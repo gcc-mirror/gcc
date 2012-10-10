@@ -8718,7 +8718,17 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
   cp_lexer_save_tokens (parser->lexer);
   attrs_location = cp_lexer_peek_token (parser->lexer)->location;
+  if (c_dialect_objc ())
+    /* In obj-c++, seing '[[' might be the either the beginning of
+       c++11 attributes, or a nested objc-message-expression.  So
+       let's parse the c++11 attributes tentatively.  */
+    cp_parser_parse_tentatively (parser);
   std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  if (c_dialect_objc ())
+    {
+      if (!cp_parser_parse_definitely (parser))
+	std_attrs = NULL_TREE;
+    }
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -20703,7 +20713,6 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_OPEN_SQUARE)
     {
       cp_lexer_consume_token (parser->lexer);
-      maybe_warn_cpp0x (CPP0X_ATTRIBUTES);
       cp_lexer_consume_token (parser->lexer);
 
       attributes = cp_parser_std_attribute_list (parser);
@@ -20711,6 +20720,10 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       if (!cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE)
 	  || !cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
 	cp_parser_skip_to_end_of_statement (parser);
+      else
+	/* Warn about parsing c++11 attribute in non-c++1 mode, only
+	   when we are sure that we have actually parsed them.  */
+	maybe_warn_cpp0x (CPP0X_ATTRIBUTES);
     }
   else
     {
