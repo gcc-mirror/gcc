@@ -1,3 +1,8 @@
+2012-10-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54878
+	* io/unix.c (tempfile_open): Set umask before calling mkstemp.
+
 2012-10-06  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* configure.ac: Check for presence of secure_getenv.

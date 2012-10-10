@@ -1051,6 +1051,9 @@ tempfile_open (const char *tempdir, char **fname)
 {
   int fd;
   const char *slash = "/";
+#if defined(HAVE_UMASK) && defined(HAVE_MKSTEMP)
+  mode_t mode_mask;
+#endif
 
   if (!tempdir)
     return -1;
@@ -1072,7 +1075,16 @@ tempfile_open (const char *tempdir, char **fname)
   snprintf (template, tempdirlen + 23, "%s%sgfortrantmpXXXXXX", 
 	    tempdir, slash);
 
+#ifdef HAVE_UMASK
+  /* Temporarily set the umask such that the file has 0600 permissions.  */
+  mode_mask = umask (S_IXUSR | S_IRWXG | S_IRWXO);
+#endif
+
   fd = mkstemp (template);
+
+#ifdef HAVE_UMASK
+  (void) umask (mode_mask);
+#endif
 
 #else /* HAVE_MKSTEMP */
   fd = -1;
