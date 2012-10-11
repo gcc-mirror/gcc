@@ -1,5 +1,6 @@
 2012-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR target/54373
 	* configure.ac (out-of-tree linker .hidden support) Set to "no"
 	for mmix-knuth-mmixware.
 	* configure: Regenerate.
