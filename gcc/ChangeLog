@@ -1,3 +1,10 @@
+2012-10-11  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (arm_arch6m): New variable to denote armv6-m
+	architecture.
+	* config/arm/arm.h (TARGET_HAVE_DMB): The armv6-m also has DMB
+	instruction.
+
 2012-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/54373
