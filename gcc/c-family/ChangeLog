@@ -1,6 +1,11 @@
+2012-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_template): Bail out for template declarations
+	declaring something coming from another file.
+
 2012-10-10  Arnaud Charlet  <charlet@adacore.com>
 
-PR ada/54845
+	PR ada/54845
 	* c-ada-spec.c (print_ada_struct_decl): Increase buf size.
 
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
