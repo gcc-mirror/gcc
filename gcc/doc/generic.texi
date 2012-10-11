@@ -1388,7 +1388,8 @@ shift.  Right shift should be treated as arithmetic, i.e., the
 high-order bits should be zero-filled when the expression has unsigned
 type and filled with the sign bit when the expression has signed type.
 Note that the result is undefined if the second operand is larger
-than or equal to the first operand's type size.
+than or equal to the first operand's type size. Unlike most nodes, these
+can have a vector as first operand and a scalar as second operand.
 
 
 @item BIT_IOR_EXPR
@@ -1482,11 +1483,12 @@ allows the backend to choose between the faster of @code{TRUNC_DIV_EXPR},
 @itemx NE_EXPR
 These nodes represent the less than, less than or equal to, greater
 than, greater than or equal to, equal, and not equal comparison
-operators.  The first and second operand with either be both of integral
-type or both of floating type.  The result type of these expressions
-will always be of integral or boolean type.  These operations return
-the result type's zero value for false, and the result type's one value
-for true.
+operators.  The first and second operands will either be both of integral
+type, both of floating type or both of vector type.  The result type of
+these expressions will always be of integral, boolean or signed integral
+vector type.  These operations return the result type's zero value for
+false, the result type's one value for true, and a vector whose elements
+are zero (false) or minus one (true) for vectors.
 
 For floating point comparisons, if we honor IEEE NaNs and either operand
 is NaN, then @code{NE_EXPR} always returns true and the remaining operators
@@ -1769,6 +1771,17 @@ of elements of a floating point type.  The result is a vector that contains
 twice as many elements of an integral type whose size is half as wide.  The
 elements of the two vectors are merged (concatenated) to form the output
 vector.
+
+@item VEC_COND_EXPR
+These nodes represent @code{?:} expressions.  The three operands must be
+vectors of the same size and number of elements.  The second and third
+operands must have the same type as the entire expression.  The first
+operand is of signed integral vector type.  If an element of the first
+operand evaluates to a zero value, the corresponding element of the
+result is taken from the third operand. If it evaluates to a minus one
+value, it is taken from the second operand. It should never evaluate to
+any other value. In contrast with a @code{COND_EXPR}, all operands are
+always evaluated.
 @end table
 
 
