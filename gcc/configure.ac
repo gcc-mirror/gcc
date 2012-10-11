@@ -3893,7 +3893,7 @@ LCF0:
     case $target in
       *-*-aix*)
 	gcc_GAS_CHECK_FEATURE([.ref support],
-	  gcc_cv_as_aix_ref, [2.21.0],,
+	  gcc_cv_as_aix_ref, [2,21,0],,
 	  [	.csect stuff[[rw]]
 	     stuff:
 		.long 1
