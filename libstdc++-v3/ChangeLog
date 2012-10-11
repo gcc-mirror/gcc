@@ -1,3 +1,8 @@
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h: Revert libstdc++/53067 quick
+	hacks thanks to the resolution of c++/51213.
+
 2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/bitset/45713.cc: Tweak.
