@@ -1700,9 +1700,17 @@ static int
 dump_ada_template (pretty_printer *buffer, tree t,
 		   int (*cpp_check)(tree, cpp_operation), int spc)
 {
-  tree inst = DECL_VINDEX (t);
   /* DECL_VINDEX is DECL_TEMPLATE_INSTANTIATIONS in this context.  */
+  tree inst = DECL_VINDEX (t);
+  /* DECL_RESULT_FLD is DECL_TEMPLATE_RESULT in this context.  */
+  tree result = DECL_RESULT_FLD (t);
   int num_inst = 0;
+
+  /* Don't look at template declarations declaring something coming from
+     another file.  This can occur for template friend declarations.  */
+  if (LOCATION_FILE (decl_sloc (result, false))
+      != LOCATION_FILE (decl_sloc (t, false)))
+    return 0;
 
   while (inst && inst != error_mark_node)
     {
