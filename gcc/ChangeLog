@@ -1,3 +1,28 @@
+2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (IMODE): New mode iterator.
+	(I124MODE): Ditto.
+	(I248MODE): Ditto.
+	(modesuffix): Handle QI and HI modes.
+	(zero_extendqi<mode>2): Macroize insn from zero_extendqi{hi,si,di}2
+	using I248MODE mode iterator.
+	(zero_extendhi<mode>2): Macroize insn from zero_extendhi{si,di}2
+	using I48MODE mode iterator.
+	(andnot<mode>3): Macroize insn from andnot{si,di}3 using
+	I48MODE mode iterator.
+	(ins<modesuffix>l_const): Macroize insn from ins{b,w,l}l_const
+	using I248MODE mode iterator.
+	(ins<modesuffix>l): Macroize insn from ins{b,w,l}l
+	using I248MODE mode iterator.
+	(*mov<mode>cc_internal): Macroize insn from
+	*mov{qi,hi,si,di}cc_internal using IMODE mode iterator.
+	(*mov<mode>cc_lbc): Macroize insn from
+	*mov{qi,hi,si,di}cc_lbc using IMODE mode iterator.
+	(*mov<mode>cc_lbs): Macroize insn from
+	*mov{qi,hi,si,di}cc_lbs using IMODE mode iterator.
+	(mov<mode>cc): Macroize insn from mov{si,di}cc_lbs
+	using I48MODE mode iterator.
+
 2012-10-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ira-build.c (ira_loop_tree_body_rev_postorder): New function.

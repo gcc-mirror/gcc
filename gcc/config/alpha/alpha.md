@@ -90,10 +90,13 @@
 (define_mode_attr reloadmode [(QI "qi") (HI "hi") (CQI "hi")])
 
 ;; Other mode iterators
+(define_mode_iterator IMODE [QI HI SI DI])
 (define_mode_iterator I12MODE [QI HI])
+(define_mode_iterator I124MODE [QI HI SI])
+(define_mode_iterator I248MODE [HI SI DI])
 (define_mode_iterator I48MODE [SI DI])
 (define_mode_attr DWI [(SI "DI") (DI "TI")])
-(define_mode_attr modesuffix [(SI "l") (DI "q")])
+(define_mode_attr modesuffix [(QI "b") (HI "w") (SI "l") (DI "q")])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
 ;; little-endian and big-endian patterns.
@@ -1026,9 +1029,9 @@
   operands[4] = GEN_INT (mask2);
 })
 
-(define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(zero_extend:HI
+(define_insn "zero_extendqi<mode>2"
+  [(set (match_operand:I248MODE 0 "register_operand" "=r,r")
+	(zero_extend:I248MODE
 	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
   ""
   "@
@@ -1037,42 +1040,9 @@
   [(set_attr "type" "ilog,ild")
    (set_attr "isa" "*,bwx")])
 
-(define_insn "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(zero_extend:SI
-	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
-  ""
-  "@
-   and %1,0xff,%0
-   ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")
-   (set_attr "isa" "*,bwx")])
-
-(define_insn "zero_extendqidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI
-	  (match_operand:QI 1 "reg_or_bwx_memory_operand" "r,m")))]
-  ""
-  "@
-   and %1,0xff,%0
-   ldbu %0,%1"
-  [(set_attr "type" "ilog,ild")
-   (set_attr "isa" "*,bwx")])
-
-(define_insn "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(zero_extend:SI
-	  (match_operand:HI 1 "reg_or_bwx_memory_operand" "r,m")))]
-  ""
-  "@
-   zapnot %1,3,%0
-   ldwu %0,%1"
-  [(set_attr "type" "shift,ild")
-   (set_attr "isa" "*,bwx")])
-
-(define_insn "zero_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI
+(define_insn "zero_extendhi<mode>2"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r,r")
+	(zero_extend:I48MODE
 	  (match_operand:HI 1 "reg_or_bwx_memory_operand" "r,m")))]
   ""
   "@
@@ -1088,18 +1058,11 @@
   "zapnot %1,15,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "*andnotsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(and:SI (not:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI"))
-		(match_operand:SI 2 "reg_or_0_operand" "rJ")))]
-  ""
-  "bic %r2,%1,%0"
-  [(set_attr "type" "ilog")])
-
-(define_insn "andnotdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI"))
-		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
+(define_insn "andnot<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(and:I48MODE
+	 (not:I48MODE (match_operand:I48MODE 1 "reg_or_8bit_operand" "rI"))
+	 (match_operand:I48MODE 2 "reg_or_0_operand" "rJ")))]
   ""
   "bic %r2,%1,%0"
   [(set_attr "type" "ilog")])
@@ -1140,9 +1103,9 @@
 
 (define_insn "*iornot<mode>3"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
-	(ior:I48MODE (not:I48MODE
-		      (match_operand:I48MODE 1 "reg_or_8bit_operand" "rI"))
-		     (match_operand:I48MODE 2 "reg_or_0_operand" "rJ")))]
+	(ior:I48MODE
+	 (not:I48MODE (match_operand:I48MODE 1 "reg_or_8bit_operand" "rI"))
+	 (match_operand:I48MODE 2 "reg_or_0_operand" "rJ")))]
   ""
   "ornot %r2,%1,%0"
   [(set_attr "type" "ilog")])
@@ -1517,21 +1480,6 @@
   "extqh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "extlh"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI
-	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		 (const_int 2147483647))
-	 (minus:DI (const_int 64)
-		    (ashift:DI
-		     (and:DI
-		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-		      (const_int 7))
-		     (const_int 3)))))]
-  ""
-  "extlh %r1,%2,%0"
-  [(set_attr "type" "shift")])
-
 (define_insn "extwh"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI
@@ -1545,6 +1493,21 @@
 		     (const_int 3)))))]
   ""
   "extwh %r1,%2,%0"
+  [(set_attr "type" "shift")])
+
+(define_insn "extlh"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ashift:DI
+	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+		 (const_int 2147483647))
+	 (minus:DI (const_int 64)
+		    (ashift:DI
+		     (and:DI
+		      (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+		      (const_int 7))
+		     (const_int 3)))))]
+  ""
+  "extlh %r1,%2,%0"
   [(set_attr "type" "shift")])
 
 ;; This converts an extXl into an extXh with an appropriate adjustment
@@ -1573,55 +1536,23 @@
 ;;  operands[7] = GEN_INT (- INTVAL (operands[2]) / BITS_PER_UNIT);
 ;;}")
 
-(define_insn "*insbl_const"
+(define_insn "ins<modesuffix>l_const"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
+	(ashift:DI (zero_extend:DI
+		    (match_operand:I124MODE 1 "register_operand" "r"))
 		   (match_operand:DI 2 "mul8_operand" "I")))]
   ""
-  "insbl %1,%s2,%0"
+  "ins<modesuffix>l %1,%s2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "inswl_const"
+(define_insn "ins<modesuffix>l"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
-		   (match_operand:DI 2 "mul8_operand" "I")))]
-  ""
-  "inswl %1,%s2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "*insll_const"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		   (match_operand:DI 2 "mul8_operand" "I")))]
-  ""
-  "insll %1,%s2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "insbl"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" "r"))
+	(ashift:DI (zero_extend:DI
+		    (match_operand:I124MODE 1 "register_operand" "r"))
 		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			      (const_int 3))))]
   ""
-  "insbl %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "inswl"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" "r"))
-		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			      (const_int 3))))]
-  ""
-  "inswl %1,%2,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "insll"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		   (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			      (const_int 3))))]
-  ""
-  "insll %1,%2,%0"
+  "ins<modesuffix>l %1,%2,%0"
   [(set_attr "type" "shift")])
 
 (define_insn "insql"
@@ -2674,14 +2605,14 @@
 ;; in order to create more pairs of constants.  As long as we're allowing
 ;; two constants at the same time, and will have to reload one of them...
 
-(define_insn "*movqicc_internal"
-  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r")
-	(if_then_else:QI
+(define_insn "*mov<mode>cc_internal"
+  [(set (match_operand:IMODE 0 "register_operand" "=r,r,r,r")
+	(if_then_else:IMODE
 	 (match_operator 2 "signed_comparison_operator"
 			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:QI 1 "add_operand" "rI,0,rI,0")
-	 (match_operand:QI 5 "add_operand" "0,rI,0,rI")))]
+	 (match_operand:IMODE 1 "add_operand" "rI,0,rI,0")
+	 (match_operand:IMODE 5 "add_operand" "0,rI,0,rI")))]
   "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
@@ -2690,168 +2621,30 @@
    cmov%d2 %r4,%5,%0"
   [(set_attr "type" "icmov")])
 
-(define_insn "*movhicc_internal"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
-	(if_then_else:HI
-	 (match_operator 2 "signed_comparison_operator"
-			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
-			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:HI 1 "add_operand" "rI,0,rI,0")
-	 (match_operand:HI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
-  "@
-   cmov%C2 %r3,%1,%0
-   cmov%D2 %r3,%5,%0
-   cmov%c2 %r4,%1,%0
-   cmov%d2 %r4,%5,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movsicc_internal"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-	(if_then_else:SI
-	 (match_operator 2 "signed_comparison_operator"
-			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
-			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:SI 1 "add_operand" "rI,0,rI,0")
-	 (match_operand:SI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
-  "@
-   cmov%C2 %r3,%1,%0
-   cmov%D2 %r3,%5,%0
-   cmov%c2 %r4,%1,%0
-   cmov%d2 %r4,%5,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movdicc_internal"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
-	(if_then_else:DI
-	 (match_operator 2 "signed_comparison_operator"
-			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
-			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
-	 (match_operand:DI 1 "add_operand" "rI,0,rI,0")
-	 (match_operand:DI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
-  "@
-   cmov%C2 %r3,%1,%0
-   cmov%D2 %r3,%5,%0
-   cmov%c2 %r4,%1,%0
-   cmov%d2 %r4,%5,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movqicc_lbc"
-  [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(if_then_else:QI
+(define_insn "*mov<mode>cc_lbc"
+  [(set (match_operand:IMODE 0 "register_operand" "=r,r")
+	(if_then_else:IMODE
 	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
 			      (const_int 1)
 			      (const_int 0))
 	     (const_int 0))
-	 (match_operand:QI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:QI 3 "reg_or_8bit_operand" "0,rI")))]
+	 (match_operand:IMODE 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:IMODE 3 "reg_or_8bit_operand" "0,rI")))]
   ""
   "@
    cmovlbc %r2,%1,%0
    cmovlbs %r2,%3,%0"
   [(set_attr "type" "icmov")])
 
-(define_insn "*movhicc_lbc"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(if_then_else:HI
-	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
-			      (const_int 1)
-			      (const_int 0))
-	     (const_int 0))
-	 (match_operand:HI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:HI 3 "reg_or_8bit_operand" "0,rI")))]
-  ""
-  "@
-   cmovlbc %r2,%1,%0
-   cmovlbs %r2,%3,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movsicc_lbc"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(if_then_else:SI
-	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
-			      (const_int 1)
-			      (const_int 0))
-	     (const_int 0))
-	 (match_operand:SI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:SI 3 "reg_or_8bit_operand" "0,rI")))]
-  ""
-  "@
-   cmovlbc %r2,%1,%0
-   cmovlbs %r2,%3,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movdicc_lbc"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(if_then_else:DI
-	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
-			      (const_int 1)
-			      (const_int 0))
-	     (const_int 0))
-	 (match_operand:DI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:DI 3 "reg_or_8bit_operand" "0,rI")))]
-  ""
-  "@
-   cmovlbc %r2,%1,%0
-   cmovlbs %r2,%3,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movqicc_lbs"
-  [(set (match_operand:QI 0 "register_operand" "=r,r")
-	(if_then_else:QI
+(define_insn "*mov<mode>cc_lbs"
+  [(set (match_operand:IMODE 0 "register_operand" "=r,r")
+	(if_then_else:IMODE
 	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
 			      (const_int 1)
 			      (const_int 0))
 	     (const_int 0))
-	 (match_operand:QI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:QI 3 "reg_or_8bit_operand" "0,rI")))]
-  ""
-  "@
-   cmovlbs %r2,%1,%0
-   cmovlbc %r2,%3,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movhicc_lbs"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
-	(if_then_else:HI
-	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
-			      (const_int 1)
-			      (const_int 0))
-	     (const_int 0))
-	 (match_operand:HI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:HI 3 "reg_or_8bit_operand" "0,rI")))]
-  ""
-  "@
-   cmovlbs %r2,%1,%0
-   cmovlbc %r2,%3,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movsicc_lbs"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(if_then_else:SI
-	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
-			      (const_int 1)
-			      (const_int 0))
-	     (const_int 0))
-	 (match_operand:SI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:SI 3 "reg_or_8bit_operand" "0,rI")))]
-  ""
-  "@
-   cmovlbs %r2,%1,%0
-   cmovlbc %r2,%3,%0"
-  [(set_attr "type" "icmov")])
-
-(define_insn "*movdicc_lbs"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(if_then_else:DI
-	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
-			      (const_int 1)
-			      (const_int 0))
-	     (const_int 0))
-	 (match_operand:DI 1 "reg_or_8bit_operand" "rI,0")
-	 (match_operand:DI 3 "reg_or_8bit_operand" "0,rI")))]
+	 (match_operand:IMODE 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:IMODE 3 "reg_or_8bit_operand" "0,rI")))]
   ""
   "@
    cmovlbs %r2,%1,%0
@@ -3450,25 +3243,16 @@
 
 ;; These are the main define_expand's used to make conditional moves.
 
-(define_expand "movsicc"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(if_then_else:SI (match_operand 1 "comparison_operator" "")
-			 (match_operand:SI 2 "reg_or_8bit_operand" "")
-			 (match_operand:SI 3 "reg_or_8bit_operand" "")))]
+(define_expand "mov<mode>cc"
+  [(set (match_operand:I48MODE 0 "register_operand" "")
+	(if_then_else:I48MODE
+	  (match_operand 1 "comparison_operator" "")
+	  (match_operand:I48MODE 2 "reg_or_8bit_operand" "")
+	  (match_operand:I48MODE 3 "reg_or_8bit_operand" "")))]
   ""
 {
-  if ((operands[1] = alpha_emit_conditional_move (operands[1], SImode)) == 0)
-    FAIL;
-})
-
-(define_expand "movdicc"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(if_then_else:DI (match_operand 1 "comparison_operator" "")
-			 (match_operand:DI 2 "reg_or_8bit_operand" "")
-			 (match_operand:DI 3 "reg_or_8bit_operand" "")))]
-  ""
-{
-  if ((operands[1] = alpha_emit_conditional_move (operands[1], DImode)) == 0)
+  operands[1] = alpha_emit_conditional_move (operands[1], <MODE>mode);
+  if (operands[1] == 0)
     FAIL;
 })
 
