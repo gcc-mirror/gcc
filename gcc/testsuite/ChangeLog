@@ -1,5 +1,8 @@
 2012-10-11  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/visibility/pragma-override1.C: Fix target markup.
+	* g++.dg/ext/visibility/pragma-override2.C: Fix target markup.
+
 	* g++.dg/gomp/tls-5.C: Require tls_native.
 	* g++.dg/tls/thread_local7.C: Require tls_native.
 	* g++.dg/tls/static2.C: New.
