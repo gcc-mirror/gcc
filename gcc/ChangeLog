@@ -1,3 +1,10 @@
+2012-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* acinclude.m4 (_gcc_COMPUTE_GAS_VERSION): Allow a single
+	character to quote the VERSION= contents.  Sanity-check contents.
+	* configure.ac ("what linker to use" ld version extraction): Ditto.
+	* configure: Regenerate.
+
 2012-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (PRINT_OPERAND_PUNCT_VALID_P):
