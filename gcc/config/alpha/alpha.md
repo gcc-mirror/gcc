@@ -92,6 +92,7 @@
 ;; Other mode iterators
 (define_mode_iterator I12MODE [QI HI])
 (define_mode_iterator I48MODE [SI DI])
+(define_mode_attr DWI [(SI "DI") (DI "TI")])
 (define_mode_attr modesuffix [(SI "l") (DI "q")])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
@@ -358,20 +359,6 @@
   operands[7] = gen_lowpart (SImode, operands[5]);
 })
 
-(define_insn "addvsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ")
-		 (match_operand:SI 2 "sext_add_operand" "rI,O")))
-   (trap_if (ne (plus:DI (sign_extend:DI (match_dup 1))
-			 (sign_extend:DI (match_dup 2)))
-		(sign_extend:DI (plus:SI (match_dup 1)
-					 (match_dup 2))))
-	    (const_int 0))]
-  ""
-  "@
-   addlv %r1,%2,%0
-   sublv %r1,%n2,%0")
-
 (define_expand "adddi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
@@ -522,15 +509,16 @@
     FAIL;
 })
 
-(define_insn "*saddl"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(plus:SI (mult:SI (match_operand:SI 1 "reg_not_elim_operand" "r,r")
-			  (match_operand:SI 2 "const48_operand" "I,I"))
-		 (match_operand:SI 3 "sext_add_operand" "rI,O")))]
+(define_insn "*sadd<modesuffix>"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r,r")
+	(plus:I48MODE
+	 (mult:I48MODE (match_operand:I48MODE 1 "reg_not_elim_operand" "r,r")
+		       (match_operand:I48MODE 2 "const48_operand" "I,I"))
+	 (match_operand:I48MODE 3 "sext_add_operand" "rI,O")))]
   ""
   "@
-   s%2addl %1,%3,%0
-   s%2subl %1,%n3,%0")
+   s%2add<modesuffix> %1,%3,%0
+   s%2sub<modesuffix> %1,%n3,%0")
 
 (define_insn "*saddl_se"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -563,35 +551,25 @@
   operands[8] = gen_lowpart (SImode, operands[6]);
 })
 
-(define_insn "*saddq"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(plus:DI (mult:DI (match_operand:DI 1 "reg_not_elim_operand" "r,r")
-			  (match_operand:DI 2 "const48_operand" "I,I"))
-		 (match_operand:DI 3 "sext_add_operand" "rI,O")))]
-  ""
-  "@
-   s%2addq %1,%3,%0
-   s%2subq %1,%n3,%0")
-
-(define_insn "addvdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ")
-		 (match_operand:DI 2 "sext_add_operand" "rI,O")))
-   (trap_if (ne (plus:TI (sign_extend:TI (match_dup 1))
-			 (sign_extend:TI (match_dup 2)))
-		(sign_extend:TI (plus:DI (match_dup 1)
-					 (match_dup 2))))
+(define_insn "addv<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r,r")
+	(plus:I48MODE (match_operand:I48MODE 1 "reg_or_0_operand" "%rJ,rJ")
+		      (match_operand:I48MODE 2 "sext_add_operand" "rI,O")))
+   (trap_if (ne (plus:<DWI> (sign_extend:<DWI> (match_dup 1))
+			    (sign_extend:<DWI> (match_dup 2)))
+		(sign_extend:<DWI> (plus:I48MODE (match_dup 1)
+						 (match_dup 2))))
 	    (const_int 0))]
   ""
   "@
-   addqv %r1,%2,%0
-   subqv %r1,%n2,%0")
+   add<modesuffix>v %r1,%2,%0
+   sub<modesuffix>v %r1,%n2,%0")
 
-(define_insn "negsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(neg:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI")))]
+(define_insn "neg<mode>2"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(neg:I48MODE (match_operand:I48MODE 1 "reg_or_8bit_operand" "rI")))]
   ""
-  "subl $31,%1,%0")
+  "sub<modesuffix> $31,%1,%0")
 
 (define_insn "*negsi_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -600,36 +578,21 @@
   ""
   "subl $31,%1,%0")
 
-(define_insn "negvsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(neg:SI (match_operand:SI 1 "register_operand" "r")))
-   (trap_if (ne (neg:DI (sign_extend:DI (match_dup 1)))
-		(sign_extend:DI (neg:SI (match_dup 1))))
+(define_insn "negv<mode>2"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(neg:I48MODE (match_operand:I48MODE 1 "register_operand" "r")))
+   (trap_if (ne (neg:<DWI> (sign_extend:<DWI> (match_dup 1)))
+		(sign_extend:<DWI> (neg:I48MODE (match_dup 1))))
 	    (const_int 0))]
   ""
-  "sublv $31,%1,%0")
+  "sub<modesuffix>v $31,%1,%0")
 
-(define_insn "negdi2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(neg:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI")))]
+(define_insn "sub<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(minus:I48MODE (match_operand:I48MODE 1 "reg_or_0_operand" "rJ")
+		       (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI")))]
   ""
-  "subq $31,%1,%0")
-
-(define_insn "negvdi2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(neg:DI (match_operand:DI 1 "register_operand" "r")))
-   (trap_if (ne (neg:TI (sign_extend:TI (match_dup 1)))
-		(sign_extend:TI (neg:DI (match_dup 1))))
-	    (const_int 0))]
-  ""
-  "subqv $31,%1,%0")
-
-(define_insn "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
-		  (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
-  ""
-  "subl %r1,%2,%0")
+  "sub<modesuffix> %r1,%2,%0")
 
 (define_insn "*subsi_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -647,32 +610,14 @@
   ""
   "subl %r1,%2,%0")
 
-(define_insn "subvsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
-		  (match_operand:SI 2 "reg_or_8bit_operand" "rI")))
-   (trap_if (ne (minus:DI (sign_extend:DI (match_dup 1))
-			  (sign_extend:DI (match_dup 2)))
-		(sign_extend:DI (minus:SI (match_dup 1)
-					  (match_dup 2))))
-	    (const_int 0))]
+(define_insn "*ssub<modesuffix>"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(minus:I48MODE
+	 (mult:I48MODE (match_operand:I48MODE 1 "reg_not_elim_operand" "r")
+		       (match_operand:I48MODE 2 "const48_operand" "I"))
+		  (match_operand:I48MODE 3 "reg_or_8bit_operand" "rI")))]
   ""
-  "sublv %r1,%2,%0")
-
-(define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		  (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
-  ""
-  "subq %r1,%2,%0")
-
-(define_insn "*ssubl"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(minus:SI (mult:SI (match_operand:SI 1 "reg_not_elim_operand" "r")
-			   (match_operand:SI 2 "const48_operand" "I"))
-		  (match_operand:SI 3 "reg_or_8bit_operand" "rI")))]
-  ""
-  "s%2subl %1,%3,%0")
+  "s%2sub<modesuffix> %1,%3,%0")
 
 (define_insn "*ssubl_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -683,34 +628,26 @@
   ""
   "s%2subl %1,%3,%0")
 
-(define_insn "*ssubq"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (mult:DI (match_operand:DI 1 "reg_not_elim_operand" "r")
-			   (match_operand:DI 2 "const48_operand" "I"))
-		  (match_operand:DI 3 "reg_or_8bit_operand" "rI")))]
-  ""
-  "s%2subq %1,%3,%0")
-
-(define_insn "subvdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		  (match_operand:DI 2 "reg_or_8bit_operand" "rI")))
-   (trap_if (ne (minus:TI (sign_extend:TI (match_dup 1))
-			  (sign_extend:TI (match_dup 2)))
-		(sign_extend:TI (minus:DI (match_dup 1)
-					  (match_dup 2))))
+(define_insn "subv<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(minus:I48MODE (match_operand:I48MODE 1 "reg_or_0_operand" "rJ")
+		       (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI")))
+   (trap_if (ne (minus:<DWI> (sign_extend:<DWI> (match_dup 1))
+			     (sign_extend:<DWI> (match_dup 2)))
+		(sign_extend:<DWI> (minus:I48MODE (match_dup 1)
+						  (match_dup 2))))
 	    (const_int 0))]
   ""
-  "subqv %r1,%2,%0")
+  "sub<modesuffix>v %r1,%2,%0")
 
-(define_insn "mulsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
+(define_insn "mul<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(mult:I48MODE (match_operand:I48MODE 1 "reg_or_0_operand" "%rJ")
+		      (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI")))]
   ""
-  "mull %r1,%2,%0"
+  "mul<modesuffix> %r1,%2,%0"
   [(set_attr "type" "imul")
-   (set_attr "opsize" "si")])
+   (set_attr "opsize" "<mode>")])
 
 (define_insn "*mulsi_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -722,40 +659,19 @@
   [(set_attr "type" "imul")
    (set_attr "opsize" "si")])
 
-(define_insn "mulvsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:SI 2 "reg_or_8bit_operand" "rI")))
-   (trap_if (ne (mult:DI (sign_extend:DI (match_dup 1))
-			 (sign_extend:DI (match_dup 2)))
-		(sign_extend:DI (mult:SI (match_dup 1)
-					 (match_dup 2))))
+(define_insn "mulv<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(mult:I48MODE (match_operand:I48MODE 1 "reg_or_0_operand" "%rJ")
+		      (match_operand:I48MODE 2 "reg_or_8bit_operand" "rI")))
+   (trap_if (ne (mult:<DWI> (sign_extend:<DWI> (match_dup 1))
+			    (sign_extend:<DWI> (match_dup 2)))
+		(sign_extend:<DWI> (mult:I48MODE (match_dup 1)
+						 (match_dup 2))))
 	    (const_int 0))]
   ""
-  "mullv %r1,%2,%0"
+  "mul<modesuffix>v %r1,%2,%0"
   [(set_attr "type" "imul")
-   (set_attr "opsize" "si")])
-
-(define_insn "muldi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(mult:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
-  ""
-  "mulq %r1,%2,%0"
-  [(set_attr "type" "imul")])
-
-(define_insn "mulvdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(mult:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:DI 2 "reg_or_8bit_operand" "rI")))
-   (trap_if (ne (mult:TI (sign_extend:TI (match_dup 1))
-			 (sign_extend:TI (match_dup 2)))
-		(sign_extend:TI (mult:DI (match_dup 1)
-					 (match_dup 2))))
-	    (const_int 0))]
-  ""
-  "mulqv %r1,%2,%0"
-  [(set_attr "type" "imul")])
+   (set_attr "opsize" "<mode>")])
 
 (define_expand "umuldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1222,18 +1138,11 @@
   "ornot $31,%1,%0"
   [(set_attr "type" "ilog")])
 
-(define_insn "*iornotsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ior:SI (not:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI"))
-		(match_operand:SI 2 "reg_or_0_operand" "rJ")))]
-  ""
-  "ornot %r2,%1,%0"
-  [(set_attr "type" "ilog")])
-
-(define_insn "*iornotdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (not:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI"))
-		(match_operand:DI 2 "reg_or_0_operand" "rJ")))]
+(define_insn "*iornot<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(ior:I48MODE (not:I48MODE
+		      (match_operand:I48MODE 1 "reg_or_8bit_operand" "rI"))
+		     (match_operand:I48MODE 2 "reg_or_0_operand" "rJ")))]
   ""
   "ornot %r2,%1,%0"
   [(set_attr "type" "ilog")])
@@ -1258,18 +1167,11 @@
    eqv %r1,%N2,%0"
   [(set_attr "type" "ilog")])
 
-(define_insn "*xornotsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(not:SI (xor:SI (match_operand:SI 1 "register_operand" "%rJ")
-			(match_operand:SI 2 "register_operand" "rI"))))]
-  ""
-  "eqv %r1,%2,%0"
-  [(set_attr "type" "ilog")])
-
-(define_insn "*xornotdi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(not:DI (xor:DI (match_operand:DI 1 "register_operand" "%rJ")
-			(match_operand:DI 2 "register_operand" "rI"))))]
+(define_insn "*xornot<mode>3"
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+	(not:I48MODE (xor:I48MODE
+		      (match_operand:I48MODE 1 "register_operand" "%rJ")
+		      (match_operand:I48MODE 2 "register_operand" "rI"))))]
   ""
   "eqv %r1,%2,%0"
   [(set_attr "type" "ilog")])
