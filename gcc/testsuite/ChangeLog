@@ -1,3 +1,8 @@
+2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43765
+	* g++.dg/parse/pr43765.C: New.
+
 2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* obj-c++.dg/tls/init-2.mm: Tweak errors.
