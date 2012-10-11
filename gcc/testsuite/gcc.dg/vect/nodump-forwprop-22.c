@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-require-effective-target vect_perm } */
-/* { dg-options "-O -fdump-tree-copyprop1" } */
+/* { dg-additional-options "-fdump-tree-copyprop1" } */
 
 typedef double vec __attribute__((vector_size (2 * sizeof (double))));
 void f (vec *px, vec *y, vec *z)
