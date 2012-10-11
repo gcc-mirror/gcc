@@ -8294,6 +8294,40 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	return build_vector (type, elts);
       }
 
+    case REDUC_MIN_EXPR:
+    case REDUC_MAX_EXPR:
+    case REDUC_PLUS_EXPR:
+      {
+	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	tree *elts;
+	enum tree_code subcode;
+
+	if (TREE_CODE (op0) != VECTOR_CST)
+	  return NULL_TREE;
+
+	elts = XALLOCAVEC (tree, nelts);
+	if (!vec_cst_ctor_to_array (op0, elts))
+	  return NULL_TREE;
+
+	switch (code)
+	  {
+	  case REDUC_MIN_EXPR: subcode = MIN_EXPR; break;
+	  case REDUC_MAX_EXPR: subcode = MAX_EXPR; break;
+	  case REDUC_PLUS_EXPR: subcode = PLUS_EXPR; break;
+	  default: gcc_unreachable ();
+	  }
+
+	for (i = 1; i < nelts; i++)
+	  {
+	    elts[0] = const_binop (subcode, elts[0], elts[i]);
+	    if (elts[0] == NULL_TREE || !CONSTANT_CLASS_P (elts[0]))
+	      return NULL_TREE;
+	    elts[i] = build_zero_cst (TREE_TYPE (type));
+	  }
+
+	return build_vector (type, elts);
+      }
+
     default:
       return NULL_TREE;
     } /* switch (code) */
