@@ -1,3 +1,8 @@
+2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36107
+	* g++.dg/ext/weak5.C: New.
+
 2012-10-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR testsuite/54868
