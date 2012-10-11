@@ -6751,7 +6751,7 @@ rs6000_emit_set_const (rtx dest, enum machine_mode mode,
 
   switch (mode)
     {
-      case  QImode:
+    case  QImode:
     case HImode:
       if (dest == NULL)
 	dest = gen_reg_rtx (mode);
@@ -14990,11 +14990,10 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'Q':
-      if (TARGET_MFCRF)
-	fputc (',', file);
-        /* FALLTHRU */
-      else
+      if (! TARGET_MFCRF)
 	return;
+      fputc (',', file);
+      /* FALLTHRU */
 
     case 'R':
       /* X is a CR register.  Print the mask for `mtcrf'.  */
@@ -15939,7 +15938,7 @@ rs6000_emit_cbranch (enum machine_mode mode, rtx operands[])
 }
 
 /* Return the string to output a conditional branch to LABEL, which is
-   the operand number of the label, or -1 if the branch is really a
+   the operand template of the label, or NULL if the branch is really a
    conditional return.
 
    OP is the conditional expression.  XEXP (OP, 0) is assumed to be a

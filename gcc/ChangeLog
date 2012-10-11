@@ -1,3 +1,11 @@
+2012-10-11  James Lemke  <jwlemke@codesourcery.com>
+
+	* config/rs6000/predicates.md (zero_fp_constant): Fix comment.
+	* config/rs6000/rs6000.md (return_pred): Fix null return.
+	* config/rs6000/rs6000.c (rs6000_emit_set_const): Fix indentation.
+	(print_operand): Make FALLTHRU obvious.
+	(output_cbranch): Correct comment.
+
 2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (DWI): New mode attribute.
