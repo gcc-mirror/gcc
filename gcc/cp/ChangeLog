@@ -1,3 +1,8 @@
+2012-10-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Set DECL_GNU_TLS_P for static data
+	members, too.
+
 2012-10-09  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53540 - using fails to be equivalent to typedef
