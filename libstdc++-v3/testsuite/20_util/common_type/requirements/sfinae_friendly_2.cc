@@ -24,10 +24,12 @@
 
 template<typename... Args>
 constexpr
-std::array<typename std::common_type<Args...>::type, sizeof...(Args)>
+std::array<typename std::decay<typename std::common_type<Args...>::type>::type, 
+  sizeof...(Args)>
 make_array(Args&&... args)  // { dg-error "invalid use" }
 {
-  typedef typename std::common_type<Args...>::type CT;
+  typedef typename std::decay<typename std::common_type<Args...>::type>::type 
+    CT;
   return std::array<CT, sizeof...(Args)>{static_cast<CT>
       (std::forward<Args>(args))...};
 }
