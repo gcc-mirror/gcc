@@ -2884,12 +2884,11 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 
 /* Return a pseudo register that contains the current thread pointer.  */
 
-static rtx
-mips_get_tp (void)
+rtx
+mips_expand_thread_pointer (rtx tp)
 {
-  rtx tp, fn;
+  rtx fn;
 
-  tp = gen_reg_rtx (Pmode);
   if (TARGET_MIPS16)
     {
       mips_need_mips16_rdhwr_p = true;
@@ -2902,6 +2901,12 @@ mips_get_tp (void)
   else
     emit_insn (PMODE_INSN (gen_tls_get_tp, (tp)));
   return tp;
+}
+
+static rtx
+mips_get_tp (void)
+{
+  return mips_expand_thread_pointer (gen_reg_rtx (Pmode));
 }
 
 /* Generate the code to access LOC, a thread-local SYMBOL_REF, and return

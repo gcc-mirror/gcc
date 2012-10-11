@@ -306,3 +306,6 @@ OPTAB_D (atomic_sub_fetch_optab, "atomic_sub_fetch$I$a")
 OPTAB_D (atomic_sub_optab, "atomic_sub$I$a")
 OPTAB_D (atomic_xor_fetch_optab, "atomic_xor_fetch$I$a")
 OPTAB_D (atomic_xor_optab, "atomic_xor$I$a")
+
+OPTAB_D (get_thread_pointer_optab, "get_thread_pointer$I$a")
+OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")

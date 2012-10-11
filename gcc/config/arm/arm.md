@@ -11501,6 +11501,15 @@
 ""
 )
 
+(define_expand "get_thread_pointersi"
+  [(match_operand:SI 0 "s_register_operand" "=r")]
+ ""
+ "
+ {
+   arm_load_tp (operands[0]);
+   DONE;
+ }")
+
 ;; Load the load/store multiple patterns
 (include "ldmstm.md")
 

@@ -782,6 +782,17 @@ DEF_BUILTIN (BUILT_IN_PROFILE_FUNC_ENTER, "__cyg_profile_func_enter", BUILT_IN_N
 DEF_BUILTIN (BUILT_IN_PROFILE_FUNC_EXIT, "__cyg_profile_func_exit", BUILT_IN_NORMAL, BT_FN_VOID_PTR_PTR, BT_LAST,
 	     false, false, false, ATTR_NULL, true, true)
 
+/* TLS thread pointer related builtins.  */
+DEF_BUILTIN (BUILT_IN_THREAD_POINTER, "__builtin_thread_pointer",
+	     BUILT_IN_NORMAL, BT_FN_PTR, BT_LAST,
+	     false, false, true, ATTR_CONST_NOTHROW_LIST, true,
+	     targetm.have_tls)
+
+DEF_BUILTIN (BUILT_IN_SET_THREAD_POINTER, "__builtin_set_thread_pointer",
+	     BUILT_IN_NORMAL, BT_FN_VOID_PTR, BT_LAST,
+	     false, false, true, ATTR_NOTHROW_LIST, true,
+	     targetm.have_tls)
+
 /* TLS emulation.  */
 DEF_BUILTIN (BUILT_IN_EMUTLS_GET_ADDRESS, targetm.emutls.get_address,
 	     BUILT_IN_NORMAL,

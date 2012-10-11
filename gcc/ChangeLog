@@ -1,3 +1,65 @@
+2012-10-11  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* builtins.c (expand_builtin_thread_pointer): New.
+	(expand_builtin_set_thread_pointer): New.
+	(expand_builtin): Add BUILT_IN_THREAD_POINTER,
+	BUILT_IN_SET_THREAD_POINTER expand cases.
+	* builtins.def (BUILT_IN_THREAD_POINTER):
+	New __builtin_thread_pointer builtin.
+	(BUILT_IN_SET_THREAD_POINTER):
+	New __builtin_set_thread_pointer builtin.
+	* optabs.def (get_thread_pointer,set_thread_pointer):
+	New standard names.
+	* doc/md.texi (Standard Names): Document get_thread_pointer and
+	set_thread_pointer patterns.
+	* config/alpha/alpha.md (get_thread_pointerdi): Rename from load_tp.
+	(set_thread_pointerdi): Rename from set_tp.
+	* config/alpha/alpha.c (alpha_legitimize_address_1): Change
+	gen_load_tp calls to gen_get_thread_pointerdi.
+	(alpha_builtin): Remove ALPHA_BUILTIN_THREAD_POINTER,
+	ALPHA_BUILTIN_SET_THREAD_POINTER.
+	(code_for_builtin): Remove CODE_FOR_load_tp, CODE_FOR_set_tp.
+	(alpha_init_builtins): Remove __builtin_thread_pointer,
+	__builtin_set_thread_pointer machine-specific builtins.
+	(alpha_expand_builtin_thread_pointer): Add hook function for
+	TARGET_EXPAND_BUILTIN_THREAD_POINTER.
+	(alpha_expand_builtin_set_thread_pointer): Add hook function for
+	TARGET_EXPAND_BUILTIN_SET_THREAD_POINTER.
+	(alpha_fold_builtin): Remove ALPHA_BUILTIN_THREAD_POINTER,
+	ALPHA_BUILTIN_SET_THREAD_POINTER cases.
+	* config/arm/arm.md (get_thread_pointersi): New pattern.
+	* config/arm/arm-protos.h (arm_load_tp): Add extern declaration.
+	* config/arm/arm.c (arm_load_tp): Remove static.
+	(arm_builtins): Remove ARM_BUILTIN_THREAD_POINTER.
+	(arm_init_tls_builtins): Remove function.
+	(arm_init_builtins): Remove call to arm_init_tls_builtins().
+	(arm_expand_builtin): Remove ARM_BUILTIN_THREAD_POINTER case.
+	* config/mips/mips.md (get_thread_pointer<mode>): New pattern.
+	* config/mips/mips-protos.h (mips_expand_thread_pointer):
+	Add extern declaration.
+	* config/mips/mips.c (mips_expand_thread_pointer):
+	Renamed from mips_get_tp.
+	(mips_get_tp): New stub calling mips_expand_thread_pointer.
+	* config/s390/s390.c (s390_builtin,code_for_builtin_64,
+	code_for_builtin_31,s390_init_builtins,s390_expand_builtin): Remove.
+	* config/s390/s390.md (get_tp_64,get_tp_31,set_tp_64,set_tp_31):
+	Remove.
+	(get_thread_pointer<mode>,set_thread_pointer<mode>):
+	New, adapted from removed patterns.
+	* config/xtensa/xtensa.md (get_thread_pointersi):
+	Renamed from load_tp.
+	(set_thread_pointersi): Renamed from set_tp.
+	* config/xtensa/xtensa.c (xtensa_legitimize_tls_address):
+	Change gen_load_tp calls to gen_get_thread_pointersi.
+	(xtensa_builtin): Remove XTENSA_BUILTIN_THREAD_POINTER and
+	XTENSA_BUILTIN_SET_THREAD_POINTER.
+	(xtensa_init_builtins): Remove __builtin_thread_pointer,
+	__builtin_set_thread_pointer machine-specific builtins.
+	(xtensa_fold_builtin): Remove XTENSA_BUILTIN_THREAD_POINTER,
+	XTENSA_BUILTIN_SET_THREAD_POINTER cases.
+	(xtensa_expand_builtin): Remove XTENSA_BUILTIN_THREAD_POINTER,
+	XTENSA_BUILTIN_SET_THREAD_POINTER cases.
+
 2012-10-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	* doc/extend.texi (Vector Extensions): C++ improvements.
