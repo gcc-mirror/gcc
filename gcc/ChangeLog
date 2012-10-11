@@ -1,5 +1,9 @@
 2012-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* configure.ac (out-of-tree linker .hidden support) Set to "no"
+	for mmix-knuth-mmixware.
+	* configure: Regenerate.
+
 	* configure.ac (gcc_cv_as_comdat_group_group): Default to no.
 	* configure: Regenerate.
 
