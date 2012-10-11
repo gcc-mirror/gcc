@@ -1,3 +1,16 @@
+2012-10-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ira-build.c (ira_loop_tree_body_rev_postorder): New function.
+	(ira_traverse_loop_tree): Traverse a loop's basic blocks in
+	reverse post-order of the reversed control-flow direction.
+	* ira-conflicts.c (ira_build_conflicts): Pass add_copies as
+	the pre-order function to ira_traverse_loop_tree to preserve
+	the existing semantics.
+
+	* ira-lives.c (remove_some_program_points_and_update_live_ranges):
+	Squeeze out live range chain elements if their program points are
+	connected.
+
 2012-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.def (REDUC_PLUS_EXPR): Fix up comment.

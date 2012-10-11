@@ -860,7 +860,7 @@ ira_build_conflicts (void)
 	  ira_object_iterator oi;
 
 	  build_conflicts ();
-	  ira_traverse_loop_tree (true, ira_loop_tree_root, NULL, add_copies);
+	  ira_traverse_loop_tree (true, ira_loop_tree_root, add_copies, NULL);
 	  /* We need finished conflict table for the subsequent call.  */
 	  if (flag_ira_region == IRA_REGION_ALL
 	      || flag_ira_region == IRA_REGION_MIXED)
