@@ -1,3 +1,8 @@
+2012-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.c (fold_unary_loc): Handle REDUC_MIN_EXPR,
+	REDUC_MAX_EXPR and REDUC_PLUS_EXPR.
+
 2012-10-11  James Lemke  <jwlemke@codesourcery.com>
 
 	* config/rs6000/predicates.md (zero_fp_constant): Fix comment.
