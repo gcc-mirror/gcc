@@ -1,3 +1,29 @@
+2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (DWI): New mode attribute.
+	(*sadd<modesuffix>): Macroize insn from *saddl and *saddq using
+	I48MODE mode iterator.
+	(addv<mode>3): Macroize insn from addvsi3 and addvdi3 using
+	I48MODE mode iterator.
+	(neg<mode>2): Macroize insn from negsi2 and negdi2 using
+	I48MODE mode iterator.
+	(negv<mode>2): Macroize insn from negvsi2 and negvdi2 using
+	I48MODE mode iterator.
+	(sub<mode>3): Macroize insn from subsi3 and subdi3 using
+	I48MODE mode iterator.
+	(*ssub<modesuffix>): Macroize insn from *ssubl and *ssubq using
+	I48MODE mode iterator.
+	(subv<mode>3): Macroize insn from subvsi3 and subvdi3 using
+	I48MODE mode iterator.
+	(mul<mode>3): Macroize insn from mulsi3 and muldi3 using
+	I48MODE mode iterator.
+	(mulv<mode>3): Macroize insn from mulvsi3 and mulvdi3 using
+	I48MODE mode iterator.
+	(*iornot<mode>3): Macroize insn from *iornotsi3 and *iornotdi3 using
+	I48MODE mode iterator.
+	(*xornot<mode>3): Macroize insn from *xornotsi3 and *xornotdi3 using
+	I48MODE mode iterator.
+
 2012-10-11  Jason Merrill  <jason@redhat.com>
 
 	* configure.ac (gcc_cv_as_aix_ref): Fix typo.
@@ -97,8 +123,7 @@
 
 2012-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	* config/rs6000/rs6000.h (PRINT_OPERAND_PUNCT_VALID_P):
-	Delete '.'.
+	* config/rs6000/rs6000.h (PRINT_OPERAND_PUNCT_VALID_P): Delete '.'.
 
 2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
@@ -118,8 +143,7 @@
 	(lto_write_tree): Adjust.
 	(output_eh_region): Likewise.
 	(output_struct_function_base): Likewise.
-	* lto-streamer.c (lto_streamer_hooks_init): Initialize location
-	hooks.
+	* lto-streamer.c (lto_streamer_hooks_init): Initialize location hooks.
 	* lto-streamer.h (lto_input_location): Adjust prototype.
 	(lto_output_location): Likewise.
 	* streamer-hooks.h (struct streamer_hooks): Adjust prototype
@@ -200,8 +224,7 @@
 	(rs6000_print_options_internal): New function for expanded
 	-mdebug=reg option printing to print both the ISA options, and the
 	builtins that are enabled.
-	(rs6000_print_isa_options): New function to print the ISA
-	options.
+	(rs6000_print_isa_options): New function to print the ISA options.
 	(rs6000_print_builtin_options): New function to print the builtin
 	functions enabled.
 
@@ -240,7 +263,7 @@
 2012-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config.gcc: Enable zEC12 for with-arch and with-tune
-          configure switches.
+	configure switches.
 	* common/config/s390/s390-common.c (processor_flags_table): Add
 	zEC12 entry.
 	* config/s390/2827.md: New file.
@@ -253,8 +276,7 @@
 	Set parameter defaults for zEC12.
 	(legitimate_reload_fp_constant_p): Adjust comment.
 	(preferred_la_operand_p): Adjust comment.
-	(s390_expand_insv): Generate insv pattern without CC clobber for
-	zEC12.
+	(s390_expand_insv): Generate insv pattern without CC clobber for zEC12.
 	(s390_adjust_priority): Add zEC12 check.
 	(s390_issue_rate): Return 2 for zEC12.
 	(s390_reorg): Enable code optimizations for zEC12.
@@ -282,8 +304,10 @@
 	(*movsf_insn): Likewise.
 	(*movdf_insn_sp64): Likewise.
 	(*mov<VM32:mode>_insn): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
-	(*mov<VM64:mode>_insn_sp64): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
-	(*mov<VM64:mode>_insn_sp32): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
+	(*mov<VM64:mode>_insn_sp64): Likewise, use 'fsrc2s'
+	instead of 'fsrc1s'.
+	(*mov<VM64:mode>_insn_sp32): Likewise, use 'fsrc2s'
+	instead of 'fsrc1s'.
 	(VIS logical instructions): Mark as visl.
 	(pdist_vis): Use 'pdist'.
 	(pditsn<mode>_vis): Use 'pdistn'.
@@ -314,15 +338,16 @@
 	* Makefile.in (fold-const.o): Add depencence on hash-table.h.
 	(dse.o): Likewise.
 	(cfg.o): Likewise.
-	* fold-const.c (fold_checksum_tree): Change to new type-safe hash table.
+	* fold-const.c (fold_checksum_tree): Change to new
+	type-safe hash table.
 	* (print_fold_checksum): Likewise.
 	* cfg.c (var bb_original): Likewise.
 	* (var bb_copy): Likewise.
 	* (var loop_copy): Likewise.
 	* hash-table.h (template hash_table): Constify parameters for find...
 	and remove_elt... member functions.
-        (hash_table::empty) Correct size expression.
-        (hash_table::clear_slot) Correct deleted entry assignment.
+	(hash_table::empty) Correct size expression.
+	(hash_table::clear_slot) Correct deleted entry assignment.
 	* dse.c (var rtx_group_table): Change to new type-safe hash table.
 
 2012-10-09  Steven Bosscher  <steven@gcc.gnu.org>
