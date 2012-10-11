@@ -1,3 +1,9 @@
+2012-10-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/54897
+	* testsuite/23_containers/bitset/45713.cc: Skip for avr*-*-*
+	cris*-*-* h8300*-*-* mcore*-*-* moxie*-*-*.
+
 2012-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/54872
