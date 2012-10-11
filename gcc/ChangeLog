@@ -1,5 +1,7 @@
 2012-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.def (REDUC_PLUS_EXPR): Fix up comment.
+
 	* fold-const.c (fold_unary_loc): Handle REDUC_MIN_EXPR,
 	REDUC_MAX_EXPR and REDUC_PLUS_EXPR.
 
