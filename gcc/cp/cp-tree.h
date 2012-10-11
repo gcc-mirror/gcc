@@ -2378,7 +2378,11 @@ struct GTY((variable_size)) lang_decl {
 
 /* The thunks associated with NODE, a FUNCTION_DECL.  */
 #define DECL_THUNKS(NODE) \
-  (LANG_DECL_FN_CHECK (NODE)->context)
+  (DECL_VIRTUAL_P (NODE) ? LANG_DECL_FN_CHECK (NODE)->context : NULL_TREE)
+
+/* Set DECL_THUNKS.  */
+#define SET_DECL_THUNKS(NODE,THUNKS) \
+  (LANG_DECL_FN_CHECK (NODE)->context = (THUNKS))
 
 /* Nonzero if NODE is a thunk, rather than an ordinary function.  */
 #define DECL_THUNK_P(NODE)			\

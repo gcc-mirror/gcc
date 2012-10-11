@@ -126,7 +126,8 @@ make_thunk (tree function, bool this_adjusting,
 		      FUNCTION_DECL, NULL_TREE, TREE_TYPE (function));
   DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (function);
   cxx_dup_lang_specific_decl (thunk);
-  DECL_THUNKS (thunk) = NULL_TREE;
+  DECL_VIRTUAL_P (thunk) = true;
+  SET_DECL_THUNKS (thunk, NULL_TREE);
 
   DECL_CONTEXT (thunk) = DECL_CONTEXT (function);
   TREE_READONLY (thunk) = TREE_READONLY (function);
@@ -157,7 +158,7 @@ make_thunk (tree function, bool this_adjusting,
 
   /* Add it to the list of thunks associated with FUNCTION.  */
   DECL_CHAIN (thunk) = DECL_THUNKS (function);
-  DECL_THUNKS (function) = thunk;
+  SET_DECL_THUNKS (function, thunk);
 
   return thunk;
 }
