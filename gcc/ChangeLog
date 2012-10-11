@@ -1,5 +1,8 @@
 2012-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* configure.ac (gcc_cv_as_comdat_group_group): Default to no.
+	* configure: Regenerate.
+
 	* acinclude.m4 (_gcc_COMPUTE_GAS_VERSION): Allow a single
 	character to quote the VERSION= contents.  Sanity-check contents.
 	* configure.ac ("what linker to use" ld version extraction): Ditto.
