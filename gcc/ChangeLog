@@ -1,3 +1,11 @@
+2012-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* doc/extend.texi (Vector Extensions): C++ improvements.
+	* doc/generic.texi (LSHIFT_EXPR, RSHIFT_EXPR): Mixed vector-scalar.
+	(LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EQ_EXPR, NE_EXPR): Specify
+	the vector case.
+	(VEC_COND_EXPR): Document it.
+
 2012-10-11  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.c (arm_arch6m): New variable to denote armv6-m

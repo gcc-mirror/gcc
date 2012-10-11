@@ -6864,7 +6864,7 @@ a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
 @dots{}, an >> bn@}}@. Vector operands must have the same number of
 elements. 
 
-For the convenience in C it is allowed to use a binary vector operation
+For convenience, it is allowed to use a binary vector operation
 where one operand is a scalar. In that case the compiler will transform
 the scalar operand into a vector where each element is the scalar from
 the operation. The transformation will happen only if the scalar could be
