@@ -21,6 +21,9 @@
 #include <type_traits>
 #include <chrono>
 
+//TODO: Uncomment this once gcc bug 53000 has been resolved:
+//#define HAS_53000_FIXED
+
 // Helper types:
 struct has_type_impl
 {
@@ -52,8 +55,10 @@ typedef std::chrono::duration<int, std::nano> din;
 typedef std::chrono::duration<double, std::nano> ddn;
 typedef std::chrono::duration<int, std::milli> dim;
 
-static_assert(is_type<std::common_type<din, din>, din>(), "");
-static_assert(is_type<std::common_type<din, din, din>, din>(), "");
+#ifdef HAS_53000_FIXED
+static_assert(is_type<std::common_type<din, din>, din&&>(), "");
+static_assert(is_type<std::common_type<din, din, din>, din&&>(), "");
+#endif
 
 static_assert(is_type<std::common_type<din, ddn>, ddn>(), "");
 static_assert(is_type<std::common_type<din, din, ddn>, ddn>(), "");
