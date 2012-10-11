@@ -25363,8 +25363,8 @@ if test "${gcc_cv_as_aix_ref+set}" = set; then :
 else
   gcc_cv_as_aix_ref=no
     if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2.21.0 \* 1000 \) + gcc_cv_as_aix_ref=yes \) \* 1000 + `
-  then :
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 21 \) \* 1000 + 0`
+  then gcc_cv_as_aix_ref=yes
 fi
   elif test x$gcc_cv_as != x; then
     $as_echo '	.csect stuff[rw]
