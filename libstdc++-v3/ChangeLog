@@ -4,6 +4,15 @@
 	* testsuite/23_containers/bitset/45713.cc: Skip for avr*-*-*
 	cris*-*-* h8300*-*-* mcore*-*-* moxie*-*-*.
 
+2012-10-11  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Update / extend.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Likewise.
+	* testsuite/20_util/duration/requirements/sfinae_friendly_1.cc:
+	Likewise.
+
 2012-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/54872
