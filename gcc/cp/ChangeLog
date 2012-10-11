@@ -1,5 +1,10 @@
 2012-10-11  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (DECL_THUNKS): NULL_TREE for non-virtual functions.
+	(SET_DECL_THUNKS): New.
+	* decl.c (duplicate_decls): Adjust.
+	* method.c (make_thunk): Adjust.
+
 	* decl.c (grokdeclarator): Set DECL_GNU_TLS_P for static data
 	members, too.
 
