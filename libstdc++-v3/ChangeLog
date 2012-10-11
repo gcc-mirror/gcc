@@ -1,3 +1,9 @@
+2012-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/54872
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.11) [!__sun__ && !__svr4__]:
+	Don't export _ZNSt12system_errorC*.
+
 2012-10-10  Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
