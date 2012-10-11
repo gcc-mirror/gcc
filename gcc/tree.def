@@ -1093,8 +1093,11 @@ DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
    Operations that take a vector of elements and "reduce" it to a scalar
    result (e.g. summing the elements of the vector, finding the minimum over
    the vector elements, etc).
-   Operand 0 is a vector; the first element in the vector has the result.
-   Operand 1 is a vector.  */
+   Operand 0 is a vector.
+   The expression returns a vector of the same type, with the first
+   element in the vector holding the result of the reduction of all elements
+   of the operand.  The content of the other elements in the returned vector
+   is undefined.  */
 DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
