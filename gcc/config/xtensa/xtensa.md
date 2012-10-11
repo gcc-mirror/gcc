@@ -1714,7 +1714,7 @@
   ""
   "")
 
-(define_insn "load_tp"
+(define_insn "get_thread_pointersi"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(unspec:SI [(const_int 0)] UNSPEC_TP))]
   "TARGET_THREADPTR"
@@ -1723,7 +1723,7 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "set_tp"
+(define_insn "set_thread_pointersi"
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
 		    UNSPECV_SET_TP)]
   "TARGET_THREADPTR"

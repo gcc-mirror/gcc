@@ -351,6 +351,8 @@ extern void mips_expand_vec_reduc (rtx, rtx, rtx (*)(rtx, rtx, rtx));
 extern void mips_expand_vec_minmax (rtx, rtx, rtx,
 				    rtx (*) (rtx, rtx, rtx), bool);
 
+extern rtx mips_expand_thread_pointer (rtx);
+
 extern bool mips_eh_uses (unsigned int);
 extern bool mips_epilogue_uses (unsigned int);
 extern void mips_final_prescan_insn (rtx, rtx *, int);

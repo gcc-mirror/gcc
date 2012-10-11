@@ -4365,7 +4365,7 @@
 ;; For userland, we load the thread pointer from the TCB.
 ;; For the kernel, we load the per-cpu private value.
 
-(define_insn "load_tp"
+(define_insn "get_thread_pointerdi"
   [(set (match_operand:DI 0 "register_operand" "=v")
 	(unspec:DI [(const_int 0)] UNSPEC_TP))]
   "TARGET_ABI_OSF"
@@ -4382,7 +4382,7 @@
 ;; quantity for CSE, we have to use a volatile unspec, and then there's
 ;; not much point in creating an R16_REG register class.
 
-(define_expand "set_tp"
+(define_expand "set_thread_pointerdi"
   [(set (reg:DI 16) (match_operand:DI 0 "input_operand" ""))
    (unspec_volatile [(reg:DI 16)] UNSPECV_SET_TP)]
   "TARGET_ABI_OSF"

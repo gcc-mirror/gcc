@@ -1899,7 +1899,7 @@ xtensa_legitimize_tls_address (rtx x)
     case TLS_MODEL_INITIAL_EXEC:
     case TLS_MODEL_LOCAL_EXEC:
       tp = gen_reg_rtx (SImode);
-      emit_insn (gen_load_tp (tp));
+      emit_insn (gen_get_thread_pointersi (tp));
       addend = force_reg (SImode, gen_sym_TPOFF (x));
       emit_insn (gen_addsi3 (dest, tp, addend));
       break;
@@ -3076,8 +3076,6 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 enum xtensa_builtin
 {
   XTENSA_BUILTIN_UMULSIDI3,
-  XTENSA_BUILTIN_THREAD_POINTER,
-  XTENSA_BUILTIN_SET_THREAD_POINTER,
   XTENSA_BUILTIN_max
 };
 
@@ -3096,23 +3094,6 @@ xtensa_init_builtins (void)
 			       "__umulsidi3", NULL_TREE);
   TREE_NOTHROW (decl) = 1;
   TREE_READONLY (decl) = 1;
-
-  if (TARGET_THREADPTR)
-    {
-      ftype = build_function_type_list (ptr_type_node, NULL_TREE);
-      decl = add_builtin_function ("__builtin_thread_pointer", ftype,
-				   XTENSA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
-				   NULL, NULL_TREE);
-      TREE_READONLY (decl) = 1;
-      TREE_NOTHROW (decl) = 1;
-
-      ftype = build_function_type_list (void_type_node, ptr_type_node,
-					NULL_TREE);
-      decl = add_builtin_function ("__builtin_set_thread_pointer", ftype,
-				   XTENSA_BUILTIN_SET_THREAD_POINTER,
-				   BUILT_IN_MD, NULL, NULL_TREE);
-      TREE_NOTHROW (decl) = 1;
-    }
 }
 
 
@@ -3133,10 +3114,6 @@ xtensa_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
 	return fold_build2 (MULT_EXPR, unsigned_intDI_type_node,
 			    fold_convert (unsigned_intDI_type_node, arg0),
 			    fold_convert (unsigned_intDI_type_node, arg1));
-      break;
-
-    case XTENSA_BUILTIN_THREAD_POINTER:
-    case XTENSA_BUILTIN_SET_THREAD_POINTER:
       break;
 
     default:
@@ -3165,19 +3142,6 @@ xtensa_expand_builtin (tree exp, rtx target,
 	 __umulsidi3 function when the Xtensa configuration can directly
 	 implement it.  If not, just call the function.  */
       return expand_call (exp, target, ignore);
-
-    case XTENSA_BUILTIN_THREAD_POINTER:
-      if (!target || !register_operand (target, Pmode))
-	target = gen_reg_rtx (Pmode);
-      emit_insn (gen_load_tp (target));
-      return target;
-
-    case XTENSA_BUILTIN_SET_THREAD_POINTER:
-      arg = expand_normal (CALL_EXPR_ARG (exp, 0));
-      if (!register_operand (arg, Pmode))
-	arg = copy_to_mode_reg (Pmode, arg);
-      emit_insn (gen_set_tp (arg));
-      return const0_rtx;
 
     default:
       internal_error ("bad builtin code");

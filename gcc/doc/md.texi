@@ -6133,6 +6133,18 @@ If this pattern is not specified, all memory models except
 @code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
 barrier pattern.
 
+@cindex @code{get_thread_pointer@var{mode}} instruction pattern
+@cindex @code{set_thread_pointer@var{mode}} instruction pattern
+@item @samp{get_thread_pointer@var{mode}}
+@itemx @samp{set_thread_pointer@var{mode}}
+These patterns emit code that reads/sets the TLS thread pointer. Currently,
+these are only needed if the target needs to support the
+@code{__builtin_thread_pointer} and @code{__builtin_set_thread_pointer}
+builtins.
+
+The get/set patterns have a single output/input operand respectively,
+with @var{mode} intended to be @code{Pmode}.
+
 @cindex @code{stack_protect_set} instruction pattern
 @item @samp{stack_protect_set}
 

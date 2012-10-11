@@ -163,6 +163,7 @@ extern int arm_attr_length_push_multi(rtx, rtx);
 extern void arm_expand_compare_and_swap (rtx op[]);
 extern void arm_split_compare_and_swap (rtx op[]);
 extern void arm_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
+extern rtx arm_load_tp (rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
