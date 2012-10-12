@@ -6060,11 +6060,6 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
       && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
     return NULL_TREE;
 
-  /* We can't build a vector type of elements with alignment bigger than
-     their size.  */
-  if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
-    return NULL_TREE;
-
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode
      precision.  The vectorization routines will have to make sure
@@ -6084,6 +6079,11 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
   if (!SCALAR_FLOAT_TYPE_P (scalar_type)
       && !INTEGRAL_TYPE_P (scalar_type)
       && !POINTER_TYPE_P (scalar_type))
+    scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
+
+  /* We can't build a vector type of elements with alignment bigger than
+     their size.  */
+  if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
     scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
 
   /* If no size was supplied use the mode the target prefers.   Otherwise
