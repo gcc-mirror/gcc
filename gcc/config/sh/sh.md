@@ -541,22 +541,22 @@
   (eq_attr "needs_delay_slot" "yes")
   [(eq_attr "in_delay_slot" "yes") (nil) (nil)])
 
-;; On the SH and SH2, the rte instruction reads the return pc from the stack,
-;; and thus we can't put a pop instruction in its delay slot.
-;; On the SH3 and SH4, the rte instruction does not use the stack, so a pop
-;; instruction can go in the delay slot.
 ;; Since a normal return (rts) implicitly uses the PR register,
 ;; we can't allow PR register loads in an rts delay slot.
+;; On the SH1* and SH2*, the rte instruction reads the return pc from the
+;; stack, and thus we can't put a pop instruction in its delay slot.
+;; On the SH3* and SH4*, the rte instruction does not use the stack, so a
+;; pop instruction can go in the delay slot, unless it references a banked
+;; register (the register bank is switched by rte).
 (define_delay
   (eq_attr "type" "return")
   [(and (eq_attr "in_delay_slot" "yes")
 	(ior (and (eq_attr "interrupt_function" "no")
 		  (eq_attr "type" "!pload,prset"))
 	     (and (eq_attr "interrupt_function" "yes")
-		  (ior
-		   (not (match_test "TARGET_SH3"))
-		   (eq_attr "hit_stack" "no")
-		   (eq_attr "banked" "no"))))) (nil) (nil)])
+		  (ior (match_test "TARGET_SH3") (eq_attr "hit_stack" "no"))
+		  (eq_attr "banked" "no"))))
+   (nil) (nil)])
 
 ;; Since a call implicitly uses the PR register, we can't allow
 ;; a PR register store in a jsr delay slot.
@@ -6231,21 +6231,6 @@ label:
 
   emit_insn (gen_ashlsi3 (operands[5], operands[0], operands[2]));
 })
-
-;; Define additional pop for SH1 and SH2 so it does not get 
-;; placed in the delay slot.
-(define_insn "*movsi_pop"
-  [(set (match_operand:SI 0 "register_operand" "=r,x,l")
-        (match_operand:SI 1 "sh_no_delay_pop_operand" ">,>,>"))]
-  "(TARGET_SH1 || TARGET_SH2E || TARGET_SH2A)
-   && ! TARGET_SH3"
-  "@
-	mov.l	%1,%0
-	lds.l	%1,%0
-	lds.l	%1,%0"
-  [(set_attr "type" "load_si,mem_mac,pload")
-   (set_attr "length" "2,2,2")
-   (set_attr "in_delay_slot" "no,no,no")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (set (subreg:SI (mem:QI (plus:SI (reg:SI SP_REG) (const_int 12)) 0) 0)
