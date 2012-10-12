@@ -1,3 +1,8 @@
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53055
+	* c-common.h (enum ref_operator) [RO_ARROW_STAR]: New.
+
 2012-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_template): Bail out for template declarations

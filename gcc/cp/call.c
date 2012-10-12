@@ -5309,7 +5309,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
       return cp_build_array_ref (input_location, arg1, arg2, complain);
 
     case MEMBER_REF:
-      return build_m_component_ref (cp_build_indirect_ref (arg1, RO_NULL, 
+      return build_m_component_ref (cp_build_indirect_ref (arg1, RO_ARROW_STAR, 
                                                            complain), 
                                     arg2, complain);
 
