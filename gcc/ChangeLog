@@ -1,3 +1,14 @@
+2012-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (vecmodesuffix): New mode attribute.
+	(modesuffix): Handle V8QI and V4HI modes.
+	(any_maxmin): New code iterator.
+	(maxmin): New code attribute.
+	(<code><mode>3): Macroize insn from {smax,smin,umax,umin}{qi,hi}3
+	using any_maxmin code iterator and I12MODE mode iterator.
+	(<code><mode>3): Macroize insn from {smax,smin,umax,umin}{v8qi,v4hi}3
+	using any_maxmin code iterator and VEC12 mode iterator.
+
 2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	* optabs.c (vector_compare_rtx): Change prototype.
@@ -62,7 +73,7 @@
 	*mov{qi,hi,si,di}cc_lbc using IMODE mode iterator.
 	(*mov<mode>cc_lbs): Macroize insn from
 	*mov{qi,hi,si,di}cc_lbs using IMODE mode iterator.
-	(mov<mode>cc): Macroize insn from mov{si,di}cc_lbs
+	(mov<mode>cc): Macroize expander from mov{si,di}cc
 	using I48MODE mode iterator.
 
 2012-10-11  Steven Bosscher  <steven@gcc.gnu.org>
