@@ -1063,6 +1063,19 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
   /* FIXME: Do more comprehensive testing of attributes, like e.g.
 	    ASYNCHRONOUS, CONTIGUOUS, VALUE, VOLATILE, etc.  */
 
+  /* Check interface of dummy procedures.  */
+  if (s1->attr.flavor == FL_PROCEDURE)
+    {
+      char err[200];
+      if (!gfc_compare_interfaces (s1, s2, s2->name, 0, 1, err, sizeof(err),
+				   NULL, NULL))
+	{
+	  snprintf (errmsg, err_len, "Interface mismatch in dummy procedure "
+		    "'%s': %s", s1->name, err);
+	  return FAILURE;
+	}
+    }
+
   /* Check string length.  */
   if (s1->ts.type == BT_CHARACTER
       && s1->ts.u.cl && s1->ts.u.cl->length
