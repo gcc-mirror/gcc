@@ -446,21 +446,35 @@ search_unit (int unit, int *ip)
 {
   int low, high, mid;
 
-  low = -1;
-  high = n_elist;
-  while (high - low > 1)
+  if (n_elist == 0)
+    {
+      *ip = 0;
+      return 0;
+    }
+
+  low = 0;
+  high = n_elist - 1;
+
+  do 
     {
       mid = (low + high) / 2;
-      if (unit <= elist[mid].unit)
-	high = mid;
+      if (unit == elist[mid].unit)
+	{
+	  *ip = mid;
+	  return 1;
+	}
+      else if (unit > elist[mid].unit)
+	low = mid + 1;
       else
-	low = mid;
-    }
-  *ip = high;
-  if (elist[high].unit == unit)
-    return 1;
+	high = mid - 1;
+    } while (low <= high);
+
+  if (unit > elist[mid].unit)
+    *ip = mid + 1;
   else
-    return 0;
+    *ip = mid;
+
+  return 0;
 }
 
 /* This matches a keyword.  If it is found, return the token supplied,
@@ -575,13 +589,13 @@ mark_single (int unit)
     }
   if (search_unit (unit, &i))
     {
-      elist[unit].conv = endian;
+      elist[i].conv = endian;
     }
   else
     {
-      for (j=n_elist; j>=i; j--)
+      for (j=n_elist-1; j>=i; j--)
 	elist[j+1] = elist[j];
-    
+
       n_elist += 1;
       elist[i].unit = unit;
       elist[i].conv = endian;

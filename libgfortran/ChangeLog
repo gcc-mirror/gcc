@@ -1,3 +1,11 @@
+2012-10-06  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/54736
+	Backport from trunk
+	* runtime/environ.c (search_unit):  Correct logic
+	for binary search.
+	(mark_single):  Fix index errors.
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
