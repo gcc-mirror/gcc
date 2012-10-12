@@ -1,3 +1,8 @@
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24449
+	* g++.dg/parse/friend-main.C: New.
+
 2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53055
