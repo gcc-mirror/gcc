@@ -50,12 +50,15 @@ update_lineno (const char *l, size_t len)
 
 %}
 
-ID	[[:alpha:]_][[:alnum:]_]*
+CID	[[:alpha:]_][[:alnum:]_]*
 WS	[[:space:]]+
 HWS	[ \t\r\v\f]*
 IWORD	short|long|(un)?signed|char|int|HOST_WIDE_INT|HOST_WIDEST_INT|bool|size_t|BOOL_BITFIELD|CPPCHAR_SIGNED_T|ino_t|dev_t|HARD_REG_SET
 ITYPE	{IWORD}({WS}{IWORD})*
+    /* Include '::' in identifiers to capture C++ scope qualifiers.  */
+ID	{CID}({HWS}::{HWS}{CID})*
 EOID	[^[:alnum:]_]
+CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend
 
 %x in_struct in_struct_comment in_comment
 %option warn noyywrap nounput nodefault perf-report
@@ -83,6 +86,10 @@ EOID	[^[:alnum:]_]
   BEGIN(in_struct);
   return UNION;
 }
+^{HWS}class/{EOID} {
+  BEGIN(in_struct);
+  return STRUCT;
+}
 ^{HWS}extern/{EOID} {
   BEGIN(in_struct);
   return EXTERN;
@@ -93,18 +100,27 @@ EOID	[^[:alnum:]_]
 }
 }
 
+    /* Parsing inside a struct, union or class declaration.  */
 <in_struct>{
-
 "/*"				{ BEGIN(in_struct_comment); }
+"//".*\n			{ lexer_line.line++; }
 
 {WS}				{ update_lineno (yytext, yyleng); }
 \\\n				{ lexer_line.line++; }
 
 "const"/{EOID}			/* don't care */
+{CXX_KEYWORD}/{EOID}			|
+"~"					|
+"&"					{
+    *yylval = XDUPVAR (const char, yytext, yyleng, yyleng + 1);
+    return IGNORABLE_CXX_KEYWORD;
+}
 "GTY"/{EOID}			{ return GTY_TOKEN; }
 "VEC"/{EOID}			{ return VEC_TOKEN; }
 "union"/{EOID}			{ return UNION; }
 "struct"/{EOID}			{ return STRUCT; }
+"class"/{EOID}			{ return STRUCT; }
+"typedef"/{EOID}		{ return TYPEDEF; }
 "enum"/{EOID}			{ return ENUM; }
 "ptr_alias"/{EOID}	  	{ return PTR_ALIAS; }
 "nested_ptr"/{EOID}		{ return NESTED_PTR; }
@@ -127,7 +143,6 @@ EOID	[^[:alnum:]_]
   return SCALAR;
 }
 
-
 {ID}/{EOID}			{
   *yylval = XDUPVAR (const char, yytext, yyleng, yyleng+1);
   return ID;
@@ -148,7 +163,7 @@ EOID	[^[:alnum:]_]
 }
 
 "..."				{ return ELLIPSIS; }
-[(){},*:<>;=%|-]		{ return yytext[0]; }
+[(){},*:<>;=%|+-]		{ return yytext[0]; }
 
    /* ignore pp-directives */
 ^{HWS}"#"{HWS}[a-z_]+[^\n]*\n   {lexer_line.line++;}
@@ -159,6 +174,7 @@ EOID	[^[:alnum:]_]
 }
 
 "/*"			{ BEGIN(in_comment); }
+"//".*\n		{ lexer_line.line++; }
 \n			{ lexer_line.line++; }
 {ID}			|
 "'"("\\".|[^\\])"'"	|
@@ -172,6 +188,7 @@ EOID	[^[:alnum:]_]
 [^*\n]		/* do nothing */
 "*"/[^/]	/* do nothing */
 }
+
 <in_comment>"*/"	{ BEGIN(INITIAL); } 
 <in_struct_comment>"*/"	{ BEGIN(in_struct); }
 

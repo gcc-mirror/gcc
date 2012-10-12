@@ -497,10 +497,10 @@ struct type scalar_char = {
 
 /* Lists of various things.  */
 
-pair_p typedefs;
-type_p structures;
-type_p param_structs;
-pair_p variables;
+pair_p typedefs = NULL;
+type_p structures = NULL;
+type_p param_structs = NULL;
+pair_p variables = NULL;
 
 static type_p find_param_structure (type_p t, type_p param[NUM_PARAM]);
 static type_p adjust_field_tree_exp (type_p t, options_p opt);
@@ -611,6 +611,7 @@ resolve_typedef (const char *s, struct fileloc *pos)
   return create_user_defined_type (s, pos);
 }
 
+
 /* Create and return a new structure with tag NAME at POS with fields
    FIELDS and options O.  The KIND of structure must be one of
    TYPE_STRUCT, TYPE_UNION or TYPE_USER_STRUCT.  */
@@ -676,8 +677,7 @@ new_structure (const char *name, enum typekind kind, struct fileloc *pos,
       structures = s;
     }
 
-  if (s->u.s.line.file != NULL
-      || (s->u.s.lang_struct && (s->u.s.lang_struct->u.s.bitmap & bitmap)))
+  if (s->u.s.lang_struct && (s->u.s.lang_struct->u.s.bitmap & bitmap))
     {
       error_at_line (pos, "duplicate definition of '%s %s'",
 		     isunion ? "union" : "struct", s->u.s.tag);
@@ -762,6 +762,7 @@ create_scalar_type (const char *name)
   else
     return &scalar_nonchar;
 }
+
 
 /* Return a pointer to T.  */
 
@@ -2636,7 +2637,7 @@ walk_type (type_p t, struct walk_type_data *d)
 
 	/* If a pointer type is marked as "atomic", we process the
 	   field itself, but we don't walk the data that they point to.
-	   
+
 	   There are two main cases where we walk types: to mark
 	   pointers that are reachable, and to relocate pointers when
 	   writing a PCH file.  In both cases, an atomic pointer is
@@ -3514,7 +3515,7 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
     {
       oprintf (d.of, "      %s (x);\n", mark_hook_name);
     }
-  
+
   d.prev_val[2] = "*x";
   d.indent = 6;
   if (orig_s->kind != TYPE_USER_STRUCT)
