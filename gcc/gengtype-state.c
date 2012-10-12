@@ -961,6 +961,8 @@ write_state_type (type_p current)
       current->state_number = state_written_type_count;
       switch (current->kind)
 	{
+	case TYPE_NONE:
+	  gcc_unreachable ();
 	case TYPE_STRUCT:
 	  write_state_struct_type (current);
 	  break;
@@ -988,9 +990,6 @@ write_state_type (type_p current)
 	case TYPE_STRING:
 	  write_state_string_type (current);
 	  break;
-
-	default:
-	  fatal ("Unexpected type...");
 	}
     }
 
@@ -1317,7 +1316,6 @@ read_state_scalar_char_type (type_p *type)
   *type = &scalar_char;
   read_state_common_type_content (*type);
 }
-
 
 /* Read the string_type.  */
 static void

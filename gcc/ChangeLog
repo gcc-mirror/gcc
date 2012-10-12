@@ -1,3 +1,55 @@
+2012-10-12  Aaron Gray <aaronngray.lists@gmail.com>
+	    Diego Novillo <dnovillo@google.com>
+
+        * gengtype-lex.l: Support for C++ single line comments.
+        Support for classes.
+	(CXX_KEYWORD): New.  Support C++ keywords inline, public,
+	protected, private, template, operator, friend, &, ~.
+	(TYPEDEF): New.  Support typedef.
+        * gengtype-parser.c: updated 'token_names[]'
+        (direct_declarator): Add support for parsing functions
+	and ctors.
+
+2012-10-12  Diego Novillo  <dnovillo@google.com>
+
+	* doc/gty.texi: Document C++ limitations in gengtype.
+	* gengtype-lex.l (CID): Rename from ID.
+	(ID): Include scoping '::' as part of the identifier name.
+	* gengtype-parse.c (token_names): Update.
+	(token_value_format): Update.
+	(consume_until_eos): Rename from consume_until_semi.
+	Remove unused argument IMMEDIATE.  Update all callers.
+	Also consider '}' as a finalizer.
+	(consume_until_comma_or_eos): Rename from
+	consume_until_comma_or_semi.
+	Remove unused argument IMMEDIATE.  Update all callers.
+	Also consider '}' as a finalizer.
+	(direct_declarator): Add documentation on ctor support.
+	Add argument IN_STRUCT.
+	If the token following ID is a '(', consider ID a
+	function and return NULL.
+	If the token following '(' is not a '*', and IN_STRUCT is
+	true, conclude that this is a ctor and return NULL.
+	If the token is IGNORABLE_CXX_KEYWORD, return NULL.
+	(inner_declarator): Add argument IN_STRUCT.
+	Update all callers.
+	(declarator): Add argument IN_STRUCT with default value
+	false.  Update all callers.
+	(type): Document argument NESTED.
+	Skip over C++ inheritance specifiers.
+	If a token TYPEDEF is found, emit an error.
+	If an enum is found inside a class/structure, emit an
+	error.
+	(typedefs, structures, param_structs, variables): Initialize.
+	(new_structure): Do not complain about duplicate
+	structures if S has a line location set.
+	* gengtype-state.c (write_state_type): Remove default
+	handler.  Add handler for TYPE_NONE.
+	(read_state_scalar_char_type):
+	* gengtype.c: Fix spacing.
+	* gengtype.h (enum gty_token): Add name.  Add token
+	IGNORABLE_CXX_KEYWORD.
+
 2012-10-12  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/arm/arm.md (get_thread_pointersi): Moved to place with

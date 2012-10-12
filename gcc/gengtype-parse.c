@@ -87,6 +87,7 @@ static const char *const token_names[] = {
   "a string constant",
   "a character constant",
   "an array declarator",
+  "a C++ keyword to ignore"
 };
 
 /* This array is indexed by token code minus FIRST_TOKEN_WITH_VALUE.  */
@@ -98,6 +99,7 @@ static const char *const token_value_format[] = {
   "'\"%s\"'",
   "\"'%s'\"",
   "'[%s]'",
+  "'%s'",
 };
 
 /* Produce a printable representation for a token defined by CODE and
@@ -313,77 +315,76 @@ consume_balanced (int opener, int closer)
 }
 
 /* Absorb a sequence of tokens, possibly including ()[]{}-delimited
-   expressions, until we encounter a semicolon outside any such
-   delimiters; absorb that too.  If IMMEDIATE is true, it is an error
-   if the semicolon is not the first token encountered.  */
+   expressions, until we encounter an end-of-statement marker (a ';' or
+   a '}') outside any such delimiters; absorb that too.  */
+
 static void
-consume_until_semi (bool immediate)
+consume_until_eos (void)
 {
-  if (immediate && token () != ';')
-    require (';');
   for (;;)
     switch (token ())
       {
       case ';':
 	advance ();
 	return;
-      default:
-	advance ();
-	break;
+
+      case '{':
+	consume_balanced ('{', '}');
+	return;
 
       case '(':
 	consume_balanced ('(', ')');
 	break;
+
       case '[':
 	consume_balanced ('[', ']');
-	break;
-      case '{':
-	consume_balanced ('{', '}');
 	break;
 
       case '}':
       case ']':
       case ')':
 	parse_error ("unmatched '%c' while scanning for ';'", token ());
-      return;
+	return;
 
       case EOF_TOKEN:
 	parse_error ("unexpected end of file while scanning for ';'");
 	return;
+
+      default:
+	advance ();
+	break;
       }
 }
 
 /* Absorb a sequence of tokens, possibly including ()[]{}-delimited
    expressions, until we encounter a comma or semicolon outside any
-   such delimiters; absorb that too.  If IMMEDIATE is true, it is an
-   error if the comma or semicolon is not the first token encountered.
-   Returns true if the loop ended with a comma.  */
+   such delimiters; absorb that too.  Returns true if the loop ended
+   with a comma.  */
+
 static bool
-consume_until_comma_or_semi (bool immediate)
+consume_until_comma_or_eos ()
 {
-  if (immediate && token () != ',' && token () != ';')
-    require2 (',', ';');
   for (;;)
     switch (token ())
       {
       case ',':
 	advance ();
 	return true;
+
       case ';':
 	advance ();
 	return false;
-      default:
-	advance ();
-	break;
+
+      case '{':
+	consume_balanced ('{', '}');
+	return false;
 
       case '(':
 	consume_balanced ('(', ')');
 	break;
+
       case '[':
 	consume_balanced ('[', ']');
-	break;
-      case '{':
-	consume_balanced ('{', '}');
 	break;
 
       case '}':
@@ -396,6 +397,10 @@ consume_until_comma_or_semi (bool immediate)
       case EOF_TOKEN:
 	parse_error ("unexpected end of file while scanning for ',' or ';'");
 	return false;
+
+      default:
+	advance ();
+	break;
       }
 }
 
@@ -548,6 +553,8 @@ gtymarker_opt (void)
     return 0;
   return gtymarker ();
 }
+
+
 
 /* Declarators. The logic here is largely lifted from c-parser.c.
    Note that we do not have to process abstract declarators, which can
@@ -584,16 +591,21 @@ array_and_function_declarators_opt (type_p ty)
     return ty;
 }
 
-static type_p inner_declarator (type_p, const char **, options_p *);
+static type_p inner_declarator (type_p, const char **, options_p *, bool);
 
 /* direct_declarator:
    '(' inner_declarator ')'
+   '(' \epsilon ')'	<-- C++ ctors/dtors
    gtymarker_opt ID array_and_function_declarators_opt
 
    Subroutine of declarator, mutually recursive with inner_declarator;
-   do not use elsewhere.  */
+   do not use elsewhere.
+
+   IN_STRUCT is true if we are called while parsing structures or classes.  */
+
 static type_p
-direct_declarator (type_p ty, const char **namep, options_p *optsp)
+direct_declarator (type_p ty, const char **namep, options_p *optsp,
+		   bool in_struct)
 {
   /* The first token in a direct-declarator must be an ID, a
      GTY marker, or an open parenthesis.  */
@@ -602,18 +614,45 @@ direct_declarator (type_p ty, const char **namep, options_p *optsp)
     case GTY_TOKEN:
       *optsp = gtymarker ();
       /* fall through */
+
     case ID:
       *namep = require (ID);
+      /* If the next token is '(', we are parsing a function declaration.
+	 Functions are ignored by gengtype, so we return NULL.  */
+      if (token () == '(')
+	return NULL;
       break;
 
     case '(':
+      /* If the declarator starts with a '(', we have three options.  We
+	 are either parsing 'TYPE (*ID)' (i.e., a function pointer)
+	 or 'TYPE(...)'.
+
+	 The latter will be a constructor iff we are inside a
+	 structure or class.  Otherwise, it could be a typedef, but
+	 since we explicitly reject typedefs inside structures, we can
+	 assume that we found a ctor and return NULL.  */
       advance ();
-      ty = inner_declarator (ty, namep, optsp);
+      if (in_struct && token () != '*')
+	{
+	  /* Found a constructor.  Find and consume the closing ')'.  */
+	  while (token () != ')')
+	    advance ();
+	  advance ();
+	  /* Tell the caller to ignore this.  */
+	  return NULL;
+	}
+      ty = inner_declarator (ty, namep, optsp, in_struct);
       require (')');
       break;
 
+    case IGNORABLE_CXX_KEYWORD:
+      /* Any C++ keyword like 'operator' means that we are not looking
+	 at a regular data declarator.  */
+      return NULL;
+
     default:
-      parse_error ("expected '(', 'GTY', or an identifier, have %s",
+      parse_error ("expected '(', ')', 'GTY', or an identifier, have %s",
 		   print_cur_token ());
       /* Do _not_ advance if what we have is a close squiggle brace, as
 	 we will get much better error recovery that way.  */
@@ -643,23 +682,26 @@ direct_declarator (type_p ty, const char **namep, options_p *optsp)
    direct_declarator
 
    Mutually recursive subroutine of direct_declarator; do not use
-   elsewhere.  */
+   elsewhere.
+
+   IN_STRUCT is true if we are called while parsing structures or classes.  */
 
 static type_p
-inner_declarator (type_p ty, const char **namep, options_p *optsp)
+inner_declarator (type_p ty, const char **namep, options_p *optsp,
+		  bool in_struct)
 {
   if (token () == '*')
     {
       type_p inner;
       advance ();
-      inner = inner_declarator (ty, namep, optsp);
+      inner = inner_declarator (ty, namep, optsp, in_struct);
       if (inner == 0)
 	return 0;
       else
 	return create_pointer (ty);
     }
   else
-    return direct_declarator (ty, namep, optsp);
+    return direct_declarator (ty, namep, optsp, in_struct);
 }
 
 /* declarator: '*'+ direct_declarator
@@ -667,10 +709,15 @@ inner_declarator (type_p ty, const char **namep, options_p *optsp)
    This is the sole public interface to this part of the grammar.
    Arguments are the type known so far, a pointer to where the name
    may be stored, and a pointer to where GTY options may be stored.
-   Returns the final type. */
+
+   IN_STRUCT is true when we are called to parse declarators inside
+   a structure or class.
+
+   Returns the final type.  */
 
 static type_p
-declarator (type_p ty, const char **namep, options_p *optsp)
+declarator (type_p ty, const char **namep, options_p *optsp,
+	    bool in_struct = false)
 {
   *namep = 0;
   *optsp = 0;
@@ -679,7 +726,7 @@ declarator (type_p ty, const char **namep, options_p *optsp)
       advance ();
       ty = create_pointer (ty);
     }
-  return direct_declarator (ty, namep, optsp);
+  return direct_declarator (ty, namep, optsp, in_struct);
 }
 
 /* Types and declarations.  */
@@ -708,18 +755,19 @@ struct_field_seq (void)
 
       if (!ty || token () == ':')
 	{
-	  consume_until_semi (false);
+	  consume_until_eos ();
 	  continue;
 	}
 
       do
 	{
-	  dty = declarator (ty, &name, &dopts);
+	  dty = declarator (ty, &name, &dopts, true);
+
 	  /* There could be any number of weird things after the declarator,
 	     notably bitfield declarations and __attribute__s.  If this
 	     function returns true, the last thing was a comma, so we have
 	     more than one declarator paired with the current type.  */
-	  another = consume_until_comma_or_semi (false);
+	  another = consume_until_comma_or_eos ();
 
 	  if (!dty)
 	    continue;
@@ -760,7 +808,12 @@ opts_have (options_p opts, const char *str)
    Returns a partial type; under some conditions (notably
    "struct foo GTY((...)) thing;") it may write an options
    structure to *OPTSP.
-*/
+
+   NESTED is true when parsing a declaration already known to have a
+   GTY marker. In these cases, typedef and enum declarations are not
+   allowed because gengtype only understands types at the global
+   scope.  */
+
 static type_p
 type (options_p *optsp, bool nested)
 {
@@ -776,6 +829,12 @@ type (options_p *optsp, bool nested)
     case VEC_TOKEN:
       s = typedef_name ();
       return resolve_typedef (s, &lexer_line);
+
+    case IGNORABLE_CXX_KEYWORD:
+      /* By returning NULL here, we indicate to the caller that they
+	 should ignore everything following this keyword up to the
+	 next ';' or '}'.  */
+      return NULL;
 
     case STRUCT:
     case UNION:
@@ -796,8 +855,8 @@ type (options_p *optsp, bool nested)
 	/* Top-level structures that are not explicitly tagged GTY(())
 	   are treated as mere forward declarations.  This is because
 	   there are a lot of structures that we don't need to know
-	   about, and some of those have weird macro stuff in them
-	   that we can't handle.  */
+	   about, and some of those have C++ and macro constructs that
+	   we cannot handle.  */
 	if (nested || token () == GTY_TOKEN)
 	  {
 	    is_gty = GTY_BEFORE_ID;
@@ -817,6 +876,13 @@ type (options_p *optsp, bool nested)
 	  {
 	    is_gty = GTY_AFTER_ID;
 	    opts = gtymarker_opt ();
+	  }
+
+	if (token () == ':')
+	  {
+	    /* Skip over C++ inheritance specification.  */
+	    while (token () != '{')
+	      advance ();
 	  }
 
 	if (is_gty)
@@ -853,6 +919,21 @@ type (options_p *optsp, bool nested)
 	return find_structure (s, kind);
       }
 
+    case TYPEDEF:
+      /* In C++, a typedef inside a struct/class/union defines a new
+	 type for that inner scope.  We cannot support this in
+	 gengtype because we have no concept of scoping.
+
+	 We handle typedefs in the global scope separately (see
+	 parse_file), so if we find a 'typedef', we must be inside
+	 a struct.  */
+      gcc_assert (nested);
+      parse_error ("typedefs not supported in structures marked with "
+		   "automatic GTY markers.  Use GTY((user)) to mark "
+		   "this structure.");
+      advance ();
+      return NULL;
+
     case ENUM:
       advance ();
       if (token () == ID)
@@ -864,6 +945,23 @@ type (options_p *optsp, bool nested)
 
       if (token () == '{')
 	consume_balanced ('{', '}');
+
+      /* If after parsing the enum we are at the end of the statement,
+	 and we are currently inside a structure, then this was an
+	 enum declaration inside this scope.
+
+	 We cannot support this for the same reason we cannot support
+	 'typedef' inside structures (see the TYPEDEF handler above).
+	 If this happens, emit an error and return NULL.  */
+      if (nested && token () == ';')
+	{
+	  parse_error ("enum definitions not supported in structures marked "
+		       "with automatic GTY markers.  Use GTY((user)) to mark "
+	               "this structure.");
+	  advance ();
+	  return NULL;
+	}
+
       return create_scalar_type (s);
 
     default:
@@ -901,7 +999,7 @@ typedef_decl (void)
 
       /* Yet another place where we could have junk (notably attributes)
 	 after the declarator.  */
-      another = consume_until_comma_or_semi (false);
+      another = consume_until_comma_or_eos ();
       if (dty)
 	do_typedef (name, dty, &lexer_line);
     }

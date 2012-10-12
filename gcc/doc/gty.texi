@@ -65,6 +65,27 @@ The parser understands simple typedefs such as
 @code{typedef int @var{name};}.
 These don't need to be marked.
 
+Since @code{gengtype}'s understanding of C++ is limited, there are
+several constructs and declarations that are not supported inside
+classes/structures marked for automatic GC code generation.  The
+following C++ constructs produce a @code{gengtype} error on
+structures/classes marked for automatic GC code generation:
+
+@itemize @bullet
+@item
+Type definitions inside classes/structures are not supported.
+@item
+Enumerations inside classes/structures are not supported.
+@end itemize
+
+If you have a class or structure using any of the above constructs,
+you need to mark that class as @code{GTY ((user))} and provide your
+own marking routines (see section @ref{User GC} for details).
+
+It is always valid to include function definitions inside classes.
+Those are always ignored by @code{gengtype}, as it only cares about
+data members.
+
 @menu
 * GTY Options::         What goes inside a @code{GTY(())}.
 * GGC Roots::           Making global variables GGC roots.
