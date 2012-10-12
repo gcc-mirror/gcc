@@ -1,3 +1,7 @@
+2012-10-12  Jan Hubicka <jh@suse.cz>
+
+	* gcc.dg/webizer.c: New testcase.
+
 2012-10-12  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/vect/pr48765.c: Skip for conflicting options, don't
