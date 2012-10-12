@@ -1,5 +1,8 @@
 2012-10-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.dg/vect/pr48765.c: Skip for conflicting options, don't
+	specify -m64.
+
 	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for
 	GNU/Linux.
 
