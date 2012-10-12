@@ -1,3 +1,7 @@
+2012-10-12  Joe Seymour  <jseymour@codesourcery.com>
+
+	* gcc.dg/pr53060.c: Prune irrelevant warning.
+
 2012-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54381
