@@ -1,3 +1,14 @@
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54680
+	* config/sh/sh.c (sh_fsca_sf2int, sh_fsca_int2sf): Fix swapped
+	comments.
+	* config/sh/predicates.md (fpul_operand): Add comment.
+	(fpul_fsca_operand, fsca_scale_factor): New predicates.
+	* config/sh/sh.md (fsca): Move below sincossf3 expander.  Convert to
+	insn_and_split.  Use fpul_fsca_operand and fsca_scale_factor predicates.
+	Simplify fpul operand in splitter.
+
 2012-10-12  Jan Hubicka <jh@suse.cz>
 
 	* tree-ssa-threadupdate.c (def_split_header_continue_p): Do not

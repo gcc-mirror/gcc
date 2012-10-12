@@ -12208,22 +12208,6 @@ label:
   [(set_attr "type" "fsrra")
    (set_attr "fp_mode" "single")])
 
-(define_insn "fsca"
-  [(set (match_operand:V2SF 0 "fp_arith_reg_operand" "=f")
-	(vec_concat:V2SF
-	 (unspec:SF [(mult:SF
-		      (float:SF (match_operand:SI 1 "fpul_operand" "y"))
-		      (match_operand:SF 2 "immediate_operand" "i"))
-		    ] UNSPEC_FSINA)
-	 (unspec:SF [(mult:SF (float:SF (match_dup 1)) (match_dup 2))
-		    ] UNSPEC_FCOSA)))
-   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
-  "TARGET_FPU_ANY && TARGET_FSCA
-   && operands[2] == sh_fsca_int2sf ()"
-  "fsca	fpul,%d0"
-  [(set_attr "type" "fsca")
-   (set_attr "fp_mode" "single")])
-
 ;; When the sincos pattern is defined, the builtin functions sin and cos
 ;; will be expanded to the sincos pattern and one of the output values will
 ;; remain unused.
@@ -12249,6 +12233,38 @@ label:
   emit_move_insn (operands[1], gen_rtx_SUBREG (SFmode, fsca, 4));
   DONE;
 })
+
+(define_insn_and_split "fsca"
+  [(set (match_operand:V2SF 0 "fp_arith_reg_operand" "=f")
+	(vec_concat:V2SF
+	 (unspec:SF [(mult:SF
+		      (float:SF (match_operand:SI 1 "fpul_fsca_operand" "y"))
+		      (match_operand:SF 2 "fsca_scale_factor" "i"))
+		    ] UNSPEC_FSINA)
+	 (unspec:SF [(mult:SF (float:SF (match_dup 1)) (match_dup 2))
+		    ] UNSPEC_FCOSA)))
+   (use (match_operand:PSI 3 "fpscr_operand" "c"))]
+  "TARGET_FPU_ANY && TARGET_FSCA"
+  "fsca	fpul,%d0"
+  "&& !fpul_operand (operands[1], SImode)"
+  [(const_int 0)]
+{
+  /* If operands[1] is something like (fix:SF (float:SF (reg:SI))) reduce it
+     to a simple reg, otherwise reload will have trouble reloading the
+     pseudo into fpul.  */
+  rtx x = XEXP (operands[1], 0);
+  while (x != NULL_RTX && !fpul_operand (x, SImode))
+    {
+      gcc_assert (GET_CODE (x) == FIX || GET_CODE (x) == FLOAT);
+      x = XEXP (x, 0);
+    }
+
+  gcc_assert (x != NULL_RTX && fpul_operand (x, SImode));
+  emit_insn (gen_fsca (operands[0], x, operands[2], operands[3]));
+  DONE;
+}
+  [(set_attr "type" "fsca")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "abssf2"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
