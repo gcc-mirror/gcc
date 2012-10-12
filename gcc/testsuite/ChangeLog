@@ -1,3 +1,8 @@
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54680
+	* gcc.target/sh/pr54680.c: New.
+
 2012-10-12  Jan Hubicka <jh@suse.cz>
 
 	* gcc.dg/webizer.c: New testcase.
