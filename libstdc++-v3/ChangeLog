@@ -4,23 +4,6 @@
 	* include/bits/atomic_base.h (atomic_signal_fence): Call
 	__atomic_signal_fence instead of __atomic_thread_fence.
 
-2012-10-05 Pavel Chupin <pavel.v.chupin@intel.com>
- 
-	        Fix missing gthr-default.h issue on separate libstdc++ configure
-	        * acinclude.m4: Define glibcxx_thread_h.
-	        * include/Makefile.am: Use glibcxx_thread_h.
-	        * Makefile.in: Regenerate.
-	        * configure: Regenerate.
-	        * doc/Makefile.in: Regenerate.
-	        * include/Makefile.in: Regenerate.
-	        * libsupc++/Makefile.in: Regenerate.
-	        * po/Makefile.in: Regenerate.
-	        * python/Makefile.in: Regenerate.
-	        * src/Makefile.in: Regenerate.
-	        * src/c++11/Makefile.in: Regenerate.
-	        * src/c++98/Makefile.in: Regenerate.
-	        * testsuite/Makefile.in: Regenerate.
-
 2012-09-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/54102, part 2

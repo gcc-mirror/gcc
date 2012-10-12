@@ -3341,16 +3341,10 @@ dnl having to write complex code (the sed commands to clean the macro
 dnl namespace are complex and fragile enough as it is).  We must also
 dnl add a relative path so that -I- is supported properly.
 dnl
-dnl Substs:
-dnl  glibcxx_thread_h
-dnl
 AC_DEFUN([GLIBCXX_ENABLE_THREADS], [
   AC_MSG_CHECKING([for thread model used by GCC])
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   AC_MSG_RESULT([$target_thread_file])
-
-  glibcxx_thread_h=gthr-$target_thread_file.h
-  AC_SUBST(glibcxx_thread_h)
 ])
 
 
