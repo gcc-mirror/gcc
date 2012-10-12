@@ -1,3 +1,8 @@
+2012-10-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.md (get_thread_pointersi): Moved to place with
+	other TLS related patterns.
+
 2012-10-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-streamer-out.c (pack_ts_target_option): Rename from ...
