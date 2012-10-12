@@ -1,3 +1,25 @@
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (negsi_cond, negdi_cond, stack_protect_test): Remove
+	get_t_reg_rtx when invoking gen_branch_true or gen_branch_false.
+	(*zero_extend<mode>si2_compact): Convert to insn_and_split.  Convert
+	zero extensions of T bit stores to reg moves in splitter.  Remove
+	obsolete unnamed peephole2 that caught zero extensions after negc T bit
+	stores.
+	(*branch_true_eq, *branch_false_ne): Delete.
+	(branch_true, branch_false): Convert insn to expander.  Move actual
+	insn logic to...
+	(*cbranch_t): ...this new insn_and_split.  Try to find preceding
+	redundant T bit stores and tests and combine them with the conditional
+	branch if possible in the splitter.
+	(movrt_xor, *movt_movrt): New insn_and_split.
+	* config/sh/predicates.md (cbranch_treg_value): New predicate.
+	* config/sh/sh-protos.h (sh_eval_treg_value): Forward declare...
+	* config/sh/sh.c (sh_eval_treg_value): ...this new function.
+	(expand_cbranchsi4, expand_cbranchdi4): Remove get_t_reg_rtx
+	when invoking gen_branch_true or gen_branch_false.
+
 2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (IMODE): New mode iterator.
