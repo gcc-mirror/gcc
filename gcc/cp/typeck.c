@@ -2908,6 +2908,10 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
          case RO_IMPLICIT_CONVERSION:
            error ("invalid use of implicit conversion on pointer to member");
            break;
+         case RO_ARROW_STAR:
+           error ("left hand operand of %<->*%> must be a pointer to class, "
+		  "but is a pointer to member of type %qT", type);
+           break;
          default:
            gcc_unreachable ();
       }

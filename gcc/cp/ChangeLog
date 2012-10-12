@@ -1,3 +1,9 @@
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53055
+	* call.c (build_new_op_1): Pass RO_ARROW_STAR to cp_build_indirect_ref.
+	* typeck.c (cp_build_indirect_ref): Handle RO_ARROW_STAR.
+
 2012-10-11  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (DECL_THUNKS): NULL_TREE for non-virtual functions.
