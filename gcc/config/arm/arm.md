@@ -11355,6 +11355,16 @@
    (set_attr "length" "4")]
 )
 
+;; For thread pointer builtin
+(define_expand "get_thread_pointersi"
+  [(match_operand:SI 0 "s_register_operand" "=r")]
+ ""
+ "
+ {
+   arm_load_tp (operands[0]);
+   DONE;
+ }")
+
 ;;
 
 ;; We only care about the lower 16 bits of the constant 
@@ -11500,15 +11510,6 @@
 "arm_arch6"
 ""
 )
-
-(define_expand "get_thread_pointersi"
-  [(match_operand:SI 0 "s_register_operand" "=r")]
- ""
- "
- {
-   arm_load_tp (operands[0]);
-   DONE;
- }")
 
 ;; Load the load/store multiple patterns
 (include "ldmstm.md")
