@@ -1,3 +1,11 @@
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-13.c: New.
+	* gcc.target/sh/pr51244-14.c: New.
+	* gcc.target/sh/pr51244-15.c: New.
+	* gcc.target/sh/pr51244-16.c: New.
+
 2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51878

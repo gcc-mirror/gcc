@@ -1048,6 +1048,14 @@
     }
 })
 
+;; A predicate that returns true if OP is a valid construct around the T bit
+;; that can be used as an operand for conditional branches.
+(define_predicate "cbranch_treg_value"
+  (match_code "eq,ne,reg,subreg,xor,sign_extend,zero_extend")
+{
+  return sh_eval_treg_value (op) >= 0;
+})
+
 ;; Returns true of OP is arith_reg_operand or t_reg_operand.
 (define_predicate "arith_reg_or_t_reg_operand"
   (ior (match_operand 0 "arith_reg_operand")

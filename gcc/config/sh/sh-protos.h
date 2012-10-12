@@ -162,6 +162,7 @@ extern bool sh_cfun_trap_exit_p (void);
 extern void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
 					enum machine_mode mode = VOIDmode);
 extern rtx sh_find_equiv_gbr_addr (rtx cur_insn, rtx mem);
+extern int sh_eval_treg_value (rtx op);
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);

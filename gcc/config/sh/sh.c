@@ -2059,7 +2059,7 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 void
 expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
 {
-  rtx (*branch_expander) (rtx, rtx) = gen_branch_true;
+  rtx (*branch_expander) (rtx) = gen_branch_true;
   comparison = prepare_cbranch_operands (operands, SImode, comparison);
   switch (comparison)
     {
@@ -2071,7 +2071,7 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
   emit_insn (gen_rtx_SET (VOIDmode, get_t_reg_rtx (),
                           gen_rtx_fmt_ee (comparison, SImode,
                                           operands[1], operands[2])));
-  rtx jump = emit_jump_insn (branch_expander (operands[3], get_t_reg_rtx ()));
+  rtx jump = emit_jump_insn (branch_expander (operands[3]));
   if (probability >= 0)
     add_reg_note (jump, REG_BR_PROB, GEN_INT (probability));
 }
@@ -2123,7 +2123,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       if (TARGET_CMPEQDI_T)
 	{
 	  emit_insn (gen_cmpeqdi_t (operands[1], operands[2]));
-	  emit_jump_insn (gen_branch_true (operands[3], get_t_reg_rtx ()));
+	  emit_jump_insn (gen_branch_true (operands[3]));
 	  return true;
 	}
       msw_skip = NE;
@@ -2150,7 +2150,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       if (TARGET_CMPEQDI_T)
 	{
 	  emit_insn (gen_cmpeqdi_t (operands[1], operands[2]));
-	  emit_jump_insn (gen_branch_false (operands[3], get_t_reg_rtx ()));
+	  emit_jump_insn (gen_branch_false (operands[3]));
 	  return true;
 	}
       msw_taken = NE;
@@ -2279,6 +2279,43 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   if (msw_skip != LAST_AND_UNUSED_RTX_CODE)
     emit_label (skip_label);
   return true;
+}
+
+/* Given an operand, return 1 if the evaluated operand plugged into an
+   if_then_else will result in a branch_true, 0 if branch_false, or
+   -1 if neither nor applies.  The truth table goes like this:
+
+       op   | cmpval |   code  | result
+   ---------+--------+---------+--------------------
+      T (0) |   0    |  EQ (1) |  0 = 0 ^ (0 == 1)
+      T (0) |   1    |  EQ (1) |  1 = 0 ^ (1 == 1)
+      T (0) |   0    |  NE (0) |  1 = 0 ^ (0 == 0)
+      T (0) |   1    |  NE (0) |  0 = 0 ^ (1 == 0)
+     !T (1) |   0    |  EQ (1) |  1 = 1 ^ (0 == 1)
+     !T (1) |   1    |  EQ (1) |  0 = 1 ^ (1 == 1)
+     !T (1) |   0    |  NE (0) |  0 = 1 ^ (0 == 0)
+     !T (1) |   1    |  NE (0) |  1 = 1 ^ (1 == 0)  */
+int
+sh_eval_treg_value (rtx op)
+{
+  enum rtx_code code = GET_CODE (op);
+  if ((code != EQ && code != NE) || !CONST_INT_P (XEXP (op, 1)))
+    return -1;
+
+  int cmpop = code == EQ ? 1 : 0;
+  int cmpval = INTVAL (XEXP (op, 1));
+  if (cmpval != 0 && cmpval != 1)
+    return -1;
+
+  int t;
+  if (t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0))))
+    t = 0;
+  else if (negt_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0))))
+    t = 1;
+  else
+    return -1;
+  
+  return t ^ (cmpval == cmpop);
 }
 
 /* Emit INSN, possibly in a PARALLEL with an USE of fpscr for SH4.  */
@@ -2485,9 +2522,9 @@ sh_emit_compare_and_branch (rtx *operands, enum machine_mode mode)
     sh_emit_set_t_insn (gen_ieee_ccmpeqsf_t (op0, op1), mode);
 
   if (branch_code == code)
-    emit_jump_insn (gen_branch_true (operands[3], get_t_reg_rtx ()));
+    emit_jump_insn (gen_branch_true (operands[3]));
   else
-    emit_jump_insn (gen_branch_false (operands[3], get_t_reg_rtx ()));
+    emit_jump_insn (gen_branch_false (operands[3]));
 }
 
 void
@@ -2521,7 +2558,7 @@ sh_emit_compare_and_set (rtx *operands, enum machine_mode mode)
             {
               lab = gen_label_rtx ();
               sh_emit_scc_to_t (EQ, op0, op1);
-              emit_jump_insn (gen_branch_true (lab, get_t_reg_rtx ()));
+              emit_jump_insn (gen_branch_true (lab));
               code = GT;
            }
           else
