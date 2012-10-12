@@ -1,3 +1,7 @@
+2012-10-12  Jan Hubicka <jh@suse.cz>
+
+	* web.c (web_main): Do not set DF_RD_PRUNE_DEAD_DEFS flag.
+
 2012-10-12  Aaron Gray <aaronngray.lists@gmail.com>
 	    Diego Novillo <dnovillo@google.com>
 
