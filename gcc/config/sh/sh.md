@@ -10210,7 +10210,7 @@ label:
 ;;
 ;; On SH the thread pointer is kept in the GBR.
 ;; These patterns are usually expanded from the respective built-in functions.
-(define_expand "get_thread_pointer"
+(define_expand "get_thread_pointersi"
   [(set (match_operand:SI 0 "register_operand") (reg:SI GBR_REG))]
   "TARGET_SH1")
 
@@ -10221,7 +10221,7 @@ label:
   "stc	gbr,%0"
   [(set_attr "type" "tls_load")])
 
-(define_expand "set_thread_pointer"
+(define_expand "set_thread_pointersi"
   [(set (reg:SI GBR_REG)
 	(unspec_volatile:SI [(match_operand:SI 0 "register_operand")]
 	 UNSPECV_GBR))]

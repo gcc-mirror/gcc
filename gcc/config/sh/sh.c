@@ -11815,12 +11815,6 @@ static struct builtin_description bdesc[] =
     CODE_FOR_byterev,	"__builtin_sh_media_BYTEREV", SH_BLTIN_2, 0 },
   { shmedia_builtin_p,
     CODE_FOR_prefetch,	"__builtin_sh_media_PREFO", SH_BLTIN_PSSV, 0 },
-
-  { sh1_builtin_p,
-    CODE_FOR_get_thread_pointer, "__builtin_thread_pointer", SH_BLTIN_VP, 0 },
-  { sh1_builtin_p,
-    CODE_FOR_set_thread_pointer, "__builtin_set_thread_pointer",
-    SH_BLTIN_PV, 0 },
 };
 
 static void

@@ -1,5 +1,12 @@
 2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54760
+	* config/sh/sh.c (bdesc): Remove thread pointer built-ins.
+	* config/sh/sh.md (get_thread_pointer, set_thread_pointer): Append mode
+	name 'si'.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/51244
 	* config/sh/sh.md (negsi_cond, negdi_cond, stack_protect_test): Remove
 	get_t_reg_rtx when invoking gen_branch_true or gen_branch_false.
