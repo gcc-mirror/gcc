@@ -1847,51 +1847,104 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
    sizeof as last operand of certain builtins.  */
 
 void
-sizeof_pointer_memaccess_warning (location_t loc, tree callee,
-				  VEC(tree, gc) *params, tree sizeof_arg,
+sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
+				  VEC(tree, gc) *params, tree *sizeof_arg,
 				  bool (*comp_types) (tree, tree))
 {
   tree type, dest = NULL_TREE, src = NULL_TREE, tem;
-  bool strop = false;
+  bool strop = false, cmp = false;
+  unsigned int idx = ~0;
+  location_t loc;
 
   if (TREE_CODE (callee) != FUNCTION_DECL
       || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
-      || sizeof_arg == error_mark_node
       || VEC_length (tree, params) <= 1)
-    return;
-
-  type = TYPE_P (sizeof_arg) ? sizeof_arg : TREE_TYPE (sizeof_arg);
-  if (!POINTER_TYPE_P (type))
     return;
 
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_STRNCMP:
     case BUILT_IN_STRNCASECMP:
+      cmp = true;
+      /* FALLTHRU */
     case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
       strop = true;
       /* FALLTHRU */
     case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMMOVE:
-    case BUILT_IN_MEMCMP:
+    case BUILT_IN_MEMMOVE_CHK:
       if (VEC_length (tree, params) < 3)
 	return;
       src = VEC_index (tree, params, 1);
       dest = VEC_index (tree, params, 0);
+      idx = 2;
+      break;
+    case BUILT_IN_BCOPY:
+      if (VEC_length (tree, params) < 3)
+	return;
+      src = VEC_index (tree, params, 0);
+      dest = VEC_index (tree, params, 1);
+      idx = 2;
+      break;
+    case BUILT_IN_MEMCMP:
+    case BUILT_IN_BCMP:
+      if (VEC_length (tree, params) < 3)
+	return;
+      src = VEC_index (tree, params, 1);
+      dest = VEC_index (tree, params, 0);
+      idx = 2;
+      cmp = true;
       break;
     case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMSET_CHK:
       if (VEC_length (tree, params) < 3)
 	return;
       dest = VEC_index (tree, params, 0);
+      idx = 2;
+      break;
+    case BUILT_IN_BZERO:
+      dest = VEC_index (tree, params, 0);
+      idx = 1;
       break;
     case BUILT_IN_STRNDUP:
       src = VEC_index (tree, params, 0);
+      strop = true;
+      idx = 1;
+      break;
+    case BUILT_IN_MEMCHR:
+      if (VEC_length (tree, params) < 3)
+	return;
+      src = VEC_index (tree, params, 0);
+      idx = 2;
+      break;
+    case BUILT_IN_SNPRINTF:
+    case BUILT_IN_SNPRINTF_CHK:
+    case BUILT_IN_VSNPRINTF:
+    case BUILT_IN_VSNPRINTF_CHK:
+      dest = VEC_index (tree, params, 0);
+      idx = 1;
       strop = true;
       break;
     default:
       break;
     }
+
+  if (idx >= 3)
+    return;
+
+  if (sizeof_arg[idx] == NULL || sizeof_arg[idx] == error_mark_node)
+    return;
+
+  type = TYPE_P (sizeof_arg[idx])
+	 ? sizeof_arg[idx] : TREE_TYPE (sizeof_arg[idx]);
+  if (!POINTER_TYPE_P (type))
+    return;
 
   if (dest
       && (tem = tree_strip_nop_conversions (dest))
@@ -1905,13 +1958,15 @@ sizeof_pointer_memaccess_warning (location_t loc, tree callee,
       && comp_types (TREE_TYPE (TREE_TYPE (tem)), type))
     return;
 
-  if (dest)
+  loc = sizeof_arg_loc[idx];
+
+  if (dest && !cmp)
     {
-      if (!TYPE_P (sizeof_arg)
-	  && operand_equal_p (dest, sizeof_arg, 0)
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (dest, sizeof_arg[idx], 0)
 	  && comp_types (TREE_TYPE (dest), type))
 	{
-	  if (TREE_CODE (sizeof_arg) == ADDR_EXPR && !strop)
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the destination; did you mean to "
@@ -1945,13 +2000,13 @@ sizeof_pointer_memaccess_warning (location_t loc, tree callee,
 	}
     }
 
-  if (src)
+  if (src && !cmp)
     {
-      if (!TYPE_P (sizeof_arg)
-	  && operand_equal_p (src, sizeof_arg, 0)
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (src, sizeof_arg[idx], 0)
 	  && comp_types (TREE_TYPE (src), type))
 	{
-	  if (TREE_CODE (sizeof_arg) == ADDR_EXPR && !strop)
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the source; did you mean to "
@@ -1984,6 +2039,87 @@ sizeof_pointer_memaccess_warning (location_t loc, tree callee,
 	  return;
 	}
     }
+
+  if (dest)
+    {
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (dest, sizeof_arg[idx], 0)
+	  && comp_types (TREE_TYPE (dest), type))
+	{
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the first source; did you mean to "
+			"remove the addressof?", callee);
+	  else if ((TYPE_PRECISION (TREE_TYPE (type))
+		    == TYPE_PRECISION (char_type_node))
+		   || strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the first source; did you mean to "
+			"provide an explicit length?", callee);
+	  else
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the first source; did you mean to "
+			"dereference it?", callee);
+	  return;
+	}
+
+      if (POINTER_TYPE_P (TREE_TYPE (dest))
+	  && !strop
+	  && comp_types (TREE_TYPE (dest), type)
+	  && !VOID_TYPE_P (TREE_TYPE (type)))
+	{
+	  warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+		      "argument to %<sizeof%> in %qD call is the same "
+		      "pointer type %qT as the first source; expected %qT "
+		      "or an explicit length", callee, TREE_TYPE (dest),
+		      TREE_TYPE (TREE_TYPE (dest)));
+	  return;
+	}
+    }
+
+  if (src)
+    {
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (src, sizeof_arg[idx], 0)
+	  && comp_types (TREE_TYPE (src), type))
+	{
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the second source; did you mean to "
+			"remove the addressof?", callee);
+	  else if ((TYPE_PRECISION (TREE_TYPE (type))
+		    == TYPE_PRECISION (char_type_node))
+		   || strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the second source; did you mean to "
+			"provide an explicit length?", callee);
+	  else
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the second source; did you mean to "
+			"dereference it?", callee);
+	  return;
+	}
+
+      if (POINTER_TYPE_P (TREE_TYPE (src))
+	  && !strop
+	  && comp_types (TREE_TYPE (src), type)
+	  && !VOID_TYPE_P (TREE_TYPE (type)))
+	{
+	  warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+		      "argument to %<sizeof%> in %qD call is the same "
+		      "pointer type %qT as the second source; expected %qT "
+		      "or an explicit length", callee, TREE_TYPE (src),
+		      TREE_TYPE (TREE_TYPE (src)));
+	  return;
+	}
+    }
+
 }
 
 /* Warn for unlikely, improbable, or stupid DECL declarations

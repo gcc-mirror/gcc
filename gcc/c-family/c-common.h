@@ -769,8 +769,8 @@ extern tree fix_string_type (tree);
 extern void constant_expression_warning (tree);
 extern void constant_expression_error (tree);
 extern bool strict_aliasing_warning (tree, tree, tree);
-extern void sizeof_pointer_memaccess_warning (location_t, tree,
-					      VEC(tree, gc) *, tree,
+extern void sizeof_pointer_memaccess_warning (location_t *, tree,
+					      VEC(tree, gc) *, tree *,
 					      bool (*) (tree, tree));
 extern void warnings_for_convert_and_check (tree, tree, tree);
 extern tree convert_and_check (tree, tree);

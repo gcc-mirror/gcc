@@ -1,68 +1,16 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
-/* Test just twice, once with -O0 non-fortified, once with -O2 fortified.  */
-/* { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } } */
-/* { dg-skip-if "" { *-*-* }  { "-flto" } { "" } } */
+/* { dg-options "-Wall -O2" } */
 
-typedef __SIZE_TYPE__ size_t;
-extern void *memset (void *, int, size_t);
-extern void *memcpy (void *__restrict, const void *__restrict, size_t);
-extern void *memmove (void *__restrict, const void *__restrict, size_t);
-extern int memcmp (const void *, const void *, size_t);
-extern char *strncpy (char *__restrict, const char *__restrict, size_t);
-extern char *strncat (char *__restrict, const char *__restrict, size_t);
-extern char *stpncpy (char *__restrict, const char *__restrict, size_t);
-extern char *strndup (const char *, size_t);
-extern int strncmp (const char *, const char *, size_t);
-extern int strncasecmp (const char *, const char *, size_t);
+#define bos(ptr) __builtin_object_size (ptr, 1)
+#define bos0(ptr) __builtin_object_size (ptr, 0)
 
-#ifdef __OPTIMIZE__
-# define bos(ptr) __builtin_object_size (ptr, 1)
-# define bos0(ptr) __builtin_object_size (ptr, 0)
-
-__attribute__((__always_inline__, __gnu_inline__, __artificial__))
-extern inline void *
-memset (void *dest, int c, size_t len)
-{
-  return __builtin___memset_chk (dest, c, len, bos0 (dest));
-}
-
-__attribute__((__always_inline__, __gnu_inline__, __artificial__))
-extern inline void *
-memcpy (void *__restrict dest, const void *__restrict src, size_t len)
-{
-  return __builtin___memcpy_chk (dest, src, len, bos0 (dest));
-}
-
-__attribute__((__always_inline__, __gnu_inline__, __artificial__))
-extern inline void *
-memmove (void *dest, const void *src, size_t len)
-{
-  return __builtin___memmove_chk (dest, src, len, bos0 (dest));
-}
-
-__attribute__((__always_inline__, __gnu_inline__, __artificial__))
-extern inline char *
-strncpy (char *__restrict dest, const char *__restrict src, size_t len)
-{
-  return __builtin___strncpy_chk (dest, src, len, bos (dest));
-}
-
-__attribute__((__always_inline__, __gnu_inline__, __artificial__))
-extern inline char *
-strncat (char *dest, const char *src, size_t len)
-{
-  return __builtin___strncat_chk (dest, src, len, bos (dest));
-}
-
-__attribute__((__always_inline__, __gnu_inline__, __artificial__))
-extern inline char *
-stpncpy (char *__restrict dest, const char *__restrict src, size_t len)
-{
-  return __builtin___stpncpy_chk (dest, src, len, bos (dest));
-}
-#endif
+#define memset(dst, val, sz) __builtin___memset_chk (dst, val, sz, bos (dst))
+#define memcpy(dst, src, sz) __builtin___memcpy_chk (dst, src, sz, bos (dst))
+#define memmove(dst, src, sz) __builtin___memmove_chk (dst, src, sz, bos (dst))
+#define strncpy(dst, src, sz) __builtin___strncpy_chk (dst, src, sz, bos (dst))
+#define strncat(dst, src, sz) __builtin___strncat_chk (dst, src, sz, bos (dst))
+#define stpncpy(dst, src, sz) __builtin___stpncpy_chk (dst, src, sz, bos (dst))
 
 struct A { short a, b; int c, d; long e, f; };
 typedef struct A TA;
@@ -74,8 +22,8 @@ typedef struct B *PB;
 typedef TB *PTB;
 typedef int X[3][3][3];
 
-int
-f1 (void *x, int z)
+void
+f1 (void *x)
 {
   struct A a, *pa1 = &a;
   TA *pa2 = &a;
@@ -130,24 +78,6 @@ f1 (void *x, int z)
   memmove (x, pa2, sizeof (PTA));    	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the source; expected \[^\n\r\]* or an explicit length" } */
   memmove (x, pa3, sizeof (PA));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the source; expected \[^\n\r\]* or an explicit length" } */
   memmove (x, pa4, sizeof (__typeof (pa4)));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the source; expected \[^\n\r\]* or an explicit length" } */
-
-  z += memcmp (&a, x, sizeof (&a));	    /* { dg-warning "call is the same expression as the first source; did you mean to remove the addressof" } */
-  z += memcmp (pa1, x, sizeof (pa1));	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pa2, x, sizeof pa2);	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pa3, x, sizeof (pa3));	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pa4, x, sizeof pa4);	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pa1, x, sizeof (struct A *));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the first source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (pa2, x, sizeof (PTA));       /* { dg-warning "call is the same pointer type \[^\n\r\]* as the first source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (pa3, x, sizeof (PA));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the first source; expected \[^\n\r\]* or an explicit length" } */
-
-  z += memcmp (x, &a, sizeof (&a));	    /* { dg-warning "call is the same expression as the second source; did you mean to remove the addressof" } */
-  z += memcmp (x, pa1, sizeof (pa1));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pa2, sizeof pa2);	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pa3, sizeof (pa3));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pa4, sizeof pa4);	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pa1, sizeof (struct A *));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (x, pa2, sizeof (PTA));       /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (x, pa3, sizeof (PA));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
 
   /* These are correct, no warning.  */
   memset (&a, 0, sizeof a);
@@ -238,48 +168,10 @@ f1 (void *x, int z)
   memmove (x, (char *) &a, sizeof (&a));
   memmove (x, &a, sizeof (&a) + 0);
   memmove (x, &a, 0 + sizeof (&a));
-
-  /* These are correct, no warning.  */
-  z += memcmp (&a, x, sizeof a);
-  z += memcmp (&a, x, sizeof (a));
-  z += memcmp (&a, x, sizeof (struct A));
-  z += memcmp (&a, x, sizeof (const struct A));
-  z += memcmp (&a, x, sizeof (volatile struct A));
-  z += memcmp (&a, x, sizeof (volatile const struct A));
-  z += memcmp (&a, x, sizeof (TA));
-  z += memcmp (&a, x, sizeof (__typeof (*&a)));
-  z += memcmp (pa1, x, sizeof (*pa1));
-  z += memcmp (pa2, x, sizeof (*pa3));
-  z += memcmp (pa3, x, sizeof (__typeof (*pa3)));
-  /* These are probably broken, but obfuscated, no warning.  */
-  z += memcmp ((void *) &a, x, sizeof (&a));
-  z += memcmp ((char *) &a, x, sizeof (&a));
-  z += memcmp (&a, x, sizeof (&a) + 0);
-  z += memcmp (&a, x, 0 + sizeof (&a));
-
-  /* These are correct, no warning.  */
-  z += memcmp (x, &a, sizeof a);
-  z += memcmp (x, &a, sizeof (a));
-  z += memcmp (x, &a, sizeof (struct A));
-  z += memcmp (x, &a, sizeof (const struct A));
-  z += memcmp (x, &a, sizeof (volatile struct A));
-  z += memcmp (x, &a, sizeof (volatile const struct A));
-  z += memcmp (x, &a, sizeof (TA));
-  z += memcmp (x, &a, sizeof (__typeof (*&a)));
-  z += memcmp (x, pa1, sizeof (*pa1));
-  z += memcmp (x, pa2, sizeof (*pa3));
-  z += memcmp (x, pa3, sizeof (__typeof (*pa3)));
-  /* These are probably broken, but obfuscated, no warning.  */
-  z += memcmp (x, (void *) &a, sizeof (&a));
-  z += memcmp (x, (char *) &a, sizeof (&a));
-  z += memcmp (x, &a, sizeof (&a) + 0);
-  z += memcmp (x, &a, 0 + sizeof (&a));
-
-  return z;
 }
 
-int
-f2 (void *x, int z)
+void
+f2 (void *x)
 {
   struct B b, *pb1 = &b;
   TB *pb2 = &b;
@@ -334,24 +226,6 @@ f2 (void *x, int z)
   memmove (x, pb2, sizeof (PTB));    	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the source; expected \[^\n\r\]* or an explicit length" } */
   memmove (x, pb3, sizeof (PB));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the source; expected \[^\n\r\]* or an explicit length" } */
   memmove (x, pb4, sizeof (__typeof (pb4)));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the source; expected \[^\n\r\]* or an explicit length" } */
-
-  z += memcmp (&b, x, sizeof (&b));	    /* { dg-warning "call is the same expression as the first source; did you mean to remove the addressof" } */
-  z += memcmp (pb1, x, sizeof (pb1));	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pb2, x, sizeof pb2);	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pb3, x, sizeof (pb3));	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pb4, x, sizeof pb4);	    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-  z += memcmp (pb1, x, sizeof (struct B *));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the first source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (pb2, x, sizeof (PTB));       /* { dg-warning "call is the same pointer type \[^\n\r\]* as the first source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (pb3, x, sizeof (PB));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the first source; expected \[^\n\r\]* or an explicit length" } */
-
-  z += memcmp (x, &b, sizeof (&b));	    /* { dg-warning "call is the same expression as the second source; did you mean to remove the addressof" } */
-  z += memcmp (x, pb1, sizeof (pb1));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pb2, sizeof pb2);	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pb3, sizeof (pb3));	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pb4, sizeof pb4);	    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
-  z += memcmp (x, pb1, sizeof (struct B *));/* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (x, pb2, sizeof (PTB));       /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
-  z += memcmp (x, pb3, sizeof (PB));	    /* { dg-warning "call is the same pointer type \[^\n\r\]* as the second source; expected \[^\n\r\]* or an explicit length" } */
 
   /* These are correct, no warning.  */
   memset (&b, 0, sizeof b);
@@ -442,47 +316,9 @@ f2 (void *x, int z)
   memmove (x, (char *) &b, sizeof (&b));
   memmove (x, &b, sizeof (&b) + 0);
   memmove (x, &b, 0 + sizeof (&b));
-
-  /* These are correct, no warning.  */
-  z += memcmp (&b, x, sizeof b);
-  z += memcmp (&b, x, sizeof (b));
-  z += memcmp (&b, x, sizeof (struct B));
-  z += memcmp (&b, x, sizeof (const struct B));
-  z += memcmp (&b, x, sizeof (volatile struct B));
-  z += memcmp (&b, x, sizeof (volatile const struct B));
-  z += memcmp (&b, x, sizeof (TB));
-  z += memcmp (&b, x, sizeof (__typeof (*&b)));
-  z += memcmp (pb1, x, sizeof (*pb1));
-  z += memcmp (pb2, x, sizeof (*pb3));
-  z += memcmp (pb3, x, sizeof (__typeof (*pb3)));
-  /* These are probably broken, but obfuscated, no warning.  */
-  z += memcmp ((void *) &b, x, sizeof (&b));
-  z += memcmp ((char *) &b, x, sizeof (&b));
-  z += memcmp (&b, x, sizeof (&b) + 0);
-  z += memcmp (&b, x, 0 + sizeof (&b));
-
-  /* These are correct, no warning.  */
-  z += memcmp (x, &b, sizeof b);
-  z += memcmp (x, &b, sizeof (b));
-  z += memcmp (x, &b, sizeof (struct B));
-  z += memcmp (x, &b, sizeof (const struct B));
-  z += memcmp (x, &b, sizeof (volatile struct B));
-  z += memcmp (x, &b, sizeof (volatile const struct B));
-  z += memcmp (x, &b, sizeof (TB));
-  z += memcmp (x, &b, sizeof (__typeof (*&b)));
-  z += memcmp (x, pb1, sizeof (*pb1));
-  z += memcmp (x, pb2, sizeof (*pb3));
-  z += memcmp (x, pb3, sizeof (__typeof (*pb3)));
-  /* These are probably broken, but obfuscated, no warning.  */
-  z += memcmp (x, (void *) &b, sizeof (&b));
-  z += memcmp (x, (char *) &b, sizeof (&b));
-  z += memcmp (x, &b, sizeof (&b) + 0);
-  z += memcmp (x, &b, 0 + sizeof (&b));
-
-  return z;
 }
 
-int
+void
 f3 (void *x, char *y, int z, X w)
 {
   unsigned char *y1 = (unsigned char *) __builtin_alloca (z + 16);
@@ -522,18 +358,6 @@ f3 (void *x, char *y, int z, X w)
   memmove (x, y2, sizeof (y2));		    /* { dg-warning "call is the same expression as the source; did you mean to provide an explicit length" } */
   memmove (x, &c, sizeof (&c));		    /* { dg-warning "call is the same expression as the source; did you mean to remove the addressof" } */
   memmove (x, w, sizeof w);		    /* { dg-warning "call is the same expression as the source; did you mean to dereference it" } */
-
-  z += memcmp (y, x, sizeof (y));	    /* { dg-warning "call is the same expression as the first source; did you mean to provide an explicit length" } */
-  z += memcmp (y1, x, sizeof (y1));	    /* { dg-warning "call is the same expression as the first source; did you mean to provide an explicit length" } */
-  z += memcmp (y2, x, sizeof (y2));	    /* { dg-warning "call is the same expression as the first source; did you mean to provide an explicit length" } */
-  z += memcmp (&c, x, sizeof (&c));	    /* { dg-warning "call is the same expression as the first source; did you mean to remove the addressof" } */
-  z += memcmp (w, x, sizeof w);		    /* { dg-warning "call is the same expression as the first source; did you mean to dereference it" } */
-
-  z += memcmp (x, y, sizeof (y));	    /* { dg-warning "call is the same expression as the second source; did you mean to provide an explicit length" } */
-  z += memcmp (x, y1, sizeof (y1));	    /* { dg-warning "call is the same expression as the second source; did you mean to provide an explicit length" } */
-  z += memcmp (x, y2, sizeof (y2));	    /* { dg-warning "call is the same expression as the second source; did you mean to provide an explicit length" } */
-  z += memcmp (x, &c, sizeof (&c));	    /* { dg-warning "call is the same expression as the second source; did you mean to remove the addressof" } */
-  z += memcmp (x, w, sizeof w);		    /* { dg-warning "call is the same expression as the second source; did you mean to dereference it" } */
 
   /* These are correct, no warning.  */
   memset (y, 0, sizeof (*y));
@@ -632,51 +456,9 @@ f3 (void *x, char *y, int z, X w)
   memmove (x, (signed char *) &c, sizeof (&c));
   memmove (x, &c, sizeof (&c) + 0);
   memmove (x, &c, 0 + sizeof (&c));
-
-  /* These are correct, no warning.  */
-  z += memcmp (y, x, sizeof (*y));
-  z += memcmp (y1, x, sizeof (*y2));
-  z += memcmp (buf1, x, sizeof buf1);
-  z += memcmp (buf3, x, sizeof (buf3));
-  z += memcmp (&buf3[0], x, sizeof (buf3));
-  z += memcmp (&buf4[0], x, sizeof (buf4));
-  z += memcmp (&y3, y, sizeof (y3));
-  z += memcmp ((char *) &y3, y, sizeof (y3));
-  z += memcmp (w, x, sizeof (X));
-  /* These are probably broken, but obfuscated, no warning.  */
-  z += memcmp ((void *) y, x, sizeof (y));
-  z += memcmp ((char *) y1, x, sizeof (y2));
-  z += memcmp (y, x, sizeof (y) + 0);
-  z += memcmp (y1, x, 0 + sizeof (y2));
-  z += memcmp ((void *) &c, x, sizeof (&c));
-  z += memcmp ((signed char *) &c, x, sizeof (&c));
-  z += memcmp (&c, x, sizeof (&c) + 0);
-  z += memcmp (&c, x, 0 + sizeof (&c));
-
-  /* These are correct, no warning.  */
-  z += memcmp (x, y, sizeof (*y));
-  z += memcmp (x, y1, sizeof (*y2));
-  z += memcmp (x, buf1, sizeof buf1);
-  z += memcmp (x, buf3, sizeof (buf3));
-  z += memcmp (x, &buf3[0], sizeof (buf3));
-  z += memcmp (x, &buf4[0], sizeof (buf4));
-  z += memcmp (y, &y3, sizeof (y3));
-  z += memcmp (y, (char *) &y3, sizeof (y3));
-  z += memcmp (x, w, sizeof (X));
-  /* These are probably broken, but obfuscated, no warning.  */
-  z += memcmp (x, (void *) y, sizeof (y));
-  z += memcmp (x, (char *) y1, sizeof (y2));
-  z += memcmp (x, y, sizeof (y) + 0);
-  z += memcmp (x, y1, 0 + sizeof (y2));
-  z += memcmp (x, (void *) &c, sizeof (&c));
-  z += memcmp (x, (signed char *) &c, sizeof (&c));
-  z += memcmp (x, &c, sizeof (&c) + 0);
-  z += memcmp (x, &c, 0 + sizeof (&c));
-
-  return z;
 }
 
-int
+void
 f4 (char *x, char **y, int z, char w[64])
 {
   const char *s1 = "foobarbaz";
@@ -684,11 +466,6 @@ f4 (char *x, char **y, int z, char w[64])
   strncpy (x, s1, sizeof (s1));		    /* { dg-warning "call is the same expression as the source; did you mean to provide an explicit length" } */
   strncat (x, s2, sizeof (s2));		    /* { dg-warning "call is the same expression as the source; did you mean to provide an explicit length" } */
   stpncpy (x, s1, sizeof (s1));		    /* { dg-warning "call is the same expression as the source; did you mean to provide an explicit length" } */
-  y[0] = strndup (s1, sizeof (s1));	    /* { dg-warning "call is the same expression as the source; did you mean to provide an explicit length" } */
-  z += strncmp (s1, s2, sizeof (s1));	    /* { dg-warning "call is the same expression as the first source; did you mean to provide an explicit length" } */
-  z += strncmp (s1, s2, sizeof (s2));	    /* { dg-warning "call is the same expression as the second source; did you mean to provide an explicit length" } */
-  z += strncasecmp (s1, s2, sizeof (s1));   /* { dg-warning "call is the same expression as the first source; did you mean to provide an explicit length" } */
-  z += strncasecmp (s1, s2, sizeof (s2));   /* { dg-warning "call is the same expression as the second source; did you mean to provide an explicit length" } */
 
   strncpy (w, s1, sizeof (w));		    /* { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" } */
   strncat (w, s2, sizeof (w));		    /* { dg-warning "call is the same expression as the destination; did you mean to provide an explicit length" } */
@@ -700,13 +477,6 @@ f4 (char *x, char **y, int z, char w[64])
   strncpy (x, s3, sizeof (s3));
   strncat (x, s4, sizeof (s4));
   stpncpy (x, s3, sizeof (s3));
-  y[1] = strndup (s3, sizeof (s3));
-  z += strncmp (s3, s4, sizeof (s3));
-  z += strncmp (s3, s4, sizeof (s4));
-  z += strncasecmp (s3, s4, sizeof (s3));
-  z += strncasecmp (s3, s4, sizeof (s4));
-
-  return z;
 }
 
 /* { dg-prune-output "\[\n\r\]*will always overflow\[\n\r\]*" } */

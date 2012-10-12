@@ -1,3 +1,16 @@
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* c-parser.c (struct c_tree_loc_pair): Removed.
+	(c_parser_expr_list): Remove struct c_tree_loc_pair * argument,
+	add location_t * and tree * arguments, fill in array of 3
+	sizeof_arg trees and corresponding locs.
+	(c_parser_attributes, c_parser_objc_keywordexpr): Adjust
+	c_parser_expr_list callers.
+	(c_parser_postfix_expression_after_primary): Likewise.  Pass
+	array of 3 sizeof_arg trees and locs (corresponding to first
+	3 arguments) to sizeof_pointer_memaccess_warning.
+
 2012-10-09  Lawrence Crowl  <crowl@google.com>
 
 	* Make-lang.in (c-decl.o): Add dependence on hash-table.h.
