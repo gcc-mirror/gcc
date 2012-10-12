@@ -1,5 +1,8 @@
 2012-10-12  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for
+	GNU/Linux.
+
 	* lib/target-supports.exp (check_effective_target_arm_hard_vfp_ok):
 	Return 0 if already specifying -mfloat-abi other than hard.
 
