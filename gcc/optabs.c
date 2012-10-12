@@ -6388,20 +6388,14 @@ get_rtx_code (enum tree_code tcode, bool unsignedp)
    unsigned operators. Do not generate compare instruction.  */
 
 static rtx
-vector_compare_rtx (tree cond, bool unsignedp, enum insn_code icode)
+vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
+		    bool unsignedp, enum insn_code icode)
 {
   struct expand_operand ops[2];
-  enum rtx_code rcode;
-  tree t_op0, t_op1;
   rtx rtx_op0, rtx_op1;
+  enum rtx_code rcode = get_rtx_code (tcode, unsignedp);
 
-  /* This is unlikely. While generating VEC_COND_EXPR, auto vectorizer
-     ensures that condition is a relational operation.  */
-  gcc_assert (COMPARISON_CLASS_P (cond));
-
-  rcode = get_rtx_code (TREE_CODE (cond), unsignedp);
-  t_op0 = TREE_OPERAND (cond, 0);
-  t_op1 = TREE_OPERAND (cond, 1);
+  gcc_assert (TREE_CODE_CLASS (tcode) == tcc_comparison);
 
   /* Expand operands.  */
   rtx_op0 = expand_expr (t_op0, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op0)),
@@ -6684,11 +6678,26 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   enum machine_mode mode = TYPE_MODE (vec_cond_type);
   enum machine_mode cmp_op_mode;
   bool unsignedp;
+  tree op0a, op0b;
+  enum tree_code tcode;
 
-  gcc_assert (COMPARISON_CLASS_P (op0));
+  if (COMPARISON_CLASS_P (op0))
+    {
+      op0a = TREE_OPERAND (op0, 0);
+      op0b = TREE_OPERAND (op0, 1);
+      tcode = TREE_CODE (op0);
+    }
+  else
+    {
+      /* Fake op0 < 0.  */
+      gcc_assert (!TYPE_UNSIGNED (TREE_TYPE (op0)));
+      op0a = op0;
+      op0b = build_zero_cst (TREE_TYPE (op0));
+      tcode = LT_EXPR;
+    }
+  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
+  cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
 
-  unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)));
-  cmp_op_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (op0, 0)));
 
   gcc_assert (GET_MODE_SIZE (mode) == GET_MODE_SIZE (cmp_op_mode)
 	      && GET_MODE_NUNITS (mode) == GET_MODE_NUNITS (cmp_op_mode));
@@ -6697,7 +6706,7 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  comparison = vector_compare_rtx (op0, unsignedp, icode);
+  comparison = vector_compare_rtx (tcode, op0a, op0b, unsignedp, icode);
   rtx_op1 = expand_normal (op1);
   rtx_op2 = expand_normal (op2);
 

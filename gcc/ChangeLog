@@ -1,3 +1,10 @@
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* optabs.c (vector_compare_rtx): Change prototype.
+	(expand_vec_cond_expr): Handle VEC_COND_EXPR whose first operand
+	is not a comparison.
+	* gimplify.c (gimplify_expr): Handle VEC_COND_EXPR.
+
 2012-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54894
