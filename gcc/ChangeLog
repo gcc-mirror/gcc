@@ -1,5 +1,10 @@
 2012-10-12  Jan Hubicka <jh@suse.cz>
 
+	* tree-ssa-threadupdate.c (def_split_header_continue_p): Do not
+	escape the loop.
+
+2012-10-12  Jan Hubicka <jh@suse.cz>
+
 	* web.c (web_main): Do not set DF_RD_PRUNE_DEAD_DEFS flag.
 
 2012-10-12  Aaron Gray <aaronngray.lists@gmail.com>

@@ -846,9 +846,15 @@ static bool
 def_split_header_continue_p (const_basic_block bb, const void *data)
 {
   const_basic_block new_header = (const_basic_block) data;
-  return (bb != new_header
-	  && (loop_depth (bb->loop_father)
-	      >= loop_depth (new_header->loop_father)));
+  const struct loop *l;
+
+  if (bb == new_header
+      || loop_depth (bb->loop_father) < loop_depth (new_header->loop_father))
+    return false;
+  for (l = bb->loop_father; l; l = loop_outer (l))
+    if (l == new_header->loop_father)
+      return true;
+  return false;
 }
 
 /* Thread jumps through the header of LOOP.  Returns true if cfg changes.
