@@ -1,4 +1,4 @@
-2012-10-06  Thomas König  <tkoenig@gcc.gnu.org>
+2012-10-12  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/54736
 	Backport from trunk
