@@ -95,8 +95,16 @@
 (define_mode_iterator I124MODE [QI HI SI])
 (define_mode_iterator I248MODE [HI SI DI])
 (define_mode_iterator I48MODE [SI DI])
+
 (define_mode_attr DWI [(SI "DI") (DI "TI")])
-(define_mode_attr modesuffix [(QI "b") (HI "w") (SI "l") (DI "q")])
+(define_mode_attr modesuffix [(QI "b") (HI "w") (SI "l") (DI "q")
+		  	      (V8QI "b8") (V4HI "w4")])
+(define_mode_attr vecmodesuffix [(QI "b8") (HI "w4")])
+
+(define_code_iterator any_maxmin [smax smin umax umin])
+
+(define_code_attr maxmin [(smax "maxs") (smin "mins")
+			  (umax "maxu") (umin "minu")])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
 ;; little-endian and big-endian patterns.
@@ -2723,68 +2731,13 @@
 				       (match_dup 0) (match_dup 1)))]
   "")
 
-(define_insn "sminqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(smin:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
+(define_insn "<code><mode>3"
+  [(set (match_operand:I12MODE 0 "register_operand" "=r")
+	(any_maxmin:I12MODE
+	 (match_operand:I12MODE 1 "reg_or_0_operand" "%rJ")
+	 (match_operand:I12MODE 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
-  "minsb8 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "uminqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(umin:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "minub8 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "smaxqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(smax:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "maxsb8 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "umaxqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(umax:QI (match_operand:QI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "maxub8 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "sminhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(smin:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "minsw4 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "uminhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(umin:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "minuw4 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "smaxhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(smax:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "maxsw4 %r1,%2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "umaxhi3"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(umax:HI (match_operand:HI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
-  "TARGET_MAX"
-  "maxuw4 %r1,%2,%0"
+  "<maxmin><vecmodesuffix> %r1,%2,%0"
   [(set_attr "type" "mvi")])
 
 (define_expand "smaxdi3"
@@ -4848,6 +4801,7 @@
 ;; Vector operations
 
 (define_mode_iterator VEC [V8QI V4HI V2SI])
+(define_mode_iterator VEC12 [V8QI V4HI])
 
 (define_expand "mov<mode>"
   [(set (match_operand:VEC 0 "nonimmediate_operand" "")
@@ -4898,68 +4852,13 @@
   [(set_attr "type" "ilog,multi,ild,ist,fcpys,fld,fst,ftoi,itof")
    (set_attr "isa" "*,*,*,*,*,*,*,fix,fix")])
 
-(define_insn "uminv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=r")
-	(umin:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
+(define_insn "<code><mode>3"
+  [(set (match_operand:VEC12 0 "register_operand" "=r")
+	(any_maxmin:VEC12
+	 (match_operand:VEC12 1 "reg_or_0_operand" "rW")
+	 (match_operand:VEC12 2 "reg_or_0_operand" "rW")))]
   "TARGET_MAX"
-  "minub8 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "sminv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=r")
-	(smin:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "minsb8 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "uminv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=r")
-	(umin:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "minuw4 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "sminv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=r")
-	(smin:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "minsw4 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "umaxv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=r")
-	(umax:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "maxub8 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "smaxv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=r")
-	(smax:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "maxsb8 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "umaxv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=r")
-	(umax:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "maxuw4 %r1,%r2,%0"
-  [(set_attr "type" "mvi")])
-
-(define_insn "smaxv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=r")
-	(smax:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
-		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
-  "TARGET_MAX"
-  "maxsw4 %r1,%r2,%0"
+  "<maxmin><modesuffix> %r1,%r2,%0"
   [(set_attr "type" "mvi")])
 
 (define_insn "one_cmpl<mode>2"
