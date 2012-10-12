@@ -1,5 +1,11 @@
 2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54602
+	* config/sh/sh.md: Correct define_delay for return insns.
+	(*movsi_pop): Delete.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54680
 	* config/sh/sh.c (sh_fsca_sf2int, sh_fsca_int2sf): Fix swapped
 	comments.
@@ -21,13 +27,13 @@
 2012-10-12  Aaron Gray <aaronngray.lists@gmail.com>
 	    Diego Novillo <dnovillo@google.com>
 
-        * gengtype-lex.l: Support for C++ single line comments.
-        Support for classes.
+	* gengtype-lex.l: Support for C++ single line comments.
+	Support for classes.
 	(CXX_KEYWORD): New.  Support C++ keywords inline, public,
 	protected, private, template, operator, friend, &, ~.
 	(TYPEDEF): New.  Support typedef.
-        * gengtype-parser.c: updated 'token_names[]'
-        (direct_declarator): Add support for parsing functions
+	* gengtype-parser.c: updated 'token_names[]'
+	(direct_declarator): Add support for parsing functions
 	and ctors.
 
 2012-10-12  Diego Novillo  <dnovillo@google.com>

@@ -1,5 +1,13 @@
 2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54602
+	* gcc.target/sh/pr54602-1.c: New.
+	* gcc.target/sh/pr54602-2.c: New.
+	* gcc.target/sh/pr54602-3.c: New.
+	* gcc.target/sh/pr54602-4.c: New.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54680
 	* gcc.target/sh/pr54680.c: New.
 
