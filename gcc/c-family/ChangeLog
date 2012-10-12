@@ -1,3 +1,14 @@
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* c-common.h (sizeof_pointer_memaccess_warning): Adjust prototype.
+	* c-common.c (sizeof_pointer_memaccess_warning): Take array of 3
+	locs and array of 3 trees instead of just single loc and single
+	sizeof_arg tree.  Handle __builtin___*_chk builtins too, and
+	also stpncpy, bcopy, bcmp, bzero, snprintf and vsnprintf builtins.
+	For *cmp* builtins that take two sources strings report warnings
+	about first and second source, not about destination and source.
+
 2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53055

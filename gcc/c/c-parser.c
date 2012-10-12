@@ -1111,12 +1111,6 @@ enum c_parser_prec {
   NUM_PRECS
 };
 
-/* Expression and its location.  */
-struct c_tree_loc_pair {
-  tree expr;
-  location_t loc;
-};
-
 static void c_parser_external_declaration (c_parser *);
 static void c_parser_asm_definition (c_parser *);
 static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
@@ -1185,8 +1179,8 @@ static tree c_parser_transaction_cancel (c_parser *);
 static struct c_expr c_parser_expression (c_parser *);
 static struct c_expr c_parser_expression_conv (c_parser *);
 static VEC(tree,gc) *c_parser_expr_list (c_parser *, bool, bool,
-					 VEC(tree,gc) **,
-					 struct c_tree_loc_pair *);
+					 VEC(tree,gc) **, location_t *,
+					 tree *);
 static void c_parser_omp_construct (c_parser *);
 static void c_parser_omp_threadprivate (c_parser *);
 static void c_parser_omp_barrier (c_parser *);
@@ -3586,7 +3580,7 @@ c_parser_attributes (c_parser *parser)
 		  tree tree_list;
 		  c_parser_consume_token (parser);
 		  expr_list = c_parser_expr_list (parser, false, true,
-						  NULL, NULL);
+						  NULL, NULL, NULL);
 		  tree_list = build_tree_list_vec (expr_list);
 		  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
 		  release_tree_vector (expr_list);
@@ -3599,7 +3593,7 @@ c_parser_attributes (c_parser *parser)
 	      else
 		{
 		  expr_list = c_parser_expr_list (parser, false, true,
-						  NULL, NULL);
+						  NULL, NULL, NULL);
 		  attr_args = build_tree_list_vec (expr_list);
 		  release_tree_vector (expr_list);
 		}
@@ -6875,7 +6869,9 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 {
   struct c_expr orig_expr;
   tree ident, idx;
-  struct c_tree_loc_pair sizeof_arg;
+  location_t sizeof_arg_loc[3];
+  tree sizeof_arg[3];
+  unsigned int i;
   VEC(tree,gc) *exprlist;
   VEC(tree,gc) *origtypes;
   while (true)
@@ -6896,21 +6892,24 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_OPEN_PAREN:
 	  /* Function call.  */
 	  c_parser_consume_token (parser);
-	  sizeof_arg.expr = NULL_TREE;
+	  for (i = 0; i < 3; i++)
+	    {
+	      sizeof_arg[i] = NULL_TREE;
+	      sizeof_arg_loc[i] = UNKNOWN_LOCATION;
+	    }
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	    exprlist = NULL;
 	  else
 	    exprlist = c_parser_expr_list (parser, true, false, &origtypes,
-					   &sizeof_arg);
+					   sizeof_arg_loc, sizeof_arg);
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  orig_expr = expr;
 	  mark_exp_read (expr.value);
-	  if (warn_sizeof_pointer_memaccess
-	      && sizeof_arg.expr != NULL_TREE)
-	    sizeof_pointer_memaccess_warning (sizeof_arg.loc,
+	  if (warn_sizeof_pointer_memaccess)
+	    sizeof_pointer_memaccess_warning (sizeof_arg_loc,
 					      expr.value, exprlist,
-					      sizeof_arg.expr,
+					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
 	  /* FIXME diagnostics: Ideally we want the FUNCNAME, not the
 	     "(" after the FUNCNAME, which is what we have now.    */
@@ -7072,14 +7071,15 @@ c_parser_expression_conv (c_parser *parser)
 
 static VEC(tree,gc) *
 c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
-		    VEC(tree,gc) **p_orig_types,
-		    struct c_tree_loc_pair *sizeof_arg)
+		    VEC(tree,gc) **p_orig_types, location_t *sizeof_arg_loc,
+		    tree *sizeof_arg)
 {
   VEC(tree,gc) *ret;
   VEC(tree,gc) *orig_types;
   struct c_expr expr;
   location_t loc = c_parser_peek_token (parser)->location;
-  location_t sizeof_arg_loc = UNKNOWN_LOCATION;
+  location_t cur_sizeof_arg_loc = UNKNOWN_LOCATION;
+  unsigned int idx = 0;
 
   ret = make_tree_vector ();
   if (p_orig_types == NULL)
@@ -7089,7 +7089,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 
   if (sizeof_arg != NULL
       && c_parser_next_token_is_keyword (parser, RID_SIZEOF))
-    sizeof_arg_loc = c_parser_peek_2nd_token (parser)->location;
+    cur_sizeof_arg_loc = c_parser_peek_2nd_token (parser)->location;
   expr = c_parser_expr_no_commas (parser, NULL);
   if (convert_p)
     expr = default_function_array_read_conversion (loc, expr);
@@ -7098,15 +7098,22 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   VEC_quick_push (tree, ret, expr.value);
   if (orig_types != NULL)
     VEC_quick_push (tree, orig_types, expr.original_type);
+  if (sizeof_arg != NULL
+      && cur_sizeof_arg_loc != UNKNOWN_LOCATION
+      && expr.original_code == SIZEOF_EXPR)
+    {
+      sizeof_arg[0] = c_last_sizeof_arg;
+      sizeof_arg_loc[0] = cur_sizeof_arg_loc;
+    }
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
       loc = c_parser_peek_token (parser)->location;
       if (sizeof_arg != NULL
 	  && c_parser_next_token_is_keyword (parser, RID_SIZEOF))
-	sizeof_arg_loc = c_parser_peek_2nd_token (parser)->location;
+	cur_sizeof_arg_loc = c_parser_peek_2nd_token (parser)->location;
       else
-	sizeof_arg_loc = UNKNOWN_LOCATION;
+	cur_sizeof_arg_loc = UNKNOWN_LOCATION;
       expr = c_parser_expr_no_commas (parser, NULL);
       if (convert_p)
 	expr = default_function_array_read_conversion (loc, expr);
@@ -7115,19 +7122,13 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
       VEC_safe_push (tree, gc, ret, expr.value);
       if (orig_types != NULL)
 	VEC_safe_push (tree, gc, orig_types, expr.original_type);
-    }
-  if (sizeof_arg != NULL)
-    {
-      if (sizeof_arg_loc != UNKNOWN_LOCATION
+      if (++idx < 3
+	  && sizeof_arg != NULL
+	  && cur_sizeof_arg_loc != UNKNOWN_LOCATION
 	  && expr.original_code == SIZEOF_EXPR)
 	{
-	  sizeof_arg->expr = c_last_sizeof_arg;
-	  sizeof_arg->loc = sizeof_arg_loc;
-	}
-      else
-	{
-	  sizeof_arg->expr = NULL_TREE;
-	  sizeof_arg->loc = UNKNOWN_LOCATION;
+	  sizeof_arg[idx] = c_last_sizeof_arg;
+	  sizeof_arg_loc[idx] = cur_sizeof_arg_loc;
 	}
     }
   if (orig_types != NULL)
@@ -8209,7 +8210,7 @@ c_parser_objc_keywordexpr (c_parser *parser)
 {
   tree ret;
   VEC(tree,gc) *expr_list = c_parser_expr_list (parser, true, true,
-						NULL, NULL);
+						NULL, NULL, NULL);
   if (VEC_length (tree, expr_list) == 1)
     {
       /* Just return the expression, remove a level of

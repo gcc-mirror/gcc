@@ -2173,16 +2173,30 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	{
 	  if (warn_sizeof_pointer_memaccess
 	      && !VEC_empty(tree, *args)
-	      && TREE_CODE (VEC_last(tree, *args)) == SIZEOF_EXPR
 	      && !processing_template_decl)
 	    {
-	      tree sizeof_arg = VEC_last(tree, *args);
-	      if (SIZEOF_EXPR_TYPE_P (sizeof_arg))
-		sizeof_arg = TREE_TYPE (TREE_OPERAND (sizeof_arg, 0));
-	      else
-		sizeof_arg = TREE_OPERAND (sizeof_arg, 0);
+	      location_t sizeof_arg_loc[3];
+	      tree sizeof_arg[3];
+	      unsigned int i;
+	      for (i = 0; i < 3; i++)
+		{
+		  tree t;
+
+		  sizeof_arg_loc[i] = UNKNOWN_LOCATION;
+		  sizeof_arg[i] = NULL_TREE;
+		  if (i >= VEC_length (tree, *args))
+		    continue;
+		  t = VEC_index (tree, *args, i);
+		  if (TREE_CODE (t) != SIZEOF_EXPR)
+		    continue;
+		  if (SIZEOF_EXPR_TYPE_P (t))
+		    sizeof_arg[i] = TREE_TYPE (TREE_OPERAND (t, 0));
+		  else
+		    sizeof_arg[i] = TREE_OPERAND (t, 0);
+		  sizeof_arg_loc[i] = EXPR_LOCATION (t);
+		}
 	      sizeof_pointer_memaccess_warning
-		(EXPR_LOCATION (VEC_last(tree, *args)), fn, *args,
+		(sizeof_arg_loc, fn, *args,
 		 sizeof_arg, same_type_ignoring_top_level_qualifiers_p);
 	    }
 

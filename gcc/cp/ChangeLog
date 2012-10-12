@@ -1,3 +1,10 @@
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* semantics.c (finish_call_expr): Pass array of 3 sizeof_arg
+	trees and locs (corresponding to first 3 arguments) to
+	sizeof_pointer_memaccess_warning.
+
 2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/24449

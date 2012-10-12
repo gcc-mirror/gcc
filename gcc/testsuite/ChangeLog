@@ -1,3 +1,14 @@
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: New test.
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: New test.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: New test.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Test also stpncpy.
+	Adjust expected wording of warnings for *cmp* builtins.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Likewise.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Likewise.
+
 2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/24449
