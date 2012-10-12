@@ -1,3 +1,10 @@
+2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/54898
+	* lto.c (gimple_types_compatible_p_1): Also compare
+	TYPE_MAIN_VARIANT.
+	(iterative_hash_gimple_type): Also hash TYPE_MAIN_VARIANT.
+
 2012-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	* lto-lang.c (lto_register_builtin_type): Avoid useless

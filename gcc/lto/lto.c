@@ -581,6 +581,15 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
   if (!compare_type_names_p (t1, t2))
     goto different_types;
 
+  /* The main variant of both types should compare equal.  */
+  if (TYPE_MAIN_VARIANT (t1) != t1
+      || TYPE_MAIN_VARIANT (t2) != t2)
+    {
+      if (!gtc_visit (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2),
+		      state, sccstack, sccstate, sccstate_obstack))
+	goto different_types;
+    }
+
   /* We may not merge typedef types to the same type in different
      contexts.  */
   if (TYPE_NAME (t1)
@@ -1101,6 +1110,12 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       && TYPE_P (DECL_CONTEXT (TYPE_NAME (type))))
     v = visit (DECL_CONTEXT (TYPE_NAME (type)), state, v,
 	       sccstack, sccstate, sccstate_obstack);
+
+  /* Factor in the variant structure.  */
+  if (TYPE_MAIN_VARIANT (type) != type)
+    v = visit (TYPE_MAIN_VARIANT (type), state, v,
+	       sccstack, sccstate, sccstate_obstack);
+
   v = iterative_hash_hashval_t (TREE_CODE (type), v);
   v = iterative_hash_hashval_t (TYPE_QUALS (type), v);
   v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
