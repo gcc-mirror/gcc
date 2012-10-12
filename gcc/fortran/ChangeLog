@@ -1,3 +1,9 @@
+2012-10-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40453
+	* interface.c (check_dummy_characteristics): Recursively check dummy
+	procedures.
+
 2012-10-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54784
