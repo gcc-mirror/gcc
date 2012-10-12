@@ -1,3 +1,8 @@
+2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54894
+	* gcc.dg/torture/pr54894.c: New testcase.
+
 2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244

@@ -1,3 +1,9 @@
+2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54894
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Handle over-aligned scalar types properly.
+
 2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54760
