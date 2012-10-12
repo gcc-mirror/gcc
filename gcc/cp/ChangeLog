@@ -1,3 +1,9 @@
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24449
+	* decl.c (grokfndecl): When checking for ::main declarations
+	use PROCESSING_REAL_TEMPLATE_DECL_P().
+
 2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53055
