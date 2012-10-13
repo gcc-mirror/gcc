@@ -602,26 +602,21 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
 	}
     }
 
-  if (dump_file)
-    fprintf (dump_file, ";; max_unroll %d (%d copies, initial %d).\n",
-	     best_unroll + 1, best_copies, nunroll);
-
   loop->lpt_decision.decision = LPT_UNROLL_CONSTANT;
   loop->lpt_decision.times = best_unroll;
 
   if (dump_file)
-    fprintf (dump_file,
-	     ";; Decided to unroll the constant times rolling loop, %d times.\n",
-	     loop->lpt_decision.times);
+    fprintf (dump_file, ";; Decided to unroll the loop %d times (%d copies).\n",
+	     loop->lpt_decision.times, best_copies);
 }
 
-/* Unroll LOOP with constant number of iterations LOOP->LPT_DECISION.TIMES + 1
-   times.  The transformation does this:
+/* Unroll LOOP with constant number of iterations LOOP->LPT_DECISION.TIMES times.
+   The transformation does this:
 
    for (i = 0; i < 102; i++)
      body;
 
-   ==>
+   ==>  (LOOP->LPT_DECISION.TIMES == 3)
 
    i = 0;
    body; i++;
@@ -671,7 +666,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 	 of exit condition have continuous body after unrolling.  */
 
       if (dump_file)
-	fprintf (dump_file, ";; Condition on beginning of loop.\n");
+	fprintf (dump_file, ";; Condition at beginning of loop.\n");
 
       /* Peel exit_mod iterations.  */
       RESET_BIT (wont_exit, 0);
@@ -713,7 +708,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 	 the loop tests the condition at the end of loop body.  */
 
       if (dump_file)
-	fprintf (dump_file, ";; Condition on end of loop.\n");
+	fprintf (dump_file, ";; Condition at end of loop.\n");
 
       /* We know that niter >= max_unroll + 2; so we do not need to care of
 	 case when we would exit before reaching the loop.  So just peel
@@ -896,9 +891,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   loop->lpt_decision.times = i - 1;
 
   if (dump_file)
-    fprintf (dump_file,
-	     ";; Decided to unroll the runtime computable "
-	     "times rolling loop, %d times.\n",
+    fprintf (dump_file, ";; Decided to unroll the loop %d times.\n",
 	     loop->lpt_decision.times);
 }
 
@@ -949,14 +942,14 @@ split_edge_and_insert (edge e, rtx insns)
   return bb;
 }
 
-/* Unroll LOOP for that we are able to count number of iterations in runtime
-   LOOP->LPT_DECISION.TIMES + 1 times.  The transformation does this (with some
+/* Unroll LOOP for which we are able to count number of iterations in runtime
+   LOOP->LPT_DECISION.TIMES times.  The transformation does this (with some
    extra care for case n < 0):
 
    for (i = 0; i < n; i++)
      body;
 
-   ==>
+   ==>  (LOOP->LPT_DECISION.TIMES == 3)
 
    i = 0;
    mod = n % 4;
@@ -1314,16 +1307,19 @@ decide_peel_simple (struct loop *loop, int flags)
   loop->lpt_decision.times = npeel;
 
   if (dump_file)
-    fprintf (dump_file, ";; Decided to simply peel the loop, %d times.\n",
+    fprintf (dump_file, ";; Decided to simply peel the loop %d times.\n",
 	     loop->lpt_decision.times);
 }
 
-/* Peel a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation:
+/* Peel a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation does this:
+
    while (cond)
      body;
 
-   ==>
+   ==>  (LOOP->LPT_DECISION.TIMES == 3)
 
+   if (!cond) goto end;
+   body;
    if (!cond) goto end;
    body;
    if (!cond) goto end;
@@ -1464,16 +1460,16 @@ decide_unroll_stupid (struct loop *loop, int flags)
   loop->lpt_decision.times = i - 1;
 
   if (dump_file)
-    fprintf (dump_file,
-	     ";; Decided to unroll the loop stupidly, %d times.\n",
+    fprintf (dump_file, ";; Decided to unroll the loop stupidly %d times.\n",
 	     loop->lpt_decision.times);
 }
 
-/* Unroll a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation:
+/* Unroll a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation does this:
+
    while (cond)
      body;
 
-   ==>
+   ==>  (LOOP->LPT_DECISION.TIMES == 3)
 
    while (cond)
      {
