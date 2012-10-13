@@ -5776,7 +5776,7 @@ expand_builtin_set_thread_pointer (tree exp)
       struct expand_operand op;
       rtx val = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 			     Pmode, EXPAND_NORMAL);      
-      create_fixed_operand (&op, val);
+      create_input_operand (&op, val, Pmode);
       expand_insn (icode, 1, &op);
       return;
     }

@@ -1,3 +1,8 @@
+2012-10-13  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* builtins.c (expand_builtin_set_thread_pointer): Use
+	create_input_operand() instead of create_fixed_operand().
+
 2012-10-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (FMODE): New mode iterator.
