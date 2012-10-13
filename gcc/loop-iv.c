@@ -2224,13 +2224,18 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
   rtx niter = desc->niter_expr;
   rtx mmin, mmax, cmp;
   unsigned HOST_WIDEST_INT nmax, inc;
+  unsigned HOST_WIDEST_INT andmax = 0;
+
+  /* We used to look for constant operand 0 of AND,
+     but canonicalization should always make this impossible.  */
+  gcc_checking_assert (GET_CODE (niter) != AND
+	               || !CONST_INT_P (XEXP (niter, 0)));
 
   if (GET_CODE (niter) == AND
-      && CONST_INT_P (XEXP (niter, 0)))
+      && CONST_INT_P (XEXP (niter, 1)))
     {
-      nmax = INTVAL (XEXP (niter, 0));
-      if (!(nmax & (nmax + 1)))
-	return nmax;
+      andmax = UINTVAL (XEXP (niter, 1));
+      niter = XEXP (niter, 0);
     }
 
   get_mode_bounds (desc->mode, desc->signed_p, desc->mode, &mmin, &mmax);
@@ -2258,7 +2263,13 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
       if (dump_file)
 	fprintf (dump_file, ";; improved upper bound by one.\n");
     }
-  return nmax / inc;
+  nmax /= inc;
+  if (andmax)
+    nmax = MIN (nmax, andmax);
+  if (dump_file)
+    fprintf (dump_file, ";; Determined upper bound "HOST_WIDEST_INT_PRINT_DEC".\n",
+	     nmax);
+  return nmax;
 }
 
 /* Computes number of iterations of the CONDITION in INSN in LOOP and stores
@@ -2563,7 +2574,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 ? iv0.base
 			 : mode_mmin);
 	  max = (up - down) / inc + 1;
-	  record_niter_bound (loop, double_int::from_shwi (max),
+	  record_niter_bound (loop, double_int::from_uhwi (max),
 			      false, true);
 
 	  if (iv0.step == const0_rtx)
@@ -2776,14 +2787,14 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
       desc->const_iter = true;
       desc->niter = val & GET_MODE_MASK (desc->mode);
-      record_niter_bound (loop, double_int::from_shwi (desc->niter),
+      record_niter_bound (loop, double_int::from_uhwi (desc->niter),
 			  false, true);
     }
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
       gcc_assert (max);
-      record_niter_bound (loop, double_int::from_shwi (max),
+      record_niter_bound (loop, double_int::from_uhwi (max),
 			  false, true);
 
       /* simplify_using_initial_values does a copy propagation on the registers
