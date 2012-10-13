@@ -93,6 +93,7 @@
 (define_mode_iterator IMODE [QI HI SI DI])
 (define_mode_iterator I12MODE [QI HI])
 (define_mode_iterator I124MODE [QI HI SI])
+(define_mode_iterator I24MODE [HI SI])
 (define_mode_iterator I248MODE [HI SI DI])
 (define_mode_iterator I48MODE [SI DI])
 
@@ -734,13 +735,16 @@
 ;; problem.  Is it worth the complication here to eliminate the sign
 ;; extension?
 
-(define_expand "divsi3"
+(define_code_iterator any_divmod [div mod udiv umod])
+
+(define_expand "<code>si3"
   [(set (match_dup 3)
 	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
    (set (match_dup 4)
 	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
    (parallel [(set (match_dup 5)
-		   (sign_extend:DI (div:SI (match_dup 3) (match_dup 4))))
+		   (sign_extend:DI
+		    (any_divmod:SI (match_dup 3) (match_dup 4))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "nonimmediate_operand" "")
@@ -752,91 +756,11 @@
   operands[5] = gen_reg_rtx (DImode);
 })
 
-(define_expand "udivsi3"
-  [(set (match_dup 3)
-	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (match_dup 4)
-	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (match_dup 5)
-		   (sign_extend:DI (udiv:SI (match_dup 3) (match_dup 4))))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (match_dup 5) 0))]
-  "TARGET_ABI_OSF"
-{
-  operands[3] = gen_reg_rtx (DImode);
-  operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_reg_rtx (DImode);
-})
-
-(define_expand "modsi3"
-  [(set (match_dup 3)
-	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (match_dup 4)
-	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (match_dup 5)
-		   (sign_extend:DI (mod:SI (match_dup 3) (match_dup 4))))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (match_dup 5) 0))]
-  "TARGET_ABI_OSF"
-{
-  operands[3] = gen_reg_rtx (DImode);
-  operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_reg_rtx (DImode);
-})
-
-(define_expand "umodsi3"
-  [(set (match_dup 3)
-	(sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "")))
-   (set (match_dup 4)
-	(sign_extend:DI (match_operand:SI 2 "nonimmediate_operand" "")))
-   (parallel [(set (match_dup 5)
-		   (sign_extend:DI (umod:SI (match_dup 3) (match_dup 4))))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "nonimmediate_operand" "")
-	(subreg:SI (match_dup 5) 0))]
-  "TARGET_ABI_OSF"
-{
-  operands[3] = gen_reg_rtx (DImode);
-  operands[4] = gen_reg_rtx (DImode);
-  operands[5] = gen_reg_rtx (DImode);
-})
-
-(define_expand "divdi3"
+(define_expand "<code>di3"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (div:DI (match_operand:DI 1 "register_operand" "")
-			   (match_operand:DI 2 "register_operand" "")))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])]
-  "TARGET_ABI_OSF"
-  "")
-
-(define_expand "udivdi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (udiv:DI (match_operand:DI 1 "register_operand" "")
-			    (match_operand:DI 2 "register_operand" "")))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])]
-  "TARGET_ABI_OSF"
-  "")
-
-(define_expand "moddi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (mod:DI (match_operand:DI 1 "register_operand" "")
-			   (match_operand:DI 2 "register_operand" "")))
-	      (clobber (reg:DI 23))
-	      (clobber (reg:DI 28))])]
-  "TARGET_ABI_OSF"
-  "")
-
-(define_expand "umoddi3"
-  [(parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (umod:DI (match_operand:DI 1 "register_operand" "")
-			    (match_operand:DI 2 "register_operand" "")))
+		   (any_divmod:DI
+		    (match_operand:DI 1 "register_operand" "")
+		    (match_operand:DI 2 "register_operand" "")))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])]
   "TARGET_ABI_OSF"
@@ -1292,16 +1216,10 @@
   "sra %r1,%2,%0"
   [(set_attr "type" "shift")])
 
-(define_insn "extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
-  "TARGET_BWX"
-  "sextb %1,%0"
-  [(set_attr "type" "shift")])
-
-(define_insn "extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+(define_insn "extendqi<mode>2"
+  [(set (match_operand:I24MODE 0 "register_operand" "=r")
+	(sign_extend:I24MODE
+	 (match_operand:QI 1 "register_operand" "r")))]
   "TARGET_BWX"
   "sextb %1,%0"
   [(set_attr "type" "shift")])
@@ -4388,56 +4306,38 @@
 ;; be the same temporary, if desired.  If the address is in a register,
 ;; operand 2 can be that register.
 
-(define_expand "unaligned_storeqi"
+(define_expand "unaligned_store<mode>"
   [(set (match_operand:DI 3 "register_operand" "")
 	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
 			(const_int -8))))
    (set (match_operand:DI 2 "register_operand" "")
 	(match_dup 0))
    (set (match_dup 3)
-	(and:DI (not:DI (ashift:DI (const_int 255)
+	(and:DI (not:DI (ashift:DI (match_dup 5)
 				   (ashift:DI (match_dup 2) (const_int 3))))
 		(match_dup 3)))
    (set (match_operand:DI 4 "register_operand" "")
-	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" ""))
+	(ashift:DI (zero_extend:DI
+		     (match_operand:I12MODE 1 "register_operand" ""))
 		   (ashift:DI (match_dup 2) (const_int 3))))
    (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
    (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
 	(match_dup 4))]
   ""
-  "")
-
-(define_expand "unaligned_storehi"
-  [(set (match_operand:DI 3 "register_operand" "")
-	(mem:DI (and:DI (match_operand:DI 0 "address_operand" "")
-			(const_int -8))))
-   (set (match_operand:DI 2 "register_operand" "")
-	(match_dup 0))
-   (set (match_dup 3)
-	(and:DI (not:DI (ashift:DI (const_int 65535)
-				   (ashift:DI (match_dup 2) (const_int 3))))
-		(match_dup 3)))
-   (set (match_operand:DI 4 "register_operand" "")
-	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" ""))
-		   (ashift:DI (match_dup 2) (const_int 3))))
-   (set (match_dup 4) (ior:DI (match_dup 4) (match_dup 3)))
-   (set (mem:DI (and:DI (match_dup 0) (const_int -8)))
-	(match_dup 4))]
-  ""
-  "")
+  "operands[5] = GEN_INT (GET_MODE_MASK (<MODE>mode));")
 
 ;; Here are the define_expand's for QI and HI moves that use the above
 ;; patterns.  We have the normal sets, plus the ones that need scratch
 ;; registers for reload.
 
-(define_expand "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "")
-	(match_operand:QI 1 "general_operand" ""))]
+(define_expand "mov<mode>"
+  [(set (match_operand:I12MODE 0 "nonimmediate_operand" "")
+	(match_operand:I12MODE 1 "general_operand" ""))]
   ""
 {
   if (TARGET_BWX
-      ? alpha_expand_mov (QImode, operands)
-      : alpha_expand_mov_nobwx (QImode, operands))
+      ? alpha_expand_mov (<MODE>mode, operands)
+      : alpha_expand_mov_nobwx (<MODE>mode, operands))
     DONE;
 })
 
@@ -4453,17 +4353,6 @@
    stb %r1,%0"
   [(set_attr "type" "ilog,iadd,ild,ist")
    (set_attr "isa" "*,*,bwx,bwx")])
-
-(define_expand "movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "")
-	(match_operand:HI 1 "general_operand" ""))]
-  ""
-{
-  if (TARGET_BWX
-      ? alpha_expand_mov (HImode, operands)
-      : alpha_expand_mov_nobwx (HImode, operands))
-    DONE;
-})
 
 (define_insn "*movhi"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
