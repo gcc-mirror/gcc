@@ -1,3 +1,8 @@
+2012-10-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ira.c (ira): Set current_loops to &ira_loops before recording
+	loop exits.  Release recorded exits and loops early.
+
 2012-10-13  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* builtins.c (expand_builtin_set_thread_pointer): Use

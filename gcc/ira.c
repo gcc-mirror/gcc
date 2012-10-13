@@ -4233,8 +4233,8 @@ ira (FILE *f)
   if (flag_ira_region == IRA_REGION_ALL || flag_ira_region == IRA_REGION_MIXED)
     {
       flow_loops_find (&ira_loops);
-      record_loop_exits ();
       current_loops = &ira_loops;
+      record_loop_exits ();
     }
 
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
@@ -4277,9 +4277,14 @@ ira (FILE *f)
 	     info.  */
 	  df_analyze ();
 
+	  /* ??? Rebuild the loop tree, but why?  Does the loop tree
+	     change if new insns were generated?  Can that be handled
+	     by updating the loop tree incrementally?  */
+	  release_recorded_exits ();
+	  flow_loops_free (&ira_loops);
 	  flow_loops_find (&ira_loops);
-	  record_loop_exits ();
 	  current_loops = &ira_loops;
+	  record_loop_exits ();
 
 	  setup_allocno_assignment_flags ();
 	  ira_initiate_assign ();
@@ -4363,6 +4368,7 @@ do_reload (void)
 
   if (current_loops != NULL)
     {
+      release_recorded_exits ();
       flow_loops_free (&ira_loops);
       free_dominance_info (CDI_DOMINATORS);
     }
