@@ -1,3 +1,18 @@
+2012-10-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (I24MODE): New mode iterator.
+	(any_divmod): New code iterator.
+	(<code>si3): Macroize expander from {div,mod,udiv,umod}si3 using
+	any_divmod code iterator.
+	(<code>si3): Macroize expander from {div,mod,udiv,umod}di3 using
+	any_divmod code iterator.
+	(extendqi<mode>2): Macroize insn from extendqi{hi,si}2 using
+	I24MODE mode iterator.
+	(unaligned_store<mode>): Macroize expander from unaligned_store{qi,hi}
+	using I12MODE mode iterator.
+	(mov<mode>): Macroize expander from mov{qi,hi} using
+	I12MODE mode iterator.
+
 2012-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54871
