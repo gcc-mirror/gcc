@@ -842,7 +842,7 @@ create_file_names (const char *file_name)
     }
 
   /* Remove the extension.  */
-  cptr = strrchr (name, '.');
+  cptr = strrchr (CONST_CAST (char *, lbasename (name)), '.');
   if (cptr)
     *cptr = 0;
 
