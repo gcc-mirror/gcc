@@ -1,3 +1,19 @@
+2012-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54871
+	* loop-iv.c (simplify_using_initial_values): When scanning previous
+	basic blocks, prune the recorded conditions if the current insn was
+	not used to make a replacement.
+
+	* loop-unroll.c (decide_unroll_constant_iterations): Clean up message.
+	(unroll_loop_constant_iterations): Clarify head comment.
+	(decide_unroll_runtime_iterations): Clean up message.
+	(unroll_loop_runtime_iterations): Clarify head comment.
+	(decide_peel_simple): Clean up message.
+	(peel_loop_simple): Clarify head comment.
+	(decide_unroll_stupid): Clean up message.
+	(unroll_loop_stupid): Clarify head comment.
+
 2012-10-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR gcov-profile/44728

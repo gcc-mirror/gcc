@@ -2004,11 +2004,30 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 		}
 	    }
 	  else
-	    /* If we did not use this insn to make a replacement, any overlap
-	       between stores in this insn and our expression will cause the
-	       expression to become invalid.  */
-	    if (for_each_rtx (expr, altered_reg_used, this_altered))
-	      goto out;
+	    {
+	      rtx *pnote, *pnote_next;
+
+	      /* If we did not use this insn to make a replacement, any overlap
+		 between stores in this insn and our expression will cause the
+		 expression to become invalid.  */
+	      if (for_each_rtx (expr, altered_reg_used, this_altered))
+		goto out;
+
+	      /* Likewise for the conditions.  */
+	      for (pnote = &cond_list; *pnote; pnote = pnote_next)
+		{
+		  rtx note = *pnote;
+		  rtx old_cond = XEXP (note, 0);
+
+		  pnote_next = &XEXP (note, 1);
+		  if (for_each_rtx (&old_cond, altered_reg_used, this_altered))
+		    {
+		      *pnote = *pnote_next;
+		      pnote_next = pnote;
+		      free_EXPR_LIST_node (note);
+		    }
+		}
+	    }
 
 	  if (CONSTANT_P (*expr))
 	    goto out;
