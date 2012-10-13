@@ -1,3 +1,9 @@
+2012-10-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR gcov-profile/44728
+	* gcov.c (create_file_names): When stripping extension only look
+	at base name.
+
 2012-10-13  Jan Hubicka  <jh@suse.cz>
 
 	* loop-iv.c (determine_max_iter): Fix handling of AND.
