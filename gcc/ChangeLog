@@ -1,3 +1,37 @@
+2012-10-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (FMODE): New mode iterator.
+	(modesuffix): Handle SF and DF modes.
+	(opmode): New mode attribute.
+	(abs<mode>2): Macroize insn from abs{sf,df}2 using FMODE mode iterator.
+	(*nabs<mode>2): Macroize insn from *nabs{sf,df}2 using
+	FMODE mode iterator.
+	(neg<mode>2): Macroize insn from neg{sf,df}2 using FMODE mode iterator.
+	(copysign<mode>3): Macroize insn from copysign{sf,df}3 using
+	FMODE mode iterator.
+	(*ncopysign<mode>3): Macroize insn from *ncopysign{sf,df}3 using
+	FMODE mode iterator.
+	(*add<mode>3_ieee): Macroize insn from *add{sf,df}_ieee using
+	FMODE mode iterator.
+	(add<mode>3): Macroize insn from add{sf,df}3 using FMODE mode iterator.
+	(*sub<mode>3_ieee): Macroize insn from *sub{sf,df}3_ieee using
+	FMODE mode iterator.
+	(sub<mode>3): Macroize insn from sub{sf,df}3 using FMODE mode iterator.
+	(*mul<mode>3_ieee): Macroize insn from *mul{sf,df}3_ieee using
+	FMODE mode iterator.
+	(mul<mode>3): Macroize insn from mul{sf,df}3 using FMODE mode iterator.
+	(*div<mode>3_ieee): Macroize insn from *div{sf,df}3_ieee using
+	FMODE mode iterator.
+	(div<mode>3): Macroize insn from div{sf,df}3 using FMODE mode iterator.
+	(*sqrt<mode>2_ieee): Macroize insn from *sqrt{sf,df}2_ieee using
+	FMODE mode iterator.
+	(sqrt<mode>2): Macroize insn from sqrt{sf,df}2
+	using FMODE mode iterator.
+	(*mov<mode>cc_internal): Macroize insn from *mov{sf,df}cc_internal
+	using FMODE mode iterator.
+	(mov<mode>cc): Macroize expander from mov{sf,df}cc
+	using FMODE mode iterator.
+
 2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54602
@@ -12,8 +46,8 @@
 	* config/sh/predicates.md (fpul_operand): Add comment.
 	(fpul_fsca_operand, fsca_scale_factor): New predicates.
 	* config/sh/sh.md (fsca): Move below sincossf3 expander.  Convert to
-	insn_and_split.  Use fpul_fsca_operand and fsca_scale_factor predicates.
-	Simplify fpul operand in splitter.
+	insn_and_split.  Use fpul_fsca_operand and fsca_scale_factor
+	predicates.  Simplify fpul operand in splitter.
 
 2012-10-12  Jan Hubicka <jh@suse.cz>
 
@@ -33,8 +67,7 @@
 	protected, private, template, operator, friend, &, ~.
 	(TYPEDEF): New.  Support typedef.
 	* gengtype-parser.c: updated 'token_names[]'
-	(direct_declarator): Add support for parsing functions
-	and ctors.
+	(direct_declarator): Add support for parsing functions and ctors.
 
 2012-10-12  Diego Novillo  <dnovillo@google.com>
 
@@ -54,23 +87,22 @@
 	Add argument IN_STRUCT.
 	If the token following ID is a '(', consider ID a
 	function and return NULL.
-	If the token following '(' is not a '*', and IN_STRUCT is
-	true, conclude that this is a ctor and return NULL.
+	If the token following '(' is not a '*', and IN_STRUCT is true,
+	conclude that this is a ctor and return NULL.
 	If the token is IGNORABLE_CXX_KEYWORD, return NULL.
 	(inner_declarator): Add argument IN_STRUCT.
 	Update all callers.
-	(declarator): Add argument IN_STRUCT with default value
-	false.  Update all callers.
+	(declarator): Add argument IN_STRUCT with default value false.
+	Update all callers.
 	(type): Document argument NESTED.
 	Skip over C++ inheritance specifiers.
 	If a token TYPEDEF is found, emit an error.
-	If an enum is found inside a class/structure, emit an
-	error.
+	If an enum is found inside a class/structure, emit an error.
 	(typedefs, structures, param_structs, variables): Initialize.
 	(new_structure): Do not complain about duplicate
 	structures if S has a line location set.
-	* gengtype-state.c (write_state_type): Remove default
-	handler.  Add handler for TYPE_NONE.
+	* gengtype-state.c (write_state_type): Remove default handler.
+	Add handler for TYPE_NONE.
 	(read_state_scalar_char_type):
 	* gengtype.c: Fix spacing.
 	* gengtype.h (enum gty_token): Add name.  Add token
