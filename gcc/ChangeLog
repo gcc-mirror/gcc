@@ -1,3 +1,9 @@
+2012-10-13  Jan Hubicka  <jh@suse.cz>
+
+	* loop-iv.c (determine_max_iter): Fix handling of AND.
+	(iv_number_of_iterations): Record upper bounds as unsigned
+	values.
+
 2012-10-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ira.c (ira): Set current_loops to &ira_loops before recording
