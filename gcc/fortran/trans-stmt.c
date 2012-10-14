@@ -5087,7 +5087,7 @@ gfc_trans_allocate (gfc_code * code)
 	      gfc_actual_arglist *actual;
 	      gfc_expr *ppc;
 	      gfc_code *ppc_code;
-	      gfc_ref *dataref;
+	      gfc_ref *ref, *dataref;
 
 	      /* Do a polymorphic deep copy.  */
 	      actual = gfc_get_actual_arglist ();
@@ -5099,13 +5099,15 @@ gfc_trans_allocate (gfc_code * code)
 	      actual->next->expr->ts.type = BT_CLASS;
 	      gfc_add_data_component (actual->next->expr);
 
-	      dataref = actual->next->expr->ref;
+	      dataref = NULL;
 	      /* Make sure we go up through the reference chain to
 		 the _data reference, where the arrayspec is found.  */
-	      while (dataref->next && dataref->next->type != REF_ARRAY)
-		dataref = dataref->next;
+	      for (ref = actual->next->expr->ref; ref; ref = ref->next)
+		if (ref->type == REF_COMPONENT
+		    && strcmp (ref->u.c.component->name, "_data") == 0)
+		  dataref = ref;
 
-	      if (dataref->u.c.component->as)
+	      if (dataref && dataref->u.c.component->as)
 		{
 		  int dim;
 		  gfc_expr *temp;

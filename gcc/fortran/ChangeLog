@@ -1,3 +1,9 @@
+2012-10-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54784
+	* trans-stmt.c (gfc_trans_allocate): Correctly determine the reference
+	to the _data component for polymorphic allocation with SOURCE.
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
