@@ -446,3 +446,40 @@ mark_loop_exit_edges (void)
     }
 }
 
+/* Return exit edge if loop has only one exit that is likely
+   to be executed on runtime (i.e. it is not EH or leading
+   to noreturn call.  */
+
+edge
+single_likely_exit (struct loop *loop)
+{
+  edge found = single_exit (loop);
+  VEC (edge, heap) *exits;
+  unsigned i;
+  edge ex;
+
+  if (found)
+    return found;
+  exits = get_loop_exit_edges (loop);
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+    {
+      if (ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
+	continue;
+      /* The constant of 5 is set in a way so noreturn calls are
+	 ruled out by this test.  The static branch prediction algorithm
+         will not assign such a low probability to conditionals for usual
+         reasons.  */
+      if (profile_status != PROFILE_ABSENT
+	  && ex->probability < 5 && !ex->count)
+	continue;
+      if (!found)
+	found = ex;
+      else
+	{
+	  VEC_free (edge, heap, exits);
+	  return NULL;
+	}
+    }
+  VEC_free (edge, heap, exits);
+  return found;
+}

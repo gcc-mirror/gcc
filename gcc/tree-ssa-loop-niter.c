@@ -2965,6 +2965,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   struct tree_niter_desc niter_desc;
   edge ex;
   double_int bound;
+  edge likely_exit;
 
   /* Give up if we already have tried to compute an estimation.  */
   if (loop->estimate_state != EST_NOT_COMPUTED)
@@ -2975,6 +2976,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   loop->any_estimate = false;
 
   exits = get_loop_exit_edges (loop);
+  likely_exit = single_likely_exit (loop);
   FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!number_of_iterations_exit (loop, ex, &niter_desc, false))
@@ -2988,7 +2990,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 			niter);
       record_estimate (loop, niter, niter_desc.max,
 		       last_stmt (ex->src),
-		       true, true, true);
+		       true, ex == likely_exit, true);
     }
   VEC_free (edge, heap, exits);
 
