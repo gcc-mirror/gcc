@@ -254,7 +254,8 @@ extern basic_block *get_loop_body_in_custom_order (const struct loop *,
 			       int (*) (const void *, const void *));
 
 extern VEC (edge, heap) *get_loop_exit_edges (const struct loop *);
-edge single_exit (const struct loop *);
+extern edge single_exit (const struct loop *);
+extern edge single_likely_exit (struct loop *loop);
 extern unsigned num_loop_branches (const struct loop *);
 
 extern edge loop_preheader_edge (const struct loop *);
