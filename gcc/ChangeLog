@@ -1,3 +1,9 @@
+2012-10-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Do not
+	predict loops with multiple exits realistically.
+	* cfgloopanal.c (single_likely_exit): New function.
+
 2012-10-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md: Remove empty predicates and/or constraints.
