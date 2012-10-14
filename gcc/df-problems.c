@@ -57,42 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 static bitmap_head seen_in_block;
 static bitmap_head seen_in_insn;
 
-
-/*----------------------------------------------------------------------------
-   Public functions access functions for the dataflow problems.
-----------------------------------------------------------------------------*/
-/* Get the live at out set for BB no matter what problem happens to be
-   defined.  This function is used by the register allocators who
-   choose different dataflow problems depending on the optimization
-   level.  */
-
-bitmap
-df_get_live_out (basic_block bb)
-{
-  gcc_assert (df_lr);
-
-  if (df_live)
-    return DF_LIVE_OUT (bb);
-  else
-    return DF_LR_OUT (bb);
-}
-
-/* Get the live at in set for BB no matter what problem happens to be
-   defined.  This function is used by the register allocators who
-   choose different dataflow problems depending on the optimization
-   level.  */
-
-bitmap
-df_get_live_in (basic_block bb)
-{
-  gcc_assert (df_lr);
-
-  if (df_live)
-    return DF_LIVE_IN (bb);
-  else
-    return DF_LR_IN (bb);
-}
-
 /*----------------------------------------------------------------------------
    Utility functions.
 ----------------------------------------------------------------------------*/

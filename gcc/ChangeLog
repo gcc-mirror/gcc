@@ -1,5 +1,24 @@
 2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR rtl-optimization/38711
+	* df.h (df_get_live_out, df_get_live_in): Make static inline functions.
+	* df-problems.c (df_get_live_out, df_get_live_in): Moved to df.h.
+	* ira-lives.c (process_bb_node_lives): Use df_get_live_out instead of
+	DF_LR_OUT.
+	* ira-build.c (create_bb_allocnos): Likewise.
+	(create_loop_allocnos): Likewise, and use df_get_live_in instead of
+	DF_LR_IN.
+	* ira-emit.c (generate_edge_moves): Likewise.
+	(add_ranges_and_copies): Likewise.
+	* ira-color.c (ira_loop_edge_freq): Use df_get_live_out instead of
+	DF_LR_OUT, and df_get_live_in instead of DF_LR_IN.
+	* ira.c (mark_elimination): Update DF_LR and DF_LIVE.
+	(build_insn_chain): Use df_get_live_out instead of DF_LR_OUT.
+	(do_reload): Remove the DF_LIVE problem for -O1.
+
+
+2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR rtl-optimization/54919
 	* loop-unroll.c (struct var_to_expand): Remove accum_pos field.
 	(analyze_insn_to_expand_var): Do not record accum_pos.

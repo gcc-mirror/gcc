@@ -2337,16 +2337,23 @@ void
 mark_elimination (int from, int to)
 {
   basic_block bb;
+  bitmap r;
 
   FOR_EACH_BB (bb)
     {
-      /* We don't use LIVE info in IRA.  */
-      bitmap r = DF_LR_IN (bb);
-
-      if (REGNO_REG_SET_P (r, from))
+      r = DF_LR_IN (bb);
+      if (bitmap_bit_p (r, from))
 	{
-	  CLEAR_REGNO_REG_SET (r, from);
-	  SET_REGNO_REG_SET (r, to);
+	  bitmap_clear_bit (r, from);
+	  bitmap_set_bit (r, to);
+	}
+      if (! df_live)
+        continue;
+      r = DF_LIVE_IN (bb);
+      if (bitmap_bit_p (r, from))
+	{
+	  bitmap_clear_bit (r, from);
+	  bitmap_set_bit (r, to);
 	}
     }
 }
@@ -3194,10 +3201,12 @@ update_equiv_regs (void)
     {
       FOR_EACH_BB (bb)
 	{
-	  bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
-	  bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
 	  bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
 	  bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
+	  if (! df_live)
+	    continue;
+	  bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
+	  bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
 	}
 
       /* Last pass - adjust debug insns referencing cleared regs.  */
@@ -3319,14 +3328,14 @@ build_insn_chain (void)
       CLEAR_REG_SET (live_relevant_regs);
       bitmap_clear (live_subregs_used);
 
-      EXECUTE_IF_SET_IN_BITMAP (DF_LR_OUT (bb), 0, i, bi)
+      EXECUTE_IF_SET_IN_BITMAP (df_get_live_out (bb), 0, i, bi)
 	{
 	  if (i >= FIRST_PSEUDO_REGISTER)
 	    break;
 	  bitmap_set_bit (live_relevant_regs, i);
 	}
 
-      EXECUTE_IF_SET_IN_BITMAP (DF_LR_OUT (bb),
+      EXECUTE_IF_SET_IN_BITMAP (df_get_live_out (bb),
 				FIRST_PSEUDO_REGISTER, i, bi)
 	{
 	  if (pseudo_for_reload_consideration_p (i))
@@ -4157,12 +4166,6 @@ ira (FILE *f)
   setup_prohibited_mode_move_regs ();
 
   df_note_add_problem ();
-
-  if (optimize == 1)
-    {
-      df_live_add_problem ();
-      df_live_set_all_dirty ();
-    }
 #ifdef ENABLE_CHECKING
   df->changeable_flags |= DF_VERIFY_SCHEDULED;
 #endif
@@ -4397,8 +4400,6 @@ do_reload (void)
      df_rescan_all_insns is not going to help here because it does not
      touch the artificial uses and defs.  */
   df_finish_pass (true);
-  if (optimize > 1)
-    df_live_add_problem ();
   df_scan_alloc (NULL);
   df_scan_blocks ();
 
