@@ -100,10 +100,6 @@ struct var_to_expand
                                       the accumulator.  If REUSE_EXPANSION is 0 reuse
                                       the original accumulator.  Else use
                                       var_expansions[REUSE_EXPANSION - 1].  */
-  unsigned accum_pos;              /* The position in which the accumulator is placed in
-                                      the insn src.  For example in x = x + something
-                                      accum_pos is 0 while in x = something + x accum_pos
-                                      is 1.  */
 };
 
 /* Information about optimization applied in
@@ -1763,7 +1759,6 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   ves->op = GET_CODE (src);
   ves->expansion_count = 0;
   ves->reuse_expansion = 0;
-  ves->accum_pos = accum_pos;
   return ves;
 }
 
@@ -2123,9 +2118,7 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
   else
     new_reg = get_expansion (ve);
 
-  validate_change (insn, &SET_DEST (set), new_reg, 1);
-  validate_change (insn, &XEXP (SET_SRC (set), ve->accum_pos), new_reg, 1);
-
+  validate_replace_rtx_group (SET_DEST (set), new_reg, insn);
   if (apply_change_group ())
     if (really_new_expansion)
       {
@@ -2165,7 +2158,7 @@ static void
 insert_var_expansion_initialization (struct var_to_expand *ve,
 				     basic_block place)
 {
-  rtx seq, var, zero_init, insn;
+  rtx seq, var, zero_init;
   unsigned i;
   enum machine_mode mode = GET_MODE (ve->reg);
   bool honor_signed_zero_p = HONOR_SIGNED_ZEROS (mode);
@@ -2205,11 +2198,7 @@ insert_var_expansion_initialization (struct var_to_expand *ve,
   seq = get_insns ();
   end_sequence ();
 
-  insn = BB_HEAD (place);
-  while (!NOTE_INSN_BASIC_BLOCK_P (insn))
-    insn = NEXT_INSN (insn);
-
-  emit_insn_after (seq, insn);
+  emit_insn_after (seq, BB_END (place));
 }
 
 /* Combine the variable expansions at the loop exit.  PLACE is the

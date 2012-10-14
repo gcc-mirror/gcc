@@ -1,3 +1,8 @@
+2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/54919
+	* gcc.dg/pr54919.c: New testcase.
+
 2012-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53581
