@@ -951,8 +951,6 @@ extern void debug_df_chain (struct df_link *);
 extern struct df_link *df_chain_create (df_ref, df_ref);
 extern void df_chain_unlink (df_ref);
 extern void df_chain_copy (df_ref, struct df_link *);
-extern bitmap df_get_live_in (basic_block);
-extern bitmap df_get_live_out (basic_block);
 extern void df_grow_bb_info (struct dataflow *);
 extern void df_chain_dump (struct df_link *, FILE *);
 extern void df_print_bb_index (basic_block bb, FILE *file);
@@ -1023,7 +1021,10 @@ extern void df_compute_regs_ever_live (bool);
 extern bool df_read_modify_subreg_p (rtx);
 extern void df_scan_verify (void);
 
-/* Get basic block info.  */
+
+/*----------------------------------------------------------------------------
+   Public functions access functions for the dataflow problems.
+----------------------------------------------------------------------------*/
 
 static inline struct df_scan_bb_info *
 df_scan_get_bb_info (unsigned int index)
@@ -1079,6 +1080,39 @@ df_word_lr_get_bb_info (unsigned int index)
     return NULL;
 }
 
+/* Get the live at out set for BB no matter what problem happens to be
+   defined.  This function is used by the register allocators who
+   choose different dataflow problems depending on the optimization
+   level.  */
+
+static inline bitmap
+df_get_live_out (basic_block bb)
+{
+  gcc_checking_assert (df_lr);
+
+  if (df_live)
+    return DF_LIVE_OUT (bb);
+  else
+    return DF_LR_OUT (bb);
+}
+
+/* Get the live at in set for BB no matter what problem happens to be
+   defined.  This function is used by the register allocators who
+   choose different dataflow problems depending on the optimization
+   level.  */
+
+static inline bitmap
+df_get_live_in (basic_block bb)
+{
+  gcc_checking_assert (df_lr);
+
+  if (df_live)
+    return DF_LIVE_IN (bb);
+  else
+    return DF_LR_IN (bb);
+}
+
+/* Get basic block info.  */
 /* Get the artificial defs for a basic block.  */
 
 static inline df_ref *

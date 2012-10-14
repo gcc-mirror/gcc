@@ -1148,7 +1148,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  high_pressure_start_point[ira_pressure_classes[i]] = -1;
 	}
       curr_bb_node = loop_tree_node;
-      reg_live_out = DF_LR_OUT (bb);
+      reg_live_out = df_get_live_out (bb);
       sparseset_clear (objects_live);
       REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
       AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
