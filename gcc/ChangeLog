@@ -1,3 +1,14 @@
+2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/54919
+	* loop-unroll.c (struct var_to_expand): Remove accum_pos field.
+	(analyze_insn_to_expand_var): Do not record accum_pos.
+	(expand_var_during_unrolling): Use validate_replace_rtx_group to
+	perform replacement of all references to SET_DEST (set) with the
+	new register, including references in REG_EQUAL notes.
+	(insert_var_expansion_initialization): Insert initializatio insns
+	at the bottom of the pre-header of the loop.
+
 2012-10-14  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Do not
@@ -19034,7 +19045,7 @@
 
 2012-04-26  Bernd Schmidt  <bernds@codesourcery.com>
 
-	* PR middle-end/52997
+	PR middle-end/52997
 	* ira.c (find_moveable_pseudos): Call resize_reg_info.
 
 	PR middle-end/52940
