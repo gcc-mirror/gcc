@@ -2,7 +2,7 @@
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/17805
-	* call.c (build_new_op): Filter out operator functions that don't
+	* call.c (build_new_op_1): Filter out operator functions that don't
 	satisfy enum-conversion match requirements.
 
 2012-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
