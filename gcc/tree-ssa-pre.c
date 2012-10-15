@@ -2853,7 +2853,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
     case NARY:
       {
 	vn_nary_op_t nary = PRE_EXPR_NARY (expr);
-	tree genop[4];
+	tree *genop = XALLOCAVEC (tree, nary->length);
 	unsigned i;
 	for (i = 0; i < nary->length; ++i)
 	  {
