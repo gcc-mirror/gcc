@@ -5043,6 +5043,11 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		  NULL_TREE, arglist, NULL_TREE,
 		  NULL_TREE, false, NULL_TREE, NULL_TREE,
 		  flags, &candidates, complain);
+
+  args[0] = arg1;
+  args[1] = arg2;
+  args[2] = NULL_TREE;
+
   /* Add class-member operators to the candidate set.  */
   if (CLASS_TYPE_P (TREE_TYPE (arg1)))
     {
@@ -5062,10 +5067,49 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 			BASELINK_ACCESS_BINFO (fns),
 			flags, &candidates, complain);
     }
+  /* Per 13.3.1.2/3, 2nd bullet, if no operand has a class type, then
+     only non-member functions that have type T1 or reference to
+     cv-qualified-opt T1 for the first argument, if the first argument
+     has an enumeration type, or T2 or reference to cv-qualified-opt
+     T2 for the second argument, if the the second argument has an
+     enumeration type.  Filter out those that don't match.  */
+  else if (! arg2 || ! CLASS_TYPE_P (TREE_TYPE (arg2)))
+    {
+      struct z_candidate **candp, **next;
 
-  args[0] = arg1;
-  args[1] = arg2;
-  args[2] = NULL_TREE;
+      for (candp = &candidates; *candp; candp = next)
+	{
+	  tree parmlist, parmtype;
+	  int i, nargs = (arg2 ? 2 : 1);
+
+	  cand = *candp;
+	  next = &cand->next;
+
+	  parmlist = TYPE_ARG_TYPES (TREE_TYPE (cand->fn));
+
+	  for (i = 0; i < nargs; ++i)
+	    {
+	      parmtype = TREE_VALUE (parmlist);
+
+	      if (TREE_CODE (parmtype) == REFERENCE_TYPE)
+		parmtype = TREE_TYPE (parmtype);
+	      if (TREE_CODE (TREE_TYPE (args[i])) == ENUMERAL_TYPE
+		  && (same_type_ignoring_top_level_qualifiers_p
+		      (TREE_TYPE (args[i]), parmtype)))
+		break;
+
+	      parmlist = TREE_CHAIN (parmlist);
+	    }
+
+	  /* No argument has an appropriate type, so remove this
+	     candidate function from the list.  */
+	  if (i == nargs)
+	    {
+	      *candp = cand->next;
+	      next = candp;
+	    }
+	}
+    }
 
   add_builtin_candidates (&candidates, code, code2, fnname, args,
 			  flags, complain);

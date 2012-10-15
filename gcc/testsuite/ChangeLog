@@ -1,3 +1,9 @@
+2012-10-15  Alexandre Oliva  <aoliva@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/17805
+	* g++.dg/overload/operator6.C: New.
+
 2012-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50080 (again)
