@@ -1094,6 +1094,7 @@ warn_about_normalization (cpp_reader *pfile,
       else
 	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
 			       "`%.*s' is not in NFC", (int) sz, buf);
+      free (buf);
     }
 }
 

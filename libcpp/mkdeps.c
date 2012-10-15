@@ -399,25 +399,33 @@ deps_restore (struct deps *deps, FILE *fd, const char *self)
   unsigned int i, count;
   size_t num_to_read;
   size_t buf_size = 512;
-  char *buf = XNEWVEC (char, buf_size);
+  char *buf;
 
   /* Number of dependences.  */
   if (fread (&count, 1, sizeof (count), fd) != sizeof (count))
     return -1;
+
+  buf = XNEWVEC (char, buf_size);
 
   /* The length of each dependence string, followed by the string.  */
   for (i = 0; i < count; i++)
     {
       /* Read in # bytes in string.  */
       if (fread (&num_to_read, 1, sizeof (size_t), fd) != sizeof (size_t))
-	return -1;
+	{
+	  free (buf);
+	  return -1;
+	}
       if (buf_size < num_to_read + 1)
 	{
 	  buf_size = num_to_read + 1 + 127;
 	  buf = XRESIZEVEC (char, buf, buf_size);
 	}
       if (fread (buf, 1, num_to_read, fd) != num_to_read)
-	return -1;
+	{
+	  free (buf);
+	  return -1;
+	}
       buf[num_to_read] = '\0';
 
       /* Generate makefile dependencies from .pch if -nopch-deps.  */
