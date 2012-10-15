@@ -665,6 +665,22 @@ as follows, having the output control string start with a @samp{@@}:
 @end group
 @end smallexample
 
+If you just need a little bit of C code in one (or a few) alternatives,
+you can use @samp{*} inside of a @samp{@@} multi-alternative template:
+
+@smallexample
+@group
+(define_insn ""
+  [(set (match_operand:SI 0 "general_operand" "=r,<,m")
+        (const_int 0))]
+  ""
+  "@@
+   clrreg %0
+   * return stack_mem_p (operands[0]) ? \"push 0\" : \"clrmem %0\";
+   clrmem %0")
+@end group
+@end smallexample
+
 @node Predicates
 @section Predicates
 @cindex predicates

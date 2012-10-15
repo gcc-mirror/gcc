@@ -1,3 +1,8 @@
+2012-10-15  J"orn Rennecke  <joern.rennecke@arc.com>
+
+	* genoutput.c (process_template): Process '*' in '@' alternatives.
+	* doc/md.texi (node Output Statement): Provide example for the above.
+
 2012-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54920
