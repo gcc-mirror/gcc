@@ -1,3 +1,24 @@
+2012-10-15  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add MCS lock implementation.
+	* configure.ac: Add max number of locks held by a thread.
+	* configure: Regenerate.
+	* Makefile.am (UPC_RUNTIME_SRC): Add lock related new files.
+	Removed upc_lock.c.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* smp/upc_defs.h: Remove definition of upc_lock_t (new
+	implementation has more fields that are lock implementation
+	specific). Remove alloc lock from the upc_info_p as UPC lock
+	is used to protect alloc routines.
+	* smp/upc_lock.c: Delete.
+	* smp/upc_lock.h: Add prototype for lock init routine.
+	* smp/upc_lock_sup.h: MCS lock support routines for
+	signalling, swap, and compare/swap.
+	* smp/upc_main.c (__upc_per_thread_init): Call lock init.
+	  (GUPCR_START): Remove init of alloc lock.
+	* smp/upc_lock.upc: New. New MCS lock implementation.
+
 2012-10-03  Gary Funck  <gary@intrepid.com>
 
 	* gen-inline-libgupc.pl: Add logic to check for //begin
@@ -10,7 +31,7 @@
 	* configure: Regenerate.
 	* smp/upc_backtrace.c (__upc_backtrace): Change default trace
 	file to 'backtrace.THREAD-ID'.
-	(__upc-bactrace_init): Install backtrace signal handler only
+	(__upc_backtrace_init): Install backtrace signal handler only
 	if backtrace is enabled for faults.
 	(__upc_fault_handler): Do not announce signals, just restore
 	signals, print backtrace, and return.  This causes a signal to
@@ -94,7 +115,7 @@
 2012-08-29  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_backtrace.h (__upc_backtrace_restore_handlers): New.
-	Prototype. 
+	Prototype.
 	* upc_backtrace.c (__upc_backtrace_restore_handlers): New.
 	Restore default signal handlers.
 	(__upc_backtrace_init): Install handlers for additional signals:

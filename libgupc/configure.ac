@@ -845,6 +845,26 @@ if test "$upc_runtime_model" = "smp"; then
     AC_MSG_RESULT([$have_rdynamic])
   fi
 
+  AC_MSG_CHECKING([for UPC runtime maximum number of locks held per thread])
+  AC_ARG_WITH(upc-runtime-max-locks,
+  [AS_HELP_STRING([--with-upc-runtime-max-locks=MAX_LOCKS],
+                  [specify the maximum number of locks that can be held by
+                   a single UPC thread [default=1024]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to
+      --with-upc-runtime-max-locks])
+    fi
+    upc_runtime_max_locks="$withval"
+  ],
+  [
+    upc_runtime_max_locks=1024
+  ])
+  AC_MSG_RESULT([$upc_runtime_max_locks])
+  AC_DEFINE_UNQUOTED(GUPCR_MAX_LOCKS,[$upc_runtime_max_locks],
+    [Maximum number of locks held per thread])
+
 fi #### End: SMP runtime configuration
 
 # Get target configury.

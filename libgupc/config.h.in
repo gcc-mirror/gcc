@@ -41,6 +41,9 @@
 /* Define if UPC GUM debug server is supported. */
 #undef GUPCR_HAVE_GUM_DEBUG
 
+/* Maximum number of locks held per thread */
+#undef GUPCR_MAX_LOCKS
+
 /* The required alignment for the UPC struct shared pointer representation. */
 #undef GUPCR_PTS_ALIGN
 

@@ -66,14 +66,6 @@ typedef os_atomic_t upc_procbits_vec_t[GUPCR_NUM_PROCBIT_WORDS];
 /* UPC thread barrier ID  */
 extern GUPCR_THREAD_LOCAL int __upc_barrier_id;
 
-typedef union upc_lock_struct
-  {
-    /* equate UPC lock to underlying OS lock. */
-    os_lock_t os_lock;
-    int data[4];
-  } upc_lock_t;
-typedef upc_lock_t *upc_lock_p;
-
 /* There is one global page table per UPC program.
    The global page table maps (thread, page) into
    a global page number in the global memory region. */
@@ -112,7 +104,6 @@ typedef struct upc_info_struct
     int partial_attach_start;
     os_heap_p runtime_heap;
     os_lock_t lock;
-    os_lock_t alloc_lock;
     upc_page_num_t init_page_alloc;
     upc_shared_ptr_t init_heap_base;
     size_t init_heap_size;

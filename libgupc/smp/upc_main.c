@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "upc_config.h"
 #include "upc_sysdep.h"
 #include "upc_defs.h"
+#include "upc_lock.h"
 #include "upc_sup.h"
 #include "upc_sync.h"
 #include "upc_affinity.h"
@@ -597,6 +598,7 @@ __upc_per_thread_init (upc_info_p u)
   const int n_init = (int)(GUPCR_INIT_ARRAY_END - GUPCR_INIT_ARRAY_START);
   int i;
   __upc_vm_init_per_thread ();
+  __upc_lock_init ();
   __upc_heap_init (u->init_heap_base, u->init_heap_size);
   __upc_barrier_init ();
   for (i = 0; i < n_init; ++i)
@@ -1109,12 +1111,10 @@ GUPCR_START (int argc, char *argv[])
   /* Initialize backtrace support. */
   __upc_backtrace_init (__upc_pgm_name);
 #endif
-
-  /* Initialize UPC runtime locks.  We do this after __upc_info
-     has been allocated and initialized, because __upc_init_lock
+  /* Initialize UPC runtime spin lock.  We do this after
+     __upc_info has been allocated and initialized, because __upc_init_lock
      refers to __upc_info on some platforms (eg, SGI/Irix).  */
   __upc_init_lock (&u->lock);
-  __upc_init_lock (&u->alloc_lock);
   /* Initialize the VM system */
   __upc_vm_init (u->init_page_alloc);
   /* Initialize thread affinity */

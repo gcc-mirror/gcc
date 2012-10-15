@@ -794,6 +794,7 @@ with_upc_backtrace_signal
 with_bfd
 with_bfd_include
 with_bfd_lib
+with_upc_runtime_max_locks
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1489,6 +1490,9 @@ Optional Packages:
                           --with-bfd-lib=PATH/lib
   --with-bfd-include=PATH specify directory for installed BFD include files
   --with-bfd-lib=PATH     specify directory for the installed BFD library
+  --with-upc-runtime-max-locks=MAX_LOCKS
+                          specify the maximum number of locks that can be held
+                          by a single UPC thread [default=1024]
 
 Some influential environment variables:
   CC          C compiler command
@@ -11461,7 +11465,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11464 "configure"
+#line 11468 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11567,7 +11571,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11570 "configure"
+#line 11574 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15360,6 +15364,33 @@ $as_echo_n "checking for -rdynamic... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_rdynamic" >&5
 $as_echo "$have_rdynamic" >&6; }
   fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC runtime maximum number of locks held per thread" >&5
+$as_echo_n "checking for UPC runtime maximum number of locks held per thread... " >&6; }
+
+# Check whether --with-upc-runtime-max-locks was given.
+if test "${with_upc_runtime_max_locks+set}" = set; then :
+  withval=$with_upc_runtime_max_locks;
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[0-9][0-9]*$' >/dev/null 2>&1; then
+      as_fn_error "$withval is an invalid option to
+      --with-upc-runtime-max-locks" "$LINENO" 5
+    fi
+    upc_runtime_max_locks="$withval"
+
+else
+
+    upc_runtime_max_locks=1024
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_runtime_max_locks" >&5
+$as_echo "$upc_runtime_max_locks" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define GUPCR_MAX_LOCKS $upc_runtime_max_locks
+_ACEOF
+
 
 fi #### End: SMP runtime configuration
 

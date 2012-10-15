@@ -119,11 +119,11 @@ UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
 	smp/upc_debug.h smp/upc_debug.c \
 	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
-	smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
-	smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \
-	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
-	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h \
-	smp/upc_tick.c smp/upc_vm.c
+	smp/upc_lib.h smp/upc_lock.upc smp/upc_lock.h smp/upc_lock_sup.h \
+	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h \
+	$(UPC_NUMA_SUP) smp/upc_pgm_info.c smp/upc_pts.h smp/upc_pupc.c \
+	smp/upc_pupc.h smp/upc_sup.h smp/upc_sync.h smp/upc_sysdep.c \
+	smp/upc_sysdep.h smp/upc_tick.c smp/upc_vm.c
 
 UPC_RUNTIME_SRC_INLINE = config.h smp/upc_access.c smp/upc_access.h \
         smp/upc_config.h smp/upc_defs.h smp/upc_mem.h smp/upc_pts.h \
