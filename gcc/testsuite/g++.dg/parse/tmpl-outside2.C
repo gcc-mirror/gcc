@@ -15,5 +15,5 @@ void test()
 
 int main()
 {
-  typename A<double>::template B<int> b;
+  typename A<double>::template B<int> b; // { dg-error "template|expected" "" { target c++98 } }
 }

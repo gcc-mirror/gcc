@@ -23252,9 +23252,29 @@ cp_parser_optional_template_keyword (cp_parser *parser)
 {
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
     {
-      /* Consume the `template' keyword.  */
-      cp_lexer_consume_token (parser->lexer);
-      return true;
+      /* In C++98 the `template' keyword can only be used within templates;
+	 outside templates the parser can always figure out what is a
+	 template and what is not.  In C++11,  per the resolution of DR 468,
+	 `template' is allowed in cases where it is not strictly necessary.  */
+      if (!processing_template_decl
+	  && pedantic && cxx_dialect == cxx98)
+	{
+	  cp_token *token = cp_lexer_peek_token (parser->lexer);
+	  pedwarn (token->location, OPT_Wpedantic,
+		   "in C++98 %<template%> (as a disambiguator) is only "
+		   "allowed within templates");
+	  /* If this part of the token stream is rescanned, the same
+	     error message would be generated.  So, we purge the token
+	     from the stream.  */
+	  cp_lexer_purge_token (parser->lexer);
+	  return false;
+	}
+      else
+	{
+	  /* Consume the `template' keyword.  */
+	  cp_lexer_consume_token (parser->lexer);
+	  return true;
+	}
     }
   return false;
 }

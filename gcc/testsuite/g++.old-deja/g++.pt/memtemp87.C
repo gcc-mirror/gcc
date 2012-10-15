@@ -12,4 +12,4 @@ public:
 template<template<class> class>
 class Y {
 };
-Q::template X<int> x;
+Q::template X<int> x; // { dg-error "template" "" { target c++98 } }
