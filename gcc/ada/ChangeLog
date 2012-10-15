@@ -1,3 +1,8 @@
+2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* gcc-interface/Makefile.in: Match arm*-*-linux-*eabi* for
+	ARM Linux/GNU.
+
 2012-10-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch7.adb: Minor reformatting.

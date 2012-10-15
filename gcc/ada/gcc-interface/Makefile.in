@@ -1850,7 +1850,7 @@ ifeq ($(strip $(filter-out powerpc% e500% linux%,$(arch) $(osys))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-ifeq ($(strip $(filter-out arm% linux-gnueabi,$(arch) $(osys)-$(word 4,$(targ)))),)
+ifeq ($(strip $(filter-out arm%-linux,$(arch)-$(osys)) $(if $(findstring eabi,$(word 4,$(targ))),,$(word 4,$(targ)))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \

@@ -1,3 +1,7 @@
+2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* config.host: Match arm*-*-linux-* for ARM Linux/GNU.
+
 2012-10-15  Pavel Chupin  <pavel.v.chupin@intel.com>
 
 	* configure: Regenerate.

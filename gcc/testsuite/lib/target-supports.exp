@@ -3924,7 +3924,7 @@ proc check_effective_target_sync_long_long_runtime { } {
 		}
 	    } ""
 	}]
-    } elseif { [istarget arm*-*-linux-gnueabi] } {
+    } elseif { [istarget arm*-*-linux-*] } {
 	return [check_runtime sync_longlong_runtime {
 	    #include <stdlib.h>
 	    int main ()
@@ -3968,7 +3968,7 @@ proc check_effective_target_sync_int_long { } {
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
-	     || [istarget arm*-*-linux-gnueabi] 
+	     || [istarget arm*-*-linux-*] 
 	     || [istarget bfin*-*linux*]
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
@@ -3999,7 +3999,7 @@ proc check_effective_target_sync_char_short { } {
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
-	     || [istarget arm*-*-linux-gnueabi] 
+	     || [istarget arm*-*-linux-*] 
 	     || [istarget hppa*-*linux*]
 	     || [istarget s390*-*-*] 
 	     || [istarget powerpc*-*-*]
