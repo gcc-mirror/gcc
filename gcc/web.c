@@ -96,6 +96,7 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   df_ref *use_link = DF_INSN_INFO_USES (insn_info);
   df_ref *def_link = DF_INSN_INFO_DEFS (insn_info);
+  struct web_entry *dup_entry;
   int i;
 
   extract_insn (insn);
@@ -107,10 +108,24 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
       df_ref *ref, *dupref;
       struct web_entry *entry;
 
-      for (dupref = use_link; *dupref; dupref++)
+      for (dup_entry = use_entry, dupref = use_link; *dupref; dupref++)
 	if (DF_REF_LOC (*dupref) == recog_data.dup_loc[i])
 	  break;
 
+      if (*dupref == NULL && type == OP_INOUT)
+	{
+
+	  for (dup_entry = def_entry, dupref = def_link; *dupref; dupref++)
+	    if (DF_REF_LOC (*dupref) == recog_data.dup_loc[i])
+	      break;
+	}
+      /* ??? *DUPREF can still be zero, because when an operand matches
+	 a memory, DF_REF_LOC (use_link[n]) points to the register part
+	 of the address, whereas recog_data.dup_loc[m] points to the
+	 entire memory ref, thus we fail to find the duplicate entry,
+         even though it is there.
+         Example: i686-pc-linux-gnu gcc.c-torture/compile/950607-1.c
+		  -O3 -fomit-frame-pointer -funroll-loops  */
       if (*dupref == NULL
 	  || DF_REF_REGNO (*dupref) < FIRST_PSEUDO_REGISTER)
 	continue;
@@ -121,7 +136,15 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
 	if (DF_REF_LOC (*ref) == recog_data.operand_loc[op])
 	  break;
 
-      (*fun) (use_entry + DF_REF_ID (*dupref), entry + DF_REF_ID (*ref));
+      if (!*ref && type == OP_INOUT)
+	{
+	  for (ref = use_link, entry = use_entry; *ref; ref++)
+	    if (DF_REF_LOC (*ref) == recog_data.operand_loc[op])
+	      break;
+	}
+
+      gcc_assert (*ref);
+      (*fun) (dup_entry + DF_REF_ID (*dupref), entry + DF_REF_ID (*ref));
     }
 }
 

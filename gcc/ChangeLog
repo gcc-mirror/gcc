@@ -1,3 +1,7 @@
+2012-10-15  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* web.c (union_match_dups): Properly handle OP_INOUT match_dups.
+
 2012-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Do not unnecessarily
