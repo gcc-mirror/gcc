@@ -1,7 +1,58 @@
+2012-10-11  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Do not use dl_iterate_phdr on Solaris 10.
+	* configure: Rebuild.
+
+2012-10-10  Ian Lance Taylor  <iant@google.com>
+
+	* elf.c: Rename all Elf typedefs to start with b_elf, and be all
+	lower case.
+
+2012-10-10  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* elf.c (elf_add_syminfo_data): Add casts to avoid warning.
+
+2012-10-09  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c (dwarf_fileline): Add cast to avoid warning.
+	(backtrace_dwarf_add): Likewise.
+
+2012-10-09  Ian Lance Taylor  <iant@google.com>
+
+	Add support for tracing through shared libraries.
+	* configure.ac: Check for link.h and dl_iterate_phdr.
+	* elf.c: #include <link.h> if system has dl_iterate_phdr.  #undef
+	ELF macros before #defining them.
+	(dl_phdr_info, dl_iterate_phdr): Define if system does not have
+	dl_iterate_phdr.
+	(struct elf_syminfo_data): Add next field.
+	(elf_initialize_syminfo): Initialize next field.
+	(elf_add_syminfo_data): New static function.
+	(elf_add): New static function, broken out of
+	backtrace_initialize.  Call backtrace_dwarf_add instead of
+	backtrace_dwarf_initialize.
+	(struct phdr_data): Define.
+	(phdr_callback): New static function.
+	(backtrace_initialize): Call elf_add.
+	* dwarf.c (struct dwarf_data): Add next and base_address fields.
+	(add_unit_addr): Add base_address parameter.  Change all callers.
+	(add_unit_ranges, build_address_map): Likewise.
+	(add_line): Add ddata parameter.  Change all callers.
+	(read_line_program, add_function_range): Likewise.
+	(dwarf_lookup_pc): New static function, broken out of
+	dwarf_fileline.
+	(dwarf_fileline): Call dwarf_lookup_pc.
+	(build_dwarf_data): New static function.
+	(backtrace_dwarf_add): New function.
+	(backtrace_dwarf_initialize): Remove.
+	* internal.h (backtrace_dwarf_initialize): Don't declare.
+	(backtrace_dwarf_add): Declare.
+	* configure, config.h.in: Rebuild.
+
 2012-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* btest.c (f23): Avoid uninitialized variable warning.
-	
+
 2012-10-04  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c: If the system header files do not declare strnlen,

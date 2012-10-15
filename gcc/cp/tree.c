@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "splay-tree.h"
 #include "gimple.h" /* gimple_has_body_p */
+#include "hash-table.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
@@ -1918,17 +1919,18 @@ static tree
 verify_stmt_tree_r (tree* tp, int * /*walk_subtrees*/, void* data)
 {
   tree t = *tp;
-  htab_t *statements = (htab_t *) data;
-  void **slot;
+  hash_table <pointer_hash <tree_node> > *statements
+      = static_cast <hash_table <pointer_hash <tree_node> > *> (data);
+  tree_node **slot;
 
   if (!STATEMENT_CODE_P (TREE_CODE (t)))
     return NULL_TREE;
 
   /* If this statement is already present in the hash table, then
      there is a circularity in the statement tree.  */
-  gcc_assert (!htab_find (*statements, t));
+  gcc_assert (!statements->find (t));
 
-  slot = htab_find_slot (*statements, t, INSERT);
+  slot = statements->find_slot (t, INSERT);
   *slot = t;
 
   return NULL_TREE;
@@ -1941,10 +1943,10 @@ verify_stmt_tree_r (tree* tp, int * /*walk_subtrees*/, void* data)
 void
 verify_stmt_tree (tree t)
 {
-  htab_t statements;
-  statements = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  hash_table <pointer_hash <tree_node> > statements;
+  statements.create (37);
   cp_walk_tree (&t, verify_stmt_tree_r, &statements, NULL);
-  htab_delete (statements);
+  statements.dispose ();
 }
 
 /* Check if the type T depends on a type with no linkage and if so, return
@@ -2559,6 +2561,7 @@ cp_tree_equal (tree t1, tree t2)
 
     case VAR_DECL:
     case CONST_DECL:
+    case FIELD_DECL:
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
     case IDENTIFIER_NODE:
@@ -3334,6 +3337,8 @@ special_function_p (const_tree decl)
   /* Rather than doing all this stuff with magic names, we should
      probably have a field of type `special_function_kind' in
      DECL_LANG_SPECIFIC.  */
+  if (DECL_INHERITED_CTOR_BASE (decl))
+    return sfk_inheriting_constructor;
   if (DECL_COPY_CONSTRUCTOR_P (decl))
     return sfk_copy_constructor;
   if (DECL_MOVE_CONSTRUCTOR_P (decl))

@@ -1,3 +1,394 @@
+2012-10-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/tls/thread_local7g.C: Require tls_native.
+
+2012-10-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/inh-ctor1.C: New.
+	* g++.dg/cpp0x/inh-ctor2.C: New.
+	* g++.dg/cpp0x/inh-ctor3.C: New.
+	* g++.dg/cpp0x/inh-ctor4.C: New.
+	* g++.dg/cpp0x/inh-ctor5.C: New.
+	* g++.dg/cpp0x/inh-ctor6.C: New.
+	* g++.dg/cpp0x/inh-ctor7.C: New.
+	* g++.dg/cpp0x/inh-ctor8.C: New.
+	* g++.dg/cpp0x/inh-ctor9.C: New.
+	* g++.dg/cpp0x/inh-ctor10.C: New.
+	* g++.dg/cpp0x/inh-ctor11.C: New.
+	* g++.dg/cpp0x/inh-ctor12.C: New.
+	* g++.dg/cpp0x/inh-ctor13.C: New.
+
+2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/54919
+	* gcc.dg/pr54919.c: New testcase.
+
+2012-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53581
+	* g++.dg/template/crash113.C: New.
+
+2012-10-14  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/unroll_5.c: New testcase.
+
+2012-10-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52643
+	* g++.dg/opt/pr52643.C: New.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54602
+	* gcc.target/sh/pr54602-1.c: New.
+	* gcc.target/sh/pr54602-2.c: New.
+	* gcc.target/sh/pr54602-3.c: New.
+	* gcc.target/sh/pr54602-4.c: New.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54680
+	* gcc.target/sh/pr54680.c: New.
+
+2012-10-12  Jan Hubicka <jh@suse.cz>
+
+	* gcc.dg/webizer.c: New testcase.
+
+2012-10-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/vect/pr48765.c: Skip for conflicting options, don't
+	specify -m64.
+
+	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for
+	GNU/Linux.
+
+	* lib/target-supports.exp (check_effective_target_arm_hard_vfp_ok):
+	Return 0 if already specifying -mfloat-abi other than hard.
+
+2012-10-12  Joe Seymour  <jseymour@codesourcery.com>
+
+	* gcc.dg/pr53060.c: Prune irrelevant warning.
+
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: New test.
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: New test.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: New test.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Test also stpncpy.
+	Adjust expected wording of warnings for *cmp* builtins.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Likewise.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Likewise.
+
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24449
+	* g++.dg/parse/friend-main.C: New.
+
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53055
+	* g++.dg/pr53055.C: New testcase.
+
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52744
+	* g++.dg/cpp0x/pr52744.C: New.
+
+2012-10-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40453
+	* gfortran.dg/dummy_procedure_9.f90: New.
+
+2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54894
+	* gcc.dg/torture/pr54894.c: New testcase.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-13.c: New.
+	* gcc.target/sh/pr51244-14.c: New.
+	* gcc.target/sh/pr51244-15.c: New.
+	* gcc.target/sh/pr51244-16.c: New.
+
+2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51878
+	* g++.dg/cpp0x/decltype45.C: New.
+
+2012-10-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54784
+	* gfortran.dg/class_allocate_13.f90: New.
+
+2012-10-11  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/visibility/pragma-override1.C: Fix target markup.
+	* g++.dg/ext/visibility/pragma-override2.C: Fix target markup.
+
+	* g++.dg/gomp/tls-5.C: Require tls_native.
+	* g++.dg/tls/thread_local7.C: Require tls_native.
+	* g++.dg/tls/static2.C: New.
+
+2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/36107
+	* g++.dg/ext/weak5.C: New.
+
+2012-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR testsuite/54868
+	* gcc.dg/tree-ssa/forwprop-22.c: Move ...
+	* gcc.dg/vect/nodump-forwprop-22.c: ... here. Adapt options.
+
+2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43765
+	* g++.dg/parse/pr43765.C: New.
+
+2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* obj-c++.dg/tls/init-2.mm: Tweak errors.
+
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43663
+	* g++.dg/init/bitfield3.C: New.
+
+2012-10-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips32-dsp-accinit-2.c: Fix test description.
+
+2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54877
+	* gcc.dg/torture/pr54877.c: New test.
+
+2012-10-10  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR testsuite/53397
+	* gcc.dg/pr53397-1.c: Moved to gcc.target/i386.
+	* gcc.target/i386/pr53397-1.c: Add -msse2 to dg-options
+	and remove target info from dg-do compile.
+	* gcc.dg/pr53397-2.c: Moved to gcc.target/i386.
+	* gcc.target/i386/pr53397-2.c: Add -msse2 to dg-options
+	and remove target info from dg-do compile.
+
+2012-10-10  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.dg/pr54782.c: Require target with pthread support.
+
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53122
+	* g++.dg/cpp0x/auto35.C: New.
+
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53540 - using fails to be equivalent to typedef
+	* g++.dg/cpp0x/alias-decl-24.C: New test.
+
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/cpp0x/gen-attrs-8.C: Update the test to reflect the fact
+	that c++11 attributes to types are ignored for now.
+	* g++.dg/cpp0x/gen-attrs-36.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-37.C: Likewise
+
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53741
+	* g++.dg/cpp0x/lambda/lambda-ice9.C: New.
+
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50478
+	* g++.dg/cpp0x/initlist67.C: New.
+
+2012-10-10  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/debug/dwarf2/deallocator.C: Cover more deallocator cases.
+
+2012-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52480
+	* gcc.target/sh/sh4a-bitmovua.c: Compact skip-if list.
+	Add runtime tests.
+
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53307
+	* g++.dg/cpp0x/decltype44.C: New.
+
+2012-10-09  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.target/ext_ins.c: Modify f2 to aviod uninitialized data.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53763
+	* g++.dg/cpp0x/decltype43.C: New.
+
+2012-10-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR middle-end/53397
+	* gcc.dg/pr53397-1.c: New test case.
+	* gcc.dg/pr53397-2.c: New test case.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* g++.dg/warn/Wparentheses-26.C: Adjust.
+	* g++.dg/warn/Wparentheses-27.C: New.
+
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-c++-common/vector-scalar.c: New testcase.
+	* g++.dg/ext/vector18.C: New testcase.
+	* g++.dg/ext/vector5.C: This is not an error anymore.
+	* gcc.dg/init-vec-1.c: Move ...
+	* c-c++-common/init-vec-1.c: ... here. Adapt error message.
+	* gcc.c-torture/execute/vector-shift1.c: Move ...
+	* c-c++-common/torture/vector-shift1.c: ... here.
+	* gcc.dg/scal-to-vec1.c: Move ...
+	* c-c++-common/scal-to-vec1.c: ... here. Avoid narrowing for
+	C++11. Adapt error messages.
+	* gcc.dg/convert-vec-1.c: Move ...
+	* c-c++-common/convert-vec-1.c: ... here.
+	* gcc.dg/scal-to-vec2.c: Move ...
+	* c-c++-common/scal-to-vec2.c: ... here.
+
+2012-10-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/54400
+	* gcc.target/i386/pr54400.c: New testcase.
+
+2012-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54858
+	* g++.dg/template/pr54858.C: New test.
+
+2012-10-08  Marek Polacek  <polacek@redhat.com>
+
+	PR debug/54831
+	* g++.dg/debug/pr54831.C: New test.
+
+2012-10-08  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/predict-loop-exit-1.C: New.
+	* g++.dg/predict-loop-exit-2.C: New.
+	* g++.dg/predict-loop-exit-3.C: New.
+
+2012-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr54445-1.c: Require tls_runtime, add tls options.
+
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/gomp/tls-5.C: New.
+	* g++.dg/gomp/tls-wrap1.C: New.
+	* g++.dg/gomp/tls-wrap2.C: New.
+	* g++.dg/gomp/tls-wrap3.C: New.
+	* g++.dg/gomp/tls-wrap4.C: New.
+	* g++.dg/gomp/tls-wrapper-cse.C: New.
+	* g++.dg/tls/thread_local-cse.C: New.
+	* g++.dg/tls/thread_local-order1.C: New.
+	* g++.dg/tls/thread_local-order2.C: New.
+	* g++.dg/tls/thread_local-wrap1.C: New.
+	* g++.dg/tls/thread_local-wrap2.C: New.
+	* g++.dg/tls/thread_local-wrap3.C: New.
+	* g++.dg/tls/thread_local-wrap4.C: New.
+	* g++.dg/tls/thread_local2g.C: New.
+	* g++.dg/tls/thread_local3g.C: New.
+	* g++.dg/tls/thread_local4g.C: New.
+	* g++.dg/tls/thread_local5g.C: New.
+	* g++.dg/tls/thread_local6g.C: New.
+	* g++.dg/tls/thread_local7g.C: New.
+
+	* g++.dg/tls/thread_local3.C: New.
+	* g++.dg/tls/thread_local4.C: New.
+	* g++.dg/tls/thread_local5.C: New.
+	* g++.dg/tls/thread_local6.C: New.
+
+	* g++.dg/tls/init-2.C: Tweak errors.
+	* g++.dg/tls/thread_local1.C: New.
+	* g++.dg/tls/thread_local2.C: New.
+	* g++.dg/tls/thread_local7.C: New.
+
+2012-10-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/54866
+	* gcc.target/i386/long-double-80-7.c: Add -msse2 to dg-options.
+
+2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54685
+	* gcc.target/sh/pr54685.c: New.
+
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* g++.dg/cpp0x/gen-attrs-1.C: New test.
+	* g++.dg/cpp0x/gen-attrs-2.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-2-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-3.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-4.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-5.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-6.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-7.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-8.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-9.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-10.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-11.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-12.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-13.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-14.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-15.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-16.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-17.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-18.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-19.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-20.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-21.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-22.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-23.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-24.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-25.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-26.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-27.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-28.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-29.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-30.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-31.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-32.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-33.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-34.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-35.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-36.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-36-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-37.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-38.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-39.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-39-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-40.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-41.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-42.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-43.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-44.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-45.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-46.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-47.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-47-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-48.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-49.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-50.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-51.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-52.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-53.C: Likewise.
+
 2012-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/tree-ssa/slsr-30.c: Use correct cleanup directive.
@@ -192,7 +583,7 @@
 
 2012-09-30  Sharad Singhai  <singhai@google.com>
 
-	* testsuite/gcc.target/i386/vect-double-1.c: Fix test.
+	* gcc.target/i386/vect-double-1.c: Fix test.
 
 2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -298,7 +689,7 @@
 2012-09-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/warn/Wunused-local-typedefs-3.C: Move the c++-only test
-	gcc/testsuite/c-c++-common/Wunused-local-typedefs-2.c to here.
+	c-c++-common/Wunused-local-typedefs-2.c to here.
 
 	PR c++/54372 - unused attribute inactive on dependant entities
 	* c-c++-common/Wunused-local-typedefs-2.c: New test.
@@ -738,7 +1129,7 @@
 
 	PR c++/54427
 	* g++.dg/other/vector-compare.C: New testcase.
-	* gcc/testsuite/c-c++-common/vector-compare-3.c: New testcase.
+	* c-c++-common/vector-compare-3.c: New testcase.
 	* gcc.dg/vector-shift.c: Move ...
 	* c-c++-common/vector-shift.c: ... here.
 	* gcc.dg/vector-shift1.c: Move ...
@@ -858,7 +1249,6 @@
 
 2012-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
-	gcc/testsuite/
 	* gcc.target/arm/neon-vset_lanes8.c, gcc.target/arm/pr51835.c,
 	gcc.target/arm/pr48252.c: Fix for big-endian support.
 
@@ -2047,7 +2437,7 @@
 2012-08-03  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/54156
-	* testsuite/gcc.dg/vect/pr53773.c: Change to use optimized dump.
+	* gcc.dg/vect/pr53773.c: Change to use optimized dump.
 
 2012-08-03  Mikael Morin  <mikael@gcc.gnu.org>
 
@@ -2126,9 +2516,9 @@
 2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/46556
-	* testsuite/gcc.dg/tree-ssa/slsr-27.c: New.
-	* testsuite/gcc.dg/tree-ssa/slsr-28.c: New.
-	* testsuite/gcc.dg/tree-ssa/slsr-29.c: New.
+	* gcc.dg/tree-ssa/slsr-27.c: New.
+	* gcc.dg/tree-ssa/slsr-28.c: New.
+	* gcc.dg/tree-ssa/slsr-29.c: New.
 
 2012-07-31  Janus Weil  <janus@gcc.gnu.org>
 
@@ -2147,7 +2537,7 @@
 2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/53773
-	* testsuite/gcc.dg/vect/pr53773.c: New test.
+	* gcc.dg/vect/pr53773.c: New test.
 
 2012-07-31  Nick Clifton  <nickc@redhat.com>
 
@@ -2654,7 +3044,7 @@
 2012-07-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/53531
-	* testsuite/g++.dg/cpp0x/variadic135.C: New.
+	* g++.dg/cpp0x/variadic135.C: New.
 
 2012-07-12  Jason Merrill  <jason@redhat.com>
 
@@ -2755,12 +3145,12 @@
 
 	PR target/48941
 	PR target/51980
-	* gcc/testsuite/gcc.target/arm/neon/vtrnf32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vtrns32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vtrnu32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vzipf32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vzips32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vzipu32.c: Update.
+	* gcc.target/arm/neon/vtrnf32.c: Update.
+	* gcc.target/arm/neon/vtrns32.c: Update.
+	* gcc.target/arm/neon/vtrnu32.c: Update.
+	* gcc.target/arm/neon/vzipf32.c: Update.
+	* gcc.target/arm/neon/vzips32.c: Update.
+	* gcc.target/arm/neon/vzipu32.c: Update.
 
 2012-07-05  Mikael Morin  <mikael@gcc.gnu.org>
 
@@ -3099,7 +3489,7 @@
 	* gcc.target/arm/ftest-armv7em-thumb.c: Likewise.
 	* gcc.target/arm/ftest-armv7r-arm.c Likewise.
 	* gcc.target/arm/ftest-armv7r-thumb.c Likewise.
-	* gcc/testsuite/lib/target-supports.exp
+	* lib/target-supports.exp
 	(check_effective_target_arm_arch_FUNC): Add support for more
 	architectures.
 	(add_options_for_arm_arch_FUNC): Likewise.
@@ -3142,8 +3532,8 @@
 
 2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* testsuite/gcc.dg/pch/ident-1.c: New test.
-	* testsuite/gcc.dg/pch/ident-1.hs: Header file for new test.
+	* gcc.dg/pch/ident-1.c: New test.
+	* gcc.dg/pch/ident-1.hs: Header file for new test.
 
 2012-06-21  Michael Matz  <matz@suse.de>
 
@@ -4206,7 +4596,7 @@
 	accross macro expansion.
 	* gcc.dg/binary-constants-3.c: Likewise.
 	* gcc.dg/cpp/sysmac2.c: Likewise.
-	* testsuite/gcc.dg/nofixed-point-2.c: Adjust for more precise
+	* gcc.dg/nofixed-point-2.c: Adjust for more precise
 	location.
 	* gcc.dg/cpp/syshdr3.c: New test.
 	* gcc.dg/cpp/syshdr3.h: New header for the new test above.
@@ -4709,7 +5099,7 @@
 	* gcc.dg/c99-const-expr-9.c: Likewise.
 	* gcc.dg/cpp/direct2.c: Likewise.  Adjust.
 	* gcc.dg/cpp/direct2s.c: Likewise.
-	* gcc/testsuite/gcc.dg/cpp/pr28709.c: Likewise.
+	* gcc.dg/cpp/pr28709.c: Likewise.
 	* gcc.dg/cpp/pragma-diagnostic-1.c: Likewise.
 	* gcc.dg/dfp/composite-type.c: Likewise.
 	* gcc.dg/uninit-6-O0.c: Adjust the test case and force it to run
@@ -4817,7 +5207,7 @@
 
 2012-04-25  Sriraman Tallam  <tmsriram@google.com>
 
-	* testsuite/gcc.target/i386/builtin_target.c: Check avx2.
+	* gcc.target/i386/builtin_target.c: Check avx2.
 
 2012-04-26  Alan Modra  <amodra@gmail.com>
 
@@ -4887,6 +5277,10 @@
 	PR c++/52363
 	* g++.dg/cpp0x/sfinae35.C: New.
 	* g++.dg/cpp0x/sfinae36.C: Likewise.
+
+2012-04-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/builtin_target.c: New testcase.
 
 2012-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -6875,8 +7269,8 @@
 2012-02-09  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/51867
-	* testsuite/c-c++-common/dfp/signbit-2.c: Change '-O0' to '-O1'.
-	* testsuite/gcc.dg/pr51867.c: New test.
+	* c-c++-common/dfp/signbit-2.c: Change '-O0' to '-O1'.
+	* gcc.dg/pr51867.c: New test.
 
 2012-02-09  Ian Lance Taylor  <iant@google.com>
 
@@ -7120,8 +7514,8 @@
 	    Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/51998
-	* testsuite/gcc.dg/alias-12.c: New testcase.
-	* testsuite/gcc.dg/alias-13.c: New testcase.
+	* gcc.dg/alias-12.c: New testcase.
+	* gcc.dg/alias-13.c: New testcase.
 
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 

@@ -510,6 +510,8 @@ static struct df_problem problem_SCAN =
   df_scan_start_dump,         /* Debugging.  */
   df_scan_start_block,        /* Debugging start block.  */
   NULL,                       /* Debugging end block.  */
+  NULL,                       /* Debugging start insn.  */
+  NULL,                       /* Debugging end insn.  */
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */

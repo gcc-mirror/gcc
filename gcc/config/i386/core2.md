@@ -36,7 +36,7 @@
   (cond [(eq_attr "type" "fmov,fop,fsgn,fmul,fdiv,fpspc,fcmov,fcmp,fxch,fistp,fisttp,frndint")
 	   (const_string "float")
 	 (eq_attr "type" "sselog,sselog1,sseiadd,sseiadd1,sseishft,sseishft1,sseimul,
-			  sse,ssemov,sseadd,ssemul,ssecmp,ssecomi,ssecvt,
+			  sse,ssemov,sseadd,sseadd1,ssemul,ssecmp,ssecomi,ssecvt,
 			  ssecvt1,sseicvt,ssediv,sseins,ssemuladd,sse4arg")
 	   (cond [(eq_attr "mode" "V4DF,V8SF,V2DF,V4SF,SF,DF")
 		    (const_string "float")
@@ -528,13 +528,13 @@
 (define_insn_reservation "c2_sse_addcmp" 3
 			 (and (eq_attr "cpu" "core2,corei7")
 			      (and (eq_attr "memory" "none")
-				   (eq_attr "type" "sseadd,ssecmp,ssecomi")))
+				   (eq_attr "type" "sseadd,sseadd1,ssecmp,ssecomi")))
 			 "c2_decodern,c2_p1")
 
 (define_insn_reservation "c2_sse_addcmp_load" 3
 			 (and (eq_attr "cpu" "core2,corei7")
 			      (and (eq_attr "memory" "load")
-				   (eq_attr "type" "sseadd,ssecmp,ssecomi")))
+				   (eq_attr "type" "sseadd,sseadd1,ssecmp,ssecomi")))
 			 "c2_decodern,c2_p2+c2_p1")
 
 (define_insn_reservation "c2_sse_mul_SF" 4

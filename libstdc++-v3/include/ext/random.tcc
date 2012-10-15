@@ -37,6 +37,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
   template<typename _UIntType, size_t __m,
 	   size_t __pos1, size_t __sl1, size_t __sl2,
@@ -402,6 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+#endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
   /**
    * Iteration method due to M.D. J<o:>hnk.
@@ -1008,6 +1010,178 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __is >> __x._M_gd2;
       __x.param(typename k_distribution<_RealType>::
 		param_type(__lambda_val, __mu_val, __nu_val));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      arcsine_distribution<_RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __p)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	result_type __dif = __p.b() - __p.a();
+	result_type __sum = __p.a() + __p.b();
+	while (__f != __t)
+	  {
+	    result_type __x = std::sin(this->_M_ud(__urng));
+	    *__f++ = (__x * __dif + __sum) / result_type(2);
+	  }
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const arcsine_distribution<_RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      __os << __x.a() << __space << __x.b();
+      __os << __space << __x._M_ud;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       arcsine_distribution<_RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      _RealType __a, __b;
+      __is >> __a >> __b;
+      __is >> __x._M_ud;
+      __x.param(typename arcsine_distribution<_RealType>::
+		param_type(__a, __b));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename hoyt_distribution<_RealType>::result_type
+      hoyt_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng)
+      {
+	result_type __x = this->_M_ad(__urng);
+	result_type __y = this->_M_ed(__urng);
+	return (result_type(2) * this->q()
+		  / (result_type(1) + this->q() * this->q()))
+	       * std::sqrt(this->omega() * __x * __y);
+      }
+
+  template<typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename hoyt_distribution<_RealType>::result_type
+      hoyt_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __p)
+      {
+	result_type __q2 = __p.q() * __p.q();
+	result_type __num = result_type(0.5L) * (result_type(1) + __q2);
+	typename __gnu_cxx::arcsine_distribution<result_type>::param_type
+	  __pa(__num, __num / __q2);
+	result_type __x = this->_M_ad(__pa, __urng);
+	result_type __y = this->_M_ed(__urng);
+	return (result_type(2) * __p.q() / (result_type(1) + __q2))
+	       * std::sqrt(__p.omega() * __x * __y);
+      }
+
+  template<typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      hoyt_distribution<_RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __p)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	result_type __2q = result_type(2) * __p.q();
+	result_type __q2 = __p.q() * __p.q();
+	result_type __q2p1 = result_type(1) + __q2;
+	result_type __num = result_type(0.5L) * __q2p1;
+	result_type __omega = __p.omega();
+	typename __gnu_cxx::arcsine_distribution<result_type>::param_type
+	  __pa(__num, __num / __q2);
+	while (__f != __t)
+	  {
+	    result_type __x = this->_M_ad(__pa, __urng);
+	    result_type __y = this->_M_ed(__urng);
+	    *__f++ = (__2q / __q2p1) * std::sqrt(__omega * __x * __y);
+	  }
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const hoyt_distribution<_RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      __os << __x.q() << __space << __x.omega();
+      __os << __space << __x._M_ad;
+      __os << __space << __x._M_ed;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       hoyt_distribution<_RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      _RealType __q, __omega;
+      __is >> __q >> __omega;
+      __is >> __x._M_ad;
+      __is >> __x._M_ed;
+      __x.param(typename hoyt_distribution<_RealType>::
+		param_type(__q, __omega));
 
       __is.flags(__flags);
       return __is;

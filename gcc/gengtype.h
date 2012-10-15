@@ -308,7 +308,6 @@ struct type {
       type_p param[NUM_PARAM];  /* The actual parameter types.  */
       struct fileloc line;      /* The source location.  */
     } param_struct;
-
   } u;
 };
 
@@ -444,38 +443,38 @@ extern void parse_file (const char *name);
 extern bool hit_error;
 
 /* Token codes.  */
-enum
-  {
-    EOF_TOKEN = 0,
+enum gty_token
+{
+  EOF_TOKEN = 0,
 
-    /* Per standard convention, codes in the range (0, UCHAR_MAX]
-       represent single characters with those character codes.  */
+  /* Per standard convention, codes in the range (0, UCHAR_MAX]
+     represent single characters with those character codes.  */
+  CHAR_TOKEN_OFFSET = UCHAR_MAX + 1,
+  GTY_TOKEN = CHAR_TOKEN_OFFSET,
+  TYPEDEF,
+  EXTERN,
+  STATIC,
+  UNION,
+  STRUCT,
+  ENUM,
+  VEC_TOKEN,
+  ELLIPSIS,
+  PTR_ALIAS,
+  NESTED_PTR,
+  USER_GTY,
+  PARAM_IS,
+  NUM,
+  SCALAR,
+  ID,
+  STRING,
+  CHAR,
+  ARRAY,
+  IGNORABLE_CXX_KEYWORD,
 
-    CHAR_TOKEN_OFFSET = UCHAR_MAX + 1,
-    GTY_TOKEN = CHAR_TOKEN_OFFSET,
-    TYPEDEF,
-    EXTERN,
-    STATIC,
-    UNION,
-    STRUCT,
-    ENUM,
-    VEC_TOKEN,
-    ELLIPSIS,
-    PTR_ALIAS,
-    NESTED_PTR,
-    USER_GTY,
-    PARAM_IS,
-    NUM,
-    SCALAR,
-    ID,
-    STRING,
-    CHAR,
-    ARRAY,
-
-    /* print_token assumes that any token >= FIRST_TOKEN_WITH_VALUE may have
-       a meaningful value to be printed.  */
-    FIRST_TOKEN_WITH_VALUE = PARAM_IS
-  };
+  /* print_token assumes that any token >= FIRST_TOKEN_WITH_VALUE may have
+     a meaningful value to be printed.  */
+  FIRST_TOKEN_WITH_VALUE = PARAM_IS
+};
 
 
 /* Level for verbose messages, e.g. output file generation...  */

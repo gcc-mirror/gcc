@@ -73,6 +73,9 @@ Enum(processor_type) String(z10) Value(PROCESSOR_2097_Z10)
 EnumValue
 Enum(processor_type) String(z196) Value(PROCESSOR_2817_Z196)
 
+EnumValue
+Enum(processor_type) String(zEC12) Value(PROCESSOR_2827_ZEC12)
+
 mbackchain
 Target Report Mask(BACKCHAIN)
 Maintain backchain pointer

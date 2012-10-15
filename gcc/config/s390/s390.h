@@ -34,7 +34,8 @@ enum processor_flags
   PF_EXTIMM = 8,
   PF_DFP = 16,
   PF_Z10 = 32,
-  PF_Z196 = 64
+  PF_Z196 = 64,
+  PF_ZEC12 = 128
 };
 
 /* This is necessary to avoid a warning about comparing different enum
@@ -59,6 +60,8 @@ enum processor_flags
  	(s390_arch_flags & PF_Z10)
 #define TARGET_CPU_Z196 \
  	(s390_arch_flags & PF_Z196)
+#define TARGET_CPU_ZEC12 \
+ 	(s390_arch_flags & PF_ZEC12)
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
@@ -74,6 +77,8 @@ enum processor_flags
        (TARGET_ZARCH && TARGET_CPU_Z10)
 #define TARGET_Z196 \
        (TARGET_ZARCH && TARGET_CPU_Z196)
+#define TARGET_ZEC12 \
+       (TARGET_ZARCH && TARGET_CPU_ZEC12)
 
 
 #define TARGET_AVOID_CMP_AND_BRANCH (s390_tune == PROCESSOR_2817_Z196)

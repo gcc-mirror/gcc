@@ -7478,6 +7478,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 				     TREE_CODE (*expr_p) == TRY_FINALLY_EXPR
 				     ? GIMPLE_TRY_FINALLY
 				     : GIMPLE_TRY_CATCH);
+	    if (LOCATION_LOCUS (saved_location) != UNKNOWN_LOCATION)
+	      gimple_set_location (try_, saved_location);
+	    else
+	      gimple_set_location (try_, EXPR_LOCATION (save_expr));
 	    if (TREE_CODE (*expr_p) == TRY_CATCH_EXPR)
 	      gimple_try_set_catch_is_cleanup (try_,
 					       TRY_CATCH_IS_CLEANUP (*expr_p));
@@ -7682,6 +7686,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	case FMA_EXPR:
+	case VEC_COND_EXPR:
 	case VEC_PERM_EXPR:
 	  /* Classified as tcc_expression.  */
 	  goto expr_3;

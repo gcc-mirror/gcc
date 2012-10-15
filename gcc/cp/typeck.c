@@ -1701,6 +1701,56 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op, bool complain)
   else
     return cxx_alignof_expr (e, complain? tf_warning_or_error : tf_none);
 }
+
+/*  Build a representation of an expression 'alignas(E).'  Return the
+    folded integer value of E if it is an integral constant expression
+    that resolves to a valid alignment.  If E depends on a template
+    parameter, return a syntactic representation tree of kind
+    ALIGNOF_EXPR.  Otherwise, return an error_mark_node if the
+    expression is ill formed, or NULL_TREE if E is NULL_TREE.  */
+
+tree
+cxx_alignas_expr (tree e)
+{
+  if (e == NULL_TREE || e == error_mark_node
+      || (!TYPE_P (e) && !require_potential_rvalue_constant_expression (e)))
+    return e;
+  
+  if (TYPE_P (e))
+    /* [dcl.align]/3:
+       
+	   When the alignment-specifier is of the form
+	   alignas(type-id ), it shall have the same effect as
+	   alignas( alignof(type-id )).  */
+
+    return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, false);
+  
+
+  /* If we reach this point, it means the alignas expression if of
+     the form "alignas(assignment-expression)", so we should follow
+     what is stated by [dcl.align]/2.  */
+
+  e = mark_rvalue_use (e);
+
+  /* [dcl.align]/2 says:
+
+         the assignment-expression shall be an integral constant
+	 expression.  */
+  
+  e = fold_non_dependent_expr (e);
+  if (value_dependent_expression_p (e))
+    /* Leave value-dependent expression alone for now. */;
+  else
+    e = cxx_constant_value (e);
+
+  if (e == NULL_TREE
+      || e == error_mark_node
+      || TREE_CODE (e) != INTEGER_CST)
+    return error_mark_node;
+
+  return e;
+}
+
 
 /* EXPR is being used in a context that is not a function call.
    Enforce:
@@ -2858,6 +2908,10 @@ cp_build_indirect_ref (tree ptr, ref_operator errorstring,
          case RO_IMPLICIT_CONVERSION:
            error ("invalid use of implicit conversion on pointer to member");
            break;
+         case RO_ARROW_STAR:
+           error ("left hand operand of %<->*%> must be a pointer to class, "
+		  "but is a pointer to member of type %qT", type);
+           break;
          default:
            gcc_unreachable ();
       }
@@ -3630,7 +3684,8 @@ build_x_binary_op (location_t loc, enum tree_code code, tree arg1,
       && !error_operand_p (arg2)
       && (code != LSHIFT_EXPR
 	  || !CLASS_TYPE_P (TREE_TYPE (arg1))))
-    warn_about_parentheses (code, arg1_code, orig_arg1, arg2_code, orig_arg2);
+    warn_about_parentheses (loc, code, arg1_code, orig_arg1,
+			    arg2_code, orig_arg2);
 
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep (code, expr, orig_arg1, orig_arg2);
@@ -3862,6 +3917,40 @@ cp_build_binary_op (location_t location,
       warning_at (loc, OPT_Wpointer_arith, "NULL used in arithmetic");
     }
 
+  /* In case when one of the operands of the binary operation is
+     a vector and another is a scalar -- convert scalar to vector.  */
+  if ((code0 == VECTOR_TYPE) != (code1 == VECTOR_TYPE))
+    {
+      enum stv_conv convert_flag = scalar_to_vector (location, code, op0, op1,
+						     complain & tf_error);
+
+      switch (convert_flag)
+        {
+          case stv_error:
+            return error_mark_node;
+          case stv_firstarg:
+            {
+              op0 = convert (TREE_TYPE (type1), op0);
+              op0 = build_vector_from_val (type1, op0);
+              type0 = TREE_TYPE (op0);
+              code0 = TREE_CODE (type0);
+              converted = 1;
+              break;
+            }
+          case stv_secondarg:
+            {
+              op1 = convert (TREE_TYPE (type0), op1);
+              op1 = build_vector_from_val (type0, op1);
+              type1 = TREE_TYPE (op1);
+              code1 = TREE_CODE (type1);
+              converted = 1;
+              break;
+            }
+          default:
+            break;
+        }
+    }
+
   switch (code)
     {
     case MINUS_EXPR:
@@ -3985,7 +4074,13 @@ cp_build_binary_op (location_t location,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      if (code0 == VECTOR_TYPE && code1 == INTEGER_TYPE
+          && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
+        {
+          result_type = type0;
+          converted = 1;
+        }
+      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
 	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
@@ -4022,7 +4117,13 @@ cp_build_binary_op (location_t location,
       break;
 
     case LSHIFT_EXPR:
-      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      if (code0 == VECTOR_TYPE && code1 == INTEGER_TYPE
+          && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE)
+        {
+          result_type = type0;
+          converted = 1;
+        }
+      else if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
 	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))

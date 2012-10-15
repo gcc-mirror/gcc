@@ -410,6 +410,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   basic_block loop_end = desc->out_edge->src;
   enum machine_mode mode;
   rtx true_prob_val;
+  double_int iterations;
 
   jump_insn = BB_END (loop_end);
 
@@ -460,9 +461,10 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 
       /* Determine if the iteration counter will be non-negative.
 	 Note that the maximum value loaded is iterations_max - 1.  */
-      if (desc->niter_max
-	  <= ((unsigned HOST_WIDEST_INT) 1
-	      << (GET_MODE_PRECISION (mode) - 1)))
+      if (max_loop_iterations (loop, &iterations)
+	  && (iterations.ule (double_int_one.llshift
+			       (GET_MODE_PRECISION (mode) - 1,
+				GET_MODE_PRECISION (mode)))))
 	nonneg = 1;
       break;
 
@@ -548,9 +550,17 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   {
     rtx init;
     unsigned level = get_loop_level (loop) + 1;
+    double_int iter;
+    rtx iter_rtx;
+
+    if (!max_loop_iterations (loop, &iter)
+	|| !iter.fits_shwi ())
+      iter_rtx = const0_rtx;
+    else
+      iter_rtx = GEN_INT (iter.to_shwi());
     init = gen_doloop_begin (counter_reg,
 			     desc->const_iter ? desc->niter_expr : const0_rtx,
-			     GEN_INT (desc->niter_max),
+			     iter_rtx,
 			     GEN_INT (level));
     if (init)
       {
@@ -608,6 +618,7 @@ doloop_optimize (struct loop *loop)
   struct niter_desc *desc;
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
+  double_int iter;
 
   if (dump_file)
     fprintf (dump_file, "Doloop: Processing loop %d.\n", loop->num);
@@ -658,7 +669,11 @@ doloop_optimize (struct loop *loop)
 
   count = copy_rtx (desc->niter_expr);
   iterations = desc->const_iter ? desc->niter_expr : const0_rtx;
-  iterations_max = GEN_INT (desc->niter_max);
+  if (!max_loop_iterations (loop, &iter)
+      || !iter.fits_shwi ())
+    iterations_max = const0_rtx;
+  else
+    iterations_max = GEN_INT (iter.to_shwi());
   level = get_loop_level (loop) + 1;
 
   /* Generate looping insn.  If the pattern FAILs then give up trying
@@ -678,7 +693,7 @@ doloop_optimize (struct loop *loop)
 	 computed, we must be sure that the number of iterations fits into
 	 the new mode.  */
       && (word_mode_size >= GET_MODE_PRECISION (mode)
-	  || desc->niter_max <= word_mode_max))
+	  || iter.ule (double_int::from_shwi (word_mode_max))))
     {
       if (word_mode_size > GET_MODE_PRECISION (mode))
 	{

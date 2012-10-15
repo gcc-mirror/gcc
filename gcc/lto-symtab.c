@@ -46,8 +46,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
     {
       fprintf (cgraph_dump_file, "Replacing cgraph node %s/%i by %s/%i"
  	       " for symbol %s\n",
-	       xstrdup (cgraph_node_name (node)), node->uid,
-	       xstrdup (cgraph_node_name (prevailing_node)),
+	       cgraph_node_name (node), node->uid,
+	       cgraph_node_name (prevailing_node),
 	       prevailing_node->uid,
 	       IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name)
 		 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->symbol.decl)))));

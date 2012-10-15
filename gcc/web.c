@@ -313,6 +313,8 @@ web_main (void)
   rtx insn;
 
   df_set_flags (DF_NO_HARD_REGS + DF_EQ_NOTES);
+  /* We can not RD_PRUNE_DEAD_DEFS, because we care about REG_EQUAL
+     notes.  */
   df_chain_add_problem (DF_UD_CHAIN);
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);

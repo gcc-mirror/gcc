@@ -18,6 +18,7 @@ int bar();
 
 void foo(int i)
 {
+  t test_outside;
   for (int j = 0; j < 10; j++)
     {
       t test;
@@ -28,6 +29,18 @@ void foo(int i)
 	  return;
 	}
     }
+  if (i)
+    {
+      t test;
+      if (i == 10)
+	{
+	  test.bar();
+	}
+    }
+  test_outside.foo();
   return;
 }
-// { dg-final { scan-assembler "deallocator.C:28" } }
+// { dg-final { scan-assembler "deallocator.C:29" } }
+// { dg-final { scan-assembler "deallocator.C:31" } }
+// { dg-final { scan-assembler "deallocator.C:38" } }
+// { dg-final { scan-assembler "deallocator.C:41" } }

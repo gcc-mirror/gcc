@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-plugin.h"
 
 struct attribute_spec;
+struct scoped_attributes;
 
 extern void add_new_plugin (const char *);
 extern void parse_plugin_arg_opt (const char *);
@@ -64,5 +65,7 @@ invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
 /* In attribs.c.  */
 
 extern void register_attribute (const struct attribute_spec *attr);
+extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
+							     const char *);
 
 #endif /* PLUGIN_H */

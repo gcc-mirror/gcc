@@ -4,5 +4,5 @@
 void foo()
 {
   int __attribute__((vector_size(8))) v;
-  v = 1/v;  // { dg-error "invalid operands of types" }
+  v = 1/v;
 }

@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
@@ -547,9 +547,6 @@ typedef struct group_info *group_info_t;
 typedef const struct group_info *const_group_info_t;
 static alloc_pool rtx_group_info_pool;
 
-/* Tables of group_info structures, hashed by base value.  */
-static htab_t rtx_group_table;
-
 /* Index into the rtx_group_vec.  */
 static int rtx_group_next_id;
 
@@ -655,22 +652,28 @@ clear_alias_set_lookup (alias_set_type alias_set)
 /* Hashtable callbacks for maintaining the "bases" field of
    store_group_info, given that the addresses are function invariants.  */
 
-static int
-invariant_group_base_eq (const void *p1, const void *p2)
+struct invariant_group_base_hasher : typed_noop_remove <group_info>
 {
-  const_group_info_t gi1 = (const_group_info_t) p1;
-  const_group_info_t gi2 = (const_group_info_t) p2;
+  typedef group_info T;
+  static inline hashval_t hash (const T *);
+  static inline bool equal (const T *, const T *);
+};
+
+inline bool
+invariant_group_base_hasher::equal (const T *gi1, const T *gi2)
+{
   return rtx_equal_p (gi1->rtx_base, gi2->rtx_base);
 }
 
-
-static hashval_t
-invariant_group_base_hash (const void *p)
+inline hashval_t
+invariant_group_base_hasher::hash (const T *gi)
 {
-  const_group_info_t gi = (const_group_info_t) p;
   int do_not_record;
   return hash_rtx (gi->rtx_base, Pmode, &do_not_record, NULL, false);
 }
+
+/* Tables of group_info structures, hashed by base value.  */
+static hash_table <invariant_group_base_hasher> rtx_group_table;
 
 
 /* Get the GROUP for BASE.  Add a new group if it is not there.  */
@@ -680,14 +683,14 @@ get_group_info (rtx base)
 {
   struct group_info tmp_gi;
   group_info_t gi;
-  void **slot;
+  group_info **slot;
 
   if (base)
     {
       /* Find the store_base_info structure for BASE, creating a new one
 	 if necessary.  */
       tmp_gi.rtx_base = base;
-      slot = htab_find_slot (rtx_group_table, &tmp_gi, INSERT);
+      slot = rtx_group_table.find_slot (&tmp_gi, INSERT);
       gi = (group_info_t) *slot;
     }
   else
@@ -777,8 +780,7 @@ dse_step0 (void)
     = create_alloc_pool ("deferred_change_pool",
 			 sizeof (struct deferred_change), 10);
 
-  rtx_group_table = htab_create (11, invariant_group_base_hash,
-				 invariant_group_base_eq, NULL);
+  rtx_group_table.create (11);
 
   bb_table = XNEWVEC (bb_info_t, last_basic_block);
   rtx_group_next_id = 0;
@@ -2872,7 +2874,7 @@ dse_step1 (void)
 
   BITMAP_FREE (regs_live);
   cselib_finish ();
-  htab_empty (rtx_group_table);
+  rtx_group_table.empty ();
 }
 
 
@@ -3812,7 +3814,7 @@ dse_step7 (void)
 
   end_alias_analysis ();
   free (bb_table);
-  htab_delete (rtx_group_table);
+  rtx_group_table.dispose ();
   VEC_free (group_info_t, heap, rtx_group_vec);
   BITMAP_FREE (all_blocks);
   BITMAP_FREE (scratch);

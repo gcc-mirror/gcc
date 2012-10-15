@@ -6864,7 +6864,7 @@ a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
 @dots{}, an >> bn@}}@. Vector operands must have the same number of
 elements. 
 
-For the convenience in C it is allowed to use a binary vector operation
+For convenience, it is allowed to use a binary vector operation
 where one operand is a scalar. In that case the compiler will transform
 the scalar operand into a vector where each element is the scalar from
 the operation. The transformation will happen only if the scalar could be
@@ -8651,6 +8651,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * RX Built-in Functions::
+* SH Built-in Functions::
 * SPARC VIS Built-in Functions::
 * SPU Built-in Functions::
 * TI C6X Built-in Functions::
@@ -13686,6 +13687,41 @@ generate the Altivec @samp{LVX} and @samp{STVX} instructions even
 if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} builtins will always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
+
+@node SH Built-in Functions
+@subsection SH Built-in Functions
+The following built-in functions are supported on the SH1, SH2, SH3 and SH4
+families of processors:
+
+@deftypefn {Built-in Function} {void} __builtin_set_thread_pointer (void *@var{ptr})
+Sets the @samp{GBR} register to the specified value @var{ptr}.  This is usually
+used by system code that manages threads and execution contexts.  The compiler
+normally will not generate code that modifies the contents of @samp{GBR} and
+thus the value is preserved across function calls.  Changing the @samp{GBR}
+value in user code must be done with caution, since the compiler might use
+@samp{GBR} in order to access thread local variables.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+Returns the value that is currently set in the @samp{GBR} register.
+Memory loads and stores that use the thread pointer as a base address will be
+turned into @samp{GBR} based displacement loads and stores, if possible.
+For example:
+@smallexample
+struct my_tcb
+@{
+   int a, b, c, d, e;
+@};
+
+int get_tcb_value (void)
+@{
+  // Generate @samp{mov.l @@(8,gbr),r0} instruction
+  return ((my_tcb*)__builtin_thread_pointer ())->c;
+@}
+
+@end smallexample
+@end deftypefn
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions

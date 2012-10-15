@@ -2382,7 +2382,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
   if (orig_code == MINUS_EXPR)
     {
       tree rhs = gimple_assign_rhs2 (def_stmt);
-      tree negrhs = copy_ssa_name (rhs, NULL);
+      tree negrhs = make_ssa_name (TREE_TYPE (rhs), NULL);
       gimple negate_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, negrhs,
 							 rhs, NULL);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);

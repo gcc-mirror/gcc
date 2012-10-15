@@ -1,3 +1,60 @@
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* c-common.h (sizeof_pointer_memaccess_warning): Adjust prototype.
+	* c-common.c (sizeof_pointer_memaccess_warning): Take array of 3
+	locs and array of 3 trees instead of just single loc and single
+	sizeof_arg tree.  Handle __builtin___*_chk builtins too, and
+	also stpncpy, bcopy, bcmp, bzero, snprintf and vsnprintf builtins.
+	For *cmp* builtins that take two sources strings report warnings
+	about first and second source, not about destination and source.
+
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53055
+	* c-common.h (enum ref_operator) [RO_ARROW_STAR]: New.
+
+2012-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_template): Bail out for template declarations
+	declaring something coming from another file.
+
+2012-10-10  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/54845
+	* c-ada-spec.c (print_ada_struct_decl): Increase buf size.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* c-common.c (warn_about_parentheses): Add location_t parameter;
+	use EXPR_LOC_OR_LOC.
+	* c-common.h: Update declaration.
+
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-common.c (scalar_to_vector): Moved from c-typeck.c. Support
+	more operations. Make error messages optional.
+	* c-common.h (enum stv_conv): Moved from c-typeck.c.
+	(scalar_to_vector): Declare.
+
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (c_common_reswords): Add thread_local.
+
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* c-common.h (bitfield_p, cxx_fundamental_alignment_p): Declare
+	new functions.
+	* c-common.c (check_cxx_fundamental_alignment_constraints): New
+	static function.
+	(handle_aligned_attribute): In choose strictest alignment
+	among many.  Use new check_cxx_fundamental_alignment_constraints.
+	(handle_transparent_union_attribute): In c++11 attribute syntax,
+	don't look through typedefs.
+
 2012-10-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (print_ada_declaration): Remove handling of TDF_RAW.

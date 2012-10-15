@@ -48,6 +48,7 @@ endif
 sources = \
 	array_type_info.cc \
 	atexit_arm.cc \
+	atexit_thread.cc \
 	bad_alloc.cc \
 	bad_cast.cc \
 	bad_typeid.cc \
@@ -121,6 +122,11 @@ eh_throw.o: eh_throw.cc
 guard.lo: guard.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 guard.o: guard.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+atexit_thread.lo: atexit_thread.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+atexit_thread.o: atexit_thread.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 nested_exception.lo: nested_exception.cc

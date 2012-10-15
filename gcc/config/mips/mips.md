@@ -6880,6 +6880,16 @@
   [(set_attr "type" "call")
    (set_attr "length" "12")
    (set_attr "mode" "<MODE>")])
+
+;; Named pattern for expanding thread pointer reference.
+(define_expand "get_thread_pointer<mode>"
+  [(match_operand:P 0 "register_operand" "=d")]
+  "HAVE_AS_TLS"
+{
+  mips_expand_thread_pointer (operands[0]);
+  DONE;
+})
+
 
 ;; Synchronization instructions.
 

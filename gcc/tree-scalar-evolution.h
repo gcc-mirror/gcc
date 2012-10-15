@@ -27,6 +27,7 @@ extern tree number_of_exit_cond_executions (struct loop *);
 extern gimple get_loop_exit_condition (const struct loop *);
 
 extern void scev_initialize (void);
+extern bool scev_initialized_p (void);
 extern void scev_reset (void);
 extern void scev_reset_htab (void);
 extern void scev_finalize (void);

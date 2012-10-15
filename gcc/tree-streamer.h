@@ -72,14 +72,16 @@ void streamer_read_tree_body (struct lto_input_block *, struct data_in *, tree);
 tree streamer_get_pickled_tree (struct lto_input_block *, struct data_in *);
 tree streamer_get_builtin_tree (struct lto_input_block *, struct data_in *);
 tree streamer_read_integer_cst (struct lto_input_block *, struct data_in *);
-struct bitpack_d streamer_read_tree_bitfields (struct lto_input_block *, tree);
+struct bitpack_d streamer_read_tree_bitfields (struct lto_input_block *,
+					       struct data_in *, tree);
 
 /* In tree-streamer-out.c.  */
 void streamer_write_string_cst (struct output_block *,
 				struct lto_output_stream *, tree);
 void streamer_write_chain (struct output_block *, tree, bool);
 void streamer_write_tree_header (struct output_block *, tree);
-void streamer_pack_tree_bitfields (struct bitpack_d *, tree);
+void streamer_pack_tree_bitfields (struct output_block *, struct bitpack_d *,
+				   tree);
 void streamer_write_tree_body (struct output_block *, tree, bool);
 void streamer_write_integer_cst (struct output_block *, tree, bool);
 void streamer_write_builtin (struct output_block *, tree);
@@ -93,8 +95,16 @@ bool streamer_tree_cache_insert_at (struct streamer_tree_cache_d *, tree,
 void streamer_tree_cache_append (struct streamer_tree_cache_d *, tree);
 bool streamer_tree_cache_lookup (struct streamer_tree_cache_d *, tree,
 				 unsigned *);
-tree streamer_tree_cache_get (struct streamer_tree_cache_d *, unsigned);
 struct streamer_tree_cache_d *streamer_tree_cache_create (void);
 void streamer_tree_cache_delete (struct streamer_tree_cache_d *);
+
+/* Return the tree node at slot IX in CACHE.  */
+
+static inline tree
+streamer_tree_cache_get (struct streamer_tree_cache_d *cache, unsigned ix)
+{
+  return VEC_index (tree, cache->nodes, ix);
+}
+
 
 #endif  /* GCC_TREE_STREAMER_H  */

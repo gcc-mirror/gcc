@@ -1,10 +1,968 @@
+2012-10-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_opposite_regno): Handle the
+	return-value register too.
+
+2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/38711
+	* df.h (df_get_live_out, df_get_live_in): Make static inline functions.
+	* df-problems.c (df_get_live_out, df_get_live_in): Moved to df.h.
+	* ira-lives.c (process_bb_node_lives): Use df_get_live_out instead of
+	DF_LR_OUT.
+	* ira-build.c (create_bb_allocnos): Likewise.
+	(create_loop_allocnos): Likewise, and use df_get_live_in instead of
+	DF_LR_IN.
+	* ira-emit.c (generate_edge_moves): Likewise.
+	(add_ranges_and_copies): Likewise.
+	* ira-color.c (ira_loop_edge_freq): Use df_get_live_out instead of
+	DF_LR_OUT, and df_get_live_in instead of DF_LR_IN.
+	* ira.c (mark_elimination): Update DF_LR and DF_LIVE.
+	(build_insn_chain): Use df_get_live_out instead of DF_LR_OUT.
+	(do_reload): Remove the DF_LIVE problem for -O1.
+
+
+2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/54919
+	* loop-unroll.c (struct var_to_expand): Remove accum_pos field.
+	(analyze_insn_to_expand_var): Do not record accum_pos.
+	(expand_var_during_unrolling): Use validate_replace_rtx_group to
+	perform replacement of all references to SET_DEST (set) with the
+	new register, including references in REG_EQUAL notes.
+	(insert_var_expansion_initialization): Insert initializatio insns
+	at the bottom of the pre-header of the loop.
+
+2012-10-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop): Do not
+	predict loops with multiple exits realistically.
+	* cfgloopanal.c (single_likely_exit): New function.
+
+2012-10-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md: Remove empty predicates and/or constraints.
+	* config/alpha/sync.md: Ditto.
+
+2012-10-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (I24MODE): New mode iterator.
+	(any_divmod): New code iterator.
+	(<code>si3): Macroize expander from {div,mod,udiv,umod}si3 using
+	any_divmod code iterator.
+	(<code>si3): Macroize expander from {div,mod,udiv,umod}di3 using
+	any_divmod code iterator.
+	(extendqi<mode>2): Macroize insn from extendqi{hi,si}2 using
+	I24MODE mode iterator.
+	(unaligned_store<mode>): Macroize expander from unaligned_store{qi,hi}
+	using I12MODE mode iterator.
+	(mov<mode>): Macroize expander from mov{qi,hi} using
+	I12MODE mode iterator.
+
+2012-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54871
+	* loop-iv.c (simplify_using_initial_values): When scanning previous
+	basic blocks, prune the recorded conditions if the current insn was
+	not used to make a replacement.
+
+	* loop-unroll.c (decide_unroll_constant_iterations): Clean up message.
+	(unroll_loop_constant_iterations): Clarify head comment.
+	(decide_unroll_runtime_iterations): Clean up message.
+	(unroll_loop_runtime_iterations): Clarify head comment.
+	(decide_peel_simple): Clean up message.
+	(peel_loop_simple): Clarify head comment.
+	(decide_unroll_stupid): Clean up message.
+	(unroll_loop_stupid): Clarify head comment.
+
+2012-10-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR gcov-profile/44728
+	* gcov.c (create_file_names): When stripping extension only look
+	at base name.
+
+2012-10-13  Jan Hubicka  <jh@suse.cz>
+
+	* loop-iv.c (determine_max_iter): Fix handling of AND.
+	(iv_number_of_iterations): Record upper bounds as unsigned
+	values.
+
+2012-10-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ira.c (ira): Set current_loops to &ira_loops before recording
+	loop exits.  Release recorded exits and loops early.
+
+2012-10-13  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* builtins.c (expand_builtin_set_thread_pointer): Use
+	create_input_operand() instead of create_fixed_operand().
+
+2012-10-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (FMODE): New mode iterator.
+	(modesuffix): Handle SF and DF modes.
+	(opmode): New mode attribute.
+	(abs<mode>2): Macroize insn from abs{sf,df}2 using FMODE mode iterator.
+	(*nabs<mode>2): Macroize insn from *nabs{sf,df}2 using
+	FMODE mode iterator.
+	(neg<mode>2): Macroize insn from neg{sf,df}2 using FMODE mode iterator.
+	(copysign<mode>3): Macroize insn from copysign{sf,df}3 using
+	FMODE mode iterator.
+	(*ncopysign<mode>3): Macroize insn from *ncopysign{sf,df}3 using
+	FMODE mode iterator.
+	(*add<mode>3_ieee): Macroize insn from *add{sf,df}_ieee using
+	FMODE mode iterator.
+	(add<mode>3): Macroize insn from add{sf,df}3 using FMODE mode iterator.
+	(*sub<mode>3_ieee): Macroize insn from *sub{sf,df}3_ieee using
+	FMODE mode iterator.
+	(sub<mode>3): Macroize insn from sub{sf,df}3 using FMODE mode iterator.
+	(*mul<mode>3_ieee): Macroize insn from *mul{sf,df}3_ieee using
+	FMODE mode iterator.
+	(mul<mode>3): Macroize insn from mul{sf,df}3 using FMODE mode iterator.
+	(*div<mode>3_ieee): Macroize insn from *div{sf,df}3_ieee using
+	FMODE mode iterator.
+	(div<mode>3): Macroize insn from div{sf,df}3 using FMODE mode iterator.
+	(*sqrt<mode>2_ieee): Macroize insn from *sqrt{sf,df}2_ieee using
+	FMODE mode iterator.
+	(sqrt<mode>2): Macroize insn from sqrt{sf,df}2
+	using FMODE mode iterator.
+	(*mov<mode>cc_internal): Macroize insn from *mov{sf,df}cc_internal
+	using FMODE mode iterator.
+	(mov<mode>cc): Macroize expander from mov{sf,df}cc
+	using FMODE mode iterator.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54602
+	* config/sh/sh.md: Correct define_delay for return insns.
+	(*movsi_pop): Delete.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54680
+	* config/sh/sh.c (sh_fsca_sf2int, sh_fsca_int2sf): Fix swapped
+	comments.
+	* config/sh/predicates.md (fpul_operand): Add comment.
+	(fpul_fsca_operand, fsca_scale_factor): New predicates.
+	* config/sh/sh.md (fsca): Move below sincossf3 expander.  Convert to
+	insn_and_split.  Use fpul_fsca_operand and fsca_scale_factor
+	predicates.  Simplify fpul operand in splitter.
+
+2012-10-12  Jan Hubicka <jh@suse.cz>
+
+	* tree-ssa-threadupdate.c (def_split_header_continue_p): Do not
+	escape the loop.
+
+2012-10-12  Jan Hubicka <jh@suse.cz>
+
+	* web.c (web_main): Do not set DF_RD_PRUNE_DEAD_DEFS flag.
+
+2012-10-12  Aaron Gray <aaronngray.lists@gmail.com>
+	    Diego Novillo <dnovillo@google.com>
+
+	* gengtype-lex.l: Support for C++ single line comments.
+	Support for classes.
+	(CXX_KEYWORD): New.  Support C++ keywords inline, public,
+	protected, private, template, operator, friend, &, ~.
+	(TYPEDEF): New.  Support typedef.
+	* gengtype-parser.c: updated 'token_names[]'
+	(direct_declarator): Add support for parsing functions and ctors.
+
+2012-10-12  Diego Novillo  <dnovillo@google.com>
+
+	* doc/gty.texi: Document C++ limitations in gengtype.
+	* gengtype-lex.l (CID): Rename from ID.
+	(ID): Include scoping '::' as part of the identifier name.
+	* gengtype-parse.c (token_names): Update.
+	(token_value_format): Update.
+	(consume_until_eos): Rename from consume_until_semi.
+	Remove unused argument IMMEDIATE.  Update all callers.
+	Also consider '}' as a finalizer.
+	(consume_until_comma_or_eos): Rename from
+	consume_until_comma_or_semi.
+	Remove unused argument IMMEDIATE.  Update all callers.
+	Also consider '}' as a finalizer.
+	(direct_declarator): Add documentation on ctor support.
+	Add argument IN_STRUCT.
+	If the token following ID is a '(', consider ID a
+	function and return NULL.
+	If the token following '(' is not a '*', and IN_STRUCT is true,
+	conclude that this is a ctor and return NULL.
+	If the token is IGNORABLE_CXX_KEYWORD, return NULL.
+	(inner_declarator): Add argument IN_STRUCT.
+	Update all callers.
+	(declarator): Add argument IN_STRUCT with default value false.
+	Update all callers.
+	(type): Document argument NESTED.
+	Skip over C++ inheritance specifiers.
+	If a token TYPEDEF is found, emit an error.
+	If an enum is found inside a class/structure, emit an error.
+	(typedefs, structures, param_structs, variables): Initialize.
+	(new_structure): Do not complain about duplicate
+	structures if S has a line location set.
+	* gengtype-state.c (write_state_type): Remove default handler.
+	Add handler for TYPE_NONE.
+	(read_state_scalar_char_type):
+	* gengtype.c: Fix spacing.
+	* gengtype.h (enum gty_token): Add name.  Add token
+	IGNORABLE_CXX_KEYWORD.
+
+2012-10-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.md (get_thread_pointersi): Moved to place with
+	other TLS related patterns.
+
+2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer-out.c (pack_ts_target_option): Rename from ...
+	(write_ts_target_option): ... this.
+	(pack_ts_optimization): Rename from ...
+	(write_ts_optimization): ... this.
+	(streamer_pack_tree_bitfields): Pack them in the bitfield section ...
+	(streamer_write_tree_body): ... not here.
+	* tree-streamer-in.c (unpack_ts_target_option): Rename from ...
+	(lto_input_ts_target_option): ... this.
+	(unpack_ts_optimization): Rename from ...
+	(lto_input_ts_optimization): ... this.
+	(unpack_value_fields): Unpack them from the bitfield section ...
+	(streamer_read_tree_body): ... not from here.
+
+2012-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (vecmodesuffix): New mode attribute.
+	(modesuffix): Handle V8QI and V4HI modes.
+	(any_maxmin): New code iterator.
+	(maxmin): New code attribute.
+	(<code><mode>3): Macroize insn from {smax,smin,umax,umin}{qi,hi}3
+	using any_maxmin code iterator and I12MODE mode iterator.
+	(<code><mode>3): Macroize insn from {smax,smin,umax,umin}{v8qi,v4hi}3
+	using any_maxmin code iterator and VEC12 mode iterator.
+
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	* optabs.c (vector_compare_rtx): Change prototype.
+	(expand_vec_cond_expr): Handle VEC_COND_EXPR whose first operand
+	is not a comparison.
+	* gimplify.c (gimplify_expr): Handle VEC_COND_EXPR.
+
+2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54894
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Handle over-aligned scalar types properly.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* config/sh/sh.c (bdesc): Remove thread pointer built-ins.
+	* config/sh/sh.md (get_thread_pointer, set_thread_pointer): Append mode
+	name 'si'.
+
+2012-10-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (negsi_cond, negdi_cond, stack_protect_test): Remove
+	get_t_reg_rtx when invoking gen_branch_true or gen_branch_false.
+	(*zero_extend<mode>si2_compact): Convert to insn_and_split.  Convert
+	zero extensions of T bit stores to reg moves in splitter.  Remove
+	obsolete unnamed peephole2 that caught zero extensions after negc T bit
+	stores.
+	(*branch_true_eq, *branch_false_ne): Delete.
+	(branch_true, branch_false): Convert insn to expander.  Move actual
+	insn logic to...
+	(*cbranch_t): ...this new insn_and_split.  Try to find preceding
+	redundant T bit stores and tests and combine them with the conditional
+	branch if possible in the splitter.
+	(movrt_xor, *movt_movrt): New insn_and_split.
+	* config/sh/predicates.md (cbranch_treg_value): New predicate.
+	* config/sh/sh-protos.h (sh_eval_treg_value): Forward declare...
+	* config/sh/sh.c (sh_eval_treg_value): ...this new function.
+	(expand_cbranchsi4, expand_cbranchdi4): Remove get_t_reg_rtx
+	when invoking gen_branch_true or gen_branch_false.
+
+2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (IMODE): New mode iterator.
+	(I124MODE): Ditto.
+	(I248MODE): Ditto.
+	(modesuffix): Handle QI and HI modes.
+	(zero_extendqi<mode>2): Macroize insn from zero_extendqi{hi,si,di}2
+	using I248MODE mode iterator.
+	(zero_extendhi<mode>2): Macroize insn from zero_extendhi{si,di}2
+	using I48MODE mode iterator.
+	(andnot<mode>3): Macroize insn from andnot{si,di}3 using
+	I48MODE mode iterator.
+	(ins<modesuffix>l_const): Macroize insn from ins{b,w,l}l_const
+	using I248MODE mode iterator.
+	(ins<modesuffix>l): Macroize insn from ins{b,w,l}l
+	using I248MODE mode iterator.
+	(*mov<mode>cc_internal): Macroize insn from
+	*mov{qi,hi,si,di}cc_internal using IMODE mode iterator.
+	(*mov<mode>cc_lbc): Macroize insn from
+	*mov{qi,hi,si,di}cc_lbc using IMODE mode iterator.
+	(*mov<mode>cc_lbs): Macroize insn from
+	*mov{qi,hi,si,di}cc_lbs using IMODE mode iterator.
+	(mov<mode>cc): Macroize expander from mov{si,di}cc
+	using I48MODE mode iterator.
+
+2012-10-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ira-build.c (ira_loop_tree_body_rev_postorder): New function.
+	(ira_traverse_loop_tree): Traverse a loop's basic blocks in
+	reverse post-order of the reversed control-flow direction.
+	* ira-conflicts.c (ira_build_conflicts): Pass add_copies as
+	the pre-order function to ira_traverse_loop_tree to preserve
+	the existing semantics.
+
+	* ira-lives.c (remove_some_program_points_and_update_live_ranges):
+	Squeeze out live range chain elements if their program points are
+	connected.
+
+2012-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (REDUC_PLUS_EXPR): Fix up comment.
+
+	* fold-const.c (fold_unary_loc): Handle REDUC_MIN_EXPR,
+	REDUC_MAX_EXPR and REDUC_PLUS_EXPR.
+
+2012-10-11  James Lemke  <jwlemke@codesourcery.com>
+
+	* config/rs6000/predicates.md (zero_fp_constant): Fix comment.
+	* config/rs6000/rs6000.md (return_pred): Fix null return.
+	* config/rs6000/rs6000.c (rs6000_emit_set_const): Fix indentation.
+	(print_operand): Make FALLTHRU obvious.
+	(output_cbranch): Correct comment.
+
+2012-10-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (DWI): New mode attribute.
+	(*sadd<modesuffix>): Macroize insn from *saddl and *saddq using
+	I48MODE mode iterator.
+	(addv<mode>3): Macroize insn from addvsi3 and addvdi3 using
+	I48MODE mode iterator.
+	(neg<mode>2): Macroize insn from negsi2 and negdi2 using
+	I48MODE mode iterator.
+	(negv<mode>2): Macroize insn from negvsi2 and negvdi2 using
+	I48MODE mode iterator.
+	(sub<mode>3): Macroize insn from subsi3 and subdi3 using
+	I48MODE mode iterator.
+	(*ssub<modesuffix>): Macroize insn from *ssubl and *ssubq using
+	I48MODE mode iterator.
+	(subv<mode>3): Macroize insn from subvsi3 and subvdi3 using
+	I48MODE mode iterator.
+	(mul<mode>3): Macroize insn from mulsi3 and muldi3 using
+	I48MODE mode iterator.
+	(mulv<mode>3): Macroize insn from mulvsi3 and mulvdi3 using
+	I48MODE mode iterator.
+	(*iornot<mode>3): Macroize insn from *iornotsi3 and *iornotdi3 using
+	I48MODE mode iterator.
+	(*xornot<mode>3): Macroize insn from *xornotsi3 and *xornotdi3 using
+	I48MODE mode iterator.
+
+2012-10-11  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac (gcc_cv_as_aix_ref): Fix typo.
+	* configure: Regenerate.
+
+2012-10-11  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* builtins.c (expand_builtin_thread_pointer): New.
+	(expand_builtin_set_thread_pointer): New.
+	(expand_builtin): Add BUILT_IN_THREAD_POINTER,
+	BUILT_IN_SET_THREAD_POINTER expand cases.
+	* builtins.def (BUILT_IN_THREAD_POINTER):
+	New __builtin_thread_pointer builtin.
+	(BUILT_IN_SET_THREAD_POINTER):
+	New __builtin_set_thread_pointer builtin.
+	* optabs.def (get_thread_pointer,set_thread_pointer):
+	New standard names.
+	* doc/md.texi (Standard Names): Document get_thread_pointer and
+	set_thread_pointer patterns.
+	* config/alpha/alpha.md (get_thread_pointerdi): Rename from load_tp.
+	(set_thread_pointerdi): Rename from set_tp.
+	* config/alpha/alpha.c (alpha_legitimize_address_1): Change
+	gen_load_tp calls to gen_get_thread_pointerdi.
+	(alpha_builtin): Remove ALPHA_BUILTIN_THREAD_POINTER,
+	ALPHA_BUILTIN_SET_THREAD_POINTER.
+	(code_for_builtin): Remove CODE_FOR_load_tp, CODE_FOR_set_tp.
+	(alpha_init_builtins): Remove __builtin_thread_pointer,
+	__builtin_set_thread_pointer machine-specific builtins.
+	(alpha_expand_builtin_thread_pointer): Add hook function for
+	TARGET_EXPAND_BUILTIN_THREAD_POINTER.
+	(alpha_expand_builtin_set_thread_pointer): Add hook function for
+	TARGET_EXPAND_BUILTIN_SET_THREAD_POINTER.
+	(alpha_fold_builtin): Remove ALPHA_BUILTIN_THREAD_POINTER,
+	ALPHA_BUILTIN_SET_THREAD_POINTER cases.
+	* config/arm/arm.md (get_thread_pointersi): New pattern.
+	* config/arm/arm-protos.h (arm_load_tp): Add extern declaration.
+	* config/arm/arm.c (arm_load_tp): Remove static.
+	(arm_builtins): Remove ARM_BUILTIN_THREAD_POINTER.
+	(arm_init_tls_builtins): Remove function.
+	(arm_init_builtins): Remove call to arm_init_tls_builtins().
+	(arm_expand_builtin): Remove ARM_BUILTIN_THREAD_POINTER case.
+	* config/mips/mips.md (get_thread_pointer<mode>): New pattern.
+	* config/mips/mips-protos.h (mips_expand_thread_pointer):
+	Add extern declaration.
+	* config/mips/mips.c (mips_expand_thread_pointer):
+	Renamed from mips_get_tp.
+	(mips_get_tp): New stub calling mips_expand_thread_pointer.
+	* config/s390/s390.c (s390_builtin,code_for_builtin_64,
+	code_for_builtin_31,s390_init_builtins,s390_expand_builtin): Remove.
+	* config/s390/s390.md (get_tp_64,get_tp_31,set_tp_64,set_tp_31):
+	Remove.
+	(get_thread_pointer<mode>,set_thread_pointer<mode>):
+	New, adapted from removed patterns.
+	* config/xtensa/xtensa.md (get_thread_pointersi):
+	Renamed from load_tp.
+	(set_thread_pointersi): Renamed from set_tp.
+	* config/xtensa/xtensa.c (xtensa_legitimize_tls_address):
+	Change gen_load_tp calls to gen_get_thread_pointersi.
+	(xtensa_builtin): Remove XTENSA_BUILTIN_THREAD_POINTER and
+	XTENSA_BUILTIN_SET_THREAD_POINTER.
+	(xtensa_init_builtins): Remove __builtin_thread_pointer,
+	__builtin_set_thread_pointer machine-specific builtins.
+	(xtensa_fold_builtin): Remove XTENSA_BUILTIN_THREAD_POINTER,
+	XTENSA_BUILTIN_SET_THREAD_POINTER cases.
+	(xtensa_expand_builtin): Remove XTENSA_BUILTIN_THREAD_POINTER,
+	XTENSA_BUILTIN_SET_THREAD_POINTER cases.
+
+2012-10-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* doc/extend.texi (Vector Extensions): C++ improvements.
+	* doc/generic.texi (LSHIFT_EXPR, RSHIFT_EXPR): Mixed vector-scalar.
+	(LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EQ_EXPR, NE_EXPR): Specify
+	the vector case.
+	(VEC_COND_EXPR): Document it.
+
+2012-10-11  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (arm_arch6m): New variable to denote armv6-m
+	architecture.
+	* config/arm/arm.h (TARGET_HAVE_DMB): The armv6-m also has DMB
+	instruction.
+
+2012-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/54373
+	* configure.ac (out-of-tree linker .hidden support) Set to "no"
+	for mmix-knuth-mmixware.
+	* configure: Regenerate.
+
+	* configure.ac (gcc_cv_as_comdat_group_group): Default to no.
+	* configure: Regenerate.
+
+	* acinclude.m4 (_gcc_COMPUTE_GAS_VERSION): Allow a single
+	character to quote the VERSION= contents.  Sanity-check contents.
+	* configure.ac ("what linker to use" ld version extraction): Ditto.
+	* configure: Regenerate.
+
+2012-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (PRINT_OPERAND_PUNCT_VALID_P): Delete '.'.
+
+2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54877
+	* tree-vect-loop.c (vect_is_simple_reduction_1): For MINUS_EXPR
+	use make_ssa_name instead of copy_ssa_name.
+
+2012-10-10  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-in.c (lto_input_location_bitpack): Rename to ...
+	(lto_input_location): ... this.  Kill original.
+	(input_eh_region): Adjust.
+	(input_struct_function_base): Likewise.
+	(lto_read_tree): Likewise.
+	* lto-streamer-out.c (lto_output_location_bitpack): Rename to ...
+	(lto_output_location): ... this.  Kill original.
+	(lto_write_tree): Adjust.
+	(output_eh_region): Likewise.
+	(output_struct_function_base): Likewise.
+	* lto-streamer.c (lto_streamer_hooks_init): Initialize location hooks.
+	* lto-streamer.h (lto_input_location): Adjust prototype.
+	(lto_output_location): Likewise.
+	* streamer-hooks.h (struct streamer_hooks): Adjust prototype
+	of input_location and output_location hooks.
+	(stream_input_location): New define.
+	(stream_output_location): Likewise.
+	* tree-streamer-in.c (unpack_ts_block_value_fields): Adjust.
+	(unpack_value_fields): Likewise.
+	(streamer_read_tree_bitfields): Likewise.
+	(lto_input_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_input_ts_exp_tree_pointers): Likewise.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	* tree-streamer-out.c (pack_ts_block_value_fields): Adjust.
+	(streamer_pack_tree_bitfields): Likewise.
+	(write_ts_decl_minimal_tree_pointers): Likewise.
+	(write_ts_exp_tree_pointers): Likewise.
+	(write_ts_block_tree_pointers): Likewise.
+	* gimple-streamer-in.c (input_phi): Adjust.
+	(input_gimple_stmt): Likewise.
+	* gimple-streamer-out.c (output_phi): Adjust.
+	(output_gimple_stmt): Likewise.
+	* tree-streamer.h (streamer_read_tree_bitfields): Adjust prototype.
+	(streamer_pack_tree_bitfields): Likewise.
+
+2012-10-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_dst_builtin): Fix signed
+	vs. unsigned warnings by using enum type for function code.
+	(paired_expand_builtin): Likewise.
+	(spe_expand_builtin): Likewise.
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Change
+	builtin mask, target flags masks type to HOST_WIDE_INT in
+	preparation for growing the number of ISA switches from 31 to 63.
+
+	* config/rs6000/rs6000.opt (rs6000_builtin_mask): Make mask type
+	HOST_WIDE_INT.
+
+	* config/rs6000/rs6000.c (struct builtin_description): Make
+	builtin mask field HOST_WIDE_INT.  Make target flags field
+	HOST_WIDE_INT in preparation for growing the # of ISA switches.
+	(struct rs6000_builtin_info_type): Likewise.
+	(struct rs6000_ptt): Likewise.
+	(rs6000_builtin_mask_calculate): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_builtin_decl): Likewise.
+	(rs6000_common_init_builtins): Likewise.
+	(rs6000_darwin_file_start): Likewise.
+	(rs6000_final_prescan_insn): Likewise.
+	(rs6000_inner_target_options): Likewise.
+	(build_target_option_node): Likewise.
+	(rs6000_function_specific_print): Likewise.
+	(DEBUG_FMT_W): New format for printing HOST_WIDE_INT in hex.
+
+	* config/rs6000/rs6000-protos.h (rs6000_builtin_mask_calculate):
+	Make target flags, builtin masks arguments/return values
+	HOST_WIDE_INT in preparation for growing the number of ISA from 31
+	to 63.
+	(rs6000_target_modify_macros): Likewise.
+	(rs6000_target_modify_macros_ptr): Likewise.
+
+	* config/rs6000/rs6000.c (DEBUG_FMT_ID): Move "-32s" to a separate
+	define and change DEBUG_FMT_<x> to use it.
+	(DEBUG_FMT_D): Likewise.
+	(DEBUG_FMT_S): Likewise.
+	(DEBUG_FMT_X): Delete, no longer used.
+	(DEBUG_FMT_W): Likewise.
+	(DEBUG_FMT_WX): New debug format for printing options in a
+	friendly fashion.
+	(rs6000_debug_reg_global): If -mdebug=reg, print all of the
+	options in target_flags and target_flags_explicit.  Print the
+	default options for -mcpu=<xxx>, -mtune=<xxx>, and the default
+	options.  Adjust printing out the builtin options.
+	(rs6000_option_override_internal): Change printing the builtin
+	options to use rs6000_print_builtin_options.
+	(rs6000_function_specific_print): Change to use
+	rs6000_print_isa_options to print ISA flags.
+	(rs6000_print_options_internal): New function for expanded
+	-mdebug=reg option printing to print both the ISA options, and the
+	builtins that are enabled.
+	(rs6000_print_isa_options): New function to print the ISA options.
+	(rs6000_print_builtin_options): New function to print the builtin
+	functions enabled.
+
+2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/51109
+	* config/i386/bdver1.md (bdver1-mult): Remove.
+
+	PR middle-end/54879
+	* combine.c (count_rtxs): Use RTX_BIN_ARITH resp. RTX_COMM_ARITH
+	instead of '2' resp. 'c' for GET_RTX_CLASS comparisons.
+
+	PR middle-end/54862
+	* simplify-rtx.c (simplify_truncation): Compare UINTVAL instead of
+	INTVAL of second argument with precision resp. op_precision.
+
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	PR middle-end/54860 - Make sure attributes hash table is created
+	* attribs.c (register_scoped_attributes): Ensure the attribute
+	hash table is created.
+
+2012-10-10  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	PR target/51109
+	* config/i386/bdver1.md (bdver1_int): Automaton has been
+	split to reduce state transitions.
+
+2012-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54876
+	* ipa-prop.c (prune_expression_for_jf_1): New function.
+	(prune_expression_for_jf): Clear EXPR_LOCATION for all
+	sub-expressions as well.
+
+2012-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.gcc: Enable zEC12 for with-arch and with-tune
+	configure switches.
+	* common/config/s390/s390-common.c (processor_flags_table): Add
+	zEC12 entry.
+	* config/s390/2827.md: New file.
+	* config/s390/s390-opts.h (enum processor_type): Add
+	PROCESSOR_2827_ZEC12.
+	* config/s390/s390.h (enum processor_flags): Add PF_ZEC12.
+	(TARGET_CPU_ZEC12, TARGET_ZEC12): New macro definitions.
+	* config/s390/s390.c (zEC12_cost): New definition.
+	(s390_option_override): Set costs for zEC12.
+	Set parameter defaults for zEC12.
+	(legitimate_reload_fp_constant_p): Adjust comment.
+	(preferred_la_operand_p): Adjust comment.
+	(s390_expand_insv): Generate insv pattern without CC clobber for zEC12.
+	(s390_adjust_priority): Add zEC12 check.
+	(s390_issue_rate): Return 2 for zEC12.
+	(s390_reorg): Enable code optimizations for zEC12.
+	(s390_sched_reorder): Reorder insns according to OOO attributes.
+	(s390_get_sched_attrmask): New function.
+	(s390_sched_score): New function.
+	(s390_sched_variable_issue): Update s390_sched_state.
+	(s390_sched_init): Reset s390_sched_state.
+	(s390_loop_unroll_adjust): Enable for zEC12.
+	* config/s390/s390.opt: Add zEC12 processor type value.
+	* config/s390/s390.md: Enable mnemonic attribute.
+	(attr cpu, cpu_facility): Add zEC12.
+	Include 2827.md.
+	("*insv<mode>_zEC12", "*insv<mode>_zEC12_noshift")
+	("*load_and_trap<mode>"): New insn definition.
+	("*cmp_and_trap_unsigned_int<mode>"): Add clt and clgt.
+
+2012-10-09  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (type attribute): Add new types 'visl'
+	(VIS logical operation), 'vismv' (VIS move), and 'pdistn'.  Rename
+	'fgm_pdist' to 'pdist'.
+	(*movsi_insn): Use vismv and visl.
+	(*movdi_insn_sp64): Likewise.
+	(*movsf_insn): Likewise.
+	(*movdf_insn_sp64): Likewise.
+	(*mov<VM32:mode>_insn): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
+	(*mov<VM64:mode>_insn_sp64): Likewise, use 'fsrc2s'
+	instead of 'fsrc1s'.
+	(*mov<VM64:mode>_insn_sp32): Likewise, use 'fsrc2s'
+	instead of 'fsrc1s'.
+	(VIS logical instructions): Mark as visl.
+	(pdist_vis): Use 'pdist'.
+	(pditsn<mode>_vis): Use 'pdistn'.
+	* config/sparc/ultra1_2.md: Adjust for new VIS attribute types.
+	* config/sparc/ultra3.md: Likewise.
+	* config/sparc/niagara.md: Likewise.
+	* config/sparc/niagara2.md: Likewise.
+	* config/sparc/niagara4.md: Add cpu units "n4_slot2" and
+	"n4_load_store" for special store scheduling.  Use them in load
+	and store reservations.  Integer divide and multiply can only
+	issue in slot-1.  Represent 1-cycle VIS moves and 3-cycle VIS
+	logic operations.
+
+2012-10-10  Dehao Chen  <dehao@google.com>
+
+	* tree-eh.c (lower_try_finally_onedest): Set correct location for
+	deallocator.
+	* gimplify.c (gimplify_expr): Set correct location for TRY stmt.
+
+2012-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52480
+	* config/sh/sh.md (extv, extzv): Check that operands[3] is zero,
+	regardless of the endianness.
+
+2012-10-09  Lawrence Crowl  <crowl@google.com>
+
+	* Makefile.in (fold-const.o): Add depencence on hash-table.h.
+	(dse.o): Likewise.
+	(cfg.o): Likewise.
+	* fold-const.c (fold_checksum_tree): Change to new
+	type-safe hash table.
+	* (print_fold_checksum): Likewise.
+	* cfg.c (var bb_original): Likewise.
+	* (var bb_copy): Likewise.
+	* (var loop_copy): Likewise.
+	* hash-table.h (template hash_table): Constify parameters for find...
+	and remove_elt... member functions.
+	(hash_table::empty) Correct size expression.
+	(hash_table::clear_slot) Correct deleted entry assignment.
+	* dse.c (var rtx_group_table): Change to new type-safe hash table.
+
+2012-10-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* basic-block. (profile_record): New struct, moved from passes.c.
+	* cfghooks.h (struct cfg_hooks) <account_profile_record>: New hook.
+	(account_profile_record): New prototype.
+	* cfghooks.c (account_profile_record): New function.
+	* tree-cfg.c (gimple_account_profile_record): New function
+	(gimple_cfg_hooks): Add it.
+	* cfgrtl.c (rtl_account_profile_record): New function
+	(rtl_cfg_hooks, cfg_layout_rtl_cfg_hooks): Add it.
+	* passes.c (check_profile_consistency): Simplify.  Move IR-dependent
+	code around using cfghooks machinery.
+
+2012-10-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* doc/extend.texi (Target Builtins): Add SH built-in section.
+	Document __builtin_thread_pointer and __builtin_set_thread_pointer.
+
+2012-10-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR middle-end/53397
+	* tree-ssa-loop-prefetch.c (gather_memory_references_ref):
+	Perform non constant step prefetching in inner loop, only
+	when it is invariant in the entire loop nest.
+	* tree-ssa-loop-prefetch.c (dump_mem_details): New function to dump
+	base, step and delta values of memeory reference analysed for
+	prefetching.
+	* tree-ssa-loop-prefetch.c (dump_mem_ref): Call dump_mem_details
+	to print base, step and delta values of memory reference.
+	* cfgloop.h (loop_outermost): New function that returns outermost
+	loop for a given loop in a loop nest.
+
+2012-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54837
+	* cfgexpand.c (expand_debug_source_expr): Move checking
+	code conditional on a found decl_debug_args vector.
+
+2012-10-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-streamer.c (streamer_tree_cache_get): Move ...
+	* tree-streamer.h (streamer_tree_cache_get): ... here as inline.
+
+2012-10-09  Jan Hubicka  <jh@suse.cz>
+
+	* loop-unroll.c (unroll_loop_constant_iterations): Add
+	update of loop->nb_iterations_upper_bound I missed in my previous
+	commit; use TRUNC_DIV_EXPR instead of FLOOR_DIV_EXPR to divide
+	iteration count.
+	(decide_unroll_runtime_iterations): Avoid overflow.
+	(unroll_loop_runtime_iterations): Use TRUNC_DIV_EXPR instead of
+	FLOOR_DIV_EXPR to update iteration bounds.
+	(decide_peel_simple): Avoid integer overflow when deciding
+	on number of peelings.
+	(decide_unroll_stupid): Likewise.
+
+2012-10-09  Tobias Burnus  <burnus@net-b.de>
+
+	* lto-cgraph.c (input_node_opt_summary): Remove unused code.
+	* lto-opts.c (append_to_collect_gcc_options): Fix condition.
+	* lto-symtab.c (lto_cgraph_replace_node): Don't xstrdup string
+	which is passed to fprintf.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* tree.h: Add EXPR_LOC_OR_LOC.
+
+2012-10-09  Nick Clifton  <nickc@redhat.com>
+
+	PR rtl-optimization/54739
+	* config/mcore/mcore.md: (anddi3, iordi3, xordi3): Delete patterns.
+
+	PR target/54661
+	* config/mcore/mcore.c (mcore_output_movedouble): Fix typo.
+
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* fold-const.c (fold_binary_loc): Use build_zero_cst instead of
+	build_int_cst for a potential vector.
+
+2012-10-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/atom.md (atom_sse_4): Merge atom_sse_attr attibutes.
+	(atom_sse_5): Ditto.
+
+2012-10-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/54400
+	* config/i386/i386.md (type attribute): Add sseadd1.
+	(unit attribute): Add support for sseadd1.
+	(memory attribute): Likewise.
+	* config/i386/athlon.md: Likewise.
+	* config/i386/core2.md: Likewise.
+	* config/i386/atom.md: Likewise.
+	* config/i386/ppro.md: Likewise.
+	* config/i386/bdver1.md: Likewise.
+	* config/i386/sse.md (sse3_h<plusminus_insn>v2df3): Split into...
+	(sse3_haddv2df3): ... expander.
+	(*sse3_haddv2df3): ... define_insn. Accept permuted operands.
+	(sse3_hsubv2df3): ... define_insn.
+	(*sse3_haddv2df3_low): New define_insn.
+	(*sse3_hsubv2df3_low): New define_insn.
+
+2012-10-08  Jan Hubicka  <jh@suse.cz>
+
+	* loop-unswitch.c (unswitch_single_loop): Use
+	estimated_loop_iterations_int to prevent unswitching when loop
+	is known to not roll.
+	* tree-ssa-loop-niter.c (estimated_loop_iterations): Do not segfault
+	when SCEV is not initialized.
+	(max_loop_iterations): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Use
+	estimated_loop_iterations_int to prevent unswithcing when
+	loop is known to not roll.
+	* tree-scalar-evolution.c (scev_initialized_p): New function.
+	* tree-scalar-evolution.h (scev_initialized_p): Likewise.
+	* loop-unroll.c (decide_peel_once_rolling): Use
+	max_loop_iterations_int.
+	(unroll_loop_constant_iterations): Update
+	nb_iterations_upper_bound and nb_iterations_estimate.
+	(decide_unroll_runtime_iterations): Use
+	estimated_loop_iterations or max_loop_iterations;
+	(unroll_loop_runtime_iterations): fix profile updating.
+	(decide_peel_simple): Use estimated_loop_iterations
+	and max_loop_iterations.
+	(decide_unroll_stupid): Use estimated_loop_iterations
+	ad max_loop_iterations.
+	* loop-doloop.c (doloop_modify): Use max_loop_iterations_int.
+	(doloop_optimize): Likewise.
+	* loop-iv.c (iv_number_of_iterations): Use record_niter_bound.
+	(find_simple_exit): Likewise.
+	* cfgloop.h (struct niter_desc): Remove niter_max.
+
+2012-10-08  Marek Polacek  <polacek@redhat.com>
+
+	PR debug/54831
+	* var-tracking.c (vt_add_function_parameter): Use condition instead
+	of gcc_assert.
+
+2012-10-08  Dehao Chen  <dehao@google.com>
+
+	* predict.c (predict_loops): Predict for short-circuit conditions.
+	(predict_extra_loop_exits): New Function.
+
+2012-10-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.h (bitmap_and_into): Update prototype.
+	* bitmap.c (bitmap_and_into): Return true if the target bitmap
+	changed, false otherwise.
+
+	* df.h (df_dump_insn_problem_function): New function type.
+	(struct df_problem): Add two functions, to dump just before and
+	just after an insn.
+	(DF_RD_PRUNE_DEAD_DEFS): New changable flag.
+	(df_dump_insn_top, df_dump_insn_bottom): New prototypes.
+	* df-core (df_dump_region): Use dump_bb.
+	(df_dump_bb_problem_data): New function.
+	(df_dump_top, df_dump_bottom): Rewrite using df_dump_bb_problem_data.
+	(df_dump_insn_problem_data): New function.
+	(df_dump_insn_top, df_dump_insn_bottom): New functions.
+	* df-scan.c (problem_SCAN): Add NULL fields for new members.
+	* df-problems.c (df_rd_local_compute): Ignore hard registers if
+	DF_NO_HARD_REGS is in effect.
+	(df_rd_transfer_function): If DF_RD_PRUNE_DEAD_DEFS is in effect,
+	prune reaching defs using the LR problem.
+	(df_rd_start_dump): Fix dumping of DEFs map.
+	(df_rd_dump_defs_set): New function.
+	(df_rd_top_dump, df_rd_bottom_dump): Use it.
+	(problem_RD): Add NULL fields for new members.
+	(problem_LR, problem_LIVE): Likewise.
+	(df_chain_bb_dump): New function.
+	(df_chain_top_dump): Dump only for artificial DEFs and USEs,
+	using df_chain_bb_dump.
+	(df_chain_bottom_dump): Likewise.
+	(df_chain_insn_top_dump, df_chain_insn_bottom_dump): New functions.
+	(problem_CHAIN): Add them as new members.
+	(problem_WORD_LR, problem_NOTE): Add NULL fields for new members.
+	(problem_MD): Likewise.
+	* cfgrtl.c (rtl_dump_bb): Use df_dump_insn_top and df_dump_insn_bottom.
+	(print_rtl_with_bb): Likewise.
+
+	* dce.c (init_dce): Use DF_RD_PRUNE_DEAD_DEFS.
+	* loop-invariant.c (find_defs): Likewise.
+	* loop-iv.c (iv_analysis_loop_init): Likewise.
+	* ree.c (find_and_remove_re): Likewise.
+	* web.c (web_main): Likewise.
+
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_code_end): Protect the use of
+	ASM_WEAKEN_DECL with #if RS6000_WEAK.
+
+2012-10-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54825
+	* tree-ssa-sccvn.c (vn_nary_length_from_stmt): Handle BIT_FIELD_REF.
+	(init_vn_nary_op_from_stmt): Likewise.
+	* tree-ssa-pre.c (compute_avail): Use vn_nary_op_lookup_stmt.
+	* tree-ssa-sccvn.h (sizeof_vn_nary_op): Avoid overflow.
+
+2012-10-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (postorder_num): New global.
+	(compute_antic): Initialize all blocks and adjust for
+	generic postorder.
+	(my_rev_post_order_compute): Remove.
+	(init_pre): Use inverted_post_order_compute.
+
+2012-10-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* sched-int.h (schedule_block): Adjust declaration.
+	* sched-rgn.c (bb_state_array, bb_state): New static variables.
+	(sched_rgn_init): Initialize them.
+	(sched_rgn_free): Free them.
+	(schedule_region): Save scheduling state for future blocks, and
+	pass such state to schedule_block.
+	* params.def (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF): New.
+	* doc/invoke.texi (--param): Document it.
+	* haifa-sched.c (schedule_block): New arg init_state.  Use it to
+	initialize state if nonnull.  All callers changed.
+	Call advance_one_cycle after scheduling.
+
+2012-10-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54854
+	* doc/invoke.texi (AVR Options): Remove -mshort-calls.
+	* config/avr/avr.opt (-mshort-calls): Remove option.
+	* config/avr/avr.h (AVR_HAVE_JMP_CALL): Don't depend on
+	TARGET_SHORT_CALLS.
+
+2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54685
+	* config/sh/sh.md (one_cmplsi2): Make insn_and_split.  Add manual
+	combine matching for an insn sequence where a ge:SI pattern
+	can be used.
+
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* plugin.h (register_scoped_attributes): Declare new function.
+	* tree.h (enu attribute_flags::ATTR_FLAG_CXX_11): New flag.
+	(lookup_scoped_attribute_spec, cxx_11_attribute_p)
+	(get_attribute_name, get_attribute_namespace): Declare new functions.
+	(struct attribute_spec): Remove const qualifier from the members.
+	* tree.c (comp_type_attributes, private_lookup_attribute)
+	(lookup_ident_attribute, remove_attribute, merge_attribute)
+	(attribute_hash_list, attribute_list_contained): Use
+	get_attribute_name.
+	* attribs.c (decl_attributes): Don't crash on error_mark_node.
+	Forbid c++11 attributes appertaining to type-specifiers.
+	(attribute_hash): Remove global variable.
+	(attributes_table): New global variable.
+	(find_attribute_namespace, register_scoped_attribute): New static
+	functions.
+	(register_scoped_attributes, lookup_scoped_attribute_spec)
+	(cxx11_attribute_p, get_attribute_name, get_attribute_namespace):
+	New public functions.
+	(init_attributes): Register all the GNU attributes into the "gnu"
+	namespace.
+	(register_attribute): Use register_scoped_attribute to register
+	the attribute into the "gnu" namespace.
+	(lookup_attribute_spec): Use lookup_scoped_attribute_spec to
+	lookup the attribute in the "gnu" namespace.
+	(decl_attributes): Use new get_attribute_namespace and
+	lookup_scoped_attribute_spec to consider attribute namespaces when
+	looking up attributes.  When operating in c++-11 mode, pass flag
+	ATTR_FLAG_CXX11 to the spec handler.
+
 2012-10-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54815
 	* config/avr/avr.md (*add<mode>3, add<mode>3, addpsi3): Make
 	constraint alternative "r,0,r" slighly more expensive.
-	(sub<mode>3,
-	(andqi3, andhi3, andpsi3, andsi3): Ditto.
+	(sub<mode>3, andqi3, andhi3, andpsi3, andsi3): Ditto.
 	(iorqi3, iorhi3, iorpsi3, iorsi3): Ditto.
 	(xorhi3, xorpsi3, xorsi3): Ditto.
 
@@ -238,7 +1196,7 @@
 
 2012-10-04  Jeff Law  <law@redhat.com>
 
-	* PR target/50356
+	PR target/50356
 	* config/h8300/h8300.c (h8300_rtx_costs): Fix typo in CONST_INT case.
 
 2012-10-04  Jason Merrill  <jason@redhat.com>
@@ -248,8 +1206,8 @@
 
 2012-10-04  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * gengtype.c (walk_type): Emit mark_hook when inside a
-          struct of a union member.
+	* gengtype.c (walk_type): Emit mark_hook when inside a
+	struct of a union member.
 
 2012-10-04  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -18111,7 +19069,7 @@
 
 2012-04-26  Bernd Schmidt  <bernds@codesourcery.com>
 
-	* PR middle-end/52997
+	PR middle-end/52997
 	* ira.c (find_moveable_pseudos): Call resize_reg_info.
 
 	PR middle-end/52940
@@ -18397,7 +19355,6 @@
 	(IX86_BUILTIN_CPU_IS): New enum value.
 	(IX86_BUILTIN_CPU_SUPPORTS): New enum value.
 	* config/i386/i386-builtin-types.def: New function type.
-	* testsuite/gcc.target/builtin_target.c: New testcase.
 	* doc/extend.texi: Document builtins.
 
 2012-04-24  Olivier Hainque  <hainque@adacore.com>

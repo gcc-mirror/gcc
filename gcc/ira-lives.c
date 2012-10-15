@@ -1148,7 +1148,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  high_pressure_start_point[ira_pressure_classes[i]] = -1;
 	}
       curr_bb_node = loop_tree_node;
-      reg_live_out = DF_LR_OUT (bb);
+      reg_live_out = df_get_live_out (bb);
       sparseset_clear (objects_live);
       REG_SET_TO_HARD_REG_SET (hard_regs_live, reg_live_out);
       AND_COMPL_HARD_REG_SET (hard_regs_live, eliminable_regset);
@@ -1458,7 +1458,7 @@ remove_some_program_points_and_update_live_ranges (void)
   int *map;
   ira_object_t obj;
   ira_object_iterator oi;
-  live_range_t r;
+  live_range_t r, prev_r, next_r;
   sbitmap born_or_dead, born, dead;
   sbitmap_iterator sbi;
   bool born_p, dead_p, prev_born_p, prev_dead_p;
@@ -1502,10 +1502,19 @@ remove_some_program_points_and_update_live_ranges (void)
   ira_max_point = n;
 
   FOR_EACH_OBJECT (obj, oi)
-    for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+    for (r = OBJECT_LIVE_RANGES (obj), prev_r = NULL; r != NULL; r = next_r)
       {
+	next_r = r->next;
 	r->start = map[r->start];
 	r->finish = map[r->finish];
+	if (prev_r == NULL || prev_r->start > r->finish + 1)
+	  {
+	    prev_r = r;
+	    continue;
+	  }
+	prev_r->start = r->start;
+	prev_r->next = next_r;
+	ira_finish_live_range (r);
       }
 
   ira_free (map);

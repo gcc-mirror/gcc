@@ -44,7 +44,7 @@ append_to_collect_gcc_options (struct obstack *ob,
 			       bool *first_p, const char *opt)
 {
   const char *p, *q = opt;
-  if (!first_p)
+  if (!*first_p)
     obstack_grow (ob, " ", 1);
   obstack_grow (ob, "'", 1);
   while ((p = strchr (q, '\'')))

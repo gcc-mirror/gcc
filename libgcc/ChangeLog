@@ -1,3 +1,17 @@
+2012-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Emit SSE
+	instructions for 64bit targets only.
+
+2012-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (FP_RND_NEAREST, FP_RND_ZERO, FP_RND_PINF,
+	FP_RND_MINF, FP_RND_MASK, FP_INIT_ROUNDMODE, _FP_DECL_EX): Move to ...
+	* config/i386/32/sfp-machine.h: ... here.
+	* config/i386/64/sfp-machine.h (FP_RND_NEAREST, FP_RND_ZERO,
+	FP_RND_PINF, FP_RND_MINF, FP_RND_MASK, FP_INIT_ROUNDMODE, _FP_DECL_EX):
+	New defines.
+
 2012-10-07  Matthias Klose  <doko@ubuntu.com>
 
 	* config/arm/unwind-arm.h (__gnu_unwind_24bit): Mark parameters

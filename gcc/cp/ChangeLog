@@ -1,3 +1,237 @@
+2012-10-14  Jason Merrill  <jason@redhat.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement C++11 inheriting constructors.
+	* cp-tree.h (cpp0x_warn_str): Add CPP0X_INHERITING_CTORS.
+	(DECL_INHERITED_CTOR_BASE, SET_DECL_INHERITED_CTOR_BASE): New.
+	(special_function_kind): Add sfk_inheriting_constructor.
+	* class.c (add_method): An inheriting ctor is hidden by a
+	user-declared one.
+	(one_inheriting_sig, one_inherited_ctor): New.
+	(add_implicitly_declared_members): Handle inheriting ctors.
+	* error.c (maybe_warn_cpp0x): Handle CPP0X_INHERITING_CTORS.
+	* init.c (emit_mem_initializers): Don't set LOOKUP_DEFAULTED
+	for an inheriting constructor.
+	* method.c (type_has_trivial_fn): Handle sfk_inheriting_constructor.
+	(type_set_nontrivial_flag): Likewise.
+	(add_one_base_init): Split out from...
+	(do_build_copy_constructor): ...here.  Handle inheriting constructors.
+	(locate_fn_flags): Handle a list of arg types.
+	(synthesized_method_walk): Handle inheriting constructors.
+	(maybe_explain_implicit_delete): Likewise.
+	(deduce_inheriting_ctor): New.
+	(implicitly_declare_fn): Handle inheriting constructors.
+	* name-lookup.c (push_class_level_binding_1): An inheriting constructor
+	does not declare the base's name.
+	(do_class_using_decl): Allow inheriting constructors.
+	* pt.c (template_parms_to_args): Split from current_template_args.
+	(add_inherited_template_parms): New.
+	(tsubst_decl): Handle inheriting constructors.
+	* tree.c (special_function_p): Handle inheriting constructors.
+
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* semantics.c (finish_call_expr): Pass array of 3 sizeof_arg
+	trees and locs (corresponding to first 3 arguments) to
+	sizeof_pointer_memaccess_warning.
+
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24449
+	* decl.c (grokfndecl): When checking for ::main declarations
+	use PROCESSING_REAL_TEMPLATE_DECL_P().
+
+2012-10-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53055
+	* call.c (build_new_op_1): Pass RO_ARROW_STAR to cp_build_indirect_ref.
+	* typeck.c (cp_build_indirect_ref): Handle RO_ARROW_STAR.
+
+2012-10-11  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_THUNKS): NULL_TREE for non-virtual functions.
+	(SET_DECL_THUNKS): New.
+	* decl.c (duplicate_decls): Adjust.
+	* method.c (make_thunk): Adjust.
+
+	* decl.c (grokdeclarator): Set DECL_GNU_TLS_P for static data
+	members, too.
+
+2012-10-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53540 - using fails to be equivalent to typedef
+	* cp-tree.h (TYPE_TEMPLATE_INFO): For an alias that is not an
+	instance of alias template, don't look for its TEMPLATE_INFO in
+	its declaration.
+	(alias_template_specialization_p): Take const_tree.
+	* pt.c (alias_template_specialization_p): Take a const_tree.
+	Don't call primary_template_instantiation_p.
+	(primary_template_instantiation_p): Call
+	alias_template_specialization_p.
+
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	* parser (cp_parser_statement): Parse c++11 attributes
+	tentatively.
+	(cp_parser_std_attribute_spec_seq): Do not warn too early about
+	using c++11 attributes in non c++11 mode.
+
+2012-10-10  Dehao Chen  <dehao@google.com>
+
+	* cp-gimplify.c (cp_genericize_r): Set location for TRY expr.
+
+2012-10-09  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in (class.o): Add dependence on hash-table.h.
+	(tree.o): Likewise.
+	(semantics.o): Likewise.
+	* class.c (fixed_type_or_null): Change to new type-safe hash table.
+	* tree.c (verify_stmt_tree): Likewise.
+	(verify_stmt_tree_r): Likewise.
+	* semantics.c (struct nrv_data): Likewise.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* typeck.c (build_x_binary_op): Update warn_about_parentheses call.
+	* parser.c (cp_parser_binary_expression): Use SET_EXPR_LOCATION
+	on current.lhs.
+
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* typeck.c (cp_build_binary_op): Handle mixed scalar-vector
+	operations.
+	[LSHIFT_EXPR, RSHIFT_EXPR]: Likewise.
+
+2012-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54858
+	* tree.c (cp_tree_equal): Handle FIELD_DECL.
+
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	Allow dynamic initialization of thread_locals.
+	* decl.c: Define tls_aggregates.
+	(expand_static_init): Remove sorry.  Add to tls_aggregates.
+	* cp-tree.h: Declare tls_aggregates.
+	* call.c (set_up_extended_ref_temp): Add to tls_aggregates.
+	* decl2.c (var_needs_tls_wrapper): New.
+	(var_defined_without_dynamic_init): New.
+	(get_tls_init_fn, get_tls_wrapper_fn): New.
+	(generate_tls_wrapper, handle_tls_init): New.
+	(cp_write_global_declarations): Call handle_tls_init and
+	enerate_tls_wrapper.
+	* mangle.c (write_guarded_var_name): Split out from..
+	(mangle_guard_variable): ...here.
+	(mangle_tls_init_fn, mangle_tls_wrapper_fn): Use it.
+	(decl_tls_wrapper_p): New.
+	* semantics.c (finish_id_expression): Replace use of thread_local
+	variable with a call to its wrapper.
+
+	* decl.c (get_thread_atexit_node): New.
+	(register_dtor_fn): Use it for TLS.
+
+	Partial implementation of C++11 thread_local.
+	* decl.c (cp_finish_decl): Remove errors about non-trivial
+	initialization and destruction of TLS variables.
+	(register_dtor_fn): Add sorry about TLS variables.
+	(expand_static_init): Add sorry about non-local TLS variables,
+	or error with __thread.
+	Don't emit thread-safety guards for local TLS variables.
+	(grokdeclarator): thread_local in a function implies static.
+	* decl.h: Adjust prototype.
+	* decl2.c (get_guard): Copy DECL_TLS_MODEL.
+	* parser.c (cp_parser_set_storage_class, cp_parser_set_decl_spec_type)
+	(set_and_check_decl_spec_loc): Take the token rather than the location.
+	Distinguish between __thread and thread_local.
+	(cp_parser_set_storage_class): Don't complain about thread_local before
+	extern/static.
+	(token_is__thread): New.
+	* call.c (make_temporary_var_for_ref_to_temp): Handle TLS.
+	* cp-tree.h (DECL_GNU_TLS_P): New.
+	(cp_decl_specifier_seq): Add gnu_thread_keyword_p.
+
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* cp-tree.h (enum cpp0x_warn_str::CPP0X_ATTRIBUTES): New member.
+	(enum cp_decl_spec::ds_std_attribute): New enumerator.
+	(struct cp_decl_specifier_seq::std_attributes): New field.
+	(cxx_alignas_expr, warn_misplaced_attr_for_class_type): Declare
+	new functions.
+	(check_tag_decl): Take an extra parameter for explicit
+	instantiations.
+	* decl.c (warn_misplaced_attr_for_class_type): Extract from ...
+	(check_tag_decl): ... here.  Add check for c++11 attributes being
+	applied to an explicit instantiation.  Take an extra parameter for
+	explicit instantiations.
+	(grokdeclarator): Make sure a c++11 attribute after an array
+	declarator appertains to the array, an attribute after a function
+	declarator appertains to the function type, an attribute after a
+	declarator-id appertains to the entity being declared, and an
+	attribute after a pointer declarator appertain to the pointer.
+	* decl2.c (is_late_template_attribute): Use get_attribute_name.
+	* error.c (maybe_warn_cpp0x): Support
+	CPP0X_GENERALIZED_ATTRIBUTES.
+	* parser.c (cp_next_tokens_can_be_attribute_p)
+	(cp_next_tokens_can_be_gnu_attribute_p)
+	(cp_next_tokens_can_be_std_attribute_p)
+	(cp_nth_tokens_can_be_attribute_p)
+	(cp_nth_tokens_can_be_gnu_attribute_p)
+	(cp_nth_tokens_can_be_std_attribute_p)
+	(cp_parser_gnu_attribute_list, cp_parser_std_attribute)
+	(cp_parser_std_attribute_spec, cp_parser_std_attribute_spec_seq)
+	(cp_parser_attributes_opt, cp_parser_std_attribute_list): New
+	static functions.
+	(cp_parser_gnu_attributes_opt): Replace cp_parser_attributes_opt.
+	(cp_parser_gnu_attribute_list): Replace cp_parser_attribute_list.
+	(cp_parser_postfix_expression): Disallow "[[" tokens here.
+	(cp_parser_label_for_labeled_statement): Use take an extra
+	parameter for attributes.
+	(cp_parser_block_declaration): Use
+	cp_nth_tokens_can_be_std_attribute_p here.
+	(cp_parser_decl_specifier_seq): Likewise.  Store C++11 attributes
+	that appears in in decl specifiers in cp_decl_specifier_seq::std_attributes.
+	declaration.  Emit proper warning about misplaced c++11 attributes
+	for class type.
+	(cp_parser_explicit_instantiation): Adjust call to check_tag_decl.
+	(cp_parser_init_declarator):  Parsing attributes here is no more a
+	GNU extension in c++-11.
+	(cp_parser_type_specifier_seq): Use
+	cp_next_tokens_can_be_attribute_p.
+	(cp_parser_direct_declarator): Likewise.  Hang c++11 attributes
+	following the declarator to its syntactic construct.  It'll later
+	be applied to the proper appertaining entity by grokdeclarator.
+	(cp_parser_ptr_operator): Likewise.
+	(make_declarator): Initialize cp_declarator::std_attribute.
+	(make_pointer_declarator, make_reference_declarator)
+	(make_ptrmem_declarator, cp_parser_make_indirect_declarator): Take
+	attributes that appertain to the pointer/reference in argument.
+	(cp_parser_ptr_operator): Take an out parameter for c++11
+	attributes.  Update comments.
+	(cp_parser_new_declarator_opt)
+	(cp_parser_conversion_declarator_opt): Adjust.
+	(cp_parser_declarator): Likewise.  Handle C++11 attributes.
+	Rename attributes to gnu_attribute for better legibility.
+	(cp_parser_simple_declaration): Update comment.
+	(cp_parser_class_specifier_1): Parse GNU attributes specifically
+	(cp_parser_enum_specifier): Accept only gnu attributes after the
+	specifier.
+	(cp_parser_member_declaration): Don't clear attributes -- intended
+	for the entity being declared -- too early because check_tag_decl
+	needs them.
+	(cp_parser_statement): Update comment.  Parse optional c++11
+	attributes at the beginning of the relevant kind of statements and
+	ignore them, for now, unless when calling
+	cp_parser_label_for_labeled_statement.
+	(cp_parser_label_for_labeled_statement): Take c++11 attributes
+	in parameter.
+	* semantics.c (potential_constant_expression_1): Likewise.
+	* typeck.c (fundamental_alignment_p, cxx_alignas_expr): New public
+	functions.
+
 2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (fold_non_dependent_expr_sfinae): Remove static specifier.

@@ -285,12 +285,15 @@ rs6000_define_or_undefine_macro (bool define_p, const char *name)
    have both the target flags and the builtin flags as arguments.  */
 
 void
-rs6000_target_modify_macros (bool define_p, int flags, unsigned bu_mask)
+rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
+			     HOST_WIDE_INT bu_mask)
 {
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
-    fprintf (stderr, "rs6000_target_modify_macros (%s, 0x%x, 0x%x)\n",
+    fprintf (stderr,
+	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX
+	     ", " HOST_WIDE_INT_PRINT_HEX ")\n",
 	     (define_p) ? "define" : "undef",
-	     (unsigned) flags, bu_mask);
+	     flags, bu_mask);
 
   /* target_flags based options.  */
   rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC");

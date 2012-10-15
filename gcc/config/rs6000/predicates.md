@@ -490,7 +490,6 @@
        (match_test "op == CONST0_RTX (mode)")))
 
 ;; Return 1 if operand is 0.0.
-;; or non-special register register field no cr0
 (define_predicate "zero_fp_constant"
   (and (match_code "const_double")
        (match_test "SCALAR_FLOAT_MODE_P (mode)

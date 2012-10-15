@@ -430,6 +430,7 @@ typedef struct bb_bitmap_sets
 
 /* Basic block list in postorder.  */
 static int *postorder;
+static int postorder_num;
 
 /* This structure is used to keep track of statistics on what
    optimization PRE was able to perform.  */
@@ -2456,7 +2457,7 @@ compute_antic (void)
   has_abnormal_preds = sbitmap_alloc (last_basic_block);
   sbitmap_zero (has_abnormal_preds);
 
-  FOR_EACH_BB (block)
+  FOR_ALL_BB (block)
     {
       edge_iterator ei;
       edge e;
@@ -2480,9 +2481,7 @@ compute_antic (void)
     }
 
   /* At the exit block we anticipate nothing.  */
-  ANTIC_IN (EXIT_BLOCK_PTR) = bitmap_set_new ();
   BB_VISITED (EXIT_BLOCK_PTR) = 1;
-  PA_IN (EXIT_BLOCK_PTR) = bitmap_set_new ();
 
   changed_blocks = sbitmap_alloc (last_basic_block + 1);
   sbitmap_ones (changed_blocks);
@@ -2496,7 +2495,7 @@ compute_antic (void)
 	 for PA ANTIC computation.  */
       num_iterations++;
       changed = false;
-      for (i = n_basic_blocks - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
+      for (i = postorder_num - 1; i >= 0; i--)
 	{
 	  if (TEST_BIT (changed_blocks, postorder[i]))
 	    {
@@ -2525,7 +2524,7 @@ compute_antic (void)
 	    fprintf (dump_file, "Starting iteration %d\n", num_iterations);
 	  num_iterations++;
 	  changed = false;
-	  for (i = n_basic_blocks - NUM_FIXED_BLOCKS - 1 ; i >= 0; i--)
+	  for (i = postorder_num - 1 ; i >= 0; i--)
 	    {
 	      if (TEST_BIT (changed_blocks, postorder[i]))
 		{
@@ -3850,11 +3849,7 @@ compute_avail (void)
 			  || code == VEC_COND_EXPR)
 			continue;
 
-		      vn_nary_op_lookup_pieces (gimple_num_ops (stmt) - 1,
-						code,
-						gimple_expr_type (stmt),
-						gimple_assign_rhs1_ptr (stmt),
-						&nary);
+		      vn_nary_op_lookup_stmt (stmt, &nary);
 		      if (!nary)
 			continue;
 
@@ -4593,78 +4588,6 @@ remove_dead_inserted_code (void)
   BITMAP_FREE (worklist);
 }
 
-/* Compute a reverse post-order in *POST_ORDER.  If INCLUDE_ENTRY_EXIT is
-   true, then then ENTRY_BLOCK and EXIT_BLOCK are included.  Returns
-   the number of visited blocks.  */
-
-static int
-my_rev_post_order_compute (int *post_order, bool include_entry_exit)
-{
-  edge_iterator *stack;
-  int sp;
-  int post_order_num = 0;
-  sbitmap visited;
-
-  if (include_entry_exit)
-    post_order[post_order_num++] = EXIT_BLOCK;
-
-  /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
-  sp = 0;
-
-  /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block);
-
-  /* None of the nodes in the CFG have been visited yet.  */
-  sbitmap_zero (visited);
-
-  /* Push the last edge on to the stack.  */
-  stack[sp++] = ei_start (EXIT_BLOCK_PTR->preds);
-
-  while (sp)
-    {
-      edge_iterator ei;
-      basic_block src;
-      basic_block dest;
-
-      /* Look at the edge on the top of the stack.  */
-      ei = stack[sp - 1];
-      src = ei_edge (ei)->src;
-      dest = ei_edge (ei)->dest;
-
-      /* Check if the edge source has been visited yet.  */
-      if (src != ENTRY_BLOCK_PTR && ! TEST_BIT (visited, src->index))
-        {
-          /* Mark that we have visited the destination.  */
-          SET_BIT (visited, src->index);
-
-          if (EDGE_COUNT (src->preds) > 0)
-            /* Since the SRC node has been visited for the first
-               time, check its predecessors.  */
-            stack[sp++] = ei_start (src->preds);
-          else
-            post_order[post_order_num++] = src->index;
-        }
-      else
-        {
-          if (ei_one_before_end_p (ei) && dest != EXIT_BLOCK_PTR)
-            post_order[post_order_num++] = dest->index;
-
-          if (!ei_one_before_end_p (ei))
-            ei_next (&stack[sp - 1]);
-          else
-            sp--;
-        }
-    }
-
-  if (include_entry_exit)
-    post_order[post_order_num++] = ENTRY_BLOCK;
-
-  free (stack);
-  sbitmap_free (visited);
-  return post_order_num;
-}
-
 
 /* Initialize data structures used by PRE.  */
 
@@ -4686,9 +4609,8 @@ init_pre (void)
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
 
-
-  postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
-  my_rev_post_order_compute (postorder, false);
+  postorder = XNEWVEC (int, n_basic_blocks);
+  postorder_num = inverted_post_order_compute (postorder);
 
   alloc_aux_for_blocks (sizeof (struct bb_bitmap_sets));
 

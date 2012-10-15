@@ -169,6 +169,9 @@ tree global_scope_name;
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
 
+/* Like static_aggregates, but for thread_local variables.  */
+tree tls_aggregates;
+
 /* -- end of C++ */
 
 /* A node for the integer constant 2.  */
@@ -2049,7 +2052,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* DECL_THUNKS is only valid for virtual functions,
 	     otherwise it is a DECL_FRIEND_CONTEXT.  */
 	  if (DECL_VIRTUAL_P (newdecl))
-	    DECL_THUNKS (newdecl) = DECL_THUNKS (olddecl);
+	    SET_DECL_THUNKS (newdecl, DECL_THUNKS (olddecl));
 	}
       /* Only variables have this field.  */
       else if (TREE_CODE (newdecl) == VAR_DECL
@@ -4132,13 +4135,32 @@ fixup_anonymous_aggr (tree t)
     }
 }
 
+/* Warn for an attribute located at LOCATION that appertains to the
+   class type CLASS_TYPE that has not been properly placed after its
+   class-key, in it class-specifier.  */
+
+void
+warn_misplaced_attr_for_class_type (source_location location,
+				    tree class_type)
+{
+  gcc_assert (TAGGED_TYPE_P (class_type));
+
+  warning_at (location, OPT_Wattributes,
+	      "attribute ignored in declaration "
+	      "of %q#T", class_type);
+  inform (location,
+	  "attribute for %q#T must follow the %qs keyword",
+	  class_type, class_key_or_enum_as_string (class_type));
+}
+
 /* Make sure that a declaration with no declarator is well-formed, i.e.
    just declares a tagged type or anonymous union.
 
    Returns the type declared; or NULL_TREE if none.  */
 
 tree
-check_tag_decl (cp_decl_specifier_seq *declspecs)
+check_tag_decl (cp_decl_specifier_seq *declspecs,
+		bool explicit_type_instantiation_p)
 {
   int saw_friend = decl_spec_seq_has_spec_p (declspecs, ds_friend);
   int saw_typedef = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
@@ -4247,10 +4269,22 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
 	/* For a template class (an explicit instantiation), use the
 	   current location.  */
 	loc = input_location;
-      warning_at (loc, OPT_Wattributes, "attribute ignored in declaration "
-		  "of %q#T", declared_type);
-      inform (loc, "attribute for %q#T must follow the %qs keyword",
-	      declared_type, class_key_or_enum_as_string (declared_type));
+
+      if (explicit_type_instantiation_p)
+	/* [dcl.attr.grammar]/4:
+
+	       No attribute-specifier-seq shall appertain to an explicit
+	       instantiation.  */
+	{
+	  warning_at (loc, OPT_Wattributes,
+		      "attribute ignored in explicit instantiation %q#T",
+		      declared_type);
+	  inform (loc,
+		  "no attribute can be applied to "
+		  "an explicit instantiation");
+	}
+      else
+	warn_misplaced_attr_for_class_type (loc, declared_type);
     }
 
   return declared_type;
@@ -4272,7 +4306,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
 tree
 shadow_tag (cp_decl_specifier_seq *declspecs)
 {
-  tree t = check_tag_decl (declspecs);
+  tree t = check_tag_decl (declspecs,
+			   /*explicit_type_instantiation_p=*/false);
 
   if (!t)
     return NULL_TREE;
@@ -6195,13 +6230,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      /* Only variables with trivial initialization and destruction can
-	 have thread-local storage.  */
-      if (DECL_THREAD_LOCAL_P (decl)
-	  && (type_has_nontrivial_default_init (TREE_TYPE (decl))
-	      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
-	error ("%qD cannot be thread-local because it has non-trivial "
-	       "type %qT", decl, TREE_TYPE (decl));
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
 	 initializer for the variable, since the initialization might
@@ -6247,13 +6275,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    }
 	  cleanups = make_tree_vector ();
 	  init = check_initializer (decl, init, flags, &cleanups);
-	  /* Thread-local storage cannot be dynamically initialized.  */
-	  if (DECL_THREAD_LOCAL_P (decl) && init)
-	    {
-	      error ("%qD is thread-local and so cannot be dynamically "
-		     "initialized", decl);
-	      init = NULL_TREE;
-	    }
 
 	  /* Check that the initializer for a static data member was a
 	     constant.  Although we check in the parser that the
@@ -6557,6 +6578,24 @@ get_atexit_node (void)
   return atexit_node;
 }
 
+/* Like get_atexit_node, but for thread-local cleanups.  */
+
+static tree
+get_thread_atexit_node (void)
+{
+  /* The declaration for `__cxa_thread_atexit' is:
+
+     int __cxa_thread_atexit (void (*)(void *), void *, void *) */
+  tree fn_type = build_function_type_list (integer_type_node,
+					   get_atexit_fn_ptr_type (),
+					   ptr_type_node, ptr_type_node,
+					   NULL_TREE);
+
+  /* Now, build the function declaration.  */
+  tree atexit_fndecl = build_library_fn_ptr ("__cxa_thread_atexit", fn_type);
+  return decay_conversion (atexit_fndecl, tf_warning_or_error);
+}
+
 /* Returns the __dso_handle VAR_DECL.  */
 
 static tree
@@ -6648,23 +6687,27 @@ tree
 register_dtor_fn (tree decl)
 {
   tree cleanup;
+  tree addr;
   tree compound_stmt;
   tree fcall;
   tree type;
-  bool use_dtor;
-  tree arg0, arg1 = NULL_TREE, arg2 = NULL_TREE;
+  bool ob_parm, dso_parm, use_dtor;
+  tree arg0, arg1, arg2;
+  tree atex_node;
 
   type = TREE_TYPE (decl);
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     return void_zero_node;
 
-  /* If we're using "__cxa_atexit" (or "__aeabi_atexit"), and DECL is
-     a class object, we can just pass the destructor to
-     "__cxa_atexit"; we don't have to build a temporary function to do
-     the cleanup.  */
-  use_dtor = (flag_use_cxa_atexit 
-	      && !targetm.cxx.use_atexit_for_cxa_atexit ()
-	      && CLASS_TYPE_P (type));
+  /* If we're using "__cxa_atexit" (or "__cxa_thread_atexit" or
+     "__aeabi_atexit"), and DECL is a class object, we can just pass the
+     destructor to "__cxa_atexit"; we don't have to build a temporary
+     function to do the cleanup.  */
+  ob_parm = (DECL_THREAD_LOCAL_P (decl)
+	     || (flag_use_cxa_atexit
+		 && !targetm.cxx.use_atexit_for_cxa_atexit ()));
+  dso_parm = ob_parm;
+  use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
       int idx;
@@ -6705,35 +6748,45 @@ register_dtor_fn (tree decl)
   /* Call atexit with the cleanup function.  */
   mark_used (cleanup);
   cleanup = build_address (cleanup);
-  if (flag_use_cxa_atexit && !targetm.cxx.use_atexit_for_cxa_atexit ())
-    {
-      tree addr;
 
-      if (use_dtor)
-	{
-	  /* We must convert CLEANUP to the type that "__cxa_atexit"
-	     expects.  */
-	  cleanup = build_nop (get_atexit_fn_ptr_type (), cleanup);
-	  /* "__cxa_atexit" will pass the address of DECL to the
-	     cleanup function.  */
-	  mark_used (decl);
-	  addr = build_address (decl);
-	  /* The declared type of the parameter to "__cxa_atexit" is
-	     "void *".  For plain "T*", we could just let the
-	     machinery in cp_build_function_call convert it -- but if the
-	     type is "cv-qualified T *", then we need to convert it
-	     before passing it in, to avoid spurious errors.  */
-	  addr = build_nop (ptr_type_node, addr);
-	}
-      else
-	/* Since the cleanup functions we build ignore the address
-	   they're given, there's no reason to pass the actual address
-	   in, and, in general, it's cheaper to pass NULL than any
-	   other value.  */
-	addr = null_pointer_node;
-      arg2 = cp_build_addr_expr (get_dso_handle_node (),
-				 tf_warning_or_error);
-      if (targetm.cxx.use_aeabi_atexit ())
+  if (DECL_THREAD_LOCAL_P (decl))
+    atex_node = get_thread_atexit_node ();
+  else
+    atex_node = get_atexit_node ();
+
+  if (use_dtor)
+    {
+      /* We must convert CLEANUP to the type that "__cxa_atexit"
+	 expects.  */
+      cleanup = build_nop (get_atexit_fn_ptr_type (), cleanup);
+      /* "__cxa_atexit" will pass the address of DECL to the
+	 cleanup function.  */
+      mark_used (decl);
+      addr = build_address (decl);
+      /* The declared type of the parameter to "__cxa_atexit" is
+	 "void *".  For plain "T*", we could just let the
+	 machinery in cp_build_function_call convert it -- but if the
+	 type is "cv-qualified T *", then we need to convert it
+	 before passing it in, to avoid spurious errors.  */
+      addr = build_nop (ptr_type_node, addr);
+    }
+  else if (ob_parm)
+    /* Since the cleanup functions we build ignore the address
+       they're given, there's no reason to pass the actual address
+       in, and, in general, it's cheaper to pass NULL than any
+       other value.  */
+    addr = null_pointer_node;
+
+  if (dso_parm)
+    arg2 = cp_build_addr_expr (get_dso_handle_node (),
+			       tf_warning_or_error);
+  else
+    arg2 = NULL_TREE;
+
+  if (ob_parm)
+    {
+      if (!DECL_THREAD_LOCAL_P (decl)
+	  && targetm.cxx.use_aeabi_atexit ())
 	{
 	  arg1 = cleanup;
 	  arg0 = addr;
@@ -6745,8 +6798,11 @@ register_dtor_fn (tree decl)
 	}
     }
   else
-    arg0 = cleanup;
-  return cp_build_function_call_nary (get_atexit_node (), tf_warning_or_error,
+    {
+      arg0 = cleanup;
+      arg1 = NULL_TREE;
+    }
+  return cp_build_function_call_nary (atex_node, tf_warning_or_error,
 				      arg0, arg1, arg2, NULL_TREE);
 }
 
@@ -6765,6 +6821,26 @@ expand_static_init (tree decl, tree init)
       && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     return;
 
+  if (DECL_THREAD_LOCAL_P (decl) && DECL_GNU_TLS_P (decl)
+      && !DECL_FUNCTION_SCOPE_P (decl))
+    {
+      if (init)
+	error ("non-local variable %qD declared %<__thread%> "
+	       "needs dynamic initialization", decl);
+      else
+	error ("non-local variable %qD declared %<__thread%> "
+	       "has a non-trivial destructor", decl);
+      static bool informed;
+      if (!informed)
+	{
+	  inform (DECL_SOURCE_LOCATION (decl),
+		  "C++11 %<thread_local%> allows dynamic initialization "
+		  "and destruction");
+	  informed = true;
+	}
+      return;
+    }
+
   if (DECL_FUNCTION_SCOPE_P (decl))
     {
       /* Emit code to perform this initialization but once.  */
@@ -6772,6 +6848,9 @@ expand_static_init (tree decl, tree init)
       tree then_clause = NULL_TREE, inner_then_clause = NULL_TREE;
       tree guard, guard_addr;
       tree flag, begin;
+      /* We don't need thread-safety code for thread-local vars.  */
+      bool thread_guard = (flag_threadsafe_statics
+			   && !DECL_THREAD_LOCAL_P (decl));
 
       /* Emit code to perform this initialization but once.  This code
 	 looks like:
@@ -6810,7 +6889,7 @@ expand_static_init (tree decl, tree init)
       /* This optimization isn't safe on targets with relaxed memory
 	 consistency.  On such targets we force synchronization in
 	 __cxa_guard_acquire.  */
-      if (!targetm.relaxed_ordering || !flag_threadsafe_statics)
+      if (!targetm.relaxed_ordering || !thread_guard)
 	{
 	  /* Begin the conditional initialization.  */
 	  if_stmt = begin_if_stmt ();
@@ -6818,7 +6897,7 @@ expand_static_init (tree decl, tree init)
 	  then_clause = begin_compound_stmt (BCS_NO_SCOPE);
 	}
 
-      if (flag_threadsafe_statics)
+      if (thread_guard)
 	{
 	  tree vfntype = NULL_TREE;
 	  tree acquire_name, release_name, abort_name;
@@ -6876,20 +6955,22 @@ expand_static_init (tree decl, tree init)
 
       finish_expr_stmt (init);
 
-      if (flag_threadsafe_statics)
+      if (thread_guard)
 	{
 	  finish_compound_stmt (inner_then_clause);
 	  finish_then_clause (inner_if_stmt);
 	  finish_if_stmt (inner_if_stmt);
 	}
 
-      if (!targetm.relaxed_ordering || !flag_threadsafe_statics)
+      if (!targetm.relaxed_ordering || !thread_guard)
 	{
 	  finish_compound_stmt (then_clause);
 	  finish_then_clause (if_stmt);
 	  finish_if_stmt (if_stmt);
 	}
     }
+  else if (DECL_THREAD_LOCAL_P (decl))
+    tls_aggregates = tree_cons (init, decl, tls_aggregates);
   else
     static_aggregates = tree_cons (init, decl, static_aggregates);
 }
@@ -7335,7 +7416,7 @@ grokfndecl (tree ctype,
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
-      if (processing_template_decl)
+      if (PROCESSING_REAL_TEMPLATE_DECL_P())
 	error ("cannot declare %<::main%> to be a template");
       if (inlinep)
 	error ("cannot declare %<::main%> to be inline");
@@ -7700,7 +7781,11 @@ grokvardecl (tree type,
     }
 
   if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
-    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+    {
+      DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+      if (declspecs->gnu_thread_keyword_p)
+	DECL_GNU_TLS_P (decl) = true;
+    }
 
   /* If the type of the decl has no linkage, make sure that we'll
      notice that in mark_used.  */
@@ -8430,7 +8515,7 @@ check_var_type (tree identifier, tree type)
 
 tree
 grokdeclarator (const cp_declarator *declarator,
-		const cp_decl_specifier_seq *declspecs,
+		cp_decl_specifier_seq *declspecs,
 		enum decl_context decl_context,
 		int initialized,
 		tree* attrlist)
@@ -9144,9 +9229,15 @@ grokdeclarator (const cp_declarator *declarator,
 	   && storage_class != sc_extern
 	   && storage_class != sc_static)
     {
-      error ("function-scope %qs implicitly auto and declared %<__thread%>",
-	     name);
-      thread_p = false;
+      if (declspecs->gnu_thread_keyword_p)
+	pedwarn (input_location, 0, "function-scope %qs implicitly auto and "
+		 "declared %<__thread%>", name);
+
+      /* When thread_local is applied to a variable of block scope the
+	 storage-class-specifier static is implied if it does not appear
+	 explicitly.  */
+      storage_class = declspecs->storage_class = sc_static;
+      staticp = 1;
     }
 
   if (storage_class && friendp)
@@ -9176,6 +9267,15 @@ grokdeclarator (const cp_declarator *declarator,
 	default:
 	  gcc_unreachable ();
 	}
+    }
+
+  if (declspecs->std_attributes)
+    {
+      /* Apply the c++11 attributes to the type preceding them.  */
+      source_location saved_loc = input_location;
+      input_location = declspecs->locations[ds_std_attribute];
+      decl_attributes (&type, declspecs->std_attributes, 0);
+      input_location = saved_loc;
     }
 
   /* Determine the type of the entity declared by recurring on the
@@ -9215,6 +9315,13 @@ grokdeclarator (const cp_declarator *declarator,
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds);
+	  if (declarator->std_attributes)
+	    /* [dcl.array]/1:
+
+	       The optional attribute-specifier-seq appertains to the
+	       array.  */
+	    returned_attrs = chainon (returned_attrs,
+				      declarator->std_attributes);
 	  break;
 
 	case cdk_function:
@@ -9411,6 +9518,13 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 
 	    type = build_function_type (type, arg_types);
+	    if (declarator->std_attributes)
+	      /* [dcl.fct]/2:
+
+		 The optional attribute-specifier-seq appertains to
+		 the function type.  */
+	      decl_attributes (&type, declarator->std_attributes,
+			       0);
 	  }
 	  break;
 
@@ -9573,6 +9687,17 @@ grokdeclarator (const cp_declarator *declarator,
 					   declarator->u.pointer.qualifiers);
 	      type_quals = cp_type_quals (type);
 	    }
+
+	  /* Apply C++11 attributes to the pointer, and not to the
+	     type pointed to.  This is unlike what is done for GNU
+	     attributes above.  It is to comply with [dcl.ptr]/1:
+
+		 [the optional attribute-specifier-seq (7.6.1) appertains
+		  to the pointer and not to the object pointed to].  */
+	  if (declarator->std_attributes)
+	    decl_attributes (&type, declarator->std_attributes,
+			     0);
+
 	  ctype = NULL_TREE;
 	  break;
 
@@ -9697,6 +9822,13 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	attrlist = &returned_attrs;
     }
+
+  if (declarator
+      && declarator->kind == cdk_id
+      && declarator->std_attributes)
+    /* [dcl.meaning]/1: The optional attribute-specifier-seq following
+       a declarator-id appertains to the entity that is declared.  */
+    *attrlist = chainon (*attrlist, declarator->std_attributes);
 
   /* Handle parameter packs. */
   if (parameter_pack_p)
@@ -10314,7 +10446,11 @@ grokdeclarator (const cp_declarator *declarator,
 		DECL_EXTERNAL (decl) = 1;
 
 		if (thread_p)
-		  DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+		  {
+		    DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+		    if (declspecs->gnu_thread_keyword_p)
+		      DECL_GNU_TLS_P (decl) = true;
+		  }
 
 		if (constexpr_p && !initialized)
 		  {
@@ -10381,7 +10517,14 @@ grokdeclarator (const cp_declarator *declarator,
 	else if (storage_class == sc_register)
 	  error ("storage class %<register%> invalid for function %qs", name);
 	else if (thread_p)
-	  error ("storage class %<__thread%> invalid for function %qs", name);
+	  {
+	    if (declspecs->gnu_thread_keyword_p)
+	      error ("storage class %<__thread%> invalid for function %qs",
+		     name);
+	    else
+	      error ("storage class %<thread_local%> invalid for function %qs",
+		     name);
+	  }
 
         if (virt_specifiers)
           error ("virt-specifiers in %qs not allowed outside a class definition", name);

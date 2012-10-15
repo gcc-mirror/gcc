@@ -27,7 +27,7 @@ struct c
   c(const c &r) : m(r.m) {}
 
   template<class T>
-    explicit c(T &o) : m((void*)0xdeadfbeef) { }
+    explicit c(T &o) : m((void*)0xdeadbeef) { }
 };
 
 int main() 

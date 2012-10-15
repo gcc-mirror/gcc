@@ -1714,7 +1714,10 @@ struct GTY(()) tree_constructor {
   != UNKNOWN_LOCATION)
 /* The location to be used in a diagnostic about this expression.  Do not
    use this macro if the location will be assigned to other expressions.  */
-#define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) ? (NODE)->exp.locus : input_location)
+#define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) \
+				? (NODE)->exp.locus : input_location)
+#define EXPR_LOC_OR_LOC(NODE, LOCUS) (EXPR_HAS_LOCATION (NODE) \
+				      ? (NODE)->exp.locus : (LOCUS))
 #define EXPR_FILENAME(NODE) LOCATION_FILE (EXPR_CHECK ((NODE))->exp.locus)
 #define EXPR_LINENO(NODE) LOCATION_LINE (EXPR_CHECK (NODE)->exp.locus)
 
@@ -5052,12 +5055,12 @@ struct attribute_spec
 {
   /* The name of the attribute (without any leading or trailing __),
      or NULL to mark the end of a table of attributes.  */
-  const char *const name;
+  const char *name;
   /* The minimum length of the list of arguments of the attribute.  */
-  const int min_length;
+  int min_length;
   /* The maximum length of the list of arguments of the attribute
      (-1 for no maximum).  */
-  const int max_length;
+  int max_length;
   /* Whether this attribute requires a DECL.  If it does, it will be passed
      from types of DECLs, function return types and array element types to
      the DECLs, function types and array types respectively; but when
@@ -5065,15 +5068,15 @@ struct attribute_spec
      a warning.  (If greater control is desired for a given attribute,
      this should be false, and the flags argument to the handler may be
      used to gain greater control in that case.)  */
-  const bool decl_required;
+  bool decl_required;
   /* Whether this attribute requires a type.  If it does, it will be passed
      from a DECL to the type of that DECL.  */
-  const bool type_required;
+  bool type_required;
   /* Whether this attribute requires a function (or method) type.  If it does,
      it will be passed from a function pointer type to the target type,
      and from a function return type (which is not itself a function
      pointer type) to the function type.  */
-  const bool function_type_required;
+  bool function_type_required;
   /* Function to handle this attribute.  NODE points to the node to which
      the attribute is to be applied.  If a DECL, it should be modified in
      place; if a TYPE, a copy should be created.  NAME is the name of the
@@ -5088,10 +5091,10 @@ struct attribute_spec
      otherwise the return value should be NULL_TREE.  This pointer may be
      NULL if no special handling is required beyond the checks implied
      by the rest of this structure.  */
-  tree (*const handler) (tree *node, tree name, tree args,
-				 int flags, bool *no_add_attrs);
+  tree (*handler) (tree *node, tree name, tree args,
+		   int flags, bool *no_add_attrs);
   /* Specifies if attribute affects type's identity.  */
-  const bool affects_type_identity;
+  bool affects_type_identity;
 };
 
 /* Flags that may be passed in the third argument of decl_attributes, and
@@ -5116,7 +5119,9 @@ enum attribute_flags
   /* The attributes are being applied by default to a library function whose
      name indicates known behavior, and should be silently ignored if they
      are not in fact compatible with the function type.  */
-  ATTR_FLAG_BUILT_IN = 16
+  ATTR_FLAG_BUILT_IN = 16,
+  /* A given attribute has been parsed as a C++-11 attribute.  */
+  ATTR_FLAG_CXX11 = 32
 };
 
 /* Default versions of target-overridable functions.  */
@@ -6213,6 +6218,8 @@ extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, const_tree);
 /* In attribs.c.  */
 
 extern const struct attribute_spec *lookup_attribute_spec (const_tree);
+extern const struct attribute_spec *lookup_scoped_attribute_spec (const_tree,
+								  const_tree);
 
 extern void init_attributes (void);
 
@@ -6225,6 +6232,12 @@ extern void init_attributes (void);
    returned to be applied at a later stage (for example, to apply
    a decl attribute to the declaration rather than to its type).  */
 extern tree decl_attributes (tree *, tree, int);
+
+extern bool cxx11_attribute_p (const_tree);
+
+extern tree get_attribute_name (const_tree);
+
+extern tree get_attribute_namespace (const_tree);
 
 extern void apply_tm_attr (tree, tree);
 

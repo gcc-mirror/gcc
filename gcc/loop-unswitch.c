@@ -257,6 +257,7 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
   rtx cond, rcond = NULL_RTX, conds, rconds, acond, cinsn;
   int repeat;
   edge e;
+  HOST_WIDE_INT iterations;
 
   /* Do not unswitch too much.  */
   if (num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL))
@@ -299,7 +300,8 @@ unswitch_single_loop (struct loop *loop, rtx cond_checked, int num)
     }
 
   /* Nor if the loop usually does not roll.  */
-  if (expected_loop_iterations (loop) < 1)
+  iterations = estimated_loop_iterations_int (loop);
+  if (iterations >= 0 && iterations <= 1)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unswitching, loop iterations < 1\n");

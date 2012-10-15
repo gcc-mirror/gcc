@@ -1,3 +1,15 @@
+2012-10-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40453
+	* interface.c (check_dummy_characteristics): Recursively check dummy
+	procedures.
+
+2012-10-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54784
+	* trans-stmt.c (gfc_trans_allocate): Correctly determine the reference
+	to the _data component for polymorphic allocation with SOURCE.
+
 2012-10-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54832

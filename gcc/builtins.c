@@ -5744,6 +5744,45 @@ expand_builtin_sync_synchronize (void)
   expand_mem_thread_fence (MEMMODEL_SEQ_CST);
 }
 
+static rtx
+expand_builtin_thread_pointer (tree exp, rtx target)
+{
+  enum insn_code icode;
+  if (!validate_arglist (exp, VOID_TYPE))
+    return const0_rtx;
+  icode = direct_optab_handler (get_thread_pointer_optab, Pmode);
+  if (icode != CODE_FOR_nothing)
+    {
+      struct expand_operand op;
+      if (!REG_P (target) || GET_MODE (target) != Pmode)
+	target = gen_reg_rtx (Pmode);
+      create_output_operand (&op, target, Pmode);
+      expand_insn (icode, 1, &op);
+      return target;
+    }
+  error ("__builtin_thread_pointer is not supported on this target");
+  return const0_rtx;
+}
+
+static void
+expand_builtin_set_thread_pointer (tree exp)
+{
+  enum insn_code icode;
+  if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
+    return;
+  icode = direct_optab_handler (set_thread_pointer_optab, Pmode);
+  if (icode != CODE_FOR_nothing)
+    {
+      struct expand_operand op;
+      rtx val = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
+			     Pmode, EXPAND_NORMAL);      
+      create_input_operand (&op, val, Pmode);
+      expand_insn (icode, 1, &op);
+      return;
+    }
+  error ("__builtin_set_thread_pointer is not supported on this target");
+}
+
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -6808,6 +6847,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (warn_free_nonheap_object)
 	maybe_emit_free_warning (exp);
       break;
+
+    case BUILT_IN_THREAD_POINTER:
+      return expand_builtin_thread_pointer (exp, target);
+
+    case BUILT_IN_SET_THREAD_POINTER:
+      expand_builtin_set_thread_pointer (exp);
+      return const0_rtx;
 
     default:	/* just do library call, if unknown builtin */
       break;

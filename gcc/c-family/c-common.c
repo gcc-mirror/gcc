@@ -504,6 +504,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__underlying_type", RID_UNDERLYING_TYPE, D_CXXONLY },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
+  { "alignas",		RID_ALIGNAS,	D_CXXONLY | D_CXX0X | D_CXXWARN },
   { "alignof",		RID_ALIGNOF,	D_CXXONLY | D_CXX0X | D_CXXWARN },
   { "asm",		RID_ASM,	D_ASM },
   { "auto",		RID_AUTO,	0 },
@@ -562,6 +563,7 @@ const struct c_common_resword c_common_reswords[] =
   { "switch",		RID_SWITCH,	0 },
   { "template",		RID_TEMPLATE,	D_CXXONLY | D_CXXWARN },
   { "this",		RID_THIS,	D_CXXONLY | D_CXXWARN },
+  { "thread_local",	RID_THREAD,	D_CXXONLY | D_CXX0X | D_CXXWARN },
   { "throw",		RID_THROW,	D_CXX_OBJC | D_CXXWARN },
   { "true",		RID_TRUE,	D_CXXONLY | D_CXXWARN },
   { "try",		RID_TRY,	D_CXX_OBJC | D_CXXWARN },
@@ -1881,51 +1883,104 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
    sizeof as last operand of certain builtins.  */
 
 void
-sizeof_pointer_memaccess_warning (location_t loc, tree callee,
-				  VEC(tree, gc) *params, tree sizeof_arg,
+sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
+				  VEC(tree, gc) *params, tree *sizeof_arg,
 				  bool (*comp_types) (tree, tree))
 {
   tree type, dest = NULL_TREE, src = NULL_TREE, tem;
-  bool strop = false;
+  bool strop = false, cmp = false;
+  unsigned int idx = ~0;
+  location_t loc;
 
   if (TREE_CODE (callee) != FUNCTION_DECL
       || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
-      || sizeof_arg == error_mark_node
       || VEC_length (tree, params) <= 1)
-    return;
-
-  type = TYPE_P (sizeof_arg) ? sizeof_arg : TREE_TYPE (sizeof_arg);
-  if (!POINTER_TYPE_P (type))
     return;
 
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_STRNCMP:
     case BUILT_IN_STRNCASECMP:
+      cmp = true;
+      /* FALLTHRU */
     case BUILT_IN_STRNCPY:
+    case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STRNCAT:
+    case BUILT_IN_STRNCAT_CHK:
+    case BUILT_IN_STPNCPY:
+    case BUILT_IN_STPNCPY_CHK:
       strop = true;
       /* FALLTHRU */
     case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMMOVE:
-    case BUILT_IN_MEMCMP:
+    case BUILT_IN_MEMMOVE_CHK:
       if (VEC_length (tree, params) < 3)
 	return;
       src = VEC_index (tree, params, 1);
       dest = VEC_index (tree, params, 0);
+      idx = 2;
+      break;
+    case BUILT_IN_BCOPY:
+      if (VEC_length (tree, params) < 3)
+	return;
+      src = VEC_index (tree, params, 0);
+      dest = VEC_index (tree, params, 1);
+      idx = 2;
+      break;
+    case BUILT_IN_MEMCMP:
+    case BUILT_IN_BCMP:
+      if (VEC_length (tree, params) < 3)
+	return;
+      src = VEC_index (tree, params, 1);
+      dest = VEC_index (tree, params, 0);
+      idx = 2;
+      cmp = true;
       break;
     case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMSET_CHK:
       if (VEC_length (tree, params) < 3)
 	return;
       dest = VEC_index (tree, params, 0);
+      idx = 2;
+      break;
+    case BUILT_IN_BZERO:
+      dest = VEC_index (tree, params, 0);
+      idx = 1;
       break;
     case BUILT_IN_STRNDUP:
       src = VEC_index (tree, params, 0);
+      strop = true;
+      idx = 1;
+      break;
+    case BUILT_IN_MEMCHR:
+      if (VEC_length (tree, params) < 3)
+	return;
+      src = VEC_index (tree, params, 0);
+      idx = 2;
+      break;
+    case BUILT_IN_SNPRINTF:
+    case BUILT_IN_SNPRINTF_CHK:
+    case BUILT_IN_VSNPRINTF:
+    case BUILT_IN_VSNPRINTF_CHK:
+      dest = VEC_index (tree, params, 0);
+      idx = 1;
       strop = true;
       break;
     default:
       break;
     }
+
+  if (idx >= 3)
+    return;
+
+  if (sizeof_arg[idx] == NULL || sizeof_arg[idx] == error_mark_node)
+    return;
+
+  type = TYPE_P (sizeof_arg[idx])
+	 ? sizeof_arg[idx] : TREE_TYPE (sizeof_arg[idx]);
+  if (!POINTER_TYPE_P (type))
+    return;
 
   if (dest
       && (tem = tree_strip_nop_conversions (dest))
@@ -1939,13 +1994,15 @@ sizeof_pointer_memaccess_warning (location_t loc, tree callee,
       && comp_types (TREE_TYPE (TREE_TYPE (tem)), type))
     return;
 
-  if (dest)
+  loc = sizeof_arg_loc[idx];
+
+  if (dest && !cmp)
     {
-      if (!TYPE_P (sizeof_arg)
-	  && operand_equal_p (dest, sizeof_arg, 0)
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (dest, sizeof_arg[idx], 0)
 	  && comp_types (TREE_TYPE (dest), type))
 	{
-	  if (TREE_CODE (sizeof_arg) == ADDR_EXPR && !strop)
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the destination; did you mean to "
@@ -1979,13 +2036,13 @@ sizeof_pointer_memaccess_warning (location_t loc, tree callee,
 	}
     }
 
-  if (src)
+  if (src && !cmp)
     {
-      if (!TYPE_P (sizeof_arg)
-	  && operand_equal_p (src, sizeof_arg, 0)
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (src, sizeof_arg[idx], 0)
 	  && comp_types (TREE_TYPE (src), type))
 	{
-	  if (TREE_CODE (sizeof_arg) == ADDR_EXPR && !strop)
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the source; did you mean to "
@@ -2018,6 +2075,87 @@ sizeof_pointer_memaccess_warning (location_t loc, tree callee,
 	  return;
 	}
     }
+
+  if (dest)
+    {
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (dest, sizeof_arg[idx], 0)
+	  && comp_types (TREE_TYPE (dest), type))
+	{
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the first source; did you mean to "
+			"remove the addressof?", callee);
+	  else if ((TYPE_PRECISION (TREE_TYPE (type))
+		    == TYPE_PRECISION (char_type_node))
+		   || strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the first source; did you mean to "
+			"provide an explicit length?", callee);
+	  else
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the first source; did you mean to "
+			"dereference it?", callee);
+	  return;
+	}
+
+      if (POINTER_TYPE_P (TREE_TYPE (dest))
+	  && !strop
+	  && comp_types (TREE_TYPE (dest), type)
+	  && !VOID_TYPE_P (TREE_TYPE (type)))
+	{
+	  warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+		      "argument to %<sizeof%> in %qD call is the same "
+		      "pointer type %qT as the first source; expected %qT "
+		      "or an explicit length", callee, TREE_TYPE (dest),
+		      TREE_TYPE (TREE_TYPE (dest)));
+	  return;
+	}
+    }
+
+  if (src)
+    {
+      if (!TYPE_P (sizeof_arg[idx])
+	  && operand_equal_p (src, sizeof_arg[idx], 0)
+	  && comp_types (TREE_TYPE (src), type))
+	{
+	  if (TREE_CODE (sizeof_arg[idx]) == ADDR_EXPR && !strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the second source; did you mean to "
+			"remove the addressof?", callee);
+	  else if ((TYPE_PRECISION (TREE_TYPE (type))
+		    == TYPE_PRECISION (char_type_node))
+		   || strop)
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the second source; did you mean to "
+			"provide an explicit length?", callee);
+	  else
+	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the second source; did you mean to "
+			"dereference it?", callee);
+	  return;
+	}
+
+      if (POINTER_TYPE_P (TREE_TYPE (src))
+	  && !strop
+	  && comp_types (TREE_TYPE (src), type)
+	  && !VOID_TYPE_P (TREE_TYPE (type)))
+	{
+	  warning_at (loc, OPT_Wsizeof_pointer_memaccess,
+		      "argument to %<sizeof%> in %qD call is the same "
+		      "pointer type %qT as the second source; expected %qT "
+		      "or an explicit length", callee, TREE_TYPE (src),
+		      TREE_TYPE (TREE_TYPE (src)));
+	  return;
+	}
+    }
+
 }
 
 /* Warn for unlikely, improbable, or stupid DECL declarations
@@ -6731,7 +6869,9 @@ handle_transparent_union_attribute (tree *node, tree name,
 
   *no_add_attrs = true;
 
-  if (TREE_CODE (*node) == TYPE_DECL)
+
+  if (TREE_CODE (*node) == TYPE_DECL
+      && ! (flags & ATTR_FLAG_CXX11))
     node = &TREE_TYPE (*node);
   type = *node;
 
@@ -7203,6 +7343,89 @@ check_user_alignment (const_tree align, bool allow_zero)
   return i;
 }
 
+/* 
+   If in c++-11, check if the c++-11 alignment constraint with respect
+   to fundamental alignment (in [dcl.align]) are satisfied.  If not in
+   c++-11 mode, does nothing.
+
+   [dcl.align]2/ says:
+
+   [* if the constant expression evaluates to a fundamental alignment,
+   the alignment requirement of the declared entity shall be the
+   specified fundamental alignment.
+
+   * if the constant expression evaluates to an extended alignment
+   and the implementation supports that alignment in the context
+   of the declaration, the alignment of the declared entity shall
+   be that alignment
+
+   * if the constant expression evaluates to an extended alignment
+   and the implementation does not support that alignment in the
+   context of the declaration, the program is ill-formed].  */
+
+static bool
+check_cxx_fundamental_alignment_constraints (tree node,
+					     unsigned align_log,
+					     int flags)
+{
+  bool alignment_too_large_p = false;
+  unsigned requested_alignment = 1U << align_log;
+  unsigned max_align = 0;
+
+  if ((!(flags & ATTR_FLAG_CXX11) && !warn_cxx_compat)
+      || (node == NULL_TREE || node == error_mark_node))
+    return true;
+
+  if (cxx_fundamental_alignment_p (requested_alignment))
+    return true;
+
+  if (DECL_P (node))
+    {
+      if (TREE_STATIC (node))
+	{
+	  /* For file scope variables and static members, the target
+	     supports alignments that are at most
+	     MAX_OFILE_ALIGNMENT.  */
+	  if (requested_alignment > (max_align = MAX_OFILE_ALIGNMENT))
+	    alignment_too_large_p = true;
+	}
+      else
+	{
+#ifdef BIGGEST_FIELD_ALIGNMENT
+#define MAX_TARGET_FIELD_ALIGNMENT BIGGEST_FIELD_ALIGNMENT
+#else
+#define MAX_TARGET_FIELD_ALIGNMENT BIGGEST_ALIGNMENT
+#endif
+	  /* For non-static members, the target supports either
+	     alignments that at most either BIGGEST_FIELD_ALIGNMENT
+	     if it is defined or BIGGEST_ALIGNMENT.  */
+	  max_align = MAX_TARGET_FIELD_ALIGNMENT;
+	  if (TREE_CODE (node) == FIELD_DECL
+	      && requested_alignment > (max_align = MAX_TARGET_FIELD_ALIGNMENT))
+	    alignment_too_large_p = true;
+#undef MAX_TARGET_FIELD_ALIGNMENT
+	  /* For stack variables, the target supports at most
+	     MAX_STACK_ALIGNMENT.  */
+	  else if (decl_function_context (node) != NULL
+		   && requested_alignment > (max_align = MAX_STACK_ALIGNMENT))
+	    alignment_too_large_p = true;
+	}
+    }
+  else if (TYPE_P (node))
+    {
+      /* Let's be liberal for types.  */
+      if (requested_alignment > (max_align = BIGGEST_ALIGNMENT))
+	alignment_too_large_p = true;
+    }
+
+  if (alignment_too_large_p)
+    pedwarn (input_location, OPT_Wattributes,
+	     "requested alignment %d is larger than %d",
+	     requested_alignment, max_align);
+
+  return !alignment_too_large_p;
+}
+
 /* Handle a "aligned" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -7226,7 +7449,8 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   else if (TYPE_P (*node))
     type = node, is_type = 1;
 
-  if ((i = check_user_alignment (align_expr, false)) == -1)
+  if ((i = check_user_alignment (align_expr, false)) == -1
+      || !check_cxx_fundamental_alignment_constraints (*node, i, flags))
     *no_add_attrs = true;
   else if (is_type)
     {
@@ -7256,6 +7480,17 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       error ("alignment may not be specified for %q+D", decl);
       *no_add_attrs = true;
     }
+  else if (DECL_USER_ALIGN (decl)
+	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
+    /* C++-11 [dcl.align/4]:
+
+           When multiple alignment-specifiers are specified for an
+	   entity, the alignment requirement shall be set to the
+	   strictest specified alignment.
+
+      This formally comes from the c++11 specification but we are
+      doing it for the GNU attribute syntax as well.  */
+    *no_add_attrs = true;
   else if (TREE_CODE (decl) == FUNCTION_DECL
 	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
     {
@@ -10497,7 +10732,7 @@ warn_array_subscript_with_type_char (tree index)
    was enclosed in parentheses.  */
 
 void
-warn_about_parentheses (enum tree_code code,
+warn_about_parentheses (location_t loc, enum tree_code code,
 			enum tree_code code_left, tree arg_left,
 			enum tree_code code_right, tree arg_right)
 {
@@ -10517,104 +10752,147 @@ warn_about_parentheses (enum tree_code code,
   switch (code)
     {
     case LSHIFT_EXPR:
-      if (code_left == PLUS_EXPR || code_right == PLUS_EXPR)
-	warning (OPT_Wparentheses,
-		 "suggest parentheses around %<+%> inside %<<<%>");
-      else if (code_left == MINUS_EXPR || code_right == MINUS_EXPR)
-	warning (OPT_Wparentheses,
-		 "suggest parentheses around %<-%> inside %<<<%>");
+      if (code_left == PLUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<+%> inside %<<<%>");
+      else if (code_right == PLUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<+%> inside %<<<%>");
+      else if (code_left == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<-%> inside %<<<%>");
+      else if (code_right == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<-%> inside %<<<%>");
       return;
 
     case RSHIFT_EXPR:
-      if (code_left == PLUS_EXPR || code_right == PLUS_EXPR)
-	warning (OPT_Wparentheses,
-		 "suggest parentheses around %<+%> inside %<>>%>");
-      else if (code_left == MINUS_EXPR || code_right == MINUS_EXPR)
-	warning (OPT_Wparentheses,
-		 "suggest parentheses around %<-%> inside %<>>%>");
+      if (code_left == PLUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<+%> inside %<>>%>");
+      else if (code_right == PLUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<+%> inside %<>>%>");
+      else if (code_left == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<-%> inside %<>>%>");
+      else if (code_right == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<-%> inside %<>>%>");
       return;
 
     case TRUTH_ORIF_EXPR:
-      if (code_left == TRUTH_ANDIF_EXPR || code_right == TRUTH_ANDIF_EXPR)
-	warning (OPT_Wparentheses,
-		 "suggest parentheses around %<&&%> within %<||%>");
+      if (code_left == TRUTH_ANDIF_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<&&%> within %<||%>");
+      else if (code_right == TRUTH_ANDIF_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+		    "suggest parentheses around %<&&%> within %<||%>");
       return;
 
     case BIT_IOR_EXPR:
       if (code_left == BIT_AND_EXPR || code_left == BIT_XOR_EXPR
-	  || code_left == PLUS_EXPR || code_left == MINUS_EXPR
-	  || code_right == BIT_AND_EXPR || code_right == BIT_XOR_EXPR
-	  || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
-	warning (OPT_Wparentheses,
+	  || code_left == PLUS_EXPR || code_left == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around arithmetic in operand of %<|%>");
+      else if (code_right == BIT_AND_EXPR || code_right == BIT_XOR_EXPR
+	       || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around arithmetic in operand of %<|%>");
       /* Check cases like x|y==z */
-      else if (TREE_CODE_CLASS (code_left) == tcc_comparison
-	       || TREE_CODE_CLASS (code_right) == tcc_comparison)
-	warning (OPT_Wparentheses,
+      else if (TREE_CODE_CLASS (code_left) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of %<|%>");
+      else if (TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around comparison in operand of %<|%>");
       /* Check cases like !x | y */
       else if (code_left == TRUTH_NOT_EXPR
 	       && !APPEARS_TO_BE_BOOLEAN_EXPR_P (code_right, arg_right))
-	warning (OPT_Wparentheses, "suggest parentheses around operand of "
-		 "%<!%> or change %<|%> to %<||%> or %<!%> to %<~%>");
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around operand of "
+		    "%<!%> or change %<|%> to %<||%> or %<!%> to %<~%>");
       return;
 
     case BIT_XOR_EXPR:
       if (code_left == BIT_AND_EXPR
-	  || code_left == PLUS_EXPR || code_left == MINUS_EXPR
-	  || code_right == BIT_AND_EXPR
-	  || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
-	warning (OPT_Wparentheses,
+	  || code_left == PLUS_EXPR || code_left == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around arithmetic in operand of %<^%>");
+      else if (code_right == BIT_AND_EXPR
+	       || code_right == PLUS_EXPR || code_right == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around arithmetic in operand of %<^%>");
       /* Check cases like x^y==z */
-      else if (TREE_CODE_CLASS (code_left) == tcc_comparison
-	       || TREE_CODE_CLASS (code_right) == tcc_comparison)
-	warning (OPT_Wparentheses,
+      else if (TREE_CODE_CLASS (code_left) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of %<^%>");
+      else if (TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around comparison in operand of %<^%>");
       return;
 
     case BIT_AND_EXPR:
-      if (code_left == PLUS_EXPR || code_right == PLUS_EXPR)
-	warning (OPT_Wparentheses,
+      if (code_left == PLUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
 		 "suggest parentheses around %<+%> in operand of %<&%>");
-      else if (code_left == MINUS_EXPR || code_right == MINUS_EXPR)
-	warning (OPT_Wparentheses,
+      else if (code_right == PLUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+		 "suggest parentheses around %<+%> in operand of %<&%>");
+      else if (code_left == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around %<-%> in operand of %<&%>");
+      else if (code_right == MINUS_EXPR)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around %<-%> in operand of %<&%>");
       /* Check cases like x&y==z */
-      else if (TREE_CODE_CLASS (code_left) == tcc_comparison
-	       || TREE_CODE_CLASS (code_right) == tcc_comparison)
-	warning (OPT_Wparentheses,
+      else if (TREE_CODE_CLASS (code_left) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of %<&%>");
+      else if (TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around comparison in operand of %<&%>");
       /* Check cases like !x & y */
       else if (code_left == TRUTH_NOT_EXPR
 	       && !APPEARS_TO_BE_BOOLEAN_EXPR_P (code_right, arg_right))
-	warning (OPT_Wparentheses, "suggest parentheses around operand of "
-		 "%<!%> or change %<&%> to %<&&%> or %<!%> to %<~%>");
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		    "suggest parentheses around operand of "
+		    "%<!%> or change %<&%> to %<&&%> or %<!%> to %<~%>");
       return;
 
     case EQ_EXPR:
-      if (TREE_CODE_CLASS (code_left) == tcc_comparison
-          || TREE_CODE_CLASS (code_right) == tcc_comparison)
-	warning (OPT_Wparentheses,
+      if (TREE_CODE_CLASS (code_left) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of %<==%>");
+      else if (TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around comparison in operand of %<==%>");
       return;
     case NE_EXPR:
-      if (TREE_CODE_CLASS (code_left) == tcc_comparison
-          || TREE_CODE_CLASS (code_right) == tcc_comparison)
-	warning (OPT_Wparentheses,
+      if (TREE_CODE_CLASS (code_left) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+		 "suggest parentheses around comparison in operand of %<!=%>");
+      else if (TREE_CODE_CLASS (code_right) == tcc_comparison)
+	warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
 		 "suggest parentheses around comparison in operand of %<!=%>");
       return;
 
     default:
-      if (TREE_CODE_CLASS (code) == tcc_comparison
-	   && ((TREE_CODE_CLASS (code_left) == tcc_comparison
+      if (TREE_CODE_CLASS (code) == tcc_comparison)
+	{
+	  if (TREE_CODE_CLASS (code_left) == tcc_comparison
 		&& code_left != NE_EXPR && code_left != EQ_EXPR
 		&& INTEGRAL_TYPE_P (TREE_TYPE (arg_left)))
-	       || (TREE_CODE_CLASS (code_right) == tcc_comparison
+	    warning_at (EXPR_LOC_OR_LOC (arg_left, loc), OPT_Wparentheses,
+			"comparisons like %<X<=Y<=Z%> do not "
+			"have their mathematical meaning");
+	  else if (TREE_CODE_CLASS (code_right) == tcc_comparison
 		   && code_right != NE_EXPR && code_right != EQ_EXPR
-		   && INTEGRAL_TYPE_P (TREE_TYPE (arg_right)))))
-	warning (OPT_Wparentheses, "comparisons like %<X<=Y<=Z%> do not "
-		 "have their mathematical meaning");
+		   && INTEGRAL_TYPE_P (TREE_TYPE (arg_right)))
+	    warning_at (EXPR_LOC_OR_LOC (arg_right, loc), OPT_Wparentheses,
+			"comparisons like %<X<=Y<=Z%> do not "
+			"have their mathematical meaning");
+	}
       return;
     }
 #undef NOT_A_BOOLEAN_EXPR_P
@@ -11221,6 +11499,127 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       *vecp = build1 (ADDR_EXPR, type1, *vecp);
       *vecp = convert (type, *vecp);
     }
+}
+
+/* Determine which of the operands, if any, is a scalar that needs to be
+   converted to a vector, for the range of operations.  */
+enum stv_conv
+scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
+		  bool complain)
+{
+  tree type0 = TREE_TYPE (op0);
+  tree type1 = TREE_TYPE (op1);
+  bool integer_only_op = false;
+  enum stv_conv ret = stv_firstarg;
+
+  gcc_assert (TREE_CODE (type0) == VECTOR_TYPE
+	      || TREE_CODE (type1) == VECTOR_TYPE);
+  switch (code)
+    {
+      /* Most GENERIC binary expressions require homogeneous arguments.
+	 LSHIFT_EXPR and RSHIFT_EXPR are exceptions and accept a first
+	 argument that is a vector and a second one that is a scalar, so
+	 we never return stv_secondarg for them.  */
+      case RSHIFT_EXPR:
+      case LSHIFT_EXPR:
+	if (TREE_CODE (type0) == INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		if (complain)
+		  error_at (loc, "conversion of scalar %qT to vector %qT "
+			    "involves truncation", type0, type1);
+		return stv_error;
+	      }
+	    else
+	      return stv_firstarg;
+	  }
+	break;
+
+      case BIT_IOR_EXPR:
+      case BIT_XOR_EXPR:
+      case BIT_AND_EXPR:
+	integer_only_op = true;
+	/* ... fall through ...  */
+
+      case PLUS_EXPR:
+      case MINUS_EXPR:
+      case MULT_EXPR:
+      case TRUNC_DIV_EXPR:
+      case CEIL_DIV_EXPR:
+      case FLOOR_DIV_EXPR:
+      case ROUND_DIV_EXPR:
+      case EXACT_DIV_EXPR:
+      case TRUNC_MOD_EXPR:
+      case FLOOR_MOD_EXPR:
+      case RDIV_EXPR:
+      case EQ_EXPR:
+      case NE_EXPR:
+      case LE_EXPR:
+      case GE_EXPR:
+      case LT_EXPR:
+      case GT_EXPR:
+      /* What about UNLT_EXPR?  */
+	if (TREE_CODE (type0) == VECTOR_TYPE)
+	  {
+	    tree tmp;
+	    ret = stv_secondarg;
+	    /* Swap TYPE0 with TYPE1 and OP0 with OP1  */
+	    tmp = type0; type0 = type1; type1 = tmp;
+	    tmp = op0; op0 = op1; op1 = tmp;
+	  }
+
+	if (TREE_CODE (type0) == INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		if (complain)
+		  error_at (loc, "conversion of scalar %qT to vector %qT "
+			    "involves truncation", type0, type1);
+		return stv_error;
+	      }
+	    return ret;
+	  }
+	else if (!integer_only_op
+		    /* Allow integer --> real conversion if safe.  */
+		 && (TREE_CODE (type0) == REAL_TYPE
+		     || TREE_CODE (type0) == INTEGER_TYPE)
+		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		if (complain)
+		  error_at (loc, "conversion of scalar %qT to vector %qT "
+			    "involves truncation", type0, type1);
+		return stv_error;
+	      }
+	    return ret;
+	  }
+      default:
+	break;
+    }
+
+  return stv_nothing;
+}
+
+/* Return true iff ALIGN is an integral constant that is a fundamental
+   alignment, as defined by [basic.align] in the c++-11
+   specifications.
+
+   That is:
+
+       [A fundamental alignment is represented by an alignment less than or
+        equal to the greatest alignment supported by the implementation
+        in all contexts, which is equal to
+        alignof(max_align_t)].  */
+
+bool
+cxx_fundamental_alignment_p  (unsigned align)
+{
+  return (align <=  MAX (TYPE_ALIGN (long_long_integer_type_node),
+			 TYPE_ALIGN (long_double_type_node)));
 }
 
 #include "gt-c-family-c-common.h"

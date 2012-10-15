@@ -1458,6 +1458,96 @@ finish_cost_vectors (void)
 
 
 
+/* Compute a post-ordering of the reverse control flow of the loop body
+   designated by the children nodes of LOOP_NODE, whose body nodes in
+   pre-order are input as LOOP_PREORDER.  Return a VEC with a post-order
+   of the reverse loop body.
+
+   For the post-order of the reverse CFG, we visit the basic blocks in
+   LOOP_PREORDER array in the reverse order of where they appear.
+   This is important: We do not just want to compute a post-order of
+   the reverse CFG, we want to make a best-guess for a visiting order that
+   minimizes the number of chain elements per allocno live range.  If the
+   blocks would be visited in a different order, we would still compute a
+   correct post-ordering but it would be less likely that two nodes
+   connected by an edge in the CFG are neighbours in the topsort.  */
+
+static VEC (ira_loop_tree_node_t, heap) *
+ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSED,
+				  VEC (ira_loop_tree_node_t, heap) *loop_preorder)
+{
+  VEC (ira_loop_tree_node_t, heap) *topsort_nodes = NULL;
+  unsigned int n_loop_preorder;
+
+  n_loop_preorder = VEC_length (ira_loop_tree_node_t, loop_preorder);
+  if (n_loop_preorder != 0)
+    {
+      ira_loop_tree_node_t subloop_node;
+      unsigned int i;
+      VEC (ira_loop_tree_node_t, heap) *dfs_stack;
+
+      /* This is a bit of strange abuse of the BB_VISITED flag:  We use
+	 the flag to mark blocks we still have to visit to add them to
+	 our post-order.  Define an alias to avoid confusion.  */
+#define BB_TO_VISIT BB_VISITED
+
+      FOR_EACH_VEC_ELT (ira_loop_tree_node_t, loop_preorder, i, subloop_node)
+	{
+	  gcc_checking_assert (! (subloop_node->bb->flags & BB_TO_VISIT));
+	  subloop_node->bb->flags |= BB_TO_VISIT;
+	}
+
+      topsort_nodes = VEC_alloc (ira_loop_tree_node_t, heap, n_loop_preorder);
+      dfs_stack = VEC_alloc (ira_loop_tree_node_t, heap, n_loop_preorder);
+
+      FOR_EACH_VEC_ELT_REVERSE (ira_loop_tree_node_t, loop_preorder,
+				i, subloop_node)
+	{
+	  if (! (subloop_node->bb->flags & BB_TO_VISIT))
+	    continue;
+
+	  subloop_node->bb->flags &= ~BB_TO_VISIT;
+	  VEC_quick_push (ira_loop_tree_node_t, dfs_stack, subloop_node);
+	  while (! VEC_empty (ira_loop_tree_node_t, dfs_stack))
+	    {
+	      edge e;
+	      edge_iterator ei;
+
+	      ira_loop_tree_node_t n = VEC_last (ira_loop_tree_node_t,
+						 dfs_stack);
+	      FOR_EACH_EDGE (e, ei, n->bb->preds)
+		{
+		  ira_loop_tree_node_t pred_node;
+		  basic_block pred_bb = e->src;
+
+		  if (e->src == ENTRY_BLOCK_PTR)
+		    continue;
+
+		  pred_node = IRA_BB_NODE_BY_INDEX (pred_bb->index);
+		  if (pred_node != n
+		      && (pred_node->bb->flags & BB_TO_VISIT))
+		    {
+		      pred_node->bb->flags &= ~BB_TO_VISIT;
+		      VEC_quick_push (ira_loop_tree_node_t, dfs_stack, pred_node);
+		    }
+		}
+	      if (n == VEC_last (ira_loop_tree_node_t, dfs_stack))
+		{
+		  VEC_pop (ira_loop_tree_node_t, dfs_stack);
+		  VEC_quick_push (ira_loop_tree_node_t, topsort_nodes, n);
+		}
+	    }
+	}
+
+#undef BB_TO_VISIT
+      VEC_free (ira_loop_tree_node_t, heap, dfs_stack);
+    }
+
+  gcc_assert (VEC_length (ira_loop_tree_node_t, topsort_nodes)
+	      == n_loop_preorder);
+  return topsort_nodes;
+}
+
 /* The current loop tree node and its regno allocno map.  */
 ira_loop_tree_node_t ira_curr_loop_tree_node;
 ira_allocno_t *ira_curr_regno_allocno_map;
@@ -1467,7 +1557,16 @@ ira_allocno_t *ira_curr_regno_allocno_map;
    correspondingly in preorder and postorder.  The function sets up
    IRA_CURR_LOOP_TREE_NODE and IRA_CURR_REGNO_ALLOCNO_MAP.  If BB_P,
    basic block nodes of LOOP_NODE is also processed (before its
-   subloop nodes).  */
+   subloop nodes).
+   
+   If BB_P is set and POSTORDER_FUNC is given, the basic blocks in
+   the loop are passed in the *reverse* post-order of the *reverse*
+   CFG.  This is only used by ira_create_allocno_live_ranges, which
+   wants to visit basic blocks in this order to minimize the number
+   of elements per live range chain.
+   Note that the loop tree nodes are still visited in the normal,
+   forward post-order of  the loop tree.  */
+
 void
 ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
 			void (*preorder_func) (ira_loop_tree_node_t),
@@ -1483,17 +1582,36 @@ ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
     (*preorder_func) (loop_node);
 
   if (bb_p)
-    for (subloop_node = loop_node->children;
-	 subloop_node != NULL;
-	 subloop_node = subloop_node->next)
-      if (subloop_node->bb != NULL)
-	{
-	  if (preorder_func != NULL)
-	    (*preorder_func) (subloop_node);
+    {
+      VEC (ira_loop_tree_node_t, heap) *loop_preorder = NULL;
+      unsigned int i;
 
-	  if (postorder_func != NULL)
+      /* Add all nodes to the set of nodes to visit.  The IRA loop tree
+	 is set up such that nodes in the loop body appear in a pre-order
+	 of their place in the CFG.  */
+      for (subloop_node = loop_node->children;
+	   subloop_node != NULL;
+	   subloop_node = subloop_node->next)
+	if (subloop_node->bb != NULL)
+	  VEC_safe_push (ira_loop_tree_node_t, heap,
+			 loop_preorder, subloop_node);
+
+      if (preorder_func != NULL)
+	FOR_EACH_VEC_ELT (ira_loop_tree_node_t, loop_preorder, i, subloop_node)
+	  (*preorder_func) (subloop_node);
+
+      if (postorder_func != NULL)
+	{
+	  VEC (ira_loop_tree_node_t, heap) *loop_rev_postorder =
+	    ira_loop_tree_body_rev_postorder (loop_node, loop_preorder);
+	  FOR_EACH_VEC_ELT_REVERSE (ira_loop_tree_node_t, loop_rev_postorder,
+				    i, subloop_node)
 	    (*postorder_func) (subloop_node);
+	  VEC_free (ira_loop_tree_node_t, heap, loop_rev_postorder);
 	}
+
+      VEC_free (ira_loop_tree_node_t, heap, loop_preorder);
+    }
 
   for (subloop_node = loop_node->subloops;
        subloop_node != NULL;
@@ -1597,7 +1715,7 @@ create_bb_allocnos (ira_loop_tree_node_t bb_node)
       create_insn_allocnos (PATTERN (insn), false);
   /* It might be a allocno living through from one subloop to
      another.  */
-  EXECUTE_IF_SET_IN_REG_SET (DF_LR_IN (bb), FIRST_PSEUDO_REGISTER, i, bi)
+  EXECUTE_IF_SET_IN_REG_SET (df_get_live_in (bb), FIRST_PSEUDO_REGISTER, i, bi)
     if (ira_curr_regno_allocno_map[i] == NULL)
       ira_create_allocno (i, false, ira_curr_loop_tree_node);
 }
@@ -1613,9 +1731,9 @@ create_loop_allocnos (edge e)
   bitmap_iterator bi;
   ira_loop_tree_node_t parent;
 
-  live_in_regs = DF_LR_IN (e->dest);
+  live_in_regs = df_get_live_in (e->dest);
   border_allocnos = ira_curr_loop_tree_node->border_allocnos;
-  EXECUTE_IF_SET_IN_REG_SET (DF_LR_OUT (e->src),
+  EXECUTE_IF_SET_IN_REG_SET (df_get_live_out (e->src),
 			     FIRST_PSEUDO_REGISTER, i, bi)
     if (bitmap_bit_p (live_in_regs, i))
       {

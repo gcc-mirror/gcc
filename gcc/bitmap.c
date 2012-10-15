@@ -916,17 +916,18 @@ bitmap_and (bitmap dst, const_bitmap a, const_bitmap b)
     dst->indx = dst->current->indx;
 }
 
-/* A &= B.  */
+/* A &= B.  Return true if A changed.  */
 
-void
+bool
 bitmap_and_into (bitmap a, const_bitmap b)
 {
   bitmap_element *a_elt = a->first;
   const bitmap_element *b_elt = b->first;
   bitmap_element *next;
+  bool changed = false;
 
   if (a == b)
-    return;
+    return false;
 
   while (a_elt && b_elt)
     {
@@ -935,6 +936,7 @@ bitmap_and_into (bitmap a, const_bitmap b)
 	  next = a_elt->next;
 	  bitmap_element_free (a, a_elt);
 	  a_elt = next;
+	  changed = true;
 	}
       else if (b_elt->indx < a_elt->indx)
 	b_elt = b_elt->next;
@@ -947,7 +949,8 @@ bitmap_and_into (bitmap a, const_bitmap b)
 	  for (ix = 0; ix < BITMAP_ELEMENT_WORDS; ix++)
 	    {
 	      BITMAP_WORD r = a_elt->bits[ix] & b_elt->bits[ix];
-
+	      if (a_elt->bits[ix] != r)
+		changed = true;
 	      a_elt->bits[ix] = r;
 	      ior |= r;
 	    }
@@ -958,9 +961,17 @@ bitmap_and_into (bitmap a, const_bitmap b)
 	  b_elt = b_elt->next;
 	}
     }
-  bitmap_elt_clear_from (a, a_elt);
+
+  if (a_elt)
+    {
+      changed = true;
+      bitmap_elt_clear_from (a, a_elt);
+    }
+
   gcc_checking_assert (!a->current == !a->first
 		       && (!a->current || a->indx == a->current->indx));
+
+  return changed;
 }
 
 

@@ -1100,6 +1100,7 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
   struct goto_queue_node *q, *qe;
   gimple x;
   gimple_seq finally;
+  gimple_stmt_iterator gsi;
   tree finally_label;
   location_t loc = gimple_location (tf->try_finally_expr);
 
@@ -1119,6 +1120,17 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
     }
 
   lower_eh_constructs_1 (state, &finally);
+
+  for (gsi = gsi_start (finally); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (LOCATION_LOCUS (gimple_location (stmt)) == UNKNOWN_LOCATION)
+	{
+	  tree block = gimple_block (stmt);
+	  gimple_set_location (stmt, gimple_location (tf->try_finally_expr));
+	  gimple_set_block (stmt, block);
+	}
+    }
 
   if (tf->may_throw)
     {

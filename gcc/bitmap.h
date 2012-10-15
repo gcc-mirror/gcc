@@ -224,7 +224,7 @@ extern unsigned long bitmap_count_bits (const_bitmap);
    are three operand versions that to not destroy the source bitmaps.
    The operations supported are &, & ~, |, ^.  */
 extern void bitmap_and (bitmap, const_bitmap, const_bitmap);
-extern void bitmap_and_into (bitmap, const_bitmap);
+extern bool bitmap_and_into (bitmap, const_bitmap);
 extern bool bitmap_and_compl (bitmap, const_bitmap, const_bitmap);
 extern bool bitmap_and_compl_into (bitmap, const_bitmap);
 #define bitmap_compl_and(DST, A, B) bitmap_and_compl (DST, B, A)

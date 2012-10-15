@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "gimple.h"
 #include "bitmap.h"
+#include "hash-table.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -2172,16 +2173,30 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	{
 	  if (warn_sizeof_pointer_memaccess
 	      && !VEC_empty(tree, *args)
-	      && TREE_CODE (VEC_last(tree, *args)) == SIZEOF_EXPR
 	      && !processing_template_decl)
 	    {
-	      tree sizeof_arg = VEC_last(tree, *args);
-	      if (SIZEOF_EXPR_TYPE_P (sizeof_arg))
-		sizeof_arg = TREE_TYPE (TREE_OPERAND (sizeof_arg, 0));
-	      else
-		sizeof_arg = TREE_OPERAND (sizeof_arg, 0);
+	      location_t sizeof_arg_loc[3];
+	      tree sizeof_arg[3];
+	      unsigned int i;
+	      for (i = 0; i < 3; i++)
+		{
+		  tree t;
+
+		  sizeof_arg_loc[i] = UNKNOWN_LOCATION;
+		  sizeof_arg[i] = NULL_TREE;
+		  if (i >= VEC_length (tree, *args))
+		    continue;
+		  t = VEC_index (tree, *args, i);
+		  if (TREE_CODE (t) != SIZEOF_EXPR)
+		    continue;
+		  if (SIZEOF_EXPR_TYPE_P (t))
+		    sizeof_arg[i] = TREE_TYPE (TREE_OPERAND (t, 0));
+		  else
+		    sizeof_arg[i] = TREE_OPERAND (t, 0);
+		  sizeof_arg_loc[i] = EXPR_LOCATION (t);
+		}
 	      sizeof_pointer_memaccess_warning
-		(EXPR_LOCATION (VEC_last(tree, *args)), fn, *args,
+		(sizeof_arg_loc, fn, *args,
 		 sizeof_arg, same_type_ignoring_top_level_qualifiers_p);
 	    }
 
@@ -3270,7 +3285,17 @@ finish_id_expression (tree id_expression,
 	  *non_integral_constant_expression_p = true;
 	}
 
-      if (scope)
+      tree wrap;
+      if (TREE_CODE (decl) == VAR_DECL
+	  && !cp_unevaluated_operand
+	  && DECL_THREAD_LOCAL_P (decl)
+	  && (wrap = get_tls_wrapper_fn (decl)))
+	{
+	  /* Replace an evaluated use of the thread_local variable with
+	     a call to its wrapper.  */
+	  decl = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
+	}
+      else if (scope)
 	{
 	  decl = (adjust_result_of_qualified_name_lookup
 		  (decl, scope, current_nonlambda_class_type()));
@@ -3827,7 +3852,7 @@ struct nrv_data
 {
   tree var;
   tree result;
-  htab_t visited;
+  hash_table <pointer_hash <tree_node> > visited;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -3836,7 +3861,7 @@ static tree
 finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 {
   struct nrv_data *dp = (struct nrv_data *)data;
-  void **slot;
+  tree_node **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
      non-statements, except that we have to consider STMT_EXPRs.  */
@@ -3875,7 +3900,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   /* Avoid walking into the same tree more than once.  Unfortunately, we
      can't just use walk_tree_without duplicates because it would only call
      us for the first occurrence of dp->var in the function body.  */
-  slot = htab_find_slot (dp->visited, *tp, INSERT);
+  slot = dp->visited.find_slot (*tp, INSERT);
   if (*slot)
     *walk_subtrees = 0;
   else
@@ -3907,9 +3932,9 @@ finalize_nrv (tree *tp, tree var, tree result)
 
   data.var = var;
   data.result = result;
-  data.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  data.visited.create (37);
   cp_walk_tree (tp, finalize_nrv_r, &data, 0);
-  htab_delete (data.visited);
+  data.visited.dispose ();
 }
 
 /* Create CP_OMP_CLAUSE_INFO for clause C.  Returns true if it is invalid.  */

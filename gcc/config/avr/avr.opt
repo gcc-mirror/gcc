@@ -50,10 +50,6 @@ Target Report Undocumented Mask(ORDER_1)
 morder2
 Target Report Undocumented Mask(ORDER_2)
 
-mshort-calls
-Target Report Mask(SHORT_CALLS)
-Use rjmp/rcall (limited range) on >8K devices
-
 mtiny-stack
 Target Report Mask(TINY_STACK)
 Change only the low 8 bits of the stack pointer

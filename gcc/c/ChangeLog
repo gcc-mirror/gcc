@@ -1,3 +1,37 @@
+2012-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54381
+	* c-parser.c (struct c_tree_loc_pair): Removed.
+	(c_parser_expr_list): Remove struct c_tree_loc_pair * argument,
+	add location_t * and tree * arguments, fill in array of 3
+	sizeof_arg trees and corresponding locs.
+	(c_parser_attributes, c_parser_objc_keywordexpr): Adjust
+	c_parser_expr_list callers.
+	(c_parser_postfix_expression_after_primary): Likewise.  Pass
+	array of 3 sizeof_arg trees and locs (corresponding to first
+	3 arguments) to sizeof_pointer_memaccess_warning.
+
+2012-10-09  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in (c-decl.o): Add dependence on hash-table.h.
+	* c-decl.c (detect_field_duplicates_hash): Change to new type-safe
+	hash table.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* c-typeck.c (parser_build_binary_op): Update warn_about_parentheses
+	call.
+
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-typeck.c: Include c-common.h.
+	(enum stv_conv): Moved to c-common.h.
+	(scalar_to_vector): Moved to c-common.c.
+	(build_binary_op): Adapt to scalar_to_vector's new prototype.
+	* Make-lang.in: c-typeck.c depends on c-common.h.
+
 2012-10-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-decl.c (c_write_global_declarations): Fix handling of

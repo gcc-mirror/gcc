@@ -1,4 +1,4 @@
-;; Copyright (C) 2010, Free Software Foundation, Inc.
+;; Copyright (C) 2010, 2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -36,7 +36,7 @@
 (define_attr "bdver1_decode" "direct,vector,double"
   (const_string "direct"))
 
-(define_automaton "bdver1,bdver1_int,bdver1_load,bdver1_mult,bdver1_fp")
+(define_automaton "bdver1,bdver1_ieu,bdver1_load,bdver1_fp,bdver1_agu")
 
 (define_cpu_unit "bdver1-decode0" "bdver1")
 (define_cpu_unit "bdver1-decode1" "bdver1")
@@ -71,15 +71,13 @@
 				     | (nothing,(bdver1-decode1 + bdver1-decode2)))")
 
 
-(define_cpu_unit "bdver1-ieu0" "bdver1_int")
-(define_cpu_unit "bdver1-ieu1" "bdver1_int")
+(define_cpu_unit "bdver1-ieu0" "bdver1_ieu")
+(define_cpu_unit "bdver1-ieu1" "bdver1_ieu")
 (define_reservation "bdver1-ieu" "(bdver1-ieu0 | bdver1-ieu1)")
 
-(define_cpu_unit "bdver1-agu0" "bdver1_int")
-(define_cpu_unit "bdver1-agu1" "bdver1_int")
+(define_cpu_unit "bdver1-agu0" "bdver1_agu")
+(define_cpu_unit "bdver1-agu1" "bdver1_agu")
 (define_reservation "bdver1-agu" "(bdver1-agu0 | bdver1-agu1)")
-
-(define_cpu_unit "bdver1-mult" "bdver1_mult")
 
 (define_cpu_unit "bdver1-load0" "bdver1_load")
 (define_cpu_unit "bdver1-load1" "bdver1_load")
@@ -92,6 +90,12 @@
 (define_reservation "bdver1-store" "(bdver1-load0 | bdver1-load1)")
 ;; 128bit SSE instructions issue two stores at once.
 (define_reservation "bdver1-store2" "(bdver1-load0 + bdver1-load1)")
+
+;; vectorpath (microcoded) instructions are single issue instructions.
+;; So, they occupy all the integer units.
+(define_reservation "bdver1-ivector" "bdver1-ieu0+bdver1-ieu1+
+                                      bdver1-agu0+bdver1-agu1+
+                                      bdver1-load0+bdver1-load1")
 
 ;; The FP operations start to execute at stage 12 in the pipeline, while
 ;; integer operations start to execute at stage 9 for athlon and 11 for K8
@@ -125,7 +129,7 @@
 (define_insn_reservation "bdver1_call" 0
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "call,callv"))
-			 "bdver1-double,bdver1-agu,bdver1-ieu")
+			 "bdver1-double,bdver1-agu")
 ;; PUSH mem is double path.
 (define_insn_reservation "bdver1_push" 1
 			 (and (eq_attr "cpu" "bdver1,bdver2")
@@ -135,17 +139,17 @@
 (define_insn_reservation "bdver1_pop" 1
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "pop"))
-			 "bdver1-direct,(bdver1-ieu+bdver1-load)")
+			 "bdver1-direct,bdver1-ivector")
 ;; LEAVE no latency info so far, assume same with amdfam10.
 (define_insn_reservation "bdver1_leave" 3
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "leave"))
-			 "bdver1-vector,(bdver1-ieu+bdver1-load)")
+			 "bdver1-vector,bdver1-ivector")
 ;; LEA executes in AGU unit with 1 cycle latency on BDVER1.
 (define_insn_reservation "bdver1_lea" 1
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (eq_attr "type" "lea"))
-			 "bdver1-direct,bdver1-agu,nothing")
+			 "bdver1-direct,bdver1-agu")
 
 ;; MUL executes in special multiplier unit attached to IEU1.
 (define_insn_reservation "bdver1_imul_DI" 6
@@ -153,23 +157,23 @@
 			      (and (eq_attr "type" "imul")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "none,unknown"))))
-			 "bdver1-direct1,bdver1-ieu1,bdver1-mult,nothing,bdver1-ieu1")
+			 "bdver1-direct1,bdver1-ieu1")
 (define_insn_reservation "bdver1_imul" 4
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (eq_attr "memory" "none,unknown")))
-			 "bdver1-direct1,bdver1-ieu1,bdver1-mult,bdver1-ieu1")
+			 "bdver1-direct1,bdver1-ieu1")
 (define_insn_reservation "bdver1_imul_mem_DI" 10
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (and (eq_attr "mode" "DI")
 					(eq_attr "memory" "load,both"))))
-			 "bdver1-direct1,bdver1-load,bdver1-ieu,bdver1-mult,nothing,bdver1-ieu")
+                         "bdver1-direct1,bdver1-load,bdver1-ieu1")
 (define_insn_reservation "bdver1_imul_mem" 8
 			 (and (eq_attr "cpu" "bdver1,bdver2")
 			      (and (eq_attr "type" "imul")
 				   (eq_attr "memory" "load,both")))
-			 "bdver1-direct1,bdver1-load,bdver1-ieu,bdver1-mult,bdver1-ieu")
+			 "bdver1-direct1,bdver1-load,bdver1-ieu1")
 
 ;; IDIV cannot execute in parallel with other instructions.  Dealing with it
 ;; as with short latency vector instruction is good approximation avoiding
@@ -697,24 +701,24 @@
 ;; SSE MUL, ADD, and MULADD.
 (define_insn_reservation "bdver1_ssemuladd_load_256" 11
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (and (eq_attr "mode" "V8SF,V4DF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd_256" 7
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (and (eq_attr "mode" "V8SF,V4DF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd_load" 10
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd" 6
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (eq_attr "memory" "none")))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_sseimul_load" 8

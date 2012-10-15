@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+
 #ifdef __SSE2__
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
@@ -132,5 +134,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 #endif // __SSE2__
+
+#endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
 #endif // _EXT_OPT_RANDOM_H

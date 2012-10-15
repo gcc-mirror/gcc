@@ -3026,6 +3026,14 @@ push_class_level_binding_1 (tree name, tree x)
       && TREE_TYPE (decl) == error_mark_node)
     decl = TREE_VALUE (decl);
 
+  if (TREE_CODE (decl) == USING_DECL
+      && TREE_CODE (USING_DECL_SCOPE (decl)) == TEMPLATE_TYPE_PARM
+      && DECL_NAME (decl) == TYPE_IDENTIFIER (USING_DECL_SCOPE (decl)))
+    /* This using-declaration declares constructors that inherit from the
+       constructors for the template parameter.  It does not redeclare the
+       name of the template parameter.  */
+    return true;
+
   if (!check_template_shadow (decl))
     return false;
 
@@ -3218,10 +3226,7 @@ do_class_using_decl (tree scope, tree name)
       return NULL_TREE;
     }
   if (MAYBE_CLASS_TYPE_P (scope) && constructor_name_p (name, scope))
-    {
-      error ("%<%T::%D%> names constructor", scope, name);
-      return NULL_TREE;
-    }
+    maybe_warn_cpp0x (CPP0X_INHERITING_CTORS);
   if (constructor_name_p (name, current_class_type))
     {
       error ("%<%T::%D%> names constructor in %qT",

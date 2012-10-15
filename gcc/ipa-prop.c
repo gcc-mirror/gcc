@@ -287,6 +287,18 @@ ipa_print_all_jump_functions (FILE *f)
     }
 }
 
+/* Worker for prune_expression_for_jf.  */
+
+static tree
+prune_expression_for_jf_1 (tree *tp, int *walk_subtrees, void *)
+{
+  if (EXPR_P (*tp))
+    SET_EXPR_LOCATION (*tp, UNKNOWN_LOCATION);
+  else
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
 /* Return the expression tree EXPR unshared and with location stripped off.  */
 
 static tree
@@ -295,7 +307,7 @@ prune_expression_for_jf (tree exp)
   if (EXPR_P (exp))
     {
       exp = unshare_expr (exp);
-      SET_EXPR_LOCATION (exp, UNKNOWN_LOCATION);
+      walk_tree (&exp, prune_expression_for_jf_1, NULL, NULL);
     }
   return exp;
 }

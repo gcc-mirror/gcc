@@ -1,3 +1,176 @@
+2012-10-14  Jason Merrill  <jason@redhat.com>
+
+	PR target/54908
+	* libsupc++/atexit_thread.cc: Rewrite to keep the cleanup list
+	with get/setspecific.  Destroy the key on dlclose.
+
+2012-10-12  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::arcsine_distribution<>
+	and __gnu_cxx::hoyt_distribution<> classes.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::arcsine_distribution<> and __gnu_cxx::hoyt_distribution<>.
+	* testsuite/ext/random/hoyt_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/hoyt_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/hoyt_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+	* testsuite/ext/random/hoyt_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/hoyt_distribution/operators/inequal.cc: New file.
+	* testsuite/ext/random/hoyt_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/hoyt_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/random/arcsine_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/arcsine_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/arcsine_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+	* testsuite/ext/random/arcsine_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/arcsine_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/random/arcsine_distribution/operators/equal.cc:
+	New file.
+	* testsuite/ext/random/arcsine_distribution/operators/serialize.cc:
+	New file.
+
+2012-10-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h: Revert libstdc++/53067 quick
+	hacks thanks to the resolution of c++/51213.
+
+2012-10-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/bitset/45713.cc: Tweak.
+
+2012-10-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/54897
+	* testsuite/23_containers/bitset/45713.cc: Skip for avr*-*-*
+	cris*-*-* h8300*-*-* mcore*-*-* moxie*-*-*.
+
+2012-10-11  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Update / extend.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Likewise.
+	* testsuite/20_util/duration/requirements/sfinae_friendly_1.cc:
+	Likewise.
+
+2012-10-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/54872
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.11) [!__sun__ && !__svr4__]:
+	Don't export _ZNSt12system_errorC*.
+
+2012-10-10  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54847
+	* config/os/bsd/darwin/os_defines.h: Define _GLIBCXX_USE_NANOSLEEP
+	and _GLIBCXX_USE_SCHED_YIELD.
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add comment.
+
+2012-10-10  Mark Kettenis  <kettenis@openbsd.org>
+
+	* configure.host (*-*-openbsd*) Set cpu_include_dir.
+	* config/os/bsd/openbsd/ctype_base.h: New file.
+	* config/os/bsd/openbsd/ctype_configure_char.cc: New file.
+	* config/os/bsd/openbsd/ctype_inline.h: New file.
+	* config/os/bsd/openbsd/os_defines.h: New file.
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Use newlib locale model
+	for OpenBSD.
+	* configure: Regenerated.
+
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (__do_common_type_impl): Revert for now
+	LWG 2141-related change.
+	* testsuite/20_util/common_type/requirements/typedefs-1.cc: Likewise.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Adjust.
+
+2012-10-09  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/type_traits (common_time): Provide "SFINAE-friendly"
+	implementation.
+	(__success_type, __failure_type): Fix.
+	* include/std/chrono (common_type): Likewise for the chrono::time_point
+	specialization.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc: New.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Likewise.
+	* testsuite/20_util/duration/requirements/sfinae_friendly_1.cc:
+	Likewise.
+	* testsuite/20_util/common_type/requirements/typedefs-1.cc: Adjust wrt
+	LWG 2141.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+	* testsuite/20_util/result_of/sfinae_friendly_1.cc: Trivial stylistic
+	tweaks.
+	* testsuite/20_util/result_of/sfinae_friendly_2.cc: Likewise.
+
+2012-10-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR libstdc++/54861
+	* include/bits/atomic_base.h (atomic_signal_fence): Call
+	__atomic_signal_fence instead of __atomic_thread_fence.
+
+2012-10-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/808590.cc:
+	Fix constant value.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54869
+	* include/ext/random (simd_fast_mersenne_twister_engine): Provide
+	only for little endian targets.
+	* include/ext/random.tcc: Likewise.
+	* config/cpu/i486/opt/ext/opt_random.h: Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_little_endian): Add.
+	* testsuite/lib/dg-options.exp (dg-require-little-endian): Add.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	operators/equal.cc: Use the latter.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	operators/inequal.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/seed1.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/seed2.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/default.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/seed_seq.cc: Likewise.
+
+2012-10-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54754
+	* include/parallel/compatibility.h: Use atomic built-ins when they are
+	lock-free.
+
+2012-10-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.7.
+
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/cxxabi.h: Declare __cxa_thread_atexit.
+	* libsupc++/atexit_thread.cc: New.
+	* libsupc++/Makefile.am (nested_exception.lo): Add it.
+	* config/abi/pre/gnu.ver: Add __cxa_thread_atexit.
+
 2012-10-07  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/28_regex/algorithms/match/basic: Remove empty directory.

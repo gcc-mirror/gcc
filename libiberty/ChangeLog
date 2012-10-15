@@ -1,3 +1,8 @@
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_special_name, d_dump): Handle TH and TW.
+	(d_make_comp, d_print_comp): Likewise.
+
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 
 	* strnlen.c: New file.

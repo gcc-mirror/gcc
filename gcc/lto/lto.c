@@ -581,6 +581,15 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
   if (!compare_type_names_p (t1, t2))
     goto different_types;
 
+  /* The main variant of both types should compare equal.  */
+  if (TYPE_MAIN_VARIANT (t1) != t1
+      || TYPE_MAIN_VARIANT (t2) != t2)
+    {
+      if (!gtc_visit (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2),
+		      state, sccstack, sccstate, sccstate_obstack))
+	goto different_types;
+    }
+
   /* We may not merge typedef types to the same type in different
      contexts.  */
   if (TYPE_NAME (t1)
@@ -1101,6 +1110,12 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       && TYPE_P (DECL_CONTEXT (TYPE_NAME (type))))
     v = visit (DECL_CONTEXT (TYPE_NAME (type)), state, v,
 	       sccstack, sccstate, sccstate_obstack);
+
+  /* Factor in the variant structure.  */
+  if (TYPE_MAIN_VARIANT (type) != type)
+    v = visit (TYPE_MAIN_VARIANT (type), state, v,
+	       sccstack, sccstate, sccstate_obstack);
+
   v = iterative_hash_hashval_t (TREE_CODE (type), v);
   v = iterative_hash_hashval_t (TYPE_QUALS (type), v);
   v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
@@ -1408,10 +1423,35 @@ remember_with_vars (tree t)
 	    (tt) = GIMPLE_REGISTER_TYPE (tt); \
 	  if (VAR_OR_FUNCTION_DECL_P (tt) && TREE_PUBLIC (tt)) \
 	    remember_with_vars (t); \
+	  if (TREE_CODE (tt) == INTEGER_CST) \
+	    (tt) = fixup_integer_cst (tt); \
 	} \
     } while (0)
 
 static void lto_fixup_types (tree);
+
+/* Return integer_cst T with updated type.  */
+
+static tree
+fixup_integer_cst (tree t)
+{
+  tree type = GIMPLE_REGISTER_TYPE (TREE_TYPE (t));
+
+  if (type == TREE_TYPE (t))
+    return t;
+
+  /* If overflow was set, streamer_read_integer_cst
+     produced local copy of T. */
+  if (TREE_OVERFLOW (t))
+    {
+      TREE_TYPE (t) = type;
+      return t;
+    }
+  else
+  /* Otherwise produce new shared node for the new type.  */
+    return build_int_cst_wide (type, TREE_INT_CST_LOW (t),
+			       TREE_INT_CST_HIGH (t));
+}
 
 /* Fix up fields of a tree_typed T.  */
 
@@ -2649,6 +2689,7 @@ lto_wpa_write_files (void)
 
       lto_set_current_out_file (NULL);
       lto_obj_file_close (file);
+      free (file);
       part->encoder = NULL;
 
       len = strlen (temp_filename);
@@ -2665,6 +2706,7 @@ lto_wpa_write_files (void)
     fatal_error ("closing LTRANS output list %s: %m", ltrans_output_list);
 
   free_ltrans_partitions();
+  free (temp_filename);
 
   timevar_pop (TV_WHOPR_WPA_IO);
 }
@@ -2927,6 +2969,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       if (!file_data)
 	{
 	  lto_obj_file_close (current_lto_file);
+	  free (current_lto_file);
 	  current_lto_file = NULL;
 	  break;
 	}
@@ -2934,6 +2977,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       decl_data[last_file_ix++] = file_data;
 
       lto_obj_file_close (current_lto_file);
+      free (current_lto_file);
       current_lto_file = NULL;
       ggc_collect ();
     }

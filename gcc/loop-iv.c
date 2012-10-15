@@ -293,6 +293,7 @@ iv_analysis_loop_init (struct loop *loop)
      the problem back.  */
   df_remove_problem (df_chain);
   df_process_deferred_rescans ();
+  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_UD_CHAIN);
   df_note_add_problem ();
   df_set_blocks (blocks);
@@ -2003,11 +2004,30 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 		}
 	    }
 	  else
-	    /* If we did not use this insn to make a replacement, any overlap
-	       between stores in this insn and our expression will cause the
-	       expression to become invalid.  */
-	    if (for_each_rtx (expr, altered_reg_used, this_altered))
-	      goto out;
+	    {
+	      rtx *pnote, *pnote_next;
+
+	      /* If we did not use this insn to make a replacement, any overlap
+		 between stores in this insn and our expression will cause the
+		 expression to become invalid.  */
+	      if (for_each_rtx (expr, altered_reg_used, this_altered))
+		goto out;
+
+	      /* Likewise for the conditions.  */
+	      for (pnote = &cond_list; *pnote; pnote = pnote_next)
+		{
+		  rtx note = *pnote;
+		  rtx old_cond = XEXP (note, 0);
+
+		  pnote_next = &XEXP (note, 1);
+		  if (for_each_rtx (&old_cond, altered_reg_used, this_altered))
+		    {
+		      *pnote = *pnote_next;
+		      pnote_next = pnote;
+		      free_EXPR_LIST_node (note);
+		    }
+		}
+	    }
 
 	  if (CONSTANT_P (*expr))
 	    goto out;
@@ -2223,13 +2243,18 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
   rtx niter = desc->niter_expr;
   rtx mmin, mmax, cmp;
   unsigned HOST_WIDEST_INT nmax, inc;
+  unsigned HOST_WIDEST_INT andmax = 0;
+
+  /* We used to look for constant operand 0 of AND,
+     but canonicalization should always make this impossible.  */
+  gcc_checking_assert (GET_CODE (niter) != AND
+	               || !CONST_INT_P (XEXP (niter, 0)));
 
   if (GET_CODE (niter) == AND
-      && CONST_INT_P (XEXP (niter, 0)))
+      && CONST_INT_P (XEXP (niter, 1)))
     {
-      nmax = INTVAL (XEXP (niter, 0));
-      if (!(nmax & (nmax + 1)))
-	return nmax;
+      andmax = UINTVAL (XEXP (niter, 1));
+      niter = XEXP (niter, 0);
     }
 
   get_mode_bounds (desc->mode, desc->signed_p, desc->mode, &mmin, &mmax);
@@ -2257,7 +2282,13 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
       if (dump_file)
 	fprintf (dump_file, ";; improved upper bound by one.\n");
     }
-  return nmax / inc;
+  nmax /= inc;
+  if (andmax)
+    nmax = MIN (nmax, andmax);
+  if (dump_file)
+    fprintf (dump_file, ";; Determined upper bound "HOST_WIDEST_INT_PRINT_DEC".\n",
+	     nmax);
+  return nmax;
 }
 
 /* Computes number of iterations of the CONDITION in INSN in LOOP and stores
@@ -2293,10 +2324,6 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
   desc->const_iter = false;
   desc->niter_expr = NULL_RTX;
-  desc->niter_max = 0;
-  if (loop->any_upper_bound
-      && loop->nb_iterations_upper_bound.fits_uhwi ())
-    desc->niter_max = loop->nb_iterations_upper_bound.low;
 
   cond = GET_CODE (condition);
   gcc_assert (COMPARISON_P (condition));
@@ -2566,9 +2593,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 ? iv0.base
 			 : mode_mmin);
 	  max = (up - down) / inc + 1;
-	  if (!desc->niter_max
-	      || max < desc->niter_max)
-	    desc->niter_max = max;
+	  record_niter_bound (loop, double_int::from_uhwi (max),
+			      false, true);
 
 	  if (iv0.step == const0_rtx)
 	    {
@@ -2779,14 +2805,16 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       unsigned HOST_WIDEST_INT val = INTVAL (desc->niter_expr);
 
       desc->const_iter = true;
-      desc->niter_max = desc->niter = val & GET_MODE_MASK (desc->mode);
+      desc->niter = val & GET_MODE_MASK (desc->mode);
+      record_niter_bound (loop, double_int::from_uhwi (desc->niter),
+			  false, true);
     }
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
-      if (!desc->niter_max
-	  || max < desc->niter_max)
-	desc->niter_max = max;
+      gcc_assert (max);
+      record_niter_bound (loop, double_int::from_uhwi (max),
+			  false, true);
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life
@@ -2811,7 +2839,8 @@ zero_iter_simplify:
 zero_iter:
   desc->const_iter = true;
   desc->niter = 0;
-  desc->niter_max = 0;
+  record_niter_bound (loop, double_int_zero,
+		      true, true);
   desc->noloop_assumptions = NULL_RTX;
   desc->niter_expr = const0_rtx;
   return;
@@ -2945,9 +2974,10 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	  print_rtl (dump_file, desc->niter_expr);
       	  fprintf (dump_file, "\n");
 
-	  fprintf (dump_file, "  upper bound: ");
-	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter_max);
-      	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, "  upper bound: %li\n",
+		   (long)max_loop_iterations_int (loop));
+	  fprintf (dump_file, "  realistic bound: %li\n",
+		   (long)estimated_loop_iterations_int (loop));
 	}
       else
 	fprintf (dump_file, "Loop %d is not simple.\n", loop->num);

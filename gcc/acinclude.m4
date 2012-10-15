@@ -393,11 +393,15 @@ for f in $gcc_cv_as_bfd_srcdir/configure \
          $gcc_cv_as_gas_srcdir/configure \
          $gcc_cv_as_gas_srcdir/configure.in \
          $gcc_cv_as_gas_srcdir/Makefile.in ; do
-  gcc_cv_gas_version=`sed -n -e 's/^[[ 	]]*\(VERSION=[[0-9]]*\.[[0-9]]*.*\)/\1/p' < $f`
+  gcc_cv_gas_version=`sed -n -e 's/^[[ 	]]*VERSION=[[^0-9A-Za-z_]]*\([[0-9]]*\.[[0-9]]*.*\)/VERSION=\1/p' < $f`
   if test x$gcc_cv_gas_version != x; then
     break
   fi
 done
+case $gcc_cv_gas_version in
+  VERSION=[[0-9]]*) ;;
+  *) AC_MSG_ERROR([[cannot find version of in-tree assembler]]);;
+esac
 gcc_cv_gas_major_version=`expr "$gcc_cv_gas_version" : "VERSION=\([[0-9]]*\)"`
 gcc_cv_gas_minor_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.\([[0-9]]*\)"`
 gcc_cv_gas_patch_version=`expr "$gcc_cv_gas_version" : "VERSION=[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)"`

@@ -133,6 +133,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef struct { char __arr[2]; } __two;
   };
 
+  // For several sfinae-friendly trait implementations we transport both the
+  // result information (as the member type) and the failure information (no
+  // member type). This is very similar to std::enable_if, but we cannot use
+  // them, because we need to derive from them as an implementation detail.
+
+  template<typename _Tp>
+    struct __success_type
+    { typedef _Tp type; };
+
+  struct __failure_type
+  { };
+
   // primary type categories.
 
   template<typename>
@@ -1771,10 +1783,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct conditional<false, _Iftrue, _Iffalse>
     { typedef _Iffalse type; };
 
-
   /// common_type
   template<typename... _Tp>
     struct common_type;
+
+  // sfinae-friendly common_type implementation:
+
+  struct __do_common_type_impl
+  {
+    template<typename _Tp, typename _Up>
+      static __success_type<decltype
+			    (true ? std::declval<_Tp>()
+			     : std::declval<_Up>())> _S_test(int);
+
+    template<typename, typename>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _Tp, typename _Up>
+    struct __common_type_impl
+    : private __do_common_type_impl
+    {
+      typedef decltype(_S_test<_Tp, _Up>(0)) type;
+    };
+
+  struct __do_member_type_wrapper
+  {
+    template<typename _Tp>
+      static __success_type<typename _Tp::type> _S_test(int);
+
+    template<typename>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _Tp>
+    struct __member_type_wrapper
+    : private __do_member_type_wrapper
+    {
+      typedef decltype(_S_test<_Tp>(0)) type;
+    };
+
+  template<typename _CTp, typename... _Args>
+    struct __expanded_common_type_wrapper
+    {
+      typedef common_type<typename _CTp::type, _Args...> type;
+    };
+
+  template<typename... _Args>
+    struct __expanded_common_type_wrapper<__failure_type, _Args...>
+    { typedef __failure_type type; };
 
   template<typename _Tp>
     struct common_type<_Tp>
@@ -1782,14 +1839,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Up>
     struct common_type<_Tp, _Up>
-    { typedef decltype(true ? declval<_Tp>() : declval<_Up>()) type; };
+    : public __common_type_impl<_Tp, _Up>::type
+    { };
 
   template<typename _Tp, typename _Up, typename... _Vp>
     struct common_type<_Tp, _Up, _Vp...>
-    {
-      typedef typename
-        common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
-    };
+    : public __expanded_common_type_wrapper<typename __member_type_wrapper<
+               common_type<_Tp, _Up>>::type, _Vp...>::type
+    { };
 
   /// The underlying type of an enum.
   template<typename _Tp>
@@ -1818,14 +1875,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Signature>
     class result_of;
 
-  // sfinae-friendly result_of implementation. We use enable_if to transport
-  // both the result information (as the member type) and the failure
-  // information (no member type).
-
-  template<typename _Tp>
-    using __success_type = enable_if<true, _Tp>;
-
-  using __failure_type = enable_if<false>;
+  // sfinae-friendly result_of implementation:
 
   // [func.require] paragraph 1 bullet 1:
   struct __result_of_memfun_ref_impl

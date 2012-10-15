@@ -1,0 +1,14 @@
+// { dg-options "-std=c++11" }
+
+struct A
+{
+  template <class... Ts> A(Ts...);
+};
+
+struct B: A
+{
+  using A::A;
+};
+
+B b1(42);
+B b2(1.0, 42, (void*)0);

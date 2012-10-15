@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,11 +15,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
+// The testcase requires bitsizetype to be wider than sizetype,
+// otherwise types/vars with 0x20000000 bytes or larger can't be used.
+// See http://gcc.gnu.org/PR54897
+// { dg-do compile { target { ! { avr*-*-* cris*-*-* h8300*-*-* mcore*-*-* moxie*-*-* } } } }
 
 #include <bitset>
 
 // libstdc++/45713
-#if __SIZEOF_SIZE_T__ >= 4
-int test[sizeof(std::bitset<0xffffffff>) != 1 ? 1 : -1];
-#endif
+int test[sizeof(std::bitset<__SIZE_MAX__>) != 1 ? 1 : -1];

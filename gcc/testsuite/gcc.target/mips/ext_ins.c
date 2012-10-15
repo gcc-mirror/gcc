@@ -18,9 +18,8 @@ NOMIPS16 unsigned int f1 (struct A a)
   return a.j;
 }
 
-NOMIPS16 void f2 (int i)
+NOMIPS16 struct A f2 (struct A a, int i)
 {
-  struct A c;
-  c.j = i;
-  func (c);
+  a.j = i;
+  return a;
 }
