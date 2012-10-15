@@ -1,3 +1,15 @@
+2012-10-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	Backport from trunk (r190222):
+
+	PR tree-optimization/54146
+	* ifcvt.c: Include pointer-set.h.
+	(cond_move_process_if_block): Change type of then_regs and
+	else_regs from alloca'd array to pointer_sets.
+	(check_cond_move_block): Update for this change.
+	(cond_move_convert_if_block): Likewise.
+	* Makefile.in: Fix dependencies for ifcvt.o.
+
 2012-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54920
