@@ -1,3 +1,8 @@
+2012-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Do not unnecessarily
+	copy the object in the MEM_P case.
+
 2012-10-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-streamer-out.c (streamer_pack_tree_bitfields): Back
@@ -36,7 +41,6 @@
 	* ira.c (mark_elimination): Update DF_LR and DF_LIVE.
 	(build_insn_chain): Use df_get_live_out instead of DF_LR_OUT.
 	(do_reload): Remove the DF_LIVE problem for -O1.
-
 
 2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
 
