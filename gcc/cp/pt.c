@@ -3847,17 +3847,16 @@ arg_from_parm_pack_p (tree arg_pack, tree parm_pack)
   return false;
 }
 
-/* Within the declaration of a template, return all levels of template
-   parameters that apply.  The template parameters are represented as
-   a TREE_VEC, in the form documented in cp-tree.h for template
-   arguments.  */
+/* Given a set of template parameters, return them as a set of template
+   arguments.  The template parameters are represented as a TREE_VEC, in
+   the form documented in cp-tree.h for template arguments.  */
 
 static tree
-current_template_args (void)
+template_parms_to_args (tree parms)
 {
   tree header;
   tree args = NULL_TREE;
-  int length = TMPL_PARMS_DEPTH (current_template_parms);
+  int length = TMPL_PARMS_DEPTH (parms);
   int l = length;
 
   /* If there is only one level of template parameters, we do not
@@ -3866,7 +3865,7 @@ current_template_args (void)
   if (length > 1)
     args = make_tree_vec (length);
 
-  for (header = current_template_parms; header; header = TREE_CHAIN (header))
+  for (header = parms; header; header = TREE_CHAIN (header))
     {
       tree a = copy_node (TREE_VALUE (header));
       int i;
@@ -3901,6 +3900,15 @@ current_template_args (void)
 	 returns the correct depth for args.  */
       TREE_VEC_ELT (args, 0) = make_tree_vec (1);
   return args;
+}
+
+/* Within the declaration of a template, return the currently active
+   template parameters as an argument TREE_VEC.  */
+
+static tree
+current_template_args (void)
+{
+  return template_parms_to_args (current_template_parms);
 }
 
 /* Update the declared TYPE by doing any lookups which were thought to be
@@ -4902,6 +4910,29 @@ tree
 push_template_decl (tree decl)
 {
   return push_template_decl_real (decl, false);
+}
+
+/* FN is an inheriting constructor that inherits from the constructor
+   template INHERITED; turn FN into a constructor template with a matching
+   template header.  */
+
+tree
+add_inherited_template_parms (tree fn, tree inherited)
+{
+  tree inner_parms
+    = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (inherited));
+  inner_parms = copy_node (inner_parms);
+  tree parms
+    = tree_cons (size_int (processing_template_decl + 1),
+		 inner_parms, current_template_parms);
+  tree tmpl = build_template_decl (fn, parms, /*member*/true);
+  tree args = template_parms_to_args (parms);
+  DECL_TEMPLATE_INFO (fn) = build_template_info (tmpl, args);
+  TREE_TYPE (tmpl) = TREE_TYPE (fn);
+  DECL_TEMPLATE_RESULT (tmpl) = fn;
+  DECL_ARTIFICIAL (tmpl) = true;
+  DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
+  return tmpl;
 }
 
 /* Called when a class template TYPE is redeclared with the indicated
@@ -10136,6 +10167,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    maybe_retrofit_in_chrg (r);
 	    if (DECL_CONSTRUCTOR_P (r))
 	      grok_ctor_properties (ctx, r);
+	    if (DECL_INHERITED_CTOR_BASE (r))
+	      deduce_inheriting_ctor (r);
 	    /* If this is an instantiation of a member template, clone it.
 	       If it isn't, that'll be handled by
 	       clone_constructors_and_destructors.  */
@@ -10336,9 +10369,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       if (DECL_DEPENDENT_P (t)
 	  || uses_template_parms (USING_DECL_SCOPE (t)))
 	{
-	  r = do_class_using_decl
-	    (tsubst_copy (USING_DECL_SCOPE (t), args, complain, in_decl),
-	     tsubst_copy (DECL_NAME (t), args, complain, in_decl));
+	  tree scope = USING_DECL_SCOPE (t);
+	  tree inst_scope = tsubst_copy (USING_DECL_SCOPE (t), args,
+					 complain, in_decl);
+	  tree name = tsubst_copy (DECL_NAME (t), args, complain, in_decl);
+	  if (TREE_CODE (scope) == TEMPLATE_TYPE_PARM
+	      && name == TYPE_IDENTIFIER (scope))
+	    name = TYPE_IDENTIFIER (inst_scope);
+	  r = do_class_using_decl (inst_scope, name);
 	  if (!r)
 	    r = error_mark_node;
 	  else

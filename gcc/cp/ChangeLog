@@ -1,3 +1,34 @@
+2012-10-14  Jason Merrill  <jason@redhat.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement C++11 inheriting constructors.
+	* cp-tree.h (cpp0x_warn_str): Add CPP0X_INHERITING_CTORS.
+	(DECL_INHERITED_CTOR_BASE, SET_DECL_INHERITED_CTOR_BASE): New.
+	(special_function_kind): Add sfk_inheriting_constructor.
+	* class.c (add_method): An inheriting ctor is hidden by a
+	user-declared one.
+	(one_inheriting_sig, one_inherited_ctor): New.
+	(add_implicitly_declared_members): Handle inheriting ctors.
+	* error.c (maybe_warn_cpp0x): Handle CPP0X_INHERITING_CTORS.
+	* init.c (emit_mem_initializers): Don't set LOOKUP_DEFAULTED
+	for an inheriting constructor.
+	* method.c (type_has_trivial_fn): Handle sfk_inheriting_constructor.
+	(type_set_nontrivial_flag): Likewise.
+	(add_one_base_init): Split out from...
+	(do_build_copy_constructor): ...here.  Handle inheriting constructors.
+	(locate_fn_flags): Handle a list of arg types.
+	(synthesized_method_walk): Handle inheriting constructors.
+	(maybe_explain_implicit_delete): Likewise.
+	(deduce_inheriting_ctor): New.
+	(implicitly_declare_fn): Handle inheriting constructors.
+	* name-lookup.c (push_class_level_binding_1): An inheriting constructor
+	does not declare the base's name.
+	(do_class_using_decl): Allow inheriting constructors.
+	* pt.c (template_parms_to_args): Split from current_template_args.
+	(add_inherited_template_parms): New.
+	(tsubst_decl): Handle inheriting constructors.
+	* tree.c (special_function_p): Handle inheriting constructors.
+
 2012-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54381

@@ -1036,7 +1036,8 @@ emit_mem_initializers (tree mem_inits)
       return;
     }
 
-  if (DECL_DEFAULTED_FN (current_function_decl))
+  if (DECL_DEFAULTED_FN (current_function_decl)
+      && ! DECL_INHERITED_CTOR_BASE (current_function_decl))
     flags |= LOOKUP_DEFAULTED;
 
   /* Sort the mem-initializers into the order in which the

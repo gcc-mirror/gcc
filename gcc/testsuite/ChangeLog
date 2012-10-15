@@ -1,3 +1,19 @@
+2012-10-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/inh-ctor1.C: New.
+	* g++.dg/cpp0x/inh-ctor2.C: New.
+	* g++.dg/cpp0x/inh-ctor3.C: New.
+	* g++.dg/cpp0x/inh-ctor4.C: New.
+	* g++.dg/cpp0x/inh-ctor5.C: New.
+	* g++.dg/cpp0x/inh-ctor6.C: New.
+	* g++.dg/cpp0x/inh-ctor7.C: New.
+	* g++.dg/cpp0x/inh-ctor8.C: New.
+	* g++.dg/cpp0x/inh-ctor9.C: New.
+	* g++.dg/cpp0x/inh-ctor10.C: New.
+	* g++.dg/cpp0x/inh-ctor11.C: New.
+	* g++.dg/cpp0x/inh-ctor12.C: New.
+	* g++.dg/cpp0x/inh-ctor13.C: New.
+
 2012-10-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/54919

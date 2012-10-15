@@ -3337,6 +3337,8 @@ special_function_p (const_tree decl)
   /* Rather than doing all this stuff with magic names, we should
      probably have a field of type `special_function_kind' in
      DECL_LANG_SPECIFIC.  */
+  if (DECL_INHERITED_CTOR_BASE (decl))
+    return sfk_inheriting_constructor;
   if (DECL_COPY_CONSTRUCTOR_P (decl))
     return sfk_copy_constructor;
   if (DECL_MOVE_CONSTRUCTOR_P (decl))
