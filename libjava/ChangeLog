@@ -1,3 +1,8 @@
+2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Match arm*-*-linux-* for ARM Linux/GNU.
+	* configure: Regenerate.
+
 2012-09-14  Dehao Chen  <dehao@google.com>
 
 	* testsuite/libjava.lang/sourcelocation.java: New cases.

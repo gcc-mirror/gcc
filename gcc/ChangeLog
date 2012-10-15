@@ -1,3 +1,8 @@
+2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* config.gcc: Match arm*-*-linux-* for ARM Linux/GNU.
+	* doc/install.texi: Use arm-*-*linux-* instead of arm-*-*linux-gnueabi.
+
 2012-10-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (UNSPEC_MOVU): Remove.

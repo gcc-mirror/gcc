@@ -1,3 +1,9 @@
+2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.host: Match arm*-*-linux-* for ARM Linux/GNU.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Likewise.
+
 2012-10-15  Pavel Chupin  <pavel.v.chupin@intel.com>
 
 	* Makefile.in: Regenerate.
