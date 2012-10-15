@@ -132,7 +132,7 @@ static void finish_struct_methods (tree);
 static void maybe_warn_about_overly_private_class (tree);
 static int method_name_cmp (const void *, const void *);
 static int resort_method_name_cmp (const void *, const void *);
-static void add_implicitly_declared_members (tree, int, int);
+static void add_implicitly_declared_members (tree, tree*, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
 static tree build_simple_base_path (tree expr, tree binfo);
 static tree build_vtbl_ref_1 (tree, tree);
@@ -1087,6 +1087,20 @@ add_method (tree type, tree method, tree using_decl)
 	      || same_type_p (TREE_TYPE (fn_type),
 			      TREE_TYPE (method_type))))
 	{
+	  if (DECL_INHERITED_CTOR_BASE (method))
+	    {
+	      if (DECL_INHERITED_CTOR_BASE (fn))
+		{
+		  error_at (DECL_SOURCE_LOCATION (method),
+			    "%q#D inherited from %qT", method,
+			    DECL_INHERITED_CTOR_BASE (method));
+		  error_at (DECL_SOURCE_LOCATION (fn),
+			    "conflicts with version inherited from %qT",
+			    DECL_INHERITED_CTOR_BASE (fn));
+		}
+	      /* Otherwise defer to the other function.  */
+	      return false;
+	    }
 	  if (using_decl)
 	    {
 	      if (DECL_CONTEXT (fn) == type)
@@ -2750,6 +2764,51 @@ declare_virt_assop_and_dtor (tree t)
 		NULL, t);
 }
 
+/* Declare the inheriting constructor for class T inherited from base
+   constructor CTOR with the parameter array PARMS of size NPARMS.  */
+
+static void
+one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
+{
+  /* We don't declare an inheriting ctor that would be a default,
+     copy or move ctor.  */
+  if (nparms == 0
+      || (nparms == 1
+	  && TREE_CODE (parms[0]) == REFERENCE_TYPE
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (parms[0])) == t))
+    return;
+  int i;
+  tree parmlist = void_list_node;
+  for (i = nparms - 1; i >= 0; i--)
+    parmlist = tree_cons (NULL_TREE, parms[i], parmlist);
+  tree fn = implicitly_declare_fn (sfk_inheriting_constructor,
+				   t, false, ctor, parmlist);
+  if (add_method (t, fn, NULL_TREE))
+    {
+      DECL_CHAIN (fn) = TYPE_METHODS (t);
+      TYPE_METHODS (t) = fn;
+    }
+}
+
+/* Declare all the inheriting constructors for class T inherited from base
+   constructor CTOR.  */
+
+static void
+one_inherited_ctor (tree ctor, tree t)
+{
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (ctor);
+
+  tree *new_parms = XALLOCAVEC (tree, list_length (parms));
+  int i = 0;
+  for (; parms && parms != void_list_node; parms = TREE_CHAIN (parms))
+    {
+      if (TREE_PURPOSE (parms))
+	one_inheriting_sig (t, ctor, new_parms, i);
+      new_parms[i++] = TREE_VALUE (parms);
+    }
+  one_inheriting_sig (t, ctor, new_parms, i);
+}
+
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.  CANT_HAVE_CONST_CTOR,
    and CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason,
@@ -2758,7 +2817,7 @@ declare_virt_assop_and_dtor (tree t)
    a const reference, respectively.  */
 
 static void
-add_implicitly_declared_members (tree t,
+add_implicitly_declared_members (tree t, tree* access_decls,
 				 int cant_have_const_cctor,
 				 int cant_have_const_assignment)
 {
@@ -2826,6 +2885,26 @@ add_implicitly_declared_members (tree t,
   /* We can't be lazy about declaring functions that might override
      a virtual function from a base class.  */
   declare_virt_assop_and_dtor (t);
+
+  while (*access_decls)
+    {
+      tree using_decl = TREE_VALUE (*access_decls);
+      tree decl = USING_DECL_DECLS (using_decl);
+      if (DECL_SELF_REFERENCE_P (decl))
+	{
+	  /* declare, then remove the decl */
+	  tree ctor_list = CLASSTYPE_CONSTRUCTORS (TREE_TYPE (decl));
+	  location_t loc = input_location;
+	  input_location = DECL_SOURCE_LOCATION (using_decl);
+	  if (ctor_list)
+	    for (; ctor_list; ctor_list = OVL_NEXT (ctor_list))
+	      one_inherited_ctor (OVL_CURRENT (ctor_list), t);
+	  *access_decls = TREE_CHAIN (*access_decls);
+	  input_location = loc;
+	}
+      else
+	access_decls = &TREE_CHAIN (*access_decls);
+    }
 }
 
 /* Subroutine of insert_into_classtype_sorted_fields.  Recursively
@@ -4342,7 +4421,8 @@ deduce_noexcept_on_destructor (tree dtor)
     {
       tree ctx = DECL_CONTEXT (dtor);
       tree implicit_fn = implicitly_declare_fn (sfk_destructor, ctx,
-						/*const_p=*/false);
+						/*const_p=*/false,
+						NULL, NULL);
       tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
       TREE_TYPE (dtor) = build_exception_variant (TREE_TYPE (dtor), eh_spec);
     }
@@ -5135,14 +5215,14 @@ check_bases_and_members (tree t)
     }
 
   /* Synthesize any needed methods.  */
-  add_implicitly_declared_members (t,
+  add_implicitly_declared_members (t, &access_decls,
 				   cant_have_const_ctor,
 				   no_const_asn_ref);
 
   /* Check defaulted declarations here so we have cant_have_const_ctor
      and don't need to worry about clones.  */
   for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
-    if (DECL_DEFAULTED_IN_CLASS_P (fn))
+    if (!DECL_ARTIFICIAL (fn) && DECL_DEFAULTED_IN_CLASS_P (fn))
       {
 	int copy = copy_fn_p (fn);
 	if (copy > 0)

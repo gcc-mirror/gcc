@@ -3374,6 +3374,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 		 "delegating constructors "
 		 "only available with -std=c++11 or -std=gnu++11");
         break;
+      case CPP0X_INHERITING_CTORS:
+	pedwarn (input_location, 0,
+		 "inheriting constructors "
+		 "only available with -std=c++11 or -std=gnu++11");
+        break;
       case CPP0X_ATTRIBUTES:
 	pedwarn (input_location, 0,
 		 "c++11 attributes "

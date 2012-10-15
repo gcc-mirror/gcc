@@ -429,6 +429,8 @@ type_has_trivial_fn (tree ctype, special_function_kind sfk)
       return !TYPE_HAS_COMPLEX_MOVE_ASSIGN (ctype);
     case sfk_destructor:
       return !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype);
+    case sfk_inheriting_constructor:
+      return false;
     default:
       gcc_unreachable ();
     }
@@ -460,6 +462,7 @@ type_set_nontrivial_flag (tree ctype, special_function_kind sfk)
     case sfk_destructor:
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype) = true;
       return;
+    case sfk_inheriting_constructor:
     default:
       gcc_unreachable ();
     }
@@ -478,7 +481,46 @@ trivial_fn_p (tree fn)
   return type_has_trivial_fn (DECL_CONTEXT (fn), special_function_p (fn));
 }
 
-/* Generate code for default X(X&) or X(X&&) constructor.  */
+/* Subroutine of do_build_copy_constructor: Add a mem-initializer for BINFO
+   given the parameter or parameters PARM, possibly inherited constructor
+   base INH, or move flag MOVE_P.  */
+
+static tree
+add_one_base_init (tree binfo, tree parm, bool move_p, tree inh,
+		   tree member_init_list)
+{
+  tree init;
+  if (inh)
+    {
+      /* An inheriting constructor only has a mem-initializer for
+	 the base it inherits from.  */
+      if (BINFO_TYPE (binfo) != inh)
+	return member_init_list;
+
+      tree *p = &init;
+      init = NULL_TREE;
+      for (; parm; parm = DECL_CHAIN (parm))
+	{
+	  tree exp = convert_from_reference (parm);
+	  if (TREE_CODE (TREE_TYPE (parm)) != REFERENCE_TYPE)
+	    exp = move (exp);
+	  *p = build_tree_list (NULL_TREE, exp);
+	  p = &TREE_CHAIN (*p);
+	}
+    }
+  else
+    {
+      init = build_base_path (PLUS_EXPR, parm, binfo, 1,
+			      tf_warning_or_error);
+      if (move_p)
+	init = move (init);
+      init = build_tree_list (NULL_TREE, init);
+    }
+  return tree_cons (binfo, init, member_init_list);
+}
+
+/* Generate code for default X(X&) or X(X&&) constructor or an inheriting
+   constructor.  */
 
 static void
 do_build_copy_constructor (tree fndecl)
@@ -486,8 +528,10 @@ do_build_copy_constructor (tree fndecl)
   tree parm = FUNCTION_FIRST_USER_PARM (fndecl);
   bool move_p = DECL_MOVE_CONSTRUCTOR_P (fndecl);
   bool trivial = trivial_fn_p (fndecl);
+  tree inh = DECL_INHERITED_CTOR_BASE (fndecl);
 
-  parm = convert_from_reference (parm);
+  if (!inh)
+    parm = convert_from_reference (parm);
 
   if (trivial
       && is_empty_class (current_class_type))
@@ -516,14 +560,8 @@ do_build_copy_constructor (tree fndecl)
       for (vbases = CLASSTYPE_VBASECLASSES (current_class_type), i = 0;
 	   VEC_iterate (tree, vbases, i, binfo); i++)
 	{
-	  init = build_base_path (PLUS_EXPR, parm, binfo, 1,
-				  tf_warning_or_error);
-	  if (move_p)
-	    init = move (init);
-	  member_init_list
-	    = tree_cons (binfo,
-			 build_tree_list (NULL_TREE, init),
-			 member_init_list);
+	  member_init_list = add_one_base_init (binfo, parm, move_p, inh,
+						member_init_list);
 	}
 
       for (binfo = TYPE_BINFO (current_class_type), i = 0;
@@ -531,15 +569,8 @@ do_build_copy_constructor (tree fndecl)
 	{
 	  if (BINFO_VIRTUAL_P (base_binfo))
 	    continue;
-
-	  init = build_base_path (PLUS_EXPR, parm, base_binfo, 1,
-				  tf_warning_or_error);
-	  if (move_p)
-	    init = move (init);
-	  member_init_list
-	    = tree_cons (base_binfo,
-			 build_tree_list (NULL_TREE, init),
-			 member_init_list);
+	  member_init_list = add_one_base_init (base_binfo, parm, move_p,
+						inh, member_init_list);
 	}
 
       for (; fields; fields = DECL_CHAIN (fields))
@@ -548,6 +579,8 @@ do_build_copy_constructor (tree fndecl)
 	  tree expr_type;
 
 	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+	  if (inh)
 	    continue;
 
 	  expr_type = TREE_TYPE (field);
@@ -833,8 +866,23 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
   args = make_tree_vector ();
   if (argtype)
     {
-      tree arg = build_stub_object (argtype);
-      VEC_quick_push (tree, args, arg);
+      if (TREE_CODE (argtype) == TREE_LIST)
+	{
+	  for (tree elt = argtype; elt != void_list_node;
+	       elt = TREE_CHAIN (elt))
+	    {
+	      tree type = TREE_VALUE (elt);
+	      if (TREE_CODE (type) != REFERENCE_TYPE)
+		type = cp_build_reference_type (type, /*rval*/true);
+	      tree arg = build_stub_object (type);
+	      VEC_safe_push (tree, gc, args, arg);
+	    }
+	}
+      else
+	{
+	  tree arg = build_stub_object (argtype);
+	  VEC_quick_push (tree, args, arg);
+	}
     }
 
   fns = lookup_fnfields (binfo, name, 0);
@@ -1110,7 +1158,8 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 static void
 synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 			 tree *spec_p, bool *trivial_p, bool *deleted_p,
-			 bool *constexpr_p, bool *no_implicit_p, bool diag)
+			 bool *constexpr_p, bool *no_implicit_p, bool diag,
+			 tree inherited_base, tree inherited_parms)
 {
   tree binfo, base_binfo, scope, fnname, rval, argtype;
   bool move_p, copy_arg_p, assign_p, expected_trivial, check_vdtor;
@@ -1162,6 +1211,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_constructor:
     case sfk_move_constructor:
     case sfk_copy_constructor:
+    case sfk_inheriting_constructor:
       ctor_p = true;
       fnname = complete_ctor_identifier;
       break;
@@ -1169,6 +1219,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     default:
       gcc_unreachable ();
     }
+
+  gcc_assert ((sfk == sfk_inheriting_constructor)
+	      == (inherited_base != NULL_TREE));
 
   /* If that user-written default constructor would satisfy the
      requirements of a constexpr constructor (7.1.5), the
@@ -1181,6 +1234,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     {
     case sfk_constructor:
     case sfk_destructor:
+    case sfk_inheriting_constructor:
       copy_arg_p = false;
       break;
 
@@ -1231,7 +1285,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   scope = push_scope (ctype);
 
-  flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE|LOOKUP_DEFAULTED;
+  flags = LOOKUP_NORMAL|LOOKUP_SPECULATIVE;
+  if (!inherited_base)
+    flags |= LOOKUP_DEFAULTED;
 
   complain = diag ? tf_warning_or_error : tf_none;
 
@@ -1252,7 +1308,11 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
       if (copy_arg_p)
 	argtype = build_stub_type (basetype, quals, move_p);
+      else if (basetype == inherited_base)
+	argtype = inherited_parms;
       rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
+      if (inherited_base)
+	argtype = NULL_TREE;
 
       process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
 			constexpr_p, no_implicit_p, diag, basetype);
@@ -1405,14 +1465,16 @@ maybe_explain_implicit_delete (tree decl)
 	}
       if (!informed)
 	{
-	  tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (decl));
+	  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
+	  tree parm_type = TREE_VALUE (parms);
 	  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
 	  tree scope = push_scope (ctype);
 	  inform (0, "%q+#D is implicitly deleted because the default "
 		 "definition would be ill-formed:", decl);
 	  pop_scope (scope);
 	  synthesized_method_walk (ctype, sfk, const_p,
-				   NULL, NULL, NULL, NULL, NULL, true);
+				   NULL, NULL, NULL, NULL, NULL, true,
+				   DECL_INHERITED_CTOR_BASE (decl), parms);
 	}
 
       input_location = loc;
@@ -1432,7 +1494,27 @@ explain_implicit_non_constexpr (tree decl)
   bool dummy;
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
-			   NULL, NULL, NULL, &dummy, NULL, true);
+			   NULL, NULL, NULL, &dummy, NULL, true,
+			   NULL_TREE, NULL_TREE);
+}
+
+/* DECL is an instantiation of an inheriting constructor template.  Deduce
+   the correct exception-specification and deletedness for this particular
+   specialization.  */
+
+void
+deduce_inheriting_ctor (tree decl)
+{
+  gcc_assert (DECL_INHERITED_CTOR_BASE (decl));
+  tree spec;
+  bool trivial, constexpr_, deleted, no_implicit;
+  synthesized_method_walk (DECL_CONTEXT (decl), sfk_inheriting_constructor,
+			   false, &spec, &trivial, &deleted, &constexpr_,
+			   &no_implicit, /*diag*/false,
+			   DECL_INHERITED_CTOR_BASE (decl),
+			   FUNCTION_FIRST_USER_PARMTYPE (decl));
+  DECL_DELETED_FN (decl) = deleted;
+  TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl), spec);
 }
 
 /* Implicitly declare the special function indicated by KIND, as a
@@ -1442,7 +1524,9 @@ explain_implicit_non_constexpr (tree decl)
    FUNCTION_DECL for the implicitly declared function.  */
 
 tree
-implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
+implicitly_declare_fn (special_function_kind kind, tree type,
+		       bool const_p, tree inherited_ctor,
+		       tree inherited_parms)
 {
   tree fn;
   tree parameter_types = void_list_node;
@@ -1499,6 +1583,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
     case sfk_copy_assignment:
     case sfk_move_constructor:
     case sfk_move_assignment:
+    case sfk_inheriting_constructor:
     {
       bool move_p;
       if (kind == sfk_copy_assignment
@@ -1510,23 +1595,44 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       else
 	name = constructor_name (type);
 
-      if (const_p)
-	rhs_parm_type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+      if (kind == sfk_inheriting_constructor)
+	parameter_types = inherited_parms;
       else
-	rhs_parm_type = type;
-      move_p = (kind == sfk_move_assignment
-		|| kind == sfk_move_constructor);
-      rhs_parm_type = cp_build_reference_type (rhs_parm_type, move_p);
+	{
+	  if (const_p)
+	    rhs_parm_type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+	  else
+	    rhs_parm_type = type;
+	  move_p = (kind == sfk_move_assignment
+		    || kind == sfk_move_constructor);
+	  rhs_parm_type = cp_build_reference_type (rhs_parm_type, move_p);
 
-      parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);
+	  parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);
+	}
       break;
     }
     default:
       gcc_unreachable ();
     }
 
-  synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
-			   &deleted_p, &constexpr_p, &no_implicit_p, false);
+  tree inherited_base = (inherited_ctor
+			 ? DECL_CONTEXT (inherited_ctor)
+			 : NULL_TREE);
+  if (inherited_ctor && TREE_CODE (inherited_ctor) == TEMPLATE_DECL)
+    {
+      /* For an inheriting constructor template, just copy these flags from
+	 the inherited constructor template for now.  */
+      raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (inherited_ctor));
+      trivial_p = false;
+      deleted_p = DECL_DELETED_FN (DECL_TEMPLATE_RESULT (inherited_ctor));
+      constexpr_p
+	= DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT (inherited_ctor));
+      no_implicit_p = false;
+    }
+  else
+    synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
+			     &deleted_p, &constexpr_p, &no_implicit_p, false,
+			     inherited_base, inherited_parms);
   /* Don't bother marking a deleted constructor as constexpr.  */
   if (deleted_p)
     constexpr_p = false;
@@ -1544,9 +1650,10 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   if (raises)
     fn_type = build_exception_variant (fn_type, raises);
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
-  DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
+  if (kind != sfk_inheriting_constructor)
+    DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
   if (kind == sfk_constructor || kind == sfk_copy_constructor
-      || kind == sfk_move_constructor)
+      || kind == sfk_move_constructor || kind == sfk_inheriting_constructor)
     DECL_CONSTRUCTOR_P (fn) = 1;
   else if (kind == sfk_destructor)
     DECL_DESTRUCTOR_P (fn) = 1;
@@ -1575,6 +1682,27 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       DECL_PARM_INDEX (decl) = DECL_PARM_LEVEL (decl) = 1;
       DECL_ARGUMENTS (fn) = decl;
     }
+  else if (kind == sfk_inheriting_constructor)
+    {
+      tree *p = &DECL_ARGUMENTS (fn);
+      for (tree parm = inherited_parms; parm != void_list_node;
+	   parm = TREE_CHAIN (parm))
+	{
+	  *p = cp_build_parm_decl (NULL_TREE, TREE_VALUE (parm));
+	  DECL_CONTEXT (*p) = fn;
+	  p = &DECL_CHAIN (*p);
+	}
+      SET_DECL_INHERITED_CTOR_BASE (fn, inherited_base);
+      DECL_NONCONVERTING_P (fn) = DECL_NONCONVERTING_P (inherited_ctor);
+      /* A constructor so declared has the same access as the corresponding
+	 constructor in X.  */
+      TREE_PRIVATE (fn) = TREE_PRIVATE (inherited_ctor);
+      TREE_PROTECTED (fn) = TREE_PROTECTED (inherited_ctor);
+      /* Copy constexpr from the inherited constructor even if the
+	 inheriting constructor doesn't satisfy the requirements.  */
+      constexpr_p
+	= DECL_DECLARED_CONSTEXPR_P (STRIP_TEMPLATE (inherited_ctor));
+    }
   /* Add the "this" parameter.  */
   this_parm = build_this_parm (fn_type, TYPE_UNQUALIFIED);
   DECL_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
@@ -1600,6 +1728,9 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   /* Restore PROCESSING_TEMPLATE_DECL.  */
   processing_template_decl = saved_processing_template_decl;
 
+  if (inherited_ctor && TREE_CODE (inherited_ctor) == TEMPLATE_DECL)
+    fn = add_inherited_template_parms (fn, inherited_ctor);
+
   return fn;
 }
 
@@ -1613,7 +1744,8 @@ defaulted_late_check (tree fn)
   tree ctx = DECL_CONTEXT (fn);
   special_function_kind kind = special_function_p (fn);
   bool fn_const_p = (copy_fn_p (fn) == 2);
-  tree implicit_fn = implicitly_declare_fn (kind, ctx, fn_const_p);
+  tree implicit_fn = implicitly_declare_fn (kind, ctx, fn_const_p,
+					    NULL, NULL);
 
   if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 		    TREE_TYPE (TREE_TYPE (implicit_fn)))
@@ -1766,7 +1898,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
     }
 
   /* Declare the function.  */
-  fn = implicitly_declare_fn (sfk, type, const_p);
+  fn = implicitly_declare_fn (sfk, type, const_p, NULL, NULL);
 
   /* [class.copy]/8 If the class definition declares a move constructor or
      move assignment operator, the implicitly declared copy constructor is
