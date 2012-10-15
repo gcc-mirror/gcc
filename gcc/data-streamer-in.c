@@ -86,6 +86,35 @@ streamer_read_string (struct data_in *data_in, struct lto_input_block *ib)
 }
 
 
+/* Read a string from the string table in DATA_IN using the bitpack BP.
+   Write the length to RLEN.  */
+
+const char *
+bp_unpack_indexed_string (struct data_in *data_in,
+			  struct bitpack_d *bp, unsigned int *rlen)
+{
+  return string_for_index (data_in, bp_unpack_var_len_unsigned (bp), rlen);
+}
+
+
+/* Read a NULL terminated string from the string table in DATA_IN.  */
+
+const char *
+bp_unpack_string (struct data_in *data_in, struct bitpack_d *bp)
+{
+  unsigned int len;
+  const char *ptr;
+
+  ptr = bp_unpack_indexed_string (data_in, bp, &len);
+  if (!ptr)
+    return NULL;
+  if (ptr[len - 1] != '\0')
+    internal_error ("bytecode stream: found non-null terminated string");
+
+  return ptr;
+}
+
+
 /* Read an unsigned HOST_WIDE_INT number from IB.  */
 
 unsigned HOST_WIDE_INT

@@ -1,3 +1,24 @@
+2012-10-15  Richard Biener  <rguenther@suse.de>
+
+	* data-streamer.h (bp_pack_string_with_length): New function.
+	(bp_pack_string): Likewise.
+	(bp_unpack_indexed_string): Likewise.
+	(bp_unpack_string): Likewise.
+	* data-streamer-out.c (bp_pack_string_with_length): Likewise.
+	(bp_pack_string): Likewise.
+	* data-streamer-in.c (bp_unpack_indexed_string): Likewise.
+	(bp_unpack_string): Likewise.
+	* tree-streamer-out.c (pack_ts_translation_unit_decl_value_fields):
+	Pack TRANSLATION_UNIT_LANGUAGE here, not ...
+	(write_ts_translation_unit_decl_tree_pointers): ... here.  Remove.
+	(streamer_pack_tree_bitfields): Adjust.
+	(streamer_write_tree_body): Likewise.
+	* tree-streamer-in.c (unpack_ts_translation_unit_decl_value_fields):
+	Unpack TRANSLATION_UNIT_LANGUAGE here, not ...
+	(lto_input_ts_translation_unit_decl_tree_pointers): ... here.  Remove.
+	(unpack_value_fields): Adjust.
+	(streamer_read_tree_body): Likewise.
+
 2012-10-15  J"orn Rennecke  <joern.rennecke@arc.com>
 
 	* genoutput.c (process_template): Process '*' in '@' alternatives.

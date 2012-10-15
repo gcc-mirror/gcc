@@ -115,6 +115,39 @@ streamer_write_string (struct output_block *ob,
 }
 
 
+/* Output STRING of LEN characters to the string table in OB.  Then
+   put the index into BP.
+   When PERSISTENT is set, the string S is supposed to not change during
+   duration of the OB and thus OB can keep pointer into it.  */
+
+void
+bp_pack_string_with_length (struct output_block *ob, struct bitpack_d *bp,
+			    const char *s, unsigned int len, bool persistent)
+{
+  unsigned index = 0;
+  if (s)
+    index = streamer_string_index (ob, s, len, persistent);
+  bp_pack_var_len_unsigned (bp, index);
+}
+
+
+/* Output the '\0' terminated STRING to the string
+   table in OB.  Then put the index onto the bitpack BP.
+   When PERSISTENT is set, the string S is supposed to not change during
+   duration of the OB and thus OB can keep pointer into it.  */
+
+void
+bp_pack_string (struct output_block *ob, struct bitpack_d *bp,
+		const char *s, bool persistent)
+{
+  unsigned index = 0;
+  if (s)
+    index = streamer_string_index (ob, s, strlen (s) + 1, persistent);
+  bp_pack_var_len_unsigned (bp, index);
+}
+
+
+
 /* Write a zero to the output stream.  */
 
 void

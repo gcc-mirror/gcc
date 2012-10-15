@@ -316,8 +316,10 @@ pack_ts_block_value_fields (struct output_block *ob,
    of expression EXPR into bitpack BP.  */
 
 static void
-pack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSED, tree expr ATTRIBUTE_UNUSED)
+pack_ts_translation_unit_decl_value_fields (struct output_block *ob,
+					    struct bitpack_d *bp, tree expr)
 {
+  bp_pack_string (ob, bp, TRANSLATION_UNIT_LANGUAGE (expr), true);
 }
 
 /* Pack a TS_TARGET_OPTION tree in EXPR to BP.  */
@@ -402,7 +404,7 @@ streamer_pack_tree_bitfields (struct output_block *ob,
     pack_ts_block_value_fields (ob, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    pack_ts_translation_unit_decl_value_fields (bp, expr);
+    pack_ts_translation_unit_decl_value_fields (ob, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     pack_ts_target_option (bp, expr);
@@ -819,16 +821,6 @@ write_ts_constructor_tree_pointers (struct output_block *ob, tree expr,
     }
 }
 
-/* Write a TS_TRANSLATION_UNIT_DECL tree in EXPR to OB.  */
-
-static void
-write_ts_translation_unit_decl_tree_pointers (struct output_block *ob,
-					      tree expr)
-{
-  streamer_write_string (ob, ob->main_stream,
-			 TRANSLATION_UNIT_LANGUAGE (expr), true);
-}
-
 /* Write all pointer fields in EXPR to output block OB.  If REF_P is true,
    the leaves of EXPR are emitted as references.  */
 
@@ -889,9 +881,6 @@ streamer_write_tree_body (struct output_block *ob, tree expr, bool ref_p)
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     write_ts_constructor_tree_pointers (ob, expr, ref_p);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    write_ts_translation_unit_decl_tree_pointers (ob, expr);
 }
 
 
