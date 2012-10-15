@@ -13466,4 +13466,114 @@ sh_find_equiv_gbr_addr (rtx insn, rtx mem)
   return NULL_RTX;
 }
 
+/*------------------------------------------------------------------------------
+  Manual insn combine support code.
+*/
+
+/* Given a reg rtx and a start insn, try to find the insn that sets the
+   specified reg by using the specified insn stepping function, such as 
+   'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
+   of the reg set.  */
+set_of_reg
+sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx))
+{
+  set_of_reg result;
+  result.insn = insn;
+  result.set_rtx = NULL_RTX;
+  result.set_src = NULL_RTX;
+
+  if (!REG_P (reg) || insn == NULL_RTX)
+    return result;
+
+  for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
+       result.insn = stepfunc (result.insn))
+    {
+      if (LABEL_P (result.insn) || BARRIER_P (result.insn))
+	return result;
+      if (!NONJUMP_INSN_P (result.insn))
+	continue;
+      if (reg_set_p (reg, result.insn))
+	{
+	  result.set_rtx = set_of (reg, result.insn);
+
+	  if (result.set_rtx == NULL_RTX || GET_CODE (result.set_rtx) != SET)
+	    return result;
+
+	  result.set_src = XEXP (result.set_rtx, 1);
+	  return result;
+	}
+    }
+
+  return result;
+}
+
+/* Given an op rtx and an insn, try to find out whether the result of the
+   specified op consists only of logical operations on T bit stores.  */
+bool
+sh_is_logical_t_store_expr (rtx op, rtx insn)
+{
+  if (!logical_operator (op, SImode))
+    return false;
+
+  rtx ops[2] = { XEXP (op, 0), XEXP (op, 1) };
+  int op_is_t_count = 0;
+
+  for (int i = 0; i < 2; ++i)
+    {
+      if (t_reg_operand (ops[i], VOIDmode)
+	  || negt_reg_operand (ops[i], VOIDmode))
+	op_is_t_count++;
+
+      else
+	{
+	  set_of_reg op_set = sh_find_set_of_reg (ops[i], insn,
+						  prev_nonnote_insn_bb);
+	  if (op_set.set_src == NULL_RTX)
+	    continue;
+
+	  if (t_reg_operand (op_set.set_src, VOIDmode)
+	      || negt_reg_operand (op_set.set_src, VOIDmode)
+	      || sh_is_logical_t_store_expr (op_set.set_src, op_set.insn))
+	      op_is_t_count++;
+	}
+    }
+  
+  return op_is_t_count == 2;
+}
+
+/* Given the operand that is extended in a sign/zero extend insn, and the
+   insn, try to figure out whether the sign/zero extension can be replaced
+   by a simple reg-reg copy.  If so, the replacement reg rtx is returned,
+   NULL_RTX otherwise.  */
+rtx
+sh_try_omit_signzero_extend (rtx extended_op, rtx insn)
+{
+  if (REG_P (extended_op))
+    extended_op = extended_op;
+  else if (GET_CODE (extended_op) == SUBREG && REG_P (SUBREG_REG (extended_op)))
+    extended_op = SUBREG_REG (extended_op);
+  else
+    return NULL_RTX;
+
+  /* Reg moves must be of the same mode.  */
+  if (GET_MODE (extended_op) != SImode)
+    return NULL_RTX;
+
+  set_of_reg s = sh_find_set_of_reg (extended_op, insn, prev_nonnote_insn_bb);
+  if (s.set_src == NULL_RTX)
+    return NULL_RTX;
+
+  if (t_reg_operand (s.set_src, VOIDmode)
+      || negt_reg_operand (s.set_src, VOIDmode))
+    return extended_op;
+
+  /* If the zero extended reg was formed by a logical operation, check the
+     operands of the logical operation.  If both originated from T bit
+     stores the zero extension can be eliminated.  */
+  else if (sh_is_logical_t_store_expr (s.set_src, s.insn))
+    return extended_op;
+
+  return NULL_RTX;
+}
+
 #include "gt-sh.h"

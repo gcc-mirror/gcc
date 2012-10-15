@@ -3708,6 +3708,26 @@ label:
   "xor	%2,%0"
   [(set_attr "type" "arith")])
 
+;; The *logical_op_t pattern helps combine eliminating sign/zero extensions
+;; of results where one of the inputs is a T bit store.  Notice that this
+;; pattern must not match during reload.  If reload picks this pattern it
+;; will be impossible to split it afterwards.
+(define_insn_and_split "*logical_op_t"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(match_operator:SI 3 "logical_operator"
+	  [(match_operand:SI 1 "arith_reg_operand")
+	   (match_operand:SI 2 "t_reg_operand")]))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 4) (reg:SI T_REG))
+   (set (match_dup 0) (match_dup 3))]
+{
+  operands[4] = gen_reg_rtx (SImode);
+  operands[3] = gen_rtx_fmt_ee (GET_CODE (operands[3]), SImode,
+				operands[1], operands[4]);
+})
+
 (define_insn "*xorsi3_media"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
 	(xor:SI (match_operand:SI 1 "logical_reg_operand" "%r,r")
@@ -5590,39 +5610,7 @@ label:
      eliminated.  Notice that this also helps the *cbranch_t splitter when
      it tries to post-combine tests and conditional branches, as it does not
      check for zero extensions.  */
-  rtx ext_reg;
-  if (REG_P (operands[1]))
-    ext_reg = operands[1];
-  else if (GET_CODE (operands[1]) == SUBREG && REG_P (SUBREG_REG (operands[1])))
-    ext_reg = SUBREG_REG (operands[1]);
-  else
-    FAIL;
-
-  /* Reg moves must be of the same mode.  */
-  if (GET_MODE (ext_reg) != SImode)
-    FAIL;
-
-  operands[2] = NULL_RTX;
-  for (rtx i = prev_nonnote_insn_bb (curr_insn); i != NULL_RTX;
-       i = prev_nonnote_insn_bb (i))
-    {
-      if (LABEL_P (i) || BARRIER_P (i))
-	break;
-      if (!NONJUMP_INSN_P (i))
-	continue;
-
-      if (reg_set_p (ext_reg, i))
-	{
-	  rtx set_op = XEXP (set_of (ext_reg, i), 1);
-	  if (set_op == NULL_RTX)
-	    break;
-	  if (t_reg_operand (set_op, VOIDmode)
-	      || negt_reg_operand (set_op, VOIDmode))
-	    operands[2] = ext_reg;
-	  break;
-	}
-    }
-
+  operands[2] = sh_try_omit_signzero_extend (operands[1], curr_insn);
   if (operands[2] == NULL_RTX)
     FAIL;
 }
@@ -5850,11 +5838,23 @@ label:
 			   subreg_lowpart_offset (SImode, GET_MODE (op1)));
 })
 
-(define_insn "*extend<mode>si2_compact_reg"
+(define_insn_and_split "*extend<mode>si2_compact_reg"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(sign_extend:SI (match_operand:QIHI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "exts.<bw>	%1,%0"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 0) (match_dup 2))]
+{
+  /* Sometimes combine fails to combine a T bit or negated T bit store to a
+     reg with a following sign extension.  In the split pass after combine,
+     try to figure the extended reg was set.  If it originated from the T
+     bit we can replace the sign extension with a reg move, which will be
+     eliminated.  */
+  operands[2] = sh_try_omit_signzero_extend (operands[1], curr_insn);
+  if (operands[2] == NULL_RTX)
+    FAIL;
+}
   [(set_attr "type" "arith")])
 
 ;; FIXME: Fold non-SH2A and SH2A alternatives with "enabled" attribute.
@@ -6629,10 +6629,19 @@ label:
 ;; picked to load/store regs.  If the regs regs are on the stack reload will
 ;; try other insns and not stick to movqi_reg_reg.
 ;; The same applies to the movhi variants.
+;;
+;; Notice, that T bit is not allowed as a mov src operand here.  This is to
+;; avoid things like (set (reg:QI) (subreg:QI (reg:SI T_REG) 0)), which
+;; introduces zero extensions after T bit stores and redundant reg copies.
+;;
+;; FIXME: We can't use 'arith_reg_operand' (which disallows T_REG) as a
+;; predicate for the mov src operand because reload will have trouble
+;; reloading MAC subregs otherwise.  For that probably special patterns
+;; would be required.
 (define_insn "*mov<mode>_reg_reg"
   [(set (match_operand:QIHI 0 "arith_reg_dest" "=r")
 	(match_operand:QIHI 1 "register_operand" "r"))]
-  "TARGET_SH1"
+  "TARGET_SH1 && !t_reg_operand (operands[1], VOIDmode)"
   "mov	%1,%0"
   [(set_attr "type" "move")])
 
@@ -8178,28 +8187,17 @@ label:
   rtx testing_insn = NULL_RTX;
   rtx tested_reg = NULL_RTX;
 
-  for (rtx i = prev_nonnote_insn_bb (curr_insn); i != NULL_RTX;
-       i = prev_nonnote_insn_bb (i))
+  set_of_reg s0 = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
+				      prev_nonnote_insn_bb);
+  if (s0.set_src != NULL_RTX
+      && GET_CODE (s0.set_src) == EQ
+      && REG_P (XEXP (s0.set_src, 0))
+      && satisfies_constraint_Z (XEXP (s0.set_src, 1)))
     {
-      if (LABEL_P (i) || BARRIER_P (i))
-	break;
-      if (!NONJUMP_INSN_P (i))
-	continue;
-
-      rtx p = PATTERN (i);
-      if (p != NULL_RTX
-	  && GET_CODE (p) == SET && t_reg_operand (XEXP (p, 0), VOIDmode)
-	  && GET_CODE (XEXP (p, 1)) == EQ
-	  && REG_P (XEXP (XEXP (p, 1), 0))
-	  && satisfies_constraint_Z (XEXP (XEXP (p, 1), 1)))
-	{
-	  testing_insn = i;
-	  tested_reg = XEXP (XEXP (p, 1), 0);
-	  break;
-	}
+      testing_insn = s0.insn;
+      tested_reg = XEXP (s0.set_src, 0);
     }
-
-  if (testing_insn == NULL_RTX)
+  else
     FAIL;
 
   /* Continue scanning the insns backwards and try to find the insn that
@@ -8213,47 +8211,37 @@ label:
   if (reg_used_between_p (get_t_reg_rtx (), testing_insn, curr_insn))
     FAIL;
 
-  for (rtx i = prev_nonnote_insn_bb (testing_insn); i != NULL_RTX;
-       i = prev_nonnote_insn_bb (i))
+  while (true)
     {
-      if (LABEL_P (i) || BARRIER_P (i))
+      set_of_reg s1 = sh_find_set_of_reg (tested_reg, s0.insn,
+					  prev_nonnote_insn_bb);
+      if (s1.set_src == NULL_RTX)
 	break;
-      if (!NONJUMP_INSN_P (i))
-	continue;
 
-      if (reg_set_p (tested_reg, i))
+      if (t_reg_operand (s1.set_src, VOIDmode))
+	operands[2] = GEN_INT (treg_value ^ 1);
+      else if (negt_reg_operand (s1.set_src, VOIDmode))
+	operands[2] = GEN_INT (treg_value);
+      else if (REG_P (s1.set_src))
 	{
-	  const_rtx tested_reg_set = set_of (tested_reg, i);
-
-	  /* It could also be a clobber...  */
-	  if (tested_reg_set == NULL_RTX || GET_CODE (tested_reg_set) != SET)
-	    break;
-
-	  rtx set_op1 = XEXP (tested_reg_set, 1);
-	  if (t_reg_operand (set_op1, VOIDmode))
-	    operands[2] = GEN_INT (treg_value ^ 1);
-	  else if (negt_reg_operand (set_op1, VOIDmode))
-	    operands[2] = GEN_INT (treg_value);
-	  else if (REG_P (set_op1))
-	    {
-	      /* If it's a reg-reg copy follow the copied reg.  This can
-		 happen e.g. when T bit store zero-extensions are
-		 eliminated.  */
-	      tested_reg = set_op1;
-	      continue;
-	    }
-
-	  /* It's only safe to remove the testing insn if the T bit is not
-	     modified between the testing insn and the insn that stores the
-	     T bit.  Notice that some T bit stores such as negc also modify
-	     the T bit.  */
-	  if (modified_between_p (get_t_reg_rtx (), i, testing_insn)
-	      || modified_in_p (get_t_reg_rtx (), i))
-	    operands[2] = NULL_RTX;
-
-	  break;
+	   /* If it's a reg-reg copy follow the copied reg.  This can
+	      happen e.g. when T bit store zero-extensions are
+	      eliminated.  */
+	  tested_reg = s1.set_src;
+	  s0.insn = s1.insn;
+	  continue;
 	}
-    }
+
+	/* It's only safe to remove the testing insn if the T bit is not
+	   modified between the testing insn and the insn that stores the
+	   T bit.  Notice that some T bit stores such as negc also modify
+	   the T bit.  */
+	if (modified_between_p (get_t_reg_rtx (), s1.insn, testing_insn)
+	    || modified_in_p (get_t_reg_rtx (), s1.insn))
+	  operands[2] = NULL_RTX;
+
+	break;
+      }
 
   if (operands[2] == NULL_RTX)
     FAIL;
