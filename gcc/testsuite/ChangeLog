@@ -1,3 +1,8 @@
+2012-10-16  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/torture/stackalign/builtin-apply-2.c,
+	gcc.dg/builtin-apply2.c: Correct STACK_ARGUMENTS_SIZE for MMIX.
+
 2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54925
