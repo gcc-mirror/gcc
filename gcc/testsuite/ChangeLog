@@ -1,3 +1,9 @@
+2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/34777
+	* gcc.target/sh/torture/sh-torture.exp: New.
+	* gcc.target/sh/torture/pr34777.c: New.
+
 2012-10-15  Matthias Klose  <doko@ubuntu.com>
 
 	* lib/target-supports.exp (check_profiling_available): Match
