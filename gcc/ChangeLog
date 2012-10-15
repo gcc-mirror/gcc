@@ -1,3 +1,7 @@
+2012-10-15  Dodji Seketeli  <dodji@redhat.com>
+
+	* alias.c: Cleanup comments.
+
 2012-10-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/54915

@@ -60,14 +60,13 @@ along with GCC; see the file COPYING3.  If not see
    struct Z z2, *pz;
 
 
-   py = &px1.y1;
+   py = &x1.y1;
    px2 = &x1;
 
    Consider the four questions:
 
    Can a store to x1 interfere with px2->y1?
    Can a store to x1 interfere with px2->z2?
-   (*px2).z2
    Can a store to x1 change the value pointed to by with py?
    Can a store to x1 change the value pointed to by with pz?
 
@@ -78,24 +77,24 @@ along with GCC; see the file COPYING3.  If not see
    a store through a pointer to an X can overwrite any field that is
    contained (recursively) in an X (unless we know that px1 != px2).
 
-   The last two of the questions can be solved in the same way as the
-   first two questions but this is too conservative.  The observation
-   is that in some cases analysis we can know if which (if any) fields
-   are addressed and if those addresses are used in bad ways.  This
-   analysis may be language specific.  In C, arbitrary operations may
-   be applied to pointers.  However, there is some indication that
-   this may be too conservative for some C++ types.
+   The last two questions can be solved in the same way as the first
+   two questions but this is too conservative.  The observation is
+   that in some cases we can know which (if any) fields are addressed
+   and if those addresses are used in bad ways.  This analysis may be
+   language specific.  In C, arbitrary operations may be applied to
+   pointers.  However, there is some indication that this may be too
+   conservative for some C++ types.
 
    The pass ipa-type-escape does this analysis for the types whose
    instances do not escape across the compilation boundary.
 
    Historically in GCC, these two problems were combined and a single
-   data structure was used to represent the solution to these
+   data structure that was used to represent the solution to these
    problems.  We now have two similar but different data structures,
-   The data structure to solve the last two question is similar to the
-   first, but does not contain have the fields in it whose address are
-   never taken.  For types that do escape the compilation unit, the
-   data structures will have identical information.
+   The data structure to solve the last two questions is similar to
+   the first, but does not contain the fields whose address are never
+   taken.  For types that do escape the compilation unit, the data
+   structures will have identical information.
 */
 
 /* The alias sets assigned to MEMs assist the back-end in determining
