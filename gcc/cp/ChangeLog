@@ -1,5 +1,11 @@
 2012-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/50080 (again)
+	* parser.c (cp_parser_optional_template_keyword): When -pedantic
+	and C++98 mode restore pre-Core/468 behavior.
+
+2012-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/50080
 	* parser.c (cp_parser_optional_template_keyword): Implement
 	Core/468, allow outside template.
