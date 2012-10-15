@@ -1,3 +1,9 @@
+2012-10-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/54915
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Check
+	argument's type.
+
 2012-10-15  Richard Biener  <rguenther@suse.de>
 
 	* data-streamer.h (bp_pack_string_with_length): New function.

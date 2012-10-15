@@ -1,3 +1,8 @@
+2012-10-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/54915
+	* gcc.dg/tree-ssa/pr54915.c: New testcase.
+
 2012-10-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54920
