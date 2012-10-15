@@ -14,6 +14,6 @@ avx_test (void)
     b[i] = a[i+3] * 2;
 }
 
-/* { dg-final { scan-assembler "avx_movups256/1" } } */
-/* { dg-final { scan-assembler-not "avx_movups/1" } } */
+/* { dg-final { scan-assembler "avx_loadups256" } } */
+/* { dg-final { scan-assembler-not "sse_loadups" } } */
 /* { dg-final { scan-assembler-not "vinsertf128" } } */

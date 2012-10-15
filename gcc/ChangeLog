@@ -1,3 +1,41 @@
+2012-09-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (UNSPEC_MOVU): Remove.
+	(UNSPEC_LOADU): New.
+	(UNSPEC_STOREU): Ditto.
+	(<sse>_movu<ssemodesuffix><avxsizesuffix>): Split to ...
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix>): ... this and ...
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>) ... this.
+	(<sse2>_movdqu<avxsizesuffix>): Split to ...
+	(<sse2>_loaddqu<avxsizesuffix>): ... this and ...
+	(<sse2>_storedqu<avxsizesuffix>): ... this.
+	(*sse4_2_pcmpestr_unaligned): Update.
+	(*sse4_2_pcmpistr_unaligned): Ditto.
+
+	* config/i386/i386.c (ix86_avx256_split_vector_move_misalign): Use
+	gen_avx_load{dqu,ups,upd}256 to load from unaligned memory and
+	gen_avx_store{dqu,ups,upd}256 to store to unaligned memory.
+	(ix86_expand_vector_move_misalign): Use gen_sse_loadups or
+	gen_sse2_load{dqu,upd} to load from unaligned memory and
+	gen_sse_loadups or gen_sse2_store{dqu,upd}256 to store to
+	unaligned memory.
+	(struct builtin_description bdesc_spec) <IX86_BUILTIN_LOADUPS>:
+	Use CODE_FOR_sse_loadups.
+	<IX86_BUILTIN_LOADUPD>: Use CODE_FOR_sse2_loadupd.
+	<IX86_BUILTIN_LOADDQU>: Use CODE_FOR_sse2_loaddqu.
+	<IX86_BUILTIN_STOREUPS>: Use CODE_FOR_sse_storeups.
+	<IX86_BUILTIN_STOREUPD>: Use CODE_FOR_sse2_storeupd.
+	<IX86_BUILTIN_STOREDQU>: Use CODE_FOR_sse2_storedqu.
+	<IX86_BUILTIN_LOADUPS256>: Use CODE_FOR_avx_loadups256.
+	<IX86_BUILTIN_LOADUPD256>: Use CODE_FOR_avx_loadupd256.
+	<IX86_BUILTIN_LOADDQU256>: Use CODE_FOR_avx_loaddqu256.
+	<IX86_BUILTIN_STOREUPS256>: Use CODE_FOR_avx_storeups256.
+	<IX86_BUILTIN_STOREUPD256>: Use CODE_FOR_avx_storeupd256.
+	<IX86_BUILTIN_STOREDQU256>: Use CODE_FOR_avx_storedqu256.
+
 2012-10-15  Steven Bosscher  <steven@gcc.gnu.org>
 
 	Backport from trunk (r190222):
@@ -25,7 +63,7 @@
 
 	* config.gcc (*-*-openbsd4.[3-9]|*-*-openbsd[5-9]*): Set
 	default_use_cxa_atexit to yes.
-		
+
 2012-10-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md: Adjust unamed HImode add insn pattern.
@@ -42,7 +80,7 @@
 	Backported from mainline
 	2012-10-03  Andrew W. Nosenko <andrew.w.nosenko@gmail.com>
 
-	*  config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
+	* config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
 	in SSE and YMM state support check for -march=native.
 
 2012-10-03  Alexandre Oliva <aoliva@redhat.com>
@@ -107,8 +145,7 @@
 
 	PR target/54703
 	* simplify-rtx.c (simplify_binary_operation_1): Perform
-	(x - (x & y)) -> (x & ~y) optimization only for integral
-	modes.
+	(x - (x & y)) -> (x & ~y) optimization only for integral modes.
 
 2012-09-24  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -186,12 +223,12 @@
 	Backport from mainline
 	2012-09-07  Andi Kleen  <ak@linux.intel.com>
 
-  	* gcc/lto-streamer.h (res_pair): Add.
-    	(lto_file_decl_data): Replace resolutions with respairs.
-    	Add max_index.
-    	* gcc/lto/lto.c (lto_resolution_read): Remove max_index.  Add rp.
-    	Initialize respairs.
-    	(lto_file_finalize): Set up resolutions vector lazily from respairs.
+	* gcc/lto-streamer.h (res_pair): Add.
+	(lto_file_decl_data): Replace resolutions with respairs.
+	Add max_index.
+	* gcc/lto/lto.c (lto_resolution_read): Remove max_index.  Add rp.
+	Initialize respairs.
+	(lto_file_finalize): Set up resolutions vector lazily from respairs.
 
 2012-09-14  Walter Lee  <walt@tilera.com>
 
@@ -257,7 +294,7 @@
 
 2012-09-12  Christian Bruel  <christian.bruel@st.com>
 
-       * config/sh/newlib.h (NO_IMPLICIT_EXTERN_C): Define.
+	* config/sh/newlib.h (NO_IMPLICIT_EXTERN_C): Define.
 
 2012-09-12  Jakub Jelinek  <jakub@redhat.com>
 
