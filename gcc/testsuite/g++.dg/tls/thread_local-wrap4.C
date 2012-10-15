@@ -2,6 +2,7 @@
 // copy per shared object.
 
 // { dg-require-effective-target tls }
+// { dg-require-effective-target fpic }
 // { dg-options "-std=c++11 -fPIC" }
 // { dg-final { scan-assembler-not "_ZTW1i@PLT" { target i?86-*-* x86_64-*-* } } }
 
