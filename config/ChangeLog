@@ -1,3 +1,7 @@
+2012-10-15  Pavel Chupin  <pavel.v.chupin@intel.com>
+
+	* gthr.m4: New. Define GCC_AC_THREAD_HEADER.
+
 2012-09-19  Steve Ellcey  <sellcey@mips.com>
 
 	* mt-sde: Change -mcode-xonly to -mcode-readable=pcrel.

@@ -1148,7 +1148,7 @@ ${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/libgcc/gthr-posix.h \
 	    -e 's/\(${uppercase}*USE_WEAK\)/_GLIBCXX_\1/g' \
 	    < $< > $@
 
-${host_builddir}/gthr-default.h: ${toplevel_builddir}/libgcc/gthr-default.h \
+${host_builddir}/gthr-default.h: ${toplevel_srcdir}/libgcc/${thread_header} \
 				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \

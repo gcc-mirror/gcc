@@ -1,3 +1,8 @@
+2012-10-15  Pavel Chupin  <pavel.v.chupin@intel.com>
+
+	* configure: Regenerate.
+	* configure.ac: Replace code with GCC_AC_THREAD_HEADER use.
+
 2012-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Emit SSE
