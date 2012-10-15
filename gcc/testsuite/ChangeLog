@@ -1,3 +1,7 @@
+2012-10-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/tls/thread_local7g.C: Require tls_native.
+
 2012-10-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/inh-ctor1.C: New.

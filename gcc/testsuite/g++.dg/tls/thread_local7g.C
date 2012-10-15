@@ -3,7 +3,7 @@
 // { dg-require-alias }
 
 // The reference temp should be TLS, not normal data.
-// { dg-final { scan-assembler-not "\\.data" } }
+// { dg-final { scan-assembler-not "\\.data" { target tls_native } } }
 
 thread_local int&& ir = 42;
 

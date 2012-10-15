@@ -27,109 +27,92 @@
 #include "bits/gthr.h"
 
 namespace {
-  // Data structure for the list of destructors: Singly-linked list
-  // of arrays.
-  class list
+  // One element in a singly-linked stack of cleanups.
+  struct elt
   {
-    struct elt
-    {
-      void *object;
-      void (*destructor)(void *);
-    };
-
-    static const int max_nelts = 32;
-
-    list *next;
-    int nelts;
-    elt array[max_nelts];
-
-    elt *allocate_elt();
-  public:
-    void run();
-    static void run(void *p);
-    int add_elt(void (*)(void *), void *);
+    void (*destructor)(void *);
+    void *object;
+    elt *next;
   };
 
-  // Return the address of an open slot.
-  list::elt *
-  list::allocate_elt()
-  {
-    if (nelts < max_nelts)
-      return &array[nelts++];
-    if (!next)
-      next = new (std::nothrow) list();
-    if (!next)
-      return 0;
-    return next->allocate_elt();
-  }
-
-  // Run all the cleanups in the list.
-  void
-  list::run()
-  {
-    for (int i = nelts - 1; i >= 0; --i)
-      array[i].destructor (array[i].object);
-    if (next)
-      next->run();
-  }
-
-  // Static version to use as a callback to __gthread_key_create.
-  void
-  list::run(void *p)
-  {
-    static_cast<list *>(p)->run();
-  }
-
-  // The list of cleanups is per-thread.
-  thread_local list first;
-
-  // The pthread data structures for actually running the destructors at
-  // thread exit are shared.  The constructor of the thread-local sentinel
-  // object in add_elt performs the initialization.
+  // Keep a per-thread list of cleanups in gthread_key storage.
   __gthread_key_t key;
-  __gthread_once_t once = __GTHREAD_ONCE_INIT;
-  void run_current () { first.run(); }
+  // But also support non-threaded mode.
+  elt *single_thread;
+
+  // Run the specified stack of cleanups.
+  void run (void *p)
+  {
+    elt *e = static_cast<elt*>(p);
+    for (; e; e = e->next)
+      e->destructor (e->object);
+  }
+
+  // Run the stack of cleanups for the current thread.
+  void run ()
+  {
+    void *e;
+    if (__gthread_active_p ())
+      e = __gthread_getspecific (key);
+    else
+      e = single_thread;
+    run (e);
+  }
+
+  // Initialize the key for the cleanup stack.  We use a static local for
+  // key init/delete rather than atexit so that delete is run on dlclose.
   void key_init() {
-    __gthread_key_create (&key, list::run);
+    struct key_s {
+      key_s() { __gthread_key_create (&key, run); }
+      ~key_s() { __gthread_key_delete (key); }
+    };
+    static key_s ks;
     // Also make sure the destructors are run by std::exit.
     // FIXME TLS cleanups should run before static cleanups and atexit
     // cleanups.
-    std::atexit (run_current);
-  }
-  struct sentinel
-  {
-    sentinel()
-    {
-      if (__gthread_active_p ())
-	{
-	  __gthread_once (&once, key_init);
-	  __gthread_setspecific (key, &first);
-	}
-      else
-	std::atexit (run_current);
-    }
-  };
-
-  // Actually insert an element.
-  int
-  list::add_elt(void (*dtor)(void *), void *obj)
-  {
-    thread_local sentinel s;
-    elt *e = allocate_elt ();
-    if (!e)
-      return -1;
-    e->object = obj;
-    e->destructor = dtor;
-    return 0;
+    std::atexit (run);
   }
 }
 
-namespace __cxxabiv1
+extern "C" int
+__cxxabiv1::__cxa_thread_atexit (void (*dtor)(void *), void *obj, void */*dso_handle*/)
+  _GLIBCXX_NOTHROW
 {
-  extern "C" int
-  __cxa_thread_atexit (void (*dtor)(void *), void *obj, void */*dso_handle*/)
-    _GLIBCXX_NOTHROW
-  {
-    return first.add_elt (dtor, obj);
-  }
+  // Do this initialization once.
+  if (__gthread_active_p ())
+    {
+      // When threads are active use __gthread_once.
+      static __gthread_once_t once = __GTHREAD_ONCE_INIT;
+      __gthread_once (&once, key_init);
+    }
+  else
+    {
+      // And when threads aren't active use a static local guard.
+      static bool queued;
+      if (!queued)
+	{
+	  queued = true;
+	  std::atexit (run);
+	}
+    }
+
+  elt *first;
+  if (__gthread_active_p ())
+    first = static_cast<elt*>(__gthread_getspecific (key));
+  else
+    first = single_thread;
+
+  elt *new_elt = new (std::nothrow) elt;
+  if (!new_elt)
+    return -1;
+  new_elt->destructor = dtor;
+  new_elt->object = obj;
+  new_elt->next = first;
+
+  if (__gthread_active_p ())
+    __gthread_setspecific (key, new_elt);
+  else
+    single_thread = new_elt;
+
+  return 0;
 }
