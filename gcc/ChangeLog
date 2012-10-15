@@ -1,3 +1,19 @@
+2012-10-15  Richard Guenther  <rguenther@suse.de>
+
+	* tree-streamer-out.c (streamer_pack_tree_bitfields): Back
+	BINFO_BASE_ACCESSES and CONSTRUCTOR lengths here.
+	(streamer_write_chain): Write TREE_CHAIN as null-terminated list.
+	(write_ts_exp_tree_pointers): Adjust.
+	(write_ts_binfo_tree_pointers): Likewise.
+	(write_ts_constructor_tree_pointers): Likewise.
+	* tree-streamer-in.c (streamer_read_chain): Read TREE_CHAIN as
+	null-terminated list.
+	(unpack_value_fields): Unpack BINFO_BASE_ACCESSES and
+	CONSTRUCTOR lengths and materialize the arrays.
+	(lto_input_ts_exp_tree_pointers): Adjust.
+	(lto_input_ts_binfo_tree_pointers): Likewise.
+	(lto_input_ts_constructor_tree_pointers): Likewise.
+
 2012-10-14  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_opposite_regno): Handle the

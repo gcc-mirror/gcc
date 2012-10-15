@@ -68,12 +68,11 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
 tree
 streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
 {
-  int i, count;
   tree first, prev, curr;
 
+  /* The chain is written as NULL terminated list of trees.  */
   first = prev = NULL_TREE;
-  count = streamer_read_hwi (ib);
-  for (i = 0; i < count; i++)
+  do
     {
       curr = stream_read_tree (ib, data_in);
       if (prev)
@@ -81,9 +80,9 @@ streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
       else
 	first = curr;
 
-      TREE_CHAIN (curr) = NULL_TREE;
       prev = curr;
     }
+  while (curr);
 
   return first;
 }
@@ -452,6 +451,20 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     unpack_ts_optimization (bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
+      if (length > 0)
+	VEC_safe_grow (tree, gc, BINFO_BASE_ACCESSES (expr), length);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
+      if (length > 0)
+	VEC_safe_grow (constructor_elt, gc, CONSTRUCTOR_ELTS (expr), length);
+    }
 }
 
 
@@ -813,12 +826,9 @@ static void
 lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
 			        struct data_in *data_in, tree expr)
 {
-  int i, length;
+  int i;
 
-  length = streamer_read_hwi (ib);
-  gcc_assert (length == TREE_OPERAND_LENGTH (expr));
-
-  for (i = 0; i < length; i++)
+  for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     TREE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
 
   TREE_SET_BLOCK (expr, stream_read_tree (ib, data_in));
@@ -878,7 +888,7 @@ static void
 lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 				  struct data_in *data_in, tree expr)
 {
-  unsigned i, len;
+  unsigned i;
   tree t;
 
   /* Note that the number of slots in EXPR was read in
@@ -898,15 +908,12 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
   BINFO_VTABLE (expr) = stream_read_tree (ib, data_in);
   BINFO_VPTR_FIELD (expr) = stream_read_tree (ib, data_in);
 
-  len = streamer_read_uhwi (ib);
-  if (len > 0)
+  /* The vector of BINFO_BASE_ACCESSES is pre-allocated during
+     unpacking the bitfield section.  */
+  for (i = 0; i < VEC_length (tree, BINFO_BASE_ACCESSES (expr)); i++)
     {
-      VEC_reserve_exact (tree, gc, BINFO_BASE_ACCESSES (expr), len);
-      for (i = 0; i < len; i++)
-	{
-	  tree a = stream_read_tree (ib, data_in);
-	  VEC_quick_push (tree, BINFO_BASE_ACCESSES (expr), a);
-	}
+      tree a = stream_read_tree (ib, data_in);
+      VEC_replace (tree, BINFO_BASE_ACCESSES (expr), i, a);
     }
 
   BINFO_INHERITANCE_CHAIN (expr) = stream_read_tree (ib, data_in);
@@ -923,16 +930,14 @@ static void
 lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
 				        struct data_in *data_in, tree expr)
 {
-  unsigned i, len;
+  unsigned i;
 
-  len = streamer_read_uhwi (ib);
-  for (i = 0; i < len; i++)
+  for (i = 0; i < CONSTRUCTOR_NELTS (expr); i++)
     {
-      tree index, value;
-
-      index = stream_read_tree (ib, data_in);
-      value = stream_read_tree (ib, data_in);
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (expr), index, value);
+      constructor_elt e;
+      e.index = stream_read_tree (ib, data_in);
+      e.value = stream_read_tree (ib, data_in);
+      VEC_replace (constructor_elt, CONSTRUCTOR_ELTS (expr), i, e);
     }
 }
 
