@@ -1,3 +1,11 @@
+2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c: Update function attribute comments.
+	* doc/extend.texi (function_vector): Rephrase SH2A specific part.
+	(nosave_low_regs, renesas, trapa_handler): Document SH specific
+	attributes.
+	(sp_switch, trap_exit): Add to index.
+
 2012-10-15  Matthias Klose  <doko@ubuntu.com>
 
 	* config.gcc: Match arm*-*-linux-* for ARM Linux/GNU.

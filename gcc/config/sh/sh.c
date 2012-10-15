@@ -9451,30 +9451,42 @@ sh_insert_attributes (tree node, tree *attributes)
   return;
 }
 
-/* Supported attributes:
+/*------------------------------------------------------------------------------
+/* Target specific attributes
+  Supported attributes are:
 
-   interrupt_handler -- specifies this function is an interrupt handler.
+   * interrupt_handler
+	Specifies this function is an interrupt handler.
 
-   trapa_handler - like above, but don't save all registers.
+   * trapa_handler
+	Like interrupt_handler, but don't save all registers.
 
-   sp_switch -- specifies an alternate stack for an interrupt handler
-   to run on.
+   * sp_switch
+	Specifies an alternate stack for an interrupt handler to run on.
 
-   trap_exit -- use a trapa to exit an interrupt function instead of
-   an rte instruction.
+   * trap_exit
+	Use a trapa to exit an interrupt function instead of rte.
 
-   nosave_low_regs - don't save r0..r7 in an interrupt handler.
-     This is useful on the SH3 and upwards,
-     which has a separate set of low regs for User and Supervisor modes.
-     This should only be used for the lowest level of interrupts.  Higher levels
-     of interrupts must save the registers in case they themselves are
-     interrupted.
+   * nosave_low_regs
+	Don't save r0..r7 in an interrupt handler function.
+	This is useful on SH3* and SH4*, which have a separate set of low
+	regs for user and privileged modes.
+	This is mainly to be used for non-reentrant interrupt handlers (i.e.
+	those that run with interrupts disabled and thus can't be
+	interrupted thenselves).
 
-   renesas -- use Renesas calling/layout conventions (functions and
-   structures).
+   * renesas
+	Use Renesas calling/layout conventions (functions and structures).
 
-   resbank -- In case of an ISR, use a register bank to save registers
-   R0-R14, MACH, MACL, GBR and PR.  This is useful only on SH2A targets.
+   * resbank
+	In case of an interrupt handler function, use a register bank to
+	save registers R0-R14, MACH, MACL, GBR and PR.
+	This is available only on SH2A targets.
+
+   * function_vector
+	Declares a function to be called using the TBR relative addressing
+	mode.  Takes an argument that specifies the slot number in the table
+	where this function can be looked up by the JSR/N @@(disp8,TBR) insn.
 */
 
 /* Handle a 'resbank' attribute.  */
