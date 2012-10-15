@@ -7,5 +7,5 @@ struct A {
 int main ()
 {
   A a;
-  return a.template f (0); // { dg-error "" } 
+  return a.template f (0);
 }

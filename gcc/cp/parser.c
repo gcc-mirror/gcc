@@ -23252,29 +23252,10 @@ cp_parser_optional_template_keyword (cp_parser *parser)
 {
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
     {
-      /* The `template' keyword can only be used within templates;
-	 outside templates the parser can always figure out what is a
-	 template and what is not.  */
-      if (!processing_template_decl)
-	{
-	  cp_token *token = cp_lexer_peek_token (parser->lexer);
-	  error_at (token->location,
-		    "%<template%> (as a disambiguator) is only allowed "
-		    "within templates");
-	  /* If this part of the token stream is rescanned, the same
-	     error message would be generated.  So, we purge the token
-	     from the stream.  */
-	  cp_lexer_purge_token (parser->lexer);
-	  return false;
-	}
-      else
-	{
-	  /* Consume the `template' keyword.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  return true;
-	}
+      /* Consume the `template' keyword.  */
+      cp_lexer_consume_token (parser->lexer);
+      return true;
     }
-
   return false;
 }
 

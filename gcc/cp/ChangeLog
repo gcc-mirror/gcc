@@ -1,3 +1,9 @@
+2012-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50080
+	* parser.c (cp_parser_optional_template_keyword): Implement
+	Core/468, allow outside template.
+
 2012-10-14  Jason Merrill  <jason@redhat.com>
 	    Ville Voutilainen  <ville.voutilainen@gmail.com>
 
