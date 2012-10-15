@@ -1,3 +1,12 @@
+2012-10-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50080
+	* g++.dg/parse/tmpl-outside2.C: New.
+	* g++.dg/parse/tmpl-outside1.C: Adjust.
+	* g++.dg/template/qualttp18.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp87.C: Likewise.
+	* g++.old-deja/g++.pt/overload13.C: Likewise.
+
 2012-10-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/54915
