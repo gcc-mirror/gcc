@@ -1,3 +1,11 @@
+2012-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	* files.c (read_file_guts, _cpp_save_file_entries): Free memory
+	before returning.
+	* lex.c (warn_about_normalization): Ditto.
+	* mkdeps.c (deps_save): Ditto.
+	* pch.c (cpp_valid_state): Ditto.
+
 2012-10-04  Florian Weimer  <fweimer@redhat.com>
 
 	* directives.c (do_pragma_warning_or_error): New.
