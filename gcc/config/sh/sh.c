@@ -13395,6 +13395,10 @@ sh_find_base_reg_disp (rtx insn, rtx x, disp_t disp = 0, rtx base_reg = NULL)
       for (rtx i = prev_nonnote_insn (insn); i != NULL;
 	   i = prev_nonnote_insn (i))
 	{
+	  if (REGNO_REG_SET_P (regs_invalidated_by_call_regset, GBR_REG)
+	      && CALL_P (i))
+	    break;
+
 	  if (!NONJUMP_INSN_P (i))
 	    continue;
 

@@ -18,6 +18,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+(define_mode_iterator QIHISIDI [QI HI SI DI])
 (define_mode_iterator QIHISI [QI HI SI])
 (define_mode_iterator QIHI [QI HI])
 (define_mode_iterator HISI [HI SI])

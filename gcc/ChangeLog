@@ -1,5 +1,16 @@
 2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54760
+	* config/sh/sh.c (sh_find_base_reg_disp): Stop searching insns when
+	hitting a call insn if GBR is marked as call used.
+	* config/sh/iterators.md (QIHISIDI): New mode iterator.
+	* config/sh/predicates.md (gbr_address_mem): New predicate.
+	* config/sh/sh.md (*movdi_gbr_load, *movdi_gbr_store): New
+	insn_and_split.
+	Use QIHISIDI instead of QIHISI in unnamed GBR addressing splits.
+
+2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.c: Update function attribute comments.
 	* doc/extend.texi (function_vector): Rephrase SH2A specific part.
 	(nosave_low_regs, renesas, trapa_handler): Document SH specific

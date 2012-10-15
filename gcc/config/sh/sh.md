@@ -10277,6 +10277,47 @@ label:
   "mov.<bwl>	%0,@(0,gbr)"
   [(set_attr "type" "store")])
 
+;; DImode memory accesses have to be split in two SImode accesses.
+;; Split them before reload, so that it gets a better chance to figure out
+;; how to deal with the R0 restriction for the individual SImode accesses.
+;; Do not match this insn during or after reload because it can't be split
+;; afterwards.
+(define_insn_and_split "*movdi_gbr_load"
+  [(set (match_operand:DI 0 "register_operand")
+	(match_operand:DI 1 "gbr_address_mem"))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 3) (match_dup 5))
+   (set (match_dup 4) (match_dup 6))]
+{
+  /* Swap low/high part load order on little endian, so that the result reg
+     of the second load can be used better.  */
+  int off = TARGET_LITTLE_ENDIAN ? 1 : 0;
+  operands[3 + off] = gen_lowpart (SImode, operands[0]);
+  operands[5 + off] = gen_lowpart (SImode, operands[1]);
+  operands[4 - off] = gen_highpart (SImode, operands[0]);
+  operands[6 - off] = gen_highpart (SImode, operands[1]);
+})
+
+(define_insn_and_split "*movdi_gbr_store"
+  [(set (match_operand:DI 0 "gbr_address_mem")
+	(match_operand:DI 1 "register_operand"))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 3) (match_dup 5))
+   (set (match_dup 4) (match_dup 6))]
+{
+  /* Swap low/high part store order on big endian, so that stores of function
+     call results can save a reg copy.  */
+  int off = TARGET_LITTLE_ENDIAN ? 0 : 1;
+  operands[3 + off] = gen_lowpart (SImode, operands[0]);
+  operands[5 + off] = gen_lowpart (SImode, operands[1]);
+  operands[4 - off] = gen_highpart (SImode, operands[0]);
+  operands[6 - off] = gen_highpart (SImode, operands[1]);
+})
+
 ;; Sometimes memory accesses do not get combined with the store_gbr insn,
 ;; in particular when the displacements are in the range of the regular move
 ;; insns.  Thus, in the first split pass after the combine pass we search
@@ -10287,15 +10328,15 @@ label:
 ;; other operand) and there's no point of doing it if the GBR is not
 ;; referenced in a function at all.
 (define_split
-  [(set (match_operand:QIHISI 0 "register_operand")
-	(match_operand:QIHISI 1 "memory_operand"))]
+  [(set (match_operand:QIHISIDI 0 "register_operand")
+	(match_operand:QIHISIDI 1 "memory_operand"))]
   "TARGET_SH1 && !reload_in_progress && !reload_completed
    && df_regs_ever_live_p (GBR_REG)"
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx gbr_mem = sh_find_equiv_gbr_addr (curr_insn, operands[1]);
   if (gbr_mem != NULL_RTX)
-    operands[1] = change_address (operands[1], GET_MODE (operands[1]), gbr_mem);
+    operands[1] = replace_equiv_address (operands[1], gbr_mem);
   else
     FAIL;
 })
@@ -10309,7 +10350,7 @@ label:
 {
   rtx gbr_mem = sh_find_equiv_gbr_addr (curr_insn, operands[1]);
   if (gbr_mem != NULL_RTX)
-    operands[1] = change_address (operands[1], GET_MODE (operands[1]), gbr_mem);
+    operands[1] = replace_equiv_address (operands[1], gbr_mem);
   else
     FAIL;
 })
@@ -10328,23 +10369,22 @@ label:
   if (gbr_mem != NULL_RTX)
     {
       operands[2] = gen_reg_rtx (GET_MODE (operands[1]));
-      operands[1] = change_address (operands[1], GET_MODE (operands[1]),
-				    gbr_mem);
+      operands[1] = replace_equiv_address (operands[1], gbr_mem);
     }
   else
     FAIL;
 })
 
 (define_split
-  [(set (match_operand:QIHISI 0 "memory_operand")
-	(match_operand:QIHISI 1 "register_operand"))]
+  [(set (match_operand:QIHISIDI 0 "memory_operand")
+	(match_operand:QIHISIDI 1 "register_operand"))]
   "TARGET_SH1 && !reload_in_progress && !reload_completed
    && df_regs_ever_live_p (GBR_REG)"
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx gbr_mem = sh_find_equiv_gbr_addr (curr_insn, operands[0]);
   if (gbr_mem != NULL_RTX)
-    operands[0] = change_address (operands[0], GET_MODE (operands[0]), gbr_mem);
+    operands[0] = replace_equiv_address (operands[0], gbr_mem);
   else
     FAIL;
 })
