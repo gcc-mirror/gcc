@@ -409,6 +409,12 @@ streamer_pack_tree_bitfields (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     pack_ts_optimization (bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    bp_pack_var_len_unsigned (bp, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    bp_pack_var_len_unsigned (bp, CONSTRUCTOR_NELTS (expr));
 }
 
 
@@ -454,11 +460,7 @@ streamer_write_builtin (struct output_block *ob, tree expr)
 void
 streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
 {
-  int i, count;
-
-  count = list_length (t);
-  streamer_write_hwi (ob, count);
-  for (i = 0; i < count; i++)
+  while (t)
     {
       tree saved_chain;
 
@@ -480,6 +482,9 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
       TREE_CHAIN (t) = saved_chain;
       t = TREE_CHAIN (t);
     }
+
+  /* Write a sentinel to terminate the chain.  */
+  stream_write_tree (ob, NULL_TREE, ref_p);
 }
 
 
@@ -725,7 +730,6 @@ write_ts_exp_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 {
   int i;
 
-  streamer_write_hwi (ob, TREE_OPERAND_LENGTH (expr));
   for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     stream_write_tree (ob, TREE_OPERAND (expr, i), ref_p);
   stream_write_tree (ob, TREE_BLOCK (expr), ref_p);
@@ -786,7 +790,8 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   stream_write_tree (ob, BINFO_VTABLE (expr), ref_p);
   stream_write_tree (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
-  streamer_write_uhwi (ob, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));
+  /* The number of BINFO_BASE_ACCESSES has already been emitted in
+     EXPR's bitfield section.  */
   FOR_EACH_VEC_ELT (tree, BINFO_BASE_ACCESSES (expr), i, t)
     stream_write_tree (ob, t, ref_p);
 
@@ -807,7 +812,6 @@ write_ts_constructor_tree_pointers (struct output_block *ob, tree expr,
   unsigned i;
   tree index, value;
 
-  streamer_write_uhwi (ob, CONSTRUCTOR_NELTS (expr));
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, index, value)
     {
       stream_write_tree (ob, index, ref_p);
