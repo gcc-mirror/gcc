@@ -1,5 +1,10 @@
 2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* gcc.target/sh/pr51244-17.c: New.
+
+2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54760
 	* gcc.target/sh/pr54760-2.c: Add long long and unsigned long long test
 	functions.

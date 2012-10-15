@@ -1,5 +1,22 @@
 2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* config/sh/sh-protos.h (set_of_reg): New struct.
+	(sh_find_set_of_reg, sh_is_logical_t_store_expr,
+	sh_try_omit_signzero_extend):  Declare...
+	* config/sh/sh.c (sh_find_set_of_reg, sh_is_logical_t_store_expr,
+	sh_try_omit_signzero_extend): ...these new functions.
+	* config/sh/sh.md (*logical_op_t): New insn_and_split.
+	(*zero_extend<mode>si2_compact): Use sh_try_omit_signzero_extend
+	in splitter.
+	(*extend<mode>si2_compact_reg): Convert to insn_and_split.
+	Use sh_try_omit_signzero_extend in splitter.
+	(*mov<mode>_reg_reg): Disallow t_reg_operand as operand 1.
+	(*cbranch_t): Rewrite combine part in splitter using new
+	sh_find_set_of_reg function.
+
+2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54760
 	* config/sh/sh.c (sh_find_base_reg_disp): Stop searching insns when
 	hitting a call insn if GBR is marked as call used.

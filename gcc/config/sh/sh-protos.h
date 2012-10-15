@@ -163,6 +163,25 @@ extern void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
 					enum machine_mode mode = VOIDmode);
 extern rtx sh_find_equiv_gbr_addr (rtx cur_insn, rtx mem);
 extern int sh_eval_treg_value (rtx op);
+
+/* Result value of sh_find_set_of_reg.  */
+struct set_of_reg
+{
+  /* The insn where sh_find_set_of_reg stopped looking.
+     Can be NULL_RTX if the end of the insn list was reached.  */
+  rtx insn;
+
+  /* The set rtx of the specified reg if found, NULL_RTX otherwise.  */
+  const_rtx set_rtx;
+
+  /* The set source rtx of the specified reg if found, NULL_RTX otherwise.
+     Usually, this is the most interesting return value.  */
+  rtx set_src;
+};
+
+extern set_of_reg sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx));
+extern bool sh_is_logical_t_store_expr (rtx op, rtx insn);
+extern rtx sh_try_omit_signzero_extend (rtx extended_op, rtx insn);
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);
