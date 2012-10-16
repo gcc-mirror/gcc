@@ -3425,14 +3425,8 @@ call_may_noreturn_p (rtx insn)
       && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
     return false;
 
-  call = PATTERN (insn);
-  if (GET_CODE (call) == PARALLEL)
-    call = XVECEXP (call, 0, 0);
-  if (GET_CODE (call) == SET)
-    call = SET_SRC (call);
-  if (GET_CODE (call) == CALL
-      && MEM_P (XEXP (call, 0))
-      && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
+  call = get_call_rtx_from (insn);
+  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
     {
       rtx symbol = XEXP (XEXP (call, 0), 0);
       if (SYMBOL_REF_DECL (symbol)
