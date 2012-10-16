@@ -1,3 +1,11 @@
+2012-10-16  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add MCS lock implementation - fix for some 32 bit targets.
+	* Makefile.am (UPC_RUNTIME_SRC): Add upc_lock_sup.c file.
+	* Makefile.in: Regenerate.
+	* smp/upc_lock_sup.c: New. Provide 8 byte CSWAP for targets
+	that don't have it (PowerPC).
+
 2012-10-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add MCS lock implementation.
