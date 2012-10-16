@@ -10811,13 +10811,8 @@ sh_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx dep_insn, int cost)
 	 function's address.  */
       if (CALL_P (insn))
 	{
-	  rtx call = PATTERN (insn);
-
-	  if (GET_CODE (call) == PARALLEL)
-	    call = XVECEXP (call, 0 ,0);
-	  if (GET_CODE (call) == SET)
-	    call = SET_SRC (call);
-	  if (GET_CODE (call) == CALL && MEM_P (XEXP (call, 0))
+	  rtx call = get_call_rtx_from (insn);
+	  if (call
 		  /* sibcalli_thunk uses a symbol_ref in an unspec.  */
 	      && (GET_CODE (XEXP (XEXP (call, 0), 0)) == UNSPEC
 		  || ! reg_set_p (XEXP (XEXP (call, 0), 0), dep_insn)))

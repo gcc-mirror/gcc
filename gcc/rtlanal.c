@@ -466,6 +466,22 @@ rtx_addr_varies_p (const_rtx x, bool for_alias)
   return 0;
 }
 
+/* Return the CALL in X if there is one.  */
+
+rtx
+get_call_rtx_from (rtx x)
+{
+  if (INSN_P (x))
+    x = PATTERN (x);
+  if (GET_CODE (x) == PARALLEL)
+    x = XVECEXP (x, 0, 0);
+  if (GET_CODE (x) == SET)
+    x = SET_SRC (x);
+  if (GET_CODE (x) == CALL && MEM_P (XEXP (x, 0)))
+    return x;
+  return NULL_RTX;
+}
+
 /* Return the value of the integer term in X, if one is apparent;
    otherwise return 0.
    Only obvious integer terms are detected.

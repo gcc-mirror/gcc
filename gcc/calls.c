@@ -384,13 +384,8 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 
   /* Some target create a fresh MEM instead of reusing the one provided
      above.  Set its MEM_EXPR.  */
-  call = PATTERN (call_insn);
-  if (GET_CODE (call) == PARALLEL)
-    call = XVECEXP (call, 0, 0);
-  if (GET_CODE (call) == SET)
-    call = SET_SRC (call);
-  if (GET_CODE (call) == CALL
-      && MEM_P (XEXP (call, 0))
+  call = get_call_rtx_from (call_insn);
+  if (call
       && MEM_EXPR (XEXP (call, 0)) == NULL_TREE
       && MEM_EXPR (funmem) != NULL_TREE)
     set_mem_expr (XEXP (call, 0), MEM_EXPR (funmem));

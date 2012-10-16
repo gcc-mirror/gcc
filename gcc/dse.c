@@ -2518,14 +2518,8 @@ scan_insn (bb_info_t bb_info, rtx insn)
       const_call = RTL_CONST_CALL_P (insn);
       if (!const_call)
 	{
-	  rtx call = PATTERN (insn);
-	  if (GET_CODE (call) == PARALLEL)
-	    call = XVECEXP (call, 0, 0);
-	  if (GET_CODE (call) == SET)
-	    call = SET_SRC (call);
-	  if (GET_CODE (call) == CALL
-	      && MEM_P (XEXP (call, 0))
-	      && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
+	  rtx call = get_call_rtx_from (insn);
+	  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
 	    {
 	      rtx symbol = XEXP (XEXP (call, 0), 0);
 	      if (SYMBOL_REF_DECL (symbol)

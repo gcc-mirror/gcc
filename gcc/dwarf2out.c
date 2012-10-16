@@ -20100,12 +20100,8 @@ dwarf2out_var_location (rtx loc_note)
       if (!CALL_P (prev))
 	prev = XVECEXP (PATTERN (prev), 0, 0);
       ca_loc->tail_call_p = SIBLING_CALL_P (prev);
-      x = PATTERN (prev);
-      if (GET_CODE (x) == PARALLEL)
-	x = XVECEXP (x, 0, 0);
-      if (GET_CODE (x) == SET)
-	x = SET_SRC (x);
-      if (GET_CODE (x) == CALL && MEM_P (XEXP (x, 0)))
+      x = get_call_rtx_from (PATTERN (prev));
+      if (x)
 	{
 	  x = XEXP (XEXP (x, 0), 0);
 	  if (GET_CODE (x) == SYMBOL_REF

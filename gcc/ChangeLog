@@ -1,3 +1,14 @@
+2012-10-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (get_call_rtx_from): New prototype.
+	* rtlanal.c (get_call_rtx_from): New function.
+	* calls.c (emit_call_1): Use it.
+	* dse.c (scan_insn): Likewise
+	* dwarf2out.c (dwarf2out_var_location): Likewise.
+	* sched-deps.c (call_may_noreturn_p): Likewise.
+	* var-tracking.c (prepare_call_arguments): Likewise.
+	* config/sh/sh.c (sh_adjust_cost): Likewise.
+
 2012-10-16  Tom de Vries  <tom@codesourcery.com>
 
 	* expr.c (move_by_pieces, move_by_pieces_ninsns, can_store_by_pieces)
