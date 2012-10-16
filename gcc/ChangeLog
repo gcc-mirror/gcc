@@ -1,3 +1,15 @@
+2012-10-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* reload.c (find_reloads_subreg_address): Remove FORCE_REPLACE
+	parameter.  Always replace normal subreg with memory reference
+	whenever possible.  Return NULL otherwise.
+	(find_reloads_toplev): Always call find_reloads_subreg_address
+	for subregs of registers equivalent to a memory location.
+	Only recurse further if find_reloads_subreg_address fails.
+	(find_reloads_address_1): Only call find_reloads_subreg_address
+	for subregs of registers equivalent to a memory location.
+	Properly handle failure of find_reloads_subreg_address.
+
 2012-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/54796
