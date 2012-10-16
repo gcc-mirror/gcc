@@ -1,3 +1,9 @@
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	PR c/40989
+	* gcc.dg/Wstrict-overflow-24.c: New.
+
 2012-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50981

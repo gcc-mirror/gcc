@@ -1,3 +1,13 @@
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	PR c/40989
+	* optc-gen.awk: Handle new form of LangEnabledBy.
+	* opts.c (set_Wstrict_aliasing): Declare here. Make static.
+	* common.opt (Wstrict-aliasing=,Wstrict-overflow=): Do not use Init.
+	* doc/options.texi (LangEnabledBy): Document new form.
+	* flags.h (set_Wstrict_aliasing): Do not declare.
+
 2012-10-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* reload.c (find_reloads_subreg_address): Remove FORCE_REPLACE

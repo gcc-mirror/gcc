@@ -1,3 +1,12 @@
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	PR c/40989
+	* c.opt (Wstrict-aliasing=,Wstrict-overflow=): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not set them here. Add
+	comment.
+	(c_common_post_options): Likewise.
+
 2012-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Define.
