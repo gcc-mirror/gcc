@@ -1,5 +1,20 @@
 2012-10-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/54796
+	* rtl.h: Document jump flag on VALUE.
+	* cselib.h (cselib_set_value_sp_based,
+	cselib_sp_based_value_p): New prototypes.
+	* alias.c (find_base_term): For cselib_sp_based_value_p
+	return static_reg_base_value[STACK_POINTER_REGNUM].
+	* cselib.c (SP_BASED_VALUE_P): Define.
+	(cselib_set_value_sp_based, cselib_sp_based_value_p): New functions.
+	* var-tracking.c (add_stores): Call cselib_set_value_sp_based
+	for not yet preserved VALUEs of sp on sp assignments if
+	hard_frame_pointer_adjustment != -1.
+	(vt_initialize): When setting hard_frame_pointer_adjustment,
+	disassociate sp from its previous value and call
+	cselib_set_value_sp_based on a new VALUE created for sp.
+
 	PR tree-optimization/54889
 	* tree-vect-stmts.c (vectorizable_load): Add VIEW_CONVERT_EXPR if
 	ARRAY_REF newref doesn't have compatible type with vectype element

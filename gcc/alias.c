@@ -1640,6 +1640,9 @@ find_base_term (rtx x)
       if (!val)
 	return ret;
 
+      if (cselib_sp_based_value_p (val))
+	return static_reg_base_value[STACK_POINTER_REGNUM];
+
       f = val->locs;
       /* Temporarily reset val->locs to avoid infinite recursion.  */
       val->locs = NULL;
