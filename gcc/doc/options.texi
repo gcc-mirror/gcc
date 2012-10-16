@@ -463,11 +463,15 @@ value of @option{-fmath-errno} for languages that do not use
 If not explicitly set, the option is set to the value of @option{-@var{opt}}.
 
 @item LangEnabledBy(@var{language}, @var{opt})
+@itemx LangEnabledBy(@var{language}, @var{opt}, @var{posarg}, @var{negarg})
 When compiling for the given language, the option is set to the value
-of @option{-@var{opt}}, if not explicitly set. It is possible to
-specify several different languages.  Each @var{language} must have
-been declared by an earlier @code{Language} record.  @xref{Option file
-format}.
+of @option{-@var{opt}}, if not explicitly set. In the second form, if
+@var{opt} is used in the positive form then @var{posarg} is considered
+to be passed to the option, and if @var{opt} is used in the negative
+form then @var{negarg} is considered to be passed to the option.  It
+is possible to specify several different languages.  Each
+@var{language} must have been declared by an earlier @code{Language}
+record.  @xref{Option file format}.
 
 @item NoDWARFRecord
 The option is omitted from the producer string written by

@@ -360,6 +360,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wall:
+      /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
       handle_generated_option (&global_options, &global_options_set,
 			       OPT_Wunused, NULL, value,
 			       c_family_lang_mask, kind, loc,
@@ -375,11 +376,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       warn_sequence_point = value;	/* Was C only.  */
       warn_switch = value;
       warn_sizeof_pointer_memaccess = value;
-      if (warn_strict_aliasing == -1)
-	set_Wstrict_aliasing (&global_options, value);
       warn_address = value;
-      if (warn_strict_overflow == -1)
-	warn_strict_overflow = value;
       warn_array_bounds = value;
       warn_volatile_register_var = value;
 
@@ -938,11 +935,6 @@ c_common_post_options (const char **pfilename)
      of -Wall or -Wpedantic are given.  */
   if (warn_pointer_sign == -1)
     warn_pointer_sign = 0;
-
-  if (warn_strict_aliasing == -1)
-    warn_strict_aliasing = 0;
-  if (warn_strict_overflow == -1)
-    warn_strict_overflow = 0;
 
   /* -Woverlength-strings is off by default, but is enabled by -Wpedantic.
      It is never enabled in C++, as the minimum limit is not normative

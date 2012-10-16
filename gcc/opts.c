@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr-common.h"
 #include "common/common-target.h"
 
+static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
+
 /* Indexed by enum debug_info_type.  */
 const char *const debug_type_names[] =
 {
@@ -1801,7 +1803,7 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
    ONOFF is assumed to take value 1 when -Wstrict-aliasing is specified,
    and 0 otherwise.  After calling this function, wstrict_aliasing will be
    set to the default value of -Wstrict_aliasing=level, currently 3.  */
-void
+static void
 set_Wstrict_aliasing (struct gcc_options *opts, int onoff)
 {
   gcc_assert (onoff == 0 || onoff == 1);

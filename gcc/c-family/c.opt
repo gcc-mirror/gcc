@@ -629,6 +629,14 @@ Wstrict-prototypes
 C ObjC Var(warn_strict_prototypes) Warning
 Warn about unprototyped function declarations
 
+Wstrict-aliasing=
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 3, 0)
+;
+
+Wstrict-overflow=
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
+;
+
 Wstrict-selector-match
 ObjC ObjC++ Var(warn_strict_selector_match) Warning
 Warn if type signatures of candidate methods do not match exactly
