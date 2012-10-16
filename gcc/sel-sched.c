@@ -3567,29 +3567,41 @@ process_use_exprs (av_set_t *av_ptr)
   return NULL;
 }
 
-/* Lookup EXPR in VINSN_VEC and return TRUE if found.  */
+/* Lookup EXPR in VINSN_VEC and return TRUE if found.  Also check patterns from
+   EXPR's history of changes.  */
 static bool
 vinsn_vec_has_expr_p (vinsn_vec_t vinsn_vec, expr_t expr)
 {
-  vinsn_t vinsn;
+  vinsn_t vinsn, expr_vinsn;
   int n;
+  unsigned i;
 
-  FOR_EACH_VEC_ELT (vinsn_t, vinsn_vec, n, vinsn)
-    if (VINSN_SEPARABLE_P (vinsn))
-      {
-        if (vinsn_equal_p (vinsn, EXPR_VINSN (expr)))
-          return true;
-      }
-    else
-      {
-        /* For non-separable instructions, the blocking insn can have
-           another pattern due to substitution, and we can't choose
-           different register as in the above case.  Check all registers
-           being written instead.  */
-        if (bitmap_intersect_p (VINSN_REG_SETS (vinsn),
-                                VINSN_REG_SETS (EXPR_VINSN (expr))))
-          return true;
-      }
+  /* Start with checking expr itself and then proceed with all the old forms
+     of expr taken from its history vector.  */
+  for (i = 0, expr_vinsn = EXPR_VINSN (expr);
+       expr_vinsn;
+       expr_vinsn = (i < VEC_length (expr_history_def,
+				     EXPR_HISTORY_OF_CHANGES (expr))
+		     ? VEC_index (expr_history_def,
+				  EXPR_HISTORY_OF_CHANGES (expr),
+				  i++)->old_expr_vinsn
+		     : NULL))
+    FOR_EACH_VEC_ELT (vinsn_t, vinsn_vec, n, vinsn)
+      if (VINSN_SEPARABLE_P (vinsn))
+	{
+	  if (vinsn_equal_p (vinsn, expr_vinsn))
+	    return true;
+	}
+      else
+	{
+	  /* For non-separable instructions, the blocking insn can have
+	     another pattern due to substitution, and we can't choose
+	     different register as in the above case.  Check all registers
+	     being written instead.  */
+	  if (bitmap_intersect_p (VINSN_REG_SETS (vinsn),
+				  VINSN_REG_SETS (expr_vinsn)))
+	    return true;
+	}
 
   return false;
 }
@@ -5697,8 +5709,8 @@ update_and_record_unavailable_insns (basic_block book_block)
               || EXPR_TARGET_AVAILABLE (new_expr)
 		 != EXPR_TARGET_AVAILABLE (cur_expr))
 	    /* Unfortunately, the below code could be also fired up on
-	       separable insns.
-	       FIXME: add an example of how this could happen.  */
+	       separable insns, e.g. when moving insns through the new
+	       speculation check as in PR 53701.  */
             vinsn_vec_add (&vec_bookkeeping_blocked_vinsns, cur_expr);
         }
 

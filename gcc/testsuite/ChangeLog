@@ -1,3 +1,11 @@
+2012-10-16  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2012-08-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/53701
+	* gcc.dg/pr53701.c: New test.
+
 2012-10-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
