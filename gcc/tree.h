@@ -490,9 +490,10 @@ struct GTY(()) tree_common {
 
        TREE_ADDRESSABLE in
            VAR_DECL, PARM_DECL, RESULT_DECL, FUNCTION_DECL, LABEL_DECL
+           SSA_NAME
            all types
            CONSTRUCTOR, IDENTIFIER_NODE
-           STMT_EXPR, it means we want the result of the enclosed expression
+           STMT_EXPR
 
        CALL_EXPR_TAILCALL in
            CALL_EXPR
@@ -1181,15 +1182,18 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* In VAR_DECL, PARM_DECL and RESULT_DECL nodes, nonzero means address
    of this is needed.  So it cannot be in a register.
    In a FUNCTION_DECL it has no meaning.
-   In CONSTRUCTOR nodes, it means object constructed must be in memory.
    In LABEL_DECL nodes, it means a goto for this label has been seen
    from a place outside all binding contours that restore stack levels.
+   In an artificial SSA_NAME that points to a stack partition with at least
+   two variables, it means that at least one variable has TREE_ADDRESSABLE.
    In ..._TYPE nodes, it means that objects of this type must be fully
    addressable.  This means that pieces of this object cannot go into
    register parameters, for example.  If this a function type, this
    means that the value must be returned in memory.
+   In CONSTRUCTOR nodes, it means object constructed must be in memory.
    In IDENTIFIER_NODEs, this means that some extern decl for this name
-   had its address taken.  That matters for inline functions.  */
+   had its address taken.  That matters for inline functions.
+   In a STMT_EXPR, it means we want the result of the enclosed expression.  */
 #define TREE_ADDRESSABLE(NODE) ((NODE)->base.addressable_flag)
 
 /* Set on a CALL_EXPR if the call is in a tail position, ie. just before the

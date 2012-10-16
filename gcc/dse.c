@@ -996,7 +996,32 @@ delete_dead_store_insn (insn_info_t insn_info)
   insn_info->wild_read = false;
 }
 
-/* Check if EXPR can possibly escape the current function scope.  */
+/* Return whether DECL, a local variable, can possibly escape the current
+   function scope.  */
+
+static bool
+local_variable_can_escape (tree decl)
+{
+  if (TREE_ADDRESSABLE (decl))
+    return true;
+
+  /* If this is a partitioned variable, we need to consider all the variables
+     in the partition.  This is necessary because a store into one of them can
+     be replaced with a store into another and this may not change the outcome
+     of the escape analysis.  */
+  if (cfun->gimple_df->decls_to_pointers != NULL)
+    {
+      void *namep
+	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, decl);
+      if (namep)
+	return TREE_ADDRESSABLE (*(tree *)namep);
+    }
+
+  return false;
+}
+
+/* Return whether EXPR can possibly escape the current function scope.  */
+
 static bool
 can_escape (tree expr)
 {
@@ -1005,7 +1030,11 @@ can_escape (tree expr)
     return true;
   base = get_base_address (expr);
   if (DECL_P (base)
-      && !may_be_aliased (base))
+      && !may_be_aliased (base)
+      && !(TREE_CODE (base) == VAR_DECL
+	   && !DECL_EXTERNAL (base)
+	   && !TREE_STATIC (base)
+	   && local_variable_can_escape (base)))
     return false;
   return true;
 }

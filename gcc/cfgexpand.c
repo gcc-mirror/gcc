@@ -697,6 +697,8 @@ update_alias_info_with_stack_vars (void)
 					   (void *)(size_t) uid)) = part;
 	  *((tree *) pointer_map_insert (cfun->gimple_df->decls_to_pointers,
 					 decl)) = name;
+	  if (TREE_ADDRESSABLE (decl))
+	    TREE_ADDRESSABLE (name) = 1;
 	}
 
       /* Make the SSA name point to all partition members.  */
