@@ -1228,7 +1228,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  gfc_conv_expr_descriptor (&se, e);
 
 	  /* Obtain a temporary class container for the result.  */ 
-	  gfc_conv_class_to_class (&se, e, sym->ts, false);
+	  gfc_conv_class_to_class (&se, e, sym->ts, false, true, false, false);
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 
 	  /* Set the offset.  */
@@ -1255,7 +1255,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  /* Get the _vptr component of the class object.  */ 
 	  tmp = gfc_get_vptr_from_expr (se.expr);
 	  /* Obtain a temporary class container for the result.  */
-	  gfc_conv_derived_to_class (&se, e, sym->ts, tmp);
+	  gfc_conv_derived_to_class (&se, e, sym->ts, tmp, false, false);
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 	}
       else
@@ -4874,7 +4874,7 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_init_se (&se_sz, NULL);
 	  gfc_conv_expr_reference (&se_sz, code->expr3);
 	  gfc_conv_class_to_class (&se_sz, code->expr3,
-				   code->expr3->ts, false);
+				   code->expr3->ts, false, true, false, false);
 	  gfc_add_block_to_block (&se.pre, &se_sz.pre);
 	  gfc_add_block_to_block (&se.post, &se_sz.post);
 	  classexpr = build_fold_indirect_ref_loc (input_location,
