@@ -990,9 +990,12 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* Clobber call-clobbered registers.  */
       if (CALL_P (insn))
 	{
-	  int set_regno = INVALID_REGNUM;
-	  int set_nregs = 0;
+	  unsigned int set_regno = INVALID_REGNUM;
+	  unsigned int set_nregs = 0;
+	  unsigned int regno;
 	  rtx exp;
+	  hard_reg_set_iterator hrsi;
+
 	  for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
 	    {
 	      rtx x = XEXP (exp, 0);
@@ -1009,10 +1012,10 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  break;
 		}
 	    }
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
-		&& (i < set_regno || i >= set_regno + set_nregs))
-	      kill_value_regno (i, 1, vd);
+
+	  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
+	    if (regno < set_regno || regno >= set_regno + set_nregs)
+	      kill_value_regno (regno, 1, vd);
 	}
 
       /* Notice stores.  */

@@ -12317,21 +12317,21 @@ record_dead_and_set_regs (rtx insn)
 
   if (CALL_P (insn))
     {
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-	  {
-	    reg_stat_type *rsp;
+      hard_reg_set_iterator hrsi;
+      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, i, hrsi)
+	{
+	  reg_stat_type *rsp;
 
-	    rsp = &VEC_index (reg_stat_type, reg_stat, i);
-	    rsp->last_set_invalid = 1;
-	    rsp->last_set = insn;
-	    rsp->last_set_value = 0;
-	    rsp->last_set_mode = VOIDmode;
-	    rsp->last_set_nonzero_bits = 0;
-	    rsp->last_set_sign_bit_copies = 0;
-	    rsp->last_death = 0;
-	    rsp->truncated_to_mode = VOIDmode;
-	  }
+	  rsp = &VEC_index (reg_stat_type, reg_stat, i);
+	  rsp->last_set_invalid = 1;
+	  rsp->last_set = insn;
+	  rsp->last_set_value = 0;
+	  rsp->last_set_mode = VOIDmode;
+	  rsp->last_set_nonzero_bits = 0;
+	  rsp->last_set_sign_bit_copies = 0;
+	  rsp->last_death = 0;
+	  rsp->truncated_to_mode = VOIDmode;
+	}
 
       last_call_luid = mem_last_set = DF_INSN_LUID (insn);
 

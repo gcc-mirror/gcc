@@ -736,10 +736,9 @@ record_opr_changes (rtx insn)
     {
       unsigned int regno;
       rtx link, x;
-
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-	  record_last_reg_set_info_regno (insn, regno);
+      hard_reg_set_iterator hrsi;
+      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
+	record_last_reg_set_info_regno (insn, regno);
 
       for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
 	if (GET_CODE (XEXP (link, 0)) == CLOBBER)

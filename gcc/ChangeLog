@@ -1,3 +1,14 @@
+2012-10-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* combine.c (record_dead_and_set_regs): Iterate over hard register set
+	with a hard_reg_set_iterator.
+	* cse.c (invalidate_for_call): Likewise.
+	* gcse.c (compute_hash_table_work): Likewise.
+	* loop-iv.c (simplify_using_initial_values): Likewise.
+	* postreload-gcse.c (record_opr_changes): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Likewise.
+	* var-tracking.c (dataflow_set_clear_at_call): Likewise.
+
 2012-10-15   Easwaran Raman  <eraman@google.com>
 
 	* optabs.c (emit_cmp_and_jump_insn_1): Add a new parameter to

@@ -1964,12 +1964,12 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	  note_stores (PATTERN (insn), mark_altered, this_altered);
 	  if (CALL_P (insn))
 	    {
-	      int i;
-
 	      /* Kill all call clobbered registers.  */
-	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-		  SET_REGNO_REG_SET (this_altered, i);
+	      unsigned int i;
+	      hard_reg_set_iterator hrsi;
+	      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call,
+					      0, i, hrsi)
+		SET_REGNO_REG_SET (this_altered, i);
 	    }
 
 	  if (suitable_set_for_replacement (insn, &dest, &src))
