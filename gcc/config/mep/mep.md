@@ -2079,7 +2079,8 @@
   [(use (match_operand 0 "register_operand" ""))
    (use (match_operand:QI 1 "const_int_operand" ""))
    (use (match_operand:QI 2 "const_int_operand" ""))
-   (use (match_operand:QI 3 "const_int_operand" ""))]
+   (use (match_operand:QI 3 "const_int_operand" ""))
+   (use (match_operand 4 "" ""))]
   "!profile_arc_flag && TARGET_OPT_REPEAT"
   "if (INTVAL (operands[3]) > 1)
      FAIL;
@@ -2115,7 +2116,8 @@
    (use (match_operand:QI 1 "const_int_operand" ""))
    (use (match_operand:QI 2 "const_int_operand" ""))
    (use (match_operand:QI 3 "const_int_operand" ""))
-   (use (label_ref (match_operand 4 "" "")))]
+   (use (label_ref (match_operand 4 "" "")))
+   (use (match_operand 5 "" ""))]
   "!profile_arc_flag && TARGET_OPT_REPEAT"
   "if (INTVAL (operands[3]) > 1)
      FAIL;

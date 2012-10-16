@@ -1425,6 +1425,7 @@
 ; operand 2 is the maximum number of loop iterations
 ; operand 3 is the number of levels of enclosed loops
 ; operand 4 is the label to jump to at the top of the loop
+; operand 5 indicates if the loop is entered at the top
 (define_expand "doloop_end"
   [(parallel [(set (pc) (if_then_else
 			  (ne (match_operand:SI 0 "" "")
@@ -1434,12 +1435,13 @@
 	      (set (match_dup 0)
 		   (plus:SI (match_dup 0)
 			    (const_int -1)))
-	      (clobber (match_scratch:SI 5 ""))])]
+	      (clobber (match_operand 5 ""))])] ; match_scratch
   "TARGET_INSNS_64PLUS && optimize"
 {
   /* The loop optimizer doesn't check the predicates... */
   if (GET_MODE (operands[0]) != SImode)
     FAIL;
+  operands[5] = gen_rtx_SCRATCH (SImode);
 })
 
 (define_insn "mvilc"
