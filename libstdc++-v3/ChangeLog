@@ -1,3 +1,71 @@
+2012-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (_Debug_msg_id): Add
+	__msg_bucket_index_oob.
+	* include/debug/macros.h (__glibcxx_check_bucket_index): New.
+	* include/debug/unordered_set (unordered_set<>::begin(size_type)):
+	Add check on bucket index.
+	(unordered_set<>::begin(size_type) const): Likewise.
+	(unordered_set<>::cbegin(size_type) const): Likewise.
+	(unordered_set<>::end(size_type)): Likewise.
+	(unordered_set<>::end(size_type) const): Likewise.
+	(unordered_set<>::cend(size_type) const): Likewise.
+	(unordered_set<>::bucket_size(size_type)): Likewise.
+	(unordered_multiset<>::begin(size_type)): Likewise.
+	(unordered_multiset<>::begin(size_type) const): Likewise.
+	(unordered_multiset<>::cbegin(size_type) const): Likewise.
+	(unordered_multiset<>::end(size_type)): Likewise.
+	(unordered_multiset<>::end(size_type) const): Likewise.
+	(unordered_multiset<>::cend(size_type) const): Likewise.
+	(unordered_multiset<>::bucket_size(size_type)): Likewise.
+	* include/debug/unordered_map (unordered_map<>::begin(size_type)):
+	Likewise.
+	(unordered_map<>::begin(size_type) const): Likewise.
+	(unordered_map<>::cbegin(size_type) const): Likewise.
+	(unordered_map<>::end(size_type)): Likewise.
+	(unordered_map<>::end(size_type) const): Likewise.
+	(unordered_map<>::cend(size_type) const): Likewise.
+	(unordered_map<>::bucket_size(size_type)): Likewise.
+	(unordered_multimap<>::begin(size_type)): Likewise.
+	(unordered_multimap<>::begin(size_type) const): Likewise.
+	(unordered_multimap<>::cbegin(size_type) const): Likewise.
+	(unordered_multimap<>::end(size_type)): Likewise.
+	(unordered_multimap<>::end(size_type) const): Likewise.
+	(unordered_multimap<>::cend(size_type) const): Likewise.
+	(unordered_multimap<>::bucket_size(size_type)): Likewise.
+	* testsuite/23_containers/unordered_map/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_map/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/cend_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/cend_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_set/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/cend_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/cend_neg.cc: New.
+
 2012-10-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.host: Match arm*-*-linux-* for ARM Linux/GNU.

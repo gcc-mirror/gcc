@@ -107,11 +107,13 @@ namespace __gnu_debug
     __msg_insert_after_end,
     __msg_erase_after_bad,
     __msg_valid_range2,
-    // unordered sequence local iterators
+    // unordered container local iterators
     __msg_local_iter_compare_bad,
     __msg_non_empty_range,
     // self move assign
-    __msg_self_move_assign
+    __msg_self_move_assign,
+    // unordered container buckets
+    __msg_bucket_index_oob
   };
 
   class _Error_formatter
