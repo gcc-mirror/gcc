@@ -1,5 +1,8 @@
 2012-10-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/54796
+	* gcc.dg/guality/pr54796.c: New test.
+
 	PR tree-optimization/54889
 	* gfortran.dg/pr54889.f90: New test.
 

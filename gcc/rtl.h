@@ -267,7 +267,8 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a CALL_INSN if it is a sibling call.
      1 in a SET that is for a return.
      In a CODE_LABEL, part of the two-bit alternate entry field.
-     1 in a CONCAT is VAL_EXPR_IS_COPIED in var-tracking.c.  */
+     1 in a CONCAT is VAL_EXPR_IS_COPIED in var-tracking.c.
+     1 in a VALUE is SP_BASED_VALUE_P in cselib.c.  */
   unsigned int jump : 1;
   /* In a CODE_LABEL, part of the two-bit alternate entry field.
      1 in a MEM if it cannot trap.
