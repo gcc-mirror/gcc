@@ -94,11 +94,15 @@ struct case_node
   tree			low;	/* Lowest index value for this label */
   tree			high;	/* Highest index value for this label */
   tree			code_label; /* Label to jump to when node matches */
+  int                   prob; /* Probability of taking this case.  */
+  /* Probability of reaching subtree rooted at this node */
+  int                   subtree_prob;
 };
 
 typedef struct case_node case_node;
 typedef struct case_node *case_node_ptr;
 
+extern basic_block label_to_block_fn (struct function *, tree);
 
 static int n_occurrences (int, const char *);
 static bool tree_conflicts_with_clobbers_p (tree, HARD_REG_SET *);
@@ -112,7 +116,7 @@ static void balance_case_nodes (case_node_ptr *, case_node_ptr);
 static int node_has_low_bound (case_node_ptr, tree);
 static int node_has_high_bound (case_node_ptr, tree);
 static int node_is_bounded (case_node_ptr, tree);
-static void emit_case_nodes (rtx, case_node_ptr, rtx, tree);
+static void emit_case_nodes (rtx, case_node_ptr, rtx, int, tree);
 
 /* Return the rtx-label that corresponds to a LABEL_DECL,
    creating it if necessary.  */
@@ -1648,23 +1652,29 @@ expand_stack_restore (tree var)
   fixup_args_size_notes (prev, get_last_insn (), 0);
 }
 
-/* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.  */
+/* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE. PROB
+   is the probability of jumping to LABEL.  */
 static void
 do_jump_if_equal (enum machine_mode mode, rtx op0, rtx op1, rtx label,
-		  int unsignedp)
+		  int unsignedp, int prob)
 {
+  gcc_assert (prob <= REG_BR_PROB_BASE);
   do_compare_rtx_and_jump (op0, op1, EQ, unsignedp, mode,
-			   NULL_RTX, NULL_RTX, label, -1);
+			   NULL_RTX, NULL_RTX, label, prob);
 }
 
 /* Do the insertion of a case label into case_list.  The labels are
    fed to us in descending order from the sorted vector of case labels used
    in the tree part of the middle end.  So the list we construct is
-   sorted in ascending order.  */
+   sorted in ascending order.
+   
+   LABEL is the case label to be inserted. LOW and HIGH are the bounds
+   against which the index is compared to jump to LABEL and PROB is the
+   estimated probability LABEL is reached from the switch statement.  */
 
 static struct case_node *
 add_case_node (struct case_node *head, tree low, tree high,
-               tree label, alloc_pool case_node_pool)
+               tree label, int prob, alloc_pool case_node_pool)
 {
   struct case_node *r;
 
@@ -1677,6 +1687,8 @@ add_case_node (struct case_node *head, tree low, tree high,
   r->high = high;
   r->code_label = label;
   r->parent = r->left = NULL;
+  r->prob = prob;
+  r->subtree_prob = prob;
   r->right = head;
   return r;
 }
@@ -1778,6 +1790,8 @@ expand_switch_as_decision_tree_p (tree range,
 
 /* Generate a decision tree, switching on INDEX_EXPR and jumping to
    one of the labels in CASE_LIST or to the DEFAULT_LABEL.
+   DEFAULT_PROB is the estimated probability that it jumps to
+   DEFAULT_LABEL.
    
    We generate a binary decision tree to select the appropriate target
    code.  This is done as follows:
@@ -1803,7 +1817,8 @@ expand_switch_as_decision_tree_p (tree range,
 
 static void
 emit_case_decision_tree (tree index_expr, tree index_type,
-			 struct case_node *case_list, rtx default_label)
+			 struct case_node *case_list, rtx default_label,
+                         int default_prob)
 {
   rtx index = expand_normal (index_expr);
 
@@ -1839,15 +1854,47 @@ emit_case_decision_tree (tree index_expr, tree index_type,
       dump_case_nodes (dump_file, case_list, indent_step, 0);
     }
 
-  emit_case_nodes (index, case_list, default_label, index_type);
+  emit_case_nodes (index, case_list, default_label, default_prob, index_type);
   if (default_label)
     emit_jump (default_label);
+}
+
+/* Return the sum of probabilities of outgoing edges of basic block BB.  */
+
+static int
+get_outgoing_edge_probs (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  int prob_sum = 0;
+  FOR_EACH_EDGE(e, ei, bb->succs)
+    prob_sum += e->probability;
+  return prob_sum;
+}
+
+/* Computes the conditional probability of jumping to a target if the branch
+   instruction is executed.
+   TARGET_PROB is the estimated probability of jumping to a target relative
+   to some basic block BB.
+   BASE_PROB is the probability of reaching the branch instruction relative
+   to the same basic block BB.  */
+
+static inline int
+conditional_probability (int target_prob, int base_prob)
+{
+  if (base_prob > 0)
+    {
+      gcc_assert (target_prob >= 0);
+      gcc_assert (target_prob <= base_prob);
+      return RDIV (target_prob * REG_BR_PROB_BASE, base_prob);
+    }
+  return -1;
 }
 
 /* Generate a dispatch tabler, switching on INDEX_EXPR and jumping to
    one of the labels in CASE_LIST or to the DEFAULT_LABEL.
    MINVAL, MAXVAL, and RANGE are the extrema and range of the case
-   labels in CASE_LIST.
+   labels in CASE_LIST. STMT_BB is the basic block containing the statement.
 
    First, a jump insn is emitted.  First we try "casesi".  If that
    fails, try "tablejump".   A target *must* have one of them (or both).
@@ -1860,19 +1907,27 @@ emit_case_decision_tree (tree index_expr, tree index_type,
 static void
 emit_case_dispatch_table (tree index_expr, tree index_type,
 			  struct case_node *case_list, rtx default_label,
-			  tree minval, tree maxval, tree range)
+			  tree minval, tree maxval, tree range,
+                          basic_block stmt_bb)
 {
   int i, ncases;
   struct case_node *n;
   rtx *labelvec;
   rtx fallback_label = label_rtx (case_list->code_label);
   rtx table_label = gen_label_rtx ();
+  bool has_gaps = false;
+  edge default_edge = EDGE_SUCC(stmt_bb, 0);
+  int default_prob = default_edge->probability;
+  int base = get_outgoing_edge_probs (stmt_bb);
+  bool try_with_tablejump = false;
+
+  int new_default_prob = conditional_probability (default_prob,
+                                                  base);
 
   if (! try_casesi (index_type, index_expr, minval, range,
-		    table_label, default_label, fallback_label))
+		    table_label, default_label, fallback_label,
+                    new_default_prob))
     {
-      bool ok;
-
       /* Index jumptables from zero for suitable values of minval to avoid
 	 a subtraction.  For the rationale see:
 	 "http://gcc.gnu.org/ml/gcc-patches/2001-10/msg01234.html".  */
@@ -1882,11 +1937,9 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 	{
 	  minval = build_int_cst (index_type, 0);
 	  range = maxval;
+          has_gaps = true;
 	}
-
-      ok = try_tablejump (index_type, index_expr, minval, range,
-			  table_label, default_label);
-      gcc_assert (ok);
+      try_with_tablejump = true;
     }
 
   /* Get table of labels to jump to, in order of case index.  */
@@ -1921,8 +1974,48 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
     default_label = fallback_label;
   for (i = 0; i < ncases; i++)
     if (labelvec[i] == 0)
-      labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
+      {
+        has_gaps = true;
+        labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
+      }
 
+  if (has_gaps)
+    {
+      /* There is at least one entry in the jump table that jumps
+         to default label. The default label can either be reached
+         through the indirect jump or the direct conditional jump
+         before that. Split the probability of reaching the
+         default label among these two jumps.  */
+      new_default_prob = conditional_probability (default_prob/2,
+                                                  base);
+      default_prob /= 2;
+      base -= default_prob;
+    }
+  else
+    {
+      base -= default_prob;
+      default_prob = 0;
+    }
+
+  default_edge->probability = default_prob;
+
+  /* We have altered the probability of the default edge. So the probabilities
+     of all other edges need to be adjusted so that it sums up to
+     REG_BR_PROB_BASE.  */
+  if (base)
+    {
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, stmt_bb->succs)
+        e->probability = RDIV (e->probability * REG_BR_PROB_BASE,  base);
+    }
+
+  if (try_with_tablejump)
+    {
+      bool ok = try_tablejump (index_type, index_expr, minval, range,
+                               table_label, default_label, new_default_prob);
+      gcc_assert (ok);
+    }
   /* Output the table.  */
   emit_label (table_label);
 
@@ -1937,6 +2030,36 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 
   /* Record no drop-through after the table.  */
   emit_barrier ();
+}
+
+/* Reset the aux field of all outgoing edges of basic block BB.  */
+
+static inline void
+reset_out_edges_aux (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE(e, ei, bb->succs)
+    e->aux = (void *)0;
+}
+
+/* Compute the number of case labels that correspond to each outgoing edge of
+   STMT. Record this information in the aux field of the edge.  */
+
+static inline void
+compute_cases_per_edge (gimple stmt)
+{
+  basic_block bb = gimple_bb (stmt);
+  reset_out_edges_aux (bb);
+  int ncases = gimple_switch_num_labels (stmt);
+  for (int i = ncases - 1; i >= 1; --i)
+    {
+      tree elt = gimple_switch_label (stmt, i);
+      tree lab = CASE_LABEL (elt);
+      basic_block case_bb = label_to_block_fn (cfun, lab);
+      edge case_edge = find_edge (bb, case_bb);
+      case_edge->aux = (void *)((long)(case_edge->aux) + 1);
+    }
 }
 
 /* Terminate a case (Pascal/Ada) or switch (C) statement
@@ -1956,6 +2079,7 @@ expand_case (gimple stmt)
   tree index_expr = gimple_switch_index (stmt);
   tree index_type = TREE_TYPE (index_expr);
   tree elt;
+  basic_block bb = gimple_bb (stmt);
 
   /* A list of case labels; it is first built as a list and it may then
      be rearranged into a nearly balanced binary tree.  */
@@ -1981,6 +2105,8 @@ expand_case (gimple stmt)
 
   /* Find the default case target label.  */
   default_label = label_rtx (CASE_LABEL (gimple_switch_default_label (stmt)));
+  edge default_edge = EDGE_SUCC(bb, 0);
+  int default_prob = default_edge->probability;
 
   /* Get upper and lower bounds of case values.  */
   elt = gimple_switch_label (stmt, 1);
@@ -1999,7 +2125,9 @@ expand_case (gimple stmt)
   uniq = 0;
   count = 0;
   struct pointer_set_t *seen_labels = pointer_set_create ();
-  for (i = gimple_switch_num_labels (stmt) - 1; i >= 1; --i)
+  compute_cases_per_edge (stmt);
+
+  for (i = ncases - 1; i >= 1; --i)
     {
       elt = gimple_switch_label (stmt, i);
       tree low = CASE_LOW (elt);
@@ -2041,10 +2169,15 @@ expand_case (gimple stmt)
 				   TREE_INT_CST_LOW (high),
 				   TREE_INT_CST_HIGH (high));
 
-      case_list = add_case_node (case_list, low, high, lab,
-				 case_node_pool);
+      basic_block case_bb = label_to_block_fn (cfun, lab);
+      edge case_edge = find_edge (bb, case_bb);
+      case_list = add_case_node (
+          case_list, low, high, lab,
+          case_edge->probability / (long)(case_edge->aux),
+          case_node_pool);
     }
   pointer_set_destroy (seen_labels);
+  reset_out_edges_aux (bb);
 
   /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
      destination, such as one with a default case only.
@@ -2060,11 +2193,12 @@ expand_case (gimple stmt)
 
   if (expand_switch_as_decision_tree_p (range, uniq, count))
     emit_case_decision_tree (index_expr, index_type,
-			     case_list, default_label);
+                             case_list, default_label,
+                             default_prob);
   else
     emit_case_dispatch_table (index_expr, index_type,
 			      case_list, default_label,
-			      minval, maxval, range);
+			      minval, maxval, range, bb);
 
   reorder_insns (NEXT_INSN (before_case), get_last_insn (), before_case);
 
@@ -2126,7 +2260,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
         {
 	  tree elt = VEC_index (tree, dispatch_table, i);
 	  rtx lab = label_rtx (CASE_LABEL (elt));
-	  do_jump_if_equal (index_mode, index, zero, lab, 0);
+	  do_jump_if_equal (index_mode, index, zero, lab, 0, -1);
 	  force_expand_binop (index_mode, sub_optab,
 			      index, CONST1_RTX (index_mode),
 			      index, 0, OPTAB_DIRECT);
@@ -2150,12 +2284,12 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
 	  tree elt = VEC_index (tree, dispatch_table, i);
 	  tree low = CASE_LOW (elt);
 	  tree lab = CASE_LABEL (elt);
-	  case_list = add_case_node (case_list, low, low, lab, case_node_pool);
+	  case_list = add_case_node (case_list, low, low, lab, 0, case_node_pool);
 	}
 
       emit_case_dispatch_table (index_expr, index_type,
 				case_list, default_label,
-				minval, maxval, range);
+				minval, maxval, range, NULL);
       emit_label (default_label);
       free_alloc_pool (case_node_pool);
     }
@@ -2237,6 +2371,9 @@ balance_case_nodes (case_node_ptr *head, case_node_ptr parent)
 	  /* Optimize each of the two split parts.  */
 	  balance_case_nodes (&np->left, np);
 	  balance_case_nodes (&np->right, np);
+          np->subtree_prob = np->prob;
+          np->subtree_prob += np->left->subtree_prob;
+          np->subtree_prob += np->right->subtree_prob;
 	}
       else
 	{
@@ -2244,8 +2381,12 @@ balance_case_nodes (case_node_ptr *head, case_node_ptr parent)
 	     but fill in `parent' fields.  */
 	  np = *head;
 	  np->parent = parent;
+          np->subtree_prob = np->prob;
 	  for (; np->right; np = np->right)
-	    np->right->parent = np;
+            {
+	      np->right->parent = np;
+              (*head)->subtree_prob += np->right->subtree_prob;
+            }
 	}
     }
 }
@@ -2358,6 +2499,7 @@ node_is_bounded (case_node_ptr node, tree index_type)
 	  && node_has_high_bound (node, index_type));
 }
 
+
 /* Emit step-by-step code to select a case for the value of INDEX.
    The thus generated decision tree follows the form of the
    case-node binary tree NODE, whose nodes represent test conditions.
@@ -2386,10 +2528,12 @@ node_is_bounded (case_node_ptr node, tree index_type)
 
 static void
 emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
-		 tree index_type)
+		 int default_prob, tree index_type)
 {
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
   int unsignedp = TYPE_UNSIGNED (index_type);
+  int probability;
+  int prob = node->prob, subtree_prob = node->subtree_prob;
   enum machine_mode mode = GET_MODE (index);
   enum machine_mode imode = TYPE_MODE (index_type);
 
@@ -2404,15 +2548,17 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
   else if (tree_int_cst_equal (node->low, node->high))
     {
+      probability = conditional_probability (prob, subtree_prob + default_prob);
       /* Node is single valued.  First see if the index expression matches
 	 this node and then check our children, if any.  */
-
       do_jump_if_equal (mode, index,
 			convert_modes (mode, imode,
 				       expand_normal (node->low),
 				       unsignedp),
-			label_rtx (node->code_label), unsignedp);
-
+			label_rtx (node->code_label), unsignedp, probability);
+      /* Since this case is taken at this point, reduce its weight from
+         subtree_weight.  */
+      subtree_prob -= prob;
       if (node->right != 0 && node->left != 0)
 	{
 	  /* This node has children on both sides.
@@ -2423,26 +2569,35 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	  if (node_is_bounded (node->right, index_type))
 	    {
+              probability = conditional_probability (
+                  node->right->prob,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->high),
 					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp,
-				       label_rtx (node->right->code_label));
-	      emit_case_nodes (index, node->left, default_label, index_type);
+				       label_rtx (node->right->code_label),
+                                       probability);
+	      emit_case_nodes (index, node->left, default_label, default_prob,
+                               index_type);
 	    }
 
 	  else if (node_is_bounded (node->left, index_type))
 	    {
+              probability = conditional_probability (
+                  node->left->prob,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->high),
 					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp,
-				       label_rtx (node->left->code_label));
-	      emit_case_nodes (index, node->right, default_label, index_type);
+				       label_rtx (node->left->code_label),
+                                       probability);
+	      emit_case_nodes (index, node->right, default_label, default_prob, index_type);
 	    }
 
 	  /* If both children are single-valued cases with no
@@ -2460,21 +2615,27 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	      /* See if the value matches what the right hand side
 		 wants.  */
+              probability = conditional_probability (
+                  node->right->prob,
+                  subtree_prob + default_prob);
 	      do_jump_if_equal (mode, index,
 				convert_modes (mode, imode,
 					       expand_normal (node->right->low),
 					       unsignedp),
 				label_rtx (node->right->code_label),
-				unsignedp);
+				unsignedp, probability);
 
 	      /* See if the value matches what the left hand side
 		 wants.  */
+              probability = conditional_probability (
+                  node->left->prob,
+                  subtree_prob + default_prob);
 	      do_jump_if_equal (mode, index,
 				convert_modes (mode, imode,
 					       expand_normal (node->left->low),
 					       unsignedp),
 				label_rtx (node->left->code_label),
-				unsignedp);
+				unsignedp, probability);
 	    }
 
 	  else
@@ -2486,6 +2647,12 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 		= build_decl (curr_insn_location (),
 			      LABEL_DECL, NULL_TREE, NULL_TREE);
 
+              /* The default label could be reached either through the right
+                 subtree or the left subtree. Divide the probability
+                 equally.  */
+              probability = conditional_probability (
+                  node->right->subtree_prob + default_prob/2,
+                  subtree_prob + default_prob);
 	      /* See if the value is on the right.  */
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
@@ -2493,11 +2660,13 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 					expand_normal (node->high),
 					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp,
-				       label_rtx (test_label));
+				       label_rtx (test_label),
+                                       probability);
+              default_prob /= 2;
 
 	      /* Value must be on the left.
 		 Handle the left-hand subtree.  */
-	      emit_case_nodes (index, node->left, default_label, index_type);
+	      emit_case_nodes (index, node->left, default_label, default_prob, index_type);
 	      /* If left-hand subtree does nothing,
 		 go to default.  */
 	      if (default_label)
@@ -2505,7 +2674,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	      /* Code branches here for the right-hand subtree.  */
 	      expand_label (test_label);
-	      emit_case_nodes (index, node->right, default_label, index_type);
+	      emit_case_nodes (index, node->right, default_label, default_prob, index_type);
 	    }
 	}
 
@@ -2523,28 +2692,38 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	    {
 	      if (!node_has_low_bound (node, index_type))
 		{
+                  probability = conditional_probability (
+                      default_prob/2,
+                      subtree_prob + default_prob);
 		  emit_cmp_and_jump_insns (index,
 					   convert_modes
 					   (mode, imode,
 					    expand_normal (node->high),
 					    unsignedp),
 					   LT, NULL_RTX, mode, unsignedp,
-					   default_label);
+					   default_label,
+                                           probability);
+                  default_prob /= 2;
 		}
 
-	      emit_case_nodes (index, node->right, default_label, index_type);
+	      emit_case_nodes (index, node->right, default_label, default_prob, index_type);
 	    }
 	  else
-	    /* We cannot process node->right normally
-	       since we haven't ruled out the numbers less than
-	       this node's value.  So handle node->right explicitly.  */
-	    do_jump_if_equal (mode, index,
-			      convert_modes
-			      (mode, imode,
-			       expand_normal (node->right->low),
-			       unsignedp),
-			      label_rtx (node->right->code_label), unsignedp);
-	}
+            {
+              probability = conditional_probability (
+                  node->right->subtree_prob,
+                  subtree_prob + default_prob);
+	      /* We cannot process node->right normally
+	         since we haven't ruled out the numbers less than
+	         this node's value.  So handle node->right explicitly.  */
+	      do_jump_if_equal (mode, index,
+			        convert_modes
+			        (mode, imode,
+			         expand_normal (node->right->low),
+			         unsignedp),
+			        label_rtx (node->right->code_label), unsignedp, probability);
+            }
+	  }
 
       else if (node->right == 0 && node->left != 0)
 	{
@@ -2554,27 +2733,38 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	    {
 	      if (!node_has_high_bound (node, index_type))
 		{
+                  probability = conditional_probability (
+                      default_prob/2,
+                      subtree_prob + default_prob);
 		  emit_cmp_and_jump_insns (index,
 					   convert_modes
 					   (mode, imode,
 					    expand_normal (node->high),
 					    unsignedp),
 					   GT, NULL_RTX, mode, unsignedp,
-					   default_label);
+					   default_label,
+                                           probability);
+                  default_prob /= 2;
 		}
 
-	      emit_case_nodes (index, node->left, default_label, index_type);
+	      emit_case_nodes (index, node->left, default_label,
+                               default_prob, index_type);
 	    }
 	  else
-	    /* We cannot process node->left normally
-	       since we haven't ruled out the numbers less than
-	       this node's value.  So handle node->left explicitly.  */
-	    do_jump_if_equal (mode, index,
-			      convert_modes
-			      (mode, imode,
-			       expand_normal (node->left->low),
-			       unsignedp),
-			      label_rtx (node->left->code_label), unsignedp);
+            {
+              probability = conditional_probability (
+                  node->left->subtree_prob,
+                  subtree_prob + default_prob);
+	      /* We cannot process node->left normally
+	         since we haven't ruled out the numbers less than
+	         this node's value.  So handle node->left explicitly.  */
+	      do_jump_if_equal (mode, index,
+			        convert_modes
+			        (mode, imode,
+			         expand_normal (node->left->low),
+			         unsignedp),
+			        label_rtx (node->left->code_label), unsignedp, probability);
+            }
 	}
     }
   else
@@ -2593,15 +2783,21 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	  tree test_label = 0;
 
 	  if (node_is_bounded (node->right, index_type))
-	    /* Right hand node is fully bounded so we can eliminate any
-	       testing and branch directly to the target code.  */
-	    emit_cmp_and_jump_insns (index,
-				     convert_modes
-				     (mode, imode,
-				      expand_normal (node->high),
-				      unsignedp),
-				     GT, NULL_RTX, mode, unsignedp,
-				     label_rtx (node->right->code_label));
+            {
+	      /* Right hand node is fully bounded so we can eliminate any
+	         testing and branch directly to the target code.  */
+              probability = conditional_probability (
+                  node->right->subtree_prob,
+                  subtree_prob + default_prob);
+	      emit_cmp_and_jump_insns (index,
+				       convert_modes
+				       (mode, imode,
+				        expand_normal (node->high),
+				        unsignedp),
+				       GT, NULL_RTX, mode, unsignedp,
+				       label_rtx (node->right->code_label),
+                                       probability);
+            }
 	  else
 	    {
 	      /* Right hand node requires testing.
@@ -2609,27 +2805,36 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	      test_label = build_decl (curr_insn_location (),
 				       LABEL_DECL, NULL_TREE, NULL_TREE);
+              probability = conditional_probability (
+                  node->right->subtree_prob + default_prob/2,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->high),
 					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp,
-				       label_rtx (test_label));
+				       label_rtx (test_label),
+                                       probability);
+              default_prob /= 2;
 	    }
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 
+          probability = conditional_probability (
+              prob,
+              subtree_prob + default_prob);
 	  emit_cmp_and_jump_insns (index,
 				   convert_modes
 				   (mode, imode,
 				    expand_normal (node->low),
 				    unsignedp),
 				   GE, NULL_RTX, mode, unsignedp,
-				   label_rtx (node->code_label));
+				   label_rtx (node->code_label),
+                                   probability);
 
 	  /* Handle the left-hand subtree.  */
-	  emit_case_nodes (index, node->left, default_label, index_type);
+	  emit_case_nodes (index, node->left, default_label, default_prob, index_type);
 
 	  /* If right node had to be handled later, do that now.  */
 
@@ -2641,7 +2846,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 		emit_jump (default_label);
 
 	      expand_label (test_label);
-	      emit_case_nodes (index, node->right, default_label, index_type);
+	      emit_case_nodes (index, node->right, default_label, default_prob, index_type);
 	    }
 	}
 
@@ -2651,26 +2856,35 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	     if they are possible.  */
 	  if (!node_has_low_bound (node, index_type))
 	    {
+              probability = conditional_probability (
+                  default_prob/2,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->low),
 					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp,
-				       default_label);
+				       default_label,
+                                       probability);
+              default_prob /= 2;
 	    }
 
 	  /* Value belongs to this node or to the right-hand subtree.  */
 
+          probability = conditional_probability (
+              prob,
+              subtree_prob + default_prob);
 	  emit_cmp_and_jump_insns (index,
 				   convert_modes
 				   (mode, imode,
 				    expand_normal (node->high),
 				    unsignedp),
 				   LE, NULL_RTX, mode, unsignedp,
-				   label_rtx (node->code_label));
+				   label_rtx (node->code_label),
+                                   probability);
 
-	  emit_case_nodes (index, node->right, default_label, index_type);
+	  emit_case_nodes (index, node->right, default_label, default_prob, index_type);
 	}
 
       else if (node->right == 0 && node->left != 0)
@@ -2679,26 +2893,35 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	     if they are possible.  */
 	  if (!node_has_high_bound (node, index_type))
 	    {
+              probability = conditional_probability (
+                  default_prob/2,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->high),
 					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp,
-				       default_label);
+				       default_label,
+                                       probability);
+              default_prob /= 2;
 	    }
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 
+          probability = conditional_probability (
+              prob,
+              subtree_prob + default_prob);
 	  emit_cmp_and_jump_insns (index,
 				   convert_modes
 				   (mode, imode,
 				    expand_normal (node->low),
 				    unsignedp),
 				   GE, NULL_RTX, mode, unsignedp,
-				   label_rtx (node->code_label));
+				   label_rtx (node->code_label),
+                                   probability);
 
-	  emit_case_nodes (index, node->left, default_label, index_type);
+	  emit_case_nodes (index, node->left, default_label, default_prob, index_type);
 	}
 
       else
@@ -2711,24 +2934,32 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	  if (!high_bound && low_bound)
 	    {
+              probability = conditional_probability (
+                  default_prob,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->high),
 					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp,
-				       default_label);
+				       default_label,
+                                       probability);
 	    }
 
 	  else if (!low_bound && high_bound)
 	    {
+              probability = conditional_probability (
+                  default_prob,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes
 				       (mode, imode,
 					expand_normal (node->low),
 					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp,
-				       default_label);
+				       default_label,
+                                       probability);
 	    }
 	  else if (!low_bound && !high_bound)
 	    {
@@ -2748,8 +2979,11 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 						    high, low),
 				       NULL_RTX, mode, EXPAND_NORMAL);
 
+              probability = conditional_probability (
+                  default_prob,
+                  subtree_prob + default_prob);
 	      emit_cmp_and_jump_insns (new_index, new_bound, GT, NULL_RTX,
-				       mode, 1, default_label);
+				       mode, 1, default_label, probability);
 	    }
 
 	  emit_jump (label_rtx (node->code_label));

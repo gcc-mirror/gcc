@@ -1,3 +1,43 @@
+2012-10-15   Easwaran Raman  <eraman@google.com>
+
+	* optabs.c (emit_cmp_and_jump_insn_1): Add a new parameter to
+	specificy the probability of taking the jump.
+	(emit_cmp_and_jump_insns): Likewise.
+	(expand_compare_and_swap_loop): Make the jump predicted not taken.
+	* dojump.c (do_compare_rtx_and_jump): Remove the code attaching
+	REG_BR_PROB note and pass probability to emit_cmp_and_jump_insns.
+	* cfgbuild.c (compute_outgoing_frequencies): Do not guess outgoing
+	probabilities for branches with more than two successors.
+	* expr.c (emit_block_move_via_loop): Predict the loop backedge loop
+	to be highly taken.
+	(try_casesi): Pass the probability of jumping to the default label.
+	(try_tablejump): Likewise.
+	(do_tablejump): Likewise.
+	* expr.h (try_tablejump): Add a new parameter.
+	(try_casesi): Likewise.
+	(emit_cmp_and_jump_insns): Add probability as default parameter with a
+	default value of -1.
+	* except.c (sjlj_emit_function_enter): Pass probability to
+	emit_cmp_and_jump_insns.
+	* stmt.c (case_node): Add new fields PROB and SUBTREE_PROB.
+	(do_jump_if_equal): Pass probability for REG_BR_PROB note.
+	(add_case_node): Pass estimated probability of jumping to the case
+	label.
+	(emit_case_decision_tree): Pass default_prob to emit_case_nodes.
+	(get_outgoing_edge_probs): New function.
+	(conditional_probability): Likewise.
+	(reset_out_edges_aux): Likewise.
+	(compute_cases_per_edge): Likewise.
+	(emit_case_dispatch_table): Update probabilities of edges coming out
+	of the switch statement.
+	(expand_case): Compute and propagate default edge probability to
+	emit_case_dispatch_table.
+	(expand_sjlj_dispatch_table): Update calls to add_case_node and
+	emit_case_dispatch_table.
+	(balance_case_nodes): Update subtree_prob values.
+	(emit_case_nodes): Compute edge probabilities and add pass them to
+	emit_cmp_and_jump_insns.
+
 2012-10-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244

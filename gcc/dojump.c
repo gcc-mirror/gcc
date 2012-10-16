@@ -886,7 +886,6 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 {
   rtx tem;
   rtx dummy_label = NULL_RTX;
-  rtx last;
 
   /* Reverse the comparison if that is safe and we want to jump if it is
      false.  Also convert to the reverse comparison if the target can
@@ -1069,25 +1068,8 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	    }
 	}
 
-      last = get_last_insn ();
       emit_cmp_and_jump_insns (op0, op1, code, size, mode, unsignedp,
-			       if_true_label);
-      if (prob != -1 && profile_status != PROFILE_ABSENT)
-	{
-	  for (last = NEXT_INSN (last);
-	       last && NEXT_INSN (last);
-	       last = NEXT_INSN (last))
-	    if (JUMP_P (last))
-	      break;
-	  if (last
-	      && JUMP_P (last)
-	      && ! NEXT_INSN (last)
-	      && any_condjump_p (last))
-	    {
-	      gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
-	      add_reg_note (last, REG_BR_PROB, GEN_INT (prob));
-	    }
-	}
+			       if_true_label, prob);
     }
 
   if (if_false_label)

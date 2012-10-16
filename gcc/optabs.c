@@ -4249,11 +4249,12 @@ prepare_operand (enum insn_code icode, rtx x, int opnum, enum machine_mode mode,
    we can do the branch.  */
 
 static void
-emit_cmp_and_jump_insn_1 (rtx test, enum machine_mode mode, rtx label)
+emit_cmp_and_jump_insn_1 (rtx test, enum machine_mode mode, rtx label, int prob)
 {
   enum machine_mode optab_mode;
   enum mode_class mclass;
   enum insn_code icode;
+  rtx insn;
 
   mclass = GET_MODE_CLASS (mode);
   optab_mode = (mclass == MODE_CC) ? CCmode : mode;
@@ -4261,7 +4262,17 @@ emit_cmp_and_jump_insn_1 (rtx test, enum machine_mode mode, rtx label)
 
   gcc_assert (icode != CODE_FOR_nothing);
   gcc_assert (insn_operand_matches (icode, 0, test));
-  emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0), XEXP (test, 1), label));
+  insn = emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0),
+                                          XEXP (test, 1), label));
+  if (prob != -1
+      && profile_status != PROFILE_ABSENT
+      && insn
+      && JUMP_P (insn)
+      && any_condjump_p (insn))
+    {
+      gcc_assert (!find_reg_note (insn, REG_BR_PROB, 0));
+      add_reg_note (insn, REG_BR_PROB, GEN_INT (prob));
+    }
 }
 
 /* Generate code to compare X with Y so that the condition codes are
@@ -4279,11 +4290,14 @@ emit_cmp_and_jump_insn_1 (rtx test, enum machine_mode mode, rtx label)
 
    COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
    It will be potentially converted into an unsigned variant based on
-   UNSIGNEDP to select a proper jump instruction.  */
+   UNSIGNEDP to select a proper jump instruction.
+   
+   PROB is the probability of jumping to LABEL.  */
 
 void
 emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
-			 enum machine_mode mode, int unsignedp, rtx label)
+			 enum machine_mode mode, int unsignedp, rtx label,
+                         int prob)
 {
   rtx op0 = x, op1 = y;
   rtx test;
@@ -4307,7 +4321,7 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
   prepare_cmp_insn (op0, op1, comparison, size, unsignedp, OPTAB_LIB_WIDEN,
 		    &test, &mode);
-  emit_cmp_and_jump_insn_1 (test, mode, label);
+  emit_cmp_and_jump_insn_1 (test, mode, label, prob);
 }
 
 
@@ -6952,9 +6966,9 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
   if (oldval != cmp_reg)
     emit_move_insn (cmp_reg, oldval);
 
-  /* ??? Mark this jump predicted not taken?  */
+  /* Mark this jump predicted not taken.  */
   emit_cmp_and_jump_insns (success, const0_rtx, EQ, const0_rtx,
-			   GET_MODE (success), 1, label);
+			   GET_MODE (success), 1, label, 0);
   return true;
 }
 

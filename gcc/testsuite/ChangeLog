@@ -1,3 +1,7 @@
+2012-10-15   Easwaran Raman  <eraman@google.com>
+	* gcc.dg/tree-prof/switch-case-1.c: New test case.
+	* gcc.dg/tree-prof/switch-case-2.c: New test case.
+
 2012-10-16  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/torture/stackalign/builtin-apply-2.c,
