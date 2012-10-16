@@ -30,6 +30,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "cpp-id-data.h"
 
+/* Adapted from hwint.h to use the Ada prefix.  */
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+# if HOST_BITS_PER_WIDE_INT == 64
+#  define ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX \
+     "16#%" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x#"
+# else
+#  define ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX \
+     "16#%" HOST_LONG_FORMAT "x%08" HOST_LONG_FORMAT "x#"
+# endif
+#else
+  /* We can assume that 'long long' is at least 64 bits.  */
+# define ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX \
+    "16#%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x#"
+#endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
+
 /* Local functions, macros and variables.  */
 static int dump_generic_ada_node (pretty_printer *, tree, tree,
 				  int (*)(tree, cpp_operation), int, int, bool);
@@ -2175,12 +2190,16 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
       break;
 
     case INTEGER_CST:
-      if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE)
-	{
-	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
-	  pp_string (buffer, "B"); /* pseudo-unit */
-	}
-      else if (!host_integerp (node, 0))
+      /* We treat the upper half of the sizetype range as negative.  This
+	 is consistent with the internal treatment and makes it possible
+	 to generate the (0 .. -1) range for flexible array members.  */
+      if (TREE_TYPE (node) == sizetype)
+	node = fold_convert (ssizetype, node);
+      if (host_integerp (node, 0))
+	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
+      else if (host_integerp (node, 1))
+	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
+      else
 	{
 	  tree val = node;
 	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
@@ -2193,12 +2212,10 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	      low = -low;
 	    }
 	  sprintf (pp_buffer (buffer)->digit_buffer,
-	  HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-	    (unsigned HOST_WIDE_INT) high, low);
+		   ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+		   (unsigned HOST_WIDE_INT) high, low);
 	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	}
-      else
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
       break;
 
     case REAL_CST:

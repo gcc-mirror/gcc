@@ -1,4 +1,9 @@
-2012-10-15   Easwaran Raman  <eraman@google.com>
+2012-10-16  Eric Botcazou <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-2.C: New test.
+
+2012-10-16  Easwaran Raman  <eraman@google.com>
+
 	* gcc.dg/tree-prof/switch-case-1.c: New test case.
 	* gcc.dg/tree-prof/switch-case-2.c: New test case.
 

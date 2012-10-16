@@ -1,3 +1,10 @@
+2012-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Define.
+	(dump_generic_ada_node) <INTEGER_CST>: Deal with sizetype specially.
+	Remove POINTER_TYPE handling, add large unsigned handling and use
+	ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX for big numbers.
+
 2012-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54381
