@@ -297,3 +297,19 @@ function lang_sanitized_name(name)
     gsub( "[^" alnum "_]", "X", name )
     return name
 }
+
+# Search for a valid var_name among all OPTS equal to option NAME.
+# If not found, return "".
+function search_var_name(name, opt_numbers, opts, flags, n_opts)
+{
+    opt_var_name = var_name(flags[opt_numbers[name]]);
+    if (opt_var_name != "") {
+        return opt_var_name;
+    }
+    for (k = 0; k < n_opts; k++) {
+        if (opts[k] == name && var_name(flags[k]) != "") {
+            return var_name(flags[k]);
+        }
+    }
+    return ""
+}

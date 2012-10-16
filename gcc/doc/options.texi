@@ -460,7 +460,10 @@ value of @option{-fmath-errno} for languages that do not use
 @code{errno}.
 
 @item EnabledBy(@var{opt})
-If not explicitly set, the option is set to the value of @option{-@var{opt}}.
+@itemx EnabledBy(@var{opt} && @var{opt2})
+If not explicitly set, the option is set to the value of
+@option{-@var{opt}}.  The second form specifies that the option is
+only set if both @var{opt} and @var{opt2} are set.
 
 @item LangEnabledBy(@var{language}, @var{opt})
 @itemx LangEnabledBy(@var{language}, @var{opt}, @var{posarg}, @var{negarg})
