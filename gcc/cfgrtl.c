@@ -541,15 +541,32 @@ flow_active_insn_p (const_rtx insn)
 
 /* Return true if the block has no effect and only forwards control flow to
    its single destination.  */
-/* FIXME: Make this a cfg hook.  */
 
 bool
-forwarder_block_p (const_basic_block bb)
+contains_no_active_insn_p (const_basic_block bb)
 {
   rtx insn;
 
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
       || !single_succ_p (bb))
+    return false;
+
+  for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && flow_active_insn_p (insn))
+      return false;
+
+  return (!INSN_P (insn)
+	  || (JUMP_P (insn) && simplejump_p (insn))
+	  || !flow_active_insn_p (insn));
+}
+
+/* Likewise, but protect loop latches, headers and preheaders.  */
+/* FIXME: Make this a cfg hook.  */
+
+bool
+forwarder_block_p (const_basic_block bb)
+{
+  if (!contains_no_active_insn_p (bb))
     return false;
 
   /* Protect loop latches, headers and preheaders.  */
@@ -563,13 +580,7 @@ forwarder_block_p (const_basic_block bb)
 	return false;
     }
 
-  for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && flow_active_insn_p (insn))
-      return false;
-
-  return (!INSN_P (insn)
-	  || (JUMP_P (insn) && simplejump_p (insn))
-	  || !flow_active_insn_p (insn));
+  return true;
 }
 
 /* Return nonzero if we can reach target from src by falling through.  */

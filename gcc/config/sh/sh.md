@@ -8474,11 +8474,14 @@ label:
 			  (pc)))
 	      (set (match_dup 0)
 		   (plus:SI (match_dup 0) (const_int -1)))
-	      (clobber (reg:SI T_REG))])]
+	      (clobber (reg:SI T_REG))])
+   (match_operand 5 "" "")]
   "TARGET_SH2"
 {
   if (GET_MODE (operands[0]) != SImode)
     FAIL;
+  emit_insn (gen_doloop_end_split (operands[0], operands[4], operands[0]));
+  DONE;
 })
 
 (define_insn_and_split "doloop_end_split"

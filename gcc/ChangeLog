@@ -1,3 +1,26 @@
+2012-10-16  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* loop-doloop.c (doloop_modify): Pass doloop_end pattern to
+	gen_doloop_begin.
+	(doloop_optimize): Pass flag to indicate if loop is entered at top
+	to gen_doloop_end.
+	* config/arm/thumb2.md (doloop_end): Accept extra operand.
+	* config/bfin/bfin.md (doloop_end): Likewise.
+	* config/c6x/c6x.md (doloop_end): Likewise.
+	* config/ia64/ia64.md (doloop_end): Likewise.
+	* config/mep/mep.md (doloop_begin, doloop_end): Likewise.
+	* config/rs6000/rs6000.md (doloop_end): Likewise.
+	* config/s390/s390.md (doloop_end): Likewise.
+	* config/sh/sh.md (doloop_end): Likewise.
+	* config/spu/spu.md (doloop_end): Likewise.
+	* config/tilegx/tilegx.md (doloop_end): Likewise.
+	* config/tilepro/tilepro.md (doloop_end): Likewise.
+	* doc/md.texi (doloop_end): Document new operand.
+	* basic-block.h (contains_no_active_insn_p): Declare.
+	* cfgrtl.c (contains_no_active_insn_p): New function, factored
+	out of ...
+	(forwarder_block_p): ... here.
+
 2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063

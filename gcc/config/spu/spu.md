@@ -4490,7 +4490,8 @@ selb\t%0,%4,%0,%3"
     (use (match_operand 1 "" ""))      ; iterations; zero if unknown
     (use (match_operand 2 "" ""))      ; max iterations
     (use (match_operand 3 "" ""))      ; loop level
-    (use (match_operand 4 "" ""))]     ; label
+    (use (match_operand 4 "" ""))      ; label
+    (match_operand 5 "" "")]
    ""
    "
  {
