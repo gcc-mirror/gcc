@@ -966,7 +966,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
   /* First move what we can in the largest integer mode, then go to
      successively smaller modes.  */
 
-  while (max_size > 1)
+  while (max_size > 1 && data.len > 0)
     {
       enum machine_mode mode = widest_int_mode_for_size (max_size);
 
@@ -1026,7 +1026,7 @@ move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
 
-  while (max_size > 1)
+  while (max_size > 1 && l > 0)
     {
       enum machine_mode mode;
       enum insn_code icode;
@@ -2417,7 +2417,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
     {
       l = len;
       max_size = STORE_MAX_PIECES + 1;
-      while (max_size > 1)
+      while (max_size > 1 && l > 0)
 	{
 	  mode = widest_int_mode_for_size (max_size);
 
@@ -2612,7 +2612,7 @@ store_by_pieces_1 (struct store_by_pieces_d *data ATTRIBUTE_UNUSED,
   /* First store what we can in the largest integer mode, then go to
      successively smaller modes.  */
 
-  while (max_size > 1)
+  while (max_size > 1 && data->len > 0)
     {
       enum machine_mode mode = widest_int_mode_for_size (max_size);
 

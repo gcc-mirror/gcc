@@ -1,3 +1,8 @@
+2012-10-16  Tom de Vries  <tom@codesourcery.com>
+
+	* expr.c (move_by_pieces, move_by_pieces_ninsns, can_store_by_pieces)
+	(store_by_pieces_1): Don't enter loop when no more data is left.
+
 2012-10-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* loop-doloop.c (doloop_modify): Pass doloop_end pattern to
