@@ -4680,11 +4680,11 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
 static void
 dataflow_set_clear_at_call (dataflow_set *set)
 {
-  int r;
+  unsigned int r;
+  hard_reg_set_iterator hrsi;
 
-  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, r))
-      var_regno_delete (set, r);
+  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, r, hrsi)
+    var_regno_delete (set, r);
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
