@@ -683,11 +683,8 @@ doloop_optimize (struct loop *loop)
      not like.  */
   start_label = block_label (desc->in_edge->dest);
   doloop_reg = gen_reg_rtx (mode);
-  entered_at_top = loop_preheader_edge (loop)->dest == desc->in_edge->dest;
-  fprintf (stderr, "entered at top orig: %d\n", entered_at_top);
   entered_at_top = (loop->latch == desc->in_edge->dest
-                      && contains_no_active_insn_p (loop->latch));
-  fprintf (stderr, "entered at top Zdenek: %d\n", entered_at_top);
+		    && contains_no_active_insn_p (loop->latch));
   doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
 			       GEN_INT (level), start_label,
 			       GEN_INT (entered_at_top));
