@@ -1,3 +1,16 @@
+2012-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50981
+	PR fortran/54618
+	* trans.h (gfc_conv_derived_to_class, gfc_conv_class_to_class):
+	Update prototype.
+	* trans-stmt.c (trans_associate_var,gfc_trans_allocate): Update
+	calls to those functions.
+	* trans-expr.c (gfc_conv_derived_to_class, gfc_conv_class_to_class,
+	gfc_conv_expr_present): Handle absent polymorphic arguments.
+	(class_scalar_coarray_to_class): New function.
+	(gfc_conv_procedure_call): Update calls.
+
 2012-10-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40453
