@@ -830,15 +830,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
                            opts->x_param_values, opts_set->x_param_values);
 
   /* This replaces set_Wunused.  */
-  /* Wunused-parameter is enabled if both -Wunused -Wextra are enabled.  */
-  if (opts->x_warn_unused_parameter == -1)
-    opts->x_warn_unused_parameter = (opts->x_warn_unused
-				     && opts->x_extra_warnings);
-  /* Wunused-but-set-parameter is enabled if both -Wunused -Wextra are
-     enabled.  */
-  if (opts->x_warn_unused_but_set_parameter == -1)
-    opts->x_warn_unused_but_set_parameter = (opts->x_warn_unused
-					     && opts->x_extra_warnings);
   /* Wunused-local-typedefs is enabled by -Wunused or -Wall.  */
   if (opts->x_warn_unused_local_typedefs == -1)
     opts->x_warn_unused_local_typedefs = opts->x_warn_unused;

@@ -2,6 +2,17 @@
 
 	PR c/53063
 	PR c/40989
+	* doc/options.texi (EnabledBy): Document new form.
+	* optc-gen.awk: Handle new form of EnabledBy.
+	* common.opt (Wunused-but-set-parameter): Use EnabledBy.
+	(Wunused-parameter): Likewise.
+	* opts.c (finish_options): Do not handle them explicitly.
+	* opt-functions.awk (search_var_name): New.
+
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	PR c/40989
 	* optc-gen.awk: Handle new form of LangEnabledBy.
 	* opts.c (set_Wstrict_aliasing): Declare here. Make static.
 	* common.opt (Wstrict-aliasing=,Wstrict-overflow=): Do not use Init.
