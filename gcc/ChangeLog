@@ -1,3 +1,10 @@
+2012-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54889
+	* tree-vect-stmts.c (vectorizable_load): Add VIEW_CONVERT_EXPR if
+	ARRAY_REF newref doesn't have compatible type with vectype element
+	type, use vectype element type for MEM_REF.
+
 2012-10-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* combine.c (record_dead_and_set_regs): Iterate over hard register set

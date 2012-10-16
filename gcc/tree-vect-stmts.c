@@ -4743,12 +4743,18 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      tree newref, newoff;
 	      gimple incr;
 	      if (TREE_CODE (ref) == ARRAY_REF)
-		newref = build4 (ARRAY_REF, TREE_TYPE (ref),
-				 unshare_expr (TREE_OPERAND (ref, 0)),
-				 running_off,
-				 NULL_TREE, NULL_TREE);
+		{
+		  newref = build4 (ARRAY_REF, TREE_TYPE (ref),
+				   unshare_expr (TREE_OPERAND (ref, 0)),
+				   running_off,
+				   NULL_TREE, NULL_TREE);
+		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
+						  TREE_TYPE (newref)))
+		    newref = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vectype),
+				     newref);
+		}
 	      else
-		newref = build2 (MEM_REF, TREE_TYPE (ref),
+		newref = build2 (MEM_REF, TREE_TYPE (vectype),
 				 running_off,
 				 TREE_OPERAND (ref, 1));
 
