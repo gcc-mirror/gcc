@@ -562,9 +562,6 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
 
-  if (TREE_CODE (expr) == PARM_DECL)
-    streamer_write_chain (ob, TREE_CHAIN (expr), ref_p);
-
   if ((TREE_CODE (expr) == VAR_DECL
        || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
@@ -585,7 +582,7 @@ write_ts_decl_non_common_tree_pointers (struct output_block *ob, tree expr,
 {
   if (TREE_CODE (expr) == FUNCTION_DECL)
     {
-      stream_write_tree (ob, DECL_ARGUMENTS (expr), ref_p);
+      streamer_write_chain (ob, DECL_ARGUMENTS (expr), ref_p);
       stream_write_tree (ob, DECL_RESULT (expr), ref_p);
     }
   else if (TREE_CODE (expr) == TYPE_DECL)
