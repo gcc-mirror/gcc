@@ -1,3 +1,11 @@
+2012-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-arch.h (avr_extra_arch_macro): Remove prototype.
+	* config/avr/avr.c (avr_extra_arch_macro): Remove variable.
+	(avr_option_override): Remove setting of avr_extra_arch_macro.
+	* config/avr/avr-c.c (avr_extra_arch_macro): Replace with
+	avr_current_device->macro.
+
 2012-10-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-streamer-out.c (write_ts_decl_common_tree_pointers):

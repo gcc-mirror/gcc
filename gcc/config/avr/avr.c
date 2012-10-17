@@ -195,9 +195,6 @@ rtx rampz_rtx;
 static GTY(()) rtx xstring_empty;
 static GTY(()) rtx xstring_e;
 
-/* Preprocessor macros to define depending on MCU type.  */
-const char *avr_extra_arch_macro;
-
 /* Current architecture.  */
 const struct base_arch_s *avr_current_arch;
 
@@ -310,7 +307,6 @@ avr_option_override (void)
 
   avr_current_device = &avr_mcu_types[avr_mcu_index];
   avr_current_arch = &avr_arch_types[avr_current_device->arch];
-  avr_extra_arch_macro = avr_current_device->macro;
   
   /* RAM addresses of some SFRs common to all Devices in respective Arch. */
 
