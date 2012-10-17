@@ -2822,13 +2822,10 @@ df_ignore_stack_reg (int regno ATTRIBUTE_UNUSED)
 #endif
 
 
-/* Remove all of the REG_DEAD or REG_UNUSED notes from INSN and add
-   them to OLD_DEAD_NOTES and OLD_UNUSED_NOTES.  Remove also
-   REG_EQUAL/REG_EQUIV notes referring to dead pseudos using LIVE
-   as the bitmap of currently live registers.  */
+/* Remove all of the REG_DEAD or REG_UNUSED notes from INSN.  */
 
 static void
-df_kill_notes (rtx insn, bitmap live)
+df_remove_dead_and_unused_notes (rtx insn)
 {
   rtx *pprev = &REG_NOTES (insn);
   rtx link = *pprev;
@@ -2873,6 +2870,27 @@ df_kill_notes (rtx insn, bitmap live)
 	    }
 	  break;
 
+	default:
+	  pprev = &XEXP (link, 1);
+	  link = *pprev;
+	  break;
+	}
+    }
+}
+
+/* Remove REG_EQUAL/REG_EQUIV notes referring to dead pseudos using LIVE
+   as the bitmap of currently live registers.  */
+
+static void
+df_remove_dead_eq_notes (rtx insn, bitmap live)
+{
+  rtx *pprev = &REG_NOTES (insn);
+  rtx link = *pprev;
+
+  while (link)
+    {
+      switch (REG_NOTE_KIND (link))
+	{
 	case REG_EQUAL:
 	case REG_EQUIV:
 	  {
@@ -2913,6 +2931,7 @@ df_kill_notes (rtx insn, bitmap live)
 	      }
 	    break;
 	  }
+
 	default:
 	  pprev = &XEXP (link, 1);
 	  link = *pprev;
@@ -2920,7 +2939,6 @@ df_kill_notes (rtx insn, bitmap live)
 	}
     }
 }
-
 
 /* Set a NOTE_TYPE note for REG in INSN.  */
 
@@ -3195,7 +3213,7 @@ df_note_bb_compute (unsigned int bb_index,
       debug_insn = DEBUG_INSN_P (insn);
 
       bitmap_clear (do_not_gen);
-      df_kill_notes (insn, live);
+      df_remove_dead_and_unused_notes (insn);
 
       /* Process the defs.  */
       if (CALL_P (insn))
@@ -3335,6 +3353,8 @@ df_note_bb_compute (unsigned int bb_index,
 	      bitmap_set_bit (live, uregno);
 	    }
 	}
+
+      df_remove_dead_eq_notes (insn, live);
 
       if (debug_insn == -1)
 	{
