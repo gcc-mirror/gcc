@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2010, 2011
+   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #define DARWIN_X86 1
 
 #undef  TARGET_64BIT
-#define TARGET_64BIT OPTION_ISA_64BIT
+#define TARGET_64BIT TARGET_ISA_64BIT
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
