@@ -1,5 +1,13 @@
 2012-10-17  Jan Hubicka  <jh@suse.cz>
 
+	* cfgloopmanip.c (copy_loop_info): New function.
+	(duplicate_loop): Use it.
+	(loop_version): Use it.
+	* loop-unswitch.c (unswitch_loop): Use it.
+	* cfgloop.h (copy_loop_info): Declare.
+
+2012-10-17  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add edge_to_cancel
 	parameter and use it to estimate code optimized out in the final iteration.
 	(loop_edge_to_cancel): New function.

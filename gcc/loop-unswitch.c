@@ -454,6 +454,7 @@ unswitch_loop (struct loop *loop, basic_block unswitch_on, rtx cond, rtx cinsn)
 		   BRANCH_EDGE (switch_bb), FALLTHRU_EDGE (switch_bb), true,
 		   prob, REG_BR_PROB_BASE - prob);
 
+  copy_loop_info (loop, nloop);
   /* Remove branches that are now unreachable in new loops.  */
   remove_path (true_edge);
   remove_path (false_edge);
