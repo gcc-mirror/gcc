@@ -1,3 +1,9 @@
+2012-10-16  Ian Lance Taylor  <iant@google.com>
+
+	* doc/extend.texi (Return Address): Change
+	__builtin_extract_return_address to
+	__builtin_extract_return_addr.
+
 2012-10-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* rtl.h (get_call_rtx_from): New prototype.
