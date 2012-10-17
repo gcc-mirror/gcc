@@ -22,6 +22,17 @@
 HeaderInclude
 config/rs6000/rs6000-opts.h
 
+;; ISA flag bits (on/off)
+Variable
+HOST_WIDE_INT rs6000_isa_flags = TARGET_DEFAULT
+
+TargetSave
+HOST_WIDE_INT x_rs6000_isa_flags
+
+;; Miscellaneous flag bits that were set explicitly by the user
+TargetSave
+HOST_WIDE_INT x_rs6000_isa_flags_explicit
+
 ;; Current processor
 TargetVariable
 enum processor_type rs6000_cpu = PROCESSOR_PPC603
@@ -86,80 +97,76 @@ HOST_WIDE_INT rs6000_builtin_mask
 TargetVariable
 unsigned int rs6000_debug
 
-;; Save for target_flags_explicit
-TargetSave
-int rs6000_target_flags_explicit
-
 ;; This option existed in the past, but now is always on.
 mpowerpc
 Target RejectNegative Undocumented Ignore
 
 mpowerpc64
-Target Report Mask(POWERPC64)
+Target Report Mask(POWERPC64) Var(rs6000_isa_flags)
 Use PowerPC-64 instruction set
 
 mpowerpc-gpopt
-Target Report Mask(PPC_GPOPT) Save
+Target Report Mask(PPC_GPOPT) Var(rs6000_isa_flags)
 Use PowerPC General Purpose group optional instructions
 
 mpowerpc-gfxopt
-Target Report Mask(PPC_GFXOPT) Save
+Target Report Mask(PPC_GFXOPT) Var(rs6000_isa_flags)
 Use PowerPC Graphics group optional instructions
 
 mmfcrf
-Target Report Mask(MFCRF) Save
+Target Report Mask(MFCRF) Var(rs6000_isa_flags)
 Use PowerPC V2.01 single field mfcr instruction
 
 mpopcntb
-Target Report Mask(POPCNTB) Save
+Target Report Mask(POPCNTB) Var(rs6000_isa_flags)
 Use PowerPC V2.02 popcntb instruction
 
 mfprnd
-Target Report Mask(FPRND) Save
+Target Report Mask(FPRND) Var(rs6000_isa_flags)
 Use PowerPC V2.02 floating point rounding instructions
 
 mcmpb
-Target Report Mask(CMPB) Save
+Target Report Mask(CMPB) Var(rs6000_isa_flags)
 Use PowerPC V2.05 compare bytes instruction
 
 mmfpgpr
-Target Report Mask(MFPGPR) Save
+Target Report Mask(MFPGPR) Var(rs6000_isa_flags)
 Use extended PowerPC V2.05 move floating point to/from GPR instructions
 
 maltivec
-Target Report Mask(ALTIVEC) Save
+Target Report Mask(ALTIVEC) Var(rs6000_isa_flags)
 Use AltiVec instructions
 
 mhard-dfp
-Target Report Mask(DFP) Save
+Target Report Mask(DFP) Var(rs6000_isa_flags)
 Use decimal floating point instructions
 
 mmulhw
-Target Report Mask(MULHW) Save
+Target Report Mask(MULHW) Var(rs6000_isa_flags)
 Use 4xx half-word multiply instructions
 
 mdlmzb
-Target Report Mask(DLMZB) Save
+Target Report Mask(DLMZB) Var(rs6000_isa_flags)
 Use 4xx string-search dlmzb instruction
 
 mmultiple
-Target Report Mask(MULTIPLE) Save
+Target Report Mask(MULTIPLE) Var(rs6000_isa_flags)
 Generate load/store multiple instructions
 
 mstring
-Target Report Mask(STRING) Save
+Target Report Mask(STRING) Var(rs6000_isa_flags)
 Generate string instructions for block moves
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT)
+Target Report RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)
 Do not use hardware floating point
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT) Var(rs6000_isa_flags)
 Use hardware floating point
 
 mpopcntd
-Target Report Mask(POPCNTD) Save
+Target Report Mask(POPCNTD) Var(rs6000_isa_flags)
 Use PowerPC V2.06 popcntd instruction
 
 mfriz
@@ -171,7 +178,7 @@ Target RejectNegative Joined Var(rs6000_veclibabi_name)
 Vector library ABI to use
 
 mvsx
-Target Report Mask(VSX) Save
+Target Report Mask(VSX) Var(rs6000_isa_flags)
 Use vector/scalar (VSX) instructions
 
 mvsx-scalar-double
@@ -211,11 +218,11 @@ Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1)
 ; Explicitly control whether we vectorize the builtins or not.
 
 mno-update
-Target Report RejectNegative Mask(NO_UPDATE) Save
+Target Report RejectNegative Mask(NO_UPDATE) Var(rs6000_isa_flags)
 Do not generate load/store with update instructions
 
 mupdate
-Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE)
+Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE) Var(rs6000_isa_flags)
 Generate load/store with update instructions
 
 msingle-pic-base
@@ -258,7 +265,7 @@ Target Report RejectNegative Joined Var(rs6000_recip_name)
 Generate software reciprocal divide and square root for better throughput.
 
 mrecip-precision
-Target Report Mask(RECIP_PRECISION) Save
+Target Report Mask(RECIP_PRECISION) Var(rs6000_isa_flags)
 Assume that the reciprocal estimate instructions provide more accuracy.
 
 mno-fp-in-toc
@@ -285,7 +292,7 @@ Place symbol+offset constants in TOC
 ;   This is at the cost of having 2 extra loads and one extra store per
 ;   function, and one less allocable register.
 mminimal-toc
-Target Report Mask(MINIMAL_TOC)
+Target Report Mask(MINIMAL_TOC) Var(rs6000_isa_flags)
 Use only one TOC entry per procedure
 
 mfull-toc
@@ -309,7 +316,7 @@ Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined 
 Specify how many bytes should be moved inline before calling out to memcpy/memmove
 
 misel
-Target Report Mask(ISEL) Save
+Target Report Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions
 
 misel=no

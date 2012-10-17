@@ -465,6 +465,64 @@ extern int rs6000_vector_align[];
 #define TARGET_FCTIDUZ	TARGET_POPCNTD
 #define TARGET_FCTIWUZ	TARGET_POPCNTD
 
+/* In switching from using target_flags to using rs6000_isa_flags, the options
+   machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  For now map
+   OPTION_MASK_<xxx> back into MASK_<xxx>.  */
+#define MASK_ALTIVEC			OPTION_MASK_ALTIVEC
+#define MASK_CMPB			OPTION_MASK_CMPB
+#define MASK_DFP			OPTION_MASK_DFP
+#define MASK_DLMZB			OPTION_MASK_DLMZB
+#define MASK_EABI			OPTION_MASK_EABI
+#define MASK_FPRND			OPTION_MASK_FPRND
+#define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
+#define MASK_ISEL			OPTION_MASK_ISEL
+#define MASK_MFCRF			OPTION_MASK_MFCRF
+#define MASK_MFPGPR			OPTION_MASK_MFPGPR
+#define MASK_MULHW			OPTION_MASK_MULHW
+#define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
+#define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
+#define MASK_POPCNTB			OPTION_MASK_POPCNTB
+#define MASK_POPCNTD			OPTION_MASK_POPCNTD
+#define MASK_PPC_GFXOPT			OPTION_MASK_PPC_GFXOPT
+#define MASK_PPC_GPOPT			OPTION_MASK_PPC_GPOPT
+#define MASK_RECIP_PRECISION		OPTION_MASK_RECIP_PRECISION
+#define MASK_SOFT_FLOAT			OPTION_MASK_SOFT_FLOAT
+#define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
+#define MASK_STRING			OPTION_MASK_STRING
+#define MASK_UPDATE			OPTION_MASK_UPDATE
+#define MASK_VSX			OPTION_MASK_VSX
+
+#ifndef IN_LIBGCC2
+#define MASK_POWERPC64			OPTION_MASK_POWERPC64
+#endif
+
+#ifdef TARGET_64BIT
+#define MASK_64BIT			OPTION_MASK_64BIT
+#endif
+
+#ifdef TARGET_RELOCATABLE
+#define MASK_RELOCATABLE		OPTION_MASK_RELOCATABLE
+#endif
+
+#ifdef TARGET_LITTLE_ENDIAN
+#define MASK_LITTLE_ENDIAN		OPTION_MASK_LITTLE_ENDIAN
+#endif
+
+#ifdef TARGET_MINIMAL_TOC
+#define MASK_MINIMAL_TOC		OPTION_MASK_MINIMAL_TOC
+#endif
+
+#ifdef TARGET_REGNAMES
+#define MASK_REGNAMES			OPTION_MASK_REGNAMES
+#endif
+
+#ifdef TARGET_PROTOTYPE
+#define MASK_PROTOTYPE			OPTION_MASK_PROTOTYPE
+#endif
+
+/* Explicit ISA options that were set.  */
+#define rs6000_isa_flags_explicit	global_options_set.x_rs6000_isa_flags
+
 /* For power systems, we want to enable Altivec and VSX builtins even if the
    user did not use -maltivec or -mvsx to allow the builtins to be used inside
    of #pragma GCC target or the target attribute to change the code level for a

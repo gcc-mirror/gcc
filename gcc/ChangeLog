@@ -1,3 +1,175 @@
+2012-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (rs6000_isa_flags): New flag word to
+	replace target_flags that gives us 63 possible switches.
+	(x_rs6000_isa_flags): Save area for rs6000_isa_flags.
+	(x_rs6000_isa_flags_explicit): Save area for
+	rs6000_isa_flags_explicit.
+	(rs6000_target_flags_explicit): Delete in favor of
+	x_rs6000_isa_flags_explicit.
+	(-mpowerpc64): Change all switches that used to be in target_flags
+	to now be in rs6000_isa_flags.  In using rs6000_isa_flags, the
+	options machinary will generate names of the form OPITON_<xxx>
+	instead of TARGET_<xxx> and OPTION_MASK_<xxx> instead of
+	MASK_<xxx>.
+	(-mpowerpc-gpopt): Likewise.
+	(-mpowerpc-gfxopt): Likewise.
+	(-mmfcrf): Likewise.
+	(-mpopcntb): Likewise.
+	(-mfprnd): Likewise.
+	(-mcmpb): Likewise.
+	(-mmfpgpr): Likewise.
+	(-maltivec): Likewise.
+	(-mhard-dfp): Likewise.
+	(-mmulhw): Likewise.
+	(-mdlmzb): Likewise.
+	(-mmultiple): Likewise.
+	(-mstring): Likewise.
+	(-msoft-float): Likewise.
+	(-mhard-float): Likewise.
+	(-mpopcntd): Likewise.
+	(-mvsx): Likewise.
+	(-mno-update): Likewise.
+	(-mupdate): Likewise.
+	(-mrecip-precision): Likewise.
+	(-mminimal-toc): Likewise.
+	(-misel): Likewise.
+	* config/rs6000/aix64.opt (-maix64): Likewise.
+	(-maix32): Likewise.
+	* config/rs6000/sysv4.opt (-mstrict-align): Likewise.
+	(-mrelocatable): Likewise.
+	(-mlittle-endian): Likewise.
+	(-mlittle): Likewise.
+	(-mbig-endian): LIkewise.
+	(-mbig): Likewise.
+	(-meabi): Likewise.
+	(-m64): Likewise.
+	(-m32): Likewise.
+	* config/rs6000/darwin.opt (-m64): Likewise.
+	(-m32): Likewise.
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_1_MASKS): Move the various
+	masks used in rs6000.c here, since they are more logically in this
+	file.  Convert from being enums to just #defines, since the types
+	of these masks is now HOST_WIDE_INT instead of int.  For
+	POWERPC_MASKS, add MASK_SOFT_FLOAT, since the only use case or'ed
+	in the mask.  Change the use in rs6000.c not to do the OR of
+	MASK_SOFT_FLOAT.
+	(ISA_2_1_MASKS): Likewise.
+	(ISA_2_2_MASKS): Likewise.
+	(ISA_2_4_MASKS): Likewise.
+	(ISA_2_5_MASKS_EMBEDDED): Likewise.
+	(ISA_2_5_MASKS_SERVER): Likewise.
+	(POWERPC_7400_MASK): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.c (ISA_2_1_MASKS): Likewise.
+	(ISA_2_1_MASKS): Likewise.
+	(ISA_2_2_MASKS): Likewise.
+	(ISA_2_4_MASKS): Likewise.
+	(ISA_2_5_MASKS_EMBEDDED): Likewise.
+	(ISA_2_5_MASKS_SERVER): Likewise.
+	(POWERPC_7400_MASK): Likewise.
+	(POWERPC_MASKS): Likewise.
+	(rs6000_option_override_internal): Likewise.
+
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Change
+	all uses of target_flags to rs6000_isa_flags.  Change all uses of
+	target_flags_explicit to rs6000_isa_flags_explicit.  Change the
+	use of MASK_<xxx> to OPTION_MASK_<xxx> that options.h defines when
+	we use a secondary flags word.  Save/restore/print the new flags
+	word when switching contexts with different target attributes.
+	(rs6000_option_override_internal): Likewise.
+	(rs6000_darwin_file_start): Likewise.
+	(rs6000_opt_masks): Likewise.
+	(rs6000_inner_target_options): Likewise.
+	(rs6000_pragma_target_parse): Likewise.
+	(rs6000_set_current_function): Likewise.
+	(rs6000_function_specific_save): Likewise.
+	(rs6000_function_specific_restore): Likewise.
+	(rs6000_function_specific_print): Likewise.
+	(rs6000_can_inline_p): Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Likewise.
+	(rs6000_cpu_cpp_builtins): Likewise.
+	* common/config/rs6000/rs6000-driver.c (rs6000_handle_option):
+	Likewise.
+
+	* config/rs6000/rs6000.h (MASK_ALTIVEC): In moving to using
+	Var(...) for all of the isa switches, the options machinery now
+	uses OPTION_MASK_<xxx> instead of MASK_<xxx> for the mask name.
+	Use #define to map the old name into the new name.  For switches
+	that are defined in aix64.opt, sysv4.opt, and darwin.opt, only do
+	the definition if those switches were defined.
+	(MASK_ALTIVEC): Likewise.
+	(MASK_CMPB): Likewise.
+	(MASK_DFP): Likewise.
+	(MASK_DLMZB): Likewise.
+	(MASK_EABI): Likewise.
+	(MASK_FPRND): Likewise.
+	(MASK_HARD_FLOAT): Likewise.
+	(MASK_ISEL): Likewise.
+	(MASK_MFCRF): Likewise.
+	(MASK_MFPGPR): Likewise.
+	(MASK_MULHW): Likewise.
+	(MASK_MULTIPLE): Likewise.
+	(MASK_NO_UPDATE): Likewise.
+	(MASK_POPCNTB): Likewise.
+	(MASK_POPCNTD): Likewise.
+	(MASK_PPC_GFXOPT): Likewise.
+	(MASK_PPC_GPOPT): Likewise.
+	(MASK_RECIP_PRECISION): Likewise.
+	(MASK_SOFT_FLOAT): Likewise.
+	(MASK_STRICT_ALIGN): Likewise.
+	(MASK_STRING): Likewise.
+	(MASK_UPDATE): Likewise.
+	(MASK_VSX): Likewise.
+	(MASK_POWERPC64): Likewise.
+	(MASK_64BIT): Likewise.
+	(MASK_RELOCATABLE): Likewise.
+	(MASK_LITTLE_ENDIAN): Likewise.
+	(MASK_MINIMAL_TOC): Likewise.
+	(MASK_REGNAMES): Likewise.
+	(MASK_PROTOTYPE): Likewise.
+	(rs6000_isa_flags_explicit): Define in terms of the
+	global_options_set structure.
+
+	* gcc/config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS):
+	Change use of target_flags to rs6000_isa_flags,
+	target_flags_explicit to rs6000_isa_flags_explicit, and MASK_<xxx>
+	to OPTION_MASK_<xxx>.
+	* gcc/config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS):
+	Likewise.
+	* gcc/config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS):
+	Likewise.
+	* gcc/config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS):
+	Likewise.
+	* gcc/config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS):
+	Likewise.
+	* gcc/config/rs6000/freebsd64.h (RELOCATABLE_NEEDS_FIXUP):
+	Likewise.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	* gcc/config/rs6000/freebsd.h (RELOCATABLE_NEEDS_FIXUP):
+	Likewise.
+	* gcc/config/rs6000/linux64.h (RELOCATABLE_NEEDS_FIXUP):
+	Likewise.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(OPTION_LITTLE_ENDIAN): Likewise.
+	(OPTION_RELOCATABLE): Likewise.
+	(OPTION_EABI): Likewise.
+	(OPTION_PROTOTYPE): Likewise.
+	* gcc/config/rs6000/linux.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
+	* gcc/config/rs6000/option-defaults.h (OPTION_MASK_64BIT):
+	Likewise.
+	(OPT_ARCH32): Likewise.
+	(OPT_ARCH64): Likewise.
+	* gcc/config/rs6000/sysv4.h (TARGET_TOC): Likewise.
+	(SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(TARGET_OS_SYSV_CPP_BUILTINS): Likewise.
+
+	* config/rs6000/t-rs6000 (rs6000.o): Add rs6000-cpus.def as a
+	dependency.
+
 2012-10-17  Jan Hubicka  <jh@suse.cz>
 
 	* cfgloopmanip.c (copy_loop_info): New function.
