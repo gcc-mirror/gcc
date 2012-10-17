@@ -548,6 +548,15 @@ struct diagnose_tm
   gimple stmt;
 };
 
+/* Return true if T is a volatile variable of some kind.  */
+
+static bool
+volatile_var_p (tree t)
+{
+  return (SSA_VAR_P (t)
+	  && TREE_THIS_VOLATILE (TREE_TYPE (t)));
+}
+
 /* Tree callback function for diagnose_tm pass.  */
 
 static tree
@@ -556,13 +565,9 @@ diagnose_tm_1_op (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   struct diagnose_tm *d = (struct diagnose_tm *) wi->info;
-  enum tree_code code = TREE_CODE (*tp);
 
-  if ((code == VAR_DECL
-       || code == RESULT_DECL
-       || code == PARM_DECL)
-      && d->block_flags & (DIAG_TM_SAFE | DIAG_TM_RELAXED)
-      && TREE_THIS_VOLATILE (TREE_TYPE (*tp))
+  if (volatile_var_p (*tp)
+      && d->block_flags & DIAG_TM_SAFE
       && !d->saw_volatile)
     {
       d->saw_volatile = 1;
@@ -3782,40 +3787,56 @@ ipa_tm_scan_irr_block (basic_block bb)
       gimple stmt = gsi_stmt (gsi);
       switch (gimple_code (stmt))
 	{
-	case GIMPLE_CALL:
-	  if (is_tm_pure_call (stmt))
-	    break;
-
-	  fn = gimple_call_fn (stmt);
-
-	  /* Functions with the attribute are by definition irrevocable.  */
-	  if (is_tm_irrevocable (fn))
-	    return true;
-
-	  /* For direct function calls, go ahead and check for replacement
-	     functions, or transitive irrevocable functions.  For indirect
-	     functions, we'll ask the runtime.  */
-	  if (TREE_CODE (fn) == ADDR_EXPR)
+	case GIMPLE_ASSIGN:
+	  if (gimple_assign_single_p (stmt))
 	    {
-	      struct tm_ipa_cg_data *d;
-	      struct cgraph_node *node;
-
-	      fn = TREE_OPERAND (fn, 0);
-	      if (is_tm_ending_fndecl (fn))
-		break;
-	      if (find_tm_replacement_function (fn))
-		break;
-
-	      node = cgraph_get_node(fn);
-	      d = get_cg_data (&node, true);
-
-	      /* Return true if irrevocable, but above all, believe
-		 the user.  */
-	      if (d->is_irrevocable
-		  && !is_tm_safe_or_pure (fn))
+	      tree lhs = gimple_assign_lhs (stmt);
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      if (volatile_var_p (lhs) || volatile_var_p (rhs))
 		return true;
 	    }
 	  break;
+
+	case GIMPLE_CALL:
+	  {
+	    tree lhs = gimple_call_lhs (stmt);
+	    if (lhs && volatile_var_p (lhs))
+	      return true;
+
+	    if (is_tm_pure_call (stmt))
+	      break;
+
+	    fn = gimple_call_fn (stmt);
+
+	    /* Functions with the attribute are by definition irrevocable.  */
+	    if (is_tm_irrevocable (fn))
+	      return true;
+
+	    /* For direct function calls, go ahead and check for replacement
+	       functions, or transitive irrevocable functions.  For indirect
+	       functions, we'll ask the runtime.  */
+	    if (TREE_CODE (fn) == ADDR_EXPR)
+	      {
+		struct tm_ipa_cg_data *d;
+		struct cgraph_node *node;
+
+		fn = TREE_OPERAND (fn, 0);
+		if (is_tm_ending_fndecl (fn))
+		  break;
+		if (find_tm_replacement_function (fn))
+		  break;
+
+		node = cgraph_get_node(fn);
+		d = get_cg_data (&node, true);
+
+		/* Return true if irrevocable, but above all, believe
+		   the user.  */
+		if (d->is_irrevocable
+		    && !is_tm_safe_or_pure (fn))
+		  return true;
+	      }
+	    break;
+	  }
 
 	case GIMPLE_ASM:
 	  /* ??? The Approved Method of indicating that an inline

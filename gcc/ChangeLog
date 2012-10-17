@@ -1,5 +1,11 @@
 2012-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
+	PR middle-end/54893
+        * trans-mem.c (diagnose_tm_1_op): Allow volatiles inside relaxed
+        transactions.
+
+2012-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
 	PR rtl-optimization/54900
 	* ifcvt.c (noce_can_store_speculate_p): Call
 	memory_must_be_modified_in_insn_p.
