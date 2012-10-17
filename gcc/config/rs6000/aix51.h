@@ -26,7 +26,7 @@
 do {									\
   if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
-      target_flags |= MASK_POWERPC64;					\
+      rs6000_isa_flags |= OPTION_MASK_POWERPC64;			\
       warning (0, "-maix64 requires PowerPC64 architecture remain enabled"); \
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\

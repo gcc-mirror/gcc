@@ -1121,7 +1121,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
   { NULL,        0, 0, false, false, false, NULL, false }
 };
 
-#ifndef MASK_STRICT_ALIGN
+#ifndef OPTION_MASK_STRICT_ALIGN
+#define OPTION_MASK_STRICT_ALIGN 0
 #define MASK_STRICT_ALIGN 0
 #endif
 #ifndef TARGET_PROFILE_KERNEL
@@ -1464,48 +1465,7 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK rs6000_vectorize_vec_perm_const_ok
 
 
-/* Simplifications for entries below.  */
-
-enum {
-  POWERPC_7400_MASK = MASK_PPC_GFXOPT | MASK_ALTIVEC
-};
-
-/* Some OSs don't support saving the high part of 64-bit registers on context
-   switch.  Other OSs don't support saving Altivec registers.  On those OSs, we
-   don't touch the MASK_POWERPC64 or MASK_ALTIVEC settings; if the user wants
-   either, the user must explicitly specify them and we won't interfere with
-   the user's specification.  */
-
-enum {
-  POWERPC_MASKS = (MASK_PPC_GPOPT | MASK_STRICT_ALIGN
-		   | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
-		   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_MULHW
-		   | MASK_DLMZB | MASK_CMPB | MASK_MFPGPR | MASK_DFP
-		   | MASK_POPCNTD | MASK_VSX | MASK_ISEL | MASK_NO_UPDATE
-		   | MASK_RECIP_PRECISION)
-};
-
-/* Masks for instructions set at various powerpc ISAs.  */
-enum {
-  ISA_2_1_MASKS = MASK_MFCRF,
-  ISA_2_2_MASKS = (ISA_2_1_MASKS | MASK_POPCNTB),
-  ISA_2_4_MASKS = (ISA_2_2_MASKS | MASK_FPRND),
-
-  /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and don't add
-     ALTIVEC, since in general it isn't a win on power6.  In ISA 2.04, fsel,
-     fre, fsqrt, etc. were no longer documented as optional.  Group masks by
-     server and embedded. */
-  ISA_2_5_MASKS_EMBEDDED = (ISA_2_2_MASKS | MASK_CMPB | MASK_RECIP_PRECISION
-			    | MASK_PPC_GFXOPT | MASK_PPC_GPOPT),
-  ISA_2_5_MASKS_SERVER = (ISA_2_5_MASKS_EMBEDDED | MASK_DFP),
-
-  /* For ISA 2.06, don't add ISEL, since in general it isn't a win, but
-     altivec is a win so enable it.  */
-  ISA_2_6_MASKS_EMBEDDED = (ISA_2_5_MASKS_EMBEDDED | MASK_POPCNTD),
-  ISA_2_6_MASKS_SERVER = (ISA_2_5_MASKS_SERVER | MASK_POPCNTD | MASK_ALTIVEC
-			  | MASK_VSX)
-};
-
+/* Processor table.  */
 struct rs6000_ptt
 {
   const char *const name;		/* Canonical processor name.  */
@@ -2357,21 +2317,21 @@ darwin_rs6000_override_options (void)
 
   if (TARGET_64BIT && ! TARGET_POWERPC64)
     {
-      target_flags |= MASK_POWERPC64;
+      rs6000_isa_flags |= OPTION_MASK_POWERPC64;
       warning (0, "-m64 requires PowerPC64 architecture, enabling");
     }
   if (flag_mkernel)
     {
       rs6000_default_long_calls = 1;
-      target_flags |= MASK_SOFT_FLOAT;
+      rs6000_isa_flags |= OPTION_MASK_SOFT_FLOAT;
     }
 
   /* Make -m64 imply -maltivec.  Darwin's 64-bit ABI includes
      Altivec.  */
   if (!flag_mkernel && !flag_apple_kext
       && TARGET_64BIT
-      && ! (target_flags_explicit & MASK_ALTIVEC))
-    target_flags |= MASK_ALTIVEC;
+      && ! (rs6000_isa_flags_explicit & OPTION_MASK_ALTIVEC))
+    rs6000_isa_flags |= OPTION_MASK_ALTIVEC;
 
   /* Unless the user (not the configurer) has explicitly overridden
      it with -mcpu=G3 or -mno-altivec, then 10.5+ targets default to
@@ -2379,10 +2339,10 @@ darwin_rs6000_override_options (void)
   if (!flag_mkernel
       && !flag_apple_kext
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0
-      && ! (target_flags_explicit & MASK_ALTIVEC)
+      && ! (rs6000_isa_flags_explicit & OPTION_MASK_ALTIVEC)
       && ! global_options_set.x_rs6000_cpu_index)
     {
-      target_flags |= MASK_ALTIVEC;
+      rs6000_isa_flags |= OPTION_MASK_ALTIVEC;
     }
 }
 #endif
@@ -2463,18 +2423,24 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_pointer_size = 32;
     }
 
-  set_masks = POWERPC_MASKS | MASK_SOFT_FLOAT;
+  /* Some OSs don't support saving the high part of 64-bit registers on context
+     switch.  Other OSs don't support saving Altivec registers.  On those OSs,
+     we don't touch the OPTION_MASK_POWERPC64 or OPTION_MASK_ALTIVEC settings;
+     if the user wants either, the user must explicitly specify them and we
+     won't interfere with the user's specification.  */
+
+  set_masks = POWERPC_MASKS;
 #ifdef OS_MISSING_POWERPC64
   if (OS_MISSING_POWERPC64)
-    set_masks &= ~MASK_POWERPC64;
+    set_masks &= ~OPTION_MASK_POWERPC64;
 #endif
 #ifdef OS_MISSING_ALTIVEC
   if (OS_MISSING_ALTIVEC)
-    set_masks &= ~MASK_ALTIVEC;
+    set_masks &= ~(OPTION_MASK_ALTIVEC | OPTION_MASK_VSX);
 #endif
 
   /* Don't override by the processor default if given explicitly.  */
-  set_masks &= ~target_flags_explicit;
+  set_masks &= ~rs6000_isa_flags_explicit;
 
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
@@ -2512,13 +2478,20 @@ rs6000_option_override_internal (bool global_init_p)
      TARGET_DEFAULT.  */
   if (have_cpu)
     {
-      target_flags &= ~set_masks;
-      target_flags |= (processor_target_table[cpu_index].target_enable
-		       & set_masks);
+      rs6000_isa_flags &= ~set_masks;
+      rs6000_isa_flags |= (processor_target_table[cpu_index].target_enable
+			   & set_masks);
     }
   else
-    target_flags |= (processor_target_table[cpu_index].target_enable
-		     & ~target_flags_explicit);
+    rs6000_isa_flags |= (processor_target_table[cpu_index].target_enable
+			 & ~rs6000_isa_flags_explicit);
+
+  /* If no -mcpu=<xxx>, inherit any default options that were cleared via
+     POWERPC_MASKS.  Originally, TARGET_DEFAULT was used to initialize
+     target_flags via the TARGET_DEFAULT_TARGET_FLAGS hook.  When we switched
+     to using rs6000_isa_flags, we need to do the initialization here.  */
+  if (!have_cpu)
+    rs6000_isa_flags |= (TARGET_DEFAULT & ~rs6000_isa_flags_explicit);
 
   if (rs6000_tune_index >= 0)
     tune_index = rs6000_tune_index;
@@ -2603,7 +2576,8 @@ rs6000_option_override_internal (bool global_init_p)
      use instructions that would be microcoded on the Cell, use the
      load/store multiple and string instructions.  */
   if (BYTES_BIG_ENDIAN && optimize_size && rs6000_gen_cell_microcode)
-    target_flags |= ~target_flags_explicit & (MASK_MULTIPLE | MASK_STRING);
+    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & (OPTION_MASK_MULTIPLE
+						      | OPTION_MASK_STRING);
 
   /* Don't allow -mmultiple or -mstring on little endian systems
      unless the cpu is a 750, because the hardware doesn't support the
@@ -2615,15 +2589,15 @@ rs6000_option_override_internal (bool global_init_p)
     {
       if (TARGET_MULTIPLE)
 	{
-	  target_flags &= ~MASK_MULTIPLE;
-	  if ((target_flags_explicit & MASK_MULTIPLE) != 0)
+	  rs6000_isa_flags &= ~OPTION_MASK_MULTIPLE;
+	  if ((rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE) != 0)
 	    warning (0, "-mmultiple is not supported on little endian systems");
 	}
 
       if (TARGET_STRING)
 	{
-	  target_flags &= ~MASK_STRING;
-	  if ((target_flags_explicit & MASK_STRING) != 0)
+	  rs6000_isa_flags &= ~OPTION_MASK_STRING;
+	  if ((rs6000_isa_flags_explicit & OPTION_MASK_STRING) != 0)
 	    warning (0, "-mstring is not supported on little endian systems");
 	}
     }
@@ -2635,10 +2609,10 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_HARD_FLOAT || !TARGET_FPRS
 	  || !TARGET_SINGLE_FLOAT || !TARGET_DOUBLE_FLOAT)
 	{
-	  if (target_flags_explicit & MASK_VSX)
+	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
 	    msg = N_("-mvsx requires hardware floating point");
 	  else
-	    target_flags &= ~ MASK_VSX;
+	    rs6000_isa_flags &= ~ OPTION_MASK_VSX;
 	}
       else if (TARGET_PAIRED_FLOAT)
 	msg = N_("-mvsx and -mpaired are incompatible");
@@ -2649,9 +2623,10 @@ rs6000_option_override_internal (bool global_init_p)
 	msg = N_("-mvsx used with little endian code");
       else if (TARGET_AVOID_XFORM > 0)
 	msg = N_("-mvsx needs indexed addressing");
-      else if (!TARGET_ALTIVEC && (target_flags_explicit & MASK_ALTIVEC))
+      else if (!TARGET_ALTIVEC && (rs6000_isa_flags_explicit
+				   & OPTION_MASK_ALTIVEC))
         {
-	  if (target_flags_explicit & MASK_VSX)
+	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
 	    msg = N_("-mvsx and -mno-altivec are incompatible");
 	  else
 	    msg = N_("-mno-altivec disables vsx");
@@ -2660,27 +2635,27 @@ rs6000_option_override_internal (bool global_init_p)
       if (msg)
 	{
 	  warning (0, msg);
-	  target_flags &= ~ MASK_VSX;
-	  target_flags_explicit |= MASK_VSX;
+	  rs6000_isa_flags &= ~ OPTION_MASK_VSX;
+	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
 	}
     }
 
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_VSX)
-    target_flags |= (ISA_2_6_MASKS_SERVER & ~target_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_6_MASKS_SERVER & ~rs6000_isa_flags_explicit);
   else if (TARGET_POPCNTD)
-    target_flags |= (ISA_2_6_MASKS_EMBEDDED & ~target_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_6_MASKS_EMBEDDED & ~rs6000_isa_flags_explicit);
   else if (TARGET_DFP)
-    target_flags |= (ISA_2_5_MASKS_SERVER & ~target_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_5_MASKS_SERVER & ~rs6000_isa_flags_explicit);
   else if (TARGET_CMPB)
-    target_flags |= (ISA_2_5_MASKS_EMBEDDED & ~target_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_5_MASKS_EMBEDDED & ~rs6000_isa_flags_explicit);
   else if (TARGET_FPRND)
-    target_flags |= (ISA_2_4_MASKS & ~target_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_4_MASKS & ~rs6000_isa_flags_explicit);
   else if (TARGET_POPCNTB)
-    target_flags |= (ISA_2_2_MASKS & ~target_flags_explicit);
+    rs6000_isa_flags |= (ISA_2_2_MASKS & ~rs6000_isa_flags_explicit);
   else if (TARGET_ALTIVEC)
-    target_flags |= (MASK_PPC_GFXOPT & ~target_flags_explicit);
+    rs6000_isa_flags |= (OPTION_MASK_PPC_GFXOPT & ~rs6000_isa_flags_explicit);
 
   /* E500mc does "better" if we inline more aggressively.  Respect the
      user's opinion, though.  */
@@ -2759,7 +2734,8 @@ rs6000_option_override_internal (bool global_init_p)
      unless the altivec ABI was set.  This is set by default for 64-bit, but
      not for 32-bit.  */
   if (main_target_opt != NULL && !main_target_opt->x_rs6000_altivec_abi)
-    target_flags &= ~((MASK_VSX | MASK_ALTIVEC) & ~target_flags_explicit);
+    rs6000_isa_flags &= ~((OPTION_MASK_VSX | OPTION_MASK_ALTIVEC)
+			  & ~rs6000_isa_flags_explicit);
 
   /* Enable Altivec ABI for AIX -maltivec.  */
   if (TARGET_XCOFF && (TARGET_ALTIVEC || TARGET_VSX))
@@ -2837,14 +2813,14 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_single_float = TARGET_E500_SINGLE || TARGET_E500_DOUBLE;
       rs6000_double_float = TARGET_E500_DOUBLE;
 
-      target_flags &= ~MASK_STRING;
+      rs6000_isa_flags &= ~OPTION_MASK_STRING;
 
       break;
 
     default:
 
-      if (have_cpu && !(target_flags_explicit & MASK_ISEL))
-	target_flags &= ~MASK_ISEL;
+      if (have_cpu && !(rs6000_isa_flags_explicit & OPTION_MASK_ISEL))
+	rs6000_isa_flags &= ~OPTION_MASK_ISEL;
 
       break;
     }
@@ -25330,7 +25306,7 @@ rs6000_darwin_file_start (void)
   i = 0;
   while (mapping[i].arg != NULL
 	 && strcmp (mapping[i].arg, cpu_id) != 0
-	 && (mapping[i].if_set & target_flags) == 0)
+	 && (mapping[i].if_set & rs6000_isa_flags) == 0)
     i++;
 
   fprintf (asm_out_file, "\t.machine %s\n", mapping[i].name);
@@ -27431,48 +27407,48 @@ struct rs6000_opt_mask {
 
 static struct rs6000_opt_mask const rs6000_opt_masks[] =
 {
-  { "altivec",		MASK_ALTIVEC,		false, true  },
-  { "cmpb",		MASK_CMPB,		false, true  },
-  { "dlmzb",		MASK_DLMZB,		false, true  },
-  { "fprnd",		MASK_FPRND,		false, true  },
-  { "hard-dfp",		MASK_DFP,		false, true  },
-  { "isel",		MASK_ISEL,		false, true  },
-  { "mfcrf",		MASK_MFCRF,		false, true  },
-  { "mfpgpr",		MASK_MFPGPR,		false, true  },
-  { "mulhw",		MASK_MULHW,		false, true  },
-  { "multiple",		MASK_MULTIPLE,		false, true  },
-  { "update",		MASK_NO_UPDATE,		true , true  },
-  { "popcntb",		MASK_POPCNTB,		false, true  },
-  { "popcntd",		MASK_POPCNTD,		false, true  },
-  { "powerpc-gfxopt",	MASK_PPC_GFXOPT,	false, true  },
-  { "powerpc-gpopt",	MASK_PPC_GPOPT,		false, true  },
-  { "recip-precision",	MASK_RECIP_PRECISION,	false, true  },
-  { "string",		MASK_STRING,		false, true  },
-  { "vsx",		MASK_VSX,		false, true  },
-#ifdef MASK_64BIT
+  { "altivec",			OPTION_MASK_ALTIVEC,		false, true  },
+  { "cmpb",			OPTION_MASK_CMPB,		false, true  },
+  { "dlmzb",			OPTION_MASK_DLMZB,		false, true  },
+  { "fprnd",			OPTION_MASK_FPRND,		false, true  },
+  { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
+  { "isel",			OPTION_MASK_ISEL,		false, true  },
+  { "mfcrf",			OPTION_MASK_MFCRF,		false, true  },
+  { "mfpgpr",			OPTION_MASK_MFPGPR,		false, true  },
+  { "mulhw",			OPTION_MASK_MULHW,		false, true  },
+  { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
+  { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
+  { "popcntb",			OPTION_MASK_POPCNTB,		false, true  },
+  { "popcntd",			OPTION_MASK_POPCNTD,		false, true  },
+  { "powerpc-gfxopt",		OPTION_MASK_PPC_GFXOPT,		false, true  },
+  { "powerpc-gpopt",		OPTION_MASK_PPC_GPOPT,		false, true  },
+  { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
+  { "string",			OPTION_MASK_STRING,		false, true  },
+  { "vsx",			OPTION_MASK_VSX,		false, true  },
+#ifdef OPTION_MASK_64BIT
 #if TARGET_AIX_OS
-  { "aix64",		MASK_64BIT,		false, false },
-  { "aix32",		MASK_64BIT,		true,  false },
+  { "aix64",			OPTION_MASK_64BIT,		false, false },
+  { "aix32",			OPTION_MASK_64BIT,		true,  false },
 #else
-  { "64",		MASK_64BIT,		false, false },
-  { "32",		MASK_64BIT,		true,  false },
+  { "64",			OPTION_MASK_64BIT,		false, false },
+  { "32",			OPTION_MASK_64BIT,		true,  false },
 #endif
 #endif
-#ifdef MASK_EABI
-  { "eabi",		MASK_EABI,		false, false },
+#ifdef OPTION_MASK_EABI
+  { "eabi",			OPTION_MASK_EABI,		false, false },
 #endif
-#ifdef MASK_LITTLE_ENDIAN
-  { "little",		MASK_LITTLE_ENDIAN,	false, false },
-  { "big",		MASK_LITTLE_ENDIAN,	true,  false },
+#ifdef OPTION_MASK_LITTLE_ENDIAN
+  { "little",			OPTION_MASK_LITTLE_ENDIAN,	false, false },
+  { "big",			OPTION_MASK_LITTLE_ENDIAN,	true,  false },
 #endif
-#ifdef MASK_RELOCATABLE
-  { "relocatable",	MASK_RELOCATABLE,	false, false },
+#ifdef OPTION_MASK_RELOCATABLE
+  { "relocatable",		OPTION_MASK_RELOCATABLE,	false, false },
 #endif
-#ifdef MASK_STRICT_ALIGN
-  { "strict-align",	MASK_STRICT_ALIGN,	false, false },
+#ifdef OPTION_MASK_STRICT_ALIGN
+  { "strict-align",		OPTION_MASK_STRICT_ALIGN,	false, false },
 #endif
-  { "soft-float",	MASK_SOFT_FLOAT,	false, false },
-  { "string",		MASK_STRING,		false, false },
+  { "soft-float",		OPTION_MASK_SOFT_FLOAT,		false, false },
+  { "string",			OPTION_MASK_STRING,		false, false },
 };
 
 /* Builtin mask mapping for printing the flags.  */
@@ -27583,20 +27559,20 @@ rs6000_inner_target_options (tree args, bool attr_p)
 		    else
 		      {
 			error_p = false;
-			target_flags_explicit |= mask;
+			rs6000_isa_flags_explicit |= mask;
 
 			/* VSX needs altivec, so -mvsx automagically sets
 			   altivec.  */
-			if (mask == MASK_VSX && !invert)
-			  mask |= MASK_ALTIVEC;
+			if (mask == OPTION_MASK_VSX && !invert)
+			  mask |= OPTION_MASK_ALTIVEC;
 
 			if (rs6000_opt_masks[i].invert)
 			  invert = !invert;
 
 			if (invert)
-			  target_flags &= ~mask;
+			  rs6000_isa_flags &= ~mask;
 			else
-			  target_flags |= mask;
+			  rs6000_isa_flags |= mask;
 		      }
 		    break;
 		  }
@@ -27851,14 +27827,14 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
     {
       prev_opt    = TREE_TARGET_OPTION (prev_tree);
       prev_bumask = prev_opt->x_rs6000_builtin_mask;
-      prev_flags  = prev_opt->x_target_flags;
+      prev_flags  = prev_opt->x_rs6000_isa_flags;
 
       cur_opt     = TREE_TARGET_OPTION (cur_tree);
-      cur_flags   = cur_opt->x_target_flags;
+      cur_flags   = cur_opt->x_rs6000_isa_flags;
       cur_bumask  = cur_opt->x_rs6000_builtin_mask;
 
       diff_bumask = (prev_bumask ^ cur_bumask);
-      diff_flags  = (prev_flags  ^ cur_flags);
+      diff_flags  = (prev_flags ^ cur_flags);
 
       if ((diff_flags != 0) || (diff_bumask != 0))
 	{
@@ -27961,7 +27937,8 @@ rs6000_set_current_function (tree fndecl)
 static void
 rs6000_function_specific_save (struct cl_target_option *ptr)
 {
-  ptr->rs6000_target_flags_explicit = target_flags_explicit;
+  ptr->x_rs6000_isa_flags = rs6000_isa_flags;
+  ptr->x_rs6000_isa_flags_explicit = rs6000_isa_flags_explicit;
 }
 
 /* Restore the current options */
@@ -27969,7 +27946,8 @@ rs6000_function_specific_save (struct cl_target_option *ptr)
 static void
 rs6000_function_specific_restore (struct cl_target_option *ptr)
 {
-  target_flags_explicit = ptr->rs6000_target_flags_explicit;
+  rs6000_isa_flags = ptr->x_rs6000_isa_flags;
+  rs6000_isa_flags_explicit = ptr->x_rs6000_isa_flags_explicit;
   (void) rs6000_option_override_internal (false);
 }
 
@@ -27980,10 +27958,10 @@ rs6000_function_specific_print (FILE *file, int indent,
 				struct cl_target_option *ptr)
 {
   rs6000_print_isa_options (file, indent, "Isa options set",
-			    ptr->x_target_flags);
+			    ptr->x_rs6000_isa_flags);
 
   rs6000_print_isa_options (file, indent, "Isa options explicit",
-			    ptr->rs6000_target_flags_explicit);
+			    ptr->x_rs6000_isa_flags_explicit);
 }
 
 /* Helper function to print the current isa or misc options on a line.  */
@@ -28093,8 +28071,8 @@ rs6000_can_inline_p (tree caller, tree callee)
       /* Callee's options should a subset of the caller's, i.e. a vsx function
 	 can inline an altivec function but a non-vsx function can't inline a
 	 vsx function.  */
-      if ((caller_opts->x_target_flags & callee_opts->x_target_flags)
-	  == callee_opts->x_target_flags)
+      if ((caller_opts->x_rs6000_isa_flags & callee_opts->x_rs6000_isa_flags)
+	  == callee_opts->x_rs6000_isa_flags)
 	ret = true;
     }
 

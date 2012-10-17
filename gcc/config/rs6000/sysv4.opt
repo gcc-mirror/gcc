@@ -49,12 +49,12 @@ Target Report Var(TARGET_NO_BITFIELD_TYPE) Save
 Align to the base type of the bit-field
 
 mstrict-align
-Target Report Mask(STRICT_ALIGN)
+Target Report Mask(STRICT_ALIGN) Var(rs6000_isa_flags)
 Align to the base type of the bit-field
 Don't assume that unaligned accesses are handled by the system
 
 mrelocatable
-Target Report Mask(RELOCATABLE)
+Target Report Mask(RELOCATABLE) Var(rs6000_isa_flags)
 Produce code relocatable at runtime
 
 mrelocatable-lib
@@ -62,19 +62,19 @@ Target
 Produce code relocatable at runtime
 
 mlittle-endian
-Target Report RejectNegative Mask(LITTLE_ENDIAN)
+Target Report RejectNegative Mask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce little endian code
 
 mlittle
-Target Report RejectNegative Mask(LITTLE_ENDIAN)
+Target Report RejectNegative Mask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce little endian code
 
 mbig-endian
-Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
+Target Report RejectNegative InverseMask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce big endian code
 
 mbig
-Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
+Target Report RejectNegative InverseMask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce big endian code
 
 ;; FIXME: This does nothing.  What should be done?
@@ -96,7 +96,7 @@ Target RejectNegative
 no description yet
 
 meabi
-Target Report Mask(EABI)
+Target Report Mask(EABI) Var(rs6000_isa_flags)
 Use EABI
 
 mbit-word
@@ -138,11 +138,11 @@ Target RejectNegative
 no description yet
 
 m64
-Target Report RejectNegative Negative(m32) Mask(64BIT)
+Target Report RejectNegative Negative(m32) Mask(64BIT) Var(rs6000_isa_flags)
 Generate 64-bit code
 
 m32
-Target Report RejectNegative Negative(m64) InverseMask(64BIT)
+Target Report RejectNegative Negative(m64) InverseMask(64BIT) Var(rs6000_isa_flags)
 Generate 32-bit code
 
 mnewlib

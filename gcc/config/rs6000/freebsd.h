@@ -72,7 +72,7 @@
    -mrelocatable or -mrelocatable-lib is given.  */
 #undef RELOCATABLE_NEEDS_FIXUP
 #define RELOCATABLE_NEEDS_FIXUP \
-  (target_flags & target_flags_explicit & MASK_RELOCATABLE)
+  (rs6000_isa_flags & rs6000_isa_flags_explicit & OPTION_MASK_RELOCATABLE)
 
 #define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)
 

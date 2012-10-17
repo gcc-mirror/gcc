@@ -295,31 +295,31 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	     (define_p) ? "define" : "undef",
 	     flags, bu_mask);
 
-  /* target_flags based options.  */
+  /* rs6000_isa_flags based options.  */
   rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC");
-  if ((flags & MASK_PPC_GPOPT) != 0)
+  if ((flags & OPTION_MASK_PPC_GPOPT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PPCSQ");
-  if ((flags & MASK_PPC_GFXOPT) != 0)
+  if ((flags & OPTION_MASK_PPC_GFXOPT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PPCGR");
-  if ((flags & MASK_POWERPC64) != 0)
+  if ((flags & OPTION_MASK_POWERPC64) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC64");
-  if ((flags & MASK_MFCRF) != 0)
+  if ((flags & OPTION_MASK_MFCRF) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR4");
-  if ((flags & MASK_POPCNTB) != 0)
+  if ((flags & OPTION_MASK_POPCNTB) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR5");
-  if ((flags & MASK_FPRND) != 0)
+  if ((flags & OPTION_MASK_FPRND) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR5X");
-  if ((flags & MASK_CMPB) != 0)
+  if ((flags & OPTION_MASK_CMPB) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR6");
-  if ((flags & MASK_MFPGPR) != 0)
+  if ((flags & OPTION_MASK_MFPGPR) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR6X");
-  if ((flags & MASK_POPCNTD) != 0)
+  if ((flags & OPTION_MASK_POPCNTD) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
-  if ((flags & MASK_SOFT_FLOAT) != 0)
+  if ((flags & OPTION_MASK_SOFT_FLOAT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_SOFT_FLOAT");
-  if ((flags & MASK_RECIP_PRECISION) != 0)
+  if ((flags & OPTION_MASK_RECIP_PRECISION) != 0)
     rs6000_define_or_undefine_macro (define_p, "__RECIP_PRECISION__");
-  if ((flags & MASK_ALTIVEC) != 0)
+  if ((flags & OPTION_MASK_ALTIVEC) != 0)
     {
       const char *vec_str = (define_p) ? "__VEC__=10206" : "__VEC__";
       rs6000_define_or_undefine_macro (define_p, "__ALTIVEC__");
@@ -329,7 +329,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
       if (!flag_iso)
 	rs6000_define_or_undefine_macro (define_p, "__APPLE_ALTIVEC__");
     }
-  if ((flags & MASK_VSX) != 0)
+  if ((flags & OPTION_MASK_VSX) != 0)
     rs6000_define_or_undefine_macro (define_p, "__VSX__");
 
   /* options from the builtin masks.  */
@@ -345,7 +345,7 @@ void
 rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 {
   /* Define all of the common macros.  */
-  rs6000_target_modify_macros (true, target_flags,
+  rs6000_target_modify_macros (true, rs6000_isa_flags,
 			       rs6000_builtin_mask_calculate ());
 
   if (TARGET_FRE)

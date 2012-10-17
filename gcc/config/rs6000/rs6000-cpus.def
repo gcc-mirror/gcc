@@ -18,6 +18,57 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* ISA masks.  */
+#ifndef ISA_2_1_MASKS
+#define ISA_2_1_MASKS		OPTION_MASK_MFCRF
+#define ISA_2_2_MASKS		(ISA_2_1_MASKS | OPTION_MASK_POPCNTB)
+#define ISA_2_4_MASKS		(ISA_2_2_MASKS | OPTION_MASK_FPRND)
+
+  /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and don't add
+     ALTIVEC, since in general it isn't a win on power6.  In ISA 2.04, fsel,
+     fre, fsqrt, etc. were no longer documented as optional.  Group masks by
+     server and embedded. */
+#define ISA_2_5_MASKS_EMBEDDED	(ISA_2_2_MASKS				\
+				 | OPTION_MASK_CMPB			\
+				 | OPTION_MASK_RECIP_PRECISION		\
+				 | OPTION_MASK_PPC_GFXOPT		\
+				 | OPTION_MASK_PPC_GPOPT)
+
+#define ISA_2_5_MASKS_SERVER	(ISA_2_5_MASKS_EMBEDDED | OPTION_MASK_DFP)
+
+  /* For ISA 2.06, don't add ISEL, since in general it isn't a win, but
+     altivec is a win so enable it.  */
+#define ISA_2_6_MASKS_EMBEDDED	(ISA_2_5_MASKS_EMBEDDED | OPTION_MASK_POPCNTD)
+#define ISA_2_6_MASKS_SERVER	(ISA_2_5_MASKS_SERVER			\
+				 | OPTION_MASK_POPCNTD			\
+				 | OPTION_MASK_ALTIVEC			\
+				 | OPTION_MASK_VSX)
+
+#define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)
+
+/* Mask of all options to set the default isa flags based on -mcpu=<xxx>.  */
+#define POWERPC_MASKS		(OPTION_MASK_ALTIVEC			\
+				 | OPTION_MASK_CMPB			\
+				 | OPTION_MASK_DFP			\
+				 | OPTION_MASK_DLMZB			\
+				 | OPTION_MASK_FPRND			\
+				 | OPTION_MASK_ISEL			\
+				 | OPTION_MASK_MFCRF			\
+				 | OPTION_MASK_MFPGPR			\
+				 | OPTION_MASK_MULHW			\
+				 | OPTION_MASK_NO_UPDATE		\
+				 | OPTION_MASK_POPCNTB			\
+				 | OPTION_MASK_POPCNTD			\
+				 | OPTION_MASK_POWERPC64		\
+				 | OPTION_MASK_PPC_GFXOPT		\
+				 | OPTION_MASK_PPC_GPOPT		\
+				 | OPTION_MASK_RECIP_PRECISION		\
+				 | OPTION_MASK_SOFT_FLOAT		\
+				 | OPTION_MASK_STRICT_ALIGN		\
+				 | OPTION_MASK_VSX)
+
+#endif
+
 /* This table occasionally claims that a processor does not support a
    particular feature even though it does, but the feature is slower than the
    alternative.  Thus, it shouldn't be relied on as a complete description of
