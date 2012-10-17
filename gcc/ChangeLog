@@ -1,3 +1,14 @@
+2012-10-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer-out.c (write_ts_decl_common_tree_pointers):
+	Do not write TREE_CHAIN of PARM_DECLs.
+	(write_ts_decl_non_common_tree_pointers): Instead stream
+	the DECL_ARGUMENTS chain.
+	* tree-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
+	Do not read TREE_CHAIN of PARM_DECLs.
+	(lto_input_ts_decl_non_common_tree_pointes): Instead read
+	the DECL_ARGUMENTS as chain.
+
 2012-10-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/iq2000/iq2000.h (call_used_regs): Remove definition.
