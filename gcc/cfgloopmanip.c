@@ -37,7 +37,6 @@ static int find_path (edge, basic_block **);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
 static void fix_bb_placements (basic_block, bool *);
-static void unloop (struct loop *, bool *);
 
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
@@ -895,7 +894,7 @@ loopify (edge latch_edge, edge header_edge,
    If this may cause the information about irreducible regions to become
    invalid, IRRED_INVALIDATED is set to true.  */
 
-static void
+void
 unloop (struct loop *loop, bool *irred_invalidated)
 {
   basic_block *body;

@@ -320,7 +320,8 @@ extern struct loop *loopify (edge, edge,
 struct loop * loop_version (struct loop *, void *,
 			    basic_block *, unsigned, unsigned, unsigned, bool);
 extern bool remove_path (edge);
-void scale_loop_frequencies (struct loop *, int, int);
+extern void unloop (struct loop *, bool *);
+extern void scale_loop_frequencies (struct loop *, int, int);
 
 /* Induction variable analysis.  */
 

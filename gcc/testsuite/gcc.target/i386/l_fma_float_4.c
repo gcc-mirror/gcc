@@ -12,7 +12,7 @@
 /* { dg-final { scan-assembler-times "vfmsub132ps" 8  } } */
 /* { dg-final { scan-assembler-times "vfnmadd132ps" 8  } } */
 /* { dg-final { scan-assembler-times "vfnmsub132ps" 8  } } */
-/* { dg-final { scan-assembler-times "vfmadd132ss" 16  } } */
-/* { dg-final { scan-assembler-times "vfmsub132ss" 16  } } */
-/* { dg-final { scan-assembler-times "vfnmadd132ss" 16  } } */
-/* { dg-final { scan-assembler-times "vfnmsub132ss" 16  } } */
+/* { dg-final { scan-assembler-times "vfmadd132ss" 72  } } */
+/* { dg-final { scan-assembler-times "vfmsub132ss" 72  } } */
+/* { dg-final { scan-assembler-times "vfnmadd132ss" 72  } } */
+/* { dg-final { scan-assembler-times "vfnmsub132ss" 72  } } */
