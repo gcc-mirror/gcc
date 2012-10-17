@@ -1,3 +1,16 @@
+2012-10-16  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/l_fma_float_?.c: Update.
+	* gcc.target/i386/l_fma_double_?.c: Update.
+	* gfortran.dg/do_1.f90: XFAIL
+	* gcc.dg/tree-ssa/cunroll-1.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-2.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-3.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-4.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-5.c: New testcase.
+	* gcc.dg/tree-ssa/ldist-17.c: Block cunroll to make testcase still
+	valid.
+
 2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063

@@ -1,3 +1,25 @@
+2012-10-17  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add edge_to_cancel
+	parameter and use it to estimate code optimized out in the final iteration.
+	(loop_edge_to_cancel): New function.
+	(try_unroll_loop_completely): New IRRED_IVALIDATED parameter;
+	handle unrolling loops with bounds given via max_loop_iteratins;
+	handle unrolling non-inner loops when code size shrinks;
+	tidy dump output; when the last iteration loop still stays
+	as loop in the CFG forcongly redirect the latch to
+	__builtin_unreachable.
+	(canonicalize_loop_induction_variables): Add irred_invlaidated
+	parameter; record niter bound derrived; dump
+	max_loop_iterations bounds; call try_unroll_loop_completely
+	even if no niter bound is given.
+	(canonicalize_induction_variables): Handle irred_invalidated.
+	(tree_unroll_loops_completely): Handle non-innermost loops;
+	handle irred_invalidated.
+	* cfgloop.h (unlop): Declare.
+	* cfgloopmanip.c (unloop): Export.
+	* tree.c (build_common_builtin_nodes): Build BULTIN_UNREACHABLE.
+
 2012-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* opth-gen.awk (TARGET_* generation): Always generate TARGET_<xxx>
