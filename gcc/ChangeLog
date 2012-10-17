@@ -1,3 +1,15 @@
+2012-10-17  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/arm.md (UNSPEC_PROLOGUE_USE): Rename this...
+        (UNSPEC_REGISTER_USE): ... to this.
+        (prologue_use): Rename this...
+	  (force_register_use): ... to this and update output assembly.
+        (epilogue) Rename gen_prologue_use to gen_force_register_use.
+        * config/arm/arm.c (arm_expand_prologue): Likewise.
+        (thumb1_expand_epilogue): Likewise.
+        (arm_expand_epilogue): Likewise.
+        (arm_expand_epilogue): Likewise.
+
 2012-10-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-arch.h (avr_extra_arch_macro): Remove prototype.
