@@ -6769,13 +6769,13 @@ random value.  In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
 Additional post-processing of the returned value may be needed, see
-@code{__builtin_extract_return_address}.
+@code{__builtin_extract_return_addr}.
 
 This function should only be used with a nonzero argument for debugging
 purposes.
 @end deftypefn
 
-@deftypefn {Built-in Function} {void *} __builtin_extract_return_address (void *@var{addr})
+@deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
 The address as returned by @code{__builtin_return_address} may have to be fed
 through this function to get the actual encoded address.  For example, on the
 31-bit S/390 platform the highest bit has to be masked out, or on SPARC
@@ -6786,7 +6786,7 @@ If no fixup is needed, this function simply passes through @var{addr}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_frob_return_address (void *@var{addr})
-This function does the reverse of @code{__builtin_extract_return_address}.
+This function does the reverse of @code{__builtin_extract_return_addr}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_frame_address (unsigned int @var{level})
