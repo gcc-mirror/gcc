@@ -1,3 +1,94 @@
+2012-10-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* opth-gen.awk (TARGET_* generation): Always generate TARGET_<xxx>
+	for Mask options, whether they use Var(...) or not.
+
+	* config/linux-android.h (ANDROID_TARGET_OS_CPP_BUILTINS): Use
+	TARGET_<xxx> instead of OPTION_<xxx>.
+	* config/i386/i386.h (TARGET_64BIT): Likewise.
+	(TARGET_MMX): Likewise.
+	(TARGET_3DNOW): Likewise.
+	(TARGET_3DNOW_A): Likewise.
+	(TARGET_SSE): Likewise.
+	(TARGET_SSE2): Likewise.
+	(TARGET_SSE3): Likewise.
+	(TARGET_SSSE3): Likewise.
+	(TARGET_SSE4_1): Likewise.
+	(TARGET_SSE4_2): Likewise.
+	(TARGET_AVX): Likewise.
+	(TARGET_AVX2): Likewise.
+	(TARGET_FMA): Likewise.
+	(TARGET_SSE4A): Likewise.
+	(TARGET_FMA4): Likewise.
+	(TARGET_XOP): Likewise.
+	(TARGET_LWP): Likewise.
+	(TARGET_ROUND): Likewise.
+	(TARGET_ABM): Likewise.
+	(TARGET_BMI): Likewise.
+	(TARGET_BMI2): Likewise.
+	(TARGET_LZCNT): Likewise.
+	(TARGET_TBM): Likewise.
+	(TARGET_POPCNT): Likewise.
+	(TARGET_SAHF): Likewise.
+	(TARGET_MOVBE): Likewise.
+	(TARGET_CRC32): Likewise.
+	(TARGET_AES): Likewise.
+	(TARGET_PCLMUL): Likewise.
+	(TARGET_CMPXCHG16B): Likewise.
+	(TARGET_FSGSBASE): Likewise.
+	(TARGET_RDRND): Likewise.
+	(TARGET_F16C): Likewise.
+	(TARGET_RTM     ): Likewise.
+	(TARGET_HLE): Likewise.
+	(TARGET_RDSEED): Likewise.
+	(TARGET_PRFCHW): Likewise.
+	(TARGET_ADX): Likewise.
+	(TARGET_64BIT): Likewise.
+	(TARGET_MMX): Likewise.
+	(TARGET_3DNOW): Likewise.
+	(TARGET_3DNOW_A): Likewise.
+	(TARGET_SSE): Likewise.
+	(TARGET_SSE2): Likewise.
+	(TARGET_SSE3): Likewise.
+	(TARGET_SSSE3): Likewise.
+	(TARGET_SSE4_1): Likewise.
+	(TARGET_SSE4_2): Likewise.
+	(TARGET_AVX): Likewise.
+	(TARGET_AVX2): Likewise.
+	(TARGET_FMA): Likewise.
+	(TARGET_SSE4A): Likewise.
+	(TARGET_FMA4): Likewise.
+	(TARGET_XOP): Likewise.
+	(TARGET_LWP): Likewise.
+	(TARGET_ROUND): Likewise.
+	(TARGET_ABM): Likewise.
+	(TARGET_BMI): Likewise.
+	(TARGET_BMI2): Likewise.
+	(TARGET_LZCNT): Likewise.
+	(TARGET_TBM): Likewise.
+	(TARGET_POPCNT): Likewise.
+	(TARGET_SAHF): Likewise.
+	(TARGET_MOVBE): Likewise.
+	(TARGET_CRC32): Likewise.
+	(TARGET_AES): Likewise.
+	(TARGET_PCLMUL): Likewise.
+	(TARGET_CMPXCHG16B): Likewise.
+	(TARGET_FSGSBASE): Likewise.
+	(TARGET_RDRND): Likewise.
+	(TARGET_F16C): Likewise.
+	(TARGET_RTM): Likewise.
+	(TARGET_HLE): Likewise.
+	(TARGET_RDSEED): Likewise.
+	(TARGET_PRFCHW): Likewise.
+	(TARGET_ADX): Likewise.
+	(TARGET_LP64): Likewise.
+	(TARGET_X32): Likewise.
+	(TARGET_ISA_ROUND): Likewise.
+	* config/i386/darwin.h (TARGET_64BIT): Likewise.
+
+	* doc/options.texi (Mask): Update documentation to specify only
+	TARGET_<xxx> is generated.
+
 2012-10-17  Greta Yorsh  <Greta.Yorsh@arm.com>
 
         * config/arm/arm.md (UNSPEC_PROLOGUE_USE): Rename this...
