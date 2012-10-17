@@ -1,3 +1,7 @@
+2012-10-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/iq2000/iq2000.h (call_used_regs): Remove definition.
+
 2012-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54870
