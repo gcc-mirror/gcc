@@ -1,3 +1,10 @@
+2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+
+	Backported from mainline
+	2012-07-23  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_reorg): Ensure all insns are split.
+
 2012-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54870

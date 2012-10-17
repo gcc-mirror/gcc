@@ -13337,6 +13337,13 @@ arm_reorg (void)
   if (TARGET_THUMB2)
     thumb2_reorg ();
 
+  /* Ensure all insns that must be split have been split at this point.
+     Otherwise, the pool placement code below may compute incorrect
+     insn lengths.  Note that when optimizing, all insns have already
+     been split at this point.  */
+  if (!optimize)
+    split_all_insns_noflow ();
+
   minipool_fix_head = minipool_fix_tail = NULL;
 
   /* The first insn must always be a note, or the code below won't
