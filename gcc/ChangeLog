@@ -1,3 +1,15 @@
+2012-10-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* df-problems.c (df_kill_notes): Split up in two functions.
+	(df_remove_dead_and_unused_notes): New function, first half of
+	df_kill notes to remove all REG_DEAD and REG_UNUSED notes.
+	(df_remove_dead_eq_notes): New function, second half of df_kill_notes
+	to remove REG_EQUAL and REG_EQUIV notes referring to dead registers.
+	(df_note_bb_compute): Call df_remove_dead_and_unused_notes instead
+	of df_kill_notes.  Call df_remove_dead_eq_notes after processing insn.
+
+	* web.c (web): Re-add DF_RD_PRUNE_DEAD_DEFS;
+
 2012-10-16  Ian Lance Taylor  <iant@google.com>
 
 	* doc/extend.texi (Return Address): Change
