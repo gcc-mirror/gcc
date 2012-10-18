@@ -1,5 +1,12 @@
 2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* loop-invariant.c: Include target.h.
+	(check_dependency): Return false for an uninitialized argument register
+	that is likely to be spilled.
+	* Makefile.in (loop-invariant.o): Add $(TARGET_H).
+
+2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* except.c (sjlj_emit_function_enter): Remove unused variable.
 
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
