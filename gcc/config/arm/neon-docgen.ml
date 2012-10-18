@@ -103,6 +103,8 @@ let intrinsic_groups =
     "Multiplication", single_opcode Vmul;
     "Multiply-accumulate", single_opcode Vmla;
     "Multiply-subtract", single_opcode Vmls;
+    "Fused-multiply-accumulate", single_opcode Vfma;
+    "Fused-multiply-subtract", single_opcode Vfms;
     "Subtraction", single_opcode Vsub;
     "Comparison (equal-to)", single_opcode Vceq;
     "Comparison (greater-than-or-equal-to)", single_opcode Vcge;

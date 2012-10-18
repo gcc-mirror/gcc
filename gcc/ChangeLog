@@ -1,3 +1,27 @@
+2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/arm.c (neon_builtin_data): Add vfma and vfms
+      	builtins.
+        * config/arm/neon-docgen.ml (intrinsic_groups): Add
+        fused-multiply-* groups.
+        * config/neon-gen.ml (print_feature_test_start): New function.
+        (print_feature_test_end): Likewise.
+        (print_variant): Print feature test macros.
+        * config/arm/neon-testgen.ml (emit_prologue): Allow different
+        tests to require different effective targets.
+        (effective_target): New function.
+        (test_intrinsic): Specify correct effective targets.
+        * gcc/config/arm/neon.md (fma<VCVTF:mode>4_intrinsic): New pattern.
+        (fmsub<VCVTF:mode>4_intrinsic): Likewise.
+        (neon_vfma<VCVFT:mode>): New expand.
+        (neon_vfms<VCVFT:mode>): Likewise.
+        * config/neon.ml (opcode): Add Vfma and Vfms.
+        (features): Add Requires_feature.
+        (ops): Add VFMA and VFMS intrinsics.
+        * config/arm/arm_neon.h: Regenerate.
+        * doc/arm-neon-intrinsics.texi: Likewise.
+
 2012-10-18  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer.h (enum LTO_tags): Add LTO_integer_cst.
@@ -11,7 +35,7 @@
 	(streamer_pack_tree_bitfields): Call it.
 	(streamer_write_integer_cst): Adjust.
 
-2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config.gcc: Add support for ARMv8 for arm*-*-* targets.

@@ -722,6 +722,10 @@
 )
 
 ;; Fused multiply-accumulate
+;; We define each insn twice here:
+;;    1: with flag_unsafe_math_optimizations for the widening multiply phase
+;;       to be able to use when converting to FMA.
+;;    2: without flag_unsafe_math_optimizations for the intrinsics to use.
 (define_insn "fma<VCVTF:mode>4"
   [(set (match_operand:VCVTF 0 "register_operand" "=w")
         (fma:VCVTF (match_operand:VCVTF 1 "register_operand" "w")
@@ -735,12 +739,38 @@
 		      (const_string "neon_fp_vmla_qqq")))]
 )
 
+(define_insn "fma<VCVTF:mode>4_intrinsic"
+  [(set (match_operand:VCVTF 0 "register_operand" "=w")
+        (fma:VCVTF (match_operand:VCVTF 1 "register_operand" "w")
+		 (match_operand:VCVTF 2 "register_operand" "w")
+		 (match_operand:VCVTF 3 "register_operand" "0")))]
+  "TARGET_NEON && TARGET_FMA"
+  "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set (attr "neon_type")
+	(if_then_else (match_test "<Is_d_reg>")
+		      (const_string "neon_fp_vmla_ddd")
+		      (const_string "neon_fp_vmla_qqq")))]
+)
+
 (define_insn "*fmsub<VCVTF:mode>4"
   [(set (match_operand:VCVTF 0 "register_operand" "=w")
         (fma:VCVTF (neg:VCVTF (match_operand:VCVTF 1 "register_operand" "w"))
 		   (match_operand:VCVTF 2 "register_operand" "w")
 		   (match_operand:VCVTF 3 "register_operand" "0")))]
   "TARGET_NEON && TARGET_FMA && flag_unsafe_math_optimizations"
+  "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set (attr "neon_type")
+	(if_then_else (match_test "<Is_d_reg>")
+		      (const_string "neon_fp_vmla_ddd")
+		      (const_string "neon_fp_vmla_qqq")))]
+)
+
+(define_insn "fmsub<VCVTF:mode>4_intrinsic"
+  [(set (match_operand:VCVTF 0 "register_operand" "=w")
+        (fma:VCVTF (neg:VCVTF (match_operand:VCVTF 1 "register_operand" "w"))
+		   (match_operand:VCVTF 2 "register_operand" "w")
+		   (match_operand:VCVTF 3 "register_operand" "0")))]
+  "TARGET_NEON && TARGET_FMA"
   "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
 	(if_then_else (match_test "<Is_d_reg>")
@@ -1922,6 +1952,32 @@
   else
     emit_insn (gen_neon_vmla<mode>_unspec (operands[0], operands[1],
 					   operands[2], operands[3]));
+  DONE;
+})
+
+(define_expand "neon_vfma<VCVTF:mode>"
+  [(match_operand:VCVTF 0 "s_register_operand")
+   (match_operand:VCVTF 1 "s_register_operand")
+   (match_operand:VCVTF 2 "s_register_operand")
+   (match_operand:VCVTF 3 "s_register_operand")
+   (match_operand:SI 4 "immediate_operand")]
+  "TARGET_NEON && TARGET_FMA"
+{
+  emit_insn (gen_fma<mode>4_intrinsic (operands[0], operands[2], operands[3],
+				       operands[1]));
+  DONE;
+})
+
+(define_expand "neon_vfms<VCVTF:mode>"
+  [(match_operand:VCVTF 0 "s_register_operand")
+   (match_operand:VCVTF 1 "s_register_operand")
+   (match_operand:VCVTF 2 "s_register_operand")
+   (match_operand:VCVTF 3 "s_register_operand")
+   (match_operand:SI 4 "immediate_operand")]
+  "TARGET_NEON && TARGET_FMA"
+{
+  emit_insn (gen_fmsub<mode>4_intrinsic (operands[0], operands[2], operands[3],
+					 operands[1]));
   DONE;
 })
 

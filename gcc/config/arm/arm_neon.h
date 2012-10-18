@@ -1350,6 +1350,38 @@ vqdmlsl_s32 (int64x2_t __a, int32x2_t __b, int32x2_t __c)
   return (int64x2_t)__builtin_neon_vqdmlslv2si (__a, __b, __c, 1);
 }
 
+#ifdef __ARM_FEATURE_FMA
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vfma_f32 (float32x2_t __a, float32x2_t __b, float32x2_t __c)
+{
+  return (float32x2_t)__builtin_neon_vfmav2sf (__a, __b, __c, 3);
+}
+
+#endif
+#ifdef __ARM_FEATURE_FMA
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vfmaq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
+{
+  return (float32x4_t)__builtin_neon_vfmav4sf (__a, __b, __c, 3);
+}
+
+#endif
+#ifdef __ARM_FEATURE_FMA
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vfms_f32 (float32x2_t __a, float32x2_t __b, float32x2_t __c)
+{
+  return (float32x2_t)__builtin_neon_vfmsv2sf (__a, __b, __c, 3);
+}
+
+#endif
+#ifdef __ARM_FEATURE_FMA
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vfmsq_f32 (float32x4_t __a, float32x4_t __b, float32x4_t __c)
+{
+  return (float32x4_t)__builtin_neon_vfmsv4sf (__a, __b, __c, 3);
+}
+
+#endif
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vsub_s8 (int8x8_t __a, int8x8_t __b)
 {

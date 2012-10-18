@@ -1,4 +1,11 @@
-2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+        * gcc.target/arm/neon/vfmaQf32.c: New testcase.
+        * gcc.target/arm/neon/vfmaf32.c: Likewise.
+        * gcc.target/arm/neon/vfmsQf32.c: Likewise.
+        * gcc.target/arm/neon/vfmsf32.c: Likewise.
+
+2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
         * gcc.target/arm/ftest-armv8a-arm.c: New testcase.
         * gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
