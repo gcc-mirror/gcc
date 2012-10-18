@@ -18726,6 +18726,8 @@ static neon_builtin_datum neon_builtin_data[] =
   VAR8 (BINOP, vmul, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
   VAR8 (TERNOP, vmla, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
   VAR3 (TERNOP, vmlal, v8qi, v4hi, v2si),
+  VAR2 (TERNOP, vfma, v2sf, v4sf),
+  VAR2 (TERNOP, vfms, v2sf, v4sf),
   VAR8 (TERNOP, vmls, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
   VAR3 (TERNOP, vmlsl, v8qi, v4hi, v2si),
   VAR4 (BINOP, vqdmulh, v4hi, v2si, v8hi, v4si),
