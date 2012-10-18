@@ -1,3 +1,25 @@
+2012-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/move.h (move_if_noexcept): Mark constexpr.
+	* include/std/array (front, back): Same.
+	* include/std/chrono: Add comment.
+	* include/std/tuple (__tuple_compare): Mark __eq, __less constexpr.
+	(operator ==, <, >, !=, <=, >=): Same.
+	* testsuite/20_util/forward/c_neg.cc: Adjust line numbers.
+	* testsuite/20_util/forward/f_neg.cc: Same.
+	* testsuite/20_util/move_if_noexcept/constexpr.cc: New.
+	* testsuite/20_util/tuple/comparison_operators/constexpr.cc: New.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Add.
+	* testsuite/23_containers/array/element_access/
+	constexpr_element_access.cc: Same.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Same.
+
+	* testsuite/20_util/tuple/comparison_operators/35480_neg.cc:
+          Temporarily add dg-excess-errors.
+
 2012-10-16  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/formatter.h (_Debug_msg_id): Add

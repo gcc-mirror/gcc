@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
@@ -18,8 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <array>
+#include <tuple>
+#include <testsuite_common_types.h>
 
-typedef std::tuple_element<1, std::array<int, 1>>::type type;
-
-// { dg-error "static assertion failed" "" { target *-*-* } 283 }
+int main()
+{
+  __gnu_test::constexpr_comparison_operators test;
+  test.operator()<std::tuple<int, int>>();
+  return 0;
+}

@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,50 @@ test_make_tuple()
       = std::make_tuple(22, 22.222, 77799);
   }
 }
+
+#if 0
+// forward_as_tuple
+void
+test_forward_as_tuple()
+{
+  {
+    typedef std::tuple<int, float> tuple_type;
+    constexpr tuple_type p1 __attribute__((unused))
+      = std::forward_as_tuple(22, 22.222);
+  }
+
+  {
+    typedef std::tuple<int, float, int> tuple_type;
+    constexpr tuple_type p1 __attribute__((unused))
+      = std::forward_as_tuple(22, 22.222, 77799);
+  }
+}
+#endif
+
+#if 0
+// tie
+void
+test_tie()
+{
+  {
+    int i(22);
+    float f(22.222);
+    typedef std::tuple<int, float> tuple_type;
+    constexpr tuple_type p1 __attribute__((unused))
+      = std::tie(i, f);
+  }
+
+  {
+    int i(22);
+    float f(22.222);
+    int ii(77799);
+
+    typedef std::tuple<int, float, int> tuple_type;
+    constexpr tuple_type p1 __attribute__((unused))
+      = std::tie(i, f, ii);
+  }
+}
+#endif
 
 // get
 void

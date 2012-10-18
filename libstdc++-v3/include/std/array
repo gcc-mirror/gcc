@@ -198,17 +198,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       front()
       { return *begin(); }
 
-      const_reference 
+      constexpr const_reference 
       front() const
-      { return *begin(); }
+      { return _AT_Type::_S_ref(_M_elems, 0); }
 
       reference 
       back()
       { return _Nm ? *(end() - 1) : *end(); }
 
-      const_reference 
+      constexpr const_reference 
       back() const
-      { return _Nm ? *(end() - 1) : *end(); }
+      { 
+	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1) 
+ 	           : _AT_Type::_S_ref(_M_elems, _Nm); 
+      }
 
       pointer
       data() noexcept
