@@ -1,3 +1,9 @@
+2012-10-19  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/predicates.md (splat_input_operand): Don't call
+	input_operand for MEMs.  Instead check for volatile and call
+	memory_address_addr_space_p with modified mode.
+
 2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
 
 	Backported from mainline
