@@ -180,7 +180,8 @@ namespace __gnu_debug
     "function requires a non-empty iterator range [%1.name;, %2.name;)",
     "attempt to self move assign",
     "attempt to access container with out-of-bounds bucket index %2;,"
-    " container only holds %3; buckets"
+    " container only holds %3; buckets",
+    "load factor shall be positive"
   };
 
   void
