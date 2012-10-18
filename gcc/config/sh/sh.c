@@ -9452,7 +9452,7 @@ sh_insert_attributes (tree node, tree *attributes)
 }
 
 /*------------------------------------------------------------------------------
-/* Target specific attributes
+  Target specific attributes
   Supported attributes are:
 
    * interrupt_handler
