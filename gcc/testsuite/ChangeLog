@@ -1,3 +1,8 @@
+2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization13.ad[sb]: New test.
+	* gnat.dg/loop_optimization13_pkg.ads: New helper.
+
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
         * gcc.target/arm/neon/vfmaQf32.c: New testcase.
