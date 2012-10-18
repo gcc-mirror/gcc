@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11" }
 // { dg-do compile }
+// { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
@@ -8,18 +8,35 @@
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
-
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <array>
+#include <utility>
+#include <testsuite_hooks.h>
 
-typedef std::tuple_element<1, std::array<int, 1>>::type type;
+struct simple
+{
+  int i;
+};
 
-// { dg-error "static assertion failed" "" { target *-*-* } 283 }
+void
+test01()
+{
+  bool test __attribute__((unused)) = true;
+
+  constexpr simple s { 5 };
+  constexpr auto s2  __attribute__((unused)) = std::move_if_noexcept(s);
+}
+
+int main()
+{
+  test01();
+  return 0;
+}

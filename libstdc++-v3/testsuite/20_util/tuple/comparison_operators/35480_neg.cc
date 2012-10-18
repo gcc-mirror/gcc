@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,3 +31,4 @@ void test01()
   if ( t1 == t2 ) {}  // { dg-error "here" }
 }
 // { dg-prune-output "incomplete type" }
+// { dg-excess-errors "body of constexpr function" }
