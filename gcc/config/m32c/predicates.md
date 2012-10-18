@@ -296,4 +296,4 @@
 
 (define_predicate "m32c_const_u16_operand"
   (and (match_operand 0 "const_int_operand")
-       (match_test "fprintf(stderr, \"u16=%d\\n\", INTVAL(op)),INTVAL (op) >= 0 && INTVAL (op) <= 65535")))
+       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 65535")))
