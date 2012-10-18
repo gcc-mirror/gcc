@@ -1,3 +1,7 @@
+2012-10-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/sh/sh.c: Fix comment to silence warning.
+
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
             Sameera Deshpande  <sameera.deshpande@arm.com>
