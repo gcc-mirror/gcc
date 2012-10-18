@@ -1,5 +1,11 @@
 2012-10-19  Alan Modra  <amodra@gmail.com>
 
+	* configure.ac (HAVE_LD_NO_DOT_SYMS): Set if using gold.
+	(HAVE_LD_LARGE_TOC): Likewise.
+	* configure: Regenerate.
+
+2012-10-19  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/predicates.md (splat_input_operand): Don't call
 	input_operand for MEMs.  Instead check for volatile and call
 	memory_address_addr_space_p with modified mode.
