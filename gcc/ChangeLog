@@ -1,3 +1,15 @@
+2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+            Sameera Deshpande  <sameera.deshpande@arm.com>
+
+           * config/arm/cortex-a15-neon.md: New file.
+           * config/arm/cortex-a15.md (cortex_a15_call): Adjust reservation.
+           (cortex_a15_load1): Likewise.
+           (cortex_a15_load3): Likewise.
+           (cortex_a15_store1): Likewise.
+           (cortex_a15_store3): Likewise.
+           (cortex-a15-neon.md): Include.
+
 2012-10-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md (altivec_lvsl, altivec_lvsr): Add mode.
