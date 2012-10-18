@@ -26768,8 +26768,8 @@ static const struct builtin_description bdesc_pcmpistr[] =
 /* Special builtins with variable number of arguments.  */
 static const struct builtin_description bdesc_special_args[] =
 {
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtsc, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtscp, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* MMX */
@@ -26887,7 +26887,7 @@ static const struct builtin_description bdesc_args[] =
 {
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT },
   { OPTION_MASK_ISA_64BIT, CODE_FOR_bsr_rex64, "__builtin_ia32_bsrdi", IX86_BUILTIN_BSRDI, UNKNOWN, (int) INT64_FTYPE_INT64 },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdpmc, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
@@ -30452,7 +30452,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2, arg3, arg4;
-  rtx op0, op1, op2, op3, op4, pat;
+  rtx op0, op1, op2, op3, op4, pat, insn;
   enum machine_mode mode0, mode1, mode2, mode3, mode4;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
@@ -30632,6 +30632,65 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	emit_move_insn (target, tmp);
 	return target;
       }
+
+    case IX86_BUILTIN_RDPMC:
+    case IX86_BUILTIN_RDTSC:
+    case IX86_BUILTIN_RDTSCP:
+
+      op0 = gen_reg_rtx (DImode);
+      op1 = gen_reg_rtx (DImode);
+
+      if (fcode == IX86_BUILTIN_RDPMC)
+	{
+	  arg0 = CALL_EXPR_ARG (exp, 0);
+	  op2 = expand_normal (arg0);
+	  if (!register_operand (op2, SImode))
+	    op2 = copy_to_mode_reg (SImode, op2);
+
+	  insn = (TARGET_64BIT
+		  ? gen_rdpmc_rex64 (op0, op1, op2)
+		  : gen_rdpmc (op0, op2));
+	  emit_insn (insn);
+	}
+      else if (fcode == IX86_BUILTIN_RDTSC)
+	{
+	  insn = (TARGET_64BIT
+		  ? gen_rdtsc_rex64 (op0, op1)
+		  : gen_rdtsc (op0));
+	  emit_insn (insn);
+	}
+      else
+	{
+	  op2 = gen_reg_rtx (SImode);
+
+	  insn = (TARGET_64BIT
+		  ? gen_rdtscp_rex64 (op0, op1, op2)
+		  : gen_rdtscp (op0, op2));
+	  emit_insn (insn);
+
+	  arg0 = CALL_EXPR_ARG (exp, 0);
+	  op4 = expand_normal (arg0);
+	  if (!address_operand (op4, VOIDmode))
+	    {
+	      op4 = convert_memory_address (Pmode, op4);
+	      op4 = copy_addr_to_reg (op4);
+	    }
+	  emit_move_insn (gen_rtx_MEM (SImode, op4), op2);
+	}
+
+      if (target == 0)
+	target = gen_reg_rtx (mode);
+
+      if (TARGET_64BIT)
+	{
+	  op1 = expand_simple_binop (DImode, ASHIFT, op1, GEN_INT (32),
+				     op1, 1, OPTAB_DIRECT);
+	  op0 = expand_simple_binop (DImode, IOR, op0, op1,
+				     op0, 1, OPTAB_DIRECT);
+	}
+
+      emit_move_insn (target, op0);
+      return target;
 
     case IX86_BUILTIN_LLWPCB:
       arg0 = CALL_EXPR_ARG (exp, 0);
