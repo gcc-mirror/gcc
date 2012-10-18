@@ -1,3 +1,24 @@
+2012-10-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (_Debug_msg_id): Add
+	__msg_valid_load_factor.
+	* include/debug/macros.h (__glibcxx_check_max_load_factor): New.
+	* include/debug/unordered_set
+	(unordered_set<>::max_load_factor(float)): Check max load factor
+	is positive.
+	(unordered_multiset<>::max_load_factor(float)): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::max_load_factor(float)): Likewise.
+	(unordered_multimap<>::max_load_factor(float)): Likewise.
+	* testsuite/23_containers/unordered_map/debug/max_load_factor_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/debug/
+	max_load_factor_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/max_load_factor_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/
+	max_load_factor_neg.cc: New.
+
 2012-10-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/move.h (move_if_noexcept): Mark constexpr.
