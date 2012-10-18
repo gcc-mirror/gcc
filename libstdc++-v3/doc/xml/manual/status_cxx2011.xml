@@ -1378,7 +1378,8 @@ particular release.
       <entry>23.2.1</entry>
       <entry>General container requirements</entry>
       <entry>Partial</entry>
-      <entry>Only <code>vector</code> meets the requirements
+      <entry>Only <code>vector</code> and <code>forward_list</code>
+             meet the requirements
              relating to allocator use and propagation.</entry>
     </row>
     <row>
