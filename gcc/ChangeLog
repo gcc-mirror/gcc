@@ -1,3 +1,9 @@
+2012-10-19  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (HAVE_LD_NO_DOT_SYMS): Set if using gold.
+	(HAVE_LD_LARGE_TOC): Likewise.
+	* configure: Regenerate.
+
 2012-10-17  DJ Delorie  <dj@delorie.com>
 
 	PR target/54950
