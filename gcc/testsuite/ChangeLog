@@ -1,3 +1,8 @@
+2012-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54884
+	* gfortran.dg/public_private_module_7.f90: New.
+
 2012-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/29633
@@ -10,21 +15,21 @@
 
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
-        * gcc.target/arm/neon/vfmaQf32.c: New testcase.
-        * gcc.target/arm/neon/vfmaf32.c: Likewise.
-        * gcc.target/arm/neon/vfmsQf32.c: Likewise.
-        * gcc.target/arm/neon/vfmsf32.c: Likewise.
+	* gcc.target/arm/neon/vfmaQf32.c: New testcase.
+	* gcc.target/arm/neon/vfmaf32.c: Likewise.
+	* gcc.target/arm/neon/vfmsQf32.c: Likewise.
+	* gcc.target/arm/neon/vfmsf32.c: Likewise.
 
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
-        * gcc.target/arm/ftest-armv8a-arm.c: New testcase.
-        * gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
-        * gcc.target/arm/ftest-support-arm.h (feature_matrix): Add
-        ARMv8-A row.
-        * gcc.target/arm/ftest-support-thumb.h (feature_matrix):
-        Likewise.
-        * gcc.target/arm/ftest-support.h (architecture): Add ARMv8-A.
-        * lib/target-supports.exp: Add ARMv8-A architecture expectation.
+	* gcc.target/arm/ftest-armv8a-arm.c: New testcase.
+	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
+	* gcc.target/arm/ftest-support-arm.h (feature_matrix): Add
+	ARMv8-A row.
+	* gcc.target/arm/ftest-support-thumb.h (feature_matrix):
+	Likewise.
+	* gcc.target/arm/ftest-support.h (architecture): Add ARMv8-A.
+	* lib/target-supports.exp: Add ARMv8-A architecture expectation.
 
 2012-10-16  Jan Hubicka  <jh@suse.cz>
 

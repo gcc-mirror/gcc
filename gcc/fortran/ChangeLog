@@ -1,3 +1,14 @@
+2012-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54884
+	* resolve.c (specification_expr): Change to bool.
+	(resolve_formal_arglist, resolve_symbol): Set
+	specification_expr to true before resolving the array spec.
+	(resolve_variable, resolve_charlen, resolve_fl_variable):
+	Properly reset specification_expr.
+	(resolve_function): Set public_use when used in
+	a specification expr.
+
 2012-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50981
