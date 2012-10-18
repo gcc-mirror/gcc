@@ -24,7 +24,7 @@
 ;; The Cortex-A15 core is modelled as a triple issue pipeline that has
 ;; the following dispatch units.
 ;; 1. Two pipelines for simple integer operations: SX1, SX2
-;; 2. Two pipelines for Neon and FP data-processing operations: CX1, CX2
+;; 2. Individual units for Neon and FP operations as in cortex-a15-neon.md
 ;; 3. One pipeline for branch operations: BX
 ;; 4. One pipeline for integer multiply and divide operations: MX
 ;; 5. Two pipelines for load and store operations: LS1, LS2
@@ -44,7 +44,6 @@
 
 ;; The main dispatch units
 (define_cpu_unit "ca15_sx1, ca15_sx2" "cortex_a15")
-(define_cpu_unit "ca15_cx1, ca15_cx2" "cortex_a15")
 (define_cpu_unit "ca15_ls1, ca15_ls2" "cortex_a15")
 (define_cpu_unit "ca15_bx, ca15_mx" "cortex_a15")
 
@@ -129,20 +128,6 @@
 	    (eq_attr "neon_type" "none")))
   "ca15_issue1,ca15_bx")
 
-
-;; We lie with calls.  They take up all issue slots, and form a block in the
-;; pipeline.  The result however is available the next cycle.
-;;
-;; Addition of new units requires this to be updated.
-(define_insn_reservation "cortex_a15_call" 1
-  (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "call")
-	    (eq_attr "neon_type" "none")))
-  "ca15_issue3,\
-   ca15_sx1+ca15_sx2+ca15_bx+ca15_mx+ca15_cx1+ca15_cx2+ca15_ls1+ca15_ls2,\
-   ca15_sx1_alu+ca15_sx1_shf+ca15_sx1_sat+ca15_sx2_alu+ca15_sx2_shf\
-    +ca15_sx2_sat+ca15_ldr+ca15_str")
-
 ;; Load-store execution Unit
 ;;
 ;; Loads of up to two words.
@@ -172,6 +157,23 @@
        (and (eq_attr "type" "store3,store4")
 	    (eq_attr "neon_type" "none")))
   "ca15_issue2,ca15_ls1+ca15_ls2,ca15_str,ca15_str")
+
+;; We include Neon.md here to ensure that the branch can block the Neon units.
+(include "cortex-a15-neon.md")
+
+;; We lie with calls.  They take up all issue slots, and form a block in the
+;; pipeline.  The result however is available the next cycle.
+(define_insn_reservation "cortex_a15_call" 1
+  (and (eq_attr "tune" "cortexa15")
+       (and (eq_attr "type" "call")
+	    (eq_attr "neon_type" "none")))
+  "ca15_issue3,\
+   ca15_sx1+ca15_sx2+ca15_bx+ca15_mx+ca15_cx_ij+ca15_cx_ik+ca15_ls1+ca15_ls2+\
+   ca15_cx_imac1+ca15_cx_ialu1+ca15_cx_ialu2+ca15_cx_ishf+\
+   ca15_cx_acc+ca15_cx_fmul1+ca15_cx_fmul2+ca15_cx_fmul3+ca15_cx_fmul4+\
+   ca15_cx_falu1+ca15_cx_falu2+ca15_cx_falu3+ca15_cx_falu4+ca15_cx_vfp_i,\
+   ca15_sx1_alu+ca15_sx1_shf+ca15_sx1_sat+ca15_sx2_alu+\
+   ca15_sx2_shf+ca15_sx2_sat+ca15_ldr+ca15_str")
 
 ;; Simple execution unit bypasses
 (define_bypass 1 "cortex_a15_alu"
