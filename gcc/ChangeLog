@@ -1,3 +1,22 @@
+2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config.gcc: Add support for ARMv8 for arm*-*-* targets.
+        * config/arm/arm-arches.def: Add armv8-a
+        * config/arm/arm-fpus.def: Add fp-armv8, neon-fp-armv8,
+        crypto-neon-fp-armv8.  Add crypto field.
+        * config/arm/arm-tables.opt: Regenerate.
+        * config/arm/arm.c (FL_FOR_ARCH8A): Likewise.
+        (arm_arch8): New global variable.
+        (ARM_FPU): Add crypto parameter.
+        (arm_option_override): Set arm_arch8, update comments.
+        * config/arm/arm.h (TARGET_CRYPTO): New macro.
+        (arm_fpu_desc): Add crypto field.
+        (base_architecture): Add ARMv8 entry.
+        (arm_arch8): New variable declaration.
+        * config/arm/bpabi.h: ARMv8 supports BE8.
+        * doc/invoke.texi: Document ARMv8 options.
+
 2012-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/54893

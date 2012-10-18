@@ -1,3 +1,14 @@
+2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+        * gcc.target/arm/ftest-armv8a-arm.c: New testcase.
+        * gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
+        * gcc.target/arm/ftest-support-arm.h (feature_matrix): Add
+        ARMv8-A row.
+        * gcc.target/arm/ftest-support-thumb.h (feature_matrix):
+        Likewise.
+        * gcc.target/arm/ftest-support.h (architecture): Add ARMv8-A.
+        * lib/target-supports.exp: Add ARMv8-A architecture expectation.
+
 2012-10-16  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/l_fma_float_?.c: Update.

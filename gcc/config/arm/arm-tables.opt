@@ -347,10 +347,13 @@ EnumValue
 Enum(arm_arch) String(armv7e-m) Value(22)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt) Value(23)
+Enum(arm_arch) String(armv8-a) Value(23)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(24)
+Enum(arm_arch) String(iwmmxt) Value(24)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(25)
 
 Enum
 Name(arm_fpu) Type(int)
@@ -396,5 +399,14 @@ EnumValue
 Enum(arm_fpu) String(neon-vfpv4) Value(12)
 
 EnumValue
-Enum(arm_fpu) String(vfp3) Value(13)
+Enum(arm_fpu) String(fp-armv8) Value(13)
+
+EnumValue
+Enum(arm_fpu) String(neon-fp-armv8) Value(14)
+
+EnumValue
+Enum(arm_fpu) String(crypto-neon-fp-armv8) Value(15)
+
+EnumValue
+Enum(arm_fpu) String(vfp3) Value(16)
 
