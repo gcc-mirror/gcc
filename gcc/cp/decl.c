@@ -5040,6 +5040,7 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
        ++index)
     {
       tree elt_init;
+      constructor_elt *old_cur = d->cur;
 
       check_array_designated_initializer (d->cur, index);
       elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false,
@@ -5050,6 +5051,10 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 			      size_int (index), elt_init);
       if (!TREE_CONSTANT (elt_init))
 	TREE_CONSTANT (new_init) = false;
+
+      /* This can happen with an invalid initializer (c++/54501).  */
+      if (d->cur == old_cur && !sized_array_p)
+	break;
     }
 
   return new_init;

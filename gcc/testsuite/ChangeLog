@@ -1,3 +1,9 @@
+2012-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54501
+	* g++.dg/init/array30.C: New.
+	* g++.dg/init/array31.C: Likewise.
+
 2012-10-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54884
