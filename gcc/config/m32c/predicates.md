@@ -293,3 +293,7 @@
 (define_predicate "m32c_1mask16_operand"
   (and (match_operand 0 "const_int_operand")
        (match_test "m32c_const_ok_for_constraint_p(INTVAL(op), 'I', \"Imw\")")))
+
+(define_predicate "m32c_const_u16_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "fprintf(stderr, \"u16=%d\\n\", INTVAL(op)),INTVAL (op) >= 0 && INTVAL (op) <= 65535")))

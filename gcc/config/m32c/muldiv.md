@@ -108,7 +108,7 @@
 (define_insn "umulhisi3_c"
   [(set (match_operand:SI 0 "ra_operand" "=Rsi")
         (mult:SI (zero_extend:SI (match_operand:HI 1 "mra_operand" "%0"))
-                 (match_operand 2 "immediate_operand" "i")))]
+                 (match_operand 2 "m32c_const_u16_operand" "i")))]
   ""
   "mulu.w\t%u2,%1"
   [(set_attr "flags" "o")]

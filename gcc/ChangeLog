@@ -1,3 +1,9 @@
+2012-10-17  DJ Delorie  <dj@delorie.com>
+
+	PR target/54950
+	* config/m32c/predicates.md (m32c_const_u16_operand): New.
+	* config/m32c/muldiv.md: Use it.
+
 2012-10-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md (addhi3): Fix typo in last change.
