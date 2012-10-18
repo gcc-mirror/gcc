@@ -1,3 +1,22 @@
+2012-10-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (altivec_lvsl, altivec_lvsr): Add mode.
+	(altivec_vsumsws_nomode): Delete.
+	(reduc_splus_<mode>, reduc_uplus_<mode>): Call gen_altivec_vsumsws
+	instead of gen_altivec_vsumsws_nomode.
+	(altivec_lvlx, altivec_lvlxl, altivec_lvrx, altivec_lvrxl):
+	Add mode.
+	* config/rs6000/rs6000.md (probe_stack): Rename to...
+	(probe_stack_<mode>): ... this.  Add mode.  Change pattern to
+	use std instead of stw when appropriate.
+	(probe_stack): New expander.
+	(move_from_CR_ov_bit): Add mode.
+	(splitter for compare_plus_ne0_<mode>, splitter for
+	compare_plus_ne0_<mode>_1): Remove constraints.
+	* config/rs6000/sync.md (loadsync): Rename to...
+	(loadsync_<mode>): ... this.  Add mode.
+	(atomic_load<mode>): Adjust.
+
 2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* loop-invariant.c: Include target.h.

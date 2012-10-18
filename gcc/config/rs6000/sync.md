@@ -100,8 +100,8 @@
 
 ;; The control dependency used for load dependency described
 ;; in B.2.3 of the Power ISA 2.06B.
-(define_insn "loadsync"
-  [(unspec_volatile:BLK [(match_operand 0 "register_operand" "r")]
+(define_insn "loadsync_<mode>"
+  [(unspec_volatile:BLK [(match_operand:INT1 0 "register_operand" "r")]
 			UNSPECV_ISYNC)
    (clobber (match_scratch:CC 1 "=y"))]
   ""
@@ -129,7 +129,16 @@
     case MEMMODEL_CONSUME:
     case MEMMODEL_ACQUIRE:
     case MEMMODEL_SEQ_CST:
-      emit_insn (gen_loadsync (operands[0]));
+      if (GET_MODE (operands[0]) == QImode)
+	emit_insn (gen_loadsync_qi (operands[0]));
+      else if (GET_MODE (operands[0]) == HImode)
+	emit_insn (gen_loadsync_hi (operands[0]));
+      else if (GET_MODE (operands[0]) == SImode)
+	emit_insn (gen_loadsync_si (operands[0]));
+      else if (GET_MODE (operands[0]) == DImode)
+	emit_insn (gen_loadsync_di (operands[0]));
+      else
+	gcc_unreachable ();
       break;
     default:
       gcc_unreachable ();

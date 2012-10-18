@@ -1674,14 +1674,16 @@
 
 (define_insn "altivec_lvsl"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand 1 "memory_operand" "Z")] UNSPEC_LVSL))]
+	(unspec:V16QI [(match_operand:V16QI 1 "memory_operand" "Z")]
+		      UNSPEC_LVSL))]
   "TARGET_ALTIVEC"
   "lvsl %0,%y1"
   [(set_attr "type" "vecload")])
 
 (define_insn "altivec_lvsr"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand 1 "memory_operand" "Z")] UNSPEC_LVSR))]
+	(unspec:V16QI [(match_operand:V16QI 1 "memory_operand" "Z")]
+		      UNSPEC_LVSR))]
   "TARGET_ALTIVEC"
   "lvsr %0,%y1"
   [(set_attr "type" "vecload")])
@@ -1831,47 +1833,37 @@
   operands[3] = gen_reg_rtx (GET_MODE (operands[0]));
 })
 
-(define_insn "altivec_vsumsws_nomode"
-  [(set (match_operand 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-                      (match_operand:V4SI 2 "register_operand" "v")]
-		     UNSPEC_VSUMSWS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
-  "TARGET_ALTIVEC"
-  "vsumsws %0,%1,%2"
-  [(set_attr "type" "veccomplex")])
-
 (define_expand "reduc_splus_<mode>"
   [(set (match_operand:VIshort 0 "register_operand" "=v")
         (unspec:VIshort [(match_operand:VIshort 1 "register_operand" "v")]
 			UNSPEC_REDUC_PLUS))]
   "TARGET_ALTIVEC"
-  "
-{ 
+{
   rtx vzero = gen_reg_rtx (V4SImode);
   rtx vtmp1 = gen_reg_rtx (V4SImode);
+  rtx dest = gen_lowpart (V4SImode, operands[0]);
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4s<VI_char>s (vtmp1, operands[1], vzero));
-  emit_insn (gen_altivec_vsumsws_nomode (operands[0], vtmp1, vzero));
+  emit_insn (gen_altivec_vsumsws (dest, vtmp1, vzero));
   DONE;
-}")
+})
 
 (define_expand "reduc_uplus_v16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
         (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")]
 		      UNSPEC_REDUC_PLUS))]
   "TARGET_ALTIVEC"
-  "
 {
   rtx vzero = gen_reg_rtx (V4SImode);
   rtx vtmp1 = gen_reg_rtx (V4SImode);
+  rtx dest = gen_lowpart (V4SImode, operands[0]);
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4ubs (vtmp1, operands[1], vzero));
-  emit_insn (gen_altivec_vsumsws_nomode (operands[0], vtmp1, vzero));
+  emit_insn (gen_altivec_vsumsws (dest, vtmp1, vzero));
   DONE;
-}")
+})
 
 (define_expand "neg<mode>2"
   [(use (match_operand:VI 0 "register_operand" ""))
@@ -2348,7 +2340,7 @@
 ;; STVLX, STVLXL, STVVRX, STVRXL are available only on Cell.
 (define_insn "altivec_lvlx"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+        (unspec:V16QI [(match_operand:BLK 1 "memory_operand" "Z")]
 		      UNSPEC_LVLX))]
   "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
   "lvlx %0,%y1"
@@ -2356,7 +2348,7 @@
 
 (define_insn "altivec_lvlxl"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+        (unspec:V16QI [(match_operand:BLK 1 "memory_operand" "Z")]
 		      UNSPEC_LVLXL))]
   "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
   "lvlxl %0,%y1"
@@ -2364,7 +2356,7 @@
 
 (define_insn "altivec_lvrx"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+        (unspec:V16QI [(match_operand:BLK 1 "memory_operand" "Z")]
 		      UNSPEC_LVRX))]
   "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
   "lvrx %0,%y1"
@@ -2372,7 +2364,7 @@
 
 (define_insn "altivec_lvrxl"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand 1 "memory_operand" "Z")] 
+        (unspec:V16QI [(match_operand:BLK 1 "memory_operand" "Z")]
 		      UNSPEC_LVRXL))]
   "TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL"
   "lvrxl %0,%y1"
