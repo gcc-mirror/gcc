@@ -1,3 +1,7 @@
+2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/lib1funcs.S (__ARM_ARCH__): Define for ARMv8-A.
+
 2012-10-15  Matthias Klose  <doko@ubuntu.com>
 
 	* config.host: Match arm*-*-linux-* for ARM Linux/GNU.

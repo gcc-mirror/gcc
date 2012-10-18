@@ -972,6 +972,38 @@
 
 
 
+@subsubsection Fused-multiply-accumulate
+
+@itemize @bullet
+@item float32x2_t vfma_f32 (float32x2_t, float32x2_t, float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vfma.f32 @var{d0}, @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vfmaq_f32 (float32x4_t, float32x4_t, float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vfma.f32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
+@subsubsection Fused-multiply-subtract
+
+@itemize @bullet
+@item float32x2_t vfms_f32 (float32x2_t, float32x2_t, float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vfms.f32 @var{d0}, @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vfmsq_f32 (float32x4_t, float32x4_t, float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vfms.f32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
 @subsubsection Subtraction
 
 @itemize @bullet
@@ -1497,24 +1529,6 @@
 @subsubsection Comparison (greater-than-or-equal-to)
 
 @itemize @bullet
-@item uint32x2_t vcge_u32 (uint32x2_t, uint32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint16x4_t vcge_u16 (uint16x4_t, uint16x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint8x8_t vcge_u8 (uint8x8_t, uint8x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
 @item uint32x2_t vcge_s32 (int32x2_t, int32x2_t)
 @*@emph{Form of expected instruction(s):} @code{vcge.s32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
@@ -1539,20 +1553,20 @@
 
 
 @itemize @bullet
-@item uint32x4_t vcgeq_u32 (uint32x4_t, uint32x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{q0}, @var{q0}, @var{q0}}
+@item uint32x2_t vcge_u32 (uint32x2_t, uint32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint16x8_t vcgeq_u16 (uint16x8_t, uint16x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{q0}, @var{q0}, @var{q0}}
+@item uint16x4_t vcge_u16 (uint16x4_t, uint16x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint8x16_t vcgeq_u8 (uint8x16_t, uint8x16_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{q0}, @var{q0}, @var{q0}}
+@item uint8x8_t vcge_u8 (uint8x8_t, uint8x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -1580,27 +1594,27 @@
 @end itemize
 
 
+@itemize @bullet
+@item uint32x4_t vcgeq_u32 (uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint16x8_t vcgeq_u16 (uint16x8_t, uint16x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint8x16_t vcgeq_u8 (uint8x16_t, uint8x16_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
 
 
 @subsubsection Comparison (less-than-or-equal-to)
-
-@itemize @bullet
-@item uint32x2_t vcle_u32 (uint32x2_t, uint32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint16x4_t vcle_u16 (uint16x4_t, uint16x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint8x8_t vcle_u8 (uint8x8_t, uint8x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
 
 @itemize @bullet
 @item uint32x2_t vcle_s32 (int32x2_t, int32x2_t)
@@ -1627,20 +1641,20 @@
 
 
 @itemize @bullet
-@item uint32x4_t vcleq_u32 (uint32x4_t, uint32x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{q0}, @var{q0}, @var{q0}}
+@item uint32x2_t vcle_u32 (uint32x2_t, uint32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint16x8_t vcleq_u16 (uint16x8_t, uint16x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{q0}, @var{q0}, @var{q0}}
+@item uint16x4_t vcle_u16 (uint16x4_t, uint16x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint8x16_t vcleq_u8 (uint8x16_t, uint8x16_t)
-@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{q0}, @var{q0}, @var{q0}}
+@item uint8x8_t vcle_u8 (uint8x8_t, uint8x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -1668,27 +1682,27 @@
 @end itemize
 
 
+@itemize @bullet
+@item uint32x4_t vcleq_u32 (uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint16x8_t vcleq_u16 (uint16x8_t, uint16x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u16 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint8x16_t vcleq_u8 (uint8x16_t, uint8x16_t)
+@*@emph{Form of expected instruction(s):} @code{vcge.u8 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
 
 
 @subsubsection Comparison (greater-than)
-
-@itemize @bullet
-@item uint32x2_t vcgt_u32 (uint32x2_t, uint32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint16x4_t vcgt_u16 (uint16x4_t, uint16x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint8x8_t vcgt_u8 (uint8x8_t, uint8x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
 
 @itemize @bullet
 @item uint32x2_t vcgt_s32 (int32x2_t, int32x2_t)
@@ -1715,20 +1729,20 @@
 
 
 @itemize @bullet
-@item uint32x4_t vcgtq_u32 (uint32x4_t, uint32x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{q0}, @var{q0}, @var{q0}}
+@item uint32x2_t vcgt_u32 (uint32x2_t, uint32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint16x8_t vcgtq_u16 (uint16x8_t, uint16x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{q0}, @var{q0}, @var{q0}}
+@item uint16x4_t vcgt_u16 (uint16x4_t, uint16x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint8x16_t vcgtq_u8 (uint8x16_t, uint8x16_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{q0}, @var{q0}, @var{q0}}
+@item uint8x8_t vcgt_u8 (uint8x8_t, uint8x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -1756,27 +1770,27 @@
 @end itemize
 
 
+@itemize @bullet
+@item uint32x4_t vcgtq_u32 (uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint16x8_t vcgtq_u16 (uint16x8_t, uint16x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint8x16_t vcgtq_u8 (uint8x16_t, uint8x16_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
 
 
 @subsubsection Comparison (less-than)
-
-@itemize @bullet
-@item uint32x2_t vclt_u32 (uint32x2_t, uint32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint16x4_t vclt_u16 (uint16x4_t, uint16x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item uint8x8_t vclt_u8 (uint8x8_t, uint8x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
 
 @itemize @bullet
 @item uint32x2_t vclt_s32 (int32x2_t, int32x2_t)
@@ -1803,20 +1817,20 @@
 
 
 @itemize @bullet
-@item uint32x4_t vcltq_u32 (uint32x4_t, uint32x4_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{q0}, @var{q0}, @var{q0}}
+@item uint32x2_t vclt_u32 (uint32x2_t, uint32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint16x8_t vcltq_u16 (uint16x8_t, uint16x8_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{q0}, @var{q0}, @var{q0}}
+@item uint16x4_t vclt_u16 (uint16x4_t, uint16x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
-@item uint8x16_t vcltq_u8 (uint8x16_t, uint8x16_t)
-@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{q0}, @var{q0}, @var{q0}}
+@item uint8x8_t vclt_u8 (uint8x8_t, uint8x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -1841,6 +1855,24 @@
 @itemize @bullet
 @item uint32x4_t vcltq_f32 (float32x4_t, float32x4_t)
 @*@emph{Form of expected instruction(s):} @code{vcgt.f32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32x4_t vcltq_u32 (uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u32 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint16x8_t vcltq_u16 (uint16x8_t, uint16x8_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u16 @var{q0}, @var{q0}, @var{q0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint8x16_t vcltq_u8 (uint8x16_t, uint8x16_t)
+@*@emph{Form of expected instruction(s):} @code{vcgt.u8 @var{q0}, @var{q0}, @var{q0}}
 @end itemize
 
 
@@ -4810,13 +4842,13 @@
 
 @itemize @bullet
 @item uint64_t vgetq_lane_u64 (uint64x2_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov @var{r0}, @var{r0}, @var{d0}}
+@*@emph{Form of expected instruction(s):} @code{vmov @var{r0}, @var{r0}, @var{d0}} @emph{or} @code{fmrrd @var{r0}, @var{r0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64_t vgetq_lane_s64 (int64x2_t, const int)
-@*@emph{Form of expected instruction(s):} @code{vmov @var{r0}, @var{r0}, @var{d0}}
+@*@emph{Form of expected instruction(s):} @code{vmov @var{r0}, @var{r0}, @var{d0}} @emph{or} @code{fmrrd @var{r0}, @var{r0}, @var{d0}}
 @end itemize
 
 
