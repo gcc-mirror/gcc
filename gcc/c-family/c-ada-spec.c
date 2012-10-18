@@ -67,8 +67,6 @@ static void dump_ads (const char *, void (*)(const char *),
 static char *to_ada_name (const char *, int *);
 static bool separate_class_package (tree);
 
-#define LOCATION_COL(LOC) ((expand_location (LOC)).column)
-
 #define INDENT(SPACE) do { \
   int i; for (i = 0; i<SPACE; i++) pp_space (buffer); } while (0)
 
@@ -553,6 +551,26 @@ decl_sloc (const_tree decl, bool last)
   return decl_sloc_common (decl, last, false);
 }
 
+/* Compare two locations LHS and RHS.  */
+
+static int
+compare_location (location_t lhs, location_t rhs)
+{
+  expanded_location xlhs = expand_location (lhs);
+  expanded_location xrhs = expand_location (rhs);
+
+  if (xlhs.file != xrhs.file)
+    return filename_cmp (xlhs.file, xrhs.file);
+
+  if (xlhs.line != xrhs.line)
+    return xlhs.line - xrhs.line;
+
+  if (xlhs.column != xrhs.column)
+    return xlhs.column - xrhs.column;
+
+  return 0;
+}
+
 /* Compare two declarations (LP and RP) by their source location.  */
 
 static int
@@ -561,7 +579,7 @@ compare_node (const void *lp, const void *rp)
   const_tree lhs = *((const tree *) lp);
   const_tree rhs = *((const tree *) rp);
 
-  return decl_sloc (lhs, true) - decl_sloc (rhs, true);
+  return compare_location (decl_sloc (lhs, true), decl_sloc (rhs, true));
 }
 
 /* Compare two comments (LP and RP) by their source location.  */
@@ -572,17 +590,7 @@ compare_comment (const void *lp, const void *rp)
   const cpp_comment *lhs = (const cpp_comment *) lp;
   const cpp_comment *rhs = (const cpp_comment *) rp;
 
-  if (LOCATION_FILE (lhs->sloc) != LOCATION_FILE (rhs->sloc))
-    return filename_cmp (LOCATION_FILE (lhs->sloc),
-			 LOCATION_FILE (rhs->sloc));
-
-  if (LOCATION_LINE (lhs->sloc) != LOCATION_LINE (rhs->sloc))
-    return LOCATION_LINE (lhs->sloc) - LOCATION_LINE (rhs->sloc);
-
-  if (LOCATION_COL (lhs->sloc) != LOCATION_COL (rhs->sloc))
-    return LOCATION_COL (lhs->sloc) - LOCATION_COL (rhs->sloc);
-
-  return 0;
+  return compare_location (lhs->sloc, rhs->sloc);
 }
 
 static tree *to_dump = NULL;
