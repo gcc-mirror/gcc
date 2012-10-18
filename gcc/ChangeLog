@@ -4,15 +4,15 @@
 
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-            Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Sameera Deshpande  <sameera.deshpande@arm.com>
 
-           * config/arm/cortex-a15-neon.md: New file.
-           * config/arm/cortex-a15.md (cortex_a15_call): Adjust reservation.
-           (cortex_a15_load1): Likewise.
-           (cortex_a15_load3): Likewise.
-           (cortex_a15_store1): Likewise.
-           (cortex_a15_store3): Likewise.
-           (cortex-a15-neon.md): Include.
+	* config/arm/cortex-a15-neon.md: New file.
+	* config/arm/cortex-a15.md (cortex_a15_call): Adjust reservation.
+	(cortex_a15_load1): Likewise.
+	(cortex_a15_load3): Likewise.
+	(cortex_a15_store1): Likewise.
+	(cortex_a15_store3): Likewise.
+	(cortex-a15-neon.md): Include.
 
 2012-10-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -47,26 +47,26 @@
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/arm.c (neon_builtin_data): Add vfma and vfms
-      	builtins.
-        * config/arm/neon-docgen.ml (intrinsic_groups): Add
-        fused-multiply-* groups.
-        * config/neon-gen.ml (print_feature_test_start): New function.
-        (print_feature_test_end): Likewise.
-        (print_variant): Print feature test macros.
-        * config/arm/neon-testgen.ml (emit_prologue): Allow different
-        tests to require different effective targets.
-        (effective_target): New function.
-        (test_intrinsic): Specify correct effective targets.
-        * gcc/config/arm/neon.md (fma<VCVTF:mode>4_intrinsic): New pattern.
-        (fmsub<VCVTF:mode>4_intrinsic): Likewise.
-        (neon_vfma<VCVFT:mode>): New expand.
-        (neon_vfms<VCVFT:mode>): Likewise.
-        * config/neon.ml (opcode): Add Vfma and Vfms.
-        (features): Add Requires_feature.
-        (ops): Add VFMA and VFMS intrinsics.
-        * config/arm/arm_neon.h: Regenerate.
-        * doc/arm-neon-intrinsics.texi: Likewise.
+	* config/arm/arm.c (neon_builtin_data): Add vfma and vfms
+	builtins.
+	* config/arm/neon-docgen.ml (intrinsic_groups): Add
+	fused-multiply-* groups.
+	* config/neon-gen.ml (print_feature_test_start): New function.
+	(print_feature_test_end): Likewise.
+	(print_variant): Print feature test macros.
+	* config/arm/neon-testgen.ml (emit_prologue): Allow different
+	tests to require different effective targets.
+	(effective_target): New function.
+	(test_intrinsic): Specify correct effective targets.
+	* gcc/config/arm/neon.md (fma<VCVTF:mode>4_intrinsic): New pattern.
+	(fmsub<VCVTF:mode>4_intrinsic): Likewise.
+	(neon_vfma<VCVFT:mode>): New expand.
+	(neon_vfms<VCVFT:mode>): Likewise.
+	* config/neon.ml (opcode): Add Vfma and Vfms.
+	(features): Add Requires_feature.
+	(ops): Add VFMA and VFMS intrinsics.
+	* config/arm/arm_neon.h: Regenerate.
+	* doc/arm-neon-intrinsics.texi: Likewise.
 
 2012-10-18  Richard Guenther  <rguenther@suse.de>
 
@@ -84,27 +84,27 @@
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config.gcc: Add support for ARMv8 for arm*-*-* targets.
-        * config/arm/arm-arches.def: Add armv8-a
-        * config/arm/arm-fpus.def: Add fp-armv8, neon-fp-armv8,
-        crypto-neon-fp-armv8.  Add crypto field.
-        * config/arm/arm-tables.opt: Regenerate.
-        * config/arm/arm.c (FL_FOR_ARCH8A): Likewise.
-        (arm_arch8): New global variable.
-        (ARM_FPU): Add crypto parameter.
-        (arm_option_override): Set arm_arch8, update comments.
-        * config/arm/arm.h (TARGET_CRYPTO): New macro.
-        (arm_fpu_desc): Add crypto field.
-        (base_architecture): Add ARMv8 entry.
-        (arm_arch8): New variable declaration.
-        * config/arm/bpabi.h: ARMv8 supports BE8.
-        * doc/invoke.texi: Document ARMv8 options.
+	* config.gcc: Add support for ARMv8 for arm*-*-* targets.
+	* config/arm/arm-arches.def: Add armv8-a
+	* config/arm/arm-fpus.def: Add fp-armv8, neon-fp-armv8,
+	crypto-neon-fp-armv8.  Add crypto field.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.c (FL_FOR_ARCH8A): Likewise.
+	(arm_arch8): New global variable.
+	(ARM_FPU): Add crypto parameter.
+	(arm_option_override): Set arm_arch8, update comments.
+	* config/arm/arm.h (TARGET_CRYPTO): New macro.
+	(arm_fpu_desc): Add crypto field.
+	(base_architecture): Add ARMv8 entry.
+	(arm_arch8): New variable declaration.
+	* config/arm/bpabi.h: ARMv8 supports BE8.
+	* doc/invoke.texi: Document ARMv8 options.
 
 2012-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/54893
-        * trans-mem.c (diagnose_tm_1_op): Allow volatiles inside relaxed
-        transactions.
+	* trans-mem.c (diagnose_tm_1_op): Allow volatiles inside relaxed
+	transactions.
 
 2012-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -410,15 +410,15 @@
 
 2012-10-17  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (UNSPEC_PROLOGUE_USE): Rename this...
-        (UNSPEC_REGISTER_USE): ... to this.
-        (prologue_use): Rename this...
+	* config/arm/arm.md (UNSPEC_PROLOGUE_USE): Rename this...
+	(UNSPEC_REGISTER_USE): ... to this.
+	(prologue_use): Rename this...
 	  (force_register_use): ... to this and update output assembly.
-        (epilogue) Rename gen_prologue_use to gen_force_register_use.
-        * config/arm/arm.c (arm_expand_prologue): Likewise.
-        (thumb1_expand_epilogue): Likewise.
-        (arm_expand_epilogue): Likewise.
-        (arm_expand_epilogue): Likewise.
+	(epilogue) Rename gen_prologue_use to gen_force_register_use.
+	* config/arm/arm.c (arm_expand_prologue): Likewise.
+	(thumb1_expand_epilogue): Likewise.
+	(arm_expand_epilogue): Likewise.
+	(arm_expand_epilogue): Likewise.
 
 2012-10-17  Georg-Johann Lay  <avr@gjlay.de>
 
