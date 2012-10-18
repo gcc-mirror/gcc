@@ -1,3 +1,7 @@
+2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* except.c (sjlj_emit_function_enter): Remove unused variable.
+
 2012-10-18  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
