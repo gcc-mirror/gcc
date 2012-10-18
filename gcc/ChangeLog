@@ -1,3 +1,16 @@
+2012-10-18  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer.h (enum LTO_tags): Add LTO_integer_cst.
+	* lto-streamer-in.c (lto_input_tree): Use it.
+	* lto-streamer-out.c (lto_output_tree): Likewise, for
+	!TREE_OVERFLOW integer constants only.
+	* tree-streamer-in.c (unpack_ts_int_cst_value_fields): New function.
+	(unpack_value_fields): Call it.
+	(streamer_read_integer_cst): Simplify.
+	* tree-streamer-out.c (pack_ts_int_cst_value_fields): New function.
+	(streamer_pack_tree_bitfields): Call it.
+	(streamer_write_integer_cst): Adjust.
+
 2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
