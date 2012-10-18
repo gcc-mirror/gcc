@@ -1,3 +1,10 @@
+2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (LOCATION_COL): Delete.
+	(compare_location): New function.
+	(compare_node): Use it.
+	(compare_comment): Likewise.
+
 2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
