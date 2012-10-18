@@ -1,3 +1,15 @@
+2012-10-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h: Add C++11 allocator support.
+	* include/bits/forward_list.tcc: Likewise.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* testsuite/23_containers/forward_list/allocator/copy.cc: New.
+	* testsuite/23_containers/forward_list/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/forward_list/allocator/minimal.cc: New.
+	* testsuite/23_containers/forward_list/allocator/move_assign.cc: New.
+	* testsuite/23_containers/forward_list/allocator/noexcept.cc: New.
+	* testsuite/23_containers/forward_list/allocator/swap.cc: New.
+
 2012-10-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/formatter.h (_Debug_msg_id): Add
