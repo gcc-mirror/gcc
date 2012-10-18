@@ -1,3 +1,8 @@
+2012-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29633
+	* g++.dg/template/pr29633.C: New.
+
 2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization13.ad[sb]: New test.
