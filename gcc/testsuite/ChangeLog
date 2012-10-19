@@ -1,3 +1,8 @@
+2012-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54981
+	* gcc.dg/pr54981.c: New testcase.
+
 2012-10-19  Zhenqiang Chen <zhenqiang.chen@linaro.org>
 
 	PR target/54892

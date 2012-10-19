@@ -1,3 +1,9 @@
+2012-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54981
+	* tree-loop-distribution.c (ssa_name_has_uses_outside_loop_p):
+	Do not consider debug stmts as uses.
+
 2012-10-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54976
