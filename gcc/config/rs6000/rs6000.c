@@ -1121,10 +1121,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
   { NULL,        0, 0, false, false, false, NULL, false }
 };
 
-#ifndef OPTION_MASK_STRICT_ALIGN
-#define OPTION_MASK_STRICT_ALIGN 0
-#define MASK_STRICT_ALIGN 0
-#endif
 #ifndef TARGET_PROFILE_KERNEL
 #define TARGET_PROFILE_KERNEL 0
 #endif
@@ -1805,10 +1801,11 @@ rs6000_debug_reg_global (void)
     fprintf (stderr, DEBUG_FMT_S, "tune", "<none>");
 
   cl_target_option_save (&cl_opts, &global_options);
-  rs6000_print_isa_options (stderr, 0, "target_flags", target_flags);
+  rs6000_print_isa_options (stderr, 0, "rs6000_isa_flags",
+			    rs6000_isa_flags);
 
-  rs6000_print_isa_options (stderr, 0, "target_flags_explicit",
-			    target_flags_explicit);
+  rs6000_print_isa_options (stderr, 0, "rs6000_isa_flags_explicit",
+			    rs6000_isa_flags_explicit);
 
   rs6000_print_builtin_options (stderr, 0, "rs6000_builtin_mask",
 				rs6000_builtin_mask);
