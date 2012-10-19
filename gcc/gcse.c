@@ -1,6 +1,6 @@
 /* Partial redundancy elimination / Hoisting for RTL.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -460,7 +460,7 @@ static void alloc_code_hoist_mem (int, int);
 static void free_code_hoist_mem (void);
 static void compute_code_hoist_vbeinout (void);
 static void compute_code_hoist_data (void);
-static int hoist_expr_reaches_here_p (basic_block, int, basic_block, char *,
+static int hoist_expr_reaches_here_p (basic_block, int, basic_block, sbitmap,
 				      int, int *);
 static int hoist_code (void);
 static int one_code_hoisting_pass (void);
@@ -2843,7 +2843,7 @@ compute_code_hoist_data (void)
 
 static int
 hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
-			   char *visited, int distance, int *bb_size)
+			   sbitmap visited, int distance, int *bb_size)
 {
   edge pred;
   edge_iterator ei;
@@ -2864,7 +2864,8 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
   if (visited == NULL)
     {
       visited_allocated_locally = 1;
-      visited = XCNEWVEC (char, last_basic_block);
+      visited = sbitmap_alloc (last_basic_block);
+      sbitmap_zero (visited);
     }
 
   FOR_EACH_EDGE (pred, ei, bb->preds)
@@ -2875,7 +2876,7 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
 	break;
       else if (pred_bb == expr_bb)
 	continue;
-      else if (visited[pred_bb->index])
+      else if (TEST_BIT (visited, pred_bb->index))
 	continue;
 
       else if (! TEST_BIT (transp[pred_bb->index], expr_index))
@@ -2884,14 +2885,14 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
       /* Not killed.  */
       else
 	{
-	  visited[pred_bb->index] = 1;
+	  SET_BIT (visited, pred_bb->index);
 	  if (! hoist_expr_reaches_here_p (expr_bb, expr_index, pred_bb,
 					   visited, distance, bb_size))
 	    break;
 	}
     }
   if (visited_allocated_locally)
-    free (visited);
+    sbitmap_free (visited);
 
   return (pred == NULL);
 }
