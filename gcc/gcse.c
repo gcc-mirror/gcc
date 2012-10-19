@@ -20,9 +20,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* TODO
    - reordering of memory allocation and freeing to be more space efficient
-   - do rough calc of how many regs are needed in each block, and a rough
-     calc of how many regs are available in each class and use that to
-     throttle back the code in cases where RTX_COST is minimal.
+   - simulate register pressure change of each basic block accurately during
+     hoist process.  But I doubt the benefit since most expressions hoisted
+     are constant or address, which usually won't reduce register pressure.
+   - calc rough register pressure information and use the info to drive all
+     kinds of code motion (including code hoisting) in a unified way.
 */
 
 /* References searched while implementing this.
@@ -141,11 +143,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "toplev.h"
 
+#include "hard-reg-set.h"
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "regs.h"
-#include "hard-reg-set.h"
+#include "ira.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "recog.h"
@@ -412,6 +415,22 @@ static bool doing_code_hoisting_p = false;
 /* For available exprs */
 static sbitmap *ae_kill;
 
+/* Data stored for each basic block.  */
+struct bb_data
+{
+  /* Maximal register pressure inside basic block for given register class
+     (defined only for the pressure classes).  */
+  int max_reg_pressure[N_REG_CLASSES];
+};
+
+#define BB_DATA(bb) ((struct bb_data *) (bb)->aux)
+
+static basic_block curr_bb;
+
+/* Current register pressure for each pressure class.  */
+static int curr_reg_pressure[N_REG_CLASSES];
+
+
 static void compute_can_copy (void);
 static void *gmalloc (size_t) ATTRIBUTE_MALLOC;
 static void *gcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
@@ -460,9 +479,11 @@ static void alloc_code_hoist_mem (int, int);
 static void free_code_hoist_mem (void);
 static void compute_code_hoist_vbeinout (void);
 static void compute_code_hoist_data (void);
-static int hoist_expr_reaches_here_p (basic_block, int, basic_block, sbitmap,
-				      int, int *);
+static int should_hoist_expr_to_dom (basic_block, struct expr *, basic_block,
+				     sbitmap, int, int *, enum reg_class,
+				     int *, bitmap);
 static int hoist_code (void);
+static enum reg_class get_pressure_class_and_nregs (rtx insn, int *nregs);
 static int one_code_hoisting_pass (void);
 static rtx process_insert_insn (struct expr *);
 static int pre_edge_insert (struct edge_list *, struct expr **);
@@ -1858,7 +1879,7 @@ prune_expressions (bool pre_p)
 	 a basic block we should account for any side-effects of a subsequent
 	 jump instructions that could clobber the expression.  It would
 	 be best to implement this check along the lines of
-	 hoist_expr_reaches_here_p where the target block is already known
+	 should_hoist_expr_to_dom where the target block is already known
 	 and, hence, there's no need to conservatively prune expressions on
 	 "intermediate" set-and-jump instructions.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -2826,10 +2847,21 @@ compute_code_hoist_data (void)
     fprintf (dump_file, "\n");
 }
 
-/* Determine if the expression identified by EXPR_INDEX would
-   reach BB unimpared if it was placed at the end of EXPR_BB.
-   Stop the search if the expression would need to be moved more
-   than DISTANCE instructions.
+/* Determine if the expression EXPR should be hoisted to EXPR_BB up in
+   flow graph, if it can reach BB unimpared.  Stop the search if the
+   expression would need to be moved more than DISTANCE instructions.
+
+   DISTANCE is the number of instructions through which EXPR can be
+   hoisted up in flow graph.
+
+   BB_SIZE points to an array which contains the number of instructions
+   for each basic block.
+
+   PRESSURE_CLASS and NREGS are register class and number of hard registers
+   for storing EXPR.
+
+   HOISTED_BBS points to a bitmap indicating basic blocks through which
+   EXPR is hoisted.
 
    It's unclear exactly what Muchnick meant by "unimpared".  It seems
    to me that the expression must either be computed or transparent in
@@ -2842,18 +2874,32 @@ compute_code_hoist_data (void)
    paths.  */
 
 static int
-hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
-			   sbitmap visited, int distance, int *bb_size)
+should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
+			  basic_block bb, sbitmap visited, int distance,
+			  int *bb_size, enum reg_class pressure_class,
+			  int *nregs, bitmap hoisted_bbs)
 {
+  unsigned int i;
   edge pred;
   edge_iterator ei;
+  sbitmap_iterator sbi;
   int visited_allocated_locally = 0;
 
   /* Terminate the search if distance, for which EXPR is allowed to move,
      is exhausted.  */
   if (distance > 0)
     {
-      distance -= bb_size[bb->index];
+      /* Let EXPR be hoisted through basic block at no cost if the block
+	 has low register pressure.  An exception is constant expression,
+	 because hoisting constant expr aggressively results in worse code.
+	 The exception is made by the observation of CSiBE on ARM target,
+	 while it has no obvious effect on other targets like x86, x86_64,
+	 mips and powerpc.  */
+      if (!flag_ira_hoist_pressure
+	  || (BB_DATA (bb)->max_reg_pressure[pressure_class]
+		>= ira_class_hard_regs_num[pressure_class]
+	      || CONST_INT_P (expr->expr)))
+	distance -= bb_size[bb->index];
 
       if (distance <= 0)
 	return 0;
@@ -2878,21 +2924,35 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
 	continue;
       else if (TEST_BIT (visited, pred_bb->index))
 	continue;
-
-      else if (! TEST_BIT (transp[pred_bb->index], expr_index))
+      else if (! TEST_BIT (transp[pred_bb->index], expr->bitmap_index))
 	break;
-
       /* Not killed.  */
       else
 	{
 	  SET_BIT (visited, pred_bb->index);
-	  if (! hoist_expr_reaches_here_p (expr_bb, expr_index, pred_bb,
-					   visited, distance, bb_size))
+	  if (! should_hoist_expr_to_dom (expr_bb, expr, pred_bb,
+					  visited, distance, bb_size,
+					  pressure_class, nregs, hoisted_bbs))
 	    break;
 	}
     }
   if (visited_allocated_locally)
-    sbitmap_free (visited);
+    {
+      /* If EXPR can be hoisted to expr_bb, record basic blocks through
+	 which EXPR is hoisted in hoisted_bbs.  Also update register
+	 pressure for basic blocks newly added in hoisted_bbs.  */
+      if (flag_ira_hoist_pressure && !pred)
+	{
+	  EXECUTE_IF_SET_IN_SBITMAP (visited, 0, i, sbi)
+	    if (!bitmap_bit_p (hoisted_bbs, i))
+	      {
+		bitmap_set_bit (hoisted_bbs, i);
+		BB_DATA (BASIC_BLOCK (i))->max_reg_pressure[pressure_class]
+		    += *nregs;
+	      }
+	}
+      sbitmap_free (visited);
+    }
 
   return (pred == NULL);
 }
@@ -2909,7 +2969,44 @@ find_occr_in_bb (struct occr *occr, basic_block bb)
   return occr;
 }
 
-/* Actually perform code hoisting.  */
+/* Actually perform code hoisting.
+
+   The code hoisting pass can hoist multiple computations of the same
+   expression along dominated path to a dominating basic block, like
+   from b2/b3 to b1 as depicted below:
+
+          b1      ------
+          /\         |
+         /  \        |
+        bx   by   distance
+       /      \      |
+      /        \     |
+     b2        b3 ------
+
+   Unfortunately code hoisting generally extends the live range of an
+   output pseudo register, which increases register pressure and hurts
+   register allocation.  To address this issue, an attribute MAX_DISTANCE
+   is computed and attached to each expression.  The attribute is computed
+   from rtx cost of the corresponding expression and it's used to control
+   how long the expression can be hoisted up in flow graph.  As the
+   expression is hoisted up in flow graph, GCC decreases its DISTANCE
+   and stops the hoist if DISTANCE reaches 0.
+
+   Option "-fira-hoist-pressure" implements register pressure directed
+   hoist based on upper method.  The rationale is:
+     1. Calculate register pressure for each basic block by reusing IRA
+	facility.
+     2. When expression is hoisted through one basic block, GCC checks
+	register pressure of the basic block and decrease DISTANCE only
+	when the register pressure is high.  In other words, expression
+	will be hoisted through basic block with low register pressure
+	at no cost.
+     3. Update register pressure information for basic blocks through
+ 	which expression is hoisted.
+	TODO: It is possible to have register pressure decreased because
+	of shrinked live ranges of input pseudo registers when hoisting
+	an expression.  For now, this effect is not simulated and we just
+	increase register pressure for hoisted expressions.  */
 
 static int
 hoist_code (void)
@@ -2918,12 +3015,18 @@ hoist_code (void)
   VEC (basic_block, heap) *dom_tree_walk;
   unsigned int dom_tree_walk_index;
   VEC (basic_block, heap) *domby;
-  unsigned int i,j;
+  unsigned int i, j, k;
   struct expr **index_map;
   struct expr *expr;
   int *to_bb_head;
   int *bb_size;
   int changed = 0;
+  struct bb_data *data;
+  /* Basic blocks that have occurrences reachable from BB.  */
+  bitmap from_bbs;
+  /* Basic blocks through which expr is hoisted.  */
+  bitmap hoisted_bbs = NULL;
+  bitmap_iterator bi;
 
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
@@ -2961,6 +3064,10 @@ hoist_code (void)
 	      && (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
 		  == ENTRY_BLOCK_PTR->next_bb));
 
+  from_bbs = BITMAP_ALLOC (NULL);
+  if (flag_ira_hoist_pressure)
+    hoisted_bbs = BITMAP_ALLOC (NULL);
+
   dom_tree_walk = get_all_dominated_blocks (CDI_DOMINATORS,
 					    ENTRY_BLOCK_PTR->next_bb);
 
@@ -2979,20 +3086,18 @@ hoist_code (void)
 	{
 	  if (TEST_BIT (hoist_vbeout[bb->index], i))
 	    {
+	      int nregs = 0;
+	      enum reg_class pressure_class = NO_REGS;
 	      /* Current expression.  */
 	      struct expr *expr = index_map[i];
 	      /* Number of occurrences of EXPR that can be hoisted to BB.  */
 	      int hoistable = 0;
-	      /* Basic blocks that have occurrences reachable from BB.  */
-	      bitmap_head _from_bbs, *from_bbs = &_from_bbs;
 	      /* Occurrences reachable from BB.  */
 	      VEC (occr_t, heap) *occrs_to_hoist = NULL;
 	      /* We want to insert the expression into BB only once, so
 		 note when we've inserted it.  */
 	      int insn_inserted_p;
 	      occr_t occr;
-
-	      bitmap_initialize (from_bbs, 0);
 
 	      /* If an expression is computed in BB and is available at end of
 		 BB, hoist all occurrences dominated by BB to BB.  */
@@ -3047,13 +3152,18 @@ hoist_code (void)
 		    max_distance += (bb_size[dominated->index]
 				     - to_bb_head[INSN_UID (occr->insn)]);
 
-		  /* Note if the expression would reach the dominated block
-		     unimpared if it was placed at the end of BB.
+		  pressure_class = get_pressure_class_and_nregs (occr->insn,
+								 &nregs);
+
+		  /* Note if the expression should be hoisted from the dominated
+		     block to BB if it can reach DOMINATED unimpared.
 
 		     Keep track of how many times this expression is hoistable
 		     from a dominated block into BB.  */
-		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL,
-						 max_distance, bb_size))
+		  if (should_hoist_expr_to_dom (bb, expr, dominated, NULL,
+						max_distance, bb_size,
+						pressure_class,	&nregs,
+						hoisted_bbs))
 		    {
 		      hoistable++;
 		      VEC_safe_push (occr_t, heap,
@@ -3093,6 +3203,28 @@ hoist_code (void)
 	      else
 		/* Punt, no point hoisting a single occurence.  */
 		VEC_free (occr_t, heap, occrs_to_hoist);
+
+	      if (flag_ira_hoist_pressure
+		  && !VEC_empty (occr_t, occrs_to_hoist))
+		{
+		  /* Update register pressure for basic block to which expr
+		     is hoisted.  */
+		  data = BB_DATA (bb);
+		  data->max_reg_pressure[pressure_class] += nregs;
+		}
+	      else if (flag_ira_hoist_pressure)
+		{
+		  /* Restore register pressure of basic block recorded in
+		     hoisted_bbs when expr will not be hoisted.  */
+		  EXECUTE_IF_SET_IN_BITMAP (hoisted_bbs, 0, k, bi)
+		    {
+		      data = BB_DATA (BASIC_BLOCK (k));
+		      data->max_reg_pressure[pressure_class] -= nregs;
+		    }
+		}
+
+	      if (flag_ira_hoist_pressure)
+		bitmap_clear (hoisted_bbs);
 
 	      insn_inserted_p = 0;
 
@@ -3142,11 +3274,174 @@ hoist_code (void)
     }
 
   VEC_free (basic_block, heap, dom_tree_walk);
+  BITMAP_FREE (from_bbs);
+  if (flag_ira_hoist_pressure)
+    BITMAP_FREE (hoisted_bbs);
+
   free (bb_size);
   free (to_bb_head);
   free (index_map);
 
   return changed;
+}
+
+/* Return pressure class and number of needed hard registers (through
+   *NREGS) of register REGNO.  */
+static enum reg_class
+get_regno_pressure_class (int regno, int *nregs)
+{
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      enum reg_class pressure_class;
+
+      pressure_class = reg_allocno_class (regno);
+      pressure_class = ira_pressure_class_translate[pressure_class];
+      *nregs
+	= ira_reg_class_max_nregs[pressure_class][PSEUDO_REGNO_MODE (regno)];
+      return pressure_class;
+    }
+  else if (! TEST_HARD_REG_BIT (ira_no_alloc_regs, regno)
+	   && ! TEST_HARD_REG_BIT (eliminable_regset, regno))
+    {
+      *nregs = 1;
+      return ira_pressure_class_translate[REGNO_REG_CLASS (regno)];
+    }
+  else
+    {
+      *nregs = 0;
+      return NO_REGS;
+    }
+}
+
+/* Return pressure class and number of hard registers (through *NREGS)
+   for destination of INSN. */
+static enum reg_class
+get_pressure_class_and_nregs (rtx insn, int *nregs)
+{
+  rtx reg;
+  enum reg_class pressure_class;
+  rtx set = single_set (insn);
+
+  /* Considered invariant insns have only one set.  */
+  gcc_assert (set != NULL_RTX);
+  reg = SET_DEST (set);
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  if (MEM_P (reg))
+    {
+      *nregs = 0;
+      pressure_class = NO_REGS;
+    }
+  else
+    {
+      gcc_assert (REG_P (reg));
+      pressure_class = reg_allocno_class (REGNO (reg));
+      pressure_class = ira_pressure_class_translate[pressure_class];
+      *nregs
+	= ira_reg_class_max_nregs[pressure_class][GET_MODE (SET_SRC (set))];
+    }
+  return pressure_class;
+}
+
+/* Increase (if INCR_P) or decrease current register pressure for
+   register REGNO.  */
+static void
+change_pressure (int regno, bool incr_p)
+{
+  int nregs;
+  enum reg_class pressure_class;
+
+  pressure_class = get_regno_pressure_class (regno, &nregs);
+  if (! incr_p)
+    curr_reg_pressure[pressure_class] -= nregs;
+  else
+    {
+      curr_reg_pressure[pressure_class] += nregs;
+      if (BB_DATA (curr_bb)->max_reg_pressure[pressure_class]
+	  < curr_reg_pressure[pressure_class])
+	BB_DATA (curr_bb)->max_reg_pressure[pressure_class]
+	  = curr_reg_pressure[pressure_class];
+    }
+}
+
+/* Calculate register pressure for each basic block by walking insns
+   from last to first.  */
+static void
+calculate_bb_reg_pressure (void)
+{
+  int i;
+  unsigned int j;
+  rtx insn;
+  basic_block bb;
+  bitmap curr_regs_live;
+  bitmap_iterator bi;
+
+
+  ira_setup_eliminable_regset ();
+  curr_regs_live = BITMAP_ALLOC (&reg_obstack);
+  FOR_EACH_BB (bb)
+    {
+      curr_bb = bb;
+      bitmap_copy (curr_regs_live, DF_LR_OUT (bb));
+      for (i = 0; i < ira_pressure_classes_num; i++)
+	curr_reg_pressure[ira_pressure_classes[i]] = 0;
+      EXECUTE_IF_SET_IN_BITMAP (curr_regs_live, 0, j, bi)
+	change_pressure (j, true);
+
+      FOR_BB_INSNS_REVERSE (bb, insn)
+	{
+	  rtx dreg;
+	  int regno;
+	  df_ref *def_rec, *use_rec;
+
+	  if (! NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    {
+	      dreg = DF_REF_REAL_REG (*def_rec);
+	      gcc_assert (REG_P (dreg));
+	      regno = REGNO (dreg);
+	      if (!(DF_REF_FLAGS (*def_rec) 
+		    & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+		{
+		  if (bitmap_clear_bit (curr_regs_live, regno))
+		    change_pressure (regno, false);
+		}
+	    }
+
+	  for (use_rec = DF_INSN_USES (insn); *use_rec; use_rec++)
+	    {
+	      dreg = DF_REF_REAL_REG (*use_rec);
+	      gcc_assert (REG_P (dreg));
+	      regno = REGNO (dreg);
+	      if (bitmap_set_bit (curr_regs_live, regno))
+		change_pressure (regno, true);
+	    }
+	}
+    }
+  BITMAP_FREE (curr_regs_live);
+
+  if (dump_file == NULL)
+    return;
+
+  fprintf (dump_file, "\nRegister Pressure: \n");
+  FOR_EACH_BB (bb)
+    {
+      fprintf (dump_file, "  Basic block %d: \n", bb->index);
+      for (i = 0; (int) i < ira_pressure_classes_num; i++)
+	{
+	  enum reg_class pressure_class;
+
+	  pressure_class = ira_pressure_classes[i];
+	  if (BB_DATA (bb)->max_reg_pressure[pressure_class] == 0)
+	    continue;
+
+	  fprintf (dump_file, "    %s=%d\n", reg_class_names[pressure_class],
+		   BB_DATA (bb)->max_reg_pressure[pressure_class]);
+	}
+    }
+  fprintf (dump_file, "\n");
 }
 
 /* Top level routine to perform one code hoisting (aka unification) pass
@@ -3168,6 +3463,16 @@ one_code_hoisting_pass (void)
 
   doing_code_hoisting_p = true;
 
+  /* Calculate register pressure for each basic block.  */
+  if (flag_ira_hoist_pressure)
+    {
+      regstat_init_n_sets_and_refs ();
+      ira_set_pseudo_classes (false, dump_file);
+      alloc_aux_for_blocks (sizeof (struct bb_data));
+      calculate_bb_reg_pressure ();
+      regstat_free_n_sets_and_refs ();
+    }
+
   /* We need alias.  */
   init_alias_analysis ();
 
@@ -3188,6 +3493,11 @@ one_code_hoisting_pass (void)
       free_code_hoist_mem ();
     }
 
+  if (flag_ira_hoist_pressure)
+    {
+      free_aux_for_blocks ();
+      free_reg_info ();
+    }
   free_hash_table (&expr_hash_table);
   free_gcse_mem ();
   obstack_free (&gcse_obstack, NULL);
