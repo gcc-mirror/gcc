@@ -1,3 +1,9 @@
+2012-10-19  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcse.c: Update copyright dates.
+	(hoist_expr_reaches_here_p): Change parameter type from char *
+	to sbitmap.
+
 2012-10-19  Sebastian Huber <sebastian.huber@embedded-brains.de>
 
 	* config.gcc
