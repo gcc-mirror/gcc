@@ -1,5 +1,9 @@
 2012-10-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Update.
+
+2012-10-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/scoped_allocator (__outermost_alloc_traits): Define.
 	(scoped_allocator_adaptor::destroy): Use it.
 	(scoped_allocator_adaptor::construct): Likewise. Overload for
