@@ -1037,7 +1037,7 @@ particular release.
       <entry>20.12.4</entry>
       <entry>Scoped allocator adaptor members</entry>
       <entry>Partial</entry>
-      <entry>Missing std::pair piecewise construction.</entry>
+      <entry>OUTERMOST is not recursive.</entry>
     </row>
     <row>
       <entry>20.12.5</entry>
