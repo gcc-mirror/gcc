@@ -1,3 +1,9 @@
+2012-10-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
+
+	* config.host
+	(arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*): Rename
+	"arm*-*-rtemseabi*" to "arm*-*-rtems*".
+
 2012-10-17  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/lib1funcs.S (__ARM_ARCH__): Define for ARMv8-A.
