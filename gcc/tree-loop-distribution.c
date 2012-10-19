@@ -125,8 +125,12 @@ ssa_name_has_uses_outside_loop_p (tree def, loop_p loop)
   use_operand_p use_p;
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
-    if (loop != loop_containing_stmt (USE_STMT (use_p)))
-      return true;
+    {
+      gimple use_stmt = USE_STMT (use_p);
+      if (!is_gimple_debug (use_stmt)
+	  && loop != loop_containing_stmt (use_stmt))
+	return true;
+    }
 
   return false;
 }
