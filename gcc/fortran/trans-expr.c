@@ -2674,6 +2674,8 @@ conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
       if (!sym->backend_decl)
 	sym->backend_decl = gfc_get_extern_function_decl (sym);
 
+      TREE_USED (sym->backend_decl) = 1;
+
       tmp = sym->backend_decl;
 
       if (sym->attr.cray_pointee)

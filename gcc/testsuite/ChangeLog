@@ -1,3 +1,8 @@
+2012-10-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54224
+	* gfortran.dg/warn_unused_function.f90: New.
+
 2012-10-19  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_prefer_ldrd_strd):
