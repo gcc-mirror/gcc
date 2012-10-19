@@ -1,3 +1,11 @@
+2012-10-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* encoding.c (TARGET_VSX): Provide definitions based on the
+	current compilation options, and not based off the target options
+	structure.
+	(TARGET_ALTIVEC): Likewise.
+	(TARGET_64BIT): Likewise.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.

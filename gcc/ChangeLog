@@ -1,3 +1,18 @@
+2012-10-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Don't assume
+	OPTION_MASK_STRICT_ALIGN is defined.
+	(MASK_STRICT_ALIGN): If OPTION_MASK_STRICT_ALIGN is not defined,
+	define this to 0 for the 3 ports that use it.
+
+	* config/rs6000/rs6000.c (OPTION_MASK_STRICT_ALIGN): Don't do
+	check for ports not having -mstrict-align here, move test to
+	rs6000-cpus.def.
+	(MASK_STRICT_ALIGN): Likewise.
+	(rs6000_debug_reg_global): Print out correct target flag words if
+	-mdebug=reg.
+
 2012-10-19  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/54945

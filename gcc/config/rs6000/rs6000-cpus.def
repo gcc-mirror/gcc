@@ -46,6 +46,17 @@
 
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)
 
+/* Deal with ports that do not have -mstrict-align.  */
+#ifdef OPTION_MASK_STRICT_ALIGN
+#define OPTION_MASK_STRICT_ALIGN_OPTIONAL OPTION_MASK_STRICT_ALIGN
+#else
+#define OPTION_MASK_STRICT_ALIGN 0
+#define OPTION_MASK_STRICT_ALIGN_OPTIONAL 0
+#ifndef MASK_STRICT_ALIGN
+#define MASK_STRICT_ALIGN 0
+#endif
+#endif
+
 /* Mask of all options to set the default isa flags based on -mcpu=<xxx>.  */
 #define POWERPC_MASKS		(OPTION_MASK_ALTIVEC			\
 				 | OPTION_MASK_CMPB			\
@@ -64,7 +75,7 @@
 				 | OPTION_MASK_PPC_GPOPT		\
 				 | OPTION_MASK_RECIP_PRECISION		\
 				 | OPTION_MASK_SOFT_FLOAT		\
-				 | OPTION_MASK_STRICT_ALIGN		\
+				 | OPTION_MASK_STRICT_ALIGN_OPTIONAL	\
 				 | OPTION_MASK_VSX)
 
 #endif
