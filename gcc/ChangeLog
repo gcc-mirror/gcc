@@ -1,3 +1,9 @@
+2012-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/54945
+	* fold-const.c (fold_sign_changed_comparison):  Punt if folding
+	pointer/non-pointer comparison.
+
 2012-10-19  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document
