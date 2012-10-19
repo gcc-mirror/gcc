@@ -1555,6 +1555,11 @@ ARM target generates Thumb-2 code for @code{-mthumb}.
 @item arm_vfp_ok
 ARM target supports @code{-mfpu=vfp -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
+
+@item arm_prefer_ldrd_strd
+ARM target prefers @code{LDRD} and @code{STRD} instructions over
+@code{LDM} and @code{STM} instructions.
+
 @end table
 
 @subsubsection MIPS-specific attributes
