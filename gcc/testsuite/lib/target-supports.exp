@@ -2464,6 +2464,18 @@ proc check_effective_target_arm_iwmmxt_ok { } {
     }
 }
 
+# Return true if LDRD/STRD instructions are prefered over LDM/STM instructions
+# for an ARM target.
+proc check_effective_target_arm_prefer_ldrd_strd { } {
+    if { ![check_effective_target_arm32] } {
+      return 0;
+    }
+
+    return [check_no_messages_and_pattern arm_prefer_ldrd_strd "strd\tr" assembly {
+        void foo (int *p) { p[0] = 1; p[1] = 0;}
+    }  "-O2 -mthumb" ]
+}
+
 # Return 1 if this is a PowerPC target with floating-point registers.
 
 proc check_effective_target_powerpc_fprs { } {

@@ -1,3 +1,8 @@
+2012-10-19  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	new effective target keyword arm_prefer_ldrd_strd.
+
 2012-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54981
