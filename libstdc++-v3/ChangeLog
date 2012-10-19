@@ -1,3 +1,12 @@
+2012-10-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/scoped_allocator (__outermost_alloc_traits): Define.
+	(scoped_allocator_adaptor::destroy): Use it.
+	(scoped_allocator_adaptor::construct): Likewise. Overload for
+	piecewise construction of std::pair objects.
+	* testsuite/20_util/scoped_allocator/2.cc: New.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+
 2012-10-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/forward_list.h: Add C++11 allocator support.
