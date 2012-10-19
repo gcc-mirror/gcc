@@ -372,7 +372,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-small-functions -fipa-cp -fipa-cp-clone @gol
 -fipa-pta -fipa-profile -fipa-pure-const -fipa-reference @gol
 -fira-algorithm=@var{algorithm} @gol
--fira-region=@var{region} @gol
+-fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
@@ -6995,6 +6995,14 @@ This typically results in the smallest code size, and is enabled by default for
 @option{-Os} or @option{-O0}.
 
 @end table
+
+@item -fira-hoist-pressure
+@opindex fira-hoist-pressure
+Use IRA to evaluate register pressure in the code hoisting pass for
+decisions to hoist expressions.  This option usually results in smaller
+code, but it can slow the compiler down.
+
+This option is enabled at level @option{-Os} for all targets.
 
 @item -fira-loop-pressure
 @opindex fira-loop-pressure

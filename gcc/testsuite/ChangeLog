@@ -1,3 +1,7 @@
+2012-10-19  Bin Cheng  <bin.cheng@arm.com>
+
+	* testsuite/gcc.dg/hoist-register-pressure.c: New test.
+
 2012-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54501

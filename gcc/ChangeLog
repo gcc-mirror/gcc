@@ -1,5 +1,31 @@
 2012-10-19  Bin Cheng  <bin.cheng@arm.com>
 
+	* common.opt (flag_ira_hoist_pressure): New.
+	* doc/invoke.texi (-fira-hoist-pressure): Describe.
+	* ira-costs.c (ira_set_pseudo_classes): New parameter.
+	* ira.h: Update copyright dates.
+	(ira_set_pseudo_classes): Update prototype.
+	* haifa-sched.c (sched_init): Update call.
+	* ira.c (ira): Update call.
+	* regmove.c: Update copyright dates.
+	(regmove_optimize): Update call.
+	* loop-invariant.c: Update copyright dates.
+	(move_loop_invariants): Update call.
+	* gcse.c: (struct bb_data): New structure.
+	(BB_DATA): New macro.
+	(curr_bb, curr_reg_pressure): New static variables.
+	(should_hoist_expr_to_dom): Rename from hoist_expr_reaches_here_p.
+	Change parameter expr_index to expr.
+	New parameters pressure_class, nregs and hoisted_bbs.
+	Use reg pressure to determine the distance expr can be hoisted.
+	(hoist_code): Use reg pressure to direct the hoist process.
+	(get_regno_pressure_class, get_pressure_class_and_nregs)
+	(change_pressure, calculate_bb_reg_pressure): New.
+	(one_code_hoisting_pass): Calculate register pressure. Allocate
+	and free data.
+
+2012-10-19  Bin Cheng  <bin.cheng@arm.com>
+
 	* gcse.c: Update copyright dates.
 	(hoist_expr_reaches_here_p): Change parameter type from char *
 	to sbitmap.

@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1939,7 +1939,7 @@ move_loop_invariants (void)
     {
       df_analyze ();
       regstat_init_n_sets_and_refs ();
-      ira_set_pseudo_classes (dump_file);
+      ira_set_pseudo_classes (true, dump_file);
       calculate_loop_reg_pressure ();
       regstat_free_n_sets_and_refs ();
     }

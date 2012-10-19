@@ -1392,6 +1392,11 @@ Enum(ira_region) String(all) Value(IRA_REGION_ALL)
 EnumValue
 Enum(ira_region) String(mixed) Value(IRA_REGION_MIXED)
 
+fira-hoist-pressure
+Common Report Var(flag_ira_hoist_pressure) Init(1) Optimization
+Use IRA based register pressure calculation
+in RTL hoist optimizations.
+
 fira-loop-pressure
 Common Report Var(flag_ira_loop_pressure)
 Use IRA based register pressure calculation

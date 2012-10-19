@@ -1,6 +1,6 @@
 /* Communication between the Integrated Register Allocator (IRA) and
    the rest of the compiler.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -131,7 +131,7 @@ extern void ira_init (void);
 extern void ira_finish_once (void);
 extern void ira_setup_eliminable_regset (void);
 extern rtx ira_eliminate_regs (rtx, enum machine_mode);
-extern void ira_set_pseudo_classes (FILE *);
+extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);
 
 extern void ira_sort_regnos_for_alter_reg (int *, int, unsigned int *);
