@@ -1,3 +1,8 @@
+2012-10-19  Zhenqiang Chen <zhenqiang.chen@linaro.org>
+
+	PR target/54892
+	* gcc.target/arm/pr54892.c: New.
+
 2012-10-19  Bin Cheng  <bin.cheng@arm.com>
 
 	* testsuite/gcc.dg/hoist-register-pressure.c: New test.
