@@ -1,3 +1,12 @@
+2012-10-19  Zhenqiang Chen <zhenqiang.chen@linaro.org>
+
+	Backported from mainline
+	2012-10-19  Zhenqiang Chen <zhenqiang.chen@linaro.org>
+
+	PR target/54892
+	* config/arm/arm.c (arm_expand_compare_and_swap): Use SImode to make
+	sure the mode is correct when falling through from above cases.
+
 2012-10-19  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac (HAVE_LD_NO_DOT_SYMS): Set if using gold.
