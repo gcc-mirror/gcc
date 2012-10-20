@@ -365,31 +365,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	construct(pair<_T1, _T2>* __p)
 	{ construct(__p, piecewise_construct, tuple<>(), tuple<>()); }
 
-      template<typename _T1, typename _T2, typename _U, typename _V>
+      template<typename _T1, typename _T2, typename _Up, typename _Vp>
 	void
-	construct(pair<_T1, _T2>* __p, _U&& __u, _V&& __v)
+	construct(pair<_T1, _T2>* __p, _Up&& __u, _Vp&& __v)
 	{
 	  construct(__p, piecewise_construct,
-		    std::forward_as_tuple(std::forward<_U>(__u)),
-		    std::forward_as_tuple(std::forward<_V>(__v)));
+		    std::forward_as_tuple(std::forward<_Up>(__u)),
+		    std::forward_as_tuple(std::forward<_Vp>(__v)));
 	}
 
-      template<typename _T1, typename _T2, typename _U, typename _V>
+      template<typename _T1, typename _T2, typename _Up, typename _Vp>
 	void
-	construct(pair<_T1, _T2>* __p, const pair<_U, _V>& __x)
+	construct(pair<_T1, _T2>* __p, const pair<_Up, _Vp>& __x)
 	{
 	  construct(__p, piecewise_construct,
 		    std::forward_as_tuple(__x.first),
 		    std::forward_as_tuple(__x.second));
 	}
 
-      template<typename _T1, typename _T2, typename _U, typename _V>
+      template<typename _T1, typename _T2, typename _Up, typename _Vp>
 	void
-	construct(pair<_T1, _T2>* __p, pair<_U, _V>&& __x)
+	construct(pair<_T1, _T2>* __p, pair<_Up, _Vp>&& __x)
 	{
 	  construct(__p, piecewise_construct,
-		    std::forward_as_tuple(std::forward<_U>(__x.first)),
-		    std::forward_as_tuple(std::forward<_V>(__x.second)));
+		    std::forward_as_tuple(std::forward<_Up>(__x.first)),
+		    std::forward_as_tuple(std::forward<_Vp>(__x.second)));
 	}
 
       template<typename _Tp>
