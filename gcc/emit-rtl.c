@@ -1,8 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5376,6 +5373,18 @@ copy_insn (rtx insn)
   copy_asm_operands_vector = 0;
   copy_asm_constraints_vector = 0;
   return copy_insn_1 (insn);
+}
+
+/* Return a copy of INSN that can be used in a SEQUENCE delay slot,
+   on that assumption that INSN itself remains in its original place.  */
+
+rtx
+copy_delay_slot_insn (rtx insn)
+{
+  /* Copy INSN with its rtx_code, all its notes, location etc.  */
+  insn = copy_rtx (insn);
+  INSN_UID (insn) = cur_insn_uid++;
+  return insn;
 }
 
 /* Initialize data structures and variables in this file
