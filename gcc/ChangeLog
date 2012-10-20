@@ -7,6 +7,9 @@
 	(steal_delay_list_from_target): Use copy_delay_slot_insn.
 	(fill_slots_from_thread, fill_simple_delay_slots): Likewise.
 
+	* final.c (shorten_branches): When optimizing, start with small
+	length and increase from there, and don't decrease lengths.
+
 2012-10-19  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (BUILT_IN_UNREACHABLE): Make ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST.
