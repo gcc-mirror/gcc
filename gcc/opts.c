@@ -829,10 +829,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
                            opts->x_param_values, opts_set->x_param_values);
 
-  /* This replaces set_Wunused.  */
-  /* Wunused-local-typedefs is enabled by -Wunused or -Wall.  */
-  if (opts->x_warn_unused_local_typedefs == -1)
-    opts->x_warn_unused_local_typedefs = opts->x_warn_unused;
 }
 
 #define LEFT_COLUMN	27
