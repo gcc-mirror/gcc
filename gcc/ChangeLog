@@ -1,5 +1,10 @@
 2012-10-20  Jan Hubicka  <jh@suse.cz>
 
+	* loop-unroll.c (decide_unroll_constant_iterations): Don't
+	perform unrolling for loops with low iterations bounds or estimates.
+
+2012-10-20  Jan Hubicka  <jh@suse.cz>
+
 	* loop-iv.c (iv_number_of_iterations): Record the upper bound
 	only if there are no further conditions on it.
 

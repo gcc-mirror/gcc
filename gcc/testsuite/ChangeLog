@@ -1,3 +1,7 @@
+2012-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/unroll-1.c: New testcase.
+
 2012-10-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54224
