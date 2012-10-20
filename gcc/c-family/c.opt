@@ -261,7 +261,7 @@ Wpsabi
 C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented
 
 Waddress
-C ObjC C++ ObjC++ Var(warn_address) Warning
+C ObjC C++ ObjC++ Var(warn_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious uses of memory addresses
 
 Wall
@@ -297,7 +297,7 @@ C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
 Warn about casts which discard qualifiers
 
 Wchar-subscripts
-C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning
+C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about subscripts whose type is \"char\"
 
 Wclobbered
@@ -319,10 +319,6 @@ Warn for implicit type conversions that may change a value
 Wconversion-null
 C++ ObjC++ Var(warn_conversion_null) Init(1) Warning
 Warn for converting NULL from/to a non-pointer type
-
-Wsign-conversion
-C ObjC C++ ObjC++ Var(warn_sign_conversion) Init(-1)
-Warn for implicit type conversions between signed and unsigned integers
 
 Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy) Warning
@@ -412,7 +408,7 @@ C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves
 
 Wimplicit
-C ObjC Var(warn_implicit) Init(-1) Warning
+C ObjC Var(warn_implicit) Warning LangEnabledBy(C ObjC,Wall)
 Warn about implicit declarations
 
 Wdouble-promotion
@@ -420,11 +416,11 @@ C ObjC C++ ObjC++ Var(warn_double_promotion) Warning
 Warn about implicit conversions from \"float\" to \"double\"
 
 Wimplicit-function-declaration
-C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning
+C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning LangEnabledBy(C ObjC,Wimplicit)
 Warn about implicit function declarations
 
 Wimplicit-int
-C ObjC Var(warn_implicit_int) Init(-1) Warning
+C ObjC Var(warn_implicit_int) Warning LangEnabledBy(C ObjC,Wimplicit)
 Warn when a declaration does not specify a type
 
 Wimport
@@ -475,7 +471,7 @@ C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers
 
 Wsizeof-pointer-memaccess
-C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning
+C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
@@ -506,8 +502,12 @@ C ObjC C++ ObjC++ Warning
 Warn about use of multi-character character constants
 
 Wnarrowing
-C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1)
+C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall)
 Warn about narrowing conversions within { } that are ill-formed in C++11
+
+Wnarrowing
+C ObjC C++ ObjC++ LangEnabledBy(C++ ObjC++,Wc++0x-compat)
+;
 
 Wnested-externs
 C ObjC Var(warn_nested_externs) Warning
@@ -562,7 +562,7 @@ C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
 Warn about packed bit-fields whose offset changed in GCC 4.4
 
 Wparentheses
-C ObjC C++ ObjC++ Var(warn_parentheses) Warning
+C ObjC C++ ObjC++ Var(warn_parentheses) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possibly missing parentheses
 
 Wpedantic
@@ -576,6 +576,14 @@ Warn when converting the type of pointers to member functions
 Wpointer-arith
 C ObjC C++ ObjC++ Var(warn_pointer_arith) Warning
 Warn about function pointer arithmetic
+
+Wpointer-sign
+C ObjC Var(warn_pointer_sign) Warning LangEnabledBy(C ObjC,Wall)
+Warn when a pointer differs in signedness in an assignment
+
+Wpointer-sign
+C ObjC LangEnabledBy(C ObjC,Wpedantic)
+;
 
 Wpointer-to-int-cast
 C ObjC Var(warn_pointer_to_int_cast) Init(1) Warning
@@ -602,7 +610,7 @@ C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code
 
 Wreturn-type
-C ObjC C++ ObjC++ Var(warn_return_type) Warning
+C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)
 
 Wselector
@@ -610,12 +618,20 @@ ObjC ObjC++ Var(warn_selector) Warning
 Warn if a selector has multiple methods
 
 Wsequence-point
-C ObjC C++ ObjC++ Var(warn_sequence_point) Warning
+C ObjC C++ ObjC++ Var(warn_sequence_point) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about possible violations of sequence point rules
 
 Wsign-compare
-C ObjC C++ ObjC++ Var(warn_sign_compare) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_sign_compare) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about signed-unsigned comparisons
+
+Wsign-compare
+C ObjC C++ ObjC++ EnabledBy(Wextra)
+;
+
+Wsign-conversion
+C ObjC C++ ObjC++ Var(warn_sign_conversion) LangEnabledBy(C ObjC,Wconversion)
+Warn for implicit type conversions between signed and unsigned integers
 
 Wsign-promo
 C++ ObjC++ Var(warn_sign_promo) Warning
@@ -673,6 +689,14 @@ Wundef
 C ObjC C++ ObjC++ Warning
 Warn if an undefined macro is used in an #if directive
 
+Wuninitialized
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+;
+
+Wmaybe-uninitialized
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+;
+
 Wunknown-pragmas
 C ObjC C++ ObjC++ Warning
 Warn about unrecognized pragmas
@@ -680,6 +704,10 @@ Warn about unrecognized pragmas
 Wunsuffixed-float-constants
 C ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants
+
+Wunused
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+; documented in common.opt
 
 Wunused-local-typedefs
 C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning EnabledBy(Wunused)
@@ -706,16 +734,12 @@ C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
 Warn if a variable length array is used
 
 Wvolatile-register-var
-C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning
+C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when a register variable is declared volatile
 
 Wwrite-strings
 C ObjC C++ ObjC++ Var(warn_write_strings) Warning
 In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.
-
-Wpointer-sign
-C ObjC Var(warn_pointer_sign) Init(-1) Warning
-Warn when a pointer differs in signedness in an assignment
 
 Wzero-as-null-pointer-constant
 C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
