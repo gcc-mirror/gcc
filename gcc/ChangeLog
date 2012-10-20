@@ -1,3 +1,8 @@
+2012-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* loop-iv.c (iv_number_of_iterations): Record the upper bound
+	only if there are no further conditions on it.
+
 2012-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
