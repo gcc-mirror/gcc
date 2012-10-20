@@ -1,3 +1,12 @@
+2012-10-20  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* emit-rtl.c (copy_delay_slot_insn): New function.
+	* emit-rtl.h (copy_delay_slot_insn): Declare.
+	* reorg.c: Include "emit-rtl.h".
+	(steal_delay_list_from_target): Use copy_delay_slot_insn.
+	(fill_slots_from_thread, fill_simple_delay_slots): Likewise.
+
 2012-10-19  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (BUILT_IN_UNREACHABLE): Make ATTR_CONST_NORETURN_NOTHROW_LEAF_LIST.
