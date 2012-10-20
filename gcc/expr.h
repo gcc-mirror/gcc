@@ -335,7 +335,7 @@ extern rtx emit_group_move_into_temps (rtx);
 extern void emit_group_store (rtx, rtx, tree, int);
 
 /* Copy BLKmode object from a set of registers.  */
-extern rtx copy_blkmode_from_reg (rtx, rtx, tree);
+extern void copy_blkmode_from_reg (rtx, rtx, tree);
 
 /* Mark REG as holding a parameter for the next CALL_INSN.
    Mode is TYPE_MODE of the non-promoted parameter, or VOIDmode.  */

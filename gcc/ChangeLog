@@ -1,3 +1,17 @@
+2012-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54315
+	* calls.c (expand_call): Don't deal specifically with BLKmode values
+	returned in naked registers.
+	* expr.h (copy_blkmode_from_reg): Adjust prototype.
+	* expr.c (copy_blkmode_from_reg): Rename first parameter into TARGET and
+	make it required.  Assert that SRCREG hasn't BLKmode.  Add a couple of 
+	short-circuits for common cases and be prepared for sub-word registers.
+	(expand_assignment): Call copy_blkmode_from_reg for BLKmode values
+	returned in naked registers.
+	(store_expr): Likewise.
+	(store_field): Likewise.
+
 2012-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* loop-unroll.c (decide_unroll_constant_iterations): Don't
