@@ -2593,8 +2593,10 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 ? iv0.base
 			 : mode_mmin);
 	  max = (up - down) / inc + 1;
-	  record_niter_bound (loop, double_int::from_uhwi (max),
-			      false, true);
+	  if (!desc->infinite
+	      && !desc->assumptions)
+	    record_niter_bound (loop, double_int::from_uhwi (max),
+			        false, true);
 
 	  if (iv0.step == const0_rtx)
 	    {
@@ -2806,15 +2808,19 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
       desc->const_iter = true;
       desc->niter = val & GET_MODE_MASK (desc->mode);
-      record_niter_bound (loop, double_int::from_uhwi (desc->niter),
-			  false, true);
+      if (!desc->infinite
+	  && !desc->assumptions)
+        record_niter_bound (loop, double_int::from_uhwi (desc->niter),
+			    false, true);
     }
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
       gcc_assert (max);
-      record_niter_bound (loop, double_int::from_uhwi (max),
-			  false, true);
+      if (!desc->infinite
+	  && !desc->assumptions)
+	record_niter_bound (loop, double_int::from_uhwi (max),
+			    false, true);
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life
