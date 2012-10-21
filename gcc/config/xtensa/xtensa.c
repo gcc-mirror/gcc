@@ -3133,7 +3133,6 @@ xtensa_expand_builtin (tree exp, rtx target,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  rtx arg;
 
   switch (fcode)
     {

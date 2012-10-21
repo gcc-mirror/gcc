@@ -1,3 +1,8 @@
+2012-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/xtensa/xtensa.c (xtensa_expand_builtin): Remove unused 'arg'
+	variable.
+
 2012-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54315
