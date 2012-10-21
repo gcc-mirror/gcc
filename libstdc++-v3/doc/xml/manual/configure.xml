@@ -38,7 +38,7 @@
 </para>
 <para>The canonical way to find out the configure options that are
    available for a given set of libstdc++ sources is to go to the
-   source directory and then type:<command>./configure --help</command>.
+   source directory and then type: <command>./configure --help</command>.
 </para>
 
 <variablelist>
@@ -107,15 +107,20 @@
 	(IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
 	'gnu' to specify a model based on functionality from the GNU C
 	library (langinfo/iconv/gettext) (from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sources.redhat.com/glibc/">glibc</link>, the GNU C
-	library), or 'generic' to use a generic "C"
-	abstraction which consists of "C" locale info.
+	library), 'generic' to use a generic "C" abstraction which consists
+	of "C" locale info, 'newlib' to specify the Newlib C library model
+	which only differs from the 'generic' model in the handling of
+	ctype, or 'darwin' which omits the <type>wchar_t</type> specializations
+	needed by the 'generic' model.
      </para>
 
-     <para>If not explicitly specified, the configure proccess tries
+     <para>If not explicitly specified, the configure process tries
       to guess the most suitable package from the choices above. The
       default is 'generic'. On glibc-based systems of sufficient
-      vintage (2.3 and newer), 'gnu' is automatically selected. This option
-      can change the library ABI.
+      vintage (2.3 and newer), 'gnu' is automatically selected. On newlib-based
+      systems (<code>'--with_newlib=yes'</code>) and OpenBSD, 'newlib' is
+      automatically selected. On Mac OS X 'darwin' is automatically selected.
+      This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 
@@ -181,9 +186,9 @@
 	and of the nanosleep and sched_yield functions, used in the
 	implementation of [thread.thread.this] of the 2011 ISO C++ standard.
 	The choice OPTION=yes checks for the availability of the facilities
-	in libc and libposix4.  In case of need the latter is also linked
+	in libc and libposix4.  In case it's needed the latter is also linked
 	to libstdc++ as part of the build process.  OPTION=rt also searches
-	(and, in case, links) librt.   Note that the latter is not always
+	(and, if needed, links) librt.   Note that the latter is not always
 	desirable because, in glibc, for example, in turn it triggers the
 	linking of libpthread too, which activates locking, a large overhead
 	for single-thread programs.  OPTION=no skips the tests completely.
@@ -249,7 +254,7 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-c99</code></term>
- <listitem><para>The "long long" type was introduced in C99, along
+ <listitem><para>The <type>long long</type> type was introduced in C99, along
 	with many other functions for wide characters, and math
 	classification macros, etc.  If enabled, all C99 functions not
 	specified by the C++ standard will be put into <code>namespace
@@ -264,7 +269,7 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-wchar_t</code>[default]</term>
- <listitem><para>Template specializations for the "wchar_t" type are
+ <listitem><para>Template specializations for the <type>wchar_t</type> type are
 	required for wide character conversion support.  Disabling
 	wide character specializations may be expedient for initial
 	porting efforts, but builds only a subset of what is required by
@@ -274,7 +279,7 @@
  </listitem></varlistentry>
 
  <varlistentry><term><code>--enable-long-long  </code></term>
- <listitem><para>The "long long" type was introduced in C99.  It is
+ <listitem><para>The <type>long long</type> type was introduced in C99.  It is
 	provided as a GNU extension to C++98 in g++.  This flag builds
 	support for "long long" into the library (specialized
 	templates and the like for iostreams).  This option is on by default:
@@ -351,7 +356,7 @@
  <listitem><para>Use extern template to pre-instantiate all required
  	specializations for certain types defined in the standard libraries. 
 	These types include <classname>string</classname> and dependents like
-	<classname>char_traits</classname>, the templateized io classes,
+	<classname>char_traits</classname>, the templatized IO classes,
 	<classname>allocator</classname>, and others.  
 	Disabling means that implicit
 	template generation will be used when compiling these types.  By

@@ -1,3 +1,9 @@
+2012-10-22  Yufeng Zhang  <yufeng.zhang@arm.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/configure.xml (--enable-clocale): Document the
+	'newlib' and 'darwin' options. Minor stylistic improvements.
+
 2012-10-21  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/profile/map.h (map::emplace_hint): Remove invalid
