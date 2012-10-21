@@ -1,3 +1,8 @@
+2012-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/atomic1.ads: XFAIL on MIPS.
+	* gnat.dg/specs/addr1.ads: Likewise.
+
 2012-10-19  Zhenqiang Chen <zhenqiang.chen@linaro.org>
 
 	Backport from mainline
