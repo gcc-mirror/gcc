@@ -341,6 +341,7 @@ GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/libgfortran.h \
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h $(GGC_H) \
     fortran/iso-c-binding.def fortran/iso-fortran-env.def
 
+CFLAGS-fortran/cpp.o += $(TARGET_SYSTEM_ROOT_DEFINE)
 fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-f95-lang.h gtype-fortran.h $(CGRAPH_H) $(TARGET_H) fortran/cpp.h \
   $(BUILTINS_DEF) fortran/types.def \
