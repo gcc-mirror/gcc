@@ -32,4 +32,5 @@ configure2()
 main()
 {
   configure2();
+  __builtin_exit (0);
 }

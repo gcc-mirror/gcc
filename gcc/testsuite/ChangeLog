@@ -1,3 +1,7 @@
+2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/webizer.c (main): Add missing exit call.
+
 2012-10-21  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54465
