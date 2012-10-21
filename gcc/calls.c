@@ -3277,9 +3277,6 @@ expand_call (tree exp, rtx target, int ignore)
 	  else
 	    emit_group_store (target, valreg, rettype,
 			      int_size_in_bytes (rettype));
-
-	  /* We can not support sibling calls for this case.  */
-	  sibcall_failure = 1;
 	}
       else if (target
 	       && GET_MODE (target) == TYPE_MODE (rettype)
