@@ -1,3 +1,9 @@
+2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/crti.S: Mark program and data addresses using PRELD.
+	Remove typo'd and unnecessary alignment-LOC for .data.  Remove
+	no-longer-needed LDBU insns.
+
 2012-10-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
 
 	* config.host
