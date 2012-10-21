@@ -1,3 +1,8 @@
+2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/23_containers/bitset/45713.cc: Skip for mmix-*-*.
+	Tweak sizetype-related comment.
+
 2012-10-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/scoped_allocator: Avoid badname.
