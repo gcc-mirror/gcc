@@ -241,7 +241,7 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", RTX_EXTRA)
 
    The third, fourth and fifth operands are only valid when
    CASE_VECTOR_SHORTEN_MODE is defined, and only in an optimizing
-   compilations.  */
+   compilation.  */
 
 DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEee0", RTX_EXTRA)
 

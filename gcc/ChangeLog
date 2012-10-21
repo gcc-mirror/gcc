@@ -1,3 +1,7 @@
+2012-10-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* rtl.def (ADDR_DIFF_VEC): Fix comment typo.
+
 2012-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/44194
