@@ -1,3 +1,10 @@
+2012-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54725
+	* Make-lang.in (CFLAGS-cpp.o): Use TARGET_SYSTEM_ROOT_DEFINE.
+	* cpp.o (gfc_cpp_init_options): Use it for
+	setting gfc_cpp_option.sysroot.
+
 2012-10-21  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54465

@@ -38,6 +38,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "cppbuiltin.h"
 #include "mkdeps.h"
 
+#ifndef TARGET_SYSTEM_ROOT
+# define TARGET_SYSTEM_ROOT NULL
+#endif
+
 #ifndef TARGET_CPU_CPP_BUILTINS
 # define TARGET_CPU_CPP_BUILTINS()
 #endif
@@ -267,7 +271,7 @@ gfc_cpp_init_options (unsigned int decoded_options_count,
 
   gfc_cpp_option.multilib = NULL;
   gfc_cpp_option.prefix = NULL;
-  gfc_cpp_option.sysroot = NULL;
+  gfc_cpp_option.sysroot = TARGET_SYSTEM_ROOT;
 
   gfc_cpp_option.deferred_opt = XNEWVEC (gfc_cpp_deferred_opt_t,
 					 decoded_options_count);

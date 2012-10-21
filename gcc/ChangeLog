@@ -1,3 +1,8 @@
+2012-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54725
+	* Makefile.in (TARGET_SYSTEM_ROOT_DEFINE): New.
+
 2012-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/xtensa/xtensa.c (xtensa_expand_builtin): Remove unused 'arg'
