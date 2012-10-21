@@ -1,3 +1,8 @@
+2012-10-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/map.h (map::emplace_hint): Remove invalid
+	parenthesis.
+
 2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* testsuite/23_containers/bitset/45713.cc: Skip for mmix-*-*.
