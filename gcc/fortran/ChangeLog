@@ -1,3 +1,13 @@
+2012-10-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54465
+	* lang.opt (Wextra):  Add.
+	* invoke.texi:  Document that -Wc-binding-type, -Wconversion
+	and -Wline-truncation are implied by -Wall.  Document that
+	-Wcompare-reals is implied by -Wextra.  Document -Wextra.
+	* options.c (set_Wextra):  New function.
+	(gfc_handle_option):  Handle -Wextra.
+
 2012-10-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54224

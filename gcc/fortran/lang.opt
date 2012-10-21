@@ -230,6 +230,10 @@ Wconversion-extra
 Fortran Warning
 Warn about most implicit conversions
 
+Wextra
+Fortran Warning
+Print extra (possibly unwanted) warnings
+
 Wfunction-elimination
 Fortran Warning
 Warn about function call elimination

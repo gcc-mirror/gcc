@@ -1,3 +1,8 @@
+2012-10-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54465
+	* gfortran.dg/wextra_1.f:  New test.
+
 2012-10-20  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-prof/unroll-1.c: New testcase.
