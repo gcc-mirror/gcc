@@ -23780,7 +23780,8 @@ memory_address_length (rtx addr, bool lea)
 
   /*  If this is not LEA instruction, add the length of addr32 prefix.  */
   if (TARGET_64BIT && !lea
-      && ((parts.base && GET_MODE (parts.base) == SImode)
+      && (SImode_address_operand (addr, VOIDmode)
+	  || (parts.base && GET_MODE (parts.base) == SImode)
 	  || (parts.index && GET_MODE (parts.index) == SImode)))
     len++;
 
