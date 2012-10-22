@@ -1508,7 +1508,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   the VAR_DECL.  Suppress debug info for the latter but make sure it
 	   will live on the stack so that it can be accessed from within the
 	   debugger through the PARM_DECL.  */
-	if (kind == E_Out_Parameter && definition && !optimize && debug_info_p)
+	if (kind == E_Out_Parameter
+	    && definition
+	    && debug_info_p
+	    && !optimize
+	    && !flag_generate_lto)
 	  {
 	    tree param = create_param_decl (gnu_entity_name, gnu_type, false);
 	    gnat_pushdecl (param, gnat_entity);
