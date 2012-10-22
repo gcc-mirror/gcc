@@ -1,5 +1,13 @@
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Force
+	BLKmode on the type if it is passed by reference.
+	<E_Array_Subtype>: Likewise.
+	<E_Record_Type>: Guard the call to Is_By_Reference_Type predicate.
+	<E_Record_Subtype>: Likewise.
+
+2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use gnat_type_for_size
 	directly to obtain an unsigned version of the base type.
 
