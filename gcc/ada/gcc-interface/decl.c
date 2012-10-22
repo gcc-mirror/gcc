@@ -4142,7 +4142,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_return_type = void_type_node;
 	else
 	  {
-	    gnu_return_type = gnat_to_gnu_type (gnat_return_type);
+	    /* Ada 2012 (AI05-0151): Incomplete types coming from a limited
+	       context may now appear in parameter and result profiles.  If
+	       we are only annotating types, break circularities here.  */
+	    if (type_annotate_only
+		&& IN (Ekind (gnat_return_type), Incomplete_Kind)
+	        && From_With_Type (gnat_return_type)
+		&& In_Extended_Main_Code_Unit
+		   (Non_Limited_View (gnat_return_type))
+		&& !present_gnu_tree (Non_Limited_View (gnat_return_type)))
+	      gnu_return_type = ptr_void_type_node;
+	    else
+	      gnu_return_type = gnat_to_gnu_type (gnat_return_type);
 
 	    /* If this function returns by reference, make the actual return
 	       type the pointer type and make a note of that.  */
@@ -4238,11 +4249,30 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     Present (gnat_param);
 	     gnat_param = Next_Formal_With_Extras (gnat_param), parmnum++)
 	  {
+	    Entity_Id gnat_param_type = Etype (gnat_param);
 	    tree gnu_param_name = get_entity_name (gnat_param);
-	    tree gnu_param_type = gnat_to_gnu_type (Etype (gnat_param));
-	    tree gnu_param, gnu_field;
-	    bool copy_in_copy_out = false;
+	    tree gnu_param_type, gnu_param, gnu_field;
 	    Mechanism_Type mech = Mechanism (gnat_param);
+  	    bool copy_in_copy_out = false, fake_param_type;
+
+	    /* Ada 2012 (AI05-0151): Incomplete types coming from a limited
+	       context may now appear in parameter and result profiles.  If
+	       we are only annotating types, break circularities here.  */
+	    if (type_annotate_only
+		&& IN (Ekind (gnat_param_type), Incomplete_Kind)
+	        && From_With_Type (Etype (gnat_param_type))
+		&& In_Extended_Main_Code_Unit
+		   (Non_Limited_View (gnat_param_type))
+		&& !present_gnu_tree (Non_Limited_View (gnat_param_type)))
+	      {
+		gnu_param_type = ptr_void_type_node;
+		fake_param_type = true;
+	      }
+	    else
+	      {
+		gnu_param_type = gnat_to_gnu_type (gnat_param_type);
+		fake_param_type = false;
+	      }
 
 	    /* Builtins are expanded inline and there is no real call sequence
 	       involved.  So the type expected by the underlying expander is
@@ -4280,10 +4310,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		mech = Default;
 	      }
 
-	    gnu_param
-	      = gnat_to_gnu_param (gnat_param, mech, gnat_entity,
-				   Has_Foreign_Convention (gnat_entity),
-				   &copy_in_copy_out);
+	    /* Do not call gnat_to_gnu_param for a fake parameter type since
+	       it will try to use the real type again.  */
+	    if (fake_param_type)
+	      {
+		if (Ekind (gnat_param) == E_Out_Parameter)
+		  gnu_param = NULL_TREE;
+		else
+		  {
+		    gnu_param
+		      = create_param_decl (gnu_param_name, gnu_param_type,
+					   false);
+		    Set_Mechanism (gnat_param,
+				   mech == Default ? By_Copy : mech);
+		    if (Ekind (gnat_param) == E_In_Out_Parameter)
+		      copy_in_copy_out = true;
+		  }
+	      }
+	    else
+	      gnu_param
+		= gnat_to_gnu_param (gnat_param, mech, gnat_entity,
+				     Has_Foreign_Convention (gnat_entity),
+				     &copy_in_copy_out);
 
 	    /* We are returned either a PARM_DECL or a type if no parameter
 	       needs to be passed; in either case, adjust the type.  */
