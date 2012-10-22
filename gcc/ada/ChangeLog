@@ -6,6 +6,8 @@
 	<E_Record_Type>: Guard the call to Is_By_Reference_Type predicate.
 	<E_Record_Subtype>: Likewise.
 
+	* gcc-interface/Makefile.in: Remove outdated comment.
+
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (rest_of_record_type_compilation): Simplify and
