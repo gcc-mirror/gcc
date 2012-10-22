@@ -137,6 +137,10 @@
        (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)) <= GET_MODE_BITSIZE (mode)
 	&& ((unsigned HOST_WIDE_INT) INTVAL (op)) > 0")))
 
+(define_predicate "ldrd_strd_offset_operand"
+  (and (match_operand 0 "const_int_operand")
+       (match_test "TARGET_LDRD && offset_ok_for_ldrd_strd (INTVAL (op))")))
+
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))

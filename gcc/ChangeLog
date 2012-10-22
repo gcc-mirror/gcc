@@ -1,3 +1,17 @@
+2012-10-22  Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/arm-protos.h (offset_ok_for_ldrd_strd): New
+        declaration.
+        (operands_ok_ldrd_strd): Likewise.
+        * config/arm/arm.c (offset_ok_for_ldrd_strd): New function.
+        (operands_ok_ldrd_strd): Likewise.
+        * config/arm/arm.md (thumb2_ldrd, thumb2_ldrd_base): New patterns.
+        (thumb2_ldrd_base_neg): Likewise.
+        (thumb2_strd, thumb2_strd_base, thumb_strd_base_neg): Likewise.
+        * predicates.md (ldrd_strd_offset_operand): New predicate.
+        * config/arm/constraints.md (Do): New constraint.
+
 2012-10-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("nonlocal_goto_receiver"): Refer to the

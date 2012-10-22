@@ -31,7 +31,7 @@
 ;; 'H' was previously used for FPA.
 
 ;; The following multi-letter normal constraints have been used:
-;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, Dl, DL, Dv, Dy, Di, Dt, Dz
+;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, Dl, DL, Do, Dv, Dy, Di, Dt, Dz
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
 ;; in Thumb-2 state: Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py
 
@@ -278,6 +278,12 @@
  (and (match_code "const_vector")
       (match_test "TARGET_32BIT
 		   && imm_for_neon_inv_logic_operand (op, GET_MODE (op))")))
+
+(define_constraint "Do"
+ "@internal
+  In ARM/Thumb2 state valid offset for an ldrd/strd instruction."
+ (and (match_code "const_int")
+      (match_test "TARGET_LDRD && offset_ok_for_ldrd_strd (ival)")))
 
 (define_constraint "Dv"
  "@internal
