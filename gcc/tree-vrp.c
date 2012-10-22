@@ -819,8 +819,19 @@ update_value_range (const_tree var, value_range_t *new_vr)
 	   || !vrp_bitmap_equal_p (old_vr->equiv, new_vr->equiv);
 
   if (is_new)
-    set_value_range (old_vr, new_vr->type, new_vr->min, new_vr->max,
-	             new_vr->equiv);
+    {
+      /* Do not allow transitions up the lattice.  The following
+         is slightly more awkward than just new_vr->type < old_vr->type
+	 because VR_RANGE and VR_ANTI_RANGE need to be considered
+	 the same.  We may not have is_new when transitioning to
+	 UNDEFINED or from VARYING.  */
+      if (new_vr->type == VR_UNDEFINED
+	  || old_vr->type == VR_VARYING)
+	set_value_range_to_varying (old_vr);
+      else
+	set_value_range (old_vr, new_vr->type, new_vr->min, new_vr->max,
+			 new_vr->equiv);
+    }
 
   BITMAP_FREE (new_vr->equiv);
 

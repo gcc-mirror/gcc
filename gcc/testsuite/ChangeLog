@@ -1,3 +1,8 @@
+2012-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55011
+	* gcc.dg/torture/pr55011.c: New testcase.
+
 2012-10-22  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* gcc.target/arm/pr40457-1.c: Adjust expected output.
