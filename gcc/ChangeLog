@@ -1,3 +1,11 @@
+2012-10-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-10-22 trunk r192685.
+	* doc/invoke.texi (AVR Options): Document __AVR_ARCH__.
+	Note __AVR_<device>__ is not defined for cores.
+	Don't point to --help=target.
+	Order --mcu= documentation according to trunk:/gcc/doc/avr-mmcu.texi.
+
 2012-10-19  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
