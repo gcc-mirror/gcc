@@ -2402,7 +2402,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 	    {
 	      if (TYPE_PRECISION (gnu_base_type)
 		  > TYPE_PRECISION (size_type_node))
-		gnu_base_type = gnat_unsigned_type (gnu_base_type);
+		gnu_base_type
+		  = gnat_type_for_size (TYPE_PRECISION (gnu_base_type), 1);
 	      else
 		gnu_base_type = size_type_node;
 

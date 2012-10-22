@@ -1,3 +1,8 @@
+2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/modular4.adb: New test.
+	* gnat.dg/modular4_pkg.ads: New helper.
+
 2012-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/atomic1.ads: XFAIL on MIPS.
