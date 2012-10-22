@@ -121,6 +121,7 @@ extern int dump_switch_p (const char *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
 extern bool dump_kind_p (int);
+extern inline bool dump_enabled_p (void);
 extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void dump_printf_loc (int, source_location,
                              const char *, ...) ATTRIBUTE_PRINTF_3;
