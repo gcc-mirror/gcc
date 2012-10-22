@@ -1,5 +1,15 @@
 2012-10-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/mmix/mmix.md ("nonlocal_goto_receiver"): Refer to the
+	frame-pointer as an operand.
+	("*nonlocal_goto_receiver_expanded"): Ditto.  Use
+	mmix_output_register_setting instead of naked output_asm_insn for
+	the offset from the frame-pointer to the saved rO.
+	* config/mmix/mmix.c (mmix_output_register_setting): Emit NEGU for
+	values -255..0.
+	* config/mmix/predicates.md ("frame_pointer_operand"): New.
+	* config/mmix/constraints.md ("Yf"): New.
+
 	* stmt.c (expand_nl_goto_receiver): Remove almost-copy of
 	expand_builtin_setjmp_receiver.
 	(expand_label): Adjust, call expand_builtin_setjmp_receiver
