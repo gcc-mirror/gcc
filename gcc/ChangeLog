@@ -1,3 +1,9 @@
+2012-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/55021
+	* tree-streamer-in.c (unpack_ts_int_cst_value_fields): Remove
+	bogus truncations.
+
 2012-10-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (memory_address_length): Assert that non-null
