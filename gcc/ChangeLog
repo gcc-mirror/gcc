@@ -1,3 +1,9 @@
+2012-10-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Document __AVR_ARCH__.
+	Note __AVR_<device>__ is not defined for cores.
+	Don't point to --help=target.
+
 2012-10-22  Sameera Deshpande  <sameera.deshpande@arm.com>
 	    Greta Yorsh  <Greta.Yorsh@arm.com>
 
