@@ -1,3 +1,9 @@
+2012-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55011
+	* tree-vrp.c (update_value_range): For invalid lattice transitions
+	drop to VARYING.
+
 2012-10-22  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Avoid subreg'ing
