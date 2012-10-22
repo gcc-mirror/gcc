@@ -1,3 +1,14 @@
+2012-10-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* stmt.c (expand_nl_goto_receiver): Remove almost-copy of
+	expand_builtin_setjmp_receiver.
+	(expand_label): Adjust, call expand_builtin_setjmp_receiver
+	with NULL for the label parameter.
+	* builtins.c (expand_builtin_setjmp_receiver): Don't clobber
+	the frame-pointer.  Adjust comments.
+	[HAVE_builtin_setjmp_receiver]: Emit builtin_setjmp_receiver
+	only if LABEL is non-NULL.
+
 2012-10-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (memory_address_length): Add new bool
