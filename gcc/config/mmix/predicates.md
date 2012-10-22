@@ -161,3 +161,14 @@
   (if_then_else (match_test "reload_in_progress || reload_completed")
     (match_test "strict_memory_address_p (Pmode, op)")
     (match_test "memory_address_p (Pmode, op)")))
+
+(define_predicate "frame_pointer_operand"
+  (ior
+   (and
+    (match_code "reg")
+    (match_test "op == hard_frame_pointer_rtx || op == frame_pointer_rtx"))
+   (and
+    (match_code "plus")
+    (match_code "reg" "0")
+    (match_code "const_int" "1")
+    (match_test "XEXP (op, 0) == stack_pointer_rtx"))))
