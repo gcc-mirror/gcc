@@ -2248,6 +2248,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
+
+	    /* If it is passed by reference, force BLKmode to ensure that
+	       objects of this type will always be put in memory.  */
+	    if (TYPE_MODE (tem) != BLKmode
+		&& Is_By_Reference_Type (gnat_entity))
+	      SET_TYPE_MODE (tem, BLKmode);
 	  }
 
 	/* If an alignment is specified, use it if valid.  But ignore it
@@ -2588,6 +2594,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
+
+	      /* See the E_Array_Type case for the rationale.  */
+	      if (TYPE_MODE (gnu_type) != BLKmode
+		  && Is_By_Reference_Type (gnat_entity))
+		SET_TYPE_MODE (gnu_type, BLKmode);
 	    }
 
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
@@ -3161,7 +3172,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If it is passed by reference, force BLKmode to ensure that objects
 	   of this type will always be put in memory.  */
-	if (Is_By_Reference_Type (gnat_entity))
+	if (TYPE_MODE (gnu_type) != BLKmode
+	    && Is_By_Reference_Type (gnat_entity))
 	  SET_TYPE_MODE (gnu_type, BLKmode);
 
 	/* We used to remove the associations of the discriminants and _Parent
@@ -3527,12 +3539,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 modify it below.  */
 	      finish_record_type (gnu_type, nreverse (gnu_field_list), 2,
 				  false);
+	      compute_record_mode (gnu_type);
 
 	      /* See the E_Record_Type case for the rationale.  */
-	      if (Is_By_Reference_Type (gnat_entity))
+	      if (TYPE_MODE (gnu_type) != BLKmode
+		  && Is_By_Reference_Type (gnat_entity))
 		SET_TYPE_MODE (gnu_type, BLKmode);
-	      else
-		compute_record_mode (gnu_type);
 
 	      TYPE_VOLATILE (gnu_type) = Treat_As_Volatile (gnat_entity);
 
