@@ -1,3 +1,8 @@
+2012-10-22  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Avoid subreg'ing
+	VFP D registers in big-endian mode.
+
 2012-10-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Options): Document __AVR_ARCH__.
