@@ -1,5 +1,10 @@
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use gnat_type_for_size
+	directly to obtain an unsigned version of the base type.
+
+2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Out_Parameter>: Do not
 	generate the special PARM_DECL for an Out parameter in LTO mode.
 
