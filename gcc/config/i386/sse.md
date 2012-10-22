@@ -21,7 +21,8 @@
 (define_c_enum "unspec" [
   ;; SSE
   UNSPEC_MOVNT
-  UNSPEC_MOVU
+  UNSPEC_LOADU
+  UNSPEC_STOREU
 
   ;; SSE3
   UNSPEC_LDDQU
@@ -586,12 +587,12 @@
   DONE;
 })
 
-(define_insn "<sse>_movu<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VF 0 "nonimmediate_operand" "=x,m")
+(define_insn "<sse>_loadu<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:VF 0 "register_operand" "=x")
 	(unspec:VF
-	  [(match_operand:VF 1 "nonimmediate_operand" "xm,x")]
-	  UNSPEC_MOVU))]
-  "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+	  [(match_operand:VF 1 "memory_operand" "m")]
+	  UNSPEC_LOADU))]
+  "TARGET_SSE"
 {
   switch (get_attr_mode (insn))
     {
@@ -618,11 +619,79 @@
 	      ]
 	      (const_string "<MODE>")))])
 
-(define_insn "<sse2>_movdqu<avxsizesuffix>"
-  [(set (match_operand:VI1 0 "nonimmediate_operand" "=x,m")
-	(unspec:VI1 [(match_operand:VI1 1 "nonimmediate_operand" "xm,x")]
-		    UNSPEC_MOVU))]
-  "TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+(define_insn "<sse>_storeu<ssemodesuffix><avxsizesuffix>"
+  [(set (match_operand:VF 0 "memory_operand" "=m")
+	(unspec:VF
+	  [(match_operand:VF 1 "register_operand" "x")]
+	  UNSPEC_STOREU))]
+  "TARGET_SSE"
+{
+  switch (get_attr_mode (insn))
+    {
+    case MODE_V8SF:
+    case MODE_V4SF:
+      return "%vmovups\t{%1, %0|%0, %1}";
+    default:
+      return "%vmovu<ssemodesuffix>\t{%1, %0|%0, %1}";
+    }
+}
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set (attr "mode")
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "<ssePSmode>")
+	       (and (eq_attr "alternative" "1")
+		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+		 (const_string "<ssePSmode>")
+	       (match_test "TARGET_AVX")
+		 (const_string "<MODE>")
+	       (match_test "optimize_function_for_size_p (cfun)")
+		 (const_string "V4SF")
+	      ]
+	      (const_string "<MODE>")))])
+
+(define_insn "<sse2>_loaddqu<avxsizesuffix>"
+  [(set (match_operand:VI1 0 "register_operand" "=x")
+	(unspec:VI1 [(match_operand:VI1 1 "memory_operand" "m")]
+		    UNSPEC_LOADU))]
+  "TARGET_SSE2"
+{
+  switch (get_attr_mode (insn))
+    {
+    case MODE_V8SF:
+    case MODE_V4SF:
+      return "%vmovups\t{%1, %0|%0, %1}";
+    default:
+      return "%vmovdqu\t{%1, %0|%0, %1}";
+    }
+}
+  [(set_attr "type" "ssemov")
+   (set_attr "movu" "1")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (match_test "TARGET_AVX")
+     (const_string "*")
+     (const_string "1")))
+   (set_attr "prefix" "maybe_vex")
+   (set (attr "mode")
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "<ssePSmode>")
+	       (and (eq_attr "alternative" "1")
+		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+		 (const_string "<ssePSmode>")
+	       (match_test "TARGET_AVX")
+		 (const_string "<sseinsnmode>")
+	       (match_test "optimize_function_for_size_p (cfun)")
+	         (const_string "V4SF")
+	      ]
+	      (const_string "<sseinsnmode>")))])
+
+(define_insn "<sse2>_storedqu<avxsizesuffix>"
+  [(set (match_operand:VI1 0 "memory_operand" "=m")
+	(unspec:VI1 [(match_operand:VI1 1 "register_operand" "x")]
+		    UNSPEC_STOREU))]
+  "TARGET_SSE2"
 {
   switch (get_attr_mode (insn))
     {
@@ -9307,7 +9376,7 @@
 	   (match_operand:SI 3 "register_operand" "a")
 	   (unspec:V16QI
 	     [(match_operand:V16QI 4 "memory_operand" "m")]
-	     UNSPEC_MOVU)
+	     UNSPEC_LOADU)
 	   (match_operand:SI 5 "register_operand" "d")
 	   (match_operand:SI 6 "const_0_to_255_operand" "n")]
 	  UNSPEC_PCMPESTR))
@@ -9315,7 +9384,7 @@
 	(unspec:V16QI
 	  [(match_dup 2)
 	   (match_dup 3)
-	   (unspec:V16QI [(match_dup 4)] UNSPEC_MOVU)
+	   (unspec:V16QI [(match_dup 4)] UNSPEC_LOADU)
 	   (match_dup 5)
 	   (match_dup 6)]
 	  UNSPEC_PCMPESTR))
@@ -9323,7 +9392,7 @@
 	(unspec:CC
 	  [(match_dup 2)
 	   (match_dup 3)
-	   (unspec:V16QI [(match_dup 4)] UNSPEC_MOVU)
+	   (unspec:V16QI [(match_dup 4)] UNSPEC_LOADU)
 	   (match_dup 5)
 	   (match_dup 6)]
 	  UNSPEC_PCMPESTR))]
@@ -9498,19 +9567,19 @@
 	  [(match_operand:V16QI 2 "register_operand" "x")
 	   (unspec:V16QI
 	     [(match_operand:V16QI 3 "memory_operand" "m")]
-	     UNSPEC_MOVU)
+	     UNSPEC_LOADU)
 	   (match_operand:SI 4 "const_0_to_255_operand" "n")]
 	  UNSPEC_PCMPISTR))
    (set (match_operand:V16QI 1 "register_operand" "=Yz")
 	(unspec:V16QI
 	  [(match_dup 2)
-	   (unspec:V16QI [(match_dup 3)] UNSPEC_MOVU)
+	   (unspec:V16QI [(match_dup 3)] UNSPEC_LOADU)
 	   (match_dup 4)]
 	  UNSPEC_PCMPISTR))
    (set (reg:CC FLAGS_REG)
 	(unspec:CC
 	  [(match_dup 2)
-	   (unspec:V16QI [(match_dup 3)] UNSPEC_MOVU)
+	   (unspec:V16QI [(match_dup 3)] UNSPEC_LOADU)
 	   (match_dup 4)]
 	  UNSPEC_PCMPISTR))]
   "TARGET_SSE4_2

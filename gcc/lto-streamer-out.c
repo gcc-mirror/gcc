@@ -372,9 +372,10 @@ lto_output_tree (struct output_block *ob, tree expr,
       return;
     }
 
-  /* INTEGER_CST nodes are special because they need their original type
+  /* Shared INTEGER_CST nodes are special because they need their original type
      to be materialized by the reader (to implement TYPE_CACHED_VALUES).  */
-  if (TREE_CODE (expr) == INTEGER_CST)
+  if (TREE_CODE (expr) == INTEGER_CST
+      && !TREE_OVERFLOW (expr))
     {
       streamer_write_integer_cst (ob, expr, ref_p);
       return;

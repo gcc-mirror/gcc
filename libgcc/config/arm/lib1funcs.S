@@ -109,6 +109,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __ARM_ARCH__ 7
 #endif
 
+#if defined(__ARM_ARCH_8A__)
+# define __ARM_ARCH__ 8
+#endif
+
 #ifndef __ARM_ARCH__
 #error Unable to determine architecture.
 #endif

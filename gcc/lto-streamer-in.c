@@ -1086,9 +1086,9 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
 	 the code and class.  */
       result = streamer_get_builtin_tree (ib, data_in);
     }
-  else if (tag == lto_tree_code_to_tag (INTEGER_CST))
+  else if (tag == LTO_integer_cst)
     {
-      /* For integer constants we only need the type and its hi/low
+      /* For shared integer constants we only need the type and its hi/low
 	 words.  */
       result = streamer_read_integer_cst (ib, data_in);
     }

@@ -665,6 +665,22 @@ as follows, having the output control string start with a @samp{@@}:
 @end group
 @end smallexample
 
+If you just need a little bit of C code in one (or a few) alternatives,
+you can use @samp{*} inside of a @samp{@@} multi-alternative template:
+
+@smallexample
+@group
+(define_insn ""
+  [(set (match_operand:SI 0 "general_operand" "=r,<,m")
+        (const_int 0))]
+  ""
+  "@@
+   clrreg %0
+   * return stack_mem_p (operands[0]) ? \"push 0\" : \"clrmem %0\";
+   clrmem %0")
+@end group
+@end smallexample
+
 @node Predicates
 @section Predicates
 @cindex predicates
@@ -5501,7 +5517,9 @@ iterations as a @code{const_int} or @code{const0_rtx} if this cannot be
 determined until run-time; operand 2 is the actual or estimated maximum
 number of iterations as a @code{const_int}; operand 3 is the number of
 enclosed loops as a @code{const_int} (an innermost loop has a value of
-1); operand 4 is the label to jump to if the register is nonzero.
+1); operand 4 is the label to jump to if the register is nonzero;
+operand 5 is const1_rtx if the loop in entered at its top, const0_rtx
+otherwise.
 @xref{Looping Patterns}.
 
 This optional instruction pattern should be defined for machines with

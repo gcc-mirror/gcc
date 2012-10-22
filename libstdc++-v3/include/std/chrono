@@ -250,7 +250,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	// 20.11.5.1 construction / copy / destroy
 	constexpr duration() = default;
 
-	constexpr duration(const duration&) = default;
+	// NB: Make constexpr implicit. This cannot be explicitly
+	// constexpr, as any UDT that is not a literal type with a
+	// constexpr copy constructor will be ill-formed.
+	duration(const duration&) = default;
 
 	template<typename _Rep2, typename = typename
 	       enable_if<is_convertible<_Rep2, rep>::value

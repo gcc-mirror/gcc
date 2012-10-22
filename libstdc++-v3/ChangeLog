@@ -1,3 +1,181 @@
+2012-10-22  Yufeng Zhang  <yufeng.zhang@arm.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/configure.xml (--enable-clocale): Document the
+	'newlib' and 'darwin' options. Minor stylistic improvements.
+
+2012-10-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/map.h (map::emplace_hint): Remove invalid
+	parenthesis.
+
+2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/23_containers/bitset/45713.cc: Skip for mmix-*-*.
+	Tweak sizetype-related comment.
+
+2012-10-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/scoped_allocator: Avoid badname.
+
+2012-10-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update.
+
+2012-10-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/scoped_allocator (__outermost_alloc_traits): Define.
+	(scoped_allocator_adaptor::destroy): Use it.
+	(scoped_allocator_adaptor::construct): Likewise. Overload for
+	piecewise construction of std::pair objects.
+	* testsuite/20_util/scoped_allocator/2.cc: New.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+
+2012-10-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h: Add C++11 allocator support.
+	* include/bits/forward_list.tcc: Likewise.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* testsuite/23_containers/forward_list/allocator/copy.cc: New.
+	* testsuite/23_containers/forward_list/allocator/copy_assign.cc: New.
+	* testsuite/23_containers/forward_list/allocator/minimal.cc: New.
+	* testsuite/23_containers/forward_list/allocator/move_assign.cc: New.
+	* testsuite/23_containers/forward_list/allocator/noexcept.cc: New.
+	* testsuite/23_containers/forward_list/allocator/swap.cc: New.
+
+2012-10-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (_Debug_msg_id): Add
+	__msg_valid_load_factor.
+	* include/debug/macros.h (__glibcxx_check_max_load_factor): New.
+	* include/debug/unordered_set
+	(unordered_set<>::max_load_factor(float)): Check max load factor
+	is positive.
+	(unordered_multiset<>::max_load_factor(float)): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::max_load_factor(float)): Likewise.
+	(unordered_multimap<>::max_load_factor(float)): Likewise.
+	* testsuite/23_containers/unordered_map/debug/max_load_factor_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/debug/
+	max_load_factor_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/max_load_factor_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/
+	max_load_factor_neg.cc: New.
+
+2012-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/move.h (move_if_noexcept): Mark constexpr.
+	* include/std/array (front, back): Same.
+	* include/std/chrono: Add comment.
+	* include/std/tuple (__tuple_compare): Mark __eq, __less constexpr.
+	(operator ==, <, >, !=, <=, >=): Same.
+	* testsuite/20_util/forward/c_neg.cc: Adjust line numbers.
+	* testsuite/20_util/forward/f_neg.cc: Same.
+	* testsuite/20_util/move_if_noexcept/constexpr.cc: New.
+	* testsuite/20_util/tuple/comparison_operators/constexpr.cc: New.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Add.
+	* testsuite/23_containers/array/element_access/
+	constexpr_element_access.cc: Same.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Same.
+
+	* testsuite/20_util/tuple/comparison_operators/35480_neg.cc:
+          Temporarily add dg-excess-errors.
+
+2012-10-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (_Debug_msg_id): Add
+	__msg_bucket_index_oob.
+	* include/debug/macros.h (__glibcxx_check_bucket_index): New.
+	* include/debug/unordered_set (unordered_set<>::begin(size_type)):
+	Add check on bucket index.
+	(unordered_set<>::begin(size_type) const): Likewise.
+	(unordered_set<>::cbegin(size_type) const): Likewise.
+	(unordered_set<>::end(size_type)): Likewise.
+	(unordered_set<>::end(size_type) const): Likewise.
+	(unordered_set<>::cend(size_type) const): Likewise.
+	(unordered_set<>::bucket_size(size_type)): Likewise.
+	(unordered_multiset<>::begin(size_type)): Likewise.
+	(unordered_multiset<>::begin(size_type) const): Likewise.
+	(unordered_multiset<>::cbegin(size_type) const): Likewise.
+	(unordered_multiset<>::end(size_type)): Likewise.
+	(unordered_multiset<>::end(size_type) const): Likewise.
+	(unordered_multiset<>::cend(size_type) const): Likewise.
+	(unordered_multiset<>::bucket_size(size_type)): Likewise.
+	* include/debug/unordered_map (unordered_map<>::begin(size_type)):
+	Likewise.
+	(unordered_map<>::begin(size_type) const): Likewise.
+	(unordered_map<>::cbegin(size_type) const): Likewise.
+	(unordered_map<>::end(size_type)): Likewise.
+	(unordered_map<>::end(size_type) const): Likewise.
+	(unordered_map<>::cend(size_type) const): Likewise.
+	(unordered_map<>::bucket_size(size_type)): Likewise.
+	(unordered_multimap<>::begin(size_type)): Likewise.
+	(unordered_multimap<>::begin(size_type) const): Likewise.
+	(unordered_multimap<>::cbegin(size_type) const): Likewise.
+	(unordered_multimap<>::end(size_type)): Likewise.
+	(unordered_multimap<>::end(size_type) const): Likewise.
+	(unordered_multimap<>::cend(size_type) const): Likewise.
+	(unordered_multimap<>::bucket_size(size_type)): Likewise.
+	* testsuite/23_containers/unordered_map/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_map/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_map/debug/cend_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multimap/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_multimap/debug/cend_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_set/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_set/debug/cend_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/bucket_size_neg.cc:
+	New.
+	* testsuite/23_containers/unordered_multiset/debug/begin1_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/begin2_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/cbegin_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/end1_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/end2_neg.cc: New.
+	* testsuite/23_containers/unordered_multiset/debug/cend_neg.cc: New.
+
+2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.host: Match arm*-*-linux-* for ARM Linux/GNU.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Likewise.
+
+2012-10-15  Pavel Chupin  <pavel.v.chupin@intel.com>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Replace code with GCC_AC_THREAD_HEADER use.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.am: Regenerate.
+	* include/Makefile.in: Rename variable.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2012-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR target/54908

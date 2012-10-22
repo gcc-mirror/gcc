@@ -116,6 +116,19 @@ mark_addressable (tree x)
       && TREE_CODE (x) != RESULT_DECL)
     return;
   TREE_ADDRESSABLE (x) = 1;
+
+  /* Also mark the artificial SSA_NAME that points to the partition of X.  */
+  if (TREE_CODE (x) == VAR_DECL
+      && !DECL_EXTERNAL (x)
+      && !TREE_STATIC (x)
+      && cfun->gimple_df != NULL
+      && cfun->gimple_df->decls_to_pointers != NULL)
+    {
+      void *namep
+	= pointer_map_contains (cfun->gimple_df->decls_to_pointers, x); 
+      if (namep)
+	TREE_ADDRESSABLE (*(tree *)namep) = 1;
+    }
 }
 
 /* Return a hash value for a formal temporary table entry.  */

@@ -558,6 +558,7 @@ LIBOBJS
 asm_hidden_op
 extra_parts
 cpu_type
+thread_header
 tm_defines
 tm_file
 tmake_file
@@ -4503,6 +4504,7 @@ tm_file="${tm_file_}"
 
 
 # Map from thread model to thread header.
+
 case $target_thread_file in
     aix)	thread_header=config/rs6000/gthr-aix.h ;;
     dce)	thread_header=config/pa/gthr-dce.h ;;
@@ -4515,6 +4517,8 @@ case $target_thread_file in
     vxworks)	thread_header=config/gthr-vxworks.h ;;
     win32)	thread_header=config/i386/gthr-win32.h ;;
 esac
+
+
 
 # Substitute configuration variables
 

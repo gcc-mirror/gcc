@@ -375,15 +375,13 @@ for (i = 0; i < n_opts; i++) {
 	if (name != "" && mask_macros[name] == 0) {
 		mask_macros[name] = 1
 		vname = var_name(flags[i])
-		macro = "OPTION_"
 		mask = "OPTION_MASK_"
 		if (vname == "") {
 			vname = "target_flags"
-			macro = "TARGET_"
 			mask = "MASK_"
 			extra_mask_macros[name] = 1
 		}
-		print "#define " macro name \
+		print "#define TARGET_" name \
 		      " ((" vname " & " mask name ") != 0)"
 	}
 }
@@ -398,14 +396,12 @@ for (i = 0; i < n_opts; i++) {
 	opt = opt_args("InverseMask", flags[i])
 	if (opt ~ ",") {
 		vname = var_name(flags[i])
-		macro = "OPTION_"
 		mask = "OPTION_MASK_"
 		if (vname == "") {
 			vname = "target_flags"
-			macro = "TARGET_"
 			mask = "MASK_"
 		}
-		print "#define " macro nth_arg(1, opt) \
+		print "#define TARGET_" nth_arg(1, opt) \
 		      " ((" vname " & " mask nth_arg(0, opt) ") == 0)"
 	}
 }

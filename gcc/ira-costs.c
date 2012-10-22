@@ -2048,9 +2048,10 @@ ira_costs (void)
   ira_free (total_allocno_costs);
 }
 
-/* Entry function which defines classes for pseudos.  */
+/* Entry function which defines classes for pseudos.
+   Set pseudo_classes_defined_p only if DEFINE_PSEUDO_CLASSES is true.  */
 void
-ira_set_pseudo_classes (FILE *dump_file)
+ira_set_pseudo_classes (bool define_pseudo_classes, FILE *dump_file)
 {
   allocno_p = false;
   internal_flag_ira_verbose = flag_ira_verbose;
@@ -2059,7 +2060,9 @@ ira_set_pseudo_classes (FILE *dump_file)
   initiate_regno_cost_classes ();
   find_costs_and_classes (dump_file);
   finish_regno_cost_classes ();
-  pseudo_classes_defined_p = true;
+  if (define_pseudo_classes)
+    pseudo_classes_defined_p = true;
+
   finish_costs ();
 }
 

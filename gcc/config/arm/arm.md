@@ -76,7 +76,7 @@
                         ; that points at the containing instruction.
   UNSPEC_PRLG_STK       ; A special barrier that prevents frame accesses
                         ; being scheduled before the stack adjustment insn.
-  UNSPEC_PROLOGUE_USE   ; As USE insns are not meaningful after reload,
+  UNSPEC_REGISTER_USE   ; As USE insns are not meaningful after reload,
                         ; this unspec is used to prevent the deletion of
                         ; instructions setting registers for EH handling
                         ; and stack frame generation.  Operand 0 is the
@@ -10610,7 +10610,7 @@
   "TARGET_EITHER"
   "
   if (crtl->calls_eh_return)
-    emit_insn (gen_prologue_use (gen_rtx_REG (Pmode, 2)));
+    emit_insn (gen_force_register_use (gen_rtx_REG (Pmode, 2)));
   if (TARGET_THUMB1)
    {
      thumb1_expand_epilogue ();
@@ -10644,7 +10644,7 @@
 ;; does not think that it is unused by the sibcall branch that
 ;; will replace the standard function epilogue.
 (define_expand "sibcall_epilogue"
-   [(parallel [(unspec:SI [(reg:SI LR_REGNUM)] UNSPEC_PROLOGUE_USE)
+   [(parallel [(unspec:SI [(reg:SI LR_REGNUM)] UNSPEC_REGISTER_USE)
                (unspec_volatile [(return)] VUNSPEC_EPILOGUE)])]
    "TARGET_32BIT"
    "
@@ -11260,10 +11260,10 @@
   ""
 )
 
-(define_insn "prologue_use"
-  [(unspec:SI [(match_operand:SI 0 "register_operand" "")] UNSPEC_PROLOGUE_USE)]
+(define_insn "force_register_use"
+  [(unspec:SI [(match_operand:SI 0 "register_operand" "")] UNSPEC_REGISTER_USE)]
   ""
-  "%@ %0 needed for prologue"
+  "%@ %0 needed"
   [(set_attr "length" "0")]
 )
 

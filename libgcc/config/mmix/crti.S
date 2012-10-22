@@ -35,20 +35,25 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 % respectively, so the compiler can switch between them pretending they're
 % segments.
 
-% This little treasure is here so the 32 lowest address bits of user data
-% will not be zero.  Because of truncation, that would cause testcase
-% gcc.c-torture/execute/980701-1.c to incorrectly fail.
+% This little treasure (some contents) is required so the 32 lowest
+% address bits of user data will not be zero.  Because of truncation,
+% that would cause testcase gcc.c-torture/execute/980701-1.c to
+% incorrectly fail.
 
 	.data	! mmixal:= 8H LOC Data_Segment
 	.p2align 3
-	LOC @+(8-@)@7
-	OCTA 2009
+dstart	OCTA 2009
 
 	.text	! mmixal:= 9H LOC 8B; LOC #100
 	.global Main
 
 % The __Stack_start symbol is provided by the link script.
 stackpp	OCTA __Stack_start
+crtstxt	OCTA _init	% Assumed to be the lowest executed address.
+	OCTA __etext	% Assumed to be beyond the highest executed address.
+
+crtsdat	OCTA dstart	% Assumed to be the lowest accessed address.
+	OCTA _end	% Assumed to be beyond the highest accessed address.
 
 % "Main" is the magic symbol the simulator jumps to.  We want to go
 % on to "main".
@@ -56,15 +61,46 @@ stackpp	OCTA __Stack_start
 Main	SETL	$255,32
 	PUT	rG,$255
 
+% Make sure we have valid memory for addresses in .text and .data (and
+% .bss, but we include this in .data), for the benefit of mmo-using
+% simulators that require validation of addresses for which contents
+% is not present.  Due to its implicit-zero nature, zeros in contents
+% may be left out in the mmo format, but we don't know the boundaries
+% of those zero-chunks; for mmo files from binutils, they correspond
+% to the beginning and end of sections in objects before linking.  We
+% validate the contents by executing PRELD (0; one byte) on each
+% 2048-byte-boundary of our .text .data, and we assume this size
+% matches the magic lowest-denominator chunk-size for all
+% validation-requiring simulators.  The effect of the PRELD (any size)
+% is assumed to be the same as initial loading of the contents, as
+% long as the PRELD happens before the first PUSHJ/PUSHGO.  If it
+% happens after that, we'll need to distinguish between
+% access-for-execution and read/write access.
+
+	GETA	$255,crtstxt
+	LDOU	$2,$255,0
+	ANDNL	$2,#7ff		% Align the start at a 2048-boundary.
+	LDOU	$3,$255,8
+	SETL	$4,2048
+0H	PRELD	0,$2,0
+	ADDU	$2,$2,$4
+	CMP	$255,$2,$3
+	BN	$255,0B
+
+	GETA	$255,crtsdat
+	LDOU	$2,$255,0
+	ANDNL	$2,#7ff
+	LDOU	$3,$255,8
+0H	PRELD	0,$2,0
+	ADDU	$2,$2,$4
+	CMP	$255,$2,$3
+	BN	$255,0B
+
 % Initialize the stack pointer.  It is supposedly made a global
 % zero-initialized (allowed to change) register in crtn.S; we use the
 % explicit number.
 	GETA	$255,stackpp
 	LDOU	$254,$255,0
-
-% Make sure we get more than one mem, to simplify counting cycles.
-	LDBU	$255,$1,0
-	LDBU	$255,$1,1
 
 	PUSHJ	$2,_init
 

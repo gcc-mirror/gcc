@@ -2096,24 +2096,22 @@ invalidate_for_call (void)
   unsigned hash;
   struct table_elt *p, *next;
   int in_table = 0;
+  hard_reg_set_iterator hrsi;
 
   /* Go through all the hard registers.  For each that is clobbered in
      a CALL_INSN, remove the register from quantity chains and update
      reg_tick if defined.  Also see if any of these registers is currently
      in the table.  */
-
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-      {
-	delete_reg_equiv (regno);
-	if (REG_TICK (regno) >= 0)
-	  {
-	    REG_TICK (regno)++;
-	    SUBREG_TICKED (regno) = -1;
-	  }
-
-	in_table |= (TEST_HARD_REG_BIT (hard_regs_in_table, regno) != 0);
-      }
+  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, regno, hrsi)
+    {
+      delete_reg_equiv (regno);
+      if (REG_TICK (regno) >= 0)
+	{
+	  REG_TICK (regno)++;
+	  SUBREG_TICKED (regno) = -1;
+	}
+      in_table |= (TEST_HARD_REG_BIT (hard_regs_in_table, regno) != 0);
+    }
 
   /* In the case where we have no call-clobbered hard registers in the
      table, we are done.  Otherwise, scan the table and remove any

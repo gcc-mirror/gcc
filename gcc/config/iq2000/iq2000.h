@@ -560,10 +560,6 @@ while (0)
 
 #define FUNCTION_MODE SImode
 
-/* Standard GCC variables that we reference.  */
-
-extern char	call_used_regs[];
-
 /* IQ2000 external variables defined in iq2000.c.  */
 
 /* Comparison type.  */

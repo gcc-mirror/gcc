@@ -1964,12 +1964,12 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	  note_stores (PATTERN (insn), mark_altered, this_altered);
 	  if (CALL_P (insn))
 	    {
-	      int i;
-
 	      /* Kill all call clobbered registers.  */
-	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-		  SET_REGNO_REG_SET (this_altered, i);
+	      unsigned int i;
+	      hard_reg_set_iterator hrsi;
+	      EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call,
+					      0, i, hrsi)
+		SET_REGNO_REG_SET (this_altered, i);
 	    }
 
 	  if (suitable_set_for_replacement (insn, &dest, &src))
@@ -2593,8 +2593,10 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 ? iv0.base
 			 : mode_mmin);
 	  max = (up - down) / inc + 1;
-	  record_niter_bound (loop, double_int::from_uhwi (max),
-			      false, true);
+	  if (!desc->infinite
+	      && !desc->assumptions)
+	    record_niter_bound (loop, double_int::from_uhwi (max),
+			        false, true);
 
 	  if (iv0.step == const0_rtx)
 	    {
@@ -2806,15 +2808,19 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
       desc->const_iter = true;
       desc->niter = val & GET_MODE_MASK (desc->mode);
-      record_niter_bound (loop, double_int::from_uhwi (desc->niter),
-			  false, true);
+      if (!desc->infinite
+	  && !desc->assumptions)
+        record_niter_bound (loop, double_int::from_uhwi (desc->niter),
+			    false, true);
     }
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
       gcc_assert (max);
-      record_niter_bound (loop, double_int::from_uhwi (max),
-			  false, true);
+      if (!desc->infinite
+	  && !desc->assumptions)
+	record_niter_bound (loop, double_int::from_uhwi (max),
+			    false, true);
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life

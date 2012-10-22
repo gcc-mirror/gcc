@@ -37,7 +37,6 @@ static int find_path (edge, basic_block **);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
 static void fix_bb_placements (basic_block, bool *);
-static void unloop (struct loop *, bool *);
 
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
@@ -895,7 +894,7 @@ loopify (edge latch_edge, edge header_edge,
    If this may cause the information about irreducible regions to become
    invalid, IRRED_INVALIDATED is set to true.  */
 
-static void
+void
 unloop (struct loop *loop, bool *irred_invalidated)
 {
   basic_block *body;
@@ -971,6 +970,20 @@ fix_loop_placements (struct loop *loop, bool *irred_invalidated)
     }
 }
 
+/* Duplicate loop bounds and other information we store about
+   the loop into its duplicate.  */
+
+void
+copy_loop_info (struct loop *loop, struct loop *target)
+{
+  gcc_checking_assert (!target->any_upper_bound && !target->any_estimate);
+  target->any_upper_bound = loop->any_upper_bound;
+  target->nb_iterations_upper_bound = loop->nb_iterations_upper_bound;
+  target->any_estimate = loop->any_estimate;
+  target->nb_iterations_estimate = loop->nb_iterations_estimate;
+  target->estimate_state = loop->estimate_state;
+}
+
 /* Copies copy of LOOP as subloop of TARGET loop, placing newly
    created loop into loops structure.  */
 struct loop *
@@ -979,6 +992,8 @@ duplicate_loop (struct loop *loop, struct loop *target)
   struct loop *cloop;
   cloop = alloc_loop ();
   place_new_loop (cloop);
+ 
+  copy_loop_info (loop, cloop);
 
   /* Mark the new loop as copy of LOOP.  */
   set_loop_copy (loop, cloop);
@@ -1686,6 +1701,8 @@ loop_version (struct loop *loop,
 		   cond_bb, true_edge, false_edge,
 		   false /* Do not redirect all edges.  */,
 		   then_scale, else_scale);
+
+  copy_loop_info (loop, nloop);
 
   /* loopify redirected latch_edge. Update its PENDING_STMTS.  */
   lv_flush_pending_stmts (latch_edge);

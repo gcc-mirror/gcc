@@ -3151,7 +3151,7 @@ This is a synonym for @samp{x86_64-*-solaris2.1[0-9]*}.
 @heading @anchor{arm-x-eabi}arm-*-eabi
 ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
-@code{arm-*-netbsdelf}, @code{arm-*-*linux-gnueabi}
+@code{arm-*-netbsdelf}, @code{arm-*-*linux-*}
 and @code{arm-*-rtemseabi}.
 
 @html

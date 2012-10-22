@@ -2682,17 +2682,16 @@ function through the function vector will reduce code size, however;
 the function vector has a limited size (maximum 128 entries on the H8/300
 and 64 entries on the H8/300H and H8S) and shares space with the interrupt vector.
 
-In SH2A target, this attribute declares a function to be called using the
+On SH2A targets, this attribute declares a function to be called using the
 TBR relative addressing mode.  The argument to this attribute is the entry
 number of the same function in a vector table containing all the TBR
-relative addressable functions.  For the successful jump, register TBR
-should contain the start address of this TBR relative vector table.
-In the startup routine of the user application, user needs to care of this
-TBR register initialization.  The TBR relative vector table can have at
-max 256 function entries.  The jumps to these functions will be generated
-using a SH2A specific, non delayed branch instruction JSR/N @@(disp8,TBR).
-You must use GAS and GLD from GNU binutils version 2.7 or later for
-this attribute to work correctly.
+relative addressable functions.  For correct operation the TBR must be setup
+accordingly to point to the start of the vector table before any functions with
+this attribute are invoked.  Usually a good place to do the initialization is
+the startup routine.  The TBR relative vector table can have at max 256 function
+entries.  The jumps to these functions will be generated using a SH2A specific,
+non delayed branch instruction JSR/N @@(disp8,TBR).  You must use GAS and GLD
+from GNU binutils version 2.7 or later for this attribute to work correctly.
 
 Please refer the example of M16C target, to see the use of this
 attribute while declaring a function,
@@ -3251,6 +3250,13 @@ with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.  The @code{nothrow} attribute is not
 implemented in GCC versions earlier than 3.3.
 
+@item nosave_low_regs
+@cindex @code{nosave_low_regs} attribute
+Use this attribute on SH targets to indicate that an @code{interrupt_handler}
+function should not save and restore registers R0..R7.  This can be used on SH3*
+and SH4* targets which have a second R0..R7 register bank for non-reentrant
+interrupt handlers.
+
 @item optimize
 @cindex @code{optimize} function attribute
 The @code{optimize} attribute is used to specify that a function is to
@@ -3428,6 +3434,11 @@ prologue and epilogue that realigns the runtime stack if necessary.
 This supports mixing legacy codes that run with a 4-byte aligned stack
 with modern codes that keep a 16-byte stack for SSE compatibility.
 
+@item renesas
+@cindex @code{renesas} attribute
+On SH targets this attribute specifies that the function or struct follows the
+Renesas ABI.
+
 @item resbank
 @cindex @code{resbank} attribute
 On the SH2A target, this attribute enables the high-speed register
@@ -3538,6 +3549,7 @@ If both @code{signal} and @code{interrupt} are specified for the same
 function, @code{signal} will be silently ignored.
 
 @item sp_switch
+@cindex @code{sp_switch} attribute
 Use this attribute on the SH to indicate an @code{interrupt_handler}
 function should switch to an alternate stack.  It expects a string
 argument that names a global variable holding the address of the
@@ -3929,9 +3941,15 @@ on data in the tiny data section.  Note the tiny data area is limited to
 slightly under 32kbytes of data.
 
 @item trap_exit
+@cindex @code{trap_exit} attribute
 Use this attribute on the SH for an @code{interrupt_handler} to return using
 @code{trapa} instead of @code{rte}.  This attribute expects an integer
 argument specifying the trap number to be used.
+
+@item trapa_handler
+@cindex @code{trapa_handler} attribute
+On SH targets this function attribute is similar to @code{interrupt_handler}
+but it does not save and restore all registers.
 
 @item unused
 @cindex @code{unused} attribute.
@@ -6751,13 +6769,13 @@ random value.  In addition, @code{__builtin_frame_address} may be used
 to determine if the top of the stack has been reached.
 
 Additional post-processing of the returned value may be needed, see
-@code{__builtin_extract_return_address}.
+@code{__builtin_extract_return_addr}.
 
 This function should only be used with a nonzero argument for debugging
 purposes.
 @end deftypefn
 
-@deftypefn {Built-in Function} {void *} __builtin_extract_return_address (void *@var{addr})
+@deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
 The address as returned by @code{__builtin_return_address} may have to be fed
 through this function to get the actual encoded address.  For example, on the
 31-bit S/390 platform the highest bit has to be masked out, or on SPARC
@@ -6768,7 +6786,7 @@ If no fixup is needed, this function simply passes through @var{addr}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_frob_return_address (void *@var{addr})
-This function does the reverse of @code{__builtin_extract_return_address}.
+This function does the reverse of @code{__builtin_extract_return_addr}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {void *} __builtin_frame_address (unsigned int @var{level})

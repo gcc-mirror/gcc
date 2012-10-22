@@ -183,27 +183,63 @@ namespace __debug
       // local versions
       local_iterator
       begin(size_type __b)
-      { return local_iterator(_Base::begin(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return local_iterator(_Base::begin(__b), __b, this);
+      }
 
       local_iterator
       end(size_type __b)
-      { return local_iterator(_Base::end(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return local_iterator(_Base::end(__b), __b, this);
+      }
 
       const_local_iterator
       begin(size_type __b) const
-      { return const_local_iterator(_Base::begin(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::begin(__b), __b, this);
+      }
 
       const_local_iterator
       end(size_type __b) const
-      { return const_local_iterator(_Base::end(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::end(__b), __b, this);
+      }
 
       const_local_iterator
       cbegin(size_type __b) const
-      { return const_local_iterator(_Base::cbegin(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::cbegin(__b), __b, this);
+      }
 
       const_local_iterator
       cend(size_type __b) const
-      { return const_local_iterator(_Base::cend(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::cend(__b), __b, this);
+      }
+
+      size_type
+      bucket_size(size_type __b) const
+      {
+	__glibcxx_check_bucket_index(__b);
+	return _Base::bucket_size(__b);
+      }
+
+      float
+      max_load_factor() const noexcept
+      { return _Base::max_load_factor(); }
+
+      void
+      max_load_factor(float __f)
+      {
+	__glibcxx_check_max_load_factor(__f);
+	_Base::max_load_factor(__f);
+      }
 
       template<typename... _Args>
 	std::pair<iterator, bool>
@@ -593,27 +629,63 @@ namespace __debug
       // local versions
       local_iterator
       begin(size_type __b)
-      { return local_iterator(_Base::begin(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return local_iterator(_Base::begin(__b), __b, this);
+      }
 
       local_iterator
       end(size_type __b)
-      { return local_iterator(_Base::end(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return local_iterator(_Base::end(__b), __b, this);
+      }
 
       const_local_iterator
       begin(size_type __b) const
-      { return const_local_iterator(_Base::begin(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::begin(__b), __b, this);
+      }
 
       const_local_iterator
       end(size_type __b) const
-      { return const_local_iterator(_Base::end(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::end(__b), __b, this);
+      }
 
       const_local_iterator
       cbegin(size_type __b) const
-      { return const_local_iterator(_Base::cbegin(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::cbegin(__b), __b, this);
+      }
 
       const_local_iterator
       cend(size_type __b) const
-      { return const_local_iterator(_Base::cend(__b), __b, this); }
+      {
+	__glibcxx_check_bucket_index(__b);
+	return const_local_iterator(_Base::cend(__b), __b, this);
+      }
+
+      size_type
+      bucket_size(size_type __b) const
+      {
+	__glibcxx_check_bucket_index(__b);
+	return _Base::bucket_size(__b);
+      }
+
+      float
+      max_load_factor() const noexcept
+      { return _Base::max_load_factor(); }
+
+      void
+      max_load_factor(float __f)
+      {
+	__glibcxx_check_max_load_factor(__f);
+	_Base::max_load_factor(__f);
+      }
 
       template<typename... _Args>
 	iterator

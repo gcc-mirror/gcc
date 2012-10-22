@@ -519,6 +519,7 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, best_copies, best_unroll = 0, n_copies, i;
   struct niter_desc *desc;
+  double_int iterations;
 
   if (!(flags & UAP_UNROLL))
     {
@@ -561,8 +562,14 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
       return;
     }
 
-  /* Check whether the loop rolls enough to consider.  */
-  if (desc->niter < 2 * nunroll)
+  /* Check whether the loop rolls enough to consider.  
+     Consult also loop bounds and profile; in the case the loop has more
+     than one exit it may well loop less than determined maximal number
+     of iterations.  */
+  if (desc->niter < 2 * nunroll
+      || ((estimated_loop_iterations (loop, &iterations)
+	   || max_loop_iterations (loop, &iterations))
+	  && iterations.ult (double_int::from_shwi (2 * nunroll))))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");

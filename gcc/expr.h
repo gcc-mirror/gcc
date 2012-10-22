@@ -190,7 +190,7 @@ extern int have_sub2_insn (rtx, rtx);
 /* Emit a pair of rtl insns to compare two rtx's and to jump
    to a label if the comparison is true.  */
 extern void emit_cmp_and_jump_insns (rtx, rtx, enum rtx_code, rtx,
-				     enum machine_mode, int, rtx);
+				     enum machine_mode, int, rtx, int prob=-1);
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump (rtx);
@@ -335,7 +335,7 @@ extern rtx emit_group_move_into_temps (rtx);
 extern void emit_group_store (rtx, rtx, tree, int);
 
 /* Copy BLKmode object from a set of registers.  */
-extern rtx copy_blkmode_from_reg (rtx, rtx, tree);
+extern void copy_blkmode_from_reg (rtx, rtx, tree);
 
 /* Mark REG as holding a parameter for the next CALL_INSN.
    Mode is TYPE_MODE of the non-promoted parameter, or VOIDmode.  */
@@ -485,8 +485,8 @@ extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
 				     enum machine_mode, rtx, rtx, rtx, int);
 
 /* Two different ways of generating switch statements.  */
-extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx);
-extern int try_tablejump (tree, tree, tree, tree, rtx, rtx);
+extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, int);
+extern int try_tablejump (tree, tree, tree, tree, rtx, rtx, int);
 
 /* Functions from alias.c */
 #include "alias.h"

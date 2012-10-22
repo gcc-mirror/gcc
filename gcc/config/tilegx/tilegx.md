@@ -2316,7 +2316,8 @@
    (use (match_operand 1 "" ""))    ;; iterations; zero if unknown
    (use (match_operand 2 "" ""))    ;; max iterations
    (use (match_operand 3 "" ""))    ;; loop level
-   (use (match_operand 4 "" ""))]   ;; label
+   (use (match_operand 4 "" ""))    ;; label
+   (use (match_operand 5 "" ""))]   ;; flag: 1 if loop entered at top, else 0
    ""
 {
   if (optimize > 0 && flag_modulo_sched)

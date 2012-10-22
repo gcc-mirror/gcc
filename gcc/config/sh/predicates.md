@@ -1139,3 +1139,20 @@
 
   return INTVAL (op) >= 0 && INTVAL (op) <= max_disp;
 })
+
+;; A predicate that determines whether OP is a valid GBR addressing mode
+;; memory reference.
+(define_predicate "gbr_address_mem"
+  (match_code "mem")
+{
+  rtx addr = XEXP (op, 0);
+
+  if (REG_P (addr) && REGNO (addr) == GBR_REG)
+    return true;
+  if (GET_CODE (addr) == PLUS
+      && REG_P (XEXP (addr, 0)) && REGNO (XEXP (addr, 0)) == GBR_REG
+      && gbr_displacement (XEXP (addr, 1), mode))
+    return true;
+
+  return false;
+})

@@ -1,3 +1,49 @@
+2012-10-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54725
+	* Make-lang.in (CFLAGS-cpp.o): Use TARGET_SYSTEM_ROOT_DEFINE.
+	* cpp.o (gfc_cpp_init_options): Use it for
+	setting gfc_cpp_option.sysroot.
+
+2012-10-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54465
+	* lang.opt (Wextra):  Add.
+	* invoke.texi:  Document that -Wc-binding-type, -Wconversion
+	and -Wline-truncation are implied by -Wall.  Document that
+	-Wcompare-reals is implied by -Wextra.  Document -Wextra.
+	* options.c (set_Wextra):  New function.
+	(gfc_handle_option):  Handle -Wextra.
+
+2012-10-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54224
+	* trans-expr.c (conv_function_val): Set TREE_USED.
+
+2012-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54884
+	* resolve.c (specification_expr): Change to bool.
+	(resolve_formal_arglist, resolve_symbol): Set
+	specification_expr to true before resolving the array spec.
+	(resolve_variable, resolve_charlen, resolve_fl_variable):
+	Properly reset specification_expr.
+	(resolve_function): Set public_use when used in
+	a specification expr.
+
+2012-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50981
+	PR fortran/54618
+	* trans.h (gfc_conv_derived_to_class, gfc_conv_class_to_class):
+	Update prototype.
+	* trans-stmt.c (trans_associate_var,gfc_trans_allocate): Update
+	calls to those functions.
+	* trans-expr.c (gfc_conv_derived_to_class, gfc_conv_class_to_class,
+	gfc_conv_expr_present): Handle absent polymorphic arguments.
+	(class_scalar_coarray_to_class): New function.
+	(gfc_conv_procedure_call): Update calls.
+
 2012-10-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40453

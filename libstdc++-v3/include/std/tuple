@@ -775,14 +775,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t __i, std::size_t __j, typename _Tp, typename _Up>
     struct __tuple_compare<0, __i, __j, _Tp, _Up>
     {
-      static bool 
+      static constexpr bool 
       __eq(const _Tp& __t, const _Up& __u)
       {
 	return (get<__i>(__t) == get<__i>(__u) &&
 		__tuple_compare<0, __i + 1, __j, _Tp, _Up>::__eq(__t, __u));
       }
      
-      static bool 
+      static constexpr bool 
       __less(const _Tp& __t, const _Up& __u)
       {
 	return ((get<__i>(__t) < get<__i>(__u))
@@ -794,55 +794,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t __i, typename _Tp, typename _Up>
     struct __tuple_compare<0, __i, __i, _Tp, _Up>
     {
-      static bool 
+      static constexpr bool 
       __eq(const _Tp&, const _Up&) { return true; }
      
-      static bool 
+      static constexpr bool 
       __less(const _Tp&, const _Up&) { return false; }
     };
 
   template<typename... _TElements, typename... _UElements>
-    bool
+    constexpr bool
     operator==(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     {
       typedef tuple<_TElements...> _Tp;
       typedef tuple<_UElements...> _Up;
-      return (__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
+      return bool(__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
 	      0, tuple_size<_Tp>::value, _Tp, _Up>::__eq(__t, __u));
     }
 
   template<typename... _TElements, typename... _UElements>
-    bool
+    constexpr bool
     operator<(const tuple<_TElements...>& __t,
 	      const tuple<_UElements...>& __u)
     {
       typedef tuple<_TElements...> _Tp;
       typedef tuple<_UElements...> _Up;
-      return (__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
+      return bool(__tuple_compare<tuple_size<_Tp>::value - tuple_size<_Up>::value,
 	      0, tuple_size<_Tp>::value, _Tp, _Up>::__less(__t, __u));
     }
 
   template<typename... _TElements, typename... _UElements>
-    inline bool
+    inline constexpr bool
     operator!=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__t == __u); }
 
   template<typename... _TElements, typename... _UElements>
-    inline bool
+    inline constexpr bool
     operator>(const tuple<_TElements...>& __t,
 	      const tuple<_UElements...>& __u)
     { return __u < __t; }
 
   template<typename... _TElements, typename... _UElements>
-    inline bool
+    inline constexpr bool
     operator<=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__u < __t); }
 
   template<typename... _TElements, typename... _UElements>
-    inline bool
+    inline constexpr bool
     operator>=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__t < __u); }
@@ -858,7 +858,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename... _Elements>
-    constexpr tuple<_Elements&&...>
+    tuple<_Elements&&...>
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 

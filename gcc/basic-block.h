@@ -802,6 +802,7 @@ extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern bool fixup_abnormal_edges (void);
 extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
+extern bool contains_no_active_insn_p (const_basic_block);
 extern bool forwarder_block_p (const_basic_block);
 extern bool can_fallthru (basic_block, basic_block);
 

@@ -22,6 +22,7 @@ enum architecture {
   ARCH_V7R,
   ARCH_V7M,
   ARCH_V7EM,
+  ARCH_V8A,
   ARCH_COUNT
 };
 

@@ -821,15 +821,10 @@ particular release.
       <entry>Type properties</entry>
       <entry>Partial</entry>
       <entry>Missing is_trivially_copyable,
-      is_assignable, is_copy_assignable, is_move_assignable,
       is_trivially_constructible, is_trivially_default_constructible,
       is_trivially_copy_constructible, is_trivially_move_constructible,
       is_trivially_assignable, is_trivially_default_assignable,
-      is_trivially_copy_assignable, is_trivially_move_assignable,
-      is_trivially_destructible,
-      is_nothrow_assignable,
-      is_nothrow_copy_assignable, is_nothrow_move_assignable,
-      is_nothrow_destructible
+      is_trivially_copy_assignable, is_trivially_move_assignable
       </entry>
     </row>
     <row>
@@ -1037,7 +1032,7 @@ particular release.
       <entry>20.12.4</entry>
       <entry>Scoped allocator adaptor members</entry>
       <entry>Partial</entry>
-      <entry>Missing std::pair piecewise construction.</entry>
+      <entry>OUTERMOST is not recursive.</entry>
     </row>
     <row>
       <entry>20.12.5</entry>
@@ -1378,7 +1373,8 @@ particular release.
       <entry>23.2.1</entry>
       <entry>General container requirements</entry>
       <entry>Partial</entry>
-      <entry>Only <code>vector</code> meets the requirements
+      <entry>Only <code>vector</code> and <code>forward_list</code>
+             meet the requirements
              relating to allocator use and propagation.</entry>
     </row>
     <row>

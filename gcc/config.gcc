@@ -270,7 +270,6 @@ case ${target} in
  | arm*-*-elf				\
  | arm*-*-freebsd*			\
  | arm*-*-linux*			\
- | arm*-*-rtems*			\
  | arm*-*-uclinux*			\
  | i[34567]86-go32-*			\
  | i[34567]86-*-go32*			\
@@ -829,7 +828,7 @@ arm*-*-netbsdelf*)
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
 	;;
-arm*-*-linux-*eabi*)			# ARM GNU/Linux with ELF
+arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	case $target in
 	arm*b-*-linux*)
@@ -863,7 +862,7 @@ arm*-*-uclinux*eabi*)		# ARM ucLinux
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
 	;;
-arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
+arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	# The BPABI long long divmod functions return a 128-bit value in
 	# registers r0-r3.  Correctly modeling that requires the use of
 	# TImode.
@@ -877,7 +876,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	  tmake_file="${tmake_file} arm/t-bpabi"
 	  use_gcc_stdint=wrap
 	  ;;
-	arm*-*-rtemseabi*)
+	arm*-*-rtems*)
 	  tm_file="${tm_file} rtems.h arm/rtems-eabi.h newlib-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi t-rtems arm/t-rtems-eabi"
 	  ;;
@@ -3040,7 +3039,7 @@ case "${target}" in
 		"" \
 		| armv[23456] | armv2a | armv3m | armv4t | armv5t \
 		| armv5te | armv6j |armv6k | armv6z | armv6zk | armv6-m \
-		| armv7 | armv7-a | armv7-r | armv7-m \
+		| armv7 | armv7-a | armv7-r | armv7-m | armv8-a \
 		| iwmmxt | ep9312)
 			# OK
 			;;
@@ -3066,7 +3065,8 @@ case "${target}" in
 		| vfp | vfp3 | vfpv3 \
 		| vfpv3-fp16 | vfpv3-d16 | vfpv3-d16-fp16 | vfpv3xd \
 		| vfpv3xd-fp16 | neon | neon-fp16 | vfpv4 | vfpv4-d16 \
-		| fpv4-sp-d16 | neon-vfpv4)
+		| fpv4-sp-d16 | neon-vfpv4 | fp-arm-v8 | neon-fp-armv8 \
+                | crypto-neon-fp-armv8)
 			# OK
 			;;
 		*)

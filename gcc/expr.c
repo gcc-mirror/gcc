@@ -154,7 +154,7 @@ static rtx do_store_flag (sepops, rtx, enum machine_mode);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (enum machine_mode, rtx, tree);
 #endif
-static void do_tablejump (rtx, enum machine_mode, rtx, rtx, rtx);
+static void do_tablejump (rtx, enum machine_mode, rtx, rtx, rtx, int);
 static rtx const_vector_from_tree (tree);
 static void write_complex_part (rtx, rtx, bool);
 
@@ -966,7 +966,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
   /* First move what we can in the largest integer mode, then go to
      successively smaller modes.  */
 
-  while (max_size > 1)
+  while (max_size > 1 && data.len > 0)
     {
       enum machine_mode mode = widest_int_mode_for_size (max_size);
 
@@ -1026,7 +1026,7 @@ move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
 
-  while (max_size > 1)
+  while (max_size > 1 && l > 0)
     {
       enum machine_mode mode;
       enum insn_code icode;
@@ -1483,7 +1483,7 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
   emit_label (cmp_label);
 
   emit_cmp_and_jump_insns (iter, size, LT, NULL_RTX, iter_mode,
-			   true, top_label);
+			   true, top_label, REG_BR_PROB_BASE * 90 / 100);
 }
 
 /* Copy all or part of a value X into registers starting at REGNO.
@@ -2086,39 +2086,23 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
     emit_move_insn (orig_dst, dst);
 }
 
-/* Generate code to copy a BLKmode object of TYPE out of a
-   set of registers starting with SRCREG into TGTBLK.  If TGTBLK
-   is null, a stack temporary is created.  TGTBLK is returned.
+/* Copy a BLKmode object of TYPE out of a register SRCREG into TARGET.
 
-   The purpose of this routine is to handle functions that return
-   BLKmode structures in registers.  Some machines (the PA for example)
-   want to return all small structures in registers regardless of the
-   structure's alignment.  */
+   This is used on targets that return BLKmode values in registers.  */
 
-rtx
-copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
+void
+copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
 {
   unsigned HOST_WIDE_INT bytes = int_size_in_bytes (type);
   rtx src = NULL, dst = NULL;
   unsigned HOST_WIDE_INT bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
   unsigned HOST_WIDE_INT bitpos, xbitpos, padding_correction = 0;
+  enum machine_mode mode = GET_MODE (srcreg);
+  enum machine_mode tmode = GET_MODE (target);
   enum machine_mode copy_mode;
 
-  if (tgtblk == 0)
-    {
-      tgtblk = assign_temp (build_qualified_type (type,
-						  (TYPE_QUALS (type)
-						   | TYPE_QUAL_CONST)),
-			    1, 1);
-      preserve_temp_slots (tgtblk);
-    }
-
-  /* This code assumes srcreg is at least a full word.  If it isn't, copy it
-     into a new pseudo which is a full word.  */
-
-  if (GET_MODE (srcreg) != BLKmode
-      && GET_MODE_SIZE (GET_MODE (srcreg)) < UNITS_PER_WORD)
-    srcreg = convert_to_mode (word_mode, srcreg, TYPE_UNSIGNED (type));
+  /* BLKmode registers created in the back-end shouldn't have survived.  */
+  gcc_assert (mode != BLKmode);
 
   /* If the structure doesn't take up a whole number of words, see whether
      SRCREG is padded on the left or on the right.  If it's on the left,
@@ -2136,22 +2120,54 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
     padding_correction
       = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD) * BITS_PER_UNIT));
 
+  /* We can use a single move if we have an exact mode for the size.  */
+  else if (MEM_P (target)
+	   && (!SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target))
+	       || MEM_ALIGN (target) >= GET_MODE_ALIGNMENT (mode))
+	   && bytes == GET_MODE_SIZE (mode))
+  {
+    emit_move_insn (adjust_address (target, mode, 0), srcreg);
+    return;
+  }
+
+  /* And if we additionally have the same mode for a register.  */
+  else if (REG_P (target)
+	   && GET_MODE (target) == mode
+	   && bytes == GET_MODE_SIZE (mode))
+  {
+    emit_move_insn (target, srcreg);
+    return;
+  }
+
+  /* This code assumes srcreg is at least a full word.  If it isn't, copy it
+     into a new pseudo which is a full word.  */
+  if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+    {
+      srcreg = convert_to_mode (word_mode, srcreg, TYPE_UNSIGNED (type));
+      mode = word_mode;
+    }
+
   /* Copy the structure BITSIZE bits at a time.  If the target lives in
      memory, take care of not reading/writing past its end by selecting
      a copy mode suited to BITSIZE.  This should always be possible given
      how it is computed.
+
+     If the target lives in register, make sure not to select a copy mode
+     larger than the mode of the register.
 
      We could probably emit more efficient code for machines which do not use
      strict alignment, but it doesn't seem worth the effort at the current
      time.  */
 
   copy_mode = word_mode;
-  if (MEM_P (tgtblk))
+  if (MEM_P (target))
     {
       enum machine_mode mem_mode = mode_for_size (bitsize, MODE_INT, 1);
       if (mem_mode != BLKmode)
 	copy_mode = mem_mode;
     }
+  else if (REG_P (target) && GET_MODE_BITSIZE (tmode) < BITS_PER_WORD)
+    copy_mode = tmode;
 
   for (bitpos = 0, xbitpos = padding_correction;
        bitpos < bytes * BITS_PER_UNIT;
@@ -2160,15 +2176,15 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
       /* We need a new source operand each time xbitpos is on a
 	 word boundary and when xbitpos == padding_correction
 	 (the first time through).  */
-      if (xbitpos % BITS_PER_WORD == 0
-	  || xbitpos == padding_correction)
-	src = operand_subword_force (srcreg, xbitpos / BITS_PER_WORD,
-				     GET_MODE (srcreg));
+      if (xbitpos % BITS_PER_WORD == 0 || xbitpos == padding_correction)
+	src = operand_subword_force (srcreg, xbitpos / BITS_PER_WORD, mode);
 
       /* We need a new destination operand each time bitpos is on
 	 a word boundary.  */
-      if (bitpos % BITS_PER_WORD == 0)
-	dst = operand_subword (tgtblk, bitpos / BITS_PER_WORD, 1, BLKmode);
+      if (REG_P (target) && GET_MODE_BITSIZE (tmode) < BITS_PER_WORD)
+	dst = target;
+      else if (bitpos % BITS_PER_WORD == 0)
+	dst = operand_subword (target, bitpos / BITS_PER_WORD, 1, tmode);
 
       /* Use xbitpos for the source extraction (right justified) and
 	 bitpos for the destination store (left justified).  */
@@ -2177,8 +2193,6 @@ copy_blkmode_from_reg (rtx tgtblk, rtx srcreg, tree type)
 					  xbitpos % BITS_PER_WORD, 1, false,
 					  NULL_RTX, copy_mode, copy_mode));
     }
-
-  return tgtblk;
 }
 
 /* Copy BLKmode value SRC into a register of mode MODE.  Return the
@@ -2417,7 +2431,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
     {
       l = len;
       max_size = STORE_MAX_PIECES + 1;
-      while (max_size > 1)
+      while (max_size > 1 && l > 0)
 	{
 	  mode = widest_int_mode_for_size (max_size);
 
@@ -2612,7 +2626,7 @@ store_by_pieces_1 (struct store_by_pieces_d *data ATTRIBUTE_UNUSED,
   /* First store what we can in the largest integer mode, then go to
      successively smaller modes.  */
 
-  while (max_size > 1)
+  while (max_size > 1 && data->len > 0)
     {
       enum machine_mode mode = widest_int_mode_for_size (max_size);
 
@@ -4883,7 +4897,12 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	emit_group_store (to_rtx, value, TREE_TYPE (from),
 			  int_size_in_bytes (TREE_TYPE (from)));
       else if (GET_MODE (to_rtx) == BLKmode)
-	emit_block_move (to_rtx, value, expr_size (from), BLOCK_OP_NORMAL);
+	{
+	  if (REG_P (value))
+	    copy_blkmode_from_reg (to_rtx, value, TREE_TYPE (from));
+	  else
+	    emit_block_move (to_rtx, value, expr_size (from), BLOCK_OP_NORMAL);
+	}
       else
 	{
 	  if (POINTER_TYPE_P (TREE_TYPE (to)))
@@ -5225,21 +5244,26 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	 supposed to be bit-copied or bit-initialized.  */
       && expr_size (exp) != const0_rtx)
     {
-      if (GET_MODE (temp) != GET_MODE (target)
-	  && GET_MODE (temp) != VOIDmode)
+      if (GET_MODE (temp) != GET_MODE (target) && GET_MODE (temp) != VOIDmode)
 	{
-	  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
-	  if (GET_MODE (target) == BLKmode
-	      && GET_MODE (temp) == BLKmode)
-	    emit_block_move (target, temp, expr_size (exp),
-			     (call_param_p
-			      ? BLOCK_OP_CALL_PARM
-			      : BLOCK_OP_NORMAL));
-	  else if (GET_MODE (target) == BLKmode)
-	    store_bit_field (target, INTVAL (expr_size (exp)) * BITS_PER_UNIT,
-			     0, 0, 0, GET_MODE (temp), temp);
+	  if (GET_MODE (target) == BLKmode)
+	    {
+	      if (REG_P (temp))
+	        {
+		  if (TREE_CODE (exp) == CALL_EXPR)
+		    copy_blkmode_from_reg (target, temp, TREE_TYPE (exp));
+		  else
+		    store_bit_field (target,
+				     INTVAL (expr_size (exp)) * BITS_PER_UNIT,
+				     0, 0, 0, GET_MODE (temp), temp);
+		}
+	      else
+		emit_block_move (target, temp, expr_size (exp),
+				 (call_param_p
+				  ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
+	    }
 	  else
-	    convert_move (target, temp, unsignedp);
+	    convert_move (target, temp, TYPE_UNSIGNED (TREE_TYPE (exp)));
 	}
 
       else if (GET_MODE (temp) == BLKmode && TREE_CODE (exp) == STRING_CST)
@@ -6328,7 +6352,8 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
      twice, once with emit_move_insn and once via store_field.  */
 
   if (mode == BLKmode
-      && (REG_P (target) || GET_CODE (target) == SUBREG))
+      && (REG_P (target) || GET_CODE (target) == SUBREG)
+      && TREE_CODE (exp) != CALL_EXPR)
     {
       rtx object = assign_temp (type, 1, 1);
       rtx blk_object = adjust_address (object, BLKmode, 0);
@@ -6474,6 +6499,16 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  if (temp_target == target)
 	    return const0_rtx;
 
+	  temp = temp_target;
+	}
+
+      /* Handle calls that return BLKmode values in registers.  */
+      else if (mode == BLKmode
+	       && REG_P (temp)
+	       && TREE_CODE (exp) == CALL_EXPR)
+	{
+	  rtx temp_target = gen_reg_rtx (GET_MODE (temp));
+	  copy_blkmode_from_reg (temp_target, temp, TREE_TYPE (exp));
 	  temp = temp_target;
 	}
 
@@ -10270,10 +10305,15 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	{
 	  enum insn_code icode;
 
-	  op0 = copy_rtx (op0);
-
 	  if (TYPE_ALIGN_OK (type))
-	    set_mem_align (op0, MAX (MEM_ALIGN (op0), TYPE_ALIGN (type)));
+	    {
+	      /* ??? Copying the MEM without substantially changing it might
+		 run afoul of the code handling volatile memory references in
+		 store_expr, which assumes that TARGET is returned unmodified
+		 if it has been used.  */
+	      op0 = copy_rtx (op0);
+	      set_mem_align (op0, MAX (MEM_ALIGN (op0), TYPE_ALIGN (type)));
+	    }
 	  else if (mode != BLKmode
 		   && MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode)
 		   /* If the target does have special handling for unaligned
@@ -10819,10 +10859,14 @@ do_store_flag (sepops ops, rtx target, enum machine_mode mode)
 #endif
 
 /* Attempt to generate a casesi instruction.  Returns 1 if successful,
-   0 otherwise (i.e. if there is no casesi instruction).  */
+   0 otherwise (i.e. if there is no casesi instruction).
+
+   DEFAULT_PROBABILITY is the probability of jumping to the default
+   label.  */
 int
 try_casesi (tree index_type, tree index_expr, tree minval, tree range,
-	    rtx table_label, rtx default_label, rtx fallback_label)
+	    rtx table_label, rtx default_label, rtx fallback_label,
+            int default_probability)
 {
   struct expand_operand ops[5];
   enum machine_mode index_mode = SImode;
@@ -10844,7 +10888,8 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
       index = expand_normal (index_expr);
       if (default_label)
         emit_cmp_and_jump_insns (rangertx, index, LTU, NULL_RTX,
-				 omode, 1, default_label);
+				 omode, 1, default_label,
+                                 default_probability);
       /* Now we can safely truncate.  */
       index = convert_to_mode (index_mode, index, 0);
     }
@@ -10890,11 +10935,13 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
    TABLE_LABEL is a CODE_LABEL rtx for the table itself.
 
    DEFAULT_LABEL is a CODE_LABEL rtx to jump to if the
-   index value is out of range.  */
+   index value is out of range.
+   DEFAULT_PROBABILITY is the probability of jumping to
+   the default label.  */
 
 static void
 do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
-	      rtx default_label)
+	      rtx default_label, int default_probability)
 {
   rtx temp, vector;
 
@@ -10911,7 +10958,8 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
 
   if (default_label)
     emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, mode, 1,
-			     default_label);
+			     default_label, default_probability);
+
 
   /* If index is in range, it must fit in Pmode.
      Convert to Pmode so we can index with it.  */
@@ -10954,7 +11002,7 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
 
 int
 try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
-	       rtx table_label, rtx default_label)
+	       rtx table_label, rtx default_label, int default_probability)
 {
   rtx index;
 
@@ -10972,7 +11020,7 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
 			       TYPE_MODE (TREE_TYPE (range)),
 			       expand_normal (range),
 			       TYPE_UNSIGNED (TREE_TYPE (range))),
-		table_label, default_label);
+		table_label, default_label, default_probability);
   return 1;
 }
 

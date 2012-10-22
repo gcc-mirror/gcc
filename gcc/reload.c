@@ -282,7 +282,7 @@ static int find_reloads_address_1 (enum machine_mode, addr_space_t, rtx, int,
 static void find_reloads_address_part (rtx, rtx *, enum reg_class,
 				       enum machine_mode, int,
 				       enum reload_type, int);
-static rtx find_reloads_subreg_address (rtx, int, int, enum reload_type,
+static rtx find_reloads_subreg_address (rtx, int, enum reload_type,
 					int, rtx, int *);
 static void copy_replacements_1 (rtx *, rtx *, int);
 static int find_inc_amount (rtx, rtx);
@@ -4810,31 +4810,19 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	}
 
       /* If the subreg contains a reg that will be converted to a mem,
-	 convert the subreg to a narrower memref now.
-	 Otherwise, we would get (subreg (mem ...) ...),
-	 which would force reload of the mem.
-
-	 We also need to do this if there is an equivalent MEM that is
-	 not offsettable.  In that case, alter_subreg would produce an
-	 invalid address on big-endian machines.
-
-	 For machines that extend byte loads, we must not reload using
-	 a wider mode if we have a paradoxical SUBREG.  find_reloads will
-	 force a reload in that case.  So we should not do anything here.  */
+	 attempt to convert the whole subreg to a (narrower or wider)
+	 memory reference instead.  If this succeeds, we're done --
+	 otherwise fall through to check whether the inner reg still
+	 needs address reloads anyway.  */
 
       if (regno >= FIRST_PSEUDO_REGISTER
-#ifdef LOAD_EXTEND_OP
-	  && !paradoxical_subreg_p (x)
-#endif
-	  && (reg_equiv_address (regno) != 0
-	      || (reg_equiv_mem (regno) != 0
-		  && (! strict_memory_address_addr_space_p
-		      (GET_MODE (x), XEXP (reg_equiv_mem (regno), 0),
-		       MEM_ADDR_SPACE (reg_equiv_mem (regno)))
-		      || ! offsettable_memref_p (reg_equiv_mem (regno))
-		      || num_not_at_initial_offset))))
-	x = find_reloads_subreg_address (x, 1, opnum, type, ind_levels,
-					   insn, address_reloaded);
+	  && reg_equiv_memory_loc (regno) != 0)
+	{
+	  tem = find_reloads_subreg_address (x, opnum, type, ind_levels,
+					     insn, address_reloaded);
+	  if (tem)
+	    return tem;
+	}
     }
 
   for (copied = 0, i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -6070,12 +6058,31 @@ find_reloads_address_1 (enum machine_mode mode, addr_space_t as,
 	      if (ira_reg_class_max_nregs [rclass][GET_MODE (SUBREG_REG (x))]
 		  > reg_class_size[(int) rclass])
 		{
-		  x = find_reloads_subreg_address (x, 0, opnum,
-						   ADDR_TYPE (type),
-						   ind_levels, insn, NULL);
-		  push_reload (x, NULL_RTX, loc, (rtx*) 0, rclass,
-			       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
-		  return 1;
+		  /* If the inner register will be replaced by a memory
+		     reference, we can do this only if we can replace the
+		     whole subreg by a (narrower) memory reference.  If
+		     this is not possible, fall through and reload just
+		     the inner register (including address reloads).  */
+		  if (reg_equiv_memory_loc (REGNO (SUBREG_REG (x))) != 0)
+		    {
+		      rtx tem = find_reloads_subreg_address (x, opnum,
+							     ADDR_TYPE (type),
+							     ind_levels, insn,
+							     NULL);
+		      if (tem)
+			{
+			  push_reload (tem, NULL_RTX, loc, (rtx*) 0, rclass,
+				       GET_MODE (tem), VOIDmode, 0, 0,
+				       opnum, type);
+			  return 1;
+			}
+		    }
+		  else
+		    {
+		      push_reload (x, NULL_RTX, loc, (rtx*) 0, rclass,
+				   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+		      return 1;
+		    }
 		}
 	    }
 	}
@@ -6152,17 +6159,12 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
 }
 
 /* X, a subreg of a pseudo, is a part of an address that needs to be
-   reloaded.
+   reloaded, and the pseusdo is equivalent to a memory location.
 
-   If the pseudo is equivalent to a memory location that cannot be directly
-   addressed, make the necessary address reloads.
-
-   If address reloads have been necessary, or if the address is changed
-   by register elimination, return the rtx of the memory location;
-   otherwise, return X.
-
-   If FORCE_REPLACE is nonzero, unconditionally replace the subreg with the
-   memory location.
+   Attempt to replace the whole subreg by a (possibly narrower or wider)
+   memory reference.  If this is possible, return this new memory
+   reference, and push all required address reloads.  Otherwise,
+   return NULL.
 
    OPNUM and TYPE identify the purpose of the reload.
 
@@ -6174,131 +6176,106 @@ find_reloads_address_part (rtx x, rtx *loc, enum reg_class rclass,
    stack slots.  */
 
 static rtx
-find_reloads_subreg_address (rtx x, int force_replace, int opnum,
-			     enum reload_type type, int ind_levels, rtx insn,
-			     int *address_reloaded)
+find_reloads_subreg_address (rtx x, int opnum, enum reload_type type,
+			     int ind_levels, rtx insn, int *address_reloaded)
 {
+  enum machine_mode outer_mode = GET_MODE (x);
+  enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
   int regno = REGNO (SUBREG_REG (x));
   int reloaded = 0;
+  rtx tem, orig;
+  int offset;
 
-  if (reg_equiv_memory_loc (regno))
+  gcc_assert (reg_equiv_memory_loc (regno) != 0);
+
+  /* We cannot replace the subreg with a modified memory reference if:
+
+     - we have a paradoxical subreg that implicitly acts as a zero or
+       sign extension operation due to LOAD_EXTEND_OP;
+
+     - we have a subreg that is implicitly supposed to act on the full
+       register due to WORD_REGISTER_OPERATIONS (see also eliminate_regs);
+
+     - the address of the equivalent memory location is mode-dependent;  or
+
+     - we have a paradoxical subreg and the resulting memory is not
+       sufficiently aligned to allow access in the wider mode.
+
+    In addition, we choose not to perform the replacement for *any*
+    paradoxical subreg, even if it were possible in principle.  This
+    is to avoid generating wider memory references than necessary.
+
+    This corresponds to how previous versions of reload used to handle
+    paradoxical subregs where no address reload was required.  */
+
+  if (paradoxical_subreg_p (x))
+    return NULL;
+
+#ifdef WORD_REGISTER_OPERATIONS
+  if (GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode)
+      && ((GET_MODE_SIZE (outer_mode) - 1) / UNITS_PER_WORD
+          == (GET_MODE_SIZE (inner_mode) - 1) / UNITS_PER_WORD))
+    return NULL;
+#endif
+
+  /* Since we don't attempt to handle paradoxical subregs, we can just
+     call into simplify_subreg, which will handle all remaining checks
+     for us.  */
+  orig = make_memloc (SUBREG_REG (x), regno);
+  offset = SUBREG_BYTE (x);
+  tem = simplify_subreg (outer_mode, orig, inner_mode, offset);
+  if (!tem || !MEM_P (tem))
+    return NULL;
+
+  /* Now push all required address reloads, if any.  */
+  reloaded = find_reloads_address (GET_MODE (tem), &tem,
+				   XEXP (tem, 0), &XEXP (tem, 0),
+				   opnum, type, ind_levels, insn);
+  /* ??? Do we need to handle nonzero offsets somehow?  */
+  if (!offset && !rtx_equal_p (tem, orig))
+    push_reg_equiv_alt_mem (regno, tem);
+
+  /* For some processors an address may be valid in the original mode but
+     not in a smaller mode.  For example, ARM accepts a scaled index register
+     in SImode but not in HImode.  Note that this is only a problem if the
+     address in reg_equiv_mem is already invalid in the new mode; other
+     cases would be fixed by find_reloads_address as usual.
+
+     ??? We attempt to handle such cases here by doing an additional reload
+     of the full address after the usual processing by find_reloads_address.
+     Note that this may not work in the general case, but it seems to cover
+     the cases where this situation currently occurs.  A more general fix
+     might be to reload the *value* instead of the address, but this would
+     not be expected by the callers of this routine as-is.
+
+     If find_reloads_address already completed replaced the address, there
+     is nothing further to do.  */
+  if (reloaded == 0
+      && reg_equiv_mem (regno) != 0
+      && !strict_memory_address_addr_space_p
+		(GET_MODE (x), XEXP (reg_equiv_mem (regno), 0),
+		 MEM_ADDR_SPACE (reg_equiv_mem (regno))))
     {
-      /* If the address is not directly addressable, or if the address is not
-	 offsettable, then it must be replaced.  */
-      if (! force_replace
-	  && (reg_equiv_address (regno)
-	      || ! offsettable_memref_p (reg_equiv_mem (regno))))
-	force_replace = 1;
-
-      if (force_replace || num_not_at_initial_offset)
-	{
-	  rtx tem = make_memloc (SUBREG_REG (x), regno);
-
-	  /* If the address changes because of register elimination, then
-	     it must be replaced.  */
-	  if (force_replace
-	      || ! rtx_equal_p (tem, reg_equiv_mem (regno)))
-	    {
-	      unsigned outer_size = GET_MODE_SIZE (GET_MODE (x));
-	      unsigned inner_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
-	      int offset;
-	      rtx orig = tem;
-
-	      /* For big-endian paradoxical subregs, SUBREG_BYTE does not
-		 hold the correct (negative) byte offset.  */
-	      if (BYTES_BIG_ENDIAN && outer_size > inner_size)
-		offset = inner_size - outer_size;
-	      else
-		offset = SUBREG_BYTE (x);
-
-	      XEXP (tem, 0) = plus_constant (GET_MODE (XEXP (tem, 0)),
-					     XEXP (tem, 0), offset);
-	      PUT_MODE (tem, GET_MODE (x));
-	      if (MEM_OFFSET_KNOWN_P (tem))
-		set_mem_offset (tem, MEM_OFFSET (tem) + offset);
-	      if (MEM_SIZE_KNOWN_P (tem)
-		  && MEM_SIZE (tem) != (HOST_WIDE_INT) outer_size)
-		set_mem_size (tem, outer_size);
-
-	      /* If this was a paradoxical subreg that we replaced, the
-		 resulting memory must be sufficiently aligned to allow
-		 us to widen the mode of the memory.  */
-	      if (outer_size > inner_size)
-		{
-		  rtx base;
-
-		  base = XEXP (tem, 0);
-		  if (GET_CODE (base) == PLUS)
-		    {
-		      if (CONST_INT_P (XEXP (base, 1))
-			  && INTVAL (XEXP (base, 1)) % outer_size != 0)
-			return x;
-		      base = XEXP (base, 0);
-		    }
-		  if (!REG_P (base)
-		      || (REGNO_POINTER_ALIGN (REGNO (base))
-			  < outer_size * BITS_PER_UNIT))
-		    return x;
-		}
-
-	      reloaded = find_reloads_address (GET_MODE (tem), &tem,
-					       XEXP (tem, 0), &XEXP (tem, 0),
-					       opnum, type, ind_levels, insn);
-	      /* ??? Do we need to handle nonzero offsets somehow?  */
-	      if (!offset && !rtx_equal_p (tem, orig))
-		push_reg_equiv_alt_mem (regno, tem);
-
-	      /* For some processors an address may be valid in the
-		 original mode but not in a smaller mode.  For
-		 example, ARM accepts a scaled index register in
-		 SImode but not in HImode.  Note that this is only
-		 a problem if the address in reg_equiv_mem is already
-		 invalid in the new mode; other cases would be fixed
-		 by find_reloads_address as usual.
-
-		 ??? We attempt to handle such cases here by doing an
-		 additional reload of the full address after the
-		 usual processing by find_reloads_address.  Note that
-		 this may not work in the general case, but it seems
-		 to cover the cases where this situation currently
-		 occurs.  A more general fix might be to reload the
-		 *value* instead of the address, but this would not
-		 be expected by the callers of this routine as-is.
-
-		 If find_reloads_address already completed replaced
-		 the address, there is nothing further to do.  */
-	      if (reloaded == 0
-		  && reg_equiv_mem (regno) != 0
-		  && !strict_memory_address_addr_space_p
-			(GET_MODE (x), XEXP (reg_equiv_mem (regno), 0),
-			 MEM_ADDR_SPACE (reg_equiv_mem (regno))))
-		{
-		  push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
-			       base_reg_class (GET_MODE (tem),
-					       MEM_ADDR_SPACE (tem),
-					       MEM, SCRATCH),
-			       GET_MODE (XEXP (tem, 0)), VOIDmode, 0, 0,
-			       opnum, type);
-		  reloaded = 1;
-		}
-	      /* If this is not a toplevel operand, find_reloads doesn't see
-		 this substitution.  We have to emit a USE of the pseudo so
-		 that delete_output_reload can see it.  */
-	      if (replace_reloads && recog_data.operand[opnum] != x)
-		/* We mark the USE with QImode so that we recognize it
-		   as one that can be safely deleted at the end of
-		   reload.  */
-		PUT_MODE (emit_insn_before (gen_rtx_USE (VOIDmode,
-							 SUBREG_REG (x)),
-					    insn), QImode);
-	      x = tem;
-	    }
-	}
+      push_reload (XEXP (tem, 0), NULL_RTX, &XEXP (tem, 0), (rtx*) 0,
+		   base_reg_class (GET_MODE (tem), MEM_ADDR_SPACE (tem),
+				   MEM, SCRATCH),
+		   GET_MODE (XEXP (tem, 0)), VOIDmode, 0, 0, opnum, type);
+      reloaded = 1;
     }
+
+  /* If this is not a toplevel operand, find_reloads doesn't see this
+     substitution.  We have to emit a USE of the pseudo so that
+     delete_output_reload can see it.  */
+  if (replace_reloads && recog_data.operand[opnum] != x)
+    /* We mark the USE with QImode so that we recognize it as one that
+       can be safely deleted at the end of reload.  */
+    PUT_MODE (emit_insn_before (gen_rtx_USE (VOIDmode, SUBREG_REG (x)), insn),
+	      QImode);
+
   if (address_reloaded)
     *address_reloaded = reloaded;
 
-  return x;
+  return tem;
 }
 
 /* Substitute into the current INSN the registers into which we have reloaded

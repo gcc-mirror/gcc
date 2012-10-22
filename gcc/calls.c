@@ -384,13 +384,8 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 
   /* Some target create a fresh MEM instead of reusing the one provided
      above.  Set its MEM_EXPR.  */
-  call = PATTERN (call_insn);
-  if (GET_CODE (call) == PARALLEL)
-    call = XVECEXP (call, 0, 0);
-  if (GET_CODE (call) == SET)
-    call = SET_SRC (call);
-  if (GET_CODE (call) == CALL
-      && MEM_P (XEXP (call, 0))
+  call = get_call_rtx_from (call_insn);
+  if (call
       && MEM_EXPR (XEXP (call, 0)) == NULL_TREE
       && MEM_EXPR (funmem) != NULL_TREE)
     set_mem_expr (XEXP (call, 0), MEM_EXPR (funmem));
@@ -3282,9 +3277,6 @@ expand_call (tree exp, rtx target, int ignore)
 	  else
 	    emit_group_store (target, valreg, rettype,
 			      int_size_in_bytes (rettype));
-
-	  /* We can not support sibling calls for this case.  */
-	  sibcall_failure = 1;
 	}
       else if (target
 	       && GET_MODE (target) == TYPE_MODE (rettype)
@@ -3331,16 +3323,6 @@ expand_call (tree exp, rtx target, int ignore)
 	      if (MEM_P (target))
 		sibcall_failure = 1;
 	    }
-	}
-      else if (TYPE_MODE (rettype) == BLKmode)
-	{
-	  rtx val = valreg;
-	  if (GET_MODE (val) != BLKmode)
-	    val = avoid_likely_spilled_reg (val);
-	  target = copy_blkmode_from_reg (target, val, rettype);
-
-	  /* We can not support sibling calls for this case.  */
-	  sibcall_failure = 1;
 	}
       else
 	target = copy_to_reg (avoid_likely_spilled_reg (valreg));

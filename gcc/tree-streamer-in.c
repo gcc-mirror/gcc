@@ -68,12 +68,11 @@ input_identifier (struct data_in *data_in, struct lto_input_block *ib)
 tree
 streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
 {
-  int i, count;
   tree first, prev, curr;
 
+  /* The chain is written as NULL terminated list of trees.  */
   first = prev = NULL_TREE;
-  count = streamer_read_hwi (ib);
-  for (i = 0; i < count; i++)
+  do
     {
       curr = stream_read_tree (ib, data_in);
       if (prev)
@@ -81,9 +80,9 @@ streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
       else
 	first = curr;
 
-      TREE_CHAIN (curr) = NULL_TREE;
       prev = curr;
     }
+  while (curr);
 
   return first;
 }
@@ -138,6 +137,17 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
     SSA_NAME_IS_DEFAULT_DEF (expr) = (unsigned) bp_unpack_value (bp, 1);
   else
     bp_unpack_value (bp, 1);
+}
+
+
+/* Unpack all the non-pointer fields of the TS_INT_CST structure of
+   expression EXPR from bitpack BP.  */
+
+static void
+unpack_ts_int_cst_value_fields (struct bitpack_d *bp, tree expr)
+{
+  TREE_INT_CST_LOW (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
+  TREE_INT_CST_HIGH (expr) = (unsigned) bp_unpack_var_len_int (bp);
 }
 
 
@@ -366,8 +376,11 @@ unpack_ts_block_value_fields (struct data_in *data_in,
    structure of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSED, tree expr ATTRIBUTE_UNUSED)
+unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
+					      struct bitpack_d *bp, tree expr)
 {
+  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (bp_unpack_string (data_in, bp));
+  VEC_safe_push (tree, gc, all_translation_units, expr);
 }
 
 /* Unpack a TS_TARGET_OPTION tree from BP into EXPR.  */
@@ -414,6 +427,9 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
      the types and sizes of each of the fields being packed.  */
   unpack_ts_base_value_fields (bp, expr);
 
+  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    unpack_ts_int_cst_value_fields (bp, expr);
+
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
     unpack_ts_real_cst_value_fields (bp, expr);
 
@@ -445,13 +461,27 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
     unpack_ts_block_value_fields (data_in, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    unpack_ts_translation_unit_decl_value_fields (bp, expr);
+    unpack_ts_translation_unit_decl_value_fields (data_in, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     unpack_ts_target_option (bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     unpack_ts_optimization (bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
+      if (length > 0)
+	VEC_safe_grow (tree, gc, BINFO_BASE_ACCESSES (expr), length);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
+      if (length > 0)
+	VEC_safe_grow (constructor_elt, gc, CONSTRUCTOR_ELTS (expr), length);
+    }
 }
 
 
@@ -627,9 +657,6 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
      for early inlining so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
 
-  if (TREE_CODE (expr) == PARM_DECL)
-    TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
-
   if ((TREE_CODE (expr) == VAR_DECL
        || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
@@ -654,7 +681,7 @@ lto_input_ts_decl_non_common_tree_pointers (struct lto_input_block *ib,
 {
   if (TREE_CODE (expr) == FUNCTION_DECL)
     {
-      DECL_ARGUMENTS (expr) = stream_read_tree (ib, data_in);
+      DECL_ARGUMENTS (expr) = streamer_read_chain (ib, data_in);
       DECL_RESULT (expr) = stream_read_tree (ib, data_in);
     }
   else if (TREE_CODE (expr) == TYPE_DECL)
@@ -813,12 +840,9 @@ static void
 lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
 			        struct data_in *data_in, tree expr)
 {
-  int i, length;
+  int i;
 
-  length = streamer_read_hwi (ib);
-  gcc_assert (length == TREE_OPERAND_LENGTH (expr));
-
-  for (i = 0; i < length; i++)
+  for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     TREE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
 
   TREE_SET_BLOCK (expr, stream_read_tree (ib, data_in));
@@ -878,7 +902,7 @@ static void
 lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 				  struct data_in *data_in, tree expr)
 {
-  unsigned i, len;
+  unsigned i;
   tree t;
 
   /* Note that the number of slots in EXPR was read in
@@ -898,15 +922,12 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
   BINFO_VTABLE (expr) = stream_read_tree (ib, data_in);
   BINFO_VPTR_FIELD (expr) = stream_read_tree (ib, data_in);
 
-  len = streamer_read_uhwi (ib);
-  if (len > 0)
+  /* The vector of BINFO_BASE_ACCESSES is pre-allocated during
+     unpacking the bitfield section.  */
+  for (i = 0; i < VEC_length (tree, BINFO_BASE_ACCESSES (expr)); i++)
     {
-      VEC_reserve_exact (tree, gc, BINFO_BASE_ACCESSES (expr), len);
-      for (i = 0; i < len; i++)
-	{
-	  tree a = stream_read_tree (ib, data_in);
-	  VEC_quick_push (tree, BINFO_BASE_ACCESSES (expr), a);
-	}
+      tree a = stream_read_tree (ib, data_in);
+      VEC_replace (tree, BINFO_BASE_ACCESSES (expr), i, a);
     }
 
   BINFO_INHERITANCE_CHAIN (expr) = stream_read_tree (ib, data_in);
@@ -923,30 +944,17 @@ static void
 lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
 				        struct data_in *data_in, tree expr)
 {
-  unsigned i, len;
+  unsigned i;
 
-  len = streamer_read_uhwi (ib);
-  for (i = 0; i < len; i++)
+  for (i = 0; i < CONSTRUCTOR_NELTS (expr); i++)
     {
-      tree index, value;
-
-      index = stream_read_tree (ib, data_in);
-      value = stream_read_tree (ib, data_in);
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (expr), index, value);
+      constructor_elt e;
+      e.index = stream_read_tree (ib, data_in);
+      e.value = stream_read_tree (ib, data_in);
+      VEC_replace (constructor_elt, CONSTRUCTOR_ELTS (expr), i, e);
     }
 }
 
-
-/* Input a TS_TRANSLATION_UNIT_DECL tree from IB and DATA_IN into EXPR.  */
-
-static void
-lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
-						  struct data_in *data_in,
-						  tree expr)
-{
-  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (streamer_read_string (data_in, ib));
-  VEC_safe_push (tree, gc, all_translation_units, expr);
-}
 
 /* Read all pointer fields in EXPR from input block IB.  DATA_IN
    contains tables and descriptors for the file being read.  */
@@ -1009,9 +1017,6 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     lto_input_ts_constructor_tree_pointers (ib, data_in, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    lto_input_ts_translation_unit_decl_tree_pointers (ib, data_in, expr);
 }
 
 
@@ -1021,25 +1026,10 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 tree
 streamer_read_integer_cst (struct lto_input_block *ib, struct data_in *data_in)
 {
-  tree result, type;
-  HOST_WIDE_INT low, high;
-  bool overflow_p;
-
-  type = stream_read_tree (ib, data_in);
-  overflow_p = (streamer_read_uchar (ib) != 0);
-  low = streamer_read_uhwi (ib);
-  high = streamer_read_uhwi (ib);
-  result = build_int_cst_wide (type, low, high);
-
-  /* If the original constant had overflown, build a replica of RESULT to
-     avoid modifying the shared constant returned by build_int_cst_wide.  */
-  if (overflow_p)
-    {
-      result = copy_node (result);
-      TREE_OVERFLOW (result) = 1;
-    }
-
-  return result;
+  tree type = stream_read_tree (ib, data_in);
+  unsigned HOST_WIDE_INT low = streamer_read_uhwi (ib);
+  HOST_WIDE_INT high = streamer_read_hwi (ib);
+  return build_int_cst_wide (type, low, high);
 }
 
 

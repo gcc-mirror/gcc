@@ -609,7 +609,7 @@ Common Warning
 Warn about code which might break strict aliasing rules
 
 Wstrict-aliasing=
-Common Joined RejectNegative UInteger Var(warn_strict_aliasing) Init(-1) Warning
+Common Joined RejectNegative UInteger Var(warn_strict_aliasing) Warning
 Warn about code which might break strict aliasing rules
 
 Wstrict-overflow
@@ -617,7 +617,7 @@ Common Warning
 Warn about optimizations that assume that signed overflow is undefined
 
 Wstrict-overflow=
-Common Joined RejectNegative UInteger Var(warn_strict_overflow) Init(-1) Warning
+Common Joined RejectNegative UInteger Var(warn_strict_overflow) Warning
 Warn about optimizations that assume that signed overflow is undefined
 
 Wsuggest-attribute=const
@@ -673,7 +673,7 @@ Common Var(warn_unused) Init(0) Warning
 Enable all -Wunused- warnings
 
 Wunused-but-set-parameter
-Common Var(warn_unused_but_set_parameter) Init(-1) Warning
+Common Var(warn_unused_but_set_parameter) Warning EnabledBy(Wunused && Wextra)
 Warn when a function parameter is only set, otherwise unused
 
 Wunused-but-set-variable
@@ -689,7 +689,7 @@ Common Var(warn_unused_label) Warning EnabledBy(Wunused)
 Warn when a label is unused
 
 Wunused-parameter
-Common Var(warn_unused_parameter) Init(-1) Warning
+Common Var(warn_unused_parameter) Warning EnabledBy(Wunused && Wextra)
 Warn when a function parameter is unused
 
 Wunused-value
@@ -1391,6 +1391,11 @@ Enum(ira_region) String(all) Value(IRA_REGION_ALL)
 
 EnumValue
 Enum(ira_region) String(mixed) Value(IRA_REGION_MIXED)
+
+fira-hoist-pressure
+Common Report Var(flag_ira_hoist_pressure) Init(1) Optimization
+Use IRA based register pressure calculation
+in RTL hoist optimizations.
 
 fira-loop-pressure
 Common Report Var(flag_ira_loop_pressure)

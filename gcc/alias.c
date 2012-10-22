@@ -60,14 +60,13 @@ along with GCC; see the file COPYING3.  If not see
    struct Z z2, *pz;
 
 
-   py = &px1.y1;
+   py = &x1.y1;
    px2 = &x1;
 
    Consider the four questions:
 
    Can a store to x1 interfere with px2->y1?
    Can a store to x1 interfere with px2->z2?
-   (*px2).z2
    Can a store to x1 change the value pointed to by with py?
    Can a store to x1 change the value pointed to by with pz?
 
@@ -78,24 +77,24 @@ along with GCC; see the file COPYING3.  If not see
    a store through a pointer to an X can overwrite any field that is
    contained (recursively) in an X (unless we know that px1 != px2).
 
-   The last two of the questions can be solved in the same way as the
-   first two questions but this is too conservative.  The observation
-   is that in some cases analysis we can know if which (if any) fields
-   are addressed and if those addresses are used in bad ways.  This
-   analysis may be language specific.  In C, arbitrary operations may
-   be applied to pointers.  However, there is some indication that
-   this may be too conservative for some C++ types.
+   The last two questions can be solved in the same way as the first
+   two questions but this is too conservative.  The observation is
+   that in some cases we can know which (if any) fields are addressed
+   and if those addresses are used in bad ways.  This analysis may be
+   language specific.  In C, arbitrary operations may be applied to
+   pointers.  However, there is some indication that this may be too
+   conservative for some C++ types.
 
    The pass ipa-type-escape does this analysis for the types whose
    instances do not escape across the compilation boundary.
 
    Historically in GCC, these two problems were combined and a single
-   data structure was used to represent the solution to these
+   data structure that was used to represent the solution to these
    problems.  We now have two similar but different data structures,
-   The data structure to solve the last two question is similar to the
-   first, but does not contain have the fields in it whose address are
-   never taken.  For types that do escape the compilation unit, the
-   data structures will have identical information.
+   The data structure to solve the last two questions is similar to
+   the first, but does not contain the fields whose address are never
+   taken.  For types that do escape the compilation unit, the data
+   structures will have identical information.
 */
 
 /* The alias sets assigned to MEMs assist the back-end in determining
@@ -1641,6 +1640,9 @@ find_base_term (rtx x)
       if (!val)
 	return ret;
 
+      if (cselib_sp_based_value_p (val))
+	return static_reg_base_value[STACK_POINTER_REGNUM];
+
       f = val->locs;
       /* Temporarily reset val->locs to avoid infinite recursion.  */
       val->locs = NULL;
@@ -2758,6 +2760,39 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
   memory_modified = false;
   note_stores (PATTERN (insn), memory_modified_1, CONST_CAST_RTX(mem));
   return memory_modified;
+}
+
+/* Return TRUE if the destination of a set is rtx identical to
+   ITEM.  */
+static inline bool
+set_dest_equal_p (const_rtx set, const_rtx item)
+{
+  rtx dest = SET_DEST (set);
+  return rtx_equal_p (dest, item);
+}
+
+/* Like memory_modified_in_insn_p, but return TRUE if INSN will
+   *DEFINITELY* modify the memory contents of MEM.  */
+bool
+memory_must_be_modified_in_insn_p (const_rtx mem, const_rtx insn)
+{
+  if (!INSN_P (insn))
+    return false;
+  insn = PATTERN (insn);
+  if (GET_CODE (insn) == SET)
+    return set_dest_equal_p (insn, mem);
+  else if (GET_CODE (insn) == PARALLEL)
+    {
+      int i;
+      for (i = 0; i < XVECLEN (insn, 0); i++)
+	{
+	  rtx sub = XVECEXP (insn, 0, i);
+	  if (GET_CODE (sub) == SET
+	      &&  set_dest_equal_p (sub, mem))
+	    return true;
+	}
+    }
+  return false;
 }
 
 /* Initialize the aliasing machinery.  Initialize the REG_KNOWN_VALUE

@@ -4680,11 +4680,11 @@ dataflow_set_remove_mem_locs (void **slot, void *data)
 static void
 dataflow_set_clear_at_call (dataflow_set *set)
 {
-  int r;
+  unsigned int r;
+  hard_reg_set_iterator hrsi;
 
-  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, r))
-      var_regno_delete (set, r);
+  EXECUTE_IF_SET_IN_HARD_REG_SET (regs_invalidated_by_call, 0, r, hrsi)
+    var_regno_delete (set, r);
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
@@ -5769,6 +5769,11 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 
   resolve = preserve = !cselib_preserved_value_p (v);
 
+  if (loc == stack_pointer_rtx
+      && hard_frame_pointer_adjustment != -1
+      && preserve)
+    cselib_set_value_sp_based (v);
+
   nloc = replace_expr_with_values (oloc);
   if (nloc)
     oloc = nloc;
@@ -5892,9 +5897,8 @@ static rtx call_arguments;
 static void
 prepare_call_arguments (basic_block bb, rtx insn)
 {
-  rtx link, x;
+  rtx link, x, call;
   rtx prev, cur, next;
-  rtx call = PATTERN (insn);
   rtx this_arg = NULL_RTX;
   tree type = NULL_TREE, t, fndecl = NULL_TREE;
   tree obj_type_ref = NULL_TREE;
@@ -5903,11 +5907,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
 
   memset (&args_so_far_v, 0, sizeof (args_so_far_v));
   args_so_far = pack_cumulative_args (&args_so_far_v);
-  if (GET_CODE (call) == PARALLEL)
-    call = XVECEXP (call, 0, 0);
-  if (GET_CODE (call) == SET)
-    call = SET_SRC (call);
-  if (GET_CODE (call) == CALL && MEM_P (XEXP (call, 0)))
+  call = get_call_rtx_from (insn);
+  if (call)
     {
       if (GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
 	{
@@ -6181,12 +6182,8 @@ prepare_call_arguments (basic_block bb, rtx insn)
     }
   call_arguments = prev;
 
-  x = PATTERN (insn);
-  if (GET_CODE (x) == PARALLEL)
-    x = XVECEXP (x, 0, 0);
-  if (GET_CODE (x) == SET)
-    x = SET_SRC (x);
-  if (GET_CODE (x) == CALL && MEM_P (XEXP (x, 0)))
+  x = get_call_rtx_from (insn);
+  if (x)
     {
       x = XEXP (XEXP (x, 0), 0);
       if (GET_CODE (x) == SYMBOL_REF)
@@ -9867,6 +9864,19 @@ vt_initialize (void)
 		    {
 		      vt_init_cfa_base ();
 		      hard_frame_pointer_adjustment = fp_cfa_offset;
+		      /* Disassociate sp from fp now.  */
+		      if (MAY_HAVE_DEBUG_INSNS)
+			{
+			  cselib_val *v;
+			  cselib_invalidate_rtx (stack_pointer_rtx);
+			  v = cselib_lookup (stack_pointer_rtx, Pmode, 1,
+					     VOIDmode);
+			  if (v && !cselib_preserved_value_p (v))
+			    {
+			      cselib_set_value_sp_based (v);
+			      preserve_value (v);
+			    }
+			}
 		    }
 		}
 	    }

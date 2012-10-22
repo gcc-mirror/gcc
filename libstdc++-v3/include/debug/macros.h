@@ -202,10 +202,18 @@ _GLIBCXX_DEBUG_VERIFY(!_Last._M_is_before_begin(),			\
 // Verify that the subscript _N is less than the container's size.
 #define __glibcxx_check_subscript(_N)					\
 _GLIBCXX_DEBUG_VERIFY(_N < this->size(),				\
-		      _M_message(__gnu_debug::__msg_subscript_oob)      \
+		      _M_message(__gnu_debug::__msg_subscript_oob)	\
                       ._M_sequence(*this, "this")			\
 		      ._M_integer(_N, #_N)				\
 		      ._M_integer(this->size(), "size"))
+
+// Verify that the bucket _N is less than the container's buckets count.
+#define __glibcxx_check_bucket_index(_N)				\
+_GLIBCXX_DEBUG_VERIFY(_N < this->bucket_count(),			\
+		      _M_message(__gnu_debug::__msg_bucket_index_oob)	\
+                      ._M_sequence(*this, "this")			\
+		      ._M_integer(_N, #_N)				\
+		      ._M_integer(this->bucket_count(), "size"))
 
 // Verify that the container is nonempty
 #define __glibcxx_check_nonempty()					\
@@ -316,7 +324,13 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(_First, _Last, \
 // Verify that the container is not self move assigned
 #define __glibcxx_check_self_move_assign(_Other)			\
 _GLIBCXX_DEBUG_VERIFY(this != &_Other,					\
-		      _M_message(__gnu_debug::__msg_self_move_assign)   \
+		      _M_message(__gnu_debug::__msg_self_move_assign)	\
+                      ._M_sequence(*this, "this"))
+
+// Verify that load factor is position
+#define __glibcxx_check_max_load_factor(_F)				\
+_GLIBCXX_DEBUG_VERIFY(_F > 0.0f,					\
+		      _M_message(__gnu_debug::__msg_valid_load_factor)	\
                       ._M_sequence(*this, "this"))
 
 #ifdef _GLIBCXX_DEBUG_PEDANTIC

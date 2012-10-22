@@ -671,6 +671,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
   if (count < 0)
     {
       cpp_errno (pfile, CPP_DL_ERROR, file->path);
+      free (buf);
       return false;
     }
 
@@ -1759,6 +1760,7 @@ _cpp_save_file_entries (cpp_reader *pfile, FILE *fp)
 	  if (!open_file (f))
 	    {
 	      open_file_failed (pfile, f, 0);
+	      free (result);
 	      return false;
 	    }
 	  ff = fdopen (f->fd, "rb");

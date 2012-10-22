@@ -727,7 +727,7 @@ warnings.
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing}, @option{-Wampersand},
-@option{-Wconversion}, @option{-Wsurprising},
+@option{-Wconversion}, @option{-Wsurprising}, @option{-Wc-binding-type},
 @option{-Wintrinsics-std}, @option{-Wno-tabs}, @option{-Wintrinsic-shadow},
 @option{-Wline-truncation}, @option{-Wtarget-lifetime},
 @option{-Wreal-q-constant} and @option{-Wunused}.
@@ -778,7 +778,8 @@ avoid such temporaries.
 Warn if the a variable might not be C interoperable.  In particular, warn if 
 the variable has been declared using an intrinsic type with default kind
 instead of using a kind parameter defined for C interoperability in the
-intrinsic @code{ISO_C_Binding} module.
+intrinsic @code{ISO_C_Binding} module.  This option is implied by
+@option{-Wall}.
 
 @item -Wcharacter-truncation
 @opindex @code{Wcharacter-truncation}
@@ -788,7 +789,8 @@ Warn when a character assignment will truncate the assigned string.
 @item -Wline-truncation
 @opindex @code{Wline-truncation}
 @cindex warnings, line truncation
-Warn when a source code line will be truncated.
+Warn when a source code line will be truncated.  This option is
+implied by @option{-Wall}.
 
 @item -Wconversion
 @opindex @code{Wconversion}
@@ -802,6 +804,14 @@ the expression after conversion. Implied by @option{-Wall}.
 @cindex warnings, conversion
 @cindex conversion
 Warn about implicit conversions between different types and kinds.
+
+@item -Wextra
+@opindex @code{Wextra}
+@cindex extra warnings
+@cindex warnings, extra
+Enables some warning options for usages of language features which
+may be problematic. This currently includes @option{-Wcompare-reals}
+and @option{-Wunused-parameter}.
 
 @item -Wimplicit-interface
 @opindex @code{Wimplicit-interface}
@@ -884,7 +894,7 @@ encountered, which yield an UNDERFLOW during compilation.
 Warn if a user-defined procedure or module procedure has the same name as an
 intrinsic; in this case, an explicit interface or @code{EXTERNAL} or
 @code{INTRINSIC} declaration might be needed to get calls later resolved to
-the desired intrinsic/procedure.
+the desired intrinsic/procedure.  This option is implied by @option{-Wall}.
 
 @item -Wunused-dummy-argument
 @opindex @code{Wunused-dummy-argument}
@@ -939,6 +949,7 @@ allocatable variable; this includes scalars and derived types.
 @item -Wcompare-reals
 @opindex @code{Wcompare-reals}
 Warn when comparing real or complex types for equality or inequality.
+This option is implied by @option{-Wextra}.
 
 @item -Wtarget-lifetime
 @opindex @code{Wtargt-lifetime}

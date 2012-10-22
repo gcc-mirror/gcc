@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,5 +27,7 @@ int main()
   constexpr array_type a = { { 0, 55, 66, 99, 4115, 2 } };
   constexpr auto v1 __attribute__((unused)) = a[1];
   constexpr auto v2 __attribute__((unused)) = a.at(2);
+  constexpr auto v3 __attribute__((unused)) = a.front();
+  constexpr auto v4 __attribute__((unused)) = a.back();
   return 0;
 }

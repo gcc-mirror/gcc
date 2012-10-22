@@ -686,6 +686,7 @@ static int thumb_call_reg_needed;
 					 architecture.  */
 #define FL_ARCH7      (1 << 22)       /* Architecture 7.  */
 #define FL_ARM_DIV    (1 << 23)	      /* Hardware divide (ARM mode).  */
+#define FL_ARCH8      (1 << 24)       /* Architecture 8.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
 #define FL_IWMMXT2    (1 << 30)       /* "Intel Wireless MMX2 technology".  */
@@ -716,6 +717,8 @@ static int thumb_call_reg_needed;
 #define FL_FOR_ARCH7R	(FL_FOR_ARCH7A | FL_THUMB_DIV)
 #define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_THUMB_DIV)
 #define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
+#define FL_FOR_ARCH8A	(FL_FOR_ARCH7 | FL_ARCH6K | FL_ARCH8 | FL_THUMB_DIV \
+			 | FL_ARM_DIV | FL_NOTM)
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
@@ -764,6 +767,9 @@ int arm_arch_notm = 0;
 
 /* Nonzero if instructions present in ARMv7E-M can be used.  */
 int arm_arch7em = 0;
+
+/* Nonzero if instructions present in ARMv8 can be used.  */
+int arm_arch8 = 0;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
@@ -1059,8 +1065,8 @@ char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
 static const struct arm_fpu_desc all_fpus[] =
 {
-#define ARM_FPU(NAME, MODEL, REV, VFP_REGS, NEON, FP16) \
-  { NAME, MODEL, REV, VFP_REGS, NEON, FP16 },
+#define ARM_FPU(NAME, MODEL, REV, VFP_REGS, NEON, FP16, CRYPTO) \
+  { NAME, MODEL, REV, VFP_REGS, NEON, FP16, CRYPTO },
 #include "arm-fpus.def"
 #undef ARM_FPU
 };
@@ -1743,6 +1749,7 @@ arm_option_override (void)
   arm_arch6m = arm_arch6 && !arm_arch_notm;
   arm_arch7 = (insn_flags & FL_ARCH7) != 0;
   arm_arch7em = (insn_flags & FL_ARCH7EM) != 0;
+  arm_arch8 = (insn_flags & FL_ARCH8) != 0;
   arm_arch_thumb2 = (insn_flags & FL_THUMB2) != 0;
   arm_arch_xscale = (insn_flags & FL_XSCALE) != 0;
 
@@ -1959,6 +1966,7 @@ arm_option_override (void)
   /* Enable -munaligned-access by default for
      - all ARMv6 architecture-based processors
      - ARMv7-A, ARMv7-R, and ARMv7-M architecture-based processors.
+     - ARMv8 architecture-base processors.
 
      Disable -munaligned-access by default for
      - all pre-ARMv6 architecture-based processors
@@ -16732,7 +16740,7 @@ arm_expand_prologue (void)
 		}
 	      emit_set_insn (ip_rtx, insn);
 	      /* Add a USE to stop propagate_one_insn() from barfing.  */
-	      emit_insn (gen_prologue_use (ip_rtx));
+	      emit_insn (gen_force_register_use (ip_rtx));
 	    }
 	}
       else
@@ -18718,6 +18726,8 @@ static neon_builtin_datum neon_builtin_data[] =
   VAR8 (BINOP, vmul, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
   VAR8 (TERNOP, vmla, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
   VAR3 (TERNOP, vmlal, v8qi, v4hi, v2si),
+  VAR2 (TERNOP, vfma, v2sf, v4sf),
+  VAR2 (TERNOP, vfms, v2sf, v4sf),
   VAR8 (TERNOP, vmls, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf),
   VAR3 (TERNOP, vmlsl, v8qi, v4hi, v2si),
   VAR4 (BINOP, vqdmulh, v4hi, v2si, v8hi, v4si),
@@ -22621,7 +22631,7 @@ thumb1_expand_epilogue (void)
 
   /* Emit a USE (stack_pointer_rtx), so that
      the stack adjustment will not be deleted.  */
-  emit_insn (gen_prologue_use (stack_pointer_rtx));
+  emit_insn (gen_force_register_use (stack_pointer_rtx));
 
   if (crtl->profile || !TARGET_SCHED_PROLOG)
     emit_insn (gen_blockage ());
@@ -22845,7 +22855,7 @@ arm_expand_epilogue (bool really_return)
 
           /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
              deleted.  */
-          emit_insn (gen_prologue_use (stack_pointer_rtx));
+          emit_insn (gen_force_register_use (stack_pointer_rtx));
         }
       else
         {
@@ -22863,7 +22873,7 @@ arm_expand_epilogue (bool really_return)
           emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
           /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
              deleted.  */
-          emit_insn (gen_prologue_use (stack_pointer_rtx));
+          emit_insn (gen_force_register_use (stack_pointer_rtx));
         }
     }
   else
@@ -22881,7 +22891,7 @@ arm_expand_epilogue (bool really_return)
                                  GEN_INT (amount)));
           /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is
              not deleted.  */
-          emit_insn (gen_prologue_use (stack_pointer_rtx));
+          emit_insn (gen_force_register_use (stack_pointer_rtx));
         }
     }
 
@@ -25437,8 +25447,8 @@ arm_expand_compare_and_swap (rtx operands[])
     case SImode:
       /* Force the value into a register if needed.  We waited until after
 	 the zero-extension above to do this properly.  */
-      if (!arm_add_operand (oldval, mode))
-	oldval = force_reg (mode, oldval);
+      if (!arm_add_operand (oldval, SImode))
+	oldval = force_reg (SImode, oldval);
       break;
 
     case DImode:

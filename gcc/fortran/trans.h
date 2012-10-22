@@ -351,8 +351,10 @@ tree gfc_vtable_copy_get (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree);
 tree gfc_copy_class_to_class (tree, tree, tree);
-void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree);
-void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool);
+void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree, bool,
+				bool);
+void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool, bool,
+			      bool, bool);
 
 /* Initialize an init/cleanup block.  */
 void gfc_start_wrapped_block (gfc_wrapped_block* block, tree code);

@@ -1,3 +1,39 @@
+2012-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	PR c/40989
+	* c.opt (Waddress,Wchar-subscripts,Wsign-conversion,Wimplicit,
+	Wimplicit-function-declaration,Wimplicit-int,Wsizeof-pointer-memaccess,
+	Wnarrowing,Wparentheses,Wpointer-sign,Wreturn-type,Wsequence-point,
+	Wsign-compare,Wuninitialized,Wmaybe-uninitialized,Wunused,
+	Wvolatile-register-var): Add LangEnabledBy or EnabledBy.
+	* c-opts.c (c_common_handle_option): Remove explicit handling from
+	here.
+	(c_common_post_options): Likewise.
+
+2012-10-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (LOCATION_COL): Delete.
+	(compare_location): New function.
+	(compare_node): Use it.
+	(compare_comment): Likewise.
+
+2012-10-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	PR c/40989
+	* c.opt (Wstrict-aliasing=,Wstrict-overflow=): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not set them here. Add
+	comment.
+	(c_common_post_options): Likewise.
+
+2012-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Define.
+	(dump_generic_ada_node) <INTEGER_CST>: Deal with sizetype specially.
+	Remove POINTER_TYPE handling, add large unsigned handling and use
+	ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX for big numbers.
+
 2012-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54381

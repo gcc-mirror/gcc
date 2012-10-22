@@ -1153,7 +1153,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
   if (dispatch_label)
     {
 #ifdef DONT_USE_BUILTIN_SETJMP
-      rtx x, last;
+      rtx x;
       x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
 				   TYPE_MODE (integer_type_node), 1,
 				   plus_constant (Pmode, XEXP (fc, 0),
@@ -1161,13 +1161,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			       TYPE_MODE (integer_type_node), 0,
-			       dispatch_label);
-      last = get_last_insn ();
-      if (JUMP_P (last) && any_condjump_p (last))
-	{
-	  gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
-	  add_reg_note (last, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE / 100));
-	}
+			       dispatch_label, REG_BR_PROB_BASE / 100);
 #else
       expand_builtin_setjmp_setup (plus_constant (Pmode, XEXP (fc, 0),
 						  sjlj_fc_jbuf_ofs),

@@ -710,7 +710,6 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 
  error:
   cpp_errno (r, CPP_DL_ERROR, "while reading precompiled header");
-  return -1;
 
  fail:
   free (namebuf);

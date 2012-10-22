@@ -4743,12 +4743,18 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      tree newref, newoff;
 	      gimple incr;
 	      if (TREE_CODE (ref) == ARRAY_REF)
-		newref = build4 (ARRAY_REF, TREE_TYPE (ref),
-				 unshare_expr (TREE_OPERAND (ref, 0)),
-				 running_off,
-				 NULL_TREE, NULL_TREE);
+		{
+		  newref = build4 (ARRAY_REF, TREE_TYPE (ref),
+				   unshare_expr (TREE_OPERAND (ref, 0)),
+				   running_off,
+				   NULL_TREE, NULL_TREE);
+		  if (!useless_type_conversion_p (TREE_TYPE (vectype),
+						  TREE_TYPE (newref)))
+		    newref = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vectype),
+				     newref);
+		}
 	      else
-		newref = build2 (MEM_REF, TREE_TYPE (ref),
+		newref = build2 (MEM_REF, TREE_TYPE (vectype),
 				 running_off,
 				 TREE_OPERAND (ref, 1));
 
@@ -6076,15 +6082,20 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
      When the component mode passes the above test simply use a type
      corresponding to that mode.  The theory is that any use that
      would cause problems with this will disable vectorization anyway.  */
-  if (!SCALAR_FLOAT_TYPE_P (scalar_type)
-      && !INTEGRAL_TYPE_P (scalar_type)
-      && !POINTER_TYPE_P (scalar_type))
+  else if (!SCALAR_FLOAT_TYPE_P (scalar_type)
+	   && !INTEGRAL_TYPE_P (scalar_type)
+	   && !POINTER_TYPE_P (scalar_type))
     scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
 
   /* We can't build a vector type of elements with alignment bigger than
      their size.  */
-  if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
+  else if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
     scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
+
+  /* If we felt back to using the mode fail if there was
+     no scalar type for it.  */
+  if (scalar_type == NULL_TREE)
+    return NULL_TREE;
 
   /* If no size was supplied use the mode the target prefers.   Otherwise
      lookup a vector mode of the specified size.  */

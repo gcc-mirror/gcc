@@ -343,8 +343,8 @@ for the option.  If the option is attached to @samp{target_flags},
 the script will set the macro @code{MASK_@var{name}} to the appropriate
 bitmask.  It will also declare a @code{TARGET_@var{name}} macro that has
 the value 1 when the option is active and 0 otherwise.  If you use @code{Var}
-to attach the option to a different variable, the associated macros are
-called @code{OPTION_MASK_@var{name}} and @code{OPTION_@var{name}} respectively.
+to attach the option to a different variable, the bitmask macro with be
+called @code{OPTION_MASK_@var{name}}.
 
 @item InverseMask(@var{othername})
 @itemx InverseMask(@var{othername}, @var{thisname})
@@ -460,14 +460,21 @@ value of @option{-fmath-errno} for languages that do not use
 @code{errno}.
 
 @item EnabledBy(@var{opt})
-If not explicitly set, the option is set to the value of @option{-@var{opt}}.
+@itemx EnabledBy(@var{opt} && @var{opt2})
+If not explicitly set, the option is set to the value of
+@option{-@var{opt}}.  The second form specifies that the option is
+only set if both @var{opt} and @var{opt2} are set.
 
 @item LangEnabledBy(@var{language}, @var{opt})
+@itemx LangEnabledBy(@var{language}, @var{opt}, @var{posarg}, @var{negarg})
 When compiling for the given language, the option is set to the value
-of @option{-@var{opt}}, if not explicitly set. It is possible to
-specify several different languages.  Each @var{language} must have
-been declared by an earlier @code{Language} record.  @xref{Option file
-format}.
+of @option{-@var{opt}}, if not explicitly set. In the second form, if
+@var{opt} is used in the positive form then @var{posarg} is considered
+to be passed to the option, and if @var{opt} is used in the negative
+form then @var{negarg} is considered to be passed to the option.  It
+is possible to specify several different languages.  Each
+@var{language} must have been declared by an earlier @code{Language}
+record.  @xref{Option file format}.
 
 @item NoDWARFRecord
 The option is omitted from the producer string written by

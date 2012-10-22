@@ -2415,7 +2415,7 @@ noce_can_store_speculate_p (basic_block top_bb, const_rtx mem)
 		  || (CALL_P (insn) && (!RTL_CONST_CALL_P (insn)))))
 	    return false;
 
-	  if (memory_modified_in_insn_p (mem, insn))
+	  if (memory_must_be_modified_in_insn_p (mem, insn))
 	    return true;
 	  if (modified_in_p (XEXP (mem, 0), insn))
 	    return false;

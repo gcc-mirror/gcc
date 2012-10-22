@@ -2840,6 +2840,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	{
 	  if (TREE_CODE (ref) != SSA_NAME)
 	    return false;
+	  if (!useless_type_conversion_p (type, TREE_TYPE (ref)))
+	    return false;
 	  orig = ref;
 	}
       if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)

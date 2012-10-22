@@ -1,6 +1,6 @@
 /* Perform instruction reorganizations for delay slot filling.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
@@ -134,6 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "tree-pass.h"
+#include "emit-rtl.h"
 
 #ifdef DELAY_SLOTS
 
@@ -1297,7 +1298,7 @@ steal_delay_list_from_target (rtx insn, rtx condition, rtx seq,
 	{
 	  if (must_annul)
 	    used_annul = 1;
-	  temp = copy_rtx (trial);
+	  temp = copy_delay_slot_insn (trial);
 	  INSN_FROM_TARGET_P (temp) = 1;
 	  new_delay_list = add_to_delay_list (temp, new_delay_list);
 	  total_slots_filled++;
@@ -2369,7 +2370,8 @@ fill_simple_delay_slots (int non_jumps_p)
 	      if (new_label)
 	        {
 		  delay_list
-		    = add_to_delay_list (copy_rtx (next_trial), delay_list);
+		    = add_to_delay_list (copy_delay_slot_insn (next_trial),
+					 delay_list);
 		  slots_filled++;
 		  reorg_redirect_jump (trial, new_label);
 
@@ -2793,7 +2795,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 		  else
 		    new_thread = next_active_insn (trial);
 
-		  temp = own_thread ? trial : copy_rtx (trial);
+		  temp = own_thread ? trial : copy_delay_slot_insn (trial);
 		  if (thread_if_true)
 		    INSN_FROM_TARGET_P (temp) = 1;
 
@@ -2974,7 +2976,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 	  else
 	    new_thread = next_active_insn (trial);
 
-	  ninsn = own_thread ? trial : copy_rtx (trial);
+	  ninsn = own_thread ? trial : copy_delay_slot_insn (trial);
 	  if (thread_if_true)
 	    INSN_FROM_TARGET_P (ninsn) = 1;
 

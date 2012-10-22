@@ -253,7 +253,7 @@ namespace __profile
 	{
 	  size_type size_before = size();
 	  auto __res = _Base::emplace_hint(__pos.base(),
-					   std::forward<_Args>(__args)...));
+					   std::forward<_Args>(__args)...);
 	  __profcxx_map_to_unordered_map_insert(this, size_before,
 						size() - size_before);
 	}

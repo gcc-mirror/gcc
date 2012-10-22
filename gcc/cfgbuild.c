@@ -559,16 +559,35 @@ compute_outgoing_frequencies (basic_block b)
 	  f->count = b->count - e->count;
 	  return;
 	}
+      else
+        {
+          guess_outgoing_edge_probabilities (b);
+        }
     }
-
-  if (single_succ_p (b))
+  else if (single_succ_p (b))
     {
       e = single_succ_edge (b);
       e->probability = REG_BR_PROB_BASE;
       e->count = b->count;
       return;
     }
-  guess_outgoing_edge_probabilities (b);
+  else
+    {
+      /* We rely on BBs with more than two successors to have sane probabilities
+         and do not guess them here. For BBs terminated by switch statements
+         expanded to jump-table jump, we have done the right thing during
+         expansion. For EH edges, we still guess the probabilities here.  */
+      bool complex_edge = false;
+      FOR_EACH_EDGE (e, ei, b->succs)
+        if (e->flags & EDGE_COMPLEX)
+          {
+            complex_edge = true;
+            break;
+          }
+      if (complex_edge)
+        guess_outgoing_edge_probabilities (b);
+    }
+
   if (b->count)
     FOR_EACH_EDGE (e, ei, b->succs)
       e->count = ((b->count * e->probability + REG_BR_PROB_BASE / 2)

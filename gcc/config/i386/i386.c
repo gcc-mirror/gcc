@@ -14994,19 +14994,24 @@ ix86_print_operand_address (FILE *file, rtx addr)
   else
     {
       /* Print SImode register names to force addr32 prefix.  */
-      if (GET_CODE (addr) == SUBREG)
+      if (SImode_address_operand (addr, VOIDmode))
 	{
+#ifdef ENABLE_CHECKING
 	  gcc_assert (TARGET_64BIT);
-	  gcc_assert (GET_MODE (addr) == SImode);
-	  gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
-	  gcc_assert (!code);
-	  code = 'l';
-	}
-      else if (GET_CODE (addr) == ZERO_EXTEND
-	       || GET_CODE (addr) == AND)
-	{
-	  gcc_assert (TARGET_64BIT);
-	  gcc_assert (GET_MODE (addr) == DImode);
+	  switch (GET_CODE (addr))
+	    {
+	    case SUBREG:
+	      gcc_assert (GET_MODE (addr) == SImode);
+	      gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
+	      break;
+	    case ZERO_EXTEND:
+	    case AND:
+	      gcc_assert (GET_MODE (addr) == DImode);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+#endif
 	  gcc_assert (!code);
 	  code = 'l';
 	}
@@ -16074,7 +16079,8 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 {
   rtx m;
   rtx (*extract) (rtx, rtx, rtx);
-  rtx (*move_unaligned) (rtx, rtx);
+  rtx (*load_unaligned) (rtx, rtx);
+  rtx (*store_unaligned) (rtx, rtx);
   enum machine_mode mode;
 
   switch (GET_MODE (op0))
@@ -16083,39 +16089,52 @@ ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
       gcc_unreachable ();
     case V32QImode:
       extract = gen_avx_vextractf128v32qi;
-      move_unaligned = gen_avx_movdqu256;
+      load_unaligned = gen_avx_loaddqu256;
+      store_unaligned = gen_avx_storedqu256;
       mode = V16QImode;
       break;
     case V8SFmode:
       extract = gen_avx_vextractf128v8sf;
-      move_unaligned = gen_avx_movups256;
+      load_unaligned = gen_avx_loadups256;
+      store_unaligned = gen_avx_storeups256;
       mode = V4SFmode;
       break;
     case V4DFmode:
       extract = gen_avx_vextractf128v4df;
-      move_unaligned = gen_avx_movupd256;
+      load_unaligned = gen_avx_loadupd256;
+      store_unaligned = gen_avx_storeupd256;
       mode = V2DFmode;
       break;
     }
 
-  if (MEM_P (op1) && TARGET_AVX256_SPLIT_UNALIGNED_LOAD)
+  if (MEM_P (op1))
     {
-      rtx r = gen_reg_rtx (mode);
-      m = adjust_address (op1, mode, 0);
-      emit_move_insn (r, m);
-      m = adjust_address (op1, mode, 16);
-      r = gen_rtx_VEC_CONCAT (GET_MODE (op0), r, m);
-      emit_move_insn (op0, r);
+      if (TARGET_AVX256_SPLIT_UNALIGNED_LOAD)
+	{
+	  rtx r = gen_reg_rtx (mode);
+	  m = adjust_address (op1, mode, 0);
+	  emit_move_insn (r, m);
+	  m = adjust_address (op1, mode, 16);
+	  r = gen_rtx_VEC_CONCAT (GET_MODE (op0), r, m);
+	  emit_move_insn (op0, r);
+	}
+      else
+	emit_insn (load_unaligned (op0, op1));
     }
-  else if (MEM_P (op0) && TARGET_AVX256_SPLIT_UNALIGNED_STORE)
+  else if (MEM_P (op0))
     {
-      m = adjust_address (op0, mode, 0);
-      emit_insn (extract (m, op1, const0_rtx));
-      m = adjust_address (op0, mode, 16);
-      emit_insn (extract (m, op1, const1_rtx));
+      if (TARGET_AVX256_SPLIT_UNALIGNED_STORE)
+	{
+	  m = adjust_address (op0, mode, 0);
+	  emit_insn (extract (m, op1, const0_rtx));
+	  m = adjust_address (op0, mode, 16);
+	  emit_insn (extract (m, op1, const1_rtx));
+	}
+      else
+	emit_insn (store_unaligned (op0, op1));
     }
   else
-    emit_insn (move_unaligned (op0, op1));
+    gcc_unreachable ();
 }
 
 /* Implement the movmisalign patterns for SSE.  Non-SSE modes go
@@ -16210,7 +16229,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  op0 = gen_lowpart (V16QImode, op0);
 	  op1 = gen_lowpart (V16QImode, op1);
 	  /* We will eventually emit movups based on insn attributes.  */
-	  emit_insn (gen_sse2_movdqu (op0, op1));
+	  emit_insn (gen_sse2_loaddqu (op0, op1));
 	}
       else if (TARGET_SSE2 && mode == V2DFmode)
         {
@@ -16222,7 +16241,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      || optimize_function_for_size_p (cfun))
 	    {
 	      /* We will eventually emit movups based on insn attributes.  */
-	      emit_insn (gen_sse2_movupd (op0, op1));
+	      emit_insn (gen_sse2_loadupd (op0, op1));
 	      return;
 	    }
 
@@ -16260,7 +16279,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	    {
 	      op0 = gen_lowpart (V4SFmode, op0);
 	      op1 = gen_lowpart (V4SFmode, op1);
-	      emit_insn (gen_sse_movups (op0, op1));
+	      emit_insn (gen_sse_loadups (op0, op1));
 	      return;
             }
 
@@ -16285,7 +16304,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	  op0 = gen_lowpart (V16QImode, op0);
 	  op1 = gen_lowpart (V16QImode, op1);
 	  /* We will eventually emit movups based on insn attributes.  */
-	  emit_insn (gen_sse2_movdqu (op0, op1));
+	  emit_insn (gen_sse2_storedqu (op0, op1));
 	}
       else if (TARGET_SSE2 && mode == V2DFmode)
 	{
@@ -16294,7 +16313,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      || TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
 	      || optimize_function_for_size_p (cfun))
 	    /* We will eventually emit movups based on insn attributes.  */
-	    emit_insn (gen_sse2_movupd (op0, op1));
+	    emit_insn (gen_sse2_storeupd (op0, op1));
 	  else
 	    {
 	      m = adjust_address (op0, DFmode, 0);
@@ -16314,7 +16333,7 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
 	      || optimize_function_for_size_p (cfun))
 	    {
 	      op0 = gen_lowpart (V4SFmode, op0);
-	      emit_insn (gen_sse_movups (op0, op1));
+	      emit_insn (gen_sse_storeups (op0, op1));
 	    }
 	  else
 	    {
@@ -23753,14 +23772,14 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
 /* Calculate the length of the memory address in the instruction encoding.
    Includes addr32 prefix, does not include the one-byte modrm, opcode,
-   or other prefixes.  */
+   or other prefixes.  We never generate addr32 prefix for LEA insn.  */
 
 int
-memory_address_length (rtx addr)
+memory_address_length (rtx addr, bool lea)
 {
   struct ix86_address parts;
   rtx base, index, disp;
-  int len;
+  int len = 0;
   int ok;
 
   if (GET_CODE (addr) == PRE_DEC
@@ -23781,10 +23800,6 @@ memory_address_length (rtx addr)
   index = parts.index;
   disp = parts.disp;
 
-  /* Add length of addr32 prefix.  */
-  len = (GET_CODE (addr) == ZERO_EXTEND
-	 || GET_CODE (addr) == AND);
-
   /* Rule of thumb:
        - esp as the base always wants an index,
        - ebp as the base always wants a displacement,
@@ -23797,13 +23812,13 @@ memory_address_length (rtx addr)
       /* esp (for its index) and ebp (for its displacement) need
 	 the two-byte modrm form.  Similarly for r12 and r13 in 64-bit
 	 code.  */
-      if (REG_P (addr)
-	  && (addr == arg_pointer_rtx
-	      || addr == frame_pointer_rtx
-	      || REGNO (addr) == SP_REG
-	      || REGNO (addr) == BP_REG
-	      || REGNO (addr) == R12_REG
-	      || REGNO (addr) == R13_REG))
+      if (REG_P (base)
+	  && (base == arg_pointer_rtx
+	      || base == frame_pointer_rtx
+	      || REGNO (base) == SP_REG
+	      || REGNO (base) == BP_REG
+	      || REGNO (base) == R12_REG
+	      || REGNO (base) == R13_REG))
 	len = 1;
     }
 
@@ -23835,7 +23850,6 @@ memory_address_length (rtx addr)
 	    len += 1;
 	}
     }
-
   else
     {
       /* Find the length of the displacement constant.  */
@@ -23870,6 +23884,12 @@ memory_address_length (rtx addr)
     default:
       break;
     }
+
+  /*  If this is not LEA instruction, add the length of addr32 prefix.  */
+  if (TARGET_64BIT && !lea
+      && ((base && GET_MODE (base) == SImode)
+	  || (index && GET_MODE (index) == SImode)))
+    len += 1;
 
   return len;
 }
@@ -23922,7 +23942,8 @@ ix86_attr_length_immediate_default (rtx insn, bool shortform)
 	  case MODE_SI:
 	    len = 4;
 	    break;
-	  /* Immediates for DImode instructions are encoded as 32bit sign extended values.  */
+	  /* Immediates for DImode instructions are encoded
+	     as 32bit sign extended values.  */
 	  case MODE_DI:
 	    len = 4;
 	    break;
@@ -23932,6 +23953,7 @@ ix86_attr_length_immediate_default (rtx insn, bool shortform)
       }
   return len;
 }
+
 /* Compute default value for "length_address" attribute.  */
 int
 ix86_attr_length_address_default (rtx insn)
@@ -23948,15 +23970,8 @@ ix86_attr_length_address_default (rtx insn)
       gcc_assert (GET_CODE (set) == SET);
 
       addr = SET_SRC (set);
-      if (TARGET_64BIT && get_attr_mode (insn) == MODE_SI)
-	{
-	  if (GET_CODE (addr) == ZERO_EXTEND)
-	    addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) == SUBREG)
-	    addr = SUBREG_REG (addr);
-	}
 
-      return memory_address_length (addr);
+      return memory_address_length (addr, true);
     }
 
   extract_insn_cached (insn);
@@ -23978,7 +23993,7 @@ ix86_attr_length_address_default (rtx insn)
 	    if (*constraints == 'X')
 	      continue;
 	  }
-	return memory_address_length (XEXP (recog_data.operand[i], 0));
+	return memory_address_length (XEXP (recog_data.operand[i], 0), false);
       }
   return 0;
 }
@@ -26769,8 +26784,8 @@ static const struct builtin_description bdesc_pcmpistr[] =
 /* Special builtins with variable number of arguments.  */
 static const struct builtin_description bdesc_special_args[] =
 {
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtsc, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdtscp, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* MMX */
@@ -26780,9 +26795,9 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_3DNOW, CODE_FOR_mmx_femms, "__builtin_ia32_femms", IX86_BUILTIN_FEMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* SSE */
-  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movups, "__builtin_ia32_storeups", IX86_BUILTIN_STOREUPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_storeups, "__builtin_ia32_storeups", IX86_BUILTIN_STOREUPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movntv4sf, "__builtin_ia32_movntps", IX86_BUILTIN_MOVNTPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
-  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_movups, "__builtin_ia32_loadups", IX86_BUILTIN_LOADUPS, UNKNOWN, (int) V4SF_FTYPE_PCFLOAT },
+  { OPTION_MASK_ISA_SSE, CODE_FOR_sse_loadups, "__builtin_ia32_loadups", IX86_BUILTIN_LOADUPS, UNKNOWN, (int) V4SF_FTYPE_PCFLOAT },
 
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_loadhps_exp, "__builtin_ia32_loadhps", IX86_BUILTIN_LOADHPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_PCV2SF },
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_loadlps_exp, "__builtin_ia32_loadlps", IX86_BUILTIN_LOADLPS, UNKNOWN, (int) V4SF_FTYPE_V4SF_PCV2SF },
@@ -26796,14 +26811,14 @@ static const struct builtin_description bdesc_special_args[] =
   /* SSE2 */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_lfence, "__builtin_ia32_lfence", IX86_BUILTIN_LFENCE, UNKNOWN, (int) VOID_FTYPE_VOID },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_mfence, 0, IX86_BUILTIN_MFENCE, UNKNOWN, (int) VOID_FTYPE_VOID },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movupd, "__builtin_ia32_storeupd", IX86_BUILTIN_STOREUPD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movdqu, "__builtin_ia32_storedqu", IX86_BUILTIN_STOREDQU, UNKNOWN, (int) VOID_FTYPE_PCHAR_V16QI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_storeupd, "__builtin_ia32_storeupd", IX86_BUILTIN_STOREUPD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_storedqu, "__builtin_ia32_storedqu", IX86_BUILTIN_STOREDQU, UNKNOWN, (int) VOID_FTYPE_PCHAR_V16QI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movntv2df, "__builtin_ia32_movntpd", IX86_BUILTIN_MOVNTPD, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V2DF },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movntv2di, "__builtin_ia32_movntdq", IX86_BUILTIN_MOVNTDQ, UNKNOWN, (int) VOID_FTYPE_PV2DI_V2DI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movntisi, "__builtin_ia32_movnti", IX86_BUILTIN_MOVNTI, UNKNOWN, (int) VOID_FTYPE_PINT_INT },
   { OPTION_MASK_ISA_SSE2 | OPTION_MASK_ISA_64BIT, CODE_FOR_sse2_movntidi, "__builtin_ia32_movnti64", IX86_BUILTIN_MOVNTI64, UNKNOWN, (int) VOID_FTYPE_PLONGLONG_LONGLONG },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movupd, "__builtin_ia32_loadupd", IX86_BUILTIN_LOADUPD, UNKNOWN, (int) V2DF_FTYPE_PCDOUBLE },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_movdqu, "__builtin_ia32_loaddqu", IX86_BUILTIN_LOADDQU, UNKNOWN, (int) V16QI_FTYPE_PCCHAR },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_loadupd, "__builtin_ia32_loadupd", IX86_BUILTIN_LOADUPD, UNKNOWN, (int) V2DF_FTYPE_PCDOUBLE },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_loaddqu, "__builtin_ia32_loaddqu", IX86_BUILTIN_LOADDQU, UNKNOWN, (int) V16QI_FTYPE_PCCHAR },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_loadhpd_exp, "__builtin_ia32_loadhpd", IX86_BUILTIN_LOADHPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_PCDOUBLE },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_loadlpd_exp, "__builtin_ia32_loadlpd", IX86_BUILTIN_LOADLPD, UNKNOWN, (int) V2DF_FTYPE_V2DF_PCDOUBLE },
@@ -26828,12 +26843,12 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastf128_v4df, "__builtin_ia32_vbroadcastf128_pd256", IX86_BUILTIN_VBROADCASTPD256, UNKNOWN, (int) V4DF_FTYPE_PCV2DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_vbroadcastf128_v8sf, "__builtin_ia32_vbroadcastf128_ps256", IX86_BUILTIN_VBROADCASTPS256, UNKNOWN, (int) V8SF_FTYPE_PCV4SF },
 
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movupd256, "__builtin_ia32_loadupd256", IX86_BUILTIN_LOADUPD256, UNKNOWN, (int) V4DF_FTYPE_PCDOUBLE },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movups256, "__builtin_ia32_loadups256", IX86_BUILTIN_LOADUPS256, UNKNOWN, (int) V8SF_FTYPE_PCFLOAT },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movupd256, "__builtin_ia32_storeupd256", IX86_BUILTIN_STOREUPD256, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V4DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movups256, "__builtin_ia32_storeups256", IX86_BUILTIN_STOREUPS256, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V8SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movdqu256, "__builtin_ia32_loaddqu256", IX86_BUILTIN_LOADDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movdqu256, "__builtin_ia32_storedqu256", IX86_BUILTIN_STOREDQU256, UNKNOWN, (int) VOID_FTYPE_PCHAR_V32QI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_loadupd256, "__builtin_ia32_loadupd256", IX86_BUILTIN_LOADUPD256, UNKNOWN, (int) V4DF_FTYPE_PCDOUBLE },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_loadups256, "__builtin_ia32_loadups256", IX86_BUILTIN_LOADUPS256, UNKNOWN, (int) V8SF_FTYPE_PCFLOAT },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_storeupd256, "__builtin_ia32_storeupd256", IX86_BUILTIN_STOREUPD256, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_storeups256, "__builtin_ia32_storeups256", IX86_BUILTIN_STOREUPS256, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_loaddqu256, "__builtin_ia32_loaddqu256", IX86_BUILTIN_LOADDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_storedqu256, "__builtin_ia32_storedqu256", IX86_BUILTIN_STOREDQU256, UNKNOWN, (int) VOID_FTYPE_PCHAR_V32QI },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_lddqu256, "__builtin_ia32_lddqu256", IX86_BUILTIN_LDDQU256, UNKNOWN, (int) V32QI_FTYPE_PCCHAR },
 
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv4di, "__builtin_ia32_movntdq256", IX86_BUILTIN_MOVNTDQ256, UNKNOWN, (int) VOID_FTYPE_PV4DI_V4DI },
@@ -26888,7 +26903,7 @@ static const struct builtin_description bdesc_args[] =
 {
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT },
   { OPTION_MASK_ISA_64BIT, CODE_FOR_bsr_rex64, "__builtin_ia32_bsrdi", IX86_BUILTIN_BSRDI, UNKNOWN, (int) INT64_FTYPE_INT64 },
-  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rdpmc, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
+  { ~OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
   { ~OPTION_MASK_ISA_64BIT, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
@@ -30453,7 +30468,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg0, arg1, arg2, arg3, arg4;
-  rtx op0, op1, op2, op3, op4, pat;
+  rtx op0, op1, op2, op3, op4, pat, insn;
   enum machine_mode mode0, mode1, mode2, mode3, mode4;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
@@ -30633,6 +30648,65 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	emit_move_insn (target, tmp);
 	return target;
       }
+
+    case IX86_BUILTIN_RDPMC:
+    case IX86_BUILTIN_RDTSC:
+    case IX86_BUILTIN_RDTSCP:
+
+      op0 = gen_reg_rtx (DImode);
+      op1 = gen_reg_rtx (DImode);
+
+      if (fcode == IX86_BUILTIN_RDPMC)
+	{
+	  arg0 = CALL_EXPR_ARG (exp, 0);
+	  op2 = expand_normal (arg0);
+	  if (!register_operand (op2, SImode))
+	    op2 = copy_to_mode_reg (SImode, op2);
+
+	  insn = (TARGET_64BIT
+		  ? gen_rdpmc_rex64 (op0, op1, op2)
+		  : gen_rdpmc (op0, op2));
+	  emit_insn (insn);
+	}
+      else if (fcode == IX86_BUILTIN_RDTSC)
+	{
+	  insn = (TARGET_64BIT
+		  ? gen_rdtsc_rex64 (op0, op1)
+		  : gen_rdtsc (op0));
+	  emit_insn (insn);
+	}
+      else
+	{
+	  op2 = gen_reg_rtx (SImode);
+
+	  insn = (TARGET_64BIT
+		  ? gen_rdtscp_rex64 (op0, op1, op2)
+		  : gen_rdtscp (op0, op2));
+	  emit_insn (insn);
+
+	  arg0 = CALL_EXPR_ARG (exp, 0);
+	  op4 = expand_normal (arg0);
+	  if (!address_operand (op4, VOIDmode))
+	    {
+	      op4 = convert_memory_address (Pmode, op4);
+	      op4 = copy_addr_to_reg (op4);
+	    }
+	  emit_move_insn (gen_rtx_MEM (SImode, op4), op2);
+	}
+
+      if (target == 0)
+	target = gen_reg_rtx (mode);
+
+      if (TARGET_64BIT)
+	{
+	  op1 = expand_simple_binop (DImode, ASHIFT, op1, GEN_INT (32),
+				     op1, 1, OPTAB_DIRECT);
+	  op0 = expand_simple_binop (DImode, IOR, op0, op1,
+				     op0, 1, OPTAB_DIRECT);
+	}
+
+      emit_move_insn (target, op0);
+      return target;
 
     case IX86_BUILTIN_LLWPCB:
       arg0 = CALL_EXPR_ARG (exp, 0);

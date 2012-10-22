@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr-common.h"
 #include "common/common-target.h"
 
+static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
+
 /* Indexed by enum debug_info_type.  */
 const char *const debug_type_names[] =
 {
@@ -827,19 +829,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
                            opts->x_param_values, opts_set->x_param_values);
 
-  /* This replaces set_Wunused.  */
-  /* Wunused-parameter is enabled if both -Wunused -Wextra are enabled.  */
-  if (opts->x_warn_unused_parameter == -1)
-    opts->x_warn_unused_parameter = (opts->x_warn_unused
-				     && opts->x_extra_warnings);
-  /* Wunused-but-set-parameter is enabled if both -Wunused -Wextra are
-     enabled.  */
-  if (opts->x_warn_unused_but_set_parameter == -1)
-    opts->x_warn_unused_but_set_parameter = (opts->x_warn_unused
-					     && opts->x_extra_warnings);
-  /* Wunused-local-typedefs is enabled by -Wunused or -Wall.  */
-  if (opts->x_warn_unused_local_typedefs == -1)
-    opts->x_warn_unused_local_typedefs = opts->x_warn_unused;
 }
 
 #define LEFT_COLUMN	27
@@ -1801,7 +1790,7 @@ handle_param (struct gcc_options *opts, struct gcc_options *opts_set,
    ONOFF is assumed to take value 1 when -Wstrict-aliasing is specified,
    and 0 otherwise.  After calling this function, wstrict_aliasing will be
    set to the default value of -Wstrict_aliasing=level, currently 3.  */
-void
+static void
 set_Wstrict_aliasing (struct gcc_options *opts, int onoff)
 {
   gcc_assert (onoff == 0 || onoff == 1);

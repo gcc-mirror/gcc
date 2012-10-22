@@ -39,16 +39,35 @@ for (i = 0; i < n_langs; i++) {
 for (i = 0; i < n_opts; i++) {
     enabledby_arg = opt_args("EnabledBy", flags[i]);
     if (enabledby_arg != "") {
-        enabledby_name = enabledby_arg;
-        enabledby_index = opt_numbers[enabledby_name];
-        if (enabledby_index == "") {
-            print "#error Enabledby: " enabledby_name 
-        } else {
-            if (enables[enabledby_name] == "") {
-                enabledby[n_enabledby] = enabledby_name;
-                n_enabledby++;
+        n_enabledby_names = split(enabledby_arg, enabledby_names, " && ");
+        if (n_enabledby_names > 2) {
+            print "#error EnabledBy (Wfoo && Wbar && Wbaz) not currently supported"
+        }
+        for (j = 1; j <= n_enabledby_names; j++) {
+            enabledby_name = enabledby_names[j];
+            enabledby_index = opt_numbers[enabledby_name];
+            if (enabledby_index == "") {
+                print "#error Enabledby: " enabledby_name 
+            } else {
+                condition = "";
+                if (n_enabledby_names == 2) {
+                    opt_var_name_1 = search_var_name(enabledby_names[1], opt_numbers, opts, flags, n_opts);
+                    opt_var_name_2 = search_var_name(enabledby_names[2], opt_numbers, opts, flags, n_opts);
+                    if (opt_var_name_1 == "") {
+                        print "#error " enabledby_names[1] " does not have a Var() flag"
+                    }
+                    if (opt_var_name_2 == "") {
+                        print "#error " enabledby_names[2] " does not have a Var() flag"
+                    }
+                    condition = "opts->x_" opt_var_name_1 " && opts->x_" opt_var_name_2;
+                }
+                if (enables[enabledby_name] == "") {
+                    enabledby[n_enabledby] = enabledby_name;
+                    n_enabledby++;
+                }
+                enables[enabledby_name] = enables[enabledby_name] opts[i] ";";
+                enablesif[enabledby_name] = enablesif[enabledby_name] condition ";";
             }
-            enables[enabledby_name] = enables[enabledby_name] opts[i] ",";
         }
     }
 
@@ -56,10 +75,20 @@ for (i = 0; i < n_opts; i++) {
     if (enabledby_arg != "") {
         n_enabledby_arg_langs = split(nth_arg(0, enabledby_arg), enabledby_arg_langs, " ");
         enabledby_name = nth_arg(1, enabledby_arg);
+        enabledby_posarg = nth_arg(2, enabledby_arg)
+	enabledby_negarg = nth_arg(3, enabledby_arg)
         enabledby_index = opt_numbers[enabledby_name];
         if (enabledby_index == "") {
-            print "#error Enabledby: " enabledby_name 
+            print "#error LangEnabledby: " enabledby_name 
         } else {
+            if (enabledby_posarg != "" && enabledby_negarg != "") {
+                with_args = "," enabledby_posarg "," enabledby_negarg
+            } else if (enabledby_posarg == "" && enabledby_negarg == "") {
+                with_args = ""
+            } else {
+                print "#error LangEnabledBy with three arguments, it should have either 2 or 4"
+            }
+
             for (j = 1; j <= n_enabledby_arg_langs; j++) {
                 lang_name = lang_sanitized_name(enabledby_arg_langs[j]);
                 lang_index = lang_numbers[enabledby_arg_langs[j]];
@@ -67,7 +96,7 @@ for (i = 0; i < n_opts; i++) {
                     enabledby[lang_name,n_enabledby_lang[lang_index]] = enabledby_name;
                     n_enabledby_lang[lang_index]++;
                 }
-                enables[lang_name,enabledby_name] = enables[lang_name,enabledby_name] opts[i] ",";
+                enables[lang_name,enabledby_name] = enables[lang_name,enabledby_name] opts[i] with_args ";";
             }
         }
     }
@@ -385,14 +414,23 @@ print "  gcc_assert (decoded->canonical_option_num_elements <= 2);           "
 print "                                                                      "
 print "  switch (code)                                                       "
 print "    {                                                                 "
+# Handle EnabledBy
 for (i = 0; i < n_enabledby; i++) {
     enabledby_name = enabledby[i];
     print "    case " opt_enum(enabledby_name) ":"
-    n_enables = split(enables[enabledby_name], thisenable, ",");
+    n_enables = split(enables[enabledby_name], thisenable, ";");
+    n_enablesif = split(enablesif[enabledby_name], thisenableif, ";");
+    if (n_enables != n_enablesif) {
+        print "#error n_enables != n_enablesif: Something went wrong!"
+    }
     for (j = 1; j < n_enables; j++) {
         opt_var_name = var_name(flags[opt_numbers[thisenable[j]]]);
         if (opt_var_name != "") {
-            print "      if (!opts_set->x_" opt_var_name ")"
+            condition = "!opts_set->x_" opt_var_name
+            if (thisenableif[j] != "") {
+                condition = condition " && (" thisenableif[j] ")"
+            }
+            print "      if (" condition ")"
             print "        handle_generated_option (opts, opts_set,"
             print "                                 " opt_enum(thisenable[j]) ", NULL, value,"
             print "                                 lang_mask, kind, loc, handlers, dc);"
@@ -431,16 +469,26 @@ for (i = 0; i < n_langs; i++) {
     for (k = 0; k < n_enabledby_lang[i]; k++) {
         enabledby_name = enabledby[lang_name,k];
         print "    case " opt_enum(enabledby_name) ":"
-        n_enables = split(enables[lang_name,enabledby_name], thisenable, ",");
-        for (j = 1; j < n_enables; j++) {
-            opt_var_name = var_name(flags[opt_numbers[thisenable[j]]]);
+        n_thisenable = split(enables[lang_name,enabledby_name], thisenable, ";");
+        for (j = 1; j < n_thisenable; j++) {
+            n_thisenable_args = split(thisenable[j], thisenable_args, ",");
+            if (n_thisenable_args == 1) {
+                thisenable_opt = thisenable[j];
+                value = "value";
+            } else {
+                thisenable_opt = thisenable_args[1];
+                with_posarg = thisenable_args[2];
+                with_negarg = thisenable_args[3];
+                value = "value ? " with_posarg " : " with_negarg;
+            }
+            opt_var_name = var_name(flags[opt_numbers[thisenable_opt]]);
             if (opt_var_name != "") {
                 print "      if (!opts_set->x_" opt_var_name ")"
                 print "        handle_generated_option (opts, opts_set,"
-                print "                                 " opt_enum(thisenable[j]) ", arg, value,"
+                print "                                 " opt_enum(thisenable_opt) ", NULL, " value ","
                 print "                                 lang_mask, kind, loc, handlers, dc);"
             } else {
-                print "#error " thisenable[j] " does not have a Var() flag"
+                print "#error " thisenable_opt " does not have a Var() flag"
             }
         }
         print "      break;\n"

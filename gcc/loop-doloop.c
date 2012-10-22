@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
@@ -561,7 +561,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     init = gen_doloop_begin (counter_reg,
 			     desc->const_iter ? desc->niter_expr : const0_rtx,
 			     iter_rtx,
-			     GEN_INT (level));
+			     GEN_INT (level),
+			     doloop_seq);
     if (init)
       {
 	start_sequence ();
@@ -619,6 +620,7 @@ doloop_optimize (struct loop *loop)
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
   double_int iter;
+  int entered_at_top;
 
   if (dump_file)
     fprintf (dump_file, "Doloop: Processing loop %d.\n", loop->num);
@@ -681,8 +683,11 @@ doloop_optimize (struct loop *loop)
      not like.  */
   start_label = block_label (desc->in_edge->dest);
   doloop_reg = gen_reg_rtx (mode);
+  entered_at_top = (loop->latch == desc->in_edge->dest
+		    && contains_no_active_insn_p (loop->latch));
   doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
-			       GEN_INT (level), start_label);
+			       GEN_INT (level), start_label,
+			       GEN_INT (entered_at_top));
 
   word_mode_size = GET_MODE_PRECISION (word_mode);
   word_mode_max
@@ -712,7 +717,8 @@ doloop_optimize (struct loop *loop)
 	}
       PUT_MODE (doloop_reg, word_mode);
       doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
-				   GEN_INT (level), start_label);
+				   GEN_INT (level), start_label,
+				   GEN_INT (entered_at_top));
     }
   if (! doloop_seq)
     {

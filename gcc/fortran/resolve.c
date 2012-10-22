@@ -81,7 +81,7 @@ static int omp_workshare_flag;
 static int formal_arg_flag = 0;
 
 /* True if we are resolving a specification expression.  */
-static int specification_expr = 0;
+static bool specification_expr = false;
 
 /* The id of the last entry seen.  */
 static int current_entry_id;
@@ -278,6 +278,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 {
   gfc_formal_arglist *f;
   gfc_symbol *sym;
+  bool saved_specification_expr;
   int i;
 
   if (proc->result != NULL)
@@ -336,7 +337,10 @@ resolve_formal_arglist (gfc_symbol *proc)
       as = sym->ts.type == BT_CLASS && sym->attr.class_ok
 	   ? CLASS_DATA (sym)->as : sym->as;
 
+      saved_specification_expr = specification_expr;
+      specification_expr = true;
       gfc_resolve_array_spec (as, 0);
+      specification_expr = saved_specification_expr;
 
       /* We can't tell if an array with dimension (:) is assumed or deferred
 	 shape until we know if it has the pointer or allocatable attributes.
@@ -3119,6 +3123,12 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
+  if (sym && specification_expr && sym->attr.function
+      && gfc_current_ns->proc_name
+      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
+    sym->attr.public_used = 1;
+
+
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
   need_full_assumed_size++;
@@ -5368,7 +5378,7 @@ resolve_variable (gfc_expr *e)
       gfc_entry_list *entry;
       gfc_formal_arglist *formal;
       int n;
-      bool seen;
+      bool seen, saved_specification_expr;
 
       /* If the symbol is a dummy...  */
       if (sym->attr.dummy && sym->ns == gfc_current_ns)
@@ -5401,7 +5411,8 @@ resolve_variable (gfc_expr *e)
 	}
 
       /* Now do the same check on the specification expressions.  */
-      specification_expr = 1;
+      saved_specification_expr = specification_expr;
+      specification_expr = true;
       if (sym->ts.type == BT_CHARACTER
 	  && gfc_resolve_expr (sym->ts.u.cl->length) == FAILURE)
 	t = FAILURE;
@@ -5409,14 +5420,12 @@ resolve_variable (gfc_expr *e)
       if (sym->as)
 	for (n = 0; n < sym->as->rank; n++)
 	  {
-	     specification_expr = 1;
 	     if (gfc_resolve_expr (sym->as->lower[n]) == FAILURE)
 	       t = FAILURE;
-	     specification_expr = 1;
 	     if (gfc_resolve_expr (sym->as->upper[n]) == FAILURE)
 	       t = FAILURE;
 	  }
-      specification_expr = 0;
+      specification_expr = saved_specification_expr;
 
       if (t == SUCCESS)
 	/* Update the symbol's entry level.  */
@@ -10175,28 +10184,35 @@ static gfc_try
 resolve_charlen (gfc_charlen *cl)
 {
   int i, k;
+  bool saved_specification_expr;
 
   if (cl->resolved)
     return SUCCESS;
 
   cl->resolved = 1;
-
+  saved_specification_expr = specification_expr;
+  specification_expr = true;
 
   if (cl->length_from_typespec)
     {
       if (gfc_resolve_expr (cl->length) == FAILURE)
-	return FAILURE;
+	{
+	  specification_expr = saved_specification_expr;
+	  return FAILURE;
+	}
 
       if (gfc_simplify_expr (cl->length, 0) == FAILURE)
-	return FAILURE;
+	{
+	  specification_expr = saved_specification_expr;
+	  return FAILURE;
+	}
     }
   else
     {
-      specification_expr = 1;
 
       if (resolve_index_expr (cl->length) == FAILURE)
 	{
-	  specification_expr = 0;
+	  specification_expr = saved_specification_expr;
 	  return FAILURE;
 	}
     }
@@ -10220,9 +10236,11 @@ resolve_charlen (gfc_charlen *cl)
       && mpz_cmp (cl->length->value.integer, gfc_integer_kinds[k].huge) > 0)
     {
       gfc_error ("String length at %L is too large", &cl->length->where);
+      specification_expr = saved_specification_expr;
       return FAILURE;
     }
 
+  specification_expr = saved_specification_expr;
   return SUCCESS;
 }
 
@@ -10682,6 +10700,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   int no_init_flag, automatic_flag;
   gfc_expr *e;
   const char *auto_save_msg;
+  bool saved_specification_expr;
 
   auto_save_msg = "Automatic object '%s' at %L cannot have the "
 		  "SAVE attribute";
@@ -10692,7 +10711,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   /* Set this flag to check that variables are parameters of all entries.
      This check is effected by the call to gfc_resolve_expr through
      is_non_constant_shape_array.  */
-  specification_expr = 1;
+  saved_specification_expr = specification_expr;
+  specification_expr = true;
 
   if (sym->ns->proc_name
       && (sym->ns->proc_name->attr.flavor == FL_MODULE
@@ -10706,7 +10726,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	 constant.  */
       gfc_error ("The module or main program array '%s' at %L must "
 		 "have constant shape", sym->name, &sym->declared_at);
-      specification_expr = 0;
+      specification_expr = saved_specification_expr;
       return FAILURE;
     }
 
@@ -10716,6 +10736,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       gfc_error ("Entity '%s' at %L has a deferred type parameter and "
 		 "requires either the pointer or allocatable attribute",
 		     sym->name, &sym->declared_at);
+      specification_expr = saved_specification_expr;
       return FAILURE;
     }
 
@@ -10729,12 +10750,14 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	{
 	  gfc_error ("Entity with assumed character length at %L must be a "
 		     "dummy argument or a PARAMETER", &sym->declared_at);
+	  specification_expr = saved_specification_expr;
 	  return FAILURE;
 	}
 
       if (e && sym->attr.save == SAVE_EXPLICIT && !gfc_is_constant_expr (e))
 	{
 	  gfc_error (auto_save_msg, sym->name, &sym->declared_at);
+	  specification_expr = saved_specification_expr;
 	  return FAILURE;
 	}
 
@@ -10748,12 +10771,14 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	    {
 	      gfc_error ("'%s' at %L must have constant character length "
 			"in this context", sym->name, &sym->declared_at);
+	      specification_expr = saved_specification_expr;
 	      return FAILURE;
 	    }
 	  if (sym->attr.in_common)
 	    {
 	      gfc_error ("COMMON variable '%s' at %L must have constant "
 			 "character length", sym->name, &sym->declared_at);
+	      specification_expr = saved_specification_expr;
 	      return FAILURE;
 	    }
 	}
@@ -10784,6 +10809,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       if (automatic_flag && sym->attr.save == SAVE_EXPLICIT)
 	{
 	  gfc_error (auto_save_msg, sym->name, &sym->declared_at);
+	  specification_expr = saved_specification_expr;
 	  return FAILURE;
 	}
     }
@@ -10817,13 +10843,19 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 		   sym->name, &sym->declared_at);
       else
 	goto no_init_error;
+      specification_expr = saved_specification_expr;
       return FAILURE;
     }
 
 no_init_error:
   if (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
-    return resolve_fl_variable_derived (sym, no_init_flag);
+    {
+      gfc_try res = resolve_fl_variable_derived (sym, no_init_flag);
+      specification_expr = saved_specification_expr;
+      return res;
+    }
 
+  specification_expr = saved_specification_expr;
   return SUCCESS;
 }
 
@@ -12569,6 +12601,7 @@ resolve_symbol (gfc_symbol *sym)
   gfc_component *c;
   symbol_attribute class_attr;
   gfc_array_spec *as;
+  bool saved_specification_expr;
 
   if (sym->attr.artificial)
     return;
@@ -12689,7 +12722,12 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
   else if (mp_flag && sym->attr.flavor == FL_PROCEDURE && sym->attr.function)
-    gfc_resolve_array_spec (sym->result->as, false);
+    {
+      bool saved_specification_expr = specification_expr;
+      specification_expr = true;
+      gfc_resolve_array_spec (sym->result->as, false);
+      specification_expr = saved_specification_expr;
+    }
 
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
     {
@@ -13105,7 +13143,10 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.function && sym->as)
     formal_arg_flag = 1;
 
+  saved_specification_expr = specification_expr;
+  specification_expr = true;
   gfc_resolve_array_spec (sym->as, check_constant);
+  specification_expr = saved_specification_expr;
 
   formal_arg_flag = 0;
 
