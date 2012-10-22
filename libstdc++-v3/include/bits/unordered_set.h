@@ -91,41 +91,624 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value> >
     class unordered_set
-    : public __uset_hashtable<_Value, _Hash, _Pred, _Alloc>
     {
-      typedef __uset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Base;
+      typedef __uset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
+      _Hashtable _M_h;
 
     public:
-      typedef typename _Base::value_type      value_type;
-      typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
-      typedef typename _Base::key_equal       key_equal;
-      typedef typename _Base::allocator_type  allocator_type;
+      // typedefs:
+      //@{
+      /// Public typedefs.
+      typedef typename _Hashtable::key_type	key_type;
+      typedef typename _Hashtable::value_type	value_type;
+      typedef typename _Hashtable::hasher	hasher;
+      typedef typename _Hashtable::key_equal	key_equal;
+      typedef typename _Hashtable::allocator_type allocator_type;
+      //@}
 
+      //@{
+      ///  Iterator-related typedefs.
+      typedef typename allocator_type::pointer		pointer;
+      typedef typename allocator_type::const_pointer	const_pointer;
+      typedef typename allocator_type::reference	reference;
+      typedef typename allocator_type::const_reference	const_reference;
+      typedef typename _Hashtable::iterator		iterator;
+      typedef typename _Hashtable::const_iterator	const_iterator;
+      typedef typename _Hashtable::local_iterator	local_iterator;
+      typedef typename _Hashtable::const_local_iterator	const_local_iterator;
+      typedef typename _Hashtable::size_type		size_type;
+      typedef typename _Hashtable::difference_type	difference_type;
+      //@}
+
+      // construct/destroy/copy
+      /**
+       *  @brief  Default constructor creates no elements.
+       *  @param __n  Initial number of buckets.
+       *  @param __hf  A hash functor.
+       *  @param __eql  A key equality functor.
+       *  @param __a  An allocator object.
+       */
       explicit
       unordered_set(size_type __n = 10,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-      : _Base(__n, __hf, __eql, __a)
+      : _M_h(__n, __hf, __eql, __a)
       { }
 
+      /**
+       *  @brief  Builds an %unordered_set from a range.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
+       *  @param __n  Minimal initial number of buckets.
+       *  @param __hf  A hash functor.
+       *  @param __eql  A key equality functor.
+       *  @param __a  An allocator object.
+       *
+       *  Create an %unordered_set consisting of copies of the elements from
+       *  [__first,__last).  This is linear in N (where N is
+       *  distance(__first,__last)).
+       */
       template<typename _InputIterator>
 	unordered_set(_InputIterator __f, _InputIterator __l,
 		      size_type __n = 0,
 		      const hasher& __hf = hasher(),
 		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
-	: _Base(__f, __l, __n, __hf, __eql, __a)
+	: _M_h(__f, __l, __n, __hf, __eql, __a)
 	{ }
 
+      /**
+       *  @brief  %Unordered_set copy constructor.
+       *  @param  __x  An %unordered_set of identical element and allocator
+       *  types.
+       *
+       *  The newly-created %unordered_set uses a copy of the allocation object
+       *  used by @a __x.
+       */
+      unordered_set(const unordered_set& __x)
+	: _M_h(__x._M_h) { }
+
+     /**
+       *  @brief %Unordered_set move constructor
+       *  @param __x  An %unordered_set of identical element and allocator
+       *  types.
+       *
+       *  The newly-created %unordered_set contains the exact contents of @a
+       *  __x. The contents of @a __x are a valid, but unspecified
+       *  %unordered_set.
+       */
+      unordered_set(unordered_set&& __x)
+	: _M_h(std::move(__x._M_h))
+      { }
+
+      /**
+       *  @brief  Builds an %unordered_set from an initializer_list.
+       *  @param  __l  An initializer_list.
+       *  @param __n  Minimal initial number of buckets.
+       *  @param __hf  A hash functor.
+       *  @param __eql  A key equality functor.
+       *  @param  __a  An allocator object.
+       *
+       *  Create an %unordered_set consisting of copies of the elements in the
+       *  list. This is linear in N (where N is @a __l.size()).
+       */
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 0,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
-      : _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
+	: _M_h(__l, __n, __hf, __eql, __a)
       { }
+
+      /**
+       *  @brief  %Unordered_set assignment operator.
+       *  @param  __x  An %unordered_set of identical element and allocator
+       *  types.
+       *
+       *  All the elements of @a __x are copied, but unlike the copy
+       *  constructor, the allocator object is not copied.
+       */
+      unordered_set&
+      operator=(const unordered_set& __x)
+      {
+	_M_h = __x._M_h;
+	return *this;
+      }
+
+      /**
+       *  @brief %Unordered_set move assignment operator.
+       *  @param __x  An %unordered_set of identical element and allocator
+       *  types.
+       *
+       *  The contents of @a __x are moved into this %unordered_set (without
+       *  copying). @a __x is a valid, but unspecified %unordered_set.
+       */
+      unordered_set&
+      operator=(unordered_set&& __x)
+      {
+	_M_h = std::move(__x._M_h);
+	return *this;
+      }
+
+      /**
+       *  @brief  %Unordered_set list assignment operator.
+       *  @param  __l  An initializer_list.
+       *
+       *  This function fills an %unordered_set with copies of the elements in
+       *  the initializer list @a __l.
+       *
+       *  Note that the assignment completely changes the %unordered_set and
+       *  that the resulting %unordered_set's size is the same as the number
+       *  of elements assigned.  Old data may be lost.
+       */
+      unordered_set&
+      operator=(initializer_list<value_type> __l)
+      {
+	_M_h = __l;
+	return *this;
+      }
+
+      ///  Returns the allocator object with which the %unordered_set was
+      ///  constructed.
+      allocator_type
+      get_allocator() const noexcept
+      { return _M_h.get_allocator(); }
+
+      // size and capacity:
+
+      ///  Returns true if the %unordered_set is empty.
+      bool
+      empty() const noexcept
+      { return _M_h.empty(); }
+
+      ///  Returns the size of the %unordered_set.
+      size_type
+      size() const noexcept
+      { return _M_h.size(); }
+
+      ///  Returns the maximum size of the %unordered_set.
+      size_type
+      max_size() const noexcept
+      { return _M_h.max_size(); }
+
+      // iterators.
+
+      //@{
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  element in the %unordered_set.
+       */
+      iterator
+      begin() noexcept
+      { return _M_h.begin(); }
+
+      const_iterator
+      begin() const noexcept
+      { return _M_h.begin(); }
+      //@}
+
+      //@{
+      /**
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  element in the %unordered_set.
+       */
+      iterator
+      end() noexcept
+      { return _M_h.end(); }
+
+      const_iterator
+      end() const noexcept
+      { return _M_h.end(); }
+      //@}
+
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  element in the %unordered_set.
+       */
+      const_iterator
+      cbegin() const noexcept
+      { return _M_h.begin(); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  element in the %unordered_set.
+       */
+      const_iterator
+      cend() const noexcept
+      { return _M_h.end(); }
+
+      // modifiers.
+
+      /**
+       *  @brief Attempts to build and insert an element into the
+       *  %unordered_set.
+       *  @param __args  Arguments used to generate an element.
+       *  @return  A pair, of which the first element is an iterator that points
+       *           to the possibly inserted element, and the second is a bool
+       *           that is true if the element was actually inserted.
+       *
+       *  This function attempts to build and insert an element into the
+       *  %unordered_set. An %unordered_set relies on unique keys and thus an
+       *  element is only inserted if it is not already present in the %set.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template<typename... _Args>
+	std::pair<iterator, bool>
+	emplace(_Args&&... __args)
+	{ return _M_h.emplace(std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief Attempts to insert an element into the %unordered_set.
+       *  @param  __pos  An iterator that serves as a hint as to where the
+       *                element should be inserted.
+       *  @param  __args  Arguments used to generate the element to be
+       *                 inserted.
+       *  @return An iterator that points to the element with key equivalent to
+       *          the one generated from @a __args (may or may not be the
+       *          element itself).
+       *
+       *  This function is not concerned about whether the insertion took place,
+       *  and thus does not return a boolean like the single-argument emplace()
+       *  does.  Note that the first parameter is only a hint and can
+       *  potentially improve the performance of the insertion process.  A bad
+       *  hint would cause no gains in efficiency.
+       *
+       *  For more on @a hinting, see:
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{ return _M_h.emplace_hint(__pos, std::forward<_Args>(__args)...); }
+
+      //@{
+      /**
+       *  @brief Attempts to insert an element into the %unordered_set.
+       *  @param  __x  Element to be inserted.
+       *  @return  A pair, of which the first element is an iterator that points
+       *           to the possibly inserted element, and the second is a bool
+       *           that is true if the element was actually inserted.
+       *
+       *  This function attempts to insert an element into the %unordered_set.
+       *  An %unordered_set relies on unique keys and thus an element is only
+       *  inserted if it is not already present in the %unordered_set.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      std::pair<iterator, bool>
+      insert(const value_type& __x)
+      { return _M_h.insert(__x); }
+
+      std::pair<iterator, bool>
+      insert(value_type&& __x)
+      { return _M_h.insert(std::move(__x)); }
+      //@}
+
+      //@{
+      /**
+       *  @brief Attempts to insert an element into the %unordered_set.
+       *  @param  __hint  An iterator that serves as a hint as to where the
+       *                 element should be inserted.
+       *  @param  __x  Element to be inserted.
+       *  @return An iterator that points to the element with key of
+       *           @a __x (may or may not be the element passed in).
+       *
+       *  This function is not concerned about whether the insertion took place,
+       *  and thus does not return a boolean like the single-argument insert()
+       *  does.  Note that the first parameter is only a hint and can
+       *  potentially improve the performance of the insertion process.  A bad
+       *  hint would cause no gains in efficiency.
+       *
+       *  For more on @a hinting, see:
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *
+       *  Insertion requires amortized constant.
+       */
+      iterator
+      insert(const_iterator __hint, const value_type& __x)
+      { return _M_h.insert(__hint, __x); }
+
+      iterator
+      insert(const_iterator __hint, value_type&& __x)
+      { return _M_h.insert(__hint, std::move(__x)); }
+      //@}
+
+      /**
+       *  @brief A template function that attempts to insert a range of
+       *  elements.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   inserted.
+       *  @param  __last  Iterator pointing to the end of the range.
+       *
+       *  Complexity similar to that of the range constructor.
+       */
+      template<typename _InputIterator>
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{ _M_h.insert(__first, __last); }
+
+      /**
+       *  @brief Attempts to insert a list of elements into the %unordered_set.
+       *  @param  __l  A std::initializer_list<value_type> of elements
+       *               to be inserted.
+       *
+       *  Complexity similar to that of the range constructor.
+       */
+      void
+      insert(initializer_list<value_type> __l)
+      { _M_h.insert(__l); }
+
+      //@{
+      /**
+       *  @brief Erases an element from an %unordered_set.
+       *  @param  __position  An iterator pointing to the element to be erased.
+       *  @return An iterator pointing to the element immediately following
+       *          @a __position prior to the element being erased. If no such
+       *          element exists, end() is returned.
+       *
+       *  This function erases an element, pointed to by the given iterator,
+       *  from an %unordered_set.  Note that this function only erases the
+       *  element, and that if the element is itself a pointer, the pointed-to
+       *  memory is not touched in any way.  Managing the pointer is the user's
+       *  responsibility.
+       */
+      iterator
+      erase(const_iterator __position)
+      { return _M_h.erase(__position); }
+
+      // LWG 2059.
+      iterator
+      erase(iterator __it)
+      { return _M_h.erase(__it); }
+      //@}
+
+      /**
+       *  @brief Erases elements according to the provided key.
+       *  @param  __x  Key of element to be erased.
+       *  @return  The number of elements erased.
+       *
+       *  This function erases all the elements located by the given key from
+       *  an %unordered_set. For an %unordered_set the result of this function
+       *  can only be 0 (not present) or 1 (present).
+       *  Note that this function only erases the element, and that if
+       *  the element is itself a pointer, the pointed-to memory is not touched
+       *  in any way.  Managing the pointer is the user's responsibility.
+       */
+      size_type
+      erase(const key_type& __x)
+      { return _M_h.erase(__x); }
+
+      /**
+       *  @brief Erases a [__first,__last) range of elements from an
+       *  %unordered_set.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                  erased.
+       *  @param __last  Iterator pointing to the end of the range to
+       *                be erased.
+       *  @return The iterator @a __last.
+       *
+       *  This function erases a sequence of elements from an %unordered_set.
+       *  Note that this function only erases the element, and that if
+       *  the element is itself a pointer, the pointed-to memory is not touched
+       *  in any way.  Managing the pointer is the user's responsibility.
+       */
+      iterator
+      erase(const_iterator __first, const_iterator __last)
+      { return _M_h.erase(__first, __last); }
+
+      /**
+       *  Erases all elements in an %unordered_set. Note that this function only
+       *  erases the elements, and that if the elements themselves are pointers,
+       *  the pointed-to memory is not touched in any way. Managing the pointer
+       *  is the user's responsibility.
+       */
+      void
+      clear() noexcept
+      { _M_h.clear(); }
+
+      /**
+       *  @brief  Swaps data with another %unordered_set.
+       *  @param  __x  An %unordered_set of the same element and allocator
+       *  types.
+       *
+       *  This exchanges the elements between two sets in constant time.
+       *  Note that the global std::swap() function is specialized such that
+       *  std::swap(s1,s2) will feed to this function.
+       */
+      void
+      swap(unordered_set& __x)
+      { _M_h.swap(__x._M_h); }
+
+      // observers.
+
+      ///  Returns the hash functor object with which the %unordered_set was
+      ///  constructed.
+      hasher
+      hash_function() const
+      { return _M_h.hash_function(); }
+
+      ///  Returns the key comparison object with which the %unordered_set was
+      ///  constructed.
+      key_equal
+      key_eq() const
+      { return _M_h.key_eq(); }
+
+      // lookup.
+
+      //@{
+      /**
+       *  @brief Tries to locate an element in an %unordered_set.
+       *  @param  __x  Element to be located.
+       *  @return  Iterator pointing to sought-after element, or end() if not
+       *           found.
+       *
+       *  This function takes a key and tries to locate the element with which
+       *  the key matches.  If successful the function returns an iterator
+       *  pointing to the sought after element.  If unsuccessful it returns the
+       *  past-the-end ( @c end() ) iterator.
+       */
+      iterator
+      find(const key_type& __x)
+      { return _M_h.find(__x); }
+
+      const_iterator
+      find(const key_type& __x) const
+      { return _M_h.find(__x); }
+      //@}
+
+      /**
+       *  @brief  Finds the number of elements.
+       *  @param  __x  Element to located.
+       *  @return  Number of elements with specified key.
+       *
+       *  This function only makes sense for unordered_multisets; for
+       *  unordered_set the result will either be 0 (not present) or 1
+       *  (present).
+       */
+      size_type
+      count(const key_type& __x) const
+      { return _M_h.count(__x); }
+
+      //@{
+      /**
+       *  @brief Finds a subsequence matching given key.
+       *  @param  __x  Key to be located.
+       *  @return  Pair of iterators that possibly points to the subsequence
+       *           matching given key.
+       *
+       *  This function probably only makes sense for multisets.
+       */
+      std::pair<iterator, iterator>
+      equal_range(const key_type& __x)
+      { return _M_h.equal_range(__x); }
+
+      std::pair<const_iterator, const_iterator>
+      equal_range(const key_type& __x) const
+      { return _M_h.equal_range(__x); }
+      //@}
+
+      // bucket interface.
+
+      /// Returns the number of buckets of the %unordered_set.
+      size_type
+      bucket_count() const noexcept
+      { return _M_h.bucket_count(); }
+
+      /// Returns the maximum number of buckets of the %unordered_set.
+      size_type
+      max_bucket_count() const noexcept
+      { return _M_h.max_bucket_count(); }
+
+      /*
+       * @brief  Returns the number of elements in a given bucket.
+       * @param  __n  A bucket index.
+       * @return  The number of elements in the bucket.
+       */
+      size_type
+      bucket_size(size_type __n) const
+      { return _M_h.bucket_size(__n); }
+
+      /*
+       * @brief  Returns the bucket index of a given element.
+       * @param  __key  A key instance.
+       * @return  The key bucket index.
+       */
+      size_type
+      bucket(const key_type& __key) const
+      { return _M_h.bucket(__key); }
+
+      //@{
+      /**
+       *  @brief  Returns a read-only (constant) iterator pointing to the first
+       *         bucket element.
+       *  @param  __n The bucket index.
+       *  @return  A read-only local iterator.
+       */
+      local_iterator
+      begin(size_type __n)
+      { return _M_h.begin(__n); }
+
+      const_local_iterator
+      begin(size_type __n) const
+      { return _M_h.begin(__n); }
+
+      const_local_iterator
+      cbegin(size_type __n) const
+      { return _M_h.cbegin(__n); }
+      //@}
+
+      //@{
+      /**
+       *  @brief  Returns a read-only (constant) iterator pointing to one past
+       *         the last bucket elements.
+       *  @param  __n The bucket index.
+       *  @return  A read-only local iterator.
+       */
+      local_iterator
+      end(size_type __n)
+      { return _M_h.end(__n); }
+
+      const_local_iterator
+      end(size_type __n) const
+      { return _M_h.end(__n); }
+
+      const_local_iterator
+      cend(size_type __n) const
+      { return _M_h.cend(__n); }
+      //@}
+
+      // hash policy.
+
+      /// Returns the average number of elements per bucket.
+      float
+      load_factor() const noexcept
+      { return _M_h.load_factor(); }
+
+      /// Returns a positive number that the %unordered_set tries to keep the
+      /// load factor less than or equal to.
+      float
+      max_load_factor() const noexcept
+      { return _M_h.max_load_factor(); }
+
+      /**
+       *  @brief  Change the %unordered_set maximum load factor.
+       *  @param  __z The new maximum load factor.
+       */
+      void
+      max_load_factor(float __z)
+      { _M_h.max_load_factor(__z); }
+
+      /**
+       *  @brief  May rehash the %unordered_set.
+       *  @param  __n The new number of buckets.
+       *
+       *  Rehash will occur only if the new number of buckets respect the
+       *  %unordered_set maximum load factor.
+       */
+      void
+      rehash(size_type __n)
+      { _M_h.rehash(__n); }
+
+      /**
+       *  @brief  Prepare the %unordered_set for a specified number of
+       *          elements.
+       *  @param  __n Number of elements required.
+       *
+       *  Same as rehash(ceil(n / max_load_factor())).
+       */
+      void
+      reserve(size_type __n)
+      { _M_h.reserve(__n); }
+
+      template<typename _Value1, typename _Hash1, typename _Pred1,
+	       typename _Alloc1>
+        friend bool
+      operator==(const unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&,
+		 const unordered_set<_Value1, _Hash1, _Pred1, _Alloc1>&);
     };
 
   /**
@@ -152,42 +735,603 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   class _Pred = std::equal_to<_Value>,
 	   class _Alloc = std::allocator<_Value> >
     class unordered_multiset
-    : public __umset_hashtable<_Value, _Hash, _Pred, _Alloc>
     {
-      typedef __umset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Base;
+      typedef __umset_hashtable<_Value, _Hash, _Pred, _Alloc>  _Hashtable;
+      _Hashtable _M_h;
 
     public:
-      typedef typename _Base::value_type      value_type;
-      typedef typename _Base::size_type       size_type;
-      typedef typename _Base::hasher          hasher;
-      typedef typename _Base::key_equal       key_equal;
-      typedef typename _Base::allocator_type  allocator_type;
+      // typedefs:
+      //@{
+      /// Public typedefs.
+      typedef typename _Hashtable::key_type	key_type;
+      typedef typename _Hashtable::value_type	value_type;
+      typedef typename _Hashtable::hasher	hasher;
+      typedef typename _Hashtable::key_equal	key_equal;
+      typedef typename _Hashtable::allocator_type allocator_type;
+      //@}
 
+      //@{
+      ///  Iterator-related typedefs.
+      typedef typename allocator_type::pointer		pointer;
+      typedef typename allocator_type::const_pointer	const_pointer;
+      typedef typename allocator_type::reference	reference;
+      typedef typename allocator_type::const_reference	const_reference;
+      typedef typename _Hashtable::iterator		iterator;
+      typedef typename _Hashtable::const_iterator	const_iterator;
+      typedef typename _Hashtable::local_iterator	local_iterator;
+      typedef typename _Hashtable::const_local_iterator	const_local_iterator;
+      typedef typename _Hashtable::size_type		size_type;
+      typedef typename _Hashtable::difference_type	difference_type;
+      //@}
+
+      // construct/destroy/copy
+      /**
+       *  @brief  Default constructor creates no elements.
+       *  @param __n  Initial number of buckets.
+       *  @param __hf  A hash functor.
+       *  @param __eql  A key equality functor.
+       *  @param __a  An allocator object.
+       */
       explicit
       unordered_multiset(size_type __n = 10,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-      : _Base(__n, __hf, __eql, __a)
+      : _M_h(__n, __hf, __eql, __a)
       { }
 
-
+      /**
+       *  @brief  Builds an %unordered_multiset from a range.
+       *  @param  __first  An input iterator.
+       *  @param  __last  An input iterator.
+       *  @param __n  Minimal initial number of buckets.
+       *  @param __hf  A hash functor.
+       *  @param __eql  A key equality functor.
+       *  @param __a  An allocator object.
+       *
+       *  Create an %unordered_multiset consisting of copies of the elements
+       *  from [__first,__last).  This is linear in N (where N is
+       *  distance(__first,__last)).
+       */
       template<typename _InputIterator>
 	unordered_multiset(_InputIterator __f, _InputIterator __l,
 			   size_type __n = 0,
 			   const hasher& __hf = hasher(),
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
-	: _Base(__f, __l, __n, __hf, __eql, __a)
+	: _M_h(__f, __l, __n, __hf, __eql, __a)
 	{ }
 
+      /**
+       *  @brief  %Unordered_multiset copy constructor.
+       *  @param  __x  An %unordered_multiset of identical element and allocator
+       *  types.
+       *
+       *  The newly-created %unordered_multiset uses a copy of the allocation object
+       *  used by @a __x.
+       */
+      unordered_multiset(const unordered_multiset& __x)
+	: _M_h(__x._M_h) { }
+
+     /**
+       *  @brief %Unordered_multiset move constructor
+       *  @param __x  An %unordered_multiset of identical element and allocator
+       *  types.
+       *
+       *  The newly-created %unordered_multiset contains the exact contents of
+       *  @a __x. The contents of @a __x are a valid, but unspecified
+       *  %unordered_multiset.
+       */
+      unordered_multiset(unordered_multiset&& __x)
+	: _M_h(std::move(__x._M_h))
+      { }
+
+      /**
+       *  @brief  Builds an %unordered_multiset from an initializer_list.
+       *  @param  __l  An initializer_list.
+       *  @param __n  Minimal initial number of buckets.
+       *  @param __hf  A hash functor.
+       *  @param __eql  A key equality functor.
+       *  @param  __a  An allocator object.
+       *
+       *  Create an %unordered_multiset consisting of copies of the elements in
+       *  the list. This is linear in N (where N is @a __l.size()).
+       */
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 0,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
-      : _Base(__l.begin(), __l.end(), __n, __hf, __eql, __a)
+	: _M_h(__l, __n, __hf, __eql, __a)
       { }
+
+      /**
+       *  @brief  %Unordered_multiset assignment operator.
+       *  @param  __x  An %unordered_multiset of identical element and allocator
+       *  types.
+       *
+       *  All the elements of @a __x are copied, but unlike the copy
+       *  constructor, the allocator object is not copied.
+       */
+      unordered_multiset&
+      operator=(const unordered_multiset& __x)
+      {
+	_M_h = __x._M_h;
+	return *this;
+      }
+
+      /**
+       *  @brief %Unordered_multiset move assignment operator.
+       *  @param __x  An %unordered_multiset of identical element and allocator
+       *  types.
+       *
+       *  The contents of @a __x are moved into this %unordered_multiset
+       *  (without copying). @a __x is a valid, but unspecified
+       *  %unordered_multiset.
+       */
+      unordered_multiset&
+      operator=(unordered_multiset&& __x)
+      {
+	_M_h = std::move(__x._M_h);
+	return *this;
+      }
+
+      /**
+       *  @brief  %Unordered_multiset list assignment operator.
+       *  @param  __l  An initializer_list.
+       *
+       *  This function fills an %unordered_multiset with copies of the elements
+       *  in the initializer list @a __l.
+       *
+       *  Note that the assignment completely changes the %unordered_multiset
+       *  and that the resulting %unordered_set's size is the same as the number
+       *  of elements assigned.  Old data may be lost.
+       */
+      unordered_multiset&
+      operator=(initializer_list<value_type> __l)
+      {
+	_M_h = __l;
+	return *this;
+      }
+
+      ///  Returns the allocator object with which the %unordered_multiset was
+      ///  constructed.
+      allocator_type
+      get_allocator() const noexcept
+      { return _M_h.get_allocator(); }
+
+      // size and capacity:
+
+      ///  Returns true if the %unordered_multiset is empty.
+      bool
+      empty() const noexcept
+      { return _M_h.empty(); }
+
+      ///  Returns the size of the %unordered_multiset.
+      size_type
+      size() const noexcept
+      { return _M_h.size(); }
+
+      ///  Returns the maximum size of the %unordered_multiset.
+      size_type
+      max_size() const noexcept
+      { return _M_h.max_size(); }
+
+      // iterators.
+
+      //@{
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  element in the %unordered_multiset.
+       */
+      iterator
+      begin() noexcept
+      { return _M_h.begin(); }
+
+      const_iterator
+      begin() const noexcept
+      { return _M_h.begin(); }
+      //@}
+
+      //@{
+      /**
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  element in the %unordered_multiset.
+       */
+      iterator
+      end() noexcept
+      { return _M_h.end(); }
+
+      const_iterator
+      end() const noexcept
+      { return _M_h.end(); }
+      //@}
+
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  element in the %unordered_multiset.
+       */
+      const_iterator
+      cbegin() const noexcept
+      { return _M_h.begin(); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  element in the %unordered_multiset.
+       */
+      const_iterator
+      cend() const noexcept
+      { return _M_h.end(); }
+
+      // modifiers.
+
+      /**
+       *  @brief Builds and insert an element into the %unordered_multiset.
+       *  @param __args  Arguments used to generate an element.
+       *  @return  An iterator that points to the inserted element.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template<typename... _Args>
+	iterator
+	emplace(_Args&&... __args)
+	{ return _M_h.emplace(std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief Inserts an element into the %unordered_multiset.
+       *  @param  __pos  An iterator that serves as a hint as to where the
+       *                element should be inserted.
+       *  @param  __args  Arguments used to generate the element to be
+       *                 inserted.
+       *  @return An iterator that points to the inserted element.
+       *
+       *  Note that the first parameter is only a hint and can potentially
+       *  improve the performance of the insertion process.  A bad hint would
+       *  cause no gains in efficiency.
+       *
+       *  For more on @a hinting, see:
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *
+       *  Insertion requires amortized constant time.
+       */
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{ return _M_h.emplace_hint(__pos, std::forward<_Args>(__args)...); }
+
+      //@{
+      /**
+       *  @brief Inserts an element into the %unordered_multiset.
+       *  @param  __x  Element to be inserted.
+       *  @return  An iterator that points to the inserted element.
+       *
+       *  Insertion requires amortized constant time.
+       */
+      iterator
+      insert(const value_type& __x)
+      { return _M_h.insert(__x); }
+
+      iterator
+      insert(value_type&& __x)
+      { return _M_h.insert(std::move(__x)); }
+      //@}
+
+      //@{
+      /**
+       *  @brief Inserts an element into the %unordered_multiset.
+       *  @param  __hint  An iterator that serves as a hint as to where the
+       *                 element should be inserted.
+       *  @param  __x  Element to be inserted.
+       *  @return An iterator that points to the inserted element.
+       *
+       *  Note that the first parameter is only a hint and can potentially
+       *  improve the performance of the insertion process.  A bad hint would
+       *  cause no gains in efficiency.
+       *
+       *  For more on @a hinting, see:
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *
+       *  Insertion requires amortized constant.
+       */
+      iterator
+      insert(const_iterator __hint, const value_type& __x)
+      { return _M_h.insert(__hint, __x); }
+
+      iterator
+      insert(const_iterator __hint, value_type&& __x)
+      { return _M_h.insert(__hint, std::move(__x)); }
+      //@}
+
+      /**
+       *  @brief A template function that inserts a range of elements.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                   inserted.
+       *  @param  __last  Iterator pointing to the end of the range.
+       *
+       *  Complexity similar to that of the range constructor.
+       */
+      template<typename _InputIterator>
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{ _M_h.insert(__first, __last); }
+
+      /**
+       *  @brief Inserts a list of elements into the %unordered_multiset.
+       *  @param  __l  A std::initializer_list<value_type> of elements to be
+       *              inserted.
+       *
+       *  Complexity similar to that of the range constructor.
+       */
+      void
+      insert(initializer_list<value_type> __l)
+      { _M_h.insert(__l); }
+
+      //@{
+      /**
+       *  @brief Erases an element from an %unordered_multiset.
+       *  @param  __position  An iterator pointing to the element to be erased.
+       *  @return An iterator pointing to the element immediately following
+       *          @a __position prior to the element being erased. If no such
+       *          element exists, end() is returned.
+       *
+       *  This function erases an element, pointed to by the given iterator,
+       *  from an %unordered_multiset.
+       *
+       *  Note that this function only erases the element, and that if the
+       *  element is itself a pointer, the pointed-to memory is not touched in
+       *  any way.  Managing the pointer is the user's responsibility.
+       */
+      iterator
+      erase(const_iterator __position)
+      { return _M_h.erase(__position); }
+
+      // LWG 2059.
+      iterator
+      erase(iterator __it)
+      { return _M_h.erase(__it); }
+      //@}
+
+
+      /**
+       *  @brief Erases elements according to the provided key.
+       *  @param  __x  Key of element to be erased.
+       *  @return  The number of elements erased.
+       *
+       *  This function erases all the elements located by the given key from
+       *  an %unordered_multiset.
+       *
+       *  Note that this function only erases the element, and that if the
+       *  element is itself a pointer, the pointed-to memory is not touched in
+       *  any way.  Managing the pointer is the user's responsibility.
+       */
+      size_type
+      erase(const key_type& __x)
+      { return _M_h.erase(__x); }
+
+      /**
+       *  @brief Erases a [__first,__last) range of elements from an
+       *  %unordered_multiset.
+       *  @param  __first  Iterator pointing to the start of the range to be
+       *                  erased.
+       *  @param __last  Iterator pointing to the end of the range to
+       *                be erased.
+       *  @return The iterator @a __last.
+       *
+       *  This function erases a sequence of elements from an
+       *  %unordered_multiset.
+       *
+       *  Note that this function only erases the element, and that if
+       *  the element is itself a pointer, the pointed-to memory is not touched
+       *  in any way.  Managing the pointer is the user's responsibility.
+       */
+      iterator
+      erase(const_iterator __first, const_iterator __last)
+      { return _M_h.erase(__first, __last); }
+
+      /**
+       *  Erases all elements in an %unordered_multiset.
+       *
+       *  Note that this function only erases the elements, and that if the
+       *  elements themselves are pointers, the pointed-to memory is not touched
+       *  in any way. Managing the pointer is the user's responsibility.
+       */
+      void
+      clear() noexcept
+      { _M_h.clear(); }
+
+      /**
+       *  @brief  Swaps data with another %unordered_multiset.
+       *  @param  __x  An %unordered_multiset of the same element and allocator
+       *  types.
+       *
+       *  This exchanges the elements between two sets in constant time.
+       *  Note that the global std::swap() function is specialized such that
+       *  std::swap(s1,s2) will feed to this function.
+       */
+      void
+      swap(unordered_multiset& __x)
+      { _M_h.swap(__x._M_h); }
+
+      // observers.
+
+      ///  Returns the hash functor object with which the %unordered_multiset
+      ///  was constructed.
+      hasher
+      hash_function() const
+      { return _M_h.hash_function(); }
+
+      ///  Returns the key comparison object with which the %unordered_multiset
+      ///  was constructed.
+      key_equal
+      key_eq() const
+      { return _M_h.key_eq(); }
+
+      // lookup.
+
+      //@{
+      /**
+       *  @brief Tries to locate an element in an %unordered_multiset.
+       *  @param  __x  Element to be located.
+       *  @return  Iterator pointing to sought-after element, or end() if not
+       *           found.
+       *
+       *  This function takes a key and tries to locate the element with which
+       *  the key matches.  If successful the function returns an iterator
+       *  pointing to the sought after element.  If unsuccessful it returns the
+       *  past-the-end ( @c end() ) iterator.
+       */
+      iterator
+      find(const key_type& __x)
+      { return _M_h.find(__x); }
+
+      const_iterator
+      find(const key_type& __x) const
+      { return _M_h.find(__x); }
+      //@}
+
+      /**
+       *  @brief  Finds the number of elements.
+       *  @param  __x  Element to located.
+       *  @return  Number of elements with specified key.
+       */
+      size_type
+      count(const key_type& __x) const
+      { return _M_h.count(__x); }
+
+      //@{
+      /**
+       *  @brief Finds a subsequence matching given key.
+       *  @param  __x  Key to be located.
+       *  @return  Pair of iterators that possibly points to the subsequence
+       *           matching given key.
+       */
+      std::pair<iterator, iterator>
+      equal_range(const key_type& __x)
+      { return _M_h.equal_range(__x); }
+
+      std::pair<const_iterator, const_iterator>
+      equal_range(const key_type& __x) const
+      { return _M_h.equal_range(__x); }
+      //@}
+
+      // bucket interface.
+
+      /// Returns the number of buckets of the %unordered_multiset.
+      size_type
+      bucket_count() const noexcept
+      { return _M_h.bucket_count(); }
+
+      /// Returns the maximum number of buckets of the %unordered_multiset.
+      size_type
+      max_bucket_count() const noexcept
+      { return _M_h.max_bucket_count(); }
+
+      /*
+       * @brief  Returns the number of elements in a given bucket.
+       * @param  __n  A bucket index.
+       * @return  The number of elements in the bucket.
+       */
+      size_type
+      bucket_size(size_type __n) const
+      { return _M_h.bucket_size(__n); }
+
+      /*
+       * @brief  Returns the bucket index of a given element.
+       * @param  __key  A key instance.
+       * @return  The key bucket index.
+       */
+      size_type
+      bucket(const key_type& __key) const
+      { return _M_h.bucket(__key); }
+
+      //@{
+      /**
+       *  @brief  Returns a read-only (constant) iterator pointing to the first
+       *         bucket element.
+       *  @param  __n The bucket index.
+       *  @return  A read-only local iterator.
+       */
+      local_iterator
+      begin(size_type __n)
+      { return _M_h.begin(__n); }
+
+      const_local_iterator
+      begin(size_type __n) const
+      { return _M_h.begin(__n); }
+
+      const_local_iterator
+      cbegin(size_type __n) const
+      { return _M_h.cbegin(__n); }
+      //@}
+
+      //@{
+      /**
+       *  @brief  Returns a read-only (constant) iterator pointing to one past
+       *         the last bucket elements.
+       *  @param  __n The bucket index.
+       *  @return  A read-only local iterator.
+       */
+      local_iterator
+      end(size_type __n)
+      { return _M_h.end(__n); }
+
+      const_local_iterator
+      end(size_type __n) const
+      { return _M_h.end(__n); }
+
+      const_local_iterator
+      cend(size_type __n) const
+      { return _M_h.cend(__n); }
+      //@}
+
+      // hash policy.
+
+      /// Returns the average number of elements per bucket.
+      float
+      load_factor() const noexcept
+      { return _M_h.load_factor(); }
+
+      /// Returns a positive number that the %unordered_multiset tries to keep the
+      /// load factor less than or equal to.
+      float
+      max_load_factor() const noexcept
+      { return _M_h.max_load_factor(); }
+
+      /**
+       *  @brief  Change the %unordered_multiset maximum load factor.
+       *  @param  __z The new maximum load factor.
+       */
+      void
+      max_load_factor(float __z)
+      { _M_h.max_load_factor(__z); }
+
+      /**
+       *  @brief  May rehash the %unordered_multiset.
+       *  @param  __n The new number of buckets.
+       *
+       *  Rehash will occur only if the new number of buckets respect the
+       *  %unordered_multiset maximum load factor.
+       */
+      void
+      rehash(size_type __n)
+      { _M_h.rehash(__n); }
+
+      /**
+       *  @brief  Prepare the %unordered_multiset for a specified number of
+       *          elements.
+       *  @param  __n Number of elements required.
+       *
+       *  Same as rehash(ceil(n / max_load_factor())).
+       */
+      void
+      reserve(size_type __n)
+      { _M_h.reserve(__n); }
+
+      template<typename _Value1, typename _Hash1, typename _Pred1,
+	       typename _Alloc1>
+        friend bool
+      operator==(const unordered_multiset<_Value1, _Hash1, _Pred1, _Alloc1>&,
+		 const unordered_multiset<_Value1, _Hash1, _Pred1, _Alloc1>&);
     };
 
   template<class _Value, class _Hash, class _Pred, class _Alloc>
@@ -206,7 +1350,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator==(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_equal(__y); }
+    { return __x._M_h._M_equal(__y._M_h); }
 
   template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline bool
@@ -218,7 +1362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     inline bool
     operator==(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_equal(__y); }
+    { return __x._M_h._M_equal(__y._M_h); }
 
   template<class _Value, class _Hash, class _Pred, class _Alloc>
     inline bool

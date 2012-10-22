@@ -479,7 +479,7 @@ namespace __debug
     inline bool
     operator==(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_equal(__y); }
+    { return __x._M_base() == __y._M_base(); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline bool
@@ -912,7 +912,7 @@ namespace __debug
     inline bool
     operator==(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_equal(__y); }
+    { return __x._M_base() == __y._M_base(); }
 
   template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
     inline bool
