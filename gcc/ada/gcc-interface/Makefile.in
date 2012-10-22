@@ -2581,8 +2581,6 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
 
-# GNULLI End #############################################################
-
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
 OSCONS_CPP=../../$(DECC) -E /comment=as_is -DNATIVE \
              -DTARGET='""$(target)""' $(fsrcpfx)ada/s-oscons-tmplt.c
