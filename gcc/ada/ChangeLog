@@ -6,6 +6,9 @@
 	<E_Record_Type>: Guard the call to Is_By_Reference_Type predicate.
 	<E_Record_Subtype>: Likewise.
 
+	* gcc-interface/Makefile.in: Remove outdated comment and reference to
+	non-existing file.
+
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use gnat_type_for_size

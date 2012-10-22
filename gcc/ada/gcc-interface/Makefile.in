@@ -1242,7 +1242,6 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
   s-taprop.adb<s-taprop-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix.adb \
-  g-trasym.adb<g-trasym-dwarf.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
   system.ads<system-freebsd-x86_64.ads
@@ -2517,8 +2516,6 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	$(CP) $(srcdir)/tsystem.h $(RTSDIR)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
-
-# GNULLI End #############################################################
 
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
 OSCONS_CPP=../../$(DECC) -E /comment=as_is -DNATIVE \
