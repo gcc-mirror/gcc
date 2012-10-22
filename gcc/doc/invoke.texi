@@ -11247,9 +11247,6 @@ These options are defined for AVR implementations:
 @opindex mmcu
 Specify Atmel AVR instruction set architectures (ISA) or MCU type.
 
-For a complete list of @var{mcu} values that are supported by @command{avr-gcc},
-see the compiler output when called with the @option{--help=target}
-command line option.
 The default for this option is@tie{}@code{avr2}.
 
 GCC supports the following AVR devices and ISAs:
@@ -11540,6 +11537,23 @@ For even more AVR-specific built-in macros see
 
 @table @code
 
+@item __AVR_ARCH__
+Build-in macro that resolves to a decimal number that identifies the
+architecture and depends on the @code{-mmcu=@var{mcu}} option.
+Possible values are:
+
+@code{2}, @code{25}, @code{3}, @code{31}, @code{35},
+@code{4}, @code{5}, @code{51}, @code{6}, @code{102}, @code{104},
+@code{105}, @code{106}, @code{107}
+
+for @var{mcu}=@code{avr2}, @code{avr25}, @code{avr3},
+@code{avr31}, @code{avr35}, @code{avr4}, @code{avr5}, @code{avr51},
+@code{avr6}, @code{avrxmega2}, @code{avrxmega4}, @code{avrxmega5},
+@code{avrxmega6}, @code{avrxmega7}, respectively.
+If @var{mcu} specifies a device, this built-in macro is set
+accordingly. For example, with @code{-mmcu=atmega8} the macro will be
+defined to @code{4}.
+
 @item __AVR_@var{Device}__
 Setting @code{-mmcu=@var{device}} defines this built-in macro which reflects
 the device's name. For example, @code{-mmcu=atmega8} defines the
@@ -11551,6 +11565,9 @@ the scheme @code{__AVR_@var{Device}__} where @var{Device} is
 the device name as from the AVR user manual. The difference between
 @var{Device} in the built-in macro and @var{device} in
 @code{-mmcu=@var{device}} is that the latter is always lowercase.
+
+If @var{device} is not a device but only a core architecture like
+@code{avr51}, this macro will not be defined.
 
 @item __AVR_HAVE_ELPM__
 The device has the the @code{ELPM} instruction.
