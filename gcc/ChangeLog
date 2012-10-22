@@ -1,6 +1,12 @@
 2012-10-22  Sameera Deshpande  <sameera.deshpande@arm.com>
 	    Greta Yorsh  <Greta.Yorsh@arm.com>
 
+	* config/arm/arm.c (thumb2_emit_ldrd_pop): New function.
+	(arm_expand_epilogue): Use the new function.
+
+2012-10-22  Sameera Deshpande  <sameera.deshpande@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
+
 	* config/arm/arm.c (thumb2_emit_strd_push): New function.
        (arm_expand_prologue): Use the new function.
 
