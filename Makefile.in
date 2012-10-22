@@ -802,6 +802,12 @@ EXTRA_HOST_FLAGS = \
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
 
+# Flags to pass to stage1 or when not bootstrapping.
+
+STAGE1_FLAGS_TO_PASS = \
+	LDFLAGS="$${LDFLAGS}" \
+	HOST_LIBS="$${HOST_LIBS}"
+
 # Flags to pass to stage2 and later makes.
 
 POSTSTAGE1_FLAGS_TO_PASS = \
@@ -2628,7 +2634,7 @@ all-build-libiberty: configure-build-libiberty
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-libiberty))
 @endif build-libiberty
 
@@ -2684,7 +2690,7 @@ all-build-bison: configure-build-bison
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/bison && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-bison))
 @endif build-bison
 
@@ -2740,7 +2746,7 @@ all-build-flex: configure-build-flex
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/flex && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-flex))
 @endif build-flex
 
@@ -2796,7 +2802,7 @@ all-build-m4: configure-build-m4
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/m4 && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-m4))
 @endif build-m4
 
@@ -2852,7 +2858,7 @@ all-build-texinfo: configure-build-texinfo
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/texinfo && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-texinfo))
 @endif build-texinfo
 
@@ -2908,7 +2914,7 @@ all-build-fixincludes: configure-build-fixincludes
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)   \
 		$(TARGET-build-fixincludes))
 @endif build-fixincludes
 
@@ -3164,7 +3170,7 @@ all-bfd: configure-bfd
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/bfd && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-bfd))
 @endif bfd
 
@@ -3192,7 +3198,8 @@ all-stage1-bfd: configure-stage1-bfd
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-bfd)
 
@@ -3207,7 +3214,7 @@ clean-stage1-bfd:
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif bfd-bootstrap
 
 
@@ -3248,9 +3255,7 @@ clean-stage2-bfd:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif bfd-bootstrap
 
 
@@ -3291,9 +3296,7 @@ clean-stage3-bfd:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif bfd-bootstrap
 
 
@@ -3334,9 +3337,7 @@ clean-stage4-bfd:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif bfd-bootstrap
 
 
@@ -3377,9 +3378,7 @@ clean-stageprofile-bfd:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif bfd-bootstrap
 
 
@@ -3420,9 +3419,7 @@ clean-stagefeedback-bfd:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif bfd-bootstrap
 
 
@@ -4045,7 +4042,7 @@ all-opcodes: configure-opcodes
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/opcodes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-opcodes))
 @endif opcodes
 
@@ -4073,7 +4070,8 @@ all-stage1-opcodes: configure-stage1-opcodes
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-opcodes)
 
@@ -4088,7 +4086,7 @@ clean-stage1-opcodes:
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif opcodes-bootstrap
 
 
@@ -4129,9 +4127,7 @@ clean-stage2-opcodes:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif opcodes-bootstrap
 
 
@@ -4172,9 +4168,7 @@ clean-stage3-opcodes:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif opcodes-bootstrap
 
 
@@ -4215,9 +4209,7 @@ clean-stage4-opcodes:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif opcodes-bootstrap
 
 
@@ -4258,9 +4250,7 @@ clean-stageprofile-opcodes:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif opcodes-bootstrap
 
 
@@ -4301,9 +4291,7 @@ clean-stagefeedback-opcodes:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif opcodes-bootstrap
 
 
@@ -4926,7 +4914,7 @@ all-binutils: configure-binutils
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/binutils && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-binutils))
 @endif binutils
 
@@ -4954,7 +4942,8 @@ all-stage1-binutils: configure-stage1-binutils
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-binutils)
 
@@ -4969,7 +4958,7 @@ clean-stage1-binutils:
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif binutils-bootstrap
 
 
@@ -5010,9 +4999,7 @@ clean-stage2-binutils:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif binutils-bootstrap
 
 
@@ -5053,9 +5040,7 @@ clean-stage3-binutils:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif binutils-bootstrap
 
 
@@ -5096,9 +5081,7 @@ clean-stage4-binutils:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif binutils-bootstrap
 
 
@@ -5139,9 +5122,7 @@ clean-stageprofile-binutils:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif binutils-bootstrap
 
 
@@ -5182,9 +5163,7 @@ clean-stagefeedback-binutils:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif binutils-bootstrap
 
 
@@ -5611,7 +5590,7 @@ all-bison: configure-bison
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/bison && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-bison))
 @endif bison
 
@@ -6054,7 +6033,7 @@ all-cgen: configure-cgen
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/cgen && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-cgen))
 @endif cgen
 
@@ -6494,7 +6473,7 @@ all-dejagnu: configure-dejagnu
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/dejagnu && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-dejagnu))
 @endif dejagnu
 
@@ -6934,7 +6913,7 @@ all-etc: configure-etc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/etc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-etc))
 @endif etc
 
@@ -7374,7 +7353,7 @@ all-fastjar: configure-fastjar
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/fastjar && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-fastjar))
 @endif fastjar
 
@@ -7817,7 +7796,7 @@ all-fixincludes: configure-fixincludes
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/fixincludes && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-fixincludes))
 @endif fixincludes
 
@@ -8241,7 +8220,7 @@ all-flex: configure-flex
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/flex && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-flex))
 @endif flex
 
@@ -8880,7 +8859,7 @@ all-gas: configure-gas
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gas && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-gas))
 @endif gas
 
@@ -8908,7 +8887,8 @@ all-stage1-gas: configure-stage1-gas
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-gas)
 
@@ -8923,7 +8903,7 @@ clean-stage1-gas:
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif gas-bootstrap
 
 
@@ -8964,9 +8944,7 @@ clean-stage2-gas:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gas-bootstrap
 
 
@@ -9007,9 +8985,7 @@ clean-stage3-gas:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gas-bootstrap
 
 
@@ -9050,9 +9026,7 @@ clean-stage4-gas:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gas-bootstrap
 
 
@@ -9093,9 +9067,7 @@ clean-stageprofile-gas:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gas-bootstrap
 
 
@@ -9136,9 +9108,7 @@ clean-stagefeedback-gas:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gas-bootstrap
 
 
@@ -9761,7 +9731,7 @@ all-gcc: configure-gcc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gcc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS) \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-gcc))
 @endif gcc
 
@@ -9789,7 +9759,8 @@ all-stage1-gcc: configure-stage1-gcc
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  $(EXTRA_GCC_FLAGS) \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-gcc)
 
@@ -9804,7 +9775,7 @@ clean-stage1-gcc:
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(EXTRA_GCC_FLAGS) clean
+	$(STAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
 
 
@@ -9845,9 +9816,7 @@ clean-stage2-gcc:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		$(EXTRA_GCC_FLAGS) clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
 
 
@@ -9888,9 +9857,7 @@ clean-stage3-gcc:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		$(EXTRA_GCC_FLAGS) clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
 
 
@@ -9931,9 +9898,7 @@ clean-stage4-gcc:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		$(EXTRA_GCC_FLAGS) clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
 
 
@@ -9974,9 +9939,7 @@ clean-stageprofile-gcc:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		$(EXTRA_GCC_FLAGS) clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
 
 
@@ -10017,9 +9980,7 @@ clean-stagefeedback-gcc:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		$(EXTRA_GCC_FLAGS) clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) clean
 @endif gcc-bootstrap
 
 
@@ -10648,7 +10609,7 @@ all-gmp: configure-gmp
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gmp && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-gmp))
 @endif gmp
 
@@ -10676,7 +10637,8 @@ all-stage1-gmp: configure-stage1-gmp
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-gmp)
 
@@ -10691,7 +10653,7 @@ clean-stage1-gmp:
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif gmp-bootstrap
 
 
@@ -10732,9 +10694,7 @@ clean-stage2-gmp:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gmp-bootstrap
 
 
@@ -10775,9 +10735,7 @@ clean-stage3-gmp:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gmp-bootstrap
 
 
@@ -10818,9 +10776,7 @@ clean-stage4-gmp:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gmp-bootstrap
 
 
@@ -10861,9 +10817,7 @@ clean-stageprofile-gmp:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gmp-bootstrap
 
 
@@ -10904,9 +10858,7 @@ clean-stagefeedback-gmp:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gmp-bootstrap
 
 
@@ -11523,7 +11475,7 @@ all-mpfr: configure-mpfr
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/mpfr && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-mpfr))
 @endif mpfr
 
@@ -11551,7 +11503,8 @@ all-stage1-mpfr: configure-stage1-mpfr
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-mpfr)
 
@@ -11566,7 +11519,7 @@ clean-stage1-mpfr:
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif mpfr-bootstrap
 
 
@@ -11607,9 +11560,7 @@ clean-stage2-mpfr:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpfr-bootstrap
 
 
@@ -11650,9 +11601,7 @@ clean-stage3-mpfr:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpfr-bootstrap
 
 
@@ -11693,9 +11642,7 @@ clean-stage4-mpfr:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpfr-bootstrap
 
 
@@ -11736,9 +11683,7 @@ clean-stageprofile-mpfr:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpfr-bootstrap
 
 
@@ -11779,9 +11724,7 @@ clean-stagefeedback-mpfr:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpfr-bootstrap
 
 
@@ -12398,7 +12341,7 @@ all-mpc: configure-mpc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/mpc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-mpc))
 @endif mpc
 
@@ -12426,7 +12369,8 @@ all-stage1-mpc: configure-stage1-mpc
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-mpc)
 
@@ -12441,7 +12385,7 @@ clean-stage1-mpc:
 	fi; \
 	cd $(HOST_SUBDIR)/mpc && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif mpc-bootstrap
 
 
@@ -12482,9 +12426,7 @@ clean-stage2-mpc:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpc-bootstrap
 
 
@@ -12525,9 +12467,7 @@ clean-stage3-mpc:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpc-bootstrap
 
 
@@ -12568,9 +12508,7 @@ clean-stage4-mpc:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpc-bootstrap
 
 
@@ -12611,9 +12549,7 @@ clean-stageprofile-mpc:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpc-bootstrap
 
 
@@ -12654,9 +12590,7 @@ clean-stagefeedback-mpc:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpc && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif mpc-bootstrap
 
 
@@ -13273,7 +13207,7 @@ all-isl: configure-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/isl && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) V=1 \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS) V=1 \
 		$(TARGET-isl))
 @endif isl
 
@@ -13301,7 +13235,8 @@ all-stage1-isl: configure-stage1-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  V=1 \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS) V=1 \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-isl)
 
@@ -13316,7 +13251,7 @@ clean-stage1-isl:
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		V=1 clean
+	$(STAGE1_FLAGS_TO_PASS) V=1 clean
 @endif isl-bootstrap
 
 
@@ -13357,9 +13292,7 @@ clean-stage2-isl:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 clean
 @endif isl-bootstrap
 
 
@@ -13400,9 +13333,7 @@ clean-stage3-isl:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 clean
 @endif isl-bootstrap
 
 
@@ -13443,9 +13374,7 @@ clean-stage4-isl:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 clean
 @endif isl-bootstrap
 
 
@@ -13486,9 +13415,7 @@ clean-stageprofile-isl:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 clean
 @endif isl-bootstrap
 
 
@@ -13529,9 +13456,7 @@ clean-stagefeedback-isl:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 clean
 @endif isl-bootstrap
 
 
@@ -14148,7 +14073,7 @@ all-cloog: configure-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		$(TARGET-cloog))
 @endif cloog
 
@@ -14176,7 +14101,8 @@ all-stage1-cloog: configure-stage1-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-cloog)
 
@@ -14191,7 +14117,7 @@ clean-stage1-cloog:
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
+	$(STAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14232,9 +14158,7 @@ clean-stage2-cloog:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14275,9 +14199,7 @@ clean-stage3-cloog:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14318,9 +14240,7 @@ clean-stage4-cloog:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14361,9 +14281,7 @@ clean-stageprofile-cloog:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14404,9 +14322,7 @@ clean-stagefeedback-cloog:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -15023,7 +14939,7 @@ all-libelf: configure-libelf
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libelf))
 @endif libelf
 
@@ -15051,7 +14967,8 @@ all-stage1-libelf: configure-stage1-libelf
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-libelf)
 
@@ -15066,7 +14983,7 @@ clean-stage1-libelf:
 	fi; \
 	cd $(HOST_SUBDIR)/libelf && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif libelf-bootstrap
 
 
@@ -15107,9 +15024,7 @@ clean-stage2-libelf:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libelf-bootstrap
 
 
@@ -15150,9 +15065,7 @@ clean-stage3-libelf:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libelf-bootstrap
 
 
@@ -15193,9 +15106,7 @@ clean-stage4-libelf:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libelf-bootstrap
 
 
@@ -15236,9 +15147,7 @@ clean-stageprofile-libelf:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libelf-bootstrap
 
 
@@ -15279,9 +15188,7 @@ clean-stagefeedback-libelf:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libelf-bootstrap
 
 
@@ -15892,7 +15799,7 @@ all-gold: configure-gold
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gold && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-gold))
 @endif gold
 
@@ -15920,7 +15827,8 @@ all-stage1-gold: configure-stage1-gold
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-gold)
 
@@ -15935,7 +15843,7 @@ clean-stage1-gold:
 	fi; \
 	cd $(HOST_SUBDIR)/gold && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif gold-bootstrap
 
 
@@ -15976,9 +15884,7 @@ clean-stage2-gold:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gold && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gold-bootstrap
 
 
@@ -16019,9 +15925,7 @@ clean-stage3-gold:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gold && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gold-bootstrap
 
 
@@ -16062,9 +15966,7 @@ clean-stage4-gold:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gold && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gold-bootstrap
 
 
@@ -16105,9 +16007,7 @@ clean-stageprofile-gold:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gold && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gold-bootstrap
 
 
@@ -16148,9 +16048,7 @@ clean-stagefeedback-gold:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gold && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif gold-bootstrap
 
 
@@ -16577,7 +16475,7 @@ all-gprof: configure-gprof
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gprof && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-gprof))
 @endif gprof
 
@@ -17213,7 +17111,7 @@ all-intl: configure-intl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/intl && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-intl))
 @endif intl
 
@@ -17241,7 +17139,8 @@ all-stage1-intl: configure-stage1-intl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-intl)
 
@@ -17256,7 +17155,7 @@ clean-stage1-intl:
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif intl-bootstrap
 
 
@@ -17297,9 +17196,7 @@ clean-stage2-intl:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif intl-bootstrap
 
 
@@ -17340,9 +17237,7 @@ clean-stage3-intl:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif intl-bootstrap
 
 
@@ -17383,9 +17278,7 @@ clean-stage4-intl:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif intl-bootstrap
 
 
@@ -17426,9 +17319,7 @@ clean-stageprofile-intl:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif intl-bootstrap
 
 
@@ -17469,9 +17360,7 @@ clean-stagefeedback-intl:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif intl-bootstrap
 
 
@@ -17898,7 +17787,7 @@ all-tcl: configure-tcl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/tcl && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-tcl))
 @endif tcl
 
@@ -18323,7 +18212,7 @@ all-itcl: configure-itcl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/itcl && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-itcl))
 @endif itcl
 
@@ -18959,7 +18848,7 @@ all-ld: configure-ld
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/ld && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-ld))
 @endif ld
 
@@ -18987,7 +18876,8 @@ all-stage1-ld: configure-stage1-ld
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-ld)
 
@@ -19002,7 +18892,7 @@ clean-stage1-ld:
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif ld-bootstrap
 
 
@@ -19043,9 +18933,7 @@ clean-stage2-ld:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif ld-bootstrap
 
 
@@ -19086,9 +18974,7 @@ clean-stage3-ld:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif ld-bootstrap
 
 
@@ -19129,9 +19015,7 @@ clean-stage4-ld:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif ld-bootstrap
 
 
@@ -19172,9 +19056,7 @@ clean-stageprofile-ld:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif ld-bootstrap
 
 
@@ -19215,9 +19097,7 @@ clean-stagefeedback-ld:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif ld-bootstrap
 
 
@@ -19840,7 +19720,7 @@ all-libbacktrace: configure-libbacktrace
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libbacktrace && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libbacktrace))
 @endif libbacktrace
 
@@ -19868,7 +19748,8 @@ all-stage1-libbacktrace: configure-stage1-libbacktrace
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-libbacktrace)
 
@@ -19883,7 +19764,7 @@ clean-stage1-libbacktrace:
 	fi; \
 	cd $(HOST_SUBDIR)/libbacktrace && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif libbacktrace-bootstrap
 
 
@@ -19924,9 +19805,7 @@ clean-stage2-libbacktrace:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libbacktrace && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libbacktrace-bootstrap
 
 
@@ -19967,9 +19846,7 @@ clean-stage3-libbacktrace:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libbacktrace && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libbacktrace-bootstrap
 
 
@@ -20010,9 +19887,7 @@ clean-stage4-libbacktrace:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libbacktrace && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libbacktrace-bootstrap
 
 
@@ -20053,9 +19928,7 @@ clean-stageprofile-libbacktrace:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libbacktrace && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libbacktrace-bootstrap
 
 
@@ -20096,9 +19969,7 @@ clean-stagefeedback-libbacktrace:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libbacktrace && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libbacktrace-bootstrap
 
 
@@ -20721,7 +20592,7 @@ all-libcpp: configure-libcpp
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libcpp && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libcpp))
 @endif libcpp
 
@@ -20749,7 +20620,8 @@ all-stage1-libcpp: configure-stage1-libcpp
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-libcpp)
 
@@ -20764,7 +20636,7 @@ clean-stage1-libcpp:
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif libcpp-bootstrap
 
 
@@ -20805,9 +20677,7 @@ clean-stage2-libcpp:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libcpp-bootstrap
 
 
@@ -20848,9 +20718,7 @@ clean-stage3-libcpp:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libcpp-bootstrap
 
 
@@ -20891,9 +20759,7 @@ clean-stage4-libcpp:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libcpp-bootstrap
 
 
@@ -20934,9 +20800,7 @@ clean-stageprofile-libcpp:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libcpp-bootstrap
 
 
@@ -20977,9 +20841,7 @@ clean-stagefeedback-libcpp:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libcpp-bootstrap
 
 
@@ -21602,7 +21464,7 @@ all-libdecnumber: configure-libdecnumber
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libdecnumber && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libdecnumber))
 @endif libdecnumber
 
@@ -21630,7 +21492,8 @@ all-stage1-libdecnumber: configure-stage1-libdecnumber
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-libdecnumber)
 
@@ -21645,7 +21508,7 @@ clean-stage1-libdecnumber:
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif libdecnumber-bootstrap
 
 
@@ -21686,9 +21549,7 @@ clean-stage2-libdecnumber:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libdecnumber-bootstrap
 
 
@@ -21729,9 +21590,7 @@ clean-stage3-libdecnumber:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libdecnumber-bootstrap
 
 
@@ -21772,9 +21631,7 @@ clean-stage4-libdecnumber:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libdecnumber-bootstrap
 
 
@@ -21815,9 +21672,7 @@ clean-stageprofile-libdecnumber:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libdecnumber-bootstrap
 
 
@@ -21858,9 +21713,7 @@ clean-stagefeedback-libdecnumber:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libdecnumber-bootstrap
 
 
@@ -22287,7 +22140,7 @@ all-libgui: configure-libgui
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libgui && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libgui))
 @endif libgui
 
@@ -22929,7 +22782,7 @@ all-libiberty: configure-libiberty
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libiberty && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libiberty))
 @endif libiberty
 
@@ -22957,7 +22810,8 @@ all-stage1-libiberty: configure-stage1-libiberty
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-libiberty)
 
@@ -22972,7 +22826,7 @@ clean-stage1-libiberty:
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif libiberty-bootstrap
 
 
@@ -23013,9 +22867,7 @@ clean-stage2-libiberty:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libiberty-bootstrap
 
 
@@ -23056,9 +22908,7 @@ clean-stage3-libiberty:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libiberty-bootstrap
 
 
@@ -23099,9 +22949,7 @@ clean-stage4-libiberty:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libiberty-bootstrap
 
 
@@ -23142,9 +22990,7 @@ clean-stageprofile-libiberty:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libiberty-bootstrap
 
 
@@ -23185,9 +23031,7 @@ clean-stagefeedback-libiberty:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif libiberty-bootstrap
 
 
@@ -23614,7 +23458,7 @@ all-libiconv: configure-libiconv
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libiconv && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libiconv))
 @endif libiconv
 
@@ -23991,7 +23835,7 @@ all-m4: configure-m4
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/m4 && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-m4))
 @endif m4
 
@@ -24431,7 +24275,7 @@ all-readline: configure-readline
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/readline && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-readline))
 @endif readline
 
@@ -24871,7 +24715,7 @@ all-sid: configure-sid
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/sid && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-sid))
 @endif sid
 
@@ -25311,7 +25155,7 @@ all-sim: configure-sim
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/sim && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-sim))
 @endif sim
 
@@ -25751,7 +25595,7 @@ all-texinfo: configure-texinfo
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/texinfo && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-texinfo))
 @endif texinfo
 
@@ -26375,7 +26219,7 @@ all-zlib: configure-zlib
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/zlib && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-zlib))
 @endif zlib
 
@@ -26403,7 +26247,8 @@ all-stage1-zlib: configure-stage1-zlib
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-zlib)
 
@@ -26418,7 +26263,7 @@ clean-stage1-zlib:
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif zlib-bootstrap
 
 
@@ -26459,9 +26304,7 @@ clean-stage2-zlib:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif zlib-bootstrap
 
 
@@ -26502,9 +26345,7 @@ clean-stage3-zlib:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif zlib-bootstrap
 
 
@@ -26545,9 +26386,7 @@ clean-stage4-zlib:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif zlib-bootstrap
 
 
@@ -26588,9 +26427,7 @@ clean-stageprofile-zlib:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif zlib-bootstrap
 
 
@@ -26631,9 +26468,7 @@ clean-stagefeedback-zlib:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif zlib-bootstrap
 
 
@@ -27042,7 +26877,7 @@ all-gdb: configure-gdb
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gdb && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-gdb))
 @endif gdb
 
@@ -27482,7 +27317,7 @@ all-expect: configure-expect
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/expect && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-expect))
 @endif expect
 
@@ -27922,7 +27757,7 @@ all-guile: configure-guile
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/guile && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-guile))
 @endif guile
 
@@ -28362,7 +28197,7 @@ all-tk: configure-tk
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/tk && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-tk))
 @endif tk
 
@@ -28802,7 +28637,7 @@ all-libtermcap: configure-libtermcap
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/libtermcap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libtermcap))
 @endif libtermcap
 
@@ -29176,7 +29011,7 @@ all-utils: configure-utils
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/utils && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-utils))
 @endif utils
 
@@ -29610,7 +29445,7 @@ all-gnattools: configure-gnattools
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/gnattools && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-gnattools))
 @endif gnattools
 
@@ -30252,7 +30087,7 @@ all-lto-plugin: configure-lto-plugin
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/lto-plugin && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-lto-plugin))
 @endif lto-plugin
 
@@ -30280,7 +30115,8 @@ all-stage1-lto-plugin: configure-stage1-lto-plugin
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-lto-plugin)
 
@@ -30295,7 +30131,7 @@ clean-stage1-lto-plugin:
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+	$(STAGE1_FLAGS_TO_PASS)  clean
 @endif lto-plugin-bootstrap
 
 
@@ -30336,9 +30172,7 @@ clean-stage2-lto-plugin:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif lto-plugin-bootstrap
 
 
@@ -30379,9 +30213,7 @@ clean-stage3-lto-plugin:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif lto-plugin-bootstrap
 
 
@@ -30422,9 +30254,7 @@ clean-stage4-lto-plugin:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif lto-plugin-bootstrap
 
 
@@ -30465,9 +30295,7 @@ clean-stageprofile-lto-plugin:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif lto-plugin-bootstrap
 
 
@@ -30508,9 +30336,7 @@ clean-stagefeedback-lto-plugin:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/lto-plugin && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
 @endif lto-plugin-bootstrap
 
 
@@ -31226,7 +31052,7 @@ all-target-libstdc++-v3: configure-target-libstdc++-v3
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(RAW_CXX_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   \
 		$(TARGET-target-libstdc++-v3))
 @endif target-libstdc++-v3
 
@@ -31254,7 +31080,8 @@ all-stage1-target-libstdc++-v3: configure-stage1-target-libstdc++-v3
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   \
+		$(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
+		  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-target-libstdc++-v3)
 
@@ -31269,7 +31096,7 @@ clean-stage1-target-libstdc++-v3:
 	fi; \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
 	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
-		 clean
+	  clean
 @endif target-libstdc++-v3-bootstrap
 
 
@@ -31310,9 +31137,7 @@ clean-stage2-target-libstdc++-v3:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   clean
 @endif target-libstdc++-v3-bootstrap
 
 
@@ -31353,9 +31178,7 @@ clean-stage3-target-libstdc++-v3:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   clean
 @endif target-libstdc++-v3-bootstrap
 
 
@@ -31396,9 +31219,7 @@ clean-stage4-target-libstdc++-v3:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   clean
 @endif target-libstdc++-v3-bootstrap
 
 
@@ -31439,9 +31260,7 @@ clean-stageprofile-target-libstdc++-v3:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   clean
 @endif target-libstdc++-v3-bootstrap
 
 
@@ -31482,9 +31301,7 @@ clean-stagefeedback-target-libstdc++-v3:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libstdc++-v3 && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   clean
 @endif target-libstdc++-v3-bootstrap
 
 
@@ -31941,7 +31758,7 @@ all-target-libmudflap: configure-target-libmudflap
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libmudflap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libmudflap))
 @endif target-libmudflap
 
@@ -32398,7 +32215,7 @@ all-target-libssp: configure-target-libssp
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libssp && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libssp))
 @endif target-libssp
 
@@ -32855,7 +32672,7 @@ all-target-newlib: configure-target-newlib
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/newlib && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-newlib))
 @endif target-newlib
 
@@ -33580,7 +33397,7 @@ all-target-libgcc: configure-target-libgcc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libgcc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libgcc))
 @endif target-libgcc
 
@@ -33608,7 +33425,8 @@ all-stage1-target-libgcc: configure-stage1-target-libgcc
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
+		$(EXTRA_TARGET_FLAGS)  \
+		  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-target-libgcc)
 
@@ -33623,7 +33441,7 @@ clean-stage1-target-libgcc:
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		 clean
+	  clean
 @endif target-libgcc-bootstrap
 
 
@@ -33664,9 +33482,7 @@ clean-stage2-target-libgcc:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgcc-bootstrap
 
 
@@ -33707,9 +33523,7 @@ clean-stage3-target-libgcc:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgcc-bootstrap
 
 
@@ -33750,9 +33564,7 @@ clean-stage4-target-libgcc:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgcc-bootstrap
 
 
@@ -33793,9 +33605,7 @@ clean-stageprofile-target-libgcc:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgcc-bootstrap
 
 
@@ -33836,9 +33646,7 @@ clean-stagefeedback-target-libgcc:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgcc-bootstrap
 
 
@@ -34290,7 +34098,7 @@ all-target-libbacktrace: configure-target-libbacktrace
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libbacktrace && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libbacktrace))
 @endif target-libbacktrace
 
@@ -34747,7 +34555,7 @@ all-target-libquadmath: configure-target-libquadmath
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libquadmath && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libquadmath))
 @endif target-libquadmath
 
@@ -35204,7 +35012,7 @@ all-target-libgfortran: configure-target-libgfortran
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libgfortran && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libgfortran))
 @endif target-libgfortran
 
@@ -35661,7 +35469,7 @@ all-target-libobjc: configure-target-libobjc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libobjc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libobjc))
 @endif target-libobjc
 
@@ -36118,7 +35926,7 @@ all-target-libgo: configure-target-libgo
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libgo && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libgo))
 @endif target-libgo
 
@@ -36575,7 +36383,7 @@ all-target-libtermcap: configure-target-libtermcap
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libtermcap && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libtermcap))
 @endif target-libtermcap
 
@@ -36967,7 +36775,7 @@ all-target-winsup: configure-target-winsup
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/winsup && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-winsup))
 @endif target-winsup
 
@@ -37424,7 +37232,7 @@ all-target-libgloss: configure-target-libgloss
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libgloss && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libgloss))
 @endif target-libgloss
 
@@ -37876,7 +37684,7 @@ all-target-libffi: configure-target-libffi
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libffi && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libffi))
 @endif target-libffi
 
@@ -38333,7 +38141,7 @@ all-target-libjava: configure-target-libjava
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(RAW_CXX_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libjava && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS) 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)'   \
 		$(TARGET-target-libjava))
 @endif target-libjava
 
@@ -38790,7 +38598,7 @@ all-target-zlib: configure-target-zlib
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/zlib && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-zlib))
 @endif target-zlib
 
@@ -39247,7 +39055,7 @@ all-target-boehm-gc: configure-target-boehm-gc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/boehm-gc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-boehm-gc))
 @endif target-boehm-gc
 
@@ -39704,7 +39512,7 @@ all-target-rda: configure-target-rda
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/rda && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-rda))
 @endif target-rda
 
@@ -40161,7 +39969,7 @@ all-target-libada: configure-target-libada
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libada && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libada))
 @endif target-libada
 
@@ -40886,7 +40694,7 @@ all-target-libgomp: configure-target-libgomp
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libgomp && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libgomp))
 @endif target-libgomp
 
@@ -40914,7 +40722,8 @@ all-stage1-target-libgomp: configure-stage1-target-libgomp
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_TARGET_FLAGS)   \
+		$(EXTRA_TARGET_FLAGS)  \
+		  \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-target-libgomp)
 
@@ -40929,7 +40738,7 @@ clean-stage1-target-libgomp:
 	fi; \
 	cd $(TARGET_SUBDIR)/libgomp && \
 	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		 clean
+	  clean
 @endif target-libgomp-bootstrap
 
 
@@ -40970,9 +40779,7 @@ clean-stage2-target-libgomp:
 	  $(MAKE) stage2-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgomp && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgomp-bootstrap
 
 
@@ -41013,9 +40820,7 @@ clean-stage3-target-libgomp:
 	  $(MAKE) stage3-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgomp && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgomp-bootstrap
 
 
@@ -41056,9 +40861,7 @@ clean-stage4-target-libgomp:
 	  $(MAKE) stage4-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgomp && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgomp-bootstrap
 
 
@@ -41099,9 +40902,7 @@ clean-stageprofile-target-libgomp:
 	  $(MAKE) stageprofile-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgomp && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgomp-bootstrap
 
 
@@ -41142,9 +40943,7 @@ clean-stagefeedback-target-libgomp:
 	  $(MAKE) stagefeedback-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgomp && \
-	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
-		  \
-		 clean
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
 @endif target-libgomp-bootstrap
 
 
@@ -41601,7 +41400,7 @@ all-target-libitm: configure-target-libitm
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libitm && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libitm))
 @endif target-libitm
 
@@ -42058,7 +41857,7 @@ all-target-libatomic: configure-target-libatomic
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libatomic && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libatomic))
 @endif target-libatomic
 

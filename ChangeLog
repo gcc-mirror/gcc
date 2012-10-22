@@ -1,6 +1,20 @@
+2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/54820
+	* Makefile.tpl (STAGE1_FLAGS_TO_PASS): New variable.
+	(all-[+prefix+][+module+]): Pass stage1_args to sub-makes.
+	(all-stage[+id+]-[+prefix+][+module+]): Likewise, if prev is false.
+	(clean-stage[+id+]-[+prefix+][+module+]): Likewise, if prev is false.
+	(host_modules): Set stage1_args to STAGE1_FLAGS_TO_PASS.
+	* Makefile.in: Regenerate.
+	* configure.ac (have_static_libs): New variable and associated check.
+	(stage1-ldflags): Move to after stage1_libs and set to -static-libstdc++
+	-static-libgcc if stage1_libs is empty and have_static_libs is yes.
+	* configure: Regenerate.
+
 2012-10-10  Richard Biener  <rguenther@suse.de>
 
-	* MAINTAINERS: Adjust for changed surename.
+	* MAINTAINERS: Adjust for changed surname.
 
 2012-10-04  Lawrence Crowl  <crowl@google.com>
 

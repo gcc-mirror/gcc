@@ -1,3 +1,8 @@
+2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/54820
+	* gcc-interface/Make-lang.in (GCC_LINK): Remove hardcoded options.
+
 2012-10-15  Matthias Klose  <doko@ubuntu.com>
 
 	* gcc-interface/Makefile.in: Match arm*-*-linux-*eabi* for

@@ -1182,6 +1182,22 @@ if test -z "$LD"; then
   fi
 fi
 
+# Check whether -static-libstdc++ -static-libgcc is supported.
+have_static_libs=no
+if test "$GCC" = yes; then
+  saved_LDFLAGS="$LDFLAGS"
+
+  LDFLAGS="$LDFLAGS -static-libstdc++ -static-libgcc"
+  AC_MSG_CHECKING([whether g++ accepts -static-libstdc++ -static-libgcc])
+  AC_LANG_PUSH(C++)
+  AC_LINK_IFELSE([int main() {}],
+    [AC_MSG_RESULT([yes]); have_static_libs=yes],
+    [AC_MSG_RESULT([no])])
+  AC_LANG_POP(C++)
+
+  LDFLAGS="$saved_LDFLAGS"
+fi
+
 ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
@@ -1478,17 +1494,6 @@ case $with_host_libstdcxx in
     ;;
 esac
 
-# Linker flags to use for stage1 or when not boostrapping.
-AC_ARG_WITH(stage1-ldflags,
-[AS_HELP_STRING([--with-stage1-ldflags=FLAGS], [linker flags for stage1])],
-[if test "$withval" = "no" -o "$withval" = "yes"; then
-   stage1_ldflags=
- else
-   stage1_ldflags=$withval
- fi],
-[stage1_ldflags=])
-AC_SUBST(stage1_ldflags)
-
 # Libraries to use for stage1 or when not bootstrapping.
 AC_ARG_WITH(stage1-libs,
 [AS_HELP_STRING([--with-stage1-libs=LIBS], [libraries for stage1])],
@@ -1499,6 +1504,23 @@ AC_ARG_WITH(stage1-libs,
  fi],
 [stage1_libs=$with_host_libstdcxx])
 AC_SUBST(stage1_libs)
+
+# Linker flags to use for stage1 or when not bootstrapping.
+AC_ARG_WITH(stage1-ldflags,
+[AS_HELP_STRING([--with-stage1-ldflags=FLAGS], [linker flags for stage1])],
+[if test "$withval" = "no" -o "$withval" = "yes"; then
+   stage1_ldflags=
+ else
+   stage1_ldflags=$withval
+ fi],
+[stage1_ldflags=
+ # In stage 1, default to linking libstdc++ and libgcc statically with GCC
+ # if supported.  But if the user explicitly specified the libraries to use,
+ # trust that they are doing what they want.
+ if test "$stage1_libs" = "" -a "$have_static_libs" = yes; then
+   stage1_ldflags="-static-libstdc++ -static-libgcc"
+ fi])
+AC_SUBST(stage1_ldflags)
 
 # Libraries to use for stage2 and later builds.  This defaults to the
 # argument passed to --with-host-libstdcxx.
