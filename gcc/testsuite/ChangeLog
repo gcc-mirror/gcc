@@ -1,5 +1,10 @@
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/limited_with4.ads: New test.
+	* gnat.dg/specs/limited_with4_pkg.ads: New helper.
+
+2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/modular4.adb: New test.
 	* gnat.dg/modular4_pkg.ads: New helper.
 
