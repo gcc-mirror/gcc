@@ -18,8 +18,8 @@
 
 	* config/i386/i386.c (memory_address_length): Assert that non-null
 	base or index RTXes are registers.  Do not check for REG RTXes.
-	Determine addr32 prefix from original base and index RTXes.
-	Simplify code.
+	Determine addr32 prefix using SImode_address_operand or
+	from original base and index RTXes.  Simplify code.
 
 2012-10-22  Richard Biener  <rguenther@suse.de>
 
