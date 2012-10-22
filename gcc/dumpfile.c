@@ -35,7 +35,7 @@ static int alt_flags;                /* current opt_info flags */
 static FILE *alt_dump_file = NULL;
 
 static void dump_loc (int, FILE *, source_location);
-static int dump_enabled_p (int);
+static int dump_phase_enabled_p (int);
 static FILE *dump_open_alternate_stream (struct dump_file_info *);
 
 /* Table of tree dump switches. This must be consistent with the
@@ -380,7 +380,7 @@ dump_start (int phase, int *flag_ptr)
   char *name;
   struct dump_file_info *dfi;
   FILE *stream;
-  if (phase == TDI_none || !dump_enabled_p (phase))
+  if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return 0;
 
   dfi = get_dump_file_info (phase);
@@ -461,7 +461,7 @@ dump_begin (int phase, int *flag_ptr)
   struct dump_file_info *dfi;
   FILE *stream;
 
-  if (phase == TDI_none || !dump_enabled_p (phase))
+  if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return NULL;
 
   name = get_dump_file_name (phase);
@@ -493,8 +493,8 @@ dump_begin (int phase, int *flag_ptr)
    If PHASE is TDI_tree_all, return nonzero if any dump is enabled for
    any phase.  */
 
-int
-dump_enabled_p (int phase)
+static int
+dump_phase_enabled_p (int phase)
 {
   if (phase == TDI_tree_all)
     {
@@ -512,6 +512,14 @@ dump_enabled_p (int phase)
       struct dump_file_info *dfi = get_dump_file_info (phase);
       return dfi->pstate || dfi->alt_state;
     }
+}
+
+/* Return true if any of the dumps are enabled, false otherwise. */
+
+inline bool
+dump_enabled_p (void)
+{
+  return (dump_file || alt_dump_file);
 }
 
 /* Returns nonzero if tree dump PHASE has been initialized.  */
@@ -834,9 +842,8 @@ opt_info_switch_p (const char *arg)
 bool
 dump_kind_p (int msg_type)
 {
-  if (!current_function_decl)
-    return 0;
-  return ((msg_type & pflags) || (msg_type & alt_flags));
+  return (dump_file && (msg_type & pflags))
+    || (alt_dump_file && (msg_type & alt_flags));
 }
 
 /* Print basic block on the dump streams.  */

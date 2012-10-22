@@ -1,3 +1,13 @@
+2012-10-22  Sharad Singhai  <singhai@google.com>
+
+	* dumpfile.c (dump_phase_enabled_p): Renamed dump_enabled_p. Update
+        all callers.
+	(dump_enabled_p): A new function to check if any of the dump files
+	is available.
+	(dump_kind_p): Remove check for current_function_decl. Add check for
+	dumpfile and alt_dump_file.
+	* dumpfile.h: Add declaration of dump_enabled_p.
+
 2012-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR lto/55021
