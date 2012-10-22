@@ -12193,6 +12193,75 @@ arm_pad_reg_upward (enum machine_mode mode,
   return !BYTES_BIG_ENDIAN;
 }
 
+/* Returns true iff OFFSET is valid for use in an LDRD/STRD instruction,
+   assuming that the address in the base register is word aligned.  */
+bool
+offset_ok_for_ldrd_strd (HOST_WIDE_INT offset)
+{
+  HOST_WIDE_INT max_offset;
+
+  /* Offset must be a multiple of 4 in Thumb mode.  */
+  if (TARGET_THUMB2 && ((offset & 3) != 0))
+    return false;
+
+  if (TARGET_THUMB2)
+    max_offset = 1020;
+  else if (TARGET_ARM)
+    max_offset = 255;
+  else
+    gcc_unreachable ();
+
+  return ((offset <= max_offset) && (offset >= -max_offset));
+}
+
+/* Checks whether the operands are valid for use in an LDRD/STRD instruction.
+   Assumes that RT, RT2, and RN are REG.  This is guaranteed by the patterns.
+   Assumes that the address in the base register RN is word aligned.  Pattern
+   guarantees that both memory accesses use the same base register,
+   the offsets are constants within the range, and the gap between the offsets is 4.
+   If preload complete then check that registers are legal.  WBACK indicates whether
+   address is updated.  LOAD indicates whether memory access is load or store.  */
+bool
+operands_ok_ldrd_strd (rtx rt, rtx rt2, rtx rn, HOST_WIDE_INT offset,
+                       bool wback, bool load)
+{
+  unsigned int t, t2, n;
+
+  if (!reload_completed)
+    return true;
+
+  if (!offset_ok_for_ldrd_strd (offset))
+    return false;
+
+  t = REGNO (rt);
+  t2 = REGNO (rt2);
+  n = REGNO (rn);
+
+  if ((TARGET_THUMB2)
+      && ((wback && (n == t || n == t2))
+          || (t == SP_REGNUM)
+          || (t == PC_REGNUM)
+          || (t2 == SP_REGNUM)
+          || (t2 == PC_REGNUM)
+          || (!load && (n == PC_REGNUM))
+          || (load && (t == t2))
+          /* Triggers Cortex-M3 LDRD errata.  */
+          || (!wback && load && fix_cm3_ldrd && (n == t))))
+    return false;
+
+  if ((TARGET_ARM)
+      && ((wback && (n == t || n == t2))
+          || (t2 == PC_REGNUM)
+          || (t % 2 != 0)   /* First destination register is not even.  */
+          || (t2 != t + 1)
+          /* PC can be used as base register (for offset addressing only),
+             but it is depricated.  */
+          || (n == PC_REGNUM)))
+    return false;
+
+  return true;
+}
+
 
 /* Print a symbolic form of X to the debug file, F.  */
 static void

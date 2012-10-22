@@ -11511,6 +11511,99 @@
 ""
 )
 
+;; Patterns for LDRD/STRD in Thumb2 mode
+
+(define_insn "*thumb2_ldrd"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (mem:SI (plus:SI (match_operand:SI 1 "s_register_operand" "rk")
+                         (match_operand:SI 2 "ldrd_strd_offset_operand" "Do"))))
+   (set (match_operand:SI 3 "s_register_operand" "=r")
+        (mem:SI (plus:SI (match_dup 1)
+                         (match_operand:SI 4 "const_int_operand" ""))))]
+  "TARGET_LDRD && TARGET_THUMB2 && reload_completed
+     && current_tune->prefer_ldrd_strd
+     && ((INTVAL (operands[2]) + 4) == INTVAL (operands[4]))
+     && (operands_ok_ldrd_strd (operands[0], operands[3],
+                                  operands[1], INTVAL (operands[2]),
+                                  false, true))"
+  "ldrd%?\t%0, %3, [%1, %2]"
+  [(set_attr "type" "load2")
+   (set_attr "predicable" "yes")])
+
+(define_insn "*thumb2_ldrd_base"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (mem:SI (match_operand:SI 1 "s_register_operand" "rk")))
+   (set (match_operand:SI 2 "s_register_operand" "=r")
+        (mem:SI (plus:SI (match_dup 1)
+                         (const_int 4))))]
+  "TARGET_LDRD && TARGET_THUMB2 && reload_completed
+     && current_tune->prefer_ldrd_strd
+     && (operands_ok_ldrd_strd (operands[0], operands[2],
+                                  operands[1], 0, false, true))"
+  "ldrd%?\t%0, %2, [%1]"
+  [(set_attr "type" "load2")
+   (set_attr "predicable" "yes")])
+
+(define_insn "*thumb2_ldrd_base_neg"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "s_register_operand" "rk")
+                         (const_int -4))))
+   (set (match_operand:SI 2 "s_register_operand" "=r")
+        (mem:SI (match_dup 1)))]
+  "TARGET_LDRD && TARGET_THUMB2 && reload_completed
+     && current_tune->prefer_ldrd_strd
+     && (operands_ok_ldrd_strd (operands[0], operands[2],
+                                  operands[1], -4, false, true))"
+  "ldrd%?\t%0, %2, [%1, #-4]"
+  [(set_attr "type" "load2")
+   (set_attr "predicable" "yes")])
+
+(define_insn "*thumb2_strd"
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "s_register_operand" "rk")
+                         (match_operand:SI 1 "ldrd_strd_offset_operand" "Do")))
+        (match_operand:SI 2 "s_register_operand" "r"))
+   (set (mem:SI (plus:SI (match_dup 0)
+                         (match_operand:SI 3 "const_int_operand" "")))
+        (match_operand:SI 4 "s_register_operand" "r"))]
+  "TARGET_LDRD && TARGET_THUMB2 && reload_completed
+     && current_tune->prefer_ldrd_strd
+     && ((INTVAL (operands[1]) + 4) == INTVAL (operands[3]))
+     && (operands_ok_ldrd_strd (operands[2], operands[4],
+                                  operands[0], INTVAL (operands[1]),
+                                  false, false))"
+  "strd%?\t%2, %4, [%0, %1]"
+  [(set_attr "type" "store2")
+   (set_attr "predicable" "yes")])
+
+(define_insn "*thumb2_strd_base"
+  [(set (mem:SI (match_operand:SI 0 "s_register_operand" "rk"))
+        (match_operand:SI 1 "s_register_operand" "r"))
+   (set (mem:SI (plus:SI (match_dup 0)
+                         (const_int 4)))
+        (match_operand:SI 2 "s_register_operand" "r"))]
+  "TARGET_LDRD && TARGET_THUMB2 && reload_completed
+     && current_tune->prefer_ldrd_strd
+     && (operands_ok_ldrd_strd (operands[1], operands[2],
+                                  operands[0], 0, false, false))"
+  "strd%?\t%1, %2, [%0]"
+  [(set_attr "type" "store2")
+   (set_attr "predicable" "yes")])
+
+(define_insn "*thumb2_strd_base_neg"
+  [(set (mem:SI (plus:SI (match_operand:SI 0 "s_register_operand" "rk")
+                         (const_int -4)))
+        (match_operand:SI 1 "s_register_operand" "r"))
+   (set (mem:SI (match_dup 0))
+        (match_operand:SI 2 "s_register_operand" "r"))]
+  "TARGET_LDRD && TARGET_THUMB2 && reload_completed
+     && current_tune->prefer_ldrd_strd
+     && (operands_ok_ldrd_strd (operands[1], operands[2],
+                                  operands[0], -4, false, false))"
+  "strd%?\t%1, %2, [%0, #-4]"
+  [(set_attr "type" "store2")
+   (set_attr "predicable" "yes")])
+
+
 ;; Load the load/store multiple patterns
 (include "ldmstm.md")
 
