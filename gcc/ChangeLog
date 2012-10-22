@@ -1,3 +1,9 @@
+2012-10-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/55008
+	* gimple-ssa-strength-reduction.c (find_basis_for_candidate): Don't
+	allow a candidate to be a basis for itself under another interpretation.
+
 2012-10-22  Sharad Singhai  <singhai@google.com>
 
 	* dumpfile.c (dump_phase_enabled_p): Renamed dump_enabled_p. Update
