@@ -1,3 +1,9 @@
+2012-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54988
+	* decl2.c (cplus_decl_attributes): Don't return early
+	if attributes is NULL.
+
 2012-10-23  Michael Matz  <matz@suse.de>
 
 	* tree-ssa-operands.h (struct def_optype_d, def_optype_p): Remove.
