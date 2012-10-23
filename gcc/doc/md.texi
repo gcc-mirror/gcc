@@ -1671,6 +1671,66 @@ table heading for each architecture is the definitive reference for
 the meanings of that architecture's constraints.
 
 @table @emph
+@item AArch64 family---@file{config/aarch64/constraints.md}
+@table @code
+@item k
+The stack pointer register (@code{SP})
+
+@item w
+Floating point or SIMD vector register
+
+@item I
+Integer constant that is valid as an immediate operand in an @code{ADD}
+instruction
+
+@item J
+Integer constant that is valid as an immediate operand in a @code{SUB}
+instruction (once negated)
+
+@item K
+Integer constant that can be used with a 32-bit logical instruction
+
+@item L
+Integer constant that can be used with a 64-bit logical instruction
+
+@item M
+Integer constant that is valid as an immediate operand in a 32-bit @code{MOV}
+pseudo instruction. The @code{MOV} may be assembled to one of several different
+machine instructions depending on the value
+
+@item N
+Integer constant that is valid as an immediate operand in a 64-bit @code{MOV}
+pseudo instruction
+
+@item S
+An absolute symbolic address or a label reference
+
+@item Y
+Floating point constant zero
+
+@item Z
+Integer constant zero
+
+@item Usa
+An absolute symbolic address
+
+@item Ush
+The high part (bits 12 and upwards) of the pc-relative address of a symbol
+within 4GB of the instruction
+
+@item Q
+A memory address which uses a single base register with no offset
+
+@item Ump
+A memory address suitable for a load/store pair instruction in SI, DI, SF and
+DF modes
+
+@item Utf
+A memory address suitable for a load/store pair instruction in TF mode
+
+@end table
+
+
 @item ARM family---@file{config/arm/constraints.md}
 @table @code
 @item w
