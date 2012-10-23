@@ -1,3 +1,9 @@
+2012-10-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Handle vectors.
+	* fold-const.c (fold_relational_const): Handle VECTOR_CST.
+	* doc/generic.texi (VEC_COND_EXPR): Document current policy.
+
 2012-10-23  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/54937
