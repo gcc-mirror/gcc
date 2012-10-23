@@ -1,3 +1,9 @@
+2012-10-23  Nick Clifton  <nickc@redhat.com>
+
+	PR target/54660
+	* config/iq2000/iq2000.c (iq2000_function_arg_advance): Suppress
+	compile time warning about pointer printing.
+
 2012-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu |
