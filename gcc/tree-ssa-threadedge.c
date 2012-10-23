@@ -580,7 +580,7 @@ simplify_control_stmt_condition (edge e,
    in e->dest.  */
 
 static bool
-cond_arg_set_in_bb (edge e, basic_block bb, int n)
+cond_arg_set_in_bb (edge e, basic_block bb)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
