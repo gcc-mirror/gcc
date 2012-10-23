@@ -1,5 +1,37 @@
 2012-10-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expmed.c (store_split_bit_field): Update the calls to
+	extract_fixed_bit_field.  In the big-endian case, always
+	use the mode of OP0 to count the number of significant bits.
+	(extract_bit_field_1): Remove unit, offset, bitpos and
+	byte_offset from the outermost scope.  Express conditions in terms
+	of bitnum rather than offset, bitpos and byte_offset.  Move the
+	computation of MODE1 to the block that needs it.  Use MODE unless
+	the TMODE-based mode_for_size calculation succeeds.  Split the
+	plain move cases into two, one for memory accesses and one for
+	register accesses.  Generalize the memory case, freeing it from
+	the old register-based endian checks.  Move the INT_MODE calculation
+	above the code that needs it.  Use simplify_gen_subreg to handle
+	multiword OP0s.  If the field still spans several words, pass it
+	directly to extract_split_bit_field.  Assume after that point
+	that both targets and register sources fit within a word.
+	Replace x-prefixed variables with non-prefixed forms.
+	Compute the bitpos for ext(z)v register operands directly in the
+	chosen unit size, rather than going through an intermediate
+	BITS_PER_WORD unit size.  Simplify the containment check
+	used when forcing OP0 into a register.  Update the call to
+	extract_fixed_bit_field.
+	(extract_fixed_bit_field): Replace the bitpos and offset parameters
+	with a single bitnum parameter, of the same form as extract_bit_field.
+	Assume that OP0 contains the full field.  Simplify the memory offset
+	calculation and containment check for volatile bitfields.  Make the
+	offset explicit when volatile bitfields force a misaligned access.
+	Remove WARNED and fix long lines.  Assert that the processed OP0
+	has an integral mode.
+	(store_split_bit_field): Update the call to store_fixed_bit_field.
+
+2012-10-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* expmed.c (lowpart_bit_field_p): New function.
 	(store_bit_field_1): Remove unit, offset, bitpos and byte_offset
 	from the outermost scope.  Express conditions in terms of bitnum
