@@ -1,3 +1,26 @@
+2012-10-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expmed.c (lowpart_bit_field_p): New function.
+	(store_bit_field_1): Remove unit, offset, bitpos and byte_offset
+	from the outermost scope.  Express conditions in terms of bitnum
+	rather than offset, bitpos and byte_offset.  Split the plain move
+	cases into two, one for memory accesses and one for register accesses.
+	Allow simplify_gen_subreg to fail rather than calling validate_subreg.
+	Move the handling of multiword OP0s after the code that coerces VALUE
+	to an integer mode.  Use simplify_gen_subreg for this case and assert
+	that it succeeds.  If the field still spans several words, pass it
+	directly to store_split_bit_field.  Assume after that point that
+	both sources and register targets fit within a word.  Replace
+	x-prefixed variables with non-prefixed forms.  Compute the bitpos
+	for insv register operands directly in the chosen unit size, rather
+	than going through an intermediate BITS_PER_WORD unit size.
+	Update the call to store_fixed_bit_field.
+	(store_fixed_bit_field): Replace the bitpos and offset parameters
+	with a single bitnum parameter, of the same form as store_bit_field.
+	Assume that OP0 contains the full field.  Simplify the memory offset
+	calculation.  Assert that the processed OP0 has an integral mode.
+	(store_split_bit_field): Update the call to store_fixed_bit_field.
+
 2012-10-23  Paul Koning  <ni1d@arrl.net>
 
 	PR debug/54508
