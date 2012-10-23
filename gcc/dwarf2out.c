@@ -21220,6 +21220,7 @@ static void
 prune_unused_types_prune (dw_die_ref die)
 {
   dw_die_ref c;
+  int pruned = 0;
 
   gcc_assert (die->die_mark);
   prune_unused_types_update_strings (die);
@@ -21242,13 +21243,24 @@ prune_unused_types_prune (dw_die_ref die)
 	      prev->die_sib = c->die_sib;
 	      die->die_child = prev;
 	    }
-	  return;
+	  pruned = 1;
+	  goto finished;
 	}
 
     if (c != prev->die_sib)
-      prev->die_sib = c;
+      {
+	prev->die_sib = c;
+	pruned = 1;
+      }
     prune_unused_types_prune (c);
   } while (c != die->die_child);
+
+ finished:
+  /* If we pruned children, and this is a class, mark it as a 
+     declaration to inform debuggers that this is not a complete
+     class definition.  */
+  if (pruned && die->die_mark == 1 && class_scope_p (die))
+    add_AT_flag (die, DW_AT_declaration, 1);
 }
 
 /* Remove dies representing declarations that we never use.  */

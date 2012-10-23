@@ -1,3 +1,8 @@
+2012-10-23  Paul Koning  <ni1d@arrl.net>
+
+	PR debug/54508
+	* g++.dg/debug/dwarf2/pr54508.C: New.
+	
 2012-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54844
