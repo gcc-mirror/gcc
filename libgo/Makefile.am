@@ -1753,8 +1753,7 @@ libgo_go_objs = \
 
 libgo_la_SOURCES = $(runtime_files)
 
-libgo_la_LDFLAGS = \
-	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
+libgo_la_LDFLAGS = $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
 
 libgo_la_LIBADD = \
 	$(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
