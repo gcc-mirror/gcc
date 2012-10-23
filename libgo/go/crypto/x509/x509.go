@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/dsa"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509/pkix"
@@ -106,6 +108,8 @@ type dsaSignature struct {
 	R, S *big.Int
 }
 
+type ecdsaSignature dsaSignature
+
 type validity struct {
 	NotBefore, NotAfter time.Time
 }
@@ -133,6 +137,10 @@ const (
 	SHA512WithRSA
 	DSAWithSHA1
 	DSAWithSHA256
+	ECDSAWithSHA1
+	ECDSAWithSHA256
+	ECDSAWithSHA384
+	ECDSAWithSHA512
 )
 
 type PublicKeyAlgorithm int
@@ -141,6 +149,7 @@ const (
 	UnknownPublicKeyAlgorithm PublicKeyAlgorithm = iota
 	RSA
 	DSA
+	ECDSA
 )
 
 // OIDs for signature algorithms
@@ -160,6 +169,12 @@ const (
 // dsaWithSha1 OBJECT IDENTIFIER ::= {
 //    iso(1) member-body(2) us(840) x9-57(10040) x9cm(4) 3 } 
 //
+// RFC 3279 2.2.3 ECDSA Signature Algorithm
+// 
+// ecdsa-with-SHA1 OBJECT IDENTIFIER ::= {
+// 	  iso(1) member-body(2) us(840) ansi-x962(10045)
+//    signatures(4) ecdsa-with-SHA1(1)}
+//
 //
 // RFC 4055 5 PKCS #1 Version 1.5
 // 
@@ -176,15 +191,30 @@ const (
 //    joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101)
 //    csor(3) algorithms(4) id-dsa-with-sha2(3) 2}
 //
+// RFC 5758 3.2 ECDSA Signature Algorithm
+//
+// ecdsa-with-SHA256 OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+//    us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 2 }
+//
+// ecdsa-with-SHA384 OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+//    us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 3 }
+//
+// ecdsa-with-SHA512 OBJECT IDENTIFIER ::= { iso(1) member-body(2)
+//    us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 4 }
+
 var (
-	oidSignatureMD2WithRSA    = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
-	oidSignatureMD5WithRSA    = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 4}
-	oidSignatureSHA1WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
-	oidSignatureSHA256WithRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
-	oidSignatureSHA384WithRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
-	oidSignatureSHA512WithRSA = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
-	oidSignatureDSAWithSHA1   = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
-	oidSignatureDSAWithSHA256 = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 4, 3, 2}
+	oidSignatureMD2WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
+	oidSignatureMD5WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 4}
+	oidSignatureSHA1WithRSA     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
+	oidSignatureSHA256WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
+	oidSignatureSHA384WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
+	oidSignatureSHA512WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
+	oidSignatureDSAWithSHA1     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
+	oidSignatureDSAWithSHA256   = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 4, 3, 2}
+	oidSignatureECDSAWithSHA1   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
+	oidSignatureECDSAWithSHA256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
+	oidSignatureECDSAWithSHA384 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
+	oidSignatureECDSAWithSHA512 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
 )
 
 func getSignatureAlgorithmFromOID(oid asn1.ObjectIdentifier) SignatureAlgorithm {
@@ -205,6 +235,14 @@ func getSignatureAlgorithmFromOID(oid asn1.ObjectIdentifier) SignatureAlgorithm 
 		return DSAWithSHA1
 	case oid.Equal(oidSignatureDSAWithSHA256):
 		return DSAWithSHA256
+	case oid.Equal(oidSignatureECDSAWithSHA1):
+		return ECDSAWithSHA1
+	case oid.Equal(oidSignatureECDSAWithSHA256):
+		return ECDSAWithSHA256
+	case oid.Equal(oidSignatureECDSAWithSHA384):
+		return ECDSAWithSHA384
+	case oid.Equal(oidSignatureECDSAWithSHA512):
+		return ECDSAWithSHA512
 	}
 	return UnknownSignatureAlgorithm
 }
@@ -218,19 +256,79 @@ func getSignatureAlgorithmFromOID(oid asn1.ObjectIdentifier) SignatureAlgorithm 
 //
 // id-dsa OBJECT IDENTIFIER ::== { iso(1) member-body(2) us(840)
 //    x9-57(10040) x9cm(4) 1 }
+//
+// RFC 5480, 2.1.1 Unrestricted Algorithm Identifier and Parameters
+//
+// id-ecPublicKey OBJECT IDENTIFIER ::= {
+//       iso(1) member-body(2) us(840) ansi-X9-62(10045) keyType(2) 1 }
 var (
-	oidPublicKeyRsa = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
-	oidPublicKeyDsa = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
+	oidPublicKeyRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	oidPublicKeyDSA   = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
+	oidPublicKeyECDSA = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
 )
 
 func getPublicKeyAlgorithmFromOID(oid asn1.ObjectIdentifier) PublicKeyAlgorithm {
 	switch {
-	case oid.Equal(oidPublicKeyRsa):
+	case oid.Equal(oidPublicKeyRSA):
 		return RSA
-	case oid.Equal(oidPublicKeyDsa):
+	case oid.Equal(oidPublicKeyDSA):
 		return DSA
+	case oid.Equal(oidPublicKeyECDSA):
+		return ECDSA
 	}
 	return UnknownPublicKeyAlgorithm
+}
+
+// RFC 5480, 2.1.1.1. Named Curve
+//
+// secp224r1 OBJECT IDENTIFIER ::= {
+//   iso(1) identified-organization(3) certicom(132) curve(0) 33 }
+//
+// secp256r1 OBJECT IDENTIFIER ::= {
+//   iso(1) member-body(2) us(840) ansi-X9-62(10045) curves(3)
+//   prime(1) 7 }
+//
+// secp384r1 OBJECT IDENTIFIER ::= {
+//   iso(1) identified-organization(3) certicom(132) curve(0) 34 }
+//
+// secp521r1 OBJECT IDENTIFIER ::= {
+//   iso(1) identified-organization(3) certicom(132) curve(0) 35 }
+//
+// NB: secp256r1 is equivalent to prime256v1
+var (
+	oidNamedCurveP224 = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
+	oidNamedCurveP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
+	oidNamedCurveP384 = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
+	oidNamedCurveP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
+)
+
+func namedCurveFromOID(oid asn1.ObjectIdentifier) elliptic.Curve {
+	switch {
+	case oid.Equal(oidNamedCurveP224):
+		return elliptic.P224()
+	case oid.Equal(oidNamedCurveP256):
+		return elliptic.P256()
+	case oid.Equal(oidNamedCurveP384):
+		return elliptic.P384()
+	case oid.Equal(oidNamedCurveP521):
+		return elliptic.P521()
+	}
+	return nil
+}
+
+func oidFromNamedCurve(curve elliptic.Curve) (asn1.ObjectIdentifier, bool) {
+	switch curve {
+	case elliptic.P224():
+		return oidNamedCurveP224, true
+	case elliptic.P256():
+		return oidNamedCurveP256, true
+	case elliptic.P384():
+		return oidNamedCurveP384, true
+	case elliptic.P521():
+		return oidNamedCurveP521, true
+	}
+
+	return nil, false
 }
 
 // KeyUsage represents the set of actions that are valid for a given key. It's
@@ -267,6 +365,9 @@ var (
 	oidExtKeyUsageClientAuth      = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 2}
 	oidExtKeyUsageCodeSigning     = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 3}
 	oidExtKeyUsageEmailProtection = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 4}
+	oidExtKeyUsageIPSECEndSystem  = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 5}
+	oidExtKeyUsageIPSECTunnel     = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 6}
+	oidExtKeyUsageIPSECUser       = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 7}
 	oidExtKeyUsageTimeStamping    = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 8}
 	oidExtKeyUsageOCSPSigning     = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 9}
 )
@@ -281,9 +382,47 @@ const (
 	ExtKeyUsageClientAuth
 	ExtKeyUsageCodeSigning
 	ExtKeyUsageEmailProtection
+	ExtKeyUsageIPSECEndSystem
+	ExtKeyUsageIPSECTunnel
+	ExtKeyUsageIPSECUser
 	ExtKeyUsageTimeStamping
 	ExtKeyUsageOCSPSigning
 )
+
+// extKeyUsageOIDs contains the mapping between an ExtKeyUsage and its OID.
+var extKeyUsageOIDs = []struct {
+	extKeyUsage ExtKeyUsage
+	oid         asn1.ObjectIdentifier
+}{
+	{ExtKeyUsageAny, oidExtKeyUsageAny},
+	{ExtKeyUsageServerAuth, oidExtKeyUsageServerAuth},
+	{ExtKeyUsageClientAuth, oidExtKeyUsageClientAuth},
+	{ExtKeyUsageCodeSigning, oidExtKeyUsageCodeSigning},
+	{ExtKeyUsageEmailProtection, oidExtKeyUsageEmailProtection},
+	{ExtKeyUsageIPSECEndSystem, oidExtKeyUsageIPSECEndSystem},
+	{ExtKeyUsageIPSECTunnel, oidExtKeyUsageIPSECTunnel},
+	{ExtKeyUsageIPSECUser, oidExtKeyUsageIPSECUser},
+	{ExtKeyUsageTimeStamping, oidExtKeyUsageTimeStamping},
+	{ExtKeyUsageOCSPSigning, oidExtKeyUsageOCSPSigning},
+}
+
+func extKeyUsageFromOID(oid asn1.ObjectIdentifier) (eku ExtKeyUsage, ok bool) {
+	for _, pair := range extKeyUsageOIDs {
+		if oid.Equal(pair.oid) {
+			return pair.extKeyUsage, true
+		}
+	}
+	return
+}
+
+func oidFromExtKeyUsage(eku ExtKeyUsage) (oid asn1.ObjectIdentifier, ok bool) {
+	for _, pair := range extKeyUsageOIDs {
+		if eku == pair.extKeyUsage {
+			return pair.oid, true
+		}
+	}
+	return
+}
 
 // A Certificate represents an X.509 certificate.
 type Certificate struct {
@@ -427,13 +566,13 @@ func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature 
 	var hashType crypto.Hash
 
 	switch algo {
-	case SHA1WithRSA, DSAWithSHA1:
+	case SHA1WithRSA, DSAWithSHA1, ECDSAWithSHA1:
 		hashType = crypto.SHA1
-	case SHA256WithRSA, DSAWithSHA256:
+	case SHA256WithRSA, DSAWithSHA256, ECDSAWithSHA256:
 		hashType = crypto.SHA256
-	case SHA384WithRSA:
+	case SHA384WithRSA, ECDSAWithSHA384:
 		hashType = crypto.SHA384
-	case SHA512WithRSA:
+	case SHA512WithRSA, ECDSAWithSHA512:
 		hashType = crypto.SHA512
 	default:
 		return ErrUnsupportedAlgorithm
@@ -460,6 +599,18 @@ func (c *Certificate) CheckSignature(algo SignatureAlgorithm, signed, signature 
 		}
 		if !dsa.Verify(pub, digest, dsaSig.R, dsaSig.S) {
 			return errors.New("DSA verification failure")
+		}
+		return
+	case *ecdsa.PublicKey:
+		ecdsaSig := new(ecdsaSignature)
+		if _, err := asn1.Unmarshal(signature, ecdsaSig); err != nil {
+			return err
+		}
+		if ecdsaSig.R.Sign() <= 0 || ecdsaSig.S.Sign() <= 0 {
+			return errors.New("crypto/x509: ECDSA signature contained zero or negative values")
+		}
+		if !ecdsa.Verify(pub, digest, ecdsaSig.R, ecdsaSig.S) {
+			return errors.New("crypto/x509: ECDSA verification failure")
 		}
 		return
 	}
@@ -497,8 +648,6 @@ type nameConstraints struct {
 
 type generalSubtree struct {
 	Name string `asn1:"tag:2,optional,ia5"`
-	Min  int    `asn1:"optional,tag:0"`
-	Max  int    `asn1:"optional,tag:1"`
 }
 
 func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{}, error) {
@@ -538,6 +687,27 @@ func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{
 				G: params.G,
 			},
 			Y: p,
+		}
+		return pub, nil
+	case ECDSA:
+		paramsData := keyData.Algorithm.Parameters.FullBytes
+		namedCurveOID := new(asn1.ObjectIdentifier)
+		_, err := asn1.Unmarshal(paramsData, namedCurveOID)
+		if err != nil {
+			return nil, err
+		}
+		namedCurve := namedCurveFromOID(*namedCurveOID)
+		if namedCurve == nil {
+			return nil, errors.New("crypto/x509: unsupported elliptic curve")
+		}
+		x, y := elliptic.Unmarshal(namedCurve, asn1Data)
+		if x == nil {
+			return nil, errors.New("crypto/x509: failed to unmarshal elliptic curve point")
+		}
+		pub := &ecdsa.PublicKey{
+			Curve: namedCurve,
+			X:     x,
+			Y:     y,
 		}
 		return pub, nil
 	default:
@@ -694,7 +864,7 @@ func parseCertificate(in *certificate) (*Certificate, error) {
 				}
 
 				for _, subtree := range constraints.Permitted {
-					if subtree.Min > 0 || subtree.Max > 0 || len(subtree.Name) == 0 {
+					if len(subtree.Name) == 0 {
 						if e.Critical {
 							return out, UnhandledCriticalExtension{}
 						}
@@ -730,22 +900,9 @@ func parseCertificate(in *certificate) (*Certificate, error) {
 				}
 
 				for _, u := range keyUsage {
-					switch {
-					case u.Equal(oidExtKeyUsageAny):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageAny)
-					case u.Equal(oidExtKeyUsageServerAuth):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageServerAuth)
-					case u.Equal(oidExtKeyUsageClientAuth):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageClientAuth)
-					case u.Equal(oidExtKeyUsageCodeSigning):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageCodeSigning)
-					case u.Equal(oidExtKeyUsageEmailProtection):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageEmailProtection)
-					case u.Equal(oidExtKeyUsageTimeStamping):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageTimeStamping)
-					case u.Equal(oidExtKeyUsageOCSPSigning):
-						out.ExtKeyUsage = append(out.ExtKeyUsage, ExtKeyUsageOCSPSigning)
-					default:
+					if extKeyUsage, ok := extKeyUsageFromOID(u); ok {
+						out.ExtKeyUsage = append(out.ExtKeyUsage, extKeyUsage)
+					} else {
 						out.UnknownExtKeyUsage = append(out.UnknownExtKeyUsage, u)
 					}
 				}
@@ -834,6 +991,7 @@ func reverseBitsInAByte(in byte) byte {
 var (
 	oidExtensionSubjectKeyId        = []int{2, 5, 29, 14}
 	oidExtensionKeyUsage            = []int{2, 5, 29, 15}
+	oidExtensionExtendedKeyUsage    = []int{2, 5, 29, 37}
 	oidExtensionAuthorityKeyId      = []int{2, 5, 29, 35}
 	oidExtensionBasicConstraints    = []int{2, 5, 29, 19}
 	oidExtensionSubjectAltName      = []int{2, 5, 29, 17}
@@ -842,7 +1000,7 @@ var (
 )
 
 func buildExtensions(template *Certificate) (ret []pkix.Extension, err error) {
-	ret = make([]pkix.Extension, 7 /* maximum number of elements. */)
+	ret = make([]pkix.Extension, 8 /* maximum number of elements. */)
 	n := 0
 
 	if template.KeyUsage != 0 {
@@ -859,6 +1017,27 @@ func buildExtensions(template *Certificate) (ret []pkix.Extension, err error) {
 		}
 
 		ret[n].Value, err = asn1.Marshal(asn1.BitString{Bytes: a[0:l], BitLength: l * 8})
+		if err != nil {
+			return
+		}
+		n++
+	}
+
+	if len(template.ExtKeyUsage) > 0 || len(template.UnknownExtKeyUsage) > 0 {
+		ret[n].Id = oidExtensionExtendedKeyUsage
+
+		var oids []asn1.ObjectIdentifier
+		for _, u := range template.ExtKeyUsage {
+			if oid, ok := oidFromExtKeyUsage(u); ok {
+				oids = append(oids, oid)
+			} else {
+				panic("internal error")
+			}
+		}
+
+		oids = append(oids, template.UnknownExtKeyUsage...)
+
+		ret[n].Value, err = asn1.Marshal(oids)
 		if err != nil {
 			return
 		}
@@ -941,11 +1120,6 @@ func buildExtensions(template *Certificate) (ret []pkix.Extension, err error) {
 	return ret[0:n], nil
 }
 
-var (
-	oidSHA1WithRSA = []int{1, 2, 840, 113549, 1, 1, 5}
-	oidRSA         = []int{1, 2, 840, 113549, 1, 1, 1}
-)
-
 func subjectBytes(cert *Certificate) ([]byte, error) {
 	if len(cert.RawSubject) > 0 {
 		return cert.RawSubject, nil
@@ -956,8 +1130,9 @@ func subjectBytes(cert *Certificate) ([]byte, error) {
 
 // CreateCertificate creates a new certificate based on a template. The
 // following members of template are used: SerialNumber, Subject, NotBefore,
-// NotAfter, KeyUsage, BasicConstraintsValid, IsCA, MaxPathLen, SubjectKeyId,
-// DNSNames, PermittedDNSDomainsCritical, PermittedDNSDomains.
+// NotAfter, KeyUsage, ExtKeyUsage, UnknownExtKeyUsage, BasicConstraintsValid,
+// IsCA, MaxPathLen, SubjectKeyId, DNSNames, PermittedDNSDomainsCritical,
+// PermittedDNSDomains.
 //
 // The certificate is signed by parent. If parent is equal to template then the
 // certificate is self-signed. The parameter pub is the public key of the
@@ -965,23 +1140,61 @@ func subjectBytes(cert *Certificate) ([]byte, error) {
 //
 // The returned slice is the certificate in DER encoding.
 //
-// The only supported key type is RSA (*rsa.PublicKey for pub, *rsa.PrivateKey
-// for priv).
+// The only supported key types are RSA and ECDSA (*rsa.PublicKey or
+// *ecdsa.PublicKey for pub, *rsa.PrivateKey or *ecdsa.PublicKey for priv).
 func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interface{}, priv interface{}) (cert []byte, err error) {
-	rsaPub, ok := pub.(*rsa.PublicKey)
-	if !ok {
-		return nil, errors.New("x509: non-RSA public keys not supported")
+	var publicKeyBytes []byte
+	var publicKeyAlgorithm pkix.AlgorithmIdentifier
+
+	switch pub := pub.(type) {
+	case *rsa.PublicKey:
+		publicKeyBytes, err = asn1.Marshal(rsaPublicKey{
+			N: pub.N,
+			E: pub.E,
+		})
+		publicKeyAlgorithm.Algorithm = oidPublicKeyRSA
+	case *ecdsa.PublicKey:
+		oid, ok := oidFromNamedCurve(pub.Curve)
+		if !ok {
+			return nil, errors.New("x509: unknown elliptic curve")
+		}
+		publicKeyAlgorithm.Algorithm = oidPublicKeyECDSA
+		var paramBytes []byte
+		paramBytes, err = asn1.Marshal(oid)
+		if err != nil {
+			return
+		}
+		publicKeyAlgorithm.Parameters.FullBytes = paramBytes
+		publicKeyBytes = elliptic.Marshal(pub.Curve, pub.X, pub.Y)
+	default:
+		return nil, errors.New("x509: only RSA and ECDSA public keys supported")
 	}
 
-	rsaPriv, ok := priv.(*rsa.PrivateKey)
-	if !ok {
-		return nil, errors.New("x509: non-RSA private keys not supported")
+	var signatureAlgorithm pkix.AlgorithmIdentifier
+	var hashFunc crypto.Hash
+
+	switch priv := priv.(type) {
+	case *rsa.PrivateKey:
+		signatureAlgorithm.Algorithm = oidSignatureSHA1WithRSA
+		hashFunc = crypto.SHA1
+	case *ecdsa.PrivateKey:
+		switch priv.Curve {
+		case elliptic.P224(), elliptic.P256():
+			hashFunc = crypto.SHA256
+			signatureAlgorithm.Algorithm = oidSignatureECDSAWithSHA256
+		case elliptic.P384():
+			hashFunc = crypto.SHA384
+			signatureAlgorithm.Algorithm = oidSignatureECDSAWithSHA384
+		case elliptic.P521():
+			hashFunc = crypto.SHA512
+			signatureAlgorithm.Algorithm = oidSignatureECDSAWithSHA512
+		default:
+			return nil, errors.New("x509: unknown elliptic curve")
+		}
+	default:
+		return nil, errors.New("x509: only RSA and ECDSA private keys supported")
 	}
 
-	asn1PublicKey, err := asn1.Marshal(rsaPublicKey{
-		N: rsaPub.N,
-		E: rsaPub.E,
-	})
 	if err != nil {
 		return
 	}
@@ -1005,15 +1218,15 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interf
 		return
 	}
 
-	encodedPublicKey := asn1.BitString{BitLength: len(asn1PublicKey) * 8, Bytes: asn1PublicKey}
+	encodedPublicKey := asn1.BitString{BitLength: len(publicKeyBytes) * 8, Bytes: publicKeyBytes}
 	c := tbsCertificate{
 		Version:            2,
 		SerialNumber:       template.SerialNumber,
-		SignatureAlgorithm: pkix.AlgorithmIdentifier{Algorithm: oidSHA1WithRSA},
+		SignatureAlgorithm: signatureAlgorithm,
 		Issuer:             asn1.RawValue{FullBytes: asn1Issuer},
 		Validity:           validity{template.NotBefore, template.NotAfter},
 		Subject:            asn1.RawValue{FullBytes: asn1Subject},
-		PublicKey:          publicKeyInfo{nil, pkix.AlgorithmIdentifier{Algorithm: oidRSA}, encodedPublicKey},
+		PublicKey:          publicKeyInfo{nil, publicKeyAlgorithm, encodedPublicKey},
 		Extensions:         extensions,
 	}
 
@@ -1024,11 +1237,24 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interf
 
 	c.Raw = tbsCertContents
 
-	h := sha1.New()
+	h := hashFunc.New()
 	h.Write(tbsCertContents)
 	digest := h.Sum(nil)
 
-	signature, err := rsa.SignPKCS1v15(rand, rsaPriv, crypto.SHA1, digest)
+	var signature []byte
+
+	switch priv := priv.(type) {
+	case *rsa.PrivateKey:
+		signature, err = rsa.SignPKCS1v15(rand, priv, hashFunc, digest)
+	case *ecdsa.PrivateKey:
+		var r, s *big.Int
+		if r, s, err = ecdsa.Sign(rand, priv, digest); err == nil {
+			signature, err = asn1.Marshal(ecdsaSignature{r, s})
+		}
+	default:
+		panic("internal error")
+	}
+
 	if err != nil {
 		return
 	}
@@ -1036,7 +1262,7 @@ func CreateCertificate(rand io.Reader, template, parent *Certificate, pub interf
 	cert, err = asn1.Marshal(certificate{
 		nil,
 		c,
-		pkix.AlgorithmIdentifier{Algorithm: oidSHA1WithRSA},
+		signatureAlgorithm,
 		asn1.BitString{Bytes: signature, BitLength: len(signature) * 8},
 	})
 	return

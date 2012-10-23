@@ -42,7 +42,8 @@ func FindPkg(path, srcDir string) (filename, id string) {
 	switch {
 	default:
 		// "x" -> "$GOPATH/pkg/$GOOS_$GOARCH/x.ext", "x"
-		bp, _ := build.Import(path, srcDir, build.FindOnly)
+		// Don't require the source files to be present.
+		bp, _ := build.Import(path, srcDir, build.FindOnly|build.AllowBinary)
 		if bp.PkgObj == "" {
 			return
 		}
@@ -89,10 +90,6 @@ func GcImportData(imports map[string]*ast.Object, filename, id string, data *buf
 		fmt.Printf("importing %s (%s)\n", id, filename)
 	}
 
-	if imports[id] != nil {
-		panic(fmt.Sprintf("package %s already imported", id))
-	}
-
 	// support for gcParser error handling
 	defer func() {
 		if r := recover(); r != nil {
@@ -128,9 +125,12 @@ func GcImport(imports map[string]*ast.Object, path string) (pkg *ast.Object, err
 		return
 	}
 
-	if pkg = imports[id]; pkg != nil {
-		return // package was imported before
-	}
+	// Note: imports[id] may already contain a partially imported package.
+	//       We must continue doing the full import here since we don't
+	//       know if something is missing.
+	// TODO: There's no need to re-import a package if we know that we
+	//       have done a full import before. At the moment we cannot
+	//       tell from the available information in this function alone.
 
 	// open file
 	f, err := os.Open(filename)
@@ -182,7 +182,7 @@ func (p *gcParser) init(filename, id string, src io.Reader, imports map[string]*
 func (p *gcParser) next() {
 	p.tok = p.scanner.Scan()
 	switch p.tok {
-	case scanner.Ident, scanner.Int, scanner.String:
+	case scanner.Ident, scanner.Int, scanner.String, '·':
 		p.lit = p.scanner.TokenText()
 	default:
 		p.lit = ""
@@ -294,9 +294,8 @@ func (p *gcParser) parsePkgId() *ast.Object {
 
 	pkg := p.imports[id]
 	if pkg == nil {
-		scope = ast.NewScope(nil)
 		pkg = ast.NewObj(ast.Pkg, "")
-		pkg.Data = scope
+		pkg.Data = ast.NewScope(nil)
 		p.imports[id] = pkg
 	}
 
@@ -509,32 +508,21 @@ func (p *gcParser) parseSignature() *Func {
 	return &Func{Params: params, Results: results, IsVariadic: isVariadic}
 }
 
-// MethodOrEmbedSpec = Name [ Signature ] .
+// InterfaceType = "interface" "{" [ MethodList ] "}" .
+// MethodList = Method { ";" Method } .
+// Method = Name Signature .
 //
-func (p *gcParser) parseMethodOrEmbedSpec() *ast.Object {
-	p.parseName()
-	if p.tok == '(' {
-		p.parseSignature()
-		// TODO(gri) compute method object
-		return ast.NewObj(ast.Fun, "_")
-	}
-	// TODO lookup name and return that type
-	return ast.NewObj(ast.Typ, "_")
-}
-
-// InterfaceType = "interface" "{" [ MethodOrEmbedList ] "}" .
-// MethodOrEmbedList = MethodOrEmbedSpec { ";" MethodOrEmbedSpec } .
+// (The methods of embedded interfaces are always "inlined"
+// by the compiler and thus embedded interfaces are never
+// visible in the export data.)
 //
 func (p *gcParser) parseInterfaceType() Type {
 	var methods ObjList
 
 	parseMethod := func() {
-		switch m := p.parseMethodOrEmbedSpec(); m.Kind {
-		case ast.Typ:
-			// TODO expand embedded methods
-		case ast.Fun:
-			methods = append(methods, m)
-		}
+		obj := ast.NewObj(ast.Fun, p.parseName())
+		obj.Type = p.parseSignature()
+		methods = append(methods, obj)
 	}
 
 	p.expectKeyword("interface")
@@ -664,7 +652,7 @@ func (p *gcParser) parseInt() (sign, val string) {
 func (p *gcParser) parseNumber() Const {
 	// mantissa
 	sign, val := p.parseInt()
-	mant, ok := new(big.Int).SetString(sign+val, 10)
+	mant, ok := new(big.Int).SetString(sign+val, 0)
 	assert(ok)
 
 	if p.lit == "p" {
@@ -693,7 +681,7 @@ func (p *gcParser) parseNumber() Const {
 // ConstDecl   = "const" ExportedName [ Type ] "=" Literal .
 // Literal     = bool_lit | int_lit | float_lit | complex_lit | string_lit .
 // bool_lit    = "true" | "false" .
-// complex_lit = "(" float_lit "+" float_lit ")" .
+// complex_lit = "(" float_lit "+" float_lit "i" ")" .
 // rune_lit = "(" int_lit "+" int_lit ")" .
 // string_lit  = `"` { unicode_char } `"` .
 //
@@ -737,6 +725,7 @@ func (p *gcParser) parseConstDecl() {
 		re := p.parseNumber()
 		p.expect('+')
 		im := p.parseNumber()
+		p.expectKeyword("i")
 		p.expect(')')
 		x = Const{cmplx{re.val.(*big.Rat), im.val.(*big.Rat)}}
 		typ = Complex128.Underlying
@@ -867,10 +856,12 @@ func (p *gcParser) parseExport() *ast.Object {
 	}
 	p.expect('\n')
 
-	assert(p.imports[p.id] == nil)
-	pkg := ast.NewObj(ast.Pkg, name)
-	pkg.Data = ast.NewScope(nil)
-	p.imports[p.id] = pkg
+	pkg := p.imports[p.id]
+	if pkg == nil {
+		pkg = ast.NewObj(ast.Pkg, name)
+		pkg.Data = ast.NewScope(nil)
+		p.imports[p.id] = pkg
+	}
 
 	for p.tok != '$' && p.tok != scanner.EOF {
 		p.parseDecl()

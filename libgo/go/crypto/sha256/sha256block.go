@@ -75,11 +75,10 @@ var _K = []uint32{
 	0xc67178f2,
 }
 
-func _Block(dig *digest, p []byte) int {
+func block(dig *digest, p []byte) {
 	var w [64]uint32
-	n := 0
 	h0, h1, h2, h3, h4, h5, h6, h7 := dig.h[0], dig.h[1], dig.h[2], dig.h[3], dig.h[4], dig.h[5], dig.h[6], dig.h[7]
-	for len(p) >= _Chunk {
+	for len(p) >= chunk {
 		// Can interlace the computation of w with the
 		// rounds below if needed for speed.
 		for i := 0; i < 16; i++ {
@@ -87,10 +86,10 @@ func _Block(dig *digest, p []byte) int {
 			w[i] = uint32(p[j])<<24 | uint32(p[j+1])<<16 | uint32(p[j+2])<<8 | uint32(p[j+3])
 		}
 		for i := 16; i < 64; i++ {
-			t1 := (w[i-2]>>17 | w[i-2]<<(32-17)) ^ (w[i-2]>>19 | w[i-2]<<(32-19)) ^ (w[i-2] >> 10)
-
-			t2 := (w[i-15]>>7 | w[i-15]<<(32-7)) ^ (w[i-15]>>18 | w[i-15]<<(32-18)) ^ (w[i-15] >> 3)
-
+			v1 := w[i-2]
+			t1 := (v1>>17 | v1<<(32-17)) ^ (v1>>19 | v1<<(32-19)) ^ (v1 >> 10)
+			v2 := w[i-15]
+			t2 := (v2>>7 | v2<<(32-7)) ^ (v2>>18 | v2<<(32-18)) ^ (v2 >> 3)
 			w[i] = t1 + w[i-7] + t2 + w[i-16]
 		}
 
@@ -120,10 +119,8 @@ func _Block(dig *digest, p []byte) int {
 		h6 += g
 		h7 += h
 
-		p = p[_Chunk:]
-		n += _Chunk
+		p = p[chunk:]
 	}
 
 	dig.h[0], dig.h[1], dig.h[2], dig.h[3], dig.h[4], dig.h[5], dig.h[6], dig.h[7] = h0, h1, h2, h3, h4, h5, h6, h7
-	return n
 }

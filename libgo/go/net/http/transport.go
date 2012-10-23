@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 // DefaultTransport is the default implementation of Transport and is
@@ -265,6 +266,11 @@ func (t *Transport) putIdleConn(pconn *persistConn) bool {
 		pconn.close()
 		return false
 	}
+	for _, exist := range t.idleConn[key] {
+		if exist == pconn {
+			log.Fatalf("dup idle pconn %p in freelist", pconn)
+		}
+	}
 	t.idleConn[key] = append(t.idleConn[key], pconn)
 	t.idleLk.Unlock()
 	return true
@@ -295,7 +301,7 @@ func (t *Transport) getIdleConn(cm *connectMethod) (pconn *persistConn) {
 			return
 		}
 	}
-	return
+	panic("unreachable")
 }
 
 func (t *Transport) dial(network, addr string) (c net.Conn, err error) {
@@ -329,6 +335,8 @@ func (t *Transport) getConn(cm *connectMethod) (*persistConn, error) {
 		cacheKey: cm.String(),
 		conn:     conn,
 		reqch:    make(chan requestAndChan, 50),
+		writech:  make(chan writeRequest, 50),
+		closech:  make(chan struct{}),
 	}
 
 	switch {
@@ -373,7 +381,7 @@ func (t *Transport) getConn(cm *connectMethod) (*persistConn, error) {
 		// Initiate TLS and check remote host name against certificate.
 		cfg := t.TLSClientConfig
 		if cfg == nil || cfg.ServerName == "" {
-			host, _, _ := net.SplitHostPort(cm.addr())
+			host := cm.tlsHost()
 			if cfg == nil {
 				cfg = &tls.Config{ServerName: host}
 			} else {
@@ -397,6 +405,7 @@ func (t *Transport) getConn(cm *connectMethod) (*persistConn, error) {
 	pconn.br = bufio.NewReader(pconn.conn)
 	pconn.bw = bufio.NewWriter(pconn.conn)
 	go pconn.readLoop()
+	go pconn.writeLoop()
 	return pconn, nil
 }
 
@@ -504,7 +513,9 @@ type persistConn struct {
 	closed   bool                // whether conn has been closed
 	br       *bufio.Reader       // from conn
 	bw       *bufio.Writer       // to conn
-	reqch    chan requestAndChan // written by roundTrip(); read by readLoop()
+	reqch    chan requestAndChan // written by roundTrip; read by readLoop
+	writech  chan writeRequest   // written by roundTrip; read by writeLoop
+	closech  chan struct{}       // broadcast close when readLoop (TCP connection) closes
 	isProxy  bool
 
 	// mutateHeaderFunc is an optional func to modify extra
@@ -537,6 +548,7 @@ func remoteSideClosed(err error) bool {
 }
 
 func (pc *persistConn) readLoop() {
+	defer close(pc.closech)
 	alive := true
 	var lastbody io.ReadCloser // last response body, if any, read on this connection
 
@@ -563,7 +575,11 @@ func (pc *persistConn) readLoop() {
 			lastbody.Close() // assumed idempotent
 			lastbody = nil
 		}
-		resp, err := ReadResponse(pc.br, rc.req)
+
+		var resp *Response
+		if err == nil {
+			resp, err = ReadResponse(pc.br, rc.req)
+		}
 
 		if err != nil {
 			pc.close()
@@ -592,12 +608,12 @@ func (pc *persistConn) readLoop() {
 		var waitForBodyRead chan bool
 		if hasBody {
 			lastbody = resp.Body
-			waitForBodyRead = make(chan bool)
+			waitForBodyRead = make(chan bool, 1)
 			resp.Body.(*bodyEOFSignal).fn = func() {
 				if alive && !pc.t.putIdleConn(pc) {
 					alive = false
 				}
-				if !alive {
+				if !alive || pc.isBroken() {
 					pc.close()
 				}
 				waitForBodyRead <- true
@@ -633,6 +649,28 @@ func (pc *persistConn) readLoop() {
 	}
 }
 
+func (pc *persistConn) writeLoop() {
+	for {
+		select {
+		case wr := <-pc.writech:
+			if pc.isBroken() {
+				wr.ch <- errors.New("http: can't write HTTP request on broken connection")
+				continue
+			}
+			err := wr.req.Request.write(pc.bw, pc.isProxy, wr.req.extra)
+			if err == nil {
+				err = pc.bw.Flush()
+			}
+			if err != nil {
+				pc.markBroken()
+			}
+			wr.ch <- err
+		case <-pc.closech:
+			return
+		}
+	}
+}
+
 type responseAndError struct {
 	res *Response
 	err error
@@ -646,6 +684,15 @@ type requestAndChan struct {
 	// Accept-Encoding gzip header? only if it we set it do
 	// we transparently decode the gzip.
 	addedGzip bool
+}
+
+// A writeRequest is sent by the readLoop's goroutine to the
+// writeLoop's goroutine to write a request while the read loop
+// concurrently waits on both the write response and the server's
+// reply.
+type writeRequest struct {
+	req *transportRequest
+	ch  chan<- error
 }
 
 func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err error) {
@@ -670,21 +717,63 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 	pc.numExpectedResponses++
 	pc.lk.Unlock()
 
-	err = req.Request.write(pc.bw, pc.isProxy, req.extra)
-	if err != nil {
-		pc.close()
-		return
-	}
-	pc.bw.Flush()
+	// Write the request concurrently with waiting for a response,
+	// in case the server decides to reply before reading our full
+	// request body.
+	writeErrCh := make(chan error, 1)
+	pc.writech <- writeRequest{req, writeErrCh}
 
-	ch := make(chan responseAndError, 1)
-	pc.reqch <- requestAndChan{req.Request, ch, requestedGzip}
-	re := <-ch
+	resc := make(chan responseAndError, 1)
+	pc.reqch <- requestAndChan{req.Request, resc, requestedGzip}
+
+	var re responseAndError
+	var pconnDeadCh = pc.closech
+	var failTicker <-chan time.Time
+WaitResponse:
+	for {
+		select {
+		case err := <-writeErrCh:
+			if err != nil {
+				re = responseAndError{nil, err}
+				break WaitResponse
+			}
+		case <-pconnDeadCh:
+			// The persist connection is dead. This shouldn't
+			// usually happen (only with Connection: close responses
+			// with no response bodies), but if it does happen it
+			// means either a) the remote server hung up on us
+			// prematurely, or b) the readLoop sent us a response &
+			// closed its closech at roughly the same time, and we
+			// selected this case first, in which case a response
+			// might still be coming soon.
+			//
+			// We can't avoid the select race in b) by using a unbuffered
+			// resc channel instead, because then goroutines can
+			// leak if we exit due to other errors.
+			pconnDeadCh = nil                               // avoid spinning
+			failTicker = time.After(100 * time.Millisecond) // arbitrary time to wait for resc
+		case <-failTicker:
+			re = responseAndError{nil, errors.New("net/http: transport closed before response was received")}
+			break WaitResponse
+		case re = <-resc:
+			break WaitResponse
+		}
+	}
+
 	pc.lk.Lock()
 	pc.numExpectedResponses--
 	pc.lk.Unlock()
 
 	return re.res, re.err
+}
+
+// markBroken marks a connection as broken (so it's not reused).
+// It differs from close in that it doesn't close the underlying
+// connection for use when it's still being read.
+func (pc *persistConn) markBroken() {
+	pc.lk.Lock()
+	defer pc.lk.Unlock()
+	pc.broken = true
 }
 
 func (pc *persistConn) close() {
@@ -728,6 +817,7 @@ type bodyEOFSignal struct {
 	body     io.ReadCloser
 	fn       func()
 	isClosed bool
+	once     sync.Once
 }
 
 func (es *bodyEOFSignal) Read(p []byte) (n int, err error) {
@@ -735,9 +825,8 @@ func (es *bodyEOFSignal) Read(p []byte) (n int, err error) {
 	if es.isClosed && n > 0 {
 		panic("http: unexpected bodyEOFSignal Read after Close; see issue 1725")
 	}
-	if err == io.EOF && es.fn != nil {
-		es.fn()
-		es.fn = nil
+	if err == io.EOF {
+		es.condfn()
 	}
 	return
 }
@@ -748,11 +837,16 @@ func (es *bodyEOFSignal) Close() (err error) {
 	}
 	es.isClosed = true
 	err = es.body.Close()
-	if err == nil && es.fn != nil {
-		es.fn()
-		es.fn = nil
+	if err == nil {
+		es.condfn()
 	}
 	return
+}
+
+func (es *bodyEOFSignal) condfn() {
+	if es.fn != nil {
+		es.once.Do(es.fn)
+	}
 }
 
 type readFirstCloseBoth struct {

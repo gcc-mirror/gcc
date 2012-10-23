@@ -10,6 +10,7 @@ import (
 	"image"
 	"image/color"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -106,13 +107,18 @@ func sng(w io.WriteCloser, filename string, png image.Image) {
 		lastAlpha := -1
 		io.WriteString(w, "PLTE {\n")
 		for i, c := range cpm {
-			r, g, b, a := c.RGBA()
-			if a != 0xffff {
+			var r, g, b, a uint8
+			switch c := c.(type) {
+			case color.RGBA:
+				r, g, b, a = c.R, c.G, c.B, 0xff
+			case color.NRGBA:
+				r, g, b, a = c.R, c.G, c.B, c.A
+			default:
+				panic("unknown palette color type")
+			}
+			if a != 0xff {
 				lastAlpha = i
 			}
-			r >>= 8
-			g >>= 8
-			b >>= 8
 			fmt.Fprintf(w, "    (%3d,%3d,%3d)     # rgb = (0x%02x,0x%02x,0x%02x)\n", r, g, b, r, g, b)
 		}
 		io.WriteString(w, "}\n")
@@ -266,4 +272,42 @@ func TestReaderError(t *testing.T) {
 			t.Errorf("decoding %s: have image + error", tt.file)
 		}
 	}
+}
+
+func benchmarkDecode(b *testing.B, filename string, bytesPerPixel int) {
+	b.StopTimer()
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		b.Fatal(err)
+	}
+	s := string(data)
+	cfg, err := DecodeConfig(strings.NewReader(s))
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(cfg.Width * cfg.Height * bytesPerPixel))
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		Decode(strings.NewReader(s))
+	}
+}
+
+func BenchmarkDecodeGray(b *testing.B) {
+	benchmarkDecode(b, "testdata/benchGray.png", 1)
+}
+
+func BenchmarkDecodeNRGBAGradient(b *testing.B) {
+	benchmarkDecode(b, "testdata/benchNRGBA-gradient.png", 4)
+}
+
+func BenchmarkDecodeNRGBAOpaque(b *testing.B) {
+	benchmarkDecode(b, "testdata/benchNRGBA-opaque.png", 4)
+}
+
+func BenchmarkDecodePaletted(b *testing.B) {
+	benchmarkDecode(b, "testdata/benchPaletted.png", 1)
+}
+
+func BenchmarkDecodeRGB(b *testing.B) {
+	benchmarkDecode(b, "testdata/benchRGB.png", 4)
 }

@@ -278,8 +278,9 @@ func (c *Conn) clientHandshake() error {
 		c.writeRecord(recordTypeHandshake, certVerify.marshal())
 	}
 
-	masterSecret, clientMAC, serverMAC, clientKey, serverKey, clientIV, serverIV :=
-		keysFromPreMasterSecret(c.vers, preMasterSecret, hello.random, serverHello.random, suite.macLen, suite.keyLen, suite.ivLen)
+	masterSecret := masterFromPreMasterSecret(c.vers, preMasterSecret, hello.random, serverHello.random)
+	clientMAC, serverMAC, clientKey, serverKey, clientIV, serverIV :=
+		keysFromMasterSecret(c.vers, masterSecret, hello.random, serverHello.random, suite.macLen, suite.keyLen, suite.ivLen)
 
 	clientCipher := suite.cipher(clientKey, clientIV, false /* not for reading */)
 	clientHash := suite.mac(c.vers, clientMAC)
@@ -306,8 +307,8 @@ func (c *Conn) clientHandshake() error {
 	serverHash := suite.mac(c.vers, serverMAC)
 	c.in.prepareCipherSpec(c.vers, serverCipher, serverHash)
 	c.readRecord(recordTypeChangeCipherSpec)
-	if c.err != nil {
-		return c.err
+	if err := c.error(); err != nil {
+		return err
 	}
 
 	msg, err = c.readHandshake()

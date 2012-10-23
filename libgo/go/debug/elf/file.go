@@ -31,6 +31,7 @@ type FileHeader struct {
 	ByteOrder  binary.ByteOrder
 	Type       Type
 	Machine    Machine
+	Entry      uint64
 }
 
 // A File represents an open ELF file.
@@ -240,6 +241,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		}
 		f.Type = Type(hdr.Type)
 		f.Machine = Machine(hdr.Machine)
+		f.Entry = uint64(hdr.Entry)
 		if v := Version(hdr.Version); v != f.Version {
 			return nil, &FormatError{0, "mismatched ELF version", v}
 		}
@@ -258,6 +260,7 @@ func NewFile(r io.ReaderAt) (*File, error) {
 		}
 		f.Type = Type(hdr.Type)
 		f.Machine = Machine(hdr.Machine)
+		f.Entry = uint64(hdr.Entry)
 		if v := Version(hdr.Version); v != f.Version {
 			return nil, &FormatError{0, "mismatched ELF version", v}
 		}
@@ -723,6 +726,20 @@ func (f *File) gnuVersion(i int, sym *ImportedSymbol) {
 // referred to by the binary f that are expected to be
 // linked with the binary at dynamic link time.
 func (f *File) ImportedLibraries() ([]string, error) {
+	return f.DynString(DT_NEEDED)
+}
+
+// DynString returns the strings listed for the given tag in the file's dynamic
+// section.
+//
+// The tag must be one that takes string values: DT_NEEDED, DT_SONAME, DT_RPATH, or
+// DT_RUNPATH.
+func (f *File) DynString(tag DynTag) ([]string, error) {
+	switch tag {
+	case DT_NEEDED, DT_SONAME, DT_RPATH, DT_RUNPATH:
+	default:
+		return nil, fmt.Errorf("non-string-valued tag %v", tag)
+	}
 	ds := f.SectionByType(SHT_DYNAMIC)
 	if ds == nil {
 		// not dynamic, so no libraries
@@ -738,25 +755,24 @@ func (f *File) ImportedLibraries() ([]string, error) {
 	}
 	var all []string
 	for len(d) > 0 {
-		var tag DynTag
-		var value uint64
+		var t DynTag
+		var v uint64
 		switch f.Class {
 		case ELFCLASS32:
-			tag = DynTag(f.ByteOrder.Uint32(d[0:4]))
-			value = uint64(f.ByteOrder.Uint32(d[4:8]))
+			t = DynTag(f.ByteOrder.Uint32(d[0:4]))
+			v = uint64(f.ByteOrder.Uint32(d[4:8]))
 			d = d[8:]
 		case ELFCLASS64:
-			tag = DynTag(f.ByteOrder.Uint64(d[0:8]))
-			value = f.ByteOrder.Uint64(d[8:16])
+			t = DynTag(f.ByteOrder.Uint64(d[0:8]))
+			v = f.ByteOrder.Uint64(d[8:16])
 			d = d[16:]
 		}
-		if tag == DT_NEEDED {
-			s, ok := getString(str, int(value))
+		if t == tag {
+			s, ok := getString(str, int(v))
 			if ok {
 				all = append(all, s)
 			}
 		}
 	}
-
 	return all, nil
 }

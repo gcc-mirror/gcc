@@ -8,6 +8,8 @@
 package types
 
 import (
+	"bytes"
+	"fmt"
 	"go/ast"
 	"sort"
 )
@@ -17,41 +19,41 @@ type Type interface {
 	isType()
 }
 
-// All concrete types embed ImplementsType which
+// All concrete types embed implementsType which
 // ensures that all types implement the Type interface.
-type ImplementsType struct{}
+type implementsType struct{}
 
-func (t *ImplementsType) isType() {}
+func (t *implementsType) isType() {}
 
 // A Bad type is a non-nil placeholder type when we don't know a type.
 type Bad struct {
-	ImplementsType
+	implementsType
 	Msg string // for better error reporting/debugging
 }
 
 // A Basic represents a (unnamed) basic type.
 type Basic struct {
-	ImplementsType
+	implementsType
 	// TODO(gri) need a field specifying the exact basic type
 }
 
 // An Array represents an array type [Len]Elt.
 type Array struct {
-	ImplementsType
+	implementsType
 	Len uint64
 	Elt Type
 }
 
 // A Slice represents a slice type []Elt.
 type Slice struct {
-	ImplementsType
+	implementsType
 	Elt Type
 }
 
 // A Struct represents a struct type struct{...}.
 // Anonymous fields are represented by objects with empty names.
 type Struct struct {
-	ImplementsType
+	implementsType
 	Fields ObjList  // struct fields; or nil
 	Tags   []string // corresponding tags; or nil
 	// TODO(gri) This type needs some rethinking:
@@ -62,14 +64,14 @@ type Struct struct {
 
 // A Pointer represents a pointer type *Base.
 type Pointer struct {
-	ImplementsType
+	implementsType
 	Base Type
 }
 
 // A Func represents a function type func(...) (...).
 // Unnamed parameters are represented by objects with empty names.
 type Func struct {
-	ImplementsType
+	implementsType
 	Recv       *ast.Object // nil if not a method
 	Params     ObjList     // (incoming) parameters from left to right; or nil
 	Results    ObjList     // (outgoing) results from left to right; or nil
@@ -78,29 +80,149 @@ type Func struct {
 
 // An Interface represents an interface type interface{...}.
 type Interface struct {
-	ImplementsType
+	implementsType
 	Methods ObjList // interface methods sorted by name; or nil
 }
 
 // A Map represents a map type map[Key]Elt.
 type Map struct {
-	ImplementsType
+	implementsType
 	Key, Elt Type
 }
 
 // A Chan represents a channel type chan Elt, <-chan Elt, or chan<-Elt.
 type Chan struct {
-	ImplementsType
+	implementsType
 	Dir ast.ChanDir
 	Elt Type
 }
 
 // A Name represents a named type as declared in a type declaration.
 type Name struct {
-	ImplementsType
+	implementsType
 	Underlying Type        // nil if not fully declared
 	Obj        *ast.Object // corresponding declared object
 	// TODO(gri) need to remember fields and methods.
+}
+
+func writeParams(buf *bytes.Buffer, params ObjList, isVariadic bool) {
+	buf.WriteByte('(')
+	for i, par := range params {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		if par.Name != "" {
+			buf.WriteString(par.Name)
+			buf.WriteByte(' ')
+		}
+		if isVariadic && i == len(params)-1 {
+			buf.WriteString("...")
+		}
+		writeType(buf, par.Type.(Type))
+	}
+	buf.WriteByte(')')
+}
+
+func writeSignature(buf *bytes.Buffer, t *Func) {
+	writeParams(buf, t.Params, t.IsVariadic)
+	if len(t.Results) == 0 {
+		// no result
+		return
+	}
+
+	buf.WriteByte(' ')
+	if len(t.Results) == 1 && t.Results[0].Name == "" {
+		// single unnamed result
+		writeType(buf, t.Results[0].Type.(Type))
+		return
+	}
+
+	// multiple or named result(s)
+	writeParams(buf, t.Results, false)
+}
+
+func writeType(buf *bytes.Buffer, typ Type) {
+	switch t := typ.(type) {
+	case *Bad:
+		fmt.Fprintf(buf, "badType(%s)", t.Msg)
+
+	case *Basic:
+		buf.WriteString("basicType") // TODO(gri) print actual type information
+
+	case *Array:
+		fmt.Fprintf(buf, "[%d]", t.Len)
+		writeType(buf, t.Elt)
+
+	case *Slice:
+		buf.WriteString("[]")
+		writeType(buf, t.Elt)
+
+	case *Struct:
+		buf.WriteString("struct{")
+		for i, fld := range t.Fields {
+			if i > 0 {
+				buf.WriteString("; ")
+			}
+			if fld.Name != "" {
+				buf.WriteString(fld.Name)
+				buf.WriteByte(' ')
+			}
+			writeType(buf, fld.Type.(Type))
+			if i < len(t.Tags) && t.Tags[i] != "" {
+				fmt.Fprintf(buf, " %q", t.Tags[i])
+			}
+		}
+		buf.WriteByte('}')
+
+	case *Pointer:
+		buf.WriteByte('*')
+		writeType(buf, t.Base)
+
+	case *Func:
+		buf.WriteString("func")
+		writeSignature(buf, t)
+
+	case *Interface:
+		buf.WriteString("interface{")
+		for i, m := range t.Methods {
+			if i > 0 {
+				buf.WriteString("; ")
+			}
+			buf.WriteString(m.Name)
+			writeSignature(buf, m.Type.(*Func))
+		}
+		buf.WriteByte('}')
+
+	case *Map:
+		buf.WriteString("map[")
+		writeType(buf, t.Key)
+		buf.WriteByte(']')
+		writeType(buf, t.Elt)
+
+	case *Chan:
+		var s string
+		switch t.Dir {
+		case ast.SEND:
+			s = "chan<- "
+		case ast.RECV:
+			s = "<-chan "
+		default:
+			s = "chan "
+		}
+		buf.WriteString(s)
+		writeType(buf, t.Elt)
+
+	case *Name:
+		buf.WriteString(t.Obj.Name)
+
+	}
+}
+
+// TypeString returns a string representation for typ.
+func TypeString(typ Type) string {
+	var buf bytes.Buffer
+	writeType(&buf, typ)
+	return buf.String()
 }
 
 // If typ is a pointer type, Deref returns the pointer's base type;

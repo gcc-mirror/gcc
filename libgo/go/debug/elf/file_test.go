@@ -19,12 +19,13 @@ type fileTest struct {
 	hdr      FileHeader
 	sections []SectionHeader
 	progs    []ProgHeader
+	needed   []string
 }
 
 var fileTests = []fileTest{
 	{
 		"testdata/gcc-386-freebsd-exec",
-		FileHeader{ELFCLASS32, ELFDATA2LSB, EV_CURRENT, ELFOSABI_FREEBSD, 0, binary.LittleEndian, ET_EXEC, EM_386},
+		FileHeader{ELFCLASS32, ELFDATA2LSB, EV_CURRENT, ELFOSABI_FREEBSD, 0, binary.LittleEndian, ET_EXEC, EM_386, 0x80483cc},
 		[]SectionHeader{
 			{"", SHT_NULL, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
 			{".interp", SHT_PROGBITS, SHF_ALLOC, 0x80480d4, 0xd4, 0x15, 0x0, 0x0, 0x1, 0x0},
@@ -64,10 +65,11 @@ var fileTests = []fileTest{
 			{PT_LOAD, PF_R + PF_W, 0x5fc, 0x80495fc, 0x80495fc, 0xd8, 0xf8, 0x1000},
 			{PT_DYNAMIC, PF_R + PF_W, 0x60c, 0x804960c, 0x804960c, 0x98, 0x98, 0x4},
 		},
+		[]string{"libc.so.6"},
 	},
 	{
 		"testdata/gcc-amd64-linux-exec",
-		FileHeader{ELFCLASS64, ELFDATA2LSB, EV_CURRENT, ELFOSABI_NONE, 0, binary.LittleEndian, ET_EXEC, EM_X86_64},
+		FileHeader{ELFCLASS64, ELFDATA2LSB, EV_CURRENT, ELFOSABI_NONE, 0, binary.LittleEndian, ET_EXEC, EM_X86_64, 0x4003e0},
 		[]SectionHeader{
 			{"", SHT_NULL, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
 			{".interp", SHT_PROGBITS, SHF_ALLOC, 0x400200, 0x200, 0x1c, 0x0, 0x0, 0x1, 0x0},
@@ -117,6 +119,7 @@ var fileTests = []fileTest{
 			{PT_LOOS + 0x474E550, PF_R, 0x5b8, 0x4005b8, 0x4005b8, 0x24, 0x24, 0x4},
 			{PT_LOOS + 0x474E551, PF_R + PF_W, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8},
 		},
+		[]string{"libc.so.6"},
 	},
 }
 
@@ -160,6 +163,14 @@ func TestOpen(t *testing.T) {
 		fn = len(f.Progs)
 		if tn != fn {
 			t.Errorf("open %s: len(Progs) = %d, want %d", tt.file, fn, tn)
+		}
+		tl := tt.needed
+		fl, err := f.ImportedLibraries()
+		if err != nil {
+			t.Error(err)
+		}
+		if !reflect.DeepEqual(tl, fl) {
+			t.Errorf("open %s: DT_NEEDED = %v, want %v", tt.file, tl, fl)
 		}
 	}
 }

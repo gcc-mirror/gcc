@@ -12,7 +12,7 @@ import (
 )
 
 func Getenv(key string) (value string, found bool) {
-	keyp, err := utf16PtrFromString(key)
+	keyp, err := UTF16PtrFromString(key)
 	if err != nil {
 		return "", false
 	}
@@ -38,12 +38,12 @@ func Setenv(key, value string) error {
 	var v *uint16
 	var err error
 	if len(value) > 0 {
-		v, err = utf16PtrFromString(value)
+		v, err = UTF16PtrFromString(value)
 		if err != nil {
 			return err
 		}
 	}
-	keyp, err := utf16PtrFromString(key)
+	keyp, err := UTF16PtrFromString(key)
 	if err != nil {
 		return err
 	}

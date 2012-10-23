@@ -7,6 +7,7 @@ package json
 import (
 	"bytes"
 	"fmt"
+	"image"
 	"reflect"
 	"strings"
 	"testing"
@@ -16,6 +17,32 @@ type T struct {
 	X string
 	Y int
 	Z int `json:"-"`
+}
+
+type U struct {
+	Alphabet string `json:"alpha"`
+}
+
+type V struct {
+	F1 interface{}
+	F2 int32
+	F3 Number
+}
+
+// ifaceNumAsFloat64/ifaceNumAsNumber are used to test unmarshalling with and
+// without UseNumber
+var ifaceNumAsFloat64 = map[string]interface{}{
+	"k1": float64(1),
+	"k2": "s",
+	"k3": []interface{}{float64(1), float64(2.0), float64(3e-3)},
+	"k4": map[string]interface{}{"kk1": "s", "kk2": float64(2)},
+}
+
+var ifaceNumAsNumber = map[string]interface{}{
+	"k1": Number("1"),
+	"k2": "s",
+	"k3": []interface{}{Number("1"), Number("2.0"), Number("3e-3")},
+	"k4": map[string]interface{}{"kk1": "s", "kk2": Number("2")},
 }
 
 type tx struct {
@@ -48,55 +75,237 @@ var (
 	umstruct = ustruct{unmarshaler{true}}
 )
 
+// Test data structures for anonymous fields.
+
+type Point struct {
+	Z int
+}
+
+type Top struct {
+	Level0 int
+	Embed0
+	*Embed0a
+	*Embed0b `json:"e,omitempty"` // treated as named
+	Embed0c  `json:"-"`           // ignored
+	Loop
+	Embed0p // has Point with X, Y, used
+	Embed0q // has Point with Z, used
+}
+
+type Embed0 struct {
+	Level1a int // overridden by Embed0a's Level1a with json tag
+	Level1b int // used because Embed0a's Level1b is renamed
+	Level1c int // used because Embed0a's Level1c is ignored
+	Level1d int // annihilated by Embed0a's Level1d
+	Level1e int `json:"x"` // annihilated by Embed0a.Level1e
+}
+
+type Embed0a struct {
+	Level1a int `json:"Level1a,omitempty"`
+	Level1b int `json:"LEVEL1B,omitempty"`
+	Level1c int `json:"-"`
+	Level1d int // annihilated by Embed0's Level1d
+	Level1f int `json:"x"` // annihilated by Embed0's Level1e
+}
+
+type Embed0b Embed0
+
+type Embed0c Embed0
+
+type Embed0p struct {
+	image.Point
+}
+
+type Embed0q struct {
+	Point
+}
+
+type Loop struct {
+	Loop1 int `json:",omitempty"`
+	Loop2 int `json:",omitempty"`
+	*Loop
+}
+
+// From reflect test:
+// The X in S6 and S7 annihilate, but they also block the X in S8.S9.
+type S5 struct {
+	S6
+	S7
+	S8
+}
+
+type S6 struct {
+	X int
+}
+
+type S7 S6
+
+type S8 struct {
+	S9
+}
+
+type S9 struct {
+	X int
+	Y int
+}
+
+// From reflect test:
+// The X in S11.S6 and S12.S6 annihilate, but they also block the X in S13.S8.S9.
+type S10 struct {
+	S11
+	S12
+	S13
+}
+
+type S11 struct {
+	S6
+}
+
+type S12 struct {
+	S6
+}
+
+type S13 struct {
+	S8
+}
+
 type unmarshalTest struct {
-	in  string
-	ptr interface{}
-	out interface{}
-	err error
+	in        string
+	ptr       interface{}
+	out       interface{}
+	err       error
+	useNumber bool
+}
+
+type Ambig struct {
+	// Given "hello", the first match should win.
+	First  int `json:"HELLO"`
+	Second int `json:"Hello"`
 }
 
 var unmarshalTests = []unmarshalTest{
 	// basic types
-	{`true`, new(bool), true, nil},
-	{`1`, new(int), 1, nil},
-	{`1.2`, new(float64), 1.2, nil},
-	{`-5`, new(int16), int16(-5), nil},
-	{`"a\u1234"`, new(string), "a\u1234", nil},
-	{`"http:\/\/"`, new(string), "http://", nil},
-	{`"g-clef: \uD834\uDD1E"`, new(string), "g-clef: \U0001D11E", nil},
-	{`"invalid: \uD834x\uDD1E"`, new(string), "invalid: \uFFFDx\uFFFD", nil},
-	{"null", new(interface{}), nil, nil},
-	{`{"X": [1,2,3], "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.TypeOf("")}},
-	{`{"x": 1}`, new(tx), tx{}, &UnmarshalFieldError{"x", txType, txType.Field(0)}},
+	{in: `true`, ptr: new(bool), out: true},
+	{in: `1`, ptr: new(int), out: 1},
+	{in: `1.2`, ptr: new(float64), out: 1.2},
+	{in: `-5`, ptr: new(int16), out: int16(-5)},
+	{in: `2`, ptr: new(Number), out: Number("2"), useNumber: true},
+	{in: `2`, ptr: new(Number), out: Number("2")},
+	{in: `2`, ptr: new(interface{}), out: float64(2.0)},
+	{in: `2`, ptr: new(interface{}), out: Number("2"), useNumber: true},
+	{in: `"a\u1234"`, ptr: new(string), out: "a\u1234"},
+	{in: `"http:\/\/"`, ptr: new(string), out: "http://"},
+	{in: `"g-clef: \uD834\uDD1E"`, ptr: new(string), out: "g-clef: \U0001D11E"},
+	{in: `"invalid: \uD834x\uDD1E"`, ptr: new(string), out: "invalid: \uFFFDx\uFFFD"},
+	{in: "null", ptr: new(interface{}), out: nil},
+	{in: `{"X": [1,2,3], "Y": 4}`, ptr: new(T), out: T{Y: 4}, err: &UnmarshalTypeError{"array", reflect.TypeOf("")}},
+	{in: `{"x": 1}`, ptr: new(tx), out: tx{}, err: &UnmarshalFieldError{"x", txType, txType.Field(0)}},
+	{in: `{"F1":1,"F2":2,"F3":3}`, ptr: new(V), out: V{F1: float64(1), F2: int32(2), F3: Number("3")}},
+	{in: `{"F1":1,"F2":2,"F3":3}`, ptr: new(V), out: V{F1: Number("1"), F2: int32(2), F3: Number("3")}, useNumber: true},
+	{in: `{"k1":1,"k2":"s","k3":[1,2.0,3e-3],"k4":{"kk1":"s","kk2":2}}`, ptr: new(interface{}), out: ifaceNumAsFloat64},
+	{in: `{"k1":1,"k2":"s","k3":[1,2.0,3e-3],"k4":{"kk1":"s","kk2":2}}`, ptr: new(interface{}), out: ifaceNumAsNumber, useNumber: true},
 
 	// Z has a "-" tag.
-	{`{"Y": 1, "Z": 2}`, new(T), T{Y: 1}, nil},
+	{in: `{"Y": 1, "Z": 2}`, ptr: new(T), out: T{Y: 1}},
+
+	{in: `{"alpha": "abc", "alphabet": "xyz"}`, ptr: new(U), out: U{Alphabet: "abc"}},
+	{in: `{"alpha": "abc"}`, ptr: new(U), out: U{Alphabet: "abc"}},
+	{in: `{"alphabet": "xyz"}`, ptr: new(U), out: U{}},
 
 	// syntax errors
-	{`{"X": "foo", "Y"}`, nil, nil, &SyntaxError{"invalid character '}' after object key", 17}},
-	{`[1, 2, 3+]`, nil, nil, &SyntaxError{"invalid character '+' after array element", 9}},
+	{in: `{"X": "foo", "Y"}`, err: &SyntaxError{"invalid character '}' after object key", 17}},
+	{in: `[1, 2, 3+]`, err: &SyntaxError{"invalid character '+' after array element", 9}},
+	{in: `{"X":12x}`, err: &SyntaxError{"invalid character 'x' after object key:value pair", 8}, useNumber: true},
 
 	// array tests
-	{`[1, 2, 3]`, new([3]int), [3]int{1, 2, 3}, nil},
-	{`[1, 2, 3]`, new([1]int), [1]int{1}, nil},
-	{`[1, 2, 3]`, new([5]int), [5]int{1, 2, 3, 0, 0}, nil},
+	{in: `[1, 2, 3]`, ptr: new([3]int), out: [3]int{1, 2, 3}},
+	{in: `[1, 2, 3]`, ptr: new([1]int), out: [1]int{1}},
+	{in: `[1, 2, 3]`, ptr: new([5]int), out: [5]int{1, 2, 3, 0, 0}},
 
 	// composite tests
-	{allValueIndent, new(All), allValue, nil},
-	{allValueCompact, new(All), allValue, nil},
-	{allValueIndent, new(*All), &allValue, nil},
-	{allValueCompact, new(*All), &allValue, nil},
-	{pallValueIndent, new(All), pallValue, nil},
-	{pallValueCompact, new(All), pallValue, nil},
-	{pallValueIndent, new(*All), &pallValue, nil},
-	{pallValueCompact, new(*All), &pallValue, nil},
+	{in: allValueIndent, ptr: new(All), out: allValue},
+	{in: allValueCompact, ptr: new(All), out: allValue},
+	{in: allValueIndent, ptr: new(*All), out: &allValue},
+	{in: allValueCompact, ptr: new(*All), out: &allValue},
+	{in: pallValueIndent, ptr: new(All), out: pallValue},
+	{in: pallValueCompact, ptr: new(All), out: pallValue},
+	{in: pallValueIndent, ptr: new(*All), out: &pallValue},
+	{in: pallValueCompact, ptr: new(*All), out: &pallValue},
 
 	// unmarshal interface test
-	{`{"T":false}`, &um0, umtrue, nil}, // use "false" so test will fail if custom unmarshaler is not called
-	{`{"T":false}`, &ump, &umtrue, nil},
-	{`[{"T":false}]`, &umslice, umslice, nil},
-	{`[{"T":false}]`, &umslicep, &umslice, nil},
-	{`{"M":{"T":false}}`, &umstruct, umstruct, nil},
+	{in: `{"T":false}`, ptr: &um0, out: umtrue}, // use "false" so test will fail if custom unmarshaler is not called
+	{in: `{"T":false}`, ptr: &ump, out: &umtrue},
+	{in: `[{"T":false}]`, ptr: &umslice, out: umslice},
+	{in: `[{"T":false}]`, ptr: &umslicep, out: &umslice},
+	{in: `{"M":{"T":false}}`, ptr: &umstruct, out: umstruct},
+
+	{
+		in: `{
+			"Level0": 1,
+			"Level1b": 2,
+			"Level1c": 3,
+			"x": 4,
+			"Level1a": 5,
+			"LEVEL1B": 6,
+			"e": {
+				"Level1a": 8,
+				"Level1b": 9,
+				"Level1c": 10,
+				"Level1d": 11,
+				"x": 12
+			},
+			"Loop1": 13,
+			"Loop2": 14,
+			"X": 15,
+			"Y": 16,
+			"Z": 17
+		}`,
+		ptr: new(Top),
+		out: Top{
+			Level0: 1,
+			Embed0: Embed0{
+				Level1b: 2,
+				Level1c: 3,
+			},
+			Embed0a: &Embed0a{
+				Level1a: 5,
+				Level1b: 6,
+			},
+			Embed0b: &Embed0b{
+				Level1a: 8,
+				Level1b: 9,
+				Level1c: 10,
+				Level1d: 11,
+				Level1e: 12,
+			},
+			Loop: Loop{
+				Loop1: 13,
+				Loop2: 14,
+			},
+			Embed0p: Embed0p{
+				Point: image.Point{X: 15, Y: 16},
+			},
+			Embed0q: Embed0q{
+				Point: Point{Z: 17},
+			},
+		},
+	},
+	{
+		in:  `{"hello": 1}`,
+		ptr: new(Ambig),
+		out: Ambig{First: 1},
+	},
+
+	{
+		in:  `{"X": 1,"Y":2}`,
+		ptr: new(S5),
+		out: S5{S8: S8{S9: S9{Y: 2}}},
+	},
+	{
+		in:  `{"X": 1,"Y":2}`,
+		ptr: new(S10),
+		out: S10{S13: S13{S8: S8{S9: S9{Y: 2}}}},
+	},
 }
 
 func TestMarshal(t *testing.T) {
@@ -135,6 +344,18 @@ func TestMarshalBadUTF8(t *testing.T) {
 	}
 }
 
+func TestMarshalNumberZeroVal(t *testing.T) {
+	var n Number
+	out, err := Marshal(n)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outStr := string(out)
+	if outStr != "0" {
+		t.Fatalf("Invalid zero val for Number: %q", outStr)
+	}
+}
+
 func TestUnmarshal(t *testing.T) {
 	for i, tt := range unmarshalTests {
 		var scan scanner
@@ -150,7 +371,11 @@ func TestUnmarshal(t *testing.T) {
 		}
 		// v = new(right-type)
 		v := reflect.New(reflect.TypeOf(tt.ptr).Elem())
-		if err := Unmarshal([]byte(in), v.Interface()); !reflect.DeepEqual(err, tt.err) {
+		dec := NewDecoder(bytes.NewBuffer(in))
+		if tt.useNumber {
+			dec.UseNumber()
+		}
+		if err := dec.Decode(v.Interface()); !reflect.DeepEqual(err, tt.err) {
 			t.Errorf("#%d: %v want %v", i, err, tt.err)
 			continue
 		}
@@ -161,6 +386,28 @@ func TestUnmarshal(t *testing.T) {
 			data, _ = Marshal(tt.out)
 			println(string(data))
 			continue
+		}
+
+		// Check round trip.
+		if tt.err == nil {
+			enc, err := Marshal(v.Interface())
+			if err != nil {
+				t.Errorf("#%d: error re-marshaling: %v", i, err)
+				continue
+			}
+			vv := reflect.New(reflect.TypeOf(tt.ptr).Elem())
+			dec = NewDecoder(bytes.NewBuffer(enc))
+			if tt.useNumber {
+				dec.UseNumber()
+			}
+			if err := dec.Decode(vv.Interface()); err != nil {
+				t.Errorf("#%d: error re-unmarshaling: %v", i, err)
+				continue
+			}
+			if !reflect.DeepEqual(v.Elem().Interface(), vv.Elem().Interface()) {
+				t.Errorf("#%d: mismatch\nhave: %#+v\nwant: %#+v", i, v.Elem().Interface(), vv.Elem().Interface())
+				continue
+			}
 		}
 	}
 }
@@ -179,6 +426,38 @@ func TestUnmarshalMarshal(t *testing.T) {
 		t.Errorf("Marshal jsonBig")
 		diff(t, b, jsonBig)
 		return
+	}
+}
+
+var numberTests = []struct {
+	in       string
+	i        int64
+	intErr   string
+	f        float64
+	floatErr string
+}{
+	{in: "-1.23e1", intErr: "strconv.ParseInt: parsing \"-1.23e1\": invalid syntax", f: -1.23e1},
+	{in: "-12", i: -12, f: -12.0},
+	{in: "1e1000", intErr: "strconv.ParseInt: parsing \"1e1000\": invalid syntax", floatErr: "strconv.ParseFloat: parsing \"1e1000\": value out of range"},
+}
+
+// Independent of Decode, basic coverage of the accessors in Number
+func TestNumberAccessors(t *testing.T) {
+	for _, tt := range numberTests {
+		n := Number(tt.in)
+		if s := n.String(); s != tt.in {
+			t.Errorf("Number(%q).String() is %q", tt.in, s)
+		}
+		if i, err := n.Int64(); err == nil && tt.intErr == "" && i != tt.i {
+			t.Errorf("Number(%q).Int64() is %d", tt.in, i)
+		} else if (err == nil && tt.intErr != "") || (err != nil && err.Error() != tt.intErr) {
+			t.Errorf("Number(%q).Int64() wanted error %q but got: %v", tt.in, tt.intErr, err)
+		}
+		if f, err := n.Float64(); err == nil && tt.floatErr == "" && f != tt.f {
+			t.Errorf("Number(%q).Float64() is %g", tt.in, f)
+		} else if (err == nil && tt.floatErr != "") || (err != nil && err.Error() != tt.floatErr) {
+			t.Errorf("Number(%q).Float64() wanted error %q but got: %v", tt.in, tt.floatErr, err)
+		}
 	}
 }
 
@@ -607,35 +886,6 @@ func TestRefUnmarshal(t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)
-	}
-}
-
-// Test that anonymous fields are ignored.
-// We may assign meaning to them later.
-func TestAnonymous(t *testing.T) {
-	type S struct {
-		T
-		N int
-	}
-
-	data, err := Marshal(new(S))
-	if err != nil {
-		t.Fatalf("Marshal: %v", err)
-	}
-	want := `{"N":0}`
-	if string(data) != want {
-		t.Fatalf("Marshal = %#q, want %#q", string(data), want)
-	}
-
-	var s S
-	if err := Unmarshal([]byte(`{"T": 1, "T": {"Y": 1}, "N": 2}`), &s); err != nil {
-		t.Fatalf("Unmarshal: %v", err)
-	}
-	if s.N != 2 {
-		t.Fatal("Unmarshal: did not set N")
-	}
-	if s.T.Y != 0 {
-		t.Fatal("Unmarshal: did set T.Y")
 	}
 }
 

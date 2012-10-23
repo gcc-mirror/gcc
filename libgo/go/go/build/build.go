@@ -33,6 +33,7 @@ type Context struct {
 	GOPATH      string   // Go path
 	CgoEnabled  bool     // whether cgo can be used
 	BuildTags   []string // additional tags to recognize in +build lines
+	InstallTag  string   // package install directory suffix
 	UseAllFiles bool     // use files regardless of +build lines, file names
 	Compiler    string   // compiler to assume when computing target paths
 
@@ -213,10 +214,13 @@ var Default Context = defaultContext()
 var cgoEnabled = map[string]bool{
 	"darwin/386":    true,
 	"darwin/amd64":  true,
-	"linux/386":     true,
-	"linux/amd64":   true,
 	"freebsd/386":   true,
 	"freebsd/amd64": true,
+	"linux/386":     true,
+	"linux/amd64":   true,
+	"linux/arm":     true,
+	"netbsd/386":    true,
+	"netbsd/amd64":  true,
 	"windows/386":   true,
 	"windows/amd64": true,
 }
@@ -278,12 +282,14 @@ type Package struct {
 	PkgObj     string // installed .a file
 
 	// Source files
-	GoFiles   []string // .go source files (excluding CgoFiles, TestGoFiles, XTestGoFiles)
-	CgoFiles  []string // .go source files that import "C"
-	CFiles    []string // .c source files
-	HFiles    []string // .h source files
-	SFiles    []string // .s source files
-	SysoFiles []string // .syso system object files to add to archive
+	GoFiles      []string // .go source files (excluding CgoFiles, TestGoFiles, XTestGoFiles)
+	CgoFiles     []string // .go source files that import "C"
+	CFiles       []string // .c source files
+	HFiles       []string // .h source files
+	SFiles       []string // .s source files
+	SysoFiles    []string // .syso system object files to add to archive
+	SwigFiles    []string // .swig files
+	SwigCXXFiles []string // .swigcxx files
 
 	// Cgo directives
 	CgoPkgConfig []string // Cgo pkg-config directives
@@ -346,6 +352,9 @@ func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Packa
 	p := &Package{
 		ImportPath: path,
 	}
+	if path == "" {
+		return p, fmt.Errorf("import %q: invalid import path", path)
+	}
 
 	var pkga string
 	var pkgerr error
@@ -354,7 +363,11 @@ func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Packa
 		dir, elem := pathpkg.Split(p.ImportPath)
 		pkga = "pkg/gccgo/" + dir + "lib" + elem + ".a"
 	case "gc":
-		pkga = "pkg/" + ctxt.GOOS + "_" + ctxt.GOARCH + "/" + p.ImportPath + ".a"
+		tag := ""
+		if ctxt.InstallTag != "" {
+			tag = "_" + ctxt.InstallTag
+		}
+		pkga = "pkg/" + ctxt.GOOS + "_" + ctxt.GOARCH + tag + "/" + p.ImportPath + ".a"
 	default:
 		// Save error for end of function.
 		pkgerr = fmt.Errorf("import %q: unknown compiler %q", path, ctxt.Compiler)
@@ -486,7 +499,7 @@ Found:
 		}
 		ext := name[i:]
 		switch ext {
-		case ".go", ".c", ".s", ".h", ".S":
+		case ".go", ".c", ".s", ".h", ".S", ".swig", ".swigcxx":
 			// tentatively okay - read to make sure
 		case ".syso":
 			// binary objects to add to package archive
@@ -504,7 +517,13 @@ Found:
 		if err != nil {
 			return p, err
 		}
-		data, err := ioutil.ReadAll(f)
+
+		var data []byte
+		if strings.HasSuffix(filename, ".go") {
+			data, err = readImports(f, false)
+		} else {
+			data, err = readComments(f)
+		}
 		f.Close()
 		if err != nil {
 			return p, fmt.Errorf("read %s: %v", filename, err)
@@ -528,6 +547,12 @@ Found:
 			continue
 		case ".S":
 			Sfiles = append(Sfiles, name)
+			continue
+		case ".swig":
+			p.SwigFiles = append(p.SwigFiles, name)
+			continue
+		case ".swigcxx":
+			p.SwigCXXFiles = append(p.SwigCXXFiles, name)
 			continue
 		}
 

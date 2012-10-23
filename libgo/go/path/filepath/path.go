@@ -13,6 +13,45 @@ import (
 	"strings"
 )
 
+// A lazybuf is a lazily constructed path buffer.
+// It supports append, reading previously appended bytes,
+// and retrieving the final string. It does not allocate a buffer
+// to hold the output until that output diverges from s.
+type lazybuf struct {
+	path       string
+	buf        []byte
+	w          int
+	volAndPath string
+	volLen     int
+}
+
+func (b *lazybuf) index(i int) byte {
+	if b.buf != nil {
+		return b.buf[i]
+	}
+	return b.path[i]
+}
+
+func (b *lazybuf) append(c byte) {
+	if b.buf == nil {
+		if b.w < len(b.path) && b.path[b.w] == c {
+			b.w++
+			return
+		}
+		b.buf = make([]byte, len(b.path))
+		copy(b.buf, b.path[:b.w])
+	}
+	b.buf[b.w] = c
+	b.w++
+}
+
+func (b *lazybuf) string() string {
+	if b.buf == nil {
+		return b.volAndPath[:b.volLen+b.w]
+	}
+	return b.volAndPath[:b.volLen] + string(b.buf[:b.w])
+}
+
 const (
 	Separator     = os.PathSeparator
 	ListSeparator = os.PathListSeparator
@@ -40,14 +79,15 @@ const (
 // Getting Dot-Dot Right,''
 // http://plan9.bell-labs.com/sys/doc/lexnames.html
 func Clean(path string) string {
-	vol := VolumeName(path)
-	path = path[len(vol):]
+	originalPath := path
+	volLen := volumeNameLen(path)
+	path = path[volLen:]
 	if path == "" {
-		if len(vol) > 1 && vol[1] != ':' {
+		if volLen > 1 && originalPath[1] != ':' {
 			// should be UNC
-			return FromSlash(vol)
+			return FromSlash(originalPath)
 		}
-		return vol + "."
+		return originalPath + "."
 	}
 	rooted := os.IsPathSeparator(path[0])
 
@@ -57,11 +97,11 @@ func Clean(path string) string {
 	//	dotdot is index in buf where .. must stop, either because
 	//		it is the leading slash or it is a leading ../../.. prefix.
 	n := len(path)
-	buf := []byte(path)
-	r, w, dotdot := 0, 0, 0
+	out := lazybuf{path: path, volAndPath: originalPath, volLen: volLen}
+	r, dotdot := 0, 0
 	if rooted {
-		buf[0] = Separator
-		r, w, dotdot = 1, 1, 1
+		out.append(Separator)
+		r, dotdot = 1, 1
 	}
 
 	for r < n {
@@ -76,46 +116,40 @@ func Clean(path string) string {
 			// .. element: remove to last separator
 			r += 2
 			switch {
-			case w > dotdot:
+			case out.w > dotdot:
 				// can backtrack
-				w--
-				for w > dotdot && !os.IsPathSeparator(buf[w]) {
-					w--
+				out.w--
+				for out.w > dotdot && !os.IsPathSeparator(out.index(out.w)) {
+					out.w--
 				}
 			case !rooted:
 				// cannot backtrack, but not rooted, so append .. element.
-				if w > 0 {
-					buf[w] = Separator
-					w++
+				if out.w > 0 {
+					out.append(Separator)
 				}
-				buf[w] = '.'
-				w++
-				buf[w] = '.'
-				w++
-				dotdot = w
+				out.append('.')
+				out.append('.')
+				dotdot = out.w
 			}
 		default:
 			// real path element.
 			// add slash if needed
-			if rooted && w != 1 || !rooted && w != 0 {
-				buf[w] = Separator
-				w++
+			if rooted && out.w != 1 || !rooted && out.w != 0 {
+				out.append(Separator)
 			}
 			// copy element
 			for ; r < n && !os.IsPathSeparator(path[r]); r++ {
-				buf[w] = path[r]
-				w++
+				out.append(path[r])
 			}
 		}
 	}
 
 	// Turn empty string into "."
-	if w == 0 {
-		buf[w] = '.'
-		w++
+	if out.w == 0 {
+		out.append('.')
 	}
 
-	return FromSlash(vol + string(buf[0:w]))
+	return FromSlash(out.string())
 }
 
 // ToSlash returns the result of replacing each separator character
@@ -416,4 +450,12 @@ func Dir(path string) string {
 		dir = "."
 	}
 	return vol + dir
+}
+
+// VolumeName returns leading volume name.  
+// Given "C:\foo\bar" it returns "C:" under windows.
+// Given "\\host\share\foo" it returns "\\host\share".
+// On other platforms it returns "".
+func VolumeName(path string) (v string) {
+	return path[:volumeNameLen(path)]
 }

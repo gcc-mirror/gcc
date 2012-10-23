@@ -96,13 +96,29 @@ func TestWriter(t *testing.T) {
 	}
 }
 
+func TestWriterReturnValues(t *testing.T) {
+	w := NewWriter(ioutil.Discard, LSB, 8)
+	n, err := w.Write([]byte("asdf"))
+	if n != 4 || err != nil {
+		t.Errorf("got %d, %v, want 4, nil", n, err)
+	}
+}
+
 func benchmarkEncoder(b *testing.B, n int) {
 	b.StopTimer()
 	b.SetBytes(int64(n))
-	buf0, _ := ioutil.ReadFile("../testdata/e.txt")
-	buf0 = buf0[:10000]
+	buf0, err := ioutil.ReadFile("../testdata/e.txt")
+	if err != nil {
+		b.Fatal(err)
+	}
+	if len(buf0) == 0 {
+		b.Fatalf("test file has no data")
+	}
 	buf1 := make([]byte, n)
 	for i := 0; i < n; i += len(buf0) {
+		if len(buf0) > n-i {
+			buf0 = buf0[:n-i]
+		}
 		copy(buf1[i:], buf0)
 	}
 	buf0 = nil

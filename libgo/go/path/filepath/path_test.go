@@ -20,7 +20,6 @@ type PathTest struct {
 
 var cleantests = []PathTest{
 	// Already clean
-	{"", "."},
 	{"abc", "abc"},
 	{"abc/def", "abc/def"},
 	{"a/b/c", "a/b/c"},
@@ -30,6 +29,9 @@ var cleantests = []PathTest{
 	{"../../abc", "../../abc"},
 	{"/abc", "/abc"},
 	{"/", "/"},
+
+	// Empty is current dir
+	{"", "."},
 
 	// Remove trailing slash
 	{"abc/", "abc"},
@@ -61,6 +63,7 @@ var cleantests = []PathTest{
 	{"abc/def/../../..", ".."},
 	{"/abc/def/../../..", "/"},
 	{"abc/def/../../../ghi/jkl/../../../mno", "../../mno"},
+	{"/../abc", "/abc"},
 
 	// Combinations
 	{"abc/./../def", "def"},
@@ -99,7 +102,27 @@ func TestClean(t *testing.T) {
 		if s := filepath.Clean(test.path); s != test.result {
 			t.Errorf("Clean(%q) = %q, want %q", test.path, s, test.result)
 		}
+		if s := filepath.Clean(test.result); s != test.result {
+			t.Errorf("Clean(%q) = %q, want %q", test.result, s, test.result)
+		}
 	}
+
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+	allocs := -ms.Mallocs
+	const rounds = 100
+	for i := 0; i < rounds; i++ {
+		for _, test := range tests {
+			filepath.Clean(test.result)
+		}
+	}
+	runtime.ReadMemStats(&ms)
+	allocs += ms.Mallocs
+	/* Fails with gccgo, which has no escape analysis.
+	if allocs >= rounds {
+		t.Errorf("Clean cleaned paths: %d allocations per test round, want zero", allocs/rounds)
+	}
+	*/
 }
 
 const sep = filepath.Separator
@@ -684,10 +707,15 @@ func TestAbs(t *testing.T) {
 	}
 	defer os.RemoveAll(root)
 
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal("getwd failed: ", err)
+	}
 	err = os.Chdir(root)
 	if err != nil {
 		t.Fatal("chdir failed: ", err)
 	}
+	defer os.Chdir(wd)
 
 	for _, dir := range absTestDirs {
 		err = os.Mkdir(dir, 0777)

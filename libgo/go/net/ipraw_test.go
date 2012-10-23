@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build !plan9
+
 package net
 
 import (
@@ -24,7 +26,7 @@ var icmpTests = []struct {
 
 func TestICMP(t *testing.T) {
 	if os.Getuid() != 0 {
-		t.Logf("test disabled; must be root")
+		t.Logf("skipping test; must be root")
 		return
 	}
 

@@ -7,6 +7,7 @@ package url
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -453,20 +454,24 @@ func TestEscape(t *testing.T) {
 //}
 
 type EncodeQueryTest struct {
-	m         Values
-	expected  string
-	expected1 string
+	m        Values
+	expected string
 }
 
 var encodeQueryTests = []EncodeQueryTest{
-	{nil, "", ""},
-	{Values{"q": {"puppies"}, "oe": {"utf8"}}, "q=puppies&oe=utf8", "oe=utf8&q=puppies"},
-	{Values{"q": {"dogs", "&", "7"}}, "q=dogs&q=%26&q=7", "q=dogs&q=%26&q=7"},
+	{nil, ""},
+	{Values{"q": {"puppies"}, "oe": {"utf8"}}, "oe=utf8&q=puppies"},
+	{Values{"q": {"dogs", "&", "7"}}, "q=dogs&q=%26&q=7"},
+	{Values{
+		"a": {"a1", "a2", "a3"},
+		"b": {"b1", "b2", "b3"},
+		"c": {"c1", "c2", "c3"},
+	}, "a=a1&a=a2&a=a3&b=b1&b=b2&b=b3&c=c1&c=c2&c=c3"},
 }
 
 func TestEncodeQuery(t *testing.T) {
 	for _, tt := range encodeQueryTests {
-		if q := tt.m.Encode(); q != tt.expected && q != tt.expected1 {
+		if q := tt.m.Encode(); q != tt.expected {
 			t.Errorf(`EncodeQuery(%+v) = %q, want %q`, tt.m, q, tt.expected)
 		}
 	}
@@ -773,5 +778,15 @@ func TestRequestURI(t *testing.T) {
 		if s != tt.out {
 			t.Errorf("%#v.RequestURI() == %q (expected %q)", tt.url, s, tt.out)
 		}
+	}
+}
+
+func TestParseFailure(t *testing.T) {
+	// Test that the first parse error is returned.
+	const url = "%gh&%ij"
+	_, err := ParseQuery(url)
+	errStr := fmt.Sprint(err)
+	if !strings.Contains(errStr, "%gh") {
+		t.Errorf(`ParseQuery(%q) returned error %q, want something containing %q"`, url, errStr, "%gh")
 	}
 }

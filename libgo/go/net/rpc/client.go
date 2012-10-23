@@ -88,10 +88,13 @@ func (client *Client) send(call *Call) {
 	err := client.codec.WriteRequest(&client.request, call.Args)
 	if err != nil {
 		client.mutex.Lock()
+		call = client.pending[seq]
 		delete(client.pending, seq)
 		client.mutex.Unlock()
-		call.Error = err
-		call.done()
+		if call != nil {
+			call.Error = err
+			call.done()
+		}
 	}
 }
 
@@ -113,12 +116,18 @@ func (client *Client) input() {
 		delete(client.pending, seq)
 		client.mutex.Unlock()
 
-		if response.Error == "" {
-			err = client.codec.ReadResponseBody(call.Reply)
+		switch {
+		case call == nil:
+			// We've got no pending call. That usually means that
+			// WriteRequest partially failed, and call was already
+			// removed; response is a server telling us about an
+			// error reading request body. We should still attempt
+			// to read error body, but there's no one to give it to.
+			err = client.codec.ReadResponseBody(nil)
 			if err != nil {
-				call.Error = errors.New("reading body " + err.Error())
+				err = errors.New("reading error body: " + err.Error())
 			}
-		} else {
+		case response.Error != "":
 			// We've got an error response. Give this to the request;
 			// any subsequent requests will get the ReadResponseBody
 			// error if there is one.
@@ -127,8 +136,14 @@ func (client *Client) input() {
 			if err != nil {
 				err = errors.New("reading error body: " + err.Error())
 			}
+			call.done()
+		default:
+			err = client.codec.ReadResponseBody(call.Reply)
+			if err != nil {
+				call.Error = errors.New("reading body " + err.Error())
+			}
+			call.done()
 		}
-		call.done()
 	}
 	// Terminate pending calls.
 	client.sending.Lock()

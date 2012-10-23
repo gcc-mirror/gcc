@@ -277,7 +277,10 @@ func Gettimeofday(tv *Timeval) (err error) {
 //sys	Pause() (err error)
 //pause() int
 
-//sys	Read(fd int, p []byte) (n int, err error)
+//sys	read(fd int, p []byte) (n int, err error)
+//read(fd int, buf *byte, count Size_t) Ssize_t
+
+//sys	readlen(fd int, p *byte, np int) (n int, err error)
 //read(fd int, buf *byte, count Size_t) Ssize_t
 
 //sys	Readlink(path string, buf []byte) (n int, err error)
@@ -344,7 +347,10 @@ func Settimeofday(tv *Timeval) (err error) {
 //sys	Utime(path string, buf *Utimbuf) (err error)
 //utime(path *byte, buf *Utimbuf) int
 
-//sys	Write(fd int, p []byte) (n int, err error)
+//sys	write(fd int, p []byte) (n int, err error)
+//write(fd int, buf *byte, count Size_t) Ssize_t
+
+//sys	writelen(fd int, p *byte, np int) (n int, err error)
 //write(fd int, buf *byte, count Size_t) Ssize_t
 
 //sys	munmap(addr uintptr, length uintptr) (err error)

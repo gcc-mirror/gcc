@@ -6,7 +6,9 @@ package http
 
 import (
 	"bytes"
+	"runtime"
 	"testing"
+	"time"
 )
 
 var headerWriteTests = []struct {
@@ -67,6 +69,24 @@ var headerWriteTests = []struct {
 		nil,
 		"Blank: \r\nDouble-Blank: \r\nDouble-Blank: \r\n",
 	},
+	// Tests header sorting when over the insertion sort threshold side:
+	{
+		Header{
+			"k1": {"1a", "1b"},
+			"k2": {"2a", "2b"},
+			"k3": {"3a", "3b"},
+			"k4": {"4a", "4b"},
+			"k5": {"5a", "5b"},
+			"k6": {"6a", "6b"},
+			"k7": {"7a", "7b"},
+			"k8": {"8a", "8b"},
+			"k9": {"9a", "9b"},
+		},
+		map[string]bool{"k5": true},
+		"k1: 1a\r\nk1: 1b\r\nk2: 2a\r\nk2: 2b\r\nk3: 3a\r\nk3: 3b\r\n" +
+			"k4: 4a\r\nk4: 4b\r\nk6: 6a\r\nk6: 6b\r\n" +
+			"k7: 7a\r\nk7: 7b\r\nk8: 8a\r\nk8: 8b\r\nk9: 9a\r\nk9: 9b\r\n",
+	},
 }
 
 func TestHeaderWrite(t *testing.T) {
@@ -77,5 +97,115 @@ func TestHeaderWrite(t *testing.T) {
 			t.Errorf("#%d:\n got: %q\nwant: %q", i, buf.String(), test.expected)
 		}
 		buf.Reset()
+	}
+}
+
+var parseTimeTests = []struct {
+	h   Header
+	err bool
+}{
+	{Header{"Date": {""}}, true},
+	{Header{"Date": {"invalid"}}, true},
+	{Header{"Date": {"1994-11-06T08:49:37Z00:00"}}, true},
+	{Header{"Date": {"Sun, 06 Nov 1994 08:49:37 GMT"}}, false},
+	{Header{"Date": {"Sunday, 06-Nov-94 08:49:37 GMT"}}, false},
+	{Header{"Date": {"Sun Nov  6 08:49:37 1994"}}, false},
+}
+
+func TestParseTime(t *testing.T) {
+	expect := time.Date(1994, 11, 6, 8, 49, 37, 0, time.UTC)
+	for i, test := range parseTimeTests {
+		d, err := ParseTime(test.h.Get("Date"))
+		if err != nil {
+			if !test.err {
+				t.Errorf("#%d:\n got err: %v", i, err)
+			}
+			continue
+		}
+		if test.err {
+			t.Errorf("#%d:\n  should err", i)
+			continue
+		}
+		if !expect.Equal(d) {
+			t.Errorf("#%d:\n got: %v\nwant: %v", i, d, expect)
+		}
+	}
+}
+
+type hasTokenTest struct {
+	header string
+	token  string
+	want   bool
+}
+
+var hasTokenTests = []hasTokenTest{
+	{"", "", false},
+	{"", "foo", false},
+	{"foo", "foo", true},
+	{"foo ", "foo", true},
+	{" foo", "foo", true},
+	{" foo ", "foo", true},
+	{"foo,bar", "foo", true},
+	{"bar,foo", "foo", true},
+	{"bar, foo", "foo", true},
+	{"bar,foo, baz", "foo", true},
+	{"bar, foo,baz", "foo", true},
+	{"bar,foo, baz", "foo", true},
+	{"bar, foo, baz", "foo", true},
+	{"FOO", "foo", true},
+	{"FOO ", "foo", true},
+	{" FOO", "foo", true},
+	{" FOO ", "foo", true},
+	{"FOO,BAR", "foo", true},
+	{"BAR,FOO", "foo", true},
+	{"BAR, FOO", "foo", true},
+	{"BAR,FOO, baz", "foo", true},
+	{"BAR, FOO,BAZ", "foo", true},
+	{"BAR,FOO, BAZ", "foo", true},
+	{"BAR, FOO, BAZ", "foo", true},
+	{"foobar", "foo", false},
+	{"barfoo ", "foo", false},
+}
+
+func TestHasToken(t *testing.T) {
+	for _, tt := range hasTokenTests {
+		if hasToken(tt.header, tt.token) != tt.want {
+			t.Errorf("hasToken(%q, %q) = %v; want %v", tt.header, tt.token, !tt.want, tt.want)
+		}
+	}
+}
+
+func BenchmarkHeaderWriteSubset(b *testing.B) {
+	doHeaderWriteSubset(b.N, b)
+}
+
+func TestHeaderWriteSubsetMallocs(t *testing.T) {
+	doHeaderWriteSubset(100, t)
+}
+
+type errorfer interface {
+	Errorf(string, ...interface{})
+}
+
+func doHeaderWriteSubset(n int, t errorfer) {
+	h := Header(map[string][]string{
+		"Content-Length": {"123"},
+		"Content-Type":   {"text/plain"},
+		"Date":           {"some date at some time Z"},
+		"Server":         {"Go http package"},
+	})
+	var buf bytes.Buffer
+	var m0 runtime.MemStats
+	runtime.ReadMemStats(&m0)
+	for i := 0; i < n; i++ {
+		buf.Reset()
+		h.WriteSubset(&buf, nil)
+	}
+	var m1 runtime.MemStats
+	runtime.ReadMemStats(&m1)
+	if mallocs := m1.Mallocs - m0.Mallocs; n >= 100 && mallocs >= uint64(n) {
+		// TODO(bradfitz,rsc): once we can sort with allocating,
+		// make this an error.  See http://golang.org/issue/3761
+		// t.Errorf("did %d mallocs (>= %d iterations); should have avoided mallocs", mallocs, n)
 	}
 }

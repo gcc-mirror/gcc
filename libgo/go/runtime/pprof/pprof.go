@@ -36,6 +36,7 @@ import (
 //	goroutine    - stack traces of all current goroutines
 //	heap         - a sampling of all heap allocations
 //	threadcreate - stack traces that led to the creation of new OS threads
+//	block        - stack traces that led to blocking on synchronization primitives
 //
 // These predefine profiles maintain themselves and panic on an explicit
 // Add or Remove method call.
@@ -76,6 +77,12 @@ var heapProfile = &Profile{
 	write: writeHeap,
 }
 
+var blockProfile = &Profile{
+	name:  "block",
+	count: countBlock,
+	write: writeBlock,
+}
+
 func lockProfiles() {
 	profiles.mu.Lock()
 	if profiles.m == nil {
@@ -84,6 +91,7 @@ func lockProfiles() {
 			"goroutine":    goroutineProfile,
 			"threadcreate": threadcreateProfile,
 			"heap":         heapProfile,
+			"block":        blockProfile,
 		}
 	}
 }
@@ -352,26 +360,26 @@ func WriteHeapProfile(w io.Writer) error {
 
 // countHeap returns the number of records in the heap profile.
 func countHeap() int {
-	n, _ := runtime.MemProfile(nil, false)
+	n, _ := runtime.MemProfile(nil, true)
 	return n
 }
 
 // writeHeap writes the current runtime heap profile to w.
 func writeHeap(w io.Writer, debug int) error {
-	// Find out how many records there are (MemProfile(nil, false)),
+	// Find out how many records there are (MemProfile(nil, true)),
 	// allocate that many records, and get the data.
 	// There's a race—more records might be added between
 	// the two calls—so allocate a few extra records for safety
 	// and also try again if we're very unlucky.
 	// The loop should only execute one iteration in the common case.
 	var p []runtime.MemProfileRecord
-	n, ok := runtime.MemProfile(nil, false)
+	n, ok := runtime.MemProfile(nil, true)
 	for {
 		// Allocate room for a slightly bigger profile,
 		// in case a few more entries have been added
 		// since the call to MemProfile.
 		p = make([]runtime.MemProfileRecord, n+50)
-		n, ok = runtime.MemProfile(p, false)
+		n, ok = runtime.MemProfile(p, true)
 		if ok {
 			p = p[0:n]
 			break
@@ -431,11 +439,14 @@ func writeHeap(w io.Writer, debug int) error {
 		fmt.Fprintf(w, "# Sys = %d\n", s.Sys)
 		fmt.Fprintf(w, "# Lookups = %d\n", s.Lookups)
 		fmt.Fprintf(w, "# Mallocs = %d\n", s.Mallocs)
+		fmt.Fprintf(w, "# Frees = %d\n", s.Frees)
 
 		fmt.Fprintf(w, "# HeapAlloc = %d\n", s.HeapAlloc)
 		fmt.Fprintf(w, "# HeapSys = %d\n", s.HeapSys)
 		fmt.Fprintf(w, "# HeapIdle = %d\n", s.HeapIdle)
 		fmt.Fprintf(w, "# HeapInuse = %d\n", s.HeapInuse)
+		fmt.Fprintf(w, "# HeapReleased = %d\n", s.HeapReleased)
+		fmt.Fprintf(w, "# HeapObjects = %d\n", s.HeapObjects)
 
 		fmt.Fprintf(w, "# Stack = %d / %d\n", s.StackInuse, s.StackSys)
 		fmt.Fprintf(w, "# MSpan = %d / %d\n", s.MSpanInuse, s.MSpanSys)
@@ -597,3 +608,60 @@ func StopCPUProfile() {
 	runtime.SetCPUProfileRate(0)
 	<-cpu.done
 }
+
+type byCycles []runtime.BlockProfileRecord
+
+func (x byCycles) Len() int           { return len(x) }
+func (x byCycles) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }
+func (x byCycles) Less(i, j int) bool { return x[i].Cycles > x[j].Cycles }
+
+// countBlock returns the number of records in the blocking profile.
+func countBlock() int {
+	n, _ := runtime.BlockProfile(nil)
+	return n
+}
+
+// writeBlock writes the current blocking profile to w.
+func writeBlock(w io.Writer, debug int) error {
+	var p []runtime.BlockProfileRecord
+	n, ok := runtime.BlockProfile(nil)
+	for {
+		p = make([]runtime.BlockProfileRecord, n+50)
+		n, ok = runtime.BlockProfile(p)
+		if ok {
+			p = p[:n]
+			break
+		}
+	}
+
+	sort.Sort(byCycles(p))
+
+	b := bufio.NewWriter(w)
+	var tw *tabwriter.Writer
+	w = b
+	if debug > 0 {
+		tw = tabwriter.NewWriter(w, 1, 8, 1, '\t', 0)
+		w = tw
+	}
+
+	fmt.Fprintf(w, "--- contention:\n")
+	fmt.Fprintf(w, "cycles/second=%v\n", runtime_cyclesPerSecond())
+	for i := range p {
+		r := &p[i]
+		fmt.Fprintf(w, "%v %v @", r.Cycles, r.Count)
+		for _, pc := range r.Stack() {
+			fmt.Fprintf(w, " %#x", pc)
+		}
+		fmt.Fprint(w, "\n")
+		if debug > 0 {
+			printStackRecord(w, r.Stack(), false)
+		}
+	}
+
+	if tw != nil {
+		tw.Flush()
+	}
+	return b.Flush()
+}
+
+func runtime_cyclesPerSecond() int64

@@ -5,6 +5,7 @@
 package gob
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 )
@@ -158,4 +159,64 @@ func TestRegistration(t *testing.T) {
 	type T struct{ a int }
 	Register(new(T))
 	Register(new(T))
+}
+
+type N1 struct{}
+type N2 struct{}
+
+// See comment in type.go/Register.
+func TestRegistrationNaming(t *testing.T) {
+	testCases := []struct {
+		t    interface{}
+		name string
+	}{
+		{&N1{}, "*gob.N1"},
+		{N2{}, "encoding/gob.N2"},
+	}
+
+	for _, tc := range testCases {
+		Register(tc.t)
+
+		tct := reflect.TypeOf(tc.t)
+		registerLock.RLock()
+		ct := nameToConcreteType[tc.name]
+		registerLock.RUnlock()
+		if ct != tct {
+			t.Errorf("nameToConcreteType[%q] = %v, want %v", tc.name, ct, tct)
+		}
+		// concreteTypeToName is keyed off the base type.
+		if tct.Kind() == reflect.Ptr {
+			tct = tct.Elem()
+		}
+		if n := concreteTypeToName[tct]; n != tc.name {
+			t.Errorf("concreteTypeToName[%v] got %v, want %v", tct, n, tc.name)
+		}
+	}
+}
+
+func TestStressParallel(t *testing.T) {
+	type T2 struct{ A int }
+	c := make(chan bool)
+	const N = 10
+	for i := 0; i < N; i++ {
+		go func() {
+			p := new(T2)
+			Register(p)
+			b := new(bytes.Buffer)
+			enc := NewEncoder(b)
+			err := enc.Encode(p)
+			if err != nil {
+				t.Error("encoder fail:", err)
+			}
+			dec := NewDecoder(b)
+			err = dec.Decode(p)
+			if err != nil {
+				t.Error("decoder fail:", err)
+			}
+			c <- true
+		}()
+	}
+	for i := 0; i < N; i++ {
+		<-c
+	}
 }

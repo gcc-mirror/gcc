@@ -27,11 +27,24 @@ RecordSpan(void *vh, byte *p)
 {
 	MHeap *h;
 	MSpan *s;
+	MSpan **all;
+	uint32 cap;
 
 	h = vh;
 	s = (MSpan*)p;
-	s->allnext = h->allspans;
-	h->allspans = s;
+	if(h->nspan >= h->nspancap) {
+		cap = 64*1024/sizeof(all[0]);
+		if(cap < h->nspancap*3/2)
+			cap = h->nspancap*3/2;
+		all = (MSpan**)runtime_SysAlloc(cap*sizeof(all[0]));
+		if(h->allspans) {
+			runtime_memmove(all, h->allspans, h->nspancap*sizeof(all[0]));
+			runtime_SysFree(h->allspans, h->nspancap*sizeof(all[0]));
+		}
+		h->allspans = all;
+		h->nspancap = cap;
+	}
+	h->allspans[h->nspan++] = s;
 }
 
 // Initialize the heap; fetch memory using alloc.
@@ -53,12 +66,12 @@ runtime_MHeap_Init(MHeap *h, void *(*alloc)(uintptr))
 // Allocate a new span of npage pages from the heap
 // and record its size class in the HeapMap and HeapMapCache.
 MSpan*
-runtime_MHeap_Alloc(MHeap *h, uintptr npage, int32 sizeclass, int32 acct)
+runtime_MHeap_Alloc(MHeap *h, uintptr npage, int32 sizeclass, int32 acct, int32 zeroed)
 {
 	MSpan *s;
 
 	runtime_lock(h);
-	runtime_purgecachedstats(runtime_m());
+	runtime_purgecachedstats(runtime_m()->mcache);
 	s = MHeap_AllocLocked(h, npage, sizeclass);
 	if(s != nil) {
 		mstats.heap_inuse += npage<<PageShift;
@@ -68,6 +81,8 @@ runtime_MHeap_Alloc(MHeap *h, uintptr npage, int32 sizeclass, int32 acct)
 		}
 	}
 	runtime_unlock(h);
+	if(s != nil && *(uintptr*)(s->start<<PageShift) != 0 && zeroed)
+		runtime_memclr((byte*)(s->start<<PageShift), s->npages<<PageShift);
 	return s;
 }
 
@@ -125,12 +140,11 @@ HaveSpan:
 		MHeap_FreeLocked(h, t);
 	}
 
-	if(*(uintptr*)(s->start<<PageShift) != 0)
-		runtime_memclr((byte*)(s->start<<PageShift), s->npages<<PageShift);
-
 	// Record span info, because gc needs to be
 	// able to map interior pointer to containing span.
 	s->sizeclass = sizeclass;
+	s->elemsize = (sizeclass==0 ? s->npages<<PageShift : (uintptr)runtime_class_to_size[sizeclass]);
+	s->types.compression = MTypes_Empty;
 	p = s->start;
 	if(sizeof(void*) == 8)
 		p -= ((uintptr)h->arena_start>>PageShift);
@@ -259,7 +273,7 @@ void
 runtime_MHeap_Free(MHeap *h, MSpan *s, int32 acct)
 {
 	runtime_lock(h);
-	runtime_purgecachedstats(runtime_m());
+	runtime_purgecachedstats(runtime_m()->mcache);
 	mstats.heap_inuse -= s->npages<<PageShift;
 	if(acct) {
 		mstats.heap_alloc -= s->npages<<PageShift;
@@ -275,6 +289,10 @@ MHeap_FreeLocked(MHeap *h, MSpan *s)
 	uintptr *sp, *tp;
 	MSpan *t;
 	PageID p;
+
+	if(s->types.sysalloc)
+		runtime_settype_sysfree(s);
+	s->types.compression = MTypes_Empty;
 
 	if(s->state != MSpanInUse || s->ref != 0) {
 		runtime_printf("MHeap_FreeLocked - span %p ptr %p state %d ref %d\n", s, s->start<<PageShift, s->state, s->ref);
@@ -416,9 +434,11 @@ runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages)
 	span->freelist = nil;
 	span->ref = 0;
 	span->sizeclass = 0;
+	span->elemsize = 0;
 	span->state = 0;
 	span->unusedsince = 0;
 	span->npreleased = 0;
+	span->types.compression = MTypes_Empty;
 }
 
 // Initialize an empty doubly-linked list.

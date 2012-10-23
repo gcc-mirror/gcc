@@ -35,11 +35,7 @@ type component struct {
 	tq uint8 // Quantization table destination selector.
 }
 
-type block [blockSize]int
-
 const (
-	blockSize = 64 // A DCT block is 8x8.
-
 	dcTable = 0
 	acTable = 1
 	maxTc   = 1
@@ -51,7 +47,7 @@ const (
 	// A color JPEG image has Y, Cb and Cr components.
 	nColorComponent = 3
 
-	// We only support 4:4:4, 4:2:2 and 4:2:0 downsampling, and therefore the
+	// We only support 4:4:4, 4:4:0, 4:2:2 and 4:2:0 downsampling, and therefore the
 	// number of luma samples per chroma sample is at most 2 in the horizontal
 	// and 2 in the vertical direction.
 	maxH = 2
@@ -96,6 +92,7 @@ type Reader interface {
 
 type decoder struct {
 	r             Reader
+	b             bits
 	width, height int
 	img1          *image.Gray
 	img3          *image.YCbCr
@@ -104,7 +101,6 @@ type decoder struct {
 	comp          [nColorComponent]component
 	huff          [maxTc + 1][maxTh + 1]huffman
 	quant         [maxTq + 1]block // Quantization tables, in zig-zag order.
-	b             bits
 	tmp           [1024]byte
 }
 
@@ -156,12 +152,12 @@ func (d *decoder) processSOF(n int) error {
 		if d.nComp == nGrayComponent {
 			continue
 		}
-		// For color images, we only support 4:4:4, 4:2:2 or 4:2:0 chroma
+		// For color images, we only support 4:4:4, 4:4:0, 4:2:2 or 4:2:0 chroma
 		// downsampling ratios. This implies that the (h, v) values for the Y
-		// component are either (1, 1), (2, 1) or (2, 2), and the (h, v)
+		// component are either (1, 1), (1, 2), (2, 1) or (2, 2), and the (h, v)
 		// values for the Cr and Cb components must be (1, 1).
 		if i == 0 {
-			if hv != 0x11 && hv != 0x21 && hv != 0x22 {
+			if hv != 0x11 && hv != 0x21 && hv != 0x22 && hv != 0x12 {
 				return UnsupportedError("luma downsample ratio")
 			}
 		} else if hv != 0x11 {
@@ -205,12 +201,14 @@ func (d *decoder) makeImg(h0, v0, mxx, myy int) {
 		return
 	}
 	var subsampleRatio image.YCbCrSubsampleRatio
-	switch h0 * v0 {
-	case 1:
+	switch {
+	case h0 == 1 && v0 == 1:
 		subsampleRatio = image.YCbCrSubsampleRatio444
-	case 2:
+	case h0 == 1 && v0 == 2:
+		subsampleRatio = image.YCbCrSubsampleRatio440
+	case h0 == 2 && v0 == 1:
 		subsampleRatio = image.YCbCrSubsampleRatio422
-	case 4:
+	case h0 == 2 && v0 == 2:
 		subsampleRatio = image.YCbCrSubsampleRatio420
 	default:
 		panic("unreachable")
@@ -311,18 +309,41 @@ func (d *decoder) processSOS(n int) error {
 					}
 
 					// Perform the inverse DCT and store the MCU component to the image.
+					idct(&b)
+					dst, stride := []byte(nil), 0
 					if d.nComp == nGrayComponent {
-						idct(d.img1.Pix[8*(my*d.img1.Stride+mx):], d.img1.Stride, &b)
+						dst, stride = d.img1.Pix[8*(my*d.img1.Stride+mx):], d.img1.Stride
 					} else {
 						switch i {
 						case 0:
-							mx0 := h0*mx + (j % 2)
-							my0 := v0*my + (j / 2)
-							idct(d.img3.Y[8*(my0*d.img3.YStride+mx0):], d.img3.YStride, &b)
+							mx0, my0 := h0*mx, v0*my
+							if h0 == 1 {
+								my0 += j
+							} else {
+								mx0 += j % 2
+								my0 += j / 2
+							}
+							dst, stride = d.img3.Y[8*(my0*d.img3.YStride+mx0):], d.img3.YStride
 						case 1:
-							idct(d.img3.Cb[8*(my*d.img3.CStride+mx):], d.img3.CStride, &b)
+							dst, stride = d.img3.Cb[8*(my*d.img3.CStride+mx):], d.img3.CStride
 						case 2:
-							idct(d.img3.Cr[8*(my*d.img3.CStride+mx):], d.img3.CStride, &b)
+							dst, stride = d.img3.Cr[8*(my*d.img3.CStride+mx):], d.img3.CStride
+						}
+					}
+					// Level shift by +128, clip to [0, 255], and write to dst.
+					for y := 0; y < 8; y++ {
+						y8 := y * 8
+						yStride := y * stride
+						for x := 0; x < 8; x++ {
+							c := b[y8+x]
+							if c < -128 {
+								c = 0
+							} else if c > 127 {
+								c = 255
+							} else {
+								c += 128
+							}
+							dst[yStride+x] = uint8(c)
 						}
 					}
 				} // for j

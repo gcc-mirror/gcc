@@ -737,6 +737,83 @@ func TestPtrToMapOfMap(t *testing.T) {
 	}
 }
 
+// A top-level nil pointer generates a panic with a helpful string-valued message.
+func TestTopLevelNilPointer(t *testing.T) {
+	errMsg := topLevelNilPanic(t)
+	if errMsg == "" {
+		t.Fatal("top-level nil pointer did not panic")
+	}
+	if !strings.Contains(errMsg, "nil pointer") {
+		t.Fatal("expected nil pointer error, got:", errMsg)
+	}
+}
+
+func topLevelNilPanic(t *testing.T) (panicErr string) {
+	defer func() {
+		e := recover()
+		if err, ok := e.(string); ok {
+			panicErr = err
+		}
+	}()
+	var ip *int
+	buf := new(bytes.Buffer)
+	if err := NewEncoder(buf).Encode(ip); err != nil {
+		t.Fatal("error in encode:", err)
+	}
+	return
+}
+
+func TestNilPointerInsideInterface(t *testing.T) {
+	var ip *int
+	si := struct {
+		I interface{}
+	}{
+		I: ip,
+	}
+	buf := new(bytes.Buffer)
+	err := NewEncoder(buf).Encode(si)
+	if err == nil {
+		t.Fatal("expected error, got none")
+	}
+	errMsg := err.Error()
+	if !strings.Contains(errMsg, "nil pointer") || !strings.Contains(errMsg, "interface") {
+		t.Fatal("expected error about nil pointer and interface, got:", errMsg)
+	}
+}
+
+type Bug4Public struct {
+	Name   string
+	Secret Bug4Secret
+}
+
+type Bug4Secret struct {
+	a int // error: no exported fields.
+}
+
+// Test that a failed compilation doesn't leave around an executable encoder.
+// Issue 3273.
+func TestMutipleEncodingsOfBadType(t *testing.T) {
+	x := Bug4Public{
+		Name:   "name",
+		Secret: Bug4Secret{1},
+	}
+	buf := new(bytes.Buffer)
+	enc := NewEncoder(buf)
+	err := enc.Encode(x)
+	if err == nil {
+		t.Fatal("first encoding: expected error")
+	}
+	buf.Reset()
+	enc = NewEncoder(buf)
+	err = enc.Encode(x)
+	if err == nil {
+		t.Fatal("second encoding: expected error")
+	}
+	if !strings.Contains(err.Error(), "no exported fields") {
+		t.Errorf("expected error about no exported fields; got %v", err)
+	}
+}
+
 // There was an error check comparing the length of the input with the
 // length of the slice being decoded. It was wrong because the next
 // thing in the input might be a type definition, which would lead to

@@ -31,6 +31,7 @@ type Conn struct {
 	haveVers          bool       // version has been negotiated
 	config            *Config    // configuration passed to constructor
 	handshakeComplete bool
+	didResume         bool // whether this connection was a session resumption
 	cipherSuite       uint16
 	ocspResponse      []byte // stapled OCSP response
 	peerCertificates  []*x509.Certificate
@@ -44,8 +45,7 @@ type Conn struct {
 	clientProtocolFallback bool
 
 	// first permanent error
-	errMutex sync.Mutex
-	err      error
+	connErr
 
 	// input/output
 	in, out  halfConn     // in.Mutex < out.Mutex
@@ -56,21 +56,25 @@ type Conn struct {
 	tmp [16]byte
 }
 
-func (c *Conn) setError(err error) error {
-	c.errMutex.Lock()
-	defer c.errMutex.Unlock()
+type connErr struct {
+	mu    sync.Mutex
+	value error
+}
 
-	if c.err == nil {
-		c.err = err
+func (e *connErr) setError(err error) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	if e.value == nil {
+		e.value = err
 	}
 	return err
 }
 
-func (c *Conn) error() error {
-	c.errMutex.Lock()
-	defer c.errMutex.Unlock()
-
-	return c.err
+func (e *connErr) error() error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.value
 }
 
 // Access to net.Conn methods.
@@ -660,8 +664,7 @@ func (c *Conn) writeRecord(typ recordType, data []byte) (n int, err error) {
 			c.tmp[0] = alertLevelError
 			c.tmp[1] = byte(err.(alert))
 			c.writeRecord(recordTypeAlert, c.tmp[0:2])
-			c.err = &net.OpError{Op: "local error", Err: err}
-			return n, c.err
+			return n, c.setError(&net.OpError{Op: "local error", Err: err})
 		}
 	}
 	return
@@ -672,8 +675,8 @@ func (c *Conn) writeRecord(typ recordType, data []byte) (n int, err error) {
 // c.in.Mutex < L; c.out.Mutex < L.
 func (c *Conn) readHandshake() (interface{}, error) {
 	for c.hand.Len() < 4 {
-		if c.err != nil {
-			return nil, c.err
+		if err := c.error(); err != nil {
+			return nil, err
 		}
 		if err := c.readRecord(recordTypeHandshake); err != nil {
 			return nil, err
@@ -684,11 +687,11 @@ func (c *Conn) readHandshake() (interface{}, error) {
 	n := int(data[1])<<16 | int(data[2])<<8 | int(data[3])
 	if n > maxHandshake {
 		c.sendAlert(alertInternalError)
-		return nil, c.err
+		return nil, c.error()
 	}
 	for c.hand.Len() < 4+n {
-		if c.err != nil {
-			return nil, c.err
+		if err := c.error(); err != nil {
+			return nil, err
 		}
 		if err := c.readRecord(recordTypeHandshake); err != nil {
 			return nil, err
@@ -738,12 +741,12 @@ func (c *Conn) readHandshake() (interface{}, error) {
 
 // Write writes data to the connection.
 func (c *Conn) Write(b []byte) (int, error) {
-	if c.err != nil {
-		return 0, c.err
+	if err := c.error(); err != nil {
+		return 0, err
 	}
 
-	if c.err = c.Handshake(); c.err != nil {
-		return 0, c.err
+	if err := c.Handshake(); err != nil {
+		return 0, c.setError(err)
 	}
 
 	c.out.Lock()
@@ -753,9 +756,8 @@ func (c *Conn) Write(b []byte) (int, error) {
 		return 0, alertInternalError
 	}
 
-	var n int
-	n, c.err = c.writeRecord(recordTypeApplicationData, b)
-	return n, c.err
+	n, err := c.writeRecord(recordTypeApplicationData, b)
+	return n, c.setError(err)
 }
 
 // Read can be made to time out and return a net.Error with Timeout() == true
@@ -768,14 +770,14 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 	c.in.Lock()
 	defer c.in.Unlock()
 
-	for c.input == nil && c.err == nil {
+	for c.input == nil && c.error() == nil {
 		if err := c.readRecord(recordTypeApplicationData); err != nil {
 			// Soft error, like EAGAIN
 			return 0, err
 		}
 	}
-	if c.err != nil {
-		return 0, c.err
+	if err := c.error(); err != nil {
+		return 0, err
 	}
 	n, err = c.input.Read(b)
 	if c.input.off >= len(c.input.data) {
@@ -829,6 +831,7 @@ func (c *Conn) ConnectionState() ConnectionState {
 	state.HandshakeComplete = c.handshakeComplete
 	if c.handshakeComplete {
 		state.NegotiatedProtocol = c.clientProtocol
+		state.DidResume = c.didResume
 		state.NegotiatedProtocolIsMutual = !c.clientProtocolFallback
 		state.CipherSuite = c.cipherSuite
 		state.PeerCertificates = c.peerCertificates

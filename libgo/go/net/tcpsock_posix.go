@@ -66,25 +66,13 @@ func (a *TCPAddr) toAddr() sockaddr {
 // TCPConn is an implementation of the Conn interface
 // for TCP network connections.
 type TCPConn struct {
-	fd *netFD
+	conn
 }
 
 func newTCPConn(fd *netFD) *TCPConn {
-	c := &TCPConn{fd}
+	c := &TCPConn{conn{fd}}
 	c.SetNoDelay(true)
 	return c
-}
-
-func (c *TCPConn) ok() bool { return c != nil && c.fd != nil }
-
-// Implementation of the Conn interface - see Conn for documentation.
-
-// Read implements the Conn Read method.
-func (c *TCPConn) Read(b []byte) (n int, err error) {
-	if !c.ok() {
-		return 0, syscall.EINVAL
-	}
-	return c.fd.Read(b)
 }
 
 // ReadFrom implements the io.ReaderFrom ReadFrom method.
@@ -93,22 +81,6 @@ func (c *TCPConn) ReadFrom(r io.Reader) (int64, error) {
 		return n, err
 	}
 	return genericReadFrom(c, r)
-}
-
-// Write implements the Conn Write method.
-func (c *TCPConn) Write(b []byte) (n int, err error) {
-	if !c.ok() {
-		return 0, syscall.EINVAL
-	}
-	return c.fd.Write(b)
-}
-
-// Close closes the TCP connection.
-func (c *TCPConn) Close() error {
-	if !c.ok() {
-		return syscall.EINVAL
-	}
-	return c.fd.Close()
 }
 
 // CloseRead shuts down the reading side of the TCP connection.
@@ -127,64 +99,6 @@ func (c *TCPConn) CloseWrite() error {
 		return syscall.EINVAL
 	}
 	return c.fd.CloseWrite()
-}
-
-// LocalAddr returns the local network address, a *TCPAddr.
-func (c *TCPConn) LocalAddr() Addr {
-	if !c.ok() {
-		return nil
-	}
-	return c.fd.laddr
-}
-
-// RemoteAddr returns the remote network address, a *TCPAddr.
-func (c *TCPConn) RemoteAddr() Addr {
-	if !c.ok() {
-		return nil
-	}
-	return c.fd.raddr
-}
-
-// SetDeadline implements the Conn SetDeadline method.
-func (c *TCPConn) SetDeadline(t time.Time) error {
-	if !c.ok() {
-		return syscall.EINVAL
-	}
-	return setDeadline(c.fd, t)
-}
-
-// SetReadDeadline implements the Conn SetReadDeadline method.
-func (c *TCPConn) SetReadDeadline(t time.Time) error {
-	if !c.ok() {
-		return syscall.EINVAL
-	}
-	return setReadDeadline(c.fd, t)
-}
-
-// SetWriteDeadline implements the Conn SetWriteDeadline method.
-func (c *TCPConn) SetWriteDeadline(t time.Time) error {
-	if !c.ok() {
-		return syscall.EINVAL
-	}
-	return setWriteDeadline(c.fd, t)
-}
-
-// SetReadBuffer sets the size of the operating system's
-// receive buffer associated with the connection.
-func (c *TCPConn) SetReadBuffer(bytes int) error {
-	if !c.ok() {
-		return syscall.EINVAL
-	}
-	return setReadBuffer(c.fd, bytes)
-}
-
-// SetWriteBuffer sets the size of the operating system's
-// transmit buffer associated with the connection.
-func (c *TCPConn) SetWriteBuffer(bytes int) error {
-	if !c.ok() {
-		return syscall.EINVAL
-	}
-	return setWriteBuffer(c.fd, bytes)
 }
 
 // SetLinger sets the behavior of Close() on a connection
@@ -225,11 +139,6 @@ func (c *TCPConn) SetNoDelay(noDelay bool) error {
 	return setNoDelay(c.fd, noDelay)
 }
 
-// File returns a copy of the underlying os.File, set to blocking mode.
-// It is the caller's responsibility to close f when finished.
-// Closing c does not affect f, and closing f does not affect c.
-func (c *TCPConn) File() (f *os.File, err error) { return c.fd.dup() }
-
 // DialTCP connects to the remote address raddr on the network net,
 // which must be "tcp", "tcp4", or "tcp6".  If laddr is not nil, it is used
 // as the local address for the connection.
@@ -257,8 +166,17 @@ func DialTCP(net string, laddr, raddr *TCPAddr) (*TCPConn, error) {
 	// use the result.  See also:
 	//	http://golang.org/issue/2690
 	//	http://stackoverflow.com/questions/4949858/
-	for i := 0; i < 2 && err == nil && laddr == nil && selfConnect(fd); i++ {
-		fd.Close()
+	//
+	// The opposite can also happen: if we ask the kernel to pick an appropriate
+	// originating local address, sometimes it picks one that is already in use.
+	// So if the error is EADDRNOTAVAIL, we have to try again too, just for
+	// a different reason.
+	//
+	// The kernel socket code is no doubt enjoying watching us squirm.
+	for i := 0; i < 2 && (laddr == nil || laddr.Port == 0) && (selfConnect(fd, err) || spuriousENOTAVAIL(err)); i++ {
+		if err == nil {
+			fd.Close()
+		}
 		fd, err = internetSocket(net, laddr.toAddr(), raddr.toAddr(), syscall.SOCK_STREAM, 0, "dial", sockaddrToTCP)
 	}
 
@@ -268,7 +186,12 @@ func DialTCP(net string, laddr, raddr *TCPAddr) (*TCPConn, error) {
 	return newTCPConn(fd), nil
 }
 
-func selfConnect(fd *netFD) bool {
+func selfConnect(fd *netFD, err error) bool {
+	// If the connect failed, we clearly didn't connect to ourselves.
+	if err != nil {
+		return false
+	}
+
 	// The socket constructor can return an fd with raddr nil under certain
 	// unknown conditions. The errors in the calls there to Getpeername
 	// are discarded, but we can't catch the problem there because those
@@ -283,6 +206,11 @@ func selfConnect(fd *netFD) bool {
 	l := fd.laddr.(*TCPAddr)
 	r := fd.raddr.(*TCPAddr)
 	return l.Port == r.Port && l.IP.Equal(r.IP)
+}
+
+func spuriousENOTAVAIL(err error) bool {
+	e, ok := err.(*OpError)
+	return ok && e.Err == syscall.EADDRNOTAVAIL
 }
 
 // TCPListener is a TCP network listener.

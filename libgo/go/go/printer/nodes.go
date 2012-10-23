@@ -203,7 +203,7 @@ func (p *printer) exprList(prev0 token.Pos, list []ast.Expr, depth int, mode exp
 			} else {
 				const r = 4 // threshold
 				ratio := float64(size) / float64(prevSize)
-				useFF = ratio <= 1/r || r <= ratio
+				useFF = ratio <= 1.0/r || r <= ratio
 			}
 		}
 
@@ -791,7 +791,14 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		if len(x.Args) > 1 {
 			depth++
 		}
-		p.expr1(x.Fun, token.HighestPrec, depth)
+		if _, ok := x.Fun.(*ast.FuncType); ok {
+			// conversions to literal function types require parentheses around the type
+			p.print(token.LPAREN)
+			p.expr1(x.Fun, token.HighestPrec, depth)
+			p.print(token.RPAREN)
+		} else {
+			p.expr1(x.Fun, token.HighestPrec, depth)
+		}
 		p.print(x.Lparen, token.LPAREN)
 		if x.Ellipsis.IsValid() {
 			p.exprList(x.Lparen, x.Args, depth, 0, x.Ellipsis)
@@ -853,9 +860,9 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 		case ast.SEND | ast.RECV:
 			p.print(token.CHAN)
 		case ast.RECV:
-			p.print(token.ARROW, token.CHAN)
+			p.print(token.ARROW, token.CHAN) // x.Arrow and x.Pos() are the same
 		case ast.SEND:
-			p.print(token.CHAN, token.ARROW)
+			p.print(token.CHAN, x.Arrow, token.ARROW)
 		}
 		p.print(blank)
 		p.expr(x.Value)
@@ -882,28 +889,32 @@ func (p *printer) expr(x ast.Expr) {
 // Print the statement list indented, but without a newline after the last statement.
 // Extra line breaks between statements in the source are respected but at most one
 // empty line is printed between statements.
-func (p *printer) stmtList(list []ast.Stmt, _indent int, nextIsRBrace bool) {
-	// TODO(gri): fix _indent code
-	if _indent > 0 {
+func (p *printer) stmtList(list []ast.Stmt, nindent int, nextIsRBrace bool) {
+	if nindent > 0 {
 		p.print(indent)
 	}
 	multiLine := false
-	for i, s := range list {
-		// _indent == 0 only for lists of switch/select case clauses;
-		// in those cases each clause is a new section
-		p.linebreak(p.lineFor(s.Pos()), 1, ignore, i == 0 || _indent == 0 || multiLine)
-		p.stmt(s, nextIsRBrace && i == len(list)-1)
-		multiLine = p.isMultiLine(s)
+	i := 0
+	for _, s := range list {
+		// ignore empty statements (was issue 3466)
+		if _, isEmpty := s.(*ast.EmptyStmt); !isEmpty {
+			// _indent == 0 only for lists of switch/select case clauses;
+			// in those cases each clause is a new section
+			p.linebreak(p.lineFor(s.Pos()), 1, ignore, i == 0 || nindent == 0 || multiLine)
+			p.stmt(s, nextIsRBrace && i == len(list)-1)
+			multiLine = p.isMultiLine(s)
+			i++
+		}
 	}
-	if _indent > 0 {
+	if nindent > 0 {
 		p.print(unindent)
 	}
 }
 
 // block prints an *ast.BlockStmt; it always spans at least two lines.
-func (p *printer) block(s *ast.BlockStmt, indent int) {
+func (p *printer) block(s *ast.BlockStmt, nindent int) {
 	p.print(s.Pos(), token.LBRACE)
-	p.stmtList(s.List, indent, true)
+	p.stmtList(s.List, nindent, true)
 	p.linebreak(p.lineFor(s.Rbrace), 1, ignore, true)
 	p.print(s.Rbrace, token.RBRACE)
 }
