@@ -840,6 +840,24 @@ default_branch_target_register_class (void)
   return NO_REGS;
 }
 
+extern bool
+default_lra_p (void)
+{
+  return false;
+}
+
+int
+default_register_priority (int hard_regno ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+extern bool
+default_different_addr_displacement_p (void)
+{
+  return false;
+}
+
 reg_class_t
 default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 			  reg_class_t reload_class_i ATTRIBUTE_UNUSED,

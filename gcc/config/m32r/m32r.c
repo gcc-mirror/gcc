@@ -1030,9 +1030,9 @@ gen_split_move_double (rtx operands[])
      subregs to make this code simpler.  It is safe to call
      alter_subreg any time after reload.  */
   if (GET_CODE (dest) == SUBREG)
-    alter_subreg (&dest);
+    alter_subreg (&dest, true);
   if (GET_CODE (src) == SUBREG)
-    alter_subreg (&src);
+    alter_subreg (&src, true);
 
   start_sequence ();
   if (REG_P (dest))

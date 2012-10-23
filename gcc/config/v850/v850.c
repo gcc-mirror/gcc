@@ -1301,11 +1301,11 @@ v850_reorg (void)
 	      if (GET_CODE (dest) == SUBREG
 		  && (GET_CODE (SUBREG_REG (dest)) == MEM
 		      || GET_CODE (SUBREG_REG (dest)) == REG))
-		alter_subreg (&dest);
+		alter_subreg (&dest, true);
 	      if (GET_CODE (src) == SUBREG
 		  && (GET_CODE (SUBREG_REG (src)) == MEM
 		      || GET_CODE (SUBREG_REG (src)) == REG))
-		alter_subreg (&src);
+		alter_subreg (&src, true);
 
 	      if (GET_CODE (dest) == MEM && GET_CODE (src) == MEM)
 		mem = NULL_RTX;
