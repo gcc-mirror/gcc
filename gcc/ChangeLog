@@ -1,3 +1,18 @@
+2012-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/mips/linux-common.h (STACK_CHECK_STATIC_BUILTIN): Define.
+	(STACK_CHECK_PROTECT): Likewise.
+	* config/mips/mips.h (MIPS_PROLOGUE_TEMP2_REGNUM): Likewise.
+	(MIPS_PROLOGUE_TEMP2): Likewise.
+	* config/mips/mips-protos.h (mips_output_probe_stack_range): Declare.
+	* config/mips/mips.c: Include common/common-target.h.
+	(mips_emit_probe_stack_range): New function.
+	(mips_output_probe_stack_range): Likewise.
+	(mips_expand_prologue): Invoke mips_emit_probe_stack_range if static
+	builtin stack checking is enabled.
+	* config/mips/mips.md (UNSPEC_PROBE_STACK_RANGE): New constant.
+	(probe_stack_range_<P:mode>): New insn.
+
 2012-10-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): Handle vectors.
