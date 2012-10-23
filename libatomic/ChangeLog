@@ -1,3 +1,9 @@
+2012-10-23  Sofiane Naci <sofiane.naci@arm.com>
+
+	Mark libatomic unsupported in AArch64.
+
+	* configure.tgt: Mark libatomic unsupported.
+
 2012-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620
