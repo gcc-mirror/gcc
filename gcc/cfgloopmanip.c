@@ -36,7 +36,7 @@ static bool rpe_enum_p (const_basic_block, const void *);
 static int find_path (edge, basic_block **);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
-static void fix_bb_placements (basic_block, bool *);
+static void fix_bb_placements (basic_block, bool *, bitmap);
 
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
@@ -159,11 +159,15 @@ fix_loop_placement (struct loop *loop)
    successors we consider edges coming out of the loops.
 
    If the changes may invalidate the information about irreducible regions,
-   IRRED_INVALIDATED is set to true.  */
+   IRRED_INVALIDATED is set to true.  
+
+   If LOOP_CLOSED_SSA_INVLIDATED is non-zero then all basic blocks with
+   changed loop_father are collected there. */
 
 static void
 fix_bb_placements (basic_block from,
-		   bool *irred_invalidated)
+		   bool *irred_invalidated,
+		   bitmap loop_closed_ssa_invalidated)
 {
   sbitmap in_queue;
   basic_block *queue, *qtop, *qbeg, *qend;
@@ -218,6 +222,8 @@ fix_bb_placements (basic_block from,
 	  /* Ordinary basic block.  */
 	  if (!fix_bb_placement (from))
 	    continue;
+	  if (loop_closed_ssa_invalidated)
+	    bitmap_set_bit (loop_closed_ssa_invalidated, from->index);
 	  target_loop = from->loop_father;
 	}
 
@@ -312,7 +318,7 @@ remove_path (edge e)
     {
       f = loop_outer (l);
       if (dominated_by_p (CDI_DOMINATORS, l->latch, e->dest))
-        unloop (l, &irred_invalidated);
+        unloop (l, &irred_invalidated, NULL);
     }
 
   /* Identify the path.  */
@@ -385,7 +391,7 @@ remove_path (edge e)
 
   /* Fix placements of basic blocks inside loops and the placement of
      loops in the loop tree.  */
-  fix_bb_placements (from, &irred_invalidated);
+  fix_bb_placements (from, &irred_invalidated, NULL);
   fix_loop_placements (from->loop_father, &irred_invalidated);
 
   if (irred_invalidated
@@ -892,10 +898,14 @@ loopify (edge latch_edge, edge header_edge,
    have no successor, which caller is expected to fix somehow.
 
    If this may cause the information about irreducible regions to become
-   invalid, IRRED_INVALIDATED is set to true.  */
+   invalid, IRRED_INVALIDATED is set to true.  
+
+   LOOP_CLOSED_SSA_INVALIDATED, if non-NULL, is a bitmap where we store
+   basic blocks that had non-trivial update on their loop_father.*/
 
 void
-unloop (struct loop *loop, bool *irred_invalidated)
+unloop (struct loop *loop, bool *irred_invalidated,
+	bitmap loop_closed_ssa_invalidated)
 {
   basic_block *body;
   struct loop *ploop;
@@ -937,7 +947,7 @@ unloop (struct loop *loop, bool *irred_invalidated)
   /* We do not pass IRRED_INVALIDATED to fix_bb_placements here, as even if
      there is an irreducible region inside the cancelled loop, the flags will
      be still correct.  */
-  fix_bb_placements (latch, &dummy);
+  fix_bb_placements (latch, &dummy, loop_closed_ssa_invalidated);
 }
 
 /* Fix placement of superloops of LOOP inside loop tree, i.e. ensure that
@@ -965,7 +975,7 @@ fix_loop_placements (struct loop *loop, bool *irred_invalidated)
 	 to the loop.  So call fix_bb_placements to fix up the placement
 	 of the preheader and (possibly) of its predecessors.  */
       fix_bb_placements (loop_preheader_edge (loop)->src,
-			 irred_invalidated);
+			 irred_invalidated, NULL);
       loop = outer;
     }
 }

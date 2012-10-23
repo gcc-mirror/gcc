@@ -1,3 +1,19 @@
+2012-10-23  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/54967
+	* cfgloopmanip.c (fix_bb_placements): Add loop_closed_ssa_invalidated;
+	track basic blocks that moved out of their loops.
+	(unloop): Likewise.
+	(remove_path): Update.
+	(fix_loop_placements): Update.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Add
+	loop_closed_ssa_invalidated parameter; pass it around.
+	(canonicalize_loop_induction_variables): Update loop closed
+	SSA form if needed.
+	(tree_unroll_loops_completely): Likewise; do irred update out of
+	the outer loop; verify that SSA form is closed.
+	* cfgloop.h (unrloop): Update.
+
 2012-10-23  Terry Guo  <terry.guo@arm.com>
 
 	PR target/55019

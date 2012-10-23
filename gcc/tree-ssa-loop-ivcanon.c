@@ -390,13 +390,16 @@ loop_edge_to_cancel (struct loop *loop)
    EXIT is the exit of the loop that should be eliminated.  
    IRRED_INVALIDATED is used to bookkeep if information about
    irreducible regions may become invalid as a result
-   of the transformation.  */
+   of the transformation.  
+   LOOP_CLOSED_SSA_INVALIDATED is used to bookkepp the case
+   when we need to go into loop closed SSA form.  */
 
 static bool
 try_unroll_loop_completely (struct loop *loop,
 			    edge exit, tree niter,
 			    enum unroll_level ul,
-			    bool *irred_invalidated)
+			    bool *irred_invalidated,
+			    bitmap loop_closed_ssa_invalidated)
 {
   unsigned HOST_WIDE_INT n_unroll, ninsns, max_unroll, unr_insns;
   gimple cond;
@@ -562,7 +565,7 @@ try_unroll_loop_completely (struct loop *loop,
       locus = latch_edge->goto_locus;
 
       /* Unloop destroys the latch edge.  */
-      unloop (loop, irred_invalidated);
+      unloop (loop, irred_invalidated, loop_closed_ssa_invalidated);
 
       /* Create new basic block for the latch edge destination and wire
 	 it in.  */
@@ -615,7 +618,8 @@ static bool
 canonicalize_loop_induction_variables (struct loop *loop,
 				       bool create_iv, enum unroll_level ul,
 				       bool try_eval,
-				       bool *irred_invalidated)
+				       bool *irred_invalidated,
+				       bitmap loop_closed_ssa_invalidated)
 {
   edge exit = NULL;
   tree niter;
@@ -663,7 +667,8 @@ canonicalize_loop_induction_variables (struct loop *loop,
 	       (int)max_loop_iterations_int (loop));
     }
 
-  if (try_unroll_loop_completely (loop, exit, niter, ul, irred_invalidated))
+  if (try_unroll_loop_completely (loop, exit, niter, ul, irred_invalidated,
+				  loop_closed_ssa_invalidated))
     return true;
 
   if (create_iv
@@ -683,13 +688,15 @@ canonicalize_induction_variables (void)
   struct loop *loop;
   bool changed = false;
   bool irred_invalidated = false;
+  bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
   FOR_EACH_LOOP (li, loop, 0)
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,
 							true,
-							&irred_invalidated);
+							&irred_invalidated,
+							loop_closed_ssa_invalidated);
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
@@ -700,6 +707,13 @@ canonicalize_induction_variables (void)
   /* Clean up the information about numbers of iterations, since brute force
      evaluation could reveal new information.  */
   scev_reset ();
+
+  if (!bitmap_empty_p (loop_closed_ssa_invalidated))
+    {
+      gcc_checking_assert (loops_state_satisfies_p (LOOP_CLOSED_SSA));
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+    }
+  BITMAP_FREE (loop_closed_ssa_invalidated);
 
   if (changed)
     return TODO_cleanup_cfg;
@@ -794,11 +808,15 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
   bool changed;
   enum unroll_level ul;
   int iteration = 0;
+  bool irred_invalidated = false;
 
   do
     {
-      bool irred_invalidated = false;
       changed = false;
+      bitmap loop_closed_ssa_invalidated = NULL;
+
+      if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
       FOR_EACH_LOOP (li, loop, 0)
 	{
@@ -812,9 +830,9 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  else
 	    ul = UL_NO_GROWTH;
 
-	  if (canonicalize_loop_induction_variables (loop, false, ul,
-						     !flag_tree_loop_ivcanon,
-						     &irred_invalidated))
+	  if (canonicalize_loop_induction_variables
+		 (loop, false, ul, !flag_tree_loop_ivcanon,
+		  &irred_invalidated, loop_closed_ssa_invalidated))
 	    {
 	      changed = true;
 	      /* If we'll continue unrolling, we need to propagate constants
@@ -834,11 +852,14 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  struct loop **iter;
 	  unsigned i;
 
-	  if (irred_invalidated
-	      && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
-	    mark_irreducible_loops ();
+	  /* We can not use TODO_update_ssa_no_phi because VOPS gets confused.  */
 
-	  update_ssa (TODO_update_ssa);
+	  if (loop_closed_ssa_invalidated
+	      && !bitmap_empty_p (loop_closed_ssa_invalidated))
+            rewrite_into_loop_closed_ssa (loop_closed_ssa_invalidated,
+					  TODO_update_ssa);
+	  else
+	    update_ssa (TODO_update_ssa);
 
 	  /* Propagate the constants within the new basic blocks.  */
 	  FOR_EACH_VEC_ELT (loop_p, father_stack, i, iter)
@@ -861,12 +882,22 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  /* Clean up the information about numbers of iterations, since
 	     complete unrolling might have invalidated it.  */
 	  scev_reset ();
+#ifdef ENABLE_CHECKING
+	  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+	    verify_loop_closed_ssa (true);
+#endif
 	}
+      if (loop_closed_ssa_invalidated)
+        BITMAP_FREE (loop_closed_ssa_invalidated);
     }
   while (changed
 	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
 
   VEC_free (loop_p, stack, father_stack);
+
+  if (irred_invalidated
+      && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
+    mark_irreducible_loops ();
 
   return 0;
 }
