@@ -1,3 +1,8 @@
+2012-10-23  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.c (offset_ok_for_ldrd_strd): Return false for
+	Thumb1.
+
 2012-10-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* dbxout.c (dbxout_symbol_location): Pass new argument to

@@ -12209,7 +12209,7 @@ offset_ok_for_ldrd_strd (HOST_WIDE_INT offset)
   else if (TARGET_ARM)
     max_offset = 255;
   else
-    gcc_unreachable ();
+    return false;
 
   return ((offset <= max_offset) && (offset >= -max_offset));
 }
