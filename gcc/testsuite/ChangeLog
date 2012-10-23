@@ -10,6 +10,47 @@
 	    Tejas Belagod  <tejas.belagod@arm.com>
 	    Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* lib/target-supports.exp
+	(check_profiling_available): Add AArch64.
+	(check_effective_target_vect_int): Likewise.
+	(check_effective_target_vect_shift): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_double): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_pack_trunc): Likewise.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_hw_misalign): Likewise.
+	(check_effective_target_vect_short_mult): Likewise.
+	(check_effective_target_vect_int_mult): Likewise.
+	(check_effective_target_vect_stridedN): Likewise.
+	(check_effective_target_sync_int_long): Likewise.
+	(check_effective_target_sync_char_short): Likewise.
+	(check_vect_support_and_set_flags): Likewise.
+	(check_effective_target_aarch64_tiny): New.
+	(check_effective_target_aarch64_small): New.
+	(check_effective_target_aarch64_large): New.
+	* g++.dg/other/PR23205.C: Enable aarch64.
+	* g++.dg/other/pr23205-2.C: Likewise.
+	* g++.old-deja/g++.abi/ptrmem.C: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Likewise.
+	* gcc.dg/20020312-2.c: Likewise.
+	* gcc.dg/20040813-1.c: Likewise.
+	* gcc.dg/builtin-apply2.c: Likewise.
+	* gcc.dg/stack-usage-1.c: Likewise.
+
+2012-10-23  Ian Bolton  <ian.bolton@arm.com>
+	    Jim MacArthur  <jim.macarthur@arm.com>
+	    Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Nigel Stephens  <nigel.stephens@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Sofiane Naci  <sofiane.naci@arm.com>
+	    Stephen Thomas  <stephen.thomas@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* gcc.target/aarch64/aapcs/aapcs64.exp: New file.
 	* gcc.target/aarch64/aapcs/abitest-2.h: New file.
 	* gcc.target/aarch64/aapcs/abitest-common.h: New file.
