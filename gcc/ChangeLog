@@ -1,3 +1,16 @@
+2012-10-23  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	Revert:
+	* stmt.c (expand_nl_goto_receiver): Remove almost-copy of
+	expand_builtin_setjmp_receiver.
+	(expand_label): Adjust, call expand_builtin_setjmp_receiver
+	with NULL for the label parameter.
+	* builtins.c (expand_builtin_setjmp_receiver): Don't clobber
+	the frame-pointer.  Adjust comments.
+	[HAVE_builtin_setjmp_receiver]: Emit builtin_setjmp_receiver
+	only if LABEL is non-NULL.
+
 2012-10-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/55008
