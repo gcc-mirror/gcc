@@ -1,3 +1,41 @@
+2012-10-23  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-operands.h (struct def_optype_d, def_optype_p): Remove.
+	(ssa_operands.free_defs): Remove.
+	(DEF_OP_PTR, DEF_OP): Remove.
+	(struct ssa_operand_iterator_d): Remove 'defs', add 'flags'
+	members, rename 'phi_stmt' to 'stmt', 'phi_i' to 'i' and 'num_phi'
+	to 'numops'.
+	* gimple.h (gimple_statement_with_ops.def_ops): Remove.
+	(gimple_def_ops, gimple_set_def_ops): Remove.
+	(gimple_vdef_op): Don't take const gimple, adjust.
+	(gimple_asm_input_op, gimple_asm_input_op_ptr,
+	gimple_asm_set_input_op, gimple_asm_output_op,
+	gimple_asm_output_op_ptr, gimple_asm_set_output_op): Adjust asserts,
+	and rewrite to move def operands to front.
+	(gimple_asm_clobber_op, gimple_asm_set_clobber_op,
+	gimple_asm_label_op, gimple_asm_set_label_op): Correct asserts.
+	* tree-ssa-operands.c (build_defs): Remove.
+	(init_ssa_operands): Don't initialize it.
+	(fini_ssa_operands): Don't free it.
+	(cleanup_build_arrays): Don't truncate it.
+	(finalize_ssa_stmt_operands): Don't assert on it.
+	(alloc_def, add_def_op, append_def): Remove.
+	(finalize_ssa_defs): Remove building of def_ops list.
+	(finalize_ssa_uses): Don't mark for SSA renaming here, ...
+	(add_stmt_operand): ... but here, don't call append_def.
+	(get_indirect_ref_operands): Remove recurse_on_base argument.
+	(get_expr_operands): Adjust call to get_indirect_ref_operands.
+	(verify_ssa_operands): Don't check def operands.
+	(free_stmt_operands): Don't free def operands.
+	* gimple.c (gimple_copy): Don't clear def operands.
+	* tree-flow-inline.h (op_iter_next_use): Adjust to explicitely
+	handle def operand.
+	(op_iter_next_tree, op_iter_next_def): Ditto.
+	(clear_and_done_ssa_iter): Clear new fields.
+	(op_iter_init): Adjust to setup new iterator structure.
+	(op_iter_init_phiuse): Adjust.
+
 2012-10-23  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.c (offset_ok_for_ldrd_strd): Return false for
