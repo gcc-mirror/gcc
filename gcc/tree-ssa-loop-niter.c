@@ -2535,7 +2535,6 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
 		 gimple at_stmt, bool is_exit, bool realistic, bool upper)
 {
   double_int delta;
-  edge exit;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2570,14 +2569,10 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
     }
 
   /* Update the number of iteration estimates according to the bound.
-     If at_stmt is an exit or dominates the single exit from the loop,
-     then the loop latch is executed at most BOUND times, otherwise
-     it can be executed BOUND + 1 times.  */
-  exit = single_exit (loop);
-  if (is_exit
-      || (exit != NULL
-	  && dominated_by_p (CDI_DOMINATORS,
-			     exit->src, gimple_bb (at_stmt))))
+     If at_stmt is an exit then the loop latch is executed at most BOUND times,
+     otherwise it can be executed BOUND + 1 times.  We will lower the estimate
+     later if such statement must be executed on last iteration  */
+  if (is_exit)
     delta = double_int_zero;
   else
     delta = double_int_one;
@@ -2953,6 +2948,110 @@ gcov_type_to_double_int (gcov_type val)
   return ret;
 }
 
+/* See if every path cross the loop goes through a statement that is known
+   to not execute at the last iteration. In that case we can decrese iteration
+   count by 1.  */
+
+static void
+maybe_lower_iteration_bound (struct loop *loop)
+{
+  pointer_set_t *not_executed_last_iteration = pointer_set_create ();
+  struct nb_iter_bound *elt;
+  bool found_exit = false;
+  VEC (basic_block, heap) *queue = NULL;
+  bitmap visited;
+
+  /* Collect all statements with interesting (i.e. lower than
+     nb_iterations_upper_bound) bound on them. 
+
+     TODO: Due to the way record_estimate choose estimates to store, the bounds
+     will be always nb_iterations_upper_bound-1.  We can change this to record
+     also statements not dominating the loop latch and update the walk bellow
+     to the shortest path algorthm.  */
+  for (elt = loop->bounds; elt; elt = elt->next)
+    {
+      if (!elt->is_exit
+	  && elt->bound.ult (loop->nb_iterations_upper_bound))
+	{
+	  if (!not_executed_last_iteration)
+	    not_executed_last_iteration = pointer_set_create ();
+	  pointer_set_insert (not_executed_last_iteration, elt->stmt);
+	}
+    }
+  if (!not_executed_last_iteration)
+    return;
+
+  /* Start DFS walk in the loop header and see if we can reach the
+     loop latch or any of the exits (including statements with side
+     effects that may terminate the loop otherwise) without visiting
+     any of the statements known to have undefined effect on the last
+     iteration.  */
+  VEC_safe_push (basic_block, heap, queue, loop->header);
+  visited = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (visited, loop->header->index);
+  found_exit = false;
+
+  do
+    {
+      basic_block bb = VEC_pop (basic_block, queue);
+      gimple_stmt_iterator gsi;
+      bool stmt_found = false;
+
+      /* Loop for possible exits and statements bounding the execution.  */
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  if (pointer_set_contains (not_executed_last_iteration, stmt))
+	    {
+	      stmt_found = true;
+	      break;
+	    }
+	  if (gimple_has_side_effects (stmt))
+	    {
+	      found_exit = true;
+	      break;
+	    }
+	}
+      if (found_exit)
+	break;
+
+      /* If no bounding statement is found, continue the walk.  */
+      if (!stmt_found)
+	{
+          edge e;
+          edge_iterator ei;
+
+          FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      if (loop_exit_edge_p (loop, e)
+		  || e == loop_latch_edge (loop))
+		{
+		  found_exit = true;
+		  break;
+		}
+	      if (bitmap_set_bit (visited, e->dest->index))
+		VEC_safe_push (basic_block, heap, queue, e->dest);
+	    }
+	}
+    }
+  while (VEC_length (basic_block, queue) && !found_exit);
+
+  /* If every path through the loop reach bounding statement before exit,
+     then we know the last iteration of the loop will have undefined effect
+     and we can decrease number of iterations.  */
+    
+  if (!found_exit)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Reducing loop iteration estimate by 1; "
+		 "undefined statement must be executed at the last iteration.\n");
+      record_niter_bound (loop, loop->nb_iterations_upper_bound - double_int_one,
+			  false, true);
+    }
+  BITMAP_FREE (visited);
+  VEC_free (basic_block, heap, queue);
+}
+
 /* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
    is true also use estimates derived from undefined behavior.  */
 
@@ -2995,6 +3094,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   VEC_free (edge, heap, exits);
 
   infer_loop_bounds_from_undefined (loop);
+
+  maybe_lower_iteration_bound (loop);
 
   /* If we have a measured profile, use it to estimate the number of
      iterations.  */

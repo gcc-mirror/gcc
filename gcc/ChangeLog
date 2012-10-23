@@ -1,5 +1,13 @@
 2012-10-23  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/54937
+	* tree-ssa-loop-niter.c (record_estimate): Do not try to lower
+	the bound of non-is_exit statements.
+	(maybe_lower_iteration_bound): Do it here.
+	(estimate_numbers_of_iterations_loop): Call it.
+
+2012-10-23  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/54967
 	* cfgloopmanip.c (fix_bb_placements): Add loop_closed_ssa_invalidated;
 	track basic blocks that moved out of their loops.
