@@ -1,3 +1,7 @@
+2012-10-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (update_ebb_live_info): Process empty blocks.
+
 2012-10-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* expmed.c (store_split_bit_field): Update the calls to
