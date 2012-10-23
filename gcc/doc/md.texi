@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -1622,7 +1622,9 @@ register preferences.
 @item *
 Says that the following character should be ignored when choosing
 register preferences.  @samp{*} has no effect on the meaning of the
-constraint as a constraint, and no effect on reloading.
+constraint as a constraint, and no effect on reloading.  For LRA
+@samp{*} additionally disparages slightly the alternative if the
+following character matches the operand.
 
 @ifset INTERNALS
 Here is an example: the 68000 has an instruction to sign-extend a

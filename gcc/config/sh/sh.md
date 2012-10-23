@@ -7366,7 +7366,7 @@ label:
 	  rtx regop = operands[store_p], word0 ,word1;
 
 	  if (GET_CODE (regop) == SUBREG)
-	    alter_subreg (&regop);
+	    alter_subreg (&regop, true);
 	  if (REGNO (XEXP (addr, 0)) == REGNO (XEXP (addr, 1)))
 	    offset = 2;
 	  else
@@ -7374,9 +7374,9 @@ label:
 	  mem = copy_rtx (mem);
 	  PUT_MODE (mem, SImode);
 	  word0 = gen_rtx_SUBREG (SImode, regop, 0);
-	  alter_subreg (&word0);
+	  alter_subreg (&word0, true);
 	  word1 = gen_rtx_SUBREG (SImode, regop, 4);
-	  alter_subreg (&word1);
+	  alter_subreg (&word1, true);
 	  if (store_p || ! refers_to_regno_p (REGNO (word0),
 					      REGNO (word0) + 1, addr, 0))
 	    {
@@ -7834,7 +7834,7 @@ label:
       else
 	{
 	  x = gen_rtx_SUBREG (V2SFmode, operands[0], i * 8);
-	  alter_subreg (&x);
+	  alter_subreg (&x, true);
 	}
 
       if (MEM_P (operands[1]))
@@ -7843,7 +7843,7 @@ label:
       else
 	{
 	  y = gen_rtx_SUBREG (V2SFmode, operands[1], i * 8);
-	  alter_subreg (&y);
+	  alter_subreg (&y, true);
 	}
 
       emit_insn (gen_movv2sf_i (x, y));

@@ -10328,7 +10328,7 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands + (nops + i));
+	operands[nops + i] = alter_subreg (operands + (nops + i), true);
 
       gcc_assert (MEM_P (operands[nops + i]));
 
@@ -10480,7 +10480,7 @@ store_multiple_sequence (rtx *operands, int nops, int nops_total,
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands + (nops + i));
+	operands[nops + i] = alter_subreg (operands + (nops + i), true);
 
       gcc_assert (MEM_P (operands[nops + i]));
 

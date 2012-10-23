@@ -90,6 +90,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "input.h"
 #include "gimple.h"
+#include "ira.h"
+#include "lra.h"
 #include "dumpfile.h"
 #include "opts.h"
 
@@ -10162,7 +10164,9 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
      argument pointer and soft frame pointer rtx's.  */
   if (reg == arg_pointer_rtx || reg == frame_pointer_rtx)
     {
-      rtx elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      rtx elim = (ira_use_lra_p
+		  ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+		  : eliminate_regs (reg, VOIDmode, NULL_RTX));
 
       if (elim != reg)
 	{
@@ -15020,7 +15024,9 @@ compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
   offset += ARG_POINTER_CFA_OFFSET (current_function_decl);
 #endif
 
-  elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+  elim = (ira_use_lra_p
+	  ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+	  : eliminate_regs (reg, VOIDmode, NULL_RTX));
   if (GET_CODE (elim) == PLUS)
     {
       offset += INTVAL (XEXP (elim, 1));

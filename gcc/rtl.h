@@ -2372,6 +2372,9 @@ extern int epilogue_completed;
 
 extern int reload_in_progress;
 
+/* Set to 1 while in lra.  */
+extern int lra_in_progress;
+
 /* This macro indicates whether you may create a new
    pseudo-register.  */
 
@@ -2490,7 +2493,12 @@ extern rtx make_compound_operation (rtx, enum rtx_code);
 extern void delete_dead_jumptables (void);
 
 /* In sched-vis.c.  */
-extern void dump_insn_slim (FILE *, const_rtx x);
+extern void debug_bb_n_slim (int);
+extern void debug_bb_slim (struct basic_block_def *);
+extern void print_value_slim (FILE *, const_rtx, int);
+extern void debug_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
+extern void dump_insn_slim (FILE *f, const_rtx x);
+extern void debug_insn_slim (const_rtx x);
 
 /* In sched-rgn.c.  */
 extern void schedule_insns (void);

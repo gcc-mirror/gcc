@@ -993,6 +993,12 @@ general_operand (rtx op, enum machine_mode mode)
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
       if (SCALAR_FLOAT_MODE_P (GET_MODE (op))
+	  /* LRA can use subreg to store a floating point value in an
+	     integer mode.  Although the floating point and the
+	     integer modes need the same number of hard registers, the
+	     size of floating point mode can be less than the integer
+	     mode.  */
+	  && ! lra_in_progress 
 	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
 
@@ -1068,6 +1074,12 @@ register_operand (rtx op, enum machine_mode mode)
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
       if (SCALAR_FLOAT_MODE_P (GET_MODE (op))
+	  /* LRA can use subreg to store a floating point value in an
+	     integer mode.  Although the floating point and the
+	     integer modes need the same number of hard registers, the
+	     size of floating point mode can be less than the integer
+	     mode.  */
+	  && ! lra_in_progress 
 	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
 
@@ -1099,7 +1111,7 @@ scratch_operand (rtx op, enum machine_mode mode)
 
   return (GET_CODE (op) == SCRATCH
 	  || (REG_P (op)
-	      && REGNO (op) < FIRST_PSEUDO_REGISTER));
+	      && (lra_in_progress || REGNO (op) < FIRST_PSEUDO_REGISTER)));
 }
 
 /* Return 1 if OP is a valid immediate operand for mode MODE.

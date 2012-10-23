@@ -1,3 +1,156 @@
+2012-10-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* dbxout.c (dbxout_symbol_location): Pass new argument to
+	alter_subreg.
+	* dwarf2out.c: Include ira.h and lra.h.
+	(based_loc_descr, compute_frame_pointer_to_fb_displacement): Use
+	lra_eliminate_regs for LRA instead of eliminate_regs.
+	* expr.c (emit_move_insn_1): Pass an additional argument to
+	emit_move_via_integer.  Use emit_move_via_integer for LRA only if
+	the insn is recognized.
+	* emit-rtl.c (gen_rtx_REG): Add lra_in_progress.
+	(validate_subreg): Don't check offset for LRA and floating point
+	modes.
+	* final.c (final_scan_insn, cleanup_subreg_operands): Pass new
+	argument to alter_subreg.
+	(walk_alter_subreg, output_operand): Ditto.
+	(alter_subreg): Add new argument.
+	* gcse.c (calculate_bb_reg_pressure): Add parameter to
+	ira_setup_eliminable_regset call.
+	* ira.c: Include lra.h.
+	(ira_init_once, ira_init, ira_finish_once): Call lra_start_once,
+	lra_init, lra_finish_once in anyway.
+	(ira_setup_eliminable_regset): Add parameter.  Remove need_fp.
+	Call lra_init_elimination and mark HARD_FRAME_POINTER_REGNUM as
+	living forever if frame_pointer_needed.
+	(setup_reg_class_relations): Set up ira_reg_class_subset.
+	(ira_reg_equiv_invariant_p, ira_reg_equiv_const): Remove.
+	(find_reg_equiv_invariant_const): Ditto.
+	(setup_reg_renumber): Use ira_equiv_no_lvalue_p instead of
+	ira_reg_equiv_invariant_p.  Skip caps for LRA.
+	(setup_reg_equiv_init, ira_update_equiv_info_by_shuffle_insn): New
+	functions.
+	(ira_reg_equiv_len, ira_reg_equiv): New externals.
+	(ira_reg_equiv): New.
+	(ira_expand_reg_equiv, init_reg_equiv, finish_reg_equiv): New
+	functions.
+	(no_equiv, update_equiv_regs): Use ira_reg_equiv instead of
+	reg_equiv_init.
+	(setup_reg_equiv): New function.
+	(ira_use_lra_p): New global.
+	(ira): Set up lra_simple_p and ira_conflicts_p.  Set up and
+	restore flag_caller_saves and flag_ira_region.  Move
+	initialization of ira_obstack and ira_bitmap_obstack upper.  Call
+	init_reg_equiv, setup_reg_equiv, and setup_reg_equiv_init instead
+	of initialization of ira_reg_equiv_len, ira_reg_equiv_invariant_p,
+	and ira_reg_equiv_const.  Call ira_setup_eliminable_regset with a
+	new argument.  Don't flatten IRA IRA for LRA.  Don't reassign
+	conflict allocnos for LRA. Call finish_reg_equiv.
+        (do_reload): Prepare code for LRA call.  Call LRA.
+	* ira.h (ira_use_lra_p): New external.
+	(struct target_ira): Add members x_ira_class_subset_p
+	x_ira_reg_class_subset, and x_ira_reg_classes_intersect_p.
+	(ira_class_subset_p, ira_reg_class_subset): New macros.
+	(ira_reg_classes_intersect_p): New macro.
+	(struct ira_reg_equiv): New.
+	(ira_setup_eliminable_regset): Add an argument.
+	(ira_expand_reg_equiv, ira_update_equiv_info_by_shuffle_insn): New
+	prototypes.
+	* ira-color.c (color_pass, move_spill_restore, coalesce_allocnos):
+	Use ira_equiv_no_lvalue_p.
+	(coalesce_spill_slots, ira_sort_regnos_for_alter_reg): Ditto.
+	* ira-emit.c (ira_create_new_reg): Call ira_expand_reg_equiv.
+	(generate_edge_moves, change_loop) Use ira_equiv_no_lvalue_p.
+	(emit_move_list): Simplify code.  Call
+	ira_update_equiv_info_by_shuffle_insn.  Use ira_reg_equiv instead
+	of ira_reg_equiv_invariant_p and ira_reg_equiv_const.  Change
+	assert.
+	* ira-int.h (struct target_ira_int): Remove x_ira_class_subset_p
+	and x_ira_reg_classes_intersect_p.
+	(ira_class_subset_p, ira_reg_classes_intersect_p): Remove.
+	(ira_reg_equiv_len, ira_reg_equiv_invariant_p): Ditto.
+	(ira_reg_equiv_const): Ditto.
+	(ira_equiv_no_lvalue_p): New function.
+	* jump.c (true_regnum): Always use hard_regno for subreg_get_info
+	when lra is in progress.
+	* haifa-sched.c (sched_init): Pass new argument to
+	ira_setup_eliminable_regset.
+	* loop-invariant.c (calculate_loop_reg_pressure): Pass new
+	argument to ira_setup_eliminable_regset.
+	* lra.h: New.
+	* lra-int.h: Ditto.
+	* lra.c: Ditto.
+	* lra-assigns.c: Ditto.
+	* lra-constraints.c: Ditto.
+	* lra-coalesce.c: Ditto.
+	* lra-eliminations.c: Ditto.
+	* lra-lives.c: Ditto.
+	* lra-spills.c: Ditto.
+	* Makefile.in (LRA_INT_H): New.
+	(OBJS): Add lra.o, lra-assigns.o, lra-coalesce.o,
+	lra-constraints.o, lra-eliminations.o, lra-lives.o, and
+	lra-spills.o.
+	(dwarf2out.o): Add dependence on ira.h and lra.h.
+	(ira.o): Add dependence on lra.h.
+	(lra.o, lra-assigns.o, lra-coalesce.o, lra-constraints.o): New
+	entries.
+	(lra-eliminations.o, lra-lives.o, lra-spills.o): Ditto.
+	* output.h (alter_subreg): Add new argument.
+	* rtlanal.c (simplify_subreg_regno): Permit mode changes for LRA.
+	Permit ARG_POINTER_REGNUM and STACK_POINTER_REGNUM for LRA.
+	* recog.c (general_operand, register_operand): Accept paradoxical
+	FLOAT_MODE subregs for LRA.
+	(scratch_operand): Accept pseudos for LRA.
+	* rtl.h (lra_in_progress): New external.
+	(debug_bb_n_slim, debug_bb_slim, print_value_slim): New
+	prototypes.
+	(debug_rtl_slim, debug_insn_slim): Ditto.
+	* sdbout.c (sdbout_symbol): Pass new argument to alter_subreg.
+	* sched-vis.c (print_value_slim): New.
+	* target.def (lra_p): New hook.
+	(register_priority): Ditto.
+	(different_addr_displacement_p): Ditto.
+	(spill_class): Ditto.
+	* target-globals.h (this_target_lra_int): New external.
+	(target_globals): New member lra_int.
+	(restore_target_globals): Restore this_target_lra_int.
+	* target-globals.c: Include lra-int.h.
+	(default_target_globals): Add &default_target_lra_int.
+	* targhooks.c (default_lra_p): New function.
+	(default_register_priority): Ditto.
+	(default_different_addr_displacement_p): Ditto.
+	* targhooks.h (default_lra_p): Declare.
+	(default_register_priority): Ditto.
+	(default_different_addr_displacement_p): Ditto.
+	* timevar.def (TV_LRA, TV_LRA_ELIMINATE, TV_LRA_INHERITANCE): New.
+	(TV_LRA_CREATE_LIVE_RANGES, TV_LRA_ASSIGN, TV_LRA_COALESCE): New.
+	* config/arm/arm.c (load_multiple_sequence): Pass new argument toOB
+	alter_subreg.
+	(store_multiple_sequence): Ditto.
+	* config/i386/i386.h (enum ix86_tune_indices): Add
+	X86_TUNE_GENERAL_REGS_SSE_SPILL.
+	(TARGET_GENERAL_REGS_SSE_SPILL): New macro.
+	* config/i386/i386.c (initial_ix86_tune_features): Set up
+	X86_TUNE_GENERAL_REGS_SSE_SPILL for m_COREI7 and m_CORE2I7.
+	(ix86_lra_p, ix86_register_priority): New functions.
+	(ix86_secondary_reload): Add NON_Q_REGS, SIREG, DIREG.
+	(inline_secondary_memory_needed): Change assert.
+	(ix86_spill_class): New function.
+	(TARGET_LRA_P, TARGET_REGISTER_BANK, TARGET_SPILL_CLASS): New
+	macros.
+	* config/m68k/m68k.c (emit_move_sequence): Pass new argument to
+	alter_subreg.
+	* config/m32r/m32r.c (gen_split_move_double): Ditto.
+	* config/pa/pa.c (pa_emit_move_sequence): Ditto.
+	* config/sh/sh.md: Ditto.
+	* config/v850/v850.c (v850_reorg): Ditto.
+	* config/xtensa/xtensa.c (fixup_subreg_mem): Ditto.
+	* doc/md.texi: Add new interpretation of hint * for LRA.
+	* doc/passes.texi: Describe LRA pass.
+	* doc/tm.texi.in: Add TARGET_LRA_P, TARGET_REGISTER_PRIORITY,
+	TARGET_DIFFERENT_ADDR_DISPLACEMENT_P, and TARGET_SPILL_CLASS.
+	* doc/tm.texi: Update.
+
 2012-10-23  Jan Hubicka  <jh@suse.cz>
 
 	* loop-unroll.c (decide_peel_simple): Simple peeling makes sense even

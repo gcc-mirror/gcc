@@ -340,6 +340,7 @@ ira_create_new_reg (rtx original_reg)
   if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "      Creating newreg=%i from oldreg=%i\n",
 	     REGNO (new_reg), REGNO (original_reg));
+  ira_expand_reg_equiv ();
   return new_reg;
 }
 
@@ -518,8 +519,7 @@ generate_edge_moves (edge e)
 	/* Remove unnecessary stores at the region exit.  We should do
 	   this for readonly memory for sure and this is guaranteed by
 	   that we never generate moves on region borders (see
-	   checking ira_reg_equiv_invariant_p in function
-	   change_loop).  */
+	   checking in function change_loop).  */
  	if (ALLOCNO_HARD_REGNO (dest_allocno) < 0
 	    && ALLOCNO_HARD_REGNO (src_allocno) >= 0
 	    && store_can_be_removed_p (src_allocno, dest_allocno))
@@ -613,8 +613,7 @@ change_loop (ira_loop_tree_node_t node)
 		  /* don't create copies because reload can spill an
 		     allocno set by copy although the allocno will not
 		     get memory slot.  */
-		  || ira_reg_equiv_invariant_p[regno]
-		  || ira_reg_equiv_const[regno] != NULL_RTX))
+		  || ira_equiv_no_lvalue_p (regno)))
 	    continue;
 	  original_reg = allocno_emit_reg (allocno);
 	  if (parent_allocno == NULL
@@ -902,17 +901,22 @@ modify_move_list (move_t list)
 static rtx
 emit_move_list (move_t list, int freq)
 {
-  int cost, regno;
-  rtx result, insn, set, to;
+  rtx to, from, dest;
+  int to_regno, from_regno, cost, regno;
+  rtx result, insn, set;
   enum machine_mode mode;
   enum reg_class aclass;
 
+  grow_reg_equivs ();
   start_sequence ();
   for (; list != NULL; list = list->next)
     {
       start_sequence ();
-      emit_move_insn (allocno_emit_reg (list->to),
-		      allocno_emit_reg (list->from));
+      to = allocno_emit_reg (list->to);
+      to_regno = REGNO (to);
+      from = allocno_emit_reg (list->from);
+      from_regno = REGNO (from);
+      emit_move_insn (to, from);
       list->insn = get_insns ();
       end_sequence ();
       for (insn = list->insn; insn != NULL_RTX; insn = NEXT_INSN (insn))
@@ -928,21 +932,22 @@ emit_move_list (move_t list, int freq)
 	     to use the equivalence.  */
 	  if ((set = single_set (insn)) != NULL_RTX)
 	    {
-	      to = SET_DEST (set);
-	      if (GET_CODE (to) == SUBREG)
-		to = SUBREG_REG (to);
-	      ira_assert (REG_P (to));
-	      regno = REGNO (to);
+	      dest = SET_DEST (set);
+	      if (GET_CODE (dest) == SUBREG)
+		dest = SUBREG_REG (dest);
+	      ira_assert (REG_P (dest));
+	      regno = REGNO (dest);
 	      if (regno >= ira_reg_equiv_len
-		  || (! ira_reg_equiv_invariant_p[regno]
-		      && ira_reg_equiv_const[regno] == NULL_RTX))
+		  || (ira_reg_equiv[regno].invariant == NULL_RTX
+		      && ira_reg_equiv[regno].constant == NULL_RTX))
 		continue; /* regno has no equivalence.  */
 	      ira_assert ((int) VEC_length (reg_equivs_t, reg_equivs)
-			  >= ira_reg_equiv_len);
+			  > regno);
 	      reg_equiv_init (regno)
 		= gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init (regno));
 	    }
 	}
+      ira_update_equiv_info_by_shuffle_insn (to_regno, from_regno, list->insn);
       emit_insn (list->insn);
       mode = ALLOCNO_MODE (list->to);
       aclass = ALLOCNO_CLASS (list->to);
