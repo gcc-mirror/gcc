@@ -1,3 +1,17 @@
+2012-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu |
+	*-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu): Use
+	glibc-c.o in c_target_objs and cxx_target_objs.  Use t-glibc in
+	tmake_file.  Set target_has_targetcm.
+	(tilegx-*-linux*, tilepro-*-linux*): Append to c_target_objs and
+	cxx_target_objs rather than overriding previous value.
+	* config/glibc-c.c, config/t-glibc: New.
+	* doc/tm.texi.in (TARGET_C_PREINCLUDE): New @hook.
+	* doc/tm.texi: Regenerate.
+	* hooks.c (hook_constcharptr_void_null): New.
+	* hooks.h (hook_constcharptr_void_null): Declare.
+
 2012-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/mips/linux-common.h (STACK_CHECK_STATIC_BUILTIN): Define.

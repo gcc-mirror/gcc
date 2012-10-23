@@ -666,6 +666,10 @@ case ${target} in
       tm_defines="$tm_defines ANDROID_DEFAULT=0"
       ;;
   esac
+  c_target_objs="${c_target_objs} glibc-c.o"
+  cxx_target_objs="${cxx_target_objs} glibc-c.o"
+  tmake_file="${tmake_file} t-glibc"
+  target_has_targetcm=yes
   ;;
 *-*-netbsd*)
   tmake_file="t-slibgcc"
@@ -2472,16 +2476,16 @@ tilegx-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
         tmake_file="${tmake_file} tilegx/t-tilegx"
 	extra_objs="mul-tables.o"
-	c_target_objs="tilegx-c.o"
-	cxx_target_objs="tilegx-c.o"
+	c_target_objs="${c_target_objs} tilegx-c.o"
+	cxx_target_objs="${cxx_target_objs} tilegx-c.o"
 	extra_headers="feedback.h"
 	;;
 tilepro-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
         tmake_file="${tmake_file} tilepro/t-tilepro"
 	extra_objs="mul-tables.o"
-	c_target_objs="tilepro-c.o"
-	cxx_target_objs="tilepro-c.o"
+	c_target_objs="${c_target_objs} tilepro-c.o"
+	cxx_target_objs="${cxx_target_objs} tilepro-c.o"
 	extra_headers="feedback.h"
 	;;
 v850-*-rtems*)

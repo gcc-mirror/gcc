@@ -1,3 +1,20 @@
+2012-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c99-predef-1.c: New test.
+	* gcc.dg/cpp/cmdlne-dU-1.c, gcc.dg/cpp/cmdlne-dU-2.c,
+	gcc.dg/cpp/cmdlne-dU-3.c, gcc.dg/cpp/cmdlne-dU-4.c,
+	gcc.dg/cpp/cmdlne-dU-5.c, gcc.dg/cpp/cmdlne-dU-6.c,
+	gcc.dg/cpp/cmdlne-dU-7.c, gcc.dg/cpp/cmdlne-dU-8.c,
+	gcc.dg/cpp/cmdlne-dU-9.c, gcc.dg/cpp/cmdlne-dU-10.c,
+	gcc.dg/cpp/cmdlne-dU-11.c, gcc.dg/cpp/cmdlne-dU-12.c,
+	gcc.dg/cpp/cmdlne-dU-13.c, gcc.dg/cpp/cmdlne-dU-14.c,
+	gcc.dg/cpp/cmdlne-dU-15.c, gcc.dg/cpp/cmdlne-dU-16.c,
+	gcc.dg/cpp/cmdlne-dU-17.c, gcc.dg/cpp/cmdlne-dU-18.c,
+	gcc.dg/cpp/cmdlne-dU-19.c, gcc.dg/cpp/cmdlne-dU-20.c,
+	gcc.dg/cpp/cmdlne-dU-21.c, gcc.dg/cpp/cmdlne-dU-22.c,
+	gcc.dg/cpp/mi5.c, gcc.dg/cpp/multiline.c: Add -nostdinc to
+	dg-options.
+
 2012-10-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/foldconst-6.c: New testcase.

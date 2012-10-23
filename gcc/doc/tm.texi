@@ -10647,6 +10647,12 @@ convention when processing system header files, but when processing user
 files @code{__STDC__} will always expand to 1.
 @end defmac
 
+@deftypefn {C Target Hook} {const char *} TARGET_C_PREINCLUDE (void)
+Define this hook to return the name of a header file to be included at the start of all compilations, as if it had been included with @code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is not defined, or the header is not found, or if the user specifies @option{-ffreestanding} or @option{-nostdinc}, no header is included.
+
+ This hook can be used together with a header provided by the system C library to implement ISO C requirements for certain macros to be predefined that describe properties of the whole implementation rather than just the compiler.
+@end deftypefn
+
 @defmac NO_IMPLICIT_EXTERN_C
 Define this macro if the system header files support C++ as well as C@.
 This macro inhibits the usual method of using system header files in
