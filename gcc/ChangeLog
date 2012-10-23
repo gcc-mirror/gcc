@@ -1,3 +1,11 @@
+2012-10-23  Jan Hubicka  <jh@suse.cz>
+
+	* loop-unroll.c (decide_peel_simple): Simple peeling makes sense even
+	with simple loops; bound number of branches only when FDO is not
+	available.
+	(decide_unroll_stupid): Mention that num_loop_branches heuristics
+	is off.
+
 2012-10-23  Nick Clifton  <nickc@redhat.com>
 
 	PR target/54660
