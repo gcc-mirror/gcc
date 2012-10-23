@@ -4300,8 +4300,6 @@ update_ebb_live_info (rtx head, rtx tail)
        curr_insn = prev_insn)
     {
       prev_insn = PREV_INSN (curr_insn);
-      if (! INSN_P (curr_insn))
-	continue;
       curr_bb = BLOCK_FOR_INSN (curr_insn);
       if (curr_bb != prev_bb)
 	{
@@ -4336,7 +4334,7 @@ update_ebb_live_info (rtx head, rtx tail)
 	  prev_bb = curr_bb;
 	  bitmap_and (&live_regs, &check_only_regs, df_get_live_out (curr_bb));
 	}
-      if (DEBUG_INSN_P (curr_insn))
+      if (! NONDEBUG_INSN_P (curr_insn))
 	continue;
       curr_id = lra_get_insn_recog_data (curr_insn);
       remove_p = false;
