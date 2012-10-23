@@ -1,5 +1,8 @@
 2012-10-23  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-threadedge.c (cond_arg_set_in_bb): Remove unused
+	debugging argument.
+
 	PR tree-optimization/54985
 	* tree-ssa-threadedge.c (cond_arg_set_in_bb): New function extracted
 	from thread_across_edge.
