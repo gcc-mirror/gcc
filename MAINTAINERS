@@ -43,6 +43,8 @@ their own patches from other maintainers or reviewers.
 
 			CPU Port Maintainers	(CPU alphabetical order)
 
+aarch64 port		Marcus Shawcroft	marcus.shawcroft@arm.com
+aarch64 port		Richard Earnshaw	richard.earnshaw@arm.com
 alpha port		Richard Henderson	rth@redhat.com
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	richard.earnshaw@arm.com
