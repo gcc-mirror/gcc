@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script, like so:
-# aclocal -I .. -I ../config && autoconf && autoheader && automake
+# aclocal -I . -I .. -I ../config && autoconf && autoheader && automake
 #
 #   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
 #   2010, 2011, 2012
@@ -88,7 +88,11 @@ target_alias=${target_alias-$host_alias}
 #  -Wno-portability:  ...except this one, since GNU make is required.
 #  -Wno-override: ... and this one, since we do want this in testsuite.
 AM_INIT_AUTOMAKE([1.11.1 foreign -Wall -Wno-portability -Wno-override])
-AM_ENABLE_MULTILIB(, ..)
+
+# UPC disables multilib for portals4 runtime
+if echo "${with_upc_runtime}" | grep -v -i '^portals4$' 2>&1 >/dev/null; then
+  AM_ENABLE_MULTILIB(, ..)
+fi
 
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
@@ -495,14 +499,16 @@ AC_MSG_CHECKING([for UPC runtime model])
 AC_ARG_WITH(upc-runtime,
 [AS_HELP_STRING([--with-upc-runtime=MODEL],
 		[specify the runtime implementation model for UPC,
-		 where MODEL may only be: 'SMP' (Symmetric Multiprocessing)
-		 in the current implementation
-		 [default='SMP']])],
+		 where MODEL may be: 'SMP' (Symmetric Multiprocessing)
+		 or 'Portals4'.  [default='SMP']])],
 [
   case "$withval" in
 changequote(,)dnl
     [Ss][Mm][Pp])
       upc_runtime_model=smp
+      ;;
+    [Pp][Oo][Rr][Tt][Aa][Ll][Ss]4)
+      upc_runtime_model=portals4
       ;;
 changequote([,])dnl
     *)
@@ -515,6 +521,108 @@ changequote([,])dnl
   upc_runtime_model=smp
 ])
 AC_MSG_RESULT([$upc_runtime_model])
+
+AC_MSG_CHECKING([for UPC runtime checking support])
+AC_ARG_ENABLE(upc-runtime-checks,
+[AS_HELP_STRING([--enable-upc-runtime-checks],
+		[enable internal UPC runtime checks that validate
+		 arguments, and check for inconsistent runtime state.
+		 [default=no]])],
+[
+  case $enableval in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-runtime-checks accepts only yes or no.])
+  esac
+],
+[
+  enable_upc_runtime_checks=no
+])
+AC_MSG_RESULT($enable_upc_runtime_checks)
+if test "$enable_upc_runtime_checks" = "yes"; then
+  AC_DEFINE(GUPCR_HAVE_CHECKS, 1,
+            [Define to 1 if UPC runtime checks are supported.])
+fi
+
+AC_MSG_CHECKING([for UPC runtime statistics support])
+AC_ARG_ENABLE(upc-runtime-stats,
+[AS_HELP_STRING([--enable-upc-runtime-stats],
+		[enable internal UPC runtime statistics collection support;
+		 these statistics count the number of various significant
+		 internal operations, and dump those counts into a
+		 per-process statistics file.
+		 [default=no]])],
+[
+  case $enableval in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-runtime-stats accepts only yes or no.])
+  esac
+],
+[
+  enable_upc_runtime_stats=no
+])
+AC_MSG_RESULT($enable_upc_runtime_stats)
+if test "$enable_upc_runtime_stats" = "yes"; then
+  AC_DEFINE(GUPCR_HAVE_STATS, 1,
+            [Define to 1 if UPC runtime statistics collection is supported.])
+fi
+
+AC_MSG_CHECKING([for UPC runtime trace support])
+AC_ARG_ENABLE(upc-runtime-trace,
+[AS_HELP_STRING([--enable-upc-runtime-trace],
+		[enable internal UPC runtime trace collection support;
+		 a runtime trace is a time stamped log that records
+		 various significant internal events; this trace
+		 is written to a per-process log file.
+		 [default=no]])],
+[
+  case $enableval in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-runtime-trace accepts only yes or no.])
+  esac
+],
+[
+  enable_upc_runtime_trace=no
+])
+AC_MSG_RESULT($enable_upc_runtime_trace)
+if test "$enable_upc_runtime_trace" = "yes"; then
+  AC_DEFINE(GUPCR_HAVE_TRACE, 1,
+            [Define to 1 if UPC runtime tracing is supported.])
+fi
+
+AC_MSG_CHECKING([for UPC runtime debug configuration])
+AC_ARG_ENABLE(upc-runtime-debug,
+[AS_HELP_STRING([--enable-upc-runtime-debug],
+		[enable UPC runtime debugging mode,
+		 where more expensive internal checks are implemented,
+		 and conservative algorithms are used that
+		 reduce the degree of parallelism, and that
+		 exercise less complex/sophisticated operations
+		 provided by the operating system and/or the
+		 network communication packages called by the UPC runtime.
+		 In addition, conservative compilation options will
+		 be used to build the runtime, and debugging symbols
+		 will be generated.
+		 [default=no]])],
+[
+  case $enableval in
+  yes | no) ;;
+  *)
+    AC_MSG_ERROR([--enable-upc-runtime-debug accepts only yes or no.])
+  esac
+],
+[
+  enable_upc_runtime_debug=no
+])
+AC_MSG_RESULT($enable_upc_runtime_debug)
+if test "$enable_upc_runtime_debug" = "yes"; then
+  AC_DEFINE(GUPCR_HAVE_DEBUG, 1,
+            [Define to 1 if UPC runtime debugging mode is enabled.])
+fi
+AC_SUBST(enable_upc_runtime_debug)
+
 
 AC_MSG_CHECKING([for UPC link script support])
 AC_ARG_ENABLE(upc-link-script,
@@ -658,6 +766,9 @@ if test "$upc_runtime_model" = "smp"; then
   fi
   # Use the generic (reference implementation)
   use_generic_collectives="yes"
+
+  DX_DOXYGEN_FEATURE(OFF)
+  DX_INIT_DOXYGEN(${PACKAGE}, doxygen.cfg, doc)
 
   AC_MSG_CHECKING([for UPC backtrace support])
   AC_ARG_ENABLE(upc-backtrace,
@@ -867,6 +978,268 @@ if test "$upc_runtime_model" = "smp"; then
 
 fi #### End: SMP runtime configuration
 
+if test "$upc_runtime_model" = "portals4"; then
+
+  #### Portals4 runtime library configuration ####
+
+  # Use the generic (reference implementation)
+  use_generic_collectives="no"
+
+  # Check for Portals4 libs
+  portals4libs="-lportals -lportals_runtime"
+  portals4inc=
+  have_portals4=no
+  AC_ARG_WITH(portals4,
+  [AS_HELP_STRING([--with-portals4=PATH],
+		  [specify prefix directory for installed portals4 package.
+		   Equivalent to --with-portals4-include=PATH/include
+		   plus --with-portals4-lib=PATH/lib])])
+  AC_ARG_WITH(portals4-include,
+  [AS_HELP_STRING([--with-portals4-include=PATH],
+		  [specify directory for installed portals4 include files])])
+  AC_ARG_WITH(portals4-lib,
+  [AS_HELP_STRING([--with-portals4-lib=PATH],
+		  [specify directory for the installed portals4 library])])
+
+  if test "x$with_portals4" != x; then
+    portals4libs="-L$with_portals4/lib $portals4libs"
+    portals4inc="-I$with_portals4/include $portals4inc"
+  fi
+  if test "x$with_portals4_include" != x; then
+    portals4inc="-I$with_portals4_include $portals4inc"
+  fi
+  if test "x$with_portals4_lib" != x; then
+    portals4libs="-L$with_portals4_lib $portals4libs"
+  fi
+  if test "x$with_portals4$with_portals4_include$with_portals4_lib" = x \
+     && test -d ${srcdir}/portals4; then
+    portals4libs='-L$$r/$(HOST_SUBDIR)/portals4/ '"$lt_cv_objdir $portals4libs"
+    portals4inc='-I$$r/$(HOST_SUBDIR)/portals4 -I$$s/portals4 '"$portals4inc"
+    # Do not test the portals4 version.  Assume that it is sufficient, since
+    # it is in the source tree, and the library has not been built yet
+    # but it would be included on the link line in the version check below
+    # hence making the test fail.
+    have_portals4=yes
+  fi
+  AC_SUBST(portals4libs)
+  AC_SUBST(portals4inc)
+
+  AC_MSG_CHECKING([for UPC runtime Portals4 PTE base index])
+  AC_ARG_WITH(upc-runtime-pte-base,
+  [AS_HELP_STRING([--with-upc-runtime-pte-base=BASE],
+		  [specify the base index of the first Portals4 PTE used
+		   by the UPC runtime [default=16]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to --with-upc-runtime-pte-base])
+    fi
+    upc_runtime_pte_base="$withval"
+  ],
+  [
+    upc_runtime_pte_base=16
+  ])
+  AC_MSG_RESULT([$upc_runtime_pte_base])
+  AC_DEFINE_UNQUOTED(GUPCR_PTE_BASE,[$upc_runtime_pte_base],
+    [Portals4 PTE base index.])
+
+  AC_MSG_CHECKING([for UPC runtime maximum number of locks held per thread])
+  AC_ARG_WITH(upc-runtime-max-locks,
+  [AS_HELP_STRING([--with-upc-runtime-max-locks=MAX_LOCKS],
+		  [specify the maximum number of locks that can be held by
+		   a single UPC thread [default=1024]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to
+      --with-upc-runtime-max-locks])
+    fi
+    upc_runtime_max_locks="$withval"
+  ],
+  [
+    upc_runtime_max_locks=1024
+  ])
+  AC_MSG_RESULT([$upc_runtime_max_locks])
+  AC_DEFINE_UNQUOTED(GUPCR_MAX_LOCKS,[$upc_runtime_max_locks],
+    [Maximum number of locks held per thread])
+
+  AC_MSG_CHECKING([for UPC runtime bounce buffer size])
+  AC_ARG_WITH(upc-runtime-bounce-buffer-size,
+  [AS_HELP_STRING([--with-upc-runtime-bounce-buffer-size=SIZE],
+		  [specify the size (in bytes) of the bounce buffer
+		   that is used by the UPC runtime to buffer
+		   network data [default=256K]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep -i '^[[0-9]][[0-9]]*[[kmg]]$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to
+--with-upc-runtime-bounce-buffer-size])
+    fi
+    bb_size="$withval"
+  ],
+  [
+    bb_size="256K"
+  ])
+  bb_size_expr=`echo "$bb_size" | \
+    sed -e 's/[[gG]]$/*1024M/;s/[[mM]]$/*1024K/;s/[[kK]]$/*1024/;s/\\*/ \\\\* /g'`
+  upc_runtime_bounce_buffer_size=`eval expr $bb_size_expr`
+  AC_MSG_RESULT([$upc_runtime_bounce_buffer_size])
+  AC_DEFINE_UNQUOTED(GUPCR_BOUNCE_BUFFER_SIZE,[$upc_runtime_bounce_buffer_size],
+    [Size of get/put bounce buffer])
+
+  AC_MSG_CHECKING([for UPC runtime collectives tree fanout])
+  AC_ARG_WITH(upc-runtime-tree-fanout,
+  [AS_HELP_STRING([--with-upc-runtime-tree-fanout=WIDTH],
+		  [specify the maximum number of children in each
+		   sub-tree used to implement UPC collective operations
+		   (e. g., upc_barrier and upc_global_alloc).
+		   [default=4]])],
+  [
+    # $withval must be a decimal integer
+    if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+      AC_MSG_ERROR([$withval is an invalid option to
+--with-upc-runtime-tree-fanout])
+    fi
+    upc_runtime_tree_fanout="$withval"
+  ],
+  [
+    upc_runtime_tree_fanout=4
+  ])
+  AC_MSG_RESULT([$upc_runtime_tree_fanout])
+  AC_DEFINE_UNQUOTED(GUPCR_TREE_FANOUT, [$upc_runtime_tree_fanout],
+    [Maximum number of children at each level of a collective operation tree.])
+
+  AC_MSG_CHECKING([for UPC runtime Portals4 triggered operation support])
+  AC_ARG_ENABLE(upc-runtime-triggered-ops,
+  [AS_HELP_STRING([--enable-upc-runtime-triggered-ops],
+		  [enable UPC runtime support for Portals4 triggered
+		   operations.  [default=yes]])],
+  [
+    case $enableval in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-runtime-triggered-ops accepts only yes or no.])
+    esac
+  ],
+  [
+    enable_upc_runtime_triggered_ops=yes
+  ])
+  AC_MSG_RESULT($enable_upc_runtime_triggered_ops)
+  if test "$enable_upc_runtime_triggered_ops" = "yes"; then
+    AC_DEFINE(GUPCR_USE_PORTALS4_TRIGGERED_OPS, 1,
+      [Define to 1 if UPC runtime will use Portals4 triggered operations.])
+  fi
+
+# Portals4 node local memory optimization
+
+  AC_MSG_CHECKING([for UPC runtime node local memory access])
+  AC_ARG_ENABLE(upc-node-local-mem,
+  [AS_HELP_STRING([--enable-upc-node-local-mem],
+		  [enable UPC runtime support for accessing shared
+		   memory of the node local threads.  [default=yes]])],
+  [
+    case $enableval in
+    yes | no) ;;
+    *)
+      AC_MSG_ERROR([--enable-upc-node-local-mem accepts only yes or no.])
+    esac
+  ],
+  [
+    enable_upc_node_local_mem=yes
+  ])
+  AC_MSG_RESULT($enable_upc_node_local_mem)
+  if test "$enable_upc_node_local_mem" = "yes"; then
+    AC_DEFINE(GUPCR_NODE_LOCAL_MEM, 1,
+      [Define to 1 if UPC runtime will use node local memory accesses.])
+  fi
+
+  if test "$enable_upc_node_local_mem" = "yes"; then
+    # START - check for shared memory type
+    # Check for Posix based shm
+    AC_MSG_CHECKING([for UPC node local memory type])
+    AC_ARG_WITH(upc-node-local-mem,
+    [AS_HELP_STRING([--with-upc-node-local-mem=SHMEM],
+		    [specify type of shared memory used for node local
+		     memory accesses (posix or mmap).
+		    [default=posix]])],
+    [
+      case $withval in
+        posix | mmap)
+	  upc_node_local=$withval
+	  ;;
+        *)
+          AC_MSG_ERROR([--with-upc-node-local-mem accepts only posix or mmap.])
+      esac
+    ],
+    [
+      upc_node_local=posix
+    ])
+    AC_MSG_RESULT($upc_node_local);
+
+    # Check if POSIX shm is available
+    if test "$upc_node_local" = "posix"; then
+      # Check if it is part of librt
+      have_shm_open=no
+      AC_CHECK_LIB(rt, shm_open,
+         [LIBS="-lrt $LIBS"
+ 	  have_shm_open=yes
+          AC_DEFINE(HAVE_SHM_OPEN, 1,
+            [Define to 1 if you have the 'shm_open' function.])])
+      if test "$have_shm_open" = "no"; then
+        # Must probe for Posix shmem
+        AC_MSG_CHECKING([for the shm_open])
+        AC_TRY_LINK([
+          #include <sys/types.h>
+          #include <sys/stat.h>
+          #include <sys/mman.h>
+          #include <unistd.h>
+          #include <fcntl.h>
+          #include <stdlib.h>
+          int size = 4096;
+          int fd;
+          void * addr;],[
+
+          fd = shm_open("shm-config-test", O_CREAT|O_RDWR, S_IRUSR|S_IWUSR);
+          (void)shm_unlink("shm-config-test");
+          if (fd < 0) return 1;
+          if (ftruncate(fd, size) < 0) return 1;
+          addr = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+          (void)close(fd);
+          if (!addr || (addr == MAP_FAILED)) return 1;
+          (void)munmap(addr, size);
+          return 0;
+          ],[AC_MSG_RESULT(yes); have_shm_open=yes ],
+	    [AC_MSG_RESULT(no); have_shm_open=no ])
+      fi
+
+      if test "$have_shm_open" = "yes"; then
+        AC_DEFINE(GUPCR_NODE_LOCAL_MEM_POSIX, 1,
+          [Define to 1 if UPC node local access uses Posix shared memory.])
+      else
+        AC_MSG_ERROR([Posix shared memory is not available])
+      fi
+    else
+      # mmap is always available
+      AC_DEFINE(GUPCR_NODE_LOCAL_MEM_MMAP, 1,
+        [Define to 1 if UPC node local access uses mmap-ed file.])
+    fi
+    # END - check for shared memory type
+  fi
+
+  AC_DEFINE(GUPCR_GLOBAL_EXIT_TIMEOUT, [2],
+    [upc_global_exit() timeout in seconds.])
+
+  DX_DOXYGEN_FEATURE(ON)
+  DX_HTML_FEATURE(ON)
+  DX_PDF_FEATURE(ON)
+  DX_DOT_FEATURE(ON)
+  DX_PS_FEATURE(OFF)
+  DX_INIT_DOXYGEN(${PACKAGE}, doxygen.cfg, doc)
+  AC_CONFIG_FILES([header.tex doxygen.sty])
+  AC_CONFIG_FILES([doxygen.cfg:portals4/doxygen.cfg.in])
+
+fi #### End: Portals4 runtime configuration
+
 # Get target configury.
 . ${srcdir}/configure.tgt
 
@@ -893,6 +1266,8 @@ AH_BOTTOM([
 
 dnl Build the runtime, based upon the --with-upc-runtime setting.
 AM_CONDITIONAL(LIBGUPC_SMP_RUNTIME, [test "$upc_runtime_model" = "smp"])
+AM_CONDITIONAL(LIBGUPC_PORTALS4_RUNTIME, [test "$upc_runtime_model" = "portals4"])
+AM_CONDITIONAL(LIBGUPC_RUNTIME_DEBUG, [test "$enable_upc_runtime_debug" = "yes"])
 
 AM_CONDITIONAL(LIBGUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
 AM_CONDITIONAL(LIBGUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
@@ -906,6 +1281,8 @@ AM_CONDITIONAL(LIBGUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBGUPC_GUM, [test "$upc_gum_debug" = "yes"])
 AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$enable_upc_backtrace" = "yes"])
 AM_CONDITIONAL(LIBGUPC_BACKTRACE_SUP, [test "$have_bfd" = "yes"])
+AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_POSIX, [test "$upc_node_local" = "posix"])
+AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_MMAP, [test "$upc_node_local" = "mmap"])
 
 AH_TOP(
 [/* Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.

@@ -1,0 +1,149 @@
+/* Copyright (c) 2012
+   Free Software Foundation, Inc.
+   This file is part of the UPC runtime library.
+   Written by Gary Funck <gary@intrepid.com>
+   and Nenad Vukicevic <nenad@intrepid.com>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
+
+
+#ifndef _GCC_UPC_LIB_H_
+#define _GCC_UPC_LIB_H_ 1
+
+#ifdef IN_TARGET_LIBS
+#include "config.h"
+#include <unistd.h>
+#endif /* IN_TARGET_LIBS */
+
+/* required, for size_t definition */
+#include <sys/types.h>
+
+#pragma upc c_code
+
+/* helper macros for expanding the value of a macro as a string. */
+#define __UPC_STR__(S) #S
+#define __UPC_XSTR__(S) __UPC_STR__(S)
+
+#ifdef __UPC_STATIC_THREADS__
+/* defined at compile time by the -fupc-threads-N switch */
+#define __UPC_N_THREADS__ THREADS
+#define __UPC_STR__(S) #S
+#define __UPC_XSTR__(S) __UPC_STR__(S)
+#define __UPC_THREADS_CONFIG__ " staticthreads=" __UPC_XSTR__(THREADS)
+#else
+/* defined at run time */
+extern const int THREADS;
+#define __UPC_N_THREADS__ -1
+#define __UPC_THREADS_CONFIG__ "dynamicthreads"
+#endif
+
+#define __UPC_THREADS_MODEL__ "process"
+
+/* Place configuration information required by the Berkeley
+   UPC compilation system into the object file. */
+static const char GCCUPCConfig[]
+#if __MACH__
+  __attribute__ ((section ("__DATA,upc_pgm_info"))) __attribute__ ((used)) =
+#else
+  __attribute__ ((section ("upc_pgm_info"))) __attribute__ ((used)) =
+#endif
+  "$GCCUPCConfig: (" __BASE_FILE__ ") "
+  __UPC_THREADS_CONFIG__ " " __UPC_THREADS_MODEL__ "$";
+
+#undef __UPC_XSTR__
+#undef __UPC_STR__
+
+extern const int MYTHREAD;
+
+/* Depth count used to implement the semantics of
+   nested upc_forall statements.  */
+extern int __upc_forall_depth;
+
+/* The UPC runtime's main program must run first,
+ * we rename the user's main to upc_main(). */
+#if __MACH__
+extern int
+main ()
+__asm__ ("_upc_main");
+#else
+extern int
+main ()
+__asm__ ("upc_main");
+#endif
+
+/* Remap calls to exit so that they invoke the UPC runtime's
+   implementation of exit instead. */
+#define exit __upc_exit
+
+/* Implementation of upc_fence.  */
+#define upc_fence __upc_fence()
+
+/* upc_shared_ptr_t is predefined as the representation of
+   a shared pointer type. */
+
+/* Runtime variables used by optimized code generation
+   on some targets. */
+/* The base address of the UPC shared section */
+extern char __upc_shared_start[1];
+
+/* Runtime procedures */
+//include lib_runtime_api
+
+//include detect_target64
+
+/* Runtime shared access procedures */
+//include mode_types
+
+#if defined(__UPC_INLINE_LIB__) || defined(IN_TARGET_LIBS)
+
+/* Library routines have access to runtime internals.  */
+
+//include gupcr_config_h
+//include lib_min_max
+//include lib_config_heap
+//include lib_config_shared_section
+//include lib_pts_defs
+
+#endif /* __UPC_INLINE_LIB__ || IN_TARGET_LIBS */
+
+#ifdef __UPC_INLINE_LIB__
+
+//include lib_mem_barrier
+//include lib_gmem
+//include lib_node_local
+//include lib_max_threads_def
+/* Must include stdio.h because of FILE def */
+#include <stdio.h>
+//include lib_utils_api
+//include lib_portals
+//include lib_inline_gmem
+/* We need to include <string.h> to define memcpy() */
+#include <string.h>
+//include lib_inline_access
+
+#else
+
+//include lib_access_prototypes
+
+#endif /* __UPC_INLINE_LIB__ */
+
+#endif /* !_GCC_UPC_LIB_H_ */

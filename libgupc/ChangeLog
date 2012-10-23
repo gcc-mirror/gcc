@@ -1,3 +1,88 @@
+2012-10-23  Nenad Vukicevic  <nenad@intrepid.com>
+            Gary Funck  <gary@intrepid.com>
+
+	Implement Portals4-based UPC runtime.
+	* configure.ac: Add a check for --with-upc-runtime=portals4.
+	Disable multilib when building libgupc for the portals4 based
+	UPC runtime.  Portals4 does not currently support
+	32-bit targets.  Implement additional UPC runtime configuration
+	switches, currently supported by the portals4 based UPC
+	runtime.  Check if the user has requested that 'doxygen'
+	design documentation generation is enabled.
+	* configure.tgt: Add portals4 library linker switches if
+	the portals4 based runtime has been enabled via a configure option.
+	* Makefile.am: Add make rules to build the portals4 based runtime
+	when enabled via a configuration option.
+	* aclocal.m4: Re-generate.
+	* config.h.in: Re-generate.
+	* configure: Re-generate.
+	* Makefile.in: Re-generate.
+	* testsuite/Makefile.in: Re-generate.
+	* ax_prog_doxygen.m4: New. Doxygen support.
+	* dox-filter-config-h: New. Doxygen support.
+	* doxygen-include.am: New. Doxygen support.
+	* doxygen.sty.in: New. Doxygen support.
+	* header.tex.in: New. Doxygen support.
+	* portals4/doxygen.cfg.in: New. Doxygen support.
+	* collectives/gen-upc-coll-reduce.pl: Add additional pattern
+	substitutions when expanding collectives customized for use
+	with portals.
+	* collectives/upc_coll_prefix_reduce.in: Ditto.
+	* collectives/upc_coll_reduce.in: Ditto.
+	* portals4/gcc-upc-lib.in: New.
+	* portals4/gupcr_access.c: New.
+	* portals4/gupcr_access.h: New.
+	* portals4/gupcr_addr.c: New.
+	* portals4/gupcr_alloc.h: New.
+	* portals4/gupcr_alloc.upc: New.
+	* portals4/gupcr_barrier.c: New.
+	* portals4/gupcr_barrier.h: New.
+	* portals4/gupcr_broadcast.c: New.
+	* portals4/gupcr_broadcast.h: New.
+	* portals4/gupcr_clock.c: New.
+	* portals4/gupcr_coll_broadcast.upc: New.  Collectives support
+	that uses portals4 collective operations.
+	* portals4/gupcr_coll_init.upc: New. Ditto.
+	* portals4/gupcr_coll_reduce.in: New. Ditto.
+	* portals4/gupcr_coll_reduce.upc: New. Ditto.
+	* portals4/gupcr_coll_sup.c: New. Ditto.
+	* portals4/gupcr_coll_sup.h: New. Ditto.
+	* portals4/upc_coll.h: New. Ditto.
+	* portals4/gupcr_config.h: New.
+	* portals4/gupcr_defs.h: New.
+	* portals4/gupcr_env.c: New.
+	* portals4/gupcr_gmem.c: New.
+	* portals4/gupcr_gmem.h: New.
+	* portals4/gupcr_lib.h: New.
+	* portals4/gupcr_lock_sup.c: New.
+	* portals4/gupcr_lock_sup.h: New.
+	* portals4/gupcr_lock.upc: New.
+	* portals4/gupcr_main.c: New.
+	* portals4/gupcr_mem.c: New.
+	* portals4/gupcr_node.c: New.
+	* portals4/gupcr_node.h: New.
+	* portals4/gupcr_node_mem_mmap.c: New.
+	* portals4/gupcr_node_mem_posix.c: New.
+	* portals4/gupcr_pgm_info.c: New.
+	* portals4/gupcr_portals.c: New.
+	* portals4/gupcr_portals.h: New.
+	* portals4/gupcr_pts.h: New.
+	* portals4/gupcr_runtime.c: New.
+	* portals4/gupcr_runtime.h: New.
+	* portals4/gupcr_shutdown.c: New.
+	* portals4/gupcr_shutdown.h: New.
+	* portals4/gupcr_slock.h: New.
+	* portals4/gupcr_slock.upc: New.
+	* portals4/gupcr_sup.h: New.
+	* portals4/gupcr_sync.h: New.
+	* portals4/gupcr_tick.c: New.
+	* portals4/gupcr_utils.c: New.
+	* portals4/gupcr_utils.h: New.
+	* testsuite/lib/libgupc-dg.exp: Build 'yod' command line
+	when running tests with the portals4 based UPC runtime.
+	* testsuite/lib/libgupc.exp: Add 'yod' switches
+	when running tests with the portals4 based UPC runtime.
+
 2012-10-16  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add MCS lock implementation - fix for some 32 bit targets.

@@ -20,21 +20,23 @@
 #    of the type that the procedure operates on.
 # 3. For floating point types, the code between
 #    "#ifndef _UPC_NONINT_T" and "#endif" is removed.
+# 4. _UPC_TO_PTL_TYPECVT is replaced with a proper define
+#    to convert UPC to PTL data types.
 #
 use strict;
 use warnings;
 my @type_config = (
-    ['signed char', 'C', 1],
-    ['unsigned char', 'UC', 1],
-    ['signed short', 'S', 1],
-    ['unsigned short', 'US', 1],
-    ['signed int', 'I', 1],
-    ['unsigned int', 'UI', 1],
-    ['signed long', 'L', 1],
-    ['unsigned long', 'UL', 1],
-    ['float', 'F', 0],
-    ['double', 'D', 0],
-    ['long double', 'LD', 0]
+    ['signed char', 'C', 1, "UPC_COLL_TO_PTL_CHAR"],
+    ['unsigned char', 'UC', 1, "UPC_COLL_TO_PTL_UCHAR"],
+    ['signed short', 'S', 1, "UPC_COLL_TO_PTL_SHORT"],
+    ['unsigned short', 'US', 1, "UPC_COLL_TO_PTL_USHORT"],
+    ['signed int', 'I', 1, "UPC_COLL_TO_PTL_INT"],
+    ['unsigned int', 'UI', 1, "UPC_COLL_TO_PTL_UINT"],
+    ['signed long', 'L', 1, "UPC_COLL_TO_PTL_LONG"],
+    ['unsigned long', 'UL', 1, "UPC_COLL_TO_PTL_ULONG"],
+    ['float', 'F', 0, "UPC_COLL_TO_PTL_FLOAT"],
+    ['double', 'D', 0, "UPC_COLL_TO_PTL_DOUBLE"],
+    ['long double', 'LD', 0, "UPC_COLL_TO_PTL_LONG_DOUBLE"]
   );
 my $src;
 {
@@ -42,22 +44,24 @@ my $src;
   $src = <>;
 }
 my ($hdr,$body) =
-   ($src =~ /(.*)(^void upc_all(?:_prefix)?_reduce_GENERIC.*)/ms);
+   ($src =~ /(.*)PREPROCESS_BEGIN(.*)/ms);
 print $hdr;
-$body = "\n$body";
 for my $t (@type_config) {
-  my ($name, $chars, $is_int) = @$t;
+  my ($name, $chars, $is_int, $data_type) = @$t;
   my $out = $body;
   for ($out) {
-    s/(^void upc_all(?:_prefix)?_reduce)_GENERIC/$1$chars/sm;
+    s/_GENERIC/$chars/smg;
     s/_UPC_RED_T/$name/smg;
+    s/_UPC_TO_PTL_TYPECVT/$data_type/smg;
     if ($is_int)
       {
         s/^#ifndef\s+_UPC_NONINT_T.*?\n(.*?)^#endif.*?\n/$1/smg;
+        s/^#ifdef\s+_UPC_NONINT_T.*?\n(.*?)^#endif.*?\n//smg;
       }
     else
       {
         s/^#ifndef\s+_UPC_NONINT_T.*?\n.*?^#endif.*?\n//smg;
+        s/^#ifdef\s+_UPC_NONINT_T.*?\n(.*?)^#endif.*?\n/$1/smg;
       }
   }
   print $out;

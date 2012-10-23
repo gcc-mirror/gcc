@@ -5,3 +5,62 @@ proc libgupc-dg-test { prog do_what extra_tool_flags } {
 proc libgupc-dg-prune { system text } {
     return [gcc-dg-prune $system $text]
 }
+
+# Check for portals runtime
+set upc_portals [check_no_compiler_messages portals executable {
+    #include <upc.h>
+    extern void PtlInit ();
+    int main () { PtlInit(); }
+  } ]
+
+# Find YOD if portals runtime is used
+if { $upc_portals } {
+    # Environment variable set?
+    if { [info exists ::env(YOD)] } {
+        set yod_cmd $::env(YOD)
+    } else {
+        # Find yod on the exec path
+        set path [split $::env(PATH) ":"]
+        foreach d $path {
+	    set yod_cmd [file join $d "yod"]
+            verbose "UPC checking for YOD: $yod_cmd in dir: $d" 2
+            if [file executable $yod_cmd] {
+	        break
+	    }
+        }
+    }
+    if { [string compare $yod_cmd ""] == 0 } {
+	error "UPC: Portals4 YOD command cannot be found."
+    }
+    verbose "UPC using YOD: $yod_cmd" 2
+}
+
+# upc_load -- wrapper around default upc_load to pass an extra
+# argument for dynamic UPC tests OR use a job scheduler to execute
+# tests
+
+if { [info procs libgupc_load] != [list] \
+    && [info procs prev_upc_load] == [list] } {
+    rename libgupc_load prev_libgupc_load
+
+    proc libgupc_load { program args } {
+        global upc_run_arguments
+        global upc_portals
+	global yod_cmd
+
+        if { $upc_portals } {
+            set runcmd $yod_cmd
+	    set pargs { "$upc_run_arguments $program" }
+	} else {
+            set pargs { $upc_run_arguments }
+            set runcmd $program
+        }
+	# Add other arguments
+	if { [llength $args] > 0 } {
+	    lappend pargs [lindex $args 0]
+	}
+
+	set result [eval [list prev_libgupc_load $runcmd] $pargs]
+	return $result
+    }
+}

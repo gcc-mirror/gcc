@@ -50,6 +50,7 @@
 
 /* The true set of function names is in upc_all_collectives.c */
 
+PREPROCESS_BEGIN
 void upc_all_prefix_reduce_GENERIC
 (shared void *dst,
  shared const void *src,

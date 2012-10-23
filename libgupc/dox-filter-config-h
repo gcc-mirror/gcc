@@ -1,0 +1,29 @@
+#!/bin/env perl
+use strict;
+use warnings;
+use File::Slurp qw(slurp);
+
+die "usage: $0 <input_file>" unless @ARGV;
+my $file = $ARGV[0];
+die "file not found: $file\n" unless -f $file;
+die "open failed: $file\n" unless open IN, "<$file";
+
+my $input = slurp(\*IN);
+
+my ($before, $gupcr_cfg, $after) = 
+  ($input =~ m{(.*//begin\ gupcr_config_h\n)(.*)
+               (//end\ gupcr_config_h.*)}xs);
+
+die "could not match the gupcr_config_h file markers\n"
+  unless defined($before)
+         && defined($gupcr_cfg)
+	 && defined($after);
+
+$gupcr_cfg =~ s{^/\*\s*((?:(?!/\*).)*?)\s*?\*/\n
+                \#(?:define|undef)\s+(\w+)(.*?)$}
+               {/**\ \@brief\ ${1}\ */\n\#define\ ${2}${3}}xgms;
+
+my $result = $before . $gupcr_cfg . $after;
+print $result;
+
+exit 0;

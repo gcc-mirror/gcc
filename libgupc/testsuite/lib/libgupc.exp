@@ -192,6 +192,11 @@ proc libgupc_target_compile { source dest type options } {
     global lang_test_file
     global lang_library_path
     global lang_link_flags
+    global upc_run_arguments
+    global upc_portals
+
+    # Save compile options for later parsing
+    set compile_flags $options
 
     if { [info exists lang_test_file] } {
         if { $blddir != "" } {
@@ -220,6 +225,29 @@ proc libgupc_target_compile { source dest type options } {
 
     set options [dg-additional-files-options $options $source]
 
+    # Check for number of specified threads
+    # Set 4 threads as a default for portals.
+    # NOTE: To detect upc portals support we compile a small
+    #       program. Make sure that upc_portals exists too.
+    set upc_run_arguments ""
+    if { [info exists upc_portals] } {
+	if { $upc_portals } {
+	    set upc_run_arguments "-n 4"
+	}
+    }
+
+    # Find if static threads compilation
+    set flags [split [join $compile_flags] " "]
+    foreach opt $flags {
+        if { [string match *fupc-threads* $opt] } {
+	    set path [split $opt "-"]
+	    set threads [lindex $path end]
+	    if { $upc_portals } {
+	        set upc_run_arguments "-n $threads"
+	    }
+	}
+    }
+    
     set result [target_compile $source $dest $type $options]
 
     return $result
@@ -241,3 +269,4 @@ proc libgupc_option_proc { option } {
 	return 0
     }
 }
+

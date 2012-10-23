@@ -1,0 +1,441 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{doxygen}
+
+% Packages used by this style file
+% See: http://en.wikibooks.org/wiki/LaTeX/Page_Layout#Standard_page_styles
+\RequirePackage{alltt}
+\RequirePackage{array}
+\RequirePackage{calc}
+\RequirePackage{color}
+\RequirePackage{fancyhdr}
+\RequirePackage{longtable}
+\RequirePackage{verbatim}
+\RequirePackage{ifthen}
+\RequirePackage[table]{xcolor}
+
+% Use helvetica font instead of times roman
+\RequirePackage{helvet}
+\RequirePackage{sectsty}
+\RequirePackage{tocloft}
+\providecommand{\rmdefault}{phv}
+\providecommand{\bfdefault}{bc}
+
+
+% Setup fancy headings
+\pagestyle{fancyplain}
+\newcommand{\clearemptydoublepage}{%
+  \newpage{\pagestyle{empty}\cleardoublepage}%
+}
+\renewcommand{\chaptermark}[1]{%
+  \markboth{#1}{}%
+}
+\renewcommand{\sectionmark}[1]{%
+  \markright{\thesection\ #1}%
+}
+
+\fancyhead[RE]{\fancyplain{}{\bfseries\leftmark}}
+\fancyhead[CE]{\fancyplain{}{}}
+\fancyhead[LE]{\fancyplain{}{\bfseries\thepage}}
+\fancyhead[RO]{\fancyplain{}{\bfseries\rightmark}}
+\fancyhead[CO]{\fancyplain{}{}}
+\fancyhead[LO]{\fancyplain{}{\bfseries\thepage}}
+\fancyfoot[RE]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_DATE@}}
+\fancyfoot[LE]{\fancyplain{}
+{\ifthenelse{\equal{@DOXYGEN_LOGO@}{}}{}
+{\includegraphics[height=20pt]{@DOXYGEN_LOGO@}}}}
+\fancyfoot[CE]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_AUTHOR@}}
+\fancyfoot[RO]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_DATE@}}
+\fancyfoot[LO]{\fancyplain{}
+{\ifthenelse{\equal{@DOXYGEN_LOGO@}{}}{}
+{\includegraphics[height=20pt]{@DOXYGEN_LOGO@}}}}
+\fancyfoot[CO]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_AUTHOR@}}
+
+\fancypagestyle{plain}{
+\fancyhead[RE]{\fancyplain{}{\bfseries\leftmark}}
+\fancyhead[CE]{\fancyplain{}{}}
+\fancyhead[LE]{\fancyplain{}{\bfseries\thepage}}
+\fancyhead[RO]{\fancyplain{}{\bfseries\rightmark}}
+\fancyhead[CO]{\fancyplain{}{}}
+\fancyhead[LO]{\fancyplain{}{\bfseries\thepage}}
+\fancyfoot[RE]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_DATE@}}
+\fancyfoot[LE]{\fancyplain{}
+{\ifthenelse{\equal{@DOXYGEN_LOGO@}{}}{}
+{\includegraphics[height=20pt]{@DOXYGEN_LOGO@}}}}
+\fancyfoot[CE]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_AUTHOR@}}
+\fancyfoot[RO]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_DATE@}}
+\fancyfoot[LO]{\fancyplain{}
+{\ifthenelse{\equal{@DOXYGEN_LOGO@}{}}{}
+{\includegraphics[height=20pt]{@DOXYGEN_LOGO@}}}}
+\fancyfoot[CO]{\fancyplain{}{\bfseries\scriptsize @DOXYGEN_AUTHOR@}}}
+
+%---------- Internal commands used in this style file ----------------
+
+% Generic environment used by all paragraph-based environments defined
+% below. Note that the command \title{...} needs to be defined inside
+% those environments!
+\newenvironment{DoxyDesc}[1]{%
+  \begin{list}{}%
+  {%
+    \settowidth{\labelwidth}{40pt}%
+    \setlength{\leftmargin}{\labelwidth}%
+    \setlength{\parsep}{0pt}%
+    \setlength{\itemsep}{-4pt}%
+    \renewcommand{\makelabel}{\entrylabel}%
+  }%
+  \item[#1]%
+}{%
+  \end{list}%
+}
+
+%---------- Commands used by doxygen LaTeX output generator ----------
+
+% Used by <pre> ... </pre>
+\newenvironment{DoxyPre}{%
+  \small%
+  \begin{alltt}%
+}{%
+  \end{alltt}%
+  \normalsize%
+}
+
+% Used by @code ... @endcode
+\newenvironment{DoxyCode}{%
+  \footnotesize%
+  \verbatim%
+}{%
+  \endverbatim%
+  \normalsize%
+}
+
+% Used by @example, @include, @includelineno and @dontinclude
+\newenvironment{DoxyCodeInclude}{%
+  \DoxyCode%
+}{%
+  \endDoxyCode%
+}
+
+% Used by @verbatim ... @endverbatim
+\newenvironment{DoxyVerb}{%
+  \footnotesize%
+  \verbatim%
+}{%
+  \endverbatim%
+  \normalsize%
+}
+
+% Used by @verbinclude
+\newenvironment{DoxyVerbInclude}{%
+  \DoxyVerb%
+}{%
+  \endDoxyVerb%
+}
+
+% Used by numbered lists (using '-#' or <ol> ... </ol>)
+\newenvironment{DoxyEnumerate}{%
+  \enumerate%
+}{%
+  \endenumerate%
+}
+
+% Used by bullet lists (using '-', @li, @arg, or <ul> ... </ul>)
+\newenvironment{DoxyItemize}{%
+  \itemize%
+}{%
+  \enditemize%
+}
+
+% Used by description lists (using <dl> ... </dl>)
+\newenvironment{DoxyDescription}{%
+  \description%
+}{%
+  \enddescription%
+}
+
+% Used by @image, @dotfile, and @dot ... @enddot
+% (only if caption is specified)
+\newenvironment{DoxyImage}{%
+  \begin{figure}[H]%
+  \begin{center}%
+}{%
+  \end{center}%
+  \end{figure}%
+}
+
+% Used by @image, @dotfile, @dot ... @enddot, and @msc ... @endmsc
+% (only if no caption is specified)
+\newenvironment{DoxyImageNoCaption}{%
+}{%
+}
+
+% Used by @attention
+\newenvironment{DoxyAttention}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @author and @authors
+\newenvironment{DoxyAuthor}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @date
+\newenvironment{DoxyDate}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @invariant
+\newenvironment{DoxyInvariant}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @note
+\newenvironment{DoxyNote}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @post
+\newenvironment{DoxyPostcond}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @pre
+\newenvironment{DoxyPrecond}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @remark
+\newenvironment{DoxyRemark}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @return
+\newenvironment{DoxyReturn}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @since
+\newenvironment{DoxySince}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @see
+\newenvironment{DoxySeeAlso}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @version
+\newenvironment{DoxyVersion}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @warning
+\newenvironment{DoxyWarning}[1]{%
+  \begin{DoxyDesc}{#1}%
+}{%
+  \end{DoxyDesc}%
+}
+
+% Used by @internal
+\newenvironment{DoxyInternal}[1]{%
+  \paragraph*{#1}%
+}{%
+}
+
+% Used by @par and @paragraph
+\newenvironment{DoxyParagraph}[1]{%
+  \begin{list}{}%
+  {%
+    \settowidth{\labelwidth}{40pt}%
+    \setlength{\leftmargin}{\labelwidth}%
+    \setlength{\parsep}{0pt}%
+    \setlength{\itemsep}{-4pt}%
+    \renewcommand{\makelabel}{\entrylabel}%
+  }%
+  \item[#1]%
+}{%
+  \end{list}%
+}
+
+% Used by parameter lists
+\newenvironment{DoxyParams}[2][]{%
+  \begin{DoxyDesc}{#2}%
+    \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \definecolor{tableShade}{HTML}{F8F8F8}%
+      \rowcolors{1}{white}{tableShade}%
+      \arrayrulecolor{gray}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \ifthenelse{\equal{#1}{}}
+      {\begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                          p{0.79\textwidth}|}}%
+      {\ifthenelse{\equal{#1}{1}}%
+       {\begin{longtable}{|>{\centering}p{0.10\textwidth}|%
+                          >{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                          p{0.68\textwidth}|}}%
+       {\begin{longtable}{|>{\centering}p{0.10\textwidth}|%
+                          >{\centering\hspace{0pt}}p{0.15\textwidth}|%
+                          >{\raggedleft\hspace{0pt}}p{0.15\textwidth}|%
+                          p{0.50\textwidth}|}}%
+       }\hline%
+}{%
+      \end{longtable}%
+    \end{description}%
+  \end{DoxyDesc}%
+}
+
+% is used for parameters within a detailed function description
+\newenvironment{DoxyParamCaption}{%
+  \renewcommand{\item}[2][]{##1 {\em ##2}}%
+  }{%
+}
+
+% Used by return value lists
+\newenvironment{DoxyRetVals}[1]{%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \definecolor{tableShade}{HTML}{F8F8F8}%
+      \rowcolors{1}{white}{tableShade}%
+      \arrayrulecolor{gray}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
+                          p{0.70\textwidth}|}%
+      \hline%
+}{%
+      \end{longtable}%
+    \end{description}%
+  \end{DoxyDesc}%
+}
+
+% Used by exception lists
+\newenvironment{DoxyExceptions}[1]{%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \definecolor{tableShade}{HTML}{F8F8F8}%
+      \rowcolors{1}{white}{tableShade}%
+      \arrayrulecolor{gray}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
+                          p{0.70\textwidth}|}%
+      \hline%
+}{%
+      \end{longtable}%
+    \end{description}%
+  \end{DoxyDesc}%
+}
+
+% Used by template parameter lists
+\newenvironment{DoxyTemplParams}[1]{%
+  \begin{DoxyDesc}{#1}%
+    \begin{description}%
+      \item[] \hspace{\fill} \vspace{-25pt}%
+      \definecolor{tableShade}{HTML}{F8F8F8}%
+      \rowcolors{1}{white}{tableShade}%
+      \arrayrulecolor{gray}%
+      \setlength{\tabcolsep}{0.01\textwidth}%
+      \begin{longtable}{|>{\raggedleft\hspace{0pt}}p{0.25\textwidth}|%
+                          p{0.70\textwidth}|}%
+      \hline%
+}{%
+      \end{longtable}%
+    \end{description}%
+  \end{DoxyDesc}%
+}
+
+\newcommand{\doxyref}[3]{\textbf{#1} (\textnormal{#2}\,\pageref{#3})}
+\newenvironment{DoxyCompactList}
+{\begin{list}{}{
+  \setlength{\leftmargin}{0.5cm}
+  \setlength{\itemsep}{0pt}
+  \setlength{\parsep}{0pt}
+  \setlength{\topsep}{0pt}
+  \renewcommand{\makelabel}{\hfill}}}
+{\end{list}}
+\newenvironment{DoxyCompactItemize}
+{
+  \begin{itemize}
+  \setlength{\itemsep}{-3pt}
+  \setlength{\parsep}{0pt}
+  \setlength{\topsep}{0pt}
+  \setlength{\partopsep}{0pt}
+}
+{\end{itemize}}
+\newcommand{\PBS}[1]{\let\temp=\\#1\let\\=\temp}
+\newlength{\tmplength}
+\newenvironment{TabularC}[1]
+{
+\setlength{\tmplength}
+     {\linewidth/(#1)-\tabcolsep*2-\arrayrulewidth*(#1+1)/(#1)}
+      \par\begin{tabular*}{\linewidth}
+             {*{#1}{|>{\PBS\raggedright\hspace{0pt}}p{\the\tmplength}}|}
+}
+{\end{tabular*}\par}
+\newcommand{\entrylabel}[1]{
+   {\parbox[b]{\labelwidth-4pt}{\makebox[0pt][l]{\textbf{#1}}\vspace{1.5\baselineskip}}}}
+\newenvironment{Desc}
+{\begin{list}{}
+  {
+    \settowidth{\labelwidth}{40pt}
+    \setlength{\leftmargin}{\labelwidth}
+    \setlength{\parsep}{0pt}
+    \setlength{\itemsep}{-4pt}
+    \renewcommand{\makelabel}{\entrylabel}
+  }
+}
+{\end{list}}
+\newenvironment{Indent}
+  {\begin{list}{}{\setlength{\leftmargin}{0.5cm}}
+      \item[]\ignorespaces}
+  {\unskip\end{list}}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.2cm}
+\addtocounter{secnumdepth}{2}
+\usepackage[T1]{fontenc}
+\makeatletter
+\renewcommand{\paragraph}{\@startsection{paragraph}{4}{0ex}%
+   {-1.0ex}%
+   {1.0ex}%
+   {\usefont{OT1}{phv}{bc}{n}\color{darkgray}}}
+\renewcommand{\subparagraph}{\@startsection{subparagraph}{5}{0ex}%
+   {-1.0ex}%
+   {1.0ex}%
+   {\usefont{OT1}{phv}{bc}{n}\color{darkgray}}}
+\makeatother
+\allsectionsfont{\usefont{OT1}{phv}{bc}{n}\selectfont\color{darkgray}}
+\stepcounter{secnumdepth}
+\stepcounter{tocdepth}
+\definecolor{comment}{rgb}{0.5,0.0,0.0}
+\definecolor{keyword}{rgb}{0.0,0.5,0.0}
+\definecolor{keywordtype}{rgb}{0.38,0.25,0.125}
+\definecolor{keywordflow}{rgb}{0.88,0.5,0.0}
+\definecolor{preprocessor}{rgb}{0.5,0.38,0.125}
+\definecolor{stringliteral}{rgb}{0.0,0.125,0.25}
+\definecolor{charliteral}{rgb}{0.0,0.5,0.5}
+\definecolor{vhdldigit}{rgb}{1.0,0.0,1.0}
+\definecolor{vhdlkeyword}{rgb}{0.43,0.0,0.43}
+\definecolor{vhdllogic}{rgb}{1.0,0.0,0.0}
+\definecolor{vhdlchar}{rgb}{0.0,0.0,0.0}

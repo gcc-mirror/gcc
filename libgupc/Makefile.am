@@ -6,8 +6,14 @@ if LIBGUPC_SMP_RUNTIME
   WARN_CFLAGS += -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
   INC_CFLAGS =
 endif
+if LIBGUPC_PORTALS4_RUNTIME
+  targ_runtime_dir = portals4
+  WARN_CFLAGS += -W -Wall -Wwrite-strings -Wstrict-prototypes -Werror
+  PORTALS4_IFLAG  = @portals4inc@
+  INC_CFLAGS = $(PORTALS4_IFLAG)
+endif
 
-ACLOCAL_AMFLAGS = -I .. -I ../config
+ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
 ## May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -37,8 +43,8 @@ nodist_libsubinclude_HEADERS =
 
 IN_LIB_CPPFLAGS  = -DIN_GCC -DIN_TARGET_LIBS
 AM_CPPFLAGS = $(IN_LIB_CPPFLAGS)
-AM_CFLAGS = $(WARN_CFLAGS)
-AM_UPCFLAGS = $(WARN_CFLAGS) -fno-strict-aliasing
+AM_CFLAGS = $(WARN_CFLAGS) $(INC_CFLAGS)
+AM_UPCFLAGS = $(WARN_CFLAGS) $(INC_CFLAGS) -fno-strict-aliasing
 
 
 SUBDIRS = testsuite
@@ -131,6 +137,88 @@ UPC_RUNTIME_SRC_INLINE = config.h smp/upc_access.c smp/upc_access.h \
         smp/upc_sup.h smp/upc_sync.h
 
 endif   ### LIBGUPC_SMP_RUNTIME ####
+
+if LIBGUPC_PORTALS4_RUNTIME
+
+EXTRA_DIST += gcc-upc-lib.in \
+              gen-gupc-inline-lib.pl
+
+UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
+	portals4/gupcr_addr.c \
+	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
+	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
+	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
+	portals4/gupcr_clock.c \
+	portals4/gupcr_coll_sup.h portals4/gupcr_coll_sup.c \
+	portals4/gupcr_config.h portals4/gupcr_defs.h \
+	portals4/gupcr_env.c portals4/gupcr_gmem.h portals4/gupcr_gmem.c \
+	portals4/gupcr_lib.h portals4/gupcr_lock.upc \
+	portals4/gupcr_lock_sup.c portals4/gupcr_lock_sup.h \
+	portals4/gupcr_main.c \
+	portals4/gupcr_node.c portals4/gupcr_node.h \
+	portals4/gupcr_mem.c portals4/gupcr_portals.c \
+	portals4/gupcr_pgm_info.c portals4/gupcr_pts.h \
+	portals4/gupcr_runtime.h portals4/gupcr_runtime.c \
+	portals4/gupcr_shutdown.h portals4/gupcr_shutdown.c \
+	portals4/gupcr_slock.h portals4/gupcr_slock.upc \
+	portals4/gupcr_sup.h portals4/gupcr_sync.h \
+	portals4/gupcr_tick.c \
+	portals4/gupcr_utils.h portals4/gupcr_utils.c
+
+UPC_RUNTIME_SRC_INLINE = config.h portals4/gupcr_access.c \
+	portals4/gupcr_access.h portals4/gupcr_config.h \
+	portals4/gupcr_defs.h portals4/gupcr_gmem.h \
+	portals4/gupcr_node.h \
+	portals4/gupcr_portals.h portals4/gupcr_pts.h \
+	portals4/gupcr_sup.h portals4/gupcr_sync.h \
+	portals4/gupcr_utils.h
+
+if LIBGUPC_NODE_LOCAL_MEM_POSIX
+  UPC_RUNTIME_SRC += portals4/gupcr_node_mem_posix.c
+endif
+if LIBGUPC_NODE_LOCAL_MEM_MMAP
+  UPC_RUNTIME_SRC += portals4/gupcr_node_mem_mmap.c
+endif
+
+include doxygen-include.am
+MOSTLYCLEANFILES += $(DX_CLEANFILES)
+EXTRA_DIST += $(DX_CONFIG)
+
+# Portals runtime only partialy uses generic collectives
+
+# We need full pathnames here, because vpath won't find
+# the files if they don't exist yet.
+LIBGUPC_COLL_SRCDIR=$(top_srcdir)/collectives
+UPC_COLL_PREFIX_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_prefix_reduce.upc
+LIBGUPC_PORTALS4_SRCDIR=$(top_srcdir)/portals4
+UPC_COLL_REDUCE_UPC = $(LIBGUPC_PORTALS4_SRCDIR)/gupcr_coll_reduce.upc
+
+if MAINTAINER_MODE
+$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl \
+                               upc_coll_prefix_reduce.in
+	$(PERL) $+ > $@
+
+$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl gupcr_coll_reduce.in
+	$(PERL) $+ > $@
+endif
+
+UPC_RUNTIME_SRC += \
+	portals4/upc_coll.h portals4/gupcr_coll_broadcast.upc \
+	portals4/gupcr_coll_init.upc $(UPC_COLL_REDUCE_UPC)
+
+UPC_COLLECTIVES_SRC = \
+	collectives/upc_coll_err.upc collectives/upc_coll_exchange.upc \
+	collectives/upc_coll_gather_all.upc collectives/upc_coll_gather.upc \
+	collectives/upc_coll_permute.upc $(UPC_COLL_PREFIX_REDUCE_UPC) \
+	collectives/upc_coll_scatter.upc collectives/upc_coll_sort.upc
+
+UPC_RUNTIME_SRC += $(UPC_COLLECTIVES_SRC)
+
+EXTRA_DIST += gen-upc-coll-reduce.pl \
+             upc_coll_prefix_reduce.in \
+             gupcr_coll_reduce.in
+
+endif   ### LIBGUPC_PORTALS_RUNTIME ####
 
 if LIBGUPC_GENERIC_COLLECTIVES
 

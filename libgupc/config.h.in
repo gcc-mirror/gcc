@@ -38,11 +38,41 @@
 /* Define to preferred signal for UPC backtrace. */
 #undef GUPCR_BACKTRACE_SIGNAL
 
+/* Size of get/put bounce buffer */
+#undef GUPCR_BOUNCE_BUFFER_SIZE
+
+/* upc_global_exit() timeout in seconds. */
+#undef GUPCR_GLOBAL_EXIT_TIMEOUT
+
+/* Define to 1 if UPC runtime checks are supported. */
+#undef GUPCR_HAVE_CHECKS
+
+/* Define to 1 if UPC runtime debugging mode is enabled. */
+#undef GUPCR_HAVE_DEBUG
+
 /* Define if UPC GUM debug server is supported. */
 #undef GUPCR_HAVE_GUM_DEBUG
 
+/* Define to 1 if UPC runtime statistics collection is supported. */
+#undef GUPCR_HAVE_STATS
+
+/* Define to 1 if UPC runtime tracing is supported. */
+#undef GUPCR_HAVE_TRACE
+
 /* Maximum number of locks held per thread */
 #undef GUPCR_MAX_LOCKS
+
+/* Define to 1 if UPC runtime will use node local memory accesses. */
+#undef GUPCR_NODE_LOCAL_MEM
+
+/* Define to 1 if UPC node local access uses mmap-ed file. */
+#undef GUPCR_NODE_LOCAL_MEM_MMAP
+
+/* Define to 1 if UPC node local access uses Posix shared memory. */
+#undef GUPCR_NODE_LOCAL_MEM_POSIX
+
+/* Portals4 PTE base index. */
+#undef GUPCR_PTE_BASE
 
 /* The required alignment for the UPC struct shared pointer representation. */
 #undef GUPCR_PTS_ALIGN
@@ -76,6 +106,9 @@
 
 /* Maximum number of children at each level of a collective operation tree. */
 #undef GUPCR_TREE_FANOUT
+
+/* Define to 1 if UPC runtime will use Portals4 triggered operations. */
+#undef GUPCR_USE_PORTALS4_TRIGGERED_OPS
 
 //end gupcr_config_h
 
@@ -191,6 +224,9 @@
 
 /* Define to 1 if you have the <semaphore.h> header file. */
 #undef HAVE_SEMAPHORE_H
+
+/* Define to 1 if you have the 'shm_open' function. */
+#undef HAVE_SHM_OPEN
 
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET

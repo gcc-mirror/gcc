@@ -1,0 +1,66 @@
+\documentclass[@DOXYGEN_PAPER_SIZE@]{report}
+\usepackage[top=1in, bottom=1in,
+            left=1in, right=1in,
+	    textwidth=6.5in]{geometry}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{ifthen}
+\usepackage[table]{xcolor}
+\usepackage{textcomp}
+\usepackage{alltt}
+\usepackage{ifpdf}
+\ifpdf
+\usepackage[pdftex,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue,
+            unicode
+           ]{hyperref}
+\else
+\usepackage[ps2pdf,
+            pagebackref=true,
+            colorlinks=true,
+            linkcolor=blue,
+            unicode
+           ]{hyperref}
+\usepackage{pspicture}
+\fi
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
+\usepackage[scaled=.90]{helvet}
+\usepackage{courier}
+\usepackage{sectsty}
+\usepackage[titles]{tocloft}
+\usepackage{doxygen}
+\lstset{language=C,inputencoding=utf8,
+        basicstyle=\footnotesize,breaklines=true,breakatwhitespace=true,
+	tabsize=8,numbers=left}
+\makeindex
+\setcounter{tocdepth}{3}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\familydefault}{\sfdefault}
+\begin{document}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\vspace*{7cm}
+\begin{center}
+\ifthenelse{\equal{@DOXYGEN_LOGO@}{}}{}
+{\includegraphics{@DOXYGEN_LOGO@}\\
+\vspace*{1cm}}
+{\large @DOXYGEN_TITLE@}\\
+\vspace*{1cm}
+{\large @DOXYGEN_AUTHOR@}\\
+\vspace*{0.5cm}
+{\small @DOXYGEN_DATETIME@}\\
+\end{center}
+\end{titlepage}
+\clearemptydoublepage
+\pagenumbering{roman}
+\tableofcontents
+\clearemptydoublepage
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
