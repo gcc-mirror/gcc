@@ -309,6 +309,13 @@ m32c*-*-*)
 	tmake_file=m32c/t-m32c
 	target_has_targetm_common=no
         ;;
+aarch64*-*-*)
+	cpu_type=aarch64
+	need_64bit_hwint=yes
+	extra_headers="arm_neon.h"
+	extra_objs="aarch64-builtins.o"
+	target_has_targetm_common=yes
+	;;
 alpha*-*-*)
 	cpu_type=alpha
 	need_64bit_hwint=yes
@@ -799,6 +806,27 @@ case ${target} in
 esac
 
 case ${target} in
+aarch64*-*-elf)
+	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-elf-raw.h"
+	tmake_file="${tmake_file} aarch64/t-aarch64"
+	use_gcc_stdint=wrap
+	case $target in
+	aarch64_be-*)
+		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+		;;
+	esac
+	;;
+aarch64*-*-linux*)
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-linux.h"
+	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-linux"
+	case $target in
+	aarch64_be-*)
+		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+		;;
+	esac
+	;;
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
 	extra_options="${extra_options} alpha/elf.opt"
@@ -2998,6 +3026,92 @@ fi
 
 supported_defaults=
 case "${target}" in
+	aarch64*-*-*)
+		supported_defaults="cpu arch"
+		for which in cpu arch; do
+
+			eval "val=\$with_$which"
+			base_val=`echo $val | sed -e 's/\+.*//'`
+			ext_val=`echo $val | sed -e 's/[a-z0-9\-]\+//'`
+
+			if [ $which = arch ]; then
+			  def=aarch64-arches.def
+			  pattern=AARCH64_ARCH
+			else
+			  def=aarch64-cores.def
+			  pattern=AARCH64_CORE
+			fi
+
+			ext_mask=AARCH64_CPU_DEFAULT_FLAGS
+
+			# Find the base CPU or ARCH id in aarch64-cores.def or
+			# aarch64-arches.def
+			if [ x"$base_val" = x ] \
+			    || grep "^$pattern(\"$base_val\"," \
+				    ${srcdir}/config/aarch64/$def \
+				    > /dev/null; then
+
+			  if [ $which = arch ]; then
+				base_id=`grep "^$pattern(\"$base_val\"," \
+				  ${srcdir}/config/aarch64/$def | \
+				  sed -e 's/^[^,]*,[ 	]*//' | \
+				  sed -e 's/,.*$//'`
+			  else
+				base_id=`grep "^$pattern(\"$base_val\"," \
+				  ${srcdir}/config/aarch64/$def | \
+				  sed -e 's/^[^,]*,[ 	]*//' | \
+				  sed -e 's/,.*$//'`
+			  fi
+
+			  while [ x"$ext_val" != x ]
+			  do
+				ext_val=`echo $ext_val | sed -e 's/\+//'`
+				ext=`echo $ext_val | sed -e 's/\+.*//'`
+				base_ext=`echo $ext | sed -e 's/^no//'`
+
+				if [ x"$base_ext" = x ] \
+				    || grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
+				    ${srcdir}/config/aarch64/aarch64-option-extensions.def \
+				    > /dev/null; then
+
+				  ext_on=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
+					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
+					sed -e 's/^[^,]*,[ 	]*//' | \
+					sed -e 's/,.*$//'`
+				  ext_off=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
+					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
+					sed -e 's/^[^,]*,[ 	]*[^,]*,[ 	]*//' | \
+					sed -e 's/,.*$//' | \
+					sed -e 's/).*$//'`
+
+				  if [ $ext = $base_ext ]; then
+					# Adding extension
+					ext_mask="("$ext_mask") | ("$ext_on")"
+				  else
+					# Removing extension
+					ext_mask="("$ext_mask") & ~("$ext_off")"
+				  fi
+
+				  true
+				else
+				  echo "Unknown extension used in --with-$which=$val" 1>&2
+				  exit 1
+				fi
+				ext_val=`echo $ext_val | sed -e 's/[a-z0-9]\+//'`
+			  done
+
+			  ext_mask="(("$ext_mask") << 6)"
+			  if [ x"$base_id" != x ]; then
+				target_cpu_cname="TARGET_CPU_$base_id | $ext_mask"
+			  fi
+			  true
+			else
+			  echo "Unknown $which used in --with-$which=$val" 1>&2
+			  exit 1
+			fi
+		done
+		;;
+
 	alpha*-*-*)
 		supported_defaults="cpu tune"
 		for which in cpu tune; do
@@ -3480,6 +3594,15 @@ esac
 # Set some miscellaneous flags for particular targets.
 target_cpu_default2=
 case ${target} in
+	aarch64*-*-*)
+		if test x$target_cpu_cname = x
+		then
+			target_cpu_default2=TARGET_CPU_generic
+		else
+			target_cpu_default2=$target_cpu_cname
+		fi
+		;;
+
 	arm*-*-*)
 		if test x$target_cpu_cname = x
 		then

@@ -23189,6 +23189,19 @@ foo:
 	tls_first_minor=19
 	tls_as_opt='--fatal-warnings'
 	;;
+  aarch64*-*-*)
+    conftest_s='
+	.section ".tdata","awT",%progbits
+foo:	.long	25
+	.text
+	adrp  x0, :tlsgd:x
+	add   x0, x0, #:tlsgd_lo12:x
+        bl    __tls_get_addr
+	nop'
+	tls_first_major=2
+	tls_first_minor=20
+	tls_as_opt='--fatal-warnings'
+	;;
   powerpc-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
