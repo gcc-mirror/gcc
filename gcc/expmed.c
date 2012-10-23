@@ -57,7 +57,6 @@ static void store_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   rtx);
 static rtx extract_fixed_bit_field (enum machine_mode, rtx,
 				    unsigned HOST_WIDE_INT,
-				    unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, rtx, int, bool);
 static rtx mask_rtx (enum machine_mode, int, int, int);
 static rtx lshift_value (enum machine_mode, rtx, int, int);
@@ -1128,28 +1127,21 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
       if (BYTES_BIG_ENDIAN)
 	{
-	  int total_bits;
-
-	  /* We must do an endian conversion exactly the same way as it is
-	     done in extract_bit_field, so that the two calls to
-	     extract_fixed_bit_field will have comparable arguments.  */
-	  if (!MEM_P (value) || GET_MODE (value) == BLKmode)
-	    total_bits = BITS_PER_WORD;
-	  else
-	    total_bits = GET_MODE_BITSIZE (GET_MODE (value));
-
 	  /* Fetch successively less significant portions.  */
 	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> (bitsize - bitsdone - thissize))
 			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
 	  else
-	    /* The args are chosen so that the last part includes the
-	       lsb.  Give extract_bit_field the value it needs (with
-	       endianness compensation) to fetch the piece we want.  */
-	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					    total_bits - bitsize + bitsdone,
-					    NULL_RTX, 1, false);
+	    {
+	      int total_bits = GET_MODE_BITSIZE (GET_MODE (value));
+	      /* The args are chosen so that the last part includes the
+		 lsb.  Give extract_bit_field the value it needs (with
+		 endianness compensation) to fetch the piece we want.  */
+	      part = extract_fixed_bit_field (word_mode, value, thissize,
+					      total_bits - bitsize + bitsdone,
+					      NULL_RTX, 1, false);
+	    }
 	}
       else
 	{
@@ -1159,7 +1151,7 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 			     >> bitsdone)
 			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
 	  else
-	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
+	    part = extract_fixed_bit_field (word_mode, value, thissize,
 					    bitsdone, NULL_RTX, 1, false);
 	}
 
@@ -1240,14 +1232,10 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		     enum machine_mode mode, enum machine_mode tmode,
 		     bool fallback_p)
 {
-  unsigned int unit
-    = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
-  unsigned HOST_WIDE_INT offset, bitpos;
   rtx op0 = str_rtx;
   enum machine_mode int_mode;
   enum machine_mode ext_mode;
   enum machine_mode mode1;
-  int byte_offset;
 
   if (tmode == VOIDmode)
     tmode = mode;
@@ -1365,36 +1353,9 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       }
   }
 
-  /* Extraction of a full-word or multi-word value from a structure
-     in a register or aligned memory can be done with just a SUBREG.
-     A subword value in the least significant part of a register
-     can also be extracted with a SUBREG.  For this, we need the
-     byte offset of the value in op0.  */
-
-  bitpos = bitnum % unit;
-  offset = bitnum / unit;
-  byte_offset = bitpos / BITS_PER_UNIT + offset * UNITS_PER_WORD;
-
-  /* If OP0 is a register, BITPOS must count within a word.
-     But as we have it, it counts within whatever size OP0 now has.
-     On a bigendian machine, these are not the same, so convert.  */
-  if (BYTES_BIG_ENDIAN
-      && !MEM_P (op0)
-      && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
-    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-
   /* ??? We currently assume TARGET is at least as big as BITSIZE.
      If that's wrong, the solution is to test for it and set TARGET to 0
      if needed.  */
-
-  /* Only scalar integer modes can be converted via subregs.  There is an
-     additional problem for FP modes here in that they can have a precision
-     which is different from the size.  mode_for_size uses precision, but
-     we want a mode based on the size, so we must avoid calling it for FP
-     modes.  */
-  mode1  = (SCALAR_INT_MODE_P (tmode)
-	    ? mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0)
-	    : mode);
 
   /* If the bitfield is volatile, we need to make sure the access
      remains on a type-aligned boundary.  */
@@ -1404,39 +1365,48 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && flag_strict_volatile_bitfields > 0)
     goto no_subreg_mode_swap;
 
-  if (((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
-	&& bitpos % BITS_PER_WORD == 0)
-       || (mode1 != BLKmode
-	   /* ??? The big endian test here is wrong.  This is correct
-	      if the value is in a register, and if mode_for_size is not
-	      the same mode as op0.  This causes us to get unnecessarily
-	      inefficient code from the Thumb port when -mbig-endian.  */
-	   && (BYTES_BIG_ENDIAN
-	       ? bitpos + bitsize == BITS_PER_WORD
-	       : bitpos == 0)))
-      && ((!MEM_P (op0)
-	   && TRULY_NOOP_TRUNCATION_MODES_P (mode1, GET_MODE (op0))
-	   && GET_MODE_SIZE (mode1) != 0
-	   && byte_offset % GET_MODE_SIZE (mode1) == 0)
-	  || (MEM_P (op0)
-	      && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
-		  || (offset * BITS_PER_UNIT % bitsize == 0
-		      && MEM_ALIGN (op0) % bitsize == 0)))))
+  /* Only scalar integer modes can be converted via subregs.  There is an
+     additional problem for FP modes here in that they can have a precision
+     which is different from the size.  mode_for_size uses precision, but
+     we want a mode based on the size, so we must avoid calling it for FP
+     modes.  */
+  mode1 = mode;
+  if (SCALAR_INT_MODE_P (tmode))
     {
-      if (MEM_P (op0))
-	op0 = adjust_bitfield_address (op0, mode1, offset);
-      else if (mode1 != GET_MODE (op0))
-	{
-	  rtx sub = simplify_gen_subreg (mode1, op0, GET_MODE (op0),
-					 byte_offset);
-	  if (sub == NULL)
-	    goto no_subreg_mode_swap;
-	  op0 = sub;
-	}
-      if (mode1 != mode)
-	return convert_to_mode (tmode, op0, unsignedp);
-      return op0;
+      enum machine_mode try_mode = mode_for_size (bitsize,
+						  GET_MODE_CLASS (tmode), 0);
+      if (try_mode != BLKmode)
+	mode1 = try_mode;
     }
+  gcc_assert (mode1 != BLKmode);
+
+  /* Extraction of a full MODE1 value can be done with a subreg as long
+     as the least significant bit of the value is the least significant
+     bit of either OP0 or a word of OP0.  */
+  if (!MEM_P (op0)
+      && lowpart_bit_field_p (bitnum, bitsize, GET_MODE (op0))
+      && bitsize == GET_MODE_BITSIZE (mode1)
+      && TRULY_NOOP_TRUNCATION_MODES_P (mode1, GET_MODE (op0)))
+    {
+      rtx sub = simplify_gen_subreg (mode1, op0, GET_MODE (op0),
+				     bitnum / BITS_PER_UNIT);
+      if (sub)
+	return convert_extracted_bit_field (sub, mode, tmode, unsignedp);
+    }
+
+  /* Extraction of a full MODE1 value can be done with a load as long as
+     the field is on a byte boundary and is sufficiently aligned.  */
+  if (MEM_P (op0)
+      && bitnum % BITS_PER_UNIT == 0
+      && bitsize == GET_MODE_BITSIZE (mode1)
+      && (!SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0))
+	  || (bitnum % bitsize == 0
+	      && MEM_ALIGN (op0) % bitsize == 0)))
+    {
+      op0 = adjust_bitfield_address (op0, mode1, bitnum / BITS_PER_UNIT);
+      return convert_extracted_bit_field (op0, mode, tmode, unsignedp);
+    }
+
  no_subreg_mode_swap:
 
   /* Handle fields bigger than a word.  */
@@ -1517,35 +1487,25 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 			   GET_MODE_BITSIZE (mode) - bitsize, NULL_RTX, 0);
     }
 
-  /* From here on we know the desired field is smaller than a word.  */
-
-  /* Check if there is a correspondingly-sized integer field, so we can
-     safely extract it as one size of integer, if necessary; then
-     truncate or extend to the size that is wanted; then use SUBREGs or
-     convert_to_mode to get one of the modes we really wanted.  */
-
-  int_mode = int_mode_for_mode (tmode);
-  if (int_mode == BLKmode)
-    int_mode = int_mode_for_mode (mode);
-  /* Should probably push op0 out to memory and then do a load.  */
-  gcc_assert (int_mode != BLKmode);
-
-  /* OFFSET is the number of words or bytes (UNIT says which)
-     from STR_RTX to the first word or byte containing part of the field.  */
-  if (!MEM_P (op0))
+  /* If OP0 is a multi-word register, narrow it to the affected word.
+     If the region spans two words, defer to extract_split_bit_field.  */
+  if (!MEM_P (op0) && GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
     {
-      if (offset != 0
-	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
+      op0 = simplify_gen_subreg (word_mode, op0, GET_MODE (op0),
+				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
+      bitnum %= BITS_PER_WORD;
+      if (bitnum + bitsize > BITS_PER_WORD)
 	{
-	  if (!REG_P (op0))
-	    op0 = copy_to_reg (op0);
-	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
-		                op0, (offset * UNITS_PER_WORD));
+	  if (!fallback_p)
+	    return NULL_RTX;
+	  target = extract_split_bit_field (op0, bitsize, bitnum, unsignedp);
+	  return convert_extracted_bit_field (target, mode, tmode, unsignedp);
 	}
-      offset = 0;
     }
 
-  /* Now OFFSET is nonzero only for memory operands.  */
+  /* From here on we know the desired field is smaller than a word.
+     If OP0 is a register, it too fits within a word.  */
+
   ext_mode = mode_for_extraction (unsignedp ? EP_extzv : EP_extv, 0);
   if (ext_mode != MAX_MACHINE_MODE
       && bitsize > 0
@@ -1556,30 +1516,34 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	   && flag_strict_volatile_bitfields > 0)
       /* If op0 is a register, we need it in EXT_MODE to make it
 	 acceptable to the format of ext(z)v.  */
-      && !(GET_CODE (op0) == SUBREG && GET_MODE (op0) != ext_mode)
-      && !((REG_P (op0) || GET_CODE (op0) == SUBREG)
-	   && (bitsize + bitpos > GET_MODE_BITSIZE (ext_mode))))
+      && !(GET_CODE (op0) == SUBREG && GET_MODE (op0) != ext_mode))
     {
       struct expand_operand ops[4];
-      unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
+      unsigned HOST_WIDE_INT bitpos = bitnum;
       rtx xop0 = op0;
       rtx xtarget = target;
       rtx xspec_target = target;
       rtx xspec_target_subreg = 0;
+      unsigned unit = GET_MODE_BITSIZE (ext_mode);
 
       /* If op0 is a register, we need it in EXT_MODE to make it
 	 acceptable to the format of ext(z)v.  */
       if (REG_P (xop0) && GET_MODE (xop0) != ext_mode)
 	xop0 = gen_lowpart_SUBREG (ext_mode, xop0);
+
       if (MEM_P (xop0))
-	/* Get ref to first byte containing part of the field.  */
-	xop0 = adjust_bitfield_address (xop0, byte_mode, xoffset);
-
-      /* Now convert from counting within UNIT to counting in EXT_MODE.  */
-      if (BYTES_BIG_ENDIAN && !MEM_P (xop0))
-	xbitpos += GET_MODE_BITSIZE (ext_mode) - unit;
-
-      unit = GET_MODE_BITSIZE (ext_mode);
+	{
+	  /* Get a reference to the first byte of the field.  */
+	  xop0 = adjust_bitfield_address (xop0, byte_mode,
+					  bitpos / BITS_PER_UNIT);
+	  bitpos %= BITS_PER_UNIT;
+	}
+      else
+	{
+	  /* Convert from counting within OP0 to counting in EXT_MODE.  */
+	  if (BYTES_BIG_ENDIAN)
+	    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
+	}
 
       /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
          "backwards" from the size of the unit we are extracting from.
@@ -1587,7 +1551,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 BYTES/BITS_BIG_ENDIAN machine.  */
 
       if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-	xbitpos = unit - bitsize - xbitpos;
+	bitpos = unit - bitsize - bitpos;
 
       if (xtarget == 0)
 	xtarget = xspec_target = gen_reg_rtx (tmode);
@@ -1613,7 +1577,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       create_output_operand (&ops[0], xtarget, ext_mode);
       create_fixed_operand (&ops[1], xop0);
       create_integer_operand (&ops[2], bitsize);
-      create_integer_operand (&ops[3], xbitpos);
+      create_integer_operand (&ops[3], bitpos);
       if (maybe_expand_insn (unsignedp ? CODE_FOR_extzv : CODE_FOR_extv,
 			     4, ops))
 	{
@@ -1652,26 +1616,25 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  && !(SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (op0))
 	       && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
 	{
-	  unsigned HOST_WIDE_INT xoffset, xbitpos;
+	  unsigned HOST_WIDE_INT offset, bitpos;
 
 	  /* Compute the offset as a multiple of this unit,
 	     counting in bytes.  */
-	  unit = GET_MODE_BITSIZE (bestmode);
-	  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-	  xbitpos = bitnum % unit;
+	  unsigned int unit = GET_MODE_BITSIZE (bestmode);
+	  offset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
+	  bitpos = bitnum % unit;
 
 	  /* Make sure the register is big enough for the whole field.  */
-	  if (xoffset * BITS_PER_UNIT + unit
-	      >= offset * BITS_PER_UNIT + bitsize)
+	  if (bitpos + bitsize <= unit)
 	    {
 	      rtx last, result, xop0;
 
 	      last = get_last_insn ();
 
 	      /* Fetch it to a register in that size.  */
-	      xop0 = adjust_bitfield_address (op0, bestmode, xoffset);
+	      xop0 = adjust_bitfield_address (op0, bestmode, offset);
 	      xop0 = force_reg (bestmode, xop0);
-	      result = extract_bit_field_1 (xop0, bitsize, xbitpos,
+	      result = extract_bit_field_1 (xop0, bitsize, bitpos,
 					    unsignedp, packedp, target,
 					    mode, tmode, false);
 	      if (result)
@@ -1685,8 +1648,16 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (!fallback_p)
     return NULL;
 
-  target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
-				    bitpos, target, unsignedp, packedp);
+  /* Find a correspondingly-sized integer field, so we can apply
+     shifts and masks to it.  */
+  int_mode = int_mode_for_mode (tmode);
+  if (int_mode == BLKmode)
+    int_mode = int_mode_for_mode (mode);
+  /* Should probably push op0 out to memory and then do a load.  */
+  gcc_assert (int_mode != BLKmode);
+
+  target = extract_fixed_bit_field (int_mode, op0, bitsize, bitnum,
+				    target, unsignedp, packedp);
   return convert_extracted_bit_field (target, mode, tmode, unsignedp);
 }
 
@@ -1716,16 +1687,8 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 			      target, mode, tmode, true);
 }
 
-/* Extract a bit field using shifts and boolean operations
-   Returns an rtx to represent the value.
-   OP0 addresses a register (word) or memory (byte).
-   BITPOS says which bit within the word or byte the bit field starts in.
-   OFFSET says how many bytes farther the bit field starts;
-    it is 0 if OP0 is a register.
-   BITSIZE says how many bits long the bit field is.
-    (If OP0 is a register, it may be narrower than a full word,
-     but BITPOS still counts within a full word,
-     which is significant on bigendian machines.)
+/* Use shifts and boolean operations to extract a field of BITSIZE bits
+   from bit BITNUM of OP0.
 
    UNSIGNEDP is nonzero for an unsigned bit field (don't sign-extend value).
    PACKEDP is true if the field has the packed attribute.
@@ -1736,21 +1699,13 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 static rtx
 extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
-			 unsigned HOST_WIDE_INT offset,
 			 unsigned HOST_WIDE_INT bitsize,
-			 unsigned HOST_WIDE_INT bitpos, rtx target,
+			 unsigned HOST_WIDE_INT bitnum, rtx target,
 			 int unsignedp, bool packedp)
 {
-  unsigned int total_bits = BITS_PER_WORD;
   enum machine_mode mode;
 
-  if (GET_CODE (op0) == SUBREG || REG_P (op0))
-    {
-      /* Special treatment for a bit field split across two registers.  */
-      if (bitsize + bitpos > BITS_PER_WORD)
-	return extract_split_bit_field (op0, bitsize, bitpos, unsignedp);
-    }
-  else
+  if (MEM_P (op0))
     {
       /* Get the proper mode to use for this field.  We want a mode that
 	 includes the entire field.  If such a mode would be larger than
@@ -1767,105 +1722,89 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	    mode = tmode;
 	}
       else
-	mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT, 0, 0,
+	mode = get_best_mode (bitsize, bitnum, 0, 0,
 			      MEM_ALIGN (op0), word_mode, MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	/* The only way this should occur is if the field spans word
 	   boundaries.  */
-	return extract_split_bit_field (op0, bitsize,
-					bitpos + offset * BITS_PER_UNIT,
-					unsignedp);
+	return extract_split_bit_field (op0, bitsize, bitnum, unsignedp);
 
-      total_bits = GET_MODE_BITSIZE (mode);
+      unsigned int total_bits = GET_MODE_BITSIZE (mode);
+      HOST_WIDE_INT bit_offset = bitnum - bitnum % total_bits;
 
-      /* Make sure bitpos is valid for the chosen mode.  Adjust BITPOS to
-	 be in the range 0 to total_bits-1, and put any excess bytes in
-	 OFFSET.  */
-      if (bitpos >= total_bits)
-	{
-	  offset += (bitpos / total_bits) * (total_bits / BITS_PER_UNIT);
-	  bitpos -= ((bitpos / total_bits) * (total_bits / BITS_PER_UNIT)
-		     * BITS_PER_UNIT);
-	}
-
-      /* If we're accessing a volatile MEM, we can't do the next
-	 alignment step if it results in a multi-word access where we
-	 otherwise wouldn't have one.  So, check for that case
-	 here.  */
+      /* If we're accessing a volatile MEM, we can't apply BIT_OFFSET
+	 if it results in a multi-word access where we otherwise wouldn't
+	 have one.  So, check for that case here.  */
       if (MEM_P (op0)
 	  && MEM_VOLATILE_P (op0)
 	  && flag_strict_volatile_bitfields > 0
-	  && bitpos + bitsize <= total_bits
-	  && bitpos + bitsize + (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT > total_bits)
+	  && bitnum % BITS_PER_UNIT + bitsize <= total_bits
+	  && bitnum % GET_MODE_BITSIZE (mode) + bitsize > total_bits)
 	{
 	  if (STRICT_ALIGNMENT)
 	    {
 	      static bool informed_about_misalignment = false;
-	      bool warned;
 
 	      if (packedp)
 		{
 		  if (bitsize == total_bits)
-		    warned = warning_at (input_location, OPT_fstrict_volatile_bitfields,
-					 "multiple accesses to volatile structure member"
-					 " because of packed attribute");
+		    warning_at (input_location, OPT_fstrict_volatile_bitfields,
+				"multiple accesses to volatile structure"
+				" member because of packed attribute");
 		  else
-		    warned = warning_at (input_location, OPT_fstrict_volatile_bitfields,
-					 "multiple accesses to volatile structure bitfield"
-					 " because of packed attribute");
+		    warning_at (input_location, OPT_fstrict_volatile_bitfields,
+				"multiple accesses to volatile structure"
+				" bitfield because of packed attribute");
 
-		  return extract_split_bit_field (op0, bitsize,
-						  bitpos + offset * BITS_PER_UNIT,
+		  return extract_split_bit_field (op0, bitsize, bitnum,
 						  unsignedp);
 		}
 
 	      if (bitsize == total_bits)
-		warned = warning_at (input_location, OPT_fstrict_volatile_bitfields,
-				     "mis-aligned access used for structure member");
+		warning_at (input_location, OPT_fstrict_volatile_bitfields,
+			    "mis-aligned access used for structure member");
 	      else
-		warned = warning_at (input_location, OPT_fstrict_volatile_bitfields,
-				     "mis-aligned access used for structure bitfield");
+		warning_at (input_location, OPT_fstrict_volatile_bitfields,
+			    "mis-aligned access used for structure bitfield");
 
-	      if (! informed_about_misalignment && warned)
+	      if (! informed_about_misalignment)
 		{
 		  informed_about_misalignment = true;
 		  inform (input_location,
-			  "when a volatile object spans multiple type-sized locations,"
-			  " the compiler must choose between using a single mis-aligned access to"
-			  " preserve the volatility, or using multiple aligned accesses to avoid"
-			  " runtime faults; this code may fail at runtime if the hardware does"
-			  " not allow this access");
+			  "when a volatile object spans multiple type-sized"
+			  " locations, the compiler must choose between using"
+			  " a single mis-aligned access to preserve the"
+			  " volatility, or using multiple aligned accesses"
+			  " to avoid runtime faults; this code may fail at"
+			  " runtime if the hardware does not allow this"
+			  " access");
 		}
 	    }
+	  bit_offset = bitnum - bitnum % BITS_PER_UNIT;
 	}
-      else
-	{
-
-	  /* Get ref to an aligned byte, halfword, or word containing the field.
-	     Adjust BITPOS to be position within a word,
-	     and OFFSET to be the offset of that word.
-	     Then alter OP0 to refer to that word.  */
-	  bitpos += (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT;
-	  offset -= (offset % (total_bits / BITS_PER_UNIT));
-	}
-
-      op0 = adjust_bitfield_address (op0, mode, offset);
+      op0 = adjust_bitfield_address (op0, mode, bit_offset / BITS_PER_UNIT);
+      bitnum -= bit_offset;
     }
 
   mode = GET_MODE (op0);
+  gcc_assert (SCALAR_INT_MODE_P (mode));
+
+  /* Note that bitsize + bitnum can be greater than GET_MODE_BITSIZE (mode)
+     for invalid input, such as extract equivalent of f5 from
+     gcc.dg/pr48335-2.c.  */
 
   if (BYTES_BIG_ENDIAN)
-    /* BITPOS is the distance between our msb and that of OP0.
+    /* BITNUM is the distance between our msb and that of OP0.
        Convert it to the distance from the lsb.  */
-    bitpos = total_bits - bitsize - bitpos;
+    bitnum = GET_MODE_BITSIZE (mode) - bitsize - bitnum;
 
-  /* Now BITPOS is always the distance between the field's lsb and that of OP0.
+  /* Now BITNUM is always the distance between the field's lsb and that of OP0.
      We have reduced the big-endian case to the little-endian case.  */
 
   if (unsignedp)
     {
-      if (bitpos)
+      if (bitnum)
 	{
 	  /* If the field does not already start at the lsb,
 	     shift it so it does.  */
@@ -1873,7 +1812,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	  rtx subtarget = (target != 0 && REG_P (target) ? target : 0);
 	  if (tmode != mode)
 	    subtarget = 0;
-	  op0 = expand_shift (RSHIFT_EXPR, mode, op0, bitpos, subtarget, 1);
+	  op0 = expand_shift (RSHIFT_EXPR, mode, op0, bitnum, subtarget, 1);
 	}
       /* Convert the value to the desired mode.  */
       if (mode != tmode)
@@ -1882,7 +1821,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
       /* Unless the msb of the field used to be the msb when we shifted,
 	 mask out the upper bits.  */
 
-      if (GET_MODE_BITSIZE (mode) != bitpos + bitsize)
+      if (GET_MODE_BITSIZE (mode) != bitnum + bitsize)
 	return expand_binop (GET_MODE (op0), and_optab, op0,
 			     mask_rtx (GET_MODE (op0), 0, bitsize, 0),
 			     target, 1, OPTAB_LIB_WIDEN);
@@ -1897,7 +1836,7 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) >= bitsize + bitpos)
+    if (GET_MODE_BITSIZE (mode) >= bitsize + bitnum)
       {
 	op0 = convert_to_mode (mode, op0, 0);
 	break;
@@ -1906,9 +1845,9 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
   if (mode != tmode)
     target = 0;
 
-  if (GET_MODE_BITSIZE (mode) != (bitsize + bitpos))
+  if (GET_MODE_BITSIZE (mode) != (bitsize + bitnum))
     {
-      int amount = GET_MODE_BITSIZE (mode) - (bitsize + bitpos);
+      int amount = GET_MODE_BITSIZE (mode) - (bitsize + bitnum);
       /* Maybe propagate the target for the shift.  */
       rtx subtarget = (target != 0 && REG_P (target) ? target : 0);
       op0 = expand_shift (LSHIFT_EXPR, mode, op0, amount, subtarget, 1);
@@ -2014,11 +1953,9 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
       /* Extract the parts in bit-counting order,
 	 whose meaning is determined by BYTES_PER_UNIT.
-	 OFFSET is in UNITs, and UNIT is in bits.
-	 extract_fixed_bit_field wants offset in bytes.  */
-      part = extract_fixed_bit_field (word_mode, word,
-				      offset * unit / BITS_PER_UNIT,
-				      thissize, thispos, 0, 1, false);
+	 OFFSET is in UNITs, and UNIT is in bits.  */
+      part = extract_fixed_bit_field (word_mode, word, thissize,
+				      offset * unit + thispos, 0, 1, false);
       bitsdone += thissize;
 
       /* Shift this part into place for the result.  */
