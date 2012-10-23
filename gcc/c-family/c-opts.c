@@ -108,6 +108,9 @@ static size_t deferred_count;
 /* Number of deferred options scanned for -include.  */
 static size_t include_cursor;
 
+/* Whether any standard preincluded header has been preincluded.  */
+static bool done_preinclude;
+
 static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
@@ -1353,6 +1356,19 @@ c_finish_options (void)
 static void
 push_command_line_include (void)
 {
+  if (!done_preinclude)
+    {
+      done_preinclude = true;
+      if (flag_hosted && std_inc && !cpp_opts->preprocessed)
+	{
+	  const char *preinc = targetcm.c_preinclude ();
+	  if (preinc && cpp_push_default_include (parse_in, preinc))
+	    return;
+	}
+    }
+
+  pch_cpp_save_state ();
+
   while (include_cursor < deferred_count)
     {
       struct deferred_opt *opt = &deferred_opts[include_cursor++];
@@ -1388,7 +1404,10 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile),
     fe_file_change (new_map);
 
   if (new_map == 0 || (new_map->reason == LC_LEAVE && MAIN_FILE_P (new_map)))
-    push_command_line_include ();
+    {
+      pch_cpp_save_state ();
+      push_command_line_include ();
+    }
 }
 
 void

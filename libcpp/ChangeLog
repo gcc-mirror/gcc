@@ -1,3 +1,20 @@
+2012-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* files.c (struct _cpp_file): Add implicit_preinclude.
+	(pch_open_file): Allow a previously opened implicitly included
+	file.
+	(_cpp_find_file): Add implicit_preinclude argument.  Free file and
+	do not call open_file_failed if implicit_preinclude.  Store
+	implicit_preinclude value.
+	(_cpp_stack_include, _cpp_fake_include, _cpp_compare_file_date):
+	Update calls to _cpp_find_file.
+	(_cpp_stack_include): Handle IT_DEFAULT.
+	(cpp_push_default_include): New.
+	* include/cpplib.h (cpp_push_default_include): Declare.
+	* init.c (cpp_read_main_file): Update call to _cpp_find_file.
+	* internal.h (enum include_type): Add IT_DEFAULT.
+	(_cpp_find_file): Update prototype.
+
 2012-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	* files.c (read_file_guts, _cpp_save_file_entries): Free memory
