@@ -1780,8 +1780,9 @@ operand is of signed integral vector type.  If an element of the first
 operand evaluates to a zero value, the corresponding element of the
 result is taken from the third operand. If it evaluates to a minus one
 value, it is taken from the second operand. It should never evaluate to
-any other value. In contrast with a @code{COND_EXPR}, all operands are
-always evaluated.
+any other value currently, but optimizations should not rely on that
+property. In contrast with a @code{COND_EXPR}, all operands are always
+evaluated.
 @end table
 
 

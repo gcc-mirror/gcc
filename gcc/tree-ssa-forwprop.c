@@ -551,6 +551,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
   gimple stmt = gsi_stmt (*gsi_p);
   tree tmp = NULL_TREE;
   tree cond = gimple_assign_rhs1 (stmt);
+  enum tree_code code = gimple_assign_rhs_code (stmt);
   bool swap = false;
 
   /* We can do tree combining on SSA_NAME and comparison expressions.  */
@@ -561,23 +562,24 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 					       TREE_OPERAND (cond, 1));
   else if (TREE_CODE (cond) == SSA_NAME)
     {
-      enum tree_code code;
+      enum tree_code def_code;
       tree name = cond;
       gimple def_stmt = get_prop_source_stmt (name, true, NULL);
       if (!def_stmt || !can_propagate_from (def_stmt))
 	return 0;
 
-      code = gimple_assign_rhs_code (def_stmt);
-      if (TREE_CODE_CLASS (code) == tcc_comparison)
+      def_code = gimple_assign_rhs_code (def_stmt);
+      if (TREE_CODE_CLASS (def_code) == tcc_comparison)
 	tmp = fold_build2_loc (gimple_location (def_stmt),
-			       code,
+			       def_code,
 			       TREE_TYPE (cond),
 			       gimple_assign_rhs1 (def_stmt),
 			       gimple_assign_rhs2 (def_stmt));
-      else if ((code == BIT_NOT_EXPR
-		&& TYPE_PRECISION (TREE_TYPE (cond)) == 1)
-	       || (code == BIT_XOR_EXPR
-		   && integer_onep (gimple_assign_rhs2 (def_stmt))))
+      else if (code == COND_EXPR
+	       && ((def_code == BIT_NOT_EXPR
+		    && TYPE_PRECISION (TREE_TYPE (cond)) == 1)
+		   || (def_code == BIT_XOR_EXPR
+		       && integer_onep (gimple_assign_rhs2 (def_stmt)))))
 	{
 	  tmp = gimple_assign_rhs1 (def_stmt);
 	  swap = true;
@@ -596,7 +598,8 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
 	  fprintf (dump_file, "'\n");
 	}
 
-      if (integer_onep (tmp))
+      if ((code == VEC_COND_EXPR) ? integer_all_onesp (tmp)
+				  : integer_onep (tmp))
 	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs2 (stmt));
       else if (integer_zerop (tmp))
 	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs3 (stmt));

@@ -16130,6 +16130,31 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	return NULL_TREE;
     }
 
+  if (TREE_CODE (op0) == VECTOR_CST && TREE_CODE (op1) == VECTOR_CST)
+    {
+      unsigned count = VECTOR_CST_NELTS (op0);
+      tree *elts =  XALLOCAVEC (tree, count);
+      gcc_assert (VECTOR_CST_NELTS (op1) == count
+		  && TYPE_VECTOR_SUBPARTS (type) == count);
+
+      for (unsigned i = 0; i < count; i++)
+	{
+	  tree elem_type = TREE_TYPE (type);
+	  tree elem0 = VECTOR_CST_ELT (op0, i);
+	  tree elem1 = VECTOR_CST_ELT (op1, i);
+
+	  tree tem = fold_relational_const (code, elem_type,
+					    elem0, elem1);
+
+	  if (tem == NULL_TREE)
+	    return NULL_TREE;
+
+	  elts[i] = build_int_cst (elem_type, integer_zerop (tem) ? 0 : -1);
+	}
+
+      return build_vector (type, elts);
+    }
+
   /* From here on we only handle LT, LE, GT, GE, EQ and NE.
 
      To compute GT, swap the arguments and do LT.
