@@ -1,3 +1,148 @@
+2012-10-23  Ian Bolton  <ian.bolton@arm.com>
+	    Jim MacArthur  <jim.macarthur@arm.com>
+	    Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Nigel Stephens  <nigel.stephens@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Sofiane Naci  <sofiane.naci@arm.com>
+	    Stephen Thomas  <stephen.thomas@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/aarch64/aapcs/aapcs64.exp: New file.
+	* gcc.target/aarch64/aapcs/abitest-2.h: New file.
+	* gcc.target/aarch64/aapcs/abitest-common.h: New file.
+	* gcc.target/aarch64/aapcs/abitest.S: New file.
+	* gcc.target/aarch64/aapcs/abitest.h: New file.
+	* gcc.target/aarch64/aapcs/func-ret-1.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-2.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-3.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-3.x: New file.
+	* gcc.target/aarch64/aapcs/func-ret-4.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-4.x: New file.
+	* gcc.target/aarch64/aapcs/ice_1.c: New file.
+	* gcc.target/aarch64/aapcs/ice_2.c: New file.
+	* gcc.target/aarch64/aapcs/ice_3.c: New file.
+	* gcc.target/aarch64/aapcs/ice_4.c: New file.
+	* gcc.target/aarch64/aapcs/ice_5.c: New file.
+	* gcc.target/aarch64/aapcs/macro-def.h: New file.
+	* gcc.target/aarch64/aapcs/test_1.c: New file.
+	* gcc.target/aarch64/aapcs/test_10.c: New file.
+	* gcc.target/aarch64/aapcs/test_11.c: New file.
+	* gcc.target/aarch64/aapcs/test_12.c: New file.
+	* gcc.target/aarch64/aapcs/test_13.c: New file.
+	* gcc.target/aarch64/aapcs/test_14.c: New file.
+	* gcc.target/aarch64/aapcs/test_15.c: New file.
+	* gcc.target/aarch64/aapcs/test_16.c: New file.
+	* gcc.target/aarch64/aapcs/test_17.c: New file.
+	* gcc.target/aarch64/aapcs/test_18.c: New file.
+	* gcc.target/aarch64/aapcs/test_19.c: New file.
+	* gcc.target/aarch64/aapcs/test_2.c: New file.
+	* gcc.target/aarch64/aapcs/test_20.c: New file.
+	* gcc.target/aarch64/aapcs/test_21.c: New file.
+	* gcc.target/aarch64/aapcs/test_22.c: New file.
+	* gcc.target/aarch64/aapcs/test_23.c: New file.
+	* gcc.target/aarch64/aapcs/test_24.c: New file.
+	* gcc.target/aarch64/aapcs/test_25.c: New file.
+	* gcc.target/aarch64/aapcs/test_26.c: New file.
+	* gcc.target/aarch64/aapcs/test_3.c: New file.
+	* gcc.target/aarch64/aapcs/test_4.c: New file.
+	* gcc.target/aarch64/aapcs/test_5.c: New file.
+	* gcc.target/aarch64/aapcs/test_6.c: New file.
+	* gcc.target/aarch64/aapcs/test_7.c: New file.
+	* gcc.target/aarch64/aapcs/test_8.c: New file.
+	* gcc.target/aarch64/aapcs/test_9.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-1.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-2.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-3.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-4.c: New file.
+	* gcc.target/aarch64/aapcs/test_complex.c: New file.
+	* gcc.target/aarch64/aapcs/test_int128.c: New file.
+	* gcc.target/aarch64/aapcs/test_quad_double.c: New file.
+	* gcc.target/aarch64/aapcs/type-def.h: New file.
+	* gcc.target/aarch64/aapcs/va_arg-1.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-10.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-11.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-12.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-2.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-3.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-4.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-5.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-6.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-7.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-8.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-9.c: New file.
+	* gcc.target/aarch64/aapcs/validate_memory.h: New file.
+	* gcc.target/aarch64/aarch64.exp: New file.
+	* gcc.target/aarch64/adc-1.c: New file.
+	* gcc.target/aarch64/adc-2.c: New file.
+	* gcc.target/aarch64/asm-1.c: New file.
+	* gcc.target/aarch64/clrsb.c: New file.
+	* gcc.target/aarch64/clz.c: New file.
+	* gcc.target/aarch64/ctz.c: New file.
+	* gcc.target/aarch64/csinc-1.c: New file.
+	* gcc.target/aarch64/csinv-1.c: New file.
+	* gcc.target/aarch64/csneg-1.c: New file.
+	* gcc.target/aarch64/extend.c: New file.
+	* gcc.target/aarch64/fcvt.x: New file.
+	* gcc.target/aarch64/fcvt_double_int.c: New file.
+	* gcc.target/aarch64/fcvt_double_long.c: New file.
+	* gcc.target/aarch64/fcvt_double_uint.c: New file.
+	* gcc.target/aarch64/fcvt_double_ulong.c: New file.
+	* gcc.target/aarch64/fcvt_float_int.c: New file.
+	* gcc.target/aarch64/fcvt_float_long.c: New file.
+	* gcc.target/aarch64/fcvt_float_uint.c: New file.
+	* gcc.target/aarch64/fcvt_float_ulong.c: New file.
+	* gcc.target/aarch64/ffs.c: New file.
+	* gcc.target/aarch64/fmadd.c: New file.
+	* gcc.target/aarch64/fnmadd-fastmath.c: New file.
+	* gcc.target/aarch64/frint.x: New file.
+	* gcc.target/aarch64/frint_double.c: New file.
+	* gcc.target/aarch64/frint_float.c: New file.
+	* gcc.target/aarch64/index.c: New file.
+	* gcc.target/aarch64/mneg-1.c: New file.
+	* gcc.target/aarch64/mneg-2.c: New file.
+	* gcc.target/aarch64/mneg-3.c: New file.
+	* gcc.target/aarch64/mnegl-1.c: New file.
+	* gcc.target/aarch64/mnegl-2.c: New file.
+	* gcc.target/aarch64/narrow_high-intrinsics.c: New file.
+	* gcc.target/aarch64/pic-constantpool1.c: New file.
+	* gcc.target/aarch64/pic-symrefplus.c: New file.
+	* gcc.target/aarch64/predefine_large.c: New file.
+	* gcc.target/aarch64/predefine_small.c: New file.
+	* gcc.target/aarch64/predefine_tiny.c: New file.
+	* gcc.target/aarch64/reload-valid-spoff.c: New file.
+	* gcc.target/aarch64/scalar_intrinsics.c: New file.
+	* gcc.target/aarch64/table-intrinsics.c: New file.
+	* gcc.target/aarch64/tst-1.c: New file.
+	* gcc.target/aarch64/vect-abs-compile.c: New file.
+	* gcc.target/aarch64/vect-abs.c: New file.
+	* gcc.target/aarch64/vect-abs.x: New file.
+	* gcc.target/aarch64/vect-compile.c: New file.
+	* gcc.target/aarch64/vect-faddv-compile.c: New file.
+	* gcc.target/aarch64/vect-faddv.c: New file.
+	* gcc.target/aarch64/vect-faddv.x: New file.
+	* gcc.target/aarch64/vect-fmax-fmin-compile.c: New file.
+	* gcc.target/aarch64/vect-fmax-fmin.c: New file.
+	* gcc.target/aarch64/vect-fmax-fmin.x: New file.
+	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: New file.
+	* gcc.target/aarch64/vect-fmaxv-fminv.x: New file.
+	* gcc.target/aarch64/vect-fp-compile.c: New file.
+	* gcc.target/aarch64/vect-fp.c: New file.
+	* gcc.target/aarch64/vect-fp.x: New file.
+	* gcc.target/aarch64/vect-mull-compile.c: New file.
+	* gcc.target/aarch64/vect-mull.c: New file.
+	* gcc.target/aarch64/vect-mull.x: New file.
+	* gcc.target/aarch64/vect.c: New file.
+	* gcc.target/aarch64/vect.x: New file.
+	* gcc.target/aarch64/vector_intrinsics.c: New file.
+	* gcc.target/aarch64/vfp-1.c: New file.
+	* gcc.target/aarch64/volatile-bitfields-1.c: New file.
+	* gcc.target/aarch64/volatile-bitfields-2.c: New file.
+	* gcc.target/aarch64/volatile-bitfields-3.c: New file.
+	* g++.dg/abi/aarch64_guard1.C: New file.
+
 2012-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54988

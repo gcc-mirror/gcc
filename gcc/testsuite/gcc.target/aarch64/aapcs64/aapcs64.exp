@@ -1,0 +1,67 @@
+#  Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+#  Contributed by ARM Ltd.
+#
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3, or (at your option)
+#  any later version.
+#
+#  GCC is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.  */
+
+load_lib c-torture.exp
+load_lib target-supports.exp
+load_lib torture-options.exp
+
+if { ![istarget aarch64*-*-*] } then {
+  return
+}
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
+set additional_flags "-W -Wall -Wno-abi"
+
+# Test parameter passing.
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	    c-torture-execute [list $src \
+				    $srcdir/$subdir/abitest.S] \
+				    $additional_flags
+    }
+}
+
+# Test unnamed argument retrieval via the va_arg macro.
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/va_arg-*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	    c-torture-execute [list $src \
+				    $srcdir/$subdir/abitest.S] \
+				    $additional_flags
+    }
+}
+
+# Test function return value.
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/func-ret-*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	    c-torture-execute [list $src \
+				    $srcdir/$subdir/abitest.S] \
+				    $additional_flags
+    }
+}
+
+# Test no internal compiler errors.
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/ice_*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	    c-torture [list $src] \
+			    $additional_flags
+    }
+}
+
+torture-finish
