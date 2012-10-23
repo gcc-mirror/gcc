@@ -49,7 +49,6 @@ static void store_fixed_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
-				   unsigned HOST_WIDE_INT,
 				   rtx);
 static void store_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
@@ -393,6 +392,23 @@ mode_for_extraction (enum extraction_pattern pattern, int opno)
     return word_mode;
   return data->operand[opno].mode;
 }
+
+/* Return true if a bitfield of size BITSIZE at bit number BITNUM within
+   a structure of mode STRUCT_MODE represents a lowpart subreg.   The subreg
+   offset is then BITNUM / BITS_PER_UNIT.  */
+
+static bool
+lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
+		     unsigned HOST_WIDE_INT bitsize,
+		     enum machine_mode struct_mode)
+{
+  if (BYTES_BIG_ENDIAN)
+    return (bitnum % BITS_PER_UNIT
+	    && (bitnum + bitsize == GET_MODE_BITSIZE (struct_mode)
+		|| (bitnum + bitsize) % BITS_PER_WORD == 0));
+  else
+    return bitnum % BITS_PER_WORD == 0;
+}
 
 /* A subroutine of store_bit_field, with the same arguments.  Return true
    if the operation could be implemented.
@@ -409,14 +425,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		   enum machine_mode fieldmode,
 		   rtx value, bool fallback_p)
 {
-  unsigned int unit
-    = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
-  unsigned HOST_WIDE_INT offset, bitpos;
   rtx op0 = str_rtx;
-  int byte_offset;
   rtx orig_value;
-
-  enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
 
   while (GET_CODE (op0) == SUBREG)
     {
@@ -427,8 +437,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 always get higher addresses.  */
       int inner_mode_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)));
       int outer_mode_size = GET_MODE_SIZE (GET_MODE (op0));
-
-      byte_offset = 0;
+      int byte_offset = 0;
 
       /* Paradoxical subregs need special handling on big endian machines.  */
       if (SUBREG_BYTE (op0) == 0 && inner_mode_size < outer_mode_size)
@@ -476,34 +485,34 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     }
 
   /* If the target is a register, overwriting the entire object, or storing
-     a full-word or multi-word field can be done with just a SUBREG.
+     a full-word or multi-word field can be done with just a SUBREG.  */
+  if (!MEM_P (op0)
+      && bitsize == GET_MODE_BITSIZE (fieldmode)
+      && ((bitsize == GET_MODE_BITSIZE (GET_MODE (op0)) && bitnum == 0)
+	  || (bitsize % BITS_PER_WORD == 0 && bitnum % BITS_PER_WORD == 0)))
+    {
+      /* Use the subreg machinery either to narrow OP0 to the required
+	 words or to cope with mode punning between equal-sized modes.  */
+      rtx sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
+				     bitnum / BITS_PER_UNIT);
+      if (sub)
+	{
+	  emit_move_insn (sub, value);
+	  return true;
+	}
+    }
 
-     If the target is memory, storing any naturally aligned field can be
+  /* If the target is memory, storing any naturally aligned field can be
      done with a simple store.  For targets that support fast unaligned
      memory, any naturally sized, unit aligned field can be done directly.  */
-
-  offset = bitnum / unit;
-  bitpos = bitnum % unit;
-  byte_offset = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-                + (offset * UNITS_PER_WORD);
-
-  if (bitpos == 0
+  if (MEM_P (op0)
+      && bitnum % BITS_PER_UNIT == 0
       && bitsize == GET_MODE_BITSIZE (fieldmode)
-      && (!MEM_P (op0)
-	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
-	      || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
-	     && ((GET_MODE (op0) == fieldmode && byte_offset == 0)
-		 || validate_subreg (fieldmode, GET_MODE (op0), op0,
-				     byte_offset)))
-	  : (! SLOW_UNALIGNED_ACCESS (fieldmode, MEM_ALIGN (op0))
-	     || (offset * BITS_PER_UNIT % bitsize == 0
-		 && MEM_ALIGN (op0) % GET_MODE_BITSIZE (fieldmode) == 0))))
+      && (!SLOW_UNALIGNED_ACCESS (fieldmode, MEM_ALIGN (op0))
+	  || (bitnum % bitsize == 0
+	      && MEM_ALIGN (op0) % bitsize == 0)))
     {
-      if (MEM_P (op0))
-	op0 = adjust_bitfield_address (op0, fieldmode, offset);
-      else if (GET_MODE (op0) != fieldmode)
-	op0 = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
-				   byte_offset);
+      op0 = adjust_bitfield_address (op0, fieldmode, bitnum / BITS_PER_UNIT);
       emit_move_insn (op0, value);
       return true;
     }
@@ -526,19 +535,11 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       }
   }
 
-  /* If OP0 is a register, BITPOS must count within a word.
-     But as we have it, it counts within whatever size OP0 now has.
-     On a bigendian machine, these are not the same, so convert.  */
-  if (BYTES_BIG_ENDIAN
-      && !MEM_P (op0)
-      && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
-    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-
   /* Storing an lsb-aligned field in a register
-     can be done with a movestrict instruction.  */
+     can be done with a movstrict instruction.  */
 
   if (!MEM_P (op0)
-      && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
+      && lowpart_bit_field_p (bitnum, bitsize, GET_MODE (op0))
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && optab_handler (movstrict_optab, fieldmode) != CODE_FOR_nothing)
     {
@@ -558,8 +559,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  arg0 = SUBREG_REG (arg0);
 	}
 
-      subreg_off = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-		   + (offset * UNITS_PER_WORD);
+      subreg_off = bitnum / BITS_PER_UNIT;
       if (validate_subreg (fieldmode, GET_MODE (arg0), arg0, subreg_off))
 	{
 	  arg0 = gen_rtx_SUBREG (fieldmode, arg0, subreg_off);
@@ -638,34 +638,6 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       return true;
     }
 
-  /* From here on we can assume that the field to be stored in is
-     a full-word (whatever type that is), since it is shorter than a word.  */
-
-  /* OFFSET is the number of words or bytes (UNIT says which)
-     from STR_RTX to the first word or byte containing part of the field.  */
-
-  if (!MEM_P (op0))
-    {
-      if (offset != 0
-	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
-	{
-	  if (!REG_P (op0))
-	    {
-	      /* Since this is a destination (lvalue), we can't copy
-		 it to a pseudo.  We can remove a SUBREG that does not
-		 change the size of the operand.  Such a SUBREG may
-		 have been added above.  */
-	      gcc_assert (GET_CODE (op0) == SUBREG
-			  && (GET_MODE_SIZE (GET_MODE (op0))
-			      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))));
-	      op0 = SUBREG_REG (op0);
-	    }
-	  op0 = gen_rtx_SUBREG (mode_for_size (BITS_PER_WORD, MODE_INT, 0),
-		                op0, (offset * UNITS_PER_WORD));
-	}
-      offset = 0;
-    }
-
   /* If VALUE has a floating-point or complex mode, access it as an
      integer of the corresponding size.  This can occur on a machine
      with 64 bit registers that uses SFmode for float.  It can also
@@ -679,9 +651,30 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       emit_move_insn (gen_lowpart (GET_MODE (orig_value), value), orig_value);
     }
 
-  /* Now OFFSET is nonzero only if OP0 is memory
-     and is therefore always measured in bytes.  */
+  /* If OP0 is a multi-word register, narrow it to the affected word.
+     If the region spans two words, defer to store_split_bit_field.  */
+  if (!MEM_P (op0) && GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
+    {
+      op0 = simplify_gen_subreg (word_mode, op0, GET_MODE (op0),
+				 bitnum / BITS_PER_WORD * UNITS_PER_WORD);
+      gcc_assert (op0);
+      bitnum %= BITS_PER_WORD;
+      if (bitnum + bitsize > BITS_PER_WORD)
+	{
+	  if (!fallback_p)
+	    return false;
 
+	  store_split_bit_field (op0, bitsize, bitnum, bitregion_start,
+				 bitregion_end, value);
+	  return true;
+	}
+    }
+
+  /* From here on we can assume that the field to be stored in fits
+     within a word.  If the destination is a register, it too fits
+     in a word.  */
+
+  enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
   if (HAVE_insv
       && GET_MODE (value) != BLKmode
       && bitsize > 0
@@ -690,25 +683,34 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
          -fstrict-volatile-bitfields is in effect.  */
       && !(MEM_P (op0) && MEM_VOLATILE_P (op0)
 	   && flag_strict_volatile_bitfields > 0)
-      && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
-	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode)))
       /* Do not use insv if the bit region is restricted and
 	 op_mode integer at offset doesn't fit into the
 	 restricted region.  */
       && !(MEM_P (op0) && bitregion_end
-	   && bitnum - bitpos + GET_MODE_BITSIZE (op_mode)
+	   && bitnum - (bitnum % BITS_PER_UNIT) + GET_MODE_BITSIZE (op_mode)
 	      > bitregion_end + 1))
     {
       struct expand_operand ops[4];
-      int xbitpos = bitpos;
+      unsigned HOST_WIDE_INT bitpos = bitnum;
       rtx value1;
       rtx xop0 = op0;
       rtx last = get_last_insn ();
       bool copy_back = false;
 
-      /* Add OFFSET into OP0's address.  */
+      unsigned int unit = GET_MODE_BITSIZE (op_mode);
       if (MEM_P (xop0))
-	xop0 = adjust_bitfield_address (xop0, byte_mode, offset);
+	{
+	  /* Get a reference to the first byte of the field.  */
+	  xop0 = adjust_bitfield_address (xop0, byte_mode,
+					  bitpos / BITS_PER_UNIT);
+	  bitpos %= BITS_PER_UNIT;
+	}
+      else
+	{
+	  /* Convert from counting within OP0 to counting in OP_MODE.  */
+	  if (BYTES_BIG_ENDIAN)
+	    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
+	}
 
       /* If xop0 is a register, we need it in OP_MODE
 	 to make it acceptable to the format of insv.  */
@@ -735,20 +737,13 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  copy_back = true;
 	}
 
-      /* We have been counting XBITPOS within UNIT.
-	 Count instead within the size of the register.  */
-      if (BYTES_BIG_ENDIAN && !MEM_P (xop0))
-	xbitpos += GET_MODE_BITSIZE (op_mode) - unit;
-
-      unit = GET_MODE_BITSIZE (op_mode);
-
       /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
          "backwards" from the size of the unit we are inserting into.
 	 Otherwise, we count bits from the most significant on a
 	 BYTES/BITS_BIG_ENDIAN machine.  */
 
       if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-	xbitpos = unit - bitsize - xbitpos;
+	bitpos = unit - bitsize - bitpos;
 
       /* Convert VALUE to op_mode (which insv insn wants) in VALUE1.  */
       value1 = value;
@@ -787,7 +782,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       create_fixed_operand (&ops[0], xop0);
       create_integer_operand (&ops[1], bitsize);
-      create_integer_operand (&ops[2], xbitpos);
+      create_integer_operand (&ops[2], bitpos);
       create_input_operand (&ops[3], value1, op_mode);
       if (maybe_expand_insn (CODE_FOR_insv, 4, ops))
 	{
@@ -832,7 +827,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	       && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
 	{
 	  rtx last, tempreg, xop0;
-	  unsigned HOST_WIDE_INT xoffset, xbitpos;
+	  unsigned int unit;
+	  unsigned HOST_WIDE_INT offset, bitpos;
 
 	  last = get_last_insn ();
 
@@ -840,14 +836,14 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	     that mode.  Compute the offset as a multiple of this unit,
 	     counting in bytes.  */
 	  unit = GET_MODE_BITSIZE (bestmode);
-	  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-	  xbitpos = bitnum % unit;
-	  xop0 = adjust_bitfield_address (op0, bestmode, xoffset);
+	  offset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
+	  bitpos = bitnum % unit;
+	  xop0 = adjust_bitfield_address (op0, bestmode, offset);
 
 	  /* Fetch that unit, store the bitfield in it, then store
 	     the unit.  */
 	  tempreg = copy_to_reg (xop0);
-	  if (store_bit_field_1 (tempreg, bitsize, xbitpos,
+	  if (store_bit_field_1 (tempreg, bitsize, bitpos,
 				 bitregion_start, bitregion_end,
 				 fieldmode, orig_value, false))
 	    {
@@ -861,8 +857,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (!fallback_p)
     return false;
 
-  store_fixed_bit_field (op0, offset, bitsize, bitpos,
-			 bitregion_start, bitregion_end, value);
+  store_fixed_bit_field (op0, bitsize, bitnum, bitregion_start,
+			 bitregion_end, value);
   return true;
 }
 
@@ -918,25 +914,17 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     gcc_unreachable ();
 }
 
-/* Use shifts and boolean operations to store VALUE
-   into a bit field of width BITSIZE
-   in a memory location specified by OP0 except offset by OFFSET bytes.
-     (OFFSET must be 0 if OP0 is a register.)
-   The field starts at position BITPOS within the byte.
-    (If OP0 is a register, it may be a full word or a narrower mode,
-     but BITPOS still counts within a full word,
-     which is significant on bigendian machines.)  */
+/* Use shifts and boolean operations to store VALUE into a bit field of
+   width BITSIZE in OP0, starting at bit BITNUM.  */
 
 static void
-store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
-		       unsigned HOST_WIDE_INT bitsize,
-		       unsigned HOST_WIDE_INT bitpos,
+store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
+		       unsigned HOST_WIDE_INT bitnum,
 		       unsigned HOST_WIDE_INT bitregion_start,
 		       unsigned HOST_WIDE_INT bitregion_end,
 		       rtx value)
 {
   enum machine_mode mode;
-  unsigned int total_bits = BITS_PER_WORD;
   rtx temp;
   int all_zero = 0;
   int all_one = 0;
@@ -948,19 +936,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
      and a field split across two bytes.
      Such cases are not supposed to be able to occur.  */
 
-  if (REG_P (op0) || GET_CODE (op0) == SUBREG)
-    {
-      gcc_assert (!offset);
-      /* Special treatment for a bit field split across two registers.  */
-      if (bitsize + bitpos > BITS_PER_WORD)
-	{
-	  store_split_bit_field (op0, bitsize, bitpos,
-				 bitregion_start, bitregion_end,
-				 value);
-	  return;
-	}
-    }
-  else
+  if (MEM_P (op0))
     {
       unsigned HOST_WIDE_INT maxbits = MAX_FIXED_MODE_SIZE;
 
@@ -983,58 +959,39 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 	  && flag_strict_volatile_bitfields > 0)
 	mode = GET_MODE (op0);
       else
-	mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
-			      bitregion_start, bitregion_end,
+	mode = get_best_mode (bitsize, bitnum, bitregion_start, bitregion_end,
 			      MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	{
 	  /* The only way this should occur is if the field spans word
 	     boundaries.  */
-	  store_split_bit_field (op0, bitsize, bitpos + offset * BITS_PER_UNIT,
-				 bitregion_start, bitregion_end, value);
+	  store_split_bit_field (op0, bitsize, bitnum, bitregion_start,
+				 bitregion_end, value);
 	  return;
 	}
 
-      total_bits = GET_MODE_BITSIZE (mode);
-
-      /* Make sure bitpos is valid for the chosen mode.  Adjust BITPOS to
-	 be in the range 0 to total_bits-1, and put any excess bytes in
-	 OFFSET.  */
-      if (bitpos >= total_bits)
-	{
-	  offset += (bitpos / total_bits) * (total_bits / BITS_PER_UNIT);
-	  bitpos -= ((bitpos / total_bits) * (total_bits / BITS_PER_UNIT)
-		     * BITS_PER_UNIT);
-	}
-
-      /* Get ref to an aligned byte, halfword, or word containing the field.
-	 Adjust BITPOS to be position within a word,
-	 and OFFSET to be the offset of that word.
-	 Then alter OP0 to refer to that word.  */
-      bitpos += (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT;
-      offset -= (offset % (total_bits / BITS_PER_UNIT));
-      op0 = adjust_bitfield_address (op0, mode, offset);
+      HOST_WIDE_INT bit_offset = bitnum - bitnum % GET_MODE_BITSIZE (mode);
+      op0 = adjust_bitfield_address (op0, mode, bit_offset / BITS_PER_UNIT);
+      bitnum -= bit_offset;
     }
 
   mode = GET_MODE (op0);
+  gcc_assert (SCALAR_INT_MODE_P (mode));
 
-  /* Now MODE is either some integral mode for a MEM as OP0,
-     or is a full-word for a REG as OP0.  TOTAL_BITS corresponds.
-     The bit field is contained entirely within OP0.
-     BITPOS is the starting bit number within OP0.
-     (OP0's mode may actually be narrower than MODE.)  */
+  /* Note that bitsize + bitnum can be greater than GET_MODE_BITSIZE (mode)
+     for invalid input, such as f5 from gcc.dg/pr48335-2.c.  */
 
   if (BYTES_BIG_ENDIAN)
-      /* BITPOS is the distance between our msb
-	 and that of the containing datum.
-	 Convert it to the distance from the lsb.  */
-      bitpos = total_bits - bitsize - bitpos;
+    /* BITNUM is the distance between our msb
+       and that of the containing datum.
+       Convert it to the distance from the lsb.  */
+    bitnum = GET_MODE_BITSIZE (mode) - bitsize - bitnum;
 
-  /* Now BITPOS is always the distance between our lsb
+  /* Now BITNUM is always the distance between our lsb
      and that of OP0.  */
 
-  /* Shift VALUE left by BITPOS bits.  If VALUE is not constant,
+  /* Shift VALUE left by BITNUM bits.  If VALUE is not constant,
      we must first convert its mode to MODE.  */
 
   if (CONST_INT_P (value))
@@ -1051,12 +1008,12 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 	       || (bitsize == HOST_BITS_PER_WIDE_INT && v == -1))
 	all_one = 1;
 
-      value = lshift_value (mode, value, bitpos, bitsize);
+      value = lshift_value (mode, value, bitnum, bitsize);
     }
   else
     {
       int must_and = (GET_MODE_BITSIZE (GET_MODE (value)) != bitsize
-		      && bitpos + bitsize != GET_MODE_BITSIZE (mode));
+		      && bitnum + bitsize != GET_MODE_BITSIZE (mode));
 
       if (GET_MODE (value) != mode)
 	value = convert_to_mode (mode, value, 1);
@@ -1065,9 +1022,9 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
 	value = expand_binop (mode, and_optab, value,
 			      mask_rtx (mode, 0, bitsize, 0),
 			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
-      if (bitpos > 0)
+      if (bitnum > 0)
 	value = expand_shift (LSHIFT_EXPR, mode, value,
-			      bitpos, NULL_RTX, 1);
+			      bitnum, NULL_RTX, 1);
     }
 
   /* Now clear the chosen bits in OP0,
@@ -1080,7 +1037,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
   if (! all_one)
     {
       temp = expand_binop (mode, and_optab, temp,
-			   mask_rtx (mode, bitpos, bitsize, 1),
+			   mask_rtx (mode, bitnum, bitsize, 1),
 			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
       temp = force_reg (mode, temp);
     }
@@ -1235,12 +1192,11 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       else
 	word = op0;
 
-      /* OFFSET is in UNITs, and UNIT is in bits.
-	 store_fixed_bit_field wants offset in bytes.  If WORD is const0_rtx,
+      /* OFFSET is in UNITs, and UNIT is in bits.  If WORD is const0_rtx,
 	 it is just an out-of-bounds access.  Ignore it.  */
       if (word != const0_rtx)
-	store_fixed_bit_field (word, offset * unit / BITS_PER_UNIT, thissize,
-			       thispos, bitregion_start, bitregion_end, part);
+	store_fixed_bit_field (word, thissize, offset * unit + thispos,
+			       bitregion_start, bitregion_end, part);
       bitsdone += thissize;
     }
 }
