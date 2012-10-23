@@ -2,34 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// TCP for Plan 9
+// TCP sockets for Plan 9
 
 package net
 
-import (
-	"syscall"
-	"time"
-)
+import "syscall"
 
-// TCPConn is an implementation of the Conn interface
-// for TCP network connections.
+// TCPConn is an implementation of the Conn interface for TCP network
+// connections.
 type TCPConn struct {
 	plan9Conn
-}
-
-// SetDeadline implements the Conn SetDeadline method.
-func (c *TCPConn) SetDeadline(t time.Time) error {
-	return syscall.EPLAN9
-}
-
-// SetReadDeadline implements the Conn SetReadDeadline method.
-func (c *TCPConn) SetReadDeadline(t time.Time) error {
-	return syscall.EPLAN9
-}
-
-// SetWriteDeadline implements the Conn SetWriteDeadline method.
-func (c *TCPConn) SetWriteDeadline(t time.Time) error {
-	return syscall.EPLAN9
 }
 
 // CloseRead shuts down the reading side of the TCP connection.
@@ -51,8 +33,8 @@ func (c *TCPConn) CloseWrite() error {
 }
 
 // DialTCP connects to the remote address raddr on the network net,
-// which must be "tcp", "tcp4", or "tcp6".  If laddr is not nil, it is used
-// as the local address for the connection.
+// which must be "tcp", "tcp4", or "tcp6".  If laddr is not nil, it is
+// used as the local address for the connection.
 func DialTCP(net string, laddr, raddr *TCPAddr) (c *TCPConn, err error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6":
@@ -69,17 +51,27 @@ func DialTCP(net string, laddr, raddr *TCPAddr) (c *TCPConn, err error) {
 	return &TCPConn{*c1}, nil
 }
 
-// TCPListener is a TCP network listener.
-// Clients should typically use variables of type Listener
-// instead of assuming TCP.
+// TCPListener is a TCP network listener.  Clients should typically
+// use variables of type Listener instead of assuming TCP.
 type TCPListener struct {
 	plan9Listener
 }
 
-// ListenTCP announces on the TCP address laddr and returns a TCP listener.
-// Net must be "tcp", "tcp4", or "tcp6".
-// If laddr has a port of 0, it means to listen on some available port.
-// The caller can use l.Addr() to retrieve the chosen address.
+func (l *TCPListener) Close() error {
+	if l == nil || l.ctl == nil {
+		return syscall.EINVAL
+	}
+	if _, err := l.ctl.WriteString("hangup"); err != nil {
+		l.ctl.Close()
+		return err
+	}
+	return l.ctl.Close()
+}
+
+// ListenTCP announces on the TCP address laddr and returns a TCP
+// listener.  Net must be "tcp", "tcp4", or "tcp6".  If laddr has a
+// port of 0, it means to listen on some available port.  The caller
+// can use l.Addr() to retrieve the chosen address.
 func ListenTCP(net string, laddr *TCPAddr) (l *TCPListener, err error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6":

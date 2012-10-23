@@ -100,6 +100,7 @@ An argument is a simple value, denoted by one of the following.
 	- A boolean, string, character, integer, floating-point, imaginary
 	  or complex constant in Go syntax. These behave like Go's untyped
 	  constants, although raw strings may not span newlines.
+	- The keyword nil, representing an untyped Go nil.
 	- The character '.' (period):
 		.
 	  The result is the value of dot.
@@ -147,6 +148,10 @@ An argument is a simple value, denoted by one of the following.
 	  The result is the value of invoking the function, fun(). The return
 	  types and values behave as in methods. Functions and function
 	  names are described below.
+	- A parenthesized instance of one the above, for grouping. The result
+	  may be accessed by a field or map key invocation.
+		print (.F1 arg1) (.F2 arg2)
+		(.StructValuedMethod "arg").Field
 
 Arguments may evaluate to any type; if they are pointers the implementation
 automatically indirects to the base type when required.
@@ -227,6 +232,8 @@ All produce the quoted word "output":
 	{{"output" | printf "%q"}}
 		A function call whose final argument comes from the previous
 		command.
+	{{printf "%q" (print "out" "put")}}
+		A parenthesized argument.
 	{{"put" | printf "%s%s" "out" | printf "%q"}}
 		A more elaborate call.
 	{{"output" | printf "%s" | printf "%q"}}

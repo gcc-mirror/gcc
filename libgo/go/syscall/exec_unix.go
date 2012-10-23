@@ -50,10 +50,6 @@ import (
 //sysnb raw_dup2(oldfd int, newfd int) (err Errno)
 //dup2(oldfd int, newfd int) int
 
-// Note: not raw, returns error rather than Errno.
-//sys	read(fd int, p *byte, np int) (n int, err error)
-//read(fd int, buf *byte, count Size_t) Ssize_t
-
 // Lock synchronizing creation of new file descriptors with fork.
 //
 // We want the child in a fork/exec sequence to inherit only the
@@ -103,7 +99,7 @@ import (
 
 var ForkLock sync.RWMutex
 
-// Convert array of string to array of NUL-terminated byte pointer.
+// StringSlicePtr is deprecated. Use SlicePtrFromStrings instead.
 // If any string contains a NUL byte this function panics instead
 // of returning an error.
 func StringSlicePtr(ss []string) []*byte {
@@ -115,14 +111,14 @@ func StringSlicePtr(ss []string) []*byte {
 	return bb
 }
 
-// slicePtrFromStrings converts a slice of strings to a slice of
+// SlicePtrFromStrings converts a slice of strings to a slice of
 // pointers to NUL-terminated byte slices. If any string contains
 // a NUL byte, it returns (nil, EINVAL).
-func slicePtrFromStrings(ss []string) ([]*byte, error) {
+func SlicePtrFromStrings(ss []string) ([]*byte, error) {
 	var err error
 	bb := make([]*byte, len(ss)+1)
 	for i := 0; i < len(ss); i++ {
-		bb[i], err = bytePtrFromString(ss[i])
+		bb[i], err = BytePtrFromString(ss[i])
 		if err != nil {
 			return nil, err
 		}
@@ -185,15 +181,15 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error) 
 	p[1] = -1
 
 	// Convert args to C form.
-	argv0p, err := bytePtrFromString(argv0)
+	argv0p, err := BytePtrFromString(argv0)
 	if err != nil {
 		return 0, err
 	}
-	argvp, err := slicePtrFromStrings(argv)
+	argvp, err := SlicePtrFromStrings(argv)
 	if err != nil {
 		return 0, err
 	}
-	envvp, err := slicePtrFromStrings(attr.Env)
+	envvp, err := SlicePtrFromStrings(attr.Env)
 	if err != nil {
 		return 0, err
 	}
@@ -204,14 +200,14 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error) 
 
 	var chroot *byte
 	if sys.Chroot != "" {
-		chroot, err = bytePtrFromString(sys.Chroot)
+		chroot, err = BytePtrFromString(sys.Chroot)
 		if err != nil {
 			return 0, err
 		}
 	}
 	var dir *byte
 	if attr.Dir != "" {
-		dir, err = bytePtrFromString(attr.Dir)
+		dir, err = BytePtrFromString(attr.Dir)
 		if err != nil {
 			return 0, err
 		}
@@ -242,7 +238,7 @@ func forkExec(argv0 string, argv []string, attr *ProcAttr) (pid int, err error) 
 
 	// Read child error status from pipe.
 	Close(p[1])
-	n, err = read(p[0], (*byte)(unsafe.Pointer(&err1)), int(unsafe.Sizeof(err1)))
+	n, err = readlen(p[0], (*byte)(unsafe.Pointer(&err1)), int(unsafe.Sizeof(err1)))
 	Close(p[0])
 	if err != nil || n != 0 {
 		if n == int(unsafe.Sizeof(err1)) {
@@ -286,15 +282,15 @@ func StartProcess(argv0 string, argv []string, attr *ProcAttr) (pid int, handle 
 
 // Ordinary exec.
 func Exec(argv0 string, argv []string, envv []string) (err error) {
-	argv0p, err := bytePtrFromString(argv0)
+	argv0p, err := BytePtrFromString(argv0)
 	if err != nil {
 		return err
 	}
-	argvp, err := slicePtrFromStrings(argv)
+	argvp, err := SlicePtrFromStrings(argv)
 	if err != nil {
 		return err
 	}
-	envvp, err := slicePtrFromStrings(envv)
+	envvp, err := SlicePtrFromStrings(envv)
 	if err != nil {
 		return err
 	}

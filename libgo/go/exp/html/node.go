@@ -4,8 +4,12 @@
 
 package html
 
+import (
+	"exp/html/atom"
+)
+
 // A NodeType is the type of a Node.
-type NodeType int
+type NodeType uint32
 
 const (
 	ErrorNode NodeType = iota
@@ -25,67 +29,115 @@ var scopeMarker = Node{Type: scopeMarkerNode}
 // A Node consists of a NodeType and some Data (tag name for element nodes,
 // content for text) and are part of a tree of Nodes. Element nodes may also
 // have a Namespace and contain a slice of Attributes. Data is unescaped, so
-// that it looks like "a<b" rather than "a&lt;b".
+// that it looks like "a<b" rather than "a&lt;b". For element nodes, DataAtom
+// is the atom for Data, or zero if Data is not a known tag name.
 //
 // An empty Namespace implies a "http://www.w3.org/1999/xhtml" namespace.
 // Similarly, "math" is short for "http://www.w3.org/1998/Math/MathML", and
 // "svg" is short for "http://www.w3.org/2000/svg".
 type Node struct {
-	Parent    *Node
-	Child     []*Node
+	Parent, FirstChild, LastChild, PrevSibling, NextSibling *Node
+
 	Type      NodeType
+	DataAtom  atom.Atom
 	Data      string
 	Namespace string
 	Attr      []Attribute
 }
 
-// Add adds a node as a child of n.
-// It will panic if the child's parent is not nil.
-func (n *Node) Add(child *Node) {
-	if child.Parent != nil {
-		panic("html: Node.Add called for a child Node that already has a parent")
+// InsertBefore inserts newChild as a child of n, immediately before oldChild
+// in the sequence of n's children. oldChild may be nil, in which case newChild
+// is appended to the end of n's children.
+//
+// It will panic if newChild already has a parent or siblings.
+func (n *Node) InsertBefore(newChild, oldChild *Node) {
+	if newChild.Parent != nil || newChild.PrevSibling != nil || newChild.NextSibling != nil {
+		panic("html: InsertBefore called for an attached child Node")
 	}
-	child.Parent = n
-	n.Child = append(n.Child, child)
+	var prev, next *Node
+	if oldChild != nil {
+		prev, next = oldChild.PrevSibling, oldChild
+	} else {
+		prev = n.LastChild
+	}
+	if prev != nil {
+		prev.NextSibling = newChild
+	} else {
+		n.FirstChild = newChild
+	}
+	if next != nil {
+		next.PrevSibling = newChild
+	} else {
+		n.LastChild = newChild
+	}
+	newChild.Parent = n
+	newChild.PrevSibling = prev
+	newChild.NextSibling = next
 }
 
-// Remove removes a node as a child of n.
-// It will panic if the child's parent is not n.
-func (n *Node) Remove(child *Node) {
-	if child.Parent == n {
-		child.Parent = nil
-		for i, m := range n.Child {
-			if m == child {
-				copy(n.Child[i:], n.Child[i+1:])
-				j := len(n.Child) - 1
-				n.Child[j] = nil
-				n.Child = n.Child[:j]
-				return
-			}
-		}
+// AppendChild adds a node c as a child of n.
+//
+// It will panic if c already has a parent or siblings.
+func (n *Node) AppendChild(c *Node) {
+	if c.Parent != nil || c.PrevSibling != nil || c.NextSibling != nil {
+		panic("html: AppendChild called for an attached child Node")
 	}
-	panic("html: Node.Remove called for a non-child Node")
+	last := n.LastChild
+	if last != nil {
+		last.NextSibling = c
+	} else {
+		n.FirstChild = c
+	}
+	n.LastChild = c
+	c.Parent = n
+	c.PrevSibling = last
+}
+
+// RemoveChild removes a node c that is a child of n. Afterwards, c will have
+// no parent and no siblings.
+//
+// It will panic if c's parent is not n.
+func (n *Node) RemoveChild(c *Node) {
+	if c.Parent != n {
+		panic("html: RemoveChild called for a non-child Node")
+	}
+	if n.FirstChild == c {
+		n.FirstChild = c.NextSibling
+	}
+	if c.NextSibling != nil {
+		c.NextSibling.PrevSibling = c.PrevSibling
+	}
+	if n.LastChild == c {
+		n.LastChild = c.PrevSibling
+	}
+	if c.PrevSibling != nil {
+		c.PrevSibling.NextSibling = c.NextSibling
+	}
+	c.Parent = nil
+	c.PrevSibling = nil
+	c.NextSibling = nil
 }
 
 // reparentChildren reparents all of src's child nodes to dst.
 func reparentChildren(dst, src *Node) {
-	for _, n := range src.Child {
-		if n.Parent != src {
-			panic("html: nodes have an inconsistent parent/child relationship")
+	for {
+		child := src.FirstChild
+		if child == nil {
+			break
 		}
-		n.Parent = dst
+		src.RemoveChild(child)
+		dst.AppendChild(child)
 	}
-	dst.Child = append(dst.Child, src.Child...)
-	src.Child = nil
 }
 
 // clone returns a new node with the same type, data and attributes.
-// The clone has no parent and no children.
+// The clone has no parent, no siblings and no children.
 func (n *Node) clone() *Node {
 	m := &Node{
-		Type: n.Type,
-		Data: n.Data,
-		Attr: make([]Attribute, len(n.Attr)),
+		Type:     n.Type,
+		DataAtom: n.DataAtom,
+		Data:     n.Data,
+		Attr:     make([]Attribute, len(n.Attr)),
 	}
 	copy(m.Attr, n.Attr)
 	return m
@@ -138,17 +190,4 @@ func (s *nodeStack) remove(n *Node) {
 	j := len(*s) - 1
 	(*s)[j] = nil
 	*s = (*s)[:j]
-}
-
-// TODO(nigeltao): forTag no longer used. Should it be deleted?
-
-// forTag returns the top-most element node with the given tag.
-func (s *nodeStack) forTag(tag string) *Node {
-	for i := len(*s) - 1; i >= 0; i-- {
-		n := (*s)[i]
-		if n.Type == ElementNode && n.Data == tag {
-			return n
-		}
-	}
-	return nil
 }

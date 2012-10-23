@@ -581,12 +581,12 @@ func (z *Int) Exp(x, y, m *Int) *Int {
 	return z
 }
 
-// GCD sets z to the greatest common divisor of a and b, which must be
-// positive numbers, and returns z.
+// GCD sets z to the greatest common divisor of a and b, which both must
+// be > 0, and returns z.
 // If x and y are not nil, GCD sets x and y such that z = a*x + b*y.
-// If either a or b is not positive, GCD sets z = x = y = 0.
+// If either a or b is <= 0, GCD sets z = x = y = 0.
 func (z *Int) GCD(x, y, a, b *Int) *Int {
-	if a.neg || b.neg {
+	if a.Sign() <= 0 || b.Sign() <= 0 {
 		z.SetInt64(0)
 		if x != nil {
 			x.SetInt64(0)
@@ -595,6 +595,9 @@ func (z *Int) GCD(x, y, a, b *Int) *Int {
 			y.SetInt64(0)
 		}
 		return z
+	}
+	if x == nil && y == nil {
+		return z.binaryGCD(a, b)
 	}
 
 	A := new(Int).Set(a)
@@ -638,6 +641,63 @@ func (z *Int) GCD(x, y, a, b *Int) *Int {
 
 	*z = *A
 	return z
+}
+
+// binaryGCD sets z to the greatest common divisor of a and b, which both must
+// be > 0, and returns z.
+// See Knuth, The Art of Computer Programming, Vol. 2, Section 4.5.2, Algorithm B.
+func (z *Int) binaryGCD(a, b *Int) *Int {
+	u := z
+	v := new(Int)
+
+	// use one Euclidean iteration to ensure that u and v are approx. the same size
+	switch {
+	case len(a.abs) > len(b.abs):
+		u.Set(b)
+		v.Rem(a, b)
+	case len(a.abs) < len(b.abs):
+		u.Set(a)
+		v.Rem(b, a)
+	default:
+		u.Set(a)
+		v.Set(b)
+	}
+
+	// v might be 0 now
+	if len(v.abs) == 0 {
+		return u
+	}
+	// u > 0 && v > 0
+
+	// determine largest k such that u = u' << k, v = v' << k
+	k := u.abs.trailingZeroBits()
+	if vk := v.abs.trailingZeroBits(); vk < k {
+		k = vk
+	}
+	u.Rsh(u, k)
+	v.Rsh(v, k)
+
+	// determine t (we know that u > 0)
+	t := new(Int)
+	if u.abs[0]&1 != 0 {
+		// u is odd
+		t.Neg(v)
+	} else {
+		t.Set(u)
+	}
+
+	for len(t.abs) > 0 {
+		// reduce t
+		t.Rsh(t, t.abs.trailingZeroBits())
+		if t.neg {
+			v.Neg(t)
+		} else {
+			u.Set(t)
+		}
+		t.Sub(u, v)
+	}
+
+	return u.Lsh(u, k)
 }
 
 // ProbablyPrime performs n Miller-Rabin tests to check whether x is prime.
@@ -697,6 +757,13 @@ func (z *Int) Rsh(x *Int, n uint) *Int {
 // Bit returns the value of the i'th bit of x. That is, it
 // returns (x>>i)&1. The bit index i must be >= 0.
 func (x *Int) Bit(i int) uint {
+	if i == 0 {
+		// optimization for common case: odd/even test of x
+		if len(x.abs) > 0 {
+			return uint(x.abs[0] & 1) // bit 0 is same for -x
+		}
+		return 0
+	}
 	if i < 0 {
 		panic("negative bit index")
 	}
@@ -892,5 +959,21 @@ func (z *Int) GobDecode(buf []byte) error {
 	}
 	z.neg = b&1 != 0
 	z.abs = z.abs.setBytes(buf[1:])
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (x *Int) MarshalJSON() ([]byte, error) {
+	// TODO(gri): get rid of the []byte/string conversions
+	return []byte(x.String()), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (z *Int) UnmarshalJSON(x []byte) error {
+	// TODO(gri): get rid of the []byte/string conversions
+	_, ok := z.SetString(string(x), 0)
+	if !ok {
+		return fmt.Errorf("math/big: cannot unmarshal %s into a *big.Int", x)
+	}
 	return nil
 }

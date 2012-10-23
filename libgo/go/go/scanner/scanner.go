@@ -125,6 +125,9 @@ func (s *Scanner) Init(file *token.File, src []byte, err ErrorHandler, mode Mode
 	s.ErrorCount = 0
 
 	s.next()
+	if s.ch == '\uFEFF' {
+		s.next() // ignore BOM
+	}
 }
 
 func (s *Scanner) error(offs int, msg string) {
@@ -157,11 +160,15 @@ func (s *Scanner) interpretLineComment(text []byte) {
 func (s *Scanner) scanComment() string {
 	// initial '/' already consumed; s.ch == '/' || s.ch == '*'
 	offs := s.offset - 1 // position of initial '/'
+	hasCR := false
 
 	if s.ch == '/' {
 		//-style comment
 		s.next()
 		for s.ch != '\n' && s.ch >= 0 {
+			if s.ch == '\r' {
+				hasCR = true
+			}
 			s.next()
 		}
 		if offs == s.lineOffset {
@@ -175,6 +182,9 @@ func (s *Scanner) scanComment() string {
 	s.next()
 	for s.ch >= 0 {
 		ch := s.ch
+		if ch == '\r' {
+			hasCR = true
+		}
 		s.next()
 		if ch == '*' && s.ch == '/' {
 			s.next()
@@ -185,7 +195,12 @@ func (s *Scanner) scanComment() string {
 	s.error(offs, "comment not terminated")
 
 exit:
-	return string(s.src[offs:s.offset])
+	lit := s.src[offs:s.offset]
+	if hasCR {
+		lit = stripCR(lit)
+	}
+
+	return string(lit)
 }
 
 func (s *Scanner) findLineEnd() bool {
@@ -378,7 +393,7 @@ func (s *Scanner) scanEscape(quote rune) {
 	for ; i > 0 && s.ch != quote && s.ch >= 0; i-- {
 		s.next()
 	}
-	if x > max || 0xd800 <= x && x < 0xe000 {
+	if x > max || 0xD800 <= x && x < 0xE000 {
 		s.error(offs, "escape sequence is invalid Unicode code point")
 	}
 }
@@ -527,6 +542,8 @@ func (s *Scanner) switch4(tok0, tok1 token.Token, ch2 rune, tok2, tok3 token.Tok
 // token.IMAG, token.CHAR, token.STRING) or token.COMMENT, the literal string
 // has the corresponding value.
 //
+// If the returned token is a keyword, the literal string is the keyword.
+//
 // If the returned token is token.SEMICOLON, the corresponding
 // literal string is ";" if the semicolon was present in the source,
 // and "\n" if the semicolon was inserted because of a newline or
@@ -560,12 +577,18 @@ scanAgain:
 	switch ch := s.ch; {
 	case isLetter(ch):
 		lit = s.scanIdentifier()
-		tok = token.Lookup(lit)
-		switch tok {
-		case token.IDENT, token.BREAK, token.CONTINUE, token.FALLTHROUGH, token.RETURN:
+		if len(lit) > 1 {
+			// keywords are longer than one letter - avoid lookup otherwise
+			tok = token.Lookup(lit)
+			switch tok {
+			case token.IDENT, token.BREAK, token.CONTINUE, token.FALLTHROUGH, token.RETURN:
+				insertSemi = true
+			}
+		} else {
 			insertSemi = true
+			tok = token.IDENT
 		}
-	case digitVal(ch) < 10:
+	case '0' <= ch && ch <= '9':
 		insertSemi = true
 		tok, lit = s.scanNumber(false)
 	default:
@@ -598,7 +621,7 @@ scanAgain:
 		case ':':
 			tok = s.switch2(token.COLON, token.DEFINE)
 		case '.':
-			if digitVal(s.ch) < 10 {
+			if '0' <= s.ch && s.ch <= '9' {
 				insertSemi = true
 				tok, lit = s.scanNumber(true)
 			} else if s.ch == '.' {

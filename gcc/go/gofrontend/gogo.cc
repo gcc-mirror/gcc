@@ -1251,6 +1251,7 @@ Gogo::clear_file_scope()
   this->package_->bindings()->clear_file_scope();
 
   // Warn about packages which were imported but not used.
+  bool quiet = saw_errors();
   for (Packages::iterator p = this->packages_.begin();
        p != this->packages_.end();
        ++p)
@@ -1260,7 +1261,7 @@ Gogo::clear_file_scope()
 	  && package->is_imported()
 	  && !package->used()
 	  && !package->uses_sink_alias()
-	  && !saw_errors())
+	  && !quiet)
 	error_at(package->location(), "imported and not used: %s",
 		 Gogo::message_name(package->package_name()).c_str());
       package->clear_is_imported();

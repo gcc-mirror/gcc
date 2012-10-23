@@ -98,42 +98,79 @@ func genericFtoa(dst []byte, val float64, fmt byte, prec, bitSize int) []byte {
 		return fmtB(dst, neg, mant, exp, flt)
 	}
 
+	if !optimize {
+		return bigFtoa(dst, prec, fmt, neg, mant, exp, flt)
+	}
+
+	var digs decimalSlice
+	ok := false
 	// Negative precision means "only as much as needed to be exact."
 	shortest := prec < 0
-
-	d := new(decimal)
 	if shortest {
-		ok := false
-		if optimize && bitSize == 64 {
-			// Try Grisu3 algorithm.
-			f := new(extFloat)
-			lower, upper := f.AssignComputeBounds(val)
-			ok = f.ShortestDecimal(d, &lower, &upper)
-		}
+		// Try Grisu3 algorithm.
+		f := new(extFloat)
+		lower, upper := f.AssignComputeBounds(mant, exp, neg, flt)
+		var buf [32]byte
+		digs.d = buf[:]
+		ok = f.ShortestDecimal(&digs, &lower, &upper)
 		if !ok {
-			// Create exact decimal representation.
-			// The shift is exp - flt.mantbits because mant is a 1-bit integer
-			// followed by a flt.mantbits fraction, and we are treating it as
-			// a 1+flt.mantbits-bit integer.
-			d.Assign(mant)
-			d.Shift(exp - int(flt.mantbits))
-			roundShortest(d, mant, exp, flt)
+			return bigFtoa(dst, prec, fmt, neg, mant, exp, flt)
 		}
 		// Precision for shortest representation mode.
-		if prec < 0 {
-			switch fmt {
-			case 'e', 'E':
-				prec = d.nd - 1
-			case 'f':
-				prec = max(d.nd-d.dp, 0)
-			case 'g', 'G':
-				prec = d.nd
+		switch fmt {
+		case 'e', 'E':
+			prec = digs.nd - 1
+		case 'f':
+			prec = max(digs.nd-digs.dp, 0)
+		case 'g', 'G':
+			prec = digs.nd
+		}
+	} else if fmt != 'f' {
+		// Fixed number of digits.
+		digits := prec
+		switch fmt {
+		case 'e', 'E':
+			digits++
+		case 'g', 'G':
+			if prec == 0 {
+				prec = 1
 			}
+			digits = prec
+		}
+		if digits <= 15 {
+			// try fast algorithm when the number of digits is reasonable.
+			var buf [24]byte
+			digs.d = buf[:]
+			f := extFloat{mant, exp - int(flt.mantbits), neg}
+			ok = f.FixedDecimal(&digs, digits)
+		}
+	}
+	if !ok {
+		return bigFtoa(dst, prec, fmt, neg, mant, exp, flt)
+	}
+	return formatDigits(dst, shortest, neg, digs, prec, fmt)
+}
+
+// bigFtoa uses multiprecision computations to format a float.
+func bigFtoa(dst []byte, prec int, fmt byte, neg bool, mant uint64, exp int, flt *floatInfo) []byte {
+	d := new(decimal)
+	d.Assign(mant)
+	d.Shift(exp - int(flt.mantbits))
+	var digs decimalSlice
+	shortest := prec < 0
+	if shortest {
+		roundShortest(d, mant, exp, flt)
+		digs = decimalSlice{d: d.d[:], nd: d.nd, dp: d.dp}
+		// Precision for shortest representation mode.
+		switch fmt {
+		case 'e', 'E':
+			prec = digs.nd - 1
+		case 'f':
+			prec = max(digs.nd-digs.dp, 0)
+		case 'g', 'G':
+			prec = digs.nd
 		}
 	} else {
-		// Create exact decimal representation.
-		d.Assign(mant)
-		d.Shift(exp - int(flt.mantbits))
 		// Round appropriately.
 		switch fmt {
 		case 'e', 'E':
@@ -146,18 +183,22 @@ func genericFtoa(dst []byte, val float64, fmt byte, prec, bitSize int) []byte {
 			}
 			d.Round(prec)
 		}
+		digs = decimalSlice{d: d.d[:], nd: d.nd, dp: d.dp}
 	}
+	return formatDigits(dst, shortest, neg, digs, prec, fmt)
+}
 
+func formatDigits(dst []byte, shortest bool, neg bool, digs decimalSlice, prec int, fmt byte) []byte {
 	switch fmt {
 	case 'e', 'E':
-		return fmtE(dst, neg, d, prec, fmt)
+		return fmtE(dst, neg, digs, prec, fmt)
 	case 'f':
-		return fmtF(dst, neg, d, prec)
+		return fmtF(dst, neg, digs, prec)
 	case 'g', 'G':
 		// trailing fractional zeros in 'e' form will be trimmed.
 		eprec := prec
-		if eprec > d.nd && d.nd >= d.dp {
-			eprec = d.nd
+		if eprec > digs.nd && digs.nd >= digs.dp {
+			eprec = digs.nd
 		}
 		// %e is used if the exponent from the conversion
 		// is less than -4 or greater than or equal to the precision.
@@ -165,17 +206,17 @@ func genericFtoa(dst []byte, val float64, fmt byte, prec, bitSize int) []byte {
 		if shortest {
 			eprec = 6
 		}
-		exp := d.dp - 1
+		exp := digs.dp - 1
 		if exp < -4 || exp >= eprec {
-			if prec > d.nd {
-				prec = d.nd
+			if prec > digs.nd {
+				prec = digs.nd
 			}
-			return fmtE(dst, neg, d, prec-1, fmt+'e'-'g')
+			return fmtE(dst, neg, digs, prec-1, fmt+'e'-'g')
 		}
-		if prec > d.dp {
-			prec = d.nd
+		if prec > digs.dp {
+			prec = digs.nd
 		}
-		return fmtF(dst, neg, d, max(prec-d.dp, 0))
+		return fmtF(dst, neg, digs, max(prec-digs.dp, 0))
 	}
 
 	// unknown format
@@ -283,8 +324,14 @@ func roundShortest(d *decimal, mant uint64, exp int, flt *floatInfo) {
 	}
 }
 
+type decimalSlice struct {
+	d      []byte
+	nd, dp int
+	neg    bool
+}
+
 // %e: -d.ddddde±dd
-func fmtE(dst []byte, neg bool, d *decimal, prec int, fmt byte) []byte {
+func fmtE(dst []byte, neg bool, d decimalSlice, prec int, fmt byte) []byte {
 	// sign
 	if neg {
 		dst = append(dst, '-')
@@ -300,12 +347,15 @@ func fmtE(dst []byte, neg bool, d *decimal, prec int, fmt byte) []byte {
 	// .moredigits
 	if prec > 0 {
 		dst = append(dst, '.')
-		for i := 1; i <= prec; i++ {
-			ch = '0'
-			if i < d.nd {
-				ch = d.d[i]
-			}
-			dst = append(dst, ch)
+		i := 1
+		m := d.nd + prec + 1 - max(d.nd, prec+1)
+		for i < m {
+			dst = append(dst, d.d[i])
+			i++
+		}
+		for i <= prec {
+			dst = append(dst, '0')
+			i++
 		}
 	}
 
@@ -335,17 +385,20 @@ func fmtE(dst []byte, neg bool, d *decimal, prec int, fmt byte) []byte {
 	i--
 	buf[i] = byte(exp + '0')
 
-	// leading zeroes
-	if i > len(buf)-2 {
-		i--
-		buf[i] = '0'
+	switch i {
+	case 0:
+		dst = append(dst, buf[0], buf[1], buf[2])
+	case 1:
+		dst = append(dst, buf[1], buf[2])
+	case 2:
+		// leading zeroes
+		dst = append(dst, '0', buf[2])
 	}
-
-	return append(dst, buf[i:]...)
+	return dst
 }
 
 // %f: -ddddddd.ddddd
-func fmtF(dst []byte, neg bool, d *decimal, prec int) []byte {
+func fmtF(dst []byte, neg bool, d decimalSlice, prec int) []byte {
 	// sign
 	if neg {
 		dst = append(dst, '-')

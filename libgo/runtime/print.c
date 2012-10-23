@@ -156,15 +156,16 @@ runtime_printfloat(double v)
 	int32 e, s, i, n;
 	float64 h;
 
-	if(runtime_isNaN(v)) {
+	if(ISNAN(v)) {
 		gwrite("NaN", 3);
 		return;
 	}
-	if(runtime_isInf(v, 1)) {
+	i = __builtin_isinf_sign(v);
+	if(i > 0) {
 		gwrite("+Inf", 4);
 		return;
 	}
-	if(runtime_isInf(v, -1)) {
+	if(i < 0) {
 		gwrite("-Inf", 4);
 		return;
 	}
@@ -290,8 +291,8 @@ runtime_printstring(String v)
 	// extern uint32 runtime_maxstring;
 
 	// if(v.len > runtime_maxstring) {
-	// 	gwrite("[invalid string]", 16);
-	// 	return;
+	//	gwrite("[string too long]", 17);
+	//	return;
 	// }
 	if(v.__length > 0)
 		gwrite(v.__data, v.__length);

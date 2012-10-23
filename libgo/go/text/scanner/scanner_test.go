@@ -358,8 +358,10 @@ func TestScanSelectedMask(t *testing.T) {
 }
 
 func TestScanNext(t *testing.T) {
-	s := new(Scanner).Init(bytes.NewBufferString("if a == bcd /* comment */ {\n\ta += c\n} // line comment ending in eof"))
-	checkTok(t, s, 1, s.Scan(), Ident, "if")
+	const BOM = '\uFEFF'
+	BOMs := string(BOM)
+	s := new(Scanner).Init(bytes.NewBufferString(BOMs + "if a == bcd /* com" + BOMs + "ment */ {\n\ta += c\n}" + BOMs + "// line comment ending in eof"))
+	checkTok(t, s, 1, s.Scan(), Ident, "if") // the first BOM is ignored
 	checkTok(t, s, 1, s.Scan(), Ident, "a")
 	checkTok(t, s, 1, s.Scan(), '=', "=")
 	checkTok(t, s, 0, s.Next(), '=', "")
@@ -372,6 +374,7 @@ func TestScanNext(t *testing.T) {
 	checkTok(t, s, 0, s.Next(), '=', "")
 	checkTok(t, s, 2, s.Scan(), Ident, "c")
 	checkTok(t, s, 3, s.Scan(), '}', "}")
+	checkTok(t, s, 3, s.Scan(), BOM, BOMs)
 	checkTok(t, s, 3, s.Scan(), -1, "")
 	if s.ErrorCount != 0 {
 		t.Errorf("%d errors", s.ErrorCount)
@@ -446,6 +449,9 @@ func TestError(t *testing.T) {
 	testError(t, `"\'"`, "1:3", "illegal char escape", String)
 
 	testError(t, `01238`, "1:6", "illegal octal number", Int)
+	testError(t, `01238123`, "1:9", "illegal octal number", Int)
+	testError(t, `0x`, "1:3", "illegal hexadecimal number", Int)
+	testError(t, `0xg`, "1:3", "illegal hexadecimal number", Int)
 	testError(t, `'aa'`, "1:4", "illegal char literal", Char)
 
 	testError(t, `'`, "1:2", "literal not terminated", Char)

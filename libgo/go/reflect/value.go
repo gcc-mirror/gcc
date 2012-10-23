@@ -298,6 +298,17 @@ func (v Value) Bytes() []byte {
 	return *(*[]byte)(v.val)
 }
 
+// runes returns v's underlying value.
+// It panics if v's underlying value is not a slice of runes (int32s).
+func (v Value) runes() []rune {
+	v.mustBe(Slice)
+	if v.typ.Elem().Kind() != Int32 {
+		panic("reflect.Value.Bytes of non-rune slice")
+	}
+	// Slice is always bigger than a word; assume flagIndir.
+	return *(*[]rune)(v.val)
+}
+
 // CanAddr returns true if the value's address can be obtained with Addr.
 // Such values are called addressable.  A value is addressable if it is
 // an element of a slice, an element of an addressable array,
@@ -526,6 +537,82 @@ func isMethod(t *commonType) bool {
 		}
 	}
 	return params > 2
+}
+
+// callReflect is the call implementation used by a function
+// returned by MakeFunc. In many ways it is the opposite of the
+// method Value.call above. The method above converts a call using Values
+// into a call of a function with a concrete argument frame, while
+// callReflect converts a call of a function with a concrete argument
+// frame into a call using Values.
+// It is in this file so that it can be next to the call method above.
+// The remainder of the MakeFunc implementation is in makefunc.go.
+func callReflect(ftyp *funcType, f func([]Value) []Value, frame unsafe.Pointer) {
+	// Copy argument frame into Values.
+	ptr := frame
+	off := uintptr(0)
+	in := make([]Value, 0, len(ftyp.in))
+	for _, arg := range ftyp.in {
+		typ := toCommonType(arg)
+		off += -off & uintptr(typ.align-1)
+		v := Value{typ, nil, flag(typ.Kind()) << flagKindShift}
+		if typ.size <= ptrSize {
+			// value fits in word.
+			v.val = unsafe.Pointer(loadIword(unsafe.Pointer(uintptr(ptr)+off), typ.size))
+		} else {
+			// value does not fit in word.
+			// Must make a copy, because f might keep a reference to it,
+			// and we cannot let f keep a reference to the stack frame
+			// after this function returns, not even a read-only reference.
+			v.val = unsafe_New(typ)
+			memmove(v.val, unsafe.Pointer(uintptr(ptr)+off), typ.size)
+			v.flag |= flagIndir
+		}
+		in = append(in, v)
+		off += typ.size
+	}
+
+	// Call underlying function.
+	out := f(in)
+	if len(out) != len(ftyp.out) {
+		panic("reflect: wrong return count from function created by MakeFunc")
+	}
+
+	// Copy results back into argument frame.
+	if len(ftyp.out) > 0 {
+		off += -off & (ptrSize - 1)
+		for i, arg := range ftyp.out {
+			typ := toCommonType(arg)
+			v := out[i]
+			if v.typ != typ {
+				panic("reflect: function created by MakeFunc using " + funcName(f) +
+					" returned wrong type: have " +
+					out[i].typ.String() + " for " + typ.String())
+			}
+			if v.flag&flagRO != 0 {
+				panic("reflect: function created by MakeFunc using " + funcName(f) +
+					" returned value obtained from unexported field")
+			}
+			off += -off & uintptr(typ.align-1)
+			addr := unsafe.Pointer(uintptr(ptr) + off)
+			if v.flag&flagIndir == 0 {
+				storeIword(addr, iword(v.val), typ.size)
+			} else {
+				memmove(addr, v.val, typ.size)
+			}
+			off += typ.size
+		}
+	}
+}
+
+// funcName returns the name of f, for use in error messages.
+func funcName(f func([]Value) []Value) string {
+	pc := *(*uintptr)(unsafe.Pointer(&f))
+	rf := runtime.FuncForPC(pc)
+	if rf != nil {
+		return rf.Name()
+	}
+	return "closure"
 }
 
 // Cap returns v's capacity.
@@ -911,9 +998,9 @@ func (v Value) Len() int {
 		tt := (*arrayType)(unsafe.Pointer(v.typ))
 		return int(tt.len)
 	case Chan:
-		return int(chanlen(*(*iword)(v.iword())))
+		return chanlen(*(*iword)(v.iword()))
 	case Map:
-		return int(maplen(*(*iword)(v.iword())))
+		return maplen(*(*iword)(v.iword()))
 	case Slice:
 		// Slice is bigger than a word; assume flagIndir.
 		return (*SliceHeader)(v.val).Len
@@ -970,7 +1057,7 @@ func (v Value) MapKeys() []Value {
 	}
 
 	m := *(*iword)(v.iword())
-	mlen := int32(0)
+	mlen := int(0)
 	if m != nil {
 		mlen = maplen(m)
 	}
@@ -1211,6 +1298,17 @@ func (v Value) SetBytes(x []byte) {
 		panic("reflect.Value.SetBytes of non-byte slice")
 	}
 	*(*[]byte)(v.val) = x
+}
+
+// setRunes sets v's underlying value.
+// It panics if v's underlying value is not a slice of runes (int32s).
+func (v Value) setRunes(x []rune) {
+	v.mustBeAssignable()
+	v.mustBe(Slice)
+	if v.typ.Elem().Kind() != Int32 {
+		panic("reflect.Value.setRunes of non-rune slice")
+	}
+	*(*[]rune)(v.val) = x
 }
 
 // SetComplex sets v's underlying value to x.
@@ -1610,6 +1708,140 @@ func Copy(dst, src Value) int {
 	return n
 }
 
+// A runtimeSelect is a single case passed to rselect.
+// This must match ../runtime/chan.c:/runtimeSelect
+type runtimeSelect struct {
+	dir uintptr      // 0, SendDir, or RecvDir
+	typ *runtimeType // channel type
+	ch  iword        // interface word for channel
+	val iword        // interface word for value (for SendDir)
+}
+
+// rselect runs a select. It returns the index of the chosen case,
+// and if the case was a receive, the interface word of the received
+// value and the conventional OK bool to indicate whether the receive
+// corresponds to a sent value.
+func rselect([]runtimeSelect) (chosen int, recv iword, recvOK bool)
+
+// A SelectDir describes the communication direction of a select case.
+type SelectDir int
+
+// NOTE: These values must match ../runtime/chan.c:/SelectDir.
+
+const (
+	_             SelectDir = iota
+	SelectSend              // case Chan <- Send
+	SelectRecv              // case <-Chan:
+	SelectDefault           // default
+)
+
+// A SelectCase describes a single case in a select operation.
+// The kind of case depends on Dir, the communication direction.
+//
+// If Dir is SelectDefault, the case represents a default case.
+// Chan and Send must be zero Values.
+//
+// If Dir is SelectSend, the case represents a send operation.
+// Normally Chan's underlying value must be a channel, and Send's underlying value must be
+// assignable to the channel's element type. As a special case, if Chan is a zero Value,
+// then the case is ignored, and the field Send will also be ignored and may be either zero
+// or non-zero.
+//
+// If Dir is SelectRecv, the case represents a receive operation.
+// Normally Chan's underlying value must be a channel and Send must be a zero Value.
+// If Chan is a zero Value, then the case is ignored, but Send must still be a zero Value.
+// When a receive operation is selected, the received Value is returned by Select.
+//
+type SelectCase struct {
+	Dir  SelectDir // direction of case
+	Chan Value     // channel to use (for send or receive)
+	Send Value     // value to send (for send)
+}
+
+// Select executes a select operation described by the list of cases.
+// Like the Go select statement, it blocks until one of the cases can
+// proceed and then executes that case. It returns the index of the chosen case
+// and, if that case was a receive operation, the value received and a
+// boolean indicating whether the value corresponds to a send on the channel
+// (as opposed to a zero value received because the channel is closed).
+func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
+	// NOTE: Do not trust that caller is not modifying cases data underfoot.
+	// The range is safe because the caller cannot modify our copy of the len
+	// and each iteration makes its own copy of the value c.
+	runcases := make([]runtimeSelect, len(cases))
+	haveDefault := false
+	for i, c := range cases {
+		rc := &runcases[i]
+		rc.dir = uintptr(c.Dir)
+		switch c.Dir {
+		default:
+			panic("reflect.Select: invalid Dir")
+
+		case SelectDefault: // default	
+			if haveDefault {
+				panic("reflect.Select: multiple default cases")
+			}
+			haveDefault = true
+			if c.Chan.IsValid() {
+				panic("reflect.Select: default case has Chan value")
+			}
+			if c.Send.IsValid() {
+				panic("reflect.Select: default case has Send value")
+			}
+
+		case SelectSend:
+			ch := c.Chan
+			if !ch.IsValid() {
+				break
+			}
+			ch.mustBe(Chan)
+			ch.mustBeExported()
+			tt := (*chanType)(unsafe.Pointer(ch.typ))
+			if ChanDir(tt.dir)&SendDir == 0 {
+				panic("reflect.Select: SendDir case using recv-only channel")
+			}
+			rc.ch = *(*iword)(ch.iword())
+			rc.typ = tt.runtimeType()
+			v := c.Send
+			if !v.IsValid() {
+				panic("reflect.Select: SendDir case missing Send value")
+			}
+			v.mustBeExported()
+			v = v.assignTo("reflect.Select", toCommonType(tt.elem), nil)
+			rc.val = v.iword()
+
+		case SelectRecv:
+			if c.Send.IsValid() {
+				panic("reflect.Select: RecvDir case has Send value")
+			}
+			ch := c.Chan
+			if !ch.IsValid() {
+				break
+			}
+			ch.mustBe(Chan)
+			ch.mustBeExported()
+			tt := (*chanType)(unsafe.Pointer(ch.typ))
+			rc.typ = tt.runtimeType()
+			if ChanDir(tt.dir)&RecvDir == 0 {
+				panic("reflect.Select: RecvDir case using send-only channel")
+			}
+			rc.ch = *(*iword)(ch.iword())
+		}
+	}
+
+	chosen, word, recvOK := rselect(runcases)
+	if runcases[chosen].dir == uintptr(SelectRecv) {
+		tt := (*chanType)(unsafe.Pointer(toCommonType(runcases[chosen].typ)))
+		typ := toCommonType(tt.elem)
+		fl := flag(typ.Kind()) << flagKindShift
+		if typ.Kind() != Ptr && typ.Kind() != UnsafePointer {
+			fl |= flagIndir
+		}
+		recv = Value{typ, unsafe.Pointer(word), fl}
+	}
+	return chosen, recv, recvOK
+}
+
 /*
  * constructors
  */
@@ -1657,7 +1889,7 @@ func MakeChan(typ Type, buffer int) Value {
 	if typ.ChanDir() != BothDir {
 		panic("reflect.MakeChan: unidirectional channel type")
 	}
-	ch := makechan(typ.runtimeType(), uint32(buffer))
+	ch := makechan(typ.runtimeType(), uint64(buffer))
 	return Value{typ.common(), unsafe.Pointer(ch), flagIndir | (flag(Chan) << flagKindShift)}
 }
 
@@ -1774,21 +2006,317 @@ func (v Value) assignTo(context string, dst *commonType, target *interface{}) Va
 	panic(context + ": value of type " + v.typ.String() + " is not assignable to type " + dst.String())
 }
 
+// Convert returns the value v converted to type t.
+// If the usual Go conversion rules do not allow conversion
+// of the value v to type t, Convert panics.
+func (v Value) Convert(t Type) Value {
+	if v.flag&flagMethod != 0 {
+		panic("reflect.Value.Convert: cannot convert method values")
+	}
+	op := convertOp(t.common(), v.typ)
+	if op == nil {
+		panic("reflect.Value.Convert: value of type " + v.typ.String() + " cannot be converted to type " + t.String())
+	}
+	return op(v, t)
+}
+
+// convertOp returns the function to convert a value of type src
+// to a value of type dst. If the conversion is illegal, convertOp returns nil.
+func convertOp(dst, src *commonType) func(Value, Type) Value {
+	switch src.Kind() {
+	case Int, Int8, Int16, Int32, Int64:
+		switch dst.Kind() {
+		case Int, Int8, Int16, Int32, Int64, Uint, Uint8, Uint16, Uint32, Uint64, Uintptr:
+			return cvtInt
+		case Float32, Float64:
+			return cvtIntFloat
+		case String:
+			return cvtIntString
+		}
+
+	case Uint, Uint8, Uint16, Uint32, Uint64, Uintptr:
+		switch dst.Kind() {
+		case Int, Int8, Int16, Int32, Int64, Uint, Uint8, Uint16, Uint32, Uint64, Uintptr:
+			return cvtUint
+		case Float32, Float64:
+			return cvtUintFloat
+		case String:
+			return cvtUintString
+		}
+
+	case Float32, Float64:
+		switch dst.Kind() {
+		case Int, Int8, Int16, Int32, Int64:
+			return cvtFloatInt
+		case Uint, Uint8, Uint16, Uint32, Uint64, Uintptr:
+			return cvtFloatUint
+		case Float32, Float64:
+			return cvtFloat
+		}
+
+	case Complex64, Complex128:
+		switch dst.Kind() {
+		case Complex64, Complex128:
+			return cvtComplex
+		}
+
+	case String:
+		if dst.Kind() == Slice && dst.Elem().PkgPath() == "" {
+			switch dst.Elem().Kind() {
+			case Uint8:
+				return cvtStringBytes
+			case Int32:
+				return cvtStringRunes
+			}
+		}
+
+	case Slice:
+		if dst.Kind() == String && src.Elem().PkgPath() == "" {
+			switch src.Elem().Kind() {
+			case Uint8:
+				return cvtBytesString
+			case Int32:
+				return cvtRunesString
+			}
+		}
+	}
+
+	// dst and src have same underlying type.
+	if haveIdenticalUnderlyingType(dst, src) {
+		return cvtDirect
+	}
+
+	// dst and src are unnamed pointer types with same underlying base type.
+	if dst.Kind() == Ptr && dst.Name() == "" &&
+		src.Kind() == Ptr && src.Name() == "" &&
+		haveIdenticalUnderlyingType(dst.Elem().common(), src.Elem().common()) {
+		return cvtDirect
+	}
+
+	if implements(dst, src) {
+		if src.Kind() == Interface {
+			return cvtI2I
+		}
+		return cvtT2I
+	}
+
+	return nil
+}
+
+// makeInt returns a Value of type t equal to bits (possibly truncated),
+// where t is a signed or unsigned int type.
+func makeInt(f flag, bits uint64, t Type) Value {
+	typ := t.common()
+	if typ.size > ptrSize {
+		// Assume ptrSize >= 4, so this must be uint64.
+		ptr := unsafe_New(t)
+		*(*uint64)(unsafe.Pointer(ptr)) = bits
+		return Value{typ, ptr, f | flag(typ.Kind())<<flagKindShift}
+	}
+	var w iword
+	switch typ.size {
+	case 1:
+		*(*uint8)(unsafe.Pointer(&w)) = uint8(bits)
+	case 2:
+		*(*uint16)(unsafe.Pointer(&w)) = uint16(bits)
+	case 4:
+		*(*uint32)(unsafe.Pointer(&w)) = uint32(bits)
+	case 8:
+		*(*uint64)(unsafe.Pointer(&w)) = uint64(bits)
+	}
+	return Value{typ, unsafe.Pointer(&w), f | flag(typ.Kind())<<flagKindShift | flagIndir}
+}
+
+// makeFloat returns a Value of type t equal to v (possibly truncated to float32),
+// where t is a float32 or float64 type.
+func makeFloat(f flag, v float64, t Type) Value {
+	typ := t.common()
+	if typ.size > ptrSize {
+		// Assume ptrSize >= 4, so this must be float64.
+		ptr := unsafe_New(t)
+		*(*float64)(unsafe.Pointer(ptr)) = v
+		return Value{typ, ptr, f | flag(typ.Kind())<<flagKindShift}
+	}
+
+	var w iword
+	switch typ.size {
+	case 4:
+		*(*float32)(unsafe.Pointer(&w)) = float32(v)
+	case 8:
+		*(*float64)(unsafe.Pointer(&w)) = v
+	}
+	return Value{typ, unsafe.Pointer(&w), f | flag(typ.Kind())<<flagKindShift | flagIndir}
+}
+
+// makeComplex returns a Value of type t equal to v (possibly truncated to complex64),
+// where t is a complex64 or complex128 type.
+func makeComplex(f flag, v complex128, t Type) Value {
+	typ := t.common()
+	if typ.size > ptrSize {
+		ptr := unsafe_New(t)
+		switch typ.size {
+		case 8:
+			*(*complex64)(unsafe.Pointer(ptr)) = complex64(v)
+		case 16:
+			*(*complex128)(unsafe.Pointer(ptr)) = v
+		}
+		return Value{typ, ptr, f | flag(typ.Kind())<<flagKindShift}
+	}
+
+	// Assume ptrSize <= 8 so this must be complex64.
+	var w iword
+	*(*complex64)(unsafe.Pointer(&w)) = complex64(v)
+	return Value{typ, unsafe.Pointer(&w), f | flag(typ.Kind())<<flagKindShift | flagIndir}
+}
+
+func makeString(f flag, v string, t Type) Value {
+	ret := New(t).Elem()
+	ret.SetString(v)
+	ret.flag = ret.flag&^flagAddr | f
+	return ret
+}
+
+func makeBytes(f flag, v []byte, t Type) Value {
+	ret := New(t).Elem()
+	ret.SetBytes(v)
+	ret.flag = ret.flag&^flagAddr | f
+	return ret
+}
+
+func makeRunes(f flag, v []rune, t Type) Value {
+	ret := New(t).Elem()
+	ret.setRunes(v)
+	ret.flag = ret.flag&^flagAddr | f
+	return ret
+}
+
+// These conversion functions are returned by convertOp
+// for classes of conversions. For example, the first function, cvtInt,
+// takes any value v of signed int type and returns the value converted
+// to type t, where t is any signed or unsigned int type.
+
+// convertOp: intXX -> [u]intXX
+func cvtInt(v Value, t Type) Value {
+	return makeInt(v.flag&flagRO, uint64(v.Int()), t)
+}
+
+// convertOp: uintXX -> [u]intXX
+func cvtUint(v Value, t Type) Value {
+	return makeInt(v.flag&flagRO, v.Uint(), t)
+}
+
+// convertOp: floatXX -> intXX
+func cvtFloatInt(v Value, t Type) Value {
+	return makeInt(v.flag&flagRO, uint64(int64(v.Float())), t)
+}
+
+// convertOp: floatXX -> uintXX
+func cvtFloatUint(v Value, t Type) Value {
+	return makeInt(v.flag&flagRO, uint64(v.Float()), t)
+}
+
+// convertOp: intXX -> floatXX
+func cvtIntFloat(v Value, t Type) Value {
+	return makeFloat(v.flag&flagRO, float64(v.Int()), t)
+}
+
+// convertOp: uintXX -> floatXX
+func cvtUintFloat(v Value, t Type) Value {
+	return makeFloat(v.flag&flagRO, float64(v.Uint()), t)
+}
+
+// convertOp: floatXX -> floatXX
+func cvtFloat(v Value, t Type) Value {
+	return makeFloat(v.flag&flagRO, v.Float(), t)
+}
+
+// convertOp: complexXX -> complexXX
+func cvtComplex(v Value, t Type) Value {
+	return makeComplex(v.flag&flagRO, v.Complex(), t)
+}
+
+// convertOp: intXX -> string
+func cvtIntString(v Value, t Type) Value {
+	return makeString(v.flag&flagRO, string(v.Int()), t)
+}
+
+// convertOp: uintXX -> string
+func cvtUintString(v Value, t Type) Value {
+	return makeString(v.flag&flagRO, string(v.Uint()), t)
+}
+
+// convertOp: []byte -> string
+func cvtBytesString(v Value, t Type) Value {
+	return makeString(v.flag&flagRO, string(v.Bytes()), t)
+}
+
+// convertOp: string -> []byte
+func cvtStringBytes(v Value, t Type) Value {
+	return makeBytes(v.flag&flagRO, []byte(v.String()), t)
+}
+
+// convertOp: []rune -> string
+func cvtRunesString(v Value, t Type) Value {
+	return makeString(v.flag&flagRO, string(v.runes()), t)
+}
+
+// convertOp: string -> []rune
+func cvtStringRunes(v Value, t Type) Value {
+	return makeRunes(v.flag&flagRO, []rune(v.String()), t)
+}
+
+// convertOp: direct copy
+func cvtDirect(v Value, typ Type) Value {
+	f := v.flag
+	t := typ.common()
+	val := v.val
+	if f&flagAddr != 0 {
+		// indirect, mutable word - make a copy
+		ptr := unsafe_New(t)
+		memmove(ptr, val, t.size)
+		val = ptr
+		f &^= flagAddr
+	}
+	return Value{t, val, v.flag&flagRO | f}
+}
+
+// convertOp: concrete -> interface
+func cvtT2I(v Value, typ Type) Value {
+	target := new(interface{})
+	x := valueInterface(v, false)
+	if typ.NumMethod() == 0 {
+		*target = x
+	} else {
+		ifaceE2I(typ.runtimeType(), x, unsafe.Pointer(target))
+	}
+	return Value{typ.common(), unsafe.Pointer(target), v.flag&flagRO | flagIndir | flag(Interface)<<flagKindShift}
+}
+
+// convertOp: interface -> interface
+func cvtI2I(v Value, typ Type) Value {
+	if v.IsNil() {
+		ret := Zero(typ)
+		ret.flag |= v.flag & flagRO
+		return ret
+	}
+	return cvtT2I(v.Elem(), typ)
+}
+
 // implemented in ../pkg/runtime
-func chancap(ch iword) int32
+func chancap(ch iword) int
 func chanclose(ch iword)
-func chanlen(ch iword) int32
+func chanlen(ch iword) int
 func chanrecv(t *runtimeType, ch iword, nb bool) (val iword, selected, received bool)
 func chansend(t *runtimeType, ch iword, val iword, nb bool) bool
 
-func makechan(typ *runtimeType, size uint32) (ch iword)
+func makechan(typ *runtimeType, size uint64) (ch iword)
 func makemap(t *runtimeType) (m iword)
 func mapaccess(t *runtimeType, m iword, key iword) (val iword, ok bool)
 func mapassign(t *runtimeType, m iword, key, val iword, ok bool)
 func mapiterinit(t *runtimeType, m iword) *byte
 func mapiterkey(it *byte) (key iword, ok bool)
 func mapiternext(it *byte)
-func maplen(m iword) int32
+func maplen(m iword) int
 
 func call(typ *commonType, fnaddr unsafe.Pointer, isInterface bool, isMethod bool, params *unsafe.Pointer, results *unsafe.Pointer)
 func ifaceE2I(t *runtimeType, src interface{}, dst unsafe.Pointer)

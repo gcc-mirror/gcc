@@ -30,6 +30,7 @@ func (c *checker) errorf(pos token.Pos, format string, args ...interface{}) stri
 
 // collectFields collects struct fields tok = token.STRUCT), interface methods
 // (tok = token.INTERFACE), and function arguments/results (tok = token.FUNC).
+//
 func (c *checker) collectFields(tok token.Token, list *ast.FieldList, cycleOk bool) (fields ObjList, tags []string, isVariadic bool) {
 	if list != nil {
 		for _, field := range list.List {
@@ -104,7 +105,7 @@ func (c *checker) makeType(x ast.Expr, cycleOk bool) (typ Type) {
 		obj := t.Obj
 		if obj == nil {
 			// unresolved identifier (error has been reported before)
-			return &Bad{Msg: "unresolved identifier"}
+			return &Bad{Msg: fmt.Sprintf("%s is unresolved", t.Name)}
 		}
 		if obj.Kind != ast.Typ {
 			msg := c.errorf(t.Pos(), "%s is not a type", t.Name)
@@ -112,10 +113,7 @@ func (c *checker) makeType(x ast.Expr, cycleOk bool) (typ Type) {
 		}
 		c.checkObj(obj, cycleOk)
 		if !cycleOk && obj.Type.(*Name).Underlying == nil {
-			// TODO(gri) Enable this message again once its position
-			// is independent of the underlying map implementation.
-			// msg := c.errorf(obj.Pos(), "illegal cycle in declaration of %s", obj.Name)
-			msg := "illegal cycle"
+			msg := c.errorf(obj.Pos(), "illegal cycle in declaration of %s", obj.Name)
 			return &Bad{Msg: msg}
 		}
 		return obj.Type.(Type)
@@ -158,8 +156,8 @@ func (c *checker) makeType(x ast.Expr, cycleOk bool) (typ Type) {
 		return &Struct{Fields: fields, Tags: tags}
 
 	case *ast.FuncType:
-		params, _, _ := c.collectFields(token.FUNC, t.Params, true)
-		results, _, isVariadic := c.collectFields(token.FUNC, t.Results, true)
+		params, _, isVariadic := c.collectFields(token.FUNC, t.Params, true)
+		results, _, _ := c.collectFields(token.FUNC, t.Results, true)
 		return &Func{Recv: nil, Params: params, Results: results, IsVariadic: isVariadic}
 
 	case *ast.InterfaceType:
@@ -168,7 +166,7 @@ func (c *checker) makeType(x ast.Expr, cycleOk bool) (typ Type) {
 		return &Interface{Methods: methods}
 
 	case *ast.MapType:
-		return &Map{Key: c.makeType(t.Key, true), Elt: c.makeType(t.Key, true)}
+		return &Map{Key: c.makeType(t.Key, true), Elt: c.makeType(t.Value, true)}
 
 	case *ast.ChanType:
 		return &Chan{Dir: t.Dir, Elt: c.makeType(t.Value, true)}
@@ -200,7 +198,21 @@ func (c *checker) checkObj(obj *ast.Object, ref bool) {
 		// TODO(gri) complete this
 
 	case ast.Fun:
-		// TODO(gri) complete this
+		fdecl := obj.Decl.(*ast.FuncDecl)
+		ftyp := c.makeType(fdecl.Type, ref).(*Func)
+		obj.Type = ftyp
+		if fdecl.Recv != nil {
+			recvField := fdecl.Recv.List[0]
+			if len(recvField.Names) > 0 {
+				ftyp.Recv = recvField.Names[0].Obj
+			} else {
+				ftyp.Recv = ast.NewObj(ast.Var, "_")
+				ftyp.Recv.Decl = recvField
+			}
+			c.checkObj(ftyp.Recv, ref)
+			// TODO(axw) add method to a list in the receiver type.
+		}
+		// TODO(axw) check function body, if non-nil.
 
 	default:
 		panic("unreachable")
@@ -213,11 +225,25 @@ func (c *checker) checkObj(obj *ast.Object, ref bool) {
 // there are errors.
 //
 func Check(fset *token.FileSet, pkg *ast.Package) (types map[ast.Expr]Type, err error) {
+	// Sort objects so that we get reproducible error
+	// positions (this is only needed for testing).
+	// TODO(gri): Consider ast.Scope implementation that
+	// provides both a list and a map for fast lookup.
+	// Would permit the use of scopes instead of ObjMaps
+	// elsewhere.
+	list := make(ObjList, len(pkg.Scope.Objects))
+	i := 0
+	for _, obj := range pkg.Scope.Objects {
+		list[i] = obj
+		i++
+	}
+	list.Sort()
+
 	var c checker
 	c.fset = fset
 	c.types = make(map[ast.Expr]Type)
 
-	for _, obj := range pkg.Scope.Objects {
+	for _, obj := range list {
 		c.checkObj(obj, false)
 	}
 

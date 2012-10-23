@@ -129,6 +129,7 @@ is_freebsd=no
 is_irix=no
 is_linux=no
 is_netbsd=no
+is_openbsd=no
 is_rtems=no
 is_solaris=no
 GOOS=unknown
@@ -138,6 +139,7 @@ case ${host} in
   *-*-irix6*)    is_irix=yes;    GOOS=irix ;;
   *-*-linux*)    is_linux=yes;   GOOS=linux ;;
   *-*-netbsd*)	 is_netbsd=yes;  GOOS=netbsd ;;
+  *-*-openbsd*)  is_openbsd=yes; GOOS=openbsd ;;
   *-*-rtems*)    is_rtems=yes;   GOOS=rtems ;;
   *-*-solaris2*) is_solaris=yes; GOOS=solaris ;;
 esac
@@ -146,6 +148,7 @@ AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
 AM_CONDITIONAL(LIBGO_IS_IRIX, test $is_irix = yes)
 AM_CONDITIONAL(LIBGO_IS_LINUX, test $is_linux = yes)
 AM_CONDITIONAL(LIBGO_IS_NETBSD, test $is_netbsd = yes)
+AM_CONDITIONAL(LIBGO_IS_OPENBSD, test $is_openbsd = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AC_SUBST(GOOS)

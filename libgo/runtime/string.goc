@@ -32,8 +32,8 @@ enum
 	Runeself	= 0x80,
 };
 
-func stringiter(s String, k int32) (retk int32) {
-	int32 l, n;
+func stringiter(s String, k int) (retk int) {
+	int32 l;
 
 	if(k >= s.__length) {
 		// retk=0 is end of iteration
@@ -48,15 +48,12 @@ func stringiter(s String, k int32) (retk int32) {
 	}
 
 	// multi-char rune
-	n = charntorune(&l, s.__data+k, s.__length-k);
-	retk = k + (n ? n : 1);
+	retk = k + charntorune(&l, s.__data+k, s.__length-k);
 
 out:
 }
 
-func stringiter2(s String, k int32) (retk int32, retv int32) {
-	int32 n;
-
+func stringiter2(s String, k int) (retk int, retv int) {
 	if(k >= s.__length) {
 		// retk=0 is end of iteration
 		retk = 0;
@@ -71,8 +68,7 @@ func stringiter2(s String, k int32) (retk int32, retv int32) {
 	}
 
 	// multi-char rune
-	n = charntorune(&retv, s.__data+k, s.__length-k);
-	retk = k + (n ? n : 1);
+	retk = k + charntorune(&retv, s.__data+k, s.__length-k);
 
 out:
 }

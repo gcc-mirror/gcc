@@ -57,8 +57,8 @@ const (
 //       if the field value is empty. The empty values are false, 0, any
 //       nil pointer or interface value, and any array, slice, map, or
 //       string of length zero.
-//     - a non-pointer anonymous struct field is handled as if the
-//       fields of its value were part of the outer struct.
+//     - an anonymous struct field is handled as if the fields of its
+//       value were part of the outer struct.
 //
 // If a field uses a tag "a>b>c", then the element c will be nested inside
 // parent elements a and b.  Fields that appear next to each other that name
@@ -83,9 +83,7 @@ func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
 	enc := NewEncoder(&b)
 	enc.prefix = prefix
 	enc.indent = indent
-	err := enc.marshalValue(reflect.ValueOf(v), nil)
-	enc.Flush()
-	if err != nil {
+	if err := enc.Encode(v); err != nil {
 		return nil, err
 	}
 	return b.Bytes(), nil
@@ -107,8 +105,10 @@ func NewEncoder(w io.Writer) *Encoder {
 // of Go values to XML.
 func (enc *Encoder) Encode(v interface{}) error {
 	err := enc.marshalValue(reflect.ValueOf(v), nil)
-	enc.Flush()
-	return err
+	if err != nil {
+		return err
+	}
+	return enc.Flush()
 }
 
 type printer struct {
@@ -164,7 +164,7 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 		xmlname := tinfo.xmlname
 		if xmlname.name != "" {
 			xmlns, name = xmlname.xmlns, xmlname.name
-		} else if v, ok := val.FieldByIndex(xmlname.idx).Interface().(Name); ok && v.Local != "" {
+		} else if v, ok := xmlname.value(val).Interface().(Name); ok && v.Local != "" {
 			xmlns, name = v.Space, v.Local
 		}
 	}
@@ -195,7 +195,7 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 		if finfo.flags&fAttr == 0 {
 			continue
 		}
-		fv := val.FieldByIndex(finfo.idx)
+		fv := finfo.value(val)
 		if finfo.flags&fOmitEmpty != 0 && isEmptyValue(fv) {
 			continue
 		}
@@ -224,7 +224,7 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 	p.WriteString(name)
 	p.WriteByte('>')
 
-	return nil
+	return p.cachedWriteError()
 }
 
 var timeType = reflect.TypeOf(time.Time{})
@@ -260,15 +260,15 @@ func (p *printer) marshalSimple(typ reflect.Type, val reflect.Value) error {
 	default:
 		return &UnsupportedTypeError{typ}
 	}
-	return nil
+	return p.cachedWriteError()
 }
 
 var ddBytes = []byte("--")
 
 func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 	if val.Type() == timeType {
-		p.WriteString(val.Interface().(time.Time).Format(time.RFC3339Nano))
-		return nil
+		_, err := p.WriteString(val.Interface().(time.Time).Format(time.RFC3339Nano))
+		return err
 	}
 	s := parentStack{printer: p}
 	for i := range tinfo.fields {
@@ -276,7 +276,7 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 		if finfo.flags&(fAttr|fAny) != 0 {
 			continue
 		}
-		vf := val.FieldByIndex(finfo.idx)
+		vf := finfo.value(val)
 		switch finfo.flags & fMode {
 		case fCharData:
 			switch vf.Kind() {
@@ -353,7 +353,13 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 		}
 	}
 	s.trim(nil)
-	return nil
+	return p.cachedWriteError()
+}
+
+// return the bufio Writer's cached write error
+func (p *printer) cachedWriteError() error {
+	_, err := p.Write(nil)
+	return err
 }
 
 func (p *printer) writeIndent(depthDelta int) {

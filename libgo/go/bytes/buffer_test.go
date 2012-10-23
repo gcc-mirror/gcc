@@ -8,20 +8,21 @@ import (
 	. "bytes"
 	"io"
 	"math/rand"
+	"runtime"
 	"testing"
 	"unicode/utf8"
 )
 
-const N = 10000  // make this bigger for a larger (and slower) test
-var data string  // test data for write tests
-var bytes []byte // test data; same as data but as a slice.
+const N = 10000      // make this bigger for a larger (and slower) test
+var data string      // test data for write tests
+var testBytes []byte // test data; same as data but as a slice.
 
 func init() {
-	bytes = make([]byte, N)
+	testBytes = make([]byte, N)
 	for i := 0; i < N; i++ {
-		bytes[i] = 'a' + byte(i%26)
+		testBytes[i] = 'a' + byte(i%26)
 	}
-	data = string(bytes)
+	data = string(testBytes)
 }
 
 // Verify that contents of buf match the string s.
@@ -84,7 +85,7 @@ func fillBytes(t *testing.T, testname string, buf *Buffer, s string, n int, fub 
 }
 
 func TestNewBuffer(t *testing.T) {
-	buf := NewBuffer(bytes)
+	buf := NewBuffer(testBytes)
 	check(t, "NewBuffer", buf, data)
 }
 
@@ -187,7 +188,7 @@ func TestLargeByteWrites(t *testing.T) {
 		limit = 9
 	}
 	for i := 3; i < limit; i += 3 {
-		s := fillBytes(t, "TestLargeWrites (1)", &buf, "", 5, bytes)
+		s := fillBytes(t, "TestLargeWrites (1)", &buf, "", 5, testBytes)
 		empty(t, "TestLargeByteWrites (2)", &buf, s, make([]byte, len(data)/i))
 	}
 	check(t, "TestLargeByteWrites (3)", &buf, "")
@@ -205,7 +206,7 @@ func TestLargeStringReads(t *testing.T) {
 func TestLargeByteReads(t *testing.T) {
 	var buf Buffer
 	for i := 3; i < 30; i += 3 {
-		s := fillBytes(t, "TestLargeReads (1)", &buf, "", 5, bytes[0:len(bytes)/i])
+		s := fillBytes(t, "TestLargeReads (1)", &buf, "", 5, testBytes[0:len(testBytes)/i])
 		empty(t, "TestLargeReads (2)", &buf, s, make([]byte, len(data)))
 	}
 	check(t, "TestLargeByteReads (3)", &buf, "")
@@ -219,7 +220,7 @@ func TestMixedReadsAndWrites(t *testing.T) {
 		if i%2 == 0 {
 			s = fillString(t, "TestMixedReadsAndWrites (1)", &buf, s, 1, data[0:wlen])
 		} else {
-			s = fillBytes(t, "TestMixedReadsAndWrites (1)", &buf, s, 1, bytes[0:wlen])
+			s = fillBytes(t, "TestMixedReadsAndWrites (1)", &buf, s, 1, testBytes[0:wlen])
 		}
 
 		rlen := rand.Intn(len(data))
@@ -240,7 +241,7 @@ func TestNil(t *testing.T) {
 func TestReadFrom(t *testing.T) {
 	var buf Buffer
 	for i := 3; i < 30; i += 3 {
-		s := fillBytes(t, "TestReadFrom (1)", &buf, "", 5, bytes[0:len(bytes)/i])
+		s := fillBytes(t, "TestReadFrom (1)", &buf, "", 5, testBytes[0:len(testBytes)/i])
 		var b Buffer
 		b.ReadFrom(&buf)
 		empty(t, "TestReadFrom (2)", &b, s, make([]byte, len(data)))
@@ -250,7 +251,7 @@ func TestReadFrom(t *testing.T) {
 func TestWriteTo(t *testing.T) {
 	var buf Buffer
 	for i := 3; i < 30; i += 3 {
-		s := fillBytes(t, "TestReadFrom (1)", &buf, "", 5, bytes[0:len(bytes)/i])
+		s := fillBytes(t, "TestReadFrom (1)", &buf, "", 5, testBytes[0:len(testBytes)/i])
 		var b Buffer
 		buf.WriteTo(&b)
 		empty(t, "TestReadFrom (2)", &b, s, make([]byte, len(data)))
@@ -370,6 +371,37 @@ func TestReadBytes(t *testing.T) {
 		}
 		if err != test.err {
 			t.Errorf("expected error %v, got %v", test.err, err)
+		}
+	}
+}
+
+func TestGrow(t *testing.T) {
+	x := []byte{'x'}
+	y := []byte{'y'}
+	tmp := make([]byte, 72)
+	for _, startLen := range []int{0, 100, 1000, 10000, 100000} {
+		xBytes := Repeat(x, startLen)
+		for _, growLen := range []int{0, 100, 1000, 10000, 100000} {
+			buf := NewBuffer(xBytes)
+			// If we read, this affects buf.off, which is good to test.
+			readBytes, _ := buf.Read(tmp)
+			buf.Grow(growLen)
+			yBytes := Repeat(y, growLen)
+			// Check no allocation occurs in write, as long as we're single-threaded.
+			var m1, m2 runtime.MemStats
+			runtime.ReadMemStats(&m1)
+			buf.Write(yBytes)
+			runtime.ReadMemStats(&m2)
+			if runtime.GOMAXPROCS(-1) == 1 && m1.Mallocs != m2.Mallocs {
+				t.Errorf("allocation occurred during write")
+			}
+			// Check that buffer has correct data.
+			if !Equal(buf.Bytes()[0:startLen-readBytes], xBytes[readBytes:]) {
+				t.Errorf("bad initial data at %d %d", startLen, growLen)
+			}
+			if !Equal(buf.Bytes()[startLen-readBytes:startLen-readBytes+growLen], yBytes) {
+				t.Errorf("bad written data at %d %d", startLen, growLen)
+			}
 		}
 	}
 }

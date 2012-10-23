@@ -426,6 +426,12 @@ func (enc *Encoder) encodeMap(b *bytes.Buffer, mv reflect.Value, keyOp, elemOp e
 // by the concrete value.  A nil value gets sent as the empty string for the name,
 // followed by no value.
 func (enc *Encoder) encodeInterface(b *bytes.Buffer, iv reflect.Value) {
+	// Gobs can encode nil interface values but not typed interface
+	// values holding nil pointers, since nil pointers point to no value.
+	elem := iv.Elem()
+	if elem.Kind() == reflect.Ptr && elem.IsNil() {
+		errorf("gob: cannot encode nil pointer of type %s inside interface", iv.Elem().Type())
+	}
 	state := enc.newEncoderState(b)
 	state.fieldnum = -1
 	state.sendZero = true
@@ -435,7 +441,9 @@ func (enc *Encoder) encodeInterface(b *bytes.Buffer, iv reflect.Value) {
 	}
 
 	ut := userType(iv.Elem().Type())
+	registerLock.RLock()
 	name, ok := concreteTypeToName[ut.base]
+	registerLock.RUnlock()
 	if !ok {
 		errorf("type not registered for interface: %s", ut.base)
 	}
@@ -454,7 +462,7 @@ func (enc *Encoder) encodeInterface(b *bytes.Buffer, iv reflect.Value) {
 	enc.pushWriter(b)
 	data := new(bytes.Buffer)
 	data.Write(spaceForLength)
-	enc.encode(data, iv.Elem(), ut)
+	enc.encode(data, elem, ut)
 	if enc.err != nil {
 		error_(enc.err)
 	}
@@ -698,9 +706,20 @@ func (enc *Encoder) getEncEngine(ut *userTypeInfo) *encEngine {
 		error_(err1)
 	}
 	if info.encoder == nil {
-		// mark this engine as underway before compiling to handle recursive types.
+		// Assign the encEngine now, so recursive types work correctly. But...
 		info.encoder = new(encEngine)
+		// ... if we fail to complete building the engine, don't cache the half-built machine.
+		// Doing this here means we won't cache a type that is itself OK but
+		// that contains a nested type that won't compile. The result is consistent
+		// error behavior when Encode is called multiple times on the top-level type.
+		ok := false
+		defer func() {
+			if !ok {
+				info.encoder = nil
+			}
+		}()
 		info.encoder = enc.compileEnc(ut)
+		ok = true
 	}
 	return info.encoder
 }

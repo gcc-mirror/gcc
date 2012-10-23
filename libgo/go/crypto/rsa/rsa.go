@@ -25,6 +25,30 @@ type PublicKey struct {
 	E int      // public exponent
 }
 
+var (
+	errPublicModulus       = errors.New("crypto/rsa: missing public modulus")
+	errPublicExponentSmall = errors.New("crypto/rsa: public exponent too small")
+	errPublicExponentLarge = errors.New("crypto/rsa: public exponent too large")
+)
+
+// checkPub sanity checks the public key before we use it.
+// We require pub.E to fit into a 32-bit integer so that we
+// do not have different behavior depending on whether
+// int is 32 or 64 bits. See also
+// http://www.imperialviolet.org/2012/03/16/rsae.html.
+func checkPub(pub *PublicKey) error {
+	if pub.N == nil {
+		return errPublicModulus
+	}
+	if pub.E < 2 {
+		return errPublicExponentSmall
+	}
+	if pub.E > 1<<31-1 {
+		return errPublicExponentLarge
+	}
+	return nil
+}
+
 // A PrivateKey represents an RSA key
 type PrivateKey struct {
 	PublicKey            // public part.
@@ -57,13 +81,17 @@ type CRTValue struct {
 // Validate performs basic sanity checks on the key.
 // It returns nil if the key is valid, or else an error describing a problem.
 func (priv *PrivateKey) Validate() error {
+	if err := checkPub(&priv.PublicKey); err != nil {
+		return err
+	}
+
 	// Check that the prime factors are actually prime. Note that this is
 	// just a sanity check. Since the random witnesses chosen by
 	// ProbablyPrime are deterministic, given the candidate number, it's
 	// easy for an attack to generate composites that pass this test.
 	for _, prime := range priv.Primes {
 		if !prime.ProbablyPrime(20) {
-			return errors.New("prime factor is composite")
+			return errors.New("crypto/rsa: prime factor is composite")
 		}
 	}
 
@@ -73,27 +101,23 @@ func (priv *PrivateKey) Validate() error {
 		modulus.Mul(modulus, prime)
 	}
 	if modulus.Cmp(priv.N) != 0 {
-		return errors.New("invalid modulus")
+		return errors.New("crypto/rsa: invalid modulus")
 	}
-	// Check that e and totient(Πprimes) are coprime.
-	totient := new(big.Int).Set(bigOne)
+
+	// Check that de ≡ 1 mod p-1, for each prime.
+	// This implies that e is coprime to each p-1 as e has a multiplicative
+	// inverse. Therefore e is coprime to lcm(p-1,q-1,r-1,...) =
+	// exponent(ℤ/nℤ). It also implies that a^de ≡ a mod p as a^(p-1) ≡ 1
+	// mod p. Thus a^de ≡ a mod n for all a coprime to n, as required.
+	congruence := new(big.Int)
+	de := new(big.Int).SetInt64(int64(priv.E))
+	de.Mul(de, priv.D)
 	for _, prime := range priv.Primes {
 		pminus1 := new(big.Int).Sub(prime, bigOne)
-		totient.Mul(totient, pminus1)
-	}
-	e := big.NewInt(int64(priv.E))
-	gcd := new(big.Int)
-	x := new(big.Int)
-	y := new(big.Int)
-	gcd.GCD(x, y, totient, e)
-	if gcd.Cmp(bigOne) != 0 {
-		return errors.New("invalid public exponent E")
-	}
-	// Check that de ≡ 1 (mod totient(Πprimes))
-	de := new(big.Int).Mul(priv.D, e)
-	de.Mod(de, totient)
-	if de.Cmp(bigOne) != 0 {
-		return errors.New("invalid private exponent D")
+		congruence.Mod(de, pminus1)
+		if congruence.Cmp(bigOne) != 0 {
+			return errors.New("crypto/rsa: invalid exponents")
+		}
 	}
 	return nil
 }
@@ -118,7 +142,7 @@ func GenerateMultiPrimeKey(random io.Reader, nprimes int, bits int) (priv *Priva
 	priv.E = 65537
 
 	if nprimes < 2 {
-		return nil, errors.New("rsa.GenerateMultiPrimeKey: nprimes must be >= 2")
+		return nil, errors.New("crypto/rsa: GenerateMultiPrimeKey: nprimes must be >= 2")
 	}
 
 	primes := make([]*big.Int, nprimes)
@@ -220,6 +244,9 @@ func encrypt(c *big.Int, pub *PublicKey, m *big.Int) *big.Int {
 // The message must be no longer than the length of the public modulus less
 // twice the hash length plus 2.
 func EncryptOAEP(hash hash.Hash, random io.Reader, pub *PublicKey, msg []byte, label []byte) (out []byte, err error) {
+	if err := checkPub(pub); err != nil {
+		return nil, err
+	}
 	hash.Reset()
 	k := (pub.N.BitLen() + 7) / 8
 	if len(msg) > k-2*hash.Size()-2 {
@@ -406,6 +433,9 @@ func decrypt(random io.Reader, priv *PrivateKey, c *big.Int) (m *big.Int, err er
 // DecryptOAEP decrypts ciphertext using RSA-OAEP.
 // If random != nil, DecryptOAEP uses RSA blinding to avoid timing side-channel attacks.
 func DecryptOAEP(hash hash.Hash, random io.Reader, priv *PrivateKey, ciphertext []byte, label []byte) (msg []byte, err error) {
+	if err := checkPub(&priv.PublicKey); err != nil {
+		return nil, err
+	}
 	k := (priv.N.BitLen() + 7) / 8
 	if len(ciphertext) > k ||
 		k < hash.Size()*2+2 {

@@ -127,6 +127,10 @@ var fmttests = []struct {
 	{"%s", []byte("abc"), "abc"},
 	{"%x", []byte("abc"), "616263"},
 	{"% x", []byte("abc\xff"), "61 62 63 ff"},
+	{"%#x", []byte("abc\xff"), "0x610x620x630xff"},
+	{"%#X", []byte("abc\xff"), "0X610X620X630XFF"},
+	{"%# x", []byte("abc\xff"), "0x61 0x62 0x63 0xff"},
+	{"%# X", []byte("abc\xff"), "0X61 0X62 0X63 0XFF"},
 	{"% X", []byte("abc\xff"), "61 62 63 FF"},
 	{"%x", []byte("xyz"), "78797a"},
 	{"%X", []byte("xyz"), "78797A"},
@@ -350,10 +354,12 @@ var fmttests = []struct {
 	{"%+v", B{1, 2}, `{I:<1> j:2}`},
 	{"%+v", C{1, B{2, 3}}, `{i:1 B:{I:<2> j:3}}`},
 
-	// q on Stringable items
+	// other formats on Stringable items
 	{"%s", I(23), `<23>`},
 	{"%q", I(23), `"<23>"`},
 	{"%x", I(23), `3c32333e`},
+	{"%#x", I(23), `0x3c0x320x330x3e`},
+	{"%# x", I(23), `0x3c 0x32 0x33 0x3e`},
 	{"%d", I(23), `23`}, // Stringer applies only to string formats.
 
 	// go syntax
@@ -375,6 +381,7 @@ var fmttests = []struct {
 	{"%#v", &iarray, `&[4]interface {}{1, "hello", 2.5, interface {}(nil)}`},
 	{"%#v", map[int]byte(nil), `map[int]uint8(nil)`},
 	{"%#v", map[int]byte{}, `map[int]uint8{}`},
+	{"%#v", "foo", `"foo"`},
 
 	// slices with other formats
 	{"%#x", []int{1, 2, 15}, `[0x1 0x2 0xf]`},
@@ -441,6 +448,11 @@ var fmttests = []struct {
 	{"%v", (*int)(nil), "<nil>"},
 	{"%v", new(int), "0xPTR"},
 
+	// %d etc. pointers use specified base.
+	{"%d", new(int), "PTR_d"},
+	{"%o", new(int), "PTR_o"},
+	{"%x", new(int), "PTR_x"},
+
 	// %d on Stringer should give integer if possible
 	{"%s", time.Time{}.Month(), "January"},
 	{"%d", time.Time{}.Month(), "1"},
@@ -470,14 +482,26 @@ func TestSprintf(t *testing.T) {
 	for _, tt := range fmttests {
 		s := Sprintf(tt.fmt, tt.val)
 		if i := strings.Index(tt.out, "PTR"); i >= 0 {
+			pattern := "PTR"
+			chars := "0123456789abcdefABCDEF"
+			switch {
+			case strings.HasPrefix(tt.out[i:], "PTR_d"):
+				pattern = "PTR_d"
+				chars = chars[:10]
+			case strings.HasPrefix(tt.out[i:], "PTR_o"):
+				pattern = "PTR_o"
+				chars = chars[:8]
+			case strings.HasPrefix(tt.out[i:], "PTR_x"):
+				pattern = "PTR_x"
+			}
 			j := i
 			for ; j < len(s); j++ {
 				c := s[j]
-				if (c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F') {
+				if !strings.ContainsRune(chars, rune(c)) {
 					break
 				}
 			}
-			s = s[0:i] + "PTR" + s[j:]
+			s = s[0:i] + pattern + s[j:]
 		}
 		if s != tt.out {
 			if _, ok := tt.val.(string); ok {
@@ -524,6 +548,14 @@ func BenchmarkSprintfPrefixedInt(b *testing.B) {
 func BenchmarkSprintfFloat(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Sprintf("%g", 5.23184)
+	}
+}
+
+func BenchmarkManyArgs(b *testing.B) {
+	var buf bytes.Buffer
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		Fprintf(&buf, "%2d/%2d/%2d %d:%d:%d %s %s\n", 3, 4, 5, 11, 12, 13, "hello", "world")
 	}
 }
 

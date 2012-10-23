@@ -584,6 +584,7 @@ func (d *Decoder) RawToken() (Token, error) {
 			if inquote == 0 && b == '>' && depth == 0 {
 				break
 			}
+		HandleB:
 			d.buf.WriteByte(b)
 			switch {
 			case b == inquote:
@@ -599,7 +600,35 @@ func (d *Decoder) RawToken() (Token, error) {
 				depth--
 
 			case b == '<' && inquote == 0:
-				depth++
+				// Look for <!-- to begin comment.
+				s := "!--"
+				for i := 0; i < len(s); i++ {
+					if b, ok = d.mustgetc(); !ok {
+						return nil, d.err
+					}
+					if b != s[i] {
+						for j := 0; j < i; j++ {
+							d.buf.WriteByte(s[j])
+						}
+						depth++
+						goto HandleB
+					}
+				}
+
+				// Remove < that was written above.
+				d.buf.Truncate(d.buf.Len() - 1)
+
+				// Look for terminator.
+				var b0, b1 byte
+				for {
+					if b, ok = d.mustgetc(); !ok {
+						return nil, d.err
+					}
+					if b0 == '-' && b1 == '-' && b == '>' {
+						break
+					}
+					b0, b1 = b1, b
+				}
 			}
 		}
 		return Directive(d.buf.Bytes()), nil
@@ -850,6 +879,8 @@ Input:
 			// Parsers are required to recognize lt, gt, amp, apos, and quot
 			// even if they have not been declared.  That's all we allow.
 			var i int
+			var semicolon bool
+			var valid bool
 			for i = 0; i < len(d.tmp); i++ {
 				var ok bool
 				d.tmp[i], ok = d.getc()
@@ -861,6 +892,8 @@ Input:
 				}
 				c := d.tmp[i]
 				if c == ';' {
+					semicolon = true
+					valid = i > 0
 					break
 				}
 				if 'a' <= c && c <= 'z' ||
@@ -873,14 +906,25 @@ Input:
 				break
 			}
 			s := string(d.tmp[0:i])
-			if i >= len(d.tmp) {
+			if !valid {
 				if !d.Strict {
 					b0, b1 = 0, 0
 					d.buf.WriteByte('&')
 					d.buf.Write(d.tmp[0:i])
+					if semicolon {
+						d.buf.WriteByte(';')
+					}
 					continue Input
 				}
-				d.err = d.syntaxError("character entity expression &" + s + "... too long")
+				semi := ";"
+				if !semicolon {
+					semi = " (no semicolon)"
+				}
+				if i < len(d.tmp) {
+					d.err = d.syntaxError("invalid character entity &" + s + semi)
+				} else {
+					d.err = d.syntaxError("invalid character entity &" + s + "... too long")
+				}
 				return nil
 			}
 			var haveText bool
@@ -910,6 +954,7 @@ Input:
 					b0, b1 = 0, 0
 					d.buf.WriteByte('&')
 					d.buf.Write(d.tmp[0:i])
+					d.buf.WriteByte(';')
 					continue Input
 				}
 				d.err = d.syntaxError("invalid character entity &" + s + ";")

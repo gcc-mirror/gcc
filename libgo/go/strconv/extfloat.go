@@ -4,8 +4,6 @@
 
 package strconv
 
-import "math"
-
 // An extFloat represents an extended floating-point number, with more
 // precision than a float64. It does not try to save bits: the
 // number represented by the structure is mant*(2^exp), with a negative
@@ -127,8 +125,7 @@ var powersOfTen = [...]extFloat{
 // floatBits returns the bits of the float64 that best approximates
 // the extFloat passed as receiver. Overflow is set to true if
 // the resulting float64 is ±Inf.
-func (f *extFloat) floatBits() (bits uint64, overflow bool) {
-	flt := &float64info
+func (f *extFloat) floatBits(flt *floatInfo) (bits uint64, overflow bool) {
 	f.Normalize()
 
 	exp := f.exp + 63
@@ -140,7 +137,7 @@ func (f *extFloat) floatBits() (bits uint64, overflow bool) {
 		exp += n
 	}
 
-	// Extract 1+flt.mantbits bits.
+	// Extract 1+flt.mantbits bits from the 64-bit mantissa.
 	mant := f.mant >> (63 - flt.mantbits)
 	if f.mant&(1<<(62-flt.mantbits)) != 0 {
 		// Round up.
@@ -180,40 +177,24 @@ out:
 	return
 }
 
-// Assign sets f to the value of x.
-func (f *extFloat) Assign(x float64) {
-	if x < 0 {
-		x = -x
-		f.neg = true
-	}
-	x, f.exp = math.Frexp(x)
-	f.mant = uint64(x * float64(1<<64))
-	f.exp -= 64
-}
-
-// AssignComputeBounds sets f to the value of x and returns
+// AssignComputeBounds sets f to the floating point value
+// defined by mant, exp and precision given by flt. It returns
 // lower, upper such that any number in the closed interval
-// [lower, upper] is converted back to x.
-func (f *extFloat) AssignComputeBounds(x float64) (lower, upper extFloat) {
-	// Special cases.
-	bits := math.Float64bits(x)
-	flt := &float64info
-	neg := bits>>(flt.expbits+flt.mantbits) != 0
-	expBiased := int(bits>>flt.mantbits) & (1<<flt.expbits - 1)
-	mant := bits & (uint64(1)<<flt.mantbits - 1)
-
-	if expBiased == 0 {
-		// denormalized.
-		f.mant = mant
-		f.exp = 1 + flt.bias - int(flt.mantbits)
-	} else {
-		f.mant = mant | 1<<flt.mantbits
-		f.exp = expBiased + flt.bias - int(flt.mantbits)
-	}
+// [lower, upper] is converted back to the same floating point number.
+func (f *extFloat) AssignComputeBounds(mant uint64, exp int, neg bool, flt *floatInfo) (lower, upper extFloat) {
+	f.mant = mant
+	f.exp = exp - int(flt.mantbits)
 	f.neg = neg
+	if f.exp <= 0 && mant == (mant>>uint(-f.exp))<<uint(-f.exp) {
+		// An exact integer
+		f.mant >>= uint(-f.exp)
+		f.exp = 0
+		return *f, *f
+	}
+	expBiased := exp - flt.bias
 
 	upper = extFloat{mant: 2*f.mant + 1, exp: f.exp - 1, neg: f.neg}
-	if mant != 0 || expBiased == 1 {
+	if mant != 1<<flt.mantbits || expBiased == 1 {
 		lower = extFloat{mant: 2*f.mant - 1, exp: f.exp - 1, neg: f.neg}
 	} else {
 		lower = extFloat{mant: 4*f.mant - 1, exp: f.exp - 2, neg: f.neg}
@@ -223,20 +204,38 @@ func (f *extFloat) AssignComputeBounds(x float64) (lower, upper extFloat) {
 
 // Normalize normalizes f so that the highest bit of the mantissa is
 // set, and returns the number by which the mantissa was left-shifted.
-func (f *extFloat) Normalize() uint {
-	if f.mant == 0 {
+func (f *extFloat) Normalize() (shift uint) {
+	mant, exp := f.mant, f.exp
+	if mant == 0 {
 		return 0
 	}
-	exp_before := f.exp
-	for f.mant < (1 << 55) {
-		f.mant <<= 8
-		f.exp -= 8
+	if mant>>(64-32) == 0 {
+		mant <<= 32
+		exp -= 32
 	}
-	for f.mant < (1 << 63) {
-		f.mant <<= 1
-		f.exp -= 1
+	if mant>>(64-16) == 0 {
+		mant <<= 16
+		exp -= 16
 	}
-	return uint(exp_before - f.exp)
+	if mant>>(64-8) == 0 {
+		mant <<= 8
+		exp -= 8
+	}
+	if mant>>(64-4) == 0 {
+		mant <<= 4
+		exp -= 4
+	}
+	if mant>>(64-2) == 0 {
+		mant <<= 2
+		exp -= 2
+	}
+	if mant>>(64-1) == 0 {
+		mant <<= 1
+		exp -= 1
+	}
+	shift = uint(f.exp - exp)
+	f.mant, f.exp = mant, exp
+	return
 }
 
 // Multiply sets f to the product f*g: the result is correctly rounded,
@@ -264,24 +263,22 @@ var uint64pow10 = [...]uint64{
 	1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
 }
 
-// AssignDecimal sets f to an approximate value of the decimal d. It
+// AssignDecimal sets f to an approximate value mantissa*10^exp. It
 // returns true if the value represented by f is guaranteed to be the
-// best approximation of d after being rounded to a float64. 
-func (f *extFloat) AssignDecimal(d *decimal) (ok bool) {
+// best approximation of d after being rounded to a float64 or
+// float32 depending on flt.
+func (f *extFloat) AssignDecimal(mantissa uint64, exp10 int, neg bool, trunc bool, flt *floatInfo) (ok bool) {
 	const uint64digits = 19
 	const errorscale = 8
-	mant10, digits := d.atou64()
-	exp10 := d.dp - digits
 	errors := 0 // An upper bound for error, computed in errorscale*ulp.
-
-	if digits < d.nd {
+	if trunc {
 		// the decimal number was truncated.
 		errors += errorscale / 2
 	}
 
-	f.mant = mant10
+	f.mant = mantissa
 	f.exp = 0
-	f.neg = d.neg
+	f.neg = neg
 
 	// Multiply by powers of ten.
 	i := (exp10 - firstPowerOfTen) / stepPowerOfTen
@@ -291,9 +288,9 @@ func (f *extFloat) AssignDecimal(d *decimal) (ok bool) {
 	adjExp := (exp10 - firstPowerOfTen) % stepPowerOfTen
 
 	// We multiply by exp%step
-	if digits+adjExp <= uint64digits {
-		// We can multiply the mantissa
-		f.mant *= uint64(float64pow10[adjExp])
+	if adjExp < uint64digits && mantissa < uint64pow10[uint64digits-adjExp] {
+		// We can multiply the mantissa exactly.
+		f.mant *= uint64pow10[adjExp]
 		f.Normalize()
 	} else {
 		f.Normalize()
@@ -318,10 +315,10 @@ func (f *extFloat) AssignDecimal(d *decimal) (ok bool) {
 	// The 64 bits mantissa is 1 + 52 bits for float64 + 11 extra bits.
 	//
 	// In many cases the approximation will be good enough.
-	const denormalExp = -1023 - 63
-	flt := &float64info
+	denormalExp := flt.bias - 63
 	var extrabits uint
 	if f.exp <= denormalExp {
+		// f.mant * 2^f.exp is smaller than 2^(flt.bias+1).
 		extrabits = uint(63 - flt.mantbits + 1 + uint(denormalExp-f.exp))
 	} else {
 		extrabits = uint(63 - flt.mantbits)
@@ -344,16 +341,17 @@ func (f *extFloat) AssignDecimal(d *decimal) (ok bool) {
 // f by an approximate power of ten 10^-exp, and returns exp10, so
 // that f*10^exp10 has the same value as the old f, up to an ulp,
 // as well as the index of 10^-exp in the powersOfTen table.
-// The arguments expMin and expMax constrain the final value of the
-// binary exponent of f.
-func (f *extFloat) frexp10(expMin, expMax int) (exp10, index int) {
-	// it is illegal to call this function with a too restrictive exponent range.
-	if expMax-expMin <= 25 {
-		panic("strconv: invalid exponent range")
-	}
+func (f *extFloat) frexp10() (exp10, index int) {
+	// The constants expMin and expMax constrain the final value of the
+	// binary exponent of f. We want a small integral part in the result
+	// because finding digits of an integer requires divisions, whereas
+	// digits of the fractional part can be found by repeatedly multiplying
+	// by 10.
+	const expMin = -60
+	const expMax = -32
 	// Find power of ten such that x * 10^n has a binary exponent
-	// between expMin and expMax
-	approxExp10 := -(f.exp + 100) * 28 / 93 // log(10)/log(2) is close to 93/28.
+	// between expMin and expMax.
+	approxExp10 := ((expMin+expMax)/2 - f.exp) * 28 / 93 // log(10)/log(2) is close to 93/28.
 	i := (approxExp10 - firstPowerOfTen) / stepPowerOfTen
 Loop:
 	for {
@@ -375,26 +373,202 @@ Loop:
 }
 
 // frexp10Many applies a common shift by a power of ten to a, b, c.
-func frexp10Many(expMin, expMax int, a, b, c *extFloat) (exp10 int) {
-	exp10, i := c.frexp10(expMin, expMax)
+func frexp10Many(a, b, c *extFloat) (exp10 int) {
+	exp10, i := c.frexp10()
 	a.Multiply(powersOfTen[i])
 	b.Multiply(powersOfTen[i])
 	return
+}
+
+// FixedDecimal stores in d the first n significant digits
+// of the decimal representation of f. It returns false
+// if it cannot be sure of the answer.
+func (f *extFloat) FixedDecimal(d *decimalSlice, n int) bool {
+	if f.mant == 0 {
+		d.nd = 0
+		d.dp = 0
+		d.neg = f.neg
+		return true
+	}
+	if n == 0 {
+		panic("strconv: internal error: extFloat.FixedDecimal called with n == 0")
+	}
+	// Multiply by an appropriate power of ten to have a reasonable
+	// number to process. 
+	f.Normalize()
+	exp10, _ := f.frexp10()
+
+	shift := uint(-f.exp)
+	integer := uint32(f.mant >> shift)
+	fraction := f.mant - (uint64(integer) << shift)
+	ε := uint64(1) // ε is the uncertainty we have on the mantissa of f.
+
+	// Write exactly n digits to d.
+	needed := n        // how many digits are left to write.
+	integerDigits := 0 // the number of decimal digits of integer.
+	pow10 := uint64(1) // the power of ten by which f was scaled.
+	for i, pow := 0, uint64(1); i < 20; i++ {
+		if pow > uint64(integer) {
+			integerDigits = i
+			break
+		}
+		pow *= 10
+	}
+	rest := integer
+	if integerDigits > needed {
+		// the integral part is already large, trim the last digits.
+		pow10 = uint64pow10[integerDigits-needed]
+		integer /= uint32(pow10)
+		rest -= integer * uint32(pow10)
+	} else {
+		rest = 0
+	}
+
+	// Write the digits of integer: the digits of rest are omitted.
+	var buf [32]byte
+	pos := len(buf)
+	for v := integer; v > 0; {
+		v1 := v / 10
+		v -= 10 * v1
+		pos--
+		buf[pos] = byte(v + '0')
+		v = v1
+	}
+	for i := pos; i < len(buf); i++ {
+		d.d[i-pos] = buf[i]
+	}
+	nd := len(buf) - pos
+	d.nd = nd
+	d.dp = integerDigits + exp10
+	needed -= nd
+
+	if needed > 0 {
+		if rest != 0 || pow10 != 1 {
+			panic("strconv: internal error, rest != 0 but needed > 0")
+		}
+		// Emit digits for the fractional part. Each time, 10*fraction
+		// fits in a uint64 without overflow.
+		for needed > 0 {
+			fraction *= 10
+			ε *= 10 // the uncertainty scales as we multiply by ten.
+			if 2*ε > 1<<shift {
+				// the error is so large it could modify which digit to write, abort.
+				return false
+			}
+			digit := fraction >> shift
+			d.d[nd] = byte(digit + '0')
+			fraction -= digit << shift
+			nd++
+			needed--
+		}
+		d.nd = nd
+	}
+
+	// We have written a truncation of f (a numerator / 10^d.dp). The remaining part
+	// can be interpreted as a small number (< 1) to be added to the last digit of the
+	// numerator.
+	//
+	// If rest > 0, the amount is:
+	//    (rest<<shift | fraction) / (pow10 << shift)
+	//    fraction being known with a ±ε uncertainty.
+	//    The fact that n > 0 guarantees that pow10 << shift does not overflow a uint64.
+	//
+	// If rest = 0, pow10 == 1 and the amount is
+	//    fraction / (1 << shift)
+	//    fraction being known with a ±ε uncertainty.
+	//
+	// We pass this information to the rounding routine for adjustment.
+
+	ok := adjustLastDigitFixed(d, uint64(rest)<<shift|fraction, pow10, shift, ε)
+	if !ok {
+		return false
+	}
+	// Trim trailing zeros.
+	for i := d.nd - 1; i >= 0; i-- {
+		if d.d[i] != '0' {
+			d.nd = i + 1
+			break
+		}
+	}
+	return true
+}
+
+// adjustLastDigitFixed assumes d contains the representation of the integral part
+// of some number, whose fractional part is num / (den << shift). The numerator
+// num is only known up to an uncertainty of size ε, assumed to be less than
+// (den << shift)/2.
+//
+// It will increase the last digit by one to account for correct rounding, typically
+// when the fractional part is greater than 1/2, and will return false if ε is such
+// that no correct answer can be given.
+func adjustLastDigitFixed(d *decimalSlice, num, den uint64, shift uint, ε uint64) bool {
+	if num > den<<shift {
+		panic("strconv: num > den<<shift in adjustLastDigitFixed")
+	}
+	if 2*ε > den<<shift {
+		panic("strconv: ε > (den<<shift)/2")
+	}
+	if 2*(num+ε) < den<<shift {
+		return true
+	}
+	if 2*(num-ε) > den<<shift {
+		// increment d by 1.
+		i := d.nd - 1
+		for ; i >= 0; i-- {
+			if d.d[i] == '9' {
+				d.nd--
+			} else {
+				break
+			}
+		}
+		if i < 0 {
+			d.d[0] = '1'
+			d.nd = 1
+			d.dp++
+		} else {
+			d.d[i]++
+		}
+		return true
+	}
+	return false
 }
 
 // ShortestDecimal stores in d the shortest decimal representation of f
 // which belongs to the open interval (lower, upper), where f is supposed
 // to lie. It returns false whenever the result is unsure. The implementation
 // uses the Grisu3 algorithm.
-func (f *extFloat) ShortestDecimal(d *decimal, lower, upper *extFloat) bool {
+func (f *extFloat) ShortestDecimal(d *decimalSlice, lower, upper *extFloat) bool {
 	if f.mant == 0 {
-		d.d[0] = '0'
-		d.nd = 1
+		d.nd = 0
 		d.dp = 0
 		d.neg = f.neg
+		return true
 	}
-	const minExp = -60
-	const maxExp = -32
+	if f.exp == 0 && *lower == *f && *lower == *upper {
+		// an exact integer.
+		var buf [24]byte
+		n := len(buf) - 1
+		for v := f.mant; v > 0; {
+			v1 := v / 10
+			v -= 10 * v1
+			buf[n] = byte(v + '0')
+			n--
+			v = v1
+		}
+		nd := len(buf) - n - 1
+		for i := 0; i < nd; i++ {
+			d.d[i] = buf[n+1+i]
+		}
+		d.nd, d.dp = nd, nd
+		for d.nd > 0 && d.d[d.nd-1] == '0' {
+			d.nd--
+		}
+		if d.nd == 0 {
+			d.dp = 0
+		}
+		d.neg = f.neg
+		return true
+	}
 	upper.Normalize()
 	// Uniformize exponents.
 	if f.exp > upper.exp {
@@ -406,7 +580,7 @@ func (f *extFloat) ShortestDecimal(d *decimal, lower, upper *extFloat) bool {
 		lower.exp = upper.exp
 	}
 
-	exp10 := frexp10Many(minExp, maxExp, lower, f, upper)
+	exp10 := frexp10Many(lower, f, upper)
 	// Take a safety margin due to rounding in frexp10Many, but we lose precision.
 	upper.mant++
 	lower.mant--
@@ -424,10 +598,12 @@ func (f *extFloat) ShortestDecimal(d *decimal, lower, upper *extFloat) bool {
 
 	// Count integral digits: there are at most 10.
 	var integerDigits int
-	for i, pow := range uint64pow10 {
-		if uint64(integer) >= pow {
-			integerDigits = i + 1
+	for i, pow := 0, uint64(1); i < 20; i++ {
+		if pow > uint64(integer) {
+			integerDigits = i
+			break
 		}
+		pow *= 10
 	}
 	for i := 0; i < integerDigits; i++ {
 		pow := uint64pow10[integerDigits-i-1]
@@ -475,7 +651,7 @@ func (f *extFloat) ShortestDecimal(d *decimal, lower, upper *extFloat) bool {
 // d = x-targetDiff*ε, without becoming smaller than x-maxDiff*ε.
 // It assumes that a decimal digit is worth ulpDecimal*ε, and that
 // all data is known with a error estimate of ulpBinary*ε.
-func adjustLastDigit(d *decimal, currentDiff, targetDiff, maxDiff, ulpDecimal, ulpBinary uint64) bool {
+func adjustLastDigit(d *decimalSlice, currentDiff, targetDiff, maxDiff, ulpDecimal, ulpBinary uint64) bool {
 	if ulpDecimal < 2*ulpBinary {
 		// Approximation is too wide.
 		return false

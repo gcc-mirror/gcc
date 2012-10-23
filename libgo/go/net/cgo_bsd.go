@@ -12,6 +12,6 @@ package net
 
 import "syscall"
 
-func cgoAddrInfoMask() int {
-	return syscall.AI_MASK
+func cgoAddrInfoFlags() int {
+	return (syscall.AI_CANONNAME | syscall.AI_V4MAPPED | syscall.AI_ALL) & syscall.AI_MASK
 }
