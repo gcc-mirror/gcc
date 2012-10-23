@@ -12104,8 +12104,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
         }
       if (SIZEOF_EXPR_TYPE_P (t))
 	{
-	  r = tsubst_copy (TREE_TYPE (TREE_OPERAND (t, 0)),
-			   args, complain, in_decl);
+	  r = tsubst (TREE_TYPE (TREE_OPERAND (t, 0)),
+		      args, complain, in_decl);
 	  r = build1 (NOP_EXPR, r, error_mark_node);
 	  r = build1 (SIZEOF_EXPR,
 		      tsubst (TREE_TYPE (t), args, complain, in_decl), r);
@@ -13533,10 +13533,13 @@ tsubst_copy_and_build (tree t,
 	  {
 	    ++cp_unevaluated_operand;
 	    ++c_inhibit_evaluation_warnings;
-	    op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
-					 /*function_p=*/false,
-					 /*integral_constant_expression_p=*/
-					 false);
+	    if (TYPE_P (op1))
+	      op1 = tsubst (op1, args, complain, in_decl);
+	    else
+	      op1 = tsubst_copy_and_build (op1, args, complain, in_decl,
+					   /*function_p=*/false,
+					   /*integral_constant_expression_p=*/
+					   false);
 	    --cp_unevaluated_operand;
 	    --c_inhibit_evaluation_warnings;
 	  }

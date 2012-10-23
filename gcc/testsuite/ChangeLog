@@ -1,3 +1,8 @@
+2012-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54844
+	* g++.dg/template/sizeof14.C: New test.
+
 2012-10-23  Ian Bolton  <ian.bolton@arm.com>
 	    Jim MacArthur  <jim.macarthur@arm.com>
 	    Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
