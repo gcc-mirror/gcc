@@ -1,3 +1,9 @@
+2012-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/54820
+	* configure.ac (have_static_libs): Force 'no' for GCC version < 4.5.
+	* configure: Regenerate.
+
 2012-10-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* MAINTAINERS (aarch64): Add Marcus and myself.
