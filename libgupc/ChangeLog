@@ -1,3 +1,10 @@
+2012-10-24  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* libgupc/Makefile.am: Add more files for cleanup.
+	* libgupc/Makefile.in: Regenerate.
+	* libgupc/smp/upc_tick.c: Add proper casting for calculating
+	  nanoseconds from sec/usec if gettimeofday() call was used.
+
 2012-10-23  Nenad Vukicevic  <nenad@intrepid.com>
             Gary Funck  <gary@intrepid.com>
 

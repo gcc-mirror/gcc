@@ -66,7 +66,7 @@ upc_ticks_now (void)
       perror ("gettimeofday");
       abort ();
     }
-  t = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
+  t = (upc_tick_t) tv.tv_sec * 1000000000LL + (upc_tick_t) tv.tv_usec * 1000;
   return t;
 }
 

@@ -338,5 +338,6 @@ stamp-build-info: libgupc.texi
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libgupc.info $(srcdir)/libgupc.texi
 	@touch $@
 
-CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgupc.info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgupc.info \
+	$(nodist_toolexeclib_HEADERS) gupc.ld gcc-upc-lib.h
 MAINTAINERCLEANFILES = $(srcdir)/libgupc.info

@@ -818,7 +818,9 @@ info_TEXINFOS = libgupc.texi
 
 # AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
 @BUILD_INFO_TRUE@STAMP_BUILD_INFO = stamp-build-info
-CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgupc.info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libgupc.info \
+	$(nodist_toolexeclib_HEADERS) gupc.ld gcc-upc-lib.h
+
 MAINTAINERCLEANFILES = $(srcdir)/libgupc.info
 all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
