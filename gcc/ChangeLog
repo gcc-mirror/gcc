@@ -1,3 +1,8 @@
+2012-10-24  Sharad Singhai  <singhai@google.com>
+
+	* config/rs6000/rs6000.c (rs6000_density_test): Use dump_enabled_p
+          instead of dump_kind_p.
+
 2012-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/54928
