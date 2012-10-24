@@ -778,10 +778,36 @@ __upc_monitor_threads (void)
   action.sa_flags = 0;
   sigaction (SIGTERM, &action, NULL);
   /* Wait for threads to finish.  */
-  while ((pid = wait (&wait_status)) > 0 || errno == EINTR)
+  for (;;)
     {
-      if (errno == EINTR)
-	continue;
+      pid = waitpid (-1, &wait_status, WNOHANG);
+      /* Check for errors.  */
+      if (pid == -1)
+	{
+	  /* Continue checking if interrupted
+	     (handling other signals).  */
+	  if (errno == EINTR)
+	    continue;
+	  /* Stop waiting if no more children.  */
+	  if (errno == ECHILD)
+	    break;
+	  /* Abort if invalid argument.  */
+	  if (errno == EINVAL)
+	    {
+	      perror ("waitpid");
+	      abort ();
+	    }
+	}
+      /* Not a child exit?  */
+      if (pid == 0)
+	{
+	  /* Check for debugger attach.  */
+	  MPIR_Breakpoint ();
+	  /* Release the CPU for 100mS and continue checking.  */
+	  usleep (100000);
+	  continue;
+	}
+      /* Check for child process that exited.  */
       thread_id = __upc_get_thread_id (pid);
       if (!global_exit_invoked && WIFEXITED (wait_status))
 	{
@@ -822,10 +848,10 @@ __upc_monitor_threads (void)
           /*  GASP note: We can't record a noncollective GASP
               exit event here, because the process has already died.  */
 	  /* We'll all go away now. */
-	  if (killpg (getpgrp (), SIGTERM) == -1)
+	  if (killpg (getpid (), SIGTERM) == -1)
 	    {
 	      perror ("killpg");
-	      abort ();
+	      exit (-1);
 	    }
 	}
     }

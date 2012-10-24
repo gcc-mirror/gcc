@@ -1,8 +1,16 @@
 2012-10-24  Nenad Vukicevic  <nenad@intrepid.com>
 
-	* libgupc/Makefile.am: Add more files for cleanup.
-	* libgupc/Makefile.in: Regenerate.
-	* libgupc/smp/upc_tick.c: Add proper casting for calculating
+	* smp/upc_main.c (__upc_monitor_threads): Allow for MPIR
+	debug connection while waiting for threads.  STAT requires
+	job launcher to periodically call MPIR_Breakpoint().  If
+	killpg() fails call exit() instead of abort to avoid recursion
+	in handling signals.
+
+2012-10-24  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* Makefile.am: Add more files for cleanup.
+	* Makefile.in: Regenerate.
+	* smp/upc_tick.c: Add proper casting for calculating
 	  nanoseconds from sec/usec if gettimeofday() call was used.
 
 2012-10-23  Nenad Vukicevic  <nenad@intrepid.com>
