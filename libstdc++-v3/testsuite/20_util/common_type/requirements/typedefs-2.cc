@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,9 @@ void test01()
   using std::is_same;
 
   VERIFY( (is_same<common_type<void>::type, void>::value) );
-  VERIFY( (is_same<common_type<const void>::type, const void>::value) );
-  VERIFY( (is_same<common_type<volatile void>::type, volatile void>::value) );
-  VERIFY( (is_same<common_type<const volatile void>::type,
-	           const volatile void>::value) );
+  VERIFY( (is_same<common_type<const void>::type, void>::value) );
+  VERIFY( (is_same<common_type<volatile void>::type, void>::value) );
+  VERIFY( (is_same<common_type<const volatile void>::type, void>::value) );
 
   VERIFY( (is_same<common_type<void, void>::type, void>::value) );
   VERIFY( (is_same<common_type<void, const void>::type, void>::value) );

@@ -1,3 +1,15 @@
+2012-10-24  Daniel Krugler  <daniel.kruegler@gmail.com>
+
+	* include/std/type_traits (common_type): Implement LWG 2141.
+	* testsuite/20_util/duration/requirements/sfinae_friendly_1.cc:
+	Update.
+	* testsuite/20_util/common_type/requirements/typedefs-1.cc: Likewise.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
+	Likewise.
+	* testsuite/20_util/common_type/requirements/sfinae_friendly_2.cc:
+	Likewise.
+	* testsuite/20_util/common_type/requirements/typedefs-2.cc: Likewise.
+
 2012-10-24   Haakan Younes  <hyounes@google.com>
 	     Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -247,7 +259,7 @@
 	* testsuite/23_containers/bitset/45713.cc: Skip for avr*-*-*
 	cris*-*-* h8300*-*-* mcore*-*-* moxie*-*-*.
 
-2012-10-11  Daniel Krugler  <daniel.kruegler@googlemail.com>
+2012-10-11  Daniel Krugler  <daniel.kruegler@gmail.com>
 
 	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
 	Update / extend.
@@ -289,7 +301,7 @@
 	* testsuite/20_util/common_type/requirements/sfinae_friendly_1.cc:
 	Adjust.
 
-2012-10-09  Daniel Krugler  <daniel.kruegler@googlemail.com>
+2012-10-09  Daniel Krugler  <daniel.kruegler@gmail.com>
 
 	* include/std/type_traits (common_time): Provide "SFINAE-friendly"
 	implementation.
@@ -466,7 +478,7 @@
 	* include/ext/random.tcc (rice_distribution<>::__generate_impl):
 	Likewise.
 
-2012-10-01  Daniel Krugler  <daniel.kruegler@googlemail.com>
+2012-10-01  Daniel Krugler  <daniel.kruegler@gmail.com>
 
 	* include/std/type_traits (result_of): Provide "SFINAE-friendly"
 	(see N3436) implementation.
@@ -1810,7 +1822,7 @@
 	PR libstdc++/52689
 	* testsuite/17_intro/static.cc: New.
 
-2012-04-23  Daniel Krugler  <daniel.kruegler@googlemail.com>
+2012-04-23  Daniel Krugler  <daniel.kruegler@gmail.com>
 
 	* include/std/type_traits (is_nothrow_destructible): Implement.
 	(is_destructible): Implement LWG 2049.
