@@ -97,8 +97,21 @@ fi
 AC_SUBST(BACKTRACE_FILE)
 
 EXTRA_FLAGS=
-if test "x$GCC" = "xyes"; then
+if test -n "${with_target_subdir}"; then
   EXTRA_FLAGS=-funwind-tables
+else
+  AC_CACHE_CHECK([for -funwind-tables option],
+    [libbacktrace_cv_c_unwind_tables],
+    [CFLAGS_hold="$CFLAGS"
+     CFLAGS="$CFLAGS -funwind-tables"
+     AC_COMPILE_IFELSE(
+       [AC_LANG_PROGRAM([static int f() { return 0; }], [return f();])],
+       [libbacktrace_cv_c_unwind_tables=yes],
+       [libbacktrace_cv_c_unwind_tables=no])
+     CFLAGS="$CFLAGS_hold"])
+   if test "$libbacktrace_cv_c_unwind_tables" = "yes"; then
+     EXTRA_FLAGS=-funwind-tables
+   fi
 fi
 AC_SUBST(EXTRA_FLAGS)
 

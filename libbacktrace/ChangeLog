@@ -1,3 +1,9 @@
+2012-10-24  Ian Lance Taylor  <iant@google.com>
+
+	PR target/55061
+	* configure.ac: Check whether -funwind-tables option works.
+	* configure: Rebuild.
+
 2012-10-11  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Do not use dl_iterate_phdr on Solaris 10.
