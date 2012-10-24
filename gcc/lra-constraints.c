@@ -515,6 +515,12 @@ extract_loc_address_regs (bool top_p, enum machine_mode mode, addr_space_t as,
     case PC:
       return;
 
+    case ZERO_EXTEND:
+      /* Pass TOP_P for displacement.  */
+      extract_loc_address_regs (top_p, mode, as, &XEXP (*loc, 0), context_p,
+				code, index_code, modify_p, ad);
+      return;
+
     case PLUS:
     case LO_SUM:
       /* When we have an address that is a sum, we must determine
