@@ -571,6 +571,48 @@ lra_spill (void)
   free (pseudo_regnos);
 }
 
+/* Apply alter_subreg for subregs of regs in *LOC.  Use FINAL_P for
+   alter_subreg calls. Return true if any subreg of reg is
+   processed.  */
+static bool
+alter_subregs (rtx *loc, bool final_p)
+{
+  int i;
+  rtx x = *loc;
+  bool res;
+  const char *fmt;
+  enum rtx_code code;
+
+  if (x == NULL_RTX)
+    return false;
+  code = GET_CODE (x);
+  if (code == SUBREG && REG_P (SUBREG_REG (x)))
+    {
+      lra_assert (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER);
+      alter_subreg (loc, final_p);
+      return true;
+    }
+  fmt = GET_RTX_FORMAT (code);
+  res = false;
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	{
+	  if (alter_subregs (&XEXP (x, i), final_p))
+	    res = true;
+	}
+      else if (fmt[i] == 'E')
+	{
+	  int j;
+	  
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (alter_subregs (&XVECEXP (x, i, j), final_p))
+	      res = true;
+	}
+    }
+  return res;
+}
+
 /* Final change of pseudos got hard registers into the corresponding
    hard registers.  */
 void
@@ -589,22 +631,15 @@ lra_hard_reg_substitution (void)
     FOR_BB_INSNS (bb, insn)
       if (INSN_P (insn))
 	{
-	  lra_insn_recog_data_t id;
+	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
 	  bool insn_change_p = false;
 
-	  id = lra_get_insn_recog_data (insn);
 	  for (i = id->insn_static_data->n_operands - 1; i >= 0; i--)
-	    {
-	      rtx op = *id->operand_loc[i];
-
-	      if (GET_CODE (op) == SUBREG && REG_P (SUBREG_REG (op)))
-		{
-		  lra_assert (REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER);
-		  alter_subreg (id->operand_loc[i], ! DEBUG_INSN_P (insn));
-		  lra_update_dup (id, i);
-		  insn_change_p = true;
-		}
-	    }
+	    if (alter_subregs (id->operand_loc[i], ! DEBUG_INSN_P (insn)))
+	      {
+		lra_update_dup (id, i);
+		insn_change_p = true;
+	      }
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
 	}
