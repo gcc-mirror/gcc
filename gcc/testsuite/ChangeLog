@@ -1,3 +1,8 @@
+2012-10-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+        * gcc.dg/vect/vect-82_64.c: Adjust the dump file.
+        * gcc.dg/vect/vect-83_64.c: Likewise.
+
 2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54922
