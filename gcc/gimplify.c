@@ -8147,15 +8147,12 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
      a VAR_DECL.  If it's a VAR_DECL from another function, the gimplifier
      will want to replace it with a new variable, but that will cause problems
      if this type is from outside the function.  It's OK to have that here.  */
-  if (expr == NULL_TREE || TREE_CONSTANT (expr)
-      || TREE_CODE (expr) == VAR_DECL
-      || CONTAINS_PLACEHOLDER_P (expr))
+  if (is_gimple_sizepos (expr))
     return;
 
   *expr_p = unshare_expr (expr);
 
   gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
-  expr = *expr_p;
 }
 
 /* Gimplify the body of statements of FNDECL and return a GIMPLE_BIND node
