@@ -1,5 +1,9 @@
 2012-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/55010
+	* cse.c (fold_rtx) <RTX_COMPARE>: Call copy_rtx on folded_arg{0,1}
+	before passing it to simplify_relational_operation.
+
 	PR debug/54828
 	* gimple.h (is_gimple_sizepos): New inline function.
 	* gimplify.c (gimplify_one_sizepos): Use it.  Remove useless

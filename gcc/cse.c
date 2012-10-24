@@ -3461,9 +3461,10 @@ fold_rtx (rtx x, rtx insn)
 	}
 
       {
-	rtx op0 = const_arg0 ? const_arg0 : folded_arg0;
-	rtx op1 = const_arg1 ? const_arg1 : folded_arg1;
-        new_rtx = simplify_relational_operation (code, mode, mode_arg0, op0, op1);
+	rtx op0 = const_arg0 ? const_arg0 : copy_rtx (folded_arg0);
+	rtx op1 = const_arg1 ? const_arg1 : copy_rtx (folded_arg1);
+	new_rtx = simplify_relational_operation (code, mode, mode_arg0,
+						 op0, op1);
       }
       break;
 

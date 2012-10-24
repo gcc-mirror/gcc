@@ -1,5 +1,8 @@
 2012-10-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/55010
+	* gcc.dg/pr55010.c: New test.
+
 	PR debug/54828
 	* g++.dg/debug/pr54828.C: New test.
 
