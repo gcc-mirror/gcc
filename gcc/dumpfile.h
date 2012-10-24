@@ -108,7 +108,6 @@ struct dump_file_info
   int num;                      /* dump file number */
 };
 
-
 /* In dumpfile.c */
 extern char *get_dump_file_name (int);
 extern int dump_initialized_p (int);
@@ -120,8 +119,6 @@ extern void dump_node (const_tree, int, FILE *);
 extern int dump_switch_p (const char *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
-extern bool dump_kind_p (int);
-extern inline bool dump_enabled_p (void);
 extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void dump_printf_loc (int, source_location,
                              const char *, ...) ATTRIBUTE_PRINTF_3;
@@ -142,10 +139,19 @@ extern void dump_bb (FILE *, basic_block, int, int);
 
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
+extern FILE *alt_dump_file;
 extern int dump_flags;
 extern const char *dump_file_name;
 
 /* Return the dump_file_info for the given phase.  */
 extern struct dump_file_info *get_dump_file_info (int);
+
+/* Return true if any of the dumps are enabled, false otherwise. */
+
+static inline bool
+dump_enabled_p (void)
+{
+  return (dump_file || alt_dump_file);
+}
 
 #endif /* GCC_DUMPFILE_H */

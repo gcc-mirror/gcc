@@ -1,3 +1,22 @@
+2012-10-24  Sharad Singhai  <singhai@google.com>
+
+	* dumpfile.c (dump_enabled_p): Make it inline and move the definition
+	to dumpfile.h.
+	(dump_kind_p): Deleted. Functionality replaced by dump_enabled_p.
+	Make alt_dump_file extern.
+	* dumpfile.h (dump_enabled_p): Move inline definition here.
+	(dump_kind_p): Delete declaration.
+	Add extern declaration of alt_dump_file.
+	* toplev.c: Move dump_file and dump_file_name to dumpfile.c.
+	* tree-vect-loop-manip.c: Replace all uses of dump_kind_p with
+	dump_enabled_p.
+	* tree-vectorizer.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+
 2012-10-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* expmed.c (lowpart_bit_field_p): Add missing == 0 check.
