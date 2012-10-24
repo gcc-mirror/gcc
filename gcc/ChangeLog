@@ -1,3 +1,8 @@
+2012-10-23  Ian Lance Taylor  <iant@google.com>
+
+	* doc/extend.texi (Extended Asm): The '+' constraint does not
+	require a register.
+
 2012-10-23  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_across_edge): Remove unused
