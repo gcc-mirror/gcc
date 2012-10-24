@@ -1,3 +1,8 @@
+2012-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/55049
+	* gcc.target/i386/pr55049-1.c: New test. 
+
 2012-10-24  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55037
@@ -13,8 +18,8 @@
 
 2012-10-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
-        * gcc.dg/vect/vect-82_64.c: Adjust the dump file.
-        * gcc.dg/vect/vect-83_64.c: Likewise.
+	* gcc.dg/vect/vect-82_64.c: Adjust the dump file.
+	* gcc.dg/vect/vect-83_64.c: Likewise.
 
 2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
