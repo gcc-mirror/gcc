@@ -743,7 +743,7 @@ thread_across_edge (gimple dummy_cond,
      safe to thread this edge.  */
   if (e->flags & EDGE_DFS_BACK)
     {
-      if (cond_arg_set_in_bb (e, e->dest, 1))
+      if (cond_arg_set_in_bb (e, e->dest))
 	goto fail;
     }
 
@@ -787,7 +787,7 @@ thread_across_edge (gimple dummy_cond,
 	     of threading without having to re-run DOM or VRP.  */
 	  if (dest
 	      && ((e->flags & EDGE_DFS_BACK) == 0
-		  || ! cond_arg_set_in_bb (taken_edge, e->dest, 2)))
+		  || ! cond_arg_set_in_bb (taken_edge, e->dest)))
 	    {
 	      /* We don't want to thread back to a block we have already
  		 visited.  This may be overly conservative.  */
@@ -846,7 +846,7 @@ thread_across_edge (gimple dummy_cond,
 	do
 	  {
 	    if ((e->flags & EDGE_DFS_BACK) == 0
-		|| ! cond_arg_set_in_bb (e3, e->dest, 3))
+		|| ! cond_arg_set_in_bb (e3, e->dest))
 	      e2 = thread_around_empty_block (e3,
 					      dummy_cond,
 					      handle_dominating_asserts,
