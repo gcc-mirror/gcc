@@ -11490,8 +11490,40 @@ fi
 
 
 EXTRA_FLAGS=
-if test "x$GCC" = "xyes"; then
+if test -n "${with_target_subdir}"; then
   EXTRA_FLAGS=-funwind-tables
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -funwind-tables option" >&5
+$as_echo_n "checking for -funwind-tables option... " >&6; }
+if test "${libbacktrace_cv_c_unwind_tables+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold="$CFLAGS"
+     CFLAGS="$CFLAGS -funwind-tables"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+static int f() { return 0; }
+int
+main ()
+{
+return f();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_c_unwind_tables=yes
+else
+  libbacktrace_cv_c_unwind_tables=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+     CFLAGS="$CFLAGS_hold"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_c_unwind_tables" >&5
+$as_echo "$libbacktrace_cv_c_unwind_tables" >&6; }
+   if test "$libbacktrace_cv_c_unwind_tables" = "yes"; then
+     EXTRA_FLAGS=-funwind-tables
+   fi
 fi
 
 
