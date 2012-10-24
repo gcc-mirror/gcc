@@ -102,7 +102,7 @@ DEF_VEC_ALLOC_O (loc_map_pair, heap);
 
 static void
 maybe_unwind_expanded_macro_loc (diagnostic_context *context,
-                                 diagnostic_info *diagnostic,
+                                 const diagnostic_info *diagnostic,
                                  source_location where)
 {
   const struct line_map *map;
@@ -144,14 +144,12 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
   /* Walk LOC_VEC and print the macro expansion trace, unless the
      first macro which expansion triggered this trace was expanded
      inside a system header.  */
+  int saved_location_line =
+    expand_location_to_spelling_point (diagnostic->location).line;
+
   if (!LINEMAP_SYSP (map))
     FOR_EACH_VEC_ELT (loc_map_pair, loc_vec, ix, iter)
       {
-        source_location resolved_def_loc = 0, resolved_exp_loc = 0,
-	  saved_location = 0;
-	int resolved_def_loc_line = 0, saved_location_line = 0;
-        diagnostic_t saved_kind;
-        const char *saved_prefix;
 	/* Sometimes, in the unwound macro expansion trace, we want to
 	   print a part of the context that shows where, in the
 	   definition of the relevant macro, is the token (we are
@@ -174,11 +172,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
 	   A contrario, when the first interesting diagnostic line
 	   points into the definition of the macro, we don't need to
 	   display any line for that macro definition in the trace
-	   anymore, otherwise it'd be redundant.
-
-	   This flag is true when we need to display the context of
-	   the macro definition.  */
-	bool print_definition_context_p = false;
+	   anymore, otherwise it'd be redundant.  */
 
         /* Okay, now here is what we want.  For each token resulting
            from macro expansion we want to show: 1/ where in the
@@ -187,75 +181,46 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
 
         /* Resolve the location iter->where into the locus 1/ of the
            comment above.  */
-        resolved_def_loc =
+        source_location resolved_def_loc =
           linemap_resolve_location (line_table, iter->where,
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
 
 	/* Don't print trace for locations that are reserved or from
 	   within a system header.  */
-	{
-	  const struct line_map *m = NULL;
-	  source_location l = linemap_resolve_location (line_table, resolved_def_loc,
-							LRK_SPELLING_LOCATION,
-							&m);
-	  if (l < RESERVED_LOCATION_COUNT
-	      || LINEMAP_SYSP (m))
-	    continue;
-
-	  resolved_def_loc_line = SOURCE_LINE (m, l);
-	}
-
-        /* Resolve the location of the expansion point of the macro
-           which expansion gave the token represented by def_loc.
-           This is the locus 2/ of the earlier comment.  */
-        resolved_exp_loc =
-          linemap_resolve_location (line_table,
-                                    MACRO_MAP_EXPANSION_POINT_LOCATION (iter->map),
-                                    LRK_MACRO_DEFINITION_LOCATION, NULL);
-
-        saved_kind = diagnostic->kind;
-        saved_prefix = pp_get_prefix (context->printer);
-        saved_location = diagnostic->location;
-	saved_location_line =
-	  expand_location_to_spelling_point (saved_location).line;
-
-        diagnostic->kind = DK_NOTE;
-
+        const struct line_map *m = NULL;
+        source_location l = 
+          linemap_resolve_location (line_table, resolved_def_loc,
+                                    LRK_SPELLING_LOCATION,  &m);
+        if (l < RESERVED_LOCATION_COUNT || LINEMAP_SYSP (m))
+          continue;
+        
 	/* We need to print the context of the macro definition only
 	   when the locus of the first displayed diagnostic (displayed
 	   before this trace) was inside the definition of the
 	   macro.  */
-	print_definition_context_p =
-	  (ix == 0 && (saved_location_line != resolved_def_loc_line));
+        int resolved_def_loc_line = SOURCE_LINE (m, l);
+        if (ix == 0 && saved_location_line != resolved_def_loc_line)
+          {
+            diagnostic_append_note (context, resolved_def_loc, 
+                                    "in definition of macro %qs",
+                                    linemap_map_get_macro_name (iter->map));
+            /* At this step, as we've printed the context of the macro
+               definition, we don't want to print the context of its
+               expansion, otherwise, it'd be redundant.  */
+            continue;
+          }
 
-	if (print_definition_context_p)
-	  {
-	    diagnostic->location = resolved_def_loc;
-	    pp_set_prefix (context->printer,
-			   diagnostic_build_prefix (context, diagnostic));
-	    pp_newline (context->printer);
-	    pp_printf (context->printer, "in definition of macro '%s'",
-		       linemap_map_get_macro_name (iter->map));
-	    pp_destroy_prefix (context->printer);
-	    diagnostic_show_locus (context, diagnostic);
-	    /* At this step, as we've printed the context of the macro
-	       definition, we don't want to print the context of its
-	       expansion, otherwise, it'd be redundant.  */
-	    continue;
-	  }
+        /* Resolve the location of the expansion point of the macro
+           which expansion gave the token represented by def_loc.
+           This is the locus 2/ of the earlier comment.  */
+        source_location resolved_exp_loc =
+          linemap_resolve_location (line_table,
+                                    MACRO_MAP_EXPANSION_POINT_LOCATION (iter->map),
+                                    LRK_MACRO_DEFINITION_LOCATION, NULL);
 
-	diagnostic->location = resolved_exp_loc;
-	pp_set_prefix (context->printer,
-                       diagnostic_build_prefix (context, diagnostic));
-	pp_newline (context->printer);
-	pp_printf (context->printer, "in expansion of macro '%s'",
-		   linemap_map_get_macro_name (iter->map));
-        pp_destroy_prefix (context->printer);
-        diagnostic_show_locus (context, diagnostic);
-
-        diagnostic->kind = saved_kind;
-        diagnostic->location = saved_location;
-        pp_set_prefix (context->printer, saved_prefix);
+        diagnostic_append_note (context, resolved_exp_loc, 
+                                "in expansion of macro %qs",
+                                linemap_map_get_macro_name (iter->map));
       }
 
   VEC_free (loc_map_pair, heap, loc_vec);

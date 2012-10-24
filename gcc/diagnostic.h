@@ -282,8 +282,10 @@ extern void diagnostic_set_info_translated (diagnostic_info *, const char *,
 					    va_list *, location_t,
 					    diagnostic_t)
      ATTRIBUTE_GCC_DIAG(2,0);
+extern void diagnostic_append_note (diagnostic_context *, location_t,
+                                    const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 #endif
-extern char *diagnostic_build_prefix (diagnostic_context *, diagnostic_info *);
+extern char *diagnostic_build_prefix (diagnostic_context *, const diagnostic_info *);
 void default_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 void default_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
