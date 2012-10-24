@@ -132,10 +132,10 @@
       (match_test "fp_high_losum_p (op)")))
 
 ;; Not needed in 64-bit mode
-(define_constraint "T"
+(define_memory_constraint "T"
  "Memory reference whose address is aligned to 8-byte boundary"
  (and (match_test "TARGET_ARCH32")
-      (match_code "mem,reg")
+      (match_code "mem")
       (match_test "memory_ok_for_ldd (op)")))
 
 ;; Not needed in 64-bit mode
@@ -148,9 +148,9 @@
       (match_test "register_ok_for_ldd (op)")))
 
 ;; Equivalent to 'T' but available in 64-bit mode
-(define_constraint "W"
+(define_memory_constraint "W"
  "Memory reference for 'e' constraint floating-point register"
- (and (match_code "mem,reg")
+ (and (match_code "mem")
       (match_test "memory_ok_for_ldd (op)")))
 
 (define_constraint "Y"
