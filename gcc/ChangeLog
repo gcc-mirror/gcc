@@ -1,3 +1,14 @@
+2012-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/54928
+	* tree-diagnostic.c (maybe_unwind_expanded_macro_loc):
+	Use diagnostic_append_note.
+	* diagnostic.c (diagnostic_build_prefix): Make diagnostic const.
+	(default_diagnostic_finalizer): Do not destroy prefix here.
+	(diagnostic_report_diagnostic): Destroy it here.
+	(diagnostic_append_note): New.
+	* diagnostic.h (diagnostic_append_note): Declare.
+
 2012-10-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55055
