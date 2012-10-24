@@ -590,7 +590,7 @@ public:
   CREATE_DISPATCH_METHODS(virtual, )
   CREATE_DISPATCH_METHODS_MEM()
 
-  ml_wt_dispatch() : abi_dispatch(false, true, false, false, &o_ml_mg)
+  ml_wt_dispatch() : abi_dispatch(false, true, false, false, 0, &o_ml_mg)
   { }
 };
 

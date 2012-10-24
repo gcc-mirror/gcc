@@ -311,6 +311,9 @@ public:
   }
   // Returns true iff this TM method supports closed nesting.
   bool closed_nesting() const { return m_closed_nesting; }
+  // Returns STATE_SERIAL or STATE_SERIAL | STATE_IRREVOCABLE iff the TM
+  // method only works for serial-mode transactions.
+  uint32_t requires_serial() const { return m_requires_serial; }
   method_group* get_method_group() const { return m_method_group; }
 
   static void *operator new(size_t s) { return xmalloc (s); }
@@ -332,12 +335,14 @@ protected:
   const bool m_write_through;
   const bool m_can_run_uninstrumented_code;
   const bool m_closed_nesting;
+  const uint32_t m_requires_serial;
   method_group* const m_method_group;
   abi_dispatch(bool ro, bool wt, bool uninstrumented, bool closed_nesting,
-      method_group* mg) :
+      uint32_t requires_serial, method_group* mg) :
     m_read_only(ro), m_write_through(wt),
     m_can_run_uninstrumented_code(uninstrumented),
-    m_closed_nesting(closed_nesting), m_method_group(mg)
+    m_closed_nesting(closed_nesting), m_requires_serial(requires_serial),
+    m_method_group(mg)
   { }
 };
 
