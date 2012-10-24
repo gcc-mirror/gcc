@@ -270,7 +270,7 @@ struct ix86_address
 };
 
 extern int ix86_decompose_address (rtx, struct ix86_address *);
-extern int memory_address_length (rtx addr);
+extern int memory_address_length (rtx, bool);
 extern void x86_output_aligned_bss (FILE *, tree, const char *,
 				    unsigned HOST_WIDE_INT, int);
 extern void x86_elf_aligned_common (FILE *, const char *,

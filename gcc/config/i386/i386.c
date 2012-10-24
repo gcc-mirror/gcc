@@ -14628,19 +14628,24 @@ ix86_print_operand_address (FILE *file, rtx addr)
   else
     {
       /* Print SImode register names to force addr32 prefix.  */
-      if (GET_CODE (addr) == SUBREG)
+      if (SImode_address_operand (addr, VOIDmode))
 	{
+#ifdef ENABLE_CHECKING
 	  gcc_assert (TARGET_64BIT);
-	  gcc_assert (GET_MODE (addr) == SImode);
-	  gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
-	  gcc_assert (!code);
-	  code = 'l';
-	}
-      else if (GET_CODE (addr) == ZERO_EXTEND
-	       || GET_CODE (addr) == AND)
-	{
-	  gcc_assert (TARGET_64BIT);
-	  gcc_assert (GET_MODE (addr) == DImode);
+	  switch (GET_CODE (addr))
+	    {
+	    case SUBREG:
+	      gcc_assert (GET_MODE (addr) == SImode);
+	      gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
+	      break;
+	    case ZERO_EXTEND:
+	    case AND:
+	      gcc_assert (GET_MODE (addr) == DImode);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+#endif
 	  gcc_assert (!code);
 	  code = 'l';
 	}
@@ -23358,10 +23363,10 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
 /* Calculate the length of the memory address in the instruction encoding.
    Includes addr32 prefix, does not include the one-byte modrm, opcode,
-   or other prefixes.  */
+   or other prefixes.  We never generate addr32 prefix for LEA insn.  */
 
 int
-memory_address_length (rtx addr)
+memory_address_length (rtx addr, bool lea)
 {
   struct ix86_address parts;
   rtx base, index, disp;
@@ -23377,18 +23382,26 @@ memory_address_length (rtx addr)
   ok = ix86_decompose_address (addr, &parts);
   gcc_assert (ok);
 
-  if (parts.base && GET_CODE (parts.base) == SUBREG)
-    parts.base = SUBREG_REG (parts.base);
-  if (parts.index && GET_CODE (parts.index) == SUBREG)
-    parts.index = SUBREG_REG (parts.index);
+  len = (parts.seg == SEG_DEFAULT) ? 0 : 1;
+
+  /*  If this is not LEA instruction, add the length of addr32 prefix.  */
+  if (TARGET_64BIT && !lea
+      && (SImode_address_operand (addr, VOIDmode)
+	  || (parts.base && GET_MODE (parts.base) == SImode)
+	  || (parts.index && GET_MODE (parts.index) == SImode)))
+    len++;
 
   base = parts.base;
   index = parts.index;
   disp = parts.disp;
 
-  /* Add length of addr32 prefix.  */
-  len = (GET_CODE (addr) == ZERO_EXTEND
-	 || GET_CODE (addr) == AND);
+  if (base && GET_CODE (base) == SUBREG)
+    base = SUBREG_REG (base);
+  if (index && GET_CODE (index) == SUBREG)
+    index = SUBREG_REG (index);
+
+  gcc_assert (base == NULL_RTX || REG_P (base));
+  gcc_assert (index == NULL_RTX || REG_P (index));
 
   /* Rule of thumb:
        - esp as the base always wants an index,
@@ -23402,14 +23415,13 @@ memory_address_length (rtx addr)
       /* esp (for its index) and ebp (for its displacement) need
 	 the two-byte modrm form.  Similarly for r12 and r13 in 64-bit
 	 code.  */
-      if (REG_P (addr)
-	  && (addr == arg_pointer_rtx
-	      || addr == frame_pointer_rtx
-	      || REGNO (addr) == SP_REG
-	      || REGNO (addr) == BP_REG
-	      || REGNO (addr) == R12_REG
-	      || REGNO (addr) == R13_REG))
-	len = 1;
+      if (base == arg_pointer_rtx
+	  || base == frame_pointer_rtx
+	  || REGNO (base) == SP_REG
+	  || REGNO (base) == BP_REG
+	  || REGNO (base) == R12_REG
+	  || REGNO (base) == R13_REG)
+	len++;
     }
 
   /* Direct Addressing.  In 64-bit mode mod 00 r/m 5
@@ -23419,7 +23431,7 @@ memory_address_length (rtx addr)
      by UNSPEC.  */
   else if (disp && !base && !index)
     {
-      len = 4;
+      len += 4;
       if (TARGET_64BIT)
 	{
 	  rtx symbol = disp;
@@ -23437,43 +23449,30 @@ memory_address_length (rtx addr)
 		  || (XINT (symbol, 1) != UNSPEC_GOTPCREL
 		      && XINT (symbol, 1) != UNSPEC_PCREL
 		      && XINT (symbol, 1) != UNSPEC_GOTNTPOFF)))
-	    len += 1;
+	    len++;
 	}
     }
-
   else
     {
       /* Find the length of the displacement constant.  */
       if (disp)
 	{
 	  if (base && satisfies_constraint_K (disp))
-	    len = 1;
+	    len += 1;
 	  else
-	    len = 4;
+	    len += 4;
 	}
       /* ebp always wants a displacement.  Similarly r13.  */
-      else if (base && REG_P (base)
-	       && (REGNO (base) == BP_REG || REGNO (base) == R13_REG))
-	len = 1;
+      else if (base && (REGNO (base) == BP_REG || REGNO (base) == R13_REG))
+	len++;
 
       /* An index requires the two-byte modrm form....  */
       if (index
 	  /* ...like esp (or r12), which always wants an index.  */
 	  || base == arg_pointer_rtx
 	  || base == frame_pointer_rtx
-	  || (base && REG_P (base)
-	      && (REGNO (base) == SP_REG || REGNO (base) == R12_REG)))
-	len += 1;
-    }
-
-  switch (parts.seg)
-    {
-    case SEG_FS:
-    case SEG_GS:
-      len += 1;
-      break;
-    default:
-      break;
+	  || (base && (REGNO (base) == SP_REG || REGNO (base) == R12_REG)))
+	len++;
     }
 
   return len;
@@ -23527,7 +23526,8 @@ ix86_attr_length_immediate_default (rtx insn, bool shortform)
 	  case MODE_SI:
 	    len = 4;
 	    break;
-	  /* Immediates for DImode instructions are encoded as 32bit sign extended values.  */
+	  /* Immediates for DImode instructions are encoded
+	     as 32bit sign extended values.  */
 	  case MODE_DI:
 	    len = 4;
 	    break;
@@ -23537,6 +23537,7 @@ ix86_attr_length_immediate_default (rtx insn, bool shortform)
       }
   return len;
 }
+
 /* Compute default value for "length_address" attribute.  */
 int
 ix86_attr_length_address_default (rtx insn)
@@ -23553,15 +23554,8 @@ ix86_attr_length_address_default (rtx insn)
       gcc_assert (GET_CODE (set) == SET);
 
       addr = SET_SRC (set);
-      if (TARGET_64BIT && get_attr_mode (insn) == MODE_SI)
-	{
-	  if (GET_CODE (addr) == ZERO_EXTEND)
-	    addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) == SUBREG)
-	    addr = SUBREG_REG (addr);
-	}
 
-      return memory_address_length (addr);
+      return memory_address_length (addr, true);
     }
 
   extract_insn_cached (insn);
@@ -23583,7 +23577,7 @@ ix86_attr_length_address_default (rtx insn)
 	    if (*constraints == 'X')
 	      continue;
 	  }
-	return memory_address_length (XEXP (recog_data.operand[i], 0));
+	return memory_address_length (XEXP (recog_data.operand[i], 0), false);
       }
   return 0;
 }

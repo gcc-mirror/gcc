@@ -1,3 +1,27 @@
+2012-10-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-10-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (memory_address_length): Assert that non-null
+	base or index RTXes are registers.  Do not check for REG RTXes.
+	Determine addr32 prefix using SImode_address_operand or
+	from original base and index RTXes.  Simplify code.
+
+	2012-10-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (memory_address_length): Add new bool
+	argument.  Update all uses.
+	* config/i386/i386.c (memory_address_length): If not LEA insn, then
+	add length of addr32 prefix based on mode of base or index register.
+	(ix86_attr_length_address_default) <TYPE_LEA>: Do not handle SImode
+	addresses here.  Update call to memory_address_length.
+	(ix86_print_address_operand): Use SImode_address_operand predicate.
+	* config/i386/predicates.md (SImode_address_operand): New.
+	* config/i386/i386.md (lea<mode>): Use SImode_address_operand
+	to calculate "mode" attribute.  Use SImode_address_operand predicate
+	instead of open-coding accepted RTX codes.
+
 2012-10-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-10-22 trunk r192685.
@@ -75,7 +99,7 @@
 	Revert
 	2011-08-04  Sergey Grechanik  <mouseentity@ispras.ru>
 	* sel-sched-ir.c (has_dependence_note_reg_use): Call ds_full_merge
-	only if producer writes to the register given by regno. 
+	only if producer writes to the register given by regno.
 
 2012-09-15  Uros Bizjak  <ubizjak@gmail.com>
 
