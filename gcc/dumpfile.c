@@ -32,11 +32,17 @@ along with GCC; see the file COPYING3.  If not see
 
 static int pflags;                   /* current dump_flags */
 static int alt_flags;                /* current opt_info flags */
-static FILE *alt_dump_file = NULL;
 
 static void dump_loc (int, FILE *, source_location);
 static int dump_phase_enabled_p (int);
 static FILE *dump_open_alternate_stream (struct dump_file_info *);
+
+/* These are currently used for communicating between passes.
+   However, instead of accessing them directly, the passes can use
+   dump_printf () for dumps.  */
+FILE *dump_file = NULL;
+FILE *alt_dump_file = NULL;
+const char *dump_file_name;
 
 /* Table of tree dump switches. This must be consistent with the
    TREE_DUMP_INDEX enumeration in dumpfile.h.  */
@@ -514,14 +520,6 @@ dump_phase_enabled_p (int phase)
     }
 }
 
-/* Return true if any of the dumps are enabled, false otherwise. */
-
-inline bool
-dump_enabled_p (void)
-{
-  return (dump_file || alt_dump_file);
-}
-
 /* Returns nonzero if tree dump PHASE has been initialized.  */
 
 int
@@ -834,16 +832,6 @@ opt_info_switch_p (const char *arg)
     flags = MSG_ALL;
 
   return opt_info_enable_all ((TDF_TREE | TDF_RTL | TDF_IPA), flags, filename);
-}
-
-/* Return true if any dumps are enabled for the given MSG_TYPE, false
-   otherwise.  */
-
-bool
-dump_kind_p (int msg_type)
-{
-  return (dump_file && (msg_type & pflags))
-    || (alt_dump_file && (msg_type & alt_flags));
 }
 
 /* Print basic block on the dump streams.  */

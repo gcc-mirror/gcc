@@ -107,7 +107,7 @@ vectorize_loops (void)
 	loop_vec_info loop_vinfo;
 	vect_location = find_loop_location (loop);
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
-	    && dump_kind_p (MSG_ALL))
+	    && dump_enabled_p ())
 	  dump_printf (MSG_ALL, "\nAnalyzing loop at %s:%d\n",
                        LOC_FILE (vect_location), LOC_LINE (vect_location));
 
@@ -118,7 +118,7 @@ vectorize_loops (void)
 	  continue;
 
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
-	    && dump_kind_p (MSG_ALL))
+	    && dump_enabled_p ())
           dump_printf (MSG_ALL, "\n\nVectorizing loop at %s:%d\n",
                        LOC_FILE (vect_location), LOC_LINE (vect_location));
 	vect_transform_loop (loop_vinfo);
@@ -128,8 +128,8 @@ vectorize_loops (void)
   vect_location = UNKNOWN_LOC;
 
   statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
-  if (dump_kind_p (MSG_ALL)
-      || (num_vectorized_loops > 0 && dump_kind_p (MSG_ALL)))
+  if (dump_enabled_p ()
+      || (num_vectorized_loops > 0 && dump_enabled_p ()))
     dump_printf_loc (MSG_ALL, vect_location,
                      "vectorized %u loops in function.\n",
                      num_vectorized_loops);
@@ -170,7 +170,7 @@ execute_vect_slp (void)
       if (vect_slp_analyze_bb (bb))
         {
           vect_slp_transform_bb (bb);
-          if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+          if (dump_enabled_p ())
             dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 			     "basic block vectorized using SLP\n");
         }

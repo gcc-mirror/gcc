@@ -792,7 +792,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   free_stmt_vec_info (orig_cond);
 
   loop_loc = find_loop_location (loop);
-  if (dump_kind_p (MSG_NOTE))
+  if (dump_enabled_p ())
     {
       if (LOCATION_LOCUS (loop_loc) != UNKNOWN_LOC)
 	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOC_FILE (loop_loc),
@@ -1683,7 +1683,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
   /* Analyze phi functions of the loop header.  */
 
-  if (dump_kind_p (MSG_NOTE))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "vect_can_advance_ivs_p:");
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -1691,7 +1691,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       tree evolution_part;
 
       phi = gsi_stmt (gsi);
-      if (dump_kind_p (MSG_NOTE))
+      if (dump_enabled_p ())
 	{
           dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
@@ -1702,7 +1702,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       if (virtual_operand_p (PHI_RESULT (phi)))
 	{
-	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "virtual phi. skip.");
 	  continue;
@@ -1712,7 +1712,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (phi)) == vect_reduction_def)
         {
-          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+          if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "reduc phi. skip.");
           continue;
@@ -1725,13 +1725,13 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       if (!access_fn)
 	{
-	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "No Access function.");
 	  return false;
 	}
 
-      if (dump_kind_p (MSG_NOTE))
+      if (dump_enabled_p ())
         {
 	  dump_printf_loc (MSG_NOTE, vect_location,
                            "Access function of PHI: ");
@@ -1742,7 +1742,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
       if (evolution_part == NULL_TREE)
         {
-	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	  if (dump_enabled_p ())
 	    dump_printf (MSG_MISSED_OPTIMIZATION, "No evolution.");
 	  return false;
         }
@@ -1827,7 +1827,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 
       phi = gsi_stmt (gsi);
       phi1 = gsi_stmt (gsi1);
-      if (dump_kind_p (MSG_NOTE))
+      if (dump_enabled_p ())
         {
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_update_ivs_after_vectorizer: phi: ");
@@ -1837,7 +1837,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       /* Skip virtual phi's.  */
       if (virtual_operand_p (PHI_RESULT (phi)))
 	{
-	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "virtual phi. skip.");
 	  continue;
@@ -1847,7 +1847,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       stmt_info = vinfo_for_stmt (phi);
       if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
         {
-	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "reduc phi. skip.");
           continue;
@@ -1910,7 +1910,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                      "=== vect_do_peeling_for_loop_bound ===");
 
@@ -2022,7 +2022,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
     {
       int npeel = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
         dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                          "known peeling = %d.", npeel);
 
@@ -2076,7 +2076,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
   if (TREE_CODE (loop_niters) != INTEGER_CST)
     iters = fold_build2 (MIN_EXPR, niters_type, iters, loop_niters);
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                        "niters for prolog loop: ");
@@ -2134,7 +2134,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
   VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
  
- if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+ if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                      "=== vect_update_inits_of_dr ===");
 
@@ -2163,7 +2163,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
   int max_iter;
   int bound = 0;
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                      "=== vect_do_peeling_for_alignment ===");
 
@@ -2475,7 +2475,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
       segment_length_a = vect_vfa_segment_size (dr_a, length_factor);
       segment_length_b = vect_vfa_segment_size (dr_b, length_factor);
 
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                            "create runtime check for data references ");
@@ -2506,7 +2506,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 	*cond_expr = part_cond_expr;
     }
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 		     "created %u versioning for alias checks.\n",
 		     VEC_length (ddr_p, may_alias_ddrs));
