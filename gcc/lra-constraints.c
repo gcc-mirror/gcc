@@ -4300,6 +4300,10 @@ update_ebb_live_info (rtx head, rtx tail)
        curr_insn = prev_insn)
     {
       prev_insn = PREV_INSN (curr_insn);
+      /* We need to process empty blocks too.  They contain
+	 NOTE_INSN_BASIC_BLOCK referring for the basic block.  */
+      if (NOTE_P (curr_insn) && NOTE_KIND (curr_insn) != NOTE_INSN_BASIC_BLOCK)
+	continue;
       curr_bb = BLOCK_FOR_INSN (curr_insn);
       if (curr_bb != prev_bb)
 	{
