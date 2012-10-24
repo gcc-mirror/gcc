@@ -225,6 +225,16 @@ done
 grep '^const _SIG[^_]' gen-sysinfo.go | \
   grep -v '^const _SIGEV_' | \
   sed -e 's/^\(const \)_\(SIG[^= ]*\)\(.*\)$/\1\2 = Signal(_\2)/' >> ${OUT}
+if ! grep '^const SIGPOLL ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const SIGIO ' ${OUT} > /dev/null 2>&1; then
+    echo "const SIGPOLL = SIGIO" >> ${OUT}
+  fi
+fi
+if ! grep '^const SIGCLD ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const SIGCHLD ' ${OUT} >/dev/null 2>&1; then
+    echo "const SIGCLD = SIGCHLD" >> ${OUT}
+  fi
+fi
 
 # The syscall numbers.  We force the names to upper case.
 grep '^const _SYS_' gen-sysinfo.go | \
