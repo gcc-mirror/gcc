@@ -402,7 +402,7 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
 		     enum machine_mode struct_mode)
 {
   if (BYTES_BIG_ENDIAN)
-    return (bitnum % BITS_PER_UNIT
+    return (bitnum % BITS_PER_UNIT == 0
 	    && (bitnum + bitsize == GET_MODE_BITSIZE (struct_mode)
 		|| (bitnum + bitsize) % BITS_PER_WORD == 0));
   else
