@@ -1,5 +1,9 @@
 2012-10-24  Torvald Riegel  <triegel@redhat.com>
 
+	* libitm.texi: Clarify ABI requirements for data-logging functions.
+
+2012-10-24  Torvald Riegel  <triegel@redhat.com>
+
 	* retry.cc (gtm_thread::decide_begin_dispatch): Ask dispatch whether
 	it requires serial mode instead of assuming that for certain
 	dispatchs.
