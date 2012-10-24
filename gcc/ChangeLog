@@ -1,3 +1,9 @@
+2012-10-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55055
+	* lra-spills.c (alter_subregs): New function.
+	(lra_hard_reg_substitution): Use it.
+
 2012-10-24  Sharad Singhai  <singhai@google.com>
 
 	* dumpfile.c (dump_enabled_p): Make it inline and move the definition
