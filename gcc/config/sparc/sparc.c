@@ -8065,29 +8065,18 @@ register_ok_for_ldd (rtx reg)
   return 1;
 }
 
-/* Return 1 if OP is a memory whose address is known to be
-   aligned to 8-byte boundary, or a pseudo during reload.
-   This makes it suitable for use in ldd and std insns.  */
+/* Return 1 if OP, a MEM, has an address which is known to be
+   aligned to an 8-byte boundary.  */
 
 int
 memory_ok_for_ldd (rtx op)
 {
-  if (MEM_P (op))
-    {
-      /* In 64-bit mode, we assume that the address is word-aligned.  */
-      if (TARGET_ARCH32 && !mem_min_alignment (op, 8))
-	return 0;
+  /* In 64-bit mode, we assume that the address is word-aligned.  */
+  if (TARGET_ARCH32 && !mem_min_alignment (op, 8))
+    return 0;
 
-      if (! can_create_pseudo_p ()
-	  && !strict_memory_address_p (Pmode, XEXP (op, 0)))
-	return 0;
-    }
-  else if (REG_P (op) && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-    {
-      if (!(reload_in_progress && reg_renumber [REGNO (op)] < 0))
-	return 0;
-    }
-  else
+  if (! can_create_pseudo_p ()
+      && !strict_memory_address_p (Pmode, XEXP (op, 0)))
     return 0;
 
   return 1;

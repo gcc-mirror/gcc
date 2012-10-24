@@ -1,3 +1,11 @@
+2012-10-23  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md ("T", "W"): Change
+	definitions to use define_memory_constraint.  Do not match
+	'reg'.
+	* config/sparc/sparc.c (memory_ok_for_ldd): Remove all non-MEM
+	handling code, update comment.
+
 2012-10-23  Ian Lance Taylor  <iant@google.com>
 
 	* doc/extend.texi (Extended Asm): The '+' constraint does not
