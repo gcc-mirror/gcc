@@ -1,5 +1,11 @@
 2012-10-24  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR bootstrap/55049
+	* lra-constraints.c (extract_loc_address_regs): Pass top_p for
+	ZERO_EXTEND operand.
+
+2012-10-24  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR bootstrap/55048
 	* lra-constraints.c (update_ebb_live_info): Skip
 	non-NOTE_INSN_BASIC_BLOCK notes.
