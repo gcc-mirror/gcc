@@ -1,3 +1,9 @@
+2012-10-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55037
+	* trans-expr.c (gfc_conv_procedure_call): Move a piece of code and
+	remove an assert.
+
 2012-10-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54725
