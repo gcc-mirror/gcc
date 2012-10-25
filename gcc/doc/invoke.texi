@@ -4632,6 +4632,13 @@ cases where multiple declaration is valid and changes nothing.
 @opindex Wno-nested-externs
 Warn if an @code{extern} declaration is encountered within a function.
 
+@item -Wno-inherited-variadic-ctor
+@opindex Winherited-variadic-ctor
+@opindex Wno-inherited-variadic-ctor
+Suppress warnings about use of C++11 inheriting constructors when the
+base class inherited from has a C variadic constructor; the warning is
+on by default because the ellipsis is not inherited.
+
 @item -Winline
 @opindex Winline
 @opindex Wno-inline

@@ -2807,6 +2807,12 @@ one_inherited_ctor (tree ctor, tree t)
       new_parms[i++] = TREE_VALUE (parms);
     }
   one_inheriting_sig (t, ctor, new_parms, i);
+  if (parms == NULL_TREE)
+    {
+      warning (OPT_Winherited_variadic_ctor,
+	       "the ellipsis in %qD is not inherited", ctor);
+      inform (DECL_SOURCE_LOCATION (ctor), "%qD declared here", ctor);
+    }
 }
 
 /* Create default constructors, assignment operators, and so forth for
