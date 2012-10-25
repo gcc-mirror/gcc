@@ -1,5 +1,9 @@
 2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
 
+	* config.host (sparc64-*-rtems*): Remove sparc/t-elf.
+
+2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
+
 	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts. 
 
 2012-10-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>

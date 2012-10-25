@@ -1057,7 +1057,7 @@ sparc64-*-elf*)
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc64-*-rtems*)
-	tmake_file="$tmake_file sparc/t-elf t-crtfm"
+	tmake_file="$tmake_file t-crtfm"
 	extra_parts="$extra_parts crti.o crtn.o crtfastmath.o"
 	;;
 sparc-wrs-vxworks)
