@@ -1,7 +1,13 @@
+2012-10-25  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md ("U"): Delete.
+	* config/sparc/sparc.md: Use 'r' constraint instead of 'U'.
+	* config/sparc/sync.md: Likewise.
+
 2012-10-25  Lawrence Crowl  <crowl@google.com>
 
 	* hash-table.h: Add usage documentation.
-	(template struct typed_free_remove): Clarify documentation. 
+	(template struct typed_free_remove): Clarify documentation.
 	Rename template parameter.
 	(struct typed_noop_remove): Likewise.
 	(descriptor concept): Change typedef T to value_type.
