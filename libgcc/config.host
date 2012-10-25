@@ -891,7 +891,7 @@ powerpc-*-eabi*)
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc-*-rtems*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
 powerpc-*-linux* | powerpc64-*-linux*)

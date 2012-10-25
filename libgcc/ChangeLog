@@ -1,3 +1,8 @@
+2012-10-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.host (powerpc-*-rtems*): Add rs6000/t-savresfgpr to
+	tmake_file.
+
 2012-10-06  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.host (*-*-openbsd*): Add t-eh-dw2-dip to tmake_file.
