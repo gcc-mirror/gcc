@@ -1,3 +1,8 @@
+2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* tree.c (signed_or_unsigned_type_for): Handle vectors.
+
 2012-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (recursive_inlining): Redirect to master

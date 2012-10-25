@@ -1,3 +1,8 @@
+2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-common.c (scalar_to_vector): Handle VEC_COND_EXPR.
+
 2012-10-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (pch_cpp_save_state): Declare.
