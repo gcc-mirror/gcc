@@ -1,7 +1,12 @@
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34892
+	* g++.dg/template/crash114.C: New.
+
 2012-10-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/55049
-	* gcc.target/i386/pr55049-1.c: New test. 
+	* gcc.target/i386/pr55049-1.c: New test.
 
 2012-10-24  Janus Weil  <janus@gcc.gnu.org>
 

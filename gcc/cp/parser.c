@@ -12258,12 +12258,21 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
       parameter_declarator->declarator->parameter_pack_p = false;
     }
 
+  if (parameter_declarator
+      && parameter_declarator->default_argument)
+    {
+      /* Can happen in some cases of erroneous input (c++/34892).  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	/* Consume the `...' for better error recovery.  */
+	cp_lexer_consume_token (parser->lexer);
+    }
   /* If the next token is an ellipsis, and we don't already have it
      marked as a parameter pack, then we have a parameter pack (that
      has no declarator).  */
-  if (!*is_parameter_pack
-      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
-      && declarator_can_be_parameter_pack (parameter_declarator->declarator))
+  else if (!*is_parameter_pack
+	   && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
+	   && (declarator_can_be_parameter_pack
+	       (parameter_declarator->declarator)))
     {
       /* Consume the `...'.  */
       cp_lexer_consume_token (parser->lexer);
