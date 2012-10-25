@@ -21259,7 +21259,8 @@ prune_unused_types_prune (dw_die_ref die)
   /* If we pruned children, and this is a class, mark it as a 
      declaration to inform debuggers that this is not a complete
      class definition.  */
-  if (pruned && die->die_mark == 1 && class_scope_p (die))
+  if (pruned && die->die_mark == 1 && class_scope_p (die)
+      && ! is_declaration_die (die))
     add_AT_flag (die, DW_AT_declaration, 1);
 }
 
