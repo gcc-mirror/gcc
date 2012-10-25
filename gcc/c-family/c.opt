@@ -741,6 +741,10 @@ Wvolatile-register-var
 C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when a register variable is declared volatile
 
+Wvirtual-move-assign
+C++ ObjC++ Var(warn_virtual_move_assign) Warning Init(1)
+Warn if a virtual base has a non-trivial move assignment operator
+
 Wwrite-strings
 C ObjC C++ ObjC++ Var(warn_write_strings) Warning
 In C++, nonzero means warn about deprecated conversion from string literals to 'char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard.

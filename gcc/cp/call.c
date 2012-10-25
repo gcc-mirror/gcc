@@ -8246,6 +8246,22 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       && (IS_TYPE_OR_DECL_P (cand1->fn)))
     return 1;
 
+  /* Prefer a non-deleted function over an implicitly deleted move
+     constructor or assignment operator.  This differs slightly from the
+     wording for issue 1402 (which says the move op is ignored by overload
+     resolution), but this way produces better error messages.  */
+  if (TREE_CODE (cand1->fn) == FUNCTION_DECL
+      && TREE_CODE (cand2->fn) == FUNCTION_DECL
+      && DECL_DELETED_FN (cand1->fn) != DECL_DELETED_FN (cand2->fn))
+    {
+      if (DECL_DELETED_FN (cand1->fn) && DECL_DEFAULTED_FN (cand1->fn)
+	  && move_fn_p (cand1->fn))
+	return -1;
+      if (DECL_DELETED_FN (cand2->fn) && DECL_DEFAULTED_FN (cand2->fn)
+	  && move_fn_p (cand2->fn))
+	return 1;
+    }
+
   /* a viable function F1
      is defined to be a better function than another viable function F2  if
      for  all arguments i, ICSi(F1) is not a worse conversion sequence than

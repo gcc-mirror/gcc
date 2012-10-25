@@ -1,5 +1,14 @@
 2012-10-25  Jason Merrill  <jason@redhat.com>
 
+	Core 1402
+	* call.c (joust): An implicitly deleted move function is
+	worse than any non-deleted function.
+	* method.c (process_subob_fn): No special rules for move.
+	(synthesized_method_walk, implicitly_declare_fn): Likewise.
+	Warn about virtual base with non-trivial move assignment.
+	* cp-tree.h (struct lang_decl_fn): Remove suppress_implicit_decl.
+	(FNDECL_SUPPRESS_IMPLICIT_DECL): Remove.
+
 	* semantics.c (finish_omp_threadprivate): Call complete_type.
 
 	* class.c (one_inherited_ctor): Warn about variadic inherited ctor.
