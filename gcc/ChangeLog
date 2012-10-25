@@ -1,3 +1,11 @@
+2012-10-25  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/54980
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Fix
+	obvious typo.
+	(loop_edge_to_cancel): Be sure that the edge is from an conditional
+	so we can cancel it.
+
 2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427

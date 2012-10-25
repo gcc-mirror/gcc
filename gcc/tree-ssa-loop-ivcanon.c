@@ -160,7 +160,7 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
       /* First make fast look if we see constant array inside.  */
       while (handled_component_p (base))
 	base = TREE_OPERAND (base, 0);
-      if ((DECL_P (base) == VAR_DECL
+      if ((DECL_P (base)
 	   && const_value_known_p (base))
 	  || CONSTANT_CLASS_P (base))
 	{
@@ -363,6 +363,10 @@ loop_edge_to_cancel (struct loop *loop)
          edge_to_cancel = EDGE_SUCC (edge_to_cancel->src, 1);
        else
          edge_to_cancel = EDGE_SUCC (edge_to_cancel->src, 0);
+
+      /* We only can handle conditionals.  */
+      if (!(edge_to_cancel->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
+	continue;
 
       /* We should never have conditionals in the loop latch. */
       gcc_assert (edge_to_cancel->dest != loop->header);
