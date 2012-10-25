@@ -1,5 +1,7 @@
 2012-10-25  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_omp_threadprivate): Call complete_type.
+
 	* class.c (one_inherited_ctor): Warn about variadic inherited ctor.
 
 2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
