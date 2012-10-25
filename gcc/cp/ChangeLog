@@ -1,3 +1,7 @@
+2012-10-25  Jason Merrill  <jason@redhat.com>
+
+	* class.c (one_inherited_ctor): Warn about variadic inherited ctor.
+
 2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427
