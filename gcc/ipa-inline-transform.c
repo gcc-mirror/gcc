@@ -209,6 +209,12 @@ inline_call (struct cgraph_edge *e, bool update_original,
   struct cgraph_node *to = NULL;
   struct cgraph_edge *curr = e;
   struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee, NULL);
+  bool new_edges_found = false;
+
+#ifdef ENABLE_CHECKING
+  int estimated_growth = estimate_edge_growth (e);
+  bool predicated = inline_edge_summary (e)->predicate != NULL;
+#endif
 
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
@@ -248,19 +254,28 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   old_size = inline_summary (to)->size;
   inline_merge_summary (e);
+  if (optimize)
+    new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
   if (update_overall_summary)
    inline_update_overall_summary (to);
   new_size = inline_summary (to)->size;
+#ifdef ENABLE_CHECKING
+  /* Verify that estimated growth match real growth.  Allow off-by-one
+     error due to INLINE_SIZE_SCALE roudoff errors.  */
+  gcc_assert (!update_overall_summary || !overall_size
+	      || abs (estimated_growth - (new_size - old_size)) <= 1
+	      /* FIXME: a hack.  Edges with false predicate are accounted
+		 wrong, we should remove them from callgraph.  */
+	      || predicated);
+#endif
+   
   if (overall_size)
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
   /* This must happen after inline_merge_summary that rely on jump
      functions of callee to not be updated.  */
-  if (optimize)
-    return ipa_propagate_indirect_call_infos (curr, new_edges);
-  else
-    return false;
+  return new_edges_found;
 }
 
 

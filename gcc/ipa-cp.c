@@ -1688,6 +1688,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 				VEC (tree, heap) *known_vals)
 {
   struct cgraph_edge *ie, *next_ie;
+  bool found = false;
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
@@ -1696,8 +1697,14 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
       next_ie = ie->next_callee;
       target = ipa_get_indirect_edge_target (ie, known_vals, NULL, NULL);
       if (target)
-	ipa_make_edge_direct_to_target (ie, target);
+	{
+	  ipa_make_edge_direct_to_target (ie, target);
+	  found = true;
+	}
     }
+  /* Turning calls to direct calls will improve overall summary.  */
+  if (found)
+    inline_update_overall_summary (node);
 }
 
 /* Vector of pointers which for linked lists of clones of an original crgaph

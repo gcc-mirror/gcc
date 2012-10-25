@@ -1,3 +1,23 @@
+2012-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipcp_discover_new_direct_edges): If something was turned
+	to direct call update the summary.
+	* ipa-inline-transform.c (inline_call): Sanity check that summaries
+	match the predicted effect; fix updating of summary after edge
+	redirection.
+	* ipa-inline-analysis.c (inline_node_duplication_hook): Do not try
+	to update the summary and recompute it instead.
+	(estimate_function_body_sizes): Fix self size estimation; double
+	check that it agrees with inline_update_overall_summary.
+	(estimate_edge_size_and_time): Handle devirtualizaiton costs.
+	(estimate_edge_devirt_benefit): Update to be called from
+	estimate_edge_size_and_time.
+	(estimate_calls_size_and_time): Update.
+	(estimate_node_size_and_time): Watch overflows.
+	(inline_merge_summary): Likewise.
+	* ipa-prob.c: Include ipa-inline.h
+	(ipa_make_edge_direct_to_target): After redirection update the summary.
+
 2012-10-25  Cary Coutant  <ccoutant@google.com>
 
 	PR debug/55063

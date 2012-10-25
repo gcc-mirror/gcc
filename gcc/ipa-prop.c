@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-inline.h"
+#include "ipa-inline.h"
 #include "gimple.h"
 #include "flags.h"
 #include "diagnostic.h"
@@ -2100,6 +2101,7 @@ struct cgraph_edge *
 ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 {
   struct cgraph_node *callee;
+  struct inline_edge_summary *es = inline_edge_summary (ie);
 
   if (TREE_CODE (target) == ADDR_EXPR)
     target = TREE_OPERAND (target, 0);
@@ -2115,6 +2117,11 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
   gcc_assert (!callee->global.inlined_to);
 
   cgraph_make_edge_direct (ie, callee);
+  es = inline_edge_summary (ie);
+  es->call_stmt_size -= (eni_size_weights.indirect_call_cost
+			 - eni_size_weights.call_cost);
+  es->call_stmt_time -= (eni_time_weights.indirect_call_cost
+			 - eni_time_weights.call_cost);
   if (dump_file)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
