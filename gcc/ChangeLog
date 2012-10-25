@@ -1,3 +1,15 @@
+2012-10-25  Lawrence Crowl  <crowl@google.com>
+
+	* hash-table.h: Add usage documentation.
+	(template struct typed_free_remove): Clarify documentation. 
+	Rename template parameter.
+	(struct typed_noop_remove): Likewise.
+	(descriptor concept): Change typedef T to value_type.
+	Add typedef compare_type.  Use more precise template parameter name,
+	Descriptor instead of Descr.  Update users to match.
+	(struct hash_table): Change 'find' parameters to use compare_type
+	instead of the value type.
+
 2012-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipcp_discover_new_direct_edges): If something was turned

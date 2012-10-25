@@ -127,20 +127,21 @@ struct redirection_data : typed_free_remove<redirection_data>
   struct el *incoming_edges;
 
   /* hash_table support.  */
-  typedef redirection_data T;
-  static inline hashval_t hash (const redirection_data *);
-  static inline int equal (const redirection_data *, const redirection_data *);
+  typedef redirection_data value_type;
+  typedef redirection_data compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline int equal (const value_type *, const compare_type *);
 };
 
 inline hashval_t
-redirection_data::hash (const redirection_data *p)
+redirection_data::hash (const value_type *p)
 {
   edge e = p->outgoing_edge;
   return e->dest->index;
 }
 
 inline int
-redirection_data::equal (const redirection_data *p1, const redirection_data *p2)
+redirection_data::equal (const value_type *p1, const compare_type *p2)
 {
   edge e1 = p1->outgoing_edge;
   edge e2 = p2->outgoing_edge;

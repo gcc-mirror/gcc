@@ -46,32 +46,33 @@ struct dead_debug_global_entry
 struct dead_debug_hash_descr
 {
   /* The hash table contains pointers to entries of this type.  */
-  typedef struct dead_debug_global_entry T;
+  typedef struct dead_debug_global_entry value_type;
+  typedef struct dead_debug_global_entry compare_type;
   /* Hash on the pseudo number.  */
-  static inline hashval_t hash (T const *my);
+  static inline hashval_t hash (const value_type *my);
   /* Entries are identical if they refer to the same pseudo.  */
-  static inline bool equal (T const *my, T const *other);
+  static inline bool equal (const value_type *my, const compare_type *other);
   /* Release entries when they're removed.  */
-  static inline void remove (T *p);
+  static inline void remove (value_type *p);
 };
 
 /* Hash on the pseudo number.  */
 inline hashval_t
-dead_debug_hash_descr::hash (T const *my)
+dead_debug_hash_descr::hash (const value_type *my)
 {
   return REGNO (my->reg);
 }
 
 /* Entries are identical if they refer to the same pseudo.  */
 inline bool
-dead_debug_hash_descr::equal (T const *my, T const *other)
+dead_debug_hash_descr::equal (const value_type *my, const compare_type *other)
 {
   return my->reg == other->reg;
 }
 
 /* Release entries when they're removed.  */
 inline void
-dead_debug_hash_descr::remove (T *p)
+dead_debug_hash_descr::remove (value_type *p)
 {
   XDELETE (p);
 }
