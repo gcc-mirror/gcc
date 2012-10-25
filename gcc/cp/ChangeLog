@@ -1,3 +1,10 @@
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34892
+	* parser.c (cp_parser_template_parameter): When
+	cp_parser_parameter_declaration parsed a default argument don't
+	see if *is_parameter_pack needs setting.
+
 2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54922
