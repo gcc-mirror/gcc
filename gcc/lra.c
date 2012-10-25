@@ -1859,19 +1859,19 @@ lra_process_new_insns (rtx insn, rtx before, rtx after, const char *title)
    scratches at the end of LRA.	 */
 
 /* Description of location of a former scratch operand.	 */
-struct loc
+struct sloc
 {
   rtx insn; /* Insn where the scratch was.  */
   int nop;  /* Number of the operand which was a scratch.  */
 };
 
-typedef struct loc *loc_t;
+typedef struct sloc *sloc_t;
 
-DEF_VEC_P(loc_t);
-DEF_VEC_ALLOC_P(loc_t, heap);
+DEF_VEC_P(sloc_t);
+DEF_VEC_ALLOC_P(sloc_t, heap);
 
 /* Locations of the former scratches.  */
-static VEC (loc_t, heap) *scratches;
+static VEC (sloc_t, heap) *scratches;
 
 /* Bitmap of scratch regnos.  */
 static bitmap_head scratch_bitmap;
@@ -1902,11 +1902,11 @@ remove_scratches (void)
   bool insn_changed_p;
   basic_block bb;
   rtx insn, reg;
-  loc_t loc;
+  sloc_t loc;
   lra_insn_recog_data_t id;
   struct lra_static_insn_data *static_id;
 
-  scratches = VEC_alloc (loc_t, heap, get_max_uid ());
+  scratches = VEC_alloc (sloc_t, heap, get_max_uid ());
   bitmap_initialize (&scratch_bitmap, &reg_obstack);
   bitmap_initialize (&scratch_operand_bitmap, &reg_obstack);
   FOR_EACH_BB (bb)
@@ -1926,10 +1926,10 @@ remove_scratches (void)
 				      *id->operand_loc[i], ALL_REGS, NULL);
 	      add_reg_note (insn, REG_UNUSED, reg);
 	      lra_update_dup (id, i);
-	      loc = XNEW (struct loc);
+	      loc = XNEW (struct sloc);
 	      loc->insn = insn;
 	      loc->nop = i;
-	      VEC_safe_push (loc_t, heap, scratches, loc);
+	      VEC_safe_push (sloc_t, heap, scratches, loc);
 	      bitmap_set_bit (&scratch_bitmap, REGNO (*id->operand_loc[i]));
 	      bitmap_set_bit (&scratch_operand_bitmap,
 			      INSN_UID (insn) * MAX_RECOG_OPERANDS + i);
@@ -1950,11 +1950,11 @@ static void
 restore_scratches (void)
 {
   int i, regno;
-  loc_t loc;
+  sloc_t loc;
   rtx last = NULL_RTX;
   lra_insn_recog_data_t id = NULL;
 
-  for (i = 0; VEC_iterate (loc_t, scratches, i, loc); i++)
+  for (i = 0; VEC_iterate (sloc_t, scratches, i, loc); i++)
     {
       if (last != loc->insn)
 	{
@@ -1977,9 +1977,9 @@ restore_scratches (void)
 		     INSN_UID (loc->insn), loc->nop);
 	}
     }
-  for (i = 0; VEC_iterate (loc_t, scratches, i, loc); i++)
+  for (i = 0; VEC_iterate (sloc_t, scratches, i, loc); i++)
     free (loc);
-  VEC_free (loc_t, heap, scratches);
+  VEC_free (sloc_t, heap, scratches);
   bitmap_clear (&scratch_bitmap);
   bitmap_clear (&scratch_operand_bitmap);
 }
