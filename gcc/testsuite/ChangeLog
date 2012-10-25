@@ -1,3 +1,8 @@
+2012-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/cunroll-4.c: Update; we now remove the loop
+	at ivcanon time.
+
 2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53761
