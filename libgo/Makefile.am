@@ -704,7 +704,7 @@ if LIBGO_IS_SOLARIS
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_solaris.go
 go_net_sockopt_file = go/net/sockopt_bsd.go
-go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_solaris.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
 else
 if LIBGO_IS_FREEBSD
 go_net_cgo_file = go/net/cgo_bsd.go
@@ -966,6 +966,9 @@ if LIBGO_IS_LINUX
 archive_tar_atim_file = go/archive/tar/stat_atim.go
 endif
 if LIBGO_IS_OPENBSD
+archive_tar_atim_file = go/archive/tar/stat_atim.go
+endif
+if LIBGO_IS_SOLARIS
 archive_tar_atim_file = go/archive/tar/stat_atim.go
 endif
 if LIBGO_IS_DARWIN
