@@ -1464,11 +1464,11 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
   emit_label (top_label);
 
   tmp = convert_modes (x_addr_mode, iter_mode, iter, true);
-  x_addr = gen_rtx_PLUS (x_addr_mode, x_addr, tmp);
+  x_addr = simplify_gen_binary (PLUS, x_addr_mode, x_addr, tmp);
 
   if (x_addr_mode != y_addr_mode)
     tmp = convert_modes (y_addr_mode, iter_mode, iter, true);
-  y_addr = gen_rtx_PLUS (y_addr_mode, y_addr, tmp);
+  y_addr = simplify_gen_binary (PLUS, y_addr_mode, y_addr, tmp);
 
   x = change_address (x, QImode, x_addr);
   y = change_address (y, QImode, y_addr);
