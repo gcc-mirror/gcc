@@ -1081,7 +1081,6 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       struct predicate true_pred = true_predicate ();
       size_time_entry *e;
       int optimized_out_size = 0;
-      gcov_type optimized_out_time = 0;
       bool inlined_to_p = false;
       struct cgraph_edge *edge;
 
@@ -1123,10 +1122,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 							     possible_truths,
 							     info);
 	  if (false_predicate_p (&new_predicate))
-	    {
-	      optimized_out_size += e->size;
-	      optimized_out_time += e->time;
-	    }
+	    optimized_out_size += e->size;
 	  else
 	    account_size_time (info, e->size, e->time, &new_predicate);
 	}
@@ -1149,9 +1145,6 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	      && !false_predicate_p (es->predicate))
 	    {
 	      optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
-	      optimized_out_time += (es->call_stmt_time
-				     * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE)
-				     * edge->frequency);
 	      edge->frequency = 0;
 	    }
 	  edge_set_predicate (edge, &new_predicate);
@@ -1174,9 +1167,6 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	      && !false_predicate_p (es->predicate))
 	    {
 	      optimized_out_size += es->call_stmt_size * INLINE_SIZE_SCALE;
-	      optimized_out_time += (es->call_stmt_time
-				     * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE)
-				     * edge->frequency);
 	      edge->frequency = 0;
 	    }
 	  edge_set_predicate (edge, &new_predicate);
@@ -1193,22 +1183,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	 about updating self sizes, because size vectors already contains
 	 sizes of the calees.  */
       gcc_assert (!inlined_to_p 
-		  || (!optimized_out_size && !optimized_out_time));
-
-      info->size -= optimized_out_size / INLINE_SIZE_SCALE;
-      info->self_size -= optimized_out_size / INLINE_SIZE_SCALE;
-      gcc_assert (info->size > 0);
-      gcc_assert (info->self_size > 0);
-
-      optimized_out_time /= INLINE_TIME_SCALE;
-      if (optimized_out_time > MAX_TIME)
-	optimized_out_time = MAX_TIME;
-      info->time -= optimized_out_time;
-      info->self_time -= optimized_out_time;
-      if (info->time < 0)
-	info->time = 0;
-      if (info->self_time < 0)
-	info->self_time = 0;
+		  || !optimized_out_size);
     }
   else
     {
@@ -1226,6 +1201,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	  set_hint_predicate (&info->loop_stride, p);
 	}
     }
+  inline_update_overall_summary (dst);
 }
 
 
@@ -2405,8 +2381,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      struct predicate p;
 
 	      this_time *= freq;
-	      time += this_time;
-	      size += this_size;
 
 	      prob = eliminated_by_inlining_prob (stmt);
 	      if (prob == 1 && dump_file && (dump_flags & TDF_DETAILS))
@@ -2419,6 +2393,12 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 				    &will_be_nonconstant);
 	      else
 		p = true_predicate ();
+
+	      if (!false_predicate_p (&p))
+		{
+		  time += this_time;
+		  size += this_size;
+		}
 
 	      /* We account everything but the calls.  Calls have their own
 		 size/time info attached to cgraph edges.  This is necessary
@@ -2621,6 +2601,12 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->size = info->self_size;
   info->stack_frame_offset = 0;
   info->estimated_stack_size = info->estimated_self_stack_size;
+#ifdef ENABLE_CHECKING
+  inline_update_overall_summary (node);
+  gcc_assert (info->time == info->self_time
+	      && info->size == info->self_size);
+#endif
+
   pop_cfun ();
 }
 
@@ -2655,37 +2641,23 @@ struct gimple_opt_pass pass_inline_parameters =
 };
 
 
-/* Increase SIZE and TIME for size and time needed to handle edge E.  */
-
-static void
-estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *time,
-			     int prob)
-{
-  struct inline_edge_summary *es = inline_edge_summary (e);
-  *size += es->call_stmt_size * INLINE_SIZE_SCALE;
-  *time += (es->call_stmt_time * prob / REG_BR_PROB_BASE
-	    * e->frequency * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE));
-  if (*time > MAX_TIME * INLINE_TIME_SCALE)
-    *time = MAX_TIME * INLINE_TIME_SCALE;
-}
-
-
 /* Estimate benefit devirtualizing indirect edge IE, provided KNOWN_VALS and
    KNOWN_BINFOS.  */
 
 static bool
 estimate_edge_devirt_benefit (struct cgraph_edge *ie,
-			      int *size, int *time, int prob,
+			      int *size, int *time,
 			      VEC (tree, heap) *known_vals,
 			      VEC (tree, heap) *known_binfos,
 			      VEC (ipa_agg_jump_function_p, heap) *known_aggs)
 {
   tree target;
-  int time_diff, size_diff;
   struct cgraph_node *callee;
   struct inline_summary *isummary;
 
   if (!known_vals && !known_binfos)
+    return false;
+  if (!flag_indirect_inlining)
     return false;
 
   target = ipa_get_indirect_edge_target (ie, known_vals, known_binfos,
@@ -2694,12 +2666,10 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
     return false;
 
   /* Account for difference in cost between indirect and direct calls.  */
-  size_diff = ((eni_size_weights.indirect_call_cost - eni_size_weights.call_cost)
-	        * INLINE_SIZE_SCALE);
-  *size -= size_diff;
-  time_diff = ((eni_time_weights.indirect_call_cost - eni_time_weights.call_cost)
-	       * INLINE_TIME_SCALE * prob / REG_BR_PROB_BASE);
-  *time -= time_diff;
+  *size -= (eni_size_weights.indirect_call_cost - eni_size_weights.call_cost);
+  *time -= (eni_time_weights.indirect_call_cost - eni_time_weights.call_cost);
+  gcc_checking_assert (*time >= 0);
+  gcc_checking_assert (*size >= 0);
 
   callee = cgraph_get_node (target);
   if (!callee || !callee->analyzed)
@@ -2707,6 +2677,34 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   isummary = inline_summary (callee);
   return isummary->inlinable;
 }
+
+/* Increase SIZE and TIME for size and time needed to handle edge E.  */
+
+static inline void
+estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *time,
+			     int prob,
+			     VEC (tree, heap) *known_vals,
+			     VEC (tree, heap) *known_binfos,
+			     VEC (ipa_agg_jump_function_p, heap) *known_aggs,
+			     inline_hints *hints)
+	
+{
+  struct inline_edge_summary *es = inline_edge_summary (e);
+  int call_size = es->call_stmt_size;
+  int call_time = es->call_stmt_time;
+  if (!e->callee
+      && estimate_edge_devirt_benefit (e, &call_size, &call_time,
+				       known_vals, known_binfos, known_aggs)
+      && hints
+      && cgraph_maybe_hot_edge_p (e))
+    *hints |= INLINE_HINT_indirect_call;
+  *size += call_size * INLINE_SIZE_SCALE;
+  *time += call_time * prob / REG_BR_PROB_BASE
+	    * e->frequency * (INLINE_TIME_SCALE / CGRAPH_FREQ_BASE);
+  if (*time > MAX_TIME * INLINE_TIME_SCALE)
+    *time = MAX_TIME * INLINE_TIME_SCALE;
+}
+
 
 
 /* Increase SIZE and TIME for size and time needed to handle all calls in NODE.
@@ -2731,7 +2729,9 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size, int *time,
 	    {
 	      /* Predicates of calls shall not use NOT_CHANGED codes,
 		 sowe do not need to compute probabilities.  */
-	      estimate_edge_size_and_time (e, size, time, REG_BR_PROB_BASE);
+	      estimate_edge_size_and_time (e, size, time, REG_BR_PROB_BASE,
+					   known_vals, known_binfos, known_aggs,
+					   hints);
 	    }
 	  else
 	    estimate_calls_size_and_time (e->callee, size, time, hints,
@@ -2743,14 +2743,9 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size, int *time,
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
       if (!es->predicate || evaluate_predicate (es->predicate, possible_truths))
-	{
-	  estimate_edge_size_and_time (e, size, time, REG_BR_PROB_BASE);
-	  if (estimate_edge_devirt_benefit (e, size, time, REG_BR_PROB_BASE,
-					    known_vals, known_binfos, known_aggs)
-	      && hints
-	      && cgraph_maybe_hot_edge_p (e))
-	    *hints |= INLINE_HINT_indirect_call;
-	}
+	estimate_edge_size_and_time (e, size, time, REG_BR_PROB_BASE,
+				     known_vals, known_binfos, known_aggs,
+				     hints);
     }
 }
 
@@ -2772,7 +2767,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
 {
   struct inline_summary *info = inline_summary (node);
   size_time_entry *e;
-  int size = 0, time = 0;
+  int size = 0;
+  int time = 0;
   inline_hints hints = 0;
   int i;
 
@@ -2801,6 +2797,8 @@ estimate_node_size_and_time (struct cgraph_node *node,
     if (evaluate_predicate (&e->predicate, possible_truths))
       {
 	size += e->size;
+	gcc_checking_assert (e->time >= 0);
+        gcc_checking_assert (time >= 0);
 	if (!inline_param_summary)
 	  time += e->time;
 	else
@@ -2809,10 +2807,17 @@ estimate_node_size_and_time (struct cgraph_node *node,
 					      &e->predicate,
 					      possible_truths,
 					      inline_param_summary);
-	    time += e->time * prob / REG_BR_PROB_BASE;
+	    gcc_checking_assert (prob >= 0);
+	    gcc_checking_assert (prob <= REG_BR_PROB_BASE);
+	    time += ((gcov_type)e->time * prob) / REG_BR_PROB_BASE;
 	  }
+        if (time > MAX_TIME * INLINE_TIME_SCALE)
+            time = MAX_TIME * INLINE_TIME_SCALE;
+        gcc_checking_assert (time >= 0);
 					         
       }
+  gcc_checking_assert (size >= 0);
+  gcc_checking_assert (time >= 0);
 
   if (info->loop_iterations
       && !evaluate_predicate (info->loop_iterations, possible_truths))
@@ -2821,18 +2826,18 @@ estimate_node_size_and_time (struct cgraph_node *node,
       && !evaluate_predicate (info->loop_stride, possible_truths))
     hints |=INLINE_HINT_loop_stride;
 
-  if (time > MAX_TIME * INLINE_TIME_SCALE)
-    time = MAX_TIME * INLINE_TIME_SCALE;
 
   estimate_calls_size_and_time (node, &size, &time, &hints, possible_truths,
 				known_vals, known_binfos, known_aggs);
-  time = (time + INLINE_TIME_SCALE / 2) / INLINE_TIME_SCALE;
-  size = (size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
+  gcc_checking_assert (size >= 0);
+  gcc_checking_assert (time >= 0);
+  time = RDIV (time, INLINE_TIME_SCALE);
+  size = RDIV (size, INLINE_SIZE_SCALE);
 
 
   if (dump_file
       && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n   size:%i time:%i\n", size, time);
+    fprintf (dump_file, "\n   size:%i time:%i\n", (int)size, (int)time);
   if (ret_time)
     *ret_time = time;
   if (ret_size)
@@ -3224,7 +3229,7 @@ inline_merge_summary (struct cgraph_edge *edge)
 	  int prob = predicate_probability (callee_info->conds,
 					    &e->predicate,
 					    clause, es->param);
-	  add_time = add_time * prob / REG_BR_PROB_BASE;
+	  add_time = ((gcov_type)add_time * prob) / REG_BR_PROB_BASE;
 	  if (add_time > MAX_TIME * INLINE_TIME_SCALE)
 	    add_time = MAX_TIME * INLINE_TIME_SCALE;
 	  if (prob != REG_BR_PROB_BASE
