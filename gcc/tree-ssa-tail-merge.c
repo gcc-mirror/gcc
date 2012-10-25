@@ -1559,7 +1559,12 @@ tail_merge_optimize (unsigned int todo)
 
   timevar_push (TV_TREE_TAIL_MERGE);
 
-  calculate_dominance_info (CDI_DOMINATORS);
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    {
+      /* PRE can leave us with unreachable blocks, remove them now.  */
+      delete_unreachable_blocks ();
+      calculate_dominance_info (CDI_DOMINATORS);
+    }
   init_worklist ();
 
   while (!VEC_empty (same_succ, worklist))

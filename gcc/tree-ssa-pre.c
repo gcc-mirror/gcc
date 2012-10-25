@@ -4820,11 +4820,12 @@ init_pre (bool do_fre)
 
 /* Deallocate data structures used by PRE.  */
 
-static void
+static unsigned 
 fini_pre (bool do_fre)
 {
   bool do_eh_cleanup = !bitmap_empty_p (need_eh_cleanup);
   bool do_ab_cleanup = !bitmap_empty_p (need_ab_cleanup);
+  unsigned todo = 0;
 
   free (postorder);
   VEC_free (bitmap_set_t, heap, value_expressions);
@@ -4851,10 +4852,12 @@ fini_pre (bool do_fre)
   BITMAP_FREE (need_ab_cleanup);
 
   if (do_eh_cleanup || do_ab_cleanup)
-    cleanup_tree_cfg ();
+    todo = TODO_cleanup_cfg;
 
   if (!do_fre)
     loop_optimizer_finalize ();
+
+  return todo;
 }
 
 /* Main entry point to the SSA-PRE pass.  DO_FRE is true if the caller
@@ -4933,7 +4936,7 @@ execute_pre (bool do_fre)
     }
 
   scev_finalize ();
-  fini_pre (do_fre);
+  todo |= fini_pre (do_fre);
 
   if (!do_fre)
     /* TODO: tail_merge_optimize may merge all predecessors of a block, in which

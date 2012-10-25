@@ -1,3 +1,8 @@
+2012-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54902
+	* g++.dg/torture/pr54902.C: New testcase.
+
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/modular4.adb: New test.

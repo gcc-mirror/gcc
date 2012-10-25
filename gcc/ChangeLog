@@ -1,3 +1,11 @@
+2012-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54902
+	* tree-ssa-pre.c (fini_pre): Return TODO.
+	(execute_pre): Adjust.
+	* tree-ssa-tailmerge.c (tail_merge_optimize): Delete unreachable
+	blocks before computing dominators.
+
 2012-10-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
