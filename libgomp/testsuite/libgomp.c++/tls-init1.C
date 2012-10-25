@@ -1,3 +1,5 @@
+// { dg-require-alias }
+
 extern "C" void abort();
 
 struct A
