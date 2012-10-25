@@ -947,7 +947,8 @@ emit_move_list (move_t list, int freq)
 		= gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init (regno));
 	    }
 	}
-      ira_update_equiv_info_by_shuffle_insn (to_regno, from_regno, list->insn);
+      if (ira_use_lra_p)
+	ira_update_equiv_info_by_shuffle_insn (to_regno, from_regno, list->insn);
       emit_insn (list->insn);
       mode = ALLOCNO_MODE (list->to);
       aclass = ALLOCNO_CLASS (list->to);

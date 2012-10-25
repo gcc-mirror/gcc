@@ -1,5 +1,12 @@
 2012-10-24  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR bootstrap/55068
+	PR regression/55050
+	* ira.c (setup_reg_renumber): Fix assert.
+	* ira-emit.c (emit_move_list): Update equivalences only for LRA.
+
+2012-10-24  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR bootstrap/55067
 	* lra.c: Rename loc to sloc and loc_t to sloc_t.
 
