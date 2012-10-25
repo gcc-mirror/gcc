@@ -1,3 +1,9 @@
+2012-10-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config.gcc (microblaze*-*-rtems*): New target.
+	* config/microblaze/rtems.h: New.
+	* config/microblaze/t-rtems: New.
+
 2012-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54902

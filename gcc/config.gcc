@@ -1728,6 +1728,14 @@ microblaze*-linux*)
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	;;
+microblaze*-*-rtems*)
+	tm_file="${tm_file} dbxelf.h"
+	tm_file="${tm_file} microblaze/rtems.h rtems.h newlib-stdint.h"
+	c_target_objs="${c_target_objs} microblaze-c.o"
+	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
+	tmake_file="${tmake_file} microblaze/t-microblaze"
+	tmake_file="${tmake_file} t-rtems microblaze/t-rtems"
+        ;;
 microblaze*-*-*)
         tm_file="${tm_file} dbxelf.h"
 	c_target_objs="${c_target_objs} microblaze-c.o"
