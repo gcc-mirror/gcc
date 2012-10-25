@@ -4722,6 +4722,16 @@ using scalars of wider type, which normally is more performance efficient;
 and @code{as a single scalar}, which means that vector fits into a
 scalar type.
 
+@item -Wno-virtual-move-assign
+@opindex Wvirtual-move-assign
+@opindex Wno-virtual-move-assign
+Suppress warnings about inheriting from a virtual base with a
+non-trivial C++11 move assignment operator.  This is dangerous because
+if the virtual base is reachable along more than one path, it will be
+moved multiple times, which can mean both objects end up in the
+moved-from state.  If the move assignment operator is written to avoid
+moving from a moved-from object, this warning can be disabled.
+
 @item -Wvla
 @opindex Wvla
 @opindex Wno-vla

@@ -1,5 +1,7 @@
 2012-10-25  Jason Merrill  <jason@redhat.com>
 
+	* c.opt (Wvirtual-move-assign): New.
+
 	* c.opt (Winherited-variadic-ctor): New.
 
 2012-10-25  Marc Glisse  <marc.glisse@inria.fr>

@@ -969,8 +969,8 @@ get_copy_assign (tree type)
    DELETED_P or give an error message MSG with argument ARG.  */
 
 static void
-process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
-		  bool *deleted_p, bool *constexpr_p, bool *no_implicit_p,
+process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
+		  bool *deleted_p, bool *constexpr_p,
 		  bool diag, tree arg)
 {
   if (!fn || fn == error_mark_node)
@@ -995,12 +995,6 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 	    error ("union member %q+D with non-trivial %qD", arg, fn);
 	}
     }
-
-  /* Core 1402: A non-trivial non-move ctor suppresses the implicit
-     declaration of the move ctor/op=.  */
-  if (no_implicit_p && move_p && !move_signature_fn_p (fn)
-      && !trivial_fn_p (fn))
-    *no_implicit_p = true;
 
   if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))
     {
@@ -1027,7 +1021,7 @@ static void
 walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		   int quals, bool copy_arg_p, bool move_p,
 		   bool assign_p, tree *spec_p, bool *trivial_p,
-		   bool *deleted_p, bool *constexpr_p, bool *no_implicit_p,
+		   bool *deleted_p, bool *constexpr_p,
 		   bool diag, int flags, tsubst_flags_t complain)
 {
   tree field;
@@ -1126,7 +1120,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	{
 	  walk_field_subobs (TYPE_FIELDS (mem_type), fnname, sfk, quals,
 			     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
-			     deleted_p, constexpr_p, no_implicit_p,
+			     deleted_p, constexpr_p,
 			     diag, flags, complain);
 	  continue;
 	}
@@ -1143,8 +1137,8 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 
       rval = locate_fn_flags (mem_type, fnname, argtype, flags, complain);
 
-      process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			constexpr_p, no_implicit_p, diag, field);
+      process_subob_fn (rval, spec_p, trivial_p, deleted_p,
+			constexpr_p, diag, field);
     }
 }
 
@@ -1158,7 +1152,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 static void
 synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 			 tree *spec_p, bool *trivial_p, bool *deleted_p,
-			 bool *constexpr_p, bool *no_implicit_p, bool diag,
+			 bool *constexpr_p, bool diag,
 			 tree inherited_base, tree inherited_parms)
 {
   tree binfo, base_binfo, scope, fnname, rval, argtype;
@@ -1170,9 +1164,6 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   if (spec_p)
     *spec_p = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
-
-  if (no_implicit_p)
-    *no_implicit_p = false;
 
   if (deleted_p)
     {
@@ -1314,8 +1305,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       if (inherited_base)
 	argtype = NULL_TREE;
 
-      process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			constexpr_p, no_implicit_p, diag, basetype);
+      process_subob_fn (rval, spec_p, trivial_p, deleted_p,
+			constexpr_p, diag, basetype);
       if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
 	{
 	  /* In a constructor we also need to check the subobject
@@ -1327,8 +1318,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	     do they affect constexpr-ness (a constant expression doesn't
 	     throw) or exception-specification (a throw from one of the
 	     dtors would be a double-fault).  */
-	  process_subob_fn (rval, false, NULL, NULL,
-			    deleted_p, NULL, NULL, false,
+	  process_subob_fn (rval, NULL, NULL,
+			    deleted_p, NULL, false,
 			    basetype);
 	}
 
@@ -1342,31 +1333,20 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    *deleted_p = true;
 	  check_vdtor = false;
 	}
+
+      if (diag && assign_p && move_p
+	  && BINFO_VIRTUAL_P (base_binfo)
+	  && rval && TREE_CODE (rval) == FUNCTION_DECL
+	  && move_fn_p (rval) && !trivial_fn_p (rval))
+	warning (OPT_Wvirtual_move_assign,
+		 "defaulted move assignment for %qT calls a non-trivial "
+		 "move assignment operator for virtual base %qT",
+		 ctype, basetype);
     }
 
   vbases = CLASSTYPE_VBASECLASSES (ctype);
   if (vbases == NULL)
     /* No virtual bases to worry about.  */;
-  else if (assign_p && move_p && no_implicit_p)
-    {
-      /* Don't implicitly declare a defaulted move assignment if a virtual
-	 base has non-trivial move assignment, since moving the same base
-	 more than once is dangerous.  */
-      /* Should the spec be changed to allow vbases that only occur once?  */
-      FOR_EACH_VEC_ELT (tree, vbases, i, base_binfo)
-	{
-	  tree basetype = BINFO_TYPE (base_binfo);
-	  if (copy_arg_p)
-	    argtype = build_stub_type (basetype, quals, move_p);
-	  rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
-	  if (rval && rval != error_mark_node
-	      && move_fn_p (rval) && !trivial_fn_p (rval))
-	    {
-	      *no_implicit_p = true;
-	      break;
-	    }
-	}
-    }
   else if (!assign_p)
     {
       if (constexpr_p)
@@ -1378,14 +1358,14 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    argtype = build_stub_type (basetype, quals, move_p);
 	  rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
 
-	  process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			    constexpr_p, no_implicit_p, diag, basetype);
+	  process_subob_fn (rval, spec_p, trivial_p, deleted_p,
+			    constexpr_p, diag, basetype);
 	  if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
 	    {
 	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				      NULL_TREE, flags, complain);
-	      process_subob_fn (rval, false, NULL, NULL,
-				deleted_p, NULL, NULL, false,
+	      process_subob_fn (rval, NULL, NULL,
+				deleted_p, NULL, false,
 				basetype);
 	    }
 	}
@@ -1394,14 +1374,14 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   /* Now handle the non-static data members.  */
   walk_field_subobs (TYPE_FIELDS (ctype), fnname, sfk, quals,
 		     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
-		     deleted_p, constexpr_p, no_implicit_p,
+		     deleted_p, constexpr_p,
 		     diag, flags, complain);
   if (ctor_p)
     walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
 		       sfk_destructor, TYPE_UNQUALIFIED, false,
 		       false, false, NULL, NULL,
 		       deleted_p, NULL,
-		       NULL, false, flags, complain);
+		       false, flags, complain);
 
   pop_scope (scope);
 
@@ -1473,7 +1453,7 @@ maybe_explain_implicit_delete (tree decl)
 		 "definition would be ill-formed:", decl);
 	  pop_scope (scope);
 	  synthesized_method_walk (ctype, sfk, const_p,
-				   NULL, NULL, NULL, NULL, NULL, true,
+				   NULL, NULL, NULL, NULL, true,
 				   DECL_INHERITED_CTOR_BASE (decl), parms);
 	}
 
@@ -1494,7 +1474,7 @@ explain_implicit_non_constexpr (tree decl)
   bool dummy;
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
-			   NULL, NULL, NULL, &dummy, NULL, true,
+			   NULL, NULL, NULL, &dummy, true,
 			   NULL_TREE, NULL_TREE);
 }
 
@@ -1507,10 +1487,10 @@ deduce_inheriting_ctor (tree decl)
 {
   gcc_assert (DECL_INHERITED_CTOR_BASE (decl));
   tree spec;
-  bool trivial, constexpr_, deleted, no_implicit;
+  bool trivial, constexpr_, deleted;
   synthesized_method_walk (DECL_CONTEXT (decl), sfk_inheriting_constructor,
 			   false, &spec, &trivial, &deleted, &constexpr_,
-			   &no_implicit, /*diag*/false,
+			   /*diag*/false,
 			   DECL_INHERITED_CTOR_BASE (decl),
 			   FUNCTION_FIRST_USER_PARMTYPE (decl));
   DECL_DELETED_FN (decl) = deleted;
@@ -1540,7 +1520,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   bool deleted_p;
   bool trivial_p;
   bool constexpr_p;
-  bool no_implicit_p;
 
   /* Because we create declarations for implicitly declared functions
      lazily, we may be creating the declaration for a member of TYPE
@@ -1627,11 +1606,10 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       deleted_p = DECL_DELETED_FN (DECL_TEMPLATE_RESULT (inherited_ctor));
       constexpr_p
 	= DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT (inherited_ctor));
-      no_implicit_p = false;
     }
   else
     synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
-			     &deleted_p, &constexpr_p, &no_implicit_p, false,
+			     &deleted_p, &constexpr_p, false,
 			     inherited_base, inherited_parms);
   /* Don't bother marking a deleted constructor as constexpr.  */
   if (deleted_p)
@@ -1719,7 +1697,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       DECL_DELETED_FN (fn) = deleted_p;
       DECL_DECLARED_CONSTEXPR_P (fn) = constexpr_p;
     }
-  FNDECL_SUPPRESS_IMPLICIT_DECL (fn) = no_implicit_p;
   DECL_EXTERNAL (fn) = true;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
@@ -1730,6 +1707,18 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 
   if (inherited_ctor && TREE_CODE (inherited_ctor) == TEMPLATE_DECL)
     fn = add_inherited_template_parms (fn, inherited_ctor);
+
+  /* Warn about calling a non-trivial move assignment in a virtual base.  */
+  if (kind == sfk_move_assignment && !deleted_p && !trivial_p
+      && CLASSTYPE_VBASECLASSES (type))
+    {
+      location_t loc = input_location;
+      input_location = DECL_SOURCE_LOCATION (fn);
+      synthesized_method_walk (type, kind, const_p,
+			       NULL, NULL, NULL, NULL, true,
+			       NULL_TREE, NULL_TREE);
+      input_location = loc;
+    }
 
   return fn;
 }
@@ -1908,17 +1897,6 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       && (type_has_user_declared_move_constructor (type)
 	  || type_has_user_declared_move_assign (type)))
     DECL_DELETED_FN (fn) = true;
-
-  /* For move variants, rather than declare them as deleted we just
-     don't declare them at all.  */
-  if (DECL_DELETED_FN (fn)
-      && (sfk == sfk_move_constructor
-	  || sfk == sfk_move_assignment))
-    return NULL_TREE;
-
-  /* We also suppress implicit move if it would call a non-trivial copy.  */
-  if (FNDECL_SUPPRESS_IMPLICIT_DECL (fn))
-    return NULL_TREE;
 
   /* A destructor may be virtual.  */
   if (sfk == sfk_destructor
