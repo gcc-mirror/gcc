@@ -4373,18 +4373,90 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	arg2 = arg1 = save_expr (arg1);
     }
 
+  /* If something has already gone wrong, just pass that fact up the
+     tree.  */
+  if (error_operand_p (arg1)
+      || error_operand_p (arg2)
+      || error_operand_p (arg3))
+    return error_mark_node;
+
+  orig_arg2 = arg2;
+  orig_arg3 = arg3;
+
+  if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (arg1)))
+    {
+      arg1 = force_rvalue (arg1, complain);
+      arg2 = force_rvalue (arg2, complain);
+      arg3 = force_rvalue (arg3, complain);
+
+      tree arg1_type = TREE_TYPE (arg1);
+      arg2_type = TREE_TYPE (arg2);
+      arg3_type = TREE_TYPE (arg3);
+
+      if (TREE_CODE (arg2_type) != VECTOR_TYPE
+	  && TREE_CODE (arg3_type) != VECTOR_TYPE)
+	{
+	  if (complain & tf_error)
+	    error ("at least one operand of a vector conditional operator "
+		   "must be a vector");
+	  return error_mark_node;
+	}
+
+      if ((TREE_CODE (arg2_type) == VECTOR_TYPE)
+	  != (TREE_CODE (arg3_type) == VECTOR_TYPE))
+	{
+	  enum stv_conv convert_flag =
+	    scalar_to_vector (input_location, VEC_COND_EXPR, arg2, arg3,
+			      complain & tf_error);
+
+	  switch (convert_flag)
+	    {
+	      case stv_error:
+		return error_mark_node;
+	      case stv_firstarg:
+		{
+		  arg2 = convert (TREE_TYPE (arg3_type), arg2);
+		  arg2 = build_vector_from_val (arg3_type, arg2);
+		  arg2_type = TREE_TYPE (arg2);
+		  break;
+		}
+	      case stv_secondarg:
+		{
+		  arg3 = convert (TREE_TYPE (arg2_type), arg3);
+		  arg3 = build_vector_from_val (arg2_type, arg3);
+		  arg3_type = TREE_TYPE (arg3);
+		  break;
+		}
+	      default:
+		break;
+	    }
+	}
+
+      if (!same_type_p (arg2_type, arg3_type)
+	  || TYPE_VECTOR_SUBPARTS (arg1_type)
+	     != TYPE_VECTOR_SUBPARTS (arg2_type)
+	  || TYPE_SIZE (arg1_type) != TYPE_SIZE (arg2_type))
+	{
+	  if (complain & tf_error)
+	    error ("incompatible vector types in conditional expression: "
+		   "%qT, %qT and %qT", TREE_TYPE (arg1), TREE_TYPE (orig_arg2),
+		   TREE_TYPE (orig_arg3));
+	  return error_mark_node;
+	}
+
+      if (!COMPARISON_CLASS_P (arg1))
+	arg1 = build2 (NE_EXPR, signed_type_for (arg1_type), arg1,
+		       build_zero_cst (arg1_type));
+      return build3 (VEC_COND_EXPR, arg2_type, arg1, arg2, arg3);
+    }
+
   /* [expr.cond]
 
      The first expression is implicitly converted to bool (clause
      _conv_).  */
   arg1 = perform_implicit_conversion_flags (boolean_type_node, arg1, complain,
 					    LOOKUP_NORMAL);
-
-  /* If something has already gone wrong, just pass that fact up the
-     tree.  */
-  if (error_operand_p (arg1)
-      || error_operand_p (arg2)
-      || error_operand_p (arg3))
+  if (error_operand_p (arg1))
     return error_mark_node;
 
   /* [expr.cond]
@@ -4394,8 +4466,6 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
      array-to-pointer (_conv.array_), and function-to-pointer
      (_conv.func_) standard conversions are performed on the second
      and third operands.  */
-  orig_arg2 = arg2;
-  orig_arg3 = arg3;
   arg2_type = unlowered_expr_type (arg2);
   arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))

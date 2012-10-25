@@ -1,3 +1,9 @@
+2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* typeck.c (build_x_conditional_expr): Handle VEC_COND_EXPR.
+	* call.c (build_conditional_expr_1): Likewise.
+
 2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/34892

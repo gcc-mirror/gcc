@@ -11474,6 +11474,8 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	integer_only_op = true;
 	/* ... fall through ...  */
 
+      case VEC_COND_EXPR:
+
       case PLUS_EXPR:
       case MINUS_EXPR:
       case MULT_EXPR:

@@ -10241,6 +10241,17 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
   if (TREE_CODE (type) == INTEGER_TYPE && TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      tree inner = TREE_TYPE (type);
+      tree inner2 = signed_or_unsigned_type_for (unsignedp, inner);
+      if (!inner2)
+	return NULL_TREE;
+      if (inner == inner2)
+	return type;
+      return build_vector_type (inner2, TYPE_VECTOR_SUBPARTS (type));
+    }
+
   if (!INTEGRAL_TYPE_P (type)
       && !POINTER_TYPE_P (type))
     return NULL_TREE;
