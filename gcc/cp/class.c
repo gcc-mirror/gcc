@@ -6267,7 +6267,7 @@ finish_struct_1 (tree t)
       tree field = first_field (t);
       if (field == NULL_TREE || error_operand_p (field))
 	{
-	  error ("type transparent class %qT does not have any fields", t);
+	  error ("type transparent %q#T does not have any fields", t);
 	  TYPE_TRANSPARENT_AGGR (t) = 0;
 	}
       else if (DECL_ARTIFICIAL (field))
@@ -6279,6 +6279,13 @@ finish_struct_1 (tree t)
 	      gcc_checking_assert (DECL_VIRTUAL_P (field));
 	      error ("type transparent class %qT has virtual functions", t);
 	    }
+	  TYPE_TRANSPARENT_AGGR (t) = 0;
+	}
+      else if (TYPE_MODE (t) != DECL_MODE (field))
+	{
+	  error ("type transparent %q#T cannot be made transparent because "
+		 "the type of the first field has a different ABI from the "
+		 "class overall", t);
 	  TYPE_TRANSPARENT_AGGR (t) = 0;
 	}
     }
