@@ -1,3 +1,8 @@
+2012-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-assigns.c (assign_by_spills): Add non-reload pseudos
+	assigned to hard register to changed_pseudo_bitmap.
+
 2012-10-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (microblaze*-*-rtems*): New target.

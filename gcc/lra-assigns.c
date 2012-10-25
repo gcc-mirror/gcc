@@ -1159,6 +1159,7 @@ assign_by_spills (void)
   bitmap_head non_reload_pseudos;
   unsigned int u;
   bitmap_iterator bi;
+  bool reload_p;
   int max_regno = max_reg_num ();
 
   for (n = 0, i = lra_constraint_new_regno_start; i < max_regno; i++)
@@ -1193,12 +1194,12 @@ assign_by_spills (void)
 		     lra_reg_info[regno].freq, regno_assign_info[regno].first,
 		     regno_assign_info[regno_assign_info[regno].first].freq);
 	  hard_regno = find_hard_regno_for (regno, &cost, -1);
-	  if (hard_regno < 0
-	      && ! bitmap_bit_p (&non_reload_pseudos, regno))
+	  reload_p = ! bitmap_bit_p (&non_reload_pseudos, regno);
+	  if (hard_regno < 0 && reload_p)
 	    hard_regno = spill_for (regno, &all_spilled_pseudos);
 	  if (hard_regno < 0)
 	    {
-	      if (! bitmap_bit_p (&non_reload_pseudos, regno))
+	      if (reload_p)
 		sorted_pseudos[nfails++] = regno;
 	    }
 	  else
@@ -1207,6 +1208,11 @@ assign_by_spills (void)
 		 pass.  Indicate that it is no longer spilled.  */
 	      bitmap_clear_bit (&all_spilled_pseudos, regno);
 	      assign_hard_regno (hard_regno, regno);
+	      if (! reload_p)
+		/* As non-reload pseudo assignment is changed we
+		   should reconsider insns referring for the
+		   pseudo.  */
+		bitmap_set_bit (&changed_pseudo_bitmap, regno);
 	    }
 	}
       if (nfails == 0)
@@ -1308,9 +1314,9 @@ assign_by_spills (void)
 	  if (hard_regno >= 0)
 	    {
 	      assign_hard_regno (hard_regno, regno);
-	  /* We change allocation for non-reload pseudo on this
-	     iteration -- mark the pseudo for invalidation of used
-	     alternatives of insns containing the pseudo.  */
+	      /* We change allocation for non-reload pseudo on this
+		 iteration -- mark the pseudo for invalidation of used
+		 alternatives of insns containing the pseudo.  */
 	      bitmap_set_bit (&changed_pseudo_bitmap, regno);
 	    }
 	}
