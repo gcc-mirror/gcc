@@ -1190,13 +1190,27 @@ recursive_inlining (struct cgraph_edge *edge,
     {
       struct cgraph_edge *curr
 	= (struct cgraph_edge *) fibheap_extract_min (heap);
-      struct cgraph_node *cnode;
-
-      if (estimate_size_after_inlining (node, curr) > limit)
-	break;
+      struct cgraph_node *cnode, *dest = curr->callee;
 
       if (!can_inline_edge_p (curr, true))
 	continue;
+
+      /* MASTER_CLONE is produced in the case we already started modified
+	 the function. Be sure to redirect edge to the original body before
+	 estimating growths otherwise we will be seeing growths after inlining
+	 the already modified body.  */
+      if (master_clone)
+	{
+          cgraph_redirect_edge_callee (curr, master_clone);
+          reset_edge_growth_cache (curr);
+	}
+
+      if (estimate_size_after_inlining (node, curr) > limit)
+	{
+	  cgraph_redirect_edge_callee (curr, dest);
+	  reset_edge_growth_cache (curr);
+	  break;
+	}
 
       depth = 1;
       for (cnode = curr->caller;
@@ -1206,7 +1220,11 @@ recursive_inlining (struct cgraph_edge *edge,
           depth++;
 
       if (!want_inline_self_recursive_call_p (curr, node, false, depth))
-	continue;
+	{
+	  cgraph_redirect_edge_callee (curr, dest);
+	  reset_edge_growth_cache (curr);
+	  continue;
+	}
 
       if (dump_file)
 	{
@@ -1228,9 +1246,10 @@ recursive_inlining (struct cgraph_edge *edge,
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);
+          cgraph_redirect_edge_callee (curr, master_clone);
+          reset_edge_growth_cache (curr);
 	}
 
-      cgraph_redirect_edge_callee (curr, master_clone);
       inline_call (curr, false, new_edges, &overall_size, true);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;

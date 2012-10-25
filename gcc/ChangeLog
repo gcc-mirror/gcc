@@ -1,3 +1,8 @@
+2012-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (recursive_inlining): Redirect to master
+	clone before testing profitability.
+
 2012-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54902
