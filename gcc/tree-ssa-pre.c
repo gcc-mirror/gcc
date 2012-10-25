@@ -4448,7 +4448,7 @@ eliminate (void)
 
 /* Perform CFG cleanups made necessary by elimination.  */
 
-static void
+static unsigned 
 fini_eliminate (void)
 {
   bool do_eh_cleanup = !bitmap_empty_p (need_eh_cleanup);
@@ -4464,7 +4464,8 @@ fini_eliminate (void)
   BITMAP_FREE (need_ab_cleanup);
 
   if (do_eh_cleanup || do_ab_cleanup)
-    cleanup_tree_cfg ();
+    return TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Borrow a bit of tree-ssa-dce.c for the moment.
@@ -4728,7 +4729,7 @@ do_pre (void)
 
   scev_finalize ();
   fini_pre ();
-  fini_eliminate ();
+  todo |= fini_eliminate ();
   loop_optimizer_finalize ();
 
   /* TODO: tail_merge_optimize may merge all predecessors of a block, in which
@@ -4794,7 +4795,7 @@ execute_fre (void)
   /* Remove all the redundant expressions.  */
   todo |= eliminate ();
 
-  fini_eliminate ();
+  todo |= fini_eliminate ();
 
   free_scc_vn ();
 
