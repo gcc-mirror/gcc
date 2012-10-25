@@ -1,3 +1,11 @@
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53761
+	* class.c (finish_struct_1): Reject aggregates decorated with
+	__transparent_union__ which cannot be made transparent because
+	the type of the first field has a different ABI from the class
+	overall.
+
 2012-10-25  Jason Merrill  <jason@redhat.com>
 
 	Core 1402
