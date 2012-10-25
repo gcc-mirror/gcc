@@ -995,7 +995,10 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 sh-*-rtems*)
 	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crt1.o crti.o crtn.o crtbeginS.o crtendS.o \
-		$sh_ic_extra_parts $sh_opt_extra_parts"
+		libic_invalidate_array_4-100.a \
+		libic_invalidate_array_4-200.a \
+		libic_invalidate_array_4a.a \
+		libgcc-Os-4-200.a libgcc-4-300.a"
 	;;
 sh-wrs-vxworks)
 	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
