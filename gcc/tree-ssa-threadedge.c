@@ -584,7 +584,7 @@ cond_arg_set_in_bb (edge e, basic_block bb)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
-  gimple last = gsi_stmt (gsi_last_bb (e->dest));
+  gimple last = last_stmt (e->dest);
 
   /* E->dest does not have to end with a control transferring
      instruction.  This can occurr when we try to extend a jump
