@@ -1,3 +1,11 @@
+2012-10-26  Terry Guo  <terry.guo@arm.com>
+
+	Backport from mainline
+	2012-10-23  Terry Guo  <terry.guo@arm.com>
+
+	PR target/55019
+	* gcc.dg/pr55019.c: New.
+
 2012-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54902

@@ -1,3 +1,12 @@
+2012-10-26  Terry Guo  <terry.guo@arm.com>
+
+	Backport from mainline
+	2012-10-23  Terry Guo  <terry.guo@arm.com>
+
+	PR target/55019
+	* config/arm/arm.c (thumb1_expand_prologue): Don't push high regs with
+	live argument regs.
+
 2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/avr/rtems.h (TARGET_OS_CPP_BUILTINS): Remove
