@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool
 m68k_handle_option (struct gcc_options *opts,
-		    struct gcc_options *opts_set ATTRIBUTE_UNUSED,
+		    struct gcc_options *opts_set,
 		    const struct cl_decoded_option *decoded,
 		    location_t loc)
 {
@@ -45,12 +45,16 @@ m68k_handle_option (struct gcc_options *opts,
     {
     case OPT_m68020_40:
       opts->x_m68k_tune_option = u68020_40;
+      opts_set->x_m68k_tune_option = (uarch_type) 1;
       opts->x_m68k_cpu_option = m68020;
+      opts_set->x_m68k_cpu_option = (target_device) 1;
       return true;
 
     case OPT_m68020_60:
       opts->x_m68k_tune_option = u68020_60;
+      opts_set->x_m68k_tune_option = (uarch_type) 1;
       opts->x_m68k_cpu_option = m68020;
+      opts_set->x_m68k_cpu_option = (target_device) 1;
       return true;
 
     case OPT_mshared_library_id_:
