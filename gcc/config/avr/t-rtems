@@ -1,3 +1,4 @@
 # Multilibs for avr RTEMS targets.
 
-# ATM, this is just a stub
+# RTEMS uses _exit from newlib
+LIB1ASMFUNCS := $(filter-out _exit,$(LIB1ASMFUNCS))

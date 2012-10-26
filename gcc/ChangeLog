@@ -1,3 +1,9 @@
+2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config/avr/rtems.h (TARGET_OS_CPP_BUILTINS): Remove
+	__USE_INIT_FINI__.
+	* config/avr/t-rtems (LIB1ASMFUNCS): Filter out _exit.
+
 2012-10-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (microblaze*-*-rtems*): New target.
