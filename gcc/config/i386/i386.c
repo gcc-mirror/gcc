@@ -24454,6 +24454,9 @@ insn_is_function_arg (rtx insn, bool* is_spilled)
 
   if (!NONDEBUG_INSN_P (insn))
     return false;
+  /* Call instructions are not movable, ignore it.  */
+  if (CALL_P (insn))
+    return false;
   insn = PATTERN (insn);
   if (GET_CODE (insn) == PARALLEL)
     insn = XVECEXP (insn, 0, 0);
@@ -24586,18 +24589,26 @@ ix86_dependencies_evaluation_hook (rtx head, rtx tail)
 	first_arg = add_parameter_dependencies (insn, head);
 	if (first_arg)
 	  {
-	    /* Check if first argument has dependee out of its home block.  */
-	    sd_iterator_def sd_it1;
-	    dep_t dep1;
-	    FOR_EACH_DEP (first_arg, SD_LIST_BACK, sd_it1, dep1)
+	    /* Add dependee for first argument to predecessors if only
+	       region contains more than one block.  */
+	    basic_block bb =  BLOCK_FOR_INSN (insn);
+	    int rgn = CONTAINING_RGN (bb->index);
+	    int nr_blks = RGN_NR_BLOCKS (rgn);
+	    /* Skip trivial regions and region head blocks that can have
+	       predecessors outside of region.  */
+	    if (nr_blks > 1 && BLOCK_TO_BB (bb->index) != 0)
 	      {
-		rtx dee;
-		dee = DEP_PRO (dep1);
-		if (!NONDEBUG_INSN_P (dee))
-		  continue;
-		if (BLOCK_FOR_INSN (dee) != BLOCK_FOR_INSN (first_arg))
-		  /* Must add dependee for first argument in dee's block.  */
-		  add_dependee_for_func_arg (first_arg, BLOCK_FOR_INSN (dee));
+		edge e;
+		edge_iterator ei;
+		/* Assume that region is SCC, i.e. all immediate predecessors
+	           of non-head block are in the same region.  */
+		FOR_EACH_EDGE (e, ei, bb->preds)
+		  {
+		    /* Avoid creating of loop-carried dependencies through
+		       using topological odering in region.  */
+		    if (BLOCK_TO_BB (bb->index) > BLOCK_TO_BB (e->src->index))
+		      add_dependee_for_func_arg (first_arg, e->src); 
+		  }
 	      }
 	    insn = first_arg;
 	  }
