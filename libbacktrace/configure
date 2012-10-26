@@ -11619,13 +11619,32 @@ $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
   fi
 
 else
-  ac_fn_c_check_func "$LINENO" "_Unwind_GetIPInfo" "ac_cv_func__Unwind_GetIPInfo"
-if test "x$ac_cv_func__Unwind_GetIPInfo" = x""yes; then :
+  ac_save_CFFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror-implicit-function-declaration"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _Unwind_GetIPInfo" >&5
+$as_echo_n "checking for _Unwind_GetIPInfo... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "unwind.h"
+	struct _Unwind_Context *context;
+	int ip_before_insn = 0;
+int
+main ()
+{
+return _Unwind_GetIPInfo (context, &ip_before_insn);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   have_unwind_getipinfo=yes
 else
   have_unwind_getipinfo=no
 fi
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$ac_save_CFLAGS"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_unwind_getipinfo" >&5
+$as_echo "$have_unwind_getipinfo" >&6; }
   if test "$have_unwind_getipinfo" = "yes"; then
 
 $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
