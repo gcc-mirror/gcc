@@ -1,5 +1,10 @@
 2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lra-constraints.c (valid_address_p): New function, split out from...
+	(process_address): ...here.
+
+2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lra-constraints.c (process_address): Describe the kinds of address
 	that we might see.
 

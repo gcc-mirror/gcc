@@ -2377,6 +2377,41 @@ valid_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* Return whether address X, described by AD, is valid for mode MODE
+   and address space AS.  */
+
+static bool
+valid_address_p (struct address *ad, enum machine_mode mode, rtx x,
+		 addr_space_t as)
+{
+  /* Some ports do not check displacements for eliminable registers,
+     so we replace them temporarily with the elimination target.  */
+  rtx saved_base_reg = NULL_RTX;
+  rtx saved_index_reg = NULL_RTX;
+  if (ad->base_reg_loc != NULL)
+    {
+      saved_base_reg = *ad->base_reg_loc;
+      lra_eliminate_reg_if_possible (ad->base_reg_loc);
+      if (ad->base_reg_loc2 != NULL)
+	*ad->base_reg_loc2 = *ad->base_reg_loc;
+    }
+  if (ad->index_reg_loc != NULL)
+    {
+      saved_index_reg = *ad->index_reg_loc;
+      lra_eliminate_reg_if_possible (ad->index_reg_loc);
+    }
+  bool ok_p = valid_address_p (mode, x, as);
+  if (saved_base_reg != NULL_RTX)
+    {
+      *ad->base_reg_loc = saved_base_reg;
+      if (ad->base_reg_loc2 != NULL)
+	*ad->base_reg_loc2 = saved_base_reg;
+    }
+  if (saved_index_reg != NULL_RTX)
+    *ad->index_reg_loc = saved_index_reg;
+  return ok_p;
+}
+
 /* Make reload base reg + disp from address AD in space AS of memory
    with MODE into a new pseudo.	 Return the new pseudo.	 */
 static rtx
@@ -2518,8 +2553,7 @@ process_address (int nop, rtx *before, rtx *after)
 {
   struct address ad;
   enum machine_mode mode;
-  rtx new_reg, *addr_loc, saved_index_reg, saved_base_reg;
-  bool ok_p;
+  rtx new_reg, *addr_loc;
   addr_space_t as;
   rtx op = *curr_id->operand_loc[nop];
   const char *constraint = curr_static_id->operand[nop].constraint;
@@ -2585,38 +2619,7 @@ process_address (int nop, rtx *before, rtx *after)
 
      All these cases involve a displacement, so there is no point
      revalidating when there is no displacement.  */
-  if (ad.disp_loc == NULL)
-    return change_p;
-
-  /* See whether the address is still valid.  Some ports do not check
-     displacements for eliminable registers, so we replace them
-     temporarily with the elimination target.  */
-  saved_base_reg = saved_index_reg = NULL_RTX;
-  if (ad.base_reg_loc != NULL)
-    {
-      saved_base_reg = *ad.base_reg_loc;
-      lra_eliminate_reg_if_possible (ad.base_reg_loc);
-      if (ad.base_reg_loc2 != NULL)
-	*ad.base_reg_loc2 = *ad.base_reg_loc;
-    }
-  if (ad.index_reg_loc != NULL)
-    {
-      saved_index_reg = *ad.index_reg_loc;
-      lra_eliminate_reg_if_possible (ad.index_reg_loc);
-    }
-  /* Some ports do not check displacements for virtual registers -- so
-     we substitute them temporarily by real registers.	*/
-  ok_p = valid_address_p (mode, *addr_loc, as);
-  if (saved_base_reg != NULL_RTX)
-    {
-      *ad.base_reg_loc = saved_base_reg;
-      if (ad.base_reg_loc2 != NULL)
-	*ad.base_reg_loc2 = saved_base_reg;
-    }
-  if (saved_index_reg != NULL_RTX)
-    *ad.index_reg_loc = saved_index_reg;
-
-  if (ok_p)
+  if (ad.disp_loc == NULL || valid_address_p (&ad, mode, *addr_loc, as))
     return change_p;
 
   /* Any index existed before LRA started, so we can assume that the
