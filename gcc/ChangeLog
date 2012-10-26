@@ -1,5 +1,10 @@
 2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lra-constraints.c (process_address): Tighten arguments to
+	base_reg_class.  Use simplify_gen_binary to generate PLUS rtxes.
+
+2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lra-constraints.c (get_index_scale, can_add_disp_p): New functions.
 	(equiv_address_substitution): Use them.
 

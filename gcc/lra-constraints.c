@@ -2722,15 +2722,14 @@ process_address (int nop, rtx *before, rtx *after)
 	{
 	  /* index * scale + disp => new base + index * scale,
 	     case (1) above.  */
-	  enum reg_class cl = base_reg_class (mode, as, SCRATCH, SCRATCH);
+	  enum reg_class cl = base_reg_class (mode, as, PLUS,
+					      GET_CODE (*ad.index_loc));
 
 	  lra_assert (INDEX_REG_CLASS != NO_REGS);
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "disp");
-	  lra_assert (GET_CODE (*addr_loc) == PLUS);
 	  lra_emit_move (new_reg, *ad.disp_loc);
-	  if (CONSTANT_P (XEXP (*addr_loc, 1)))
-	    XEXP (*addr_loc, 1) = XEXP (*addr_loc, 0);
-	  XEXP (*addr_loc, 0) = new_reg;
+	  *addr_loc = simplify_gen_binary (PLUS, GET_MODE (new_reg),
+					   new_reg, *ad.index_loc);
 	}
     }
   else if (ad.index_reg_loc == NULL)
@@ -2749,7 +2748,8 @@ process_address (int nop, rtx *before, rtx *after)
       /* base + scale * index + disp => new base + scale * index,
 	 case (1) above.  */
       new_reg = base_plus_disp_to_reg (mode, as, &ad);
-      *addr_loc = gen_rtx_PLUS (Pmode, new_reg, *ad.index_loc);
+      *addr_loc = simplify_gen_binary (PLUS, GET_MODE (new_reg),
+				       new_reg, *ad.index_loc);
     }
   *before = get_insns ();
   end_sequence ();
