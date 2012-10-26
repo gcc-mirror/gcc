@@ -129,8 +129,18 @@ AC_SUBST(WARN_FLAGS)
 if test -n "${with_target_subdir}"; then
   GCC_CHECK_UNWIND_GETIPINFO
 else
-  AC_CHECK_FUNC(_Unwind_GetIPInfo, [have_unwind_getipinfo=yes],
-		[have_unwind_getipinfo=no])
+  ac_save_CFFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror-implicit-function-declaration"
+  AC_MSG_CHECKING([for _Unwind_GetIPInfo])
+  AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM(
+       [#include "unwind.h"
+	struct _Unwind_Context *context;
+	int ip_before_insn = 0;],
+	[return _Unwind_GetIPInfo (context, &ip_before_insn);])],
+	[have_unwind_getipinfo=yes], [have_unwind_getipinfo=no])
+  CFLAGS="$ac_save_CFLAGS"
+  AC_MSG_RESULT([$have_unwind_getipinfo])
   if test "$have_unwind_getipinfo" = "yes"; then
     AC_DEFINE(HAVE_GETIPINFO, 1, [Define if _Unwind_GetIPInfo is available.])
   fi
