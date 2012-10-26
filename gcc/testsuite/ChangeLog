@@ -1,3 +1,23 @@
+2012-10-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* gcc.target/i386/fxsave-1.c: New.
+	* gcc.target/i386/fxsave64-1.c: Ditto.
+	* gcc.target/i386/fxrstor-1.c: Ditto.
+	* gcc.target/i386/fxrstor64-1.c: Ditto.
+	* gcc.target/i386/xsave-1.c: Ditto.
+	* gcc.target/i386/xsave64-1.c: Ditto.
+	* gcc.target/i386/xrstor-1.c: Ditto.
+	* gcc.target/i386/xrstor64-1.c: Ditto.
+	* gcc.target/i386/xsaveopt-1.c: Ditto.
+	* gcc.target/i386/xsaveopt64-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Add -mfxsr, -mxsaveopt.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2012-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/cunroll-4.c: Update; we now remove the loop

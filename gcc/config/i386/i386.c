@@ -2752,7 +2752,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
      preceding options while match those first.  */
   static struct ix86_target_opts isa_opts[] =
   {
-    { "-mfma4",	OPTION_MASK_ISA_FMA4 },
+    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
@@ -2760,17 +2760,18 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
     { "-mssse3",	OPTION_MASK_ISA_SSSE3 },
-    { "-msse3",	OPTION_MASK_ISA_SSE3 },
-    { "-msse2",	OPTION_MASK_ISA_SSE2 },
+    { "-msse3",		OPTION_MASK_ISA_SSE3 },
+    { "-msse2",		OPTION_MASK_ISA_SSE2 },
     { "-msse",		OPTION_MASK_ISA_SSE },
     { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
     { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mbmi",		OPTION_MASK_ISA_BMI },
-    { "-mbmi2",	OPTION_MASK_ISA_BMI2 },
+    { "-mbmi2",		OPTION_MASK_ISA_BMI2 },
     { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
     { "-mhle",		OPTION_MASK_ISA_HLE },
+    { "-mfxsr",		OPTION_MASK_ISA_FXSR },
     { "-mrdseed",	OPTION_MASK_ISA_RDSEED },
     { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
     { "-madx",		OPTION_MASK_ISA_ADX },
@@ -2782,8 +2783,10 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mf16c",	OPTION_MASK_ISA_F16C },
+    { "-mf16c",		OPTION_MASK_ISA_F16C },
     { "-mrtm",		OPTION_MASK_ISA_RTM },
+    { "-mxsave",	OPTION_MASK_ISA_XSAVE },
+    { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
   };
 
   /* Flag options.  */
@@ -3054,6 +3057,10 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_PRFCHW		(HOST_WIDE_INT_1 << 34)
 #define PTA_RDSEED		(HOST_WIDE_INT_1 << 35)
 #define PTA_ADX			(HOST_WIDE_INT_1 << 36)
+#define PTA_FXSR		(HOST_WIDE_INT_1 << 37)
+#define PTA_XSAVE		(HOST_WIDE_INT_1 << 38)
+#define PTA_XSAVEOPT		(HOST_WIDE_INT_1 << 39)
+
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -3076,46 +3083,48 @@ ix86_option_override_internal (bool main_args_p)
       {"c3-2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, PTA_MMX | PTA_SSE},
       {"i686", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, 0},
       {"pentiumpro", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, 0},
-      {"pentium2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, PTA_MMX},
+      {"pentium2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, PTA_MMX | PTA_FXSR},
       {"pentium3", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE},
+	PTA_MMX | PTA_SSE | PTA_FXSR},
       {"pentium3m", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE},
+	PTA_MMX | PTA_SSE | PTA_FXSR},
       {"pentium-m", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE | PTA_SSE2},
+	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_FXSR},
       {"pentium4", PROCESSOR_PENTIUM4, CPU_NONE,
-	PTA_MMX |PTA_SSE | PTA_SSE2},
+	PTA_MMX |PTA_SSE | PTA_SSE2 | PTA_FXSR},
       {"pentium4m", PROCESSOR_PENTIUM4, CPU_NONE,
-	PTA_MMX | PTA_SSE | PTA_SSE2},
+	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_FXSR},
       {"prescott", PROCESSOR_NOCONA, CPU_NONE,
-	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3},
+	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
       {"nocona", PROCESSOR_NOCONA, CPU_NONE,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_CX16 | PTA_NO_SAHF},
+	| PTA_CX16 | PTA_NO_SAHF | PTA_FXSR},
       {"core2", PROCESSOR_CORE2_64, CPU_CORE2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_CX16},
+	| PTA_SSSE3 | PTA_CX16 | PTA_FXSR},
       {"corei7", PROCESSOR_COREI7_64, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16},
+	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_FXSR},
       {"corei7-avx", PROCESSOR_COREI7_64, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
-	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL},
+	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL
+	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
       {"core-avx-i", PROCESSOR_COREI7_64, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
-	| PTA_RDRND | PTA_F16C},
+	| PTA_RDRND | PTA_F16C | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
       {"core-avx2", PROCESSOR_COREI7_64, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX | PTA_AVX2
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
 	| PTA_RDRND | PTA_F16C | PTA_BMI | PTA_BMI2 | PTA_LZCNT
-	| PTA_FMA | PTA_MOVBE | PTA_RTM | PTA_HLE},
+	| PTA_FMA | PTA_MOVBE | PTA_RTM | PTA_HLE | PTA_FXSR | PTA_XSAVE
+	| PTA_XSAVEOPT},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
+	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE | PTA_FXSR},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
       {"k6", PROCESSOR_K6, CPU_K6, PTA_MMX},
@@ -3156,7 +3165,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_SSE2 | PTA_NO_SAHF},
       {"amdfam10", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
 	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM}, 
+	| PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM},
       {"barcelona", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
 	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
 	| PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM},
@@ -3164,21 +3173,24 @@ ix86_option_override_internal (bool main_args_p)
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
 	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
-	| PTA_XOP | PTA_LWP | PTA_PRFCHW},
+	| PTA_XOP | PTA_LWP | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE
+	| PTA_XSAVEOPT},
       {"bdver2", PROCESSOR_BDVER2, CPU_BDVER2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
 	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
 	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
-	| PTA_FMA | PTA_PRFCHW},
+	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
       {"btver1", PROCESSOR_BTVER1, CPU_GENERIC64,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW},
+	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
+	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
       {"btver2", PROCESSOR_BTVER2, CPU_GENERIC64,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_SSE4_1
 	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX
-	| PTA_BMI | PTA_F16C | PTA_MOVBE | PTA_PRFCHW},
+	| PTA_BMI | PTA_F16C | PTA_MOVBE | PTA_PRFCHW
+	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
 
       {"generic32", PROCESSOR_GENERIC32, CPU_PENTIUMPRO,
 	PTA_HLE /* flags are only used for -march switch.  */ },
@@ -3549,6 +3561,15 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_ADX
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_ADX))
 	  ix86_isa_flags |= OPTION_MASK_ISA_ADX;
+	if (processor_alias_table[i].flags & PTA_FXSR
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_FXSR))
+	  ix86_isa_flags |= OPTION_MASK_ISA_FXSR;
+	if (processor_alias_table[i].flags & PTA_XSAVE
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVE))
+	  ix86_isa_flags |= OPTION_MASK_ISA_XSAVE;
+	if (processor_alias_table[i].flags & PTA_XSAVEOPT
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEOPT))
+	  ix86_isa_flags |= OPTION_MASK_ISA_XSAVEOPT;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4368,6 +4389,9 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
     IX86_ATTR_ISA ("rdseed",	OPT_mrdseed),
     IX86_ATTR_ISA ("adx",	OPT_madx),
+    IX86_ATTR_ISA ("fxsr",	OPT_mfxsr),
+    IX86_ATTR_ISA ("xsave",	OPT_mxsave),
+    IX86_ATTR_ISA ("xsaveopt",	OPT_mxsaveopt),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -25570,6 +25594,19 @@ enum ix86_builtins
   IX86_BUILTIN_STMXCSR,
   IX86_BUILTIN_SFENCE,
 
+  IX86_BUILTIN_FXSAVE,
+  IX86_BUILTIN_FXRSTOR,
+  IX86_BUILTIN_FXSAVE64,
+  IX86_BUILTIN_FXRSTOR64,
+
+  IX86_BUILTIN_XSAVE,
+  IX86_BUILTIN_XRSTOR,
+  IX86_BUILTIN_XSAVE64,
+  IX86_BUILTIN_XRSTOR64,
+
+  IX86_BUILTIN_XSAVEOPT,
+  IX86_BUILTIN_XSAVEOPT64,
+
   /* 3DNow! Original */
   IX86_BUILTIN_FEMMS,
   IX86_BUILTIN_PAVGUSB,
@@ -26775,6 +26812,19 @@ static const struct builtin_description bdesc_special_args[] =
 
   /* 3DNow! */
   { OPTION_MASK_ISA_3DNOW, CODE_FOR_mmx_femms, "__builtin_ia32_femms", IX86_BUILTIN_FEMMS, UNKNOWN, (int) VOID_FTYPE_VOID },
+
+  /* FXSR, XSAVE and XSAVEOPT */
+  { OPTION_MASK_ISA_FXSR, CODE_FOR_nothing, "__builtin_ia32_fxsave", IX86_BUILTIN_FXSAVE, UNKNOWN, (int) VOID_FTYPE_PVOID },
+  { OPTION_MASK_ISA_FXSR, CODE_FOR_nothing, "__builtin_ia32_fxrstor", IX86_BUILTIN_FXRSTOR, UNKNOWN, (int) VOID_FTYPE_PVOID },
+  { OPTION_MASK_ISA_XSAVE, CODE_FOR_nothing, "__builtin_ia32_xsave", IX86_BUILTIN_XSAVE, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVE, CODE_FOR_nothing, "__builtin_ia32_xrstor", IX86_BUILTIN_XRSTOR, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVEOPT, CODE_FOR_nothing, "__builtin_ia32_xsaveopt", IX86_BUILTIN_XSAVEOPT, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+
+  { OPTION_MASK_ISA_FXSR | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_fxsave64", IX86_BUILTIN_FXSAVE64, UNKNOWN, (int) VOID_FTYPE_PVOID },
+  { OPTION_MASK_ISA_FXSR | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_fxrstor64", IX86_BUILTIN_FXRSTOR64, UNKNOWN, (int) VOID_FTYPE_PVOID },
+  { OPTION_MASK_ISA_XSAVE | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xsave64", IX86_BUILTIN_XSAVE64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVE | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xrstor64", IX86_BUILTIN_XRSTOR64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
+  { OPTION_MASK_ISA_XSAVEOPT | OPTION_MASK_ISA_64BIT, CODE_FOR_nothing, "__builtin_ia32_xsaveopt64", IX86_BUILTIN_XSAVEOPT64, UNKNOWN, (int) VOID_FTYPE_PVOID_INT64 },
 
   /* SSE */
   { OPTION_MASK_ISA_SSE, CODE_FOR_sse_storeups, "__builtin_ia32_storeups", IX86_BUILTIN_STOREUPS, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V4SF },
@@ -30689,6 +30739,118 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       emit_move_insn (target, op0);
       return target;
+
+    case IX86_BUILTIN_FXSAVE:
+    case IX86_BUILTIN_FXRSTOR:
+    case IX86_BUILTIN_FXSAVE64:
+    case IX86_BUILTIN_FXRSTOR64:
+      switch (fcode)
+	{
+	case IX86_BUILTIN_FXSAVE:
+	  icode = CODE_FOR_fxsave;
+	  break;
+	case IX86_BUILTIN_FXRSTOR:
+	  icode = CODE_FOR_fxrstor;
+	  break;
+	case IX86_BUILTIN_FXSAVE64:
+	  icode = CODE_FOR_fxsave64;
+	  break;
+	case IX86_BUILTIN_FXRSTOR64:
+	  icode = CODE_FOR_fxrstor64;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      op0 = expand_normal (arg0);
+
+      if (!address_operand (op0, VOIDmode))
+	{
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
+	}
+      op0 = gen_rtx_MEM (BLKmode, op0);
+
+      pat = GEN_FCN (icode) (op0);
+      if (pat)
+	emit_insn (pat);
+      return 0;
+
+    case IX86_BUILTIN_XSAVE:
+    case IX86_BUILTIN_XRSTOR:
+    case IX86_BUILTIN_XSAVE64:
+    case IX86_BUILTIN_XRSTOR64:
+    case IX86_BUILTIN_XSAVEOPT:
+    case IX86_BUILTIN_XSAVEOPT64:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+
+      if (!address_operand (op0, VOIDmode))
+	{
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
+	}
+      op0 = gen_rtx_MEM (BLKmode, op0);
+
+      op1 = force_reg (DImode, op1);
+
+      if (TARGET_64BIT)
+	{
+	  op2 = expand_simple_binop (DImode, LSHIFTRT, op1, GEN_INT (32),
+				     NULL, 1, OPTAB_DIRECT);
+	  switch (fcode)
+	    {
+	    case IX86_BUILTIN_XSAVE:
+	      icode = CODE_FOR_xsave_rex64;
+	      break;
+	    case IX86_BUILTIN_XRSTOR:
+	      icode = CODE_FOR_xrstor_rex64;
+	      break;
+	    case IX86_BUILTIN_XSAVE64:
+	      icode = CODE_FOR_xsave64;
+	      break;
+	    case IX86_BUILTIN_XRSTOR64:
+	      icode = CODE_FOR_xrstor64;
+	      break;
+	    case IX86_BUILTIN_XSAVEOPT:
+	      icode = CODE_FOR_xsaveopt_rex64;
+	      break;
+	    case IX86_BUILTIN_XSAVEOPT64:
+	      icode = CODE_FOR_xsaveopt64;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  op2 = gen_lowpart (SImode, op2);
+	  op1 = gen_lowpart (SImode, op1);
+	  pat = GEN_FCN (icode) (op0, op1, op2);
+	}
+      else
+	{
+	  switch (fcode)
+	    {
+	    case IX86_BUILTIN_XSAVE:
+	      icode = CODE_FOR_xsave;
+	      break;
+	    case IX86_BUILTIN_XRSTOR:
+	      icode = CODE_FOR_xrstor;
+	      break;
+	    case IX86_BUILTIN_XSAVEOPT:
+	      icode = CODE_FOR_xsaveopt;
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  pat = GEN_FCN (icode) (op0, op1);
+	}
+
+      if (pat)
+	emit_insn (pat);
+      return 0;
 
     case IX86_BUILTIN_LLWPCB:
       arg0 = CALL_EXPR_ARG (exp, 0);

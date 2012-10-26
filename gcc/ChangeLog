@@ -1,3 +1,58 @@
+2012-10-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc/common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_FXSR_SET): New.
+	(OPTION_MASK_ISA_XSAVE_SET): Likewise.
+	(OPTION_MASK_ISA_XSAVEOPT_SET): Likewise.
+	(ix86_handle_option): Handle mfxsr, mxsave, mxsaveopt options.
+	* gcc/config.gcc (i[34567]86-*-*): Add fxsrintrin.h,
+	xsaveintrin.h, xsaveoptintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/fxsrintrin.h: New header.
+	* config/i386/xsaveintrin.h: Likewise.
+	* config/i386/xsaveoptintrin.h: Likewise.
+	* gcc/config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	FXSR/XSAVE/XSAVEOPT support.
+	* gcc/config/i386/i386-builtin-types.def
+	(VOID_FTYPE_PVOID_INT64): New function type.
+	* gcc/config/i386/i386-c.c: Define __FXSR__, __XSAVE__
+	and __XSAVEOPT__ if needed.
+	* gcc/config/i386/i386.c (ix86_target_string): Define -mfxsr,
+	 -mxsave and -mxsaveopt options.
+	(PTA_FXSR): New.
+	(PTA_XSAVE): Likewise.
+	(PTA_XSAVEOPT): Likewise.
+	(ix86_option_override_internal): Handle new option.
+	(processor_alias_table): Added PTA_FXSR, PTA_XSAVE, PTA_XSAVEOPT.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mfxsr,
+	OPT_mxsave, OPT_mxsaveopt.
+	(ix86_builtins): Add IX86_BUILTIN_FXSAVE, IX86_BUILTIN_FXRSTOR,
+	IX86_BUILTIN_FXSAVE64, IX86_BUILTIN_XSAVE, IX86_BUILTIN_XSAVE64,
+	IX86_BUILTIN_XRSTOR, IX86_BUILTIN_XRSTOR64, IX86_BUILTIN_XSAVEOPT,
+	IX86_BUILTIN_XSAVEOPT64.
+	(ix86_expand_builtin): Handle these built-ins.
+	* gcc/config/i386/i386.h (TARGET_FXSR): New.
+	(TARGET_XSAVE): Likewise.
+	(TARGET_XSAVEOPT): Likewise.
+	* gcc/config/i386/i386.md (ANY_XSAVE): New int iterator.
+	(ANY_XSAVE64): Likewise.
+	(xsave): New int attribute.
+	(fxsave): New instruction.
+	(fxsave64): Likewise.
+	(fxrstor): Likewise.
+	(fxrstor64): Likewise.
+	(<xsave>): Likewise.
+	(<xsave>_rex64): Likewise.
+	(xrstor): Likewise.
+	(xrstor_rex64): Likewise.
+	(xrstor64): Likewise.
+	* gcc/config/i386/i386.opt (mfxsr): New.
+	(mxsave): Likewise.
+	(mxsaveopt): Likewise.
+	* gcc/config/i386/x86intrin.h: Include
+	xsaveintrin.h, fxsrintrin.h, xsaveoptintrin.h.
+
 2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/avr/t-rtems: Revert previous commit.
