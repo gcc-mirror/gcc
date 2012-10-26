@@ -4622,7 +4622,10 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
   if (DECL_DEBUG_EXPR_IS_FROM (decl))
     {
       tree realdecl = DECL_DEBUG_EXPR (decl);
-      if (realdecl && handled_component_p (realdecl))
+      if (realdecl
+	  && (handled_component_p (realdecl)
+	      || (TREE_CODE (realdecl) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR)))
 	{
 	  HOST_WIDE_INT maxsize;
 	  tree innerdecl;
