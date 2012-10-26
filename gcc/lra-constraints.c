@@ -756,6 +756,28 @@ extract_address_regs (enum machine_mode mem_mode, addr_space_t as,
     ad->index_loc = ad->index_reg_loc;
 }
 
+/* Return the scale applied to *AD->INDEX_REG_LOC, or 0 if the index is
+   more complicated than that.  */
+static HOST_WIDE_INT
+get_index_scale (struct address *ad)
+{
+  rtx index = *ad->index_loc;
+  if (GET_CODE (index) == MULT
+      && CONST_INT_P (XEXP (index, 1))
+      && ad->index_reg_loc == &XEXP (index, 0))
+    return INTVAL (XEXP (index, 1));
+
+  if (GET_CODE (index) == ASHIFT
+      && CONST_INT_P (XEXP (index, 1))
+      && ad->index_reg_loc == &XEXP (index, 0))
+    return (HOST_WIDE_INT) 1 << INTVAL (XEXP (index, 1));
+
+  if (ad->index_reg_loc == ad->index_loc)
+    return 1;
+
+  return 0;
+}
+
 
 
 /* The page contains major code to choose the current insn alternative
@@ -2428,6 +2450,40 @@ base_plus_disp_to_reg (enum machine_mode mode, addr_space_t as,
   return new_reg;
 }
 
+/* Return true if we can add a displacement to address ADDR_LOC,
+   which is described by AD, even if that makes the address invalid.
+   The fix-up code requires any new address to be the sum of the base,
+   index and displacement fields of an AD-like structure.  */
+static bool
+can_add_disp_p (struct address *ad, rtx *addr_loc)
+{
+  /* Automodified addresses have a fixed form.  */
+  if (ad->base_modify_p)
+    return false;
+
+  /* If the address already has a displacement, and is not an UNSPEC,
+     we can simply add the new displacement to it.  */
+  if (ad->disp_loc && GET_CODE (*ad->disp_loc) == UNSPEC)
+    return true;
+
+  /* If the address is entirely a base or index, we can try adding
+     a constant to it.  */
+  if (addr_loc == ad->base_reg_loc || addr_loc == ad->index_loc)
+    return true;
+
+  /* Likewise if the address is entirely a sum of the base and index.  */
+  if (GET_CODE (*addr_loc) == PLUS)
+    {
+      rtx *op0 = &XEXP (*addr_loc, 0);
+      rtx *op1 = &XEXP (*addr_loc, 1);
+      if (op0 == ad->base_reg_loc && op1 == ad->index_loc)
+	return true;
+      if (op1 == ad->base_reg_loc && op0 == ad->index_loc)
+	return true;
+    }
+  return false;
+}
+
 /* Make substitution in address AD in space AS with location ADDR_LOC.
    Update AD and ADDR_LOC if it is necessary.  Return true if a
    substitution was made.  */
@@ -2473,7 +2529,8 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
 	}
       else if (GET_CODE (new_base_reg) == PLUS
 	       && REG_P (XEXP (new_base_reg, 0))
-	       && CONST_INT_P (XEXP (new_base_reg, 1)))
+	       && CONST_INT_P (XEXP (new_base_reg, 1))
+	       && can_add_disp_p (ad, addr_loc))
 	{
 	  disp += INTVAL (XEXP (new_base_reg, 1));
 	  *ad->base_reg_loc = XEXP (new_base_reg, 0);
@@ -2481,12 +2538,6 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
 	}
       if (ad->base_reg_loc2 != NULL)
 	*ad->base_reg_loc2 = *ad->base_reg_loc;
-    }
-  scale = 1;
-  if (ad->index_loc != NULL && GET_CODE (*ad->index_loc) == MULT)
-    {
-      lra_assert (CONST_INT_P (XEXP (*ad->index_loc, 1)));
-      scale = INTVAL (XEXP (*ad->index_loc, 1));
     }
   if (index_reg != new_index_reg)
     {
@@ -2497,7 +2548,9 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
 	}
       else if (GET_CODE (new_index_reg) == PLUS
 	       && REG_P (XEXP (new_index_reg, 0))
-	       && CONST_INT_P (XEXP (new_index_reg, 1)))
+	       && CONST_INT_P (XEXP (new_index_reg, 1))
+	       && can_add_disp_p (ad, addr_loc)
+	       && (scale = get_index_scale (ad)))
 	{
 	  disp += INTVAL (XEXP (new_index_reg, 1)) * scale;
 	  *ad->index_reg_loc = XEXP (new_index_reg, 0);
