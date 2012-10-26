@@ -1204,10 +1204,8 @@ check_and_process_move (bool *change_p, bool *sec_mem_p)
       || ((secondary_class != NO_REGS || sri.icode != CODE_FOR_nothing)
 	  && dclass != NO_REGS))
     {
-#if ENABLE_ASSERT_CHECKING
       enum reg_class old_sclass = secondary_class;
       secondary_reload_info old_sri = sri;
-#endif
 
       sri.prev_sri = NULL;
       sri.icode = CODE_FOR_nothing;
