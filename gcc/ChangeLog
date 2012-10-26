@@ -1,3 +1,8 @@
+2012-10-26  Gunther Nikl  <gnikl@users.sourceforge.net>
+
+	* common/config/m68k/m68k-common.c (m68k_handle_option): Set
+	gcc_options fields of opts_set for -m68020-40 and -m68020-60.
+
 2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/avr/t-rtems: Revert previous commit.
