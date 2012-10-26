@@ -1,3 +1,16 @@
+2012-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/54971
+	* tree-sra.c (struct access): New flag grp_to_be_debug_replaced.
+	(dump_access): Dump the new flag.
+	(analyze_access_subtree): Set the new flag when appropriate.
+	(create_access_replacement): Handle debug replacements differently.
+	(generate_subtree_copies): Handle the grp_to_be_debug_replaced flag.
+	(init_subtree_with_zero): Likewise.
+	(sra_modify_expr): Likewise.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_assign): Likewise.
+
 2012-10-23  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.c (insn_is_function_arg) : Add check on CALL
