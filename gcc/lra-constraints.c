@@ -2494,8 +2494,23 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
   return change_p;
 }
 
-/* Major function to make reloads for address in operand NOP.  Add to
-   reloads to the list *BEFORE and *AFTER.  We might need to add
+/* Major function to make reloads for an address in operand NOP.
+   The supported cases are:
+
+   1) an address that existed before LRA started, at which point it must
+      have been valid.  These addresses are subject to elimination and
+      may have become invalid due to the elimination offset being out
+      of range.
+
+   2) an address created by forcing a constant to memory (force_const_to_mem).
+      The initial form of these addresses might not be valid, and it is this
+      function's job to make them valid.
+
+   3) a frame address formed from a register and a (possibly zero)
+      constant offset.  As above, these addresses might not be valid
+      and this function must make them so.
+
+   Add reloads to the lists *BEFORE and *AFTER.  We might need to add
    reloads to *AFTER because of inc/dec, {pre, post} modify in the
    address.  Return true for any RTL change.  */
 static bool
@@ -2557,9 +2572,19 @@ process_address (int nop, rtx *before, rtx *after)
       && process_addr_reg (ad.index_reg_loc, before, NULL, INDEX_REG_CLASS))
     change_p = true;
 
-  /* The address was valid before LRA.  We only change its form if the
-     address has a displacement, so if it has no displacement it must
-     still be valid.  */
+  /* There are three cases where the shape of *ADDR_LOC may now be invalid:
+
+     1) the original address was valid, but either elimination or
+	equiv_address_substitution applied a displacement that made
+	it invalid.
+
+     2) the address is an invalid symbolic address created by
+	force_const_to_mem.
+
+     3) the address is a frame address with an invalid offset.
+
+     All these cases involve a displacement, so there is no point
+     revalidating when there is no displacement.  */
   if (ad.disp_loc == NULL)
     return change_p;
 
@@ -2594,9 +2619,8 @@ process_address (int nop, rtx *before, rtx *after)
   if (ok_p)
     return change_p;
 
-  /* Addresses were legitimate before LRA.  So if the address has
-     two registers than it can have two of them.  We should also
-     not worry about scale for the same reason.	 */
+  /* Any index existed before LRA started, so we can assume that the
+     presence and shape of the index is valid.  */
   push_to_sequence (*before);
   if (ad.base_reg_loc == NULL)
     {
@@ -2611,7 +2635,7 @@ process_address (int nop, rtx *before, rtx *after)
 	    rtx insn;
 	    rtx last = get_last_insn ();
 
-	    /* disp => lo_sum (new_base, disp)	*/
+	    /* disp => lo_sum (new_base, disp), case (2) above.  */
 	    insn = emit_insn (gen_rtx_SET
 			      (VOIDmode, new_reg,
 			       gen_rtx_HIGH (Pmode, copy_rtx (*ad.disp_loc))));
@@ -2633,14 +2657,15 @@ process_address (int nop, rtx *before, rtx *after)
 #endif
 	  if (code < 0)
 	    {
-	      /* disp => new_base  */
+	      /* disp => new_base, case (2) above.  */
 	      lra_emit_move (new_reg, *ad.disp_loc);
 	      *ad.disp_loc = new_reg;
 	    }
 	}
       else
 	{
-	  /* index * scale + disp => new base + index * scale  */
+	  /* index * scale + disp => new base + index * scale,
+	     case (1) above.  */
 	  enum reg_class cl = base_reg_class (mode, as, SCRATCH, SCRATCH);
 
 	  lra_assert (INDEX_REG_CLASS != NO_REGS);
@@ -2654,7 +2679,7 @@ process_address (int nop, rtx *before, rtx *after)
     }
   else if (ad.index_reg_loc == NULL)
     {
-      /* base + disp => new base  */
+      /* base + disp => new base, cases (1) and (3) above.  */
       /* Another option would be to reload the displacement into an
 	 index register.  However, postreload has code to optimize
 	 address reloads that have the same base and different
@@ -2665,7 +2690,8 @@ process_address (int nop, rtx *before, rtx *after)
     }
   else
     {
-      /* base + scale * index + disp => new base + scale * index  */
+      /* base + scale * index + disp => new base + scale * index,
+	 case (1) above.  */
       new_reg = base_plus_disp_to_reg (mode, as, &ad);
       *addr_loc = gen_rtx_PLUS (Pmode, new_reg, *ad.index_loc);
     }
