@@ -221,8 +221,7 @@
 2012-10-25  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimize/54980
-	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Fix
-	obvious typo.
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Fix obvious typo.
 	(loop_edge_to_cancel): Be sure that the edge is from an conditional
 	so we can cancel it.
 
@@ -336,8 +335,7 @@
 2012-10-23  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md ("T", "W"): Change
-	definitions to use define_memory_constraint.  Do not match
-	'reg'.
+	definitions to use define_memory_constraint.  Do not match 'reg'.
 	* config/sparc/sparc.c (memory_ok_for_ldd): Remove all non-MEM
 	handling code, update comment.
 
@@ -450,7 +448,7 @@
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 	    Sofiane Naci  <sofiane.naci@arm.com>
-	    Stephen Thomas  <stephen,thomas@arm.com>
+	    Stephen Thomas  <stephen.thomas@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 	    Yufeng Zhang  <yufeng.zhang@arm.com>
 
@@ -504,9 +502,8 @@
 	* tree-ssa-operands.h (struct def_optype_d, def_optype_p): Remove.
 	(ssa_operands.free_defs): Remove.
 	(DEF_OP_PTR, DEF_OP): Remove.
-	(struct ssa_operand_iterator_d): Remove 'defs', add 'flags'
-	members, rename 'phi_stmt' to 'stmt', 'phi_i' to 'i' and 'num_phi'
-	to 'numops'.
+	(struct ssa_operand_iterator_d): Remove 'defs', add 'flags' members,
+	rename 'phi_stmt' to 'stmt', 'phi_i' to 'i' and 'num_phi' to 'numops'.
 	* gimple.h (gimple_statement_with_ops.def_ops): Remove.
 	(gimple_def_ops, gimple_set_def_ops): Remove.
 	(gimple_vdef_op): Don't take const gimple, adjust.
@@ -539,13 +536,11 @@
 
 2012-10-23  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-	* config/arm/arm.c (offset_ok_for_ldrd_strd): Return false for
-	Thumb1.
+	* config/arm/arm.c (offset_ok_for_ldrd_strd): Return false for Thumb1.
 
 2012-10-23  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* dbxout.c (dbxout_symbol_location): Pass new argument to
-	alter_subreg.
+	* dbxout.c (dbxout_symbol_location): Pass new argument to alter_subreg.
 	* dwarf2out.c: Include ira.h and lra.h.
 	(based_loc_descr, compute_frame_pointer_to_fb_displacement): Use
 	lra_eliminate_regs for LRA instead of eliminate_regs.
@@ -553,8 +548,7 @@
 	emit_move_via_integer.  Use emit_move_via_integer for LRA only if
 	the insn is recognized.
 	* emit-rtl.c (gen_rtx_REG): Add lra_in_progress.
-	(validate_subreg): Don't check offset for LRA and floating point
-	modes.
+	(validate_subreg): Don't check offset for LRA and floating point modes.
 	* final.c (final_scan_insn, cleanup_subreg_operands): Pass new
 	argument to alter_subreg.
 	(walk_alter_subreg, output_operand): Ditto.
@@ -590,7 +584,7 @@
 	and ira_reg_equiv_const.  Call ira_setup_eliminable_regset with a
 	new argument.  Don't flatten IRA IRA for LRA.  Don't reassign
 	conflict allocnos for LRA. Call finish_reg_equiv.
-        (do_reload): Prepare code for LRA call.  Call LRA.
+	(do_reload): Prepare code for LRA call.  Call LRA.
 	* ira.h (ira_use_lra_p): New external.
 	(struct target_ira): Add members x_ira_class_subset_p
 	x_ira_reg_class_subset, and x_ira_reg_classes_intersect_p.
@@ -607,8 +601,7 @@
 	(generate_edge_moves, change_loop) Use ira_equiv_no_lvalue_p.
 	(emit_move_list): Simplify code.  Call
 	ira_update_equiv_info_by_shuffle_insn.  Use ira_reg_equiv instead
-	of ira_reg_equiv_invariant_p and ira_reg_equiv_const.  Change
-	assert.
+	of ira_reg_equiv_invariant_p and ira_reg_equiv_const.  Change assert.
 	* ira-int.h (struct target_ira_int): Remove x_ira_class_subset_p
 	and x_ira_reg_classes_intersect_p.
 	(ira_class_subset_p, ira_reg_classes_intersect_p): Remove.
@@ -631,13 +624,11 @@
 	* lra-lives.c: Ditto.
 	* lra-spills.c: Ditto.
 	* Makefile.in (LRA_INT_H): New.
-	(OBJS): Add lra.o, lra-assigns.o, lra-coalesce.o,
-	lra-constraints.o, lra-eliminations.o, lra-lives.o, and
-	lra-spills.o.
+	(OBJS): Add lra.o, lra-assigns.o, lra-coalesce.o, lra-constraints.o,
+	lra-eliminations.o, lra-lives.o, and lra-spills.o.
 	(dwarf2out.o): Add dependence on ira.h and lra.h.
 	(ira.o): Add dependence on lra.h.
-	(lra.o, lra-assigns.o, lra-coalesce.o, lra-constraints.o): New
-	entries.
+	(lra.o, lra-assigns.o, lra-coalesce.o, lra-constraints.o): New entries.
 	(lra-eliminations.o, lra-lives.o, lra-spills.o): Ditto.
 	* output.h (alter_subreg): Add new argument.
 	* rtlanal.c (simplify_subreg_regno): Permit mode changes for LRA.
@@ -646,8 +637,7 @@
 	FLOAT_MODE subregs for LRA.
 	(scratch_operand): Accept pseudos for LRA.
 	* rtl.h (lra_in_progress): New external.
-	(debug_bb_n_slim, debug_bb_slim, print_value_slim): New
-	prototypes.
+	(debug_bb_n_slim, debug_bb_slim, print_value_slim): New prototypes.
 	(debug_rtl_slim, debug_insn_slim): Ditto.
 	* sdbout.c (sdbout_symbol): Pass new argument to alter_subreg.
 	* sched-vis.c (print_value_slim): New.
@@ -668,7 +658,7 @@
 	(default_different_addr_displacement_p): Ditto.
 	* timevar.def (TV_LRA, TV_LRA_ELIMINATE, TV_LRA_INHERITANCE): New.
 	(TV_LRA_CREATE_LIVE_RANGES, TV_LRA_ASSIGN, TV_LRA_COALESCE): New.
-	* config/arm/arm.c (load_multiple_sequence): Pass new argument toOB
+	* config/arm/arm.c (load_multiple_sequence): Pass new argument to
 	alter_subreg.
 	(store_multiple_sequence): Ditto.
 	* config/i386/i386.h (enum ix86_tune_indices): Add
@@ -680,8 +670,7 @@
 	(ix86_secondary_reload): Add NON_Q_REGS, SIREG, DIREG.
 	(inline_secondary_memory_needed): Change assert.
 	(ix86_spill_class): New function.
-	(TARGET_LRA_P, TARGET_REGISTER_BANK, TARGET_SPILL_CLASS): New
-	macros.
+	(TARGET_LRA_P, TARGET_REGISTER_BANK, TARGET_SPILL_CLASS): New macros.
 	* config/m68k/m68k.c (emit_move_sequence): Pass new argument to
 	alter_subreg.
 	* config/m32r/m32r.c (gen_split_move_double): Ditto.
@@ -790,13 +779,14 @@
 2012-10-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/55008
-	* gimple-ssa-strength-reduction.c (find_basis_for_candidate): Don't
-	allow a candidate to be a basis for itself under another interpretation.
+	* gimple-ssa-strength-reduction.c (find_basis_for_candidate):
+	Don't allow a candidate to be a basis for itself under another
+	interpretation.
 
 2012-10-22  Sharad Singhai  <singhai@google.com>
 
 	* dumpfile.c (dump_phase_enabled_p): Renamed dump_enabled_p. Update
-        all callers.
+	all callers.
 	(dump_enabled_p): A new function to check if any of the dump files
 	is available.
 	(dump_kind_p): Remove check for current_function_decl. Add check for
