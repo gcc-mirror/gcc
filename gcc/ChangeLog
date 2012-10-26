@@ -1,3 +1,8 @@
+2012-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (inline_call): Only account size changes
+	for !DECL_EXTERNAL.
+
 2012-10-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR debug/54971
