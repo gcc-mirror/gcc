@@ -1,3 +1,9 @@
+2012-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54824
+	* tree-optimize.c (execute_fixup_cfg): Insert __builtin_unreachable
+	at the end of blocks with no successors.
+
 2012-10-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
