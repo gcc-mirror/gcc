@@ -1,3 +1,9 @@
+2012-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-int.h (lra_assert): Redefine it gcc_checking_assert.
+	* lra-constraints.c (check_and_process_move): Remove #if
+	ENABLE_ASSERT_CHECKING.
+
 2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/avr/rtems.h (TARGET_OS_CPP_BUILTINS): Remove

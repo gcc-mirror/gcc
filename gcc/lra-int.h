@@ -25,13 +25,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "insn-attr.h"
 #include "insn-codes.h"
 
-#ifdef ENABLE_CHECKING
-#define lra_assert(c) gcc_assert (c)
-#else
-/* Always define and include C, so that warnings for empty body in an
-  ‘if’ statement and unused variable do not occur.  */
-#define lra_assert(c) ((void)(0 && (c)))
-#endif
+#define lra_assert(c) gcc_checking_assert (c)
 
 /* The parameter used to prevent infinite reloading for an insn.  Each
    insn operands might require a reload and, if it is a memory, its
