@@ -269,7 +269,10 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	      || predicated);
 #endif
    
-  if (overall_size)
+  /* Account the change of overall unit size; external functions will be
+     removed and are thus not accounted.  */
+  if (overall_size
+      && !DECL_EXTERNAL (to->symbol.decl))
     *overall_size += new_size - old_size;
   ncalls_inlined++;
 
