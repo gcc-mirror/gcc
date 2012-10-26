@@ -1,3 +1,9 @@
+2012-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55081
+	* typeck2.c (store_init_value): Call fold_non_dependent_expr
+	and maybe_constant_init even for C++98.
+
 2012-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54984

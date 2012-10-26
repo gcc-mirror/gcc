@@ -709,11 +709,9 @@ store_init_value (tree decl, tree init, VEC(tree,gc)** cleanups, int flags)
 
   /* In C++0x constant expression is a semantic, not syntactic, property.
      In C++98, make sure that what we thought was a constant expression at
-     template definition time is still constant.  */
-  if ((cxx_dialect >= cxx0x
-       || DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
-      && (decl_maybe_constant_var_p (decl)
-	  || TREE_STATIC (decl)))
+     template definition time is still constant and otherwise perform this
+     as optimization, e.g. to fold SIZEOF_EXPRs in the initializer.  */
+  if (decl_maybe_constant_var_p (decl) || TREE_STATIC (decl))
     {
       bool const_init;
       value = fold_non_dependent_expr (value);

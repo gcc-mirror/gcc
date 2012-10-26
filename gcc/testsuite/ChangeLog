@@ -1,5 +1,8 @@
 2012-10-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/55081
+	* g++.dg/opt/pr55081.C: New test.
+
 	PR debug/54970
 	PR debug/54971
 	* gcc.dg/guality/pr54970.c: New test.
