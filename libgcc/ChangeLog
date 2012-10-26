@@ -1,10 +1,18 @@
+2012-10-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtfastmath.c (set_fast_math): Use __builtin_ia32_fxsave.
+	Clear only fxsave.mxcsr_mask.  Use saved mxcsr from fxsave structure
+	when appropriate.  Correct structure element types.
+	* config/i386/t-crtfm (crtfastmath.o): Compile with -mfxsr, remove
+	-minline-all-stringops from compile flags.
+
 2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config.host (sparc64-*-rtems*): Remove sparc/t-elf.
 
 2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
 
-	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts. 
+	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts.
 
 2012-10-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
