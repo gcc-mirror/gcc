@@ -1,3 +1,14 @@
+2012-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54970
+	* cfgexpand.c (expand_debug_expr): Expand &MEM_REF[&var, n]
+	as DEBUG_IMPLICIT_PTR + n if &var expands to DEBUG_IMPLICIT_PTR.
+	* tree-sra.c (create_access_replacement): Allow also MEM_REFs
+	with ADDR_EXPR first operand in DECL_DEBUG_EXPR expressions.
+	* var-tracking.c (track_expr_p): Handle MEM_REFs in DECL_DEBUG_EXPR
+	expressions.
+	* dwarf2out.c (add_var_loc_to_decl): Likewise.
+
 2012-10-26  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (cond_arg_set_in_bb): Use last stmt.

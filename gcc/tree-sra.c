@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -1941,7 +1941,8 @@ create_access_replacement (struct access *access)
 	 and that get_ref_base_and_extent works properly on the
 	 expression.  It cannot handle accesses at a non-constant offset
 	 though, so just give up in those cases.  */
-      for (d = debug_expr; !fail && handled_component_p (d);
+      for (d = debug_expr;
+	   !fail && (handled_component_p (d) || TREE_CODE (d) == MEM_REF);
 	   d = TREE_OPERAND (d, 0))
 	switch (TREE_CODE (d))
 	  {
@@ -1958,6 +1959,12 @@ create_access_replacement (struct access *access)
 	    if (TREE_OPERAND (d, 2)
 		&& TREE_CODE (TREE_OPERAND (d, 2)) != INTEGER_CST)
 	      fail = true;
+	    break;
+	  case MEM_REF:
+	    if (TREE_CODE (TREE_OPERAND (d, 0)) != ADDR_EXPR)
+	      fail = true;
+	    else
+	      d = TREE_OPERAND (d, 0);
 	    break;
 	  default:
 	    break;
