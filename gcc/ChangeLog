@@ -1,5 +1,31 @@
 2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR bootstrap/55049
+	* Makefile.in (rtlanal.o): Add dependency on addresses.h.
+	* rtl.h (address_info): New structure.
+	(strip_address_mutations, decompose_address, decompose_lea_address)
+	(decompose_mem_address, update_address, get_index_scale)
+	(get_index_code): Declare.
+	* rtlanal.c: Include addresses.h.
+	(strip_address_mutations, must_be_base_p, must_be_index_p)
+	(set_address_segment, set_address_base, set_address_index)
+	(set_address_disp, decompose_incdec_address, decompose_automod_address)
+	(extract_plus_operands, baseness, decompose_normal_address)
+	(decompose_address, decompose_lea_address, decompose_mem_address)
+	(update_address, get_index_scale, get_index_code): New functions.
+	* lra-constraints.c (strip_subreg): New function.
+	(address, extract_loc_address_regs, extract_address_regs)
+	(get_index_scale): Delete.
+	(process_addr_reg): Apply strip_subreg to the location.
+	(uses_hard_regs_p): Use decompose_mem_address.
+	(valid_address_p, base_plus_disp_to_reg, can_add_disp_p)
+	(equiv_address_substitution): Take an address_info rather
+	than an address.  Remove other arguments.  Avoid using Pmode.
+	(process_address): Use decompose_mem_address and decompose_lea_address.
+	Update calls to above functions.
+
+2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lra-constraints.c (process_address): Tighten arguments to
 	base_reg_class.  Use simplify_gen_binary to generate PLUS rtxes.
 
