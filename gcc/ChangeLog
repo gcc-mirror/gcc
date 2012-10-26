@@ -1,3 +1,7 @@
+2012-10-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/sync.md (ATOMIC): Correct DI condition.
+
 2012-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/54970
