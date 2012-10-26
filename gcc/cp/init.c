@@ -2911,7 +2911,8 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
 
       orig_placement = make_tree_vector_copy (*placement);
       orig_nelts = nelts;
-      orig_init = make_tree_vector_copy (*init);
+      if (*init)
+	orig_init = make_tree_vector_copy (*init);
 
       make_args_non_dependent (*placement);
       if (nelts)
