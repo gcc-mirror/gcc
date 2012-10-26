@@ -152,6 +152,13 @@ static enum machine_mode curr_operand_mode[MAX_RECOG_OPERANDS];
 static int new_regno_start;
 static int new_insn_uid_start;
 
+/* If LOC is nonnull, strip any outer subreg from it.  */
+static inline rtx *
+strip_subreg (rtx *loc)
+{
+  return loc && GET_CODE (*loc) == SUBREG ? &SUBREG_REG (*loc) : loc;
+}
+
 /* Return hard regno of REGNO or if it is was not assigned to a hard
    register, use a hard register from its allocno class.  */
 static int
@@ -435,28 +442,6 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
 
 /* The page contains code to extract memory address parts.  */
 
-/* Info about base and index regs of an address.  In some rare cases,
-   base/index register can be actually memory.	In this case we will
-   reload it.  */
-struct address
-{
-  /* NULL if there is no a base register.  */
-  rtx *base_reg_loc;
-  /* Second location of {post/pre}_modify, NULL otherwise.  */
-  rtx *base_reg_loc2;
-  /* NULL if there is no an index register.  */
-  rtx *index_reg_loc;
-  /* Location of index reg * scale or index_reg_loc otherwise.  */
-  rtx *index_loc;
-  /* NULL if there is no a displacement.  */
-  rtx *disp_loc;
-  /* Defined if base_reg_loc is not NULL.  */
-  enum rtx_code base_outer_code, index_code;
-  /* True if the base register is modified in the address, for
-     example, in PRE_INC.  */
-  bool base_modify_p;
-};
-
 /* Wrapper around REGNO_OK_FOR_INDEX_P, to allow pseudos.  */
 static inline bool
 ok_for_index_p_nonstrict (rtx reg)
@@ -477,305 +462,6 @@ ok_for_base_p_nonstrict (rtx reg, enum machine_mode mode, addr_space_t as,
   if (regno >= FIRST_PSEUDO_REGISTER)
     return true;
   return ok_for_base_p_1 (regno, mode, as, outer_code, index_code);
-}
-
-/* Process address part in space AS (or all address if TOP_P) with
-   location *LOC to extract address characteristics.
-
-   If CONTEXT_P is false, we are looking at the base part of an
-   address, otherwise we are looking at the index part.
-
-   MODE is the mode of the memory reference; OUTER_CODE and INDEX_CODE
-   give the context that the rtx appears in; MODIFY_P if *LOC is
-   modified.  */
-static void
-extract_loc_address_regs (bool top_p, enum machine_mode mode, addr_space_t as,
-			  rtx *loc, bool context_p, enum rtx_code outer_code,
-			  enum rtx_code index_code,
-			  bool modify_p, struct address *ad)
-{
-  rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
-  bool base_ok_p;
-
-  switch (code)
-    {
-    case CONST_INT:
-    case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      if (! context_p)
-	{
-	  lra_assert (top_p);
-	  ad->disp_loc = loc;
-	}
-      return;
-
-    case CC0:
-    case PC:
-      return;
-
-    case ZERO_EXTEND:
-      /* Pass TOP_P for displacement.  */
-      extract_loc_address_regs (top_p, mode, as, &XEXP (*loc, 0), context_p,
-				code, index_code, modify_p, ad);
-      return;
-
-    case PLUS:
-    case LO_SUM:
-      /* When we have an address that is a sum, we must determine
-	 whether registers are "base" or "index" regs.	If there is a
-	 sum of two registers, we must choose one to be the
-	 "base".  */
-      {
-	rtx *arg0_loc = &XEXP (x, 0);
-	rtx *arg1_loc = &XEXP (x, 1);
-	rtx *tloc;
-	rtx arg0 = *arg0_loc;
-	rtx arg1 = *arg1_loc;
-	enum rtx_code code0 = GET_CODE (arg0);
-	enum rtx_code code1 = GET_CODE (arg1);
-
-	/* Look inside subregs.	 */
-	if (code0 == SUBREG)
-	  {
-	    arg0_loc = &SUBREG_REG (arg0);
-	    arg0 = *arg0_loc;
-	    code0 = GET_CODE (arg0);
-	  }
-	if (code1 == SUBREG)
-	  {
-	    arg1_loc = &SUBREG_REG (arg1);
-	    arg1 = *arg1_loc;
-	    code1 = GET_CODE (arg1);
-	  }
-
-	if (CONSTANT_P (arg0)
-	    || code1 == PLUS || code1 == MULT || code1 == ASHIFT)
-	  {
-	    tloc = arg1_loc;
-	    arg1_loc = arg0_loc;
-	    arg0_loc = tloc;
-	    arg0 = *arg0_loc;
-	    code0 = GET_CODE (arg0);
-	    arg1 = *arg1_loc;
-	    code1 = GET_CODE (arg1);
-	  }
-	/* If this machine only allows one register per address, it
-	   must be in the first operand.  */
-	if (MAX_REGS_PER_ADDRESS == 1 || code == LO_SUM)
-	  {
-	    lra_assert (ad->disp_loc == NULL);
-	    ad->disp_loc = arg1_loc;
-	    extract_loc_address_regs (false, mode, as, arg0_loc, false, code,
-				      code1, modify_p, ad);
-	  }
-	/* Base + disp addressing  */
-	else if (code0 != PLUS && code0 != MULT && code0 != ASHIFT
-		 && CONSTANT_P (arg1))
-	  {
-	    lra_assert (ad->disp_loc == NULL);
-	    ad->disp_loc = arg1_loc;
-	    extract_loc_address_regs (false, mode, as, arg0_loc, false, PLUS,
-				      code1, modify_p, ad);
-	  }
-	/* If index and base registers are the same on this machine,
-	   just record registers in any non-constant operands.	We
-	   assume here, as well as in the tests below, that all
-	   addresses are in canonical form.  */
-	else if (INDEX_REG_CLASS
-		 == base_reg_class (VOIDmode, as, PLUS, SCRATCH)
-		 && code0 != PLUS && code0 != MULT && code0 != ASHIFT)
-	  {
-	    extract_loc_address_regs (false, mode, as, arg0_loc, false, PLUS,
-				      code1, modify_p, ad);
-	    lra_assert (! CONSTANT_P (arg1));
-	    extract_loc_address_regs (false, mode, as, arg1_loc, true, PLUS,
-				      code0, modify_p, ad);
-	  }
-	/* It might be [base + ]index * scale + disp. */
-	else if (CONSTANT_P (arg1))
-	  {
-	    lra_assert (ad->disp_loc == NULL);
-	    ad->disp_loc = arg1_loc;
-	    extract_loc_address_regs (false, mode, as, arg0_loc, context_p,
-				      PLUS, code0, modify_p, ad);
-	  }
-	/* If both operands are registers but one is already a hard
-	   register of index or reg-base class, give the other the
-	   class that the hard register is not.	 */
-	else if (code0 == REG && code1 == REG
-		 && REGNO (arg0) < FIRST_PSEUDO_REGISTER
-		 && ((base_ok_p
-		      = ok_for_base_p_nonstrict (arg0, mode, as, PLUS, REG))
-		     || ok_for_index_p_nonstrict (arg0)))
-	  {
-	    extract_loc_address_regs (false, mode, as, arg0_loc, ! base_ok_p,
-				      PLUS, REG, modify_p, ad);
-	    extract_loc_address_regs (false, mode, as, arg1_loc, base_ok_p,
-				      PLUS, REG, modify_p, ad);
-	  }
-	else if (code0 == REG && code1 == REG
-		 && REGNO (arg1) < FIRST_PSEUDO_REGISTER
-		 && ((base_ok_p
-		      = ok_for_base_p_nonstrict (arg1, mode, as, PLUS, REG))
-		     || ok_for_index_p_nonstrict (arg1)))
-	  {
-	    extract_loc_address_regs (false, mode, as, arg0_loc, base_ok_p,
-				      PLUS, REG, modify_p, ad);
-	    extract_loc_address_regs (false, mode, as, arg1_loc, ! base_ok_p,
-				      PLUS, REG, modify_p, ad);
-	  }
-	/* Otherwise, count equal chances that each might be a base or
-	   index register.  This case should be rare.  */
-	else
-	  {
-	    extract_loc_address_regs (false, mode, as, arg0_loc, false, PLUS,
-				      code1, modify_p, ad);
-	    extract_loc_address_regs (false, mode, as, arg1_loc,
-				      ad->base_reg_loc != NULL, PLUS,
-				      code0, modify_p, ad);
-	  }
-      }
-      break;
-
-    case MULT:
-    case ASHIFT:
-      {
-	rtx *arg0_loc = &XEXP (x, 0);
-	enum rtx_code code0 = GET_CODE (*arg0_loc);
-	
-	if (code0 == CONST_INT)
-	  arg0_loc = &XEXP (x, 1);
-	extract_loc_address_regs (false, mode, as, arg0_loc, true,
-				  outer_code, code, modify_p, ad);
-	lra_assert (ad->index_loc == NULL);
-	ad->index_loc = loc;
-	break;
-      }
-
-    case POST_MODIFY:
-    case PRE_MODIFY:
-      extract_loc_address_regs (false, mode, as, &XEXP (x, 0), false,
-				code, GET_CODE (XEXP (XEXP (x, 1), 1)),
-				true, ad);
-      lra_assert (rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)));
-      ad->base_reg_loc2 = &XEXP (XEXP (x, 1), 0);
-      if (REG_P (XEXP (XEXP (x, 1), 1)))
-	extract_loc_address_regs (false, mode, as, &XEXP (XEXP (x, 1), 1),
-				  true, code, REG, modify_p, ad);
-      break;
-
-    case POST_INC:
-    case PRE_INC:
-    case POST_DEC:
-    case PRE_DEC:
-      extract_loc_address_regs (false, mode, as, &XEXP (x, 0), false, code,
-				SCRATCH, true, ad);
-      break;
-
-      /* We process memory as a register.  That means we flatten
-	 addresses.  In other words, the final code will never
-	 contains memory in an address even if the target supports
-	 such addresses (it is too rare these days).  Memory also can
-	 occur in address as a result some previous transformations
-	 like equivalence substitution.	 */
-    case MEM:
-    case REG:
-      if (context_p)
-	{
-	  lra_assert (ad->index_reg_loc == NULL);
-	  ad->index_reg_loc = loc;
-	}
-      else
-	{
-	  lra_assert (ad->base_reg_loc == NULL);
-	  ad->base_reg_loc = loc;
-	  ad->base_outer_code = outer_code;
-	  ad->index_code = index_code;
-	  ad->base_modify_p = modify_p;
-	}
-      break;
-    default:
-      {
-	const char *fmt = GET_RTX_FORMAT (code);
-	int i;
-
-	if (GET_RTX_LENGTH (code) != 1
-	    || fmt[0] != 'e' || GET_CODE (XEXP (x, 0)) != UNSPEC)
-	  {
-	    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	      if (fmt[i] == 'e')
-		extract_loc_address_regs (false, mode, as, &XEXP (x, i),
-					  context_p, code, SCRATCH,
-					  modify_p, ad);
-	    break;
-	  }
-	/* fall through for case UNARY_OP (UNSPEC ...)	*/
-      }
-
-    case UNSPEC:
-      if (ad->disp_loc == NULL)
-	ad->disp_loc = loc;
-      else if (ad->base_reg_loc == NULL)
-	{
-	  ad->base_reg_loc = loc;
-	  ad->base_outer_code = outer_code;
-	  ad->index_code = index_code;
-	  ad->base_modify_p = modify_p;
-	}
-      else
-	{
-	  lra_assert (ad->index_reg_loc == NULL);
-	  ad->index_reg_loc = loc;
-	}
-      break;
-
-    }
-}
-
-
-/* Describe address *LOC in AD.  There are two cases:
-   - *LOC is the address in a (mem ...).  In this case OUTER_CODE is MEM
-     and AS is the mem's address space.
-   - *LOC is matched to an address constraint such as 'p'.  In this case
-     OUTER_CODE is ADDRESS and AS is ADDR_SPACE_GENERIC.  */
-static void
-extract_address_regs (enum machine_mode mem_mode, addr_space_t as,
-		      rtx *loc, enum rtx_code outer_code, struct address *ad)
-{
-  ad->base_reg_loc = ad->base_reg_loc2
-    = ad->index_reg_loc = ad->index_loc = ad->disp_loc = NULL;
-  ad->base_outer_code = SCRATCH;
-  ad->index_code = SCRATCH;
-  ad->base_modify_p = false;
-  extract_loc_address_regs (true, mem_mode, as, loc, false, outer_code,
-			    SCRATCH, false, ad);  
-  if (ad->index_loc == NULL)
-    /* SUBREG ??? */
-    ad->index_loc = ad->index_reg_loc;
-}
-
-/* Return the scale applied to *AD->INDEX_REG_LOC, or 0 if the index is
-   more complicated than that.  */
-static HOST_WIDE_INT
-get_index_scale (struct address *ad)
-{
-  rtx index = *ad->index_loc;
-  if (GET_CODE (index) == MULT
-      && CONST_INT_P (XEXP (index, 1))
-      && ad->index_reg_loc == &XEXP (index, 0))
-    return INTVAL (XEXP (index, 1));
-
-  if (GET_CODE (index) == ASHIFT
-      && CONST_INT_P (XEXP (index, 1))
-      && ad->index_reg_loc == &XEXP (index, 0))
-    return (HOST_WIDE_INT) 1 << INTVAL (XEXP (index, 1));
-
-  if (ad->index_reg_loc == ad->index_loc)
-    return 1;
-
-  return 0;
 }
 
 
@@ -1354,11 +1040,13 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
 {
   int regno;
   enum reg_class rclass, new_class;
-  rtx reg = *loc;
+  rtx reg;
   rtx new_reg;
   enum machine_mode mode;
   bool before_p = false;
 
+  loc = strip_subreg (loc);
+  reg = *loc;
   mode = GET_MODE (reg);
   if (! REG_P (reg))
     {
@@ -1538,21 +1226,13 @@ uses_hard_regs_p (rtx x, HARD_REG_SET set)
     }
   if (MEM_P (x))
     {
-      struct address ad;
-      enum machine_mode mode = GET_MODE (x);
-      rtx *addr_loc = &XEXP (x, 0);
+      struct address_info ad;
 
-      extract_address_regs (mode, MEM_ADDR_SPACE (x), addr_loc, MEM, &ad);
-      if (ad.base_reg_loc != NULL)
-	{
-	  if (uses_hard_regs_p (*ad.base_reg_loc, set))
-	    return true;
-	}
-      if (ad.index_reg_loc != NULL)
-	{
-	  if (uses_hard_regs_p (*ad.index_reg_loc, set))
-	    return true;
-	}
+      decompose_mem_address (&ad, x);
+      if (ad.base_term != NULL && uses_hard_regs_p (*ad.base_term, set))
+	return true;
+      if (ad.index_term != NULL && uses_hard_regs_p (*ad.index_term, set))
+	return true;
     }
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -2399,115 +2079,92 @@ valid_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
-/* Return whether address X, described by AD, is valid for mode MODE
-   and address space AS.  */
+/* Return whether address AD is valid.  */
 
 static bool
-valid_address_p (struct address *ad, enum machine_mode mode, rtx x,
-		 addr_space_t as)
+valid_address_p (struct address_info *ad)
 {
   /* Some ports do not check displacements for eliminable registers,
      so we replace them temporarily with the elimination target.  */
   rtx saved_base_reg = NULL_RTX;
   rtx saved_index_reg = NULL_RTX;
-  if (ad->base_reg_loc != NULL)
+  rtx *base_term = strip_subreg (ad->base_term);
+  rtx *index_term = strip_subreg (ad->index_term);
+  if (base_term != NULL)
     {
-      saved_base_reg = *ad->base_reg_loc;
-      lra_eliminate_reg_if_possible (ad->base_reg_loc);
-      if (ad->base_reg_loc2 != NULL)
-	*ad->base_reg_loc2 = *ad->base_reg_loc;
+      saved_base_reg = *base_term;
+      lra_eliminate_reg_if_possible (base_term);
+      if (ad->base_term2 != NULL)
+	*ad->base_term2 = *ad->base_term;
     }
-  if (ad->index_reg_loc != NULL)
+  if (index_term != NULL)
     {
-      saved_index_reg = *ad->index_reg_loc;
-      lra_eliminate_reg_if_possible (ad->index_reg_loc);
+      saved_index_reg = *index_term;
+      lra_eliminate_reg_if_possible (index_term);
     }
-  bool ok_p = valid_address_p (mode, x, as);
+  bool ok_p = valid_address_p (ad->mode, *ad->outer, ad->as);
   if (saved_base_reg != NULL_RTX)
     {
-      *ad->base_reg_loc = saved_base_reg;
-      if (ad->base_reg_loc2 != NULL)
-	*ad->base_reg_loc2 = saved_base_reg;
+      *base_term = saved_base_reg;
+      if (ad->base_term2 != NULL)
+	*ad->base_term2 = *ad->base_term;
     }
   if (saved_index_reg != NULL_RTX)
-    *ad->index_reg_loc = saved_index_reg;
+    *index_term = saved_index_reg;
   return ok_p;
 }
 
-/* Make reload base reg + disp from address AD in space AS of memory
-   with MODE into a new pseudo.	 Return the new pseudo.	 */
+/* Make reload base reg + disp from address AD.  Return the new pseudo.  */
 static rtx
-base_plus_disp_to_reg (enum machine_mode mode, addr_space_t as,
-		       struct address *ad)
+base_plus_disp_to_reg (struct address_info *ad)
 {
   enum reg_class cl;
   rtx new_reg;
 
-  lra_assert (ad->base_reg_loc != NULL && ad->disp_loc != NULL);
-  cl = base_reg_class (mode, as, ad->base_outer_code, ad->index_code);
-  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "base + disp");
-  lra_emit_add (new_reg, *ad->base_reg_loc, *ad->disp_loc);
+  lra_assert (ad->base == ad->base_term && ad->disp == ad->disp_term);
+  cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
+		       get_index_code (ad));
+  new_reg = lra_create_new_reg (GET_MODE (*ad->base_term), NULL_RTX,
+				cl, "base + disp");
+  lra_emit_add (new_reg, *ad->base_term, *ad->disp_term);
   return new_reg;
 }
 
-/* Return true if we can add a displacement to address ADDR_LOC,
-   which is described by AD, even if that makes the address invalid.
-   The fix-up code requires any new address to be the sum of the base,
-   index and displacement fields of an AD-like structure.  */
+/* Return true if we can add a displacement to address AD, even if that
+   makes the address invalid.  The fix-up code requires any new address
+   to be the sum of the BASE_TERM, INDEX and DISP_TERM fields.  */
 static bool
-can_add_disp_p (struct address *ad, rtx *addr_loc)
+can_add_disp_p (struct address_info *ad)
 {
-  /* Automodified addresses have a fixed form.  */
-  if (ad->base_modify_p)
-    return false;
-
-  /* If the address already has a displacement, and is not an UNSPEC,
-     we can simply add the new displacement to it.  */
-  if (ad->disp_loc && GET_CODE (*ad->disp_loc) == UNSPEC)
-    return true;
-
-  /* If the address is entirely a base or index, we can try adding
-     a constant to it.  */
-  if (addr_loc == ad->base_reg_loc || addr_loc == ad->index_loc)
-    return true;
-
-  /* Likewise if the address is entirely a sum of the base and index.  */
-  if (GET_CODE (*addr_loc) == PLUS)
-    {
-      rtx *op0 = &XEXP (*addr_loc, 0);
-      rtx *op1 = &XEXP (*addr_loc, 1);
-      if (op0 == ad->base_reg_loc && op1 == ad->index_loc)
-	return true;
-      if (op1 == ad->base_reg_loc && op0 == ad->index_loc)
-	return true;
-    }
-  return false;
+  return (!ad->autoinc_p
+	  && ad->segment == NULL
+	  && ad->base == ad->base_term
+	  && ad->disp == ad->disp_term);
 }
 
-/* Make substitution in address AD in space AS with location ADDR_LOC.
-   Update AD and ADDR_LOC if it is necessary.  Return true if a
-   substitution was made.  */
+/* Make equiv substitution in address AD.  Return true if a substitution
+   was made.  */
 static bool
-equiv_address_substitution (struct address *ad, rtx *addr_loc,
-			    enum machine_mode mode, addr_space_t as,
-			    enum rtx_code code)
+equiv_address_substitution (struct address_info *ad)
 {
-  rtx base_reg, new_base_reg, index_reg, new_index_reg;
+  rtx base_reg, new_base_reg, index_reg, new_index_reg, *base_term, *index_term;
   HOST_WIDE_INT disp, scale;
   bool change_p;
 
-  if (ad->base_reg_loc == NULL)
+  base_term = strip_subreg (ad->base_term);
+  if (base_term == NULL)
     base_reg = new_base_reg = NULL_RTX;
   else
     {
-      base_reg = *ad->base_reg_loc;
+      base_reg = *base_term;
       new_base_reg = get_equiv_substitution (base_reg);
     }
-  if (ad->index_reg_loc == NULL)
+  index_term = strip_subreg (ad->index_term);
+  if (index_term == NULL)
     index_reg = new_index_reg = NULL_RTX;
   else
     {
-      index_reg = *ad->index_reg_loc;
+      index_reg = *index_term;
       new_index_reg = get_equiv_substitution (index_reg);
     }
   if (base_reg == new_base_reg && index_reg == new_index_reg)
@@ -2518,53 +2175,53 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
     {
       fprintf (lra_dump_file, "Changing address in insn %d ",
 	       INSN_UID (curr_insn));
-      print_value_slim (lra_dump_file, *addr_loc, 1);
+      print_value_slim (lra_dump_file, *ad->outer, 1);
     }
   if (base_reg != new_base_reg)
     {
       if (REG_P (new_base_reg))
 	{
-	  *ad->base_reg_loc = new_base_reg;
+	  *base_term = new_base_reg;
 	  change_p = true;
 	}
       else if (GET_CODE (new_base_reg) == PLUS
 	       && REG_P (XEXP (new_base_reg, 0))
 	       && CONST_INT_P (XEXP (new_base_reg, 1))
-	       && can_add_disp_p (ad, addr_loc))
+	       && can_add_disp_p (ad))
 	{
 	  disp += INTVAL (XEXP (new_base_reg, 1));
-	  *ad->base_reg_loc = XEXP (new_base_reg, 0);
+	  *base_term = XEXP (new_base_reg, 0);
 	  change_p = true;
 	}
-      if (ad->base_reg_loc2 != NULL)
-	*ad->base_reg_loc2 = *ad->base_reg_loc;
+      if (ad->base_term2 != NULL)
+	*ad->base_term2 = *ad->base_term;
     }
   if (index_reg != new_index_reg)
     {
       if (REG_P (new_index_reg))
 	{
-	  *ad->index_reg_loc = new_index_reg;
+	  *index_term = new_index_reg;
 	  change_p = true;
 	}
       else if (GET_CODE (new_index_reg) == PLUS
 	       && REG_P (XEXP (new_index_reg, 0))
 	       && CONST_INT_P (XEXP (new_index_reg, 1))
-	       && can_add_disp_p (ad, addr_loc)
+	       && can_add_disp_p (ad)
 	       && (scale = get_index_scale (ad)))
 	{
 	  disp += INTVAL (XEXP (new_index_reg, 1)) * scale;
-	  *ad->index_reg_loc = XEXP (new_index_reg, 0);
+	  *index_term = XEXP (new_index_reg, 0);
 	  change_p = true;
 	}
     }
   if (disp != 0)
     {
-      if (ad->disp_loc != NULL)
-	*ad->disp_loc = plus_constant (Pmode, *ad->disp_loc, disp);
+      if (ad->disp != NULL)
+	*ad->disp = plus_constant (GET_MODE (*ad->inner), *ad->disp, disp);
       else
 	{
-	  *addr_loc = gen_rtx_PLUS (Pmode, *addr_loc, GEN_INT (disp));
-	  extract_address_regs (mode, as, addr_loc, code, ad);
+	  *ad->inner = plus_constant (GET_MODE (*ad->inner), *ad->inner, disp);
+	  update_address (ad);
 	}
       change_p = true;
     }
@@ -2575,7 +2232,7 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
       else
 	{
 	  fprintf (lra_dump_file, " on equiv ");
-	  print_value_slim (lra_dump_file, *addr_loc, 1);
+	  print_value_slim (lra_dump_file, *ad->outer, 1);
 	  fprintf (lra_dump_file, "\n");
 	}
     }
@@ -2604,62 +2261,43 @@ equiv_address_substitution (struct address *ad, rtx *addr_loc,
 static bool
 process_address (int nop, rtx *before, rtx *after)
 {
-  struct address ad;
-  enum machine_mode mode;
-  rtx new_reg, *addr_loc;
-  addr_space_t as;
+  struct address_info ad;
+  rtx new_reg;
   rtx op = *curr_id->operand_loc[nop];
   const char *constraint = curr_static_id->operand[nop].constraint;
   bool change_p;
-  enum rtx_code code;
 
   if (constraint[0] == 'p'
       || EXTRA_ADDRESS_CONSTRAINT (constraint[0], constraint))
-    {
-      mode = VOIDmode;
-      addr_loc = curr_id->operand_loc[nop];
-      as = ADDR_SPACE_GENERIC;
-      code = ADDRESS;
-    }
+    decompose_lea_address (&ad, curr_id->operand_loc[nop]);
   else if (MEM_P (op))
-    {
-      mode = GET_MODE (op);
-      addr_loc = &XEXP (op, 0);
-      as = MEM_ADDR_SPACE (op);
-      code = MEM;
-    }
+    decompose_mem_address (&ad, op);
   else if (GET_CODE (op) == SUBREG
 	   && MEM_P (SUBREG_REG (op)))
-    {
-      mode = GET_MODE (SUBREG_REG (op));
-      addr_loc = &XEXP (SUBREG_REG (op), 0);
-      as = MEM_ADDR_SPACE (SUBREG_REG (op));
-      code = MEM;
-    }
+    decompose_mem_address (&ad, SUBREG_REG (op));
   else
     return false;
-  if (GET_CODE (*addr_loc) == AND)
-    addr_loc = &XEXP (*addr_loc, 0);
-  extract_address_regs (mode, as, addr_loc, code, &ad);
-  change_p = equiv_address_substitution (&ad, addr_loc, mode, as, code);
-  if (ad.base_reg_loc != NULL
+  change_p = equiv_address_substitution (&ad);
+  if (ad.base_term != NULL
       && (process_addr_reg
-	  (ad.base_reg_loc, before,
-	   (ad.base_modify_p && REG_P (*ad.base_reg_loc)
-	    && find_regno_note (curr_insn, REG_DEAD,
-				REGNO (*ad.base_reg_loc)) == NULL_RTX
+	  (ad.base_term, before,
+	   (ad.autoinc_p
+	    && !(REG_P (*ad.base_term)
+		 && find_regno_note (curr_insn, REG_DEAD,
+				     REGNO (*ad.base_term)) != NULL_RTX)
 	    ? after : NULL),
-	   base_reg_class (mode, as, ad.base_outer_code, ad.index_code))))
+	   base_reg_class (ad.mode, ad.as, ad.base_outer_code,
+			   get_index_code (&ad)))))
     {
       change_p = true;
-      if (ad.base_reg_loc2 != NULL)
-	*ad.base_reg_loc2 = *ad.base_reg_loc;
+      if (ad.base_term2 != NULL)
+	*ad.base_term2 = *ad.base_term;
     }
-  if (ad.index_reg_loc != NULL
-      && process_addr_reg (ad.index_reg_loc, before, NULL, INDEX_REG_CLASS))
+  if (ad.index_term != NULL
+      && process_addr_reg (ad.index_term, before, NULL, INDEX_REG_CLASS))
     change_p = true;
 
-  /* There are three cases where the shape of *ADDR_LOC may now be invalid:
+  /* There are three cases where the shape of *AD.INNER may now be invalid:
 
      1) the original address was valid, but either elimination or
 	equiv_address_substitution applied a displacement that made
@@ -2670,21 +2308,25 @@ process_address (int nop, rtx *before, rtx *after)
 
      3) the address is a frame address with an invalid offset.
 
-     All these cases involve a displacement, so there is no point
-     revalidating when there is no displacement.  */
-  if (ad.disp_loc == NULL || valid_address_p (&ad, mode, *addr_loc, as))
+     All these cases involve a displacement and a non-autoinc address,
+     so there is no point revalidating other types.  */
+  if (ad.disp == NULL || ad.autoinc_p || valid_address_p (&ad))
     return change_p;
 
   /* Any index existed before LRA started, so we can assume that the
      presence and shape of the index is valid.  */
   push_to_sequence (*before);
-  if (ad.base_reg_loc == NULL)
+  gcc_assert (ad.segment == NULL);
+  gcc_assert (ad.disp == ad.disp_term);
+  if (ad.base == NULL)
     {
-      if (ad.index_reg_loc == NULL)
+      if (ad.index == NULL)
 	{
 	  int code = -1;
-	  enum reg_class cl = base_reg_class (mode, as, SCRATCH, SCRATCH);
-	  
+	  enum reg_class cl = base_reg_class (ad.mode, ad.as,
+					      SCRATCH, SCRATCH);
+	  rtx disp = *ad.disp;
+
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "disp");
 #ifdef HAVE_lo_sum
 	  {
@@ -2694,16 +2336,14 @@ process_address (int nop, rtx *before, rtx *after)
 	    /* disp => lo_sum (new_base, disp), case (2) above.  */
 	    insn = emit_insn (gen_rtx_SET
 			      (VOIDmode, new_reg,
-			       gen_rtx_HIGH (Pmode, copy_rtx (*ad.disp_loc))));
+			       gen_rtx_HIGH (Pmode, copy_rtx (disp))));
 	    code = recog_memoized (insn);
 	    if (code >= 0)
 	      {
-		rtx save = *ad.disp_loc;
-
-		*ad.disp_loc = gen_rtx_LO_SUM (Pmode, new_reg, *ad.disp_loc);
-		if (! valid_address_p (mode, *ad.disp_loc, as))
+		*ad.disp = gen_rtx_LO_SUM (Pmode, new_reg, disp);
+		if (! valid_address_p (ad.mode, *ad.outer, ad.as))
 		  {
-		    *ad.disp_loc = save;
+		    *ad.disp = disp;
 		    code = -1;
 		  }
 	      }
@@ -2714,25 +2354,25 @@ process_address (int nop, rtx *before, rtx *after)
 	  if (code < 0)
 	    {
 	      /* disp => new_base, case (2) above.  */
-	      lra_emit_move (new_reg, *ad.disp_loc);
-	      *ad.disp_loc = new_reg;
+	      lra_emit_move (new_reg, disp);
+	      *ad.disp = new_reg;
 	    }
 	}
       else
 	{
 	  /* index * scale + disp => new base + index * scale,
 	     case (1) above.  */
-	  enum reg_class cl = base_reg_class (mode, as, PLUS,
-					      GET_CODE (*ad.index_loc));
+	  enum reg_class cl = base_reg_class (ad.mode, ad.as, PLUS,
+					      GET_CODE (*ad.index));
 
 	  lra_assert (INDEX_REG_CLASS != NO_REGS);
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "disp");
-	  lra_emit_move (new_reg, *ad.disp_loc);
-	  *addr_loc = simplify_gen_binary (PLUS, GET_MODE (new_reg),
-					   new_reg, *ad.index_loc);
+	  lra_emit_move (new_reg, *ad.disp);
+	  *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
+					   new_reg, *ad.index);
 	}
     }
-  else if (ad.index_reg_loc == NULL)
+  else if (ad.index == NULL)
     {
       /* base + disp => new base, cases (1) and (3) above.  */
       /* Another option would be to reload the displacement into an
@@ -2740,16 +2380,16 @@ process_address (int nop, rtx *before, rtx *after)
 	 address reloads that have the same base and different
 	 displacements, so reloading into an index register would
 	 not necessarily be a win.  */
-      new_reg = base_plus_disp_to_reg (mode, as, &ad);
-      *addr_loc = new_reg;
+      new_reg = base_plus_disp_to_reg (&ad);
+      *ad.inner = new_reg;
     }
   else
     {
       /* base + scale * index + disp => new base + scale * index,
 	 case (1) above.  */
-      new_reg = base_plus_disp_to_reg (mode, as, &ad);
-      *addr_loc = simplify_gen_binary (PLUS, GET_MODE (new_reg),
-				       new_reg, *ad.index_loc);
+      new_reg = base_plus_disp_to_reg (&ad);
+      *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
+				       new_reg, *ad.index);
     }
   *before = get_insns ();
   end_sequence ();
