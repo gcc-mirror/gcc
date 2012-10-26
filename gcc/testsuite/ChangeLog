@@ -309,8 +309,7 @@
 	gcc.dg/cpp/cmdlne-dU-17.c, gcc.dg/cpp/cmdlne-dU-18.c,
 	gcc.dg/cpp/cmdlne-dU-19.c, gcc.dg/cpp/cmdlne-dU-20.c,
 	gcc.dg/cpp/cmdlne-dU-21.c, gcc.dg/cpp/cmdlne-dU-22.c,
-	gcc.dg/cpp/mi5.c, gcc.dg/cpp/multiline.c: Add -nostdinc to
-	dg-options.
+	gcc.dg/cpp/mi5.c, gcc.dg/cpp/multiline.c: Add -nostdinc to dg-options.
 
 2012-10-23  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -383,8 +382,8 @@
 
 2012-10-19  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-	* lib/target-supports.exp (check_effective_target_arm_prefer_ldrd_strd):
-	New procedure.
+	* lib/target-supports.exp
+	(check_effective_target_arm_prefer_ldrd_strd): New procedure.
 
 2012-10-19  Richard Guenther  <rguenther@suse.de>
 
@@ -432,10 +431,8 @@
 
 	* gcc.target/arm/ftest-armv8a-arm.c: New testcase.
 	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
-	* gcc.target/arm/ftest-support-arm.h (feature_matrix): Add
-	ARMv8-A row.
-	* gcc.target/arm/ftest-support-thumb.h (feature_matrix):
-	Likewise.
+	* gcc.target/arm/ftest-support-arm.h (feature_matrix): Add ARMv8-A row.
+	* gcc.target/arm/ftest-support-thumb.h (feature_matrix): Likewise.
 	* gcc.target/arm/ftest-support.h (architecture): Add ARMv8-A.
 	* lib/target-supports.exp: Add ARMv8-A architecture expectation.
 
@@ -637,8 +634,7 @@
 	* gcc.dg/vect/pr48765.c: Skip for conflicting options, don't
 	specify -m64.
 
-	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for
-	GNU/Linux.
+	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for GNU/Linux.
 
 	* lib/target-supports.exp (check_effective_target_arm_hard_vfp_ok):
 	Return 0 if already specifying -mfloat-abi other than hard.
