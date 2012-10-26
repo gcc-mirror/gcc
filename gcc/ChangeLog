@@ -1,5 +1,10 @@
 2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* lra-constraints.c (get_index_scale, can_add_disp_p): New functions.
+	(equiv_address_substitution): Use them.
+
+2012-10-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* lra-constraints.c (valid_address_p): New function, split out from...
 	(process_address): ...here.
 
