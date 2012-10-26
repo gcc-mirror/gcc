@@ -1,3 +1,10 @@
+2012-10-26  Teresa Johnson  <tejohnson@google.com>
+
+	* ree.c (add_removable_extension): Remove unnecessary
+	mode check with other extension.
+	* testsuite/gcc.c-torture/execute/20111227-2.c: New test.
+	* testsuite/gcc.c-torture/execute/20111227-3.c: Ditto.
+
 2012-10-26  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (inline_call): Only account size changes
