@@ -1,3 +1,7 @@
+2012-10-26  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (cond_arg_set_in_bb): Use last stmt.
+
 2012-10-26  Gunther Nikl  <gnikl@users.sourceforge.net>
 
 	* common/config/m68k/m68k-common.c (m68k_handle_option): Set
