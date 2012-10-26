@@ -75,6 +75,9 @@
 #define bit_RDSEED	(1 << 18)
 #define bit_ADX	(1 << 19)
 
+/* Extended State Enumeration Sub-leaf (%eax == 13, %ecx == 1) */
+#define bit_XSAVEOPT	(1 << 0)
+
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */
 #define signature_AMD_ebx	0x68747541

@@ -552,6 +552,18 @@ madx
 Target Report Mask(ISA_ADX) Var(ix86_isa_flags) Save
 Support flag-preserving add-carry instructions
 
+mfxsr
+Target Report Mask(ISA_FXSR) Var(ix86_isa_flags) Save
+Support FXSAVE and FXRSTOR instructions
+
+mxsave
+Target Report Mask(ISA_XSAVE) Var(ix86_isa_flags) Save
+Support XSAVE and XRSTOR instructions
+
+mxsaveopt
+Target Report Mask(ISA_XSAVEOPT) Var(ix86_isa_flags) Save
+Support XSAVEOPT instruction
+
 mtbm
 Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
 Support TBM built-in functions and code generation
