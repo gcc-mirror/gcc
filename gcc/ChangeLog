@@ -1,3 +1,8 @@
+2012-10-26  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_as_legitimate_address): Do not allow
+	reg+addend addresses for the _far namespace.
+
 2012-10-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/sync.md (ATOMIC): Correct DI condition.
