@@ -1,3 +1,9 @@
+2012-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54984
+	* init.c (build_new): Don't turn a null *init into a pointer to
+	empty vector orig_init.
+
 2012-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54858
