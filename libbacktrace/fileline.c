@@ -80,9 +80,9 @@ fileline_initialize (struct backtrace_state *state,
   /* We have not initialized the information.  Do it now.  */
 
   if (state->filename != NULL)
-    descriptor = backtrace_open (state->filename, error_callback, data);
+    descriptor = backtrace_open (state->filename, error_callback, data, NULL);
   else
-    descriptor = backtrace_open ("/proc/self/exe", error_callback, data);
+    descriptor = backtrace_open ("/proc/self/exe", error_callback, data, NULL);
   if (descriptor < 0)
     failed = 1;
 

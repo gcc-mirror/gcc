@@ -1,3 +1,13 @@
+2012-10-26  Ian Lance Taylor  <iant@google.com>
+
+	PR other/55087
+	* posix.c (backtrace_open): Add does_not_exist parameter.
+	* elf.c (phdr_callback): Do not warn if shared library could not
+	be opened.
+	* fileline.c (fileline_initialize): Update calls to
+	backtrace_open.
+	* internal.h (backtrace_open): Update declaration.
+
 2012-10-26  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/55061
