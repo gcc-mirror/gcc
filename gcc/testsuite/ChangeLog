@@ -1,3 +1,8 @@
+2012-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34283
+	* gcc.target/i386/pr34283.c: New test.
+
 2012-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55081
