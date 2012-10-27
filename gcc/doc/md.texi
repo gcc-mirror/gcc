@@ -3219,6 +3219,9 @@ when the Visual Instruction Set is available.
 @item h
 64-bit global or out register for the SPARC-V8+ architecture.
 
+@item C
+The constant all-ones, for floating-point.
+
 @item D
 A vector constant
 
@@ -3233,10 +3236,12 @@ Zero
 loaded with the @code{sethi} instruction)
 
 @item L
-A constant in the range supported by @code{movcc} instructions
+A constant in the range supported by @code{movcc} instructions (11-bit
+signed immediate)
 
 @item M
-A constant in the range supported by @code{movrcc} instructions
+A constant in the range supported by @code{movrcc} instructions (10-bit
+signed immediate)
 
 @item N
 Same as @samp{K}, except that it verifies that bits that are not in the
@@ -3251,6 +3256,9 @@ Floating-point zero
 
 @item H
 Signed 13-bit constant, sign-extended to 32 or 64 bits
+
+@item P
+The constant -1
 
 @item Q
 Floating-point constant whose integral representation can
@@ -3270,11 +3278,11 @@ instruction sequence
 @item T
 Memory address aligned to an 8-byte boundary
 
-@item U
-Even register
-
 @item W
 Memory address for @samp{e} constraint registers
+
+@item w
+Memory address with only a base register
 
 @item Y
 Vector zero
