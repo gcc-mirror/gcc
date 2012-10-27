@@ -571,15 +571,12 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
 	  && HARD_REGNO_MODE_OK (hard_regno, PSEUDO_REGNO_MODE (regno))
 	  && ! TEST_HARD_REG_BIT (impossible_start_hard_regs, hard_regno)
 	  && (nregs_diff == 0
-#ifdef WORDS_BIG_ENDIAN
-	      || (hard_regno - nregs_diff >= 0
-		  && TEST_HARD_REG_BIT (reg_class_contents[rclass],
-					hard_regno - nregs_diff))
-#else
-	      || TEST_HARD_REG_BIT (reg_class_contents[rclass],
-				    hard_regno + nregs_diff)
-#endif
-	      ))
+	      || (WORDS_BIG_ENDIAN
+		  ? (hard_regno - nregs_diff >= 0
+		     && TEST_HARD_REG_BIT (reg_class_contents[rclass],
+					   hard_regno - nregs_diff))
+		  : TEST_HARD_REG_BIT (reg_class_contents[rclass],
+				       hard_regno + nregs_diff))))
 	{
 	  if (hard_regno_costs_check[hard_regno]
 	      != curr_hard_regno_costs_check)

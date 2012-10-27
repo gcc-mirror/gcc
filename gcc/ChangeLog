@@ -1,3 +1,7 @@
+2012-10-27  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* lra-assigns.c (find_hard_regno_for): Fix use of WORDS_BIG_ENDIAN.
+
 2012-10-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/55034
