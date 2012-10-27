@@ -1,3 +1,8 @@
+2012-10-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55042
+	* config/sh/sh.c (sh1_builtin_p): Comment out unused function.
+
 2012-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*lea<mode>): Remove unneeded temporary.
