@@ -1,3 +1,11 @@
+2012-10-27  Dominique Dhumieres  <dominiq@lps.ens.fr>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/54404
+	* g++.dg/other/darwin-cfstring1.C: Add -ftrack-macro-expansion=0
+	to dg-options.
+	* obj-c++.dg/strings/const-cfstring-2.mm: Likewise.
+
 2012-10-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/34283
