@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;    AB                       
+;;;    AB                  U
 ;;;    a        jkl    q  tuv xyz
 
 
@@ -43,10 +43,6 @@
  
 (define_register_constraint "h" "(TARGET_V9 && TARGET_V8PLUS ? I64_REGS : NO_REGS)"
  "64-bit global or out register in V8+ mode")
-
-(define_memory_constraint "w"
-  "A memory with only a base register"
-  (match_operand 0 "mem_noofs_operand"))
 
 ;; Floating-point constant constraints
 
@@ -107,10 +103,6 @@
  (and (match_code "const_int")
       (match_test "ival == -1")))
 
-;; Extra constraints
-;; Our memory extra constraints have to emulate the behavior of 'm' and 'o',
-;; i.e. accept pseudo-registers during reload.
-
 (define_constraint "D"
  "const_vector"
   (and (match_code "const_vector")
@@ -143,6 +135,10 @@
  "Memory reference for 'e' constraint floating-point register"
  (and (match_code "mem")
       (match_test "memory_ok_for_ldd (op)")))
+
+(define_memory_constraint "w"
+  "A memory with only a base register"
+  (match_operand 0 "mem_noofs_operand"))
 
 (define_constraint "Y"
  "The vector zero constant"
