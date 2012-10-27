@@ -11582,11 +11582,14 @@ shmedia_builtin_p (void)
   return TARGET_SHMEDIA;
 }
 
+/* This function can be used if there are any built-ins that are not for
+   SHmedia.  It's commented out to avoid the defined-but-unused warning.
 static bool
 sh1_builtin_p (void)
 {
   return TARGET_SH1;
 }
+*/
 
 /* describe number and signedness of arguments; arg[0] == result
    (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
