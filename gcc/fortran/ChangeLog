@@ -1,3 +1,8 @@
+2012-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* trans.c (gfc_allocate_allocatable):  Revert accidental
+	commit.
+
 2012-10-24  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55037
