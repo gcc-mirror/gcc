@@ -1,3 +1,22 @@
+2012-10-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/unordered_map.h (unordered_map<>): Prefer
+	aggregation to inheritance with _Hashtable.
+	(unordered_multimap<>): Likewise.
+	* include/bits/unordered_set.h
+	(unordered_set<>(const unordered_set&)):  Use default
+	implementation.
+	(unordered_set<>(unordered_set&&)): Likewise.
+	(unordered_set<>::operator=(const unordered_set&)): Likewise.
+	(unordered_set<>::operator=(unordered_set&&)): Likewise.
+	(unordered_multiset<>(const unordered_multiset&)): Likewise.
+	(unordered_multiset<>(unordered_multiset&&)): Likewise.
+	(unordered_multiset<>::operator=(const unordered_multiset&)):
+	Likewise.
+	(unordered_multiset<>::operator=(unordered_multiset&&)): Likewise.
+	* include/debug/unordered_map (operator==): Adapt.
+	* include/profile/unordered_map (operator==): Adapt.
+
 2012-10-24  Daniel Krugler  <daniel.kruegler@gmail.com>
 
 	* include/std/type_traits (common_type): Implement LWG 2141.
