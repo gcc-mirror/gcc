@@ -1,3 +1,8 @@
+2012-10-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/55034
+	* config/avr/avr.c (avr_out_lpm): Remove unused regno_dest.
+
 2012-10-27  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/55042
