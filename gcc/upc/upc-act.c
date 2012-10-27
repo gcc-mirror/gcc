@@ -1477,8 +1477,6 @@ upc_build_init_func (const tree stmt_list)
   DECL_SOURCE_LOCATION (current_function_decl) = loc;
   TREE_PUBLIC (current_function_decl) = 0;
   TREE_USED (current_function_decl) = 1;
-  DECL_SECTION_NAME (current_function_decl) =
-    build_string (strlen (UPC_INIT_SECTION_NAME), UPC_INIT_SECTION_NAME);
   fn_body = c_begin_compound_stmt (true);
   append_to_statement_list_force (stmt_list, &fn_body);
   fn_body = c_end_compound_stmt (loc, fn_body, true);

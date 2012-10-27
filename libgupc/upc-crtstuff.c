@@ -48,10 +48,6 @@ UPC_SHARED_SECTION_BEGIN
 /* Establish a symbol at the beginning of the progam info data section */
 UPC_PGM_INFO_SECTION_BEGIN
 #endif /* UPC_PGM_INFO_SECTION_BEGIN */
-#ifdef UPC_INIT_SECTION_BEGIN
-/* Establish a symbol at the beginning of the initialization section */
-UPC_INIT_SECTION_BEGIN
-#endif /* UPC_INIT_SECTION_BEGIN */
 #ifdef UPC_INIT_ARRAY_SECTION_BEGIN
 /* Establish a symbol at the beginning of the initialization array section. */
 UPC_INIT_ARRAY_SECTION_BEGIN
@@ -69,10 +65,6 @@ UPC_SHARED_SECTION_END
 /* Establish a symbol at the end of the program info data section */
 UPC_PGM_INFO_SECTION_END
 #endif /* UPC_PGM_INFO_SECTION_END */
-#ifdef UPC_INIT_SECTION_END
-/* Establish a symbol at the end of the initialization section */
-UPC_INIT_SECTION_END
-#endif /* UPC_INIT_SECTION_END */
 #ifdef UPC_INIT_ARRAY_SECTION_END
 /* Establish a symbol at the end of the initialization array section. */
 UPC_INIT_ARRAY_SECTION_END

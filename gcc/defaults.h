@@ -1436,21 +1436,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define UPC_PGM_INFO_END_NAME __upc_pgm_info_end
 #endif
 
-/* Name of section where UPC iniitialization routines are located.  */
-#ifndef UPC_INIT_SECTION_NAME
-#define UPC_INIT_SECTION_NAME "upc_init"
-#endif
-
-/* Used by upc-crtbegin to define the beginning of init. routines section */
-#ifndef UPC_INIT_BEGIN_NAME
-#define UPC_INIT_BEGIN_NAME __upc_init_start
-#endif
-
-/* Used by upc-crtend to define the beginning of init. routines section */
-#ifndef UPC_INIT_END_NAME
-#define UPC_INIT_END_NAME __upc_init_end
-#endif
-
 /* Name of section that holds an array of addresses that points to 
    the UPC initialization routiones */
 #ifndef UPC_INIT_ARRAY_SECTION_NAME

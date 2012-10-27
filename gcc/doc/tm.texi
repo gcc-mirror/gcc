@@ -10313,18 +10313,6 @@ Used by @code{upc-crtbegin} to define the beginning of the shared section.
 Used by @code{upc-crtend} to define the end of the shared section.
 @end defmac
 
-@defmac UPC_INIT_SECTION_NAME
-Name of section where UPC initialization routines are located.
-@end defmac
-
-@defmac UPC_INIT_BEGIN_NAME
-Used by @code{upc-crtbegin} to define the beginning of init. routines section.
-@end defmac
-
-@defmac UPC_INIT_END_NAME
-Used by @code{upc-crtend} to define the beginning of init. routines section.
-@end defmac
-
 @defmac UPC_INIT_ARRAY_SECTION_NAME
 Name of section that holds an array of addresses that points to 
 the UPC initialization routines.
