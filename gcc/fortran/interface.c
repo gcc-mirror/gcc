@@ -2713,10 +2713,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (((f->sym->ts.type == BT_CLASS && f->sym->attr.class_ok
 		&& CLASS_DATA (f->sym)->attr.class_pointer)
 	       || (f->sym->ts.type != BT_CLASS && f->sym->attr.pointer))
-	      && gfc_check_vardef_context (a->expr, true, false, context)
+	      && gfc_check_vardef_context (a->expr, true, false, false, context)
 		   == FAILURE)
 	    return 0;
-	  if (gfc_check_vardef_context (a->expr, false, false, context)
+	  if (gfc_check_vardef_context (a->expr, false, false, false, context)
 		== FAILURE)
 	    return 0;
 	}
