@@ -1,3 +1,19 @@
+2012-09-29  Robert Mason  <rbmj@verizon.net>
+
+	* fixinc.in: Omit machine name checks for vxworks
+	* fixincludes/inclhack.def (AAB_vxworks_assert) new replacement fix
+	(AAB_vxworks_regs_vxtypes): another
+	(AAB_vxworks_stdint): yet another
+	(AAB_vxworks_unistd): and another
+	(vxworks_ioctl_macro): reformatting fix
+	(vxworks_mkdir_macro): again
+	(vxworks_regs): and again
+	(vxworks_write_const): and again
+	* tests/base/ioLib.h: new test result
+	* tests/base/math.h: likewise
+	* tests/base/sys/stat.h: likewise
+	* tests/base/testing.h: and again
+
 2012-09-29  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (AAB_aix_fcntl): New fix.
