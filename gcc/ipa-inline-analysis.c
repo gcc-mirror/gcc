@@ -1375,6 +1375,9 @@ dump_inline_summary (FILE * f, struct cgraph_node *node)
 	       (int) s->estimated_self_stack_size);
       fprintf (f, "  global stack:    %i\n",
 	       (int) s->estimated_stack_size);
+      if (s->scc_no)
+        fprintf (f, "  In SCC:          %i\n",
+	         (int) s->scc_no);
       for (i = 0;
 	   VEC_iterate (size_time_entry, s->entry, i, e);
 	   i++)
@@ -3348,7 +3351,8 @@ do_estimate_edge_time (struct cgraph_edge *edge)
       VEC_index (edge_growth_cache_entry, edge_growth_cache, edge->uid).size
 	= size + (size >= 0);
       if (inline_summary (to)->scc_no
-	  && inline_summary (to)->scc_no == inline_summary (callee)->scc_no)
+	  && inline_summary (to)->scc_no == inline_summary (callee)->scc_no
+	  && !cgraph_edge_recursive_p (edge))
 	hints |= INLINE_HINT_same_scc;
       VEC_index (edge_growth_cache_entry, edge_growth_cache, edge->uid).hints
 	= hints + 1;
@@ -3439,7 +3443,8 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
   VEC_free (tree, heap, known_binfos);
   VEC_free (ipa_agg_jump_function_p, heap, known_aggs);
   if (inline_summary (to)->scc_no
-      && inline_summary (to)->scc_no == inline_summary (callee)->scc_no)
+      && inline_summary (to)->scc_no == inline_summary (callee)->scc_no
+      && !cgraph_edge_recursive_p (edge))
     hints |= INLINE_HINT_same_scc;
   return hints;
 }
