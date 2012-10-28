@@ -6176,8 +6176,7 @@ thread_prologue_and_epilogue_insns (void)
 	  CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
 	  if (frame_pointer_needed)
 	    CLEAR_HARD_REG_BIT (prologue_clobbered, HARD_FRAME_POINTER_REGNUM);
-	  CLEAR_HARD_REG_SET (live_on_edge);
-	  reg_set_to_hard_reg_set (&live_on_edge,
+	  REG_SET_TO_HARD_REG_SET (live_on_edge,
 				   df_get_live_in (entry_edge->dest));
 	  if (hard_reg_set_intersect_p (live_on_edge, prologue_clobbered))
 	    {
