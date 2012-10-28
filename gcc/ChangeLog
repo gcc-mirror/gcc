@@ -1,3 +1,13 @@
+2012-10-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/38711
+	* ira.c (ira): Remove DF_LIVE if the problem is in the stack.
+	(do_reload): Add it back at the end for -O2 and higher.
+
+	* function.c (thread_prologue_and_epilogue_insns): Use
+	REG_SET_TO_HARD_REG_SET instead of CLEAR_HARD_REG_SET and
+	reg_set_to_hard_reg_set.
+
 2012-10-28  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (edge_badness): Reduce precision; use scc hints.
