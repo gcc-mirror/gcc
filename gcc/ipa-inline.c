@@ -845,8 +845,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 precision for small bandesses (those are interesting) yet we don't
 	 overflow for growths that are still in interesting range.
 
-	 Fixed point arithmetic with point at 8th bit. */
-      badness = ((gcov_type)growth) * (1<<(19+8));
+	 Fixed point arithmetic with point at 6th bit. */
+      badness = ((gcov_type)growth) * (1<<(19+6));
       badness = (badness + div / 2) / div;
 
       /* Overall growth of inlining all calls of function matters: we want to
@@ -861,9 +861,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 We might mix the valud into the fraction by taking into account
 	 relative growth of the unit, but for now just add the number
 	 into resulting fraction.  */
-      if (badness > INT_MAX / 2)
+      if (badness > INT_MAX / 4)
 	{
-	  badness = INT_MAX / 2;
+	  badness = INT_MAX / 4;
 	  if (dump)
 	    fprintf (dump_file, "Badness overflow\n");
 	}
@@ -871,6 +871,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   | INLINE_HINT_loop_iterations
 		   | INLINE_HINT_loop_stride))
 	badness /= 8;
+      if (hints & (INLINE_HINT_same_scc))
+	badness *= 4;
+      if (hints & (INLINE_HINT_in_scc))
+	badness *= 2;
       if (dump)
 	{
 	  fprintf (dump_file,
@@ -1337,16 +1341,10 @@ inline_small_functions (void)
   if (flag_indirect_inlining)
     new_indirect_edges = VEC_alloc (cgraph_edge_p, heap, 8);
 
-  if (dump_file)
-    fprintf (dump_file,
-	     "\nDeciding on inlining of small functions.  Starting with size %i.\n",
-	     initial_size);
-
   /* Compute overall unit size and other global parameters used by badness
      metrics.  */
 
   max_count = 0;
-  initialize_growth_caches ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->global.inlined_to)
@@ -1355,15 +1353,25 @@ inline_small_functions (void)
 	    || node->thunk.thunk_p)
 	  {
 	    struct inline_summary *info = inline_summary (node);
+	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->symbol.aux;
 
 	    if (!DECL_EXTERNAL (node->symbol.decl))
 	      initial_size += info->size;
+	    info->scc_no = (dfs && dfs->next_cycle && dfs->next_cycle != node
+			    ? dfs->scc_no + 1 : 0);
 	  }
 
 	for (edge = node->callers; edge; edge = edge->next_caller)
 	  if (max_count < edge->count)
 	    max_count = edge->count;
       }
+  ipa_free_postorder_info ();
+  initialize_growth_caches ();
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "\nDeciding on inlining of small functions.  Starting with size %i.\n",
+	     initial_size);
 
   overall_size = initial_size;
   max_size = compute_max_insns (overall_size);
@@ -1528,7 +1536,7 @@ inline_small_functions (void)
 	  reset_edge_caches (edge->callee);
           reset_node_growth_cache (callee);
 
-	  update_callee_keys (edge_heap, edge->callee, updated_nodes);
+	  update_callee_keys (edge_heap, where, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)

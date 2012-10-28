@@ -1,3 +1,15 @@
+2012-10-28  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (edge_badness): Reduce precision; use scc hints.
+	(inline_small_functions): Fix dumps; update all callees after inlining.
+	* ipa-inline.h (INLINE_HINT_in_scc, INLINE_HINT_same_scc): New constants.
+	(inline summary): Add SCC_NO.
+	* ipa-inline-analysis.c (dump_inline_hints): Dump SCC hints.
+	(reset_inline_summary): Reset scc_no.
+	(estimate_node_size_and_time): Set in_scc hint.
+	(do_estimate_edge_time): Add same_scc hint.
+	(do_estimate_edge_hints): Likewise.
+
 2012-10-28  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* doc/cppopts.texi: Fix use of @item vs. @itemx inside @table.
