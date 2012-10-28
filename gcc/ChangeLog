@@ -1,3 +1,8 @@
+2012-10-28  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/tm.texi.in (Misc): Add newline before @end.
+	* doc/tm.texi: Update.
+
 2012-10-27  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* lra-assigns.c (find_hard_regno_for): Fix use of WORDS_BIG_ENDIAN.
