@@ -1337,6 +1337,7 @@ inline_small_functions (void)
   int min_size, max_size;
   VEC (cgraph_edge_p, heap) *new_indirect_edges = NULL;
   int initial_size = 0;
+  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
 
   if (flag_indirect_inlining)
     new_indirect_edges = VEC_alloc (cgraph_edge_p, heap, 8);
@@ -1345,6 +1346,8 @@ inline_small_functions (void)
      metrics.  */
 
   max_count = 0;
+  ipa_reduced_postorder (order, true, true, NULL);
+  free (order);
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->global.inlined_to)
