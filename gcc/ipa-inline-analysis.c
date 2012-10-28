@@ -1567,6 +1567,7 @@ eliminated_by_inlining_prob (gimple stmt)
 	if (gimple_assign_rhs_code (stmt) == CONVERT_EXPR
 	    || gimple_assign_rhs_code (stmt) == NOP_EXPR
 	    || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
+	    || gimple_assign_rhs_code (stmt) == ADDR_EXPR
 	    || gimple_assign_rhs_class (stmt) == GIMPLE_SINGLE_RHS)
 	  {
 	    tree rhs = gimple_assign_rhs1 (stmt);
@@ -1584,6 +1585,20 @@ eliminated_by_inlining_prob (gimple stmt)
 	    /* Reads of parameter are expected to be free.  */
 	    if (unmodified_parm (stmt, inner_rhs))
 	      rhs_free = true;
+	    /* Match expressions of form &this->field. Those will most likely
+	       combine with something upstream after inlining.  */
+	    else if (TREE_CODE (inner_rhs) == ADDR_EXPR)
+	      {
+		tree op = get_base_address (TREE_OPERAND (inner_rhs, 0));
+		if (TREE_CODE (op) == PARM_DECL)
+		  rhs_free = true;
+	        else if (TREE_CODE (op) == MEM_REF)
+		  {
+		    op = get_base_address (TREE_OPERAND (op, 0));
+		    if (unmodified_parm (stmt, op))
+		      rhs_free = true;
+		  }
+	      }
 
 	    /* When parameter is not SSA register because its address is taken
 	       and it is just copied into one, the statement will be completely
