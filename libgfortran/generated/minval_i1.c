@@ -344,12 +344,8 @@ mminval_i1 (gfc_array_i1 * const restrict retarray,
 #if defined (GFC_INTEGER_1_QUIET_NAN)
 	int non_empty_p = 0;
 #endif
-	if (len <= 0)
-	  *dest = GFC_INTEGER_1_HUGE;
-	else
+	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
-	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
-	      {
 
 #if defined (GFC_INTEGER_1_INFINITY) || defined (GFC_INTEGER_1_QUIET_NAN)
 		if (*msrc)
@@ -374,9 +370,8 @@ mminval_i1 (gfc_array_i1 * const restrict retarray,
 #endif
 		if (*msrc && *src < result)
 		  result = *src;
-	      }
-	    *dest = result;
 	  }
+	*dest = result;
       }
       /* Advance to the next element.  */
       count[0]++;
