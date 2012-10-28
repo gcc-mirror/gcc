@@ -861,9 +861,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 We might mix the valud into the fraction by taking into account
 	 relative growth of the unit, but for now just add the number
 	 into resulting fraction.  */
-      if (badness > INT_MAX / 4)
+      if (badness > INT_MAX / 8)
 	{
-	  badness = INT_MAX / 4;
+	  badness = INT_MAX / 8;
 	  if (dump)
 	    fprintf (dump_file, "Badness overflow\n");
 	}
@@ -1360,8 +1360,19 @@ inline_small_functions (void)
 
 	    if (!DECL_EXTERNAL (node->symbol.decl))
 	      initial_size += info->size;
-	    info->scc_no = (dfs && dfs->next_cycle && dfs->next_cycle != node
-			    ? dfs->scc_no + 1 : 0);
+	    if (dfs && dfs->next_cycle)
+	      {
+		struct cgraph_node *n2;
+		int id = dfs->scc_no + 1;
+		for (n2 = node; n2;
+		     n2 = ((struct ipa_dfs_info *) node->symbol.aux)->next_cycle)
+		  {
+		    struct inline_summary *info2 = inline_summary (n2);
+		    if (info2->scc_no)
+		      break;
+		    info2->scc_no = id;
+		  }
+	      }
 	  }
 
 	for (edge = node->callers; edge; edge = edge->next_caller)

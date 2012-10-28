@@ -1,3 +1,11 @@
+2012-10-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inlinehint-3.c: New testcase.
+	* ipa-inline.c (edge_badness): Fix overflow.
+	(inline_small_functions): Initialize SCCs correctly.
+	(do_estimate_edge_time, do_estimate_edge_hints): Skip self
+	recursive functions in SCC hints.
+
 2012-10-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/38711
