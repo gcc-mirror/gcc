@@ -2,19 +2,8 @@
 
 	Place shared initialization code into the .text
 	section instead of a separate .upc_init section.
-	* gcc/defaults.h (UPC_INIT_SECTION_NAME): Delete.
-	(UPC_INIT_BEGIN_NAME): Delete.
-	(UPC_INIT_END_NAME): Delete.
-	* gcc/doc/tm.texi.in: Ditto.
-	* gcc/doc/tm.texi: Ditto.
-	* gcc/upc/upc-act.c (upc_build_init_func): Remove settings
+	* upc-act.c (upc_build_init_func): Remove settings
 	of the section for shared initialization code.
-	* libgupc/config/default/upc-crt-config.h (UPC_INIT_SECTION_BEGIN):
-	Delete.
-	(UPC_INIT_SECTION_END): Delete.
-	* libgupc/config/darwin/upc-crt-config.h: Ditto.
-	* libgupc/upc-crtstuff.c: Remove declarations for .upc_init
-	section start/end.
 
 2012-09-26  Gary Funck  <gary@intrepid.com>
 

@@ -1,3 +1,17 @@
+2012-10-27 Gary Funck  <gary@intrepid.com>
+
+	* defaults.h: fix typos and formatting in UPC-related entries.
+
+2012-10-26  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Place shared initialization code into the .text
+	section instead of a separate .upc_init section.
+	* defaults.h (UPC_INIT_SECTION_NAME): Delete.
+	(UPC_INIT_BEGIN_NAME): Delete.
+	(UPC_INIT_END_NAME): Delete.
+	* doc/tm.texi.in: Ditto.
+	* doc/tm.texi: Ditto.
+
 2012-10-22 Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 192673 into gupc branch.

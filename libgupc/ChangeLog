@@ -1,3 +1,14 @@
+2012-10-26  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Place shared initialization code into the .text
+	section instead of a separate .upc_init section.
+	* config/default/upc-crt-config.h (UPC_INIT_SECTION_BEGIN):
+	Delete.
+	(UPC_INIT_SECTION_END): Delete.
+	* config/darwin/upc-crt-config.h: Ditto.
+	* upc-crtstuff.c: Remove declarations for .upc_init
+	section start/end.
+
 2012-10-24  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_main.c (__upc_monitor_threads): Allow for MPIR
