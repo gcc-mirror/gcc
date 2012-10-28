@@ -1,3 +1,8 @@
+2012-10-28  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Handle
+	&this->field expressions.
+
 2012-10-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.h (struct rtx_def): Add a comment for member unchanging.
