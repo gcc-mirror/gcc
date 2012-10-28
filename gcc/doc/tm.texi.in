@@ -11165,7 +11165,8 @@ accepted by immediate-add plus one.  We currently assume that the
 value of @code{TARGET_CONST_ANCHOR} is a power of 2.  For example, on
 MIPS, where add-immediate takes a 16-bit signed value,
 @code{TARGET_CONST_ANCHOR} is set to @samp{0x8000}.  The default value
-is zero, which disables this optimization.  @end deftypevr
+is zero, which disables this optimization.
+@end deftypevr
 
 @hook TARGET_MEMMODEL_CHECK
 Validate target specific memory model mask bits. When NULL no target specific
