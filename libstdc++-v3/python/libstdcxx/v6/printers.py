@@ -633,8 +633,13 @@ class Tr1UnorderedSetPrinter:
         self.typename = typename
         self.val = val
 
+    def hashtable (self):
+        if self.typename.startswith('std::tr1'):
+            return self.val
+        return self.val['_M_h']
+
     def to_string (self):
-        return '%s with %d elements' % (self.typename, self.val['_M_element_count'])
+        return '%s with %d elements' % (self.typename, self.hashtable()['_M_element_count'])
 
     @staticmethod
     def format_count (i):
@@ -642,7 +647,7 @@ class Tr1UnorderedSetPrinter:
 
     def children (self):
         counter = itertools.imap (self.format_count, itertools.count())
-        return itertools.izip (counter, Tr1HashtableIterator (self.val))
+        return itertools.izip (counter, Tr1HashtableIterator (self.hashtable()))
 
 class Tr1UnorderedMapPrinter:
     "Print a tr1::unordered_map"
@@ -651,8 +656,13 @@ class Tr1UnorderedMapPrinter:
         self.typename = typename
         self.val = val
 
+    def hashtable (self):
+        if self.typename.startswith('std::tr1'):
+            return self.val
+        return self.val['_M_h']
+
     def to_string (self):
-        return '%s with %d elements' % (self.typename, self.val['_M_element_count'])
+        return '%s with %d elements' % (self.typename, self.hashtable()['_M_element_count'])
 
     @staticmethod
     def flatten (list):
@@ -671,7 +681,7 @@ class Tr1UnorderedMapPrinter:
     def children (self):
         counter = itertools.imap (self.format_count, itertools.count())
         # Map over the hash table and flatten the result.
-        data = self.flatten (itertools.imap (self.format_one, Tr1HashtableIterator (self.val)))
+        data = self.flatten (itertools.imap (self.format_one, Tr1HashtableIterator (self.hashtable())))
         # Zip the two iterators together.
         return itertools.izip (counter, data)
 

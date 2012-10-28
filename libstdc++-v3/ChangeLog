@@ -1,3 +1,10 @@
+2012-10-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55041
+	* python/libstdcxx/v6/printers.py (Tr1UnorderedMapPrinter): Update
+	to handle hashtable as member of unordered_map not base class.
+	(Tr1UnorderedSetPrinter): Likewise.
+
 2012-10-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/unordered_map.h (unordered_map<>): Prefer
