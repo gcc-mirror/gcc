@@ -6683,16 +6683,19 @@ gfc_resolve_iterator_expr (gfc_expr *expr, bool real_ok,
 
 
 /* Resolve the expressions in an iterator structure.  If REAL_OK is
-   false allow only INTEGER type iterators, otherwise allow REAL types.  */
+   false allow only INTEGER type iterators, otherwise allow REAL types.
+   Set own_scope to true for ac-implied-do and data-implied-do as those
+   have a separate scope such that, e.g., a INTENT(IN) doesn't apply.  */
 
 gfc_try
-gfc_resolve_iterator (gfc_iterator *iter, bool real_ok)
+gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 {
   if (gfc_resolve_iterator_expr (iter->var, real_ok, "Loop variable")
       == FAILURE)
     return FAILURE;
 
-  if (gfc_check_vardef_context (iter->var, false, false, _("iterator variable"))
+  if (gfc_check_vardef_context (iter->var, false, false, own_scope,
+				_("iterator variable"))
       == FAILURE)
     return FAILURE;
 
@@ -6961,10 +6964,10 @@ resolve_deallocate_expr (gfc_expr *e)
     }
 
   if (pointer
-      && gfc_check_vardef_context (e, true, true, _("DEALLOCATE object"))
+      && gfc_check_vardef_context (e, true, true, false, _("DEALLOCATE object"))
 	 == FAILURE)
     return FAILURE;
-  if (gfc_check_vardef_context (e, false, true, _("DEALLOCATE object"))
+  if (gfc_check_vardef_context (e, false, true, false, _("DEALLOCATE object"))
       == FAILURE)
     return FAILURE;
 
@@ -7307,9 +7310,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   e2 = remove_last_array_ref (e);
   t = SUCCESS;
   if (t == SUCCESS && pointer)
-    t = gfc_check_vardef_context (e2, true, true, _("ALLOCATE object"));
+    t = gfc_check_vardef_context (e2, true, true, false, _("ALLOCATE object"));
   if (t == SUCCESS)
-    t = gfc_check_vardef_context (e2, false, true, _("ALLOCATE object"));
+    t = gfc_check_vardef_context (e2, false, true, false, _("ALLOCATE object"));
   gfc_free_expr (e2);
   if (t == FAILURE)
     goto failure;
@@ -7489,7 +7492,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   /* Check the stat variable.  */
   if (stat)
     {
-      gfc_check_vardef_context (stat, false, false, _("STAT variable"));
+      gfc_check_vardef_context (stat, false, false, false, _("STAT variable"));
 
       if ((stat->ts.type != BT_INTEGER
 	   && !(stat->ref && (stat->ref->type == REF_ARRAY
@@ -7532,7 +7535,8 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 	gfc_warning ("ERRMSG at %L is useless without a STAT tag",
 		     &errmsg->where);
 
-      gfc_check_vardef_context (errmsg, false, false, _("ERRMSG variable"));
+      gfc_check_vardef_context (errmsg, false, false, false,
+				_("ERRMSG variable"));
 
       if ((errmsg->ts.type != BT_CHARACTER
 	   && !(errmsg->ref
@@ -8618,7 +8622,7 @@ resolve_transfer (gfc_code *code)
      code->ext.dt may be NULL if the TRANSFER is related to
      an INQUIRE statement -- but in this case, we are not reading, either.  */
   if (code->ext.dt && code->ext.dt->dt_io_kind->value.iokind == M_READ
-      && gfc_check_vardef_context (exp, false, false, _("item in READ"))
+      && gfc_check_vardef_context (exp, false, false, false, _("item in READ"))
 	 == FAILURE)
     return;
 
@@ -8739,7 +8743,7 @@ resolve_lock_unlock (gfc_code *code)
 	       &code->expr2->where);
 
   if (code->expr2
-      && gfc_check_vardef_context (code->expr2, false, false,
+      && gfc_check_vardef_context (code->expr2, false, false, false,
 				   _("STAT variable")) == FAILURE)
     return;
 
@@ -8751,7 +8755,7 @@ resolve_lock_unlock (gfc_code *code)
 	       &code->expr3->where);
 
   if (code->expr3
-      && gfc_check_vardef_context (code->expr3, false, false,
+      && gfc_check_vardef_context (code->expr3, false, false, false,
 				   _("ERRMSG variable")) == FAILURE)
     return;
 
@@ -8763,7 +8767,7 @@ resolve_lock_unlock (gfc_code *code)
 	       "variable", &code->expr4->where);
 
   if (code->expr4
-      && gfc_check_vardef_context (code->expr4, false, false,
+      && gfc_check_vardef_context (code->expr4, false, false, false,
 				   _("ACQUIRED_LOCK variable")) == FAILURE)
     return;
 }
@@ -9700,7 +9704,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (t == FAILURE)
 	    break;
 
-	  if (gfc_check_vardef_context (code->expr1, false, false,
+	  if (gfc_check_vardef_context (code->expr1, false, false, false,
 					_("assignment")) == FAILURE)
 	    break;
 
@@ -9739,10 +9743,10 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	       array ref may be present on the LHS and fool gfc_expr_attr
 	       used in gfc_check_vardef_context.  Remove it.  */
 	    e = remove_last_array_ref (code->expr1);
-	    t = gfc_check_vardef_context (e, true, false,
+	    t = gfc_check_vardef_context (e, true, false, false,
 					  _("pointer assignment"));
 	    if (t == SUCCESS)
-	      t = gfc_check_vardef_context (e, false, false,
+	      t = gfc_check_vardef_context (e, false, false, false,
 					    _("pointer assignment"));
 	    gfc_free_expr (e);
 	    if (t == FAILURE)
@@ -9804,7 +9808,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (code->ext.iterator != NULL)
 	    {
 	      gfc_iterator *iter = code->ext.iterator;
-	      if (gfc_resolve_iterator (iter, true) != FAILURE)
+	      if (gfc_resolve_iterator (iter, true, false) != FAILURE)
 		gfc_resolve_do_iterator (code, iter->var->symtree->n.sym);
 	    }
 	  break;
@@ -13563,7 +13567,7 @@ resolve_data_variables (gfc_data_variable *d)
 	}
       else
 	{
-	  if (gfc_resolve_iterator (&d->iter, false) == FAILURE)
+	  if (gfc_resolve_iterator (&d->iter, false, true) == FAILURE)
 	    return FAILURE;
 
 	  if (resolve_data_variables (d->list) == FAILURE)

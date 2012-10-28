@@ -1,3 +1,21 @@
+2012-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54958
+	* gfortran.h (gfc_resolve_iterator_expr,
+	gfc_check_vardef_context): Update prototype.
+	* expr.c (gfc_check_vardef_context): Add own_scope
+	argument and honour it.
+	* resolve.c (gfc_resolve_iterator_expr): Add own_scope
+	argument and honour it.
+	(resolve_deallocate_expr, resolve_allocate_expr,
+	resolve_data_variables, resolve_transfer
+	resolve_lock_unlock, resolve_code): Update calls.
+	* array.c (resolve_array_list): Ditto.
+	* check.c (gfc_check_atomic_def, gfc_check_atomic_ref): Ditto.
+	* interface.c (compare_actual_formal): Ditto.
+	* intrinsic.c (check_arglist): Ditto.
+	* io.c (resolve_tag, gfc_resolve_dt, gfc_resolve_inquire): Ditto.
+
 2012-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* trans.c (gfc_allocate_allocatable):  Revert accidental
