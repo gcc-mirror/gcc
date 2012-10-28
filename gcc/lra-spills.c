@@ -614,13 +614,13 @@ alter_subregs (rtx *loc, bool final_p)
 }
 
 /* Final change of pseudos got hard registers into the corresponding
-   hard registers.  */
+   hard registers and removing temporary clobbers.  */
 void
-lra_hard_reg_substitution (void)
+lra_final_code_change (void)
 {
   int i, hard_regno;
   basic_block bb;
-  rtx insn;
+  rtx insn, curr;
   int max_regno = max_reg_num ();
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
@@ -628,9 +628,21 @@ lra_hard_reg_substitution (void)
 	&& (hard_regno = lra_get_regno_hard_regno (i)) >= 0)
       SET_REGNO (regno_reg_rtx[i], hard_regno);
   FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
+    FOR_BB_INSNS_SAFE (bb, insn, curr)
       if (INSN_P (insn))
 	{
+	  rtx pat = PATTERN (insn);
+
+	  if (GET_CODE (pat) == CLOBBER && LRA_TEMP_CLOBBER_P (pat))
+	    {
+	      /* Remove clobbers temporarily created in LRA.  We don't
+		 need them anymore and don't want to waste compiler
+		 time processing them in a few subsequent passes.  */
+	      lra_invalidate_insn_data (insn);
+	      remove_insn (insn);
+	      continue;
+	    }
+
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
 	  bool insn_change_p = false;
 

@@ -1,3 +1,13 @@
+2012-10-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.h (struct rtx_def): Add a comment for member unchanging.
+	* lra-int.h (LRA_TEMP_CLOBBER_P): New macro.
+	(lra_hard_reg_substitution): Rename to lra_final_code_change.
+	* lra-constraints.c (match_reload): Mark temporary clobbers.
+	* lra-spill.c (lra_hard_reg_substitution): Rename to
+	lra_final_code_change.  Remove temporary clobbers.
+	* lra.c (lra): Rename to lra_final_code_change.
+
 2012-10-28  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inlinehint-3.c: New testcase.

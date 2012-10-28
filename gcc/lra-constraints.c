@@ -663,7 +663,7 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	      rtx *before, rtx *after)
 {
   int i, in;
-  rtx new_in_reg, new_out_reg, reg;
+  rtx new_in_reg, new_out_reg, reg, clobber;
   enum machine_mode inmode, outmode;
   rtx in_rtx = *curr_id->operand_loc[ins[0]];
   rtx out_rtx = *curr_id->operand_loc[out];
@@ -694,8 +694,10 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	    new_in_reg = gen_rtx_SUBREG (inmode, reg, 0);
 	  /* NEW_IN_REG is non-paradoxical subreg.  We don't want
 	     NEW_OUT_REG living above.  We add clobber clause for
-	     this.  */
-	  emit_clobber (new_out_reg);
+	     this.  This is just a temporary clobber.  We can remove
+	     it at the end of LRA work.  */
+	  clobber = emit_clobber (new_out_reg);
+	  LRA_TEMP_CLOBBER_P (PATTERN (clobber)) = 1;
 	}
     }
   else

@@ -241,6 +241,10 @@ struct lra_insn_recog_data
 
 typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 
+/* Whether the clobber is used temporary in LRA.  */
+#define LRA_TEMP_CLOBBER_P(x) \
+  (RTL_FLAG_CHECK1 ("TEMP_CLOBBER_P", (x), CLOBBER)->unchanging)
+
 /* lra.c: */
 
 extern FILE *lra_dump_file;
@@ -346,7 +350,7 @@ extern bool lra_coalesce (void);
 
 extern bool lra_need_for_spills_p (void);
 extern void lra_spill (void);
-extern void lra_hard_reg_substitution (void);
+extern void lra_final_code_change (void);
 
 
 /* lra-elimination.c: */
