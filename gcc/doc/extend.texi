@@ -1251,10 +1251,10 @@ The @code{__flash} qualifier will locate data in the
 instruction. Pointers to this address space are 16 bits wide.
 
 @item __flash1
-@item __flash2
-@item __flash3
-@item __flash4
-@item __flash5
+@itemx __flash2
+@itemx __flash3
+@itemx __flash4
+@itemx __flash5
 @cindex @code{__flash1} AVR Named Address Spaces
 @cindex @code{__flash2} AVR Named Address Spaces
 @cindex @code{__flash3} AVR Named Address Spaces

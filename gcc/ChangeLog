@@ -1,5 +1,12 @@
 2012-10-28  Andreas Schwab  <schwab@linux-m68k.org>
 
+	* doc/cppopts.texi: Fix use of @item vs. @itemx inside @table.
+	* doc/extend.texi: Likewise.
+	* doc/generic.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+
 	* doc/tm.texi.in (Misc): Add newline before @end.
 	* doc/tm.texi: Update.
 
