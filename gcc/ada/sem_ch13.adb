@@ -2708,7 +2708,21 @@ package body Sem_Ch13 is
                   if Present (O_Ent)
                     and then Is_Object (O_Ent)
                     and then not Off
+
+                    --  The following test is an expedient solution to what
+                    --  is really a problem in CodePeer. Suppressing the
+                    --  Set_Treat_As_Volatile call here prevents later
+                    --  generation (in some cases) of trees that CodePeer
+                    --  should, but currently does not, handle correctly.
+                    --  This test should probably be removed when CodePeer
+                    --  is improved, just because we want the tree CodePeer
+                    --  analyzes to match the tree for which we generate code
+                    --  as closely as is practical. ???
+
+                    and then not CodePeer_Mode
                   then
+                     --  ??? O_Ent might not be in current unit
+
                      Set_Treat_As_Volatile (O_Ent);
                   end if;
 

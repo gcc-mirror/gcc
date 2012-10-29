@@ -10656,6 +10656,18 @@ package body Sem_Ch3 is
          then
             Check_Recursive_Declaration (Designated_Type (T));
          end if;
+
+         --  A deferred constant is a visible entity. If type has invariants,
+         --  verify that the initial value satisfies them.
+
+         if Expander_Active and then Has_Invariants (T) then
+            declare
+               Call : constant Node_Id :=
+                 Make_Invariant_Call (New_Occurrence_Of (Prev, Sloc (N)));
+            begin
+               Insert_After (N, Call);
+            end;
+         end if;
       end if;
    end Constant_Redeclaration;
 
