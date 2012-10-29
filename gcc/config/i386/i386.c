@@ -24478,6 +24478,8 @@ add_parameter_dependencies (rtx call, rtx head)
   rtx first_arg = NULL;
   bool is_spilled = false;
 
+  head = PREV_INSN (head);
+
   /* Find nearest to call argument passing instruction.  */
   while (true)
     {
@@ -24575,6 +24577,8 @@ ix86_dependencies_evaluation_hook (rtx head, rtx tail)
   rtx first_arg = NULL;
   if (reload_completed)
     return;
+  while (head != tail && DEBUG_INSN_P (head))
+    head = NEXT_INSN (head);
   for (insn = tail; insn != head; insn = PREV_INSN (insn))
     if (INSN_P (insn) && CALL_P (insn))
       {
@@ -24603,6 +24607,8 @@ ix86_dependencies_evaluation_hook (rtx head, rtx tail)
 		  }
 	      }
 	    insn = first_arg;
+	    if (insn == head)
+	      break;
 	  }
       }
     else if (first_arg)
