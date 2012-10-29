@@ -902,9 +902,9 @@ package body Exp_Dbug is
       end if;
    end Get_Variant_Encoding;
 
-   ------------------------------------------
-   --  Build_Subprogram_Instance_Renamings --
-   ------------------------------------------
+   -----------------------------------------
+   -- Build_Subprogram_Instance_Renamings --
+   -----------------------------------------
 
    procedure Build_Subprogram_Instance_Renamings
      (N       : Node_Id;

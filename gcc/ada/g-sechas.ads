@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2009-2012, Free Software Foundation, Inc.          --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,9 @@
 --  Use GNAT.MD5 and GNAT.SHA* instead.
 
 with Ada.Streams; use Ada.Streams;
+
 with Interfaces;
+
 with System;
 
 package GNAT.Secure_Hashes is
@@ -85,15 +87,14 @@ package GNAT.Secure_Hashes is
       procedure To_Hash
         (H      : State;
          H_Bits : out Stream_Element_Array);
-      --  Convert H to stream representation with the given bit order.
-      --  If H_Bits is smaller than the internal hash state, then the state
+      --  Convert H to stream representation with the given bit order. If
+      --  H_Bits is smaller than the internal hash state, then the state
       --  is truncated.
 
    end Hash_Function_State;
 
-   --  Generic hashing framework:
-   --  The user interface for each implemented secure hash function is an
-   --  instance of this generic package.
+   --  Generic hashing framework: The user interface for each implemented
+   --  secure hash function is an instance of this generic package.
 
    generic
       Block_Words : Natural;
@@ -167,7 +168,7 @@ package GNAT.Secure_Hashes is
       function Digest      (S : String)      return Binary_Message_Digest;
       function Wide_Digest (W : Wide_String) return Binary_Message_Digest;
       function Digest
-        (A : Stream_Element_Array) return Binary_Message_Digest;
+        (A : Stream_Element_Array)           return Binary_Message_Digest;
       --  These functions are equivalent to the corresponding Update (or
       --  Wide_Update) on a default initialized Context, followed by Digest
       --  on the resulting Context.
@@ -180,8 +181,8 @@ package GNAT.Secure_Hashes is
       --  Return hash for the data accumulated with C in hexadecimal
       --  representation.
 
-      function Digest      (S : String)      return Message_Digest;
-      function Wide_Digest (W : Wide_String) return Message_Digest;
+      function Digest      (S : String)               return Message_Digest;
+      function Wide_Digest (W : Wide_String)          return Message_Digest;
       function Digest      (A : Stream_Element_Array) return Message_Digest;
       --  These functions are equivalent to the corresponding Update (or
       --  Wide_Update) on a default initialized Context, followed by Digest
