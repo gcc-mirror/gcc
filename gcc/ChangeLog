@@ -1,10 +1,17 @@
+2012-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Use simplify_gen_subreg
+	to generate SImode equivalent of address, zero-extended with AND RTX.
+	* config/i386/i386.md (ashift to lea splitter): Split to SImode mult.
+	(simple lea to add/shift peephole2s): Remove peephole2s that operate
+	on subregs of DImode operations.
+
 2012-10-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55106
 	* lra-constraints.c (skip_usage_debug_insns): New function.
 	(check_secondary_memory_needed_p): Ditto.
-	(inherit_reload_reg): Use the new functions.  Improve debug
-	output.
+	(inherit_reload_reg): Use the new functions.  Improve debug output.
 
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
@@ -47,7 +54,8 @@
 
 	* ipa-inline.c (edge_badness): Reduce precision; use scc hints.
 	(inline_small_functions): Fix dumps; update all callees after inlining.
-	* ipa-inline.h (INLINE_HINT_in_scc, INLINE_HINT_same_scc): New constants.
+	* ipa-inline.h (INLINE_HINT_in_scc, INLINE_HINT_same_scc): New
+	constants.
 	(inline summary): Add SCC_NO.
 	* ipa-inline-analysis.c (dump_inline_hints): Dump SCC hints.
 	(reset_inline_summary): Reset scc_no.

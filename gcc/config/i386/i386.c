@@ -11821,7 +11821,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 		return 0;
 	    }
 	  else if (GET_MODE (addr) == DImode)
-	    addr = gen_rtx_SUBREG (SImode, addr, 0);
+	    {
+	      addr = simplify_gen_subreg (SImode, addr, DImode, 0);
+	      if (addr == NULL_RTX)
+		return 0;
+	    }
 	  else if (GET_MODE (addr) != VOIDmode)
 	    return 0;
 	}
