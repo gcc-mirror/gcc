@@ -1586,6 +1586,7 @@ force_single_succ_latches (void)
 	continue;
 
       e = find_edge (loop->latch, loop->header);
+      gcc_checking_assert (e != NULL);
 
       split_edge (e);
     }
@@ -1847,6 +1848,32 @@ fix_loop_structure (bitmap changed_bbs)
     	  bb->aux = NULL;
 	}
     }
+
+  /* Then re-compute the single latch if there is one.  */
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      edge_iterator ei;
+      edge e, latch = NULL;
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
+	  {
+	    if (!latch)
+	      latch = e;
+	    else
+	      {
+		latch = NULL;
+		break;
+	      }
+	  }
+      if (latch
+	  && latch->src->loop_father == loop)
+	loop->latch = latch->src;
+      else
+	loop->latch = NULL;
+    }
+
+  if (!loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
+    disambiguate_loops_with_multiple_latches ();
 
   if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
     create_preheaders (CP_SIMPLE_PREHEADERS);
