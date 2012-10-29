@@ -911,6 +911,12 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Activation_Chain_Entity
 
    begin
+      --  Activation chain is never used in restricted profile
+
+      if Restricted_Profile then
+         return;
+      end if;
+
       Find_Enclosing_Context (N, Context, Context_Id, Decls);
 
       --  If an activation chain entity has not been declared already, create

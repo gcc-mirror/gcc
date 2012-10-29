@@ -1,3 +1,18 @@
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Gen_Output_File_Ada): Do not emit declaration for
+	Is_Elaborated if not referenced.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Activation_Chain_Entity): Punt in restricted
+	profile.
+	* exp_ch3.adb (Build_Initialization_Call): Do no append _Chain
+	parameter in restricted profile.
+	(Build_Init_Call_Thru): Likewise.
+	(Init_Formals): Likewise.
+	* exp_ch3.adb: Minor reformatting.
+
 2012-10-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* usage.adb: Update usage line for -gnatw.k.

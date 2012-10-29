@@ -2394,8 +2394,13 @@ package body Bindgen is
 
          --  The B.1 (39) implementation advice says that the adainit/adafinal
          --  routines should be idempotent. Generate a flag to ensure that.
+         --  This is not needed if we are suppressing the standard library
+         --  since it would never be referenced.
 
-         WBI ("   Is_Elaborated : Boolean := False;");
+         if not Suppress_Standard_Library_On_Target then
+            WBI ("   Is_Elaborated : Boolean := False;");
+         end if;
+
          WBI ("");
       end if;
 
