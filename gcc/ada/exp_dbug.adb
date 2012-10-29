@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -901,6 +901,39 @@ package body Exp_Dbug is
          end;
       end if;
    end Get_Variant_Encoding;
+
+   ------------------------------------------
+   --  Build_Subprogram_Instance_Renamings --
+   ------------------------------------------
+
+   procedure Build_Subprogram_Instance_Renamings
+     (N       : Node_Id;
+      Wrapper : Entity_Id)
+   is
+      Loc  : Source_Ptr;
+      Decl : Node_Id;
+      E    : Entity_Id;
+
+   begin
+      E := First_Entity (Wrapper);
+      while Present (E) loop
+         if Nkind (Parent (E)) = N_Object_Declaration
+           and then Is_Elementary_Type (Etype (E))
+         then
+            Loc := Sloc (Expression (Parent (E)));
+            Decl := Make_Object_Renaming_Declaration (Loc,
+               Defining_Identifier =>
+                 Make_Defining_Identifier (Loc, Chars (E)),
+               Subtype_Mark        => New_Occurrence_Of (Etype (E), Loc),
+               Name                => New_Occurrence_Of (E, Loc));
+
+            Append (Decl, Declarations (N));
+            Set_Needs_Debug_Info (Defining_Identifier (Decl));
+         end if;
+
+         Next_Entity (E);
+      end loop;
+   end Build_Subprogram_Instance_Renamings;
 
    ------------------------------------
    -- Get_Secondary_DT_External_Name --

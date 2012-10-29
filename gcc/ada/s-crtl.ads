@@ -177,7 +177,7 @@ package System.CRTL is
       size   : size_t) return int;
    pragma Import (C, setvbuf, "setvbuf");
 
-   procedure tmpnam (string : chars);
+   procedure tmpnam (str : chars);
    pragma Import (C, tmpnam, "tmpnam");
 
    function tmpfile return FILEs;

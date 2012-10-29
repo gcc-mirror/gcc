@@ -33,6 +33,7 @@ with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
+with Exp_Dbug; use Exp_Dbug;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -2723,6 +2724,16 @@ package body Sem_Ch6 is
 
             Install_Formals (Spec_Id);
             Last_Real_Spec_Entity := Last_Entity (Spec_Id);
+
+            --  Within an instance, add local renaming declarations so that
+            --  gdb can retrieve the values of actuals more easily.
+
+            if Is_Generic_Instance (Spec_Id)
+              and then Is_Wrapper_Package (Current_Scope)
+            then
+               Build_Subprogram_Instance_Renamings (N, Current_Scope);
+            end if;
+
             Push_Scope (Spec_Id);
 
             --  Make sure that the subprogram is immediately visible. For

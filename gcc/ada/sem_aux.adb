@@ -431,11 +431,17 @@ package body Sem_Aux is
    begin
       N := First_Rep_Item (E);
       while Present (N) loop
+
+         --  Only one of Priority / Interrupt_Priority can be specified, so
+         --  return whichever one is present to catch illegal duplication.
+
          if Nkind (N) = N_Pragma
            and then
              (Pragma_Name (N) = Nam
                or else (Nam = Name_Priority
-                         and then Pragma_Name (N) = Name_Interrupt_Priority))
+                         and then Pragma_Name (N) = Name_Interrupt_Priority)
+               or else (Nam = Name_Interrupt_Priority
+                         and then Pragma_Name (N) = Name_Priority))
          then
             if Check_Parents then
                return N;

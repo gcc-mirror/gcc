@@ -175,7 +175,7 @@ package Interfaces.C_Streams is
       mode   : int;
       size   : size_t) return int;
 
-   procedure tmpnam (string : chars) renames System.CRTL.tmpnam;
+   procedure tmpnam (str : chars) renames System.CRTL.tmpnam;
    --  The parameter must be a pointer to a string buffer of at least L_tmpnam
    --  bytes (the call with a null parameter is not supported). The returned
    --  value, which is just a copy of the input argument, is discarded.

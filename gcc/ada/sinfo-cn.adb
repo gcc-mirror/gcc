@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,11 @@
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.
 
-with Atree;  use Atree;
-with Snames; use Snames;
+with Atree;    use Atree;
+with Errout;   use Errout;
+with Sem_Util; use Sem_Util;
+with Snames;   use Snames;
+with Warnsw;   use Warnsw;
 
 package body Sinfo.CN is
 
@@ -71,6 +74,20 @@ package body Sinfo.CN is
 
    procedure Change_Identifier_To_Defining_Identifier (N : in out Node_Id) is
    begin
+      --  Check for redefinition of standard entity (requiring a warning)
+
+      if Warn_On_Standard_Redefinition then
+         declare
+            C : constant Entity_Id := Current_Entity (N);
+         begin
+            if Present (C) and then Sloc (C) = Standard_Location then
+               Error_Msg_N ("redefinition of entity& in Standard?", N);
+            end if;
+         end;
+      end if;
+
+      --  Go ahead with the change
+
       Set_Nkind (N, N_Defining_Identifier);
       N := Extend_Node (N);
    end Change_Identifier_To_Defining_Identifier;
