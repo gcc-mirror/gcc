@@ -243,6 +243,13 @@ package body Ch3 is
 
       if Ident_Node /= Error then
          Change_Identifier_To_Defining_Identifier (Ident_Node);
+
+         --  Warn if standard redefinition, except that we never warn on a
+         --  record field definition (since this is always a harmless case).
+
+         if not Inside_Record_Definition then
+            Warn_If_Standard_Redefinition (Ident_Node);
+         end if;
       end if;
 
       return Ident_Node;
@@ -3191,6 +3198,7 @@ package body Ch3 is
       Rec_Node : Node_Id;
 
    begin
+      Inside_Record_Definition := True;
       Rec_Node := New_Node (N_Record_Definition, Token_Ptr);
 
       --  Null record case
@@ -3235,6 +3243,7 @@ package body Ch3 is
          end loop;
       end if;
 
+      Inside_Record_Definition := False;
       return Rec_Node;
    end P_Record_Definition;
 
