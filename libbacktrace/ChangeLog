@@ -1,5 +1,10 @@
 2012-10-29  Ian Lance Taylor  <iant@google.com>
 
+	* mmap.c (backtrace_vector_release): Correct last patch: add
+	aligned, not size.
+
+2012-10-29  Ian Lance Taylor  <iant@google.com>
+
 	* mmap.c (backtrace_vector_release): Make sure freed block is
 	aligned on 8-byte boundary.
 
