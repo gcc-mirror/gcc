@@ -1,3 +1,8 @@
+2012-10-29  Ian Lance Taylor  <iant@google.com>
+
+	* mmap.c (backtrace_vector_release): Make sure freed block is
+	aligned on 8-byte boundary.
+
 2012-10-26  Ian Lance Taylor  <iant@google.com>
 
 	PR other/55087
