@@ -5464,7 +5464,7 @@ strip_address_mutations (rtx *loc, enum rtx_code *outer_code)
                && subreg_lowpart_p (*loc))
 	/* (subreg (operator ...) ...) inside and is used for mode
 	   conversion too.  */
-	loc = &XEXP (*loc, 0);
+	loc = &SUBREG_REG (*loc);
       else
 	return loc;
       if (outer_code)

@@ -1,3 +1,8 @@
+2012-10-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtlanal.c (strip_address_mutation): Use SUBREG_REG instead of
+	XEXP.
+
 2012-10-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Use simplify_gen_subreg
