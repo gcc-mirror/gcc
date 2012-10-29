@@ -6657,13 +6657,16 @@ any trailing blanks. The value of 79 allows convenient display on an
 80 character wide device or window, allowing for possible special
 treatment of 80 character lines. Note that this count is of
 characters in the source text. This means that a tab character counts
-as one character in this count but a wide character sequence counts as
+as one character in this count and a wide character sequence counts as
 a single character (however many bytes are needed in the encoding).
 
 @item ^Mnnn^MAX_LENGTH=nnn^
 @emph{Set maximum line length.}
 The length of lines must not exceed the
 given value @option{nnn}. The maximum value that can be specified is 32767.
+If neither style option for setting the line length is used, then the
+default is 255. This also controls the maximum length of lexical elements,
+where the only restriction is that they must fit on a single line.
 
 @item ^n^STANDARD_CASING^
 @emph{Check casing of entities in Standard.}
