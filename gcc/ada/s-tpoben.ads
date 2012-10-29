@@ -59,34 +59,30 @@ package System.Tasking.Protected_Objects.Entries is
 
    type Protected_Entry_Body_Array is
      array (Positive_Protected_Entry_Index range <>) of Entry_Body;
-   --  This is an array of the executable code for all entry bodies of
-   --  a protected type.
+   --  Contains executable code for all entry bodies of a protected type
 
    type Protected_Entry_Body_Access is access all Protected_Entry_Body_Array;
 
    type Protected_Entry_Queue_Array is
      array (Protected_Entry_Index range <>) of Entry_Queue;
 
-   --  A data structure which contains the string names of entries and entry
-   --  family members.
-
    type Protected_Entry_Names_Array is
      array (Protected_Entry_Index range <>) of String_Access;
-
    type Protected_Entry_Names_Access is access all Protected_Entry_Names_Array;
+   --  Contains string name of entries and entry family members
 
-   --  This type contains the GNARL state of a protected object. The
-   --  application-defined portion of the state (i.e. private objects)
-   --  is maintained by the compiler-generated code.
-   --  note that there is a simplified version of this type declared in
-   --  System.Tasking.PO_Simple that handle the simple case (no entries).
+   --  The following type contains the GNARL state of a protected object.
+   --  The application-defined portion of the state (i.e. private objects)
+   --  is maintained by the compiler-generated code. Note that there is a
+   --  simplified version of this type declared in System.Tasking.PO_Simple
+   --  that handle the simple case (no entries).
 
    type Protection_Entries (Num_Entries : Protected_Entry_Index) is new
      Ada.Finalization.Limited_Controlled
    with record
-      L                 : aliased Task_Primitives.Lock;
-      --  The underlying lock associated with a Protection_Entries.
-      --  Note that you should never (un)lock Object.L directly, but instead
+      L : aliased Task_Primitives.Lock;
+      --  The underlying lock associated with a Protection_Entries. Note
+      --  that you should never (un)lock Object.L directly, but instead
       --  use Lock_Entries/Unlock_Entries.
 
       Compiler_Info : System.Address;
@@ -150,8 +146,8 @@ package System.Tasking.Protected_Objects.Entries is
       --  Entries components.
    end record;
 
-   --  No default initial values for this type, since call records
-   --  will need to be re-initialized before every use.
+   --  No default initial values for this type, since call records will need to
+   --  be re-initialized before every use.
 
    type Protection_Entries_Access is access all Protection_Entries'Class;
    --  See comments in s-tassta.adb about the implicit call to Current_Master

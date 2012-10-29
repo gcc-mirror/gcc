@@ -6430,7 +6430,7 @@ package body Sem_Prag is
 
       procedure S14_Pragma is
       begin
-         if not S14_Extensions then
+         if not Formal_Extensions then
             Error_Pragma ("pragma% requires the use of debug switch -gnatd.V");
          end if;
       end S14_Pragma;

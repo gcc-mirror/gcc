@@ -1209,7 +1209,6 @@ private
    procedure Set_Entry_Names
      (Self_Id : Task_Id;
       Names   : Task_Entry_Names_Access);
-   --  Associate an array of string that denote entry [family] names with a
-   --  task.
+   --  Associate an array of strings denotinge entry [family] names with a task
 
 end System.Tasking;
