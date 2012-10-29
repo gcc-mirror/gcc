@@ -218,6 +218,14 @@ int counter = 0;
 
 #define CST(name,comment) C(#name,String,name,comment)
 
+/* ioctl(2) requests are "int" in UNIX, but "unsigned long" on FreeBSD */
+
+#ifdef __FreeBSD__
+# define CNI CNU
+#else
+# define CNI CND
+#endif
+
 #define STR(x) STR1(x)
 #define STR1(x) #x
 
@@ -373,12 +381,12 @@ CND(FNDELAY, "Nonblocking")
 #ifndef FIONBIO
 # define FIONBIO -1
 #endif
-CND(FIONBIO, "Set/clear non-blocking io")
+CNI(FIONBIO, "Set/clear non-blocking io")
 
 #ifndef FIONREAD
 # define FIONREAD -1
 #endif
-CND(FIONREAD, "How many bytes to read")
+CNI(FIONREAD, "How many bytes to read")
 
 /*
 
@@ -1318,6 +1326,7 @@ CND(SIZEOF_struct_servent, "struct servent");
 #define SIZEOF_sigset (sizeof (sigset_t))
 CND(SIZEOF_sigset, "sigset");
 #endif
+
 /*
 
    --  Fields of struct msghdr
@@ -1399,7 +1408,7 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 /* There's no clock_gettime or clock_id's on Darwin, generate a dummy value */
 # define CLOCK_RT_Ada "-1"
 
-#elif defined(FreeBSD) || defined(_AIX)
+#elif defined(__FreeBSD__) || defined(_AIX)
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
  ** appropriately (see thread.c).

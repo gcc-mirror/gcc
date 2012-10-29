@@ -28,7 +28,6 @@ with Einfo;    use Einfo;
 with Exp_Attr; use Exp_Attr;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
-with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Rtsfind;  use Rtsfind;
@@ -81,11 +80,17 @@ package body Exp_Alfa is
          when N_Attribute_Reference =>
             Expand_Alfa_N_Attribute_Reference (N);
 
+         --  Note: we use to qualify entity names in the following constructs
+         --  (as full expansion does), but this was removed as this prevents
+         --  the verification back-end from using a short name for debugging
+         --  and user interaction. The verification back-end already takes
+         --  care of qualifying names when needed
+
          when N_Block_Statement     |
               N_Package_Body        |
               N_Package_Declaration |
               N_Subprogram_Body     =>
-            Qualify_Entity_Names (N);
+            null;
 
          when N_Subprogram_Call     =>
             Expand_Alfa_Call (N);
@@ -97,6 +102,9 @@ package body Exp_Alfa is
          when N_In =>
             Expand_Alfa_N_In (N);
 
+         --  A NOT IN B gets transformed to NOT (A IN B). This is the same
+         --  expansion used in the normal case, so shared the code.
+
          when N_Not_In =>
             Expand_N_Not_In (N);
 
@@ -105,6 +113,8 @@ package body Exp_Alfa is
 
          when N_Simple_Return_Statement =>
             Expand_Alfa_N_Simple_Return_Statement (N);
+
+         --  In Alfa mode, no other constructs require expansion
 
          when others =>
             null;

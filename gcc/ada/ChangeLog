@@ -1,5 +1,18 @@
 2012-10-29  Robert Dewar  <dewar@adacore.com>
 
+	* s-bignum.adb: Minor comment change.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Fix signedness of ioctl request identifiers
+	for x86_64-freebsd.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb (Expand_Alfa): Remove qualification of names.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb: Minor reformatting.
 
 2012-10-29  Robert Dewar  <dewar@adacore.com>
