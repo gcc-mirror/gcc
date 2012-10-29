@@ -1,3 +1,11 @@
+2012-10-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55106
+	* lra-constraints.c (skip_usage_debug_insns): New function.
+	(check_secondary_memory_needed_p): Ditto.
+	(inherit_reload_reg): Use the new functions.  Improve debug
+	output.
+
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/cpp.texi (Search Path): Fix outdated C++ path.
