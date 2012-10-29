@@ -1,3 +1,19 @@
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Add special case for case expression alternative.
+	(Is_Signed_Integer_Arithmetic_Op): Remove special case for case
+	expression alternative.
+	* exp_ch4.adb Minor reformatting.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb: Minor reformatting.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb: Minor: Remove redundant test.
+
 2012-10-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* pprint.ads, pprint.adb, adabkend.ads, adabkend.adb,
