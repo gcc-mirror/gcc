@@ -28346,6 +28346,38 @@ other part of your application. In this case, use GNAT to build the DLL
 or whatever environment to build your executable.
 @end enumerate
 
+In addition to the description about C main in
+@pxref{Mixed Language Programming} section, if the C main uses a
+stand-alone library it is required on x86-windows to
+setup the SEH context. For this the C main must looks like this:
+
+@smallexample
+/* main.c */
+extern void adainit (void);
+extern void adafinal (void);
+extern void __gnat_initialize(void*);
+extern void call_to_ada (void);
+
+int main (int argc, char *argv[])
+@{
+  int SEH [2];
+
+  /* Initialize the SEH context */
+  __gnat_initialize (&SEH);
+
+  adainit();
+
+  /* Then call Ada services in the stand-alone library */
+
+  call_to_ada();
+
+  adafinal();
+@}
+@end smallexample
+
+Note that this is not needed on x86_64-windows where the Windows
+native SEH support is used.
+
 @node Windows Calling Conventions
 @section Windows Calling Conventions
 @findex Stdcall

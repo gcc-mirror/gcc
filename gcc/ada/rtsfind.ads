@@ -1531,6 +1531,7 @@ package Rtsfind is
      RE_Simple_Mode,                     -- System.Tasking
      RE_Terminate_Mode,                  -- System.Tasking
      RE_Delay_Mode,                      -- System.Tasking
+     RE_Entry_Index,                     -- System.Tasking
      RE_Task_Entry_Index,                -- System.Tasking
      RE_Self,                            -- System.Tasking
 
@@ -2782,6 +2783,7 @@ package Rtsfind is
      RE_Simple_Mode                      => System_Tasking,
      RE_Terminate_Mode                   => System_Tasking,
      RE_Delay_Mode                       => System_Tasking,
+     RE_Entry_Index                      => System_Tasking,
      RE_Task_Entry_Index                 => System_Tasking,
      RE_Self                             => System_Tasking,
 

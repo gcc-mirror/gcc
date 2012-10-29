@@ -59,9 +59,9 @@ package body System.Tasking is
    -- Number_Of_Entries --
    -----------------------
 
-   function Number_Of_Entries (Self_Id : Task_Id) return Task_Entry_Index is
+   function Number_Of_Entries (Self_Id : Task_Id) return Entry_Index is
    begin
-      return Self_Id.Entry_Num;
+      return Entry_Index (Self_Id.Entry_Num);
    end Number_Of_Entries;
 
    ----------

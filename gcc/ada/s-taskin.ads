@@ -253,7 +253,7 @@ package System.Tasking is
    type String_Access is access all String;
 
    type Task_Entry_Names_Array is
-     array (Task_Entry_Index range <>) of String_Access;
+     array (Entry_Index range <>) of String_Access;
 
    type Task_Entry_Names_Access is access all Task_Entry_Names_Array;
 
@@ -1203,7 +1203,7 @@ private
    --  registered for removal (Expunge_Unactivated_Tasks). The "limited" forces
    --  Activation_Chain to be a by-reference type; see RM-6.2(4).
 
-   function Number_Of_Entries (Self_Id : Task_Id) return Task_Entry_Index;
+   function Number_Of_Entries (Self_Id : Task_Id) return Entry_Index;
    --  Given a task, return the number of entries it contains
 
    procedure Set_Entry_Names

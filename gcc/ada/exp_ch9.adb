@@ -1460,25 +1460,22 @@ package body Exp_Ch9 is
          begin
             if No (Index) and then No (Data) then
                declare
-                  Count     : RE_Id;
-                  Data_Typ  : RE_Id;
-                  Index_Typ : RE_Id;
-                  Size      : Entity_Id;
+                  Count    : RE_Id;
+                  Data_Typ : RE_Id;
+                  Size     : Entity_Id;
 
                begin
                   if Is_Protected_Type (Typ) then
-                     Count     := RO_PE_Number_Of_Entries;
-                     Data_Typ  := RE_Protected_Entry_Names_Array;
-                     Index_Typ := RE_Protected_Entry_Index;
+                     Count    := RO_PE_Number_Of_Entries;
+                     Data_Typ := RE_Protected_Entry_Names_Array;
                   else
-                     Count     := RO_ST_Number_Of_Entries;
-                     Data_Typ  := RE_Task_Entry_Names_Array;
-                     Index_Typ := RE_Task_Entry_Index;
+                     Count    := RO_ST_Number_Of_Entries;
+                     Data_Typ := RE_Task_Entry_Names_Array;
                   end if;
 
                   --  Step 1: Generate the declaration of the index variable:
 
-                  --    Index : <Index_Typ> := 1;
+                  --    Index : Entry_Index := 1;
 
                   Index := Make_Temporary (Loc, 'I');
 
@@ -1486,13 +1483,13 @@ package body Exp_Ch9 is
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Index,
                       Object_Definition   =>
-                        New_Reference_To (RTE (Index_Typ), Loc),
+                        New_Reference_To (RTE (RE_Entry_Index), Loc),
                       Expression          => Make_Integer_Literal (Loc, 1)));
 
                   --  Step 2: Generate the declaration of an array to house all
                   --  names:
 
-                  --    Size : constant <Index_Typ> := <Count> (Obj_Ref);
+                  --    Size : constant Entry_Index := <Count> (Obj_Ref);
                   --    Data : aliased <Data_Typ> := (1 .. Size => null);
 
                   Size := Make_Temporary (Loc, 'S');
@@ -1502,7 +1499,7 @@ package body Exp_Ch9 is
                       Defining_Identifier => Size,
                       Constant_Present    => True,
                       Object_Definition   =>
-                        New_Reference_To (RTE (Index_Typ), Loc),
+                        New_Reference_To (RTE (RE_Entry_Index), Loc),
                       Expression          =>
                         Make_Function_Call (Loc,
                           Name                   =>

@@ -1323,12 +1323,15 @@ pragma Attribute_Definition
 @end smallexample
 
 @noindent
-If Attribute is a known attribute name, this pragma is equivalent to
+If @code{Attribute} is a known attribute name, this pragma is equivalent to
 the attribute definition clause:
+
 @smallexample @c ada
   for Entity'Attribute use Expression;
 @end smallexample
-else the pragma is ignored, and a warning is emitted. This allows source
+
+If @code{Attribute} is not a recognized attribute name, the pragma is
+ignored, and a warning is emitted. This allows source
 code to be written that takes advantage of some new attribute, while remaining
 compilable with earlier compilers.
 

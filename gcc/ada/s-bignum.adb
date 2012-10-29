@@ -233,14 +233,27 @@ package body System.Bignums is
             pragma Import (Ada, BD);
 
             --  Expose a writable view of discriminant BD.Len so that we can
-            --  initialize it.
+            --  initialize it. We need to use the exact layout of the record
+            --  for the overlay to shield ourselves from endianness issues.
 
-            BL : Length;
-            for BL'Address use BD.Len'Address;
-            pragma Import (Ada, BL);
+            type Bignum_Data_Header is record
+               Len : Length;
+               Neg : Boolean;
+            end record;
+
+            for Bignum_Data_Header use record
+               Len at 0 range 0 .. 23;
+               Neg at 3 range 0 .. 7;
+            end record;
+
+            BDH : Bignum_Data_Header;
+            for BDH'Address use BD'Address;
+            pragma Import (Ada, BDH);
+
+            pragma Assert (BDH.Len'Size = BD.Len'Size);
 
          begin
-            BL := Len;
+            BDH.Len := Len;
             return B;
          end;
       end if;
