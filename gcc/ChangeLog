@@ -1,3 +1,9 @@
+2012-10-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55027
+	* tree.c (real_zerop, real_onep, real_twop, real_minus_onep):
+	Handle VECTOR_CST.
+
 2012-10-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtlanal.c (strip_address_mutation): Use SUBREG_REG instead of

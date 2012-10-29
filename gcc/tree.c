@@ -1992,12 +1992,25 @@ real_zerop (const_tree expr)
 {
   STRIP_NOPS (expr);
 
-  return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0)
-	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
-	  || (TREE_CODE (expr) == COMPLEX_CST
-	      && real_zerop (TREE_REALPART (expr))
-	      && real_zerop (TREE_IMAGPART (expr))));
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0)
+	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
+    case COMPLEX_CST:
+      return real_zerop (TREE_REALPART (expr))
+	     && real_zerop (TREE_IMAGPART (expr));
+    case VECTOR_CST:
+      {
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  if (!real_zerop (VECTOR_CST_ELT (expr, i)))
+	    return false;
+	return true;
+      }
+    default:
+      return false;
+    }
 }
 
 /* Return 1 if EXPR is the real constant one in real or complex form.
@@ -2009,12 +2022,25 @@ real_onep (const_tree expr)
 {
   STRIP_NOPS (expr);
 
-  return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1)
-	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
-	  || (TREE_CODE (expr) == COMPLEX_CST
-	      && real_onep (TREE_REALPART (expr))
-	      && real_zerop (TREE_IMAGPART (expr))));
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1)
+	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
+    case COMPLEX_CST:
+      return real_onep (TREE_REALPART (expr))
+	     && real_zerop (TREE_IMAGPART (expr));
+    case VECTOR_CST:
+      {
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  if (!real_onep (VECTOR_CST_ELT (expr, i)))
+	    return false;
+	return true;
+      }
+    default:
+      return false;
+    }
 }
 
 /* Return 1 if EXPR is the real constant two.  Trailing zeroes matter
@@ -2025,12 +2051,25 @@ real_twop (const_tree expr)
 {
   STRIP_NOPS (expr);
 
-  return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2)
-	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
-	  || (TREE_CODE (expr) == COMPLEX_CST
-	      && real_twop (TREE_REALPART (expr))
-	      && real_zerop (TREE_IMAGPART (expr))));
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2)
+	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
+    case COMPLEX_CST:
+      return real_twop (TREE_REALPART (expr))
+	     && real_zerop (TREE_IMAGPART (expr));
+    case VECTOR_CST:
+      {
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  if (!real_twop (VECTOR_CST_ELT (expr, i)))
+	    return false;
+	return true;
+      }
+    default:
+      return false;
+    }
 }
 
 /* Return 1 if EXPR is the real constant minus one.  Trailing zeroes
@@ -2041,12 +2080,25 @@ real_minus_onep (const_tree expr)
 {
   STRIP_NOPS (expr);
 
-  return ((TREE_CODE (expr) == REAL_CST
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconstm1)
-	   && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr)))))
-	  || (TREE_CODE (expr) == COMPLEX_CST
-	      && real_minus_onep (TREE_REALPART (expr))
-	      && real_zerop (TREE_IMAGPART (expr))));
+  switch (TREE_CODE (expr))
+    {
+    case REAL_CST:
+      return REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconstm1)
+	     && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
+    case COMPLEX_CST:
+      return real_minus_onep (TREE_REALPART (expr))
+	     && real_zerop (TREE_IMAGPART (expr));
+    case VECTOR_CST:
+      {
+	unsigned i;
+	for (i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	  if (!real_minus_onep (VECTOR_CST_ELT (expr, i)))
+	    return false;
+	return true;
+      }
+    default:
+      return false;
+    }
 }
 
 /* Nonzero if EXP is a constant or a cast of a constant.  */
