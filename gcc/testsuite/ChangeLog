@@ -1,3 +1,8 @@
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
+	* gcc.dg/guality/pr54693.c: New.
+
 2012-10-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/55027

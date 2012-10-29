@@ -1,5 +1,11 @@
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/54693
+	* tree-ssa-threadedge.c (thread_around_empty_block): Copy
+	debug temps from predecessor before threading.
+
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/54551
 	PR debug/54693
 	* valtrack.c (dead_debug_global_find): Accept NULL dtemp.
