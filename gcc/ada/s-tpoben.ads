@@ -66,10 +66,14 @@ package System.Tasking.Protected_Objects.Entries is
    type Protected_Entry_Queue_Array is
      array (Protected_Entry_Index range <>) of Entry_Queue;
 
+   --  The following declarations define an array that contains the string
+   --  names of entries and entry family members, together with an associated
+   --  access type.
+
    type Protected_Entry_Names_Array is
-     array (Protected_Entry_Index range <>) of String_Access;
+     array (Entry_Index range <>) of String_Access;
+
    type Protected_Entry_Names_Access is access all Protected_Entry_Names_Array;
-   --  Contains string name of entries and entry family members
 
    --  The following type contains the GNARL state of a protected object.
    --  The application-defined portion of the state (i.e. private objects)
@@ -205,7 +209,7 @@ package System.Tasking.Protected_Objects.Entries is
    --  read and write locks.
 
    function Number_Of_Entries
-     (Object : Protection_Entries_Access) return Protected_Entry_Index;
+     (Object : Protection_Entries_Access) return Entry_Index;
    --  Return the number of entries of a protected object
 
    procedure Set_Ceiling

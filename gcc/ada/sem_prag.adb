@@ -6930,7 +6930,7 @@ package body Sem_Prag is
 
          when Pragma_Attribute_Definition => Attribute_Definition : declare
             Attribute_Designator : constant Node_Id := Get_Pragma_Arg (Arg1);
-            Aname : Name_Id;
+            Aname                : Name_Id;
 
          begin
             GNAT_Pragma;
@@ -6946,11 +6946,17 @@ package body Sem_Prag is
 
             Check_Arg_Is_Local_Name (Arg2);
 
+            --  If the attribute is not recognized, then issue a warning (not
+            --  an error), and ignore the pragma.
+
             Aname := Chars (Attribute_Designator);
+
             if not Is_Attribute_Name (Aname) then
                Bad_Attribute (Attribute_Designator, Aname, Warn => True);
                return;
             end if;
+
+            --  Otherwise, rewrite the pragma as an attribute definition clause
 
             Rewrite (N,
               Make_Attribute_Definition_Clause (Loc,

@@ -1,3 +1,44 @@
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor rewording.
+
+2012-10-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.ads (Is_Expanded_Dispatching_Call): New subprogram.
+	* exp_disp.adb (Expand_Dispatching_Call): No action needed if the
+	call has been already expanded.
+	(Is_Expanded_Dispatching_Call): New subprogram.
+	* sem_disp.adb (Propagate_Tag): No action needed if the call
+	has been already expanded.
+
+2012-10-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Create_Index_And_Data): Remove local
+	variable Index_Typ and its uses. The type of the index is now
+	System.Tasking.Entry_Index. Update all related comments.
+	* rtsfind.ads: Add RE_Entry_Index in tables RE_Id and RE_Unit_Table.
+	* s-taskin.adb (Number_Of_Entries): The return type is now Entry_Index.
+	* s-taskin.ads: The index type of Task_Entry_Names_Array is now
+	Entry_Index.
+	(Number_Of_Entries): The return type is now Entry_Index.
+	* s-tpoben.adb (Number_Of_Entries): The return type is now Entry_Index.
+	* s-tpoben.ads: The index type of Protected_Entry_Names_Array
+	is now Entry_Index.
+	(Number_Of_Entries): The return type is now Entry_Index.
+
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi: Add note about SEH setup on x86-windows.
+
+2012-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-bignum.adb (Allocate_Bignum): Use the exact layout of
+	Bignum_Data for the overlay.
+
 2012-10-29  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_rm.texi, sem_prag.adb, sem_util.adb, sem_util.ads,

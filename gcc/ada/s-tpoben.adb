@@ -359,10 +359,10 @@ package body System.Tasking.Protected_Objects.Entries is
    -----------------------
 
    function Number_Of_Entries
-     (Object : Protection_Entries_Access) return Protected_Entry_Index
+     (Object : Protection_Entries_Access) return Entry_Index
    is
    begin
-      return Object.Num_Entries;
+      return Entry_Index (Object.Num_Entries);
    end Number_Of_Entries;
 
    -----------------

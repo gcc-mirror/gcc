@@ -2382,6 +2382,12 @@ package body Sem_Disp is
          Call_Node := Expression (Actual);
       end if;
 
+      --  No action needed if the call has been already expanded
+
+      if Is_Expanded_Dispatching_Call (Call_Node) then
+         return;
+      end if;
+
       --  Do not set the Controlling_Argument if already set. This happens in
       --  the special case of _Input (see Exp_Attr, case Input).
 
