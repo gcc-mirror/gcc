@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,12 @@ package body Prj.Makr is
    Non_Empty_Node : constant Project_Node_Id := 1;
    --  Used for the With_Clause of the naming project
 
+   --  Turn off warnings for now around this redefinition of True and False,
+   --  but it really seems a bit horrible to do this redefinition ???
+
+   pragma Warnings (Off);
    type Matched_Type is (True, False, Excluded);
+   pragma Warnings (On);
 
    Naming_File_Suffix      : constant String := "_naming";
    Source_List_File_Suffix : constant String := "_source_list.txt";

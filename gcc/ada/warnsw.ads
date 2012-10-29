@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,10 @@ package Warnsw is
    --  clause specifies a size that overrides a size for the typen which was
    --  set with an explicit size clause. Off by default, set by -gnatw.s (but
    --  not -gnatwa).
+
+   Warn_On_Standard_Redefinition : Boolean := False;
+   --  Warn when a program defines an identifier that matches a name in
+   --  Standard. Off by default, set by -gnatw.k (and also by -gnatwa).
 
    -----------------
    -- Subprograms --

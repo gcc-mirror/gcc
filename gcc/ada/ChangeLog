@@ -1,3 +1,37 @@
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Get_Rep_Item): Treat Priority and Interrupt_Priority
+	as equivalent, because only one of them can be specified for a
+	task, protected definition, or subprogram body.
+	* aspects.adb ((Same_Aspect): The canonical aspect of
+	Interrupt_Priority is Priority.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* i-cstrea.ads: Avoid redefinition of standard symbol string.
+	* prj-makr.adb: Add comment for OK redefinition of Stadard.
+	* prj.ads: Add comment for OK redefinition of Stadard.
+	* s-crtl.ads: Avoid redefinition of standard symbol string.
+	* sinfo-cn.adb (Change_Identifier_To_Defining_Identifier):
+	Generate warning for standard redefinition if
+	Warn_On_Standard_Definition set.
+	* usage.adb: Add lines for -gnatw.k and -gnatw.K
+	* warnsw.adb: Set/reset Warn_On_Standard_Redefinition
+	appropriately.
+	* warnsw.ads (Warn_On_Standard_Redefinition): New flag.
+	* s-stratt-xdr.adb: Avoid new warning.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.ads, exp_dbug.adb (Build_Subprogram_Instance_Renamings):
+	in the body of a subpogram instance, introduce local renamings
+	for actuals of an elementary type, so that GDB can recover the
+	values of these actuals more directly.
+
 2012-10-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb (Analyze_Loop_Statement): Add warning for identical
