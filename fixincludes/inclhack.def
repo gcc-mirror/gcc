@@ -196,25 +196,6 @@ fix = {
 	_EndOfHeader_;
 };
 
-
-/*
- *  ... and for the previous fix to be useful, you have to not use ""
- *  includes.
- */
-fix = {
-  hackname  = AAB_darwin7_9_long_double_funcs_2;
-  mach      = "*-*-darwin7.9*";
-  files     = math.h;
-  select    = '#include[ \t]+\"';
-  c_fix     = format;
-  c_fix_arg = "%1<%2.h>";
-  
-  c_fix_arg = '([ \t]*#[ \t]*include[ \t]+)"([a-z0-9/]+)\.h"';
-  
-  test_text = '#include "architecture/ppc/math.h"';
-};
-
-
 /*
  *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
@@ -1069,7 +1050,6 @@ fix = {
     test_text = "extern void exit ( int );";
 };
 
-
 /*
  *  Remove `extern double cabs' declarations from math.h.
  *  This conflicts with C99.  Discovered on AIX.
@@ -1105,7 +1085,7 @@ fix = {
      */
     files     = "architecture/ppc/math.h";
     files     = "architecture/*/math.h";
-    select    = "#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 1345)";
+    select    = '#if defined\(__APPLE_CC__\) && \(__APPLE_CC__ >= 1345\)';
     bypass    = "powl";
     c_fix     = format; 
     c_fix_arg = "#if 1";
@@ -1179,6 +1159,9 @@ fix = {
     test_text = "#define _CTRL(c) ('c'&037)";
 };
 
+/*
+ *  Fix various macros used to define ioctl numbers.
+ */
 fix = {
     hackname  = ctrl_quotes_use;
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
@@ -1213,6 +1196,23 @@ fix = {
                 "}\n"
                 "#endif\n";
     test_text = "extern void* malloc( size_t );";
+};
+
+/*
+ *  For the AAB_darwin7_9_long_double_funcs fix to be useful,
+ *  you have to not use "" includes.
+ */
+fix = {
+    hackname  = darwin_9_long_double_funcs_2;
+    mach      = "*-*-darwin7.9*";
+    files     = math.h;
+    select    = '#include[ \t]+\"';
+    c_fix     = format;
+    c_fix_arg = "%1<%2.h>";
+  
+    c_fix_arg = '([ \t]*#[ \t]*include[ \t]+)"([a-z0-9/]+)\.h"';
+  
+    test_text = '#include "architecture/ppc/math.h"';
 };
 
 
@@ -2498,6 +2498,9 @@ fix = {
     "#define XX_IO(x)        ('x'<<8|256)";
 };
 
+/*
+ *  Fix the usage of the ioctl macro numbers.
+ */
 fix = {
     hackname  = io_quotes_use;
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*"

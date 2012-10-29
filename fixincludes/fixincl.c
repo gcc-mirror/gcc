@@ -53,21 +53,7 @@ static const char z_std_preamble[] =
     original, manufacturer supplied header file.  */\n\n";
 
 int find_base_len = 0;
-
-typedef enum {
-  VERB_SILENT = 0,
-  VERB_FIXES,
-  VERB_APPLIES,
-  VERB_PROGRESS,
-  VERB_TESTS,
-  VERB_EVERYTHING
-} te_verbose;
-
-te_verbose  verbose_level = VERB_PROGRESS;
 int have_tty = 0;
-
-#define VLEVEL(l)  ((unsigned int) verbose_level >= (unsigned int) l)
-#define NOT_SILENT VLEVEL(VERB_FIXES)
 
 pid_t process_chain_head = (pid_t) -1;
 
@@ -412,8 +398,17 @@ run_compiles (void)
   /* FOR every fixup, ...  */
   do
     {
-      tTestDesc *p_test = p_fixd->p_test_desc;
-      int test_ct = p_fixd->test_ct;
+      tTestDesc *p_test;
+      int test_ct;
+
+      if (fixinc_mode && (p_fixd->fd_flags & FD_REPLACEMENT))
+        {
+          p_fixd->fd_flags |= FD_SKIP_TEST;
+          continue;
+        }
+
+      p_test = p_fixd->p_test_desc;
+      test_ct = p_fixd->test_ct;
 
       /*  IF the machine type pointer is not NULL (we are not in test mode)
              AND this test is for or not done on particular machines
