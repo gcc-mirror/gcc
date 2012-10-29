@@ -1,4 +1,4 @@
-2012-09-29  Bruce Korb  <bkorb@gnu.org>
+2012-10-29  Bruce Korb  <bkorb@gnu.org>
 
 	* README: testing wrap and replacement fixes is pointless.
 	* fixincl.c: export verbosity enumerations to fixlib.h
@@ -13,7 +13,7 @@
 	* tests/base/ioLib.h: the need for this is now exposed, so add it.
 	* tests/base/architecture/ppc/math.h: the correct result is now needed.
 
-2012-09-29  Robert Mason  <rbmj@verizon.net>
+2012-10-29  Robert Mason  <rbmj@verizon.net>
 
 	* fixinc.in: Omit machine name checks for vxworks
 	* fixincludes/inclhack.def (AAB_vxworks_assert) new replacement fix
