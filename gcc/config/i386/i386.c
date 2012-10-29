@@ -11810,23 +11810,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
-	  addr = XEXP (addr, 0);
+	  addr = simplify_gen_subreg (SImode, XEXP (addr, 0), DImode, 0);
+	  if (addr == NULL_RTX)
+	    return 0;
 
-	  /* Adjust SUBREGs.  */
-	  if (GET_CODE (addr) == SUBREG
-	      && GET_MODE (SUBREG_REG (addr)) == SImode)
-	    {
-	      addr = SUBREG_REG (addr);
-	      if (CONST_INT_P (addr))
-		return 0;
-	    }
-	  else if (GET_MODE (addr) == DImode)
-	    {
-	      addr = simplify_gen_subreg (SImode, addr, DImode, 0);
-	      if (addr == NULL_RTX)
-		return 0;
-	    }
-	  else if (GET_MODE (addr) != VOIDmode)
+	  if (CONST_INT_P (addr))
 	    return 0;
 	}
     }
