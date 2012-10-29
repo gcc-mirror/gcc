@@ -5459,6 +5459,12 @@ strip_address_mutations (rtx *loc, enum rtx_code *outer_code)
       else if (code == AND && CONST_INT_P (XEXP (*loc, 1)))
 	/* (and ... (const_int -X)) is used to align to X bytes.  */
 	loc = &XEXP (*loc, 0);
+      else if (code == SUBREG
+               && !OBJECT_P (SUBREG_REG (*loc))
+               && subreg_lowpart_p (*loc))
+	/* (subreg (operator ...) ...) inside and is used for mode
+	   conversion too.  */
+	loc = &XEXP (*loc, 0);
       else
 	return loc;
       if (outer_code)
