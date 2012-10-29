@@ -4032,6 +4032,12 @@ allowed to be bigger than the size of the type, but it can waste space if for
 example fields of type R appear in an enclosing record. If the above type is
 compiled in @code{Optimize_Alignment (Space)} mode, the alignment is set to 1.
 
+However, there is one case in which SPACE is ignored. If a variable length
+record (that is a discriminated record with a component which is an array
+whose length depends on a discriminant), has a pragam pack, then it is not
+in general possible to set the alignment of such a record to one, so the
+pragma is ignored in this case (with a warning).
+
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:
 
