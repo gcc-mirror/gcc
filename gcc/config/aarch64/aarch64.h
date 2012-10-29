@@ -794,7 +794,6 @@ do {									     \
 enum aarch64_builtins
 {
   AARCH64_BUILTIN_MIN,
-  AARCH64_BUILTIN_THREAD_POINTER,
   AARCH64_SIMD_BUILTIN_BASE
 };
 

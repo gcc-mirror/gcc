@@ -2923,6 +2923,17 @@
   [(set_attr "length" "0")]
 )
 
+;; Named pattern for expanding thread pointer reference.
+(define_expand "get_thread_pointerdi"
+  [(match_operand:DI 0 "register_operand" "=r")]
+  ""
+{
+  rtx tmp = aarch64_load_tp (operands[0]);
+  if (tmp != operands[0])
+    emit_move_insn (operands[0], tmp);
+  DONE;
+})
+
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")
 
