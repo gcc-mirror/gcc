@@ -27,6 +27,7 @@ with Csets;    use Csets;
 with Namet.Sp; use Namet.Sp;
 with Stylesw;  use Stylesw;
 with Uintp;    use Uintp;
+with Warnsw;   use Warnsw;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
@@ -761,5 +762,22 @@ package body Util is
    begin
       return (Token_Ptr = First_Non_Blank_Location or else Token = Tok_EOF);
    end Token_Is_At_Start_Of_Line;
+
+   -----------------------------------
+   -- Warn_If_Standard_Redefinition --
+   -----------------------------------
+
+   procedure Warn_If_Standard_Redefinition (N : Node_Id) is
+   begin
+      if Warn_On_Standard_Redefinition then
+         declare
+            C : constant Entity_Id := Current_Entity (N);
+         begin
+            if Present (C) and then Sloc (C) = Standard_Location then
+               Error_Msg_N ("redefinition of entity& in Standard?", N);
+            end if;
+         end;
+      end if;
+   end Warn_If_Standard_Redefinition;
 
 end Util;

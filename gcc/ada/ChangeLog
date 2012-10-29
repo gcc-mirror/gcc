@@ -1,3 +1,24 @@
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* warnsw.adb (Set_GNAT_Mode_Warnings): Unset
+	Warn_On_Standard_Redefinition.
+
+2012-10-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Subprograms): Complete documentation.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch11.adb (Warn_If_Standard_Redefinition): Add calls.
+	* par-ch3.adb (P_Defining_Identifier): Call
+	Warn_If_Standard_Redefinition if not inside record definition.
+	* par-ch6.adb (Warn_If_Standard_Redefinition): Add calls.
+	* par-util.adb (Warn_If_Standard_Redefinition): New procedure.
+	* par.adb (Inside_Record_Definition): New flag.
+	(Warn_If_Standard_Redefinition): New procedure.
+	* sinfo-cn.adb (Change_Identifier_To_Defining_Identifier): Remove
+	handling of warning for redefining standard name (moved to Par*).
+
 2012-10-29  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Derive_Progenitor_Subprograms): Disable small

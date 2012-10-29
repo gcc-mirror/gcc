@@ -12804,25 +12804,30 @@ package body Sem_Ch3 is
       --  done here because interfaces must be visible in the partial and
       --  private view (RM 7.3(7.3/2)).
 
-      --  Small optimization: This work is only required if the parent
-      --  is abstract or a generic formal type. If the tagged type is not
-      --  abstract, it cannot have abstract primitives (the only entities
-      --  in the list of primitives of non-abstract tagged types that can
-      --  reference abstract primitives through its Alias attribute are the
-      --  internal entities that have attribute Interface_Alias, and these
-      --  entities are generated later by Add_Internal_Interface_Entities).
-      --  Need explanation for the generic case ???
+      --  Small optimization: This work is only required if the parent may
+      --  have entities whose Alias attribute reference an interface primitive.
+      --  Such a situation may occur if the parent is an abstract type and the
+      --  primitive has not been yet overridden or if the parent is a generic
+      --  formal type covering interfaces.
+
+      --  If the tagged type is not abstract, it cannot have abstract
+      --  primitives (the only entities in the list of primitives of
+      --  non-abstract tagged types that can reference abstract primitives
+      --  through its Alias attribute are the internal entities that have
+      --  attribute Interface_Alias, and these entities are generated later
+      --  by Add_Internal_Interface_Entities).
 
       if In_Private_Part (Current_Scope)
         and then (Is_Abstract_Type (Parent_Type)
-                    or else Is_Generic_Type (Parent_Type))
+                    or else
+                  Is_Generic_Type  (Parent_Type))
       then
          Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
          while Present (Elmt) loop
             Subp := Node (Elmt);
 
             --  At this stage it is not possible to have entities in the list
-            --  of primitives that have attribute Interface_Alias
+            --  of primitives that have attribute Interface_Alias.
 
             pragma Assert (No (Interface_Alias (Subp)));
 
@@ -12846,7 +12851,7 @@ package body Sem_Ch3 is
       end if;
 
       --  Step 2: Add primitives of progenitors that are not implemented by
-      --  parents of Tagged_Type
+      --  parents of Tagged_Type.
 
       if Present (Interfaces (Base_Type (Tagged_Type))) then
          Iface_Elmt := First_Elmt (Interfaces (Base_Type (Tagged_Type)));
@@ -12873,7 +12878,7 @@ package body Sem_Ch3 is
                           Iface_Prim  => Iface_Subp);
 
                   --  If not found we derive a new primitive leaving its alias
-                  --  attribute referencing the interface primitive
+                  --  attribute referencing the interface primitive.
 
                   if No (E) then
                      Derive_Subprogram
@@ -12896,7 +12901,7 @@ package body Sem_Ch3 is
                        Is_Abstract_Subprogram (E));
 
                   --  Propagate to the full view interface entities associated
-                  --  with the partial view
+                  --  with the partial view.
 
                   elsif In_Private_Part (Current_Scope)
                     and then Present (Alias (E))
