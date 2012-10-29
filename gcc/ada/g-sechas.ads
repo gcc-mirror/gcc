@@ -156,6 +156,22 @@ package GNAT.Secure_Hashes is
       Word_Length : constant Natural := Hash_State.Word'Size / 8;
       Hash_Length : constant Natural := Hash_Words * Word_Length;
 
+      subtype Binary_Message_Digest is
+        Stream_Element_Array (1 .. Stream_Element_Offset (Hash_Length));
+      --  The fixed-length byte array returned by Digest, providing
+      --  the hash in binary representation.
+
+      function Digest (C : Context) return Binary_Message_Digest;
+      --  Return hash for the data accumulated with C
+
+      function Digest      (S : String)      return Binary_Message_Digest;
+      function Wide_Digest (W : Wide_String) return Binary_Message_Digest;
+      function Digest
+        (A : Stream_Element_Array) return Binary_Message_Digest;
+      --  These functions are equivalent to the corresponding Update (or
+      --  Wide_Update) on a default initialized Context, followed by Digest
+      --  on the resulting Context.
+
       subtype Message_Digest is String (1 .. 2 * Hash_Length);
       --  The fixed-length string returned by Digest, providing the hash in
       --  hexadecimal representation.

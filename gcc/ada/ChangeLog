@@ -1,3 +1,9 @@
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* g-sechas.adb, g-sechas.ads: (Binary_Message_Digest): New subtype.
+	(Digest): New versions returning a Binary_Message_Digest.
+	(Wide_Digest): Likewise.
+
 2012-10-29  Robert Dewar  <dewar@adacore.com>
 
 	* warnsw.adb: Complete previous change.
