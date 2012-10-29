@@ -1,3 +1,10 @@
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/54930
+	* gcc.dg/Wreturn-local-addr.c: New.
+	* g++.dg/warn/Wno-return-local-addr.C: New.
+	* g++.dg/warn/Wreturn-local-addr.C: New.
+
 2012-10-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/55116

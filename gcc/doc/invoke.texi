@@ -261,7 +261,7 @@ Objective-C and Objective-C++ Dialects}.
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
--Wredundant-decls @gol
+-Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wsign-conversion  -Wsizeof-pointer-memaccess @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
@@ -3534,6 +3534,12 @@ definitions, may be found on the GCC readings page, at
 @uref{http://gcc.gnu.org/@/readings.html}.
 
 This warning is enabled by @option{-Wall} for C and C++.
+
+@item -Wno-return-local-addr
+@opindex Wno-return-local-addr
+@opindex Wreturn-local-addr
+Do not warn about returning a pointer (or in C++, a reference) to a
+variable that goes out of scope after the function returns.
 
 @item -Wreturn-type
 @opindex Wreturn-type
