@@ -1,3 +1,13 @@
+2012-10-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lra-assigns.c: Remove trailing white spaces.
+	* lra-coalesce.c: Likewise.
+	* lra-constraints.c: Likewise.
+	* lra-eliminations.c: Likewise.
+	* lra-int.h: Likewise.
+	* lra-spills.c: Likewise.
+	* lra.c: Likewise.
+
 2012-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53066

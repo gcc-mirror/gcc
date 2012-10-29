@@ -79,7 +79,7 @@ move_freq_compare_func (const void *v1p, const void *v2p)
   rtx mv1 = *(const rtx *) v1p;
   rtx mv2 = *(const rtx *) v2p;
   int pri1, pri2;
-  
+
   pri1 = BLOCK_FOR_INSN (mv1)->frequency;
   pri2 = BLOCK_FOR_INSN (mv2)->frequency;
   if (pri2 - pri1)
