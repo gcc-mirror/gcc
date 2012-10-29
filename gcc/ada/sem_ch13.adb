@@ -5032,7 +5032,8 @@ package body Sem_Ch13 is
          ----------------------------
 
          procedure Replace_Type_Reference (N : Node_Id) is
-            --  Use the Sloc of the usage name below, not the defining name
+            --  See comments in Add_Predicates.Replace_Type_Reference regarding
+            --  Sloc and Comes_From_Source.
          begin
             --  Invariant'Class, replace with T'Class (obj)
 
@@ -5055,6 +5056,8 @@ package body Sem_Ch13 is
                Set_Entity (N, Object_Entity);
                Set_Etype  (N, Typ);
             end if;
+
+            Set_Comes_From_Source (N, True);
          end Replace_Type_Reference;
 
       --  Start of processing for Add_Invariants
@@ -5442,6 +5445,11 @@ package body Sem_Ch13 is
 
             Set_Entity (N, Object_Entity);
             Set_Etype (N, Typ);
+
+            --  We want to treat the node as if it comes from source, so that
+            --  ASIS will not ignore it
+
+            Set_Comes_From_Source (N, True);
          end Replace_Type_Reference;
 
       --  Start of processing for Add_Predicates

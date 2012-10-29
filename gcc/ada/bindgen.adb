@@ -78,6 +78,12 @@ package body Bindgen is
    --  disallow the creation of new dispatching domains just before calling
    --  the main procedure from the environment task.
 
+   System_Tasking_Restricted_Stages_Used : Boolean := False;
+   --  Flag indicating whether the unit System.Tasking.Restricted.Stages is in
+   --  the closure of the partition. This is set by Resolve_Binder_Options,
+   --  and it used to call a routine to active all the tasks at the end of
+   --  the elaboration.
+
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
 
@@ -534,6 +540,12 @@ package body Bindgen is
             WBI ("");
          end if;
 
+         if System_Tasking_Restricted_Stages_Used then
+            WBI ("      procedure Activate_Tasks;");
+            WBI ("      pragma Import (C, Activate_Tasks," &
+                 " ""__gnat_activate_tasks"");");
+         end if;
+
          WBI ("   begin");
 
          if Main_Priority /= No_Main_Priority then
@@ -624,6 +636,14 @@ package body Bindgen is
          WBI ("      Handler_Installed : Integer;");
          WBI ("      pragma Import (C, Handler_Installed, " &
               """__gnat_handler_installed"");");
+
+         --  Import task activation procedure for ravenscar
+
+         if System_Tasking_Restricted_Stages_Used then
+            WBI ("      procedure Activate_Tasks;");
+            WBI ("      pragma Import (C, Activate_Tasks," &
+                 " ""__gnat_activate_tasks"");");
+         end if;
 
          --  The import of the soft link which performs library-level object
          --  finalization is not needed for VM targets; regular Ada is used in
@@ -943,6 +963,10 @@ package body Bindgen is
 
       if Dispatching_Domains_Used then
          WBI ("      Freeze_Dispatching_Domains;");
+      end if;
+
+      if System_Tasking_Restricted_Stages_Used then
+         WBI ("      Activate_Tasks;");
       end if;
 
       --  Case of main program is CIL function or procedure
@@ -2862,6 +2886,12 @@ package body Bindgen is
 
          if OpenVMS_On_Target and then Name_Buffer (1 .. 5) = "dec%s" then
             With_DECGNAT := True;
+         end if;
+
+         --  Likewise for the use of restricted tasking
+
+         if Name_Buffer (1 .. 34) = "system.tasking.restricted.stages%s" then
+            System_Tasking_Restricted_Stages_Used := True;
          end if;
       end loop;
    end Resolve_Binder_Options;

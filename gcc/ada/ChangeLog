@@ -1,3 +1,53 @@
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Add warning for identical
+	inner/outer ranges.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Change terminology "present" to "defined" in talking
+	about whether a given field is defined for a given entity kind.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Minor comment fix.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Reference): Set_Comes_From_Source.
+	Otherwise, the node is ignored by ASIS.
+	* sem_ch5.adb: Minor reformatting.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb, exp_dist.adb, exp_dist.ads (Build_To_Any_Call): Pass
+	an explicit Loc parameter to set the source location of generated
+	nodes.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Task_Activation_Call): Do nothing on
+	restricted profile.
+	* bindgen.adb (System_Tasking_Restricted_Stages_Used): New variable.
+	(Gen_Adainit): Declare and call Activate_Tasks when the above variable
+	is set.
+	(Resolve_Binder_Options): Set the variable.
+	* rtsfind.ads (RE_Activate_Restricted_Tasks): Removed (now unused).
+	* s-tarest.adb (Tasks_Activation_Chain): New variable.
+	(Activate_Restricted_Tasks): Removed, and replaced by ...
+	(Activate_Tasks): New procedure, to activate all tasks at
+	the end of elaboration.
+	(Create_Restricted_Tasks): Chain parameter is now unreferenced.	Put
+	the created task on the Tasks_Activation_Chain list.
+	* s-tarest.ads (Activate_Restricted_Tasks): Removed.
+	(Activate_Tasks): Added.
+
+2012-10-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb (Resolve_If_Expression): Compare subtype of the 'then'
+	expression against the subtype of the expression rather than comparing
+	base types, same as is already done for the 'else' expression.
+
 2012-10-29  Steve Baird  <baird@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): If CodePeer_Mode

@@ -1756,7 +1756,6 @@ package Rtsfind is
      RE_Timed_Task_Entry_Call,           -- System.Tasking.Rendezvous
      RE_Timed_Selective_Wait,            -- System.Tasking.Rendezvous
 
-     RE_Activate_Restricted_Tasks,       -- System.Tasking.Restricted.Stages
      RE_Complete_Restricted_Activation,  -- System.Tasking.Restricted.Stages
      RE_Create_Restricted_Task,          -- System.Tasking.Restricted.Stages
      RE_Complete_Restricted_Task,        -- System.Tasking.Restricted.Stages
@@ -3042,7 +3041,6 @@ package Rtsfind is
      RE_Timed_Task_Entry_Call            => System_Tasking_Rendezvous,
      RE_Timed_Selective_Wait             => System_Tasking_Rendezvous,
 
-     RE_Activate_Restricted_Tasks        => System_Tasking_Restricted_Stages,
      RE_Complete_Restricted_Activation   => System_Tasking_Restricted_Stages,
      RE_Create_Restricted_Task           => System_Tasking_Restricted_Stages,
      RE_Complete_Restricted_Task         => System_Tasking_Restricted_Stages,

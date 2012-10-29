@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,20 +175,11 @@ package System.Tasking.Restricted.Stages is
    --
    --  This procedure can raise Storage_Error if the task creation fails
 
-   procedure Activate_Restricted_Tasks
-     (Chain_Access : Activation_Chain_Access);
-   --  Compiler interface only. Do not call from within the RTS.
-   --  This must be called by the creator of a chain of one or more new tasks,
-   --  to activate them. The chain is a linked list that up to this point is
-   --  only known to the task that created them, though the individual tasks
-   --  are already in the All_Tasks_List.
-   --
-   --  The compiler builds the chain in LIFO order (as a stack). Another
-   --  version of this procedure had code to reverse the chain, so as to
-   --  activate the tasks in the order of declaration. This might be nice, but
-   --  it is not needed if priority-based scheduling is supported, since all
-   --  the activated tasks synchronize on the activators lock before they start
-   --  activating and so they should start activating in priority order.
+   procedure Activate_Tasks;
+   pragma Export (C, Activate_Tasks, "__gnat_activate_tasks");
+   --  Binder interface only. Do not call from within the RTS. This must be
+   --  called an the end of the elaboration to activate all tasks, in order
+   --  to implement the sequential elaboration policy.
 
    procedure Complete_Restricted_Activation;
    --  Compiler interface only. Do not call from within the RTS. This should be
@@ -217,7 +208,7 @@ package System.Tasking.Restricted.Stages is
    --     restricted_terminated (t1._task_id)
 
    procedure Finalize_Global_Tasks;
-   --  This is needed to support the compiler interface; it will only be called
+   --  This is needed to support the compiler interface. It will only be called
    --  by the Environment task in the binder generated file (by adafinal).
    --  Instead, it will cause the Environment to block forever, since none of
    --  the dependent tasks are expected to terminate
