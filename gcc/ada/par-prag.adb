@@ -1098,6 +1098,7 @@ begin
            Pragma_All_Calls_Remote               |
            Pragma_Annotate                       |
            Pragma_Assert                         |
+           Pragma_Assert_And_Cut                 |
            Pragma_Asynchronous                   |
            Pragma_Atomic                         |
            Pragma_Atomic_Components              |

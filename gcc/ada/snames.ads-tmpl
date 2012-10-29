@@ -448,6 +448,7 @@ package Snames is
    --  correctly recognize and process Name_AST_Entry.
 
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
+   Name_Assert_And_Cut                 : constant Name_Id := N + $; -- GNAT
    Name_Asynchronous                   : constant Name_Id := N + $;
    Name_Atomic                         : constant Name_Id := N + $;
    Name_Atomic_Components              : constant Name_Id := N + $;
@@ -1697,6 +1698,7 @@ package Snames is
       Pragma_Abort_Defer,
       Pragma_All_Calls_Remote,
       Pragma_Assert,
+      Pragma_Assert_And_Cut,
       Pragma_Asynchronous,
       Pragma_Atomic,
       Pragma_Atomic_Components,
