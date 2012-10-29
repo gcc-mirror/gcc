@@ -1,3 +1,8 @@
+2012-10-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55106
+	* g++.dg/pr55106.C: New.
+
 2012-10-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53695
