@@ -1,7 +1,7 @@
 2012-10-29  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.c (ix86_decompose_address): Use simplify_gen_subreg
-	to generate SImode equivalent of address, zero-extended with AND RTX.
+	* config/i386/i386.c (ix86_decompose_address): Use simplify_subreg
+	to check SImode equivalent of address, zero-extended with AND RTX.
 	* config/i386/i386.md (ashift to lea splitter): Split to SImode mult.
 	(simple lea to add/shift peephole2s): Remove peephole2s that operate
 	on subregs of DImode operations.
