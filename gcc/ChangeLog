@@ -1,3 +1,7 @@
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/cpp.texi (Search Path): Fix outdated C++ path.
+
 2012-10-28  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Handle
