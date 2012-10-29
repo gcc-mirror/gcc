@@ -1,3 +1,10 @@
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+        PR libstdc++/55123
+        * include/bits/shared_ptr_base.h (__shared_count::_S_create_from_up):
+        Do not instantiate allocator with element_type.
+        * testsuite/20_util/shared_ptr/cons/55123.cc: New.
+
 2012-10-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR libstdc++/54861
