@@ -1,3 +1,8 @@
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Reference): Use correct sloc for
+	the new node.
+
 2012-10-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_elab.adb: Minor reformatting and code reorganization.
