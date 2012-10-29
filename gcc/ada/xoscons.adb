@@ -314,8 +314,8 @@ procedure XOSCons is
         (S : String;
          K : Asm_Int_Kind) return Int_Value_Type
       is
-         First    : Integer := S'First;
-         Result   : Int_Value_Type;
+         First  : Integer := S'First;
+         Result : Int_Value_Type;
 
       begin
          --  On some platforms, immediate integer values are prefixed with

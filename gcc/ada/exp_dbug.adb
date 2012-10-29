@@ -1307,6 +1307,20 @@ package body Exp_Dbug is
       if Has_Qualified_Name (Ent) then
          return;
 
+      --  In formal verification mode, simply append a suffix for homonyms, but
+      --  do not mark the name as being qualified. We used to qualify entity
+      --  names as full expansion does, but this was removed as this prevents
+      --  the verification back-end from using a short name for debugging and
+      --  user interaction. The verification back-end already takes care of
+      --  qualifying names when needed.
+
+      elsif Alfa_Mode then
+         Get_Name_String (Chars (Ent));
+         Append_Homonym_Number (Ent);
+         Output_Homonym_Numbers_Suffix;
+         Set_Chars (Ent, Name_Enter);
+         return;
+
       --  If the entity is a variable encoding the debug name for an object
       --  renaming, then the qualified name of the entity associated with the
       --  renamed object can now be incorporated in the debug name.
