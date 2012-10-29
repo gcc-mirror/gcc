@@ -4652,7 +4652,7 @@ package body Freeze is
          --  this is where we analye the expression (after the type is frozen,
          --  since in the case of Default_Value, we are analyzing with the
          --  type itself, and we treat Default_Component_Value similarly for
-         --  the sake of uniformity.
+         --  the sake of uniformity).
 
          if Is_First_Subtype (E) and then Has_Default_Aspect (E) then
             declare
