@@ -728,8 +728,9 @@ package body System.Bignums is
 
       --  The complex full multi-precision case. We will employ algorithm
       --  D defined in the section "The Classical Algorithms" (sec. 4.3.1)
-      --  of Donald Knuth's "The Art of Computer Programming", Vol. 2. The
-      --  terminology is adjusted for this section to match that reference.
+      --  of Donald Knuth's "The Art of Computer Programming", Vol. 2, 2nd
+      --  edition. The terminology is adjusted for this section to match that
+      --  reference.
 
       --  We are dividing X.Len digits of X (called u here) by Y.Len digits
       --  of Y (called v here), developing the quotient and remainder. The
@@ -775,12 +776,12 @@ package body System.Bignums is
             v (J) := Y.D (J);
          end loop;
 
-         --  [Division of nonnegative integers]. Given nonnegative integers u
+         --  [Division of nonnegative integers.] Given nonnegative integers u
          --  = (ul,u2..um+n) and v = (v1,v2..vn), where v1 /= 0 and n > 1, we
          --  form the quotient u / v = (q0,ql..qm) and the remainder u mod v =
          --  (r1,r2..rn).
 
-         pragma Assert (v (1) /= 0);
+         pragma Assert (v1 /= 0);
          pragma Assert (n > 1);
 
          --  Dl. [Normalize.] Set d = b/(vl + 1). Then set (u0,u1,u2..um+n)
@@ -789,7 +790,7 @@ package body System.Bignums is
          --  u0 at the left of u1; if d = 1 all we need to do in this step is
          --  to set u0 = 0.
 
-         d := b / DD (v1 + 1);
+         d := b / (DD (v1) + 1);
 
          if d = 1 then
             u0 := 0;
@@ -826,15 +827,15 @@ package body System.Bignums is
 
          --  D2. [Initialize j.] Set j = 0. The loop on j, steps D2 through D7,
          --  will be essentially a division of (uj, uj+1..uj+n) by (v1,v2..vn)
-         --  to get a single quotient digit qj;
+         --  to get a single quotient digit qj.
 
          j := 0;
 
          --  Loop through digits
 
          loop
-            --  D3. [Calculate qhat] If uj = v1, set qhat to b-l; otherwise set
-            --  qhat to (uj,uj+1)/v1.
+            --  D3. [Calculate qhat.] If uj = v1, set qhat to b-l; otherwise
+            --  set qhat to (uj,uj+1)/v1.
 
             if u (j) = v1 then
                qhat := -1;

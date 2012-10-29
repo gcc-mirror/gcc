@@ -9422,6 +9422,18 @@ accuracy in some portions of the domain.
 @end cartouche
 Followed.
 
+@cindex Sequential elaboration policy
+@unnumberedsec H.6(15/2): Pragma Partition_Elaboration_Policy
+
+@sp 1
+@cartouche
+If the partition elaboration policy is @code{Sequential} and the
+Environment task becomes permanently blocked during elaboration then the
+partition is deadlocked and it is recommended that the partition be
+immediately terminated.
+@end cartouche
+Not followed.
+
 @c -----------------------------------------
 @node Implementation Defined Characteristics
 @chapter Implementation Defined Characteristics

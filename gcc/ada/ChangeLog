@@ -1,3 +1,82 @@
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_rm.texi: Document implementation advice for Pragma
+	Partition_Elaboration_Policy.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* s-bignum.adb (Div_Rem): Reference that Algorithm_D is from
+	the second edition of TAOCP from Knuth, since the algo changed
+	in the third edition. Also correct the definition of 'd' which
+	could overflow.
+
+2012-10-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Create static strings
+	which denote entry [family] names and associate them with the
+	object's Protection_Entries or ATCB.
+	(Build_Init_Statements):
+	Remove local variable Names. Do not generate the entry [family]
+	names inside the init proc because they are now static.
+	* exp_ch9.adb (Build_Entry_Names): Reimplemented. The strings
+	which denote entry [family] names are now generated statically
+	and associated with the concurrent object's Protection_Entries
+	or ATCB during initialization.
+	* exp_ch9.ads (Build_Entry_Names): Change subprogram profile
+	and associated comment on usage.
+	* rtsfind.ads: Add the following entries to tables RE_Id and
+	RE_Unit_Table:
+
+	RE_Protected_Entry_Names_Array RE_Task_Entry_Names_Array
+	RO_PE_Number_Of_Entries RO_PE_Set_Entry_Names
+	RO_ST_Number_Of_Entries RO_ST_Set_Entry_Names
+
+	Remove the following entries from tables RE_Id and RE_Unit_Table:
+
+	RO_PE_Set_Entry_Name RO_TS_Set_Entry_Name
+
+	* s-taskin.adb: Remove with clause for Ada.Unchecked_Deallocation.
+	(Free_Entry_Names_Array): Removed.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Names): New routine.
+	* s-taskin.ads: Rename type Entry_Names_Array to
+	Task_Entry_Names_Array. Rename type Entry_Names_Array_Access
+	to Task_Entry_Names_Access. Update the type of ACTB field
+	Entry_Names and add a comment on its protection status.
+	(Free_Entry_Names_Array): Removed.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Names): New routine.
+	* s-tassta.adb (Create_Task): Remove formal parameter
+	Build_Entry_Names. Do not allocate an array to hold the
+	string names of entries and families.
+	(Free_Entry_Names): Removed.
+	(Free_Task): Remove the call to Free_Entry_Names.
+	(Set_Entry_Name): Removed.
+	(Vulnerable_Free_Task): Remove the call to Free_Entry_Names.
+	* s-tassta.ads (Create_Task): Remove formal parameter
+	Build_Entry_Names along with associated comment.
+	(Set_Entry_Name): Removed.
+	* s-tpoben.adb: Remove with clause for Ada.Unchecked_Deallocation.
+	(Finalize): Remove the call to Free_Entry_Names.
+	(Free_Entry_Names): Removed.
+	(Initialize_Protection_Entries):
+	Remove formal parameter Build_Entry_Names. Do not allocate
+	an array to hold the string names of entries and families.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Name): Removed.
+	(Set_Entry_Names): New routine.
+	* s-tpoben.ads: Add types Protected_Entry_Names_Array and
+	Protected_Entry_Names_Access. Update the type of Protection_Enties
+	field Entry_Names.
+	(Initialize_Protection_Entries): Remove
+	formal parameter Build_Entry_Names along with associated comment.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Name): Removed.
+	(Set_Entry_Names): New routine.
+
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Minor typo fix.
 2012-10-29  Yannick Moy  <moy@adacore.com>
 
 	* debug.adb Associate debug switch -gnatd.V to extensions for
