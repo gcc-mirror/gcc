@@ -6115,9 +6115,7 @@ package body Sem_Res is
 
       --  Check comparison on unordered enumeration
 
-      if Comes_From_Source (N)
-        and then Bad_Unordered_Enumeration_Reference (N, Etype (L))
-      then
+      if Bad_Unordered_Enumeration_Reference (N, Etype (L)) then
          Error_Msg_N ("comparison on unordered enumeration type?", N);
       end if;
 
