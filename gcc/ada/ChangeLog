@@ -1,3 +1,14 @@
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* xoscons.adb, Make-generated.in; The template used by xoscons is now
+	given as parameter.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_dbug.adb (Qualify_Entity_Name): Only do renaming in formal
+	verification mode when there is a homonym.
+
 2012-10-29  Thomas Quinot  <quinot@adacore.com>
 
 	* xoscons.adb: Minor reformatting.

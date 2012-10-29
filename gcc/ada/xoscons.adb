@@ -23,16 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This program generates the spec of System.OS_Constants (s-oscons.ads)
+--  The base name of the template file is given by Argument (1). This program
+--  generates the spec for this specified unit (let's call it UNIT_NAME).
 
 --  It works in conjunction with a C template file which must be pre-processed
 --  and compiled using the cross compiler. Two input files are used:
---    - the preprocessed C file: s-oscons-tmplt.i
---    - the generated assembly file: s-oscons-tmplt.s
+--    - the preprocessed C file: UNIT_NAME-tmplt.i
+--    - the generated assembly file: UNIT_NAME-tmplt.s
 
---  The contents of s-oscons.ads is written on standard output
+--  The generated files are UNIT_NAME.ads and UNIT_NAME.h
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Command_Line;        use Ada.Command_Line;
 with Ada.Exceptions;          use Ada.Exceptions;
 with Ada.Strings.Fixed;       use Ada.Strings.Fixed;
 with Ada.Text_IO;             use Ada.Text_IO;
@@ -52,7 +54,7 @@ procedure XOSCons is
    use ASCII;
    use Ada.Strings;
 
-   Unit_Name : constant String := "s-oscons";
+   Unit_Name : constant String := Argument (1);
    Tmpl_Name : constant String := Unit_Name & "-tmplt";
 
    -------------------------------------------------
@@ -559,4 +561,7 @@ begin
 
    Close (Tmpl_File);
 
+exception
+   when others =>
+      Put_Line ("xoscons <base_name>");
 end XOSCons;

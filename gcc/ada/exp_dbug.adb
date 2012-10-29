@@ -1315,10 +1315,13 @@ package body Exp_Dbug is
       --  qualifying names when needed.
 
       elsif Alfa_Mode then
-         Get_Name_String (Chars (Ent));
-         Append_Homonym_Number (Ent);
-         Output_Homonym_Numbers_Suffix;
-         Set_Chars (Ent, Name_Enter);
+         if Has_Homonym (Ent) then
+            Get_Name_String (Chars (Ent));
+            Append_Homonym_Number (Ent);
+            Output_Homonym_Numbers_Suffix;
+            Set_Chars (Ent, Name_Enter);
+         end if;
+
          return;
 
       --  If the entity is a variable encoding the debug name for an object
