@@ -234,7 +234,7 @@ package body System.Bignums is
 
             --  Expose a writable view of discriminant BD.Len so that we can
             --  initialize it. We need to use the exact layout of the record
-            --  for the overlay to shield ourselves from endianness issues.
+            --  to ensure that the Length field has 24 bits as expected.
 
             type Bignum_Data_Header is record
                Len : Length;
