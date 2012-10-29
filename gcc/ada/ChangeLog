@@ -1,3 +1,13 @@
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi, sem_prag.adb, sem_util.adb, sem_util.ads,
+	par-prag.adb, par-util.adb, snames.ads-tmpl (Sem_Prag.Analyze_Pragma):
+	Handle new pragma Attribute_Definition.
+	(Sem_Util.Bad_Attribute): New routine, moved here
+	from par-util, so that it can be used by the above.
+	(Par_Util.Signal_Bad_Attribute): Processing moved to
+	Sem_Util.Bad_Attribute.
+
 2012-10-29  Robert Dewar  <dewar@adacore.com>
 
 	* s-tpoben.ads, s-taskin.ads, exp_ch3.adb: Minor reformatting.

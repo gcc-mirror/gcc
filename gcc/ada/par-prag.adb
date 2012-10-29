@@ -1103,6 +1103,7 @@ begin
            Pragma_Atomic                         |
            Pragma_Atomic_Components              |
            Pragma_Attach_Handler                 |
+           Pragma_Attribute_Definition           |
            Pragma_Check                          |
            Pragma_Check_Name                     |
            Pragma_Check_Policy                   |

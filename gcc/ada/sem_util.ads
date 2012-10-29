@@ -108,6 +108,14 @@ package Sem_Util is
    --  are open, and the scope of the array is not outside the scope of the
    --  component.
 
+   procedure Bad_Attribute
+     (N    : Node_Id;
+      Nam  : Name_Id;
+      Warn : Boolean := False);
+   --  Called when node N is expected to contain a valid attribute name, and
+   --  Nam is found instead. If Warn is set True this is a warning, else this
+   --  is an error.
+
    procedure Bad_Predicated_Subtype_Use
      (Msg : String;
       N   : Node_Id;

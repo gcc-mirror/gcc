@@ -107,6 +107,7 @@ Implementation Defined Pragmas
 * Pragma Assert::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Attribute_Definition::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
@@ -845,6 +846,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assert::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Attribute_Definition::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
@@ -1307,6 +1309,28 @@ may be used to handle an OpenVMS asynchronous system trap (@code{AST})
 resulting from an OpenVMS system service call.  The pragma does not affect
 normal use of the entry.  For further details on this pragma, see the
 DEC Ada Language Reference Manual, section 9.12a.
+
+@node Pragma Attribute_Definition
+@unnumberedsec Pragma Attribute_Definition
+@findex Attribute_Definition
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Attribute_Definition
+  ([Attribute  =>] ATTRIBUTE_DESIGNATOR,
+   [Entity     =>] LOCAL_NAME,
+   [Expression =>] EXPRESSION | NAME);
+@end smallexample
+
+@noindent
+If Attribute is a known attribute name, this pragma is equivalent to
+the attribute definition clause:
+@smallexample @c ada
+  for Entity'Attribute use Expression;
+@end smallexample
+else the pragma is ignored, and a warning is emitted. This allows source
+code to be written that takes advantage of some new attribute, while remaining
+compilable with earlier compilers.
 
 @node Pragma C_Pass_By_Copy
 @unnumberedsec Pragma C_Pass_By_Copy

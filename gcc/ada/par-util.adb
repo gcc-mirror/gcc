@@ -716,20 +716,7 @@ package body Util is
 
    procedure Signal_Bad_Attribute is
    begin
-      Error_Msg_N ("unrecognized attribute&", Token_Node);
-
-      --  Check for possible misspelling
-
-      Error_Msg_Name_1 := First_Attribute_Name;
-      while Error_Msg_Name_1 <= Last_Attribute_Name loop
-         if Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1) then
-            Error_Msg_N -- CODEFIX
-              ("\possible misspelling of %", Token_Node);
-            exit;
-         end if;
-
-         Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
-      end loop;
+      Bad_Attribute (Token_Node, Token_Name, Warn => False);
    end Signal_Bad_Attribute;
 
    -----------------------------
