@@ -1936,7 +1936,7 @@ package Opt is
    --  for integers are limited to the strict minimum with this option. Set by
    --  debug flag -gnatd.D.
 
-   S14_Extensions : Boolean := False;
+   Formal_Extensions : Boolean := False;
    --  When this flag is set, new aspects/pragmas/attributes are accepted,
    --  whose main purpose is to facilitate formal verification. Set by debug
    --  flag -gnatd.V.

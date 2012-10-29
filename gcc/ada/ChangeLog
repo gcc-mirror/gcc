@@ -1,3 +1,16 @@
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* s-tpoben.ads, s-taskin.ads, exp_ch3.adb: Minor reformatting.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, gnat1drv.adb, opt.ads: Rename S14_Extensions
+	into Formal_Extensions.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
 2012-10-29  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat_rm.texi: Document implementation advice for Pragma

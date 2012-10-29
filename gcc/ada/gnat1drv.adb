@@ -419,7 +419,7 @@ procedure Gnat1drv is
       --  Set switches for formal verification mode
 
       if Debug_Flag_Dot_VV then
-         S14_Extensions := True;
+         Formal_Extensions := True;
       end if;
 
       if Debug_Flag_Dot_FF then

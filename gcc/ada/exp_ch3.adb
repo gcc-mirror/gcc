@@ -3101,8 +3101,7 @@ package body Exp_Ch3 is
 
                      Clean_Task_Names (Typ, Proc_Id);
 
-                     --  Preserve the initialization state in the current
-                     --  counter.
+                     --  Preserve initialization state in the current counter
 
                      if Needs_Finalization (Typ) then
                         if No (Counter_Id) then
