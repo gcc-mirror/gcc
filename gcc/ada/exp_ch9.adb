@@ -13912,11 +13912,10 @@ package body Exp_Ch9 is
           Prefix => Make_Identifier (Loc, New_External_Name (Tnam, 'E')),
           Attribute_Name => Name_Unchecked_Access));
 
-      if not Restricted_Profile then
-         --  Chain parameter. This is a reference to the _Chain parameter of
-         --  the initialization procedure. There is no chain in restricted
-         --  profile.
+      --  Chain parameter. This is a reference to the Chain parameter of the
+      --  initialization procedure. There is no chain in restricted profile.
 
+      if not Restricted_Profile then
          Append_To (Args, Make_Identifier (Loc, Name_uChain));
       end if;
 

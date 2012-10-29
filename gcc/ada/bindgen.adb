@@ -65,18 +65,18 @@ package body Bindgen is
 
    System_Restrictions_Used : Boolean := False;
    --  Flag indicating whether the unit System.Restrictions is in the closure
-   --  of the partition. This is set by Resolve_Binder_Options, and
-   --  is used to determine whether or not to initialize the restrictions
-   --  information in the body of the binder generated file (we do not want
-   --  to do this unconditionally, since it drags in the System.Restrictions
-   --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
+   --  of the partition. This is set by Resolve_Binder_Options, and is used
+   --  to determine whether or not to initialize the restrictions information
+   --  in the body of the binder generated file (we do not want to do this
+   --  unconditionally, since it drags in the System.Restrictions unit
+   --  unconditionally, which is unpleasand, especially for ZFP etc.)
 
    Dispatching_Domains_Used : Boolean := False;
    --  Flag indicating whether multiprocessor dispatching domains are used in
-   --  the closure of the partition. This is set by Resolve_Binder_Options,
-   --  and is used to call the routine to disallow the creation of new
-   --  dispatching domains just before calling the main procedure from the
-   --  environment task.
+   --  the closure of the partition. This is set by Resolve_Binder_Options, and
+   --  is used to call the routine to disallow the creation of new dispatching
+   --  domains just before calling the main procedure from the environment
+   --  task.
 
    System_Tasking_Restricted_Stages_Used : Boolean := False;
    --  Flag indicating whether the unit System.Tasking.Restricted.Stages is in
@@ -2814,10 +2814,11 @@ package body Bindgen is
    ----------------------------
 
    procedure Resolve_Binder_Options is
+
       procedure Check_Package (Var : in out Boolean; Name : String);
-      --  Set Var to true iff the current identifier in Namet is Name.
-      --  Do nothing if it doesn't match. This procedure is just an helper
-      --  to avoid to explicitely deal with length.
+      --  Set Var to true iff the current identifier in Namet is Name. Do
+      --  nothing if it doesn't match. This procedure is just an helper to
+      --  avoid to explicitely deal with length.
 
       -------------------
       -- Check_Package --
@@ -2831,13 +2832,16 @@ package body Bindgen is
             Var := True;
          end if;
       end Check_Package;
+
+   --  Start of processing for Check_Package
+
    begin
       for E in Elab_Order.First .. Elab_Order.Last loop
          Get_Name_String (Units.Table (Elab_Order.Table (E)).Uname);
 
          --  This is not a perfect approach, but is the current protocol
          --  between the run-time and the binder to indicate that tasking is
-         --  used: system.os_interface should always be used by any tasking
+         --  used: System.OS_Interface should always be used by any tasking
          --  application.
 
          Check_Package (With_GNARL, "system.os_interface%s");

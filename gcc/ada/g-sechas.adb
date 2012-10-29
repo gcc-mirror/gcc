@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2009-2012, Free Software Foundation, Inc.          --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,10 +212,10 @@ package body GNAT.Secure_Hashes is
       -- Final --
       -----------
 
-      --  Once a complete message has been processed, it is padded with one
-      --  1 bit followed by enough 0 bits so that the last block is
-      --  2 * Word'Size bits short of being completed. The last 2 * Word'Size
-      --  bits are set to the message size in bits (excluding padding).
+      --  Once a complete message has been processed, it is padded with one 1
+      --  bit followed by enough 0 bits so that the last block is 2 * Word'Size
+      --  bits short of being completed. The last 2 * Word'Size bits are set to
+      --  the message size in bits (excluding padding).
 
       procedure Final
         (C          : Context;

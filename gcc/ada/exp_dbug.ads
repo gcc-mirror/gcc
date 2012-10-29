@@ -1447,15 +1447,14 @@ package Exp_Dbug is
    -----------------------------------------------
 
    procedure Build_Subprogram_Instance_Renamings
-     (N      : Node_Id;
-     Wrapper : Entity_Id);
-
+     (N       : Node_Id;
+      Wrapper : Entity_Id);
    --  The debugger has difficulties in recovering the value of actuals of an
    --  elementary type, from within the body of a subprogram instantiation.
    --  This is because such actuals generate an object declaration that is
    --  placed within the wrapper package of the instance, and the entity in
    --  these declarations is encoded in a complex way that GDB does not handle
-   --  well.  These new renaming declarations appear within the body of the
+   --  well. These new renaming declarations appear within the body of the
    --  subprogram, and are redundant from a visibility point of view, but They
    --  should have no measurable performance impact, and require no special
    --  decoding in the debugger.
