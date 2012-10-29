@@ -7155,12 +7155,13 @@ package body Sem_Res is
       Resolve (Then_Expr, Typ);
       Then_Typ := Etype (Then_Expr);
 
-      --  When the "then" expression is of a scalar type different from the
-      --  result type, then insert a conversion to ensure the generation of
-      --  a constraint check.
+      --  When the "then" expression is of a scalar subtype different from the
+      --  result subtype, then insert a conversion to ensure the generation of
+      --  a constraint check. The same is done for the else part below, again
+      --  comparing subtypes rather than base types.
 
       if Is_Scalar_Type (Then_Typ)
-        and then Base_Type (Then_Typ) /= Base_Type (Typ)
+        and then Then_Typ /= Typ
       then
          Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
          Analyze_And_Resolve (Then_Expr, Typ);

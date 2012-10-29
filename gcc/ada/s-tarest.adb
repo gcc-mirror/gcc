@@ -70,6 +70,9 @@ package body System.Tasking.Restricted.Stages is
    use Task_Primitives.Operations;
    use Task_Info;
 
+   Tasks_Activation_Chain : Task_Id;
+   --  Chain of all the tasks to activate
+
    Global_Task_Lock : aliased System.Task_Primitives.RTS_Lock;
    --  This is a global lock; it is used to execute in mutual exclusion
    --  from all other tasks. It is only used by Task_Lock and Task_Unlock.
@@ -298,9 +301,9 @@ package body System.Tasking.Restricted.Stages is
    -- Restricted GNARLI --
    -----------------------
 
-   -------------------------------
-   -- Activate_Restricted_Tasks --
-   -------------------------------
+   --------------------
+   -- Activate_Tasks --
+   --------------------
 
    --  Note that locks of activator and activated task are both locked here.
    --  This is necessary because C.State and Self.Wait_Count have to be
@@ -308,9 +311,7 @@ package body System.Tasking.Restricted.Stages is
    --  created before the activated task. That satisfies our
    --  in-order-of-creation ATCB locking policy.
 
-   procedure Activate_Restricted_Tasks
-     (Chain_Access : Activation_Chain_Access)
-   is
+   procedure Activate_Tasks is
       Self_ID       : constant Task_Id := STPO.Self;
       C             : Task_Id;
       Activate_Prio : System.Any_Priority;
@@ -332,8 +333,7 @@ package body System.Tasking.Restricted.Stages is
       --  Activate all the tasks in the chain. Creation of the thread of
       --  control was deferred until activation. So create it now.
 
-      C := Chain_Access.T_ID;
-
+      C := Tasks_Activation_Chain;
       while C /= null loop
          if C.Common.State /= Terminated then
             pragma Assert (C.Common.State = Unactivated);
@@ -384,8 +384,8 @@ package body System.Tasking.Restricted.Stages is
 
       --  Remove the tasks from the chain
 
-      Chain_Access.T_ID := null;
-   end Activate_Restricted_Tasks;
+      Tasks_Activation_Chain := null;
+   end Activate_Tasks;
 
    ------------------------------------
    -- Complete_Restricted_Activation --
@@ -466,6 +466,8 @@ package body System.Tasking.Restricted.Stages is
       Task_Image    : String;
       Created_Task  : Task_Id)
    is
+      pragma Unreferenced (Chain);
+
       Self_ID       : constant Task_Id := STPO.Self;
       Base_Priority : System.Any_Priority;
       Base_CPU      : System.Multiprocessors.CPU_Range;
@@ -558,8 +560,8 @@ package body System.Tasking.Restricted.Stages is
       --  may be used by the operation of Ada code within the task.
 
       SSL.Create_TSD (Created_Task.Common.Compiler_Data);
-      Created_Task.Common.Activation_Link := Chain.T_ID;
-      Chain.T_ID := Created_Task;
+      Created_Task.Common.Activation_Link := Tasks_Activation_Chain;
+      Tasks_Activation_Chain := Created_Task;
    end Create_Restricted_Task;
 
    ---------------------------
