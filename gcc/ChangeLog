@@ -1,3 +1,8 @@
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/54930
+	* doc/invoke.texi (Warning Options): Document -Wno-return-local-addr.
+
 2012-10-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* lra-assigns.c: Remove trailing white spaces.

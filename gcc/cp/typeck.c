@@ -8020,14 +8020,14 @@ maybe_warn_about_returning_address_of_local (tree retval)
       if (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
 	  || TREE_CODE (whats_returned) == TARGET_EXPR)
 	{
-	  warning (0, "returning reference to temporary");
+	  warning (OPT_Wreturn_local_addr, "returning reference to temporary");
 	  return;
 	}
       if (TREE_CODE (whats_returned) == VAR_DECL
 	  && DECL_NAME (whats_returned)
 	  && TEMP_NAME_P (DECL_NAME (whats_returned)))
 	{
-	  warning (0, "reference to non-lvalue returned");
+	  warning (OPT_Wreturn_local_addr, "reference to non-lvalue returned");
 	  return;
 	}
     }
@@ -8043,10 +8043,10 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	   || TREE_PUBLIC (whats_returned)))
     {
       if (TREE_CODE (valtype) == REFERENCE_TYPE)
-	warning (0, "reference to local variable %q+D returned",
+	warning (OPT_Wreturn_local_addr, "reference to local variable %q+D returned",
 		 whats_returned);
       else
-	warning (0, "address of local variable %q+D returned",
+	warning (OPT_Wreturn_local_addr, "address of local variable %q+D returned",
 		 whats_returned);
       return;
     }
