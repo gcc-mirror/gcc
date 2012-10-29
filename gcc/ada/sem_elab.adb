@@ -1884,18 +1884,15 @@ package body Sem_Elab is
 
    begin
       --  If not function or procedure call or instantiation, then ignore
-      --  call (this happens in some error case and rewriting cases)
+      --  call (this happens in some error cases and rewriting cases).
 
-      if Nkind (N) /= N_Function_Call
-           and then
-         Nkind (N) /= N_Procedure_Call_Statement
-           and then
-         not Inst_Case
+      if not Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+        and then not Inst_Case
       then
          return;
 
-      --  Nothing to do if this is a call or instantiation that has
-      --  already been found to be a sure ABE
+      --  Nothing to do if this is a call or instantiation that has already
+      --  been found to be a sure ABE.
 
       elsif ABE_Is_Certain (N) then
          return;

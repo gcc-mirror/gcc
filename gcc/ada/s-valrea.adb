@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Powten_Table; use System.Powten_Table;
-with System.Val_Util;     use System.Val_Util;
+with System.Powten_Table;  use System.Powten_Table;
+with System.Val_Util;      use System.Val_Util;
 with System.Float_Control;
 
 package body System.Val_Real is
@@ -82,10 +82,6 @@ package body System.Val_Real is
       --  necessarily required in a case like this where the result is not
       --  a machine number, but it is certainly a desirable behavior.
 
-      procedure Bad_Based_Value;
-      pragma No_Return (Bad_Based_Value);
-      --  Raise exception for bad based value
-
       procedure Scanf;
       --  Scans integer literal value starting at current character position.
       --  For each digit encountered, Uval is multiplied by 10.0, and the new
@@ -94,16 +90,6 @@ package body System.Val_Real is
       --  longest possible syntactically valid numeral is scanned out, and on
       --  return P points past the last character. On entry, the current
       --  character is known to be a digit, so a numeral is definitely present.
-
-      ---------------------
-      -- Bad_Based_Value --
-      ---------------------
-
-      procedure Bad_Based_Value is
-      begin
-         raise Constraint_Error with
-           "invalid based literal for 'Value";
-      end Bad_Based_Value;
 
       -----------
       -- Scanf --
@@ -194,8 +180,7 @@ package body System.Val_Real is
       --  Any other initial character is an error
 
       else
-         raise Constraint_Error with
-           "invalid character in 'Value string";
+         Bad_Value (Str);
       end if;
 
       --  Deal with based case
@@ -233,7 +218,7 @@ package body System.Val_Real is
 
             loop
                if P > Max then
-                  Bad_Based_Value;
+                  Bad_Value (Str);
 
                elsif Str (P) in Digs then
                   Digit := Character'Pos (Str (P)) - Character'Pos ('0');
@@ -247,7 +232,7 @@ package body System.Val_Real is
                     Character'Pos (Str (P)) - (Character'Pos ('a') - 10);
 
                else
-                  Bad_Based_Value;
+                  Bad_Value (Str);
                end if;
 
                --  Save up trailing zeroes after the decimal point
@@ -281,7 +266,7 @@ package body System.Val_Real is
                P := P + 1;
 
                if P > Max then
-                  Bad_Based_Value;
+                  Bad_Value (Str);
 
                elsif Str (P) = '_' then
                   Scan_Underscore (Str, P, Ptr, Max, True);
@@ -296,7 +281,7 @@ package body System.Val_Real is
                      After_Point := 1;
 
                      if P > Max then
-                        Bad_Based_Value;
+                        Bad_Value (Str);
                      end if;
                   end if;
 
@@ -372,7 +357,7 @@ package body System.Val_Real is
       --  Here is where we check for a bad based number
 
       if Bad_Base then
-         Bad_Based_Value;
+         Bad_Value (Str);
 
       --  If OK, then deal with initial minus sign, note that this processing
       --  is done even if Uval is zero, so that -0.0 is correctly interpreted.

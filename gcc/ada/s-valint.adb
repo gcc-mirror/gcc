@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,7 +58,7 @@ package body System.Val_Int is
 
       if Str (Ptr.all) not in '0' .. '9' then
          Ptr.all := Start;
-         raise Constraint_Error;
+         Bad_Value (Str);
       end if;
 
       Uval := Scan_Raw_Unsigned (Str, Ptr, Max);
@@ -69,7 +69,7 @@ package body System.Val_Int is
          if Minus and then Uval = Unsigned (-(Integer'First)) then
             return Integer'First;
          else
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
 
       --  Negative values

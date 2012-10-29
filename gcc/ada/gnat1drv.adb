@@ -419,7 +419,6 @@ procedure Gnat1drv is
       --  Set switches for formal verification mode
 
       if Debug_Flag_Dot_FF then
-
          Alfa_Mode := True;
 
          --  Set strict standard interpretation of compiler permissions
@@ -448,15 +447,13 @@ procedure Gnat1drv is
 
          Restrict.Restrictions.Set (No_Initialize_Scalars) := True;
 
-         --  Suppress all language checks since they are handled implicitly by
-         --    the formal verification backend.
-         --  Turn off dynamic elaboration checks.
-         --  Turn off alignment checks.
-         --  Turn off validity checking.
-
-         Suppress_Options           := Suppress_All;
-         Dynamic_Elaboration_Checks := False;
-         Reset_Validity_Check_Options;
+         --  Note: at this point we used to suppress various checks, but that
+         --  is not what we want. We need the semantic processing for these
+         --  checks (which will set flags like Do_Overflow_Check, showing the
+         --  points at which potential checks are required semantically). We
+         --  don't want the expansion associated with these checks, but that
+         --  happens anyway because this expansion is simply not done in the
+         --  Alfa version of the expander.
 
          --  Kill debug of generated code, since it messes up sloc values
 
