@@ -1,3 +1,13 @@
+2012-10-29  Terry Guo  <terry.guo@arm.com>
+
+	Backport from mainline
+	2012-10-11  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (arm_arch6m): New variable to denote armv6-m
+	architecture.
+	* config/arm/arm.h (TARGET_HAVE_DMB): The armv6-m also has DMB
+	instruction.
+
 2012-10-26  Gunther Nikl  <gnikl@users.sourceforge.net>
 
 	* common/config/m68k/m68k-common.c (m68k_handle_option): Set

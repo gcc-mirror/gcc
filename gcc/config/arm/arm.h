@@ -267,7 +267,7 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_UNIFIED_ASM TARGET_THUMB2
 
 /* Nonzero if this chip provides the DMB instruction.  */
-#define TARGET_HAVE_DMB		(arm_arch7)
+#define TARGET_HAVE_DMB		(arm_arch6m || arm_arch7)
 
 /* Nonzero if this chip implements a memory barrier via CP15.  */
 #define TARGET_HAVE_DMB_MCR	(arm_arch6 && ! TARGET_HAVE_DMB \
@@ -382,6 +382,9 @@ extern int arm_arch6;
 
 /* Nonzero if this chip supports the ARM Architecture 6k extensions.  */
 extern int arm_arch6k;
+
+/* Nonzero if instructions present in ARMv6-M can be used.  */
+extern int arm_arch6m;
 
 /* Nonzero if this chip supports the ARM Architecture 7 extensions.  */
 extern int arm_arch7;
