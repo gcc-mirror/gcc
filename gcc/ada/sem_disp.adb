@@ -840,7 +840,7 @@ package body Sem_Disp is
       Tagged_Type := Find_Dispatching_Type (Subp);
 
       --  Ada 2005 (AI-345): Use the corresponding record (if available).
-      --  Required because primitives of concurrent types are be attached
+      --  Required because primitives of concurrent types are attached
       --  to the corresponding record (not to the concurrent type).
 
       if Ada_Version >= Ada_2005

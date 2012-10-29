@@ -12804,16 +12804,18 @@ package body Sem_Ch3 is
       --  done here because interfaces must be visible in the partial and
       --  private view (RM 7.3(7.3/2)).
 
-      --  Small optimization: This work is only required if the parent is
-      --  abstract. If the tagged type is not abstract, it cannot have
-      --  abstract primitives (the only entities in the list of primitives of
-      --  non-abstract tagged types that can reference abstract primitives
-      --  through its Alias attribute are the internal entities that have
-      --  attribute Interface_Alias, and these entities are generated later
-      --  by Add_Internal_Interface_Entities).
+      --  Small optimization: This work is only required if the parent
+      --  is abstract or a generic formal type. If the tagged type is not
+      --  abstract, it cannot have abstract primitives (the only entities
+      --  in the list of primitives of non-abstract tagged types that can
+      --  reference abstract primitives through its Alias attribute are the
+      --  internal entities that have attribute Interface_Alias, and these
+      --  entities are generated later by Add_Internal_Interface_Entities).
+      --  Need explanation for the generic case ???
 
       if In_Private_Part (Current_Scope)
-        and then Is_Abstract_Type (Parent_Type)
+        and then (Is_Abstract_Type (Parent_Type)
+                    or else Is_Generic_Type (Parent_Type))
       then
          Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
          while Present (Elmt) loop

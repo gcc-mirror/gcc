@@ -911,7 +911,7 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Activation_Chain_Entity
 
    begin
-      --  Activation chain is never used in restricted profile
+      --  Activation chain is never used in restricted profile (why not???)
 
       if Restricted_Profile then
          return;
@@ -919,8 +919,7 @@ package body Exp_Ch9 is
 
       Find_Enclosing_Context (N, Context, Context_Id, Decls);
 
-      --  If an activation chain entity has not been declared already, create
-      --  one.
+      --  If activation chain entity has not been declared already, create one
 
       if Nkind (Context) = N_Extended_Return_Statement
         or else No (Activation_Chain_Entity (Context))

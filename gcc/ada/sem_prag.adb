@@ -6763,11 +6763,13 @@ package body Sem_Prag is
          -- Assert/Assert_And_Cut --
          ---------------------------
 
-         --  pragma Assert ([Check =>] Boolean_EXPRESSION
-         --                 [, [Message =>] Static_String_EXPRESSION]);
+         --  pragma Assert
+         --    (   [Check => ]  Boolean_EXPRESSION
+         --     [, [Message =>] Static_String_EXPRESSION]);
 
-         --  pragma Assert_And_Cut ([Check =>] Boolean_EXPRESSION
-         --                         [, [Message =>] Static_String_EXPRESSION]);
+         --  pragma Assert_And_Cut
+         --    (   [Check => ]  Boolean_EXPRESSION
+         --     [, [Message =>] Static_String_EXPRESSION]);
 
          when Pragma_Assert | Pragma_Assert_And_Cut => Assert : declare
             Expr : Node_Id;
@@ -6776,7 +6778,6 @@ package body Sem_Prag is
          begin
             if Prag_Id = Pragma_Assert then
                Ada_2005_Pragma;
-
             else -- Pragma_Assert_And_Cut
                GNAT_Pragma;
             end if;
