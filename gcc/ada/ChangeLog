@@ -1,3 +1,13 @@
+2012-10-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Subprograms): Disable small
+	optimization in generic formal types.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, exp_ch3.adb: Add comments.
+	* sem_prag.adb: Minor reformatting.
+
 2012-10-29  Tristan Gingold  <gingold@adacore.com>
 
 	* bindgen.adb (Gen_Output_File_Ada): Do not emit declaration for

@@ -1537,10 +1537,9 @@ package body Exp_Ch3 is
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
 
+         --  Add _Chain (not done in the restricted profile because ???)
+
          if not Restricted_Profile then
-
-            --  No _Chain for restricted profile
-
             Append_To (Args, Make_Identifier (Loc, Name_uChain));
          end if;
 
