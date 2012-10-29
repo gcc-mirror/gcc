@@ -107,17 +107,18 @@ package body ALI is
       --  Initialize global variables recording cumulative options in all
       --  ALI files that are read for a given processing run in gnatbind.
 
-      Dynamic_Elaboration_Checks_Specified := False;
-      Float_Format_Specified               := ' ';
-      Locking_Policy_Specified             := ' ';
-      No_Normalize_Scalars_Specified       := False;
-      No_Object_Specified                  := False;
-      Normalize_Scalars_Specified          := False;
-      Queuing_Policy_Specified             := ' ';
-      Static_Elaboration_Model_Used        := False;
-      Task_Dispatching_Policy_Specified    := ' ';
-      Unreserve_All_Interrupts_Specified   := False;
-      Zero_Cost_Exceptions_Specified       := False;
+      Dynamic_Elaboration_Checks_Specified   := False;
+      Float_Format_Specified                 := ' ';
+      Locking_Policy_Specified               := ' ';
+      No_Normalize_Scalars_Specified         := False;
+      No_Object_Specified                    := False;
+      Normalize_Scalars_Specified            := False;
+      Partition_Elaboration_Policy_Specified := ' ';
+      Queuing_Policy_Specified               := ' ';
+      Static_Elaboration_Model_Used          := False;
+      Task_Dispatching_Policy_Specified      := ' ';
+      Unreserve_All_Interrupts_Specified     := False;
+      Zero_Cost_Exceptions_Specified         := False;
    end Initialize_ALI;
 
    --------------
@@ -813,36 +814,37 @@ package body ALI is
       Set_Name_Table_Info (F, Int (Id));
 
       ALIs.Table (Id) := (
-        Afile                      => F,
-        Compile_Errors             => False,
-        First_Interrupt_State      => Interrupt_States.Last + 1,
-        First_Sdep                 => No_Sdep_Id,
-        First_Specific_Dispatching => Specific_Dispatching.Last + 1,
-        First_Unit                 => No_Unit_Id,
-        Float_Format               => 'I',
-        Last_Interrupt_State       => Interrupt_States.Last,
-        Last_Sdep                  => No_Sdep_Id,
-        Last_Specific_Dispatching  => Specific_Dispatching.Last,
-        Last_Unit                  => No_Unit_Id,
-        Locking_Policy             => ' ',
-        Main_Priority              => -1,
-        Main_CPU                   => -1,
-        Main_Program               => None,
-        No_Object                  => False,
-        Normalize_Scalars          => False,
-        Ofile_Full_Name            => Full_Object_File_Name,
-        Queuing_Policy             => ' ',
-        Restrictions               => No_Restrictions,
-        SAL_Interface              => False,
-        Sfile                      => No_File,
-        Task_Dispatching_Policy    => ' ',
-        Time_Slice_Value           => -1,
-        Allocator_In_Body          => False,
-        WC_Encoding                => 'b',
-        Unit_Exception_Table       => False,
-        Ver                        => (others => ' '),
-        Ver_Len                    => 0,
-        Zero_Cost_Exceptions       => False);
+        Afile                        => F,
+        Compile_Errors               => False,
+        First_Interrupt_State        => Interrupt_States.Last + 1,
+        First_Sdep                   => No_Sdep_Id,
+        First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
+        First_Unit                   => No_Unit_Id,
+        Float_Format                 => 'I',
+        Last_Interrupt_State         => Interrupt_States.Last,
+        Last_Sdep                    => No_Sdep_Id,
+        Last_Specific_Dispatching    => Specific_Dispatching.Last,
+        Last_Unit                    => No_Unit_Id,
+        Locking_Policy               => ' ',
+        Main_Priority                => -1,
+        Main_CPU                     => -1,
+        Main_Program                 => None,
+        No_Object                    => False,
+        Normalize_Scalars            => False,
+        Ofile_Full_Name              => Full_Object_File_Name,
+        Partition_Elaboration_Policy => ' ',
+        Queuing_Policy               => ' ',
+        Restrictions                 => No_Restrictions,
+        SAL_Interface                => False,
+        Sfile                        => No_File,
+        Task_Dispatching_Policy      => ' ',
+        Time_Slice_Value             => -1,
+        Allocator_In_Body            => False,
+        WC_Encoding                  => 'b',
+        Unit_Exception_Table         => False,
+        Ver                          => (others => ' '),
+        Ver_Len                      => 0,
+        Zero_Cost_Exceptions         => False);
 
       --  Now we acquire the input lines from the ALI file. Note that the
       --  convention in the following code is that as we enter each section,
@@ -1026,6 +1028,13 @@ package body ALI is
             elsif C = 'D' then
                Checkc ('B');
                Detect_Blocking := True;
+
+            --  Processing for Ex
+
+            elsif C = 'E' then
+               Partition_Elaboration_Policy_Specified := Getc;
+               ALIs.Table (Id).Partition_Elaboration_Policy :=
+                 Partition_Elaboration_Policy_Specified;
 
             --  Processing for FD/FG/FI
 

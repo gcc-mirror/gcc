@@ -409,6 +409,7 @@ package Snames is
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
    Name_Overflow_Checks                : constant Name_Id := N + $; -- GNAT
+   Name_Partition_Elaboration_Policy   : constant Name_Id := N + $; -- Ada 05
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
    Name_Priority_Specific_Dispatching  : constant Name_Id := N + $; -- Ada 05
@@ -1014,6 +1015,17 @@ package Snames is
    Name_Non_Preemptive_Within_Priorities : constant Name_Id := N + $;
    Name_Round_Robin_Within_Priorities    : constant Name_Id := N + $;
    Last_Task_Dispatching_Policy_Name     : constant Name_Id := N + $;
+
+   --  Names of recognized partition elaboration policy identifiers
+
+   --  Note: policies are identified by the first character of the name (e.g. S
+   --  for Sequential). If new policy names are added, the first character must
+   --  be distinct.
+
+   First_Partition_Elaboration_Policy_Name : constant Name_Id := N + $;
+   Name_Concurrent                         : constant Name_Id := N + $;
+   Name_Sequential                         : constant Name_Id := N + $;
+   Last_Partition_Elaboration_Policy_Name  : constant Name_Id := N + $;
 
    --  Names of recognized checks for pragma Suppress
 
@@ -1666,6 +1678,7 @@ package Snames is
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
       Pragma_Overflow_Checks,
+      Pragma_Partition_Elaboration_Policy,
       Pragma_Persistent_BSS,
       Pragma_Polling,
       Pragma_Priority_Specific_Dispatching,
@@ -1902,6 +1915,10 @@ package Snames is
    function Is_Locking_Policy_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized locking policy
 
+   function Is_Partition_Elaboration_Policy_Name (N : Name_Id) return Boolean;
+   --  Test to see if the name N is the name of a recognized partition
+   --  elaboration policy.
+
    function Is_Operator_Symbol_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of an operator symbol
 
@@ -1978,6 +1995,7 @@ private
    pragma Inline (Is_Entity_Attribute_Name);
    pragma Inline (Is_Type_Attribute_Name);
    pragma Inline (Is_Locking_Policy_Name);
+   pragma Inline (Is_Partition_Elaboration_Policy_Name);
    pragma Inline (Is_Operator_Symbol_Name);
    pragma Inline (Is_Queuing_Policy_Name);
    pragma Inline (Is_Pragma_Name);

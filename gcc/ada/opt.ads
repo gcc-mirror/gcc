@@ -1085,6 +1085,18 @@ package Opt is
    --  True if output of list of objects is requested (-O switch set). List is
    --  output under the given filename, or standard output if not specified.
 
+   Partition_Elaboration_Policy : Character := ' ';
+   --  GNAT, GNATBIND
+   --  Set to ' ' for the default case (no elaboration policy specified). Reset
+   --  to first character (uppercase) of locking policy name if a valid pragma
+   --  Partition_Elaboration_Policy is encountered.
+
+   Partition_Elaboration_Policy_Sloc : Source_Ptr := No_Location;
+   --  GNAT, GNATBIND
+   --  Remember location of previous Partition_Elaboration_Policy pragma. This
+   --  is used for inconsistency error messages. A value of System_Location is
+   --  used if the policy is set in package System.
+
    Persistent_BSS_Mode : Boolean := False;
    --  GNAT
    --  True if a Persistent_BSS configuration pragma is in effect, causing

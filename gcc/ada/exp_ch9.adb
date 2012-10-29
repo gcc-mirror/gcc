@@ -911,7 +911,8 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Activation_Chain_Entity
 
    begin
-      --  Activation chain is never used in restricted profile (why not???)
+      --  Activation chain is never used in restricted profile, see comment
+      --  of Create_Restricted_Task in s-tarest.ads.
 
       if Restricted_Profile then
          return;

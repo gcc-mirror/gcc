@@ -52,6 +52,7 @@ package body Bcheck is
    procedure Check_Consistent_Locking_Policy;
    procedure Check_Consistent_Normalize_Scalars;
    procedure Check_Consistent_Optimize_Alignment;
+   procedure Check_Consistent_Partition_Elaboration_Policy;
    procedure Check_Consistent_Queuing_Policy;
    procedure Check_Consistent_Restrictions;
    procedure Check_Consistent_Restriction_No_Default_Initialization;
@@ -81,6 +82,10 @@ package body Bcheck is
 
       if Locking_Policy_Specified /= ' ' then
          Check_Consistent_Locking_Policy;
+      end if;
+
+      if Partition_Elaboration_Policy_Specified /= ' ' then
+         Check_Consistent_Partition_Elaboration_Policy;
       end if;
 
       if Zero_Cost_Exceptions_Specified then
@@ -743,6 +748,59 @@ package body Bcheck is
          end if;
       end loop;
    end Check_Consistent_Optimize_Alignment;
+
+   ---------------------------------------------------
+   -- Check_Consistent_Partition_Elaboration_Policy --
+   ---------------------------------------------------
+
+   --  The rule is that all files for which the partition elaboration policy is
+   --  significant must be compiled with the same setting.
+
+   procedure Check_Consistent_Partition_Elaboration_Policy is
+   begin
+      --  First search for a unit specifying a policy and then
+      --  check all remaining units against it.
+
+      Find_Policy : for A1 in ALIs.First .. ALIs.Last loop
+         if ALIs.Table (A1).Partition_Elaboration_Policy /= ' ' then
+            Check_Policy : declare
+               Policy : constant Character :=
+                  ALIs.Table (A1).Partition_Elaboration_Policy;
+
+            begin
+               for A2 in A1 + 1 .. ALIs.Last loop
+                  if ALIs.Table (A2).Partition_Elaboration_Policy /= ' '
+                       and then
+                     ALIs.Table (A2).Partition_Elaboration_Policy /= Policy
+                  then
+                     Error_Msg_File_1 := ALIs.Table (A1).Sfile;
+                     Error_Msg_File_2 := ALIs.Table (A2).Sfile;
+
+                     Consistency_Error_Msg
+                       ("{ and { compiled with different partition "
+                          & "elaboration policies");
+                     exit Find_Policy;
+                  end if;
+               end loop;
+            end Check_Policy;
+
+            --  A No_Task_Hierarchy restriction must be specified for the
+            --  Sequential policy (RM H.6(6/2)).
+
+            if Partition_Elaboration_Policy_Specified = 'S'
+              and then not Cumulative_Restrictions.Set (No_Task_Hierarchy)
+            then
+               Error_Msg_File_1 := ALIs.Table (A1).Sfile;
+               Error_Msg
+                 ("{ has sequential partition elaboration policy, but no");
+               Error_Msg
+                 ("pragma Restrictions (No_Task_Hierarchy) was specified");
+            end if;
+
+            exit Find_Policy;
+         end if;
+      end loop Find_Policy;
+   end Check_Consistent_Partition_Elaboration_Policy;
 
    -------------------------------------
    -- Check_Consistent_Queuing_Policy --
