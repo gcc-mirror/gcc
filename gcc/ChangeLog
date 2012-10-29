@@ -1,3 +1,13 @@
+2012-10-29  Andrew Pinski  <apinski@cavium.com>
+
+        * config/aarch64/aarch64-protos.h (aarch64_load_tp): New proto.
+        * config/aarch64/aarch64.c (aarch64_load_tp): Export.
+        (aarch64_init_builtins): Don't add __builtin_thread_pointer builtin.
+        * config/aarch64/aarch64.h (aarch64_builtins): Delete
+
+AARCH64_BUILTIN_THREAD_POINTER.
+        * config/aarch64/aarch64.md (get_thread_pointerdi): New pattern.
+
 2012-10-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/55027

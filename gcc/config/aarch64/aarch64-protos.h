@@ -254,6 +254,7 @@ bool aarch64_split_128bit_move_p (rtx, rtx);
 bool aarch64_legitimate_address_p (enum machine_mode, rtx, RTX_CODE, bool);
 enum machine_mode aarch64_select_cc_mode (RTX_CODE, rtx, rtx);
 rtx aarch64_gen_compare_reg (RTX_CODE, rtx, rtx);
+rtx aarch64_load_tp (rtx);
 
 #endif /* RTX_CODE */
 
