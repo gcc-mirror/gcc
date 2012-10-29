@@ -122,15 +122,6 @@ upc_handle_option (size_t scode, const char *arg, int value, int kind,
       flag_upc_pthreads = 1;
       upc_pthreads_model = upc_pthreads_tls_model;
       break;
-    case OPT_fupc_pthreads_per_process_:
-      if (value > UPC_MAX_THREADS)
-	{
-	  error ("THREADS value exceeds UPC implementation limit of %d",
-		 UPC_MAX_THREADS);
-	  value = 1;
-	}
-      flag_upc_pthreads_per_process = value;
-      break;
     case OPT_fupc_threads_:
       if (value > UPC_MAX_THREADS)
 	{
@@ -201,17 +192,6 @@ upc_cpp_builtins (cpp_reader * pfile)
   if (flag_upc_pthreads && (upc_pthreads_model == upc_pthreads_tls_model))
     {
       cpp_define (pfile, "__UPC_PTHREADS_MODEL_TLS__=1");
-      if (flag_upc_pthreads_per_process)
-	{
-	  cpp_define (pfile, "__UPC_STATIC_PTHREADS__=1");
-	  (void) sprintf (def_buf, "PTHREADS=%d",
-			  flag_upc_pthreads_per_process);
-	  cpp_define (pfile, def_buf);
-	}
-      else
-	{
-	  cpp_define (pfile, "__UPC_DYNAMIC_PTHREADS__=1");
-	}
     }
   /* Collectives are supported. */
   cpp_define (parse_in, "__UPC_COLLECTIVE__=1");

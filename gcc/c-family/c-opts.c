@@ -676,7 +676,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_fupc_instrument:
     case OPT_fupc_instrument_functions:
     case OPT_fupc_pthreads_model_tls:
-    case OPT_fupc_pthreads_per_process_:
     case OPT_fupc_threads_:
       /* processed in language-specific routine */
       break;

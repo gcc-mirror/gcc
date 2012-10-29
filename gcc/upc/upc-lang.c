@@ -164,7 +164,6 @@ upc_init_options (unsigned int decoded_options_count,
   /* By default, don't map UPC threads to POSIX threads. */
   flag_upc_pthreads = 0;
   upc_pthreads_model = upc_pthreads_no_model;
-  flag_upc_pthreads_per_process = 0;
   /* By default, GASP profiling is off.  */
   flag_upc_instrument = 0;
   flag_upc_instrument_functions = 0;

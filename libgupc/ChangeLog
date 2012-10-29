@@ -1,3 +1,12 @@
+2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Remove unused --upc-pthreads-per-process compile switch. 
+	* libgupc/smp/gcc-upc-lib.in (__UPC_N_PTHREADS__): Delete.
+	(__UPC_STATIC_PTHREADS__): Delete.
+	(__UPC_USES_PTHREADS__): Delete.
+	(GCCUPCConfig): Remove pthreads configuration from the list of
+	defines.
+
 2012-10-26  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Place shared initialization code into the .text

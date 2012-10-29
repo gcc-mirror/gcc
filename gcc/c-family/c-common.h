@@ -618,11 +618,6 @@ extern int compiling_upc;
 /* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
 extern int flag_upc_pthreads;
 
-/* The -fupc-pthreads-per-process-N switch tells the UPC compiler
-   and runtime to map N UPC threads per process onto
-   N POSIX threads running inside the process. */
-extern int flag_upc_pthreads_per_process;
-
 typedef enum
   {
     upc_pthreads_no_model = 0,

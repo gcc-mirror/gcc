@@ -1,3 +1,10 @@
+2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Remove unused --upc-pthreads-per-process compile switch. 
+	* upc-act.c (upc_handle_option): Ditto.
+	(upc_cpp_builtins): Ditto.
+	* upc-lang.c (upc_init_options): Ditto.
+
 2012-10-26  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Place shared initialization code into the .text

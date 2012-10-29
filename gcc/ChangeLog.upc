@@ -1,3 +1,13 @@
+2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Remove unused --upc-pthreads-per-process compile switch. 
+	* c-family/c.opt: Remove --upc-pthreads-per-process switch
+	that compiler/runtime do not use.
+	* c-family/c-opts.c (c_common_handle_option): Remove support for
+	--upc-pthreads-per-process switch.
+	* c-family/c-common.c: Ditto.
+	* c-family/c-common.h: Ditto.
+
 2012-10-27 Gary Funck  <gary@intrepid.com>
 
 	* defaults.h: fix typos and formatting in UPC-related entries.

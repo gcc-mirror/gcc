@@ -1155,10 +1155,6 @@ UPC
 Generate code for a POSIX threads based UPC runtime environment
 with TLS (Thread Local Storage) support
 
-fupc-pthreads-per-process-
-UPC Joined RejectNegative UInteger
-Specify the number of POSIX threads per process that are mapped to UPC threads
-
 fupc-threads-
 UPC Joined RejectNegative UInteger
 Specify the compile-time value of THREADS

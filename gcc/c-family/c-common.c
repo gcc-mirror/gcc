@@ -202,11 +202,6 @@ int flag_upc_threads;
 /* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
 int flag_upc_pthreads;
 
-/* The -fupc-pthreads-per-process-N switch tells the UPC compiler
-   and runtime to map N UPC threads per process onto
-   N POSIX threads running inside the process. */
-int flag_upc_pthreads_per_process;
- 
 /* The implementation model for UPC threads that
    are mapped to POSIX threads, specified at compilation
    time by the -fupc-pthreads-model-* switch. */
