@@ -6759,14 +6759,17 @@ package body Sem_Prag is
             end if;
          end Annotate;
 
-         ------------
-         -- Assert --
-         ------------
+         -----------------------------
+         -- Assert & Assert_And_Cut --
+         -----------------------------
 
          --  pragma Assert ([Check =>] Boolean_EXPRESSION
          --                 [, [Message =>] Static_String_EXPRESSION]);
 
-         when Pragma_Assert => Assert : declare
+         --  pragma Assert_And_Cut ([Check =>] Boolean_EXPRESSION
+         --                         [, [Message =>] Static_String_EXPRESSION]);
+
+         when Pragma_Assert | Pragma_Assert_And_Cut => Assert : declare
             Expr : Node_Id;
             Newa : List_Id;
 
@@ -6783,6 +6786,13 @@ package body Sem_Prag is
 
             --  So rewrite pragma in this manner, transfer the message
             --  argument if present, and analyze the result
+
+            --  Pragma Assert_And_Cut is treated exactly like pragma Assert by
+            --  the frontend. Formal verification tools may use it to "cut" the
+            --  paths through the code, to make verification tractable. When
+            --  dealing with a semantically analyzed tree, the information that
+            --  a Check node N corresponds to a source Assert_And_Cut pragma
+            --  can be retrieved from the pragma kind of Original_Node(N).
 
             Expr := Get_Pragma_Arg (Arg1);
             Newa := New_List (
@@ -15185,6 +15195,7 @@ package body Sem_Prag is
       Pragma_All_Calls_Remote               => -1,
       Pragma_Annotate                       => -1,
       Pragma_Assert                         => -1,
+      Pragma_Assert_And_Cut                 => -1,
       Pragma_Assertion_Policy               =>  0,
       Pragma_Assume_No_Invalid_Values       =>  0,
       Pragma_Asynchronous                   => -1,

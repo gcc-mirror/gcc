@@ -105,6 +105,7 @@ Implementation Defined Pragmas
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assert_And_Cut::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
@@ -843,6 +844,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assert_And_Cut::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
@@ -1195,6 +1197,22 @@ of Ada from 2005 on. In GNAT, it is implemented in all versions
 of Ada, and the DISABLE policy is an implementation-defined
 addition.
 
+@node Pragma Assert_And_Cut
+@unnumberedsec Pragma Assert_And_Cut
+@findex Assert_And_Cut
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Assert_And_Cut (
+  boolean_EXPRESSION
+  [, string_EXPRESSION]);
+@end smallexample
+
+@noindent
+The effect of this pragma for compilation is exactly the same as the one
+of pragma @code{Assert}. This pragma is used to help formal verification
+tools by marking program points where the tool can simplify precise
+knowledge about execution based on the assertion given.
 
 @node Pragma Assertion_Policy
 @unnumberedsec Pragma Assertion_Policy

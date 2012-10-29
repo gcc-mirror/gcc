@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2008-2012, Free Software Foundation, Inc.          --
+--          Copyright (C) 2008-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --  This package plus its child provide the low level interface to the Win32
 --  API. The core part of the Win32 API (common to RTX and Win32) is in this
 --  package, and an additional part of the Win32 API which is not supported by
---  RTX is in package System.Win33.Ext.
+--  RTX is in package System.Win32.Ext.
 
 with Interfaces.C;
 
@@ -73,8 +73,13 @@ package System.Win32 is
    for Bits2'Size  use 2;
    for Bits17'Size use 17;
 
+   --  Note that the following clashes with standard names are to stay
+   --  compatible with the historical choice of following the C names.
+
+   pragma Warnings (Off);
    FALSE : constant := 0;
    TRUE  : constant := 1;
+   pragma Warnings (On);
 
    function GetLastError return DWORD;
    pragma Import (Stdcall, GetLastError, "GetLastError");
