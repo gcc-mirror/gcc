@@ -1,3 +1,20 @@
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb Associate debug switch -gnatd.V to extensions for
+	formal verification.
+	* gnat1drv.adb (Adjust_Global_Switches): Set flag S14_Extensions
+	when -gnatd.V is set.
+	* gnat_rm.texi: Remove doc for Assert_And_Cut.
+	* opt.ads Declare new flag S14_Extensions, to be set when new
+	aspects/pragmas/attributes for formal verification should be
+	accepted.
+	* sem_prag.adb (Analyze_Pragma): Check that S14_Extensions is
+	set when treating pragma Assert_And_Cut.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tarest.ads, s-tassta.adb: Add a pragma Partition_Elaboration_Policy.
+
 2012-10-29  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb: Minor reformatting.

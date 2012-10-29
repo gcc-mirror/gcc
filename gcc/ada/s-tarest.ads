@@ -43,6 +43,10 @@
 --  The restricted GNARLI is also composed of System.Protected_Objects and
 --  System.Protected_Objects.Single_Entry
 
+pragma Partition_Elaboration_Policy (Sequential);
+--  This package only implements the sequential elaboration policy. This pragma
+--  will enforce it (and detect conflicts with user specified policy).
+
 with System.Task_Info;
 with System.Parameters;
 

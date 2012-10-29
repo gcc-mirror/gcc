@@ -782,6 +782,10 @@ package body Sem_Prag is
       --  Called for all GNAT defined pragmas to check the relevant restriction
       --  (No_Implementation_Pragmas).
 
+      procedure S14_Pragma;
+      --  Called for all pragmas defined for formal verification to check that
+      --  the S14_Extensions flag is set.
+
       function Is_Before_First_Decl
         (Pragma_Node : Node_Id;
          Decls       : List_Id) return Boolean;
@@ -1280,6 +1284,7 @@ package body Sem_Prag is
             Error_Pragma_Arg ("invalid argument for pragma%", Argx);
          end if;
       end Check_Arg_Is_One_Of;
+
       ---------------------------------
       -- Check_Arg_Is_Queuing_Policy --
       ---------------------------------
@@ -6419,6 +6424,17 @@ package body Sem_Prag is
          end if;
       end Set_Ravenscar_Profile;
 
+      ----------------
+      -- S14_Pragma --
+      ----------------
+
+      procedure S14_Pragma is
+      begin
+         if not S14_Extensions then
+            Error_Pragma ("pragma% requires the use of debug switch -gnatd.V");
+         end if;
+      end S14_Pragma;
+
    --  Start of processing for Analyze_Pragma
 
    begin
@@ -6800,6 +6816,7 @@ package body Sem_Prag is
                Ada_2005_Pragma;
             else -- Pragma_Assert_And_Cut
                GNAT_Pragma;
+               S14_Pragma;
             end if;
 
             Check_At_Least_N_Arguments (1);
