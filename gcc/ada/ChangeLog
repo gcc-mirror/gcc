@@ -1,3 +1,17 @@
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that pragma Optimize_Alignment (Space) is
+	ignored with a warning for packed variable length records.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c, g-socthi-dummy.adb, g-socthi-dummy.ads, g-socthi-vms.adb,
+	g-socthi-vms.ads, g-socthi-vxworks.adb, g-socthi-vxworks.ads,
+	s-oscons-tmplt.c, g-socthi-mingw.adb, g-socthi-mingw.ads, g-socthi.adb,
+	g-socthi.ads, xoscons.adb, g-socket.adb, g-sothco.ads: Introduce an
+	appropriate subtype for IOCTL requests, since these may be signed or
+	unsigned.
+
 2012-10-29  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_alfa.adb: Minor reformatting.
