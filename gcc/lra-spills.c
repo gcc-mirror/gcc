@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.	If not see
      end
      create new stack slot S and assign P to S
    end
- 
+
    The actual algorithm is bit more complicated because of different
    pseudo sizes.
 
@@ -143,9 +143,9 @@ assign_mem_slot (int i)
 
   lra_assert (regno_reg_rtx[i] != NULL_RTX && REG_P (regno_reg_rtx[i])
 	      && lra_reg_info[i].nrefs != 0 && reg_renumber[i] < 0);
-  
+
   x = slots[pseudo_slots[i].slot_num].mem;
-  
+
   /* We can use a slot already allocated because it is guaranteed the
      slot provides both enough inherent space and enough total
      space.  */
@@ -181,14 +181,14 @@ assign_mem_slot (int i)
 	}
       slots[pseudo_slots[i].slot_num].mem = stack_slot;
     }
-      
+
   /* On a big endian machine, the "address" of the slot is the address
      of the low part that fits its inherent mode.  */
   if (BYTES_BIG_ENDIAN && inherent_size < total_size)
     adjust += (total_size - inherent_size);
-  
+
   x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
-  
+
   /* Set all of the memory attributes as appropriate for a spill.  */
   set_mem_attrs_for_spill (x);
   pseudo_slots[i].mem = x;
@@ -265,7 +265,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
   bitmap setjump_crosses = regstat_get_setjmp_crosses ();
   /* Hard registers which can not be used for any purpose at given
      program point because they are unallocatable or already allocated
-     for other pseudos.	 */ 
+     for other pseudos.	 */
   HARD_REG_SET *reserved_hard_regs;
 
   if (! lra_reg_spill_p)
@@ -604,7 +604,7 @@ alter_subregs (rtx *loc, bool final_p)
       else if (fmt[i] == 'E')
 	{
 	  int j;
-	  
+
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (alter_subregs (&XVECEXP (x, i, j), final_p))
 	      res = true;
