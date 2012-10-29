@@ -1,6 +1,7 @@
 2012-10-29  Arnaud Charlet  <charlet@adacore.com>
 
-	* pprint.ads, pprint.adb: New.
+	* pprint.ads, pprint.adb, adabkend.ads, adabkend.adb,
+	aa_util.ads, aa_util.adb: New.
 
 2012-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 
