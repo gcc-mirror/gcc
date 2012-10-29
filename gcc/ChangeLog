@@ -1,3 +1,11 @@
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
+	* config/i386/i386.c (add_parameter_dependencies): Stop
+	backward scan at the insn before the incoming head.
+	(ix86_dependencies_evaluation_hook): Skip debug insns.  Stop
+	if first_arg is head.
+
 2012-10-29  Andrew Pinski  <apinski@cavium.com>
 
         * config/aarch64/aarch64-protos.h (aarch64_load_tp): New proto.
