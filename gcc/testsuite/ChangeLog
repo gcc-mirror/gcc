@@ -1,3 +1,7 @@
+2012-10-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inlinehint-3.c: New testcase.
+
 2012-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54958
