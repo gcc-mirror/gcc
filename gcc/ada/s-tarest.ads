@@ -167,6 +167,10 @@ package System.Tasking.Restricted.Stages is
    --  Created_Task is the resulting task.
    --
    --  This procedure can raise Storage_Error if the task creation fails
+   --
+   --  Contrary to Create_Task, there is no Chain parameter (for the activation
+   --  chain), as there is only one global activation chain, which is declared
+   --  in the body of this package.
 
    procedure Activate_Tasks;
    pragma Export (C, Activate_Tasks, "__gnat_activate_tasks");

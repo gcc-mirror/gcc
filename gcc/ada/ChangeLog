@@ -1,3 +1,49 @@
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb, s-tarest.ads, exp_ch3.adb: Update comments.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor documentation addition.
+
+2012-10-29  Emmanuel Briot  <briot@adacore.com>
+
+	* xr_tabls.adb, xr_tabls.ads (Add_Declaration, Add_Reference): No
+	longer assume that a parameter declaration is seen after the subprogram
+	that uses it.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Emit partition elaboration policy
+	in P line.
+	* lib-writ.ads: Document partition elaboration policy indication.
+	* sem_prag.adb (Check_Arg_Is_Partition_Elaboration_Policy): New
+	procedure.
+	(Analyze_Pragma): Handle Partition_Elaboration_Policy.
+	(Sig_Flags): Add flag for Pragma_Partition_Elaboration_Policy
+	* ali.adb (Initialize_ALI): Init Partition_Elaboration_Policy_Specified.
+	(Scan_ALI): Read Ex indications.
+	* ali.ads: ALIs_Record: Add Partition_Elaboration_Policy.
+	* par-prag.adb (Prag): Add Partition_Elaboration_Policy.
+	* snames.adb-tmpl (Is_Partition_Elaboration_Policy_Name): New function.
+	* opt.ads (Partition_Elaboration_Policy): Declare.
+	(Partition_Elaboration_Policy_Sloc): Declare.
+	* bcheck.adb (Check_Consistent_Partition_Elaboration_Policy):
+	New procedure.	(Check_Configuration_Consistency): Check partition
+	elaboration policy consistency.
+	* snames.ads-tmpl (Name_Partition_Elaboration_Policy): New name.
+	(First_Partition_Elaboration_Policy_Name, Name_Concurrent,
+	Name_Sequential, Last_Partition_Elaboration_Policy_Name): Likewise.
+	(Pragma_Partition_Elaboration_Policy): New literal.
+	(Is_Partition_Elaboration_Policy_Name): New function.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Is_Public_Subprogram_For): Handle properly
+	expression functions, which are rewritten as subprogram
+	declarations, when generating invariants for its return value
+	and in-out parameters.
+
 2012-10-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* warnsw.adb (Set_GNAT_Mode_Warnings): Unset

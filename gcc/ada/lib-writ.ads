@@ -196,6 +196,10 @@ package Lib.Writ is
    --         DB   Detect_Blocking pragma is in effect for all units in this
    --              file.
    --
+   --         Ex   A valid Partition_Elaboration_Policy pragma applies to all
+   --              the units in this file, where x is the first character
+   --              (upper case) of the policy name (e.g. 'C' for Concurrent).
+   --
    --         FD   Configuration pragmas apply to all the units in this file
    --              specifying a possibly non-standard floating point format
    --              (VAX float with Long_Float using D_Float).

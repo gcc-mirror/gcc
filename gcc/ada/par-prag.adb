@@ -1202,6 +1202,7 @@ begin
            Pragma_Optimize_Alignment             |
            Pragma_Overflow_Checks                |
            Pragma_Pack                           |
+           Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |
            Pragma_Preelaborable_Initialization   |
            Pragma_Polling                        |

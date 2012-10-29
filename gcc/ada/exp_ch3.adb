@@ -1537,7 +1537,8 @@ package body Exp_Ch3 is
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
 
-         --  Add _Chain (not done in the restricted profile because ???)
+         --  Add _Chain (not done in the restricted profile because not used,
+         --  see comment of Create_Restricted_Task in s-tarest.ads).
 
          if not Restricted_Profile then
             Append_To (Args, Make_Identifier (Loc, Name_uChain));
@@ -1993,7 +1994,8 @@ package body Exp_Ch3 is
 
             if not Restricted_Profile then
 
-               --  No _Chain for restricted profile
+               --  No _Chain for the restricted profile because not used,
+               --  see comment of Create_Restricted_Task in s-tarest.ads.
 
                Append_To (Args, Make_Identifier (Loc, Name_uChain));
             end if;
@@ -7806,7 +7808,8 @@ package body Exp_Ch3 is
 
          if not Restricted_Profile then
 
-            --  No _Chain for restricted profile
+            --  No _Chain for the restricted profile because not used, see
+            --  comment of Create_Restricted_Task in s-tarest.ads.
 
             Append_To (Formals,
               Make_Parameter_Specification (Loc,

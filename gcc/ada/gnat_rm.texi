@@ -1212,7 +1212,24 @@ pragma Assert_And_Cut (
 The effect of this pragma for compilation is exactly the same as the one
 of pragma @code{Assert}. This pragma is used to help formal verification
 tools by marking program points where the tool can simplify precise
-knowledge about execution based on the assertion given.
+knowledge about execution based on the assertion given. For example, in
+the procedure below, all that is needed to prove that the code using X
+is free from run-time errors is that X is positive. Without the pragma,
+GNATprove considers all execution paths through P, which may be
+many. With the pragma, GNATprove only needs to consider the paths from
+the start of the procedure to the pragma, and the paths from the pragma
+to the end of the procedure, hence many fewer paths. For more details,
+see the GNATprove User's Guide.
+
+@smallexample @c ada
+procedure P is
+   X : Integer;
+begin
+   --  complex computation that sets X
+   pragma Assert_And_Cut (X > 0);
+   --  complex computation that uses X
+end P;
+@end smallexample
 
 @node Pragma Assertion_Policy
 @unnumberedsec Pragma Assertion_Policy
