@@ -1,3 +1,23 @@
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb: Minor reformatting and code reorganization.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_Primary): Warn on bad use of unary minus.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* s-valuti.ads, s-valuti.adb (Bad_Value): New procedure.
+	* s-valllu.adb, s-valwch.adb, s-valcha.adb, s-valint.adb,
+	s-valuns.adb, s-valrea.adb, s-valboo.adb, s-valenu.adb,
+	s-vallli.adb: Use Bad_Value everywhere.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Do not suppress checks
+	in Alfa mode.
+
 2012-10-29  Yannick Moy  <moy@adacore.com>
 
 	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
