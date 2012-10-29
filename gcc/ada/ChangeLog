@@ -1,3 +1,15 @@
+2012-10-29  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): If CodePeer_Mode
+	= True and we detect that an Address specification is used to overlay
+	another object, do not set that object's Treat_As_Volatile flag.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Constant_Redeclaration): If the type of a
+	deferred constant has invariants, generate invariant call on
+	the initial value.
+
 2012-10-29  Bob Duff  <duff@adacore.com>
 
 	* sem_ch13.adb (Replace_Type_Reference): Use correct sloc for
