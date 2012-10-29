@@ -1,3 +1,7 @@
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (s-oscons.ads): Adjust call to xoscons.
+
 2012-10-29  Pascal Obry  <obry@adacore.com>
 
 	* xoscons.adb, Make-generated.in; The template used by xoscons is now
