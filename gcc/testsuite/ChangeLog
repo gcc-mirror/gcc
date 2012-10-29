@@ -1,3 +1,9 @@
+2012-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53066
+	* gcc.dg/Wshadow-4.c: New.
+	* gcc.dg/Wshadow-4.h: New.
+
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54693

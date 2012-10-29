@@ -2561,8 +2561,18 @@ warn_if_shadowing (tree new_decl)
 	  warning (OPT_Wshadow, "declaration of %q+D shadows a parameter",
 		   new_decl);
 	else if (DECL_FILE_SCOPE_P (old_decl))
-	  warning (OPT_Wshadow, "declaration of %q+D shadows a global "
-		   "declaration", new_decl);
+	  {
+	    /* Do not warn if a variable shadows a function, unless
+	       the variable is a function or a pointer-to-function.  */
+	    if (TREE_CODE (old_decl) == FUNCTION_DECL
+		&& TREE_CODE (new_decl) != FUNCTION_DECL
+		&& !FUNCTION_POINTER_TYPE_P (TREE_TYPE (new_decl)))
+		continue;
+
+	    warning_at (DECL_SOURCE_LOCATION (new_decl), OPT_Wshadow, 
+			"declaration of %qD shadows a global declaration",
+			new_decl);
+	  }
 	else if (TREE_CODE (old_decl) == FUNCTION_DECL
 		 && DECL_BUILT_IN (old_decl))
 	  {

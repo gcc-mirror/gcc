@@ -1,3 +1,10 @@
+2012-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53066
+	* c-decl.c (warn_if_shadowing): Do not warn if a variable
+	shadows a function, unless the variable is a function or a
+	pointer-to-function.
+
 2012-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54381
