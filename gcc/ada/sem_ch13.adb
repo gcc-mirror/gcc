@@ -5018,17 +5018,18 @@ package body Sem_Ch13 is
          ----------------------------
 
          procedure Replace_Type_Reference (N : Node_Id) is
+            --  Use the Sloc of the usage name below, not the defining name
          begin
             --  Invariant'Class, replace with T'Class (obj)
 
             if Class_Present (Ritem) then
                Rewrite (N,
-                 Make_Type_Conversion (Loc,
+                 Make_Type_Conversion (Sloc (N),
                    Subtype_Mark =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Occurrence_Of (T, Loc),
+                     Make_Attribute_Reference (Sloc (N),
+                       Prefix         => New_Occurrence_Of (T, Sloc (N)),
                        Attribute_Name => Name_Class),
-                   Expression   => Make_Identifier (Loc, Object_Name)));
+                   Expression   => Make_Identifier (Sloc (N), Object_Name)));
 
                Set_Entity (Expression (N), Object_Entity);
                Set_Etype  (Expression (N), Typ);
@@ -5036,7 +5037,7 @@ package body Sem_Ch13 is
             --  Invariant, replace with obj
 
             else
-               Rewrite (N, Make_Identifier (Loc, Object_Name));
+               Rewrite (N, Make_Identifier (Sloc (N), Object_Name));
                Set_Entity (N, Object_Entity);
                Set_Etype  (N, Typ);
             end if;
@@ -5422,7 +5423,9 @@ package body Sem_Ch13 is
 
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
-            Rewrite (N, Make_Identifier (Loc, Object_Name));
+            Rewrite (N, Make_Identifier (Sloc (N), Object_Name));
+            --  Use the Sloc of the usage name, not the defining name
+
             Set_Entity (N, Object_Entity);
             Set_Etype (N, Typ);
          end Replace_Type_Reference;
@@ -6622,7 +6625,7 @@ package body Sem_Ch13 is
       --  containing that copy, but Expression (Ident) is a preanalyzed copy
       --  of the expression, preanalyzed just after the freeze point.
 
-      --  Make a copy of the expression to be preanalyed
+      --  Make a copy of the expression to be preanalyzed
 
       Set_Expression (ASN, New_Copy_Tree (Entity (Ident)));
 
