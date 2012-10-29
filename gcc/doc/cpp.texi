@@ -856,7 +856,8 @@ requested with @code{@w{#include <@var{file}>}} in:
 /usr/include
 @end smallexample
 
-For C++ programs, it will also look in @file{/usr/include/g++-v3},
+For C++ programs, it will also look in
+@file{@var{libdir}/../include/c++/@var{version}},
 first.  In the above, @var{target} is the canonical name of the system
 GCC was configured to compile code for; often but not always the same as
 the canonical name of the system it runs on.  @var{version} is the
