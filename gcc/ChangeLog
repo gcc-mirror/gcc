@@ -1,5 +1,18 @@
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/54551
+	PR debug/54693
+	* valtrack.c (dead_debug_global_find): Accept NULL dtemp.
+	(dead_debug_global_insert): Return new entry.
+	(dead_debug_global_replace_temp): Return early if REG is no
+	longer in place, or if dtemp was already substituted.
+	(dead_debug_promote_uses): Insert for all defs and replace all
+	debug uses at once.
+	(dead_debug_local_finish): Release used after promotion.
+	(dead_debug_insert_temp): Stop if dtemp is NULL.
+
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/54693
 	* loop-unroll.c (loop_exit_at_end_p): Skip debug insns.
 

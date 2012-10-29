@@ -225,14 +225,13 @@ dead_debug_global_find (struct dead_debug_global *global, rtx reg)
 
   dead_debug_global_entry *entry = global->htab.find (&temp_entry);
   gcc_checking_assert (entry && entry->reg == temp_entry.reg);
-  gcc_checking_assert (entry->dtemp);
 
   return entry;
 }
 
 /* Insert an entry mapping REG to DTEMP in GLOBAL->htab.  */
 
-static void
+static dead_debug_global_entry *
 dead_debug_global_insert (struct dead_debug_global *global, rtx reg, rtx dtemp)
 {
   dead_debug_global_entry temp_entry;
@@ -246,6 +245,7 @@ dead_debug_global_insert (struct dead_debug_global *global, rtx reg, rtx dtemp)
   gcc_checking_assert (!*slot);
   *slot = XNEW (dead_debug_global_entry);
   **slot = temp_entry;
+  return *slot;
 }
 
 /* If UREGNO, referenced by USE, is a pseudo marked as used in GLOBAL,
@@ -263,15 +263,18 @@ dead_debug_global_replace_temp (struct dead_debug_global *global,
 {
   if (!global || uregno < FIRST_PSEUDO_REGISTER
       || !global->used
+      || !REG_P (*DF_REF_REAL_LOC (use))
+      || REGNO (*DF_REF_REAL_LOC (use)) != uregno
       || !bitmap_bit_p (global->used, uregno))
     return false;
-
-  gcc_checking_assert (REGNO (*DF_REF_REAL_LOC (use)) == uregno);
 
   dead_debug_global_entry *entry
     = dead_debug_global_find (global, *DF_REF_REAL_LOC (use));
   gcc_checking_assert (GET_CODE (entry->reg) == REG
 		       && REGNO (entry->reg) == uregno);
+
+  if (!entry->dtemp)
+    return true;
 
   *DF_REF_REAL_LOC (use) = entry->dtemp;
   if (!pto_rescan)
@@ -364,6 +367,8 @@ dead_debug_promote_uses (struct dead_debug_local *debug)
        head; head = *headp)
     {
       rtx reg = *DF_REF_REAL_LOC (head->use);
+      df_ref ref;
+      dead_debug_global_entry *entry;
 
       if (GET_CODE (reg) != REG
 	  || REGNO (reg) < FIRST_PSEUDO_REGISTER)
@@ -376,17 +381,46 @@ dead_debug_promote_uses (struct dead_debug_local *debug)
 	debug->global->used = BITMAP_ALLOC (NULL);
 
       if (bitmap_set_bit (debug->global->used, REGNO (reg)))
-	dead_debug_global_insert (debug->global, reg,
-				  make_debug_expr_from_rtl (reg));
+	entry = dead_debug_global_insert (debug->global, reg,
+					  make_debug_expr_from_rtl (reg));
 
-      if (!dead_debug_global_replace_temp (debug->global, head->use,
-					   REGNO (reg), &debug->to_rescan))
-	{
-	  headp = &head->next;
-	  continue;
-	}
-      
+      gcc_checking_assert (entry->dtemp);
+
+      /* Tentatively remove the USE from the list.  */
       *headp = head->next;
+
+      if (!debug->to_rescan)
+	debug->to_rescan = BITMAP_ALLOC (NULL);
+
+      for (ref = DF_REG_USE_CHAIN (REGNO (reg)); ref;
+	   ref = DF_REF_NEXT_REG (ref))
+	if (DEBUG_INSN_P (DF_REF_INSN (ref)))
+	  {
+	    if (!dead_debug_global_replace_temp (debug->global, ref,
+						 REGNO (reg),
+						 &debug->to_rescan))
+	      {
+		rtx insn = DF_REF_INSN (ref);
+		INSN_VAR_LOCATION_LOC (insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+		bitmap_set_bit (debug->to_rescan, INSN_UID (insn));
+	      }
+	  }
+
+      for (ref = DF_REG_DEF_CHAIN (REGNO (reg)); ref;
+	   ref = DF_REF_NEXT_REG (ref))
+	if (!dead_debug_insert_temp (debug, REGNO (reg), DF_REF_INSN (ref),
+				     DEBUG_TEMP_BEFORE_WITH_VALUE))
+	  {
+	    rtx bind;
+	    bind = gen_rtx_VAR_LOCATION (GET_MODE (reg),
+					 DEBUG_EXPR_TREE_DECL (entry->dtemp),
+					 gen_rtx_UNKNOWN_VAR_LOC (),
+					 VAR_INIT_STATUS_INITIALIZED);
+	    rtx insn = emit_debug_insn_before (bind, DF_REF_INSN (ref));
+	    bitmap_set_bit (debug->to_rescan, INSN_UID (insn));
+	  }
+
+      entry->dtemp = NULL;
       XDELETE (head);
     }
 }
@@ -398,11 +432,11 @@ dead_debug_promote_uses (struct dead_debug_local *debug)
 void
 dead_debug_local_finish (struct dead_debug_local *debug, bitmap used)
 {
-  if (debug->used != used)
-    BITMAP_FREE (debug->used);
-
   if (debug->global)
     dead_debug_promote_uses (debug);
+
+  if (debug->used != used)
+    BITMAP_FREE (debug->used);
 
   dead_debug_reset_uses (debug, debug->head);
 
@@ -535,6 +569,8 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	= dead_debug_global_find (debug->global, reg);
       gcc_checking_assert (entry->reg == reg);
       dval = entry->dtemp;
+      if (!dval)
+	return 0;
     }
 
   gcc_checking_assert (uses || global);
