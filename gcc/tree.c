@@ -8553,14 +8553,19 @@ variably_modified_type_p (tree type, tree fn)
   tree t;
 
 /* Test if T is either variable (if FN is zero) or an expression containing
-   a variable in FN.  */
+   a variable in FN.  If TYPE isn't gimplified, return true also if
+   gimplify_one_sizepos would gimplify the expression into a local
+   variable.  */
 #define RETURN_TRUE_IF_VAR(T)						\
   do { tree _t = (T);							\
     if (_t != NULL_TREE							\
 	&& _t != error_mark_node					\
 	&& TREE_CODE (_t) != INTEGER_CST				\
 	&& TREE_CODE (_t) != PLACEHOLDER_EXPR				\
-	&& (!fn || walk_tree (&_t, find_var_from_fn, fn, NULL)))	\
+	&& (!fn								\
+	    || (!TYPE_SIZES_GIMPLIFIED (type)				\
+		&& !is_gimple_sizepos (_t))				\
+	    || walk_tree (&_t, find_var_from_fn, fn, NULL)))		\
       return true;  } while (0)
 
   if (type == error_mark_node)
@@ -10321,6 +10326,17 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
 {
   if (TREE_CODE (type) == INTEGER_TYPE && TYPE_UNSIGNED (type) == unsignedp)
     return type;
+
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      tree inner = TREE_TYPE (type);
+      tree inner2 = signed_or_unsigned_type_for (unsignedp, inner);
+      if (!inner2)
+	return NULL_TREE;
+      if (inner == inner2)
+	return type;
+      return build_vector_type (inner2, TYPE_VECTOR_SUBPARTS (type));
+    }
 
   if (!INTEGRAL_TYPE_P (type)
       && !POINTER_TYPE_P (type))

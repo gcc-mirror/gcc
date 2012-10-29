@@ -106,9 +106,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Operand is in a place where opf_non_addressable does not apply.  */
 #define opf_not_non_addressable (1 << 4)
 
-/* Array for building all the def operands.  */
-static VEC(tree,heap) *build_defs;
-
 /* Array for building all the use operands.  */
 static VEC(tree,heap) *build_uses;
 
@@ -185,7 +182,6 @@ init_ssa_operands (struct function *fn)
 {
   if (!n_initialized++)
     {
-      build_defs = VEC_alloc (tree, heap, 5);
       build_uses = VEC_alloc (tree, heap, 10);
       build_vuse = NULL_TREE;
       build_vdef = NULL_TREE;
@@ -210,13 +206,11 @@ fini_ssa_operands (void)
 
   if (!--n_initialized)
     {
-      VEC_free (tree, heap, build_defs);
       VEC_free (tree, heap, build_uses);
       build_vdef = NULL_TREE;
       build_vuse = NULL_TREE;
     }
 
-  gimple_ssa_operands (cfun)->free_defs = NULL;
   gimple_ssa_operands (cfun)->free_uses = NULL;
 
   while ((ptr = gimple_ssa_operands (cfun)->operand_memory) != NULL)
@@ -242,8 +236,7 @@ ssa_operand_alloc (unsigned size)
 {
   char *ptr;
 
-  gcc_assert (size == sizeof (struct use_optype_d)
-	      || size == sizeof (struct def_optype_d));
+  gcc_assert (size == sizeof (struct use_optype_d));
 
   if (gimple_ssa_operands (cfun)->operand_memory_index + size
       >= gimple_ssa_operands (cfun)->ssa_operand_mem_size)
@@ -282,25 +275,6 @@ ssa_operand_alloc (unsigned size)
 }
 
 
-/* Allocate a DEF operand.  */
-
-static inline struct def_optype_d *
-alloc_def (void)
-{
-  struct def_optype_d *ret;
-  if (gimple_ssa_operands (cfun)->free_defs)
-    {
-      ret = gimple_ssa_operands (cfun)->free_defs;
-      gimple_ssa_operands (cfun)->free_defs
-	= gimple_ssa_operands (cfun)->free_defs->next;
-    }
-  else
-    ret = (struct def_optype_d *)
-	  ssa_operand_alloc (sizeof (struct def_optype_d));
-  return ret;
-}
-
-
 /* Allocate a USE operand.  */
 
 static inline struct use_optype_d *
@@ -317,21 +291,6 @@ alloc_use (void)
     ret = (struct use_optype_d *)
           ssa_operand_alloc (sizeof (struct use_optype_d));
   return ret;
-}
-
-
-/* Adds OP to the list of defs after LAST.  */
-
-static inline def_optype_p
-add_def_op (tree *op, def_optype_p last)
-{
-  def_optype_p new_def;
-
-  new_def = alloc_def ();
-  DEF_OP_PTR (new_def) = op;
-  last->next = new_def;
-  new_def->next = NULL;
-  return new_def;
 }
 
 
@@ -358,14 +317,6 @@ add_use_op (gimple stmt, tree *op, use_optype_p last)
 static inline void
 finalize_ssa_defs (gimple stmt)
 {
-  unsigned new_i;
-  struct def_optype_d new_list;
-  def_optype_p old_ops, last;
-  unsigned int num = VEC_length (tree, build_defs);
-
-  /* There should only be a single real definition per assignment.  */
-  gcc_assert ((stmt && gimple_code (stmt) != GIMPLE_ASSIGN) || num <= 1);
-
   /* Pre-pend the vdef we may have built.  */
   if (build_vdef != NULL_TREE)
     {
@@ -375,16 +326,7 @@ finalize_ssa_defs (gimple stmt)
 	oldvdef = SSA_NAME_VAR (oldvdef);
       if (oldvdef != build_vdef)
 	gimple_set_vdef (stmt, build_vdef);
-      VEC_safe_insert (tree, heap, build_defs, 0, (tree)gimple_vdef_ptr (stmt));
-      ++num;
     }
-
-  new_list.next = NULL;
-  last = &new_list;
-
-  old_ops = gimple_def_ops (stmt);
-
-  new_i = 0;
 
   /* Clear and unlink a no longer necessary VDEF.  */
   if (build_vdef == NULL_TREE
@@ -405,30 +347,6 @@ finalize_ssa_defs (gimple stmt)
       cfun->gimple_df->rename_vops = 1;
       cfun->gimple_df->ssa_renaming_needed = 1;
     }
-
-  /* Check for the common case of 1 def that hasn't changed.  */
-  if (old_ops && old_ops->next == NULL && num == 1
-      && (tree *) VEC_index (tree, build_defs, 0) == DEF_OP_PTR (old_ops))
-    return;
-
-  /* If there is anything in the old list, free it.  */
-  if (old_ops)
-    {
-      old_ops->next = gimple_ssa_operands (cfun)->free_defs;
-      gimple_ssa_operands (cfun)->free_defs = old_ops;
-    }
-
-  /* If there is anything remaining in the build_defs list, simply emit it.  */
-  for ( ; new_i < num; new_i++)
-    {
-      tree *op = (tree *) VEC_index (tree, build_defs, new_i);
-      if (DECL_P (*op))
-	cfun->gimple_df->ssa_renaming_needed = 1;
-      last = add_def_op (op, last);
-    }
-
-  /* Now set the stmt's operands.  */
-  gimple_set_def_ops (stmt, new_list.next);
 }
 
 
@@ -488,8 +406,6 @@ finalize_ssa_uses (gimple stmt)
   for (new_i = 0; new_i < VEC_length (tree, build_uses); new_i++)
     {
       tree *op = (tree *) VEC_index (tree, build_uses, new_i);
-      if (DECL_P (*op))
-	cfun->gimple_df->ssa_renaming_needed = 1;
       last = add_use_op (stmt, op, last);
     }
 
@@ -506,7 +422,6 @@ cleanup_build_arrays (void)
 {
   build_vdef = NULL_TREE;
   build_vuse = NULL_TREE;
-  VEC_truncate (tree, build_defs, 0);
   VEC_truncate (tree, build_uses, 0);
 }
 
@@ -527,19 +442,9 @@ finalize_ssa_stmt_operands (gimple stmt)
 static inline void
 start_ssa_stmt_operands (void)
 {
-  gcc_assert (VEC_length (tree, build_defs) == 0);
   gcc_assert (VEC_length (tree, build_uses) == 0);
   gcc_assert (build_vuse == NULL_TREE);
   gcc_assert (build_vdef == NULL_TREE);
-}
-
-
-/* Add DEF_P to the list of pointers to operands.  */
-
-static inline void
-append_def (tree *def_p)
-{
-  VEC_safe_push (tree, heap, build_defs, (tree) def_p);
 }
 
 
@@ -620,9 +525,11 @@ add_stmt_operand (tree *var_p, gimple stmt, int flags)
     {
       /* The variable is a GIMPLE register.  Add it to real operands.  */
       if (flags & opf_def)
-	append_def (var_p);
+	;
       else
 	append_use (var_p);
+      if (DECL_P (*var_p))
+	cfun->gimple_df->ssa_renaming_needed = 1;
     }
   else
     {
@@ -669,15 +576,10 @@ mark_address_taken (tree ref)
    STMT is the statement being processed, EXPR is the MEM_REF
       that got us here.
 
-   FLAGS is as in get_expr_operands.
-
-   RECURSE_ON_BASE should be set to true if we want to continue
-      calling get_expr_operands on the base pointer, and false if
-      something else will do it for us.  */
+   FLAGS is as in get_expr_operands.  */
 
 static void
-get_indirect_ref_operands (gimple stmt, tree expr, int flags,
-			   bool recurse_on_base)
+get_indirect_ref_operands (gimple stmt, tree expr, int flags)
 {
   tree *pptr = &TREE_OPERAND (expr, 0);
 
@@ -689,10 +591,9 @@ get_indirect_ref_operands (gimple stmt, tree expr, int flags,
   add_virtual_operand (stmt, flags);
 
   /* If requested, add a USE operand for the base pointer.  */
-  if (recurse_on_base)
-    get_expr_operands (stmt, pptr,
-		       opf_non_addressable | opf_use
-		       | (flags & (opf_no_vops|opf_not_non_addressable)));
+  get_expr_operands (stmt, pptr,
+		     opf_non_addressable | opf_use
+		     | (flags & (opf_no_vops|opf_not_non_addressable)));
 }
 
 
@@ -853,7 +754,7 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
       return;
 
     case MEM_REF:
-      get_indirect_ref_operands (stmt, expr, flags, true);
+      get_indirect_ref_operands (stmt, expr, flags);
       return;
 
     case TARGET_MEM_REF:
@@ -1126,31 +1027,6 @@ verify_ssa_operands (gimple stmt)
 	return true;
       }
 
-  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
-    {
-      FOR_EACH_VEC_ELT (tree, build_defs, i, def)
-	{
-	  if (def_p == (tree *)def)
-	    {
-	      VEC_replace (tree, build_defs, i, NULL_TREE);
-	      break;
-	    }
-	}
-      if (i == VEC_length (tree, build_defs))
-	{
-	  error ("excess def operand for stmt");
-	  debug_generic_expr (DEF_FROM_PTR (def_p));
-	  return true;
-	}
-    }
-  FOR_EACH_VEC_ELT (tree, build_defs, i, def)
-    if (def != NULL_TREE)
-      {
-	error ("def operand missing for stmt");
-	debug_generic_expr (*(tree *)def);
-	return true;
-      }
-
   if (gimple_has_volatile_ops (stmt) != volatile_p)
     {
       error ("stmt volatile flag not up-to-date");
@@ -1168,17 +1044,7 @@ verify_ssa_operands (gimple stmt)
 void
 free_stmt_operands (gimple stmt)
 {
-  def_optype_p defs = gimple_def_ops (stmt), last_def;
   use_optype_p uses = gimple_use_ops (stmt), last_use;
-
-  if (defs)
-    {
-      for (last_def = defs; last_def->next; last_def = last_def->next)
-	continue;
-      last_def->next = gimple_ssa_operands (cfun)->free_defs;
-      gimple_ssa_operands (cfun)->free_defs = defs;
-      gimple_set_def_ops (stmt, NULL);
-    }
 
   if (uses)
     {

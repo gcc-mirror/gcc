@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+func adjustAttributeNames(aa []Attribute, nameMap map[string]string) {
+	for i := range aa {
+		if newName, ok := nameMap[aa[i].Key]; ok {
+			aa[i].Key = newName
+		}
+	}
+}
+
 func adjustForeignAttributes(aa []Attribute) {
 	for i, a := range aa {
 		if a.Key == "" || a.Key[0] != 'x' {
@@ -29,13 +37,32 @@ func htmlIntegrationPoint(n *Node) bool {
 	}
 	switch n.Namespace {
 	case "math":
-		// TODO: annotation-xml elements whose start tags have "text/html" or
-		// "application/xhtml+xml" encodings.
+		if n.Data == "annotation-xml" {
+			for _, a := range n.Attr {
+				if a.Key == "encoding" {
+					val := strings.ToLower(a.Val)
+					if val == "text/html" || val == "application/xhtml+xml" {
+						return true
+					}
+				}
+			}
+		}
 	case "svg":
 		switch n.Data {
 		case "desc", "foreignObject", "title":
 			return true
 		}
+	}
+	return false
+}
+
+func mathMLTextIntegrationPoint(n *Node) bool {
+	if n.Namespace != "math" {
+		return false
+	}
+	switch n.Data {
+	case "mi", "mo", "mn", "ms", "mtext":
+		return true
 	}
 	return false
 }
@@ -55,7 +82,6 @@ var breakout = map[string]bool{
 	"dt":         true,
 	"em":         true,
 	"embed":      true,
-	"font":       true,
 	"h1":         true,
 	"h2":         true,
 	"h3":         true,
@@ -129,4 +155,72 @@ var svgTagNameAdjustments = map[string]string{
 	"textpath":            "textPath",
 }
 
-// TODO: add look-up tables for MathML and SVG attribute adjustments.
+// Section 12.2.5.1
+var mathMLAttributeAdjustments = map[string]string{
+	"definitionurl": "definitionURL",
+}
+
+var svgAttributeAdjustments = map[string]string{
+	"attributename":             "attributeName",
+	"attributetype":             "attributeType",
+	"basefrequency":             "baseFrequency",
+	"baseprofile":               "baseProfile",
+	"calcmode":                  "calcMode",
+	"clippathunits":             "clipPathUnits",
+	"contentscripttype":         "contentScriptType",
+	"contentstyletype":          "contentStyleType",
+	"diffuseconstant":           "diffuseConstant",
+	"edgemode":                  "edgeMode",
+	"externalresourcesrequired": "externalResourcesRequired",
+	"filterres":                 "filterRes",
+	"filterunits":               "filterUnits",
+	"glyphref":                  "glyphRef",
+	"gradienttransform":         "gradientTransform",
+	"gradientunits":             "gradientUnits",
+	"kernelmatrix":              "kernelMatrix",
+	"kernelunitlength":          "kernelUnitLength",
+	"keypoints":                 "keyPoints",
+	"keysplines":                "keySplines",
+	"keytimes":                  "keyTimes",
+	"lengthadjust":              "lengthAdjust",
+	"limitingconeangle":         "limitingConeAngle",
+	"markerheight":              "markerHeight",
+	"markerunits":               "markerUnits",
+	"markerwidth":               "markerWidth",
+	"maskcontentunits":          "maskContentUnits",
+	"maskunits":                 "maskUnits",
+	"numoctaves":                "numOctaves",
+	"pathlength":                "pathLength",
+	"patterncontentunits":       "patternContentUnits",
+	"patterntransform":          "patternTransform",
+	"patternunits":              "patternUnits",
+	"pointsatx":                 "pointsAtX",
+	"pointsaty":                 "pointsAtY",
+	"pointsatz":                 "pointsAtZ",
+	"preservealpha":             "preserveAlpha",
+	"preserveaspectratio":       "preserveAspectRatio",
+	"primitiveunits":            "primitiveUnits",
+	"refx":                      "refX",
+	"refy":                      "refY",
+	"repeatcount":               "repeatCount",
+	"repeatdur":                 "repeatDur",
+	"requiredextensions":        "requiredExtensions",
+	"requiredfeatures":          "requiredFeatures",
+	"specularconstant":          "specularConstant",
+	"specularexponent":          "specularExponent",
+	"spreadmethod":              "spreadMethod",
+	"startoffset":               "startOffset",
+	"stddeviation":              "stdDeviation",
+	"stitchtiles":               "stitchTiles",
+	"surfacescale":              "surfaceScale",
+	"systemlanguage":            "systemLanguage",
+	"tablevalues":               "tableValues",
+	"targetx":                   "targetX",
+	"targety":                   "targetY",
+	"textlength":                "textLength",
+	"viewbox":                   "viewBox",
+	"viewtarget":                "viewTarget",
+	"xchannelselector":          "xChannelSelector",
+	"ychannelselector":          "yChannelSelector",
+	"zoomandpan":                "zoomAndPan",
+}

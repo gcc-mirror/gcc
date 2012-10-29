@@ -52,7 +52,7 @@ func (file *File) readdirnames(n int) (names []string, err error) {
 	entry_dirent := (*syscall.Dirent)(unsafe.Pointer(&file.dirinfo.buf[0]))
 
 	size := n
-	if size < 0 {
+	if size <= 0 {
 		size = 100
 		n = -1
 	}

@@ -346,6 +346,11 @@ fi
 
 # They all compile; now generate the code to call them.
 
+testname() {
+	# Remove the package from the name used with the -test option.
+	echo $1 | sed 's/^.*\.//'
+}
+
 localname() {
 	# The package main has been renamed to __main__ when imported.
 	# Adjust its uses.
@@ -373,7 +378,7 @@ localname() {
 	fi
 	# benchmarks are named BenchmarkFoo.
 	pattern='Benchmark([^a-z].*)?'
-	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep " $test .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
+	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '\..*\..*\.' | fgrep -v '$' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
 
 	# examples are named ExampleFoo
 	pattern='Example([^a-z].*)?'
@@ -396,8 +401,9 @@ localname() {
 	echo 'var tests = []testing.InternalTest {'
 	for i in $tests
 	do
+		n=$(testname $i)
 		j=$(localname $i)
-		echo '	{"'$i'", '$j'},'
+		echo '	{"'$n'", '$j'},'
 	done
 	echo '}'
 
@@ -407,8 +413,9 @@ localname() {
 	echo 'var benchmarks = []testing.InternalBenchmark{ //'
 	for i in $benchmarks
 	do
+		n=$(testname $i)
 		j=$(localname $i)
-		echo '	{"'$i'", '$j'},'
+		echo '	{"'$n'", '$j'},'
 	done
 	echo '}'
 
@@ -417,8 +424,9 @@ localname() {
 	# This doesn't work because we don't pick up the output.
 	#for i in $examples
 	#do
+	#	n=$(testname $i)
 	#	j=$(localname $i)
-	#	echo '	{"'$i'", '$j', ""},'
+	#	echo '	{"'$n'", '$j', ""},'
 	#done
 	echo '}'
 

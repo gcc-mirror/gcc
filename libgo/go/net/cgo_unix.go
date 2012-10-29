@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build darwin freebsd linux
+// +build darwin freebsd linux netbsd
 
 package net
 
@@ -102,13 +102,7 @@ func cgoLookupIPCNAME(name string) (addrs []IP, cname string, err error, complet
 	var res *syscall.Addrinfo
 	var hints syscall.Addrinfo
 
-	// NOTE(rsc): In theory there are approximately balanced
-	// arguments for and against including AI_ADDRCONFIG
-	// in the flags (it includes IPv4 results only on IPv4 systems,
-	// and similarly for IPv6), but in practice setting it causes
-	// getaddrinfo to return the wrong canonical name on Linux.
-	// So definitely leave it out.
-	hints.Ai_flags = int32((syscall.AI_ALL | syscall.AI_V4MAPPED | syscall.AI_CANONNAME) & cgoAddrInfoMask())
+	hints.Ai_flags = int32(cgoAddrInfoFlags())
 
 	h := syscall.StringBytePtr(name)
 	syscall.Entersyscall()

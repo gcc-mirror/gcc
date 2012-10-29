@@ -8,9 +8,14 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"exp/html/atom"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"runtime"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -37,7 +42,10 @@ func readParseTest(r *bufio.Reader) (text, want, context string, err error) {
 		}
 		b = append(b, line...)
 	}
-	text = strings.TrimRight(string(b), "\n")
+	text = string(b)
+	if strings.HasSuffix(text, "\n") {
+		text = text[:len(text)-1]
+	}
 	b = b[:0]
 
 	// Skip the error list.
@@ -70,12 +78,22 @@ func readParseTest(r *bufio.Reader) (text, want, context string, err error) {
 	if string(line) != "#document\n" {
 		return "", "", "", fmt.Errorf(`got %q want "#document\n"`, line)
 	}
+	inQuote := false
 	for {
 		line, err = r.ReadSlice('\n')
 		if err != nil && err != io.EOF {
 			return "", "", "", err
 		}
-		if len(line) == 0 || len(line) == 1 && line[0] == '\n' {
+		trimmed := bytes.Trim(line, "| \n")
+		if len(trimmed) > 0 {
+			if line[0] == '|' && trimmed[0] == '"' {
+				inQuote = true
+			}
+			if trimmed[len(trimmed)-1] == '"' && !(line[0] == '|' && len(trimmed) == 1) {
+				inQuote = false
+			}
+		}
+		if len(line) == 0 || len(line) == 1 && line[0] == '\n' && !inQuote {
 			break
 		}
 		b = append(b, line...)
@@ -88,6 +106,23 @@ func dumpIndent(w io.Writer, level int) {
 	for i := 0; i < level; i++ {
 		io.WriteString(w, "  ")
 	}
+}
+
+type sortedAttributes []Attribute
+
+func (a sortedAttributes) Len() int {
+	return len(a)
+}
+
+func (a sortedAttributes) Less(i, j int) bool {
+	if a[i].Namespace != a[j].Namespace {
+		return a[i].Namespace < a[j].Namespace
+	}
+	return a[i].Key < a[j].Key
+}
+
+func (a sortedAttributes) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
 }
 
 func dumpLevel(w io.Writer, n *Node, level int) error {
@@ -103,13 +138,8 @@ func dumpLevel(w io.Writer, n *Node, level int) error {
 		} else {
 			fmt.Fprintf(w, "<%s>", n.Data)
 		}
-		attr := n.Attr
-		if len(attr) == 2 && attr[0].Namespace == "xml" && attr[1].Namespace == "xlink" {
-			// Some of the test cases in tests10.dat change the order of adjusted
-			// foreign attributes, but that behavior is not in the spec, and could
-			// simply be an implementation detail of html5lib's python map ordering.
-			attr[0], attr[1] = attr[1], attr[0]
-		}
+		attr := sortedAttributes(n.Attr)
+		sort.Sort(attr)
 		for _, a := range attr {
 			io.WriteString(w, "\n")
 			dumpIndent(w, level+1)
@@ -147,7 +177,7 @@ func dumpLevel(w io.Writer, n *Node, level int) error {
 		return errors.New("unknown node type")
 	}
 	io.WriteString(w, "\n")
-	for _, c := range n.Child {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		if err := dumpLevel(w, c, level+1); err != nil {
 			return err
 		}
@@ -156,106 +186,126 @@ func dumpLevel(w io.Writer, n *Node, level int) error {
 }
 
 func dump(n *Node) (string, error) {
-	if n == nil || len(n.Child) == 0 {
+	if n == nil || n.FirstChild == nil {
 		return "", nil
 	}
 	var b bytes.Buffer
-	for _, child := range n.Child {
-		if err := dumpLevel(&b, child, 0); err != nil {
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if err := dumpLevel(&b, c, 0); err != nil {
 			return "", err
 		}
 	}
 	return b.String(), nil
 }
 
+const testDataDir = "testdata/webkit/"
+
 func TestParser(t *testing.T) {
-	testFiles := []struct {
-		filename string
-		// n is the number of test cases to run from that file.
-		// -1 means all test cases.
-		n int
-	}{
-		// TODO(nigeltao): Process all the test cases from all the .dat files.
-		{"adoption01.dat", -1},
-		{"doctype01.dat", -1},
-		{"tests1.dat", -1},
-		{"tests2.dat", -1},
-		{"tests3.dat", -1},
-		{"tests4.dat", -1},
-		{"tests5.dat", -1},
-		{"tests6.dat", -1},
-		{"tests10.dat", 35},
+	testFiles, err := filepath.Glob(testDataDir + "*.dat")
+	if err != nil {
+		t.Fatal(err)
 	}
 	for _, tf := range testFiles {
-		f, err := os.Open("testdata/webkit/" + tf.filename)
+		f, err := os.Open(tf)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer f.Close()
 		r := bufio.NewReader(f)
-		for i := 0; i != tf.n; i++ {
+
+		for i := 0; ; i++ {
 			text, want, context, err := readParseTest(r)
-			if err == io.EOF && tf.n == -1 {
+			if err == io.EOF {
 				break
 			}
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			var doc *Node
-			if context == "" {
-				doc, err = Parse(strings.NewReader(text))
-				if err != nil {
-					t.Fatal(err)
-				}
-			} else {
-				contextNode := &Node{
-					Type: ElementNode,
-					Data: context,
-				}
-				nodes, err := ParseFragment(strings.NewReader(text), contextNode)
-				if err != nil {
-					t.Fatal(err)
-				}
-				doc = &Node{
-					Type: DocumentNode,
-				}
-				for _, n := range nodes {
-					doc.Add(n)
-				}
-			}
+			err = testParseCase(text, want, context)
 
-			got, err := dump(doc)
 			if err != nil {
-				t.Fatal(err)
-			}
-			// Compare the parsed tree to the #document section.
-			if got != want {
-				t.Errorf("%s test #%d %q, got vs want:\n----\n%s----\n%s----", tf.filename, i, text, got, want)
-				continue
-			}
-			if renderTestBlacklist[text] || context != "" {
-				continue
-			}
-			// Check that rendering and re-parsing results in an identical tree.
-			pr, pw := io.Pipe()
-			go func() {
-				pw.CloseWithError(Render(pw, doc))
-			}()
-			doc1, err := Parse(pr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			got1, err := dump(doc1)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if got != got1 {
-				t.Errorf("%s test #%d %q, got vs got1:\n----\n%s----\n%s----", tf.filename, i, text, got, got1)
-				continue
+				t.Errorf("%s test #%d %q, %s", tf, i, text, err)
 			}
 		}
 	}
+}
+
+// testParseCase tests one test case from the test files. If the test does not
+// pass, it returns an error that explains the failure.
+// text is the HTML to be parsed, want is a dump of the correct parse tree,
+// and context is the name of the context node, if any.
+func testParseCase(text, want, context string) (err error) {
+	defer func() {
+		if x := recover(); x != nil {
+			switch e := x.(type) {
+			case error:
+				err = e
+			default:
+				err = fmt.Errorf("%v", e)
+			}
+		}
+	}()
+
+	var doc *Node
+	if context == "" {
+		doc, err = Parse(strings.NewReader(text))
+		if err != nil {
+			return err
+		}
+	} else {
+		contextNode := &Node{
+			Type:     ElementNode,
+			DataAtom: atom.Lookup([]byte(context)),
+			Data:     context,
+		}
+		nodes, err := ParseFragment(strings.NewReader(text), contextNode)
+		if err != nil {
+			return err
+		}
+		doc = &Node{
+			Type: DocumentNode,
+		}
+		for _, n := range nodes {
+			doc.AppendChild(n)
+		}
+	}
+
+	if err := checkTreeConsistency(doc); err != nil {
+		return err
+	}
+
+	got, err := dump(doc)
+	if err != nil {
+		return err
+	}
+	// Compare the parsed tree to the #document section.
+	if got != want {
+		return fmt.Errorf("got vs want:\n----\n%s----\n%s----", got, want)
+	}
+
+	if renderTestBlacklist[text] || context != "" {
+		return nil
+	}
+
+	// Check that rendering and re-parsing results in an identical tree.
+	pr, pw := io.Pipe()
+	go func() {
+		pw.CloseWithError(Render(pw, doc))
+	}()
+	doc1, err := Parse(pr)
+	if err != nil {
+		return err
+	}
+	got1, err := dump(doc1)
+	if err != nil {
+		return err
+	}
+	if got != got1 {
+		return fmt.Errorf("got vs got1:\n----\n%s----\n%s----", got, got1)
+	}
+
+	return nil
 }
 
 // Some test input result in parse trees are not 'well-formed' despite
@@ -266,11 +316,81 @@ var renderTestBlacklist = map[string]bool{
 	// The second <a> will be reparented to the first <table>'s parent. This
 	// results in an <a> whose parent is an <a>, which is not 'well-formed'.
 	`<a><table><td><a><table></table><a></tr><a></table><b>X</b>C<a>Y`: true,
+	// The same thing with a <p>:
+	`<p><table></p>`: true,
 	// More cases of <a> being reparented:
 	`<a href="blah">aba<table><a href="foo">br<tr><td></td></tr>x</table>aoe`: true,
 	`<a><table><a></table><p><a><div><a>`:                                     true,
 	`<a><table><td><a><table></table><a></tr><a></table><a>`:                  true,
+	// A similar reparenting situation involving <nobr>:
+	`<!DOCTYPE html><body><b><nobr>1<table><nobr></b><i><nobr>2<nobr></i>3`: true,
 	// A <plaintext> element is reparented, putting it before a table.
 	// A <plaintext> element can't have anything after it in HTML.
-	`<table><plaintext><td>`: true,
+	`<table><plaintext><td>`:                                   true,
+	`<!doctype html><table><plaintext></plaintext>`:            true,
+	`<!doctype html><table><tbody><plaintext></plaintext>`:     true,
+	`<!doctype html><table><tbody><tr><plaintext></plaintext>`: true,
+	// A form inside a table inside a form doesn't work either.
+	`<!doctype html><form><table></form><form></table></form>`: true,
+	// A script that ends at EOF may escape its own closing tag when rendered.
+	`<!doctype html><script><!--<script `:          true,
+	`<!doctype html><script><!--<script <`:         true,
+	`<!doctype html><script><!--<script <a`:        true,
+	`<!doctype html><script><!--<script </`:        true,
+	`<!doctype html><script><!--<script </s`:       true,
+	`<!doctype html><script><!--<script </script`:  true,
+	`<!doctype html><script><!--<script </scripta`: true,
+	`<!doctype html><script><!--<script -`:         true,
+	`<!doctype html><script><!--<script -a`:        true,
+	`<!doctype html><script><!--<script -<`:        true,
+	`<!doctype html><script><!--<script --`:        true,
+	`<!doctype html><script><!--<script --a`:       true,
+	`<!doctype html><script><!--<script --<`:       true,
+	`<script><!--<script `:                         true,
+	`<script><!--<script <a`:                       true,
+	`<script><!--<script </script`:                 true,
+	`<script><!--<script </scripta`:                true,
+	`<script><!--<script -`:                        true,
+	`<script><!--<script -a`:                       true,
+	`<script><!--<script --`:                       true,
+	`<script><!--<script --a`:                      true,
+	`<script><!--<script <`:                        true,
+	`<script><!--<script </`:                       true,
+	`<script><!--<script </s`:                      true,
+	// Reconstructing the active formatting elements results in a <plaintext>
+	// element that contains an <a> element.
+	`<!doctype html><p><a><plaintext>b`: true,
+}
+
+func TestNodeConsistency(t *testing.T) {
+	// inconsistentNode is a Node whose DataAtom and Data do not agree.
+	inconsistentNode := &Node{
+		Type:     ElementNode,
+		DataAtom: atom.Frameset,
+		Data:     "table",
+	}
+	_, err := ParseFragment(strings.NewReader("<p>hello</p>"), inconsistentNode)
+	if err == nil {
+		t.Errorf("got nil error, want non-nil")
+	}
+}
+
+func BenchmarkParser(b *testing.B) {
+	buf, err := ioutil.ReadFile("testdata/go1.html")
+	if err != nil {
+		b.Fatalf("could not read testdata/go1.html: %v", err)
+	}
+	b.SetBytes(int64(len(buf)))
+	runtime.GC()
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+	mallocs := ms.Mallocs
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Parse(bytes.NewBuffer(buf))
+	}
+	b.StopTimer()
+	runtime.ReadMemStats(&ms)
+	mallocs = ms.Mallocs - mallocs
+	b.Logf("%d iterations, %d mallocs per iteration\n", b.N, int(mallocs)/b.N)
 }

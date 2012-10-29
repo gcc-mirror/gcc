@@ -2784,7 +2784,7 @@ bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
 gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
-gfc_try gfc_check_vardef_context (gfc_expr*, bool, bool, const char*);
+gfc_try gfc_check_vardef_context (gfc_expr*, bool, bool, bool, const char*);
 
 
 /* st.c */
@@ -2805,7 +2805,7 @@ int gfc_impure_variable (gfc_symbol *);
 int gfc_pure (gfc_symbol *);
 int gfc_implicit_pure (gfc_symbol *);
 int gfc_elemental (gfc_symbol *);
-gfc_try gfc_resolve_iterator (gfc_iterator *, bool);
+gfc_try gfc_resolve_iterator (gfc_iterator *, bool, bool);
 gfc_try find_forall_index (gfc_expr *, gfc_symbol *, int);
 gfc_try gfc_resolve_index (gfc_expr *, int);
 gfc_try gfc_resolve_dim_arg (gfc_expr *);

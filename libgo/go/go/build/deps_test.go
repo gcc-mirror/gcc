@@ -30,7 +30,7 @@ var pkgDeps = map[string][]string{
 	"errors":      {},
 	"io":          {"errors", "sync"},
 	"runtime":     {"unsafe"},
-	"sync":        {"sync/atomic"},
+	"sync":        {"sync/atomic", "unsafe"},
 	"sync/atomic": {"unsafe"},
 	"unsafe":      {},
 
@@ -177,7 +177,7 @@ var pkgDeps = map[string][]string{
 	},
 
 	// One of a kind.
-	"archive/tar":         {"L4", "OS"},
+	"archive/tar":         {"L4", "OS", "syscall"},
 	"archive/zip":         {"L4", "OS", "compress/flate"},
 	"compress/bzip2":      {"L4"},
 	"compress/flate":      {"L4"},
@@ -300,7 +300,10 @@ var pkgDeps = map[string][]string{
 		"L4", "CRYPTO-MATH", "CGO", "OS",
 		"crypto/x509", "encoding/pem", "net", "syscall",
 	},
-	"crypto/x509":      {"L4", "CRYPTO-MATH", "OS", "CGO", "crypto/x509/pkix", "encoding/pem", "syscall"},
+	"crypto/x509": {
+		"L4", "CRYPTO-MATH", "OS", "CGO",
+		"crypto/x509/pkix", "encoding/pem", "encoding/hex", "syscall",
+	},
 	"crypto/x509/pkix": {"L4", "CRYPTO-MATH"},
 
 	// Simple net+crypto-aware packages.

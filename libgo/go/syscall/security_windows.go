@@ -37,7 +37,7 @@ const (
 // TranslateAccountName converts a directory service
 // object name from one format to another.
 func TranslateAccountName(username string, from, to uint32, initSize int) (string, error) {
-	u, e := utf16PtrFromString(username)
+	u, e := UTF16PtrFromString(username)
 	if e != nil {
 		return "", e
 	}
@@ -97,7 +97,7 @@ type SID struct{}
 // sid into a valid, functional sid.
 func StringToSid(s string) (*SID, error) {
 	var sid *SID
-	p, e := utf16PtrFromString(s)
+	p, e := UTF16PtrFromString(s)
 	if e != nil {
 		return nil, e
 	}
@@ -116,13 +116,13 @@ func LookupSID(system, account string) (sid *SID, domain string, accType uint32,
 	if len(account) == 0 {
 		return nil, "", 0, EINVAL
 	}
-	acc, e := utf16PtrFromString(account)
+	acc, e := UTF16PtrFromString(account)
 	if e != nil {
 		return nil, "", 0, e
 	}
 	var sys *uint16
 	if len(system) > 0 {
-		sys, e = utf16PtrFromString(system)
+		sys, e = UTF16PtrFromString(system)
 		if e != nil {
 			return nil, "", 0, e
 		}
@@ -183,7 +183,7 @@ func (sid *SID) Copy() (*SID, error) {
 func (sid *SID) LookupAccount(system string) (account, domain string, accType uint32, err error) {
 	var sys *uint16
 	if len(system) > 0 {
-		sys, err = utf16PtrFromString(system)
+		sys, err = UTF16PtrFromString(system)
 		if err != nil {
 			return "", "", 0, err
 		}

@@ -24,12 +24,11 @@
 
 template<typename... Args>
 constexpr
-std::array<typename std::decay<typename std::common_type<Args...>::type>::type, 
+std::array<typename std::common_type<Args...>::type, 
   sizeof...(Args)>
 make_array(Args&&... args)  // { dg-error "invalid use" }
 {
-  typedef typename std::decay<typename std::common_type<Args...>::type>::type 
-    CT;
+  typedef typename std::common_type<Args...>::type CT;
   return std::array<CT, sizeof...(Args)>{static_cast<CT>
       (std::forward<Args>(args))...};
 }
@@ -39,10 +38,26 @@ void test01()
   constexpr auto a1 = make_array(0);
   constexpr auto a2 = make_array(0, 1.2);
   constexpr auto a3 = make_array(5, true, 3.1415f, 'c');
+  
+  int i{};
+  double d{1.2};
+  float f{3.1415f};
+  
+  auto b1 = make_array(i);
+  auto b2 = make_array(i, 1.2);
+  auto b3 = make_array(i, d);
+  auto b4 = make_array(0, d);
+  auto b5 = make_array(i, true, f, 'c');
 
   static_assert(std::is_same<decltype(a1), const std::array<int, 1>>(), "");
   static_assert(std::is_same<decltype(a2), const std::array<double, 2>>(), "");
   static_assert(std::is_same<decltype(a3), const std::array<float, 4>>(), "");
+
+  static_assert(std::is_same<decltype(b1), std::array<int, 1>>(), "");
+  static_assert(std::is_same<decltype(b2), std::array<double, 2>>(), "");
+  static_assert(std::is_same<decltype(b3), std::array<double, 2>>(), "");
+  static_assert(std::is_same<decltype(b4), std::array<double, 2>>(), "");
+  static_assert(std::is_same<decltype(b5), std::array<float, 4>>(), "");
 }
 
 void test02()

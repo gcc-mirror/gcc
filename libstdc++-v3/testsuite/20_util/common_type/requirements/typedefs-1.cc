@@ -105,7 +105,7 @@ void test02()
   COMMON_TYPE_TEST_ALL_2(int, int, int, 1);
   COMMON_TYPE_TEST_ALL_2(int, double, double, 2);
   COMMON_TYPE_TEST_2(NO_CV, A, A, A, 3);
-  COMMON_TYPE_TEST_2(const, A, A, const A, 4);
+  COMMON_TYPE_TEST_2(const, A, A, A, 4);
   COMMON_TYPE_TEST_2(NO_CV, B, A, A, 5);  
 }
 

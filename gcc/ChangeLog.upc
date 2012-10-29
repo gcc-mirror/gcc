@@ -1,3 +1,7 @@
+2012-10-29 Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 192909 into gupc branch.
+
 2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Remove unused --upc-pthreads-per-process compile switch. 

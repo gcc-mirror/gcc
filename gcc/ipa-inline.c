@@ -845,8 +845,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 precision for small bandesses (those are interesting) yet we don't
 	 overflow for growths that are still in interesting range.
 
-	 Fixed point arithmetic with point at 8th bit. */
-      badness = ((gcov_type)growth) * (1<<(19+8));
+	 Fixed point arithmetic with point at 6th bit. */
+      badness = ((gcov_type)growth) * (1<<(19+6));
       badness = (badness + div / 2) / div;
 
       /* Overall growth of inlining all calls of function matters: we want to
@@ -861,9 +861,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	 We might mix the valud into the fraction by taking into account
 	 relative growth of the unit, but for now just add the number
 	 into resulting fraction.  */
-      if (badness > INT_MAX / 2)
+      if (badness > INT_MAX / 8)
 	{
-	  badness = INT_MAX / 2;
+	  badness = INT_MAX / 8;
 	  if (dump)
 	    fprintf (dump_file, "Badness overflow\n");
 	}
@@ -871,6 +871,10 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   | INLINE_HINT_loop_iterations
 		   | INLINE_HINT_loop_stride))
 	badness /= 8;
+      if (hints & (INLINE_HINT_same_scc))
+	badness *= 4;
+      if (hints & (INLINE_HINT_in_scc))
+	badness *= 2;
       if (dump)
 	{
 	  fprintf (dump_file,
@@ -1190,13 +1194,27 @@ recursive_inlining (struct cgraph_edge *edge,
     {
       struct cgraph_edge *curr
 	= (struct cgraph_edge *) fibheap_extract_min (heap);
-      struct cgraph_node *cnode;
-
-      if (estimate_size_after_inlining (node, curr) > limit)
-	break;
+      struct cgraph_node *cnode, *dest = curr->callee;
 
       if (!can_inline_edge_p (curr, true))
 	continue;
+
+      /* MASTER_CLONE is produced in the case we already started modified
+	 the function. Be sure to redirect edge to the original body before
+	 estimating growths otherwise we will be seeing growths after inlining
+	 the already modified body.  */
+      if (master_clone)
+	{
+          cgraph_redirect_edge_callee (curr, master_clone);
+          reset_edge_growth_cache (curr);
+	}
+
+      if (estimate_size_after_inlining (node, curr) > limit)
+	{
+	  cgraph_redirect_edge_callee (curr, dest);
+	  reset_edge_growth_cache (curr);
+	  break;
+	}
 
       depth = 1;
       for (cnode = curr->caller;
@@ -1206,7 +1224,11 @@ recursive_inlining (struct cgraph_edge *edge,
           depth++;
 
       if (!want_inline_self_recursive_call_p (curr, node, false, depth))
-	continue;
+	{
+	  cgraph_redirect_edge_callee (curr, dest);
+	  reset_edge_growth_cache (curr);
+	  continue;
+	}
 
       if (dump_file)
 	{
@@ -1228,9 +1250,10 @@ recursive_inlining (struct cgraph_edge *edge,
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);
+          cgraph_redirect_edge_callee (curr, master_clone);
+          reset_edge_growth_cache (curr);
 	}
 
-      cgraph_redirect_edge_callee (curr, master_clone);
       inline_call (curr, false, new_edges, &overall_size, true);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;
@@ -1314,20 +1337,17 @@ inline_small_functions (void)
   int min_size, max_size;
   VEC (cgraph_edge_p, heap) *new_indirect_edges = NULL;
   int initial_size = 0;
+  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
 
   if (flag_indirect_inlining)
     new_indirect_edges = VEC_alloc (cgraph_edge_p, heap, 8);
-
-  if (dump_file)
-    fprintf (dump_file,
-	     "\nDeciding on inlining of small functions.  Starting with size %i.\n",
-	     initial_size);
 
   /* Compute overall unit size and other global parameters used by badness
      metrics.  */
 
   max_count = 0;
-  initialize_growth_caches ();
+  ipa_reduced_postorder (order, true, true, NULL);
+  free (order);
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (!node->global.inlined_to)
@@ -1336,15 +1356,36 @@ inline_small_functions (void)
 	    || node->thunk.thunk_p)
 	  {
 	    struct inline_summary *info = inline_summary (node);
+	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->symbol.aux;
 
 	    if (!DECL_EXTERNAL (node->symbol.decl))
 	      initial_size += info->size;
+	    if (dfs && dfs->next_cycle)
+	      {
+		struct cgraph_node *n2;
+		int id = dfs->scc_no + 1;
+		for (n2 = node; n2;
+		     n2 = ((struct ipa_dfs_info *) node->symbol.aux)->next_cycle)
+		  {
+		    struct inline_summary *info2 = inline_summary (n2);
+		    if (info2->scc_no)
+		      break;
+		    info2->scc_no = id;
+		  }
+	      }
 	  }
 
 	for (edge = node->callers; edge; edge = edge->next_caller)
 	  if (max_count < edge->count)
 	    max_count = edge->count;
       }
+  ipa_free_postorder_info ();
+  initialize_growth_caches ();
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "\nDeciding on inlining of small functions.  Starting with size %i.\n",
+	     initial_size);
 
   overall_size = initial_size;
   max_size = compute_max_insns (overall_size);
@@ -1509,7 +1550,7 @@ inline_small_functions (void)
 	  reset_edge_caches (edge->callee);
           reset_node_growth_cache (callee);
 
-	  update_callee_keys (edge_heap, edge->callee, updated_nodes);
+	  update_callee_keys (edge_heap, where, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)

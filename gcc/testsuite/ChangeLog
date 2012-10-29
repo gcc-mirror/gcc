@@ -1,3 +1,379 @@
+2012-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54958
+	* gfortran.dg/do_check_6.f90: New.
+
+2012-10-27  Dominique Dhumieres  <dominiq@lps.ens.fr>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/54404
+	* g++.dg/other/darwin-cfstring1.C: Add -ftrack-macro-expansion=0
+	to dg-options.
+	* obj-c++.dg/strings/const-cfstring-2.mm: Likewise.
+
+2012-10-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/34283
+	* gcc.target/i386/pr34283.c: New test.
+
+2012-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55081
+	* g++.dg/opt/pr55081.C: New test.
+
+	PR debug/54970
+	PR debug/54971
+	* gcc.dg/guality/pr54970.c: New test.
+
+2012-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54984
+	* g++.dg/template/new11.C: New.
+
+2012-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54824
+	* gcc.dg/torture/pr54824.c: New testcase.
+
+2012-10-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* gcc.target/i386/fxsave-1.c: New.
+	* gcc.target/i386/fxsave64-1.c: Ditto.
+	* gcc.target/i386/fxrstor-1.c: Ditto.
+	* gcc.target/i386/fxrstor64-1.c: Ditto.
+	* gcc.target/i386/xsave-1.c: Ditto.
+	* gcc.target/i386/xsave64-1.c: Ditto.
+	* gcc.target/i386/xrstor-1.c: Ditto.
+	* gcc.target/i386/xrstor64-1.c: Ditto.
+	* gcc.target/i386/xsaveopt-1.c: Ditto.
+	* gcc.target/i386/xsaveopt64-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Add -mfxsr, -mxsaveopt.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
+2012-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/cunroll-4.c: Update; we now remove the loop
+	at ivcanon time.
+
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53761
+	* g++.dg/ext/transparent-union.C: New.
+
+2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* g++.dg/ext/vector19.C: New testcase.
+
+2012-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54902
+	* g++.dg/torture/pr54902.C: New testcase.
+
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34892
+	* g++.dg/template/crash114.C: New.
+
+2012-10-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/55049
+	* gcc.target/i386/pr55049-1.c: New test.
+
+2012-10-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55037
+	* gfortran.dg/class_dummy_4.f03: New.
+
+2012-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/55010
+	* gcc.dg/pr55010.c: New test.
+
+	PR debug/54828
+	* g++.dg/debug/pr54828.C: New test.
+
+2012-10-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gcc.dg/vect/vect-82_64.c: Adjust the dump file.
+	* gcc.dg/vect/vect-83_64.c: Likewise.
+
+2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54922
+	* g++.dg/cpp0x/constexpr-union4.C: New.
+
+2012-10-23  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/execute/pr54985.c: New test.
+
+2012-10-23  Paul Koning  <ni1d@arrl.net>
+
+	PR debug/54508
+	* g++.dg/debug/dwarf2/pr54508.C: New.
+
+2012-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54844
+	* g++.dg/template/sizeof14.C: New test.
+
+2012-10-23  Ian Bolton  <ian.bolton@arm.com>
+	    Jim MacArthur  <jim.macarthur@arm.com>
+	    Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Nigel Stephens  <nigel.stephens@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Sofiane Naci  <sofiane.naci@arm.com>
+	    Stephen Thomas  <stephen.thomas@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* lib/target-supports.exp
+	(check_profiling_available): Add AArch64.
+	(check_effective_target_vect_int): Likewise.
+	(check_effective_target_vect_shift): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_double): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_pack_trunc): Likewise.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_hw_misalign): Likewise.
+	(check_effective_target_vect_short_mult): Likewise.
+	(check_effective_target_vect_int_mult): Likewise.
+	(check_effective_target_vect_stridedN): Likewise.
+	(check_effective_target_sync_int_long): Likewise.
+	(check_effective_target_sync_char_short): Likewise.
+	(check_vect_support_and_set_flags): Likewise.
+	(check_effective_target_aarch64_tiny): New.
+	(check_effective_target_aarch64_small): New.
+	(check_effective_target_aarch64_large): New.
+	* g++.dg/other/PR23205.C: Enable aarch64.
+	* g++.dg/other/pr23205-2.C: Likewise.
+	* g++.old-deja/g++.abi/ptrmem.C: Likewise.
+	* gcc.c-torture/execute/20101011-1.c: Likewise.
+	* gcc.dg/20020312-2.c: Likewise.
+	* gcc.dg/20040813-1.c: Likewise.
+	* gcc.dg/builtin-apply2.c: Likewise.
+	* gcc.dg/stack-usage-1.c: Likewise.
+
+2012-10-23  Ian Bolton  <ian.bolton@arm.com>
+	    Jim MacArthur  <jim.macarthur@arm.com>
+	    Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Nigel Stephens  <nigel.stephens@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Sofiane Naci  <sofiane.naci@arm.com>
+	    Stephen Thomas  <stephen.thomas@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/aarch64/aapcs/aapcs64.exp: New file.
+	* gcc.target/aarch64/aapcs/abitest-2.h: New file.
+	* gcc.target/aarch64/aapcs/abitest-common.h: New file.
+	* gcc.target/aarch64/aapcs/abitest.S: New file.
+	* gcc.target/aarch64/aapcs/abitest.h: New file.
+	* gcc.target/aarch64/aapcs/func-ret-1.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-2.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-3.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-3.x: New file.
+	* gcc.target/aarch64/aapcs/func-ret-4.c: New file.
+	* gcc.target/aarch64/aapcs/func-ret-4.x: New file.
+	* gcc.target/aarch64/aapcs/ice_1.c: New file.
+	* gcc.target/aarch64/aapcs/ice_2.c: New file.
+	* gcc.target/aarch64/aapcs/ice_3.c: New file.
+	* gcc.target/aarch64/aapcs/ice_4.c: New file.
+	* gcc.target/aarch64/aapcs/ice_5.c: New file.
+	* gcc.target/aarch64/aapcs/macro-def.h: New file.
+	* gcc.target/aarch64/aapcs/test_1.c: New file.
+	* gcc.target/aarch64/aapcs/test_10.c: New file.
+	* gcc.target/aarch64/aapcs/test_11.c: New file.
+	* gcc.target/aarch64/aapcs/test_12.c: New file.
+	* gcc.target/aarch64/aapcs/test_13.c: New file.
+	* gcc.target/aarch64/aapcs/test_14.c: New file.
+	* gcc.target/aarch64/aapcs/test_15.c: New file.
+	* gcc.target/aarch64/aapcs/test_16.c: New file.
+	* gcc.target/aarch64/aapcs/test_17.c: New file.
+	* gcc.target/aarch64/aapcs/test_18.c: New file.
+	* gcc.target/aarch64/aapcs/test_19.c: New file.
+	* gcc.target/aarch64/aapcs/test_2.c: New file.
+	* gcc.target/aarch64/aapcs/test_20.c: New file.
+	* gcc.target/aarch64/aapcs/test_21.c: New file.
+	* gcc.target/aarch64/aapcs/test_22.c: New file.
+	* gcc.target/aarch64/aapcs/test_23.c: New file.
+	* gcc.target/aarch64/aapcs/test_24.c: New file.
+	* gcc.target/aarch64/aapcs/test_25.c: New file.
+	* gcc.target/aarch64/aapcs/test_26.c: New file.
+	* gcc.target/aarch64/aapcs/test_3.c: New file.
+	* gcc.target/aarch64/aapcs/test_4.c: New file.
+	* gcc.target/aarch64/aapcs/test_5.c: New file.
+	* gcc.target/aarch64/aapcs/test_6.c: New file.
+	* gcc.target/aarch64/aapcs/test_7.c: New file.
+	* gcc.target/aarch64/aapcs/test_8.c: New file.
+	* gcc.target/aarch64/aapcs/test_9.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-1.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-2.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-3.c: New file.
+	* gcc.target/aarch64/aapcs/test_align-4.c: New file.
+	* gcc.target/aarch64/aapcs/test_complex.c: New file.
+	* gcc.target/aarch64/aapcs/test_int128.c: New file.
+	* gcc.target/aarch64/aapcs/test_quad_double.c: New file.
+	* gcc.target/aarch64/aapcs/type-def.h: New file.
+	* gcc.target/aarch64/aapcs/va_arg-1.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-10.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-11.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-12.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-2.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-3.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-4.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-5.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-6.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-7.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-8.c: New file.
+	* gcc.target/aarch64/aapcs/va_arg-9.c: New file.
+	* gcc.target/aarch64/aapcs/validate_memory.h: New file.
+	* gcc.target/aarch64/aarch64.exp: New file.
+	* gcc.target/aarch64/adc-1.c: New file.
+	* gcc.target/aarch64/adc-2.c: New file.
+	* gcc.target/aarch64/asm-1.c: New file.
+	* gcc.target/aarch64/clrsb.c: New file.
+	* gcc.target/aarch64/clz.c: New file.
+	* gcc.target/aarch64/ctz.c: New file.
+	* gcc.target/aarch64/csinc-1.c: New file.
+	* gcc.target/aarch64/csinv-1.c: New file.
+	* gcc.target/aarch64/csneg-1.c: New file.
+	* gcc.target/aarch64/extend.c: New file.
+	* gcc.target/aarch64/fcvt.x: New file.
+	* gcc.target/aarch64/fcvt_double_int.c: New file.
+	* gcc.target/aarch64/fcvt_double_long.c: New file.
+	* gcc.target/aarch64/fcvt_double_uint.c: New file.
+	* gcc.target/aarch64/fcvt_double_ulong.c: New file.
+	* gcc.target/aarch64/fcvt_float_int.c: New file.
+	* gcc.target/aarch64/fcvt_float_long.c: New file.
+	* gcc.target/aarch64/fcvt_float_uint.c: New file.
+	* gcc.target/aarch64/fcvt_float_ulong.c: New file.
+	* gcc.target/aarch64/ffs.c: New file.
+	* gcc.target/aarch64/fmadd.c: New file.
+	* gcc.target/aarch64/fnmadd-fastmath.c: New file.
+	* gcc.target/aarch64/frint.x: New file.
+	* gcc.target/aarch64/frint_double.c: New file.
+	* gcc.target/aarch64/frint_float.c: New file.
+	* gcc.target/aarch64/index.c: New file.
+	* gcc.target/aarch64/mneg-1.c: New file.
+	* gcc.target/aarch64/mneg-2.c: New file.
+	* gcc.target/aarch64/mneg-3.c: New file.
+	* gcc.target/aarch64/mnegl-1.c: New file.
+	* gcc.target/aarch64/mnegl-2.c: New file.
+	* gcc.target/aarch64/narrow_high-intrinsics.c: New file.
+	* gcc.target/aarch64/pic-constantpool1.c: New file.
+	* gcc.target/aarch64/pic-symrefplus.c: New file.
+	* gcc.target/aarch64/predefine_large.c: New file.
+	* gcc.target/aarch64/predefine_small.c: New file.
+	* gcc.target/aarch64/predefine_tiny.c: New file.
+	* gcc.target/aarch64/reload-valid-spoff.c: New file.
+	* gcc.target/aarch64/scalar_intrinsics.c: New file.
+	* gcc.target/aarch64/table-intrinsics.c: New file.
+	* gcc.target/aarch64/tst-1.c: New file.
+	* gcc.target/aarch64/vect-abs-compile.c: New file.
+	* gcc.target/aarch64/vect-abs.c: New file.
+	* gcc.target/aarch64/vect-abs.x: New file.
+	* gcc.target/aarch64/vect-compile.c: New file.
+	* gcc.target/aarch64/vect-faddv-compile.c: New file.
+	* gcc.target/aarch64/vect-faddv.c: New file.
+	* gcc.target/aarch64/vect-faddv.x: New file.
+	* gcc.target/aarch64/vect-fmax-fmin-compile.c: New file.
+	* gcc.target/aarch64/vect-fmax-fmin.c: New file.
+	* gcc.target/aarch64/vect-fmax-fmin.x: New file.
+	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: New file.
+	* gcc.target/aarch64/vect-fmaxv-fminv.x: New file.
+	* gcc.target/aarch64/vect-fp-compile.c: New file.
+	* gcc.target/aarch64/vect-fp.c: New file.
+	* gcc.target/aarch64/vect-fp.x: New file.
+	* gcc.target/aarch64/vect-mull-compile.c: New file.
+	* gcc.target/aarch64/vect-mull.c: New file.
+	* gcc.target/aarch64/vect-mull.x: New file.
+	* gcc.target/aarch64/vect.c: New file.
+	* gcc.target/aarch64/vect.x: New file.
+	* gcc.target/aarch64/vector_intrinsics.c: New file.
+	* gcc.target/aarch64/vfp-1.c: New file.
+	* gcc.target/aarch64/volatile-bitfields-1.c: New file.
+	* gcc.target/aarch64/volatile-bitfields-2.c: New file.
+	* gcc.target/aarch64/volatile-bitfields-3.c: New file.
+	* g++.dg/abi/aarch64_guard1.C: New file.
+
+2012-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54988
+	* c-c++-common/pr54988.c: New test.
+
+2012-10-23  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/peel-1.c: New testcase.
+
+2012-10-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR gcc/52945
+	* gcc.dg/lto/pr52634_0.c: skip the test on Darwin.
+
+2012-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c99-predef-1.c: New test.
+	* gcc.dg/cpp/cmdlne-dU-1.c, gcc.dg/cpp/cmdlne-dU-2.c,
+	gcc.dg/cpp/cmdlne-dU-3.c, gcc.dg/cpp/cmdlne-dU-4.c,
+	gcc.dg/cpp/cmdlne-dU-5.c, gcc.dg/cpp/cmdlne-dU-6.c,
+	gcc.dg/cpp/cmdlne-dU-7.c, gcc.dg/cpp/cmdlne-dU-8.c,
+	gcc.dg/cpp/cmdlne-dU-9.c, gcc.dg/cpp/cmdlne-dU-10.c,
+	gcc.dg/cpp/cmdlne-dU-11.c, gcc.dg/cpp/cmdlne-dU-12.c,
+	gcc.dg/cpp/cmdlne-dU-13.c, gcc.dg/cpp/cmdlne-dU-14.c,
+	gcc.dg/cpp/cmdlne-dU-15.c, gcc.dg/cpp/cmdlne-dU-16.c,
+	gcc.dg/cpp/cmdlne-dU-17.c, gcc.dg/cpp/cmdlne-dU-18.c,
+	gcc.dg/cpp/cmdlne-dU-19.c, gcc.dg/cpp/cmdlne-dU-20.c,
+	gcc.dg/cpp/cmdlne-dU-21.c, gcc.dg/cpp/cmdlne-dU-22.c,
+	gcc.dg/cpp/mi5.c, gcc.dg/cpp/multiline.c: Add -nostdinc to dg-options.
+
+2012-10-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/foldconst-6.c: New testcase.
+
+2012-10-23  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/54937
+	* gcc.c-torture/execute/pr54937.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-2.c: Update.
+
+2012-10-23  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/54967
+	* gfortran.dg/pr54967.f90: New testcase.
+
+2012-10-23  Terry Guo  <terry.guo@arm.com>
+
+	PR target/55019
+	* gcc.dg/pr55019.c: New.
+
+2012-10-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/55008
+	* gcc.dg/tree-ssa/pr55008.c: New test.
+
+2012-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55011
+	* gcc.dg/torture/pr55011.c: New testcase.
+
+2012-10-22  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.target/arm/pr40457-1.c: Adjust expected output.
+	* gcc.target/arm/pr40457-2.c: Likewise.
+	* gcc.target/arm/pr40457-3.c: Likewise.
+
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/limited_with4.ads: New test.
@@ -33,8 +409,8 @@
 
 2012-10-19  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-	* lib/target-supports.exp (check_effective_target_arm_prefer_ldrd_strd):
-	New procedure.
+	* lib/target-supports.exp
+	(check_effective_target_arm_prefer_ldrd_strd): New procedure.
 
 2012-10-19  Richard Guenther  <rguenther@suse.de>
 
@@ -82,10 +458,8 @@
 
 	* gcc.target/arm/ftest-armv8a-arm.c: New testcase.
 	* gcc.target/arm/ftest-armv8a-thumb.c: Likewise.
-	* gcc.target/arm/ftest-support-arm.h (feature_matrix): Add
-	ARMv8-A row.
-	* gcc.target/arm/ftest-support-thumb.h (feature_matrix):
-	Likewise.
+	* gcc.target/arm/ftest-support-arm.h (feature_matrix): Add ARMv8-A row.
+	* gcc.target/arm/ftest-support-thumb.h (feature_matrix): Likewise.
 	* gcc.target/arm/ftest-support.h (architecture): Add ARMv8-A.
 	* lib/target-supports.exp: Add ARMv8-A architecture expectation.
 
@@ -287,8 +661,7 @@
 	* gcc.dg/vect/pr48765.c: Skip for conflicting options, don't
 	specify -m64.
 
-	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for
-	GNU/Linux.
+	* gcc.target/arm/div64-unwinding.c: Skip, don't xfail, for GNU/Linux.
 
 	* lib/target-supports.exp (check_effective_target_arm_hard_vfp_ok):
 	Return 0 if already specifying -mfloat-abi other than hard.

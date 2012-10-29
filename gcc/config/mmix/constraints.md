@@ -110,3 +110,7 @@
 (define_address_constraint "U"
   "@internal"
   (match_operand 0 "mmix_address_operand"))
+
+(define_constraint "Yf"
+  "@internal"
+  (match_operand 0 "frame_pointer_operand"))

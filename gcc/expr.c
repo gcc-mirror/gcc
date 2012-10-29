@@ -1464,11 +1464,11 @@ emit_block_move_via_loop (rtx x, rtx y, rtx size,
   emit_label (top_label);
 
   tmp = convert_modes (x_addr_mode, iter_mode, iter, true);
-  x_addr = gen_rtx_PLUS (x_addr_mode, x_addr, tmp);
+  x_addr = simplify_gen_binary (PLUS, x_addr_mode, x_addr, tmp);
 
   if (x_addr_mode != y_addr_mode)
     tmp = convert_modes (y_addr_mode, iter_mode, iter, true);
-  y_addr = gen_rtx_PLUS (y_addr_mode, y_addr, tmp);
+  y_addr = simplify_gen_binary (PLUS, y_addr_mode, y_addr, tmp);
 
   x = change_address (x, QImode, x_addr);
   y = change_address (y, QImode, y_addr);
@@ -3448,9 +3448,13 @@ emit_move_insn_1 (rtx x, rtx y)
      fits within a HOST_WIDE_INT.  */
   if (!CONSTANT_P (y) || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
     {
-      rtx ret = emit_move_via_integer (mode, x, y, false);
+      rtx ret = emit_move_via_integer (mode, x, y, lra_in_progress);
+
       if (ret)
-	return ret;
+	{
+	  if (! lra_in_progress || recog (PATTERN (ret), ret, 0) >= 0)
+	    return ret;
+	}
     }
 
   return emit_move_multi_word (mode, x, y);

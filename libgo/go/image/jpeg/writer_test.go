@@ -171,23 +171,37 @@ func TestWriter(t *testing.T) {
 	}
 }
 
-func BenchmarkEncodeRGBOpaque(b *testing.B) {
+func BenchmarkDecode(b *testing.B) {
+	b.StopTimer()
+	data, err := ioutil.ReadFile("../testdata/video-001.jpeg")
+	if err != nil {
+		b.Fatal(err)
+	}
+	cfg, err := DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.SetBytes(int64(cfg.Width * cfg.Height * 4))
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		Decode(bytes.NewReader(data))
+	}
+}
+
+func BenchmarkEncode(b *testing.B) {
 	b.StopTimer()
 	img := image.NewRGBA(image.Rect(0, 0, 640, 480))
-	// Set all pixels to 0xFF alpha to force opaque mode.
 	bo := img.Bounds()
 	rnd := rand.New(rand.NewSource(123))
 	for y := bo.Min.Y; y < bo.Max.Y; y++ {
 		for x := bo.Min.X; x < bo.Max.X; x++ {
-			img.Set(x, y, color.RGBA{
+			img.SetRGBA(x, y, color.RGBA{
 				uint8(rnd.Intn(256)),
 				uint8(rnd.Intn(256)),
 				uint8(rnd.Intn(256)),
-				255})
+				255,
+			})
 		}
-	}
-	if !img.Opaque() {
-		b.Fatal("expected image to be opaque")
 	}
 	b.SetBytes(640 * 480 * 4)
 	b.StartTimer()

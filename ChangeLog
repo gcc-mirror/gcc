@@ -1,3 +1,21 @@
+2012-10-24  Sharad Singhai  <singhai@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2012-10-24  Eric Christopher  <echristo@gmail.com>
+
+	* MAINTAINERS: Update email address.
+
+2012-10-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/54820
+	* configure.ac (have_static_libs): Force 'no' for GCC version < 4.5.
+	* configure: Regenerate.
+
+2012-10-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* MAINTAINERS (aarch64): Add Marcus and myself.
+
 2012-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/54820

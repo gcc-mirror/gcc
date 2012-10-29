@@ -2299,7 +2299,9 @@ mmix_output_register_setting (FILE *stream,
   if (do_begin_end)
     fprintf (stream, "\t");
 
-  if (mmix_shiftable_wyde_value ((unsigned HOST_WIDEST_INT) value))
+  if (insn_const_int_ok_for_constraint (value, CONSTRAINT_K))
+    fprintf (stream, "NEGU %s,0," HOST_WIDEST_INT_PRINT_DEC, reg_names[regno], -value);
+  else if (mmix_shiftable_wyde_value ((unsigned HOST_WIDEST_INT) value))
     {
       /* First, the one-insn cases.  */
       mmix_output_shiftvalue_op_from_str (stream, "SET",

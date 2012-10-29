@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "cfgloop.h"
 #include "ira-int.h"
+#include "lra-int.h"
 #include "builtins.h"
 #include "gcse.h"
 #include "bb-reorder.h"
@@ -55,6 +56,7 @@ struct target_globals default_target_globals = {
   &default_target_cfgloop,
   &default_target_ira,
   &default_target_ira_int,
+  &default_target_lra_int,
   &default_target_builtins,
   &default_target_gcse,
   &default_target_bb_reorder,

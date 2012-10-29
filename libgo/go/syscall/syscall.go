@@ -16,21 +16,21 @@ package syscall
 
 import "unsafe"
 
-// StringByteSlice returns a NUL-terminated slice of bytes containing the text of s.
+// StringByteSlice is deprecated. Use ByteSliceFromString instead.
 // If s contains a NUL byte this function panics instead of
 // returning an error.
 func StringByteSlice(s string) []byte {
-	a, err := byteSliceFromString(s)
+	a, err := ByteSliceFromString(s)
 	if err != nil {
 		panic("syscall: string with NUL passed to StringByteSlice")
 	}
 	return a
 }
 
-// byteSliceFromString returns a NUL-terminated slice of bytes
+// ByteSliceFromString returns a NUL-terminated slice of bytes
 // containing the text of s. If s contains a NUL byte at any
 // location, it returns (nil, EINVAL).
-func byteSliceFromString(s string) ([]byte, error) {
+func ByteSliceFromString(s string) ([]byte, error) {
 	for i := 0; i < len(s); i++ {
 		if s[i] == 0 {
 			return nil, EINVAL
@@ -41,16 +41,16 @@ func byteSliceFromString(s string) ([]byte, error) {
 	return a, nil
 }
 
-// StringBytePtr returns a pointer to a NUL-terminated array of bytes containing the text of s.
+// StringBytePtr is deprecated. Use BytePtrFromString instead.
 // If s contains a NUL byte this function panics instead of
 // returning an error.
 func StringBytePtr(s string) *byte { return &StringByteSlice(s)[0] }
 
-// bytePtrFromString returns a pointer to a NUL-terminated array of
+// BytePtrFromString returns a pointer to a NUL-terminated array of
 // bytes containing the text of s. If s contains a NUL byte at any
 // location, it returns (nil, EINVAL).
-func bytePtrFromString(s string) (*byte, error) {
-	a, err := byteSliceFromString(s)
+func BytePtrFromString(s string) (*byte, error) {
+	a, err := ByteSliceFromString(s)
 	if err != nil {
 		return nil, err
 	}

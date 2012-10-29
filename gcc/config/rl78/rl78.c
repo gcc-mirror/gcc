@@ -686,6 +686,13 @@ rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
   if (! characterize_address (x, &base, &index, &addend))
     return false;
 
+  /* We can't extract the high/low portions of a PLUS address
+     involving a register during devirtualization, so make sure all
+     such __far addresses do not have addends.  This forces GCC to do
+     the sum separately.  */
+  if (addend && base && as == ADDR_SPACE_FAR)
+    return false;
+
   if (base && index)
     {
       int ir = REGNO (index);

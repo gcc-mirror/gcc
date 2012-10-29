@@ -1534,7 +1534,7 @@ resolve_tag (const io_tag *tag, gfc_expr *e)
       char context[64];
 
       sprintf (context, _("%s tag"), tag->name);
-      if (gfc_check_vardef_context (e, false, false, context) == FAILURE)
+      if (gfc_check_vardef_context (e, false, false, false, context) == FAILURE)
 	return FAILURE;
     }
   
@@ -2867,7 +2867,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
       /* If we are writing, make sure the internal unit can be changed.  */
       gcc_assert (k != M_PRINT);
       if (k == M_WRITE
-	  && gfc_check_vardef_context (e, false, false,
+	  && gfc_check_vardef_context (e, false, false, false,
 				       _("internal unit in WRITE")) == FAILURE)
 	return FAILURE;
     }
@@ -2897,7 +2897,7 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
 	  gfc_try t;
 
 	  e = gfc_get_variable_expr (gfc_find_sym_in_symtree (n->sym));
-	  t = gfc_check_vardef_context (e, false, false, NULL);
+	  t = gfc_check_vardef_context (e, false, false, false, NULL);
 	  gfc_free_expr (e);
 
 	  if (t == FAILURE)
@@ -4063,7 +4063,8 @@ gfc_resolve_inquire (gfc_inquire *inquire)
     { \
       char context[64]; \
       sprintf (context, _("%s tag with INQUIRE"), (tag)->name); \
-      if (gfc_check_vardef_context ((expr), false, false, context) == FAILURE) \
+      if (gfc_check_vardef_context ((expr), false, false, false, \
+				    context) == FAILURE) \
 	return FAILURE; \
     }
   INQUIRE_RESOLVE_TAG (&tag_iomsg, inquire->iomsg);

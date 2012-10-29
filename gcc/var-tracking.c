@@ -4921,7 +4921,9 @@ track_expr_p (tree expr, bool need_rtl)
 	realdecl = expr;
       else if (!DECL_P (realdecl))
 	{
-	  if (handled_component_p (realdecl))
+	  if (handled_component_p (realdecl)
+	      || (TREE_CODE (realdecl) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR))
 	    {
 	      HOST_WIDE_INT bitsize, bitpos, maxsize;
 	      tree innerdecl

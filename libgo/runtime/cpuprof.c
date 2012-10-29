@@ -130,7 +130,7 @@ extern void runtime_SetCPUProfileRate(int32)
 // SetCPUProfileRate sets the CPU profiling rate.
 // The user documentation is in debug.go.
 void
-runtime_SetCPUProfileRate(int32 hz)
+runtime_SetCPUProfileRate(intgo hz)
 {
 	uintptr *p;
 	uintptr n;

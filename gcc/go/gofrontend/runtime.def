@@ -148,27 +148,28 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
 
 
 // Start building a select statement.
-DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P1(INT), R1(POINTER))
+DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P1(INT32), R1(POINTER))
 
 // Add a default clause to a select statement.
-DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault", P2(POINTER, INT), R0())
+DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault",
+	       P2(POINTER, INT32), R0())
 
 // Add a send clause to a select statement.
 DEF_GO_RUNTIME(SELECTSEND, "runtime.selectsend",
-	       P4(POINTER, CHAN, POINTER, INT), R0())
+	       P4(POINTER, CHAN, POINTER, INT32), R0())
 
 // Add a receive clause to a select statement, for a clause which does
 // not check whether the channel is closed.
 DEF_GO_RUNTIME(SELECTRECV, "runtime.selectrecv",
-	       P4(POINTER, CHAN, POINTER, INT), R0())
+	       P4(POINTER, CHAN, POINTER, INT32), R0())
 
 // Add a receive clause to a select statement, for a clause which does
 // check whether the channel is closed.
 DEF_GO_RUNTIME(SELECTRECV2, "runtime.selectrecv2",
-	       P5(POINTER, CHAN, POINTER, BOOLPTR, INT), R0())
+	       P5(POINTER, CHAN, POINTER, BOOLPTR, INT32), R0())
 
 // Run a select, returning the index of the selected clause.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT))
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT32))
 
 
 // Panic.

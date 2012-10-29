@@ -311,17 +311,12 @@ void
       {
 ')dnl
 define(START_MASKED_ARRAY_BLOCK,
-`	if (len <= 0)
-	  *dest = '$1`;
-	else
+`	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
-	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
-	      {
 ')dnl
 define(FINISH_MASKED_ARRAY_FUNCTION,
-`	      }
-	    *dest = result;
-	  }
+`	  }
+	*dest = result;
       }
       /* Advance to the next element.  */
       count[0]++;
@@ -500,6 +495,6 @@ FINISH_ARRAY_FUNCTION($4)')dnl
 define(MASKED_ARRAY_FUNCTION,
 `START_MASKED_ARRAY_FUNCTION
 $2
-START_MASKED_ARRAY_BLOCK($1)
+START_MASKED_ARRAY_BLOCK
 $3
 FINISH_MASKED_ARRAY_FUNCTION')dnl

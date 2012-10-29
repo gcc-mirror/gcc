@@ -10328,7 +10328,7 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands + (nops + i));
+	operands[nops + i] = alter_subreg (operands + (nops + i), true);
 
       gcc_assert (MEM_P (operands[nops + i]));
 
@@ -10480,7 +10480,7 @@ store_multiple_sequence (rtx *operands, int nops, int nops_total,
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands + (nops + i));
+	operands[nops + i] = alter_subreg (operands + (nops + i), true);
 
       gcc_assert (MEM_P (operands[nops + i]));
 
@@ -12191,6 +12191,75 @@ arm_pad_reg_upward (enum machine_mode mode,
 
   /* Otherwise, use default padding.  */
   return !BYTES_BIG_ENDIAN;
+}
+
+/* Returns true iff OFFSET is valid for use in an LDRD/STRD instruction,
+   assuming that the address in the base register is word aligned.  */
+bool
+offset_ok_for_ldrd_strd (HOST_WIDE_INT offset)
+{
+  HOST_WIDE_INT max_offset;
+
+  /* Offset must be a multiple of 4 in Thumb mode.  */
+  if (TARGET_THUMB2 && ((offset & 3) != 0))
+    return false;
+
+  if (TARGET_THUMB2)
+    max_offset = 1020;
+  else if (TARGET_ARM)
+    max_offset = 255;
+  else
+    return false;
+
+  return ((offset <= max_offset) && (offset >= -max_offset));
+}
+
+/* Checks whether the operands are valid for use in an LDRD/STRD instruction.
+   Assumes that RT, RT2, and RN are REG.  This is guaranteed by the patterns.
+   Assumes that the address in the base register RN is word aligned.  Pattern
+   guarantees that both memory accesses use the same base register,
+   the offsets are constants within the range, and the gap between the offsets is 4.
+   If preload complete then check that registers are legal.  WBACK indicates whether
+   address is updated.  LOAD indicates whether memory access is load or store.  */
+bool
+operands_ok_ldrd_strd (rtx rt, rtx rt2, rtx rn, HOST_WIDE_INT offset,
+                       bool wback, bool load)
+{
+  unsigned int t, t2, n;
+
+  if (!reload_completed)
+    return true;
+
+  if (!offset_ok_for_ldrd_strd (offset))
+    return false;
+
+  t = REGNO (rt);
+  t2 = REGNO (rt2);
+  n = REGNO (rn);
+
+  if ((TARGET_THUMB2)
+      && ((wback && (n == t || n == t2))
+          || (t == SP_REGNUM)
+          || (t == PC_REGNUM)
+          || (t2 == SP_REGNUM)
+          || (t2 == PC_REGNUM)
+          || (!load && (n == PC_REGNUM))
+          || (load && (t == t2))
+          /* Triggers Cortex-M3 LDRD errata.  */
+          || (!wback && load && fix_cm3_ldrd && (n == t))))
+    return false;
+
+  if ((TARGET_ARM)
+      && ((wback && (n == t || n == t2))
+          || (t2 == PC_REGNUM)
+          || (t % 2 != 0)   /* First destination register is not even.  */
+          || (t2 != t + 1)
+          /* PC can be used as base register (for offset addressing only),
+             but it is depricated.  */
+          || (n == PC_REGNUM)))
+    return false;
+
+  return true;
 }
 
 
@@ -15783,6 +15852,126 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
     }
 }
 
+/* Generate and emit a pattern that will be recognized as STRD pattern.  If even
+   number of registers are being pushed, multiple STRD patterns are created for
+   all register pairs.  If odd number of registers are pushed, emit a
+   combination of STRDs and STR for the prologue saves.  */
+static void
+thumb2_emit_strd_push (unsigned long saved_regs_mask)
+{
+  int num_regs = 0;
+  int i, j;
+  rtx par = NULL_RTX;
+  rtx insn = NULL_RTX;
+  rtx dwarf = NULL_RTX;
+  rtx tmp, reg, tmp1;
+
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      num_regs++;
+
+  gcc_assert (num_regs && num_regs <= 16);
+
+  /* Pre-decrement the stack pointer, based on there being num_regs 4-byte
+     registers to push.  */
+  tmp = gen_rtx_SET (VOIDmode,
+                     stack_pointer_rtx,
+                     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  insn = emit_insn (tmp);
+
+  /* Create sequence for DWARF info.  */
+  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_regs + 1));
+
+  /* RTLs cannot be shared, hence create new copy for dwarf.  */
+  tmp1 = gen_rtx_SET (VOIDmode,
+                     stack_pointer_rtx,
+                     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
+  RTX_FRAME_RELATED_P (tmp1) = 1;
+  XVECEXP (dwarf, 0, 0) = tmp1;
+
+  gcc_assert (!(saved_regs_mask & (1 << SP_REGNUM)));
+  gcc_assert (!(saved_regs_mask & (1 << PC_REGNUM)));
+
+  /* Var j iterates over all the registers to gather all the registers in
+     saved_regs_mask.  Var i gives index of register R_j in stack frame.
+     A PARALLEL RTX of register-pair is created here, so that pattern for
+     STRD can be matched.  If num_regs is odd, 1st register will be pushed
+     using STR and remaining registers will be pushed with STRD in pairs.
+     If num_regs is even, all registers are pushed with STRD in pairs.
+     Hence, skip first element for odd num_regs.  */
+  for (i = num_regs - 1, j = LAST_ARM_REGNUM; i >= (num_regs % 2); j--)
+    if (saved_regs_mask & (1 << j))
+      {
+        /* Create RTX for store.  New RTX is created for dwarf as
+           they are not sharable.  */
+        reg = gen_rtx_REG (SImode, j);
+        tmp = gen_rtx_SET (SImode,
+                           gen_frame_mem
+                           (SImode,
+                            plus_constant (Pmode, stack_pointer_rtx, 4 * i)),
+                           reg);
+
+        tmp1 = gen_rtx_SET (SImode,
+                           gen_frame_mem
+                           (SImode,
+                            plus_constant (Pmode, stack_pointer_rtx, 4 * i)),
+                           reg);
+        RTX_FRAME_RELATED_P (tmp) = 1;
+        RTX_FRAME_RELATED_P (tmp1) = 1;
+
+        if (((i - (num_regs % 2)) % 2) == 1)
+          /* When (i - (num_regs % 2)) is odd, the RTX to be emitted is yet to
+             be created.  Hence create it first.  The STRD pattern we are
+             generating is :
+             [ (SET (MEM (PLUS (SP) (NUM))) (reg_t1))
+               (SET (MEM (PLUS (SP) (NUM + 4))) (reg_t2)) ]
+             where the target registers need not be consecutive.  */
+          par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+
+        /* Register R_j is added in PARALLEL RTX.  If (i - (num_regs % 2)) is
+           even, the reg_j is added as 0th element and if it is odd, reg_i is
+           added as 1st element of STRD pattern shown above.  */
+        XVECEXP (par, 0, ((i - (num_regs % 2)) % 2)) = tmp;
+        XVECEXP (dwarf, 0, (i + 1)) = tmp1;
+
+        if (((i - (num_regs % 2)) % 2) == 0)
+          /* When (i - (num_regs % 2)) is even, RTXs for both the registers
+             to be loaded are generated in above given STRD pattern, and the
+             pattern can be emitted now.  */
+          emit_insn (par);
+
+        i--;
+      }
+
+  if ((num_regs % 2) == 1)
+    {
+      /* If odd number of registers are pushed, generate STR pattern to store
+         lone register.  */
+      for (; (saved_regs_mask & (1 << j)) == 0; j--);
+
+      tmp1 = gen_frame_mem (SImode, plus_constant (Pmode,
+                                                   stack_pointer_rtx, 4 * i));
+      reg = gen_rtx_REG (SImode, j);
+      tmp = gen_rtx_SET (SImode, tmp1, reg);
+      RTX_FRAME_RELATED_P (tmp) = 1;
+
+      emit_insn (tmp);
+
+      tmp1 = gen_rtx_SET (SImode,
+                         gen_frame_mem
+                         (SImode,
+                          plus_constant (Pmode, stack_pointer_rtx, 4 * i)),
+                          reg);
+      RTX_FRAME_RELATED_P (tmp1) = 1;
+      XVECEXP (dwarf, 0, (i + 1)) = tmp1;
+    }
+
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  return;
+}
+
 /* Generate and emit an insn that we will recognize as a push_multi.
    Unfortunately, since this insn does not reflect very well the actual
    semantics of the operation, we need to annotate the insn for the benefit
@@ -16074,6 +16263,143 @@ arm_emit_vfp_multi_reg_pop (int first_reg, int num_regs, rtx base_reg)
 
   par = emit_insn (par);
   REG_NOTES (par) = dwarf;
+}
+
+/* Generate and emit a pattern that will be recognized as LDRD pattern.  If even
+   number of registers are being popped, multiple LDRD patterns are created for
+   all register pairs.  If odd number of registers are popped, last register is
+   loaded by using LDR pattern.  */
+static void
+thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
+{
+  int num_regs = 0;
+  int i, j;
+  rtx par = NULL_RTX;
+  rtx dwarf = NULL_RTX;
+  rtx tmp, reg, tmp1;
+  bool return_in_pc;
+
+  return_in_pc = (saved_regs_mask & (1 << PC_REGNUM)) ? true : false;
+  for (i = 0; i <= LAST_ARM_REGNUM; i++)
+    if (saved_regs_mask & (1 << i))
+      num_regs++;
+
+  gcc_assert (num_regs && num_regs <= 16);
+
+  /* We cannot generate ldrd for PC.  Hence, reduce the count if PC is
+     to be popped.  So, if num_regs is even, now it will become odd,
+     and we can generate pop with PC.  If num_regs is odd, it will be
+     even now, and ldr with return can be generated for PC.  */
+  if (return_in_pc)
+    num_regs--;
+
+  gcc_assert (!(saved_regs_mask & (1 << SP_REGNUM)));
+
+  /* Var j iterates over all the registers to gather all the registers in
+     saved_regs_mask.  Var i gives index of saved registers in stack frame.
+     A PARALLEL RTX of register-pair is created here, so that pattern for
+     LDRD can be matched.  As PC is always last register to be popped, and
+     we have already decremented num_regs if PC, we don't have to worry
+     about PC in this loop.  */
+  for (i = 0, j = 0; i < (num_regs - (num_regs % 2)); j++)
+    if (saved_regs_mask & (1 << j))
+      {
+        /* Create RTX for memory load.  */
+        reg = gen_rtx_REG (SImode, j);
+        tmp = gen_rtx_SET (SImode,
+                           reg,
+                           gen_frame_mem (SImode,
+                               plus_constant (Pmode,
+                                              stack_pointer_rtx, 4 * i)));
+        RTX_FRAME_RELATED_P (tmp) = 1;
+
+        if (i % 2 == 0)
+          {
+            /* When saved-register index (i) is even, the RTX to be emitted is
+               yet to be created.  Hence create it first.  The LDRD pattern we
+               are generating is :
+               [ (SET (reg_t0) (MEM (PLUS (SP) (NUM))))
+                 (SET (reg_t1) (MEM (PLUS (SP) (NUM + 4)))) ]
+               where target registers need not be consecutive.  */
+            par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+            dwarf = NULL_RTX;
+          }
+
+        /* ith register is added in PARALLEL RTX.  If i is even, the reg_i is
+           added as 0th element and if i is odd, reg_i is added as 1st element
+           of LDRD pattern shown above.  */
+        XVECEXP (par, 0, (i % 2)) = tmp;
+        dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+        if ((i % 2) == 1)
+          {
+            /* When saved-register index (i) is odd, RTXs for both the registers
+               to be loaded are generated in above given LDRD pattern, and the
+               pattern can be emitted now.  */
+            par = emit_insn (par);
+            REG_NOTES (par) = dwarf;
+          }
+
+        i++;
+      }
+
+  /* If the number of registers pushed is odd AND return_in_pc is false OR
+     number of registers are even AND return_in_pc is true, last register is
+     popped using LDR.  It can be PC as well.  Hence, adjust the stack first and
+     then LDR with post increment.  */
+
+  /* Increment the stack pointer, based on there being
+     num_regs 4-byte registers to restore.  */
+  tmp = gen_rtx_SET (VOIDmode,
+                     stack_pointer_rtx,
+                     plus_constant (Pmode, stack_pointer_rtx, 4 * i));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  emit_insn (tmp);
+
+  dwarf = NULL_RTX;
+
+  if (((num_regs % 2) == 1 && !return_in_pc)
+      || ((num_regs % 2) == 0 && return_in_pc))
+    {
+      /* Scan for the single register to be popped.  Skip until the saved
+         register is found.  */
+      for (; (saved_regs_mask & (1 << j)) == 0; j++);
+
+      /* Gen LDR with post increment here.  */
+      tmp1 = gen_rtx_MEM (SImode,
+                          gen_rtx_POST_INC (SImode,
+                                            stack_pointer_rtx));
+      set_mem_alias_set (tmp1, get_frame_alias_set ());
+
+      reg = gen_rtx_REG (SImode, j);
+      tmp = gen_rtx_SET (SImode, reg, tmp1);
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+
+      if (return_in_pc)
+        {
+          /* If return_in_pc, j must be PC_REGNUM.  */
+          gcc_assert (j == PC_REGNUM);
+          par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+          XVECEXP (par, 0, 0) = ret_rtx;
+          XVECEXP (par, 0, 1) = tmp;
+          par = emit_jump_insn (par);
+        }
+      else
+        {
+          par = emit_insn (tmp);
+        }
+
+      REG_NOTES (par) = dwarf;
+    }
+  else if ((num_regs % 2) == 1 && return_in_pc)
+    {
+      /* There are 2 registers to be popped.  So, generate the pattern
+         pop_multiple_with_stack_update_and_return to pop in PC.  */
+      arm_emit_multi_reg_pop (saved_regs_mask & (~((1 << j) - 1)));
+    }
+
+  return;
 }
 
 /* Calculate the size of the return value that is passed in registers.  */
@@ -16711,8 +17037,25 @@ arm_expand_prologue (void)
 	      saved_regs += frame;
 	    }
 	}
-      insn = emit_multi_reg_push (live_regs_mask);
-      RTX_FRAME_RELATED_P (insn) = 1;
+
+      if (current_tune->prefer_ldrd_strd
+          && !optimize_function_for_size_p (cfun))
+        {
+          if (TARGET_THUMB2)
+            {
+              thumb2_emit_strd_push (live_regs_mask);
+            }
+          else
+            {
+              insn = emit_multi_reg_push (live_regs_mask);
+              RTX_FRAME_RELATED_P (insn) = 1;
+            }
+        }
+      else
+        {
+          insn = emit_multi_reg_push (live_regs_mask);
+          RTX_FRAME_RELATED_P (insn) = 1;
+        }
     }
 
   if (! IS_VOLATILE (func_type))
@@ -22410,12 +22753,18 @@ thumb1_expand_prologue (void)
     {
       unsigned pushable_regs;
       unsigned next_hi_reg;
+      unsigned arg_regs_num = TARGET_AAPCS_BASED ? crtl->args.info.aapcs_ncrn
+						 : crtl->args.info.nregs;
+      unsigned arg_regs_mask = (1 << arg_regs_num) - 1;
 
       for (next_hi_reg = 12; next_hi_reg > LAST_LO_REGNUM; next_hi_reg--)
 	if (live_regs_mask & (1 << next_hi_reg))
 	  break;
 
-      pushable_regs = l_mask & 0xff;
+      /* Here we need to mask out registers used for passing arguments
+	 even if they can be pushed.  This is to avoid using them to stash the high
+	 registers.  Such kind of stash may clobber the use of arguments.  */
+      pushable_regs = l_mask & (~arg_regs_mask) & 0xff;
 
       if (pushable_regs == 0)
 	pushable_regs = 1 << thumb_find_work_register (live_regs_mask);
@@ -22993,7 +23342,16 @@ arm_expand_epilogue (bool really_return)
         }
       else
         {
-          arm_emit_multi_reg_pop (saved_regs_mask);
+          if (current_tune->prefer_ldrd_strd
+              && !optimize_function_for_size_p (cfun))
+            {
+              if (TARGET_THUMB2)
+                thumb2_emit_ldrd_pop (saved_regs_mask);
+              else
+                arm_emit_multi_reg_pop (saved_regs_mask);
+            }
+          else
+            arm_emit_multi_reg_pop (saved_regs_mask);
         }
 
       if (return_in_pc == true)

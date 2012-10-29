@@ -1792,9 +1792,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __do_common_type_impl
   {
     template<typename _Tp, typename _Up>
-      static __success_type<decltype
+      static __success_type<typename decay<decltype
 			    (true ? std::declval<_Tp>()
-			     : std::declval<_Up>())> _S_test(int);
+			     : std::declval<_Up>())>::type> _S_test(int);
 
     template<typename, typename>
       static __failure_type _S_test(...);
@@ -1835,7 +1835,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct common_type<_Tp>
-    { typedef _Tp type; };
+    { typedef typename decay<_Tp>::type type; };
 
   template<typename _Tp, typename _Up>
     struct common_type<_Tp, _Up>

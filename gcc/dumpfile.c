@@ -32,11 +32,17 @@ along with GCC; see the file COPYING3.  If not see
 
 static int pflags;                   /* current dump_flags */
 static int alt_flags;                /* current opt_info flags */
-static FILE *alt_dump_file = NULL;
 
 static void dump_loc (int, FILE *, source_location);
-static int dump_enabled_p (int);
+static int dump_phase_enabled_p (int);
 static FILE *dump_open_alternate_stream (struct dump_file_info *);
+
+/* These are currently used for communicating between passes.
+   However, instead of accessing them directly, the passes can use
+   dump_printf () for dumps.  */
+FILE *dump_file = NULL;
+FILE *alt_dump_file = NULL;
+const char *dump_file_name;
 
 /* Table of tree dump switches. This must be consistent with the
    TREE_DUMP_INDEX enumeration in dumpfile.h.  */
@@ -380,7 +386,7 @@ dump_start (int phase, int *flag_ptr)
   char *name;
   struct dump_file_info *dfi;
   FILE *stream;
-  if (phase == TDI_none || !dump_enabled_p (phase))
+  if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return 0;
 
   dfi = get_dump_file_info (phase);
@@ -461,7 +467,7 @@ dump_begin (int phase, int *flag_ptr)
   struct dump_file_info *dfi;
   FILE *stream;
 
-  if (phase == TDI_none || !dump_enabled_p (phase))
+  if (phase == TDI_none || !dump_phase_enabled_p (phase))
     return NULL;
 
   name = get_dump_file_name (phase);
@@ -493,8 +499,8 @@ dump_begin (int phase, int *flag_ptr)
    If PHASE is TDI_tree_all, return nonzero if any dump is enabled for
    any phase.  */
 
-int
-dump_enabled_p (int phase)
+static int
+dump_phase_enabled_p (int phase)
 {
   if (phase == TDI_tree_all)
     {
@@ -826,17 +832,6 @@ opt_info_switch_p (const char *arg)
     flags = MSG_ALL;
 
   return opt_info_enable_all ((TDF_TREE | TDF_RTL | TDF_IPA), flags, filename);
-}
-
-/* Return true if any dumps are enabled for the given MSG_TYPE, false
-   otherwise.  */
-
-bool
-dump_kind_p (int msg_type)
-{
-  if (!current_function_decl)
-    return 0;
-  return ((msg_type & pflags) || (msg_type & alt_flags));
 }
 
 /* Print basic block on the dump streams.  */

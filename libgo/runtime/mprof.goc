@@ -15,21 +15,35 @@ package runtime
 // NOTE(rsc): Everything here could use cas if contention became an issue.
 static Lock proflock;
 
-// Per-call-stack allocation information.
+enum { MProf, BProf };  // profile types
+
+// Per-call-stack profiling information.
 // Lookup by hashing call stack into a linked-list hash table.
 typedef struct Bucket Bucket;
 struct Bucket
 {
 	Bucket	*next;	// next in hash list
-	Bucket	*allnext;	// next in list of all buckets
-	uintptr	allocs;
-	uintptr	frees;
-	uintptr	alloc_bytes;
-	uintptr	free_bytes;
-	uintptr	recent_allocs;  // since last gc
-	uintptr	recent_frees;
-	uintptr	recent_alloc_bytes;
-	uintptr	recent_free_bytes;
+	Bucket	*allnext;	// next in list of all mbuckets/bbuckets
+	int32	typ;
+	union
+	{
+		struct  // typ == MProf
+		{
+			uintptr	allocs;
+			uintptr	frees;
+			uintptr	alloc_bytes;
+			uintptr	free_bytes;
+			uintptr	recent_allocs;  // since last gc
+			uintptr	recent_frees;
+			uintptr	recent_alloc_bytes;
+			uintptr	recent_free_bytes;
+		};
+		struct  // typ == BProf
+		{
+			int64	count;
+			int64	cycles;
+		};
+	};
 	uintptr	hash;
 	uintptr	nstk;
 	uintptr	stk[1];
@@ -38,12 +52,13 @@ enum {
 	BuckHashSize = 179999,
 };
 static Bucket **buckhash;
-static Bucket *buckets;
+static Bucket *mbuckets;  // memory profile buckets
+static Bucket *bbuckets;  // blocking profile buckets
 static uintptr bucketmem;
 
 // Return the bucket for stk[0:nstk], allocating new bucket if needed.
 static Bucket*
-stkbucket(uintptr *stk, int32 nstk, bool alloc)
+stkbucket(int32 typ, uintptr *stk, int32 nstk, bool alloc)
 {
 	int32 i;
 	uintptr h;
@@ -66,7 +81,7 @@ stkbucket(uintptr *stk, int32 nstk, bool alloc)
 
 	i = h%BuckHashSize;
 	for(b = buckhash[i]; b; b=b->next)
-		if(b->hash == h && b->nstk == (uintptr)nstk &&
+		if(b->typ == typ && b->hash == h && b->nstk == (uintptr)nstk &&
 		   runtime_mcmp((byte*)b->stk, (byte*)stk, nstk*sizeof stk[0]) == 0)
 			return b;
 
@@ -76,12 +91,18 @@ stkbucket(uintptr *stk, int32 nstk, bool alloc)
 	b = runtime_mallocgc(sizeof *b + nstk*sizeof stk[0], FlagNoProfiling, 0, 1);
 	bucketmem += sizeof *b + nstk*sizeof stk[0];
 	runtime_memmove(b->stk, stk, nstk*sizeof stk[0]);
+	b->typ = typ;
 	b->hash = h;
 	b->nstk = nstk;
 	b->next = buckhash[i];
 	buckhash[i] = b;
-	b->allnext = buckets;
-	buckets = b;
+	if(typ == MProf) {
+		b->allnext = mbuckets;
+		mbuckets = b;
+	} else {
+		b->allnext = bbuckets;
+		bbuckets = b;
+	}
 	return b;
 }
 
@@ -92,7 +113,7 @@ runtime_MProf_GC(void)
 	Bucket *b;
 	
 	runtime_lock(&proflock);
-	for(b=buckets; b; b=b->allnext) {
+	for(b=mbuckets; b; b=b->allnext) {
 		b->allocs += b->recent_allocs;
 		b->frees += b->recent_frees;
 		b->alloc_bytes += b->recent_alloc_bytes;
@@ -107,20 +128,26 @@ runtime_MProf_GC(void)
 
 // Map from pointer to Bucket* that allocated it.
 // Three levels:
-//	Linked-list hash table for top N-20 bits.
-//	Array index for next 13 bits.
-//	Linked list for next 7 bits.
+//	Linked-list hash table for top N-AddrHashShift bits.
+//	Array index for next AddrDenseBits bits.
+//	Linked list for next AddrHashShift-AddrDenseBits bits.
 // This is more efficient than using a general map,
 // because of the typical clustering of the pointer keys.
 
 typedef struct AddrHash AddrHash;
 typedef struct AddrEntry AddrEntry;
 
+enum {
+	AddrHashBits = 12,	// good for 4GB of used address space
+	AddrHashShift = 20,	// each AddrHash knows about 1MB of address space
+	AddrDenseBits = 8,	// good for a profiling rate of 4096 bytes
+};
+
 struct AddrHash
 {
 	AddrHash *next;	// next in top-level hash table linked list
 	uintptr addr;	// addr>>20
-	AddrEntry *dense[1<<13];
+	AddrEntry *dense[1<<AddrDenseBits];
 };
 
 struct AddrEntry
@@ -130,9 +157,6 @@ struct AddrEntry
 	Bucket *b;
 };
 
-enum {
-	AddrHashBits = 12	// 1MB per entry, so good for 4GB of used address space
-};
 static AddrHash *addrhash[1<<AddrHashBits];
 static AddrEntry *addrfree;
 static uintptr addrmem;
@@ -155,15 +179,15 @@ setaddrbucket(uintptr addr, Bucket *b)
 	AddrHash *ah;
 	AddrEntry *e;
 
-	h = (uint32)((addr>>20)*HashMultiplier) >> (32-AddrHashBits);
+	h = (uint32)((addr>>AddrHashShift)*HashMultiplier) >> (32-AddrHashBits);
 	for(ah=addrhash[h]; ah; ah=ah->next)
-		if(ah->addr == (addr>>20))
+		if(ah->addr == (addr>>AddrHashShift))
 			goto found;
 
 	ah = runtime_mallocgc(sizeof *ah, FlagNoProfiling, 0, 1);
 	addrmem += sizeof *ah;
 	ah->next = addrhash[h];
-	ah->addr = addr>>20;
+	ah->addr = addr>>AddrHashShift;
 	addrhash[h] = ah;
 
 found:
@@ -175,9 +199,9 @@ found:
 		e[63].next = nil;
 	}
 	addrfree = e->next;
-	e->addr = (uint32)~(addr & ((1<<20)-1));
+	e->addr = (uint32)~(addr & ((1<<AddrHashShift)-1));
 	e->b = b;
-	h = (addr>>7)&(nelem(ah->dense)-1);	// entry in dense is top 13 bits of low 20.
+	h = (addr>>(AddrHashShift-AddrDenseBits))&(nelem(ah->dense)-1);	// entry in dense is top 8 bits of low 20.
 	e->next = ah->dense[h];
 	ah->dense[h] = e;
 }
@@ -191,16 +215,16 @@ getaddrbucket(uintptr addr)
 	AddrEntry *e, **l;
 	Bucket *b;
 
-	h = (uint32)((addr>>20)*HashMultiplier) >> (32-AddrHashBits);
+	h = (uint32)((addr>>AddrHashShift)*HashMultiplier) >> (32-AddrHashBits);
 	for(ah=addrhash[h]; ah; ah=ah->next)
-		if(ah->addr == (addr>>20))
+		if(ah->addr == (addr>>AddrHashShift))
 			goto found;
 	return nil;
 
 found:
-	h = (addr>>7)&(nelem(ah->dense)-1);	// entry in dense is top 13 bits of low 20.
+	h = (addr>>(AddrHashShift-AddrDenseBits))&(nelem(ah->dense)-1);	// entry in dense is top 8 bits of low 20.
 	for(l=&ah->dense[h]; (e=*l) != nil; l=&e->next) {
-		if(e->addr == (uint32)~(addr & ((1<<20)-1))) {
+		if(e->addr == (uint32)~(addr & ((1<<AddrHashShift)-1))) {
 			*l = e->next;
 			b = e->b;
 			e->next = addrfree;
@@ -227,7 +251,7 @@ runtime_MProf_Malloc(void *p, uintptr size)
 	m->nomemprof++;
 	nstk = runtime_callers(1, stk, 32);
 	runtime_lock(&proflock);
-	b = stkbucket(stk, nstk, true);
+	b = stkbucket(MProf, stk, nstk, true);
 	b->recent_allocs++;
 	b->recent_alloc_bytes += size;
 	setaddrbucket((uintptr)p, b);
@@ -259,6 +283,37 @@ runtime_MProf_Free(void *p, uintptr size)
 	m->nomemprof--;
 }
 
+int64 runtime_blockprofilerate;  // in CPU ticks
+
+void runtime_SetBlockProfileRate(intgo) asm("runtime.SetBlockProfileRate");
+
+void
+runtime_SetBlockProfileRate(intgo rate)
+{
+	runtime_atomicstore64((uint64*)&runtime_blockprofilerate, rate * runtime_tickspersecond() / (1000*1000*1000));
+}
+
+void
+runtime_blockevent(int64 cycles, int32 skip)
+{
+	int32 nstk;
+	int64 rate;
+	uintptr stk[32];
+	Bucket *b;
+
+	if(cycles <= 0)
+		return;
+	rate = runtime_atomicload64((uint64*)&runtime_blockprofilerate);
+	if(rate <= 0 || (rate > cycles && runtime_fastrand1()%rate > cycles))
+		return;
+
+	nstk = runtime_callers(skip, stk, 32);
+	runtime_lock(&proflock);
+	b = stkbucket(BProf, stk, nstk, true);
+	b->count++;
+	b->cycles += cycles;
+	runtime_unlock(&proflock);
+}
 
 // Go interface to profile data.  (Declared in extern.go)
 // Assumes Go sizeof(int) == sizeof(int32)
@@ -287,20 +342,20 @@ record(Record *r, Bucket *b)
 		r->stk[i] = 0;
 }
 
-func MemProfile(p Slice, include_inuse_zero bool) (n int32, ok bool) {
+func MemProfile(p Slice, include_inuse_zero bool) (n int, ok bool) {
 	Bucket *b;
 	Record *r;
 
 	runtime_lock(&proflock);
 	n = 0;
-	for(b=buckets; b; b=b->allnext)
+	for(b=mbuckets; b; b=b->allnext)
 		if(include_inuse_zero || b->alloc_bytes != b->free_bytes)
 			n++;
 	ok = false;
 	if(n <= p.__count) {
 		ok = true;
 		r = (Record*)p.__values;
-		for(b=buckets; b; b=b->allnext)
+		for(b=mbuckets; b; b=b->allnext)
 			if(include_inuse_zero || b->alloc_bytes != b->free_bytes)
 				record(r++, b);
 	}
@@ -308,12 +363,46 @@ func MemProfile(p Slice, include_inuse_zero bool) (n int32, ok bool) {
 }
 
 void
-runtime_MProf_Mark(void (*scan)(byte *, int64))
+runtime_MProf_Mark(void (*addroot)(byte *, uintptr))
 {
 	// buckhash is not allocated via mallocgc.
-	scan((byte*)&buckets, sizeof buckets);
-	scan((byte*)&addrhash, sizeof addrhash);
-	scan((byte*)&addrfree, sizeof addrfree);
+	addroot((byte*)&mbuckets, sizeof mbuckets);
+	addroot((byte*)&bbuckets, sizeof bbuckets);
+	addroot((byte*)&addrhash, sizeof addrhash);
+	addroot((byte*)&addrfree, sizeof addrfree);
+}
+
+// Must match BlockProfileRecord in debug.go.
+typedef struct BRecord BRecord;
+struct BRecord {
+	int64 count;
+	int64 cycles;
+	uintptr stk[32];
+};
+
+func BlockProfile(p Slice) (n int, ok bool) {
+	Bucket *b;
+	BRecord *r;
+	int32 i;
+
+	runtime_lock(&proflock);
+	n = 0;
+	for(b=bbuckets; b; b=b->allnext)
+		n++;
+	ok = false;
+	if(n <= p.__count) {
+		ok = true;
+		r = (BRecord*)p.__values;
+		for(b=bbuckets; b; b=b->allnext, r++) {
+			r->count = b->count;
+			r->cycles = b->cycles;
+			for(i=0; (uintptr)i<b->nstk && (uintptr)i<nelem(r->stk); i++)
+				r->stk[i] = b->stk[i];
+			for(; (uintptr)i<nelem(r->stk); i++)
+				r->stk[i] = 0;			
+		}
+	}
+	runtime_unlock(&proflock);
 }
 
 // Must match StackRecord in debug.go.
@@ -322,7 +411,7 @@ struct TRecord {
 	uintptr stk[32];
 };
 
-func ThreadCreateProfile(p Slice) (n int32, ok bool) {
+func ThreadCreateProfile(p Slice) (n int, ok bool) {
 	TRecord *r;
 	M *first, *m;
 	
@@ -341,7 +430,7 @@ func ThreadCreateProfile(p Slice) (n int32, ok bool) {
 	}
 }
 
-func Stack(b Slice, all bool) (n int32) {
+func Stack(b Slice, all bool) (n int) {
 	byte *pc, *sp;
 	bool enablegc;
 	
@@ -378,7 +467,7 @@ func Stack(b Slice, all bool) (n int32) {
 		runtime_m()->gcing = 0;
 		mstats.enablegc = enablegc;
 		runtime_semrelease(&runtime_worldsema);
-		runtime_starttheworld(false);
+		runtime_starttheworld();
 	}
 }
 
@@ -397,7 +486,7 @@ saveg(G *g, TRecord *r)
 		r->stk[n] = 0;
 }
 
-func GoroutineProfile(b Slice) (n int32, ok bool) {
+func GoroutineProfile(b Slice) (n int, ok bool) {
 	TRecord *r;
 	G *gp;
 	
@@ -423,7 +512,7 @@ func GoroutineProfile(b Slice) (n int32, ok bool) {
 	
 		runtime_m()->gcing = 0;
 		runtime_semrelease(&runtime_worldsema);
-		runtime_starttheworld(false);
+		runtime_starttheworld();
 	}
 }
 

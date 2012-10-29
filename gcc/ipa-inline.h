@@ -47,7 +47,9 @@ typedef struct GTY(()) condition
 enum inline_hints_vals {
   INLINE_HINT_indirect_call = 1,
   INLINE_HINT_loop_iterations = 2,
-  INLINE_HINT_loop_stride = 4
+  INLINE_HINT_loop_stride = 4,
+  INLINE_HINT_same_scc = 8,
+  INLINE_HINT_in_scc = 16
 };
 typedef int inline_hints;
 
@@ -127,6 +129,8 @@ struct GTY(()) inline_summary
   /* Predicate on when some loop in the function becomes to have known
      stride.   */
   struct predicate * GTY((skip)) loop_stride;
+  /* Number of SCC on the beggining of inlining process.  */
+  int scc_no;
 };
 
 

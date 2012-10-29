@@ -146,8 +146,8 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_int_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
-  TREE_INT_CST_LOW (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
-  TREE_INT_CST_HIGH (expr) = (unsigned) bp_unpack_var_len_int (bp);
+  TREE_INT_CST_LOW (expr) = bp_unpack_var_len_unsigned (bp);
+  TREE_INT_CST_HIGH (expr) = bp_unpack_var_len_int (bp);
 }
 
 

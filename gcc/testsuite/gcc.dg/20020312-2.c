@@ -92,6 +92,8 @@ extern void abort (void);
 # else
 #  define PIC_REG "gr17"
 #endif
+#elif defined (__aarch64__)
+/* No pic register -- yet.  */
 #else
 # error "Modify the test for your target."
 #endif

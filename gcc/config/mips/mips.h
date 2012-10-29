@@ -1743,6 +1743,9 @@ struct mips_cpu_info {
    - The prologue can use MIPS_PROLOGUE_TEMP as a general temporary
      register.  The register must not conflict with MIPS16_PIC_TEMP.
 
+   - If we aren't generating MIPS16 code, the prologue can also use
+     MIPS_PROLOGUE_TEMP2 as a general temporary register.
+
    - The epilogue can use MIPS_EPILOGUE_TEMP as a general temporary
      register.
 
@@ -1759,6 +1762,10 @@ struct mips_cpu_info {
 #define MIPS16_PIC_TEMP_REGNUM (GP_REG_FIRST + 2)
 #define MIPS_PROLOGUE_TEMP_REGNUM \
   (cfun->machine->interrupt_handler_p ? K0_REG_NUM : GP_REG_FIRST + 3)
+#define MIPS_PROLOGUE_TEMP2_REGNUM \
+  (TARGET_MIPS16 \
+   ? (gcc_unreachable (), INVALID_REGNUM) \
+   : cfun->machine->interrupt_handler_p ? K1_REG_NUM : GP_REG_FIRST + 12)
 #define MIPS_EPILOGUE_TEMP_REGNUM		\
   (cfun->machine->interrupt_handler_p		\
    ? K0_REG_NUM					\
@@ -1766,6 +1773,8 @@ struct mips_cpu_info {
 
 #define MIPS16_PIC_TEMP gen_rtx_REG (Pmode, MIPS16_PIC_TEMP_REGNUM)
 #define MIPS_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_PROLOGUE_TEMP_REGNUM)
+#define MIPS_PROLOGUE_TEMP2(MODE) \
+  gen_rtx_REG (MODE, MIPS_PROLOGUE_TEMP2_REGNUM)
 #define MIPS_EPILOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_EPILOGUE_TEMP_REGNUM)
 
 /* Define this macro if it is as good or better to call a constant

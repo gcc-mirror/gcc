@@ -13,7 +13,9 @@ import (
 	"strings"
 )
 
-// A node is an element in the parse tree. The interface is trivial.
+// A Node is an element in the parse tree. The interface is trivial.
+// The interface contains an unexported method so that only
+// types local to this package can satisfy it.
 type Node interface {
 	Type() NodeType
 	String() string
@@ -21,10 +23,26 @@ type Node interface {
 	// To avoid type assertions, some XxxNodes also have specialized
 	// CopyXxx methods that return *XxxNode.
 	Copy() Node
+	Position() Pos // byte position of start of node in full original input string
+	// Make sure only functions in this package can create Nodes.
+	unexported()
 }
 
 // NodeType identifies the type of a parse tree node.
 type NodeType int
+
+// Pos represents a byte position in the original input text from which
+// this template was parsed.
+type Pos int
+
+func (p Pos) Position() Pos {
+	return p
+}
+
+// unexported keeps Node implementations local to the package.
+// All implementations embed Pos, so this takes care of it.
+func (Pos) unexported() {
+}
 
 // Type returns itself and provides an easy default implementation
 // for embedding in a Node. Embedded in all non-trivial Nodes.
@@ -34,8 +52,9 @@ func (t NodeType) Type() NodeType {
 
 const (
 	NodeText       NodeType = iota // Plain text.
-	NodeAction                     // A simple action such as field evaluation.
+	NodeAction                     // A non-control action such as a field evaluation.
 	NodeBool                       // A boolean constant.
+	NodeChain                      // A sequence of field accesses.
 	NodeCommand                    // An element of a pipeline.
 	NodeDot                        // The cursor, dot.
 	nodeElse                       // An else action. Not added to tree.
@@ -44,6 +63,7 @@ const (
 	NodeIdentifier                 // An identifier; always a function name.
 	NodeIf                         // An if action.
 	NodeList                       // A list of Nodes.
+	NodeNil                        // An untyped nil constant.
 	NodeNumber                     // A numerical constant.
 	NodePipe                       // A pipeline of commands.
 	NodeRange                      // A range action.
@@ -58,11 +78,12 @@ const (
 // ListNode holds a sequence of nodes.
 type ListNode struct {
 	NodeType
+	Pos
 	Nodes []Node // The element nodes in lexical order.
 }
 
-func newList() *ListNode {
-	return &ListNode{NodeType: NodeList}
+func newList(pos Pos) *ListNode {
+	return &ListNode{NodeType: NodeList, Pos: pos}
 }
 
 func (l *ListNode) append(n Node) {
@@ -81,7 +102,7 @@ func (l *ListNode) CopyList() *ListNode {
 	if l == nil {
 		return l
 	}
-	n := newList()
+	n := newList(l.Pos)
 	for _, elem := range l.Nodes {
 		n.append(elem.Copy())
 	}
@@ -95,11 +116,12 @@ func (l *ListNode) Copy() Node {
 // TextNode holds plain text.
 type TextNode struct {
 	NodeType
+	Pos
 	Text []byte // The text; may span newlines.
 }
 
-func newText(text string) *TextNode {
-	return &TextNode{NodeType: NodeText, Text: []byte(text)}
+func newText(pos Pos, text string) *TextNode {
+	return &TextNode{NodeType: NodeText, Pos: pos, Text: []byte(text)}
 }
 
 func (t *TextNode) String() string {
@@ -113,13 +135,14 @@ func (t *TextNode) Copy() Node {
 // PipeNode holds a pipeline with optional declaration
 type PipeNode struct {
 	NodeType
-	Line int             // The line number in the input.
+	Pos
+	Line int             // The line number in the input (deprecated; kept for compatibility)
 	Decl []*VariableNode // Variable declarations in lexical order.
 	Cmds []*CommandNode  // The commands in lexical order.
 }
 
-func newPipeline(line int, decl []*VariableNode) *PipeNode {
-	return &PipeNode{NodeType: NodePipe, Line: line, Decl: decl}
+func newPipeline(pos Pos, line int, decl []*VariableNode) *PipeNode {
+	return &PipeNode{NodeType: NodePipe, Pos: pos, Line: line, Decl: decl}
 }
 
 func (p *PipeNode) append(command *CommandNode) {
@@ -154,7 +177,7 @@ func (p *PipeNode) CopyPipe() *PipeNode {
 	for _, d := range p.Decl {
 		decl = append(decl, d.Copy().(*VariableNode))
 	}
-	n := newPipeline(p.Line, decl)
+	n := newPipeline(p.Pos, p.Line, decl)
 	for _, c := range p.Cmds {
 		n.append(c.Copy().(*CommandNode))
 	}
@@ -167,15 +190,16 @@ func (p *PipeNode) Copy() Node {
 
 // ActionNode holds an action (something bounded by delimiters).
 // Control actions have their own nodes; ActionNode represents simple
-// ones such as field evaluations.
+// ones such as field evaluations and parenthesized pipelines.
 type ActionNode struct {
 	NodeType
-	Line int       // The line number in the input.
+	Pos
+	Line int       // The line number in the input (deprecated; kept for compatibility)
 	Pipe *PipeNode // The pipeline in the action.
 }
 
-func newAction(line int, pipe *PipeNode) *ActionNode {
-	return &ActionNode{NodeType: NodeAction, Line: line, Pipe: pipe}
+func newAction(pos Pos, line int, pipe *PipeNode) *ActionNode {
+	return &ActionNode{NodeType: NodeAction, Pos: pos, Line: line, Pipe: pipe}
 }
 
 func (a *ActionNode) String() string {
@@ -184,18 +208,19 @@ func (a *ActionNode) String() string {
 }
 
 func (a *ActionNode) Copy() Node {
-	return newAction(a.Line, a.Pipe.CopyPipe())
+	return newAction(a.Pos, a.Line, a.Pipe.CopyPipe())
 
 }
 
 // CommandNode holds a command (a pipeline inside an evaluating action).
 type CommandNode struct {
 	NodeType
+	Pos
 	Args []Node // Arguments in lexical order: Identifier, field, or constant.
 }
 
-func newCommand() *CommandNode {
-	return &CommandNode{NodeType: NodeCommand}
+func newCommand(pos Pos) *CommandNode {
+	return &CommandNode{NodeType: NodeCommand, Pos: pos}
 }
 
 func (c *CommandNode) append(arg Node) {
@@ -208,6 +233,10 @@ func (c *CommandNode) String() string {
 		if i > 0 {
 			s += " "
 		}
+		if arg, ok := arg.(*PipeNode); ok {
+			s += "(" + arg.String() + ")"
+			continue
+		}
 		s += arg.String()
 	}
 	return s
@@ -217,7 +246,7 @@ func (c *CommandNode) Copy() Node {
 	if c == nil {
 		return c
 	}
-	n := newCommand()
+	n := newCommand(c.Pos)
 	for _, c := range c.Args {
 		n.append(c.Copy())
 	}
@@ -227,6 +256,7 @@ func (c *CommandNode) Copy() Node {
 // IdentifierNode holds an identifier.
 type IdentifierNode struct {
 	NodeType
+	Pos
 	Ident string // The identifier's name.
 }
 
@@ -235,23 +265,32 @@ func NewIdentifier(ident string) *IdentifierNode {
 	return &IdentifierNode{NodeType: NodeIdentifier, Ident: ident}
 }
 
+// SetPos sets the position. NewIdentifier is a public method so we can't modify its signature.
+// Chained for convenience.
+// TODO: fix one day?
+func (i *IdentifierNode) SetPos(pos Pos) *IdentifierNode {
+	i.Pos = pos
+	return i
+}
+
 func (i *IdentifierNode) String() string {
 	return i.Ident
 }
 
 func (i *IdentifierNode) Copy() Node {
-	return NewIdentifier(i.Ident)
+	return NewIdentifier(i.Ident).SetPos(i.Pos)
 }
 
-// VariableNode holds a list of variable names. The dollar sign is
-// part of the name.
+// VariableNode holds a list of variable names, possibly with chained field
+// accesses. The dollar sign is part of the (first) name.
 type VariableNode struct {
 	NodeType
-	Ident []string // Variable names in lexical order.
+	Pos
+	Ident []string // Variable name and fields in lexical order.
 }
 
-func newVariable(ident string) *VariableNode {
-	return &VariableNode{NodeType: NodeVariable, Ident: strings.Split(ident, ".")}
+func newVariable(pos Pos, ident string) *VariableNode {
+	return &VariableNode{NodeType: NodeVariable, Pos: pos, Ident: strings.Split(ident, ".")}
 }
 
 func (v *VariableNode) String() string {
@@ -266,14 +305,16 @@ func (v *VariableNode) String() string {
 }
 
 func (v *VariableNode) Copy() Node {
-	return &VariableNode{NodeType: NodeVariable, Ident: append([]string{}, v.Ident...)}
+	return &VariableNode{NodeType: NodeVariable, Pos: v.Pos, Ident: append([]string{}, v.Ident...)}
 }
 
-// DotNode holds the special identifier '.'. It is represented by a nil pointer.
-type DotNode bool
+// DotNode holds the special identifier '.'.
+type DotNode struct {
+	Pos
+}
 
-func newDot() *DotNode {
-	return nil
+func newDot(pos Pos) *DotNode {
+	return &DotNode{Pos: pos}
 }
 
 func (d *DotNode) Type() NodeType {
@@ -285,7 +326,28 @@ func (d *DotNode) String() string {
 }
 
 func (d *DotNode) Copy() Node {
-	return newDot()
+	return newDot(d.Pos)
+}
+
+// NilNode holds the special identifier 'nil' representing an untyped nil constant.
+type NilNode struct {
+	Pos
+}
+
+func newNil(pos Pos) *NilNode {
+	return &NilNode{Pos: pos}
+}
+
+func (n *NilNode) Type() NodeType {
+	return NodeNil
+}
+
+func (n *NilNode) String() string {
+	return "nil"
+}
+
+func (n *NilNode) Copy() Node {
+	return newNil(n.Pos)
 }
 
 // FieldNode holds a field (identifier starting with '.').
@@ -293,11 +355,12 @@ func (d *DotNode) Copy() Node {
 // The period is dropped from each ident.
 type FieldNode struct {
 	NodeType
+	Pos
 	Ident []string // The identifiers in lexical order.
 }
 
-func newField(ident string) *FieldNode {
-	return &FieldNode{NodeType: NodeField, Ident: strings.Split(ident[1:], ".")} // [1:] to drop leading period
+func newField(pos Pos, ident string) *FieldNode {
+	return &FieldNode{NodeType: NodeField, Pos: pos, Ident: strings.Split(ident[1:], ".")} // [1:] to drop leading period
 }
 
 func (f *FieldNode) String() string {
@@ -309,17 +372,59 @@ func (f *FieldNode) String() string {
 }
 
 func (f *FieldNode) Copy() Node {
-	return &FieldNode{NodeType: NodeField, Ident: append([]string{}, f.Ident...)}
+	return &FieldNode{NodeType: NodeField, Pos: f.Pos, Ident: append([]string{}, f.Ident...)}
+}
+
+// ChainNode holds a term followed by a chain of field accesses (identifier starting with '.').
+// The names may be chained ('.x.y').
+// The periods are dropped from each ident.
+type ChainNode struct {
+	NodeType
+	Pos
+	Node  Node
+	Field []string // The identifiers in lexical order.
+}
+
+func newChain(pos Pos, node Node) *ChainNode {
+	return &ChainNode{NodeType: NodeChain, Pos: pos, Node: node}
+}
+
+// Add adds the named field (which should start with a period) to the end of the chain.
+func (c *ChainNode) Add(field string) {
+	if len(field) == 0 || field[0] != '.' {
+		panic("no dot in field")
+	}
+	field = field[1:] // Remove leading dot.
+	if field == "" {
+		panic("empty field")
+	}
+	c.Field = append(c.Field, field)
+}
+
+func (c *ChainNode) String() string {
+	s := c.Node.String()
+	if _, ok := c.Node.(*PipeNode); ok {
+		s = "(" + s + ")"
+	}
+	for _, field := range c.Field {
+		s += "." + field
+	}
+	return s
+}
+
+func (c *ChainNode) Copy() Node {
+	return &ChainNode{NodeType: NodeChain, Pos: c.Pos, Node: c.Node, Field: append([]string{}, c.Field...)}
 }
 
 // BoolNode holds a boolean constant.
 type BoolNode struct {
 	NodeType
+	Pos
 	True bool // The value of the boolean constant.
 }
 
-func newBool(true bool) *BoolNode {
-	return &BoolNode{NodeType: NodeBool, True: true}
+func newBool(pos Pos, true bool) *BoolNode {
+	return &BoolNode{NodeType: NodeBool, Pos: pos, True: true}
 }
 
 func (b *BoolNode) String() string {
@@ -330,7 +435,7 @@ func (b *BoolNode) String() string {
 }
 
 func (b *BoolNode) Copy() Node {
-	return newBool(b.True)
+	return newBool(b.Pos, b.True)
 }
 
 // NumberNode holds a number: signed or unsigned integer, float, or complex.
@@ -338,6 +443,7 @@ func (b *BoolNode) Copy() Node {
 // This simulates in a small amount of code the behavior of Go's ideal constants.
 type NumberNode struct {
 	NodeType
+	Pos
 	IsInt      bool       // Number has an integral value.
 	IsUint     bool       // Number has an unsigned integral value.
 	IsFloat    bool       // Number has a floating-point value.
@@ -349,8 +455,8 @@ type NumberNode struct {
 	Text       string     // The original textual representation from the input.
 }
 
-func newNumber(text string, typ itemType) (*NumberNode, error) {
-	n := &NumberNode{NodeType: NodeNumber, Text: text}
+func newNumber(pos Pos, text string, typ itemType) (*NumberNode, error) {
+	n := &NumberNode{NodeType: NodeNumber, Pos: pos, Text: text}
 	switch typ {
 	case itemCharConstant:
 		rune, _, tail, err := strconv.UnquoteChar(text[1:], text[0])
@@ -460,12 +566,13 @@ func (n *NumberNode) Copy() Node {
 // StringNode holds a string constant. The value has been "unquoted".
 type StringNode struct {
 	NodeType
+	Pos
 	Quoted string // The original text of the string, with quotes.
 	Text   string // The string, after quote processing.
 }
 
-func newString(orig, text string) *StringNode {
-	return &StringNode{NodeType: NodeString, Quoted: orig, Text: text}
+func newString(pos Pos, orig, text string) *StringNode {
+	return &StringNode{NodeType: NodeString, Pos: pos, Quoted: orig, Text: text}
 }
 
 func (s *StringNode) String() string {
@@ -473,15 +580,17 @@ func (s *StringNode) String() string {
 }
 
 func (s *StringNode) Copy() Node {
-	return newString(s.Quoted, s.Text)
+	return newString(s.Pos, s.Quoted, s.Text)
 }
 
-// endNode represents an {{end}} action. It is represented by a nil pointer.
+// endNode represents an {{end}} action.
 // It does not appear in the final parse tree.
-type endNode bool
+type endNode struct {
+	Pos
+}
 
-func newEnd() *endNode {
-	return nil
+func newEnd(pos Pos) *endNode {
+	return &endNode{Pos: pos}
 }
 
 func (e *endNode) Type() NodeType {
@@ -493,17 +602,18 @@ func (e *endNode) String() string {
 }
 
 func (e *endNode) Copy() Node {
-	return newEnd()
+	return newEnd(e.Pos)
 }
 
 // elseNode represents an {{else}} action. Does not appear in the final tree.
 type elseNode struct {
 	NodeType
-	Line int // The line number in the input.
+	Pos
+	Line int // The line number in the input (deprecated; kept for compatibility)
 }
 
-func newElse(line int) *elseNode {
-	return &elseNode{NodeType: nodeElse, Line: line}
+func newElse(pos Pos, line int) *elseNode {
+	return &elseNode{NodeType: nodeElse, Pos: pos, Line: line}
 }
 
 func (e *elseNode) Type() NodeType {
@@ -515,13 +625,14 @@ func (e *elseNode) String() string {
 }
 
 func (e *elseNode) Copy() Node {
-	return newElse(e.Line)
+	return newElse(e.Pos, e.Line)
 }
 
 // BranchNode is the common representation of if, range, and with.
 type BranchNode struct {
 	NodeType
-	Line     int       // The line number in the input.
+	Pos
+	Line     int       // The line number in the input (deprecated; kept for compatibility)
 	Pipe     *PipeNode // The pipeline to be evaluated.
 	List     *ListNode // What to execute if the value is non-empty.
 	ElseList *ListNode // What to execute if the value is empty (nil if absent).
@@ -550,12 +661,12 @@ type IfNode struct {
 	BranchNode
 }
 
-func newIf(line int, pipe *PipeNode, list, elseList *ListNode) *IfNode {
-	return &IfNode{BranchNode{NodeType: NodeIf, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
+func newIf(pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) *IfNode {
+	return &IfNode{BranchNode{NodeType: NodeIf, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
 }
 
 func (i *IfNode) Copy() Node {
-	return newIf(i.Line, i.Pipe.CopyPipe(), i.List.CopyList(), i.ElseList.CopyList())
+	return newIf(i.Pos, i.Line, i.Pipe.CopyPipe(), i.List.CopyList(), i.ElseList.CopyList())
 }
 
 // RangeNode represents a {{range}} action and its commands.
@@ -563,12 +674,12 @@ type RangeNode struct {
 	BranchNode
 }
 
-func newRange(line int, pipe *PipeNode, list, elseList *ListNode) *RangeNode {
-	return &RangeNode{BranchNode{NodeType: NodeRange, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
+func newRange(pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) *RangeNode {
+	return &RangeNode{BranchNode{NodeType: NodeRange, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
 }
 
 func (r *RangeNode) Copy() Node {
-	return newRange(r.Line, r.Pipe.CopyPipe(), r.List.CopyList(), r.ElseList.CopyList())
+	return newRange(r.Pos, r.Line, r.Pipe.CopyPipe(), r.List.CopyList(), r.ElseList.CopyList())
 }
 
 // WithNode represents a {{with}} action and its commands.
@@ -576,24 +687,25 @@ type WithNode struct {
 	BranchNode
 }
 
-func newWith(line int, pipe *PipeNode, list, elseList *ListNode) *WithNode {
-	return &WithNode{BranchNode{NodeType: NodeWith, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
+func newWith(pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) *WithNode {
+	return &WithNode{BranchNode{NodeType: NodeWith, Pos: pos, Line: line, Pipe: pipe, List: list, ElseList: elseList}}
 }
 
 func (w *WithNode) Copy() Node {
-	return newWith(w.Line, w.Pipe.CopyPipe(), w.List.CopyList(), w.ElseList.CopyList())
+	return newWith(w.Pos, w.Line, w.Pipe.CopyPipe(), w.List.CopyList(), w.ElseList.CopyList())
 }
 
 // TemplateNode represents a {{template}} action.
 type TemplateNode struct {
 	NodeType
-	Line int       // The line number in the input.
+	Pos
+	Line int       // The line number in the input (deprecated; kept for compatibility)
 	Name string    // The name of the template (unquoted).
 	Pipe *PipeNode // The command to evaluate as dot for the template.
 }
 
-func newTemplate(line int, name string, pipe *PipeNode) *TemplateNode {
-	return &TemplateNode{NodeType: NodeTemplate, Line: line, Name: name, Pipe: pipe}
+func newTemplate(pos Pos, line int, name string, pipe *PipeNode) *TemplateNode {
+	return &TemplateNode{NodeType: NodeTemplate, Line: line, Pos: pos, Name: name, Pipe: pipe}
 }
 
 func (t *TemplateNode) String() string {
@@ -604,5 +716,5 @@ func (t *TemplateNode) String() string {
 }
 
 func (t *TemplateNode) Copy() Node {
-	return newTemplate(t.Line, t.Name, t.Pipe.CopyPipe())
+	return newTemplate(t.Pos, t.Line, t.Name, t.Pipe.CopyPipe())
 }

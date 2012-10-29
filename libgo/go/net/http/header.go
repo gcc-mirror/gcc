@@ -5,11 +5,11 @@
 package http
 
 import (
-	"fmt"
 	"io"
 	"net/textproto"
 	"sort"
 	"strings"
+	"time"
 )
 
 // A Header represents the key-value pairs in an HTTP header.
@@ -36,6 +36,14 @@ func (h Header) Get(key string) string {
 	return textproto.MIMEHeader(h).Get(key)
 }
 
+// get is like Get, but key must already be in CanonicalHeaderKey form.
+func (h Header) get(key string) string {
+	if v := h[key]; len(v) > 0 {
+		return v[0]
+	}
+	return ""
+}
+
 // Del deletes the values associated with key.
 func (h Header) Del(key string) {
 	textproto.MIMEHeader(h).Del(key)
@@ -46,24 +54,77 @@ func (h Header) Write(w io.Writer) error {
 	return h.WriteSubset(w, nil)
 }
 
+var timeFormats = []string{
+	TimeFormat,
+	time.RFC850,
+	time.ANSIC,
+}
+
+// ParseTime parses a time header (such as the Date: header),
+// trying each of the three formats allowed by HTTP/1.1:
+// TimeFormat, time.RFC850, and time.ANSIC.
+func ParseTime(text string) (t time.Time, err error) {
+	for _, layout := range timeFormats {
+		t, err = time.Parse(layout, text)
+		if err == nil {
+			return
+		}
+	}
+	return
+}
+
 var headerNewlineToSpace = strings.NewReplacer("\n", " ", "\r", " ")
+
+type writeStringer interface {
+	WriteString(string) (int, error)
+}
+
+// stringWriter implements WriteString on a Writer.
+type stringWriter struct {
+	w io.Writer
+}
+
+func (w stringWriter) WriteString(s string) (n int, err error) {
+	return w.w.Write([]byte(s))
+}
+
+type keyValues struct {
+	key    string
+	values []string
+}
+
+type byKey []keyValues
+
+func (s byKey) Len() int           { return len(s) }
+func (s byKey) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s byKey) Less(i, j int) bool { return s[i].key < s[j].key }
+
+func (h Header) sortedKeyValues(exclude map[string]bool) []keyValues {
+	kvs := make([]keyValues, 0, len(h))
+	for k, vv := range h {
+		if !exclude[k] {
+			kvs = append(kvs, keyValues{k, vv})
+		}
+	}
+	sort.Sort(byKey(kvs))
+	return kvs
+}
 
 // WriteSubset writes a header in wire format.
 // If exclude is not nil, keys where exclude[key] == true are not written.
 func (h Header) WriteSubset(w io.Writer, exclude map[string]bool) error {
-	keys := make([]string, 0, len(h))
-	for k := range h {
-		if exclude == nil || !exclude[k] {
-			keys = append(keys, k)
-		}
+	ws, ok := w.(writeStringer)
+	if !ok {
+		ws = stringWriter{w}
 	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		for _, v := range h[k] {
+	for _, kv := range h.sortedKeyValues(exclude) {
+		for _, v := range kv.values {
 			v = headerNewlineToSpace.Replace(v)
-			v = strings.TrimSpace(v)
-			if _, err := fmt.Fprintf(w, "%s: %s\r\n", k, v); err != nil {
-				return err
+			v = textproto.TrimString(v)
+			for _, s := range []string{kv.key, ": ", v, "\r\n"} {
+				if _, err := ws.WriteString(s); err != nil {
+					return err
+				}
 			}
 		}
 	}
