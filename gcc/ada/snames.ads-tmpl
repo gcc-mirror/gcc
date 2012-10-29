@@ -1915,7 +1915,8 @@ package Snames is
    function Is_Locking_Policy_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized locking policy
 
-   function Is_Partition_Elaboration_Policy_Name (N : Name_Id) return Boolean;
+   function Is_Partition_Elaboration_Policy_Name
+     (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized partition
    --  elaboration policy.
 

@@ -5159,6 +5159,7 @@ switch are
 @option{-gnatwh} (hiding),
 @option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatw.i} (overlapping actuals),
+@option{-gnatw.k} (redefinition of names in standard),
 @option{-gnatwl} (elaboration warnings),
 @option{-gnatw.l} (inherited aspects),
 @option{-gnatw.o} (warn on values set by out parameters ignored),
@@ -5468,6 +5469,24 @@ This warning can also be turned on using @option{-gnatwa}.
 @emph{Suppress warnings on variables that could be constants.}
 @cindex @option{-gnatwK} (@command{gcc})
 This switch disables warnings on variables that could be declared constants.
+
+@item -gnatw.k
+@emph{Activate warnings on redefinition of names in standard.}
+@cindex @option{-gnatw.k} (@command{gcc})
+This switch activates warnings for declarations that declare a name that
+is defined in package Standard. Such declarations can be confusing,
+especially since the names in package Standard continue to be directly
+visible, meaning that use visibiliy on such redeclared names does not
+work as expected. Names of discriminants and components in records are
+not included in this check.
+This warning is not part of the warnings activated by @option{-gnatwa}.
+It must be explicitly activated.
+
+@item -gnatw.K
+@emph{Suppress warnings on variables that could be constants.}
+@cindex @option{-gnatwK} (@command{gcc})
+This switch activates warnings for declarations that declare a name that
+is defined in package Standard.
 
 @item -gnatwl
 @emph{Activate warnings for elaboration pragmas.}

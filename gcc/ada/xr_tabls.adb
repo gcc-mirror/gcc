@@ -295,10 +295,10 @@ package body Xr_Tabls is
       then
          New_Decl.Match := Default_Match
            or else Match (File_Ref, Line, Column);
-         New_Decl.Is_Parameter := New_Decl.Is_Parameter or else Is_Param;
+         New_Decl.Is_Parameter := New_Decl.Is_Parameter or Is_Param;
 
       elsif New_Decl /= null then
-         New_Decl.Is_Parameter := New_Decl.Is_Parameter or else Is_Param;
+         New_Decl.Is_Parameter := New_Decl.Is_Parameter or Is_Param;
       end if;
 
       return New_Decl;
@@ -413,22 +413,23 @@ package body Xr_Tabls is
 
          when '=' | '<' | '>' | '^' =>
 
-            --  Create a dummy declaration in the table to report it as a
-            --  parameter.
+            --  Create dummy declaration in table to report it as a parameter
+
             --  In a given ALI file, the declaration of the subprogram comes
             --  before the declaration of the parameter. However, it is
             --  possible that another ALI file has been parsed that also
-            --  references the parameter (for instance a named parameter in a
-            --  call), so we need to check whether there already exists a
+            --  references the parameter (for instance a named parameter in
+            --  a call), so we need to check whether there already exists a
             --  declaration for the parameter.
 
-            New_Decl := Add_Declaration
-              (File_Ref  => File_Ref,
-               Symbol    => "",
-               Line      => Line,
-               Column    => Column,
-               Decl_Type => ' ',
-               Is_Parameter => True);
+            New_Decl :=
+              Add_Declaration
+                (File_Ref     => File_Ref,
+                 Symbol       => "",
+                 Line         => Line,
+                 Column       => Column,
+                 Decl_Type    => ' ',
+                 Is_Parameter => True);
 
          when 'e' | 'z' | 't' | 'p' | 'P' | 'k' | 'd' =>
             return;

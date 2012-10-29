@@ -2726,10 +2726,14 @@ package body Sem_Ch6 is
             Last_Real_Spec_Entity := Last_Entity (Spec_Id);
 
             --  Within an instance, add local renaming declarations so that
-            --  gdb can retrieve the values of actuals more easily.
+            --  gdb can retrieve the values of actuals more easily. This is
+            --  only relevant if generating code (and indeed we definitely
+            --  do not want these definitions -gnatc mode, because that would
+            --  confuse ASIS).
 
             if Is_Generic_Instance (Spec_Id)
               and then Is_Wrapper_Package (Current_Scope)
+              and then Expander_Active
             then
                Build_Subprogram_Instance_Renamings (N, Current_Scope);
             end if;
