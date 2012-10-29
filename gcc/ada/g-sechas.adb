@@ -184,6 +184,30 @@ package body GNAT.Secure_Hashes is
          return Digest (C);
       end Digest;
 
+      function Digest (C : Context) return Binary_Message_Digest is
+         Hash_Bits : Stream_Element_Array
+                       (1 .. Stream_Element_Offset (Hash_Length));
+      begin
+         Final (C, Hash_Bits);
+         return Hash_Bits;
+      end Digest;
+
+      function Digest (S : String) return Binary_Message_Digest is
+         C : Context;
+      begin
+         Update (C, S);
+         return Digest (C);
+      end Digest;
+
+      function Digest
+        (A : Stream_Element_Array) return Binary_Message_Digest
+      is
+         C : Context;
+      begin
+         Update (C, A);
+         return Digest (C);
+      end Digest;
+
       -----------
       -- Final --
       -----------
@@ -319,6 +343,13 @@ package body GNAT.Secure_Hashes is
       -----------------
 
       function Wide_Digest (W : Wide_String) return Message_Digest is
+         C : Context;
+      begin
+         Wide_Update (C, W);
+         return Digest (C);
+      end Wide_Digest;
+
+      function Wide_Digest (W : Wide_String) return Binary_Message_Digest is
          C : Context;
       begin
          Wide_Update (C, W);
