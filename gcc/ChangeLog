@@ -1,6 +1,12 @@
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54693
+	* gcc/valtrack.c (dead_debug_insert_temp): Defer rescan of
+	newly-emitted debug insn.
+
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
 	* tree-ssa-threadedge.c (thread_around_empty_block): Copy
 	debug temps from predecessor before threading.
 

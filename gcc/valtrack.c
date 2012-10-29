@@ -688,7 +688,9 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
     bind = emit_debug_insn_after (bind, insn);
   else
     bind = emit_debug_insn_before (bind, insn);
-  df_insn_rescan (bind);
+  if (debug->to_rescan == NULL)
+    debug->to_rescan = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (debug->to_rescan, INSN_UID (bind));
 
   /* Adjust all uses.  */
   while ((cur = uses))
@@ -699,8 +701,6 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	*DF_REF_REAL_LOC (cur->use)
 	  = gen_lowpart_SUBREG (GET_MODE (*DF_REF_REAL_LOC (cur->use)), dval);
       /* ??? Should we simplify subreg of subreg?  */
-      if (debug->to_rescan == NULL)
-	debug->to_rescan = BITMAP_ALLOC (NULL);
       bitmap_set_bit (debug->to_rescan, INSN_UID (DF_REF_INSN (cur->use)));
       uses = cur->next;
       XDELETE (cur);
