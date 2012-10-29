@@ -1,6 +1,11 @@
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54693
+	* loop-unroll.c (loop_exit_at_end_p): Skip debug insns.
+
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
 	* config/i386/i386.c (add_parameter_dependencies): Stop
 	backward scan at the insn before the incoming head.
 	(ix86_dependencies_evaluation_hook): Skip debug insns.  Stop

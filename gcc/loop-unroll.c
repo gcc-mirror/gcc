@@ -215,7 +215,7 @@ loop_exit_at_end_p (struct loop *loop)
   /* Check that the latch is empty.  */
   FOR_BB_INSNS (loop->latch, insn)
     {
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	return false;
     }
 
