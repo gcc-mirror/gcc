@@ -379,7 +379,12 @@ tracer (void)
   /* Trace formation is done on the fly inside tail_duplicate */
   changed = tail_duplicate ();
   if (changed)
-    free_dominance_info (CDI_DOMINATORS);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      calculate_dominance_info (CDI_DOMINATORS);
+      if (current_loops)
+	fix_loop_structure (NULL);
+    }
 
   if (dump_file)
     brief_dump_cfg (dump_file, dump_flags);
