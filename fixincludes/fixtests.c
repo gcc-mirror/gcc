@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "fixlib.h"
 
-#define _ENV_(v,m,n,t)   extern tCC* v;
+#define _ENV_(v,m,n,t)   extern char const * v;
 ENV_TABLE
 #undef _ENV_
 

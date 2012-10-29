@@ -20,31 +20,43 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "fixlib.h"
 
-#define _ENV_(v,m,n,t)   tCC* v = NULL;
+te_verbose  verbose_level = VERB_PROGRESS;
+
+fixinc_mode_t fixinc_mode = TESTING_OFF;
+
+#define _ENV_(v,m,n,t) char const * v = NULL;
 ENV_TABLE
 #undef _ENV_
+
+static void
+show_not_def (char const * vname)
+{
+  static const char var_not_found[] =
+    "fixincl ERROR:  %s environment variable not defined\n"
+    "each of these must be defined:\n";
+  static char const not_found_var[] = "\t%s\n";
+
+  fprintf (stderr, var_not_found, vname);
+# define _ENV_(vv,mm,nn,tt) \
+  if (mm) fprintf (stderr, not_found_var, nn);
+  ENV_TABLE
+# undef _ENV_
+
+  exit (EXIT_FAILURE);
+}
 
 void
 initialize_opts (void)
 {
-  static const char var_not_found[] =
-#ifndef __STDC__
-    "fixincl ERROR:  %s environment variable not defined\n"
-#else
-    "fixincl ERROR:  %s environment variable not defined\n"
-    "each of these must be defined:\n"
-# define _ENV_(vv,mm,nn,tt) "\t" nn "  - " tt "\n"
-  ENV_TABLE
-# undef _ENV_
-#endif
-    ;
+#define _ENV_(v,m,n,t)   {                      \
+    static char const var[] = n;                \
+    v = getenv (var);                           \
+    if (m && (v == NULL)) show_not_def (var);   \
+  }
 
-#define _ENV_(v,m,n,t)   { tSCC var[] = n;  \
-  v = getenv (var); if (m && (v == NULL)) { \
-  fprintf (stderr, var_not_found, var);     \
-  exit (EXIT_FAILURE); } }
-
-ENV_TABLE
-
+  ENV_TABLE;
 #undef _ENV_
+
+  if ((pz_test_mode != NULL) && (strcmp (pz_test_mode, "true") == 0))
+    fixinc_mode = TESTING_ON;
 }
