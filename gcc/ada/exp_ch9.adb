@@ -13912,10 +13912,13 @@ package body Exp_Ch9 is
           Prefix => Make_Identifier (Loc, New_External_Name (Tnam, 'E')),
           Attribute_Name => Name_Unchecked_Access));
 
-      --  Chain parameter. This is a reference to the _Chain parameter of
-      --  the initialization procedure.
+      if not Restricted_Profile then
+         --  Chain parameter. This is a reference to the _Chain parameter of
+         --  the initialization procedure. There is no chain in restricted
+         --  profile.
 
-      Append_To (Args, Make_Identifier (Loc, Name_uChain));
+         Append_To (Args, Make_Identifier (Loc, Name_uChain));
+      end if;
 
       --  Task name parameter. Take this from the _Task_Id parameter to the
       --  init call unless there is a Task_Name pragma, in which case we take

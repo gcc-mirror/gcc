@@ -1,3 +1,27 @@
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* warnsw.adb: Complete previous change.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Check_File_In_Partition, Check_System_Restrictions_Used):
+	Removed.
+	(Check_Dispatching_Domains_Used): Removed.
+	(Gen_Adafinal): Remove call to above procedures.
+	(Resolve_Binder_Options): Handle system restrictions and dispatching
+	domains.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tarest.ads, s-tarest.adb (Create_Restricted_Task): Remove
+	Chain parameter.
+	* exp_ch9.adb (Make_Task_Create_Call): Do not add Chain parameter
+	on restricted runtime.
+
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* g-sechas.adb, g-sechas.ads: Minor code clean-up.
+
 2012-10-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aux.adb (Get_Rep_Item): Treat Priority and Interrupt_Priority
