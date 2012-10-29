@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,14 @@ package System.Tasking.Protected_Objects.Entries is
 
    type Protected_Entry_Queue_Array is
      array (Protected_Entry_Index range <>) of Entry_Queue;
+
+   --  A data structure which contains the string names of entries and entry
+   --  family members.
+
+   type Protected_Entry_Names_Array is
+     array (Protected_Entry_Index range <>) of String_Access;
+
+   type Protected_Entry_Names_Access is access all Protected_Entry_Names_Array;
 
    --  This type contains the GNARL state of a protected object. The
    --  application-defined portion of the state (i.e. private objects)
@@ -136,7 +144,7 @@ package System.Tasking.Protected_Objects.Entries is
 
       Entry_Queues : Protected_Entry_Queue_Array (1 .. Num_Entries);
 
-      Entry_Names : Entry_Names_Array_Access := null;
+      Entry_Names : Protected_Entry_Names_Access := null;
       --  An array of string names which denotes entry [family member] names.
       --  The structure is indexed by protected entry index and contains Num_
       --  Entries components.
@@ -167,12 +175,11 @@ package System.Tasking.Protected_Objects.Entries is
    --  System.Tasking.Protected_Objects.Initialize_Protection.
 
    procedure Initialize_Protection_Entries
-     (Object            : Protection_Entries_Access;
-      Ceiling_Priority  : Integer;
-      Compiler_Info     : System.Address;
-      Entry_Bodies      : Protected_Entry_Body_Access;
-      Find_Body_Index   : Find_Body_Index_Access;
-      Build_Entry_Names : Boolean);
+     (Object           : Protection_Entries_Access;
+      Ceiling_Priority : Integer;
+      Compiler_Info    : System.Address;
+      Entry_Bodies     : Protected_Entry_Body_Access;
+      Find_Body_Index  : Find_Body_Index_Access);
    --  Initialize the Object parameter so that it can be used by the runtime
    --  to keep track of the runtime state of a protected object.
 
@@ -201,17 +208,20 @@ package System.Tasking.Protected_Objects.Entries is
    --  possible future use. At the current time, everyone uses Lock for both
    --  read and write locks.
 
+   function Number_Of_Entries
+     (Object : Protection_Entries_Access) return Protected_Entry_Index;
+   --  Return the number of entries of a protected object
+
    procedure Set_Ceiling
      (Object : Protection_Entries_Access;
       Prio   : System.Any_Priority);
    --  Sets the new ceiling priority of the protected object
 
-   procedure Set_Entry_Name
-     (Object : Protection_Entries'Class;
-      Pos    : Protected_Entry_Index;
-      Val    : String_Access);
-   --  This is called by the compiler to map a string which denotes an entry
-   --  name to a protected entry index.
+   procedure Set_Entry_Names
+     (Object : Protection_Entries_Access;
+      Names  : Protected_Entry_Names_Access);
+   --  Associate an array of string that denote entry [family] names with a
+   --  protected object.
 
    procedure Unlock_Entries (Object : Protection_Entries_Access);
    --  Relinquish ownership of the lock for the object represented by the

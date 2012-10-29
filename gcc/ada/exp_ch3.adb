@@ -1704,6 +1704,18 @@ package body Exp_Ch3 is
          end if;
       end if;
 
+      --  When the object is either protected or a task, create static strings
+      --  which denote the names of entries and families. Associate the strings
+      --  with the concurrent object's Protection_Entries or ATCB. This is a
+      --  VMS Debug feature.
+
+      if OpenVMS_On_Target
+        and then Is_Concurrent_Type (Typ)
+        and then Entry_Names_OK
+      then
+         Build_Entry_Names (Id_Ref, Typ, Res);
+      end if;
+
       return Res;
 
    exception
@@ -2665,7 +2677,6 @@ package body Exp_Ch3 is
          Decl       : Node_Id;
          Has_POC    : Boolean;
          Id         : Entity_Id;
-         Names      : Node_Id;
          Stmts      : List_Id;
          Typ        : Entity_Id;
 
@@ -3009,17 +3020,6 @@ package body Exp_Ch3 is
 
             Append_To (Stmts, Make_Task_Create_Call (Rec_Type));
 
-            --  Generate the statements which map a string entry name to a
-            --  task entry index. Note that the task may not have entries.
-
-            if Entry_Names_OK then
-               Names := Build_Entry_Names (Rec_Type);
-
-               if Present (Names) then
-                  Append_To (Stmts, Names);
-               end if;
-            end if;
-
             declare
                Task_Type : constant Entity_Id :=
                              Corresponding_Concurrent_Type (Rec_Type);
@@ -3073,18 +3073,6 @@ package body Exp_Ch3 is
          if Is_Protected_Record_Type (Rec_Type) then
             Append_List_To (Stmts,
               Make_Initialize_Protection (Rec_Type));
-
-            --  Generate the statements which map a string entry name to a
-            --  protected entry index. Note that the protected type may not
-            --  have entries.
-
-            if Entry_Names_OK then
-               Names := Build_Entry_Names (Rec_Type);
-
-               if Present (Names) then
-                  Append_To (Stmts, Names);
-               end if;
-            end if;
          end if;
 
          --  Second pass: components with per-object constraints
