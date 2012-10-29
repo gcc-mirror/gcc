@@ -28,6 +28,7 @@ with Einfo;    use Einfo;
 with Exp_Attr; use Exp_Attr;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch6;  use Exp_Ch6;
+with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Rtsfind;  use Rtsfind;
@@ -80,17 +81,19 @@ package body Exp_Alfa is
          when N_Attribute_Reference =>
             Expand_Alfa_N_Attribute_Reference (N);
 
-         --  Note: we used to qualify entity names in the following constructs
-         --  (as full expansion does), but this was removed as this prevents
-         --  the verification back-end from using a short name for debugging
-         --  and user interaction. The verification back-end already takes
-         --  care of qualifying names when needed.
+         --  Qualification of entity names in formal verification mode
+         --  is limited to the addition of a suffix for homonyms (see
+         --  Exp_Dbug.Qualify_Entity_Name). We used to qualify entity names
+         --  as full expansion does, but this was removed as this prevents the
+         --  verification back-end from using a short name for debugging and
+         --  user interaction. The verification back-end already takes care
+         --  of qualifying names when needed.
 
          when N_Block_Statement     |
               N_Package_Body        |
               N_Package_Declaration |
               N_Subprogram_Body     =>
-            null;
+            Qualify_Entity_Names (N);
 
          when N_Subprogram_Call     =>
             Expand_Alfa_Call (N);

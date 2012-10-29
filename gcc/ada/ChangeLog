@@ -1,3 +1,16 @@
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb: Minor reformatting.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb (Expand_Alfa): Backtrack change that removed
+	qualification of names in formal verification mode. Instead,
+	the qualification should be modified.
+	* exp_dbug.adb (Qualify_Entity_Name): Modify qualification in formal
+	verification mode, so that only a suffix is added to distinguish
+	homonyms from the same scope.
+
 2012-10-29  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document that pragma Optimize_Alignment (Space) is
