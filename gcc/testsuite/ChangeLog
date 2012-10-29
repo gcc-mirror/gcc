@@ -1,3 +1,8 @@
+2012-10-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55027
+	* gcc.dg/pr55027.c: New testcase.
+
 2012-10-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inline-6.c: New testcase.
