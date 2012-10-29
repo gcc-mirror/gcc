@@ -6759,9 +6759,9 @@ package body Sem_Prag is
             end if;
          end Annotate;
 
-         -----------------------------
-         -- Assert & Assert_And_Cut --
-         -----------------------------
+         ---------------------------
+         -- Assert/Assert_And_Cut --
+         ---------------------------
 
          --  pragma Assert ([Check =>] Boolean_EXPRESSION
          --                 [, [Message =>] Static_String_EXPRESSION]);
@@ -6774,7 +6774,13 @@ package body Sem_Prag is
             Newa : List_Id;
 
          begin
-            Ada_2005_Pragma;
+            if Prag_Id = Pragma_Assert then
+               Ada_2005_Pragma;
+
+            else -- Pragma_Assert_And_Cut
+               GNAT_Pragma;
+            end if;
+
             Check_At_Least_N_Arguments (1);
             Check_At_Most_N_Arguments (2);
             Check_Arg_Order ((Name_Check, Name_Message));
@@ -13679,9 +13685,9 @@ package body Sem_Prag is
             end;
          end Stream_Convert;
 
-         -------------------------
-         -- Style_Checks (GNAT) --
-         -------------------------
+         ------------------
+         -- Style_Checks --
+         ------------------
 
          --  pragma Style_Checks (On | Off | ALL_CHECKS | STRING_LITERAL);
 
