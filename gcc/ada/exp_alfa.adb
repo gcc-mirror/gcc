@@ -80,11 +80,11 @@ package body Exp_Alfa is
          when N_Attribute_Reference =>
             Expand_Alfa_N_Attribute_Reference (N);
 
-         --  Note: we use to qualify entity names in the following constructs
+         --  Note: we used to qualify entity names in the following constructs
          --  (as full expansion does), but this was removed as this prevents
          --  the verification back-end from using a short name for debugging
          --  and user interaction. The verification back-end already takes
-         --  care of qualifying names when needed
+         --  care of qualifying names when needed.
 
          when N_Block_Statement     |
               N_Package_Body        |

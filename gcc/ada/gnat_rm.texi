@@ -9553,8 +9553,12 @@ See separate section on source representation.
 length.  See 2.2(15).
 @end cartouche
 @noindent
-The maximum line length is 255 characters and the maximum length of a
-lexical element is also 255 characters.
+The maximum line length is 255 characters and the maximum length of
+a lexical element is also 255 characters. This is the default setting
+if not overridden by the use of compiler switch @option{-gnaty} (which
+sets the maximum to 79) or @option{-gnatyMnn} which allows the maximum
+line length to be specified to be any value up to 32767. The maximum
+length of a lexical element is the same as the maximum line length.
 
 @sp 1
 @cartouche
