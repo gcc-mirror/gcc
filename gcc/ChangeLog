@@ -1,3 +1,8 @@
+2012-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_decompose_address): Use simplify_gen_subreg
+	for all addresses, zero-extended with AND.
+
 2012-10-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55116
