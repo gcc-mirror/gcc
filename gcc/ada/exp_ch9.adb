@@ -912,7 +912,7 @@ package body Exp_Ch9 is
 
    begin
       --  Activation chain is never used in restricted profile, see comment
-      --  of Create_Restricted_Task in s-tarest.ads.
+      --  for Create_Restricted_Task in s-tarest.ads.
 
       if Restricted_Profile then
          return;

@@ -88,10 +88,9 @@ package Xr_Tabls is
    --  removed, but the new entity is never inserted. Symbol_Match should be
    --  set to False if the name of the symbol doesn't match the pattern from
    --  the command line. In that case, the entity will not be output by
-   --  gnatfind. If Symbol_Match is True, the entity will only be output if the
-   --  file name itself matches.
-   --  Is_Parameter should be set to True if the entity is known to be a
-   --  subprogram parameter.
+   --  gnatfind. If Symbol_Match is True, the entity will only be output if
+   --  the file name itself matches. Is_Parameter should be set to True if
+   --  the entity is known to be a subprogram parameter.
 
    procedure Add_Parent
      (Declaration : in out Declaration_Reference;
