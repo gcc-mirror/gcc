@@ -474,7 +474,7 @@ begin
                                                   "(annex J) feature");
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
-   Write_Line ("        .k+  turn on warnings for standard redefinition");
+   Write_Line ("        .k   turn on warnings for standard redefinition");
    Write_Line ("        .K*  turn off warnings for standard redefinition");
    Write_Line ("        l    turn on warnings for missing " &
                                                   "elaboration pragma");
