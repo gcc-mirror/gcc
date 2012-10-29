@@ -240,7 +240,8 @@ backtrace_vector_release (struct backtrace_state *state,
   aligned = (size + 7) & ~ (size_t) 7;
   alc -= aligned - size;
 
-  backtrace_free (state, (char *) vec->base + size, alc, error_callback, data);
+  backtrace_free (state, (char *) vec->base + aligned, alc,
+		  error_callback, data);
   vec->alc = 0;
   return 1;
 }
