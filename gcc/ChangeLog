@@ -1,3 +1,10 @@
+2012-10-29  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (want_inline_function_called_once_p): Rename to ...
+	(want_inline_function_to_all_callers_p): check also functions with
+	multiple callers.
+	(ipa_inline): Handle inlining for size into multiple callers.
+
 2012-10-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53695
