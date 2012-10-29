@@ -33,6 +33,10 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
+pragma Partition_Elaboration_Policy (Concurrent);
+--  This package only implements the concurrent elaboration policy. This pragma
+--  will enforce it (and detect conflicts with user specified policy).
+
 with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 
