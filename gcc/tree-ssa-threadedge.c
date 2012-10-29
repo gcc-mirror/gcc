@@ -637,6 +637,24 @@ thread_around_empty_block (edge taken_edge,
   if (!single_pred_p (bb))
     return NULL;
 
+  /* Before threading, copy DEBUG stmts from the predecessor, so that
+     we don't lose the bindings as we redirect the edges.  */
+  if (MAY_HAVE_DEBUG_STMTS)
+    {
+      gsi = gsi_after_labels (bb);
+      for (gimple_stmt_iterator si = gsi_last_bb (taken_edge->src);
+	   !gsi_end_p (si); gsi_prev (&si))
+	{
+	  stmt = gsi_stmt (si);
+	  if (!is_gimple_debug (stmt))
+	    continue;
+
+	  stmt = gimple_copy (stmt);
+	  /* ??? Should we drop the location of the copy?  */
+	  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+	}
+    }
+
   /* This block must have more than one successor.  */
   if (single_succ_p (bb))
     return NULL;
