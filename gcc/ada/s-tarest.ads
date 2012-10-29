@@ -89,7 +89,7 @@ package System.Tasking.Restricted.Stages is
    --         create_restricted_task (unspecified_priority, tZ,
    --           unspecified_task_info, unspecified_cpu,
    --           task_procedure_access!(tB'address), _init'address,
-   --           tE'unchecked_access, _chain, _task_name, _init._task_id);
+   --           tE'unchecked_access, _task_name, _init._task_id);
    --         return;
    --      end tVIP;
 
@@ -120,8 +120,6 @@ package System.Tasking.Restricted.Stages is
    --   t1S : constant String := "t1";
    --   tIP (t1, 3, _chain, t1S, 1);
 
-   --   activate_restricted_tasks (_chain'unchecked_access);
-
    procedure Create_Restricted_Task
      (Priority      : Integer;
       Stack_Address : System.Address;
@@ -131,7 +129,6 @@ package System.Tasking.Restricted.Stages is
       State         : Task_Procedure_Access;
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
-      Chain         : in out Activation_Chain;
       Task_Image    : String;
       Created_Task  : Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
@@ -163,10 +160,6 @@ package System.Tasking.Restricted.Stages is
    --
    --  Elaborated is a pointer to a Boolean that must be set to true on exit
    --  if the task could be successfully elaborated.
-   --
-   --  Chain is a linked list of task that needs to be created. On exit,
-   --  Created_Task.Activation_Link will be Chain.T_ID, and Chain.T_ID will be
-   --  Created_Task (the created task will be linked at the front of Chain).
    --
    --  Task_Image is a string created by the compiler that the run time can
    --  store to ease the debugging and the Ada.Task_Identification facility.

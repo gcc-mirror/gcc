@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2009, Free Software Foundation, Inc.             --
+--         Copyright (C) 2009-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,6 @@ with System;     use System;
 with Interfaces; use Interfaces;
 
 package body GNAT.Secure_Hashes is
-
-   use Ada.Streams;
 
    Hex_Digit : constant array (Stream_Element range 0 .. 15) of Character :=
                  "0123456789abcdef";

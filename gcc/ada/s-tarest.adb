@@ -462,12 +462,9 @@ package body System.Tasking.Restricted.Stages is
       State         : Task_Procedure_Access;
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
-      Chain         : in out Activation_Chain;
       Task_Image    : String;
       Created_Task  : Task_Id)
    is
-      pragma Unreferenced (Chain);
-
       Self_ID       : constant Task_Id := STPO.Self;
       Base_Priority : System.Any_Priority;
       Base_CPU      : System.Multiprocessors.CPU_Range;
