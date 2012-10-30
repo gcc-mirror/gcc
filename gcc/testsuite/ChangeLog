@@ -1,5 +1,9 @@
 2012-10-30  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/vect/slp-perm-2.c: Adjust.
+
+2012-10-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55111
 	* gcc.dg/torture/pr55111.c: New testcase.
 
