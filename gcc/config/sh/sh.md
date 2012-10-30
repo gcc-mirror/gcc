@@ -633,11 +633,37 @@
 ;; Test low QI subreg against zero.
 ;; This avoids unnecessary zero extension before the test.
 
-(define_insn "tstqi_t_zero"
+(define_insn "*tstqi_t_zero"
   [(set (reg:SI T_REG)
 	(eq:SI (match_operand:QI 0 "logical_operand" "z") (const_int 0)))]
   "TARGET_SH1"
   "tst	#255,%0"
+  [(set_attr "type" "mt_group")])
+
+;; This pattern might be risky because it also tests the upper bits and not
+;; only the subreg.  However, it seems that combine will get to this only
+;; when testing sign/zero extended values.  In this case the extended upper
+;; bits do not matter.
+(define_insn "*tst<mode>_t_zero"
+  [(set (reg:SI T_REG)
+	(eq:SI
+	  (subreg:QIHI
+	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_le>)
+	  (const_int 0)))]
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
+  "tst	%0,%1"
+  [(set_attr "type" "mt_group")])
+
+(define_insn "*tst<mode>_t_zero"
+  [(set (reg:SI T_REG)
+	(eq:SI
+	  (subreg:QIHI
+	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_be>)
+	  (const_int 0)))]
+  "TARGET_SH1 && !TARGET_LITTLE_ENDIAN"
+  "tst	%0,%1"
   [(set_attr "type" "mt_group")])
 
 ;; Extract LSB, negate and store in T bit.
@@ -3514,7 +3540,7 @@ label:
   /* If it is possible to turn the and insn into a zero extension
      already, redundant zero extensions will be folded, which results
      in better code.  
-     Ideally the splitter of *andsi_compact would be enough, if reundant
+     Ideally the splitter of *andsi_compact would be enough, if redundant
      zero extensions were detected after the combine pass, which does not
      happen at the moment.  */
   if (TARGET_SH1)
