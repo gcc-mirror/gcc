@@ -1,3 +1,14 @@
+2012-10-30  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_bsl<mode>_internal): New pattern.
+	(aarch64_simd_bsl<mode>): Likewise.
+	(aarch64_vcond_internal<mode>): Likewise.
+	(vcondu<mode><mode>): Likewise.
+	(vcond<mode><mode>): Likewise.
+	* config/aarch64/iterators.md (UNSPEC_BSL): Add to define_constants.
+
 2012-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55111
