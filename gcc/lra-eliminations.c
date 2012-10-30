@@ -550,7 +550,8 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
 	      return x;
 	    }
 	  else
-	    return gen_rtx_SUBREG (GET_MODE (x), new_rtx, SUBREG_BYTE (x));
+	    return simplify_gen_subreg (GET_MODE (x), new_rtx,
+					GET_MODE (new_rtx), SUBREG_BYTE (x));
 	}
 
       return x;
