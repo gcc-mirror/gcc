@@ -1,3 +1,42 @@
+2012-10-29  Lawrence Crowl  <crowl@google.com>
+
+	* sbitmap.h (sbitmap_copy): Rename bitmap_copy.
+	(sbitmap_copy_n): Rename bitmap_copy_n.
+	(sbitmap_equal): Rename bitmap_equal_p.
+	(sbitmap_empty_p): Rename bitmap_empty_p.
+	(sbitmap_range_empty_p): Rename bitmap_range_empty_p.
+	(sbitmap_zero): Rename bitmap_clear.
+	(sbitmap_ones): Rename bitmap_ones.
+	(sbitmap_vector_zero): Rename bitmap_vector_clear.
+	(sbitmap_vector_ones): Rename bitmap_vector_ones.
+	(sbitmap_not): Rename bitmap_not.
+	(sbitmap_a_and_b_cg): Commented out.
+	(sbitmap_a_and_b): Rename bitmap_and.  Add bool return.
+	(sbitmap_difference): Rename bitmap_and_compl.
+	(sbitmap_a_or_b_cg): Commented out.
+	(sbitmap_a_or_b): Rename bitmap_xor.  Add bool return.
+	(sbitmap_a_xor_b_cg): Commented out.
+	(sbitmap_a_xor_b): Rename bitmap_xor.  Add bool return.
+	(sbitmap_a_and_b_or_c_cg): Rename bitmap_and_or.
+	(sbitmap_a_and_b_or_c): Commented out.
+	(sbitmap_a_or_b_and_c_cg): Rename bitmap_or_and.
+	(sbitmap_a_or_b_and_c): Commented out.
+	(sbitmap_union_of_diff_cg): Rename bitmap_ior_and_compl.
+	(sbitmap_union_of_diff): Commented out.
+	(dump_sbitmap): Rename dump_bitmap.
+	(dump_sbitmap_file): Rename dump_bitmap_file.
+	(debug_sbitmap): Rename debug_bitmap.
+	(dump_sbitmap_vector): Rename dump_bitmap_vector.
+	(sbitmap_first_set_bit): Rename bitmap_first_set_bit.
+	(sbitmap_last_set_bit): Rename bitmap_last_set_bit.
+	(sbitmap_a_subset_b_p): Rename bitmap_subset_p.
+	(sbitmap_any_common_bits): Rename bitmap_intersect_p.
+	(#define sbitmap_free): Reimplement as inline function.
+	(#define sbitmap_vector_free): Reimplement as inline function.
+	* bitmap.h (#define bitmap_zero): Remove as redundant.
+	(#define bitmap_empty_p): Reimplement as inline function.
+	(#define dump_bitmap): Reimplement as inline function.
+
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/54930

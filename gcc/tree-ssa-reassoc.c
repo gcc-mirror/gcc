@@ -1282,7 +1282,7 @@ undistribute_ops_list (enum tree_code opcode,
 
   /* Build a list of candidates to process.  */
   candidates = sbitmap_alloc (length);
-  sbitmap_zero (candidates);
+  bitmap_clear (candidates);
   nr_candidates = 0;
   FOR_EACH_VEC_ELT (operand_entry_t, *ops, i, oe1)
     {
@@ -1315,7 +1315,7 @@ undistribute_ops_list (enum tree_code opcode,
       fprintf (dump_file, "searching for un-distribute opportunities ");
       print_generic_expr (dump_file,
 	VEC_index (operand_entry_t, *ops,
-		   sbitmap_first_set_bit (candidates))->op, 0);
+		   bitmap_first_set_bit (candidates))->op, 0);
       fprintf (dump_file, " %d\n", nr_candidates);
     }
 
@@ -1387,7 +1387,7 @@ undistribute_ops_list (enum tree_code opcode,
 
       /* Now collect the operands in the outer chain that contain
          the common operand in their inner chain.  */
-      sbitmap_zero (candidates2);
+      bitmap_clear (candidates2);
       nr_candidates2 = 0;
       EXECUTE_IF_SET_IN_SBITMAP (candidates, 0, i, sbi0)
 	{
@@ -1421,7 +1421,7 @@ undistribute_ops_list (enum tree_code opcode,
 	{
 	  operand_entry_t oe1, oe2;
 	  gimple prod;
-	  int first = sbitmap_first_set_bit (candidates2);
+	  int first = bitmap_first_set_bit (candidates2);
 
 	  /* Build the new addition chain.  */
 	  oe1 = VEC_index (operand_entry_t, *ops, first);

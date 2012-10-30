@@ -3725,7 +3725,7 @@ break_superblocks (void)
   basic_block bb;
 
   superblocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (superblocks);
+  bitmap_clear (superblocks);
 
   FOR_EACH_BB (bb)
     if (bb->flags & BB_SUPERBLOCK)

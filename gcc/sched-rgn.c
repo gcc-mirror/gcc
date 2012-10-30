@@ -644,16 +644,16 @@ haifa_find_rgns (void)
   stack = XNEWVEC (edge_iterator, n_edges);
 
   inner = sbitmap_alloc (last_basic_block);
-  sbitmap_ones (inner);
+  bitmap_ones (inner);
 
   header = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (header);
+  bitmap_clear (header);
 
   in_queue = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_queue);
+  bitmap_clear (in_queue);
 
   in_stack = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_stack);
+  bitmap_clear (in_stack);
 
   for (i = 0; i < last_basic_block; i++)
     max_hdr[i] = -1;
@@ -798,7 +798,7 @@ haifa_find_rgns (void)
         {
           degree1 = XNEWVEC (int, last_basic_block);
           extended_rgn_header = sbitmap_alloc (last_basic_block);
-          sbitmap_zero (extended_rgn_header);
+          bitmap_clear (extended_rgn_header);
 	}
 
       /* Find blocks which are inner loop headers.  We still have non-reducible
@@ -1035,7 +1035,7 @@ haifa_find_rgns (void)
         {
           free (degree1);
 
-          sbitmap_a_or_b (header, header, extended_rgn_header);
+          bitmap_ior (header, header, extended_rgn_header);
           sbitmap_free (extended_rgn_header);
 
           extend_rgns (degree, &idx, header, max_hdr);
@@ -1416,7 +1416,7 @@ compute_dom_prob_ps (int bb)
   prob[bb] = 0;
 
   /* Initialize dom[bb] to '111..1'.  */
-  sbitmap_ones (dom[bb]);
+  bitmap_ones (dom[bb]);
 
   FOR_EACH_EDGE (in_edge, in_ei, BASIC_BLOCK (BB_TO_BLOCK (bb))->preds)
     {
@@ -1428,13 +1428,13 @@ compute_dom_prob_ps (int bb)
 	continue;
 
       pred_bb = BLOCK_TO_BB (in_edge->src->index);
-      sbitmap_a_and_b (dom[bb], dom[bb], dom[pred_bb]);
-      sbitmap_a_or_b (ancestor_edges[bb],
+      bitmap_and (dom[bb], dom[bb], dom[pred_bb]);
+      bitmap_ior (ancestor_edges[bb],
 		      ancestor_edges[bb], ancestor_edges[pred_bb]);
 
       SET_BIT (ancestor_edges[bb], EDGE_TO_BIT (in_edge));
 
-      sbitmap_a_or_b (pot_split[bb], pot_split[bb], pot_split[pred_bb]);
+      bitmap_ior (pot_split[bb], pot_split[bb], pot_split[pred_bb]);
 
       FOR_EACH_EDGE (out_edge, out_ei, in_edge->src->succs)
 	SET_BIT (pot_split[bb], EDGE_TO_BIT (out_edge));
@@ -1443,7 +1443,7 @@ compute_dom_prob_ps (int bb)
     }
 
   SET_BIT (dom[bb], bb);
-  sbitmap_difference (pot_split[bb], pot_split[bb], ancestor_edges[bb]);
+  bitmap_and_compl (pot_split[bb], pot_split[bb], ancestor_edges[bb]);
 
   if (sched_verbose >= 2)
     fprintf (sched_dump, ";;  bb_prob(%d, %d) = %3d\n", bb, BB_TO_BLOCK (bb),
@@ -1459,9 +1459,9 @@ static void
 split_edges (int bb_src, int bb_trg, edgelst *bl)
 {
   sbitmap src = sbitmap_alloc (SBITMAP_SIZE (pot_split[bb_src]));
-  sbitmap_copy (src, pot_split[bb_src]);
+  bitmap_copy (src, pot_split[bb_src]);
 
-  sbitmap_difference (src, src, pot_split[bb_trg]);
+  bitmap_and_compl (src, src, pot_split[bb_trg]);
   extract_edgelst (src, bl);
   sbitmap_free (src);
 }
@@ -1542,7 +1542,7 @@ compute_trg_info (int trg)
 	     overrunning the end of the bblst_table.  */
 
 	  update_idx = 0;
-	  sbitmap_zero (visited);
+	  bitmap_clear (visited);
 	  for (j = 0; j < el.nr_members; j++)
 	    {
 	      block = el.first_member[j]->src;
@@ -3177,7 +3177,7 @@ sched_rgn_compute_dependencies (int rgn)
 
       /* Initialize bitmap used in add_branch_dependences.  */
       insn_referenced = sbitmap_alloc (sched_max_luid);
-      sbitmap_zero (insn_referenced);
+      bitmap_clear (insn_referenced);
 
       /* Compute backward dependencies.  */
       for (bb = 0; bb < current_nr_blocks; bb++)
@@ -3217,7 +3217,7 @@ sched_rgn_local_init (int rgn)
       prob = XNEWVEC (int, current_nr_blocks);
 
       dom = sbitmap_vector_alloc (current_nr_blocks, current_nr_blocks);
-      sbitmap_vector_zero (dom, current_nr_blocks);
+      bitmap_vector_clear (dom, current_nr_blocks);
 
       /* Use ->aux to implement EDGE_TO_BIT mapping.  */
       rgn_nr_edges = 0;
@@ -3241,9 +3241,9 @@ sched_rgn_local_init (int rgn)
 
       /* Split edges.  */
       pot_split = sbitmap_vector_alloc (current_nr_blocks, rgn_nr_edges);
-      sbitmap_vector_zero (pot_split, current_nr_blocks);
+      bitmap_vector_clear (pot_split, current_nr_blocks);
       ancestor_edges = sbitmap_vector_alloc (current_nr_blocks, rgn_nr_edges);
-      sbitmap_vector_zero (ancestor_edges, current_nr_blocks);
+      bitmap_vector_clear (ancestor_edges, current_nr_blocks);
 
       /* Compute probabilities, dominators, split_edges.  */
       for (bb = 0; bb < current_nr_blocks; bb++)

@@ -5661,7 +5661,7 @@ find_assert_locations (void)
       if (!live[rpo[i]])
 	{
 	  live[rpo[i]] = sbitmap_alloc (num_ssa_names);
-	  sbitmap_zero (live[rpo[i]]);
+	  bitmap_clear (live[rpo[i]]);
 	}
 
       /* Process BB and update the live information with uses in
@@ -5669,7 +5669,7 @@ find_assert_locations (void)
       need_asserts |= find_assert_locations_1 (bb, live[rpo[i]]);
 
       /* Merge liveness into the predecessor blocks and free it.  */
-      if (!sbitmap_empty_p (live[rpo[i]]))
+      if (!bitmap_empty_p (live[rpo[i]]))
 	{
 	  int pred_rpo = i;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -5681,9 +5681,9 @@ find_assert_locations (void)
 	      if (!live[pred])
 		{
 		  live[pred] = sbitmap_alloc (num_ssa_names);
-		  sbitmap_zero (live[pred]);
+		  bitmap_clear (live[pred]);
 		}
-	      sbitmap_a_or_b (live[pred], live[pred], live[rpo[i]]);
+	      bitmap_ior (live[pred], live[pred], live[rpo[i]]);
 
 	      if (bb_rpo[pred] < pred_rpo)
 		pred_rpo = bb_rpo[pred];

@@ -2347,7 +2347,7 @@ rewrite_into_ssa (void)
      mark_def_sites will add to this set those blocks that the renamer
      should process.  */
   interesting_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (interesting_blocks);
+  bitmap_clear (interesting_blocks);
 
   /* Initialize dominance frontier.  */
   dfs = XNEWVEC (bitmap_head, last_basic_block);
@@ -2729,7 +2729,7 @@ dump_update_ssa (FILE *file)
   if (!need_ssa_update_p (cfun))
     return;
 
-  if (new_ssa_names && sbitmap_first_set_bit (new_ssa_names) >= 0)
+  if (new_ssa_names && bitmap_first_set_bit (new_ssa_names) >= 0)
     {
       sbitmap_iterator sbi;
 
@@ -2779,10 +2779,10 @@ init_update_ssa (struct function *fn)
      add_new_name_mapping are typically done after creating new SSA
      names, so we'll need to reallocate these arrays.  */
   old_ssa_names = sbitmap_alloc (num_ssa_names + NAME_SETS_GROWTH_FACTOR);
-  sbitmap_zero (old_ssa_names);
+  bitmap_clear (old_ssa_names);
 
   new_ssa_names = sbitmap_alloc (num_ssa_names + NAME_SETS_GROWTH_FACTOR);
-  sbitmap_zero (new_ssa_names);
+  bitmap_clear (new_ssa_names);
 
   bitmap_obstack_initialize (&update_ssa_obstack);
 
@@ -3133,8 +3133,8 @@ update_ssa (unsigned update_flags)
       /* If we only need to update virtuals, remove all the mappings for
 	 real names before proceeding.  The caller is responsible for
 	 having dealt with the name mappings before calling update_ssa.  */
-      sbitmap_zero (old_ssa_names);
-      sbitmap_zero (new_ssa_names);
+      bitmap_clear (old_ssa_names);
+      bitmap_clear (new_ssa_names);
     }
 
   gcc_assert (update_ssa_initialized_fn == cfun);
@@ -3152,14 +3152,14 @@ update_ssa (unsigned update_flags)
   /* If there are names defined in the replacement table, prepare
      definition and use sites for all the names in NEW_SSA_NAMES and
      OLD_SSA_NAMES.  */
-  if (sbitmap_first_set_bit (new_ssa_names) >= 0)
+  if (bitmap_first_set_bit (new_ssa_names) >= 0)
     {
       prepare_names_to_update (insert_phi_p);
 
       /* If all the names in NEW_SSA_NAMES had been marked for
 	 removal, and there are no symbols to rename, then there's
 	 nothing else to do.  */
-      if (sbitmap_first_set_bit (new_ssa_names) < 0
+      if (bitmap_first_set_bit (new_ssa_names) < 0
 	  && !cfun->gimple_df->ssa_renaming_needed)
 	goto done;
     }
@@ -3230,7 +3230,7 @@ update_ssa (unsigned update_flags)
 	bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
       compute_dominance_frontiers (dfs);
 
-      if (sbitmap_first_set_bit (old_ssa_names) >= 0)
+      if (bitmap_first_set_bit (old_ssa_names) >= 0)
 	{
 	  sbitmap_iterator sbi;
 
@@ -3240,7 +3240,7 @@ update_ssa (unsigned update_flags)
 	     gain any new members).  Copy OLD_SSA_NAMES to a temporary
 	     for traversal.  */
 	  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (old_ssa_names));
-	  sbitmap_copy (tmp, old_ssa_names);
+	  bitmap_copy (tmp, old_ssa_names);
 	  EXECUTE_IF_SET_IN_SBITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,
 	                                  update_flags);
@@ -3273,7 +3273,7 @@ update_ssa (unsigned update_flags)
 
   /* Now start the renaming process at START_BB.  */
   interesting_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (interesting_blocks);
+  bitmap_clear (interesting_blocks);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
     SET_BIT (interesting_blocks, i);
 

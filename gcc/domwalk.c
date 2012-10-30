@@ -145,7 +145,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
   int sp = 0;
   sbitmap visited = sbitmap_alloc (last_basic_block + 1);
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   SET_BIT (visited, ENTRY_BLOCK_PTR->index);
 
   while (true)

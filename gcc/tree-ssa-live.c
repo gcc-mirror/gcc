@@ -1008,7 +1008,7 @@ live_worklist (tree_live_info_p live)
   sbitmap visited = sbitmap_alloc (last_basic_block + 1);
   bitmap tmp = BITMAP_ALLOC (&liveness_bitmap_obstack);
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   /* Visit all the blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */

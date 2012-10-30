@@ -1080,7 +1080,7 @@ df_worklist_dataflow (struct dataflow *dataflow,
     bbindex_to_postorder[i] = last_basic_block;
 
   /* Initialize the considered map.  */
-  sbitmap_zero (considered);
+  bitmap_clear (considered);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_consider, 0, index, bi)
     {
       SET_BIT (considered, index);

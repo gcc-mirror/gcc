@@ -60,7 +60,7 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
     return false;
 
   visited = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   ret = true;
 
   FOR_EACH_EDGE (e, ei, va_arg_bb->preds)

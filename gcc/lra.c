@@ -2259,7 +2259,7 @@ lra (FILE *f)
   df_set_flags (DF_NO_INSN_RESCAN);
   lra_constraint_insn_stack = VEC_alloc (rtx, heap, get_max_uid ());
   lra_constraint_insn_stack_bitmap = sbitmap_alloc (get_max_uid ());
-  sbitmap_zero (lra_constraint_insn_stack_bitmap);
+  bitmap_clear (lra_constraint_insn_stack_bitmap);
   lra_live_ranges_init ();
   lra_constraints_init ();
   lra_curr_reload_num = 0;
@@ -2355,7 +2355,7 @@ lra (FILE *f)
     {
       sbitmap blocks;
       blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_ones (blocks);
+      bitmap_ones (blocks);
       find_many_sub_basic_blocks (blocks);
       sbitmap_free (blocks);
     }

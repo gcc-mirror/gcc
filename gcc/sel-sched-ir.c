@@ -6094,7 +6094,7 @@ sel_init_pipelining (void)
   current_loop_nest = NULL;
 
   bbs_in_loop_rgns = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (bbs_in_loop_rgns);
+  bitmap_clear (bbs_in_loop_rgns);
 
   recompute_rev_top_order ();
 }

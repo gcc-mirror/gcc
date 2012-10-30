@@ -236,7 +236,7 @@ make_edges (basic_block min, basic_block max, int update_p)
       /* If we have an edge cache, cache edges going out of BB.  */
       if (edge_cache)
 	{
-	  sbitmap_zero (edge_cache);
+	  bitmap_clear (edge_cache);
 	  if (update_p)
 	    {
 	      FOR_EACH_EDGE (e, ei, bb->succs)
@@ -385,7 +385,7 @@ make_edges (basic_block min, basic_block max, int update_p)
     }
 
   if (edge_cache)
-    sbitmap_vector_free (edge_cache);
+    sbitmap_free (edge_cache);
 }
 
 static void

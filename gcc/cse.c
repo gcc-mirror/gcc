@@ -6546,7 +6546,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 
   /* Set up the table of already visited basic blocks.  */
   cse_visited_basic_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (cse_visited_basic_blocks);
+  bitmap_clear (cse_visited_basic_blocks);
 
   /* Loop over basic blocks in reverse completion order (RPO),
      excluding the ENTRY and EXIT blocks.  */

@@ -1822,7 +1822,7 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
   HOST_WIDE_INT i;
   rtx val;
 
-  if (sbitmap_empty_p (stored_args_map))
+  if (bitmap_empty_p (stored_args_map))
     return false;
   val = internal_arg_pointer_based_exp (addr, true);
   if (val == NULL_RTX)
@@ -2749,7 +2749,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    = plus_constant (Pmode, argblock, -crtl->args.pretend_args_size);
 #endif
 	  stored_args_map = sbitmap_alloc (args_size.constant);
-	  sbitmap_zero (stored_args_map);
+	  bitmap_clear (stored_args_map);
 	}
 
       /* If we have no actual push instructions, or shouldn't use them,

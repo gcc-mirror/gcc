@@ -724,7 +724,7 @@ init_dce (bool fast)
     can_alter_cfg = true;
 
   marked = sbitmap_alloc (get_max_uid () + 1);
-  sbitmap_zero (marked);
+  bitmap_clear (marked);
 }
 
 
@@ -1082,7 +1082,7 @@ fast_dce (bool word_level)
 	  /* So something was deleted that requires a redo.  Do it on
 	     the cheap.  */
 	  delete_unmarked_insns ();
-	  sbitmap_zero (marked);
+	  bitmap_clear (marked);
 	  bitmap_clear (processed);
 	  bitmap_clear (redo_out);
 

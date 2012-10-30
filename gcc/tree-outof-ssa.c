@@ -670,7 +670,7 @@ eliminate_phi (edge e, elim_graph g)
     {
       int part;
 
-      sbitmap_zero (g->visited);
+      bitmap_clear (g->visited);
       VEC_truncate (int, g->stack, 0);
 
       FOR_EACH_VEC_ELT (int, g->nodes, x, part)
@@ -679,7 +679,7 @@ eliminate_phi (edge e, elim_graph g)
 	    elim_forward (g, part);
 	}
 
-      sbitmap_zero (g->visited);
+      bitmap_clear (g->visited);
       while (VEC_length (int, g->stack) > 0)
 	{
 	  x = VEC_pop (int, g->stack);

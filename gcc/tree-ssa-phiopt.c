@@ -482,7 +482,7 @@ blocks_in_phiopt_order (void)
 #define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index))
 #define VISITED_P(BB) (TEST_BIT (visited, (BB)->index))
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   MARK_VISITED (ENTRY_BLOCK_PTR);
   FOR_EACH_BB (x)

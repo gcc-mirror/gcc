@@ -643,7 +643,7 @@ schedule_reg_move (partial_schedule_ptr ps, int i_reg_move,
       fprintf (dump_file, "%11d %11d %5s %s\n", start, end, "", "(max, min)");
     }
 
-  sbitmap_zero (must_follow);
+  bitmap_clear (must_follow);
   SET_BIT (must_follow, move->def);
 
   start = MAX (start, end - (ii - 1));
@@ -767,7 +767,7 @@ schedule_reg_moves (partial_schedule_ptr ps)
 	  move->new_reg = gen_reg_rtx (GET_MODE (prev_reg));
 	  move->num_consecutive_stages = distances[0] && distances[1] ? 2 : 1;
 	  move->insn = gen_move_insn (move->new_reg, copy_rtx (prev_reg));
-	  sbitmap_zero (move->uses);
+	  bitmap_clear (move->uses);
 
 	  prev_reg = move->new_reg;
 	}
@@ -982,7 +982,7 @@ optimize_sc (partial_schedule_ptr ps, ddg_ptr g)
       goto clear;
     }
 
-  sbitmap_ones (sched_nodes);
+  bitmap_ones (sched_nodes);
 
   /* Calculate the new placement of the branch.  It should be in row
      ii-1 and fall into it's scheduling window.  */
@@ -1880,10 +1880,10 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
   int count_succs;
 
   /* 1. compute sched window for u (start, end, step).  */
-  sbitmap_zero (psp);
-  sbitmap_zero (pss);
-  psp_not_empty = sbitmap_a_and_b_cg (psp, u_node_preds, sched_nodes);
-  pss_not_empty = sbitmap_a_and_b_cg (pss, u_node_succs, sched_nodes);
+  bitmap_clear (psp);
+  bitmap_clear (pss);
+  psp_not_empty = bitmap_and (psp, u_node_preds, sched_nodes);
+  pss_not_empty = bitmap_and (pss, u_node_succs, sched_nodes);
 
   /* We first compute a forward range (start <= end), then decide whether
      to reverse it.  */
@@ -2050,8 +2050,8 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
   first_cycle_in_window = (step == 1) ? start : end - step;
   last_cycle_in_window = (step == 1) ? end - step : start;
 
-  sbitmap_zero (must_precede);
-  sbitmap_zero (must_follow);
+  bitmap_clear (must_precede);
+  bitmap_clear (must_follow);
 
   if (dump_file)
     fprintf (dump_file, "\nmust_precede: ");
@@ -2159,8 +2159,8 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 
   partial_schedule_ptr ps = create_partial_schedule (ii, g, DFA_HISTORY);
 
-  sbitmap_ones (tobe_scheduled);
-  sbitmap_zero (sched_nodes);
+  bitmap_ones (tobe_scheduled);
+  bitmap_clear (sched_nodes);
 
   while (flush_and_start_over && (ii < maxii))
     {
@@ -2168,7 +2168,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
       if (dump_file)
 	fprintf (dump_file, "Starting with ii=%d\n", ii);
       flush_and_start_over = false;
-      sbitmap_zero (sched_nodes);
+      bitmap_clear (sched_nodes);
 
       for (i = 0; i < num_nodes; i++)
 	{
@@ -2264,7 +2264,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
       ps = NULL;
     }
   else
-    gcc_assert (sbitmap_equal (tobe_scheduled, sched_nodes));
+    gcc_assert (bitmap_equal_p (tobe_scheduled, sched_nodes));
 
   sbitmap_free (sched_nodes);
   sbitmap_free (must_precede);
@@ -2482,7 +2482,7 @@ check_nodes_order (int *node_order, int num_nodes)
   int i;
   sbitmap tmp = sbitmap_alloc (num_nodes);
 
-  sbitmap_zero (tmp);
+  bitmap_clear (tmp);
 
   if (dump_file)
     fprintf (dump_file, "SMS final nodes order: \n");
@@ -2550,8 +2550,8 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
   sbitmap tmp = sbitmap_alloc (num_nodes);
   sbitmap ones = sbitmap_alloc (num_nodes);
 
-  sbitmap_zero (prev_sccs);
-  sbitmap_ones (ones);
+  bitmap_clear (prev_sccs);
+  bitmap_ones (ones);
 
   /* Perform the node ordering starting from the SCC with the highest recMII.
      For each SCC order the nodes according to their ASAP/ALAP/HEIGHT etc.  */
@@ -2561,14 +2561,14 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
 
       /* Add nodes on paths from previous SCCs to the current SCC.  */
       find_nodes_on_paths (on_path, g, prev_sccs, scc->nodes);
-      sbitmap_a_or_b (tmp, scc->nodes, on_path);
+      bitmap_ior (tmp, scc->nodes, on_path);
 
       /* Add nodes on paths from the current SCC to previous SCCs.  */
       find_nodes_on_paths (on_path, g, scc->nodes, prev_sccs);
-      sbitmap_a_or_b (tmp, tmp, on_path);
+      bitmap_ior (tmp, tmp, on_path);
 
       /* Remove nodes of previous SCCs from current extended SCC.  */
-      sbitmap_difference (tmp, tmp, prev_sccs);
+      bitmap_and_compl (tmp, tmp, prev_sccs);
 
       pos = order_nodes_in_scc (g, prev_sccs, tmp, node_order, pos);
       /* Above call to order_nodes_in_scc updated prev_sccs |= tmp.  */
@@ -2578,7 +2578,7 @@ order_nodes_of_sccs (ddg_all_sccs_ptr all_sccs, int * node_order)
      to order_nodes_in_scc handles a single connected component.  */
   while (pos < g->num_nodes)
     {
-      sbitmap_difference (tmp, ones, prev_sccs);
+      bitmap_and_compl (tmp, ones, prev_sccs);
       pos = order_nodes_in_scc (g, prev_sccs, tmp, node_order, pos);
     }
   sbitmap_free (prev_sccs);
@@ -2751,35 +2751,35 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
   sbitmap predecessors = sbitmap_alloc (num_nodes);
   sbitmap successors = sbitmap_alloc (num_nodes);
 
-  sbitmap_zero (predecessors);
+  bitmap_clear (predecessors);
   find_predecessors (predecessors, g, nodes_ordered);
 
-  sbitmap_zero (successors);
+  bitmap_clear (successors);
   find_successors (successors, g, nodes_ordered);
 
-  sbitmap_zero (tmp);
-  if (sbitmap_a_and_b_cg (tmp, predecessors, scc))
+  bitmap_clear (tmp);
+  if (bitmap_and (tmp, predecessors, scc))
     {
-      sbitmap_copy (workset, tmp);
+      bitmap_copy (workset, tmp);
       dir = BOTTOMUP;
     }
-  else if (sbitmap_a_and_b_cg (tmp, successors, scc))
+  else if (bitmap_and (tmp, successors, scc))
     {
-      sbitmap_copy (workset, tmp);
+      bitmap_copy (workset, tmp);
       dir = TOPDOWN;
     }
   else
     {
       int u;
 
-      sbitmap_zero (workset);
+      bitmap_clear (workset);
       if ((u = find_max_asap (g, scc)) >= 0)
 	SET_BIT (workset, u);
       dir = BOTTOMUP;
     }
 
-  sbitmap_zero (zero_bitmap);
-  while (!sbitmap_equal (workset, zero_bitmap))
+  bitmap_clear (zero_bitmap);
+  while (!bitmap_equal_p (workset, zero_bitmap))
     {
       int v;
       ddg_node_ptr v_node;
@@ -2788,45 +2788,45 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 
       if (dir == TOPDOWN)
 	{
-	  while (!sbitmap_equal (workset, zero_bitmap))
+	  while (!bitmap_equal_p (workset, zero_bitmap))
 	    {
 	      v = find_max_hv_min_mob (g, workset);
 	      v_node = &g->nodes[v];
 	      node_order[pos++] = v;
 	      v_node_succs = NODE_SUCCESSORS (v_node);
-	      sbitmap_a_and_b (tmp, v_node_succs, scc);
+	      bitmap_and (tmp, v_node_succs, scc);
 
 	      /* Don't consider the already ordered successors again.  */
-	      sbitmap_difference (tmp, tmp, nodes_ordered);
-	      sbitmap_a_or_b (workset, workset, tmp);
+	      bitmap_and_compl (tmp, tmp, nodes_ordered);
+	      bitmap_ior (workset, workset, tmp);
 	      RESET_BIT (workset, v);
 	      SET_BIT (nodes_ordered, v);
 	    }
 	  dir = BOTTOMUP;
-	  sbitmap_zero (predecessors);
+	  bitmap_clear (predecessors);
 	  find_predecessors (predecessors, g, nodes_ordered);
-	  sbitmap_a_and_b (workset, predecessors, scc);
+	  bitmap_and (workset, predecessors, scc);
 	}
       else
 	{
-	  while (!sbitmap_equal (workset, zero_bitmap))
+	  while (!bitmap_equal_p (workset, zero_bitmap))
 	    {
 	      v = find_max_dv_min_mob (g, workset);
 	      v_node = &g->nodes[v];
 	      node_order[pos++] = v;
 	      v_node_preds = NODE_PREDECESSORS (v_node);
-	      sbitmap_a_and_b (tmp, v_node_preds, scc);
+	      bitmap_and (tmp, v_node_preds, scc);
 
 	      /* Don't consider the already ordered predecessors again.  */
-	      sbitmap_difference (tmp, tmp, nodes_ordered);
-	      sbitmap_a_or_b (workset, workset, tmp);
+	      bitmap_and_compl (tmp, tmp, nodes_ordered);
+	      bitmap_ior (workset, workset, tmp);
 	      RESET_BIT (workset, v);
 	      SET_BIT (nodes_ordered, v);
 	    }
 	  dir = TOPDOWN;
-	  sbitmap_zero (successors);
+	  bitmap_clear (successors);
 	  find_successors (successors, g, nodes_ordered);
-	  sbitmap_a_and_b (workset, successors, scc);
+	  bitmap_and (workset, successors, scc);
 	}
     }
   sbitmap_free (tmp);

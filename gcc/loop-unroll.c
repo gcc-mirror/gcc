@@ -465,7 +465,7 @@ peel_loop_completely (struct loop *loop)
       bool ok;
 
       wont_exit = sbitmap_alloc (npeel + 1);
-      sbitmap_ones (wont_exit);
+      bitmap_ones (wont_exit);
       RESET_BIT (wont_exit, 0);
       if (desc->noloop_assumptions)
 	RESET_BIT (wont_exit, 1);
@@ -655,7 +655,7 @@ unroll_loop_constant_iterations (struct loop *loop)
   exit_mod = niter % (max_unroll + 1);
 
   wont_exit = sbitmap_alloc (max_unroll + 1);
-  sbitmap_ones (wont_exit);
+  bitmap_ones (wont_exit);
 
   remove_edges = NULL;
   if (flag_split_ivs_in_unroller
@@ -1066,7 +1066,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
      here; the only exception is when we have extra zero check and the number
      of iterations is reliable.  Also record the place of (possible) extra
      zero check.  */
-  sbitmap_zero (wont_exit);
+  bitmap_clear (wont_exit);
   if (extra_zero_check
       && !desc->noloop_assumptions)
     SET_BIT (wont_exit, 1);
@@ -1083,7 +1083,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   for (i = 0; i < n_peel; i++)
     {
       /* Peel the copy.  */
-      sbitmap_zero (wont_exit);
+      bitmap_clear (wont_exit);
       if (i != n_peel - 1 || !last_may_exit)
 	SET_BIT (wont_exit, 1);
       ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
@@ -1139,7 +1139,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
 
   /* And unroll loop.  */
 
-  sbitmap_ones (wont_exit);
+  bitmap_ones (wont_exit);
   RESET_BIT (wont_exit, may_exit_copy);
   opt_info_start_duplication (opt_info);
 
@@ -1340,7 +1340,7 @@ peel_loop_simple (struct loop *loop)
     opt_info = analyze_insns_in_loop (loop);
 
   wont_exit = sbitmap_alloc (npeel + 1);
-  sbitmap_zero (wont_exit);
+  bitmap_clear (wont_exit);
 
   opt_info_start_duplication (opt_info);
 
@@ -1498,7 +1498,7 @@ unroll_loop_stupid (struct loop *loop)
 
 
   wont_exit = sbitmap_alloc (nunroll + 1);
-  sbitmap_zero (wont_exit);
+  bitmap_clear (wont_exit);
   opt_info_start_duplication (opt_info);
 
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),

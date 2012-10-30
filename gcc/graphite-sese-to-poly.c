@@ -405,7 +405,7 @@ build_scop_bbs (scop_p scop)
   sbitmap visited = sbitmap_alloc (last_basic_block);
   sese region = SCOP_REGION (scop);
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   build_scop_bbs_1 (scop, visited, SESE_ENTRY_BB (region));
   sbitmap_free (visited);
 }

@@ -1203,7 +1203,7 @@ build_pred_graph (void)
   graph->eq_rep = XNEWVEC (int, graph->size);
   graph->direct_nodes = sbitmap_alloc (graph->size);
   graph->address_taken = BITMAP_ALLOC (&predbitmap_obstack);
-  sbitmap_zero (graph->direct_nodes);
+  bitmap_clear (graph->direct_nodes);
 
   for (j = 0; j < FIRST_REF_NODE; j++)
     {
@@ -1533,7 +1533,7 @@ init_topo_info (void)
   size_t size = graph->size;
   struct topo_info *ti = XNEW (struct topo_info);
   ti->visited = sbitmap_alloc (size);
-  sbitmap_zero (ti->visited);
+  bitmap_clear (ti->visited);
   ti->topo_order = VEC_alloc (unsigned, heap, 1);
   return ti;
 }
@@ -1811,9 +1811,9 @@ init_scc_info (size_t size)
 
   si->current_index = 0;
   si->visited = sbitmap_alloc (size);
-  sbitmap_zero (si->visited);
+  bitmap_clear (si->visited);
   si->deleted = sbitmap_alloc (size);
-  sbitmap_zero (si->deleted);
+  bitmap_clear (si->deleted);
   si->node_mapping = XNEWVEC (unsigned int, size);
   si->dfs = XCNEWVEC (unsigned int, size);
 
@@ -2166,7 +2166,7 @@ perform_var_substitution (constraint_graph_t graph)
     if (!TEST_BIT (si->visited, si->node_mapping[i]))
       condense_visit (graph, si, si->node_mapping[i]);
 
-  sbitmap_zero (si->visited);
+  bitmap_clear (si->visited);
   /* Actually the label the nodes for pointer equivalences  */
   for (i = 0; i < FIRST_REF_NODE; i++)
     if (!TEST_BIT (si->visited, si->node_mapping[i]))

@@ -6775,7 +6775,7 @@ init_seqno (bitmap blocks_to_reschedule, basic_block from)
 
   if (blocks_to_reschedule)
     {
-      sbitmap_ones (visited_bbs);
+      bitmap_ones (visited_bbs);
       EXECUTE_IF_SET_IN_BITMAP (blocks_to_reschedule, 0, bbi, bi)
         {
 	  gcc_assert (BLOCK_TO_BB (bbi) < current_nr_blocks);
@@ -6784,7 +6784,7 @@ init_seqno (bitmap blocks_to_reschedule, basic_block from)
     }
   else
     {
-      sbitmap_zero (visited_bbs);
+      bitmap_clear (visited_bbs);
       from = EBB_FIRST_BB (0);
     }
 

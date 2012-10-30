@@ -2874,7 +2874,7 @@ split_all_insns (void)
   basic_block bb;
 
   blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (blocks);
+  bitmap_clear (blocks);
   changed = false;
 
   FOR_EACH_BB_REVERSE (bb)

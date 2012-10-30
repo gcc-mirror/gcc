@@ -600,8 +600,8 @@ compute_local_properties (sbitmap *kill, sbitmap *comp,
   unsigned int i;
 
   /* Initialize the bitmaps that were passed in.  */
-  sbitmap_vector_zero (kill, last_basic_block);
-  sbitmap_vector_zero (comp, last_basic_block);
+  bitmap_vector_clear (kill, last_basic_block);
+  bitmap_vector_clear (comp, last_basic_block);
 
   for (i = 0; i < table->size; i++)
     {

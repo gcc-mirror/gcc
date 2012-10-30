@@ -482,7 +482,7 @@ optimize_mode_switching (void)
   transp = sbitmap_vector_alloc (last_basic_block, n_entities);
   comp = sbitmap_vector_alloc (last_basic_block, n_entities);
 
-  sbitmap_vector_ones (transp, last_basic_block);
+  bitmap_vector_ones (transp, last_basic_block);
 
   for (j = n_entities - 1; j >= 0; j--)
     {
@@ -591,8 +591,8 @@ optimize_mode_switching (void)
       sbitmap *insert;
 
       /* Set the anticipatable and computing arrays.  */
-      sbitmap_vector_zero (antic, last_basic_block);
-      sbitmap_vector_zero (comp, last_basic_block);
+      bitmap_vector_clear (antic, last_basic_block);
+      bitmap_vector_clear (comp, last_basic_block);
       for (j = n_entities - 1; j >= 0; j--)
 	{
 	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);
@@ -612,7 +612,7 @@ optimize_mode_switching (void)
 	 placement mode switches to modes with priority I.  */
 
       FOR_EACH_BB (bb)
-	sbitmap_not (kill[bb->index], transp[bb->index]);
+	bitmap_not (kill[bb->index], transp[bb->index]);
       edge_list = pre_edge_lcm (n_entities, transp, comp, antic,
 				kill, &insert, &del);
 

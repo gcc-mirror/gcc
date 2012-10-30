@@ -41,24 +41,24 @@ along with GCC; see the file COPYING3.  If not see
    Most other operations on this set representation are O(U) where U is
    the size of the set universe:
 
-     * clear			: sbitmap_zero
+     * clear			: bitmap_clear
      * cardinality		: sbitmap_popcount
-     * choose_one		: sbitmap_first_set_bit /
-				  sbitmap_last_set_bit
+     * choose_one		: bitmap_first_set_bit /
+				  bitmap_last_set_bit
      * forall			: EXECUTE_IF_SET_IN_SBITMAP
-     * set_copy			: sbitmap_copy / sbitmap_copy_n
-     * set_intersection		: sbitmap_a_and_b
-     * set_union		: sbitmap_a_or_b
-     * set_difference		: sbitmap_difference
+     * set_copy			: bitmap_copy / bitmap_copy_n
+     * set_intersection		: bitmap_and
+     * set_union		: bitmap_ior
+     * set_difference		: bitmap_and_compl
      * set_disjuction		: (not implemented)
-     * set_compare		: sbitmap_equal
+     * set_compare		: bitmap_equal_p
 
    Some operations on 3 sets that occur frequently in in data flow problems
    are also implemented:
 
-      * A | (B & C)		: sbitmap_a_or_b_and_c
-      * A | (B & ~C)		: sbitmap_union_of_diff
-      * A & (B | C)		: sbitmap_a_and_b_or_c
+      * A | (B & C)		: bitmap_or_and
+      * A | (B & ~C)		: bitmap_ior_and_compl
+      * A & (B | C)		: bitmap_and_or
 
    Most of the set functions have two variants: One that returns non-zero
    if members were added or removed from the target set, and one that just
@@ -265,54 +265,53 @@ do {									\
     }									\
 } while (0)
 
-#define sbitmap_free(MAP)		(free((MAP)->popcount), free((MAP)))
-#define sbitmap_vector_free(VEC)	free(VEC)
+inline void sbitmap_free (sbitmap map)
+{
+  free (map->popcount);
+  free (map);
+}
 
-extern void dump_sbitmap (FILE *, const_sbitmap);
-extern void dump_sbitmap_file (FILE *, const_sbitmap);
-extern void dump_sbitmap_vector (FILE *, const char *, const char *, sbitmap *,
+inline void sbitmap_vector_free (sbitmap * vec)
+{
+  free (vec);
+}
+
+extern void dump_bitmap (FILE *, const_sbitmap);
+extern void dump_bitmap_file (FILE *, const_sbitmap);
+extern void dump_bitmap_vector (FILE *, const char *, const char *, sbitmap *,
 				 int);
 extern sbitmap sbitmap_alloc (unsigned int);
 extern sbitmap sbitmap_alloc_with_popcount (unsigned int);
 extern sbitmap *sbitmap_vector_alloc (unsigned int, unsigned int);
 extern sbitmap sbitmap_resize (sbitmap, unsigned int, int);
-extern void sbitmap_copy (sbitmap, const_sbitmap);
-extern void sbitmap_copy_n (sbitmap, const_sbitmap, unsigned int);
-extern int sbitmap_equal (const_sbitmap, const_sbitmap);
-extern bool sbitmap_empty_p (const_sbitmap);
-extern bool sbitmap_range_empty_p (const_sbitmap, unsigned int, unsigned int);
-extern void sbitmap_zero (sbitmap);
-extern void sbitmap_ones (sbitmap);
-extern void sbitmap_vector_zero (sbitmap *, unsigned int);
-extern void sbitmap_vector_ones (sbitmap *, unsigned int);
+extern void bitmap_copy (sbitmap, const_sbitmap);
+extern void bitmap_copy_n (sbitmap, const_sbitmap, unsigned int);
+extern int bitmap_equal_p (const_sbitmap, const_sbitmap);
+extern bool bitmap_empty_p (const_sbitmap);
+extern bool bitmap_range_empty_p (const_sbitmap, unsigned int, unsigned int);
+extern void bitmap_clear (sbitmap);
+extern void bitmap_ones (sbitmap);
+extern void bitmap_vector_clear (sbitmap *, unsigned int);
+extern void bitmap_vector_ones (sbitmap *, unsigned int);
 
-extern void sbitmap_union_of_diff (sbitmap, const_sbitmap,
-				   const_sbitmap, const_sbitmap);
-extern bool sbitmap_union_of_diff_cg (sbitmap, const_sbitmap,
+extern bool bitmap_ior_and_compl (sbitmap, const_sbitmap,
 				      const_sbitmap, const_sbitmap);
-extern void sbitmap_difference (sbitmap, const_sbitmap, const_sbitmap);
-extern void sbitmap_not (sbitmap, const_sbitmap);
-extern void sbitmap_a_or_b_and_c (sbitmap, const_sbitmap,
-				  const_sbitmap, const_sbitmap);
-extern bool sbitmap_a_or_b_and_c_cg (sbitmap, const_sbitmap,
+extern void bitmap_and_compl (sbitmap, const_sbitmap, const_sbitmap);
+extern void bitmap_not (sbitmap, const_sbitmap);
+extern bool bitmap_or_and (sbitmap, const_sbitmap,
 				     const_sbitmap, const_sbitmap);
-extern void sbitmap_a_and_b_or_c (sbitmap, const_sbitmap,
-				  const_sbitmap, const_sbitmap);
-extern bool sbitmap_a_and_b_or_c_cg (sbitmap, const_sbitmap,
+extern bool bitmap_and_or (sbitmap, const_sbitmap,
 				     const_sbitmap, const_sbitmap);
-extern bool sbitmap_any_common_bits (const_sbitmap, const_sbitmap);
-extern void sbitmap_a_and_b (sbitmap, const_sbitmap, const_sbitmap);
-extern bool sbitmap_a_and_b_cg (sbitmap, const_sbitmap, const_sbitmap);
-extern void sbitmap_a_or_b (sbitmap, const_sbitmap, const_sbitmap);
-extern bool sbitmap_a_or_b_cg (sbitmap, const_sbitmap, const_sbitmap);
-extern void sbitmap_a_xor_b (sbitmap, const_sbitmap, const_sbitmap);
-extern bool sbitmap_a_xor_b_cg (sbitmap, const_sbitmap, const_sbitmap);
-extern bool sbitmap_a_subset_b_p (const_sbitmap, const_sbitmap);
+extern bool bitmap_intersect_p (const_sbitmap, const_sbitmap);
+extern bool bitmap_and (sbitmap, const_sbitmap, const_sbitmap);
+extern bool bitmap_ior (sbitmap, const_sbitmap, const_sbitmap);
+extern bool bitmap_xor (sbitmap, const_sbitmap, const_sbitmap);
+extern bool bitmap_subset_p (const_sbitmap, const_sbitmap);
 
-extern int sbitmap_first_set_bit (const_sbitmap);
-extern int sbitmap_last_set_bit (const_sbitmap);
+extern int bitmap_first_set_bit (const_sbitmap);
+extern int bitmap_last_set_bit (const_sbitmap);
 
-extern void debug_sbitmap (const_sbitmap);
+extern void debug_bitmap (const_sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
 extern unsigned long sbitmap_popcount (const_sbitmap, unsigned long);
 extern void sbitmap_verify_popcount (const_sbitmap);

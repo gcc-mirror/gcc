@@ -37,34 +37,38 @@ typedef struct ebitmap_def
 } *ebitmap;
 
 
-#define ebitmap_empty_p(MAP) ((MAP)->numwords == 0)
+inline bool bitmap_empty_p (ebitmap map)
+{
+  return map->numwords == 0;
+}
+
 #define ebitmap_free(MAP)  (free((MAP)->elts), \
 			    sbitmap_free ((MAP)->wordmask),	\
 			    free((MAP)))
 
-extern void ebitmap_set_bit (ebitmap, unsigned int);
-extern void ebitmap_clear_bit (ebitmap, unsigned int);
-extern bool ebitmap_bit_p (ebitmap, unsigned int);
-extern void dump_ebitmap (FILE *, ebitmap);
-extern void dump_ebitmap_file (FILE *, ebitmap);
-extern void dump_ebitmap_vector (FILE *, const char *, const char *, ebitmap *,
-				 int);
+extern void bitmap_set_bit (ebitmap, unsigned int);
+extern void bitmap_clear_bit (ebitmap, unsigned int);
+extern bool bitmap_bit_p (ebitmap, unsigned int);
+extern void dump_bitmap (FILE *, ebitmap);
+extern void dump_bitmap_file (FILE *, ebitmap);
+extern void dump_bitmap_vector (FILE *, const char *, const char *, ebitmap *,
+				int);
 extern ebitmap ebitmap_alloc (unsigned int);
 extern ebitmap *ebitmap_vector_alloc (unsigned int, unsigned int);
-extern void ebitmap_copy (ebitmap, ebitmap);
-extern void ebitmap_and (ebitmap, ebitmap, ebitmap);
-extern void ebitmap_and_into (ebitmap, ebitmap);
-extern bool ebitmap_and_compl (ebitmap, ebitmap, ebitmap);
-extern bool ebitmap_and_compl_into (ebitmap, ebitmap);
-extern bool ebitmap_ior_into (ebitmap, ebitmap);
-extern bool ebitmap_ior (ebitmap, ebitmap, ebitmap);
-extern bool ebitmap_ior_and_compl (ebitmap, ebitmap, ebitmap, ebitmap);
-extern bool ebitmap_ior_and_compl_into (ebitmap, ebitmap, ebitmap);
-extern bool ebitmap_equal_p (ebitmap, ebitmap);
-extern void ebitmap_clear (ebitmap);
-extern int ebitmap_last_set_bit (ebitmap);
-extern void debug_ebitmap (ebitmap);
-extern unsigned long ebitmap_popcount(ebitmap, unsigned long);
+extern void bitmap_copy (ebitmap, ebitmap);
+extern void bitmap_and (ebitmap, ebitmap, ebitmap);
+extern void bitmap_and_into (ebitmap, ebitmap);
+extern bool bitmap_and_compl (ebitmap, ebitmap, ebitmap);
+extern bool bitmap_and_compl_into (ebitmap, ebitmap);
+extern bool bitmap_ior_into (ebitmap, ebitmap);
+extern bool bitmap_ior (ebitmap, ebitmap, ebitmap);
+extern bool bitmap_ior_and_compl (ebitmap, ebitmap, ebitmap, ebitmap);
+extern bool bitmap_ior_and_compl_into (ebitmap, ebitmap, ebitmap);
+extern bool bitmap_equal_p (ebitmap, ebitmap);
+extern void bitmap_clear (ebitmap);
+extern int bitmap_last_set_bit (ebitmap);
+extern void debug_bitmap (ebitmap);
+extern unsigned long bitmap_popcount(ebitmap, unsigned long);
 
 /* The iterator for ebitmap.  */
 typedef struct {

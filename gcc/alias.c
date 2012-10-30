@@ -2869,7 +2869,7 @@ init_alias_analysis (void)
       memset (new_reg_base_value, 0, maxreg * sizeof (rtx));
 
       /* Wipe the reg_seen array clean.  */
-      sbitmap_zero (reg_seen);
+      bitmap_clear (reg_seen);
 
       /* Mark all hard registers which may contain an address.
 	 The stack, frame and argument pointers may contain an address.

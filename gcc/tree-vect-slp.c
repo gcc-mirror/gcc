@@ -1289,7 +1289,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
           /* Check that the loads in the first sequence are different and there
              are no gaps between them.  */
           load_index = sbitmap_alloc (group_size);
-          sbitmap_zero (load_index);
+          bitmap_clear (load_index);
           for (k = 0; k < group_size; k++)
             {
               first_group_load_index = VEC_index (int, load_permutation, k);
@@ -1407,7 +1407,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
   supported = true;
   load_index = sbitmap_alloc (group_size);
-  sbitmap_zero (load_index);
+  bitmap_clear (load_index);
   for (j = 0; j < group_size; j++)
     {
       for (i = j * group_size, k = 0;

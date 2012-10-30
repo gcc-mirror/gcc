@@ -401,10 +401,10 @@ move_or_delete_vzeroupper (void)
   visited = sbitmap_alloc (last_basic_block);
   in_worklist = sbitmap_alloc (last_basic_block);
   in_pending = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_worklist);
+  bitmap_clear (in_worklist);
 
   /* Don't check outgoing edges of entry point.  */
-  sbitmap_ones (in_pending);
+  bitmap_ones (in_pending);
   FOR_EACH_BB (bb)
     if (BLOCK_INFO (bb)->processed)
       RESET_BIT (in_pending, bb->index);
@@ -426,7 +426,7 @@ move_or_delete_vzeroupper (void)
       in_pending = in_worklist;
       in_worklist = sbitmap_swap;
 
-      sbitmap_zero (visited);
+      bitmap_clear (visited);
 
       cfun->machine->rescan_vzeroupper_p = 0;
 
@@ -24783,7 +24783,7 @@ core2i7_first_cycle_multipass_issue (void *_data, char *ready_try, int n_ready,
 					       n_ready, 0);
       data->ready_try_change_size = n_ready;
     }
-  sbitmap_zero (data->ready_try_change);
+  bitmap_clear (data->ready_try_change);
 
   /* Filter out insns from ready_try that the core will not be able to issue
      on current cycle due to decoder.  */
@@ -24802,7 +24802,7 @@ core2i7_first_cycle_multipass_backtrack (const void *_data,
   unsigned int i = 0;
   sbitmap_iterator sbi;
 
-  gcc_assert (sbitmap_last_set_bit (data->ready_try_change) < n_ready);
+  gcc_assert (bitmap_last_set_bit (data->ready_try_change) < n_ready);
   EXECUTE_IF_SET_IN_SBITMAP (data->ready_try_change, 0, i, sbi)
     {
       ready_try[i] = 0;
