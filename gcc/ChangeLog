@@ -1,3 +1,8 @@
+2012-10-30  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg): Handle vectors.
+	(fold_binary_loc): call it for VEC_COND_EXPR.
+
 2012-10-30  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 
