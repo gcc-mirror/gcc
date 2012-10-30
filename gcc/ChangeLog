@@ -1,5 +1,23 @@
 2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54963
+	* config/sh/iterators.md (SIDI): New mode iterator.
+	* config/sh/sh.md (negdi2): Use parallel around operation and T_REG
+	clobber in expander.
+	(*negdi2): Mark output operand as early clobbered.  Add T_REG clobber.
+	Split after reload.  Simplify split code.
+	(abssi2, absdi2): Fold expanders into abs<mode>2.
+	(*abssi2, *absdi2): Fold into *abs<mode>2 insn_and_split.  Split insns
+	before reload.
+	(*negabssi2, *negabsdi2): Fold into *negabs<mode>2.  Add T_REG clobber.
+	Split insns before reload.
+	(negsi_cond): Reformat.  Use emit_move_insn instead of
+	gen_movesi.
+	(negdi_cond): Reformat.  Use emit_move_insn instead of a pair
+	of gen_movsi.  Split insn before reload.
+
+2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54988
 	* config/sh/sh.md (tstqi_t_zero): Rename to *tstqi_t_zero.
 	(*tst<mode>_t_zero): New insns.
