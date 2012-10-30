@@ -1793,12 +1793,15 @@ loop_only_exit_p (const struct loop *loop, const_edge exit)
    meaning described in comments at struct tree_niter_desc
    declaration), false otherwise.  If WARN is true and
    -Wunsafe-loop-optimizations was given, warn if the optimizer is going to use
-   potentially unsafe assumptions.  */
+   potentially unsafe assumptions.  
+   When EVERY_ITERATION is true, only tests that are known to be executed
+   every iteration are considered (i.e. only test that alone bounds the loop). 
+ */
 
 bool
 number_of_iterations_exit (struct loop *loop, edge exit,
 			   struct tree_niter_desc *niter,
-			   bool warn)
+			   bool warn, bool every_iteration)
 {
   gimple stmt;
   tree type;
@@ -1806,7 +1809,8 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   enum tree_code code;
   affine_iv iv0, iv1;
 
-  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src))
+  if (every_iteration
+      && !dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src))
     return false;
 
   niter->assumptions = boolean_false_node;
@@ -2568,6 +2572,11 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
       loop->bounds = elt;
     }
 
+  /* If statement is executed on every path to the loop latch, we can directly
+     infer the upper bound on the # of iterations of the loop.  */
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (at_stmt)))
+    return;
+
   /* Update the number of iteration estimates according to the bound.
      If at_stmt is an exit then the loop latch is executed at most BOUND times,
      otherwise it can be executed BOUND + 1 times.  We will lower the estimate
@@ -2651,7 +2660,6 @@ struct ilb_data
 {
   struct loop *loop;
   gimple stmt;
-  bool reliable;
 };
 
 static bool
@@ -2660,7 +2668,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   struct ilb_data *data = (struct ilb_data *) dta;
   tree ev, init, step;
   tree low, high, type, next;
-  bool sign, upper = data->reliable, at_end = false;
+  bool sign, upper = true, at_end = false;
   struct loop *loop = data->loop;
 
   if (TREE_CODE (base) != ARRAY_REF)
@@ -2737,14 +2745,12 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
    STMT is guaranteed to be executed in every iteration of LOOP.*/
 
 static void
-infer_loop_bounds_from_ref (struct loop *loop, gimple stmt, tree ref,
-			    bool reliable)
+infer_loop_bounds_from_ref (struct loop *loop, gimple stmt, tree ref)
 {
   struct ilb_data data;
 
   data.loop = loop;
   data.stmt = stmt;
-  data.reliable = reliable;
   for_each_index (&ref, idx_infer_loop_bounds, &data);
 }
 
@@ -2753,7 +2759,7 @@ infer_loop_bounds_from_ref (struct loop *loop, gimple stmt, tree ref,
    executed in every iteration of LOOP.  */
 
 static void
-infer_loop_bounds_from_array (struct loop *loop, gimple stmt, bool reliable)
+infer_loop_bounds_from_array (struct loop *loop, gimple stmt)
 {
   if (is_gimple_assign (stmt))
     {
@@ -2763,10 +2769,10 @@ infer_loop_bounds_from_array (struct loop *loop, gimple stmt, bool reliable)
       /* For each memory access, analyze its access function
 	 and record a bound on the loop iteration domain.  */
       if (REFERENCE_CLASS_P (op0))
-	infer_loop_bounds_from_ref (loop, stmt, op0, reliable);
+	infer_loop_bounds_from_ref (loop, stmt, op0);
 
       if (REFERENCE_CLASS_P (op1))
-	infer_loop_bounds_from_ref (loop, stmt, op1, reliable);
+	infer_loop_bounds_from_ref (loop, stmt, op1);
     }
   else if (is_gimple_call (stmt))
     {
@@ -2775,13 +2781,13 @@ infer_loop_bounds_from_array (struct loop *loop, gimple stmt, bool reliable)
 
       lhs = gimple_call_lhs (stmt);
       if (lhs && REFERENCE_CLASS_P (lhs))
-	infer_loop_bounds_from_ref (loop, stmt, lhs, reliable);
+	infer_loop_bounds_from_ref (loop, stmt, lhs);
 
       for (i = 0; i < n; i++)
 	{
 	  arg = gimple_call_arg (stmt, i);
 	  if (REFERENCE_CLASS_P (arg))
-	    infer_loop_bounds_from_ref (loop, stmt, arg, reliable);
+	    infer_loop_bounds_from_ref (loop, stmt, arg);
 	}
     }
 }
@@ -2910,14 +2916,15 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 
       /* If BB is not executed in each iteration of the loop, we cannot
 	 use the operations in it to infer reliable upper bound on the
-	 # of iterations of the loop.  However, we can use it as a guess.  */
+	 # of iterations of the loop.  However, we can use it as a guess. 
+	 Reliable guesses come only from array bounds.  */
       reliable = dominated_by_p (CDI_DOMINATORS, loop->latch, bb);
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);
 
-	  infer_loop_bounds_from_array (loop, stmt, reliable);
+	  infer_loop_bounds_from_array (loop, stmt);
 
 	  if (reliable)
             {
@@ -3078,7 +3085,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   likely_exit = single_likely_exit (loop);
   FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
-      if (!number_of_iterations_exit (loop, ex, &niter_desc, false))
+      if (!number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	continue;
 
       niter = niter_desc.niter;
