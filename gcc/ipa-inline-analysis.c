@@ -1548,6 +1548,7 @@ static int
 eliminated_by_inlining_prob (gimple stmt)
 {
   enum gimple_code code = gimple_code (stmt);
+  enum tree_code rhs_code;
 
   if (!optimize)
     return 0;
@@ -1560,14 +1561,16 @@ eliminated_by_inlining_prob (gimple stmt)
 	if (gimple_num_ops (stmt) != 2)
 	  return 0;
 
+	rhs_code = gimple_assign_rhs_code (stmt);
+
 	/* Casts of parameters, loads from parameters passed by reference
 	   and stores to return value or parameters are often free after
 	   inlining dua to SRA and further combining.
 	   Assume that half of statements goes away.  */
-	if (gimple_assign_rhs_code (stmt) == CONVERT_EXPR
-	    || gimple_assign_rhs_code (stmt) == NOP_EXPR
-	    || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
-	    || gimple_assign_rhs_code (stmt) == ADDR_EXPR
+	if (rhs_code == CONVERT_EXPR
+	    || rhs_code == NOP_EXPR
+	    || rhs_code == VIEW_CONVERT_EXPR
+	    || rhs_code == ADDR_EXPR
 	    || gimple_assign_rhs_class (stmt) == GIMPLE_SINGLE_RHS)
 	  {
 	    tree rhs = gimple_assign_rhs1 (stmt);
@@ -1592,12 +1595,9 @@ eliminated_by_inlining_prob (gimple stmt)
 		tree op = get_base_address (TREE_OPERAND (inner_rhs, 0));
 		if (TREE_CODE (op) == PARM_DECL)
 		  rhs_free = true;
-	        else if (TREE_CODE (op) == MEM_REF)
-		  {
-		    op = get_base_address (TREE_OPERAND (op, 0));
-		    if (unmodified_parm (stmt, op))
-		      rhs_free = true;
-		  }
+	        else if (TREE_CODE (op) == MEM_REF
+			 && unmodified_parm (stmt, TREE_OPERAND (op, 0)))
+		  rhs_free = true;
 	      }
 
 	    /* When parameter is not SSA register because its address is taken

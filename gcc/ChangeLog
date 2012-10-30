@@ -1,5 +1,9 @@
 2012-10-30  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Cleanup.
+
+2012-10-30  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-loop-niter.c (number_of_iterations_exit): New parameter
 	EVERY_ITERATION with implicit value of true.
 	(record_estimate): Check dominance relationship of the basic block
