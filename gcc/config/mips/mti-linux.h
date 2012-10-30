@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This target is a multilib target, specify the sysroot paths.  */
 #undef SYSROOT_SUFFIX_SPEC
 #define SYSROOT_SUFFIX_SPEC \
-    "%{mips32:/mips32}%{mips64:/mips64}%{mips64r2:/mips64r2}%{msoft-float:/sof}%{mel|EL:/el}%{mabi=64:/64}%{mabi=n32:/n32}"
+    "%{mips32:/mips32}%{mips64:/mips64}%{mips64r2:/mips64r2}%{mabi=64:/64}%{mel|EL:/el}%{msoft-float:/sof}"
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS						\
@@ -35,6 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 									\
   /* Infer the -msynci setting from -march if not explicitly set.  */	\
   MIPS_ISA_SYNCI_SPEC,							\
+									\
+  /* If no ABI option is specified, infer one from the ISA level	\
+     or -mgp setting.  */						\
+  "%{!mabi=*: %{" MIPS_32BIT_OPTION_SPEC ": -mabi=32;: -mabi=n32}}",	\
 									\
   /* Base SPECs.  */							\
   BASE_DRIVER_SELF_SPECS						\
