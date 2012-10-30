@@ -1,3 +1,9 @@
+2012-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55111
+	* tree-ssa-pre.c (eliminate_insert): Properly fold the built
+	stmt.
+
 2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54963
