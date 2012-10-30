@@ -1225,33 +1225,20 @@ ada/mdll-fil.o : ada/mdll-fil.adb ada/mdll.ads ada/mdll-fil.ads
 ada/mdll-utl.o : ada/mdll-utl.adb ada/mdll.ads ada/mdll-utl.ads ada/sdefault.ads ada/types.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-ada/adadecode.o : ada/adadecode.c $(CONFIG_H) $(SYSTEM_H) ada/adadecode.h
-ada/adaint.o   : ada/adaint.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/argv.o     : ada/argv.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/cstreams.o : ada/cstreams.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/exit.o     : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
-ada/link.o     : ada/link.c
-
-ada/targext.o : ada/targext.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
+ada/adadecode.o : ada/adadecode.c $(CONFIG_H) $(SYSTEM_H) ada/adadecode.h ada/adaint.h
+ada/adaint.o : ada/adaint.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h version.h
+ada/argv.o : ada/argv.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
 ada/cio.o : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
+ada/cstreams.o : ada/cstreams.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
+ada/env.o: ada/env.c $(CONFIG_H) $(SYSTEM_H) ada/env.h
+ada/exit.o : ada/exit.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
+ada/final.o : ada/final.c
 ada/init.o : ada/init.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
-ada/initialize.o : ada/initialize.c
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
+ada/initialize.o : ada/initialize.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
+ada/link.o : ada/link.c auto-host.h
 ada/raise.o : ada/raise.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
-		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+ada/seh_init.o: ada/seh_init.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
+ada/targext.o : ada/targext.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 
 ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) ada/gcc-interface/ada.h ada/types.h ada/uintp.h \
