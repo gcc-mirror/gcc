@@ -627,7 +627,8 @@ bool parallelize_loops (void);
 
 bool loop_only_exit_p (const struct loop *, const_edge);
 bool number_of_iterations_exit (struct loop *, edge,
-				struct tree_niter_desc *niter, bool);
+				struct tree_niter_desc *niter, bool,
+				bool every_iteration = true);
 tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
