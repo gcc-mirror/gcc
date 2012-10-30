@@ -1,3 +1,7 @@
+2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gimple-pretty-print.c (dump_gimple_bb_header): Avoid alloca.
+
 2012-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/54953
@@ -70,7 +74,7 @@
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54693
-	* gcc/valtrack.c (dead_debug_insert_temp): Defer rescan of
+	* valtrack.c (dead_debug_insert_temp): Defer rescan of
 	newly-emitted debug insn.
 
 2012-10-29  Alexandre Oliva <aoliva@redhat.com>
@@ -323,24 +327,24 @@ AARCH64_BUILTIN_THREAD_POINTER.
 2012-10-26  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
-	* gcc/common/config/i386/i386-common.c
+	* common/config/i386/i386-common.c
 	(OPTION_MASK_ISA_FXSR_SET): New.
 	(OPTION_MASK_ISA_XSAVE_SET): Likewise.
 	(OPTION_MASK_ISA_XSAVEOPT_SET): Likewise.
 	(ix86_handle_option): Handle mfxsr, mxsave, mxsaveopt options.
-	* gcc/config.gcc (i[34567]86-*-*): Add fxsrintrin.h,
+	* config.gcc (i[34567]86-*-*): Add fxsrintrin.h,
 	xsaveintrin.h, xsaveoptintrin.h.
 	(x86_64-*-*): Likewise.
 	* config/i386/fxsrintrin.h: New header.
 	* config/i386/xsaveintrin.h: Likewise.
 	* config/i386/xsaveoptintrin.h: Likewise.
-	* gcc/config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
 	FXSR/XSAVE/XSAVEOPT support.
-	* gcc/config/i386/i386-builtin-types.def
+	* config/i386/i386-builtin-types.def
 	(VOID_FTYPE_PVOID_INT64): New function type.
-	* gcc/config/i386/i386-c.c: Define __FXSR__, __XSAVE__
+	* config/i386/i386-c.c: Define __FXSR__, __XSAVE__
 	and __XSAVEOPT__ if needed.
-	* gcc/config/i386/i386.c (ix86_target_string): Define -mfxsr,
+	* config/i386/i386.c (ix86_target_string): Define -mfxsr,
 	 -mxsave and -mxsaveopt options.
 	(PTA_FXSR): New.
 	(PTA_XSAVE): Likewise.
@@ -354,10 +358,10 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	IX86_BUILTIN_XRSTOR, IX86_BUILTIN_XRSTOR64, IX86_BUILTIN_XSAVEOPT,
 	IX86_BUILTIN_XSAVEOPT64.
 	(ix86_expand_builtin): Handle these built-ins.
-	* gcc/config/i386/i386.h (TARGET_FXSR): New.
+	* config/i386/i386.h (TARGET_FXSR): New.
 	(TARGET_XSAVE): Likewise.
 	(TARGET_XSAVEOPT): Likewise.
-	* gcc/config/i386/i386.md (ANY_XSAVE): New int iterator.
+	* config/i386/i386.md (ANY_XSAVE): New int iterator.
 	(ANY_XSAVE64): Likewise.
 	(xsave): New int attribute.
 	(fxsave): New instruction.
@@ -369,10 +373,10 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	(xrstor): Likewise.
 	(xrstor_rex64): Likewise.
 	(xrstor64): Likewise.
-	* gcc/config/i386/i386.opt (mfxsr): New.
+	* config/i386/i386.opt (mfxsr): New.
 	(mxsave): Likewise.
 	(mxsaveopt): Likewise.
-	* gcc/config/i386/x86intrin.h: Include
+	* config/i386/x86intrin.h: Include
 	xsaveintrin.h, fxsrintrin.h, xsaveoptintrin.h.
 
 2012-10-26  Ralf Corsépius  <ralf.corsepius@rtems.org>
@@ -1395,7 +1399,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	tests to require different effective targets.
 	(effective_target): New function.
 	(test_intrinsic): Specify correct effective targets.
-	* gcc/config/arm/neon.md (fma<VCVTF:mode>4_intrinsic): New pattern.
+	* config/arm/neon.md (fma<VCVTF:mode>4_intrinsic): New pattern.
 	(fmsub<VCVTF:mode>4_intrinsic): Likewise.
 	(neon_vfma<VCVFT:mode>): New expand.
 	(neon_vfms<VCVFT:mode>): Likewise.
@@ -1584,27 +1588,27 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	(rs6000_isa_flags_explicit): Define in terms of the
 	global_options_set structure.
 
-	* gcc/config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS):
+	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS):
 	Change use of target_flags to rs6000_isa_flags, target_flags_explicit
 	to rs6000_isa_flags_explicit, and MASK_<xxx> to OPTION_MASK_<xxx>.
-	* gcc/config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
-	* gcc/config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
-	* gcc/config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
-	* gcc/config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
-	* gcc/config/rs6000/freebsd64.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
+	* config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	* config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	* config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	* config/rs6000/freebsd64.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
 	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
-	* gcc/config/rs6000/freebsd.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
-	* gcc/config/rs6000/linux64.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
+	* config/rs6000/freebsd.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
+	* config/rs6000/linux64.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
 	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
 	(OPTION_LITTLE_ENDIAN): Likewise.
 	(OPTION_RELOCATABLE): Likewise.
 	(OPTION_EABI): Likewise.
 	(OPTION_PROTOTYPE): Likewise.
-	* gcc/config/rs6000/linux.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
-	* gcc/config/rs6000/option-defaults.h (OPTION_MASK_64BIT): Likewise.
+	* config/rs6000/linux.h (RELOCATABLE_NEEDS_FIXUP): Likewise.
+	* config/rs6000/option-defaults.h (OPTION_MASK_64BIT): Likewise.
 	(OPT_ARCH32): Likewise.
 	(OPT_ARCH64): Likewise.
-	* gcc/config/rs6000/sysv4.h (TARGET_TOC): Likewise.
+	* config/rs6000/sysv4.h (TARGET_TOC): Likewise.
 	(SUBTARGET_OVERRIDE_OPTIONS): Likewise.
 	(SUBSUBTARGET_OVERRIDE_OPTIONS): Likewise.
 	(TARGET_OS_SYSV_CPP_BUILTINS): Likewise.
@@ -5737,13 +5741,13 @@ AARCH64_BUILTIN_THREAD_POINTER.
 
 2012-09-08  Andi Kleen  <ak@linux.intel.com>
 
-	* gcc/lto/lto.c (do_whole_program_analysis): Fix last broken patch.
+	* lto/lto.c (do_whole_program_analysis): Fix last broken patch.
 
 2012-09-08  Andi Kleen  <ak@linux.intel.com>
 
-	* gcc/common.opt (-fmem-report-wpa): Add
-	* gcc/doc/invoke.texi (-fmem-report-wpa): Document.
-	* gcc/lto/lto.c (do_whole_program_analysis): Run mem_report
+	* common.opt (-fmem-report-wpa): Add
+	* doc/invoke.texi (-fmem-report-wpa): Document.
+	* lto/lto.c (do_whole_program_analysis): Run mem_report
 	when mem_report_wpa is set.
 
 2012-09-07  Anthony Green  <green@moxielogic.com>
@@ -5832,10 +5836,10 @@ AARCH64_BUILTIN_THREAD_POINTER.
 
 2012-09-06  Andi Kleen  <ak@linux.intel.com>
 
-	* gcc/lto-streamer.h (res_pair): Add.
+	* lto-streamer.h (res_pair): Add.
 	(lto_file_decl_data): Replace resolutions with respairs.
 	Add max_index.
-	* gcc/lto/lto.c (lto_resolution_read): Remove max_index.  Add rp.
+	* lto/lto.c (lto_resolution_read): Remove max_index.  Add rp.
 	Initialize respairs.
 	(lto_file_finalize): Set up resolutions vector lazily from respairs.
 
@@ -8277,7 +8281,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	* ggc.h: ... here.
 	* doc/gty.texi: Document support for C++ templates and
 	user-provided markers.
-	* gcc/gengtype-lex.l: Update copyright year.
+	* gengtype-lex.l: Update copyright year.
 	Remove support for recognizing DEF_VEC_O, DEF_VEC_P and DEFVEC_I.
 	* gengtype-parse.c: Update copyright year.
 	(token_names): Remove DEF_VEC_O, DEF_VEC_P and DEF_VEC_I.
@@ -10979,7 +10983,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
-	* config/gcc/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New
+	* config/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New
 	insns.
 
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
@@ -11543,7 +11547,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	(stack_protect_set_<mode>): Likewise.
 	(stack_protect_test): Likewise.
 	(stack_protect_test_<mode>): Likewise.
-	* gcc/defaults.h: Define macro TARGET_HAS_BIONIC to 0 - target does
+	* defaults.h: Define macro TARGET_HAS_BIONIC to 0 - target does
 	not have Bionic by default
 	* config/linux.h: Redefine macro TARGET_HAS_BIONIC to (OPTION_BIONIC)
 	Macro OPTION_BIONIC is defined in this file and provides Bionic
@@ -12278,15 +12282,15 @@ AARCH64_BUILTIN_THREAD_POINTER.
 	Set "type" attribute.
 	* config/mips/generic.md (generic_atomic, generic_syncloop):
 	New reservations.
-	* gcc/config/mips/10000.md, gcc/config/mips/20kc.md,
-	* gcc/config/mips/24k.md, gcc/config/mips/4130.md,
-	* gcc/config/mips/4k.md, gcc/config/mips/5400.md,
-	* gcc/config/mips/5500.md, gcc/config/mips/5k.md,
-	* gcc/config/mips/7000.md, gcc/config/mips/74k.md,
-	* gcc/config/mips/9000.md, gcc/config/mips/loongson2ef.md,
-	* gcc/config/mips/loongson3a.md, gcc/config/mips/octeon.md,
-	* gcc/config/mips/sb1.md, gcc/config/mips/sr71k.md,
-	* gcc/config/mips/xlr.md: Handle "atomic" and "syncloop" types.
+	* config/mips/10000.md, config/mips/20kc.md,
+	* config/mips/24k.md, config/mips/4130.md,
+	* config/mips/4k.md, config/mips/5400.md,
+	* config/mips/5500.md, config/mips/5k.md,
+	* config/mips/7000.md, config/mips/74k.md,
+	* config/mips/9000.md, config/mips/loongson2ef.md,
+	* config/mips/loongson3a.md, config/mips/octeon.md,
+	* config/mips/sb1.md, config/mips/sr71k.md,
+	* config/mips/xlr.md: Handle "atomic" and "syncloop" types.
 
 2012-07-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -16438,7 +16442,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 
 2012-06-12  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
-	* gcc/config/mips/mips-tables.opt (xlp): Fix merge typo.
+	* config/mips/mips-tables.opt (xlp): Fix merge typo.
 
 2012-06-11  Roland McGrath  <mcgrathr@google.com>
 
@@ -25780,7 +25784,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52506
-	* gcc/config/avr/avr.c (expand_epilogue): Fix order of restoration
+	* config/avr/avr.c (expand_epilogue): Fix order of restoration
 	to: RAMPZ, RAMPY, RAMPX, RAMPD.
 	(expand_prologue): Only clear RAMPZ if it has effect on RAM-read.
 
@@ -25794,7 +25798,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 2012-03-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/52461
-	* gcc/config/avr/avr.c (avr_out_lpm): Clear RAMPZ after usage
+	* config/avr/avr.c (avr_out_lpm): Clear RAMPZ after usage
 	if RAMPZ affects reading from RAM.
 
 2012-03-07  Richard Guenther  <rguenther@suse.de>
