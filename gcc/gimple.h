@@ -2041,6 +2041,31 @@ gimple_assign_single_p (gimple gs)
           && gimple_assign_rhs_class (gs) == GIMPLE_SINGLE_RHS);
 }
 
+/* Return true if GS performs a store to its lhs.  */
+
+static inline bool
+gimple_store_p (gimple gs)
+{
+  tree lhs = gimple_get_lhs (gs);
+  return lhs && !is_gimple_reg (lhs);
+}
+
+/* Return true if GS is an assignment that loads from its rhs1.  */
+
+static inline bool
+gimple_assign_load_p (gimple gs)
+{
+  tree rhs;
+  if (!gimple_assign_single_p (gs))
+    return false;
+  rhs = gimple_assign_rhs1 (gs);
+  if (TREE_CODE (rhs) == WITH_SIZE_EXPR)
+    return true;
+  rhs = get_base_address (rhs);
+  return (DECL_P (rhs)
+	  || TREE_CODE (rhs) == MEM_REF || TREE_CODE (rhs) == TARGET_MEM_REF);
+}
+
 
 /* Return true if S is a type-cast assignment.  */
 
