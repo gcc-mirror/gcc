@@ -3996,8 +3996,8 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 
   tree res = make_temp_ssa_name (TREE_TYPE (val), NULL, "pretmp");
   gimple tem = gimple_build_assign (res,
-				    build1 (TREE_CODE (expr),
-					    TREE_TYPE (expr), leader));
+				    fold_build1 (TREE_CODE (expr),
+						 TREE_TYPE (expr), leader));
   gsi_insert_before (gsi, tem, GSI_SAME_STMT);
   VN_INFO_GET (res)->valnum = val;
 
