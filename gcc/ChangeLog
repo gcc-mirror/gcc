@@ -1,3 +1,9 @@
+2012-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cse.c (hash_rtx_cb): Replace RTX_UNCHANGING_P with MEM_READONLY_P in
+	head comment.
+	(hash_rtx): Likewise.
+
 2012-10-29  Terry Guo  <terry.guo@arm.com>
 
 	Backport from mainline

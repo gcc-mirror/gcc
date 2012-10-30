@@ -2555,7 +2555,7 @@ hash_rtx_cb (const_rtx x, enum machine_mode mode,
    Store 1 in DO_NOT_RECORD_P if any subexpression is volatile.
 
    If HASH_ARG_IN_MEMORY_P is not NULL, store 1 in it if X contains
-   a MEM rtx which does not have the RTX_UNCHANGING_P bit set.
+   a MEM rtx which does not have the MEM_READONLY_P flag set.
 
    Note that cse_insn knows that the hash code of a MEM expression
    is just (int) MEM plus the hash code of the address.  */
@@ -2571,7 +2571,7 @@ hash_rtx (const_rtx x, enum machine_mode mode, int *do_not_record_p,
 /* Hash an rtx X for cse via hash_rtx.
    Stores 1 in do_not_record if any subexpression is volatile.
    Stores 1 in hash_arg_in_memory if X contains a mem rtx which
-   does not have the RTX_UNCHANGING_P bit set.  */
+   does not have the MEM_READONLY_P flag set.  */
 
 static inline unsigned
 canon_hash (rtx x, enum machine_mode mode)
