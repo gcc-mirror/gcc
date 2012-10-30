@@ -1,3 +1,11 @@
+2012-10-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* defaults.h (SLOW_UNALIGNED_ACCESS): Provide default definition.
+	* expmed.c (SLOW_UNALIGNED_ACCESS): Remove default definition.
+	* expr.c (SLOW_UNALIGNED_ACCESS): Likewise.
+	* lra-constraints.c (SLOW_UNALIGNED_ACCESS): Likewise.
+	(simplify_operand_subreg): Don't check STRICT_ALIGNMENT here.
+
 2012-10-30  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Cleanup.
