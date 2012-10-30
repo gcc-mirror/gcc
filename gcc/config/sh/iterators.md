@@ -22,6 +22,7 @@
 (define_mode_iterator QIHISI [QI HI SI])
 (define_mode_iterator QIHI [QI HI])
 (define_mode_iterator HISI [HI SI])
+(define_mode_iterator SIDI [SI DI])
 
 ;; Mode attributes that can be used as the instruction suffix for mode
 ;; variant instructions.
