@@ -380,9 +380,11 @@ dead_debug_promote_uses (struct dead_debug_local *debug)
       if (!debug->global->used)
 	debug->global->used = BITMAP_ALLOC (NULL);
 
-      if (bitmap_set_bit (debug->global->used, REGNO (reg)))
-	entry = dead_debug_global_insert (debug->global, reg,
-					  make_debug_expr_from_rtl (reg));
+      bool added = bitmap_set_bit (debug->global->used, REGNO (reg));
+      gcc_checking_assert (added);
+
+      entry = dead_debug_global_insert (debug->global, reg,
+					make_debug_expr_from_rtl (reg));
 
       gcc_checking_assert (entry->dtemp);
 
