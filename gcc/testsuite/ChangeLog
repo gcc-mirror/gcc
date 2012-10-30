@@ -1,5 +1,10 @@
 2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR rtl-optimization/55093
+	* gcc.target/i386/pr55093.c: New file.
+
+2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/pr55116.c: Renamed to ...
 	* gcc.target/i386/pr55116-1.c: This.
 
