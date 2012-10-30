@@ -1,3 +1,11 @@
+2012-10-30  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2012-01-25 Andrey Belevantsev <abel@ispras.ru>
+	
+	PR rtl-optimization/48374
+	* sel-sched-ir.h (get_all_loop_exits): Check for zero successors. 	
+
 2012-10-22  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
