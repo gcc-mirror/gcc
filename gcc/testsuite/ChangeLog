@@ -1,5 +1,10 @@
 2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/pr55116.c: Renamed to ...
+	* gcc.target/i386/pr55116-1.c: This.
+
+2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/pr55116-2.c: New file.
 
 2012-10-30  Richard Biener  <rguenther@suse.de>
