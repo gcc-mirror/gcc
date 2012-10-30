@@ -38,3 +38,6 @@
 ;; Return codes.
 (define_code_iterator any_return [return simple_return])
 
+;; Lowpart subreg byte position code attributes for big and little endian.
+(define_mode_attr lowpart_be [(QI "3") (HI "2")])
+(define_mode_attr lowpart_le [(QI "0") (HI "0")])

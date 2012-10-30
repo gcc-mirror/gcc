@@ -1,3 +1,10 @@
+2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54988
+	* config/sh/sh.md (tstqi_t_zero): Rename to *tstqi_t_zero.
+	(*tst<mode>_t_zero): New insns.
+	* config/sh/iterators.md (lowpart_be, lowpart_le): New mode attributes.
+
 2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gimple-pretty-print.c (dump_gimple_bb_header): Avoid alloca.
