@@ -1,3 +1,11 @@
+2012-10-30  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54551
+	PR debug/54693
+	* valtrack.c (dead_debug_promote_uses): Assert-check that
+	global used bit was clear and initialize entry
+	unconditionally.
+
 2012-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cse.c (hash_rtx_cb): Replace RTX_UNCHANGING_P with MEM_READONLY_P in
