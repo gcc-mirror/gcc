@@ -189,12 +189,6 @@ static void write_complex_part (rtx, rtx, bool);
   (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
    < (unsigned int) MOVE_RATIO (optimize_insn_for_speed_p ()))
 #endif
-
-/* SLOW_UNALIGNED_ACCESS is nonzero if unaligned accesses are very slow.  */
-
-#ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
-#endif
 
 /* This is run to set up which modes can be used
    directly in memory and to initialize the block move optab.  It is run

@@ -1107,10 +1107,6 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
   return true;
 }
 
-#ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS(mode, align) 0
-#endif
-
 /* Make reloads for subreg in operand NOP with internal subreg mode
    REG_MODE, add new reloads for further processing.  Return true if
    any reload was generated.  */
@@ -1134,8 +1130,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
      address might violate the necessary alignment or the access might
      be slow.  So take this into consideration.	 */
   if ((MEM_P (reg)
-       && ((! STRICT_ALIGNMENT
-	    && ! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg)))
+       && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
 	   || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
       || (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER))
     {
