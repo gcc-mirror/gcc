@@ -1,3 +1,8 @@
+2012-10-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* lra-constrraints.c (check_secondary_memory_needed_p):
+	Add ATTRIBUTE_UNUSED to parameters.
+
 2012-10-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* defaults.h (SLOW_UNALIGNED_ACCESS): Provide default definition.

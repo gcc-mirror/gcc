@@ -3586,7 +3586,8 @@ skip_usage_debug_insns (rtx usage_insns)
    USAGE_INSNS after inserting inherited pseudo of class INHER_CL
    into the insn.  */
 static bool
-check_secondary_memory_needed_p (enum reg_class inher_cl, rtx usage_insns)
+check_secondary_memory_needed_p (enum reg_class inher_cl ATTRIBUTE_UNUSED,
+				 rtx usage_insns ATTRIBUTE_UNUSED)
 {
 #ifndef SECONDARY_MEMORY_NEEDED
   return false;
