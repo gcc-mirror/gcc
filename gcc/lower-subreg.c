@@ -1485,7 +1485,7 @@ decompose_multiword_subregs (bool decompose_copies)
       propagate_pseudo_copies ();
 
       sub_blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (sub_blocks);
+      bitmap_clear (sub_blocks);
 
       EXECUTE_IF_SET_IN_BITMAP (decomposable_context, 0, regno, iter)
 	decompose_register (regno);

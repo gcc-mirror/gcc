@@ -238,7 +238,7 @@ tail_duplicate (void)
   /* Create an oversized sbitmap to reduce the chance that we need to
      resize it.  */
   bb_seen = sbitmap_alloc (last_basic_block * 2);
-  sbitmap_zero (bb_seen);
+  bitmap_clear (bb_seen);
   initialize_original_copy_tables ();
 
   if (profile_info && flag_branch_probabilities)

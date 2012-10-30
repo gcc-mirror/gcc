@@ -1302,7 +1302,7 @@ reload (rtx first, int global)
     {
       sbitmap blocks;
       blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_ones (blocks);
+      bitmap_ones (blocks);
       find_many_sub_basic_blocks (blocks);
       sbitmap_free (blocks);
     }

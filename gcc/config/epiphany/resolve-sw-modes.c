@@ -63,7 +63,7 @@ resolve_sw_modes (void)
 
   todo = VEC_alloc (basic_block, heap, last_basic_block);
   pushed = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (pushed);
+  bitmap_clear (pushed);
   if (!finalize_fp_sets)
     {
       df_note_add_problem ();

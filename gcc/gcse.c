@@ -658,13 +658,13 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
   /* Initialize any bitmaps that were passed in.  */
   if (transp)
     {
-      sbitmap_vector_ones (transp, last_basic_block);
+      bitmap_vector_ones (transp, last_basic_block);
     }
 
   if (comp)
-    sbitmap_vector_zero (comp, last_basic_block);
+    bitmap_vector_clear (comp, last_basic_block);
   if (antloc)
-    sbitmap_vector_zero (antloc, last_basic_block);
+    bitmap_vector_clear (antloc, last_basic_block);
 
   for (i = 0; i < table->size; i++)
     {
@@ -1823,7 +1823,7 @@ prune_expressions (bool pre_p)
   basic_block bb;
 
   prune_exprs = sbitmap_alloc (expr_hash_table.n_elems);
-  sbitmap_zero (prune_exprs);
+  bitmap_clear (prune_exprs);
   for (ui = 0; ui < expr_hash_table.size; ui++)
     {
       for (expr = expr_hash_table.table[ui]; expr; expr = expr->next_same_hash)
@@ -1886,9 +1886,9 @@ prune_expressions (bool pre_p)
 	if ((e->flags & EDGE_ABNORMAL)
 	    && (pre_p || CALL_P (BB_END (e->src))))
 	  {
-	    sbitmap_difference (antloc[bb->index],
+	    bitmap_and_compl (antloc[bb->index],
 				antloc[bb->index], prune_exprs);
-	    sbitmap_difference (transp[bb->index],
+	    bitmap_and_compl (transp[bb->index],
 				transp[bb->index], prune_exprs);
 	    break;
 	  }
@@ -1924,7 +1924,7 @@ prune_insertions_deletions (int n_elems)
      the number of deletions achieved.  We will prune these out of the
      insertion/deletion sets.  */
   prune_exprs = sbitmap_alloc (n_elems);
-  sbitmap_zero (prune_exprs);
+  bitmap_clear (prune_exprs);
 
   /* Iterate over the edges counting the number of times each expression
      needs to be inserted.  */
@@ -1976,7 +1976,7 @@ compute_pre_data (void)
 
   compute_local_properties (transp, comp, antloc, &expr_hash_table);
   prune_expressions (true);
-  sbitmap_vector_zero (ae_kill, last_basic_block);
+  bitmap_vector_clear (ae_kill, last_basic_block);
 
   /* Compute ae_kill for each basic block using:
 
@@ -1985,8 +1985,8 @@ compute_pre_data (void)
 
   FOR_EACH_BB (bb)
     {
-      sbitmap_a_or_b (ae_kill[bb->index], transp[bb->index], comp[bb->index]);
-      sbitmap_not (ae_kill[bb->index], ae_kill[bb->index]);
+      bitmap_ior (ae_kill[bb->index], transp[bb->index], comp[bb->index]);
+      bitmap_not (ae_kill[bb->index], ae_kill[bb->index]);
     }
 
   edge_list = pre_edge_lcm (expr_hash_table.n_elems, transp, comp, antloc,
@@ -2235,7 +2235,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
   set_size = pre_insert_map[0]->size;
   num_edges = NUM_EDGES (edge_list);
   inserted = sbitmap_vector_alloc (num_edges, expr_hash_table.n_elems);
-  sbitmap_vector_zero (inserted, num_edges);
+  bitmap_vector_clear (inserted, num_edges);
 
   for (e = 0; e < num_edges; e++)
     {
@@ -2786,8 +2786,8 @@ compute_code_hoist_vbeinout (void)
   int changed, passes;
   basic_block bb;
 
-  sbitmap_vector_zero (hoist_vbeout, last_basic_block);
-  sbitmap_vector_zero (hoist_vbein, last_basic_block);
+  bitmap_vector_clear (hoist_vbeout, last_basic_block);
+  bitmap_vector_clear (hoist_vbein, last_basic_block);
 
   passes = 0;
   changed = 1;
@@ -2807,11 +2807,11 @@ compute_code_hoist_vbeinout (void)
 
 	      /* Include expressions in VBEout that are calculated
 		 in BB and available at its end.  */
-	      sbitmap_a_or_b (hoist_vbeout[bb->index],
+	      bitmap_ior (hoist_vbeout[bb->index],
 			      hoist_vbeout[bb->index], comp[bb->index]);
 	    }
 
-	  changed |= sbitmap_a_or_b_and_c_cg (hoist_vbein[bb->index],
+	  changed |= bitmap_or_and (hoist_vbein[bb->index],
 					      antloc[bb->index],
 					      hoist_vbeout[bb->index],
 					      transp[bb->index]);
@@ -2827,9 +2827,9 @@ compute_code_hoist_vbeinout (void)
       FOR_EACH_BB (bb)
         {
 	  fprintf (dump_file, "vbein (%d): ", bb->index);
-	  dump_sbitmap_file (dump_file, hoist_vbein[bb->index]);
+	  dump_bitmap_file (dump_file, hoist_vbein[bb->index]);
 	  fprintf (dump_file, "vbeout(%d): ", bb->index);
-	  dump_sbitmap_file (dump_file, hoist_vbeout[bb->index]);
+	  dump_bitmap_file (dump_file, hoist_vbeout[bb->index]);
 	}
     }
 }
@@ -2911,7 +2911,7 @@ should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
     {
       visited_allocated_locally = 1;
       visited = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (visited);
+      bitmap_clear (visited);
     }
 
   FOR_EACH_EDGE (pred, ei, bb->preds)

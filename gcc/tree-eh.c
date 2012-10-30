@@ -3525,8 +3525,8 @@ remove_unreachable_handlers (void)
   r_reachable = sbitmap_alloc (VEC_length (eh_region, cfun->eh->region_array));
   lp_reachable
     = sbitmap_alloc (VEC_length (eh_landing_pad, cfun->eh->lp_array));
-  sbitmap_zero (r_reachable);
-  sbitmap_zero (lp_reachable);
+  bitmap_clear (r_reachable);
+  bitmap_clear (lp_reachable);
 
   FOR_EACH_BB (bb)
     {
@@ -3571,9 +3571,9 @@ remove_unreachable_handlers (void)
       fprintf (dump_file, "Before removal of unreachable regions:\n");
       dump_eh_tree (dump_file, cfun);
       fprintf (dump_file, "Reachable regions: ");
-      dump_sbitmap_file (dump_file, r_reachable);
+      dump_bitmap_file (dump_file, r_reachable);
       fprintf (dump_file, "Reachable landing pads: ");
-      dump_sbitmap_file (dump_file, lp_reachable);
+      dump_bitmap_file (dump_file, lp_reachable);
     }
 
   for (r_nr = 1;
@@ -3645,7 +3645,7 @@ remove_unreachable_handlers_no_lp (void)
   basic_block bb;
 
   r_reachable = sbitmap_alloc (VEC_length (eh_region, cfun->eh->region_array));
-  sbitmap_zero (r_reachable);
+  bitmap_clear (r_reachable);
 
   FOR_EACH_BB (bb)
     {

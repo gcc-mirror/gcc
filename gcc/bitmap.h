@@ -211,7 +211,10 @@ extern bool bitmap_intersect_p (const_bitmap, const_bitmap);
 extern bool bitmap_intersect_compl_p (const_bitmap, const_bitmap);
 
 /* True if MAP is an empty bitmap.  */
-#define bitmap_empty_p(MAP) (!(MAP)->first)
+inline bool bitmap_empty_p (const_bitmap map)
+{
+  return !map->first;
+}
 
 /* True if the bitmap has only a single bit set.  */
 extern bool bitmap_single_bit_set_p (const_bitmap);
@@ -288,8 +291,11 @@ extern bitmap bitmap_gc_alloc_stat (ALONE_MEM_STAT_DECL);
 extern void bitmap_obstack_free (bitmap);
 
 /* A few compatibility/functions macros for compatibility with sbitmaps */
-#define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
-#define bitmap_zero(a) bitmap_clear (a)
+inline void dump_bitmap (FILE *file, const_bitmap map)
+{
+  bitmap_print (file, map, "", "\n");
+}
+
 extern unsigned bitmap_first_set_bit (const_bitmap);
 extern unsigned bitmap_last_set_bit (const_bitmap);
 

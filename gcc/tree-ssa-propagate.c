@@ -487,10 +487,10 @@ ssa_prop_init (void)
   varying_ssa_edges = VEC_alloc (gimple, gc, 20);
 
   executable_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (executable_blocks);
+  bitmap_clear (executable_blocks);
 
   bb_in_list = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (bb_in_list);
+  bitmap_clear (bb_in_list);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_immediate_uses (dump_file);

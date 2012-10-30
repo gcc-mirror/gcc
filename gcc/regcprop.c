@@ -1045,7 +1045,7 @@ copyprop_hardreg_forward (void)
   all_vd = XNEWVEC (struct value_data, last_basic_block);
 
   visited = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   if (MAY_HAVE_DEBUG_INSNS)
     debug_insn_changes_pool

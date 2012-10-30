@@ -1489,13 +1489,13 @@ tree_dce_init (bool aggressive)
 	control_dependence_map[i] = BITMAP_ALLOC (NULL);
 
       last_stmt_necessary = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (last_stmt_necessary);
+      bitmap_clear (last_stmt_necessary);
       bb_contains_live_stmts = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (bb_contains_live_stmts);
+      bitmap_clear (bb_contains_live_stmts);
     }
 
   processed = sbitmap_alloc (num_ssa_names + 1);
-  sbitmap_zero (processed);
+  bitmap_clear (processed);
 
   worklist = VEC_alloc (gimple, heap, 64);
   cfg_altered = false;
@@ -1566,7 +1566,7 @@ perform_tree_ssa_dce (bool aggressive)
       timevar_pop (TV_CONTROL_DEPENDENCES);
 
       visited_control_parents = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (visited_control_parents);
+      bitmap_clear (visited_control_parents);
 
       mark_dfs_back_edges ();
     }

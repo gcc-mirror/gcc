@@ -14828,7 +14828,7 @@ r10k_insert_cache_barriers (void)
   /* Bit X of PROTECTED_BBS is set if the last operation in basic block
      X is protected by a cache barrier.  */
   protected_bbs = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (protected_bbs);
+  bitmap_clear (protected_bbs);
 
   /* Iterate over the basic blocks in reverse post-order.  */
   rev_post_order = XNEWVEC (int, last_basic_block);

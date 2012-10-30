@@ -2457,7 +2457,7 @@ compute_antic (void)
   /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
      We pre-build the map of blocks with incoming abnormal edges here.  */
   has_abnormal_preds = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (has_abnormal_preds);
+  bitmap_clear (has_abnormal_preds);
 
   FOR_ALL_BB (block)
     {
@@ -2486,7 +2486,7 @@ compute_antic (void)
   BB_VISITED (EXIT_BLOCK_PTR) = 1;
 
   changed_blocks = sbitmap_alloc (last_basic_block + 1);
-  sbitmap_ones (changed_blocks);
+  bitmap_ones (changed_blocks);
   while (changed)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2516,7 +2516,7 @@ compute_antic (void)
 
   if (do_partial_partial)
     {
-      sbitmap_ones (changed_blocks);
+      bitmap_ones (changed_blocks);
       mark_dfs_back_edges ();
       num_iterations = 0;
       changed = true;

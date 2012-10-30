@@ -660,9 +660,9 @@ create_ddg (basic_block bb, int closing_branch_deps)
 
       g->nodes[i].cuid = i;
       g->nodes[i].successors = sbitmap_alloc (num_nodes);
-      sbitmap_zero (g->nodes[i].successors);
+      bitmap_clear (g->nodes[i].successors);
       g->nodes[i].predecessors = sbitmap_alloc (num_nodes);
-      sbitmap_zero (g->nodes[i].predecessors);
+      bitmap_clear (g->nodes[i].predecessors);
       g->nodes[i].first_note = (first_note ? first_note : insn);
       g->nodes[i++].insn = insn;
       first_note = NULL_RTX;
@@ -890,7 +890,7 @@ create_scc (ddg_ptr g, sbitmap nodes)
   scc->backarcs = NULL;
   scc->num_backarcs = 0;
   scc->nodes = sbitmap_alloc (g->num_nodes);
-  sbitmap_copy (scc->nodes, nodes);
+  bitmap_copy (scc->nodes, nodes);
 
   /* Mark the backarcs that belong to this SCC.  */
   EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
@@ -980,11 +980,11 @@ find_successors (sbitmap succ, ddg_ptr g, sbitmap ops)
   EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
     {
       const sbitmap node_succ = NODE_SUCCESSORS (&g->nodes[i]);
-      sbitmap_a_or_b (succ, succ, node_succ);
+      bitmap_ior (succ, succ, node_succ);
     };
 
   /* We want those that are not in ops.  */
-  sbitmap_difference (succ, succ, ops);
+  bitmap_and_compl (succ, succ, ops);
 }
 
 /* Given a set OPS of nodes in the DDG, find the set of their predecessors
@@ -999,11 +999,11 @@ find_predecessors (sbitmap preds, ddg_ptr g, sbitmap ops)
   EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
     {
       const sbitmap node_preds = NODE_PREDECESSORS (&g->nodes[i]);
-      sbitmap_a_or_b (preds, preds, node_preds);
+      bitmap_ior (preds, preds, node_preds);
     };
 
   /* We want those that are not in ops.  */
-  sbitmap_difference (preds, preds, ops);
+  bitmap_and_compl (preds, preds, ops);
 }
 
 
@@ -1035,14 +1035,14 @@ check_sccs (ddg_all_sccs_ptr sccs, int num_nodes)
   int i = 0;
   sbitmap tmp = sbitmap_alloc (num_nodes);
 
-  sbitmap_zero (tmp);
+  bitmap_clear (tmp);
   for (i = 0; i < sccs->num_sccs; i++)
     {
-      gcc_assert (!sbitmap_empty_p (sccs->sccs[i]->nodes));
+      gcc_assert (!bitmap_empty_p (sccs->sccs[i]->nodes));
       /* Verify that every node in sccs is in exactly one strongly
          connected component.  */
-      gcc_assert (!sbitmap_any_common_bits (tmp, sccs->sccs[i]->nodes));
-      sbitmap_a_or_b (tmp, tmp, sccs->sccs[i]->nodes);
+      gcc_assert (!bitmap_intersect_p (tmp, sccs->sccs[i]->nodes));
+      bitmap_ior (tmp, tmp, sccs->sccs[i]->nodes);
     }
   sbitmap_free (tmp);
 }
@@ -1076,9 +1076,9 @@ create_ddg_all_sccs (ddg_ptr g)
       if (backarc->aux.count == IN_SCC)
 	continue;
 
-      sbitmap_zero (scc_nodes);
-      sbitmap_zero (from);
-      sbitmap_zero (to);
+      bitmap_clear (scc_nodes);
+      bitmap_clear (from);
+      bitmap_clear (to);
       SET_BIT (from, dest->cuid);
       SET_BIT (to, src->cuid);
 
@@ -1132,15 +1132,15 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
   sbitmap reach_to = sbitmap_alloc (num_nodes);
   sbitmap tmp = sbitmap_alloc (num_nodes);
 
-  sbitmap_copy (reachable_from, from);
-  sbitmap_copy (tmp, from);
+  bitmap_copy (reachable_from, from);
+  bitmap_copy (tmp, from);
 
   change = 1;
   while (change)
     {
       change = 0;
-      sbitmap_copy (workset, tmp);
-      sbitmap_zero (tmp);
+      bitmap_copy (workset, tmp);
+      bitmap_clear (tmp);
       EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
 	{
 	  ddg_edge_ptr e;
@@ -1161,15 +1161,15 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 	}
     }
 
-  sbitmap_copy (reach_to, to);
-  sbitmap_copy (tmp, to);
+  bitmap_copy (reach_to, to);
+  bitmap_copy (tmp, to);
 
   change = 1;
   while (change)
     {
       change = 0;
-      sbitmap_copy (workset, tmp);
-      sbitmap_zero (tmp);
+      bitmap_copy (workset, tmp);
+      bitmap_clear (tmp);
       EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
 	{
 	  ddg_edge_ptr e;
@@ -1190,7 +1190,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 	}
     }
 
-  answer = sbitmap_a_and_b_cg (result, reachable_from, reach_to);
+  answer = bitmap_and (result, reachable_from, reach_to);
   sbitmap_free (workset);
   sbitmap_free (reachable_from);
   sbitmap_free (reach_to);
@@ -1247,7 +1247,7 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
     g->nodes[i].aux.count = -1;
   g->nodes[src].aux.count = 0;
 
-  sbitmap_zero (tmp);
+  bitmap_clear (tmp);
   SET_BIT (tmp, src);
 
   while (change)
@@ -1255,8 +1255,8 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
       sbitmap_iterator sbi;
 
       change = 0;
-      sbitmap_copy (workset, tmp);
-      sbitmap_zero (tmp);
+      bitmap_copy (workset, tmp);
+      bitmap_clear (tmp);
       EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
 	{
 	  ddg_node_ptr u_node = &g->nodes[u];

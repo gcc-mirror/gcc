@@ -79,7 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Find the last set bit in ebitmap MAP.  */
 
 int
-ebitmap_last_set_bit (ebitmap map)
+bitmap_last_set_bit (ebitmap map)
 {
   unsigned int i = 0;
   ebitmap_iterator ebi;
@@ -183,10 +183,10 @@ ebitmap_array_clear (ebitmap map)
 /* Clear ebitmap MAP.  */
 
 void
-ebitmap_clear (ebitmap map)
+bitmap_clear (ebitmap map)
 {
   ebitmap_array_clear (map);
-  sbitmap_zero (map->wordmask);
+  bitmap_clear (map->wordmask);
   map->wordmask = sbitmap_resize (map->wordmask, 1, 0);
   map->numwords = 0;
   map->cache = NULL;
@@ -203,7 +203,7 @@ ebitmap_alloc (unsigned int size)
     size = EBITMAP_ELT_BITS;
   ebitmap_array_init (ret, (size + EBITMAP_ELT_BITS - 1) / EBITMAP_ELT_BITS);
   ret->wordmask = sbitmap_alloc_with_popcount (size);
-  sbitmap_zero (ret->wordmask);
+  bitmap_clear (ret->wordmask);
   ret->numwords = 0;
   ret->cache = NULL;
   ret->cacheindex = 0;
@@ -214,7 +214,7 @@ ebitmap_alloc (unsigned int size)
 /* Clear BIT from ebitmap MAP.  */
 
 void
-ebitmap_clear_bit (ebitmap map, unsigned int bit)
+bitmap_clear_bit (ebitmap map, unsigned int bit)
 {
   unsigned int wordindex = bit / EBITMAP_ELT_BITS;
   unsigned int eltwordindex = 0;
@@ -269,7 +269,7 @@ ebitmap_clear_bit (ebitmap map, unsigned int bit)
 /* Set BIT in ebitmap MAP.  */
 
 void
-ebitmap_set_bit (ebitmap map, unsigned int bit)
+bitmap_set_bit (ebitmap map, unsigned int bit)
 {
   unsigned int wordindex = bit / EBITMAP_ELT_BITS;
   unsigned int eltwordindex;
@@ -325,7 +325,7 @@ ebitmap_set_bit (ebitmap map, unsigned int bit)
 /* Return true if MAP contains BIT.  */
 
 bool
-ebitmap_bit_p (ebitmap map, unsigned int bit)
+bitmap_bit_p (ebitmap map, unsigned int bit)
 {
   unsigned int wordindex = bit / EBITMAP_ELT_BITS;
   unsigned int bitindex= bit % EBITMAP_ELT_BITS;
@@ -355,12 +355,12 @@ ebitmap_bit_p (ebitmap map, unsigned int bit)
 /* Copy ebitmap SRC to DST.  */
 
 void
-ebitmap_copy (ebitmap dst, ebitmap src)
+bitmap_copy (ebitmap dst, ebitmap src)
 {
   /* Blow away any existing wordmask, and copy the new one.  */
   sbitmap_free (dst->wordmask);
   dst->wordmask = sbitmap_alloc_with_popcount (src->wordmask->n_bits);
-  sbitmap_copy (dst->wordmask, src->wordmask);
+  bitmap_copy (dst->wordmask, src->wordmask);
 
   /* Make sure our destination array is big enough, and then copy the
      actual words.  */
@@ -374,14 +374,14 @@ ebitmap_copy (ebitmap dst, ebitmap src)
 /* Dump ebitmap BMAP to FILE.  */
 
 void
-dump_ebitmap (FILE *file, ebitmap bmap)
+dump_bitmap (FILE *file, ebitmap bmap)
 {
   unsigned int pos;
   unsigned int i;
   int res;
   unsigned int size;
 
-  res = sbitmap_last_set_bit (bmap->wordmask);
+  res = bitmap_last_set_bit (bmap->wordmask);
   if (res == -1)
     size = 0;
   else
@@ -390,7 +390,7 @@ dump_ebitmap (FILE *file, ebitmap bmap)
   fprintf (file, "n_words = %d, set = {", bmap->numwords);
 
   for (pos = 30, i = 0; i < size; i++)
-    if (ebitmap_bit_p (bmap, i))
+    if (bitmap_bit_p (bmap, i))
       {
 	if (pos > 70)
 	  {
@@ -407,15 +407,15 @@ dump_ebitmap (FILE *file, ebitmap bmap)
 /* Dump ebitmap BMAP to stderr.  */
 
 DEBUG_FUNCTION void
-debug_ebitmap (ebitmap bmap)
+debug_bitmap (ebitmap bmap)
 {
-  dump_ebitmap (stderr, bmap);
+  dump_bitmap (stderr, bmap);
 }
 
 /* Perform the operation DST &= SRC.  */
 
 void
-ebitmap_and_into (ebitmap dst, ebitmap src)
+bitmap_and_into (ebitmap dst, ebitmap src)
 {
   sbitmap_iterator sbi;
   unsigned int i;
@@ -430,13 +430,13 @@ ebitmap_and_into (ebitmap dst, ebitmap src)
   /* Short circuit the empty bitmap cases.  */
   if (src->numwords == 0 || dst->numwords == 0)
     {
-      ebitmap_clear (dst);
+      bitmap_clear (dst);
       return;
     }
 
   /* AND the masks, then walk the words that may actually appear in
      the result, AND'ing them.  */
-  sbitmap_a_and_b (dst->wordmask, dst->wordmask, src->wordmask);
+  bitmap_and (dst->wordmask, dst->wordmask, src->wordmask);
 
   EXECUTE_IF_SET_IN_SBITMAP (dst->wordmask, 0, i, sbi)
     {
@@ -469,7 +469,7 @@ ebitmap_and_into (ebitmap dst, ebitmap src)
 /* Perform the operation DST = SRC1 & SRC2.  */
 
 void
-ebitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
+bitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
 {
   sbitmap_iterator sbi;
   unsigned int i;
@@ -480,7 +480,7 @@ ebitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
   dst->cache = NULL;
   if (src1->numwords == 0 || src2->numwords == 0)
     {
-      ebitmap_clear (dst);
+      bitmap_clear (dst);
       return;
     }
 
@@ -488,7 +488,7 @@ ebitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
     = sbitmap_resize (dst->wordmask,
 		      MIN (src1->wordmask->n_bits, src2->wordmask->n_bits),
 		      0);
-  sbitmap_a_and_b (dst->wordmask, src1->wordmask, src2->wordmask);
+  bitmap_and (dst->wordmask, src1->wordmask, src2->wordmask);
 
   EXECUTE_IF_SET_IN_SBITMAP (dst->wordmask, 0, i, sbi)
     {
@@ -524,8 +524,8 @@ ebitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
       gcc_assert (dst->elts[i] != 0);
 
     EXECUTE_IF_SET_IN_EBITMAP (src1, 0, i, ebi)
-      if (ebitmap_bit_p (src2, i))
-	gcc_assert (ebitmap_bit_p (dst, i));
+      if (bitmap_bit_p (src2, i))
+	gcc_assert (bitmap_bit_p (dst, i));
 
     for (i = 0; i <  dst->numwords; i++)
       gcc_assert (dst->elts[i] != 0);
@@ -542,7 +542,7 @@ ebitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
    changed.  */
 
 bool
-ebitmap_ior_into (ebitmap dst, ebitmap src)
+bitmap_ior_into (ebitmap dst, ebitmap src)
 {
   unsigned int dstsize = dst->wordmask->n_bits;
   unsigned int srcsize = src->wordmask->n_bits;
@@ -557,7 +557,7 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
   unsigned int newarraysize;
 #ifdef EBITMAP_DEBUGGING
   ebitmap dstcopy = ebitmap_alloc (1);
-  ebitmap_copy (dstcopy, dst);
+  bitmap_copy (dstcopy, dst);
 #endif
 
   dst->cache = NULL;
@@ -566,7 +566,7 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
 
   if (dst->numwords == 0 && src->numwords != 0)
     {
-      ebitmap_copy (dst, src);
+      bitmap_copy (dst, src);
       return true;
     }
   else if (src->numwords == 0)
@@ -575,10 +575,10 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
   /* We can do without the temp mask if it's faster, but it would mean
      touching more words in the actual dense vector.  */
   tempmask = sbitmap_alloc (MAX (srcsize, dstsize));
-  sbitmap_zero (tempmask);
+  bitmap_clear (tempmask);
   if (srcsize == dstsize)
     {
-      sbitmap_a_or_b (tempmask, dst->wordmask, src->wordmask);
+      bitmap_ior (tempmask, dst->wordmask, src->wordmask);
     }
   else
     {
@@ -586,13 +586,13 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
 				      0);
       if (srcsize >= dstsize)
 	{
-	  sbitmap_copy_n (tempmask, dst->wordmask, dst->wordmask->size);
-	  sbitmap_a_or_b (tempmask, tempmask, src->wordmask);
+	  bitmap_copy_n (tempmask, dst->wordmask, dst->wordmask->size);
+	  bitmap_ior (tempmask, tempmask, src->wordmask);
 	}
       else
 	{
-	  sbitmap_copy_n (tempmask, src->wordmask, src->wordmask->size);
-	  sbitmap_a_or_b (tempmask, tempmask, dst->wordmask);
+	  bitmap_copy_n (tempmask, src->wordmask, src->wordmask->size);
+	  bitmap_ior (tempmask, tempmask, dst->wordmask);
 	}
     }
   newarraysize = src->numwords + dst->numwords;
@@ -649,12 +649,12 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
       gcc_assert (dst->elts[i] != 0);
 
     EXECUTE_IF_SET_IN_EBITMAP (src, 0, i, ebi)
-      gcc_assert (ebitmap_bit_p (dst, i));
+      gcc_assert (bitmap_bit_p (dst, i));
     EXECUTE_IF_SET_IN_EBITMAP (dstcopy, 0, i, ebi)
-      gcc_assert (ebitmap_bit_p (dst, i));
+      gcc_assert (bitmap_bit_p (dst, i));
 
     sbitmap_verify_popcount (dst->wordmask);
-    gcc_assert (changed == !ebitmap_equal_p (dst, dstcopy));
+    gcc_assert (changed == !bitmap_equal_p (dst, dstcopy));
     gcc_assert (sbitmap_popcount (dst->wordmask,
 				  dst->wordmask->n_bits) == dst->numwords);
   }
@@ -666,7 +666,7 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
    in DST has changed.  */
 
 bool
-ebitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
+bitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
 {
   unsigned int src1size = src1->wordmask->n_bits;
   unsigned int src2size = src2->wordmask->n_bits;
@@ -681,27 +681,27 @@ ebitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
   unsigned int newarraysize;
 #ifdef EBITMAP_DEBUGGING
   ebitmap dstcopy = ebitmap_alloc (1);
-  ebitmap_copy (dstcopy, dst);
+  bitmap_copy (dstcopy, dst);
 #endif
 
   dst->cache = NULL;
   tempmask = sbitmap_alloc_with_popcount (MAX (src1size, src2size));
-  sbitmap_zero (tempmask);
+  bitmap_clear (tempmask);
   if (src1size == src2size)
     {
-      sbitmap_a_or_b (tempmask, src1->wordmask, src2->wordmask);
+      bitmap_ior (tempmask, src1->wordmask, src2->wordmask);
     }
   else
     {
       if (src1size >= src2size)
 	{
-	  sbitmap_copy_n (tempmask, src2->wordmask, src2->wordmask->size);
-	  sbitmap_a_or_b (tempmask, tempmask, src1->wordmask);
+	  bitmap_copy_n (tempmask, src2->wordmask, src2->wordmask->size);
+	  bitmap_ior (tempmask, tempmask, src1->wordmask);
 	}
       else
 	{
-	  sbitmap_copy_n (tempmask, src1->wordmask, src1->wordmask->size);
-	  sbitmap_a_or_b (tempmask, tempmask, src2->wordmask);
+	  bitmap_copy_n (tempmask, src1->wordmask, src1->wordmask->size);
+	  bitmap_ior (tempmask, tempmask, src2->wordmask);
 	}
     }
   newarraysize = src1->numwords + src2->numwords;
@@ -768,13 +768,13 @@ ebitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
       gcc_assert (dst->elts[i] != 0);
 
     EXECUTE_IF_SET_IN_EBITMAP (src1, 0, i, ebi)
-      gcc_assert (ebitmap_bit_p (dst, i));
+      gcc_assert (bitmap_bit_p (dst, i));
 
     EXECUTE_IF_SET_IN_EBITMAP (src2, 0, i, ebi)
-      gcc_assert (ebitmap_bit_p (dst, i));
+      gcc_assert (bitmap_bit_p (dst, i));
   }
   sbitmap_verify_popcount (dst->wordmask);
-  gcc_assert (changed == !ebitmap_equal_p (dst, dstcopy));
+  gcc_assert (changed == !bitmap_equal_p (dst, dstcopy));
   gcc_assert (sbitmap_popcount (dst->wordmask,
 				dst->wordmask->n_bits) == dst->numwords);
 #endif
@@ -786,7 +786,7 @@ ebitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
    has changed.  */
 
 bool
-ebitmap_and_compl_into (ebitmap dst, ebitmap src)
+bitmap_and_compl_into (ebitmap dst, ebitmap src)
 {
   bool changed = false;
   unsigned int i;
@@ -795,7 +795,7 @@ ebitmap_and_compl_into (ebitmap dst, ebitmap src)
   sbitmap_iterator sbi;
 #ifdef EBITMAP_DEBUGGING
   ebitmap dstcopy = ebitmap_alloc (1);
-  ebitmap_copy (dstcopy, dst);
+  bitmap_copy (dstcopy, dst);
 #endif
 
   gcc_assert (dst != src);
@@ -840,8 +840,8 @@ ebitmap_and_compl_into (ebitmap dst, ebitmap src)
 
     EXECUTE_IF_SET_IN_EBITMAP (dstcopy, 0, i, ebi)
       {
-	if (!ebitmap_bit_p (src, i))
-	  gcc_assert (ebitmap_bit_p (dst, i));
+	if (!bitmap_bit_p (src, i))
+	  gcc_assert (bitmap_bit_p (dst, i));
       }
 
     for (i = 0; i <  dst->numwords; i++)
@@ -850,7 +850,7 @@ ebitmap_and_compl_into (ebitmap dst, ebitmap src)
     gcc_assert (sbitmap_popcount (dst->wordmask,
 				  dst->wordmask->n_bits) == neweltindex);
     sbitmap_verify_popcount (dst->wordmask);
-    gcc_assert (changed == !ebitmap_equal_p (dst, dstcopy));
+    gcc_assert (changed == !bitmap_equal_p (dst, dstcopy));
     gcc_assert (sbitmap_popcount (dst->wordmask,
 				  dst->wordmask->n_bits) == dst->numwords);
   }
@@ -865,7 +865,7 @@ ebitmap_and_compl_into (ebitmap dst, ebitmap src)
    in DST has changed.  */
 
 bool
-ebitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
+bitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
 {
   unsigned int src1size = src1->wordmask->n_bits;
   sbitmap_iterator sbi;
@@ -880,8 +880,8 @@ ebitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
   /* XXX: Optimize like the into version.  */
   dst->cache = NULL;
   tempmask = sbitmap_alloc_with_popcount (src1size);
-  sbitmap_zero (tempmask);
-  sbitmap_copy (tempmask, src1->wordmask);
+  bitmap_clear (tempmask);
+  bitmap_copy (tempmask, src1->wordmask);
 
   newarraysize = src1->numwords;
   newarray = XNEWVEC (EBITMAP_ELT_TYPE, newarraysize);
@@ -945,8 +945,8 @@ ebitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
 
     EXECUTE_IF_SET_IN_EBITMAP (src1, 0, i, ebi)
       {
-	if (!ebitmap_bit_p (src2, i))
-	  gcc_assert (ebitmap_bit_p (dst, i));
+	if (!bitmap_bit_p (src2, i))
+	  gcc_assert (bitmap_bit_p (dst, i));
       }
   for (i = 0; i <  dst->numwords; i++)
     gcc_assert (dst->elts[i] != 0);
@@ -962,30 +962,30 @@ ebitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
 /* Perform the operation DST = A | (B & ~C).  */
 
 bool
-ebitmap_ior_and_compl (ebitmap dst, ebitmap a, ebitmap b, ebitmap c)
+bitmap_ior_and_compl (ebitmap dst, ebitmap a, ebitmap b, ebitmap c)
 {
   bool changed;
   ebitmap temp = ebitmap_alloc (1);
 #ifdef EBITMAP_DEBUGGING
   ebitmap dstcopy = ebitmap_alloc (1);
-  ebitmap_copy (dstcopy, dst);
+  bitmap_copy (dstcopy, dst);
 #endif
 
   dst->cache = NULL;
-  ebitmap_and_compl (temp, b, c);
-  changed = ebitmap_ior (dst, a, temp);
+  bitmap_and_compl (temp, b, c);
+  changed = bitmap_ior (dst, a, temp);
 #ifdef EBITMAP_DEBUGGING
   {
     ebitmap_iterator ebi;
     unsigned int i;
 
     EXECUTE_IF_SET_IN_EBITMAP (a, 0, i, ebi)
-      gcc_assert (ebitmap_bit_p (dst, i));
+      gcc_assert (bitmap_bit_p (dst, i));
 
     EXECUTE_IF_SET_IN_EBITMAP (b, 0, i, ebi)
-      if (!ebitmap_bit_p (c, i))
-	gcc_assert (ebitmap_bit_p (dst, i));
-    gcc_assert (changed == !ebitmap_equal_p (dst, dstcopy));
+      if (!bitmap_bit_p (c, i))
+	gcc_assert (bitmap_bit_p (dst, i));
+    gcc_assert (changed == !bitmap_equal_p (dst, dstcopy));
   }
 #endif
   ebitmap_free (temp);
@@ -996,21 +996,21 @@ ebitmap_ior_and_compl (ebitmap dst, ebitmap a, ebitmap b, ebitmap c)
 /* Return true if ebitmap DST is equal to ebitmap SRC.  */
 
 bool
-ebitmap_equal_p (ebitmap dst, ebitmap src)
+bitmap_equal_p (ebitmap dst, ebitmap src)
 {
   unsigned int which = MIN (dst->wordmask->size, src->wordmask->size);
 
   if (dst->numwords != src->numwords)
     return false;
 
-  /* sbitmap_equal compares up to the size of the first argument, so
+  /* bitmap_equal_p compares up to the size of the first argument, so
      if the two sbitmaps are not equally sized, we need to pass the
      smaller one as the first argument, or it will crash.  */
   if (which == dst->wordmask->size
-      && !sbitmap_equal (dst->wordmask, src->wordmask))
+      && !bitmap_equal_p (dst->wordmask, src->wordmask))
     return false;
   else if (which == src->wordmask->size
-	   && !sbitmap_equal (src->wordmask, dst->wordmask))
+	   && !bitmap_equal_p (src->wordmask, dst->wordmask))
     return false;
 
   return memcmp (dst->elts, src->elts,

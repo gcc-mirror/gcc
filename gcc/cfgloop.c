@@ -393,7 +393,7 @@ flow_loops_find (struct loops *loops)
   /* Count the number of loop headers.  This should be the
      same as the number of natural loops.  */
   headers = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (headers);
+  bitmap_clear (headers);
 
   num_loops = 0;
   FOR_EACH_BB (header)
@@ -1351,7 +1351,7 @@ verify_loop_structure (void)
 	  }
       free (bbs);
     }
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       bbs = get_loop_body (loop);

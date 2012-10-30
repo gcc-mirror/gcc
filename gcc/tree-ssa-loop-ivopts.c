@@ -3076,7 +3076,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
       HOST_WIDE_INT i;
 
       valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
-      sbitmap_zero (valid_mult);
+      bitmap_clear (valid_mult);
       addr = gen_rtx_fmt_ee (MULT, address_mode, reg1, NULL_RTX);
       for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
 	{

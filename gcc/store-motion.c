@@ -849,7 +849,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
   sp = 0;
   ei = ei_start (bb->succs);
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   act = (EDGE_COUNT (ei_container (ei)) > 0 ? EDGE_I (ei_container (ei), 0) : NULL);
   while (1)
@@ -1014,10 +1014,10 @@ build_store_vectors (void)
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
   st_avloc = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (st_avloc, last_basic_block);
+  bitmap_vector_clear (st_avloc, last_basic_block);
 
   st_antloc = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (st_antloc, last_basic_block);
+  bitmap_vector_clear (st_antloc, last_basic_block);
 
   for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
@@ -1050,10 +1050,10 @@ build_store_vectors (void)
     }
 
   st_kill = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (st_kill, last_basic_block);
+  bitmap_vector_clear (st_kill, last_basic_block);
 
   st_transp = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (st_transp, last_basic_block);
+  bitmap_vector_clear (st_transp, last_basic_block);
   regs_set_in_block = XNEWVEC (int, max_gcse_regno);
 
   FOR_EACH_BB (bb)
@@ -1092,10 +1092,10 @@ build_store_vectors (void)
 
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "st_antloc", "", st_antloc, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_kill", "", st_kill, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_transp", "", st_transp, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_avloc", "", st_avloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_antloc", "", st_antloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_kill", "", st_kill, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_transp", "", st_transp, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_avloc", "", st_avloc, last_basic_block);
     }
 }
 

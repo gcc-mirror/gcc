@@ -1465,8 +1465,8 @@ remove_some_program_points_and_update_live_ranges (void)
   
   born = sbitmap_alloc (ira_max_point);
   dead = sbitmap_alloc (ira_max_point);
-  sbitmap_zero (born);
-  sbitmap_zero (dead);
+  bitmap_clear (born);
+  bitmap_clear (dead);
   FOR_EACH_OBJECT (obj, oi)
     for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
       {
@@ -1476,7 +1476,7 @@ remove_some_program_points_and_update_live_ranges (void)
       }
 
   born_or_dead = sbitmap_alloc (ira_max_point);
-  sbitmap_a_or_b (born_or_dead, born, dead);
+  bitmap_ior (born_or_dead, born, dead);
   map = (int *) ira_allocate (sizeof (int) * ira_max_point);
   n = -1;
   prev_born_p = prev_dead_p = false;

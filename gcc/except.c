@@ -610,7 +610,7 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
   gcc_assert (ifun->eh->region_tree);
 
   b_outer = sbitmap_alloc (VEC_length (eh_region, ifun->eh->region_array));
-  sbitmap_zero (b_outer);
+  bitmap_clear (b_outer);
 
   do
     {

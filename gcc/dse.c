@@ -3384,7 +3384,7 @@ dse_step3 (bool for_spills)
   bitmap all_ones = NULL;
   unsigned int i;
 
-  sbitmap_ones (unreachable_blocks);
+  bitmap_ones (unreachable_blocks);
 
   FOR_ALL_BB (bb)
     {

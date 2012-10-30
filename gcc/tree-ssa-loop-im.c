@@ -2578,7 +2578,7 @@ tree_ssa_lim_initialize (void)
 
   bitmap_obstack_initialize (&lim_bitmap_obstack);
 
-  sbitmap_zero (contains_call);
+  bitmap_clear (contains_call);
   FOR_EACH_BB (bb)
     {
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))

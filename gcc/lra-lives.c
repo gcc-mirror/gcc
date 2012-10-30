@@ -772,8 +772,8 @@ remove_some_program_points_and_update_live_ranges (void)
 
   born = sbitmap_alloc (lra_live_max_point);
   dead = sbitmap_alloc (lra_live_max_point);
-  sbitmap_zero (born);
-  sbitmap_zero (dead);
+  bitmap_clear (born);
+  bitmap_clear (dead);
   max_regno = max_reg_num ();
   for (i = FIRST_PSEUDO_REGISTER; i < (unsigned) max_regno; i++)
     {
@@ -785,7 +785,7 @@ remove_some_program_points_and_update_live_ranges (void)
 	}
     }
   born_or_dead = sbitmap_alloc (lra_live_max_point);
-  sbitmap_a_or_b (born_or_dead, born, dead);
+  bitmap_ior (born_or_dead, born, dead);
   map = XCNEWVEC (int, lra_live_max_point);
   n = -1;
   prev_born_p = prev_dead_p = false;
