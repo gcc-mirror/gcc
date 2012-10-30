@@ -1,3 +1,12 @@
+2012-10-30  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Change order
+	and add mabi=64.
+	(DRIVER_SELF_SPECS): Make -n32 the default on mips64* archs.
+	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Change order.
+	(MULTILIB_DIRNAMES): Ditto.
+	(MULTILIB_EXCEPTIONS): New.
+
 2012-10-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* lra-constraints.c (check_secondary_memory_needed_p):
