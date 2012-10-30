@@ -3494,10 +3494,7 @@ simplify_subreg_regno (unsigned int xregno, enum machine_mode xmode,
     return -1;
 
   if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      /* We should convert arg register in LRA after the elimination
-	 if it is possible.  */
-      && xregno == ARG_POINTER_REGNUM
-      && ! lra_in_progress)
+      && xregno == ARG_POINTER_REGNUM)
     return -1;
 
   if (xregno == STACK_POINTER_REGNUM
