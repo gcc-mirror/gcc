@@ -684,7 +684,8 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 			       DEBUG_EXPR_TREE_DECL (dval), breg,
 			       VAR_INIT_STATUS_INITIALIZED);
 
-  if (where == DEBUG_TEMP_AFTER_WITH_REG)
+  if (where == DEBUG_TEMP_AFTER_WITH_REG
+      || where == DEBUG_TEMP_AFTER_WITH_REG_FORCE)
     bind = emit_debug_insn_after (bind, insn);
   else
     bind = emit_debug_insn_before (bind, insn);
