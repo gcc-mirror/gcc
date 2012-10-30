@@ -1,5 +1,5 @@
 /* { dg-options "-Os -fdump-rtl-hoist" }  */
-/* { dg-final { scan-rtl-dump "PRE/HOIST: end of bb .* copying expression" "hoist" } } */
+/* { dg-final { scan-rtl-dump "PRE/HOIST: end of bb .* copying expression" "hoist" { target { nonpic } } } } */
 
 #define BUF 100
 int a[BUF];
