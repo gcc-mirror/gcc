@@ -131,7 +131,12 @@ enum debug_temp_where
     /* Bind a newly-created debug temporary to a REG for UREGNO, and
        insert the debug insn after INSN.  REG is expected to be set at
        INSN.  */
-    DEBUG_TEMP_AFTER_WITH_REG = 1
+    DEBUG_TEMP_AFTER_WITH_REG = 1,
+    /* Like DEBUG_TEMP_AFTER_WITH_REG, but force addition of a debug
+       temporary even if there is just a single debug use.  This is used
+       on regs that are becoming REG_DEAD on INSN and so uses of the
+       reg later on are invalid.  */
+    DEBUG_TEMP_AFTER_WITH_REG_FORCE = 2
   };
 
 extern void dead_debug_global_init (struct dead_debug_global *, bitmap);

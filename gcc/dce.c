@@ -1,5 +1,5 @@
 /* RTL dead code elimination.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -880,7 +880,10 @@ word_dce_process_block (basic_block bb, bool redo_out,
 
 	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	      dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
-				      DEBUG_TEMP_BEFORE_WITH_VALUE);
+				      marked_insn_p (insn)
+				      && !control_flow_insn_p (insn)
+				      ? DEBUG_TEMP_AFTER_WITH_REG_FORCE
+				      : DEBUG_TEMP_BEFORE_WITH_VALUE);
 	  }
 
 	if (dump_file)
@@ -981,7 +984,9 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
 	if (debug.used && !bitmap_empty_p (debug.used))
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	    dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
-				    DEBUG_TEMP_BEFORE_WITH_VALUE);
+				    needed && !control_flow_insn_p (insn)
+				    ? DEBUG_TEMP_AFTER_WITH_REG_FORCE
+				    : DEBUG_TEMP_BEFORE_WITH_VALUE);
       }
 
   dead_debug_local_finish (&debug, NULL);

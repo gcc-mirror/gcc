@@ -1,3 +1,13 @@
+2012-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54953
+	* valtrack.h (DEBUG_TEMP_AFTER_WITH_REG_FORCE): New.
+	* valtrack.c (dead_debug_insert_temp): Use emit_debug_insn_after
+	even for where == DEBUG_TEMP_AFTER_WITH_REG_FORCE.
+	* dce.c (word_dce_process_block, dce_process_block): Pass
+	DEBUG_TEMP_AFTER_WITH_REG_FORCE if insn is needed and therefore
+	not going to be eliminated.
+
 2012-10-29  Lawrence Crowl  <crowl@google.com>
 
 	* sbitmap.h (sbitmap_copy): Rename bitmap_copy.
