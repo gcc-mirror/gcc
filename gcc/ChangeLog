@@ -1,3 +1,17 @@
+2012-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): New parameter
+	EVERY_ITERATION with implicit value of true.
+	(record_estimate): Check dominance relationship of the basic block
+	we are estimating on instead of relying on UPPER to be false.
+	(struct ilb_data): Drop RELIABLE.
+	(idx_infer_loop_bounds): Update.
+	(infer_loop_bounds_from_ref): Drop parameter RELIABLE.
+	(infer_loop_bounds_from_array): Drop parameter RELIABLE.
+	(infer_loop_bounds_from_undefined): Update comments and handling
+	of RELIABLE.
+	(estimate_numbers_of_iterations_loop): Record all bounds.
+
 2012-10-30  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* lra-eliminations.c (lra_eliminate_regs_1): Use simplify_gen_subreg
