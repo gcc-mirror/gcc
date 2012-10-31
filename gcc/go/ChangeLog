@@ -1,3 +1,14 @@
+2012-10-30  Ian Lance Taylor  <iant@google.com>
+
+	* lang.opt (-fgo-relative-import-path): New option.
+	* go-lang.c (go_relative_import_path): New static variable.
+	(go_langhook_init): Pass go_relative_import_path to
+	go_create_gogo.
+	(go_langhook_handle_option): Handle -fgo-relative-import-path.
+	* go-c.h (go_create_gogo): Update declaration.
+	* gccgo.texi (Invoking gccgo): Document
+	-fgo-relative-import-path.
+
 2012-09-20  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (go/gogo.o): Depend on filenames.h.

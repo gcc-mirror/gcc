@@ -184,6 +184,12 @@ Using either @option{-fgo-pkgpath} or @option{-fgo-prefix} disables
 the special treatment of the @code{main} package and permits that
 package to be imported like any other.
 
+@item -fgo-relative-import-path=@var{dir}
+@cindex @option{-fgo-relative-import-path}
+A relative import is an import that starts with @file{./} or
+@file{../}.  If this option is used, @command{gccgo} will use
+@var{dir} as a prefix for the relative import when searching for it.
+
 @item -frequire-return-statement
 @itemx -fno-require-return-statement
 @cindex @option{-frequire-return-statement}
