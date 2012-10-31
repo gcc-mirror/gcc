@@ -1767,29 +1767,41 @@ ipa_inline (void)
 	  FOR_EACH_DEFINED_FUNCTION (node)
 	    {
 	      if (want_inline_function_to_all_callers_p (node, cold))
-		while (node->callers && !node->global.inlined_to)
-		  {
-		    struct cgraph_node *caller = node->callers->caller;
+		{
+		  int num_calls = 0;
+		  struct cgraph_edge *e;
+		  for (e = node->callers; e; e = e->next_caller)
+		    num_calls++;
+		  while (node->callers && !node->global.inlined_to)
+		    {
+		      struct cgraph_node *caller = node->callers->caller;
 
-		    if (dump_file)
-		      {
-			fprintf (dump_file,
-				 "\nInlining %s size %i.\n",
-				 cgraph_node_name (node),
-				 inline_summary (node)->size);
-			fprintf (dump_file,
-				 " Called once from %s %i insns.\n",
-				 cgraph_node_name (node->callers->caller),
-				 inline_summary (node->callers->caller)->size);
-		      }
+		      if (dump_file)
+			{
+			  fprintf (dump_file,
+				   "\nInlining %s size %i.\n",
+				   cgraph_node_name (node),
+				   inline_summary (node)->size);
+			  fprintf (dump_file,
+				   " Called once from %s %i insns.\n",
+				   cgraph_node_name (node->callers->caller),
+				   inline_summary (node->callers->caller)->size);
+			}
 
-		    inline_call (node->callers, true, NULL, NULL, true);
-		    if (dump_file)
-		      fprintf (dump_file,
-			       " Inlined into %s which now has %i size\n",
-			       cgraph_node_name (caller),
-			       inline_summary (caller)->size);
-		  }
+		      inline_call (node->callers, true, NULL, NULL, true);
+		      if (dump_file)
+			fprintf (dump_file,
+				 " Inlined into %s which now has %i size\n",
+				 cgraph_node_name (caller),
+				 inline_summary (caller)->size);
+		      if (!num_calls--)
+		        {
+			  if (dump_file)
+			    fprintf (dump_file, "New calls found; giving up.\n");
+			  break;
+		        }
+		    }
+		}
 	    }
 	}
     }
