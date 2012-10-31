@@ -71,7 +71,7 @@
 
 2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
-	PR target/54988
+	PR target/53988
 	* gcc.target/sh/pr53988.c: New.
 
 2012-10-30  Bin Cheng  <bin.cheng@arm.com>
