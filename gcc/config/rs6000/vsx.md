@@ -209,8 +209,8 @@
 
 ;; VSX moves
 (define_insn "*vsx_mov<mode>"
-  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?wa,?wa,*o,*r,*r,<VSr>,?wa,v,wZ,v")
-	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,wa,Z,wa,r,o,r,j,j,W,v,wZ"))]
+  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?wa,?wa,*Y,*r,*r,<VSr>,?wa,v,wZ,v")
+	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,wa,Z,wa,r,Y,r,j,j,W,v,wZ"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
@@ -272,8 +272,8 @@
 ;; Unlike other VSX moves, allow the GPRs, since a normal use of TImode is for
 ;; unions.  However for plain data movement, slightly favor the vector loads
 (define_insn "*vsx_movti"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,?o,?r,?r,wa,v,v,wZ")
-	(match_operand:TI 1 "input_operand" "wa,Z,wa,r,o,r,j,W,wZ,v"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,wa,wa,?Y,?r,?r,wa,v,v,wZ")
+	(match_operand:TI 1 "input_operand" "wa,Z,wa,r,Y,r,j,W,wZ,v"))]
   "VECTOR_MEM_VSX_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"
