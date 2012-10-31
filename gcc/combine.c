@@ -7211,10 +7211,6 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       && GET_MODE_SIZE (extraction_mode) < GET_MODE_SIZE (mode))
     extraction_mode = mode;
 
-  if (pos_rtx && GET_MODE (pos_rtx) != VOIDmode
-      && GET_MODE_SIZE (pos_mode) < GET_MODE_SIZE (GET_MODE (pos_rtx)))
-    pos_mode = GET_MODE (pos_rtx);
-
   /* If this is not from memory, the desired mode is the preferred mode
      for an extraction pattern's first input operand, or word_mode if there
      is none.  */
@@ -7231,14 +7227,6 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	  wanted_inner_mode = GET_MODE_WIDER_MODE (wanted_inner_mode);
 	  gcc_assert (wanted_inner_mode != VOIDmode);
 	}
-
-      /* If we have to change the mode of memory and cannot, the desired mode
-	 is EXTRACTION_MODE.  */
-      if (inner_mode != wanted_inner_mode
-	  && (mode_dependent_address_p (XEXP (inner, 0), MEM_ADDR_SPACE (inner))
-	      || MEM_VOLATILE_P (inner)
-	      || pos_rtx))
-	wanted_inner_mode = extraction_mode;
     }
 
   orig_pos = pos;
@@ -7359,9 +7347,6 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	}
       pos_rtx = temp;
     }
-  else if (pos_rtx != 0
-	   && GET_MODE_SIZE (pos_mode) < GET_MODE_SIZE (GET_MODE (pos_rtx)))
-    pos_rtx = gen_lowpart (pos_mode, pos_rtx);
 
   /* Make POS_RTX unless we already have it and it is correct.  If we don't
      have a POS_RTX but we do have an ORIG_POS_RTX, the latter must
