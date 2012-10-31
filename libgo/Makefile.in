@@ -4310,35 +4310,35 @@ goc2c: goc2c.$(OBJEXT)
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
 
 malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 mprof.c: $(srcdir)/runtime/mprof.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --gcc --go-pkgpath os_signal $< > $@.tmp
+	./goc2c --go-pkgpath os_signal $< > $@.tmp
 	mv -f $@.tmp $@
 
 time.c: $(srcdir)/runtime/time.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 version.go: s-version; @true
