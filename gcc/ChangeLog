@@ -1,3 +1,8 @@
+2012-10-31  Tom Tromey  <tromey@redhat.com>
+
+	PR other/50899
+	* doc/gcc.texi: Add @direntry for gcov.
+
 2012-10-31  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* expr.c (can_move_by_pieces): Apply ATTRIBUTE_UNUSED to len.
