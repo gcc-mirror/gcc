@@ -314,8 +314,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Fwd_list_base(const _Node_alloc_type& __a)
       : _M_impl(__a) { }
 
-      _Fwd_list_base(const _Fwd_list_base& __lst, const _Node_alloc_type& __a);
-
       _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a);
 
       _Fwd_list_base(_Fwd_list_base&& __lst)
@@ -394,14 +392,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Also unlike the other standard containers, std::forward_list provides
    *  specialized algorithms %unique to linked lists, such as
    *  splicing, sorting, and in-place reversal.
-   *
-   *  A couple points on memory allocation for forward_list<Tp>:
-   *
-   *  First, we never actually allocate a Tp, we allocate
-   *  Fwd_list_node<Tp>'s and trust [20.1.5]/4 to DTRT.  This is to ensure
-   *  that after elements from %forward_list<X,Alloc1> are spliced into
-   *  %forward_list<X,Alloc2>, destroying the memory of the second %list is a
-   *  valid operation, i.e., Alloc1 giveth and Alloc2 taketh away.
    */
   template<typename _Tp, typename _Alloc = allocator<_Tp> >
     class forward_list : private _Fwd_list_base<_Tp, _Alloc>
@@ -429,7 +419,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef std::ptrdiff_t                               difference_type;
       typedef _Alloc                                       allocator_type;
 
-      // 23.2.3.1 construct/copy/destroy:
+      // 23.3.4.2 construct/copy/destroy:
 
       /**
        *  @brief  Creates a %forward_list with no elements.
@@ -446,8 +436,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al    An allocator object.
        */
       forward_list(const forward_list& __list, const _Alloc& __al)
-      : _Base(__list, _Node_alloc_type(__al))
-      { }
+      : _Base(_Node_alloc_type(__al))
+      { _M_range_initialize(__list.begin(), __list.end()); }
 
       /**
        *  @brief  Move constructor with allocator argument.
@@ -455,6 +445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @param  __al    An allocator object.
        */
       forward_list(forward_list&& __list, const _Alloc& __al)
+      noexcept(_Node_alloc_traits::_S_always_equal())
       : _Base(std::move(__list), _Node_alloc_type(__al))
       { }
 
@@ -504,7 +495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  The %forward_list copy constructor.
        *  @param  __list  A %forward_list of identical element and allocator
-       *                types.
+       *                  types.
        */
       forward_list(const forward_list& __list)
       : _Base(_Node_alloc_traits::_S_select_on_copy(
@@ -514,10 +505,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  The %forward_list move constructor.
        *  @param  __list  A %forward_list of identical element and allocator
-       *                types.
+       *                  types.
        *
        *  The newly-created %forward_list contains the exact contents of @a
-       *  forward_list. The contents of @a __list are a valid, but unspecified
+       *  __list. The contents of @a __list are a valid, but unspecified
        *  %forward_list.
        */
       forward_list(forward_list&& __list) noexcept
@@ -647,7 +638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       get_allocator() const noexcept
       { return allocator_type(this->_M_get_Node_allocator()); }
 
-      // 23.2.3.2 iterators:
+      // 23.3.4.3 iterators:
 
       /**
        *  Returns a read/write iterator that points before the first element
@@ -743,7 +734,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       max_size() const noexcept
       { return _Node_alloc_traits::max_size(this->_M_get_Node_allocator()); }
 
-      // 23.2.3.3 element access:
+      // 23.3.4.4 element access:
 
       /**
        *  Returns a read/write reference to the data at the first
@@ -767,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         return __front->_M_value;
       }
 
-      // 23.2.3.4 modiﬁers:
+      // 23.3.4.5 modiﬁers:
 
       /**
        *  @brief  Constructs object in %forward_list at the front of the
@@ -1031,7 +1022,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       clear() noexcept
       { this->_M_erase_after(&this->_M_impl._M_head, 0); }
 
-      // 23.2.3.5 forward_list operations:
+      // 23.3.4.6 forward_list operations:
 
       /**
        *  @brief  Insert contents of another %forward_list.
@@ -1223,7 +1214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->_M_impl._M_head._M_reverse_after(); }
 
     private:
-      // Called by the range constructor to implement [23.1.1]/9
+      // Called by the range constructor to implement [23.3.4.2]/9
       template<typename _InputIterator>
         void
         _M_range_initialize(_InputIterator __first, _InputIterator __last);

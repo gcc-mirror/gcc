@@ -36,28 +36,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
-    _Fwd_list_base(const _Fwd_list_base& __lst, const _Node_alloc_type& __a)
-    : _M_impl(__a)
-    {
-      this->_M_impl._M_head._M_next = 0;
-      _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-      _Node* __curr = static_cast<_Node*>(__lst._M_impl._M_head._M_next);
-
-      while (__curr)
-        {
-          __to->_M_next = _M_create_node(__curr->_M_value);
-          __to = __to->_M_next;
-          __curr = static_cast<_Node*>(__curr->_M_next);
-        }
-    }
-
-  template<typename _Tp, typename _Alloc>
-    _Fwd_list_base<_Tp, _Alloc>::
     _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a)
     : _M_impl(__a)
     {
       if (__lst._M_get_Node_allocator() == __a)
-        this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
+	{
+	  this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
+	  __lst._M_impl._M_head._M_next = 0;
+	}
       else
         {
           this->_M_impl._M_head._M_next = 0;
@@ -72,7 +58,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
               __curr = static_cast<_Node*>(__curr->_M_next);
             }
         }
-      __lst._M_impl._M_head._M_next = 0;
     }
 
   template<typename _Tp, typename _Alloc>
@@ -119,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __last;
     }
 
-  // Called by the range constructor to implement [23.1.1]/9
+  // Called by the range constructor to implement [23.3.4.2]/9
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
       void
