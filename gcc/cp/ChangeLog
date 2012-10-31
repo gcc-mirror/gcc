@@ -1,3 +1,9 @@
+2012-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54583
+	* tree.c (build_cplus_array_type): Set TREE_NO_WARNING on the
+	TYPE_SIZE of VLAs.
+
 2012-10-31  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/54955
