@@ -1,3 +1,8 @@
+2012-10-31  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* lra-constraints.c (choose_split_class): Add ATTRIBUTE_UNUSED to
+	hard_reg_class.
+
 2012-10-30  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54551
