@@ -1,3 +1,8 @@
+2012-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54583
+	* g++.dg/ext/vla13.C: New.
+
 2012-10-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55150
