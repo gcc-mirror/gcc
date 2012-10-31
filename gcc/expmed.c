@@ -784,16 +784,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
   if (op_mode != MAX_MACHINE_MODE
-      /* Do not use insv for volatile bitfields when
-         -fstrict-volatile-bitfields is in effect.  */
-      && !(MEM_P (op0) && MEM_VOLATILE_P (op0)
-	   && flag_strict_volatile_bitfields > 0)
-      /* Do not use insv if the bit region is restricted and
-	 op_mode integer at offset doesn't fit into the
-	 restricted region.  */
-      && !(MEM_P (op0) && bitregion_end
-	   && bitnum - (bitnum % BITS_PER_UNIT) + GET_MODE_BITSIZE (op_mode)
-	      > bitregion_end + 1)
+      && !MEM_P (op0)
       && store_bit_field_using_insv (op0, bitsize, bitnum, value, op_mode))
     return true;
 
@@ -803,6 +794,18 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     {
       enum machine_mode bestmode;
       unsigned HOST_WIDE_INT maxbits = MAX_FIXED_MODE_SIZE;
+
+      /* Do not use insv for volatile bitfields when
+         -fstrict-volatile-bitfields is in effect.  */
+      if (!(MEM_VOLATILE_P (op0) && flag_strict_volatile_bitfields > 0)
+	  /* Do not use insv if the bit region is restricted and
+	     an op_mode integer doesn't fit into the restricted region.  */
+	  && !(bitregion_end
+	       && (bitnum - (bitnum % BITS_PER_UNIT)
+		   + GET_MODE_BITSIZE (op_mode)
+		   > bitregion_end + 1))
+	  && store_bit_field_using_insv (op0, bitsize, bitnum, value, op_mode))
+	return true;
 
       if (bitregion_end)
 	maxbits = bitregion_end - bitregion_start + 1;
@@ -1594,11 +1597,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      If OP0 is a register, it too fits within a word.  */
 
   ext_mode = mode_for_extraction (unsignedp ? EP_extzv : EP_extv, 0);
-  if (ext_mode != MAX_MACHINE_MODE
-      /* Do not use extv/extzv for volatile bitfields when
-         -fstrict-volatile-bitfields is in effect.  */
-      && !(MEM_P (op0) && MEM_VOLATILE_P (op0)
-	   && flag_strict_volatile_bitfields > 0))
+  if (ext_mode != MAX_MACHINE_MODE && !MEM_P (op0))
     {
       rtx result = extract_bit_field_using_extv (op0, bitsize, bitnum,
 						 unsignedp, target, mode,
@@ -1612,6 +1611,17 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (ext_mode != MAX_MACHINE_MODE && MEM_P (op0))
     {
       enum machine_mode bestmode;
+
+      /* Do not use extv/extzv for volatile bitfields when
+         -fstrict-volatile-bitfields is in effect.  */
+      if (!(MEM_VOLATILE_P (op0) && flag_strict_volatile_bitfields > 0))
+	{
+	  rtx result = extract_bit_field_using_extv (op0, bitsize, bitnum,
+						     unsignedp, target, mode,
+						     tmode, ext_mode);
+	  if (result)
+	    return result;
+	}
 
       /* Get the mode to use for inserting into this field.  If
 	 OP0 is BLKmode, get the smallest mode consistent with the
