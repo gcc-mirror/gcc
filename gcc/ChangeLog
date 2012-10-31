@@ -1,5 +1,12 @@
 2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/rs6000/rs6000.md (insvsi, insvdi, extvsi, extvdi): Rename to...
+	(insvsi_internal, insvdi_internal, extvsi_internal)
+	(extvdi_internal): ...this.
+	(insv, extv): Update accordingly.
+
+2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* combine.c (simplify_comparison): If BITS_BIG_ENDIAN, always assume
 	that zero_extracts of const_ints are doing word-sized extractions.
 
