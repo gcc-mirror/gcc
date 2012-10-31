@@ -787,6 +787,7 @@ extern void remove_fake_exit_edges (void);
 extern void add_noreturn_fake_exit_edges (void);
 extern void connect_infinite_loops_to_exit (void);
 extern int post_order_compute (int *, bool, bool);
+extern basic_block dfs_find_deadend (basic_block);
 extern int inverted_post_order_compute (int *);
 extern int pre_and_rev_post_order_compute (int *, int *, bool);
 extern int dfs_enumerate_from (basic_block, int,
