@@ -1,3 +1,12 @@
+2012-10-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54955
+	* parser.c (cp_nth_tokens_can_be_std_attribute_p): Recognize the
+	'Alignas' keyword as the beginning of a c++11 attribute specifier.
+	Update the comment of the function.
+	(cp_next_tokens_can_be_gnu_attribute_p): Update the comment of the
+	function.
+
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/54930
