@@ -1,3 +1,9 @@
+2012-10-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55150
+	* lra-constraints.c (lra_constraints): Update debug insn info
+	after equivalence change.
+
 2012-10-31  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (ipa_inline): Avoid infinite loop on inlining

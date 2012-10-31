@@ -1,3 +1,8 @@
+2012-10-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55150
+	* gcc.dg/pr55150.c: New test.
+
 2012-10-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55134
