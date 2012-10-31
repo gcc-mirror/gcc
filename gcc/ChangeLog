@@ -1,3 +1,8 @@
+2012-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (ix86_expand_prologue): Emit frame info for the
+	special register pushes before frame probing and allocation.
+
 2012-10-31  Ralf Corsépius  <ralf.corsepius@rtems.org>,
 	    Joel Sherrill  <joel.sherrill@oarcorp.com>
 

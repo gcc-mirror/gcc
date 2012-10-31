@@ -10339,7 +10339,7 @@ ix86_expand_prologue (void)
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
       rtx (*adjust_stack_insn)(rtx, rtx, rtx);
-
+      const bool sp_is_cfa_reg = (m->fs.cfa_reg == stack_pointer_rtx);
       bool eax_live = false;
       bool r10_live = false;
 
@@ -10348,16 +10348,31 @@ ix86_expand_prologue (void)
       if (!TARGET_64BIT_MS_ABI)
         eax_live = ix86_eax_live_at_start_p ();
 
+      /* Note that SEH directives need to continue tracking the stack
+	 pointer even after the frame pointer has been set up.  */
       if (eax_live)
 	{
-	  emit_insn (gen_push (eax));
+	  insn = emit_insn (gen_push (eax));
 	  allocate -= UNITS_PER_WORD;
+	  if (sp_is_cfa_reg || TARGET_SEH)
+	    {
+	      if (sp_is_cfa_reg)
+		m->fs.cfa_offset += UNITS_PER_WORD;
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
 	}
+
       if (r10_live)
 	{
 	  r10 = gen_rtx_REG (Pmode, R10_REG);
-	  emit_insn (gen_push (r10));
+	  insn = emit_insn (gen_push (r10));
 	  allocate -= UNITS_PER_WORD;
+	  if (sp_is_cfa_reg || TARGET_SEH)
+	    {
+	      if (sp_is_cfa_reg)
+		m->fs.cfa_offset += UNITS_PER_WORD;
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
 	}
 
       emit_move_insn (eax, GEN_INT (allocate));
@@ -10371,13 +10386,10 @@ ix86_expand_prologue (void)
       insn = emit_insn (adjust_stack_insn (stack_pointer_rtx,
 					   stack_pointer_rtx, eax));
 
-      /* Note that SEH directives need to continue tracking the stack
-	 pointer even after the frame pointer has been set up.  */
-      if (m->fs.cfa_reg == stack_pointer_rtx || TARGET_SEH)
+      if (sp_is_cfa_reg || TARGET_SEH)
 	{
-	  if (m->fs.cfa_reg == stack_pointer_rtx)
+	  if (sp_is_cfa_reg)
 	    m->fs.cfa_offset += allocate;
-
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			gen_rtx_SET (VOIDmode, stack_pointer_rtx,
