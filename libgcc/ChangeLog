@@ -1,3 +1,8 @@
+2012-10-31  Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	* config.host (m32r-*-rtems*): Include crtinit.o and crtfinit.o
+	as extra_parts.
+
 2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config.host (sparc64-*-rtems*): Remove sparc/t-elf.

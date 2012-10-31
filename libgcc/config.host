@@ -693,6 +693,7 @@ m32r-*-elf*)
  	;;
 m32r-*-rtems*)
 	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
+	extra_parts="$extra_parts crtinit.o crtfini.o"
 	;;
 m32rle-*-elf*)
 	tmake_file=t-fdpbit
