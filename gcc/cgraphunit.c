@@ -386,7 +386,8 @@ referred_to_p (symtab_node node)
   if (ipa_ref_list_referring_iterate (&node->symbol.ref_list, 0, ref))
     return true;
   /* For functions check also calls.  */
-  if (symtab_function_p (node) && cgraph (node)->callers)
+  cgraph_node *cn = dyn_cast <cgraph_node> (node);
+  if (cn && cn->callers)
     return true;
   return false;
 }
@@ -809,7 +810,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 void
 varpool_finalize_decl (tree decl)
 {
-  struct varpool_node *node = varpool_node (decl);
+  struct varpool_node *node = varpool_node_for_decl (decl);
 
   gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
 
@@ -835,6 +836,35 @@ varpool_finalize_decl (tree decl)
   if (cgraph_state == CGRAPH_STATE_FINISHED)
     varpool_assemble_decl (node);
 }
+
+
+/* Determine if a symbol NODE is finalized and needed.  */
+
+inline static bool
+symbol_finalized_and_needed (symtab_node node)
+{
+  if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+    return cnode->local.finalized
+	   && cgraph_decide_is_function_needed (cnode, cnode->symbol.decl);
+  if (varpool_node *vnode = dyn_cast <varpool_node> (node))
+    return vnode->finalized
+	   && !DECL_EXTERNAL (vnode->symbol.decl)
+	   && decide_is_variable_needed (vnode, vnode->symbol.decl);
+  return false;
+}
+
+/* Determine if a symbol NODE is finalized.  */
+
+inline static bool
+symbol_finalized (symtab_node node)
+{
+  if (cgraph_node *cnode= dyn_cast <cgraph_node> (node))
+    return cnode->local.finalized;
+  if (varpool_node *vnode = dyn_cast <varpool_node> (node))
+    return vnode->finalized;
+  return false;
+}
+
 
 /* Discover all functions and variables that are trivially needed, analyze
    them as well as all functions and variables referred by them  */
@@ -870,13 +900,7 @@ cgraph_analyze_functions (void)
 	   node != (symtab_node)first_analyzed
 	   && node != (symtab_node)first_analyzed_var; node = node->symbol.next)
 	{
-	  if ((symtab_function_p (node)
-	       && cgraph (node)->local.finalized
-	       && cgraph_decide_is_function_needed (cgraph (node), node->symbol.decl))
-	      || (symtab_variable_p (node)
-		  && varpool (node)->finalized
-		  && !DECL_EXTERNAL (node->symbol.decl)
-		  && decide_is_variable_needed (varpool (node), node->symbol.decl)))
+	  if (symbol_finalized_and_needed (node))
 	    {
 	      enqueue_node (node);
 	      if (!changed && cgraph_dump_file)
@@ -903,18 +927,15 @@ cgraph_analyze_functions (void)
 	  changed = true;
 	  node = first;
 	  first = (symtab_node)first->symbol.aux;
-	  if (symtab_function_p (node) && cgraph (node)->local.finalized)
+	  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+	  if (cnode && cnode->local.finalized)
 	    {
 	      struct cgraph_edge *edge;
-	      struct cgraph_node *cnode;
-	      tree decl;
+	      tree decl = cnode->symbol.decl;
 
-	      cnode = cgraph (node);
-	      decl = cnode->symbol.decl;
-
-	      /* ??? It is possible to create extern inline function and later using
-		 weak alias attribute to kill its body. See
-		 gcc.c-torture/compile/20011119-1.c  */
+	      /* ??? It is possible to create extern inline function
+	      and later using weak alias attribute to kill its body.
+	      See gcc.c-torture/compile/20011119-1.c  */
 	      if (!DECL_STRUCT_FUNCTION (decl)
 		  && (!cnode->alias || !cnode->thunk.alias)
 		  && !cnode->thunk.thunk_p)
@@ -929,23 +950,25 @@ cgraph_analyze_functions (void)
 
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
 		if (edge->callee->local.finalized)
-		  enqueue_node ((symtab_node)edge->callee);
+		   enqueue_node ((symtab_node)edge->callee);
 
-	      /* If decl is a clone of an abstract function, mark that abstract
-		 function so that we don't release its body. The DECL_INITIAL() of that
-		 abstract function declaration will be later needed to output debug
-		 info.  */
+	      /* If decl is a clone of an abstract function,
+	      mark that abstract function so that we don't release its body.
+	      The DECL_INITIAL() of that abstract function declaration
+	      will be later needed to output debug info.  */
 	      if (DECL_ABSTRACT_ORIGIN (decl))
 		{
-		  struct cgraph_node *origin_node;
-		  origin_node = cgraph_get_node (DECL_ABSTRACT_ORIGIN (decl));
+		  struct cgraph_node *origin_node
+	    	  = cgraph_get_node (DECL_ABSTRACT_ORIGIN (decl));
 		  origin_node->abstract_and_needed = true;
 		}
-
 	    }
-	  else if (symtab_variable_p (node)
-		   && varpool (node)->finalized)
-	    varpool_analyze_node (varpool (node));
+	  else
+	    {
+	      varpool_node *vnode = dyn_cast <varpool_node> (node);
+	      if (vnode && vnode->finalized)
+		varpool_analyze_node (vnode);
+	    }
 
 	  if (node->symbol.same_comdat_group)
 	    {
@@ -956,8 +979,7 @@ cgraph_analyze_functions (void)
 		enqueue_node (next);
 	    }
 	  for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref); i++)
-	    if ((symtab_function_p (ref->referred) && cgraph (ref->referred)->local.finalized)
-		|| (symtab_variable_p (ref->referred) && varpool (ref->referred)->finalized))
+	    if (symbol_finalized (ref->referred))
 	      enqueue_node (ref->referred);
           cgraph_process_new_functions ();
 	}
@@ -985,10 +1007,9 @@ cgraph_analyze_functions (void)
 	  symtab_remove_node (node);
 	  continue;
 	}
-      if (symtab_function_p (node))
+      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
 	{
 	  tree decl = node->symbol.decl;
-	  struct cgraph_node *cnode = cgraph (node);
 
 	  if (cnode->local.finalized && !gimple_has_body_p (decl)
 	      && (!cnode->alias || !cnode->thunk.alias)
@@ -1070,7 +1091,7 @@ handle_alias_pairs (void)
 	}
 
       if (TREE_CODE (p->decl) == FUNCTION_DECL
-          && target_node && symtab_function_p (target_node))
+          && target_node && is_a <cgraph_node> (target_node))
 	{
 	  struct cgraph_node *src_node = cgraph_get_node (p->decl);
 	  if (src_node && src_node->local.finalized)
@@ -1079,7 +1100,7 @@ handle_alias_pairs (void)
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);
 	}
       else if (TREE_CODE (p->decl) == VAR_DECL
-	       && target_node && symtab_variable_p (target_node))
+	       && target_node && is_a <varpool_node> (target_node))
 	{
 	  varpool_create_variable_alias (p->decl, target_node->symbol.decl);
 	  VEC_unordered_remove (alias_pair, alias_pairs, i);

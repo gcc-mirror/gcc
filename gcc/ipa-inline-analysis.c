@@ -3855,22 +3855,25 @@ void
 inline_write_summary (void)
 {
   struct cgraph_node *node;
-  symtab_node snode;
   struct output_block *ob = create_output_block (LTO_section_inline_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
   int i;
 
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
-    if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
-	&& cgraph (snode)->analyzed)
-      count++;
+    {
+      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+      if (cnode && cnode->analyzed)
+	count++;
+    }
   streamer_write_uhwi (ob, count);
 
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
-	  && (node = cgraph (snode))->analyzed)
+      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+      if (cnode && (node = cnode)->analyzed)
 	{
 	  struct inline_summary *info = inline_summary (node);
 	  struct bitpack_d bp;
@@ -3878,7 +3881,7 @@ inline_write_summary (void)
 	  int i;
 	  size_time_entry *e;
 	  struct condition *c;
-
+  
 	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, (symtab_node)node));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
@@ -3897,7 +3900,7 @@ inline_write_summary (void)
 	      bp_pack_value (&bp, c->by_ref, 1);
 	      streamer_write_bitpack (&bp);
 	      if (c->agg_contents)
-		streamer_write_uhwi (ob, c->offset);
+	        streamer_write_uhwi (ob, c->offset);
 	    }
 	  streamer_write_uhwi (ob, VEC_length (size_time_entry, info->entry));
 	  for (i = 0;

@@ -2671,12 +2671,17 @@ lto_wpa_write_files (void)
 	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
 		{
 	          fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
-		  if (symtab_function_p (node)
-		      && lto_symtab_encoder_encode_body_p (part->encoder, cgraph (node)))
+		  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+		  if (cnode
+		      && lto_symtab_encoder_encode_body_p (part->encoder, cnode))
 		    fprintf (cgraph_dump_file, "(body included)");
-		  else if (symtab_variable_p (node)
-		           && lto_symtab_encoder_encode_initializer_p (part->encoder, varpool (node)))
-		    fprintf (cgraph_dump_file, "(initializer included)");
+		  else
+		    {
+		      varpool_node *vnode = dyn_cast <varpool_node> (node);
+		      if (vnode
+			  && lto_symtab_encoder_encode_initializer_p (part->encoder, vnode))
+			fprintf (cgraph_dump_file, "(initializer included)");
+		    }
 		}
 	    }
 	  fprintf (cgraph_dump_file, "\n");

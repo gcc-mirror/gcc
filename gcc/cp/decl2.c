@@ -1775,7 +1775,7 @@ import_export_class (tree ctype)
 static bool
 var_finalized_p (tree var)
 {
-  return varpool_node (var)->finalized;
+  return varpool_node_for_decl (var)->finalized;
 }
 
 /* DECL is a VAR_DECL or FUNCTION_DECL which, for whatever reason,
@@ -1893,7 +1893,7 @@ maybe_emit_vtables (tree ctype)
 	TREE_ASM_WRITTEN (vtbl) = 1;
       else if (DECL_ONE_ONLY (vtbl))
 	{
-	  current = varpool_node (vtbl);
+	  current = varpool_node_for_decl (vtbl);
 	  if (last)
 	    symtab_add_to_same_comdat_group ((symtab_node) current, (symtab_node) last);
 	  last = current;

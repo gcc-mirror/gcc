@@ -503,12 +503,15 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
 struct cgraph_node *
 cgraph_node_for_asm (tree asmname)
 {
-  symtab_node node = symtab_node_for_asm (asmname);
-
   /* We do not want to look at inline clones.  */
-  for (node = symtab_node_for_asm (asmname); node; node = node->symbol.next_sharing_asm_name)
-    if (symtab_function_p (node) && !cgraph(node)->global.inlined_to)
-      return cgraph (node);
+  for (symtab_node node = symtab_node_for_asm (asmname);
+       node;
+       node = node->symbol.next_sharing_asm_name)
+    {
+      cgraph_node *cn = dyn_cast <cgraph_node> (node);
+      if (cn && !cn->global.inlined_to)
+	return cn;
+    }
   return NULL;
 }
 

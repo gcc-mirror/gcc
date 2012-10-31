@@ -1115,7 +1115,7 @@ lsei_next_function_in_partition (lto_symtab_encoder_iterator *lsei)
 {
   lsei_next (lsei);
   while (!lsei_end_p (*lsei)
-	 && (!symtab_function_p (lsei_node (*lsei))
+	 && (!is_a <cgraph_node> (lsei_node (*lsei))
 	     || !lto_symtab_encoder_in_partition_p (lsei->encoder, lsei_node (*lsei))))
     lsei_next (lsei);
 }
@@ -1128,7 +1128,7 @@ lsei_start_function_in_partition (lto_symtab_encoder_t encoder)
 
   if (lsei_end_p (lsei))
     return lsei;
-  if (!symtab_function_p (lsei_node (lsei))
+  if (!is_a <cgraph_node> (lsei_node (lsei))
       || !lto_symtab_encoder_in_partition_p (encoder, lsei_node (lsei)))
     lsei_next_function_in_partition (&lsei);
 
@@ -1141,7 +1141,7 @@ lsei_next_variable_in_partition (lto_symtab_encoder_iterator *lsei)
 {
   lsei_next (lsei);
   while (!lsei_end_p (*lsei)
-	 && (!symtab_variable_p (lsei_node (*lsei))
+	 && (!is_a <varpool_node> (lsei_node (*lsei))
 	     || !lto_symtab_encoder_in_partition_p (lsei->encoder, lsei_node (*lsei))))
     lsei_next (lsei);
 }
@@ -1154,7 +1154,7 @@ lsei_start_variable_in_partition (lto_symtab_encoder_t encoder)
 
   if (lsei_end_p (lsei))
     return lsei;
-  if (!symtab_variable_p (lsei_node (lsei))
+  if (!is_a <varpool_node> (lsei_node (lsei))
       || !lto_symtab_encoder_in_partition_p (encoder, lsei_node (lsei)))
     lsei_next_variable_in_partition (&lsei);
 
