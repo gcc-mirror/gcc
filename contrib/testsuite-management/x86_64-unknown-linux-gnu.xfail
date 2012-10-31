@@ -1,9 +1,19 @@
+FAIL: g++.dg/torture/pr46154.C -O3 -fomit-frame-pointer  (internal compiler error)
+FAIL: g++.dg/torture/pr46154.C -O2 -flto -fno-use-linker-plugin -flto-partition=none  (internal compiler error)
+FAIL: g++.dg/torture/pr46154.C -O3 -g  (internal compiler error)
+FAIL: g++.dg/torture/pr46154.C -O2 -flto -fno-use-linker-plugin -flto-partition=none  (test for excess errors)
+FAIL: g++.dg/torture/pr46154.C -O3 -g  (test for excess errors)
+FAIL: g++.dg/torture/pr46154.C -O3 -fomit-frame-pointer  (test for excess errors)
+FAIL: g++.dg/torture/pr46154.C -O2  (test for excess errors)
+FAIL: g++.dg/torture/pr46154.C -O2  (internal compiler error)
 FAIL: g++.dg/tree-ssa/pr45453.C -std=gnu++98 (test for excess errors)
 UNRESOLVED: g++.dg/tree-ssa/pr45453.C -std=gnu++11  scan-tree-dump-times optimized "OBJ_TYPE_REF" 1
 UNRESOLVED: g++.dg/tree-ssa/pr45453.C -std=gnu++98  scan-tree-dump-times optimized "OBJ_TYPE_REF" 1
 FAIL: g++.dg/tree-ssa/pr45453.C -std=gnu++11 (test for excess errors)
 FAIL: gcc.dg/attr-weakref-1.c (test for excess errors)
 UNRESOLVED: gcc.dg/attr-weakref-1.c compilation failed to produce executable
+FAIL: gcc.dg/autopar/pr49960.c scan-tree-dump-times optimized "loopfn" 0
+FAIL: gcc.dg/autopar/pr49960.c scan-tree-dump-times parloops "SUCCESS: may be parallelized" 0
 FAIL: gcc.dg/builtin-object-size-8.c execution test
 FAIL: gcc.dg/graphite/pr42521.c (internal compiler error)
 FAIL: gcc.dg/graphite/pr42521.c (test for excess errors)
@@ -27,33 +37,52 @@ XPASS: gcc.dg/guality/inline-params.c -O3 -fomit-frame-pointer  execution test
 XPASS: gcc.dg/guality/inline-params.c -Os  execution test
 XPASS: gcc.dg/guality/pr41447-1.c -O1  execution test
 XPASS: gcc.dg/guality/pr41447-1.c -O3 -fomit-frame-pointer  execution test
-XPASS: gcc.dg/guality/pr41447-1.c -O0  execution test
 XPASS: gcc.dg/guality/pr41447-1.c -Os  execution test
 XPASS: gcc.dg/guality/pr41447-1.c -O2  execution test
 XPASS: gcc.dg/guality/pr41447-1.c -O3 -g  execution test
+XPASS: gcc.dg/guality/pr41447-1.c -O0  execution test
 XPASS: gcc.dg/guality/pr41447-1.c -O2 -flto -fuse-linker-plugin -fno-fat-lto-objects  execution test
 XPASS: gcc.dg/guality/pr41616-1.c -O1  execution test
 XPASS: gcc.dg/guality/pr41616-1.c -O3 -fomit-frame-pointer  execution test
 XPASS: gcc.dg/guality/pr41616-1.c -O0  execution test
-XPASS: gcc.dg/guality/pr41616-1.c -Os  execution test
-XPASS: gcc.dg/guality/pr41616-1.c -O2  execution test
 XPASS: gcc.dg/guality/pr41616-1.c -O2 -flto -fno-use-linker-plugin -flto-partition=none  execution test
+XPASS: gcc.dg/guality/pr41616-1.c -O2  execution test
 XPASS: gcc.dg/guality/pr41616-1.c -O3 -g  execution test
+XPASS: gcc.dg/guality/pr41616-1.c -Os  execution test
 XPASS: gcc.dg/inline_3.c (test for excess errors)
 XPASS: gcc.dg/inline_4.c (test for excess errors)
 FAIL: gcc.dg/pr44974.c scan-assembler call[^\n]*_Exit
-FAIL: gcc.dg/torture/pr51106-2.c -O1  (test for excess errors)
 FAIL: gcc.dg/torture/pr51106-2.c -Os  (test for excess errors)
+FAIL: gcc.dg/torture/pr51106-2.c -O3 -g  (internal compiler error)
+FAIL: gcc.dg/torture/pr51106-2.c -O1  (test for excess errors)
+FAIL: gcc.dg/torture/pr51106-2.c -O3 -fomit-frame-pointer  (internal compiler error)
+FAIL: gcc.dg/torture/pr51106-2.c -O2 -flto -fno-use-linker-plugin -flto-partition=none  (internal compiler error)
+FAIL: gcc.dg/torture/pr51106-2.c -Os  (internal compiler error)
 FAIL: gcc.dg/torture/pr51106-2.c -O2 -flto -fno-use-linker-plugin -flto-partition=none  (test for excess errors)
 FAIL: gcc.dg/torture/pr51106-2.c -O3 -g  (test for excess errors)
+FAIL: gcc.dg/torture/pr51106-2.c -O1  (internal compiler error)
 FAIL: gcc.dg/torture/pr51106-2.c -O0  (test for excess errors)
+FAIL: gcc.dg/torture/pr51106-2.c -O0  (internal compiler error)
 FAIL: gcc.dg/torture/pr51106-2.c -O2  (test for excess errors)
+FAIL: gcc.dg/torture/pr51106-2.c -O2  (internal compiler error)
 FAIL: gcc.dg/torture/pr51106-2.c -O3 -fomit-frame-pointer  (test for excess errors)
 XPASS: gcc.dg/unroll_2.c (test for excess errors)
 XPASS: gcc.dg/unroll_3.c (test for excess errors)
 XPASS: gcc.dg/unroll_4.c (test for excess errors)
 XPASS: gfortran.dg/do_1.f90 -O0  execution test
 XPASS: gfortran.dg/do_1.f90 -O1  execution test
+FAIL: gfortran.dg/lto/pr45586 f_lto_pr45586_0.o-f_lto_pr45586_0.o link, -O0 -flto -flto-partition=none -fuse-linker-plugin (internal compiler error)
+FAIL: gfortran.dg/lto/pr45586 f_lto_pr45586_0.o-f_lto_pr45586_0.o link, -O0 -flto -fuse-linker-plugin -fno-fat-lto-objects  (internal compiler error)
+UNRESOLVED: gfortran.dg/lto/pr45586 f_lto_pr45586_0.o-f_lto_pr45586_0.o execute -O0 -flto -fuse-linker-plugin -fno-fat-lto-objects
+FAIL: gfortran.dg/lto/pr45586 f_lto_pr45586_0.o-f_lto_pr45586_0.o link, -O0 -flto -flto-partition=1to1 -fno-use-linker-plugin  (internal compiler error)
+UNRESOLVED: gfortran.dg/lto/pr45586 f_lto_pr45586_0.o-f_lto_pr45586_0.o execute -O0 -flto -flto-partition=1to1 -fno-use-linker-plugin
+UNRESOLVED: gfortran.dg/lto/pr45586 f_lto_pr45586_0.o-f_lto_pr45586_0.o execute -O0 -flto -flto-partition=none -fuse-linker-plugin
+UNRESOLVED: gfortran.dg/lto/pr45586-2 f_lto_pr45586-2_0.o-f_lto_pr45586-2_0.o execute -O0 -flto -flto-partition=none -fuse-linker-plugin
+UNRESOLVED: gfortran.dg/lto/pr45586-2 f_lto_pr45586-2_0.o-f_lto_pr45586-2_0.o execute -O0 -flto -flto-partition=1to1 -fno-use-linker-plugin
+FAIL: gfortran.dg/lto/pr45586-2 f_lto_pr45586-2_0.o-f_lto_pr45586-2_0.o link, -O0 -flto -flto-partition=none -fuse-linker-plugin (internal compiler error)
+UNRESOLVED: gfortran.dg/lto/pr45586-2 f_lto_pr45586-2_0.o-f_lto_pr45586-2_0.o execute -O0 -flto -fuse-linker-plugin -fno-fat-lto-objects
+FAIL: gfortran.dg/lto/pr45586-2 f_lto_pr45586-2_0.o-f_lto_pr45586-2_0.o link, -O0 -flto -fuse-linker-plugin -fno-fat-lto-objects  (internal compiler error)
+FAIL: gfortran.dg/lto/pr45586-2 f_lto_pr45586-2_0.o-f_lto_pr45586-2_0.o link, -O0 -flto -flto-partition=1to1 -fno-use-linker-plugin  (internal compiler error)
 FAIL: gnat.dg/array11.adb (test for warnings, line 12)
 FAIL: gnat.dg/object_overflow.adb (test for warnings, line 8)
 FAIL: libmudflap.c++/pass55-frag.cxx (-O2) execution test
@@ -63,6 +92,7 @@ FAIL: libmudflap.c/fail37-frag.c (-O3) output pattern test
 FAIL: libmudflap.c/fail37-frag.c (-O2) output pattern test
 FAIL: libmudflap.c/fail37-frag.c (-O3) crash test
 FAIL: libmudflap.c/fail37-frag.c (-O2) crash test
+FAIL: reflect 
 FAIL: sourcelocation -findirect-dispatch output - source compiled test
 FAIL: sourcelocation -O3 output - source compiled test
 FAIL: sourcelocation output - source compiled test

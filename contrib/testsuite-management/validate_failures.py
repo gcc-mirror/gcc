@@ -101,7 +101,7 @@ class TestResult(object):
       try:
         (self.state,
          self.name,
-         self.description) = re.match(r' *([A-Z]+): (\S+)\s(.*)',
+         self.description) = re.match(r' *([A-Z]+):\s*(\S+)\s+(.*)',
                                       summary_line).groups()
       except:
         print 'Failed to parse summary line: "%s"' % summary_line
