@@ -1,3 +1,15 @@
+2012-10-31   Easwaran Raman  <eraman@google.com>
+
+	PR target/54938
+	PR middle-end/54957
+	* optabs.c (emit_cmp_and_jump_insn_1): Add REG_BR_PROB note
+	only if it doesn't already exist.
+	* stmt.c (get_outgoing_edge_probs): Return 0 if BB is NULL.
+	(emit_case_dispatch_table): Handle the case where STMT_BB is
+	NULL.
+	(expand_sjlj_dispatch_table): Pass BB containing before_case
+	to emit_case_dispatch_table.
+
 2012-10-31  Lawrence Crowl  <crowl@google.com>
 
 	* is-a.h: New.
