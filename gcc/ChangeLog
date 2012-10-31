@@ -1,3 +1,7 @@
+2012-10-31  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux64.h (TARGET_OS_CPP_BUILTINS): Define _CALL_LINUX.
+
 2012-10-31  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* lra-constraints.c (choose_split_class): Add ATTRIBUTE_UNUSED to
