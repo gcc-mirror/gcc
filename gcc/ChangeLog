@@ -1,3 +1,11 @@
+2012-10-31  Ralf Corsépius  <ralf.corsepius@rtems.org>,
+	    Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	* config/sparc/t-rtems: New (Custom multilibs).
+	* config/sparc/t-rtems-64: New (Custom multilibs).
+	* config.gcc (sparc64-*-rtems*): Add sparc/t-rtems-64.
+	(sparc-*-rtems*): Add sparc/t-rtems.
+
 2012-10-31  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (legitimize_reload_address): Remove code
