@@ -1,5 +1,13 @@
 2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expmed.c (store_bit_field_1): Use OP_MODE to check whether an
+	insv pattern is available.  Remove redundant checks for OP_MODE
+	being MAX_MACHINE_MODE.
+	(extract_bit_field_1): Remove redundant checks for EXT_MODE being
+	MAX_MACHINE_MODE.
+
+2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* expmed.c (store_bit_field_1): Remove test for BLKmode values.
 
 2012-10-31  Ralf Corsépius  <ralf.corsepius@rtems.org>,

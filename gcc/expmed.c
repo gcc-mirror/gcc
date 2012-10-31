@@ -669,7 +669,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      in a word.  */
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
-  if (HAVE_insv
+  if (op_mode != MAX_MACHINE_MODE
       && bitsize > 0
       && GET_MODE_BITSIZE (op_mode) >= bitsize
       /* Do not use insv for volatile bitfields when
@@ -788,7 +788,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* If OP0 is a memory, try copying it to a register and seeing if a
      cheap register alternative is available.  */
-  if (HAVE_insv && MEM_P (op0))
+  if (op_mode != MAX_MACHINE_MODE && MEM_P (op0))
     {
       enum machine_mode bestmode;
       unsigned HOST_WIDE_INT maxbits = MAX_FIXED_MODE_SIZE;
@@ -803,13 +803,10 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       if (GET_MODE (op0) == BLKmode
 	  || GET_MODE_BITSIZE (GET_MODE (op0)) > maxbits
-	  || (op_mode != MAX_MACHINE_MODE
-	      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (op_mode)))
+	  || GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (op_mode))
 	bestmode = get_best_mode (bitsize, bitnum,
 				  bitregion_start, bitregion_end,
-				  MEM_ALIGN (op0),
-				  (op_mode == MAX_MACHINE_MODE
-				   ? VOIDmode : op_mode),
+				  MEM_ALIGN (op0), op_mode,
 				  MEM_VOLATILE_P (op0));
       else
 	bestmode = GET_MODE (op0);
@@ -1597,12 +1594,9 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 smallest mode containing the field.  */
 
       if (GET_MODE (op0) == BLKmode
-	  || (ext_mode != MAX_MACHINE_MODE
-	      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (ext_mode)))
+	  || GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (ext_mode))
 	bestmode = get_best_mode (bitsize, bitnum, 0, 0, MEM_ALIGN (op0),
-				  (ext_mode == MAX_MACHINE_MODE
-				   ? VOIDmode : ext_mode),
-				  MEM_VOLATILE_P (op0));
+				  ext_mode, MEM_VOLATILE_P (op0));
       else
 	bestmode = GET_MODE (op0);
 
