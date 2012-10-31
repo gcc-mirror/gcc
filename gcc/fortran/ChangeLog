@@ -1,3 +1,9 @@
+2012-10-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55134
+	* trans-array.c (gfc_conv_array_parameter): Regard AS_DEFERRED as
+	array with descriptor.
+
 2012-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54958
