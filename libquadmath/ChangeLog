@@ -1,3 +1,27 @@
+2012-10-31  Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers <joseph@codesourcery.com>
+	    David S. Miller <davem@davemloft.net>
+	    Ulrich Drepper <drepper@redhat.com>
+	    Marek Polacek <polacek@redhat.com>:
+	    Petr Baudis <pasky@suse.cz>
+
+	* math/complex.c (csqrtq): NaN and INF fixes. 
+	* math/sqrtq.c (sqrt): NaN, INF and < 0 fixes.
+	* math/expm1q.c (expm1q): Changes from GLIBC. Use expq for
+	large parameters. Fix errno for boundary conditions.
+	* math/finiteq.c (finiteq): Add comment.
+	* math/fmaq.c (fmaq): Changes from GLIBC. Fix missing underflows
+	and bad results for some subnormal results. Fix sign of inexact
+	zero return. Fix sign of exact zero return. 
+	Ensure additions are not scheduled after fetestexcept.
+	* math/jnq.c (jnq): Changes from GLIBC. Set up errno properly
+	for ynq. Fix jnq precision.
+	* math/nearbyintq.c (nearbyintq): Changes from GLIBC. Do not
+	manipulate bits before adding and subtracting TWO112[sx].
+	* math/rintq.c (rintq): Ditto.
+	* math/scalbnq.c (scalbnq): Changes from GLIBC. Fix integer
+	overflow.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.

@@ -177,7 +177,11 @@ csqrtq (__complex128 z)
 
   if (im == 0)
   {
-    if (re < 0)
+    if (isnanq (re))
+    {
+      COMPLEX_ASSIGN (v, -re, -re);
+    }
+    else if (re < 0)
     {
       COMPLEX_ASSIGN (v, 0, copysignq (sqrtq (-re), im));
     }
@@ -185,6 +189,10 @@ csqrtq (__complex128 z)
     {
       COMPLEX_ASSIGN (v, fabsq (sqrtq (re)), copysignq (0, im));
     }
+  }
+  else if (isinfq (im))
+  {
+    COMPLEX_ASSIGN (v, fabsq (im), im);
   }
   else if (re == 0)
   {
