@@ -63,8 +63,9 @@
 // See libstdc++/20806.
 #define _GLIBCXX_HAVE_DOS_BASED_FILESYSTEM 1
 
-// See  libstdc++/37522.
-#define _GLIBCXX_HAVE_BROKEN_VSWPRINTF 1
+// See  libstdc++/37522. mingw-w64 stdio redirect for C++
+// #define _GLIBCXX_HAVE_BROKEN_VSWPRINTF 1
+// Workaround added for mingw-w64 trunk headers r5437
 
 // See libstdc++/43738
 // On native windows targets there is no ioctl function. And the existing

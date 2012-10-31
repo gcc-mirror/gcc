@@ -1,3 +1,8 @@
+2012-10-31  Jonathan Yong  <jon_y@users.sourceforge.net>
+
+	* config/os/mingw32-w64/os_defines.h: Do not define anymore
+	_GLIBCXX_HAVE_BROKEN_VSWPRINTF.
+
 2012-10-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/forward_list.h (forward_list): Adjust comments.
