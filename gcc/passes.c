@@ -201,7 +201,7 @@ rest_of_decl_compilation (tree decl,
     ;
   else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl)
 	   && TREE_STATIC (decl))
-    varpool_node (decl);
+    varpool_node_for_decl (decl);
 }
 
 /* Called after finishing a record, union or enumeral type.  */

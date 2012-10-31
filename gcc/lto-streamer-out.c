@@ -956,7 +956,6 @@ copy_function (struct cgraph_node *node)
 static void
 lto_output (void)
 {
-  struct cgraph_node *node;
   struct lto_out_decl_state *decl_state;
 #ifdef ENABLE_CHECKING
   bitmap output = lto_bitmap_alloc ();
@@ -972,10 +971,9 @@ lto_output (void)
   for (i = 0; i < n_nodes; i++)
     {
       symtab_node snode = lto_symtab_encoder_deref (encoder, i);
-      if (!symtab_function_p (snode))
-	continue;
-      node = cgraph (snode);
-      if (lto_symtab_encoder_encode_body_p (encoder, node)
+      cgraph_node *node = dyn_cast <cgraph_node> (snode);
+      if (node
+	  && lto_symtab_encoder_encode_body_p (encoder, node)
 	  && !node->alias
 	  && !node->thunk.thunk_p)
 	{

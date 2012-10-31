@@ -1,3 +1,29 @@
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* is-a.h: New.
+	(is_a <T> (U*)): New.  Test for is-a relationship.
+	(as_a <T> (U*)): New.  Treat as a derived type.
+	(dyn_cast <T> (U*)): New.  Conditionally cast based on is_a.
+	* cgraph.h (varpool_node): Rename to varpool_node_for_decl.
+	Adjust callers to match.
+	(is_a_helper <cgraph_node>::test (symtab_node_def *)): New.
+	(is_a_helper <varpool_node>::test (symtab_node_def *)): New.
+	(symtab_node_def::try_function): New.  Change most calls to
+	symtab_function_p with calls to dyn_cast <cgraph_node> (p).
+	(symtab_node_def::try_variable): New.  Change most calls to
+	symtab_variable_p with calls to dyn_cast <varpool_node> (p).
+	(symtab_function_p): Remove.  Change callers to use
+        is_a <cgraph_node> (p) instead.
+	(symtab_variable_p): Remove.  Change callers to use
+        is_a <varpool_node> (p) instead.
+	* cgraph.c (cgraph_node_for_asm): Remove redundant call to
+	symtab_node_for_asm.
+	* cgraphunit.c (symbol_finalized_and_needed): New.
+	(symbol_finalized): New.
+	(cgraph_analyze_functions): Split complicated conditionals out into
+	above new functions.
+	* Makefile.in (CGRAPH_H): Add is-a.h as used by cgraph.h.
+
 2012-10-31  Steven Bosscher  <steven@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
