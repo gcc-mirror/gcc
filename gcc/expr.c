@@ -841,7 +841,7 @@ widest_int_mode_for_size (unsigned int size)
    succeed.  */
 
 int
-can_move_by_pieces (unsigned HOST_WIDE_INT len,
+can_move_by_pieces (unsigned HOST_WIDE_INT len ATTRIBUTE_UNUSED,
 		    unsigned int align ATTRIBUTE_UNUSED)
 {
   return MOVE_BY_PIECES_P (len, align);
