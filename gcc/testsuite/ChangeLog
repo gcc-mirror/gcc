@@ -1,3 +1,7 @@
+2012-10-31  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/pr44974.c: Add noinline.
+
 2012-10-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/53718
