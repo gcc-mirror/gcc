@@ -1,3 +1,7 @@
+2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expmed.c (store_bit_field_1): Remove test for BLKmode values.
+
 2012-10-31  Ralf Corsépius  <ralf.corsepius@rtems.org>,
 	    Joel Sherrill  <joel.sherrill@oarcorp.com>
 
