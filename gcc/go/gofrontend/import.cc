@@ -41,6 +41,9 @@ go_add_search_path(const char* path)
 // When FILENAME is not an absolute path and does not start with ./ or
 // ../, we use the search path provided by -I and -L options.
 
+// When FILENAME does start with ./ or ../, we use
+// RELATIVE_IMPORT_PATH as a prefix.
+
 // When FILENAME does not exist, we try modifying FILENAME to find the
 // file.  We use the first of these which exists:
 //   * We append ".gox".
@@ -55,19 +58,35 @@ go_add_search_path(const char* path)
 // later in the search path.
 
 Import::Stream*
-Import::open_package(const std::string& filename, Location location)
+Import::open_package(const std::string& filename, Location location,
+		     const std::string& relative_import_path)
 {
   bool is_local;
   if (IS_ABSOLUTE_PATH(filename))
     is_local = true;
-  else if (filename[0] == '.' && IS_DIR_SEPARATOR(filename[1]))
+  else if (filename[0] == '.'
+	   && (filename[1] == '\0' || IS_DIR_SEPARATOR(filename[1])))
     is_local = true;
   else if (filename[0] == '.'
 	   && filename[1] == '.'
-	   && IS_DIR_SEPARATOR(filename[2]))
+	   && (filename[2] == '\0' || IS_DIR_SEPARATOR(filename[2])))
     is_local = true;
   else
     is_local = false;
+
+  std::string fn = filename;
+  if (is_local && !IS_ABSOLUTE_PATH(filename) && !relative_import_path.empty())
+    {
+      if (fn == ".")
+	{
+	  // A special case.
+	  fn = relative_import_path;
+	}
+      else
+	fn = relative_import_path + '/' + fn;
+      is_local = false;
+    }
+
   if (!is_local)
     {
       for (std::vector<std::string>::const_iterator p = search_path.begin();
@@ -77,14 +96,14 @@ Import::open_package(const std::string& filename, Location location)
 	  std::string indir = *p;
 	  if (!indir.empty() && indir[indir.size() - 1] != '/')
 	    indir += '/';
-	  indir += filename;
+	  indir += fn;
 	  Stream* s = Import::try_package_in_directory(indir, location);
 	  if (s != NULL)
 	    return s;
 	}
     }
 
-  Stream* s = Import::try_package_in_directory(filename, location);
+  Stream* s = Import::try_package_in_directory(fn, location);
   if (s != NULL)
     return s;
 
