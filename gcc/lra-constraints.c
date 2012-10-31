@@ -3343,7 +3343,10 @@ lra_constraints (bool first_p)
 	     pseudo to the equivalent value if necessary.  */
 	  curr_id = lra_get_insn_recog_data (curr_insn);
 	  if (debug_loc_equivalence_change_p (curr_id->operand_loc[0]))
-	    changed_p = true;
+	    {
+	      lra_update_insn_regno_info (curr_insn);
+	      changed_p = true;
+	    }
 	}
       else if (INSN_P (curr_insn))
 	{
