@@ -3852,7 +3852,8 @@ choose_split_class (enum reg_class allocno_class,
 #else
   int i;
   enum reg_class cl, best_cl = NO_REGS;
-  enum reg_class hard_reg_class = REGNO_REG_CLASS (hard_regno);
+  enum reg_class hard_reg_class ATTRIBUTE_UNUSED
+    = REGNO_REG_CLASS (hard_regno);
 
   if (! SECONDARY_MEMORY_NEEDED (allocno_class, allocno_class, mode)
       && TEST_HARD_REG_BIT (reg_class_contents[allocno_class], hard_regno))
