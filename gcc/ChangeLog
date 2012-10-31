@@ -1,3 +1,8 @@
+2012-10-31  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (ipa_inline): Avoid infinite loop on inlining
+	empty virtual functions calling themselves.
+
 2012-10-31  Tom Tromey  <tromey@redhat.com>
 
 	PR other/50899
