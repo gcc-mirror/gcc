@@ -1,3 +1,18 @@
+2012-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19105
+	PR tree-optimization/21643
+	PR tree-optimization/46309
+	* tree-ssa-reassoc.c (init_range_entry): Add STMT argument
+	and use it if EXP is NULL.
+	(update_range_test): Handle OPCODE equal to ERROR_MARK
+	and oe->op NULL.
+	(optimize_range_tests): Likewise.
+	(final_range_test_p, suitable_cond_bb, no_side_effect_bb, get_ops,
+	maybe_optimize_range_tests): New functions.
+	(reassociate_bb): Call maybe_optimize_range_tests if last
+	stmt of bb is GIMPLE_COND that hasn't been visited yet.
+
 2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/rs6000/rs6000.md (insvsi, insvdi, extvsi, extvdi): Rename to...

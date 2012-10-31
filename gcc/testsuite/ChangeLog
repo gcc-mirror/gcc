@@ -1,3 +1,13 @@
+2012-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19105
+	PR tree-optimization/21643
+	PR tree-optimization/46309
+	* gcc.dg/pr19105.c: New test.
+	* gcc.dg/pr21643.c: New test.
+	* gcc.dg/pr46309-2.c: New test.
+	* gcc.c-torture/execute/pr46309.c: New test.
+
 2012-10-31  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/dimode_off.c: New.
