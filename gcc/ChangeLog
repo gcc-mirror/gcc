@@ -1,5 +1,13 @@
 2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expmed.c (store_bit_field_using_insv): New function,
+	split out from...
+	(store_bit_field_1): ...here.
+	(extract_bit_field_using_extv): New function, split out from...
+	(extract_bit_field_1): ...here.
+
+2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* expmed.c (store_bit_field_1): Use OP_MODE to check whether an
 	insv pattern is available.  Remove redundant checks for OP_MODE
 	being MAX_MACHINE_MODE.
