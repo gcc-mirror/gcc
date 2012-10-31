@@ -404,6 +404,120 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
     return bitnum % BITS_PER_WORD == 0;
 }
 
+/* Try to use an insv pattern to store VALUE into a field of OP0.
+   OP_MODE is the mode of the insertion and BITSIZE and BITNUM are
+   as for store_bit_field.  */
+
+static bool
+store_bit_field_using_insv (rtx op0, unsigned HOST_WIDE_INT bitsize,
+			    unsigned HOST_WIDE_INT bitnum, rtx value,
+			    enum machine_mode op_mode)
+{
+  struct expand_operand ops[4];
+  rtx value1;
+  rtx xop0 = op0;
+  rtx last = get_last_insn ();
+  bool copy_back = false;
+
+  unsigned int unit = GET_MODE_BITSIZE (op_mode);
+  if (bitsize == 0 || bitsize > unit)
+    return false;
+
+  if (MEM_P (xop0))
+    {
+      /* Get a reference to the first byte of the field.  */
+      xop0 = adjust_bitfield_address (xop0, byte_mode, bitnum / BITS_PER_UNIT);
+      bitnum %= BITS_PER_UNIT;
+    }
+  else
+    {
+      /* Convert from counting within OP0 to counting in OP_MODE.  */
+      if (BYTES_BIG_ENDIAN)
+	bitnum += unit - GET_MODE_BITSIZE (GET_MODE (op0));
+
+      /* If xop0 is a register, we need it in OP_MODE
+	 to make it acceptable to the format of insv.  */
+      if (GET_CODE (xop0) == SUBREG)
+	/* We can't just change the mode, because this might clobber op0,
+	   and we will need the original value of op0 if insv fails.  */
+	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
+      if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
+	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
+    }
+
+  /* If the destination is a paradoxical subreg such that we need a
+     truncate to the inner mode, perform the insertion on a temporary and
+     truncate the result to the original destination.  Note that we can't
+     just truncate the paradoxical subreg as (truncate:N (subreg:W (reg:N
+     X) 0)) is (reg:N X).  */
+  if (GET_CODE (xop0) == SUBREG
+      && REG_P (SUBREG_REG (xop0))
+      && !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (SUBREG_REG (xop0)),
+					 op_mode))
+    {
+      rtx tem = gen_reg_rtx (op_mode);
+      emit_move_insn (tem, xop0);
+      xop0 = tem;
+      copy_back = true;
+    }
+
+  /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
+     "backwards" from the size of the unit we are inserting into.
+     Otherwise, we count bits from the most significant on a
+     BYTES/BITS_BIG_ENDIAN machine.  */
+
+  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+    bitnum = unit - bitsize - bitnum;
+
+  /* Convert VALUE to op_mode (which insv insn wants) in VALUE1.  */
+  value1 = value;
+  if (GET_MODE (value) != op_mode)
+    {
+      if (GET_MODE_BITSIZE (GET_MODE (value)) >= bitsize)
+	{
+	  /* Optimization: Don't bother really extending VALUE
+	     if it has all the bits we will actually use.  However,
+	     if we must narrow it, be sure we do it correctly.  */
+
+	  if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (op_mode))
+	    {
+	      rtx tmp;
+
+	      tmp = simplify_subreg (op_mode, value1, GET_MODE (value), 0);
+	      if (! tmp)
+		tmp = simplify_gen_subreg (op_mode,
+					   force_reg (GET_MODE (value),
+						      value1),
+					   GET_MODE (value), 0);
+	      value1 = tmp;
+	    }
+	  else
+	    value1 = gen_lowpart (op_mode, value1);
+	}
+      else if (CONST_INT_P (value))
+	value1 = gen_int_mode (INTVAL (value), op_mode);
+      else
+	/* Parse phase is supposed to make VALUE's data type
+	   match that of the component reference, which is a type
+	   at least as wide as the field; so VALUE should have
+	   a mode that corresponds to that type.  */
+	gcc_assert (CONSTANT_P (value));
+    }
+
+  create_fixed_operand (&ops[0], xop0);
+  create_integer_operand (&ops[1], bitsize);
+  create_integer_operand (&ops[2], bitnum);
+  create_input_operand (&ops[3], value1, op_mode);
+  if (maybe_expand_insn (CODE_FOR_insv, 4, ops))
+    {
+      if (copy_back)
+	convert_move (op0, xop0, true);
+      return true;
+    }
+  delete_insns_since (last);
+  return false;
+}
+
 /* A subroutine of store_bit_field, with the same arguments.  Return true
    if the operation could be implemented.
 
@@ -670,8 +784,6 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
   if (op_mode != MAX_MACHINE_MODE
-      && bitsize > 0
-      && GET_MODE_BITSIZE (op_mode) >= bitsize
       /* Do not use insv for volatile bitfields when
          -fstrict-volatile-bitfields is in effect.  */
       && !(MEM_P (op0) && MEM_VOLATILE_P (op0)
@@ -681,110 +793,9 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 restricted region.  */
       && !(MEM_P (op0) && bitregion_end
 	   && bitnum - (bitnum % BITS_PER_UNIT) + GET_MODE_BITSIZE (op_mode)
-	      > bitregion_end + 1))
-    {
-      struct expand_operand ops[4];
-      unsigned HOST_WIDE_INT bitpos = bitnum;
-      rtx value1;
-      rtx xop0 = op0;
-      rtx last = get_last_insn ();
-      bool copy_back = false;
-
-      unsigned int unit = GET_MODE_BITSIZE (op_mode);
-      if (MEM_P (xop0))
-	{
-	  /* Get a reference to the first byte of the field.  */
-	  xop0 = adjust_bitfield_address (xop0, byte_mode,
-					  bitpos / BITS_PER_UNIT);
-	  bitpos %= BITS_PER_UNIT;
-	}
-      else
-	{
-	  /* Convert from counting within OP0 to counting in OP_MODE.  */
-	  if (BYTES_BIG_ENDIAN)
-	    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-	}
-
-      /* If xop0 is a register, we need it in OP_MODE
-	 to make it acceptable to the format of insv.  */
-      if (GET_CODE (xop0) == SUBREG)
-	/* We can't just change the mode, because this might clobber op0,
-	   and we will need the original value of op0 if insv fails.  */
-	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
-      if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
-	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
-
-      /* If the destination is a paradoxical subreg such that we need a
-	 truncate to the inner mode, perform the insertion on a temporary and
-	 truncate the result to the original destination.  Note that we can't
-	 just truncate the paradoxical subreg as (truncate:N (subreg:W (reg:N
-	 X) 0)) is (reg:N X).  */
-      if (GET_CODE (xop0) == SUBREG
-	  && REG_P (SUBREG_REG (xop0))
-	  && (!TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (SUBREG_REG (xop0)),
-					      op_mode)))
-	{
-	  rtx tem = gen_reg_rtx (op_mode);
-	  emit_move_insn (tem, xop0);
-	  xop0 = tem;
-	  copy_back = true;
-	}
-
-      /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
-         "backwards" from the size of the unit we are inserting into.
-	 Otherwise, we count bits from the most significant on a
-	 BYTES/BITS_BIG_ENDIAN machine.  */
-
-      if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-	bitpos = unit - bitsize - bitpos;
-
-      /* Convert VALUE to op_mode (which insv insn wants) in VALUE1.  */
-      value1 = value;
-      if (GET_MODE (value) != op_mode)
-	{
-	  if (GET_MODE_BITSIZE (GET_MODE (value)) >= bitsize)
-	    {
-	      /* Optimization: Don't bother really extending VALUE
-		 if it has all the bits we will actually use.  However,
-		 if we must narrow it, be sure we do it correctly.  */
-
-	      if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (op_mode))
-		{
-		  rtx tmp;
-
-		  tmp = simplify_subreg (op_mode, value1, GET_MODE (value), 0);
-		  if (! tmp)
-		    tmp = simplify_gen_subreg (op_mode,
-					       force_reg (GET_MODE (value),
-							  value1),
-					       GET_MODE (value), 0);
-		  value1 = tmp;
-		}
-	      else
-		value1 = gen_lowpart (op_mode, value1);
-	    }
-	  else if (CONST_INT_P (value))
-	    value1 = gen_int_mode (INTVAL (value), op_mode);
-	  else
-	    /* Parse phase is supposed to make VALUE's data type
-	       match that of the component reference, which is a type
-	       at least as wide as the field; so VALUE should have
-	       a mode that corresponds to that type.  */
-	    gcc_assert (CONSTANT_P (value));
-	}
-
-      create_fixed_operand (&ops[0], xop0);
-      create_integer_operand (&ops[1], bitsize);
-      create_integer_operand (&ops[2], bitpos);
-      create_input_operand (&ops[3], value1, op_mode);
-      if (maybe_expand_insn (CODE_FOR_insv, 4, ops))
-	{
-	  if (copy_back)
-	    convert_move (op0, xop0, true);
-	  return true;
-	}
-      delete_insns_since (last);
-    }
+	      > bitregion_end + 1)
+      && store_bit_field_using_insv (op0, bitsize, bitnum, value, op_mode))
+    return true;
 
   /* If OP0 is a memory, try copying it to a register and seeing if a
      cheap register alternative is available.  */
@@ -1211,6 +1222,91 @@ convert_extracted_bit_field (rtx x, enum machine_mode mode,
   return convert_to_mode (tmode, x, unsignedp);
 }
 
+/* Try to use an ext(z)v pattern to extract a field from OP0.
+   Return the extracted value on success, otherwise return null.
+   EXT_MODE is the mode of the extraction and the other arguments
+   are as for extract_bit_field.  */
+
+static rtx
+extract_bit_field_using_extv (rtx op0, unsigned HOST_WIDE_INT bitsize,
+			      unsigned HOST_WIDE_INT bitnum,
+			      int unsignedp, rtx target,
+			      enum machine_mode mode, enum machine_mode tmode,
+			      enum machine_mode ext_mode)
+{
+  struct expand_operand ops[4];
+  rtx spec_target = target;
+  rtx spec_target_subreg = 0;
+  unsigned unit = GET_MODE_BITSIZE (ext_mode);
+
+  if (bitsize == 0 || unit < bitsize)
+    return NULL_RTX;
+
+  if (MEM_P (op0))
+    {
+      /* Get a reference to the first byte of the field.  */
+      op0 = adjust_bitfield_address (op0, byte_mode, bitnum / BITS_PER_UNIT);
+      bitnum %= BITS_PER_UNIT;
+    }
+  else
+    {
+      /* Convert from counting within OP0 to counting in EXT_MODE.  */
+      if (BYTES_BIG_ENDIAN)
+	bitnum += unit - GET_MODE_BITSIZE (GET_MODE (op0));
+
+      /* If op0 is a register, we need it in EXT_MODE to make it
+	 acceptable to the format of ext(z)v.  */
+      if (GET_CODE (op0) == SUBREG && GET_MODE (op0) != ext_mode)
+	return NULL_RTX;
+      if (REG_P (op0) && GET_MODE (op0) != ext_mode)
+	op0 = gen_lowpart_SUBREG (ext_mode, op0);
+    }
+
+  /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
+     "backwards" from the size of the unit we are extracting from.
+     Otherwise, we count bits from the most significant on a
+     BYTES/BITS_BIG_ENDIAN machine.  */
+
+  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+    bitnum = unit - bitsize - bitnum;
+
+  if (target == 0)
+    target = spec_target = gen_reg_rtx (tmode);
+
+  if (GET_MODE (target) != ext_mode)
+    {
+      /* Don't use LHS paradoxical subreg if explicit truncation is needed
+	 between the mode of the extraction (word_mode) and the target
+	 mode.  Instead, create a temporary and use convert_move to set
+	 the target.  */
+      if (REG_P (target)
+	  && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (target), ext_mode))
+	{
+	  target = gen_lowpart (ext_mode, target);
+	  if (GET_MODE_PRECISION (ext_mode)
+	      > GET_MODE_PRECISION (GET_MODE (spec_target)))
+	    spec_target_subreg = target;
+	}
+      else
+	target = gen_reg_rtx (ext_mode);
+    }
+
+  create_output_operand (&ops[0], target, ext_mode);
+  create_fixed_operand (&ops[1], op0);
+  create_integer_operand (&ops[2], bitsize);
+  create_integer_operand (&ops[3], bitnum);
+  if (maybe_expand_insn (unsignedp ? CODE_FOR_extzv : CODE_FOR_extv, 4, ops))
+    {
+      target = ops[0].value;
+      if (target == spec_target)
+	return target;
+      if (target == spec_target_subreg)
+	return spec_target;
+      return convert_extracted_bit_field (target, mode, tmode, unsignedp);
+    }
+  return NULL_RTX;
+}
+
 /* A subroutine of extract_bit_field, with the same arguments.
    If FALLBACK_P is true, fall back to extract_fixed_bit_field
    if we can find no other means of implementing the operation.
@@ -1499,86 +1595,16 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   ext_mode = mode_for_extraction (unsignedp ? EP_extzv : EP_extv, 0);
   if (ext_mode != MAX_MACHINE_MODE
-      && bitsize > 0
-      && GET_MODE_BITSIZE (ext_mode) >= bitsize
       /* Do not use extv/extzv for volatile bitfields when
          -fstrict-volatile-bitfields is in effect.  */
       && !(MEM_P (op0) && MEM_VOLATILE_P (op0)
-	   && flag_strict_volatile_bitfields > 0)
-      /* If op0 is a register, we need it in EXT_MODE to make it
-	 acceptable to the format of ext(z)v.  */
-      && !(GET_CODE (op0) == SUBREG && GET_MODE (op0) != ext_mode))
+	   && flag_strict_volatile_bitfields > 0))
     {
-      struct expand_operand ops[4];
-      unsigned HOST_WIDE_INT bitpos = bitnum;
-      rtx xop0 = op0;
-      rtx xtarget = target;
-      rtx xspec_target = target;
-      rtx xspec_target_subreg = 0;
-      unsigned unit = GET_MODE_BITSIZE (ext_mode);
-
-      /* If op0 is a register, we need it in EXT_MODE to make it
-	 acceptable to the format of ext(z)v.  */
-      if (REG_P (xop0) && GET_MODE (xop0) != ext_mode)
-	xop0 = gen_lowpart_SUBREG (ext_mode, xop0);
-
-      if (MEM_P (xop0))
-	{
-	  /* Get a reference to the first byte of the field.  */
-	  xop0 = adjust_bitfield_address (xop0, byte_mode,
-					  bitpos / BITS_PER_UNIT);
-	  bitpos %= BITS_PER_UNIT;
-	}
-      else
-	{
-	  /* Convert from counting within OP0 to counting in EXT_MODE.  */
-	  if (BYTES_BIG_ENDIAN)
-	    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-	}
-
-      /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count
-         "backwards" from the size of the unit we are extracting from.
-	 Otherwise, we count bits from the most significant on a
-	 BYTES/BITS_BIG_ENDIAN machine.  */
-
-      if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-	bitpos = unit - bitsize - bitpos;
-
-      if (xtarget == 0)
-	xtarget = xspec_target = gen_reg_rtx (tmode);
-
-      if (GET_MODE (xtarget) != ext_mode)
-	{
-	  /* Don't use LHS paradoxical subreg if explicit truncation is needed
-	     between the mode of the extraction (word_mode) and the target
-	     mode.  Instead, create a temporary and use convert_move to set
-	     the target.  */
-	  if (REG_P (xtarget)
-	      && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (xtarget), ext_mode))
-	    {
-	      xtarget = gen_lowpart (ext_mode, xtarget);
-	      if (GET_MODE_PRECISION (ext_mode)
-		  > GET_MODE_PRECISION (GET_MODE (xspec_target)))
-		xspec_target_subreg = xtarget;
-	    }
-	  else
-	    xtarget = gen_reg_rtx (ext_mode);
-	}
-
-      create_output_operand (&ops[0], xtarget, ext_mode);
-      create_fixed_operand (&ops[1], xop0);
-      create_integer_operand (&ops[2], bitsize);
-      create_integer_operand (&ops[3], bitpos);
-      if (maybe_expand_insn (unsignedp ? CODE_FOR_extzv : CODE_FOR_extv,
-			     4, ops))
-	{
-	  xtarget = ops[0].value;
-	  if (xtarget == xspec_target)
-	    return xtarget;
-	  if (xtarget == xspec_target_subreg)
-	    return xspec_target;
-	  return convert_extracted_bit_field (xtarget, mode, tmode, unsignedp);
-	}
+      rtx result = extract_bit_field_using_extv (op0, bitsize, bitnum,
+						 unsignedp, target, mode,
+						 tmode, ext_mode);
+      if (result)
+	return result;
     }
 
   /* If OP0 is a memory, try copying it to a register and seeing if a
