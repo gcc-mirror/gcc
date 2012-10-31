@@ -318,6 +318,8 @@ extern int dot_symbols;
 	  builtin_define ("__PPC64__");			\
 	  builtin_define ("__powerpc__");		\
 	  builtin_define ("__powerpc64__");		\
+	  if (!DOT_SYMBOLS)				\
+	    builtin_define ("_CALL_LINUX");		\
 	  builtin_assert ("cpu=powerpc64");		\
 	  builtin_assert ("machine=powerpc64");		\
 	}						\
