@@ -165,8 +165,8 @@
 
 ;; Vector move instructions.
 (define_insn "*altivec_mov<mode>"
-  [(set (match_operand:VM2 0 "nonimmediate_operand" "=Z,v,v,*o,*r,*r,v,v")
-	(match_operand:VM2 1 "input_operand" "v,Z,v,r,o,r,j,W"))]
+  [(set (match_operand:VM2 0 "nonimmediate_operand" "=Z,v,v,*Y,*r,*r,v,v")
+	(match_operand:VM2 1 "input_operand" "v,Z,v,r,Y,r,j,W"))]
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
@@ -190,8 +190,8 @@
 ;; is for unions.  However for plain data movement, slightly favor the vector
 ;; loads
 (define_insn "*altivec_movti"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,v,v,?o,?r,?r,v,v")
-	(match_operand:TI 1 "input_operand" "v,Z,v,r,o,r,j,W"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=Z,v,v,?Y,?r,?r,v,v")
+	(match_operand:TI 1 "input_operand" "v,Z,v,r,Y,r,j,W"))]
   "VECTOR_MEM_ALTIVEC_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"

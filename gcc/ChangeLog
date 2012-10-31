@@ -1,5 +1,14 @@
 2012-10-31  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (legitimize_reload_address): Remove code
+	handling non-aligned ld/std.
+	* config/rs6000/paired.md (movv2sf_paired): Use 'Y' instead of 'o'.
+	* config/rs6000/vsx.md (vsx_mov, vsx_movti): Likewise.
+	* config/rs6000/altivec.md (altivec_mov, altivec_movti): Likewise.
+	* config/rs6000/dfp.md (movtd_internal): Use 'm' instead of 'o'.
+
+2012-10-31  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/linux64.h (TARGET_OS_CPP_BUILTINS): Define _CALL_LINUX.
 
 2012-10-31  Joern Rennecke  <joern.rennecke@embecosm.com>
