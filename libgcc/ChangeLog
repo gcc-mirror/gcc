@@ -1,3 +1,8 @@
+2012-10-31  Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	* config.host (m32r-*-rtems*): Include crtinit.o and crtfinit.o
+	as extra_parts.
+
 2012-10-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/crtfastmath.c (set_fast_math): Use __builtin_ia32_fxsave.
