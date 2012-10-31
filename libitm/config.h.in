@@ -12,6 +12,9 @@
 /* Define if your assembler supports .cfi_* directives. */
 #undef HAVE_AS_CFI_PSEUDO_OP
 
+/* Define to 1 if the assembler supports RTM. */
+#undef HAVE_AS_RTM
+
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
 
