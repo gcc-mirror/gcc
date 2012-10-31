@@ -670,7 +670,6 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
   if (HAVE_insv
-      && GET_MODE (value) != BLKmode
       && bitsize > 0
       && GET_MODE_BITSIZE (op_mode) >= bitsize
       /* Do not use insv for volatile bitfields when
