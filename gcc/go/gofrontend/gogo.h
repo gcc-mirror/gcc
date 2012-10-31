@@ -206,6 +206,17 @@ class Gogo
   pkgpath_from_option() const
   { return this->pkgpath_from_option_; }
 
+  // Return the relative import path as set from the command line.
+  // Returns an empty string if it was not set.
+  const std::string&
+  relative_import_path() const
+  { return this->relative_import_path_; }
+
+  // Set the relative import path from a command line option.
+  void
+  set_relative_import_path(const std::string& s)
+  {this->relative_import_path_ = s; }
+
   // Return the priority to use for the package we are compiling.
   // This is two more than the largest priority of any package we
   // import.
@@ -732,6 +743,9 @@ class Gogo
   bool pkgpath_from_option_;
   // Whether an explicit prefix was set by -fgo-prefix.
   bool prefix_from_option_;
+  // The relative import path, from the -fgo-relative-import-path
+  // option.
+  std::string relative_import_path_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
