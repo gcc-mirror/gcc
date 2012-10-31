@@ -13,6 +13,14 @@
  * ====================================================
  */
 
+
+/*
+ * scalbnq (__float128 x, int n)
+ * scalbnq(x,n) returns x* 2**n  computed by  exponent
+ * manipulation rather than by actually performing an
+ * exponentiation or a multiplication.
+ */
+
 #include "quadmath-imp.h"
 
 static const __float128
@@ -34,10 +42,12 @@ scalbnq (__float128 x, int n)
 	    k = ((hx>>48)&0x7fff) - 114;
 	}
         if (k==0x7fff) return x+x;		/* NaN or Inf */
-        k = k+n;
-        if (n> 50000 || k > 0x7ffe)
-	  return huge*copysignq(huge,x); /* overflow  */
 	if (n< -50000) return tiny*copysignq(tiny,x); /*underflow*/
+        if (n> 50000 || k+n > 0x7ffe)
+	  return huge*copysignq(huge,x); /* overflow  */
+	/* Now k and n are bounded we know that k = k+n does not
+	   overflow.  */
+        k = k+n;
         if (k > 0) 				/* normal result */
 	    {SET_FLT128_MSW64(x,(hx&0x8000ffffffffffffULL)|(k<<48)); return x;}
         if (k <= -114)

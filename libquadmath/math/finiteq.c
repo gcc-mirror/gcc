@@ -15,6 +15,11 @@
 
 #include "quadmath-imp.h"
 
+/*
+ * finiteq(x) returns 1 is x is finite, else 0;
+ * no branching!
+ */
+
 int
 finiteq (const __float128 x)
 {
