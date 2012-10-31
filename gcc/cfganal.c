@@ -573,7 +573,9 @@ post_order_compute (int *post_order, bool include_entry_exit,
 }
 
 
-/* Helper routine for inverted_post_order_compute.
+/* Helper routine for inverted_post_order_compute
+   flow_dfs_compute_reverse_execute, and the reverse-CFG
+   deapth first search in dominance.c.
    BB has to belong to a region of CFG
    unreachable by inverted traversal from the exit.
    i.e. there's no control flow path from ENTRY to EXIT
@@ -593,19 +595,17 @@ post_order_compute (int *post_order, bool include_entry_exit,
    that all blocks in the region are reachable
    by starting an inverted traversal from the returned block.  */
 
-static basic_block
+basic_block
 dfs_find_deadend (basic_block bb)
 {
-  sbitmap visited = sbitmap_alloc (last_basic_block);
-  bitmap_clear (visited);
+  bitmap visited = BITMAP_ALLOC (NULL);
 
   for (;;)
     {
-      SET_BIT (visited, bb->index);
       if (EDGE_COUNT (bb->succs) == 0
-          || TEST_BIT (visited, EDGE_SUCC (bb, 0)->dest->index))
+	  || ! bitmap_set_bit (visited, bb->index))
         {
-          sbitmap_free (visited);
+          BITMAP_FREE (visited);
           return bb;
         }
 
@@ -958,7 +958,7 @@ flow_dfs_compute_reverse_execute (depth_first_search_ds data,
   /* Determine if there are unvisited basic blocks.  */
   FOR_BB_BETWEEN (bb, last_unvisited, NULL, prev_bb)
     if (!TEST_BIT (data->visited_blocks, bb->index))
-      return bb;
+      return dfs_find_deadend (bb);
 
   return NULL;
 }

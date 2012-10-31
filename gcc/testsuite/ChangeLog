@@ -1,3 +1,9 @@
+2012-10-31  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55018
+	* gcc.dg/torture/pr55018.c: New test.
+
 2012-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54583

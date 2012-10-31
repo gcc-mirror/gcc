@@ -377,14 +377,18 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
 	{
 	  FOR_EACH_BB_REVERSE (b)
 	    {
+	      basic_block b2;
 	      if (di->dfs_order[b->index])
 		continue;
-	      bitmap_set_bit (di->fake_exit_edge, b->index);
-	      di->dfs_order[b->index] = di->dfsnum;
-	      di->dfs_to_bb[di->dfsnum] = b;
+	      b2 = dfs_find_deadend (b);
+	      gcc_checking_assert (di->dfs_order[b2->index] == 0);
+	      bitmap_set_bit (di->fake_exit_edge, b2->index);
+	      di->dfs_order[b2->index] = di->dfsnum;
+	      di->dfs_to_bb[di->dfsnum] = b2;
 	      di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
 	      di->dfsnum++;
-	      calc_dfs_tree_nonrec (di, b, reverse);
+	      calc_dfs_tree_nonrec (di, b2, reverse);
+	      gcc_checking_assert (di->dfs_order[b->index]);
 	    }
 	}
     }

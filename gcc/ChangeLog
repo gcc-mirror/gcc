@@ -1,3 +1,15 @@
+2012-10-31  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55018
+	* basic-block.h (dfs_find_deadend): New prototype.
+	* cfganal.c (dfs_find_deadend): No longer static.  Use bitmap
+	instead of sbitmap for visited.
+	(flow_dfs_compute_reverse_execute): Use dfs_find_deadend here, too.
+	* dominance.c (calc_dfs_tree): If saw_unconnected,
+	traverse from dfs_find_deadend of unconnected b
+	instead of b directly.
+
 2012-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Emit frame info for the
