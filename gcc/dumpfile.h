@@ -113,8 +113,8 @@ struct dump_file_info
   const char *alt_filename;     /* filename for the -fopt-info stream  */
   FILE *pstream;                /* pass-specific dump stream  */
   FILE *alt_stream;             /* -fopt-info stream */
-  int optgroup_flags;           /* optgroup flags for -fopt-info */
   int pflags;                   /* dump flags */
+  int optgroup_flags;           /* optgroup flags for -fopt-info */
   int alt_flags;                /* flags for opt-info */
   int pstate;                   /* state of pass-specific stream */
   int alt_state;                /* state of the -fopt-info stream */
