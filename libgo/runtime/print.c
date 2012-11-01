@@ -4,6 +4,7 @@
 
 #include <stdarg.h>
 #include "runtime.h"
+#include "array.h"
 
 //static Lock debuglock;
 
@@ -294,8 +295,8 @@ runtime_printstring(String v)
 	//	gwrite("[string too long]", 17);
 	//	return;
 	// }
-	if(v.__length > 0)
-		gwrite(v.__data, v.__length);
+	if(v.len > 0)
+		gwrite(v.str, v.len);
 }
 
 void

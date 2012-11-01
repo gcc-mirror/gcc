@@ -5,13 +5,14 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
+#include "go-type.h"
 #include "interface.h"
 
 /* Compare a non-empty interface value with an empty interface value.
    Return 0 for equal, not zero for not equal (return value is like
    strcmp).  */
 
-int
+intgo
 __go_interface_empty_compare (struct __go_interface left,
 			      struct __go_empty_interface right)
 {

@@ -106,10 +106,10 @@ __go_map_next_prime (uintptr_t n)
 struct __go_map *
 __go_new_map (const struct __go_map_descriptor *descriptor, uintptr_t entries)
 {
-  int ientries;
+  intgo ientries;
   struct __go_map *ret;
 
-  ientries = (int) entries;
+  ientries = (intgo) entries;
   if (ientries < 0 || (uintptr_t) ientries != entries)
     runtime_panicstring ("map size out of range");
 

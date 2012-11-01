@@ -9,6 +9,7 @@
 #include "backtrace.h"
 
 #include "runtime.h"
+#include "array.h"
 
 /* Argument passed to callback function.  */
 

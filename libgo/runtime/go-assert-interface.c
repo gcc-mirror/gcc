@@ -4,11 +4,12 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "go-panic.h"
+#include "go-type.h"
 #include "interface.h"
-#include "runtime.h"
 
 /* This is called by the compiler to implement a type assertion from
    one interface type to another.  This returns the value that should

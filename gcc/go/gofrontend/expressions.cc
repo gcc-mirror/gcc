@@ -1832,11 +1832,9 @@ Integer_expression::do_get_tree(Translate_context* context)
       // some reason.  Use a type which will fit the value.  We use <,
       // not <=, because we need an extra bit for the sign bit.
       int bits = mpz_sizeinbase(this->val_, 2);
-      if (bits < INT_TYPE_SIZE)
-	{
-	  Type* t = Type::lookup_integer_type("int");
-	  type = type_to_tree(t->get_backend(gogo));
-	}
+      Type* int_type = Type::lookup_integer_type("int");
+      if (bits < int_type->integer_type()->bits())
+	type = type_to_tree(int_type->get_backend(gogo));
       else if (bits < 64)
 	{
 	  Type* t = Type::lookup_integer_type("int64");
@@ -3146,7 +3144,10 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
   else if (type->is_string_type()
 	   && expr_type->integer_type() != NULL)
     {
-      expr_tree = fold_convert(integer_type_node, expr_tree);
+      Type* int_type = Type::lookup_integer_type("int");
+      tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
+
+      expr_tree = fold_convert(int_type_tree, expr_tree);
       if (host_integerp(expr_tree, 0))
 	{
 	  HOST_WIDE_INT intval = tree_low_cst(expr_tree, 0);
@@ -3162,20 +3163,24 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 			       "__go_int_to_string",
 			       1,
 			       type_tree,
-			       integer_type_node,
-			       fold_convert(integer_type_node, expr_tree));
+			       int_type_tree,
+			       expr_tree);
     }
   else if (type->is_string_type() && expr_type->is_slice_type())
     {
       if (!DECL_P(expr_tree))
 	expr_tree = save_expr(expr_tree);
+
+      Type* int_type = Type::lookup_integer_type("int");
+      tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
+
       Array_type* a = expr_type->array_type();
       Type* e = a->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
       tree valptr = fold_convert(const_ptr_type_node,
 				 a->value_pointer_tree(gogo, expr_tree));
       tree len = a->length_tree(gogo, expr_tree);
-      len = fold_convert_loc(this->location().gcc_location(), integer_type_node,
+      len = fold_convert_loc(this->location().gcc_location(), int_type_tree,
                              len);
       if (e->integer_type()->is_byte())
 	{
@@ -3187,7 +3192,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 				   type_tree,
 				   const_ptr_type_node,
 				   valptr,
-				   integer_type_node,
+				   int_type_tree,
 				   len);
 	}
       else
@@ -3201,7 +3206,7 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
 				   type_tree,
 				   const_ptr_type_node,
 				   valptr,
-				   integer_type_node,
+				   int_type_tree,
 				   len);
 	}
     }
@@ -3939,6 +3944,7 @@ Unary_expression::do_check_types(Gogo*)
 tree
 Unary_expression::do_get_tree(Translate_context* context)
 {
+  Gogo* gogo = context->gogo();
   Location loc = this->location();
 
   // Taking the address of a set-and-use-temporary expression requires
@@ -4103,7 +4109,7 @@ Unary_expression::do_get_tree(Translate_context* context)
 					       expr,
 					       fold_convert(TREE_TYPE(expr),
 							    null_pointer_node));
-		tree crash = Gogo::runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
+		tree crash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
 						 loc);
 		expr = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
 				       TREE_TYPE(expr), build3(COND_EXPR,
@@ -4119,7 +4125,7 @@ Unary_expression::do_get_tree(Translate_context* context)
 	if (VOID_TYPE_P(target_type_tree))
 	  {
 	    Type* pt = this->expr_->type()->points_to();
-	    tree ind = type_to_tree(pt->get_backend(context->gogo()));
+	    tree ind = type_to_tree(pt->get_backend(gogo));
 	    expr = fold_convert_loc(loc.gcc_location(),
                                     build_pointer_type(ind), expr);
 	  }
@@ -5668,6 +5674,8 @@ Binary_expression::do_check_types(Gogo*)
 tree
 Binary_expression::do_get_tree(Translate_context* context)
 {
+  Gogo* gogo = context->gogo();
+
   tree left = this->left_->get_tree(context);
   tree right = this->right_->get_tree(context);
 
@@ -5756,7 +5764,7 @@ Binary_expression::do_get_tree(Translate_context* context)
     {
       go_assert(this->op_ == OPERATOR_PLUS);
       Type* st = Type::make_string_type();
-      tree string_type = type_to_tree(st->get_backend(context->gogo()));
+      tree string_type = type_to_tree(st->get_backend(gogo));
       static tree string_plus_decl;
       return Gogo::call_builtin(&string_plus_decl,
 				this->location(),
@@ -5859,7 +5867,7 @@ Binary_expression::do_get_tree(Translate_context* context)
 	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO), 0
 	  int errcode = RUNTIME_ERROR_DIVISION_BY_ZERO;
 	  tree panic = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
-				       Gogo::runtime_error(errcode,
+				       gogo->runtime_error(errcode,
 							   this->location()),
 				       fold_convert_loc(gccloc, TREE_TYPE(ret),
 							integer_zero_node));
@@ -6152,6 +6160,9 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 			    Type* right_type, tree right_tree,
 			    Location location)
 {
+  Type* int_type = Type::lookup_integer_type("int");
+  tree int_type_tree = type_to_tree(int_type->get_backend(context->gogo()));
+
   enum tree_code code;
   switch (op)
     {
@@ -6186,12 +6197,12 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 				     location,
 				     "__go_strcmp",
 				     2,
-				     integer_type_node,
+				     int_type_tree,
 				     string_type,
 				     left_tree,
 				     string_type,
 				     right_tree);
-      right_tree = build_int_cst_type(integer_type_node, 0);
+      right_tree = build_int_cst_type(int_type_tree, 0);
     }
   else if ((left_type->interface_type() != NULL
 	    && right_type->interface_type() == NULL
@@ -6248,7 +6259,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 					 location,
 					 "__go_empty_interface_value_compare",
 					 3,
-					 integer_type_node,
+					 int_type_tree,
 					 TREE_TYPE(left_tree),
 					 left_tree,
 					 TREE_TYPE(descriptor),
@@ -6267,7 +6278,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 					 location,
 					 "__go_interface_value_compare",
 					 3,
-					 integer_type_node,
+					 int_type_tree,
 					 TREE_TYPE(left_tree),
 					 left_tree,
 					 TREE_TYPE(descriptor),
@@ -6279,7 +6290,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 	  // This can panic if the type is not comparable.
 	  TREE_NOTHROW(interface_value_compare_decl) = 0;
 	}
-      right_tree = build_int_cst_type(integer_type_node, 0);
+      right_tree = build_int_cst_type(int_type_tree, 0);
 
       if (make_tmp != NULL_TREE)
 	left_tree = build2(COMPOUND_EXPR, TREE_TYPE(left_tree), make_tmp,
@@ -6296,7 +6307,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 					 location,
 					 "__go_empty_interface_compare",
 					 2,
-					 integer_type_node,
+					 int_type_tree,
 					 TREE_TYPE(left_tree),
 					 left_tree,
 					 TREE_TYPE(right_tree),
@@ -6314,7 +6325,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 					 location,
 					 "__go_interface_compare",
 					 2,
-					 integer_type_node,
+					 int_type_tree,
 					 TREE_TYPE(left_tree),
 					 left_tree,
 					 TREE_TYPE(right_tree),
@@ -6339,7 +6350,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 					 location,
 					 "__go_interface_empty_compare",
 					 2,
-					 integer_type_node,
+					 int_type_tree,
 					 TREE_TYPE(left_tree),
 					 left_tree,
 					 TREE_TYPE(right_tree),
@@ -6350,7 +6361,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 	  TREE_NOTHROW(interface_empty_compare_decl) = 0;
 	}
 
-      right_tree = build_int_cst_type(integer_type_node, 0);
+      right_tree = build_int_cst_type(int_type_tree, 0);
     }
 
   if (left_type->is_nil_type()
@@ -7869,6 +7880,9 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	    arg_tree = build_fold_indirect_ref(arg_tree);
 	  }
 
+	Type* int_type = Type::lookup_integer_type("int");
+	tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
+
 	tree val_tree;
 	if (this->code_ == BUILTIN_LEN)
 	  {
@@ -7893,7 +7907,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      location,
 					      "__go_map_len",
 					      1,
-					      integer_type_node,
+					      int_type_tree,
 					      arg_type_tree,
 					      arg_tree);
 	      }
@@ -7905,7 +7919,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      location,
 					      "__go_chan_len",
 					      1,
-					      integer_type_node,
+					      int_type_tree,
 					      arg_type_tree,
 					      arg_tree);
 	      }
@@ -7934,7 +7948,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 					      location,
 					      "__go_chan_cap",
 					      1,
-					      integer_type_node,
+					      int_type_tree,
 					      arg_type_tree,
 					      arg_tree);
 	      }
@@ -7942,15 +7956,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	      go_unreachable();
 	  }
 
-	if (val_tree == error_mark_node)
-	  return error_mark_node;
-
-	Type* int_type = Type::lookup_integer_type("int");
-	tree type_tree = type_to_tree(int_type->get_backend(gogo));
-	if (type_tree == TREE_TYPE(val_tree))
-	  return val_tree;
-	else
-	  return fold(convert_to_integer(type_tree, val_tree));
+	return fold_convert_loc(location.gcc_location(), int_type_tree,
+				val_tree);
       }
 
     case BUILTIN_PRINT:
@@ -9872,7 +9879,7 @@ Array_index_expression::do_get_tree(Translate_context* context)
 	      : (this->end_ == NULL
 		 ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
 		 : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
-  tree crash = Gogo::runtime_error(code, loc);
+  tree crash = gogo->runtime_error(code, loc);
 
   if (this->end_ == NULL)
     {
@@ -10185,7 +10192,9 @@ String_index_expression::do_get_tree(Translate_context* context)
 
   tree length_tree = String_type::length_tree(context->gogo(), string_tree);
   length_tree = save_expr(length_tree);
-  tree length_type = TREE_TYPE(length_tree);
+
+  Type* int_type = Type::lookup_integer_type("int");
+  tree length_type = type_to_tree(int_type->get_backend(context->gogo()));
 
   tree bad_index = boolean_false_node;
 
@@ -10205,7 +10214,7 @@ String_index_expression::do_get_tree(Translate_context* context)
   int code = (this->end_ == NULL
 	      ? RUNTIME_ERROR_STRING_INDEX_OUT_OF_BOUNDS
 	      : RUNTIME_ERROR_STRING_SLICE_OUT_OF_BOUNDS);
-  tree crash = Gogo::runtime_error(code, loc);
+  tree crash = context->gogo()->runtime_error(code, loc);
 
   if (this->end_ == NULL)
     {

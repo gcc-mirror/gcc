@@ -30,7 +30,7 @@ enum Runtime_function_type
   RFT_BOOL,
   // Go type *bool, C type _Bool*.
   RFT_BOOLPTR,
-  // Go type int, C type int.
+  // Go type int, C type intgo.
   RFT_INT,
   // Go type int32, C type int32_t.
   RFT_INT32,

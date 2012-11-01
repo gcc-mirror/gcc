@@ -558,7 +558,7 @@ class Gogo
 	       tree rettype, ...);
 
   // Build a call to the runtime error function.
-  static tree
+  tree
   runtime_error(int code, Location);
 
   // Build a builtin struct with a list of fields.

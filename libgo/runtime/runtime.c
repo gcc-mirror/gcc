@@ -9,7 +9,6 @@
 #include "runtime.h"
 #include "array.h"
 #include "go-panic.h"
-#include "go-string.h"
 
 int32
 runtime_gotraceback(void)
@@ -93,9 +92,9 @@ runtime_getenv(const char *s)
 	envv = (String*)syscall_Envs.__values;
 	envc = syscall_Envs.__count;
 	for(i=0; i<envc; i++){
-		if(envv[i].__length <= len)
+		if(envv[i].len <= len)
 			continue;
-		v = (const byte*)envv[i].__data;
+		v = (const byte*)envv[i].str;
 		for(j=0; j<len; j++)
 			if(bs[j] != v[j])
 				goto nomatch;

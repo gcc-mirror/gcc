@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "config.h"
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
@@ -19,7 +18,7 @@ Signame (int sig)
   const char* s = NULL;
   char buf[100];
   size_t len;
-  unsigned char *data;
+  byte *data;
   String ret;
 
 #if defined(HAVE_STRSIGNAL)
@@ -34,7 +33,7 @@ Signame (int sig)
   len = __builtin_strlen (s);
   data = runtime_mallocgc (len, FlagNoPointers, 0, 0);
   __builtin_memcpy (data, s, len);
-  ret.__data = data;
-  ret.__length = len;
+  ret.str = data;
+  ret.len = len;
   return ret;
 }
