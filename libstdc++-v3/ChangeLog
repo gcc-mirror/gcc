@@ -1,3 +1,18 @@
+2012-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h (forward_list::assign): Dispatch to new
+	functions based on assignability of elements.
+	(forward_list::_M_assign): Add overloaded functions for assigning
+	via assignment or via clearing and insertion.
+	(forward_list::_M_assign_val): Likewise.
+	(forward_list::_M_move_assign(forward_list&&, false_type)): Do not
+	erase elements that are not moved.
+	* include/bits/forward_list.tcc (forward_list::operator=): Call
+	assign() to copy elements.
+	* testsuite/23_containers/forward_list/cons/10.cc: New.
+	* testsuite/23_containers/forward_list/cons/11.cc: New.
+	* testsuite/23_containers/forward_list/cons/12.cc: New.
+
 2012-10-31  Jonathan Yong  <jon_y@users.sourceforge.net>
 
 	* config/os/mingw32-w64/os_defines.h: Do not define anymore
