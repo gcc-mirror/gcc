@@ -1,3 +1,7 @@
+2012-11-01  Steve Ellcey  <sellcey@mips.com>
+
+	* target-globals.c (save_target_globals): Save lra_int struct.
+
 2012-11-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/standards.texi (Standards): Adjust reference to Go
