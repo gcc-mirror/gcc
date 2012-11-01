@@ -1,3 +1,248 @@
+2012-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/18_support/initializer_list/range_access.cc: Fix copying
+	permission statement.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	808590.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	move_iterators/1.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/
+	move_iterators/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/shrink_to_fit.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/range_access/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/23_containers/array/element_access/at_neg.cc: Likewise.
+	* testsuite/23_containers/array/range_access.cc: Likewise.
+	* testsuite/23_containers/deque/capacity/29134-2.cc: Likewise.
+	* testsuite/23_containers/deque/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/deque/capacity/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/deque/range_access.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/do_the_right_thing.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/1.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/10.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/11.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/12.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/2.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/4.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/5.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/6.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/7.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/8.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/9.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/clear.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after5_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after6_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after7_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after8_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/erase_after9_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/move_constructor.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after5_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after6_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/splice_after7_neg.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/debug/swap.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/1.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/2.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/4.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/5.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/6.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/1.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/2.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/4.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/5.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/6.cc: Likewise.
+	* testsuite/23_containers/forward_list/operations/7.cc: Likewise.
+	* testsuite/23_containers/forward_list/range_access.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	do_the_right_thing.cc: Likewise.
+	* testsuite/23_containers/list/capacity/1.cc: Likewise.
+	* testsuite/23_containers/list/capacity/1.h: Likewise.
+	* testsuite/23_containers/list/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/1.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/1.h: Likewise.
+	* testsuite/23_containers/list/modifiers/1_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/2.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/2.h: Likewise.
+	* testsuite/23_containers/list/modifiers/3.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/3.h: Likewise.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Likewise.
+	* testsuite/23_containers/list/modifiers/insert/25288.h: Likewise.
+	* testsuite/23_containers/list/operations/1.cc: Likewise.
+	* testsuite/23_containers/list/operations/1.h: Likewise.
+	* testsuite/23_containers/list/operations/2.cc: Likewise.
+	* testsuite/23_containers/list/operations/2.h: Likewise.
+	* testsuite/23_containers/list/operations/2_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/operations/3.cc: Likewise.
+	* testsuite/23_containers/list/operations/3.h: Likewise.
+	* testsuite/23_containers/list/operations/3_c++0x.cc: Likewise.
+	* testsuite/23_containers/list/operations/4.cc: Likewise.
+	* testsuite/23_containers/list/operations/4.h: Likewise.
+	* testsuite/23_containers/list/operations/42352.cc: Likewise.
+	* testsuite/23_containers/list/operations/5.cc: Likewise.
+	* testsuite/23_containers/list/operations/5.h: Likewise.
+	* testsuite/23_containers/list/range_access.cc: Likewise.
+	* testsuite/23_containers/list/requirements/do_the_right_thing.cc:
+	Likewise.
+	* testsuite/23_containers/map/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/map/range_access.cc: Likewise.
+	* testsuite/23_containers/multimap/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/multimap/range_access.cc: Likewise.
+	* testsuite/23_containers/multiset/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/multiset/range_access.cc: Likewise.
+	* testsuite/23_containers/set/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/set/range_access.cc: Likewise.
+	* testsuite/23_containers/unordered_map/final_hash.cc: Likewise.
+	* testsuite/23_containers/unordered_map/observers.cc: Likewise.
+	* testsuite/23_containers/unordered_map/range_access.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/52942.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/53067.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/requirements/53339.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/final_hash.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/observers.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/range_access.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/53339.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/final_hash.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/observers.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/range_access.cc: Likewise.
+	* testsuite/23_containers/unordered_set/final_hash.cc: Likewise.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/observers.cc: Likewise.
+	* testsuite/23_containers/unordered_set/range_access.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/52942.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/requirements/53067.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Likewise.
+	* testsuite/23_containers/vector/capacity/29134-2.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/shrink_to_fit.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/shrink_to_fit2.cc: Likewise.
+	* testsuite/23_containers/vector/range_access.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/do_the_right_thing.cc:
+	Likewise.
+	* testsuite/24_iterators/range_access.cc: Likewise.
+	* testsuite/25_algorithms/copy/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/3.cc: Likewise.
+	* testsuite/25_algorithms/copy/34595.cc: Likewise.
+	* testsuite/25_algorithms/copy/4.cc: Likewise.
+	* testsuite/25_algorithms/copy/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/1.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/3.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/char/4.cc: Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/1.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/3.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/4.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_backward/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/1.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/2.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/3.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/4.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/50119.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/move_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/fill/4.cc: Likewise.
+	* testsuite/25_algorithms/fill_n/1.cc: Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/1.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/char/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/1.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/heap/1.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
+	* testsuite/25_algorithms/heap/moveable2.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/1.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/1.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted/1.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/1.cc: Likewise.
+	* testsuite/25_algorithms/move/1.cc: Likewise.
+	* testsuite/25_algorithms/move/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/deque_iterators/1.cc: Likewise.
+	* testsuite/25_algorithms/partition/1.cc: Likewise.
+	* testsuite/25_algorithms/partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/pop_heap/empty2_neg.cc: Likewise.
+	* testsuite/25_algorithms/pop_heap/empty_neg.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/1.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/moveable.cc: Likewise.
+	* testsuite/25_algorithms/stable_partition/pr52822.cc: Likewise.
+	* testsuite/26_numerics/valarray/range_access.cc: Likewise.
+	* testsuite/28_regex/range_access.cc: Likewise.
+	* testsuite/ext/vstring/capacity/29134.cc: Likewise.
+	* testsuite/ext/vstring/capacity/shrink_to_fit.cc: Likewise.
+	* testsuite/ext/vstring/hash/char/1.cc: Likewise.
+	* testsuite/ext/vstring/hash/wchar_t/1.cc: Likewise.
+	* testsuite/ext/vstring/range_access.cc: Likewise.
+	* testsuite/ext/vstring/requirements/do_the_right_thing.cc: Likewise.
+	* testsuite/performance/25_algorithms/copy_backward_deque_iterators.cc:
+	Likewise.
+	* testsuite/performance/25_algorithms/copy_deque_iterators.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_map/capacity/29134-map.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/capacity/
+	29134-multimap.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/capacity/
+	29134-multiset.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_set/capacity/29134-set.cc:
+	Likewise.
+
 2012-11-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (__details::_Before_begin<>):
