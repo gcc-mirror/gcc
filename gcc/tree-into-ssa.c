@@ -2673,12 +2673,12 @@ prepare_names_to_update (bool insert_phi_p)
   /* First process names in NEW_SSA_NAMES.  Otherwise, uses of old
      names may be considered to be live-in on blocks that contain
      definitions for their replacements.  */
-  EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (new_ssa_names, 0, i, sbi)
     prepare_def_site_for (ssa_name (i), insert_phi_p);
 
   /* If an old name is in NAMES_TO_RELEASE, we cannot remove it from
      OLD_SSA_NAMES, but we have to ignore its definition site.  */
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (old_ssa_names, 0, i, sbi)
     {
       if (names_to_release == NULL || !bitmap_bit_p (names_to_release, i))
 	prepare_def_site_for (ssa_name (i), insert_phi_p);
@@ -2738,7 +2738,7 @@ dump_update_ssa (FILE *file)
       fprintf (file, "N_i -> { O_1 ... O_j } means that N_i replaces "
 	             "O_1, ..., O_j\n\n");
 
-      EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (new_ssa_names, 0, i, sbi)
 	dump_names_replaced_by (file, ssa_name (i));
     }
 
@@ -3242,7 +3242,7 @@ update_ssa (unsigned update_flags)
 	     for traversal.  */
 	  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (old_ssa_names));
 	  bitmap_copy (tmp, old_ssa_names);
-	  EXECUTE_IF_SET_IN_SBITMAP (tmp, 0, i, sbi)
+	  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,
 	                                  update_flags);
 	  sbitmap_free (tmp);
@@ -3266,7 +3266,7 @@ update_ssa (unsigned update_flags)
 
   /* Reset the current definition for name and symbol before renaming
      the sub-graph.  */
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (old_ssa_names, 0, i, sbi)
     get_ssa_name_ann (ssa_name (i))->info.current_def = NULL_TREE;
 
   FOR_EACH_VEC_ELT (tree, symbols_to_rename, i, sym)

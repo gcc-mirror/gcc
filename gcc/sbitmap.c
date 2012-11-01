@@ -656,7 +656,7 @@ bitmap_first_set_bit (const_sbitmap bmap)
   unsigned int n = 0;
   sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (bmap, 0, n, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (bmap, 0, n, sbi)
     return n;
   return -1;
 }

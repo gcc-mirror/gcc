@@ -438,7 +438,7 @@ bitmap_and_into (ebitmap dst, ebitmap src)
      the result, AND'ing them.  */
   bitmap_and (dst->wordmask, dst->wordmask, src->wordmask);
 
-  EXECUTE_IF_SET_IN_SBITMAP (dst->wordmask, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (dst->wordmask, 0, i, sbi)
     {
       EBITMAP_ELT_TYPE tmpword = ebitmap_array_get (src, srceltindex++);
       tmpword &= ebitmap_array_get (dst, dsteltindex++);
@@ -490,7 +490,7 @@ bitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
 		      0);
   bitmap_and (dst->wordmask, src1->wordmask, src2->wordmask);
 
-  EXECUTE_IF_SET_IN_SBITMAP (dst->wordmask, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (dst->wordmask, 0, i, sbi)
     {
       bool src1hasword, src2hasword;
 
@@ -598,7 +598,7 @@ bitmap_ior_into (ebitmap dst, ebitmap src)
   newarraysize = src->numwords + dst->numwords;
   newarray = XNEWVEC (EBITMAP_ELT_TYPE, newarraysize);
 
-  EXECUTE_IF_SET_IN_SBITMAP (tempmask, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (tempmask, 0, i, sbi)
     {
       bool dsthasword, srchasword;
 
@@ -707,7 +707,7 @@ bitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
   newarraysize = src1->numwords + src2->numwords;
   newarray = XNEWVEC (EBITMAP_ELT_TYPE, newarraysize);
 
-  EXECUTE_IF_SET_IN_SBITMAP (tempmask, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (tempmask, 0, i, sbi)
     {
       bool src1hasword, src2hasword;
       EBITMAP_ELT_TYPE tmpword;
@@ -803,7 +803,7 @@ bitmap_and_compl_into (ebitmap dst, ebitmap src)
   if (src->numwords == 0)
     return false;
 
-  EXECUTE_IF_SET_IN_SBITMAP (dst->wordmask, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (dst->wordmask, 0, i, sbi)
     {
       bool srchasword;
 
@@ -886,7 +886,7 @@ bitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
   newarraysize = src1->numwords;
   newarray = XNEWVEC (EBITMAP_ELT_TYPE, newarraysize);
 
-  EXECUTE_IF_SET_IN_SBITMAP (src1->wordmask, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (src1->wordmask, 0, i, sbi)
     {
       bool src2hasword;
       EBITMAP_ELT_TYPE tmpword;

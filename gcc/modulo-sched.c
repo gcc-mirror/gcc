@@ -615,7 +615,7 @@ schedule_reg_move (partial_schedule_ptr ps, int i_reg_move,
 
   /* Handle the dependencies between the move and previously-scheduled
      successors.  */
-  EXECUTE_IF_SET_IN_SBITMAP (move->uses, 0, u, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (move->uses, 0, u, sbi)
     {
       this_insn = ps_rtl_insn (ps, u);
       this_latency = insn_latency (move->insn, this_insn);
@@ -829,7 +829,7 @@ apply_reg_moves (partial_schedule_ptr ps)
       unsigned int i_use;
       sbitmap_iterator sbi;
 
-      EXECUTE_IF_SET_IN_SBITMAP (move->uses, 0, i_use, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (move->uses, 0, i_use, sbi)
 	{
 	  replace_rtx (ps->g->nodes[i_use].insn, move->old_reg, move->new_reg);
 	  df_insn_rescan (ps->g->nodes[i_use].insn);
@@ -2664,7 +2664,7 @@ find_max_asap (ddg_ptr g, sbitmap nodes)
   int result = -1;
   sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (nodes, 0, u, sbi)
     {
       ddg_node_ptr u_node = &g->nodes[u];
 
@@ -2686,7 +2686,7 @@ find_max_hv_min_mob (ddg_ptr g, sbitmap nodes)
   int result = -1;
   sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (nodes, 0, u, sbi)
     {
       ddg_node_ptr u_node = &g->nodes[u];
 
@@ -2715,7 +2715,7 @@ find_max_dv_min_mob (ddg_ptr g, sbitmap nodes)
   int result = -1;
   sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (nodes, 0, u, sbi)
     {
       ddg_node_ptr u_node = &g->nodes[u];
 

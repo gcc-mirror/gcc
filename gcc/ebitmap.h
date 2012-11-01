@@ -94,8 +94,9 @@ typedef struct {
 static inline void
 ebitmap_iter_init (ebitmap_iterator *i, ebitmap bmp, unsigned int min)
 {
-  sbitmap_iter_init (&i->maskiter, bmp->wordmask,
-		     min / EBITMAP_ELT_BITS);
+  unsigned unused;
+  bmp_iter_set_init (&i->maskiter, bmp->wordmask,
+		     min / EBITMAP_ELT_BITS, &unused);
   i->size = bmp->numwords;
   if (i->size == 0)
     {
@@ -131,14 +132,15 @@ static inline bool
 ebitmap_iter_cond (ebitmap_iterator *i, unsigned int *n)
 {
   unsigned int ourn = 0;
+  unsigned unused;
 
   if (i->size == 0)
     return false;
 
   if (i->word == 0)
     {
-      sbitmap_iter_next (&i->maskiter);
-      if (!sbitmap_iter_cond (&i->maskiter, &ourn))
+      bmp_iter_next (&i->maskiter, &unused);
+      if (!bmp_iter_set (&i->maskiter, &ourn))
 	return false;
       i->bit_num = ourn * EBITMAP_ELT_BITS;
       i->word = i->ptr[i->eltnum++];

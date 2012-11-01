@@ -1480,7 +1480,7 @@ remove_some_program_points_and_update_live_ranges (void)
   map = (int *) ira_allocate (sizeof (int) * ira_max_point);
   n = -1;
   prev_born_p = prev_dead_p = false;
-  EXECUTE_IF_SET_IN_SBITMAP (born_or_dead, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (born_or_dead, 0, i, sbi)
     {
       born_p = bitmap_bit_p (born, i);
       dead_p = bitmap_bit_p (dead, i);

@@ -1324,7 +1324,7 @@ undistribute_ops_list (enum tree_code opcode,
   ctable = htab_create (15, oecount_hash, oecount_eq, NULL);
   subops = XCNEWVEC (VEC (operand_entry_t, heap) *,
 		     VEC_length (operand_entry_t, *ops));
-  EXECUTE_IF_SET_IN_SBITMAP (candidates, 0, i, sbi0)
+  EXECUTE_IF_SET_IN_BITMAP (candidates, 0, i, sbi0)
     {
       gimple oedef;
       enum tree_code oecode;
@@ -1389,7 +1389,7 @@ undistribute_ops_list (enum tree_code opcode,
          the common operand in their inner chain.  */
       bitmap_clear (candidates2);
       nr_candidates2 = 0;
-      EXECUTE_IF_SET_IN_SBITMAP (candidates, 0, i, sbi0)
+      EXECUTE_IF_SET_IN_BITMAP (candidates, 0, i, sbi0)
 	{
 	  gimple oedef;
 	  enum tree_code oecode;
@@ -1431,7 +1431,7 @@ undistribute_ops_list (enum tree_code opcode,
 	      print_generic_expr (dump_file, oe1->op, 0);
 	    }
 	  zero_one_operation (&oe1->op, c->oecode, c->op);
-	  EXECUTE_IF_SET_IN_SBITMAP (candidates2, first+1, i, sbi0)
+	  EXECUTE_IF_SET_IN_BITMAP (candidates2, first+1, i, sbi0)
 	    {
 	      gimple sum;
 	      oe2 = VEC_index (operand_entry_t, *ops, i);
