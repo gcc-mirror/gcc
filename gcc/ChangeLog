@@ -1,3 +1,9 @@
+2012-11-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55001
+	* tree-vect-generic.c (expand_vector_condition): New function.
+	(expand_vector_operations_1): Call it.
+
 2012-11-01  Steve Ellcey  <sellcey@mips.com>
 
 	* target-globals.c (save_target_globals): Save lra_int struct.
