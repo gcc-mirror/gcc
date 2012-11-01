@@ -861,6 +861,7 @@ struct gimple_opt_pass pass_dominator =
  {
   GIMPLE_PASS,
   "dom",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dominator,			/* gate */
   tree_ssa_dominator_optimize,		/* execute */
   NULL,					/* sub */
@@ -3033,6 +3034,7 @@ struct gimple_opt_pass pass_phi_only_cprop =
  {
   GIMPLE_PASS,
   "phicprop",                           /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dominator,                       /* gate */
   eliminate_degenerate_phis,            /* execute */
   NULL,                                 /* sub */

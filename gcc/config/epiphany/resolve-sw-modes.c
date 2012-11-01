@@ -166,6 +166,7 @@ struct rtl_opt_pass pass_resolve_sw_modes =
  {
   RTL_PASS,
   "resolve_sw_modes",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_resolve_sw_modes,		/* gate */
   resolve_sw_modes,			/* execute */
   NULL,					/* sub */

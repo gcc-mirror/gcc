@@ -46,6 +46,9 @@ struct opt_pass
      name.  If the name starts with a star, no dump happens. */
   const char *name;
 
+  /* The -fopt-info optimization group flags as defined in dumpfile.h. */
+  unsigned int optinfo_flags;
+
   /* If non-null, this pass and all sub-passes are executed only if
      the function returns true.  */
   bool (*gate) (void);

@@ -650,6 +650,7 @@ struct rtl_opt_pass pass_stack_adjustments =
  {
   RTL_PASS,
   "csa",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_stack_adjustments,        /* gate */
   rest_of_handle_stack_adjustments,     /* execute */
   NULL,                                 /* sub */

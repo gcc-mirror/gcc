@@ -1578,6 +1578,7 @@ struct gimple_opt_pass pass_loop_distribution =
  {
   GIMPLE_PASS,
   "ldist",			/* name */
+  OPTGROUP_LOOP,                /* optinfo_flags */
   gate_tree_loop_distribution,  /* gate */
   tree_loop_distribution,       /* execute */
   NULL,				/* sub */

@@ -47,6 +47,7 @@ struct gimple_opt_pass pass_tree_loop =
  {
   GIMPLE_PASS,
   "loop",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_loop,			/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
@@ -82,6 +83,7 @@ struct gimple_opt_pass pass_tree_loop_init =
  {
   GIMPLE_PASS,
   "loopinit",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   NULL,					/* gate */
   tree_ssa_loop_init,			/* execute */
   NULL,					/* sub */
@@ -118,6 +120,7 @@ struct gimple_opt_pass pass_lim =
  {
   GIMPLE_PASS,
   "lim",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_ssa_loop_im,		/* gate */
   tree_ssa_loop_im,			/* execute */
   NULL,					/* sub */
@@ -154,6 +157,7 @@ struct gimple_opt_pass pass_tree_unswitch =
  {
   GIMPLE_PASS,
   "unswitch",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_ssa_loop_unswitch,		/* gate */
   tree_ssa_loop_unswitch,		/* execute */
   NULL,					/* sub */
@@ -190,6 +194,7 @@ struct gimple_opt_pass pass_predcom =
  {
   GIMPLE_PASS,
   "pcom",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_predictive_commoning,	/* gate */
   run_tree_predictive_commoning,	/* execute */
   NULL,					/* sub */
@@ -226,6 +231,8 @@ struct gimple_opt_pass pass_vectorize =
  {
   GIMPLE_PASS,
   "vect",                               /* name */
+  OPTGROUP_LOOP
+  | OPTGROUP_VEC,                       /* optinfo_flags */
   gate_tree_vectorize,                  /* gate */
   tree_vectorize,                       /* execute */
   NULL,                                 /* sub */
@@ -275,6 +282,7 @@ struct gimple_opt_pass pass_graphite =
  {
   GIMPLE_PASS,
   "graphite0",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_graphite_transforms,		/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
@@ -294,6 +302,7 @@ struct gimple_opt_pass pass_graphite_transforms =
  {
   GIMPLE_PASS,
   "graphite",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_graphite_transforms,		/* gate */
   graphite_transforms,       		/* execute */
   NULL,					/* sub */
@@ -331,6 +340,7 @@ struct gimple_opt_pass pass_check_data_deps =
  {
   GIMPLE_PASS,
   "ckdd",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_check_data_deps,	        	/* gate */
   check_data_deps,       		/* execute */
   NULL,					/* sub */
@@ -367,6 +377,7 @@ struct gimple_opt_pass pass_iv_canon =
  {
   GIMPLE_PASS,
   "ivcanon",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_ssa_loop_ivcanon,		/* gate */
   tree_ssa_loop_ivcanon,	       	/* execute */
   NULL,					/* sub */
@@ -394,6 +405,7 @@ struct gimple_opt_pass pass_scev_cprop =
  {
   GIMPLE_PASS,
   "sccp",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_scev_const_prop,			/* gate */
   scev_const_prop,	       		/* execute */
   NULL,					/* sub */
@@ -428,6 +440,7 @@ struct gimple_opt_pass pass_record_bounds =
  {
   GIMPLE_PASS,
   "*record_bounds",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   tree_ssa_loop_bounds,		       	/* execute */
   NULL,					/* sub */
@@ -466,6 +479,7 @@ struct gimple_opt_pass pass_complete_unroll =
  {
   GIMPLE_PASS,
   "cunroll",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_complete_unroll,		/* gate */
   tree_complete_unroll,		       	/* execute */
   NULL,					/* sub */
@@ -512,6 +526,7 @@ struct gimple_opt_pass pass_complete_unrolli =
  {
   GIMPLE_PASS,
   "cunrolli",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_complete_unroll_inner,	/* gate */
   tree_complete_unroll_inner,	       	/* execute */
   NULL,					/* sub */
@@ -551,6 +566,7 @@ struct gimple_opt_pass pass_parallelize_loops =
  {
   GIMPLE_PASS,
   "parloops",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_parallelize_loops,		/* gate */
   tree_parallelize_loops,      		/* execute */
   NULL,					/* sub */
@@ -587,6 +603,7 @@ struct gimple_opt_pass pass_loop_prefetch =
  {
   GIMPLE_PASS,
   "aprefetch",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_ssa_loop_prefetch,		/* gate */
   tree_ssa_loop_prefetch,	       	/* execute */
   NULL,					/* sub */
@@ -624,6 +641,7 @@ struct gimple_opt_pass pass_iv_optimize =
  {
   GIMPLE_PASS,
   "ivopts",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_tree_ssa_loop_ivopts,		/* gate */
   tree_ssa_loop_ivopts,		       	/* execute */
   NULL,					/* sub */
@@ -654,6 +672,7 @@ struct gimple_opt_pass pass_tree_loop_done =
  {
   GIMPLE_PASS,
   "loopdone",				/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   NULL,					/* gate */
   tree_ssa_loop_done,			/* execute */
   NULL,					/* sub */

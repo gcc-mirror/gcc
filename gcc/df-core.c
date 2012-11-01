@@ -754,6 +754,7 @@ struct rtl_opt_pass pass_df_initialize_opt =
  {
   RTL_PASS,
   "dfinit",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_opt,                             /* gate */
   rest_of_handle_df_initialize,         /* execute */
   NULL,                                 /* sub */
@@ -781,6 +782,7 @@ struct rtl_opt_pass pass_df_initialize_no_opt =
  {
   RTL_PASS,
   "no-opt dfinit",                      /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_no_opt,                          /* gate */
   rest_of_handle_df_initialize,         /* execute */
   NULL,                                 /* sub */
@@ -828,6 +830,7 @@ struct rtl_opt_pass pass_df_finish =
  {
   RTL_PASS,
   "dfinish",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   rest_of_handle_df_finish,             /* execute */
   NULL,                                 /* sub */

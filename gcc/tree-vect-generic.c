@@ -1435,6 +1435,7 @@ struct gimple_opt_pass pass_lower_vector =
  {
   GIMPLE_PASS,
   "veclower",				/* name */
+  OPTGROUP_VEC,                         /* optinfo_flags */
   gate_expand_vector_operations_ssa,    /* gate */
   expand_vector_operations,		/* execute */
   NULL,					/* sub */
@@ -1457,6 +1458,7 @@ struct gimple_opt_pass pass_lower_vector_ssa =
  {
   GIMPLE_PASS,
   "veclower2",				/* name */
+  OPTGROUP_VEC,                         /* optinfo_flags */
   0,	                                /* gate */
   expand_vector_operations,		/* execute */
   NULL,					/* sub */

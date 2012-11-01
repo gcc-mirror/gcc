@@ -2123,6 +2123,7 @@ struct gimple_opt_pass pass_ccp =
  {
   GIMPLE_PASS,
   "ccp",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ccp,				/* gate */
   do_ssa_ccp,				/* execute */
   NULL,					/* sub */
@@ -2507,6 +2508,7 @@ struct gimple_opt_pass pass_fold_builtins =
  {
   GIMPLE_PASS,
   "fab",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_fold_all_builtins,		/* execute */
   NULL,					/* sub */

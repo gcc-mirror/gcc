@@ -4300,6 +4300,7 @@ struct gimple_opt_pass pass_reassoc =
  {
   GIMPLE_PASS,
   "reassoc",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tree_ssa_reassoc,		/* gate */
   execute_reassoc,			/* execute */
   NULL,					/* sub */

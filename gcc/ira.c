@@ -4716,6 +4716,7 @@ struct rtl_opt_pass pass_ira =
  {
   RTL_PASS,
   "ira",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_ira,		        /* execute */
   NULL,                                 /* sub */
@@ -4742,6 +4743,7 @@ struct rtl_opt_pass pass_reload =
  {
   RTL_PASS,
   "reload",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_reload,	        /* execute */
   NULL,                                 /* sub */

@@ -2019,6 +2019,7 @@ struct gimple_opt_pass pass_early_inline =
  {
   GIMPLE_PASS,
   "einline",	 			/* name */
+  OPTGROUP_INLINE,                      /* optinfo_flags */
   NULL,					/* gate */
   early_inliner,			/* execute */
   NULL,					/* sub */
@@ -2051,6 +2052,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
  {
   IPA_PASS,
   "inline",				/* name */
+  OPTGROUP_INLINE,                      /* optinfo_flags */
   gate_ipa_inline,			/* gate */
   ipa_inline,				/* execute */
   NULL,					/* sub */

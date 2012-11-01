@@ -9234,6 +9234,7 @@ struct gimple_opt_pass pass_vrp =
  {
   GIMPLE_PASS,
   "vrp",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_vrp,				/* gate */
   execute_vrp,				/* execute */
   NULL,					/* sub */

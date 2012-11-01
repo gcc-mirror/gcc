@@ -1,3 +1,4 @@
+
 /* Perform branch target register load optimizations.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
@@ -1509,6 +1510,7 @@ struct rtl_opt_pass pass_branch_target_load_optimize1 =
  {
   RTL_PASS,
   "btl1",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_branch_target_load_optimize1,      /* gate */
   rest_of_handle_branch_target_load_optimize1,   /* execute */
   NULL,                                 /* sub */
@@ -1558,6 +1560,7 @@ struct rtl_opt_pass pass_branch_target_load_optimize2 =
  {
   RTL_PASS,
   "btl2",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_branch_target_load_optimize2,      /* gate */
   rest_of_handle_branch_target_load_optimize2,   /* execute */
   NULL,                                 /* sub */

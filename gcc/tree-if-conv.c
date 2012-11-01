@@ -1859,6 +1859,7 @@ struct gimple_opt_pass pass_if_conversion =
  {
   GIMPLE_PASS,
   "ifcvt",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tree_if_conversion,		/* gate */
   main_tree_if_conversion,		/* execute */
   NULL,					/* sub */

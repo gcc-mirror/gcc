@@ -1951,6 +1951,7 @@ struct gimple_opt_pass pass_phiopt =
  {
   GIMPLE_PASS,
   "phiopt",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_phiopt,				/* gate */
   tree_ssa_phiopt,			/* execute */
   NULL,					/* sub */
@@ -1979,6 +1980,7 @@ struct gimple_opt_pass pass_cselim =
  {
   GIMPLE_PASS,
   "cselim",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_cselim,				/* gate */
   tree_ssa_cs_elim,			/* execute */
   NULL,					/* sub */

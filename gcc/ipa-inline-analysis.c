@@ -2655,6 +2655,7 @@ struct gimple_opt_pass pass_inline_parameters =
  {
   GIMPLE_PASS,
   "inline_param",			/* name */
+  OPTGROUP_INLINE,                      /* optinfo_flags */
   NULL,					/* gate */
   compute_inline_parameters_for_current,/* execute */
   NULL,					/* sub */

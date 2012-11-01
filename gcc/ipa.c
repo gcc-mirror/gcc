@@ -948,6 +948,7 @@ struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
  {
   SIMPLE_IPA_PASS,
   "visibility",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   local_function_and_variable_visibility,/* execute */
   NULL,					/* sub */
@@ -977,6 +978,7 @@ struct simple_ipa_opt_pass pass_ipa_free_inline_summary =
  {
   SIMPLE_IPA_PASS,
   "*free_inline_summary",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   free_inline_summary,			/* execute */
   NULL,					/* sub */
@@ -1015,6 +1017,7 @@ struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
  {
   IPA_PASS,
   "whole-program",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_whole_program_function_and_variable_visibility,/* gate */
   whole_program_function_and_variable_visibility,/* execute */
   NULL,					/* sub */
@@ -1098,6 +1101,7 @@ struct ipa_opt_pass_d pass_ipa_profile =
  {
   IPA_PASS,
   "profile_estimate",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ipa_profile,			/* gate */
   ipa_profile,			        /* execute */
   NULL,					/* sub */
@@ -1408,6 +1412,7 @@ struct ipa_opt_pass_d pass_ipa_cdtor_merge =
  {
   IPA_PASS,
   "cdtor",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ipa_cdtor_merge,			/* gate */
   ipa_cdtor_merge,		        /* execute */
   NULL,					/* sub */

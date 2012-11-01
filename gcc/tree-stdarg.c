@@ -960,6 +960,7 @@ struct gimple_opt_pass pass_stdarg =
  {
   GIMPLE_PASS,
   "stdarg",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_optimize_stdarg,			/* gate */
   execute_optimize_stdarg,		/* execute */
   NULL,					/* sub */

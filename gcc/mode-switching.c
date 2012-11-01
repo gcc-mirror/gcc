@@ -763,6 +763,7 @@ struct rtl_opt_pass pass_mode_switching =
  {
   RTL_PASS,
   "mode_sw",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_mode_switching,                  /* gate */
   rest_of_handle_mode_switching,        /* execute */
   NULL,                                 /* sub */

@@ -1601,6 +1601,7 @@ struct gimple_opt_pass pass_split_functions =
  {
   GIMPLE_PASS,
   "fnsplit",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_split_functions,			/* gate */
   execute_split_functions,		/* execute */
   NULL,					/* sub */
@@ -1642,6 +1643,7 @@ struct gimple_opt_pass pass_feedback_split_functions =
  {
   GIMPLE_PASS,
   "feedback_fnsplit",			/* name */
+  OPTGROUP_NONE,                      /* optinfo_flags */
   gate_feedback_split_functions,	/* gate */
   execute_feedback_split_functions,	/* execute */
   NULL,					/* sub */

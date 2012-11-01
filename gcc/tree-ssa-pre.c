@@ -4766,6 +4766,7 @@ struct gimple_opt_pass pass_pre =
  {
   GIMPLE_PASS,
   "pre",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pre,				/* gate */
   do_pre,				/* execute */
   NULL,					/* sub */
@@ -4819,6 +4820,7 @@ struct gimple_opt_pass pass_fre =
  {
   GIMPLE_PASS,
   "fre",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_fre,				/* gate */
   execute_fre,				/* execute */
   NULL,					/* sub */

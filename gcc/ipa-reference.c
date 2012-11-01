@@ -1181,6 +1181,7 @@ struct ipa_opt_pass_d pass_ipa_reference =
  {
   IPA_PASS,
   "static-var",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_reference,			/* gate */
   propagate,			        /* execute */
   NULL,					/* sub */

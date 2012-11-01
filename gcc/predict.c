@@ -2823,6 +2823,7 @@ struct gimple_opt_pass pass_profile =
  {
   GIMPLE_PASS,
   "profile_estimate",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_estimate_probability,		/* gate */
   tree_estimate_probability_driver,	/* execute */
   NULL,					/* sub */
@@ -2842,6 +2843,7 @@ struct gimple_opt_pass pass_strip_predict_hints =
  {
   GIMPLE_PASS,
   "*strip_predict_hints",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   strip_predict_hints,			/* execute */
   NULL,					/* sub */

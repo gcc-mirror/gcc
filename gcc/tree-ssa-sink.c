@@ -584,6 +584,7 @@ struct gimple_opt_pass pass_sink_code =
  {
   GIMPLE_PASS,
   "sink",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_sink,				/* gate */
   do_sink,				/* execute */
   NULL,					/* sub */

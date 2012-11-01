@@ -1920,6 +1920,7 @@ struct rtl_opt_pass pass_set_nothrow_function_flags =
  {
   RTL_PASS,
   "nothrow",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   set_nothrow_function_flags,           /* execute */
   NULL,                                 /* sub */
@@ -2569,6 +2570,7 @@ struct rtl_opt_pass pass_convert_to_eh_region_ranges =
  {
   RTL_PASS,
   "eh_ranges",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_convert_to_eh_region_ranges,	/* gate */
   convert_to_eh_region_ranges,          /* execute */
   NULL,                                 /* sub */

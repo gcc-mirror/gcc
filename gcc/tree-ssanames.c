@@ -451,6 +451,7 @@ struct gimple_opt_pass pass_release_ssa_names =
  {
   GIMPLE_PASS,
   "release_ssa",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   release_dead_ssa_names,		/* execute */
   NULL,					/* sub */

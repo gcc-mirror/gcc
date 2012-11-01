@@ -3575,6 +3575,7 @@ struct rtl_opt_pass pass_sched =
  {
   RTL_PASS,
   "sched1",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_sched,                    /* gate */
   rest_of_handle_sched,                 /* execute */
   NULL,                                 /* sub */
@@ -3596,6 +3597,7 @@ struct rtl_opt_pass pass_sched2 =
  {
   RTL_PASS,
   "sched2",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_sched2,                   /* gate */
   rest_of_handle_sched2,                /* execute */
   NULL,                                 /* sub */

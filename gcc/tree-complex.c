@@ -1608,6 +1608,7 @@ struct gimple_opt_pass pass_lower_complex =
  {
   GIMPLE_PASS,
   "cplxlower",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   0,					/* gate */
   tree_lower_complex,			/* execute */
   NULL,					/* sub */
@@ -1638,6 +1639,7 @@ struct gimple_opt_pass pass_lower_complex_O0 =
  {
   GIMPLE_PASS,
   "cplxlower0",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_no_optimization,			/* gate */
   tree_lower_complex,			/* execute */
   NULL,					/* sub */

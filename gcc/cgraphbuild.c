@@ -370,6 +370,7 @@ struct gimple_opt_pass pass_build_cgraph_edges =
  {
   GIMPLE_PASS,
   "*build_cgraph_edges",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   build_cgraph_edges,			/* execute */
   NULL,					/* sub */
@@ -487,6 +488,7 @@ struct gimple_opt_pass pass_rebuild_cgraph_edges =
  {
   GIMPLE_PASS,
   "*rebuild_cgraph_edges",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   rebuild_cgraph_edges,			/* execute */
   NULL,					/* sub */
@@ -514,6 +516,7 @@ struct gimple_opt_pass pass_remove_cgraph_callee_edges =
  {
   GIMPLE_PASS,
   "*remove_cgraph_callee_edges",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   remove_cgraph_callee_edges,		/* execute */
   NULL,					/* sub */

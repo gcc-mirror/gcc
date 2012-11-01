@@ -1651,6 +1651,7 @@ struct gimple_opt_pass pass_dce =
  {
   GIMPLE_PASS,
   "dce",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dce,				/* gate */
   tree_ssa_dce,				/* execute */
   NULL,					/* sub */
@@ -1670,6 +1671,7 @@ struct gimple_opt_pass pass_dce_loop =
  {
   GIMPLE_PASS,
   "dceloop",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dce,				/* gate */
   tree_ssa_dce_loop,			/* execute */
   NULL,					/* sub */
@@ -1689,6 +1691,7 @@ struct gimple_opt_pass pass_cd_dce =
  {
   GIMPLE_PASS,
   "cddce",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dce,				/* gate */
   tree_ssa_cd_dce,			/* execute */
   NULL,					/* sub */

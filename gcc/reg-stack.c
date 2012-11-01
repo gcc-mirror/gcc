@@ -3305,6 +3305,7 @@ struct rtl_opt_pass pass_stack_regs =
  {
   RTL_PASS,
   "*stack_regs",                        /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_stack_regs,               /* gate */
   NULL,					/* execute */
   NULL,                                 /* sub */
@@ -3336,6 +3337,7 @@ struct rtl_opt_pass pass_stack_regs_run =
  {
   RTL_PASS,
   "stack",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_stack_regs,            /* execute */
   NULL,                                 /* sub */
