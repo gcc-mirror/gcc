@@ -1,3 +1,8 @@
+2012-11-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55160
+	* gcc.target/sh/pr55160.c: New.
+
 2012-11-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/vsx-mass-1.c: Check for dot symbols in
