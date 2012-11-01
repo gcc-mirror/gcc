@@ -1,3 +1,9 @@
+2012-11-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55150
+	* lra-constraints.c (lra_constraints): Check only pseudos with
+	equivalences.  Add insns with equivalence pseudos.
+
 2012-11-01  Sharad Singhai  <singhai@google.com>
 
 	PR other/55164
