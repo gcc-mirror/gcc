@@ -1,3 +1,9 @@
+2012-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53708
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Preserve
+	user-supplied alignment when used with an explicit section name.
+
 2012-10-31  Dehao Chen  <dehao@google.com>
 
 	* tree-eh.c (do_return_redirection): Set location for jump statement.
