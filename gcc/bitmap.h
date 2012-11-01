@@ -682,10 +682,13 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
    should be treated as a read-only variable as it contains loop
    state.  */
 
+#ifndef EXECUTE_IF_SET_IN_BITMAP
+/* See sbitmap.h for the other definition of EXECUTE_IF_SET_IN_BITMAP.  */
 #define EXECUTE_IF_SET_IN_BITMAP(BITMAP, MIN, BITNUM, ITER)		\
   for (bmp_iter_set_init (&(ITER), (BITMAP), (MIN), &(BITNUM));		\
        bmp_iter_set (&(ITER), &(BITNUM));				\
        bmp_iter_next (&(ITER), &(BITNUM)))
+#endif
 
 /* Loop over all the bits set in BITMAP1 & BITMAP2, starting with MIN
    and setting BITNUM to the bit number.  ITER is a bitmap iterator.

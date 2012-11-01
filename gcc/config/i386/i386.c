@@ -24815,7 +24815,7 @@ core2i7_first_cycle_multipass_backtrack (const void *_data,
   sbitmap_iterator sbi;
 
   gcc_assert (bitmap_last_set_bit (data->ready_try_change) < n_ready);
-  EXECUTE_IF_SET_IN_SBITMAP (data->ready_try_change, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (data->ready_try_change, 0, i, sbi)
     {
       ready_try[i] = 0;
     }

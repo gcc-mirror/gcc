@@ -342,7 +342,7 @@ extract_edgelst (sbitmap set, edgelst *el)
   el->nr_members = 0;
 
   /* Iterate over each word in the bitset.  */
-  EXECUTE_IF_SET_IN_SBITMAP (set, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, sbi)
     {
       edgelst_table[edgelst_last++] = rgn_edges[i];
       el->nr_members++;

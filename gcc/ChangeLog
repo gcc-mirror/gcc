@@ -1,3 +1,17 @@
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* sbitmap.h (sbitmap_iter_init): Rename bmp_iter_set_init and add
+	unused parameter to match bitmap iterator.  Update callers.
+	(sbitmap_iter_cond): Rename bmp_iter_set.  Update callers.
+	(sbitmap_iter_next): Rename bmp_iter_next and add unused parameter to
+	match bitmap iterator.  Update callers.
+	(EXECUTE_IF_SET_IN_SBITMAP_REV): Remove unused.
+	(EXECUTE_IF_SET_IN_SBITMAP): Rename EXECUTE_IF_SET_IN_BITMAP and
+	adjust to be identical to the definition in bitmap.h.  Conditionalize
+	the definition based on not having been defined.  Update callers.
+	* bitmap.h (EXECUTE_IF_SET_IN_BITMAP): Conditionalize the definition
+	based on not having been defined.  (To match the above.)
+
 2012-11-01  Lawrence Crowl  <crowl@google.com>
 
 	* sbitmap.h (TEST_BIT): Rename bitmap_bit_p, normalizing parameter

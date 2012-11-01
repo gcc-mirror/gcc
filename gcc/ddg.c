@@ -801,7 +801,7 @@ print_sccs (FILE *file, ddg_all_sccs_ptr sccs, ddg_ptr g)
   for (i = 0; i < sccs->num_sccs; i++)
     {
       fprintf (file, "SCC number: %d\n", i);
-      EXECUTE_IF_SET_IN_SBITMAP (sccs->sccs[i]->nodes, 0, u, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (sccs->sccs[i]->nodes, 0, u, sbi)
       {
         fprintf (file, "insn num %d\n", u);
         print_rtl_single (file, g->nodes[u].insn);
@@ -893,7 +893,7 @@ create_scc (ddg_ptr g, sbitmap nodes)
   bitmap_copy (scc->nodes, nodes);
 
   /* Mark the backarcs that belong to this SCC.  */
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, u, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (nodes, 0, u, sbi)
     {
       ddg_edge_ptr e;
       ddg_node_ptr n = &g->nodes[u];
@@ -977,7 +977,7 @@ find_successors (sbitmap succ, ddg_ptr g, sbitmap ops)
   unsigned int i = 0;
   sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (ops, 0, i, sbi)
     {
       const sbitmap node_succ = NODE_SUCCESSORS (&g->nodes[i]);
       bitmap_ior (succ, succ, node_succ);
@@ -996,7 +996,7 @@ find_predecessors (sbitmap preds, ddg_ptr g, sbitmap ops)
   unsigned int i = 0;
   sbitmap_iterator sbi;
 
-  EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (ops, 0, i, sbi)
     {
       const sbitmap node_preds = NODE_PREDECESSORS (&g->nodes[i]);
       bitmap_ior (preds, preds, node_preds);
@@ -1141,7 +1141,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
       change = 0;
       bitmap_copy (workset, tmp);
       bitmap_clear (tmp);
-      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (workset, 0, u, sbi)
 	{
 	  ddg_edge_ptr e;
 	  ddg_node_ptr u_node = &g->nodes[u];
@@ -1170,7 +1170,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
       change = 0;
       bitmap_copy (workset, tmp);
       bitmap_clear (tmp);
-      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (workset, 0, u, sbi)
 	{
 	  ddg_edge_ptr e;
 	  ddg_node_ptr u_node = &g->nodes[u];
@@ -1257,7 +1257,7 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
       change = 0;
       bitmap_copy (workset, tmp);
       bitmap_clear (tmp);
-      EXECUTE_IF_SET_IN_SBITMAP (workset, 0, u, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (workset, 0, u, sbi)
 	{
 	  ddg_node_ptr u_node = &g->nodes[u];
 

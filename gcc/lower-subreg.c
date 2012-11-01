@@ -1589,7 +1589,7 @@ decompose_multiword_subregs (bool decompose_copies)
 	 of a basic block, split those blocks now.  Note that we only handle
 	 the case where splitting a load has caused multiple possibly trapping
 	 loads to appear.  */
-      EXECUTE_IF_SET_IN_SBITMAP (sub_blocks, 0, i, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (sub_blocks, 0, i, sbi)
 	{
 	  rtx insn, end;
 	  edge fallthru;

@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
      * cardinality		: sbitmap_popcount
      * choose_one		: bitmap_first_set_bit /
 				  bitmap_last_set_bit
-     * forall			: EXECUTE_IF_SET_IN_SBITMAP
+     * forall			: EXECUTE_IF_SET_IN_BITMAP
      * set_copy			: bitmap_copy / bitmap_copy_n
      * set_intersection		: bitmap_and
      * set_union		: bitmap_ior
@@ -177,7 +177,8 @@ typedef struct {
    MIN.  */
 
 static inline void
-sbitmap_iter_init (sbitmap_iterator *i, const_sbitmap bmp, unsigned int min)
+bmp_iter_set_init (sbitmap_iterator *i, const_sbitmap bmp,
+		   unsigned int min, unsigned *bit_no ATTRIBUTE_UNUSED)
 {
   i->word_num = min / (unsigned int) SBITMAP_ELT_BITS;
   i->bit_num = min;
@@ -196,7 +197,7 @@ sbitmap_iter_init (sbitmap_iterator *i, const_sbitmap bmp, unsigned int min)
    false.  */
 
 static inline bool
-sbitmap_iter_cond (sbitmap_iterator *i, unsigned int *n)
+bmp_iter_set (sbitmap_iterator *i, unsigned int *n)
 {
   /* Skip words that are zeros.  */
   for (; i->word == 0; i->word = i->ptr[i->word_num])
@@ -222,7 +223,7 @@ sbitmap_iter_cond (sbitmap_iterator *i, unsigned int *n)
 /* Advance to the next bit.  */
 
 static inline void
-sbitmap_iter_next (sbitmap_iterator *i)
+bmp_iter_next (sbitmap_iterator *i, unsigned *bit_no ATTRIBUTE_UNUSED)
 {
   i->word >>= 1;
   i->bit_num++;
@@ -232,38 +233,13 @@ sbitmap_iter_next (sbitmap_iterator *i)
    iteration, N is set to the index of the bit being visited.  ITER is
    an instance of sbitmap_iterator used to iterate the bitmap.  */
 
-#define EXECUTE_IF_SET_IN_SBITMAP(SBITMAP, MIN, N, ITER)	\
-  for (sbitmap_iter_init (&(ITER), (SBITMAP), (MIN));		\
-       sbitmap_iter_cond (&(ITER), &(N));			\
-       sbitmap_iter_next (&(ITER)))
-
-#define EXECUTE_IF_SET_IN_SBITMAP_REV(SBITMAP, N, CODE)			\
-do {									\
-  unsigned int word_num_;						\
-  unsigned int bit_num_;						\
-  unsigned int size_ = (SBITMAP)->size;					\
-  SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
-									\
-  for (word_num_ = size_; word_num_ > 0; word_num_--)			\
-    {									\
-      SBITMAP_ELT_TYPE word_ = ptr_[word_num_ - 1];			\
-									\
-      if (word_ != 0)							\
-	for (bit_num_ = SBITMAP_ELT_BITS; bit_num_ > 0; bit_num_--)	\
-	  {								\
-	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE)1 << (bit_num_ - 1);\
-									\
-	    if ((word_ & _mask) != 0)					\
-	      {								\
-		word_ &= ~ _mask;					\
-		(N) = (word_num_ - 1) * SBITMAP_ELT_BITS + bit_num_ - 1;\
-		CODE;							\
-		if (word_ == 0)						\
-		  break;						\
-	      }								\
-	  }								\
-    }									\
-} while (0)
+#ifndef EXECUTE_IF_SET_IN_BITMAP
+/* See bitmap.h for the other definition of EXECUTE_IF_SET_IN_BITMAP.  */
+#define EXECUTE_IF_SET_IN_BITMAP(BITMAP, MIN, BITNUM, ITER)	\
+  for (bmp_iter_set_init (&(ITER), (BITMAP), (MIN), &(BITNUM));	\
+       bmp_iter_set (&(ITER), &(BITNUM));			\
+       bmp_iter_next (&(ITER), &(BITNUM)))
+#endif
 
 inline void sbitmap_free (sbitmap map)
 {

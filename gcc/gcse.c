@@ -1930,7 +1930,7 @@ prune_insertions_deletions (int n_elems)
      needs to be inserted.  */
   for (i = 0; i < (unsigned) n_edges; i++)
     {
-      EXECUTE_IF_SET_IN_SBITMAP (pre_insert_map[i], 0, j, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (pre_insert_map[i], 0, j, sbi)
 	insertions[j]++;
     }
 
@@ -1938,7 +1938,7 @@ prune_insertions_deletions (int n_elems)
      edges.  */
   for (i = 0; i < (unsigned) last_basic_block; i++)
     {
-      EXECUTE_IF_SET_IN_SBITMAP (pre_delete_map[i], 0, j, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (pre_delete_map[i], 0, j, sbi)
 	deletions[j]++;
     }
 
@@ -1952,7 +1952,7 @@ prune_insertions_deletions (int n_elems)
       bitmap_set_bit (prune_exprs, j);
 
   /* Now prune PRE_INSERT_MAP and PRE_DELETE_MAP based on PRUNE_EXPRS.  */
-  EXECUTE_IF_SET_IN_SBITMAP (prune_exprs, 0, j, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (prune_exprs, 0, j, sbi)
     {
       for (i = 0; i < (unsigned) n_edges; i++)
 	bitmap_clear_bit (pre_insert_map[i], j);
@@ -2943,7 +2943,7 @@ should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
 	 pressure for basic blocks newly added in hoisted_bbs.  */
       if (flag_ira_hoist_pressure && !pred)
 	{
-	  EXECUTE_IF_SET_IN_SBITMAP (visited, 0, i, sbi)
+	  EXECUTE_IF_SET_IN_BITMAP (visited, 0, i, sbi)
 	    if (!bitmap_bit_p (hoisted_bbs, i))
 	      {
 		bitmap_set_bit (hoisted_bbs, i);
