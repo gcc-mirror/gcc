@@ -1,3 +1,8 @@
+2012-11-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR target/55160
+	* config/sh/sh.md (doloop_end): Use emit_jump_insn.
+
 2012-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53708
