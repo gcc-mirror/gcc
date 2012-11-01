@@ -7,7 +7,7 @@
 #ifndef LIBGO_INTERFACE_H
 #define LIBGO_INTERFACE_H
 
-#include "go-type.h"
+struct __go_type_descriptor;
 
 /* A variable of interface type is an instance of this struct, if the
    interface has any methods.  */

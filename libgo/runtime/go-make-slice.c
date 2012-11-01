@@ -6,12 +6,12 @@
 
 #include <stdint.h>
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "go-panic.h"
 #include "go-type.h"
 #include "array.h"
-#include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
 
@@ -20,8 +20,8 @@ __go_make_slice2 (const struct __go_type_descriptor *td, uintptr_t len,
 		  uintptr_t cap)
 {
   const struct __go_slice_type* std;
-  int ilen;
-  int icap;
+  intgo ilen;
+  intgo icap;
   uintptr_t size;
   struct __go_open_array ret;
   unsigned int flag;
@@ -29,11 +29,11 @@ __go_make_slice2 (const struct __go_type_descriptor *td, uintptr_t len,
   __go_assert (td->__code == GO_SLICE);
   std = (const struct __go_slice_type *) td;
 
-  ilen = (int) len;
+  ilen = (intgo) len;
   if (ilen < 0 || (uintptr_t) ilen != len)
     runtime_panicstring ("makeslice: len out of range");
 
-  icap = (int) cap;
+  icap = (intgo) cap;
   if (cap < len
       || (uintptr_t) icap != cap
       || (std->__element_type->__size > 0

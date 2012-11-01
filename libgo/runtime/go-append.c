@@ -4,10 +4,10 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
-#include "go-type.h"
-#include "go-panic.h"
-#include "array.h"
 #include "runtime.h"
+#include "go-panic.h"
+#include "go-type.h"
+#include "array.h"
 #include "arch.h"
 #include "malloc.h"
 

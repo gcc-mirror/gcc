@@ -2985,7 +2985,7 @@ String_type::length_tree(Gogo*, tree string)
   tree length_field = DECL_CHAIN(TYPE_FIELDS(string_type));
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(length_field)),
 		    "__length") == 0);
-  return fold_build3(COMPONENT_REF, integer_type_node, string,
+  return fold_build3(COMPONENT_REF, TREE_TYPE(length_field), string,
 		     length_field, NULL_TREE);
 }
 
@@ -5524,7 +5524,9 @@ Array_type::get_length_tree(Gogo* gogo)
 	  tree len = this->length_->get_tree(&context);
 	  if (len != error_mark_node)
 	    {
-	      len = convert_to_integer(integer_type_node, len);
+	      Type* int_type = Type::lookup_integer_type("int");
+	      tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
+	      len = convert_to_integer(int_type_tree, len);
 	      len = save_expr(len);
 	    }
 	  this->length_tree_ = len;
@@ -5663,10 +5665,12 @@ Array_type::length_tree(Gogo* gogo, tree array)
   if (this->length_ != NULL)
     {
       if (TREE_CODE(array) == SAVE_EXPR)
-	return fold_convert(integer_type_node, this->get_length_tree(gogo));
+	return this->get_length_tree(gogo);
       else
-	return omit_one_operand(integer_type_node,
-				this->get_length_tree(gogo), array);
+	{
+	  tree len = this->get_length_tree(gogo);
+	  return omit_one_operand(TREE_TYPE(len), len, array);
+	}
     }
 
   // This is an open array.  We need to read the length field.
@@ -5690,8 +5694,10 @@ tree
 Array_type::capacity_tree(Gogo* gogo, tree array)
 {
   if (this->length_ != NULL)
-    return omit_one_operand(integer_type_node, this->get_length_tree(gogo),
-			    array);
+    {
+      tree len = this->get_length_tree(gogo);
+      return omit_one_operand(TREE_TYPE(len), len, array);
+    }
 
   // This is an open array.  We need to read the capacity field.
 

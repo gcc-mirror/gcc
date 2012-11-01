@@ -21,10 +21,8 @@
 #include <sys/mman.h>
 #endif
 
-#include "array.h"
+#include "interface.h"
 #include "go-alloc.h"
-#include "go-panic.h"
-#include "go-string.h"
 
 /* This file supports C files copied from the 6g runtime library.
    This is a version of the 6g runtime.h rewritten for gccgo's version
@@ -67,7 +65,7 @@ typedef struct	ParFor		ParFor;
 typedef struct	ParForThread	ParForThread;
 
 typedef	struct	__go_open_array		Slice;
-typedef	struct	__go_string		String;
+typedef	struct	String			String;
 typedef struct	__go_interface		Iface;
 typedef	struct	__go_empty_interface	Eface;
 typedef	struct	__go_type_descriptor	Type;
@@ -128,6 +126,11 @@ union	Note
 {
 	uint32	key;	// futex-based impl
 	M*	waitm;	// waiting M (sema-based impl)
+};
+struct String
+{
+	const byte*	str;
+	intgo		len;
 };
 struct	GCStats
 {

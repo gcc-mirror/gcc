@@ -11,7 +11,6 @@
 #include "runtime.h"
 #include "array.h"
 #include "go-panic.h"
-#include "go-string.h"
 #include "interface.h"
 
 /* This implements the various little functions which are called by

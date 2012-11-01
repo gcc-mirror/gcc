@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "runtime.h"
 #include "map.h"
 
 struct __go_map *

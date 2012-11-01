@@ -4,22 +4,21 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
-#include "go-string.h"
-#include "array.h"
 #include "runtime.h"
+#include "array.h"
 #include "arch.h"
 #include "malloc.h"
 
 struct __go_open_array
-__go_string_to_byte_array (struct __go_string str)
+__go_string_to_byte_array (String str)
 {
   unsigned char *data;
   struct __go_open_array ret;
 
-  data = (unsigned char *) runtime_mallocgc (str.__length, FlagNoPointers, 1, 0);
-  __builtin_memcpy (data, str.__data, str.__length);
+  data = (unsigned char *) runtime_mallocgc (str.len, FlagNoPointers, 1, 0);
+  __builtin_memcpy (data, str.str, str.len);
   ret.__values = (void *) data;
-  ret.__count = str.__length;
-  ret.__capacity = str.__length;
+  ret.__count = str.len;
+  ret.__capacity = str.len;
   return ret;
 }

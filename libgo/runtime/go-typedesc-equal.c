@@ -4,6 +4,7 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "runtime.h"
 #include "go-string.h"
 #include "go-type.h"
 
