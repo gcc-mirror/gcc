@@ -86,7 +86,7 @@ static bool
 live_on_edge (edge e, tree name)
 {
   return (live[e->dest->index]
-	  && TEST_BIT (live[e->dest->index], SSA_NAME_VERSION (name)));
+	  && bitmap_bit_p (live[e->dest->index], SSA_NAME_VERSION (name)));
 }
 
 /* Local functions.  */
@@ -5556,7 +5556,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
 	  /* If op is not live beyond this stmt, do not bother to insert
 	     asserts for it.  */
-	  if (!TEST_BIT (live, SSA_NAME_VERSION (op)))
+	  if (!bitmap_bit_p (live, SSA_NAME_VERSION (op)))
 	    continue;
 
 	  /* If OP is used in such a way that we can infer a value
@@ -5604,9 +5604,9 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
       /* Update live.  */
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
-	SET_BIT (live, SSA_NAME_VERSION (op));
+	bitmap_set_bit (live, SSA_NAME_VERSION (op));
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
-	RESET_BIT (live, SSA_NAME_VERSION (op));
+	bitmap_clear_bit (live, SSA_NAME_VERSION (op));
     }
 
   /* Traverse all PHI nodes in BB, updating live.  */
@@ -5624,10 +5624,10 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 	{
 	  tree arg = USE_FROM_PTR (arg_p);
 	  if (TREE_CODE (arg) == SSA_NAME)
-	    SET_BIT (live, SSA_NAME_VERSION (arg));
+	    bitmap_set_bit (live, SSA_NAME_VERSION (arg));
 	}
 
-      RESET_BIT (live, SSA_NAME_VERSION (res));
+      bitmap_clear_bit (live, SSA_NAME_VERSION (res));
     }
 
   return need_assert;

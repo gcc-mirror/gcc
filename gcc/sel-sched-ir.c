@@ -6007,7 +6007,7 @@ make_region_from_loop (struct loop *loop)
   new_rgn_number = sel_create_new_region ();
 
   sel_add_block_to_region (preheader_block, &bb_ord_index, new_rgn_number);
-  SET_BIT (bbs_in_loop_rgns, preheader_block->index);
+  bitmap_set_bit (bbs_in_loop_rgns, preheader_block->index);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -6018,11 +6018,11 @@ make_region_from_loop (struct loop *loop)
 
       gcc_assert (new_rgn_number >= 0);
 
-      if (! TEST_BIT (bbs_in_loop_rgns, loop_blocks[i]->index))
+      if (! bitmap_bit_p (bbs_in_loop_rgns, loop_blocks[i]->index))
 	{
 	  sel_add_block_to_region (loop_blocks[i], &bb_ord_index,
                                    new_rgn_number);
-	  SET_BIT (bbs_in_loop_rgns, loop_blocks[i]->index);
+	  bitmap_set_bit (bbs_in_loop_rgns, loop_blocks[i]->index);
 	}
     }
 
@@ -6068,7 +6068,7 @@ make_regions_from_loop_nest (struct loop *loop)
 
   /* Traverse all inner nodes of the loop.  */
   for (cur_loop = loop->inner; cur_loop; cur_loop = cur_loop->next)
-    if (! TEST_BIT (bbs_in_loop_rgns, cur_loop->header->index))
+    if (! bitmap_bit_p (bbs_in_loop_rgns, cur_loop->header->index))
       return false;
 
   /* At this moment all regular inner loops should have been pipelined.
@@ -6182,10 +6182,10 @@ make_regions_from_the_rest (void)
     {
       degree[bb->index] = 0;
 
-      if (!TEST_BIT (bbs_in_loop_rgns, bb->index))
+      if (!bitmap_bit_p (bbs_in_loop_rgns, bb->index))
 	{
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (!TEST_BIT (bbs_in_loop_rgns, e->src->index))
+	    if (!bitmap_bit_p (bbs_in_loop_rgns, e->src->index))
 	      degree[bb->index]++;
 	}
       else

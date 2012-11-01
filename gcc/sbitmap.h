@@ -34,9 +34,9 @@ along with GCC; see the file COPYING3.  If not see
    The following operations can be performed in O(1) time:
 
      * set_size			: SBITMAP_SIZE
-     * member_p			: TEST_BIT
-     * add_member		: SET_BIT
-     * remove_member		: RESET_BIT
+     * member_p			: bitmap_bit_p
+     * add_member		: bitmap_set_bit
+     * remove_member		: bitmap_clear_bit
 
    Most other operations on this set representation are O(U) where U is
    the size of the set universe:
@@ -100,7 +100,7 @@ struct simple_bitmap_def
 
 /* Test if bit number bitno in the bitmap is set.  */
 static inline SBITMAP_ELT_TYPE
-TEST_BIT (const_sbitmap map, unsigned int bitno)
+bitmap_bit_p (const_sbitmap map, int bitno)
 {
   size_t i = bitno / SBITMAP_ELT_BITS;
   unsigned int s = bitno % SBITMAP_ELT_BITS;
@@ -110,21 +110,21 @@ TEST_BIT (const_sbitmap map, unsigned int bitno)
 /* Set bit number BITNO in the sbitmap MAP.  */
 
 static inline void
-SET_BIT (sbitmap map, unsigned int bitno)
+bitmap_set_bit (sbitmap map, int bitno)
 {
   gcc_checking_assert (! map->popcount);
   map->elms[bitno / SBITMAP_ELT_BITS]
     |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
 }
 
-/* Like SET_BIT, but updates population count.  */
+/* Like bitmap_set_bit, but updates population count.  */
 
 static inline void
-SET_BIT_WITH_POPCOUNT (sbitmap map, unsigned int bitno)
+bitmap_set_bit_with_popcount (sbitmap map, int bitno)
 {
   bool oldbit;
   gcc_checking_assert (map->popcount);
-  oldbit = TEST_BIT (map, bitno);
+  oldbit = bitmap_bit_p (map, bitno);
   if (!oldbit)
     map->popcount[bitno / SBITMAP_ELT_BITS]++;
   map->elms[bitno / SBITMAP_ELT_BITS]
@@ -134,21 +134,21 @@ SET_BIT_WITH_POPCOUNT (sbitmap map, unsigned int bitno)
 /* Reset bit number BITNO in the sbitmap MAP.  */
 
 static inline void
-RESET_BIT (sbitmap map,  unsigned int bitno)
+bitmap_clear_bit (sbitmap map, int bitno)
 {
   gcc_checking_assert (! map->popcount);
   map->elms[bitno / SBITMAP_ELT_BITS]
     &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
 }
 
-/* Like RESET_BIT, but updates population count.  */
+/* Like bitmap_clear_bit, but updates population count.  */
 
 static inline void
-RESET_BIT_WITH_POPCOUNT (sbitmap map,  unsigned int bitno)
+bitmap_clear_bit_with_popcount (sbitmap map, int bitno)
 {
   bool oldbit;
   gcc_checking_assert (map->popcount);
-  oldbit = TEST_BIT (map, bitno);
+  oldbit = bitmap_bit_p (map, bitno);
   if (oldbit)
     map->popcount[bitno / SBITMAP_ELT_BITS]--;
   map->elms[bitno / SBITMAP_ELT_BITS]

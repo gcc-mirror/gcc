@@ -227,7 +227,7 @@ bitmap_clear_bit (ebitmap map, unsigned int bit)
     return;
 
   if (wordindex >= map->wordmask->n_bits
-      || !TEST_BIT (map->wordmask, wordindex))
+      || !bitmap_bit_p (map->wordmask, wordindex))
     return;
 
   if (map->cache != NULL && map->cacheindex == wordindex)
@@ -258,7 +258,7 @@ bitmap_clear_bit (ebitmap map, unsigned int bit)
             map->cache = map->cache - 1;
         }
 
-      RESET_BIT_WITH_POPCOUNT (map->wordmask, wordindex);
+      bitmap_clear_bit_with_popcount (map->wordmask, wordindex);
 
       memmove(&map->elts[eltwordindex], &map->elts[eltwordindex + 1],
 	      sizeof (EBITMAP_ELT_TYPE) * (map->numwords - eltwordindex));
@@ -288,12 +288,12 @@ bitmap_set_bit (ebitmap map, unsigned int bit)
 
   /* Allocate a new word in the array and move whatever is in it's
      place, if necessary. */
-  if (!TEST_BIT (map->wordmask, wordindex))
+  if (!bitmap_bit_p (map->wordmask, wordindex))
     {
       unsigned long count;
       unsigned int i;
 
-      SET_BIT_WITH_POPCOUNT (map->wordmask, wordindex);
+      bitmap_set_bit_with_popcount (map->wordmask, wordindex);
       count = sbitmap_popcount (map->wordmask, wordindex);
       gcc_assert (count <= map->numwords);
 
@@ -341,7 +341,7 @@ bitmap_bit_p (ebitmap map, unsigned int bit)
      it's not set in the wordmask, this bit can't exist in our
      ebitmap.  */
   if (wordindex >= map->wordmask->n_bits
-      || !TEST_BIT (map->wordmask, wordindex))
+      || !bitmap_bit_p (map->wordmask, wordindex))
     return false;
 
   /* Find the bit and test it.  */
@@ -449,7 +449,7 @@ bitmap_and_into (ebitmap dst, ebitmap src)
 	  *dstplace = tmpword;
 	}
       else
-	RESET_BIT_WITH_POPCOUNT (dst->wordmask, i);
+	bitmap_clear_bit_with_popcount (dst->wordmask, i);
     }
 #ifdef EBITMAP_DEBUGGING
   {
@@ -494,8 +494,8 @@ bitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
     {
       bool src1hasword, src2hasword;
 
-      src1hasword = TEST_BIT (src1->wordmask, i);
-      src2hasword = TEST_BIT (src2->wordmask, i);
+      src1hasword = bitmap_bit_p (src1->wordmask, i);
+      src2hasword = bitmap_bit_p (src2->wordmask, i);
 
       if (src1hasword && src2hasword)
 	{
@@ -508,7 +508,7 @@ bitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
 	      *dstplace = tmpword;
 	    }
 	  else
-	    RESET_BIT_WITH_POPCOUNT (dst->wordmask, i);
+	    bitmap_clear_bit_with_popcount (dst->wordmask, i);
 	}
       else if (src1hasword)
 	src1eltindex++;
@@ -603,9 +603,9 @@ bitmap_ior_into (ebitmap dst, ebitmap src)
       bool dsthasword, srchasword;
 
       dsthasword = (i < dst->wordmask->n_bits
-		    && TEST_BIT (dst->wordmask, i));
+		    && bitmap_bit_p (dst->wordmask, i));
       srchasword = (i < src->wordmask->n_bits
-		    && TEST_BIT (src->wordmask, i));
+		    && bitmap_bit_p (src->wordmask, i));
 
       if (dsthasword && srchasword)
 	{
@@ -624,7 +624,7 @@ bitmap_ior_into (ebitmap dst, ebitmap src)
 	{
 	  newarray [neweltindex++] = ebitmap_array_get (src, srceltindex++);
 	  gcc_assert (i < dst->wordmask->n_bits);
-	  SET_BIT_WITH_POPCOUNT (dst->wordmask, i);
+	  bitmap_set_bit_with_popcount (dst->wordmask, i);
 	  changed |= true;
 	}
     }
@@ -712,9 +712,9 @@ bitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
       bool src1hasword, src2hasword;
       EBITMAP_ELT_TYPE tmpword;
       src1hasword = (i < src1->wordmask->n_bits
-		    && TEST_BIT (src1->wordmask, i));
+		    && bitmap_bit_p (src1->wordmask, i));
       src2hasword = (i < src2->wordmask->n_bits
-		    && TEST_BIT (src2->wordmask, i));
+		    && bitmap_bit_p (src2->wordmask, i));
 
       if (src1hasword && src2hasword)
 	{
@@ -733,7 +733,7 @@ bitmap_ior (ebitmap dst, ebitmap src1, ebitmap src2)
 	  newarray [neweltindex++] = tmpword;
 	}
 
-      if (i >= dst->wordmask->n_bits || !TEST_BIT (dst->wordmask, i))
+      if (i >= dst->wordmask->n_bits || !bitmap_bit_p (dst->wordmask, i))
 	{
 	  changed = true;
 	}
@@ -808,7 +808,7 @@ bitmap_and_compl_into (ebitmap dst, ebitmap src)
       bool srchasword;
 
       srchasword = (i < src->wordmask->n_bits
-		    && TEST_BIT (src->wordmask, i));
+		    && bitmap_bit_p (src->wordmask, i));
 
       if (srchasword)
 	{
@@ -825,7 +825,7 @@ bitmap_and_compl_into (ebitmap dst, ebitmap src)
 	      *dstplace = tmpword;
 	    }
 	  else
-	    RESET_BIT_WITH_POPCOUNT (dst->wordmask, i);
+	    bitmap_clear_bit_with_popcount (dst->wordmask, i);
 	}
       else
 	{
@@ -892,7 +892,7 @@ bitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
       EBITMAP_ELT_TYPE tmpword;
 
       src2hasword = (i < src2->wordmask->n_bits
-		     && TEST_BIT (src2->wordmask, i));
+		     && bitmap_bit_p (src2->wordmask, i));
 
       if (src2hasword)
 	{
@@ -904,7 +904,7 @@ bitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
 	      newarray[neweltindex++] = tmpword;
 	    }
 	  else
-	    RESET_BIT_WITH_POPCOUNT (tempmask, i);
+	    bitmap_clear_bit_with_popcount (tempmask, i);
 
 	}
       else
@@ -914,7 +914,7 @@ bitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
 	  newarray[neweltindex++] = tmpword;
 	}
 
-      if (i >= dst->wordmask->n_bits || !TEST_BIT (dst->wordmask, i))
+      if (i >= dst->wordmask->n_bits || !bitmap_bit_p (dst->wordmask, i))
 	{
 	  changed = true;
 	}

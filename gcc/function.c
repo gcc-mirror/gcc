@@ -6491,8 +6491,8 @@ epilogue_done:
       /* Look for basic blocks within the prologue insns.  */
       blocks = sbitmap_alloc (last_basic_block);
       bitmap_clear (blocks);
-      SET_BIT (blocks, entry_edge->dest->index);
-      SET_BIT (blocks, orig_entry_edge->dest->index);
+      bitmap_set_bit (blocks, entry_edge->dest->index);
+      bitmap_set_bit (blocks, orig_entry_edge->dest->index);
       find_many_sub_basic_blocks (blocks);
       sbitmap_free (blocks);
 

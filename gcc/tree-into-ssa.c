@@ -541,7 +541,7 @@ is_old_name (tree name)
   if (!new_ssa_names)
     return false;
   return (ver < SBITMAP_SIZE (new_ssa_names)
-	  && TEST_BIT (old_ssa_names, ver));
+	  && bitmap_bit_p (old_ssa_names, ver));
 }
 
 
@@ -554,7 +554,7 @@ is_new_name (tree name)
   if (!new_ssa_names)
     return false;
   return (ver < SBITMAP_SIZE (new_ssa_names)
-	  && TEST_BIT (new_ssa_names, ver));
+	  && bitmap_bit_p (new_ssa_names, ver));
 }
 
 
@@ -610,8 +610,8 @@ add_new_name_mapping (tree new_tree, tree old)
 
   /* Register NEW_TREE and OLD in NEW_SSA_NAMES and OLD_SSA_NAMES,
      respectively.  */
-  SET_BIT (new_ssa_names, SSA_NAME_VERSION (new_tree));
-  SET_BIT (old_ssa_names, SSA_NAME_VERSION (old));
+  bitmap_set_bit (new_ssa_names, SSA_NAME_VERSION (new_tree));
+  bitmap_set_bit (old_ssa_names, SSA_NAME_VERSION (old));
 }
 
 
@@ -653,7 +653,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
 	  set_rewrite_uses (stmt, true);
 	}
       if (rewrite_uses_p (stmt))
-	SET_BIT (interesting_blocks, bb->index);
+	bitmap_set_bit (interesting_blocks, bb->index);
       return;
     }
 
@@ -681,7 +681,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
   /* If we found the statement interesting then also mark the block BB
      as interesting.  */
   if (rewrite_uses_p (stmt) || register_defs_p (stmt))
-    SET_BIT (interesting_blocks, bb->index);
+    bitmap_set_bit (interesting_blocks, bb->index);
 }
 
 /* Structure used by prune_unused_phi_nodes to record bounds of the intervals
@@ -1402,7 +1402,7 @@ rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   /* Step 2.  Rewrite every variable used in each statement in the block
      with its immediate reaching definitions.  Update the current definition
      of a variable when a new real or virtual definition is found.  */
-  if (TEST_BIT (interesting_blocks, bb->index))
+  if (bitmap_bit_p (interesting_blocks, bb->index))
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       rewrite_stmt (&gsi);
 
@@ -2114,7 +2114,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     }
 
   /* Step 2.  Rewrite every variable used in each statement in the block.  */
-  if (TEST_BIT (interesting_blocks, bb->index))
+  if (bitmap_bit_p (interesting_blocks, bb->index))
     {
       gcc_checking_assert (bitmap_bit_p (blocks_to_update, bb->index));
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2668,7 +2668,7 @@ prepare_names_to_update (bool insert_phi_p)
      want to replace existing instances.  */
   if (names_to_release)
     EXECUTE_IF_SET_IN_BITMAP (names_to_release, 0, i, bi)
-      RESET_BIT (new_ssa_names, i);
+      bitmap_clear_bit (new_ssa_names, i);
 
   /* First process names in NEW_SSA_NAMES.  Otherwise, uses of old
      names may be considered to be live-in on blocks that contain
@@ -3276,7 +3276,7 @@ update_ssa (unsigned update_flags)
   interesting_blocks = sbitmap_alloc (last_basic_block);
   bitmap_clear (interesting_blocks);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
-    SET_BIT (interesting_blocks, i);
+    bitmap_set_bit (interesting_blocks, i);
 
   rewrite_blocks (start_bb, REWRITE_UPDATE);
 

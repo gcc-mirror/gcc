@@ -2523,7 +2523,7 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
 	  if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
 	    last = bb;
 
-	  if (TEST_BIT (contains_call, bb->index))
+	  if (bitmap_bit_p (contains_call, bb->index))
 	    break;
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -2588,7 +2588,7 @@ tree_ssa_lim_initialize (void)
 	}
 
       if (!gsi_end_p (bsi))
-	SET_BIT (contains_call, bb->index);
+	bitmap_set_bit (contains_call, bb->index);
     }
 
   for (loop = current_loops->tree_root->inner; loop; loop = loop->next)

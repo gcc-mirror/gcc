@@ -722,7 +722,7 @@ dump_bitmap_file (FILE *file, const_sbitmap bmap)
   fprintf (file, "n_bits = %d, set = {", bmap->n_bits);
 
   for (pos = 30, i = 0; i < bmap->n_bits; i++)
-    if (TEST_BIT (bmap, i))
+    if (bitmap_bit_p (bmap, i))
       {
 	if (pos > 70)
 	  {

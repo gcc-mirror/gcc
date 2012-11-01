@@ -500,10 +500,10 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		  SET_HARD_REG_BIT (info.btrs_live_in_block, regno);
 		  bitmap_and_compl (bb_gen[i], bb_gen[i],
 				      btr_defset[regno - first_btr]);
-		  SET_BIT (bb_gen[i], insn_uid);
+		  bitmap_set_bit (bb_gen[i], insn_uid);
 		  def->next_this_bb = defs_this_bb;
 		  defs_this_bb = def;
-		  SET_BIT (btr_defset[regno - first_btr], insn_uid);
+		  bitmap_set_bit (btr_defset[regno - first_btr], insn_uid);
 		  note_other_use_this_block (regno, info.users_this_bb);
 		}
 	      /* Check for the blockage emitted by expand_nl_goto_receiver.  */
@@ -652,7 +652,7 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
       changed = 0;
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	{
-	  sbitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK (i));
+	  bitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK (i));
 	  changed |= bitmap_ior_and_compl (bb_out[i], bb_gen[i],
 					       bb_in, bb_kill[i]);
 	}
@@ -675,7 +675,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
       rtx insn;
       rtx last;
 
-      sbitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK (i));
+      bitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK (i));
       for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
 	   insn != last;
 	   insn = NEXT_INSN (insn))
@@ -692,7 +692,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		     for this one.  */
 		  bitmap_and_compl (reaching_defs, reaching_defs,
 				      btr_defset[def->btr - first_btr]);
-		  SET_BIT(reaching_defs, insn_uid);
+		  bitmap_set_bit(reaching_defs, insn_uid);
 		}
 
 	      if (user != NULL)

@@ -91,9 +91,9 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 
       gcc_assert (src != ENTRY_BLOCK_PTR);
 
-      if (! TEST_BIT (visited, src->index))
+      if (! bitmap_bit_p (visited, src->index))
 	{
-	  SET_BIT (visited, src->index);
+	  bitmap_set_bit (visited, src->index);
 	  FOR_EACH_EDGE (e, ei, src->preds)
 	    VEC_safe_push (edge, heap, stack, e);
 	}

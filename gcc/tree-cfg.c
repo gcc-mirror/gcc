@@ -7174,7 +7174,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
   if (! blocks)
     check_last_block = true;
   else
-    check_last_block = TEST_BIT (blocks, EXIT_BLOCK_PTR->prev_bb->index);
+    check_last_block = bitmap_bit_p (blocks, EXIT_BLOCK_PTR->prev_bb->index);
 
   /* In the last basic block, before epilogue generation, there will be
      a fallthru edge to EXIT.  Special care is required if the last insn
@@ -7222,7 +7222,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
       if (!bb)
 	continue;
 
-      if (blocks && !TEST_BIT (blocks, i))
+      if (blocks && !bitmap_bit_p (blocks, i))
 	continue;
 
       gsi = gsi_last_nondebug_bb (bb);

@@ -619,7 +619,7 @@ schedule_reg_move (partial_schedule_ptr ps, int i_reg_move,
     {
       this_insn = ps_rtl_insn (ps, u);
       this_latency = insn_latency (move->insn, this_insn);
-      if (distance1_uses && !TEST_BIT (distance1_uses, u))
+      if (distance1_uses && !bitmap_bit_p (distance1_uses, u))
 	this_distance = -1;
       else
 	this_distance = 0;
@@ -644,7 +644,7 @@ schedule_reg_move (partial_schedule_ptr ps, int i_reg_move,
     }
 
   bitmap_clear (must_follow);
-  SET_BIT (must_follow, move->def);
+  bitmap_set_bit (must_follow, move->def);
 
   start = MAX (start, end - (ii - 1));
   for (c = end; c >= start; c--)
@@ -796,9 +796,9 @@ schedule_reg_moves (partial_schedule_ptr ps)
 		ps_reg_move_info *move;
 
 		move = ps_reg_move (ps, first_move + dest_copy - 1);
-		SET_BIT (move->uses, e->dest->cuid);
+		bitmap_set_bit (move->uses, e->dest->cuid);
 		if (e->distance == 1)
-		  SET_BIT (distance1_uses, e->dest->cuid);
+		  bitmap_set_bit (distance1_uses, e->dest->cuid);
 	      }
 	  }
 
@@ -1911,7 +1911,7 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
       {
 	int v = e->src->cuid;
 
-	if (TEST_BIT (sched_nodes, v))
+	if (bitmap_bit_p (sched_nodes, v))
 	  {
 	    int p_st = SCHED_TIME (v);
 	    int earliest = p_st + e->latency - (e->distance * ii);
@@ -1939,7 +1939,7 @@ get_sched_window (partial_schedule_ptr ps, ddg_node_ptr u_node,
       {
 	int v = e->dest->cuid;
 
-	if (TEST_BIT (sched_nodes, v))
+	if (bitmap_bit_p (sched_nodes, v))
 	  {
 	    int s_st = SCHED_TIME (v);
 	    int earliest = (e->data_type == MEM_DEP ? s_st - ii + 1 : INT_MIN);
@@ -2068,14 +2068,14 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
      and check only if
       SCHED_TIME (e->src) - (e->distance * ii) == first_cycle_in_window  */
   for (e = u_node->in; e != 0; e = e->next_in)
-    if (TEST_BIT (sched_nodes, e->src->cuid)
+    if (bitmap_bit_p (sched_nodes, e->src->cuid)
 	&& ((SCHED_TIME (e->src->cuid) - (e->distance * ii)) ==
              first_cycle_in_window))
       {
 	if (dump_file)
 	  fprintf (dump_file, "%d ", e->src->cuid);
 
-	SET_BIT (must_precede, e->src->cuid);
+	bitmap_set_bit (must_precede, e->src->cuid);
       }
 
   if (dump_file)
@@ -2093,14 +2093,14 @@ calculate_must_precede_follow (ddg_node_ptr u_node, int start, int end,
      and check only if
       SCHED_TIME (e->dest) + (e->distance * ii) == last_cycle_in_window  */
   for (e = u_node->out; e != 0; e = e->next_out)
-    if (TEST_BIT (sched_nodes, e->dest->cuid)
+    if (bitmap_bit_p (sched_nodes, e->dest->cuid)
 	&& ((SCHED_TIME (e->dest->cuid) + (e->distance * ii)) ==
              last_cycle_in_window))
       {
 	if (dump_file)
 	  fprintf (dump_file, "%d ", e->dest->cuid);
 
-	SET_BIT (must_follow, e->dest->cuid);
+	bitmap_set_bit (must_follow, e->dest->cuid);
       }
 
   if (dump_file)
@@ -2131,7 +2131,7 @@ try_scheduling_node_in_cycle (partial_schedule_ptr ps,
   if (psi)
     {
       SCHED_TIME (u) = cycle;
-      SET_BIT (sched_nodes, u);
+      bitmap_set_bit (sched_nodes, u);
       success = 1;
       *num_splits = 0;
       if (dump_file)
@@ -2178,11 +2178,11 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 
 	  if (!NONDEBUG_INSN_P (insn))
 	    {
-	      RESET_BIT (tobe_scheduled, u);
+	      bitmap_clear_bit (tobe_scheduled, u);
 	      continue;
 	    }
 
-	  if (TEST_BIT (sched_nodes, u))
+	  if (bitmap_bit_p (sched_nodes, u))
 	    continue;
 
 	  /* Try to get non-empty scheduling window.  */
@@ -2379,7 +2379,7 @@ compute_split_row (sbitmap sched_nodes, int low, int up, int ii,
     {
       int v = e->src->cuid;
 
-      if (TEST_BIT (sched_nodes, v)
+      if (bitmap_bit_p (sched_nodes, v)
 	  && (low == SCHED_TIME (v) + e->latency - (e->distance * ii)))
 	if (SCHED_TIME (v) > lower)
 	  {
@@ -2398,7 +2398,7 @@ compute_split_row (sbitmap sched_nodes, int low, int up, int ii,
     {
       int v = e->dest->cuid;
 
-      if (TEST_BIT (sched_nodes, v)
+      if (bitmap_bit_p (sched_nodes, v)
 	  && (up == SCHED_TIME (v) - e->latency + (e->distance * ii)))
 	if (SCHED_TIME (v) < upper)
 	  {
@@ -2434,7 +2434,7 @@ verify_partial_schedule (partial_schedule_ptr ps, sbitmap sched_nodes)
 	  int u = crr_insn->id;
 	  
 	  length++;
-	  gcc_assert (TEST_BIT (sched_nodes, u));
+	  gcc_assert (bitmap_bit_p (sched_nodes, u));
 	  /* ??? Test also that all nodes of sched_nodes are in ps, perhaps by
 	     popcount (sched_nodes) == number of insns in ps.  */
 	  gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
@@ -2493,9 +2493,9 @@ check_nodes_order (int *node_order, int num_nodes)
 
       if (dump_file)
         fprintf (dump_file, "%d ", u);
-      gcc_assert (u < num_nodes && u >= 0 && !TEST_BIT (tmp, u));
+      gcc_assert (u < num_nodes && u >= 0 && !bitmap_bit_p (tmp, u));
 
-      SET_BIT (tmp, u);
+      bitmap_set_bit (tmp, u);
     }
 
   if (dump_file)
@@ -2774,7 +2774,7 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 
       bitmap_clear (workset);
       if ((u = find_max_asap (g, scc)) >= 0)
-	SET_BIT (workset, u);
+	bitmap_set_bit (workset, u);
       dir = BOTTOMUP;
     }
 
@@ -2799,8 +2799,8 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 	      /* Don't consider the already ordered successors again.  */
 	      bitmap_and_compl (tmp, tmp, nodes_ordered);
 	      bitmap_ior (workset, workset, tmp);
-	      RESET_BIT (workset, v);
-	      SET_BIT (nodes_ordered, v);
+	      bitmap_clear_bit (workset, v);
+	      bitmap_set_bit (nodes_ordered, v);
 	    }
 	  dir = BOTTOMUP;
 	  bitmap_clear (predecessors);
@@ -2820,8 +2820,8 @@ order_nodes_in_scc (ddg_ptr g, sbitmap nodes_ordered, sbitmap scc,
 	      /* Don't consider the already ordered predecessors again.  */
 	      bitmap_and_compl (tmp, tmp, nodes_ordered);
 	      bitmap_ior (workset, workset, tmp);
-	      RESET_BIT (workset, v);
-	      SET_BIT (nodes_ordered, v);
+	      bitmap_clear_bit (workset, v);
+	      bitmap_set_bit (nodes_ordered, v);
 	    }
 	  dir = TOPDOWN;
 	  bitmap_clear (successors);
@@ -3019,10 +3019,10 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
        next_ps_i = next_ps_i->next_in_row)
     {
       if (must_follow
-	  && TEST_BIT (must_follow, next_ps_i->id)
+	  && bitmap_bit_p (must_follow, next_ps_i->id)
 	  && ! first_must_follow)
         first_must_follow = next_ps_i;
-      if (must_precede && TEST_BIT (must_precede, next_ps_i->id))
+      if (must_precede && bitmap_bit_p (must_precede, next_ps_i->id))
         {
           /* If we have already met a node that must follow, then
 	     there is no possible column.  */
@@ -3033,7 +3033,7 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
         }
       /* The closing branch must be the last in the row.  */
       if (must_precede 
-	  && TEST_BIT (must_precede, next_ps_i->id)
+	  && bitmap_bit_p (must_precede, next_ps_i->id)
 	  && JUMP_P (ps_rtl_insn (ps, next_ps_i->id)))
 	return false;
              
@@ -3105,7 +3105,7 @@ ps_insn_advance_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
 
   /* Check if next_in_row is dependent on ps_i, both having same sched
      times (typically ANTI_DEP).  If so, ps_i cannot skip over it.  */
-  if (must_follow && TEST_BIT (must_follow, ps_i->next_in_row->id))
+  if (must_follow && bitmap_bit_p (must_follow, ps_i->next_in_row->id))
     return false;
 
   /* Advance PS_I over its next_in_row in the doubly linked list.  */

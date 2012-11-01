@@ -2910,7 +2910,7 @@ split_all_insns (void)
 		{
 		  if (split_insn (insn))
 		    {
-		      SET_BIT (blocks, bb->index);
+		      bitmap_set_bit (blocks, bb->index);
 		      changed = true;
 		    }
 		}

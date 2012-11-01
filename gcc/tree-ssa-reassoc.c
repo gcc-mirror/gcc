@@ -1300,7 +1300,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  || !is_reassociable_op (oe1def, dcode, loop))
 	continue;
 
-      SET_BIT (candidates, i);
+      bitmap_set_bit (candidates, i);
       nr_candidates++;
     }
 
@@ -1410,7 +1410,7 @@ undistribute_ops_list (enum tree_code opcode,
 	    {
 	      if (oe1->op == c->op)
 		{
-		  SET_BIT (candidates2, i);
+		  bitmap_set_bit (candidates2, i);
 		  ++nr_candidates2;
 		  break;
 		}

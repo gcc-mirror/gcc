@@ -214,7 +214,7 @@ mark_stmt_necessary (gimple stmt, bool add_to_worklist)
   if (add_to_worklist)
     VEC_safe_push (gimple, heap, worklist, stmt);
   if (bb_contains_live_stmts && !is_gimple_debug (stmt))
-    SET_BIT (bb_contains_live_stmts, gimple_bb (stmt)->index);
+    bitmap_set_bit (bb_contains_live_stmts, gimple_bb (stmt)->index);
 }
 
 
@@ -229,14 +229,14 @@ mark_operand_necessary (tree op)
   gcc_assert (op);
 
   ver = SSA_NAME_VERSION (op);
-  if (TEST_BIT (processed, ver))
+  if (bitmap_bit_p (processed, ver))
     {
       stmt = SSA_NAME_DEF_STMT (op);
       gcc_assert (gimple_nop_p (stmt)
 		  || gimple_plf (stmt, STMT_NECESSARY));
       return;
     }
-  SET_BIT (processed, ver);
+  bitmap_set_bit (processed, ver);
 
   stmt = SSA_NAME_DEF_STMT (op);
   gcc_assert (stmt);
@@ -254,7 +254,7 @@ mark_operand_necessary (tree op)
 
   gimple_set_plf (stmt, STMT_NECESSARY, true);
   if (bb_contains_live_stmts)
-    SET_BIT (bb_contains_live_stmts, gimple_bb (stmt)->index);
+    bitmap_set_bit (bb_contains_live_stmts, gimple_bb (stmt)->index);
   VEC_safe_push (gimple, heap, worklist, stmt);
 }
 
@@ -386,8 +386,8 @@ mark_last_stmt_necessary (basic_block bb)
 {
   gimple stmt = last_stmt (bb);
 
-  SET_BIT (last_stmt_necessary, bb->index);
-  SET_BIT (bb_contains_live_stmts, bb->index);
+  bitmap_set_bit (last_stmt_necessary, bb->index);
+  bitmap_set_bit (bb_contains_live_stmts, bb->index);
 
   /* We actually mark the statement only if it is a control statement.  */
   if (stmt && is_ctrl_stmt (stmt))
@@ -423,12 +423,12 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el,
 	  continue;
 	}
 
-      if (!TEST_BIT (last_stmt_necessary, cd_bb->index))
+      if (!bitmap_bit_p (last_stmt_necessary, cd_bb->index))
 	mark_last_stmt_necessary (cd_bb);
     }
 
   if (!skipped)
-    SET_BIT (visited_control_parents, bb->index);
+    bitmap_set_bit (visited_control_parents, bb->index);
 }
 
 
@@ -617,7 +617,7 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
   /* We have to skip already visited (and thus necessary) statements
      to make the chaining work after we dropped back to simple mode.  */
   if (chain_ovfl
-      && TEST_BIT (processed, SSA_NAME_VERSION (vdef)))
+      && bitmap_bit_p (processed, SSA_NAME_VERSION (vdef)))
     {
       gcc_assert (gimple_nop_p (def_stmt)
 		  || gimple_plf (def_stmt, STMT_NECESSARY));
@@ -713,7 +713,7 @@ propagate_necessity (struct edge_list *el)
 	     already done so.  */
 	  basic_block bb = gimple_bb (stmt);
 	  if (bb != ENTRY_BLOCK_PTR
-	      && !TEST_BIT (visited_control_parents, bb->index))
+	      && !bitmap_bit_p (visited_control_parents, bb->index))
 	    mark_control_dependent_edges_necessary (bb, el, false);
 	}
 
@@ -815,11 +815,11 @@ propagate_necessity (struct edge_list *el)
 		  if (gimple_bb (stmt)
 		      != get_immediate_dominator (CDI_POST_DOMINATORS, arg_bb))
 		    {
-		      if (!TEST_BIT (last_stmt_necessary, arg_bb->index))
+		      if (!bitmap_bit_p (last_stmt_necessary, arg_bb->index))
 			mark_last_stmt_necessary (arg_bb);
 		    }
 		  else if (arg_bb != ENTRY_BLOCK_PTR
-		           && !TEST_BIT (visited_control_parents,
+		           && !bitmap_bit_p (visited_control_parents,
 					 arg_bb->index))
 		    mark_control_dependent_edges_necessary (arg_bb, el, true);
 		}
@@ -1342,7 +1342,7 @@ eliminate_unnecessary_stmts (void)
 		 call (); saving one operand.  */
 	      if (name
 		  && TREE_CODE (name) == SSA_NAME
-		  && !TEST_BIT (processed, SSA_NAME_VERSION (name))
+		  && !bitmap_bit_p (processed, SSA_NAME_VERSION (name))
 		  /* Avoid doing so for allocation calls which we
 		     did not mark as necessary, it will confuse the
 		     special logic we apply to malloc/free pair removal.  */
@@ -1387,7 +1387,7 @@ eliminate_unnecessary_stmts (void)
 	{
 	  prev_bb = bb->prev_bb;
 
-	  if (!TEST_BIT (bb_contains_live_stmts, bb->index)
+	  if (!bitmap_bit_p (bb_contains_live_stmts, bb->index)
 	      || !(bb->flags & BB_REACHABLE))
 	    {
 	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))

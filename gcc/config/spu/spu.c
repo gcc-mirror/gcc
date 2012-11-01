@@ -2102,7 +2102,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
   LABEL_PRESERVE_P (branch_label) = 1;
   insn = emit_label_before (branch_label, branch);
   branch_label = gen_rtx_LABEL_REF (VOIDmode, branch_label);
-  SET_BIT (blocks, BLOCK_FOR_INSN (branch)->index);
+  bitmap_set_bit (blocks, BLOCK_FOR_INSN (branch)->index);
 
   hint = emit_insn_before (gen_hbr (branch_label, target), before);
   recog_memoized (hint);

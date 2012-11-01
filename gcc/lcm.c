@@ -145,7 +145,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 	  /* Clear the aux field of this block so that it can be added to
 	     the worklist again if necessary.  */
 	  bb->aux = NULL;
-	  sbitmap_intersection_of_succs (antout[bb->index], antin, bb);
+	  bitmap_intersection_of_succs (antout[bb->index], antin, bb);
 	}
 
       if (bitmap_or_and (antin[bb->index], antloc[bb->index],
@@ -526,7 +526,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
 	  /* Clear the aux field of this block so that it can be added to
 	     the worklist again if necessary.  */
 	  bb->aux = NULL;
-	  sbitmap_intersection_of_preds (avin[bb->index], avout, bb);
+	  bitmap_intersection_of_preds (avin[bb->index], avout, bb);
 	}
 
       if (bitmap_ior_and_compl (avout[bb->index], avloc[bb->index],

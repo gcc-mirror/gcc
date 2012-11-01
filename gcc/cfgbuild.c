@@ -241,7 +241,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 	    {
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (e->dest != EXIT_BLOCK_PTR)
-		  SET_BIT (edge_cache, e->dest->index);
+		  bitmap_set_bit (edge_cache, e->dest->index);
 	    }
 	}
 
@@ -605,7 +605,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 
   FOR_EACH_BB (bb)
     SET_STATE (bb,
-	       TEST_BIT (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
+	       bitmap_bit_p (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
 
   FOR_EACH_BB (bb)
     if (STATE (bb) == BLOCK_TO_SPLIT)

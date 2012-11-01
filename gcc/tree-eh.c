@@ -3551,25 +3551,25 @@ remove_unreachable_handlers (void)
 	  /* Negative LP numbers are MUST_NOT_THROW regions which
 	     are not considered BB enders.  */
 	  if (lp_nr < 0)
-	    SET_BIT (r_reachable, -lp_nr);
+	    bitmap_set_bit (r_reachable, -lp_nr);
 
 	  /* Positive LP numbers are real landing pads, are are BB enders.  */
 	  else if (lp_nr > 0)
 	    {
 	      gcc_assert (gsi_one_before_end_p (gsi));
 	      region = get_eh_region_from_lp_number (lp_nr);
-	      SET_BIT (r_reachable, region->index);
-	      SET_BIT (lp_reachable, lp_nr);
+	      bitmap_set_bit (r_reachable, region->index);
+	      bitmap_set_bit (lp_reachable, lp_nr);
 	    }
 
 	  /* Avoid removing regions referenced from RESX/EH_DISPATCH.  */
 	  switch (gimple_code (stmt))
 	    {
 	    case GIMPLE_RESX:
-	      SET_BIT (r_reachable, gimple_resx_region (stmt));
+	      bitmap_set_bit (r_reachable, gimple_resx_region (stmt));
 	      break;
 	    case GIMPLE_EH_DISPATCH:
-	      SET_BIT (r_reachable, gimple_eh_dispatch_region (stmt));
+	      bitmap_set_bit (r_reachable, gimple_eh_dispatch_region (stmt));
 	      break;
 	    default:
 	      break;
@@ -3589,7 +3589,7 @@ remove_unreachable_handlers (void)
 
   for (r_nr = 1;
        VEC_iterate (eh_region, cfun->eh->region_array, r_nr, region); ++r_nr)
-    if (region && !TEST_BIT (r_reachable, r_nr))
+    if (region && !bitmap_bit_p (r_reachable, r_nr))
       {
 	if (dump_file)
 	  fprintf (dump_file, "Removing unreachable region %d\n", r_nr);
@@ -3598,7 +3598,7 @@ remove_unreachable_handlers (void)
 
   for (lp_nr = 1;
        VEC_iterate (eh_landing_pad, cfun->eh->lp_array, lp_nr, lp); ++lp_nr)
-    if (lp && !TEST_BIT (lp_reachable, lp_nr))
+    if (lp && !bitmap_bit_p (lp_reachable, lp_nr))
       {
 	if (dump_file)
 	  fprintf (dump_file, "Removing unreachable landing pad %d\n", lp_nr);
@@ -3666,10 +3666,10 @@ remove_unreachable_handlers_no_lp (void)
 	switch (gimple_code (stmt))
 	  {
 	  case GIMPLE_RESX:
-	    SET_BIT (r_reachable, gimple_resx_region (stmt));
+	    bitmap_set_bit (r_reachable, gimple_resx_region (stmt));
 	    break;
 	  case GIMPLE_EH_DISPATCH:
-	    SET_BIT (r_reachable, gimple_eh_dispatch_region (stmt));
+	    bitmap_set_bit (r_reachable, gimple_eh_dispatch_region (stmt));
 	    break;
 	  default:
 	    break;
@@ -3678,7 +3678,7 @@ remove_unreachable_handlers_no_lp (void)
 
   for (i = 1; VEC_iterate (eh_region, cfun->eh->region_array, i, r); ++i)
     if (r && r->landing_pads == NULL && r->type != ERT_MUST_NOT_THROW
-	&& !TEST_BIT (r_reachable, i))
+	&& !bitmap_bit_p (r_reachable, i))
       {
 	if (dump_file)
 	  fprintf (dump_file, "Removing unreachable region %d\n", i);

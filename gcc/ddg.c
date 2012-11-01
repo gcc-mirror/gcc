@@ -562,7 +562,7 @@ build_intra_loop_deps (ddg_ptr g)
 		{
 		  /* Don't bother calculating inter-loop dep if an intra-loop dep
 		     already exists.  */
-	      	  if (! TEST_BIT (dest_node->successors, j))
+	      	  if (! bitmap_bit_p (dest_node->successors, j))
 		    add_inter_loop_mem_dep (g, dest_node, j_node);
 		  /* If -fmodulo-sched-allow-regmoves
 		     is set certain anti-dep edges are not created.
@@ -572,7 +572,7 @@ build_intra_loop_deps (ddg_ptr g)
 		     memory dependencies.  Thus we add intra edges between
 		     every two memory instructions in this case.  */
 		  if (flag_modulo_sched_allow_regmoves
-		      && !TEST_BIT (dest_node->predecessors, j))
+		      && !bitmap_bit_p (dest_node->predecessors, j))
 		    add_intra_loop_mem_dep (g, j_node, dest_node);
 		}
             }
@@ -838,8 +838,8 @@ add_edge_to_ddg (ddg_ptr g ATTRIBUTE_UNUSED, ddg_edge_ptr e)
   /* Should have allocated the sbitmaps.  */
   gcc_assert (src->successors && dest->predecessors);
 
-  SET_BIT (src->successors, dest->cuid);
-  SET_BIT (dest->predecessors, src->cuid);
+  bitmap_set_bit (src->successors, dest->cuid);
+  bitmap_set_bit (dest->predecessors, src->cuid);
   e->next_in = dest->in;
   dest->in = e;
   e->next_out = src->out;
@@ -899,7 +899,7 @@ create_scc (ddg_ptr g, sbitmap nodes)
       ddg_node_ptr n = &g->nodes[u];
 
       for (e = n->out; e; e = e->next_out)
-	if (TEST_BIT (nodes, e->dest->cuid))
+	if (bitmap_bit_p (nodes, e->dest->cuid))
 	  {
 	    e->aux.count = IN_SCC;
 	    if (e->distance > 0)
@@ -1079,8 +1079,8 @@ create_ddg_all_sccs (ddg_ptr g)
       bitmap_clear (scc_nodes);
       bitmap_clear (from);
       bitmap_clear (to);
-      SET_BIT (from, dest->cuid);
-      SET_BIT (to, src->cuid);
+      bitmap_set_bit (from, dest->cuid);
+      bitmap_set_bit (to, src->cuid);
 
       if (find_nodes_on_paths (scc_nodes, g, from, to))
 	{
@@ -1151,10 +1151,10 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 	      ddg_node_ptr v_node = e->dest;
 	      int v = v_node->cuid;
 
-	      if (!TEST_BIT (reachable_from, v))
+	      if (!bitmap_bit_p (reachable_from, v))
 		{
-		  SET_BIT (reachable_from, v);
-		  SET_BIT (tmp, v);
+		  bitmap_set_bit (reachable_from, v);
+		  bitmap_set_bit (tmp, v);
 		  change = 1;
 		}
 	    }
@@ -1180,10 +1180,10 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 	      ddg_node_ptr v_node = e->src;
 	      int v = v_node->cuid;
 
-	      if (!TEST_BIT (reach_to, v))
+	      if (!bitmap_bit_p (reach_to, v))
 		{
-		  SET_BIT (reach_to, v);
-		  SET_BIT (tmp, v);
+		  bitmap_set_bit (reach_to, v);
+		  bitmap_set_bit (tmp, v);
 		  change = 1;
 		}
 	    }
@@ -1214,12 +1214,12 @@ update_dist_to_successors (ddg_node_ptr u_node, sbitmap nodes, sbitmap tmp)
       ddg_node_ptr v_node = e->dest;
       int v = v_node->cuid;
 
-      if (TEST_BIT (nodes, v)
+      if (bitmap_bit_p (nodes, v)
 	  && (e->distance == 0)
 	  && (v_node->aux.count < u_node->aux.count + e->latency))
 	{
 	  v_node->aux.count = u_node->aux.count + e->latency;
-	  SET_BIT (tmp, v);
+	  bitmap_set_bit (tmp, v);
 	  result = 1;
 	}
     }
@@ -1248,7 +1248,7 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
   g->nodes[src].aux.count = 0;
 
   bitmap_clear (tmp);
-  SET_BIT (tmp, src);
+  bitmap_set_bit (tmp, src);
 
   while (change)
     {

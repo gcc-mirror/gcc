@@ -407,7 +407,7 @@ move_or_delete_vzeroupper (void)
   bitmap_ones (in_pending);
   FOR_EACH_BB (bb)
     if (BLOCK_INFO (bb)->processed)
-      RESET_BIT (in_pending, bb->index);
+      bitmap_clear_bit (in_pending, bb->index);
     else
       {
 	move_or_delete_vzeroupper_1 (bb, false);
@@ -433,13 +433,13 @@ move_or_delete_vzeroupper (void)
       while (!fibheap_empty (worklist))
 	{
 	  bb = (basic_block) fibheap_extract_min (worklist);
-	  RESET_BIT (in_worklist, bb->index);
-	  gcc_assert (!TEST_BIT (visited, bb->index));
-	  if (!TEST_BIT (visited, bb->index))
+	  bitmap_clear_bit (in_worklist, bb->index);
+	  gcc_assert (!bitmap_bit_p (visited, bb->index));
+	  if (!bitmap_bit_p (visited, bb->index))
 	    {
 	      edge_iterator ei;
 
-	      SET_BIT (visited, bb->index);
+	      bitmap_set_bit (visited, bb->index);
 
 	      if (move_or_delete_vzeroupper_1 (bb, false))
 		FOR_EACH_EDGE (e, ei, bb->succs)
@@ -448,21 +448,21 @@ move_or_delete_vzeroupper (void)
 			|| BLOCK_INFO (e->dest)->processed)
 		      continue;
 
-		    if (TEST_BIT (visited, e->dest->index))
+		    if (bitmap_bit_p (visited, e->dest->index))
 		      {
-			if (!TEST_BIT (in_pending, e->dest->index))
+			if (!bitmap_bit_p (in_pending, e->dest->index))
 			  {
 			    /* Send E->DEST to next round.  */
-			    SET_BIT (in_pending, e->dest->index);
+			    bitmap_set_bit (in_pending, e->dest->index);
 			    fibheap_insert (pending,
 					    bb_order[e->dest->index],
 					    e->dest);
 			  }
 		      }
-		    else if (!TEST_BIT (in_worklist, e->dest->index))
+		    else if (!bitmap_bit_p (in_worklist, e->dest->index))
 		      {
 			/* Add E->DEST to current round.  */
-			SET_BIT (in_worklist, e->dest->index);
+			bitmap_set_bit (in_worklist, e->dest->index);
 			fibheap_insert (worklist, bb_order[e->dest->index],
 					e->dest);
 		      }
@@ -24740,7 +24740,7 @@ core2i7_first_cycle_multipass_filter_ready_try
 	  ready_try[n_ready] = 1;
 
 	  if (data->ready_try_change)
-	    SET_BIT (data->ready_try_change, n_ready);
+	    bitmap_set_bit (data->ready_try_change, n_ready);
 	}
     }
 }
