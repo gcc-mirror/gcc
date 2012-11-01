@@ -165,22 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		}
 	      std::__alloc_on_copy(__this_alloc, __that_alloc);
             }
-          iterator __prev1 = before_begin();
-          iterator __curr1 = begin();
-          iterator __last1 = end();
-          const_iterator __first2 = __list.cbegin();
-          const_iterator __last2 = __list.cend();
-          while (__curr1 != __last1 && __first2 != __last2)
-            {
-              *__curr1 = *__first2;
-              ++__prev1;
-              ++__curr1;
-              ++__first2;
-            }
-          if (__first2 == __last2)
-            erase_after(__prev1, __last1);
-          else
-            insert_after(__prev1, __first2, __last2);
+	  assign(__list.cbegin(), __list.cend());
         }
       return *this;
     }
