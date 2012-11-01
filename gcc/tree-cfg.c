@@ -247,6 +247,7 @@ struct gimple_opt_pass pass_build_cfg =
  {
   GIMPLE_PASS,
   "cfg",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_build_cfg,			/* execute */
   NULL,					/* sub */
@@ -7705,6 +7706,7 @@ struct gimple_opt_pass pass_split_crit_edges =
  {
   GIMPLE_PASS,
   "crited",                          /* name */
+  OPTGROUP_NONE,                 /* optinfo_flags */
   NULL,                          /* gate */
   split_critical_edges,          /* execute */
   NULL,                          /* sub */
@@ -7858,6 +7860,7 @@ struct gimple_opt_pass pass_warn_function_return =
  {
   GIMPLE_PASS,
   "*warn_function_return",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_warn_function_return,		/* execute */
   NULL,					/* sub */
@@ -7894,6 +7897,7 @@ struct gimple_opt_pass pass_warn_function_noreturn =
  {
   GIMPLE_PASS,
   "*warn_function_noreturn",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_warn_function_noreturn,		/* gate */
   execute_warn_function_noreturn,	/* execute */
   NULL,					/* sub */
@@ -7992,6 +7996,7 @@ struct gimple_opt_pass pass_warn_unused_result =
   {
     GIMPLE_PASS,
     "*warn_unused_result",		/* name */
+    OPTGROUP_NONE,                        /* optinfo_flags */
     gate_warn_unused_result,		/* gate */
     run_warn_unused_result,		/* execute */
     NULL,				/* sub */

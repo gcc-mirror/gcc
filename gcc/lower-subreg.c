@@ -1665,6 +1665,7 @@ struct rtl_opt_pass pass_lower_subreg =
  {
   RTL_PASS,
   "subreg1",	                        /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_lower_subreg,             /* gate */
   rest_of_handle_lower_subreg,          /* execute */
   NULL,                                 /* sub */
@@ -1685,6 +1686,7 @@ struct rtl_opt_pass pass_lower_subreg2 =
  {
   RTL_PASS,
   "subreg2",	                        /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_lower_subreg,             /* gate */
   rest_of_handle_lower_subreg2,          /* execute */
   NULL,                                 /* sub */

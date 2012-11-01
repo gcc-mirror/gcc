@@ -194,6 +194,7 @@ struct gimple_opt_pass pass_lower_cf =
  {
   GIMPLE_PASS,
   "lower",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   lower_function_body,			/* execute */
   NULL,					/* sub */

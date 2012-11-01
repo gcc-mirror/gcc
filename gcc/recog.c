@@ -3742,6 +3742,7 @@ struct rtl_opt_pass pass_peephole2 =
  {
   RTL_PASS,
   "peephole2",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_peephole2,                /* gate */
   rest_of_handle_peephole2,             /* execute */
   NULL,                                 /* sub */
@@ -3769,6 +3770,7 @@ struct rtl_opt_pass pass_split_all_insns =
  {
   RTL_PASS,
   "split1",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_split_all_insns,       /* execute */
   NULL,                                 /* sub */
@@ -3799,6 +3801,7 @@ struct rtl_opt_pass pass_split_after_reload =
  {
   RTL_PASS,
   "split2",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_split_after_reload,    /* execute */
   NULL,                                 /* sub */
@@ -3843,6 +3846,7 @@ struct rtl_opt_pass pass_split_before_regstack =
  {
   RTL_PASS,
   "split3",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_split_before_regstack,    /* gate */
   rest_of_handle_split_before_regstack, /* execute */
   NULL,                                 /* sub */
@@ -3881,6 +3885,7 @@ struct rtl_opt_pass pass_split_before_sched2 =
  {
   RTL_PASS,
   "split4",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_split_before_sched2,      /* gate */
   rest_of_handle_split_before_sched2,   /* execute */
   NULL,                                 /* sub */
@@ -3912,6 +3917,7 @@ struct rtl_opt_pass pass_split_for_shorten_branches =
  {
   RTL_PASS,
   "split5",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_do_final_split,                  /* gate */
   split_all_insns_noflow,               /* execute */
   NULL,                                 /* sub */

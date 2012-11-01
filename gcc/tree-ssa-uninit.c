@@ -2037,6 +2037,7 @@ struct gimple_opt_pass pass_late_warn_uninitialized =
  {
   GIMPLE_PASS,
   "uninit",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_warn_uninitialized,		/* gate */
   execute_late_warn_uninitialized,	/* execute */
   NULL,					/* sub */

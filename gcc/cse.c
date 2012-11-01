@@ -7456,6 +7456,7 @@ struct rtl_opt_pass pass_cse =
  {
   RTL_PASS,
   "cse1",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_cse,                      /* gate */
   rest_of_handle_cse,			/* execute */
   NULL,                                 /* sub */
@@ -7518,6 +7519,7 @@ struct rtl_opt_pass pass_cse2 =
  {
   RTL_PASS,
   "cse2",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_cse2,                     /* gate */
   rest_of_handle_cse2,			/* execute */
   NULL,                                 /* sub */
@@ -7578,6 +7580,7 @@ struct rtl_opt_pass pass_cse_after_global_opts =
  {
   RTL_PASS,
   "cse_local",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_cse_after_global_opts,    /* gate */
   rest_of_handle_cse_after_global_opts, /* execute */
   NULL,                                 /* sub */

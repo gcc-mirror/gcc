@@ -194,6 +194,8 @@ struct gimple_opt_pass pass_slp_vectorize =
  {
   GIMPLE_PASS,
   "slp",                                /* name */
+  OPTGROUP_LOOP
+  | OPTGROUP_VEC,                       /* optinfo_flags */
   gate_vect_slp,                        /* gate */
   execute_vect_slp,                     /* execute */
   NULL,                                 /* sub */
@@ -266,6 +268,8 @@ struct simple_ipa_opt_pass pass_ipa_increase_alignment =
  {
   SIMPLE_IPA_PASS,
   "increase_alignment",                 /* name */
+  OPTGROUP_LOOP
+  | OPTGROUP_VEC,                       /* optinfo_flags */
   gate_increase_alignment,              /* gate */
   increase_alignment,                   /* execute */
   NULL,                                 /* sub */

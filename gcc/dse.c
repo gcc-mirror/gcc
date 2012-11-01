@@ -3934,6 +3934,7 @@ struct rtl_opt_pass pass_rtl_dse1 =
  {
   RTL_PASS,
   "dse1",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dse1,                            /* gate */
   rest_of_handle_dse,                   /* execute */
   NULL,                                 /* sub */
@@ -3954,6 +3955,7 @@ struct rtl_opt_pass pass_rtl_dse2 =
  {
   RTL_PASS,
   "dse2",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dse2,                            /* gate */
   rest_of_handle_dse,                   /* execute */
   NULL,                                 /* sub */

@@ -920,6 +920,7 @@ struct gimple_opt_pass pass_call_cdce =
  {
   GIMPLE_PASS,
   "cdce",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_call_cdce,                       /* gate */
   tree_call_cdce,                       /* execute */
   NULL,                                 /* sub */

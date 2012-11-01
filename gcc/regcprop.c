@@ -1235,6 +1235,7 @@ struct rtl_opt_pass pass_cprop_hardreg =
  {
   RTL_PASS,
   "cprop_hardreg",                      /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_cprop,                    /* gate */
   copyprop_hardreg_forward,             /* execute */
   NULL,                                 /* sub */

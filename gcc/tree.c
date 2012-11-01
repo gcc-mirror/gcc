@@ -5292,6 +5292,7 @@ struct simple_ipa_opt_pass pass_ipa_free_lang_data =
  {
   SIMPLE_IPA_PASS,
   "*free_lang_data",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   free_lang_data,			/* execute */
   NULL,					/* sub */

@@ -4677,6 +4677,7 @@ struct rtl_opt_pass pass_expand =
  {
   RTL_PASS,
   "expand",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   gimple_expand_cfg,			/* execute */
   NULL,                                 /* sub */

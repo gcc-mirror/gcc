@@ -1238,6 +1238,7 @@ struct rtl_opt_pass pass_rtl_store_motion =
  {
   RTL_PASS,
   "store_motion",                       /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_rtl_store_motion,                /* gate */
   execute_rtl_store_motion,		/* execute */
   NULL,                                 /* sub */

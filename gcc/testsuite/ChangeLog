@@ -1,3 +1,10 @@
+2012-11-01  Sharad Singhai  <singhai@google.com>
+
+	* testsuite/gcc.dg/plugin/selfassign.c: Add opgtroup_flags initializer.
+	* testsuite/gcc.dg/plugin/one_time_plugin.c: Likewise.
+	* testsuite/g++.dg/plugin/selfassign.c: Likewise.
+	* testsuite/g++.dg/plugin/dumb_plugin.c: Likewise.
+
 2012-10-31  Dehao Chen  <dehao@google.com>
 
 	* g++.dg/debug/dwarf2/block.C: New testcase.

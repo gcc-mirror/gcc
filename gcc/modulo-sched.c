@@ -3364,6 +3364,7 @@ struct rtl_opt_pass pass_sms =
  {
   RTL_PASS,
   "sms",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_sms,                      /* gate */
   rest_of_handle_sms,                   /* execute */
   NULL,                                 /* sub */

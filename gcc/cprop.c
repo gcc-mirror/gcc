@@ -1923,6 +1923,7 @@ struct rtl_opt_pass pass_rtl_cprop =
  {
   RTL_PASS,
   "cprop",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_rtl_cprop,                       /* gate */
   execute_rtl_cprop,  			/* execute */
   NULL,                                 /* sub */

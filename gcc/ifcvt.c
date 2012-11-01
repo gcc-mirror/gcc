@@ -4462,6 +4462,7 @@ struct rtl_opt_pass pass_rtl_ifcvt =
  {
   RTL_PASS,
   "ce1",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_if_conversion,            /* gate */
   rest_of_handle_if_conversion,         /* execute */
   NULL,                                 /* sub */
@@ -4499,6 +4500,7 @@ struct rtl_opt_pass pass_if_after_combine =
  {
   RTL_PASS,
   "ce2",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_if_after_combine,         /* gate */
   rest_of_handle_if_after_combine,      /* execute */
   NULL,                                 /* sub */
@@ -4535,6 +4537,7 @@ struct rtl_opt_pass pass_if_after_reload =
  {
   RTL_PASS,
   "ce3",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_if_after_reload,          /* gate */
   rest_of_handle_if_after_reload,       /* execute */
   NULL,                                 /* sub */

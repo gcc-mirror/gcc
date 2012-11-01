@@ -2404,6 +2404,7 @@ struct gimple_opt_pass pass_build_ssa =
  {
   GIMPLE_PASS,
   "ssa",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   rewrite_into_ssa,			/* execute */
   NULL,					/* sub */

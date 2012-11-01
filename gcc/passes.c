@@ -103,7 +103,6 @@ debug_pass (void)
 
 
 /* Global variables used to communicate with passes.  */
-int dump_flags;
 bool in_gimple_form;
 bool first_pass_instance;
 
@@ -285,6 +284,7 @@ struct simple_ipa_opt_pass pass_early_local_passes =
  {
   SIMPLE_IPA_PASS,
   "early_local_cleanups",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_all_early_local_passes,		/* gate */
   execute_all_early_local_passes,	/* execute */
   NULL,					/* sub */
@@ -314,6 +314,7 @@ static struct gimple_opt_pass pass_all_early_optimizations =
  {
   GIMPLE_PASS,
   "early_optimizations",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_all_early_optimizations,		/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
@@ -341,6 +342,7 @@ static struct gimple_opt_pass pass_all_optimizations =
  {
   GIMPLE_PASS,
   "*all_optimizations",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_all_optimizations,		/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
@@ -368,6 +370,7 @@ static struct gimple_opt_pass pass_all_optimizations_g =
  {
   GIMPLE_PASS,
   "*all_optimizations_g",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_all_optimizations_g,		/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
@@ -395,6 +398,7 @@ static struct rtl_opt_pass pass_rest_of_compilation =
  {
   RTL_PASS,
   "*rest_of_compilation",               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_rest_of_compilation,             /* gate */
   NULL,                                 /* execute */
   NULL,                                 /* sub */
@@ -420,6 +424,7 @@ static struct rtl_opt_pass pass_postreload =
  {
   RTL_PASS,
   "*all-postreload",                        /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_postreload,                      /* gate */
   NULL,                                 /* execute */
   NULL,                                 /* sub */
@@ -487,6 +492,7 @@ register_one_dump_file (struct opt_pass *pass)
   const char *name, *full_name, *prefix;
   char num[10];
   int flags, id;
+  int optgroup_flags = OPTGROUP_NONE;
 
   /* See below in next_pass_1.  */
   num[0] = '\0';
@@ -503,15 +509,26 @@ register_one_dump_file (struct opt_pass *pass)
   name = name ? name + 1 : pass->name;
   dot_name = concat (".", name, num, NULL);
   if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
-    prefix = "ipa-", flags = TDF_IPA;
+    {
+      prefix = "ipa-";
+      flags = TDF_IPA;
+      optgroup_flags |= OPTGROUP_IPA;
+    }
   else if (pass->type == GIMPLE_PASS)
-    prefix = "tree-", flags = TDF_TREE;
+    {
+      prefix = "tree-";
+      flags = TDF_TREE;
+    }
   else
-    prefix = "rtl-", flags = TDF_RTL;
+    {
+      prefix = "rtl-";
+      flags = TDF_RTL;
+    }
 
   flag_name = concat (prefix, name, num, NULL);
   glob_name = concat (prefix, name, NULL);
-  id = dump_register (dot_name, flag_name, glob_name, flags);
+  optgroup_flags |= pass->optinfo_flags;
+  id = dump_register (dot_name, flag_name, glob_name, flags, optgroup_flags);
   set_pass_for_id (id, pass);
   full_name = concat (prefix, pass->name, num, NULL);
   register_pass_name (pass, full_name);

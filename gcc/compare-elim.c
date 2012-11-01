@@ -660,6 +660,7 @@ struct rtl_opt_pass pass_compare_elim_after_reload =
  {
   RTL_PASS,
   "cmpelim",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_compare_elim_after_reload,	/* gate */
   execute_compare_elim_after_reload,	/* execute */
   NULL,					/* sub */

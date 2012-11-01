@@ -43,34 +43,35 @@ static FILE *dump_open_alternate_stream (struct dump_file_info *);
 FILE *dump_file = NULL;
 FILE *alt_dump_file = NULL;
 const char *dump_file_name;
+int dump_flags;
 
 /* Table of tree dump switches. This must be consistent with the
    TREE_DUMP_INDEX enumeration in dumpfile.h.  */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0},
+  {NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0},
   {".cgraph", "ipa-cgraph", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0},
+   0, 0, 0, 0, 0},
   {".tu", "translation-unit", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 1},
+   0, 0, 0, 0, 1},
   {".class", "class-hierarchy", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 2},
+   0, 0, 0, 0, 2},
   {".original", "tree-original", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 3},
+   0, 0, 0, 0, 3},
   {".gimple", "tree-gimple", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 4},
+   0, 0, 0, 0, 4},
   {".nested", "tree-nested", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 5},
+   0, 0, 0, 0, 5},
   {".vcg", "tree-vcg", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 6},
+   0, 0, 0, 0, 6},
 #define FIRST_AUTO_NUMBERED_DUMP 7
 
   {NULL, "tree-all", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0},
+   0, 0, 0, 0, 0},
   {NULL, "rtl-all", NULL, NULL, NULL, NULL, NULL, TDF_RTL,
-   0, 0, 0, 0},
+   0, 0, 0, 0, 0},
   {NULL, "ipa-all", NULL, NULL, NULL, NULL, NULL, TDF_IPA,
-   0, 0, 0, 0},
+   0, 0, 0, 0, 0},
 };
 
 /* Dynamically registered tree dump files and switches.  */
@@ -117,24 +118,32 @@ static const struct dump_option_value_info dump_options[] =
   {NULL, 0}
 };
 
-/* A subset of the dump_options table which is used for opt-info
-   options. This must be consistent with the MSG_* flags in
-   dump_options.
+/* A subset of the dump_options table which is used for -fopt-info
+   types. This must be consistent with the MSG_* flags in dumpfile.h.
  */
-static const struct dump_option_value_info opt_info_options[] =
+static const struct dump_option_value_info optinfo_verbosity_options[] =
 {
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
-  {"optall", (MSG_OPTIMIZED_LOCATIONS
-           | MSG_MISSED_OPTIMIZATION
-           | MSG_NOTE)},
+  {"all", MSG_ALL},
+  {NULL, 0}
+};
+
+/* Flags used for -fopt-info groups.  */
+static const struct dump_option_value_info optgroup_options[] =
+{
+  {"ipa", OPTGROUP_IPA},
+  {"loop", OPTGROUP_LOOP},
+  {"inline", OPTGROUP_INLINE},
+  {"vec", OPTGROUP_VEC},
+  {"optall", OPTGROUP_ALL},
   {NULL, 0}
 };
 
 unsigned int
 dump_register (const char *suffix, const char *swtch, const char *glob,
-	       int flags)
+	       int flags, int optgroup_flags)
 {
   static int next_dump = FIRST_AUTO_NUMBERED_DUMP;
   int num = next_dump++;
@@ -157,6 +166,7 @@ dump_register (const char *suffix, const char *swtch, const char *glob,
   extra_dump_files[count].swtch = swtch;
   extra_dump_files[count].glob = glob;
   extra_dump_files[count].pflags = flags;
+  extra_dump_files[count].optgroup_flags = optgroup_flags;
   extra_dump_files[count].num = num;
 
   return count + TDI_end;
@@ -376,8 +386,8 @@ dump_printf_loc (int dump_kind, source_location loc, const char *format, ...)
 /* Start a dump for PHASE. Store user-supplied dump flags in
    *FLAG_PTR.  Return the number of streams opened.  Set globals
    DUMP_FILE, and ALT_DUMP_FILE to point to the opened streams, and
-   set dump_flags appropriately for both pass dump stream and opt-info
-   stream. */
+   set dump_flags appropriately for both pass dump stream and
+   -fopt-info stream. */
 
 int
 dump_start (int phase, int *flag_ptr)
@@ -418,7 +428,7 @@ dump_start (int phase, int *flag_ptr)
       dfi->alt_stream = stream;
       count++;
       alt_dump_file = dfi->alt_stream;
-      /* Initialize current opt-info flags. */
+      /* Initialize current -fopt-info flags. */
       alt_flags = dfi->alt_flags;
     }
 
@@ -603,18 +613,19 @@ dump_enable_all (int flags, const char *filename)
   return n;
 }
 
-/* Enable opt-info dumps on all IR_DUMP_TYPE passes with FLAGS on
-   FILENAME.  Return the number of enabled dumps.  */
+/* Enable -fopt-info dumps on all dump files matching OPTGROUP_FLAGS.
+   Enable dumps with FLAGS on FILENAME.  Return the number of enabled
+   dumps.  */
 
 static int
-opt_info_enable_all (int ir_dump_type, int flags, const char *filename)
+opt_info_enable_passes (int optgroup_flags, int flags, const char *filename)
 {
   int n = 0;
   size_t i;
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
     {
-      if ((dump_files[i].pflags & ir_dump_type))
+      if ((dump_files[i].optgroup_flags & optgroup_flags))
         {
           const char *old_filename = dump_files[i].alt_filename;
           /* Since this file is shared among different passes, it
@@ -632,7 +643,7 @@ opt_info_enable_all (int ir_dump_type, int flags, const char *filename)
 
   for (i = 0; i < extra_dump_files_in_use; i++)
     {
-      if ((extra_dump_files[i].pflags & ir_dump_type))
+      if ((extra_dump_files[i].optgroup_flags & optgroup_flags))
         {
           const char *old_filename = extra_dump_files[i].alt_filename;
           /* Since this file is shared among different passes, it
@@ -753,11 +764,12 @@ dump_switch_p (const char *arg)
   return any;
 }
 
-/* Parse ARG as a -fopt-info switch and store flags and filename.
-   Return non-zero if it is a recognized switch.  */
+/* Parse ARG as a -fopt-info switch and store flags, optgroup_flags
+   and filename.  Return non-zero if it is a recognized switch.  */
 
 static int
-opt_info_switch_p_1 (const char *arg, int *flags, char **filename)
+opt_info_switch_p_1 (const char *arg, int *flags, int *optgroup_flags,
+                     char **filename)
 {
   const char *option_value;
   const char *ptr;
@@ -767,9 +779,10 @@ opt_info_switch_p_1 (const char *arg, int *flags, char **filename)
 
   *filename = NULL;
   *flags = 0;
+  *optgroup_flags = 0;
 
   if (!ptr)
-    return 1;
+    return 1;       /* Handle '-fopt-info' without any additional options.  */
 
   while (*ptr)
     {
@@ -790,11 +803,20 @@ opt_info_switch_p_1 (const char *arg, int *flags, char **filename)
 	end_ptr = ptr + strlen (ptr);
       length = end_ptr - ptr;
 
-      for (option_ptr = opt_info_options; option_ptr->name; option_ptr++)
+      for (option_ptr = optinfo_verbosity_options; option_ptr->name;
+           option_ptr++)
 	if (strlen (option_ptr->name) == length
 	    && !memcmp (option_ptr->name, ptr, length))
           {
             *flags |= option_ptr->value;
+	    goto found;
+          }
+
+      for (option_ptr = optgroup_options; option_ptr->name; option_ptr++)
+	if (strlen (option_ptr->name) == length
+	    && !memcmp (option_ptr->name, ptr, length))
+          {
+            *optgroup_flags |= option_ptr->value;
 	    goto found;
           }
 
@@ -806,8 +828,11 @@ opt_info_switch_p_1 (const char *arg, int *flags, char **filename)
           break;
         }
       else
-        warning (0, "ignoring unknown option %q.*s in %<-fopt-info=%s%>",
-                 length, ptr, arg);
+        {
+          warning (0, "unknown option %q.*s in %<-fopt-info-%s%>",
+                   length, ptr, arg);
+          return 0;
+        }
     found:;
       ptr = end_ptr;
     }
@@ -822,16 +847,31 @@ int
 opt_info_switch_p (const char *arg)
 {
   int flags;
+  int optgroup_flags;
   char *filename;
+  static char *file_seen = NULL;
 
-  opt_info_switch_p_1 (arg, &flags, &filename);
+  if (!opt_info_switch_p_1 (arg, &flags, &optgroup_flags, &filename))
+    return 0;
 
   if (!filename)
     filename = xstrdup ("stderr");
+
+  /* Bail out if a different filename has been specified.  */
+  if (file_seen && strcmp (file_seen, filename))
+    {
+      warning (0, "ignoring possibly conflicting option %<-fopt-info-%s%>",
+               arg);
+      return 1;
+    }
+
+  file_seen = xstrdup (filename);
   if (!flags)
     flags = MSG_ALL;
+  if (!optgroup_flags)
+    optgroup_flags = OPTGROUP_ALL;
 
-  return opt_info_enable_all ((TDF_TREE | TDF_RTL | TDF_IPA), flags, filename);
+  return opt_info_enable_passes (optgroup_flags, flags, filename);
 }
 
 /* Print basic block on the dump streams.  */

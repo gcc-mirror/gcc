@@ -76,6 +76,7 @@ struct rtl_opt_pass pass_mode_switch_use =
  {
   RTL_PASS,
   "mode_switch_use",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   insert_uses,				/* execute */
   NULL,					/* sub */

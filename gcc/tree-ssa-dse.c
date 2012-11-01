@@ -356,6 +356,7 @@ struct gimple_opt_pass pass_dse =
  {
   GIMPLE_PASS,
   "dse",			/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   gate_dse,			/* gate */
   tree_ssa_dse,			/* execute */
   NULL,				/* sub */

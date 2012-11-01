@@ -1135,6 +1135,7 @@ struct gimple_opt_pass pass_init_datastructures =
  {
   GIMPLE_PASS,
   "*init_datastructures",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_init_datastructures,		/* execute */
   NULL,					/* sub */
@@ -1744,6 +1745,7 @@ struct gimple_opt_pass pass_early_warn_uninitialized =
  {
   GIMPLE_PASS,
   "*early_warn_uninitialized",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_warn_uninitialized,		/* gate */
   execute_early_warn_uninitialized,	/* execute */
   NULL,					/* sub */
@@ -2174,6 +2176,7 @@ struct gimple_opt_pass pass_update_address_taken =
  {
   GIMPLE_PASS,
   "addressables",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   NULL,					/* execute */
   NULL,					/* sub */

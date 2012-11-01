@@ -3443,6 +3443,7 @@ struct gimple_opt_pass pass_sra_early =
  {
   GIMPLE_PASS,
   "esra",	 			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_intra_sra,			/* gate */
   early_intra_sra,			/* execute */
   NULL,					/* sub */
@@ -3464,6 +3465,7 @@ struct gimple_opt_pass pass_sra =
  {
   GIMPLE_PASS,
   "sra",	 			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_intra_sra,			/* gate */
   late_intra_sra,			/* execute */
   NULL,					/* sub */
@@ -5006,6 +5008,7 @@ struct gimple_opt_pass pass_early_ipa_sra =
  {
   GIMPLE_PASS,
   "eipa_sra",	 			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   ipa_early_sra_gate,			/* gate */
   ipa_early_sra,			/* execute */
   NULL,					/* sub */

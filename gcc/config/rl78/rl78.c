@@ -133,6 +133,7 @@ static struct opt_pass rl78_devirt_pass =
 {
   RTL_PASS,
   "devirt",
+  OPTGROUP_NONE,                        /* optinfo_flags */
   devirt_gate,
   devirt_pass,
   NULL,

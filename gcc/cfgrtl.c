@@ -456,6 +456,7 @@ struct rtl_opt_pass pass_free_cfg =
  {
   RTL_PASS,
   "*free_cfg",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_pass_free_cfg,                /* execute */
   NULL,                                 /* sub */
@@ -2998,6 +2999,7 @@ struct rtl_opt_pass pass_into_cfg_layout_mode =
  {
   RTL_PASS,
   "into_cfglayout",                     /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   into_cfg_layout_mode,                 /* execute */
   NULL,                                 /* sub */
@@ -3017,6 +3019,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
  {
   RTL_PASS,
   "outof_cfglayout",                    /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   outof_cfg_layout_mode,                /* execute */
   NULL,                                 /* sub */

@@ -1949,6 +1949,7 @@ struct rtl_opt_pass pass_instantiate_virtual_regs =
  {
   RTL_PASS,
   "vregs",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   instantiate_virtual_regs,             /* execute */
   NULL,                                 /* sub */
@@ -6925,6 +6926,7 @@ struct rtl_opt_pass pass_leaf_regs =
  {
   RTL_PASS,
   "*leaf_regs",                         /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_check_leaf_regs,       /* execute */
   NULL,                                 /* sub */
@@ -6963,6 +6965,7 @@ struct rtl_opt_pass pass_thread_prologue_and_epilogue =
  {
   RTL_PASS,
   "pro_and_epilogue",                   /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_thread_prologue_and_epilogue, /* execute */
   NULL,                                 /* sub */
@@ -7164,6 +7167,7 @@ struct rtl_opt_pass pass_match_asm_constraints =
  {
   RTL_PASS,
   "asmcons",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   rest_of_match_asm_constraints,	/* execute */
   NULL,                                 /* sub */

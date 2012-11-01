@@ -1009,6 +1009,7 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
  {
   IPA_PASS,
   "lto_gimple_out",	                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_lto_out,			        /* gate */
   NULL,		                	/* execute */
   NULL,					/* sub */
@@ -1424,6 +1425,7 @@ struct ipa_opt_pass_d pass_ipa_lto_finish_out =
  {
   IPA_PASS,
   "lto_decls_out",	                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_lto_out,			        /* gate */
   NULL,        	                        /* execute */
   NULL,					/* sub */

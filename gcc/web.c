@@ -445,6 +445,7 @@ struct rtl_opt_pass pass_web =
  {
   RTL_PASS,
   "web",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_web,                      /* gate */
   web_main,		                /* execute */
   NULL,                                 /* sub */

@@ -95,6 +95,7 @@ struct gimple_opt_pass pass_cleanup_cfg_post_optimizing =
  {
   GIMPLE_PASS,
   "optimized",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_cleanup_cfg_post_optimizing,	/* execute */
   NULL,					/* sub */
@@ -222,6 +223,7 @@ struct gimple_opt_pass pass_fixup_cfg =
  {
   GIMPLE_PASS,
   "*free_cfg_annotations",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_fixup_cfg,			/* execute */
   NULL,					/* sub */

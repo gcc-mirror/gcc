@@ -2543,6 +2543,7 @@ struct ipa_opt_pass_d pass_ipa_cp =
  {
   IPA_PASS,
   "cp",				/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   cgraph_gate_cp,		/* gate */
   ipcp_driver,			/* execute */
   NULL,				/* sub */

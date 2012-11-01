@@ -4027,6 +4027,7 @@ struct rtl_opt_pass pass_rtl_pre =
  {
   RTL_PASS,
   "rtl pre",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_rtl_pre,                         /* gate */
   execute_rtl_pre,    			/* execute */
   NULL,                                 /* sub */
@@ -4047,6 +4048,7 @@ struct rtl_opt_pass pass_rtl_hoist =
  {
   RTL_PASS,
   "hoist",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_rtl_hoist,                       /* gate */
   execute_rtl_hoist,  			/* execute */
   NULL,                                 /* sub */

@@ -1,3 +1,30 @@
+2012-11-01  Sharad Singhai  <singhai@google.com>
+
+	* doc/invoke.texi: Update -fopt-info documentation.
+	* dumpfile.c: Move dump_flags here from passes.c.
+	Rename opt_info_options to optinfo_verbosity_options.
+	Add optgroup_options.
+	(dump_files): Add field for optinfo_flags in the static initializer.
+	(dump_register): Handle additional parameter for optgroup_flags.
+	(opt_info_enable_passes): Renamed opt_info_enable_all. Handle
+	optgroup_flags. Fix documentation.
+	(opt_info_switch_p_1): Handle optgroup options.
+	(opt_info_switch_p): Handle optgroup_flags. Warn on multiple files.
+	* dumpfile.h (dump_register): Additional argument for optgroup_flags.
+	All callers updated.
+	(struct dump_file_info): Add field for optgroup_flags.
+	Define OPTGROUP_* flags.
+	* tree-pass.h (struct opt_pass): Add addtional field for optinfo_flags.
+	All opt_pass static initializers updated.
+	* opts-global.c (dump_remap_tree_vectorizer_verbose): Use 'all'
+	instead of 'optall'.
+	(handle_common_deferred_options): Fix typo in error message.
+	* passes.c (register_one_dump_file): Add argument for optgroup_flags.
+	Turn on OPTGROUP_IPA for IPA passes.
+	Move dump_flags from here to dumpfile.c.
+	* statistics.c (statistics_early_init): Use OPTGROUP_NONE in call to
+	dump_register.
+
 2012-11-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR target/55160

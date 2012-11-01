@@ -6807,6 +6807,7 @@ struct gimple_opt_pass pass_build_alias =
  {
   GIMPLE_PASS,
   "alias",		    /* name */
+  OPTGROUP_NONE,            /* optinfo_flags */
   gate_tree_pta,	    /* gate */
   NULL,                     /* execute */
   NULL,                     /* sub */
@@ -6829,6 +6830,7 @@ struct gimple_opt_pass pass_build_ealias =
  {
   GIMPLE_PASS,
   "ealias",		    /* name */
+  OPTGROUP_NONE,            /* optinfo_flags */
   gate_tree_pta,	    /* gate */
   NULL,                     /* execute */
   NULL,                     /* sub */
@@ -7203,6 +7205,7 @@ struct simple_ipa_opt_pass pass_ipa_pta =
  {
   SIMPLE_IPA_PASS,
   "pta",		                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ipa_pta,			/* gate */
   ipa_pta_execute,			/* execute */
   NULL,					/* sub */

@@ -409,6 +409,7 @@ struct gimple_opt_pass pass_phiprop =
  {
   GIMPLE_PASS,
   "phiprop",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_phiprop,			/* gate */
   tree_ssa_phiprop,		/* execute */
   NULL,				/* sub */

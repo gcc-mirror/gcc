@@ -1463,6 +1463,7 @@ struct gimple_opt_pass pass_convert_switch =
  {
   GIMPLE_PASS,
   "switchconv",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   switchconv_gate,			/* gate */
   do_switchconv,			/* execute */
   NULL,					/* sub */

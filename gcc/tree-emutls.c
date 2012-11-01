@@ -815,6 +815,7 @@ struct simple_ipa_opt_pass pass_ipa_lower_emutls =
  {
   SIMPLE_IPA_PASS,
   "emutls",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_emutls,				/* gate */
   ipa_lower_emutls,			/* execute */
   NULL,                                 /* sub */

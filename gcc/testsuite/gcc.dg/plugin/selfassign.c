@@ -268,6 +268,7 @@ static struct gimple_opt_pass pass_warn_self_assign =
   {
     GIMPLE_PASS,
     "warn_self_assign",                   /* name */
+    OPTGROUP_NONE,                        /* optinfo_flags */
     gate_warn_self_assign,                /* gate */
     execute_warn_self_assign,             /* execute */
     NULL,                                 /* sub */

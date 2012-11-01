@@ -2140,6 +2140,7 @@ struct gimple_opt_pass pass_lower_eh =
  {
   GIMPLE_PASS,
   "eh",					/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   lower_eh_constructs,			/* execute */
   NULL,					/* sub */
@@ -2999,6 +3000,7 @@ struct gimple_opt_pass pass_refactor_eh =
  {
   GIMPLE_PASS,
   "ehopt",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_refactor_eh,			/* gate */
   refactor_eh,				/* execute */
   NULL,					/* sub */
@@ -3207,6 +3209,7 @@ struct gimple_opt_pass pass_lower_resx =
  {
   GIMPLE_PASS,
   "resx",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_lower_resx,			/* gate */
   execute_lower_resx,			/* execute */
   NULL,					/* sub */
@@ -3503,6 +3506,7 @@ struct gimple_opt_pass pass_lower_eh_dispatch =
  {
   GIMPLE_PASS,
   "ehdisp",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_lower_eh_dispatch,		/* gate */
   execute_lower_eh_dispatch,		/* execute */
   NULL,					/* sub */
@@ -4326,6 +4330,7 @@ struct gimple_opt_pass pass_cleanup_eh = {
   {
    GIMPLE_PASS,
    "ehcleanup",			/* name */
+   OPTGROUP_NONE,               /* optinfo_flags */
    gate_cleanup_eh,		/* gate */
    execute_cleanup_eh,		/* execute */
    NULL,			/* sub */

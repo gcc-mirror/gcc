@@ -403,6 +403,7 @@ struct gimple_opt_pass pass_tracer =
  {
   GIMPLE_PASS,
   "tracer",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tracer,                          /* gate */
   tracer,                               /* execute */
   NULL,                                 /* sub */

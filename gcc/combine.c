@@ -13817,6 +13817,7 @@ struct rtl_opt_pass pass_combine =
  {
   RTL_PASS,
   "combine",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_combine,                  /* gate */
   rest_of_handle_combine,               /* execute */
   NULL,                                 /* sub */

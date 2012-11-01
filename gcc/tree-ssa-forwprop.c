@@ -3122,6 +3122,7 @@ struct gimple_opt_pass pass_forwprop =
  {
   GIMPLE_PASS,
   "forwprop",			/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   gate_forwprop,		/* gate */
   ssa_forward_propagate_and_combine,	/* execute */
   NULL,				/* sub */
