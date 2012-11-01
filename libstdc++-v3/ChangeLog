@@ -1,3 +1,16 @@
+2012-11-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (__details::_Before_begin<>):
+	New, combine a base node instance and an allocator.
+	* include/bits/hashtable.h (_Hashtable<>::_M_node_allocator): Remove.
+	(_Hashtable<>::_M_before_begin): Rename into _M_bbegin and type
+	modified to __detail::_Before_begin<>.
+	(_Hashtable<>::_M_node_allocator()): New, get the node allocator
+	part of _M_bbegin.
+	(_Hashtable<>::_M_before_begin()): New, get the before begin node
+	part of _M_bbegin.
+	(_Hashtable<>): Adapt to use latter.
+
 2012-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/forward_list.h (forward_list::assign): Dispatch to new

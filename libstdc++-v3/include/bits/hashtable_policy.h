@@ -1708,6 +1708,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+  /**
+   * This type is to combine a _Hash_node_base instance with an allocator
+   * instance through inheritance to benefit from EBO when possible.
+   */
+  template<typename _NodeAlloc>
+    struct _Before_begin : public _NodeAlloc
+    {
+      _Hash_node_base _M_node;
+
+      _Before_begin(const _Before_begin&) = default;
+      _Before_begin(_Before_begin&&) = default;
+
+      template<typename _Alloc>
+	_Before_begin(_Alloc&& __a)
+	  : _NodeAlloc(std::forward<_Alloc>(__a))
+	{ }
+    };
+
  //@} hashtable-detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
