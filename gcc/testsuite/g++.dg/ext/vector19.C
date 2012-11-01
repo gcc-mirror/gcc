@@ -1,8 +1,5 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-std=c++11 -mavx2" } */
-
-// The target restrictions and the -mavx2 flag are meant to disappear
-// once vector lowering is in place.
+/* { dg-do compile } */
+/* { dg-options "-std=c++11" } */
 
 typedef double vec __attribute__((vector_size(2*sizeof(double))));
 typedef signed char vec2 __attribute__((vector_size(16)));

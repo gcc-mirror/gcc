@@ -868,6 +868,72 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   return gimplify_build2 (gsi, MINUS_EXPR, type, op0, tem);
 }
 
+/* Expand a vector condition to scalars, by using many conditions
+   on the vector's elements.  */
+static void
+expand_vector_condition (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree type = gimple_expr_type (stmt);
+  tree a = gimple_assign_rhs1 (stmt);
+  tree a1 = a;
+  tree a2;
+  bool a_is_comparison = false;
+  tree b = gimple_assign_rhs2 (stmt);
+  tree c = gimple_assign_rhs3 (stmt);
+  VEC(constructor_elt,gc) *v;
+  tree constr;
+  tree inner_type = TREE_TYPE (type);
+  tree cond_type = TREE_TYPE (TREE_TYPE (a));
+  tree comp_inner_type = cond_type;
+  tree width = TYPE_SIZE (inner_type);
+  tree index = bitsize_int (0);
+  int nunits = TYPE_VECTOR_SUBPARTS (type);
+  int i;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+
+  if (TREE_CODE (a) != SSA_NAME)
+    {
+      gcc_assert (COMPARISON_CLASS_P (a));
+      a_is_comparison = true;
+      a1 = TREE_OPERAND (a, 0);
+      a2 = TREE_OPERAND (a, 1);
+      comp_inner_type = TREE_TYPE (TREE_TYPE (a1));
+    }
+
+  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1)))
+    return;
+
+  /* TODO: try and find a smaller vector type.  */
+
+  warning_at (loc, OPT_Wvector_operation_performance,
+	      "vector condition will be expanded piecewise");
+
+  v = VEC_alloc(constructor_elt, gc, nunits);
+  for (i = 0; i < nunits;
+       i++, index = int_const_binop (PLUS_EXPR, index, width))
+    {
+      tree aa, result;
+      tree bb = tree_vec_extract (gsi, inner_type, b, width, index);
+      tree cc = tree_vec_extract (gsi, inner_type, c, width, index);
+      if (a_is_comparison)
+	{
+	  tree aa1 = tree_vec_extract (gsi, comp_inner_type, a1, width, index);
+	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2, width, index);
+	  aa = build2 (TREE_CODE (a), cond_type, aa1, aa2);
+	}
+      else
+	aa = tree_vec_extract (gsi, cond_type, a, width, index);
+      result = gimplify_build3 (gsi, COND_EXPR, inner_type, aa, bb, cc);
+      constructor_elt ce = {NULL_TREE, result};
+      VEC_quick_push (constructor_elt, v, ce);
+    }
+
+  constr = build_constructor (type, v);
+  gimple_assign_set_rhs_from_tree (gsi, constr);
+  update_stmt (gsi_stmt (*gsi));
+}
+
 static tree
 expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type,
 			 gimple assign, enum tree_code code)
@@ -1248,6 +1314,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       return;
     }
 
+  if (code == VEC_COND_EXPR)
+    {
+      expand_vector_condition (gsi);
+      return;
+    }
   if (rhs_class != GIMPLE_UNARY_RHS && rhs_class != GIMPLE_BINARY_RHS)
     return;
 

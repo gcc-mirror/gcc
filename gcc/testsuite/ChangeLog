@@ -1,3 +1,9 @@
+2012-11-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55001
+	* g++.dg/ext/vector19.C: Remove target restrictions.
+	* gcc.dg/fold-compare-7.c: New testcase.
+
 2012-11-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/55160
