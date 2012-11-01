@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -4247,7 +4247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	    __aurng(__urng);
-	  return -std::log(__aurng()) / __p.lambda();
+	  return -std::log(result_type(1) - __aurng()) / __p.lambda();
 	}
 
     private:

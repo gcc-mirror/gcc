@@ -1,3 +1,11 @@
+2012-11-01   Haakan Younes  <hyounes@google.com>
+	     Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/55047
+	* include/bits/random.h (exponential_distribution<>::operator):
+	Fix formula to std::log(result_type(1) - __aurng()).
+	* include/bits/random.tcc: Likewise, everywhere.
+
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
         PR libstdc++/55123
