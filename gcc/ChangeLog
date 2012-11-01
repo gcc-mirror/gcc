@@ -1,3 +1,16 @@
+2012-10-31  Dehao Chen  <dehao@google.com>
+
+	* tree-eh.c (do_return_redirection): Set location for jump statement.
+	(do_goto_redirection): Likewise.
+	(frob_into_branch_around): Likewise.
+	(lower_try_finally_nofallthru): Likewise.
+	(lower_try_finally_copy): Likewise.
+	(lower_try_finally_switch): Likewise.
+	* expr.c (store_expr): Use current insn location instead of expr
+	location.
+	(expand_expr_real): Likewise.
+	(expand_expr_real_1): Likewise.
+
 2012-10-31   Easwaran Raman  <eraman@google.com>
 
 	PR target/54938
