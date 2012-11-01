@@ -80,6 +80,7 @@ save_target_globals (void)
   g->cfgloop = XCNEW (struct target_cfgloop);
   g->ira = XCNEW (struct target_ira);
   g->ira_int = XCNEW (struct target_ira_int);
+  g->lra_int = XCNEW (struct target_lra_int);
   g->builtins = XCNEW (struct target_builtins);
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);
