@@ -1,13 +1,13 @@
-/*                                                      log2l.c
- *      Base 2 logarithm, 128-bit long double precision
+/*                                                      log2q.c
+ *      Base 2 logarithm for __float128 precision
  *
  *
  *
  * SYNOPSIS:
  *
- * long double x, y, log2l();
+ * __float128 x, y, log2q();
  *
- * y = log2l( x );
+ * y = log2q( x );
  *
  *
  *

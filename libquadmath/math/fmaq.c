@@ -228,6 +228,17 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	 for proper rounding.  */
       if (v.ieee.exponent == 226)
 	{
+         /* If the exponent would be in the normal range when
+            rounding to normal precision with unbounded exponent
+            range, the exact result is known and spurious underflows
+            must be avoided on systems detecting tininess after
+            rounding.  */
+         if (TININESS_AFTER_ROUNDING)
+           {
+             w.value = a1 + u.value;
+             if (w.ieee.exponent == 227)
+               return w.value * 0x1p-226L;
+           }
 	  /* v.ieee.mant_low & 2 is LSB bit of the result before rounding,
 	     v.ieee.mant_low & 1 is the round bit and j is our sticky
 	     bit. */

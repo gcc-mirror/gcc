@@ -87,7 +87,8 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(libsubincludedir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__dirstamp = $(am__leading_dot)dirstamp
-@BUILD_LIBQUADMATH_TRUE@am_libquadmath_la_OBJECTS = math/acoshq.lo \
+@BUILD_LIBQUADMATH_TRUE@am_libquadmath_la_OBJECTS = math/x2y2m1q.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/isinf_nsq.lo math/acoshq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/fmodq.lo math/acosq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/frexpq.lo math/rem_pio2q.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/asinhq.lo math/hypotq.lo \
@@ -126,9 +127,13 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBQUADMATH_TRUE@	math/ilogbq.lo math/llrintq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/log2q.lo math/lrintq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/nearbyintq.lo math/remquoq.lo \
-@BUILD_LIBQUADMATH_TRUE@	printf/addmul_1.lo printf/add_n.lo \
-@BUILD_LIBQUADMATH_TRUE@	printf/cmp.lo printf/divrem.lo \
-@BUILD_LIBQUADMATH_TRUE@	printf/flt1282mpn.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/ccoshq.lo math/cexpq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/clog10q.lo math/clogq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/csinq.lo math/csinhq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/csqrtq.lo math/ctanq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/ctanhq.lo printf/addmul_1.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/add_n.lo printf/cmp.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/divrem.lo printf/flt1282mpn.lo \
 @BUILD_LIBQUADMATH_TRUE@	printf/fpioconst.lo printf/lshift.lo \
 @BUILD_LIBQUADMATH_TRUE@	printf/mul_1.lo printf/mul_n.lo \
 @BUILD_LIBQUADMATH_TRUE@	printf/mul.lo printf/printf_fphex.lo \
@@ -321,7 +326,8 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h
 @BUILD_LIBQUADMATH_TRUE@libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 @BUILD_LIBQUADMATH_TRUE@libquadmath_la_SOURCES = \
-@BUILD_LIBQUADMATH_TRUE@  math/acoshq.c math/fmodq.c math/acosq.c math/frexpq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/x2y2m1q.c math/isinf_nsq.c math/acoshq.c math/fmodq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/acosq.c math/frexpq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/roundq.c math/atanhq.c math/isnanq.c math/scalblnq.c math/atanq.c \
@@ -338,6 +344,8 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@  math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/ccoshq.c math/cexpq.c math/clog10q.c math/clogq.c math/csinq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/csinhq.c math/csqrtq.c math/ctanq.c math/ctanhq.c \
 @BUILD_LIBQUADMATH_TRUE@  printf/addmul_1.c printf/add_n.c printf/cmp.c printf/divrem.c \
 @BUILD_LIBQUADMATH_TRUE@  printf/flt1282mpn.c printf/fpioconst.c printf/lshift.c printf/mul_1.c \
 @BUILD_LIBQUADMATH_TRUE@  printf/mul_n.c printf/mul.c printf/printf_fphex.c printf/printf_fp.c \
@@ -504,6 +512,8 @@ math/$(am__dirstamp):
 math/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) math/$(DEPDIR)
 	@: > math/$(DEPDIR)/$(am__dirstamp)
+math/x2y2m1q.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/isinf_nsq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/acoshq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/fmodq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/acosq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
@@ -588,6 +598,15 @@ math/lrintq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/nearbyintq.lo: math/$(am__dirstamp) \
 	math/$(DEPDIR)/$(am__dirstamp)
 math/remquoq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/ccoshq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/cexpq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/clog10q.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/clogq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/csinq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/csinhq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/csqrtq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/ctanq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/ctanhq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 printf/$(am__dirstamp):
 	@$(MKDIR_P) printf
 	@: > printf/$(am__dirstamp)
@@ -669,10 +688,18 @@ mostlyclean-compile:
 	-rm -f math/catanq.lo
 	-rm -f math/cbrtq.$(OBJEXT)
 	-rm -f math/cbrtq.lo
+	-rm -f math/ccoshq.$(OBJEXT)
+	-rm -f math/ccoshq.lo
 	-rm -f math/ceilq.$(OBJEXT)
 	-rm -f math/ceilq.lo
+	-rm -f math/cexpq.$(OBJEXT)
+	-rm -f math/cexpq.lo
 	-rm -f math/cimagq.$(OBJEXT)
 	-rm -f math/cimagq.lo
+	-rm -f math/clog10q.$(OBJEXT)
+	-rm -f math/clog10q.lo
+	-rm -f math/clogq.$(OBJEXT)
+	-rm -f math/clogq.lo
 	-rm -f math/complex.$(OBJEXT)
 	-rm -f math/complex.lo
 	-rm -f math/conjq.$(OBJEXT)
@@ -689,6 +716,16 @@ mostlyclean-compile:
 	-rm -f math/cprojq.lo
 	-rm -f math/crealq.$(OBJEXT)
 	-rm -f math/crealq.lo
+	-rm -f math/csinhq.$(OBJEXT)
+	-rm -f math/csinhq.lo
+	-rm -f math/csinq.$(OBJEXT)
+	-rm -f math/csinq.lo
+	-rm -f math/csqrtq.$(OBJEXT)
+	-rm -f math/csqrtq.lo
+	-rm -f math/ctanhq.$(OBJEXT)
+	-rm -f math/ctanhq.lo
+	-rm -f math/ctanq.$(OBJEXT)
+	-rm -f math/ctanq.lo
 	-rm -f math/erfq.$(OBJEXT)
 	-rm -f math/erfq.lo
 	-rm -f math/expm1q.$(OBJEXT)
@@ -717,6 +754,8 @@ mostlyclean-compile:
 	-rm -f math/hypotq.lo
 	-rm -f math/ilogbq.$(OBJEXT)
 	-rm -f math/ilogbq.lo
+	-rm -f math/isinf_nsq.$(OBJEXT)
+	-rm -f math/isinf_nsq.lo
 	-rm -f math/isinfq.$(OBJEXT)
 	-rm -f math/isinfq.lo
 	-rm -f math/isnanq.$(OBJEXT)
@@ -795,6 +834,8 @@ mostlyclean-compile:
 	-rm -f math/tgammaq.lo
 	-rm -f math/truncq.$(OBJEXT)
 	-rm -f math/truncq.lo
+	-rm -f math/x2y2m1q.$(OBJEXT)
+	-rm -f math/x2y2m1q.lo
 	-rm -f printf/add_n.$(OBJEXT)
 	-rm -f printf/add_n.lo
 	-rm -f printf/addmul_1.$(OBJEXT)
@@ -851,8 +892,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/catanhq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/catanq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cbrtq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/ccoshq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/ceilq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cexpq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cimagq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/clog10q.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/clogq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/complex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/conjq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/copysignq.Plo@am__quote@
@@ -861,6 +906,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cosq_kernel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cprojq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/crealq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/csinhq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/csinq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/csqrtq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/ctanhq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/ctanq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/erfq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/expm1q.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/expq.Plo@am__quote@
@@ -875,6 +925,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/frexpq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/hypotq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/ilogbq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/isinf_nsq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/isinfq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/isnanq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/j0q.Plo@am__quote@
@@ -914,6 +965,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/tanq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/tgammaq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/truncq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/x2y2m1q.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/add_n.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/addmul_1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/cmp.Plo@am__quote@

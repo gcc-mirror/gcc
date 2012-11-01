@@ -63,6 +63,16 @@ cacoshq (__complex128 x)
       __real__ res = 0.0;
       __imag__ res = copysignq (M_PI_2q, __imag__ x);
     }
+  /* The factor 16 is just a guess.  */
+  else if (16.0Q * fabsq (__imag__ x) < fabsq (__real__ x))
+    {
+      /* Kahan's formula which avoid cancellation through subtraction in
+	 some cases.  */
+      res = 2.0Q * clogq (csqrtq ((x + 1.0Q) / 2.0Q)
+			    + csqrtq ((x - 1.0Q) / 2.0Q));
+      if (signbit (__real__ res))
+	__real__ res = 0.0Q;
+    }
   else
     {
       __complex128 y;
@@ -72,17 +82,13 @@ cacoshq (__complex128 x)
 
       y = csqrtq (y);
 
-      if (__real__ x < 0.0)
+      if (signbitq (x))
 	y = -y;
 
       __real__ y += __real__ x;
       __imag__ y += __imag__ x;
 
       res = clogq (y);
-
-      /* We have to use the positive branch.  */
-      if (__real__ res < 0.0)
-	res = -res;
     }
 
   return res;

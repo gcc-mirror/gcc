@@ -1,4 +1,4 @@
-/* s_scalbnl.c -- long double version of s_scalbn.c.
+/* scalbnq.c -- __float128 version of s_scalbn.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
    

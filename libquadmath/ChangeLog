@@ -1,3 +1,79 @@
+2012-11-01  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.am (libquadmath_la_SOURCES): Add new math/* files.
+	* Makefile.in: Regenerated.
+	* math/acoshq.c: Update comment.
+	* math/acosq.c: Ditto.
+	* math/asinhq.c: Ditto.
+	* math/asinq.c: Ditto.
+	* math/atan2q.c: Ditto.
+	* math/atanhq.c: Ditto.
+	* math/ceilq.c: Ditto.
+	* math/copysignq.c: Ditto.
+	* math/cosq.c: Ditto.
+	* math/coshq.c: Ditto.
+	* math/erfq.c: Ditto.
+	* math/fabsq.c: Ditto.
+	* math/finiteq.c: Ditto.
+	* math/floorq.c: Ditto.
+	* math/fmodq.c: Ditto.
+	* math/frexpq.c: Ditto.
+	* math/isnanq.c: Ditto.
+	* math/j0q.c: Ditto.
+	* math/j1q.c: Ditto.
+	* math/ldexpq.c: Ditto.
+	* math/llroundq.c: Ditto.
+	* math/log10q.c: Ditto.
+	* math/log1pq.c: Ditto.
+	* math/log2q.c: Ditto.
+	* math/logq.c: Ditto.
+	* math/lroundq.c: Ditto.
+	* math/modfq.c: Ditto.
+	* math/nextafterq.c: Ditto.
+	* math/powq.c: Ditto.
+	* math/rem_pio2q.c: Ditto.
+	* math/remainderq.c: Ditto.
+	* math/rintq.c: Ditto.
+	* math/roundq.c: Ditto.
+	* math/scalblnq.c: Ditto.
+	* math/scalbnq.c: Ditto.
+	* math/sincosq_kernel.c: Ditto.
+	* math/sinq.c: Ditto.
+	* math/tanq.c: Ditto.
+	* math/expq.c: Ditto.
+	(__expq_table, expq): Renamed local array from __expl_table.
+	* math/cosq_kernel.c (__quadmath_kernel_cosq): Fix sign handling.
+	* math/cacoshq.c: Changes from GLIBC; fix returned sign.
+	* math/casinhq.c: Changes from GLIBC to fix special-case.
+	* math/cbrtq.c: Use modified GLIBC version.
+	* math/complex.c (ccoshd, cexpq, clog10q, clogq, csinhq, csinq,
+	ctanhq, ctanq): Moved to separates files.
+	(mult_c128, div_c128): Removed no longer needed functions.
+	(cexpiq): Call sincosq instead of sinq and cosq.
+	(cosq): Call cosh(-re,im) instead of cosq/sinq/sinh/cosh.
+	* math/ccoshq.c (ccoshq): New file, moved from complex.c and
+	modified based on GLIBC.
+	* math/cexpq.c (cexp): Ditto.
+	* math/clog10q.c (clog10q): Ditto.
+	* math/clogq.c (clogq): Ditto.
+	* math/csinhq.c: Ditto.
+	* math/csinq.c: Ditto.
+	* math/csqrtq.c: Ditto.
+	* math/ctanhq.c: Ditto.
+	* math/ctanq.c: Ditto.
+	* math/fmaq.c (fmaq): Port TININESS_AFTER_ROUNDING handling
+	from GLIBC.
+	* math/ilogbq.c (ilogbq): Add errno = EDOM handling.
+	* math/isinf_nsq.c (__quadmath_isinf_nsq): New file, ported
+	from GLIBC.
+	* math/lgammaq.c (lgammaq): Add signgam handling.
+	* math/sinhq.c (sinhq): Fix sign handling.
+	* math/sinq_kernel.c (__quadmath_kernel_sinq): Ditto.
+	* math/tgammaq.c (tgammaq): Ditto.
+	* math/x2y2m1q.c: New file.
+	* quadmath-imp.h (TININESS_AFTER_ROUNDING): New define.
+	(__quadmath_x2y2m1q, __quadmath_isinf_nsq): New prototypes.
+
 2012-10-31  Tobias Burnus  <burnus@net-b.de>
 	    Joseph Myers <joseph@codesourcery.com>
 	    David S. Miller <davem@davemloft.net>

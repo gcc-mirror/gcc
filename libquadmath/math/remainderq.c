@@ -1,4 +1,4 @@
-/* e_fmodl.c -- long double version of e_fmod.c.
+/* fmodq.c -- __float128 version of e_fmod.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 /*

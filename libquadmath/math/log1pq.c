@@ -1,15 +1,15 @@
 /*							log1pl.c
  *
  *      Relative error logarithm
- *	Natural logarithm of 1+x, 128-bit long double precision
+ *	Natural logarithm of 1+x for __float128 precision
  *
  *
  *
  * SYNOPSIS:
  *
- * long double x, y, log1pl();
+ * __float128 x, y, log1pl();
  *
- * y = log1pl( x );
+ * y = log1pq( x );
  *
  *
  *

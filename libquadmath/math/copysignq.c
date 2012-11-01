@@ -1,4 +1,4 @@
-/* s_copysignl.c -- long double version of s_copysign.c.
+/* copysignq.c -- __float128 version of s_copysign.c.
  * Conversion to long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 

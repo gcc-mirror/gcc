@@ -1,4 +1,4 @@
-/* s_fabsl.c -- __float128 version of s_fabs.c.
+/* fabsq.c -- __float128 version of s_fabs.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
