@@ -3244,9 +3244,11 @@ lra_constraints (bool first_p)
 {
   bool changed_p;
   int i, hard_regno, new_insns_num;
-  unsigned int min_len, new_min_len;
-  rtx set, x, dest_reg;
+  unsigned int min_len, new_min_len, uid;
+  rtx set, x, reg, dest_reg;
   basic_block last_bb;
+  bitmap_head equiv_insn_bitmap;
+  bitmap_iterator bi;
 
   lra_constraint_iter++;
   if (lra_dump_file != NULL)
@@ -3261,10 +3263,12 @@ lra_constraints (bool first_p)
   lra_risky_transformations_p = false;
   new_insn_uid_start = get_max_uid ();
   new_regno_start = first_p ? lra_constraint_new_regno_start : max_reg_num ();
+  bitmap_initialize (&equiv_insn_bitmap, &reg_obstack);
   for (i = FIRST_PSEUDO_REGISTER; i < new_regno_start; i++)
     if (lra_reg_info[i].nrefs != 0)
       {
 	ira_reg_equiv[i].profitable_p = true;
+	reg = regno_reg_rtx[i];
 	if ((hard_regno = lra_get_regno_hard_regno (i)) >= 0)
 	  {
 	    int j, nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (i)];
@@ -3272,7 +3276,7 @@ lra_constraints (bool first_p)
 	    for (j = 0; j < nregs; j++)
 	      df_set_regs_ever_live (hard_regno + j, true);
 	  }
-	else if ((x = get_equiv_substitution (regno_reg_rtx[i])) != NULL_RTX)
+	else if ((x = get_equiv_substitution (reg)) != reg)
 	  {
 	    bool pseudo_p = contains_reg_p (x, false, false);
 	    rtx set, insn;
@@ -3310,8 +3314,15 @@ lra_constraints (bool first_p)
 	      ira_reg_equiv[i].defined_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;
+	    if (get_equiv_substitution (reg) != reg)
+	      bitmap_ior_into (&equiv_insn_bitmap, &lra_reg_info[i].insn_bitmap);
 	  }
       }
+  /* We should add all insns containing pseudos which should be
+     substituted by their equivalences.  */
+  EXECUTE_IF_SET_IN_BITMAP (&equiv_insn_bitmap, 0, uid, bi)
+    lra_push_insn_by_uid (uid);
+  bitmap_clear (&equiv_insn_bitmap);
   lra_eliminate (false);
   min_len = lra_insn_stack_length ();
   new_insns_num = 0;
