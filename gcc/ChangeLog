@@ -1,3 +1,7 @@
+2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Remove moxie web reference.
+
 2012-11-01  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/55001
