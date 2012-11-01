@@ -1,4 +1,22 @@
-2012-10-31  Lawrence Crowl  <crowl@google.com>
+2012-11-01  Lawrence Crowl  <crowl@google.com>
+
+	* ebitmap.h: Remove unused.
+	* ebitmap.c: Remove unused.
+	* Makefile.in: Remove ebitmap.h and ebitmap.c.
+	* sbitmap.h (SBITMAP_SIZE_BYTES): Move to source file.
+	(SET_BIT_WITH_POPCOUNT): Remove unused.
+	(RESET_BIT_WITH_POPCOUNT): Remove unused.
+	(bitmap_copy_n): Remove unused.
+	(bitmap_range_empty_p): Remove unused.
+	(sbitmap_popcount): Remove unused.
+	(sbitmap_verify_popcount): Make private to source file.
+	* sbitmap.c (SBITMAP_SIZE_BYTES): Move here from header.
+	(bitmap_copy_n): Remove unused.
+	(bitmap_range_empty_p): Remove unused.
+	(sbitmap_popcount): Remove unused.
+	(sbitmap_verify_popcount): Make private to source file.
+
+2012-11-01  Lawrence Crowl  <crowl@google.com>
 
 	* sbitmap.h (sbitmap_iter_init): Rename bmp_iter_set_init and add
 	unused parameter to match bitmap iterator.  Update callers.

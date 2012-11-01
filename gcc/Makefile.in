@@ -942,7 +942,6 @@ REAL_H = real.h $(MACHMODE_H)
 IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
 LRA_INT_H = lra.h $(BITMAP_H) $(RECOG_H) $(INSN_ATTR_H) insn-codes.h lra-int.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
-EBITMAP_H = ebitmap.h sbitmap.h
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
@@ -1200,7 +1199,6 @@ OBJS = \
 	dwarf2asm.o \
 	dwarf2cfi.o \
 	dwarf2out.o \
-	ebitmap.o \
 	emit-rtl.o \
 	et-forest.o \
 	except.o \
@@ -1833,7 +1831,6 @@ graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $
     $(CONFIG_H) $(EMIT_RTL_H)
 
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h
-ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(EBITMAP_H)
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
 AR_LIBS = @COLLECT2_LIBS@

@@ -42,11 +42,10 @@ along with GCC; see the file COPYING3.  If not see
    the size of the set universe:
 
      * clear			: bitmap_clear
-     * cardinality		: sbitmap_popcount
      * choose_one		: bitmap_first_set_bit /
 				  bitmap_last_set_bit
      * forall			: EXECUTE_IF_SET_IN_BITMAP
-     * set_copy			: bitmap_copy / bitmap_copy_n
+     * set_copy			: bitmap_copy
      * set_intersection		: bitmap_and
      * set_union		: bitmap_ior
      * set_difference		: bitmap_and_compl
@@ -93,7 +92,6 @@ struct simple_bitmap_def
 
 /* Return the set size needed for N elements.  */
 #define SBITMAP_SET_SIZE(N) (((N) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
-#define SBITMAP_SIZE_BYTES(BITMAP) ((BITMAP)->size * sizeof (SBITMAP_ELT_TYPE))
 
 /* Return the number of bits in BITMAP.  */
 #define SBITMAP_SIZE(BITMAP) ((BITMAP)->n_bits)
@@ -117,40 +115,12 @@ bitmap_set_bit (sbitmap map, int bitno)
     |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
 }
 
-/* Like bitmap_set_bit, but updates population count.  */
-
-static inline void
-bitmap_set_bit_with_popcount (sbitmap map, int bitno)
-{
-  bool oldbit;
-  gcc_checking_assert (map->popcount);
-  oldbit = bitmap_bit_p (map, bitno);
-  if (!oldbit)
-    map->popcount[bitno / SBITMAP_ELT_BITS]++;
-  map->elms[bitno / SBITMAP_ELT_BITS]
-    |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
-}
-
 /* Reset bit number BITNO in the sbitmap MAP.  */
 
 static inline void
 bitmap_clear_bit (sbitmap map, int bitno)
 {
   gcc_checking_assert (! map->popcount);
-  map->elms[bitno / SBITMAP_ELT_BITS]
-    &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
-}
-
-/* Like bitmap_clear_bit, but updates population count.  */
-
-static inline void
-bitmap_clear_bit_with_popcount (sbitmap map, int bitno)
-{
-  bool oldbit;
-  gcc_checking_assert (map->popcount);
-  oldbit = bitmap_bit_p (map, bitno);
-  if (oldbit)
-    map->popcount[bitno / SBITMAP_ELT_BITS]--;
   map->elms[bitno / SBITMAP_ELT_BITS]
     &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
 }
@@ -261,10 +231,8 @@ extern sbitmap sbitmap_alloc_with_popcount (unsigned int);
 extern sbitmap *sbitmap_vector_alloc (unsigned int, unsigned int);
 extern sbitmap sbitmap_resize (sbitmap, unsigned int, int);
 extern void bitmap_copy (sbitmap, const_sbitmap);
-extern void bitmap_copy_n (sbitmap, const_sbitmap, unsigned int);
 extern int bitmap_equal_p (const_sbitmap, const_sbitmap);
 extern bool bitmap_empty_p (const_sbitmap);
-extern bool bitmap_range_empty_p (const_sbitmap, unsigned int, unsigned int);
 extern void bitmap_clear (sbitmap);
 extern void bitmap_ones (sbitmap);
 extern void bitmap_vector_clear (sbitmap *, unsigned int);
@@ -290,5 +258,4 @@ extern int bitmap_last_set_bit (const_sbitmap);
 extern void debug_bitmap (const_sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
 extern unsigned long sbitmap_popcount (const_sbitmap, unsigned long);
-extern void sbitmap_verify_popcount (const_sbitmap);
 #endif /* ! GCC_SBITMAP_H */
