@@ -8479,7 +8479,7 @@ label:
 {
   if (GET_MODE (operands[0]) != SImode)
     FAIL;
-  emit_insn (gen_doloop_end_split (operands[0], operands[4], operands[0]));
+  emit_jump_insn (gen_doloop_end_split (operands[0], operands[4], operands[0]));
   DONE;
 })
 
