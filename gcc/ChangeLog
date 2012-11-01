@@ -1,3 +1,9 @@
+2012-11-01  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/55104
+	* ipa-inline-transform.c (inline_call): Silence an sanity check until
+	ipa-cp issue if fixed.
+
 2012-11-01  Sharad Singhai  <singhai@google.com>
 
 	* doc/invoke.texi: Update -fopt-info documentation.
