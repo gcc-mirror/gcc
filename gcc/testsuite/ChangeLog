@@ -1,3 +1,8 @@
+2012-11-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vsx-mass-1.c: Check for dot symbols in
+	scan-assembler regex.
+
 2012-11-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55150
