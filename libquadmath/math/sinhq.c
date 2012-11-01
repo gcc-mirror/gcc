@@ -1,4 +1,4 @@
-/* e_sinhl.c -- __float128 version of e_sinh.c.
+/* sinhq.c -- __float128 version of e_sinh.c.
  * Conversion to __float128 by Ulrich Drepper,
  * Cygnus Support, drepper@cygnus.com.
  */
@@ -35,22 +35,22 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
-/* __ieee754_sinhl(x)
+/* sinhq(x)
  * Method :
  * mathematically sinh(x) if defined to be (exp(x)-exp(-x))/2
- *      1. Replace x by |x| (sinhl(-x) = -sinhl(x)).
+ *      1. Replace x by |x| (sinhq(-x) = -sinhq(x)).
  *      2.
  *                                                   E + E/(E+1)
- *          0        <= x <= 25     :  sinhl(x) := --------------, E=expm1l(x)
+ *          0        <= x <= 25     :  sinhq(x) := --------------, E=expm1q(x)
  *                                                       2
  *
- *          25       <= x <= lnovft :  sinhl(x) := expl(x)/2
- *          lnovft   <= x <= ln2ovft:  sinhl(x) := expl(x/2)/2 * expl(x/2)
- *          ln2ovft  <  x           :  sinhl(x) := x*shuge (overflow)
+ *          25       <= x <= lnovft :  sinhq(x) := expq(x)/2
+ *          lnovft   <= x <= ln2ovft:  sinhq(x) := expq(x/2)/2 * expq(x/2)
+ *          ln2ovft  <  x           :  sinhq(x) := x*shuge (overflow)
  *
  * Special cases:
- *      sinhl(x) is |x| if x is +INF, -INF, or NaN.
- *      only sinhl(0)=0 is exact for finite x.
+ *      sinhq(x) is |x| if x is +INF, -INF, or NaN.
+ *      only sinhq(0)=0 is exact for finite x.
  */
 
 #include "quadmath-imp.h"
@@ -106,6 +106,6 @@ sinhq (__float128 x)
       return t * w;
     }
 
-  /* |x| > overflowthreshold, sinhl(x) overflow */
+  /* |x| > overflowthreshold, sinhq(x) overflow */
   return x * shuge;
 }

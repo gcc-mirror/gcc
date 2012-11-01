@@ -99,13 +99,17 @@ __quadmath_kernel_cosq (__float128 x, __float128 y)
     {
       /* So that we don't have to use too large polynomial,  we find
 	 l and h such that x = l + h,  where fabsl(l) <= 1.0/256 with 83
-	 possible values for h.  We look up cosl(h) and sinl(h) in
-	 pre-computed tables,  compute cosl(l) and sinl(l) using a
+	 possible values for h.  We look up cosq(h) and sinq(h) in
+	 pre-computed tables,  compute cosq(l) and sinq(l) using a
 	 Chebyshev polynomial of degree 10(11) and compute
-	 cosl(h+l) = cosl(h)cosl(l) - sinl(h)sinl(l).  */
+	 cosq(h+l) = cosq(h)cosq(l) - sinq(h)sinq(l).  */
       index = 0x3ffe - (tix >> 16);
       hix = (tix + (0x200 << index)) & (0xfffffc00 << index);
-      x = fabsq (x);
+      if (signbitq (x))
+       {
+         x = -x;
+         y = -y;
+       }
       switch (index)
 	{
 	case 0: index = ((45 << 10) + hix - 0x3ffe0000) >> 8; break;

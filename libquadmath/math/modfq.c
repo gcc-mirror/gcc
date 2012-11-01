@@ -1,4 +1,4 @@
-/* s_modfl.c -- long double version of s_modf.c.
+/* modfq.c -- __float128 version of s_modf.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 

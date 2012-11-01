@@ -30,19 +30,19 @@
 #endif
 
 
-/* __expl_table basically consists of four tables, T_EXPL_ARG{1,2} and
+/* __expq_table basically consists of four tables, T_EXPL_ARG{1,2} and
    T_EXPL_RES{1,2}. All tables use positive and negative indexes, the 0 points
    are marked by T_EXPL_* defines.
    For ARG1 and RES1 tables lets B be 89 and S 256.0, for ARG2 and RES2 B is 65
    and S 32768.0.
    These table have the property that, for all integers -B <= i <= B
-   expl(__expl_table[T_EXPL_ARGN+2*i]+__expl_table[T_EXPL_ARGN+2*i+1]+r) ==
-   __expl_table[T_EXPL_RESN+i], __expl_table[T_EXPL_RESN+i] is some exact number
+   expl(__expq_table[T_EXPL_ARGN+2*i]+__expq_table[T_EXPL_ARGN+2*i+1]+r) ==
+   __expq_table[T_EXPL_RESN+i], __expq_table[T_EXPL_RESN+i] is some exact number
    with the low 58 bits of the mantissa 0,
-   __expl_table[T_EXPL_ARGN+2*i] == i/S+s
+   __expq_table[T_EXPL_ARGN+2*i] == i/S+s
    where absl(s) <= 2^-54 and absl(r) <= 2^-212.  */
 
-static const __float128 __expl_table [] = {
+static const __float128 __expq_table [] = {
  -3.47656250000000000584188889839535373E-01Q, /* bffd640000000000002b1b04213cf000 */
   6.90417668990715641167244540876988960E-32Q, /* 3f97667c3fdb588a6ae1af8748357a17 */
  -3.43749999999999981853132895957607418E-01Q, /* bffd5ffffffffffffac4ff5f4050b000 */
@@ -1122,8 +1122,8 @@ expq (__float128 x)
       /* Compute tval1 = t.  */
       tval1 = (int) (t * TWO8);
 
-      x -= __expl_table[T_EXPL_ARG1+2*tval1];
-      xl -= __expl_table[T_EXPL_ARG1+2*tval1+1];
+      x -= __expq_table[T_EXPL_ARG1+2*tval1];
+      xl -= __expq_table[T_EXPL_ARG1+2*tval1+1];
 
       /* Calculate t/32768.  */
       t = x + THREEp96;
@@ -1132,14 +1132,14 @@ expq (__float128 x)
       /* Compute tval2 = t.  */
       tval2 = (int) (t * TWO15);
 
-      x -= __expl_table[T_EXPL_ARG2+2*tval2];
-      xl -= __expl_table[T_EXPL_ARG2+2*tval2+1];
+      x -= __expq_table[T_EXPL_ARG2+2*tval2];
+      xl -= __expq_table[T_EXPL_ARG2+2*tval2+1];
 
       x = x + xl;
 
       /* Compute ex2 = 2^n_0 e^(argtable[tval1]) e^(argtable[tval2]).  */
-      ex2_u.value = __expl_table[T_EXPL_RES1 + tval1]
-		* __expl_table[T_EXPL_RES2 + tval2];
+      ex2_u.value = __expq_table[T_EXPL_RES1 + tval1]
+		* __expq_table[T_EXPL_RES2 + tval2];
       n_i = (int)n;
       /* 'unsafe' is 1 iff n_1 != 0.  */
       unsafe = abs(n_i) >= -FLT128_MIN_EXP - 1;

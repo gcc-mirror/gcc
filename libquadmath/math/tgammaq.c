@@ -30,6 +30,8 @@ tgammaq (__float128 x)
      conditions we must check some values separately.  */
   int64_t hx;
   uint64_t lx;
+  __float128 res;
+  int sign;
 
   GET_FLT128_WORDS64 (hx, lx, x);
 
@@ -46,5 +48,6 @@ tgammaq (__float128 x)
     return x - x;
 
   /* XXX FIXME.  */
-  return expq (lgammaq (x));
+  res = expq (lgammaq (x));
+  return signbitq (x) ? -res : res;
 }

@@ -1,4 +1,4 @@
-/* s_floorl.c -- long double version of s_floor.c.
+/* floorq.c -- __float128 version of s_floor.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 

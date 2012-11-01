@@ -1,14 +1,14 @@
-/*							logll.c
+/*							logq.c
  *
- * Natural logarithm for 128-bit long double precision.
+ * Natural logarithm for __float128 precision.
  *
  *
  *
  * SYNOPSIS:
  *
- * long double x, y, logl();
+ * __float128 x, y, logq();
  *
- * y = logl( x );
+ * y = logq( x );
  *
  *
  *

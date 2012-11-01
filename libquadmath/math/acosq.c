@@ -31,7 +31,7 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
-/* __ieee754_acosl(x)
+/* acosq(x)
  * Method :
  *      acos(x)  = pi/2 - asin(x)
  *      acos(-x) = pi/2 + asin(x)
@@ -51,7 +51,7 @@
  *      if x is NaN, return x itself;
  *      if |x|>1, return NaN with invalid signal.
  *
- * Functions needed: __ieee754_sqrtl.
+ * Functions needed: sqrtq.
  */
 
 #include "quadmath-imp.h"
