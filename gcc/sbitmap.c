@@ -44,6 +44,13 @@ static unsigned long sbitmap_elt_popcount (SBITMAP_ELT_TYPE);
 typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
 
+/* Return the size in bytes of a bitmap MAP.  */
+
+static inline unsigned int sbitmap_size_bytes (const_sbitmap map)
+{
+   return map->size * sizeof (SBITMAP_ELT_TYPE);
+}
+
 /* This macro controls debugging that is as expensive as the
    operations it verifies.  */
 
@@ -53,7 +60,7 @@ typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
 /* Verify the population count of sbitmap A matches the cached value,
    if there is a cached value. */
 
-void
+static void
 sbitmap_verify_popcount (const_sbitmap a)
 {
   unsigned ix;
@@ -111,7 +118,7 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
 
   size = SBITMAP_SET_SIZE (n_elms);
   bytes = size * sizeof (SBITMAP_ELT_TYPE);
-  if (bytes > SBITMAP_SIZE_BYTES (bmap))
+  if (bytes > sbitmap_size_bytes (bmap))
     {
       amt = (sizeof (struct simple_bitmap_def)
 	    + bytes - sizeof (SBITMAP_ELT_TYPE));
@@ -125,7 +132,7 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
       if (def)
 	{
 	  memset (bmap->elms + bmap->size, -1,
-		  bytes - SBITMAP_SIZE_BYTES (bmap));
+		  bytes - sbitmap_size_bytes (bmap));
 
 	  /* Set the new bits if the original last element.  */
 	  last_bit = bmap->n_bits % SBITMAP_ELT_BITS;
@@ -142,7 +149,7 @@ sbitmap_resize (sbitmap bmap, unsigned int n_elms, int def)
       else
 	{
 	  memset (bmap->elms + bmap->size, 0,
-		  bytes - SBITMAP_SIZE_BYTES (bmap));
+		  bytes - sbitmap_size_bytes (bmap));
 	  if (bmap->popcount)
 	    memset (bmap->popcount + bmap->size, 0,
 		    (size * sizeof (unsigned char))
@@ -181,7 +188,7 @@ sbitmap_realloc (sbitmap src, unsigned int n_elms)
   amt = (sizeof (struct simple_bitmap_def)
 	 + bytes - sizeof (SBITMAP_ELT_TYPE));
 
-  if (SBITMAP_SIZE_BYTES (src)  >= bytes)
+  if (sbitmap_size_bytes (src)  >= bytes)
     {
       src->n_bits = n_elms;
       return src;
@@ -245,16 +252,6 @@ bitmap_copy (sbitmap dst, const_sbitmap src)
     memcpy (dst->popcount, src->popcount, sizeof (unsigned char) * dst->size);
 }
 
-/* Copy the first N elements of sbitmap SRC to DST.  */
-
-void
-bitmap_copy_n (sbitmap dst, const_sbitmap src, unsigned int n)
-{
-  memcpy (dst->elms, src->elms, sizeof (SBITMAP_ELT_TYPE) * n);
-  if (dst->popcount)
-    memcpy (dst->popcount, src->popcount, sizeof (unsigned char) * n);
-}
-
 /* Determine if a == b.  */
 int
 bitmap_equal_p (const_sbitmap a, const_sbitmap b)
@@ -275,63 +272,13 @@ bitmap_empty_p (const_sbitmap bmap)
   return true;
 }
 
-/* Return false if any of the N bits are set in MAP starting at
-   START.  */
-
-bool
-bitmap_range_empty_p (const_sbitmap bmap, unsigned int start, unsigned int n)
-{
-  unsigned int i = start / SBITMAP_ELT_BITS;
-  SBITMAP_ELT_TYPE elm;
-  unsigned int shift = start % SBITMAP_ELT_BITS;
-
-  gcc_assert (bmap->n_bits >= start + n);
-
-  elm = bmap->elms[i];
-  elm = elm >> shift;
-
-  if (shift + n <= SBITMAP_ELT_BITS)
-    {
-      /* The bits are totally contained in a single element.  */
-      if (shift + n < SBITMAP_ELT_BITS)
-        elm &= ((1 << n) - 1);
-      return (elm == 0);
-    }
-
-  if (elm)
-    return false;
-
-  n -= SBITMAP_ELT_BITS - shift;
-  i++;
-
-  /* Deal with full elts.  */
-  while (n >= SBITMAP_ELT_BITS)
-    {
-      if (bmap->elms[i])
-	return false;
-      i++;
-      n -= SBITMAP_ELT_BITS;
-    }
-
-  /* The leftover bits.  */
-  if (n)
-    {
-      elm = bmap->elms[i];
-      elm &= ((1 << n) - 1);
-      return (elm == 0);
-    }
-
-  return true;
-}
-
-
 
 /* Zero all elements in a bitmap.  */
 
 void
 bitmap_clear (sbitmap bmap)
 {
-  memset (bmap->elms, 0, SBITMAP_SIZE_BYTES (bmap));
+  memset (bmap->elms, 0, sbitmap_size_bytes (bmap));
   if (bmap->popcount)
     memset (bmap->popcount, 0, bmap->size * sizeof (unsigned char));
 }
@@ -343,7 +290,7 @@ bitmap_ones (sbitmap bmap)
 {
   unsigned int last_bit;
 
-  memset (bmap->elms, -1, SBITMAP_SIZE_BYTES (bmap));
+  memset (bmap->elms, -1, sbitmap_size_bytes (bmap));
   if (bmap->popcount)
     memset (bmap->popcount, -1, bmap->size * sizeof (unsigned char));
 
@@ -790,50 +737,3 @@ sbitmap_elt_popcount (SBITMAP_ELT_TYPE a)
   return ret;
 }
 #endif
-
-/* Count the number of bits in SBITMAP a, up to bit MAXBIT.  */
-
-unsigned long
-sbitmap_popcount (const_sbitmap a, unsigned long maxbit)
-{
-  unsigned long count = 0;
-  unsigned ix;
-  unsigned int lastword;
-
-  if (maxbit == 0)
-    return 0;
-
-  if (maxbit >= a->n_bits)
-    maxbit = a->n_bits;
-
-  /* Count the bits in the full word.  */
-  lastword = MIN (a->size, SBITMAP_SET_SIZE (maxbit + 1) - 1);
-  for (ix = 0; ix < lastword; ix++)
-    {
-      if (a->popcount)
-	{
-	  count += a->popcount[ix];
-#ifdef BITMAP_DEBUGGING
-	  gcc_assert (a->popcount[ix] == do_popcount (a->elms[ix]));
-#endif
-	}
-      else
-	count += do_popcount (a->elms[ix]);
-    }
-
-  /* Count the remaining bits.  */
-  if (lastword < a->size)
-    {
-      unsigned int bitindex;
-      SBITMAP_ELT_TYPE theword = a->elms[lastword];
-
-      bitindex = maxbit % SBITMAP_ELT_BITS;
-      if (bitindex != 0)
-	{
-	  theword &= (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - bitindex);
-	  count += do_popcount (theword);
-	}
-    }
-  return count;
-}
-
