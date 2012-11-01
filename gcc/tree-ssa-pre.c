@@ -2119,7 +2119,7 @@ defer_or_phi_translate_block (bitmap_set_t dest, bitmap_set_t source,
 {
   if (!BB_VISITED (phiblock))
     {
-      SET_BIT (changed_blocks, block->index);
+      bitmap_set_bit (changed_blocks, block->index);
       BB_VISITED (block) = 0;
       BB_DEFERRED (block) = 1;
       return false;
@@ -2215,7 +2215,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
       /* Of multiple successors we have to have visited one already.  */
       if (!first)
 	{
-	  SET_BIT (changed_blocks, block->index);
+	  bitmap_set_bit (changed_blocks, block->index);
 	  BB_VISITED (block) = 0;
 	  BB_DEFERRED (block) = 1;
 	  changed = true;
@@ -2265,12 +2265,12 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   if (!bitmap_set_equal (old, ANTIC_IN (block)))
     {
       changed = true;
-      SET_BIT (changed_blocks, block->index);
+      bitmap_set_bit (changed_blocks, block->index);
       FOR_EACH_EDGE (e, ei, block->preds)
-	SET_BIT (changed_blocks, e->src->index);
+	bitmap_set_bit (changed_blocks, e->src->index);
     }
   else
-    RESET_BIT (changed_blocks, block->index);
+    bitmap_clear_bit (changed_blocks, block->index);
 
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2422,12 +2422,12 @@ compute_partial_antic_aux (basic_block block,
   if (!bitmap_set_equal (old_PA_IN, PA_IN (block)))
     {
       changed = true;
-      SET_BIT (changed_blocks, block->index);
+      bitmap_set_bit (changed_blocks, block->index);
       FOR_EACH_EDGE (e, ei, block->preds)
-	SET_BIT (changed_blocks, e->src->index);
+	bitmap_set_bit (changed_blocks, e->src->index);
     }
   else
-    RESET_BIT (changed_blocks, block->index);
+    bitmap_clear_bit (changed_blocks, block->index);
 
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2469,7 +2469,7 @@ compute_antic (void)
 	  e->flags &= ~EDGE_DFS_BACK;
 	  if (e->flags & EDGE_ABNORMAL)
 	    {
-	      SET_BIT (has_abnormal_preds, block->index);
+	      bitmap_set_bit (has_abnormal_preds, block->index);
 	      break;
 	    }
 	}
@@ -2499,11 +2499,11 @@ compute_antic (void)
       changed = false;
       for (i = postorder_num - 1; i >= 0; i--)
 	{
-	  if (TEST_BIT (changed_blocks, postorder[i]))
+	  if (bitmap_bit_p (changed_blocks, postorder[i]))
 	    {
 	      basic_block block = BASIC_BLOCK (postorder[i]);
 	      changed |= compute_antic_aux (block,
-					    TEST_BIT (has_abnormal_preds,
+					    bitmap_bit_p (has_abnormal_preds,
 						      block->index));
 	    }
 	}
@@ -2528,12 +2528,12 @@ compute_antic (void)
 	  changed = false;
 	  for (i = postorder_num - 1 ; i >= 0; i--)
 	    {
-	      if (TEST_BIT (changed_blocks, postorder[i]))
+	      if (bitmap_bit_p (changed_blocks, postorder[i]))
 		{
 		  basic_block block = BASIC_BLOCK (postorder[i]);
 		  changed
 		    |= compute_partial_antic_aux (block,
-						  TEST_BIT (has_abnormal_preds,
+						  bitmap_bit_p (has_abnormal_preds,
 							    block->index));
 		}
 	    }

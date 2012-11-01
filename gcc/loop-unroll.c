@@ -466,9 +466,9 @@ peel_loop_completely (struct loop *loop)
 
       wont_exit = sbitmap_alloc (npeel + 1);
       bitmap_ones (wont_exit);
-      RESET_BIT (wont_exit, 0);
+      bitmap_clear_bit (wont_exit, 0);
       if (desc->noloop_assumptions)
-	RESET_BIT (wont_exit, 1);
+	bitmap_clear_bit (wont_exit, 1);
 
       remove_edges = NULL;
 
@@ -672,9 +672,9 @@ unroll_loop_constant_iterations (struct loop *loop)
 	fprintf (dump_file, ";; Condition at beginning of loop.\n");
 
       /* Peel exit_mod iterations.  */
-      RESET_BIT (wont_exit, 0);
+      bitmap_clear_bit (wont_exit, 0);
       if (desc->noloop_assumptions)
-	RESET_BIT (wont_exit, 1);
+	bitmap_clear_bit (wont_exit, 1);
 
       if (exit_mod)
 	{
@@ -703,7 +703,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 	    loop->any_estimate = false;
 	}
 
-      SET_BIT (wont_exit, 1);
+      bitmap_set_bit (wont_exit, 1);
     }
   else
     {
@@ -719,9 +719,9 @@ unroll_loop_constant_iterations (struct loop *loop)
       if (exit_mod != max_unroll
 	  || desc->noloop_assumptions)
 	{
-	  RESET_BIT (wont_exit, 0);
+	  bitmap_clear_bit (wont_exit, 0);
 	  if (desc->noloop_assumptions)
-	    RESET_BIT (wont_exit, 1);
+	    bitmap_clear_bit (wont_exit, 1);
 
           opt_info_start_duplication (opt_info);
 	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
@@ -747,11 +747,11 @@ unroll_loop_constant_iterations (struct loop *loop)
 	    loop->any_estimate = false;
 	  desc->noloop_assumptions = NULL_RTX;
 
-	  SET_BIT (wont_exit, 0);
-	  SET_BIT (wont_exit, 1);
+	  bitmap_set_bit (wont_exit, 0);
+	  bitmap_set_bit (wont_exit, 1);
 	}
 
-      RESET_BIT (wont_exit, max_unroll);
+      bitmap_clear_bit (wont_exit, max_unroll);
     }
 
   /* Now unroll the loop.  */
@@ -1069,7 +1069,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   bitmap_clear (wont_exit);
   if (extra_zero_check
       && !desc->noloop_assumptions)
-    SET_BIT (wont_exit, 1);
+    bitmap_set_bit (wont_exit, 1);
   ezc_swtch = loop_preheader_edge (loop)->src;
   ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 				      1, wont_exit, desc->out_edge,
@@ -1085,7 +1085,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       /* Peel the copy.  */
       bitmap_clear (wont_exit);
       if (i != n_peel - 1 || !last_may_exit)
-	SET_BIT (wont_exit, 1);
+	bitmap_set_bit (wont_exit, 1);
       ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					  1, wont_exit, desc->out_edge,
 					  &remove_edges,
@@ -1140,7 +1140,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   /* And unroll loop.  */
 
   bitmap_ones (wont_exit);
-  RESET_BIT (wont_exit, may_exit_copy);
+  bitmap_clear_bit (wont_exit, may_exit_copy);
   opt_info_start_duplication (opt_info);
 
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),

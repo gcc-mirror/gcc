@@ -1293,18 +1293,18 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
           for (k = 0; k < group_size; k++)
             {
               first_group_load_index = VEC_index (int, load_permutation, k);
-              if (TEST_BIT (load_index, first_group_load_index))
+              if (bitmap_bit_p (load_index, first_group_load_index))
                 {
                   bad_permutation = true;
                   break;
                 }
 
-              SET_BIT (load_index, first_group_load_index);
+              bitmap_set_bit (load_index, first_group_load_index);
             }
 
           if (!bad_permutation)
             for (k = 0; k < group_size; k++)
-              if (!TEST_BIT (load_index, k))
+              if (!bitmap_bit_p (load_index, k))
                 {
                   bad_permutation = true;
                   break;
@@ -1423,17 +1423,17 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
          prev = next;
        }
 
-      if (TEST_BIT (load_index, prev))
+      if (bitmap_bit_p (load_index, prev))
         {
           supported = false;
           break;
         }
 
-      SET_BIT (load_index, prev);
+      bitmap_set_bit (load_index, prev);
     }
  
   for (j = 0; j < group_size; j++)
-    if (!TEST_BIT (load_index, j))
+    if (!bitmap_bit_p (load_index, j))
       return false;
 
   sbitmap_free (load_index);

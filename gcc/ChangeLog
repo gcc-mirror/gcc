@@ -1,3 +1,24 @@
+2012-11-01  Lawrence Crowl  <crowl@google.com>
+
+	* sbitmap.h (TEST_BIT): Rename bitmap_bit_p, normalizing parameter
+	type. Update callers to match.
+	(SET_BIT): Rename bitmap_set_bit, normalizing parameter type. Update
+	callers to match.
+	(SET_BIT_WITH_POPCOUNT): Rename bitmap_set_bit_with_popcount,
+	normalizing parameter type. Update callers to match.
+	(RESET_BIT): Rename bitmap_clear_bit, normalizing parameter type.
+	Update callers to match.
+	(RESET_BIT_WITH_POPCOUNT): Rename bitmap_clear_bit_with_popcount,
+	normalizing parameter type. Update callers to match.
+	* basic-block.h (sbitmap_intersection_of_succs): Rename
+	bitmap_intersection_of_succs. Update callers to match.
+	* basic-block.h (sbitmap_intersection_of_preds): Rename
+	bitmap_intersection_of_preds. Update callers to match.
+	* basic-block.h (sbitmap_union_of_succs): Rename
+	bitmap_union_of_succs. Update callers to match.
+	* basic-block.h (sbitmap_union_of_preds): Rename
+	bitmap_union_of_preds. Update callers to match.
+
 2012-11-01  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55150

@@ -14799,7 +14799,7 @@ r10k_protected_bb_p (basic_block bb, sbitmap protected_bbs)
 
   FOR_EACH_EDGE (e, ei, bb->preds)
     if (!single_succ_p (e->src)
-	|| !TEST_BIT (protected_bbs, e->src->index)
+	|| !bitmap_bit_p (protected_bbs, e->src->index)
 	|| (e->flags & EDGE_COMPLEX) != 0)
       return false;
   return true;
@@ -14893,7 +14893,7 @@ r10k_insert_cache_barriers (void)
 
       /* Record whether the end of this block is protected.  */
       if (unprotected_region == NULL_RTX)
-	SET_BIT (protected_bbs, bb->index);
+	bitmap_set_bit (protected_bbs, bb->index);
     }
   XDELETEVEC (rev_post_order);
 

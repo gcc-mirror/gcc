@@ -1544,7 +1544,7 @@ decompose_multiword_subregs (bool decompose_copies)
 			  extract_insn (insn);
 
 			  if (cfi)
-			    SET_BIT (sub_blocks, bb->index);
+			    bitmap_set_bit (sub_blocks, bb->index);
 			}
 		    }
 		  else

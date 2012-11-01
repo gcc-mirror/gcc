@@ -148,10 +148,10 @@ make_preds_opaque (basic_block b, int j)
     {
       basic_block pb = e->src;
 
-      if (e->aux || ! TEST_BIT (transp[pb->index], j))
+      if (e->aux || ! bitmap_bit_p (transp[pb->index], j))
 	continue;
 
-      RESET_BIT (transp[pb->index], j);
+      bitmap_clear_bit (transp[pb->index], j);
       make_preds_opaque (pb, j);
     }
 }
@@ -513,7 +513,7 @@ optimize_mode_switching (void)
 	      {
 		ptr = new_seginfo (no_mode, BB_HEAD (bb), bb->index, live_now);
 		add_seginfo (info + bb->index, ptr);
-		RESET_BIT (transp[bb->index], j);
+		bitmap_clear_bit (transp[bb->index], j);
 	      }
 	  }
 
@@ -530,7 +530,7 @@ optimize_mode_switching (void)
 		      last_mode = mode;
 		      ptr = new_seginfo (mode, insn, bb->index, live_now);
 		      add_seginfo (info + bb->index, ptr);
-		      RESET_BIT (transp[bb->index], j);
+		      bitmap_clear_bit (transp[bb->index], j);
 		    }
 #ifdef MODE_AFTER
 		  last_mode = MODE_AFTER (e, last_mode, insn);
@@ -569,7 +569,7 @@ optimize_mode_switching (void)
 	       an extra check in make_preds_opaque.  We also
 	       need this to avoid confusing pre_edge_lcm when
 	       antic is cleared but transp and comp are set.  */
-	    RESET_BIT (transp[bb->index], j);
+	    bitmap_clear_bit (transp[bb->index], j);
 
 	    /* Insert a fake computing definition of MODE into entry
 	       blocks which compute no mode. This represents the mode on
@@ -601,10 +601,10 @@ optimize_mode_switching (void)
 	  FOR_EACH_BB (bb)
 	    {
 	      if (info[bb->index].seginfo->mode == m)
-		SET_BIT (antic[bb->index], j);
+		bitmap_set_bit (antic[bb->index], j);
 
 	      if (info[bb->index].computing == m)
-		SET_BIT (comp[bb->index], j);
+		bitmap_set_bit (comp[bb->index], j);
 	    }
 	}
 
@@ -638,7 +638,7 @@ optimize_mode_switching (void)
 
 	      eg->aux = 0;
 
-	      if (! TEST_BIT (insert[e], j))
+	      if (! bitmap_bit_p (insert[e], j))
 		continue;
 
 	      eg->aux = (void *)1;
@@ -665,7 +665,7 @@ optimize_mode_switching (void)
 	    }
 
 	  FOR_EACH_BB_REVERSE (bb)
-	    if (TEST_BIT (del[bb->index], j))
+	    if (bitmap_bit_p (del[bb->index], j))
 	      {
 		make_preds_opaque (bb, j);
 		/* Cancel the 'deleted' mode set.  */

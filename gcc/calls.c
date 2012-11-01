@@ -1846,7 +1846,7 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
 
       for (k = 0; k < size; k++)
 	if (i + k < SBITMAP_SIZE (stored_args_map)
-	    && TEST_BIT (stored_args_map, i + k))
+	    && bitmap_bit_p (stored_args_map, i + k))
 	  return true;
     }
 
@@ -2133,7 +2133,7 @@ check_sibcall_argument_overlap (rtx insn, struct arg_data *arg, int mark_stored_
 #endif
 
       for (high = low + arg->locate.size.constant; low < high; low++)
-	SET_BIT (stored_args_map, low);
+	bitmap_set_bit (stored_args_map, low);
     }
   return insn != NULL_RTX;
 }

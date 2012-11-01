@@ -99,7 +99,7 @@ resolve_sw_modes (void)
 	    selected_mode = (enum attr_fp_mode) epiphany_normal_fp_rounding;
 
 	    VEC_quick_push (basic_block, todo, bb);
-	    SET_BIT (pushed, bb->index);
+	    bitmap_set_bit (pushed, bb->index);
 	  }
 	XVECEXP (XEXP (src, 0), 0, 0) = GEN_INT (selected_mode);
 	SET_SRC (XVECEXP (PATTERN (insn), 0, 1)) = copy_rtx (src);
@@ -114,8 +114,8 @@ resolve_sw_modes (void)
       edge e;
       edge_iterator ei;
 
-      SET_BIT (pushed, bb->index);
-      SET_BIT (pushed, bb->index);
+      bitmap_set_bit (pushed, bb->index);
+      bitmap_set_bit (pushed, bb->index);
 
       if (epiphany_normal_fp_rounding == FP_MODE_ROUND_NEAREST)
 	{
@@ -139,10 +139,10 @@ resolve_sw_modes (void)
 	    continue;
 	  if (REGNO_REG_SET_P (DF_LIVE_IN (succ), selected_reg))
 	    {
-	      if (TEST_BIT (pushed, succ->index))
+	      if (bitmap_bit_p (pushed, succ->index))
 		continue;
 	      VEC_quick_push (basic_block, todo, succ);
-	      SET_BIT (pushed, bb->index);
+	      bitmap_set_bit (pushed, bb->index);
 	      continue;
 	    }
 	  start_sequence ();

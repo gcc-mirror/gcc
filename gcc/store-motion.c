@@ -796,7 +796,7 @@ insert_store (struct st_expr * expr, edge e)
 	int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
 
 	gcc_assert (index != EDGE_INDEX_NO_EDGE);
-	if (! TEST_BIT (st_insert_map[index], expr->index))
+	if (! bitmap_bit_p (st_insert_map[index], expr->index))
 	  break;
       }
 
@@ -807,7 +807,7 @@ insert_store (struct st_expr * expr, edge e)
       FOR_EACH_EDGE (tmp, ei, e->dest->preds)
 	{
 	  int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
-	  RESET_BIT (st_insert_map[index], expr->index);
+	  bitmap_clear_bit (st_insert_map[index], expr->index);
 	}
       insert_insn_start_basic_block (insn, bb);
       return 0;
@@ -867,16 +867,16 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
       bb = act->dest;
 
       if (bb == EXIT_BLOCK_PTR
-	  || TEST_BIT (visited, bb->index))
+	  || bitmap_bit_p (visited, bb->index))
 	{
 	  if (!ei_end_p (ei))
 	      ei_next (&ei);
 	  act = (! ei_end_p (ei)) ? ei_edge (ei) : NULL;
 	  continue;
 	}
-      SET_BIT (visited, bb->index);
+      bitmap_set_bit (visited, bb->index);
 
-      if (TEST_BIT (st_antloc[bb->index], smexpr->index))
+      if (bitmap_bit_p (st_antloc[bb->index], smexpr->index))
 	{
 	  for (last = smexpr->antic_stores;
 	       BLOCK_FOR_INSN (XEXP (last, 0)) != bb;
@@ -1030,7 +1030,7 @@ build_store_vectors (void)
 	     we can delete this one (It occurs earlier in the block). We'll
 	     copy the SRC expression to an unused register in case there
 	     are any side effects.  */
-	  if (TEST_BIT (st_avloc[bb->index], ptr->index))
+	  if (bitmap_bit_p (st_avloc[bb->index], ptr->index))
 	    {
 	      rtx r = gen_reg_rtx_and_attrs (ptr->pattern);
 	      if (dump_file)
@@ -1038,14 +1038,14 @@ build_store_vectors (void)
 	      replace_store_insn (r, XEXP (st, 0), bb, ptr);
 	      continue;
 	    }
-	  SET_BIT (st_avloc[bb->index], ptr->index);
+	  bitmap_set_bit (st_avloc[bb->index], ptr->index);
 	}
 
       for (st = ptr->antic_stores; st != NULL; st = XEXP (st, 1))
 	{
 	  insn = XEXP (st, 0);
 	  bb = BLOCK_FOR_INSN (insn);
-	  SET_BIT (st_antloc[bb->index], ptr->index);
+	  bitmap_set_bit (st_antloc[bb->index], ptr->index);
 	}
     }
 
@@ -1079,12 +1079,12 @@ build_store_vectors (void)
 	    {
 	      /* It should not be necessary to consider the expression
 		 killed if it is both anticipatable and available.  */
-	      if (!TEST_BIT (st_antloc[bb->index], ptr->index)
-		  || !TEST_BIT (st_avloc[bb->index], ptr->index))
-		SET_BIT (st_kill[bb->index], ptr->index);
+	      if (!bitmap_bit_p (st_antloc[bb->index], ptr->index)
+		  || !bitmap_bit_p (st_avloc[bb->index], ptr->index))
+		bitmap_set_bit (st_kill[bb->index], ptr->index);
 	    }
 	  else
-	    SET_BIT (st_transp[bb->index], ptr->index);
+	    bitmap_set_bit (st_transp[bb->index], ptr->index);
 	}
     }
 
@@ -1164,7 +1164,7 @@ one_store_motion_pass (void)
       /* If any of the edges we have above are abnormal, we can't move this
 	 store.  */
       for (x = NUM_EDGES (edge_list) - 1; x >= 0; x--)
-	if (TEST_BIT (st_insert_map[x], ptr->index)
+	if (bitmap_bit_p (st_insert_map[x], ptr->index)
 	    && (INDEX_EDGE (edge_list, x)->flags & EDGE_ABNORMAL))
 	  break;
 
@@ -1181,14 +1181,14 @@ one_store_motion_pass (void)
       /* Now we want to insert the new stores which are going to be needed.  */
 
       FOR_EACH_BB (bb)
-	if (TEST_BIT (st_delete_map[bb->index], ptr->index))
+	if (bitmap_bit_p (st_delete_map[bb->index], ptr->index))
 	  {
 	    delete_store (ptr, bb);
 	    n_stores_deleted++;
 	  }
 
       for (x = 0; x < NUM_EDGES (edge_list); x++)
-	if (TEST_BIT (st_insert_map[x], ptr->index))
+	if (bitmap_bit_p (st_insert_map[x], ptr->index))
 	  {
 	    did_edge_inserts |= insert_store (ptr, INDEX_EDGE (edge_list, x));
 	    n_stores_created++;

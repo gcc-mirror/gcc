@@ -1471,8 +1471,8 @@ remove_some_program_points_and_update_live_ranges (void)
     for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
       {
 	ira_assert (r->start <= r->finish);
-	SET_BIT (born, r->start);
-	SET_BIT (dead, r->finish);
+	bitmap_set_bit (born, r->start);
+	bitmap_set_bit (dead, r->finish);
       }
 
   born_or_dead = sbitmap_alloc (ira_max_point);
@@ -1482,8 +1482,8 @@ remove_some_program_points_and_update_live_ranges (void)
   prev_born_p = prev_dead_p = false;
   EXECUTE_IF_SET_IN_SBITMAP (born_or_dead, 0, i, sbi)
     {
-      born_p = TEST_BIT (born, i);
-      dead_p = TEST_BIT (dead, i);
+      born_p = bitmap_bit_p (born, i);
+      dead_p = bitmap_bit_p (dead, i);
       if ((prev_born_p && ! prev_dead_p && born_p && ! dead_p)
 	  || (prev_dead_p && ! prev_born_p && dead_p && ! born_p))
 	map[i] = n;

@@ -74,13 +74,13 @@ mark_bb_seen (basic_block bb)
   if ((unsigned int)bb->index >= size)
     bb_seen = sbitmap_resize (bb_seen, size * 2, 0);
 
-  SET_BIT (bb_seen, bb->index);
+  bitmap_set_bit (bb_seen, bb->index);
 }
 
 static inline bool
 bb_seen_p (basic_block bb)
 {
-  return TEST_BIT (bb_seen, bb->index);
+  return bitmap_bit_p (bb_seen, bb->index);
 }
 
 /* Return true if we should ignore the basic block for purposes of tracing.  */

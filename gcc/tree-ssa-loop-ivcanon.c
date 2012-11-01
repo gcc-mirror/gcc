@@ -521,7 +521,7 @@ try_unroll_loop_completely (struct loop *loop,
       initialize_original_copy_tables ();
       wont_exit = sbitmap_alloc (n_unroll + 1);
       bitmap_ones (wont_exit);
-      RESET_BIT (wont_exit, 0);
+      bitmap_clear_bit (wont_exit, 0);
 
       if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 						 n_unroll, wont_exit,

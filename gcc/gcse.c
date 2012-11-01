@@ -686,7 +686,7 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  if (antloc)
 	    for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 	      {
-		SET_BIT (antloc[BLOCK_FOR_INSN (occr->insn)->index], indx);
+		bitmap_set_bit (antloc[BLOCK_FOR_INSN (occr->insn)->index], indx);
 
 		/* While we're scanning the table, this is a good place to
 		   initialize this.  */
@@ -698,7 +698,7 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  if (comp)
 	    for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
 	      {
-		SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
+		bitmap_set_bit (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
 
 		/* While we're scanning the table, this is a good place to
 		   initialize this.  */
@@ -1662,7 +1662,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 	  for (def = DF_REG_DEF_CHAIN (REGNO (x));
 	       def;
 	       def = DF_REF_NEXT_REG (def))
-	    RESET_BIT (bmap[DF_REF_BB (def)->index], indx);
+	    bitmap_clear_bit (bmap[DF_REF_BB (def)->index], indx);
 	}
 
       return;
@@ -1677,7 +1677,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 	     do any list walking for them.  */
 	  EXECUTE_IF_SET_IN_BITMAP (blocks_with_calls, 0, bb_index, bi)
 	    {
-	      RESET_BIT (bmap[bb_index], indx);
+	      bitmap_clear_bit (bmap[bb_index], indx);
 	    }
 
 	    /* Now iterate over the blocks which have memory modifications
@@ -1698,7 +1698,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 
 		    if (canon_true_dependence (dest, GET_MODE (dest),
 					       dest_addr, x, NULL_RTX))
-		      RESET_BIT (bmap[bb_index], indx);
+		      bitmap_clear_bit (bmap[bb_index], indx);
 	          }
 	      }
 	}
@@ -1831,7 +1831,7 @@ prune_expressions (bool pre_p)
 	  /* Note potentially trapping expressions.  */
 	  if (may_trap_p (expr->expr))
 	    {
-	      SET_BIT (prune_exprs, expr->bitmap_index);
+	      bitmap_set_bit (prune_exprs, expr->bitmap_index);
 	      continue;
 	    }
 
@@ -1857,7 +1857,7 @@ prune_expressions (bool pre_p)
 		 analysis to determine if this mem is actually killed
 		 by this call.  */
 
-	      SET_BIT (prune_exprs, expr->bitmap_index);
+	      bitmap_set_bit (prune_exprs, expr->bitmap_index);
 	    }
 	}
     }
@@ -1949,16 +1949,16 @@ prune_insertions_deletions (int n_elems)
   for (j = 0; j < (unsigned) n_elems; j++)
     if (deletions[j]
 	&& ((unsigned) insertions[j] / deletions[j]) > MAX_GCSE_INSERTION_RATIO)
-      SET_BIT (prune_exprs, j);
+      bitmap_set_bit (prune_exprs, j);
 
   /* Now prune PRE_INSERT_MAP and PRE_DELETE_MAP based on PRUNE_EXPRS.  */
   EXECUTE_IF_SET_IN_SBITMAP (prune_exprs, 0, j, sbi)
     {
       for (i = 0; i < (unsigned) n_edges; i++)
-	RESET_BIT (pre_insert_map[i], j);
+	bitmap_clear_bit (pre_insert_map[i], j);
 
       for (i = 0; i < (unsigned) last_basic_block; i++)
-	RESET_BIT (pre_delete_map[i], j);
+	bitmap_clear_bit (pre_delete_map[i], j);
     }
 
   sbitmap_free (prune_exprs);
@@ -2033,7 +2033,7 @@ pre_expr_reaches_here_p_work (basic_block occr_bb, struct expr *expr,
 	;/* Nothing to do.  */
 
       /* Does this predecessor generate this expression?  */
-      else if (TEST_BIT (comp[pred_bb->index], expr->bitmap_index))
+      else if (bitmap_bit_p (comp[pred_bb->index], expr->bitmap_index))
 	{
 	  /* Is this the occurrence we're looking for?
 	     Note that there's only one generating occurrence per block
@@ -2044,7 +2044,7 @@ pre_expr_reaches_here_p_work (basic_block occr_bb, struct expr *expr,
 	  visited[pred_bb->index] = 1;
 	}
       /* Ignore this predecessor if it kills the expression.  */
-      else if (! TEST_BIT (transp[pred_bb->index], expr->bitmap_index))
+      else if (! bitmap_bit_p (transp[pred_bb->index], expr->bitmap_index))
 	visited[pred_bb->index] = 1;
 
       /* Neither gen nor kill.  */
@@ -2262,7 +2262,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 
 		    /* Insert this expression on this edge if it would
 		       reach the deleted occurrence in BB.  */
-		    if (!TEST_BIT (inserted[e], j))
+		    if (!bitmap_bit_p (inserted[e], j))
 		      {
 			rtx insn;
 			edge eg = INDEX_EDGE (edge_list, e);
@@ -2292,7 +2292,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 			  }
 
 			update_ld_motion_stores (expr);
-			SET_BIT (inserted[e], j);
+			bitmap_set_bit (inserted[e], j);
 			did_insert = 1;
 			gcse_create_count++;
 		      }
@@ -2532,7 +2532,7 @@ pre_delete (void)
 	    basic_block bb = BLOCK_FOR_INSN (insn);
 
 	    /* We only delete insns that have a single_set.  */
-	    if (TEST_BIT (pre_delete_map[bb->index], indx)
+	    if (bitmap_bit_p (pre_delete_map[bb->index], indx)
 		&& (set = single_set (insn)) != 0
                 && dbg_cnt (pre_insn))
 	      {
@@ -2802,8 +2802,8 @@ compute_code_hoist_vbeinout (void)
 	{
 	  if (bb->next_bb != EXIT_BLOCK_PTR)
 	    {
-	      sbitmap_intersection_of_succs (hoist_vbeout[bb->index],
-					     hoist_vbein, bb);
+	      bitmap_intersection_of_succs (hoist_vbeout[bb->index],
+					    hoist_vbein, bb);
 
 	      /* Include expressions in VBEout that are calculated
 		 in BB and available at its end.  */
@@ -2922,14 +2922,14 @@ should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
 	break;
       else if (pred_bb == expr_bb)
 	continue;
-      else if (TEST_BIT (visited, pred_bb->index))
+      else if (bitmap_bit_p (visited, pred_bb->index))
 	continue;
-      else if (! TEST_BIT (transp[pred_bb->index], expr->bitmap_index))
+      else if (! bitmap_bit_p (transp[pred_bb->index], expr->bitmap_index))
 	break;
       /* Not killed.  */
       else
 	{
-	  SET_BIT (visited, pred_bb->index);
+	  bitmap_set_bit (visited, pred_bb->index);
 	  if (! should_hoist_expr_to_dom (expr_bb, expr, pred_bb,
 					  visited, distance, bb_size,
 					  pressure_class, nregs, hoisted_bbs))
@@ -3084,7 +3084,7 @@ hoist_code (void)
 	 block.  These are the potentially hoistable expressions.  */
       for (i = 0; i < SBITMAP_SIZE (hoist_vbeout[bb->index]); i++)
 	{
-	  if (TEST_BIT (hoist_vbeout[bb->index], i))
+	  if (bitmap_bit_p (hoist_vbeout[bb->index], i))
 	    {
 	      int nregs = 0;
 	      enum reg_class pressure_class = NO_REGS;
@@ -3101,7 +3101,7 @@ hoist_code (void)
 
 	      /* If an expression is computed in BB and is available at end of
 		 BB, hoist all occurrences dominated by BB to BB.  */
-	      if (TEST_BIT (comp[bb->index], i))
+	      if (bitmap_bit_p (comp[bb->index], i))
 		{
 		  occr = find_occr_in_bb (expr->antic_occr, bb);
 
@@ -3132,7 +3132,7 @@ hoist_code (void)
 		  /* We've found a dominated block, now see if it computes
 		     the busy expression and whether or not moving that
 		     expression to the "beginning" of that block is safe.  */
-		  if (!TEST_BIT (antloc[dominated->index], i))
+		  if (!bitmap_bit_p (antloc[dominated->index], i))
 		    continue;
 
 		  occr = find_occr_in_bb (expr->antic_occr, dominated);

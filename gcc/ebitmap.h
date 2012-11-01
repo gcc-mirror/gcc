@@ -115,7 +115,7 @@ ebitmap_iter_init (ebitmap_iterator *i, ebitmap bmp, unsigned int min)
     }
   else
     {
-      if (TEST_BIT (bmp->wordmask, min / EBITMAP_ELT_BITS) == 0)
+      if (bitmap_bit_p (bmp->wordmask, min / EBITMAP_ELT_BITS) == 0)
 	i->word = 0;
       else
 	{

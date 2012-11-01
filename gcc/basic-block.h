@@ -717,10 +717,10 @@ ei_cond (edge_iterator ei, edge *p)
 #define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
 
 /* In cfganal.c */
-extern void sbitmap_intersection_of_succs (sbitmap, sbitmap *, basic_block);
-extern void sbitmap_intersection_of_preds (sbitmap, sbitmap *, basic_block);
-extern void sbitmap_union_of_succs (sbitmap, sbitmap *, basic_block);
-extern void sbitmap_union_of_preds (sbitmap, sbitmap *, basic_block);
+extern void bitmap_intersection_of_succs (sbitmap, sbitmap *, basic_block);
+extern void bitmap_intersection_of_preds (sbitmap, sbitmap *, basic_block);
+extern void bitmap_union_of_succs (sbitmap, sbitmap *, basic_block);
+extern void bitmap_union_of_preds (sbitmap, sbitmap *, basic_block);
 
 /* In lcm.c */
 extern struct edge_list *pre_edge_lcm (int, sbitmap *, sbitmap *,

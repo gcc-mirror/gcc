@@ -3363,9 +3363,9 @@ mark_reachable_blocks (sbitmap unreachable_blocks, basic_block bb)
   edge e;
   edge_iterator ei;
 
-  if (TEST_BIT (unreachable_blocks, bb->index))
+  if (bitmap_bit_p (unreachable_blocks, bb->index))
     {
-      RESET_BIT (unreachable_blocks, bb->index);
+      bitmap_clear_bit (unreachable_blocks, bb->index);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  mark_reachable_blocks (unreachable_blocks, e->src);

@@ -1751,9 +1751,9 @@ lra_push_insn_1 (rtx insn, bool always_update)
   if (uid >= SBITMAP_SIZE (lra_constraint_insn_stack_bitmap))
     lra_constraint_insn_stack_bitmap =
       sbitmap_resize (lra_constraint_insn_stack_bitmap, 3 * uid / 2, 0);
-  if (TEST_BIT (lra_constraint_insn_stack_bitmap, uid))
+  if (bitmap_bit_p (lra_constraint_insn_stack_bitmap, uid))
     return;
-  SET_BIT (lra_constraint_insn_stack_bitmap, uid);
+  bitmap_set_bit (lra_constraint_insn_stack_bitmap, uid);
   if (! always_update)
     lra_update_insn_regno_info (insn);
   VEC_safe_push (rtx, heap, lra_constraint_insn_stack, insn);
@@ -1785,7 +1785,7 @@ rtx
 lra_pop_insn (void)
 {
   rtx insn = VEC_pop (rtx, lra_constraint_insn_stack);
-  RESET_BIT (lra_constraint_insn_stack_bitmap, INSN_UID (insn));
+  bitmap_clear_bit (lra_constraint_insn_stack_bitmap, INSN_UID (insn));
   return insn;
 }
 

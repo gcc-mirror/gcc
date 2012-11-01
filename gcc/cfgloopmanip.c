@@ -191,9 +191,9 @@ fix_bb_placements (basic_block from,
 
   in_queue = sbitmap_alloc (last_basic_block);
   bitmap_clear (in_queue);
-  SET_BIT (in_queue, from->index);
+  bitmap_set_bit (in_queue, from->index);
   /* Prevent us from going out of the base_loop.  */
-  SET_BIT (in_queue, base_loop->header->index);
+  bitmap_set_bit (in_queue, base_loop->header->index);
 
   queue = XNEWVEC (basic_block, base_loop->num_nodes + 1);
   qtop = queue + base_loop->num_nodes + 1;
@@ -208,7 +208,7 @@ fix_bb_placements (basic_block from,
       qbeg++;
       if (qbeg == qtop)
 	qbeg = queue;
-      RESET_BIT (in_queue, from->index);
+      bitmap_clear_bit (in_queue, from->index);
 
       if (from->loop_father->header == from)
 	{
@@ -242,7 +242,7 @@ fix_bb_placements (basic_block from,
 	  if (e->flags & EDGE_IRREDUCIBLE_LOOP)
 	    *irred_invalidated = true;
 
-	  if (TEST_BIT (in_queue, pred->index))
+	  if (bitmap_bit_p (in_queue, pred->index))
 	    continue;
 
 	  /* If it is subloop, then it either was not moved, or
@@ -262,7 +262,7 @@ fix_bb_placements (basic_block from,
 	      continue;
 	    }
 
-	  if (TEST_BIT (in_queue, pred->index))
+	  if (bitmap_bit_p (in_queue, pred->index))
 	    continue;
 
 	  /* Schedule the basic block.  */
@@ -270,7 +270,7 @@ fix_bb_placements (basic_block from,
 	  qend++;
 	  if (qend == qtop)
 	    qend = queue;
-	  SET_BIT (in_queue, pred->index);
+	  bitmap_set_bit (in_queue, pred->index);
 	}
     }
   free (in_queue);
@@ -331,19 +331,19 @@ remove_path (edge e)
 
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
   for (i = 0; i < nrem; i++)
-    SET_BIT (seen, rem_bbs[i]->index);
+    bitmap_set_bit (seen, rem_bbs[i]->index);
   if (!irred_invalidated)
     FOR_EACH_EDGE (ae, ei, e->src->succs)
-      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index)
+      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index)
 	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
 	irred_invalidated = true;
   for (i = 0; i < nrem; i++)
     {
       bb = rem_bbs[i];
       FOR_EACH_EDGE (ae, ei, rem_bbs[i]->succs)
-	if (ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index))
+	if (ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index))
 	  {
-	    SET_BIT (seen, ae->dest->index);
+	    bitmap_set_bit (seen, ae->dest->index);
 	    bord_bbs[n_bord_bbs++] = ae->dest;
 
 	    if (ae->flags & EDGE_IRREDUCIBLE_LOOP)
@@ -371,9 +371,9 @@ remove_path (edge e)
       basic_block ldom;
 
       bb = get_immediate_dominator (CDI_DOMINATORS, bord_bbs[i]);
-      if (TEST_BIT (seen, bb->index))
+      if (bitmap_bit_p (seen, bb->index))
 	continue;
-      SET_BIT (seen, bb->index);
+      bitmap_set_bit (seen, bb->index);
 
       for (ldom = first_dom_son (CDI_DOMINATORS, bb);
 	   ldom;
@@ -598,7 +598,7 @@ update_dominators_in_loop (struct loop *loop)
   body = get_loop_body (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
-    SET_BIT (seen, body[i]->index);
+    bitmap_set_bit (seen, body[i]->index);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -607,9 +607,9 @@ update_dominators_in_loop (struct loop *loop)
       for (ldom = first_dom_son (CDI_DOMINATORS, body[i]);
 	   ldom;
 	   ldom = next_dom_son (CDI_DOMINATORS, ldom))
-	if (!TEST_BIT (seen, ldom->index))
+	if (!bitmap_bit_p (seen, ldom->index))
 	  {
-	    SET_BIT (seen, ldom->index);
+	    bitmap_set_bit (seen, ldom->index);
 	    VEC_safe_push (basic_block, heap, dom_bbs, ldom);
 	  }
     }
@@ -1206,7 +1206,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       scale_step = XNEWVEC (int, ndupl);
 
       for (i = 1; i <= ndupl; i++)
-	scale_step[i - 1] = TEST_BIT (wont_exit, i)
+	scale_step[i - 1] = bitmap_bit_p (wont_exit, i)
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 
@@ -1233,7 +1233,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
       else if (is_latch)
 	{
-	  prob_pass_main = TEST_BIT (wont_exit, 0)
+	  prob_pass_main = bitmap_bit_p (wont_exit, 0)
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 	  p = prob_pass_main;
@@ -1342,7 +1342,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
 
       /* Record exit edge in this copy.  */
-      if (orig && TEST_BIT (wont_exit, j + 1))
+      if (orig && bitmap_bit_p (wont_exit, j + 1))
 	{
 	  if (to_remove)
 	    VEC_safe_push (edge, heap, *to_remove, new_spec_edges[SE_ORIG]);
@@ -1378,7 +1378,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   free (orig_loops);
 
   /* Record the exit edge in the original loop body, and update the frequencies.  */
-  if (orig && TEST_BIT (wont_exit, 0))
+  if (orig && bitmap_bit_p (wont_exit, 0))
     {
       if (to_remove)
 	VEC_safe_push (edge, heap, *to_remove, orig);

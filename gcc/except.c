@@ -614,14 +614,14 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
 
   do
     {
-      SET_BIT (b_outer, region_b->index);
+      bitmap_set_bit (b_outer, region_b->index);
       region_b = region_b->outer;
     }
   while (region_b);
 
   do
     {
-      if (TEST_BIT (b_outer, region_a->index))
+      if (bitmap_bit_p (b_outer, region_a->index))
 	break;
       region_a = region_a->outer;
     }
