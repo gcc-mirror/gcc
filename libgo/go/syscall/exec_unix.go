@@ -21,34 +21,34 @@ import (
 //setsid() Pid_t
 
 //sysnb raw_setpgid(pid int, pgid int) (err Errno)
-//setpgid(pid Pid_t, pgid Pid_t) int
+//setpgid(pid Pid_t, pgid Pid_t) _C_int
 
 //sysnb	raw_chroot(path *byte) (err Errno)
-//chroot(path *byte) int
+//chroot(path *byte) _C_int
 
 //sysnb	raw_chdir(path *byte) (err Errno)
-//chdir(path *byte) int
+//chdir(path *byte) _C_int
 
 //sysnb	raw_fcntl(fd int, cmd int, arg int) (val int, err Errno)
-//fcntl(fd int, cmd int, arg int) int
+//fcntl(fd _C_int, cmd _C_int, arg _C_int) _C_int
 
 //sysnb	raw_close(fd int) (err Errno)
-//close(fd int) int
+//close(fd _C_int) _C_int
 
 //sysnb	raw_ioctl(fd int, cmd int, val int) (rval int, err Errno)
-//ioctl(fd int, cmd int, val int) int
+//ioctl(fd _C_int, cmd _C_int, val _C_int) _C_int
 
 //sysnb	raw_execve(argv0 *byte, argv **byte, envv **byte) (err Errno)
-//execve(argv0 *byte, argv **byte, envv **byte) int
+//execve(argv0 *byte, argv **byte, envv **byte) _C_int
 
 //sysnb	raw_write(fd int, buf *byte, count int) (err Errno)
-//write(fd int, buf *byte, count Size_t) Ssize_t
+//write(fd _C_int, buf *byte, count Size_t) Ssize_t
 
 //sysnb	raw_exit(status int)
-//_exit(status int)
+//_exit(status _C_int)
 
 //sysnb raw_dup2(oldfd int, newfd int) (err Errno)
-//dup2(oldfd int, newfd int) int
+//dup2(oldfd _C_int, newfd _C_int) _C_int
 
 // Lock synchronizing creation of new file descriptors with fork.
 //

@@ -5,4 +5,4 @@
 package syscall
 
 //sysnb	Uname(buf *Utsname) (err error)
-//uname(buf *Utsname) int
+//uname(buf *Utsname) _C_int
