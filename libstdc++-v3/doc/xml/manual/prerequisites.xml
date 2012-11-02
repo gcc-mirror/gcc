@@ -30,10 +30,7 @@
   </para>
 
    <para>As of GCC 4.0.1 the minimum version of binutils required to build
-      libstdc++ is <code>2.15.90.0.1.1</code>. You can get snapshots
-      (as well as releases) of binutils from
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="ftp://sources.redhat.com/pub/binutils/">
-      ftp://sources.redhat.com/pub/binutils</link>.
+      libstdc++ is <code>2.15.90.0.1.1</code>.
       Older releases of libstdc++ do not require such a recent version,
       but to take full advantage of useful space-saving features and
       bug-fixes you should use a recent binutils whenever possible.
