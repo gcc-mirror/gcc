@@ -1,3 +1,16 @@
+2012-11-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr46728-1.c: Pass -fno-ident to eliminate
+	failures in case 'pow', such as 'powerpc' is used in the compiler
+	version name.
+	* gcc.target/powerpc/pr46728-2.c: Likewise.
+	* gcc.target/powerpc/pr46728-3.c: Likewise.
+	* gcc.target/powerpc/pr46728-4.c: Likewise.
+	* gcc.target/powerpc/pr46728-5.c: Likewise.
+	* gcc.target/powerpc/pr46728-7.c: Likewise.
+	* gcc.target/powerpc/pr46728-8.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr46728-6.c: Likewise.
+
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/cunroll-10.c: New testcase.

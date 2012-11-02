@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "No __builtin_cbrt" { powerpc*-*-darwin* } } */
-/* { dg-options "-O2 -ffast-math -fno-inline -fno-unroll-loops -lm -mpowerpc-gpopt" } */
+/* { dg-options "-O2 -ffast-math -fno-inline -fno-unroll-loops -lm -mpowerpc-gpopt -fno-ident" } */
 
 #include <math.h>
 
