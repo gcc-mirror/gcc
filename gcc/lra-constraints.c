@@ -3095,10 +3095,10 @@ contains_reg_p (rtx x, bool hard_reg_p, bool spilled_p)
   return false;
 }
 
-/* Process all regs in debug location *LOC and change them on
-   equivalent substitution.  Return true if any change was done.  */
+/* Process all regs in location *LOC and change them on equivalent
+   substitution.  Return true if any change was done.  */
 static bool
-debug_loc_equivalence_change_p (rtx *loc)
+loc_equivalence_change_p (rtx *loc)
 {
   rtx subst, reg, x = *loc;
   bool result = false;
@@ -3130,11 +3130,11 @@ debug_loc_equivalence_change_p (rtx *loc)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	result = debug_loc_equivalence_change_p (&XEXP (x, i)) || result;
+	result = loc_equivalence_change_p (&XEXP (x, i)) || result;
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  result
-	    = debug_loc_equivalence_change_p (&XVECEXP (x, i, j)) || result;
+	    = loc_equivalence_change_p (&XVECEXP (x, i, j)) || result;
     }
   return result;
 }
@@ -3322,7 +3322,6 @@ lra_constraints (bool first_p)
      substituted by their equivalences.  */
   EXECUTE_IF_SET_IN_BITMAP (&equiv_insn_bitmap, 0, uid, bi)
     lra_push_insn_by_uid (uid);
-  bitmap_clear (&equiv_insn_bitmap);
   lra_eliminate (false);
   min_len = lra_insn_stack_length ();
   new_insns_num = 0;
@@ -3353,7 +3352,8 @@ lra_constraints (bool first_p)
 	  /* We need to check equivalence in debug insn and change
 	     pseudo to the equivalent value if necessary.  */
 	  curr_id = lra_get_insn_recog_data (curr_insn);
-	  if (debug_loc_equivalence_change_p (curr_id->operand_loc[0]))
+	  if (bitmap_bit_p (&equiv_insn_bitmap, INSN_UID (curr_insn))
+	      && loc_equivalence_change_p (curr_id->operand_loc[0]))
 	    {
 	      lra_update_insn_regno_info (curr_insn);
 	      changed_p = true;
@@ -3417,8 +3417,18 @@ lra_constraints (bool first_p)
 	  init_curr_operand_mode ();
 	  if (curr_insn_transform ())
 	    changed_p = true;
+	  /* Check non-transformed insns too for equiv change as USE
+	     or CLOBBER don't need reloads but can contain pseudos
+	     being changed on their equivalences.  */
+	  else if (bitmap_bit_p (&equiv_insn_bitmap, INSN_UID (curr_insn))
+		   && loc_equivalence_change_p (&PATTERN (curr_insn)))
+	    {
+	      lra_update_insn_regno_info (curr_insn);
+	      changed_p = true;
+	    }
 	}
     }
+  bitmap_clear (&equiv_insn_bitmap);
   /* If we used a new hard regno, changed_p should be true because the
      hard reg is assigned to a new pseudo.  */
 #ifdef ENABLE_CHECKING
