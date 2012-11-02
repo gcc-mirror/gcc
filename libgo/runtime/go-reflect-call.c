@@ -75,15 +75,15 @@ go_slice_to_ffi (
     const struct __go_slice_type *descriptor __attribute__ ((unused)))
 {
   ffi_type *ret;
-  ffi_type *intgo;
+  ffi_type *ffi_intgo;
 
   ret = (ffi_type *) __go_alloc (sizeof (ffi_type));
   ret->type = FFI_TYPE_STRUCT;
   ret->elements = (ffi_type **) __go_alloc (4 * sizeof (ffi_type *));
   ret->elements[0] = &ffi_type_pointer;
-  intgo = sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
-  ret->elements[1] = intgo;
-  ret->elements[2] = intgo;
+  ffi_intgo = sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
+  ret->elements[1] = ffi_intgo;
+  ret->elements[2] = ffi_intgo;
   ret->elements[3] = NULL;
   return ret;
 }
@@ -117,14 +117,14 @@ static ffi_type *
 go_string_to_ffi (void)
 {
   ffi_type *ret;
-  ffi_type *intgo;
+  ffi_type *ffi_intgo;
 
   ret = (ffi_type *) __go_alloc (sizeof (ffi_type));
   ret->type = FFI_TYPE_STRUCT;
   ret->elements = (ffi_type **) __go_alloc (3 * sizeof (ffi_type *));
   ret->elements[0] = &ffi_type_pointer;
-  intgo = sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
-  ret->elements[1] = intgo;
+  ffi_intgo = sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
+  ret->elements[1] = ffi_intgo;
   ret->elements[2] = NULL;
   return ret;
 }
