@@ -1,6 +1,6 @@
 2012-11-02  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR middle-end/55150
+	PR middle-end/55130
 	* gcc.target/i386/pr55130.c: New test.
 
 2012-11-02  Jakub Jelinek  <jakub@redhat.com>
