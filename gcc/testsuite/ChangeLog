@@ -1,5 +1,8 @@
 2012-11-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	* gcc.target/powerpc/pr48258-2.c: Simplfy the acceptance
+	conditions to verify the reduction code is vectorized.
+
 	* gcc.target/powerpc/pr46728-1.c: Pass -fno-ident to eliminate
 	failures in case 'pow', such as 'powerpc' is used in the compiler
 	version name.
