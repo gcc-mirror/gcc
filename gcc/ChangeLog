@@ -1,3 +1,23 @@
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/55079
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Update
+	MAX field if NITER was folded to contant.
+	(record_estimate): Sanity check.
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): New
+	function.
+	(remove_redundant_iv_test): New function.
+	(loops_to_unloop, loops_to_unloop_nunroll): New static vars.
+	(unloop_loops): Break out from ...
+	(try_unroll_loop_completely): ... here; Pass in MAXITER; use
+	remove_exits_and_undefined_stmts; do not unloop.
+	(canonicalize_loop_induction_variables): Compute MAXITER;
+	use remove_redundant_iv_test; remove loop_close_ssa_invalidated
+	and irred_invalidated arguments.
+	(canonicalize_induction_variables): Compute fresh bound estimates;
+	unloop; walk from innermost.
+	(tree_unroll_loops_completely): Likewise.
+
 2012-11-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55130
