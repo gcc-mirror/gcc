@@ -2961,6 +2961,224 @@ gcov_type_to_double_int (gcov_type val)
   return ret;
 }
 
+/* Compare double ints, callback for qsort.  */
+
+int
+double_int_cmp (const void *p1, const void *p2)
+{
+  const double_int *d1 = (const double_int *)p1;
+  const double_int *d2 = (const double_int *)p2;
+  if (*d1 == *d2)
+    return 0;
+  if (d1->ult (*d2))
+    return -1;
+  return 1;
+}
+
+/* Return index of BOUND in BOUNDS array sorted in increasing order.
+   Lookup by binary search.  */
+
+int
+bound_index (VEC (double_int, heap) *bounds, double_int bound)
+{
+  unsigned int end = VEC_length (double_int, bounds);
+  unsigned int begin = 0;
+
+  /* Find a matching index by means of a binary search.  */
+  while (begin != end)
+    {
+      unsigned int middle = (begin + end) / 2;
+      double_int index = VEC_index (double_int, bounds, middle);
+
+      if (index == bound)
+	return middle;
+      else if (index.ult (bound))
+	begin = middle + 1;
+      else
+	end = middle;
+    }
+  gcc_unreachable ();
+}
+
+/* Used to hold vector of queues of basic blocks bellow.  */
+typedef VEC (basic_block, heap) *bb_queue;
+DEF_VEC_P(bb_queue);
+DEF_VEC_ALLOC_P(bb_queue,heap);
+
+/* We recorded loop bounds only for statements dominating loop latch (and thus
+   executed each loop iteration).  If there are any bounds on statements not
+   dominating the loop latch we can improve the estimate by walking the loop
+   body and seeing if every path from loop header to loop latch contains
+   some bounded statement.  */
+
+static void
+discover_iteration_bound_by_body_walk (struct loop *loop)
+{
+  pointer_map_t *bb_bounds;
+  struct nb_iter_bound *elt;
+  VEC (double_int, heap) *bounds = NULL;
+  VEC (bb_queue, heap) *queues = NULL;
+  bb_queue queue = NULL;
+  ptrdiff_t queue_index;
+  ptrdiff_t latch_index = 0;
+  pointer_map_t *block_priority;
+
+  /* Discover what bounds may interest us.  */
+  for (elt = loop->bounds; elt; elt = elt->next)
+    {
+      double_int bound = elt->bound;
+
+      /* Exit terminates loop at given iteration, while non-exits produce undefined
+	 effect on the next iteration.  */
+      if (!elt->is_exit)
+	bound += double_int_one;
+
+      if (!loop->any_upper_bound
+	  || bound.ult (loop->nb_iterations_upper_bound))
+        VEC_safe_push (double_int, heap, bounds, bound);
+    }
+
+  /* Exit early if there is nothing to do.  */
+  if (!bounds)
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, " Trying to walk loop body to reduce the bound.\n");
+
+  /* Sort the bounds in decreasing order.  */
+  qsort (VEC_address (double_int, bounds), VEC_length (double_int, bounds),
+	 sizeof (double_int), double_int_cmp);
+
+  /* For every basic block record the lowest bound that is guaranteed to
+     terminate the loop.  */
+
+  bb_bounds = pointer_map_create ();
+  for (elt = loop->bounds; elt; elt = elt->next)
+    {
+      double_int bound = elt->bound;
+      if (!elt->is_exit)
+	bound += double_int_one;
+
+      if (!loop->any_upper_bound
+	  || bound.ult (loop->nb_iterations_upper_bound))
+	{
+	  ptrdiff_t index = bound_index (bounds, bound);
+	  void **entry = pointer_map_contains (bb_bounds,
+					       gimple_bb (elt->stmt));
+	  if (!entry)
+	    *pointer_map_insert (bb_bounds,
+				 gimple_bb (elt->stmt)) = (void *)index;
+	  else if ((ptrdiff_t)*entry > index)
+	    *entry = (void *)index;
+	}
+    }
+
+  block_priority = pointer_map_create ();
+
+  /* Perform shortest path discovery loop->header ... loop->latch.
+
+     The "distance" is given by the smallest loop bound of basic block
+     present in the path and we look for path with largest smallest bound
+     on it.
+
+     To avoid the need for fibonaci heap on double ints we simply compress
+     double ints into indexes to BOUNDS array and then represent the queue
+     as arrays of queues for every index.
+     Index of VEC_length (BOUNDS) means that the execution of given BB has
+     no bounds determined.
+
+     VISITED is a pointer map translating basic block into smallest index
+     it was inserted into the priority queue with.  */
+  latch_index = -1;
+
+  /* Start walk in loop header with index set to infinite bound.  */
+  queue_index = VEC_length (double_int, bounds);
+  VEC_safe_grow_cleared (bb_queue, heap, queues, queue_index + 1);
+  VEC_safe_push (basic_block, heap, queue, loop->header);
+  VEC_replace (bb_queue, queues, queue_index, queue);
+  *pointer_map_insert (block_priority, loop->header) = (void *)queue_index;
+
+  for (; queue_index >= 0; queue_index--)
+    {
+      if (latch_index < queue_index)
+	{
+	  while (VEC_length (basic_block,
+			     VEC_index (bb_queue, queues, queue_index)))
+	    {
+	      basic_block bb;
+	      ptrdiff_t bound_index = queue_index;
+	      void **entry;
+              edge e;
+              edge_iterator ei;
+
+	      queue = VEC_index (bb_queue, queues, queue_index);
+	      bb = VEC_pop (basic_block, queue);
+
+	      /* OK, we later inserted the BB with lower priority, skip it.  */
+	      if ((ptrdiff_t)*pointer_map_contains (block_priority, bb) > queue_index)
+		continue;
+
+	      /* See if we can improve the bound.  */
+	      entry = pointer_map_contains (bb_bounds, bb);
+	      if (entry && (ptrdiff_t)*entry < bound_index)
+		bound_index = (ptrdiff_t)*entry;
+
+	      /* Insert succesors into the queue, watch for latch edge
+		 and record greatest index we saw.  */
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		{
+		  bool insert = false;
+		  void **entry;
+
+		  if (loop_exit_edge_p (loop, e))
+		    continue;
+
+		  if (e == loop_latch_edge (loop)
+		      && latch_index < bound_index)
+		    latch_index = bound_index;
+		  else if (!(entry = pointer_map_contains (block_priority, e->dest)))
+		    {
+		      insert = true;
+		      *pointer_map_insert (block_priority, e->dest) = (void *)bound_index;
+		    }
+		  else if ((ptrdiff_t)*entry < bound_index)
+		    {
+		      insert = true;
+		      *entry = (void *)bound_index;
+		    }
+		    
+		  if (insert)
+		    {
+		      bb_queue queue2 = VEC_index (bb_queue, queues, bound_index);
+		      VEC_safe_push (basic_block, heap, queue2, e->dest);
+		      VEC_replace (bb_queue, queues, bound_index, queue2);
+		    }
+		}
+	    }
+	}
+      else
+	VEC_free (basic_block, heap, VEC_index (bb_queue, queues, queue_index));
+    }
+
+  gcc_assert (latch_index >= 0);
+  if (latch_index < VEC_length (double_int, bounds))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Found better loop bound ");
+	  dump_double_int (dump_file,
+			   VEC_index (double_int, bounds, latch_index), true);
+	  fprintf (dump_file, "\n");
+	}
+      record_niter_bound (loop, VEC_index (double_int, bounds, latch_index),
+			  false, true);
+    }
+
+  VEC_free (bb_queue, heap, queues);
+  pointer_map_destroy (bb_bounds);
+  pointer_map_destroy (block_priority);
+}
+
 /* See if every path cross the loop goes through a statement that is known
    to not execute at the last iteration. In that case we can decrese iteration
    count by 1.  */
@@ -3107,6 +3325,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   VEC_free (edge, heap, exits);
 
   infer_loop_bounds_from_undefined (loop);
+
+  discover_iteration_bound_by_body_walk (loop);
 
   maybe_lower_iteration_bound (loop);
 
