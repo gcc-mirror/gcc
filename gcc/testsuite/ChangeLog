@@ -1,3 +1,8 @@
+2012-11-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/default_format_1.f90: XFAIL on AIX.
+	* gfortran.dg/default_format_denormal_1.f90: Same.
+
 2012-11-01  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/55001
