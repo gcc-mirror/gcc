@@ -1,3 +1,15 @@
+2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/configure.xml: Adjust GNU libc link.
+
+	* doc/xml/manual/debug.xml: Adjust GDB documentation link.
+	Use GCC instead of gcc.
+
+	* doc/xml/manual/prerequisites.xml: Remove detailed reference
+	to binutils downloads.
+
+
+
 2012-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55169

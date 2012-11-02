@@ -106,7 +106,7 @@
 	choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
 	(IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
 	'gnu' to specify a model based on functionality from the GNU C
-	library (langinfo/iconv/gettext) (from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sources.redhat.com/glibc/">glibc</link>, the GNU C
+	library (langinfo/iconv/gettext) (from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.gnu.org/software/libc/">glibc</link>, the GNU C
 	library), 'generic' to use a generic "C" abstraction which consists
 	of "C" locale info, 'newlib' to specify the Newlib C library model
 	which only differs from the 'generic' model in the handling of
