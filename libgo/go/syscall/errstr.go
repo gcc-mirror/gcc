@@ -7,7 +7,7 @@
 package syscall
 
 //sysnb	strerror_r(errnum int, buf []byte) (err error)
-//strerror_r(errnum int, buf *byte, buflen Size_t) int
+//strerror_r(errnum _C_int, buf *byte, buflen Size_t) _C_int
 
 func Errstr(errnum int) string {
 	for len := 128; ; len *= 2 {

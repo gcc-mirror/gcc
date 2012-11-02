@@ -12,7 +12,7 @@ import (
 )
 
 //sysnb	strerror(errnum int) (buf *byte)
-//strerror(errnum int) *byte
+//strerror(errnum _C_int) *byte
 
 var errstr_lock sync.Mutex
 
