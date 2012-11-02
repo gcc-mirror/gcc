@@ -1,3 +1,9 @@
+2012-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55147
+	* config/i386/i386.md (bswapdi2): Limit to TARGET_64BIT.
+	(*bswapdi2_doubleword): Removed.
+
 2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Remove moxie web reference.

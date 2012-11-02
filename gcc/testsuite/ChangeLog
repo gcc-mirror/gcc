@@ -1,3 +1,8 @@
+2012-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55147
+	* gcc.target/i386/pr55147.c: New test.
+
 2012-11-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/default_format_1.f90: XFAIL on AIX.
