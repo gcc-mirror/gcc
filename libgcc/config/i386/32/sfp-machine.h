@@ -77,6 +77,7 @@
 #define _FP_NANFRAC_E		_FP_QNANBIT_E, 0, 0, 0
 #define _FP_NANFRAC_Q		_FP_QNANBIT_Q, 0, 0, 0
 
+#ifndef _SOFT_FLOAT
 #define FP_RND_NEAREST		0
 #define FP_RND_ZERO		0xc00
 #define FP_RND_PINF		0x800
@@ -91,3 +92,4 @@
   do {							\
     __asm__ __volatile__ ("fnstcw\t%0" : "=m" (_fcw));	\
   } while (0)
+#endif

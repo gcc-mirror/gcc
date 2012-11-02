@@ -1,3 +1,13 @@
+2012-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55175
+	* config/i386/sfp-exceptions.c: Guard with _SOFT_FLOAT.
+	* config/i386/sfp-machine.h: Guard exception handling
+	code with _SOFT_FLOAT.
+	* config/i386/32/sfp-machine.h: Guard rounding handling
+	code with _SOFT_FLOAT.
+	* config/i386/64/sfp-machine.h: Ditto.
+
 2012-10-31  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host (m32r-*-rtems*): Include crtinit.o and crtfinit.o
@@ -196,7 +206,7 @@
 2012-09-01  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.host (x86_64-*-openbsd*): New target.
-	
+
 2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/mips/crtfastmath.c (set_fast_math): Add 'nomips16'

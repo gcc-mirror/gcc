@@ -21,6 +21,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _SOFT_FLOAT
 #include "sfp-machine.h"
 
 struct fenv
@@ -88,3 +89,4 @@ __sfp_handle_exceptions (int _fex)
       asm volatile ("fwait");
     }
 };
+#endif

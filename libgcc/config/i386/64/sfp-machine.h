@@ -18,6 +18,7 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #define _FP_NANFRAC_E		_FP_QNANBIT_E, 0
 #define _FP_NANFRAC_Q		_FP_QNANBIT_Q, 0
 
+#ifndef _SOFT_FLOAT
 #define FP_RND_NEAREST		0
 #define FP_RND_ZERO		0x6000
 #define FP_RND_PINF		0x4000
@@ -32,3 +33,4 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
   do {								\
     __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (_fcw));	\
   } while (0)
+#endif
