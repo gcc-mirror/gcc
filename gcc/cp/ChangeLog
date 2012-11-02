@@ -1,3 +1,9 @@
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* decl2.c (var_finalized_p): Rename varpool_node to
+	varpool_node_for_decl.
+	(maybe_emit_vtables): Likewise.
+
 2012-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54583

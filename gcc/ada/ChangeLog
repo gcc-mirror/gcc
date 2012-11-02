@@ -1,3 +1,8 @@
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations):
+	Rename varpool_node to varpool_node_for_decl.
+
 2012-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in: Fix and clean up rules for C files.
