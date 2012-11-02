@@ -1,17 +1,10 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-O3 -mcpu=power7 -mabi=altivec -ffast-math -fno-unroll-loops" } */
-/* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmindp" 1 } } */
-/* { dg-final { scan-assembler-times "xvmaxdp" 1 } } */
-/* { dg-final { scan-assembler-times "xsadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xsmindp" 1 } } */
-/* { dg-final { scan-assembler-times "xsmaxdp" 1 } } */
-/* { dg-final { scan-assembler-not "xxsldwi" } } */
-/* { dg-final { scan-assembler-not "stvx" } } */
-/* { dg-final { scan-assembler-not "stxvd2x" } } */
-/* { dg-final { scan-assembler-not "stxvw4x" } } */
+/* { dg-options "-O3 -mcpu=power7 -mabi=altivec -ffast-math" } */
+/* { dg-final { scan-assembler "xvadddp" } } */
+/* { dg-final { scan-assembler "xvmindp" } } */
+/* { dg-final { scan-assembler "xvmaxdp" } } */
 
 #include <stddef.h>
 
