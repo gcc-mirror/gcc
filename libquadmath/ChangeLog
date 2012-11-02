@@ -1,4 +1,11 @@
 2012-11-01  Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* math/fmaq.c (fmaq): Merge from GLIBC. Handle cases
+	with small x * y using scaling, not as x * y + z.
+	* math/lgammaq.c (lgammaq): Fix signgam handling.
+
+2012-11-01  Tobias Burnus  <burnus@net-b.de>
 
 	* Makefile.am (libquadmath_la_SOURCES): Add new math/* files.
 	* Makefile.in: Regenerated.

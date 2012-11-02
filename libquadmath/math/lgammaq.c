@@ -759,7 +759,8 @@ lgammaq (__float128 x)
 {
   __float128 p, q, w, z, nx;
   int i, nn;
-  int sign;
+
+  signgam = 1;
 
   if (! finiteq (x))
     return x * x;
@@ -767,10 +768,8 @@ lgammaq (__float128 x)
   if (x == 0.0Q)
     {
       if (signbitq (x))
-	sign = -1;
+	signgam = -1;
     }
-
-  signgam = sign;
 
   if (x < 0.0Q)
     {
@@ -780,9 +779,9 @@ lgammaq (__float128 x)
 	return (one / (p - p));
       i = p;
       if ((i & 1) == 0)
-	sign = -1;
+	signgam = -1;
       else
-	sign = 1;
+	signgam = 1;
       z = q - p;
       if (z > 0.5Q)
 	{
@@ -790,10 +789,8 @@ lgammaq (__float128 x)
 	  z = p - q;
 	}
       z = q * sinq (PIQ * z);
-      signgam = sign;
-
       if (z == 0.0Q)
-	return (sign * huge * huge);
+	return (signgam * huge * huge);
       w = lgammaq (q);
       z = logq (PIQ / z) - w;
       return (z);
@@ -1025,7 +1022,7 @@ lgammaq (__float128 x)
     }
 
   if (x > MAXLGM)
-    return (sign * huge * huge);
+    return (signgam * huge * huge);
 
   q = ls2pi - x;
   q = (x - 0.5Q) * logq (x) + q;
