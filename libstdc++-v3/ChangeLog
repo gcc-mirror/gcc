@@ -1,3 +1,17 @@
+2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Fix reference to Austin Common
+	Standards Revision Group.
+	* doc/xml/manual/messages.xml: Ditto.
+	* doc/xml/manual/using_exceptions.xml: Ditto.
+
+	* doc/xml/manual/messages.xml: Fix reference to GNU gettext.
+
+	* doc/xml/manual/policy_data_structures.xml: Fix reference to
+	STL at SGI.
+	Update reference to COM at Microsoft.
+	Update reference to Worst-case efficient priority queues at ACM.
+	
 2012-11-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/18_support/initializer_list/range_access.cc: Fix copying
