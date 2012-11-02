@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -lm" } */
+/* { dg-options "-O2 -ffast-math -lm -fno-ident" } */
 
 #include <math.h>
 
