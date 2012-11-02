@@ -1,3 +1,8 @@
+2012-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/55169
+	* include/bits/random.h: Remove all uses of param().
+
 2012-11-01   Haakan Younes  <hyounes@google.com>
 	     Paolo Carlini  <paolo.carlini@oracle.com>
 
