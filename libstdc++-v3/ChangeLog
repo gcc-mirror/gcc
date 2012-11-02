@@ -1,5 +1,10 @@
 2012-11-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator): Update.
+	(StdForwardListPrinter): Likewise.
+
+2012-11-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/forward_list.h (forward_list(size_type)): Add missing
 	allocator parameter.
 	(_Fwd_list_node_base): Use NSDMI and define constructor as defaulted.
