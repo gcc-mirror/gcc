@@ -1,3 +1,8 @@
+2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Update reference to Hoard.
+	Update reference to Berger's OOPSLA 2002 paper.
+
 2012-11-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator): Update.
@@ -22,7 +27,7 @@
 	* testsuite/23_containers/forward_list/cons/14.cc: New.
 
 2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
-
+	
 	* doc/xml/manual/codecvt.xml: Fix reference to Austin Common
 	Standards Revision Group.
 	* doc/xml/manual/messages.xml: Ditto.
