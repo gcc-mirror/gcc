@@ -1,3 +1,9 @@
+2012-11-02  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Add option
+	--clean_build to compare test results against another
+	build.
+
 2012-10-31  Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py: Fix parsing
