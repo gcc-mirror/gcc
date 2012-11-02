@@ -73,6 +73,37 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  || u.ieee.exponent + v.ieee.exponent
 	     < IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG - 2)
 	return x * y + z;
+      /* If x * y is less than 1/4 of FLT128_DENORM_MIN, neither the
+	 result nor whether there is underflow depends on its exact
+	 value, only on its sign.  */
+      if (u.ieee.exponent + v.ieee.exponent
+	  < IEEE854_FLT128_DOUBLE_BIAS - FLT128_MANT_DIG - 2)
+	{
+	  int neg = u.ieee.negative ^ v.ieee.negative;
+	  __float128 tiny = neg ? -0x1p-16494L : 0x1p-16494L;
+	  if (w.ieee.exponent >= 3)
+	    return tiny + z;
+	  /* Scaling up, adding TINY and scaling down produces the
+	     correct result, because in round-to-nearest mode adding
+	     TINY has no effect and in other modes double rounding is
+	     harmless.  But it may not produce required underflow
+	     exceptions.  */
+	  v.value = z * 0x1p114L + tiny;
+	  if (TININESS_AFTER_ROUNDING
+	      ? v.ieee.exponent < 115
+	      : (w.ieee.exponent == 0
+		 || (w.ieee.exponent == 1
+		     && w.ieee.negative != neg
+		     && w.ieee.mantissa3 == 0
+		     && w.ieee.mantissa2 == 0
+		     && w.ieee.mantissa1 == 0
+		     && w.ieee.mantissa0 == 0)))
+	    {
+	      volatile __float128 force_underflow = x * y;
+	      (void) force_underflow;
+	    }
+	  return v.value * 0x1p-114L;
+	}
       if (u.ieee.exponent + v.ieee.exponent
 	  >= 0x7fff + IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG)
 	{
@@ -228,17 +259,17 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	 for proper rounding.  */
       if (v.ieee.exponent == 226)
 	{
-         /* If the exponent would be in the normal range when
-            rounding to normal precision with unbounded exponent
-            range, the exact result is known and spurious underflows
-            must be avoided on systems detecting tininess after
-            rounding.  */
-         if (TININESS_AFTER_ROUNDING)
-           {
-             w.value = a1 + u.value;
-             if (w.ieee.exponent == 227)
-               return w.value * 0x1p-226L;
-           }
+	  /* If the exponent would be in the normal range when
+	     rounding to normal precision with unbounded exponent
+	     range, the exact result is known and spurious underflows
+	     must be avoided on systems detecting tininess after
+	     rounding.  */
+	  if (TININESS_AFTER_ROUNDING)
+	    {
+	      w.value = a1 + u.value;
+	      if (w.ieee.exponent == 227)
+		return w.value * 0x1p-226L;
+	    }
 	  /* v.ieee.mant_low & 2 is LSB bit of the result before rounding,
 	     v.ieee.mant_low & 1 is the round bit and j is our sticky
 	     bit. */
