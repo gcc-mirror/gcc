@@ -1,4 +1,3 @@
-// { dg-do compile }
 // { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
@@ -21,36 +20,33 @@
 // 23.3.4.2 forward_list construction [forwardlist.cons]
 
 #include <forward_list>
+#include <memory>
+#include <scoped_allocator>
+#include <testsuite_hooks.h>
 
-bool fail = false;
-
-struct NonCopyAssignable
+struct A
 {
-  NonCopyAssignable() = default;
-  NonCopyAssignable(const NonCopyAssignable&) = default;
-  NonCopyAssignable(int) { }
+  typedef std::allocator<A> allocator_type;
 
-  NonCopyAssignable& operator=(const NonCopyAssignable&) = delete;
-  NonCopyAssignable& operator=(int) = delete;
+  A() : ok(false) { }
+  A(const A&) : ok(false) { }
+  A(const allocator_type&) : ok(true) { }
+  A(const A&, const allocator_type&) : ok(true) { }
+
+  bool ok;
 };
 
 void test01()
 {
-  typedef std::forward_list<NonCopyAssignable> list;
+  typedef std::scoped_allocator_adaptor<A::allocator_type> alloc_type;
+  typedef std::forward_list<A, alloc_type> list;
 
-  list l(2);
-  NonCopyAssignable from[2];
-  int from2[2];
+  list l1(1);
+  VERIFY( l1.begin()->ok );
 
-  // Assigning non-Assignable elements is QoI, not required by the standard.
-
-  l = l;
-
-  l.assign(from, from+2);
-  l.assign(2, from[0]);
-
-  l.assign(from2, from2+2);
-  l.assign(2, from2[0]);
+  A a;
+  list l2(1, a);
+  VERIFY( l2.begin()->ok );
 }
 
 int main()

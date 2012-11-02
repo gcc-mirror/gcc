@@ -1,3 +1,21 @@
+2012-11-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/forward_list.h (forward_list(size_type)): Add missing
+	allocator parameter.
+	(_Fwd_list_node_base): Use NSDMI and define constructor as defaulted.
+	(_Fwd_list_node::_M_value): Replace with uninitialized storage.
+	(_Fwd_list_node::_M_valptr()): Define functions to access storage.
+	(_Fwd_list_iterator, _Fwd_list_const_iterator): Use _M_valptr.
+	(_Fwd_list_base::_M_create_node): Only use allocator to construct the
+	element not the node.
+	* include/bits/forward_list.tcc (_Fwd_list_base::_M_erase_after): Only
+	use allocator to destroy the element not the node.
+	* testsuite/23_containers/forward_list/cons/11.cc: Remove unused
+	headers.
+	* testsuite/23_containers/forward_list/cons/12.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/13.cc: New.
+	* testsuite/23_containers/forward_list/cons/14.cc: New.
+
 2012-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/codecvt.xml: Fix reference to Austin Common
