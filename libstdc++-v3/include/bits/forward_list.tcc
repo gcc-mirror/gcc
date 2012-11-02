@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
           while (__curr)
             {
               __to->_M_next =
-                _M_create_node(std::move_if_noexcept(__curr->_M_value));
+                _M_create_node(std::move_if_noexcept(*__curr->_M_valptr()));
               __to = __to->_M_next;
               __curr = static_cast<_Node*>(__curr->_M_next);
             }
@@ -81,7 +81,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Node* __curr = static_cast<_Node*>(__pos->_M_next);
       __pos->_M_next = __curr->_M_next;
-      _Node_alloc_traits::destroy(_M_get_Node_allocator(), __curr);
+      _Tp_alloc_type __a(_M_get_Node_allocator());
+      allocator_traits<_Tp_alloc_type>::destroy(__a, __curr->_M_valptr());
+      __curr->~_Node();
       _M_put_node(__curr);
       return __pos->_M_next;
     }
@@ -97,7 +99,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         {
           _Node* __temp = __curr;
           __curr = static_cast<_Node*>(__curr->_M_next);
-          _Node_alloc_traits::destroy(_M_get_Node_allocator(), __temp);
+	  _Tp_alloc_type __a(_M_get_Node_allocator());
+	  allocator_traits<_Tp_alloc_type>::destroy(__a, __temp->_M_valptr());
+	  __temp->~_Node();
           _M_put_node(__temp);
         }
       __pos->_M_next = __last;
@@ -300,10 +304,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
         {
-          if (__tmp->_M_value == __val)
+          if (*__tmp->_M_valptr() == __val)
 	    {
-	      if (std::__addressof(__tmp->_M_value)
-		  != std::__addressof(__val))
+	      if (__tmp->_M_valptr() != std::__addressof(__val))
 		{
 		  this->_M_erase_after(__curr);
 		  continue;
@@ -327,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
         while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
           {
-            if (__pred(__tmp->_M_value))
+            if (__pred(*__tmp->_M_valptr()))
               this->_M_erase_after(__curr);
             else
               __curr = static_cast<_Node*>(__curr->_M_next);
@@ -364,10 +367,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         _Node_base* __node = &this->_M_impl._M_head;
         while (__node->_M_next && __list._M_impl._M_head._M_next)
           {
-            if (__comp(static_cast<_Node*>
-                       (__list._M_impl._M_head._M_next)->_M_value,
-                       static_cast<_Node*>
-                       (__node->_M_next)->_M_value))
+            if (__comp(*static_cast<_Node*>
+                       (__list._M_impl._M_head._M_next)->_M_valptr(),
+                       *static_cast<_Node*>
+                       (__node->_M_next)->_M_valptr()))
               __node->_M_transfer_after(&__list._M_impl._M_head,
                                         __list._M_impl._M_head._M_next);
             __node = __node->_M_next;
@@ -460,7 +463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
                         __p = static_cast<_Node*>(__p->_M_next);
                         --__psize;
                       }
-                    else if (__comp(__p->_M_value, __q->_M_value))
+                    else if (__comp(*__p->_M_valptr(), *__q->_M_valptr()))
                       {
                         // First node of p is lower; e must come from p.
                         __e = __p;

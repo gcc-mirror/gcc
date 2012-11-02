@@ -48,9 +48,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    */
   struct _Fwd_list_node_base
   {
-    _Fwd_list_node_base() : _M_next(0) { }
+    _Fwd_list_node_base() = default;
 
-    _Fwd_list_node_base* _M_next;
+    _Fwd_list_node_base* _M_next = nullptr;
 
     _Fwd_list_node_base*
     _M_transfer_after(_Fwd_list_node_base* __begin,
@@ -86,19 +86,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  A helper node class for %forward_list.
-   *          This is just a linked list with a data value in each node.
+   *          This is just a linked list with uninitialized storage for a
+   *          data value in each node.
    *          There is a sorting utility method.
    */
   template<typename _Tp>
     struct _Fwd_list_node
     : public _Fwd_list_node_base
     {
-      template<typename... _Args>
-        _Fwd_list_node(_Args&&... __args)
-        : _Fwd_list_node_base(), 
-          _M_value(std::forward<_Args>(__args)...) { }
+      _Fwd_list_node() = default;
 
-      _Tp _M_value;
+      typename aligned_storage<sizeof(_Tp), alignment_of<_Tp>::value>::type
+	_M_storage;
+
+      _Tp*
+      _M_valptr() noexcept
+      {
+	return static_cast<_Tp*>(static_cast<void*>(&_M_storage));
+      }
+
+      const _Tp*
+      _M_valptr() const noexcept
+      {
+	return static_cast<const _Tp*>(static_cast<const void*>(&_M_storage));
+      }
     };
 
   /**
@@ -127,12 +138,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       reference
       operator*() const
-      { return static_cast<_Node*>(this->_M_node)->_M_value; }
+      { return *static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       pointer
       operator->() const
-      { return std::__addressof(static_cast<_Node*>
-				(this->_M_node)->_M_value); }
+      { return static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       _Self&
       operator++()
@@ -199,12 +209,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       reference
       operator*() const
-      { return static_cast<_Node*>(this->_M_node)->_M_value; }
+      { return *static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       pointer
       operator->() const
-      { return std::__addressof(static_cast<_Node*>
-				(this->_M_node)->_M_value); }
+      { return static_cast<_Node*>(this->_M_node)->_M_valptr(); }
 
       _Self&
       operator++()
@@ -339,9 +348,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
           _Node* __node = this->_M_get_node();
           __try
             {
-              _Node_alloc_traits::construct(_M_get_Node_allocator(), __node,
-                                            std::forward<_Args>(__args)...);
-              __node->_M_next = 0;
+	      _Tp_alloc_type __a(_M_get_Node_allocator());
+	      typedef allocator_traits<_Tp_alloc_type> _Alloc_traits;
+	      ::new ((void*)__node) _Node();
+	      _Alloc_traits::construct(__a, __node->_M_valptr(),
+				       std::forward<_Args>(__args)...);
             }
           __catch(...)
             {
@@ -457,8 +468,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  constructed elements.
        */
       explicit
-      forward_list(size_type __n)
-      : _Base()
+      forward_list(size_type __n, const _Alloc& __al = _Alloc())
+      : _Base(_Node_alloc_type(__al))
       { _M_default_initialize(__n); }
 
       /**
@@ -738,7 +749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       front()
       {
         _Node* __front = static_cast<_Node*>(this->_M_impl._M_head._M_next);
-        return __front->_M_value;
+        return *__front->_M_valptr();
       }
 
       /**
@@ -749,7 +760,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       front() const
       {
         _Node* __front = static_cast<_Node*>(this->_M_impl._M_head._M_next);
-        return __front->_M_value;
+        return *__front->_M_valptr();
       }
 
       // 23.3.4.5 modiﬁers:

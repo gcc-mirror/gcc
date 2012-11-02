@@ -20,8 +20,6 @@
 // 23.3.4.2 forward_list construction [forwardlist.cons]
 
 #include <forward_list>
-#include <testsuite_hooks.h>
-#include <testsuite_allocator.h>
 
 bool fail = false;
 

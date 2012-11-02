@@ -21,39 +21,15 @@
 // 23.3.4.2 forward_list construction [forwardlist.cons]
 
 #include <forward_list>
-
-bool fail = false;
-
-struct NonCopyAssignable
-{
-  NonCopyAssignable() = default;
-  NonCopyAssignable(const NonCopyAssignable&) = default;
-  NonCopyAssignable(int) { }
-
-  NonCopyAssignable& operator=(const NonCopyAssignable&) = delete;
-  NonCopyAssignable& operator=(int) = delete;
-};
+#include <scoped_allocator>
 
 void test01()
 {
-  typedef std::forward_list<NonCopyAssignable> list;
+  using namespace std;
+  using list = forward_list<int>;
+  forward_list<list, scoped_allocator_adaptor<list::allocator_type>> l;
 
-  list l(2);
-  NonCopyAssignable from[2];
-  int from2[2];
-
-  // Assigning non-Assignable elements is QoI, not required by the standard.
-
-  l = l;
-
-  l.assign(from, from+2);
-  l.assign(2, from[0]);
-
-  l.assign(from2, from2+2);
-  l.assign(2, from2[0]);
+  // Check for forward_list(size_type, const allocator_type&)
+  l.emplace_front(1u);
 }
 
-int main()
-{
-  test01();
-}
