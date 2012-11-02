@@ -1,5 +1,11 @@
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-loop-niter.c (double_int_cmp, bound_index,
+	discover_iteration_bound_by_body_walk): New functions.
+	(discover_iteration_bound_by_body_walk): Use it.
+
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
 	* predict.c (predict_loops): Predict also exits not dominating
 	latch.
 
