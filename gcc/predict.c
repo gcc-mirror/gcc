@@ -1419,7 +1419,7 @@ predict_loops (void)
 
 	  predict_extra_loop_exits (ex);
 
-	  if (number_of_iterations_exit (loop, ex, &niter_desc, false))
+	  if (number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	    niter = niter_desc.niter;
 	  if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
 	    niter = loop_niter_by_eval (loop, ex);
