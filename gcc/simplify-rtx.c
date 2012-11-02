@@ -4546,7 +4546,9 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
       && GET_CODE (op0) == PLUS
       && CONST_INT_P (XEXP (op0, 1))
       && (rtx_equal_p (op1, XEXP (op0, 0))
-	  || rtx_equal_p (op1, XEXP (op0, 1))))
+	  || rtx_equal_p (op1, XEXP (op0, 1)))
+      /* (LTU/GEU (PLUS a 0) 0) is not the same as (GEU/LTU a 0). */
+      && XEXP (op0, 1) != const0_rtx)
     {
       rtx new_cmp
 	= simplify_gen_unary (NEG, cmp_mode, XEXP (op0, 1), cmp_mode);
