@@ -1,5 +1,10 @@
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (predict_loops): Predict also exits not dominating
+	latch.
+
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
 	* predict.c (predict_loops): Do not predict infinite loops.
 
 2012-11-02  Jan Hubicka  <jh@suse.cz>
