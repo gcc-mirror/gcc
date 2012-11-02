@@ -574,6 +574,44 @@ simplify_control_stmt_condition (edge e,
   return cached_lhs;
 }
 
+/* Return TRUE if the statement at the end of e->dest depends on
+   the output of any statement in BB.   Otherwise return FALSE.
+
+   This is used when we are threading a backedge and need to ensure
+   that temporary equivalences from BB do not affect the condition
+   in e->dest.  */
+
+static bool
+cond_arg_set_in_bb (edge e, basic_block bb)
+{
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  gimple last = last_stmt (e->dest);
+
+  /* E->dest does not have to end with a control transferring
+     instruction.  This can occurr when we try to extend a jump
+     threading opportunity deeper into the CFG.  In that case
+     it is safe for this check to return false.  */
+  if (!last)
+    return false;
+
+  if (gimple_code (last) != GIMPLE_COND
+      && gimple_code (last) != GIMPLE_GOTO
+      && gimple_code (last) != GIMPLE_SWITCH)
+    return false;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, last, iter, SSA_OP_USE | SSA_OP_VUSE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+
+      if (TREE_CODE (use) == SSA_NAME
+	  && gimple_code (SSA_NAME_DEF_STMT (use)) != GIMPLE_PHI
+	  && gimple_bb (SSA_NAME_DEF_STMT (use)) == bb)
+	return true;
+    }
+  return false;
+}
+
 /* TAKEN_EDGE represents the an edge taken as a result of jump threading.
    See if we can thread around TAKEN_EDGE->dest as well.  If so, return
    the edge out of TAKEN_EDGE->dest that we can statically compute will be
@@ -707,19 +745,8 @@ thread_across_edge (gimple dummy_cond,
      safe to thread this edge.  */
   if (e->flags & EDGE_DFS_BACK)
     {
-      ssa_op_iter iter;
-      use_operand_p use_p;
-      gimple last = gsi_stmt (gsi_last_bb (e->dest));
-
-      FOR_EACH_SSA_USE_OPERAND (use_p, last, iter, SSA_OP_USE | SSA_OP_VUSE)
-	{
-	  tree use = USE_FROM_PTR (use_p);
-
-          if (TREE_CODE (use) == SSA_NAME
-	      && gimple_code (SSA_NAME_DEF_STMT (use)) != GIMPLE_PHI
-	      && gimple_bb (SSA_NAME_DEF_STMT (use)) == e->dest)
-	    goto fail;
-	}
+      if (cond_arg_set_in_bb (e, e->dest))
+	goto fail;
     }
 
   stmt_count = 0;
@@ -760,7 +787,9 @@ thread_across_edge (gimple dummy_cond,
 	     address.  If DEST is not null, then see if we can thread
 	     through it as well, this helps capture secondary effects
 	     of threading without having to re-run DOM or VRP.  */
-	  if (dest)
+	  if (dest
+	      && ((e->flags & EDGE_DFS_BACK) == 0
+		  || ! cond_arg_set_in_bb (taken_edge, e->dest)))
 	    {
 	      /* We don't want to thread back to a block we have already
  		 visited.  This may be overly conservative.  */
@@ -818,11 +847,16 @@ thread_across_edge (gimple dummy_cond,
 	e3 = taken_edge;
 	do
 	  {
-	    e2 = thread_around_empty_block (e3,
-				            dummy_cond,
-				            handle_dominating_asserts,
-				            simplify,
-				            visited);
+	    if ((e->flags & EDGE_DFS_BACK) == 0
+		|| ! cond_arg_set_in_bb (e3, e->dest))
+	      e2 = thread_around_empty_block (e3,
+					      dummy_cond,
+					      handle_dominating_asserts,
+					      simplify,
+					      visited);
+	    else
+	      e2 = NULL;
+
 	    if (e2)
 	      {
 	        e3 = e2;

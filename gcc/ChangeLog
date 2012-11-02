@@ -1,3 +1,11 @@
+2012-11-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/54985
+	* tree-ssa-threadedge.c (cond_arg_set_in_bb): New function extracted
+	from thread_across_edge.
+	(thread_across_edge): Use it in all cases where we might thread
+	across a back edge.
+
 2012-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): Emit frame info for the
