@@ -1,4 +1,8 @@
 2012-11-01  Tobias Burnus  <burnus@net-b.de>
+
+	* math/fmaq.c (fmaq): Fix build.
+
+2012-11-01  Tobias Burnus  <burnus@net-b.de>
 	    Joseph Myers  <joseph@codesourcery.com>
 
 	* math/fmaq.c (fmaq): Merge from GLIBC. Handle cases

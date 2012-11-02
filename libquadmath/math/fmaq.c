@@ -77,7 +77,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	 result nor whether there is underflow depends on its exact
 	 value, only on its sign.  */
       if (u.ieee.exponent + v.ieee.exponent
-	  < IEEE854_FLT128_DOUBLE_BIAS - FLT128_MANT_DIG - 2)
+	  < IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG - 2)
 	{
 	  int neg = u.ieee.negative ^ v.ieee.negative;
 	  __float128 tiny = neg ? -0x1p-16494L : 0x1p-16494L;
@@ -94,10 +94,8 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	      : (w.ieee.exponent == 0
 		 || (w.ieee.exponent == 1
 		     && w.ieee.negative != neg
-		     && w.ieee.mantissa3 == 0
-		     && w.ieee.mantissa2 == 0
-		     && w.ieee.mantissa1 == 0
-		     && w.ieee.mantissa0 == 0)))
+		     && w.ieee.mant_low == 0
+		     && w.ieee.mant_high == 0)))
 	    {
 	      volatile __float128 force_underflow = x * y;
 	      (void) force_underflow;
