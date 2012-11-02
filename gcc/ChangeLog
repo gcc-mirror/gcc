@@ -1,3 +1,11 @@
+2012-11-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55130
+	* lra-constraints.c (debug_loc_equivalence_change_p): Rename to
+	loc_equivalence_change_p.
+	(lra_constraints): Check equiv_insn_bitmap for debug insn.  Call
+	loc_equivalence_change_p for non-transformed insn.
+
 2012-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfg-flags.def (ABNORMAL_CALL): Fix comment.
