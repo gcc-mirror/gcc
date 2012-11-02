@@ -1403,6 +1403,11 @@ predict_loops (void)
 
       exits = get_loop_exit_edges (loop);
       n_exits = VEC_length (edge, exits);
+      if (!n_exits)
+	{
+          VEC_free (edge, heap, exits);
+	  continue;
+	}
 
       FOR_EACH_VEC_ELT (edge, exits, j, ex)
 	{

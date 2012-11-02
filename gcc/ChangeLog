@@ -1,5 +1,9 @@
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (predict_loops): Do not predict infinite loops.
+
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/55079
 	* tree-ssa-loop-niter.c (number_of_iterations_exit): Update
 	MAX field if NITER was folded to contant.
