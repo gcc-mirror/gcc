@@ -1880,6 +1880,10 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 
   fold_undefer_and_ignore_overflow_warnings ();
 
+  /* If NITER has simplified into a constant, update MAX.  */
+  if (TREE_CODE (niter->niter) == INTEGER_CST)
+    niter->max = tree_to_double_int (niter->niter);
+
   if (integer_onep (niter->assumptions))
     return true;
 
@@ -2556,6 +2560,8 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
      real number of iterations.  */
   if (TREE_CODE (bound) != INTEGER_CST)
     realistic = false;
+  else
+    gcc_checking_assert (i_bound == tree_to_double_int (bound));
   if (!upper && !realistic)
     return;
 

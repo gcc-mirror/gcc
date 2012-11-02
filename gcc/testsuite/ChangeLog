@@ -1,3 +1,8 @@
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/cunroll-10.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-9.c: New testcase.
+
 2012-11-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55130

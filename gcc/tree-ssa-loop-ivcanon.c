@@ -389,33 +389,192 @@ loop_edge_to_cancel (struct loop *loop)
   return NULL;
 }
 
-/* Tries to unroll LOOP completely, i.e. NITER times.
-   UL determines which loops we are allowed to unroll.
-   EXIT is the exit of the loop that should be eliminated.  
+/* Remove all tests for exits that are known to be taken after LOOP was
+   peeled NPEELED times. Put gcc_unreachable before every statement
+   known to not be executed.  */
+
+static bool
+remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
+{
+  struct nb_iter_bound *elt;
+  bool changed = false;
+
+  for (elt = loop->bounds; elt; elt = elt->next)
+    {
+      /* If statement is known to be undefined after peeling, turn it
+	 into unreachable (or trap when debugging experience is supposed
+	 to be good).  */
+      if (!elt->is_exit
+	  && elt->bound.ult (double_int::from_uhwi (npeeled)))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
+	  gimple stmt = gimple_build_call
+	      (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
+
+	  gimple_set_location (stmt, gimple_location (elt->stmt));
+	  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+	  changed = true;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Forced statement unreachable: ");
+	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	    }
+	}
+      /* If we know the exit will be taken after peeling, update.  */
+      else if (elt->is_exit
+	       && elt->bound.ule (double_int::from_uhwi (npeeled)))
+	{
+	  basic_block bb = gimple_bb (elt->stmt);
+	  edge exit_edge = EDGE_SUCC (bb, 0);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Forced exit to be taken: ");
+	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	    }
+	  if (!loop_exit_edge_p (loop, exit_edge))
+	    exit_edge = EDGE_SUCC (bb, 1);
+	  gcc_checking_assert (loop_exit_edge_p (loop, exit_edge));
+	  if (exit_edge->flags & EDGE_TRUE_VALUE)
+	    gimple_cond_make_true (elt->stmt);
+	  else
+	    gimple_cond_make_false (elt->stmt);
+	  update_stmt (elt->stmt);
+	  changed = true;
+	}
+    }
+  return changed;
+}
+
+/* Remove all exits that are known to be never taken because of the loop bound
+   discovered.  */
+
+static bool
+remove_redundant_iv_tests (struct loop *loop)
+{
+  struct nb_iter_bound *elt;
+  bool changed = false;
+
+  if (!loop->any_upper_bound)
+    return false;
+  for (elt = loop->bounds; elt; elt = elt->next)
+    {
+      /* Exit is pointless if it won't be taken before loop reaches
+	 upper bound.  */
+      if (elt->is_exit && loop->any_upper_bound
+          && loop->nb_iterations_upper_bound.ult (elt->bound))
+	{
+	  basic_block bb = gimple_bb (elt->stmt);
+	  edge exit_edge = EDGE_SUCC (bb, 0);
+	  struct tree_niter_desc niter;
+
+	  if (!loop_exit_edge_p (loop, exit_edge))
+	    exit_edge = EDGE_SUCC (bb, 1);
+
+	  /* Only when we know the actual number of iterations, not
+	     just a bound, we can remove the exit.  */
+	  if (!number_of_iterations_exit (loop, exit_edge,
+					  &niter, false, false))
+	    gcc_unreachable ();
+	  if (!integer_onep (niter.assumptions)
+	      || !integer_zerop (niter.may_be_zero)
+	      || !niter.niter
+	      || TREE_CODE (niter.niter) != INTEGER_CST
+	      || !loop->nb_iterations_upper_bound.ult
+		   (tree_to_double_int (niter.niter)))
+	    continue;
+	  
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Removed pointless exit: ");
+	      print_gimple_stmt (dump_file, elt->stmt, 0, 0);
+	    }
+	  if (exit_edge->flags & EDGE_TRUE_VALUE)
+	    gimple_cond_make_false (elt->stmt);
+	  else
+	    gimple_cond_make_true (elt->stmt);
+	  update_stmt (elt->stmt);
+	  changed = true;
+	}
+    }
+  return changed;
+}
+
+/* Stores loops that will be unlooped after we process whole loop tree. */
+static VEC(loop_p, heap) *loops_to_unloop;
+static VEC(int, heap) *loops_to_unloop_nunroll;
+
+/* Cancel all fully unrolled loops by putting __builtin_unreachable
+   on the latch edge.  
+   We do it after all unrolling since unlooping moves basic blocks
+   across loop boundaries trashing loop closed SSA form as well
+   as SCEV info needed to be intact during unrolling. 
+
    IRRED_INVALIDATED is used to bookkeep if information about
    irreducible regions may become invalid as a result
    of the transformation.  
    LOOP_CLOSED_SSA_INVALIDATED is used to bookkepp the case
    when we need to go into loop closed SSA form.  */
 
+void
+unloop_loops (bitmap loop_closed_ssa_invalidated,
+	      bool *irred_invalidated)
+{
+  while (VEC_length (loop_p, loops_to_unloop))
+    {
+      struct loop *loop = VEC_pop (loop_p, loops_to_unloop);
+      int n_unroll = VEC_pop (int, loops_to_unloop_nunroll);
+      basic_block latch = loop->latch;
+      edge latch_edge = loop_latch_edge (loop);
+      int flags = latch_edge->flags;
+      location_t locus = latch_edge->goto_locus;
+      gimple stmt;
+      gimple_stmt_iterator gsi;
+
+      remove_exits_and_undefined_stmts (loop, n_unroll);
+
+      /* Unloop destroys the latch edge.  */
+      unloop (loop, irred_invalidated, loop_closed_ssa_invalidated);
+
+      /* Create new basic block for the latch edge destination and wire
+	 it in.  */
+      stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
+      latch_edge = make_edge (latch, create_basic_block (NULL, NULL, latch), flags);
+      latch_edge->probability = 0;
+      latch_edge->count = 0;
+      latch_edge->flags |= flags;
+      latch_edge->goto_locus = locus;
+
+      latch_edge->dest->loop_father = current_loops->tree_root;
+      latch_edge->dest->count = 0;
+      latch_edge->dest->frequency = 0;
+      set_immediate_dominator (CDI_DOMINATORS, latch_edge->dest, latch_edge->src);
+
+      gsi = gsi_start_bb (latch_edge->dest);
+      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+    }
+  VEC_free (loop_p, heap, loops_to_unloop);
+  loops_to_unloop = NULL;
+  VEC_free (int, heap, loops_to_unloop_nunroll);
+  loops_to_unloop_nunroll = NULL;
+}
+
+/* Tries to unroll LOOP completely, i.e. NITER times.
+   UL determines which loops we are allowed to unroll.
+   EXIT is the exit of the loop that should be eliminated.  
+   MAXITER specfy bound on number of iterations, -1 if it is
+   not known or too large for HOST_WIDE_INT.  */
+
 static bool
 try_unroll_loop_completely (struct loop *loop,
 			    edge exit, tree niter,
 			    enum unroll_level ul,
-			    bool *irred_invalidated,
-			    bitmap loop_closed_ssa_invalidated)
+			    HOST_WIDE_INT maxiter)
 {
   unsigned HOST_WIDE_INT n_unroll, ninsns, max_unroll, unr_insns;
   gimple cond;
   struct loop_size size;
   bool n_unroll_found = false;
-  HOST_WIDE_INT maxiter;
-  basic_block latch;
-  edge latch_edge;
-  location_t locus;
-  int flags;
-  gimple stmt;
-  gimple_stmt_iterator gsi;
   edge edge_to_cancel = NULL;
   int num = loop->num;
 
@@ -445,7 +604,6 @@ try_unroll_loop_completely (struct loop *loop,
     exit = NULL;
 
   /* See if we can improve our estimate by using recorded loop bounds.  */
-  maxiter = max_loop_iterations_int (loop);
   if (maxiter >= 0
       && (!n_unroll_found || (unsigned HOST_WIDE_INT)maxiter < n_unroll))
     {
@@ -545,6 +703,7 @@ try_unroll_loop_completely (struct loop *loop,
       free_original_copy_tables ();
     }
 
+
   /* Remove the conditional from the last copy of the loop.  */
   if (edge_to_cancel)
     {
@@ -557,37 +716,10 @@ try_unroll_loop_completely (struct loop *loop,
       /* Do not remove the path. Doing so may remove outer loop
 	 and confuse bookkeeping code in tree_unroll_loops_completelly.  */
     }
-  /* We did not manage to cancel the loop.
-     The loop latch remains reachable even if it will never be reached
-     at runtime.  We must redirect it to somewhere, so create basic
-     block containg __builtin_unreachable call for this reason.  */
-  else
-    {
-      latch = loop->latch;
-      latch_edge = loop_latch_edge (loop);
-      flags = latch_edge->flags;
-      locus = latch_edge->goto_locus;
 
-      /* Unloop destroys the latch edge.  */
-      unloop (loop, irred_invalidated, loop_closed_ssa_invalidated);
-
-      /* Create new basic block for the latch edge destination and wire
-	 it in.  */
-      stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
-      latch_edge = make_edge (latch, create_basic_block (NULL, NULL, latch), flags);
-      latch_edge->probability = 0;
-      latch_edge->count = 0;
-      latch_edge->flags |= flags;
-      latch_edge->goto_locus = locus;
-
-      latch_edge->dest->loop_father = current_loops->tree_root;
-      latch_edge->dest->count = 0;
-      latch_edge->dest->frequency = 0;
-      set_immediate_dominator (CDI_DOMINATORS, latch_edge->dest, latch_edge->src);
-
-      gsi = gsi_start_bb (latch_edge->dest);
-      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-    }
+  /* Store the loop for later unlooping and exit removal.  */
+  VEC_safe_push (loop_p, heap, loops_to_unloop, loop);
+  VEC_safe_push (int, heap, loops_to_unloop_nunroll, n_unroll);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -614,19 +746,17 @@ try_unroll_loop_completely (struct loop *loop,
    CREATE_IV is true if we may create a new iv.  UL determines
    which loops we are allowed to completely unroll.  If TRY_EVAL is true, we try
    to determine the number of iterations of a loop by direct evaluation.
-   Returns true if cfg is changed.  
-
-   IRRED_INVALIDATED is used to keep if irreducible reginos needs to be recomputed.  */
+   Returns true if cfg is changed.   */
 
 static bool
 canonicalize_loop_induction_variables (struct loop *loop,
 				       bool create_iv, enum unroll_level ul,
-				       bool try_eval,
-				       bool *irred_invalidated,
-				       bitmap loop_closed_ssa_invalidated)
+				       bool try_eval)
 {
   edge exit = NULL;
   tree niter;
+  HOST_WIDE_INT maxiter;
+  bool modified = false;
 
   niter = number_of_latch_executions (loop);
   if (TREE_CODE (niter) == INTEGER_CST)
@@ -657,6 +787,9 @@ canonicalize_loop_induction_variables (struct loop *loop,
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     record_niter_bound (loop, tree_to_double_int (niter), false, true);
 
+  /* Force re-computation of loop bounds so we can remove redundant exits.  */
+  maxiter = max_loop_iterations_int (loop);
+
   if (dump_file && (dump_flags & TDF_DETAILS)
       && TREE_CODE (niter) == INTEGER_CST)
     {
@@ -665,21 +798,25 @@ canonicalize_loop_induction_variables (struct loop *loop,
       fprintf (dump_file, " times.\n");
     }
   if (dump_file && (dump_flags & TDF_DETAILS)
-      && max_loop_iterations_int (loop) >= 0)
+      && maxiter >= 0)
     {
       fprintf (dump_file, "Loop %d iterates at most %i times.\n", loop->num,
-	       (int)max_loop_iterations_int (loop));
+	       (int)maxiter);
     }
 
-  if (try_unroll_loop_completely (loop, exit, niter, ul, irred_invalidated,
-				  loop_closed_ssa_invalidated))
+  /* Remove exits that are known to be never taken based on loop bound.
+     Needs to be called after compilation of max_loop_iterations_int that
+     populates the loop bounds.  */
+  modified |= remove_redundant_iv_tests (loop);
+
+  if (try_unroll_loop_completely (loop, exit, niter, ul, maxiter))
     return true;
 
   if (create_iv
       && niter && !chrec_contains_undetermined (niter))
     create_canonical_iv (loop, exit, niter);
 
-  return false;
+  return modified;
 }
 
 /* The main entry point of the pass.  Adds canonical induction variables
@@ -694,16 +831,18 @@ canonicalize_induction_variables (void)
   bool irred_invalidated = false;
   bitmap loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-  FOR_EACH_LOOP (li, loop, 0)
+  free_numbers_of_iterations_estimates ();
+  estimate_numbers_of_iterations ();
+
+  FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       changed |= canonicalize_loop_induction_variables (loop,
 							true, UL_SINGLE_ITER,
-							true,
-							&irred_invalidated,
-							loop_closed_ssa_invalidated);
+							true);
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
+  unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
   if (irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     mark_irreducible_loops ();
@@ -822,7 +961,10 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
       if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
 	loop_closed_ssa_invalidated = BITMAP_ALLOC (NULL);
 
-      FOR_EACH_LOOP (li, loop, 0)
+      free_numbers_of_iterations_estimates ();
+      estimate_numbers_of_iterations ();
+
+      FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
 	{
 	  struct loop *loop_father = loop_outer (loop);
 
@@ -835,8 +977,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	    ul = UL_NO_GROWTH;
 
 	  if (canonicalize_loop_induction_variables
-		 (loop, false, ul, !flag_tree_loop_ivcanon,
-		  &irred_invalidated, loop_closed_ssa_invalidated))
+		 (loop, false, ul, !flag_tree_loop_ivcanon))
 	    {
 	      changed = true;
 	      /* If we'll continue unrolling, we need to propagate constants
@@ -856,8 +997,16 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  struct loop **iter;
 	  unsigned i;
 
-	  /* We can not use TODO_update_ssa_no_phi because VOPS gets confused.  */
+	  /* Be sure to skip unlooped loops while procesing father_stack
+	     array.  */
+	  FOR_EACH_VEC_ELT (loop_p, loops_to_unloop, i, iter)
+	    (*iter)->aux = NULL;
+	  FOR_EACH_VEC_ELT (loop_p, father_stack, i, iter)
+	    if (!(*iter)->aux)
+	      *iter = NULL;
+          unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
 
+	  /* We can not use TODO_update_ssa_no_phi because VOPS gets confused.  */
 	  if (loop_closed_ssa_invalidated
 	      && !bitmap_empty_p (loop_closed_ssa_invalidated))
             rewrite_into_loop_closed_ssa (loop_closed_ssa_invalidated,
@@ -867,14 +1016,15 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
 	  /* Propagate the constants within the new basic blocks.  */
 	  FOR_EACH_VEC_ELT (loop_p, father_stack, i, iter)
-	    {
-	      unsigned j;
-	      basic_block *body = get_loop_body_in_dom_order (*iter);
-	      for (j = 0; j < (*iter)->num_nodes; j++)
-		propagate_constants_for_unrolling (body[j]);
-	      free (body);
-	      (*iter)->aux = NULL;
-	    }
+	    if (*iter)
+	      {
+		unsigned j;
+		basic_block *body = get_loop_body_in_dom_order (*iter);
+		for (j = 0; j < (*iter)->num_nodes; j++)
+		  propagate_constants_for_unrolling (body[j]);
+		free (body);
+		(*iter)->aux = NULL;
+	      }
 	  VEC_truncate (loop_p, father_stack, 0);
 
 	  /* This will take care of removing completely unrolled loops
