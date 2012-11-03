@@ -1,5 +1,14 @@
 2012-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.c (output_movedouble, output_far_jump,
+	output_ieee_ccmpeq): Use multi-line strings for asm.
+	(find_regmode_weight): Wrap lines.
+	(sh_optimize_target_register_callee_saved): Remove commented out
+	variable.
+	(emit_load_ptr): Remove prototype.
+
+2012-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/51244
 	* config/sh/sh.md (*cbranch_t): Allow splitting after reload.
 	Allow going beyond current basic block before reload when looking for
