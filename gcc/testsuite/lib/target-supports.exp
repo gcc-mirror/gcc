@@ -4608,6 +4608,14 @@ proc check_effective_target_lto { } {
     return [info exists ENABLE_LTO]
 }
 
+# Return 1 if -mx32 -maddress-mode=short can compile, 0 otherwise.
+
+proc check_effective_target_maybe_x32 { } {
+    return [check_no_compiler_messages maybe_x32 object {
+        void foo (void) {}
+    } "-mx32 -maddress-mode=short"]
+}
+
 # Return 1 if this target supports the -fsplit-stack option, 0
 # otherwise.
 
