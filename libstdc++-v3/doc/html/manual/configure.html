@@ -17,7 +17,7 @@
    for released versions.
 </p><p>The canonical way to find out the configure options that are
    available for a given set of libstdc++ sources is to go to the
-   source directory and then type:<span class="command"><strong>./configure --help</strong></span>.
+   source directory and then type: <span class="command"><strong>./configure --help</strong></span>.
 </p><div class="variablelist"><dl><dt><span class="term"><code class="code">--enable-multilib</code>[default]</span></dt><dd><p>This is part of the generic multilib support for building cross
 	compilers.  As such, targets like "powerpc-elf" will have
 	libstdc++ built many different ways:  "-msoft-float"
@@ -53,14 +53,19 @@
 	choices are 'ieee_1003.1-2001' to specify an X/Open, Standard Unix
 	(IEEE Std. 1003.1-2001) model based on langinfo/iconv/catgets,
 	'gnu' to specify a model based on functionality from the GNU C
-	library (langinfo/iconv/gettext) (from <a class="link" href="http://sources.redhat.com/glibc/" target="_top">glibc</a>, the GNU C
-	library), or 'generic' to use a generic "C"
-	abstraction which consists of "C" locale info.
-     </p><p>If not explicitly specified, the configure proccess tries
+	library (langinfo/iconv/gettext) (from <a class="link" href="https://www.gnu.org/software/libc/" target="_top">glibc</a>, the GNU C
+	library), 'generic' to use a generic "C" abstraction which consists
+	of "C" locale info, 'newlib' to specify the Newlib C library model
+	which only differs from the 'generic' model in the handling of
+	ctype, or 'darwin' which omits the <span class="type">wchar_t</span> specializations
+	needed by the 'generic' model.
+     </p><p>If not explicitly specified, the configure process tries
       to guess the most suitable package from the choices above. The
       default is 'generic'. On glibc-based systems of sufficient
-      vintage (2.3 and newer), 'gnu' is automatically selected. This option
-      can change the library ABI.
+      vintage (2.3 and newer), 'gnu' is automatically selected. On newlib-based
+      systems (<code class="code">'--with_newlib=yes'</code>) and OpenBSD, 'newlib' is
+      automatically selected. On Mac OS X 'darwin' is automatically selected.
+      This option can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-allocator</code></span></dt><dd><p>This is an abbreviated form of
 	<code class="code">'--enable-libstdcxx-allocator=auto'</code> (described
 	next).
@@ -94,9 +99,9 @@
 	and of the nanosleep and sched_yield functions, used in the
 	implementation of [thread.thread.this] of the 2011 ISO C++ standard.
 	The choice OPTION=yes checks for the availability of the facilities
-	in libc and libposix4.  In case of need the latter is also linked
+	in libc and libposix4.  In case it's needed the latter is also linked
 	to libstdc++ as part of the build process.  OPTION=rt also searches
-	(and, in case, links) librt.   Note that the latter is not always
+	(and, if needed, links) librt.   Note that the latter is not always
 	desirable because, in glibc, for example, in turn it triggers the
 	linking of libpthread too, which activates locking, a large overhead
 	for single-thread programs.  OPTION=no skips the tests completely.
@@ -137,7 +142,7 @@
   -ffunction-sections
   -fvtable-gc</pre><p>and opposite forms (-fno-) of the same.  Tell us (the libstdc++
 	mailing list) if you discover more!
-     </p></dd><dt><span class="term"><code class="code">--enable-c99</code></span></dt><dd><p>The "long long" type was introduced in C99, along
+     </p></dd><dt><span class="term"><code class="code">--enable-c99</code></span></dt><dd><p>The <span class="type">long long</span> type was introduced in C99, along
 	with many other functions for wide characters, and math
 	classification macros, etc.  If enabled, all C99 functions not
 	specified by the C++ standard will be put into <code class="code">namespace
@@ -148,13 +153,13 @@
 	without a doubt).  By default, C99 support is on, assuming the
 	configure probes find all the necessary functions and bits
 	necessary. This option can change the library ABI.
-    </p></dd><dt><span class="term"><code class="code">--enable-wchar_t</code>[default]</span></dt><dd><p>Template specializations for the "wchar_t" type are
+    </p></dd><dt><span class="term"><code class="code">--enable-wchar_t</code>[default]</span></dt><dd><p>Template specializations for the <span class="type">wchar_t</span> type are
 	required for wide character conversion support.  Disabling
 	wide character specializations may be expedient for initial
 	porting efforts, but builds only a subset of what is required by
 	ISO, and is not recommended.  By default, this option is on.
 	This option can change the library ABI.
-     </p></dd><dt><span class="term"><code class="code">--enable-long-long  </code></span></dt><dd><p>The "long long" type was introduced in C99.  It is
+     </p></dd><dt><span class="term"><code class="code">--enable-long-long  </code></span></dt><dd><p>The <span class="type">long long</span> type was introduced in C99.  It is
 	provided as a GNU extension to C++98 in g++.  This flag builds
 	support for "long long" into the library (specialized
 	templates and the like for iostreams).  This option is on by default:
@@ -204,7 +209,7 @@
      </p></dd><dt><span class="term"><code class="code">--enable-extern-template</code>[default]</span></dt><dd><p>Use extern template to pre-instantiate all required
  	specializations for certain types defined in the standard libraries. 
 	These types include <code class="classname">string</code> and dependents like
-	<code class="classname">char_traits</code>, the templateized io classes,
+	<code class="classname">char_traits</code>, the templatized IO classes,
 	<code class="classname">allocator</code>, and others.  
 	Disabling means that implicit
 	template generation will be used when compiling these types.  By
