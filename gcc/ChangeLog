@@ -1,3 +1,11 @@
+2012-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (*cbranch_t): Allow splitting after reload.
+	Allow going beyond current basic block before reload when looking for
+	the reg set insn.
+	* config/sh/sh.c (sh_find_set_of_reg): Don't stop at labels.
+
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk): Add
