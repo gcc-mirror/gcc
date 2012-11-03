@@ -1,3 +1,8 @@
+2012-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/octeon-exts-7.c (bar): Make sure the extraction of
+	b requires a 64-bit operation followed by a truncation.
+
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-38.c: Correct testcase.
