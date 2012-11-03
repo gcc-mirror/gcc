@@ -1,3 +1,8 @@
+2012-11-03  Andrew Pinski  <apinski@cavium.com>
+
+	 * gcc.target/mips/octeon-bbit-3.c: Change the second call to abort to
+	call abort1 so that cross jumping does not happen.
+
 2012-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
