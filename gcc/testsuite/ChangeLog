@@ -1,3 +1,11 @@
+2012-11-03  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/54255
+	* lib/target-supports.exp (check_effective_target_masm_intel): New
+	proc.
+	* gcc.target/i386/asm-dialect-1.c: Use dg-require-effective-target
+	masm_intel.
+
 2012-11-03  H.J. Lu  <hjl.tools@gmail.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 

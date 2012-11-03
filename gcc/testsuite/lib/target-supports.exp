@@ -4625,6 +4625,15 @@ proc check_effective_target_split_stack {} {
     } "-fsplit-stack"]
 }
 
+# Return 1 if this target supports the -masm=intel option, 0
+# otherwise
+
+proc check_effective_target_masm_intel  {} {
+    return [check_no_compiler_messages masm_intel object {
+	extern void abort (void);
+    } "-masm=intel"]
+}
+
 # Return 1 if the language for the compiler under test is C.
 
 proc check_effective_target_c { } {
