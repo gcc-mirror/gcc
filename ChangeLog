@@ -1,3 +1,7 @@
+2012-11-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2012-11-03  Robert Mason  <rbmj@verizon.net>
 
 	* configure.ac: add --disable-libstdcxx configure option

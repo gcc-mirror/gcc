@@ -749,6 +749,7 @@ enable_libquadmath
 enable_libquadmath_support
 enable_libada
 enable_libssp
+enable_libstdcxx
 enable_static_libjava
 enable_bootstrap
 with_mpc
@@ -1464,6 +1465,7 @@ Optional Features:
                           disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
+  --disable-libstdcxx     do not build libstdc++-v3 directory
   --enable-static-libjava[=ARG]
                           build static libjava [default=no]
   --enable-bootstrap      enable bootstrapping [yes if native build]
@@ -3073,6 +3075,17 @@ else
 fi
 
 
+# Check whether --enable-libstdcxx was given.
+if test "${enable_libstdcxx+set}" = set; then :
+  enableval=$enable_libstdcxx; ENABLE_LIBSTDCXX=$enableval
+else
+  ENABLE_LIBSTDCXX=default
+fi
+
+if test "${ENABLE_LIBSTDCXX}" = "no" ; then
+  noconfigdirs="$noconfigdirs libstdc++-v3"
+fi
+
 # Save it here so that, even in case of --enable-libgcj, if the Java
 # front-end isn't enabled, we still get libgcj disabled.
 libgcj_saved=$libgcj
@@ -3216,19 +3229,22 @@ case "${target}" in
 esac
 
 # Disable libstdc++-v3 for some systems.
-case "${target}" in
-  *-*-vxworks*)
-    # VxWorks uses the Dinkumware C++ library.
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
-  arm*-wince-pe*)
-    # the C++ libraries don't build on top of CE's C libraries
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
-  avr-*-*)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
-esac
+# Allow user to override this if they pass --enable-libstdc++-v3
+if test "${ENABLE_LIBSTDCXX}" = "default" ; then
+  case "${target}" in
+    *-*-vxworks*)
+      # VxWorks uses the Dinkumware C++ library.
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+    arm*-wince-pe*)
+      # the C++ libraries don't build on top of CE's C libraries
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+    avr-*-*)
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+  esac
+fi
 
 # Disable Fortran for some systems.
 case "${target}" in
