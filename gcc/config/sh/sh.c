@@ -13486,7 +13486,7 @@ sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx))
   for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
        result.insn = stepfunc (result.insn))
     {
-      if (LABEL_P (result.insn) || BARRIER_P (result.insn))
+      if (BARRIER_P (result.insn))
 	return result;
       if (!NONJUMP_INSN_P (result.insn))
 	continue;

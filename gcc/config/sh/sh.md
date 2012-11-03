@@ -8167,13 +8167,15 @@ label:
 {
   return output_branch (sh_eval_treg_value (operands[1]), insn, operands);
 }
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(set (pc) (if_then_else (eq (reg:SI T_REG) (match_dup 2))
 			   (label_ref (match_dup 0))
 			   (pc)))]
 {
   /* Try to find missed test and branch combine opportunities which result
      in redundant T bit tests before conditional branches.
+     This is done not only after combine (and before reload) but in every
+     split pass, because some opportunities are formed also after combine.
      FIXME: Probably this would not be needed if CCmode was used
      together with TARGET_FIXED_CONDITION_CODE_REGS.  */
 
@@ -8212,8 +8214,11 @@ label:
 
   while (true)
     {
+      /* It's not safe to go beyond the current basic block after reload.  */
       set_of_reg s1 = sh_find_set_of_reg (tested_reg, s0.insn,
-					  prev_nonnote_insn_bb);
+					  reload_completed
+					  ? prev_nonnote_insn_bb
+					  : prev_nonnote_insn);
       if (s1.set_src == NULL_RTX)
 	break;
 
