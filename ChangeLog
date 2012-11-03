@@ -1,3 +1,9 @@
+2012-11-03  Corinna Vinschen  <corinna@vinschen.de>
+
+	* configure.ac (FLAGS_FOR_TARGET,target=cygwin): Fix for building
+	against Mingw64 w32api.
+	* configure: Regenerate.
+
 2012-11-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
