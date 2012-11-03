@@ -1,3 +1,8 @@
+2012-11-03  Robert Mason  <rbmj@verizon.net>
+
+	* configure.ac: add --disable-libstdcxx configure option
+	and handle defaulted state only for VxWorks, ARM-wince-pe and AVR.
+
 2012-10-30 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
