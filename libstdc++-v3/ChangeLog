@@ -1,3 +1,8 @@
+2012-11-03  Robert Mason  <rbmj@verizon.net>
+
+	* config/os/vxworks/os_defines.h:
+	Keep vxWorks from defining min()/max() as macros
+
 2012-11-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/html/*: Regenerate.

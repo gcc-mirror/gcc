@@ -33,4 +33,10 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+//Keep vxWorks from defining min()/max() as macros
+#ifdef NOMINMAX
+#undef NOMINMAX
+#endif
+#define NOMINMAX 1
+
 #endif

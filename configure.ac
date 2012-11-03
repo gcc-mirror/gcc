@@ -427,6 +427,15 @@ AC_ARG_ENABLE(libssp,
 ENABLE_LIBSSP=$enableval,
 ENABLE_LIBSSP=yes)
 
+AC_ARG_ENABLE(libstdcxx,
+AS_HELP_STRING([--disable-libstdcxx],
+  [do not build libstdc++-v3 directory]),
+ENABLE_LIBSTDCXX=$enableval,
+ENABLE_LIBSTDCXX=default)
+[if test "${ENABLE_LIBSTDCXX}" = "no" ; then
+  noconfigdirs="$noconfigdirs libstdc++-v3"
+fi]
+
 # Save it here so that, even in case of --enable-libgcj, if the Java
 # front-end isn't enabled, we still get libgcj disabled.
 libgcj_saved=$libgcj
@@ -562,19 +571,22 @@ case "${target}" in
 esac
 
 # Disable libstdc++-v3 for some systems.
-case "${target}" in
-  *-*-vxworks*)
-    # VxWorks uses the Dinkumware C++ library.
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
-  arm*-wince-pe*)
-    # the C++ libraries don't build on top of CE's C libraries
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
-  avr-*-*)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3"
-    ;;
-esac
+# Allow user to override this if they pass --enable-libstdc++-v3
+if test "${ENABLE_LIBSTDCXX}" = "default" ; then
+  case "${target}" in
+    *-*-vxworks*)
+      # VxWorks uses the Dinkumware C++ library.
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+    arm*-wince-pe*)
+      # the C++ libraries don't build on top of CE's C libraries
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+    avr-*-*)
+      noconfigdirs="$noconfigdirs target-libstdc++-v3"
+      ;;
+  esac
+fi
 
 # Disable Fortran for some systems.
 case "${target}" in

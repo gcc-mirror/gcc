@@ -92,7 +92,8 @@ gcov_open (const char *name, int mode)
     {
       /* Read-only mode - acquire a read-lock.  */
       s_flock.l_type = F_RDLCK;
-      fd = open (name, O_RDONLY);
+      /* pass mode (ignored) for compatibility */
+      fd = open (name, O_RDONLY, S_IRUSR | S_IWUSR);
     }
   else
     {
