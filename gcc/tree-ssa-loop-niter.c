@@ -3161,7 +3161,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
     }
 
   gcc_assert (latch_index >= 0);
-  if (latch_index < VEC_length (double_int, bounds))
+  if ((unsigned)latch_index < VEC_length (double_int, bounds))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
