@@ -1,3 +1,8 @@
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk): Add
+	missing sign to unsigned.
+
 2012-11-02  Andrew Pinski  <apinski@cavium.com>
 
 	PR rtl-opt/54524
