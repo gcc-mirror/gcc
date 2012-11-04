@@ -30,8 +30,10 @@ along with GCC; see the file COPYING3.  If not see
    They were set up by the preceding pass (lifetime analysis).
 
    We try to combine each pair of insns joined by a logical link.
-   We also try to combine triples of insns A, B and C when
-   C has a link back to B and B has a link back to A.
+   We also try to combine triplets of insns A, B and C when C has
+   a link back to B and B has a link back to A.  Likewise for a
+   small number of quadruplets of insns A, B, C and D for which
+   there's high likelihood of of success.
 
    LOG_LINKS does not have links for use of the CC0.  They don't
    need to, because the insn that sets the CC0 is always immediately
@@ -6958,14 +6960,13 @@ expand_field_assignment (const_rtx x)
 }
 
 /* Return an RTX for a reference to LEN bits of INNER.  If POS_RTX is nonzero,
-   it is an RTX that represents a variable starting position; otherwise,
-   POS is the (constant) starting bit position (counted from the LSB).
+   it is an RTX that represents the (variable) starting position; otherwise,
+   POS is the (constant) starting bit position.  Both are counted from the LSB.
 
-   UNSIGNEDP is nonzero for an unsigned reference and zero for a
-   signed reference.
+   UNSIGNEDP is nonzero for an unsigned reference and zero for a signed one.
 
-   IN_DEST is nonzero if this is a reference in the destination of a
-   SET.  This is used when a ZERO_ or SIGN_EXTRACT isn't needed.  If nonzero,
+   IN_DEST is nonzero if this is a reference in the destination of a SET.
+   This is used when a ZERO_ or SIGN_EXTRACT isn't needed.  If nonzero,
    a STRICT_LOW_PART will be used, if zero, ZERO_EXTEND or SIGN_EXTEND will
    be used.
 
@@ -6996,6 +6997,9 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   rtx orig_pos_rtx = pos_rtx;
   HOST_WIDE_INT orig_pos;
 
+  if (pos_rtx && CONST_INT_P (pos_rtx))
+    pos = INTVAL (pos_rtx), pos_rtx = 0;
+
   if (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
     {
       /* If going from (subreg:SI (mem:QI ...)) to (mem:QI ...),
@@ -7024,9 +7028,6 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
     }
 
   inner_mode = GET_MODE (inner);
-
-  if (pos_rtx && CONST_INT_P (pos_rtx))
-    pos = INTVAL (pos_rtx), pos_rtx = 0;
 
   /* See if this can be done without an extraction.  We never can if the
      width of the field is not the same as that of some integer mode. For
