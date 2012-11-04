@@ -33,7 +33,8 @@
 
 	PR rtl-opt/54524
 	* simplify-rtx.c (simplify_relational_operation_1): Don't simplify
-	(LTU/GEU (PLUS a 0) 0) into (GEU/LTU a 0) since they are not equivalent.
+	(LTU/GEU (PLUS a 0) 0) into (GEU/LTU a 0) since they are not
+	equivalent.
 
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
@@ -43,8 +44,7 @@
 
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
-	* predict.c (predict_loops): Predict also exits not dominating
-	latch.
+	* predict.c (predict_loops): Predict also exits not dominating latch.
 
 2012-11-02  Jan Hubicka  <jh@suse.cz>
 
@@ -108,8 +108,7 @@
 
 2012-11-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/standards.texi (Standards): Adjust reference to Go
-	specification.
+	* doc/standards.texi (Standards): Adjust reference to Go specification.
 
 2012-11-01  Lawrence Crowl  <crowl@google.com>
 
@@ -239,8 +238,7 @@
 	* optabs.c (emit_cmp_and_jump_insn_1): Add REG_BR_PROB note
 	only if it doesn't already exist.
 	* stmt.c (get_outgoing_edge_probs): Return 0 if BB is NULL.
-	(emit_case_dispatch_table): Handle the case where STMT_BB is
-	NULL.
+	(emit_case_dispatch_table): Handle the case where STMT_BB is NULL.
 	(expand_sjlj_dispatch_table): Pass BB containing before_case
 	to emit_case_dispatch_table.
 
@@ -278,9 +276,8 @@
 	* cfganal.c (dfs_find_deadend): No longer static.  Use bitmap
 	instead of sbitmap for visited.
 	(flow_dfs_compute_reverse_execute): Use dfs_find_deadend here, too.
-	* dominance.c (calc_dfs_tree): If saw_unconnected,
-	traverse from dfs_find_deadend of unconnected b
-	instead of b directly.
+	* dominance.c (calc_dfs_tree): If saw_unconnected, traverse from
+	dfs_find_deadend of unconnected b instead of b directly.
 
 2012-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -314,8 +311,7 @@
 	PR tree-optimization/46309
 	* tree-ssa-reassoc.c (init_range_entry): Add STMT argument
 	and use it if EXP is NULL.
-	(update_range_test): Handle OPCODE equal to ERROR_MARK
-	and oe->op NULL.
+	(update_range_test): Handle OPCODE equal to ERROR_MARK and oe->op NULL.
 	(optimize_range_tests): Likewise.
 	(final_range_test_p, suitable_cond_bb, no_side_effect_bb, get_ops,
 	maybe_optimize_range_tests): New functions.
@@ -324,7 +320,8 @@
 
 2012-10-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* config/rs6000/rs6000.md (insvsi, insvdi, extvsi, extvdi): Rename to...
+	* config/rs6000/rs6000.md (insvsi, insvdi, extvsi, extvdi): Rename
+	to...
 	(insvsi_internal, insvdi_internal, extvsi_internal)
 	(extvdi_internal): ...this.
 	(insv, extv): Update accordingly.
@@ -400,8 +397,7 @@
 	PR debug/54551
 	PR debug/54693
 	* valtrack.c (dead_debug_promote_uses): Assert-check that
-	global used bit was clear and initialize entry
-	unconditionally.
+	global used bit was clear and initialize entry unconditionally.
 
 2012-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -485,8 +481,7 @@
 2012-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55111
-	* tree-ssa-pre.c (eliminate_insert): Properly fold the built
-	stmt.
+	* tree-ssa-pre.c (eliminate_insert): Properly fold the built stmt.
 
 2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -501,8 +496,7 @@
 	before reload.
 	(*negabssi2, *negabsdi2): Fold into *negabs<mode>2.  Add T_REG clobber.
 	Split insns before reload.
-	(negsi_cond): Reformat.  Use emit_move_insn instead of
-	gen_movesi.
+	(negsi_cond): Reformat.  Use emit_move_insn instead of gen_movesi.
 	(negdi_cond): Reformat.  Use emit_move_insn instead of a pair
 	of gen_movsi.  Split insn before reload.
 
@@ -626,13 +620,12 @@
 
 2012-10-29  Andrew Pinski  <apinski@cavium.com>
 
-        * config/aarch64/aarch64-protos.h (aarch64_load_tp): New proto.
-        * config/aarch64/aarch64.c (aarch64_load_tp): Export.
-        (aarch64_init_builtins): Don't add __builtin_thread_pointer builtin.
-        * config/aarch64/aarch64.h (aarch64_builtins): Delete
-
-AARCH64_BUILTIN_THREAD_POINTER.
-        * config/aarch64/aarch64.md (get_thread_pointerdi): New pattern.
+	* config/aarch64/aarch64-protos.h (aarch64_load_tp): New proto.
+	* config/aarch64/aarch64.c (aarch64_load_tp): Export.
+	(aarch64_init_builtins): Don't add __builtin_thread_pointer builtin.
+	* config/aarch64/aarch64.h (aarch64_builtins): Delete
+	AARCH64_BUILTIN_THREAD_POINTER.
+	* config/aarch64/aarch64.md (get_thread_pointerdi): New pattern.
 
 2012-10-29  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -642,8 +635,7 @@ AARCH64_BUILTIN_THREAD_POINTER.
 
 2012-10-29  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* rtlanal.c (strip_address_mutation): Use SUBREG_REG instead of
-	XEXP.
+	* rtlanal.c (strip_address_mutation): Use SUBREG_REG instead of XEXP.
 
 2012-10-29  Uros Bizjak  <ubizjak@gmail.com>
 

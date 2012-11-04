@@ -9,15 +9,13 @@
 2012-11-03  H.J. Lu  <hjl.tools@gmail.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
-	* lib/target-supports.exp (check_effective_target_maybe_x32): New
-	proc.
-	* gcc.target/i386/pr54457.c: Use dg-require-effective-target
-	maybe_x32.
+	* lib/target-supports.exp (check_effective_target_maybe_x32): New proc.
+	* gcc.target/i386/pr54457.c: Use dg-require-effective-target maybe_x32.
 	* gcc.target/i386/pr53249.c: Likewise.
 
 2012-11-03  Andrew Pinski  <apinski@cavium.com>
 
-	 * gcc.target/mips/octeon-bbit-3.c: Change the second call to abort to
+	* gcc.target/mips/octeon-bbit-3.c: Change the second call to abort to
 	call abort1 so that cross jumping does not happen.
 
 2012-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
@@ -40,9 +38,8 @@
 	* gcc.target/powerpc/pr48258-2.c: Simplfy the acceptance
 	conditions to verify the reduction code is vectorized.
 
-	* gcc.target/powerpc/pr46728-1.c: Pass -fno-ident to eliminate
-	failures in case 'pow', such as 'powerpc' is used in the compiler
-	version name.
+	* gcc.target/powerpc/pr46728-1.c: Pass -fno-ident to eliminate failures
+	in case 'pow', such as 'powerpc' is used in the compiler version name.
 	* gcc.target/powerpc/pr46728-2.c: Likewise.
 	* gcc.target/powerpc/pr46728-3.c: Likewise.
 	* gcc.target/powerpc/pr46728-4.c: Likewise.
