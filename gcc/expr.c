@@ -9221,13 +9221,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (g)
 	{
 	  rtx r;
-	  location_t saved_loc = input_location;
+	  location_t saved_loc = curr_insn_location ();
 
-	  input_location = gimple_location (g);
-	  set_curr_insn_location (input_location);
+	  set_curr_insn_location (gimple_location (g));
 	  r = expand_expr_real (gimple_assign_rhs_to_tree (g), target,
 				tmode, modifier, NULL);
-	  input_location = saved_loc;
 	  set_curr_insn_location (saved_loc);
 	  if (REG_P (r) && !REG_EXPR (r))
 	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (exp), r);
