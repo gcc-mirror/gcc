@@ -1,3 +1,11 @@
+2012-11-04  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into):
+	New, rewritten from debug stmt copying code...
+	(thread_around_empty_block): ... removed from here.
+	(thread_across_edge): Call propagate_threaded_block_debug_into.
+
 2012-11-04  Dehao Chen  <dehao@google.com>
 
 	* expr.c (expand_expr_real_1): Change to not using input_location.
