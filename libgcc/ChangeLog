@@ -1,3 +1,10 @@
+2012-11-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55175
+	* config/i386/32/sfp-machine.h: Guard exception handling and
+	rounding handling code with _SOFT_FLOAT.
+	* config/i386/64/sfp-machine.h: Ditto.
+
 2012-10-31  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.host (m32r-*-rtems*): Include crtinit.o and crtfinit.o
@@ -9,7 +16,7 @@
 
 2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
 
-	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts. 
+	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts.
 
 2012-10-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
@@ -22,7 +29,7 @@
 	* unwind-dw2-fde-dip.c: Don't include <elf.h> on OpenBSD.
 	(USE_PT_GNU_EH_FRAME): Define for OpenBSD.
 	(ElfW): Likewise.
-				
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
@@ -30,7 +37,7 @@
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-09-05 mainline r190697.
-	
+
 	PR target/54461
 	* config.host (tmake_file,host=avr-*-*): Add avr/t-avrlibc if
 	configured --with-avrlibc.
