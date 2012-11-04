@@ -1,3 +1,8 @@
+2012-11-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55199
+	* gfortran.dg/associate_12.f90: New.
+
 2012-11-03  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/54255
