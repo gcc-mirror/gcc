@@ -1,3 +1,8 @@
+2012-11-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_unary_loc): Disable conversion optimization
+	for void type.
+
 2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure: Regenerate.

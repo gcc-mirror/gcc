@@ -7749,7 +7749,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    return build2_loc (loc, TREE_CODE (op0), type,
 			       TREE_OPERAND (op0, 0),
 			       TREE_OPERAND (op0, 1));
-	  else if (!INTEGRAL_TYPE_P (type) && TREE_CODE (type) != VECTOR_TYPE)
+	  else if (!INTEGRAL_TYPE_P (type) && !VOID_TYPE_P (type)
+		   && TREE_CODE (type) != VECTOR_TYPE)
 	    return build3_loc (loc, COND_EXPR, type, op0,
 			       constant_boolean_node (true, type),
 			       constant_boolean_node (false, type));
