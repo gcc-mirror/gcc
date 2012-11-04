@@ -26,7 +26,8 @@
  * None of this is safe with dlclose and incremental collection.
  * But then not much of anything is safe in the presence of dlclose.
  */
-#if (defined(__linux__) || defined(__GLIBC__)) && !defined(_GNU_SOURCE)
+#if (defined(__linux__) || defined(__GLIBC__) || defined(__GNU__)) \
+    && !defined(_GNU_SOURCE)
     /* Can't test LINUX, since this must be define before other includes */
 #   define _GNU_SOURCE
 #endif
