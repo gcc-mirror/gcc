@@ -1587,6 +1587,12 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_unswitch_loops = value;
       if (!opts_set->x_flag_gcse_after_reload)
 	opts->x_flag_gcse_after_reload = value;
+      if (!opts_set->x_flag_tree_vectorize)
+	opts->x_flag_tree_vectorize = value;
+      if (!opts_set->x_flag_vect_cost_model)
+	opts->x_flag_vect_cost_model = value;
+      if (!opts_set->x_flag_tree_loop_distribute_patterns)
+	opts->x_flag_tree_loop_distribute_patterns = value;
       break;
 
     case OPT_fprofile_generate_:
