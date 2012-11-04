@@ -14538,8 +14538,8 @@ $as_echo "#define HAVE_ATTRIBUTE_ALIAS 1" >>confdefs.h
   fi
 if test x$try_ifunc = xyes; then
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports funcs" >&5
-$as_echo_n "checking whether the target supports funcs... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports the ifunc attribute" >&5
+$as_echo_n "checking whether the target supports the ifunc attribute... " >&6; }
 if test "${libat_cv_have_ifunc+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
