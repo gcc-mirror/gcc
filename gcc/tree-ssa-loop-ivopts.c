@@ -6422,7 +6422,111 @@ remove_unused_ivs (struct ivopts_data *data)
 	  && !info->inv_id
 	  && !info->iv->have_use_for
 	  && !info->preserve_biv)
-	bitmap_set_bit (toremove, SSA_NAME_VERSION (info->iv->ssa_name));
+	{
+	  bitmap_set_bit (toremove, SSA_NAME_VERSION (info->iv->ssa_name));
+	  
+	  tree def = info->iv->ssa_name;
+
+	  if (MAY_HAVE_DEBUG_STMTS && SSA_NAME_DEF_STMT (def))
+	    {
+	      imm_use_iterator imm_iter;
+	      use_operand_p use_p;
+	      gimple stmt;
+	      int count = 0;
+
+	      FOR_EACH_IMM_USE_STMT (stmt, imm_iter, def)
+		{
+		  if (!gimple_debug_bind_p (stmt))
+		    continue;
+
+		  /* We just want to determine whether to do nothing
+		     (count == 0), to substitute the computed
+		     expression into a single use of the SSA DEF by
+		     itself (count == 1), or to use a debug temp
+		     because the SSA DEF is used multiple times or as
+		     part of a larger expression (count > 1). */
+		  count++;
+		  if (gimple_debug_bind_get_value (stmt) != def)
+		    count++;
+
+		  if (count > 1)
+		    BREAK_FROM_IMM_USE_STMT (imm_iter);
+		}
+
+	      if (!count)
+		continue;
+
+	      struct iv_use dummy_use;
+	      struct iv_cand *best_cand = NULL, *cand;
+	      unsigned i, best_pref = 0, cand_pref;
+
+	      memset (&dummy_use, 0, sizeof (dummy_use));
+	      dummy_use.iv = info->iv;
+	      for (i = 0; i < n_iv_uses (data) && i < 64; i++)
+		{
+		  cand = iv_use (data, i)->selected;
+		  if (cand == best_cand)
+		    continue;
+		  cand_pref = operand_equal_p (cand->iv->step,
+					       info->iv->step, 0)
+		    ? 4 : 0;
+		  cand_pref
+		    += TYPE_MODE (TREE_TYPE (cand->iv->base))
+		    == TYPE_MODE (TREE_TYPE (info->iv->base))
+		    ? 2 : 0;
+		  cand_pref
+		    += TREE_CODE (cand->iv->base) == INTEGER_CST
+		    ? 1 : 0;
+		  if (best_cand == NULL || best_pref < cand_pref)
+		    {
+		      best_cand = cand;
+		      best_pref = cand_pref;
+		    }
+		}
+
+	      if (!best_cand)
+		continue;
+
+	      tree comp = get_computation_at (data->current_loop,
+					      &dummy_use, best_cand,
+					      SSA_NAME_DEF_STMT (def));
+	      if (!comp)
+		continue;
+
+	      if (count > 1)
+		{
+		  tree vexpr = make_node (DEBUG_EXPR_DECL);
+		  DECL_ARTIFICIAL (vexpr) = 1;
+		  TREE_TYPE (vexpr) = TREE_TYPE (comp);
+		  if (SSA_NAME_VAR (def))
+		    DECL_MODE (vexpr) = DECL_MODE (SSA_NAME_VAR (def));
+		  else
+		    DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (vexpr));
+		  gimple def_temp = gimple_build_debug_bind (vexpr, comp, NULL);
+		  gimple_stmt_iterator gsi;
+
+		  if (gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI)
+		    gsi = gsi_after_labels (gimple_bb
+					    (SSA_NAME_DEF_STMT (def)));
+		  else
+		    gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (def));
+
+		  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
+		  comp = vexpr;
+		}
+
+	      FOR_EACH_IMM_USE_STMT (stmt, imm_iter, def)
+		{
+		  if (!gimple_debug_bind_p (stmt))
+		    continue;
+
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+		    SET_USE (use_p, comp);
+
+		  update_stmt (stmt);
+		}
+	    }
+	}
     }
 
   release_defs_bitset (toremove);
