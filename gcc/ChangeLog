@@ -1,3 +1,13 @@
+2012-11-03  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (profile-use): update documentation.
+	* opts.c (common_handle_option): Enable tree-vectorize
+	and tree-loop-distribute-patterns.
+	* tree-loop-distribution.c (tree_loop_distribution): Skip loops
+	optimized for size.
+	* config/i386/i386.c (ix86_option_override_internal): Enabe
+	prefetch_lop_arrays for profile-use.
+
 2012-11-03  Robert Mason  <rbmj@verizon.net>
 
 	* gcov-io.c (gcov_open): Add file mode to open call (need for VxWorks)

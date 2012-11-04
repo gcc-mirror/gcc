@@ -3950,7 +3950,7 @@ ix86_option_override_internal (bool main_args_p)
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
-      && optimize >= 3
+      && (optimize >= 3 || flag_profile_use)
       && TARGET_SOFTWARE_PREFETCHING_BENEFICIAL)
     flag_prefetch_loop_arrays = 1;
 

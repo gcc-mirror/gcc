@@ -1511,6 +1511,10 @@ tree_loop_distribution (void)
       if (!single_exit (loop))
 	continue;
 
+      /* Only optimize hot loops.  */
+      if (!optimize_loop_for_speed_p (loop))
+	continue;
+
       /* Only distribute loops with a header and latch for now.  */
       if (loop->num_nodes > 2)
 	continue;

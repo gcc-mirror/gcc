@@ -8409,7 +8409,8 @@ Enable profile feedback directed optimizations, and optimizations
 generally profitable only with profile feedback available.
 
 The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
-@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}
+@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}, @code{-ftree-vectorize},
+@code{ftree-loop-distribute-patterns}
 
 By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
