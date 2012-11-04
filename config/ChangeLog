@@ -1,3 +1,7 @@
+2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* dfp.m4 (enable_decimal_float): Enable for i?86*-*-gnu*.
+
 2012-10-15  Pavel Chupin  <pavel.v.chupin@intel.com>
 
 	* gthr.m4: New. Define GCC_AC_THREAD_HEADER.

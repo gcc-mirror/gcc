@@ -1,4 +1,4 @@
-/* Copyright (C) 2007, 2009  Free Software Foundation, Inc.
+/* Copyright (C) 2007, 2009, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -124,7 +124,7 @@ ALIGN (16)
 #define DENORMAL_MODE           0x00000100
 #define INVALID_MODE            0x00000080
 
-#if defined LINUX || defined SUNOS
+#if defined LINUX || defined __GLIBC__ || defined SUNOS
 #define LX16  "%016llx"
 #define LX    "%llx"
 #define LD4   "%4llu"
