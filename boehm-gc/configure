@@ -14796,6 +14796,15 @@ $as_echo "$as_me: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&2;}
 $as_echo "#define USE_COMPILER_TLS 1" >>confdefs.h
 
        ;;
+     *-*-gnu*)
+
+$as_echo "#define GC_GNU_THREADS 1" >>confdefs.h
+
+	$as_echo "#define _REENTRANT 1" >>confdefs.h
+
+	$as_echo "#define THREAD_LOCAL_ALLOC 1" >>confdefs.h
+
+	;;
      *-*-freebsd*)
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&5
 $as_echo "$as_me: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&2;}

@@ -1,3 +1,21 @@
+2012-11-04  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* configure.ac: Add stanza for *-*-gnu* threads configuration.
+	* configure: Regenerate.
+	* include/gc_config.h.in: Likewise.
+	* dyn_load.c (_GNU_SOURCE): Define for __GNU__.
+	* include/gc_config_macros.h (_REENTRANT, GC_PTHREADS): Define for
+	GC_GNU_THREADS.
+	* include/private/gcconfig.h (DATASTART): Don't define for I386 &&
+	HURD.
+	(SIG_SUSPEND, SIG_THR_RESTART, SEARCH_FOR_DATA_START): Define for
+	I386 && HURD.
+	(UNIX_LIKE, REGISTER_LIBRARIES_EARLY): Define for HURD.
+	* os_dep.c (GC_init_linux_data_start): Handle for HURD.
+	* pthread_support.c (GC_thr_init): Add case for GC_GNU_THREADS.
+	* specific.c: Use for GC_GNU_THREADS.
+	* threadlibs.c: Add case for GC_GNU_THREADS.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.

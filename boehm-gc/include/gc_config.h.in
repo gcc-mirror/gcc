@@ -33,6 +33,9 @@
 /* include support for gcj */
 #undef GC_GCJ_SUPPORT
 
+/* support GNU threads */
+#undef GC_GNU_THREADS
+
 /* enables support for HP/UX 11 pthreads */
 #undef GC_HPUX_THREADS
 

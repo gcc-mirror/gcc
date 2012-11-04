@@ -175,6 +175,11 @@ case "$THREADS" in
        AC_DEFINE(THREAD_LOCAL_ALLOC)
        AC_DEFINE(USE_COMPILER_TLS, 1,[use tls for boehm])
        ;;
+     *-*-gnu*)
+	AC_DEFINE(GC_GNU_THREADS,1,[support GNU threads])
+	AC_DEFINE(_REENTRANT)
+	AC_DEFINE(THREAD_LOCAL_ALLOC)
+	;;
      *-*-freebsd*)
 	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
 	AC_DEFINE(GC_FREEBSD_THREADS,1,[support FreeBSD threads])
