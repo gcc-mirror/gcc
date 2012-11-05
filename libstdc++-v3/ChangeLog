@@ -1,4 +1,47 @@
 2012-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+        PR libstdc++/28811
+        PR libstdc++/54482
+        * configure.ac (glibcxx_lt_pic_flag,
+          glibcxx_compiler_pic_flag,
+          glibcxx_compiler_shared_flag): New. Use them.
+        (lt_prog_compiler_pic_CXX): Set via glibcxx_*_flag(s) above.
+        (pic_mode): Set to default.
+        (PIC_CXXFLAGS): Remove.
+        * Makefile.am (PICFLAG, PICFLAG_FOR_TARGET): Remove. Comment.
+        * libsupc++/Makefile.am: Use glibcxx_ld_pic_flag and
+          glibcxx_compiler_shared_flag. Comment.
+        * src/c++11/Makefile.am: Same.
+        * src/c++98/Makefile.am: Same.
+        * src/Makefile.am: Use glibcxx_compiler_pic_flag.
+
+        * Makefile.in: Regenerated.
+        * aclocal.m4: Same.
+        * configure: Same.
+        * doc/Makefile.in: Same.
+        * include/Makefile.in: Same.
+        * libsupc++/Makefile.in: Same.
+        * po/Makefile.in: Same.
+        * python/Makefile.in: Same.
+        * src/Makefile.in: Same.
+        * src/c++11/Makefile.in: Same.
+        * src/c++98/Makefile.in: Same.
+        * testsuite/Makefile.in: Same.
+
+        * src/c++11/compatibility-atomic-c++0x.cc: Use
+          _GLIBCXX_SHARED instead of PIC to designate shared-only
+          code blocks.
+        * src/c++11/compatibility-c++0x.cc: Same.
+        * src/c++11/compatibility-thread-c++0x.cc: Same.
+        * src/c++98/compatibility-list-2.cc: Same.
+        * src/c++98/compatibility.cc: : Same.
+
+        * testsuite/17_intro/shared_with_static_deps.cc: New.
+
+        * doc/xml/manual/build_hacking.xml: Separate configure from
+        make/build issues, add build details.
+
+2012-11-05  Benjamin Kosnik  <bkoz@redhat.com>
             Oleg Smolsky  <oleg@smolsky.net>
 
 	PR libstdc++/55028
