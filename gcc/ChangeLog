@@ -1,3 +1,25 @@
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (compute_uninlined_call_time,
+	compute_inlined_call_time): New functions.
+	(RELATIVE_TIME_BENEFIT_RANGE): New macro.
+	(relative_time_benefit): Rewrite.
+	(edge_badness): Rewrite path with guessed profile and estimated profile.
+	* ipa-inline.h (INLINE_HINT_declared_inline, INLINE_HINT_cross_module):
+	New hints.
+	(struct inline_summary): Add GROWTH filed.
+	* ipa-inline-analysis.c (dump_inline_hints): Update.
+	(reset_inline_summary): Update.
+	(dump_inline_summary): Update.
+	(will_be_nonconstant_predicate): Cleanup to use gimple_store_p and
+	gimple_assign_load_p predicates.
+	(estimate_node_size_and_time): Drop INLINE_HINT_declared_inline hint.
+	(simple_edge_hints): New function.
+	(do_estimate_edge_time): Return time of invocation of callee rather
+	than the time scaled by edge frequency; update hints code.
+	(do_estimate_edge_hints): Update.
+	(do_estimate_growth): Cleanup.
+
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/55194
