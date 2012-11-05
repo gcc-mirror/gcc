@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli-details" } */
 void abort (void);
 int a[10];
 int b[11];
@@ -18,5 +18,5 @@ t (int n)
     }
   return sum;
 }
-/* { dg-final { scan-tree-dump-times 1 "Removed pointless exit:" "cunroli" } } */
+/* { dg-final { scan-tree-dump-times "Removed pointless exit:" 1 "cunroli" } } */
 /* { dg-final { cleanup-tree-dump "cunroli" } } */
