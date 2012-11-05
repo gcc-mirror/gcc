@@ -1,3 +1,9 @@
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (leaf_node_p): Rename to ...
+	(num_calls) ... this one.
+	(want_early_inline_function_p): Allow smal growth on non-leafs.
+
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/54402
