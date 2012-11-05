@@ -114,7 +114,8 @@ namespace __gnu_debug
     __msg_self_move_assign,
     // unordered container buckets
     __msg_bucket_index_oob,
-    __msg_valid_load_factor
+    __msg_valid_load_factor,
+    __msg_equal_allocs
   };
 
   class _Error_formatter

@@ -1,3 +1,16 @@
+2012-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/profile/forward_list: Update to meet allocator-aware
+	requirements.
+	* include/debug/forward_list: Likewise.
+	* include/debug/vector: Verify allocators are swapped or equal.
+	* include/debug/macros.h (__glibcxx_check_equal_allocs): Define.
+	* include/debug/formatter.h: Add new debug message.
+	* src/c++11/debug.cc: Likewise.
+	* testsuite/23_containers/forward_list/allocator/swap.cc: Do not
+	swap containers with non-propagating, non-equal allocators.
+	* testsuite/23_containers/vector/allocator/swap.cc: Likewise.
+
 2012-11-05  Benjamin Kosnik  <bkoz@redhat.com>
             Oleg Smolsky  <oleg@smolsky.net>
 

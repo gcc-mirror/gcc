@@ -181,7 +181,8 @@ namespace __gnu_debug
     "attempt to self move assign",
     "attempt to access container with out-of-bounds bucket index %2;,"
     " container only holds %3; buckets",
-    "load factor shall be positive"
+    "load factor shall be positive",
+    "allocators must be equal"
   };
 
   void
