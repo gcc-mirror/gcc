@@ -1,7 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2005-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -467,6 +466,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       throw_value_base(const throw_value_base& __v) : _M_i(__v._M_i)
       { throw_conditionally(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // Shall not throw.
+      throw_value_base(throw_value_base&&) = default;
+#endif
+
       explicit throw_value_base(const std::size_t __i) : _M_i(__i)
       { throw_conditionally(); }
 #endif
@@ -478,6 +482,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_i = __v._M_i;
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      // Shall not throw.
+      throw_value_base&
+      operator=(throw_value_base&&) = default;
+#endif
 
       throw_value_base&
       operator++()
@@ -568,7 +578,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     throw_value_limit(const throw_value_limit& __other)
     : base_type(__other._M_i) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    throw_value_limit(throw_value_limit&&) = default;
+#endif
+
     explicit throw_value_limit(const std::size_t __i) : base_type(__i) { }
+#endif
+
+    throw_value_limit&
+    operator=(const throw_value_limit& __other)
+    {
+      base_type::operator=(__other);
+      return *this;
+    }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    throw_value_limit&
+    operator=(throw_value_limit&&) = default;
 #endif
   };
 
@@ -583,8 +609,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     throw_value_random(const throw_value_random& __other)
     : base_type(__other._M_i) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    throw_value_random(throw_value_random&&) = default;
+#endif
 
     explicit throw_value_random(const std::size_t __i) : base_type(__i) { }
+#endif
+
+    throw_value_random&
+    operator=(const throw_value_random& __other)
+    {
+      base_type::operator=(__other);
+      return *this;
+    }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    throw_value_random&
+    operator=(throw_value_random&&) = default;
 #endif
   };
 
