@@ -11,6 +11,11 @@ void MRTRBR(int MA_1, int NA_1, int MB_1)
 {
   int i,j, t,k;
 
+  /* At the moment we are not able to hoist the loop headers out of the loop
+     nest.  */
+  if (MA_1 < 4 || NA_1 < 4 || MB_1 < 4)
+    return;
+
   /* The outer most loop is not parallel because for different k's there
      is write-write dependency for T[i][j].  */
   

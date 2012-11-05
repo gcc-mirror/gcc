@@ -1,3 +1,7 @@
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/autopar/pr49960.c: Fix testcase.
+
 2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/cunroll-9.c: Dump cunrolli details.
