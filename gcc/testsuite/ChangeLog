@@ -1,6 +1,11 @@
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54828
+	* g++.dg/debug/pr54828.C: New test.
+
 	2012-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54988

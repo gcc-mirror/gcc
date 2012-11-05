@@ -1,6 +1,16 @@
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54828
+	* gimple.h (is_gimple_sizepos): New inline function.
+	* gimplify.c (gimplify_one_sizepos): Use it.  Remove useless
+	final assignment to expr variable.
+	* tree.c (RETURN_TRUE_IF_VAR): Return true also if
+	!TYPE_SIZES_GIMPLIFIED (type) and _t is going to be gimplified
+	into a local temporary.
+
 	2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54877
