@@ -1941,9 +1941,6 @@ find_loop_niter (struct loop *loop, edge *exit)
   *exit = NULL;
   FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
-      if (!just_once_each_iteration_p (loop, ex->src))
-	continue;
-
       if (!number_of_iterations_exit (loop, ex, &desc, false))
 	continue;
 
@@ -3186,7 +3183,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 static void
 maybe_lower_iteration_bound (struct loop *loop)
 {
-  pointer_set_t *not_executed_last_iteration = pointer_set_create ();
+  pointer_set_t *not_executed_last_iteration = NULL;
   struct nb_iter_bound *elt;
   bool found_exit = false;
   VEC (basic_block, heap) *queue = NULL;
