@@ -401,6 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
         if (__zero)
           _M_x[0] = __detail::_Shift<_UIntType, __w - 1>::__value;
+	_M_p = state_size;
       }
 
   template<typename _UIntType, size_t __w,
