@@ -774,6 +774,11 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #undef strerror
  #pragma GCC poison strerror
 
+/* loc_t is defined on some systems and too inviting for some
+   programmers to avoid.  */
+#undef loc_t
+ #pragma GCC poison loc_t
+
 /* Old target macros that have moved to the target hooks structure.  */
  #pragma GCC poison ASM_OPEN_PAREN ASM_CLOSE_PAREN			\
 	FUNCTION_PROLOGUE FUNCTION_EPILOGUE				\
