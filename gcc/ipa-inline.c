@@ -380,17 +380,18 @@ can_early_inline_edge_p (struct cgraph_edge *e)
 }
 
 
-/* Return true when N is leaf function.  Accept cheap builtins
-   in leaf functions.  */
+/* Return number of calls in N.  Ignore cheap builtins.  */
 
-static bool
-leaf_node_p (struct cgraph_node *n)
+static int
+num_calls (struct cgraph_node *n)
 {
   struct cgraph_edge *e;
+  int num = 0;
+
   for (e = n->callees; e; e = e->next_callee)
     if (!is_inexpensive_builtin (e->callee->symbol.decl))
-      return false;
-  return true;
+      num++;
+  return num;
 }
 
 
@@ -414,6 +415,8 @@ want_early_inline_function_p (struct cgraph_edge *e)
   else
     {
       int growth = estimate_edge_growth (e);
+      int n;
+
       if (growth <= 0)
 	;
       else if (!cgraph_maybe_hot_edge_p (e)
@@ -427,22 +430,23 @@ want_early_inline_function_p (struct cgraph_edge *e)
 		     growth);
 	  want_inline = false;
 	}
-      else if (!leaf_node_p (callee)
-	       && growth > 0)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
-		     "callee is not leaf and code would grow by %i\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
-		     xstrdup (cgraph_node_name (callee)), callee->uid,
-		     growth);
-	  want_inline = false;
-	}
       else if (growth > PARAM_VALUE (PARAM_EARLY_INLINING_INSNS))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "growth %i exceeds --param early-inlining-insns\n",
+		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
+		     xstrdup (cgraph_node_name (callee)), callee->uid,
+		     growth);
+	  want_inline = false;
+	}
+      else if ((n = num_calls (callee)) != 0
+	       && growth * (n + 1) > PARAM_VALUE (PARAM_EARLY_INLINING_INSNS))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
+		     "growth %i exceeds --param early-inlining-insns "
+		     "divided by number of calls\n",
 		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
 		     xstrdup (cgraph_node_name (callee)), callee->uid,
 		     growth);
