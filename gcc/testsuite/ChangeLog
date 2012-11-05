@@ -1,3 +1,11 @@
+2012-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54877
+	* gcc.dg/torture/pr54877.c: New test.
+
 2012-11-02  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/execute/pr54985.c: New test.

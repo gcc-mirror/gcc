@@ -1,3 +1,12 @@
+2012-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54877
+	* tree-vect-loop.c (vect_is_simple_reduction_1): For MINUS_EXPR
+	use make_ssa_name instead of copy_ssa_name.
+
 2012-11-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
