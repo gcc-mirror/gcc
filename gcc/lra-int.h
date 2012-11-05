@@ -227,10 +227,8 @@ struct lra_insn_recog_data
      value can be NULL or points to array of the hard register numbers
      ending with a negative value.  */
   int *arg_hard_regs;
-#ifdef HAVE_ATTR_enabled
   /* Alternative enabled for the insn.	NULL for debug insns.  */
   bool *alternative_enabled_p;
-#endif
   /* The alternative should be used for the insn, -1 if invalid, or we
      should try to use any alternative, or the insn is a debug
      insn.  */
