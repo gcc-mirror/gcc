@@ -760,11 +760,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
 
   niter = number_of_latch_executions (loop);
   if (TREE_CODE (niter) == INTEGER_CST)
-    {
-      exit = single_exit (loop);
-      if (!just_once_each_iteration_p (loop, exit->src))
-	return false;
-    }
+    exit = single_exit (loop);
   else
     {
       /* If the loop has more than one exit, try checking all of them
@@ -785,7 +781,10 @@ canonicalize_loop_induction_variables (struct loop *loop,
   /* We work exceptionally hard here to estimate the bound
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
-    record_niter_bound (loop, tree_to_double_int (niter), false, true);
+    {
+      record_niter_bound (loop, tree_to_double_int (niter),
+			  exit == single_likely_exit (loop), true);
+    }
 
   /* Force re-computation of loop bounds so we can remove redundant exits.  */
   maxiter = max_loop_iterations_int (loop);
@@ -813,7 +812,8 @@ canonicalize_loop_induction_variables (struct loop *loop,
     return true;
 
   if (create_iv
-      && niter && !chrec_contains_undetermined (niter))
+      && niter && !chrec_contains_undetermined (niter)
+      && exit && just_once_each_iteration_p (loop, exit->src))
     create_canonical_iv (loop, exit, niter);
 
   return modified;

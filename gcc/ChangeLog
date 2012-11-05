@@ -6,6 +6,14 @@
 
 2012-11-05  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-loop-niter.c (find_loop_niter): Remove just_once_each_iteration_p.
+	(maybe_lower_iteration_bound): Initialize not_executed_last_iteration to  NULL
+	* tree-ssa-loop-ivcanon.c (canonicalize_loop_induction_variables): Skip
+	just_once_each_iteration_p; record estimated bound when loop has only one
+	likely exit; test just_once_each_iteration_p before IV canon itself.
+
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline.c (leaf_node_p): Rename to ...
 	(num_calls) ... this one.
 	(want_early_inline_function_p): Allow smal growth on non-leafs.
