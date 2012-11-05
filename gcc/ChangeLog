@@ -1,3 +1,9 @@
+2012-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55194
+	* dwarf2out.c (value_format) <case dw_val_class_high_pc>: Handle
+	also DWARF2_ADDR_SIZE 1 and 2.
+
 2012-11-05  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (leaf_node_p): Rename to ...
