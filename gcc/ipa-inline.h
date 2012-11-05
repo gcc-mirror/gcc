@@ -49,7 +49,9 @@ enum inline_hints_vals {
   INLINE_HINT_loop_iterations = 2,
   INLINE_HINT_loop_stride = 4,
   INLINE_HINT_same_scc = 8,
-  INLINE_HINT_in_scc = 16
+  INLINE_HINT_in_scc = 16,
+  INLINE_HINT_declared_inline = 32,
+  INLINE_HINT_cross_module = 64
 };
 typedef int inline_hints;
 
@@ -129,6 +131,12 @@ struct GTY(()) inline_summary
   /* Predicate on when some loop in the function becomes to have known
      stride.   */
   struct predicate * GTY((skip)) loop_stride;
+  /* Estimated growth for inlining all copies of the function before start
+     of small functions inlining.
+     This value will get out of date as the callers are duplicated, but
+     using up-to-date value in the badness metric mean a lot of extra
+     expenses.  */
+  int growth;
   /* Number of SCC on the beggining of inlining process.  */
   int scc_no;
 };
