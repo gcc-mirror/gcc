@@ -1,3 +1,16 @@
+2012-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/throw_allocator.h (__throw_value_base): Add move
+	semantic, not throwing.
+	(__throw_value_limit): Likewise.
+	(__throw_value_random): Likewise.
+	* testsuite/util/exception/safety.h: Add validation of C++11
+	methods emplace/emplace_front/emplace_back/emplace_hint.
+	* testsuite/util/testsuite_container_traits.h: Signal emplace
+	support on deque, forward_list, list and vector.
+	* testsuite/23_containers/deque/requirements/exception/
+	propagation_consistent.cc: Remove dg-do run fail.
+
 2012-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55215

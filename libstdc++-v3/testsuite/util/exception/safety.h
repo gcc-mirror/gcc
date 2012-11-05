@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -226,17 +226,22 @@ namespace __gnu_test
 	// compared to the control container.
 	// NB: Should be equivalent to __test != __control, but
 	// computed without equivalence operators
-	const size_type szt = std::distance(__test.begin(), __test.end());
-	const size_type szc = std::distance(__control.begin(),
-					    __control.end());
-	bool __equal_size = szt == szc;
+	const size_type szt
+	  = std::distance(__test.begin(), __test.end());
+	const size_type szc
+	  = std::distance(__control.begin(), __control.end());
+
+	if (szt != szc)
+	  throw std::logic_error(
+		"setup_base::compare containers size not equal");
 
 	// Should test iterator validity before and after exception.
 	bool __equal_it = std::equal(__test.begin(), __test.end(),
 				     __control.begin());
 
-	if (!__equal_size || !__equal_it)
-	  throw std::logic_error("setup_base::compare containers not equal");
+	if (!__equal_it)
+	  throw std::logic_error(
+		"setup_base::compare containers iterators not equal");
 
 	return true;
       }
@@ -627,6 +632,96 @@ namespace __gnu_test
 	operator()(_Tp&, _Tp&) { }
       };
 
+    template<typename _Tp, bool = traits<_Tp>::has_push_pop::value
+				  && traits<_Tp>::has_emplace::value>
+      struct emplace_front
+      {
+	typedef _Tp 					container_type;
+	typedef typename container_type::value_type    	value_type;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      __test.emplace_front(cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      __test.emplace_front(cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+    };
+
+    // Specialization, empty.
+    template<typename _Tp>
+      struct emplace_front<_Tp, false>
+      {
+	void
+	operator()(_Tp&) { }
+
+	void
+	operator()(_Tp&, _Tp&) { }
+      };
+
+
+    template<typename _Tp, bool = traits<_Tp>::has_push_pop::value
+				  && traits<_Tp>::has_emplace::value 
+				  && traits<_Tp>::is_reversible::value>
+      struct emplace_back
+      {
+	typedef _Tp 					container_type;
+	typedef typename container_type::value_type    	value_type;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      __test.emplace_back(cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      __test.push_back(cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+    };
+
+    // Specialization, empty.
+    template<typename _Tp>
+      struct emplace_back<_Tp, false>
+      {
+	void
+	operator()(_Tp&) { }
+
+	void
+	operator()(_Tp&, _Tp&) { }
+      };
+
 
     // Abstract the insert function into two parts:
     // 1, insert_base_functions == holds function pointer
@@ -726,9 +821,8 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert_after) { }
       };
 
-    template<typename _Tp,
-	     bool = traits<_Tp>::has_insert::value,
-	     bool = traits<_Tp>::has_insert_after::value>
+    template<typename _Tp, bool = traits<_Tp>::has_insert::value,
+			   bool = traits<_Tp>::has_insert_after::value>
       struct insert_point;
 
     // Specialization for most containers.
@@ -826,11 +920,12 @@ namespace __gnu_test
 	operator()(_Tp&, _Tp&) { }
       };
 
-    template<typename _Tp,
-	     bool = traits<_Tp>::has_emplace::value>
+    template<typename _Tp, bool = traits<_Tp>::has_emplace::value
+				  && (traits<_Tp>::is_associative::value
+				      || traits<_Tp>::is_unordered::value)>
       struct emplace;
 
-    // Specialization for most containers.
+    // Specialization for associative and unordered containers.
     template<typename _Tp>
       struct emplace<_Tp, true>
       {
@@ -875,13 +970,56 @@ namespace __gnu_test
 	operator()(_Tp&, _Tp&) { }
       };
 
-    template<typename _Tp,
-	     bool = traits<_Tp>::has_emplace::value>
-      struct emplace_hint;
+    template<typename _Tp, bool = traits<_Tp>::has_emplace::value,
+			   bool = traits<_Tp>::is_associative::value
+				  || traits<_Tp>::is_unordered::value,
+			   bool = traits<_Tp>::has_insert_after::value>
+      struct emplace_point;
 
     // Specialization for most containers.
     template<typename _Tp>
-      struct emplace_hint<_Tp, true>
+      struct emplace_point<_Tp, true, false, false>
+      {
+	typedef _Tp 				       	container_type;
+	typedef typename container_type::value_type 	value_type;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.begin();
+	      std::advance(i, s);
+	      __test.emplace(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.begin();
+	      std::advance(i, s);
+	      __test.emplace(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+ 	}
+      };
+
+    // Specialization for associative and unordered containers.
+    template<typename _Tp>
+      struct emplace_point<_Tp, true, true, false>
       {
 	typedef _Tp 				       	container_type;
 	typedef typename container_type::value_type 	value_type;
@@ -920,9 +1058,52 @@ namespace __gnu_test
  	}
       };
 
-    // Specialization, empty.
+    // Specialization for forward_list.
     template<typename _Tp>
-      struct emplace_hint<_Tp, false>
+      struct emplace_point<_Tp, true, false, true>
+      {
+	typedef _Tp 				       	container_type;
+	typedef typename container_type::value_type 	value_type;
+
+	void
+	operator()(_Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.before_begin();
+	      std::advance(i, s);
+	      __test.emplace_after(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+	}
+
+	// Assumes containers start out equivalent.
+	void
+	operator()(_Tp& __control, _Tp& __test)
+	{
+	  try
+	    {
+	      const value_type cv = generate_unique<value_type>();
+	      const size_type sz = std::distance(__test.begin(), __test.end());
+	      size_type s = generate(sz);
+	      auto i = __test.before_begin();
+	      std::advance(i, s);
+	      __test.emplace_after(i, cv);
+	    }
+	  catch(const __gnu_cxx::forced_error&)
+	    { throw; }
+ 	}
+      };
+
+    // Specialization, empty.
+    template<typename _Tp, bool is_associative_or_unordered,
+			   bool has_insert_after>
+      struct emplace_point<_Tp, false, is_associative_or_unordered,
+			   has_insert_after>
       {
 	void
 	operator()(_Tp&) { }
@@ -1128,7 +1309,9 @@ namespace __gnu_test
       typedef erase_range<container_type> 	       	erase_range;
       typedef insert_point<container_type> 	       	insert_point;
       typedef emplace<container_type>			emplace;
-      typedef emplace_hint<container_type>		emplace_hint;
+      typedef emplace_point<container_type>		emplace_point;
+      typedef emplace_front<container_type>		emplace_front;
+      typedef emplace_back<container_type>		emplace_back;
       typedef pop_front<container_type> 	       	pop_front;
       typedef pop_back<container_type> 			pop_back;
       typedef push_front<container_type> 	       	push_front;
@@ -1146,7 +1329,9 @@ namespace __gnu_test
       erase_range		_M_eraser;
       insert_point		_M_insertp;
       emplace			_M_emplace;
-      emplace_hint		_M_emplaceh;
+      emplace_point		_M_emplacep;
+      emplace_front		_M_emplacef;
+      emplace_back		_M_emplaceb;
       pop_front			_M_popf;
       pop_back			_M_popb;
       push_front	       	_M_pushf;
@@ -1207,7 +1392,9 @@ namespace __gnu_test
 	_M_functions.push_back(function_type(base_type::_M_eraser));
 	_M_functions.push_back(function_type(base_type::_M_insertp));
 	_M_functions.push_back(function_type(base_type::_M_emplace));
-	_M_functions.push_back(function_type(base_type::_M_emplaceh));
+	_M_functions.push_back(function_type(base_type::_M_emplacep));
+	_M_functions.push_back(function_type(base_type::_M_emplacef));
+	_M_functions.push_back(function_type(base_type::_M_emplaceb));
 	_M_functions.push_back(function_type(base_type::_M_popf));
 	_M_functions.push_back(function_type(base_type::_M_popb));
 	_M_functions.push_back(function_type(base_type::_M_pushf));
@@ -1328,7 +1515,8 @@ namespace __gnu_test
   // Test strong exception guarantee.
   // Run through all member functions with a roll-back, consistent
   // coherent requirement.
-  // all: member functions insert of a single element, push_back, push_front
+  // all: member functions insert and emplace of a single element, push_back,
+  // push_front
   // unordered: rehash
   template<typename _Tp>
     struct propagation_consistent : public test_base<_Tp>
@@ -1360,9 +1548,12 @@ namespace __gnu_test
 
 	// Construct containers.
 	populate p(_M_container_control);
-	sync();
 
 	// Construct list of member functions to exercise.
+	_M_functions.push_back(function_type(base_type::_M_emplace));
+	_M_functions.push_back(function_type(base_type::_M_emplacep));
+	_M_functions.push_back(function_type(base_type::_M_emplacef));
+	_M_functions.push_back(function_type(base_type::_M_emplaceb));
 	_M_functions.push_back(function_type(base_type::_M_pushf));
 	_M_functions.push_back(function_type(base_type::_M_pushb));
 	_M_functions.push_back(function_type(base_type::_M_insertp));
