@@ -1,6 +1,11 @@
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54988
+	* c-c++-common/pr54988.c: New test.
+
 	2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54877
