@@ -115,7 +115,8 @@ can_refer_decl_in_current_unit_p (tree decl)
 tree
 canonicalize_constructor_val (tree cval)
 {
-  STRIP_USELESS_TYPE_CONVERSION (cval);
+  tree orig_cval = cval;
+  STRIP_NOPS (cval);
   if (TREE_CODE (cval) == POINTER_PLUS_EXPR
       && TREE_CODE (TREE_OPERAND (cval, 1)) == INTEGER_CST)
     {
@@ -146,8 +147,12 @@ canonicalize_constructor_val (tree cval)
       /* Fixup types in global initializers.  */
       if (TREE_TYPE (TREE_TYPE (cval)) != TREE_TYPE (TREE_OPERAND (cval, 0)))
 	cval = build_fold_addr_expr (TREE_OPERAND (cval, 0));
+
+      if (!useless_type_conversion_p (TREE_TYPE (orig_cval), TREE_TYPE (cval)))
+	cval = fold_convert (TREE_TYPE (orig_cval), cval);
+      return cval;
     }
-  return cval;
+  return orig_cval;
 }
 
 /* If SYM is a constant variable with known value, return the value.
