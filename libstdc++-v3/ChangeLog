@@ -1,3 +1,21 @@
+2012-11-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/55215
+	* include/bits/random.tcc (mersenne_twister_engine<>::seed(_Sseq&)):
+	Assign state_size to _M_p.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/55215.cc:
+	New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/55215.cc:
+	Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/55215.cc:
+	Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	55215.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/cons/55215.cc:
+	Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	55215.cc: Likewise.
+
 2012-11-03  Florian Weimer  <fweimer@redhat.com>
 
 	* libsupc++/vec.cc (compute_size): New.
@@ -23,14 +41,12 @@
 	* doc/xml/manual/prerequisites.xml: Remove detailed reference
 	to binutils downloads.
 
-
-
 2012-11-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55169
 	* include/bits/random.h: Remove all uses of param().
 	(chi_squared_distribution<>::__generate_impl(_ForwardIterator,
-	_ForwardIterator, _UniformRandomNumberGenerator&): Declare
+	_ForwardIterator, _UniformRandomNumberGenerator&)): Declare
 	* include/bits/random.tcc: ... define.
 	* include/ext/random: Remove all uses of param().
 
