@@ -7597,12 +7597,16 @@ value_format (dw_attr_ref a)
     case dw_val_class_high_pc:
       switch (DWARF2_ADDR_SIZE)
 	{
-	  case 4:
-	    return DW_FORM_data4;
-	  case 8:
-	    return DW_FORM_data8;
-	  default:
-	    gcc_unreachable ();
+	case 1:
+	  return DW_FORM_data1;
+	case 2:
+	  return DW_FORM_data2;
+	case 4:
+	  return DW_FORM_data4;
+	case 8:
+	  return DW_FORM_data8;
+	default:
+	  gcc_unreachable ();
 	}
 
     default:
