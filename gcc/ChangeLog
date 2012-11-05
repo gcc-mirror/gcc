@@ -1,3 +1,9 @@
+2012-11-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* lra-constraints.c (process_alt_operands): Permit putting reg
+	value into memory.  Increase reject for this case.
+
 2012-11-05  Dehao Chen  <dehao@google.com>
 
 	* final.c (reemit_insn_block_notes): Do not change scope if insn
