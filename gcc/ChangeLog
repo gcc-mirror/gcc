@@ -1,3 +1,13 @@
+2012-11-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.h (TARGET_CACHE32, TARGET_HARVARD): Delete macro.
+	(TARGET_SUPERSCALAR): Add TARGET_SH2A.
+	(CACHE_LOG): Use TARGET_HARD_SH4 and TARGET_SH5 instead of
+	TARGET_CACHE32.
+	(TRAMPOLINE_ALIGNMENT): Use TARGET_HARD_SH4 and TARGET_SH5 instead of
+	TARGET_HARVARD.
+	* config/sh/sh.c (sh_trampoline_init): Likewise.
+
 2012-11-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* system.h (loc_t): Poison.

@@ -11545,7 +11545,7 @@ sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
 				SImode));
   emit_move_insn (adjust_address (tramp_mem, SImode, 8), cxt);
   emit_move_insn (adjust_address (tramp_mem, SImode, 12), fnaddr);
-  if (TARGET_HARVARD)
+  if (TARGET_HARD_SH4 || TARGET_SH5)
     {
       if (!TARGET_INLINE_IC_INVALIDATE
 	  || (!(TARGET_SH4A_ARCH || TARGET_SH4_300) && TARGET_USERMODE))

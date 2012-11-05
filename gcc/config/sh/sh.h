@@ -58,14 +58,8 @@ extern int code_for_indirect_jump_scratch;
 /* Nonzero if we should generate code using type 3E insns.  */
 #define TARGET_SH3E (TARGET_SH3 && TARGET_SH_E)
 
-/* Nonzero if the cache line size is 32.  */
-#define TARGET_CACHE32 (TARGET_HARD_SH4 || TARGET_SH5)
-
 /* Nonzero if we schedule for a superscalar implementation.  */
-#define TARGET_SUPERSCALAR TARGET_HARD_SH4
-
-/* Nonzero if the target has separate instruction and data caches.  */
-#define TARGET_HARVARD (TARGET_HARD_SH4 || TARGET_SH5)
+#define TARGET_SUPERSCALAR (TARGET_HARD_SH4 || TARGET_SH2A)
 
 /* Nonzero if a double-precision FPU is available.  */
 #define TARGET_FPU_DOUBLE \
@@ -461,7 +455,7 @@ extern enum sh_divide_strategy_e sh_div_strategy;
 /* The log (base 2) of the cache line size, in bytes.  Processors prior to
    SH2 have no actual cache, but they fetch code in chunks of 4 bytes.
    The SH2/3 have 16 byte cache lines, and the SH4 has a 32 byte cache line */
-#define CACHE_LOG (TARGET_CACHE32 ? 5 : TARGET_SH2 ? 4 : 2)
+#define CACHE_LOG ((TARGET_HARD_SH4 || TARGET_SH5) ? 5 : TARGET_SH2 ? 4 : 2)
 
 /* ABI given & required minimum allocation boundary (in *bits*) for the
    code of a function.  */
@@ -1575,9 +1569,10 @@ struct sh_args {
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE  (TARGET_SHMEDIA64 ? 40 : TARGET_SH5 ? 24 : 16)
 
-/* Alignment required for a trampoline in bits .  */
+/* Alignment required for a trampoline in bits.  */
 #define TRAMPOLINE_ALIGNMENT \
-  ((CACHE_LOG < 3 || (optimize_size && ! TARGET_HARVARD)) ? 32 \
+  ((CACHE_LOG < 3 \
+    || (optimize_size && ! (TARGET_HARD_SH4 || TARGET_SH5))) ? 32 \
    : TARGET_SHMEDIA ? 256 : 64)
 
 /* A C expression whose value is RTL representing the value of the return
