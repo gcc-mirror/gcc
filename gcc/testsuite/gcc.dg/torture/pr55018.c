@@ -1,6 +1,7 @@
 /* PR tree-optimization/55018 */
 /* { dg-do compile } */
 /* { dg-options "-fdump-tree-optimized" } */
+/* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 
 void
 foo (int x)
