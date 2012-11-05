@@ -1,3 +1,8 @@
+2012-11-05  Dehao Chen  <dehao@google.com>
+
+	* final.c (reemit_insn_block_notes): Do not change scope if insn
+	location is UNKNOWN_LOCATION.
+
 2012-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* doc/md.texi (Defining Attributes): Document that we are defining

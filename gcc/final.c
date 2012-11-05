@@ -1616,7 +1616,12 @@ reemit_insn_block_notes (void)
 					     insn_scope (XVECEXP (body, 0, i)));
 	}
       if (! this_block)
-	this_block = DECL_INITIAL (cfun->decl);
+	{
+	  if (INSN_LOCATION (insn) == UNKNOWN_LOCATION)
+	    continue;
+	  else
+	    this_block = DECL_INITIAL (cfun->decl);
+	}
 
       if (this_block != cur_block)
 	{
