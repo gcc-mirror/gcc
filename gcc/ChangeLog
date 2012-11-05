@@ -1,3 +1,38 @@
+2012-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* doc/md.texi (Defining Attributes): Document that we are defining
+	HAVE_ATTR_name macors as 1 for defined attributes, and as 0
+	for undefined special attributes.
+	* final.c (asm_insn_count, align_fuzz): Always define.
+	(insn_current_reference_address): Likewise.
+	(init_insn_lengths): Use if (HAVE_ATTR_length) instead of
+	#ifdef HAVE_ATTR_length.
+	(get_attr_length_1, shorten_branches, final): Likewise.
+	(final_scan_insn, output_asm_name): Likewise.
+	* genattr.c (gen_attr): Define HAVE_ATTR_name macros for
+	defined attributes as 1.
+	Remove ancient get_attr_alternative compatibility code.
+	For special purpose attributes not provided, define HAVE_ATTR_name
+	as 0.
+	In case no length attribute is given, provide stub definitions
+	for insn_*_length* functions, and also include insn-addr.h.
+	In case no enabled attribute is given, provide stub definition.
+	* genattrtab.c (write_length_unit_log): Always write a definition.
+	* hooks.c (hook_int_rtx_1, hook_int_rtx_unreachable): New functions.
+	* hooks.h (hook_int_rtx_1, hook_int_rtx_unreachable): Declare.
+	* lra-int.h (struct lra_insn_recog_data): Make member
+	alternative_enabled_p unconditional.
+	* lra.c (free_insn_recog_data): Use if (HAVE_ATTR_length) instead of
+	#ifdef HAVE_ATTR_length.
+	(lra_set_insn_recog_data): Likewise.  Make initialization of
+	alternative_enabled_p unconditional.
+	(lra_update_insn_recog_data): Use #if instead of #ifdef for
+	HAVE_ATTR_enabled.
+	* recog.c [!HAVE_ATTR_enabled] (get_attr_enabled): Don't define.
+	(extract_insn): Check HAVE_ATTR_enabled.
+	(gate_handle_split_before_regstack): Use #if instead of
+	#if defined for HAVE_ATTR_length.
+
 2012-11-05  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (compute_uninlined_call_time,

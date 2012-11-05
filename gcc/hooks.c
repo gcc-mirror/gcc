@@ -203,6 +203,18 @@ hook_int_rtx_0 (rtx a ATTRIBUTE_UNUSED)
 }
 
 int
+hook_int_rtx_1 (rtx)
+{
+  return 1;
+}
+
+int
+hook_int_rtx_unreachable (rtx)
+{
+  gcc_unreachable ();
+}
+
+int
 hook_int_rtx_bool_0 (rtx a ATTRIBUTE_UNUSED, bool b ATTRIBUTE_UNUSED)
 {
   return 0;
