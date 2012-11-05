@@ -1581,7 +1581,9 @@ process_alt_operands (int only_alternative)
 		case TARGET_MEM_CONSTRAINT:
 		  if (MEM_P (op) || spilled_pseudo_p (op))
 		    win = true;
-		  if (CONST_POOL_OK_P (mode, op))
+		  /* We can put constant or pseudo value into memory
+		     to satisfy the constraint.  */
+		  if (CONST_POOL_OK_P (mode, op) || REG_P (op))
 		    badop = false;
 		  constmemok = true;
 		  break;
@@ -1613,7 +1615,10 @@ process_alt_operands (int only_alternative)
 		       && offsettable_nonstrict_memref_p (op))
 		      || spilled_pseudo_p (op))
 		    win = true;
-		  if (CONST_POOL_OK_P (mode, op) || MEM_P (op))
+		  /* We can put constant or pseudo value into memory
+		     or make memory address offsetable to satisfy the
+		     constraint.  */
+		  if (CONST_POOL_OK_P (mode, op) || MEM_P (op) || REG_P (op))
 		    badop = false;
 		  constmemok = true;
 		  offmemok = true;
@@ -1638,6 +1643,7 @@ process_alt_operands (int only_alternative)
 		  if (CONST_INT_P (op)
 		      || (GET_CODE (op) == CONST_DOUBLE && mode == VOIDmode))
 		    break;
+
 		case 'i':
 		  if (general_constant_p (op))
 		    win = true;
@@ -1702,10 +1708,12 @@ process_alt_operands (int only_alternative)
 			    win = true;
 
 			  /* If we didn't already win, we can reload
-			     constants via force_const_mem, and other
-			     MEMs by reloading the address like for
+			     constants via force_const_mem or put the
+			     pseudo value into memory, or make other
+			     memory by reloading the address like for
 			     'o'.  */
-			  if (CONST_POOL_OK_P (mode, op) || MEM_P (op))
+			  if (CONST_POOL_OK_P (mode, op)
+			      || MEM_P (op) || REG_P (op))
 			    badop = false;
 			  constmemok = true;
 			  offmemok = true;
@@ -1918,6 +1926,13 @@ process_alt_operands (int only_alternative)
 		    reload_nregs
 		      += ira_reg_class_max_nregs[this_alternative][mode];
 		}
+
+	      /* We are trying to spill pseudo into memory.  It is
+		 usually more costly than moving to a hard register
+		 although it might takes the same number of
+		 reloads.  */
+	      if (no_regs_p && REG_P (op))
+		reject++;
 
 	      /* Input reloads can be inherited more often than output
 		 reloads can be removed, so penalize output

@@ -1,3 +1,8 @@
+2012-11-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: New test.
+
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/54970
