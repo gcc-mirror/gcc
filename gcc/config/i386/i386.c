@@ -11414,10 +11414,6 @@ ix86_address_subreg_operand (rtx op)
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return false;
 
-  /* simplify_subreg does not handle stack pointer.  */
-  if (REGNO (op) == STACK_POINTER_REGNUM)
-    return false;
-
   /* Allow only SUBREGs of non-eliminable hard registers.  */
   return register_no_elim_operand (op, mode);
 }
@@ -13692,14 +13688,8 @@ void
 print_reg (rtx x, int code, FILE *file)
 {
   const char *reg;
+  unsigned int regno;
   bool duplicated = code == 'd' && TARGET_AVX;
-
-  gcc_assert (x == pc_rtx
-	      || (REGNO (x) != ARG_POINTER_REGNUM
-		  && REGNO (x) != FRAME_POINTER_REGNUM
-		  && REGNO (x) != FLAGS_REG
-		  && REGNO (x) != FPSR_REG
-		  && REGNO (x) != FPCR_REG));
 
   if (ASSEMBLER_DIALECT == ASM_ATT)
     putc ('%', file);
@@ -13710,6 +13700,13 @@ print_reg (rtx x, int code, FILE *file)
       fputs ("rip", file);
       return;
     }
+
+  regno = true_regnum (x);
+  gcc_assert (regno != ARG_POINTER_REGNUM
+	      && regno != FRAME_POINTER_REGNUM
+	      && regno != FLAGS_REG
+	      && regno != FPSR_REG
+	      && regno != FPCR_REG);
 
   if (code == 'w' || MMX_REG_P (x))
     code = 2;
@@ -13736,7 +13733,7 @@ print_reg (rtx x, int code, FILE *file)
     {
       gcc_assert (TARGET_64BIT);
       putc ('r', file);
-      fprint_ul (file, REGNO (x) - FIRST_REX_INT_REG + 8);
+      fprint_ul (file, regno - FIRST_REX_INT_REG + 8);
       switch (code)
 	{
 	  case 0:
@@ -13780,24 +13777,24 @@ print_reg (rtx x, int code, FILE *file)
     case 16:
     case 2:
     normal:
-      reg = hi_reg_name[REGNO (x)];
+      reg = hi_reg_name[regno];
       break;
     case 1:
-      if (REGNO (x) >= ARRAY_SIZE (qi_reg_name))
+      if (regno >= ARRAY_SIZE (qi_reg_name))
 	goto normal;
-      reg = qi_reg_name[REGNO (x)];
+      reg = qi_reg_name[regno];
       break;
     case 0:
-      if (REGNO (x) >= ARRAY_SIZE (qi_high_reg_name))
+      if (regno >= ARRAY_SIZE (qi_high_reg_name))
 	goto normal;
-      reg = qi_high_reg_name[REGNO (x)];
+      reg = qi_high_reg_name[regno];
       break;
     case 32:
       if (SSE_REG_P (x))
 	{
 	  gcc_assert (!duplicated);
 	  putc ('y', file);
-	  fputs (hi_reg_name[REGNO (x)] + 1, file);
+	  fputs (hi_reg_name[regno] + 1, file);
 	  return;
 	}
       break;
@@ -14571,22 +14568,6 @@ ix86_print_operand_address (FILE *file, rtx addr)
     ok = ix86_decompose_address (addr, &parts);
 
   gcc_assert (ok);
-
-  if (parts.base && GET_CODE (parts.base) == SUBREG)
-    {
-      rtx tmp = SUBREG_REG (parts.base);
-      parts.base = simplify_subreg (GET_MODE (parts.base),
-				    tmp, GET_MODE (tmp), 0);
-      gcc_assert (parts.base != NULL_RTX);
-    }
-
-  if (parts.index && GET_CODE (parts.index) == SUBREG)
-    {
-      rtx tmp = SUBREG_REG (parts.index);
-      parts.index = simplify_subreg (GET_MODE (parts.index),
-				     tmp, GET_MODE (tmp), 0);
-      gcc_assert (parts.index != NULL_RTX);
-    }
 
   base = parts.base;
   index = parts.index;

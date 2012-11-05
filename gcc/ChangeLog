@@ -1,3 +1,11 @@
+2012-11-05  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/55204
+	* config/i386/i386.c (ix86_address_subreg_operand): Remove stack
+	pointer check.
+	(print_reg): Use true_regnum rather than REGNO.
+	(ix86_print_operand_address): Remove SUBREG handling.
+
 2012-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
