@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Free Software Foundation
+// Copyright (C) 2011-2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,23 @@
 struct T { int i; };
 
 using __gnu_test::propagating_allocator;
+
+// It is undefined behaviour to swap() containers wth unequal allocators
+// if the allocator doesn't propagate, so ensure the allocators compare
+// equal, while still being able to test propagation via get_personality().
+bool
+operator==(const propagating_allocator<T, false>&,
+           const propagating_allocator<T, false>&)
+{
+  return true;
+}
+
+bool
+operator!=(const propagating_allocator<T, false>&,
+           const propagating_allocator<T, false>&)
+{
+  return false;
+}
 
 void test01()
 {
