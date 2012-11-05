@@ -9543,16 +9543,25 @@ fp_setter (rtx insn)
 	pat = XEXP (expr, 0);
     }
   if (GET_CODE (pat) == SET)
-    return SET_DEST (pat) == hard_frame_pointer_rtx;
+    {
+      if (SET_DEST (pat) != hard_frame_pointer_rtx)
+	return false;
+    }
   else if (GET_CODE (pat) == PARALLEL)
     {
       int i;
       for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
 	if (GET_CODE (XVECEXP (pat, 0, i)) == SET
 	    && SET_DEST (XVECEXP (pat, 0, i)) == hard_frame_pointer_rtx)
-	  return true;
+	  break;
+      if (i < 0)
+	return false;
     }
-  return false;
+  else
+    return false;
+  if (find_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx))
+    return false;
+  return true;
 }
 
 /* Initialize cfa_base_rtx, create a preserved VALUE for it and
@@ -9600,7 +9609,7 @@ vt_init_cfa_base (void)
 static bool
 vt_initialize (void)
 {
-  basic_block bb, prologue_bb = single_succ (ENTRY_BLOCK_PTR);
+  basic_block bb;
   HOST_WIDE_INT fp_cfa_offset = -1;
 
   alloc_aux_for_blocks (sizeof (struct variable_tracking_info_def));
@@ -9858,8 +9867,7 @@ vt_initialize (void)
 		      VTI (bb)->out.stack_adjust += post;
 		    }
 
-		  if (bb == prologue_bb
-		      && fp_cfa_offset != -1
+		  if (fp_cfa_offset != -1
 		      && hard_frame_pointer_adjustment == -1
 		      && RTX_FRAME_RELATED_P (insn)
 		      && fp_setter (insn))

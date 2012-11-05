@@ -1,3 +1,11 @@
+2012-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54402
+	* var-tracking.c (fp_setter): Return false if there is REG_CFA_RESTORE
+	hfp note.
+	(vt_initialize): Look for fp_setter in any bb, not just successor of
+	entry bb.
+
 2012-11-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_CACHE32, TARGET_HARVARD): Delete macro.
