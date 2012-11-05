@@ -1,7 +1,7 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+   2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2689,36 +2689,19 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		else_rtx = const0_rtx;
 	      }
 
-	    switch (GET_CODE (cond_rtx))
+	    if (COMPARISON_P (cond_rtx)
+		&& XEXP (cond_rtx, 0) == cc0_rtx)
 	      {
-	      case GTU:
-	      case GT:
-	      case LTU:
-	      case LT:
-	      case GEU:
-	      case GE:
-	      case LEU:
-	      case LE:
-	      case EQ:
-	      case NE:
-		{
-		  int result;
-		  if (XEXP (cond_rtx, 0) != cc0_rtx)
-		    break;
-		  result = alter_cond (cond_rtx);
-		  if (result == 1)
-		    validate_change (insn, &SET_SRC (set), then_rtx, 0);
-		  else if (result == -1)
-		    validate_change (insn, &SET_SRC (set), else_rtx, 0);
-		  else if (result == 2)
-		    INSN_CODE (insn) = -1;
-		  if (SET_DEST (set) == SET_SRC (set))
-		    delete_insn (insn);
-		}
-		break;
-
-	      default:
-		break;
+		int result;
+		result = alter_cond (cond_rtx);
+		if (result == 1)
+		  validate_change (insn, &SET_SRC (set), then_rtx, 0);
+		else if (result == -1)
+		  validate_change (insn, &SET_SRC (set), else_rtx, 0);
+		else if (result == 2)
+		  INSN_CODE (insn) = -1;
+		if (SET_DEST (set) == SET_SRC (set))
+		  delete_insn (insn);
 	      }
 	  }
 

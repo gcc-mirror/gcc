@@ -1,3 +1,8 @@
+2012-11-05  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* final.c (final_scan_insn) [HAVE_cc0]: Handle all comparison
+	codes in non-jump and cmove insn.
+
 2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
 	    Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 

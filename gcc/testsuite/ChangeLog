@@ -1,3 +1,7 @@
+2012-11-05  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/torture/fp-compare.c: New testcase.
+
 2012-11-05  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/const-1.c: Update.
