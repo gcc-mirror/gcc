@@ -1,3 +1,7 @@
+2012-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/torture/20121105-1.C: New test.
+
 2012-11-05  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.dg/torture/fp-compare.c: New testcase.
