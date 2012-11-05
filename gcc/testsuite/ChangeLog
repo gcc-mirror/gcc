@@ -1,3 +1,9 @@
+2012-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54970
+	PR debug/54971
+	* gcc.dg/guality/pr54970.c: Use NOP instead of "NOP" in inline-asm.
+
 2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/51128
