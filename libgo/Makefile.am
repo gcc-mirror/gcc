@@ -829,7 +829,27 @@ endif
 if LIBGO_IS_SOLARIS
 go_os_stat_file = go/os/stat_solaris.go
 else
+if LIBGO_IS_LINUX
+go_os_stat_file = go/os/stat_atim.go
+else
+if LIBGO_IS_OPENBSD
+go_os_stat_file = go/os/stat_atim.go
+else
+if LIBGO_IS_DARWIN
+go_os_stat_file = go/os/stat_atimspec.go
+else
+if LIBGO_IS_FREEBSD
+go_os_stat_file = go/os/stat_atimspec.go
+else
+if LIBGO_IS_NETBSD
+go_os_stat_file = go/os/stat_atimspec.go
+else
 go_os_stat_file = go/os/stat.go
+endif
+endif
+endif
+endif
+endif
 endif
 
 go_os_files = \
