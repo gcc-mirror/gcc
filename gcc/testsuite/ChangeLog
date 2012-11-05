@@ -1,3 +1,8 @@
+2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51128
+	* gcc.dg/torture/pr55018.c: Skip if -fno-fat-lto-objects was passed.
+
 2012-11-05  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/autopar/pr49960.c: Fix testcase.
@@ -574,7 +579,7 @@
 2012-10-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR gcc/52945
-	* gcc.dg/lto/pr52634_0.c: skip the test on Darwin.
+	* gcc.dg/lto/pr52634_0.c: Skip the test on Darwin.
 
 2012-10-23  Joseph Myers  <joseph@codesourcery.com>
 
@@ -9588,8 +9593,7 @@
 2012-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51502
-	* lib/gcc-dg.exp (scan-module-absence):  Really commit last
-	change.
+	* lib/gcc-dg.exp (scan-module-absence):  Really commit last change.
 
 2012-01-01  Ira Rosen  <irar@il.ibm.com>
 
