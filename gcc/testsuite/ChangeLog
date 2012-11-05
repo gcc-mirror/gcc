@@ -1,3 +1,8 @@
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/const-1.c: Update.
+	* gcc.dg/pure-1.c: Update.
+
 2012-11-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55151

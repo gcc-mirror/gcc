@@ -1,3 +1,8 @@
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-niter.c (finite_loop_p): Revamp to be just wrapper of
+	max_loop_iterations.
+
 2012-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* reorg.c (fill_simple_delay_slots): Avoid calling optimize_skip
