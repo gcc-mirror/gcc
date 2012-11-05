@@ -1,6 +1,6 @@
 /* CPU mode switching
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -342,6 +342,16 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		      }
 		    if (j >= 0)
 		      {
+			/* __builtin_return emits a sequence of loads to all
+			   return registers.  One of them might require
+			   another mode than MODE_EXIT, even if it is
+			   unrelated to the return value, so we want to put
+			   the final mode switch after it.  */
+			if (maybe_builtin_apply
+			    && targetm.calls.function_value_regno_p
+			        (copy_start))
+			  forced_late_switch = 1;
+
 			/* For the SH4, floating point loads depend on fpscr,
 			   thus we might need to put the final mode switch
 			   after the return value copy.  That is still OK,

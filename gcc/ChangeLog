@@ -1,3 +1,10 @@
+2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
+	    Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	* mode-switching.c (create_pre_exit): Force late switching if
+	__builtin_{apply,return} emitted a load that require mode,
+	other than MODE_EXIT.
+
 2012-11-05  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/55204
