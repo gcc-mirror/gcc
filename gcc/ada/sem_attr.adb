@@ -7235,6 +7235,8 @@ package body Sem_Attr is
       -- Loop_Entry --
       ----------------
 
+      --  This null processing requires an explanatory comment???
+
       when Attribute_Loop_Entry =>
          null;
 

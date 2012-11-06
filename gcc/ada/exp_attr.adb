@@ -5627,6 +5627,9 @@ package body Exp_Attr is
                --  function, then issue a warning that this will cause infinite
                --  recursion.
 
+               --  Do we have to issue these warnings in the expander rather
+               --  than during analysis (means they are skipped in -gnatc???).
+
                if Current_Scope = Pred_Func then
                   Error_Msg_N
                     ("attribute Valid requires a predicate check?", N);
