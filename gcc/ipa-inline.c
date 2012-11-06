@@ -459,16 +459,16 @@ want_early_inline_function_p (struct cgraph_edge *e)
 /* Compute time of the edge->caller + edge->callee execution when inlining
    does not happen.  */
 
-inline int
+inline gcov_type
 compute_uninlined_call_time (struct inline_summary *callee_info,
 			     struct cgraph_edge *edge)
 {
-  int uninlined_call_time =
+  gcov_type uninlined_call_time =
     RDIV ((gcov_type)callee_info->time * MAX (edge->frequency, 1),
 	  CGRAPH_FREQ_BASE);
-  int caller_time = inline_summary (edge->caller->global.inlined_to
-				    ? edge->caller->global.inlined_to
-				    : edge->caller)->time;
+  gcov_type caller_time = inline_summary (edge->caller->global.inlined_to
+				          ? edge->caller->global.inlined_to
+				          : edge->caller)->time;
   return uninlined_call_time + caller_time;
 }
 
@@ -479,12 +479,13 @@ inline gcov_type
 compute_inlined_call_time (struct cgraph_edge *edge,
 			   int edge_time)
 {
-  int caller_time = inline_summary (edge->caller->global.inlined_to
-				    ? edge->caller->global.inlined_to
-				    : edge->caller)->time;
-  int time = caller_time + RDIV ((edge_time - inline_edge_summary (edge)->call_stmt_time)
-			         * MAX (edge->frequency, 1),
-				 CGRAPH_FREQ_BASE);
+  gcov_type caller_time = inline_summary (edge->caller->global.inlined_to
+					  ? edge->caller->global.inlined_to
+					  : edge->caller)->time;
+  gcov_type time = (caller_time
+		    + RDIV (((gcov_type) edge_time
+			     - inline_edge_summary (edge)->call_stmt_time)
+		    * MAX (edge->frequency, 1), CGRAPH_FREQ_BASE));
   /* Possible one roundoff error, but watch for overflows.  */
   gcc_checking_assert (time >= INT_MIN / 2);
   if (time < 0)
@@ -770,9 +771,9 @@ relative_time_benefit (struct inline_summary *callee_info,
 		       struct cgraph_edge *edge,
 		       int edge_time)
 {
-  int relbenefit;
-  int uninlined_call_time = compute_uninlined_call_time (callee_info, edge);
-  int inlined_call_time = compute_inlined_call_time (edge, edge_time);
+  gcov_type relbenefit;
+  gcov_type uninlined_call_time = compute_uninlined_call_time (callee_info, edge);
+  gcov_type inlined_call_time = compute_inlined_call_time (edge, edge_time);
 
   /* Inlining into extern inline function is not a win.  */
   if (DECL_EXTERNAL (edge->caller->global.inlined_to
@@ -918,7 +919,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   (int) badness, (double)edge->frequency / CGRAPH_FREQ_BASE,
 		   relative_time_benefit (callee_info, edge, edge_time) * 100.0
 		   / RELATIVE_TIME_BENEFIT_RANGE, 
-		   compute_uninlined_call_time (callee_info, edge),
+		   (int)compute_uninlined_call_time (callee_info, edge),
 		   (int)compute_inlined_call_time (edge, edge_time),
 		   estimate_growth (callee),
 		   callee_info->growth);
