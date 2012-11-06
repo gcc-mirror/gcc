@@ -324,7 +324,10 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		    else
 		      break;
 		    if (copy_start >= FIRST_PSEUDO_REGISTER)
-		      break;
+		      {
+			last_insn = return_copy;
+			continue;
+		      }
 		    copy_num
 		      = hard_regno_nregs[copy_start][GET_MODE (copy_reg)];
 
