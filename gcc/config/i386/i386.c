@@ -3649,8 +3649,10 @@ ix86_option_override_internal (bool main_args_p)
 	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
 	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
-	  /* Enable 128-bit AVX instruction generation for the auto-vectorizer.  */
-	  if (TARGET_AVX128_OPTIMAL && !(target_flags_explicit & MASK_PREFER_AVX128))
+	  /* Enable 128-bit AVX instruction generation
+	     for the auto-vectorizer.  */
+	  if (TARGET_AVX128_OPTIMAL
+	      && !(target_flags_explicit & MASK_PREFER_AVX128))
 	    target_flags |= MASK_PREFER_AVX128;
 	}
     }
@@ -23415,7 +23417,6 @@ ix86_init_machine_status (void)
 
   f = ggc_alloc_cleared_machine_function ();
   f->use_fast_prologue_epilogue_nregs = -1;
-  f->tls_descriptor_call_expanded_p = 0;
   f->call_abi = ix86_abi;
   f->optimize_mode_switching[AVX_U128] = TARGET_VZEROUPPER;
 
