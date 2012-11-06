@@ -1,3 +1,12 @@
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-bignum.adb (Div_Rem): Fix bug in step D3.
+	* uintp.adb (UI_Div_Rem): Add comment on bug in step D3.
+
 2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Update the comment

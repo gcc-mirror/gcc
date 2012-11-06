@@ -11289,16 +11289,13 @@ package body Sem_Prag is
          --------------------
 
          --  pragma Loop_Assertion
-         --    (   [Invariant =>] boolean_Expression
-         --      | [Invariant =>] boolean_Expression ,
-         --         Variant => TERMINATION_VARIANTS
-         --      |  Variant => TERMINATION_VARIANTS );
-         --
-         --  TERMINATION_VARIANTS ::=
-         --    ( TERMINATION_VARIANT {, TERMINATION_VARIANT} )
-         --
+         --        (  [Invariant =>] boolean_Expression );
+         --     |  ( [[Invariant =>] boolean_Expression ,]
+         --            Variant   =>
+         --              ( TERMINATION_VARIANT {, TERMINATION_VARIANT ) );
+
          --  TERMINATION_VARIANT ::= CHANGE_MODIFIER => discrete_EXPRESSION
-         --
+
          --  CHANGE_MODIFIER ::= Increasing | Decreasing
 
          when Pragma_Loop_Assertion => Loop_Assertion : declare
