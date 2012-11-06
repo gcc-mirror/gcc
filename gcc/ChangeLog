@@ -1,3 +1,60 @@
+2012-11-05  Sriraman Tallam  <tmsriram@google.com>
+
+	* doc/tm.texi.in (TARGET_OPTION_FUNCTION_VERSIONS): New hook
+	description.
+	* (TARGET_COMPARE_VERSION_PRIORITY): New hook description.
+	* (TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): New hook description.
+	* (TARGET_GENERATE_VERSION_DISPATCHER_BODY): New hook description.
+	* doc/tm.texi: Regenerate.
+	* target.def (compare_version_priority): New target hook.
+	* (generate_version_dispatcher_body): New target hook.
+	* (get_function_versions_dispatcher): New target hook.
+	* (function_versions): New target hook.
+	* cgraph.c (cgraph_fnver_htab): New htab.
+	(cgraph_fn_ver_htab_hash): New function.
+	(cgraph_fn_ver_htab_eq): New function.
+	(version_info_node): New pointer.
+	(insert_new_cgraph_node_version): New function.
+	(get_cgraph_node_version): New function.
+	(delete_function_version): New function.
+	(record_function_versions): New function.
+	* cgraph.h (cgraph_node): New bitfield dispatcher_function.
+	(cgraph_function_version_info): New struct.
+	(get_cgraph_node_version): New function.
+	(insert_new_cgraph_node_version): New function.
+	(record_function_versions): New function.
+	(delete_function_version): New function.
+	(init_lowered_empty_function): Expose function.
+	* tree.h (DECL_FUNCTION_VERSIONED): New macro.
+	(tree_function_decl): New bit-field versioned_function.
+	* cgraphunit.c (cgraph_analyze_function): Generate body of multiversion
+	function dispatcher.
+	(cgraph_analyze_functions): Analyze dispatcher function.
+	(init_lowered_empty_function): Make non-static. New parameter in_ssa.
+	(assemble_thunk): Add parameter to call to init_lowered_empty_function.
+	* config/i386/i386.c (add_condition_to_bb): New function.
+	(get_builtin_code_for_version): New function.
+	(ix86_compare_version_priority): New function.
+	(feature_compare): New function.
+	(dispatch_function_versions): New function.
+	(ix86_function_versions): New function.
+	(attr_strcmp): New function.
+	(ix86_mangle_function_version_assembler_name): New function.
+	(ix86_mangle_decl_assembler_name): New function.
+	(make_name): New function.
+	(make_dispatcher_decl): New function.
+	(is_function_default_version): New function.
+	(ix86_get_function_versions_dispatcher): New function.
+	(make_attribute): New function.
+	(make_resolver_func): New function.
+	(ix86_generate_version_dispatcher_body): New function.
+	(fold_builtin_cpu): Return integer for cpu builtins.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): New macro.
+	(TARGET_COMPARE_VERSION_PRIORITY): New macro.
+	(TARGET_GENERATE_VERSION_DISPATCHER_BODY): New macro.
+	(TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): New macro.
+	(TARGET_OPTION_FUNCTION_VERSIONS): New macro.
+
 2012-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* recog.c (extract_insn): Enabled alternative defaults to 1.

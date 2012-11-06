@@ -1087,6 +1087,35 @@ add_method (tree type, tree method, tree using_decl)
 	      || same_type_p (TREE_TYPE (fn_type),
 			      TREE_TYPE (method_type))))
 	{
+	  /* For function versions, their parms and types match
+	     but they are not duplicates.  Record function versions
+	     as and when they are found.  extern "C" functions are
+	     not treated as versions.  */
+	  if (TREE_CODE (fn) == FUNCTION_DECL
+	      && TREE_CODE (method) == FUNCTION_DECL
+	      && !DECL_EXTERN_C_P (fn)
+	      && !DECL_EXTERN_C_P (method)
+	      && (DECL_FUNCTION_SPECIFIC_TARGET (fn)
+		  || DECL_FUNCTION_SPECIFIC_TARGET (method))
+	      && targetm.target_option.function_versions (fn, method))
+ 	    {
+	      /* Mark functions as versions if necessary.  Modify the mangled
+		 decl name if necessary.  */
+	      if (!DECL_FUNCTION_VERSIONED (fn))
+		{
+		  DECL_FUNCTION_VERSIONED (fn) = 1;
+		  if (DECL_ASSEMBLER_NAME_SET_P (fn))
+		    mangle_decl (fn);
+		}
+	      if (!DECL_FUNCTION_VERSIONED (method))
+		{
+		  DECL_FUNCTION_VERSIONED (method) = 1;
+		  if (DECL_ASSEMBLER_NAME_SET_P (method))
+		    mangle_decl (method);
+		}
+	      record_function_versions (fn, method);
+	      continue;
+	    }
 	  if (DECL_INHERITED_CTOR_BASE (method))
 	    {
 	      if (DECL_INHERITED_CTOR_BASE (fn))
@@ -6951,6 +6980,38 @@ pop_lang_context (void)
 {
   current_lang_name = VEC_pop (tree, current_lang_base);
 }
+
+/* fn is a function version dispatcher that is marked used. Mark all the 
+   semantically identical function versions it will dispatch as used.  */
+
+static void
+mark_versions_used (tree fn)
+{
+  struct cgraph_node *node;
+  struct cgraph_function_version_info *node_v;
+  struct cgraph_function_version_info *it_v;
+
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
+
+  node = cgraph_get_node (fn);
+  if (node == NULL)
+    return;
+
+  gcc_assert (node->dispatcher_function);
+
+  node_v = get_cgraph_node_version (node);
+  if (node_v == NULL)
+    return;
+
+  /* All semantically identical versions are chained.  Traverse and mark each
+     one of them as used.  */
+  it_v = node_v->next;
+  while (it_v != NULL)
+    {
+      mark_used (it_v->this_node->symbol.decl);
+      it_v = it_v->next;
+    }
+}
 
 /* Type instantiation routines.  */
 
@@ -7162,12 +7223,26 @@ resolve_address_of_overloaded_function (tree target_type,
     {
       /* There were too many matches.  First check if they're all
 	 the same function.  */
-      tree match;
+      tree match = NULL_TREE;
 
       fn = TREE_PURPOSE (matches);
-      for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
-	if (!decls_match (fn, TREE_PURPOSE (match)))
-	  break;
+
+      /* For multi-versioned functions, more than one match is just fine.
+	 Call decls_match to make sure they are different because they are
+	 versioned.  */
+      if (DECL_FUNCTION_VERSIONED (fn))
+	{
+          for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
+  	    if (!DECL_FUNCTION_VERSIONED (TREE_PURPOSE (match))
+	        || decls_match (fn, TREE_PURPOSE (match)))
+	      break;
+	}
+      else
+	{
+          for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
+  	    if (!decls_match (fn, TREE_PURPOSE (match)))
+	      break;
+	}
 
       if (match)
 	{
@@ -7206,6 +7281,28 @@ resolve_address_of_overloaded_function (tree target_type,
 	  inform (input_location, "(a pointer to member can only be formed with %<&%E%>)", fn);
 	  explained = 1;
 	}
+    }
+
+  /* If a pointer to a function that is multi-versioned is requested, the
+     pointer to the dispatcher function is returned instead.  This works
+     well because indirectly calling the function will dispatch the right
+     function version at run-time.  */
+  if (DECL_FUNCTION_VERSIONED (fn))
+    {
+      tree dispatcher_decl = NULL;
+      gcc_assert (targetm.get_function_versions_dispatcher);
+      dispatcher_decl = targetm.get_function_versions_dispatcher (fn);
+      if (!dispatcher_decl)
+	{
+	  error_at (input_location, "Pointer to a multiversioned function"
+		    " without a default is not allowed");
+	  return error_mark_node;
+	}
+      retrofit_lang_decl (dispatcher_decl);
+      fn = dispatcher_decl;
+      /* Mark all the versions corresponding to the dispatcher as used.  */
+      if (!(flags & tf_conv))
+	mark_versions_used (fn);
     }
 
   /* If we're doing overload resolution purely for the purpose of
