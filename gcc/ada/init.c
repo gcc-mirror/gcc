@@ -52,6 +52,10 @@ extern "C" {
 #include "vxWorks.h"
 #endif
 
+#ifdef __ANDROID__
+#undef linux
+#endif
+
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
