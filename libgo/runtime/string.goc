@@ -54,7 +54,7 @@ func stringiter(s String, k int) (retk int) {
 out:
 }
 
-func stringiter2(s String, k int) (retk int, retv int) {
+func stringiter2(s String, k int) (retk int, retv int32) {
 	if(k >= s.len) {
 		// retk=0 is end of iteration
 		retk = 0;

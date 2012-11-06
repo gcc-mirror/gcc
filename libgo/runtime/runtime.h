@@ -341,7 +341,7 @@ int32	runtime_ncpu;
 /*
  * common functions and data
  */
-int32	runtime_findnull(const byte*);
+intgo	runtime_findnull(const byte*);
 void	runtime_dump(byte*, int32);
 
 /*
@@ -614,7 +614,7 @@ extern uintptr runtime_stacks_sys;
 
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
-extern _Bool __go_file_line(uintptr, String*, String*, int *);
+extern _Bool __go_file_line(uintptr, String*, String*, intgo *);
 extern byte* runtime_progname();
 
 int32 getproccount(void);

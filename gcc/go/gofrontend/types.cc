@@ -2568,8 +2568,12 @@ Integer_type::create_abstract_integer_type()
 {
   static Integer_type* abstract_type;
   if (abstract_type == NULL)
-    abstract_type = new Integer_type(true, false, INT_TYPE_SIZE,
-				     RUNTIME_TYPE_KIND_INT);
+    {
+      Type* int_type = Type::lookup_integer_type("int");
+      abstract_type = new Integer_type(true, false,
+				       int_type->integer_type()->bits(),
+				       RUNTIME_TYPE_KIND_INT);
+    }
   return abstract_type;
 }
 

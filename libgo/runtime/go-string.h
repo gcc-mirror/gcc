@@ -26,6 +26,6 @@ __go_ptr_strings_equal (const String *ps1, const String *ps2)
   return __go_strings_equal (*ps1, *ps2);
 }
 
-extern int __go_get_rune (const unsigned char *, size_t, int *);
+extern int __go_get_rune (const unsigned char *, size_t, int32 *);
 
 #endif /* !defined(LIBGO_GO_STRING_H) */

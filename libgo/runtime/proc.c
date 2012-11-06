@@ -610,11 +610,11 @@ runtime_goroutinetrailer(G *g)
 	if(g != nil && g->gopc != 0 && g->goid != 1) {
 		String fn;
 		String file;
-		int line;
+		intgo line;
 
 		if(__go_file_line(g->gopc - 1, &fn, &file, &line)) {
 			runtime_printf("created by %S\n", fn);
-			runtime_printf("\t%S:%d\n", file, line);
+			runtime_printf("\t%S:%D\n", file, (int64) line);
 		}
 	}
 }
