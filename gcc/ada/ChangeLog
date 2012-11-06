@@ -1,3 +1,7 @@
+2012-11-06  Pascal Obry  <obry@adacore.com>
+
+	* xoscons.adb, xutil.adb, xutil.ads: Add support for post-processing.
+
 2012-11-06  Yannick Moy  <moy@adacore.com>
 
 	* s-bignum.adb (Div_Rem): Fix another bug in step D3.
