@@ -1,3 +1,23 @@
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Update the comment
+	on intended expansion.	Reimplement the logic which expands the
+	termination variants.
+	(Process_Increase_Decrease): Update the parameter profile and the
+	comment related to it. Accommodate the new aggregate-like appearance of
+	the termination variants.
+	* sem_prag.adb (Analyze_Pragma): Update the syntax of pragma
+	Loop_Assertion. Reimplement the semantic analysis of the pragma
+	to accommodate the new aggregate-like variant.
+	(Check_Variant): New routine.
+	* snames.ads-tmpl: Change names Name_Decreases and Name_Increases
+	to Name_Decreasing and Name_Increasing respectively. Add name
+	Variant.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb: Static evaluation of case expressions.
+
 2012-11-06  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb, impunit.adb, exp_ch9.adb, par-ch4.adb,

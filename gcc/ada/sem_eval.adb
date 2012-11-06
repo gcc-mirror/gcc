@@ -1759,21 +1759,63 @@ package body Sem_Eval is
    -- Eval_Case_Expression --
    --------------------------
 
-   --  Right now we do not attempt folding of any case expressions, and the
-   --  language does not require it, so the only required processing is to
-   --  do the check for all expressions appearing in the case expression.
+   --  A conditional expression is static if all its conditions and dependent
+   --  expressions are static.
 
    procedure Eval_Case_Expression (N : Node_Id) is
-      Alt : Node_Id;
+      Alt       : Node_Id;
+      Choice    : Node_Id;
+      Is_Static : Boolean;
+      Result    : Node_Id;
+      Val       : Uint;
 
    begin
-      Check_Non_Static_Context (Expression (N));
+      Result := Empty;
+      Is_Static := True;
+
+      if Is_Static_Expression (Expression (N)) then
+         Val := Expr_Value (Expression (N));
+
+      else
+         Check_Non_Static_Context (Expression (N));
+         Is_Static := False;
+      end if;
 
       Alt := First (Alternatives (N));
-      while Present (Alt) loop
-         Check_Non_Static_Context (Expression (Alt));
+
+      Search : while Present (Alt) loop
+         if not Is_Static
+           or else not Is_Static_Expression (Expression (Alt))
+         then
+            Check_Non_Static_Context (Expression (Alt));
+            Is_Static := False;
+
+         else
+            Choice := First (Discrete_Choices (Alt));
+            while Present (Choice) loop
+               if Nkind (Choice) = N_Others_Choice then
+                  Result := Expression (Alt);
+                  exit Search;
+
+               elsif Expr_Value (Choice) = Val then
+                  Result := Expression (Alt);
+                  exit Search;
+
+               else
+                  Next (Choice);
+               end if;
+            end loop;
+         end if;
+
          Next (Alt);
-      end loop;
+      end loop Search;
+
+      if Is_Static then
+         Rewrite (N, Relocate_Node (Result));
+
+      else
+         Set_Is_Static_Expression (N, False);
+      end if;
    end Eval_Case_Expression;
 
    ------------------------
