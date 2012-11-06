@@ -3862,7 +3862,6 @@ package body Sem_Eval is
    function Expr_Value_R (N : Node_Id) return Ureal is
       Kind : constant Node_Kind := Nkind (N);
       Ent  : Entity_Id;
-      Expr : Node_Id;
 
    begin
       if Kind = N_Real_Literal then
@@ -3875,25 +3874,6 @@ package body Sem_Eval is
 
       elsif Kind = N_Integer_Literal then
          return UR_From_Uint (Expr_Value (N));
-
-      --  Strange case of VAX literals, which are at this stage transformed
-      --  into Vax_Type!x_To_y(IEEE_Literal). See Expand_N_Real_Literal in
-      --  Exp_Vfpt for further details.
-
-      elsif Vax_Float (Etype (N))
-        and then Nkind (N) = N_Unchecked_Type_Conversion
-      then
-         Expr := Expression (N);
-
-         if Nkind (Expr) = N_Function_Call
-           and then Present (Parameter_Associations (Expr))
-         then
-            Expr := First (Parameter_Associations (Expr));
-
-            if Nkind (Expr) = N_Real_Literal then
-               return Realval (Expr);
-            end if;
-         end if;
 
       --  Peculiar VMS case, if we have xxx'Null_Parameter, return 0.0
 
