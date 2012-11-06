@@ -94,7 +94,7 @@ LIBADA_FLAGS_TO_PASS = \
 .PHONY: gnatlib gnatlib-plain gnatlib-sjlj gnatlib-zcx gnatlib-shared osconstool
 gnatlib: @default_gnatlib_target@
 
-gnatlib-plain: $(GCC_DIR)/ada/Makefile
+gnatlib-plain: osconstool $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) gnatlib \
 	&& touch stamp-libada
@@ -103,7 +103,7 @@ gnatlib-plain: $(GCC_DIR)/ada/Makefile
 	$(LN_S) $(ADA_RTS_DIR) adainclude
 	$(LN_S) $(ADA_RTS_DIR) adalib
 
-gnatlib-sjlj gnatlib-zcx gnatlib-shared: $(GCC_DIR)/ada/Makefile
+gnatlib-sjlj gnatlib-zcx gnatlib-shared: osconstool $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) $@ \
 	&& touch stamp-libada
@@ -111,6 +111,10 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: $(GCC_DIR)/ada/Makefile
 	-rm -rf adalib
 	$(LN_S) $(ADA_RTS_DIR) adainclude
 	$(LN_S) $(ADA_RTS_DIR) adalib
+
+osconstool:
+	$(MAKE) -C $(GCC_DIR) $(LIBADA_FLAGS_TO_PASS) ada/s-oscons.ads
+	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) copy-s-oscons
 
 install-gnatlib: $(GCC_DIR)/ada/Makefile
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) install-gnatlib
