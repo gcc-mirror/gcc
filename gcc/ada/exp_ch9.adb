@@ -14021,6 +14021,7 @@ package body Exp_Ch9 is
 
       declare
          Create_RE : RE_Id;
+
       begin
          if Restricted_Profile then
             if Partition_Elaboration_Policy = 'S' then
@@ -14031,6 +14032,7 @@ package body Exp_Ch9 is
          else
             Create_RE := RE_Create_Task;
          end if;
+
          Name := New_Reference_To (RTE (Create_RE), Loc);
       end;
 

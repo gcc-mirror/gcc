@@ -1,3 +1,26 @@
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, impunit.adb, exp_ch9.adb, par-ch4.adb,
+	s-tarest.adb: Minor reformatting.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tposen.ads: Minor comment update.
+
+2012-11-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sysdep.c: Rename sig* wrappers to use unique names.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* exp_dbug.adb (Qualify_Entity_Name): Mark entity as having a qualified
+	name after being treated, in formal verification mode.
+
+2012-11-06  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Updating gnattest section to reflect changes
+	in default behaviour of the tool.
+
 2012-11-06  Thomas Quinot  <quinot@adacore.com>
 
 	* s-oscons-tmplt.c: Interfaces.C now needs to be WITH'd even

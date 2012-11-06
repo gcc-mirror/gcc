@@ -933,47 +933,35 @@ __gnat_is_file_not_found_error (int errno_val) {
 /* Provide extern symbols for sig* as needed by the tasking run-time, instead
    of static inline functions.  */
 
-#define sigismember android_sigismember
-#define sigaddset android_sigaddset
-#define sigdelset android_sigdelset
-#define sigemptyset android_sigemptyset
-#define sigfillset android_sigfillset
-
 #include <signal.h>
 
-#undef sigismember
-#undef sigaddset
-#undef sigdelset
-#undef sigemptyset
-#undef sigfillset
-
 int
-sigismember (sigset_t *set, int signum)
+_sigismember (sigset_t *set, int signum)
 {
-    return android_sigismember (set, signum);
+    return sigismember (set, signum);
 }
 
 int
-sigaddset (sigset_t *set, int signum)
+_sigaddset (sigset_t *set, int signum)
 {
-   return android_sigaddset (set, signum);
+   return sigaddset (set, signum);
 }
 
 int
-sigdelset (sigset_t *set, int signum)
+_sigdelset (sigset_t *set, int signum)
 {
-   return android_sigdelset (set, signum);
+   return sigdelset (set, signum);
 }
 
 int
-sigemptyset (sigset_t *set)
+_sigemptyset (sigset_t *set)
 {
-    return android_sigemptyset (set);
+    return sigemptyset (set);
 }
 
 int
-sigfillset(sigset_t *set)
+_sigfillset(sigset_t *set)
 {
-    return android_sigfillset (set);
+    return sigfillset (set);
 }
 #endif

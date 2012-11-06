@@ -18348,6 +18348,22 @@ specifies the directory that will hold the harness packages and project file
 for the test driver. If the @var{dirname} is a relative path, it is considered
 relative to the object directory of the project file.
 
+@item --separates
+@cindex @option{--separates} (@command{gnattest})
+Bodies of all test routines are generated as separates. This option is
+temporarily provided for compatibility to support the old way of generating test
+skeletons. Its usage is not recommended because at some point the option will be
+abandoned together with this way of generating test packages.
+
+
+@item --transition
+@cindex @option{--transition} (@command{gnattest})
+This allows transition from separate test routines to monolith test packages.
+All matching test routines are overwritten with contents of corresponding
+separates. Note that if separate test routines had any manually added with
+clauses they will be moved to the test package body as is and have to be moved
+by hand.
+
 @end table
 
 @option{--tests_root}, @option{--subdir} and @option{--tests-dir} switches are
@@ -18432,8 +18448,11 @@ is located in:
 For each package containing visible subprograms, a child test package is
 generated. It contains one test routine per tested subprogram. Each
 declaration of a test subprogram has a comment specifying which tested
-subprogram it corresponds to. All of the test routines have separate bodies.
-The test routine located at simple-test_data-tests-test_inc_5eaee3.adb contains
+subprogram it corresponds to. Bodies of test routines are placed in test package
+bodies and are surrounded by special comment sections. Those comment sections
+should not be removed or modified in order for gnattest to be able to regenerate
+test packages and keep already written tests in place.
+The test routine Test_Inc_5eaee3 located at simple-test_data-tests.adb contains
 a single statement: a call to procedure Assert. It has two arguments:
 the Boolean expression we want to check and the diagnosis message to display if
 the condition is false.
@@ -18469,8 +18488,9 @@ values can be set by Set_Up routine and used in test routines afterwards.
 
 Bodies of test routines and test_data packages are never overridden after they
 have been created once. As long as the name of the subprogram, full expanded Ada
-names, and the order of its parameters is the same, the old test routine will
-fit in its place and no test skeleton will be generated for the subprogram.
+names, and the order of its parameters is the same, and comment sections are
+intact the old test routine will fit in its place and no test skeleton will be
+generated for the subprogram.
 
 This can be demonstrated with the previous example. By uncommenting declaration
 and body of function Dec in simple.ads and simple.adb, running
@@ -18487,7 +18507,7 @@ the old test is not replaced with a stub, nor is it lost, but a new test
 skeleton is created for function Dec.
 
 The only way of regenerating tests skeletons is to remove the previously created
-tests.
+tests together with corresponding comment sections.
 
 @node Default Test Behavior
 @section Default Test Behavior
@@ -18615,7 +18635,7 @@ Gnattest has a special option to run overridden parent tests against objects
 of the type which have overriding primitives:
 
 @smallexample
-gnattest --harness-dir=driver --liskov -Ptagged_rec.gpr
+gnattest --harness-dir=driver --validate-type-extensions -Ptagged_rec.gpr
 cd driver
 gprbuild -Ptest_driver
 test_runner

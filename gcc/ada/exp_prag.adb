@@ -819,20 +819,20 @@ package body Exp_Prag is
    --     Old_1  : <type of Incr_Expr>;
    --     Old_2  : <type of Decr_Expr>;
    --     Flag   : Boolean := False;
-   --
+
    --     for | while ... loop
    --        <preceding source statements>
-   --
+
    --        pragma Assert (<Invar_Expr>);
-   --
+
    --        if Flag then
    --           Old_1 := Curr_1;
    --           Old_2 := Curr_2;
    --        end if;
-   --
+
    --        Curr_1 := <Incr_Expr>;
    --        Curr_2 := <Decr_Expr>;
-   --
+
    --        if Flag then
    --           if Curr_1 /= Old_1 then
    --              pragma Assert (Curr_1 > Old_1);
@@ -842,7 +842,7 @@ package body Exp_Prag is
    --        else
    --           Flag := True;
    --        end if;
-   --
+
    --        <succeeding source statements>
    --     end loop;
 
@@ -886,7 +886,8 @@ package body Exp_Prag is
                  Make_Op_Gt (Loc,
                    Left_Opnd  => Curr_Val,
                    Right_Opnd => Old_Val);
-            else
+
+            else pragma Assert (Chars (Arg) = Name_Decreases);
                return
                  Make_Op_Lt (Loc,
                    Left_Opnd  => Curr_Val,
@@ -956,13 +957,11 @@ package body Exp_Prag is
              Object_Definition   =>
                New_Reference_To (Etype (Expr), Loop_Loc)));
 
-         --  Restore the original scope after all temporaries have been
-         --  analyzed.
+         --  Restore original scope after all temporaries have been analyzed
 
          Pop_Scope;
 
-         --  Step 3: Store the value of the expression from the previous
-         --  iteration.
+         --  Step 3: Store value of the expression from the previous iteration
 
          if No (Old_Assign) then
             Old_Assign := New_List;
@@ -990,8 +989,7 @@ package body Exp_Prag is
              Name       => New_Reference_To (Curr_Id, Loc),
              Expression => Relocate_Node (Expr)));
 
-         --  Step 5: Create the corresponding assertion to verify the change of
-         --  value.
+         --  Step 5: Create corresponding assertion to verify change of value
 
          --  Generate:
          --    pragma Assert (Curr <|> Old);
@@ -1136,6 +1134,8 @@ package body Exp_Prag is
                  Name       => New_Reference_To (Flag_Id, Loc),
                  Expression => New_Reference_To (Standard_True, Loc)))));
       end if;
+
+      --  Need a comment on this final rewrite ???
 
       Rewrite (N, Make_Null_Statement (Loc));
       Analyze (N);

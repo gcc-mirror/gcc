@@ -618,11 +618,12 @@ package body System.Tasking.Restricted.Stages is
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
       Task_Image    : String;
-      Created_Task  : Task_Id) is
+      Created_Task  : Task_Id)
+   is
    begin
-      Create_Restricted_Task (Priority, Stack_Address, Size, Task_Info,
-                              CPU, State, Discriminants, Elaborated,
-                              Task_Image, Created_Task);
+      Create_Restricted_Task
+        (Priority, Stack_Address, Size, Task_Info, CPU, State,
+         Discriminants, Elaborated, Task_Image, Created_Task);
 
       --  Append this task to the activation chain
 
