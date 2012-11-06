@@ -488,10 +488,16 @@ package body Bindgen is
             WBI ("");
          end if;
 
-         if System_Tasking_Restricted_Stages_Used then
-            WBI ("      procedure Activate_Tasks;");
-            WBI ("      pragma Import (C, Activate_Tasks," &
-                 " ""__gnat_activate_tasks"");");
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      Partition_Elaboration_Policy : Character;");
+            WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
+                  " ""__gnat_partition_elaboration_policy"");");
+            WBI ("");
+            WBI ("      procedure Activate_All_Tasks_Sequential;");
+            WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
+                 " ""__gnat_activate_all_tasks"");");
          end if;
 
          WBI ("   begin");
@@ -510,8 +516,18 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
 
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            Set_String ("      Partition_Elaboration_Policy := '");
+            Set_Char   (Partition_Elaboration_Policy_Specified);
+            Set_String ("';");
+            Write_Statement_Buffer;
+         end if;
+
          if Main_Priority = No_Main_Priority
            and then Main_CPU = No_Main_CPU
+           and then not System_Tasking_Restricted_Stages_Used
          then
             WBI ("      null;");
          end if;
@@ -587,10 +603,16 @@ package body Bindgen is
 
          --  Import task activation procedure for ravenscar
 
-         if System_Tasking_Restricted_Stages_Used then
-            WBI ("      procedure Activate_Tasks;");
-            WBI ("      pragma Import (C, Activate_Tasks," &
-                 " ""__gnat_activate_tasks"");");
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      Partition_Elaboration_Policy : Character;");
+            WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
+                  " ""__gnat_partition_elaboration_policy"");");
+            WBI ("");
+            WBI ("      procedure Activate_All_Tasks_Sequential;");
+            WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
+                 " ""__gnat_activate_all_tasks"");");
          end if;
 
          --  The import of the soft link which performs library-level object
@@ -726,6 +748,15 @@ package body Bindgen is
          Set_Char   (Task_Dispatching_Policy_Specified);
          Set_String ("';");
          Write_Statement_Buffer;
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            Set_String ("      Partition_Elaboration_Policy := '");
+            Set_Char   (Partition_Elaboration_Policy_Specified);
+            Set_String ("';");
+            Write_Statement_Buffer;
+         end if;
 
          Gen_Restrictions;
 
@@ -913,8 +944,10 @@ package body Bindgen is
          WBI ("      Freeze_Dispatching_Domains;");
       end if;
 
-      if System_Tasking_Restricted_Stages_Used then
-         WBI ("      Activate_Tasks;");
+      if System_Tasking_Restricted_Stages_Used
+        and then Partition_Elaboration_Policy_Specified = 'S'
+      then
+         WBI ("      Activate_All_Tasks_Sequential;");
       end if;
 
       --  Case of main program is CIL function or procedure

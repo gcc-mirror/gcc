@@ -252,14 +252,7 @@ main (void) {
  **/
 TXT("--  This is the version for " TARGET)
 TXT("")
-
-#ifdef HAVE_SOCKETS
-/**
- **  The type definitions for struct hostent components uses Interfaces.C
- **/
-
 TXT("with Interfaces.C;")
-#endif
 
 /*
 package System.OS_Constants is
