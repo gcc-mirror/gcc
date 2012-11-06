@@ -41,8 +41,8 @@ typedef double       float64 __attribute__ ((mode (DF)));
 typedef signed int   intptr __attribute__ ((mode (pointer)));
 typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
-typedef int		intgo; // Go's int
-typedef unsigned int	uintgo; // Go's uint
+typedef intptr		intgo; // Go's int
+typedef uintptr		uintgo; // Go's uint
 
 /* Defined types.  */
 
