@@ -1,5 +1,17 @@
 2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma): Do not
+	output the characters of an illegal argument as it may not have
+	characters to begin with.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion):
+	Change the order of argument processing to avoid disappearing
+	increase / decrease expressions.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_prag.adb: Add with and use clause for Sem_Ch8.
 	(Expand_N_Pragma): Add a new variant to expand pragma Loop_Assertion.
 	(Expand_Pragma_Loop_Assertion): New routine.
