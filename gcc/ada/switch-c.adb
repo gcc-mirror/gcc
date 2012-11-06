@@ -97,11 +97,8 @@ package body Switch.C is
    function Get_Overflow_Mode (C : Character) return Overflow_Check_Type is
    begin
       case C is
-         when '0' =>
-            return Suppressed;
-
          when '1' =>
-            return Checked;
+            return Strict;
 
          when '2' =>
             return Minimized;
@@ -801,12 +798,13 @@ package body Switch.C is
 
             when 'o' =>
                Ptr := Ptr + 1;
+               Suppress_Options.Suppress (Overflow_Check) := False;
 
                --  Case of no digits after the -gnato
 
-               if Ptr > Max or else Switch_Chars (Ptr) not in '0' .. '3' then
-                  Suppress_Options.Overflow_Checks_General    := Checked;
-                  Suppress_Options.Overflow_Checks_Assertions := Checked;
+               if Ptr > Max or else Switch_Chars (Ptr) not in '1' .. '3' then
+                  Suppress_Options.Overflow_Checks_General    := Strict;
+                  Suppress_Options.Overflow_Checks_Assertions := Strict;
 
                --  At least one digit after the -gnato
 
@@ -821,7 +819,7 @@ package body Switch.C is
                   --  be the same as general mode.
 
                   if Ptr > Max
-                    or else Switch_Chars (Ptr) not in '0' .. '3'
+                    or else Switch_Chars (Ptr) not in '1' .. '3'
                   then
                      Suppress_Options.Overflow_Checks_Assertions :=
                        Suppress_Options.Overflow_Checks_General;
@@ -868,9 +866,6 @@ package body Switch.C is
                         Suppress_Options.Suppress (J) := True;
                      end if;
                   end loop;
-
-                  Suppress_Options.Overflow_Checks_General    := Suppressed;
-                  Suppress_Options.Overflow_Checks_Assertions := Suppressed;
 
                   Validity_Checks_On  := False;
                   Opt.Suppress_Checks := True;

@@ -3840,11 +3840,11 @@ package body Exp_Util is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Insert_Actions (Assoc_Node, Ins_Actions);
-            Scope_Suppress := Svg;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -6727,7 +6727,7 @@ package body Exp_Util is
 
       --  All this must not have any checks
 
-      Scope_Suppress := Suppress_All;
+      Scope_Suppress.Suppress := (others => True);
 
       --  If it is a scalar type and we need to capture the value, just make
       --  a copy. Likewise for a function call, an attribute reference, an

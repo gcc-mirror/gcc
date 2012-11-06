@@ -2121,7 +2121,8 @@ package body Sem_Prag is
               (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
-         --  Record if pragma is disabled
+         --  For a pragma in the extended main source unit, record enabled
+         --  status in SCO (note: there is never any SCO for an instance).
 
          if Check_Enabled (Pname) then
             Set_SCO_Pragma_Enabled (Loc);
@@ -5058,7 +5059,8 @@ package body Sem_Prag is
 
                   --  If previous error, avoid cascaded errors
 
-                  Applies := True;
+                  Cascaded_Error;
+                  Applies   := True;
                   Effective := True;
 
                else
@@ -5701,18 +5703,6 @@ package body Sem_Prag is
          if C = No_Check_Id then
             Error_Pragma_Arg
               ("argument of pragma% is not valid check name", Arg1);
-         end if;
-
-         --  Special processing for overflow check case
-
-         if C = All_Checks or else C = Overflow_Check then
-            if Suppress_Case then
-               Scope_Suppress.Overflow_Checks_General    := Suppressed;
-               Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
-            else
-               Scope_Suppress.Overflow_Checks_General    := Checked;
-               Scope_Suppress.Overflow_Checks_Assertions := Checked;
-            end if;
          end if;
 
          if Arg_Count = 1 then
@@ -12007,10 +11997,11 @@ package body Sem_Prag is
          --  pragma Overflow_Checks
          --    ([General => ] MODE [, [Assertions => ] MODE]);
 
-         --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
+         --  MODE := STRICT | MINIMIZED | ELIMINATED
 
          --  Note: ELIMINATED is allowed only if Long_Long_Integer'Size is 64
-         --  since System.Bignums makes this assumption.
+         --  since System.Bignums makes this assumption. This is true of nearly
+         --  all (all?) targets.
 
          when Pragma_Overflow_Checks => Overflow_Checks : declare
             function Get_Check_Mode
@@ -12034,19 +12025,8 @@ package body Sem_Prag is
                Check_Optional_Identifier (Arg, Name);
                Check_Arg_Is_Identifier (Argx);
 
-               --  Do not suppress overflow checks for formal verification.
-               --  Instead, require that a check is inserted so that formal
-               --  verification can detect wraparound errors.
-
-               if Chars (Argx) = Name_Suppressed then
-                  if Alfa_Mode then
-                     return Checked;
-                  else
-                     return Suppressed;
-                  end if;
-
-               elsif Chars (Argx) = Name_Checked then
-                  return Checked;
+               if Chars (Argx) = Name_Strict then
+                  return Strict;
 
                elsif Chars (Argx) = Name_Minimized then
                   return Minimized;
@@ -14545,6 +14525,7 @@ package body Sem_Prag is
             --  Note: in previous versions of GNAT we used to check for limited
             --  types and give an error, but in fact the standard does allow
             --  Unchecked_Union on limited types, so this check was removed.
+
             --  Similarly, GNAT used to require that all discriminants have
             --  default values, but this is not mandated by the RM.
 
