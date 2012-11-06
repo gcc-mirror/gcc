@@ -2314,6 +2314,14 @@ grecord-gcc-switches
 Common RejectNegative Var(dwarf_record_gcc_switches,1)
 Record gcc command line switches in DWARF DW_AT_producer.
 
+gno-split-dwarf
+Common Driver RejectNegative Var(dwarf_split_debug_info,0) Init(0)
+Don't generate debug information in separate .dwo files
+
+gsplit-dwarf
+Common Driver RejectNegative Var(dwarf_split_debug_info,1)
+Generate debug information in separate .dwo files
+
 gstabs
 Common JoinedOrMissing Negative(gstabs+)
 Generate debug information in STABS format

@@ -259,6 +259,17 @@ enum dwarf_line_number_hp_sfc_ops
     DW_LNE_HP_SFC_associate = 3
   };
 
+/* Type codes for location list entries.
+   Extension for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
+
+enum dwarf_location_list_entry_type
+  {
+    DW_LLE_GNU_end_of_list_entry = 0,
+    DW_LLE_GNU_base_address_selection_entry = 1,
+    DW_LLE_GNU_start_end_entry = 2,
+    DW_LLE_GNU_start_length_entry = 3
+  };
+
 #define DW_CIE_ID	  0xffffffff
 #define DW64_CIE_ID	  0xffffffffffffffffULL
 #define DW_CIE_VERSION	  1
