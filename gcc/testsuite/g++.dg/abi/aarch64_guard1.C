@@ -2,7 +2,7 @@
 // 8-byte doubleword and that only the least significant bit is used
 // for initialization guard variables.
 // { dg-do compile { target aarch64*-*-* } }
-// { dg-options "-O -fdump-tree-original" }
+// { dg-options "-O -fdump-tree-original -fno-section-anchors" }
 
 int bar();
 
