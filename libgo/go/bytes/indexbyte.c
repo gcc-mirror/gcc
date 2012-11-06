@@ -13,11 +13,11 @@
    We deliberately don't split the stack in case it does call the
    library function, which shouldn't need much stack space.  */
 
-int IndexByte (struct __go_open_array, char)
+intgo IndexByte (struct __go_open_array, char)
   asm ("bytes.IndexByte")
   __attribute__ ((no_split_stack));
 
-int
+intgo
 IndexByte (struct __go_open_array s, char b)
 {
   char *p;
