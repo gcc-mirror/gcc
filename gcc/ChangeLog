@@ -119,7 +119,7 @@
 2012-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* doc/md.texi (Defining Attributes): Document that we are defining
-	HAVE_ATTR_name macors as 1 for defined attributes, and as 0
+	HAVE_ATTR_name macros as 1 for defined attributes, and as 0
 	for undefined special attributes.
 	* final.c (asm_insn_count, align_fuzz): Always define.
 	(insn_current_reference_address): Likewise.
