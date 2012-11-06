@@ -28,6 +28,7 @@
 #include <cxxabi.h>
 #include <new>
 #include <exception>
+#include <cstdlib>
 #include <bits/exception_defines.h>
 #include "unwind-cxx.h"
 
@@ -65,10 +66,18 @@ namespace __cxxabiv1
 			     std::size_t padding_size)
     {
       if (element_size && element_count > std::size_t(-1) / element_size)
+#ifdef __EXCEPTIONS
 	throw std::bad_alloc();
+#else
+        std::abort();
+#endif
       std::size_t size = element_count * element_size;
       if (size + padding_size < size)
+#ifdef __EXCEPTIONS
 	throw std::bad_alloc();
+#else
+        std::abort();
+#endif
       return size + padding_size;
     }
   }
