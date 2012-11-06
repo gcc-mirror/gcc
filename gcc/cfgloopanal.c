@@ -483,3 +483,36 @@ single_likely_exit (struct loop *loop)
   VEC_free (edge, heap, exits);
   return found;
 }
+
+
+/* Gets basic blocks of a LOOP.  Header is the 0-th block, rest is in dfs
+   order against direction of edges from latch.  Specially, if
+   header != latch, latch is the 1-st block.  */
+
+VEC (basic_block, heap) *
+get_loop_hot_path (const struct loop *loop)
+{
+  basic_block bb = loop->header;
+  VEC (basic_block, heap) *path = NULL;
+  bitmap visited = BITMAP_ALLOC (NULL);
+
+  while (true)
+    {
+      edge_iterator ei;
+      edge e;
+      edge best = NULL;
+
+      VEC_safe_push (basic_block, heap, path, bb);
+      bitmap_set_bit (visited, bb->index);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+        if ((!best || e->probability > best->probability)
+	    && !loop_exit_edge_p (loop, e)
+	    && !bitmap_bit_p (visited, e->dest->index))
+	  best = e;
+      if (!best || best->dest == loop->header)
+	break;
+      bb = best->dest;
+    }
+  BITMAP_FREE (visited);
+  return path;
+}

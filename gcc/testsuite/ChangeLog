@@ -1,3 +1,10 @@
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-1.c: Make to look like a good unroling candidate still.
+	* gcc.dg/tree-ssa/loop-23.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-1.c: Unrolling now happens early.
+	* gcc.dg/tree-prof/unroll-1.c: Remove confused dg-options.
+
 2012-11-06  David Edelsohn  <dje.gcc@gmail.com>
 
 	* const-uniq-1.c: Expand regex to match AIX XCOFF labels.

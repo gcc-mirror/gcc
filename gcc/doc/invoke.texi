@@ -9085,6 +9085,9 @@ the loop code is peeled.
 @item max-peel-times
 The maximum number of peelings of a single loop.
 
+@item max-peel-branches
+The maximum number of branches on the hot path through the peeled sequence.
+
 @item max-completely-peeled-insns
 The maximum number of insns of a completely peeled loop.
 
