@@ -621,21 +621,24 @@ package body System.Tasking.Restricted.Stages is
       Created_Task  : Task_Id)
    is
    begin
-      Create_Restricted_Task
-        (Priority, Stack_Address, Size, Task_Info, CPU, State,
-         Discriminants, Elaborated, Task_Image, Created_Task);
-
-      --  Append this task to the activation chain
-
       if Partition_Elaboration_Policy = 'S' then
 
-         --  In fact the elaboration policy is sequential, add this task to
-         --  the global activation chain to defer its activation.
+         --  A unit may have been compiled without partition elaboration
+         --  policy, and in this case the compiler will emit calls for the
+         --  default policy (concurrent). But if the partition policy is
+         --  sequential, activation must be deferred.
 
-         Created_Task.Common.Activation_Link := Tasks_Activation_Chain;
-         Tasks_Activation_Chain := Created_Task;
+         Create_Restricted_Task_Sequential
+           (Priority, Stack_Address, Size, Task_Info, CPU, State,
+            Discriminants, Elaborated, Task_Image, Created_Task);
 
       else
+         Create_Restricted_Task
+           (Priority, Stack_Address, Size, Task_Info, CPU, State,
+            Discriminants, Elaborated, Task_Image, Created_Task);
+
+         --  Append this task to the activation chain
+
          Created_Task.Common.Activation_Link := Chain.T_ID;
          Chain.T_ID := Created_Task;
       end if;

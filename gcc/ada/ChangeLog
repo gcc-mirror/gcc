@@ -1,3 +1,18 @@
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* s-bignum.adb (Div_Rem): Fix another bug in step D3.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tarest.adb (Create_Restricted_Task): Call
+	Create_Restricted_Task_Sequential in sequential case.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Do not rewrite the
+	pragma into a null statement as its presence is desirable in -gnatG
+	output.
+
 2012-11-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Check_Constrained_Object): Do nothing if the

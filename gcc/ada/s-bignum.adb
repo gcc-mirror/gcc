@@ -859,6 +859,8 @@ package body System.Bignums is
             --  This had a bug not discovered till 1995, see Vol 2 errata:
             --  http://www-cs-faculty.stanford.edu/~uno/err2-2e.ps.gz. Under
             --  rare circumstances the expression in the test could overflow.
+            --  This version was further corrected in 2005, see Vol 2 errata:
+            --  http://www-cs-faculty.stanford.edu/~uno/all2-pre.ps.gz.
             --  The code below is the fixed version of this step.
 
             --  D3. [Calculate qhat.] Set qhat to (uj,uj+1)/v1 and rhat to
@@ -868,13 +870,13 @@ package body System.Bignums is
             qhat := temp / DD (v1);
             rhat := temp mod DD (v1);
 
-            --  D3 (continued). Now test if qhat = b or v2*qhat > (rhat,uj+2):
+            --  D3 (continued). Now test if qhat >= b or v2*qhat > (rhat,uj+2):
             --  if so, decrease qhat by 1, increase rhat by v1, and repeat this
             --  test if rhat < b. [The test on v2 determines at at high speed
             --  most of the cases in which the trial value qhat is one too
             --  large, and eliminates all cases where qhat is two too large.]
 
-            while qhat = b
+            while qhat >= b
               or else DD (v2) * qhat > LSD (rhat) & u (j + 2)
             loop
                qhat := qhat - 1;

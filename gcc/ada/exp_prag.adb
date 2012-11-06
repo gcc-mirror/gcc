@@ -1177,11 +1177,10 @@ package body Exp_Prag is
                  Expression => New_Reference_To (Standard_True, Loc)))));
       end if;
 
-      --  The original pragma has been transformed into a complex sequence of
-      --  statements and does not need to remain in the tree.
+      --  Note: the pragma has been completely transformed into a sequence of
+      --  corresponding declarations and statements. We leave it in the tree
+      --  for documentation purposes. It will be ignored by the backend.
 
-      Rewrite (N, Make_Null_Statement (Loc));
-      Analyze (N);
    end Expand_Pragma_Loop_Assertion;
 
    --------------------------------
