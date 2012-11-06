@@ -1213,7 +1213,18 @@ find_duplicate (same_succ same_succ, basic_block bb1, basic_block bb2)
 
   while (!gsi_end_p (gsi1) && !gsi_end_p (gsi2))
     {
-      if (!gimple_equal_p (same_succ, gsi_stmt (gsi1), gsi_stmt (gsi2)))
+      gimple stmt1 = gsi_stmt (gsi1);
+      gimple stmt2 = gsi_stmt (gsi2);
+
+      if (!gimple_equal_p (same_succ, stmt1, stmt2))
+	return;
+
+      // We cannot tail-merge the builtins that end transactions.
+      // ??? The alternative being unsharing of BBs in the tm_init pass.
+      if (flag_tm
+	  && is_gimple_call (stmt1)
+	  && (gimple_call_flags (stmt1) & ECF_TM_BUILTIN)
+	  && is_tm_ending_fndecl (gimple_call_fndecl (stmt1)))
 	return;
 
       gsi_prev_nondebug (&gsi1);
