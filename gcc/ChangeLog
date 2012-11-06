@@ -1,3 +1,116 @@
+2012-11-06  Sterling Augustine <saugustine@google.com>
+            Cary Coutant <ccoutant@google.com>
+
+	* common.opt (gno-split-dwarf, gsplit-dwarf): New switches.
+	* doc/invoke.texi (Debugging Options): Document them.
+	* gcc.c (replace_extension_spec_func):  New function.
+	(ASM_FINAL_SPEC): Adjust.
+	(static_spec_functions): Add new field for replace-extension.
+	(check_live_switch): Adjust comment.  Add case for 'g'.
+	* opts.c (finish_options): Set x_debug_generate_pub_sections based on
+	x_dwarf_split_debug_info.
+	(common_handle_option): Add case for OPT_gsplit_dwarf.
+	* dwarf2out.h (addr_table_entry_struct): Add forward declaration.
+	(dw_val_struct): Add val_entry pointer.
+	* dwarf2out.c: (debug_skeleton_info_section,
+	debug_skeleton_abbrev_section, debug_addr_section,
+	debug_skeleton_line_section, debug_str_offsets_section): New globals.
+	(NOT_INDEXED, NO_INDEX_ASSIGNED): New defines.
+	(indirect_string_node): New field index.
+	(ate_kind): New enum with fields ate_kind_rtc, ate_kind_rtx_dtprel,
+	ate_kind_label.
+	(addr_table_entry): New structure and type.
+	(dw_loc_list_struct): Add field begin_entry.
+	(new_loc_desc): Initialize val_entry.
+	(size_of_loc_descr, output_loc_operands, output_loc_operands_raw):
+	Add cases for DW_OP_GNU_addr_index and DW_OP_const_index.
+	(build_cfa_loc): Initialize val_entry.
+	(AT_index, add_addr_table_entry, remove_addr_table_entry,
+	add_AT_lbl_id): New functions.
+	(add_AT_addr, add_AT_range_list): New parameter force_direct.
+	(output_die_abbrevs): New function.
+	(add_ranges_by_labels): New parameter force_direct.
+	(output_line_info): New parameter prologue_only.
+	(dtprel_bool): New enum with dtprel_false and dtprel_true.
+	(dw_addr_op, new_addr_loc_descr): New functions.
+	(DEBUG_DWO_INFO_SECTION, DEBUG_DWO_ABBREV_SECTION,
+	DEBUG_ADDR_SECTION, DEBUG_NORM_MACINFO_SECTION,
+	DEBUG_DWO_MACINFO_SECTION, DEBUG_MACINFO_SECTION,
+	DEBUG_NORM_MACRO_SECTION, DEBUG_DWO_MACRO_SECTION,
+	DEBUG_MACRO_SECTION, DEBUG_DWO_LINE_SECTION,
+	DEBUG_DWO_LOC_SECTION, DEBUG_NORM_STR_OFFSETS_SECTION,
+	DEBUG_DWO_STR_OFFSETS_SECTION, DEBUG_STR_OFFSETS_SECTION,
+	DEBUG_DWO_STR_SECTION, DEBUG_NORM_STR_SECTION, DEBUG_STR_SECTION,
+	DEBUG_MACRO_SECTION_FLAGS, DEBUG_SKELETON_LINE_SECTION_LABEL,
+	DEBUG_SKELETON_INFO_SECTION_LABEL, DEBUG_ADDR_SECTION_LABEL
+	DEBUG_SKELETON_ABBREV_SECTION_LABEL): New macros.
+	(DEBUG_STR_SECTION_FLAGS): Adjust.
+	(TEXT_SECTION_LABEL, COLD_TEXT_SECTION_LABEL,
+	DEBUG_LINE_SECTION_LABEL, DEBUG_INFO_SECTION_LABEL,
+	DEBUG_ABBREV_SECTION_LABEL, DEBUG_ADDR_SECTION_LABEL,
+	DEBUG_LOC_SECTION_LABEL, DEBUG_RANGES_SECTION_LABEL,
+	DEBUG_MACINFO_SECTION_LABEL, DEBUG_MACRO_SECTION_LABEL): Adjust
+	indentation.
+	(debug_skeleton_abbrev_section_label, debug_addr_section_label,
+	debug_skeleton_line_section_label, debug_skeleton_info_section_label):
+	New global variables.
+	(add_AT_flag, add_AT_int, add_AT_unsigned, add_AT_double, add_AT_vec,
+	add_AT_data8): Initialize val_entry.
+	(add_AT_low_high_pc): New parameter force_direct. Handle
+	dwarf_split_debug_info.
+	(set_indirect_string, find_AT_string_form): New functions.
+	(AT_string_form): Adjust to call find_AT_string_from.
+	(add_AT_die_ref, add_AT_fde_ref, add_AT_loc, add_AT_list):
+	Initialize val_entry.
+	(addr_index_table): New global variable.
+	(addr_table_entry_do_hash, addr_table_entry_eq, add_addr_table_entry,
+	init_addr_table_entry, remove_addr_table_entry, index_addr_table_entry,
+	remove_loc_list_addr_table_entries): New functions.
+	(add_AT_addr, add_AT_lbl_id, add_AT_range_list): New parameter
+	force_direct.  Handle dwarf_split_debug_info.
+	(add_AT_file, add_AT_vms_delta, add_AT_lineptr, add_AT_macptr,
+	add_AT_offset): Initialize val_entry.
+	(UNRELOCATED_OFFSET, RELOCATED_OFFSET): New defines.
+	(size_of_die): Handle dwarf_split_debug_info.
+	(size_of_aranges, value_format): Call AT_class.  Check AT_index.
+	(output_die_abbrevs): New function.
+	(output_abbrev_section): Call output_die_abbrevs.
+	(new_loc_list): Initialize begin_entry.
+	(output_loc_list): Handle dwarf_split_debug_info.
+	(output_range_list_offset, output_loc_list_offset,
+	output_attr_index_or_value, ): New functions.
+	(output_die): Fix call to dw2_asm_output_data.  Call
+	output_attr_index_or_value and output_range_list_offset.
+	Adjust logic around dw_val_class_str.
+	(add_top_lebel_skeleton_die_attrs, get_skeleton_type_unit,
+	output_skeleton_debug_sections): New functions.
+	(output_comdat_type_unit, output_pubname, output_aranges): Handle
+	dwarf_split_debug_info.
+	(add_ranges_by_labels): New parameter force_direct.
+	(mem_loc_descriptor, loc_descr): Call new_addr_loc_descr.
+	(loc_list_from_tree, add_const_value_attribtue): Use dtprel_bools in
+	place of generic integer.
+	(dwarf2out_vms_debug_main_pointer, gen_entry_point_die, gen_label_die,
+	gen_call_site_die, gen_subprogram_die, gen_variable_die,
+	add_high_low_attributes): Adjust calls to add_AT_lbl_id.
+	(output_macinfo_op): Adjust indirect_string_logic.
+	(save_macinfo_strings): New function.
+	(output_macinfo): Adjust.
+	(dwarf2out_init): Handle dwarf_split_debug_info.
+	(index_string, output_index_string_offset, output_index_string): New
+	functions.
+	(output_indirect_string): Adjust.
+	(output_indirect_strings, output_addr_table_entry, output_addr_table):
+	New functions.
+	(resolve_addr_in_expr, hash_loc_operands): Handle DW_OP_GNU_addr_index
+	and DW_OP_GNU_const_index.  Handle dwarf_split_debug_info.  Call
+	remove_loc_list_addr_table_entries and remove_addr_table_entry.
+	(index_location_lists): New function.
+	(dwarf2out_finish): Handle dwarf_split_debug_info.  New variable
+	main_comp_unit_die.  Adjust calls to add_AT_low_high_pc,
+	add_ranges_by_labels, add_AT_addr, and add_AT_lineptr. Call
+	save_macinfo_strings and output_indirect_strings.
+
 2012-11-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/i386.c (make_dispatcher_decl): Guard with

@@ -4846,6 +4846,14 @@ it reasonable to use the optimizer for programs that might have bugs.
 The following options are useful when GCC is generated with the
 capability for more than one debugging format.
 
+@item -gsplit-dwarf
+@opindex gsplit-dwarf
+Separate as much dwarf debugging information as possible into a
+separate output file with the extension .dwo.  This option allows
+the build system to avoid linking files with debug information.  To
+be useful, this option requires a debugger capable of reading .dwo
+files.
+
 @item -ggdb
 @opindex ggdb
 Produce debugging information for use by GDB@.  This means to use the
