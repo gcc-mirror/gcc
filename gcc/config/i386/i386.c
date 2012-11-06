@@ -28813,6 +28813,8 @@ make_name (tree decl, const char *suffix, bool make_unique)
   return global_var_name;
 }
 
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+
 /* Make a dispatcher declaration for the multi-versioned function DECL.
    Calls to DECL function will be replaced with calls to the dispatcher
    by the front-end.  Return the decl created.  */
@@ -28849,6 +28851,8 @@ make_dispatcher_decl (const tree decl)
 
   return func_decl;  
 }
+
+#endif
 
 /* Returns true if decl is multi-versioned and DECL is the default function,
    that is it is not tagged with target specific optimization.  */

@@ -1,3 +1,8 @@
+2012-11-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/i386/i386.c (make_dispatcher_decl): Guard with
+	ASM_OUTPUT_TYPE_DIRECTIVE and HAVE_GNU_INDIRECT_FUNCTION.
+
 2012-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (estimate_function_body_sizes,
