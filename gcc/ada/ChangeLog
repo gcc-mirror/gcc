@@ -1,3 +1,7 @@
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb, exp_vfpt.adb, xoscons.adb: Minor reformatting.
+
 2012-11-06  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_vfpt.adb: Document VAX float point layout.

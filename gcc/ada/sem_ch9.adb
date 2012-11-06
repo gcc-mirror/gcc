@@ -1470,7 +1470,7 @@ package body Sem_Ch9 is
 
       Analyze (Call);
 
-      --  An indirect call in this context  is illegal. A procedure call that
+      --  An indirect call in this context is illegal. A procedure call that
       --  does not involve a renaming of an entry is illegal as well, but this
       --  and other semantic errors are caught during resolution.
 
