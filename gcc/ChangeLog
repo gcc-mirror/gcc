@@ -1,3 +1,22 @@
+2012-11-06  Andrey Turetskiy  <andrey.turetskiy@gmail.com>
+
+	* config/i386/i386.c (bdesc_args): Rename CODE_FOR_avx2_umulhrswv16hi3 to
+	CODE_FOR_avx2_pmulhrswv16hi3.
+	* config/i386/predicates.md (const1_operand): Extend for vectors.
+	* config/i386/sse.md (ssse3_avx2): Extend.
+	(ssedoublemode): Ditto.
+	(<sse2_avx2>_uavg<mode>3): Merge avx2_uavgv32qi3, sse2_uavgv16qi3,
+	avx2_uavgv16hi3 and sse2_uavgv8hi3 into one.
+	(*<sse2_avx2>_uavg<mode>3): Merge *avx2_uavgv32qi3, *sse2_uavgv16qi3,
+	*avx2_uavgv16hi3 and *sse2_uavgv8hi3 into one.
+	(PMULHRSW): New.
+	(<ssse3_avx2>_pmulhrsw<mode>3): Merge avx2_umulhrswv16hi3,
+	ssse3_pmulhrswv8hi3 and ssse3_pmulhrswv4hi3 into one.
+	(*avx2_pmulhrswv16hi3): Replace const_vector with const1_operand
+	predicate.
+	(*ssse3_pmulhrswv8hi3): Ditto.
+	(*ssse3_pmulhrswv4hi3): Ditto.
+
 2012-11-06  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.c (epiphany_address_cost):

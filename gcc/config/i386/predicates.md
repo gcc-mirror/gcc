@@ -568,10 +568,14 @@
   return op == CONST0_RTX (mode);
 })
 
-;; Match exactly one.
+;; Match one or vector filled with ones.
 (define_predicate "const1_operand"
-  (and (match_code "const_int")
-       (match_test "op == const1_rtx")))
+  (match_code "const_int,const_double,const_vector")
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+  return op == CONST1_RTX (mode);
+})
 
 ;; Match exactly eight.
 (define_predicate "const8_operand"
