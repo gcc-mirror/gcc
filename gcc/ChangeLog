@@ -1,3 +1,7 @@
+2012-11-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* recog.c (extract_insn): Enabled alternative defaults to 1.
+
 2012-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (print_reg): Replace REX_INT_REG_P with
