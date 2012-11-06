@@ -1,3 +1,8 @@
+2012-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/shared_ptr/cons/55123.cc: Remove duplicate
+	include.
+
 2012-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/atomic_base.h: Don't include <cstddef>, use nullptr.
