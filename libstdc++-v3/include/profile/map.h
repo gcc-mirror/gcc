@@ -261,6 +261,7 @@ namespace __profile
 					   std::forward<_Args>(__args)...);
 	  __profcxx_map_to_unordered_map_insert(this, size_before,
 						size() - size_before);
+	  return __res;
 	}
 #endif
 
