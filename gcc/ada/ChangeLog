@@ -1,3 +1,27 @@
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* fe.h (Get_Vax_Real_Literal_As_Signed): Declare.
+	* eval_fat.adb, eval_fat.ads (Decompose_Int): Move spec in package spec.
+	* exp_vfpt.adb, exp_vfpt.ads (Vax_Real_Literal_As_Signed): New function.
+	(Expand_Vax_Real_Literal): Remove.
+	* exp_ch2.adb (Expand_N_Real_Literal): Do nothing.
+	* sem_eval.adb (Expr_Value_R): Remove special Vax float case,
+	as this is not anymore a special case.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* uintp.ads: Minor correction of typo in comment.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragnma, case Unchecked_Union): remove
+	requirement that discriminants of an unchecked_union must have
+	defaults.
+
+2012-11-06  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* projects.texi: Minor wordsmithing.
+
 2012-11-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch9.adb, exp_vfpt.adb, xoscons.adb: Minor reformatting.

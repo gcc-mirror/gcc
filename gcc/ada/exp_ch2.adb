@@ -32,7 +32,6 @@ with Errout;   use Errout;
 with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Exp_VFpt; use Exp_VFpt;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -637,9 +636,8 @@ package body Exp_Ch2 is
 
    procedure Expand_N_Real_Literal (N : Node_Id) is
    begin
-      if Vax_Float (Etype (N)) then
-         Expand_Vax_Real_Literal (N);
-      end if;
+      --  Vax real literal are now allowed by gigi
+      null;
    end Expand_N_Real_Literal;
 
    --------------------------------
