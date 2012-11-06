@@ -1,3 +1,11 @@
+2012-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54917
+	* target-memory.c (gfc_target_expr_size,gfc_target_interpret_expr):
+	Handle BT_CLASS.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Add support for
+	polymorphic arguments.
+
 2012-11-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55199
