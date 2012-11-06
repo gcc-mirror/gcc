@@ -776,7 +776,9 @@ package body System.Bignums is
 
          d    : DD;
          j    : Length;
-         qhat : SD;
+         qhat : DD;
+         rhat : DD;
+         temp : DD;
 
       begin
          --  Initialize data of left and right operands
@@ -847,26 +849,37 @@ package body System.Bignums is
          --  Loop through digits
 
          loop
+            --  Note: In the original printing, step D3 was as follows:
+
             --  D3. [Calculate qhat.] If uj = v1, set qhat to b-l; otherwise
-            --  set qhat to (uj,uj+1)/v1.
+            --  set qhat to (uj,uj+1)/v1. Now test if v2 * qhat is greater than
+            --  (uj*b + uj+1 - qhat*v1)*b + uj+2. If so, decrease qhat by 1 and
+            --  repeat this test
 
-            if u (j) = v1 then
-               qhat := -1;
-            else
-               qhat := SD ((u (j) & u (j + 1)) / DD (v1));
-            end if;
+            --  This had a bug not discovered till 1995, see Vol 2 errata:
+            --  http://www-cs-faculty.stanford.edu/~uno/err2-2e.ps.gz. Under
+            --  rare circumstances the expression in the test could overflow.
+            --  The code below is the fixed version of this step.
 
-            --  D3 (continued). Now test if v2 * qhat is greater than (uj*b +
-            --  uj+1 - qhat*v1)*b + uj+2. If so, decrease qhat by 1 and repeat
-            --  this test, which determines at high speed most of the cases in
-            --  which the trial value qhat is one too large, and it eliminates
-            --  all cases where qhat is two too large.
+            --  D3. [Calculate qhat.] Set qhat to (uj,uj+1)/v1 and rhat to
+            --  to (uj,uj+1) mod v1.
 
-            while DD (v2) * DD (qhat) >
-                   ((u (j) & u (j + 1)) -
-                     DD (qhat) * DD (v1)) * b + DD (u (j + 2))
+            temp := u (j) & u (j + 1);
+            qhat := temp / DD (v1);
+            rhat := temp mod DD (v1);
+
+            --  D3 (continued). Now test if qhat = b or v2*qhat > (rhat,uj+2):
+            --  if so, decrease qhat by 1, increase rhat by v1, and repeat this
+            --  test if rhat < b. [The test on v2 determines at at high speed
+            --  most of the cases in which the trial value qhat is one too
+            --  large, and eliminates all cases where qhat is two too large.]
+
+            while qhat = b
+              or else DD (v2) * qhat > LSD (rhat) & u (j + 2)
             loop
                qhat := qhat - 1;
+               rhat := rhat + DD (v1);
+               exit when rhat >= b;
             end loop;
 
             --  D4. [Multiply and subtract.] Replace (uj,uj+1..uj+n) by
@@ -892,7 +905,7 @@ package body System.Bignums is
             begin
                Borrow := 0;
                for K in reverse 1 .. n loop
-                  Temp := DD (qhat) * DD (v (K)) + DD (Borrow);
+                  Temp := qhat * DD (v (K)) + DD (Borrow);
                   Borrow := MSD (Temp);
 
                   if LSD (Temp) > u (j + K) then
@@ -908,7 +921,7 @@ package body System.Bignums is
                --  D5. [Test remainder.] Set qj = qhat. If the result of step
                --  D4 was negative, we will do the add back step (step D6).
 
-               q (j) := qhat;
+               q (j) := LSD (qhat);
 
                if Negative then
 
