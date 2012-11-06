@@ -1,3 +1,16 @@
+2012-11-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Apply a predicate
+	check when evaluating the attribute Valid, and issue a warning
+	about infinite recursion when the check occurs within the
+	predicate function of the prefix's subtype.
+	* exp_ch4.adb (Expand_N_In): Remove test for Is_Discrete_Type
+	when we're checking that there's no predicate check function as a
+	condition for substituting a Valid check for a scalar membership
+	test (substitution should be suppressed for any kind of scalar
+	subtype with a predicate check). Also, don't emit a predicate
+	check when the right operand is a range.
+
 2012-11-06  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, bindgen.adb, exp_vfpt.adb, exp_vfpt.ads, exp_ch2.adb,

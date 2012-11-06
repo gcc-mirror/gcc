@@ -5565,8 +5565,7 @@ package body Exp_Ch4 is
         --  Skip this for predicated types, where such expressions are a
         --  reasonable way of testing if something meets the predicate.
 
-        and then not (Is_Discrete_Type (Ltyp)
-                       and then Present (Predicate_Function (Ltyp)))
+        and then not Present (Predicate_Function (Ltyp))
       then
          Substitute_Valid_Check;
          return;
@@ -6103,6 +6102,9 @@ package body Exp_Ch4 is
       --  If a predicate is present, then we do the predicate test, but we
       --  most certainly want to omit this if we are within the predicate
       --  function itself, since otherwise we have an infinite recursion!
+      --  The check should also not be emitted when testing against a range
+      --  (the check is only done when the right operand is a subtype; see
+      --  RM12-4.5.2 (28.1/3-30/3)).
 
       declare
          PFunc : constant Entity_Id := Predicate_Function (Rtyp);
@@ -6110,6 +6112,7 @@ package body Exp_Ch4 is
       begin
          if Present (PFunc)
            and then Current_Scope /= PFunc
+           and then Nkind (Rop) /= N_Range
          then
             Rewrite (N,
               Make_And_Then (Loc,

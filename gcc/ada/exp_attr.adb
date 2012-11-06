@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch3;  use Exp_Ch3;
@@ -5607,6 +5608,32 @@ package body Exp_Attr is
 
             Rewrite (N, Make_Range_Test);
          end if;
+
+         --  If a predicate is present, then we do the predicate test, even if
+         --  within the predicate function (infinite recursion is warned about
+         --  in that case).
+
+         declare
+            Pred_Func : constant Entity_Id := Predicate_Function (Ptyp);
+
+         begin
+            if Present (Pred_Func) then
+               Rewrite (N,
+                 Make_And_Then (Loc,
+                   Left_Opnd  => Relocate_Node (N),
+                   Right_Opnd => Make_Predicate_Call (Ptyp, Pref)));
+
+               --  If the attribute appears within the subtype's own predicate
+               --  function, then issue a warning that this will cause infinite
+               --  recursion.
+
+               if Current_Scope = Pred_Func then
+                  Error_Msg_N
+                    ("attribute Valid requires a predicate check?", N);
+                  Error_Msg_N ("\and will result in infinite recursion?", N);
+               end if;
+            end if;
+         end;
 
          Analyze_And_Resolve (N, Standard_Boolean);
          Validity_Checks_On := Save_Validity_Checks_On;
