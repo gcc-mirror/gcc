@@ -1,4 +1,27 @@
 2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
+            Richard Henderson  <rth@redhat.com>
+
+	* cfg-flags.def (TM_UNINSTRUMENTED, TM_ABORT): New.
+	* trans-mem.c (PROB_VERY_LIKELY, PROB_UNLIKELY, PROB_LIKELY): New.
+	(struct tm_region): Add tm_state, restart_block,
+	original_transaction_was_outer.
+	(tm_region_init_0): Initialize them.
+	(collect_bb2reg, get_bb_regions_instrumented): New.
+	(tm_log_emit_save_or_restores): Merge into ...
+	(expand_transaction): ... here.
+	(generate_tm_state, propagate_tm_flags_out): New.
+	(execute_tm_mark): Avoid processing blocks more than once.
+	(split_bb_make_tm_edge): Split out from ...
+	(make_tm_edge): ... here.  And merge the rest into ...
+	(expand_block_edges): ... here.
+	(execute_tm_edges): Avoid processing blocks more than once.
+	(ipa_uninstrument_transaction): New.
+	(ipa_tm_scan_calls_transaction): Use it.  Rebuild cgraph and ssa.
+	(ipa_tm_execute): Init and free original_copy_tables.
+	* trans-mem.h (PR_MULTIWAYCODE): New.
+	* tree-cfg.c (make_edges): Use EDGE_TM_ABORT.
+
+2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cfghooks.c (copy_bbs): Handle a null loop_father.
 
