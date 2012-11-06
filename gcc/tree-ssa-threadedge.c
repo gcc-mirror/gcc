@@ -610,6 +610,10 @@ cond_arg_set_in_bb (edge e, basic_block bb)
   return false;
 }
 
+DEF_VEC_O(tree);
+DEF_VEC_ALLOC_O_STACK(tree);
+#define VEC_tree_stack_alloc(alloc) VEC_stack_alloc (tree, alloc)
+
 /* Copy debug stmts from DEST's chain of single predecessors up to
    SRC, so that we don't lose the bindings as PHI nodes are introduced
    when DEST gains new predecessors.  */
@@ -625,10 +629,35 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
   gcc_checking_assert (dest != src);
 
   gimple_stmt_iterator gsi = gsi_after_labels (dest);
-  pointer_set_t *vars = pointer_set_create ();
+  int i = 0;
+  const int alloc_count = 16; // ?? Should this be a PARAM?
 
+  /* Estimate the number of debug vars overridden in the beginning of
+     DEST, to tell how many we're going to need to begin with.  */
   for (gimple_stmt_iterator si = gsi;
-       !gsi_end_p (si); gsi_next (&si))
+       i * 4 <= alloc_count * 3 && !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple stmt = gsi_stmt (si);
+      if (!is_gimple_debug (stmt))
+	break;
+      i++;
+    }
+
+  VEC(tree, stack) *fewvars = NULL;
+  pointer_set_t *vars = NULL;
+
+  /* If we're already starting with 3/4 of alloc_count, go for a
+     pointer_set, otherwise start with an unordered stack-allocated
+     VEC.  */
+  if (i * 4 > alloc_count * 3)
+    vars = pointer_set_create ();
+  else if (alloc_count)
+    fewvars = VEC_alloc (tree, stack, alloc_count);
+
+  /* Now go through the initial debug stmts in DEST again, this time
+     actually inserting in VARS or FEWVARS.  Don't bother checking for
+     duplicates in FEWVARS.  */
+  for (gimple_stmt_iterator si = gsi; !gsi_end_p (si); gsi_next (&si))
     {
       gimple stmt = gsi_stmt (si);
       if (!is_gimple_debug (stmt))
@@ -643,7 +672,10 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
       else
 	gcc_unreachable ();
 
-      pointer_set_insert (vars, var);
+      if (vars)
+	pointer_set_insert (vars, var);
+      else
+	VEC_quick_push (tree, fewvars, var);
     }
 
   basic_block bb = dest;
@@ -675,8 +707,28 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 	     or somesuch.  Adding `&& bb == src' to the condition
 	     below will preserve all potentially relevant debug
 	     notes.  */
-	  if (pointer_set_insert (vars, var))
+	  if (vars && pointer_set_insert (vars, var))
 	    continue;
+	  else if (!vars)
+	    {
+	      int i = VEC_length (tree, fewvars);
+	      while (i--)
+		if (VEC_index (tree, fewvars, i) == var)
+		  break;
+	      if (i >= 0)
+		continue;
+
+	      if (VEC_length (tree, fewvars) < alloc_count)
+		VEC_quick_push (tree, fewvars, var);
+	      else
+		{
+		  vars = pointer_set_create ();
+		  for (i = 0; i < alloc_count; i++)
+		    pointer_set_insert (vars, VEC_index (tree, fewvars, i));
+		  VEC_free (tree, stack, fewvars);
+		  pointer_set_insert (vars, var);
+		}
+	    }
 
 	  stmt = gimple_copy (stmt);
 	  /* ??? Should we drop the location of the copy to denote
@@ -686,7 +738,10 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
     }
   while (bb != src && single_pred_p (bb));
 
-  pointer_set_destroy (vars);
+  if (vars)
+    pointer_set_destroy (vars);
+  else if (fewvars)
+    VEC_free (tree, stack, fewvars);
 }
 
 /* TAKEN_EDGE represents the an edge taken as a result of jump threading.
