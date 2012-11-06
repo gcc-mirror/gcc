@@ -911,10 +911,10 @@ package body Exp_Ch9 is
    --  Start of processing for Build_Activation_Chain_Entity
 
    begin
-      --  Activation chain is never used in restricted profile, see comment
-      --  for Create_Restricted_Task in s-tarest.ads.
+      --  Activation chain is never used for sequential elaboration policy, see
+      --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
 
-      if Restricted_Profile then
+      if Partition_Elaboration_Policy = 'S' then
          return;
       end if;
 
@@ -4900,10 +4900,10 @@ package body Exp_Ch9 is
       P     : Node_Id;
 
    begin
-      --  On restricted profile, all the tasks will be activated at the end
-      --  of the elaboration (Sequential elaboration policy).
+      --  For sequential elaboration policy, all the tasks will be activated at
+      --  the end of the elaboration.
 
-      if Restricted_Profile then
+      if Partition_Elaboration_Policy = 'S' then
          return;
       end if;
 
@@ -4925,7 +4925,11 @@ package body Exp_Ch9 is
       end if;
 
       if Present (Chain) then
-         Name := New_Reference_To (RTE (RE_Activate_Tasks), Loc);
+         if Restricted_Profile then
+            Name := New_Reference_To (RTE (RE_Activate_Restricted_Tasks), Loc);
+         else
+            Name := New_Reference_To (RTE (RE_Activate_Tasks), Loc);
+         end if;
 
          Call :=
            Make_Procedure_Call_Statement (Loc,
@@ -13980,10 +13984,10 @@ package body Exp_Ch9 is
           Prefix => Make_Identifier (Loc, New_External_Name (Tnam, 'E')),
           Attribute_Name => Name_Unchecked_Access));
 
-      --  Chain parameter. This is a reference to the Chain parameter of the
-      --  initialization procedure. There is no chain in restricted profile.
+      --  Add Chain parameter (not done for sequential elaboration policy, see
+      --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
 
-      if not Restricted_Profile then
+      if Partition_Elaboration_Policy /= 'S' then
          Append_To (Args, Make_Identifier (Loc, Name_uChain));
       end if;
 
@@ -14015,11 +14019,20 @@ package body Exp_Ch9 is
           Prefix        => Make_Identifier (Loc, Name_uInit),
           Selector_Name => Make_Identifier (Loc, Name_uTask_Id)));
 
-      if Restricted_Profile then
-         Name := New_Reference_To (RTE (RE_Create_Restricted_Task), Loc);
-      else
-         Name := New_Reference_To (RTE (RE_Create_Task), Loc);
-      end if;
+      declare
+         Create_RE : RE_Id;
+      begin
+         if Restricted_Profile then
+            if Partition_Elaboration_Policy = 'S' then
+               Create_RE := RE_Create_Restricted_Task_Sequential;
+            else
+               Create_RE := RE_Create_Restricted_Task;
+            end if;
+         else
+            Create_RE := RE_Create_Task;
+         end if;
+         Name := New_Reference_To (RTE (Create_RE), Loc);
+      end;
 
       return
         Make_Procedure_Call_Statement (Loc,

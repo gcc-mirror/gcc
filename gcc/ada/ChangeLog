@@ -1,3 +1,54 @@
+2012-11-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Interfaces.C now needs to be WITH'd even
+	on platforms that do not support sockets (for the benefit of
+	subtype IOCTL_Req_T).
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_Primary): if-expressions, case-expressions,
+	and quantified expressions are legal if surrounded by parentheses
+	from an enclosing context, such as a call or an instantiation.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* impunit.adb (Get_Kind_Of_Unit): Return appropriate kind for
+	predefined implementation files, instead of returning
+	Not_Predefined_Unit on all .adb files.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Activation_Chain_Entity): Return immediately if
+	partition elaboration policy is sequential.
+	(Build_Task_Activation_Call): Likewise. Use
+	Activate_Restricted_Tasks on restricted profile.
+	(Make_Task_Create_Call): Do not use the _Chain
+	parameter if elaboration policy is sequential. Call
+	Create_Restricted_Task_Sequential in that case.
+	* exp_ch3.adb (Build_Initialization_Call): Change condition to
+	support concurrent elaboration policy.
+	(Build_Record_Init_Proc): Likewise.
+	(Init_Formals): Likewise.
+	* bindgen.adb (Gen_Adainit): Declare Partition_Elaboration_Policy
+	and set it in generated code if the elaboration policy is
+	sequential. The procedure called to activate all tasks is now
+	named __gnat_activate_all_tasks.
+	* rtsfind.adb (RE_Activate_Restricted_Task,
+	RE_Create_Restricted_Task_Sequential): New RE_Id literals.
+	* s-tarest.adb (Create_Restricted_Task): Added to create a task without
+	adding it on an activation chain.
+	(Activate_Tasks): Has now a Chain parameter.
+	(Activate_All_Tasks_Sequential): Added. Called by the binder to
+	activate all tasks.
+	(Activate_Restricted_Tasks): Added. Called during elaboration to
+	activate tasks of the units.
+	* s-tarest.ads: Remove pragma Partition_Elaboration_Policy.
+	(Partition_Elaboration_Policy): New variable (set by the binder).
+	(Create_Restricted_Task): Revert removal of the chain parameter.
+	(Create_Restricted_Task_Sequential): New procedure.
+	(Activate_Restricted_Tasks): Revert removal.
+	(Activate_All_Tasks_Sequential): New procedure.
+
 2012-11-06  Bernard Banner  <banner@adacore.com>
 
 	* adaint.c Add file macro definitions missing on Android.

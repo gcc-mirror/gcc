@@ -43,10 +43,6 @@
 --  The restricted GNARLI is also composed of System.Protected_Objects and
 --  System.Protected_Objects.Single_Entry
 
-pragma Partition_Elaboration_Policy (Sequential);
---  This package only implements the sequential elaboration policy. This pragma
---  will enforce it (and detect conflicts with user specified policy).
-
 with System.Task_Info;
 with System.Parameters;
 
@@ -124,6 +120,13 @@ package System.Tasking.Restricted.Stages is
    --   t1S : constant String := "t1";
    --   tIP (t1, 3, _chain, t1S, 1);
 
+   Partition_Elaboration_Policy : Character := 'C';
+   pragma Export (C, Partition_Elaboration_Policy,
+                  "__gnat_partition_elaboration_policy");
+   --  Partition elaboration policy. Value can be either 'C' for concurrent,
+   --  which is the default or 'S' for sequential. This value can be modified
+   --  by the binder generated code, before calling elaboration code.
+
    procedure Create_Restricted_Task
      (Priority      : Integer;
       Stack_Address : System.Address;
@@ -133,10 +136,12 @@ package System.Tasking.Restricted.Stages is
       State         : Task_Procedure_Access;
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
+      Chain         : in out Activation_Chain;
       Task_Image    : String;
       Created_Task  : Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
-   --  This must be called to create a new task.
+   --  This must be called to create a new task, when the partition
+   --  elaboration policy is not specified (or is concurrent).
    --
    --  Priority is the task's priority (assumed to be in the
    --  System.Any_Priority'Range)
@@ -165,19 +170,58 @@ package System.Tasking.Restricted.Stages is
    --  Elaborated is a pointer to a Boolean that must be set to true on exit
    --  if the task could be successfully elaborated.
    --
+   --  Chain is a linked list of task that needs to be created. On exit,
+   --  Created_Task.Activation_Link will be Chain.T_ID, and Chain.T_ID will be
+   --  Created_Task (the created task will be linked at the front of Chain).
+   --
    --  Task_Image is a string created by the compiler that the run time can
    --  store to ease the debugging and the Ada.Task_Identification facility.
    --
    --  Created_Task is the resulting task.
    --
    --  This procedure can raise Storage_Error if the task creation fails
-   --
-   --  Contrary to Create_Task, there is no Chain parameter (for the activation
-   --  chain), as there is only one global activation chain, which is declared
-   --  in the body of this package.
 
-   procedure Activate_Tasks;
-   pragma Export (C, Activate_Tasks, "__gnat_activate_tasks");
+   procedure Create_Restricted_Task_Sequential
+     (Priority      : Integer;
+      Stack_Address : System.Address;
+      Size          : System.Parameters.Size_Type;
+      Task_Info     : System.Task_Info.Task_Info_Type;
+      CPU           : Integer;
+      State         : Task_Procedure_Access;
+      Discriminants : System.Address;
+      Elaborated    : Access_Boolean;
+      Task_Image    : String;
+      Created_Task  : Task_Id);
+   --  Compiler interface only. Do not call from within the RTS.
+   --  This must be called to create a new task, when the sequential partition
+   --  elaboration policy is used.
+   --
+   --  The parameters are the same as Create_Restricted_Task_Concurrent,
+   --  except there is no Chain parameter (for the activation chain), as there
+   --  is only one global activation chain, which is declared in the body of
+   --  this package.
+
+   procedure Activate_Restricted_Tasks
+     (Chain_Access : Activation_Chain_Access);
+   --  Compiler interface only. Do not call from within the RTS.
+   --  This must be called by the creator of a chain of one or more new tasks,
+   --  to activate them. The chain is a linked list that up to this point is
+   --  only known to the task that created them, though the individual tasks
+   --  are already in the All_Tasks_List.
+   --
+   --  The compiler builds the chain in LIFO order (as a stack). Another
+   --  version of this procedure had code to reverse the chain, so as to
+   --  activate the tasks in the order of declaration. This might be nice, but
+   --  it is not needed if priority-based scheduling is supported, since all
+   --  the activated tasks synchronize on the activators lock before they start
+   --  activating and so they should start activating in priority order.
+   --
+   --  When the partition elaboration policy is sequential, this procedure
+   --  does nothing, tasks will be activated at end of elaboration.
+
+   procedure Activate_All_Tasks_Sequential;
+   pragma Export (C, Activate_All_Tasks_Sequential,
+                  "__gnat_activate_all_tasks");
    --  Binder interface only. Do not call from within the RTS. This must be
    --  called an the end of the elaboration to activate all tasks, in order
    --  to implement the sequential elaboration policy.
