@@ -1,5 +1,9 @@
 2012-10-30  Arnaud Charlet  <charlet@adacore.com>
 
+	* Makefile.in (osconstool): Removed, no longer needed.
+
+2012-10-30  Arnaud Charlet  <charlet@adacore.com>
+
 	* Makefile.in (osconstool): Fix target.
 
 2012-06-11  Olivier Hainque  <hainque@adacore.com>
