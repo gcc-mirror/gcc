@@ -1,3 +1,11 @@
+2012-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.c (and_xor_ior_costs, addsubcosts): Double the costs for
+	ops larger than SImode.
+	* config/sh/sh.md (rotcl, *rotcl): New insns and splits.
+	(ashldi3_k): Convert to insn_and_split and use new rotcl insn.
+
 2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
 	* config/i386/i386-protos.h (emit_i387_cw_initialization): Deleted.

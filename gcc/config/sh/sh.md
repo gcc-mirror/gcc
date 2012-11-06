@@ -4006,10 +4006,11 @@ label:
     FAIL;
 })
 
-;; The rotcr insn is used primarily in DImode right shifts (arithmetic
-;; and logical).  It can also be used to implement things like
+;; The rotcr and rotcl insns are used primarily in DImode shifts by one.
+;; They can also be used to implement things like
 ;;	bool t = a == b;
-;;	int x = (y >> 1) | (t << 31);
+;;	int x0 = (y >> 1) | (t << 31);	// rotcr
+;;	int x1 = (y << 1) | t;		// rotcl
 (define_insn "rotcr"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -4020,6 +4021,17 @@ label:
 	(and:SI (match_dup 1) (const_int 1)))]
   "TARGET_SH1"
   "rotcr	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			   (const_int 1))
+		(match_operand:SI 2 "t_reg_operand")))
+   (set (reg:SI T_REG)
+	(lshiftrt:SI (match_dup 1) (const_int 31)))]
+  "TARGET_SH1"
+  "rotcl	%0"
   [(set_attr "type" "arith")])
 
 ;; Simplified rotcr version for combine, which allows arbitrary shift
@@ -4121,6 +4133,160 @@ label:
 			   (ashift:SI (match_dup 1) (const_int 31))))
 	      (clobber (reg:SI T_REG))])])
 
+;; Basically the same as the rotcr pattern above, but for rotcl.
+;; FIXME: Fold copy pasted split code for rotcr and rotcl.
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))
+		(and:SI (match_operand:SI 3 "arith_reg_or_t_reg_operand")
+			(const_int 1))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  gcc_assert (INTVAL (operands[2]) > 0);
+
+  if (INTVAL (operands[2]) > 1)
+    {
+      const rtx shift_count = GEN_INT (INTVAL (operands[2]) - 1);
+      rtx prev_set_t_insn = NULL_RTX;
+      rtx tmp_t_reg = NULL_RTX;
+
+      /* If we're going to emit a shift sequence that clobbers the T_REG,
+	 try to find the previous insn that sets the T_REG and emit the 
+	 shift insn before that insn, to remove the T_REG dependency.
+	 If the insn that sets the T_REG cannot be found, store the T_REG
+	 in a temporary reg and restore it after the shift.  */
+      if (sh_ashlsi_clobbers_t_reg_p (shift_count)
+	  && ! sh_dynamicalize_shift_p (shift_count))
+	{
+	  prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+
+	  /* Skip the nott insn, which was probably inserted by the splitter
+	     of *rotcl_neg_t.  Don't use one of the recog functions
+	     here during insn splitting, since that causes problems in later
+	     passes.  */
+	  if (prev_set_t_insn != NULL_RTX)
+	    {
+	      rtx pat = PATTERN (prev_set_t_insn);
+	      if (GET_CODE (pat) == SET
+		  && t_reg_operand (XEXP (pat, 0), SImode)
+		  && negt_reg_operand (XEXP (pat, 1), SImode))
+	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+	    }
+
+	  if (! (prev_set_t_insn != NULL_RTX
+		 && reg_set_p (get_t_reg_rtx (), prev_set_t_insn)
+		 && ! reg_referenced_p (get_t_reg_rtx (),
+					PATTERN (prev_set_t_insn))))
+	    {
+	      prev_set_t_insn = NULL_RTX;
+	      tmp_t_reg = gen_reg_rtx (SImode);
+	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
+	    } 
+	}
+
+      rtx shift_result = gen_reg_rtx (SImode);
+      rtx shift_insn = gen_ashlsi3 (shift_result, operands[1], shift_count);
+      operands[1] = shift_result;
+
+      /* Emit the shift insn before the insn that sets T_REG, if possible.  */
+      if (prev_set_t_insn != NULL_RTX)
+	emit_insn_before (shift_insn, prev_set_t_insn);
+      else
+	emit_insn (shift_insn);
+
+      /* Restore T_REG if it has been saved before.  */
+      if (tmp_t_reg != NULL_RTX)
+	emit_insn (gen_cmpgtsi_t (tmp_t_reg, const0_rtx));
+    }
+
+  /* For the rotcl insn to work, operands[3] must be in T_REG.
+     If it is not we can get it there by shifting it right one bit.
+     In this case T_REG is not an input for this insn, thus we don't have to
+     pay attention as of where to insert the shlr insn.  */
+  if (! t_reg_operand (operands[3], SImode))
+    {
+      /* We don't care about the shifted result here, only the T_REG.  */
+      emit_insn (gen_shlr (gen_reg_rtx (SImode), operands[3]));
+      operands[3] = get_t_reg_rtx ();
+    }
+
+  emit_insn (gen_rotcl (operands[0], operands[1], operands[3]));
+  DONE;
+})
+
+;; rotcl combine pattern variations
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))
+		(match_operand:SI 3 "t_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
+			   (and:SI (match_dup 3) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_or_t_reg_operand")
+			(const_int 1))
+		(ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			   (match_operand:SI 3 "const_int_operand"))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
+			   (and:SI (match_dup 1) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))
+		(lshiftrt:SI (match_operand:SI 3 "arith_reg_operand")
+			     (const_int 31))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])]
+{
+  /* We don't care about the result of the left shift, only the T_REG.  */
+  emit_insn (gen_shll (gen_reg_rtx (SImode), operands[3]));
+})
+
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (lshiftrt:SI (match_operand:SI 3 "arith_reg_operand")
+			     (const_int 31))
+		(ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])]
+{
+  /* We don't care about the result of the left shift, only the T_REG.  */
+  emit_insn (gen_shll (gen_reg_rtx (SImode), operands[3]));
+})
+
 ;; rotcr combine bridge pattern which will make combine try out more
 ;; complex patterns.
 (define_insn_and_split "*rotcr"
@@ -4188,6 +4354,35 @@ label:
 {
   emit_insn (gen_nott (get_t_reg_rtx ()));
 })
+
+;; rotcl combine patterns for rotating in the negated T_REG value.
+;; For some strange reason these have to be specified as splits which combine
+;; will pick up.  If they are specified as insn_and_split like the
+;; *rotcr_neg_t patterns above, combine would recognize them successfully
+;; but not emit them on non-SH2A targets.
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (match_operand:SI 1 "negt_reg_operand")
+		(ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			   (match_operand:SI 3 "const_int_operand"))))]
+  "TARGET_SH1"
+  [(set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))
+   (parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			   (match_operand:SI 3 "const_int_operand"))
+		(match_operand:SI 1 "negt_reg_operand")))]
+  "TARGET_SH1"
+  [(set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))
+   (parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
 
 ;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ;; SImode shift left
@@ -4480,16 +4675,22 @@ label:
   DONE;
 })
 
-;; This should be an define_insn_and_split.
-(define_insn "ashldi3_k"
+(define_insn_and_split "ashldi3_k"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		   (const_int 1)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  "shll	%R0\;rotcl	%S0"
-  [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx high = gen_highpart (SImode, operands[0]);
+  rtx low = gen_lowpart (SImode, operands[0]);
+  emit_insn (gen_shll (low, low));
+  emit_insn (gen_rotcl (high, high, get_t_reg_rtx ()));
+  DONE;
+})
 
 (define_insn "ashldi3_media"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
