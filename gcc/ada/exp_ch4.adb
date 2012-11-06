@@ -213,19 +213,19 @@ package body Exp_Ch4 is
    --  Convert_To_Actual_Subtype if necessary).
 
    function Minimized_Eliminated_Overflow_Check (N : Node_Id) return Boolean;
-   --  For signed arithmetic operations with Do_Overflow_Check set when the
-   --  current overflow mode is MINIMIZED or ELIMINATED, we need to make a
-   --  call to Apply_Arithmetic_Overflow_Checks as the first thing we do. We
-   --  then return. We count on the recursive apparatus for overflow checks
-   --  to call us back with an equivalent operation that does not have the
-   --  Do_Overflow_Check flag set, and that is when we will proceed with the
-   --  expansion of the operator (e.g. converting X+0 to X, or X**2 to X*X).
-   --  We cannot do these optimizations without first making this check, since
-   --  there may be operands further down the tree that are relying on the
-   --  recursive calls triggered by the top level nodes to properly process
-   --  overflow checking and remaining expansion on these nodes. Note that
-   --  this call back may be skipped if the operation is done in Bignum mode
-   --  but that's fine, since the Bignum call takes care of everything.
+   --  For signed arithmetic operations when the current overflow mode is
+   --  MINIMIZED or ELIMINATED, we must call Apply_Arithmetic_Overflow_Checks
+   --  as the first thing we do. We then return. We count on the recursive
+   --  apparatus for overflow checks to call us back with an equivalent
+   --  operation that is in CHECKED mode, avoiding a recursive entry into this
+   --  routine, and that is when we will proceed with the expansion of the
+   --  operator (e.g. converting X+0 to X, or X**2 to X*X). We cannot do
+   --  these optimizations without first making this check, since there may be
+   --  operands further down the tree that are relying on the recursive calls
+   --  triggered by the top level nodes to properly process overflow checking
+   --  and remaining expansion on these nodes. Note that this call back may be
+   --  skipped if the operation is done in Bignum mode but that's fine, since
+   --  the Bignum call takes care of everything.
 
    procedure Optimize_Length_Comparison (N : Node_Id);
    --  Given an expression, if it is of the form X'Length op N (or the other
@@ -2274,8 +2274,8 @@ package body Exp_Ch4 is
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Entity for Long_Long_Integer'Base
 
-      Check : constant Overflow_Check_Type := Overflow_Check_Mode (Empty);
-      --  Current checking mode
+      Check : constant Overflow_Check_Type := Overflow_Check_Mode;
+      --  Current overflow checking mode
 
       procedure Set_True;
       procedure Set_False;
@@ -2320,9 +2320,9 @@ package body Exp_Ch4 is
       --  our operands using the Minimize_Eliminate circuitry which applies
       --  this processing to the two operand subtrees.
 
-      Minimize_Eliminate_Overflow_Checks
+      Minimize_Eliminate_Overflows
         (Left_Opnd (N),  Llo, Lhi, Top_Level => False);
-      Minimize_Eliminate_Overflow_Checks
+      Minimize_Eliminate_Overflows
         (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
 
       --  See if the range information decides the result of the comparison.
@@ -3721,7 +3721,7 @@ package body Exp_Ch4 is
       --  Entity for Long_Long_Integer'Base (Standard should export this???)
 
    begin
-      Minimize_Eliminate_Overflow_Checks (Lop, Lo, Hi, Top_Level => False);
+      Minimize_Eliminate_Overflows (Lop, Lo, Hi, Top_Level => False);
 
       --  If right operand is a subtype name, and the subtype name has no
       --  predicate, then we can just replace the right operand with an
@@ -3751,9 +3751,9 @@ package body Exp_Ch4 is
       --  have not been processed for minimized or eliminated checks.
 
       if Nkind (Rop) = N_Range then
-         Minimize_Eliminate_Overflow_Checks
+         Minimize_Eliminate_Overflows
            (Low_Bound (Rop), Lo, Hi, Top_Level => False);
-         Minimize_Eliminate_Overflow_Checks
+         Minimize_Eliminate_Overflows
            (High_Bound (Rop), Lo, Hi, Top_Level => False);
 
          --  We have A in B .. C, treated as  A >= B and then A <= C
@@ -5498,7 +5498,7 @@ package body Exp_Ch4 is
          --  in which case, this usage makes sense, and in any case, we have
          --  actually eliminated the danger of optimization above.
 
-         if Overflow_Check_Mode (Restyp) not in Minimized_Or_Eliminated then
+         if Overflow_Check_Mode not in Minimized_Or_Eliminated then
             Error_Msg_N ("?explicit membership test may be optimized away", N);
             Error_Msg_N -- CODEFIX
               ("\?use ''Valid attribute instead", N);
@@ -5526,7 +5526,7 @@ package body Exp_Ch4 is
       --  type, then expand with a separate procedure. Note the use of the
       --  flag No_Minimize_Eliminate to prevent infinite recursion.
 
-      if Overflow_Check_Mode (Empty) in Minimized_Or_Eliminated
+      if Overflow_Check_Mode in Minimized_Or_Eliminated
         and then Is_Signed_Integer_Type (Ltyp)
         and then not No_Minimize_Eliminate (N)
       then
@@ -11785,8 +11785,7 @@ package body Exp_Ch4 is
    begin
       return
         Is_Signed_Integer_Type (Etype (N))
-          and then Do_Overflow_Check (N)
-          and then Overflow_Check_Mode (Empty) in Minimized_Or_Eliminated;
+          and then Overflow_Check_Mode in Minimized_Or_Eliminated;
    end Minimized_Eliminated_Overflow_Check;
 
    --------------------------------

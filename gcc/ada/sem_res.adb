@@ -334,25 +334,11 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Analyze_And_Resolve (N, Typ);
-            Scope_Suppress := Svg;
-         end;
-
-      elsif Suppress = Overflow_Check then
-         declare
-            Svg : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_General;
-            Sva : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_Assertions;
-         begin
-            Scope_Suppress.Overflow_Checks_General    := Suppressed;
-            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
-            Analyze_And_Resolve (N, Typ);
-            Scope_Suppress.Overflow_Checks_General    := Svg;
-            Scope_Suppress.Overflow_Checks_Assertions := Sva;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -388,25 +374,11 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Analyze_And_Resolve (N);
-            Scope_Suppress := Svg;
-         end;
-
-      elsif Suppress = Overflow_Check then
-         declare
-            Svg : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_General;
-            Sva : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_Assertions;
-         begin
-            Scope_Suppress.Overflow_Checks_General    := Suppressed;
-            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
-            Analyze_And_Resolve (N);
-            Scope_Suppress.Overflow_Checks_General    := Svg;
-            Scope_Suppress.Overflow_Checks_Assertions := Sva;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -1690,19 +1662,23 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      --  We suppress all checks for this analysis, except in Alfa mode.
-      --  Otherwise the checks are applied properly, and in the proper
-      --  location, when the default expressions are reanalyzed and reexpanded
-      --  later on.
+      --  Normally, we suppress all checks for this preanalysis. There is no
+      --  point in processing them now, since they will be applied properly
+      --  and in the proper location when the default expressions reanalyzed
+      --  and reexpanded later on. We will also have more information at that
+      --  point for possible suppression of individual checks.
 
-      --  Alfa mode suppresses all expansion but requires the setting of
-      --  checking flags (DIvision_Check and others) in particular for Ada 2012
-      --  constructs such as quantified expressions, that are expanded in two
-      --  separate steps.
+      --  However, in Alfa mode, most expansion is suppressed, and this
+      --  later reanalysis and reexpansion may not occur. Alfa mode does
+      --  require the setting of checking flags for proof purposes, so we
+      --  do the Alfa preanalysis without suppressing checks.
+
+      --  This special handling for Alfa mode is required for example in the
+      --  case of Ada 2012 constructs such as quantified expressions, which are
+      --  expanded in two separate steps.
 
       if Alfa_Mode then
          Analyze_And_Resolve (N, T);
-
       else
          Analyze_And_Resolve (N, T, Suppress => All_Checks);
       end if;
@@ -2946,11 +2922,11 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Resolve (N, Typ);
-            Scope_Suppress := Svg;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -5959,16 +5935,6 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
-
-      --  If we still have a case expression, and overflow checks are enabled
-      --  in MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check to
-      --  ensure that we handle overflow for dependent expressions.
-
-      if Nkind (N) = N_Case_Expression
-        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
-      then
-         Set_Do_Overflow_Check (N);
-      end if;
    end Resolve_Case_Expression;
 
    -------------------------------
@@ -7215,16 +7181,6 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_If_Expression (N);
-
-      --  If we still have a if expression, and overflow checks are enabled in
-      --  MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check to ensure
-      --  that we handle overflow for dependent expressions.
-
-      if Nkind (N) = N_If_Expression
-        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
-      then
-         Set_Do_Overflow_Check (N);
-      end if;
    end Resolve_If_Expression;
 
    -------------------------------

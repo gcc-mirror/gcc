@@ -1,3 +1,26 @@
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb, exp_ch4.adb: Minor changes throughout for
+	new overflow checking.
+	* exp_util.adb (Insert_Actions): Remove special casing of
+	Overflow_Check.
+	* gnat1drv.adb (Adjust_Global_Switches): Fixes for new handling
+	of overflow checks.
+	* sem.adb (Analyze): Remove special casing of Overflow_Check
+	(Analyze_List): ditto.
+	* sem_prag.adb (Analyze_Pragma, case Overflow_Checks): Remove
+	SUPPRESSED and change CHECKED to STRICT.
+	* sem_res.adb (Analyze_And_Resolve): No longer treat
+	Overflow_Check specially.
+	(Preanalyze_And_Resolve): ditto.
+	(Resolve): ditto.
+	* snames.ads-tmpl: Replace Name_Checked by Name_Strict.
+	* switch-c.adb (Get_Overflow_Mode): Eliminate 0 setting,
+	CHECKED => STRICT.
+	* types.ads (Overflow_Check_Type): Remove Suppressed, change
+	Checked to Strict (Suppress_Record): Overflow check controlled
+	by Suppress array.
+
 2012-11-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Preanalyze_And_Resolve): In Alfa mode do not

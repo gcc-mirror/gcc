@@ -665,7 +665,6 @@ package Snames is
    Name_By_Protected_Procedure         : constant Name_Id := N + $;
    Name_Casing                         : constant Name_Id := N + $;
    Name_Check_All                      : constant Name_Id := N + $;
-   Name_Checked                        : constant Name_Id := N + $;
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
@@ -739,6 +738,7 @@ package Snames is
    Name_State                          : constant Name_Id := N + $;
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
+   Name_Strict                         : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
    Name_Suppressed                     : constant Name_Id := N + $;
    Name_Task_Stack_Size_Default        : constant Name_Id := N + $;
