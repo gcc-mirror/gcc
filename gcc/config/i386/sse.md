@@ -10452,8 +10452,7 @@
 ;; Clear the upper 128bits of AVX registers, equivalent to a NOP
 ;; if the upper 128bits are unused.
 (define_insn "avx_vzeroupper"
-  [(unspec_volatile [(match_operand 0 "const_int_operand")]
-		    UNSPECV_VZEROUPPER)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_VZEROUPPER)]
   "TARGET_AVX"
   "vzeroupper"
   [(set_attr "type" "sse")

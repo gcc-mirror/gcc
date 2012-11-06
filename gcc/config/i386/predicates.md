@@ -1229,6 +1229,13 @@
   return true;
 })
 
+;; return true if OP is a vzeroupper operation.
+(define_predicate "vzeroupper_operation"
+  (match_code "unspec_volatile")
+{
+  return XINT (op, 1) == UNSPECV_VZEROUPPER;
+})
+
 ;; Return true if OP is a parallel for a vbroadcast permute.
 
 (define_predicate "avx_vbroadcast_operand"

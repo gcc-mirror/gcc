@@ -14,4 +14,4 @@ void feat_s3_cep_dcep (int cepsize_used, float **mfc, float **feat)
     f[i] = w[i] - _w[i];
 }
 
-/* { dg-final { scan-assembler-times "avx_vzeroupper" 1 } } */
+/* { dg-final { scan-assembler-times "avx_vzeroupper" 2 } } */
