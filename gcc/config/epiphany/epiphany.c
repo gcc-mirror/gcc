@@ -729,7 +729,7 @@ epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
    If ADDR is not a valid address, its cost is irrelevant.  */
 
 static int
-epiphany_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+epiphany_address_cost (rtx addr, enum machine_mode mode,
 		       addr_space_t as ATTRIBUTE_UNUSED, bool speed)
 {
   rtx reg;
@@ -761,19 +761,28 @@ epiphany_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
     }
   if (!satisfies_constraint_Rgs (reg))
     return 1;
-  /* ??? We don't know the mode of the memory access.  We are going to assume
-     SImode, unless lack of offset alignment indicates a smaller access.  */
+  /* The offset range available for short instructions depends on the mode
+     of the memory access.  */
   /* First, make sure we have a valid integer.  */
   if (!satisfies_constraint_L (off))
     return 1;
   i = INTVAL (off);
-  if ((i & 1) == 0)
-    i >>= 1;
-  if ((i & 1) == 0)
-    i >>= 1;
-  if (i < -7 || i > 7)
-    return 1;
-  return 0;
+  switch (GET_MODE_SIZE (mode))
+    {
+      default:
+      case 4:
+	if (i & 1)
+	  return 1;
+	i >>= 1;
+	/* Fall through.  */
+      case 2:
+	if (i & 1)
+	  return 1;
+	i >>= 1;
+	/* Fall through.  */
+      case 1:
+	return i < -7 || i > 7;
+    }
 }
 
 /* Compute the cost of moving data between registers and memory.
