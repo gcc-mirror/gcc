@@ -27,6 +27,7 @@
 
 2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
+	PR target/47440
 	* gcc.target/i386/avx-vzeroupper-5.c: Changed scan-assembler-times.
 	* gcc.target/i386/avx-vzeroupper-8.c: Likewise.
 	* gcc.target/i386/avx-vzeroupper-9.c: Likewise.

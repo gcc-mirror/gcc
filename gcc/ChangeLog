@@ -72,6 +72,7 @@
 
 2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
+	PR target/47440
 	* config/i386/i386-protos.h (emit_i387_cw_initialization): Delete.
 	(emit_vzero): Add prototype.
 	(ix86_mode_entry): Likewise.
