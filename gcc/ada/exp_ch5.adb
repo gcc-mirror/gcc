@@ -3108,6 +3108,11 @@ package body Exp_Ch5 is
                        Expressions =>
                          New_List (New_Occurrence_Of (Cursor, Loc))));
 
+               --  The defining identifier in the iterator is user-visible
+               --  and must be visible in the debugger.
+
+               Set_Debug_Info_Needed (Id);
+
                --  If the container holds controlled objects, wrap the loop
                --  statements and element renaming declaration with a block.
                --  This ensures that the result of Element (Cusor) is

@@ -11284,6 +11284,84 @@ package body Sem_Prag is
             Set_Standard_Fpt_Formats;
          end Long_Float;
 
+         --------------------
+         -- Loop_Assertion --
+         --------------------
+
+         --  pragma Loop_Assertion (
+         --     [[Invariant   =>] boolean_EXPRESSION],
+         --      {CHANGE_MODE =>  discrete_EXPRESSION} );
+         --
+         --  CHANGE_MODE ::= Increases | Decreases
+
+         when Pragma_Loop_Assertion => Loop_Assertion : declare
+            Arg  : Node_Id;
+            Expr : Node_Id;
+            Seen : Boolean := False;
+            Stmt : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+
+            --  Completely ignore if disabled
+
+            if Check_Disabled (Pname) then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+            end if;
+
+            --  Verify that the pragma appears inside a loop
+
+            Stmt := N;
+            while Present (Stmt) and then Nkind (Stmt) /= N_Loop_Statement loop
+               Stmt := Parent (Stmt);
+            end loop;
+
+            if No (Stmt) then
+               Error_Pragma ("pragma % must appear inside a loop");
+            end if;
+
+            Check_At_Least_N_Arguments (1);
+
+            --  Process the arguments
+
+            Arg := Arg1;
+            while Present (Arg) loop
+               Expr := Expression (Arg);
+
+               --  All expressions are preanalyzed because they will be
+               --  relocated during expansion and analyzed in their new
+               --  context.
+
+               if Chars (Arg) = Name_Invariant or else Arg_Count = 1 then
+
+                  --  Only one invariant is allowed in the pragma
+
+                  if Seen then
+                     Error_Pragma_Arg
+                       ("only one invariant allowed in pragma %", Arg);
+                  else
+                     Seen := True;
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+               elsif Chars (Arg) = Name_Increases
+                 or else Chars (Arg) = Name_Decreases
+               then
+                  Preanalyze_And_Resolve (Expr, Any_Discrete);
+
+               --  Illegal argument
+
+               else
+                  Error_Pragma_Arg ("argument & not allowed in pragma %", Arg);
+               end if;
+
+               Next (Arg);
+            end loop;
+         end Loop_Assertion;
+
          -----------------------
          -- Machine_Attribute --
          -----------------------
@@ -15428,6 +15506,7 @@ package body Sem_Prag is
       Pragma_Lock_Free                      => -1,
       Pragma_Locking_Policy                 => -1,
       Pragma_Long_Float                     => -1,
+      Pragma_Loop_Assertion                 => -1,
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,

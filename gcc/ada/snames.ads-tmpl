@@ -405,6 +405,7 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
+   Name_Loop_Assertion                 : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
@@ -670,6 +671,7 @@ package Snames is
    Name_Component_Size_4               : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
+   Name_Decreases                      : constant Name_Id := N + $;
    Name_Descriptor                     : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
@@ -689,6 +691,7 @@ package Snames is
    Name_GPL                            : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
+   Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
@@ -1675,6 +1678,7 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Long_Float,
+      Pragma_Loop_Assertion,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
