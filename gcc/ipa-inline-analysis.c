@@ -2442,6 +2442,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		{
 		  time += this_time;
 		  size += this_size;
+		  if (time > MAX_TIME * INLINE_TIME_SCALE)
+		    time = MAX_TIME * INLINE_TIME_SCALE;
 		}
 
 	      /* We account everything but the calls.  Calls have their own
@@ -3323,7 +3325,11 @@ inline_update_overall_summary (struct cgraph_node *node)
   info->size = 0;
   info->time = 0;
   for (i = 0; VEC_iterate (size_time_entry, info->entry, i, e); i++)
-    info->size += e->size, info->time += e->time;
+    {
+      info->size += e->size, info->time += e->time;
+      if (info->time > MAX_TIME * INLINE_TIME_SCALE)
+        info->time = MAX_TIME * INLINE_TIME_SCALE;
+    }
   estimate_calls_size_and_time (node, &info->size, &info->time, NULL,
 				~(clause_t)(1 << predicate_false_condition),
 				NULL, NULL, NULL);
