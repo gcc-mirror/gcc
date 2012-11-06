@@ -1,5 +1,19 @@
 2012-11-06  Jan Hubicka  <jh@suse.cz>
 
+	* cfgloopanal.c (get_loop_hot_path): New function.
+	* tree-ssa-lop-ivcanon.c (struct loop_size): Add CONSTANT_IV,
+	NUM_NON_PURE_CALLS_ON_HOT_PATH, NUM_PURE_CALLS_ON_HOT_PATH,
+	NUM_BRANCHES_ON_HOT_PATH.
+	(tree_estimate_loop_size): Compute the new values.
+	(try_unroll_loop_completely): Disable unrolling of loops with only
+	calls or too many branches.
+	(tree_unroll_loops_completely): Deal also with outer loops of hot loops.
+	* cfgloop.h (get_loop_hot_path): Declare.
+	* params.def (PARAM_MAX_PEEL_BRANCHES): New parameters.
+	* invoke.texi (max-peel-branches): Document.
+
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-pure-const.c (check_stmt): Fix debug info formatting.
 
 2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
