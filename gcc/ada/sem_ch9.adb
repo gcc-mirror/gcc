@@ -2036,16 +2036,12 @@ package body Sem_Ch9 is
          --  by an aspect/pragma.
 
          declare
-            Id : constant Entity_Id :=
-                   Defining_Identifier (Original_Node (N));
+            Id : constant Entity_Id := Defining_Identifier (Original_Node (N));
             --  The warning must be issued on the original identifier in order
             --  to deal properly with the case of a single protected object.
 
             Prio_Item : constant Node_Id :=
-                          Get_Rep_Item
-                            (Defining_Identifier (N),
-                             Name_Priority,
-                             Check_Parents => False);
+                          Get_Rep_Item (Def_Id, Name_Priority, False);
 
          begin
             if Present (Prio_Item) then
@@ -2074,11 +2070,42 @@ package body Sem_Ch9 is
          end if;
       end if;
 
+      --  If the Attach_Handler aspect is specified or the Interrupt_Handler
+      --  aspect is True, then the initial ceiling priority must be in the
+      --  range of System.Interrupt_Priority. It is therefore recommanded
+      --  to use the Interrupt_Priority aspect instead of the Priority aspect.
+
+      if Has_Interrupt_Handler (T) or else Has_Attach_Handler (T) then
+         declare
+            Prio_Item : constant Node_Id :=
+                          Get_Rep_Item (Def_Id, Name_Priority, False);
+
+         begin
+            if Present (Prio_Item) then
+
+               --  Aspect case
+
+               if (Nkind (Prio_Item) = N_Aspect_Specification
+                    or else From_Aspect_Specification (Prio_Item))
+                 and then Chars (Identifier (Prio_Item)) = Name_Priority
+               then
+                  Error_Msg_N ("?aspect Interrupt_Priority is preferred "
+                               & "in presence of handlers", Prio_Item);
+
+               --  Pragma case
+
+               elsif Pragma_Name (Prio_Item) = Name_Priority then
+                  Error_Msg_N ("?pragma Interrupt_Priority is preferred "
+                               & "in presence of handlers", Prio_Item);
+               end if;
+            end if;
+         end;
+      end if;
+
       --  Case of a completion of a private declaration
 
-      if T /= Def_Id
-        and then Is_Private_Type (Def_Id)
-      then
+      if T /= Def_Id and then Is_Private_Type (Def_Id) then
+
          --  Deal with preelaborable initialization. Note that this processing
          --  is done by Process_Full_View, but as can be seen below, in this
          --  case the call to Process_Full_View is skipped if any serious
@@ -2326,9 +2353,7 @@ package body Sem_Ch9 is
             --  the first parameter of Entry_Id since it is the interface
             --  controlling formal.
 
-            if Ada_Version >= Ada_2012
-              and then Is_Disp_Req
-            then
+            if Ada_Version >= Ada_2012 and then Is_Disp_Req then
                declare
                   Enclosing_Formal : Entity_Id;
                   Target_Formal    : Entity_Id;
@@ -2668,7 +2693,7 @@ package body Sem_Ch9 is
       Ref_Id : Entity_Id;
       --  This is the entity of the task or task type, and is the entity used
       --  for cross-reference purposes (it differs from Spec_Id in the case of
-      --  a single task, since Spec_Id is set to the task type)
+      --  a single task, since Spec_Id is set to the task type).
 
    begin
       Tasking_Used := True;

@@ -4339,15 +4339,14 @@ inlining, but that is no longer the case.
 
 @item -gnato??
 @cindex @option{-gnato??} (@command{gcc})
-Set default overflow checking mode. Here `@code{??}' is two digits, a
-single digit, or nothing. Each digit is one of the digits `@code{0}'
+Set default mode for handling generation of code to avoid intermediate
+arithmetic overflow. Here `@code{??}' is two digits, a
+single digit, or nothing. Each digit is one of the digits `@code{1}'
 through `@code{3}':
 
 @itemize @bullet
-@item   @code{0}:
-suppress overflow checks (@code{SUPPRESSED})
 @item   @code{1}:
-all intermediate overflows checked (@code{CHECKED})
+all intermediate overflows checked against base type (@code{STRICT})
 @item   @code{2}:
 minimize intermediate overflows (@code{MINIMIZED})
 @item   @code{3}:
@@ -4360,10 +4359,15 @@ assertions, and the second within assertions.
 
 If no digits follow the @option{-gnato}, then it is equivalent to
 @option{-gnato11},
-causing all intermediate overflows to be checked.
+causing all intermediate overflows to be handled in strict mode.
 
-The default if no option @option{-gnato} is given is that overflows are not
-checked, which is equivalent to @option{-gnato00}.
+This switch also causes arithmetic overflow checking to be performed
+(as though pragma @code{Unsuppress (Overflow_Check)} has been specified.
+
+The default if no option @option{-gnato} is given is that overflow handling
+is in @code{STRICT} mode (computations done using the base type), and that
+overflow is not enabled.
+
 Note that division by zero is a separate check that is not
 controlled by this switch (division by zero checking is on by default).
 
@@ -25619,7 +25623,8 @@ intermediate addition of @code{(A + 1)} raises an overflow error.
 
 The (perhaps surprising) answer is that the Ada language
 definition does not answer this question. Instead it leaves
-it up to the implementation to do one of two things:
+it up to the implementation to do one of two things if overflow
+checks are enabled.
 
 @itemize @bullet
 @item
@@ -25632,10 +25637,14 @@ subsequent operations.
 
 @noindent
 If the compiler chooses the first approach, then the assignment of this
-example will indeed raise @code{Constraint_Error}. But if the compiler
+example will indeed raise @code{Constraint_Error} if overflow checking is
+enabled, or result in erroneous execution if overflow checks are suppressed.
+
+But if the compiler
 chooses the second approach, then it can perform both additions yielding
 the correct mathematical result, which is in range, so no exception
-will be raised.
+will be raised, and the right result is obtained, regardless of whether
+overflow checks are suppressed.
 
 Note that in the first example an
 exception will be raised in either case, since if the compiler
@@ -25700,30 +25709,22 @@ would prefer this precondition to be considered True at run time).
 To deal with the portability issue, and with the problem of
 mathematical versus run-time intepretation of the expressions in
 assertions, GNAT provides comprehensive control over the handling
-of intermediate overflow. GNAT can operate in four modes, and
+of intermediate overflow. GNAT can operate in three modes, and
 furthemore, permits separate selection of operating modes for
 the expressions within assertions (here the term ``assertions''
 is used in the technical sense, which includes preconditions and so forth)
 and for expressions appearing outside assertions.
 
-The four modes are:
+The three modes are:
 
 @itemize @bullet
-@item   @i{Checks suppressed} (@code{SUPPRESSED})
-
-     This is the normal defined language mode, as specified by a pragma
-     @code{Suppress (Overflow_Check)}. If any intermediate overflow occurs,
-     then the program execution is erroneous, which means that anything
-     could happen. Note in particular, that the result of evaluating
-     a precondition may be plain wrong if there is an intermediate
-     overflow, as in our examples above.
-
-@item   @i{All intermediate overflows checked} (@code{CHECKED})
+@item   @i{All intermediate overflows checked} (@code{STRICT})
 
      In this mode, all intermediate results for predefined arithmetic
      operators must be in range of the base type. If this is not the
-     case a constraint error is raised. This is the normal default mode
-     specified by use of the pragma @code{Unsuppress (Overflow_Check)}.
+     case then either an exception is raised (if overflow checks are
+     enabled) or the execution is erroneous (if overflow checks are suppressed).
+     This is the normal default mode.
 
 @item   @i{Most intermediate overflows avoided} (@code{MINIMIZED})
 
@@ -25732,7 +25733,7 @@ The four modes are:
      performed for predefined arithmetic operators. This is slightly more
      expensive at
      run time (compared to suppressing intermediate overflow checks), though
-     the cost is minimal on modern 64-bit machines. For the examples given
+     the cost is negligible on modern 64-bit machines. For the examples given
      earlier, no intermediate overflows would have resulted in exceptions,
      since the intermediate results are all in the range of
      @code{Long_Long_Integer} (typically 64-bits on nearly all implementations
@@ -25750,9 +25751,11 @@ The four modes are:
      Now the intermediate results are
      out of the range of @code{Long_Long_Integer} even though the final result
      is in range and the precondition is True (from a mathematical point
-     of view). In such a case, operating in this mode, an exception will
-     be raised for the intermediate overflow (which is why this mode
-     says @i{most} intermediate overflows are avoided).
+     of view). In such a case, operating in this mode, an overflow occurs
+     for the intermediate computation (which is why this mode
+     says @i{most} intermediate overflows are avoided). In this case,
+     an exception is raised if overflow checks are enabled, and the
+     execution is erroneous if overflow checks are suppressed.
 
 @item   @i{All intermediate overflows avoided} (@code{ELIMINATED})
 
@@ -25773,6 +25776,15 @@ The four modes are:
      predefined arithmetic operators, meaning that there is never a
      conflict between the mathematical view of the assertion, and its
      run-time behavior.
+
+     Note that in this mode, the behavior is unaffected by whether or
+     not overflow checks are suppressed, since overflow does not occur.
+     It is possible for gigantic intermediate expressions to raise
+     @code{Storage_Error} as a result of attempting to compute the
+     results of such expressions (e.g. @code{Integer'Last ** Integer'Last})
+     but overflow is impossible.
+
+
 @end itemize
 
 @noindent
@@ -25781,9 +25793,10 @@ The four modes are:
   aritmetic.
 
   For fixed-point arithmetic, checks can be suppressed. But if checks
-  are enabled (any of the three non-suppress modes will enable checks),
+  are enabled
   then fixed-point values are always checked for overflow against the
-  base type for intermediate expressions.
+  base type for intermediate expressions (that is such checks always
+  operate in the equivalent of @code{STRICT} mode).
 
   For floating-point, on nearly all architectures, @code{Machine_Overflows}
   is False, and IEEE infinities are generated, so overflow exceptions
@@ -25799,7 +25812,7 @@ The four modes are:
 @section Specifying the Desired Mode
 
 @noindent
-The desired mode of overflow checking can be specified using
+The desired mode of for handling intermediate overflow can be specified using
 either the @code{Overflow_Checks} pragma or an equivalent compiler switch.
 The pragma has the form
 @cindex pragma @code{Overflow_Checks}
@@ -25812,8 +25825,7 @@ The pragma has the form
 where @code{MODE} is one of
 
 @itemize @bullet
-@item   @code{SUPPRESSED}: suppress overflow checks
-@item   @code{CHECKED}:  all intermediate overflows checked
+@item   @code{STRICT}:  intermediate overflows checked (using base type)
 @item   @code{MINIMIZED}: minimize intermediate overflows
 @item   @code{ELIMINATED}: eliminate intermediate overflows
 @end itemize
@@ -25850,17 +25862,21 @@ configuration pragma, specifying a default for the whole
 program, or in a declarative scope, where it applies to the
 remaining declarations and statements in that scope.
 
+Note that pragma @code{Overflow_Checks} does not affect whether
+overflow checks are enabled or suppressed. It only controls the
+method used to compute intermediate values. To control whether
+overflow checking is enabled or suppressed, use pragma @code{Suppress}
+or @code{Unsuppress} in the usual manner
+
 Additionally, a compiler switch @option{-gnato?} or @option{-gnato??}
 can be used to control the checking mode default (which can be subsequently
-overridden using the pragma form).
+overridden using pragmas).
 @cindex @option{-gnato?} (gcc)
 @cindex @option{-gnato??} (gcc)
 
-Here `@code{?}' is one of the digits `@code{0}' through `@code{3}':
+Here `@code{?}' is one of the digits `@code{1}' through `@code{3}':
 
 @itemize @bullet
-@item   @code{0}:
-suppress overflow checks (@code{SUPPRESSED})
 @item   @code{1}:
 all intermediate overflows checked (@code{CHECKED})
 @item   @code{2}:
@@ -25879,6 +25895,11 @@ If no digits follow the @option{-gnato}, then it is equivalent to
 @option{-gnato11},
 causing all intermediate overflows to be checked.
 
+In addition to setting the mode used for computation of intermediate
+results, the @code{-gnato} switch also enables overflow checking (which
+is suppressed by default). It thus combines the effect of using
+a pragma @code{Overflow_Checks} and pragma @code{Unsuppress}.
+
 
 @c -------------------------
 @node Default Settings
@@ -25887,48 +25908,37 @@ causing all intermediate overflows to be checked.
 The default mode for overflow checks is
 
 @smallexample
-   General => Suppressed
+   General => Strict
 @end smallexample
 
 @noindent
-which suppresses checks inside and outside assertions,
+which causes all computations both inside and outside assertions to use
+the base type. In addition overflow checks are suppressed.
+
 This retains compatibility with previous versions of
-GNAT which suppressed overflow checks by default.
+GNAT which suppressed overflow checks by default and always
+used the base type for computation of intermediate results.
 
 The switch @option{-gnato} (with no digits following) is equivalent to
 @cindex @option{-gnato} (gcc)
 
 @smallexample
-   General => Checked
+   General => Strict
 @end smallexample
 
 @noindent
 which causes overflow checking of all intermediate overflows
-both inside and outside assertions. This provides compatibility
+both inside and outside assertions against the base type.
+This provides compatibility
 with this switch as implemented in previous versions of GNAT.
 
-The pragma @code{Suppress (Overflow_Check)} sets mode
+The pragma @code{Suppress (Overflow_Check)} disables overflow
+checking, but it has no effect on the method used for computing
+intermediate results.
 
-@smallexample
-   General => Suppressed
-@end smallexample
-
-@noindent
-suppressing all overflow checking within and outside
-assertions.
-@cindex @code{Overflow_Check} (argument to pragma Suppress)
-
-The pragam @code{Unsuppress (Overflow_Check)} sets mode
-
-@smallexample
-   General => Checked
-@end smallexample
-
-@noindent
-which causes overflow checking of all intermediate overflows.
-This applies both inside and outside assertions.
-@cindex @code{Overflow_Check} (argument to pragma Unsuppress)
-
+The pragam @code{Unsuppress (Overflow_Check)} enables overflow
+checking, but it has no effect on the method used for computing
+intermediate results.
 
 @c -------------------------
 @node Implementation Notes
@@ -25944,12 +25954,7 @@ makes sense if you want to
 make sure that your code is compatible with any other possible
 Ada implementation. This may be useful in ensuring portability
 for code that is to be exported to some other compiler than GNAT.
-It is also appropriate if you intend to turn off checks for
-the final delivered software, since in @code{SUPPRESSED} mode, the
-assumption is that all intermediate results are in range. In
-this situation, it is likely that you are also suppressing
-assertions in the final executable, so in that case it does not
-matter which mode is selected for assertions during development.
+
 
 The Ada standard allows the reassociation of expressions at
 the same precedence level if no parentheses are present. For
