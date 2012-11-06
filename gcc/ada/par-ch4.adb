@@ -2359,10 +2359,13 @@ package body Ch4 is
    --  Error recovery: can raise Error_Resync
 
    function P_Primary return Node_Id is
-      Lparen     : constant Boolean := Prev_Token = Tok_Left_Paren;
-
       Scan_State : Saved_Scan_State;
       Node1      : Node_Id;
+
+      Lparen : constant Boolean := Prev_Token = Tok_Left_Paren;
+      --  Remember if previous token is a left parenthesis. This is used to
+      --  deal with checking whether IF/CASE/FOR expressions appearing as
+      --  primaries require extra parenthesization.
 
    begin
       --  The loop runs more than once only if misplaced pragmas are found
@@ -2537,7 +2540,6 @@ package body Ch4 is
             --  For [all | some]  indicates a quantified expression
 
             when Tok_For =>
-
                if Token_Is_At_Start_Of_Line then
                   Error_Msg_AP ("misplaced loop");
                   return Error;
@@ -2553,10 +2555,9 @@ package body Ch4 is
 
                   return Node1;
 
-               else
-
                --  Otherwise treat as misused identifier
 
+               else
                   return P_Identifier;
                end if;
 
