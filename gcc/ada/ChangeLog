@@ -1,3 +1,23 @@
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb: Add with and use clause for Sem_Ch8.
+	(Expand_N_Pragma): Add a new variant to expand pragma Loop_Assertion.
+	(Expand_Pragma_Loop_Assertion): New routine.
+	* par-prag.adb (Prag): The semantic analysis of pragma
+	Loop_Assertion is carried out by Analyze_Pragma. No need for
+	checks in the parser.
+	* sem_prag.adb: Add a reference position value for pragma
+	Loop_Assertion in Sig_Flags.
+	(Analyze_Pragma): Add semantic analysis for pragma Loop_Assertion.
+	* snames.ads-tmpl: Add the following new names:
+	Name_Decreases Name_Increases Name_Loop_Assertion.
+	Add new pragma id Pragma_Loop_Assertion.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: Identifier in iterator must have debug
+	information.
+
 2012-11-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Remove
