@@ -2250,10 +2250,19 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
 static void
 cgraph_debug_gimple_stmt (struct function *this_cfun, gimple stmt)
 {
+  bool fndecl_was_null = false;
   /* debug_gimple_stmt needs correct cfun */
   if (cfun != this_cfun)
     set_cfun (this_cfun);
+  /* ...and an actual current_function_decl */
+  if (!current_function_decl)
+    {
+      current_function_decl = this_cfun->decl;
+      fndecl_was_null = true;
+    }
   debug_gimple_stmt (stmt);
+  if (fndecl_was_null)
+    current_function_decl = NULL;
 }
 
 /* Verify that call graph edge E corresponds to DECL from the associated

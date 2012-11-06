@@ -1,3 +1,8 @@
+2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cgraph.c (cgraph_debug_gimple_stmt): Handle a null
+	current_function_decl.
+
 2012-11-06  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-tail-merge.c (find_duplicate): Do not consider
