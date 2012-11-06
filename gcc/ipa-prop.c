@@ -65,25 +65,35 @@ static struct cgraph_node_hook_list *function_insertion_hook_holder;
 /* Return index of the formal whose tree is PTREE in function which corresponds
    to INFO.  */
 
-int
-ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
+static int
+ipa_get_param_decl_index_1 (VEC (ipa_param_descriptor_t, heap) *descriptors,
+			    tree ptree)
 {
   int i, count;
 
-  count = ipa_get_param_count (info);
+  count = VEC_length (ipa_param_descriptor_t, descriptors);
   for (i = 0; i < count; i++)
-    if (ipa_get_param (info, i) == ptree)
+    if (VEC_index (ipa_param_descriptor_t, descriptors, i).decl == ptree)
       return i;
 
   return -1;
 }
 
-/* Populate the param_decl field in parameter descriptors of INFO that
-   corresponds to NODE.  */
+/* Return index of the formal whose tree is PTREE in function which corresponds
+   to INFO.  */
+
+int
+ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
+{
+  return ipa_get_param_decl_index_1 (info->descriptors, ptree);
+}
+
+/* Populate the param_decl field in parameter DESCRIPTORS that correspond to
+   NODE.  */
 
 static void
 ipa_populate_param_decls (struct cgraph_node *node,
-			  struct ipa_node_params *info)
+			  VEC (ipa_param_descriptor_t, heap) *descriptors)
 {
   tree fndecl;
   tree fnargs;
@@ -95,8 +105,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
   param_num = 0;
   for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
     {
-      VEC_index (ipa_param_descriptor_t,
-		 info->descriptors, param_num).decl = parm;
+      VEC_index (ipa_param_descriptor_t, descriptors, param_num).decl = parm;
       param_num++;
     }
 }
@@ -133,7 +142,7 @@ ipa_initialize_node_params (struct cgraph_node *node)
 	{
 	  VEC_safe_grow_cleared (ipa_param_descriptor_t, heap,
 				 info->descriptors, param_count);
-	  ipa_populate_param_decls (node, info);
+	  ipa_populate_param_decls (node, info->descriptors);
 	}
     }
 }
@@ -662,7 +671,7 @@ parm_preserved_before_stmt_p (struct param_analysis_info *parm_ainfo,
    modified.  Otherwise return -1.  */
 
 static int
-load_from_unmodified_param (struct ipa_node_params *info,
+load_from_unmodified_param (VEC (ipa_param_descriptor_t, heap) *descriptors,
 			    struct param_analysis_info *parms_ainfo,
 			    gimple stmt)
 {
@@ -676,7 +685,7 @@ load_from_unmodified_param (struct ipa_node_params *info,
   if (TREE_CODE (op1) != PARM_DECL)
     return -1;
 
-  index = ipa_get_param_decl_index (info, op1);
+  index = ipa_get_param_decl_index_1 (descriptors, op1);
   if (index < 0
       || !parm_preserved_before_stmt_p (parms_ainfo ? &parms_ainfo[index]
 					: NULL, stmt, op1))
@@ -750,7 +759,7 @@ parm_ref_data_pass_through_p (struct param_analysis_info *parm_ainfo,
    reference respectively.  */
 
 static bool
-ipa_load_from_parm_agg_1 (struct ipa_node_params *info,
+ipa_load_from_parm_agg_1 (VEC (ipa_param_descriptor_t, heap) *descriptors,
 			  struct param_analysis_info *parms_ainfo, gimple stmt,
 			  tree op, int *index_p, HOST_WIDE_INT *offset_p,
 			  bool *by_ref_p)
@@ -764,7 +773,7 @@ ipa_load_from_parm_agg_1 (struct ipa_node_params *info,
 
   if (DECL_P (base))
     {
-      int index = ipa_get_param_decl_index (info, base);
+      int index = ipa_get_param_decl_index_1 (descriptors, base);
       if (index >= 0
 	  && parm_preserved_before_stmt_p (parms_ainfo ? &parms_ainfo[index]
 					   : NULL, stmt, op))
@@ -784,7 +793,7 @@ ipa_load_from_parm_agg_1 (struct ipa_node_params *info,
   if (SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0)))
     {
       tree parm = SSA_NAME_VAR (TREE_OPERAND (base, 0));
-      index = ipa_get_param_decl_index (info, parm);
+      index = ipa_get_param_decl_index_1 (descriptors, parm);
     }
   else
     {
@@ -804,7 +813,7 @@ ipa_load_from_parm_agg_1 (struct ipa_node_params *info,
       */
 
       gimple def = SSA_NAME_DEF_STMT (TREE_OPERAND (base, 0));
-      index = load_from_unmodified_param (info, parms_ainfo, def);
+      index = load_from_unmodified_param (descriptors, parms_ainfo, def);
     }
 
   if (index >= 0
@@ -826,8 +835,8 @@ ipa_load_from_parm_agg (struct ipa_node_params *info, gimple stmt,
 			tree op, int *index_p, HOST_WIDE_INT *offset_p,
 			bool *by_ref_p)
 {
-  return ipa_load_from_parm_agg_1 (info, NULL, stmt, op, index_p, offset_p,
-				   by_ref_p);
+  return ipa_load_from_parm_agg_1 (info->descriptors, NULL, stmt, op, index_p,
+				   offset_p, by_ref_p);
 }
 
 /* Given that an actual argument is an SSA_NAME (given in NAME) and is a result
@@ -900,13 +909,13 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       if (SSA_NAME_IS_DEFAULT_DEF (op1))
 	index = ipa_get_param_decl_index (info, SSA_NAME_VAR (op1));
       else
-	index = load_from_unmodified_param (info, parms_ainfo,
+	index = load_from_unmodified_param (info->descriptors, parms_ainfo,
 					    SSA_NAME_DEF_STMT (op1));
       tc_ssa = op1;
     }
   else
     {
-      index = load_from_unmodified_param (info, parms_ainfo, stmt);
+      index = load_from_unmodified_param (info->descriptors, parms_ainfo, stmt);
       tc_ssa = gimple_assign_lhs (stmt);
     }
 
@@ -1649,7 +1658,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
 
   def = SSA_NAME_DEF_STMT (target);
   if (gimple_assign_single_p (def)
-      && ipa_load_from_parm_agg_1 (info, parms_ainfo, def,
+      && ipa_load_from_parm_agg_1 (info->descriptors, parms_ainfo, def,
 				   gimple_assign_rhs1 (def), &index, &offset,
 				   &by_ref))
     {
