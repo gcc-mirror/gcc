@@ -1076,12 +1076,18 @@ package body Exp_Prag is
    --  Start of processing for Expand_Pragma_Loop_Assertion
 
    begin
-      --  Locate the enclosing loop for which this assertion applies
+      --  Locate the enclosing loop for which this assertion applies. In the
+      --  case of Ada 2012 array iteration, we might be dealing with nested
+      --  loops. Only the outermost loop has an identifier.
 
       Loop_Stmt := N;
-      while Present (Loop_Stmt)
-        and then Nkind (Loop_Stmt) /= N_Loop_Statement
-      loop
+      while Present (Loop_Stmt) loop
+         if Nkind (Loop_Stmt) = N_Loop_Statement
+           and then Present (Identifier (Loop_Stmt))
+         then
+            exit;
+         end if;
+
          Loop_Stmt := Parent (Loop_Stmt);
       end loop;
 

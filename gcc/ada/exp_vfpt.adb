@@ -80,8 +80,8 @@ package body Exp_VFpt is
    --  +--------------------------------+
 
    --  Note that the fraction bits are not continuous in memory. Bytes in a
-   --  words are stored using little endianness, but words are stored using
-   --  big endianness (PDP endian)
+   --  words are stored in little endian format, but words are stored using
+   --  big endian format (PDP endian).
 
    --  Like Float F but with 55 bits for the fraction.
 

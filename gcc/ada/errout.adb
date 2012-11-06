@@ -18,6 +18,10 @@
 -- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
 -- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
+-- As a special exception under Section 7 of GPL version 3, you are granted --
+-- additional permissions described in the GCC Runtime Library Exception,   --
+-- version 3.1, as published by the Free Software Foundation.               --
+--                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
@@ -205,10 +209,9 @@ package body Errout is
    procedure Cascaded_Error is
    begin
       --  An anomaly has been detected which is assumed to be a consequence of
-      --  a previous error. Raise an exception if no serious error has been
-      --  found so far.
+      --  a previous error. Raise an exception if no error found previously.
 
-      if Serious_Errors_Detected = 0 then
+      if Total_Errors_Detected = 0 then
          raise Program_Error;
       end if;
    end Cascaded_Error;

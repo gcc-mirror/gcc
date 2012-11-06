@@ -739,9 +739,10 @@ package body Sem_Ch8 is
             --  expanded. Limited types with discriminants are included.
 
             elsif Is_Limited_Record (Typ)
-              or else (Ekind (Typ) = E_Limited_Private_Type
-                and then Has_Discriminants (Typ)
-                and then Is_Access_Type (Etype (First_Discriminant (Typ))))
+              or else
+                (Ekind (Typ) = E_Limited_Private_Type
+                  and then Has_Discriminants (Typ)
+                  and then Is_Access_Type (Etype (First_Discriminant (Typ))))
             then
                null;
 

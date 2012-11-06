@@ -54,10 +54,10 @@ package Exp_VFpt is
 
    function Get_Vax_Real_Literal_As_Signed (N : Node_Id) return Uint;
    --  Get the Vax binary representation of a real literal whose type is a Vax
-   --  floating-point type. This is used by gigi. Previously we expanded
-   --  real literal to a call to a LIB$OTS routine that performed the
-   --  conversion. This worked well, but was not efficient and generated huge
-   --  functions for aggregate initialization.
+   --  floating-point type. This is used by gigi. Previously we expanded real
+   --  literal to a call to a LIB$OTS routine that performed the conversion.
+   --  This worked correctly from a funcional point of view, but was
+   --  inefficient and generated huge functions for aggregate initializations.
 
    procedure Expand_Vax_Valid (N : Node_Id);
    --  The node N is an attribute reference node for the Valid attribute where
