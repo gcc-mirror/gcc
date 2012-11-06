@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,15 @@ with System.Case_Util; use System.Case_Util;
 
 package body System.Val_Util is
 
+   ---------------
+   -- Bad_Value --
+   ---------------
+
+   procedure Bad_Value (S : String) is
+   begin
+      raise Constraint_Error with "bad input for 'Value: """ & S & '"';
+   end Bad_Value;
+
    ----------------------
    -- Normalize_String --
    ----------------------
@@ -54,7 +63,7 @@ package body System.Val_Util is
       --  Check for case when the string contained no characters
 
       if F > L then
-         raise Constraint_Error;
+         Bad_Value (S);
       end if;
 
       --  Scan for trailing spaces
@@ -169,7 +178,7 @@ package body System.Val_Util is
 
    begin
       if P > Max then
-         raise Constraint_Error;
+         Bad_Value (Str);
       end if;
 
       --  Scan past initial blanks
@@ -179,7 +188,7 @@ package body System.Val_Util is
 
          if P > Max then
             Ptr.all := P;
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
       end loop;
 
@@ -192,7 +201,7 @@ package body System.Val_Util is
 
          if P > Max then
             Ptr.all := Start;
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
       end if;
 
@@ -217,7 +226,7 @@ package body System.Val_Util is
       --  raise constraint error, with Ptr unchanged, and thus > Max.
 
       if P > Max then
-         raise Constraint_Error;
+         Bad_Value (Str);
       end if;
 
       --  Scan past initial blanks
@@ -227,7 +236,7 @@ package body System.Val_Util is
 
          if P > Max then
             Ptr.all := P;
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
       end loop;
 
@@ -241,7 +250,7 @@ package body System.Val_Util is
 
          if P > Max then
             Ptr.all := Start;
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
 
       --  Skip past an initial plus sign
@@ -252,7 +261,7 @@ package body System.Val_Util is
 
          if P > Max then
             Ptr.all := Start;
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
 
       else
@@ -270,7 +279,7 @@ package body System.Val_Util is
    begin
       for J in P .. Str'Last loop
          if Str (J) /= ' ' then
-            raise Constraint_Error;
+            Bad_Value (Str);
          end if;
       end loop;
    end Scan_Trailing_Blanks;
@@ -304,7 +313,7 @@ package body System.Val_Util is
 
       if P > Max then
          Ptr.all := P;
-         raise Constraint_Error;
+         Bad_Value (Str);
       end if;
 
       --  Similarly, if no digit follows the underscore raise an error. This
@@ -313,13 +322,12 @@ package body System.Val_Util is
       C := Str (P);
 
       if C in '0' .. '9'
-        or else
-          (Ext and then (C in 'A' .. 'F' or else C in 'a' .. 'f'))
+        or else (Ext and then (C in 'A' .. 'F' or else C in 'a' .. 'f'))
       then
          return;
       else
          Ptr.all := P;
-         raise Constraint_Error;
+         Bad_Value (Str);
       end if;
    end Scan_Underscore;
 

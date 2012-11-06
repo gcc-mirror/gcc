@@ -11,7 +11,6 @@
 #include "backtrace.h"
 
 #include "runtime.h"
-#include "go-string.h"
 
 /* Get the function name, file name, and line number for a PC value.
    We use the backtrace library to get this.  */
@@ -20,9 +19,9 @@
 
 struct caller
 {
-  struct __go_string fn;
-  struct __go_string file;
-  int line;
+  String fn;
+  String file;
+  intgo line;
 };
 
 /* Collect file/line information for a PC value.  If this is called
@@ -37,32 +36,32 @@ callback (void *data, uintptr_t pc __attribute__ ((unused)),
 
   if (function == NULL)
     {
-      c->fn.__data = NULL;
-      c->fn.__length = 0;
+      c->fn.str = NULL;
+      c->fn.len = 0;
     }
   else
     {
-      char *s;
+      byte *s;
 
-      c->fn.__length = __builtin_strlen (function);
-      s = runtime_malloc (c->fn.__length);
-      __builtin_memcpy (s, function, c->fn.__length);
-      c->fn.__data = (unsigned char *) s;
+      c->fn.len = __builtin_strlen (function);
+      s = runtime_malloc (c->fn.len);
+      __builtin_memcpy (s, function, c->fn.len);
+      c->fn.str = s;
     }
 
   if (filename == NULL)
     {
-      c->file.__data = NULL;
-      c->file.__length = 0;
+      c->file.str = NULL;
+      c->file.len = 0;
     }
   else
     {
-      char *s;
+      byte *s;
 
-      c->file.__length = __builtin_strlen (filename);
-      s = runtime_malloc (c->file.__length);
-      __builtin_memcpy (s, filename, c->file.__length);
-      c->file.__data = (unsigned char *) s;
+      c->file.len = __builtin_strlen (filename);
+      s = runtime_malloc (c->file.len);
+      __builtin_memcpy (s, filename, c->file.len);
+      c->file.str = s;
     }
 
   c->line = lineno;
@@ -111,8 +110,7 @@ __go_get_backtrace_state ()
 /* Return function/file/line information for PC.  */
 
 _Bool
-__go_file_line (uintptr pc, struct __go_string *fn, struct __go_string *file,
-		int *line)
+__go_file_line (uintptr pc, String *fn, String *file, intgo *line)
 {
   struct caller c;
 
@@ -122,7 +120,7 @@ __go_file_line (uintptr pc, struct __go_string *fn, struct __go_string *file,
   *fn = c.fn;
   *file = c.file;
   *line = c.line;
-  return c.file.__length > 0;
+  return c.file.len > 0;
 }
 
 /* Collect symbol information.  */
@@ -153,8 +151,8 @@ __go_symbol_value (uintptr_t pc, uintptr_t *val)
 struct caller_ret
 {
   uintptr_t pc;
-  struct __go_string file;
-  int line;
+  String file;
+  intgo line;
   _Bool ok;
 };
 
@@ -170,7 +168,7 @@ Caller (int skip)
   struct caller_ret ret;
   uintptr pc;
   int32 n;
-  struct __go_string fn;
+  String fn;
 
   runtime_memclr (&ret, sizeof ret);
   n = runtime_callers (skip + 1, &pc, 1);
@@ -188,9 +186,9 @@ Func *
 FuncForPC (uintptr_t pc)
 {
   Func *ret;
-  struct __go_string fn;
-  struct __go_string file;
-  int line;
+  String fn;
+  String file;
+  intgo line;
   uintptr_t val;
 
   if (!__go_file_line (pc, &fn, &file, &line))
@@ -212,8 +210,8 @@ FuncForPC (uintptr_t pc)
 
 struct funcline_go_return
 {
-  struct __go_string retfile;
-  int retline;
+  String retfile;
+  intgo retline;
 };
 
 struct funcline_go_return
@@ -224,7 +222,7 @@ struct funcline_go_return
 runtime_funcline_go (Func *f __attribute__((unused)), uintptr targetpc)
 {
   struct funcline_go_return ret;
-  struct __go_string fn;
+  String fn;
 
   if (!__go_file_line (targetpc, &fn, &ret.retfile,  &ret.retline))
     runtime_memclr (&ret, sizeof ret);

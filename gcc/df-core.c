@@ -754,6 +754,7 @@ struct rtl_opt_pass pass_df_initialize_opt =
  {
   RTL_PASS,
   "dfinit",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_opt,                             /* gate */
   rest_of_handle_df_initialize,         /* execute */
   NULL,                                 /* sub */
@@ -781,6 +782,7 @@ struct rtl_opt_pass pass_df_initialize_no_opt =
  {
   RTL_PASS,
   "no-opt dfinit",                      /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_no_opt,                          /* gate */
   rest_of_handle_df_initialize,         /* execute */
   NULL,                                 /* sub */
@@ -828,6 +830,7 @@ struct rtl_opt_pass pass_df_finish =
  {
   RTL_PASS,
   "dfinish",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   rest_of_handle_df_finish,             /* execute */
   NULL,                                 /* sub */
@@ -888,7 +891,7 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
     FOR_EACH_EDGE (e, ei, bb->preds)
       {
         if (age <= BB_LAST_CHANGE_AGE (e->src)
-	    && TEST_BIT (considered, e->src->index))
+	    && bitmap_bit_p (considered, e->src->index))
           changed |= dataflow->problem->con_fun_n (e);
       }
   else if (dataflow->problem->con_fun_0)
@@ -903,7 +906,7 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
         {
           unsigned ob_index = e->dest->index;
 
-          if (TEST_BIT (considered, ob_index))
+          if (bitmap_bit_p (considered, ob_index))
             bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
         }
       return true;
@@ -933,7 +936,7 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
         if (age <= BB_LAST_CHANGE_AGE (e->dest)
-	    && TEST_BIT (considered, e->dest->index))
+	    && bitmap_bit_p (considered, e->dest->index))
           changed |= dataflow->problem->con_fun_n (e);
       }
   else if (dataflow->problem->con_fun_0)
@@ -948,7 +951,7 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
         {
           unsigned ob_index = e->src->index;
 
-          if (TEST_BIT (considered, ob_index))
+          if (bitmap_bit_p (considered, ob_index))
             bitmap_set_bit (pending, bbindex_to_postorder[ob_index]);
         }
       return true;
@@ -1080,10 +1083,10 @@ df_worklist_dataflow (struct dataflow *dataflow,
     bbindex_to_postorder[i] = last_basic_block;
 
   /* Initialize the considered map.  */
-  sbitmap_zero (considered);
+  bitmap_clear (considered);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_consider, 0, index, bi)
     {
-      SET_BIT (considered, index);
+      bitmap_set_bit (considered, index);
     }
 
   /* Initialize the mapping of block index to postorder.  */

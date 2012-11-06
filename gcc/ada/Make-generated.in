@@ -93,7 +93,7 @@ $(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SU
 		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
 		$(OSCONS_CPP) ; \
 		$(OSCONS_EXTRACT) ; \
-		./xoscons ) ; \
+		./xoscons s-oscons ) ; \
 		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.ads $(ADA_GEN_SUBDIR)/s-oscons.ads ; \
 		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.h $(ADA_GEN_SUBDIR)/s-oscons.h
 

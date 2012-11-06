@@ -190,10 +190,10 @@ fix_bb_placements (basic_block from,
     return;
 
   in_queue = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_queue);
-  SET_BIT (in_queue, from->index);
+  bitmap_clear (in_queue);
+  bitmap_set_bit (in_queue, from->index);
   /* Prevent us from going out of the base_loop.  */
-  SET_BIT (in_queue, base_loop->header->index);
+  bitmap_set_bit (in_queue, base_loop->header->index);
 
   queue = XNEWVEC (basic_block, base_loop->num_nodes + 1);
   qtop = queue + base_loop->num_nodes + 1;
@@ -208,7 +208,7 @@ fix_bb_placements (basic_block from,
       qbeg++;
       if (qbeg == qtop)
 	qbeg = queue;
-      RESET_BIT (in_queue, from->index);
+      bitmap_clear_bit (in_queue, from->index);
 
       if (from->loop_father->header == from)
 	{
@@ -242,7 +242,7 @@ fix_bb_placements (basic_block from,
 	  if (e->flags & EDGE_IRREDUCIBLE_LOOP)
 	    *irred_invalidated = true;
 
-	  if (TEST_BIT (in_queue, pred->index))
+	  if (bitmap_bit_p (in_queue, pred->index))
 	    continue;
 
 	  /* If it is subloop, then it either was not moved, or
@@ -262,7 +262,7 @@ fix_bb_placements (basic_block from,
 	      continue;
 	    }
 
-	  if (TEST_BIT (in_queue, pred->index))
+	  if (bitmap_bit_p (in_queue, pred->index))
 	    continue;
 
 	  /* Schedule the basic block.  */
@@ -270,7 +270,7 @@ fix_bb_placements (basic_block from,
 	  qend++;
 	  if (qend == qtop)
 	    qend = queue;
-	  SET_BIT (in_queue, pred->index);
+	  bitmap_set_bit (in_queue, pred->index);
 	}
     }
   free (in_queue);
@@ -327,23 +327,23 @@ remove_path (edge e)
   n_bord_bbs = 0;
   bord_bbs = XNEWVEC (basic_block, n_basic_blocks);
   seen = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (seen);
+  bitmap_clear (seen);
 
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
   for (i = 0; i < nrem; i++)
-    SET_BIT (seen, rem_bbs[i]->index);
+    bitmap_set_bit (seen, rem_bbs[i]->index);
   if (!irred_invalidated)
     FOR_EACH_EDGE (ae, ei, e->src->succs)
-      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index)
+      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index)
 	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
 	irred_invalidated = true;
   for (i = 0; i < nrem; i++)
     {
       bb = rem_bbs[i];
       FOR_EACH_EDGE (ae, ei, rem_bbs[i]->succs)
-	if (ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index))
+	if (ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index))
 	  {
-	    SET_BIT (seen, ae->dest->index);
+	    bitmap_set_bit (seen, ae->dest->index);
 	    bord_bbs[n_bord_bbs++] = ae->dest;
 
 	    if (ae->flags & EDGE_IRREDUCIBLE_LOOP)
@@ -365,15 +365,15 @@ remove_path (edge e)
   free (rem_bbs);
 
   /* Find blocks whose dominators may be affected.  */
-  sbitmap_zero (seen);
+  bitmap_clear (seen);
   for (i = 0; i < n_bord_bbs; i++)
     {
       basic_block ldom;
 
       bb = get_immediate_dominator (CDI_DOMINATORS, bord_bbs[i]);
-      if (TEST_BIT (seen, bb->index))
+      if (bitmap_bit_p (seen, bb->index))
 	continue;
-      SET_BIT (seen, bb->index);
+      bitmap_set_bit (seen, bb->index);
 
       for (ldom = first_dom_son (CDI_DOMINATORS, bb);
 	   ldom;
@@ -594,11 +594,11 @@ update_dominators_in_loop (struct loop *loop)
   unsigned i;
 
   seen = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (seen);
+  bitmap_clear (seen);
   body = get_loop_body (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
-    SET_BIT (seen, body[i]->index);
+    bitmap_set_bit (seen, body[i]->index);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -607,9 +607,9 @@ update_dominators_in_loop (struct loop *loop)
       for (ldom = first_dom_son (CDI_DOMINATORS, body[i]);
 	   ldom;
 	   ldom = next_dom_son (CDI_DOMINATORS, ldom))
-	if (!TEST_BIT (seen, ldom->index))
+	if (!bitmap_bit_p (seen, ldom->index))
 	  {
-	    SET_BIT (seen, ldom->index);
+	    bitmap_set_bit (seen, ldom->index);
 	    VEC_safe_push (basic_block, heap, dom_bbs, ldom);
 	  }
     }
@@ -1206,7 +1206,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       scale_step = XNEWVEC (int, ndupl);
 
       for (i = 1; i <= ndupl; i++)
-	scale_step[i - 1] = TEST_BIT (wont_exit, i)
+	scale_step[i - 1] = bitmap_bit_p (wont_exit, i)
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 
@@ -1233,7 +1233,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
       else if (is_latch)
 	{
-	  prob_pass_main = TEST_BIT (wont_exit, 0)
+	  prob_pass_main = bitmap_bit_p (wont_exit, 0)
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 	  p = prob_pass_main;
@@ -1342,7 +1342,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
 
       /* Record exit edge in this copy.  */
-      if (orig && TEST_BIT (wont_exit, j + 1))
+      if (orig && bitmap_bit_p (wont_exit, j + 1))
 	{
 	  if (to_remove)
 	    VEC_safe_push (edge, heap, *to_remove, new_spec_edges[SE_ORIG]);
@@ -1378,7 +1378,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   free (orig_loops);
 
   /* Record the exit edge in the original loop body, and update the frequencies.  */
-  if (orig && TEST_BIT (wont_exit, 0))
+  if (orig && bitmap_bit_p (wont_exit, 0))
     {
       if (to_remove)
 	VEC_safe_push (edge, heap, *to_remove, orig);
@@ -1586,6 +1586,7 @@ force_single_succ_latches (void)
 	continue;
 
       e = find_edge (loop->latch, loop->header);
+      gcc_checking_assert (e != NULL);
 
       split_edge (e);
     }
@@ -1847,6 +1848,32 @@ fix_loop_structure (bitmap changed_bbs)
     	  bb->aux = NULL;
 	}
     }
+
+  /* Then re-compute the single latch if there is one.  */
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      edge_iterator ei;
+      edge e, latch = NULL;
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
+	  {
+	    if (!latch)
+	      latch = e;
+	    else
+	      {
+		latch = NULL;
+		break;
+	      }
+	  }
+      if (latch
+	  && latch->src->loop_father == loop)
+	loop->latch = latch->src;
+      else
+	loop->latch = NULL;
+    }
+
+  if (!loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
+    disambiguate_loops_with_multiple_latches ();
 
   if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
     create_preheaders (CP_SIMPLE_PREHEADERS);

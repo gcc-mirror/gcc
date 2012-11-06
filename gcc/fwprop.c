@@ -1486,6 +1486,7 @@ struct rtl_opt_pass pass_rtl_fwprop =
  {
   RTL_PASS,
   "fwprop1",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_fwprop,				/* gate */
   fwprop,				/* execute */
   NULL,                                 /* sub */
@@ -1535,6 +1536,7 @@ struct rtl_opt_pass pass_rtl_fwprop_addr =
  {
   RTL_PASS,
   "fwprop2",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_fwprop,				/* gate */
   fwprop_addr,				/* execute */
   NULL,                                 /* sub */

@@ -99,6 +99,7 @@ ENDFOR  fix
 
 =]
 
+export TEST_MODE=true
 find . -type f | sed 's;^\./;;' | sort | ../../fixincl
 cd ${DESTDIR}
 

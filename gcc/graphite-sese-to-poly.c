@@ -321,7 +321,7 @@ all_non_dominated_preds_marked_p (basic_block bb, sbitmap map)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->preds)
-    if (!TEST_BIT (map, e->src->index)
+    if (!bitmap_bit_p (map, e->src->index)
 	&& !dominated_by_p (CDI_DOMINATORS, e->src, bb))
 	return false;
 
@@ -365,13 +365,13 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
   VEC (basic_block, heap) *dom;
   poly_bb_p pbb;
 
-  if (TEST_BIT (visited, bb->index)
+  if (bitmap_bit_p (visited, bb->index)
       || !bb_in_sese_p (bb, region))
     return;
 
   pbb = new_poly_bb (scop, try_generate_gimple_bb (scop, bb));
   VEC_safe_push (poly_bb_p, heap, SCOP_BBS (scop), pbb);
-  SET_BIT (visited, bb->index);
+  bitmap_set_bit (visited, bb->index);
 
   dom = get_dominated_by (CDI_DOMINATORS, bb);
 
@@ -405,7 +405,7 @@ build_scop_bbs (scop_p scop)
   sbitmap visited = sbitmap_alloc (last_basic_block);
   sese region = SCOP_REGION (scop);
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   build_scop_bbs_1 (scop, visited, SESE_ENTRY_BB (region));
   sbitmap_free (visited);
 }

@@ -106,7 +106,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 
   /* We want a maximal solution, so make an optimistic initialization of
      ANTIN.  */
-  sbitmap_vector_ones (antin, last_basic_block);
+  bitmap_vector_ones (antin, last_basic_block);
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of ANTIN above.  */
@@ -139,16 +139,16 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 	/* Do not clear the aux field for blocks which are predecessors of
 	   the EXIT block.  That way we never add then to the worklist
 	   again.  */
-	sbitmap_zero (antout[bb->index]);
+	bitmap_clear (antout[bb->index]);
       else
 	{
 	  /* Clear the aux field of this block so that it can be added to
 	     the worklist again if necessary.  */
 	  bb->aux = NULL;
-	  sbitmap_intersection_of_succs (antout[bb->index], antin, bb);
+	  bitmap_intersection_of_succs (antout[bb->index], antin, bb);
 	}
 
-      if (sbitmap_a_or_b_and_c_cg (antin[bb->index], antloc[bb->index],
+      if (bitmap_or_and (antin[bb->index], antloc[bb->index],
 				   transp[bb->index], antout[bb->index]))
 	/* If the in state of this block changed, then we need
 	   to add the predecessors of this block to the worklist
@@ -190,17 +190,17 @@ compute_earliest (struct edge_list *edge_list, int n_exprs, sbitmap *antin,
       pred = INDEX_EDGE_PRED_BB (edge_list, x);
       succ = INDEX_EDGE_SUCC_BB (edge_list, x);
       if (pred == ENTRY_BLOCK_PTR)
-	sbitmap_copy (earliest[x], antin[succ->index]);
+	bitmap_copy (earliest[x], antin[succ->index]);
       else
 	{
 	  if (succ == EXIT_BLOCK_PTR)
-	    sbitmap_zero (earliest[x]);
+	    bitmap_clear (earliest[x]);
 	  else
 	    {
-	      sbitmap_difference (difference, antin[succ->index],
+	      bitmap_and_compl (difference, antin[succ->index],
 				  avout[pred->index]);
-	      sbitmap_not (temp_bitmap, antout[pred->index]);
-	      sbitmap_a_and_b_or_c (earliest[x], difference,
+	      bitmap_not (temp_bitmap, antout[pred->index]);
+	      bitmap_and_or (earliest[x], difference,
 				    kill[pred->index], temp_bitmap);
 	    }
 	}
@@ -271,14 +271,14 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      example the expression is ANTLOC in a block within the loop) then
      this algorithm will detect it when we process the block at the head
      of the optimistic edge.  That will requeue the affected blocks.  */
-  sbitmap_vector_ones (later, num_edges);
+  bitmap_vector_ones (later, num_edges);
 
   /* Note that even though we want an optimistic setting of LATER, we
      do not want to be overly optimistic.  Consider an outgoing edge from
      the entry block.  That edge should always have a LATER value the
      same as EARLIEST for that edge.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    sbitmap_copy (later[(size_t) e->aux], earliest[(size_t) e->aux]);
+    bitmap_copy (later[(size_t) e->aux], earliest[(size_t) e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
@@ -305,14 +305,14 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 	qout = worklist;
 
       /* Compute the intersection of LATERIN for each incoming edge to B.  */
-      sbitmap_ones (laterin[bb->index]);
+      bitmap_ones (laterin[bb->index]);
       FOR_EACH_EDGE (e, ei, bb->preds)
-	sbitmap_a_and_b (laterin[bb->index], laterin[bb->index],
+	bitmap_and (laterin[bb->index], laterin[bb->index],
 			 later[(size_t)e->aux]);
 
       /* Calculate LATER for all outgoing edges.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (sbitmap_union_of_diff_cg (later[(size_t) e->aux],
+	if (bitmap_ior_and_compl (later[(size_t) e->aux],
 				      earliest[(size_t) e->aux],
 				      laterin[e->src->index],
 				      antloc[e->src->index])
@@ -331,9 +331,9 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
   /* Computation of insertion and deletion points requires computing LATERIN
      for the EXIT block.  We allocated an extra entry in the LATERIN array
      for just this purpose.  */
-  sbitmap_ones (laterin[last_basic_block]);
+  bitmap_ones (laterin[last_basic_block]);
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-    sbitmap_a_and_b (laterin[last_basic_block],
+    bitmap_and (laterin[last_basic_block],
 		     laterin[last_basic_block],
 		     later[(size_t) e->aux]);
 
@@ -352,7 +352,7 @@ compute_insert_delete (struct edge_list *edge_list, sbitmap *antloc,
   basic_block bb;
 
   FOR_EACH_BB (bb)
-    sbitmap_difference (del[bb->index], antloc[bb->index],
+    bitmap_and_compl (del[bb->index], antloc[bb->index],
 			laterin[bb->index]);
 
   for (x = 0; x < NUM_EDGES (edge_list); x++)
@@ -360,9 +360,9 @@ compute_insert_delete (struct edge_list *edge_list, sbitmap *antloc,
       basic_block b = INDEX_EDGE_SUCC_BB (edge_list, x);
 
       if (b == EXIT_BLOCK_PTR)
-	sbitmap_difference (insert[x], later[x], laterin[last_basic_block]);
+	bitmap_and_compl (insert[x], later[x], laterin[last_basic_block]);
       else
-	sbitmap_difference (insert[x], later[x], laterin[b->index]);
+	bitmap_and_compl (insert[x], later[x], laterin[b->index]);
     }
 }
 
@@ -390,10 +390,10 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
       fprintf (dump_file, "Edge List:\n");
       verify_edge_list (dump_file, edge_list);
       print_edge_list (dump_file, edge_list);
-      dump_sbitmap_vector (dump_file, "transp", "", transp, last_basic_block);
-      dump_sbitmap_vector (dump_file, "antloc", "", antloc, last_basic_block);
-      dump_sbitmap_vector (dump_file, "avloc", "", avloc, last_basic_block);
-      dump_sbitmap_vector (dump_file, "kill", "", kill, last_basic_block);
+      dump_bitmap_vector (dump_file, "transp", "", transp, last_basic_block);
+      dump_bitmap_vector (dump_file, "antloc", "", antloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "avloc", "", avloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "kill", "", kill, last_basic_block);
     }
 #endif
 
@@ -411,8 +411,8 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "antin", "", antin, last_basic_block);
-      dump_sbitmap_vector (dump_file, "antout", "", antout, last_basic_block);
+      dump_bitmap_vector (dump_file, "antin", "", antin, last_basic_block);
+      dump_bitmap_vector (dump_file, "antout", "", antout, last_basic_block);
     }
 #endif
 
@@ -422,7 +422,7 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
-    dump_sbitmap_vector (dump_file, "earliest", "", earliest, num_edges);
+    dump_bitmap_vector (dump_file, "earliest", "", earliest, num_edges);
 #endif
 
   sbitmap_vector_free (antout);
@@ -438,8 +438,8 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "laterin", "", laterin, last_basic_block + 1);
-      dump_sbitmap_vector (dump_file, "later", "", later, num_edges);
+      dump_bitmap_vector (dump_file, "laterin", "", laterin, last_basic_block + 1);
+      dump_bitmap_vector (dump_file, "later", "", later, num_edges);
     }
 #endif
 
@@ -447,8 +447,8 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 
   *insert = sbitmap_vector_alloc (num_edges, n_exprs);
   *del = sbitmap_vector_alloc (last_basic_block, n_exprs);
-  sbitmap_vector_zero (*insert, num_edges);
-  sbitmap_vector_zero (*del, last_basic_block);
+  bitmap_vector_clear (*insert, num_edges);
+  bitmap_vector_clear (*del, last_basic_block);
   compute_insert_delete (edge_list, antloc, later, laterin, *insert, *del);
 
   sbitmap_vector_free (laterin);
@@ -457,8 +457,8 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "pre_insert_map", "", *insert, num_edges);
-      dump_sbitmap_vector (dump_file, "pre_delete_map", "", *del,
+      dump_bitmap_vector (dump_file, "pre_insert_map", "", *insert, num_edges);
+      dump_bitmap_vector (dump_file, "pre_delete_map", "", *del,
 			   last_basic_block);
     }
 #endif
@@ -485,7 +485,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
     XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
 
   /* We want a maximal solution.  */
-  sbitmap_vector_ones (avout, last_basic_block);
+  bitmap_vector_ones (avout, last_basic_block);
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of AVOUT above.  */
@@ -520,16 +520,16 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
       if (bb->aux == ENTRY_BLOCK_PTR)
 	/* Do not clear the aux field for blocks which are successors of the
 	   ENTRY block.  That way we never add then to the worklist again.  */
-	sbitmap_zero (avin[bb->index]);
+	bitmap_clear (avin[bb->index]);
       else
 	{
 	  /* Clear the aux field of this block so that it can be added to
 	     the worklist again if necessary.  */
 	  bb->aux = NULL;
-	  sbitmap_intersection_of_preds (avin[bb->index], avout, bb);
+	  bitmap_intersection_of_preds (avin[bb->index], avout, bb);
 	}
 
-      if (sbitmap_union_of_diff_cg (avout[bb->index], avloc[bb->index],
+      if (bitmap_ior_and_compl (avout[bb->index], avloc[bb->index],
 				    avin[bb->index], kill[bb->index]))
 	/* If the out state of this block changed, then we need
 	   to add the successors of this block to the worklist
@@ -572,17 +572,17 @@ compute_farthest (struct edge_list *edge_list, int n_exprs,
       pred = INDEX_EDGE_PRED_BB (edge_list, x);
       succ = INDEX_EDGE_SUCC_BB (edge_list, x);
       if (succ == EXIT_BLOCK_PTR)
-	sbitmap_copy (farthest[x], st_avout[pred->index]);
+	bitmap_copy (farthest[x], st_avout[pred->index]);
       else
 	{
 	  if (pred == ENTRY_BLOCK_PTR)
-	    sbitmap_zero (farthest[x]);
+	    bitmap_clear (farthest[x]);
 	  else
 	    {
-	      sbitmap_difference (difference, st_avout[pred->index],
+	      bitmap_and_compl (difference, st_avout[pred->index],
 				  st_antin[succ->index]);
-	      sbitmap_not (temp_bitmap, st_avin[succ->index]);
-	      sbitmap_a_and_b_or_c (farthest[x], difference,
+	      bitmap_not (temp_bitmap, st_avin[succ->index]);
+	      bitmap_and_or (farthest[x], difference,
 				    kill[succ->index], temp_bitmap);
 	    }
 	}
@@ -619,14 +619,14 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
     INDEX_EDGE (edge_list, i)->aux = (void *) (size_t) i;
 
   /* We want a maximal solution.  */
-  sbitmap_vector_ones (nearer, num_edges);
+  bitmap_vector_ones (nearer, num_edges);
 
   /* Note that even though we want an optimistic setting of NEARER, we
      do not want to be overly optimistic.  Consider an incoming edge to
      the exit block.  That edge should always have a NEARER value the
      same as FARTHEST for that edge.  */
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-    sbitmap_copy (nearer[(size_t)e->aux], farthest[(size_t)e->aux]);
+    bitmap_copy (nearer[(size_t)e->aux], farthest[(size_t)e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit
      from the loop given our optimistic initialization of NEARER.  */
@@ -644,14 +644,14 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
       bb->aux = NULL;
 
       /* Compute the intersection of NEARER for each outgoing edge from B.  */
-      sbitmap_ones (nearerout[bb->index]);
+      bitmap_ones (nearerout[bb->index]);
       FOR_EACH_EDGE (e, ei, bb->succs)
-	sbitmap_a_and_b (nearerout[bb->index], nearerout[bb->index],
+	bitmap_and (nearerout[bb->index], nearerout[bb->index],
 			 nearer[(size_t) e->aux]);
 
       /* Calculate NEARER for all incoming edges.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
-	if (sbitmap_union_of_diff_cg (nearer[(size_t) e->aux],
+	if (bitmap_ior_and_compl (nearer[(size_t) e->aux],
 				      farthest[(size_t) e->aux],
 				      nearerout[e->dest->index],
 				      st_avloc[e->dest->index])
@@ -667,9 +667,9 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
   /* Computation of insertion and deletion points requires computing NEAREROUT
      for the ENTRY block.  We allocated an extra entry in the NEAREROUT array
      for just this purpose.  */
-  sbitmap_ones (nearerout[last_basic_block]);
+  bitmap_ones (nearerout[last_basic_block]);
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    sbitmap_a_and_b (nearerout[last_basic_block],
+    bitmap_and (nearerout[last_basic_block],
 		     nearerout[last_basic_block],
 		     nearer[(size_t) e->aux]);
 
@@ -688,16 +688,16 @@ compute_rev_insert_delete (struct edge_list *edge_list, sbitmap *st_avloc,
   basic_block bb;
 
   FOR_EACH_BB (bb)
-    sbitmap_difference (del[bb->index], st_avloc[bb->index],
+    bitmap_and_compl (del[bb->index], st_avloc[bb->index],
 			nearerout[bb->index]);
 
   for (x = 0; x < NUM_EDGES (edge_list); x++)
     {
       basic_block b = INDEX_EDGE_PRED_BB (edge_list, x);
       if (b == ENTRY_BLOCK_PTR)
-	sbitmap_difference (insert[x], nearer[x], nearerout[last_basic_block]);
+	bitmap_and_compl (insert[x], nearer[x], nearerout[last_basic_block]);
       else
-	sbitmap_difference (insert[x], nearer[x], nearerout[b->index]);
+	bitmap_and_compl (insert[x], nearer[x], nearerout[b->index]);
     }
 }
 
@@ -722,8 +722,8 @@ pre_edge_rev_lcm (int n_exprs, sbitmap *transp,
 
   st_antin = sbitmap_vector_alloc (last_basic_block, n_exprs);
   st_antout = sbitmap_vector_alloc (last_basic_block, n_exprs);
-  sbitmap_vector_zero (st_antin, last_basic_block);
-  sbitmap_vector_zero (st_antout, last_basic_block);
+  bitmap_vector_clear (st_antin, last_basic_block);
+  bitmap_vector_clear (st_antout, last_basic_block);
   compute_antinout_edge (st_antloc, transp, st_antin, st_antout);
 
   /* Compute global anticipatability.  */
@@ -737,20 +737,20 @@ pre_edge_rev_lcm (int n_exprs, sbitmap *transp,
       fprintf (dump_file, "Edge List:\n");
       verify_edge_list (dump_file, edge_list);
       print_edge_list (dump_file, edge_list);
-      dump_sbitmap_vector (dump_file, "transp", "", transp, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_avloc", "", st_avloc, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_antloc", "", st_antloc, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_antin", "", st_antin, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_antout", "", st_antout, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_kill", "", kill, last_basic_block);
+      dump_bitmap_vector (dump_file, "transp", "", transp, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_avloc", "", st_avloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_antloc", "", st_antloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_antin", "", st_antin, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_antout", "", st_antout, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_kill", "", kill, last_basic_block);
     }
 #endif
 
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "st_avout", "", st_avout, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_avin", "", st_avin, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_avout", "", st_avout, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_avin", "", st_avin, last_basic_block);
     }
 #endif
 
@@ -761,7 +761,7 @@ pre_edge_rev_lcm (int n_exprs, sbitmap *transp,
 
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
-    dump_sbitmap_vector (dump_file, "farthest", "", farthest, num_edges);
+    dump_bitmap_vector (dump_file, "farthest", "", farthest, num_edges);
 #endif
 
   sbitmap_vector_free (st_antin);
@@ -779,9 +779,9 @@ pre_edge_rev_lcm (int n_exprs, sbitmap *transp,
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "nearerout", "", nearerout,
+      dump_bitmap_vector (dump_file, "nearerout", "", nearerout,
 			   last_basic_block + 1);
-      dump_sbitmap_vector (dump_file, "nearer", "", nearer, num_edges);
+      dump_bitmap_vector (dump_file, "nearer", "", nearer, num_edges);
     }
 #endif
 
@@ -798,8 +798,8 @@ pre_edge_rev_lcm (int n_exprs, sbitmap *transp,
 #ifdef LCM_DEBUG_INFO
   if (dump_file)
     {
-      dump_sbitmap_vector (dump_file, "pre_insert_map", "", *insert, num_edges);
-      dump_sbitmap_vector (dump_file, "pre_delete_map", "", *del,
+      dump_bitmap_vector (dump_file, "pre_insert_map", "", *insert, num_edges);
+      dump_bitmap_vector (dump_file, "pre_delete_map", "", *del,
 			   last_basic_block);
     }
 #endif

@@ -1,4 +1,4 @@
-/* s_finitel.c -- long double version of s_finite.c.
+/* finiteq.c -- __float128 version of s_finite.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -14,6 +14,11 @@
  */
 
 #include "quadmath-imp.h"
+
+/*
+ * finiteq(x) returns 1 is x is finite, else 0;
+ * no branching!
+ */
 
 int
 finiteq (const __float128 x)

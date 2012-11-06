@@ -23,16 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This program generates the spec of System.OS_Constants (s-oscons.ads)
+--  The base name of the template file is given by Argument (1). This program
+--  generates the spec for this specified unit (let's call it UNIT_NAME).
 
 --  It works in conjunction with a C template file which must be pre-processed
 --  and compiled using the cross compiler. Two input files are used:
---    - the preprocessed C file: s-oscons-tmplt.i
---    - the generated assembly file: s-oscons-tmplt.s
+--    - the preprocessed C file: UNIT_NAME-tmplt.i
+--    - the generated assembly file: UNIT_NAME-tmplt.s
 
---  The contents of s-oscons.ads is written on standard output
+--  The generated files are UNIT_NAME.ads and UNIT_NAME.h
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Command_Line;        use Ada.Command_Line;
 with Ada.Exceptions;          use Ada.Exceptions;
 with Ada.Strings.Fixed;       use Ada.Strings.Fixed;
 with Ada.Text_IO;             use Ada.Text_IO;
@@ -52,7 +54,7 @@ procedure XOSCons is
    use ASCII;
    use Ada.Strings;
 
-   Unit_Name : constant String := "s-oscons";
+   Unit_Name : constant String := Argument (1);
    Tmpl_Name : constant String := Unit_Name & "-tmplt";
 
    -------------------------------------------------
@@ -76,6 +78,7 @@ procedure XOSCons is
       CNU,     --  Named number (decimal, unsigned)
       CNS,     --  Named number (freeform text)
       C,       --  Constant object
+      SUB,     --  Subtype
       TXT);    --  Literal text
    --  Recognized markers found in assembly file. These markers are produced by
    --  the same-named macros from the C template.
@@ -181,65 +184,84 @@ procedure XOSCons is
    --  Start of processing for Output_Info
 
    begin
-      --  Case of non-TXT case (TXT case handled by common code below)
+      case Info.Kind is
+         when TXT =>
 
-      if Info.Kind /= TXT then
-         case Lang is
-            when Lang_Ada =>
-               Put ("   " & Info.Constant_Name.all);
-               Put (Spaces (Max_Constant_Name_Len
-                              - Info.Constant_Name'Length));
+            --  Handled in the common code for comments below
 
-               if Info.Kind in Named_Number then
-                  Put (" : constant := ");
-               else
-                  Put (" : constant " & Info.Constant_Type.all);
-                  Put (Spaces (Max_Constant_Type_Len
-                                 - Info.Constant_Type'Length));
-                  Put (" := ");
+            null;
+
+         when SUB =>
+            case Lang is
+               when Lang_Ada =>
+                  Put ("   subtype " & Info.Constant_Name.all
+                       & " is Interfaces.C."
+                       & Info.Text_Value.all & ";");
+               when Lang_C =>
+                  Put ("#define " & Info.Constant_Name.all & " "
+                       & Info.Text_Value.all);
+            end case;
+
+         when others =>
+
+            --  All named number cases
+
+            case Lang is
+               when Lang_Ada =>
+                  Put ("   " & Info.Constant_Name.all);
+                  Put (Spaces (Max_Constant_Name_Len
+                                 - Info.Constant_Name'Length));
+
+                  if Info.Kind in Named_Number then
+                     Put (" : constant := ");
+                  else
+                     Put (" : constant " & Info.Constant_Type.all);
+                     Put (Spaces (Max_Constant_Type_Len
+                                    - Info.Constant_Type'Length));
+                     Put (" := ");
+                  end if;
+
+               when Lang_C =>
+                  Put ("#define " & Info.Constant_Name.all & " ");
+                  Put (Spaces (Max_Constant_Name_Len
+                                 - Info.Constant_Name'Length));
+            end case;
+
+            if Info.Kind in Asm_Int_Kind then
+               if not Info.Int_Value.Positive then
+                  Put ("-");
                end if;
 
-            when Lang_C =>
-               Put ("#define " & Info.Constant_Name.all & " ");
-               Put (Spaces (Max_Constant_Name_Len
-                              - Info.Constant_Name'Length));
-         end case;
+               Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
 
-         if Info.Kind in Asm_Int_Kind then
-            if not Info.Int_Value.Positive then
-               Put ("-");
+            else
+               declare
+                  Is_String : constant Boolean :=
+                                Info.Kind = C
+                                  and then Info.Constant_Type.all = "String";
+
+               begin
+                  if Is_String then
+                     Put ("""");
+                  end if;
+
+                  Put (Info.Text_Value.all);
+
+                  if Is_String then
+                     Put ("""");
+                  end if;
+               end;
             end if;
 
-            Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
+            if Lang = Lang_Ada then
+               Put (";");
 
-         else
-            declare
-               Is_String : constant Boolean :=
-                             Info.Kind = C
-                               and then Info.Constant_Type.all = "String";
-
-            begin
-               if Is_String then
-                  Put ("""");
+               if Info.Comment'Length > 0 then
+                  Put (Spaces (Max_Constant_Value_Len - Info.Value_Len));
+                  Put (" --  ");
                end if;
-
-               Put (Info.Text_Value.all);
-
-               if Is_String then
-                  Put ("""");
-               end if;
-            end;
-         end if;
-
-         if Lang = Lang_Ada then
-            Put (";");
-
-            if Info.Comment'Length > 0 then
-               Put (Spaces (Max_Constant_Value_Len - Info.Value_Len));
-               Put (" --  ");
             end if;
-         end if;
-      end if;
+      end case;
 
       if Lang = Lang_Ada then
          Put (Info.Comment.all);
@@ -294,8 +316,8 @@ procedure XOSCons is
         (S : String;
          K : Asm_Int_Kind) return Int_Value_Type
       is
-         First    : Integer := S'First;
-         Result   : Int_Value_Type;
+         First  : Integer := S'First;
+         Result : Int_Value_Type;
 
       begin
          --  On some platforms, immediate integer values are prefixed with
@@ -349,13 +371,16 @@ procedure XOSCons is
            Integer (Parse_Int (Line (Index1 .. Index2 - 1), CNU).Abs_Value);
 
          case Info.Kind is
-            when CND | CNU | CNS | C =>
+            when CND | CNU | CNS | C | SUB =>
                Index1 := Index2 + 1;
                Find_Colon (Index2);
 
                Info.Constant_Name := Field_Alloc;
 
-               if Info.Constant_Name'Length > Max_Constant_Name_Len then
+               if Info.Kind /= SUB
+                    and then
+                  Info.Constant_Name'Length > Max_Constant_Name_Len
+               then
                   Max_Constant_Name_Len := Info.Constant_Name'Length;
                end if;
 
@@ -536,4 +561,7 @@ begin
 
    Close (Tmpl_File);
 
+exception
+   when others =>
+      Put_Line ("xoscons <base_name>");
 end XOSCons;

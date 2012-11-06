@@ -2016,6 +2016,7 @@ struct gimple_opt_pass pass_strlen =
  {
   GIMPLE_PASS,
   "strlen",			/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   gate_strlen,			/* gate */
   tree_ssa_strlen,		/* execute */
   NULL,				/* sub */

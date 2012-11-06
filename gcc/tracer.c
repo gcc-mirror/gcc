@@ -74,13 +74,13 @@ mark_bb_seen (basic_block bb)
   if ((unsigned int)bb->index >= size)
     bb_seen = sbitmap_resize (bb_seen, size * 2, 0);
 
-  SET_BIT (bb_seen, bb->index);
+  bitmap_set_bit (bb_seen, bb->index);
 }
 
 static inline bool
 bb_seen_p (basic_block bb)
 {
-  return TEST_BIT (bb_seen, bb->index);
+  return bitmap_bit_p (bb_seen, bb->index);
 }
 
 /* Return true if we should ignore the basic block for purposes of tracing.  */
@@ -238,7 +238,7 @@ tail_duplicate (void)
   /* Create an oversized sbitmap to reduce the chance that we need to
      resize it.  */
   bb_seen = sbitmap_alloc (last_basic_block * 2);
-  sbitmap_zero (bb_seen);
+  bitmap_clear (bb_seen);
   initialize_original_copy_tables ();
 
   if (profile_info && flag_branch_probabilities)
@@ -379,7 +379,12 @@ tracer (void)
   /* Trace formation is done on the fly inside tail_duplicate */
   changed = tail_duplicate ();
   if (changed)
-    free_dominance_info (CDI_DOMINATORS);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      calculate_dominance_info (CDI_DOMINATORS);
+      if (current_loops)
+	fix_loop_structure (NULL);
+    }
 
   if (dump_file)
     brief_dump_cfg (dump_file, dump_flags);
@@ -398,6 +403,7 @@ struct gimple_opt_pass pass_tracer =
  {
   GIMPLE_PASS,
   "tracer",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tracer,                          /* gate */
   tracer,                               /* execute */
   NULL,                                 /* sub */

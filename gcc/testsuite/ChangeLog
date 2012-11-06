@@ -1,3 +1,248 @@
+2012-11-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55199
+	* gfortran.dg/associate_12.f90: New.
+
+2012-11-03  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/54255
+	* lib/target-supports.exp (check_effective_target_masm_intel): New
+	proc.
+	* gcc.target/i386/asm-dialect-1.c: Use dg-require-effective-target
+	masm_intel.
+
+2012-11-03  H.J. Lu  <hjl.tools@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* lib/target-supports.exp (check_effective_target_maybe_x32): New proc.
+	* gcc.target/i386/pr54457.c: Use dg-require-effective-target maybe_x32.
+	* gcc.target/i386/pr53249.c: Likewise.
+
+2012-11-03  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/mips/octeon-bbit-3.c: Change the second call to abort to
+	call abort1 so that cross jumping does not happen.
+
+2012-11-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-18.c: New.
+	* gcc.target/sh/pr51244-19.c: New.
+
+2012-11-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/octeon-exts-7.c (bar): Make sure the extraction of
+	b requires a 64-bit operation followed by a truncation.
+
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-38.c: Correct testcase.
+
+2012-11-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr48258-2.c: Simplfy the acceptance
+	conditions to verify the reduction code is vectorized.
+
+	* gcc.target/powerpc/pr46728-1.c: Pass -fno-ident to eliminate failures
+	in case 'pow', such as 'powerpc' is used in the compiler version name.
+	* gcc.target/powerpc/pr46728-2.c: Likewise.
+	* gcc.target/powerpc/pr46728-3.c: Likewise.
+	* gcc.target/powerpc/pr46728-4.c: Likewise.
+	* gcc.target/powerpc/pr46728-5.c: Likewise.
+	* gcc.target/powerpc/pr46728-7.c: Likewise.
+	* gcc.target/powerpc/pr46728-8.c: Likewise.
+	* gcc/testsuite/gcc.dg/pr46728-6.c: Likewise.
+
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-38.c: New testcase.
+
+2012-11-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/cunroll-10.c: New testcase.
+	* gcc.dg/tree-ssa/cunroll-9.c: New testcase.
+
+2012-11-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55130
+	* gcc.target/i386/pr55130.c: New test.
+
+2012-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55147
+	* gcc.target/i386/pr55147.c: New test.
+
+2012-11-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/default_format_1.f90: XFAIL on AIX.
+	* gfortran.dg/default_format_denormal_1.f90: Same.
+
+2012-11-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55001
+	* g++.dg/ext/vector19.C: Remove target restrictions.
+	* gcc.dg/fold-compare-7.c: New testcase.
+
+2012-11-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55160
+	* gcc.target/sh/pr55160.c: New.
+
+2012-11-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vsx-mass-1.c: Check for dot symbols in
+	scan-assembler regex.
+
+2012-11-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55150
+	* gcc.dg/pr55150.c: Rename to gcc.dg/pr55150-1.c.
+	* gcc.dg/pr55150-2.c: New test.
+
+2012-11-01  Sharad Singhai  <singhai@google.com>
+
+	* testsuite/gcc.dg/plugin/selfassign.c: Add opgtroup_flags initializer.
+	* testsuite/gcc.dg/plugin/one_time_plugin.c: Likewise.
+	* testsuite/g++.dg/plugin/selfassign.c: Likewise.
+	* testsuite/g++.dg/plugin/dumb_plugin.c: Likewise.
+
+2012-10-31  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/debug/dwarf2/block.C: New testcase.
+
+2012-10-31  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/pr44974.c: Add noinline.
+
+2012-10-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53718
+	* gfortran.dg/class_54.f90: New.
+
+2012-10-31  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55018
+	* gcc.dg/torture/pr55018.c: New test.
+
+2012-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54583
+	* g++.dg/ext/vla13.C: New.
+
+2012-10-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55150
+	* gcc.dg/pr55150.c: New test.
+
+2012-10-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55134
+	* gfortran.dg/associate_11.f90: New.
+
+2012-10-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54955
+	* g++.dg/cpp0x/gen-attrs-48-2.C: New test.
+
+2012-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/19105
+	PR tree-optimization/21643
+	PR tree-optimization/46309
+	* gcc.dg/pr19105.c: New test.
+	* gcc.dg/pr21643.c: New test.
+	* gcc.dg/pr46309-2.c: New test.
+	* gcc.c-torture/execute/pr46309.c: New test.
+
+2012-10-31  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/dimode_off.c: New.
+	* gcc.target/powerpc/timode_off.c: New.
+	* gcc.target/powerpc/dfmode_off.c: New.
+	* gcc.target/powerpc/tfmode_off.c: New.
+
+2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/55093
+	* gcc.target/i386/pr55093.c: New file.
+
+2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr55116.c: Renamed to ...
+	* gcc.target/i386/pr55116-1.c: This.
+
+2012-10-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr55116-2.c: New file.
+
+2012-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-perm-2.c: Adjust.
+
+2012-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55111
+	* gcc.dg/torture/pr55111.c: New testcase.
+
+2012-10-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53988
+	* gcc.target/sh/pr53988.c: New.
+
+2012-10-30  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/54989
+	* gcc.dg/hoist-register-pressure-1.c: Rename from
+	hoist-register-pressure.c. Add nonpic condition.
+	* gcc.dg/hoist-register-pressure-2.c: New testcase.
+
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/54930
+	* gcc.dg/Wreturn-local-addr.c: New.
+	* g++.dg/warn/Wno-return-local-addr.C: New.
+	* g++.dg/warn/Wreturn-local-addr.C: New.
+
+2012-10-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/55116
+	* gcc.target/i386/pr55116.c: New file.
+
+2012-10-29  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53066
+	* gcc.dg/Wshadow-4.c: New.
+	* gcc.dg/Wshadow-4.h: New.
+
+2012-10-29  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
+	* gcc.dg/guality/pr54693.c: New.
+
+2012-10-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55027
+	* gcc.dg/pr55027.c: New testcase.
+
+2012-10-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inline-6.c: New testcase.
+
+2012-10-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55106
+	* g++.dg/pr55106.C: New.
+
+2012-10-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53695
+	* gcc.dg/torture/pr53695.c: New testcase.
+
+2012-10-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inlinehint-3.c: New testcase.
+
 2012-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54958

@@ -767,7 +767,7 @@ package Atree is
    --  Note that this routine is very rarely used, since usually the
    --  default mechanism provided sets the right value, but in some
    --  unusual cases, the value needs to be reset (e.g. when a source
-   --  node is copied, and the copy must not have Comes_From_Source set.
+   --  node is copied, and the copy must not have Comes_From_Source set).
 
    procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Has_Aspects);

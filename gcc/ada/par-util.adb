@@ -27,6 +27,7 @@ with Csets;    use Csets;
 with Namet.Sp; use Namet.Sp;
 with Stylesw;  use Stylesw;
 with Uintp;    use Uintp;
+with Warnsw;   use Warnsw;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
@@ -715,20 +716,7 @@ package body Util is
 
    procedure Signal_Bad_Attribute is
    begin
-      Error_Msg_N ("unrecognized attribute&", Token_Node);
-
-      --  Check for possible misspelling
-
-      Error_Msg_Name_1 := First_Attribute_Name;
-      while Error_Msg_Name_1 <= Last_Attribute_Name loop
-         if Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1) then
-            Error_Msg_N -- CODEFIX
-              ("\possible misspelling of %", Token_Node);
-            exit;
-         end if;
-
-         Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
-      end loop;
+      Bad_Attribute (Token_Node, Token_Name, Warn => False);
    end Signal_Bad_Attribute;
 
    -----------------------------
@@ -761,5 +749,22 @@ package body Util is
    begin
       return (Token_Ptr = First_Non_Blank_Location or else Token = Tok_EOF);
    end Token_Is_At_Start_Of_Line;
+
+   -----------------------------------
+   -- Warn_If_Standard_Redefinition --
+   -----------------------------------
+
+   procedure Warn_If_Standard_Redefinition (N : Node_Id) is
+   begin
+      if Warn_On_Standard_Redefinition then
+         declare
+            C : constant Entity_Id := Current_Entity (N);
+         begin
+            if Present (C) and then Sloc (C) = Standard_Location then
+               Error_Msg_N ("redefinition of entity& in Standard?", N);
+            end if;
+         end;
+      end if;
+   end Warn_If_Standard_Redefinition;
 
 end Util;

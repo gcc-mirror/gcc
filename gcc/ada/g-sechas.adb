@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2009, Free Software Foundation, Inc.             --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,8 +33,6 @@ with System;     use System;
 with Interfaces; use Interfaces;
 
 package body GNAT.Secure_Hashes is
-
-   use Ada.Streams;
 
    Hex_Digit : constant array (Stream_Element range 0 .. 15) of Character :=
                  "0123456789abcdef";
@@ -186,14 +184,38 @@ package body GNAT.Secure_Hashes is
          return Digest (C);
       end Digest;
 
+      function Digest (C : Context) return Binary_Message_Digest is
+         Hash_Bits : Stream_Element_Array
+                       (1 .. Stream_Element_Offset (Hash_Length));
+      begin
+         Final (C, Hash_Bits);
+         return Hash_Bits;
+      end Digest;
+
+      function Digest (S : String) return Binary_Message_Digest is
+         C : Context;
+      begin
+         Update (C, S);
+         return Digest (C);
+      end Digest;
+
+      function Digest
+        (A : Stream_Element_Array) return Binary_Message_Digest
+      is
+         C : Context;
+      begin
+         Update (C, A);
+         return Digest (C);
+      end Digest;
+
       -----------
       -- Final --
       -----------
 
-      --  Once a complete message has been processed, it is padded with one
-      --  1 bit followed by enough 0 bits so that the last block is
-      --  2 * Word'Size bits short of being completed. The last 2 * Word'Size
-      --  bits are set to the message size in bits (excluding padding).
+      --  Once a complete message has been processed, it is padded with one 1
+      --  bit followed by enough 0 bits so that the last block is 2 * Word'Size
+      --  bits short of being completed. The last 2 * Word'Size bits are set to
+      --  the message size in bits (excluding padding).
 
       procedure Final
         (C          : Context;
@@ -321,6 +343,13 @@ package body GNAT.Secure_Hashes is
       -----------------
 
       function Wide_Digest (W : Wide_String) return Message_Digest is
+         C : Context;
+      begin
+         Wide_Update (C, W);
+         return Digest (C);
+      end Wide_Digest;
+
+      function Wide_Digest (W : Wide_String) return Binary_Message_Digest is
          C : Context;
       begin
          Wide_Update (C, W);

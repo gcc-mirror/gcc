@@ -3494,10 +3494,7 @@ simplify_subreg_regno (unsigned int xregno, enum machine_mode xmode,
     return -1;
 
   if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      /* We should convert arg register in LRA after the elimination
-	 if it is possible.  */
-      && xregno == ARG_POINTER_REGNUM
-      && ! lra_in_progress)
+      && xregno == ARG_POINTER_REGNUM)
     return -1;
 
   if (xregno == STACK_POINTER_REGNUM
@@ -5459,6 +5456,12 @@ strip_address_mutations (rtx *loc, enum rtx_code *outer_code)
       else if (code == AND && CONST_INT_P (XEXP (*loc, 1)))
 	/* (and ... (const_int -X)) is used to align to X bytes.  */
 	loc = &XEXP (*loc, 0);
+      else if (code == SUBREG
+               && !OBJECT_P (SUBREG_REG (*loc))
+               && subreg_lowpart_p (*loc))
+	/* (subreg (operator ...) ...) inside and is used for mode
+	   conversion too.  */
+	loc = &SUBREG_REG (*loc);
       else
 	return loc;
       if (outer_code)

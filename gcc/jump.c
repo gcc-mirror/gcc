@@ -146,6 +146,7 @@ struct rtl_opt_pass pass_cleanup_barriers =
  {
   RTL_PASS,
   "barriers",                           /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   cleanup_barriers,                     /* execute */
   NULL,                                 /* sub */

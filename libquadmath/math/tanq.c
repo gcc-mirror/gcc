@@ -160,7 +160,7 @@ __quadmath_kernel_tanq (__float128 x, __float128 y, int iy)
 
 
 
-/* s_tanl.c -- long double version of s_tan.c.
+/* tanq.c -- __float128 version of s_tan.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
   
@@ -180,8 +180,8 @@ __quadmath_kernel_tanq (__float128 x, __float128 y, int iy)
  * Return tangent function of x.
  *
  * kernel function:
- *	__kernel_tanq		... tangent function on [-pi/4,pi/4]
- *	__ieee754_rem_pio2q	... argument reduction routine
+ *	__quadmath_kernel_tanq	... tangent function on [-pi/4,pi/4]
+ *	__quadmath_rem_pio2q	... argument reduction routine
  *
  * Method.
  *      Let S,C and T denote the sin, cos and tan respectively on

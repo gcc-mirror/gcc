@@ -201,8 +201,8 @@
   [(set_attr "type" "fp")])
 
 (define_insn "*movv2sf_paired"
-  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=Z,f,f,o,r,r,f")
-		 (match_operand:V2SF 1 "input_operand" "f,Z,f,r,o,r,W"))]
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=Z,f,f,Y,r,r,f")
+		 (match_operand:V2SF 1 "input_operand" "f,Z,f,r,Y,r,W"))]
   "TARGET_PAIRED_FLOAT
    && (register_operand (operands[0], V2SFmode) 
        || register_operand (operands[1], V2SFmode))"

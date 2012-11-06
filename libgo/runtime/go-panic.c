@@ -13,7 +13,6 @@
 #include "go-alloc.h"
 #include "go-defer.h"
 #include "go-panic.h"
-#include "go-string.h"
 #include "interface.h"
 
 /* Print the panic stack.  This is used when there is no recover.  */

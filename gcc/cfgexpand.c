@@ -4581,7 +4581,7 @@ gimple_expand_cfg (void)
     }
 
   blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_ones (blocks);
+  bitmap_ones (blocks);
   find_many_sub_basic_blocks (blocks);
   sbitmap_free (blocks);
   purge_all_dead_edges ();
@@ -4677,6 +4677,7 @@ struct rtl_opt_pass pass_expand =
  {
   RTL_PASS,
   "expand",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   gimple_expand_cfg,			/* execute */
   NULL,                                 /* sub */

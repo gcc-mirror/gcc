@@ -6,21 +6,21 @@
 
 #include <stdlib.h>
 
-#include "go-string.h"
+#include "runtime.h"
 
-struct __go_string getgoroot (void) asm ("runtime.getgoroot");
+String getgoroot (void) asm ("runtime.getgoroot");
 
-struct __go_string
+String
 getgoroot ()
 {
   const char *p;
-  struct __go_string ret;
+  String ret;
 
   p = getenv ("GOROOT");
-  ret.__data = (const unsigned char *) p;
-  if (ret.__data == NULL)
-    ret.__length = 0;
+  ret.str = (const byte *) p;
+  if (ret.str == NULL)
+    ret.len = 0;
   else
-    ret.__length = __builtin_strlen (p);
+    ret.len = __builtin_strlen (p);
   return ret;
 }

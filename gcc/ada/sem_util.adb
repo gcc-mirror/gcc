@@ -36,6 +36,7 @@ with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
+with Namet.Sp; use Namet.Sp;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Output;   use Output;
@@ -403,6 +404,33 @@ package body Sem_Util is
         and then In_Open_Scopes (SCT)
         and then Scope_Depth (ST) >= Scope_Depth (SCT);
    end Available_Full_View_Of_Component;
+
+   -------------------
+   -- Bad_Attribute --
+   -------------------
+
+   procedure Bad_Attribute
+     (N    : Node_Id;
+      Nam  : Name_Id;
+      Warn : Boolean := False)
+   is
+   begin
+      Error_Msg_Warn := Warn;
+      Error_Msg_N ("unrecognized attribute&<", N);
+
+      --  Check for possible misspelling
+
+      Error_Msg_Name_1 := First_Attribute_Name;
+      while Error_Msg_Name_1 <= Last_Attribute_Name loop
+         if Is_Bad_Spelling_Of (Nam, Error_Msg_Name_1) then
+            Error_Msg_N -- CODEFIX
+              ("\possible misspelling of %<", N);
+            exit;
+         end if;
+
+         Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
+      end loop;
+   end Bad_Attribute;
 
    --------------------------------
    -- Bad_Predicated_Subtype_Use --

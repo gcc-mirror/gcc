@@ -612,7 +612,7 @@ class StdStringPrinter:
 
 class Tr1HashtableIterator:
     def __init__ (self, hash):
-        self.node = hash['_M_before_begin']['_M_nxt']
+        self.node = hash['_M_bbegin']['_M_node']['_M_nxt']
         self.node_type = find_type(hash.type, '__node_type').pointer()
 
     def __iter__ (self):
@@ -707,7 +707,9 @@ class StdForwardListPrinter:
             self.base = elt['_M_next']
             count = self.count
             self.count = self.count + 1
-            return ('[%d]' % count, elt['_M_value'])
+            valptr = elt['_M_storage'].address
+            valptr = valptr.cast(elt.type.template_argument(0).pointer())
+            return ('[%d]' % count, valptr.dereference())
 
     def __init__(self, typename, val):
         self.val = val

@@ -1497,6 +1497,7 @@ struct ipa_opt_pass_d pass_ipa_pure_const =
  {
   IPA_PASS,
   "pure-const",		                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pure_const,			/* gate */
   propagate,			        /* execute */
   NULL,					/* sub */
@@ -1662,6 +1663,7 @@ struct gimple_opt_pass pass_local_pure_const =
  {
   GIMPLE_PASS,
   "local-pure-const",	                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pure_const,			/* gate */
   local_pure_const,		        /* execute */
   NULL,					/* sub */

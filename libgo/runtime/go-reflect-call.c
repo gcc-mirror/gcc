@@ -8,12 +8,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "config.h"
-
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "go-type.h"
-#include "runtime.h"
 
 #ifdef USE_LIBFFI
 
@@ -77,13 +75,15 @@ go_slice_to_ffi (
     const struct __go_slice_type *descriptor __attribute__ ((unused)))
 {
   ffi_type *ret;
+  ffi_type *ffi_intgo;
 
   ret = (ffi_type *) __go_alloc (sizeof (ffi_type));
   ret->type = FFI_TYPE_STRUCT;
   ret->elements = (ffi_type **) __go_alloc (4 * sizeof (ffi_type *));
   ret->elements[0] = &ffi_type_pointer;
-  ret->elements[1] = &ffi_type_sint;
-  ret->elements[2] = &ffi_type_sint;
+  ffi_intgo = sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
+  ret->elements[1] = ffi_intgo;
+  ret->elements[2] = ffi_intgo;
   ret->elements[3] = NULL;
   return ret;
 }
@@ -110,19 +110,21 @@ go_struct_to_ffi (const struct __go_struct_type *descriptor)
   return ret;
 }
 
-/* Return an ffi_type for a Go string type.  This describes the
-   __go_string struct.  */
+/* Return an ffi_type for a Go string type.  This describes the String
+   struct.  */
 
 static ffi_type *
 go_string_to_ffi (void)
 {
   ffi_type *ret;
+  ffi_type *ffi_intgo;
 
   ret = (ffi_type *) __go_alloc (sizeof (ffi_type));
   ret->type = FFI_TYPE_STRUCT;
   ret->elements = (ffi_type **) __go_alloc (3 * sizeof (ffi_type *));
   ret->elements[0] = &ffi_type_pointer;
-  ret->elements[1] = &ffi_type_sint;
+  ffi_intgo = sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
+  ret->elements[1] = ffi_intgo;
   ret->elements[2] = NULL;
   return ret;
 }
@@ -199,7 +201,7 @@ go_type_to_ffi (const struct __go_type_descriptor *descriptor)
     case GO_INT8:
       return &ffi_type_sint8;
     case GO_INT:
-      return &ffi_type_sint;
+      return sizeof (intgo) == 4 ? &ffi_type_sint32 : &ffi_type_sint64;
     case GO_UINT16:
       return &ffi_type_uint16;
     case GO_UINT32:
@@ -209,7 +211,7 @@ go_type_to_ffi (const struct __go_type_descriptor *descriptor)
     case GO_UINT8:
       return &ffi_type_uint8;
     case GO_UINT:
-      return &ffi_type_uint;
+      return sizeof (uintgo) == 4 ? &ffi_type_uint32 : &ffi_type_uint64;
     case GO_UINTPTR:
       if (sizeof (void *) == 2)
 	return &ffi_type_uint16;

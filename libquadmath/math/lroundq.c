@@ -1,4 +1,4 @@
-/* Round long double value to long int.
+/* Round __float128 value to long int.
    Copyright (C) 1997, 1999, 2004 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and

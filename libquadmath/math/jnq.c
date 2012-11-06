@@ -11,9 +11,9 @@
 
 /* Modifications for 128-bit long double are
    Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-   and are incorporated herein by permission of the author.  The author 
+   and are incorporated herein by permission of the author.  The author
    reserves the right to distribute this material elsewhere under different
-   copying permissions.  These modifications are distributed here under 
+   copying permissions.  These modifications are distributed here under
    the following terms:
 
     This library is free software; you can redistribute it and/or
@@ -56,6 +56,7 @@
  *
  */
 
+#include <errno.h>
 #include "quadmath-imp.h"
 
 static const __float128
@@ -273,7 +274,16 @@ jnq (int n, __float128 x)
 		    }
 		}
 	    }
-	  b = (t * j0q (x) / b);
+	  /* j0() and j1() suffer enormous loss of precision at and
+	   * near zero; however, we know that their zero points never
+	   * coincide, so just choose the one further away from zero.
+	   */
+	  z = j0q (x);
+	  w = j1q (x);
+	  if (fabsq (z) >= fabsq (w))
+	    b = (t * z / b);
+	  else
+	    b = (t * w / a);
 	}
     }
   if (sgn == 1)
@@ -374,6 +384,9 @@ ynq (int n, __float128 x)
 	  a = temp;
 	}
     }
+  /* If B is +-Inf, set up errno accordingly.  */
+  if (! finiteq (b))
+    errno = ERANGE;
   if (sign > 0)
     return b;
   else

@@ -21,7 +21,7 @@ static Gogo* gogo;
 GO_EXTERN_C
 void
 go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
-	       const char *prefix)
+	       const char *prefix, const char *relative_import_path)
 {
   go_assert(::gogo == NULL);
   Linemap* linemap = go_get_linemap();
@@ -31,6 +31,9 @@ go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
     ::gogo->set_pkgpath(pkgpath);
   else if (prefix != NULL)
     ::gogo->set_prefix(prefix);
+
+  if (relative_import_path != NULL)
+    ::gogo->set_relative_import_path(relative_import_path);
 
   // FIXME: This should be in the gcc dependent code.
   ::gogo->define_builtin_function_trees();

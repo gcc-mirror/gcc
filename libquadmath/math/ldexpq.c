@@ -1,4 +1,4 @@
-/* s_ldexpl.c -- long double version of s_ldexp.c.
+/* ldexpq.c -- __float128 version of s_ldexp.c.
  * Conversion to long double by Ulrich Drepper,
  * Cygnus Support, drepper@cygnus.com.
  */

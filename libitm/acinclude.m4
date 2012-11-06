@@ -109,6 +109,20 @@ i[[34567]]86 | x86_64)
   ;;
 esac])
 
+dnl Check if as supports RTM instructions.
+AC_DEFUN([LIBITM_CHECK_AS_RTM], [
+case "${target_cpu}" in
+i[[34567]]86 | x86_64)
+  AC_CACHE_CHECK([if the assembler supports RTM], libitm_cv_as_rtm, [
+    AC_TRY_COMPILE([], [asm("1: xbegin 1b; xend");],
+		   [libitm_cv_as_rtm=yes], [libitm_cv_as_rtm=no])
+  ])
+  if test x$libitm_cv_as_rtm = xyes; then
+    AC_DEFINE(HAVE_AS_RTM, 1, [Define to 1 if the assembler supports RTM.])
+  fi
+  ;;
+esac])
+
 sinclude(../libtool.m4)
 dnl The lines below arrange for aclocal not to bring an installed
 dnl libtool.m4 into aclocal.m4, while still arranging for automake to

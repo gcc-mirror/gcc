@@ -275,6 +275,7 @@ struct gimple_opt_pass pass_nrv =
  {
   GIMPLE_PASS,
   "nrv",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pass_return_slot,		/* gate */
   tree_nrv,				/* execute */
   NULL,					/* sub */
@@ -360,6 +361,7 @@ struct gimple_opt_pass pass_return_slot =
  {
   GIMPLE_PASS,
   "retslot",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_return_slot_opt,		/* execute */
   NULL,					/* sub */

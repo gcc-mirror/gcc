@@ -3070,6 +3070,10 @@ package VMS_Data is
                                                "-gnatwk "                  &
                                             "NOCONSTANT_VARIABLES "        &
                                                "-gnatwK "                  &
+                                            "STANDARD_REDEFINITION "       &
+                                               "-gnatw.k "                 &
+                                            "NOSTANDARD_REDEFINITION "     &
+                                               "-gnatw.K "                 &
                                             "ELABORATION "                 &
                                                "-gnatwl "                  &
                                             "NOELABORATION "               &

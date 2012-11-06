@@ -7012,6 +7012,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       if (!sym->attr.pointer
 	  && sym->as
 	  && sym->as->type != AS_ASSUMED_SHAPE 
+	  && sym->as->type != AS_DEFERRED
 	  && sym->as->type != AS_ASSUMED_RANK 
 	  && !sym->attr.allocatable)
         {

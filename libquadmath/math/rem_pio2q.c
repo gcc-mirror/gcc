@@ -15,10 +15,10 @@
  */
 
 /*
- * __kernel_rem_pio2(x,y,e0,nx,prec,ipio2)
+ * __quadmath_kernel_rem_pio2 (x,y,e0,nx,prec,ipio2)
  * double x[],y[]; int e0,nx,prec; int ipio2[];
  *
- * __kernel_rem_pio2 return the last three digits of N with
+ * __quadmath_kernel_rem_pio2  return the last three digits of N with
  *		y = x - N*pi/2
  * so that |y| < pi/2.
  *

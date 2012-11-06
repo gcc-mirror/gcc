@@ -2682,6 +2682,7 @@ struct gimple_opt_pass pass_strength_reduction =
  {
   GIMPLE_PASS,
   "slsr",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_strength_reduction,		/* gate */
   execute_strength_reduction,		/* execute */
   NULL,					/* sub */

@@ -681,34 +681,41 @@ check_caller_edge (struct cgraph_node *node, void *edge)
 }
 
 
-/* Decide if NODE is called once inlining it would eliminate need
-   for the offline copy of function.  */
+/* Decide if inlining NODE would reduce unit size by eliminating
+   the offline copy of function.  
+   When COLD is true the cold calls are considered, too.  */
 
 static bool
-want_inline_function_called_once_p (struct cgraph_node *node)
+want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
 {
    struct cgraph_node *function = cgraph_function_or_thunk_node (node, NULL);
+   struct cgraph_edge *e;
+   bool has_hot_call = false;
+
+   /* Does it have callers?  */
+   if (!node->callers)
+     return false;
    /* Already inlined?  */
    if (function->global.inlined_to)
      return false;
-   /* Zero or more then one callers?  */
-   if (!node->callers
-       || node->callers->next_caller)
+   if (cgraph_function_or_thunk_node (node, NULL) != node)
+     return false;
+   /* Inlining into all callers would increase size?  */
+   if (estimate_growth (node) > 0)
      return false;
    /* Maybe other aliases has more direct calls.  */
    if (cgraph_for_node_and_aliases (node, check_caller_edge, node->callers, true))
      return false;
-   /* Recursive call makes no sense to inline.  */
-   if (cgraph_edge_recursive_p (node->callers))
-     return false;
-   /* External functions are not really in the unit, so inlining
-      them when called once would just increase the program size.  */
-   if (DECL_EXTERNAL (function->symbol.decl))
-     return false;
-   /* Offline body must be optimized out.  */
-   if (!cgraph_will_be_removed_from_program_if_no_direct_calls (function))
-     return false;
-   if (!can_inline_edge_p (node->callers, true))
+   /* All inlines must be possible.  */
+   for (e = node->callers; e; e = e->next_caller)
+     {
+       if (!can_inline_edge_p (e, true))
+         return false;
+       if (!has_hot_call && cgraph_maybe_hot_edge_p (e))
+	 has_hot_call = 1;
+     }
+
+   if (!cold && !has_hot_call)
      return false;
    return true;
 }
@@ -1729,14 +1736,16 @@ ipa_inline (void)
   symtab_remove_unreachable_nodes (true, dump_file);
   free (order);
 
-  /* We already perform some inlining of functions called once during
-     inlining small functions above.  After unreachable nodes are removed,
-     we still might do a quick check that nothing new is found.  */
+  /* Inline functions with a property that after inlining into all callers the
+     code size will shrink because the out-of-line copy is eliminated. 
+     We do this regardless on the callee size as long as function growth limits
+     are met.  */
   if (flag_inline_functions_called_once)
     {
       int cold;
       if (dump_file)
-	fprintf (dump_file, "\nDeciding on functions called once:\n");
+	fprintf (dump_file,
+		 "\nDeciding on functions to be inlined into all callers:\n");
 
       /* Inlining one function called once has good chance of preventing
 	 inlining other function into the same callee.  Ideally we should
@@ -1757,30 +1766,41 @@ ipa_inline (void)
 	{
 	  FOR_EACH_DEFINED_FUNCTION (node)
 	    {
-	      if (want_inline_function_called_once_p (node)
-		  && (cold
-		      || cgraph_maybe_hot_edge_p (node->callers)))
+	      if (want_inline_function_to_all_callers_p (node, cold))
 		{
-		  struct cgraph_node *caller = node->callers->caller;
-
-		  if (dump_file)
+		  int num_calls = 0;
+		  struct cgraph_edge *e;
+		  for (e = node->callers; e; e = e->next_caller)
+		    num_calls++;
+		  while (node->callers && !node->global.inlined_to)
 		    {
-		      fprintf (dump_file,
-			       "\nInlining %s size %i.\n",
-			       cgraph_node_name (node),
-			       inline_summary (node)->size);
-		      fprintf (dump_file,
-			       " Called once from %s %i insns.\n",
-			       cgraph_node_name (node->callers->caller),
-			       inline_summary (node->callers->caller)->size);
-		    }
+		      struct cgraph_node *caller = node->callers->caller;
 
-		  inline_call (node->callers, true, NULL, NULL, true);
-		  if (dump_file)
-		    fprintf (dump_file,
-			     " Inlined into %s which now has %i size\n",
-			     cgraph_node_name (caller),
-			     inline_summary (caller)->size);
+		      if (dump_file)
+			{
+			  fprintf (dump_file,
+				   "\nInlining %s size %i.\n",
+				   cgraph_node_name (node),
+				   inline_summary (node)->size);
+			  fprintf (dump_file,
+				   " Called once from %s %i insns.\n",
+				   cgraph_node_name (node->callers->caller),
+				   inline_summary (node->callers->caller)->size);
+			}
+
+		      inline_call (node->callers, true, NULL, NULL, true);
+		      if (dump_file)
+			fprintf (dump_file,
+				 " Inlined into %s which now has %i size\n",
+				 cgraph_node_name (caller),
+				 inline_summary (caller)->size);
+		      if (!num_calls--)
+		        {
+			  if (dump_file)
+			    fprintf (dump_file, "New calls found; giving up.\n");
+			  break;
+		        }
+		    }
 		}
 	    }
 	}
@@ -1999,6 +2019,7 @@ struct gimple_opt_pass pass_early_inline =
  {
   GIMPLE_PASS,
   "einline",	 			/* name */
+  OPTGROUP_INLINE,                      /* optinfo_flags */
   NULL,					/* gate */
   early_inliner,			/* execute */
   NULL,					/* sub */
@@ -2031,6 +2052,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
  {
   IPA_PASS,
   "inline",				/* name */
+  OPTGROUP_INLINE,                      /* optinfo_flags */
   gate_ipa_inline,			/* gate */
   ipa_inline,				/* execute */
   NULL,					/* sub */

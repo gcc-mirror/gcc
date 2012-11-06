@@ -189,6 +189,7 @@ struct rtl_opt_pass pass_loop2 =
  {
   RTL_PASS,
   "loop2",                              /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_handle_loop2, 		        /* gate */
   NULL,                                 /* execute */
   NULL,                                 /* sub */
@@ -225,6 +226,7 @@ struct rtl_opt_pass pass_rtl_loop_init =
  {
   RTL_PASS,
   "loop2_init",                           /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rtl_loop_init,                        /* execute */
   NULL,                                 /* sub */
@@ -265,6 +267,7 @@ struct rtl_opt_pass pass_rtl_loop_done =
  {
   RTL_PASS,
   "loop2_done",                          /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rtl_loop_done,                        /* execute */
   NULL,                                 /* sub */
@@ -301,6 +304,7 @@ struct rtl_opt_pass pass_rtl_move_loop_invariants =
  {
   RTL_PASS,
   "loop2_invariant",                    /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_rtl_move_loop_invariants,        /* gate */
   rtl_move_loop_invariants,             /* execute */
   NULL,                                 /* sub */
@@ -337,6 +341,7 @@ struct rtl_opt_pass pass_rtl_unswitch =
  {
   RTL_PASS,
   "loop2_unswitch",                      /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_rtl_unswitch,                    /* gate */
   rtl_unswitch,                         /* execute */
   NULL,                                 /* sub */
@@ -385,6 +390,7 @@ struct rtl_opt_pass pass_rtl_unroll_and_peel_loops =
  {
   RTL_PASS,
   "loop2_unroll",                        /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_rtl_unroll_and_peel_loops,       /* gate */
   rtl_unroll_and_peel_loops,            /* execute */
   NULL,                                 /* sub */
@@ -426,6 +432,7 @@ struct rtl_opt_pass pass_rtl_doloop =
  {
   RTL_PASS,
   "loop2_doloop",                        /* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_rtl_doloop,                      /* gate */
   rtl_doloop,                           /* execute */
   NULL,                                 /* sub */

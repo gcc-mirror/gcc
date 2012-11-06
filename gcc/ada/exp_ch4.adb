@@ -3877,8 +3877,8 @@ package body Exp_Ch4 is
          end if;
 
       --  Right operand is a subtype name and the subtype has a predicate. We
-      --  have to make sure predicate is checked, and for that we need to use
-      --  the standard N_In circuitry with appropriate types.
+      --  have to make sure the predicate is checked, and for that we need to
+      --  use the standard N_In circuitry with appropriate types.
 
       else
          pragma Assert (Present (Predicate_Function (Etype (Rop))));
@@ -3921,7 +3921,7 @@ package body Exp_Ch4 is
             --       Bnn
             --   end
 
-            --  A bit gruesome, but here goes.
+            --  A bit gruesome, but there doesn't seem to be a simpler way
 
             declare
                Blk : constant Node_Id   := Make_Bignum_Block (Loc);
@@ -3937,10 +3937,8 @@ package body Exp_Ch4 is
 
                Nin :=
                  Make_In (Loc,
-                   Left_Opnd =>
-                     Convert_To (Base_Type (Etype (Rop)),
-                       New_Occurrence_Of (Lnn, Loc)),
-                   Right_Opnd => New_Occurrence_Of (Etype (Rop), Loc));
+                   Left_Opnd  => Convert_To (TB, New_Occurrence_Of (Lnn, Loc)),
+                   Right_Opnd => New_Occurrence_Of (T, Loc));
                Set_No_Minimize_Eliminate (Nin);
 
                --  Now decorate the block

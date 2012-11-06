@@ -2882,7 +2882,12 @@ package body Layout is
         and then Is_Packed (E)
         and then not Is_Atomic (E)
       then
-         Align := 1;
+         if not Size_Known_At_Compile_Time (E) then
+            Error_Msg_N ("Optimize_Alignment has no effect for &", E);
+            Error_Msg_N ("\pragma is ignored for variable length record?", E);
+         else
+            Align := 1;
+         end if;
 
       --  Not a record, or not packed
 

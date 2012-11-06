@@ -482,7 +482,7 @@ analyze_function (struct cgraph_node *fn)
   local = init_function_info (fn);
   for (i = 0; ipa_ref_list_reference_iterate (&fn->symbol.ref_list, i, ref); i++)
     {
-      if (!symtab_variable_p (ref->referred))
+      if (!is_a <varpool_node> (ref->referred))
 	continue;
       var = ipa_ref_varpool_node (ref)->symbol.decl;
       if (!is_proper_for_analysis (var))
@@ -979,8 +979,6 @@ stream_out_bitmap (struct lto_simple_output_block *ob,
 static void
 ipa_reference_write_optimization_summary (void)
 {
-  struct cgraph_node *node;
-  symtab_node snode;
   struct lto_simple_output_block *ob
     = lto_create_simple_output_block (LTO_section_ipa_reference);
   unsigned int count = 0;
@@ -994,12 +992,10 @@ ipa_reference_write_optimization_summary (void)
   /* See what variables we are interested in.  */
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      struct varpool_node *vnode;
-      snode = lto_symtab_encoder_deref (encoder, i);
-      if (!symtab_variable_p (snode))
-	continue;
-      vnode = varpool (snode);
-      if (bitmap_bit_p (all_module_statics, DECL_UID (vnode->symbol.decl))
+      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      varpool_node *vnode = dyn_cast <varpool_node> (snode);
+      if (vnode
+	  && bitmap_bit_p (all_module_statics, DECL_UID (vnode->symbol.decl))
 	  && referenced_from_this_partition_p (&vnode->symbol.ref_list, encoder))
 	{
 	  tree decl = vnode->symbol.decl;
@@ -1013,10 +1009,12 @@ ipa_reference_write_optimization_summary (void)
 
   if (ltrans_statics_bitcount)
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
-      if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
-	  && write_node_summary_p (cgraph (snode),
-				   encoder, ltrans_statics))
+      {
+	symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+	cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+	if (cnode && write_node_summary_p (cnode, encoder, ltrans_statics))
 	  count++;
+      }
 
   streamer_write_uhwi_stream (ob->main_stream, count);
   if (count)
@@ -1027,17 +1025,15 @@ ipa_reference_write_optimization_summary (void)
   if (ltrans_statics_bitcount)
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       {
-	snode = lto_symtab_encoder_deref (encoder, i);
-	if (!symtab_function_p (snode))
-	  continue;
-	node = cgraph (snode);
-	if (write_node_summary_p (node, encoder, ltrans_statics))
+	symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+	cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+	if (cnode && write_node_summary_p (cnode, encoder, ltrans_statics))
 	  {
 	    ipa_reference_optimization_summary_t info;
 	    int node_ref;
 
-	    info = get_reference_optimization_summary (node);
-	    node_ref = lto_symtab_encoder_encode (encoder, (symtab_node) node);
+	    info = get_reference_optimization_summary (cnode);
+	    node_ref = lto_symtab_encoder_encode (encoder, snode);
 	    streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	    stream_out_bitmap (ob, info->statics_not_read, ltrans_statics,
@@ -1185,6 +1181,7 @@ struct ipa_opt_pass_d pass_ipa_reference =
  {
   IPA_PASS,
   "static-var",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_reference,			/* gate */
   propagate,			        /* execute */
   NULL,					/* sub */

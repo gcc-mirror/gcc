@@ -68,14 +68,21 @@ package Prj is
    type Yes_No_Unknown is (Yes, No, Unknown);
    --  Tri-state to decide if -lgnarl is needed when linking
 
+   pragma Warnings (Off);
    type Project_Qualifier is
      (Unspecified,
+
+      --  The following clash with Standard is OK, and justified by the context
+      --  which really wants to use the same set of qualifiers.
+
       Standard,
+
       Library,
       Configuration,
       Dry,
       Aggregate,
       Aggregate_Library);
+   pragma Warnings (On);
    --  Qualifiers that can prefix the reserved word "project" in a project
    --  file:
    --    Standard:             standard project ...
@@ -1188,7 +1195,17 @@ package Prj is
 
    --  The following record describes a project file representation
 
-   type Standalone is (No, Standard, Encapsulated);
+   pragma Warnings (Off);
+   type Standalone is
+     (No,
+
+      --  The following clash with Standard is OK, and justified by the context
+      --  which really wants to use the same set of qualifiers.
+
+      Standard,
+
+      Encapsulated);
+   pragma Warnings (On);
 
    type Project_Data (Qualifier : Project_Qualifier := Unspecified) is record
 

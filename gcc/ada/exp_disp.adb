@@ -703,6 +703,10 @@ package body Exp_Disp is
         --  previously notified the violation of this restriction.
 
         or else Restriction_Active (No_Dispatching_Calls)
+
+        --  No action needed if the dispatching call has been already expanded
+
+        or else Is_Expanded_Dispatching_Call (Name (Call_Node))
       then
          return;
       end if;
@@ -1974,6 +1978,17 @@ package body Exp_Disp is
       return not Is_Interface (Typ)
                and then not Restriction_Active (No_Dispatching_Calls);
    end Has_DT;
+
+   ----------------------------------
+   -- Is_Expanded_Dispatching_Call --
+   ----------------------------------
+
+   function Is_Expanded_Dispatching_Call (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) in N_Subprogram_Call
+        and then Nkind (Name (N)) = N_Explicit_Dereference
+        and then Is_Dispatch_Table_Entity (Etype (Name (N)));
+   end Is_Expanded_Dispatching_Call;
 
    -----------------------------------------
    -- Is_Predefined_Dispatching_Operation --

@@ -1,6 +1,542 @@
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations):
+	Rename varpool_node to varpool_node_for_decl.
+
+2012-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in: Fix and clean up rules for C files.
+
 2012-10-29  Arnaud Charlet  <charlet@adacore.com>
 
-	* pprint.ads, pprint.adb: New.
+	* gcc-interface/Makefile.in (s-oscons.ads): Adjust call to xoscons.
+
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* xoscons.adb, Make-generated.in; The template used by xoscons is now
+	given as parameter.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_dbug.adb (Qualify_Entity_Name): Only do renaming in formal
+	verification mode when there is a homonym.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb: Minor reformatting.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb (Expand_Alfa): Backtrack change that removed
+	qualification of names in formal verification mode. Instead,
+	the qualification should be modified.
+	* exp_dbug.adb (Qualify_Entity_Name): Modify qualification in formal
+	verification mode, so that only a suffix is added to distinguish
+	homonyms from the same scope.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that pragma Optimize_Alignment (Space) is
+	ignored with a warning for packed variable length records.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c, g-socthi-dummy.adb, g-socthi-dummy.ads, g-socthi-vms.adb,
+	g-socthi-vms.ads, g-socthi-vxworks.adb, g-socthi-vxworks.ads,
+	s-oscons-tmplt.c, g-socthi-mingw.adb, g-socthi-mingw.ads, g-socthi.adb,
+	g-socthi.ads, xoscons.adb, g-socket.adb, g-sothco.ads: Introduce an
+	appropriate subtype for IOCTL requests, since these may be signed or
+	unsigned.
+
+2012-10-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_alfa.adb: Minor reformatting.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Clarify documentation on maximum
+	line length style switch.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb (Set_Composite_Alignment): Ignore pragma
+	Optimize_Alignment (Space) for packed variable length records.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* s-bignum.adb: Minor comment change.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Fix signedness of ioctl request identifiers
+	for x86_64-freebsd.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* exp_alfa.adb (Expand_Alfa): Remove qualification of names.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor rewording.
+
+2012-10-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.ads (Is_Expanded_Dispatching_Call): New subprogram.
+	* exp_disp.adb (Expand_Dispatching_Call): No action needed if the
+	call has been already expanded.
+	(Is_Expanded_Dispatching_Call): New subprogram.
+	* sem_disp.adb (Propagate_Tag): No action needed if the call
+	has been already expanded.
+
+2012-10-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Create_Index_And_Data): Remove local
+	variable Index_Typ and its uses. The type of the index is now
+	System.Tasking.Entry_Index. Update all related comments.
+	* rtsfind.ads: Add RE_Entry_Index in tables RE_Id and RE_Unit_Table.
+	* s-taskin.adb (Number_Of_Entries): The return type is now Entry_Index.
+	* s-taskin.ads: The index type of Task_Entry_Names_Array is now
+	Entry_Index.
+	(Number_Of_Entries): The return type is now Entry_Index.
+	* s-tpoben.adb (Number_Of_Entries): The return type is now Entry_Index.
+	* s-tpoben.ads: The index type of Protected_Entry_Names_Array
+	is now Entry_Index.
+	(Number_Of_Entries): The return type is now Entry_Index.
+
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi: Add note about SEH setup on x86-windows.
+
+2012-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-bignum.adb (Allocate_Bignum): Use the exact layout of
+	Bignum_Data for the overlay.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi, sem_prag.adb, sem_util.adb, sem_util.ads,
+	par-prag.adb, par-util.adb, snames.ads-tmpl (Sem_Prag.Analyze_Pragma):
+	Handle new pragma Attribute_Definition.
+	(Sem_Util.Bad_Attribute): New routine, moved here
+	from par-util, so that it can be used by the above.
+	(Par_Util.Signal_Bad_Attribute): Processing moved to
+	Sem_Util.Bad_Attribute.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* s-tpoben.ads, s-taskin.ads, exp_ch3.adb: Minor reformatting.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, gnat1drv.adb, opt.ads: Rename S14_Extensions
+	into Formal_Extensions.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_rm.texi: Document implementation advice for Pragma
+	Partition_Elaboration_Policy.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* s-bignum.adb (Div_Rem): Reference that Algorithm_D is from
+	the second edition of TAOCP from Knuth, since the algo changed
+	in the third edition. Also correct the definition of 'd' which
+	could overflow.
+
+2012-10-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Create static strings
+	which denote entry [family] names and associate them with the
+	object's Protection_Entries or ATCB.
+	(Build_Init_Statements):
+	Remove local variable Names. Do not generate the entry [family]
+	names inside the init proc because they are now static.
+	* exp_ch9.adb (Build_Entry_Names): Reimplemented. The strings
+	which denote entry [family] names are now generated statically
+	and associated with the concurrent object's Protection_Entries
+	or ATCB during initialization.
+	* exp_ch9.ads (Build_Entry_Names): Change subprogram profile
+	and associated comment on usage.
+	* rtsfind.ads: Add the following entries to tables RE_Id and
+	RE_Unit_Table:
+
+	RE_Protected_Entry_Names_Array RE_Task_Entry_Names_Array
+	RO_PE_Number_Of_Entries RO_PE_Set_Entry_Names
+	RO_ST_Number_Of_Entries RO_ST_Set_Entry_Names
+
+	Remove the following entries from tables RE_Id and RE_Unit_Table:
+
+	RO_PE_Set_Entry_Name RO_TS_Set_Entry_Name
+
+	* s-taskin.adb: Remove with clause for Ada.Unchecked_Deallocation.
+	(Free_Entry_Names_Array): Removed.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Names): New routine.
+	* s-taskin.ads: Rename type Entry_Names_Array to
+	Task_Entry_Names_Array. Rename type Entry_Names_Array_Access
+	to Task_Entry_Names_Access. Update the type of ACTB field
+	Entry_Names and add a comment on its protection status.
+	(Free_Entry_Names_Array): Removed.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Names): New routine.
+	* s-tassta.adb (Create_Task): Remove formal parameter
+	Build_Entry_Names. Do not allocate an array to hold the
+	string names of entries and families.
+	(Free_Entry_Names): Removed.
+	(Free_Task): Remove the call to Free_Entry_Names.
+	(Set_Entry_Name): Removed.
+	(Vulnerable_Free_Task): Remove the call to Free_Entry_Names.
+	* s-tassta.ads (Create_Task): Remove formal parameter
+	Build_Entry_Names along with associated comment.
+	(Set_Entry_Name): Removed.
+	* s-tpoben.adb: Remove with clause for Ada.Unchecked_Deallocation.
+	(Finalize): Remove the call to Free_Entry_Names.
+	(Free_Entry_Names): Removed.
+	(Initialize_Protection_Entries):
+	Remove formal parameter Build_Entry_Names. Do not allocate
+	an array to hold the string names of entries and families.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Name): Removed.
+	(Set_Entry_Names): New routine.
+	* s-tpoben.ads: Add types Protected_Entry_Names_Array and
+	Protected_Entry_Names_Access. Update the type of Protection_Enties
+	field Entry_Names.
+	(Initialize_Protection_Entries): Remove
+	formal parameter Build_Entry_Names along with associated comment.
+	(Number_Of_Entries): New routine.
+	(Set_Entry_Name): Removed.
+	(Set_Entry_Names): New routine.
+
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Minor typo fix.
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb Associate debug switch -gnatd.V to extensions for
+	formal verification.
+	* gnat1drv.adb (Adjust_Global_Switches): Set flag S14_Extensions
+	when -gnatd.V is set.
+	* gnat_rm.texi: Remove doc for Assert_And_Cut.
+	* opt.ads Declare new flag S14_Extensions, to be set when new
+	aspects/pragmas/attributes for formal verification should be
+	accepted.
+	* sem_prag.adb (Analyze_Pragma): Check that S14_Extensions is
+	set when treating pragma Assert_And_Cut.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tarest.ads, s-tassta.adb: Add a pragma Partition_Elaboration_Policy.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* xr_tabls.adb, xr_tabls.ads, exp_ch9.adb, snames.adb-tmpl,
+	snames.ads-tmpl, exp_ch3.adb: Minor reformatting.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Call Build_Subprogrm_Instance_Renamings only when
+	generating code.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for -gnatw.k/-gnatw.K.
+	* ug_words: Add entries for -gnatw.k/.K for [NO]STANDARD_REDEFINITION.
+	* vms_data.ads: Add entries for [NO]STANDARD_REDEFINITION.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb, s-tarest.ads, exp_ch3.adb: Update comments.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor documentation addition.
+
+2012-10-29  Emmanuel Briot  <briot@adacore.com>
+
+	* xr_tabls.adb, xr_tabls.ads (Add_Declaration, Add_Reference): No
+	longer assume that a parameter declaration is seen after the subprogram
+	that uses it.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* lib-writ.adb (Write_ALI): Emit partition elaboration policy
+	in P line.
+	* lib-writ.ads: Document partition elaboration policy indication.
+	* sem_prag.adb (Check_Arg_Is_Partition_Elaboration_Policy): New
+	procedure.
+	(Analyze_Pragma): Handle Partition_Elaboration_Policy.
+	(Sig_Flags): Add flag for Pragma_Partition_Elaboration_Policy
+	* ali.adb (Initialize_ALI): Init Partition_Elaboration_Policy_Specified.
+	(Scan_ALI): Read Ex indications.
+	* ali.ads: ALIs_Record: Add Partition_Elaboration_Policy.
+	* par-prag.adb (Prag): Add Partition_Elaboration_Policy.
+	* snames.adb-tmpl (Is_Partition_Elaboration_Policy_Name): New function.
+	* opt.ads (Partition_Elaboration_Policy): Declare.
+	(Partition_Elaboration_Policy_Sloc): Declare.
+	* bcheck.adb (Check_Consistent_Partition_Elaboration_Policy):
+	New procedure.	(Check_Configuration_Consistency): Check partition
+	elaboration policy consistency.
+	* snames.ads-tmpl (Name_Partition_Elaboration_Policy): New name.
+	(First_Partition_Elaboration_Policy_Name, Name_Concurrent,
+	Name_Sequential, Last_Partition_Elaboration_Policy_Name): Likewise.
+	(Pragma_Partition_Elaboration_Policy): New literal.
+	(Is_Partition_Elaboration_Policy_Name): New function.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Is_Public_Subprogram_For): Handle properly
+	expression functions, which are rewritten as subprogram
+	declarations, when generating invariants for its return value
+	and in-out parameters.
+
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* warnsw.adb (Set_GNAT_Mode_Warnings): Unset
+	Warn_On_Standard_Redefinition.
+
+2012-10-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Subprograms): Complete documentation.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch11.adb (Warn_If_Standard_Redefinition): Add calls.
+	* par-ch3.adb (P_Defining_Identifier): Call
+	Warn_If_Standard_Redefinition if not inside record definition.
+	* par-ch6.adb (Warn_If_Standard_Redefinition): Add calls.
+	* par-util.adb (Warn_If_Standard_Redefinition): New procedure.
+	* par.adb (Inside_Record_Definition): New flag.
+	(Warn_If_Standard_Redefinition): New procedure.
+	* sinfo-cn.adb (Change_Identifier_To_Defining_Identifier): Remove
+	handling of warning for redefining standard name (moved to Par*).
+
+2012-10-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Derive_Progenitor_Subprograms): Disable small
+	optimization in generic formal types.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, exp_ch3.adb: Add comments.
+	* sem_prag.adb: Minor reformatting.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Gen_Output_File_Ada): Do not emit declaration for
+	Is_Elaborated if not referenced.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Activation_Chain_Entity): Punt in restricted
+	profile.
+	* exp_ch3.adb (Build_Initialization_Call): Do no append _Chain
+	parameter in restricted profile.
+	(Build_Init_Call_Thru): Likewise.
+	(Init_Formals): Likewise.
+	* exp_ch3.adb: Minor reformatting.
+
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb: Update usage line for -gnatw.k.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb: Code clean up.
+
+2012-10-29  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Clarify documentation of attribute
+	Ignore_Source_Sub_Dirs.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* g-sechas.adb, g-sechas.ads, exp_ch9.adb, bindgen.adb, exp_dbug.adb,
+	exp_dbug.ads: Minor reformatting.
+
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* g-sechas.adb, g-sechas.ads: (Binary_Message_Digest): New subtype.
+	(Digest): New versions returning a Binary_Message_Digest.
+	(Wide_Digest): Likewise.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* warnsw.adb: Complete previous change.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (Check_File_In_Partition, Check_System_Restrictions_Used):
+	Removed.
+	(Check_Dispatching_Domains_Used): Removed.
+	(Gen_Adafinal): Remove call to above procedures.
+	(Resolve_Binder_Options): Handle system restrictions and dispatching
+	domains.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tarest.ads, s-tarest.adb (Create_Restricted_Task): Remove
+	Chain parameter.
+	* exp_ch9.adb (Make_Task_Create_Call): Do not add Chain parameter
+	on restricted runtime.
+
+2012-10-29  Pascal Obry  <obry@adacore.com>
+
+	* g-sechas.adb, g-sechas.ads: Minor code clean-up.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Get_Rep_Item): Treat Priority and Interrupt_Priority
+	as equivalent, because only one of them can be specified for a
+	task, protected definition, or subprogram body.
+	* aspects.adb ((Same_Aspect): The canonical aspect of
+	Interrupt_Priority is Priority.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* i-cstrea.ads: Avoid redefinition of standard symbol string.
+	* prj-makr.adb: Add comment for OK redefinition of Stadard.
+	* prj.ads: Add comment for OK redefinition of Stadard.
+	* s-crtl.ads: Avoid redefinition of standard symbol string.
+	* sinfo-cn.adb (Change_Identifier_To_Defining_Identifier):
+	Generate warning for standard redefinition if
+	Warn_On_Standard_Definition set.
+	* usage.adb: Add lines for -gnatw.k and -gnatw.K
+	* warnsw.adb: Set/reset Warn_On_Standard_Redefinition
+	appropriately.
+	* warnsw.ads (Warn_On_Standard_Redefinition): New flag.
+	* s-stratt-xdr.adb: Avoid new warning.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_dbug.ads, exp_dbug.adb (Build_Subprogram_Instance_Renamings):
+	in the body of a subpogram instance, introduce local renamings
+	for actuals of an elementary type, so that GDB can recover the
+	values of these actuals more directly.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Add warning for identical
+	inner/outer ranges.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Change terminology "present" to "defined" in talking
+	about whether a given field is defined for a given entity kind.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Minor comment fix.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Reference): Set_Comes_From_Source.
+	Otherwise, the node is ignored by ASIS.
+	* sem_ch5.adb: Minor reformatting.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb, exp_dist.adb, exp_dist.ads (Build_To_Any_Call): Pass
+	an explicit Loc parameter to set the source location of generated
+	nodes.
+
+2012-10-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Task_Activation_Call): Do nothing on
+	restricted profile.
+	* bindgen.adb (System_Tasking_Restricted_Stages_Used): New variable.
+	(Gen_Adainit): Declare and call Activate_Tasks when the above variable
+	is set.
+	(Resolve_Binder_Options): Set the variable.
+	* rtsfind.ads (RE_Activate_Restricted_Tasks): Removed (now unused).
+	* s-tarest.adb (Tasks_Activation_Chain): New variable.
+	(Activate_Restricted_Tasks): Removed, and replaced by ...
+	(Activate_Tasks): New procedure, to activate all tasks at
+	the end of elaboration.
+	(Create_Restricted_Tasks): Chain parameter is now unreferenced.	Put
+	the created task on the Tasks_Activation_Chain list.
+	* s-tarest.ads (Activate_Restricted_Tasks): Removed.
+	(Activate_Tasks): Added.
+
+2012-10-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb (Resolve_If_Expression): Compare subtype of the 'then'
+	expression against the subtype of the expression rather than comparing
+	base types, same as is already done for the 'else' expression.
+
+2012-10-29  Steve Baird  <baird@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): If CodePeer_Mode
+	= True and we detect that an Address specification is used to overlay
+	another object, do not set that object's Treat_As_Volatile flag.
+
+2012-10-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Constant_Redeclaration): If the type of a
+	deferred constant has invariants, generate invariant call on
+	the initial value.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Reference): Use correct sloc for
+	the new node.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb: Minor reformatting and code reorganization.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_Primary): Warn on bad use of unary minus.
+
+2012-10-29  Robert Dewar  <dewar@adacore.com>
+
+	* s-valuti.ads, s-valuti.adb (Bad_Value): New procedure.
+	* s-valllu.adb, s-valwch.adb, s-valcha.adb, s-valint.adb,
+	s-valuns.adb, s-valrea.adb, s-valboo.adb, s-valenu.adb,
+	s-vallli.adb: Use Bad_Value everywhere.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Do not suppress checks
+	in Alfa mode.
+
+2012-10-29  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Add special case for case expression alternative.
+	(Is_Signed_Integer_Arithmetic_Op): Remove special case for case
+	expression alternative.
+	* exp_ch4.adb Minor reformatting.
+
+2012-10-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb: Minor reformatting.
+
+2012-10-29  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb: Minor: Remove redundant test.
+
+2012-10-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* pprint.ads, pprint.adb, adabkend.ads, adabkend.adb,
+	aa_util.ads, aa_util.adb: New.
 
 2012-10-23  Eric Botcazou  <ebotcazou@adacore.com>
 

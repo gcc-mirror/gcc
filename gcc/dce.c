@@ -1,5 +1,5 @@
 /* RTL dead code elimination.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -163,7 +163,7 @@ marked_insn_p (rtx insn)
   /* Artificial defs are always needed and they do not have an insn.
      We should never see them here.  */
   gcc_assert (insn);
-  return TEST_BIT (marked, INSN_UID (insn));
+  return bitmap_bit_p (marked, INSN_UID (insn));
 }
 
 
@@ -177,7 +177,7 @@ mark_insn (rtx insn, bool fast)
     {
       if (!fast)
 	VEC_safe_push (rtx, heap, worklist, insn);
-      SET_BIT (marked, INSN_UID (insn));
+      bitmap_set_bit (marked, INSN_UID (insn));
       if (dump_file)
 	fprintf (dump_file, "  Adding insn %d to worklist\n", INSN_UID (insn));
       if (CALL_P (insn)
@@ -724,7 +724,7 @@ init_dce (bool fast)
     can_alter_cfg = true;
 
   marked = sbitmap_alloc (get_max_uid () + 1);
-  sbitmap_zero (marked);
+  bitmap_clear (marked);
 }
 
 
@@ -786,6 +786,7 @@ struct rtl_opt_pass pass_ud_rtl_dce =
  {
   RTL_PASS,
   "ud_dce",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ud_dce,                          /* gate */
   rest_of_handle_ud_dce,                /* execute */
   NULL,                                 /* sub */
@@ -880,7 +881,10 @@ word_dce_process_block (basic_block bb, bool redo_out,
 
 	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	      dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
-				      DEBUG_TEMP_BEFORE_WITH_VALUE);
+				      marked_insn_p (insn)
+				      && !control_flow_insn_p (insn)
+				      ? DEBUG_TEMP_AFTER_WITH_REG_FORCE
+				      : DEBUG_TEMP_BEFORE_WITH_VALUE);
 	  }
 
 	if (dump_file)
@@ -981,7 +985,9 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au,
 	if (debug.used && !bitmap_empty_p (debug.used))
 	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
 	    dead_debug_insert_temp (&debug, DF_REF_REGNO (*def_rec), insn,
-				    DEBUG_TEMP_BEFORE_WITH_VALUE);
+				    needed && !control_flow_insn_p (insn)
+				    ? DEBUG_TEMP_AFTER_WITH_REG_FORCE
+				    : DEBUG_TEMP_BEFORE_WITH_VALUE);
       }
 
   dead_debug_local_finish (&debug, NULL);
@@ -1082,7 +1088,7 @@ fast_dce (bool word_level)
 	  /* So something was deleted that requires a redo.  Do it on
 	     the cheap.  */
 	  delete_unmarked_insns ();
-	  sbitmap_zero (marked);
+	  bitmap_clear (marked);
 	  bitmap_clear (processed);
 	  bitmap_clear (redo_out);
 
@@ -1196,6 +1202,7 @@ struct rtl_opt_pass pass_fast_rtl_dce =
  {
   RTL_PASS,
   "rtl_dce",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_fast_dce,                        /* gate */
   rest_of_handle_fast_dce,              /* execute */
   NULL,                                 /* sub */

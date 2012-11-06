@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -205,7 +205,7 @@ package body System.Val_Uns is
 
                if P > Max then
                   Ptr.all := P;
-                  raise Constraint_Error;
+                  Bad_Value (Str);
                end if;
 
                --  If terminating base character, we are done with loop
@@ -254,7 +254,7 @@ package body System.Val_Uns is
       --  Return result, dealing with sign and overflow
 
       if Overflow then
-         raise Constraint_Error;
+         Bad_Value (Str);
       else
          return Uval;
       end if;
@@ -277,7 +277,7 @@ package body System.Val_Uns is
 
       if Str (Ptr.all) not in '0' .. '9' then
          Ptr.all := Start;
-         raise Constraint_Error;
+         Bad_Value (Str);
       end if;
 
       return Scan_Raw_Unsigned (Str, Ptr, Max);

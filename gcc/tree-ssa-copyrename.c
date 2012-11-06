@@ -443,6 +443,7 @@ struct gimple_opt_pass pass_rename_ssa_copies =
  {
   GIMPLE_PASS,
   "copyrename",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_copyrename,			/* gate */
   rename_ssa_copies,			/* execute */
   NULL,					/* sub */

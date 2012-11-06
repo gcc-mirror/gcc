@@ -1268,6 +1268,7 @@ struct gimple_opt_pass pass_object_sizes =
  {
   GIMPLE_PASS,
   "objsz",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   compute_object_sizes,			/* execute */
   NULL,					/* sub */

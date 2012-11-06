@@ -401,13 +401,13 @@ move_or_delete_vzeroupper (void)
   visited = sbitmap_alloc (last_basic_block);
   in_worklist = sbitmap_alloc (last_basic_block);
   in_pending = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_worklist);
+  bitmap_clear (in_worklist);
 
   /* Don't check outgoing edges of entry point.  */
-  sbitmap_ones (in_pending);
+  bitmap_ones (in_pending);
   FOR_EACH_BB (bb)
     if (BLOCK_INFO (bb)->processed)
-      RESET_BIT (in_pending, bb->index);
+      bitmap_clear_bit (in_pending, bb->index);
     else
       {
 	move_or_delete_vzeroupper_1 (bb, false);
@@ -426,20 +426,20 @@ move_or_delete_vzeroupper (void)
       in_pending = in_worklist;
       in_worklist = sbitmap_swap;
 
-      sbitmap_zero (visited);
+      bitmap_clear (visited);
 
       cfun->machine->rescan_vzeroupper_p = 0;
 
       while (!fibheap_empty (worklist))
 	{
 	  bb = (basic_block) fibheap_extract_min (worklist);
-	  RESET_BIT (in_worklist, bb->index);
-	  gcc_assert (!TEST_BIT (visited, bb->index));
-	  if (!TEST_BIT (visited, bb->index))
+	  bitmap_clear_bit (in_worklist, bb->index);
+	  gcc_assert (!bitmap_bit_p (visited, bb->index));
+	  if (!bitmap_bit_p (visited, bb->index))
 	    {
 	      edge_iterator ei;
 
-	      SET_BIT (visited, bb->index);
+	      bitmap_set_bit (visited, bb->index);
 
 	      if (move_or_delete_vzeroupper_1 (bb, false))
 		FOR_EACH_EDGE (e, ei, bb->succs)
@@ -448,21 +448,21 @@ move_or_delete_vzeroupper (void)
 			|| BLOCK_INFO (e->dest)->processed)
 		      continue;
 
-		    if (TEST_BIT (visited, e->dest->index))
+		    if (bitmap_bit_p (visited, e->dest->index))
 		      {
-			if (!TEST_BIT (in_pending, e->dest->index))
+			if (!bitmap_bit_p (in_pending, e->dest->index))
 			  {
 			    /* Send E->DEST to next round.  */
-			    SET_BIT (in_pending, e->dest->index);
+			    bitmap_set_bit (in_pending, e->dest->index);
 			    fibheap_insert (pending,
 					    bb_order[e->dest->index],
 					    e->dest);
 			  }
 		      }
-		    else if (!TEST_BIT (in_worklist, e->dest->index))
+		    else if (!bitmap_bit_p (in_worklist, e->dest->index))
 		      {
 			/* Add E->DEST to current round.  */
-			SET_BIT (in_worklist, e->dest->index);
+			bitmap_set_bit (in_worklist, e->dest->index);
 			fibheap_insert (worklist, bb_order[e->dest->index],
 					e->dest);
 		      }
@@ -3950,7 +3950,7 @@ ix86_option_override_internal (bool main_args_p)
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
-      && optimize >= 3
+      && (optimize >= 3 || flag_profile_use)
       && TARGET_SOFTWARE_PREFETCHING_BENEFICIAL)
     flag_prefetch_loop_arrays = 1;
 
@@ -10714,7 +10714,7 @@ ix86_expand_prologue (void)
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
       rtx (*adjust_stack_insn)(rtx, rtx, rtx);
-
+      const bool sp_is_cfa_reg = (m->fs.cfa_reg == stack_pointer_rtx);
       bool eax_live = false;
       bool r10_live = false;
 
@@ -10723,16 +10723,31 @@ ix86_expand_prologue (void)
       if (!TARGET_64BIT_MS_ABI)
         eax_live = ix86_eax_live_at_start_p ();
 
+      /* Note that SEH directives need to continue tracking the stack
+	 pointer even after the frame pointer has been set up.  */
       if (eax_live)
 	{
-	  emit_insn (gen_push (eax));
+	  insn = emit_insn (gen_push (eax));
 	  allocate -= UNITS_PER_WORD;
+	  if (sp_is_cfa_reg || TARGET_SEH)
+	    {
+	      if (sp_is_cfa_reg)
+		m->fs.cfa_offset += UNITS_PER_WORD;
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
 	}
+
       if (r10_live)
 	{
 	  r10 = gen_rtx_REG (Pmode, R10_REG);
-	  emit_insn (gen_push (r10));
+	  insn = emit_insn (gen_push (r10));
 	  allocate -= UNITS_PER_WORD;
+	  if (sp_is_cfa_reg || TARGET_SEH)
+	    {
+	      if (sp_is_cfa_reg)
+		m->fs.cfa_offset += UNITS_PER_WORD;
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
 	}
 
       emit_move_insn (eax, GEN_INT (allocate));
@@ -10746,13 +10761,10 @@ ix86_expand_prologue (void)
       insn = emit_insn (adjust_stack_insn (stack_pointer_rtx,
 					   stack_pointer_rtx, eax));
 
-      /* Note that SEH directives need to continue tracking the stack
-	 pointer even after the frame pointer has been set up.  */
-      if (m->fs.cfa_reg == stack_pointer_rtx || TARGET_SEH)
+      if (sp_is_cfa_reg || TARGET_SEH)
 	{
-	  if (m->fs.cfa_reg == stack_pointer_rtx)
+	  if (sp_is_cfa_reg)
 	    m->fs.cfa_offset += allocate;
-
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			gen_rtx_SET (VOIDmode, stack_pointer_rtx,
@@ -11825,23 +11837,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
-	  addr = XEXP (addr, 0);
+	  addr = simplify_gen_subreg (SImode, XEXP (addr, 0), DImode, 0);
+	  if (addr == NULL_RTX)
+	    return 0;
 
-	  /* Adjust SUBREGs.  */
-	  if (GET_CODE (addr) == SUBREG
-	      && GET_MODE (SUBREG_REG (addr)) == SImode)
-	    {
-	      addr = SUBREG_REG (addr);
-	      if (CONST_INT_P (addr))
-		return 0;
-	    }
-	  else if (GET_MODE (addr) == DImode)
-	    {
-	      addr = simplify_gen_subreg (SImode, addr, DImode, 0);
-	      if (addr == NULL_RTX)
-		return 0;
-	    }
-	  else if (GET_MODE (addr) != VOIDmode)
+	  if (CONST_INT_P (addr))
 	    return 0;
 	}
     }
@@ -24505,6 +24505,8 @@ add_parameter_dependencies (rtx call, rtx head)
   rtx first_arg = NULL;
   bool is_spilled = false;
 
+  head = PREV_INSN (head);
+
   /* Find nearest to call argument passing instruction.  */
   while (true)
     {
@@ -24602,6 +24604,8 @@ ix86_dependencies_evaluation_hook (rtx head, rtx tail)
   rtx first_arg = NULL;
   if (reload_completed)
     return;
+  while (head != tail && DEBUG_INSN_P (head))
+    head = NEXT_INSN (head);
   for (insn = tail; insn != head; insn = PREV_INSN (insn))
     if (INSN_P (insn) && CALL_P (insn))
       {
@@ -24630,6 +24634,8 @@ ix86_dependencies_evaluation_hook (rtx head, rtx tail)
 		  }
 	      }
 	    insn = first_arg;
+	    if (insn == head)
+	      break;
 	  }
       }
     else if (first_arg)
@@ -24749,7 +24755,7 @@ core2i7_first_cycle_multipass_filter_ready_try
 	  ready_try[n_ready] = 1;
 
 	  if (data->ready_try_change)
-	    SET_BIT (data->ready_try_change, n_ready);
+	    bitmap_set_bit (data->ready_try_change, n_ready);
 	}
     }
 }
@@ -24804,7 +24810,7 @@ core2i7_first_cycle_multipass_issue (void *_data, char *ready_try, int n_ready,
 					       n_ready, 0);
       data->ready_try_change_size = n_ready;
     }
-  sbitmap_zero (data->ready_try_change);
+  bitmap_clear (data->ready_try_change);
 
   /* Filter out insns from ready_try that the core will not be able to issue
      on current cycle due to decoder.  */
@@ -24823,8 +24829,8 @@ core2i7_first_cycle_multipass_backtrack (const void *_data,
   unsigned int i = 0;
   sbitmap_iterator sbi;
 
-  gcc_assert (sbitmap_last_set_bit (data->ready_try_change) < n_ready);
-  EXECUTE_IF_SET_IN_SBITMAP (data->ready_try_change, 0, i, sbi)
+  gcc_assert (bitmap_last_set_bit (data->ready_try_change) < n_ready);
+  EXECUTE_IF_SET_IN_BITMAP (data->ready_try_change, 0, i, sbi)
     {
       ready_try[i] = 0;
     }

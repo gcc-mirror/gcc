@@ -8,7 +8,6 @@
 #include "go-alloc.h"
 #include "interface.h"
 #include "go-panic.h"
-#include "go-string.h"
 
 /* Go memory allocated by code not written in Go.  We keep a linked
    list of these allocations so that the garbage collector can see
@@ -135,9 +134,9 @@ extern const struct __go_type_descriptor string_type_descriptor
 void
 _cgo_panic (const char *p)
 {
-  int len;
+  intgo len;
   unsigned char *data;
-  struct __go_string *ps;
+  String *ps;
   struct __go_empty_interface e;
 
   runtime_exitsyscall ();
@@ -145,8 +144,8 @@ _cgo_panic (const char *p)
   data = alloc_saved (len);
   __builtin_memcpy (data, p, len);
   ps = alloc_saved (sizeof *ps);
-  ps->__data = data;
-  ps->__length = len;
+  ps->str = data;
+  ps->len = len;
   e.__type_descriptor = &string_type_descriptor;
   e.__object = ps;
 

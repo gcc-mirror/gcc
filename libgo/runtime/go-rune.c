@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "runtime.h"
 #include "go-string.h"
 
 /* Get a character from the UTF-8 string STR, of length LEN.  Store

@@ -1488,10 +1488,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
   if (sym->attr.vtab
       || (sym->name[0] == '_' && strncmp ("__def_init", sym->name, 10) == 0))
-    {
-      TREE_READONLY (decl) = 1;
-      GFC_DECL_PUSH_TOPLEVEL (decl) = 1;
-    }
+    TREE_READONLY (decl) = 1;
 
   return decl;
 }
@@ -1923,8 +1920,7 @@ build_function_decl (gfc_symbol * sym, bool global)
   /* Layout the function declaration and put it in the binding level
      of the current function.  */
 
-  if (global
-      || (sym->name[0] == '_' && strncmp ("__copy", sym->name, 6) == 0))
+  if (global)
     pushdecl_top_level (fndecl);
   else
     pushdecl (fndecl);
@@ -5425,10 +5421,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       next = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
-      if (GFC_DECL_PUSH_TOPLEVEL (decl))
-	pushdecl_top_level (decl);
-      else
-	pushdecl (decl);
+      pushdecl (decl);
       decl = next;
     }
   saved_function_decls = NULL_TREE;

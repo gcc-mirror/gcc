@@ -2234,6 +2234,7 @@ struct rtl_opt_pass pass_reorder_blocks =
  {
   RTL_PASS,
   "bbro",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_reorder_blocks,           /* gate */
   rest_of_handle_reorder_blocks,        /* execute */
   NULL,                                 /* sub */
@@ -2376,6 +2377,7 @@ struct rtl_opt_pass pass_duplicate_computed_gotos =
  {
   RTL_PASS,
   "compgotos",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_duplicate_computed_gotos,        /* gate */
   duplicate_computed_gotos,             /* execute */
   NULL,                                 /* sub */
@@ -2579,6 +2581,7 @@ struct rtl_opt_pass pass_partition_blocks =
  {
   RTL_PASS,
   "bbpart",                             /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_partition_blocks,         /* gate */
   partition_hot_cold_basic_blocks,      /* execute */
   NULL,                                 /* sub */

@@ -3424,7 +3424,7 @@ finish_alt_states (void)
 
 /* Set bit number bitno in the bit string.  The macro is not side
    effect proof.  */
-#define SET_BIT(bitstring, bitno)					  \
+#define bitmap_set_bit(bitstring, bitno)					  \
   ((bitstring)[(bitno) / (sizeof (*(bitstring)) * CHAR_BIT)] |=		  \
 	(HOST_WIDE_INT)1 << (bitno) % (sizeof (*(bitstring)) * CHAR_BIT))
 
@@ -3434,7 +3434,7 @@ finish_alt_states (void)
 
 /* Test if bit number bitno in the bitstring is set.  The macro is not
    side effect proof.  */
-#define TEST_BIT(bitstring, bitno)					  \
+#define bitmap_bit_p(bitstring, bitno)					  \
   ((bitstring)[(bitno) / (sizeof (*(bitstring)) * CHAR_BIT)] >>		  \
 	(bitno) % (sizeof (*(bitstring)) * CHAR_BIT) & 1)
 
@@ -3563,7 +3563,7 @@ static void
 set_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 {
   gcc_assert (cycle_num < max_cycles_num);
-  SET_BIT (reservs, cycle_num * els_in_cycle_reserv
+  bitmap_set_bit (reservs, cycle_num * els_in_cycle_reserv
            * sizeof (set_el_t) * CHAR_BIT + unit_num);
 }
 
@@ -3573,7 +3573,7 @@ static int
 test_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 {
   gcc_assert (cycle_num < max_cycles_num);
-  return TEST_BIT (reservs, cycle_num * els_in_cycle_reserv
+  return bitmap_bit_p (reservs, cycle_num * els_in_cycle_reserv
 		   * sizeof (set_el_t) * CHAR_BIT + unit_num);
 }
 
@@ -3677,7 +3677,7 @@ output_cycle_reservs (FILE *f, reserv_sets_t reservs, int start_cycle,
 
   reserved_units_num = 0;
   for (unit_num = 0; unit_num < description->units_num; unit_num++)
-    if (TEST_BIT (reservs, start_cycle * els_in_cycle_reserv
+    if (bitmap_bit_p (reservs, start_cycle * els_in_cycle_reserv
                   * sizeof (set_el_t) * CHAR_BIT + unit_num))
       reserved_units_num++;
   gcc_assert (repetition_num > 0);
@@ -3687,7 +3687,7 @@ output_cycle_reservs (FILE *f, reserv_sets_t reservs, int start_cycle,
   for (unit_num = 0;
        unit_num < description->units_num;
        unit_num++)
-    if (TEST_BIT (reservs, start_cycle * els_in_cycle_reserv
+    if (bitmap_bit_p (reservs, start_cycle * els_in_cycle_reserv
 		  * sizeof (set_el_t) * CHAR_BIT + unit_num))
       {
         if (reserved_units_num != 0)
@@ -4279,7 +4279,7 @@ initiate_excl_sets (void)
 	       el != NULL;
 	       el = el->next_unit_set_el)
 	    {
-	      SET_BIT (unit_excl_set, el->unit_decl->unit_num);
+	      bitmap_set_bit (unit_excl_set, el->unit_decl->unit_num);
 	      el->unit_decl->in_set_p = TRUE;
 	    }
           unit_excl_set_table [DECL_UNIT (decl)->unit_num] = unit_excl_set;
@@ -4344,7 +4344,7 @@ form_reserv_sets_list (pattern_set_el_t pattern_list)
       curr->next_pattern_reserv = NULL;
       for (i = 0; i < el->units_num; i++)
 	{
-	  SET_BIT (curr->reserv, el->unit_decls [i]->unit_num);
+	  bitmap_set_bit (curr->reserv, el->unit_decls [i]->unit_num);
 	  el->unit_decls [i]->in_set_p = TRUE;
 	}
       if (prev != NULL)

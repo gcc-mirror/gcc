@@ -5753,6 +5753,7 @@ struct gimple_opt_pass pass_expand_omp =
  {
   GIMPLE_PASS,
   "ompexp",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_expand_omp,			/* gate */
   execute_expand_omp,			/* execute */
   NULL,					/* sub */
@@ -6927,6 +6928,7 @@ struct gimple_opt_pass pass_lower_omp =
  {
   GIMPLE_PASS,
   "omplower",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_lower_omp,			/* execute */
   NULL,					/* sub */
@@ -7190,6 +7192,7 @@ struct gimple_opt_pass pass_diagnose_omp_blocks =
   {
     GIMPLE_PASS,
     "*diagnose_omp_blocks",		/* name */
+    OPTGROUP_NONE,                      /* optinfo_flags */
     gate_diagnose_omp_blocks,		/* gate */
     diagnose_omp_structured_block_errors,	/* execute */
     NULL,				/* sub */

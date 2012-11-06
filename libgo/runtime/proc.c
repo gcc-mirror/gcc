@@ -586,13 +586,13 @@ void
 runtime_goroutinetrailer(G *g)
 {
 	if(g != nil && g->gopc != 0 && g->goid != 1) {
-		struct __go_string fn;
-		struct __go_string file;
+		String fn;
+		String file;
 		int line;
 
 		if(__go_file_line(g->gopc - 1, &fn, &file, &line)) {
-			runtime_printf("created by %s\n", fn.__data);
-			runtime_printf("\t%s:%d\n", file.__data, line);
+			runtime_printf("created by %S\n", fn);
+			runtime_printf("\t%S:%d\n", file, line);
 		}
 	}
 }

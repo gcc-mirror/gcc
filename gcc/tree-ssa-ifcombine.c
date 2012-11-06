@@ -653,6 +653,7 @@ struct gimple_opt_pass pass_tree_ifcombine =
  {
   GIMPLE_PASS,
   "ifcombine",			/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   gate_ifcombine,		/* gate */
   tree_ssa_ifcombine,		/* execute */
   NULL,				/* sub */

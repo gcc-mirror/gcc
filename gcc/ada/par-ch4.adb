@@ -2364,6 +2364,7 @@ package body Ch4 is
 
    begin
       --  The loop runs more than once only if misplaced pragmas are found
+      --  or if a misplaced unary minus is skipped.
 
       loop
          case Token is
@@ -2537,8 +2538,15 @@ package body Ch4 is
                   return P_Identifier;
                end if;
 
+            --  Minus may well be an improper attempt at a unary minus. Give
+            --  a message, skip the minus and keep going!
+
+            when Tok_Minus =>
+               Error_Msg_SC ("parentheses required for unary minus");
+               Scan; -- past minus
+
             --  Anything else is illegal as the first token of a primary, but
-            --  we test for a reserved identifier so that it is treated nicely
+            --  we test for some common errors, to improve error messages.
 
             when others =>
                if Is_Reserved_Identifier then

@@ -156,6 +156,12 @@ package ALI is
       --  this is a language defined unit. Otherwise set to first character
       --  (upper case) of policy name. Not set if 'P' appears in Ignore_Lines.
 
+      Partition_Elaboration_Policy : Character;
+      --  Indicates partition elaboration policy for units in this file. Space
+      --  means that no Partition_Elaboration_Policy pragma was present or that
+      --  this is a language defined unit. Otherwise set to first character
+      --  (upper case) of policy name. Not set if 'P' appears in Ignore_Lines.
+
       Queuing_Policy : Character;
       --  Indicates queuing policy for units in this file. Space means tasking
       --  was not used, or that no Queuing_Policy pragma was present or that
@@ -484,6 +490,11 @@ package ALI is
    Normalize_Scalars_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if an ali file indicates
    --  that the file was compiled in Normalize_Scalars mode.
+
+   Partition_Elaboration_Policy_Specified : Character := ' ';
+   --  Set to blank by Initialize_ALI. Set to the appropriate partition
+   --  elaboration policy character if an ali file contains a P line setting
+   --  the policy.
 
    Queuing_Policy_Specified : Character := ' ';
    --  Set to blank by Initialize_ALI. Set to the appropriate queuing policy

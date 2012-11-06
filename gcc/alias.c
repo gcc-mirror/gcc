@@ -1245,7 +1245,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
     {
       while (--n >= 0)
 	{
-	  SET_BIT (reg_seen, regno + n);
+	  bitmap_set_bit (reg_seen, regno + n);
 	  new_reg_base_value[regno + n] = 0;
 	}
       return;
@@ -1266,12 +1266,12 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
   else
     {
       /* There's a REG_NOALIAS note against DEST.  */
-      if (TEST_BIT (reg_seen, regno))
+      if (bitmap_bit_p (reg_seen, regno))
 	{
 	  new_reg_base_value[regno] = 0;
 	  return;
 	}
-      SET_BIT (reg_seen, regno);
+      bitmap_set_bit (reg_seen, regno);
       new_reg_base_value[regno] = unique_base_value (unique_id++);
       return;
     }
@@ -1327,10 +1327,10 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
       }
   /* If this is the first set of a register, record the value.  */
   else if ((regno >= FIRST_PSEUDO_REGISTER || ! fixed_regs[regno])
-	   && ! TEST_BIT (reg_seen, regno) && new_reg_base_value[regno] == 0)
+	   && ! bitmap_bit_p (reg_seen, regno) && new_reg_base_value[regno] == 0)
     new_reg_base_value[regno] = find_base_value (src);
 
-  SET_BIT (reg_seen, regno);
+  bitmap_set_bit (reg_seen, regno);
 }
 
 /* Return REG_BASE_VALUE for REGNO.  Selective scheduler uses this to avoid
@@ -1377,7 +1377,7 @@ get_reg_known_equiv_p (unsigned int regno)
     {
       regno -= FIRST_PSEUDO_REGISTER;
       if (regno < VEC_length (rtx, reg_known_value))
-	return TEST_BIT (reg_known_equiv_p, regno);
+	return bitmap_bit_p (reg_known_equiv_p, regno);
     }
   return false;
 }
@@ -1391,9 +1391,9 @@ set_reg_known_equiv_p (unsigned int regno, bool val)
       if (regno < VEC_length (rtx, reg_known_value))
 	{
 	  if (val)
-	    SET_BIT (reg_known_equiv_p, regno);
+	    bitmap_set_bit (reg_known_equiv_p, regno);
 	  else
-	    RESET_BIT (reg_known_equiv_p, regno);
+	    bitmap_clear_bit (reg_known_equiv_p, regno);
 	}
     }
 }
@@ -2869,7 +2869,7 @@ init_alias_analysis (void)
       memset (new_reg_base_value, 0, maxreg * sizeof (rtx));
 
       /* Wipe the reg_seen array clean.  */
-      sbitmap_zero (reg_seen);
+      bitmap_clear (reg_seen);
 
       /* Mark all hard registers which may contain an address.
 	 The stack, frame and argument pointers may contain an address.

@@ -2150,6 +2150,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+  template<typename _RealType>
+    template<typename _ForwardIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      std::chi_squared_distribution<_RealType>::
+      __generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+		      _UniformRandomNumberGenerator& __urng)
+      {
+	__glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+	while (__f != __t)
+	  *__f++ = 2 * _M_gd(__urng);
+      }
 
   template<typename _RealType>
     template<typename _ForwardIterator,
@@ -2158,8 +2170,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::chi_squared_distribution<_RealType>::
       __generate_impl(_ForwardIterator __f, _ForwardIterator __t,
 		      _UniformRandomNumberGenerator& __urng,
-		      typename std::gamma_distribution<result_type>::param_type&
-		      __p)
+		      const typename
+		      std::gamma_distribution<result_type>::param_type& __p)
       {
 	__glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
 	while (__f != __t)

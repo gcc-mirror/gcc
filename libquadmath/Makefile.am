@@ -43,7 +43,8 @@ nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 libquadmath_la_SOURCES = \
-  math/acoshq.c math/fmodq.c math/acosq.c math/frexpq.c \
+  math/x2y2m1q.c math/isinf_nsq.c math/acoshq.c math/fmodq.c \
+  math/acosq.c math/frexpq.c \
   math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
   math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
   math/roundq.c math/atanhq.c math/isnanq.c math/scalblnq.c math/atanq.c \
@@ -60,6 +61,8 @@ libquadmath_la_SOURCES = \
   math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
   math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
   math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c \
+  math/ccoshq.c math/cexpq.c math/clog10q.c math/clogq.c math/csinq.c \
+  math/csinhq.c math/csqrtq.c math/ctanq.c math/ctanhq.c \
   printf/addmul_1.c printf/add_n.c printf/cmp.c printf/divrem.c \
   printf/flt1282mpn.c printf/fpioconst.c printf/lshift.c printf/mul_1.c \
   printf/mul_n.c printf/mul.c printf/printf_fphex.c printf/printf_fp.c \

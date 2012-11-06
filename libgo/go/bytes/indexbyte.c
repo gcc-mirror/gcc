@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "runtime.h"
 #include "array.h"
 
 /* This is in C so that the compiler can optimize it appropriately.

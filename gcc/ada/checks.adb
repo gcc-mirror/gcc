@@ -1108,7 +1108,11 @@ package body Checks is
         or else Nkind (P) in N_Membership_Test
         or else Nkind (P) in N_Op_Compare
 
-        --  We may also be a range operand in a membership test
+        --  This is also true for an alternative in a case expression
+
+        or else Nkind (P) = N_Case_Expression_Alternative
+
+        --  This is also true for a range operand in a membership test
 
         or else (Nkind (P) = N_Range
                   and then Nkind (Parent (P)) in N_Membership_Test)
@@ -6267,9 +6271,6 @@ package body Checks is
 
          when N_If_Expression | N_Case_Expression =>
             return Is_Signed_Integer_Type (Etype (N));
-
-         when N_Case_Expression_Alternative =>
-            return Is_Signed_Integer_Type (Etype (Parent (N)));
 
          when others =>
             return False;

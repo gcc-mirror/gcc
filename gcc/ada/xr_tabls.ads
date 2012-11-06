@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,6 +78,7 @@ package Xr_Tabls is
       Line         : Natural;
       Column       : Natural;
       Decl_Type    : Character;
+      Is_Parameter : Boolean := False;
       Remove_Only  : Boolean := False;
       Symbol_Match : Boolean := True)
       return         Declaration_Reference;
@@ -87,8 +88,9 @@ package Xr_Tabls is
    --  removed, but the new entity is never inserted. Symbol_Match should be
    --  set to False if the name of the symbol doesn't match the pattern from
    --  the command line. In that case, the entity will not be output by
-   --  gnatfind. If Symbol_Match is True, the entity will only be output if the
-   --  file name itself matches.
+   --  gnatfind. If Symbol_Match is True, the entity will only be output if
+   --  the file name itself matches. Is_Parameter should be set to True if
+   --  the entity is known to be a subprogram parameter.
 
    procedure Add_Parent
      (Declaration : in out Declaration_Reference;

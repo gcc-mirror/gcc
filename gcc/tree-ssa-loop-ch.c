@@ -260,6 +260,7 @@ struct gimple_opt_pass pass_ch =
  {
   GIMPLE_PASS,
   "ch",					/* name */
+  OPTGROUP_LOOP,                        /* optinfo_flags */
   gate_ch,				/* gate */
   copy_loop_headers,			/* execute */
   NULL,					/* sub */

@@ -2068,9 +2068,6 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
       if (flags & TDF_LINENO)
 	{
 	  gimple_stmt_iterator gsi;
-	  char *s_indent = (char *) alloca ((size_t) indent + 1);
-	  memset (s_indent, ' ', (size_t) indent);
-	  s_indent[indent] = '\0';
 
 	  if (flags & TDF_COMMENT)
 	    fputs (";; ", outf);
@@ -2079,8 +2076,8 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
 	    if (!is_gimple_debug (gsi_stmt (gsi))
 		&& get_lineno (gsi_stmt (gsi)) != UNKNOWN_LOCATION)
 	      {
-		fprintf (outf, "%sstarting at line %d",
-			 s_indent, get_lineno (gsi_stmt (gsi)));
+		fprintf (outf, "%*sstarting at line %d",
+			 indent, "", get_lineno (gsi_stmt (gsi)));
 		break;
 	      }
 	  if (bb->discriminator)
@@ -2092,12 +2089,7 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
     {
       gimple stmt = first_stmt (bb);
       if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
-	{
-	  char *s_indent = (char *) alloca ((size_t) indent - 2 + 1);
-	  memset (s_indent, ' ', (size_t) indent);
-	  s_indent[indent] = '\0';
-	  fprintf (outf, "%s<bb %d>:\n", s_indent, bb->index);
-	}
+	fprintf (outf, "%*s<bb %d>:\n", indent, "", bb->index);
     }
 }
 

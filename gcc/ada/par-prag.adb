@@ -1098,10 +1098,12 @@ begin
            Pragma_All_Calls_Remote               |
            Pragma_Annotate                       |
            Pragma_Assert                         |
+           Pragma_Assert_And_Cut                 |
            Pragma_Asynchronous                   |
            Pragma_Atomic                         |
            Pragma_Atomic_Components              |
            Pragma_Attach_Handler                 |
+           Pragma_Attribute_Definition           |
            Pragma_Check                          |
            Pragma_Check_Name                     |
            Pragma_Check_Policy                   |
@@ -1201,6 +1203,7 @@ begin
            Pragma_Optimize_Alignment             |
            Pragma_Overflow_Checks                |
            Pragma_Pack                           |
+           Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |
            Pragma_Preelaborable_Initialization   |
            Pragma_Polling                        |

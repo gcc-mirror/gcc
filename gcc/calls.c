@@ -1822,7 +1822,7 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
   HOST_WIDE_INT i;
   rtx val;
 
-  if (sbitmap_empty_p (stored_args_map))
+  if (bitmap_empty_p (stored_args_map))
     return false;
   val = internal_arg_pointer_based_exp (addr, true);
   if (val == NULL_RTX)
@@ -1846,7 +1846,7 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
 
       for (k = 0; k < size; k++)
 	if (i + k < SBITMAP_SIZE (stored_args_map)
-	    && TEST_BIT (stored_args_map, i + k))
+	    && bitmap_bit_p (stored_args_map, i + k))
 	  return true;
     }
 
@@ -2133,7 +2133,7 @@ check_sibcall_argument_overlap (rtx insn, struct arg_data *arg, int mark_stored_
 #endif
 
       for (high = low + arg->locate.size.constant; low < high; low++)
-	SET_BIT (stored_args_map, low);
+	bitmap_set_bit (stored_args_map, low);
     }
   return insn != NULL_RTX;
 }
@@ -2749,7 +2749,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    = plus_constant (Pmode, argblock, -crtl->args.pretend_args_size);
 #endif
 	  stored_args_map = sbitmap_alloc (args_size.constant);
-	  sbitmap_zero (stored_args_map);
+	  bitmap_clear (stored_args_map);
 	}
 
       /* If we have no actual push instructions, or shouldn't use them,

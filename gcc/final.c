@@ -822,6 +822,7 @@ struct rtl_opt_pass pass_compute_alignments =
  {
   RTL_PASS,
   "alignments",                         /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   compute_alignments,                   /* execute */
   NULL,                                 /* sub */
@@ -4373,6 +4374,7 @@ struct rtl_opt_pass pass_final =
  {
   RTL_PASS,
   "final",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_final,                 /* execute */
   NULL,                                 /* sub */
@@ -4401,6 +4403,7 @@ struct rtl_opt_pass pass_shorten_branches =
  {
   RTL_PASS,
   "shorten",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_shorten_branches,      /* execute */
   NULL,                                 /* sub */
@@ -4547,6 +4550,7 @@ struct rtl_opt_pass pass_clean_state =
  {
   RTL_PASS,
   "*clean_state",                       /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_clean_state,                  /* execute */
   NULL,                                 /* sub */

@@ -81,25 +81,25 @@ along with GCC; see the file COPYING3.	If not see
 struct elim_table
 {
   /* Hard register number to be eliminated.  */
-  int from;			
+  int from;
   /* Hard register number used as replacement.	*/
-  int to;			
+  int to;
   /* Difference between values of the two hard registers above on
      previous iteration.  */
   HOST_WIDE_INT previous_offset;
   /* Difference between the values on the current iteration.  */
-  HOST_WIDE_INT offset;		
+  HOST_WIDE_INT offset;
   /* Nonzero if this elimination can be done.  */
-  bool can_eliminate;		
+  bool can_eliminate;
   /* CAN_ELIMINATE since the last check.  */
   bool prev_can_eliminate;
   /* REG rtx for the register to be eliminated.	 We cannot simply
      compare the number since we might then spuriously replace a hard
      register corresponding to a pseudo assigned to the reg to be
      eliminated.  */
-  rtx from_rtx;			
+  rtx from_rtx;
   /* REG rtx for the replacement.  */
-  rtx to_rtx;			
+  rtx to_rtx;
 };
 
 /* The elimination table.  Each array entry describes one possible way
@@ -335,7 +335,7 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
       if ((ep = get_elimination (x)) != NULL)
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
-	  
+
 	  if (update_p)
 	    return plus_constant (Pmode, to, ep->offset - ep->previous_offset);
 	  else if (full_p)
@@ -354,10 +354,10 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
 	    {
 	      HOST_WIDE_INT offset;
 	      rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
-	      
+
 	      if (! update_p && ! full_p)
 		return gen_rtx_PLUS (Pmode, to, XEXP (x, 1));
-	      
+
 	      offset = (update_p
 			? ep->offset - ep->previous_offset : ep->offset);
 	      if (CONST_INT_P (XEXP (x, 1))
@@ -405,7 +405,7 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
 	  && (ep = get_elimination (XEXP (x, 0))) != NULL)
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
-	  
+
 	  if (update_p)
 	    return
 	      plus_constant (Pmode,
@@ -420,7 +420,7 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
 	  else
 	    return gen_rtx_MULT (Pmode, to, XEXP (x, 1));
 	}
-      
+
       /* ... fall through ...  */
 
     case CALL:
@@ -550,7 +550,8 @@ lra_eliminate_regs_1 (rtx x, enum machine_mode mem_mode,
 	      return x;
 	    }
 	  else
-	    return gen_rtx_SUBREG (GET_MODE (x), new_rtx, SUBREG_BYTE (x));
+	    return simplify_gen_subreg (GET_MODE (x), new_rtx,
+					GET_MODE (new_rtx), SUBREG_BYTE (x));
 	}
 
       return x;
@@ -777,7 +778,7 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
       && (ep = get_elimination (SET_DEST (old_set))) != NULL)
     {
       bool delete_p = replace_p;
-      
+
 #ifdef HARD_FRAME_POINTER_REGNUM
       /* If this is setting the frame pointer register to the hardware
 	 frame pointer register and this is an elimination that will
@@ -798,11 +799,11 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 	      rtx base = SET_SRC (old_set);
 	      HOST_WIDE_INT offset = 0;
 	      rtx base_insn = insn;
-	      
+
 	      while (base != ep->to_rtx)
 		{
 		  rtx prev_insn, prev_set;
-		  
+
 		  if (GET_CODE (base) == PLUS && CONST_INT_P (XEXP (base, 1)))
 		    {
 		      offset += INTVAL (XEXP (base, 1));
@@ -818,14 +819,14 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 		  else
 		    break;
 		}
-	      
+
 	      if (base == ep->to_rtx)
 		{
 		  rtx src;
-		  
+
 		  offset -= (ep->offset - ep->previous_offset);
 		  src = plus_constant (Pmode, ep->to_rtx, offset);
-		  
+
 		  /* First see if this insn remains valid when we make
 		     the change.  If not, keep the INSN_CODE the same
 		     and let the constraint pass fit it up.  */
@@ -841,14 +842,14 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 		  return;
 		}
 	    }
-	  
-	  
+
+
 	  /* We can't delete this insn, but needn't process it
 	     since it won't be used unless something changes.  */
 	  delete_p = false;
 	}
 #endif
-      
+
       /* This insn isn't serving a useful purpose.  We delete it
 	 when REPLACE is set.  */
       if (delete_p)
@@ -892,13 +893,13 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
       if (REG_P (reg) && (ep = get_elimination (reg)) != NULL)
 	{
 	  rtx to_rtx = replace_p ? ep->to_rtx : ep->from_rtx;
-	  
+
 	  if (! replace_p)
 	    {
 	      offset += (ep->offset - ep->previous_offset);
 	      offset = trunc_int_for_mode (offset, GET_MODE (plus_cst_src));
 	    }
-	  
+
 	  if (GET_CODE (XEXP (plus_cst_src, 0)) == SUBREG)
 	    to_rtx = gen_lowpart (GET_MODE (XEXP (plus_cst_src, 0)), to_rtx);
 	  /* If we have a nonzero offset, and the source is already a
@@ -909,7 +910,7 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 	  if (offset == 0 || plus_src)
 	    {
 	      rtx new_src = plus_constant (GET_MODE (to_rtx), to_rtx, offset);
-	      
+
 	      old_set = single_set (insn);
 
 	      /* First see if this insn remains valid when we make the
@@ -923,7 +924,7 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
 		{
 		  rtx new_pat = gen_rtx_SET (VOIDmode,
 					     SET_DEST (old_set), new_src);
-		  
+
 		  if (! validate_change (insn, &PATTERN (insn), new_pat, 0))
 		    SET_SRC (old_set) = new_src;
 		}
@@ -1153,7 +1154,7 @@ init_elim_table (void)
       ep->to = ep1->to;
       value_p = (targetm.can_eliminate (ep->from, ep->to)
 		 && ! (ep->to == STACK_POINTER_REGNUM
-		       && frame_pointer_needed 
+		       && frame_pointer_needed
 		       && (! SUPPORTS_STACK_ALIGNMENT
 			   || ! stack_realign_fp)));
       setup_can_eliminate (ep, value_p);

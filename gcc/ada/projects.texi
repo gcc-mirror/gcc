@@ -286,9 +286,14 @@ There are several ways of defining source directories:
   It is often desirable to remove, from the source directories, directory
   subtrees rooted at some subdirectories. An example is the subdirectories
   created by a Version Control System such as Subversion that creates directory
-  subtrees .svn/**. To do that, attribute  @b{Ignore_Source_Sub_Dirs} can be
-  used. It specifies the list of simple file names for the root of these
-  undesirable directory subtrees.
+  subtrees rooted at subdirectories ".svn". To do that, attribute
+  @b{Ignore_Source_Sub_Dirs} can be used. It specifies the list of simple
+  file names for the roots of these undesirable directory subtrees.
+
+@smallexample
+    @b{for} Source_Dirs @b{use} ("./**");
+    @b{for} Ignore_Source_Sub_Dirs @b{use} (".svn");
+@end smallexample
 
 @end itemize
 

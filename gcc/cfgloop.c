@@ -393,7 +393,7 @@ flow_loops_find (struct loops *loops)
   /* Count the number of loop headers.  This should be the
      same as the number of natural loops.  */
   headers = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (headers);
+  bitmap_clear (headers);
 
   num_loops = 0;
   FOR_EACH_BB (header)
@@ -420,7 +420,7 @@ flow_loops_find (struct loops *loops)
 	      && dominated_by_p (CDI_DOMINATORS, latch, header))
 	    {
 	      /* Shared headers should be eliminated by now.  */
-	      SET_BIT (headers, header->index);
+	      bitmap_set_bit (headers, header->index);
 	      num_loops++;
 	    }
 	}
@@ -451,7 +451,7 @@ flow_loops_find (struct loops *loops)
 
 	  /* Search the nodes of the CFG in reverse completion order
 	     so that we can find outer loops first.  */
-	  if (!TEST_BIT (headers, rc_order[b]))
+	  if (!bitmap_bit_p (headers, rc_order[b]))
 	    continue;
 
 	  header = BASIC_BLOCK (rc_order[b]);
@@ -1351,7 +1351,7 @@ verify_loop_structure (void)
 	  }
       free (bbs);
     }
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       bbs = get_loop_body (loop);
@@ -1361,9 +1361,9 @@ verify_loop_structure (void)
 	  bb = bbs[j];
 
 	  /* Ignore this block if it is in an inner loop.  */
-	  if (TEST_BIT (visited, bb->index))
+	  if (bitmap_bit_p (visited, bb->index))
 	    continue;
-	  SET_BIT (visited, bb->index);
+	  bitmap_set_bit (visited, bb->index);
 
 	  if (bb->loop_father != loop)
 	    {
@@ -1426,9 +1426,9 @@ verify_loop_structure (void)
 	{
 	  edge_iterator ei;
 	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
-	    SET_BIT (irreds, bb->index);
+	    bitmap_set_bit (irreds, bb->index);
 	  else
-	    RESET_BIT (irreds, bb->index);
+	    bitmap_clear_bit (irreds, bb->index);
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (e->flags & EDGE_IRREDUCIBLE_LOOP)
 	      e->flags |= EDGE_ALL_FLAGS + 1;
@@ -1443,13 +1443,13 @@ verify_loop_structure (void)
 	  edge_iterator ei;
 
 	  if ((bb->flags & BB_IRREDUCIBLE_LOOP)
-	      && !TEST_BIT (irreds, bb->index))
+	      && !bitmap_bit_p (irreds, bb->index))
 	    {
 	      error ("basic block %d should be marked irreducible", bb->index);
 	      err = 1;
 	    }
 	  else if (!(bb->flags & BB_IRREDUCIBLE_LOOP)
-	      && TEST_BIT (irreds, bb->index))
+	      && bitmap_bit_p (irreds, bb->index))
 	    {
 	      error ("basic block %d should not be marked irreducible", bb->index);
 	      err = 1;

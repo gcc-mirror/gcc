@@ -80,7 +80,7 @@ package body GNAT.Sockets is
                   Shut_Write      => SOSC.SHUT_WR,
                   Shut_Read_Write => SOSC.SHUT_RDWR);
 
-   Requests : constant array (Request_Name) of C.int :=
+   Requests : constant array (Request_Name) of SOSC.IOCTL_Req_T :=
                 (Non_Blocking_IO => SOSC.FIONBIO,
                  N_Bytes_To_Read => SOSC.FIONREAD);
 

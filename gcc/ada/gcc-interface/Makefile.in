@@ -2610,7 +2610,7 @@ $(RTSDIR)/s-oscons.ads: ../stamp-gnatlib1-$(RTSDIR) s-oscons-tmplt.c gsocket.h .
 	(cd $(RTSDIR) ; \
 	    $(OSCONS_CPP) ; \
 	    $(OSCONS_EXTRACT) ; \
-	    ../bldtools/oscons/xoscons)
+	    ../bldtools/oscons/xoscons s-oscons)
 
 # Don't use semicolon separated shell commands that involve list expansions.
 # The semicolon triggers a call to DCL on VMS and DCL can't handle command

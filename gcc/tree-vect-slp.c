@@ -1289,22 +1289,22 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
           /* Check that the loads in the first sequence are different and there
              are no gaps between them.  */
           load_index = sbitmap_alloc (group_size);
-          sbitmap_zero (load_index);
+          bitmap_clear (load_index);
           for (k = 0; k < group_size; k++)
             {
               first_group_load_index = VEC_index (int, load_permutation, k);
-              if (TEST_BIT (load_index, first_group_load_index))
+              if (bitmap_bit_p (load_index, first_group_load_index))
                 {
                   bad_permutation = true;
                   break;
                 }
 
-              SET_BIT (load_index, first_group_load_index);
+              bitmap_set_bit (load_index, first_group_load_index);
             }
 
           if (!bad_permutation)
             for (k = 0; k < group_size; k++)
-              if (!TEST_BIT (load_index, k))
+              if (!bitmap_bit_p (load_index, k))
                 {
                   bad_permutation = true;
                   break;
@@ -1407,7 +1407,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
   supported = true;
   load_index = sbitmap_alloc (group_size);
-  sbitmap_zero (load_index);
+  bitmap_clear (load_index);
   for (j = 0; j < group_size; j++)
     {
       for (i = j * group_size, k = 0;
@@ -1423,17 +1423,17 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
          prev = next;
        }
 
-      if (TEST_BIT (load_index, prev))
+      if (bitmap_bit_p (load_index, prev))
         {
           supported = false;
           break;
         }
 
-      SET_BIT (load_index, prev);
+      bitmap_set_bit (load_index, prev);
     }
  
   for (j = 0; j < group_size; j++)
-    if (!TEST_BIT (load_index, j))
+    if (!bitmap_bit_p (load_index, j))
       return false;
 
   sbitmap_free (load_index);

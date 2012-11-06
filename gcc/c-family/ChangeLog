@@ -1,3 +1,8 @@
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/54930
+	* c.opt (Wreturn_local_addr): Define new option.
+
 2012-10-25  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wvirtual-move-assign): New.

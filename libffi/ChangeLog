@@ -1,3 +1,8 @@
+2012-10-31  Alan Modra  <amodra@gmail.com>
+
+	* src/powerpc/linux64_closure.S: Add new ABI support.
+	* src/powerpc/linux64.S: Likewise.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.

@@ -3512,12 +3512,12 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
 
-      if (is_gimple_reg (lhs))
-	cost = 0;
-      else
-	cost = estimate_move_cost (TREE_TYPE (lhs));
+      cost = 0;
 
-      if (!is_gimple_reg (rhs) && !is_gimple_min_invariant (rhs))
+      /* Account for the cost of moving to / from memory.  */
+      if (gimple_store_p (stmt))
+	cost += estimate_move_cost (TREE_TYPE (lhs));
+      if (gimple_assign_load_p (stmt))
 	cost += estimate_move_cost (TREE_TYPE (rhs));
 
       cost += estimate_operator_cost (gimple_assign_rhs_code (stmt), weights,

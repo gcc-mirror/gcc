@@ -1045,7 +1045,7 @@ copyprop_hardreg_forward (void)
   all_vd = XNEWVEC (struct value_data, last_basic_block);
 
   visited = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   if (MAY_HAVE_DEBUG_INSNS)
     debug_insn_changes_pool
@@ -1054,14 +1054,14 @@ copyprop_hardreg_forward (void)
 
   FOR_EACH_BB (bb)
     {
-      SET_BIT (visited, bb->index);
+      bitmap_set_bit (visited, bb->index);
 
       /* If a block has a single predecessor, that we've already
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
       if (single_pred_p (bb)
-	  && TEST_BIT (visited, single_pred (bb)->index)
+	  && bitmap_bit_p (visited, single_pred (bb)->index)
 	  && ! (single_pred_edge (bb)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
 	{
 	  all_vd[bb->index] = all_vd[single_pred (bb)->index];
@@ -1089,7 +1089,7 @@ copyprop_hardreg_forward (void)
   if (MAY_HAVE_DEBUG_INSNS)
     {
       FOR_EACH_BB (bb)
-	if (TEST_BIT (visited, bb->index)
+	if (bitmap_bit_p (visited, bb->index)
 	    && all_vd[bb->index].n_debug_insn_changes)
 	  {
 	    unsigned int regno;
@@ -1235,6 +1235,7 @@ struct rtl_opt_pass pass_cprop_hardreg =
  {
   RTL_PASS,
   "cprop_hardreg",                      /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_cprop,                    /* gate */
   copyprop_hardreg_forward,             /* execute */
   NULL,                                 /* sub */

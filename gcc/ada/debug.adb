@@ -139,7 +139,7 @@ package body Debug is
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
    --  d.U  Ignore indirect calls for static elaboration
-   --  d.V
+   --  d.V  Extensions for formal verification
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X  Use Expression_With_Actions
    --  d.Y  Do not use Expression_With_Actions

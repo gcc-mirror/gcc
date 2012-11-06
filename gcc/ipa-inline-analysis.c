@@ -1548,6 +1548,7 @@ static int
 eliminated_by_inlining_prob (gimple stmt)
 {
   enum gimple_code code = gimple_code (stmt);
+  enum tree_code rhs_code;
 
   if (!optimize)
     return 0;
@@ -1560,14 +1561,16 @@ eliminated_by_inlining_prob (gimple stmt)
 	if (gimple_num_ops (stmt) != 2)
 	  return 0;
 
+	rhs_code = gimple_assign_rhs_code (stmt);
+
 	/* Casts of parameters, loads from parameters passed by reference
 	   and stores to return value or parameters are often free after
 	   inlining dua to SRA and further combining.
 	   Assume that half of statements goes away.  */
-	if (gimple_assign_rhs_code (stmt) == CONVERT_EXPR
-	    || gimple_assign_rhs_code (stmt) == NOP_EXPR
-	    || gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
-	    || gimple_assign_rhs_code (stmt) == ADDR_EXPR
+	if (rhs_code == CONVERT_EXPR
+	    || rhs_code == NOP_EXPR
+	    || rhs_code == VIEW_CONVERT_EXPR
+	    || rhs_code == ADDR_EXPR
 	    || gimple_assign_rhs_class (stmt) == GIMPLE_SINGLE_RHS)
 	  {
 	    tree rhs = gimple_assign_rhs1 (stmt);
@@ -1592,12 +1595,9 @@ eliminated_by_inlining_prob (gimple stmt)
 		tree op = get_base_address (TREE_OPERAND (inner_rhs, 0));
 		if (TREE_CODE (op) == PARM_DECL)
 		  rhs_free = true;
-	        else if (TREE_CODE (op) == MEM_REF)
-		  {
-		    op = get_base_address (TREE_OPERAND (op, 0));
-		    if (unmodified_parm (stmt, op))
-		      rhs_free = true;
-		  }
+	        else if (TREE_CODE (op) == MEM_REF
+			 && unmodified_parm (stmt, TREE_OPERAND (op, 0)))
+		  rhs_free = true;
 	      }
 
 	    /* When parameter is not SSA register because its address is taken
@@ -2655,6 +2655,7 @@ struct gimple_opt_pass pass_inline_parameters =
  {
   GIMPLE_PASS,
   "inline_param",			/* name */
+  OPTGROUP_INLINE,                      /* optinfo_flags */
   NULL,					/* gate */
   compute_inline_parameters_for_current,/* execute */
   NULL,					/* sub */
@@ -3855,22 +3856,25 @@ void
 inline_write_summary (void)
 {
   struct cgraph_node *node;
-  symtab_node snode;
   struct output_block *ob = create_output_block (LTO_section_inline_summary);
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
   int i;
 
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
-    if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
-	&& cgraph (snode)->analyzed)
-      count++;
+    {
+      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+      if (cnode && cnode->analyzed)
+	count++;
+    }
   streamer_write_uhwi (ob, count);
 
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
-	  && (node = cgraph (snode))->analyzed)
+      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
+      if (cnode && (node = cnode)->analyzed)
 	{
 	  struct inline_summary *info = inline_summary (node);
 	  struct bitpack_d bp;
@@ -3878,7 +3882,7 @@ inline_write_summary (void)
 	  int i;
 	  size_time_entry *e;
 	  struct condition *c;
-
+  
 	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, (symtab_node)node));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
@@ -3897,7 +3901,7 @@ inline_write_summary (void)
 	      bp_pack_value (&bp, c->by_ref, 1);
 	      streamer_write_bitpack (&bp);
 	      if (c->agg_contents)
-		streamer_write_uhwi (ob, c->offset);
+	        streamer_write_uhwi (ob, c->offset);
 	    }
 	  streamer_write_uhwi (ob, VEC_length (size_time_entry, info->entry));
 	  for (i = 0;

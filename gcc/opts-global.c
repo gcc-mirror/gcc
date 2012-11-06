@@ -240,7 +240,7 @@ read_cmdline_options (struct gcc_options *opts, struct gcc_options *opts_set,
    REPORT_VECTORIZED_LOCATIONS ==> "-optimized"
    REPORT_UNVECTORIZED_LOCATIONS ==> "-missed"
 
-   Any higher verbosity levels get mapped to "-optall" flags.  */
+   Any higher verbosity levels get mapped to "-all" flags.  */
 
 static void
 dump_remap_tree_vectorizer_verbose (const char *arg)
@@ -259,7 +259,7 @@ dump_remap_tree_vectorizer_verbose (const char *arg)
       remapped_opt_info = "missed";
       break;
     default:
-      remapped_opt_info = "optall";
+      remapped_opt_info = "all";
       break;
     }
 
@@ -390,7 +390,7 @@ handle_common_deferred_options (void)
 
         case OPT_fopt_info_:
 	  if (!opt_info_switch_p (opt->arg))
-	    error ("unrecognized command line option %<-fopt-info%s%>",
+	    error ("unrecognized command line option %<-fopt-info-%s%>",
                    opt->arg);
           break;
 

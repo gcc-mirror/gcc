@@ -33,6 +33,7 @@ with Expander; use Expander;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
+with Exp_Dbug; use Exp_Dbug;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -2723,6 +2724,20 @@ package body Sem_Ch6 is
 
             Install_Formals (Spec_Id);
             Last_Real_Spec_Entity := Last_Entity (Spec_Id);
+
+            --  Within an instance, add local renaming declarations so that
+            --  gdb can retrieve the values of actuals more easily. This is
+            --  only relevant if generating code (and indeed we definitely
+            --  do not want these definitions -gnatc mode, because that would
+            --  confuse ASIS).
+
+            if Is_Generic_Instance (Spec_Id)
+              and then Is_Wrapper_Package (Current_Scope)
+              and then Expander_Active
+            then
+               Build_Subprogram_Instance_Renamings (N, Current_Scope);
+            end if;
+
             Push_Scope (Spec_Id);
 
             --  Make sure that the subprogram is immediately visible. For
@@ -11457,10 +11472,19 @@ package body Sem_Ch6 is
          --  public subprogram, since we do get initializations to deal with.
          --  Other internally generated subprograms are not public.
 
-         if not Is_List_Member (DD) and then Is_Init_Proc (DD) then
+         if not Is_List_Member (DD)
+           and then Is_Init_Proc (Defining_Entity (DD))
+         then
             return True;
 
-         elsif not Comes_From_Source (DD) then
+         --  The declaration may have been generated for an expression function
+         --  so check whether that function comes from source.
+
+         elsif not Comes_From_Source (DD)
+           and then
+             (Nkind (Original_Node (DD)) /= N_Expression_Function
+               or else not Comes_From_Source (Defining_Entity (DD)))
+         then
             return False;
 
          --  Otherwise we test whether the subprogram is declared in the
@@ -11786,7 +11810,7 @@ package body Sem_Ch6 is
       end if;
 
       --  If we had any postconditions and expansion is enabled, or if the
-      --  procedure has invariants, then build the _Postconditions procedure.
+      --  subprogram has invariants, then build the _Postconditions procedure.
 
       if (Present (Plist) or else Invariants_Or_Predicates_Present)
         and then Expander_Active
@@ -11795,7 +11819,7 @@ package body Sem_Ch6 is
             Plist := Empty_List;
          end if;
 
-         --  Special processing for function case
+         --  Special processing for function return
 
          if Ekind (Designator) /= E_Procedure then
             declare

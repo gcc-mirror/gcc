@@ -32,6 +32,7 @@ struct gimple_opt_pass one_pass =
   {
   GIMPLE_PASS,
   "cfg",                           /* name */
+  OPTGROUP_NONE,                         /* optinfo_flags */
   one_pass_gate,                         /* gate */
   one_pass_exec,       /* execute */
   NULL,                                 /* sub */

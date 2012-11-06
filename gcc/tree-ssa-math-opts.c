@@ -642,6 +642,7 @@ struct gimple_opt_pass pass_cse_reciprocals =
  {
   GIMPLE_PASS,
   "recip",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_cse_reciprocals,			/* gate */
   execute_cse_reciprocals,		/* execute */
   NULL,					/* sub */
@@ -1505,6 +1506,7 @@ struct gimple_opt_pass pass_cse_sincos =
  {
   GIMPLE_PASS,
   "sincos",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_cse_sincos,			/* gate */
   execute_cse_sincos,			/* execute */
   NULL,					/* sub */
@@ -1977,6 +1979,7 @@ struct gimple_opt_pass pass_optimize_bswap =
  {
   GIMPLE_PASS,
   "bswap",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_optimize_bswap,                  /* gate */
   execute_optimize_bswap,		/* execute */
   NULL,					/* sub */
@@ -2741,6 +2744,7 @@ struct gimple_opt_pass pass_optimize_widening_mul =
  {
   GIMPLE_PASS,
   "widening_mul",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_optimize_widening_mul,		/* gate */
   execute_optimize_widening_mul,	/* execute */
   NULL,					/* sub */

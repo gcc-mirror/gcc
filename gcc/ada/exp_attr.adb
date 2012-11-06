@@ -5141,7 +5141,8 @@ package body Exp_Attr is
       begin
          Rewrite (N,
            Build_To_Any_Call
-             (Convert_To (P_Type,
+             (Loc,
+              Convert_To (P_Type,
               Relocate_Node (First (Exprs))), Decls));
          Insert_Actions (N, Decls);
          Analyze_And_Resolve (N, RTE (RE_Any));

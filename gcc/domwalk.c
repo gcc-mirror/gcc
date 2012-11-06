@@ -145,8 +145,8 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
   int sp = 0;
   sbitmap visited = sbitmap_alloc (last_basic_block + 1);
-  sbitmap_zero (visited);
-  SET_BIT (visited, ENTRY_BLOCK_PTR->index);
+  bitmap_clear (visited);
+  bitmap_set_bit (visited, ENTRY_BLOCK_PTR->index);
 
   while (true)
     {
@@ -187,7 +187,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  if (walk_data->before_dom_children)
 	    (*walk_data->before_dom_children) (walk_data, bb);
 
-	  SET_BIT (visited, bb->index);
+	  bitmap_set_bit (visited, bb->index);
 
 	  /* Mark the current BB to be popped out of the recursion stack
 	     once children are processed.  */
@@ -233,7 +233,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 		FOR_EACH_EDGE (e, ei, bb->preds)
 		  {
 		    if (!dominated_by_p (CDI_DOMINATORS, e->src, e->dest)
-			&& !TEST_BIT (visited, e->src->index))
+			&& !bitmap_bit_p (visited, e->src->index))
 		      {
 			found = false;
 			break;

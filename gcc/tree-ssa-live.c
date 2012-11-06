@@ -968,9 +968,9 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
   edge_iterator ei;
   basic_block pred_bb;
   bitmap loe;
-  gcc_assert (!TEST_BIT (visited, bb->index));
+  gcc_assert (!bitmap_bit_p (visited, bb->index));
 
-  SET_BIT (visited, bb->index);
+  bitmap_set_bit (visited, bb->index);
   loe = live_on_entry (live, bb);
 
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -988,9 +988,9 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
 	 changes, and pred_bb has been visited already, add it to the
 	 revisit stack.  */
       change = bitmap_ior_into (live_on_entry (live, pred_bb), tmp);
-      if (TEST_BIT (visited, pred_bb->index) && change)
+      if (bitmap_bit_p (visited, pred_bb->index) && change)
 	{
-	  RESET_BIT (visited, pred_bb->index);
+	  bitmap_clear_bit (visited, pred_bb->index);
 	  *(live->stack_top)++ = pred_bb->index;
 	}
     }
@@ -1008,7 +1008,7 @@ live_worklist (tree_live_info_p live)
   sbitmap visited = sbitmap_alloc (last_basic_block + 1);
   bitmap tmp = BITMAP_ALLOC (&liveness_bitmap_obstack);
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   /* Visit all the blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */

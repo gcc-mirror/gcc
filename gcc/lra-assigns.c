@@ -149,7 +149,7 @@ init_regno_assign_info (void)
 {
   int i, regno1, regno2, max_regno = max_reg_num ();
   lra_copy_t cp;
-  
+
   regno_assign_info = XNEWVEC (struct regno_assign_info, max_regno);
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
@@ -185,10 +185,10 @@ reload_pseudo_compare_func (const void *v1p, const void *v2p)
   enum reg_class cl1 = regno_allocno_class_array[r1];
   enum reg_class cl2 = regno_allocno_class_array[r2];
   int diff;
-  
+
   lra_assert (r1 >= lra_constraint_new_regno_start
 	      && r2 >= lra_constraint_new_regno_start);
-  
+
   /* Prefer to assign reload registers with smaller classes first to
      guarantee assignment to all reload registers.  */
   if ((diff = (ira_class_hard_regs_num[cl1]
@@ -217,7 +217,7 @@ pseudo_compare_func (const void *v1p, const void *v2p)
   /* Prefer to assign more frequently used registers first.  */
   if ((diff = lra_reg_info[r2].freq - lra_reg_info[r1].freq) != 0)
     return diff;
-  
+
   /* If regs are equally good, sort by their numbers, so that the
      results of qsort leave nothing to chance.	*/
   return r1 - r2;
@@ -378,7 +378,7 @@ init_live_reload_and_inheritance_pseudos (void)
 {
   int i, p, max_regno = max_reg_num ();
   lra_live_range_t r;
-  
+
   conflict_reload_and_inheritance_pseudos = sparseset_alloc (max_regno);
   live_reload_and_inheritance_pseudos = XNEWVEC (bitmap_head, lra_live_max_point);
   bitmap_obstack_initialize (&live_reload_and_inheritance_pseudos_bitmap_obstack);
@@ -470,7 +470,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
       for (p = r->start + 1; p <= r->finish; p++)
 	{
 	  lra_live_range_t r2;
-	  
+
 	  for (r2 = start_point_ranges[p];
 	       r2 != NULL;
 	       r2 = r2->start_next)
@@ -511,7 +511,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
 		 [lra_reg_info[conflict_regno].biggest_mode]);
 	/* Remember about multi-register pseudos.  For example, 2 hard
 	   register pseudos can start on the same hard register but can
-	   not start on HR and HR+1/HR-1.  */ 
+	   not start on HR and HR+1/HR-1.  */
 	for (hr = conflict_hr + 1;
 	     hr < FIRST_PSEUDO_REGISTER && hr < conflict_hr + nregs;
 	     hr++)
@@ -810,7 +810,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap)
   EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
     {
       struct lra_insn_reg *ir;
-      
+
       for (ir = lra_get_insn_regs (uid); ir != NULL; ir = ir->next)
 	if (ir->regno >= FIRST_PSEUDO_REGISTER)
 	  bitmap_set_bit (&insn_conflict_pseudos, ir->regno);
@@ -867,7 +867,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap)
 	      for (p = r->start; p <= r->finish; p++)
 		{
 		  lra_live_range_t r2;
-		  
+
 		  for (r2 = start_point_ranges[p];
 		       r2 != NULL;
 		       r2 = r2->start_next)
@@ -913,7 +913,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap)
 	  EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	    {
 	      rtx x;
-	      
+
 	      cost += lra_reg_info[spill_regno].freq;
 	      if (ira_reg_equiv[spill_regno].memory != NULL
 		  || ira_reg_equiv[spill_regno].constant != NULL)
@@ -1038,7 +1038,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	  for (p = r->start + 1; p <= r->finish; p++)
 	    {
 	      lra_live_range_t r2;
-	      
+
 	      for (r2 = start_point_ranges[p];
 		   r2 != NULL;
 		   r2 = r2->start_next)
@@ -1239,7 +1239,7 @@ assign_by_spills (void)
 	  {
 	    lra_insn_recog_data_t data;
 	    struct lra_insn_reg *r;
-	      
+
 	    data = lra_get_insn_recog_data (insn);
 	    for (r = data->regs; r != NULL; r = r->next)
 	      {

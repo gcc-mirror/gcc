@@ -798,6 +798,7 @@ struct gimple_opt_pass pass_diagnose_tm_blocks =
   {
     GIMPLE_PASS,
     "*diagnose_tm_blocks",		/* name */
+    OPTGROUP_NONE,                      /* optinfo_flags */
     gate_tm,				/* gate */
     diagnose_tm_blocks,			/* execute */
     NULL,				/* sub */
@@ -1738,6 +1739,7 @@ struct gimple_opt_pass pass_lower_tm =
  {
   GIMPLE_PASS,
   "tmlower",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tm,				/* gate */
   execute_lower_tm,			/* execute */
   NULL,					/* sub */
@@ -1985,6 +1987,7 @@ struct gimple_opt_pass pass_tm_init =
  {
   GIMPLE_PASS,
   "*tminit",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tm_init,				/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
@@ -2571,6 +2574,7 @@ struct gimple_opt_pass pass_tm_mark =
  {
   GIMPLE_PASS,
   "tmmark",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_tm_mark,			/* execute */
   NULL,					/* sub */
@@ -2848,6 +2852,7 @@ struct gimple_opt_pass pass_tm_edges =
  {
   GIMPLE_PASS,
   "tmedge",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_tm_edges,			/* execute */
   NULL,					/* sub */
@@ -3513,6 +3518,7 @@ struct gimple_opt_pass pass_tm_memopt =
  {
   GIMPLE_PASS,
   "tmmemopt",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tm_memopt,			/* gate */
   execute_tm_memopt,			/* execute */
   NULL,					/* sub */
@@ -5067,6 +5073,7 @@ struct simple_ipa_opt_pass pass_ipa_tm =
  {
   SIMPLE_IPA_PASS,
   "tmipa",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tm,				/* gate */
   ipa_tm_execute,			/* execute */
   NULL,					/* sub */

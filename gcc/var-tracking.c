@@ -6748,11 +6748,11 @@ vt_find_locations (void)
   visited = sbitmap_alloc (last_basic_block);
   in_worklist = sbitmap_alloc (last_basic_block);
   in_pending = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_worklist);
+  bitmap_clear (in_worklist);
 
   FOR_EACH_BB (bb)
     fibheap_insert (pending, bb_order[bb->index], bb);
-  sbitmap_ones (in_pending);
+  bitmap_ones (in_pending);
 
   while (success && !fibheap_empty (pending))
     {
@@ -6763,20 +6763,20 @@ vt_find_locations (void)
       in_pending = in_worklist;
       in_worklist = sbitmap_swap;
 
-      sbitmap_zero (visited);
+      bitmap_clear (visited);
 
       while (!fibheap_empty (worklist))
 	{
 	  bb = (basic_block) fibheap_extract_min (worklist);
-	  RESET_BIT (in_worklist, bb->index);
-	  gcc_assert (!TEST_BIT (visited, bb->index));
-	  if (!TEST_BIT (visited, bb->index))
+	  bitmap_clear_bit (in_worklist, bb->index);
+	  gcc_assert (!bitmap_bit_p (visited, bb->index));
+	  if (!bitmap_bit_p (visited, bb->index))
 	    {
 	      bool changed;
 	      edge_iterator ei;
 	      int oldinsz, oldoutsz;
 
-	      SET_BIT (visited, bb->index);
+	      bitmap_set_bit (visited, bb->index);
 
 	      if (VTI (bb)->in.vars)
 		{
@@ -6869,21 +6869,21 @@ vt_find_locations (void)
 		      if (e->dest == EXIT_BLOCK_PTR)
 			continue;
 
-		      if (TEST_BIT (visited, e->dest->index))
+		      if (bitmap_bit_p (visited, e->dest->index))
 			{
-			  if (!TEST_BIT (in_pending, e->dest->index))
+			  if (!bitmap_bit_p (in_pending, e->dest->index))
 			    {
 			      /* Send E->DEST to next round.  */
-			      SET_BIT (in_pending, e->dest->index);
+			      bitmap_set_bit (in_pending, e->dest->index);
 			      fibheap_insert (pending,
 					      bb_order[e->dest->index],
 					      e->dest);
 			    }
 			}
-		      else if (!TEST_BIT (in_worklist, e->dest->index))
+		      else if (!bitmap_bit_p (in_worklist, e->dest->index))
 			{
 			  /* Add E->DEST to current round.  */
-			  SET_BIT (in_worklist, e->dest->index);
+			  bitmap_set_bit (in_worklist, e->dest->index);
 			  fibheap_insert (worklist, bb_order[e->dest->index],
 					  e->dest);
 			}
@@ -9543,16 +9543,25 @@ fp_setter (rtx insn)
 	pat = XEXP (expr, 0);
     }
   if (GET_CODE (pat) == SET)
-    return SET_DEST (pat) == hard_frame_pointer_rtx;
+    {
+      if (SET_DEST (pat) != hard_frame_pointer_rtx)
+	return false;
+    }
   else if (GET_CODE (pat) == PARALLEL)
     {
       int i;
       for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
 	if (GET_CODE (XVECEXP (pat, 0, i)) == SET
 	    && SET_DEST (XVECEXP (pat, 0, i)) == hard_frame_pointer_rtx)
-	  return true;
+	  break;
+      if (i < 0)
+	return false;
     }
-  return false;
+  else
+    return false;
+  if (find_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx))
+    return false;
+  return true;
 }
 
 /* Initialize cfa_base_rtx, create a preserved VALUE for it and
@@ -9600,7 +9609,7 @@ vt_init_cfa_base (void)
 static bool
 vt_initialize (void)
 {
-  basic_block bb, prologue_bb = single_succ (ENTRY_BLOCK_PTR);
+  basic_block bb;
   HOST_WIDE_INT fp_cfa_offset = -1;
 
   alloc_aux_for_blocks (sizeof (struct variable_tracking_info_def));
@@ -9858,8 +9867,7 @@ vt_initialize (void)
 		      VTI (bb)->out.stack_adjust += post;
 		    }
 
-		  if (bb == prologue_bb
-		      && fp_cfa_offset != -1
+		  if (fp_cfa_offset != -1
 		      && hard_frame_pointer_adjustment == -1
 		      && RTX_FRAME_RELATED_P (insn)
 		      && fp_setter (insn))
@@ -10099,6 +10107,7 @@ struct rtl_opt_pass pass_variable_tracking =
  {
   RTL_PASS,
   "vartrack",                           /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_var_tracking,             /* gate */
   variable_tracking_main,               /* execute */
   NULL,                                 /* sub */

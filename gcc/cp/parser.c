@@ -20324,7 +20324,7 @@ cp_next_tokens_can_be_gnu_attribute_p (cp_parser *parser)
 }
 
 /* Return TRUE iff the next tokens in the stream are possibly the
-   beginning of a standard C++-11 attribute.  */
+   beginning of a standard C++-11 attribute specifier.  */
 
 static bool
 cp_next_tokens_can_be_std_attribute_p (cp_parser *parser)
@@ -20333,7 +20333,7 @@ cp_next_tokens_can_be_std_attribute_p (cp_parser *parser)
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the
-   beginning of a standard C++-11 attribute.  */
+   beginning of a standard C++-11 attribute specifier.  */
 
 static bool
 cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n)
@@ -20341,9 +20341,10 @@ cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n)
   cp_token *token = cp_lexer_peek_nth_token (parser->lexer, n);
 
   return (cxx_dialect >= cxx0x
-	  && token->type == CPP_OPEN_SQUARE
-	  && (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
-	  && token->type == CPP_OPEN_SQUARE);
+	  && ((token->type == CPP_KEYWORD && token->keyword == RID_ALIGNAS)
+	      || (token->type == CPP_OPEN_SQUARE
+		  && (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
+		  && token->type == CPP_OPEN_SQUARE)));
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the

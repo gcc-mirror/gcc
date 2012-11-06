@@ -96,6 +96,7 @@ struct rtl_opt_pass pass_stack_ptr_mod =
  {
   RTL_PASS,
   "*stack_ptr_mod",                     /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_stack_ptr_mod,         /* execute */
   NULL,                                 /* sub */

@@ -211,7 +211,10 @@ extern bool bitmap_intersect_p (const_bitmap, const_bitmap);
 extern bool bitmap_intersect_compl_p (const_bitmap, const_bitmap);
 
 /* True if MAP is an empty bitmap.  */
-#define bitmap_empty_p(MAP) (!(MAP)->first)
+inline bool bitmap_empty_p (const_bitmap map)
+{
+  return !map->first;
+}
 
 /* True if the bitmap has only a single bit set.  */
 extern bool bitmap_single_bit_set_p (const_bitmap);
@@ -288,8 +291,11 @@ extern bitmap bitmap_gc_alloc_stat (ALONE_MEM_STAT_DECL);
 extern void bitmap_obstack_free (bitmap);
 
 /* A few compatibility/functions macros for compatibility with sbitmaps */
-#define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
-#define bitmap_zero(a) bitmap_clear (a)
+inline void dump_bitmap (FILE *file, const_bitmap map)
+{
+  bitmap_print (file, map, "", "\n");
+}
+
 extern unsigned bitmap_first_set_bit (const_bitmap);
 extern unsigned bitmap_last_set_bit (const_bitmap);
 
@@ -676,10 +682,13 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
    should be treated as a read-only variable as it contains loop
    state.  */
 
+#ifndef EXECUTE_IF_SET_IN_BITMAP
+/* See sbitmap.h for the other definition of EXECUTE_IF_SET_IN_BITMAP.  */
 #define EXECUTE_IF_SET_IN_BITMAP(BITMAP, MIN, BITNUM, ITER)		\
   for (bmp_iter_set_init (&(ITER), (BITMAP), (MIN), &(BITNUM));		\
        bmp_iter_set (&(ITER), &(BITNUM));				\
        bmp_iter_next (&(ITER), &(BITNUM)))
+#endif
 
 /* Loop over all the bits set in BITMAP1 & BITMAP2, starting with MIN
    and setting BITNUM to the bit number.  ITER is a bitmap iterator.

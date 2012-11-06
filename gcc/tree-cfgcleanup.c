@@ -977,6 +977,7 @@ struct gimple_opt_pass pass_merge_phi =
  {
   GIMPLE_PASS,
   "mergephi",			/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   gate_merge_phi,		/* gate */
   merge_phi_nodes,		/* execute */
   NULL,				/* sub */

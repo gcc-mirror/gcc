@@ -1371,7 +1371,7 @@ lookup_filename (const char *file_name)
 
 static void
 vmsdbgout_write_source_line (unsigned line, const char *filename,
-                             int discriminator, bool is_stmt)
+                             int /* discriminator */, bool /* is_stmt */)
 {
   dst_line_info_ref line_info;
 

@@ -600,8 +600,8 @@ compute_local_properties (sbitmap *kill, sbitmap *comp,
   unsigned int i;
 
   /* Initialize the bitmaps that were passed in.  */
-  sbitmap_vector_zero (kill, last_basic_block);
-  sbitmap_vector_zero (comp, last_basic_block);
+  bitmap_vector_clear (kill, last_basic_block);
+  bitmap_vector_clear (comp, last_basic_block);
 
   for (i = 0; i < table->size; i++)
     {
@@ -617,20 +617,20 @@ compute_local_properties (sbitmap *kill, sbitmap *comp,
 	     is killed in the block where the definition is.  */
 	  for (def = DF_REG_DEF_CHAIN (REGNO (expr->dest));
 	       def; def = DF_REF_NEXT_REG (def))
-	    SET_BIT (kill[DF_REF_BB (def)->index], indx);
+	    bitmap_set_bit (kill[DF_REF_BB (def)->index], indx);
 
 	  /* If the source is a pseudo-reg, for each definition of the source,
 	     the expression is killed in the block where the definition is.  */
 	  if (REG_P (expr->src))
 	    for (def = DF_REG_DEF_CHAIN (REGNO (expr->src));
 		 def; def = DF_REF_NEXT_REG (def))
-	      SET_BIT (kill[DF_REF_BB (def)->index], indx);
+	      bitmap_set_bit (kill[DF_REF_BB (def)->index], indx);
 
 	  /* The occurrences recorded in avail_occr are exactly those that
 	     are locally available in the block where they are.  */
 	  for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
 	    {
-	      SET_BIT (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
+	      bitmap_set_bit (comp[BLOCK_FOR_INSN (occr->insn)->index], indx);
 	    }
 	}
     }
@@ -658,7 +658,7 @@ compute_cprop_data (void)
     {
       int index = implicit_set_indexes[bb->index];
       if (index != -1)
-	SET_BIT (cprop_avin[bb->index], index);
+	bitmap_set_bit (cprop_avin[bb->index], index);
     }
 }
 
@@ -830,7 +830,7 @@ find_avail_set (int regno, rtx insn)
 	 which contains INSN.  */
       while (set)
 	{
-	  if (TEST_BIT (cprop_avin[BLOCK_FOR_INSN (insn)->index],
+	  if (bitmap_bit_p (cprop_avin[BLOCK_FOR_INSN (insn)->index],
 			set->bitmap_index))
 	    break;
 	  set = next_set (regno, set);
@@ -1447,7 +1447,7 @@ find_bypass_set (int regno, int bb)
 
       while (set)
 	{
-	  if (TEST_BIT (cprop_avout[bb], set->bitmap_index))
+	  if (bitmap_bit_p (cprop_avout[bb], set->bitmap_index))
 	    break;
 	  set = next_set (regno, set);
 	}
@@ -1923,6 +1923,7 @@ struct rtl_opt_pass pass_rtl_cprop =
  {
   RTL_PASS,
   "cprop",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_rtl_cprop,                       /* gate */
   execute_rtl_cprop,  			/* execute */
   NULL,                                 /* sub */

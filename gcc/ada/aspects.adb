@@ -275,7 +275,7 @@ package body Aspects is
     Aspect_Inline_Always                => Aspect_Inline,
     Aspect_Input                        => Aspect_Input,
     Aspect_Interrupt_Handler            => Aspect_Interrupt_Handler,
-    Aspect_Interrupt_Priority           => Aspect_Interrupt_Priority,
+    Aspect_Interrupt_Priority           => Aspect_Priority,
     Aspect_Invariant                    => Aspect_Invariant,
     Aspect_Iterator_Element             => Aspect_Iterator_Element,
     Aspect_Link_Name                    => Aspect_Link_Name,

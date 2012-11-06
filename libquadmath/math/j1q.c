@@ -6,9 +6,9 @@
  *
  * SYNOPSIS:
  *
- * long double x, y, j1l();
+ * __float128 x, y, j1q();
  *
- * y = j1l( x );
+ * y = j1q( x );
  *
  *
  *
@@ -52,9 +52,9 @@
  *
  * SYNOPSIS:
  *
- * double x, y, y1l();
+ * __float128, y, y1q();
  *
- * y = y1l( x );
+ * y = y1q( x );
  *
  *
  *

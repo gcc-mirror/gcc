@@ -1485,7 +1485,7 @@ decompose_multiword_subregs (bool decompose_copies)
       propagate_pseudo_copies ();
 
       sub_blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (sub_blocks);
+      bitmap_clear (sub_blocks);
 
       EXECUTE_IF_SET_IN_BITMAP (decomposable_context, 0, regno, iter)
 	decompose_register (regno);
@@ -1544,7 +1544,7 @@ decompose_multiword_subregs (bool decompose_copies)
 			  extract_insn (insn);
 
 			  if (cfi)
-			    SET_BIT (sub_blocks, bb->index);
+			    bitmap_set_bit (sub_blocks, bb->index);
 			}
 		    }
 		  else
@@ -1589,7 +1589,7 @@ decompose_multiword_subregs (bool decompose_copies)
 	 of a basic block, split those blocks now.  Note that we only handle
 	 the case where splitting a load has caused multiple possibly trapping
 	 loads to appear.  */
-      EXECUTE_IF_SET_IN_SBITMAP (sub_blocks, 0, i, sbi)
+      EXECUTE_IF_SET_IN_BITMAP (sub_blocks, 0, i, sbi)
 	{
 	  rtx insn, end;
 	  edge fallthru;
@@ -1665,6 +1665,7 @@ struct rtl_opt_pass pass_lower_subreg =
  {
   RTL_PASS,
   "subreg1",	                        /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_lower_subreg,             /* gate */
   rest_of_handle_lower_subreg,          /* execute */
   NULL,                                 /* sub */
@@ -1685,6 +1686,7 @@ struct rtl_opt_pass pass_lower_subreg2 =
  {
   RTL_PASS,
   "subreg2",	                        /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_lower_subreg,             /* gate */
   rest_of_handle_lower_subreg2,          /* execute */
   NULL,                                 /* sub */

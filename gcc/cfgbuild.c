@@ -236,12 +236,12 @@ make_edges (basic_block min, basic_block max, int update_p)
       /* If we have an edge cache, cache edges going out of BB.  */
       if (edge_cache)
 	{
-	  sbitmap_zero (edge_cache);
+	  bitmap_clear (edge_cache);
 	  if (update_p)
 	    {
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (e->dest != EXIT_BLOCK_PTR)
-		  SET_BIT (edge_cache, e->dest->index);
+		  bitmap_set_bit (edge_cache, e->dest->index);
 	    }
 	}
 
@@ -385,7 +385,7 @@ make_edges (basic_block min, basic_block max, int update_p)
     }
 
   if (edge_cache)
-    sbitmap_vector_free (edge_cache);
+    sbitmap_free (edge_cache);
 }
 
 static void
@@ -605,7 +605,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 
   FOR_EACH_BB (bb)
     SET_STATE (bb,
-	       TEST_BIT (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
+	       bitmap_bit_p (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
 
   FOR_EACH_BB (bb)
     if (STATE (bb) == BLOCK_TO_SPLIT)

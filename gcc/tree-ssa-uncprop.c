@@ -585,6 +585,7 @@ struct gimple_opt_pass pass_uncprop =
  {
   GIMPLE_PASS,
   "uncprop",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_uncprop,				/* gate */
   tree_ssa_uncprop,			/* execute */
   NULL,					/* sub */

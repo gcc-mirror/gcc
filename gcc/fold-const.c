@@ -5959,8 +5959,10 @@ fold_binary_op_with_conditional_arg (location_t loc,
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
+  enum tree_code cond_code = COND_EXPR;
 
-  if (TREE_CODE (cond) == COND_EXPR)
+  if (TREE_CODE (cond) == COND_EXPR
+      || TREE_CODE (cond) == VEC_COND_EXPR)
     {
       test = TREE_OPERAND (cond, 0);
       true_value = TREE_OPERAND (cond, 1);
@@ -5980,6 +5982,9 @@ fold_binary_op_with_conditional_arg (location_t loc,
       true_value = constant_boolean_node (true, testtype);
       false_value = constant_boolean_node (false, testtype);
     }
+
+  if (TREE_CODE (TREE_TYPE (test)) == VECTOR_TYPE)
+    cond_code = VEC_COND_EXPR;
 
   /* This transformation is only worthwhile if we don't have to wrap ARG
      in a SAVE_EXPR and the operation can be simplified on at least one
@@ -6011,7 +6016,7 @@ fold_binary_op_with_conditional_arg (location_t loc,
   if (!TREE_CONSTANT (arg) && !TREE_CONSTANT (lhs) && !TREE_CONSTANT (rhs))
     return NULL_TREE;
 
-  return fold_build3_loc (loc, COND_EXPR, type, test, lhs, rhs);
+  return fold_build3_loc (loc, cond_code, type, test, lhs, rhs);
 }
 
 
@@ -7744,7 +7749,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    return build2_loc (loc, TREE_CODE (op0), type,
 			       TREE_OPERAND (op0, 0),
 			       TREE_OPERAND (op0, 1));
-	  else if (!INTEGRAL_TYPE_P (type) && TREE_CODE (type) != VECTOR_TYPE)
+	  else if (!INTEGRAL_TYPE_P (type) && !VOID_TYPE_P (type)
+		   && TREE_CODE (type) != VECTOR_TYPE)
 	    return build3_loc (loc, COND_EXPR, type, op0,
 			       constant_boolean_node (true, type),
 			       constant_boolean_node (false, type));
@@ -9900,7 +9906,9 @@ fold_binary_loc (location_t loc,
 			     tem);
 	}
 
-      if (TREE_CODE (arg0) == COND_EXPR || COMPARISON_CLASS_P (arg0))
+      if (TREE_CODE (arg0) == COND_EXPR
+	  || TREE_CODE (arg0) == VEC_COND_EXPR
+	  || COMPARISON_CLASS_P (arg0))
 	{
 	  tem = fold_binary_op_with_conditional_arg (loc, code, type, op0, op1,
 						     arg0, arg1,
@@ -9909,7 +9917,9 @@ fold_binary_loc (location_t loc,
 	    return tem;
 	}
 
-      if (TREE_CODE (arg1) == COND_EXPR || COMPARISON_CLASS_P (arg1))
+      if (TREE_CODE (arg1) == COND_EXPR
+	  || TREE_CODE (arg1) == VEC_COND_EXPR
+	  || COMPARISON_CLASS_P (arg1))
 	{
 	  tem = fold_binary_op_with_conditional_arg (loc, code, type, op0, op1,
 						     arg1, arg0,

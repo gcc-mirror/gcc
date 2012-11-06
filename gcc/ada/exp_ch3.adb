@@ -1537,7 +1537,12 @@ package body Exp_Ch3 is
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
 
-         Append_To (Args, Make_Identifier (Loc, Name_uChain));
+         --  Add _Chain (not done in the restricted profile because not used,
+         --  see comment for Create_Restricted_Task in s-tarest.ads).
+
+         if not Restricted_Profile then
+            Append_To (Args, Make_Identifier (Loc, Name_uChain));
+         end if;
 
          --  Ada 2005 (AI-287): In case of default initialized components
          --  with tasks, we generate a null string actual parameter.
@@ -1697,6 +1702,18 @@ package body Exp_Ch3 is
                 (Obj_Ref => New_Copy_Tree (First_Arg),
                  Typ     => Typ));
          end if;
+      end if;
+
+      --  When the object is either protected or a task, create static strings
+      --  which denote the names of entries and families. Associate the strings
+      --  with the concurrent object's Protection_Entries or ATCB. This is a
+      --  VMS Debug feature.
+
+      if OpenVMS_On_Target
+        and then Is_Concurrent_Type (Typ)
+        and then Entry_Names_OK
+      then
+         Build_Entry_Names (Id_Ref, Typ, Res);
       end if;
 
       return Res;
@@ -1987,7 +2004,14 @@ package body Exp_Ch3 is
                Append_To (Args, Make_Identifier (Loc, Name_uMaster));
             end if;
 
-            Append_To (Args, Make_Identifier (Loc, Name_uChain));
+            if not Restricted_Profile then
+
+               --  No _Chain for the restricted profile because not used,
+               --  see comment of Create_Restricted_Task in s-tarest.ads.
+
+               Append_To (Args, Make_Identifier (Loc, Name_uChain));
+            end if;
+
             Append_To (Args, Make_Identifier (Loc, Name_uTask_Name));
             First_Discr_Param := Next (Next (Next (First_Discr_Param)));
          end if;
@@ -2653,7 +2677,6 @@ package body Exp_Ch3 is
          Decl       : Node_Id;
          Has_POC    : Boolean;
          Id         : Entity_Id;
-         Names      : Node_Id;
          Stmts      : List_Id;
          Typ        : Entity_Id;
 
@@ -2997,17 +3020,6 @@ package body Exp_Ch3 is
 
             Append_To (Stmts, Make_Task_Create_Call (Rec_Type));
 
-            --  Generate the statements which map a string entry name to a
-            --  task entry index. Note that the task may not have entries.
-
-            if Entry_Names_OK then
-               Names := Build_Entry_Names (Rec_Type);
-
-               if Present (Names) then
-                  Append_To (Stmts, Names);
-               end if;
-            end if;
-
             declare
                Task_Type : constant Entity_Id :=
                              Corresponding_Concurrent_Type (Rec_Type);
@@ -3061,18 +3073,6 @@ package body Exp_Ch3 is
          if Is_Protected_Record_Type (Rec_Type) then
             Append_List_To (Stmts,
               Make_Initialize_Protection (Rec_Type));
-
-            --  Generate the statements which map a string entry name to a
-            --  protected entry index. Note that the protected type may not
-            --  have entries.
-
-            if Entry_Names_OK then
-               Names := Build_Entry_Names (Rec_Type);
-
-               if Present (Names) then
-                  Append_To (Stmts, Names);
-               end if;
-            end if;
          end if;
 
          --  Second pass: components with per-object constraints
@@ -3101,8 +3101,7 @@ package body Exp_Ch3 is
 
                      Clean_Task_Names (Typ, Proc_Id);
 
-                     --  Preserve the initialization state in the current
-                     --  counter.
+                     --  Preserve initialization state in the current counter
 
                      if Needs_Finalization (Typ) then
                         if No (Counter_Id) then
@@ -7791,24 +7790,30 @@ package body Exp_Ch3 is
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uMaster),
-             Parameter_Type => New_Reference_To (RTE (RE_Master_Id), Loc)));
+             Parameter_Type      =>
+               New_Reference_To (RTE (RE_Master_Id), Loc)));
 
-         Append_To (Formals,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Name_uChain),
-             In_Present => True,
-             Out_Present => True,
-             Parameter_Type =>
-               New_Reference_To (RTE (RE_Activation_Chain), Loc)));
+         if not Restricted_Profile then
+
+            --  No _Chain for the restricted profile because not used, see
+            --  comment for Create_Restricted_Task in s-tarest.ads.
+
+            Append_To (Formals,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc, Name_uChain),
+                In_Present          => True,
+                Out_Present         => True,
+                Parameter_Type      =>
+                  New_Reference_To (RTE (RE_Activation_Chain), Loc)));
+         end if;
 
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uTask_Name),
-             In_Present => True,
-             Parameter_Type =>
-               New_Reference_To (Standard_String, Loc)));
+             In_Present          => True,
+             Parameter_Type      => New_Reference_To (Standard_String, Loc)));
       end if;
 
       return Formals;
@@ -7907,7 +7912,7 @@ package body Exp_Ch3 is
                           (RTE (RE_Set_Dynamic_Offset_To_Top), Loc),
                 Parameter_Associations => New_List (
                   Make_Attribute_Reference (Loc,
-                    Prefix => New_Copy_Tree (Target),
+                    Prefix         => New_Copy_Tree (Target),
                     Attribute_Name => Name_Address),
 
                   Unchecked_Convert_To (RTE (RE_Tag),
@@ -7920,7 +7925,7 @@ package body Exp_Ch3 is
                      Make_Attribute_Reference (Loc,
                        Prefix         =>
                          Make_Selected_Component (Loc,
-                           Prefix => New_Copy_Tree (Target),
+                           Prefix        => New_Copy_Tree (Target),
                            Selector_Name =>
                              New_Reference_To (Tag_Comp, Loc)),
                        Attribute_Name => Name_Position)),
@@ -7946,18 +7951,17 @@ package body Exp_Ch3 is
                                        (Offset_To_Top_Comp, Loc)),
                 Expression =>
                   Make_Attribute_Reference (Loc,
-                    Prefix         =>
+                    Prefix       =>
                       Make_Selected_Component (Loc,
-                        Prefix => New_Copy_Tree (Target),
-                        Selector_Name =>
-                          New_Reference_To (Tag_Comp, Loc)),
+                        Prefix        => New_Copy_Tree (Target),
+                        Selector_Name => New_Reference_To (Tag_Comp, Loc)),
                   Attribute_Name => Name_Position)));
 
          --  Normal case: No discriminants in the parent type
 
          else
-            --  Don't need to set any value if this interface shares
-            --  the primary dispatch table.
+            --  Don't need to set any value if this interface shares the
+            --  primary dispatch table.
 
             if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
                Append_To (Stmts_List,

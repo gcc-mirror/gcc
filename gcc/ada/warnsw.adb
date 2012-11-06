@@ -87,6 +87,7 @@ package body Warnsw is
             Warn_On_Record_Holes                := True;
             Warn_On_Redundant_Constructs        := True;
             Warn_On_Reverse_Bit_Order           := True;
+            Warn_On_Standard_Redefinition       := True;
             Warn_On_Suspicious_Contract         := True;
             Warn_On_Unchecked_Conversion        := True;
             Warn_On_Unordered_Enumeration_Type  := True;
@@ -108,6 +109,12 @@ package body Warnsw is
 
          when 'I' =>
             Warn_On_Overlap                     := False;
+
+         when 'k' =>
+            Warn_On_Standard_Redefinition       := True;
+
+         when 'K' =>
+            Warn_On_Standard_Redefinition       := False;
 
          when 'l' =>
             List_Inherited_Aspects              := True;
@@ -307,6 +314,7 @@ package body Warnsw is
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Reverse_Bit_Order           := False;
+            Warn_On_Standard_Redefinition       := False;
             Warn_On_Suspicious_Contract         := False;
             Warn_On_Suspicious_Modulus_Value    := False;
             Warn_On_Unchecked_Conversion        := False;

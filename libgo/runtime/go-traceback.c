@@ -7,7 +7,6 @@
 #include "config.h"
 
 #include "runtime.h"
-#include "go-string.h"
 
 /* Print a stack trace for the current goroutine.  */
 
@@ -28,12 +27,12 @@ runtime_printtrace (uintptr *pcbuf, int32 c)
 
   for (i = 0; i < c; ++i)
     {
-      struct __go_string fn;
-      struct __go_string file;
+      String fn;
+      String file;
       int line;
 
       if (__go_file_line (pcbuf[i], &fn, &file, &line)
-	  && runtime_showframe (fn.__data))
+	  && runtime_showframe (fn.str))
 	{
 	  runtime_printf ("%S\n", fn);
 	  runtime_printf ("\t%S:%d\n", file, line);

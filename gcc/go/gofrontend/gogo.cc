@@ -44,6 +44,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
     pkgpath_set_(false),
     pkgpath_from_option_(false),
     prefix_from_option_(false),
+    relative_import_path_(),
     verify_types_(),
     interface_types_(),
     specific_type_functions_(),
@@ -477,7 +478,8 @@ Gogo::import_package(const std::string& filename,
       return;
     }
 
-  Import::Stream* stream = Import::open_package(filename, location);
+  Import::Stream* stream = Import::open_package(filename, location,
+						this->relative_import_path_);
   if (stream == NULL)
     {
       error_at(location, "import file %qs not found", filename.c_str());

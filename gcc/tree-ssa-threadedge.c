@@ -610,6 +610,85 @@ cond_arg_set_in_bb (edge e, basic_block bb)
   return false;
 }
 
+/* Copy debug stmts from DEST's chain of single predecessors up to
+   SRC, so that we don't lose the bindings as PHI nodes are introduced
+   when DEST gains new predecessors.  */
+static void
+propagate_threaded_block_debug_into (basic_block dest, basic_block src)
+{
+  if (!MAY_HAVE_DEBUG_STMTS)
+    return;
+
+  if (!single_pred_p (dest))
+    return;
+
+  gcc_checking_assert (dest != src);
+
+  gimple_stmt_iterator gsi = gsi_after_labels (dest);
+  pointer_set_t *vars = pointer_set_create ();
+
+  for (gimple_stmt_iterator si = gsi;
+       !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple stmt = gsi_stmt (si);
+      if (!is_gimple_debug (stmt))
+	break;
+
+      tree var;
+
+      if (gimple_debug_bind_p (stmt))
+	var = gimple_debug_bind_get_var (stmt);
+      else if (gimple_debug_source_bind_p (stmt))
+	var = gimple_debug_source_bind_get_var (stmt);
+      else
+	gcc_unreachable ();
+
+      pointer_set_insert (vars, var);
+    }
+
+  basic_block bb = dest;
+
+  do
+    {
+      bb = single_pred (bb);
+      for (gimple_stmt_iterator si = gsi_last_bb (bb);
+	   !gsi_end_p (si); gsi_prev (&si))
+	{
+	  gimple stmt = gsi_stmt (si);
+	  if (!is_gimple_debug (stmt))
+	    continue;
+
+	  tree var;
+
+	  if (gimple_debug_bind_p (stmt))
+	    var = gimple_debug_bind_get_var (stmt);
+	  else if (gimple_debug_source_bind_p (stmt))
+	    var = gimple_debug_source_bind_get_var (stmt);
+	  else
+	    gcc_unreachable ();
+
+	  /* Discard debug bind overlaps.  ??? Unlike stmts from src,
+	     copied into a new block that will precede BB, debug bind
+	     stmts in bypassed BBs may actually be discarded if
+	     they're overwritten by subsequent debug bind stmts, which
+	     might be a problem once we introduce stmt frontier notes
+	     or somesuch.  Adding `&& bb == src' to the condition
+	     below will preserve all potentially relevant debug
+	     notes.  */
+	  if (pointer_set_insert (vars, var))
+	    continue;
+
+	  stmt = gimple_copy (stmt);
+	  /* ??? Should we drop the location of the copy to denote
+	     they're artificial bindings?  */
+	  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+	}
+    }
+  while (bb != src && single_pred_p (bb));
+
+  pointer_set_destroy (vars);
+}
+
 /* TAKEN_EDGE represents the an edge taken as a result of jump threading.
    See if we can thread around TAKEN_EDGE->dest as well.  If so, return
    the edge out of TAKEN_EDGE->dest that we can statically compute will be
@@ -809,6 +888,9 @@ thread_across_edge (gimple dummy_cond,
 	    }
 
 	  remove_temporary_equivalences (stack);
+	  if (!taken_edge)
+	    return;
+	  propagate_threaded_block_debug_into (taken_edge->dest, e->dest);
 	  register_jump_thread (e, taken_edge, NULL);
 	  return;
 	}
@@ -874,7 +956,11 @@ thread_across_edge (gimple dummy_cond,
 	       same.  */
 	    tmp = find_edge (taken_edge->src, e3->dest);
 	    if (!tmp || phi_args_equal_on_edges (tmp, e3))
-	      register_jump_thread (e, taken_edge, e3);
+	      {
+		propagate_threaded_block_debug_into (e3->dest,
+						     taken_edge->dest);
+		register_jump_thread (e, taken_edge, e3);
+	      }
 	  }
 
       }

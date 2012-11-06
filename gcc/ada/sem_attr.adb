@@ -646,8 +646,8 @@ package body Sem_Attr is
                Kill_Current_Values;
             end if;
 
-            --  Treat as call for elaboration purposes and we are all
-            --  done. Suppress this treatment under debug flag.
+            --  Treat as call for elaboration purposes and we are all done.
+            --  Suppress this treatment under debug flag.
 
             if not Debug_Flag_Dot_UU then
                Check_Elab_Call (N);

@@ -11,7 +11,7 @@ import (
 )
 
 //sysnb	raw_prctl(option int, arg2 int, arg3 int, arg4 int, arg5 int) (ret int, err Errno)
-//prctl(option int, arg2 _C_long, arg3 _C_long, arg4 _C_long, arg5 _C_long) int
+//prctl(option _C_int, arg2 _C_long, arg3 _C_long, arg4 _C_long, arg5 _C_long) _C_int
 
 type SysProcAttr struct {
 	Chroot     string      // Chroot.

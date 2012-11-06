@@ -2289,6 +2289,7 @@ struct rtl_opt_pass pass_postreload_cse =
  {
   RTL_PASS,
   "postreload",                         /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_postreload,               /* gate */
   rest_of_handle_postreload,            /* execute */
   NULL,                                 /* sub */

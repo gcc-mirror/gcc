@@ -390,7 +390,7 @@ lra_update_operator_dups (lra_insn_recog_data_t id)
   for (i = 0; i < static_id->n_dups; i++)
     {
       int ndup = static_id->dup_num[i];
-      
+
       if (static_id->operand[ndup].is_operator)
 	*id->dup_loc[i] = *id->operand_loc[ndup];
     }

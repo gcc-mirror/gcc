@@ -1048,6 +1048,7 @@ struct gimple_opt_pass pass_tail_recursion =
  {
   GIMPLE_PASS,
   "tailr",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tail_calls,			/* gate */
   execute_tail_recursion,		/* execute */
   NULL,					/* sub */
@@ -1067,6 +1068,7 @@ struct gimple_opt_pass pass_tail_calls =
  {
   GIMPLE_PASS,
   "tailc",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_tail_calls,			/* gate */
   execute_tail_calls,			/* execute */
   NULL,					/* sub */

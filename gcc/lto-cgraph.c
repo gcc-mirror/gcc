@@ -679,7 +679,7 @@ add_references (lto_symtab_encoder_t encoder,
   int i;
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-    if (symtab_function_p (ref->referred))
+    if (is_a <cgraph_node> (ref->referred))
       add_node_to (encoder, ipa_ref_node (ref), false);
     else
       lto_symtab_encoder_encode (encoder, ref->referred);
@@ -730,9 +730,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
       symtab_node node = lto_symtab_encoder_deref (encoder, i);
-      if (symtab_variable_p (node))
+      if (varpool_node *vnode = dyn_cast <varpool_node> (node))
 	{
-	  struct varpool_node *vnode = varpool (node);
 	  if (DECL_INITIAL (vnode->symbol.decl)
 	      && !lto_symtab_encoder_encode_initializer_p (encoder,
 							   vnode)
@@ -796,8 +795,8 @@ output_symtab (void)
   for (i = 0; i < n_nodes; i++)
     {
       symtab_node node = lto_symtab_encoder_deref (encoder, i);
-      if (symtab_function_p (node))
-        lto_output_node (ob, cgraph (node), encoder);
+      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
+        lto_output_node (ob, cnode, encoder);
       else
         lto_output_varpool_node (ob, varpool (node), encoder);
 	
@@ -983,7 +982,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   order = streamer_read_hwi (ib) + order_base;
   decl_index = streamer_read_uhwi (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
-  node = varpool_node (var_decl);
+  node = varpool_node_for_decl (var_decl);
   node->symbol.order = order;
   if (order >= symtab_order)
     symtab_order = order + 1;
@@ -1144,14 +1143,14 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   /* AUX pointers should be all non-zero for function nodes read from the stream.  */
 #ifdef ENABLE_CHECKING
   FOR_EACH_VEC_ELT (symtab_node, nodes, i, node)
-    gcc_assert (node->symbol.aux || !symtab_function_p (node));
+    gcc_assert (node->symbol.aux || !is_a <cgraph_node> (node));
 #endif
   FOR_EACH_VEC_ELT (symtab_node, nodes, i, node)
     {
       int ref;
-      if (symtab_function_p (node))
+      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
 	{
-	  ref = (int) (intptr_t) cgraph (node)->global.inlined_to;
+	  ref = (int) (intptr_t) cnode->global.inlined_to;
 
 	  /* We share declaration of builtins, so we may read same node twice.  */
 	  if (!node->symbol.aux)
@@ -1160,9 +1159,9 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 
 	  /* Fixup inlined_to from reference to pointer.  */
 	  if (ref != LCC_NOT_FOUND)
-	    cgraph (node)->global.inlined_to = cgraph (VEC_index (symtab_node, nodes, ref));
+	    cnode->global.inlined_to = cgraph (VEC_index (symtab_node, nodes, ref));
 	  else
-	    cgraph (node)->global.inlined_to = NULL;
+	    cnode->global.inlined_to = NULL;
 	}
 
       ref = (int) (intptr_t) node->symbol.same_comdat_group;
@@ -1174,7 +1173,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 	node->symbol.same_comdat_group = NULL;
     }
   FOR_EACH_VEC_ELT (symtab_node, nodes, i, node)
-    node->symbol.aux = symtab_function_p (node) ? (void *)1 : NULL;
+    node->symbol.aux = is_a <cgraph_node> (node) ? (void *)1 : NULL;
   return nodes;
 }
 
@@ -1449,7 +1448,6 @@ output_node_opt_summary (struct output_block *ob,
 static void
 output_cgraph_opt_summary (void)
 {
-  symtab_node node;
   int i, n_nodes;
   lto_symtab_encoder_t encoder;
   struct output_block *ob = create_output_block (LTO_section_cgraph_opt_sum);
@@ -1459,18 +1457,21 @@ output_cgraph_opt_summary (void)
   encoder = ob->decl_state->symtab_node_encoder;
   n_nodes = lto_symtab_encoder_size (encoder);
   for (i = 0; i < n_nodes; i++)
-    if (symtab_function_p (node = lto_symtab_encoder_deref (encoder, i))
-	&& output_cgraph_opt_summary_p (cgraph (node)))
-      count++;
+    {
+      symtab_node node = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+      if (cnode && output_cgraph_opt_summary_p (cnode))
+	count++;
+    }
   streamer_write_uhwi (ob, count);
   for (i = 0; i < n_nodes; i++)
     {
-      node = lto_symtab_encoder_deref (encoder, i);
-      if (symtab_function_p (node)
-	  && output_cgraph_opt_summary_p (cgraph (node)))
+      symtab_node node = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+      if (cnode && output_cgraph_opt_summary_p (cnode))
 	{
 	  streamer_write_uhwi (ob, i);
-	  output_node_opt_summary (ob, cgraph (node), encoder);
+	  output_node_opt_summary (ob, cnode, encoder);
 	}
     }
   produce_asm (ob, NULL);

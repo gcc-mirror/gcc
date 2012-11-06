@@ -828,6 +828,7 @@ struct gimple_opt_pass pass_copy_prop =
  {
   GIMPLE_PASS,
   "copyprop",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_copy_prop,			/* gate */
   execute_copy_prop,			/* execute */
   NULL,					/* sub */

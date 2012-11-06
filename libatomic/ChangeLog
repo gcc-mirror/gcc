@@ -1,3 +1,10 @@
+2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* acinclude.m4 (LIBAT_CHECK_IFUNC): Clarify message.
+	* configure: Regenerate.
+
+	* configure: Regenerate.
+
 2012-10-23  Sofiane Naci <sofiane.naci@arm.com>
 
 	Mark libatomic unsupported in AArch64.

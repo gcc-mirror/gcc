@@ -1,4 +1,4 @@
-/* Round long double to integer away from zero.
+/* Round __float128 to integer away from zero.
    Copyright (C) 1997, 1999 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and

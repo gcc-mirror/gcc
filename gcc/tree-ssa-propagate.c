@@ -177,7 +177,7 @@ cfg_blocks_add (basic_block bb)
   bool head = false;
 
   gcc_assert (bb != ENTRY_BLOCK_PTR && bb != EXIT_BLOCK_PTR);
-  gcc_assert (!TEST_BIT (bb_in_list, bb->index));
+  gcc_assert (!bitmap_bit_p (bb_in_list, bb->index));
 
   if (cfg_blocks_empty_p ())
     {
@@ -218,7 +218,7 @@ cfg_blocks_add (basic_block bb)
   VEC_replace (basic_block, cfg_blocks,
 	       head ? cfg_blocks_head : cfg_blocks_tail,
 	       bb);
-  SET_BIT (bb_in_list, bb->index);
+  bitmap_set_bit (bb_in_list, bb->index);
 }
 
 
@@ -237,7 +237,7 @@ cfg_blocks_get (void)
   cfg_blocks_head = ((cfg_blocks_head + 1)
 		     % VEC_length (basic_block, cfg_blocks));
   --cfg_blocks_num;
-  RESET_BIT (bb_in_list, bb->index);
+  bitmap_clear_bit (bb_in_list, bb->index);
 
   return bb;
 }
@@ -286,7 +286,7 @@ add_control_edge (edge e)
   e->flags |= EDGE_EXECUTABLE;
 
   /* If the block is already in the list, we're done.  */
-  if (TEST_BIT (bb_in_list, bb->index))
+  if (bitmap_bit_p (bb_in_list, bb->index))
     return;
 
   cfg_blocks_add (bb);
@@ -390,7 +390,7 @@ process_ssa_edge_worklist (VEC(gimple,gc) **worklist)
 	 the destination block is executable.  Otherwise, visit the
 	 statement only if its block is marked executable.  */
       if (gimple_code (stmt) == GIMPLE_PHI
-	  || TEST_BIT (executable_blocks, bb->index))
+	  || bitmap_bit_p (executable_blocks, bb->index))
 	simulate_stmt (stmt);
     }
 }
@@ -418,7 +418,7 @@ simulate_block (basic_block block)
 
   /* If this is the first time we've simulated this block, then we
      must simulate each of its statements.  */
-  if (!TEST_BIT (executable_blocks, block->index))
+  if (!bitmap_bit_p (executable_blocks, block->index))
     {
       gimple_stmt_iterator j;
       unsigned int normal_edge_count;
@@ -426,7 +426,7 @@ simulate_block (basic_block block)
       edge_iterator ei;
 
       /* Note that we have simulated this block.  */
-      SET_BIT (executable_blocks, block->index);
+      bitmap_set_bit (executable_blocks, block->index);
 
       for (j = gsi_start_bb (block); !gsi_end_p (j); gsi_next (&j))
 	{
@@ -487,10 +487,10 @@ ssa_prop_init (void)
   varying_ssa_edges = VEC_alloc (gimple, gc, 20);
 
   executable_blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (executable_blocks);
+  bitmap_clear (executable_blocks);
 
   bb_in_list = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (bb_in_list);
+  bitmap_clear (bb_in_list);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_immediate_uses (dump_file);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -252,13 +252,10 @@ package System.Tasking is
 
    type String_Access is access all String;
 
-   type Entry_Names_Array is
+   type Task_Entry_Names_Array is
      array (Entry_Index range <>) of String_Access;
 
-   type Entry_Names_Array_Access is access all Entry_Names_Array;
-
-   procedure Free_Entry_Names_Array (Obj : in out Entry_Names_Array);
-   --  Deallocate all string names contained in an entry names array
+   type Task_Entry_Names_Access is access all Task_Entry_Names_Array;
 
    ----------------------------------
    -- Entry_Call_Record definition --
@@ -968,10 +965,13 @@ package System.Tasking is
       --  associated with protected objects or task entries, and are protected
       --  by the protected object lock or Acceptor.L, respectively.
 
-      Entry_Names : Entry_Names_Array_Access := null;
+      Entry_Names : Task_Entry_Names_Access := null;
       --  An array of string names which denotes entry [family member] names.
       --  The structure is indexed by task entry index and contains Entry_Num
       --  components.
+      --
+      --  Protection: The array is populated during task initialization, before
+      --  the task has been activated. No protection is required in this case.
 
       New_Base_Priority : System.Any_Priority;
       --  New value for Base_Priority (for dynamic priorities package)
@@ -1202,5 +1202,13 @@ private
    --  abnormally after creating task components, and these must be properly
    --  registered for removal (Expunge_Unactivated_Tasks). The "limited" forces
    --  Activation_Chain to be a by-reference type; see RM-6.2(4).
+
+   function Number_Of_Entries (Self_Id : Task_Id) return Entry_Index;
+   --  Given a task, return the number of entries it contains
+
+   procedure Set_Entry_Names
+     (Self_Id : Task_Id;
+      Names   : Task_Entry_Names_Access);
+   --  Associate an array of strings denotinge entry [family] names with a task
 
 end System.Tasking;

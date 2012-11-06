@@ -949,6 +949,7 @@ struct rtl_opt_pass pass_ree =
  {
   RTL_PASS,
   "ree",                                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_ree,                      /* gate */
   rest_of_handle_ree,                   /* execute */
   NULL,                                 /* sub */

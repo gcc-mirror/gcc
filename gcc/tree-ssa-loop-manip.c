@@ -1172,8 +1172,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   /* Unroll the loop and remove the exits in all iterations except for the
      last one.  */
   wont_exit = sbitmap_alloc (factor);
-  sbitmap_ones (wont_exit);
-  RESET_BIT (wont_exit, factor - 1);
+  bitmap_ones (wont_exit);
+  bitmap_clear_bit (wont_exit, factor - 1);
 
   ok = gimple_duplicate_loop_to_header_edge
 	  (loop, loop_latch_edge (loop), factor - 1,

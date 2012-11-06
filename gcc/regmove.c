@@ -1369,6 +1369,7 @@ struct rtl_opt_pass pass_regmove =
  {
   RTL_PASS,
   "regmove",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_regmove,                  /* gate */
   regmove_optimize,			/* execute */
   NULL,                                 /* sub */
