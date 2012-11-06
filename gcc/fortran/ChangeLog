@@ -1,3 +1,9 @@
+2012-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54917
+	* target-memory.c (gfc_target_expr_size,gfc_target_interpret_expr):
+	Handle BT_CLASS.
+
 2012-10-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54784

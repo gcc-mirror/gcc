@@ -120,6 +120,7 @@ gfc_target_expr_size (gfc_expr *e)
     case BT_HOLLERITH:
       return e->representation.length;
     case BT_DERIVED:
+    case BT_CLASS:
       {
 	/* Determine type size without clobbering the typespec for ISO C
 	   binding types.  */
@@ -563,6 +564,9 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
         gfc_interpret_character (buffer, buffer_size, result);
       break;
 
+    case BT_CLASS:
+      result->ts = CLASS_DATA (result)->ts;
+      /* Fall through.  */
     case BT_DERIVED:
       result->representation.length = 
         gfc_interpret_derived (buffer, buffer_size, result);
