@@ -77,7 +77,8 @@ namespace __profile
       : _Base(__n, __value, __al)
       { }
 
-      template<typename _InputIterator>
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
         forward_list(_InputIterator __first, _InputIterator __last,
                      const _Alloc& __al = _Alloc())
         : _Base(__first, __last, __al)

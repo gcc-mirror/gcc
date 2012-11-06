@@ -1,5 +1,16 @@
 2012-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/profile/deque: Constrain InputIterator parameters.
+	* include/profile/forward_list: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/multimap.h: Likewise.
+	* include/profile/set.h: Likewise.
+	* include/profile/multiset.h: Likewise.
+	* include/profile/vector: Likewise.
+
+2012-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/profile/forward_list: Update to meet allocator-aware
 	requirements.
 	* include/debug/forward_list: Likewise.
