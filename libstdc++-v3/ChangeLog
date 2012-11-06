@@ -1,3 +1,7 @@
+2012-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/profile/map.h (map::emplace_hint): Add missing return.
+
 2012-11-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/profile/deque: Constrain InputIterator parameters.
