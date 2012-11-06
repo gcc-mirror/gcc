@@ -13729,7 +13729,7 @@ print_reg (rtx x, int code, FILE *file)
 
   /* Irritatingly, AMD extended registers use different naming convention
      from the normal registers: "r%d[bwd]"  */
-  if (REX_INT_REG_P (x))
+  if (REX_INT_REGNO_P (regno))
     {
       gcc_assert (TARGET_64BIT);
       putc ('r', file);
