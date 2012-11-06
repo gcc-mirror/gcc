@@ -1,3 +1,7 @@
+2012-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* const-uniq-1.c: Expand regex to match AIX XCOFF labels.
+
 2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/41993
