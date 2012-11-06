@@ -498,9 +498,9 @@ package body Bindgen is
            and then Partition_Elaboration_Policy_Specified = 'S'
          then
             WBI ("      procedure Install_Restricted_Handlers_Sequential;");
-            WBI ("      pragma Import (C,"
-                   & "Install_Restricted_Handlers_Sequential," &
-                   " ""__gnat_attach_all_handlers"");");
+            WBI ("      pragma Import (C," &
+                 "Install_Restricted_Handlers_Sequential," &
+                 " ""__gnat_attach_all_handlers"");");
             WBI ("");
          end if;
 
@@ -509,7 +509,7 @@ package body Bindgen is
          then
             WBI ("      Partition_Elaboration_Policy : Character;");
             WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
-                  " ""__gnat_partition_elaboration_policy"");");
+                 " ""__gnat_partition_elaboration_policy"");");
             WBI ("");
             WBI ("      procedure Activate_All_Tasks_Sequential;");
             WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
@@ -617,16 +617,15 @@ package body Bindgen is
          WBI ("      pragma Import (C, Handler_Installed, " &
               """__gnat_handler_installed"");");
 
-         --  Import handlers attach procedure for sequential elaboration
-         --  policy.
+         --  Import handlers attach procedure for sequential elaboration policy
 
          if System_Interrupts_Used
            and then Partition_Elaboration_Policy_Specified = 'S'
          then
             WBI ("      procedure Install_Restricted_Handlers_Sequential;");
-            WBI ("      pragma Import (C,"
-                   & "Install_Restricted_Handlers_Sequential," &
-                   " ""__gnat_attach_all_handlers"");");
+            WBI ("      pragma Import (C," &
+                 "Install_Restricted_Handlers_Sequential," &
+                 " ""__gnat_attach_all_handlers"");");
             WBI ("");
          end if;
 
@@ -638,7 +637,7 @@ package body Bindgen is
          then
             WBI ("      Partition_Elaboration_Policy : Character;");
             WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
-                  " ""__gnat_partition_elaboration_policy"");");
+                 " ""__gnat_partition_elaboration_policy"");");
             WBI ("");
             WBI ("      procedure Activate_All_Tasks_Sequential;");
             WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &

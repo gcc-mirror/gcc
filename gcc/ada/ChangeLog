@@ -1,3 +1,35 @@
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, bindgen.adb, exp_vfpt.adb, exp_vfpt.ads, exp_ch2.adb,
+	errout.adb, sem_ch8.adb: Minor reformatting.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Include Loop_Entry_Attributes to the list of
+	Node/List/Elist10 usage.
+	(Loop_Entry_Attributes): New routine.
+	(Set_Loop_Entry_Attributes): New routine.
+	(Write_Field10_Name): Add an output string for Loop_Entry_Attributes.
+	* einfo.ads: Define new attribute Loop_Entry_Attributes along
+	with its usage in nodes.
+	(Loop_Entry_Attributes): New routine and dedicated pragma Inline.
+	(Set_Loop_Entry_Attributes): New routine and dedicated pragma Inline.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Do not expand
+	Attribute_Loop_Entry here.
+	* exp_ch5.adb: Add with and use clause for Elists;
+	(Expand_Loop_Entry_Attributes): New routine.
+	(Expand_N_Loop_Statement): Add a call to Expand_Loop_Entry_Attributes.
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Specialize the
+	search to include multiple nested loops produced by the expansion
+	of Ada 2012 array iterator.
+	* sem_attr.adb: Add with and use clause for Elists.
+	(Analyze_Attribute): Check the legality of attribute Loop_Entry.
+	(Resolve_Attribute): Nothing to do for Loop_Entry.
+	(S14_Attribute): New routine.
+	* snames.ads-tmpl: Add a comment on entries marked with
+	HiLite. Add new name Name_Loop_Entry. Add new attribute
+	Attribute_Loop_Entry.
+
 2012-11-06  Geert Bosch  <bosch@adacore.com>
 
 	* eval_fat.adb (Machine, Succ): Fix front end to support static

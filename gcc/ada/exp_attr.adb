@@ -2953,7 +2953,7 @@ package body Exp_Attr is
       -- Length --
       ------------
 
-      when Attribute_Length => declare
+      when Attribute_Length => Length : declare
          Ityp : Entity_Id;
          Xnum : Uint;
 
@@ -3103,7 +3103,13 @@ package body Exp_Attr is
          else
             Apply_Universal_Integer_Attribute_Checks (N);
          end if;
-      end;
+      end Length;
+
+      --  The expansion of this attribute is carried out when the target loop
+      --  is processed. See Expand_Loop_Entry_Attributes for details.
+
+      when Attribute_Loop_Entry =>
+         null;
 
       -------------
       -- Machine --

@@ -635,8 +635,13 @@ package body Exp_Ch2 is
    ---------------------------
 
    procedure Expand_N_Real_Literal (N : Node_Id) is
+      pragma Unreferenced (N);
+
    begin
-      --  Vax real literal are now allowed by gigi
+      --  Historically, this routine existed because there were expansion
+      --  requirements for Vax real literals, but now Vax real literals
+      --  are now handled by gigi, so this routine no longer does anything.
+
       null;
    end Expand_N_Real_Literal;
 
