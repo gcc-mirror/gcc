@@ -1,3 +1,15 @@
+2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-c++-common/tm/trxn-expr-3.c: Adjust for uninstrumented code path.
+	* gcc.dg/tm/debug-1.c: Same.
+	* gcc.dg/tm/irrevocable-3.c: Same.
+	* gcc.dg/tm/irrevocable-4.c: Same.
+	* gcc.dg/tm/memopt-10.c: Same.
+	* gcc.dg/tm/memopt-11.c: Same.
+	* gcc.dg/tm/props-4.c: Same.
+	* gcc.dg/tm/wrap-3.c: Same.
+	* gcc.dg/tm/wrap-4.c: Same.
+
 2012-11-06  Andrew Pinski  <apinski@cavium.com>
 
 	* g++.dg/abi/aarch64_guard1.C: Add -fno-section-anchors.

@@ -22,6 +22,5 @@ foo(void)
 
 /* { dg-final { scan-tree-dump-times " instrumentedCode" 1 "tmedge" } } */
 /* { dg-final { scan-tree-dump-times "hasNoAbort" 0 "tmedge" } } */
-/* { dg-final { scan-tree-dump-times "LABEL=<L0>" 1 "tmmark" } } */
 /* { dg-final { cleanup-tree-dump "tmedge" } } */
 /* { dg-final { cleanup-tree-dump "tmmark" } } */
