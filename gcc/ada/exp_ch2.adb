@@ -28,7 +28,6 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
-with Errout;   use Errout;
 with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -341,7 +340,8 @@ package body Exp_Ch2 is
    begin
       --  Defend against errors
 
-      if No (E) and then Total_Errors_Detected /= 0 then
+      if No (E) then
+         Check_Error_Detected;
          return;
       end if;
 

@@ -33,7 +33,6 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram ordering, not used for this unit
 
 with Atree;  use Atree;
-with Errout; use Errout;
 with Namet;  use Namet;
 with Nlists; use Nlists;
 with Output; use Output;
@@ -6981,7 +6980,7 @@ package body Einfo is
             --  previous errors.
 
             elsif No (Etyp) then
-               Cascaded_Error;
+               Check_Error_Detected;
                return T;
 
             elsif Is_Private_Type (T) and then Etyp = Full_View (T) then

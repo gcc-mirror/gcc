@@ -5059,7 +5059,7 @@ package body Sem_Prag is
 
                   --  If previous error, avoid cascaded errors
 
-                  Cascaded_Error;
+                  Check_Error_Detected;
                   Applies   := True;
                   Effective := True;
 

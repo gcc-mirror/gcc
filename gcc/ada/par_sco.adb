@@ -969,7 +969,7 @@ package body Par_SCO is
       --  The test here for zero is to deal with possible previous errors
 
       if Index = 0 then
-         Cascaded_Error;
+         Check_Error_Detected;
 
       else
          declare

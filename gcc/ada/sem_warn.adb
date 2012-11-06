@@ -619,6 +619,7 @@ package body Sem_Warn is
          if No (Entity (Ident))
            or else Ekind (Entity (Ident)) /= E_Loop
          then
+            Check_Error_Detected;
             return;
          end if;
 
@@ -3317,7 +3318,7 @@ package body Sem_Warn is
                       or else
                     Denotes_Same_Prefix (Act1, Act2))
                then
-                  --  Exclude generic types and guard against previous errors.
+                  --  Exclude generic types and guard against previous errors
 
                   if Error_Posted (N)
                     or else No (Etype (Act1))

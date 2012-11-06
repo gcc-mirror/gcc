@@ -828,6 +828,7 @@ package body Sem_Elab is
                --  If no alias, there is a previous error
 
                if No (Ent) then
+                  Check_Error_Detected;
                   return;
                end if;
             end loop;

@@ -39,19 +39,6 @@ with System;
 
 package Errout is
 
-   Serious_Errors_Detected : Nat renames Err_Vars.Serious_Errors_Detected;
-   --  This is a count of errors that are serious enough to stop expansion,
-   --  and hence to prevent generation of an object file even if the switch
-   --  -gnatQ is set.
-
-   Total_Errors_Detected : Nat renames Err_Vars.Total_Errors_Detected;
-   --  Number of errors detected so far. Includes count of serious errors and
-   --  non-serious errors, so this value is always greater than or equal to
-   --  the Serious_Errors_Detected value.
-
-   Warnings_Detected : Nat renames Err_Vars.Warnings_Detected;
-   --  Number of warnings detected
-
    Configurable_Run_Time_Violations : Nat := 0;
    --  Count of configurable run time violations so far. This is used to
    --  suppress certain cascaded error messages when we know that we may not
@@ -726,13 +713,6 @@ package Errout is
    --  unit and comes from source. Typically this is a warning mode flag.
    --  This routine can only be called during semantic analysis. It may not
    --  be called during parsing.
-
-   procedure Cascaded_Error;
-   --  When an anomaly is detected, many semantic routines silently bail out,
-   --  assuming that the anomaly was caused by a previously detected error.
-   --  This routine should be called in these cases, and will raise an
-   --  exception if no serious error has been detected. This ensure that the
-   --  anomaly is never allowed to go unnoticed.
 
    procedure Change_Error_Text (Error_Id : Error_Msg_Id; New_Msg : String);
    --  The error message text of the message identified by Id is replaced by

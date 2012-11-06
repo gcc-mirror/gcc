@@ -560,6 +560,20 @@ package body Atree is
           (Nodes.Table (E + 2).Field12'Unrestricted_Access)).Convention := Val;
    end Basic_Set_Convention;
 
+   --------------------------
+   -- Check_Error_Detected --
+   --------------------------
+
+   procedure Check_Error_Detected is
+   begin
+      --  An anomaly has been detected which is assumed to be a consequence of
+      --  a previous error. Raise an exception if no error found previously.
+
+      if Total_Errors_Detected = 0 then
+         raise Program_Error;
+      end if;
+   end Check_Error_Detected;
+
    -----------------
    -- Change_Node --
    -----------------

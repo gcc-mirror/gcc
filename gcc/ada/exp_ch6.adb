@@ -6227,6 +6227,7 @@ package body Exp_Ch6 is
       if Present (Expression (N))
         and then Nkind (Expression (N)) = N_Empty
       then
+         Check_Error_Detected;
          return;
       end if;
 
