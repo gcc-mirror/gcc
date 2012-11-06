@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "diagnostic.h"
 #include "dumpfile.h"
+#include "tree-pass.h"
+#include "tree-flow.h"
 
 enum upper_128bits_state
 {
@@ -28463,6 +28465,967 @@ ix86_init_mmx_sse_builtins (void)
     }
 }
 
+/* This adds a condition to the basic_block NEW_BB in function FUNCTION_DECL
+   to return a pointer to VERSION_DECL if the outcome of the expression
+   formed by PREDICATE_CHAIN is true.  This function will be called during
+   version dispatch to decide which function version to execute.  It returns
+   the basic block at the end, to which more conditions can be added.  */
+
+static basic_block
+add_condition_to_bb (tree function_decl, tree version_decl,
+		     tree predicate_chain, basic_block new_bb)
+{
+  gimple return_stmt;
+  tree convert_expr, result_var;
+  gimple convert_stmt;
+  gimple call_cond_stmt;
+  gimple if_else_stmt;
+
+  basic_block bb1, bb2, bb3;
+  edge e12, e23;
+
+  tree cond_var, and_expr_var = NULL_TREE;
+  gimple_seq gseq;
+
+  tree predicate_decl, predicate_arg;
+
+  push_cfun (DECL_STRUCT_FUNCTION (function_decl));
+
+  gcc_assert (new_bb != NULL);
+  gseq = bb_seq (new_bb);
+
+
+  convert_expr = build1 (CONVERT_EXPR, ptr_type_node,
+	     		 build_fold_addr_expr (version_decl));
+  result_var = create_tmp_var (ptr_type_node, NULL);
+  convert_stmt = gimple_build_assign (result_var, convert_expr); 
+  return_stmt = gimple_build_return (result_var);
+
+  if (predicate_chain == NULL_TREE)
+    {
+      gimple_seq_add_stmt (&gseq, convert_stmt);
+      gimple_seq_add_stmt (&gseq, return_stmt);
+      set_bb_seq (new_bb, gseq);
+      gimple_set_bb (convert_stmt, new_bb);
+      gimple_set_bb (return_stmt, new_bb);
+      pop_cfun ();
+      return new_bb;
+    }
+
+  while (predicate_chain != NULL)
+    {
+      cond_var = create_tmp_var (integer_type_node, NULL);
+      predicate_decl = TREE_PURPOSE (predicate_chain);
+      predicate_arg = TREE_VALUE (predicate_chain);
+      call_cond_stmt = gimple_build_call (predicate_decl, 1, predicate_arg);
+      gimple_call_set_lhs (call_cond_stmt, cond_var);
+
+      gimple_set_block (call_cond_stmt, DECL_INITIAL (function_decl));
+      gimple_set_bb (call_cond_stmt, new_bb);
+      gimple_seq_add_stmt (&gseq, call_cond_stmt);
+
+      predicate_chain = TREE_CHAIN (predicate_chain);
+      
+      if (and_expr_var == NULL)
+        and_expr_var = cond_var;
+      else
+	{
+	  gimple assign_stmt;
+	  /* Use MIN_EXPR to check if any integer is zero?.
+	     and_expr_var = min_expr <cond_var, and_expr_var>  */
+	  assign_stmt = gimple_build_assign (and_expr_var,
+			  build2 (MIN_EXPR, integer_type_node,
+				  cond_var, and_expr_var));
+
+	  gimple_set_block (assign_stmt, DECL_INITIAL (function_decl));
+	  gimple_set_bb (assign_stmt, new_bb);
+	  gimple_seq_add_stmt (&gseq, assign_stmt);
+	}
+    }
+
+  if_else_stmt = gimple_build_cond (GT_EXPR, and_expr_var,
+	  		            integer_zero_node,
+				    NULL_TREE, NULL_TREE);
+  gimple_set_block (if_else_stmt, DECL_INITIAL (function_decl));
+  gimple_set_bb (if_else_stmt, new_bb);
+  gimple_seq_add_stmt (&gseq, if_else_stmt);
+
+  gimple_seq_add_stmt (&gseq, convert_stmt);
+  gimple_seq_add_stmt (&gseq, return_stmt);
+  set_bb_seq (new_bb, gseq);
+
+  bb1 = new_bb;
+  e12 = split_block (bb1, if_else_stmt);
+  bb2 = e12->dest;
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_TRUE_VALUE;
+
+  e23 = split_block (bb2, return_stmt);
+
+  gimple_set_bb (convert_stmt, bb2);
+  gimple_set_bb (return_stmt, bb2);
+
+  bb3 = e23->dest;
+  make_edge (bb1, bb3, EDGE_FALSE_VALUE); 
+
+  remove_edge (e23);
+  make_edge (bb2, EXIT_BLOCK_PTR, 0);
+
+  pop_cfun ();
+
+  return bb3;
+}
+
+/* This parses the attribute arguments to target in DECL and determines
+   the right builtin to use to match the platform specification.
+   It returns the priority value for this version decl.  If PREDICATE_LIST
+   is not NULL, it stores the list of cpu features that need to be checked
+   before dispatching this function.  */
+
+static unsigned int
+get_builtin_code_for_version (tree decl, tree *predicate_list)
+{
+  tree attrs;
+  struct cl_target_option cur_target;
+  tree target_node;
+  struct cl_target_option *new_target;
+  const char *arg_str = NULL;
+  const char *attrs_str = NULL;
+  char *tok_str = NULL;
+  char *token;
+
+  /* Priority of i386 features, greater value is higher priority.   This is
+     used to decide the order in which function dispatch must happen.  For
+     instance, a version specialized for SSE4.2 should be checked for dispatch
+     before a version for SSE3, as SSE4.2 implies SSE3.  */
+  enum feature_priority
+  {
+    P_ZERO = 0,
+    P_MMX,
+    P_SSE,
+    P_SSE2,
+    P_SSE3,
+    P_SSSE3,
+    P_PROC_SSSE3,
+    P_SSE4_a,
+    P_PROC_SSE4_a,
+    P_SSE4_1,
+    P_SSE4_2,
+    P_PROC_SSE4_2,
+    P_POPCNT,
+    P_AVX,
+    P_AVX2,
+    P_FMA,
+    P_PROC_FMA
+  };
+
+ enum feature_priority priority = P_ZERO;
+
+  /* These are the target attribute strings for which a dispatcher is
+     available, from fold_builtin_cpu.  */
+
+  static struct _feature_list
+    {
+      const char *const name;
+      const enum feature_priority priority;
+    }
+  const feature_list[] =
+    {
+      {"mmx", P_MMX},
+      {"sse", P_SSE},
+      {"sse2", P_SSE2},
+      {"sse3", P_SSE3},
+      {"ssse3", P_SSSE3},
+      {"sse4.1", P_SSE4_1},
+      {"sse4.2", P_SSE4_2},
+      {"popcnt", P_POPCNT},
+      {"avx", P_AVX},
+      {"avx2", P_AVX2}
+    };
+
+
+  static unsigned int NUM_FEATURES
+    = sizeof (feature_list) / sizeof (struct _feature_list);
+
+  unsigned int i;
+
+  tree predicate_chain = NULL_TREE;
+  tree predicate_decl, predicate_arg;
+
+  attrs = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+  gcc_assert (attrs != NULL);
+
+  attrs = TREE_VALUE (TREE_VALUE (attrs));
+
+  gcc_assert (TREE_CODE (attrs) == STRING_CST);
+  attrs_str = TREE_STRING_POINTER (attrs);
+
+
+  /* Handle arch= if specified.  For priority, set it to be 1 more than
+     the best instruction set the processor can handle.  For instance, if
+     there is a version for atom and a version for ssse3 (the highest ISA
+     priority for atom), the atom version must be checked for dispatch
+     before the ssse3 version. */
+  if (strstr (attrs_str, "arch=") != NULL)
+    {
+      cl_target_option_save (&cur_target, &global_options);
+      target_node = ix86_valid_target_attribute_tree (attrs);
+    
+      gcc_assert (target_node);
+      new_target = TREE_TARGET_OPTION (target_node);
+      gcc_assert (new_target);
+      
+      if (new_target->arch_specified && new_target->arch > 0)
+	{
+	  switch (new_target->arch)
+	    {
+	    case PROCESSOR_CORE2_32:
+	    case PROCESSOR_CORE2_64:
+	      arg_str = "core2";
+	      priority = P_PROC_SSSE3;
+	      break;
+	    case PROCESSOR_COREI7_32:
+	    case PROCESSOR_COREI7_64:
+	      arg_str = "corei7";
+	      priority = P_PROC_SSE4_2;
+	      break;
+	    case PROCESSOR_ATOM:
+	      arg_str = "atom";
+	      priority = P_PROC_SSSE3;
+	      break;
+	    case PROCESSOR_AMDFAM10:
+	      arg_str = "amdfam10h";
+	      priority = P_PROC_SSE4_a;
+	      break;
+	    case PROCESSOR_BDVER1:
+	      arg_str = "bdver1";
+	      priority = P_PROC_FMA;
+	      break;
+	    case PROCESSOR_BDVER2:
+	      arg_str = "bdver2";
+	      priority = P_PROC_FMA;
+	      break;
+	    }  
+	}    
+    
+      cl_target_option_restore (&global_options, &cur_target);
+	
+      if (predicate_list && arg_str == NULL)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+	    	"No dispatcher found for the versioning attributes");
+	  return 0;
+	}
+    
+      if (predicate_list)
+	{
+          predicate_decl = ix86_builtins [(int) IX86_BUILTIN_CPU_IS];
+          /* For a C string literal the length includes the trailing NULL.  */
+          predicate_arg = build_string_literal (strlen (arg_str) + 1, arg_str);
+          predicate_chain = tree_cons (predicate_decl, predicate_arg,
+				       predicate_chain);
+	}
+    }
+
+  /* Process feature name.  */
+  tok_str =  (char *) xmalloc (strlen (attrs_str) + 1);
+  strcpy (tok_str, attrs_str);
+  token = strtok (tok_str, ",");
+  predicate_decl = ix86_builtins [(int) IX86_BUILTIN_CPU_SUPPORTS];
+
+  while (token != NULL)
+    {
+      /* Do not process "arch="  */
+      if (strncmp (token, "arch=", 5) == 0)
+	{
+	  token = strtok (NULL, ",");
+	  continue;
+	}
+      for (i = 0; i < NUM_FEATURES; ++i)
+	{
+	  if (strcmp (token, feature_list[i].name) == 0)
+	    {
+	      if (predicate_list)
+		{
+		  predicate_arg = build_string_literal (
+				  strlen (feature_list[i].name) + 1,
+				  feature_list[i].name);
+		  predicate_chain = tree_cons (predicate_decl, predicate_arg,
+					       predicate_chain);
+		}
+	      /* Find the maximum priority feature.  */
+	      if (feature_list[i].priority > priority)
+		priority = feature_list[i].priority;
+
+	      break;
+	    }
+	}
+      if (predicate_list && i == NUM_FEATURES)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "No dispatcher found for %s", token);
+	  return 0;
+	}
+      token = strtok (NULL, ",");
+    }
+  free (tok_str);
+
+  if (predicate_list && predicate_chain == NULL_TREE)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+	        "No dispatcher found for the versioning attributes : %s",
+	        attrs_str);
+      return 0;
+    }
+  else if (predicate_list)
+    {
+      predicate_chain = nreverse (predicate_chain);
+      *predicate_list = predicate_chain;
+    }
+
+  return priority; 
+}
+
+/* This compares the priority of target features in function DECL1
+   and DECL2.  It returns positive value if DECL1 is higher priority,
+   negative value if DECL2 is higher priority and 0 if they are the
+   same.  */
+
+static int
+ix86_compare_version_priority (tree decl1, tree decl2)
+{
+  unsigned int priority1 = 0;
+  unsigned int priority2 = 0;
+
+  if (lookup_attribute ("target", DECL_ATTRIBUTES (decl1)) != NULL)
+    priority1 = get_builtin_code_for_version (decl1, NULL);
+
+  if (lookup_attribute ("target", DECL_ATTRIBUTES (decl2)) != NULL)
+    priority2 = get_builtin_code_for_version (decl2, NULL);
+
+  return (int)priority1 - (int)priority2;
+}
+
+/* V1 and V2 point to function versions with different priorities
+   based on the target ISA.  This function compares their priorities.  */
+ 
+static int
+feature_compare (const void *v1, const void *v2)
+{
+  typedef struct _function_version_info
+    {
+      tree version_decl;
+      tree predicate_chain;
+      unsigned int dispatch_priority;
+    } function_version_info;
+
+  const function_version_info c1 = *(const function_version_info *)v1;
+  const function_version_info c2 = *(const function_version_info *)v2;
+  return (c2.dispatch_priority - c1.dispatch_priority);
+}
+
+/* This function generates the dispatch function for
+   multi-versioned functions.  DISPATCH_DECL is the function which will
+   contain the dispatch logic.  FNDECLS are the function choices for
+   dispatch, and is a tree chain.  EMPTY_BB is the basic block pointer
+   in DISPATCH_DECL in which the dispatch code is generated.  */
+
+static int
+dispatch_function_versions (tree dispatch_decl,
+			    void *fndecls_p,
+			    basic_block *empty_bb)
+{
+  tree default_decl;
+  gimple ifunc_cpu_init_stmt;
+  gimple_seq gseq;
+  int ix;
+  tree ele;
+  VEC (tree, heap) *fndecls;
+  unsigned int num_versions = 0;
+  unsigned int actual_versions = 0;
+  unsigned int i;
+
+  struct _function_version_info
+    {
+      tree version_decl;
+      tree predicate_chain;
+      unsigned int dispatch_priority;
+    }*function_version_info;
+
+  gcc_assert (dispatch_decl != NULL
+	      && fndecls_p != NULL
+	      && empty_bb != NULL);
+
+  /*fndecls_p is actually a vector.  */
+  fndecls = (VEC (tree, heap) *)fndecls_p;
+
+  /* At least one more version other than the default.  */
+  num_versions = VEC_length (tree, fndecls);
+  gcc_assert (num_versions >= 2);
+
+  function_version_info = (struct _function_version_info *)
+    XNEWVEC (struct _function_version_info, (num_versions - 1));
+
+  /* The first version in the vector is the default decl.  */
+  default_decl = VEC_index (tree, fndecls, 0);
+
+  push_cfun (DECL_STRUCT_FUNCTION (dispatch_decl));
+
+  gseq = bb_seq (*empty_bb);
+  /* Function version dispatch is via IFUNC.  IFUNC resolvers fire before
+     constructors, so explicity call __builtin_cpu_init here.  */
+  ifunc_cpu_init_stmt = gimple_build_call_vec (
+                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], NULL);
+  gimple_seq_add_stmt (&gseq, ifunc_cpu_init_stmt);
+  gimple_set_bb (ifunc_cpu_init_stmt, *empty_bb);
+  set_bb_seq (*empty_bb, gseq);
+
+  pop_cfun ();
+
+
+  for (ix = 1; VEC_iterate (tree, fndecls, ix, ele); ++ix)
+    {
+      tree version_decl = ele;
+      tree predicate_chain = NULL_TREE;
+      unsigned int priority;
+      /* Get attribute string, parse it and find the right predicate decl.
+         The predicate function could be a lengthy combination of many
+	 features, like arch-type and various isa-variants.  */
+      priority = get_builtin_code_for_version (version_decl,
+	 			               &predicate_chain);
+
+      if (predicate_chain == NULL_TREE)
+	continue;
+
+      actual_versions++;
+      function_version_info [ix - 1].version_decl = version_decl;
+      function_version_info [ix - 1].predicate_chain = predicate_chain;
+      function_version_info [ix - 1].dispatch_priority = priority;
+    }
+
+  /* Sort the versions according to descending order of dispatch priority.  The
+     priority is based on the ISA.  This is not a perfect solution.  There
+     could still be ambiguity.  If more than one function version is suitable
+     to execute,  which one should be dispatched?  In future, allow the user
+     to specify a dispatch  priority next to the version.  */
+  qsort (function_version_info, actual_versions,
+         sizeof (struct _function_version_info), feature_compare);
+
+  for  (i = 0; i < actual_versions; ++i)
+    *empty_bb = add_condition_to_bb (dispatch_decl,
+				     function_version_info[i].version_decl,
+				     function_version_info[i].predicate_chain,
+				     *empty_bb);
+
+  /* dispatch default version at the end.  */
+  *empty_bb = add_condition_to_bb (dispatch_decl, default_decl,
+				   NULL, *empty_bb);
+
+  free (function_version_info);
+  return 0;
+}
+
+/* This function returns true if FN1 and FN2 are versions of the same function,
+   that is, the targets of the function decls are different.  This assumes
+   that FN1 and FN2 have the same signature.  */
+
+static bool
+ix86_function_versions (tree fn1, tree fn2)
+{
+  tree attr1, attr2;
+  struct cl_target_option *target1, *target2;
+
+  if (TREE_CODE (fn1) != FUNCTION_DECL
+      || TREE_CODE (fn2) != FUNCTION_DECL)
+    return false;
+
+  attr1 = DECL_FUNCTION_SPECIFIC_TARGET (fn1);
+  attr2 = DECL_FUNCTION_SPECIFIC_TARGET (fn2);
+
+  /* Atleast one function decl should have target attribute specified.  */
+  if (attr1 == NULL_TREE && attr2 == NULL_TREE)
+    return false;
+
+  if (attr1 == NULL_TREE)
+    attr1 = target_option_default_node;
+  else if (attr2 == NULL_TREE)
+    attr2 = target_option_default_node;
+
+  target1 = TREE_TARGET_OPTION (attr1);
+  target2 = TREE_TARGET_OPTION (attr2);
+
+  /* target1 and target2 must be different in some way.  */
+  if (target1->x_ix86_isa_flags == target2->x_ix86_isa_flags
+      && target1->x_target_flags == target2->x_target_flags
+      && target1->arch == target2->arch
+      && target1->tune == target2->tune
+      && target1->x_ix86_fpmath == target2->x_ix86_fpmath
+      && target1->branch_cost == target2->branch_cost)
+    return false;
+
+  return true;
+}
+
+/* Comparator function to be used in qsort routine to sort attribute
+   specification strings to "target".  */
+
+static int
+attr_strcmp (const void *v1, const void *v2)
+{
+  const char *c1 = *(char *const*)v1;
+  const char *c2 = *(char *const*)v2;
+  return strcmp (c1, c2);
+}
+
+/* STR is the argument to target attribute.  This function tokenizes
+   the comma separated arguments, sorts them and returns a string which
+   is a unique identifier for the comma separated arguments.   It also
+   replaces non-identifier characters "=,-" with "_".  */
+
+static char *
+sorted_attr_string (const char *str)
+{
+  char **args = NULL;
+  char *attr_str, *ret_str;
+  char *attr = NULL;
+  unsigned int argnum = 1;
+  unsigned int i;
+
+  for (i = 0; i < strlen (str); i++)
+    if (str[i] == ',')
+      argnum++;
+
+  attr_str = (char *)xmalloc (strlen (str) + 1);
+  strcpy (attr_str, str);
+
+  /* Replace "=,-" with "_".  */
+  for (i = 0; i < strlen (attr_str); i++)
+    if (attr_str[i] == '=' || attr_str[i]== '-')
+      attr_str[i] = '_';
+
+  if (argnum == 1)
+    return attr_str;
+
+  args = XNEWVEC (char *, argnum);
+
+  i = 0;
+  attr = strtok (attr_str, ",");
+  while (attr != NULL)
+    {
+      args[i] = attr;
+      i++;
+      attr = strtok (NULL, ",");
+    }
+
+  qsort (args, argnum, sizeof (char*), attr_strcmp);
+
+  ret_str = (char *)xmalloc (strlen (str) + 1);
+  strcpy (ret_str, args[0]);
+  for (i = 1; i < argnum; i++)
+    {
+      strcat (ret_str, "_");
+      strcat (ret_str, args[i]);
+    }
+
+  free (args);
+  free (attr_str);
+  return ret_str;
+}
+
+/* This function changes the assembler name for functions that are
+   versions.  If DECL is a function version and has a "target"
+   attribute, it appends the attribute string to its assembler name.  */
+
+static tree
+ix86_mangle_function_version_assembler_name (tree decl, tree id)
+{
+  tree version_attr;
+  const char *orig_name, *version_string, *attr_str;
+  char *assembler_name;
+
+  if (DECL_DECLARED_INLINE_P (decl)
+      && lookup_attribute ("gnu_inline",
+			   DECL_ATTRIBUTES (decl)))
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "Function versions cannot be marked as gnu_inline,"
+	      " bodies have to be generated");
+
+  if (DECL_VIRTUAL_P (decl)
+      || DECL_VINDEX (decl))
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "Virtual function versioning not supported\n");
+
+  version_attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+
+  /* target attribute string is NULL for default functions.  */
+  if (version_attr == NULL_TREE)
+    return id;
+
+  orig_name = IDENTIFIER_POINTER (id);
+  version_string
+    = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (version_attr)));
+
+  attr_str = sorted_attr_string (version_string);
+  assembler_name = (char *) xmalloc (strlen (orig_name)
+				     + strlen (attr_str) + 2);
+
+  sprintf (assembler_name, "%s.%s", orig_name, attr_str);
+
+  /* Allow assembler name to be modified if already set.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    SET_DECL_RTL (decl, NULL);
+
+  return get_identifier (assembler_name);
+}
+
+static tree 
+ix86_mangle_decl_assembler_name (tree decl, tree id)
+{
+  /* For function version, add the target suffix to the assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (decl))
+    return ix86_mangle_function_version_assembler_name (decl, id);
+
+  return id;
+}
+
+/* Return a new name by appending SUFFIX to the DECL name.  If make_unique
+   is true, append the full path name of the source file.  */
+
+static char *
+make_name (tree decl, const char *suffix, bool make_unique)
+{
+  char *global_var_name;
+  int name_len;
+  const char *name;
+  const char *unique_name = NULL;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  /* Get a unique name that can be used globally without any chances
+     of collision at link time.  */
+  if (make_unique)
+    unique_name = IDENTIFIER_POINTER (get_file_function_name ("\0"));
+
+  name_len = strlen (name) + strlen (suffix) + 2;
+
+  if (make_unique)
+    name_len += strlen (unique_name) + 1;
+  global_var_name = XNEWVEC (char, name_len);
+
+  /* Use '.' to concatenate names as it is demangler friendly.  */
+  if (make_unique)
+      snprintf (global_var_name, name_len, "%s.%s.%s", name,
+		unique_name, suffix);
+  else
+      snprintf (global_var_name, name_len, "%s.%s", name, suffix);
+
+  return global_var_name;
+}
+
+/* Make a dispatcher declaration for the multi-versioned function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher
+   by the front-end.  Return the decl created.  */
+
+static tree
+make_dispatcher_decl (const tree decl)
+{
+  tree func_decl;
+  char *func_name, *resolver_name;
+  tree fn_type, func_type;
+  bool is_uniq = false;
+
+  if (TREE_PUBLIC (decl) == 0)
+    is_uniq = true;
+
+  func_name = make_name (decl, "ifunc", is_uniq);
+  resolver_name = make_name (decl, "resolver", is_uniq);
+  gcc_assert (resolver_name);
+
+  fn_type = TREE_TYPE (decl);
+  func_type = build_function_type (TREE_TYPE (fn_type),
+				   TYPE_ARG_TYPES (fn_type));
+  
+  func_decl = build_fn_decl (func_name, func_type);
+  TREE_USED (func_decl) = 1;
+  DECL_CONTEXT (func_decl) = NULL_TREE;
+  DECL_INITIAL (func_decl) = error_mark_node;
+  DECL_ARTIFICIAL (func_decl) = 1;
+  /* Mark this func as external, the resolver will flip it again if
+     it gets generated.  */
+  DECL_EXTERNAL (func_decl) = 1;
+  /* This will be of type IFUNCs have to be externally visible.  */
+  TREE_PUBLIC (func_decl) = 1;
+
+  return func_decl;  
+}
+
+/* Returns true if decl is multi-versioned and DECL is the default function,
+   that is it is not tagged with target specific optimization.  */
+
+static bool
+is_function_default_version (const tree decl)
+{
+  return (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_FUNCTION_VERSIONED (decl)
+	  && DECL_FUNCTION_SPECIFIC_TARGET (decl) == NULL_TREE);
+}
+
+/* Make a dispatcher declaration for the multi-versioned function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher
+   by the front-end.  Returns the decl of the dispatcher function.  */
+
+static tree
+ix86_get_function_versions_dispatcher (void *decl)
+{
+  tree fn = (tree) decl;
+  struct cgraph_node *node = NULL;
+  struct cgraph_node *default_node = NULL;
+  struct cgraph_function_version_info *node_v = NULL;
+  struct cgraph_function_version_info *it_v = NULL;
+  struct cgraph_function_version_info *first_v = NULL;
+
+  tree dispatch_decl = NULL;
+  struct cgraph_node *dispatcher_node = NULL;
+  struct cgraph_function_version_info *dispatcher_version_info = NULL;
+
+  struct cgraph_function_version_info *default_version_info = NULL;
+ 
+  gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
+
+  node = cgraph_get_node (fn);
+  gcc_assert (node != NULL);
+
+  node_v = get_cgraph_node_version (node);
+  gcc_assert (node_v != NULL);
+ 
+  if (node_v->dispatcher_resolver != NULL)
+    return node_v->dispatcher_resolver;
+
+  /* Find the default version and make it the first node.  */
+  first_v = node_v;
+  /* Go to the beginnig of the chain.  */
+  while (first_v->prev != NULL)
+    first_v = first_v->prev;
+  default_version_info = first_v;
+  while (default_version_info != NULL)
+    {
+      if (is_function_default_version
+	    (default_version_info->this_node->symbol.decl))
+        break;
+      default_version_info = default_version_info->next;
+    }
+
+  /* If there is no default node, just return NULL.  */
+  if (default_version_info == NULL)
+    return NULL;
+
+  /* Make default info the first node.  */
+  if (first_v != default_version_info)
+    {
+      default_version_info->prev->next = default_version_info->next;
+      if (default_version_info->next)
+        default_version_info->next->prev = default_version_info->prev;
+      first_v->prev = default_version_info;
+      default_version_info->next = first_v;
+      default_version_info->prev = NULL;
+    }
+
+  default_node = default_version_info->this_node;
+
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+  /* Right now, the dispatching is done via ifunc.  */
+  dispatch_decl = make_dispatcher_decl (default_node->symbol.decl); 
+#else
+  error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
+	    "Multiversioning needs ifunc which is not supported "
+	    "in this configuration");
+#endif
+
+  dispatcher_node = cgraph_get_create_node (dispatch_decl);
+  gcc_assert (dispatcher_node != NULL);
+  dispatcher_node->dispatcher_function = 1;
+  dispatcher_version_info
+    = insert_new_cgraph_node_version (dispatcher_node);
+  dispatcher_version_info->next = default_version_info;
+  dispatcher_node->local.finalized = 1;
+ 
+  /* Set the dispatcher for all the versions.  */ 
+  it_v = default_version_info;
+  while (it_v->next != NULL)
+    {
+      it_v->dispatcher_resolver = dispatch_decl;
+      it_v = it_v->next;
+    }
+
+  return dispatch_decl;
+}
+
+/* Makes a function attribute of the form NAME(ARG_NAME) and chains
+   it to CHAIN.  */
+
+static tree
+make_attribute (const char *name, const char *arg_name, tree chain)
+{
+  tree attr_name;
+  tree attr_arg_name;
+  tree attr_args;
+  tree attr;
+
+  attr_name = get_identifier (name);
+  attr_arg_name = build_string (strlen (arg_name), arg_name);
+  attr_args = tree_cons (NULL_TREE, attr_arg_name, NULL_TREE);
+  attr = tree_cons (attr_name, attr_args, chain);
+  return attr;
+}
+
+/* Make the resolver function decl to dispatch the versions of
+   a multi-versioned function,  DEFAULT_DECL.  Create an
+   empty basic block in the resolver and store the pointer in
+   EMPTY_BB.  Return the decl of the resolver function.  */
+
+static tree
+make_resolver_func (const tree default_decl,
+		    const tree dispatch_decl,
+		    basic_block *empty_bb)
+{
+  char *resolver_name;
+  tree decl, type, decl_name, t;
+  bool is_uniq = false;
+
+  /* IFUNC's have to be globally visible.  So, if the default_decl is
+     not, then the name of the IFUNC should be made unique.  */
+  if (TREE_PUBLIC (default_decl) == 0)
+    is_uniq = true;
+
+  /* Append the filename to the resolver function if the versions are
+     not externally visible.  This is because the resolver function has
+     to be externally visible for the loader to find it.  So, appending
+     the filename will prevent conflicts with a resolver function from
+     another module which is based on the same version name.  */
+  resolver_name = make_name (default_decl, "resolver", is_uniq);
+
+  /* The resolver function should return a (void *). */
+  type = build_function_type_list (ptr_type_node, NULL_TREE);
+
+  decl = build_fn_decl (resolver_name, type);
+  decl_name = get_identifier (resolver_name);
+  SET_DECL_ASSEMBLER_NAME (decl, decl_name);
+
+  DECL_NAME (decl) = decl_name;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 0;
+  /* IFUNC resolvers have to be externally visible.  */
+  TREE_PUBLIC (decl) = 1;
+  DECL_UNINLINABLE (decl) = 0;
+
+  /* Resolver is not external, body is generated.  */
+  DECL_EXTERNAL (decl) = 0;
+  DECL_EXTERNAL (dispatch_decl) = 0;
+
+  DECL_CONTEXT (decl) = NULL_TREE;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  DECL_STATIC_CONSTRUCTOR (decl) = 0;
+
+  if (DECL_COMDAT_GROUP (default_decl)
+      || TREE_PUBLIC (default_decl))
+    {
+      /* In this case, each translation unit with a call to this
+	 versioned function will put out a resolver.  Ensure it
+	 is comdat to keep just one copy.  */
+      DECL_COMDAT (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+  /* Build result decl and add to function_decl. */
+  t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
+  DECL_ARTIFICIAL (t) = 1;
+  DECL_IGNORED_P (t) = 1;
+  DECL_RESULT (decl) = t;
+
+  gimplify_function_tree (decl);
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
+  *empty_bb = init_lowered_empty_function (decl, false);
+
+  cgraph_add_new_function (decl, true);
+  cgraph_call_function_insertion_hooks (cgraph_get_create_node (decl));
+
+  pop_cfun ();
+
+  gcc_assert (dispatch_decl != NULL);
+  /* Mark dispatch_decl as "ifunc" with resolver as resolver_name.  */
+  DECL_ATTRIBUTES (dispatch_decl) 
+    = make_attribute ("ifunc", resolver_name, DECL_ATTRIBUTES (dispatch_decl));
+
+  /* Create the alias for dispatch to resolver here.  */
+  /*cgraph_create_function_alias (dispatch_decl, decl);*/
+  cgraph_same_body_alias (NULL, dispatch_decl, decl);
+  return decl;
+}
+
+/* Generate the dispatching code body to dispatch multi-versioned function
+   DECL.  The target hook is called to process the "target" attributes and
+   provide the code to dispatch the right function at run-time.  NODE points
+   to the dispatcher decl whose body will be created.  */
+
+static tree 
+ix86_generate_version_dispatcher_body (void *node_p)
+{
+  tree resolver_decl;
+  basic_block empty_bb;
+  VEC (tree, heap) *fn_ver_vec = NULL;
+  tree default_ver_decl;
+  struct cgraph_node *versn;
+  struct cgraph_node *node;
+
+  struct cgraph_function_version_info *node_version_info = NULL;
+  struct cgraph_function_version_info *versn_info = NULL;
+
+  node = (cgraph_node *)node_p;
+
+  node_version_info = get_cgraph_node_version (node);
+  gcc_assert (node->dispatcher_function
+	      && node_version_info != NULL);
+
+  if (node_version_info->dispatcher_resolver)
+    return node_version_info->dispatcher_resolver;
+
+  /* The first version in the chain corresponds to the default version.  */
+  default_ver_decl = node_version_info->next->this_node->symbol.decl;
+
+  /* node is going to be an alias, so remove the finalized bit.  */
+  node->local.finalized = false;
+
+  resolver_decl = make_resolver_func (default_ver_decl,
+				      node->symbol.decl, &empty_bb);
+
+  node_version_info->dispatcher_resolver = resolver_decl;
+
+  push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
+
+  fn_ver_vec = VEC_alloc (tree, heap, 2);
+
+  for (versn_info = node_version_info->next; versn_info;
+       versn_info = versn_info->next)
+    {
+      versn = versn_info->this_node;
+      /* Check for virtual functions here again, as by this time it should
+	 have been determined if this function needs a vtable index or
+	 not.  This happens for methods in derived classes that override
+	 virtual methods in base classes but are not explicitly marked as
+	 virtual.  */
+      if (DECL_VINDEX (versn->symbol.decl))
+        error_at (DECL_SOURCE_LOCATION (versn->symbol.decl),
+		  "Virtual function multiversioning not supported");
+      VEC_safe_push (tree, heap, fn_ver_vec, versn->symbol.decl);
+    }
+
+  dispatch_function_versions (resolver_decl, fn_ver_vec, &empty_bb);
+
+  rebuild_cgraph_edges (); 
+  pop_cfun ();
+  return resolver_decl;
+}
 /* This builds the processor_model struct type defined in
    libgcc/config/i386/cpuinfo.c  */
 
@@ -28651,6 +29614,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     {
       tree ref;
       tree field;
+      tree final;
+
       unsigned int field_val = 0;
       unsigned int NUM_ARCH_NAMES
 	= sizeof (arch_names_table) / sizeof (struct _arch_names_table);
@@ -28690,14 +29655,17 @@ fold_builtin_cpu (tree fndecl, tree *args)
 		     field, NULL_TREE);
 
       /* Check the value.  */
-      return build2 (EQ_EXPR, unsigned_type_node, ref,
-		     build_int_cstu (unsigned_type_node, field_val));
+      final = build2 (EQ_EXPR, unsigned_type_node, ref,
+		      build_int_cstu (unsigned_type_node, field_val));
+      return build1 (CONVERT_EXPR, integer_type_node, final);
     }
   else if (fn_code == IX86_BUILTIN_CPU_SUPPORTS)
     {
       tree ref;
       tree array_elt;
       tree field;
+      tree final;
+
       unsigned int field_val = 0;
       unsigned int NUM_ISA_NAMES
 	= sizeof (isa_names_table) / sizeof (struct _isa_names_table);
@@ -28729,8 +29697,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       field_val = (1 << isa_names_table[i].feature);
       /* Return __cpu_model.__cpu_features[0] & field_val  */
-      return build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
-		     build_int_cstu (unsigned_type_node, field_val));
+      final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
+		      build_int_cstu (unsigned_type_node, field_val));
+      return build1 (CONVERT_EXPR, integer_type_node, final);
     }
   gcc_unreachable ();
 }
@@ -41218,6 +42187,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_PROFILE_BEFORE_PROLOGUE
 #define TARGET_PROFILE_BEFORE_PROLOGUE ix86_profile_before_prologue
 
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME ix86_mangle_decl_assembler_name
+
 #undef TARGET_ASM_UNALIGNED_HI_OP
 #define TARGET_ASM_UNALIGNED_HI_OP TARGET_ASM_ALIGNED_HI_OP
 #undef TARGET_ASM_UNALIGNED_SI_OP
@@ -41310,6 +42282,17 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_FOLD_BUILTIN
 #define TARGET_FOLD_BUILTIN ix86_fold_builtin
+
+#undef TARGET_COMPARE_VERSION_PRIORITY
+#define TARGET_COMPARE_VERSION_PRIORITY ix86_compare_version_priority
+
+#undef TARGET_GENERATE_VERSION_DISPATCHER_BODY
+#define TARGET_GENERATE_VERSION_DISPATCHER_BODY \
+  ix86_generate_version_dispatcher_body
+
+#undef TARGET_GET_FUNCTION_VERSIONS_DISPATCHER
+#define TARGET_GET_FUNCTION_VERSIONS_DISPATCHER \
+  ix86_get_function_versions_dispatcher
 
 #undef TARGET_ENUM_VA_LIST_P
 #define TARGET_ENUM_VA_LIST_P ix86_enum_va_list
@@ -41450,6 +42433,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT ix86_function_specific_print
+
+#undef TARGET_OPTION_FUNCTION_VERSIONS
+#define TARGET_OPTION_FUNCTION_VERSIONS ix86_function_versions
 
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P ix86_can_inline_p

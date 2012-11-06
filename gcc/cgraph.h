@@ -280,6 +280,8 @@ struct GTY(()) cgraph_node {
   /* ?? We should be able to remove this.  We have enough bits in
      cgraph to calculate it.  */
   unsigned tm_clone : 1;
+  /* True if this decl is a dispatcher for function versions.  */
+  unsigned dispatcher_function : 1;
 };
 
 DEF_VEC_P(symtab_node);
@@ -291,6 +293,47 @@ typedef struct cgraph_node *cgraph_node_ptr;
 DEF_VEC_P(cgraph_node_ptr);
 DEF_VEC_ALLOC_P(cgraph_node_ptr,heap);
 DEF_VEC_ALLOC_P(cgraph_node_ptr,gc);
+
+/* Function Multiversioning info.  */
+struct GTY(()) cgraph_function_version_info {
+  /* The cgraph_node for which the function version info is stored.  */
+  struct cgraph_node *this_node;
+  /* Chains all the semantically identical function versions.  The
+     first function in this chain is the version_info node of the
+     default function.  */
+  struct cgraph_function_version_info *prev;
+  /* If this version node corresponds to a dispatcher for function
+     versions, this points to the version info node of the default
+     function, the first node in the chain.  */
+  struct cgraph_function_version_info *next;
+  /* If this node corresponds to a function version, this points
+     to the dispatcher function decl, which is the function that must
+     be called to execute the right function version at run-time.
+
+     If this cgraph node is a dispatcher (if dispatcher_function is
+     true, in the cgraph_node struct) for function versions, this
+     points to resolver function, which holds the function body of the
+     dispatcher. The dispatcher decl is an alias to the resolver
+     function decl.  */
+  tree dispatcher_resolver;
+};
+
+/* Get the cgraph_function_version_info node corresponding to node.  */
+struct cgraph_function_version_info *
+  get_cgraph_node_version (struct cgraph_node *node);
+
+/* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
+   corresponding to cgraph_node NODE.  */
+struct cgraph_function_version_info *
+  insert_new_cgraph_node_version (struct cgraph_node *node);
+
+/* Record that DECL1 and DECL2 are semantically identical function
+   versions.  */
+void record_function_versions (tree decl1, tree decl2);
+
+/* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
+   DECL is a duplicate declaration.  */
+void delete_function_version (tree decl);
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node
    can appear in multiple sets.  */
@@ -638,6 +681,9 @@ void init_cgraph (void);
 bool cgraph_process_new_functions (void);
 void cgraph_process_same_body_aliases (void);
 void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alias);
+/*  Initialize datastructures so DECL is a function in lowered gimple form.
+    IN_SSA is true if the gimple is in SSA.  */
+basic_block init_lowered_empty_function (tree decl, bool in_ssa);
 
 /* In cgraphclones.c  */
 

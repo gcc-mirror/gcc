@@ -132,6 +132,144 @@ static GTY(()) struct cgraph_edge *free_edges;
 /* Did procss_same_body_aliases run?  */
 bool same_body_aliases_done;
 
+/* Map a cgraph_node to cgraph_function_version_info using this htab.
+   The cgraph_function_version_info has a THIS_NODE field that is the
+   corresponding cgraph_node..  */
+
+static htab_t GTY((param_is (struct cgraph_function_version_info *)))
+  cgraph_fnver_htab = NULL;
+
+/* Hash function for cgraph_fnver_htab.  */
+static hashval_t
+cgraph_fnver_htab_hash (const void *ptr)
+{
+  int uid = ((const struct cgraph_function_version_info *)ptr)->this_node->uid;
+  return (hashval_t)(uid);
+}
+
+/* eq function for cgraph_fnver_htab.  */
+static int
+cgraph_fnver_htab_eq (const void *p1, const void *p2)
+{
+  const struct cgraph_function_version_info *n1
+    = (const struct cgraph_function_version_info *)p1;
+  const struct cgraph_function_version_info *n2
+    = (const struct cgraph_function_version_info *)p2;
+
+  return n1->this_node->uid == n2->this_node->uid;
+}
+
+/* Mark as GC root all allocated nodes.  */
+static GTY(()) struct cgraph_function_version_info *
+  version_info_node = NULL;
+
+/* Get the cgraph_function_version_info node corresponding to node.  */
+struct cgraph_function_version_info *
+get_cgraph_node_version (struct cgraph_node *node)
+{
+  struct cgraph_function_version_info *ret;
+  struct cgraph_function_version_info key;
+  key.this_node = node;
+
+  if (cgraph_fnver_htab == NULL)
+    return NULL;
+
+  ret = (struct cgraph_function_version_info *)
+    htab_find (cgraph_fnver_htab, &key);
+
+  return ret;
+}
+
+/* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
+   corresponding to cgraph_node NODE.  */
+struct cgraph_function_version_info *
+insert_new_cgraph_node_version (struct cgraph_node *node)
+{
+  void **slot;
+  
+  version_info_node = NULL;
+  version_info_node = ggc_alloc_cleared_cgraph_function_version_info ();
+  version_info_node->this_node = node;
+
+  if (cgraph_fnver_htab == NULL)
+    cgraph_fnver_htab = htab_create_ggc (2, cgraph_fnver_htab_hash,
+				         cgraph_fnver_htab_eq, NULL);
+
+  slot = htab_find_slot (cgraph_fnver_htab, version_info_node, INSERT);
+  gcc_assert (slot != NULL);
+  *slot = version_info_node;
+  return version_info_node;
+}
+
+/* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
+   DECL is a duplicate declaration.  */
+void
+delete_function_version (tree decl)
+{
+  struct cgraph_node *decl_node = cgraph_get_create_node (decl);
+  struct cgraph_function_version_info *decl_v = NULL;
+
+  if (decl_node == NULL)
+    return;
+
+  decl_v = get_cgraph_node_version (decl_node);
+
+  if (decl_v == NULL)
+    return;
+
+  if (decl_v->prev != NULL)
+   decl_v->prev->next = decl_v->next;
+
+  if (decl_v->next != NULL)
+    decl_v->next->prev = decl_v->prev;
+
+  if (cgraph_fnver_htab != NULL)
+    htab_remove_elt (cgraph_fnver_htab, decl_v);
+
+  cgraph_remove_node (decl_node);
+}
+
+/* Record that DECL1 and DECL2 are semantically identical function
+   versions.  */
+void
+record_function_versions (tree decl1, tree decl2)
+{
+  struct cgraph_node *decl1_node = cgraph_get_create_node (decl1);
+  struct cgraph_node *decl2_node = cgraph_get_create_node (decl2);
+  struct cgraph_function_version_info *decl1_v = NULL;
+  struct cgraph_function_version_info *decl2_v = NULL;
+  struct cgraph_function_version_info *before;
+  struct cgraph_function_version_info *after;
+
+  gcc_assert (decl1_node != NULL && decl2_node != NULL);
+  decl1_v = get_cgraph_node_version (decl1_node);
+  decl2_v = get_cgraph_node_version (decl2_node);
+
+  if (decl1_v != NULL && decl2_v != NULL)
+    return;
+
+  if (decl1_v == NULL)
+    decl1_v = insert_new_cgraph_node_version (decl1_node);
+
+  if (decl2_v == NULL)
+    decl2_v = insert_new_cgraph_node_version (decl2_node);
+
+  /* Chain decl2_v and decl1_v.  All semantically identical versions
+     will be chained together.  */
+
+  before = decl1_v;
+  after = decl2_v;
+
+  while (before->next != NULL)
+    before = before->next;
+
+  while (after->prev != NULL)
+    after= after->prev;
+
+  before->next = after;
+  after->prev = before;
+}
+
 /* Macros to access the next item in the list of free cgraph nodes and
    edges. */
 #define NEXT_FREE_NODE(NODE) cgraph ((NODE)->symbol.next)

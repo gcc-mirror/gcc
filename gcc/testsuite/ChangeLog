@@ -1,3 +1,12 @@
+2012-11-05  Sriraman Tallam  <tmsriram@google.com>
+
+	* testsuite/g++.dg/mv1.C: New test.
+	* testsuite/g++.dg/mv2.C: New test.
+	* testsuite/g++.dg/mv3.C: New test.
+	* testsuite/g++.dg/mv4.C: New test.
+	* testsuite/g++.dg/mv5.C: New test.
+	* testsuite/g++.dg/mv6.C: New test.
+
 2012-11-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR testsuite/55186

@@ -1298,6 +1298,37 @@ DEFHOOK
  tree, (tree fndecl, int n_args, tree *argp, bool ignore),
  hook_tree_tree_int_treep_bool_null)
 
+/* Target hook is used to compare the target attributes in two functions to
+   determine which function's features get higher priority.  This is used
+   during function multi-versioning to figure out the order in which two
+   versions must be dispatched.  A function version with a higher priority
+   is checked for dispatching earlier.  DECL1 and DECL2 are
+   the two function decls that will be compared. It returns positive value
+   if DECL1 is higher priority,  negative value if DECL2 is higher priority
+   and 0 if they are the same. */
+DEFHOOK
+(compare_version_priority,
+ "",
+ int, (tree decl1, tree decl2), NULL)
+
+/*  Target hook is used to generate the dispatcher logic to invoke the right
+    function version at run-time for a given set of function versions.
+    ARG points to the callgraph node of the dispatcher function whose body
+    must be generated.  */
+DEFHOOK
+(generate_version_dispatcher_body,
+ "",
+ tree, (void *arg), NULL) 
+
+/* Target hook is used to get the dispatcher function for a set of function
+   versions.  The dispatcher function is called to invoke the right function
+   version at run-time.  DECL is one version from a set of semantically
+   identical versions.  */
+DEFHOOK
+(get_function_versions_dispatcher,
+ "",
+ tree, (void *decl), NULL)
+
 /* Returns a code for a target-specific builtin that implements
    reciprocal of the function, or NULL_TREE if not available.  */
 DEFHOOK
@@ -2773,6 +2804,16 @@ DEFHOOK
  "",
  void, (void),
  hook_void_void)
+
+/* This function returns true if DECL1 and DECL2 are versions of the same
+   function.  DECL1 and DECL2 are function versions if and only if they
+   have the same function signature and different target specific attributes,
+   that is, they are compiled for different target machines.  */
+DEFHOOK
+(function_versions,
+ "",
+ bool, (tree decl1, tree decl2),
+ hook_bool_tree_tree_false)
 
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX
