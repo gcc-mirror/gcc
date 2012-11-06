@@ -1,3 +1,9 @@
+2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md
+	(<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>): Mark operand 0
+	as read and written by the instruction.
+
 2012-11-06  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54693
