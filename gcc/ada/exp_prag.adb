@@ -1076,10 +1076,12 @@ package body Exp_Prag is
 
       Arg := First (Args);
       while Present (Arg) loop
-         if No (Invar) or else Chars (Arg) = Name_Invariant then
-            Invar := Expression (Arg);
-         else
+         if Chars (Arg) = Name_Increases
+           or else Chars (Arg) = Name_Decreases
+         then
             Process_Increase_Decrease (Arg, Is_Last => Arg = Last_Arg);
+         else
+            Invar := Expression (Arg);
          end if;
 
          Next (Arg);
@@ -1088,12 +1090,14 @@ package body Exp_Prag is
       --  Verify the invariant expression, generate:
       --    pragma Assert (<Invar>);
 
-      Insert_Action (N,
-        Make_Pragma (Loc,
-          Chars                        => Name_Assert,
-          Pragma_Argument_Associations => New_List (
-            Make_Pragma_Argument_Association (Loc,
-              Expression => Relocate_Node (Invar)))));
+      if Present (Invar) then
+         Insert_Action (N,
+           Make_Pragma (Loc,
+             Chars                        => Name_Assert,
+             Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Expression => Relocate_Node (Invar)))));
+      end if;
 
       --  Construct the segment which stores the old values of all expressions.
       --  Generate:

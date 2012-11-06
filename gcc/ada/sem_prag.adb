@@ -11335,8 +11335,12 @@ package body Sem_Prag is
                --  relocated during expansion and analyzed in their new
                --  context.
 
-               if Chars (Arg) = Name_Invariant or else Arg_Count = 1 then
-
+               if Chars (Arg) = Name_Invariant
+                 or else
+                   (Arg_Count = 1
+                      and then Chars (Arg) /= Name_Increases
+                      and then Chars (Arg) /= Name_Decreases)
+               then
                   --  Only one invariant is allowed in the pragma
 
                   if Seen then
@@ -11355,7 +11359,7 @@ package body Sem_Prag is
                --  Illegal argument
 
                else
-                  Error_Pragma_Arg ("argument & not allowed in pragma %", Arg);
+                  Error_Pragma_Arg ("argument not allowed in pragma %", Arg);
                end if;
 
                Next (Arg);
