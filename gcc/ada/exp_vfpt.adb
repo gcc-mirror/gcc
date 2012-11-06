@@ -39,10 +39,10 @@ package body Exp_VFpt is
 
    --  Vax floating point format (from Vax Architecture Reference Manual
    --  version 6):
-   --
+
    --  Float F:
    --  --------
-   --
+
    --   1 1
    --   5 4             7 6            0
    --  +-+---------------+--------------+
@@ -50,23 +50,23 @@ package body Exp_VFpt is
    --  +-+---------------+--------------+
    --  |             fraction           |  A + 2
    --  +--------------------------------+
-   --
+
    --  bit 15 is the sign bit,
    --  bits 14:7 is the excess 128 binary exponent,
    --  bits 6:0 and 31:16 the normalized 24-bit fraction with the redundant
    --    most significant fraction bit not represented.
-   --
+
    --  An exponent value of 0 together with a sign bit of 0, is taken to
    --  indicate that the datum has a value of 0. Exponent values of 1 through
    --  255 indicate true binary exponents of -127 to +127. An exponent value
    --  of 0, together with a sign bit of 1, is taken as reserved.
-   --
+
    --  Note that fraction bits are not continuous in memory, VAX is little
    --  endian (LSB first).
-   --
+
    --  Float D:
    --  --------
-   --
+
    --   1 1
    --   5 4             7 6            0
    --  +-+---------------+--------------+
@@ -78,12 +78,12 @@ package body Exp_VFpt is
    --  +--------------------------------+
    --  |             fraction           |  A + 6
    --  +--------------------------------+
-   --
+
    --  Like Float F but with 55 bits for the fraction.
-   --
+
    --  Float G:
    --  --------
-   --
+
    --   1 1
    --   5 4                   4 3      0
    --  +-+---------------------+--------+
@@ -95,12 +95,12 @@ package body Exp_VFpt is
    --  +--------------------------------+
    --  |             fraction           |  A + 6
    --  +--------------------------------+
-   --
+
    --  Exponent values of 1 through 2047 indicate trye binary exponents of
    --  -1023 to +1023.
-   --
+
    --  Main differences compared to IEEE 754:
-   --
+
    --  * No denormalized numbers
    --  * No infinity
    --  * No NaN

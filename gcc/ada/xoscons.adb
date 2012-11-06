@@ -442,7 +442,6 @@ procedure XOSCons is
       Ada_Ofile, C_Ofile : Sfile;
       Current_Line       : in out Integer)
    is
-
       function Get_Value (Name : String) return Int_Value_Type;
       --  Returns the value of the variable Name
 
@@ -465,15 +464,16 @@ procedure XOSCons is
             end loop;
 
             --  Not found returns 0
+
             return (True, 0);
          end if;
       end Get_Value;
 
-      Sline  : Slice_Set;
+      --  Local variables
 
+      Sline  : Slice_Set;
       Line   : String (1 .. 256);
       Last   : Integer;
-
       Value1 : Int_Value_Type;
       Value2 : Int_Value_Type;
       Res    : Boolean;
