@@ -1,3 +1,9 @@
+2012-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-8.c: New.
+	* gcc.target/sh/pr54089-9.c: New.
+
 2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
 	* gcc.target/i386/avx-vzeroupper-5.c: Changed scan-assembler-times.
