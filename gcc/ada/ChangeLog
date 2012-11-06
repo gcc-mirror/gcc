@@ -1,3 +1,12 @@
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): Do nothing if the
+	renamed object is a limited record.
+
+2012-11-06  Bernard Banner  <banner@adacore.com>
+
+	* sysdep.c (_getpagesize): New. Minor reformatting.
+
 2012-11-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb: Minor reformatting.

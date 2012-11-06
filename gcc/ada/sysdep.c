@@ -938,30 +938,37 @@ __gnat_is_file_not_found_error (int errno_val) {
 int
 _sigismember (sigset_t *set, int signum)
 {
-    return sigismember (set, signum);
+  return sigismember (set, signum);
 }
 
 int
 _sigaddset (sigset_t *set, int signum)
 {
-   return sigaddset (set, signum);
+  return sigaddset (set, signum);
 }
 
 int
 _sigdelset (sigset_t *set, int signum)
 {
-   return sigdelset (set, signum);
+  return sigdelset (set, signum);
 }
 
 int
 _sigemptyset (sigset_t *set)
 {
-    return sigemptyset (set);
+  return sigemptyset (set);
 }
 
 int
-_sigfillset(sigset_t *set)
+_sigfillset (sigset_t *set)
 {
-    return sigfillset (set);
+  return sigfillset (set);
+}
+
+#include <unistd.h>
+int
+_getpagesize (void)
+{
+  return getpagesize ();
 }
 #endif
