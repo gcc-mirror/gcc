@@ -1,3 +1,19 @@
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads, atree.ads: Minor reformatting.
+
+2012-11-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/Makefile.in: Add runtime pairs for Android.
+	Rework handling of s-oscons.ads.
+	* s-osinte-android.ads, s-osinte-android.adb: New files.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): For N_Real_Literal, create the
+	binary representation of vax floats.
+
 2012-11-06  Tristan Gingold  <gingold@adacore.com>
 
 	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Fix thinko

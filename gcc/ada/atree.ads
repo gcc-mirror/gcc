@@ -281,7 +281,10 @@ package Atree is
    ------------------
 
    --  The following variables denote the count of errors of various kinds
-   --  detected in the tree.
+   --  detected in the tree. Note that these might be more logically located
+   --  in Err_Vars, but we put it to deal with licensing issues (we need this
+   --  to have the GPL exception licensing, since Check_Error_Detected can
+   --  be called from units with this licensing).
 
    Serious_Errors_Detected : Nat := 0;
    --  This is a count of errors that are serious enough to stop expansion,
