@@ -33,7 +33,6 @@
 
 #include <limits>
 #include <vector>
-#include <cstddef> // For size_t
 #include <string>
 #include <memory> // For std::allocator
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,

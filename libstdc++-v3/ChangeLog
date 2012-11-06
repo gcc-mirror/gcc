@@ -1,3 +1,12 @@
+2012-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/atomic_base.h: Don't include <cstddef>, use nullptr.
+	* include/std/atomic: Likewise.
+	* include/tr2/dynamic_bitset: Likewise.
+
+	* libsupc++/vec.cc (compute_size(std::size_t, std::size_t,
+	std::size_t)): Fix for -fno-exceptions.
+
 2012-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/profile/map.h (map::emplace_hint): Add missing return.
