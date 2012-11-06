@@ -1,3 +1,18 @@
+2012-11-06  Bernard Banner  <banner@adacore.com>
+
+	* adaint.c Add file macro definitions missing on Android.
+	* adaint.h Avoid definitions related to task affinity and CPU
+	sets since this functionality is missing on the Android
+	* errno.c (__set_errno): Android already contains such a named
+	procedure so do include again.
+	* gsocket.h: Sockets not supported on Android.
+	* init.c: Avoid linux related code not supported on Android.
+	* sysdep.c (sigismember, sigaddset, sigdelset, sigemptyset,
+	sigfillset): wrapper functions since sig routines are defined
+	as inline macros on Android.
+	* terminals.c: Add stubs for terminal related functions not
+	supported on Android.
+
 2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Do not

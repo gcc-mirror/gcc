@@ -250,7 +250,11 @@ extern char * __gnat_locate_executable_file        (char *, char *);
 extern char * __gnat_locate_file_with_predicate    (char *, char *,
 						    int (*)(char*));
 
-#if defined (linux)
+#if defined (__ANDROID__)
+#undef linux
+extern void   *__gnat_lwp_self                     (void);
+
+#elif defined (linux)
 extern void   *__gnat_lwp_self			   (void);
 
 /* Routines for interface to required CPU set primitives */
