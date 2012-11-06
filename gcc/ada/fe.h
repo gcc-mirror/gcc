@@ -80,6 +80,10 @@ extern Boolean Is_Entity_Name		(Node_Id);
 #define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
 extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
 
+/* atree: */
+
+#define Serious_Errors_Detected atree__serious_errors_detected
+
 /* errout: */
 
 #define Error_Msg_N               errout__error_msg_n
@@ -95,7 +99,6 @@ extern void Set_Identifier_Casing (Char *, const Char *);
 #define Error_Msg_Node_2        err_vars__error_msg_node_2
 #define Error_Msg_Uint_1        err_vars__error_msg_uint_1
 #define Error_Msg_Uint_2        err_vars__error_msg_uint_2
-#define Serious_Errors_Detected err_vars__serious_errors_detected
 
 extern Entity_Id Error_Msg_Node_2;
 extern Uint      Error_Msg_Uint_1;

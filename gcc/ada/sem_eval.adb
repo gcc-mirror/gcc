@@ -1294,10 +1294,13 @@ package body Sem_Eval is
 
    begin
       --  Never known at compile time if bad type or raises constraint error
-      --  or empty (latter case occurs only as a result of a previous error)
+      --  or empty (latter case occurs only as a result of a previous error).
 
-      if No (Op)
-        or else Op = Error
+      if No (Op) then
+         Check_Error_Detected;
+         return False;
+
+      elsif Op = Error
         or else Etype (Op) = Any_Type
         or else Raises_Constraint_Error (Op)
       then

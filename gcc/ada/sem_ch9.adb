@@ -2094,7 +2094,9 @@ package body Sem_Ch9 is
 
                --  Pragma case
 
-               elsif Pragma_Name (Prio_Item) = Name_Priority then
+               elsif Nkind (Prio_Item) = N_Pragma
+                 and then Pragma_Name (Prio_Item) = Name_Priority
+               then
                   Error_Msg_N ("?pragma Interrupt_Priority is preferred "
                                & "in presence of handlers", Prio_Item);
                end if;

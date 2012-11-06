@@ -906,9 +906,10 @@ package body Sem_Type is
             --  covers an object T2 that implements a direct derivation of T1.
             --  Note: test for presence of E is defense against previous error.
 
-            if Present (E)
-              and then Present (Interfaces (E))
-            then
+            if No (E) then
+               Check_Error_Detected;
+
+            elsif Present (Interfaces (E)) then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
                   if Is_Ancestor (Etype (T1), Node (Elmt)) then

@@ -379,6 +379,7 @@ package body Exp_Ch13 is
       --  This is an error protection against previous errors
 
       if No (E_Scope) then
+         Check_Error_Detected;
          return;
       end if;
 

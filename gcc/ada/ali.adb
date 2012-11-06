@@ -970,9 +970,16 @@ package body ALI is
                Add_Char_To_Name_Buffer (Getc);
             end loop;
 
-            --  If -fstack-check, record that it occurred
+            --  If -fstack-check, record that it occurred. Note that an
+            --  additional string parameter can be specified, in the form of
+            --  -fstack-check={no|generic|specific}. "no" means no checking,
+            --  "generic" means force the use of old-style checking, and
+            --  "specific" means use the best checking method.
 
-            if Name_Buffer (1 .. Name_Len) = "-fstack-check" then
+            if Name_Len >= 13
+              and then Name_Buffer (1 .. 13) = "-fstack-check"
+              and then Name_Buffer (1 .. Name_Len) /= "-fstack-check=no"
+            then
                Stack_Check_Switch_Set := True;
             end if;
 

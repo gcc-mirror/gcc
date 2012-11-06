@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with ALI;      use ALI;
+with Atree;    use Atree;
 with Debug;
 with Err_Vars; use Err_Vars;
 with Errutil;

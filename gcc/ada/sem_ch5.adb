@@ -898,6 +898,7 @@ package body Sem_Ch5 is
       --  up, and we just return immediately (defence against previous errors).
 
       if No (HSS) then
+         Check_Error_Detected;
          return;
       end if;
 
@@ -942,11 +943,8 @@ package body Sem_Ch5 is
             --  identifier and continue, otherwise raise an exception.
 
             if No (Ent) then
-               if Total_Errors_Detected /= 0 then
-                  Set_Identifier (N, Empty);
-               else
-                  raise Program_Error;
-               end if;
+               Check_Error_Detected;
+               Set_Identifier (N, Empty);
 
             else
                Set_Ekind (Ent, E_Block);
@@ -1398,6 +1396,7 @@ package body Sem_Ch5 is
       --  Ignore previous error
 
       if Label_Ent = Any_Id then
+         Check_Error_Detected;
          return;
 
       --  We just have a label as the target of a goto

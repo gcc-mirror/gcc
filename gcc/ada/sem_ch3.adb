@@ -12078,6 +12078,7 @@ package body Sem_Ch3 is
       --  Defend against previous errors
 
       if No (Scalar_Range (Derived_Type)) then
+         Check_Error_Detected;
          return;
       end if;
 

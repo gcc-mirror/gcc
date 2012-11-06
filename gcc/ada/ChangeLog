@@ -1,3 +1,27 @@
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Fix thinko
+	in previous commit.
+
+2012-11-06  Jose Ruiz  <ruiz@adacore.com>
+
+	* ali.adb (Scan_ALI): Fix parsing mechanism for -fstack-check.
+
+2012-11-06  Thomas Quinot  <quinot@adacore.com>
+
+	* atree.adb, atree.ads, einfo.adb, errout.adb, errout.ads, erroutc.adb,
+	erroutc.ads, errutil.adb, errutil.ads, err_vars.ads, expander.adb,
+	exp_ch13.adb, exp_ch2.adb, exp_ch6.adb, exp_dist.adb, fe.h,
+	fmap.adb, fmap.ads, gprep.adb, makeutl.adb, osint.adb, osint.ads,
+	par_sco.adb, prepcomp.adb, prj-part.adb, prj-proc.adb, scng.adb,
+	sdefault.ads, sem_ch10.adb, sem_ch13.adb, sem_ch2.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_ch5.adb, sem_dim.adb, sem_elab.adb, sem_eval.adb,
+	sem_intr.adb, sem_prag.adb, sem_type.adb, sem_warn.adb, stylesw.adb,
+	stylesw.ads, targparm.adb, targparm.ads (Cascaded_Error): Rename to
+	more descriptive name 'Check_Error_Detected'. Add calls to
+	Check_Error_Detected at places where semantic analysis is abandoned
+	assuming a previously detected error.
+
 2012-11-06  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb: Minor comment change.
