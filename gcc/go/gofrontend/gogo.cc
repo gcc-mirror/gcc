@@ -23,8 +23,7 @@
 
 // Class Gogo.
 
-Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
-           int pointer_size)
+Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   : backend_(backend),
     linemap_(linemap),
     package_(NULL),
@@ -83,6 +82,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int int_type_size,
   this->add_named_type(Type::make_complex_type("complex128", 128,
 					       RUNTIME_TYPE_KIND_COMPLEX128));
 
+  int int_type_size = pointer_size;
   if (int_type_size < 32)
     int_type_size = 32;
   this->add_named_type(Type::make_integer_type("uint", true,
