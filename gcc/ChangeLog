@@ -1,5 +1,7 @@
 2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
 
+	* cfghooks.c (copy_bbs): Handle a null loop_father.
+
 	* cgraph.c (cgraph_debug_gimple_stmt): Handle a null
 	current_function_decl.
 

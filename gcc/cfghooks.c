@@ -1258,12 +1258,15 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       new_bb = new_bbs[i] = duplicate_block (bb, NULL, after);
       after = new_bb;
       bb->flags |= BB_DUPLICATED;
-      /* Possibly set loop header.  */
-      if (bb->loop_father->header == bb && bb->loop_father != base)
-	new_bb->loop_father->header = new_bb;
-      /* Or latch.  */
-      if (bb->loop_father->latch == bb && bb->loop_father != base)
-	new_bb->loop_father->latch = new_bb;
+      if (bb->loop_father)
+	{
+	  /* Possibly set loop header.  */
+	  if (bb->loop_father->header == bb && bb->loop_father != base)
+	    new_bb->loop_father->header = new_bb;
+	  /* Or latch.  */
+	  if (bb->loop_father->latch == bb && bb->loop_father != base)
+	    new_bb->loop_father->latch = new_bb;
+	}
     }
 
   /* Set dominators.  */
