@@ -1,3 +1,9 @@
+2012-11-06  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54693
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into):
+	Use a stack vector before allocating a pointer set.
+
 2012-11-06  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_get_param_decl_index_1): New function.
