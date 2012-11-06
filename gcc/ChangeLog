@@ -1,3 +1,8 @@
+2012-11-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (print_reg): Replace REX_INT_REG_P with
+	REX_INT_REGNO_P.
+
 2012-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/54986
