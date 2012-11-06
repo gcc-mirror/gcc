@@ -1,5 +1,10 @@
 2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_init_machine_status): Do not
+	explicitly clear tls_descriptor_call_expanded_p again.
+
+2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/sse.md
 	(<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>): Mark operand 0
 	as read and written by the instruction.
