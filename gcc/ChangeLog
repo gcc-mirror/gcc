@@ -1,5 +1,11 @@
 2012-11-06  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline.c (compute_uninlined_call_time): Return gcov_type.
+	(compute_inlined_call_time): Watch overflows.
+	(relative_time_benefit): Compute in gcov_type.
+
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
 	* cfgloopanal.c (get_loop_hot_path): New function.
 	* tree-ssa-lop-ivcanon.c (struct loop_size): Add CONSTANT_IV,
 	NUM_NON_PURE_CALLS_ON_HOT_PATH, NUM_PURE_CALLS_ON_HOT_PATH,
