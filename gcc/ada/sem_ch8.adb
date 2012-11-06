@@ -731,6 +731,15 @@ package body Sem_Ch8 is
             elsif Is_Unchecked_Union (Etype (Nam)) then
                null;
 
+            --  If a record is limited its size is invariant. This is the case
+            --  in particular with record types with an access discirminant
+            --  that are used in iterators. This is an optimization, but it
+            --  also prevents typing anomalies when the prefix is further
+            --  expanded.
+
+            elsif Is_Limited_Record (Etype (Nam)) then
+               null;
+
             else
                Subt := Make_Temporary (Loc, 'T');
                Remove_Side_Effects (Nam);
