@@ -1,3 +1,19 @@
+2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (TARGET_INSTANTIATE_DECLS): New define.
+	(ix86_instantiate_decls): New function.
+	(ix86_expand_builtin) <case IX86_BUILTIN_LDMXCSR>: Use SLOT_TEMP
+	stack slot instead of SLOT_VIRTUAL.
+	<case IX86_BUILTIN_STMXCSR>: Ditto.
+	(assign_386_stack_local): Do not assert when virtual slot is valid.
+	* config/i386/i386.h (enum ix86_stack_slot): Remove SLOT_VIRTUAL.
+	* config/i386/i386.md (truncdfsf2): Do not use SLOT_VIRTUAL stack slot.
+	(truncxf<mode>2): Ditto.
+	(floatunssi<mode>2): Ditto.
+	(isinf<mode>2): Ditto.
+	* config/i386/sync.md (atomic_load<mode>): Ditto.
+	(atomic_store<mode>): Ditto.
+
 2012-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound,
@@ -14,27 +30,27 @@
 
 2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
 
-	* config/i386/i386-protos.h (emit_i387_cw_initialization): Deleted.
-	(emit_vzero): Added prototype.
+	* config/i386/i386-protos.h (emit_i387_cw_initialization): Delete.
+	(emit_vzero): Add prototype.
 	(ix86_mode_entry): Likewise.
 	(ix86_mode_exit): Likewise.
 	(ix86_emit_mode_set): Likewise.
 
-	* config/i386/i386.c (typedef struct block_info_def): Deleted.
-	(define BLOCK_INFO): Deleted.
-	(check_avx256_stores): Added checking for MEM_P.
-	(move_or_delete_vzeroupper_2): Deleted.
-	(move_or_delete_vzeroupper_1): Deleted.
-	(move_or_delete_vzeroupper): Deleted.
-	(ix86_maybe_emit_epilogue_vzeroupper): Deleted.
-	(function_pass_avx256_p): Deleted.
-	(ix86_function_ok_for_sibcall): Deleted disabling sibcall.
-	(nit_cumulative_args): Deleted initialization of of avx256 fields of
+	* config/i386/i386.c (typedef struct block_info_def): Delete.
+	(define BLOCK_INFO): Delete.
+	(check_avx256_stores): Add checking for MEM_P.
+	(move_or_delete_vzeroupper_2): Delete.
+	(move_or_delete_vzeroupper_1): Delete.
+	(move_or_delete_vzeroupper): Delete.
+	(ix86_maybe_emit_epilogue_vzeroupper): Delete.
+	(function_pass_avx256_p): Delete.
+	(ix86_function_ok_for_sibcall): Remove sibcall disabling.
+	(nit_cumulative_args): Remove initialization of of avx256 fields of
 	cfun->machine.
-	(ix86_emit_restore_sse_regs_using_mov): Deleted vzeroupper generation.
+	(ix86_emit_restore_sse_regs_using_mov): Remove vzeroupper generation.
 	(ix86_expand_epilogue): Likewise.
 	(ix86_avx_u128_mode_needed): New.
-	(ix86_i387_mode_needed): Renamed ix86_mode_needed.
+	(ix86_i387_mode_needed): Rename from ix86_mode_needed.
 	(ix86_mode_needed): New.
 	(ix86_avx_u128_mode_after): New.
 	(ix86_mode_after): New.
@@ -43,11 +59,11 @@
 	(ix86_avx_u128_mode_exit): New.
 	(ix86_mode_exit): New.
 	(ix86_emit_mode_set): New.
-	(ix86_expand_call): Deleted vzeroupper generation.
-	(ix86_split_call_vzeroupper): Deleted.
-	(ix86_init_machine_status): Initialzed optimize_mode_switching.
-	(ix86_expand_special_args_builtin): Changed.
-	(ix86_reorg): Deleted a call of move_or_delete_vzeroupper.
+	(ix86_expand_call): Delete vzeroupper generation.
+	(ix86_split_call_vzeroupper): Delete.
+	(ix86_init_machine_status): Initialize optimize_mode_switching.
+	(ix86_expand_special_args_builtin): Change.
+	(ix86_reorg): Delete a call of move_or_delete_vzeroupper.
 
 	* config/i386/i386.h  (VALID_AVX256_REG_OR_OI_MODE): New.
 	(AVX_U128): New.
@@ -56,26 +72,26 @@
 	(MODE_AFTER): New.
 	(MODE_ENTRY): New.
 	(MODE_EXIT): New.
-	(EMIT_MODE_SET): Changed.
-	(machine_function): Deleted avx256 fields.
+	(EMIT_MODE_SET): Change.
+	(machine_function): Delete avx256 fields.
 
-	* config/i386/i386.md (UNSPEC_CALL_NEEDS_VZEROUPPER): Deleted.
-	(define_insn_and_split "*call_vzeroupper"): Deleted.
-	(define_insn_and_split "*call_rex64_ms_sysv_vzeroupper"): Deleted.
-	(define_insn_and_split "*sibcall_vzeroupper"): Deleted.
-	(define_insn_and_split "*call_pop_vzeroupper"): Deleted.
-	(define_insn_and_split "*sibcall_pop_vzeroupper"): Deleted.
-	(define_insn_and_split "*call_value_vzeroupper"): Deleted.
-	(define_insn_and_split "*sibcall_value_vzeroupper"): Deleted.
-	(define_insn_and_split "*call_value_rex64_ms_sysv_vzeroupper"): Deleted.
-	(define_insn_and_split "*call_value_pop_vzeroupper"): Deleted.
-	(define_insn_and_split "*sibcall_value_pop_vzeroupper"): Deleted.
-	(define_expand "return"): Deleted vzeroupper emitting.
-	(define_expand "simple_return"): Deleted.
+	* config/i386/i386.md (UNSPEC_CALL_NEEDS_VZEROUPPER): Delete.
+	(define_insn_and_split "*call_vzeroupper"): Delete.
+	(define_insn_and_split "*call_rex64_ms_sysv_vzeroupper"): Delete.
+	(define_insn_and_split "*sibcall_vzeroupper"): Delete.
+	(define_insn_and_split "*call_pop_vzeroupper"): Delete.
+	(define_insn_and_split "*sibcall_pop_vzeroupper"): Delete.
+	(define_insn_and_split "*call_value_vzeroupper"): Delete.
+	(define_insn_and_split "*sibcall_value_vzeroupper"): Delete.
+	(define_insn_and_split "*call_value_rex64_ms_sysv_vzeroupper"): Delete.
+	(define_insn_and_split "*call_value_pop_vzeroupper"): Delete.
+	(define_insn_and_split "*sibcall_value_pop_vzeroupper"): Delete.
+	(define_expand "return"): Remove vzeroupper emitting.
+	(define_expand "simple_return"): Delete.
 
 	* config/i386/predicates.md (vzeroupper_operation): New.
 
-	* config/i386/sse.md (avx_vzeroupper): Changed.
+	* config/i386/sse.md (avx_vzeroupper): Change.
 
 2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
@@ -86,8 +102,8 @@
 
 2012-11-06  Andrey Turetskiy  <andrey.turetskiy@gmail.com>
 
-	* config/i386/i386.c (bdesc_args): Rename CODE_FOR_avx2_umulhrswv16hi3 to
-	CODE_FOR_avx2_pmulhrswv16hi3.
+	* config/i386/i386.c (bdesc_args): Rename CODE_FOR_avx2_umulhrswv16hi3
+	to CODE_FOR_avx2_pmulhrswv16hi3.
 	* config/i386/predicates.md (const1_operand): Extend for vectors.
 	* config/i386/sse.md (ssse3_avx2): Extend.
 	(ssedoublemode): Ditto.
