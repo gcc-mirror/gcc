@@ -1,3 +1,8 @@
+2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/41993
+	* gcc.dg/torture/pr41993.c: New test.
+
 2012-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/l_fma_float_?.c: Update.
