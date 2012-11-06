@@ -1379,6 +1379,13 @@ package body Sem_Res is
       if Nkind (Name (N)) = N_Expanded_Name then
          Pack := Entity (Prefix (Name (N)));
 
+         --  If this is a package renaming, get renamed entity, which will be
+         --  the scope of the operands if operaton is type-correct.
+
+         if Present (Renamed_Entity (Pack)) then
+            Pack := Renamed_Entity (Pack);
+         end if;
+
          --  If the entity being called is defined in the given package, it is
          --  a renaming of a predefined operator, and known to be legal.
 
@@ -1683,11 +1690,22 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      --  We suppress all checks for this analysis, since the checks will
-      --  be applied properly, and in the right location, when the default
-      --  expression is reanalyzed and reexpanded later on.
+      --  We suppress all checks for this analysis, except in Alfa mode.
+      --  Otherwise the checks are applied properly, and in the proper
+      --  location, when the default expressions are reanalyzed and reexpanded
+      --  later on.
 
-      Analyze_And_Resolve (N, T, Suppress => All_Checks);
+      --  Alfa mode suppresses all expansion but requires the setting of
+      --  checking flags (DIvision_Check and others) in particular for Ada 2012
+      --  constructs such as quantified expressions, that are expanded in two
+      --  separate steps.
+
+      if Alfa_Mode then
+         Analyze_And_Resolve (N, T);
+
+      else
+         Analyze_And_Resolve (N, T, Suppress => All_Checks);
+      end if;
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
