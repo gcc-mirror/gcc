@@ -6517,7 +6517,7 @@ package body Sem_Attr is
 
       when Attribute_Denorm =>
          Fold_Uint
-           (N, UI_From_Int (Boolean'Pos (Denorm_On_Target)), True);
+           (N, UI_From_Int (Boolean'Pos (Has_Denormals (P_Type))), True);
 
       ---------------------
       -- Descriptor_Size --
@@ -7631,7 +7631,7 @@ package body Sem_Attr is
 
       when Attribute_Signed_Zeros =>
          Fold_Uint
-           (N, UI_From_Int (Boolean'Pos (Signed_Zeros_On_Target)), Static);
+           (N, UI_From_Int (Boolean'Pos (Has_Signed_Zeros (P_Type))), Static);
 
       ----------
       -- Size --

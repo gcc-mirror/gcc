@@ -1,3 +1,27 @@
+2012-11-06  Geert Bosch  <bosch@adacore.com>
+
+	* eval_fat.adb (Machine, Succ): Fix front end to support static
+	evaluation of attributes on targets with both VAX and IEEE float.
+	* sem_util.ads, sem_util.adb (Has_Denormals, Has_Signed_Zeros):
+	New type-specific functions. Previously we used Denorm_On_Target
+	and Signed_Zeros_On_Target directly, but that doesn't work well
+	for OpenVMS where a single target supports both floating point
+	with and without signed zeros.
+	* sem_attr.adb (Attribute_Denorm, Attribute_Signed_Zeros): Use
+	new Has_Denormals and Has_Signed_Zeros functions to support both
+	IEEE and VAX floating point on a single target.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (System_Interrupts_Used): New variable.
+	(Gen_Adainit): Declare and call
+	Install_Restricted_Handlers_Sequential if System.Interrupts is
+	used when elaboration policy is sequential.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: Complete previous change.
+
 2012-11-06  Tristan Gingold  <gingold@adacore.com>
 
 	* fe.h (Get_Vax_Real_Literal_As_Signed): Declare.

@@ -25,7 +25,7 @@
 
 with Einfo;    use Einfo;
 with Errout;   use Errout;
-with Targparm; use Targparm;
+with Sem_Util; use Sem_Util;
 
 package body Eval_Fat is
 
@@ -505,8 +505,8 @@ package body Eval_Fat is
             Emin_Den : constant UI := Machine_Emin_Value (RT)
                                         - Machine_Mantissa_Value (RT) + Uint_1;
          begin
-            if X_Exp < Emin_Den or not Denorm_On_Target then
-               if Signed_Zeros_On_Target and then UR_Is_Negative (X) then
+            if X_Exp < Emin_Den or not Has_Denormals (RT) then
+               if Has_Signed_Zeros (RT) and then UR_Is_Negative (X) then
                   Error_Msg_N
                     ("floating-point value underflows to -0.0?", Enode);
                   return Ureal_M_0;
@@ -517,7 +517,7 @@ package body Eval_Fat is
                   return Ureal_0;
                end if;
 
-            elsif Denorm_On_Target then
+            elsif Has_Denormals (RT) then
 
                --  Emin - Mant <= X_Exp < Emin, so result is denormal. Handle
                --  gradual underflow by first computing the number of
@@ -718,7 +718,7 @@ package body Eval_Fat is
       --  Set exponent such that the radix point will be directly following the
       --  mantissa after scaling.
 
-      if Denorm_On_Target or Exp /= Emin then
+      if Has_Denormals (RT) or Exp /= Emin then
          Exp := Exp - Mantissa;
       else
          Exp := Exp - 1;
