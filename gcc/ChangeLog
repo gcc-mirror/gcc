@@ -1,3 +1,8 @@
+2012-11-06  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-tail-merge.c (find_duplicate): Do not consider
+	is_tm_ending_fndecl calls as mergable.
+
 2012-11-06  Sterling Augustine <saugustine@google.com>
             Cary Coutant <ccoutant@google.com>
 
