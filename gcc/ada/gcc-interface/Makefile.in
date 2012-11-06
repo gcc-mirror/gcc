@@ -2611,6 +2611,8 @@ $(RTSDIR)/s-oscons.ads: ../stamp-gnatlib1-$(RTSDIR)
 	$(RM) $(RTSDIR)/s-oscons.ads
 	(cd $(RTSDIR); $(LN_S) ../s-oscons.ads s-oscons.ads)
 
+copy-s-oscons: $(RTSDIR)/s-oscons.ads
+
 gnatlib: ../stamp-gnatlib1-$(RTSDIR) ../stamp-gnatlib2-$(RTSDIR) $(RTSDIR)/s-oscons.ads
 # C files
 	$(MAKE) -C $(RTSDIR) \
