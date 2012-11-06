@@ -5448,9 +5448,15 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   bool transform_pattern_stmt = false;
   bool check_profitability = false;
   int th;
+  /* Record number of iterations before we started tampering with the profile. */
+  gcov_type expected_iterations = expected_loop_iterations_unbounded (loop);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "=== vec_transform_loop ===");
+
+  /* If profile is inprecise, we have chance to fix it up.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    expected_iterations = LOOP_VINFO_INT_NITERS (loop_vinfo);
 
   /* Use the more conservative vectorization threshold.  If the number
      of iterations is constant assume the cost check has been performed
@@ -5734,6 +5740,25 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     }				/* BBs in loop */
 
   slpeel_make_loop_iterate_ntimes (loop, ratio);
+
+  /* Reduce loop iterations by the vectorization factor.  */
+  scale_loop_profile (loop, RDIV (REG_BR_PROB_BASE , vectorization_factor),
+		      expected_iterations / vectorization_factor);
+  loop->nb_iterations_upper_bound
+    = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (vectorization_factor),
+					    FLOOR_DIV_EXPR);
+  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+      && loop->nb_iterations_upper_bound != double_int_zero)
+    loop->nb_iterations_upper_bound = loop->nb_iterations_upper_bound - double_int_one;
+  if (loop->any_estimate)
+    {
+      loop->nb_iterations_estimate
+        = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (vectorization_factor),
+					     FLOOR_DIV_EXPR);
+       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	   && loop->nb_iterations_estimate != double_int_zero)
+	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - double_int_one;
+    }
 
   /* The memory tags and pointers in vectorized statements need to
      have their SSA forms updated.  FIXME, why can't this be delayed

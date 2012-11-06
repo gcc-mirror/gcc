@@ -1,3 +1,9 @@
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound,
+	vect_do_peeling_for_alignment): Fix loop bound computation.
+	* tree-vect-loop.c (vect_transform_loop): Maintain loop bounds.
+
 2012-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
