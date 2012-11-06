@@ -55,7 +55,7 @@ enum
 extern void __go_runtime_error () __attribute__ ((noreturn));
 
 void
-__go_runtime_error (int i)
+__go_runtime_error (int32 i)
 {
   switch (i)
     {

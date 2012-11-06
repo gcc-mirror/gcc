@@ -182,6 +182,9 @@ int counter = 0;
 #define C(sname,type,value,comment)\
   printf ("\n->C:$%d:" sname ":" #type ":" value ":" comment, __LINE__);
 
+#define SUB(sname)\
+  printf ("\n->SUB:$%d:" #sname ":" sname, __LINE__);
+
 #define TXT(text) \
   printf ("\n->TXT:$%d:" text, __LINE__);
 
@@ -209,6 +212,11 @@ int counter = 0;
   : : "i" (__LINE__));
 /* Typed constant */
 
+#define SUB(sname) \
+  asm volatile("\n->SUB:%0:" #sname ":" sname \
+  : : "i" (__LINE__));
+/* Subtype */
+
 #define TXT(text) \
   asm volatile("\n->TXT:%0:" text \
   : : "i" (__LINE__));
@@ -217,6 +225,7 @@ int counter = 0;
 #endif /* NATIVE */
 
 #define CST(name,comment) C(#name,String,name,comment)
+/* String constant */
 
 #define STR(x) STR1(x)
 #define STR1(x) #x
@@ -243,14 +252,7 @@ main (void) {
  **/
 TXT("--  This is the version for " TARGET)
 TXT("")
-
-#ifdef HAVE_SOCKETS
-/**
- **  The type definitions for struct hostent components uses Interfaces.C
- **/
-
 TXT("with Interfaces.C;")
-#endif
 
 /*
 package System.OS_Constants is
@@ -370,15 +372,27 @@ CND(FNDELAY, "Nonblocking")
 
 */
 
+/* ioctl(2) requests are "int" in UNIX, but "unsigned long" on FreeBSD */
+
+#ifdef __FreeBSD__
+# define CNI CNU
+# define IOCTL_Req_T "unsigned"
+#else
+# define CNI CND
+# define IOCTL_Req_T "int"
+#endif
+
+SUB(IOCTL_Req_T)
+
 #ifndef FIONBIO
 # define FIONBIO -1
 #endif
-CND(FIONBIO, "Set/clear non-blocking io")
+CNI(FIONBIO, "Set/clear non-blocking io")
 
 #ifndef FIONREAD
 # define FIONREAD -1
 #endif
-CND(FIONREAD, "How many bytes to read")
+CNI(FIONREAD, "How many bytes to read")
 
 /*
 
@@ -1318,18 +1332,19 @@ CND(SIZEOF_struct_servent, "struct servent");
 #define SIZEOF_sigset (sizeof (sigset_t))
 CND(SIZEOF_sigset, "sigset");
 #endif
+
 /*
 
    --  Fields of struct msghdr
 */
 
 #if defined (__sun__) || defined (__hpux__)
-# define msg_iovlen_t "int"
+# define Msg_Iovlen_T "int"
 #else
-# define msg_iovlen_t "size_t"
+# define Msg_Iovlen_T "size_t"
 #endif
 
-TXT("   subtype Msg_Iovlen_T is Interfaces.C." msg_iovlen_t ";")
+SUB(Msg_Iovlen_T)
 
 /*
 
@@ -1399,7 +1414,7 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 /* There's no clock_gettime or clock_id's on Darwin, generate a dummy value */
 # define CLOCK_RT_Ada "-1"
 
-#elif defined(FreeBSD) || defined(_AIX)
+#elif defined(__FreeBSD__) || defined(_AIX)
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
  ** appropriately (see thread.c).

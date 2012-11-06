@@ -261,7 +261,7 @@ Objective-C and Objective-C++ Dialects}.
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
--Wredundant-decls @gol
+-Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wsign-conversion  -Wsizeof-pointer-memaccess @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
@@ -466,6 +466,15 @@ Objective-C and Objective-C++ Dialects}.
 @c This list is ordered alphanumerically by subsection name.
 @c Try and put the significant identifier (CPU or system) first,
 @c so users have a clue at guessing where the ones they want will be.
+
+@emph{AArch64 Options}
+@gccoptlist{-mbig-endian  -mlittle-endian @gol
+-mgeneral-regs-only @gol
+-mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
+-mstrict-align @gol
+-momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
+-mtls-dialect=desc  -mtls-dialect=traditional @gol
+-march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}}
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file -mprefer-short-insn-regs @gol
@@ -1608,7 +1617,7 @@ GNU dialect of ISO C99.  When ISO C99 is fully implemented in GCC,
 this will become the default.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
-@item gnu1x
+@itemx gnu1x
 GNU dialect of ISO C11.  Support is incomplete and experimental.  The
 name @samp{gnu1x} is deprecated.
 
@@ -3526,6 +3535,12 @@ definitions, may be found on the GCC readings page, at
 
 This warning is enabled by @option{-Wall} for C and C++.
 
+@item -Wno-return-local-addr
+@opindex Wno-return-local-addr
+@opindex Wreturn-local-addr
+Do not warn about returning a pointer (or in C++, a reference) to a
+variable that goes out of scope after the function returns.
+
 @item -Wreturn-type
 @opindex Wreturn-type
 @opindex Wno-return-type
@@ -4623,6 +4638,13 @@ cases where multiple declaration is valid and changes nothing.
 @opindex Wno-nested-externs
 Warn if an @code{extern} declaration is encountered within a function.
 
+@item -Wno-inherited-variadic-ctor
+@opindex Winherited-variadic-ctor
+@opindex Wno-inherited-variadic-ctor
+Suppress warnings about use of C++11 inheriting constructors when the
+base class inherited from has a C variadic constructor; the warning is
+on by default because the ellipsis is not inherited.
+
 @item -Winline
 @opindex Winline
 @opindex Wno-inline
@@ -4705,6 +4727,16 @@ scalar operation is performed on every vector element;
 using scalars of wider type, which normally is more performance efficient;
 and @code{as a single scalar}, which means that vector fits into a
 scalar type.
+
+@item -Wno-virtual-move-assign
+@opindex Wvirtual-move-assign
+@opindex Wno-virtual-move-assign
+Suppress warnings about inheriting from a virtual base with a
+non-trivial C++11 move assignment operator.  This is dangerous because
+if the virtual base is reachable along more than one path, it will be
+moved multiple times, which can mean both objects end up in the
+moved-from state.  If the move assignment operator is written to avoid
+moving from a moved-from object, this warning can be disabled.
 
 @item -Wvla
 @opindex Wvla
@@ -5284,7 +5316,7 @@ is set by this option.
 For example, with @option{-fdbg-cnt=dce:10,tail_call:0},
 @code{dbg_cnt(dce)} returns true only for first 10 invocations.
 
-@itemx -fenable-@var{kind}-@var{pass}
+@item -fenable-@var{kind}-@var{pass}
 @itemx -fdisable-@var{kind}-@var{pass}=@var{range-list}
 @opindex fdisable-
 @opindex fenable-
@@ -5438,11 +5470,11 @@ Dump after duplicating the computed gotos.
 @option{-fdump-rtl-ce3} enable dumping after the three
 if conversion passes.
 
-@itemx -fdump-rtl-cprop_hardreg
+@item -fdump-rtl-cprop_hardreg
 @opindex fdump-rtl-cprop_hardreg
 Dump after hard register copy propagation.
 
-@itemx -fdump-rtl-csa
+@item -fdump-rtl-csa
 @opindex fdump-rtl-csa
 Dump after combining stack adjustments.
 
@@ -5453,11 +5485,11 @@ Dump after combining stack adjustments.
 @option{-fdump-rtl-cse1} and @option{-fdump-rtl-cse2} enable dumping after
 the two common subexpression elimination passes.
 
-@itemx -fdump-rtl-dce
+@item -fdump-rtl-dce
 @opindex fdump-rtl-dce
 Dump after the standalone dead code elimination passes.
 
-@itemx -fdump-rtl-dbr
+@item -fdump-rtl-dbr
 @opindex fdump-rtl-dbr
 Dump after delayed branch scheduling.
 
@@ -5502,7 +5534,7 @@ Dump after the initialization of the registers.
 @opindex fdump-rtl-initvals
 Dump after the computation of the initial value sets.
 
-@itemx -fdump-rtl-into_cfglayout
+@item -fdump-rtl-into_cfglayout
 @opindex fdump-rtl-into_cfglayout
 Dump after converting to cfglayout mode.
 
@@ -5532,7 +5564,7 @@ Dump after removing redundant mode switches.
 @opindex fdump-rtl-rnreg
 Dump after register renumbering.
 
-@itemx -fdump-rtl-outof_cfglayout
+@item -fdump-rtl-outof_cfglayout
 @opindex fdump-rtl-outof_cfglayout
 Dump after converting from cfglayout mode.
 
@@ -5989,58 +6021,108 @@ Enable all the available tree dumps with the flags provided in this option.
 @itemx -fopt-info-@var{options}
 @itemx -fopt-info-@var{options}=@var{filename}
 @opindex fopt-info
-Controls optimization dumps from all the passes. If the
+Controls optimization dumps from various optimization passes. If the
 @samp{-@var{options}} form is used, @var{options} is a list of
-@samp{-} separated options to control the dump details.  If
-@var{options} is not specified, it defaults to @option{optall}. If the
-@var{filename} is not specified, it defaults to @file{stderr}. Note
-that the output @var{filename} will be overwritten in case of multiple
-translation units. If a combined output from multiple translation
-units is desired, @file{stderr} should be used instead.
+@samp{-} separated options to select the dump details and
+optimizations.  If @var{options} is not specified, it defaults to
+@option{all} for details and @option{optall} for optimization
+groups. If the @var{filename} is not specified, it defaults to
+@file{stderr}. Note that the output @var{filename} will be overwritten
+in case of multiple translation units. If a combined output from
+multiple translation units is desired, @file{stderr} should be used
+instead.
 
-The following options are available
+The options can be divided into two groups, 1) options describing the
+verbosity of the dump, and 2) options describing which optimizations
+should be included. The options from both the groups can be freely
+mixed as they are non-overlapping. However, in case of any conflicts,
+the latter options override the earlier options on the command
+line. Though multiple -fopt-info options are accepted, only one of
+them can have @option{=filename}. If other filenames are provided then
+all but the first one are ignored.
+
+The dump verbosity has the following options
 
 @table @samp
 @item optimized
 Print information when an optimization is successfully applied. It is
 up to a pass to decide which information is relevant. For example, the
-vectorizer pass prints the location of loop which got vectorized.
+vectorizer passes print the source location of loops which got
+successfully vectorized.
 @item missed
 Print information about missed optimizations. Individual passes
-control which information to include in the output. For example,
+control which informations to include in the output. For example,
 
 @smallexample
-gcc -O2 -ftree-vectorize -fopt-info-missed
+gcc -O2 -ftree-vectorize -fopt-info-vec-missed
 @end smallexample
 
-will print information about missed optimization opportunities on
-stderr.
+will print information about missed optimization opportunities from
+vectorization passes on stderr.
 @item note
 Print verbose information about optimizations, such as certain
 transformations, more detailed messages about decisions etc.
-@item optall
+@item all
 Print detailed optimization information. This includes
-@var{optimized}, @var{missed}, and @var{note}. For example,
-
-@smallexample
-gcc -O2 -ftree-vectorize -fopt-info-optall=opt.all
-@end smallexample
-
-outputs detailed optimization report from all the passes into
-@file{opt.all}.
+@var{optimized}, @var{missed}, and @var{note}.
 @end table
 
-It applies the dump options to all the passes. If the @var{filename}
-is provided, the dump from all the passes is concatenated, otherwise
-the dump is output onto @file{stderr}. If @var{options} is omitted, it
-defaults to @option{optall}.
+The second set of options describes a group of optimizations and may
+include one or more of the following.
 
+@table @samp
+@item ipa
+Enable dumps from all interprocedural optimizations.
+@item loop
+Enable dumps from all loop optimizations.
+@item inline
+Enable dumps from all inlining optimizations.
+@item vec
+Enable dumps from all vectorization optimizations.
+@end table
+
+For example,
 @smallexample
-gcc -O3 -fopt-info-optimized-missed=optdump.txt
+gcc -O3 -fopt-info-missed=missed.all
 @end smallexample
 
-This will output information about missed optimizations as well as
-optimized locations from all the passes into @file{optdump.txt}.
+outputs missed optimization report from all the passes into
+@file{missed.all}.
+
+As another example,
+@smallexample
+gcc -O3 -fopt-info-inline-optimized-missed=inline.txt
+@end smallexample
+
+will output information about missed optimizations as well as
+optimized locations from all the inlining passes into
+@file{inline.txt}.
+
+If the @var{filename} is provided, then the dumps from all the
+applicable optimizations are concatenated into the @file{filename}.
+Otherwise the dump is output onto @file{stderr}. If @var{options} is
+omitted, it defaults to @option{all-optall}, which means dump all
+available optimization info from all the passes. In the following
+example, all optimization info is output on to @file{stderr}.
+
+@smallexample
+gcc -O3 -fopt-info
+@end smallexample
+
+Note that @option{-fopt-info-vec-missed} behaves the same as
+@option{-fopt-info-missed-vec}.
+
+As another example, consider
+
+@smallexample
+gcc -fopt-info-vec-missed=vec.miss -fopt-info-loop-optimized=loop.opt
+@end smallexample
+
+Here the two output filenames @file{vec.miss} and @file{loop.opt} are
+in conflict since only one output file is allowed. In this case, only
+the first option takes effect and the subsequent options are
+ignored. Thus only the @file{vec.miss} is produced which cotaints
+dumps from the vectorizer about missed opportunities.
 
 @item -ftree-vectorizer-verbose=@var{n}
 @opindex ftree-vectorizer-verbose
@@ -8327,7 +8409,8 @@ Enable profile feedback directed optimizations, and optimizations
 generally profitable only with profile feedback available.
 
 The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
-@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}
+@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}, @code{-ftree-vectorize},
+@code{ftree-loop-distribute-patterns}
 
 By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
@@ -9001,6 +9084,9 @@ the loop code is peeled.
 
 @item max-peel-times
 The maximum number of peelings of a single loop.
+
+@item max-peel-branches
+The maximum number of branches on the hot path through the peeled sequence.
 
 @item max-completely-peeled-insns
 The maximum number of insns of a completely peeled loop.
@@ -10619,6 +10705,7 @@ platform.
 @c in Machine Dependent Options
 
 @menu
+* AArch64 Options::
 * Adapteva Epiphany Options::
 * ARM Options::
 * AVR Options::
@@ -10788,10 +10875,10 @@ integer multiply, or integer multiply-and-accumulate.
 The default is @option{-mfp-mode=caller}
 
 @item -mnosplit-lohi
+@itemx -mno-postinc
+@itemx -mno-postmodify
 @opindex mnosplit-lohi
-@item -mno-postinc
 @opindex mno-postinc
-@item -mno-postmodify
 @opindex mno-postmodify
 Code generation tweaks that disable, respectively, splitting of 32-bit
 loads, generation of post-increment addresses, and generation of
@@ -10826,6 +10913,125 @@ which specify use of that register as a fixed register,
 and @samp{none}, which means that no register is used for this
 purpose.  The default is @option{-m1reg-none}.
 
+@end table
+
+@node AArch64 Options
+@subsection AArch64 Options
+@cindex AArch64 Options
+
+These options are defined for AArch64 implementations:
+
+@table @gcctabopt
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate big-endian code.  This is the default when GCC is configured for an
+@samp{aarch64_be-*-*} target.
+
+@item -mgeneral-regs-only
+@opindex mgeneral-regs-only
+Generate code which uses only the general registers.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate little-endian code.  This is the default when GCC is configured for an
+@samp{aarch64-*-*} but not an @samp{aarch64_be-*-*} target.
+
+@item -mcmodel=tiny
+@opindex mcmodel=tiny
+Generate code for the tiny code model.  The program and its statically defined
+symbols must be within 1GB of each other.  Pointers are 64 bits.  Programs can
+be statically or dynamically linked.  This model is not fully implemented and
+mostly treated as @samp{small}.
+
+@item -mcmodel=small
+@opindex mcmodel=small
+Generate code for the small code model.  The program and its statically defined
+symbols must be within 4GB of each other.  Pointers are 64 bits.  Programs can
+be statically or dynamically linked.  This is the default code model.
+
+@item -mcmodel=large
+@opindex mcmodel=large
+Generate code for the large code model.  This makes no assumptions about
+addresses and sizes of sections.  Pointers are 64 bits.  Programs can be
+statically linked only.
+
+@item -mstrict-align
+@opindex mstrict-align
+Do not assume that unaligned memory references will be handled by the system.
+
+@item -momit-leaf-frame-pointer
+@itemx -mno-omit-leaf-frame-pointer
+@opindex momit-leaf-frame-pointer
+@opindex mno-omit-leaf-frame-pointer
+Omit or keep the frame pointer in leaf functions.  The former behaviour is the
+default.
+
+@item -mtls-dialect=desc
+@opindex mtls-dialect=desc
+Use TLS descriptors as the thread-local storage mechanism for dynamic accesses
+of TLS variables.  This is the default.
+
+@item -mtls-dialect=traditional
+@opindex mtls-dialect=traditional
+Use traditional TLS as the thread-local storage mechanism for dynamic accesses
+of TLS variables.
+
+@item -march=@var{name}
+@opindex march
+Specify the name of the target architecture, optionally suffixed by one or
+more feature modifiers.  This option has the form
+@option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
+only value for @var{arch} is @samp{armv8-a}.  The possible values for
+@var{feature} are documented in the sub-section below.
+
+Where conflicting feature modifiers are specified, the right-most feature is
+used.
+
+GCC uses this name to determine what kind of instructions it can emit when
+generating assembly code.  This option can be used in conjunction with or
+instead of the @option{-mcpu=} option.
+
+@item -mcpu=@var{name}
+@opindex mcpu
+Specify the name of the target processor, optionally suffixed by one or more
+feature modifiers.  This option has the form
+@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
+possible values for @var{cpu} are @samp{generic}, @samp{large}.  The
+possible values for @var{feature} are documented in the sub-section
+below.
+
+Where conflicting feature modifiers are specified, the right-most feature is
+used.
+
+GCC uses this name to determine what kind of instructions it can emit when
+generating assembly code.
+
+@item -mtune=@var{name}
+@opindex mtune
+Specify the name of the processor to tune the performance for.  The code will
+be tuned as if the target processor were of the type specified in this option,
+but still using instructions compatible with the target processor specified
+by a @option{-mcpu=} option.  This option cannot be suffixed by feature
+modifiers.
+
+@end table
+
+@subsubsection @option{-march} and @option{-mcpu} feature modifiers
+@cindex @option{-march} feature modifiers
+@cindex @option{-mcpu} feature modifiers
+Feature modifiers used with @option{-march} and @option{-mcpu} can be one
+the following:
+
+@table @samp
+@item crypto
+Enable Crypto extension.  This implies Advanced SIMD is enabled.
+@item fp
+Enable floating-point instructions.
+@item simd
+Enable Advanced SIMD instructions.  This implies floating-point instructions
+are enabled.  This is the default for all current possible values for options
+@option{-march} and @option{-mcpu=}.
 @end table
 
 @node ARM Options
@@ -11593,7 +11799,7 @@ This is the case for devices with at least 16@tie{}KiB of program
 memory.
 
 @item __AVR_HAVE_EIJMP_EICALL__
-@item __AVR_3_BYTE_PC__
+@itemx __AVR_3_BYTE_PC__
 The device has the @code{EIJMP} and @code{EICALL} instructions.
 This is the case for devices with more than 128@tie{}KiB of program memory.
 This also means that the program counter
@@ -11604,13 +11810,13 @@ The program counter (PC) is 2@tie{}bytes wide. This is the case for devices
 with up to 128@tie{}KiB of program memory.
 
 @item __AVR_HAVE_8BIT_SP__
-@item __AVR_HAVE_16BIT_SP__
+@itemx __AVR_HAVE_16BIT_SP__
 The stack pointer (SP) register is treated as 8-bit respectively
 16-bit register by the compiler.
 The definition of these macros is affected by @code{-mtiny-stack}.
 
 @item __AVR_HAVE_SPH__
-@item __AVR_SP8__
+@itemx __AVR_SP8__
 The device has the SPH (high part of stack pointer) special function
 register or has an 8-bit stack pointer, respectively.
 The definition of these macros is affected by @code{-mmcu=} and
@@ -11618,9 +11824,9 @@ in the cases of @code{-mmcu=avr2} and @code{-mmcu=avr25} also
 by @code{-msp8}.
 
 @item __AVR_HAVE_RAMPD__
-@item __AVR_HAVE_RAMPX__
-@item __AVR_HAVE_RAMPY__
-@item __AVR_HAVE_RAMPZ__
+@itemx __AVR_HAVE_RAMPX__
+@itemx __AVR_HAVE_RAMPY__
+@itemx __AVR_HAVE_RAMPZ__
 The device has the @code{RAMPD}, @code{RAMPX}, @code{RAMPY},
 @code{RAMPZ} special function register, respectively.
 
@@ -11628,7 +11834,7 @@ The device has the @code{RAMPD}, @code{RAMPX}, @code{RAMPY},
 This macro reflects the @code{-mno-interrupts} command line option.
 
 @item __AVR_ERRATA_SKIP__
-@item __AVR_ERRATA_SKIP_JMP_CALL__
+@itemx __AVR_ERRATA_SKIP_JMP_CALL__
 Some AVR devices (AT90S8515, ATmega103) must not skip 32-bit
 instructions because of a hardware erratum.  Skip instructions are
 @code{SBRS}, @code{SBRC}, @code{SBIS}, @code{SBIC} and @code{CPSE}.
@@ -18311,7 +18517,7 @@ Mark the @code{MAC} register as call-clobbered, even if
 @option{-mhitachi} is given.
 
 @item -mieee
-@item -mno-ieee
+@itemx -mno-ieee
 @opindex mieee
 @opindex mnoieee
 Control the IEEE compliance of floating-point comparisons, which affects the

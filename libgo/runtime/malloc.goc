@@ -14,7 +14,6 @@ package runtime
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
-#include "go-string.h"
 #include "interface.h"
 #include "go-type.h"
 #include "race.h"

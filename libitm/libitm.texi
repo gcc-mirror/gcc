@@ -156,6 +156,13 @@ about which memory locations are shared and which are not shared with other
 threads (i.e., data must be accessed either transactionally or
 nontransactionally). Otherwise, non-write-through TM algorithms would not work.
 
+For memory locations on the stack, this requirement extends to only the
+lifetime of the stack frame that the memory location belongs to (or the
+lifetime of the transaction, whichever is shorter).  Thus, memory that is
+reused for several stack frames could be target of both data logging and
+transactional accesses; however, this is harmless because these stack frames'
+lifetimes will end before the transaction finishes.
+
 @subsection [No changes] Scatter/gather calls
 @subsection [No changes] Serial and irrevocable mode
 @subsection [No changes] Transaction descriptor

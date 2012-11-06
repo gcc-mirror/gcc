@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -902,6 +902,39 @@ package body Exp_Dbug is
       end if;
    end Get_Variant_Encoding;
 
+   -----------------------------------------
+   -- Build_Subprogram_Instance_Renamings --
+   -----------------------------------------
+
+   procedure Build_Subprogram_Instance_Renamings
+     (N       : Node_Id;
+      Wrapper : Entity_Id)
+   is
+      Loc  : Source_Ptr;
+      Decl : Node_Id;
+      E    : Entity_Id;
+
+   begin
+      E := First_Entity (Wrapper);
+      while Present (E) loop
+         if Nkind (Parent (E)) = N_Object_Declaration
+           and then Is_Elementary_Type (Etype (E))
+         then
+            Loc := Sloc (Expression (Parent (E)));
+            Decl := Make_Object_Renaming_Declaration (Loc,
+               Defining_Identifier =>
+                 Make_Defining_Identifier (Loc, Chars (E)),
+               Subtype_Mark        => New_Occurrence_Of (Etype (E), Loc),
+               Name                => New_Occurrence_Of (E, Loc));
+
+            Append (Decl, Declarations (N));
+            Set_Needs_Debug_Info (Defining_Identifier (Decl));
+         end if;
+
+         Next_Entity (E);
+      end loop;
+   end Build_Subprogram_Instance_Renamings;
+
    ------------------------------------
    -- Get_Secondary_DT_External_Name --
    ------------------------------------
@@ -1272,6 +1305,25 @@ package body Exp_Dbug is
 
    begin
       if Has_Qualified_Name (Ent) then
+         return;
+
+      --  In formal verification mode, simply append a suffix for homonyms.
+      --  We used to qualify entity names as full expansion does, but this was
+      --  removed as this prevents the verification back-end from using a short
+      --  name for debugging and user interaction. The verification back-end
+      --  already takes care of qualifying names when needed. Still mark the
+      --  name as being qualified, as Qualify_Entity_Name may be called more
+      --  than once on the same entity.
+
+      elsif Alfa_Mode then
+         if Has_Homonym (Ent) then
+            Get_Name_String (Chars (Ent));
+            Append_Homonym_Number (Ent);
+            Output_Homonym_Numbers_Suffix;
+            Set_Chars (Ent, Name_Enter);
+         end if;
+
+         Set_Has_Qualified_Name (Ent);
          return;
 
       --  If the entity is a variable encoding the debug name for an object

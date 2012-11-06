@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2003-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2003-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -33,7 +33,7 @@
 
 #include "gsocket.h"
 
-#ifdef VMS
+#if defined(VMS)
 /*
  * For VMS, gsocket.h can't include sockets-related DEC C header files
  * when building the runtime (because these files are in a DEC C text library
@@ -65,6 +65,10 @@ struct servent {
   int                  s_port;
   __netdb_char_ptr     s_proto;
 };
+#elif defined(__FreeBSD__)
+typedef unsigned int IOCTL_Req_T;
+#else
+typedef int IOCTL_Req_T;
 #endif
 
 #if defined(HAVE_SOCKETS)
@@ -98,7 +102,7 @@ extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
 extern void __gnat_reset_socket_set (fd_set *);
 extern int  __gnat_get_h_errno (void);
-extern int  __gnat_socket_ioctl (int, int, int *);
+extern int  __gnat_socket_ioctl (int, IOCTL_Req_T, int *);
 
 extern char * __gnat_servent_s_name (struct servent *);
 extern char * __gnat_servent_s_alias (struct servent *, int index);
@@ -526,7 +530,7 @@ __gnat_get_h_errno (void) {
 /* Wrapper for ioctl(2), which is a variadic function */
 
 int
-__gnat_socket_ioctl (int fd, int req, int *arg) {
+__gnat_socket_ioctl (int fd, IOCTL_Req_T req, int *arg) {
 #if defined (_WIN32)
   return ioctlsocket (fd, req, arg);
 #elif defined (__APPLE__)

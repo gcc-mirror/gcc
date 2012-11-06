@@ -354,12 +354,8 @@ mminloc1_4_r16 (gfc_array_i4 * const restrict retarray,
 	GFC_INTEGER_4 result2 = 0;
 #endif
 	result = 0;
-	if (len <= 0)
-	  *dest = 0;
-	else
+	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
-	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
-	      {
 
 		if (*msrc)
 		  {
@@ -387,9 +383,8 @@ mminloc1_4_r16 (gfc_array_i4 * const restrict retarray,
 		    minval = *src;
 		    result = (GFC_INTEGER_4)n + 1;
 		  }
-	      }
-	    *dest = result;
 	  }
+	*dest = result;
       }
       /* Advance to the next element.  */
       count[0]++;

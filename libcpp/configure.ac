@@ -134,6 +134,7 @@ fi
 
 m4_changequote(,)
 case $target in
+	aarch64*-*-* | \
 	alpha*-*-* | \
 	arm*-*-*eabi* | \
 	arm*-*-symbianelf* | \

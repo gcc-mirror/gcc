@@ -21,10 +21,8 @@
 #include <sys/mman.h>
 #endif
 
-#include "array.h"
+#include "interface.h"
 #include "go-alloc.h"
-#include "go-panic.h"
-#include "go-string.h"
 
 /* This file supports C files copied from the 6g runtime library.
    This is a version of the 6g runtime.h rewritten for gccgo's version
@@ -43,8 +41,8 @@ typedef double       float64 __attribute__ ((mode (DF)));
 typedef signed int   intptr __attribute__ ((mode (pointer)));
 typedef unsigned int uintptr __attribute__ ((mode (pointer)));
 
-typedef int		intgo; // Go's int
-typedef unsigned int	uintgo; // Go's uint
+typedef intptr		intgo; // Go's int
+typedef uintptr		uintgo; // Go's uint
 
 /* Defined types.  */
 
@@ -67,7 +65,7 @@ typedef struct	ParFor		ParFor;
 typedef struct	ParForThread	ParForThread;
 
 typedef	struct	__go_open_array		Slice;
-typedef	struct	__go_string		String;
+typedef	struct	String			String;
 typedef struct	__go_interface		Iface;
 typedef	struct	__go_empty_interface	Eface;
 typedef	struct	__go_type_descriptor	Type;
@@ -128,6 +126,11 @@ union	Note
 {
 	uint32	key;	// futex-based impl
 	M*	waitm;	// waiting M (sema-based impl)
+};
+struct String
+{
+	const byte*	str;
+	intgo		len;
 };
 struct	GCStats
 {
@@ -338,7 +341,7 @@ int32	runtime_ncpu;
 /*
  * common functions and data
  */
-int32	runtime_findnull(const byte*);
+intgo	runtime_findnull(const byte*);
 void	runtime_dump(byte*, int32);
 
 /*
@@ -611,7 +614,7 @@ extern uintptr runtime_stacks_sys;
 
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
-extern _Bool __go_file_line(uintptr, String*, String*, int *);
+extern _Bool __go_file_line(uintptr, String*, String*, intgo *);
 extern byte* runtime_progname();
 
 int32 getproccount(void);

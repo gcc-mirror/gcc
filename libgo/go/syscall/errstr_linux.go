@@ -9,7 +9,7 @@ package syscall
 import "unsafe"
 
 //sysnb	strerror_r(errnum int, b []byte) (errstr *byte)
-//strerror_r(errnum int, b *byte, len Size_t) *byte
+//strerror_r(errnum _C_int, b *byte, len Size_t) *byte
 
 func Errstr(errnum int) string {
 	a := make([]byte, 128)

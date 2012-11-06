@@ -654,19 +654,21 @@ clear_alias_set_lookup (alias_set_type alias_set)
 
 struct invariant_group_base_hasher : typed_noop_remove <group_info>
 {
-  typedef group_info T;
-  static inline hashval_t hash (const T *);
-  static inline bool equal (const T *, const T *);
+  typedef group_info value_type;
+  typedef group_info compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
 };
 
 inline bool
-invariant_group_base_hasher::equal (const T *gi1, const T *gi2)
+invariant_group_base_hasher::equal (const value_type *gi1,
+				    const compare_type *gi2)
 {
   return rtx_equal_p (gi1->rtx_base, gi2->rtx_base);
 }
 
 inline hashval_t
-invariant_group_base_hasher::hash (const T *gi)
+invariant_group_base_hasher::hash (const value_type *gi)
 {
   int do_not_record;
   return hash_rtx (gi->rtx_base, Pmode, &do_not_record, NULL, false);
@@ -3361,9 +3363,9 @@ mark_reachable_blocks (sbitmap unreachable_blocks, basic_block bb)
   edge e;
   edge_iterator ei;
 
-  if (TEST_BIT (unreachable_blocks, bb->index))
+  if (bitmap_bit_p (unreachable_blocks, bb->index))
     {
-      RESET_BIT (unreachable_blocks, bb->index);
+      bitmap_clear_bit (unreachable_blocks, bb->index);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  mark_reachable_blocks (unreachable_blocks, e->src);
@@ -3382,7 +3384,7 @@ dse_step3 (bool for_spills)
   bitmap all_ones = NULL;
   unsigned int i;
 
-  sbitmap_ones (unreachable_blocks);
+  bitmap_ones (unreachable_blocks);
 
   FOR_ALL_BB (bb)
     {
@@ -3412,7 +3414,7 @@ dse_step3 (bool for_spills)
   /* For any block in an infinite loop, we must initialize the out set
      to all ones.  This could be expensive, but almost never occurs in
      practice. However, it is common in regression tests.  */
-  EXECUTE_IF_SET_IN_SBITMAP (unreachable_blocks, 0, i, sbi)
+  EXECUTE_IF_SET_IN_BITMAP (unreachable_blocks, 0, i, sbi)
     {
       if (bitmap_bit_p (all_blocks, i))
 	{
@@ -3932,6 +3934,7 @@ struct rtl_opt_pass pass_rtl_dse1 =
  {
   RTL_PASS,
   "dse1",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dse1,                            /* gate */
   rest_of_handle_dse,                   /* execute */
   NULL,                                 /* sub */
@@ -3952,6 +3955,7 @@ struct rtl_opt_pass pass_rtl_dse2 =
  {
   RTL_PASS,
   "dse2",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dse2,                            /* gate */
   rest_of_handle_dse,                   /* execute */
   NULL,                                 /* sub */

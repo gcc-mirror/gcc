@@ -1,5 +1,5 @@
 /* Compute x * y + z as ternary operation.
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010-2012 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2010.
 
@@ -57,6 +57,11 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  && u.ieee.exponent != 0x7fff
           && v.ieee.exponent != 0x7fff)
 	return (z + x) + y;
+      /* If z is zero and x are y are nonzero, compute the result
+	 as x * y to avoid the wrong sign of a zero result if x * y
+	 underflows to 0.  */
+      if (z == 0 && x != 0 && y != 0)
+	return x * y;
       /* If x or y or z is Inf/NaN, or if fma will certainly overflow,
 	 or if x * y is less than half of FLT128_DENORM_MIN,
 	 compute as x * y + z.  */
@@ -68,6 +73,35 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  || u.ieee.exponent + v.ieee.exponent
 	     < IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG - 2)
 	return x * y + z;
+      /* If x * y is less than 1/4 of FLT128_DENORM_MIN, neither the
+	 result nor whether there is underflow depends on its exact
+	 value, only on its sign.  */
+      if (u.ieee.exponent + v.ieee.exponent
+	  < IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG - 2)
+	{
+	  int neg = u.ieee.negative ^ v.ieee.negative;
+	  __float128 tiny = neg ? -0x1p-16494L : 0x1p-16494L;
+	  if (w.ieee.exponent >= 3)
+	    return tiny + z;
+	  /* Scaling up, adding TINY and scaling down produces the
+	     correct result, because in round-to-nearest mode adding
+	     TINY has no effect and in other modes double rounding is
+	     harmless.  But it may not produce required underflow
+	     exceptions.  */
+	  v.value = z * 0x1p114L + tiny;
+	  if (TININESS_AFTER_ROUNDING
+	      ? v.ieee.exponent < 115
+	      : (w.ieee.exponent == 0
+		 || (w.ieee.exponent == 1
+		     && w.ieee.negative != neg
+		     && w.ieee.mant_low == 0
+		     && w.ieee.mant_high == 0)))
+	    {
+	      volatile __float128 force_underflow = x * y;
+	      (void) force_underflow;
+	    }
+	  return v.value * 0x1p-114L;
+	}
       if (u.ieee.exponent + v.ieee.exponent
 	  >= 0x7fff + IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG)
 	{
@@ -136,6 +170,11 @@ fmaq (__float128 x, __float128 y, __float128 z)
       y = v.value;
       z = w.value;
     }
+
+  /* Ensure correct sign of exact 0 + 0.  */
+  if (__builtin_expect ((x == 0 || y == 0) && z == 0, 0))
+    return x * y + z;
+
   /* Multiplication m1 + m2 = x * y using Dekker's algorithm.  */
 #define C ((1LL << (FLT128_MANT_DIG + 1) / 2) + 1)
   __float128 x1 = x * C;
@@ -191,7 +230,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 #endif
       v.value = a1 + u.value;
       /* Ensure the addition is not scheduled after fetestexcept call.  */
-      asm volatile ("" : : "m" (v));
+      asm volatile ("" : : "m" (v.value));
 #ifdef USE_FENV_H
       int j = fetestexcept (FE_INEXACT) != 0;
       feupdateenv (&env);
@@ -218,22 +257,27 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	 for proper rounding.  */
       if (v.ieee.exponent == 226)
 	{
+	  /* If the exponent would be in the normal range when
+	     rounding to normal precision with unbounded exponent
+	     range, the exact result is known and spurious underflows
+	     must be avoided on systems detecting tininess after
+	     rounding.  */
+	  if (TININESS_AFTER_ROUNDING)
+	    {
+	      w.value = a1 + u.value;
+	      if (w.ieee.exponent == 227)
+		return w.value * 0x1p-226L;
+	    }
 	  /* v.ieee.mant_low & 2 is LSB bit of the result before rounding,
 	     v.ieee.mant_low & 1 is the round bit and j is our sticky
-	     bit.  In round-to-nearest 001 rounds down like 00,
-	     011 rounds up, even though 01 rounds down (thus we need
-	     to adjust), 101 rounds down like 10 and 111 rounds up
-	     like 11.  */
-	  if ((v.ieee.mant_low & 3) == 1)
-	    {
-	      v.value *= 0x1p-226Q;
-	      if (v.ieee.negative)
-		return v.value - 0x1p-16494Q /* __FLT128_DENORM_MIN__ */;
-	      else
-		return v.value + 0x1p-16494Q /* __FLT128_DENORM_MIN__ */;
-	    }
-	  else
-	    return v.value * 0x1p-226Q;
+	     bit. */
+	  w.value = 0.0Q;
+	  w.ieee.mant_low = ((v.ieee.mant_low & 3) << 1) | j;
+	  w.ieee.negative = v.ieee.negative;
+	  v.ieee.mant_low &= ~3U;
+	  v.value *= 0x1p-226L;
+	  w.value *= 0x1p-2L;
+	  return v.value + w.value;
 	}
       v.ieee.mant_low |= j;
       return v.value * 0x1p-226Q;

@@ -25,7 +25,6 @@
 
 with Atree;    use Atree;
 with Debug_A;  use Debug_A;
-with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Alfa; use Exp_Alfa;
 with Exp_Attr; use Exp_Attr;

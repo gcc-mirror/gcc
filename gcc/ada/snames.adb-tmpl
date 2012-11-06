@@ -419,6 +419,18 @@ package body Snames is
       return N in First_Locking_Policy_Name .. Last_Locking_Policy_Name;
    end Is_Locking_Policy_Name;
 
+   -------------------------------------
+   -- Is_Partition_Elaboration_Policy --
+   -------------------------------------
+
+   function Is_Partition_Elaboration_Policy_Name
+     (N : Name_Id) return Boolean
+   is
+   begin
+      return N in First_Partition_Elaboration_Policy_Name ..
+                  Last_Partition_Elaboration_Policy_Name;
+   end Is_Partition_Elaboration_Policy_Name;
+
    -----------------------------
    -- Is_Operator_Symbol_Name --
    -----------------------------

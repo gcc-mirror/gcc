@@ -174,7 +174,7 @@
 ;; opcode that is "phased-in".  Not implemented as of Power7, so not yet used,
 ;; but let's prepare the macros anyway.
 
-(define_mode_iterator ATOMIC    [SI (DI "TARGET_64BIT")])
+(define_mode_iterator ATOMIC    [SI (DI "TARGET_POWERPC64")])
 
 (define_insn "load_locked<mode>"
   [(set (match_operand:ATOMIC 0 "gpc_reg_operand" "=r")

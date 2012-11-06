@@ -36,28 +36,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     _Fwd_list_base<_Tp, _Alloc>::
-    _Fwd_list_base(const _Fwd_list_base& __lst, const _Node_alloc_type& __a)
-    : _M_impl(__a)
-    {
-      this->_M_impl._M_head._M_next = 0;
-      _Fwd_list_node_base* __to = &this->_M_impl._M_head;
-      _Node* __curr = static_cast<_Node*>(__lst._M_impl._M_head._M_next);
-
-      while (__curr)
-        {
-          __to->_M_next = _M_create_node(__curr->_M_value);
-          __to = __to->_M_next;
-          __curr = static_cast<_Node*>(__curr->_M_next);
-        }
-    }
-
-  template<typename _Tp, typename _Alloc>
-    _Fwd_list_base<_Tp, _Alloc>::
     _Fwd_list_base(_Fwd_list_base&& __lst, const _Node_alloc_type& __a)
     : _M_impl(__a)
     {
       if (__lst._M_get_Node_allocator() == __a)
-        this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
+	{
+	  this->_M_impl._M_head._M_next = __lst._M_impl._M_head._M_next;
+	  __lst._M_impl._M_head._M_next = 0;
+	}
       else
         {
           this->_M_impl._M_head._M_next = 0;
@@ -67,12 +53,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
           while (__curr)
             {
               __to->_M_next =
-                _M_create_node(std::move_if_noexcept(__curr->_M_value));
+                _M_create_node(std::move_if_noexcept(*__curr->_M_valptr()));
               __to = __to->_M_next;
               __curr = static_cast<_Node*>(__curr->_M_next);
             }
         }
-      __lst._M_impl._M_head._M_next = 0;
     }
 
   template<typename _Tp, typename _Alloc>
@@ -96,7 +81,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       _Node* __curr = static_cast<_Node*>(__pos->_M_next);
       __pos->_M_next = __curr->_M_next;
-      _Node_alloc_traits::destroy(_M_get_Node_allocator(), __curr);
+      _Tp_alloc_type __a(_M_get_Node_allocator());
+      allocator_traits<_Tp_alloc_type>::destroy(__a, __curr->_M_valptr());
+      __curr->~_Node();
       _M_put_node(__curr);
       return __pos->_M_next;
     }
@@ -112,14 +99,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         {
           _Node* __temp = __curr;
           __curr = static_cast<_Node*>(__curr->_M_next);
-          _Node_alloc_traits::destroy(_M_get_Node_allocator(), __temp);
+	  _Tp_alloc_type __a(_M_get_Node_allocator());
+	  allocator_traits<_Tp_alloc_type>::destroy(__a, __temp->_M_valptr());
+	  __temp->~_Node();
           _M_put_node(__temp);
         }
       __pos->_M_next = __last;
       return __last;
     }
 
-  // Called by the range constructor to implement [23.1.1]/9
+  // Called by the range constructor to implement [23.3.4.2]/9
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
       void
@@ -180,22 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		}
 	      std::__alloc_on_copy(__this_alloc, __that_alloc);
             }
-          iterator __prev1 = before_begin();
-          iterator __curr1 = begin();
-          iterator __last1 = end();
-          const_iterator __first2 = __list.cbegin();
-          const_iterator __last2 = __list.cend();
-          while (__curr1 != __last1 && __first2 != __last2)
-            {
-              *__curr1 = *__first2;
-              ++__prev1;
-              ++__curr1;
-              ++__first2;
-            }
-          if (__first2 == __last2)
-            erase_after(__prev1, __last1);
-          else
-            insert_after(__prev1, __first2, __last2);
+	  assign(__list.cbegin(), __list.cend());
         }
       return *this;
     }
@@ -330,10 +304,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
         {
-          if (__tmp->_M_value == __val)
+          if (*__tmp->_M_valptr() == __val)
 	    {
-	      if (std::__addressof(__tmp->_M_value)
-		  != std::__addressof(__val))
+	      if (__tmp->_M_valptr() != std::__addressof(__val))
 		{
 		  this->_M_erase_after(__curr);
 		  continue;
@@ -357,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
         while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
           {
-            if (__pred(__tmp->_M_value))
+            if (__pred(*__tmp->_M_valptr()))
               this->_M_erase_after(__curr);
             else
               __curr = static_cast<_Node*>(__curr->_M_next);
@@ -394,10 +367,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         _Node_base* __node = &this->_M_impl._M_head;
         while (__node->_M_next && __list._M_impl._M_head._M_next)
           {
-            if (__comp(static_cast<_Node*>
-                       (__list._M_impl._M_head._M_next)->_M_value,
-                       static_cast<_Node*>
-                       (__node->_M_next)->_M_value))
+            if (__comp(*static_cast<_Node*>
+                       (__list._M_impl._M_head._M_next)->_M_valptr(),
+                       *static_cast<_Node*>
+                       (__node->_M_next)->_M_valptr()))
               __node->_M_transfer_after(&__list._M_impl._M_head,
                                         __list._M_impl._M_head._M_next);
             __node = __node->_M_next;
@@ -490,7 +463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
                         __p = static_cast<_Node*>(__p->_M_next);
                         --__psize;
                       }
-                    else if (__comp(__p->_M_value, __q->_M_value))
+                    else if (__comp(*__p->_M_valptr(), *__q->_M_valptr()))
                       {
                         // First node of p is lower; e must come from p.
                         __e = __p;

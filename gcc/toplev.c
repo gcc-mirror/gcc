@@ -169,8 +169,6 @@ const char *user_label_prefix;
 FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *stack_usage_file = NULL;
-FILE *dump_file = NULL;
-const char *dump_file_name;
 
 /* The current working directory of a translation.  It's generally the
    directory from which compilation was initiated, but a preprocessed

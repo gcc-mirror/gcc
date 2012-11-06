@@ -3,9 +3,9 @@
 // license that can be found in the LICENSE file.
 
 package reflect
+#include "runtime.h"
 #include "go-type.h"
 #include "interface.h"
-#include "runtime.h"
 #include "go-panic.h"
 
 func ifaceE2I(inter *Type, e Eface, ret *Iface) {

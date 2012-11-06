@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,6 +244,9 @@ package Exp_Disp is
 
    function Has_CPP_Constructors (Typ : Entity_Id) return Boolean;
    --  Returns true if the type has CPP constructors
+
+   function Is_Expanded_Dispatching_Call (N : Node_Id) return Boolean;
+   --  Returns true if N is the expanded code of a dispatching call
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation

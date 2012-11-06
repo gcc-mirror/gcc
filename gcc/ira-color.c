@@ -2834,8 +2834,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  exit_freq = ira_loop_edge_freq (subloop_node, regno, true);
 	  enter_freq = ira_loop_edge_freq (subloop_node, regno, false);
 	  ira_assert (regno < ira_reg_equiv_len);
-	  if (ira_reg_equiv_invariant_p[regno]
-	      || ira_reg_equiv_const[regno] != NULL_RTX)
+	  if (ira_equiv_no_lvalue_p (regno))
 	    {
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{
@@ -2940,9 +2939,7 @@ move_spill_restore (void)
 		 copies and the reload pass can spill the allocno set
 		 by copy although the allocno will not get memory
 		 slot.  */
-	      || (regno < ira_reg_equiv_len
-		  && (ira_reg_equiv_invariant_p[regno]
-		      || ira_reg_equiv_const[regno] != NULL_RTX))
+	      || ira_equiv_no_lvalue_p (regno)
 	      || !bitmap_bit_p (loop_node->border_allocnos, ALLOCNO_NUM (a)))
 	    continue;
 	  mode = ALLOCNO_MODE (a);
@@ -3366,9 +3363,7 @@ coalesce_allocnos (void)
       a = ira_allocnos[j];
       regno = ALLOCNO_REGNO (a);
       if (! ALLOCNO_ASSIGNED_P (a) || ALLOCNO_HARD_REGNO (a) >= 0
-	  || (regno < ira_reg_equiv_len
-	      && (ira_reg_equiv_const[regno] != NULL_RTX
-		  || ira_reg_equiv_invariant_p[regno])))
+	  || ira_equiv_no_lvalue_p (regno))
 	continue;
       for (cp = ALLOCNO_COPIES (a); cp != NULL; cp = next_cp)
 	{
@@ -3383,9 +3378,7 @@ coalesce_allocnos (void)
 	      if ((cp->insn != NULL || cp->constraint_p)
 		  && ALLOCNO_ASSIGNED_P (cp->second)
 		  && ALLOCNO_HARD_REGNO (cp->second) < 0
-		  && (regno >= ira_reg_equiv_len
-		      || (! ira_reg_equiv_invariant_p[regno]
-			  && ira_reg_equiv_const[regno] == NULL_RTX)))
+		  && ! ira_equiv_no_lvalue_p (regno))
 		sorted_copies[cp_num++] = cp;
 	    }
 	  else if (cp->second == a)
@@ -3651,9 +3644,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
       allocno = spilled_coalesced_allocnos[i];
       if (ALLOCNO_COALESCE_DATA (allocno)->first != allocno
 	  || bitmap_bit_p (set_jump_crosses, ALLOCNO_REGNO (allocno))
-	  || (ALLOCNO_REGNO (allocno) < ira_reg_equiv_len
-	      && (ira_reg_equiv_const[ALLOCNO_REGNO (allocno)] != NULL_RTX
-		  || ira_reg_equiv_invariant_p[ALLOCNO_REGNO (allocno)])))
+	  || ira_equiv_no_lvalue_p (ALLOCNO_REGNO (allocno)))
 	continue;
       for (j = 0; j < i; j++)
 	{
@@ -3661,9 +3652,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
 	  n = ALLOCNO_COALESCE_DATA (a)->temp;
 	  if (ALLOCNO_COALESCE_DATA (a)->first == a
 	      && ! bitmap_bit_p (set_jump_crosses, ALLOCNO_REGNO (a))
-	      && (ALLOCNO_REGNO (a) >= ira_reg_equiv_len
-		  || (! ira_reg_equiv_invariant_p[ALLOCNO_REGNO (a)]
-		      && ira_reg_equiv_const[ALLOCNO_REGNO (a)] == NULL_RTX))
+	      && ! ira_equiv_no_lvalue_p (ALLOCNO_REGNO (a))
 	      && ! slot_coalesced_allocno_live_ranges_intersect_p (allocno, n))
 	    break;
 	}
@@ -3771,9 +3760,7 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
       allocno = spilled_coalesced_allocnos[i];
       if (ALLOCNO_COALESCE_DATA (allocno)->first != allocno
 	  || ALLOCNO_HARD_REGNO (allocno) >= 0
-	  || (ALLOCNO_REGNO (allocno) < ira_reg_equiv_len
-	      && (ira_reg_equiv_const[ALLOCNO_REGNO (allocno)] != NULL_RTX
-		  || ira_reg_equiv_invariant_p[ALLOCNO_REGNO (allocno)])))
+	  || ira_equiv_no_lvalue_p (ALLOCNO_REGNO (allocno)))
 	continue;
       if (internal_flag_ira_verbose > 3 && ira_dump_file != NULL)
 	fprintf (ira_dump_file, "      Slot %d (freq,size):", slot_num);

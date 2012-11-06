@@ -1216,6 +1216,15 @@ package body Uintp is
 
                --  [ CALCULATE Q (hat) ] (step D3 in the algorithm)
 
+               --  Note: this version of step D3 is from the original published
+               --  algorithm, which is known to have a bug causing overflows.
+               --  See: http://www-cs-faculty.stanford.edu/~uno/err2-2e.ps.gz.
+               --  In this code we are safe since our representation of double
+               --  length numbers allows an expanded range.
+
+               --  We don't have a proof of this claim, but the only cases we
+               --  have found that show the bug in step D3 work fine here.
+
                Tmp_Int := Dividend (J) * Base + Dividend (J + 1);
 
                --  Initial guess
@@ -1230,7 +1239,7 @@ package body Uintp is
 
                while Divisor_Dig2 * Q_Guess >
                      (Tmp_Int - Q_Guess * Divisor_Dig1) * Base +
-                                                          Dividend (J + 2)
+                        Dividend (J + 2)
                loop
                   Q_Guess := Q_Guess - 1;
                end loop;

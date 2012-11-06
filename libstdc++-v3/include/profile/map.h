@@ -69,7 +69,12 @@ namespace __profile
       : _Base(__comp, __a)
       { __profcxx_map_to_unordered_map_construct(this); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<typename _InputIterator>
+#endif
         map(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp = _Compare(),
 	    const _Allocator& __a = _Allocator())
@@ -252,10 +257,11 @@ namespace __profile
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{
 	  size_type size_before = size();
-	  auto __res = _Base::emplace_hint(__pos.base(),
+	  auto __res = _Base::emplace_hint(__pos,
 					   std::forward<_Args>(__args)...);
 	  __profcxx_map_to_unordered_map_insert(this, size_before,
 						size() - size_before);
+	  return __res;
 	}
 #endif
 
@@ -326,7 +332,12 @@ namespace __profile
       }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<typename _InputIterator>
+#endif
         void
         insert(_InputIterator __first, _InputIterator __last)
         {

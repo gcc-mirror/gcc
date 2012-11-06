@@ -225,6 +225,16 @@ done
 grep '^const _SIG[^_]' gen-sysinfo.go | \
   grep -v '^const _SIGEV_' | \
   sed -e 's/^\(const \)_\(SIG[^= ]*\)\(.*\)$/\1\2 = Signal(_\2)/' >> ${OUT}
+if ! grep '^const SIGPOLL ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const SIGIO ' ${OUT} > /dev/null 2>&1; then
+    echo "const SIGPOLL = SIGIO" >> ${OUT}
+  fi
+fi
+if ! grep '^const SIGCLD ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const SIGCHLD ' ${OUT} >/dev/null 2>&1; then
+    echo "const SIGCLD = SIGCHLD" >> ${OUT}
+  fi
+fi
 
 # The syscall numbers.  We force the names to upper case.
 grep '^const _SYS_' gen-sysinfo.go | \
@@ -404,7 +414,18 @@ echo "type Uid_t _uid_t" >> ${OUT}
 echo "type Gid_t _gid_t" >> ${OUT}
 echo "type Socklen_t _socklen_t" >> ${OUT}
 
-# The long type, needed because that is the type that ptrace returns.
+# The C int type.
+sizeof_int=`grep '^const ___SIZEOF_INT__ = ' gen-sysinfo.go | sed -e 's/.*= //'`
+if test "$sizeof_int" = "4"; then
+  echo "type _C_int int32" >> ${OUT}
+elif test "$sizeof_int" = "8"; then
+  echo "type _C_int int64" >> ${OUT}
+else
+  echo 1>&2 "mksysinfo.sh: could not determine size of int (got $sizeof_int)"
+  exit 1
+fi
+
+# The C long type, needed because that is the type that ptrace returns.
 sizeof_long=`grep '^const ___SIZEOF_LONG__ = ' gen-sysinfo.go | sed -e 's/.*= //'`
 if test "$sizeof_long" = "4"; then
   echo "type _C_long int32" >> ${OUT}

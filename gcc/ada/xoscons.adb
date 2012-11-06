@@ -23,36 +23,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This program generates the spec of System.OS_Constants (s-oscons.ads)
+--  The base name of the template file is given by Argument (1). This program
+--  generates the spec for this specified unit (let's call it UNIT_NAME).
 
 --  It works in conjunction with a C template file which must be pre-processed
 --  and compiled using the cross compiler. Two input files are used:
---    - the preprocessed C file: s-oscons-tmplt.i
---    - the generated assembly file: s-oscons-tmplt.s
+--    - the preprocessed C file: UNIT_NAME-tmplt.i
+--    - the generated assembly file: UNIT_NAME-tmplt.s
 
---  The contents of s-oscons.ads is written on standard output
+--  The generated files are UNIT_NAME.ads and UNIT_NAME.h
 
-with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Ada.Exceptions;          use Ada.Exceptions;
-with Ada.Strings.Fixed;       use Ada.Strings.Fixed;
-with Ada.Text_IO;             use Ada.Text_IO;
-with Ada.Streams.Stream_IO;   use Ada.Streams.Stream_IO;
+with Ada.Characters.Handling;    use Ada.Characters.Handling;
+with Ada.Command_Line;           use Ada.Command_Line;
+with Ada.Exceptions;             use Ada.Exceptions;
+with Ada.Streams.Stream_IO;      use Ada.Streams.Stream_IO;
+with Ada.Strings.Fixed;          use Ada.Strings.Fixed;
+with Ada.Strings.Maps;           use Ada.Strings.Maps;
+with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
+with Ada.Text_IO;                use Ada.Text_IO;
 
 pragma Warnings (Off);
 --  System.Unsigned_Types is an internal GNAT unit
 with System.Unsigned_Types;   use System.Unsigned_Types;
 pragma Warnings (On);
 
+with GNAT.String_Split; use GNAT.String_Split;
 with GNAT.Table;
 
 with XUtil; use XUtil;
 
 procedure XOSCons is
 
-   use ASCII;
    use Ada.Strings;
+   use ASCII;
 
-   Unit_Name : constant String := "s-oscons";
+   Unit_Name : constant String := Argument (1);
    Tmpl_Name : constant String := Unit_Name & "-tmplt";
 
    -------------------------------------------------
@@ -71,11 +76,15 @@ procedure XOSCons is
       Abs_Value : Long_Unsigned := 0;
    end record;
 
+   function ">" (V1, V2 : Int_Value_Type) return Boolean;
+   function "<" (V1, V2 : Int_Value_Type) return Boolean;
+
    type Asm_Info_Kind is
      (CND,     --  Named number (decimal)
       CNU,     --  Named number (decimal, unsigned)
       CNS,     --  Named number (freeform text)
       C,       --  Constant object
+      SUB,     --  Subtype
       TXT);    --  Literal text
    --  Recognized markers found in assembly file. These markers are produced by
    --  the same-named macros from the C template.
@@ -126,6 +135,10 @@ procedure XOSCons is
 
    type Language is (Lang_Ada, Lang_C);
 
+   function Parse_Int (S : String; K : Asm_Int_Kind) return Int_Value_Type;
+   --  Parse a decimal number, preceded by an optional '$' or '#' character,
+   --  and return its value.
+
    procedure Output_Info
      (Lang       : Language;
       OFile      : Sfile;
@@ -141,6 +154,30 @@ procedure XOSCons is
    function Spaces (Count : Integer) return String;
    --  If Count is positive, return a string of Count spaces, else return an
    --  empty string.
+
+   ---------
+   -- ">" --
+   ---------
+
+   function ">" (V1, V2 : Int_Value_Type) return Boolean is
+      P1 : Boolean renames V1.Positive;
+      P2 : Boolean renames V2.Positive;
+      A1 : Long_Unsigned renames V1.Abs_Value;
+      A2 : Long_Unsigned renames V2.Abs_Value;
+   begin
+      return (P1 and then not P2)
+        or else (P1 and then P2 and then A1 > A2)
+        or else (not P1 and then not P2 and then A1 < A2);
+   end ">";
+
+   ---------
+   -- "<" --
+   ---------
+
+   function "<" (V1, V2 : Int_Value_Type) return Boolean is
+   begin
+      return not (V1 > V2) and then not (V1 = V2);
+   end "<";
 
    ----------------------------
    -- Contains_Template_Name --
@@ -181,65 +218,84 @@ procedure XOSCons is
    --  Start of processing for Output_Info
 
    begin
-      --  Case of non-TXT case (TXT case handled by common code below)
+      case Info.Kind is
+         when TXT =>
 
-      if Info.Kind /= TXT then
-         case Lang is
-            when Lang_Ada =>
-               Put ("   " & Info.Constant_Name.all);
-               Put (Spaces (Max_Constant_Name_Len
-                              - Info.Constant_Name'Length));
+            --  Handled in the common code for comments below
 
-               if Info.Kind in Named_Number then
-                  Put (" : constant := ");
-               else
-                  Put (" : constant " & Info.Constant_Type.all);
-                  Put (Spaces (Max_Constant_Type_Len
-                                 - Info.Constant_Type'Length));
-                  Put (" := ");
+            null;
+
+         when SUB =>
+            case Lang is
+               when Lang_Ada =>
+                  Put ("   subtype " & Info.Constant_Name.all
+                       & " is Interfaces.C."
+                       & Info.Text_Value.all & ";");
+               when Lang_C =>
+                  Put ("#define " & Info.Constant_Name.all & " "
+                       & Info.Text_Value.all);
+            end case;
+
+         when others =>
+
+            --  All named number cases
+
+            case Lang is
+               when Lang_Ada =>
+                  Put ("   " & Info.Constant_Name.all);
+                  Put (Spaces (Max_Constant_Name_Len
+                                 - Info.Constant_Name'Length));
+
+                  if Info.Kind in Named_Number then
+                     Put (" : constant := ");
+                  else
+                     Put (" : constant " & Info.Constant_Type.all);
+                     Put (Spaces (Max_Constant_Type_Len
+                                    - Info.Constant_Type'Length));
+                     Put (" := ");
+                  end if;
+
+               when Lang_C =>
+                  Put ("#define " & Info.Constant_Name.all & " ");
+                  Put (Spaces (Max_Constant_Name_Len
+                                 - Info.Constant_Name'Length));
+            end case;
+
+            if Info.Kind in Asm_Int_Kind then
+               if not Info.Int_Value.Positive then
+                  Put ("-");
                end if;
 
-            when Lang_C =>
-               Put ("#define " & Info.Constant_Name.all & " ");
-               Put (Spaces (Max_Constant_Name_Len
-                              - Info.Constant_Name'Length));
-         end case;
+               Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
 
-         if Info.Kind in Asm_Int_Kind then
-            if not Info.Int_Value.Positive then
-               Put ("-");
+            else
+               declare
+                  Is_String : constant Boolean :=
+                                Info.Kind = C
+                                  and then Info.Constant_Type.all = "String";
+
+               begin
+                  if Is_String then
+                     Put ("""");
+                  end if;
+
+                  Put (Info.Text_Value.all);
+
+                  if Is_String then
+                     Put ("""");
+                  end if;
+               end;
             end if;
 
-            Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
+            if Lang = Lang_Ada then
+               Put (";");
 
-         else
-            declare
-               Is_String : constant Boolean :=
-                             Info.Kind = C
-                               and then Info.Constant_Type.all = "String";
-
-            begin
-               if Is_String then
-                  Put ("""");
+               if Info.Comment'Length > 0 then
+                  Put (Spaces (Max_Constant_Value_Len - Info.Value_Len));
+                  Put (" --  ");
                end if;
-
-               Put (Info.Text_Value.all);
-
-               if Is_String then
-                  Put ("""");
-               end if;
-            end;
-         end if;
-
-         if Lang = Lang_Ada then
-            Put (";");
-
-            if Info.Comment'Length > 0 then
-               Put (Spaces (Max_Constant_Value_Len - Info.Value_Len));
-               Put (" --  ");
             end if;
-         end if;
-      end if;
+      end case;
 
       if Lang = Lang_Ada then
          Put (Info.Comment.all);
@@ -260,10 +316,6 @@ procedure XOSCons is
 
       procedure Find_Colon (Index : in out Integer);
       --  Increment Index until the next colon in Line
-
-      function Parse_Int (S : String; K : Asm_Int_Kind) return Int_Value_Type;
-      --  Parse a decimal number, preceded by an optional '$' or '#' character,
-      --  and return its value.
 
       -----------------
       -- Field_Alloc --
@@ -286,53 +338,6 @@ procedure XOSCons is
          end loop;
       end Find_Colon;
 
-      ---------------
-      -- Parse_Int --
-      ---------------
-
-      function Parse_Int
-        (S : String;
-         K : Asm_Int_Kind) return Int_Value_Type
-      is
-         First    : Integer := S'First;
-         Result   : Int_Value_Type;
-
-      begin
-         --  On some platforms, immediate integer values are prefixed with
-         --  a $ or # character in assembly output.
-
-         if S (First) = '$' or else S (First) = '#' then
-            First := First + 1;
-         end if;
-
-         if S (First) = '-' then
-            Result.Positive := False;
-            First := First + 1;
-         else
-            Result.Positive := True;
-         end if;
-
-         Result.Abs_Value := Long_Unsigned'Value (S (First .. S'Last));
-
-         if not Result.Positive and then K = CNU then
-
-            --  Negative value, but unsigned expected: take 2's complement
-            --  reciprocical value.
-
-            Result.Abs_Value := ((not Result.Abs_Value) + 1)
-                                  and
-                                (Shift_Left (1, Size_Of_Unsigned_Int) - 1);
-            Result.Positive  := True;
-         end if;
-
-         return Result;
-
-      exception
-         when others =>
-            Put_Line (Standard_Error, "can't parse decimal value: " & S);
-            raise;
-      end Parse_Int;
-
    --  Start of processing for Parse_Asm_Line
 
    begin
@@ -349,13 +354,16 @@ procedure XOSCons is
            Integer (Parse_Int (Line (Index1 .. Index2 - 1), CNU).Abs_Value);
 
          case Info.Kind is
-            when CND | CNU | CNS | C =>
+            when CND | CNU | CNS | C | SUB =>
                Index1 := Index2 + 1;
                Find_Colon (Index2);
 
                Info.Constant_Name := Field_Alloc;
 
-               if Info.Constant_Name'Length > Max_Constant_Name_Len then
+               if Info.Kind /= SUB
+                    and then
+                  Info.Constant_Name'Length > Max_Constant_Name_Len
+               then
                   Max_Constant_Name_Len := Info.Constant_Name'Length;
                end if;
 
@@ -422,6 +430,153 @@ procedure XOSCons is
          Put_Line
            (Standard_Error, "exception raised: " & Exception_Information (E));
    end Parse_Asm_Line;
+
+   ----------------
+   -- Parse_Cond --
+   ----------------
+
+   procedure Parse_Cond
+     (If_Line            : String;
+      Cond               : Boolean;
+      Tmpl_File          : Ada.Text_IO.File_Type;
+      Ada_Ofile, C_Ofile : Sfile;
+      Current_Line       : in out Integer)
+   is
+      function Get_Value (Name : String) return Int_Value_Type;
+      --  Returns the value of the variable Name
+
+      ---------------
+      -- Get_Value --
+      ---------------
+
+      function Get_Value (Name : String) return Int_Value_Type is
+      begin
+         if Is_Subset (To_Set (Name), Decimal_Digit_Set) then
+            return Parse_Int (Name, CND);
+
+         else
+            for K in 1 .. Asm_Infos.Last loop
+               if Asm_Infos.Table (K).Constant_Name /= null then
+                  if Name = Asm_Infos.Table (K).Constant_Name.all then
+                     return Asm_Infos.Table (K).Int_Value;
+                  end if;
+               end if;
+            end loop;
+
+            --  Not found returns 0
+
+            return (True, 0);
+         end if;
+      end Get_Value;
+
+      --  Local variables
+
+      Sline  : Slice_Set;
+      Line   : String (1 .. 256);
+      Last   : Integer;
+      Value1 : Int_Value_Type;
+      Value2 : Int_Value_Type;
+      Res    : Boolean;
+
+   --  Start of processing for Parse_Cond
+
+   begin
+      Create (Sline, If_Line, " ");
+
+      if Slice_Count (Sline) /= 4 then
+         Put_Line (Standard_Error, "can't parse " & If_Line);
+      end if;
+
+      Value1 := Get_Value (Slice (Sline, 2));
+      Value2 := Get_Value (Slice (Sline, 4));
+
+      if Slice (Sline, 3) = ">" then
+         Res := Cond and (Value1 > Value2);
+
+      elsif Slice (Sline, 3) = "<" then
+         Res := Cond and (Value1 < Value2);
+
+      elsif Slice (Sline, 3) = "=" then
+         Res := Cond and (Value1 = Value2);
+
+      elsif Slice (Sline, 3) = "/=" then
+         Res := Cond and (Value1 /= Value2);
+
+      else
+         --  No other operator can be used
+
+         Put_Line (Standard_Error, "unknown operator in " & If_Line);
+         Res := False;
+      end if;
+
+      Current_Line := Current_Line + 1;
+
+      loop
+         Get_Line (Tmpl_File, Line, Last);
+         Current_Line := Current_Line + 1;
+         exit when Line (1 .. Last) = "@END_IF";
+
+         if Line (1 .. 4) = "@IF " then
+            Parse_Cond
+              (Line (1 .. Last), Res,
+               Tmpl_File, Ada_Ofile, C_Ofile, Current_Line);
+
+         elsif Line (1 .. Last) = "@ELSE" then
+            Res := Cond and not Res;
+
+         elsif Res then
+            Put_Line (Ada_OFile, Line (1 .. Last));
+            Put_Line (C_OFile, Line (1 .. Last));
+         end if;
+      end loop;
+   end Parse_Cond;
+
+   ---------------
+   -- Parse_Int --
+   ---------------
+
+   function Parse_Int
+     (S : String;
+      K : Asm_Int_Kind) return Int_Value_Type
+   is
+      First  : Integer := S'First;
+      Result : Int_Value_Type;
+
+   begin
+      --  On some platforms, immediate integer values are prefixed with
+      --  a $ or # character in assembly output.
+
+      if S (First) = '$' or else S (First) = '#' then
+         First := First + 1;
+      end if;
+
+      if S (First) = '-' then
+         Result.Positive := False;
+         First := First + 1;
+      else
+         Result.Positive := True;
+      end if;
+
+      Result.Abs_Value := Long_Unsigned'Value (S (First .. S'Last));
+
+      if not Result.Positive and then K = CNU then
+
+         --  Negative value, but unsigned expected: take 2's complement
+         --  reciprocical value.
+
+         Result.Abs_Value := ((not Result.Abs_Value) + 1)
+                               and
+                             (Shift_Left (1, Size_Of_Unsigned_Int) - 1);
+         Result.Positive  := True;
+      end if;
+
+      return Result;
+
+   exception
+      when others =>
+         Put_Line (Standard_Error, "can't parse decimal value: " & S);
+         raise;
+   end Parse_Int;
 
    ------------
    -- Spaces --
@@ -515,6 +670,12 @@ begin
             if Line (1 .. Last) = "*/" then
                Put_Line (C_OFile, Line (1 .. Last));
                In_Comment := False;
+
+            elsif Last > 4 and then Line (1 .. 4) = "@IF " then
+               Parse_Cond
+                 (Line (1 .. Last), True,
+                  Tmpl_File, Ada_Ofile, C_Ofile, Current_Line);
+
             else
                Put_Line (Ada_OFile, Line (1 .. Last));
                Put_Line (C_OFile, Line (1 .. Last));
@@ -525,8 +686,11 @@ begin
             In_Comment := True;
 
          elsif Asm_Infos.Table (Current_Info).Line_Number = Current_Line then
-            Output_Info (Lang_Ada, Ada_OFile, Current_Info);
-            Output_Info (Lang_C,   C_OFile,   Current_Info);
+            if Fixed.Index (Line, "/*NOGEN*/") = 0 then
+               Output_Info (Lang_Ada, Ada_OFile, Current_Info);
+               Output_Info (Lang_C,   C_OFile,   Current_Info);
+            end if;
+
             Current_Info := Current_Info + 1;
          end if;
 
@@ -536,4 +700,7 @@ begin
 
    Close (Tmpl_File);
 
+exception
+   when others =>
+      Put_Line ("xoscons <base_name>");
 end XOSCons;

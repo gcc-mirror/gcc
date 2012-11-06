@@ -3388,6 +3388,7 @@ struct rtl_opt_pass pass_dwarf2_frame =
  {
   RTL_PASS,
   "dwarf2",			/* name */
+  OPTGROUP_NONE,                /* optinfo_flags */
   gate_dwarf2_frame,		/* gate */
   execute_dwarf2_frame,		/* execute */
   NULL,				/* sub */

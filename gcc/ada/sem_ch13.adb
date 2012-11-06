@@ -253,9 +253,7 @@ package body Sem_Ch13 is
             --  is important, since otherwise if there are record subtypes, we
             --  could reverse the bits once for each subtype, which is wrong.
 
-            if Present (CC)
-              and then Ekind (R) = E_Record_Type
-            then
+            if Present (CC) and then Ekind (R) = E_Record_Type then
                declare
                   CFB : constant Uint    := Component_Bit_Offset (Comp);
                   CSZ : constant Uint    := Esize (Comp);
@@ -623,14 +621,12 @@ package body Sem_Ch13 is
                   for C in Start .. Stop loop
                      declare
                         Comp : constant Entity_Id := Comps (C);
-                        CC   : constant Node_Id   :=
-                                 Component_Clause (Comp);
-                        LB   : constant Uint :=
-                                 Static_Integer (Last_Bit (CC));
+                        CC   : constant Node_Id   := Component_Clause (Comp);
+
+                        LB   : constant Uint := Static_Integer (Last_Bit (CC));
                         NFB  : constant Uint := MSS - Uint_1 - LB;
                         NLB  : constant Uint := NFB + Esize (Comp) - 1;
-                        Pos  : constant Uint :=
-                                 Static_Integer (Position (CC));
+                        Pos  : constant Uint := Static_Integer (Position (CC));
 
                      begin
                         if Warn_On_Reverse_Bit_Order then
@@ -1012,9 +1008,7 @@ package body Sem_Ch13 is
 
             procedure Analyze_Aspect_Implicit_Dereference is
             begin
-               if not Is_Type (E)
-                 or else not Has_Discriminants (E)
-               then
+               if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
                     ("Aspect must apply to a type with discriminants", N);
 
@@ -1306,7 +1300,8 @@ package body Sem_Ch13 is
                         A_Name := Chars (Identifier (A));
 
                         if A_Name = Name_Import
-                          or else A_Name = Name_Export
+                             or else
+                           A_Name = Name_Export
                         then
                            if Found then
                               Error_Msg_N ("conflicting", A);
@@ -1331,6 +1326,7 @@ package body Sem_Ch13 is
                      end loop;
 
                      Arg_List := New_List (Relocate_Node (Expr), Ent);
+
                      if Present (L_Assoc) then
                         Append_To (Arg_List, L_Assoc);
                      end if;
@@ -1769,9 +1765,7 @@ package body Sem_Ch13 is
                   --  For a Boolean aspect, create the corresponding pragma if
                   --  no expression or if the value is True.
 
-                  if Is_Boolean_Aspect (Aspect)
-                    and then No (Aitem)
-                  then
+                  if Is_Boolean_Aspect (Aspect) and then No (Aitem) then
                      if Is_True (Static_Boolean (Expr)) then
                         Aitem :=
                           Make_Pragma (Loc,
@@ -2708,7 +2702,21 @@ package body Sem_Ch13 is
                   if Present (O_Ent)
                     and then Is_Object (O_Ent)
                     and then not Off
+
+                    --  The following test is an expedient solution to what
+                    --  is really a problem in CodePeer. Suppressing the
+                    --  Set_Treat_As_Volatile call here prevents later
+                    --  generation (in some cases) of trees that CodePeer
+                    --  should, but currently does not, handle correctly.
+                    --  This test should probably be removed when CodePeer
+                    --  is improved, just because we want the tree CodePeer
+                    --  analyzes to match the tree for which we generate code
+                    --  as closely as is practical. ???
+
+                    and then not CodePeer_Mode
                   then
+                     --  ??? O_Ent might not be in current unit
+
                      Set_Treat_As_Volatile (O_Ent);
                   end if;
 
@@ -4738,11 +4746,13 @@ package body Sem_Ch13 is
                              or else Intval (Last_Bit (Rep1)) /=
                                                    Intval (Last_Bit (CC))
                            then
-                              Error_Msg_N ("component clause inconsistent "
-                                & "with representation of ancestor", CC);
+                              Error_Msg_N
+                                ("component clause inconsistent "
+                                 & "with representation of ancestor", CC);
                            elsif Warn_On_Redundant_Constructs then
-                              Error_Msg_N ("?redundant component clause "
-                                & "for inherited component!", CC);
+                              Error_Msg_N
+                                ("?redundant component clause "
+                                 & "for inherited component!", CC);
                            end if;
                         end;
                      end if;
@@ -5017,18 +5027,21 @@ package body Sem_Ch13 is
          -- Replace_Type_Reference --
          ----------------------------
 
+         --  Note: See comments in Add_Predicates.Replace_Type_Reference
+         --  regarding handling of Sloc and Comes_From_Source.
+
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
             --  Invariant'Class, replace with T'Class (obj)
 
             if Class_Present (Ritem) then
                Rewrite (N,
-                 Make_Type_Conversion (Loc,
+                 Make_Type_Conversion (Sloc (N),
                    Subtype_Mark =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Occurrence_Of (T, Loc),
+                     Make_Attribute_Reference (Sloc (N),
+                       Prefix         => New_Occurrence_Of (T, Sloc (N)),
                        Attribute_Name => Name_Class),
-                   Expression   => Make_Identifier (Loc, Object_Name)));
+                   Expression   => Make_Identifier (Sloc (N), Object_Name)));
 
                Set_Entity (Expression (N), Object_Entity);
                Set_Etype  (Expression (N), Typ);
@@ -5036,10 +5049,12 @@ package body Sem_Ch13 is
             --  Invariant, replace with obj
 
             else
-               Rewrite (N, Make_Identifier (Loc, Object_Name));
+               Rewrite (N, Make_Identifier (Sloc (N), Object_Name));
                Set_Entity (N, Object_Entity);
                Set_Etype  (N, Typ);
             end if;
+
+            Set_Comes_From_Source (N, True);
          end Replace_Type_Reference;
 
       --  Start of processing for Add_Invariants
@@ -5127,7 +5142,8 @@ package body Sem_Ch13 is
                Assoc := New_List (
                  Make_Pragma_Argument_Association (Loc,
                    Expression => Make_Identifier (Loc, Name_Invariant)),
-                 Make_Pragma_Argument_Association (Loc, Expression => Exp));
+                 Make_Pragma_Argument_Association (Loc,
+                   Expression => Exp));
 
                --  Add message if present in Invariant pragma
 
@@ -5236,7 +5252,6 @@ package body Sem_Ch13 is
       --  Build the procedure if we generated at least one Check pragma
 
       if Stmts /= No_List then
-
          Spec  := Copy_Separate_Tree (Specification (PDecl));
 
          PBody :=
@@ -5422,9 +5437,16 @@ package body Sem_Ch13 is
 
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
-            Rewrite (N, Make_Identifier (Loc, Object_Name));
+            Rewrite (N, Make_Identifier (Sloc (N), Object_Name));
+            --  Use the Sloc of the usage name, not the defining name
+
             Set_Entity (N, Object_Entity);
             Set_Etype (N, Typ);
+
+            --  We want to treat the node as if it comes from source, so that
+            --  ASIS will not ignore it
+
+            Set_Comes_From_Source (N, True);
          end Replace_Type_Reference;
 
       --  Start of processing for Add_Predicates
@@ -5462,7 +5484,6 @@ package body Sem_Ch13 is
                if Entity (Arg1) = Typ
                  or else Full_View (Entity (Arg1)) = Typ
                then
-
                   --  We have a match, this entry is for our subtype
 
                   --  We need to replace any occurrences of the name of the
@@ -6049,6 +6070,7 @@ package body Sem_Ch13 is
             --  Comparisons of type with static value
 
             when N_Op_Compare =>
+
                --  Type is left operand
 
                if Is_Type_Ref (Left_Opnd (Exp))
@@ -6311,9 +6333,7 @@ package body Sem_Ch13 is
       begin
          --  Not static if type does not have static predicates
 
-         if not Has_Predicates (Typ)
-           or else No (Static_Predicate (Typ))
-         then
+         if not Has_Predicates (Typ) or else No (Static_Predicate (Typ)) then
             raise Non_Static;
          end if;
 
@@ -6622,7 +6642,7 @@ package body Sem_Ch13 is
       --  containing that copy, but Expression (Ident) is a preanalyzed copy
       --  of the expression, preanalyzed just after the freeze point.
 
-      --  Make a copy of the expression to be preanalyed
+      --  Make a copy of the expression to be preanalyzed
 
       Set_Expression (ASN, New_Copy_Tree (Entity (Ident)));
 
@@ -7272,9 +7292,8 @@ package body Sem_Ch13 is
          --  clause in question, then there was some previous error for which
          --  we already gave a message, so just return with Comp Empty.
 
-         if No (Comp)
-           or else Component_Clause (Comp) /= CC
-         then
+         if No (Comp) or else Component_Clause (Comp) /= CC then
+            Check_Error_Detected;
             Comp := Empty;
 
          --  Normal case where we have a component clause
@@ -7410,9 +7429,7 @@ package body Sem_Ch13 is
 
             --  Check parent overlap if component might overlap parent field
 
-            if Present (Tagged_Parent)
-              and then Fbit <= Parent_Last_Bit
-            then
+            if Present (Tagged_Parent) and then Fbit <= Parent_Last_Bit then
                Pcomp := First_Component_Or_Discriminant (Tagged_Parent);
                while Present (Pcomp) loop
                   if not Is_Tag (Pcomp)
@@ -7574,7 +7591,7 @@ package body Sem_Ch13 is
                   --  Outer level of record definition, check discriminants
 
                   if Nkind_In (Clist, N_Full_Type_Declaration,
-                               N_Private_Type_Declaration)
+                                      N_Private_Type_Declaration)
                   then
                      if Has_Discriminants (Defining_Identifier (Clist)) then
                         C2_Ent :=
@@ -7879,13 +7896,20 @@ package body Sem_Ch13 is
          end if;
       end if;
 
-      --  Dismiss cases for generic types or types with previous errors
+      --  Dismiss generic types
 
-      if No (UT)
-        or else UT = Any_Type
-        or else Is_Generic_Type (UT)
-        or else Is_Generic_Type (Root_Type (UT))
+      if Is_Generic_Type (T)
+           or else
+         Is_Generic_Type (UT)
+           or else
+         Is_Generic_Type (Root_Type (UT))
       then
+         return;
+
+      --  Guard against previous errors
+
+      elsif No (UT) or else UT = Any_Type then
+         Check_Error_Detected;
          return;
 
       --  Check case of bit packed array
@@ -7926,6 +7950,7 @@ package body Sem_Ch13 is
 
             if Asiz <= Siz then
                return;
+
             else
                Error_Msg_Uint_1 := Asiz;
                Error_Msg_NE
@@ -8256,11 +8281,12 @@ package body Sem_Ch13 is
    begin
       if Nkind (N) /= N_Attribute_Definition_Clause then
          return False;
+
       else
          declare
-            Id    : constant Attribute_Id := Get_Attribute_Id (Chars (N));
+            Id : constant Attribute_Id := Get_Attribute_Id (Chars (N));
          begin
-            return   Id = Attribute_Input
+            return    Id = Attribute_Input
               or else Id = Attribute_Output
               or else Id = Attribute_Read
               or else Id = Attribute_Write
@@ -8656,6 +8682,7 @@ package body Sem_Ch13 is
       elsif Has_Private_Component (T) then
          if Nkind (N) = N_Pragma then
             return False;
+
          else
             Error_Msg_N
               ("representation item must appear after type is fully defined",
@@ -8750,9 +8777,7 @@ package body Sem_Ch13 is
       --  but avoid chaining if we have an overloadable entity, and the pragma
       --  is one that can apply to multiple overloaded entities.
 
-      if Is_Overloadable (T)
-        and then Nkind (N) = N_Pragma
-      then
+      if Is_Overloadable (T) and then Nkind (N) = N_Pragma then
          declare
             Pname : constant Name_Id := Pragma_Name (N);
          begin
@@ -9020,8 +9045,6 @@ package body Sem_Ch13 is
 
             begin
                if Has_Discriminants (T1) then
-                  CD1 := First_Discriminant (T1);
-                  CD2 := First_Discriminant (T2);
 
                   --  The number of discriminants may be different if the
                   --  derived type has fewer (constrained by values). The
@@ -9029,9 +9052,9 @@ package body Sem_Ch13 is
                   --  the original, so the discrepancy does not per se
                   --  indicate a different representation.
 
-                  while Present (CD1)
-                    and then Present (CD2)
-                  loop
+                  CD1 := First_Discriminant (T1);
+                  CD2 := First_Discriminant (T2);
+                  while Present (CD1) and then Present (CD2) loop
                      if not Same_Rep then
                         return False;
                      else
@@ -9043,7 +9066,6 @@ package body Sem_Ch13 is
 
                CD1 := First_Component (Underlying_Type (Base_Type (T1)));
                CD2 := First_Component (Underlying_Type (Base_Type (T2)));
-
                while Present (CD1) loop
                   if not Same_Rep then
                      return False;
@@ -9069,7 +9091,6 @@ package body Sem_Ch13 is
          begin
             L1 := First_Literal (T1);
             L2 := First_Literal (T2);
-
             while Present (L1) loop
                if Enumeration_Rep (L1) /= Enumeration_Rep (L2) then
                   return False;
@@ -9080,7 +9101,6 @@ package body Sem_Ch13 is
             end loop;
 
             return True;
-
          end Enumeration_Case;
 
       --  Any other types have the same representation for these purposes
@@ -9194,7 +9214,6 @@ package body Sem_Ch13 is
             --  Skip processing of this entry if warning already posted
 
             if not Address_Warning_Posted (ACCR.N) then
-
                Expr := Original_Node (Expression (ACCR.N));
 
                --  Get alignments
@@ -9328,9 +9347,8 @@ package body Sem_Ch13 is
             --  Bad component size, check reason
 
             if Has_Component_Size_Clause (Atyp) then
-               P :=
-                 Get_Attribute_Definition_Clause
-                   (Atyp, Attribute_Component_Size);
+               P := Get_Attribute_Definition_Clause
+                      (Atyp, Attribute_Component_Size);
 
                if Present (P) then
                   Error_Msg_Sloc := Sloc (P);
@@ -9402,7 +9420,8 @@ package body Sem_Ch13 is
          --  cases where we cannot check static values.
 
          if not (Known_Static_Esize (C)
-                  and then Known_Static_Esize (Ctyp))
+                  and then
+                 Known_Static_Esize (Ctyp))
          then
             return False;
          end if;
@@ -9410,9 +9429,7 @@ package body Sem_Ch13 is
          --  Size of component must be addressable or greater than 64 bits
          --  and a multiple of bytes.
 
-         if not Addressable (Esize (C))
-           and then Esize (C) < Uint_64
-         then
+         if not Addressable (Esize (C)) and then Esize (C) < Uint_64 then
             return False;
          end if;
 
@@ -9601,9 +9618,7 @@ package body Sem_Ch13 is
 
       --  Source may be unconstrained array, but not target
 
-      if Is_Array_Type (Target)
-        and then not Is_Constrained (Target)
-      then
+      if Is_Array_Type (Target) and then not Is_Constrained (Target) then
          Error_Msg_N
            ("unchecked conversion to unconstrained array not allowed", N);
          return;
@@ -9649,9 +9664,7 @@ package body Sem_Ch13 is
          begin
             pragma Assert (Present (Calendar_Time));
 
-            if Source = Calendar_Time
-              or else Target = Calendar_Time
-            then
+            if Source = Calendar_Time or else Target = Calendar_Time then
                Error_Msg_N
                  ("?representation of 'Time values may change between " &
                   "'G'N'A'T versions", N);
@@ -9666,10 +9679,9 @@ package body Sem_Ch13 is
 
       if Warn_On_Unchecked_Conversion then
          Unchecked_Conversions.Append
-           (New_Val => UC_Entry'
-              (Eloc   => Sloc (N),
-               Source => Source,
-               Target => Target));
+           (New_Val => UC_Entry'(Eloc   => Sloc (N),
+                                 Source => Source,
+                                 Target => Target));
 
          --  If both sizes are known statically now, then back end annotation
          --  is not required to do a proper check but if either size is not
@@ -9767,7 +9779,8 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := UI_Abs (Source_Siz - Target_Siz);
 
                      if Is_Discrete_Type (Source)
-                       and then Is_Discrete_Type (Target)
+                          and then
+                        Is_Discrete_Type (Target)
                      then
                         if Source_Siz > Target_Siz then
                            Error_Msg
@@ -9831,7 +9844,8 @@ package body Sem_Ch13 is
 
                begin
                   if Known_Alignment (D_Source)
-                    and then Known_Alignment (D_Target)
+                       and then
+                     Known_Alignment (D_Target)
                   then
                      declare
                         Source_Align : constant Uint := Alignment (D_Source);

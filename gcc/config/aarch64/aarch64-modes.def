@@ -1,0 +1,54 @@
+/* Machine description for AArch64 architecture.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Contributed by ARM Ltd.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+CC_MODE (CCFP);
+CC_MODE (CCFPE);
+CC_MODE (CC_SWP);
+CC_MODE (CC_ZESWP); /* zero-extend LHS (but swap to make it RHS).  */
+CC_MODE (CC_SESWP); /* sign-extend LHS (but swap to make it RHS).  */
+CC_MODE (CC_NZ);    /* Only N and Z bits of condition flags are valid.  */
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI.  */
+VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI.  */
+VECTOR_MODES (FLOAT, 8);      /*                 V2SF.  */
+VECTOR_MODES (FLOAT, 16);     /*            V4SF V2DF.  */
+
+/* Oct Int: 256-bit integer mode needed for 32-byte vector arguments.  */
+INT_MODE (OI, 32);
+
+/* Opaque integer modes for 3, 6 or 8 Neon double registers (2 is
+   TImode).  */
+INT_MODE (EI, 24);
+INT_MODE (CI, 48);
+INT_MODE (XI, 64);
+
+/* Vector modes for register lists.  */
+VECTOR_MODES (INT, 32);		/* V32QI V16HI V8SI V4DI.  */
+VECTOR_MODES (FLOAT, 32);	/* V8SF V4DF.  */
+
+VECTOR_MODES (INT, 48);		/* V32QI V16HI V8SI V4DI.  */
+VECTOR_MODES (FLOAT, 48);	/* V8SF V4DF.  */
+
+VECTOR_MODES (INT, 64);		/* V32QI V16HI V8SI V4DI.  */
+VECTOR_MODES (FLOAT, 64);	/* V8SF V4DF.  */
+
+/* Quad float: 128-bit floating mode for long doubles.  */
+FLOAT_MODE (TF, 16, ieee_quad_format);

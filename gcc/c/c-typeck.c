@@ -8742,7 +8742,8 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 		  && !TREE_STATIC (inner)
 		  && DECL_CONTEXT (inner) == current_function_decl)
 		warning_at (loc,
-			    0, "function returns address of local variable");
+			    OPT_Wreturn_local_addr, "function returns address "
+			    "of local variable");
 	      break;
 
 	    default:

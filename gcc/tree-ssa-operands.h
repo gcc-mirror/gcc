@@ -34,14 +34,6 @@ typedef ssa_use_operand_t *use_operand_p;
 #define NULL_USE_OPERAND_P 		((use_operand_p)NULL)
 #define NULL_DEF_OPERAND_P 		((def_operand_p)NULL)
 
-/* This represents the DEF operands of a stmt.  */
-struct def_optype_d
-{
-  struct def_optype_d *next;
-  tree *def_ptr;
-};
-typedef struct def_optype_d *def_optype_p;
-
 /* This represents the USE operands of a stmt.  */
 struct use_optype_d
 {
@@ -68,7 +60,6 @@ struct GTY(()) ssa_operands {
 
    bool ops_active;
 
-   struct def_optype_d * GTY ((skip (""))) free_defs;
    struct use_optype_d * GTY ((skip (""))) free_uses;
 };
 
@@ -81,9 +72,6 @@ struct GTY(()) ssa_operands {
 
 #define USE_OP_PTR(OP)		(&((OP)->use_ptr))
 #define USE_OP(OP)		(USE_FROM_PTR (USE_OP_PTR (OP)))
-
-#define DEF_OP_PTR(OP)		((OP)->def_ptr)
-#define DEF_OP(OP)		(DEF_FROM_PTR (DEF_OP_PTR (OP)))
 
 #define PHI_RESULT_PTR(PHI)	gimple_phi_result_ptr (PHI)
 #define PHI_RESULT(PHI)		DEF_FROM_PTR (PHI_RESULT_PTR (PHI))
@@ -133,13 +121,13 @@ enum ssa_op_iter_type {
 
 typedef struct ssa_operand_iterator_d
 {
-  bool done;
   enum ssa_op_iter_type iter_type;
-  def_optype_p defs;
+  bool done;
+  int flags;
+  unsigned i;
+  unsigned numops;
   use_optype_p uses;
-  int phi_i;
-  int num_phi;
-  gimple phi_stmt;
+  gimple stmt;
 } ssa_op_iter;
 
 /* These flags are used to determine which operands are returned during

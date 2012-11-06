@@ -1842,6 +1842,7 @@ struct rtl_opt_pass pass_regrename =
  {
   RTL_PASS,
   "rnreg",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_regrename,                /* gate */
   regrename_optimize,                   /* execute */
   NULL,                                 /* sub */

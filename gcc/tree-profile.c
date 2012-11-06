@@ -568,6 +568,7 @@ struct simple_ipa_opt_pass pass_ipa_tree_profile =
  {
   SIMPLE_IPA_PASS,
   "profile",  		               /* name */
+  OPTGROUP_NONE,                       /* optinfo_flags */
   gate_tree_profile_ipa,               /* gate */
   tree_profiling,                      /* execute */
   NULL,                                /* sub */

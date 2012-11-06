@@ -70,6 +70,9 @@ package body System.Tasking.Restricted.Stages is
    use Task_Primitives.Operations;
    use Task_Info;
 
+   Tasks_Activation_Chain : Task_Id;
+   --  Chain of all the tasks to activate
+
    Global_Task_Lock : aliased System.Task_Primitives.RTS_Lock;
    --  This is a global lock; it is used to execute in mutual exclusion
    --  from all other tasks. It is only used by Task_Lock and Task_Unlock.
@@ -107,6 +110,24 @@ package body System.Tasking.Restricted.Stages is
    procedure Terminate_Task (Self_ID : Task_Id);
    --  Terminate the calling task.
    --  This should only be called by the Task_Wrapper procedure.
+
+   procedure Create_Restricted_Task
+     (Priority      : Integer;
+      Stack_Address : System.Address;
+      Size          : System.Parameters.Size_Type;
+      Task_Info     : System.Task_Info.Task_Info_Type;
+      CPU           : Integer;
+      State         : Task_Procedure_Access;
+      Discriminants : System.Address;
+      Elaborated    : Access_Boolean;
+      Task_Image    : String;
+      Created_Task  : Task_Id);
+   --  Code shared between Create_Restricted_Task_Concurrent and
+   --  Create_Restricted_Task_Sequential. See comment of the former in the
+   --  specification of this package.
+
+   procedure Activate_Tasks (Chain : Task_Id);
+   --  Activate the list of tasks started by Chain
 
    procedure Init_RTS;
    --  This procedure performs the initialization of the GNARL.
@@ -298,9 +319,43 @@ package body System.Tasking.Restricted.Stages is
    -- Restricted GNARLI --
    -----------------------
 
+   -----------------------------------
+   -- Activate_All_Tasks_Sequential --
+   -----------------------------------
+
+   procedure Activate_All_Tasks_Sequential is
+   begin
+      pragma Assert (Partition_Elaboration_Policy = 'S');
+
+      Activate_Tasks (Tasks_Activation_Chain);
+      Tasks_Activation_Chain := Null_Task;
+   end Activate_All_Tasks_Sequential;
+
    -------------------------------
    -- Activate_Restricted_Tasks --
    -------------------------------
+
+   procedure Activate_Restricted_Tasks
+     (Chain_Access : Activation_Chain_Access) is
+   begin
+      if Partition_Elaboration_Policy = 'S' then
+
+         --  In sequential elaboration policy, the chain must be empty. This
+         --  procedure can be called if the unit has been compiled without
+         --  partition elaboration policy, but the partition has a sequential
+         --  elaboration policy.
+
+         pragma Assert (Chain_Access.T_ID = Null_Task);
+         null;
+      else
+         Activate_Tasks (Chain_Access.T_ID);
+         Chain_Access.T_ID := Null_Task;
+      end if;
+   end Activate_Restricted_Tasks;
+
+   --------------------
+   -- Activate_Tasks --
+   --------------------
 
    --  Note that locks of activator and activated task are both locked here.
    --  This is necessary because C.State and Self.Wait_Count have to be
@@ -308,9 +363,7 @@ package body System.Tasking.Restricted.Stages is
    --  created before the activated task. That satisfies our
    --  in-order-of-creation ATCB locking policy.
 
-   procedure Activate_Restricted_Tasks
-     (Chain_Access : Activation_Chain_Access)
-   is
+   procedure Activate_Tasks (Chain : Task_Id) is
       Self_ID       : constant Task_Id := STPO.Self;
       C             : Task_Id;
       Activate_Prio : System.Any_Priority;
@@ -332,8 +385,7 @@ package body System.Tasking.Restricted.Stages is
       --  Activate all the tasks in the chain. Creation of the thread of
       --  control was deferred until activation. So create it now.
 
-      C := Chain_Access.T_ID;
-
+      C := Chain;
       while C /= null loop
          if C.Common.State /= Terminated then
             pragma Assert (C.Common.State = Unactivated);
@@ -381,11 +433,7 @@ package body System.Tasking.Restricted.Stages is
       if Single_Lock then
          Unlock_RTS;
       end if;
-
-      --  Remove the tasks from the chain
-
-      Chain_Access.T_ID := null;
-   end Activate_Restricted_Tasks;
+   end Activate_Tasks;
 
    ------------------------------------
    -- Complete_Restricted_Activation --
@@ -462,7 +510,6 @@ package body System.Tasking.Restricted.Stages is
       State         : Task_Procedure_Access;
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
-      Chain         : in out Activation_Chain;
       Task_Image    : String;
       Created_Task  : Task_Id)
    is
@@ -558,9 +605,70 @@ package body System.Tasking.Restricted.Stages is
       --  may be used by the operation of Ada code within the task.
 
       SSL.Create_TSD (Created_Task.Common.Compiler_Data);
-      Created_Task.Common.Activation_Link := Chain.T_ID;
-      Chain.T_ID := Created_Task;
    end Create_Restricted_Task;
+
+   procedure Create_Restricted_Task
+     (Priority      : Integer;
+      Stack_Address : System.Address;
+      Size          : System.Parameters.Size_Type;
+      Task_Info     : System.Task_Info.Task_Info_Type;
+      CPU           : Integer;
+      State         : Task_Procedure_Access;
+      Discriminants : System.Address;
+      Elaborated    : Access_Boolean;
+      Chain         : in out Activation_Chain;
+      Task_Image    : String;
+      Created_Task  : Task_Id)
+   is
+   begin
+      if Partition_Elaboration_Policy = 'S' then
+
+         --  A unit may have been compiled without partition elaboration
+         --  policy, and in this case the compiler will emit calls for the
+         --  default policy (concurrent). But if the partition policy is
+         --  sequential, activation must be deferred.
+
+         Create_Restricted_Task_Sequential
+           (Priority, Stack_Address, Size, Task_Info, CPU, State,
+            Discriminants, Elaborated, Task_Image, Created_Task);
+
+      else
+         Create_Restricted_Task
+           (Priority, Stack_Address, Size, Task_Info, CPU, State,
+            Discriminants, Elaborated, Task_Image, Created_Task);
+
+         --  Append this task to the activation chain
+
+         Created_Task.Common.Activation_Link := Chain.T_ID;
+         Chain.T_ID := Created_Task;
+      end if;
+   end Create_Restricted_Task;
+
+   ---------------------------------------
+   -- Create_Restricted_Task_Sequential --
+   ---------------------------------------
+
+   procedure Create_Restricted_Task_Sequential
+     (Priority      : Integer;
+      Stack_Address : System.Address;
+      Size          : System.Parameters.Size_Type;
+      Task_Info     : System.Task_Info.Task_Info_Type;
+      CPU           : Integer;
+      State         : Task_Procedure_Access;
+      Discriminants : System.Address;
+      Elaborated    : Access_Boolean;
+      Task_Image    : String;
+      Created_Task  : Task_Id) is
+   begin
+      Create_Restricted_Task (Priority, Stack_Address, Size, Task_Info,
+                              CPU, State, Discriminants, Elaborated,
+                              Task_Image, Created_Task);
+
+      --  Append this task to the activation chain
+
+      Created_Task.Common.Activation_Link := Tasks_Activation_Chain;
+      Tasks_Activation_Chain := Created_Task;
+   end Create_Restricted_Task_Sequential;
 
    ---------------------------
    -- Finalize_Global_Tasks --

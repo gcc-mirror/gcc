@@ -341,7 +341,7 @@ public:
   CREATE_DISPATCH_METHODS(virtual, )
   CREATE_DISPATCH_METHODS_MEM()
 
-  gl_wt_dispatch() : abi_dispatch(false, true, false, false, &o_gl_mg)
+  gl_wt_dispatch() : abi_dispatch(false, true, false, false, 0, &o_gl_mg)
   { }
 };
 

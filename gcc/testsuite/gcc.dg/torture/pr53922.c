@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-weak "" } */
 /* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } { "*" } { "" } } */
+/* { dg-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } } */
 
 int x(int a)
 {

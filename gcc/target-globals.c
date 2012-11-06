@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "cfgloop.h"
 #include "ira-int.h"
+#include "lra-int.h"
 #include "builtins.h"
 #include "gcse.h"
 #include "bb-reorder.h"
@@ -55,6 +56,7 @@ struct target_globals default_target_globals = {
   &default_target_cfgloop,
   &default_target_ira,
   &default_target_ira_int,
+  &default_target_lra_int,
   &default_target_builtins,
   &default_target_gcse,
   &default_target_bb_reorder,
@@ -78,6 +80,7 @@ save_target_globals (void)
   g->cfgloop = XCNEW (struct target_cfgloop);
   g->ira = XCNEW (struct target_ira);
   g->ira_int = XCNEW (struct target_ira_int);
+  g->lra_int = XCNEW (struct target_lra_int);
   g->builtins = XCNEW (struct target_builtins);
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);

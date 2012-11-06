@@ -7,7 +7,7 @@ package runtime_test
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
+	// "os/exec"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -50,14 +50,19 @@ func testCrashHandler(t *testing.T, ct *crashTest) {
 	}
 	f.Close()
 
-	got, err := exec.Command("go", "run", src).CombinedOutput()
-	if err != nil {
-		t.Fatalf("program exited with error: %v\n%v", err, string(got))
-	}
-	want := "main: recovered done\nnew-thread: recovered done\nsecond-new-thread: recovered done\nmain-again: recovered done\n"
-	if string(got) != string(want) {
-		t.Fatalf("expected %q, but got %q", string(want), string(got))
-	}
+	/*
+		 gccgo does not have a go command.
+
+		got, err := exec.Command("go", "run", src).CombinedOutput()
+		if err != nil {
+			t.Fatalf("program exited with error: %v\n%v", err, string(got))
+		}
+		want := "main: recovered done\nnew-thread: recovered done\nsecond-new-thread: recovered done\nmain-again: recovered done\n"
+		if string(got) != string(want) {
+			t.Fatalf("expected %q, but got %q", string(want), string(got))
+		}
+
+	*/
 }
 
 func TestCrashHandler(t *testing.T) {

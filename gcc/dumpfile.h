@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "line-map.h"
 
 /* Different tree dump places.  When you add new tree dump places,
-   extend the DUMP_FILES array in tree-dump.c.  */
+   extend the DUMP_FILES array in dumpfile.c.  */
 enum tree_dump_index
 {
   TDI_none,			/* No dump */
@@ -46,9 +46,9 @@ enum tree_dump_index
 
 /* Bit masks to control dumping. Not all values are applicable to all
    dumps. Add new ones at the end. When you define new values, extend
-   the DUMP_OPTIONS array in tree-dump.c. The TDF_* flags coexist with
-   MSG_* flags (for -fopt-info) and the bit values must be chosen
-   to allow that.  */
+   the DUMP_OPTIONS array in dumpfile.c. The TDF_* flags coexist with
+   MSG_* flags (for -fopt-info) and the bit values must be chosen to
+   allow that.  */
 #define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
 #define TDF_SLIM	(1 << 1)	/* don't go wild following links */
 #define TDF_RAW  	(1 << 2)	/* don't unparse the function */
@@ -91,6 +91,18 @@ enum tree_dump_index
 #define MSG_ALL         (MSG_OPTIMIZED_LOCATIONS | MSG_MISSED_OPTIMIZATION \
                          | MSG_NOTE)
 
+
+/* Flags to control high-level -fopt-info dumps.  Usually these flags
+   define a group of passes.  An optimization pass can be part of
+   multiple groups.  */
+#define OPTGROUP_NONE        (0)
+#define OPTGROUP_IPA         (1 << 1)   /* IPA optimization passes */
+#define OPTGROUP_LOOP        (1 << 2)   /* Loop optimization passes */
+#define OPTGROUP_INLINE      (1 << 3)   /* Inlining passes */
+#define OPTGROUP_VEC         (1 << 4)   /* Vectorization passes */
+#define OPTGROUP_ALL	     (OPTGROUP_IPA | OPTGROUP_LOOP | OPTGROUP_INLINE \
+                              | OPTGROUP_VEC)
+
 /* Define a tree dump switch.  */
 struct dump_file_info
 {
@@ -98,16 +110,16 @@ struct dump_file_info
   const char *swtch;            /* command line dump switch */
   const char *glob;             /* command line glob  */
   const char *pfilename;        /* filename for the pass-specific stream  */
-  const char *alt_filename;     /* filename for the opt-info stream  */
+  const char *alt_filename;     /* filename for the -fopt-info stream  */
   FILE *pstream;                /* pass-specific dump stream  */
-  FILE *alt_stream;             /* opt-info stream */
+  FILE *alt_stream;             /* -fopt-info stream */
   int pflags;                   /* dump flags */
+  int optgroup_flags;           /* optgroup flags for -fopt-info */
   int alt_flags;                /* flags for opt-info */
   int pstate;                   /* state of pass-specific stream */
-  int alt_state;                /* state of the opt-info stream */
+  int alt_state;                /* state of the -fopt-info stream */
   int num;                      /* dump file number */
 };
-
 
 /* In dumpfile.c */
 extern char *get_dump_file_name (int);
@@ -120,8 +132,6 @@ extern void dump_node (const_tree, int, FILE *);
 extern int dump_switch_p (const char *);
 extern int opt_info_switch_p (const char *);
 extern const char *dump_flag_name (int);
-extern bool dump_kind_p (int);
-extern inline bool dump_enabled_p (void);
 extern void dump_printf (int, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void dump_printf_loc (int, source_location,
                              const char *, ...) ATTRIBUTE_PRINTF_3;
@@ -132,7 +142,7 @@ extern void dump_gimple_stmt_loc (int, source_location, int, gimple, int);
 extern void dump_gimple_stmt (int, int, gimple, int);
 extern void print_combine_total_stats (void);
 extern unsigned int dump_register (const char *, const char *, const char *,
-                                   int);
+                                   int, int);
 extern bool enable_rtl_dump_file (void);
 
 /* In combine.c  */
@@ -142,10 +152,18 @@ extern void dump_bb (FILE *, basic_block, int, int);
 
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
+extern FILE *alt_dump_file;
 extern int dump_flags;
 extern const char *dump_file_name;
 
 /* Return the dump_file_info for the given phase.  */
 extern struct dump_file_info *get_dump_file_info (int);
+
+/* Return true if any of the dumps is enabled, false otherwise. */
+static inline bool
+dump_enabled_p (void)
+{
+  return (dump_file || alt_dump_file);
+}
 
 #endif /* GCC_DUMPFILE_H */

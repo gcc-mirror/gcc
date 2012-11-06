@@ -633,11 +633,37 @@
 ;; Test low QI subreg against zero.
 ;; This avoids unnecessary zero extension before the test.
 
-(define_insn "tstqi_t_zero"
+(define_insn "*tstqi_t_zero"
   [(set (reg:SI T_REG)
 	(eq:SI (match_operand:QI 0 "logical_operand" "z") (const_int 0)))]
   "TARGET_SH1"
   "tst	#255,%0"
+  [(set_attr "type" "mt_group")])
+
+;; This pattern might be risky because it also tests the upper bits and not
+;; only the subreg.  However, it seems that combine will get to this only
+;; when testing sign/zero extended values.  In this case the extended upper
+;; bits do not matter.
+(define_insn "*tst<mode>_t_zero"
+  [(set (reg:SI T_REG)
+	(eq:SI
+	  (subreg:QIHI
+	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_le>)
+	  (const_int 0)))]
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
+  "tst	%0,%1"
+  [(set_attr "type" "mt_group")])
+
+(define_insn "*tst<mode>_t_zero"
+  [(set (reg:SI T_REG)
+	(eq:SI
+	  (subreg:QIHI
+	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_be>)
+	  (const_int 0)))]
+  "TARGET_SH1 && !TARGET_LITTLE_ENDIAN"
+  "tst	%0,%1"
   [(set_attr "type" "mt_group")])
 
 ;; Extract LSB, negate and store in T bit.
@@ -3514,7 +3540,7 @@ label:
   /* If it is possible to turn the and insn into a zero extension
      already, redundant zero extensions will be folded, which results
      in better code.  
-     Ideally the splitter of *andsi_compact would be enough, if reundant
+     Ideally the splitter of *andsi_compact would be enough, if redundant
      zero extensions were detected after the combine pass, which does not
      happen at the moment.  */
   if (TARGET_SH1)
@@ -3980,10 +4006,11 @@ label:
     FAIL;
 })
 
-;; The rotcr insn is used primarily in DImode right shifts (arithmetic
-;; and logical).  It can also be used to implement things like
+;; The rotcr and rotcl insns are used primarily in DImode shifts by one.
+;; They can also be used to implement things like
 ;;	bool t = a == b;
-;;	int x = (y >> 1) | (t << 31);
+;;	int x0 = (y >> 1) | (t << 31);	// rotcr
+;;	int x1 = (y << 1) | t;		// rotcl
 (define_insn "rotcr"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -3994,6 +4021,17 @@ label:
 	(and:SI (match_dup 1) (const_int 1)))]
   "TARGET_SH1"
   "rotcr	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			   (const_int 1))
+		(match_operand:SI 2 "t_reg_operand")))
+   (set (reg:SI T_REG)
+	(lshiftrt:SI (match_dup 1) (const_int 31)))]
+  "TARGET_SH1"
+  "rotcl	%0"
   [(set_attr "type" "arith")])
 
 ;; Simplified rotcr version for combine, which allows arbitrary shift
@@ -4095,6 +4133,160 @@ label:
 			   (ashift:SI (match_dup 1) (const_int 31))))
 	      (clobber (reg:SI T_REG))])])
 
+;; Basically the same as the rotcr pattern above, but for rotcl.
+;; FIXME: Fold copy pasted split code for rotcr and rotcl.
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))
+		(and:SI (match_operand:SI 3 "arith_reg_or_t_reg_operand")
+			(const_int 1))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  gcc_assert (INTVAL (operands[2]) > 0);
+
+  if (INTVAL (operands[2]) > 1)
+    {
+      const rtx shift_count = GEN_INT (INTVAL (operands[2]) - 1);
+      rtx prev_set_t_insn = NULL_RTX;
+      rtx tmp_t_reg = NULL_RTX;
+
+      /* If we're going to emit a shift sequence that clobbers the T_REG,
+	 try to find the previous insn that sets the T_REG and emit the 
+	 shift insn before that insn, to remove the T_REG dependency.
+	 If the insn that sets the T_REG cannot be found, store the T_REG
+	 in a temporary reg and restore it after the shift.  */
+      if (sh_ashlsi_clobbers_t_reg_p (shift_count)
+	  && ! sh_dynamicalize_shift_p (shift_count))
+	{
+	  prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+
+	  /* Skip the nott insn, which was probably inserted by the splitter
+	     of *rotcl_neg_t.  Don't use one of the recog functions
+	     here during insn splitting, since that causes problems in later
+	     passes.  */
+	  if (prev_set_t_insn != NULL_RTX)
+	    {
+	      rtx pat = PATTERN (prev_set_t_insn);
+	      if (GET_CODE (pat) == SET
+		  && t_reg_operand (XEXP (pat, 0), SImode)
+		  && negt_reg_operand (XEXP (pat, 1), SImode))
+	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+	    }
+
+	  if (! (prev_set_t_insn != NULL_RTX
+		 && reg_set_p (get_t_reg_rtx (), prev_set_t_insn)
+		 && ! reg_referenced_p (get_t_reg_rtx (),
+					PATTERN (prev_set_t_insn))))
+	    {
+	      prev_set_t_insn = NULL_RTX;
+	      tmp_t_reg = gen_reg_rtx (SImode);
+	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
+	    } 
+	}
+
+      rtx shift_result = gen_reg_rtx (SImode);
+      rtx shift_insn = gen_ashlsi3 (shift_result, operands[1], shift_count);
+      operands[1] = shift_result;
+
+      /* Emit the shift insn before the insn that sets T_REG, if possible.  */
+      if (prev_set_t_insn != NULL_RTX)
+	emit_insn_before (shift_insn, prev_set_t_insn);
+      else
+	emit_insn (shift_insn);
+
+      /* Restore T_REG if it has been saved before.  */
+      if (tmp_t_reg != NULL_RTX)
+	emit_insn (gen_cmpgtsi_t (tmp_t_reg, const0_rtx));
+    }
+
+  /* For the rotcl insn to work, operands[3] must be in T_REG.
+     If it is not we can get it there by shifting it right one bit.
+     In this case T_REG is not an input for this insn, thus we don't have to
+     pay attention as of where to insert the shlr insn.  */
+  if (! t_reg_operand (operands[3], SImode))
+    {
+      /* We don't care about the shifted result here, only the T_REG.  */
+      emit_insn (gen_shlr (gen_reg_rtx (SImode), operands[3]));
+      operands[3] = get_t_reg_rtx ();
+    }
+
+  emit_insn (gen_rotcl (operands[0], operands[1], operands[3]));
+  DONE;
+})
+
+;; rotcl combine pattern variations
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))
+		(match_operand:SI 3 "t_reg_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
+			   (and:SI (match_dup 3) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_or_t_reg_operand")
+			(const_int 1))
+		(ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			   (match_operand:SI 3 "const_int_operand"))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
+			   (and:SI (match_dup 1) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))
+		(lshiftrt:SI (match_operand:SI 3 "arith_reg_operand")
+			     (const_int 31))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])]
+{
+  /* We don't care about the result of the left shift, only the T_REG.  */
+  emit_insn (gen_shll (gen_reg_rtx (SImode), operands[3]));
+})
+
+(define_insn_and_split "*rotcl"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (lshiftrt:SI (match_operand:SI 3 "arith_reg_operand")
+			     (const_int 31))
+		(ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			   (match_operand:SI 2 "const_int_operand"))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 1) (match_dup 2))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])]
+{
+  /* We don't care about the result of the left shift, only the T_REG.  */
+  emit_insn (gen_shll (gen_reg_rtx (SImode), operands[3]));
+})
+
 ;; rotcr combine bridge pattern which will make combine try out more
 ;; complex patterns.
 (define_insn_and_split "*rotcr"
@@ -4162,6 +4354,35 @@ label:
 {
   emit_insn (gen_nott (get_t_reg_rtx ()));
 })
+
+;; rotcl combine patterns for rotating in the negated T_REG value.
+;; For some strange reason these have to be specified as splits which combine
+;; will pick up.  If they are specified as insn_and_split like the
+;; *rotcr_neg_t patterns above, combine would recognize them successfully
+;; but not emit them on non-SH2A targets.
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (match_operand:SI 1 "negt_reg_operand")
+		(ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			   (match_operand:SI 3 "const_int_operand"))))]
+  "TARGET_SH1"
+  [(set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))
+   (parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			   (match_operand:SI 3 "const_int_operand"))
+		(match_operand:SI 1 "negt_reg_operand")))]
+  "TARGET_SH1"
+  [(set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))
+   (parallel [(set (match_dup 0)
+		   (ior:SI (ashift:SI (match_dup 2) (match_dup 3))
+			   (and:SI (reg:SI T_REG) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
 
 ;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ;; SImode shift left
@@ -4454,16 +4675,22 @@ label:
   DONE;
 })
 
-;; This should be an define_insn_and_split.
-(define_insn "ashldi3_k"
+(define_insn_and_split "ashldi3_k"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		   (const_int 1)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  "shll	%R0\;rotcl	%S0"
-  [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx high = gen_highpart (SImode, operands[0]);
+  rtx low = gen_lowpart (SImode, operands[0]);
+  emit_insn (gen_shll (low, low));
+  emit_insn (gen_rotcl (high, high, get_t_reg_rtx ()));
+  DONE;
+})
 
 (define_insn "ashldi3_media"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
@@ -5177,28 +5404,25 @@ label:
 ;; Don't expand immediately because otherwise neg:DI (abs:DI) will not be
 ;; combined.
 (define_expand "negdi2"
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(neg:DI (match_operand:DI 1 "arith_reg_operand" "")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  "")
+  [(parallel [(set (match_operand:DI 0 "arith_reg_dest")
+		   (neg:DI (match_operand:DI 1 "arith_reg_operand")))
+	      (clobber (reg:SI T_REG))])]
+  "TARGET_SH1")
 
 (define_insn_and_split "*negdi2"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(neg:DI (match_operand:DI 1 "arith_reg_operand" "r")))]
+  [(set (match_operand:DI 0 "arith_reg_dest" "=&r")
+	(neg:DI (match_operand:DI 1 "arith_reg_operand" "r")))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  "TARGET_SH1"
+  "&& reload_completed"
   [(const_int 0)]
 {
-  rtx low_src = gen_lowpart (SImode, operands[1]);
-  rtx high_src = gen_highpart (SImode, operands[1]);
-  rtx low_dst = gen_lowpart (SImode, operands[0]);
-  rtx high_dst = gen_highpart (SImode, operands[0]);
-
   emit_insn (gen_clrt ());
-  emit_insn (gen_negc (low_dst, low_src));
-  emit_insn (gen_negc (high_dst, high_src));
+  emit_insn (gen_negc (gen_lowpart (SImode, operands[0]),
+		       gen_lowpart (SImode, operands[1])));
+  emit_insn (gen_negc (gen_highpart (SImode, operands[0]),
+		       gen_highpart (SImode, operands[1])));
   DONE;
 })
 
@@ -5272,38 +5496,53 @@ label:
 		(const_int -1)))]
   "TARGET_SHMEDIA" "")
 
-(define_expand "abssi2"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-  	(abs:SI (match_operand:SI 1 "arith_reg_operand" "")))
+(define_expand "abs<mode>2"
+  [(parallel [(set (match_operand:SIDI 0 "arith_reg_dest")
+		   (abs:SIDI (match_operand:SIDI 1 "arith_reg_operand")))
+	      (clobber (reg:SI T_REG))])]
+  "TARGET_SH1")
+
+(define_insn_and_split "*abs<mode>2"
+  [(set (match_operand:SIDI 0 "arith_reg_dest")
+  	(abs:SIDI (match_operand:SIDI 1 "arith_reg_operand")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  "")
-
-(define_insn_and_split "*abssi2"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-  	(abs:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
-  "TARGET_SH1"
   "#"
-  "TARGET_SH1"
+  "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  emit_insn (gen_cmpgesi_t (operands[1], const0_rtx));
-  emit_insn (gen_negsi_cond (operands[0], operands[1], operands[1],
-		 const1_rtx));
+  if (<MODE>mode == SImode)
+    emit_insn (gen_cmpgesi_t (operands[1], const0_rtx));
+  else
+    {
+      rtx high_src = gen_highpart (SImode, operands[1]);
+      emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
+    }
+
+  emit_insn (gen_neg<mode>_cond (operands[0], operands[1], operands[1],
+				 const1_rtx));
   DONE;
 })
 
-(define_insn_and_split "*negabssi2"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-  	(neg:SI (abs:SI (match_operand:SI 1 "arith_reg_operand" "r"))))]
+(define_insn_and_split "*negabs<mode>2"
+  [(set (match_operand:SIDI 0 "arith_reg_dest")
+	(neg:SIDI (abs:SIDI (match_operand:SIDI 1 "arith_reg_operand"))))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  "TARGET_SH1"
+  "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  emit_insn (gen_cmpgesi_t (operands[1], const0_rtx));
-  emit_insn (gen_negsi_cond (operands[0], operands[1], operands[1],
-		 const0_rtx));
+  if (<MODE>mode == SImode)
+    emit_insn (gen_cmpgesi_t (operands[1], const0_rtx));
+  else
+    {
+      rtx high_src = gen_highpart (SImode, operands[1]);
+      emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
+    }
+
+  emit_insn (gen_neg<mode>_cond (operands[0], operands[1], operands[1],
+				 const0_rtx));
   DONE;
 })
 
@@ -5316,10 +5555,10 @@ label:
 
 (define_insn_and_split "negsi_cond"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(if_then_else:SI (eq:SI (reg:SI T_REG)
-			  (match_operand:SI 3 "const_int_operand" "M,N"))
-	 (match_operand:SI 1 "arith_reg_operand" "0,0")
-	 (neg:SI (match_operand:SI 2 "arith_reg_operand" "r,r"))))]
+	(if_then_else
+	  (eq:SI (reg:SI T_REG) (match_operand:SI 3 "const_int_operand" "M,N"))
+	  (match_operand:SI 1 "arith_reg_operand" "0,0")
+	  (neg:SI (match_operand:SI 2 "arith_reg_operand" "r,r"))))]
   "TARGET_SH1 && TARGET_ZDCBRANCH"
 {
   static const char* alt[] =
@@ -5339,7 +5578,7 @@ label:
 {
   rtx skip_neg_label = gen_label_rtx ();
 
-  emit_insn (gen_movsi (operands[0], operands[1]));
+  emit_move_insn (operands[0], operands[1]);
 
   emit_jump_insn (INTVAL (operands[3])
 		  ? gen_branch_true (skip_neg_label)
@@ -5352,63 +5591,21 @@ label:
   [(set_attr "type" "arith") ;; poor approximation
    (set_attr "length" "4")])
 
-(define_expand "absdi2"
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(abs:DI (match_operand:DI 1 "arith_reg_operand" "")))
+(define_insn_and_split "negdi_cond"
+  [(set (match_operand:DI 0 "arith_reg_dest")
+	(if_then_else
+	  (eq:SI (reg:SI T_REG) (match_operand:SI 3 "const_int_operand"))
+	  (match_operand:DI 1 "arith_reg_operand")
+	  (neg:DI (match_operand:DI 2 "arith_reg_operand"))))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  "")
-
-(define_insn_and_split "*absdi2"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(abs:DI (match_operand:DI 1 "arith_reg_operand" "r")))]
-  "TARGET_SH1"
   "#"
-  "&& reload_completed"
+  "&& can_create_pseudo_p ()"
   [(const_int 0)]
 {
-  rtx high_src = gen_highpart (SImode, operands[1]);
-  emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
-  emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
-			     const1_rtx));
-  DONE;
-})
-
-(define_insn_and_split "*negabsdi2"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-  	(neg:DI (abs:DI (match_operand:DI 1 "arith_reg_operand" "r"))))]
-  "TARGET_SH1"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-{
-  rtx high_src = gen_highpart (SImode, operands[1]);
-  emit_insn (gen_cmpgesi_t (high_src, const0_rtx));
-  emit_insn (gen_negdi_cond (operands[0], operands[1], operands[1],
-			     const0_rtx));
-  DONE;
-})
-
-(define_insn_and_split "negdi_cond"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
-	(if_then_else:DI (eq:SI (reg:SI T_REG)
-				(match_operand:SI 3 "const_int_operand" "M,N"))
-	 (match_operand:DI 1 "arith_reg_operand" "r,r")
-	 (neg:DI (match_operand:DI 2 "arith_reg_operand" "1,1"))))]
-  "TARGET_SH1"
-  "#"
-  "TARGET_SH1"
-  [(const_int 0)]
-{
-  rtx low_src = gen_lowpart (SImode, operands[1]);
-  rtx high_src = gen_highpart (SImode, operands[1]);
-  rtx low_dst = gen_lowpart (SImode, operands[0]);
-  rtx high_dst = gen_highpart (SImode, operands[0]);
-
   rtx skip_neg_label = gen_label_rtx ();
 
-  emit_insn (gen_movsi (low_dst, low_src));
-  emit_insn (gen_movsi (high_dst, high_src));
+  emit_move_insn (operands[0], operands[1]);
 
   emit_jump_insn (INTVAL (operands[3]) 
 		  ? gen_branch_true (skip_neg_label)
@@ -5417,8 +5614,11 @@ label:
   if (!INTVAL (operands[3]))
     emit_insn (gen_clrt ());
 
-  emit_insn (gen_negc (low_dst, low_src));
-  emit_label_after (skip_neg_label, emit_insn (gen_negc (high_dst, high_src)));
+  emit_insn (gen_negc (gen_lowpart (SImode, operands[0]),
+		       gen_lowpart (SImode, operands[1])));
+  emit_label_after (skip_neg_label,
+		    emit_insn (gen_negc (gen_highpart (SImode, operands[0]),
+					 gen_highpart (SImode, operands[1]))));
   DONE;
 })
 
@@ -7366,7 +7566,7 @@ label:
 	  rtx regop = operands[store_p], word0 ,word1;
 
 	  if (GET_CODE (regop) == SUBREG)
-	    alter_subreg (&regop);
+	    alter_subreg (&regop, true);
 	  if (REGNO (XEXP (addr, 0)) == REGNO (XEXP (addr, 1)))
 	    offset = 2;
 	  else
@@ -7374,9 +7574,9 @@ label:
 	  mem = copy_rtx (mem);
 	  PUT_MODE (mem, SImode);
 	  word0 = gen_rtx_SUBREG (SImode, regop, 0);
-	  alter_subreg (&word0);
+	  alter_subreg (&word0, true);
 	  word1 = gen_rtx_SUBREG (SImode, regop, 4);
-	  alter_subreg (&word1);
+	  alter_subreg (&word1, true);
 	  if (store_p || ! refers_to_regno_p (REGNO (word0),
 					      REGNO (word0) + 1, addr, 0))
 	    {
@@ -7834,7 +8034,7 @@ label:
       else
 	{
 	  x = gen_rtx_SUBREG (V2SFmode, operands[0], i * 8);
-	  alter_subreg (&x);
+	  alter_subreg (&x, true);
 	}
 
       if (MEM_P (operands[1]))
@@ -7843,7 +8043,7 @@ label:
       else
 	{
 	  y = gen_rtx_SUBREG (V2SFmode, operands[1], i * 8);
-	  alter_subreg (&y);
+	  alter_subreg (&y, true);
 	}
 
       emit_insn (gen_movv2sf_i (x, y));
@@ -8168,13 +8368,15 @@ label:
 {
   return output_branch (sh_eval_treg_value (operands[1]), insn, operands);
 }
-  "&& can_create_pseudo_p ()"
+  "&& 1"
   [(set (pc) (if_then_else (eq (reg:SI T_REG) (match_dup 2))
 			   (label_ref (match_dup 0))
 			   (pc)))]
 {
   /* Try to find missed test and branch combine opportunities which result
      in redundant T bit tests before conditional branches.
+     This is done not only after combine (and before reload) but in every
+     split pass, because some opportunities are formed also after combine.
      FIXME: Probably this would not be needed if CCmode was used
      together with TARGET_FIXED_CONDITION_CODE_REGS.  */
 
@@ -8213,8 +8415,11 @@ label:
 
   while (true)
     {
+      /* It's not safe to go beyond the current basic block after reload.  */
       set_of_reg s1 = sh_find_set_of_reg (tested_reg, s0.insn,
-					  prev_nonnote_insn_bb);
+					  reload_completed
+					  ? prev_nonnote_insn_bb
+					  : prev_nonnote_insn);
       if (s1.set_src == NULL_RTX)
 	break;
 
@@ -8480,7 +8685,7 @@ label:
 {
   if (GET_MODE (operands[0]) != SImode)
     FAIL;
-  emit_insn (gen_doloop_end_split (operands[0], operands[4], operands[0]));
+  emit_jump_insn (gen_doloop_end_split (operands[0], operands[4], operands[0]));
   DONE;
 })
 

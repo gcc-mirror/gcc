@@ -1,4 +1,5 @@
 /* { dg-options "-masm=intel" } */
+/* { dg-require-effective-target masm_intel } */
 
 extern void abort (void);
 

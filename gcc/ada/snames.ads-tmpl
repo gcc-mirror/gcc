@@ -363,6 +363,7 @@ package Snames is
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
+   Name_Attribute_Definition           : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
    Name_Check_Name                     : constant Name_Id := N + $; -- GNAT
    Name_Check_Policy                   : constant Name_Id := N + $; -- GNAT
@@ -404,11 +405,13 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
+   Name_Loop_Assertion                 : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
    Name_Overflow_Checks                : constant Name_Id := N + $; -- GNAT
+   Name_Partition_Elaboration_Policy   : constant Name_Id := N + $; -- Ada 05
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
    Name_Priority_Specific_Dispatching  : constant Name_Id := N + $; -- Ada 05
@@ -448,6 +451,7 @@ package Snames is
    --  correctly recognize and process Name_AST_Entry.
 
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
+   Name_Assert_And_Cut                 : constant Name_Id := N + $; -- GNAT
    Name_Asynchronous                   : constant Name_Id := N + $;
    Name_Atomic                         : constant Name_Id := N + $;
    Name_Atomic_Components              : constant Name_Id := N + $;
@@ -661,12 +665,12 @@ package Snames is
    Name_By_Protected_Procedure         : constant Name_Id := N + $;
    Name_Casing                         : constant Name_Id := N + $;
    Name_Check_All                      : constant Name_Id := N + $;
-   Name_Checked                        : constant Name_Id := N + $;
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
+   Name_Decreasing                     : constant Name_Id := N + $;
    Name_Descriptor                     : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
@@ -686,6 +690,7 @@ package Snames is
    Name_GPL                            : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
+   Name_Increasing                     : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
@@ -733,6 +738,7 @@ package Snames is
    Name_State                          : constant Name_Id := N + $;
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
+   Name_Strict                         : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
    Name_Suppressed                     : constant Name_Id := N + $;
    Name_Task_Stack_Size_Default        : constant Name_Id := N + $;
@@ -747,6 +753,7 @@ package Snames is
    Name_Unrestricted                   : constant Name_Id := N + $;
    Name_Uppercase                      : constant Name_Id := N + $;
    Name_User                           : constant Name_Id := N + $;
+   Name_Variant                        : constant Name_Id := N + $;
    Name_VAX_Float                      : constant Name_Id := N + $;
    Name_VMS                            : constant Name_Id := N + $;
    Name_Vtable_Ptr                     : constant Name_Id := N + $;
@@ -763,6 +770,10 @@ package Snames is
 
    --  The entries marked VMS are recognized only in OpenVMS implementations
    --  of GNAT, and are treated as illegal in all other contexts.
+
+   --  The entries marked HiLite are attributes that are defined by Hi-Lite
+   --  and implemented in GNAT operating under formal verification mode. The
+   --  entries are treated as illegal in all other contexts.
 
    First_Attribute_Name                : constant Name_Id := N + $;
    Name_Abort_Signal                   : constant Name_Id := N + $; -- GNAT
@@ -825,6 +836,7 @@ package Snames is
    Name_Leading_Part                   : constant Name_Id := N + $;
    Name_Length                         : constant Name_Id := N + $;
    Name_Lock_Free                      : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Entry                     : constant Name_Id := N + $; -- HiLite
    Name_Machine_Emax                   : constant Name_Id := N + $;
    Name_Machine_Emin                   : constant Name_Id := N + $;
    Name_Machine_Mantissa               : constant Name_Id := N + $;
@@ -1013,6 +1025,17 @@ package Snames is
    Name_Non_Preemptive_Within_Priorities : constant Name_Id := N + $;
    Name_Round_Robin_Within_Priorities    : constant Name_Id := N + $;
    Last_Task_Dispatching_Policy_Name     : constant Name_Id := N + $;
+
+   --  Names of recognized partition elaboration policy identifiers
+
+   --  Note: policies are identified by the first character of the name (e.g. S
+   --  for Sequential). If new policy names are added, the first character must
+   --  be distinct.
+
+   First_Partition_Elaboration_Policy_Name : constant Name_Id := N + $;
+   Name_Concurrent                         : constant Name_Id := N + $;
+   Name_Sequential                         : constant Name_Id := N + $;
+   Last_Partition_Elaboration_Policy_Name  : constant Name_Id := N + $;
 
    --  Names of recognized checks for pragma Suppress
 
@@ -1424,6 +1447,7 @@ package Snames is
       Attribute_Leading_Part,
       Attribute_Length,
       Attribute_Lock_Free,
+      Attribute_Loop_Entry,
       Attribute_Machine_Emax,
       Attribute_Machine_Emin,
       Attribute_Machine_Mantissa,
@@ -1633,6 +1657,7 @@ package Snames is
       Pragma_Annotate,
       Pragma_Assertion_Policy,
       Pragma_Assume_No_Invalid_Values,
+      Pragma_Attribute_Definition,
       Pragma_C_Pass_By_Copy,
       Pragma_Check_Name,
       Pragma_Check_Policy,
@@ -1660,11 +1685,13 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Long_Float,
+      Pragma_Loop_Assertion,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
       Pragma_Overflow_Checks,
+      Pragma_Partition_Elaboration_Policy,
       Pragma_Persistent_BSS,
       Pragma_Polling,
       Pragma_Priority_Specific_Dispatching,
@@ -1697,6 +1724,7 @@ package Snames is
       Pragma_Abort_Defer,
       Pragma_All_Calls_Remote,
       Pragma_Assert,
+      Pragma_Assert_And_Cut,
       Pragma_Asynchronous,
       Pragma_Atomic,
       Pragma_Atomic_Components,
@@ -1900,6 +1928,11 @@ package Snames is
    function Is_Locking_Policy_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized locking policy
 
+   function Is_Partition_Elaboration_Policy_Name
+     (N : Name_Id) return Boolean;
+   --  Test to see if the name N is the name of a recognized partition
+   --  elaboration policy.
+
    function Is_Operator_Symbol_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of an operator symbol
 
@@ -1976,6 +2009,7 @@ private
    pragma Inline (Is_Entity_Attribute_Name);
    pragma Inline (Is_Type_Attribute_Name);
    pragma Inline (Is_Locking_Policy_Name);
+   pragma Inline (Is_Partition_Elaboration_Policy_Name);
    pragma Inline (Is_Operator_Symbol_Name);
    pragma Inline (Is_Queuing_Policy_Name);
    pragma Inline (Is_Pragma_Name);

@@ -173,7 +173,7 @@ GTM::gtm_thread::decide_begin_dispatch (uint32_t prop)
 	  && dd->closed_nesting_alternative())
 	dd = dd->closed_nesting_alternative();
 
-      if (dd != dispatch_serial() && dd != dispatch_serialirr())
+      if (!(dd->requires_serial() & STATE_SERIAL))
 	{
 	  // The current dispatch is supposedly a non-serial one.  Become an
 	  // active transaction and verify this.  Relaxed memory order is fine
@@ -193,10 +193,7 @@ GTM::gtm_thread::decide_begin_dispatch (uint32_t prop)
 
   // We are some kind of serial transaction.
   serial_lock.write_lock();
-  if (dd == dispatch_serialirr())
-    state = STATE_SERIAL | STATE_IRREVOCABLE;
-  else
-    state = STATE_SERIAL;
+  state = dd->requires_serial();
   return dd;
 }
 

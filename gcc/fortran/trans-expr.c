@@ -4180,13 +4180,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     CLASS_DATA (fsym)->attr.class_pointer
 				     || CLASS_DATA (fsym)->attr.allocatable);
 
-		  if (fsym && (fsym->ts.type == BT_DERIVED
-			       || fsym->ts.type == BT_ASSUMED)
-		      && e->ts.type == BT_CLASS
-		      && !CLASS_DATA (e)->attr.dimension
-		      && !CLASS_DATA (e)->attr.codimension)
-		    parmse.expr = gfc_class_data_get (parmse.expr);
-
 		  /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
 		     allocated on entry, it must be deallocated.  */
 		  if (fsym && fsym->attr.intent == INTENT_OUT
@@ -4215,7 +4208,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      if (fsym->ts.type == BT_CLASS)
 			{
 			  gfc_symbol *vtab;
-			  gcc_assert (fsym->ts.u.derived == e->ts.u.derived);
 			  vtab = gfc_find_derived_vtab (fsym->ts.u.derived);
 			  tmp = gfc_get_symbol_decl (vtab);
 			  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
@@ -4240,6 +4232,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		      gfc_add_expr_to_block (&se->pre, tmp);
 		    }
+
+		  if (fsym && (fsym->ts.type == BT_DERIVED
+			       || fsym->ts.type == BT_ASSUMED)
+		      && e->ts.type == BT_CLASS
+		      && !CLASS_DATA (e)->attr.dimension
+		      && !CLASS_DATA (e)->attr.codimension)
+		    parmse.expr = gfc_class_data_get (parmse.expr);
 
 		  /* Wrap scalar variable in a descriptor. We need to convert
 		     the address of a pointer back to the pointer itself before,

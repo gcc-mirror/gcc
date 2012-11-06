@@ -6,7 +6,7 @@
    otherwise it will not be interpreted all in one unit.  */
 
 /* { dg-do preprocess }
-   { dg-options "-H -C" }
+   { dg-options "-nostdinc -H -C" }
    { dg-message "mi1c\.h" "redundant include check with -C" { target *-*-* } 0 } */
 
 #include "mi1c.h"

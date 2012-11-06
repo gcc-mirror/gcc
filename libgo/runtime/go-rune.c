@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "runtime.h"
 #include "go-string.h"
 
 /* Get a character from the UTF-8 string STR, of length LEN.  Store
@@ -13,7 +14,7 @@
    characters used from STR.  */
 
 int
-__go_get_rune (const unsigned char *str, size_t len, int *rune)
+__go_get_rune (const unsigned char *str, size_t len, int32 *rune)
 {
   int c, c1, c2, c3, l;
 

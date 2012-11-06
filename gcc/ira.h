@@ -20,11 +20,16 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* True when we use LRA instead of reload pass for the current
+   function.  */
+extern bool ira_use_lra_p;
+
 /* True if we have allocno conflicts.  It is false for non-optimized
    mode or when the conflict table is too big.  */
 extern bool ira_conflicts_p;
 
-struct target_ira {
+struct target_ira
+{
   /* Map: hard register number -> allocno class it belongs to.  If the
      corresponding class is NO_REGS, the hard register is not available
      for allocation.  */
@@ -79,6 +84,23 @@ struct target_ira {
      class.  */
   int x_ira_class_hard_regs_num[N_REG_CLASSES];
 
+  /* Register class subset relation: TRUE if the first class is a subset
+     of the second one considering only hard registers available for the
+     allocation.  */
+  int x_ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* The biggest class inside of intersection of the two classes (that
+     is calculated taking only hard registers available for allocation
+     into account.  If the both classes contain no hard registers
+     available for allocation, the value is calculated with taking all
+     hard-registers including fixed ones into account.  */
+  enum reg_class x_ira_reg_class_subset[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* True if the two classes (that is calculated taking only hard
+     registers available for allocation into account; are
+     intersected.  */
+  bool x_ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
+
   /* If class CL has a single allocatable register of mode M,
      index [CL][M] gives the number of that register, otherwise it is -1.  */
   short x_ira_class_singleton[N_REG_CLASSES][MAX_MACHINE_MODE];
@@ -121,18 +143,48 @@ extern struct target_ira *this_target_ira;
   (this_target_ira->x_ira_class_hard_regs)
 #define ira_class_hard_regs_num \
   (this_target_ira->x_ira_class_hard_regs_num)
+#define ira_class_subset_p \
+  (this_target_ira->x_ira_class_subset_p)
+#define ira_reg_class_subset \
+  (this_target_ira->x_ira_reg_class_subset)
+#define ira_reg_classes_intersect_p \
+  (this_target_ira->x_ira_reg_classes_intersect_p)
 #define ira_class_singleton \
   (this_target_ira->x_ira_class_singleton)
 #define ira_no_alloc_regs \
   (this_target_ira->x_ira_no_alloc_regs)
 
+/* Major structure describing equivalence info for a pseudo.  */
+struct ira_reg_equiv
+{
+  /* True if we can use this equivalence.  */
+  bool defined_p;
+  /* True if the usage of the equivalence is profitable.  */
+  bool profitable_p;
+  /* Equiv. memory, constant, invariant, and initializing insns of
+     given pseudo-register or NULL_RTX.  */
+  rtx memory;
+  rtx constant;
+  rtx invariant;
+  /* Always NULL_RTX if defined_p is false.  */
+  rtx init_insns;
+};
+
+/* The length of the following array.  */
+extern int ira_reg_equiv_len;
+
+/* Info about equiv. info for each register.  */
+extern struct ira_reg_equiv *ira_reg_equiv;
+
 extern void ira_init_once (void);
 extern void ira_init (void);
 extern void ira_finish_once (void);
-extern void ira_setup_eliminable_regset (void);
+extern void ira_setup_eliminable_regset (bool);
 extern rtx ira_eliminate_regs (rtx, enum machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);
+extern void ira_expand_reg_equiv (void);
+extern void ira_update_equiv_info_by_shuffle_insn (int, int, rtx);
 
 extern void ira_sort_regnos_for_alter_reg (int *, int, unsigned int *);
 extern void ira_mark_allocation_change (int);

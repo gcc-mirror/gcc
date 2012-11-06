@@ -87,8 +87,8 @@ extern "C" {
 #include <unixio.h>
 #endif
 
-#ifdef __vxworks
-/* S_IREAD and S_IWRITE are not defined in VxWorks */
+#if defined (__vxworks) || defined (__ANDROID__)
+/* S_IREAD and S_IWRITE are not defined in VxWorks or Android */
 #ifndef S_IREAD
 #define S_IREAD  (S_IRUSR | S_IRGRP | S_IROTH)
 #endif
@@ -3763,7 +3763,16 @@ void __main (void) {}
 #endif
 #endif
 
-#if defined (linux)
+#if defined (__ANDROID__)
+
+#include <pthread.h>
+
+void *__gnat_lwp_self (void)
+{
+   return (void *) pthread_self ();
+}
+
+#elif defined (linux)
 /* There is no function in the glibc to retrieve the LWP of the current
    thread. We need to do a system call in order to retrieve this
    information. */

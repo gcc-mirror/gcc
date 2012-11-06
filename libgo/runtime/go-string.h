@@ -9,26 +9,15 @@
 
 #include <stddef.h>
 
-/* A string is an instance of this structure.  */
-
-struct __go_string
-{
-  /* The bytes.  */
-  const unsigned char *__data;
-  /* The length.  */
-  int __length;
-};
-
 static inline _Bool
-__go_strings_equal (struct __go_string s1, struct __go_string s2)
+__go_strings_equal (String s1, String s2)
 {
-  return (s1.__length == s2.__length
-	  && __builtin_memcmp (s1.__data, s2.__data, s1.__length) == 0);
+  return (s1.len == s2.len
+	  && __builtin_memcmp (s1.str, s2.str, s1.len) == 0);
 }
 
 static inline _Bool
-__go_ptr_strings_equal (const struct __go_string *ps1,
-			const struct __go_string *ps2)
+__go_ptr_strings_equal (const String *ps1, const String *ps2)
 {
   if (ps1 == NULL)
     return ps2 == NULL;
@@ -37,6 +26,6 @@ __go_ptr_strings_equal (const struct __go_string *ps1,
   return __go_strings_equal (*ps1, *ps2);
 }
 
-extern int __go_get_rune (const unsigned char *, size_t, int *);
+extern int __go_get_rune (const unsigned char *, size_t, int32 *);
 
 #endif /* !defined(LIBGO_GO_STRING_H) */

@@ -550,6 +550,10 @@ namespace __debug
 			noexcept(_Alloc_traits::_S_nothrow_swap())
 #endif
       {
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	if (!_Alloc_traits::_S_propagate_on_swap())
+	  __glibcxx_check_equal_allocs(__x);
+#endif
 	_Base::swap(__x);
 	this->_M_swap(__x);
         std::swap(_M_guaranteed_capacity, __x._M_guaranteed_capacity);

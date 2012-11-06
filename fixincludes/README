@@ -44,6 +44,9 @@ To make your fix, you will need to do several things:
     Make sure it is now properly handled.  Add tests to the
     "test_text" entry(ies) that validate your fix.  This will
     help ensure that future fixes won't negate your work.
+    Do *NOT* specify test text for "wrap" or "replacement" fixes.
+    There is no real possibility that these fixes will fail.
+    If they do, you will surely know straight away.
 
 5.  Go into the fixincludes build directory and type, "make check".
     You are guaranteed to have issues printed out as a result.

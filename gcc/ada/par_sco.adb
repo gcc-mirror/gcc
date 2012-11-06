@@ -34,6 +34,8 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Put_SCOs;
 with SCOs;     use SCOs;
+with Sem;      use Sem;
+with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
@@ -926,9 +928,14 @@ package body Par_SCO is
       Sloc_Range (Orig, Start, Dummy);
       Index := Condition_Pragma_Hash_Table.Get (Start);
 
-      --  The test here for zero is to deal with possible previous errors
+      --  Index can be zero for boolean expressions that do not have SCOs
+      --  (simple decisions outside of a control flow structure), or in case
+      --  of a previous error.
 
-      if Index /= 0 then
+      if Index = 0 then
+         return;
+
+      else
          pragma Assert (SCO_Table.Table (Index).C1 = ' ');
          SCO_Table.Table (Index).C2 := Constant_Condition_Code (Val);
       end if;
@@ -942,6 +949,17 @@ package body Par_SCO is
       Index : Nat;
 
    begin
+      --  Nothing to do if not generating SCO, or if we're not processing the
+      --  original source occurrence of the pragma.
+
+      if not (Generate_SCO
+               and then
+                 In_Extended_Main_Source_Unit (Cunit_Entity (Current_Sem_Unit))
+               and then not (In_Instance or In_Inlined_Body))
+      then
+         return;
+      end if;
+
       --  Note: the reason we use the Sloc value as the key is that in the
       --  generic case, the call to this procedure is made on a copy of the
       --  original node, so we can't use the Node_Id value.
@@ -950,7 +968,10 @@ package body Par_SCO is
 
       --  The test here for zero is to deal with possible previous errors
 
-      if Index /= 0 then
+      if Index = 0 then
+         Check_Error_Detected;
+
+      else
          declare
             T : SCO_Table_Entry renames SCO_Table.Table (Index);
 

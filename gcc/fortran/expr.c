@@ -4634,13 +4634,15 @@ gfc_build_intrinsic_call (const char* name, locus where, unsigned numarg, ...)
    (F2008, 16.6.7) or pointer association context (F2008, 16.6.8).
    This is called from the various places when resolving
    the pieces that make up such a context.
+   If own_scope is true (applies to, e.g., ac-implied-do/data-implied-do
+   variables), some checks are not performed.
 
    Optionally, a possible error message can be suppressed if context is NULL
    and just the return status (SUCCESS / FAILURE) be requested.  */
 
 gfc_try
 gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
-			  const char* context)
+			  bool own_scope, const char* context)
 {
   gfc_symbol* sym = NULL;
   bool is_pointer;
@@ -4725,7 +4727,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
      assignment to a pointer component from pointer-assignment to a pointer
      component.  Note that (normal) assignment to procedure pointers is not
      possible.  */
-  check_intentin = true;
+  check_intentin = !own_scope;
   ptr_component = (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 		  ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer;
   for (ref = e->ref; ref && check_intentin; ref = ref->next)
@@ -4760,7 +4762,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
     }
 
   /* PROTECTED and use-associated.  */
-  if (sym->attr.is_protected && sym->attr.use_assoc  && check_intentin)
+  if (sym->attr.is_protected && sym->attr.use_assoc && check_intentin)
     {
       if (pointer && is_pointer)
 	{
@@ -4782,7 +4784,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 
   /* Variable not assignable from a PURE procedure but appears in
      variable definition context.  */
-  if (!pointer && gfc_pure (NULL) && gfc_impure_variable (sym))
+  if (!pointer && !own_scope && gfc_pure (NULL) && gfc_impure_variable (sym))
     {
       if (context)
 	gfc_error ("Variable '%s' can not appear in a variable definition"
@@ -4856,7 +4858,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
 
       /* Target must be allowed to appear in a variable definition context.  */
-      if (gfc_check_vardef_context (assoc->target, pointer, false, NULL)
+      if (gfc_check_vardef_context (assoc->target, pointer, false, false, NULL)
 	  == FAILURE)
 	{
 	  if (context)

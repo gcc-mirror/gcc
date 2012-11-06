@@ -3927,8 +3927,7 @@ the O32 ABI.
 <hr />
 @end html
 @heading @anchor{moxie-x-elf}moxie-*-elf
-The moxie processor.  See @uref{http://moxielogic.org/} for more
-information about this processor.
+The moxie processor.
 
 @html
 <hr />

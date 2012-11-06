@@ -63,20 +63,32 @@ package body Bindgen is
    Num_Elab_Calls : Nat := 0;
    --  Number of generated calls to elaboration routines
 
-   System_Restrictions_Used : Boolean;
+   System_Restrictions_Used : Boolean := False;
    --  Flag indicating whether the unit System.Restrictions is in the closure
-   --  of the partition. This is set by Check_System_Restrictions_Used, and
-   --  is used to determine whether or not to initialize the restrictions
-   --  information in the body of the binder generated file (we do not want
-   --  to do this unconditionally, since it drags in the System.Restrictions
-   --  unit unconditionally, which is unpleasand, especially for ZFP etc.)
+   --  of the partition. This is set by Resolve_Binder_Options, and is used
+   --  to determine whether or not to initialize the restrictions information
+   --  in the body of the binder generated file (we do not want to do this
+   --  unconditionally, since it drags in the System.Restrictions unit
+   --  unconditionally, which is unpleasand, especially for ZFP etc.)
 
-   Dispatching_Domains_Used : Boolean;
+   Dispatching_Domains_Used : Boolean := False;
    --  Flag indicating whether multiprocessor dispatching domains are used in
-   --  the closure of the partition. This is set by
-   --  Check_Dispatching_Domains_Used, and is used to call the routine to
-   --  disallow the creation of new dispatching domains just before calling
-   --  the main procedure from the environment task.
+   --  the closure of the partition. This is set by Resolve_Binder_Options, and
+   --  is used to call the routine to disallow the creation of new dispatching
+   --  domains just before calling the main procedure from the environment
+   --  task.
+
+   System_Tasking_Restricted_Stages_Used : Boolean := False;
+   --  Flag indicating whether the unit System.Tasking.Restricted.Stages is in
+   --  the closure of the partition. This is set by Resolve_Binder_Options,
+   --  and it used to call a routine to active all the tasks at the end of
+   --  the elaboration when partition elaboration policy is sequential.
+
+   System_Interrupts_Used : Boolean := False;
+   --  Flag indicating whether the unit System.Interrups is in the closure of
+   --  the partition. This is set by Resolve_Binder_Options, and it used to
+   --  attach interrupt handlers at the end of the elaboration when partition
+   --  elaboration policy is sequential.
 
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
@@ -236,21 +248,6 @@ package body Bindgen is
    -- Local Subprograms --
    -----------------------
 
-   procedure Check_File_In_Partition
-     (File_Name : String;
-      Flag      : out Boolean);
-   --  If the file indicated by File_Name is in the partition the Flag is set
-   --  to True, False otherwise.
-
-   procedure Check_System_Restrictions_Used;
-   --  Sets flag System_Restrictions_Used (Set to True if and only if the unit
-   --  System.Restrictions is present in the partition, otherwise False).
-
-   procedure Check_Dispatching_Domains_Used;
-   --  Sets flag Dispatching_Domains_Used to True when using the unit
-   --  System.Multiprocessors.Dispatching_Domains is present in the partition,
-   --  otherwise set to False.
-
    procedure Gen_Adainit;
    --  Generates the Adainit procedure
 
@@ -385,43 +382,6 @@ package body Bindgen is
    --  First writes its argument (using Set_String (S)), then writes out the
    --  contents of statement buffer up to Last, and reset Last to 0
 
-   ------------------------------------
-   -- Check_Dispatching_Domains_Used --
-   ------------------------------------
-
-   procedure Check_Dispatching_Domains_Used is
-   begin
-      Check_File_In_Partition ("s-mudido.ads", Dispatching_Domains_Used);
-   end Check_Dispatching_Domains_Used;
-
-   -----------------------------
-   -- Check_File_In_Partition --
-   -----------------------------
-
-   procedure Check_File_In_Partition
-     (File_Name : String;
-      Flag      : out Boolean)
-   is
-   begin
-      for J in Units.First .. Units.Last loop
-         if Get_Name_String (Units.Table (J).Sfile) = File_Name then
-            Flag := True;
-            return;
-         end if;
-      end loop;
-
-      Flag := False;
-   end Check_File_In_Partition;
-
-   ------------------------------------
-   -- Check_System_Restrictions_Used --
-   ------------------------------------
-
-   procedure Check_System_Restrictions_Used is
-   begin
-      Check_File_In_Partition ("s-restri.ads", System_Restrictions_Used);
-   end Check_System_Restrictions_Used;
-
    ------------------
    -- Gen_Adafinal --
    ------------------
@@ -534,6 +494,28 @@ package body Bindgen is
             WBI ("");
          end if;
 
+         if System_Interrupts_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      procedure Install_Restricted_Handlers_Sequential;");
+            WBI ("      pragma Import (C," &
+                 "Install_Restricted_Handlers_Sequential," &
+                 " ""__gnat_attach_all_handlers"");");
+            WBI ("");
+         end if;
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      Partition_Elaboration_Policy : Character;");
+            WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
+                 " ""__gnat_partition_elaboration_policy"");");
+            WBI ("");
+            WBI ("      procedure Activate_All_Tasks_Sequential;");
+            WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
+                 " ""__gnat_activate_all_tasks"");");
+         end if;
+
          WBI ("   begin");
 
          if Main_Priority /= No_Main_Priority then
@@ -550,8 +532,18 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
 
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            Set_String ("      Partition_Elaboration_Policy := '");
+            Set_Char   (Partition_Elaboration_Policy_Specified);
+            Set_String ("';");
+            Write_Statement_Buffer;
+         end if;
+
          if Main_Priority = No_Main_Priority
            and then Main_CPU = No_Main_CPU
+           and then not System_Tasking_Restricted_Stages_Used
          then
             WBI ("      null;");
          end if;
@@ -624,6 +616,33 @@ package body Bindgen is
          WBI ("      Handler_Installed : Integer;");
          WBI ("      pragma Import (C, Handler_Installed, " &
               """__gnat_handler_installed"");");
+
+         --  Import handlers attach procedure for sequential elaboration policy
+
+         if System_Interrupts_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      procedure Install_Restricted_Handlers_Sequential;");
+            WBI ("      pragma Import (C," &
+                 "Install_Restricted_Handlers_Sequential," &
+                 " ""__gnat_attach_all_handlers"");");
+            WBI ("");
+         end if;
+
+         --  Import task activation procedure for sequential elaboration
+         --  policy.
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      Partition_Elaboration_Policy : Character;");
+            WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
+                 " ""__gnat_partition_elaboration_policy"");");
+            WBI ("");
+            WBI ("      procedure Activate_All_Tasks_Sequential;");
+            WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
+                 " ""__gnat_activate_all_tasks"");");
+         end if;
 
          --  The import of the soft link which performs library-level object
          --  finalization is not needed for VM targets; regular Ada is used in
@@ -758,6 +777,15 @@ package body Bindgen is
          Set_Char   (Task_Dispatching_Policy_Specified);
          Set_String ("';");
          Write_Statement_Buffer;
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            Set_String ("      Partition_Elaboration_Policy := '");
+            Set_Char   (Partition_Elaboration_Policy_Specified);
+            Set_String ("';");
+            Write_Statement_Buffer;
+         end if;
 
          Gen_Restrictions;
 
@@ -943,6 +971,18 @@ package body Bindgen is
 
       if Dispatching_Domains_Used then
          WBI ("      Freeze_Dispatching_Domains;");
+      end if;
+
+      --  Sequential partition elaboration policy
+
+      if Partition_Elaboration_Policy_Specified = 'S' then
+         if System_Interrupts_Used then
+            WBI ("      Install_Restricted_Handlers_Sequential;");
+         end if;
+
+         if System_Tasking_Restricted_Stages_Used then
+            WBI ("      Activate_All_Tasks_Sequential;");
+         end if;
       end if;
 
       --  Case of main program is CIL function or procedure
@@ -2100,9 +2140,6 @@ package body Bindgen is
 
       --  Generate output file in appropriate language
 
-      Check_System_Restrictions_Used;
-      Check_Dispatching_Domains_Used;
-
       Gen_Output_File_Ada (Filename);
    end Gen_Output_File;
 
@@ -2425,8 +2462,13 @@ package body Bindgen is
 
          --  The B.1 (39) implementation advice says that the adainit/adafinal
          --  routines should be idempotent. Generate a flag to ensure that.
+         --  This is not needed if we are suppressing the standard library
+         --  since it would never be referenced.
 
-         WBI ("   Is_Elaborated : Boolean := False;");
+         if not Suppress_Standard_Library_On_Target then
+            WBI ("   Is_Elaborated : Boolean := False;");
+         end if;
+
          WBI ("");
       end if;
 
@@ -2845,24 +2887,63 @@ package body Bindgen is
    ----------------------------
 
    procedure Resolve_Binder_Options is
+
+      procedure Check_Package (Var : in out Boolean; Name : String);
+      --  Set Var to true iff the current identifier in Namet is Name. Do
+      --  nothing if it doesn't match. This procedure is just an helper to
+      --  avoid to explicitely deal with length.
+
+      -------------------
+      -- Check_Package --
+      -------------------
+
+      procedure Check_Package (Var : in out Boolean; Name : String) is
+      begin
+         if Name_Len = Name'Length
+           and then Name_Buffer (1 .. Name_Len) = Name
+         then
+            Var := True;
+         end if;
+      end Check_Package;
+
+   --  Start of processing for Check_Package
+
    begin
       for E in Elab_Order.First .. Elab_Order.Last loop
          Get_Name_String (Units.Table (Elab_Order.Table (E)).Uname);
 
          --  This is not a perfect approach, but is the current protocol
          --  between the run-time and the binder to indicate that tasking is
-         --  used: system.os_interface should always be used by any tasking
+         --  used: System.OS_Interface should always be used by any tasking
          --  application.
 
-         if Name_Buffer (1 .. 19) = "system.os_interface" then
-            With_GNARL := True;
-         end if;
+         Check_Package (With_GNARL, "system.os_interface%s");
 
          --  Ditto for declib and the "dec" package
 
-         if OpenVMS_On_Target and then Name_Buffer (1 .. 5) = "dec%s" then
-            With_DECGNAT := True;
+         if OpenVMS_On_Target then
+            Check_Package (With_DECGNAT, "dec%s");
          end if;
+
+         --  Ditto for the use of restricted tasking
+
+         Check_Package
+           (System_Tasking_Restricted_Stages_Used,
+            "system.tasking.restricted.stages%s");
+
+         --  Ditto for the use of interrupts
+
+         Check_Package (System_Interrupts_Used, "system.interrupts%s");
+
+         --  Ditto for the use of dispatching domains
+
+         Check_Package
+           (Dispatching_Domains_Used,
+            "system.multiprocessors.dispatching_domains%s");
+
+         --  Ditto for the use of restrictions
+
+         Check_Package (System_Restrictions_Used, "system.restrictions%s");
       end loop;
    end Resolve_Binder_Options;
 

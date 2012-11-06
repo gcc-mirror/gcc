@@ -546,6 +546,21 @@ print_value (char *buf, const_rtx x, int verbose)
     }
 }				/* print_value */
 
+/* Print X, an RTL value node, to file F in slim format.  Include
+   additional information if VERBOSE is nonzero.
+
+   Value nodes are constants, registers, labels, symbols and
+   memory.  */
+
+void
+print_value_slim (FILE *f, const_rtx x, int verbose)
+{
+  char buf[BUF_LEN];
+
+  print_value (buf, x, verbose);
+  fprintf (f, "%s", buf);
+}
+
 /* The next step in insn detalization, its pattern recognition.  */
 
 void

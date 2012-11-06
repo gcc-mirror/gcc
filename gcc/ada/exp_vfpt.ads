@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 --  point formats as used on the Vax and the Alpha and the ia64.
 
 with Types; use Types;
+with Uintp; use Uintp;
 
 package Exp_VFpt is
 
@@ -51,10 +52,12 @@ package Exp_VFpt is
    --  that moves the return value to an integer location on Alpha/VMS,
    --  noop everywhere else.
 
-   procedure Expand_Vax_Real_Literal (N : Node_Id);
-   --  The node N is a real literal node where the type is a Vax floating-point
-   --  type. This procedure rewrites the node to eliminate the occurrence of
-   --  such constants.
+   function Get_Vax_Real_Literal_As_Signed (N : Node_Id) return Uint;
+   --  Get the Vax binary representation of a real literal whose type is a Vax
+   --  floating-point type. This is used by gigi. Previously we expanded real
+   --  literal to a call to a LIB$OTS routine that performed the conversion.
+   --  This worked correctly from a funcional point of view, but was
+   --  inefficient and generated huge functions for aggregate initializations.
 
    procedure Expand_Vax_Valid (N : Node_Id);
    --  The node N is an attribute reference node for the Valid attribute where

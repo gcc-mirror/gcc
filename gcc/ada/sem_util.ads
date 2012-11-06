@@ -108,6 +108,14 @@ package Sem_Util is
    --  are open, and the scope of the array is not outside the scope of the
    --  component.
 
+   procedure Bad_Attribute
+     (N    : Node_Id;
+      Nam  : Name_Id;
+      Warn : Boolean := False);
+   --  Called when node N is expected to contain a valid attribute name, and
+   --  Nam is found instead. If Warn is set True this is a warning, else this
+   --  is an error.
+
    procedure Bad_Predicated_Subtype_Use
      (Msg : String;
       N   : Node_Id;
@@ -666,6 +674,10 @@ package Sem_Util is
    function Has_Declarations (N : Node_Id) return Boolean;
    --  Determines if the node can have declarations
 
+   function Has_Denormals (E : Entity_Id) return Boolean;
+   --  Determines if the floating-point type E supports denormal numbers.
+   --  Returns False if E is not a floating-point type.
+
    function Has_Discriminant_Dependent_Constraint
      (Comp : Entity_Id) return Boolean;
    --  Returns True if and only if Comp has a constrained subtype that depends
@@ -699,6 +711,10 @@ package Sem_Util is
    function Has_Private_Component (Type_Id : Entity_Id) return Boolean;
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
+
+   function Has_Signed_Zeros (E : Entity_Id) return Boolean;
+   --  Determines if the floating-point type E supports signed zeros.
+   --  Returns False if E is not a floating-point type.
 
    function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean;
    --  Return whether an array type has static bounds

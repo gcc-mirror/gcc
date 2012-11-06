@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;    use Atree;
 with Errout;   use Errout;
 with Lib.Writ; use Lib.Writ;
 with Opt;      use Opt;

@@ -435,6 +435,8 @@ begin
 
    Write_Switch_Char ("wxx");
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
+   Write_Line ("        *    indicates default setting");
+   Write_Line ("        +    indicates warning flag included in -gnatwa");
    Write_Line ("        a    turn on all info/warnings marked below with +");
    Write_Line ("        A    turn off all optional info/warnings");
    Write_Line ("        .a*+ turn on warnings for failing assertion");
@@ -472,6 +474,8 @@ begin
                                                   "(annex J) feature");
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
+   Write_Line ("        .k   turn on warnings for standard redefinition");
+   Write_Line ("        .K*  turn off warnings for standard redefinition");
    Write_Line ("        l    turn on warnings for missing " &
                                                   "elaboration pragma");
    Write_Line ("        L*   turn off warnings for missing " &
@@ -541,8 +545,6 @@ begin
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &
                                                   "unchecked conversion");
-   Write_Line ("        *    indicates default in above list");
-   Write_Line ("        +    indicates warning flag included in -gnatwa");
 
    --  Line for -gnatW switch
 

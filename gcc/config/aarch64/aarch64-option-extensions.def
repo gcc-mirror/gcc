@@ -1,0 +1,37 @@
+/* Copyright (C) 2012 Free Software Foundation, Inc.
+   Contributed by ARM Ltd.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This is a list of ISA extentsions in AArch64.
+
+   Before using #include to read this file, define a macro:
+
+      AARCH64_OPT_EXTENSION(EXT_NAME, FLAGS_ON, FLAGS_OFF)
+
+   EXT_NAME is the name of the extension, represented as a string constant.
+   FLAGS_ON are the bitwise-or of the features that the extension adds.
+   FLAGS_OFF are the bitwise-or of the features that the extension removes.  */
+
+/* V8 Architecture Extensions.
+   This list currently contains example extensions for CPUs that implement
+   AArch64, and therefore serves as a template for adding more CPUs in the
+   future.  */
+
+AARCH64_OPT_EXTENSION("fp",	AARCH64_FL_FP,	AARCH64_FL_FPSIMD | AARCH64_FL_CRYPTO)
+AARCH64_OPT_EXTENSION("simd",	AARCH64_FL_FPSIMD,	AARCH64_FL_SIMD | AARCH64_FL_CRYPTO)
+AARCH64_OPT_EXTENSION("crypto",	AARCH64_FL_CRYPTO | AARCH64_FL_FPSIMD,	AARCH64_FL_CRYPTO)

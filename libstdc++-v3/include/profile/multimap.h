@@ -68,7 +68,12 @@ namespace __profile
 			const _Allocator& __a = _Allocator())
       : _Base(__comp, __a) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<typename _InputIterator>
+#endif
       multimap(_InputIterator __first, _InputIterator __last,
 	       const _Compare& __comp = _Compare(),
 	       const _Allocator& __a = _Allocator())
@@ -234,7 +239,12 @@ namespace __profile
 					std::forward<_Pair>(__x))); }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<typename _InputIterator>
+#endif
         void
         insert(_InputIterator __first, _InputIterator __last)
         { _Base::insert(__first, __last); }

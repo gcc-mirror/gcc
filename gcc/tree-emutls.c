@@ -260,7 +260,7 @@ get_emutls_init_templ_addr (tree decl)
   /* Create varpool node for the new variable and finalize it if it is
      not external one.  */
   if (DECL_EXTERNAL (to))
-    varpool_node (to);
+    varpool_node_for_decl (to);
   else
     varpool_add_new_variable (to);
   return build_fold_addr_expr (to);
@@ -332,7 +332,7 @@ new_emutls_decl (tree decl, tree alias_of)
   /* Create varpool node for the new variable and finalize it if it is
      not external one.  */
   if (DECL_EXTERNAL (to))
-    varpool_node (to);
+    varpool_node_for_decl (to);
   else if (!alias_of)
     varpool_add_new_variable (to);
   else 
@@ -815,6 +815,7 @@ struct simple_ipa_opt_pass pass_ipa_lower_emutls =
  {
   SIMPLE_IPA_PASS,
   "emutls",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_emutls,				/* gate */
   ipa_lower_emutls,			/* execute */
   NULL,                                 /* sub */

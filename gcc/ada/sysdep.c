@@ -44,6 +44,10 @@
 #include "vxWorks.h"
 #endif
 
+#ifdef __ANDROID__
+#undef linux
+#endif
+
 #ifdef IN_RTS
 #define POSIX
 #include "tconfig.h"
@@ -923,3 +927,48 @@ __gnat_is_file_not_found_error (int errno_val) {
          return 0;
    }
 }
+
+#ifdef __ANDROID__
+
+/* Provide extern symbols for sig* as needed by the tasking run-time, instead
+   of static inline functions.  */
+
+#include <signal.h>
+
+int
+_sigismember (sigset_t *set, int signum)
+{
+  return sigismember (set, signum);
+}
+
+int
+_sigaddset (sigset_t *set, int signum)
+{
+  return sigaddset (set, signum);
+}
+
+int
+_sigdelset (sigset_t *set, int signum)
+{
+  return sigdelset (set, signum);
+}
+
+int
+_sigemptyset (sigset_t *set)
+{
+  return sigemptyset (set);
+}
+
+int
+_sigfillset (sigset_t *set)
+{
+  return sigfillset (set);
+}
+
+#include <unistd.h>
+int
+_getpagesize (void)
+{
+  return getpagesize ();
+}
+#endif

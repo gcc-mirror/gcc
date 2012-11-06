@@ -767,7 +767,7 @@ sdbout_symbol (tree decl, int local)
 	      if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 		return;
 	    }
-	  regno = REGNO (alter_subreg (&value));
+	  regno = REGNO (alter_subreg (&value, true));
 	  SET_DECL_RTL (decl, value);
 	}
       /* Don't output anything if an auto variable

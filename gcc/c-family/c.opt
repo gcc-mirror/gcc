@@ -426,6 +426,10 @@ Warn when a declaration does not specify a type
 Wimport
 C ObjC C++ ObjC++ Undocumented Ignore
 
+Winherited-variadic-ctor
+C++ ObjC++ Var(warn_inh_var_ctor) Init(1) Warning
+Warn about C++11 inheriting constructors when the base has a variadic constructor
+
 Wint-to-pointer-cast
 C ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
 Warn when there is a cast to a pointer from an integer of a different size
@@ -609,6 +613,10 @@ Wreorder
 C++ ObjC++ Var(warn_reorder) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn when the compiler reorders code
 
+Wreturn-local-addr
+C ObjC C++ ObjC++ Var(warn_return_local_addr) Init(1) Warning
+Warn about returning a pointer/reference to a local or temporary variable.
+
 Wreturn-type
 C ObjC C++ ObjC++ Var(warn_return_type) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)
@@ -736,6 +744,10 @@ Warn if a variable length array is used
 Wvolatile-register-var
 C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn when a register variable is declared volatile
+
+Wvirtual-move-assign
+C++ ObjC++ Var(warn_virtual_move_assign) Warning Init(1)
+Warn if a virtual base has a non-trivial move assignment operator
 
 Wwrite-strings
 C ObjC C++ ObjC++ Var(warn_write_strings) Warning

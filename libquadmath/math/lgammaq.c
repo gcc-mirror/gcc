@@ -18,7 +18,7 @@
  * Returns the base e (2.718...) logarithm of the absolute
  * value of the gamma function of the argument.
  * The sign (+1 or -1) of the gamma function is returned in a
- * global (extern) variable named sgngam.
+ * global (extern) variable named signgam.
  *
  * The positive domain is partitioned into numerous segments for approximation.
  * For x > 10,
@@ -69,6 +69,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
 #include "quadmath-imp.h"
+#include <math.h>  /* For extern int signgam.  */
 
 static const __float128 PIQ = 3.1415926535897932384626433832795028841972E0Q;
 static const __float128 MAXLGM = 1.0485738685148938358098967157129705071571E4928Q;
@@ -757,9 +758,9 @@ __float128
 lgammaq (__float128 x)
 {
   __float128 p, q, w, z, nx;
-  int i, nn, sign;
+  int i, nn;
 
-  sign = 1;
+  signgam = 1;
 
   if (! finiteq (x))
     return x * x;
@@ -767,7 +768,7 @@ lgammaq (__float128 x)
   if (x == 0.0Q)
     {
       if (signbitq (x))
-        sign = -1;
+	signgam = -1;
     }
 
   if (x < 0.0Q)
@@ -778,9 +779,9 @@ lgammaq (__float128 x)
 	return (one / (p - p));
       i = p;
       if ((i & 1) == 0)
-	sign = -1;
+	signgam = -1;
       else
-	sign = 1;
+	signgam = 1;
       z = q - p;
       if (z > 0.5Q)
 	{
@@ -789,7 +790,7 @@ lgammaq (__float128 x)
 	}
       z = q * sinq (PIQ * z);
       if (z == 0.0Q)
-	return (sign * huge * huge);
+	return (signgam * huge * huge);
       w = lgammaq (q);
       z = logq (PIQ / z) - w;
       return (z);
@@ -855,7 +856,7 @@ lgammaq (__float128 x)
 		{
 		  z = x - 0.75Q;
 		  p = z * neval (z, RN1r75, NRN1r75)
-		        / deval (z, RD1r75, NRD1r75);
+			/ deval (z, RD1r75, NRD1r75);
 		  p += lgam1r75b;
 		  p += lgam1r75a;
 		}
@@ -1021,7 +1022,7 @@ lgammaq (__float128 x)
     }
 
   if (x > MAXLGM)
-    return (sign * huge * huge);
+    return (signgam * huge * huge);
 
   q = ls2pi - x;
   q = (x - 0.5Q) * logq (x) + q;

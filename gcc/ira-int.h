@@ -795,11 +795,6 @@ struct target_ira_int {
   /* Map class->true if class is a pressure class, false otherwise. */
   bool x_ira_reg_pressure_class_p[N_REG_CLASSES];
 
-  /* Register class subset relation: TRUE if the first class is a subset
-     of the second one considering only hard registers available for the
-     allocation.  */
-  int x_ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
-
   /* Array of the number of hard registers of given class which are
      available for allocation.  The order is defined by the hard
      register numbers.  */
@@ -852,13 +847,8 @@ struct target_ira_int {
      taking all hard-registers including fixed ones into account.  */
   enum reg_class x_ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
 
-  /* True if the two classes (that is calculated taking only hard
-     registers available for allocation into account; are
-     intersected.  */
-  bool x_ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
-
   /* Classes with end marker LIM_REG_CLASSES which are intersected with
-     given class (the first index;.  That includes given class itself.
+     given class (the first index).  That includes given class itself.
      This is calculated taking only hard registers available for
      allocation into account.  */
   enum reg_class x_ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
@@ -875,7 +865,7 @@ struct target_ira_int {
 
   /* For each reg class, table listing all the classes contained in it
      (excluding the class itself.  Non-allocatable registers are
-     excluded from the consideration;.  */
+     excluded from the consideration).  */
   enum reg_class x_alloc_reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
 
   /* Array whose values are hard regset of hard registers for which
@@ -908,8 +898,6 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_reg_allocno_class_p)
 #define ira_reg_pressure_class_p \
   (this_target_ira_int->x_ira_reg_pressure_class_p)
-#define ira_class_subset_p \
-  (this_target_ira_int->x_ira_class_subset_p)
 #define ira_non_ordered_class_hard_regs \
   (this_target_ira_int->x_ira_non_ordered_class_hard_regs)
 #define ira_class_hard_reg_index \
@@ -928,8 +916,6 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_uniform_class_p)
 #define ira_reg_class_intersect \
   (this_target_ira_int->x_ira_reg_class_intersect)
-#define ira_reg_classes_intersect_p \
-  (this_target_ira_int->x_ira_reg_classes_intersect_p)
 #define ira_reg_class_super_classes \
   (this_target_ira_int->x_ira_reg_class_super_classes)
 #define ira_reg_class_subunion \
@@ -949,17 +935,6 @@ extern void ira_print_disposition (FILE *);
 extern void ira_debug_disposition (void);
 extern void ira_debug_allocno_classes (void);
 extern void ira_init_register_move_cost (enum machine_mode);
-
-/* The length of the two following arrays.  */
-extern int ira_reg_equiv_len;
-
-/* The element value is TRUE if the corresponding regno value is
-   invariant.  */
-extern bool *ira_reg_equiv_invariant_p;
-
-/* The element value is equiv constant of given pseudo-register or
-   NULL_RTX.  */
-extern rtx *ira_reg_equiv_const;
 
 /* ira-build.c */
 
@@ -1041,6 +1016,20 @@ extern void ira_color (void);
 extern void ira_initiate_emit_data (void);
 extern void ira_finish_emit_data (void);
 extern void ira_emit (bool);
+
+
+
+/* Return true if equivalence of pseudo REGNO is not a lvalue.  */
+static inline bool
+ira_equiv_no_lvalue_p (int regno)
+{
+  if (regno >= ira_reg_equiv_len)
+    return false;
+  return (ira_reg_equiv[regno].constant != NULL_RTX
+	  || ira_reg_equiv[regno].invariant != NULL_RTX
+	  || (ira_reg_equiv[regno].memory != NULL_RTX
+	      && MEM_READONLY_P (ira_reg_equiv[regno].memory)));
+}
 
 
 

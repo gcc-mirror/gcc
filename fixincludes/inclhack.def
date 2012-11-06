@@ -196,25 +196,6 @@ fix = {
 	_EndOfHeader_;
 };
 
-
-/*
- *  ... and for the previous fix to be useful, you have to not use ""
- *  includes.
- */
-fix = {
-  hackname  = AAB_darwin7_9_long_double_funcs_2;
-  mach      = "*-*-darwin7.9*";
-  files     = math.h;
-  select    = '#include[ \t]+\"';
-  c_fix     = format;
-  c_fix_arg = "%1<%2.h>";
-  
-  c_fix_arg = '([ \t]*#[ \t]*include[ \t]+)"([a-z0-9/]+)\.h"';
-  
-  test_text = '#include "architecture/ppc/math.h"';
-};
-
-
 /*
  *  This fixes __FD_ZERO bug for linux 2.x.y (x <= 2 && y <= some n)
  */
@@ -390,6 +371,206 @@ fix = {
 	  extern int memcmp();
 
 	#endif /* __memory_h__ */
+	_EndOfHeader_;
+};
+
+/*
+ * Fix assert.h on VxWorks:
+ */
+fix = {
+    hackname    = AAB_vxworks_assert;
+    files       = assert.h;
+    mach        = "*-*-vxworks*";
+        
+    replace     = <<- _EndOfHeader_
+	#ifndef _ASSERT_H
+	#define _ASSERT_H
+
+	#ifdef assert
+	#undef assert
+	#endif
+
+	#if defined(__STDC__) || defined(__cplusplus)
+	extern void __assert (const char*);
+	#else
+	extern void __assert ();
+	#endif
+
+	#ifdef NDEBUG
+	#define assert(ign) ((void)0)
+	#else
+
+	#define ASSERT_STRINGIFY(str) ASSERT_STRINGIFY_HELPER(str)
+	#define ASSERT_STRINGIFY_HELPER(str) #str
+
+	#define assert(test) ((void) \
+	        ((test) ? ((void)0) : \
+	        __assert("Assertion failed: " ASSERT_STRINGIFY(test) ", file " \
+	        __FILE__ ", line " ASSERT_STRINGIFY(__LINE__) "\n")))
+
+	#endif
+
+	#endif
+	_EndOfHeader_;
+};
+
+/*
+ * Add needed include to regs.h (NOT the gcc header) on VxWorks
+ */
+
+fix = {
+    hackname    = AAB_vxworks_regs_vxtypes;
+    files       = regs.h;
+    mach        = "*-*-vxworks*";
+
+    replace     = <<- _EndOfHeader_
+	#ifndef _REGS_H
+	#define _REGS_H
+	#include <types/vxTypesOld.h>
+	#include_next <arch/../regs.h>
+	#endif
+	_EndOfHeader_;
+};
+
+/*
+ * Make VxWorks stdint.h a bit more compliant - add typedefs
+ */
+fix = {
+    hackname    = AAB_vxworks_stdint;
+    files       = stdint.h;
+    mach        = "*-*-vxworks*";
+        
+    replace     = <<- _EndOfHeader_
+	#ifndef _STDINT_H
+	#define _STDINT_H
+	/* get int*_t, uint*_t */
+	#include <types/vxTypes.h>
+	
+	/* get legacy vxworks types for compatibility */
+	#include <types/vxTypesOld.h>
+	
+	typedef long intptr_t;
+	typedef unsigned long uintptr_t;
+	
+	typedef int64_t intmax_t;
+	typedef uint64_t uintmax_t;
+	
+	typedef int8_t int_least8_t;
+	typedef int16_t int_least16_t;
+	typedef int32_t int_least32_t;
+	typedef int64_t int_least64_t;
+	
+	typedef uint8_t uint_least8_t;
+	typedef uint16_t uint_least16_t;
+	typedef uint32_t uint_least32_t;
+	typedef uint64_t uint_least64_t;
+	
+	typedef int8_t int_fast8_t;
+	typedef int int_fast16_t;
+	typedef int32_t int_fast32_t;
+	typedef int64_t int_fast64_t;
+	
+	typedef uint8_t uint_fast8_t;
+	typedef unsigned int uint_fast16_t;
+	typedef uint32_t uint_fast32_t;
+	typedef uint64_t uint_fast64_t;
+	
+	/* Ranges */
+	#define UINT8_MAX (~(uint8_t)0)
+	#define UINT8_MIN 0
+	#define UINT16_MAX (~(uint16_t)0)
+	#define UINT16_MIN 0
+	#define UINT32_MAX (~(uint32_t)0)
+	#define UINT32_MIN 0
+	#define UINT64_MAX (~(uint64_t)0)
+	#define UINT64_MIN 0
+	
+	#define UINTPTR_MAX (~(uintptr_t)0)
+	#define UINTPTR_MIN 0
+	
+	/* Need to do int_fast16_t as well, as type
+	   size may be architecture dependent */
+	#define UINT_FAST16_MAX (~(uint_fast16_t)0)
+	#define UINT_FAST16_MAX 0
+	
+	#define INT8_MAX (UINT8_MAX>>1)
+	#define INT8_MIN (INT8_MAX+1)
+	#define INT16_MAX (UINT16_MAX>>1)
+	#define INT16_MIN (INT16_MAX+1)
+	#define INT32_MAX (UINT32_MAX>>1)
+	#define INT32_MIN (INT32_MAX+1)
+	#define INT64_MAX (UINT64_MAX>>1)
+	#define INT64_MIN (INT64_MAX+1)
+	
+	#define INTPTR_MAX (UINTPTR_MAX>>1)
+	#define INTPTR_MIN (INTPTR_MAX+1)	
+	
+	#define INT_FAST16_MAX (UINT_FAST16_MAX>>1)
+	#define INT_FAST16_MIN (INT_FAST16_MAX+1)
+	
+	/* now define equiv. constants */
+	#define UINT_FAST8_MAX UINT8_MAX
+	#define UINT_FAST8_MIN UINT_FAST8_MIN
+	#define INT_FAST8_MAX INT8_MAX
+	#define INT_FAST8_MIN INT8_MIN
+	#define UINT_FAST32_MAX UINT32_MAX
+	#define UINT_FAST32_MIN UINT32_MIN
+	#define INT_FAST32_MAX INT32_MAX
+	#define INT_FAST32_MIN INT32_MIN
+	#define UINT_FAST64_MAX UINT64_MAX
+	#define UINT_FAST64_MIN UINT64_MIN
+	#define INT_FAST64_MAX INT64_MAX
+	#define INT_FAST64_MIN INT64_MIN
+	
+	#define UINT_LEAST8_MAX UINT8_MAX
+	#define UINT_LEAST8_MIN UINT8_MIN
+	#define INT_LEAST8_MAX INT8_MAX
+	#define INT_LEAST8_MIN INT8_MIN
+	#define UINT_LEAST16_MAX UINT16_MAX
+	#define UINT_LEAST16_MIN UINT16_MIN
+	#define INT_LEAST16_MAX INT16_MAX
+	#define INT_LEAST16_MIN INT16_MIN
+	#define UINT_LEAST32_MAX UINT32_MAX
+	#define UINT_LEAST32_MIN UINT32_MIN
+	#define INT_LEAST32_MAX INT32_MAX
+	#define INT_LEAST32_MIN INT32_MIN
+	#define UINT_LEAST64_MAX UINT64_MAX
+	#define UINT_LEAST64_MIN UINT64_MIN
+	#define INT_LEAST64_MAX INT64_MAX
+	#define INT_LEAST64_MIN INT64_MIN
+	
+	#define UINTMAX_MAX UINT64_MAX
+	#define UINTMAX_MIN UINT64_MIN
+	#define INTMAX_MAX INT64_MAX
+	#define INTMAX_MIN INT64_MIN
+	
+	#endif
+	_EndOfHeader_;
+};
+
+/*
+ *  This hack makes makes unistd.h more POSIX-compliant on VxWorks
+ */
+fix = {
+    hackname    = AAB_vxworks_unistd;
+    files       = unistd.h;
+    mach        = "*-*-vxworks*";
+        
+    replace     = <<- _EndOfHeader_
+	#ifndef _UNISTD_H
+	#define _UNISTD_H
+	#include_next <unistd.h>
+	#include <ioLib.h>
+	#ifndef STDIN_FILENO
+	#define STDIN_FILENO 0
+	#endif
+	#ifndef STDOUT_FILENO
+	#define STDOUT_FILENO 1
+	#endif
+	#ifndef STDERR_FILENO
+	#define STDERR_FILENO 2
+	#endif
+	#endif /* _UNISTD_H */
 	_EndOfHeader_;
 };
 
@@ -869,7 +1050,6 @@ fix = {
     test_text = "extern void exit ( int );";
 };
 
-
 /*
  *  Remove `extern double cabs' declarations from math.h.
  *  This conflicts with C99.  Discovered on AIX.
@@ -905,7 +1085,7 @@ fix = {
      */
     files     = "architecture/ppc/math.h";
     files     = "architecture/*/math.h";
-    select    = "#if defined(__APPLE_CC__) && (__APPLE_CC__ >= 1345)";
+    select    = '#if defined\(__APPLE_CC__\) && \(__APPLE_CC__ >= 1345\)';
     bypass    = "powl";
     c_fix     = format; 
     c_fix_arg = "#if 1";
@@ -979,6 +1159,9 @@ fix = {
     test_text = "#define _CTRL(c) ('c'&037)";
 };
 
+/*
+ *  Fix various macros used to define ioctl numbers.
+ */
 fix = {
     hackname  = ctrl_quotes_use;
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
@@ -1013,6 +1196,23 @@ fix = {
                 "}\n"
                 "#endif\n";
     test_text = "extern void* malloc( size_t );";
+};
+
+/*
+ *  For the AAB_darwin7_9_long_double_funcs fix to be useful,
+ *  you have to not use "" includes.
+ */
+fix = {
+    hackname  = darwin_9_long_double_funcs_2;
+    mach      = "*-*-darwin7.9*";
+    files     = math.h;
+    select    = '#include[ \t]+\"';
+    c_fix     = format;
+    c_fix_arg = "%1<%2.h>";
+  
+    c_fix_arg = '([ \t]*#[ \t]*include[ \t]+)"([a-z0-9/]+)\.h"';
+  
+    test_text = '#include "architecture/ppc/math.h"';
 };
 
 
@@ -2298,6 +2498,9 @@ fix = {
     "#define XX_IO(x)        ('x'<<8|256)";
 };
 
+/*
+ *  Fix the usage of the ioctl macro numbers.
+ */
 fix = {
     hackname  = io_quotes_use;
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*"
@@ -4410,6 +4613,41 @@ fix = {
     "#endif /* __GNUC_TYPEOF_FEATURE_BROKEN_USE_DEFAULT_UNTIL_FIXED__ */\n";
 };
 
+/*
+ *  Wrap VxWorks ioctl to keep everything pretty
+ */
+fix = {
+    hackname    = vxworks_ioctl_macro;
+    files       = ioLib.h;
+    mach        = "*-*-vxworks*";
+
+    c_fix       = format;
+    c_fix_arg   = "%0\n"
+        "#define ioctl(fd, func, arg) (ioctl)(fd, func, (int)(arg))\n";
+    c_fix_arg   = "extern[\t ]+int[\t ]+ioctl[\t ]*\\([\t ,[:alnum:]]*\\);";
+        
+    test_text   = "extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;";
+};
+
+/*
+ *  Wrap VxWorks mkdir to be posix compliant
+ */
+fix = {
+    hackname    = vxworks_mkdir_macro;
+    files       = sys/stat.h;
+    mach        = "*-*-vxworks*";
+
+    c_fix       = format;
+    c_fix_arg   = "%0\n"
+                "#define mkdir(dir, ...) ((void)0, ##__VA_ARGS__, (mkdir)(dir))\n";
+    c_fix_arg   = "extern[\t ]+STATUS[\t ]+mkdir[\t ]*"
+                "\\([\t ]*const[\t ]+char[\t ]*\\*[\t ]*" /* arg type */
+                "(|[_[:alpha:]][_[:alnum:]]*)" /* arg name (optional) */
+                "\\)[\t ]*;";
+        
+    test_text   = "extern STATUS mkdir (const char * _qwerty) ;";
+};
+
 
 /*
  *  Fix VxWorks <time.h> to not require including <vxTypes.h>.
@@ -4443,6 +4681,20 @@ fix = {
     "# define\t__INCstath <sys/stat.h>";
 };
 
+/*
+ *  Make it so VxWorks does not include gcc/regs.h accidentally
+ */
+fix = {
+    hackname    = vxworks_regs;
+    mach        = "*-*-vxworks*";
+
+    select      = "#[\t ]*include[\t ]+[<\"]regs.h[>\"]";
+    c_fix       = format;
+    c_fix_arg   = "#include <arch/../regs.h>";
+        
+    test_text   = "#include <regs.h>\n";
+};
+
 
 /*
  *  Another bad dependency in VxWorks 5.2 <time.h>.
@@ -4470,6 +4722,23 @@ fix = {
                 "#define VOIDFUNCPTR (void(*)())";
 };
 
+/*
+ *  This hack makes write const-correct on VxWorks
+ */
+fix = {
+    hackname    = vxworks_write_const;
+    files       = ioLib.h;
+    mach        = "*-*-vxworks*";
+
+    c_fix       = format;
+    c_fix_arg   = "extern int  write (int, const char*, size_t);";
+    c_fix_arg   = "extern[\t ]+int[\t ]+write[\t ]*\\("
+                "[\t ]*int[\t ]*,"
+                "[\t ]*char[\t ]*\\*[\t ]*,"
+                "[\t ]*size_t[\t ]*\\)[\t ]*;";
+
+    test_text       = "extern int write ( int , char * , size_t ) ;";
+};
 
 /*
  *  There are several name conflicts with C++ reserved words in X11 header

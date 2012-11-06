@@ -1087,7 +1087,7 @@ fixup_subreg_mem (rtx x)
 	gen_rtx_SUBREG (GET_MODE (x),
 			reg_equiv_mem (REGNO (SUBREG_REG (x))),
 			SUBREG_BYTE (x));
-      x = alter_subreg (&temp);
+      x = alter_subreg (&temp, true);
     }
   return x;
 }

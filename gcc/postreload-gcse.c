@@ -1328,6 +1328,7 @@ struct rtl_opt_pass pass_gcse2 =
  {
   RTL_PASS,
   "gcse2",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_gcse2,                    /* gate */
   rest_of_handle_gcse2,                 /* execute */
   NULL,                                 /* sub */

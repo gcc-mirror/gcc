@@ -31,7 +31,8 @@
 
 /* First all usupported platforms. Add stubs for exported routines. */
 
-#if defined (VMS) || defined (__vxworks) || defined (__Lynx__)
+#if defined (VMS) || defined (__vxworks) || defined (__Lynx__) || \
+    defined (__ANDROID__)
 
 void * __gnat_new_tty (void) { return (void*)0; }
 char * __gnat_tty_name (void* t) { return (char*)0; }

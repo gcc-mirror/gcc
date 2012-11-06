@@ -8,7 +8,8 @@
 struct bar
 {
   long long a:18;
-  long long b:14;
+  long long b:24;
+  long long c:22;
 };
 
 NOMIPS16 int

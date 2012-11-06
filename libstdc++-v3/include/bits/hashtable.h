@@ -99,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Each _Hashtable data structure has:
    *
    *  - _Bucket[]       _M_buckets
-   *  - _Hash_node_base _M_before_begin
+   *  - _Hash_node_base _M_bbegin
    *  - size_type       _M_bucket_count
    *  - size_type       _M_element_count
    *
@@ -302,16 +302,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							_Node_allocator_type;
       typedef typename _Alloc::template rebind<__bucket_type>::other
 							_Bucket_allocator_type;
-      typedef typename _Alloc::template rebind<value_type>::other
-							_Value_allocator_type;
 
+      using __before_begin = __detail::_Before_begin<_Node_allocator_type>;
 
-      _Node_allocator_type	_M_node_allocator;
       __bucket_type*		_M_buckets;
       size_type			_M_bucket_count;
-      __node_base	       	_M_before_begin;
+      __before_begin		_M_bbegin;
       size_type			_M_element_count;
       _RehashPolicy		_M_rehash_policy;
+
+      _Node_allocator_type&
+      _M_node_allocator()
+      { return _M_bbegin; }
+
+      const _Node_allocator_type&
+      _M_node_allocator() const
+      { return _M_bbegin; }
+
+      __node_base&
+      _M_before_begin()
+      { return _M_bbegin._M_node; }
+
+      const __node_base&
+      _M_before_begin() const
+      { return _M_bbegin._M_node; }
 
       template<typename... _Args>
 	__node_type*
@@ -337,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __node_type*
       _M_begin() const
-      { return static_cast<__node_type*>(_M_before_begin._M_nxt); }
+      { return static_cast<__node_type*>(_M_before_begin()._M_nxt); }
 
     public:
       // Constructor, destructor, assignment, swap
@@ -455,11 +469,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       allocator_type
       get_allocator() const noexcept
-      { return allocator_type(_M_node_allocator); }
+      { return allocator_type(_M_node_allocator()); }
 
       size_type
       max_size() const noexcept
-      { return _M_node_allocator.max_size(); }
+      { return _M_node_allocator().max_size(); }
 
       // Observers
       key_equal
@@ -685,15 +699,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _M_allocate_node(_Args&&... __args)
       {
-	__node_type* __n = _M_node_allocator.allocate(1);
+	__node_type* __n = _M_node_allocator().allocate(1);
 	__try
 	  {
-	    _M_node_allocator.construct(__n, std::forward<_Args>(__args)...);
+	    _M_node_allocator().construct(__n, std::forward<_Args>(__args)...);
 	    return __n;
 	  }
 	__catch(...)
 	  {
-	    _M_node_allocator.deallocate(__n, 1);
+	    _M_node_allocator().deallocate(__n, 1);
 	    __throw_exception_again;
 	  }
       }
@@ -707,8 +721,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_deallocate_node(__node_type* __n)
     {
-      _M_node_allocator.destroy(__n);
-      _M_node_allocator.deallocate(__n, 1);
+      _M_node_allocator().destroy(__n);
+      _M_node_allocator().deallocate(__n, 1);
     }
 
   template<typename _Key, typename _Value,
@@ -738,7 +752,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_allocate_buckets(size_type __n)
     {
-      _Bucket_allocator_type __alloc(_M_node_allocator);
+      _Bucket_allocator_type __alloc(_M_node_allocator());
 
       __bucket_type* __p = __alloc.allocate(__n);
       __builtin_memset(__p, 0, __n * sizeof(__bucket_type));
@@ -754,7 +768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_deallocate_buckets(__bucket_type* __p, size_type __n)
     {
-      _Bucket_allocator_type __alloc(_M_node_allocator);
+      _Bucket_allocator_type __alloc(_M_node_allocator());
       __alloc.deallocate(__p, __n);
     }
 
@@ -786,8 +800,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __hashtable_base(__exk, __h1, __h2, __h, __eq),
       __map_base(),
       __rehash_base(),
-      _M_node_allocator(__a),
       _M_bucket_count(0),
+      _M_bbegin(__a),
       _M_element_count(0),
       _M_rehash_policy()
     {
@@ -815,8 +829,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : __hashtable_base(__exk, __h1, __h2, __h, __eq),
 	__map_base(),
 	__rehash_base(),
-	_M_node_allocator(__a),
 	_M_bucket_count(0),
+	_M_bbegin(__a),
 	_M_element_count(0),
 	_M_rehash_policy()
       {
@@ -854,15 +868,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __hashtable_base(__ht),
       __map_base(__ht),
       __rehash_base(__ht),
-      _M_node_allocator(__ht._M_node_allocator),
       _M_bucket_count(__ht._M_bucket_count),
+      _M_bbegin(__ht._M_bbegin),
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
       _M_buckets = _M_allocate_buckets(_M_bucket_count);
       __try
 	{
-	  if (!__ht._M_before_begin._M_nxt)
+	  if (!__ht._M_before_begin()._M_nxt)
 	    return;
 
 	  // First deal with the special first node pointed to by
@@ -870,8 +884,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const __node_type* __ht_n = __ht._M_begin();
 	  __node_type* __this_n = _M_allocate_node(__ht_n->_M_v);
 	  this->_M_copy_code(__this_n, __ht_n);
-	  _M_before_begin._M_nxt = __this_n;
-	  _M_buckets[_M_bucket_index(__this_n)] = &_M_before_begin;
+	  _M_before_begin()._M_nxt = __this_n;
+	  _M_buckets[_M_bucket_index(__this_n)] = &_M_before_begin();
 
 	  // Then deal with other nodes.
 	  __node_base* __prev_n = __this_n;
@@ -904,20 +918,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __hashtable_base(__ht),
       __map_base(__ht),
       __rehash_base(__ht),
-      _M_node_allocator(std::move(__ht._M_node_allocator)),
       _M_buckets(__ht._M_buckets),
       _M_bucket_count(__ht._M_bucket_count),
-      _M_before_begin(__ht._M_before_begin._M_nxt),
+      _M_bbegin(std::move(__ht._M_bbegin)),
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
       // Update, if necessary, bucket pointing to before begin that hasn't move.
       if (_M_begin())
-	_M_buckets[_M_bucket_index(_M_begin())] = &_M_before_begin;
+	_M_buckets[_M_bucket_index(_M_begin())] = &_M_before_begin();
       __ht._M_rehash_policy = _RehashPolicy();
       __ht._M_bucket_count = __ht._M_rehash_policy._M_next_bkt(0);
       __ht._M_buckets = __ht._M_allocate_buckets(__ht._M_bucket_count);
-      __ht._M_before_begin._M_nxt = nullptr;
+      __ht._M_before_begin()._M_nxt = nullptr;
       __ht._M_element_count = 0;
     }
 
@@ -949,22 +962,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 431. Swapping containers with unequal allocators.
-      std::__alloc_swap<_Node_allocator_type>::_S_do_it(_M_node_allocator,
-							__x._M_node_allocator);
+      std::__alloc_swap<_Node_allocator_type>::_S_do_it(_M_node_allocator(),
+							__x._M_node_allocator());
 
       std::swap(_M_rehash_policy, __x._M_rehash_policy);
       std::swap(_M_buckets, __x._M_buckets);
       std::swap(_M_bucket_count, __x._M_bucket_count);
-      std::swap(_M_before_begin._M_nxt, __x._M_before_begin._M_nxt);
+      std::swap(_M_before_begin()._M_nxt, __x._M_before_begin()._M_nxt);
       std::swap(_M_element_count, __x._M_element_count);
 
       // Fix buckets containing the _M_before_begin pointers that
       // can't be swapped.
       if (_M_begin())
-	_M_buckets[_M_bucket_index(_M_begin())] = &_M_before_begin;
+	_M_buckets[_M_bucket_index(_M_begin())] = &_M_before_begin();
       if (__x._M_begin())
 	__x._M_buckets[__x._M_bucket_index(__x._M_begin())]
-	  = &(__x._M_before_begin);
+	  = &(__x._M_before_begin());
     }
 
   template<typename _Key, typename _Value,
@@ -1165,13 +1178,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // The bucket is empty, the new node is inserted at the
 	  // beginning of the singly linked list and the bucket will
 	  // contain _M_before_begin pointer.
-	  __node->_M_nxt = _M_before_begin._M_nxt;
-	  _M_before_begin._M_nxt = __node;
+	  __node->_M_nxt = _M_before_begin()._M_nxt;
+	  _M_before_begin()._M_nxt = __node;
 	  if (__node->_M_nxt)
 	    // We must update former begin bucket that is pointing to
 	    // _M_before_begin.
 	    _M_buckets[_M_bucket_index(__node->_M_next())] = __node;
-	  _M_buckets[__bkt] = &_M_before_begin;
+	  _M_buckets[__bkt] = &_M_before_begin();
 	}
     }
 
@@ -1193,8 +1206,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_buckets[__next_bkt] = _M_buckets[__bkt];
 
 	  // Second update before begin node if necessary
-	  if (&_M_before_begin == _M_buckets[__bkt])
-	    _M_before_begin._M_nxt = __next;
+	  if (&_M_before_begin() == _M_buckets[__bkt])
+	    _M_before_begin()._M_nxt = __next;
 	  _M_buckets[__bkt] = nullptr;
 	}
     }
@@ -1614,7 +1627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_deallocate_nodes(_M_begin());
       __builtin_memset(_M_buckets, 0, _M_bucket_count * sizeof(__bucket_type));
       _M_element_count = 0;
-      _M_before_begin._M_nxt = nullptr;
+      _M_before_begin()._M_nxt = nullptr;
     }
 
   template<typename _Key, typename _Value,
@@ -1677,7 +1690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __bucket_type* __new_buckets = _M_allocate_buckets(__n);
       __node_type* __p = _M_begin();
-      _M_before_begin._M_nxt = nullptr;
+      _M_before_begin()._M_nxt = nullptr;
       std::size_t __bbegin_bkt;
       while (__p)
 	{
@@ -1685,9 +1698,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::size_t __bkt = __hash_code_base::_M_bucket_index(__p, __n);
 	  if (!__new_buckets[__bkt])
 	    {
-	      __p->_M_nxt = _M_before_begin._M_nxt;
-	      _M_before_begin._M_nxt = __p;
-	      __new_buckets[__bkt] = &_M_before_begin;
+	      __p->_M_nxt = _M_before_begin()._M_nxt;
+	      _M_before_begin()._M_nxt = __p;
+	      __new_buckets[__bkt] = &_M_before_begin();
 	      if (__p->_M_nxt)
 		__new_buckets[__bbegin_bkt] = __p;
 	      __bbegin_bkt = __bkt;
@@ -1718,7 +1731,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __bucket_type* __new_buckets = _M_allocate_buckets(__n);
 
       __node_type* __p = _M_begin();
-      _M_before_begin._M_nxt = nullptr;
+      _M_before_begin()._M_nxt = nullptr;
       std::size_t __bbegin_bkt;
       std::size_t __prev_bkt;
       __node_type* __prev_p = nullptr;
@@ -1763,9 +1776,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	      if (!__new_buckets[__bkt])
 		{
-		  __p->_M_nxt = _M_before_begin._M_nxt;
-		  _M_before_begin._M_nxt = __p;
-		  __new_buckets[__bkt] = &_M_before_begin;
+		  __p->_M_nxt = _M_before_begin()._M_nxt;
+		  _M_before_begin()._M_nxt = __p;
+		  __new_buckets[__bkt] = &_M_before_begin();
 		  if (__p->_M_nxt)
 		    __new_buckets[__bbegin_bkt] = __p;
 		  __bbegin_bkt = __bkt;

@@ -2331,14 +2331,17 @@ Gogo::call_builtin(tree* pdecl, Location location, const char* name,
 tree
 Gogo::runtime_error(int code, Location location)
 {
+  Type* int32_type = Type::lookup_integer_type("int32");
+  tree int32_type_tree = type_to_tree(int32_type->get_backend(this));
+
   static tree runtime_error_fndecl;
   tree ret = Gogo::call_builtin(&runtime_error_fndecl,
 				location,
 				"__go_runtime_error",
 				1,
 				void_type_node,
-				integer_type_node,
-				build_int_cst(integer_type_node, code));
+				int32_type_tree,
+				build_int_cst(int32_type_tree, code));
   if (ret == error_mark_node)
     return error_mark_node;
   // The runtime error function panics and does not return.

@@ -72,6 +72,11 @@ casinhq (__complex128 x)
       __imag__ y += __imag__ x;
 
       res = clogq (y);
+
+      /* Ensure zeros have correct sign and results are correct if
+	 very close to branch cuts.  */
+      __real__ res = copysignq (__real__ res, __real__ x);
+      __imag__ res = copysignq (__imag__ res, __imag__ x);
     }
 
   return res;

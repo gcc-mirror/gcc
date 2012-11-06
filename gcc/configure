@@ -7038,6 +7038,7 @@ else
 
   case $target in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
+    i?86*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
     i?86*-*-cygwin*)
       enable_decimal_float=yes
@@ -17785,7 +17786,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17788 "configure"
+#line 17789 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17891,7 +17892,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17894 "configure"
+#line 17895 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23187,6 +23188,19 @@ foo:
 	move.l x@TLSLE(%a5),%a0'
 	tls_first_major=2
 	tls_first_minor=19
+	tls_as_opt='--fatal-warnings'
+	;;
+  aarch64*-*-*)
+    conftest_s='
+	.section ".tdata","awT",%progbits
+foo:	.long	25
+	.text
+	adrp  x0, :tlsgd:x
+	add   x0, x0, #:tlsgd_lo12:x
+        bl    __tls_get_addr
+	nop'
+	tls_first_major=2
+	tls_first_minor=20
 	tls_as_opt='--fatal-warnings'
 	;;
   powerpc-*-*)

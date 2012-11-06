@@ -709,6 +709,7 @@ package body Sem_Ch8 is
       ------------------------------
 
       procedure Check_Constrained_Object is
+         Typ  : constant Entity_Id := Etype (Nam);
          Subt : Entity_Id;
 
       begin
@@ -728,7 +729,21 @@ package body Sem_Ch8 is
             --  A renaming of an unchecked union does not have an
             --  actual subtype.
 
-            elsif Is_Unchecked_Union (Etype (Nam)) then
+            elsif Is_Unchecked_Union (Typ) then
+               null;
+
+            --  If a record is limited its size is invariant. This is the case
+            --  in particular with record types with an access discirminant
+            --  that are used in iterators. This is an optimization, but it
+            --  also prevents typing anomalies when the prefix is further
+            --  expanded. Limited types with discriminants are included.
+
+            elsif Is_Limited_Record (Typ)
+              or else
+                (Ekind (Typ) = E_Limited_Private_Type
+                  and then Has_Discriminants (Typ)
+                  and then Is_Access_Type (Etype (First_Discriminant (Typ))))
+            then
                null;
 
             else
@@ -738,7 +753,7 @@ package body Sem_Ch8 is
                  Make_Subtype_Declaration (Loc,
                    Defining_Identifier => Subt,
                    Subtype_Indication  =>
-                     Make_Subtype_From_Expr (Nam, Etype (Nam))));
+                     Make_Subtype_From_Expr (Nam, Typ)));
                Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
                Set_Etype (Nam, Subt);
             end if;

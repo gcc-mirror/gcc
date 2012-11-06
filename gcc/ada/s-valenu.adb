@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
+
 with System.Val_Util; use System.Val_Util;
 
 package body System.Val_Enum is
@@ -70,7 +71,7 @@ package body System.Val_Enum is
          end if;
       end loop;
 
-      raise Constraint_Error;
+      Bad_Value (Str);
    end Value_Enumeration_8;
 
    --------------------------
@@ -109,7 +110,7 @@ package body System.Val_Enum is
          end if;
       end loop;
 
-      raise Constraint_Error;
+      Bad_Value (Str);
    end Value_Enumeration_16;
 
    --------------------------
@@ -148,7 +149,7 @@ package body System.Val_Enum is
          end if;
       end loop;
 
-      raise Constraint_Error;
+      Bad_Value (Str);
    end Value_Enumeration_32;
 
 end System.Val_Enum;

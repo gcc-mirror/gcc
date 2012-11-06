@@ -456,6 +456,7 @@ struct rtl_opt_pass pass_free_cfg =
  {
   RTL_PASS,
   "*free_cfg",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_pass_free_cfg,                /* execute */
   NULL,                                 /* sub */
@@ -2094,7 +2095,8 @@ rtl_verify_flow_info_1 (void)
   /* Now check the basic blocks (boundaries etc.) */
   FOR_EACH_BB_REVERSE (bb)
     {
-      int n_fallthru = 0, n_eh = 0, n_call = 0, n_abnormal = 0, n_branch = 0;
+      int n_fallthru = 0, n_branch = 0, n_abnormal_call = 0, n_sibcall = 0;
+      int n_eh = 0, n_abnormal = 0;
       edge e, fallthru = NULL;
       rtx note;
       edge_iterator ei;
@@ -2131,13 +2133,13 @@ rtl_verify_flow_info_1 (void)
 		}
 	      if (e->flags & EDGE_FALLTHRU)
 		{
-		  error ("fallthru edge crosses section boundary (bb %i)",
+		  error ("fallthru edge crosses section boundary in bb %i",
 			 e->src->index);
 		  err = 1;
 		}
 	      if (e->flags & EDGE_EH)
 		{
-		  error ("EH edge crosses section boundary (bb %i)",
+		  error ("EH edge crosses section boundary in bb %i",
 			 e->src->index);
 		  err = 1;
 		}
@@ -2157,22 +2159,26 @@ rtl_verify_flow_info_1 (void)
 	    n_branch++;
 
 	  if (e->flags & EDGE_ABNORMAL_CALL)
-	    n_call++;
+	    n_abnormal_call++;
+
+	  if (e->flags & EDGE_SIBCALL)
+	    n_sibcall++;
 
 	  if (e->flags & EDGE_EH)
 	    n_eh++;
-	  else if (e->flags & EDGE_ABNORMAL)
+
+	  if (e->flags & EDGE_ABNORMAL)
 	    n_abnormal++;
 	}
 
       if (n_eh && !find_reg_note (BB_END (bb), REG_EH_REGION, NULL_RTX))
 	{
-	  error ("missing REG_EH_REGION note in the end of bb %i", bb->index);
+	  error ("missing REG_EH_REGION note at the end of bb %i", bb->index);
 	  err = 1;
 	}
       if (n_eh > 1)
 	{
-	  error ("too many eh edges %i", bb->index);
+	  error ("too many exception handling edges in bb %i", bb->index);
 	  err = 1;
 	}
       if (n_branch
@@ -2185,29 +2191,35 @@ rtl_verify_flow_info_1 (void)
 	}
       if (n_fallthru && any_uncondjump_p (BB_END (bb)))
 	{
-	  error ("fallthru edge after unconditional jump %i", bb->index);
+	  error ("fallthru edge after unconditional jump in bb %i", bb->index);
 	  err = 1;
 	}
       if (n_branch != 1 && any_uncondjump_p (BB_END (bb)))
 	{
-	  error ("wrong number of branch edges after unconditional jump %i",
-		 bb->index);
+	  error ("wrong number of branch edges after unconditional jump"
+		 " in bb %i", bb->index);
 	  err = 1;
 	}
       if (n_branch != 1 && any_condjump_p (BB_END (bb))
 	  && JUMP_LABEL (BB_END (bb)) != BB_HEAD (fallthru->dest))
 	{
-	  error ("wrong amount of branch edges after conditional jump %i",
-		 bb->index);
+	  error ("wrong amount of branch edges after conditional jump"
+		 " in bb %i", bb->index);
 	  err = 1;
 	}
-      if (n_call && !CALL_P (BB_END (bb)))
+      if (n_abnormal_call && !CALL_P (BB_END (bb)))
 	{
-	  error ("call edges for non-call insn in bb %i", bb->index);
+	  error ("abnormal call edges for non-call insn in bb %i", bb->index);
 	  err = 1;
 	}
-      if (n_abnormal
-	  && (!CALL_P (BB_END (bb)) && n_call != n_abnormal)
+      if (n_sibcall && !CALL_P (BB_END (bb)))
+	{
+	  error ("sibcall edges for non-call insn in bb %i", bb->index);
+	  err = 1;
+	}
+      if (n_abnormal > n_eh
+	  && !(CALL_P (BB_END (bb))
+	       && n_abnormal == n_abnormal_call + n_sibcall)
 	  && (!JUMP_P (BB_END (bb))
 	      || any_condjump_p (BB_END (bb))
 	      || any_uncondjump_p (BB_END (bb))))
@@ -2998,6 +3010,7 @@ struct rtl_opt_pass pass_into_cfg_layout_mode =
  {
   RTL_PASS,
   "into_cfglayout",                     /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   into_cfg_layout_mode,                 /* execute */
   NULL,                                 /* sub */
@@ -3017,6 +3030,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
  {
   RTL_PASS,
   "outof_cfglayout",                    /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   outof_cfg_layout_mode,                /* execute */
   NULL,                                 /* sub */
@@ -3725,13 +3739,13 @@ break_superblocks (void)
   basic_block bb;
 
   superblocks = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (superblocks);
+  bitmap_clear (superblocks);
 
   FOR_EACH_BB (bb)
     if (bb->flags & BB_SUPERBLOCK)
       {
 	bb->flags &= ~BB_SUPERBLOCK;
-	SET_BIT (superblocks, bb->index);
+	bitmap_set_bit (superblocks, bb->index);
 	need = true;
       }
 
@@ -4252,7 +4266,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
   if (! blocks)
     check_last_block = true;
   else
-    check_last_block = TEST_BIT (blocks, EXIT_BLOCK_PTR->prev_bb->index);
+    check_last_block = bitmap_bit_p (blocks, EXIT_BLOCK_PTR->prev_bb->index);
 
   /* In the last basic block, before epilogue generation, there will be
      a fallthru edge to EXIT.  Special care is required if the last insn
@@ -4302,7 +4316,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
       if (!bb)
 	continue;
 
-      if (blocks && !TEST_BIT (blocks, i))
+      if (blocks && !bitmap_bit_p (blocks, i))
 	continue;
 
       for (insn = BB_END (bb); ; insn = prev_insn)

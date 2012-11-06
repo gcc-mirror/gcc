@@ -4,15 +4,15 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-string.h"
 #include "array.h"
-#include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
 
 struct __go_open_array
-__go_string_to_int_array (struct __go_string str)
+__go_string_to_int_array (String str)
 {
   size_t c;
   const unsigned char *p;
@@ -22,8 +22,8 @@ __go_string_to_int_array (struct __go_string str)
   struct __go_open_array ret;
 
   c = 0;
-  p = str.__data;
-  pend = p + str.__length;
+  p = str.str;
+  pend = p + str.len;
   while (p < pend)
     {
       int rune;
@@ -34,7 +34,7 @@ __go_string_to_int_array (struct __go_string str)
 
   data = (uint32_t *) runtime_mallocgc (c * sizeof (uint32_t), FlagNoPointers,
 					1, 0);
-  p = str.__data;
+  p = str.str;
   pd = data;
   while (p < pend)
     {

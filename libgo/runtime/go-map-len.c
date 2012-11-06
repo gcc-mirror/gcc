@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "runtime.h"
 #include "go-assert.h"
 #include "map.h"
 
@@ -13,11 +14,12 @@
    but I'm doing it as a function for now to make it easy to change
    the map structure.  */
 
-int
+intgo
 __go_map_len (struct __go_map *map)
 {
   if (map == NULL)
     return 0;
-  __go_assert (map->__element_count == (uintptr_t) (int) map->__element_count);
+  __go_assert (map->__element_count
+	       == (uintptr_t) (intgo) map->__element_count);
   return map->__element_count;
 }

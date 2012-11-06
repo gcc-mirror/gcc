@@ -3008,6 +3008,7 @@ struct rtl_opt_pass pass_jump =
  {
   RTL_PASS,
   "jump",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_jump,				/* execute */
   NULL,					/* sub */
@@ -3034,6 +3035,7 @@ struct rtl_opt_pass pass_jump2 =
  {
   RTL_PASS,
   "jump2",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   execute_jump2,			/* execute */
   NULL,					/* sub */

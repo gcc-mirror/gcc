@@ -691,7 +691,7 @@ standard rule in @file{gcc/Makefile.in} to the variable
 @code{lang_checks}.
 
 @table @code
-@itemx all.cross
+@item all.cross
 @itemx start.encap
 @itemx rest.encap
 FIXME: exactly what goes in each of these targets?

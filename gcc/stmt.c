@@ -1867,6 +1867,8 @@ get_outgoing_edge_probs (basic_block bb)
   edge e;
   edge_iterator ei;
   int prob_sum = 0;
+  if (!bb)
+    return 0;
   FOR_EACH_EDGE(e, ei, bb->succs)
     prob_sum += e->probability;
   return prob_sum;
@@ -1916,8 +1918,8 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   rtx fallback_label = label_rtx (case_list->code_label);
   rtx table_label = gen_label_rtx ();
   bool has_gaps = false;
-  edge default_edge = EDGE_SUCC(stmt_bb, 0);
-  int default_prob = default_edge->probability;
+  edge default_edge = stmt_bb ? EDGE_SUCC(stmt_bb, 0) : NULL;
+  int default_prob = default_edge ? default_edge->probability : 0;
   int base = get_outgoing_edge_probs (stmt_bb);
   bool try_with_tablejump = false;
 
@@ -1997,7 +1999,8 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
       default_prob = 0;
     }
 
-  default_edge->probability = default_prob;
+  if (default_edge)
+    default_edge->probability = default_prob;
 
   /* We have altered the probability of the default edge. So the probabilities
      of all other edges need to be adjusted so that it sums up to
@@ -2289,7 +2292,8 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
 
       emit_case_dispatch_table (index_expr, index_type,
 				case_list, default_label,
-				minval, maxval, range, NULL);
+				minval, maxval, range,
+                                BLOCK_FOR_INSN (before_case));
       emit_label (default_label);
       free_alloc_pool (case_node_pool);
     }

@@ -840,7 +840,7 @@ package body Sem_Disp is
       Tagged_Type := Find_Dispatching_Type (Subp);
 
       --  Ada 2005 (AI-345): Use the corresponding record (if available).
-      --  Required because primitives of concurrent types are be attached
+      --  Required because primitives of concurrent types are attached
       --  to the corresponding record (not to the concurrent type).
 
       if Ada_Version >= Ada_2005
@@ -2380,6 +2380,12 @@ package body Sem_Disp is
 
       else
          Call_Node := Expression (Actual);
+      end if;
+
+      --  No action needed if the call has been already expanded
+
+      if Is_Expanded_Dispatching_Call (Call_Node) then
+         return;
       end if;
 
       --  Do not set the Controlling_Argument if already set. This happens in

@@ -1099,6 +1099,11 @@ package body Lib.Writ is
          end if;
       end if;
 
+      if Partition_Elaboration_Policy /= ' ' then
+         Write_Info_Str  (" E");
+         Write_Info_Char (Partition_Elaboration_Policy);
+      end if;
+
       if not Object then
          Write_Info_Str (" NO");
       end if;

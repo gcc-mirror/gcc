@@ -4,11 +4,13 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "go-assert.h"
 #include "go-panic.h"
+#include "go-string.h"
+#include "go-type.h"
 #include "interface.h"
-#include "runtime.h"
 
 /* This is called when converting one interface type into another
    interface type.  LHS_DESCRIPTOR is the type descriptor of the

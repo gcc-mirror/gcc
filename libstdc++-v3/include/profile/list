@@ -1,6 +1,6 @@
 // Profiling list implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -99,7 +99,12 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
       list(_InputIterator __first, _InputIterator __last,
 	   const _Allocator& __a = _Allocator())
       : _Base(__first, __last, __a)
@@ -171,7 +176,12 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       {	_Base::assign(__l); }
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         void
         assign(_InputIterator __first, _InputIterator __last)
         { _Base::assign(__first, __last); }
@@ -328,7 +338,8 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         emplace(iterator __position, _Args&&... __args)
 	{
 	  return iterator(_Base::emplace(__position.base(),
-                                         std::forward<_Args>(__args)...));
+                                         std::forward<_Args>(__args)...),
+			  this);
 	}
 #endif
 
@@ -363,14 +374,19 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	_Base::insert(__position.base(), __n, __x);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<class _InputIterator>
+#endif
         void
         insert(iterator __position, _InputIterator __first,
 	       _InputIterator __last)
-      {
-        _M_profile_insert(this, __position, size());
-        _Base::insert(__position.base(), __first, __last);
-      }
+	{
+	  _M_profile_insert(this, __position, size());
+	  _Base::insert(__position.base(), __first, __last);
+	}
 
       iterator
       erase(iterator __position)

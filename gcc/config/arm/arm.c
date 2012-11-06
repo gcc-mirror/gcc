@@ -10328,7 +10328,7 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands + (nops + i));
+	operands[nops + i] = alter_subreg (operands + (nops + i), true);
 
       gcc_assert (MEM_P (operands[nops + i]));
 
@@ -10480,7 +10480,7 @@ store_multiple_sequence (rtx *operands, int nops, int nops_total,
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands + (nops + i));
+	operands[nops + i] = alter_subreg (operands + (nops + i), true);
 
       gcc_assert (MEM_P (operands[nops + i]));
 
@@ -12209,7 +12209,7 @@ offset_ok_for_ldrd_strd (HOST_WIDE_INT offset)
   else if (TARGET_ARM)
     max_offset = 255;
   else
-    gcc_unreachable ();
+    return false;
 
   return ((offset <= max_offset) && (offset >= -max_offset));
 }

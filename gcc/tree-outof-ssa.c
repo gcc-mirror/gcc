@@ -550,10 +550,10 @@ elim_forward (elim_graph g, int T)
   int S;
   source_location locus;
 
-  SET_BIT (g->visited, T);
+  bitmap_set_bit (g->visited, T);
   FOR_EACH_ELIM_GRAPH_SUCC (g, T, S, locus,
     {
-      if (!TEST_BIT (g->visited, S))
+      if (!bitmap_bit_p (g->visited, S))
         elim_forward (g, S);
     });
   VEC_safe_push (int, heap, g->stack, T);
@@ -570,7 +570,7 @@ elim_unvisited_predecessor (elim_graph g, int T)
 
   FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
     {
-      if (!TEST_BIT (g->visited, P))
+      if (!bitmap_bit_p (g->visited, P))
         return 1;
     });
   return 0;
@@ -584,10 +584,10 @@ elim_backward (elim_graph g, int T)
   int P;
   source_location locus;
 
-  SET_BIT (g->visited, T);
+  bitmap_set_bit (g->visited, T);
   FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
     {
-      if (!TEST_BIT (g->visited, P))
+      if (!bitmap_bit_p (g->visited, P))
         {
 	  elim_backward (g, P);
 	  insert_partition_copy_on_edge (g->e, P, T, locus);
@@ -629,7 +629,7 @@ elim_create (elim_graph g, int T)
       insert_part_to_rtx_on_edge (g->e, U, T, UNKNOWN_LOCATION);
       FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
 	{
-	  if (!TEST_BIT (g->visited, P))
+	  if (!bitmap_bit_p (g->visited, P))
 	    {
 	      elim_backward (g, P);
 	      insert_rtx_to_part_on_edge (g->e, P, U, unsignedsrcp, locus);
@@ -641,7 +641,7 @@ elim_create (elim_graph g, int T)
       S = elim_graph_remove_succ_edge (g, T, &locus);
       if (S != -1)
 	{
-	  SET_BIT (g->visited, T);
+	  bitmap_set_bit (g->visited, T);
 	  insert_partition_copy_on_edge (g->e, T, S, locus);
 	}
     }
@@ -670,20 +670,20 @@ eliminate_phi (edge e, elim_graph g)
     {
       int part;
 
-      sbitmap_zero (g->visited);
+      bitmap_clear (g->visited);
       VEC_truncate (int, g->stack, 0);
 
       FOR_EACH_VEC_ELT (int, g->nodes, x, part)
         {
-	  if (!TEST_BIT (g->visited, part))
+	  if (!bitmap_bit_p (g->visited, part))
 	    elim_forward (g, part);
 	}
 
-      sbitmap_zero (g->visited);
+      bitmap_clear (g->visited);
       while (VEC_length (int, g->stack) > 0)
 	{
 	  x = VEC_pop (int, g->stack);
-	  if (!TEST_BIT (g->visited, x))
+	  if (!bitmap_bit_p (g->visited, x))
 	    elim_create (g, x);
 	}
     }

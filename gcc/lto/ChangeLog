@@ -1,3 +1,13 @@
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* lto.c (lto_wpa_write_files): Change symtab checking to a checked
+	down-cast via dyn_cast.
+	* lto-partition.c (add_symbol_to_partition_1): Likewise.
+	(undo_partition): Likewise.
+	(lto_balanced_map): Likewise.
+	(get_symbol_class): Likewise and via is_a.
+	(lto_balanced_map): Change symtab checking to is_a.
+
 2012-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/54898

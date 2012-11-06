@@ -233,14 +233,27 @@ package body System.Bignums is
             pragma Import (Ada, BD);
 
             --  Expose a writable view of discriminant BD.Len so that we can
-            --  initialize it.
+            --  initialize it. We need to use the exact layout of the record
+            --  to ensure that the Length field has 24 bits as expected.
 
-            BL : Length;
-            for BL'Address use BD.Len'Address;
-            pragma Import (Ada, BL);
+            type Bignum_Data_Header is record
+               Len : Length;
+               Neg : Boolean;
+            end record;
+
+            for Bignum_Data_Header use record
+               Len at 0 range 0 .. 23;
+               Neg at 3 range 0 .. 7;
+            end record;
+
+            BDH : Bignum_Data_Header;
+            for BDH'Address use BD'Address;
+            pragma Import (Ada, BDH);
+
+            pragma Assert (BDH.Len'Size = BD.Len'Size);
 
          begin
-            BL := Len;
+            BDH.Len := Len;
             return B;
          end;
       end if;
@@ -728,8 +741,9 @@ package body System.Bignums is
 
       --  The complex full multi-precision case. We will employ algorithm
       --  D defined in the section "The Classical Algorithms" (sec. 4.3.1)
-      --  of Donald Knuth's "The Art of Computer Programming", Vol. 2. The
-      --  terminology is adjusted for this section to match that reference.
+      --  of Donald Knuth's "The Art of Computer Programming", Vol. 2, 2nd
+      --  edition. The terminology is adjusted for this section to match that
+      --  reference.
 
       --  We are dividing X.Len digits of X (called u here) by Y.Len digits
       --  of Y (called v here), developing the quotient and remainder. The
@@ -762,7 +776,9 @@ package body System.Bignums is
 
          d    : DD;
          j    : Length;
-         qhat : SD;
+         qhat : DD;
+         rhat : DD;
+         temp : DD;
 
       begin
          --  Initialize data of left and right operands
@@ -775,12 +791,12 @@ package body System.Bignums is
             v (J) := Y.D (J);
          end loop;
 
-         --  [Division of nonnegative integers]. Given nonnegative integers u
+         --  [Division of nonnegative integers.] Given nonnegative integers u
          --  = (ul,u2..um+n) and v = (v1,v2..vn), where v1 /= 0 and n > 1, we
          --  form the quotient u / v = (q0,ql..qm) and the remainder u mod v =
          --  (r1,r2..rn).
 
-         pragma Assert (v (1) /= 0);
+         pragma Assert (v1 /= 0);
          pragma Assert (n > 1);
 
          --  Dl. [Normalize.] Set d = b/(vl + 1). Then set (u0,u1,u2..um+n)
@@ -789,7 +805,7 @@ package body System.Bignums is
          --  u0 at the left of u1; if d = 1 all we need to do in this step is
          --  to set u0 = 0.
 
-         d := b / DD (v1 + 1);
+         d := b / (DD (v1) + 1);
 
          if d = 1 then
             u0 := 0;
@@ -826,33 +842,46 @@ package body System.Bignums is
 
          --  D2. [Initialize j.] Set j = 0. The loop on j, steps D2 through D7,
          --  will be essentially a division of (uj, uj+1..uj+n) by (v1,v2..vn)
-         --  to get a single quotient digit qj;
+         --  to get a single quotient digit qj.
 
          j := 0;
 
          --  Loop through digits
 
          loop
-            --  D3. [Calculate qhat] If uj = v1, set qhat to b-l; otherwise set
-            --  qhat to (uj,uj+1)/v1.
+            --  Note: In the original printing, step D3 was as follows:
 
-            if u (j) = v1 then
-               qhat := -1;
-            else
-               qhat := SD ((u (j) & u (j + 1)) / DD (v1));
-            end if;
+            --  D3. [Calculate qhat.] If uj = v1, set qhat to b-l; otherwise
+            --  set qhat to (uj,uj+1)/v1. Now test if v2 * qhat is greater than
+            --  (uj*b + uj+1 - qhat*v1)*b + uj+2. If so, decrease qhat by 1 and
+            --  repeat this test
 
-            --  D3 (continued). Now test if v2 * qhat is greater than (uj*b +
-            --  uj+1 - qhat*v1)*b + uj+2. If so, decrease qhat by 1 and repeat
-            --  this test, which determines at high speed most of the cases in
-            --  which the trial value qhat is one too large, and it eliminates
-            --  all cases where qhat is two too large.
+            --  This had a bug not discovered till 1995, see Vol 2 errata:
+            --  http://www-cs-faculty.stanford.edu/~uno/err2-2e.ps.gz. Under
+            --  rare circumstances the expression in the test could overflow.
+            --  This version was further corrected in 2005, see Vol 2 errata:
+            --  http://www-cs-faculty.stanford.edu/~uno/all2-pre.ps.gz.
+            --  The code below is the fixed version of this step.
 
-            while DD (v2) * DD (qhat) >
-                   ((u (j) & u (j + 1)) -
-                     DD (qhat) * DD (v1)) * b + DD (u (j + 2))
+            --  D3. [Calculate qhat.] Set qhat to (uj,uj+1)/v1 and rhat to
+            --  to (uj,uj+1) mod v1.
+
+            temp := u (j) & u (j + 1);
+            qhat := temp / DD (v1);
+            rhat := temp mod DD (v1);
+
+            --  D3 (continued). Now test if qhat >= b or v2*qhat > (rhat,uj+2):
+            --  if so, decrease qhat by 1, increase rhat by v1, and repeat this
+            --  test if rhat < b. [The test on v2 determines at at high speed
+            --  most of the cases in which the trial value qhat is one too
+            --  large, and eliminates all cases where qhat is two too large.]
+
+            while qhat >= b
+              or else DD (v2) * qhat > LSD (rhat) & u (j + 2)
             loop
                qhat := qhat - 1;
+               rhat := rhat + DD (v1);
+               exit when rhat >= b;
             end loop;
 
             --  D4. [Multiply and subtract.] Replace (uj,uj+1..uj+n) by
@@ -878,7 +907,7 @@ package body System.Bignums is
             begin
                Borrow := 0;
                for K in reverse 1 .. n loop
-                  Temp := DD (qhat) * DD (v (K)) + DD (Borrow);
+                  Temp := qhat * DD (v (K)) + DD (Borrow);
                   Borrow := MSD (Temp);
 
                   if LSD (Temp) > u (j + K) then
@@ -894,7 +923,7 @@ package body System.Bignums is
                --  D5. [Test remainder.] Set qj = qhat. If the result of step
                --  D4 was negative, we will do the add back step (step D6).
 
-               q (j) := qhat;
+               q (j) := LSD (qhat);
 
                if Negative then
 

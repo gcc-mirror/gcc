@@ -28,6 +28,13 @@ extern int fchmod(int, mode_t);
 #endif  /* RS6000_FCHMOD_CHECK */
 
 
+#if defined( VXWORKS_MKDIR_MACRO_CHECK )
+extern STATUS mkdir (const char * _qwerty) ;
+#define mkdir(dir, ...) ((void)0, ##__VA_ARGS__, (mkdir)(dir))
+
+#endif  /* VXWORKS_MKDIR_MACRO_CHECK */
+
+
 #if defined( VXWORKS_NEEDS_VXWORKS_CHECK )
 #include </dev/null> /* ULONG */
 # define	__INCstath <sys/stat.h>

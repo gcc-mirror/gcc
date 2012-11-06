@@ -6,7 +6,7 @@
 /* So far, CFString is darwin-only.  */
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-skip-if "NeXT only" { *-*-* } { "-fgnu-runtime" } { "" } } */
-/* { dg-options "-mconstant-cfstrings -Wnonportable-cfstrings" } */
+/* { dg-options "-ftrack-macro-expansion=0 -mconstant-cfstrings -Wnonportable-cfstrings" } */
 
 #import <Foundation/NSString.h>
 #import <CoreFoundation/CFString.h>

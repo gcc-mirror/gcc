@@ -57,14 +57,20 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 int
 backtrace_open (const char *filename, backtrace_error_callback error_callback,
-		void *data)
+		void *data, int *does_not_exist)
 {
   int descriptor;
+
+  if (does_not_exist != NULL)
+    *does_not_exist = 0;
 
   descriptor = open (filename, O_RDONLY | O_BINARY | O_CLOEXEC);
   if (descriptor < 0)
     {
-      error_callback (data, filename, errno);
+      if (does_not_exist != NULL && errno == ENOENT)
+	*does_not_exist = 1;
+      else
+	error_callback (data, filename, errno);
       return -1;
     }
 

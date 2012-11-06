@@ -1816,7 +1816,7 @@ resolve_array_list (gfc_constructor_base base)
 	  gfc_symbol *iter_var;
 	  locus iter_var_loc;
 	 
-	  if (gfc_resolve_iterator (iter, false) == FAILURE)
+	  if (gfc_resolve_iterator (iter, false, true) == FAILURE)
 	    t = FAILURE;
 
 	  /* Check for bounds referencing the iterator variable.  */

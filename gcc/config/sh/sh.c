@@ -2600,21 +2600,25 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 
   if (MEM_P (dst)
       && GET_CODE (XEXP (dst, 0)) == PRE_DEC)
-    return "mov.l	%T1,%0\n\tmov.l	%1,%0";
+    return     "mov.l	%T1,%0"	"\n"
+	   "	mov.l	%1,%0";
 
   if (register_operand (dst, mode)
       && register_operand (src, mode))
     {
       if (REGNO (src) == MACH_REG)
-	return "sts	mach,%S0\n\tsts	macl,%R0";
+	return         "sts	mach,%S0" "\n"
+	       "	sts	macl,%R0";
 
       /* When mov.d r1,r2 do r2->r3 then r1->r2;
          when mov.d r1,r0 do r1->r0 then r2->r1.  */
 
       if (REGNO (src) + 1 == REGNO (dst))
-	return "mov	%T1,%T0\n\tmov	%1,%0";
+	return         "mov	%T1,%T0" "\n"
+	       "	mov	%1,%0";
       else
-	return "mov	%1,%0\n\tmov	%T1,%T0";
+	return         "mov	%1,%0" "\n"
+	       "	mov	%T1,%T0";
     }
   else if (CONST_INT_P (src))
     {
@@ -2654,19 +2658,23 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 	  break;
 	  
 	case LABEL_REF:
-	  return "mov.l	%1,%0\n\tmov.l	%1+4,%T0";
+	  return       "mov.l	%1,%0" "\n"
+		 "	mov.l	%1+4,%T0";
 	case POST_INC:
-	  return "mov.l	%1,%0\n\tmov.l	%1,%T0";
+	  return       "mov.l	%1,%0" "\n"
+		 "	mov.l	%1,%T0";
 	default:
 	  gcc_unreachable ();
 	}
 
       /* Work out the safe way to copy.  Copy into the second half first.  */
       if (dreg == ptrreg)
-	return "mov.l	%T1,%T0\n\tmov.l	%1,%0";
+	return         "mov.l	%T1,%T0" "\n"
+	       "	mov.l	%1,%0";
     }
 
-  return "mov.l	%1,%0\n\tmov.l	%T1,%T0";
+  return       "mov.l	%1,%0" "\n"
+	 "	mov.l	%T1,%T0";
 }
 
 /* Print an instruction which would have gone into a delay slot after
@@ -2698,7 +2706,8 @@ output_far_jump (rtx insn, rtx op)
       && offset - get_attr_length (insn) <= 32766)
     {
       far = 0;
-      jump = "mov.w	%O0,%1; braf	%1";
+      jump =   "mov.w	%O0,%1" "\n"
+	     "	braf	%1";
     }
   else
     {
@@ -2706,12 +2715,19 @@ output_far_jump (rtx insn, rtx op)
       if (flag_pic)
 	{
 	  if (TARGET_SH2)
-	    jump = "mov.l	%O0,%1; braf	%1";
+	    jump =     "mov.l	%O0,%1" "\n"
+		   "	braf	%1";
 	  else
-	    jump = "mov.l	r0,@-r15; mova	%O0,r0; mov.l	@r0,%1; add	r0,%1; mov.l	@r15+,r0; jmp	@%1";
+	    jump =     "mov.l	r0,@-r15"	"\n"
+		   "	mova	%O0,r0"		"\n"
+		   "	mov.l	@r0,%1"		"\n"
+		   "	add	r0,%1"		"\n"
+		   "	mov.l	@r15+,r0"	"\n"
+		   "	jmp	@%1";
 	}
       else
-	jump = "mov.l	%O0,%1; jmp	@%1";
+	jump =         "mov.l	%O0,%1" "\n"
+	       "	jmp	@%1";
     }
   /* If we have a scratch register available, use it.  */
   if (NONJUMP_INSN_P ((prev = prev_nonnote_insn (insn)))
@@ -2719,7 +2735,12 @@ output_far_jump (rtx insn, rtx op)
     {
       this_jmp.reg = SET_DEST (XVECEXP (PATTERN (prev), 0, 0));
       if (REGNO (this_jmp.reg) == R0_REG && flag_pic && ! TARGET_SH2)
-	jump = "mov.l	r1,@-r15; mova	%O0,r0; mov.l	@r0,r1; add	r1,r0; mov.l	@r15+,r1; jmp	@%1";
+	jump =         "mov.l	r1,@-r15"	"\n"
+	       "	mova	%O0,r0"		"\n"
+	       "	mov.l	@r0,r1"		"\n"
+	       "	add	r1,r0"		"\n"
+	       "	mov.l	@r15+,r1"	"\n"
+	       "	jmp	@%1";
       output_asm_insn (jump, &this_jmp.lab);
       if (dbr_sequence_length ())
 	print_slot (final_sequence);
@@ -2738,12 +2759,12 @@ output_far_jump (rtx insn, rtx op)
 	 need its value across jumps, so save r13 in it instead of in
 	 the stack.  */
       if (TARGET_SH5)
-	output_asm_insn ("lds	r13, macl", 0);
+	output_asm_insn ("lds	r13,macl", 0);
       else
 	output_asm_insn ("mov.l	r13,@-r15", 0);
       output_asm_insn (jump, &this_jmp.lab);
       if (TARGET_SH5)
-	output_asm_insn ("sts	macl, r13", 0);
+	output_asm_insn ("sts	macl,r13", 0);
       else
 	output_asm_insn ("mov.l	@r15+,r13", 0);
     }
@@ -2911,7 +2932,8 @@ output_branchy_insn (enum rtx_code code, const char *templ,
 const char *
 output_ieee_ccmpeq (rtx insn, rtx *operands)
 {
-  return output_branchy_insn (NE, "bt\t%l9\n\tfcmp/eq\t%1,%0",
+  return output_branchy_insn (NE,      "bt	%l9" "\n"
+				  "	fcmp/eq	%1,%0",
 			      insn, operands);
 }
 
@@ -3202,14 +3224,18 @@ shiftcosts (rtx x)
 static inline int
 and_xor_ior_costs (rtx x, int code)
 {
-  int i;
+  /* On SH1-4 we have only max. SImode operations.
+     Double the cost for modes > SImode.  */
+  const int cost_scale = !TARGET_SHMEDIA
+			 && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+			 ? 2 : 1;
 
   /* A logical operation with two registers is a single cycle
      instruction.  */
   if (!CONST_INT_P (XEXP (x, 1)))
-    return 1;
+    return 1 * cost_scale;
 
-  i = INTVAL (XEXP (x, 1));
+  int i = INTVAL (XEXP (x, 1));
 
   if (TARGET_SHMEDIA)
     {
@@ -3222,19 +3248,19 @@ and_xor_ior_costs (rtx x, int code)
 
   /* These constants are single cycle extu.[bw] instructions.  */
   if ((i == 0xff || i == 0xffff) && code == AND)
-    return 1;
+    return 1 * cost_scale;
   /* Constants that can be used in an instruction as an immediate are
      a single cycle, but this requires r0, so make it a little more
      expensive.  */
   if (CONST_OK_FOR_K08 (i))
-    return 2;
+    return 2 * cost_scale;
   /* Constants that can be loaded with a mov immediate need one more cycle.
      This case is probably unnecessary.  */
   if (CONST_OK_FOR_I08 (i))
-    return 2;
+    return 2 * cost_scale;
   /* Any other constant requires an additional 2 cycle pc-relative load.
      This case is probably unnecessary.  */
-  return 3;
+  return 3 * cost_scale;
 }
 
 /* Return the cost of an addition or a subtraction.  */
@@ -3242,15 +3268,21 @@ and_xor_ior_costs (rtx x, int code)
 static inline int
 addsubcosts (rtx x)
 {
+  /* On SH1-4 we have only max. SImode operations.
+     Double the cost for modes > SImode.  */
+  const int cost_scale = !TARGET_SHMEDIA
+			 && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+			 ? 2 : 1;
+
   /* Adding a register is a single cycle insn.  */
   if (REG_P (XEXP (x, 1))
       || GET_CODE (XEXP (x, 1)) == SUBREG)
-    return 1;
+    return 1 * cost_scale;
 
   /* Likewise for small constants.  */
   if (CONST_INT_P (XEXP (x, 1))
       && CONST_OK_FOR_ADD (INTVAL (XEXP (x, 1))))
-    return 1;
+    return 1 * cost_scale;
 
   if (TARGET_SHMEDIA)
     switch (GET_CODE (XEXP (x, 1)))
@@ -3275,7 +3307,7 @@ addsubcosts (rtx x)
 
   /* Any other constant requires a 2 cycle pc-relative load plus an
      addition.  */
-  return 3;
+  return 3 * cost_scale;
 }
 
 /* Return the cost of a multiply.  */
@@ -11051,10 +11083,12 @@ find_regmode_weight (basic_block b, enum machine_mode mode)
 
       if (mode == SFmode)
 	INSN_REGMODE_WEIGHT (insn, mode) =
-	  find_insn_regmode_weight (insn, mode) + 2 * find_insn_regmode_weight (insn, DFmode);
+	  find_insn_regmode_weight (insn, mode)
+	  + 2 * find_insn_regmode_weight (insn, DFmode);
       else if (mode == SImode)
 	INSN_REGMODE_WEIGHT (insn, mode) =
-	  find_insn_regmode_weight (insn, mode) + 2 * find_insn_regmode_weight (insn, DImode);
+	  find_insn_regmode_weight (insn, mode)
+	  + 2 * find_insn_regmode_weight (insn, DImode);
     }
 }
 
@@ -11350,15 +11384,12 @@ sh_target_reg_class (void)
 static bool
 sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
 {
-  HARD_REG_SET dummy;
-#if 0
-  rtx insn;
-#endif
-
   if (! shmedia_space_reserved_for_target_registers)
     return 0;
   if (after_prologue_epilogue_gen && ! TARGET_SAVE_ALL_TARGET_REGS)
     return 0;
+
+  HARD_REG_SET dummy;
   if (calc_live_regs (&dummy) >= 6 * 8)
     return 1;
   return 0;
@@ -11524,7 +11555,7 @@ sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
 				SImode));
   emit_move_insn (adjust_address (tramp_mem, SImode, 8), cxt);
   emit_move_insn (adjust_address (tramp_mem, SImode, 12), fnaddr);
-  if (TARGET_HARVARD)
+  if (TARGET_HARD_SH4 || TARGET_SH5)
     {
       if (!TARGET_INLINE_IC_INVALIDATE
 	  || (!(TARGET_SH4A_ARCH || TARGET_SH4_300) && TARGET_USERMODE))
@@ -11582,11 +11613,14 @@ shmedia_builtin_p (void)
   return TARGET_SHMEDIA;
 }
 
+/* This function can be used if there are any built-ins that are not for
+   SHmedia.  It's commented out to avoid the defined-but-unused warning.
 static bool
 sh1_builtin_p (void)
 {
   return TARGET_SH1;
 }
+*/
 
 /* describe number and signedness of arguments; arg[0] == result
    (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
@@ -12294,8 +12328,6 @@ sh_register_move_cost (enum machine_mode mode,
 
   return 2 * ((GET_MODE_SIZE (mode) + 3) / 4U);
 }
-
-static rtx emit_load_ptr (rtx, rtx);
 
 static rtx
 emit_load_ptr (rtx reg, rtx addr)
@@ -13483,7 +13515,7 @@ sh_find_set_of_reg (rtx reg, rtx insn, rtx(*stepfunc)(rtx))
   for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
        result.insn = stepfunc (result.insn))
     {
-      if (LABEL_P (result.insn) || BARRIER_P (result.insn))
+      if (BARRIER_P (result.insn))
 	return result;
       if (!NONJUMP_INSN_P (result.insn))
 	continue;

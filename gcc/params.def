@@ -291,6 +291,11 @@ DEFPARAM(PARAM_MAX_PEEL_TIMES,
 	"max-peel-times",
 	"The maximum number of peelings of a single loop",
 	16, 0, 0)
+/* The maximum number of peelings of a single loop that is peeled completely.  */
+DEFPARAM(PARAM_MAX_PEEL_BRANCHES,
+	"max-peel-branches",
+	"The maximum number of branches on the path through the peeled sequence",
+	32, 0, 0)
 /* The maximum number of insns of a peeled loop.  */
 DEFPARAM(PARAM_MAX_COMPLETELY_PEELED_INSNS,
 	"max-completely-peeled-insns",

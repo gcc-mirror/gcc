@@ -1,6 +1,6 @@
 /* Copyright (C) 2000, 2003 Free Software Foundation, Inc.  */
 /* { dg-do preprocess } */
-/* { dg-options "-C" } */
+/* { dg-options "-nostdinc -C" } */
 /* Test that multi-line tokens are recognized by cpp0 as being
    multiline .  Source: Neil Booth, 17 Dec 2000.  */
 /* Line 1

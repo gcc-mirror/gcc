@@ -35,10 +35,10 @@ foo2b(int n)
 
 /* Unbounded loops are not safe.  */
 static int __attribute__ ((noinline))
-foo3(int n)  /* { dg-warning "const\[^\n\]* normally" "detect const candidate" } */
+foo3(unsigned int n)  /* { dg-warning "const\[^\n\]* normally" "detect const candidate" } */
 {
   int ret = 0;
-  int i;
+  unsigned int i;
   for (i=0; extern_const (i+n); n++)
     ret+=extern_const (i);
   return ret;

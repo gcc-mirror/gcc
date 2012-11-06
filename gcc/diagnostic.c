@@ -208,7 +208,7 @@ diagnostic_set_info (diagnostic_info *diagnostic, const char *gmsgid,
    responsible for freeing the memory.  */
 char *
 diagnostic_build_prefix (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
+			 const diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T) (T),
@@ -519,10 +519,9 @@ default_diagnostic_starter (diagnostic_context *context,
 }
 
 void
-default_diagnostic_finalizer (diagnostic_context *context,
+default_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
 			      diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {
-  pp_destroy_prefix (context->printer);
 }
 
 /* Interface to specify diagnostic kind overrides.  Returns the
@@ -759,6 +758,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   diagnostic_show_locus (context, diagnostic);
   (*diagnostic_finalizer (context)) (context, diagnostic);
+  pp_destroy_prefix (context->printer);
   pp_newline_and_flush (context->printer);
   diagnostic_action_after_output (context, diagnostic);
   diagnostic->message.format_spec = saved_format_spec;
@@ -819,6 +819,29 @@ verbatim (const char *gmsgid, ...)
   pp_format_verbatim (global_dc->printer, &text);
   pp_newline_and_flush (global_dc->printer);
   va_end (ap);
+}
+
+/* Add a note with text GMSGID and with LOCATION to the diagnostic CONTEXT.  */
+void
+diagnostic_append_note (diagnostic_context *context,
+                        location_t location,
+                        const char * gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_NOTE);
+  if (context->inhibit_notes_p)
+    return;
+  pp_set_prefix (context->printer,
+                 diagnostic_build_prefix (context, &diagnostic));
+  pp_newline (context->printer);
+  pp_format (context->printer, &diagnostic.message);
+  pp_output_formatted_text (context->printer);
+  pp_destroy_prefix (context->printer);
+  diagnostic_show_locus (context, &diagnostic);
+  va_end(ap);
 }
 
 bool

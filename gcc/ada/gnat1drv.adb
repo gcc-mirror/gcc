@@ -192,14 +192,12 @@ procedure Gnat1drv is
 
          --  Enable all other language checks
 
-         Suppress_Options :=
-           (Suppress                   => (Access_Check      => True,
-                                           Alignment_Check   => True,
-                                           Division_Check    => True,
-                                           Elaboration_Check => True,
-                                           others            => False),
-            Overflow_Checks_General    => Suppressed,
-            Overflow_Checks_Assertions => Suppressed);
+         Suppress_Options.Suppress :=
+           (Access_Check      => True,
+            Alignment_Check   => True,
+            Division_Check    => True,
+            Elaboration_Check => True,
+            others            => False);
 
          Dynamic_Elaboration_Checks := False;
 
@@ -328,42 +326,50 @@ procedure Gnat1drv is
          Exception_Mechanism := Back_End_Exceptions;
       end if;
 
-      --  Set proper status for overflow checks
+      --  Set proper status for overflow check mechanism
 
-      --  If already set (by - gnato or -gnatp) then we have nothing to do
+      --  If already set (by -gnato) then we have nothing to do
 
       if Opt.Suppress_Options.Overflow_Checks_General /= Not_Set then
          null;
 
-      --  Otherwise set appropriate default mode. Note: at present we set
-      --  SUPPRESSED in all three of the following cases. They are separated
-      --  because in the future we may make different choices.
-
-      --  By default suppress overflow checks in -gnatg mode
-
-      elsif GNAT_Mode then
-         Suppress_Options.Overflow_Checks_General    := Suppressed;
-         Suppress_Options.Overflow_Checks_Assertions := Suppressed;
-
-      --  If we have backend divide and overflow checks, then by default
-      --  overflow checks are suppressed. Historically this code used to
-      --  activate overflow checks, although no target currently has these
-      --  flags set, so this was dead code anyway.
-
-      elsif Targparm.Backend_Divide_Checks_On_Target
-              and
-            Targparm.Backend_Overflow_Checks_On_Target
-      then
-         Suppress_Options.Overflow_Checks_General    := Suppressed;
-         Suppress_Options.Overflow_Checks_Assertions := Suppressed;
-
-      --  Otherwise for now, default is checks are suppressed. This is subject
-      --  to change in the future, but for now this is the compatible behavior
-      --  with previous versions of GNAT.
+      --  Otherwise set overflow mode defaults
 
       else
-         Suppress_Options.Overflow_Checks_General    := Suppressed;
-         Suppress_Options.Overflow_Checks_Assertions := Suppressed;
+         --  Otherwise set overflow checks off by default
+
+         Suppress_Options.Suppress (Overflow_Check) := True;
+
+         --  Set appropriate default overflow handling mode. Note: at present
+         --  we set STRICT in all three of the following cases. They are
+         --  separated because in the future we may make different choices.
+
+         --  By default set STRICT mode if -gnatg in effect
+
+         if GNAT_Mode then
+            Suppress_Options.Overflow_Checks_General    := Strict;
+            Suppress_Options.Overflow_Checks_Assertions := Strict;
+
+         --  If we have backend divide and overflow checks, then by default
+         --  overflow checks are STRICT. Historically this code used to also
+         --  activate overflow checks, although no target currently has these
+         --  flags set, so this was dead code anyway.
+
+         elsif Targparm.Backend_Divide_Checks_On_Target
+           and
+             Targparm.Backend_Overflow_Checks_On_Target
+         then
+            Suppress_Options.Overflow_Checks_General    := Strict;
+            Suppress_Options.Overflow_Checks_Assertions := Strict;
+
+         --  Otherwise for now, default is STRICT mode. This may change in the
+         --  future, but for now this is the compatible behavior with previous
+         --  versions of GNAT.
+
+         else
+            Suppress_Options.Overflow_Checks_General    := Strict;
+            Suppress_Options.Overflow_Checks_Assertions := Strict;
+         end if;
       end if;
 
       --  Set default for atomic synchronization. As this synchronization
@@ -418,8 +424,11 @@ procedure Gnat1drv is
 
       --  Set switches for formal verification mode
 
-      if Debug_Flag_Dot_FF then
+      if Debug_Flag_Dot_VV then
+         Formal_Extensions := True;
+      end if;
 
+      if Debug_Flag_Dot_FF then
          Alfa_Mode := True;
 
          --  Set strict standard interpretation of compiler permissions
@@ -448,15 +457,13 @@ procedure Gnat1drv is
 
          Restrict.Restrictions.Set (No_Initialize_Scalars) := True;
 
-         --  Suppress all language checks since they are handled implicitly by
-         --    the formal verification backend.
-         --  Turn off dynamic elaboration checks.
-         --  Turn off alignment checks.
-         --  Turn off validity checking.
-
-         Suppress_Options           := Suppress_All;
-         Dynamic_Elaboration_Checks := False;
-         Reset_Validity_Check_Options;
+         --  Note: at this point we used to suppress various checks, but that
+         --  is not what we want. We need the semantic processing for these
+         --  checks (which will set flags like Do_Overflow_Check, showing the
+         --  points at which potential checks are required semantically). We
+         --  don't want the expansion associated with these checks, but that
+         --  happens anyway because this expansion is simply not done in the
+         --  Alfa version of the expander.
 
          --  Kill debug of generated code, since it messes up sloc values
 

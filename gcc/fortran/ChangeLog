@@ -1,3 +1,60 @@
+2012-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54917
+	* target-memory.c (gfc_target_expr_size,gfc_target_interpret_expr):
+	Handle BT_CLASS.
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Add support for
+	polymorphic arguments.
+
+2012-11-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55199
+	* primary.c (gfc_match_varspec): Clear typespec if it cannot be
+	determined at this point.
+
+2012-10-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53718
+	* trans.h (GFC_DECL_PUSH_TOPLEVEL): Removed.
+	* trans-decl.c (gfc_get_symbol_decl,gfc_generate_function_code): Remove
+	GFC_DECL_PUSH_TOPLEVEL.
+	(build_function_decl): Do not push __copy procedure to toplevel.
+
+2012-10-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55134
+	* trans-array.c (gfc_conv_array_parameter): Regard AS_DEFERRED as
+	array with descriptor.
+
+2012-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54958
+	* gfortran.h (gfc_resolve_iterator_expr,
+	gfc_check_vardef_context): Update prototype.
+	* expr.c (gfc_check_vardef_context): Add own_scope
+	argument and honour it.
+	* resolve.c (gfc_resolve_iterator_expr): Add own_scope
+	argument and honour it.
+	(resolve_deallocate_expr, resolve_allocate_expr,
+	resolve_data_variables, resolve_transfer
+	resolve_lock_unlock, resolve_code): Update calls.
+	* array.c (resolve_array_list): Ditto.
+	* check.c (gfc_check_atomic_def, gfc_check_atomic_ref): Ditto.
+	* interface.c (compare_actual_formal): Ditto.
+	* intrinsic.c (check_arglist): Ditto.
+	* io.c (resolve_tag, gfc_resolve_dt, gfc_resolve_inquire): Ditto.
+
+2012-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* trans.c (gfc_allocate_allocatable):  Revert accidental
+	commit.
+
+2012-10-24  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55037
+	* trans-expr.c (gfc_conv_procedure_call): Move a piece of code and
+	remove an assert.
+
 2012-10-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54725

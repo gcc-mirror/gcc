@@ -143,6 +143,7 @@ struct rtl_opt_pass pass_initialize_regs =
  {
   RTL_PASS,
   "init-regs",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_initialize_regs,                 /* gate */
   rest_of_handle_initialize_regs,       /* execute */
   NULL,                                 /* sub */

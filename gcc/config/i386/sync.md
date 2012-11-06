@@ -149,9 +149,7 @@
   if (<MODE>mode == DImode && !TARGET_64BIT)
     emit_insn (gen_atomic_loaddi_fpu
 	       (operands[0], operands[1],
-	        assign_386_stack_local (DImode,
-					(virtuals_instantiated
-					 ? SLOT_TEMP : SLOT_VIRTUAL))));
+	        assign_386_stack_local (DImode, SLOT_TEMP)));
   else
     emit_move_insn (operands[0], operands[1]);
   DONE;
@@ -212,9 +210,7 @@
 	 out to be significantly larger than this plus a barrier.  */
       emit_insn (gen_atomic_storedi_fpu
 		 (operands[0], operands[1],
-	          assign_386_stack_local (DImode,
-					  (virtuals_instantiated
-					   ? SLOT_TEMP : SLOT_VIRTUAL))));
+	          assign_386_stack_local (DImode, SLOT_TEMP)));
     }
   else
     {

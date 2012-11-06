@@ -2874,7 +2874,6 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
   rtx src = SET_SRC (single_set (insn));
   rtx addr;
   int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
-  int regno_dest;
   int segment;
   RTX_CODE code;
   addr_space_t as = MEM_ADDR_SPACE (src);
@@ -2902,8 +2901,6 @@ avr_out_lpm (rtx insn, rtx *op, int *plen)
   xop[4] = xstring_empty;
   xop[5] = tmp_reg_rtx;
   xop[6] = XEXP (rampz_rtx, 0);
-
-  regno_dest = REGNO (dest);
 
   segment = avr_addrspace[as].segment;
 

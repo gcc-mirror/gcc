@@ -148,7 +148,6 @@ bessel_yn_r4 (gfc_array_r4 * const restrict ret, int n1, int n2,
       return;
     }
 
-  ret->base_addr = ret->base_addr;
   last1 = MATHFUNC(yn) (n1, x);
   ret->base_addr[0] = last1;
 

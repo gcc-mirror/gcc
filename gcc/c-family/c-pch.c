@@ -93,6 +93,10 @@ get_ident (void)
   return result;
 }
 
+/* Whether preprocessor state should be saved by pch_init.  */
+
+static bool pch_ready_to_save_cpp_state = false;
+
 /* Prepare to write a PCH file, if one is being written.  This is
    called at the start of compilation.  */
 
@@ -136,7 +140,31 @@ pch_init (void)
   /* Let the debugging format deal with the PCHness.  */
   (*debug_hooks->handle_pch) (0);
 
-  cpp_save_state (parse_in, f);
+  if (pch_ready_to_save_cpp_state)
+    pch_cpp_save_state ();
+}
+
+/* Whether preprocessor state has been saved in a PCH file.  */
+
+static bool pch_cpp_state_saved = false;
+
+/* Save preprocessor state in a PCH file, after implicitly included
+   headers have been read.  If the PCH file has not yet been opened,
+   record that state should be saved when it is opened.  */
+
+void
+pch_cpp_save_state (void)
+{
+  if (!pch_cpp_state_saved)
+    {
+      if (pch_outfile)
+	{
+	  cpp_save_state (parse_in, pch_outfile);
+	  pch_cpp_state_saved = true;
+	}
+      else
+	pch_ready_to_save_cpp_state = true;
+    }
 }
 
 /* Write the PCH file.  This is called at the end of a compilation which

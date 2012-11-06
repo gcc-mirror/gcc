@@ -276,6 +276,39 @@ package Atree is
    Current_Error_Node : Node_Id;
    --  Node to place error messages
 
+   ------------------
+   -- Error Counts --
+   ------------------
+
+   --  The following variables denote the count of errors of various kinds
+   --  detected in the tree. Note that these might be more logically located
+   --  in Err_Vars, but we put it to deal with licensing issues (we need this
+   --  to have the GPL exception licensing, since Check_Error_Detected can
+   --  be called from units with this licensing).
+
+   Serious_Errors_Detected : Nat := 0;
+   --  This is a count of errors that are serious enough to stop expansion,
+   --  and hence to prevent generation of an object file even if the
+   --  switch -gnatQ is set. Initialized to zero at the start of compilation.
+   --  Initialized for -gnatVa use, see comment above.
+
+   Total_Errors_Detected : Nat := 0;
+   --  Number of errors detected so far. Includes count of serious errors and
+   --  non-serious errors, so this value is always greater than or equal to the
+   --  Serious_Errors_Detected value. Initialized to zero at the start of
+   --  compilation. Initialized for -gnatVa use, see comment above.
+
+   Warnings_Detected : Nat := 0;
+   --  Number of warnings detected. Initialized to zero at the start of
+   --  compilation. Initialized for -gnatVa use, see comment above.
+
+   procedure Check_Error_Detected;
+   --  When an anomaly is found in the tree, many semantic routines silently
+   --  bail out, assuming that the anomaly was caused by a previously detected
+   --  error. This routine should be called in these cases, and will raise an
+   --  exception if no error has been detected. This ensure that the anomaly
+   --  is never allowed to go unnoticed.
+
    -------------------------------
    -- Default Setting of Fields --
    -------------------------------
@@ -767,7 +800,7 @@ package Atree is
    --  Note that this routine is very rarely used, since usually the
    --  default mechanism provided sets the right value, but in some
    --  unusual cases, the value needs to be reset (e.g. when a source
-   --  node is copied, and the copy must not have Comes_From_Source set.
+   --  node is copied, and the copy must not have Comes_From_Source set).
 
    procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Has_Aspects);

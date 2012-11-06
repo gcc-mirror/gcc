@@ -101,7 +101,7 @@ class TestResult(object):
       try:
         (self.state,
          self.name,
-         self.description) = re.match(r' *([A-Z]+): (\S+)\s(.*)',
+         self.description) = re.match(r' *([A-Z]+):\s*(\S+)\s+(.*)',
                                       summary_line).groups()
       except:
         print 'Failed to parse summary line: "%s"' % summary_line
@@ -292,12 +292,33 @@ def PrintSummary(msg, summary):
 
 def GetSumFiles(results, build_dir):
   if not results:
-    print 'Getting actual results from build'
+    print 'Getting actual results from build directory %s' % build_dir
     sum_files = CollectSumFiles(build_dir)
   else:
     print 'Getting actual results from user-provided results'
     sum_files = results.split()
   return sum_files
+
+
+def PerformComparison(expected, actual, ignore_missing_failures):
+  actual_vs_expected, expected_vs_actual = CompareResults(expected, actual)
+
+  tests_ok = True
+  if len(actual_vs_expected) > 0:
+    PrintSummary('Unexpected results in this build (new failures)',
+                 actual_vs_expected)
+    tests_ok = False
+
+  if not ignore_missing_failures and len(expected_vs_actual) > 0:
+    PrintSummary('Expected results not present in this build (fixed tests)'
+                 '\n\nNOTE: This is not a failure.  It just means that these '
+                 'tests were expected\nto fail, but they worked in this '
+                 'configuration.\n', expected_vs_actual)
+
+  if tests_ok:
+    print '\nSUCCESS: No unexpected failures.'
+
+  return tests_ok
 
 
 def CheckExpectedResults(options):
@@ -320,24 +341,7 @@ def CheckExpectedResults(options):
     PrintSummary('Tests expected to fail', manifest)
     PrintSummary('\nActual test results', actual)
 
-  actual_vs_manifest, manifest_vs_actual = CompareResults(manifest, actual)
-
-  tests_ok = True
-  if len(actual_vs_manifest) > 0:
-    PrintSummary('Build results not in the manifest', actual_vs_manifest)
-    tests_ok = False
-
-  if not options.ignore_missing_failures and len(manifest_vs_actual) > 0:
-    PrintSummary('Manifest results not present in the build'
-                 '\n\nNOTE: This is not a failure.  It just means that the '
-                 'manifest expected\nthese tests to fail, '
-                 'but they worked in this configuration.\n',
-                 manifest_vs_actual)
-
-  if tests_ok:
-    print '\nSUCCESS: No unexpected failures.'
-
-  return tests_ok
+  return PerformComparison(manifest, actual, options.ignore_missing_failures)
 
 
 def ProduceManifest(options):
@@ -361,6 +365,20 @@ def ProduceManifest(options):
   return True
 
 
+def CompareBuilds(options):
+  (srcdir, target, valid_build) = GetBuildData(options)
+  if not valid_build:
+    return False
+
+  sum_files = GetSumFiles(options.results, options.build_dir)
+  actual = GetResults(sum_files)
+
+  clean_sum_files = GetSumFiles(None, options.clean_build)
+  clean = GetResults(clean_sum_files)
+
+  return PerformComparison(clean, actual, options.ignore_missing_failures)
+
+
 def Main(argv):
   parser = optparse.OptionParser(usage=__doc__)
 
@@ -368,6 +386,14 @@ def Main(argv):
   parser.add_option('--build_dir', action='store', type='string',
                     dest='build_dir', default='.',
                     help='Build directory to check (default = .)')
+  parser.add_option('--clean_build', action='store', type='string',
+                    dest='clean_build', default=None,
+                    help='Compare test results from this build against '
+                    'those of another (clean) build.  Use this option '
+                    'when comparing the test results of your patch versus '
+                    'the test results of a clean build without your patch. '
+                    'You must provide the path to the top directory of your '
+                    'clean build.')
   parser.add_option('--force', action='store_true', dest='force',
                     default=False, help='When used with --produce_manifest, '
                     'it will overwrite an existing manifest file '
@@ -400,6 +426,8 @@ def Main(argv):
 
   if options.produce_manifest:
     retval = ProduceManifest(options)
+  elif options.clean_build:
+    retval = CompareBuilds(options)
   else:
     retval = CheckExpectedResults(options)
 

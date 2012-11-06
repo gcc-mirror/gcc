@@ -886,7 +886,7 @@ CFGLOOP_H = cfgloop.h $(BASIC_BLOCK_H) vecprim.h double-int.h \
 IPA_UTILS_H = ipa-utils.h $(TREE_H) $(CGRAPH_H)
 IPA_REFERENCE_H = ipa-reference.h $(BITMAP_H) $(TREE_H)
 CGRAPH_H = cgraph.h $(VEC_H) $(TREE_H) $(BASIC_BLOCK_H) $(FUNCTION_H) \
-	cif-code.def ipa-ref.h ipa-ref-inline.h $(LINKER_PLUGIN_API_H)
+	cif-code.def ipa-ref.h ipa-ref-inline.h $(LINKER_PLUGIN_API_H) is-a.h
 DF_H = df.h $(BITMAP_H) $(REGSET_H) sbitmap.h $(BASIC_BLOCK_H) \
 	alloc-pool.h $(TIMEVAR_H)
 VALTRACK_H = valtrack.h $(BITMAP_H) $(DF_H) $(RTL_H) $(BASIC_BLOCK_H) \
@@ -940,8 +940,8 @@ TREE_DATA_REF_H = tree-data-ref.h $(OMEGA_H) graphds.h $(SCEV_H)
 TREE_INLINE_H = tree-inline.h vecir.h
 REAL_H = real.h $(MACHMODE_H)
 IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
+LRA_INT_H = lra.h $(BITMAP_H) $(RECOG_H) $(INSN_ATTR_H) insn-codes.h lra-int.h
 DBGCNT_H = dbgcnt.h dbgcnt.def
-EBITMAP_H = ebitmap.h sbitmap.h
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
@@ -1199,7 +1199,6 @@ OBJS = \
 	dwarf2asm.o \
 	dwarf2cfi.o \
 	dwarf2out.o \
-	ebitmap.o \
 	emit-rtl.o \
 	et-forest.o \
 	except.o \
@@ -1272,6 +1271,13 @@ OBJS = \
 	loop-unroll.o \
 	loop-unswitch.o \
 	lower-subreg.o \
+	lra.o \
+	lra-assigns.o \
+	lra-coalesce.o \
+	lra-constraints.o \
+	lra-eliminations.o \
+	lra-lives.o \
+	lra-spills.o \
 	lto-cgraph.o \
 	lto-streamer.o \
 	lto-streamer-in.o \
@@ -1825,7 +1831,6 @@ graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $
     $(CONFIG_H) $(EMIT_RTL_H)
 
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h
-ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(EBITMAP_H)
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
 AR_LIBS = @COLLECT2_LIBS@
@@ -2701,7 +2706,7 @@ print-rtl.o : print-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(DIAGNOSTIC_CORE_H) \
    $(RTL_H) hard-reg-set.h $(TM_P_H) insn-config.h $(RECOG_H) \
    $(FLAGS_H) $(REGS_H) output.h $(TARGET_H) $(FUNCTION_H) $(TREE_H) \
-   $(DF_H) $(EMIT_RTL_H)
+   $(DF_H) $(EMIT_RTL_H) addresses.h
 
 varasm.o : varasm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) hard-reg-set.h $(REGS_H) \
@@ -2783,7 +2788,7 @@ dwarf2out.o : dwarf2out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h \
    toplev.h $(DIAGNOSTIC_CORE_H) $(DWARF2OUT_H) reload.h \
    $(GGC_H) $(EXCEPT_H) dwarf2asm.h $(TM_P_H) langhooks.h $(HASHTAB_H) \
    gt-dwarf2out.h $(TARGET_H) $(CGRAPH_H) $(MD5_H) $(INPUT_H) $(FUNCTION_H) \
-   $(GIMPLE_H) $(TREE_FLOW_H) \
+   $(GIMPLE_H) ira.h lra.h $(TREE_FLOW_H) \
    $(TREE_PRETTY_PRINT_H) $(COMMON_TARGET_H) $(OPTS_H)
 dwarf2cfi.o : dwarf2cfi.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    version.h $(RTL_H) $(EXPR_H) $(REGS_H) $(FUNCTION_H) output.h \
@@ -3217,7 +3222,43 @@ ira.o: ira.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(REGS_H) $(RTL_H) $(TM_P_H) $(TARGET_H) $(FLAGS_H) $(OBSTACK_H) \
    $(BITMAP_H) hard-reg-set.h $(BASIC_BLOCK_H) $(DBGCNT_H) $(FUNCTION_H) \
    $(EXPR_H) $(RECOG_H) $(PARAMS_H) $(TREE_PASS_H) output.h \
-   $(EXCEPT_H) reload.h toplev.h $(DIAGNOSTIC_CORE_H) $(DF_H) $(GGC_H) $(IRA_INT_H)
+   $(EXCEPT_H) reload.h toplev.h $(DIAGNOSTIC_CORE_H) \
+   $(DF_H) $(GGC_H) $(IRA_INT_H) lra.h
+lra.o : lra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) $(REGS_H) insn-config.h insn-codes.h $(TIMEVAR_H) $(TREE_PASS_H) \
+   $(DF_H) $(RECOG_H) output.h addresses.h $(REGS_H) hard-reg-set.h \
+   $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) \
+   $(EXCEPT_H) ira.h $(LRA_INT_H)
+lra-assigns.o : lra-assigns.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
+   $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) ira.h \
+   rtl-error.h sparseset.h $(LRA_INT_H)
+lra-coalesce.o : lra-coalesce.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
+   $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) ira.h \
+   rtl-error.h ira.h $(LRA_INT_H)
+lra-constraints.o : lra-constraints.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) $(REGS_H) insn-config.h insn-codes.h $(DF_H) \
+   $(RECOG_H) output.h addresses.h $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   $(FUNCTION_H) $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) \
+   ira.h rtl-error.h $(LRA_INT_H)
+lra-eliminations.o : lra-eliminations.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
+   $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) ira.h \
+   rtl-error.h $(LRA_INT_H)
+lra-lives.o : lra-lives.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
+   $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) \
+   $(LRA_INT_H)
+lra-spills.o : lra-spills.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
+   $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
+   $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) \
+   ira.h $(LRA_INT_H)
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(TREE_PASS_H) $(DF_H) \
    $(RECOG_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \

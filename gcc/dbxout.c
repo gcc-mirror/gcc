@@ -2994,7 +2994,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	  if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 	    return 0;
 	}
-      home = alter_subreg (&home);
+      home = alter_subreg (&home, true);
     }
   if (REG_P (home))
     {

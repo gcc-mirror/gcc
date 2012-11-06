@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -1622,7 +1622,9 @@ register preferences.
 @item *
 Says that the following character should be ignored when choosing
 register preferences.  @samp{*} has no effect on the meaning of the
-constraint as a constraint, and no effect on reloading.
+constraint as a constraint, and no effect on reloading.  For LRA
+@samp{*} additionally disparages slightly the alternative if the
+following character matches the operand.
 
 @ifset INTERNALS
 Here is an example: the 68000 has an instruction to sign-extend a
@@ -1669,6 +1671,66 @@ table heading for each architecture is the definitive reference for
 the meanings of that architecture's constraints.
 
 @table @emph
+@item AArch64 family---@file{config/aarch64/constraints.md}
+@table @code
+@item k
+The stack pointer register (@code{SP})
+
+@item w
+Floating point or SIMD vector register
+
+@item I
+Integer constant that is valid as an immediate operand in an @code{ADD}
+instruction
+
+@item J
+Integer constant that is valid as an immediate operand in a @code{SUB}
+instruction (once negated)
+
+@item K
+Integer constant that can be used with a 32-bit logical instruction
+
+@item L
+Integer constant that can be used with a 64-bit logical instruction
+
+@item M
+Integer constant that is valid as an immediate operand in a 32-bit @code{MOV}
+pseudo instruction. The @code{MOV} may be assembled to one of several different
+machine instructions depending on the value
+
+@item N
+Integer constant that is valid as an immediate operand in a 64-bit @code{MOV}
+pseudo instruction
+
+@item S
+An absolute symbolic address or a label reference
+
+@item Y
+Floating point constant zero
+
+@item Z
+Integer constant zero
+
+@item Usa
+An absolute symbolic address
+
+@item Ush
+The high part (bits 12 and upwards) of the pc-relative address of a symbol
+within 4GB of the instruction
+
+@item Q
+A memory address which uses a single base register with no offset
+
+@item Ump
+A memory address suitable for a load/store pair instruction in SI, DI, SF and
+DF modes
+
+@item Utf
+A memory address suitable for a load/store pair instruction in TF mode
+
+@end table
+
+
 @item ARM family---@file{config/arm/constraints.md}
 @table @code
 @item w
@@ -3157,6 +3219,9 @@ when the Visual Instruction Set is available.
 @item h
 64-bit global or out register for the SPARC-V8+ architecture.
 
+@item C
+The constant all-ones, for floating-point.
+
 @item D
 A vector constant
 
@@ -3171,10 +3236,12 @@ Zero
 loaded with the @code{sethi} instruction)
 
 @item L
-A constant in the range supported by @code{movcc} instructions
+A constant in the range supported by @code{movcc} instructions (11-bit
+signed immediate)
 
 @item M
-A constant in the range supported by @code{movrcc} instructions
+A constant in the range supported by @code{movrcc} instructions (10-bit
+signed immediate)
 
 @item N
 Same as @samp{K}, except that it verifies that bits that are not in the
@@ -3189,6 +3256,9 @@ Floating-point zero
 
 @item H
 Signed 13-bit constant, sign-extended to 32 or 64 bits
+
+@item P
+The constant -1
 
 @item Q
 Floating-point constant whose integral representation can
@@ -3208,11 +3278,11 @@ instruction sequence
 @item T
 Memory address aligned to an 8-byte boundary
 
-@item U
-Even register
-
 @item W
 Memory address for @samp{e} constraint registers
+
+@item w
+Memory address with only a base register
 
 @item Y
 Vector zero
@@ -4413,8 +4483,8 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @cindex @code{ior@var{m}3} instruction pattern
 @cindex @code{xor@var{m}3} instruction pattern
 @item @samp{ssadd@var{m}3}, @samp{usadd@var{m}3}
-@item @samp{sub@var{m}3}, @samp{sssub@var{m}3}, @samp{ussub@var{m}3}
-@item @samp{mul@var{m}3}, @samp{ssmul@var{m}3}, @samp{usmul@var{m}3}
+@itemx @samp{sub@var{m}3}, @samp{sssub@var{m}3}, @samp{ussub@var{m}3}
+@itemx @samp{mul@var{m}3}, @samp{ssmul@var{m}3}, @samp{usmul@var{m}3}
 @itemx @samp{div@var{m}3}, @samp{ssdiv@var{m}3}
 @itemx @samp{udiv@var{m}3}, @samp{usdiv@var{m}3}
 @itemx @samp{mod@var{m}3}, @samp{umod@var{m}3}
@@ -7496,7 +7566,7 @@ For example, if the following is present in the @file{md} file:
 the following lines will be written to the file @file{insn-attr.h}.
 
 @smallexample
-#define HAVE_ATTR_type
+#define HAVE_ATTR_type 1
 enum attr_type @{TYPE_BRANCH, TYPE_FP, TYPE_LOAD,
                  TYPE_STORE, TYPE_ARITH@};
 extern enum attr_type get_attr_type ();
@@ -7520,6 +7590,10 @@ The @code{enabled} attribute can be defined to prevent certain
 alternatives of an insn definition from being used during code
 generation. @xref{Disable Insn Alternatives}.
 @end table
+
+For each of these special attributes, the corresponding
+@samp{HAVE_ATTR_@var{name}} @samp{#define} is also written when the
+attribute is not defined; in that case, it is defined as @samp{0}.
 
 @findex define_enum_attr
 @anchor{define_enum_attr}

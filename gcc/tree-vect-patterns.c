@@ -416,7 +416,7 @@ vect_recog_dot_prod_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   pattern_stmt = gimple_build_assign_with_ops (DOT_PROD_EXPR, var,
 					       oprnd00, oprnd01, oprnd1);
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                        "vect_recog_dot_prod_pattern: detected: ");
@@ -676,7 +676,7 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
     return NULL;
 
   /* Pattern detected.  */
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                      "vect_recog_widen_mult_pattern: detected: ");
 
@@ -699,7 +699,7 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
   pattern_stmt = gimple_build_assign_with_ops (WIDEN_MULT_EXPR, var, oprnd0,
 					       oprnd1);
 
-  if (dump_kind_p (MSG_NOTE))
+  if (dump_enabled_p ())
     dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   VEC_safe_push (gimple, heap, *stmts, last_stmt);
@@ -912,7 +912,7 @@ vect_recog_widen_sum_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   pattern_stmt = gimple_build_assign_with_ops (WIDEN_SUM_EXPR, var,
 					       oprnd0, oprnd1);
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                        "vect_recog_widen_sum_pattern: detected: ");
@@ -1217,7 +1217,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
       STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt)) = pattern_stmt;
       new_pattern_def_seq (vinfo_for_stmt (stmt), new_def_stmt);
 
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
         {
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                            "created pattern stmt: ");
@@ -1285,7 +1285,7 @@ vect_recog_over_widening_pattern (VEC (gimple, heap) **stmts,
     return NULL;
 
   /* Pattern detected.  */
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                        "vect_recog_over_widening_pattern: detected: ");
@@ -1421,7 +1421,7 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
     return NULL;
 
   /* Pattern detected.  */
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                      "vect_recog_widen_shift_pattern: detected: ");
 
@@ -1445,7 +1445,7 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
   pattern_stmt =
     gimple_build_assign_with_ops (WIDEN_LSHIFT_EXPR, var, oprnd0, oprnd1);
 
-  if (dump_kind_p (MSG_NOTE))
+  if (dump_enabled_p ())
     dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   VEC_safe_push (gimple, heap, *stmts, last_stmt);
@@ -1567,7 +1567,7 @@ vect_recog_vector_vector_shift_pattern (VEC (gimple, heap) **stmts,
     }
 
   /* Pattern detected.  */
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                      "vect_recog_vector_vector_shift_pattern: detected: ");
 
@@ -1575,7 +1575,7 @@ vect_recog_vector_vector_shift_pattern (VEC (gimple, heap) **stmts,
   var = vect_recog_temp_ssa_var (TREE_TYPE (oprnd0), NULL);
   pattern_stmt = gimple_build_assign_with_ops (rhs_code, var, oprnd0, def);
 
-  if (dump_kind_p (MSG_NOTE))
+  if (dump_enabled_p ())
     dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
 
   VEC_safe_push (gimple, heap, *stmts, last_stmt);
@@ -1685,7 +1685,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
 	return NULL;
 
       /* Pattern detected.  */
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
         dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                          "vect_recog_divmod_pattern: detected: ");
 
@@ -1789,7 +1789,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
 					    signmask);
 	}
 
-      if (dump_kind_p (MSG_NOTE))
+      if (dump_enabled_p ())
 	dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt,
                               0);
 
@@ -2031,7 +2031,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
     }
 
   /* Pattern detected.  */
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                        "vect_recog_divmod_pattern: detected: ");
@@ -2199,7 +2199,7 @@ vect_recog_mixed_size_cond_pattern (VEC (gimple, heap) **stmts, tree *type_in,
   *type_in = vecitype;
   *type_out = vectype;
 
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                      "vect_recog_mixed_size_cond_pattern: detected: ");
 
@@ -2592,7 +2592,7 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       *type_out = vectype;
       *type_in = vectype;
       VEC_safe_push (gimple, heap, *stmts, last_stmt);
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, 
                          "vect_recog_bool_pattern: detected: ");
 
@@ -2638,7 +2638,7 @@ vect_recog_bool_pattern (VEC (gimple, heap) **stmts, tree *type_in,
       *type_out = vectype;
       *type_in = vectype;
       VEC_safe_push (gimple, heap, *stmts, last_stmt);
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                          "vect_recog_bool_pattern: detected: ");
       return pattern_stmt;
@@ -2788,7 +2788,7 @@ vect_pattern_recog_1 (vect_recog_func_ptr vect_recog_func,
     }
 
   /* Found a vectorizable pattern.  */
-  if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+  if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                        "pattern recognized: ");
@@ -2814,7 +2814,7 @@ vect_pattern_recog_1 (vect_recog_func_ptr vect_recog_func,
     {
       stmt_info = vinfo_for_stmt (stmt);
       pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-      if (dump_kind_p (MSG_OPTIMIZED_LOCATIONS))
+      if (dump_enabled_p ())
         {
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                            "additional pattern stmt: ");
@@ -2915,7 +2915,7 @@ vect_pattern_recog (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   VEC (gimple, heap) *stmts_to_replace = VEC_alloc (gimple, heap, 1);
   gimple stmt;
 
-  if (dump_kind_p (MSG_NOTE))
+  if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "=== vect_pattern_recog ===");
 

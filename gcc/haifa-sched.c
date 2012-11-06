@@ -6548,7 +6548,7 @@ sched_init (void)
     sched_pressure = SCHED_PRESSURE_NONE;
 
   if (sched_pressure != SCHED_PRESSURE_NONE)
-    ira_setup_eliminable_regset ();
+    ira_setup_eliminable_regset (false);
 
   /* Initialize SPEC_INFO.  */
   if (targetm.sched.set_sched_flags)

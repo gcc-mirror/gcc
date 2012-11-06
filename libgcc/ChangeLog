@@ -1,3 +1,74 @@
+2012-11-06  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c (__generic_morestack): Align the returned
+	stack pointer to a 32 byte boundary.
+	* config/i386/morestack.S (__morestack_non_split) [32-bit]: Don't
+	increment the return address until we have decided that we don't
+	have a varargs function.
+	(__morestack) [32-bit]: Align stack correctly when calling C
+	functions.
+	(__morestack) [64-bit]: Likewise.
+
+2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure: Regenerate.
+
+2012-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55175
+	* config/i386/sfp-exceptions.c: Guard with _SOFT_FLOAT.
+	* config/i386/sfp-machine.h: Guard exception handling
+	code with _SOFT_FLOAT.
+	* config/i386/32/sfp-machine.h: Guard rounding handling
+	code with _SOFT_FLOAT.
+	* config/i386/64/sfp-machine.h: Ditto.
+
+2012-10-31  Joel Sherrill  <joel.sherrill@oarcorp.com>
+
+	* config.host (m32r-*-rtems*): Include crtinit.o and crtfinit.o
+	as extra_parts.
+
+2012-10-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtfastmath.c (set_fast_math): Use __builtin_ia32_fxsave.
+	Clear only fxsave.mxcsr_mask.  Use saved mxcsr from fxsave structure
+	when appropriate.  Correct structure element types.
+	* config/i386/t-crtfm (crtfastmath.o): Compile with -mfxsr, remove
+	-minline-all-stringops from compile flags.
+
+2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config.host (sparc64-*-rtems*): Remove sparc/t-elf.
+
+2012-10-25  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config.host (sh*-*-rtems*): Add sh*-*-elf*'s extra_parts.
+
+2012-10-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.host (powerpc-*-rtems*): Add rs6000/t-savresfgpr to
+	tmake_file.
+
+2012-10-23  Ian Bolton  <ian.bolton@arm.com>
+	    Jim MacArthur  <jim.macarthur@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+	    Nigel Stephens  <nigel.stephens@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+	    Sofiane Naci  <sofiane.naci@arm.com>
+	    Stephen Thomas  <stephen.thomas@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+	    Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config.host (aarch64*-*-elf, aarch64*-*-linux*): New.
+	* config/aarch64/crti.S: New file.
+	* config/aarch64/crtn.S: New file.
+	* config/aarch64/linux-unwind.h: New file.
+	* config/aarch64/sfp-machine.h: New file.
+	* config/aarch64/sync-cache.c: New file.
+	* config/aarch64/t-aarch64: New file.
+	* config/aarch64/t-softfp: New file.
+
 2012-10-21  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/crti.S: Mark program and data addresses using PRELD.
@@ -150,7 +221,7 @@
 2012-09-01  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.host (x86_64-*-openbsd*): New target.
-	
+
 2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/mips/crtfastmath.c (set_fast_math): Add 'nomips16'

@@ -170,6 +170,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatw.P        ^ /WARNINGS=NO_PARAMETER_ORDER
 -gnatw.h        ^ /WARNINGS=OVERRIDING_SIZE
 -gnatw.H        ^ /WARNINGS=NOOVERRIDING_SIZE
+-gnatw.k        ^ /WARNINGS=STANDARD_REDEFINITION
+-gnatw.K        ^ /WARNINGS=NOSTANDARD_REDEFINITION
 -gnatwq         ^ /WARNINGS=MISSING_PARENS
 -gnatwQ         ^ /WARNINGS=NOMISSING_PARENS
 -gnatwr         ^ /WARNINGS=REDUNDANT

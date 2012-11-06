@@ -610,18 +610,18 @@ eh_region_outermost (struct function *ifun, eh_region region_a,
   gcc_assert (ifun->eh->region_tree);
 
   b_outer = sbitmap_alloc (VEC_length (eh_region, ifun->eh->region_array));
-  sbitmap_zero (b_outer);
+  bitmap_clear (b_outer);
 
   do
     {
-      SET_BIT (b_outer, region_b->index);
+      bitmap_set_bit (b_outer, region_b->index);
       region_b = region_b->outer;
     }
   while (region_b);
 
   do
     {
-      if (TEST_BIT (b_outer, region_a->index))
+      if (bitmap_bit_p (b_outer, region_a->index))
 	break;
       region_a = region_a->outer;
     }
@@ -1920,6 +1920,7 @@ struct rtl_opt_pass pass_set_nothrow_function_flags =
  {
   RTL_PASS,
   "nothrow",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   set_nothrow_function_flags,           /* execute */
   NULL,                                 /* sub */
@@ -2569,6 +2570,7 @@ struct rtl_opt_pass pass_convert_to_eh_region_ranges =
  {
   RTL_PASS,
   "eh_ranges",                          /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_convert_to_eh_region_ranges,	/* gate */
   convert_to_eh_region_ranges,          /* execute */
   NULL,                                 /* sub */

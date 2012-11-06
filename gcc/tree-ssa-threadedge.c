@@ -572,6 +572,178 @@ simplify_control_stmt_condition (edge e,
   return cached_lhs;
 }
 
+/* Return TRUE if the statement at the end of e->dest depends on
+   the output of any statement in BB.   Otherwise return FALSE.
+
+   This is used when we are threading a backedge and need to ensure
+   that temporary equivalences from BB do not affect the condition
+   in e->dest.  */
+
+static bool
+cond_arg_set_in_bb (edge e, basic_block bb)
+{
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  gimple last = last_stmt (e->dest);
+
+  /* E->dest does not have to end with a control transferring
+     instruction.  This can occurr when we try to extend a jump
+     threading opportunity deeper into the CFG.  In that case
+     it is safe for this check to return false.  */
+  if (!last)
+    return false;
+
+  if (gimple_code (last) != GIMPLE_COND
+      && gimple_code (last) != GIMPLE_GOTO
+      && gimple_code (last) != GIMPLE_SWITCH)
+    return false;
+
+  FOR_EACH_SSA_USE_OPERAND (use_p, last, iter, SSA_OP_USE | SSA_OP_VUSE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+
+      if (TREE_CODE (use) == SSA_NAME
+	  && gimple_code (SSA_NAME_DEF_STMT (use)) != GIMPLE_PHI
+	  && gimple_bb (SSA_NAME_DEF_STMT (use)) == bb)
+	return true;
+    }
+  return false;
+}
+
+DEF_VEC_O(tree);
+DEF_VEC_ALLOC_O_STACK(tree);
+#define VEC_tree_stack_alloc(alloc) VEC_stack_alloc (tree, alloc)
+
+/* Copy debug stmts from DEST's chain of single predecessors up to
+   SRC, so that we don't lose the bindings as PHI nodes are introduced
+   when DEST gains new predecessors.  */
+static void
+propagate_threaded_block_debug_into (basic_block dest, basic_block src)
+{
+  if (!MAY_HAVE_DEBUG_STMTS)
+    return;
+
+  if (!single_pred_p (dest))
+    return;
+
+  gcc_checking_assert (dest != src);
+
+  gimple_stmt_iterator gsi = gsi_after_labels (dest);
+  int i = 0;
+  const int alloc_count = 16; // ?? Should this be a PARAM?
+
+  /* Estimate the number of debug vars overridden in the beginning of
+     DEST, to tell how many we're going to need to begin with.  */
+  for (gimple_stmt_iterator si = gsi;
+       i * 4 <= alloc_count * 3 && !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple stmt = gsi_stmt (si);
+      if (!is_gimple_debug (stmt))
+	break;
+      i++;
+    }
+
+  VEC(tree, stack) *fewvars = NULL;
+  pointer_set_t *vars = NULL;
+
+  /* If we're already starting with 3/4 of alloc_count, go for a
+     pointer_set, otherwise start with an unordered stack-allocated
+     VEC.  */
+  if (i * 4 > alloc_count * 3)
+    vars = pointer_set_create ();
+  else if (alloc_count)
+    fewvars = VEC_alloc (tree, stack, alloc_count);
+
+  /* Now go through the initial debug stmts in DEST again, this time
+     actually inserting in VARS or FEWVARS.  Don't bother checking for
+     duplicates in FEWVARS.  */
+  for (gimple_stmt_iterator si = gsi; !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple stmt = gsi_stmt (si);
+      if (!is_gimple_debug (stmt))
+	break;
+
+      tree var;
+
+      if (gimple_debug_bind_p (stmt))
+	var = gimple_debug_bind_get_var (stmt);
+      else if (gimple_debug_source_bind_p (stmt))
+	var = gimple_debug_source_bind_get_var (stmt);
+      else
+	gcc_unreachable ();
+
+      if (vars)
+	pointer_set_insert (vars, var);
+      else
+	VEC_quick_push (tree, fewvars, var);
+    }
+
+  basic_block bb = dest;
+
+  do
+    {
+      bb = single_pred (bb);
+      for (gimple_stmt_iterator si = gsi_last_bb (bb);
+	   !gsi_end_p (si); gsi_prev (&si))
+	{
+	  gimple stmt = gsi_stmt (si);
+	  if (!is_gimple_debug (stmt))
+	    continue;
+
+	  tree var;
+
+	  if (gimple_debug_bind_p (stmt))
+	    var = gimple_debug_bind_get_var (stmt);
+	  else if (gimple_debug_source_bind_p (stmt))
+	    var = gimple_debug_source_bind_get_var (stmt);
+	  else
+	    gcc_unreachable ();
+
+	  /* Discard debug bind overlaps.  ??? Unlike stmts from src,
+	     copied into a new block that will precede BB, debug bind
+	     stmts in bypassed BBs may actually be discarded if
+	     they're overwritten by subsequent debug bind stmts, which
+	     might be a problem once we introduce stmt frontier notes
+	     or somesuch.  Adding `&& bb == src' to the condition
+	     below will preserve all potentially relevant debug
+	     notes.  */
+	  if (vars && pointer_set_insert (vars, var))
+	    continue;
+	  else if (!vars)
+	    {
+	      int i = VEC_length (tree, fewvars);
+	      while (i--)
+		if (VEC_index (tree, fewvars, i) == var)
+		  break;
+	      if (i >= 0)
+		continue;
+
+	      if (VEC_length (tree, fewvars) < alloc_count)
+		VEC_quick_push (tree, fewvars, var);
+	      else
+		{
+		  vars = pointer_set_create ();
+		  for (i = 0; i < alloc_count; i++)
+		    pointer_set_insert (vars, VEC_index (tree, fewvars, i));
+		  VEC_free (tree, stack, fewvars);
+		  pointer_set_insert (vars, var);
+		}
+	    }
+
+	  stmt = gimple_copy (stmt);
+	  /* ??? Should we drop the location of the copy to denote
+	     they're artificial bindings?  */
+	  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+	}
+    }
+  while (bb != src && single_pred_p (bb));
+
+  if (vars)
+    pointer_set_destroy (vars);
+  else if (fewvars)
+    VEC_free (tree, stack, fewvars);
+}
+
 /* TAKEN_EDGE represents the an edge taken as a result of jump threading.
    See if we can thread around TAKEN_EDGE->dest as well.  If so, return
    the edge out of TAKEN_EDGE->dest that we can statically compute will be
@@ -705,19 +877,8 @@ thread_across_edge (gimple dummy_cond,
      safe to thread this edge.  */
   if (e->flags & EDGE_DFS_BACK)
     {
-      ssa_op_iter iter;
-      use_operand_p use_p;
-      gimple last = gsi_stmt (gsi_last_bb (e->dest));
-
-      FOR_EACH_SSA_USE_OPERAND (use_p, last, iter, SSA_OP_USE | SSA_OP_VUSE)
-	{
-	  tree use = USE_FROM_PTR (use_p);
-
-          if (TREE_CODE (use) == SSA_NAME
-	      && gimple_code (SSA_NAME_DEF_STMT (use)) != GIMPLE_PHI
-	      && gimple_bb (SSA_NAME_DEF_STMT (use)) == e->dest)
-	    goto fail;
-	}
+      if (cond_arg_set_in_bb (e, e->dest))
+	goto fail;
     }
 
   stmt_count = 0;
@@ -758,7 +919,9 @@ thread_across_edge (gimple dummy_cond,
 	     address.  If DEST is not null, then see if we can thread
 	     through it as well, this helps capture secondary effects
 	     of threading without having to re-run DOM or VRP.  */
-	  if (dest)
+	  if (dest
+	      && ((e->flags & EDGE_DFS_BACK) == 0
+		  || ! cond_arg_set_in_bb (taken_edge, e->dest)))
 	    {
 	      /* We don't want to thread back to a block we have already
  		 visited.  This may be overly conservative.  */
@@ -780,6 +943,9 @@ thread_across_edge (gimple dummy_cond,
 	    }
 
 	  remove_temporary_equivalences (stack);
+	  if (!taken_edge)
+	    return;
+	  propagate_threaded_block_debug_into (taken_edge->dest, e->dest);
 	  register_jump_thread (e, taken_edge, NULL);
 	  return;
 	}
@@ -816,11 +982,16 @@ thread_across_edge (gimple dummy_cond,
 	e3 = taken_edge;
 	do
 	  {
-	    e2 = thread_around_empty_block (e3,
-				            dummy_cond,
-				            handle_dominating_asserts,
-				            simplify,
-				            visited);
+	    if ((e->flags & EDGE_DFS_BACK) == 0
+		|| ! cond_arg_set_in_bb (e3, e->dest))
+	      e2 = thread_around_empty_block (e3,
+					      dummy_cond,
+					      handle_dominating_asserts,
+					      simplify,
+					      visited);
+	    else
+	      e2 = NULL;
+
 	    if (e2)
 	      {
 	        e3 = e2;
@@ -840,7 +1011,11 @@ thread_across_edge (gimple dummy_cond,
 	       same.  */
 	    tmp = find_edge (taken_edge->src, e3->dest);
 	    if (!tmp || phi_args_equal_on_edges (tmp, e3))
-	      register_jump_thread (e, taken_edge, e3);
+	      {
+		propagate_threaded_block_debug_into (e3->dest,
+						     taken_edge->dest);
+		register_jump_thread (e, taken_edge, e3);
+	      }
 	  }
 
       }

@@ -671,15 +671,18 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       if (cfun->can_throw_non_call_exceptions)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "    can throw; looping");
+	    fprintf (dump_file, "    can throw; looping\n");
 	  local->looping = true;
 	}
       if (stmt_can_throw_external (stmt))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "    can throw externally");
+	    fprintf (dump_file, "    can throw externally\n");
 	  local->can_throw = true;
 	}
+      else
+	if (dump_file)
+	  fprintf (dump_file, "    can throw\n");
     }
   switch (gimple_code (stmt))
     {
@@ -691,7 +694,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 	/* Target of long jump. */
 	{
           if (dump_file)
-            fprintf (dump_file, "    nonlocal label is not const/pure");
+            fprintf (dump_file, "    nonlocal label is not const/pure\n");
 	  local->pure_const_state = IPA_NEITHER;
 	}
       break;
@@ -699,14 +702,14 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       if (gimple_asm_clobbers_memory_p (stmt))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "    memory asm clobber is not const/pure");
+	    fprintf (dump_file, "    memory asm clobber is not const/pure\n");
 	  /* Abandon all hope, ye who enter here. */
 	  local->pure_const_state = IPA_NEITHER;
 	}
       if (gimple_asm_volatile_p (stmt))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "    volatile is not const/pure");
+	    fprintf (dump_file, "    volatile is not const/pure\n");
 	  /* Abandon all hope, ye who enter here. */
 	  local->pure_const_state = IPA_NEITHER;
           local->looping = true;
@@ -1497,6 +1500,7 @@ struct ipa_opt_pass_d pass_ipa_pure_const =
  {
   IPA_PASS,
   "pure-const",		                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pure_const,			/* gate */
   propagate,			        /* execute */
   NULL,					/* sub */
@@ -1662,6 +1666,7 @@ struct gimple_opt_pass pass_local_pure_const =
  {
   GIMPLE_PASS,
   "local-pure-const",	                /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pure_const,			/* gate */
   local_pure_const,		        /* execute */
   NULL,					/* sub */

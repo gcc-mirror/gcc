@@ -124,8 +124,10 @@ class Import
   // Find import data.  This searches the file system for FILENAME and
   // returns a pointer to a Stream object to read the data that it
   // exports.  LOCATION is the location of the import statement.
+  // RELATIVE_IMPORT_PATH is used as a prefix for a relative import.
   static Stream*
-  open_package(const std::string& filename, Location location);
+  open_package(const std::string& filename, Location location,
+	       const std::string& relative_import_path);
 
   // Constructor.
   Import(Stream*, Location);

@@ -426,12 +426,12 @@
   "TARGET_HARD_FLOAT && TARGET_FPRS"
   "{ rs6000_emit_move (operands[0], operands[1], TDmode); DONE; }")
 
-; It's important to list the o->f and f->o moves before f->f because
-; otherwise reload, given m->f, will try to pick f->f and reload it,
-; which doesn't make progress.  Likewise r->Y must be before r->r.
+; It's important to list the Y->r and r->Y moves before r->r because
+; otherwise reload, given m->r, will try to pick r->r and reload it,
+; which doesn't make progress.
 (define_insn_and_split "*movtd_internal"
-  [(set (match_operand:TD 0 "nonimmediate_operand" "=o,d,d,r,Y,r")
-	(match_operand:TD 1 "input_operand"         "d,o,d,YGHF,r,r"))]
+  [(set (match_operand:TD 0 "nonimmediate_operand" "=m,d,d,Y,r,r")
+	(match_operand:TD 1 "input_operand"         "d,m,d,r,YGHF,r"))]
   "TARGET_HARD_FLOAT && TARGET_FPRS
    && (gpc_reg_operand (operands[0], TDmode)
        || gpc_reg_operand (operands[1], TDmode))"

@@ -302,6 +302,12 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__PRFCHW__");
   if (isa_flag & OPTION_MASK_ISA_ADX)
     def_or_undef (parse_in, "__ADX__");
+  if (isa_flag & OPTION_MASK_ISA_FXSR)
+    def_or_undef (parse_in, "__FXSR__");
+  if (isa_flag & OPTION_MASK_ISA_XSAVE)
+    def_or_undef (parse_in, "__XSAVE__");
+  if (isa_flag & OPTION_MASK_ISA_XSAVEOPT)
+    def_or_undef (parse_in, "__XSAVEOPT__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))

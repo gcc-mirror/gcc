@@ -246,7 +246,7 @@ void
 statistics_early_init (void)
 {
   statistics_dump_nr = dump_register (".statistics", "statistics",
-				      "statistics", TDF_TREE);
+				      "statistics", TDF_TREE, OPTGROUP_NONE);
 }
 
 /* Init the statistics.  */

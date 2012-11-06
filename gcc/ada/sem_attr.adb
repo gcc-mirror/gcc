@@ -30,6 +30,7 @@ with Casing;   use Casing;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Eval_Fat;
 with Exp_Dist; use Exp_Dist;
@@ -375,6 +376,10 @@ package body Sem_Attr is
       pragma No_Return (Error_Attr);
       --  Like Error_Attr, but error is posted at the start of the prefix
 
+      procedure S14_Attribute;
+      --  Called for all attributes defined for formal verification to check
+      --  that the S14_Extensions flag is set.
+
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
       --  yield values of type Universal_Integer. The attribute reference
@@ -646,8 +651,8 @@ package body Sem_Attr is
                Kill_Current_Values;
             end if;
 
-            --  Treat as call for elaboration purposes and we are all
-            --  done. Suppress this treatment under debug flag.
+            --  Treat as call for elaboration purposes and we are all done.
+            --  Suppress this treatment under debug flag.
 
             if not Debug_Flag_Dot_UU then
                Check_Elab_Call (N);
@@ -1949,6 +1954,18 @@ package body Sem_Attr is
 
          Set_Etype (N, Standard_Boolean);
       end Legal_Formal_Attribute;
+
+      -------------------
+      -- S14_Attribute --
+      -------------------
+
+      procedure S14_Attribute is
+      begin
+         if not Formal_Extensions then
+            Error_Attr
+              ("attribute % requires the use of debug switch -gnatd.V", N);
+         end if;
+      end S14_Attribute;
 
       ------------------------
       -- Standard_Attribute --
@@ -3583,6 +3600,231 @@ package body Sem_Attr is
             Error_Attr_P
               ("prefix of % attribute must be a protected object");
          end if;
+
+      ----------------
+      -- Loop_Entry --
+      ----------------
+
+      when Attribute_Loop_Entry => Loop_Entry : declare
+         procedure Check_References_In_Prefix (Loop_Id : Entity_Id);
+         --  Inspect the prefix for any uses of entities declared within the
+         --  related loop. Loop_Id denotes the loop identifier.
+
+         --------------------------------
+         -- Check_References_In_Prefix --
+         --------------------------------
+
+         procedure Check_References_In_Prefix (Loop_Id : Entity_Id) is
+            Loop_Decl : constant Node_Id := Label_Construct (Parent (Loop_Id));
+
+            function Check_Reference (Nod : Node_Id) return Traverse_Result;
+            --  Determine whether a reference mentions an entity declared
+            --  within the related loop.
+
+            function Declared_Within (Nod : Node_Id) return Boolean;
+            --  Determine whether Nod appears in the subtree of Loop_Decl
+
+            ---------------------
+            -- Check_Reference --
+            ---------------------
+
+            function Check_Reference (Nod : Node_Id) return Traverse_Result is
+            begin
+               if Nkind (Nod) = N_Identifier
+                 and then Present (Entity (Nod))
+                 and then Declared_Within (Declaration_Node (Entity (Nod)))
+               then
+                  Error_Attr
+                    ("prefix of attribute % cannot reference local entities",
+                     Nod);
+                  return Abandon;
+               else
+                  return OK;
+               end if;
+            end Check_Reference;
+
+            procedure Check_References is new Traverse_Proc (Check_Reference);
+
+            ---------------------
+            -- Declared_Within --
+            ---------------------
+
+            function Declared_Within (Nod : Node_Id) return Boolean is
+               Stmt : Node_Id;
+
+            begin
+               Stmt := Nod;
+               while Present (Stmt) loop
+                  if Stmt = Loop_Decl then
+                     return True;
+
+                  --  Prevent the search from going too far
+
+                  elsif Nkind_In (Stmt, N_Entry_Body,
+                                        N_Package_Body,
+                                        N_Package_Declaration,
+                                        N_Protected_Body,
+                                        N_Subprogram_Body,
+                                        N_Task_Body)
+                  then
+                     exit;
+                  end if;
+
+                  Stmt := Parent (Stmt);
+               end loop;
+
+               return False;
+            end Declared_Within;
+
+         --  Start of processing for Check_Prefix_For_Local_References
+
+         begin
+            Check_References (P);
+         end Check_References_In_Prefix;
+
+         --  Local variables
+
+         Enclosing_Loop    : Node_Id;
+         In_Loop_Assertion : Boolean   := False;
+         Loop_Id           : Entity_Id := Empty;
+         Scop              : Entity_Id;
+         Stmt              : Node_Id;
+
+      --  Start of processing for Loop_Entry
+
+      begin
+         S14_Attribute;
+         Check_E1;
+         Analyze (E1);
+
+         --  The prefix must denote an object
+
+         if not Is_Object_Reference (P) then
+            Error_Attr_P ("prefix of attribute % must denote an object");
+         end if;
+
+         --  The prefix cannot be of a limited type because the expansion of
+         --  Loop_Entry must create a constant initialized by the evaluated
+         --  prefix.
+
+         if Is_Immutably_Limited_Type (Etype (P)) then
+            Error_Attr_P ("prefix of attribute % cannot be limited");
+         end if;
+
+         --  The sole argument of a Loop_Entry must be a loop name
+
+         if Is_Entity_Name (E1) then
+            Loop_Id := Entity (E1);
+         end if;
+
+         if No (Loop_Id)
+           or else Ekind (Loop_Id) /= E_Loop
+           or else not In_Open_Scopes (Loop_Id)
+         then
+            Error_Attr ("argument of % must be a valid loop name", E1);
+            return;
+         end if;
+
+         --  Climb the parent chain to verify the location of the attribute and
+         --  find the enclosing loop.
+
+         Stmt := N;
+         while Present (Stmt) loop
+
+            --  Locate the enclosing Loop_Assertion pragma (if any). Note that
+            --  when Loop_Assertion is expanded, we must look for an Assertion
+            --  pragma.
+
+            if Nkind (Original_Node (Stmt)) = N_Pragma
+              and then
+                (Pragma_Name (Original_Node (Stmt)) = Name_Assert
+                   or else
+                 Pragma_Name (Original_Node (Stmt)) = Name_Loop_Assertion)
+            then
+               In_Loop_Assertion := True;
+
+            --  Locate the enclosing loop (if any). Note that Ada 2012 array
+            --  iteration may be expanded into several nested loops, we are
+            --  interested in the outermost one which has the loop identifier.
+
+            elsif Nkind (Stmt) = N_Loop_Statement
+              and then Present (Identifier (Stmt))
+            then
+               Enclosing_Loop := Stmt;
+               exit;
+
+            --  Prevent the search from going too far
+
+            elsif Nkind_In (Stmt, N_Entry_Body,
+                                  N_Package_Body,
+                                  N_Package_Declaration,
+                                  N_Protected_Body,
+                                  N_Subprogram_Body,
+                                  N_Task_Body)
+            then
+               exit;
+            end if;
+
+            Stmt := Parent (Stmt);
+         end loop;
+
+         --  Loop_Entry must appear within a Loop_Assertion pragma
+
+         if not In_Loop_Assertion then
+            Error_Attr
+              ("attribute % must appear within pragma Loop_Assertion", N);
+         end if;
+
+         --  A Loop_Entry that applies to a given loop statement shall not
+         --  appear within a body of accept statement, if this construct is
+         --  itself enclosed by the given loop statement.
+
+         for J in reverse 0 .. Scope_Stack.Last loop
+            Scop := Scope_Stack.Table (J).Entity;
+
+            if Ekind (Scop) = E_Loop and then Scop = Loop_Id then
+               exit;
+
+            elsif Ekind_In (Scop, E_Block, E_Loop, E_Return_Statement) then
+               null;
+
+            else
+               Error_Attr
+                 ("cannot appear in program unit or accept statement", N);
+               exit;
+            end if;
+         end loop;
+
+         --  The prefix cannot mention entities declared within the related
+         --  loop because they will not be visible once the prefix is moved
+         --  outside the loop.
+
+         Check_References_In_Prefix (Loop_Id);
+
+         --  The prefix must denote a static entity if the pragma does not
+         --  apply to the innermost enclosing loop statement.
+
+         if Present (Enclosing_Loop)
+           and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
+           and then not Is_Entity_Name (P)
+         then
+            Error_Attr_P ("prefix of attribute % must denote an entity");
+         end if;
+
+         Set_Etype (N, Etype (P));
+
+         --  Associate the attribute with its related loop
+
+         if No (Loop_Entry_Attributes (Loop_Id)) then
+            Set_Loop_Entry_Attributes (Loop_Id, New_Elmt_List);
+         end if;
+
+         --  A Loop_Entry may be [pre]analyzed several times, depending on the
+         --  context. Ensure that it appears only once in the attributes list
+         --  of the related loop.
+
+         Append_Unique_Elmt (N, Loop_Entry_Attributes (Loop_Id));
+      end Loop_Entry;
 
       -------------
       -- Machine --
@@ -6517,7 +6759,7 @@ package body Sem_Attr is
 
       when Attribute_Denorm =>
          Fold_Uint
-           (N, UI_From_Int (Boolean'Pos (Denorm_On_Target)), True);
+           (N, UI_From_Int (Boolean'Pos (Has_Denormals (P_Type))), True);
 
       ---------------------
       -- Descriptor_Size --
@@ -6988,6 +7230,15 @@ package body Sem_Attr is
             end case;
          end;
       end Length;
+
+      ----------------
+      -- Loop_Entry --
+      ----------------
+
+      --  This null processing requires an explanatory comment???
+
+      when Attribute_Loop_Entry =>
+         null;
 
       -------------
       -- Machine --
@@ -7631,7 +7882,7 @@ package body Sem_Attr is
 
       when Attribute_Signed_Zeros =>
          Fold_Uint
-           (N, UI_From_Int (Boolean'Pos (Signed_Zeros_On_Target)), Static);
+           (N, UI_From_Int (Boolean'Pos (Has_Signed_Zeros (P_Type))), Static);
 
       ----------
       -- Size --

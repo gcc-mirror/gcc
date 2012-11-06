@@ -53,6 +53,7 @@
 
 
 
+#include <errno.h>
 #include "quadmath-imp.h"
 
 /* exp(x) - 1 = x + 0.5 x^2 + x^3 P(x)/Q(x)
@@ -100,6 +101,11 @@ expm1q (__float128 x)
   ix = u.words32.w0;
   sign = ix & 0x80000000;
   ix &= 0x7fffffff;
+  if (!sign && ix >= 0x40060000)
+    {
+      /* If num is positive and exp >= 6 use plain exp.  */
+      return expq (x);
+    }
   if (ix >= 0x7fff0000)
     {
       /* Infinity. */
@@ -120,7 +126,10 @@ expm1q (__float128 x)
 
   /* Overflow.  */
   if (x > maxlog)
-    return (HUGE_VALQ * HUGE_VALQ);
+    {
+      errno = ERANGE;
+      return (HUGE_VALQ * HUGE_VALQ);
+    }
 
   /* Minimum value.  */
   if (x < minarg)

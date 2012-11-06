@@ -107,6 +107,7 @@ Implementation Defined Pragmas
 * Pragma Assert::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Attribute_Definition::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
@@ -845,6 +846,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assert::
 * Pragma Assertion_Policy::
 * Pragma Assume_No_Invalid_Values::
+* Pragma Attribute_Definition::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
@@ -1195,7 +1197,6 @@ of Ada from 2005 on. In GNAT, it is implemented in all versions
 of Ada, and the DISABLE policy is an implementation-defined
 addition.
 
-
 @node Pragma Assertion_Policy
 @unnumberedsec Pragma Assertion_Policy
 @findex Debug_Policy
@@ -1308,6 +1309,31 @@ may be used to handle an OpenVMS asynchronous system trap (@code{AST})
 resulting from an OpenVMS system service call.  The pragma does not affect
 normal use of the entry.  For further details on this pragma, see the
 DEC Ada Language Reference Manual, section 9.12a.
+
+@node Pragma Attribute_Definition
+@unnumberedsec Pragma Attribute_Definition
+@findex Attribute_Definition
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Attribute_Definition
+  ([Attribute  =>] ATTRIBUTE_DESIGNATOR,
+   [Entity     =>] LOCAL_NAME,
+   [Expression =>] EXPRESSION | NAME);
+@end smallexample
+
+@noindent
+If @code{Attribute} is a known attribute name, this pragma is equivalent to
+the attribute definition clause:
+
+@smallexample @c ada
+  for Entity'Attribute use Expression;
+@end smallexample
+
+If @code{Attribute} is not a recognized attribute name, the pragma is
+ignored, and a warning is emitted. This allows source
+code to be written that takes advantage of some new attribute, while remaining
+compilable with earlier compilers.
 
 @node Pragma C_Pass_By_Copy
 @unnumberedsec Pragma C_Pass_By_Copy
@@ -4005,6 +4031,12 @@ with a size of 8 bytes. This is a valid choice, since sizes of objects are
 allowed to be bigger than the size of the type, but it can waste space if for
 example fields of type R appear in an enclosing record. If the above type is
 compiled in @code{Optimize_Alignment (Space)} mode, the alignment is set to 1.
+
+However, there is one case in which SPACE is ignored. If a variable length
+record (that is a discriminated record with a component which is an array
+whose length depends on a discriminant), has a pragam pack, then it is not
+in general possible to set the alignment of such a record to one, so the
+pragma is ignored in this case (with a warning).
 
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:
@@ -7951,7 +7983,7 @@ features are used, as defined in Annex J of the Ada Reference Manual.
 wide types
 appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
-type @code{Character}.
+type @code{Character}).
 
 @node SPARK
 @unnumberedsubsec SPARK
@@ -9423,6 +9455,18 @@ accuracy in some portions of the domain.
 @end cartouche
 Followed.
 
+@cindex Sequential elaboration policy
+@unnumberedsec H.6(15/2): Pragma Partition_Elaboration_Policy
+
+@sp 1
+@cartouche
+If the partition elaboration policy is @code{Sequential} and the
+Environment task becomes permanently blocked during elaboration then the
+partition is deadlocked and it is recommended that the partition be
+immediately terminated.
+@end cartouche
+Not followed.
+
 @c -----------------------------------------
 @node Implementation Defined Characteristics
 @chapter Implementation Defined Characteristics
@@ -9515,8 +9559,12 @@ See separate section on source representation.
 length.  See 2.2(15).
 @end cartouche
 @noindent
-The maximum line length is 255 characters and the maximum length of a
-lexical element is also 255 characters.
+The maximum line length is 255 characters and the maximum length of
+a lexical element is also 255 characters. This is the default setting
+if not overridden by the use of compiler switch @option{-gnaty} (which
+sets the maximum to 79) or @option{-gnatyMnn} which allows the maximum
+line length to be specified to be any value up to 32767. The maximum
+length of a lexical element is the same as the maximum line length.
 
 @sp 1
 @cartouche

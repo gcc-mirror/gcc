@@ -137,6 +137,9 @@
 
   ;; MIPS16 casesi jump table dispatch.
   UNSPEC_CASESI_DISPATCH
+
+  ;; Stack checking.
+  UNSPEC_PROBE_STACK_RANGE
 ])
 
 (define_constants
@@ -6039,6 +6042,17 @@
   ""
   [(set_attr "type" "ghost")
    (set_attr "mode" "none")])
+
+(define_insn "probe_stack_range_<P:mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
+			    (match_operand:P 2 "register_operand" "d")]
+			    UNSPEC_PROBE_STACK_RANGE))]
+  ""
+ { return mips_output_probe_stack_range (operands[0], operands[2]); }
+  [(set_attr "type" "unknown")
+   (set_attr "can_delay" "no")
+   (set_attr "mode" "<MODE>")])
 
 (define_expand "epilogue"
   [(const_int 2)]

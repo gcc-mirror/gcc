@@ -6,7 +6,7 @@
  *
  * SYNOPSIS:
  *
- * long double x, y, j0l();
+ * __float128 x, y, j0l();
  *
  * y = j0l( x );
  *
@@ -52,7 +52,7 @@
  *
  * SYNOPSIS:
  *
- * double x, y, y0l();
+ * __float128 x, y, y0l();
  *
  * y = y0l( x );
  *

@@ -12258,12 +12258,21 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
       parameter_declarator->declarator->parameter_pack_p = false;
     }
 
+  if (parameter_declarator
+      && parameter_declarator->default_argument)
+    {
+      /* Can happen in some cases of erroneous input (c++/34892).  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	/* Consume the `...' for better error recovery.  */
+	cp_lexer_consume_token (parser->lexer);
+    }
   /* If the next token is an ellipsis, and we don't already have it
      marked as a parameter pack, then we have a parameter pack (that
      has no declarator).  */
-  if (!*is_parameter_pack
-      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
-      && declarator_can_be_parameter_pack (parameter_declarator->declarator))
+  else if (!*is_parameter_pack
+	   && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
+	   && (declarator_can_be_parameter_pack
+	       (parameter_declarator->declarator)))
     {
       /* Consume the `...'.  */
       cp_lexer_consume_token (parser->lexer);
@@ -20315,7 +20324,7 @@ cp_next_tokens_can_be_gnu_attribute_p (cp_parser *parser)
 }
 
 /* Return TRUE iff the next tokens in the stream are possibly the
-   beginning of a standard C++-11 attribute.  */
+   beginning of a standard C++-11 attribute specifier.  */
 
 static bool
 cp_next_tokens_can_be_std_attribute_p (cp_parser *parser)
@@ -20324,7 +20333,7 @@ cp_next_tokens_can_be_std_attribute_p (cp_parser *parser)
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the
-   beginning of a standard C++-11 attribute.  */
+   beginning of a standard C++-11 attribute specifier.  */
 
 static bool
 cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n)
@@ -20332,9 +20341,10 @@ cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n)
   cp_token *token = cp_lexer_peek_nth_token (parser->lexer, n);
 
   return (cxx_dialect >= cxx0x
-	  && token->type == CPP_OPEN_SQUARE
-	  && (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
-	  && token->type == CPP_OPEN_SQUARE);
+	  && ((token->type == CPP_KEYWORD && token->keyword == RID_ALIGNAS)
+	      || (token->type == CPP_OPEN_SQUARE
+		  && (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
+		  && token->type == CPP_OPEN_SQUARE)));
 }
 
 /* Return TRUE iff the next Nth tokens in the stream are possibly the

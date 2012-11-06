@@ -61,6 +61,10 @@ fgo-prefix=
 Go Joined RejectNegative
 -fgo-prefix=<string>	Set package-specific prefix for exported Go names
 
+fgo-relative-import-path=
+Go Joined RejectNegative
+-fgo-relative-import-path=<path> Treat a relative import as relative to path
+
 frequire-return-statement
 Go Var(go_require_return_statement) Init(1) Warning
 Functions which return values must end with return statements

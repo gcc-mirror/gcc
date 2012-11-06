@@ -14,11 +14,9 @@
 #include <fpu_control.h>
 #endif
 
+#include "runtime.h"
 #include "go-alloc.h"
 #include "array.h"
-#include "go-string.h"
-
-#include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
 

@@ -3646,8 +3646,8 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 				 : NULL);
 
 	  /* No pointer arguments for intrinsics.  */
-	  if (gfc_check_vardef_context (actual->expr, false, false, context)
-		== FAILURE)
+	  if (gfc_check_vardef_context (actual->expr, false, false, false,
+					context) == FAILURE)
 	    return FAILURE;
 	}
     }

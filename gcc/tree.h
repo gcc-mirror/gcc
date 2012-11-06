@@ -1066,6 +1066,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define POINTER_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == POINTER_TYPE || TREE_CODE (TYPE) == REFERENCE_TYPE)
 
+/* Nonzero if TYPE represents a pointer to function.  */
+#define FUNCTION_POINTER_TYPE_P(TYPE) \
+  (POINTER_TYPE_P (TYPE) && TREE_CODE (TREE_TYPE (TYPE)) == FUNCTION_TYPE)
+
 /* Nonzero if this type is a complete type.  */
 #define COMPLETE_TYPE_P(NODE) (TYPE_SIZE (NODE) != NULL_TREE)
 
@@ -3476,6 +3480,12 @@ extern VEC(tree, gc) **decl_debug_args_insert (tree);
 #define DECL_FUNCTION_SPECIFIC_OPTIMIZATION(NODE) \
    (FUNCTION_DECL_CHECK (NODE)->function_decl.function_specific_optimization)
 
+/* In FUNCTION_DECL, this is set if this function has other versions generated
+   using "target" attributes.  The default version is the one which does not
+   have any "target" attribute set. */
+#define DECL_FUNCTION_VERSIONED(NODE)\
+   (FUNCTION_DECL_CHECK (NODE)->function_decl.versioned_function)
+
 /* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
    arguments/result/saved_tree fields by front ends.   It was either inherit
    FUNCTION_DECL from non_common, or inherit non_common from FUNCTION_DECL,
@@ -3520,8 +3530,8 @@ struct GTY(()) tree_function_decl {
   unsigned looping_const_or_pure_flag : 1;
   unsigned has_debug_args_flag : 1;
   unsigned tm_clone_flag : 1;
-
-  /* 1 bit left */
+  unsigned versioned_function : 1;
+  /* No bits left.  */
 };
 
 /* The source language of the translation-unit.  */

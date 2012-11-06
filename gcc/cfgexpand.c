@@ -3284,6 +3284,27 @@ expand_debug_expr (tree exp)
 		}
 	    }
 
+	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+		 == ADDR_EXPR)
+	    {
+	      op0 = expand_debug_expr (TREE_OPERAND (TREE_OPERAND (exp, 0),
+						     0));
+	      if (op0 != NULL
+		  && (GET_CODE (op0) == DEBUG_IMPLICIT_PTR
+		      || (GET_CODE (op0) == PLUS
+			  && GET_CODE (XEXP (op0, 0)) == DEBUG_IMPLICIT_PTR
+			  && CONST_INT_P (XEXP (op0, 1)))))
+		{
+		  op1 = expand_debug_expr (TREE_OPERAND (TREE_OPERAND (exp, 0),
+							 1));
+		  if (!op1 || !CONST_INT_P (op1))
+		    return NULL;
+
+		  return plus_constant (mode, op0, INTVAL (op1));
+		}
+	    }
+
 	  return NULL;
 	}
 
@@ -4560,7 +4581,7 @@ gimple_expand_cfg (void)
     }
 
   blocks = sbitmap_alloc (last_basic_block);
-  sbitmap_ones (blocks);
+  bitmap_ones (blocks);
   find_many_sub_basic_blocks (blocks);
   sbitmap_free (blocks);
   purge_all_dead_edges ();
@@ -4656,6 +4677,7 @@ struct rtl_opt_pass pass_expand =
  {
   RTL_PASS,
   "expand",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   gimple_expand_cfg,			/* execute */
   NULL,                                 /* sub */

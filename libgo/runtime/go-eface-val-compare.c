@@ -11,7 +11,7 @@
 /* Compare an empty interface with a value.  Return 0 for equal, not
    zero for not equal (return value is like strcmp).  */
 
-int
+intgo
 __go_empty_interface_value_compare (
     struct __go_empty_interface left,
     const struct __go_type_descriptor *right_descriptor,

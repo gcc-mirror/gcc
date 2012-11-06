@@ -2117,12 +2117,11 @@ package VMS_Data is
    --   range 0-3, it sets the overflow checking mode for all expressions,
    --   including those outside and within assertions. The meaning of nnn is:
    --
-   --     0   suppress overflow checks (SUPPRESSED)
-   --     1   all intermediate overflows checked (CHECKED)
+   --     1   all intermediate computations done using base type (STRICT)
    --     2   minimize intermediate overflows (MINIMIZED)
    --     3   eliminate intermediate overflows (ELIMINATED)
    --
-   --   Otherwise nn can be two digits, both 0-3, and in this case the first
+   --   Otherwise nn can be two digits, both 1-3, and in this case the first
    --   digit sets the mode (using the above code) for expressions outside an
    --   assertion, and the second digit sets the mode for expressions within
    --   an assertion.
@@ -3070,6 +3069,10 @@ package VMS_Data is
                                                "-gnatwk "                  &
                                             "NOCONSTANT_VARIABLES "        &
                                                "-gnatwK "                  &
+                                            "STANDARD_REDEFINITION "       &
+                                               "-gnatw.k "                 &
+                                            "NOSTANDARD_REDEFINITION "     &
+                                               "-gnatw.K "                 &
                                             "ELABORATION "                 &
                                                "-gnatwl "                  &
                                             "NOELABORATION "               &

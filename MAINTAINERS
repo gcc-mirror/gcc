@@ -43,6 +43,8 @@ their own patches from other maintainers or reviewers.
 
 			CPU Port Maintainers	(CPU alphabetical order)
 
+aarch64 port		Marcus Shawcroft	marcus.shawcroft@arm.com
+aarch64 port		Richard Earnshaw	richard.earnshaw@arm.com
 alpha port		Richard Henderson	rth@redhat.com
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	richard.earnshaw@arm.com
@@ -78,7 +80,7 @@ m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
 mep port		DJ Delorie		dj@redhat.com
 microblaze		Michael Eager		eager@eagercon.com
-mips port		Eric Christopher	echristo@apple.com
+mips port		Eric Christopher	echristo@gmail.com
 mips port		Richard Sandiford	rdsandiford@googlemail.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
@@ -114,7 +116,7 @@ xtensa port		Sterling Augustine	augustine.sterling@gmail.com
 			OS Port Maintainers	(OS alphabetical order)
 
 darwin port		Mike Stump		mikestump@comcast.net
-darwin port		Eric Christopher	echristo@apple.com
+darwin port		Eric Christopher	echristo@gmail.com
 darwin port		Stan Shebs		stanshebs@earthlink.net
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
@@ -370,12 +372,14 @@ Nathan Froyd					froydnj@gcc.gnu.org
 Chao-ying Fu					fu@mips.com
 Gary Funck					gary@intrepid.com
 Pompapathi V Gadad 				Pompapathi.V.Gadad@nsc.com
+Gopalasubramanian Ganesh			Ganesh.Gopalasubramanian@amd.com
 Kaveh Ghazi					ghazi@gcc.gnu.org
 Matthew Gingell					gingell@gnat.com
 Tristan Gingold					gingold@adacore.com
 Jan-Benedict Glaw				jbglaw@lug-owl.de
 Marc Glisse					marc.glisse@inria.fr
 Anthony Green					green@redhat.com
+James Greenhalgh				james.greenhalgh@arm.com
 Doug Gregor					doug.gregor@gmail.com
 Matthew Gretton-Dann				matthew.gretton-dann@arm.com
 Jon Grimm					jgrimm2@us.ibm.com
@@ -500,6 +504,7 @@ Dodji Seketeli					dodji@gcc.gnu.org
 Svein Seldal					svein@dev.seldal.com
 Thiemo Seufer					ths@networkno.de
 Marcus Shawcroft				marcus.shawcroft@arm.com
+Sharad Singhai					singhai@google.com
 Johannes Singler				singler@kit.edu
 Franz Sirl					franz.sirl-kernel@lauterbach.com
 Jan Sjodin					jan.sjodin@amd.com

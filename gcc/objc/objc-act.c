@@ -3827,19 +3827,20 @@ objc_get_class_ivars (tree class_name)
 
 struct decl_name_hash : typed_noop_remove <tree_node>
 {
-  typedef tree_node T;
-  static inline hashval_t hash (const T *);
-  static inline bool equal (const T *, const T *);
+  typedef tree_node value_type;
+  typedef tree_node compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
 };
 
 inline hashval_t
-decl_name_hash::hash (const T *q)
+decl_name_hash::hash (const value_type *q)
 {
   return (hashval_t) ((intptr_t)(DECL_NAME (q)) >> 3);
 }
 
 inline bool
-decl_name_hash::equal (const T *a, const T *b)
+decl_name_hash::equal (const value_type *a, const compare_type *b)
 {
   return DECL_NAME (a) == DECL_NAME (b);
 }

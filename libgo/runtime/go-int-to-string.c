@@ -4,18 +4,17 @@
    Use of this source code is governed by a BSD-style
    license that can be found in the LICENSE file.  */
 
-#include "go-string.h"
 #include "runtime.h"
 #include "arch.h"
 #include "malloc.h"
 
-struct __go_string
-__go_int_to_string (int v)
+String
+__go_int_to_string (intgo v)
 {
   char buf[4];
   int len;
   unsigned char *retdata;
-  struct __go_string ret;
+  String ret;
 
   /* A negative value is not valid UTF-8; turn it into the replacement
      character.  */
@@ -63,8 +62,8 @@ __go_int_to_string (int v)
 
   retdata = runtime_mallocgc (len, FlagNoPointers, 1, 0);
   __builtin_memcpy (retdata, buf, len);
-  ret.__data = retdata;
-  ret.__length = len;
+  ret.str = retdata;
+  ret.len = len;
 
   return ret;
 }

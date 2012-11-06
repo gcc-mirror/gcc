@@ -1403,6 +1403,11 @@ predict_loops (void)
 
       exits = get_loop_exit_edges (loop);
       n_exits = VEC_length (edge, exits);
+      if (!n_exits)
+	{
+          VEC_free (edge, heap, exits);
+	  continue;
+	}
 
       FOR_EACH_VEC_ELT (edge, exits, j, ex)
 	{
@@ -1414,7 +1419,7 @@ predict_loops (void)
 
 	  predict_extra_loop_exits (ex);
 
-	  if (number_of_iterations_exit (loop, ex, &niter_desc, false))
+	  if (number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	    niter = niter_desc.niter;
 	  if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
 	    niter = loop_niter_by_eval (loop, ex);
@@ -2823,6 +2828,7 @@ struct gimple_opt_pass pass_profile =
  {
   GIMPLE_PASS,
   "profile_estimate",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_estimate_probability,		/* gate */
   tree_estimate_probability_driver,	/* execute */
   NULL,					/* sub */
@@ -2842,6 +2848,7 @@ struct gimple_opt_pass pass_strip_predict_hints =
  {
   GIMPLE_PASS,
   "*strip_predict_hints",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   strip_predict_hints,			/* execute */
   NULL,					/* sub */

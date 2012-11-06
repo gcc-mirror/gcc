@@ -28,11 +28,9 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
-with Errout;   use Errout;
 with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Exp_VFpt; use Exp_VFpt;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
@@ -342,7 +340,8 @@ package body Exp_Ch2 is
    begin
       --  Defend against errors
 
-      if No (E) and then Total_Errors_Detected /= 0 then
+      if No (E) then
+         Check_Error_Detected;
          return;
       end if;
 
@@ -636,10 +635,14 @@ package body Exp_Ch2 is
    ---------------------------
 
    procedure Expand_N_Real_Literal (N : Node_Id) is
+      pragma Unreferenced (N);
+
    begin
-      if Vax_Float (Etype (N)) then
-         Expand_Vax_Real_Literal (N);
-      end if;
+      --  Historically, this routine existed because there were expansion
+      --  requirements for Vax real literals, but now Vax real literals
+      --  are now handled by gigi, so this routine no longer does anything.
+
+      null;
    end Expand_N_Real_Literal;
 
    --------------------------------

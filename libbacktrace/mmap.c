@@ -229,7 +229,18 @@ backtrace_vector_release (struct backtrace_state *state,
 			  backtrace_error_callback error_callback,
 			  void *data)
 {
-  backtrace_free (state, (char *) vec->base + vec->size, vec->alc,
+  size_t size;
+  size_t alc;
+  size_t aligned;
+
+  /* Make sure that the block that we free is aligned on an 8-byte
+     boundary.  */
+  size = vec->size;
+  alc = vec->alc;
+  aligned = (size + 7) & ~ (size_t) 7;
+  alc -= aligned - size;
+
+  backtrace_free (state, (char *) vec->base + aligned, alc,
 		  error_callback, data);
   vec->alc = 0;
   return 1;

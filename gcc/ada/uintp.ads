@@ -407,7 +407,7 @@ private
 
    Base : constant Int := 2 ** Base_Bits;
 
-   --  Values in the range -(Base+1) .. Max_Direct are encoded directly as
+   --  Values in the range -(Base-1) .. Max_Direct are encoded directly as
    --  Uint values by adding a bias value. The value of Max_Direct is chosen
    --  so that a directly represented number always fits in two digits when
    --  represented in base format.

@@ -114,3 +114,9 @@ extern size_t
 #endif
 
 #endif  /* VMS_USE_PRAGMA_EXTERN_MODEL_CHECK */
+
+
+#if defined( VXWORKS_REGS_CHECK )
+#include <arch/../regs.h>
+
+#endif  /* VXWORKS_REGS_CHECK */

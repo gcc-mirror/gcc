@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,7 +89,7 @@ package System.Tasking.Restricted.Stages is
    --         create_restricted_task (unspecified_priority, tZ,
    --           unspecified_task_info, unspecified_cpu,
    --           task_procedure_access!(tB'address), _init'address,
-   --           tE'unchecked_access, _chain, _task_name, _init._task_id);
+   --           tE'unchecked_access, _task_name, _init._task_id);
    --         return;
    --      end tVIP;
 
@@ -120,7 +120,12 @@ package System.Tasking.Restricted.Stages is
    --   t1S : constant String := "t1";
    --   tIP (t1, 3, _chain, t1S, 1);
 
-   --   activate_restricted_tasks (_chain'unchecked_access);
+   Partition_Elaboration_Policy : Character := 'C';
+   pragma Export (C, Partition_Elaboration_Policy,
+                  "__gnat_partition_elaboration_policy");
+   --  Partition elaboration policy. Value can be either 'C' for concurrent,
+   --  which is the default or 'S' for sequential. This value can be modified
+   --  by the binder generated code, before calling elaboration code.
 
    procedure Create_Restricted_Task
      (Priority      : Integer;
@@ -135,7 +140,8 @@ package System.Tasking.Restricted.Stages is
       Task_Image    : String;
       Created_Task  : Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
-   --  This must be called to create a new task.
+   --  This must be called to create a new task, when the partition
+   --  elaboration policy is not specified (or is concurrent).
    --
    --  Priority is the task's priority (assumed to be in the
    --  System.Any_Priority'Range)
@@ -175,6 +181,26 @@ package System.Tasking.Restricted.Stages is
    --
    --  This procedure can raise Storage_Error if the task creation fails
 
+   procedure Create_Restricted_Task_Sequential
+     (Priority      : Integer;
+      Stack_Address : System.Address;
+      Size          : System.Parameters.Size_Type;
+      Task_Info     : System.Task_Info.Task_Info_Type;
+      CPU           : Integer;
+      State         : Task_Procedure_Access;
+      Discriminants : System.Address;
+      Elaborated    : Access_Boolean;
+      Task_Image    : String;
+      Created_Task  : Task_Id);
+   --  Compiler interface only. Do not call from within the RTS.
+   --  This must be called to create a new task, when the sequential partition
+   --  elaboration policy is used.
+   --
+   --  The parameters are the same as Create_Restricted_Task_Concurrent,
+   --  except there is no Chain parameter (for the activation chain), as there
+   --  is only one global activation chain, which is declared in the body of
+   --  this package.
+
    procedure Activate_Restricted_Tasks
      (Chain_Access : Activation_Chain_Access);
    --  Compiler interface only. Do not call from within the RTS.
@@ -189,6 +215,16 @@ package System.Tasking.Restricted.Stages is
    --  it is not needed if priority-based scheduling is supported, since all
    --  the activated tasks synchronize on the activators lock before they start
    --  activating and so they should start activating in priority order.
+   --
+   --  When the partition elaboration policy is sequential, this procedure
+   --  does nothing, tasks will be activated at end of elaboration.
+
+   procedure Activate_All_Tasks_Sequential;
+   pragma Export (C, Activate_All_Tasks_Sequential,
+                  "__gnat_activate_all_tasks");
+   --  Binder interface only. Do not call from within the RTS. This must be
+   --  called an the end of the elaboration to activate all tasks, in order
+   --  to implement the sequential elaboration policy.
 
    procedure Complete_Restricted_Activation;
    --  Compiler interface only. Do not call from within the RTS. This should be
@@ -217,7 +253,7 @@ package System.Tasking.Restricted.Stages is
    --     restricted_terminated (t1._task_id)
 
    procedure Finalize_Global_Tasks;
-   --  This is needed to support the compiler interface; it will only be called
+   --  This is needed to support the compiler interface. It will only be called
    --  by the Environment task in the binder generated file (by adafinal).
    --  Instead, it will cause the Environment to block forever, since none of
    --  the dependent tasks are expected to terminate

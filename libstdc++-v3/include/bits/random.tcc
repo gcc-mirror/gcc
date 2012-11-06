@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -385,6 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
         if (__zero)
           _M_x[0] = __detail::_Shift<_UIntType, __w - 1>::__value;
+	_M_p = state_size;
       }
 
   template<typename _UIntType, size_t __w,
@@ -1187,7 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	double __cand;
 	do
-	  __cand = std::floor(std::log(__aurng()) / __param._M_log_1_p);
+	  __cand = std::floor(std::log(1.0 - __aurng()) / __param._M_log_1_p);
 	while (__cand >= __thr);
 
 	return result_type(__cand + __naf);
@@ -1217,7 +1218,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    double __cand;
 	    do
-	      __cand = std::floor(std::log(__aurng()) / __param._M_log_1_p);
+	      __cand = std::floor(std::log(1.0 - __aurng())
+				  / __param._M_log_1_p);
 	    while (__cand >= __thr);
 
 	    *__f++ = __cand + __naf;
@@ -1464,7 +1466,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    do
 	      {
 		const double __u = __c * __aurng();
-		const double __e = -std::log(__aurng());
+		const double __e = -std::log(1.0 - __aurng());
 
 		double __w = 0.0;
 
@@ -1496,7 +1498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __x = 1;
 		else
 		  {
-		    const double __v = -std::log(__aurng());
+		    const double __v = -std::log(1.0 - __aurng());
 		    const double __y = __param._M_d
 				     + __v * __2cx / __param._M_d;
 		    __x = std::ceil(__y);
@@ -1655,7 +1657,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	do
 	  {
-	    const double __e = -std::log(__aurng());
+	    const double __e = -std::log(1.0 - __aurng());
 	    __sum += __e / (__t - __x);
 	    __x += 1;
 	  }
@@ -1723,7 +1725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __reject = __y >= __param._M_d1;
 		    if (!__reject)
 		      {
-			const double __e = -std::log(__aurng());
+			const double __e = -std::log(1.0 - __aurng());
 			__x = std::floor(__y);
 			__v = -__e - __n * __n / 2 + __param._M_c;
 		      }
@@ -1735,15 +1737,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __reject = __y >= __param._M_d2;
 		    if (!__reject)
 		      {
-			const double __e = -std::log(__aurng());
+			const double __e = -std::log(1.0 - __aurng());
 			__x = std::floor(-__y);
 			__v = -__e - __n * __n / 2;
 		      }
 		  }
 		else if (__u <= __a123)
 		  {
-		    const double __e1 = -std::log(__aurng());
-		    const double __e2 = -std::log(__aurng());
+		    const double __e1 = -std::log(1.0 - __aurng());
+		    const double __e2 = -std::log(1.0 - __aurng());
 
 		    const double __y = __param._M_d1
 				     + 2 * __s1s * __e1 / __param._M_d1;
@@ -1754,8 +1756,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  }
 		else
 		  {
-		    const double __e1 = -std::log(__aurng());
-		    const double __e2 = -std::log(__aurng());
+		    const double __e1 = -std::log(1.0 - __aurng());
+		    const double __e2 = -std::log(1.0 - __aurng());
 
 		    const double __y = __param._M_d2
 				     + 2 * __s2s * __e1 / __param._M_d2;
@@ -1869,7 +1871,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	  __aurng(__urng);
 	while (__f != __t)
-	  *__f++ = -std::log(__aurng()) / __p.lambda();
+	  *__f++ = -std::log(result_type(1) - __aurng()) / __p.lambda();
       }
 
   template<typename _RealType, typename _CharT, typename _Traits>
@@ -2149,6 +2151,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+  template<typename _RealType>
+    template<typename _ForwardIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      std::chi_squared_distribution<_RealType>::
+      __generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+		      _UniformRandomNumberGenerator& __urng)
+      {
+	__glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+	while (__f != __t)
+	  *__f++ = 2 * _M_gd(__urng);
+      }
 
   template<typename _RealType>
     template<typename _ForwardIterator,
@@ -2157,8 +2171,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::chi_squared_distribution<_RealType>::
       __generate_impl(_ForwardIterator __f, _ForwardIterator __t,
 		      _UniformRandomNumberGenerator& __urng,
-		      typename std::gamma_distribution<result_type>::param_type&
-		      __p)
+		      const typename
+		      std::gamma_distribution<result_type>::param_type& __p)
       {
 	__glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
 	while (__f != __t)
@@ -2628,7 +2642,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	  __aurng(__urng);
-	return __p.b() * std::pow(-std::log(__aurng()),
+	return __p.b() * std::pow(-std::log(result_type(1) - __aurng()),
 				  result_type(1) / __p.a());
       }
 
@@ -2644,10 +2658,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
 	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	  __aurng(__urng);
-	auto inv_a = result_type(1) / __p.a();
+	auto __inv_a = result_type(1) / __p.a();
 
 	while (__f != __t)
-	  *__f++ = __p.b() * std::pow(-std::log(__aurng()), inv_a);
+	  *__f++ = __p.b() * std::pow(-std::log(result_type(1) - __aurng()),
+				      __inv_a);
       }
 
   template<typename _RealType, typename _CharT, typename _Traits>
@@ -2704,7 +2719,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
 	  __aurng(__urng);
-	return __p.a() - __p.b() * std::log(-std::log(__aurng()));
+	return __p.a() - __p.b() * std::log(-std::log(result_type(1)
+						      - __aurng()));
       }
 
   template<typename _RealType>
@@ -2721,7 +2737,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __aurng(__urng);
 
 	while (__f != __t)
-	  *__f++ = __p.a() - __p.b() * std::log(-std::log(__aurng()));
+	  *__f++ = __p.a() - __p.b() * std::log(-std::log(result_type(1)
+							  - __aurng()));
       }
 
   template<typename _RealType, typename _CharT, typename _Traits>

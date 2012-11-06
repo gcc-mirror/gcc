@@ -4,6 +4,7 @@
 
 #include "runtime.h"
 #include "go-defer.h"
+#include "go-panic.h"
 
 // Code related to defer, panic and recover.
 

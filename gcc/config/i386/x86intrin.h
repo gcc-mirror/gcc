@@ -105,6 +105,18 @@
 #include <prfchwintrin.h>
 #endif
 
+#ifdef __FXSR__
+#include <fxsrintrin.h>
+#endif
+
+#ifdef __XSAVE__
+#include <xsaveintrin.h>
+#endif
+
+#ifdef __XSAVEOPT__
+#include <xsaveoptintrin.h>
+#endif
+
 #include <adxintrin.h>
 
 #endif /* _X86INTRIN_H_INCLUDED */

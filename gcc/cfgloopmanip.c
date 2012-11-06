@@ -36,7 +36,7 @@ static bool rpe_enum_p (const_basic_block, const void *);
 static int find_path (edge, basic_block **);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
-static void fix_bb_placements (basic_block, bool *);
+static void fix_bb_placements (basic_block, bool *, bitmap);
 
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
@@ -159,11 +159,15 @@ fix_loop_placement (struct loop *loop)
    successors we consider edges coming out of the loops.
 
    If the changes may invalidate the information about irreducible regions,
-   IRRED_INVALIDATED is set to true.  */
+   IRRED_INVALIDATED is set to true.  
+
+   If LOOP_CLOSED_SSA_INVLIDATED is non-zero then all basic blocks with
+   changed loop_father are collected there. */
 
 static void
 fix_bb_placements (basic_block from,
-		   bool *irred_invalidated)
+		   bool *irred_invalidated,
+		   bitmap loop_closed_ssa_invalidated)
 {
   sbitmap in_queue;
   basic_block *queue, *qtop, *qbeg, *qend;
@@ -186,10 +190,10 @@ fix_bb_placements (basic_block from,
     return;
 
   in_queue = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (in_queue);
-  SET_BIT (in_queue, from->index);
+  bitmap_clear (in_queue);
+  bitmap_set_bit (in_queue, from->index);
   /* Prevent us from going out of the base_loop.  */
-  SET_BIT (in_queue, base_loop->header->index);
+  bitmap_set_bit (in_queue, base_loop->header->index);
 
   queue = XNEWVEC (basic_block, base_loop->num_nodes + 1);
   qtop = queue + base_loop->num_nodes + 1;
@@ -204,7 +208,7 @@ fix_bb_placements (basic_block from,
       qbeg++;
       if (qbeg == qtop)
 	qbeg = queue;
-      RESET_BIT (in_queue, from->index);
+      bitmap_clear_bit (in_queue, from->index);
 
       if (from->loop_father->header == from)
 	{
@@ -218,6 +222,8 @@ fix_bb_placements (basic_block from,
 	  /* Ordinary basic block.  */
 	  if (!fix_bb_placement (from))
 	    continue;
+	  if (loop_closed_ssa_invalidated)
+	    bitmap_set_bit (loop_closed_ssa_invalidated, from->index);
 	  target_loop = from->loop_father;
 	}
 
@@ -236,7 +242,7 @@ fix_bb_placements (basic_block from,
 	  if (e->flags & EDGE_IRREDUCIBLE_LOOP)
 	    *irred_invalidated = true;
 
-	  if (TEST_BIT (in_queue, pred->index))
+	  if (bitmap_bit_p (in_queue, pred->index))
 	    continue;
 
 	  /* If it is subloop, then it either was not moved, or
@@ -256,7 +262,7 @@ fix_bb_placements (basic_block from,
 	      continue;
 	    }
 
-	  if (TEST_BIT (in_queue, pred->index))
+	  if (bitmap_bit_p (in_queue, pred->index))
 	    continue;
 
 	  /* Schedule the basic block.  */
@@ -264,7 +270,7 @@ fix_bb_placements (basic_block from,
 	  qend++;
 	  if (qend == qtop)
 	    qend = queue;
-	  SET_BIT (in_queue, pred->index);
+	  bitmap_set_bit (in_queue, pred->index);
 	}
     }
   free (in_queue);
@@ -312,7 +318,7 @@ remove_path (edge e)
     {
       f = loop_outer (l);
       if (dominated_by_p (CDI_DOMINATORS, l->latch, e->dest))
-        unloop (l, &irred_invalidated);
+        unloop (l, &irred_invalidated, NULL);
     }
 
   /* Identify the path.  */
@@ -321,23 +327,23 @@ remove_path (edge e)
   n_bord_bbs = 0;
   bord_bbs = XNEWVEC (basic_block, n_basic_blocks);
   seen = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (seen);
+  bitmap_clear (seen);
 
   /* Find "border" hexes -- i.e. those with predecessor in removed path.  */
   for (i = 0; i < nrem; i++)
-    SET_BIT (seen, rem_bbs[i]->index);
+    bitmap_set_bit (seen, rem_bbs[i]->index);
   if (!irred_invalidated)
     FOR_EACH_EDGE (ae, ei, e->src->succs)
-      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index)
+      if (ae != e && ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index)
 	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
 	irred_invalidated = true;
   for (i = 0; i < nrem; i++)
     {
       bb = rem_bbs[i];
       FOR_EACH_EDGE (ae, ei, rem_bbs[i]->succs)
-	if (ae->dest != EXIT_BLOCK_PTR && !TEST_BIT (seen, ae->dest->index))
+	if (ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index))
 	  {
-	    SET_BIT (seen, ae->dest->index);
+	    bitmap_set_bit (seen, ae->dest->index);
 	    bord_bbs[n_bord_bbs++] = ae->dest;
 
 	    if (ae->flags & EDGE_IRREDUCIBLE_LOOP)
@@ -359,15 +365,15 @@ remove_path (edge e)
   free (rem_bbs);
 
   /* Find blocks whose dominators may be affected.  */
-  sbitmap_zero (seen);
+  bitmap_clear (seen);
   for (i = 0; i < n_bord_bbs; i++)
     {
       basic_block ldom;
 
       bb = get_immediate_dominator (CDI_DOMINATORS, bord_bbs[i]);
-      if (TEST_BIT (seen, bb->index))
+      if (bitmap_bit_p (seen, bb->index))
 	continue;
-      SET_BIT (seen, bb->index);
+      bitmap_set_bit (seen, bb->index);
 
       for (ldom = first_dom_son (CDI_DOMINATORS, bb);
 	   ldom;
@@ -385,7 +391,7 @@ remove_path (edge e)
 
   /* Fix placements of basic blocks inside loops and the placement of
      loops in the loop tree.  */
-  fix_bb_placements (from, &irred_invalidated);
+  fix_bb_placements (from, &irred_invalidated, NULL);
   fix_loop_placements (from->loop_father, &irred_invalidated);
 
   if (irred_invalidated
@@ -588,11 +594,11 @@ update_dominators_in_loop (struct loop *loop)
   unsigned i;
 
   seen = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (seen);
+  bitmap_clear (seen);
   body = get_loop_body (loop);
 
   for (i = 0; i < loop->num_nodes; i++)
-    SET_BIT (seen, body[i]->index);
+    bitmap_set_bit (seen, body[i]->index);
 
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -601,9 +607,9 @@ update_dominators_in_loop (struct loop *loop)
       for (ldom = first_dom_son (CDI_DOMINATORS, body[i]);
 	   ldom;
 	   ldom = next_dom_son (CDI_DOMINATORS, ldom))
-	if (!TEST_BIT (seen, ldom->index))
+	if (!bitmap_bit_p (seen, ldom->index))
 	  {
-	    SET_BIT (seen, ldom->index);
+	    bitmap_set_bit (seen, ldom->index);
 	    VEC_safe_push (basic_block, heap, dom_bbs, ldom);
 	  }
     }
@@ -892,10 +898,14 @@ loopify (edge latch_edge, edge header_edge,
    have no successor, which caller is expected to fix somehow.
 
    If this may cause the information about irreducible regions to become
-   invalid, IRRED_INVALIDATED is set to true.  */
+   invalid, IRRED_INVALIDATED is set to true.  
+
+   LOOP_CLOSED_SSA_INVALIDATED, if non-NULL, is a bitmap where we store
+   basic blocks that had non-trivial update on their loop_father.*/
 
 void
-unloop (struct loop *loop, bool *irred_invalidated)
+unloop (struct loop *loop, bool *irred_invalidated,
+	bitmap loop_closed_ssa_invalidated)
 {
   basic_block *body;
   struct loop *ploop;
@@ -937,7 +947,7 @@ unloop (struct loop *loop, bool *irred_invalidated)
   /* We do not pass IRRED_INVALIDATED to fix_bb_placements here, as even if
      there is an irreducible region inside the cancelled loop, the flags will
      be still correct.  */
-  fix_bb_placements (latch, &dummy);
+  fix_bb_placements (latch, &dummy, loop_closed_ssa_invalidated);
 }
 
 /* Fix placement of superloops of LOOP inside loop tree, i.e. ensure that
@@ -965,7 +975,7 @@ fix_loop_placements (struct loop *loop, bool *irred_invalidated)
 	 to the loop.  So call fix_bb_placements to fix up the placement
 	 of the preheader and (possibly) of its predecessors.  */
       fix_bb_placements (loop_preheader_edge (loop)->src,
-			 irred_invalidated);
+			 irred_invalidated, NULL);
       loop = outer;
     }
 }
@@ -1196,7 +1206,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       scale_step = XNEWVEC (int, ndupl);
 
       for (i = 1; i <= ndupl; i++)
-	scale_step[i - 1] = TEST_BIT (wont_exit, i)
+	scale_step[i - 1] = bitmap_bit_p (wont_exit, i)
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 
@@ -1223,7 +1233,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
       else if (is_latch)
 	{
-	  prob_pass_main = TEST_BIT (wont_exit, 0)
+	  prob_pass_main = bitmap_bit_p (wont_exit, 0)
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 	  p = prob_pass_main;
@@ -1332,7 +1342,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 	}
 
       /* Record exit edge in this copy.  */
-      if (orig && TEST_BIT (wont_exit, j + 1))
+      if (orig && bitmap_bit_p (wont_exit, j + 1))
 	{
 	  if (to_remove)
 	    VEC_safe_push (edge, heap, *to_remove, new_spec_edges[SE_ORIG]);
@@ -1368,7 +1378,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   free (orig_loops);
 
   /* Record the exit edge in the original loop body, and update the frequencies.  */
-  if (orig && TEST_BIT (wont_exit, 0))
+  if (orig && bitmap_bit_p (wont_exit, 0))
     {
       if (to_remove)
 	VEC_safe_push (edge, heap, *to_remove, orig);
@@ -1576,6 +1586,7 @@ force_single_succ_latches (void)
 	continue;
 
       e = find_edge (loop->latch, loop->header);
+      gcc_checking_assert (e != NULL);
 
       split_edge (e);
     }
@@ -1837,6 +1848,32 @@ fix_loop_structure (bitmap changed_bbs)
     	  bb->aux = NULL;
 	}
     }
+
+  /* Then re-compute the single latch if there is one.  */
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      edge_iterator ei;
+      edge e, latch = NULL;
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
+	  {
+	    if (!latch)
+	      latch = e;
+	    else
+	      {
+		latch = NULL;
+		break;
+	      }
+	  }
+      if (latch
+	  && latch->src->loop_father == loop)
+	loop->latch = latch->src;
+      else
+	loop->latch = NULL;
+    }
+
+  if (!loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
+    disambiguate_loops_with_multiple_latches ();
 
   if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
     create_preheaders (CP_SIMPLE_PREHEADERS);

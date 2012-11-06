@@ -60,7 +60,7 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
     return false;
 
   visited = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
   ret = true;
 
   FOR_EACH_EDGE (e, ei, va_arg_bb->preds)
@@ -91,9 +91,9 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 
       gcc_assert (src != ENTRY_BLOCK_PTR);
 
-      if (! TEST_BIT (visited, src->index))
+      if (! bitmap_bit_p (visited, src->index))
 	{
-	  SET_BIT (visited, src->index);
+	  bitmap_set_bit (visited, src->index);
 	  FOR_EACH_EDGE (e, ei, src->preds)
 	    VEC_safe_push (edge, heap, stack, e);
 	}
@@ -960,6 +960,7 @@ struct gimple_opt_pass pass_stdarg =
  {
   GIMPLE_PASS,
   "stdarg",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_optimize_stdarg,			/* gate */
   execute_optimize_stdarg,		/* execute */
   NULL,					/* sub */

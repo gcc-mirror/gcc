@@ -158,29 +158,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_h(__f, __l, __n, __hf, __eql, __a)
 	{ }
 
-      /**
-       *  @brief  %Unordered_set copy constructor.
-       *  @param  __x  An %unordered_set of identical element and allocator
-       *  types.
-       *
-       *  The newly-created %unordered_set uses a copy of the allocation object
-       *  used by @a __x.
-       */
-      unordered_set(const unordered_set& __x)
-	: _M_h(__x._M_h) { }
+      /// Copy constructor.
+      unordered_set(const unordered_set&) = default;
 
-     /**
-       *  @brief %Unordered_set move constructor
-       *  @param __x  An %unordered_set of identical element and allocator
-       *  types.
-       *
-       *  The newly-created %unordered_set contains the exact contents of @a
-       *  __x. The contents of @a __x are a valid, but unspecified
-       *  %unordered_set.
-       */
-      unordered_set(unordered_set&& __x)
-	: _M_h(std::move(__x._M_h))
-      { }
+      /// Move constructor.
+      unordered_set(unordered_set&&) = default;
 
       /**
        *  @brief  Builds an %unordered_set from an initializer_list.
@@ -201,35 +183,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_h(__l, __n, __hf, __eql, __a)
       { }
 
-      /**
-       *  @brief  %Unordered_set assignment operator.
-       *  @param  __x  An %unordered_set of identical element and allocator
-       *  types.
-       *
-       *  All the elements of @a __x are copied, but unlike the copy
-       *  constructor, the allocator object is not copied.
-       */
+      /// Copy assignment operator.
       unordered_set&
-      operator=(const unordered_set& __x)
-      {
-	_M_h = __x._M_h;
-	return *this;
-      }
+      operator=(const unordered_set&) = default;
 
-      /**
-       *  @brief %Unordered_set move assignment operator.
-       *  @param __x  An %unordered_set of identical element and allocator
-       *  types.
-       *
-       *  The contents of @a __x are moved into this %unordered_set (without
-       *  copying). @a __x is a valid, but unspecified %unordered_set.
-       */
+      /// Move assignment operator.
       unordered_set&
-      operator=(unordered_set&& __x)
-      {
-	_M_h = std::move(__x._M_h);
-	return *this;
-      }
+      operator=(unordered_set&&) = default;
 
       /**
        *  @brief  %Unordered_set list assignment operator.
@@ -330,7 +290,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *
        *  This function attempts to build and insert an element into the
        *  %unordered_set. An %unordered_set relies on unique keys and thus an
-       *  element is only inserted if it is not already present in the %set.
+       *  element is only inserted if it is not already present in the
+       *  %unordered_set.
        *
        *  Insertion requires amortized constant time.
        */
@@ -802,29 +763,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_h(__f, __l, __n, __hf, __eql, __a)
 	{ }
 
-      /**
-       *  @brief  %Unordered_multiset copy constructor.
-       *  @param  __x  An %unordered_multiset of identical element and allocator
-       *  types.
-       *
-       *  The newly-created %unordered_multiset uses a copy of the allocation object
-       *  used by @a __x.
-       */
-      unordered_multiset(const unordered_multiset& __x)
-	: _M_h(__x._M_h) { }
+      /// Copy constructor.
+      unordered_multiset(const unordered_multiset&) = default;
 
-     /**
-       *  @brief %Unordered_multiset move constructor
-       *  @param __x  An %unordered_multiset of identical element and allocator
-       *  types.
-       *
-       *  The newly-created %unordered_multiset contains the exact contents of
-       *  @a __x. The contents of @a __x are a valid, but unspecified
-       *  %unordered_multiset.
-       */
-      unordered_multiset(unordered_multiset&& __x)
-	: _M_h(std::move(__x._M_h))
-      { }
+      /// Move constructor.
+      unordered_multiset(unordered_multiset&&) = default;
 
       /**
        *  @brief  Builds an %unordered_multiset from an initializer_list.
@@ -845,36 +788,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_h(__l, __n, __hf, __eql, __a)
       { }
 
-      /**
-       *  @brief  %Unordered_multiset assignment operator.
-       *  @param  __x  An %unordered_multiset of identical element and allocator
-       *  types.
-       *
-       *  All the elements of @a __x are copied, but unlike the copy
-       *  constructor, the allocator object is not copied.
-       */
+      /// Copy assignment operator.
       unordered_multiset&
-      operator=(const unordered_multiset& __x)
-      {
-	_M_h = __x._M_h;
-	return *this;
-      }
+      operator=(const unordered_multiset&) = default;
 
-      /**
-       *  @brief %Unordered_multiset move assignment operator.
-       *  @param __x  An %unordered_multiset of identical element and allocator
-       *  types.
-       *
-       *  The contents of @a __x are moved into this %unordered_multiset
-       *  (without copying). @a __x is a valid, but unspecified
-       *  %unordered_multiset.
-       */
+      /// Move assignment operator.
       unordered_multiset&
-      operator=(unordered_multiset&& __x)
-      {
-	_M_h = std::move(__x._M_h);
-	return *this;
-      }
+      operator=(unordered_multiset&& __x) = default;
 
       /**
        *  @brief  %Unordered_multiset list assignment operator.

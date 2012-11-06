@@ -1,4 +1,4 @@
-/* s_ilogbl.c -- long double version of s_ilogb.c.
+/* ilogbq.c -- __float128 version of s_ilogb.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -17,7 +17,7 @@
 static char rcsid[] = "$NetBSD: $";
 #endif
 
-/* ilogbl(long double x)
+/* ilogbl(__float128 x)
  * return the binary exponent of non-zero x
  * ilogbl(0) = FP_ILOGB0
  * ilogbl(NaN) = FP_ILOGBNAN (no signal is raised)
@@ -26,6 +26,7 @@ static char rcsid[] = "$NetBSD: $";
 
 #include <limits.h>
 #include <math.h>
+#include <errno.h>
 #include "quadmath-imp.h"
 
 #ifndef FP_ILOGB0
@@ -45,7 +46,13 @@ ilogbq (__float128 x)
 	hx &= 0x7fffffffffffffffLL;
 	if(hx <= 0x0001000000000000LL) {
 	    if((hx|lx)==0)
+	      {
+		errno = EDOM;
+#ifdef USE_FENV_H
+		feraiseexcept (FE_INVALID);
+#endif
 		return FP_ILOGB0;	/* ilogbl(0) = FP_ILOGB0 */
+	      }
 	    else			/* subnormal x */
 		if(hx==0) {
 		    for (ix = -16431; lx>0; lx<<=1) ix -=1;
@@ -58,7 +65,18 @@ ilogbq (__float128 x)
 	else if (FP_ILOGBNAN != INT_MAX) {
 	    /* ISO C99 requires ilogbl(+-Inf) == INT_MAX.  */
 	    if (((hx^0x7fff000000000000LL)|lx) == 0)
+	      {
+		errno = EDOM;
+#ifdef USE_FENV_H
+		feraiseexcept (FE_INVALID);
+#endif
 		return INT_MAX;
+	      }
 	}
+
+	errno = EDOM;
+#ifdef USE_FENV_H
+	feraiseexcept (FE_INVALID);
+#endif
 	return FP_ILOGBNAN;
 }

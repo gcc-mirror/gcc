@@ -580,9 +580,9 @@ op_iter_next_use (ssa_op_iter *ptr)
       ptr->uses = ptr->uses->next;
       return use_p;
     }
-  if (ptr->phi_i < ptr->num_phi)
+  if (ptr->i < ptr->numops)
     {
-      return PHI_ARG_DEF_PTR (ptr->phi_stmt, (ptr->phi_i)++);
+      return PHI_ARG_DEF_PTR (ptr->stmt, (ptr->i)++);
     }
   ptr->done = true;
   return NULL_USE_OPERAND_P;
@@ -592,14 +592,33 @@ op_iter_next_use (ssa_op_iter *ptr)
 static inline def_operand_p
 op_iter_next_def (ssa_op_iter *ptr)
 {
-  def_operand_p def_p;
   gcc_checking_assert (ptr->iter_type == ssa_op_iter_def);
-  if (ptr->defs)
+  if (ptr->flags & SSA_OP_VDEF)
     {
-      def_p = DEF_OP_PTR (ptr->defs);
-      ptr->defs = ptr->defs->next;
-      return def_p;
+      tree *p;
+      ptr->flags &= ~SSA_OP_VDEF;
+      p = gimple_vdef_ptr (ptr->stmt);
+      if (p && *p)
+	return p;
     }
+  if (ptr->flags & SSA_OP_DEF)
+    {
+      while (ptr->i < ptr->numops)
+	{
+	  tree *val = gimple_op_ptr (ptr->stmt, ptr->i);
+	  ptr->i++;
+	  if (*val)
+	    {
+	      if (TREE_CODE (*val) == TREE_LIST)
+		val = &TREE_VALUE (*val);
+	      if (TREE_CODE (*val) == SSA_NAME
+		  || is_gimple_reg (*val))
+		return val;
+	    }
+	}
+      ptr->flags &= ~SSA_OP_DEF;
+    }
+
   ptr->done = true;
   return NULL_DEF_OPERAND_P;
 }
@@ -616,16 +635,32 @@ op_iter_next_tree (ssa_op_iter *ptr)
       ptr->uses = ptr->uses->next;
       return val;
     }
-  if (ptr->defs)
+  if (ptr->flags & SSA_OP_VDEF)
     {
-      val = DEF_OP (ptr->defs);
-      ptr->defs = ptr->defs->next;
-      return val;
+      ptr->flags &= ~SSA_OP_VDEF;
+      if ((val = gimple_vdef (ptr->stmt)))
+	return val;
+    }
+  if (ptr->flags & SSA_OP_DEF)
+    {
+      while (ptr->i < ptr->numops)
+	{
+	  val = gimple_op (ptr->stmt, ptr->i);
+	  ptr->i++;
+	  if (val)
+	    {
+	      if (TREE_CODE (val) == TREE_LIST)
+		val = TREE_VALUE (val);
+	      if (TREE_CODE (val) == SSA_NAME
+		  || is_gimple_reg (val))
+		return val;
+	    }
+	}
+      ptr->flags &= ~SSA_OP_DEF;
     }
 
   ptr->done = true;
   return NULL_TREE;
-
 }
 
 
@@ -636,13 +671,13 @@ op_iter_next_tree (ssa_op_iter *ptr)
 static inline void
 clear_and_done_ssa_iter (ssa_op_iter *ptr)
 {
-  ptr->defs = NULL;
+  ptr->i = 0;
+  ptr->numops = 0;
   ptr->uses = NULL;
   ptr->iter_type = ssa_op_iter_none;
-  ptr->phi_i = 0;
-  ptr->num_phi = 0;
-  ptr->phi_stmt = NULL;
+  ptr->stmt = NULL;
   ptr->done = true;
+  ptr->flags = 0;
 }
 
 /* Initialize the iterator PTR to the virtual defs in STMT.  */
@@ -655,21 +690,34 @@ op_iter_init (ssa_op_iter *ptr, gimple stmt, int flags)
   gcc_checking_assert (gimple_code (stmt) != GIMPLE_PHI
 		       && (!(flags & SSA_OP_VDEF) || (flags & SSA_OP_DEF))
 		       && (!(flags & SSA_OP_VUSE) || (flags & SSA_OP_USE)));
-  ptr->defs = (flags & (SSA_OP_DEF|SSA_OP_VDEF)) ? gimple_def_ops (stmt) : NULL;
-  if (!(flags & SSA_OP_VDEF)
-      && ptr->defs
-      && gimple_vdef (stmt) != NULL_TREE)
-    ptr->defs = ptr->defs->next;
+  ptr->numops = 0;
+  if (flags & (SSA_OP_DEF | SSA_OP_VDEF))
+    {
+      switch (gimple_code (stmt))
+	{
+	  case GIMPLE_ASSIGN:
+	  case GIMPLE_CALL:
+	    ptr->numops = 1;
+	    break;
+	  case GIMPLE_ASM:
+	    ptr->numops = gimple_asm_noutputs (stmt);
+	    break;
+	  default:
+	    ptr->numops = 0;
+	    flags &= ~(SSA_OP_DEF | SSA_OP_VDEF);
+	    break;
+	}
+    }
   ptr->uses = (flags & (SSA_OP_USE|SSA_OP_VUSE)) ? gimple_use_ops (stmt) : NULL;
   if (!(flags & SSA_OP_VUSE)
       && ptr->uses
       && gimple_vuse (stmt) != NULL_TREE)
     ptr->uses = ptr->uses->next;
   ptr->done = false;
+  ptr->i = 0;
 
-  ptr->phi_i = 0;
-  ptr->num_phi = 0;
-  ptr->phi_stmt = NULL;
+  ptr->stmt = stmt;
+  ptr->flags = flags;
 }
 
 /* Initialize iterator PTR to the use operands in STMT based on FLAGS. Return
@@ -839,9 +887,10 @@ op_iter_init_phiuse (ssa_op_iter *ptr, gimple phi, int flags)
       return NULL_USE_OPERAND_P;
     }
 
-  ptr->phi_stmt = phi;
-  ptr->num_phi = gimple_phi_num_args (phi);
+  ptr->stmt = phi;
+  ptr->numops = gimple_phi_num_args (phi);
   ptr->iter_type = ssa_op_iter_use;
+  ptr->flags = flags;
   return op_iter_next_use (ptr);
 }
 

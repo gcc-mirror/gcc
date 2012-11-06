@@ -815,7 +815,7 @@ tree_ssa_dominator_optimize (void)
 	}
 
       gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-      bitmap_zero (need_eh_cleanup);
+      bitmap_clear (need_eh_cleanup);
     }
 
   statistics_counter_event (cfun, "Redundant expressions eliminated",
@@ -861,6 +861,7 @@ struct gimple_opt_pass pass_dominator =
  {
   GIMPLE_PASS,
   "dom",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dominator,			/* gate */
   tree_ssa_dominator_optimize,		/* execute */
   NULL,					/* sub */
@@ -3033,6 +3034,7 @@ struct gimple_opt_pass pass_phi_only_cprop =
  {
   GIMPLE_PASS,
   "phicprop",                           /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_dominator,                       /* gate */
   eliminate_degenerate_phis,            /* execute */
   NULL,                                 /* sub */

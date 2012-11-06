@@ -201,19 +201,19 @@ am__objects_5 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-interface-compare.lo go-interface-eface-compare.lo \
 	go-interface-val-compare.lo go-make-slice.lo go-map-delete.lo \
 	go-map-index.lo go-map-len.lo go-map-range.lo go-matherr.lo \
-	go-nanotime.lo go-now.lo go-new-map.lo go-new.lo go-nosys.lo \
-	go-panic.lo go-print.lo go-recover.lo go-reflect-call.lo \
-	go-reflect-map.lo go-rune.lo go-runtime-error.lo go-setenv.lo \
-	go-signal.lo go-strcmp.lo go-string-to-byte-array.lo \
-	go-string-to-int-array.lo go-strplus.lo go-strslice.lo \
-	go-traceback.lo go-trampoline.lo go-type-complex.lo \
-	go-type-eface.lo go-type-error.lo go-type-float.lo \
-	go-type-identity.lo go-type-interface.lo go-type-string.lo \
-	go-typedesc-equal.lo go-typestring.lo go-unsafe-new.lo \
-	go-unsafe-newarray.lo go-unsafe-pointer.lo go-unwind.lo \
-	chan.lo cpuprof.lo lfstack.lo $(am__objects_1) mcache.lo \
-	mcentral.lo $(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo \
-	mheap.lo msize.lo panic.lo parfor.lo print.lo proc.lo \
+	go-memcmp.lo go-nanotime.lo go-now.lo go-new-map.lo go-new.lo \
+	go-nosys.lo go-panic.lo go-print.lo go-recover.lo \
+	go-reflect-call.lo go-reflect-map.lo go-rune.lo \
+	go-runtime-error.lo go-setenv.lo go-signal.lo go-strcmp.lo \
+	go-string-to-byte-array.lo go-string-to-int-array.lo \
+	go-strplus.lo go-strslice.lo go-traceback.lo go-trampoline.lo \
+	go-type-complex.lo go-type-eface.lo go-type-error.lo \
+	go-type-float.lo go-type-identity.lo go-type-interface.lo \
+	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
+	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
+	go-unwind.lo chan.lo cpuprof.lo lfstack.lo $(am__objects_1) \
+	mcache.lo mcentral.lo $(am__objects_2) mfinal.lo mfixalloc.lo \
+	mgc0.lo mheap.lo msize.lo panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_3) \
 	iface.lo malloc.lo map.lo mprof.lo reflect.lo runtime1.lo \
 	sema.lo sigqueue.lo string.lo time.lo $(am__objects_4)
@@ -793,6 +793,7 @@ runtime_files = \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
 	runtime/go-matherr.c \
+	runtime/go-memcmp.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-new-map.c \
@@ -993,7 +994,7 @@ go_mime_files = \
 @LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
 @LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
 @LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
-@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_solaris.go
+@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
 @LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@go_net_sockoptip_file = go/net/sockoptip_linux.go go/net/sockoptip_posix.go
 @LIBGO_IS_LINUX_TRUE@go_net_sockoptip_file = go/net/sockoptip_linux.go go/net/sockoptip_posix.go
 @LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@go_net_sendfile_file = go/net/sendfile_stub.go
@@ -1054,7 +1055,12 @@ go_net_files = \
 @LIBGO_IS_IRIX_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_TRUE@go_os_sys_file = go/os/sys_linux.go
-@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat.go
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat.go
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_TRUE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atimspec.go
+@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atimspec.go
+@LIBGO_IS_DARWIN_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_OPENBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atimspec.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_OPENBSD_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atim.go
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_stat_file = go/os/stat_atim.go
 @LIBGO_IS_SOLARIS_TRUE@go_os_stat_file = go/os/stat_solaris.go
 go_os_files = \
 	$(go_os_dir_file) \
@@ -1174,6 +1180,7 @@ go_unicode_files = \
 @LIBGO_IS_LINUX_TRUE@archive_tar_atim_file = go/archive/tar/stat_atim.go
 @LIBGO_IS_NETBSD_TRUE@archive_tar_atim_file = go/archive/tar/stat_atimespec.go
 @LIBGO_IS_OPENBSD_TRUE@archive_tar_atim_file = go/archive/tar/stat_atim.go
+@LIBGO_IS_SOLARIS_TRUE@archive_tar_atim_file = go/archive/tar/stat_atim.go
 go_archive_tar_files = \
 	go/archive/tar/common.go \
 	go/archive/tar/reader.go \
@@ -2419,6 +2426,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-len.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-range.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-matherr.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-memcmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-new.Plo@am__quote@
@@ -2724,6 +2732,13 @@ go-matherr.lo: runtime/go-matherr.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-matherr.c' object='go-matherr.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-matherr.lo `test -f 'runtime/go-matherr.c' || echo '$(srcdir)/'`runtime/go-matherr.c
+
+go-memcmp.lo: runtime/go-memcmp.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-memcmp.lo -MD -MP -MF $(DEPDIR)/go-memcmp.Tpo -c -o go-memcmp.lo `test -f 'runtime/go-memcmp.c' || echo '$(srcdir)/'`runtime/go-memcmp.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-memcmp.Tpo $(DEPDIR)/go-memcmp.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-memcmp.c' object='go-memcmp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-memcmp.lo `test -f 'runtime/go-memcmp.c' || echo '$(srcdir)/'`runtime/go-memcmp.c
 
 go-nanotime.lo: runtime/go-nanotime.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-nanotime.lo -MD -MP -MF $(DEPDIR)/go-nanotime.Tpo -c -o go-nanotime.lo `test -f 'runtime/go-nanotime.c' || echo '$(srcdir)/'`runtime/go-nanotime.c
@@ -4309,35 +4324,35 @@ goc2c: goc2c.$(OBJEXT)
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
 
 malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 mprof.c: $(srcdir)/runtime/mprof.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --gcc --go-pkgpath os_signal $< > $@.tmp
+	./goc2c --go-pkgpath os_signal $< > $@.tmp
 	mv -f $@.tmp $@
 
 time.c: $(srcdir)/runtime/time.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 version.go: s-version; @true

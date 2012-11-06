@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "alloc-pool.h"
-#include "hashtab.h"
+#include "hash-table.h"
 
 #define align_eight(x) (((x+7) >> 3) << 3)
 
@@ -83,38 +83,42 @@ struct alloc_pool_descriptor
   int elt_size;
 };
 
+struct alloc_pool_hasher : typed_noop_remove <alloc_pool_descriptor>
+{
+  typedef alloc_pool_descriptor value_type;
+  typedef char compare_type;
+  static inline hashval_t hash (const alloc_pool_descriptor *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
 /* Hashtable mapping alloc_pool names to descriptors.  */
-static htab_t alloc_pool_hash;
+static hash_table <alloc_pool_hasher>  alloc_pool_hash;
 
 /* Hashtable helpers.  */
-static hashval_t
-hash_descriptor (const void *p)
+inline hashval_t
+alloc_pool_hasher::hash (const value_type *d)
 {
-  const struct alloc_pool_descriptor *const d =
-    (const struct alloc_pool_descriptor * )p;
   return htab_hash_pointer (d->name);
 }
-static int
-eq_descriptor (const void *p1, const void *p2)
+
+inline bool
+alloc_pool_hasher::equal (const value_type *d,
+                          const compare_type *p2)
 {
-  const struct alloc_pool_descriptor *const d =
-    (const struct alloc_pool_descriptor *) p1;
   return d->name == p2;
 }
 
 /* For given name, return descriptor, create new if needed.  */
 static struct alloc_pool_descriptor *
-alloc_pool_descriptor (const char *name)
+allocate_pool_descriptor (const char *name)
 {
   struct alloc_pool_descriptor **slot;
 
-  if (!alloc_pool_hash)
-    alloc_pool_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
+  if (!alloc_pool_hash.is_created ())
+    alloc_pool_hash.create (10);
 
-  slot = (struct alloc_pool_descriptor **)
-    htab_find_slot_with_hash (alloc_pool_hash, name,
-			      htab_hash_pointer (name),
-			      INSERT);
+  slot = alloc_pool_hash.find_slot_with_hash (name,
+					      htab_hash_pointer (name), INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct alloc_pool_descriptor);
@@ -158,7 +162,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
 
   if (GATHER_STATISTICS)
     {
-      struct alloc_pool_descriptor *desc = alloc_pool_descriptor (name);
+      struct alloc_pool_descriptor *desc = allocate_pool_descriptor (name);
       desc->elt_size = size;
       desc->created++;
     }
@@ -205,7 +209,7 @@ empty_alloc_pool (alloc_pool pool)
 
   if (GATHER_STATISTICS)
     {
-      struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
+      struct alloc_pool_descriptor *desc = allocate_pool_descriptor (pool->name);
       desc->current -= (pool->elts_allocated - pool->elts_free) * pool->elt_size;
     }
 
@@ -253,7 +257,7 @@ pool_alloc (alloc_pool pool)
 
   if (GATHER_STATISTICS)
     {
-      struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
+      struct alloc_pool_descriptor *desc = allocate_pool_descriptor (pool->name);
 
       desc->allocated += pool->elt_size;
       desc->current += pool->elt_size;
@@ -357,7 +361,7 @@ pool_free (alloc_pool pool, void *ptr)
 
   if (GATHER_STATISTICS)
     {
-      struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
+      struct alloc_pool_descriptor *desc = allocate_pool_descriptor (pool->name);
       desc->current -= pool->elt_size;
     }
 }
@@ -371,19 +375,20 @@ struct output_info
   unsigned long total_allocated;
 };
 
-/* Called via htab_traverse.  Output alloc_pool descriptor pointed out by SLOT
-   and update statistics.  */
-static int
-print_statistics (void **slot, void *b)
+/* Called via hash_table.traverse.  Output alloc_pool descriptor pointed out by
+   SLOT and update statistics.  */
+int
+print_alloc_pool_statistics (alloc_pool_descriptor **slot,
+			     struct output_info *i)
 {
-  struct alloc_pool_descriptor *d = (struct alloc_pool_descriptor *) *slot;
-  struct output_info *i = (struct output_info *) b;
+  struct alloc_pool_descriptor *d = *slot;
 
   if (d->allocated)
     {
-      fprintf (stderr, "%-22s %6d %10lu %10lu(%10lu) %10lu(%10lu) %10lu(%10lu)\n", d->name,
-	       d->elt_size, d->created, d->allocated, d->allocated / d->elt_size,
-	       d->peak, d->peak / d->elt_size,
+      fprintf (stderr,
+	       "%-22s %6d %10lu %10lu(%10lu) %10lu(%10lu) %10lu(%10lu)\n",
+	       d->name, d->elt_size, d->created, d->allocated,
+	       d->allocated / d->elt_size, d->peak, d->peak / d->elt_size,
 	       d->current, d->current / d->elt_size);
       i->total_allocated += d->allocated;
       i->total_created += d->created;
@@ -400,14 +405,15 @@ dump_alloc_pool_statistics (void)
   if (! GATHER_STATISTICS)
     return;
 
-  if (!alloc_pool_hash)
+  if (!alloc_pool_hash.is_created ())
     return;
 
   fprintf (stderr, "\nAlloc-pool Kind         Elt size  Pools  Allocated (elts)            Peak (elts)            Leak (elts)\n");
   fprintf (stderr, "--------------------------------------------------------------------------------------------------------------\n");
   info.total_created = 0;
   info.total_allocated = 0;
-  htab_traverse (alloc_pool_hash, print_statistics, &info);
+  alloc_pool_hash.traverse <struct output_info *,
+			    print_alloc_pool_statistics> (&info);
   fprintf (stderr, "--------------------------------------------------------------------------------------------------------------\n");
   fprintf (stderr, "%-22s           %7lu %10lu\n",
 	   "Total", info.total_created, info.total_allocated);

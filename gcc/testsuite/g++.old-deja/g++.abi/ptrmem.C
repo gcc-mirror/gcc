@@ -7,7 +7,7 @@
    function.  However, some platforms use all bits to encode a
    function pointer.  Such platforms use the lowest bit of the delta,
    that is shifted left by one bit.  */
-#if defined __MN10300__ || defined __SH5__ || defined __arm__ || defined __thumb__ || defined __mips__
+#if defined __MN10300__ || defined __SH5__ || defined __arm__ || defined __thumb__ || defined __mips__ || defined __aarch64__
 #define ADJUST_PTRFN(func, virt) ((void (*)())(func))
 #define ADJUST_DELTA(delta, virt) (((delta) << 1) + !!(virt))
 #else

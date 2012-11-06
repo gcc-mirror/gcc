@@ -479,10 +479,10 @@ blocks_in_phiopt_order (void)
   unsigned np, i;
   sbitmap visited = sbitmap_alloc (last_basic_block);
 
-#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index))
-#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index))
+#define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
+#define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
 
-  sbitmap_zero (visited);
+  bitmap_clear (visited);
 
   MARK_VISITED (ENTRY_BLOCK_PTR);
   FOR_EACH_BB (x)
@@ -1951,6 +1951,7 @@ struct gimple_opt_pass pass_phiopt =
  {
   GIMPLE_PASS,
   "phiopt",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_phiopt,				/* gate */
   tree_ssa_phiopt,			/* execute */
   NULL,					/* sub */
@@ -1979,6 +1980,7 @@ struct gimple_opt_pass pass_cselim =
  {
   GIMPLE_PASS,
   "cselim",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_cselim,				/* gate */
   tree_ssa_cs_elim,			/* execute */
   NULL,					/* sub */

@@ -1949,6 +1949,7 @@ struct rtl_opt_pass pass_instantiate_virtual_regs =
  {
   RTL_PASS,
   "vregs",                              /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   instantiate_virtual_regs,             /* execute */
   NULL,                                 /* sub */
@@ -6176,8 +6177,7 @@ thread_prologue_and_epilogue_insns (void)
 	  CLEAR_HARD_REG_BIT (prologue_clobbered, STACK_POINTER_REGNUM);
 	  if (frame_pointer_needed)
 	    CLEAR_HARD_REG_BIT (prologue_clobbered, HARD_FRAME_POINTER_REGNUM);
-	  CLEAR_HARD_REG_SET (live_on_edge);
-	  reg_set_to_hard_reg_set (&live_on_edge,
+	  REG_SET_TO_HARD_REG_SET (live_on_edge,
 				   df_get_live_in (entry_edge->dest));
 	  if (hard_reg_set_intersect_p (live_on_edge, prologue_clobbered))
 	    {
@@ -6490,9 +6490,9 @@ epilogue_done:
 
       /* Look for basic blocks within the prologue insns.  */
       blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_zero (blocks);
-      SET_BIT (blocks, entry_edge->dest->index);
-      SET_BIT (blocks, orig_entry_edge->dest->index);
+      bitmap_clear (blocks);
+      bitmap_set_bit (blocks, entry_edge->dest->index);
+      bitmap_set_bit (blocks, orig_entry_edge->dest->index);
       find_many_sub_basic_blocks (blocks);
       sbitmap_free (blocks);
 
@@ -6926,6 +6926,7 @@ struct rtl_opt_pass pass_leaf_regs =
  {
   RTL_PASS,
   "*leaf_regs",                         /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_check_leaf_regs,       /* execute */
   NULL,                                 /* sub */
@@ -6964,6 +6965,7 @@ struct rtl_opt_pass pass_thread_prologue_and_epilogue =
  {
   RTL_PASS,
   "pro_and_epilogue",                   /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   rest_of_handle_thread_prologue_and_epilogue, /* execute */
   NULL,                                 /* sub */
@@ -7165,6 +7167,7 @@ struct rtl_opt_pass pass_match_asm_constraints =
  {
   RTL_PASS,
   "asmcons",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   rest_of_match_asm_constraints,	/* execute */
   NULL,                                 /* sub */

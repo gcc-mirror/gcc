@@ -323,18 +323,13 @@ msum_r16 (gfc_array_r16 * const restrict retarray,
       {
 
   result = 0;
-	if (len <= 0)
-	  *dest = 0;
-	else
+	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
-	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
-	      {
 
   if (*msrc)
     result += *src;
-	      }
-	    *dest = result;
 	  }
+	*dest = result;
       }
       /* Advance to the next element.  */
       count[0]++;

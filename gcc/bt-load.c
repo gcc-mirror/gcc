@@ -1,3 +1,4 @@
+
 /* Perform branch target register load optimizations.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
@@ -436,7 +437,7 @@ note_btr_set (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
 	note_other_use_this_block (regno, info->users_this_bb);
 	SET_HARD_REG_BIT (info->btrs_written_in_block, regno);
 	SET_HARD_REG_BIT (info->btrs_live_in_block, regno);
-	sbitmap_difference (info->bb_gen, info->bb_gen,
+	bitmap_and_compl (info->bb_gen, info->bb_gen,
 			    info->btr_defset[regno - first_btr]);
       }
 }
@@ -457,7 +458,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
   btr_def_group all_btr_def_groups = NULL;
   defs_uses_info info;
 
-  sbitmap_vector_zero (bb_gen, last_basic_block);
+  bitmap_vector_clear (bb_gen, last_basic_block);
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
@@ -497,12 +498,12 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		  def_array[insn_uid] = def;
 		  SET_HARD_REG_BIT (info.btrs_written_in_block, regno);
 		  SET_HARD_REG_BIT (info.btrs_live_in_block, regno);
-		  sbitmap_difference (bb_gen[i], bb_gen[i],
+		  bitmap_and_compl (bb_gen[i], bb_gen[i],
 				      btr_defset[regno - first_btr]);
-		  SET_BIT (bb_gen[i], insn_uid);
+		  bitmap_set_bit (bb_gen[i], insn_uid);
 		  def->next_this_bb = defs_this_bb;
 		  defs_this_bb = def;
-		  SET_BIT (btr_defset[regno - first_btr], insn_uid);
+		  bitmap_set_bit (btr_defset[regno - first_btr], insn_uid);
 		  note_other_use_this_block (regno, info.users_this_bb);
 		}
 	      /* Check for the blockage emitted by expand_nl_goto_receiver.  */
@@ -519,7 +520,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		      user->other_use_this_block = 1;
 		  IOR_HARD_REG_SET (info.btrs_written_in_block, all_btrs);
 		  IOR_HARD_REG_SET (info.btrs_live_in_block, all_btrs);
-		  sbitmap_zero (info.bb_gen);
+		  bitmap_clear (info.bb_gen);
 		}
 	      else
 		{
@@ -618,13 +619,13 @@ compute_kill (sbitmap *bb_kill, sbitmap *btr_defset,
 
   /* For each basic block, form the set BB_KILL - the set
      of definitions that the block kills.  */
-  sbitmap_vector_zero (bb_kill, last_basic_block);
+  bitmap_vector_clear (bb_kill, last_basic_block);
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
     {
       for (regno = first_btr; regno <= last_btr; regno++)
 	if (TEST_HARD_REG_BIT (all_btrs, regno)
 	    && TEST_HARD_REG_BIT (btrs_written[i], regno))
-	  sbitmap_a_or_b (bb_kill[i], bb_kill[i],
+	  bitmap_ior (bb_kill[i], bb_kill[i],
 			  btr_defset[regno - first_btr]);
     }
 }
@@ -643,7 +644,7 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
   sbitmap bb_in = sbitmap_alloc (max_uid);
 
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
-    sbitmap_copy (bb_out[i], bb_gen[i]);
+    bitmap_copy (bb_out[i], bb_gen[i]);
 
   changed = 1;
   while (changed)
@@ -651,8 +652,8 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
       changed = 0;
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	{
-	  sbitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK (i));
-	  changed |= sbitmap_union_of_diff_cg (bb_out[i], bb_gen[i],
+	  bitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK (i));
+	  changed |= bitmap_ior_and_compl (bb_out[i], bb_gen[i],
 					       bb_in, bb_kill[i]);
 	}
     }
@@ -674,7 +675,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
       rtx insn;
       rtx last;
 
-      sbitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK (i));
+      bitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK (i));
       for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
 	   insn != last;
 	   insn = NEXT_INSN (insn))
@@ -689,9 +690,9 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		{
 		  /* Remove all reaching defs of regno except
 		     for this one.  */
-		  sbitmap_difference (reaching_defs, reaching_defs,
+		  bitmap_and_compl (reaching_defs, reaching_defs,
 				      btr_defset[def->btr - first_btr]);
-		  SET_BIT(reaching_defs, insn_uid);
+		  bitmap_set_bit(reaching_defs, insn_uid);
 		}
 
 	      if (user != NULL)
@@ -702,7 +703,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		  sbitmap_iterator sbi;
 
 		  if (user->use)
-		    sbitmap_a_and_b (
+		    bitmap_and (
 		      reaching_defs_of_reg,
 		      reaching_defs,
 		      btr_defset[REGNO (user->use) - first_btr]);
@@ -710,17 +711,17 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		    {
 		      int reg;
 
-		      sbitmap_zero (reaching_defs_of_reg);
+		      bitmap_clear (reaching_defs_of_reg);
 		      for (reg = first_btr; reg <= last_btr; reg++)
 			if (TEST_HARD_REG_BIT (all_btrs, reg)
 			    && refers_to_regno_p (reg, reg + 1, user->insn,
 						  NULL))
-			  sbitmap_a_or_b_and_c (reaching_defs_of_reg,
+			  bitmap_or_and (reaching_defs_of_reg,
 			    reaching_defs_of_reg,
 			    reaching_defs,
 			    btr_defset[reg - first_btr]);
 		    }
-		  EXECUTE_IF_SET_IN_SBITMAP (reaching_defs_of_reg, 0, uid, sbi)
+		  EXECUTE_IF_SET_IN_BITMAP (reaching_defs_of_reg, 0, uid, sbi)
 		    {
 		      btr_def def = def_array[uid];
 
@@ -763,7 +764,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		  for (regno = first_btr; regno <= last_btr; regno++)
 		    if (TEST_HARD_REG_BIT (all_btrs, regno)
 			&& TEST_HARD_REG_BIT (call_used_reg_set, regno))
-		      sbitmap_difference (reaching_defs, reaching_defs,
+		      bitmap_and_compl (reaching_defs, reaching_defs,
 					  btr_defset[regno - first_btr]);
 		}
 	    }
@@ -785,7 +786,7 @@ build_btr_def_use_webs (fibheap_t all_btr_defs)
   sbitmap *bb_kill;
   sbitmap *bb_out;
 
-  sbitmap_vector_zero (btr_defset, (last_btr - first_btr) + 1);
+  bitmap_vector_clear (btr_defset, (last_btr - first_btr) + 1);
 
   compute_defs_uses_and_gen (all_btr_defs, def_array, use_array, btr_defset,
 			     bb_gen, btrs_written);
@@ -1509,6 +1510,7 @@ struct rtl_opt_pass pass_branch_target_load_optimize1 =
  {
   RTL_PASS,
   "btl1",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_branch_target_load_optimize1,      /* gate */
   rest_of_handle_branch_target_load_optimize1,   /* execute */
   NULL,                                 /* sub */
@@ -1558,6 +1560,7 @@ struct rtl_opt_pass pass_branch_target_load_optimize2 =
  {
   RTL_PASS,
   "btl2",                               /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_handle_branch_target_load_optimize2,      /* gate */
   rest_of_handle_branch_target_load_optimize2,   /* execute */
   NULL,                                 /* sub */

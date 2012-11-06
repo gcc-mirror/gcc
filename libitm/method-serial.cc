@@ -50,13 +50,15 @@ static serial_mg o_serial_mg;
 class serialirr_dispatch : public abi_dispatch
 {
  public:
-  serialirr_dispatch() : abi_dispatch(false, true, true, false, &o_serial_mg)
+  serialirr_dispatch() : abi_dispatch(false, true, true, false,
+      gtm_thread::STATE_SERIAL | gtm_thread::STATE_IRREVOCABLE, &o_serial_mg)
   { }
 
  protected:
   serialirr_dispatch(bool ro, bool wt, bool uninstrumented,
-      bool closed_nesting, method_group* mg) :
-    abi_dispatch(ro, wt, uninstrumented, closed_nesting, mg) { }
+      bool closed_nesting, uint32_t requires_serial, method_group* mg) :
+    abi_dispatch(ro, wt, uninstrumented, closed_nesting, requires_serial, mg)
+  { }
 
   // Transactional loads and stores simply access memory directly.
   // These methods are static to avoid indirect calls, and will be used by the
@@ -151,7 +153,9 @@ public:
   CREATE_DISPATCH_METHODS(virtual, )
   CREATE_DISPATCH_METHODS_MEM()
 
-  serial_dispatch() : abi_dispatch(false, true, false, true, &o_serial_mg) { }
+  serial_dispatch() : abi_dispatch(false, true, false, true,
+      gtm_thread::STATE_SERIAL, &o_serial_mg)
+  { }
 };
 
 
@@ -162,7 +166,7 @@ class serialirr_onwrite_dispatch : public serialirr_dispatch
 {
  public:
   serialirr_onwrite_dispatch() :
-    serialirr_dispatch(false, true, false, false, &o_serial_mg) { }
+    serialirr_dispatch(false, true, false, false, 0, &o_serial_mg) { }
 
  protected:
   static void pre_write()

@@ -4,7 +4,7 @@
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do compile { target *-*-darwin* } } */
-/* { dg-options "-mconstant-cfstrings" } */
+/* { dg-options "-ftrack-macro-expansion=0 -mconstant-cfstrings" } */
 
 #include <CoreFoundation/CFString.h>
 

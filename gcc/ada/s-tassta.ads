@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,8 +180,7 @@ package System.Tasking.Stages is
       Elaborated        : Access_Boolean;
       Chain             : in out Activation_Chain;
       Task_Image        : String;
-      Created_Task      : out Task_Id;
-      Build_Entry_Names : Boolean);
+      Created_Task      : out Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
    --
@@ -212,8 +211,6 @@ package System.Tasking.Stages is
    --   run time can store to ease the debugging and the
    --   Ada.Task_Identification facility.
    --  Created_Task is the resulting task.
-   --  Build_Entry_Names is a flag which controls the allocation of the data
-   --   structure which stores all entry names.
    --
    --  This procedure can raise Storage_Error if the task creation failed.
 
@@ -284,13 +281,6 @@ package System.Tasking.Stages is
    --  chain, and change their master to the one passed in by the caller. If
    --  that doesn't happen, they will never be activated, and will become
    --  terminated on leaving the return statement.
-
-   procedure Set_Entry_Name
-     (T   : Task_Id;
-      Pos : Task_Entry_Index;
-      Val : String_Access);
-   --  This is called by the compiler to map a string which denotes an entry
-   --  name to a task entry index.
 
    function Terminated (T : Task_Id) return Boolean;
    --  This is called by the compiler to implement the 'Terminated attribute.

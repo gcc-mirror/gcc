@@ -1,0 +1,100 @@
+; Machine description for AArch64 architecture.
+; Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+; Contributed by ARM Ltd.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it
+; under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 3, or (at your option)
+; any later version.
+;
+; GCC is distributed in the hope that it will be useful, but
+; WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+; General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/aarch64/aarch64-opts.h
+
+; The TLS dialect names to use with -mtls-dialect.
+
+Enum
+Name(tls_type) Type(enum aarch64_tls_type)
+The possible TLS dialects:
+
+EnumValue
+Enum(tls_type) String(trad) Value(TLS_TRADITIONAL)
+
+EnumValue
+Enum(tls_type) String(desc) Value(TLS_DESCRIPTORS)
+
+; The code model option names for -mcmodel.
+
+Enum
+Name(cmodel) Type(enum aarch64_code_model)
+The code model option names for -mcmodel:
+
+EnumValue
+Enum(cmodel) String(tiny) Value(AARCH64_CMODEL_TINY)
+
+EnumValue
+Enum(cmodel) String(small) Value(AARCH64_CMODEL_SMALL)
+
+EnumValue
+Enum(cmodel) String(large) Value(AARCH64_CMODEL_LARGE)
+
+; The cpu/arch option names to use in cpu/arch selection.
+
+Variable
+const char *aarch64_arch_string
+
+Variable
+const char *aarch64_cpu_string
+
+Variable
+const char *aarch64_tune_string
+
+mbig-endian
+Target Report RejectNegative Mask(BIG_END)
+Assume target CPU is configured as big endian
+
+mgeneral-regs-only
+Target Report RejectNegative Mask(GENERAL_REGS_ONLY)
+Generate code which uses only the general registers
+
+mlittle-endian
+Target Report RejectNegative InverseMask(BIG_END)
+Assume target CPU is configured as little endian
+
+mcmodel=
+Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_CMODEL_SMALL)
+Specify the code model
+
+mstrict-align
+Target Report RejectNegative Mask(STRICT_ALIGN)
+Don't assume that unaligned accesses are handled by the system
+
+momit-leaf-frame-pointer
+Target Report Save Var(flag_omit_leaf_frame_pointer) Init(1)
+Omit the frame pointer in leaf functions
+
+mtls-dialect=
+Target RejectNegative Joined Enum(tls_type) Var(aarch64_tls_dialect) Init(TLS_DESCRIPTORS)
+Specify TLS dialect
+
+march=
+Target RejectNegative Joined Var(aarch64_arch_string)
+-march=ARCH	Use features of architecture ARCH
+
+mcpu=
+Target RejectNegative Joined Var(aarch64_cpu_string)
+-mcpu=CPU	Use features of and optimize for CPU
+
+mtune=
+Target RejectNegative Joined Var(aarch64_tune_string)
+-mtune=CPU	Optimize for CPU

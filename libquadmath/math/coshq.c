@@ -30,25 +30,25 @@
     License along with this library; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
-/* __ieee754_coshl(x)
+/* coshq(x)
  * Method :
- * mathematically coshl(x) if defined to be (exp(x)+exp(-x))/2
- *      1. Replace x by |x| (coshl(x) = coshl(-x)).
+ * mathematically coshq(x) if defined to be (exp(x)+exp(-x))/2
+ *      1. Replace x by |x| (coshq(x) = coshq(-x)).
  *      2.
  *                                                      [ exp(x) - 1 ]^2
- *          0        <= x <= ln2/2  :  coshl(x) := 1 + -------------------
+ *          0        <= x <= ln2/2  :  coshq(x) := 1 + -------------------
  *                                                         2*exp(x)
  *
  *                                                 exp(x) +  1/exp(x)
- *          ln2/2    <= x <= 22     :  coshl(x) := -------------------
+ *          ln2/2    <= x <= 22     :  coshq(x) := -------------------
  *                                                         2
- *          22       <= x <= lnovft :  coshl(x) := expl(x)/2
- *          lnovft   <= x <= ln2ovft:  coshl(x) := expl(x/2)/2 * expl(x/2)
- *          ln2ovft  <  x           :  coshl(x) := huge*huge (overflow)
+ *          22       <= x <= lnovft :  coshq(x) := expq(x)/2
+ *          lnovft   <= x <= ln2ovft:  coshq(x) := expq(x/2)/2 * expq(x/2)
+ *          ln2ovft  <  x           :  coshq(x) := huge*huge (overflow)
  *
  * Special cases:
- *      coshl(x) is |x| if x is +INF, -INF, or NaN.
- *      only coshl(0)=1 is exact for finite x.
+ *      coshq(x) is |x| if x is +INF, -INF, or NaN.
+ *      only coshq(0)=1 is exact for finite x.
  */
 
 #include "quadmath-imp.h"
@@ -73,7 +73,7 @@ coshq (__float128 x)
   if (ex >= 0x7fff0000)
     return x * x;
 
-  /* |x| in [0,0.5*ln2], return 1+expm1l(|x|)^2/(2*expl(|x|)) */
+  /* |x| in [0,0.5*ln2], return 1+expm1l(|x|)^2/(2*expq(|x|)) */
   if (ex < 0x3ffd62e4) /* 0.3465728759765625 */
     {
       t = expm1q (u.value);

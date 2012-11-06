@@ -1,3 +1,32 @@
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/54930
+	* c.opt (Wreturn_local_addr): Define new option.
+
+2012-10-25  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wvirtual-move-assign): New.
+
+	* c.opt (Winherited-variadic-ctor): New.
+
+2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-common.c (scalar_to_vector): Handle VEC_COND_EXPR.
+
+2012-10-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (pch_cpp_save_state): Declare.
+	* c-target.def (c_preinclude): New hook.
+	* c-opts.c (done_preinclude): New.
+	(push_command_line_include): Handle default preincluded header.
+	(cb_file_change): Call pch_cpp_save_state when calling
+	push_command_line_include.
+	* c-pch.c (pch_ready_to_save_cpp_state, pch_cpp_state_saved)
+	(pch_cpp_save_state): New.
+	(pch_init): Call pch_cpp_save_state conditionally, instead of
+	calling cpp_save_state.
+
 2012-10-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063

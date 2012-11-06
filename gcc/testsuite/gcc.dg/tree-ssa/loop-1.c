@@ -17,13 +17,16 @@
    to the load from the GOT this also contains the name of the funtion so for
    each call the function name would appear twice.  */
 /* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized -mno-relax-pic-calls" { target mips*-*-* } } */
-
-void xxx(void)
+__attribute__ ((pure))
+int foo (int x);
+int xxx(void)
 {
   int x = 45;
+  int sum;
 
   while (x >>= 1)
-    foo ();
+    sum += foo (x) * 2;
+  return sum;
 }
 
 /* We should be able to find out that the loop iterates four times and unroll it completely.  */

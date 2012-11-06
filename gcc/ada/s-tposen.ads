@@ -163,7 +163,6 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --     procedure _clean is
    --     begin
    --        service_entry (_object._object'unchecked_access);
-   --        unlock_entry (_object._object'unchecked_access);
    --        return;
    --     end _clean;
    --  begin

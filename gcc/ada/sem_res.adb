@@ -334,25 +334,11 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Analyze_And_Resolve (N, Typ);
-            Scope_Suppress := Svg;
-         end;
-
-      elsif Suppress = Overflow_Check then
-         declare
-            Svg : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_General;
-            Sva : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_Assertions;
-         begin
-            Scope_Suppress.Overflow_Checks_General    := Suppressed;
-            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
-            Analyze_And_Resolve (N, Typ);
-            Scope_Suppress.Overflow_Checks_General    := Svg;
-            Scope_Suppress.Overflow_Checks_Assertions := Sva;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -388,25 +374,11 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Analyze_And_Resolve (N);
-            Scope_Suppress := Svg;
-         end;
-
-      elsif Suppress = Overflow_Check then
-         declare
-            Svg : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_General;
-            Sva : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_Assertions;
-         begin
-            Scope_Suppress.Overflow_Checks_General    := Suppressed;
-            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
-            Analyze_And_Resolve (N);
-            Scope_Suppress.Overflow_Checks_General    := Svg;
-            Scope_Suppress.Overflow_Checks_Assertions := Sva;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -1379,6 +1351,13 @@ package body Sem_Res is
       if Nkind (Name (N)) = N_Expanded_Name then
          Pack := Entity (Prefix (Name (N)));
 
+         --  If this is a package renaming, get renamed entity, which will be
+         --  the scope of the operands if operaton is type-correct.
+
+         if Present (Renamed_Entity (Pack)) then
+            Pack := Renamed_Entity (Pack);
+         end if;
+
          --  If the entity being called is defined in the given package, it is
          --  a renaming of a predefined operator, and known to be legal.
 
@@ -1683,11 +1662,26 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      --  We suppress all checks for this analysis, since the checks will
-      --  be applied properly, and in the right location, when the default
-      --  expression is reanalyzed and reexpanded later on.
+      --  Normally, we suppress all checks for this preanalysis. There is no
+      --  point in processing them now, since they will be applied properly
+      --  and in the proper location when the default expressions reanalyzed
+      --  and reexpanded later on. We will also have more information at that
+      --  point for possible suppression of individual checks.
 
-      Analyze_And_Resolve (N, T, Suppress => All_Checks);
+      --  However, in Alfa mode, most expansion is suppressed, and this
+      --  later reanalysis and reexpansion may not occur. Alfa mode does
+      --  require the setting of checking flags for proof purposes, so we
+      --  do the Alfa preanalysis without suppressing checks.
+
+      --  This special handling for Alfa mode is required for example in the
+      --  case of Ada 2012 constructs such as quantified expressions, which are
+      --  expanded in two separate steps.
+
+      if Alfa_Mode then
+         Analyze_And_Resolve (N, T);
+      else
+         Analyze_And_Resolve (N, T, Suppress => All_Checks);
+      end if;
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
@@ -2928,11 +2922,11 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Record := Scope_Suppress;
+            Sva : constant Suppress_Array := Scope_Suppress.Suppress;
          begin
-            Scope_Suppress := Suppress_All;
+            Scope_Suppress.Suppress := (others => True);
             Resolve (N, Typ);
-            Scope_Suppress := Svg;
+            Scope_Suppress.Suppress := Sva;
          end;
 
       else
@@ -5941,16 +5935,6 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
-
-      --  If we still have a case expression, and overflow checks are enabled
-      --  in MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check to
-      --  ensure that we handle overflow for dependent expressions.
-
-      if Nkind (N) = N_Case_Expression
-        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
-      then
-         Set_Do_Overflow_Check (N);
-      end if;
    end Resolve_Case_Expression;
 
    -------------------------------
@@ -6115,9 +6099,7 @@ package body Sem_Res is
 
       --  Check comparison on unordered enumeration
 
-      if Comes_From_Source (N)
-        and then Bad_Unordered_Enumeration_Reference (N, Etype (L))
-      then
+      if Bad_Unordered_Enumeration_Reference (N, Etype (L)) then
          Error_Msg_N ("comparison on unordered enumeration type?", N);
       end if;
 
@@ -7157,12 +7139,13 @@ package body Sem_Res is
       Resolve (Then_Expr, Typ);
       Then_Typ := Etype (Then_Expr);
 
-      --  When the "then" expression is of a scalar type different from the
-      --  result type, then insert a conversion to ensure the generation of
-      --  a constraint check.
+      --  When the "then" expression is of a scalar subtype different from the
+      --  result subtype, then insert a conversion to ensure the generation of
+      --  a constraint check. The same is done for the else part below, again
+      --  comparing subtypes rather than base types.
 
       if Is_Scalar_Type (Then_Typ)
-        and then Base_Type (Then_Typ) /= Base_Type (Typ)
+        and then Then_Typ /= Typ
       then
          Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
          Analyze_And_Resolve (Then_Expr, Typ);
@@ -7198,16 +7181,6 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_If_Expression (N);
-
-      --  If we still have a if expression, and overflow checks are enabled in
-      --  MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check to ensure
-      --  that we handle overflow for dependent expressions.
-
-      if Nkind (N) = N_If_Expression
-        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
-      then
-         Set_Do_Overflow_Check (N);
-      end if;
    end Resolve_If_Expression;
 
    -------------------------------

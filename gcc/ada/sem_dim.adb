@@ -1634,7 +1634,7 @@ package body Sem_Dim is
             --  the call was aborted due to a previous error.
 
             if No (Actual) then
-               Cascaded_Error;
+               Check_Error_Detected;
                return;
             end if;
 

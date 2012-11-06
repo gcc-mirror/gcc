@@ -59,7 +59,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    Num_Library_Units : Natural := 0;
    --  Count number of units parsed (relevant only in syntax check only mode,
-   --  since in semantics check mode only a single unit is permitted anyway)
+   --  since in semantics check mode only a single unit is permitted anyway).
 
    Save_Config_Switches : Config_Switches_Type;
    --  Variable used to save values of config switches while we parse the
@@ -67,7 +67,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    Loop_Block_Count : Nat := 0;
    --  Counter used for constructing loop/block names (see the routine
-   --  Par.Ch5.Get_Loop_Block_Name)
+   --  Par.Ch5.Get_Loop_Block_Name).
+
+   Inside_Record_Definition : Boolean := False;
+   --  Flag set True within a record definition. Used to control warning
+   --  for redefinition of standard entities (not issued for field names).
 
    --------------------
    -- Error Recovery --
@@ -1263,6 +1267,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       function Token_Is_At_End_Of_Line return Boolean;
       --  Determines if the current token is the last token on the line
+
+      procedure Warn_If_Standard_Redefinition (N : Node_Id);
+      --  Issues a warning if Warn_On_Standard_Redefinition is set True, and
+      --  the Node N (which is a Defining_Identifier node with the Chars field
+      --  set) is a renaming of an entity in package Standard.
 
    end Util;
 

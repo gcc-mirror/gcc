@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
@@ -109,6 +110,10 @@ package body Exp_Ch5 is
 
    procedure Expand_Iterator_Loop_Over_Array (N : Node_Id);
    --  Expand loop over arrays that uses the form "for X of C"
+
+   procedure Expand_Loop_Entry_Attributes (N : Node_Id);
+   --  Given a loop statement subject to at least one Loop_Entry attribute,
+   --  expand both the loop and all related Loop_Entry references.
 
    procedure Expand_Predicated_Loop (N : Node_Id);
    --  Expand for loop over predicated subtype
@@ -1521,6 +1526,324 @@ package body Exp_Ch5 is
          end if;
       end;
    end Expand_Assign_Record;
+
+   ----------------------------------
+   -- Expand_Loop_Entry_Attributes --
+   ----------------------------------
+
+   procedure Expand_Loop_Entry_Attributes (N : Node_Id) is
+      procedure Build_Conditional_Block
+        (Loc      : Source_Ptr;
+         Cond     : Node_Id;
+         Stmt     : Node_Id;
+         If_Stmt  : out Node_Id;
+         Blk_Stmt : out Node_Id);
+      --  Create a block Blk_Stmt with an empty declarative list and a single
+      --  statement Stmt. The block is encased in an if statement If_Stmt with
+      --  condition Cond. If_Stmt is Empty when there is no condition provided.
+
+      function Is_Array_Iteration (N : Node_Id) return Boolean;
+      --  Determine whether loop statement N denotes an Ada 2012 iteration over
+      --  an array object.
+
+      -----------------------------
+      -- Build_Conditional_Block --
+      -----------------------------
+
+      procedure Build_Conditional_Block
+        (Loc      : Source_Ptr;
+         Cond     : Node_Id;
+         Stmt     : Node_Id;
+         If_Stmt  : out Node_Id;
+         Blk_Stmt : out Node_Id)
+      is
+      begin
+         Blk_Stmt :=
+           Make_Block_Statement (Loc,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Stmt)));
+
+         if Present (Cond) then
+            If_Stmt :=
+              Make_If_Statement (Loc,
+                Condition       => Cond,
+                Then_Statements => New_List (Blk_Stmt));
+         else
+            If_Stmt := Empty;
+         end if;
+      end Build_Conditional_Block;
+
+      ------------------------
+      -- Is_Array_Iteration --
+      ------------------------
+
+      function Is_Array_Iteration (N : Node_Id) return Boolean is
+         Stmt : constant Node_Id := Original_Node (N);
+         Iter : Node_Id;
+
+      begin
+         if Nkind (Stmt) = N_Loop_Statement
+           and then Present (Iteration_Scheme (Stmt))
+           and then Present (Iterator_Specification (Iteration_Scheme (Stmt)))
+         then
+            Iter := Iterator_Specification (Iteration_Scheme (Stmt));
+
+            return
+              Of_Present (Iter)
+                and then Is_Array_Type (Etype (Name (Iter)));
+         end if;
+
+         return False;
+      end Is_Array_Iteration;
+
+      --  Local variables
+
+      Loc     : constant Source_Ptr := Sloc (N);
+      Loop_Id : constant Entity_Id  := Identifier (N);
+      Scheme  : constant Node_Id    := Iteration_Scheme (N);
+      Blk     : Node_Id;
+      LE      : Node_Id;
+      LE_Elmt : Elmt_Id;
+      Result  : Node_Id;
+      Temp    : Entity_Id;
+      Typ     : Entity_Id;
+
+   --  Start of processing for Expand_Loop_Entry_Attributes
+
+   begin
+      --  The loop will never execute after it has been expanded, no point in
+      --  processing it.
+
+      if Is_Null_Loop (N) then
+         return;
+
+      --  A loop without an identifier cannot be referenced in 'Loop_Entry
+
+      elsif No (Loop_Id) then
+         return;
+
+      --  The loop is not subject to 'Loop_Entry
+
+      elsif No (Loop_Entry_Attributes (Entity (Loop_Id))) then
+         return;
+
+      --  Step 1: Loop transformations
+
+      --  While loops are transformed into:
+
+      --    if <Condition> then
+      --       declare
+      --          Temp1 : constant <type of Pref1> := <Pref1>;
+      --          . . .
+      --          TempN : constant <type of PrefN> := <PrefN>;
+      --       begin
+      --          loop
+      --             <original source statements with attribute rewrites>
+      --             exit when not <Condition>;
+      --          end loop;
+      --       end;
+      --    end if;
+
+      --  Note that loops over iterators and containers are already converted
+      --  into while loops.
+
+      elsif Present (Condition (Scheme)) then
+         declare
+            Cond : constant Node_Id := Condition (Scheme);
+
+         begin
+            --  Transform the original while loop into an infinite loop where
+            --  the last statement checks the negated condition. This placement
+            --  ensures that the condition will not be evaluated twice on the
+            --  first iteration.
+
+            --  Generate:
+            --    exit when not <Cond>:
+
+            Append_To (Statements (N),
+              Make_Exit_Statement (Loc,
+                Condition => Make_Op_Not (Loc, New_Copy_Tree (Cond))));
+
+            Build_Conditional_Block (Loc,
+              Cond     => Relocate_Node (Cond),
+              Stmt     => Relocate_Node (N),
+              If_Stmt  => Result,
+              Blk_Stmt => Blk);
+         end;
+
+      --  Ada 2012 iteration over an array is transformed into:
+
+      --    if <Array_Nam>'Length (1) > 0
+      --      and then <Array_Nam>'Length (N) > 0
+      --    then
+      --       declare
+      --          Temp1 : constant <type of Pref1> := <Pref1>;
+      --          . . .
+      --          TempN : constant <type of PrefN> := <PrefN>;
+      --       begin
+      --          for X in ... loop  --  multiple loops depending on dims
+      --             <original source statements with attribute rewrites>
+      --          end loop;
+      --       end;
+      --    end if;
+
+      elsif Is_Array_Iteration (N) then
+         declare
+            Array_Nam : constant Entity_Id :=
+                          Entity (Name (Iterator_Specification
+                            (Iteration_Scheme (Original_Node (N)))));
+            Num_Dims  : constant Pos :=
+                          Number_Dimensions (Etype (Array_Nam));
+            Cond      : Node_Id := Empty;
+            Check     : Node_Id;
+            Top_Loop  : Node_Id;
+
+         begin
+            --  Generate a check which determines whether all dimensions of
+            --  the array are non-null.
+
+            for Dim in 1 .. Num_Dims loop
+               Check :=
+                 Make_Op_Gt (Loc,
+                   Left_Opnd  =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Reference_To (Array_Nam, Loc),
+                       Attribute_Name => Name_Length,
+                       Expressions    => New_List (
+                         Make_Integer_Literal (Loc, Dim))),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, 0));
+
+               if No (Cond) then
+                  Cond := Check;
+               else
+                  Cond :=
+                    Make_And_Then (Loc,
+                      Left_Opnd  => Cond,
+                      Right_Opnd => Check);
+               end if;
+            end loop;
+
+            Top_Loop := Relocate_Node (N);
+            Set_Analyzed (Top_Loop);
+
+            Build_Conditional_Block (Loc,
+              Cond     => Cond,
+              Stmt     => Top_Loop,
+              If_Stmt  => Result,
+              Blk_Stmt => Blk);
+         end;
+
+      --  For loops are transformed into:
+
+      --    if <Low> <= <High> then
+      --       declare
+      --          Temp1 : constant <type of Pref1> := <Pref1>;
+      --          . . .
+      --          TempN : constant <type of PrefN> := <PrefN>;
+      --       begin
+      --          for <Def_Id> in <Low> .. <High> loop
+      --             <original source statements with attribute rewrites>
+      --          end loop;
+      --       end;
+      --    end if;
+
+      elsif Present (Loop_Parameter_Specification (Scheme)) then
+         declare
+            Loop_Spec : constant Node_Id :=
+                          Loop_Parameter_Specification (Scheme);
+            Subt_Def  : constant Node_Id :=
+                          Discrete_Subtype_Definition (Loop_Spec);
+            Cond      : Node_Id;
+
+         begin
+            --  At this point in the expansion all discrete subtype definitions
+            --  should be transformed into ranges.
+
+            pragma Assert (Nkind (Subt_Def) = N_Range);
+
+            --  Generate
+            --    Low <= High
+
+            Cond :=
+              Make_Op_Le (Loc,
+                Left_Opnd  => New_Copy_Tree (Low_Bound (Subt_Def)),
+                Right_Opnd => New_Copy_Tree (High_Bound (Subt_Def)));
+
+            Build_Conditional_Block (Loc,
+              Cond     => Cond,
+              Stmt     => Relocate_Node (N),
+              If_Stmt  => Result,
+              Blk_Stmt => Blk);
+         end;
+
+      --  Infinite loops are transformed into:
+
+      --    declare
+      --       Temp1 : constant <type of Pref1> := <Pref1>;
+      --       . . .
+      --       TempN : constant <type of PrefN> := <PrefN>;
+      --    begin
+      --       loop
+      --          <original source statements with attribute rewrites>
+      --       end loop;
+      --    end;
+
+      else
+         Build_Conditional_Block (Loc,
+           Cond     => Empty,
+           Stmt     => Relocate_Node (N),
+           If_Stmt  => Result,
+           Blk_Stmt => Blk);
+
+         Result := Blk;
+      end if;
+
+      --  Step 2: Loop_Entry attribute transformations
+
+      --  At this point the various loops have been augmented to contain a
+      --  block. Populate the declarative list of the block with constants
+      --  which store the value of their relative prefixes at the point of
+      --  entry in the loop.
+
+      LE_Elmt := First_Elmt (Loop_Entry_Attributes (Entity (Loop_Id)));
+      while Present (LE_Elmt) loop
+         LE  := Node (LE_Elmt);
+         Typ := Etype (Prefix (LE));
+
+         --  Declare a constant to capture the value of the previx of each
+         --  Loop_Entry attribute.
+
+         --  Generate:
+         --    Temp : constant <type of Pref> := <Pref>;
+
+         Temp := Make_Temporary (Loc, 'P');
+
+         Append_To (Declarations (Blk),
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp,
+             Constant_Present    => True,
+             Object_Definition   => New_Reference_To (Typ, Loc),
+             Expression          => Relocate_Node (Prefix (LE))));
+
+         --  Replace the original attribute with a reference to the constant
+
+         Rewrite (LE, New_Reference_To (Temp, Loc));
+         Set_Etype (LE, Typ);
+
+         Next_Elmt (LE_Elmt);
+      end loop;
+
+      --  Destroy the list of Loop_Entry attributes to prevent the infinite
+      --  expansion when analyzing and expanding the newly generated loops.
+
+      Set_Loop_Entry_Attributes (Entity (Loop_Id), No_Elist);
+
+      Rewrite (N, Result);
+      Analyze (N);
+   end Expand_Loop_Entry_Attributes;
 
    -----------------------------------
    -- Expand_N_Assignment_Statement --
@@ -3108,6 +3431,11 @@ package body Exp_Ch5 is
                        Expressions =>
                          New_List (New_Occurrence_Of (Cursor, Loc))));
 
+               --  The defining identifier in the iterator is user-visible
+               --  and must be visible in the debugger.
+
+               Set_Debug_Info_Needed (Id);
+
                --  If the container holds controlled objects, wrap the loop
                --  statements and element renaming declaration with a block.
                --  This ensures that the result of Element (Cusor) is
@@ -3657,6 +3985,13 @@ package body Exp_Ch5 is
       then
          Expand_Iterator_Loop (N);
       end if;
+
+      --  If the loop is subject to at least one Loop_Entry attribute, it
+      --  requires additional processing.
+
+      if Nkind (N) = N_Loop_Statement then
+         Expand_Loop_Entry_Attributes (N);
+      end if;
    end Expand_N_Loop_Statement;
 
    ----------------------------
@@ -3849,10 +4184,10 @@ package body Exp_Ch5 is
             --  Rewrite the loop
 
             D :=
-               Make_Object_Declaration (Loc,
-                 Defining_Identifier => Loop_Id,
-                 Object_Definition   => New_Occurrence_Of (Ltype, Loc),
-                 Expression          => Lo_Val (First (Stat)));
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Loop_Id,
+                Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                Expression          => Lo_Val (First (Stat)));
             Set_Suppress_Assignment_Checks (D);
 
             Rewrite (N,

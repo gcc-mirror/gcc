@@ -90,6 +90,7 @@ package body Einfo is
    --    Discriminal_Link                Node10
    --    Float_Rep                       Uint10 (but returns Float_Rep_Kind)
    --    Handler_Records                 List10
+   --    Loop_Entry_Attributes           Elist10
    --    Normalized_Position_Max         Uint10
 
    --    Component_Bit_Offset            Uint11
@@ -2245,6 +2246,12 @@ package body Einfo is
       pragma Assert (Is_Enumeration_Type (Id));
       return Node16 (Id);
    end Lit_Strings;
+
+   function Loop_Entry_Attributes (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Loop);
+      return Elist10 (Id);
+   end Loop_Entry_Attributes;
 
    function Low_Bound_Tested (Id : E) return B is
    begin
@@ -4791,6 +4798,12 @@ package body Einfo is
       Set_Node16 (Id, V);
    end Set_Lit_Strings;
 
+   procedure Set_Loop_Entry_Attributes (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Loop);
+      Set_Elist10 (Id, V);
+   end Set_Loop_Entry_Attributes;
+
    procedure Set_Low_Bound_Tested (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Formal (Id));
@@ -6967,6 +6980,7 @@ package body Einfo is
             --  previous errors.
 
             elsif No (Etyp) then
+               Check_Error_Detected;
                return T;
 
             elsif Is_Private_Type (T) and then Etyp = Full_View (T) then
@@ -7873,6 +7887,9 @@ package body Einfo is
               E_Package_Body                               |
               E_Procedure                                  =>
             Write_Str ("Handler_Records");
+
+         when E_Loop                                       =>
+            Write_Str ("Loop_Entry_Attributes");
 
          when E_Component                                  |
               E_Discriminant                               =>

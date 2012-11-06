@@ -1142,7 +1142,7 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, "%p", type);
+      fprintf (stderr, "%p", (const void *) type);
       fprintf (stderr, ", %d )\n\n", named);
     }
 

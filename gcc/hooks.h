@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -75,6 +75,8 @@ extern int hook_int_uint_mode_1 (unsigned int, enum machine_mode);
 extern int hook_int_const_tree_0 (const_tree);
 extern int hook_int_const_tree_const_tree_1 (const_tree, const_tree);
 extern int hook_int_rtx_0 (rtx);
+extern int hook_int_rtx_1 (rtx);
+extern int hook_int_rtx_unreachable (rtx);
 extern int hook_int_rtx_bool_0 (rtx, bool);
 extern int hook_int_rtx_mode_as_bool_0 (rtx, enum machine_mode, addr_space_t,
 					bool);
@@ -95,6 +97,7 @@ extern rtx hook_rtx_rtx_identity (rtx);
 extern rtx hook_rtx_rtx_null (rtx);
 extern rtx hook_rtx_tree_int_null (tree, int);
 
+extern const char *hook_constcharptr_void_null (void);
 extern const char *hook_constcharptr_const_tree_null (const_tree);
 extern const char *hook_constcharptr_const_rtx_null (const_rtx);
 extern const char *hook_constcharptr_const_tree_const_tree_null (const_tree, const_tree);

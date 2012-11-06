@@ -173,7 +173,8 @@ typedef struct pre_expr_d : typed_noop_remove <pre_expr_d>
   pre_expr_union u;
 
   /* hash_table support.  */
-  typedef pre_expr_d T;
+  typedef pre_expr_d value_type;
+  typedef pre_expr_d compare_type;
   static inline hashval_t hash (const pre_expr_d *);
   static inline int equal (const pre_expr_d *, const pre_expr_d *);
 } *pre_expr;
@@ -186,7 +187,7 @@ typedef struct pre_expr_d : typed_noop_remove <pre_expr_d>
 /* Compare E1 and E1 for equality.  */
 
 inline int
-pre_expr_d::equal (const struct pre_expr_d *e1, const struct pre_expr_d *e2)
+pre_expr_d::equal (const value_type *e1, const compare_type *e2)
 {
   if (e1->kind != e2->kind)
     return false;
@@ -211,7 +212,7 @@ pre_expr_d::equal (const struct pre_expr_d *e1, const struct pre_expr_d *e2)
 /* Hash E.  */
 
 inline hashval_t
-pre_expr_d::hash (const struct pre_expr_d *e)
+pre_expr_d::hash (const value_type *e)
 {
   switch (e->kind)
     {
@@ -499,9 +500,10 @@ typedef struct expr_pred_trans_d : typed_free_remove<expr_pred_trans_d>
   hashval_t hashcode;
 
   /* hash_table support.  */
-  typedef expr_pred_trans_d T;
-  static inline hashval_t hash (const expr_pred_trans_d *);
-  static inline int equal (const expr_pred_trans_d *, const expr_pred_trans_d *);
+  typedef expr_pred_trans_d value_type;
+  typedef expr_pred_trans_d compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline int equal (const value_type *, const compare_type *);
 } *expr_pred_trans_t;
 typedef const struct expr_pred_trans_d *const_expr_pred_trans_t;
 
@@ -512,8 +514,8 @@ expr_pred_trans_d::hash (const expr_pred_trans_d *e)
 }
 
 inline int
-expr_pred_trans_d::equal (const expr_pred_trans_d *ve1,
-			  const expr_pred_trans_d *ve2)
+expr_pred_trans_d::equal (const value_type *ve1,
+			  const compare_type *ve2)
 {
   basic_block b1 = ve1->pred;
   basic_block b2 = ve2->pred;
@@ -2117,7 +2119,7 @@ defer_or_phi_translate_block (bitmap_set_t dest, bitmap_set_t source,
 {
   if (!BB_VISITED (phiblock))
     {
-      SET_BIT (changed_blocks, block->index);
+      bitmap_set_bit (changed_blocks, block->index);
       BB_VISITED (block) = 0;
       BB_DEFERRED (block) = 1;
       return false;
@@ -2213,7 +2215,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
       /* Of multiple successors we have to have visited one already.  */
       if (!first)
 	{
-	  SET_BIT (changed_blocks, block->index);
+	  bitmap_set_bit (changed_blocks, block->index);
 	  BB_VISITED (block) = 0;
 	  BB_DEFERRED (block) = 1;
 	  changed = true;
@@ -2263,12 +2265,12 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   if (!bitmap_set_equal (old, ANTIC_IN (block)))
     {
       changed = true;
-      SET_BIT (changed_blocks, block->index);
+      bitmap_set_bit (changed_blocks, block->index);
       FOR_EACH_EDGE (e, ei, block->preds)
-	SET_BIT (changed_blocks, e->src->index);
+	bitmap_set_bit (changed_blocks, e->src->index);
     }
   else
-    RESET_BIT (changed_blocks, block->index);
+    bitmap_clear_bit (changed_blocks, block->index);
 
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2420,12 +2422,12 @@ compute_partial_antic_aux (basic_block block,
   if (!bitmap_set_equal (old_PA_IN, PA_IN (block)))
     {
       changed = true;
-      SET_BIT (changed_blocks, block->index);
+      bitmap_set_bit (changed_blocks, block->index);
       FOR_EACH_EDGE (e, ei, block->preds)
-	SET_BIT (changed_blocks, e->src->index);
+	bitmap_set_bit (changed_blocks, e->src->index);
     }
   else
-    RESET_BIT (changed_blocks, block->index);
+    bitmap_clear_bit (changed_blocks, block->index);
 
  maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2455,7 +2457,7 @@ compute_antic (void)
   /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
      We pre-build the map of blocks with incoming abnormal edges here.  */
   has_abnormal_preds = sbitmap_alloc (last_basic_block);
-  sbitmap_zero (has_abnormal_preds);
+  bitmap_clear (has_abnormal_preds);
 
   FOR_ALL_BB (block)
     {
@@ -2467,7 +2469,7 @@ compute_antic (void)
 	  e->flags &= ~EDGE_DFS_BACK;
 	  if (e->flags & EDGE_ABNORMAL)
 	    {
-	      SET_BIT (has_abnormal_preds, block->index);
+	      bitmap_set_bit (has_abnormal_preds, block->index);
 	      break;
 	    }
 	}
@@ -2484,7 +2486,7 @@ compute_antic (void)
   BB_VISITED (EXIT_BLOCK_PTR) = 1;
 
   changed_blocks = sbitmap_alloc (last_basic_block + 1);
-  sbitmap_ones (changed_blocks);
+  bitmap_ones (changed_blocks);
   while (changed)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2497,11 +2499,11 @@ compute_antic (void)
       changed = false;
       for (i = postorder_num - 1; i >= 0; i--)
 	{
-	  if (TEST_BIT (changed_blocks, postorder[i]))
+	  if (bitmap_bit_p (changed_blocks, postorder[i]))
 	    {
 	      basic_block block = BASIC_BLOCK (postorder[i]);
 	      changed |= compute_antic_aux (block,
-					    TEST_BIT (has_abnormal_preds,
+					    bitmap_bit_p (has_abnormal_preds,
 						      block->index));
 	    }
 	}
@@ -2514,7 +2516,7 @@ compute_antic (void)
 
   if (do_partial_partial)
     {
-      sbitmap_ones (changed_blocks);
+      bitmap_ones (changed_blocks);
       mark_dfs_back_edges ();
       num_iterations = 0;
       changed = true;
@@ -2526,12 +2528,12 @@ compute_antic (void)
 	  changed = false;
 	  for (i = postorder_num - 1 ; i >= 0; i--)
 	    {
-	      if (TEST_BIT (changed_blocks, postorder[i]))
+	      if (bitmap_bit_p (changed_blocks, postorder[i]))
 		{
 		  basic_block block = BASIC_BLOCK (postorder[i]);
 		  changed
 		    |= compute_partial_antic_aux (block,
-						  TEST_BIT (has_abnormal_preds,
+						  bitmap_bit_p (has_abnormal_preds,
 							    block->index));
 		}
 	    }
@@ -3994,8 +3996,8 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
 
   tree res = make_temp_ssa_name (TREE_TYPE (val), NULL, "pretmp");
   gimple tem = gimple_build_assign (res,
-				    build1 (TREE_CODE (expr),
-					    TREE_TYPE (expr), leader));
+				    fold_build1 (TREE_CODE (expr),
+						 TREE_TYPE (expr), leader));
   gsi_insert_before (gsi, tem, GSI_SAME_STMT);
   VN_INFO_GET (res)->valnum = val;
 
@@ -4448,7 +4450,7 @@ eliminate (void)
 
 /* Perform CFG cleanups made necessary by elimination.  */
 
-static void
+static unsigned 
 fini_eliminate (void)
 {
   bool do_eh_cleanup = !bitmap_empty_p (need_eh_cleanup);
@@ -4464,7 +4466,8 @@ fini_eliminate (void)
   BITMAP_FREE (need_ab_cleanup);
 
   if (do_eh_cleanup || do_ab_cleanup)
-    cleanup_tree_cfg ();
+    return TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Borrow a bit of tree-ssa-dce.c for the moment.
@@ -4728,7 +4731,7 @@ do_pre (void)
 
   scev_finalize ();
   fini_pre ();
-  fini_eliminate ();
+  todo |= fini_eliminate ();
   loop_optimizer_finalize ();
 
   /* TODO: tail_merge_optimize may merge all predecessors of a block, in which
@@ -4763,6 +4766,7 @@ struct gimple_opt_pass pass_pre =
  {
   GIMPLE_PASS,
   "pre",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_pre,				/* gate */
   do_pre,				/* execute */
   NULL,					/* sub */
@@ -4794,7 +4798,7 @@ execute_fre (void)
   /* Remove all the redundant expressions.  */
   todo |= eliminate ();
 
-  fini_eliminate ();
+  todo |= fini_eliminate ();
 
   free_scc_vn ();
 
@@ -4816,6 +4820,7 @@ struct gimple_opt_pass pass_fre =
  {
   GIMPLE_PASS,
   "fre",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_fre,				/* gate */
   execute_fre,				/* execute */
   NULL,					/* sub */

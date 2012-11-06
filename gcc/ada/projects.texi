@@ -286,9 +286,14 @@ There are several ways of defining source directories:
   It is often desirable to remove, from the source directories, directory
   subtrees rooted at some subdirectories. An example is the subdirectories
   created by a Version Control System such as Subversion that creates directory
-  subtrees .svn/**. To do that, attribute  @b{Ignore_Source_Sub_Dirs} can be
-  used. It specifies the list of simple file names for the root of these
-  undesirable directory subtrees.
+  subtrees rooted at subdirectories ".svn". To do that, attribute
+  @b{Ignore_Source_Sub_Dirs} can be used. It specifies the list of simple
+  file names for the roots of these undesirable directory subtrees.
+
+@smallexample
+    @b{for} Source_Dirs @b{use} ("./**");
+    @b{for} Ignore_Source_Sub_Dirs @b{use} (".svn");
+@end smallexample
 
 @end itemize
 
@@ -1031,10 +1036,10 @@ names in lower case)
 
 @noindent
 After building an application or a library it is often required to
-install it into the development environment. This installation is
-required if the library is to be used by another application for
-example. The @command{gprinstall} tool provide an easy way to install
-libraries, executable or object code generated durting the build. The
+install it into the development environment. For instance this step is
+required if the library is to be used by another application.
+The @command{gprinstall} tool provides an easy way to install
+libraries, executable or object code generated during the build. The
 @b{Install} package can be used to change the default locations.
 
 The following attributes can be defined in package @code{Install}:
@@ -1068,7 +1073,7 @@ installed. Default is @b{include}.
 
 @item @b{Project_Subdir}
 
-Subdirectory of @b{Prefix} where the installed project is to be
+Subdirectory of @b{Prefix} where the generated project file is to be
 installed. Default is @b{share/gpr}.
 @end table
 

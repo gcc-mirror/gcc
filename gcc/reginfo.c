@@ -972,6 +972,7 @@ struct rtl_opt_pass pass_reginfo_init =
  {
   RTL_PASS,
   "reginfo",                            /* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,                                 /* gate */
   reginfo_init,                         /* execute */
   NULL,                                 /* sub */

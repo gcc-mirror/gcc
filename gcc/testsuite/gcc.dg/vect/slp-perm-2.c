@@ -12,7 +12,8 @@
 
 #define N 16
 
-void foo (unsigned int *__restrict__ pInput, unsigned int *__restrict__ pOutput)
+void __attribute__((noinline))
+foo (unsigned int *__restrict__ pInput, unsigned int *__restrict__ pOutput)
 {
   unsigned int i, a, b;
 

@@ -1,3 +1,35 @@
+2012-10-29  Ian Lance Taylor  <iant@google.com>
+
+	* mmap.c (backtrace_vector_release): Correct last patch: add
+	aligned, not size.
+
+2012-10-29  Ian Lance Taylor  <iant@google.com>
+
+	* mmap.c (backtrace_vector_release): Make sure freed block is
+	aligned on 8-byte boundary.
+
+2012-10-26  Ian Lance Taylor  <iant@google.com>
+
+	PR other/55087
+	* posix.c (backtrace_open): Add does_not_exist parameter.
+	* elf.c (phdr_callback): Do not warn if shared library could not
+	be opened.
+	* fileline.c (fileline_initialize): Update calls to
+	backtrace_open.
+	* internal.h (backtrace_open): Update declaration.
+
+2012-10-26  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/55061
+	* configure.ac: Check for _Unwind_GetIPInfo function declaration.
+	* configure: Regenerate.
+
+2012-10-24  Ian Lance Taylor  <iant@google.com>
+
+	PR target/55061
+	* configure.ac: Check whether -funwind-tables option works.
+	* configure: Rebuild.
+
 2012-10-11  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Do not use dl_iterate_phdr on Solaris 10.

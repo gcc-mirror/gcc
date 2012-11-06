@@ -115,13 +115,14 @@ DEF_EDGE_FLAG(FALLTHRU, 0)
 DEF_EDGE_FLAG(ABNORMAL, 1)
 
 /* Edge out of a basic block that ends with a CALL_INSN with abnormal
-   exit, like an exception, or a sibcall.
+   exit, like an exception or a non-local goto.
+   ABNORMAL_CALL edges also have ABNORMAL set.
    This flag is only used for the RTL CFG.  */
 DEF_EDGE_FLAG(ABNORMAL_CALL, 2)
 
 /* Exception edge.  Exception handling edges represent possible control
-   transfers from a trapping instruction to an exception handler.  EH
-   edges also have EDGE_ABNORMAL set.  */
+   transfers from a trapping instruction to an exception handler.
+   EH edges also have ABNORMAL set for the RTL CFG.  */
 DEF_EDGE_FLAG(EH, 3)
 
 /* Never merge blocks via this edge.  This is used for exception handling,
@@ -158,6 +159,7 @@ DEF_EDGE_FLAG(EXECUTABLE, 10)
 DEF_EDGE_FLAG(CROSSING, 11)
 
 /* Edge from a sibcall CALL_INSN to exit.
+   SIBCALL edges also have ABNORMAL set.
    This flag is only used for the RTL CFG.  */
 DEF_EDGE_FLAG(SIBCALL, 12)
 

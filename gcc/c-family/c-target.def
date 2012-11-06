@@ -1,6 +1,6 @@
 /* Target hook definitions for C-family front ends.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -89,5 +89,20 @@ DEFHOOK
   @var{format_arg} is one recognized as a valid string reference type.",
  void, (tree format_arg, tree args_list),
  NULL)
+
+DEFHOOK
+(c_preinclude,
+ "Define this hook to return the name of a header file to be included at\
+ the start of all compilations, as if it had been included with\
+ @code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is\
+ not defined, or the header is not found, or if the user specifies\
+ @option{-ffreestanding} or @option{-nostdinc}, no header is included.\n\
+\n\
+ This hook can be used together with a header provided by the system C\
+ library to implement ISO C requirements for certain macros to be\
+ predefined that describe properties of the whole implementation rather\
+ than just the compiler.",
+ const char *, (void),
+ hook_constcharptr_void_null)
  
 HOOK_VECTOR_END (C90_EMPTY_HACK)

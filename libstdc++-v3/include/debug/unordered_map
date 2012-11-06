@@ -482,7 +482,7 @@ namespace __debug
     inline bool
     operator==(const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_equal(__y); }
+    { return __x._M_base() == __y._M_base(); }
 
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>
@@ -929,7 +929,7 @@ namespace __debug
     inline bool
     operator==(const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	       const unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
-    { return __x._M_equal(__y); }
+    { return __x._M_base() == __y._M_base(); }
 
   template<typename _Key, typename _Tp, typename _Hash,
 	   typename _Pred, typename _Alloc>

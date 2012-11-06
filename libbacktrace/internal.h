@@ -109,10 +109,16 @@ struct backtrace_state
   struct backtrace_freelist_struct *freelist;
 };
 
-/* Open a file for reading.  Returns -1 on error.  */
+/* Open a file for reading.  Returns -1 on error.  If DOES_NOT_EXIST
+   is not NULL, *DOES_NOT_EXIST will be set to 0 normally and set to 1
+   if the file does not exist.  If the file does not exist and
+   DOES_NOT_EXIST is not NULL, the function will return -1 and will
+   not call ERROR_CALLBACK.  On other errors, or if DOES_NOT_EXIST is
+   NULL, the function will call ERROR_CALLBACK before returning.  */
 extern int backtrace_open (const char *filename,
 			   backtrace_error_callback error_callback,
-			   void *data);
+			   void *data,
+			   int *does_not_exist);
 
 /* A view of the contents of a file.  This supports mmap when
    available.  A view will remain in memory even after backtrace_close

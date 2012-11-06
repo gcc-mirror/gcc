@@ -462,6 +462,7 @@ runtime_files = \
 	runtime/go-map-len.c \
 	runtime/go-map-range.c \
 	runtime/go-matherr.c \
+	runtime/go-memcmp.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-new-map.c \
@@ -536,35 +537,35 @@ goc2c: goc2c.$(OBJEXT)
 	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(LDFLAGS_FOR_BUILD) -o $@ $<
 
 malloc.c: $(srcdir)/runtime/malloc.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 mprof.c: $(srcdir)/runtime/mprof.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 runtime1.c: $(srcdir)/runtime/runtime1.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 sema.c: $(srcdir)/runtime/sema.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 sigqueue.c: $(srcdir)/runtime/sigqueue.goc goc2c
-	./goc2c --gcc --go-pkgpath os_signal $< > $@.tmp
+	./goc2c --go-pkgpath os_signal $< > $@.tmp
 	mv -f $@.tmp $@
 
 time.c: $(srcdir)/runtime/time.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 %.c: $(srcdir)/runtime/%.goc goc2c
-	./goc2c --gcc $< > $@.tmp
+	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
 go_bufio_files = \
@@ -704,7 +705,7 @@ if LIBGO_IS_SOLARIS
 go_net_cgo_file = go/net/cgo_linux.go
 go_net_sock_file = go/net/sock_solaris.go
 go_net_sockopt_file = go/net/sockopt_bsd.go
-go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_solaris.go
+go_net_sockoptip_file = go/net/sockoptip_bsd.go go/net/sockoptip_posix.go
 else
 if LIBGO_IS_FREEBSD
 go_net_cgo_file = go/net/cgo_bsd.go
@@ -829,7 +830,27 @@ endif
 if LIBGO_IS_SOLARIS
 go_os_stat_file = go/os/stat_solaris.go
 else
+if LIBGO_IS_LINUX
+go_os_stat_file = go/os/stat_atim.go
+else
+if LIBGO_IS_OPENBSD
+go_os_stat_file = go/os/stat_atim.go
+else
+if LIBGO_IS_DARWIN
+go_os_stat_file = go/os/stat_atimspec.go
+else
+if LIBGO_IS_FREEBSD
+go_os_stat_file = go/os/stat_atimspec.go
+else
+if LIBGO_IS_NETBSD
+go_os_stat_file = go/os/stat_atimspec.go
+else
 go_os_stat_file = go/os/stat.go
+endif
+endif
+endif
+endif
+endif
 endif
 
 go_os_files = \
@@ -966,6 +987,9 @@ if LIBGO_IS_LINUX
 archive_tar_atim_file = go/archive/tar/stat_atim.go
 endif
 if LIBGO_IS_OPENBSD
+archive_tar_atim_file = go/archive/tar/stat_atim.go
+endif
+if LIBGO_IS_SOLARIS
 archive_tar_atim_file = go/archive/tar/stat_atim.go
 endif
 if LIBGO_IS_DARWIN

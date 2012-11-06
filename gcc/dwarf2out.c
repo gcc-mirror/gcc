@@ -90,6 +90,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "input.h"
 #include "gimple.h"
+#include "ira.h"
+#include "lra.h"
 #include "dumpfile.h"
 #include "opts.h"
 
@@ -4620,7 +4622,10 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
   if (DECL_DEBUG_EXPR_IS_FROM (decl))
     {
       tree realdecl = DECL_DEBUG_EXPR (decl);
-      if (realdecl && handled_component_p (realdecl))
+      if (realdecl
+	  && (handled_component_p (realdecl)
+	      || (TREE_CODE (realdecl) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR)))
 	{
 	  HOST_WIDE_INT maxsize;
 	  tree innerdecl;
@@ -7592,12 +7597,16 @@ value_format (dw_attr_ref a)
     case dw_val_class_high_pc:
       switch (DWARF2_ADDR_SIZE)
 	{
-	  case 4:
-	    return DW_FORM_data4;
-	  case 8:
-	    return DW_FORM_data8;
-	  default:
-	    gcc_unreachable ();
+	case 1:
+	  return DW_FORM_data1;
+	case 2:
+	  return DW_FORM_data2;
+	case 4:
+	  return DW_FORM_data4;
+	case 8:
+	  return DW_FORM_data8;
+	default:
+	  gcc_unreachable ();
 	}
 
     default:
@@ -10162,7 +10171,9 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
      argument pointer and soft frame pointer rtx's.  */
   if (reg == arg_pointer_rtx || reg == frame_pointer_rtx)
     {
-      rtx elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      rtx elim = (ira_use_lra_p
+		  ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+		  : eliminate_regs (reg, VOIDmode, NULL_RTX));
 
       if (elim != reg)
 	{
@@ -15020,7 +15031,9 @@ compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
   offset += ARG_POINTER_CFA_OFFSET (current_function_decl);
 #endif
 
-  elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+  elim = (ira_use_lra_p
+	  ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+	  : eliminate_regs (reg, VOIDmode, NULL_RTX));
   if (GET_CODE (elim) == PLUS)
     {
       offset += INTVAL (XEXP (elim, 1));
@@ -21214,6 +21227,7 @@ static void
 prune_unused_types_prune (dw_die_ref die)
 {
   dw_die_ref c;
+  int pruned = 0;
 
   gcc_assert (die->die_mark);
   prune_unused_types_update_strings (die);
@@ -21236,13 +21250,25 @@ prune_unused_types_prune (dw_die_ref die)
 	      prev->die_sib = c->die_sib;
 	      die->die_child = prev;
 	    }
-	  return;
+	  pruned = 1;
+	  goto finished;
 	}
 
     if (c != prev->die_sib)
-      prev->die_sib = c;
+      {
+	prev->die_sib = c;
+	pruned = 1;
+      }
     prune_unused_types_prune (c);
   } while (c != die->die_child);
+
+ finished:
+  /* If we pruned children, and this is a class, mark it as a 
+     declaration to inform debuggers that this is not a complete
+     class definition.  */
+  if (pruned && die->die_mark == 1 && class_scope_p (die)
+      && ! is_declaration_die (die))
+    add_AT_flag (die, DW_AT_declaration, 1);
 }
 
 /* Remove dies representing declarations that we never use.  */

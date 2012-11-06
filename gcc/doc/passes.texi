@@ -771,7 +771,7 @@ branch instructions.  The source file for this pass is @file{gcse.c}.
 This pass attempts to replace conditional branches and surrounding
 assignments with arithmetic, boolean value producing comparison
 instructions, and conditional move instructions.  In the very last
-invocation after reload, it will generate predicated instructions
+invocation after reload/LRA, it will generate predicated instructions
 when supported by the target.  The code is located in @file{ifcvt.c}.
 
 @item Web construction
@@ -842,9 +842,9 @@ source file is @file{regmove.c}.
 The integrated register allocator (@acronym{IRA}).  It is called
 integrated because coalescing, register live range splitting, and hard
 register preferencing are done on-the-fly during coloring.  It also
-has better integration with the reload pass.  Pseudo-registers spilled
-by the allocator or the reload have still a chance to get
-hard-registers if the reload evicts some pseudo-registers from
+has better integration with the reload/LRA pass.  Pseudo-registers spilled
+by the allocator or the reload/LRA have still a chance to get
+hard-registers if the reload/LRA evicts some pseudo-registers from
 hard-registers.  The allocator helps to choose better pseudos for
 spilling based on their live ranges and to coalesce stack slots
 allocated for the spilled pseudo-registers.  IRA is a regional
@@ -875,6 +875,23 @@ instructions to save and restore call-clobbered registers around calls.
 
 Source files are @file{reload.c} and @file{reload1.c}, plus the header
 @file{reload.h} used for communication between them.
+
+@cindex Local Register Allocator (LRA)
+@item
+This pass is a modern replacement of the reload pass.  Source files
+are @file{lra.c}, @file{lra-assign.c}, @file{lra-coalesce.c},
+@file{lra-constraints.c}, @file{lra-eliminations.c},
+@file{lra-equivs.c}, @file{lra-lives.c}, @file{lra-saves.c},
+@file{lra-spills.c}, the header @file{lra-int.h} used for
+communication between them, and the header @file{lra.h} used for
+communication between LRA and the rest of compiler.
+
+Unlike the reload pass, intermediate LRA decisions are reflected in
+RTL as much as possible.  This reduces the number of target-dependent
+macros and hooks, leaving instruction constraints as the primary
+source of control.
+
+LRA is run on targets for which TARGET_LRA_P returns true.
 @end itemize
 
 @item Basic block reordering

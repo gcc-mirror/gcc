@@ -1,3 +1,113 @@
+2012-11-05  Sriraman Tallam  <tmsriram@google.com>
+
+	* class.c (add_method): Change assembler names of function versions.
+	(mark_versions_used): New static function.
+	(resolve_address_of_overloaded_function): Create dispatcher decl and
+	return address of dispatcher instead.
+	* decl.c (decls_match): Make decls unmatched for versioned
+	functions.
+	(duplicate_decls): Remove ambiguity for versioned functions.
+	Delete versioned function data for merged decls. 
+	* decl2.c (check_classfn): Check attributes of versioned functions
+	for match.
+	* call.c (get_function_version_dispatcher): New function.
+	(mark_versions_used): New static function.
+	(build_over_call): Make calls to multiversioned functions
+	to call the dispatcher.
+	(joust): For calls to multi-versioned functions, make the most
+	specialized function version win.
+
+2012-10-31  Lawrence Crowl  <crowl@google.com>
+
+	* decl2.c (var_finalized_p): Rename varpool_node to
+	varpool_node_for_decl.
+	(maybe_emit_vtables): Likewise.
+
+2012-10-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54583
+	* tree.c (build_cplus_array_type): Set TREE_NO_WARNING on the
+	TYPE_SIZE of VLAs.
+
+2012-10-31  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54955
+	* parser.c (cp_nth_tokens_can_be_std_attribute_p): Recognize the
+	'Alignas' keyword as the beginning of a c++11 attribute specifier.
+	Update the comment of the function.
+	(cp_next_tokens_can_be_gnu_attribute_p): Update the comment of the
+	function.
+
+2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/54930
+	* typeck.c (maybe_warn_about_returning_address_of_local): Use
+	OPT_Wreturn_local_addr.
+
+2012-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55081
+	* typeck2.c (store_init_value): Call fold_non_dependent_expr
+	and maybe_constant_init even for C++98.
+
+2012-10-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54984
+	* init.c (build_new): Don't turn a null *init into a pointer to
+	empty vector orig_init.
+
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53761
+	* class.c (finish_struct_1): Reject aggregates decorated with
+	__transparent_union__ which cannot be made transparent because
+	the type of the first field has a different ABI from the class
+	overall.
+
+2012-10-25  Jason Merrill  <jason@redhat.com>
+
+	Core 1402
+	* call.c (joust): An implicitly deleted move function is
+	worse than any non-deleted function.
+	* method.c (process_subob_fn): No special rules for move.
+	(synthesized_method_walk, implicitly_declare_fn): Likewise.
+	Warn about virtual base with non-trivial move assignment.
+	* cp-tree.h (struct lang_decl_fn): Remove suppress_implicit_decl.
+	(FNDECL_SUPPRESS_IMPLICIT_DECL): Remove.
+
+	* semantics.c (finish_omp_threadprivate): Call complete_type.
+
+	* class.c (one_inherited_ctor): Warn about variadic inherited ctor.
+
+2012-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* typeck.c (build_x_conditional_expr): Handle VEC_COND_EXPR.
+	* call.c (build_conditional_expr_1): Likewise.
+
+2012-10-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/34892
+	* parser.c (cp_parser_template_parameter): When
+	cp_parser_parameter_declaration parsed a default argument don't
+	see if *is_parameter_pack needs setting.
+
+2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54922
+	* semantics.c (cx_check_missing_mem_inits): Handle anonymous union
+	members.
+
+2012-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54844
+	* pt.c (tsubst_copy, tsubst_copy_and_build) <case SIZEOF_EXPR>: Use
+	tsubst instead of tsubst_copy* on types.
+
+	PR c++/54988
+	* decl2.c (cplus_decl_attributes): Don't return early
+	if attributes is NULL.
+
 2012-10-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54501

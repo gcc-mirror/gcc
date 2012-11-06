@@ -323,18 +323,13 @@ mproduct_c16 (gfc_array_c16 * const restrict retarray,
       {
 
   result = 1;
-	if (len <= 0)
-	  *dest = 1;
-	else
+	for (n = 0; n < len; n++, src += delta, msrc += mdelta)
 	  {
-	    for (n = 0; n < len; n++, src += delta, msrc += mdelta)
-	      {
 
   if (*msrc)
     result *= *src;
-	      }
-	    *dest = result;
 	  }
+	*dest = result;
       }
       /* Advance to the next element.  */
       count[0]++;

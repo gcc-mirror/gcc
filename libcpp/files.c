@@ -110,6 +110,9 @@ struct _cpp_file
 
   /* If BUFFER above contains the true contents of the file.  */
   bool buffer_valid;
+
+  /* If this file is implicitly preincluded.  */
+  bool implicit_preinclude;
 };
 
 /* A singly-linked list for all searches for a given file name, with
@@ -291,7 +294,8 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
   /* If the file is not included as first include from either the toplevel
      file or the command-line it is not a valid use of PCH.  */
   if (pfile->all_files
-      && pfile->all_files->next_file)
+      && pfile->all_files->next_file
+      && !pfile->all_files->next_file->implicit_preinclude)
     return false;
 
   flen = strlen (path);
@@ -480,9 +484,14 @@ _cpp_find_failed (_cpp_file *file)
    descriptor.  FD can be -1 if the file was found in the cache and
    had previously been closed.  To open it again pass the return value
    to open_file().
+
+   If IMPLICIT_PREINCLUDE then it is OK for the file to be missing.
+   If present, it is OK for a precompiled header to be included after
+   it.
 */
 _cpp_file *
-_cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake, int angle_brackets)
+_cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
+		bool fake, int angle_brackets, bool implicit_preinclude)
 {
   struct file_hash_entry *entry, **hash_slot;
   _cpp_file *file;
@@ -506,6 +515,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
     return entry->u.file;
 
   file = make_cpp_file (pfile, start_dir, fname);
+  file->implicit_preinclude = implicit_preinclude;
 
   /* Try each path in the include chain.  */
   for (; !fake ;)
@@ -535,7 +545,14 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
 		cpp_error (pfile, CPP_DL_ERROR,
 			   "use -Winvalid-pch for more information");
 	    }
-	  open_file_failed (pfile, file, angle_brackets);
+	  if (implicit_preinclude)
+	    {
+	      free ((char *) file->name);
+	      free (file);
+	      return NULL;
+	    }
+	  else
+	    open_file_failed (pfile, file, angle_brackets);
 	  break;
 	}
 
@@ -950,7 +967,10 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (!dir)
     return false;
 
-  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets);
+  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets,
+			 type == IT_DEFAULT);
+  if (type == IT_DEFAULT && file == NULL)
+    return false;
 
   /* Compensate for the increment in linemap_add that occurs in
      _cpp_stack_file.  In the case of a normal #include, we're
@@ -960,7 +980,8 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
      This does not apply if we found a PCH file (in which case
      linemap_add is not called) or we were included from the
      command-line.  */
-  if (file->pchname == NULL && file->err_no == 0 && type != IT_CMDLINE)
+  if (file->pchname == NULL && file->err_no == 0
+      && type != IT_CMDLINE && type != IT_DEFAULT)
     pfile->line_table->highest_location--;
 
   return _cpp_stack_file (pfile, file, type == IT_IMPORT);
@@ -1243,7 +1264,7 @@ cpp_clear_file_cache (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, true, 0);
+  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, true, 0, false);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
@@ -1361,7 +1382,7 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
   if (!dir)
     return -1;
 
-  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets);
+  file = _cpp_find_file (pfile, fname, dir, false, angle_brackets, false);
   if (file->err_no)
     return -1;
 
@@ -1380,6 +1401,15 @@ bool
 cpp_push_include (cpp_reader *pfile, const char *fname)
 {
   return _cpp_stack_include (pfile, fname, false, IT_CMDLINE);
+}
+
+/* Pushes the given file, implicitly included at the start of a
+   compilation, onto the buffer stack but without any errors if the
+   file is not found.  Returns nonzero if successful.  */
+bool
+cpp_push_default_include (cpp_reader *pfile, const char *fname)
+{
+  return _cpp_stack_include (pfile, fname, true, IT_DEFAULT);
 }
 
 /* Do appropriate cleanup when a file INC's buffer is popped off the

@@ -1636,14 +1636,15 @@ write_length_unit_log (FILE *outf)
   unsigned int length_unit_log, length_or;
   int unknown = 0;
 
-  if (length_attr == 0)
-    return;
-  length_or = or_attr_value (length_attr->default_val->value, &unknown);
-  for (av = length_attr->first_value; av; av = av->next)
-    for (ie = av->first_insn; ie; ie = ie->next)
-      length_or |= or_attr_value (av->value, &unknown);
+  if (length_attr)
+    {
+      length_or = or_attr_value (length_attr->default_val->value, &unknown);
+      for (av = length_attr->first_value; av; av = av->next)
+	for (ie = av->first_insn; ie; ie = ie->next)
+	  length_or |= or_attr_value (av->value, &unknown);
+    }
 
-  if (unknown)
+  if (length_attr == NULL || unknown)
     length_unit_log = 0;
   else
     {

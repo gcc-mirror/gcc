@@ -2345,7 +2345,6 @@ gimple_copy (gimple stmt)
   /* Clear out SSA operand vectors on COPY.  */
   if (gimple_has_ops (stmt))
     {
-      gimple_set_def_ops (copy, NULL);
       gimple_set_use_ops (copy, NULL);
 
       /* SSA operands need to be updated.  */

@@ -2,12 +2,12 @@
 
 struct A
 {
-  A(int, ...);
+  A(int, ...);			// { dg-message "declared here" }
 };
 
 struct B: A
 {
-  using A::A;
+  using A::A;			// { dg-warning "ellipsis" }
 };
 
 B b1(42);

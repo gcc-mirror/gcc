@@ -6732,7 +6732,7 @@ init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
   insn_t succ_insn;
   succ_iterator si;
 
-  SET_BIT (visited_bbs, bbi);
+  bitmap_set_bit (visited_bbs, bbi);
   if (blocks_to_reschedule)
     bitmap_clear_bit (blocks_to_reschedule, bb->index);
 
@@ -6744,7 +6744,7 @@ init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
 
       gcc_assert (in_current_region_p (succ));
 
-      if (!TEST_BIT (visited_bbs, succ_bbi))
+      if (!bitmap_bit_p (visited_bbs, succ_bbi))
 	{
 	  gcc_assert (succ_bbi > bbi);
 
@@ -6775,16 +6775,16 @@ init_seqno (bitmap blocks_to_reschedule, basic_block from)
 
   if (blocks_to_reschedule)
     {
-      sbitmap_ones (visited_bbs);
+      bitmap_ones (visited_bbs);
       EXECUTE_IF_SET_IN_BITMAP (blocks_to_reschedule, 0, bbi, bi)
         {
 	  gcc_assert (BLOCK_TO_BB (bbi) < current_nr_blocks);
-          RESET_BIT (visited_bbs, BLOCK_TO_BB (bbi));
+          bitmap_clear_bit (visited_bbs, BLOCK_TO_BB (bbi));
 	}
     }
   else
     {
-      sbitmap_zero (visited_bbs);
+      bitmap_clear (visited_bbs);
       from = EBB_FIRST_BB (0);
     }
 

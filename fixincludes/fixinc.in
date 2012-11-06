@@ -128,6 +128,22 @@ fi
 
 # # # # # # # # # # # # # # # # # # # # #
 #
+#  Check to see if the machine_name fix needs to be disabled.
+#
+#  On some platforms, machine_name doesn't work properly and
+#  breaks some of the header files.  Since everything works
+#  properly without it, just wipe the macro list to
+#  disable the fix.
+
+case "${target_canonical}" in
+    *-*-vxworks*)
+	test -f ${MACRO_LIST} &&  echo > ${MACRO_LIST}
+        ;;
+esac
+
+
+# # # # # # # # # # # # # # # # # # # # #
+#
 #  In the file macro_list are listed all the predefined
 #  macros that are not in the C89 reserved namespace (the reserved
 #  namespace is all identifiers beginnning with two underscores or one

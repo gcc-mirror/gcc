@@ -810,6 +810,7 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
 {
   struct phdr_data *pd = (struct phdr_data *) pdata;
   int descriptor;
+  int does_not_exist;
   fileline elf_fileline_fn;
   int found_dwarf;
 
@@ -821,7 +822,8 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
       || info->dlpi_addr == 0)
     return 0;
 
-  descriptor = backtrace_open (info->dlpi_name, pd->error_callback, pd->data);
+  descriptor = backtrace_open (info->dlpi_name, pd->error_callback, pd->data,
+			       &does_not_exist);
   if (descriptor < 0)
     return 0;
 

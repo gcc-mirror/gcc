@@ -84,7 +84,7 @@ process_references (struct ipa_ref_list *list,
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
     {
-      if (symtab_function_p (ref->referred))
+      if (is_a <cgraph_node> (ref->referred))
 	{
 	  struct cgraph_node *node = ipa_ref_node (ref);
 
@@ -290,10 +290,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 			      before_inlining_p, reachable);
 	}
 
-      if (symtab_function_p (node))
+      if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
 	{
-	  struct cgraph_node *cnode = cgraph (node);
-
 	  /* Mark the callees reachable unless they are direct calls to extern
  	     inline functions we decided to not inline.  */
 	  if (!in_boundary_p)
@@ -332,18 +330,18 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    }
 	}
       /* When we see constructor of external variable, keep referred nodes in the
-	 boundary.  This will also hold initializers of the external vars NODE
-	 reffers to.  */
-      if (symtab_variable_p (node)
+	boundary.  This will also hold initializers of the external vars NODE
+	refers to.  */
+      varpool_node *vnode = dyn_cast <varpool_node> (node);
+      if (vnode
 	  && DECL_EXTERNAL (node->symbol.decl)
-	  && !varpool (node)->alias
+	  && !vnode->alias
 	  && in_boundary_p)
-        {
-	  int i;
+	{
 	  struct ipa_ref *ref;
-	  for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref); i++)
+	  for (int i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref); i++)
 	    enqueue_node (ref->referred, &first, reachable);
-        }
+	}
     }
 
   /* Remove unreachable functions.   */
@@ -526,7 +524,7 @@ cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
     if (ref->use == IPA_REF_ADDR)
       {
 	struct varpool_node *node;
-	if (symtab_function_p (ref->referring))
+	if (is_a <cgraph_node> (ref->referring))
 	  return true;
 	node = ipa_ref_referring_varpool_node (ref);
 	if (!DECL_VIRTUAL_P (node->symbol.decl))
@@ -950,6 +948,7 @@ struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
  {
   SIMPLE_IPA_PASS,
   "visibility",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   local_function_and_variable_visibility,/* execute */
   NULL,					/* sub */
@@ -979,6 +978,7 @@ struct simple_ipa_opt_pass pass_ipa_free_inline_summary =
  {
   SIMPLE_IPA_PASS,
   "*free_inline_summary",		/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   NULL,					/* gate */
   free_inline_summary,			/* execute */
   NULL,					/* sub */
@@ -1017,6 +1017,7 @@ struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
  {
   IPA_PASS,
   "whole-program",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_whole_program_function_and_variable_visibility,/* gate */
   whole_program_function_and_variable_visibility,/* execute */
   NULL,					/* sub */
@@ -1100,6 +1101,7 @@ struct ipa_opt_pass_d pass_ipa_profile =
  {
   IPA_PASS,
   "profile_estimate",			/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ipa_profile,			/* gate */
   ipa_profile,			        /* execute */
   NULL,					/* sub */
@@ -1410,6 +1412,7 @@ struct ipa_opt_pass_d pass_ipa_cdtor_merge =
  {
   IPA_PASS,
   "cdtor",				/* name */
+  OPTGROUP_NONE,                        /* optinfo_flags */
   gate_ipa_cdtor_merge,			/* gate */
   ipa_cdtor_merge,		        /* execute */
   NULL,					/* sub */

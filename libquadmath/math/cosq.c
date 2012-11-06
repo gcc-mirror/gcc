@@ -1,4 +1,4 @@
-/* s_cosl.c -- long double version of s_cos.c.
+/* cosq.c -- __float128 version of s_cos.c.
  * Conversion to long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -13,13 +13,13 @@
  * ====================================================
  */
 
-/* cosl(x)
+/* cosq(x)
  * Return cosine function of x.
  *
  * kernel function:
- *	__kernel_sinl		... sine function on [-pi/4,pi/4]
- *	__kernel_cosl		... cosine function on [-pi/4,pi/4]
- *	__ieee754_rem_pio2l	... argument reduction routine
+ *	__quadmath_kernel_sinq	... sine function on [-pi/4,pi/4]
+ *	__quadmath_kernel_cosq	... cosine function on [-pi/4,pi/4]
+ *	__quadmath_rem_pio2q	... argument reduction routine
  *
  * Method.
  *      Let S,C and T denote the sin, cos and tan respectively on

@@ -185,10 +185,11 @@ AC_DEFUN([LIBAT_WORDSIZE],[
 ])
 
 dnl
-dnl Check whether the target supports ifuncs.
+dnl Check whether the target supports the ifunc attribute.
 dnl
 AC_DEFUN([LIBAT_CHECK_IFUNC], [
-  AC_CACHE_CHECK([whether the target supports funcs], libat_cv_have_ifunc, [
+  AC_CACHE_CHECK([whether the target supports the ifunc attribute],
+		 libat_cv_have_ifunc, [
   save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
   AC_TRY_LINK([
