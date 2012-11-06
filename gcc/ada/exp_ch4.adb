@@ -3715,7 +3715,7 @@ package body Exp_Ch4 is
       --  Save result type
 
       Lo, Hi : Uint;
-      --  Bounds in Minimize calls, not used yet ???
+      --  Bounds in Minimize calls, not used currently
 
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Entity for Long_Long_Integer'Base (Standard should export this???)

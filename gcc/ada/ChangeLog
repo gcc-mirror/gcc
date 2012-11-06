@@ -1,5 +1,22 @@
 2012-11-06  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb: Minor comment change.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Extensive revision of documentation of overflow
+	checking.
+	* vms_data.ads: Overflow check numbers must be in range 1-3,
+	not 0-3.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Emit a
+	warning if pragma Priority is used in presence of an interrupt
+	handler.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
 	* checks.ads, checks.adb, exp_ch4.adb: Minor changes throughout for
 	new overflow checking.
 	* exp_util.adb (Insert_Actions): Remove special casing of
