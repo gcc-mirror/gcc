@@ -2165,7 +2165,7 @@ extract_insn (rtx insn)
 	{
 	  which_alternative = i;
 	  recog_data.alternative_enabled_p[i]
-	    = HAVE_ATTR_enabled ? get_attr_enabled (insn) : 0;
+	    = HAVE_ATTR_enabled ? get_attr_enabled (insn) : 1;
 	}
     }
 
