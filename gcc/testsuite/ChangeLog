@@ -1,3 +1,14 @@
+2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	* gcc.target/i386/avx-vzeroupper-5.c: Changed scan-assembler-times.
+	* gcc.target/i386/avx-vzeroupper-8.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-9.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-10.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-11.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-12.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-19.c: Likewis.
+	* gcc.target/i386/avx-vzeroupper-27.c: New.
+
 2012-11-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54917

@@ -16,5 +16,5 @@ foo ()
   _mm256_zeroupper ();
 }
 
-/* { dg-final { scan-assembler-times "avx_vzeroupper" 1 } } */
+/* { dg-final { scan-assembler-times "avx_vzeroupper" 4 } } */
 /* { dg-final { scan-assembler-times "\\*avx_vzeroall" 1 } } */
