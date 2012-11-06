@@ -22,8 +22,6 @@
 
 // libstdc++/55123
 
-#include <memory>
-
 void f() {
   std::unique_ptr<const int> y;
   std::shared_ptr<const int> x = std::move(y);
