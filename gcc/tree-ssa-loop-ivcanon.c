@@ -140,6 +140,20 @@ struct loop_size
      instructions after exit are not executed.  */
   int last_iteration;
   int last_iteration_eliminated_by_peeling;
+  
+  /* If some IV computation will become constant.  */
+  bool constant_iv;
+
+  /* Number of call stmts that are not a builtin and are pure or const
+     present on the hot path.  */
+  int num_pure_calls_on_hot_path;
+  /* Number of call stmts that are not a builtin and are not pure nor const
+     present on the hot path.  */
+  int num_non_pure_calls_on_hot_path;
+  /* Number of statements other than calls in the loop.  */
+  int non_call_stmts_on_hot_path;
+  /* Number of branches seen on the hot path.  */
+  int num_branches_on_hot_path;
 };
 
 /* Return true if OP in STMT will be constant after peeling LOOP.  */
@@ -188,7 +202,11 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
   return true;
 }
 
-/* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.
+/* Computes an estimated number of insns in LOOP.
+   EXIT (if non-NULL) is an exite edge that will be eliminated in all but last
+   iteration of the loop.
+   EDGE_TO_CANCEL (if non-NULL) is an non-exit edge eliminated in the last iteration
+   of loop.
    Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT.  */
 
 static void
@@ -198,11 +216,17 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
   gimple_stmt_iterator gsi;
   unsigned int i;
   bool after_exit;
+  VEC (basic_block, heap) *path = get_loop_hot_path (loop);
 
   size->overall = 0;
   size->eliminated_by_peeling = 0;
   size->last_iteration = 0;
   size->last_iteration_eliminated_by_peeling = 0;
+  size->num_pure_calls_on_hot_path = 0;
+  size->num_non_pure_calls_on_hot_path = 0;
+  size->non_call_stmts_on_hot_path = 0;
+  size->num_branches_on_hot_path = 0;
+  size->constant_iv = 0;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Estimating sizes for loop %i\n", loop->num);
@@ -221,6 +245,8 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	  gimple stmt = gsi_stmt (gsi);
 	  int num = estimate_num_insns (stmt, &eni_size_weights);
 	  bool likely_eliminated = false;
+	  bool likely_eliminated_last = false;
+	  bool likely_eliminated_peeled = false;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -231,11 +257,21 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	  /* Look for reasons why we might optimize this stmt away. */
 
 	  /* Exit conditional.  */
-	  if (exit && body[i] == exit->src && stmt == last_stmt (exit->src))
+	  if (exit && body[i] == exit->src
+		   && stmt == last_stmt (exit->src))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "   Exit condition will be eliminated.\n");
-	      likely_eliminated = true;
+	        fprintf (dump_file, "   Exit condition will be eliminated "
+			 "in peeled copies.\n");
+	      likely_eliminated_peeled = true;
+	    }
+	  else if (edge_to_cancel && body[i] == edge_to_cancel->src
+		   && stmt == last_stmt (edge_to_cancel->src))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file, "   Exit condition will be eliminated "
+			 "in last copy.\n");
+	      likely_eliminated_last = true;
 	    }
 	  /* Sets of IV variables  */
 	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
@@ -249,19 +285,22 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	  /* Assignments of IV variables.  */
 	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
 		   && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-		   && constant_after_peeling (gimple_assign_rhs1 (stmt), stmt,loop)
+		   && constant_after_peeling (gimple_assign_rhs1 (stmt), stmt, loop)
 		   && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
 		       || constant_after_peeling (gimple_assign_rhs2 (stmt),
 		       				  stmt, loop)))
 	    {
+	      size->constant_iv = true;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "   Constant expression will be folded away.\n");
 	      likely_eliminated = true;
 	    }
 	  /* Conditionals.  */
-	  else if (gimple_code (stmt) == GIMPLE_COND
-		   && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
-		   && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop))
+	  else if ((gimple_code (stmt) == GIMPLE_COND
+		    && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
+		    && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop))
+		   || (gimple_code (stmt) == GIMPLE_SWITCH
+		       && constant_after_peeling (gimple_switch_index (stmt), stmt, loop)))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        fprintf (dump_file, "   Constant conditional.\n");
@@ -269,16 +308,49 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	    }
 
 	  size->overall += num;
-	  if (likely_eliminated)
+	  if (likely_eliminated || likely_eliminated_peeled)
 	    size->eliminated_by_peeling += num;
 	  if (!after_exit)
 	    {
 	      size->last_iteration += num;
-	      if (likely_eliminated)
+	      if (likely_eliminated || likely_eliminated_last)
 		size->last_iteration_eliminated_by_peeling += num;
 	    }
 	}
     }
+  while (VEC_length (basic_block, path))
+    {
+      basic_block bb = VEC_pop (basic_block, path);
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  if (gimple_code (stmt) == GIMPLE_CALL)
+	    {
+	      int flags = gimple_call_flags (stmt);
+	      tree decl = gimple_call_fndecl (stmt);
+
+	      if (decl && DECL_IS_BUILTIN (decl)
+		  && is_inexpensive_builtin (decl))
+		;
+	      else if (flags & (ECF_PURE | ECF_CONST))
+		size->num_pure_calls_on_hot_path++;
+	      else
+		size->num_non_pure_calls_on_hot_path++;
+	      size->num_branches_on_hot_path ++;
+	    }
+	  else if (gimple_code (stmt) != GIMPLE_CALL
+		   && gimple_code (stmt) != GIMPLE_DEBUG)
+	    size->non_call_stmts_on_hot_path++;
+	  if (((gimple_code (stmt) == GIMPLE_COND
+	        && (!constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
+		    || constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop)))
+	       || (gimple_code (stmt) == GIMPLE_SWITCH
+		   && !constant_after_peeling (gimple_switch_index (stmt), stmt, loop)))
+	      && (!exit || bb != exit->src))
+	    size->num_branches_on_hot_path++;
+	}
+    }
+  VEC_free (basic_block, heap, path);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "size: %i-%i, last_iteration: %i-%i\n", size->overall,
     	     size->eliminated_by_peeling, size->last_iteration,
@@ -644,34 +716,85 @@ try_unroll_loop_completely (struct loop *loop,
 		   (int) unr_insns);
 	}
 
+      /* If the code is going to shrink, we don't need to be extra cautious
+	 on guessing if the unrolling is going to be profitable.  */
+      if (unr_insns
+	  /* If there is IV variable that will become constant, we save
+	     one instruction in the loop prologue we do not account
+	     otherwise.  */
+	  <= ninsns + (size.constant_iv != false))
+	;
       /* We unroll only inner loops, because we do not consider it profitable
 	 otheriwse.  We still can cancel loopback edge of not rolling loop;
 	 this is always a good idea.  */
-      if (loop->inner && unr_insns > ninsns)
+      else if (ul == UL_NO_GROWTH)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d:"
+	    fprintf (dump_file, "Not unrolling loop %d: size would grow.\n",
+		     loop->num);
+	  return false;
+	}
+      /* Outer loops tend to be less interesting candidates for complette
+	 unrolling unless we can do a lot of propagation into the inner loop
+	 body.  For now we disable outer loop unrolling when the code would
+	 grow.  */
+      else if (loop->inner)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Not unrolling loop %d: "
 		     "it is not innermost and code would grow.\n",
 		     loop->num);
 	  return false;
 	}
-
-      if (unr_insns > ninsns
-	  && (unr_insns
-	      > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS)))
+      /* If there is call on a hot path through the loop, then
+	 there is most probably not much to optimize.  */
+      else if (size.num_non_pure_calls_on_hot_path)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d "
-		     "(--param max-completely-peeled-insns limit reached).\n",
+	    fprintf (dump_file, "Not unrolling loop %d: "
+		     "contains call and code would grow.\n",
 		     loop->num);
 	  return false;
 	}
-
-      if (ul == UL_NO_GROWTH
-	  && unr_insns > ninsns)
+      /* If there is pure/const call in the function, then we
+	 can still optimize the unrolled loop body if it contains
+	 some other interesting code than the calls and code
+	 storing or cumulating the return value.  */
+      else if (size.num_pure_calls_on_hot_path
+	       /* One IV increment, one test, one ivtmp store
+		  and one usefull stmt.  That is about minimal loop
+		  doing pure call.  */
+	       && (size.non_call_stmts_on_hot_path
+		   <= 3 + size.num_pure_calls_on_hot_path))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Not unrolling loop %d: size would grow.\n",
+	    fprintf (dump_file, "Not unrolling loop %d: "
+		     "contains just pure calls and code would grow.\n",
+		     loop->num);
+	  return false;
+	}
+      /* Complette unrolling is major win when control flow is removed and
+	 one big basic block is created.  If the loop contains control flow
+	 the optimization may still be a win because of eliminating the loop
+	 overhead but it also may blow the branch predictor tables.
+	 Limit number of branches on the hot path through the peeled
+	 sequence.  */
+      else if (size.num_branches_on_hot_path * (int)n_unroll
+	       > PARAM_VALUE (PARAM_MAX_PEEL_BRANCHES))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Not unrolling loop %d: "
+		     " number of branches on hot path in the unrolled sequence"
+		     " reach --param max-peel-branches limit.\n",
+		     loop->num);
+	  return false;
+	}
+      else if (unr_insns
+	       > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Not unrolling loop %d: "
+		     "(--param max-completely-peeled-insns limit reached).\n",
 		     loop->num);
 	  return false;
 	}
@@ -689,6 +812,8 @@ try_unroll_loop_completely (struct loop *loop,
 	{
           free_original_copy_tables ();
 	  free (wont_exit);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Failed to duplicate the loop\n");
 	  return false;
 	}
 
@@ -968,7 +1093,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	{
 	  struct loop *loop_father = loop_outer (loop);
 
-	  if (may_increase_size && optimize_loop_for_speed_p (loop)
+	  if (may_increase_size && optimize_loop_nest_for_speed_p (loop)
 	      /* Unroll outermost loops only if asked to do so or they do
 		 not cause code growth.  */
 	      && (unroll_outer || loop_outer (loop_father)))
