@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,78 @@ with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 
 package body Exp_VFpt is
+
+   --  Vax floating point format (from Vax Architecture Reference Manual
+   --  version 6):
+   --
+   --  Float F:
+   --  --------
+   --
+   --   1 1
+   --   5 4             7 6            0
+   --  +-+---------------+--------------+
+   --  |S|     exp       |   fraction   |  A
+   --  +-+---------------+--------------+
+   --  |             fraction           |  A + 2
+   --  +--------------------------------+
+   --
+   --  bit 15 is the sign bit,
+   --  bits 14:7 is the excess 128 binary exponent,
+   --  bits 6:0 and 31:16 the normalized 24-bit fraction with the redundant
+   --    most significant fraction bit not represented.
+   --
+   --  An exponent value of 0 together with a sign bit of 0, is taken to
+   --  indicate that the datum has a value of 0. Exponent values of 1 through
+   --  255 indicate true binary exponents of -127 to +127. An exponent value
+   --  of 0, together with a sign bit of 1, is taken as reserved.
+   --
+   --  Note that fraction bits are not continuous in memory, VAX is little
+   --  endian (LSB first).
+   --
+   --  Float D:
+   --  --------
+   --
+   --   1 1
+   --   5 4             7 6            0
+   --  +-+---------------+--------------+
+   --  |S|     exp       |   fraction   |  A
+   --  +-+---------------+--------------+
+   --  |             fraction           |  A + 2
+   --  +--------------------------------+
+   --  |             fraction           |  A + 4
+   --  +--------------------------------+
+   --  |             fraction           |  A + 6
+   --  +--------------------------------+
+   --
+   --  Like Float F but with 55 bits for the fraction.
+   --
+   --  Float G:
+   --  --------
+   --
+   --   1 1
+   --   5 4                   4 3      0
+   --  +-+---------------------+--------+
+   --  |S|     exp             |  fract |  A
+   --  +-+---------------------+--------+
+   --  |             fraction           |  A + 2
+   --  +--------------------------------+
+   --  |             fraction           |  A + 4
+   --  +--------------------------------+
+   --  |             fraction           |  A + 6
+   --  +--------------------------------+
+   --
+   --  Exponent values of 1 through 2047 indicate trye binary exponents of
+   --  -1023 to +1023.
+   --
+   --  Main differences compared to IEEE 754:
+   --
+   --  * No denormalized numbers
+   --  * No infinity
+   --  * No NaN
+   --  * No -0.0
+   --  * Reserved values (exp = 0, sign = 1)
+   --  * Vax mantissa represent values [0.5, 1)
+   --  * Bias is shifted by 1 (for single float: 128 on Vax, 127 on IEEE)
 
    VAXFF_Digits : constant := 6;
    VAXDF_Digits : constant := 9;

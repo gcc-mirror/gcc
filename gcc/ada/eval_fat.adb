@@ -371,9 +371,14 @@ package body Eval_Fat is
          case Mode is
             when Round_Even =>
 
-               --  This rounding mode should not be used for static
-               --  expressions, but only for compile-time evaluation of
-               --  non-static expressions.
+               --  This rounding mode corresponds to the unbiased rounding
+               --  method that is used at run time. When the real value is
+               --  exactly between two machine numbers, choose the machine
+               --  number with its least significant bit equal to zero.
+
+               --  The recommendation advice in RM 4.9(38) is that static
+               --  expressions are rounded to machine numbers in the same
+               --  way as the target machine does.
 
                if (Even and then N * 2 > D)
                      or else
@@ -386,7 +391,9 @@ package body Eval_Fat is
 
                --  Do not round to even as is done with IEEE arithmetic, but
                --  instead round away from zero when the result is exactly
-               --  between two machine numbers. See RM 4.9(38).
+               --  between two machine numbers. This biased rounding method
+               --  should not be used to convert static expressions to
+               --  machine numbers, see AI95-268.
 
                if N * 2 >= D then
                   Fraction := Fraction + 1;
@@ -513,7 +520,7 @@ package body Eval_Fat is
                                         - Machine_Mantissa_Value (RT) + Uint_1;
          begin
             if X_Exp < Emin_Den or not Denorm_On_Target then
-               if UR_Is_Negative (X) then
+               if Signed_Zeros_On_Target and then UR_Is_Negative (X) then
                   Error_Msg_N
                     ("floating-point value underflows to -0.0?", Enode);
                   return Ureal_M_0;

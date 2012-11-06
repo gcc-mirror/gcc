@@ -1,3 +1,17 @@
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_vfpt.adb: Document VAX float point layout.
+
+2012-11-06  Geert Bosch  <bosch@adacore.com>
+
+	* eval_fat.adb (Machine): Don't return -0.0 on targets without
+	signed zeros.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Entry_Call_Alternative,
+	Check_Triggering_Statement): Reject properly an indirect call.
+
 2012-11-06  Pascal Obry  <obry@adacore.com>
 
 	* xoscons.adb, xutil.adb, xutil.ads: Add support for post-processing.

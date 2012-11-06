@@ -1470,6 +1470,15 @@ package body Sem_Ch9 is
 
       Analyze (Call);
 
+      --  An indirect call in this context  is illegal. A procedure call that
+      --  does not involve a renaming of an entry is illegal as well, but this
+      --  and other semantic errors are caught during resolution.
+
+      if Nkind (Call) = N_Explicit_Dereference then
+         Error_Msg_N
+           ("entry call or dispatching primitive of interface required ", N);
+      end if;
+
       if Is_Non_Empty_List (Statements (N)) then
          Analyze_Statements (Statements (N));
       end if;
@@ -3304,6 +3313,11 @@ package body Sem_Ch9 is
                  ("dispatching operation of limited or synchronized " &
                   "interface required (RM 9.7.2(3))!", Error_Node);
             end if;
+
+         elsif Nkind (Trigger) = N_Explicit_Dereference then
+            Error_Msg_N
+              ("entry call or dispatching primitive of interface required ",
+                Trigger);
          end if;
       end if;
    end Check_Triggering_Statement;
