@@ -1,3 +1,8 @@
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/l_fma_float_?.c: Update.
+	* gcc.target/i386/l_fma_double_?.c: Update.
+
 2012-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089

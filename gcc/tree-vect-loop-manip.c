@@ -1954,9 +1954,16 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
      by ratio_mult_vf_name steps.  */
   vect_update_ivs_after_vectorizer (loop_vinfo, ratio_mult_vf_name, update_e);
 
-  max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
+  /* For vectorization factor N, we need to copy last N-1 values in epilogue
+     and this means N-2 loopback edge executions.
+
+     PEELING_FOR_GAPS works by subtracting last iteration and thus the epilogue
+     will execute at least LOOP_VINFO_VECT_FACTOR times.  */
+  max_iter = (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+	      ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) * 2
+	      : LOOP_VINFO_VECT_FACTOR (loop_vinfo)) - 2;
   if (check_profitability)
-    max_iter = MAX (max_iter, (int) th);
+    max_iter = MAX (max_iter, (int) th - 1);
   record_niter_bound (new_loop, double_int::from_shwi (max_iter), false, true);
   dump_printf (MSG_OPTIMIZED_LOCATIONS,
                "Setting upper bound of nb iterations for epilogue "
@@ -2186,9 +2193,11 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
 #ifdef ENABLE_CHECKING
   slpeel_verify_cfg_after_peeling (new_loop, loop);
 #endif
-  max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
+  /* For vectorization factor N, we need to copy at most N-1 values 
+     for alignment and this means N-2 loopback edge executions.  */
+  max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 2;
   if (check_profitability)
-    max_iter = MAX (max_iter, (int) th);
+    max_iter = MAX (max_iter, (int) th - 1);
   record_niter_bound (new_loop, double_int::from_shwi (max_iter), false, true);
   dump_printf (MSG_OPTIMIZED_LOCATIONS,
                "Setting upper bound of nb iterations for prologue "
