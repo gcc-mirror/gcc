@@ -1840,7 +1840,7 @@ aarch64_expand_prologue (void)
 	       - original_frame_size
 	       - cfun->machine->frame.saved_regs_size);
 
-  /* Store pairs and load pairs have a range only of +/- 512.  */
+  /* Store pairs and load pairs have a range only -512 to 504.  */
   if (offset >= 512)
     {
       /* When the frame has a large size, an initial decrease is done on
@@ -1988,6 +1988,7 @@ aarch64_expand_epilogue (bool for_sibcall)
   HOST_WIDE_INT original_frame_size, frame_size, offset;
   HOST_WIDE_INT fp_offset;
   rtx insn;
+  rtx cfa_reg;
 
   aarch64_layout_frame ();
   original_frame_size = get_frame_size () + cfun->machine->saved_varargs_size;
@@ -2000,7 +2001,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 	       - original_frame_size
 	       - cfun->machine->frame.saved_regs_size);
 
-  /* Store pairs and load pairs have a range only of +/- 512.  */
+  cfa_reg = frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx;
+
+  /* Store pairs and load pairs have a range only -512 to 504.  */
   if (offset >= 512)
     {
       offset = original_frame_size + cfun->machine->frame.saved_regs_size;
@@ -2031,6 +2034,10 @@ aarch64_expand_epilogue (bool for_sibcall)
 				       hard_frame_pointer_rtx,
 				       GEN_INT (- fp_offset)));
       RTX_FRAME_RELATED_P (insn) = 1;
+      /* As SP is set to (FP - fp_offset), according to the rules in
+	 dwarf2cfi.c:dwarf2out_frame_debug_expr, CFA should be calculated
+	 from the value of SP from now on.  */
+      cfa_reg = stack_pointer_rtx;
     }
 
   aarch64_save_or_restore_callee_save_registers
@@ -2070,11 +2077,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 				 GEN_INT (offset),
 				 GEN_INT (GET_MODE_SIZE (DImode) + offset)));
 	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
-	      aarch64_set_frame_expr (gen_rtx_SET
-				      (Pmode,
-				       stack_pointer_rtx,
-				       gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-						     GEN_INT (offset))));
+	      add_reg_note (insn, REG_CFA_ADJUST_CFA,
+			    (gen_rtx_SET (Pmode, stack_pointer_rtx,
+					  plus_constant (cfa_reg, offset))));
 	    }
 
 	  /* The first part of a frame-related parallel insn
@@ -2094,7 +2099,6 @@ aarch64_expand_epilogue (bool for_sibcall)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	}
-
       else
 	{
 	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx,
