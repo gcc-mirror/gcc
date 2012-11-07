@@ -1,3 +1,9 @@
+2012-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/55219
+	* fold-const.c (fold_binary_op_with_conditional_arg): Do not fold if
+	the argument is itself a conditional expression.
+
 2012-10-30  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
