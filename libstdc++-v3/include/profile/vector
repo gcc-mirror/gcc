@@ -84,8 +84,8 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       explicit
-      vector(size_type __n)
-      : _Base(__n)
+      vector(size_type __n, const _Allocator& __a = _Allocator())
+      : _Base(__n, __a)
       {
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);
@@ -147,7 +147,7 @@ namespace __profile
       }
 
       vector(const _Base& __x, const _Allocator& __a)
-      : _Base(__x) 
+      : _Base(__x, __a)
       { 
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);

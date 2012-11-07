@@ -1,3 +1,20 @@
+2012-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_vector.h (vector(size_type)): Add missing allocator
+	parameter.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/debug/vector (vector(size_type)): Likewise.
+	* include/profile/vector (vector(size_type)): Likewise. Pass allocator
+	to base constructor.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2012-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/51850
