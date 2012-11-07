@@ -381,35 +381,36 @@ C ObjC C++ ObjC++ Var(warn_float_equal) Warning
 Warn if testing floating point numbers for equality
 
 Wformat
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Warning Alias(Wformat=, 1, 0)
 Warn about printf/scanf/strftime/strfmon format string anomalies
 
+Wformat-contains-nul
+C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+Warn about format strings that contain NUL bytes
+
 Wformat-extra-args
-C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning
+C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn if passing too many arguments to a function for its format string
 
 Wformat-nonliteral
-C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning
+C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
 Warn about format strings that are not literals
 
-Wformat-contains-nul
-C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning
-Warn about format strings that contain NUL bytes
-
 Wformat-security
-C ObjC C++ ObjC++ Var(warn_format_security) Warning
+C ObjC C++ ObjC++ Var(warn_format_security) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
 Warn about possible security problems with format functions
 
 Wformat-y2k
-C ObjC C++ ObjC++ Var(warn_format_y2k) Warning
+C ObjC C++ ObjC++ Var(warn_format_y2k) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 2, 0)
 Warn about strftime formats yielding 2-digit years
 
 Wformat-zero-length
-C ObjC C++ ObjC++ Var(warn_format_zero_length) Warning
+C ObjC C++ ObjC++ Var(warn_format_zero_length) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 1, 0)
 Warn about zero-length formats
 
 Wformat=
-C ObjC C++ ObjC++ Joined Warning
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
+Warn about printf/scanf/strftime/strfmon format string anomalies
 
 Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
@@ -558,8 +559,12 @@ C++ ObjC++ Var(warn_nonvdtor) Warning
 Warn about non-virtual destructors
 
 Wnonnull
-C ObjC C++ ObjC++ Var(warn_nonnull) Warning
+C ObjC C++ ObjC++ Var(warn_nonnull) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 1,0)
 Warn about NULL being passed to argument slots marked as requiring non-NULL
+
+Wnonnull
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+;
 
 Wnormalized=
 C ObjC C++ ObjC++ Joined Warning

@@ -358,7 +358,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wall:
       /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
-      set_Wformat (value);
 
       cpp_opts->warn_trigraphs = value;
       cpp_opts->warn_comments = value;
@@ -383,14 +382,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wendif_labels:
       cpp_opts->warn_endif_labels = value;
-      break;
-
-    case OPT_Wformat:
-      set_Wformat (value);
-      break;
-
-    case OPT_Wformat_:
-      set_Wformat (atoi (arg));
       break;
 
     case OPT_Winvalid_pch:

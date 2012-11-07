@@ -193,11 +193,6 @@ const char *pch_file;
    user's namespace.  */
 int flag_iso;
 
-/* Warn about format/argument anomalies in calls to formatted I/O functions
-   (*printf, *scanf, strftime, strfmon, etc.).  */
-
-int warn_format;
-
 /* C/ObjC language option variables.  */
 
 
@@ -8495,7 +8490,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 	 in position >= the number of fixed arguments.  */
       if ((nargs - 1 - pos) < len)
 	{
-	  warning (OPT_Wformat,
+	  warning (OPT_Wformat_,
 		   "not enough variable arguments to fit a sentinel");
 	  return;
 	}
@@ -8510,7 +8505,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 	     users to cast the NULL they have written there.
 	     We warn with -Wstrict-null-sentinel, though.  */
 	  && (warn_strict_null_sentinel || null_node != sentinel))
-	warning (OPT_Wformat, "missing sentinel in function call");
+	warning (OPT_Wformat_, "missing sentinel in function call");
     }
 }
 

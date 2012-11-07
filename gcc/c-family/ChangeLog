@@ -1,6 +1,29 @@
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
+	* c.opt (Wformat): Make it Alias Wformat=1.
+	(Wformat-contains-nul,Wformat-extra-args,Wformat-nonliteral,
+	Wformat-security,Wformat-y2k,Wformat-zero-length): Use
+	LangEnabledBy.
+	(Wformat=): RejectNegative. Use LangEnabledBy.
+	(Wnonnull): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not handle Wformat here.
+	* c-format.c (set_Wformat): Delete.
+	(decode_format_attr): Replace OPT_Wformat with OPT_Wformat_.
+        (maybe_read_dollar_number):  Likewise.
+        (avoid_dollar_number):  Likewise.
+        (finish_dollar_format_checking):  Likewise.
+        (check_format_info):  Likewise.
+        (check_format_info_main):  Likewise.
+        (check_format_types):  Likewise.
+        (format_type_warning):  Likewise.
+        * c-common.c (int):  Likewise.
+        (check_function_sentinel):  Likewise.
+        * c-common.h (warn_format,set_Wformat): Do not declare here.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
 	* c.opt(Warray-bounds,Wdelete-non-virtual-dtor,Wenum-compare,
 	Wmain,Woverlength-strings, Wunknown-pragmas,Wunused-macros):
 	Use LangEnabledBy.
