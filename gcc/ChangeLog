@@ -1,3 +1,9 @@
+2012-11-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR middle-end/49220
+	* mode-switching.c (create_pre_exit): Set short_block if there
+	are no copy insns.
+
 2012-11-07  Martin Jambor  <mjambor@suse.cz>
 
 	* lto-cgraph.c: Include tree-pass.h.
