@@ -1,3 +1,12 @@
+2012-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (true_predicate, single_cond_predicate,
+	reset_inline_edge_summary): Fix
+	formatting.
+	(account_size_time): Bump up the limit on number of size/time entries to
+	256.
+	(estimate_function_body_sizes): Work in reverse postorder.
+
 2012-11-07  David S. Miller  <davem@davemloft.net>
 
 	PR bootstrap/55211
