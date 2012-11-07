@@ -682,6 +682,11 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	    new_out_reg = gen_lowpart_SUBREG (outmode, reg);
 	  else
 	    new_out_reg = gen_rtx_SUBREG (outmode, reg, 0);
+	  /* If the input reg is dying here, we can use the same hard
+	     register for REG and IN_RTX.  */
+	  if (REG_P (in_rtx)
+	      && find_regno_note (curr_insn, REG_DEAD, REGNO (in_rtx)))
+	    lra_reg_info[REGNO (reg)].val = lra_reg_info[REGNO (in_rtx)].val;
 	}
       else
 	{
@@ -698,6 +703,19 @@ match_reload (signed char out, signed char *ins, enum reg_class goal_class,
 	     it at the end of LRA work.  */
 	  clobber = emit_clobber (new_out_reg);
 	  LRA_TEMP_CLOBBER_P (PATTERN (clobber)) = 1;
+	  if (GET_CODE (in_rtx) == SUBREG)
+	    {
+	      rtx subreg_reg = SUBREG_REG (in_rtx);
+	      
+	      /* If SUBREG_REG is dying here and sub-registers IN_RTX
+		 and NEW_IN_REG are similar, we can use the same hard
+		 register for REG and SUBREG_REG.  */
+	      if (REG_P (subreg_reg) && GET_MODE (subreg_reg) == outmode
+		  && SUBREG_BYTE (in_rtx) == SUBREG_BYTE (new_in_reg)
+		  && find_regno_note (curr_insn, REG_DEAD, REGNO (subreg_reg)))
+		lra_reg_info[REGNO (reg)].val
+		  = lra_reg_info[REGNO (subreg_reg)].val;
+	    }
 	}
     }
   else

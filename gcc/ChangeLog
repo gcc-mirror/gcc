@@ -1,3 +1,9 @@
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55122
+	* lra-constraints.c (match_reload): Sync values for dead input
+	pseudos.
+
 2012-11-07  Richard Henderson  <rth@redhat.com>
 
 	* trans-mem.c (pass_ipa_tm): Don't use TODO_update_ssa.
