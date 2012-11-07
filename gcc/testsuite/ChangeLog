@@ -1,3 +1,8 @@
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: Use ia32 instead of x86_64.
+
 2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/cunroll-1.c: Scan cunrolli dump.
