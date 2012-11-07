@@ -1,3 +1,34 @@
+2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/array (_GLIBCXX_THROW_OR_ABORT): Move...
+	* include/bits/c++config: ... here.
+	* include/bits/shared_ptr_base.h (__throw_bad_weak_ptr): Use it.
+	* include/ext/pb_ds/exception.hpp: Likewise.
+	* include/ext/throw_allocator.h (__throw_forced_error): Likewise.
+	* include/ext/concurrence.h (__throw_concurrence_lock_error,
+	__throw_concurrence_unlock_error, __throw_concurrence_broadcast_error,
+	__throw_concurrence_wait_error): Likewise.
+	* include/tr1/shared_ptr.h (__throw_bad_weak_ptr): Likewise.
+	* include/tr1/functional (function<_Res(_ArgTypes...)>::operator()
+	(_ArgTypes...)): Likewise.
+	* libsupc++/eh_aux_runtime.cc (__cxxabiv1::__cxa_bad_cast,
+	__cxxabiv1::__cxa_bad_typeid): Likewise.
+	* libsupc++/vec.cc (compute_size): Likewise.
+	* libsupc++/new_op.cc (operator new (std::size_t)): Likewise.
+	* src/c++11/functexcept.cc: Likewise.
+	* testsuite/util/io/illegal_input_error.hpp
+	(__throw_illegal_input_error): Likewise.
+	* libsupc++/eh_personality.cc: Avoid warning with -fno-exceptions.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+
 2012-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_vector.h (vector(size_type)): Add missing allocator

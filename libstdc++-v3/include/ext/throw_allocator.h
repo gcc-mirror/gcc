@@ -77,14 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Substitute for forced_error object when -fno-exceptions.
   inline void
   __throw_forced_error()
-  {
-#if __EXCEPTIONS
-    throw forced_error();
-#else
-    __builtin_abort();
-#endif
-  }
-
+  { _GLIBCXX_THROW_OR_ABORT(forced_error()); }
 
   /**
    *  @brief Base class for checking address and label information

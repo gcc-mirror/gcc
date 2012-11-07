@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-
 
 // Copyright (C) 2004 Ami Tavory and Vladimir Dreizin, IBM-HRL.
 
@@ -49,13 +48,7 @@ namespace __gnu_pbds
     // Substitute for concurrence_error object in the case of -fno-exceptions.
     inline void
     __throw_illegal_input_error()
-    {
-#if __EXCEPTIONS
-      throw illegal_input_error();
-#else
-      __builtin_abort();
-#endif
-    }
+    { _GLIBCXX_THROW_OR_ABORT(illegal_input_error()); }
   } // namespace test
 } // namespace __gnu_pbds
 

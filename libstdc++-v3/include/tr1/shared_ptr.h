@@ -1,7 +1,6 @@
 // <tr1/shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
-// Free Software Foundation, Inc.
+// Copyright (C) 2007-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,13 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Substitute for bad_weak_ptr object in the case of -fno-exceptions.
   inline void
   __throw_bad_weak_ptr()
-  {
-#if __EXCEPTIONS
-    throw bad_weak_ptr();
-#else
-    __builtin_abort();
-#endif
-  }
+  { _GLIBCXX_THROW_OR_ABORT(bad_weak_ptr()); }
 
   using __gnu_cxx::_Lock_policy;
   using __gnu_cxx::__default_lock_policy;

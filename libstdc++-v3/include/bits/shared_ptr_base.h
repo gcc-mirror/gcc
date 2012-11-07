@@ -73,13 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Substitute for bad_weak_ptr object in the case of -fno-exceptions.
   inline void
   __throw_bad_weak_ptr()
-  {
-#if __EXCEPTIONS
-    throw bad_weak_ptr();
-#else
-    __builtin_abort();
-#endif
-  }
+  { _GLIBCXX_THROW_OR_ABORT(bad_weak_ptr()); }
 
   using __gnu_cxx::_Lock_policy;
   using __gnu_cxx::__default_lock_policy;
