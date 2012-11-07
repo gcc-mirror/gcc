@@ -1,3 +1,12 @@
+2012-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	* lto-cgraph.c: Include tree-pass.h.
+	(lto_output_node): Stream node->ipa_transforms_to_apply.
+	(input_node): Likewise.
+	* tree-pass.h (passes_by_id): Declare.
+	(passes_by_id_size): Likewise.
+	* Makefile.in (lto-cgraph.o): Add TREE_PASS_H to dependencies.
+
 2012-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (true_predicate, single_cond_predicate,
