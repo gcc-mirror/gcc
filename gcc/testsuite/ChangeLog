@@ -1,5 +1,10 @@
 2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: Compile it only for x86_64.
+
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/55122
 	* gcc.dg/pr55122.c: New test.
 
