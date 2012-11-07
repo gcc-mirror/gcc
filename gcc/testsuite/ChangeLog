@@ -1,3 +1,8 @@
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/51294
+	* c-c++-common/pr51294.c: New.
+
 2012-11-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/53787
