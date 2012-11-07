@@ -2079,7 +2079,8 @@ aarch64_expand_epilogue (bool for_sibcall)
 	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 2)) = 1;
 	      add_reg_note (insn, REG_CFA_ADJUST_CFA,
 			    (gen_rtx_SET (Pmode, stack_pointer_rtx,
-					  plus_constant (cfa_reg, offset))));
+					  plus_constant (Pmode, cfa_reg,
+							 offset))));
 	    }
 
 	  /* The first part of a frame-related parallel insn
