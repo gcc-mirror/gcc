@@ -1,3 +1,10 @@
+2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (enum upper_128bits_state): Remove.
+	(check_avx256_store): Use bool pointer argument.
+	(ix86_avx_u128_mode_needed): Use note_stores also for CALL insns.
+	* config/i386/predicates.md (vzeroupper_operation): Use match_test.
+
 2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_prologue): For the
@@ -23,19 +30,18 @@
 2012-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (true_predicate, single_cond_predicate,
-	reset_inline_edge_summary): Fix
-	formatting.
-	(account_size_time): Bump up the limit on number of size/time entries to
-	256.
+	reset_inline_edge_summary): Fix formatting.
+	(account_size_time): Bump up the limit on number of size/time
+	entries to 256.
 	(estimate_function_body_sizes): Work in reverse postorder.
 
 2012-11-07  David S. Miller  <davem@davemloft.net>
 
 	PR bootstrap/55211
 	Revert:
-    	* config/sparc/constraints.md ("U"): Delete.
-    	* config/sparc/sparc.md: Use 'r' constraint instead of 'U'.
-    	* config/sparc/sync.md: Likewise.
+	* config/sparc/constraints.md ("U"): Delete.
+	* config/sparc/sparc.md: Use 'r' constraint instead of 'U'.
+	* config/sparc/sync.md: Likewise.
 	And revert parts of:
 	* doc/md.texi: Sync sparc constraint documentation with reality.
 
@@ -55,7 +61,7 @@
 	* dwarf2out.c (output_comdat_type_unit): Check for OBJECT_FORMAT_ELF.
 
 2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	* cfg-flags.def (TM_UNINSTRUMENTED, TM_ABORT): New.
 	* trans-mem.c (PROB_VERY_LIKELY, PROB_UNLIKELY, PROB_LIKELY): New.

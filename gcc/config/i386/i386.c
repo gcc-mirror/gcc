@@ -65,27 +65,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-flow.h"
 
-enum upper_128bits_state
-{
-  unknown = 0,
-  unused,
-  used
-};
-
 /* Check if a 256bit AVX register is referenced in stores.   */
 
 static void
 check_avx256_stores (rtx dest, const_rtx set, void *data)
 {
-  if (((REG_P (dest) || MEM_P(dest))
+  if (((REG_P (dest) || MEM_P (dest))
        && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (dest)))
       || (GET_CODE (set) == SET
 	  && (REG_P (SET_SRC (set)) || MEM_P (SET_SRC (set)))
 	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (SET_SRC (set)))))
     {
-      enum upper_128bits_state *state
-	= (enum upper_128bits_state *) data;
-      *state = used;
+      bool *used = (bool *) data;
+      *used = true;
     }
 }
 
@@ -14967,23 +14959,24 @@ output_387_binary_op (rtx insn, rtx *operands)
 static int
 ix86_avx_u128_mode_needed (rtx insn)
 {
-  rtx pat = PATTERN (insn);
-  rtx arg;
-  enum upper_128bits_state state;
+  bool avx_u128_used;
 
   if (CALL_P (insn))
     {
+      rtx link;
+
       /* Needed mode is set to AVX_U128_CLEAN if there are
 	 no 256bit modes used in function arguments.  */
-      for (arg = CALL_INSN_FUNCTION_USAGE (insn); arg;
-	   arg = XEXP (arg, 1))
+      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+	   link;
+	   link = XEXP (link, 1))
 	{
-	  if (GET_CODE (XEXP (arg, 0)) == USE)
+	  if (GET_CODE (XEXP (link, 0)) == USE)
 	    {
-	      rtx reg = XEXP (XEXP (arg, 0), 0);
+	      rtx arg = XEXP (XEXP (link, 0), 0);
 
-	      if (reg && REG_P (reg)
-		  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
+	      if (REG_P (arg)
+		  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (arg)))
 		return AVX_U128_ANY;
 	    }
 	}
@@ -14992,10 +14985,11 @@ ix86_avx_u128_mode_needed (rtx insn)
     }
 
   /* Check if a 256bit AVX register is referenced in stores.  */
-  state = unused;
-  note_stores (pat, check_avx256_stores, &state);
-  if (state == used)
+  avx_u128_used = false;
+  note_stores (PATTERN (insn), check_avx256_stores, &avx_u128_used);
+  if (avx_u128_used)
     return AVX_U128_DIRTY;
+
   return AVX_U128_ANY;
 }
 
@@ -15079,39 +15073,21 @@ static int
 ix86_avx_u128_mode_after (int mode, rtx insn)
 {
   rtx pat = PATTERN (insn);
-  rtx reg = NULL;
-  int i;
-  enum upper_128bits_state state;
-
-  /* Check for CALL instruction.  */
-  if (CALL_P (insn))
-    {
-      if (GET_CODE (pat) == SET)
-	reg = SET_DEST (pat);
-      else if (GET_CODE (pat) == PARALLEL)
-	for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
-	  {
-	    rtx x = XVECEXP (pat, 0, i);
-	    if (GET_CODE(x) == SET)
-	      reg = SET_DEST (x);
-	  }
-      /* Mode after call is set to AVX_U128_DIRTY if there are
-	 256bit modes used in the function return register.  */
-      if (reg && REG_P (reg) && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
-	return AVX_U128_DIRTY;
-      else
-	return AVX_U128_CLEAN;
-    }
+  bool avx_u128_used;
 
   if (vzeroupper_operation (pat, VOIDmode)
       || vzeroall_operation (pat, VOIDmode))
     return AVX_U128_CLEAN;
 
   /* Check if a 256bit AVX register is referenced in stores.  */
-  state = unused;
-  note_stores (pat, check_avx256_stores, &state);
-  if (state == used)
+  avx_u128_used = false;
+  note_stores (pat, check_avx256_stores, &avx_u128_used);
+  if (avx_u128_used)
     return AVX_U128_DIRTY;
+  /* We know that state is clean after CALL insn if there are no
+     256bit modes used in the function return register.  */
+  else if (CALL_P (insn))
+    return AVX_U128_CLEAN;
 
   return mode;
 }
@@ -15145,9 +15121,10 @@ ix86_avx_u128_mode_entry (void)
   for (arg = DECL_ARGUMENTS (current_function_decl); arg;
        arg = TREE_CHAIN (arg))
     {
-      rtx reg = DECL_INCOMING_RTL (arg);
+      rtx incoming = DECL_INCOMING_RTL (arg);
 
-      if (reg && REG_P (reg) && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
+      if (incoming && REG_P (incoming)
+	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (incoming)))
 	return AVX_U128_DIRTY;
     }
 
