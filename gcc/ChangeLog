@@ -1,3 +1,11 @@
+2012-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54693
+	* tree-flow.h (propagate_threaded_block_debug_into): New prototype.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): No
+	longer static.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Use it.
+
 2012-11-06  Sterling Augustine <saugustine@google.com>
 
 	* dwarf2out.c (output_comdat_type_unit): Check for OBJECT_FORMAT_ELF.
