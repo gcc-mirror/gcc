@@ -268,6 +268,10 @@ Wall
 C ObjC C++ ObjC++ Warning
 Enable most warning messages
 
+Warray-bounds
+LangEnabledBy(C ObjC C++ ObjC++,Wall)
+; in common.opt
+
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector
@@ -332,6 +336,10 @@ Wdelete-non-virtual-dtor
 C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about deleting polymorphic objects with non-virtual destructors
 
+Wdelete-non-virtual-dtor
+LangEnabledBy(C++ ObjC++,Weffc++)
+;
+
 Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
@@ -353,8 +361,12 @@ C ObjC C++ ObjC++ Warning
 Warn about stray tokens after #elif and #endif
 
 Wenum-compare
-C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall)
 Warn about comparison of different enum types
+
+Wenum-compare
+LangEnabledBy(C ObjC,Wc++-compat)
+;
 
 Werror
 C ObjC C++ ObjC++
@@ -459,8 +471,12 @@ C ObjC C++ ObjC++ Var(warn_long_long) Init(-1) Warning
 Do not warn about using \"long long\" when -pedantic
 
 Wmain
-C ObjC C++ ObjC++ Var(warn_main) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_main) Init(-1) Warning LangEnabledBy(C ObjC,Wall, 2, 0)
 Warn about suspicious declarations of \"main\"
+
+Wmain
+LangEnabledBy(C ObjC C++ ObjC++,Wpedantic, 2, 0)
+;
 
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
@@ -480,6 +496,18 @@ C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C Obj
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes
+
+Wswitch
+C ObjC C++ ObjC++ Var(warn_switch) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about enumerated switches, with no default, missing a case
+
+Wswitch-default
+C ObjC C++ ObjC++ Var(warn_switch_default) Warning
+Warn about enumerated switches missing a \"default:\" statement
+
+Wswitch-enum
+C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
+Warn about all enumerated switches missing a specific case
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
@@ -550,7 +578,7 @@ C ObjC Var(warn_old_style_definition) Warning
 Warn if an old-style parameter definition is used
 
 Woverlength-strings
-C ObjC C++ ObjC++ Var(warn_overlength_strings) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_overlength_strings) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn if a string is longer than the maximum portable length specified by the standard
 
 Woverloaded-virtual
@@ -706,7 +734,7 @@ C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ;
 
 Wunknown-pragmas
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Warning Var(warn_unknown_pragmas) LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
 Warn about unrecognized pragmas
 
 Wunsuffixed-float-constants
@@ -722,7 +750,7 @@ C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning EnabledBy(Wunused)
 Warn when typedefs locally defined in a function are not used
 
 Wunused-macros
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Var(cpp_warn_unused_macros) Warning
 Warn about macros defined in the main file that are not used
 
 Wunused-result
@@ -730,8 +758,8 @@ C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
-C ObjC C++ ObjC++ Warning
-Do not warn about using variadic macros when -pedantic
+C ObjC C++ ObjC++ Var(cpp_warn_variadic_macros) Init(1) Warning
+Warn about using variadic macros
 
 Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)

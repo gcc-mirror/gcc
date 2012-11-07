@@ -585,10 +585,6 @@ extern const char *pch_file;
 
 extern int flag_iso;
 
-/* Warn about #pragma directives that are not recognized.  */
-
-extern int warn_unknown_pragmas; /* Tri state variable.  */
-
 /* Warn about format/argument anomalies in calls to formatted I/O functions
    (*printf, *scanf, strftime, strfmon, etc.).  */
 

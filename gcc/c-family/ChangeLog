@@ -1,5 +1,23 @@
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR c/53063
+	* c.opt(Warray-bounds,Wdelete-non-virtual-dtor,Wenum-compare,
+	Wmain,Woverlength-strings, Wunknown-pragmas,Wunused-macros):
+	Use LangEnabledBy.
+	(Wswitch,Wswitch-default,Wswitch-enum): Likewise. Move here from
+	common.opt.
+	(Wvariadic-macros): Init(1).
+	* c-opts.c (c_common_handle_option): Do not handle them
+	explicitly.
+	(c_common_post_options): Likewise.
+	(sanitize_cpp_opts): warn_unused_macros is now
+	cpp_warn_unused_macros.
+	(push_command_line_include): Likewise.
+	* c-common.c (warn_unknown_pragmas): Do not define.
+	* c-common.h (warn_unknown_pragmas): Do not declare.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR c/51294
 	* c-common.c (conversion_warning): Handle conditional expressions.
 
