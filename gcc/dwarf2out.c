@@ -8829,6 +8829,7 @@ output_comdat_type_unit (comdat_type_node *node)
 
   unmark_dies (node->root_die);
 
+#if defined (OBJECT_FORMAT_ELF)
   if (dwarf_split_debug_info)
     {
       /* Produce the skeleton type-unit header.  */
@@ -8858,6 +8859,7 @@ output_comdat_type_unit (comdat_type_node *node)
 
       output_die (get_skeleton_type_unit ());
     }
+#endif
 }
 
 /* Return the DWARF2/3 pubname associated with a decl.  */

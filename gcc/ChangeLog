@@ -1,3 +1,7 @@
+2012-11-06  Sterling Augustine <saugustine@google.com>
+
+	* dwarf2out.c (output_comdat_type_unit): Check for OBJECT_FORMAT_ELF.
+
 2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
             Richard Henderson  <rth@redhat.com>
 
@@ -47,7 +51,7 @@
 	(common_handle_option): Add case for OPT_gsplit_dwarf.
 	* dwarf2out.h (addr_table_entry_struct): Add forward declaration.
 	(dw_val_struct): Add val_entry pointer.
-	* dwarf2out.c: (debug_skeleton_info_section,
+	* dwarf2out.c (debug_skeleton_info_section,
 	debug_skeleton_abbrev_section, debug_addr_section,
 	debug_skeleton_line_section, debug_str_offsets_section): New globals.
 	(NOT_INDEXED, NO_INDEX_ASSIGNED): New defines.
