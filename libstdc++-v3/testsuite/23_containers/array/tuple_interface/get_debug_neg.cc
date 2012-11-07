@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++11" }
-// { dg-require-normal-mode "" }
+// { dg-require-debug-mode "" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
@@ -21,6 +21,13 @@
 
 #include <array>
 
-typedef std::tuple_element<1, std::array<int, 1>>::type type;
+std::array<int, 1> a{};
+const std::array<int, 1> ca{};
 
+int n1 = std::get<1>(a);
+int n2 = std::get<1>(std::move(a));
+int n3 = std::get<1>(ca);
+
+// { dg-error "static assertion failed" "" { target *-*-* } 274 }
 // { dg-error "static assertion failed" "" { target *-*-* } 283 }
+// { dg-error "static assertion failed" "" { target *-*-* } 291 }

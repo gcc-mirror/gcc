@@ -1,6 +1,6 @@
-// <array> -*- C++ -*-
+// Debugging array implementation -*- C++ -*-
 
-// Copyright (C) 2007-2012 Free Software Foundation, Inc.
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,61 +22,29 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file include/array
+/** @file debug/array
  *  This is a Standard C++ Library header.
  */
 
-#ifndef _GLIBCXX_ARRAY
-#define _GLIBCXX_ARRAY 1
+#ifndef _GLIBCXX_DEBUG_ARRAY
+#define _GLIBCXX_DEBUG_ARRAY 1
 
 #pragma GCC system_header
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# include <bits/c++0x_warning.h>
-#else
+#include <debug/safe_sequence.h>
 
-#include <stdexcept>
-#include <bits/stl_algobase.h>
-#include <bits/range_access.h>
+#ifndef _GLIBCXX_THROW_OR_ABORT
+# if __EXCEPTIONS
+#  define _GLIBCXX_THROW_OR_ABORT(_Exc) (throw (_Exc))
+# else
+#  define _GLIBCXX_THROW_OR_ABORT(_Exc) (__builtin_abort())
+# endif
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
-
-  template<typename _Tp, std::size_t _Nm>
-    struct __array_traits
-    {
-      typedef _Tp _Type[_Nm];
-
-      static constexpr _Tp&
-      _S_ref(const _Type& __t, std::size_t __n) noexcept
-      { return const_cast<_Tp&>(__t[__n]); }
-    };
-
- template<typename _Tp>
-   struct __array_traits<_Tp, 0>
-   {
-     struct _Type { };
-
-     static constexpr _Tp&
-     _S_ref(const _Type&, std::size_t) noexcept
-     { return *static_cast<_Tp*>(nullptr); }
-   };
-
-  /**
-   *  @brief A standard container for storing a fixed size sequence of elements.
-   *
-   *  @ingroup sequences
-   *
-   *  Meets the requirements of a <a href="tables.html#65">container</a>, a
-   *  <a href="tables.html#66">reversible container</a>, and a
-   *  <a href="tables.html#67">sequence</a>.
-   *
-   *  Sets support random access iterators.
-   *
-   *  @tparam  Tp  Type of element. Required to be a complete type.
-   *  @tparam  N  Number of elements.
-  */
+namespace __debug
+{
   template<typename _Tp, std::size_t _Nm>
     struct array
     {
@@ -85,8 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef const value_type*                       const_pointer;
       typedef value_type&                   	      reference;
       typedef const value_type&             	      const_reference;
-      typedef value_type*          		      iterator;
-      typedef const value_type*			      const_iterator;
+      typedef value_type*                             iterator;
+      typedef const value_type*                       const_iterator;
       typedef std::size_t                    	      size_type;
       typedef std::ptrdiff_t                   	      difference_type;
       typedef std::reverse_iterator<iterator>	      reverse_iterator;
@@ -95,6 +63,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Support for zero-sized arrays mandatory.
       typedef _GLIBCXX_STD_C::__array_traits<_Tp, _Nm> _AT_Type;
       typename _AT_Type::_Type                         _M_elems;
+
+      template<std::size_t _Size>
+	struct _Array_check_subscript
+ 	{
+	  std::size_t size() { return _Size; }
+
+	  _Array_check_subscript(std::size_t __index)
+	  { __glibcxx_check_subscript(__index); }
+        };
+
+      template<std::size_t _Size>
+	struct _Array_check_nonempty
+ 	{
+	  bool empty() { return _Size == 0; }
+
+	  _Array_check_nonempty()
+	  { __glibcxx_check_nonempty(); }
+        };
 
       // No explicit construct/copy/destroy for aggregate type.
 
@@ -170,11 +156,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Element access.
       reference
       operator[](size_type __n)
-      { return _AT_Type::_S_ref(_M_elems, __n); }
+      {
+	__glibcxx_check_subscript(__n);
+	return _AT_Type::_S_ref(_M_elems, __n);
+      }
 
       constexpr const_reference
       operator[](size_type __n) const noexcept
-      { return _AT_Type::_S_ref(_M_elems, __n); }
+      {
+	return __n < _Nm ? _AT_Type::_S_ref(_M_elems, __n)
+	 : (_GLIBCXX_THROW_OR_ABORT (_Array_check_subscript<_Nm>(__n)),
+	    _AT_Type::_S_ref(_M_elems, 0));
+      }
 
       reference
       at(size_type __n)
@@ -196,21 +189,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       reference 
       front()
-      { return *begin(); }
+      {
+	__glibcxx_check_nonempty();
+	return *begin();
+      }
 
       constexpr const_reference 
       front() const
-      { return _AT_Type::_S_ref(_M_elems, 0); }
+      {
+	return _Nm ? _AT_Type::_S_ref(_M_elems, 0)
+	  : (_GLIBCXX_THROW_OR_ABORT (_Array_check_nonempty<_Nm>()),
+	     _AT_Type::_S_ref(_M_elems, 0));
+      }
 
       reference 
       back()
-      { return _Nm ? *(end() - 1) : *end(); }
+      {
+	__glibcxx_check_nonempty();
+	return _Nm ? *(end() - 1) : *end();
+      }
 
       constexpr const_reference 
       back() const
-      { 
-	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1) 
- 	           : _AT_Type::_S_ref(_M_elems, 0);
+      {
+	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
+	  : (_GLIBCXX_THROW_OR_ABORT (_Array_check_nonempty<_Nm>()),
+	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
       pointer
@@ -263,27 +267,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     noexcept(noexcept(__one.swap(__two)))
     { __one.swap(__two); }
 
-  // Tuple interface to class template array.
-
-  /// tuple_size
-  template<typename _Tp> 
-    class tuple_size;
-
-  template<typename _Tp, std::size_t _Nm>
-    struct tuple_size<array<_Tp, _Nm>>
-    : public integral_constant<std::size_t, _Nm> { };
-
-  /// tuple_element
-  template<std::size_t _Int, typename _Tp>
-    class tuple_element;
-
-  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    struct tuple_element<_Int, array<_Tp, _Nm>>
-    {
-      static_assert(_Int < _Nm, "index is out of bounds");
-      typedef _Tp type;
-    };
-
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     constexpr _Tp&
     get(array<_Tp, _Nm>& __arr) noexcept
@@ -309,18 +292,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::
 	_S_ref(__arr._M_elems, _Int);
     }
+} // namespace __debug
 
-_GLIBCXX_END_NAMESPACE_CONTAINER
+  // Tuple interface to class template array.
+
+  /// tuple_size
+  template<typename _Tp> 
+    class tuple_size;
+
+  template<typename _Tp, std::size_t _Nm>
+    struct tuple_size<__debug::array<_Tp, _Nm>>
+    : public integral_constant<std::size_t, _Nm> { };
+
+  /// tuple_element
+  template<std::size_t _Int, typename _Tp>
+    class tuple_element;
+
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    struct tuple_element<_Int, __debug::array<_Tp, _Nm>>
+    {
+      static_assert(_Int < _Nm, "index is out of bounds");
+      typedef _Tp type;
+    };
 } // namespace std
 
-#ifdef _GLIBCXX_DEBUG
-# include <debug/array>
-#endif
+#undef _GLIBCXX_THROW_OR_ABORT
 
-#ifdef _GLIBCXX_PROFILE
-# include <profile/array>
-#endif
-
-#endif // __GXX_EXPERIMENTAL_CXX0X__
-
-#endif // _GLIBCXX_ARRAY
+#endif // _GLIBCXX_DEBUG_ARRAY
