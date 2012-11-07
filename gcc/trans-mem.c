@@ -5355,7 +5355,7 @@ struct simple_ipa_opt_pass pass_ipa_tm =
   0,			                /* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_ssa,      		/* todo_flags_finish */
+  0,					/* todo_flags_finish */
  },
 };
 
