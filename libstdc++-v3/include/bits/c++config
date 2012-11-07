@@ -1,7 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 1997-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -113,6 +112,14 @@
 
 #ifndef _GLIBCXX_NOTHROW
 # define _GLIBCXX_NOTHROW _GLIBCXX_USE_NOEXCEPT
+#endif
+
+#ifndef _GLIBCXX_THROW_OR_ABORT
+# if __EXCEPTIONS
+#  define _GLIBCXX_THROW_OR_ABORT(_EXC) (throw (_EXC))
+# else
+#  define _GLIBCXX_THROW_OR_ABORT(_EXC) (__builtin_abort())
+# endif
 #endif
 
 // Macro for extern template, ie controling template linkage via use

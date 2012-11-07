@@ -33,14 +33,6 @@
 
 #include <debug/safe_sequence.h>
 
-#ifndef _GLIBCXX_THROW_OR_ABORT
-# if __EXCEPTIONS
-#  define _GLIBCXX_THROW_OR_ABORT(_Exc) (throw (_Exc))
-# else
-#  define _GLIBCXX_THROW_OR_ABORT(_Exc) (__builtin_abort())
-# endif
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __debug
@@ -165,7 +157,7 @@ namespace __debug
       operator[](size_type __n) const noexcept
       {
 	return __n < _Nm ? _AT_Type::_S_ref(_M_elems, __n)
-	 : (_GLIBCXX_THROW_OR_ABORT (_Array_check_subscript<_Nm>(__n)),
+	 : (_GLIBCXX_THROW_OR_ABORT(_Array_check_subscript<_Nm>(__n)),
 	    _AT_Type::_S_ref(_M_elems, 0));
       }
 
@@ -198,7 +190,7 @@ namespace __debug
       front() const
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, 0)
-	  : (_GLIBCXX_THROW_OR_ABORT (_Array_check_nonempty<_Nm>()),
+	  : (_GLIBCXX_THROW_OR_ABORT(_Array_check_nonempty<_Nm>()),
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
@@ -213,7 +205,7 @@ namespace __debug
       back() const
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
-	  : (_GLIBCXX_THROW_OR_ABORT (_Array_check_nonempty<_Nm>()),
+	  : (_GLIBCXX_THROW_OR_ABORT(_Array_check_nonempty<_Nm>()),
 	     _AT_Type::_S_ref(_M_elems, 0));
       }
 
@@ -315,7 +307,5 @@ namespace __debug
       typedef _Tp type;
     };
 } // namespace std
-
-#undef _GLIBCXX_THROW_OR_ABORT
 
 #endif // _GLIBCXX_DEBUG_ARRAY
