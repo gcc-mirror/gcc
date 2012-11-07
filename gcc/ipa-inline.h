@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "ipa-prop.h"
+
 /* Representation of inline parameters that do depend on context function is
    inlined into (i.e. known constant values of function parameters.
 
@@ -207,9 +209,9 @@ void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
-					VEC (tree, heap) *known_vals,
-					VEC (tree, heap) *known_binfos,
-					int *, int *);
+					VEC (tree, heap) *, VEC (tree, heap) *,
+					VEC (ipa_agg_jump_function_p, heap) *,
+					int *, int *, inline_hints *);
 int do_estimate_growth (struct cgraph_node *);
 void inline_merge_summary (struct cgraph_edge *edge);
 void inline_update_overall_summary (struct cgraph_node *node);

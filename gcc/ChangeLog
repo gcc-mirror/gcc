@@ -1,3 +1,102 @@
+2012-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/53787
+	* ipa-cp.c (ipcp_value_source): New field offset.
+	(ipcp_agg_lattice): New type.
+	(ipcp_param_lattices): Likewise, move virt_call from ipcp_lattice here.
+	(ipcp_agg_lattice_pool): New variable.
+	(ipa_get_parm_lattices): New function.
+	(ipa_get_lattice): Turned into ipa_get_scalar_lat, use the above.
+	Adjusted all callers.
+	(print_lattice): New function.
+	(print_all_lattices): Use the above, also print aggregate lattices.
+	(set_agg_lats_to_bottom): New function.
+	(set_agg_lats_contain_variable): Likewise.
+	(set_all_contains_variable): Likewise.
+	(initialize_node_lattices): Also handle aggregate lattices, set
+	virt_call in ipcp_param_lattices.
+	(add_value_source): Handle offsets.
+	(add_value_to_lattice): Likewise.
+	(add_scalar_value_to_lattice): New function.
+	(propagate_vals_accross_pass_through): Use add_scalar_value_to_lattice.
+	(propagate_vals_accross_ancestor): Likewise.
+	(propagate_accross_jump_function): Renamed to
+	propagate_scalar_accross_jump_function, use
+	add_scalar_value_to_lattice.
+	(set_check_aggs_by_ref): New function.
+	(merge_agg_lats_step): Likewise.
+	(set_chain_of_aglats_contains_variable): Likewise.
+	(merge_aggregate_lattices): Likewise.
+	(propagate_constants_accross_call): Also handle aggregate lattices.
+	(hint_time_bonus): New function.
+	(context_independent_aggregate_values): Likewise.
+	(gather_context_independent_values): Also handle agggregate values.
+	(agg_jmp_p_vec_for_t_vec): New function.
+	(estimate_local_effects): Also handle agggregate values.
+	(add_all_node_vals_to_toposort): Likewise.
+	(ipcp_propagate_stage): Use struct ipcp_param_lattices.
+	(get_clone_agg_value): New function.
+	(cgraph_edge_brings_value_p): Also handle agggregate values.
+	(create_specialized_node): Likewise.
+	(find_more_values_for_callers_subset): Rename to
+	find_more_scalar_values_for_callers_subset.  Modify dump.
+	(copy_plats_to_inter): New function.
+	(intersect_with_plats): Likewise.
+	(agg_replacements_to_vector): Likewise.
+	(intersect_with_agg_replacements): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+	(known_aggs_to_agg_replacement_list): Likewise.
+	(cgraph_edge_brings_all_scalars_for_node): Likewise.
+	(cgraph_edge_brings_all_agg_vals_for_node): Likewise.
+	(perhaps_add_new_callers): Old functionality moved to
+	cgraph_edge_brings_all_scalars_for_node, call it and
+	cgraph_edge_brings_all_agg_vals_for_node.
+	(ipcp_val_in_agg_replacements_p): New function.
+	(decide_about_value): New function.
+	(decide_whether_version_node): A lot of functionality moved to
+	decide_about_value.  Also handle agggregate values.
+	(ipcp_driver): Also allocate ipcp_agg_lattice_pool.
+	(pass_ipa_cp): Fill in new entries.
+	* ipa-prop.c (ipa_node_agg_replacements): New variable.
+	(free_parms_ainfo): New function.
+	(ipa_analyze_node): Use free_parms_ainfo to free stuff.
+	(ipa_find_agg_cst_for_param): Do not rely on offset ordering.
+	(ipa_set_node_agg_value_chain): New function.
+	(ipa_node_removal_hook): Also handle ipa_node_agg_replacements.
+	(ipa_node_duplication_hook): Likewise.
+	(ipa_free_all_structures_after_ipa_cp): Also free ipcp_agg_lattice_pool.
+	(ipa_free_all_structures_after_iinln): Likewise.
+	(ipa_dump_agg_replacement_values): New function.
+	(write_agg_replacement_chain): Likewise.
+	(read_agg_replacement_chain): Likewise.
+	(ipa_prop_write_all_agg_replacement): Likewise.
+	(read_replacements_section): Likewise.
+	(ipa_prop_read_all_agg_replacement): Likewise.
+	(adjust_agg_replacement_values): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-prop.h: Also define heap vector of ipa_agg_jf_item_t and of
+	ipa_agg_jump_function_t.
+	(ipa_node_params): Make lattices an array of ipcp_param_lattices.
+	(ipa_agg_replacement_value): New type and its vector.
+	(ipa_set_node_agg_value_chain) Declare.
+	(ipa_node_agg_replacements): Likewise.
+	(ipa_get_agg_replacements_for_node): New function.
+	(ipcp_agg_lattice_pool): Declare.
+	(ipa_dump_agg_replacement_values): Likewise.
+	(ipa_prop_write_all_agg_replacement): Likewise.
+	(ipa_prop_read_all_agg_replacement): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-inline-analysis.c (estimate_ipcp_clone_size_and_time): Pass around
+	known aggregates and hints.
+	* ipa-inline.h: include ipa-prop.h.
+	(estimate_ipcp_clone_size_and_time): Adjust declaration.
+	* lto-streamer.h (lto_section_type): New item
+	LTO_section_ipcp_transform.
+	* lto-section-in.c (lto_section_name): New element ipcp_trans.
+	* params.def (PARAM_IPA_CP_LOOP_HINT_BONUS): New parameter.
+	* Makefile.in (IPA_INLINE_H): New.  Use everywhee instead of
+	ipa-inline.h.
+
 2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (enum upper_128bits_state): Remove.

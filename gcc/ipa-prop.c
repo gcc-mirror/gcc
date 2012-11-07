@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "params.h"
 
-
 /* Intermediate information about a parameter that is only useful during the
    run of ipa_analyze_node and is not kept afterwards.  */
 
@@ -52,6 +51,8 @@ struct param_analysis_info
 
 /* Vector where the parameter infos are actually stored. */
 VEC (ipa_node_params_t, heap) *ipa_node_params_vector;
+/* Vector of known aggregate values in cloned nodes.  */
+VEC (ipa_agg_replacement_value_p, gc) *ipa_node_agg_replacements;
 /* Vector where the parameter infos are actually stored. */
 VEC (ipa_edge_args_t, gc) *ipa_edge_args_vector;
 
@@ -1936,6 +1937,22 @@ ipa_analyze_params_uses (struct cgraph_node *node,
   info->uses_analysis_done = 1;
 }
 
+/* Free stuff in PARMS_AINFO, assume there are PARAM_COUNT parameters.  */
+
+static void
+free_parms_ainfo (struct param_analysis_info *parms_ainfo, int param_count)
+{
+  int i;
+
+  for (i = 0; i < param_count; i++)
+    {
+      if (parms_ainfo[i].parm_visited_statements)
+	BITMAP_FREE (parms_ainfo[i].parm_visited_statements);
+      if (parms_ainfo[i].pt_visited_statements)
+	BITMAP_FREE (parms_ainfo[i].pt_visited_statements);
+    }
+}
+
 /* Initialize the array describing properties of of formal parameters
    of NODE, analyze their uses and compute jump functions associated
    with actual arguments of calls from within NODE.  */
@@ -1945,7 +1962,7 @@ ipa_analyze_node (struct cgraph_node *node)
 {
   struct ipa_node_params *info;
   struct param_analysis_info *parms_ainfo;
-  int i, param_count;
+  int param_count;
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
@@ -1960,14 +1977,7 @@ ipa_analyze_node (struct cgraph_node *node)
   ipa_analyze_params_uses (node, parms_ainfo);
   ipa_compute_jump_functions (node, parms_ainfo);
 
-  for (i = 0; i < param_count; i++)
-    {
-      if (parms_ainfo[i].parm_visited_statements)
-	BITMAP_FREE (parms_ainfo[i].parm_visited_statements);
-      if (parms_ainfo[i].pt_visited_statements)
-	BITMAP_FREE (parms_ainfo[i].pt_visited_statements);
-    }
-
+  free_parms_ainfo (parms_ainfo, param_count);
   pop_cfun ();
 }
 
@@ -2163,17 +2173,13 @@ ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg,
     return NULL;
 
   FOR_EACH_VEC_ELT (ipa_agg_jf_item_t, agg->items, i, item)
-    {
-      if (item->offset == offset)
-	{
-	  /* Currently we do not have clobber values, return NULL for them once
-	     we do.  */
-	  gcc_checking_assert (is_gimple_ip_invariant (item->value));
-	  return item->value;
-	}
-      else if (item->offset > offset)
-	return NULL;
-    }
+    if (item->offset == offset)
+      {
+	/* Currently we do not have clobber values, return NULL for them once
+	   we do.  */
+	gcc_checking_assert (is_gimple_ip_invariant (item->value));
+	return item->value;
+      }
   return NULL;
 }
 
@@ -2436,6 +2442,21 @@ ipa_free_all_node_params (void)
   ipa_node_params_vector = NULL;
 }
 
+/* Set the aggregate replacements of NODE to be AGGVALS.  */
+
+void
+ipa_set_node_agg_value_chain (struct cgraph_node *node,
+			      struct ipa_agg_replacement_value *aggvals)
+{
+  if (VEC_length (ipa_agg_replacement_value_p, ipa_node_agg_replacements)
+      <= (unsigned) cgraph_max_uid)
+    VEC_safe_grow_cleared (ipa_agg_replacement_value_p, gc,
+			   ipa_node_agg_replacements, cgraph_max_uid + 1);
+
+  VEC_replace (ipa_agg_replacement_value_p, ipa_node_agg_replacements,
+	       node->uid, aggvals);
+}
+
 /* Hook that is called by cgraph.c when an edge is removed.  */
 
 static void
@@ -2455,9 +2476,12 @@ ipa_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   /* During IPA-CP updating we can be called on not-yet analyze clones.  */
   if (VEC_length (ipa_node_params_t, ipa_node_params_vector)
-      <= (unsigned)node->uid)
-    return;
-  ipa_free_node_params_substructures (IPA_NODE_REF (node));
+      > (unsigned)node->uid)
+    ipa_free_node_params_substructures (IPA_NODE_REF (node));
+  if (VEC_length (ipa_agg_replacement_value_p, ipa_node_agg_replacements)
+      > (unsigned)node->uid)
+    VEC_replace (ipa_agg_replacement_value_p, ipa_node_agg_replacements,
+		 (unsigned)node->uid, NULL);
 }
 
 /* Hook that is called by cgraph.c when an edge is duplicated.  */
@@ -2491,6 +2515,7 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 			   ATTRIBUTE_UNUSED void *data)
 {
   struct ipa_node_params *old_info, *new_info;
+  struct ipa_agg_replacement_value *old_av, *new_av;
 
   ipa_check_create_node_params ();
   old_info = IPA_NODE_REF (src);
@@ -2503,6 +2528,23 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 
   new_info->uses_analysis_done = old_info->uses_analysis_done;
   new_info->node_enqueued = old_info->node_enqueued;
+
+  old_av = ipa_get_agg_replacements_for_node (src);
+  if (!old_av)
+    return;
+
+  new_av = NULL;
+  while (old_av)
+    {
+      struct ipa_agg_replacement_value *v;
+
+      v = ggc_alloc_ipa_agg_replacement_value ();
+      memcpy (v, old_av, sizeof (*v));
+      v->next = new_av;
+      new_av = v;
+      old_av = old_av->next;
+    }
+  ipa_set_node_agg_value_chain (dst, new_av);
 }
 
 
@@ -2564,6 +2606,7 @@ ipa_free_all_structures_after_ipa_cp (void)
       ipa_free_all_node_params ();
       free_alloc_pool (ipcp_sources_pool);
       free_alloc_pool (ipcp_values_pool);
+      free_alloc_pool (ipcp_agg_lattice_pool);
       ipa_unregister_cgraph_hooks ();
     }
 }
@@ -2581,13 +2624,15 @@ ipa_free_all_structures_after_iinln (void)
     free_alloc_pool (ipcp_sources_pool);
   if (ipcp_values_pool)
     free_alloc_pool (ipcp_values_pool);
+  if (ipcp_agg_lattice_pool)
+    free_alloc_pool (ipcp_agg_lattice_pool);
 }
 
 /* Print ipa_tree_map data structures of all functions in the
    callgraph to F.  */
 
 void
-ipa_print_node_params (FILE * f, struct cgraph_node *node)
+ipa_print_node_params (FILE *f, struct cgraph_node *node)
 {
   int i, count;
   tree temp;
@@ -3171,6 +3216,23 @@ ipa_dump_param_adjustments (FILE *file, ipa_parm_adjustment_vec adjustments,
   VEC_free (tree, heap, parms);
 }
 
+/* Dump the AV linked list.  */
+
+void
+ipa_dump_agg_replacement_values (FILE *f, struct ipa_agg_replacement_value *av)
+{
+  bool comma = false;
+  fprintf (f, "     Aggregate replacements:");
+  for (; av; av = av->next)
+    {
+      fprintf (f, "%s %i[" HOST_WIDE_INT_PRINT_DEC "]=", comma ? "," : "",
+	       av->index, av->offset);
+      print_generic_expr (f, av->value, 0);
+      comma = true;
+    }
+  fprintf (f, "\n");
+}
+
 /* Stream out jump function JUMP_FUNC to OB.  */
 
 static void
@@ -3549,4 +3611,328 @@ ipa_update_after_lto_read (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->analyzed)
       ipa_initialize_node_params (node);
+}
+
+void
+write_agg_replacement_chain (struct output_block *ob, struct cgraph_node *node)
+{
+  int node_ref;
+  unsigned int count = 0;
+  lto_symtab_encoder_t encoder;
+  struct ipa_agg_replacement_value *aggvals, *av;
+
+  aggvals = ipa_get_agg_replacements_for_node (node);
+  encoder = ob->decl_state->symtab_node_encoder;
+  node_ref = lto_symtab_encoder_encode (encoder, (symtab_node) node);
+  streamer_write_uhwi (ob, node_ref);
+
+  for (av = aggvals; av; av = av->next)
+    count++;
+  streamer_write_uhwi (ob, count);
+
+  for (av = aggvals; av; av = av->next)
+    {
+      streamer_write_uhwi (ob, av->offset);
+      streamer_write_uhwi (ob, av->index);
+      stream_write_tree (ob, av->value, true);
+    }
+}
+
+/* Stream in the aggregate value replacement chain for NODE from IB.  */
+
+static void
+read_agg_replacement_chain (struct lto_input_block *ib,
+			    struct cgraph_node *node,
+			    struct data_in *data_in)
+{
+  struct ipa_agg_replacement_value *aggvals = NULL;
+  unsigned int count, i;
+
+  count = streamer_read_uhwi (ib);
+  for (i = 0; i <count; i++)
+    {
+      struct ipa_agg_replacement_value *av;
+
+      av = ggc_alloc_ipa_agg_replacement_value ();
+      av->offset = streamer_read_uhwi (ib);
+      av->index = streamer_read_uhwi (ib);
+      av->value = stream_read_tree (ib, data_in);
+      av->next = aggvals;
+      aggvals = av;
+    }
+  ipa_set_node_agg_value_chain (node, aggvals);
+}
+
+/* Write all aggregate replacement for nodes in set.  */
+
+void
+ipa_prop_write_all_agg_replacement (void)
+{
+  struct cgraph_node *node;
+  struct output_block *ob;
+  unsigned int count = 0;
+  lto_symtab_encoder_iterator lsei;
+  lto_symtab_encoder_t encoder;
+
+  if (!ipa_node_agg_replacements)
+    return;
+
+  ob = create_output_block (LTO_section_ipcp_transform);
+  encoder = ob->decl_state->symtab_node_encoder;
+  ob->cgraph_node = NULL;
+  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
+       lsei_next_function_in_partition (&lsei))
+    {
+      node = lsei_cgraph_node (lsei);
+      if (cgraph_function_with_gimple_body_p (node)
+	  && ipa_get_agg_replacements_for_node (node) != NULL)
+	count++;
+    }
+
+  streamer_write_uhwi (ob, count);
+
+  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
+       lsei_next_function_in_partition (&lsei))
+    {
+      node = lsei_cgraph_node (lsei);
+      if (cgraph_function_with_gimple_body_p (node)
+	  && ipa_get_agg_replacements_for_node (node) != NULL)
+	write_agg_replacement_chain (ob, node);
+    }
+  streamer_write_char_stream (ob->main_stream, 0);
+  produce_asm (ob, NULL);
+  destroy_output_block (ob);
+}
+
+/* Read replacements section in file FILE_DATA of length LEN with data
+   DATA.  */
+
+static void
+read_replacements_section (struct lto_file_decl_data *file_data,
+			   const char *data,
+			   size_t len)
+{
+  const struct lto_function_header *header =
+    (const struct lto_function_header *) data;
+  const int cfg_offset = sizeof (struct lto_function_header);
+  const int main_offset = cfg_offset + header->cfg_size;
+  const int string_offset = main_offset + header->main_size;
+  struct data_in *data_in;
+  struct lto_input_block ib_main;
+  unsigned int i;
+  unsigned int count;
+
+  LTO_INIT_INPUT_BLOCK (ib_main, (const char *) data + main_offset, 0,
+			header->main_size);
+
+  data_in = lto_data_in_create (file_data, (const char *) data + string_offset,
+				header->string_size, NULL);
+  count = streamer_read_uhwi (&ib_main);
+
+  for (i = 0; i < count; i++)
+    {
+      unsigned int index;
+      struct cgraph_node *node;
+      lto_symtab_encoder_t encoder;
+
+      index = streamer_read_uhwi (&ib_main);
+      encoder = file_data->symtab_node_encoder;
+      node = cgraph (lto_symtab_encoder_deref (encoder, index));
+      gcc_assert (node->analyzed);
+      read_agg_replacement_chain (&ib_main, node, data_in);
+    }
+  lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
+			 len);
+  lto_data_in_delete (data_in);
+}
+
+/* Read IPA-CP aggregate replacements.  */
+
+void
+ipa_prop_read_all_agg_replacement (void)
+{
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  while ((file_data = file_data_vec[j++]))
+    {
+      size_t len;
+      const char *data = lto_get_section_data (file_data,
+					       LTO_section_ipcp_transform,
+					       NULL, &len);
+      if (data)
+        read_replacements_section (file_data, data, len);
+    }
+}
+
+/* Adjust the aggregate replacements in AGGVAL to reflect parameters skipped in
+   NODE.  */
+
+static void
+adjust_agg_replacement_values (struct cgraph_node *node,
+			       struct ipa_agg_replacement_value *aggval)
+{
+  struct ipa_agg_replacement_value *v;
+  int i, c = 0, d = 0, *adj;
+
+  if (!node->clone.combined_args_to_skip)
+    return;
+
+  for (v = aggval; v; v = v->next)
+    {
+      gcc_assert (v->index >= 0);
+      if (c < v->index)
+	c = v->index;
+    }
+  c++;
+
+  adj = XALLOCAVEC (int, c);
+  for (i = 0; i < c; i++)
+    if (bitmap_bit_p (node->clone.combined_args_to_skip, i))
+      {
+	adj[i] = -1;
+	d++;
+      }
+    else
+      adj[i] = i - d;
+
+  for (v = aggval; v; v = v->next)
+    v->index = adj[v->index];
+}
+
+
+/* Function body transformation phase.  */
+
+unsigned int
+ipcp_transform_function (struct cgraph_node *node)
+{
+  VEC (ipa_param_descriptor_t, heap) *descriptors = NULL;
+  struct param_analysis_info *parms_ainfo;
+  struct ipa_agg_replacement_value *aggval;
+  gimple_stmt_iterator gsi;
+  basic_block bb;
+  int param_count;
+  bool cfg_changed = false, something_changed = false;
+
+  gcc_checking_assert (cfun);
+  gcc_checking_assert (current_function_decl);
+
+  if (dump_file)
+    fprintf (dump_file, "Modification phase of node %s/%i\n",
+	     cgraph_node_name (node), node->uid);
+
+  aggval = ipa_get_agg_replacements_for_node (node);
+  if (!aggval)
+      return 0;
+  param_count = count_formal_params (node->symbol.decl);
+  if (param_count == 0)
+    return 0;
+  adjust_agg_replacement_values (node, aggval);
+  if (dump_file)
+    ipa_dump_agg_replacement_values (dump_file, aggval);
+  parms_ainfo = XALLOCAVEC (struct param_analysis_info, param_count);
+  memset (parms_ainfo, 0, sizeof (struct param_analysis_info) * param_count);
+  VEC_safe_grow_cleared (ipa_param_descriptor_t, heap,
+			 descriptors, param_count);
+  ipa_populate_param_decls (node, descriptors);
+
+  FOR_EACH_BB (bb)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	struct ipa_agg_replacement_value *v;
+	gimple stmt = gsi_stmt (gsi);
+	tree rhs, val, t;
+	HOST_WIDE_INT offset;
+	int index;
+	bool by_ref, vce;
+
+	if (!gimple_assign_load_p (stmt))
+	  continue;
+	rhs = gimple_assign_rhs1 (stmt);
+	if (!is_gimple_reg_type (TREE_TYPE (rhs)))
+	  continue;
+
+	vce = false;
+	t = rhs;
+	while (handled_component_p (t))
+	  {
+	    /* V_C_E can do things like convert an array of integers to one
+               bigger integer and similar things we do not handle below.  */
+            if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR)
+	      {
+		vce = true;
+		break;
+	      }
+	    t = TREE_OPERAND (t, 0);
+	  }
+	if (vce)
+	  continue;
+
+	if (!ipa_load_from_parm_agg_1 (descriptors, parms_ainfo, stmt,
+				       rhs, &index, &offset, &by_ref))
+	  continue;
+	for (v = aggval; v; v = v->next)
+	  if (v->index == index
+	      && v->offset == offset)
+	    break;
+	if (!v)
+	  continue;
+
+	gcc_checking_assert (is_gimple_ip_invariant (v->value));
+	if (!useless_type_conversion_p (TREE_TYPE (rhs), TREE_TYPE (v->value)))
+	  {
+	    if (fold_convertible_p (TREE_TYPE (rhs), v->value))
+	      val = fold_build1 (NOP_EXPR, TREE_TYPE (rhs), v->value);
+	    else if (TYPE_SIZE (TREE_TYPE (rhs))
+		     == TYPE_SIZE (TREE_TYPE (v->value)))
+	      val = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (rhs), v->value);
+	    else
+	      {
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "    const ");
+		    print_generic_expr (dump_file, v->value, 0);
+		    fprintf (dump_file, "  can't be converted to type of ");
+		    print_generic_expr (dump_file, rhs, 0);
+		    fprintf (dump_file, "\n");
+		  }
+		continue;
+	      }
+	  }
+	else
+	  val = v->value;
+
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    fprintf (dump_file, "Modifying stmt:\n  ");
+	    print_gimple_stmt (dump_file, stmt, 0, 0);
+	  }
+	gimple_assign_set_rhs_from_tree (&gsi, val);
+	update_stmt (stmt);
+
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  {
+	    fprintf (dump_file, "into:\n  ");
+	    print_gimple_stmt (dump_file, stmt, 0, 0);
+	    fprintf (dump_file, "\n");
+	  }
+
+	something_changed = true;
+	if (maybe_clean_eh_stmt (stmt)
+	    && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+	  cfg_changed = true;
+      }
+
+  VEC_replace (ipa_agg_replacement_value_p, ipa_node_agg_replacements,
+	       node->uid, NULL);
+  free_parms_ainfo (parms_ainfo, param_count);
+  VEC_free (ipa_param_descriptor_t, heap, descriptors);
+
+  if (!something_changed)
+    return 0;
+  else if (cfg_changed)
+    return TODO_update_ssa_only_virtuals | TODO_cleanup_cfg;
+  else
+    return TODO_update_ssa_only_virtuals;
 }
