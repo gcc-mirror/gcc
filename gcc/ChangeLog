@@ -1,3 +1,8 @@
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* common.opt (Wswitch,Wswitch-default,Wswitch-enum): Move to c.opt.
+
 2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_prologue): add the missing

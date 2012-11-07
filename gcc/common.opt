@@ -632,18 +632,6 @@ Wsuggest-attribute=noreturn
 Common Var(warn_suggest_attribute_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn))
 
-Wswitch
-Common Var(warn_switch) Warning
-Warn about enumerated switches, with no default, missing a case
-
-Wswitch-default
-Common Var(warn_switch_default) Warning
-Warn about enumerated switches missing a \"default:\" statement
-
-Wswitch-enum
-Common Var(warn_switch_enum) Warning
-Warn about all enumerated switches missing a specific case
-
 Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers

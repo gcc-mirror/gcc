@@ -1,3 +1,8 @@
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* options.c (set_Wall): Do not set warn_switch here.
+
 2012-11-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54917
