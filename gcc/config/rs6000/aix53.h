@@ -62,6 +62,7 @@ do {									\
 %{mcpu=power6: -mpwr6} \
 %{mcpu=power6x: -mpwr6} \
 %{mcpu=power7: -mpwr7} \
+%{mcpu=power8: -mpwr8} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rs64a: -mppc} \
 %{mcpu=603: -m603} \
