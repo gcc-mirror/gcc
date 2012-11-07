@@ -1,3 +1,7 @@
+2012-11-06  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: Add -fno-vect-cost-model.
+
 2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-c++-common/tm/trxn-expr-3.c: Adjust for uninstrumented code path.
