@@ -1,3 +1,7 @@
+2012-11-07  Richard Henderson  <rth@redhat.com>
+
+	* trans-mem.c (pass_ipa_tm): Don't use TODO_update_ssa.
+
 2012-11-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* doc/invoke.texi (-mcpu=power8): Document.
