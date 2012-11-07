@@ -5246,19 +5246,12 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	{
 	  if (GET_MODE (target) == BLKmode)
 	    {
-	      if (REG_P (temp))
-	        {
-		  if (TREE_CODE (exp) == CALL_EXPR)
-		    copy_blkmode_from_reg (target, temp, TREE_TYPE (exp));
-		  else
-		    store_bit_field (target,
-				     INTVAL (expr_size (exp)) * BITS_PER_UNIT,
-				     0, 0, 0, GET_MODE (temp), temp);
-		}
+	      if (REG_P (temp) && TREE_CODE (exp) == CALL_EXPR)
+		copy_blkmode_from_reg (target, temp, TREE_TYPE (exp));
 	      else
-		emit_block_move (target, temp, expr_size (exp),
-				 (call_param_p
-				  ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
+		store_bit_field (target,
+				 INTVAL (expr_size (exp)) * BITS_PER_UNIT,
+				 0, 0, 0, GET_MODE (temp), temp);
 	    }
 	  else
 	    convert_move (target, temp, TYPE_UNSIGNED (TREE_TYPE (exp)));
