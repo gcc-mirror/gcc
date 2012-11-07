@@ -1,3 +1,8 @@
+2012-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54693
+	* gcc.dg/guality/pr54693-2.c: New test.
+
 2012-11-06  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: Add -fno-vect-cost-model.

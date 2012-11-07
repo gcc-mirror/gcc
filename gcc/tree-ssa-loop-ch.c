@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -197,6 +197,7 @@ copy_loop_headers (void)
 
       entry = loop_preheader_edge (loop);
 
+      propagate_threaded_block_debug_into (exit->dest, entry->dest);
       if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
 	{
 	  fprintf (dump_file, "Duplication failed.\n");

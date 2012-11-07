@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
@@ -617,7 +617,7 @@ DEF_VEC_ALLOC_O_STACK(tree);
 /* Copy debug stmts from DEST's chain of single predecessors up to
    SRC, so that we don't lose the bindings as PHI nodes are introduced
    when DEST gains new predecessors.  */
-static void
+void
 propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 {
   if (!MAY_HAVE_DEBUG_STMTS)
