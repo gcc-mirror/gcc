@@ -1,3 +1,9 @@
+2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55224
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Put back exception
+	to make a sibcall if one of the functions has void return type.
+
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
@@ -15,7 +21,7 @@
 
 2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
 
-	* config/aarch64/aarch64.c (aarch64_expand_prologue): add the missing
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Add the missing
 	argument 'Pmode' to the 'plus_constant' call.
 
 2012-11-07  Martin Jambor  <mjambor@suse.cz>
