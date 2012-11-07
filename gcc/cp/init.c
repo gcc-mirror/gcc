@@ -2185,6 +2185,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   bool outer_nelts_from_type = false;
   double_int inner_nelts_count = double_int_one;
   tree alloc_call, alloc_expr;
+  /* Size of the inner array elements. */
+  double_int inner_size;
   /* The address returned by the call to "operator new".  This node is
      a VAR_DECL and is therefore reusable.  */
   tree alloc_node;
@@ -2346,8 +2348,6 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       double_int max_size
 	= double_int_one.llshift (TYPE_PRECISION (sizetype) - 1,
 				  HOST_BITS_PER_DOUBLE_INT);
-      /* Size of the inner array elements. */
-      double_int inner_size;
       /* Maximum number of outer elements which can be allocated. */
       double_int max_outer_nelts;
       tree max_outer_nelts_tree;
@@ -2451,7 +2451,13 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	  if (array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type))
 	    size = size_binop (PLUS_EXPR, size, cookie_size);
 	  else
-	    cookie_size = NULL_TREE;
+	    {
+	      cookie_size = NULL_TREE;
+	      /* No size arithmetic necessary, so the size check is
+		 not needed. */
+	      if (outer_nelts_check != NULL && inner_size.is_one ())
+		outer_nelts_check = NULL_TREE;
+	    }
 	  /* Perform the overflow check.  */
 	  if (outer_nelts_check != NULL_TREE)
             size = fold_build3 (COND_EXPR, sizetype, outer_nelts_check,
@@ -2487,7 +2493,13 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	  /* Use a global operator new.  */
 	  /* See if a cookie might be required.  */
 	  if (!(array_p && TYPE_VEC_NEW_USES_COOKIE (elt_type)))
-	    cookie_size = NULL_TREE;
+	    {
+	      cookie_size = NULL_TREE;
+	      /* No size arithmetic necessary, so the size check is
+		 not needed. */
+	      if (outer_nelts_check != NULL && inner_size.is_one ())
+		outer_nelts_check = NULL_TREE;
+	    }
 
 	  alloc_call = build_operator_new_call (fnname, placement,
 						&size, &cookie_size,
