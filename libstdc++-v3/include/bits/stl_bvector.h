@@ -555,6 +555,21 @@ template<typename _Alloc>
     vector(const allocator_type& __a)
     : _Base(__a) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    explicit
+    vector(size_type __n, const allocator_type& __a = allocator_type())
+    : vector(__n, false, __a)
+    { }
+
+    vector(size_type __n, const bool& __value, 
+	   const allocator_type& __a = allocator_type())
+    : _Base(__a)
+    {
+      _M_initialize(__n);
+      std::fill(this->_M_impl._M_start._M_p, this->_M_impl._M_end_of_storage, 
+		__value ? ~0 : 0);
+    }
+#else
     explicit
     vector(size_type __n, const bool& __value = bool(), 
 	   const allocator_type& __a = allocator_type())
@@ -564,6 +579,7 @@ template<typename _Alloc>
       std::fill(this->_M_impl._M_start._M_p, this->_M_impl._M_end_of_storage, 
 		__value ? ~0 : 0);
     }
+#endif
 
     vector(const vector& __x)
     : _Base(__x._M_get_Bit_allocator())

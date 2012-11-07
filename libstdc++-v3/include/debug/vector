@@ -83,8 +83,8 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       explicit
-      vector(size_type __n)
-      : _Base(__n), _M_guaranteed_capacity(__n) { }
+      vector(size_type __n, const _Allocator& __a = _Allocator())
+      : _Base(__n, __a), _M_guaranteed_capacity(__n) { }
 
       vector(size_type __n, const _Tp& __value,
 	     const _Allocator& __a = _Allocator())

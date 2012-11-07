@@ -261,13 +261,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Creates a %vector with default constructed elements.
        *  @param  __n  The number of elements to initially create.
+       *  @param  __a  An allocator.
        *
        *  This constructor fills the %vector with @a __n default
        *  constructed elements.
        */
       explicit
-      vector(size_type __n)
-      : _Base(__n)
+      vector(size_type __n, const allocator_type& __a = allocator_type())
+      : _Base(__n, __a)
       { _M_default_initialize(__n); }
 
       /**
