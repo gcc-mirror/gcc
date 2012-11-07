@@ -1,5 +1,10 @@
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR c/53063
+	* doc/invoke.texi (Wformat): Update.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* optc-gen.awk: Factor code out to...
 	* opt-functions.awk (lang_enabled_by): ... this new function.
 

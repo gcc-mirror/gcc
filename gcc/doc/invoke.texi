@@ -3241,10 +3241,12 @@ the compiler performs the entire computation with @code{double}
 because the floating-point literal is a @code{double}.
 
 @item -Wformat
+@itemx -Wformat=@var{n}
 @opindex Wformat
 @opindex Wno-format
 @opindex ffreestanding
 @opindex fno-builtin
+@opindex Wformat=
 Check calls to @code{printf} and @code{scanf}, etc., to make sure that
 the arguments supplied have types appropriate to the format string
 specified, and that the conversions specified in the format string make
@@ -3268,20 +3270,17 @@ in the selected standard version (but not for @code{strfmon} formats,
 since those are not in any version of the C standard).  @xref{C Dialect
 Options,,Options Controlling C Dialect}.
 
-Since @option{-Wformat} also checks for null format arguments for
-several functions, @option{-Wformat} also implies @option{-Wnonnull}.
-
-@option{-Wformat} is included in @option{-Wall}.  For more control over some
-aspects of format checking, the options @option{-Wformat-y2k},
-@option{-Wno-format-extra-args}, @option{-Wno-format-zero-length},
-@option{-Wformat-nonliteral}, @option{-Wformat-security}, and
-@option{-Wformat=2} are available, but are not included in @option{-Wall}.
-
-@item -Wformat-y2k
-@opindex Wformat-y2k
-@opindex Wno-format-y2k
-If @option{-Wformat} is specified, also warn about @code{strftime}
-formats that may yield only a two-digit year.
+@table @gcctabopt
+@item -Wformat=1
+@itemx -Wformat
+Option @option{-Wformat} is equivalent to @option{-Wformat=1}, and
+@option{-Wno-format} is equivalent to @option{-Wformat=0}.  Since
+@option{-Wformat} also checks for null format arguments for several
+functions, @option{-Wformat} also implies @option{-Wnonnull}.  Some
+aspects of this level of format checking can be disabled by the
+options: @option{-Wno-format-contains-nul},
+@option{-Wno-format-extra-args}, and @option{-Wno-format-zero-length}.
+@option{-Wformat} is enabled by @option{-Wall}.
 
 @item -Wno-format-contains-nul
 @opindex Wno-format-contains-nul
@@ -3310,6 +3309,12 @@ Unix Specification says that such unused arguments are allowed.
 If @option{-Wformat} is specified, do not warn about zero-length formats.
 The C standard specifies that zero-length formats are allowed.
 
+
+@item -Wformat=2
+Enable @option{-Wformat} plus additional format checks.  Currently
+equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
+-Wformat-y2k}.
+
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
 @opindex Wno-format-nonliteral
@@ -3330,12 +3335,12 @@ currently a subset of what @option{-Wformat-nonliteral} warns about, but
 in future warnings may be added to @option{-Wformat-security} that are not
 included in @option{-Wformat-nonliteral}.)
 
-@item -Wformat=2
-@opindex Wformat=2
-@opindex Wno-format=2
-Enable @option{-Wformat} plus format checks not included in
-@option{-Wformat}.  Currently equivalent to @option{-Wformat
--Wformat-nonliteral -Wformat-security -Wformat-y2k}.
+@item -Wformat-y2k
+@opindex Wformat-y2k
+@opindex Wno-format-y2k
+If @option{-Wformat} is specified, also warn about @code{strftime}
+formats that may yield only a two-digit year.
+@end table
 
 @item -Wnonnull
 @opindex Wnonnull
@@ -3796,7 +3801,6 @@ It is equivalent to @option{-Wstrict-aliasing=3}
 
 @item -Wstrict-aliasing=n
 @opindex Wstrict-aliasing=n
-@opindex Wno-strict-aliasing=n
 This option is only active when @option{-fstrict-aliasing} is active.
 It warns about code that might break the strict aliasing rules that the
 compiler is using for optimization.
