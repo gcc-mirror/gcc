@@ -1,3 +1,9 @@
+2012-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/55219
+	* fold-const.c (fold_binary_op_with_conditional_arg): Do not fold if
+	the argument is itself a conditional expression.
+
 2012-11-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (print_reg): Replace REX_INT_REG_P with
