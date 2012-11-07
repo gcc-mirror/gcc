@@ -1,3 +1,8 @@
+2012-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in: Revert most changes.
+	* gcc-interface/Make-lang.in (gnatlib): Remove ada/s-oscons.ads.
+
 2012-11-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in (copy-s-oscons): New target.

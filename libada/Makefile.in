@@ -113,8 +113,7 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: osconstool $(GCC_DIR)/ada/Makefile
 	$(LN_S) $(ADA_RTS_DIR) adalib
 
 osconstool:
-	$(MAKE) -C $(GCC_DIR) $(LIBADA_FLAGS_TO_PASS) ada/s-oscons.ads
-	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) copy-s-oscons
+	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) ./bldtools/oscons/xoscons
 
 install-gnatlib: $(GCC_DIR)/ada/Makefile
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) install-gnatlib

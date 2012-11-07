@@ -1,16 +1,3 @@
-2012-10-30  Arnaud Charlet  <charlet@adacore.com>
-
-	* Makefile.in (osconstool): Revert previous change, still needed
-	after all. Add call to copy-s-oscons target.
-
-2012-10-30  Arnaud Charlet  <charlet@adacore.com>
-
-	* Makefile.in (osconstool): Removed, no longer needed.
-
-2012-10-30  Arnaud Charlet  <charlet@adacore.com>
-
-	* Makefile.in (osconstool): Fix target.
-
 2012-06-11  Olivier Hainque  <hainque@adacore.com>
 
 	* Makefile.in (GNATLIBCFLAGS_FOR_C): Remove $(PICFLAG).
