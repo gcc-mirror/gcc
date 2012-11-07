@@ -1,3 +1,13 @@
+2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55226
+	Revert:
+	2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54922
+	* semantics.c (cx_check_missing_mem_inits): Handle anonymous union
+	members.
+
 2012-11-07  Florian Weimer  <fweimer@redhat.com>
 
 	* init.c (build_new_1): Do not check for arithmetic overflow if
@@ -12,7 +22,7 @@
 	* decl.c (decls_match): Make decls unmatched for versioned
 	functions.
 	(duplicate_decls): Remove ambiguity for versioned functions.
-	Delete versioned function data for merged decls. 
+	Delete versioned function data for merged decls.
 	* decl2.c (check_classfn): Check attributes of versioned functions
 	for match.
 	* call.c (get_function_version_dispatcher): New function.
