@@ -1,3 +1,13 @@
+2012-11-07  David S. Miller  <davem@davemloft.net>
+
+	PR bootstrap/55211
+	Revert:
+    	* config/sparc/constraints.md ("U"): Delete.
+    	* config/sparc/sparc.md: Use 'r' constraint instead of 'U'.
+    	* config/sparc/sync.md: Likewise.
+	And revert parts of:
+	* doc/md.texi: Sync sparc constraint documentation with reality.
+
 2012-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_avx_u128_mode_after): Don't
