@@ -15086,9 +15086,9 @@ ix86_avx_u128_mode_after (int mode, rtx insn)
   /* Check for CALL instruction.  */
   if (CALL_P (insn))
     {
-      if (GET_CODE (pat) == SET || GET_CODE (pat) == CALL)
+      if (GET_CODE (pat) == SET)
 	reg = SET_DEST (pat);
-      else if (GET_CODE (pat) ==  PARALLEL)
+      else if (GET_CODE (pat) == PARALLEL)
 	for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
 	  {
 	    rtx x = XVECEXP (pat, 0, i);

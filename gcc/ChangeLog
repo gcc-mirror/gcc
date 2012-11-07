@@ -1,5 +1,8 @@
 2012-11-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_avx_u128_mode_after): Don't
+	look for reg in CALL operand.
+
 	PR debug/54693
 	* tree-flow.h (propagate_threaded_block_debug_into): New prototype.
 	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): No
