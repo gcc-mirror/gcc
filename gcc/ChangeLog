@@ -1,5 +1,10 @@
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	* optc-gen.awk: Factor code out to...
+	* opt-functions.awk (lang_enabled_by): ... this new function.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	PR c/53063
 	* common.opt (Wswitch,Wswitch-default,Wswitch-enum): Move to c.opt.
 
