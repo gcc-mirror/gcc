@@ -65,22 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-flow.h"
 
-/* Check if a 256bit AVX register is referenced in stores.   */
-
-static void
-check_avx256_stores (rtx dest, const_rtx set, void *data)
-{
-  if (((REG_P (dest) || MEM_P (dest))
-       && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (dest)))
-      || (GET_CODE (set) == SET
-	  && (REG_P (SET_SRC (set)) || MEM_P (SET_SRC (set)))
-	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (SET_SRC (set)))))
-    {
-      bool *used = (bool *) data;
-      *used = true;
-    }
-}
-
 static rtx legitimize_dllimport_symbol (rtx, bool);
 
 #ifndef CHECK_STACK_LIMIT
@@ -4638,6 +4622,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       if (!rtx_equal_p (a, b))
 	return false;
     }
+  else if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
+    ;
   else if (!rtx_equal_p (a, b))
     return false;
 
@@ -14952,6 +14938,22 @@ output_387_binary_op (rtx insn, rtx *operands)
 
   strcat (buf, p);
   return buf;
+}
+
+/* Check if a 256bit AVX register is referenced in stores.   */
+
+static void
+check_avx256_stores (rtx dest, const_rtx set, void *data)
+{
+  if (((REG_P (dest) || MEM_P (dest))
+       && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (dest)))
+      || (GET_CODE (set) == SET
+	  && (REG_P (SET_SRC (set)) || MEM_P (SET_SRC (set)))
+	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (SET_SRC (set)))))
+    {
+      bool *used = (bool *) data;
+      *used = true;
+    }
 }
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */
