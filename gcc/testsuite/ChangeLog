@@ -37,6 +37,7 @@
 
 2012-11-07  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/49220
 	* gcc.c-torture/compile/pr49220.c: New test.
 
 2012-11-07  Florian Weimer  <fweimer@redhat.com>
