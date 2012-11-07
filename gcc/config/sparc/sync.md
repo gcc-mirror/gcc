@@ -115,7 +115,7 @@
 })
 
 (define_insn "atomic_loaddi_1"
-  [(set (match_operand:DI 0 "register_operand" "=r,?*f")
+  [(set (match_operand:DI 0 "register_operand" "=U,?*f")
 	(unspec:DI [(match_operand:DI 1 "memory_operand" "m,m")]
 		   UNSPEC_ATOMIC))]
   "!TARGET_ARCH64"
@@ -144,7 +144,7 @@
 (define_insn "atomic_storedi_1"
   [(set (match_operand:DI 0 "memory_operand" "=m,m,m")
 	(unspec:DI
-	  [(match_operand:DI 1 "register_or_v9_zero_operand" "J,r,?*f")]
+	  [(match_operand:DI 1 "register_or_v9_zero_operand" "J,U,?*f")]
 	  UNSPEC_ATOMIC))]
   "!TARGET_ARCH64"
   "@

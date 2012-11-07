@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;    AB                  U
+;;;    AB
 ;;;    a        jkl    q  tuv xyz
 
 
@@ -129,6 +129,15 @@
  (and (match_test "TARGET_ARCH32")
       (match_code "mem")
       (match_test "memory_ok_for_ldd (op)")))
+
+;; Not needed in 64-bit mode
+(define_constraint "U"
+ "Pseudo-register or hard even-numbered integer register"
+ (and (match_test "TARGET_ARCH32")
+      (match_code "reg")
+      (ior (match_test "REGNO (op) < FIRST_PSEUDO_REGISTER")
+	   (not (match_test "reload_in_progress && reg_renumber [REGNO (op)] < 0")))
+      (match_test "register_ok_for_ldd (op)")))
 
 ;; Equivalent to 'T' but available in 64-bit mode
 (define_memory_constraint "W"
