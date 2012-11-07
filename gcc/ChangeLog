@@ -1,3 +1,22 @@
+2012-11-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi (-mcpu=power8): Document.
+	* config.in (HAVE_AS_POWER8): New.
+	* config.gcc: Add cpu_type power8.
+	* configure.ac: (HAVE_AS_POWER8): Check for assembler support for
+	the POWER8 instructions.
+	* configure: Regenerate.
+	* config/rs6000/rs6000.h: (ASM_CPU_POWER8_SPEC): Define.
+	(ASM_CPU_SPEC): Pass %(asm_cpu_power8) for -mcpu=power8.
+	(EXTRA_SPECS): Add asm_cpu_power8 spec string.
+	* config/rs6000/rs6000-cpus.def (processor_target_table): Alias
+	POWER8 to POWER7.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/driver-rs6000.c (ASM_CPU_SPEC): For -mcpu=power8,
+	pass %(asm_cpu_power8)/-mpwr8.
+	* config/rs6000/aix53.h: Likewise.
+	* config/rs6000/aix61.h: Likewise.
+
 2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55224
