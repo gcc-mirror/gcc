@@ -248,6 +248,7 @@ enum lto_section_type
   LTO_section_opts,
   LTO_section_cgraph_opt_sum,
   LTO_section_inline_summary,
+  LTO_section_ipcp_transform,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 

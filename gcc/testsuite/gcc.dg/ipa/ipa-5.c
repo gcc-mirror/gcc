@@ -5,7 +5,7 @@
 /* Float & short constants.  */
 
 #include <stdio.h>
-void t(void);
+int t(void);
 int g (float b, short c)
 {
   t();
@@ -13,10 +13,11 @@ int g (float b, short c)
 }
 int f (float a)
 {
-  t();
+  int i, j = t();
   /* a is modified.  */
   if (a++ > 0)
-    g (a, 3);
+    for (i = 0; i < j; i++)
+      g (a, 3);
 }
 int main ()
 {
@@ -26,7 +27,7 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump-times "Creating a specialized node" 2 "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "Creating a specialized node" 3 "cp"  } } */
 /* { dg-final { scan-ipa-dump "replacing param c with const 3" "cp"  } } */
 /* { dg-final { scan-ipa-dump "replacing param a with const 7" "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */

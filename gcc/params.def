@@ -901,6 +901,12 @@ DEFPARAM (PARAM_IPA_MAX_AGG_ITEMS,
 	  "jump functions and lattices",
 	  16, 0, 0)
 
+DEFPARAM (PARAM_IPA_CP_LOOP_HINT_BONUS,
+	  "ipa-cp-loop-hint-bonus",
+	  "Compile-time bonus IPA-CP assigns to candidates which make loop "
+	  "bounds or strides known.",
+	  64, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,

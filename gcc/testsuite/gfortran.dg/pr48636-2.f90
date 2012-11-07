@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fdump-ipa-inline-details -fno-ipa-cp" }
+! { dg-options "-O3 -fdump-ipa-cp-details -fno-inline" }
 
 module foo
   implicit none
@@ -33,7 +33,6 @@ program main
   print *,x
 end program main
 
-! { dg-final { scan-ipa-dump "bar\[^\\n\]*inline copy in MAIN" "inline" } }
-! { dg-final { scan-ipa-dump-times "phi predicate:" 5 "inline" } }
-! { dg-final { scan-ipa-dump "inline hints: loop_iterations" "inline" } }
-! { dg-final { cleanup-ipa-dump "inline" } }
+! { dg-final { scan-ipa-dump "Creating a specialized node of bar/\[0-9\]*\\." "cp" } }
+! { dg-final { scan-ipa-dump-times "Aggregate replacements\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=\[^=\]*=" 2 "cp" } }
+! { dg-final { cleanup-ipa-dump "cp" } }
