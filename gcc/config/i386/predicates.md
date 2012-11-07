@@ -1231,10 +1231,8 @@
 
 ;; return true if OP is a vzeroupper operation.
 (define_predicate "vzeroupper_operation"
-  (match_code "unspec_volatile")
-{
-  return XINT (op, 1) == UNSPECV_VZEROUPPER;
-})
+  (and (match_code "unspec_volatile")
+       (match_test "XINT (op, 1) == UNSPECV_VZEROUPPER")))
 
 ;; Return true if OP is a parallel for a vbroadcast permute.
 
