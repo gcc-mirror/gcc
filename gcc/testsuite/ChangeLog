@@ -1,3 +1,12 @@
+2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55226
+	Revert:
+	2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54922
+	* g++.dg/cpp0x/constexpr-union4.C: New.
+
 2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gcc.target/aarch64/dwarf-cfa-reg.c: New test.
@@ -17,7 +26,8 @@
 
 2012-11-06  Andrew Pinski  <apinski@cavium.com>
 
-	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: Add -fno-vect-cost-model.
+	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: Add
+	-fno-vect-cost-model.
 
 2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -37,7 +47,8 @@
 
 2012-11-06  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/tree-ssa/loop-1.c: Make to look like a good unroling candidate still.
+	* gcc.dg/tree-ssa/loop-1.c: Make to look like a good unroling
+	candidate still.
 	* gcc.dg/tree-ssa/loop-23.c: Likewise.
 	* gcc.dg/tree-ssa/cunroll-1.c: Unrolling now happens early.
 	* gcc.dg/tree-prof/unroll-1.c: Remove confused dg-options.
