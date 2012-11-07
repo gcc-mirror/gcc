@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc*-*-darwin* powerpc-ibm-aix* } { "*" } { "" } } */
 /* { dg-options "-O2 -mcpu=power7 -falign-functions=16" } */
 /* { dg-final { scan-assembler ".p2align 5,,31" } } */
 
