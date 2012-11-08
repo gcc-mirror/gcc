@@ -1,3 +1,7 @@
+2012-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* g++.old-deja/g++.abi/cxa_vec.C: Fix typo in comment.
+
 2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55151

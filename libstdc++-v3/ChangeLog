@@ -1,3 +1,7 @@
+2012-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* testsuite/18_support/cxa_vec.cc: Fix typo in comment.
+
 2012-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/profile/iterator_tracker.h (operator++): Fix returning
