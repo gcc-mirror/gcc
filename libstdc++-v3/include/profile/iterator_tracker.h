@@ -93,7 +93,7 @@ namespace __profile
 	return *this;
       }
 
-      __iterator_tracker&
+      __iterator_tracker
       operator++(int)
       {
 	_M_ds->_M_profile_iterate();
@@ -110,7 +110,7 @@ namespace __profile
 	return *this;
       }
 
-      __iterator_tracker&
+      __iterator_tracker
       operator--(int)
       {
 	_M_ds->_M_profile_iterate(1);

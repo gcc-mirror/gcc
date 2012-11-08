@@ -1,3 +1,9 @@
+2012-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/profile/iterator_tracker.h (operator++): Fix returning
+	dangling reference.
+	(operator--): Likewise.
+
 2012-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/shared_ptr/cons/55123.cc: Remove duplicate
