@@ -1,5 +1,12 @@
 2012-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/53145
+	* dwarf2out.c (gen_compile_unit_die): Don't call gen_producer_string
+	here, instead add "" if producer_string is NULL.
+	(dwarf2out_finish): Call gen_producer_string here, unconditionally
+	decrease refcount of the old indirect string and set val_str to
+	find_AT_string result.
+
 	PR debug/54499
 	* cgraphunit.c (assemble_thunk): Don't call source_line debug hook
 	here, instead call insn_locations_{init,finalize} and initialize
