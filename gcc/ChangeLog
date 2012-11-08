@@ -1,3 +1,9 @@
+2012-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54308
+	* config/rs6000/rs6000.c (legitimate_indirect_address_p): Remove
+	inline keyword.
+
 2012-11-08  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/54850
