@@ -3978,18 +3978,12 @@ process_command (unsigned int decoded_options_count,
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
     warning (0, "%<-x %s%> after last input file has no effect", spec_lang);
 
+  /* Synthesize -fcompare-debug flag from the GCC_COMPARE_DEBUG
+     environment variable.  */
   if (compare_debug == 2 || compare_debug == 3)
     {
-      alloc_switch ();
-      switches[n_switches].part1 = concat ("fcompare-debug=",
-					   compare_debug_opt,
-					   NULL);
-      switches[n_switches].args = 0;
-      switches[n_switches].live_cond = 0;
-      switches[n_switches].validated = false;
-      switches[n_switches].known = false;
-      switches[n_switches].ordering = 0;
-      n_switches++;
+      const char *opt = concat ("-fcompare-debug=", compare_debug_opt, NULL);
+      save_switch (opt, 0, NULL, false, true);
       compare_debug = 1;
     }
 

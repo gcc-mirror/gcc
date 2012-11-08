@@ -1,3 +1,9 @@
+2012-11-08  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR driver/54789
+	* gcc.c (process_command): Use save_switch for synthesized
+	-fcompare-debug=* option; mark the switch as known.
+
 2012-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54308
