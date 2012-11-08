@@ -12315,7 +12315,7 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "<avx_avx2>_maskstore<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:V48_AVX2 0 "memory_operand" "=m")
+  [(set (match_operand:V48_AVX2 0 "memory_operand" "+m")
 	(unspec:V48_AVX2
 	  [(match_operand:<sseintvecmode> 1 "register_operand" "x")
 	   (match_operand:V48_AVX2 2 "register_operand" "x")
