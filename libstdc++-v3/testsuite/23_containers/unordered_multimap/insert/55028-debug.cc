@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++0x -D_GLIBCXX_DEBUG" }
+// { dg-options "-std=gnu++11" }
 //
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
