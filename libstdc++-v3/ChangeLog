@@ -1,3 +1,11 @@
+2012-11-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54075
+	* include/bits/hashtable.h (_Hashtable<>::rehash): Reset hash
+	policy state if no rehash.
+	* testsuite/23_containers/unordered_set/modifiers/reserve.cc
+	(test02): New.
+
 2012-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/unordered_multimap/insert/55028-debug.cc:
