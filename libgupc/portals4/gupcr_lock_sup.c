@@ -264,6 +264,8 @@ gupcr_lock_init (void)
   gupcr_lock_link_init ();
   /* Initialize the lock free list.  */
   gupcr_lock_free_init ();
+  /* Initialize the heap allocator locks.  */
+  gupcr_lock_heap_sup_init ();
 }
 
 /**

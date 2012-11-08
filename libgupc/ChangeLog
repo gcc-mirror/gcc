@@ -1,5 +1,29 @@
 2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
 
+	Replace the usage of spin locks to regular UPC locks in
+	the heap allocation implementation.
+	* Makefile.am (UPC_RUNTIME_SRC): Remove spin lock source
+	files. Add gupcr_lock.h.
+	* Makefile.in; Regenerate.
+	* portals4/gupcr_lock.h: New. External definitions for heap
+	allocation locks.
+	* portals4/gupcr_lock.upc: Declare heap allocation locks.
+	(gupcr_lock_heap_sup_init): New. Initialize heap allocation locks.
+	* portals4/gupcr_alloc.upc: Remove spin lock declarations.
+	(gupcr_alloc_init): Remove spin lock initialization.
+	(gupcr_heap_init_info): Replace spin lock with UPC lock.
+	(gupcr_heap_region_alloc): Ditto.
+	(gupcr_heap_alloc): Ditto.
+	(gupcr_heap_free): Ditto.
+	* portals4/gupcr_lock_sup.h (gupcr_lock_heap_sup_init): Add external
+	definition.
+	* portals4/gupcr_lock_sup.c (gupcr_lock_init): Call the heap
+	allocation locks initialization.
+	* portals4/gupcr_slock.h: Delete.
+	* portals4/gupcr_slock.upc: Delete.
+
+2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
+
 	* testsuite/lib/libgupc.exp: Set the "-B" option at the right
 	place so we support command that runs the tests on multiple
 	targets.  The previous version failed on building RPMs that

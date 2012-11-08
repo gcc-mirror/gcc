@@ -50,8 +50,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gupcr_config.h"
 #include "gupcr_defs.h"
 #include "gupcr_utils.h"
-#include "gupcr_slock.h"
 #include "gupcr_barrier.h"
+#include "gupcr_lock.h"
 
 struct upc_heap_list_struct;
 typedef shared struct upc_heap_list_struct *upc_heap_list_p;
@@ -64,7 +64,7 @@ typedef upc_heap_list_t upc_heap_pool_t[GUPCR_HEAP_NUM_POOLS];
 typedef struct upc_heap_struct
 {
   shared void *base;
-  gupcr_slock_t *lock;
+  upc_lock_t *lock;
   size_t size;
   int is_global;
   size_t pool_avail;
@@ -87,7 +87,6 @@ static size_t gupcr_heap_region_size;
 
 static shared upc_heap_t gupcr_global_heap_info;
 static shared upc_heap_t gupcr_local_heap_info[THREADS];
-static shared gupcr_slock_t gupcr_heap_region_lock;
 static strict shared size_t gupcr_heap_global_hi_water_mark;
 static strict shared size_t gupcr_heap_local_low_water_mark;
 static upc_heap_p gupcr_global_heap;
@@ -316,7 +315,10 @@ gupcr_heap_init_info (upc_heap_p heap,
   gupcr_assert (base != NULL);
   heap->base = base;
   heap->is_global = is_global;
-  gupcr_slock_reset ((gupcr_slock_t *) &heap->lock);
+  if (is_global)
+    heap->lock = gupcr_global_heap_lock;
+  else
+    heap->lock = gupcr_local_heap_lock;
   for (p = 0, pool = &heap->pool[0]; p < GUPCR_HEAP_NUM_POOLS; ++p, ++pool)
     {
       pool->next = (upc_heap_list_p) pool;
@@ -350,7 +352,6 @@ gupcr_alloc_init (shared void *heap_region_base, size_t heap_region_size)
     {
       gupcr_heap_global_hi_water_mark = 0;
       gupcr_heap_local_low_water_mark = heap_region_size;
-      gupcr_slock_reset (&gupcr_heap_region_lock);
       gupcr_heap_init_info (&gupcr_global_heap_info, 1, heap_region_base);
     }
   /* The local heap base is initially the top of the UPC heap region,  */
@@ -388,7 +389,7 @@ gupcr_heap_region_alloc (upc_heap_p heap, size_t size)
   heap_base = heap->base;
   new_heap_size = heap_size + size;
   have_enough_space = 0;
-  gupcr_slock_lock (&gupcr_heap_region_lock);
+  upc_lock (gupcr_heap_region_lock);
   if (is_global)
     {
       size_t new_hi_water_mark;
@@ -413,7 +414,7 @@ gupcr_heap_region_alloc (upc_heap_p heap, size_t size)
 	    }
 	}
     }
-  gupcr_slock_unlock (&gupcr_heap_region_lock);
+  upc_unlock (gupcr_heap_region_lock);
   if (have_enough_space)
     {
       ptrdiff_t heap_size_offset;
@@ -483,10 +484,9 @@ gupcr_heap_alloc (upc_heap_p heap, size_t size)
   unsigned long long int pool_avail;
   unsigned int p;
   upc_heap_node_p alloc = NULL;
-  gupcr_slock_t *heap_lock = (gupcr_slock_t *) &heap->lock;
   gupcr_assert (heap != NULL);
   gupcr_assert (size > 0);
-  gupcr_slock_lock (heap_lock);
+  upc_lock (heap->lock);
   pool_avail = heap->pool_avail << pool_fit;
   if (!pool_avail)
     {
@@ -502,7 +502,7 @@ gupcr_heap_alloc (upc_heap_p heap, size_t size)
     }
   if (alloc)
     mem = gupcr_pts_add_offset (alloc, GUPCR_HEAP_ALLOC_OVERHEAD);
-  gupcr_slock_unlock (heap_lock);
+  upc_unlock (heap->lock);
   return mem;
 }
 
@@ -514,15 +514,14 @@ gupcr_heap_free (upc_heap_p heap, upc_heap_node_p node)
 {
   unsigned int p;
   upc_heap_node_p free_node;
-  gupcr_slock_t *heap_lock = (gupcr_slock_t *) &heap->lock;
   gupcr_assert (heap != NULL);
   gupcr_assert (node != NULL);
-  gupcr_slock_lock (heap_lock);
+  upc_lock (heap->lock);
   for (p = gupcr_plog2 (node->size), free_node = node;
        gupcr_heap_list_join (heap, p, &free_node); ++p) /* loop */ ;
   free_node->alloc_tag = 0;
   gupcr_heap_list_push (heap, p, free_node);
-  gupcr_slock_unlock (heap_lock);
+  upc_unlock (heap->lock);
 }
 
 shared void *

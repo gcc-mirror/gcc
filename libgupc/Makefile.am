@@ -152,7 +152,8 @@ UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_coll_sup.h portals4/gupcr_coll_sup.c \
 	portals4/gupcr_config.h portals4/gupcr_defs.h \
 	portals4/gupcr_env.c portals4/gupcr_gmem.h portals4/gupcr_gmem.c \
-	portals4/gupcr_lib.h portals4/gupcr_lock.upc \
+	portals4/gupcr_lib.h \
+	portals4/gupcr_lock.upc portals4/gupcr_lock.h \
 	portals4/gupcr_lock_sup.c portals4/gupcr_lock_sup.h \
 	portals4/gupcr_main.c \
 	portals4/gupcr_node.c portals4/gupcr_node.h \
@@ -160,7 +161,6 @@ UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_pgm_info.c portals4/gupcr_pts.h \
 	portals4/gupcr_runtime.h portals4/gupcr_runtime.c \
 	portals4/gupcr_shutdown.h portals4/gupcr_shutdown.c \
-	portals4/gupcr_slock.h portals4/gupcr_slock.upc \
 	portals4/gupcr_sup.h portals4/gupcr_sync.h \
 	portals4/gupcr_tick.c \
 	portals4/gupcr_utils.h portals4/gupcr_utils.c

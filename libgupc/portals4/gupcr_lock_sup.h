@@ -43,5 +43,6 @@ extern void gupcr_lock_wait (void);
 /* See: gupcr_alloc.upc */
 extern void gupcr_lock_link_init (void);
 extern void gupcr_lock_free_init (void);
+extern void gupcr_lock_heap_sup_init (void);
 
 #endif /* gupcr_lock_sup.h */

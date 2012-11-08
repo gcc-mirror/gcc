@@ -25,25 +25,17 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _GUPCR_SLOCK_H_
-#define _GUPCR_SLOCK_H_
+#ifndef _GUPCR_LOCK_H_
+#define _GUPCR_LOCK_H_
 
 /**
- * @file gupcr_slock.h
- * GUPC Portals4 spin lock implementation.
+ * @file gupcr_lock.h
+ * GUPC Portals4 lock external definitions.
  */
 
-#ifdef __UPC__
+/* Heap allocation locks.  */
+extern upc_lock_t *gupcr_heap_region_lock;
+extern upc_lock_t *gupcr_global_heap_lock;
+extern upc_lock_t *gupcr_local_heap_lock;
 
-typedef shared struct gupcr_slock_struct
-{
-  int lock_word;
-} gupcr_slock_t;
-
-extern void gupcr_slock_reset (gupcr_slock_t *);
-extern void gupcr_slock_lock (gupcr_slock_t *);
-extern void gupcr_slock_unlock (gupcr_slock_t *);
-
-#endif /* __UPC__ */
-
-#endif /* gupcr_slock.h */
+#endif /* gupcr_lock.h */

@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gupcr_defs.h"
 #include "gupcr_utils.h"
 #include "gupcr_lock_sup.h"
+#include "gupcr_lock.h"
 #include "gupcr_barrier.h"
 
 /**
@@ -101,6 +102,39 @@ static gupcr_lock_link_ref gupcr_lock_links;
 
 /** UPC lock free list.  */
 static upc_lock_t *lock_free;
+
+/* Heap allocator locks.  */
+/** Heap region allocation lock.  */
+shared upc_lock_t gupcr_heap_region_lock_data;
+upc_lock_t *gupcr_heap_region_lock;
+/** Global heap lock.  */
+shared upc_lock_t gupcr_global_heap_lock_data;
+upc_lock_t *gupcr_global_heap_lock;
+/** Local heap locks.  */
+shared upc_lock_t gupcr_local_heap_lock_data[THREADS];
+upc_lock_t *gupcr_local_heap_lock;
+
+/**
+ * Initialize the heap allocator locks.
+ * 
+ * All shared references must be local due to the fact
+ * this is called before Portals has been initialized.
+ */
+void
+gupcr_lock_heap_sup_init (void)
+{
+  if (!MYTHREAD)
+    {
+      upc_memset (&gupcr_heap_region_lock_data, '\0', sizeof (upc_lock_t));
+      upc_memset (&gupcr_global_heap_lock_data, '\0', sizeof (upc_lock_t));
+    }
+  gupcr_heap_region_lock = &gupcr_heap_region_lock_data;
+  gupcr_global_heap_lock = &gupcr_global_heap_lock_data;
+
+  upc_memset (&gupcr_local_heap_lock_data[MYTHREAD],
+	      '\0', sizeof (upc_lock_t));
+  gupcr_local_heap_lock = &gupcr_local_heap_lock_data[MYTHREAD];
+}
 
 /**
  * Initialize the local lock free list.
