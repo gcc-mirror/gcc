@@ -1597,6 +1597,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // level.
 	  _M_rehash_policy._M_prev_resize = 0;
 	}
+      else
+	// No rehash, restore previous state to keep a consistent state.
+	_M_rehash_policy._M_reset(__saved_state);
     }
 
   template<typename _Key, typename _Value,
