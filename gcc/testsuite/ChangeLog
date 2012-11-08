@@ -1,3 +1,8 @@
+2012-11-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48636
+	* gcc.dg/winline-3.c: Update.
+
 2012-11-08  Martin Jambor  <mjambor@suse.cz>
 
 	* gfortran.dg/ipcp-array-1.f90: New test.

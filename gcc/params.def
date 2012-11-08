@@ -46,6 +46,11 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 	  "Maximal estimated outcome of branch considered predictable",
 	  2, 0, 50)
 
+DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
+	  "inline-min-speedup",
+	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-isnsns-auto",
+	  10, 0, 0)
+
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
