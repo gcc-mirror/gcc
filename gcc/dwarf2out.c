@@ -18867,9 +18867,7 @@ gen_compile_unit_die (const char *filename)
 	add_comp_dir_attribute (die);
     }
 
-  if (producer_string == NULL)
-    producer_string = gen_producer_string ();
-  add_AT_string (die, DW_AT_producer, producer_string);
+  add_AT_string (die, DW_AT_producer, producer_string ? producer_string : "");
 
   /* If our producer is LTO try to figure out a common language to use
      from the global list of translation units.  */
@@ -23217,13 +23215,12 @@ dwarf2out_finish (const char *filename)
   dw_die_ref main_comp_unit_die;
 
   /* PCH might result in DW_AT_producer string being restored from the
-     header compilation, fix it up if needed.  */
+     header compilation, so always fill it with empty string initially
+     and overwrite only here.  */
   dw_attr_ref producer = get_AT (comp_unit_die (), DW_AT_producer);
-  if (strcmp (AT_string (producer), producer_string) != 0)
-    {
-      struct indirect_string_node *node = find_AT_string (producer_string);
-      producer->dw_attr_val.v.val_str = node;
-    }
+  producer_string = gen_producer_string ();
+  producer->dw_attr_val.v.val_str->refcount--;
+  producer->dw_attr_val.v.val_str = find_AT_string (producer_string);
 
   gen_scheduled_generic_parms_dies ();
   gen_remaining_tmpl_value_param_die_attribute ();
