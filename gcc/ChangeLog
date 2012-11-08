@@ -1,3 +1,9 @@
+2012-11-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/54850
+	* sched-deps.c (find_inc): Add all dependencies from the inc_insn
+	to the mem_insn.
+
 2012-11-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48636
