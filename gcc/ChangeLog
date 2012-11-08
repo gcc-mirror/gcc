@@ -1,3 +1,9 @@
+2012-11-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/55191
+	* cfganal.c (connect_infinite_loops_to_exit): Call dfs_deadend here.
+	(flow_dfs_compute_reverse_execute): Don't call it here.
+
 2012-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/53145
