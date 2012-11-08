@@ -74,7 +74,6 @@ proc libgupc_init { args } {
       setenv LANG C.ASCII
     }
 
-    set tooldir ""
     if ![info exists GUPC_UNDER_TEST] then {
         if [info exists TOOL_EXECUTABLE] {
             set GUPC_UNDER_TEST $TOOL_EXECUTABLE
@@ -84,8 +83,8 @@ proc libgupc_init { args } {
               set file [lookfor_file $tool_root_dir gcc/gupc]
             }
             if { $file != "" } {
-              set GUPC_UNDER_TEST $file
 	      set tooldir [file dirname $file]
+              set GUPC_UNDER_TEST "$file -B$tooldir/"
             } else {
               set GUPC_UNDER_TEST [transform upc]
             }
@@ -140,10 +139,6 @@ proc libgupc_init { args } {
 
     set ALWAYS_CFLAGS ""
     if { $blddir != "" } {
-        # Add -B for gcc tools
-        if {$tooldir != ""} {
-          lappend ALWAYS_CFLAGS "additional_flags=-B${tooldir}/"
-        }
 	# Added -I for gcc-upc.h
         lappend ALWAYS_CFLAGS "additional_flags=-I${srcdir}/../include"
 	# Added -I for gcc-upc-lib.h

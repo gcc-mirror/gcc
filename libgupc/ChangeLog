@@ -1,11 +1,9 @@
-2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
+2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
 
-	Remove unused --upc-pthreads-per-process compile switch. 
-	* libgupc/smp/gcc-upc-lib.in (__UPC_N_PTHREADS__): Delete.
-	(__UPC_STATIC_PTHREADS__): Delete.
-	(__UPC_USES_PTHREADS__): Delete.
-	(GCCUPCConfig): Remove pthreads configuration from the list of
-	defines.
+	* testsuite/lib/libgupc.exp: Set the "-B" option at the right
+	place so we support command that runs the tests on multiple
+	targets.  The previous version failed on building RPMs that
+	tested "unix,unix/-fstack-protector" targets.
 
 2012-10-26  Nenad Vukicevic  <nenad@intrepid.com>
 
