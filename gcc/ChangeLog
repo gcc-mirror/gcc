@@ -1,3 +1,12 @@
+2012-11-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48636
+	* ipa-inline.c (big_speedup_p): New function.
+	(want_inline_small_function_p): Use it.
+	(edge_badness): Dump it.
+	* params.def (inline-min-speedup): New parameter.
+	* doc/invoke.texi (inline-min-speedup): Document.
+
 2012-11-08  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (determine_known_aggregate_parts): Skip writes to

@@ -493,6 +493,22 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   return time;
 }
 
+/* Return true if the speedup for inlining E is bigger than
+   PARAM_MAX_INLINE_MIN_SPEEDUP.  */
+
+static bool
+big_speedup_p (struct cgraph_edge *e)
+{
+  gcov_type time = compute_uninlined_call_time (inline_summary (e->callee),
+					  	e);
+  gcov_type inlined_time = compute_inlined_call_time (e,
+					              estimate_edge_time (e));
+  if (time - inlined_time
+      > RDIV (time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP), 100))
+    return true;
+  return false;
+}
+
 /* Return true if we are interested in inlining small function.
    When REPORT is true, report reason to dump file.  */
 
@@ -514,6 +530,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
     {
       int growth = estimate_edge_growth (e);
       inline_hints hints = estimate_edge_hints (e);
+      bool big_speedup = big_speedup_p (e);
 
       if (growth <= 0)
 	;
@@ -521,6 +538,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 hints suggests that inlining given function is very profitable.  */
       else if (DECL_DECLARED_INLINE_P (callee->symbol.decl)
 	       && growth >= MAX_INLINE_INSNS_SINGLE
+	       && !big_speedup
 	       && !(hints & (INLINE_HINT_indirect_call
 			     | INLINE_HINT_loop_iterations
 			     | INLINE_HINT_loop_stride)))
@@ -574,6 +592,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 Upgrade it to MAX_INLINE_INSNS_SINGLE when hints suggests that
 	 inlining given function is very profitable.  */
       else if (!DECL_DECLARED_INLINE_P (callee->symbol.decl)
+	       && !big_speedup
 	       && growth >= ((hints & (INLINE_HINT_indirect_call
 				       | INLINE_HINT_loop_iterations
 				       | INLINE_HINT_loop_stride))
@@ -836,6 +855,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	       growth,
 	       edge_time);
       dump_inline_hints (dump_file, hints);
+      if (big_speedup_p (edge))
+	fprintf (dump_file, " big_speedup");
       fprintf (dump_file, "\n");
     }
 
