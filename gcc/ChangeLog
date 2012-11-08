@@ -1,3 +1,8 @@
+2012-11-07  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md ("U"): Document, in detail,
+	which this constraint is necessary.
+
 2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/55235
