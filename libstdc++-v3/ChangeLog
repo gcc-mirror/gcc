@@ -1,3 +1,8 @@
+2012-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/unordered_multimap/insert/55028-debug.cc:
+	Don't pass -D_GLIBCXX_DEBUG by hand (check-debug does).
+
 2012-11-08  Florian Weimer  <fweimer@redhat.com>
 
 	* testsuite/18_support/cxa_vec.cc: Fix typo in comment.
