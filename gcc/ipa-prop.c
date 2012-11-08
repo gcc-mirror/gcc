@@ -1318,7 +1318,12 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	    break;
 	}
       else if (lhs_base != arg_base)
-	break;
+	{
+	  if (DECL_P (lhs_base))
+	    continue;
+	  else
+	    break;
+	}
 
       if (lhs_offset + lhs_size < arg_offset
 	  || lhs_offset >= (arg_offset + arg_size))

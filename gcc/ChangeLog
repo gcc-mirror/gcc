@@ -1,3 +1,8 @@
+2012-11-08  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (determine_known_aggregate_parts): Skip writes to
+	different declarations when tracking writes to a declaration.
+
 2012-11-07  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md ("U"): Document, in detail,
