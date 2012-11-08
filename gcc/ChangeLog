@@ -1,3 +1,10 @@
+2012-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54499
+	* cgraphunit.c (assemble_thunk): Don't call source_line debug hook
+	here, instead call insn_locations_{init,finalize} and initialize
+	prologue_location.
+
 2012-11-08  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
 
 	PR driver/54789

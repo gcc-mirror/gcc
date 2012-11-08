@@ -1,3 +1,8 @@
+2012-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54499
+	* g++.dg/debug/pr54499.C: New test.
+
 2012-11-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48636
