@@ -452,6 +452,7 @@ void
 connect_infinite_loops_to_exit (void)
 {
   basic_block unvisited_block = EXIT_BLOCK_PTR;
+  basic_block deadend_block;
   struct depth_first_search_dsS dfs_ds;
 
   /* Perform depth-first search in the reverse graph to find nodes
@@ -467,8 +468,9 @@ connect_infinite_loops_to_exit (void)
       if (!unvisited_block)
 	break;
 
-      make_edge (unvisited_block, EXIT_BLOCK_PTR, EDGE_FAKE);
-      flow_dfs_compute_reverse_add_bb (&dfs_ds, unvisited_block);
+      deadend_block = dfs_find_deadend (unvisited_block);
+      make_edge (deadend_block, EXIT_BLOCK_PTR, EDGE_FAKE);
+      flow_dfs_compute_reverse_add_bb (&dfs_ds, deadend_block);
     }
 
   flow_dfs_compute_reverse_finish (&dfs_ds);
@@ -958,7 +960,7 @@ flow_dfs_compute_reverse_execute (depth_first_search_ds data,
   /* Determine if there are unvisited basic blocks.  */
   FOR_BB_BETWEEN (bb, last_unvisited, NULL, prev_bb)
     if (!bitmap_bit_p (data->visited_blocks, bb->index))
-      return dfs_find_deadend (bb);
+      return bb;
 
   return NULL;
 }
