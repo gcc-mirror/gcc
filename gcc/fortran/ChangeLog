@@ -1,3 +1,15 @@
+2012-11-07  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/51727
+	* module.c (sorted_pointer_info): New.
+	(gfc_get_sorted_pointer_info): New.
+	(free_sorted_pointer_info_tree): New.
+	(compare_sorted_pointer_info): New.
+	(find_symbols_to_write): New.
+	(write_symbol1_recursion): New.
+	(write_symbol1): Collect symbols that need writing, output in order.
+	(write_generic): Traverse tree in order.
+
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/53063
