@@ -1,3 +1,8 @@
+2012-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tm/pr47530-2.C: Adjust for uninstrumented code path.
+	* g++.dg/tm/pr47530.C: Same.
+
 2012-11-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54859
