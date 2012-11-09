@@ -48,8 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 
 static int reload_cse_noop_set_p (rtx);
-static void reload_cse_simplify (rtx, rtx);
-static void reload_cse_regs_1 (rtx);
+static bool reload_cse_simplify (rtx, rtx);
+static void reload_cse_regs_1 (void);
 static int reload_cse_simplify_set (rtx, rtx);
 static int reload_cse_simplify_operands (rtx, rtx);
 
@@ -67,14 +67,14 @@ static void
 reload_cse_regs (rtx first ATTRIBUTE_UNUSED)
 {
   bool moves_converted;
-  reload_cse_regs_1 (first);
+  reload_cse_regs_1 ();
   reload_combine ();
   moves_converted = reload_cse_move2add (first);
   if (flag_expensive_optimizations)
     {
       if (moves_converted)
 	reload_combine ();
-      reload_cse_regs_1 (first);
+      reload_cse_regs_1 ();
     }
 }
 
@@ -88,11 +88,13 @@ reload_cse_noop_set_p (rtx set)
   return rtx_equal_for_cselib_p (SET_DEST (set), SET_SRC (set));
 }
 
-/* Try to simplify INSN.  */
-static void
+/* Try to simplify INSN.  Return true if the CFG may have changed.  */
+static bool
 reload_cse_simplify (rtx insn, rtx testreg)
 {
   rtx body = PATTERN (insn);
+  basic_block insn_bb = BLOCK_FOR_INSN (insn);
+  unsigned insn_bb_succs = EDGE_COUNT (insn_bb->succs);
 
   if (GET_CODE (body) == SET)
     {
@@ -113,7 +115,8 @@ reload_cse_simplify (rtx insn, rtx testreg)
 	    value = 0;
 	  if (check_for_inc_dec (insn))
 	    delete_insn_and_edges (insn);
-	  return;
+	  /* We're done with this insn.  */
+	  goto done;
 	}
 
       if (count > 0)
@@ -166,7 +169,7 @@ reload_cse_simplify (rtx insn, rtx testreg)
 	  if (check_for_inc_dec (insn))
 	    delete_insn_and_edges (insn);
 	  /* We're done with this insn.  */
-	  return;
+	  goto done;
 	}
 
       /* It's not a no-op, but we can try to simplify it.  */
@@ -179,6 +182,9 @@ reload_cse_simplify (rtx insn, rtx testreg)
       else
 	reload_cse_simplify_operands (insn, testreg);
     }
+
+done:
+  return (EDGE_COUNT (insn_bb->succs) != insn_bb_succs);
 }
 
 /* Do a very simple CSE pass over the hard registers.
@@ -199,25 +205,30 @@ reload_cse_simplify (rtx insn, rtx testreg)
    if possible, much like an optional reload would.  */
 
 static void
-reload_cse_regs_1 (rtx first)
+reload_cse_regs_1 (void)
 {
+  bool cfg_changed = false;
+  basic_block bb;
   rtx insn;
   rtx testreg = gen_rtx_REG (VOIDmode, -1);
 
   cselib_init (CSELIB_RECORD_MEMORY);
   init_alias_analysis ();
 
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_P (insn))
-	reload_cse_simplify (insn, testreg);
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	if (INSN_P (insn))
+	  cfg_changed |= reload_cse_simplify (insn, testreg);
 
-      cselib_process_insn (insn);
-    }
+	cselib_process_insn (insn);
+      }
 
   /* Clean up.  */
   end_alias_analysis ();
   cselib_finish ();
+  if (cfg_changed)
+    cleanup_cfg (0);
 }
 
 /* Try to simplify a single SET instruction.  SET is the set pattern.
