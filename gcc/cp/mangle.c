@@ -173,6 +173,7 @@ static void mangle_call_offset (const tree, const tree);
 static void write_mangled_name (const tree, bool);
 static void write_encoding (const tree);
 static void write_name (tree, const int);
+static void write_abi_tags (tree);
 static void write_unscoped_name (const tree);
 static void write_unscoped_template_name (const tree);
 static void write_nested_name (const tree);
@@ -1192,15 +1193,17 @@ write_unqualified_name (const tree decl)
       return;
     }
 
+  bool found = false;
+
   if (DECL_NAME (decl) == NULL_TREE)
     {
+      found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
       write_source_name (DECL_ASSEMBLER_NAME (decl));
-      return;
     }
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
-      bool found = true;
+      found = true;
       if (DECL_CONSTRUCTOR_P (decl))
 	write_special_name_constructor (decl);
       else if (DECL_DESTRUCTOR_P (decl))
@@ -1234,14 +1237,13 @@ write_unqualified_name (const tree decl)
 	write_literal_operator_name (DECL_NAME (decl));
       else
 	found = false;
-
-      if (found)
-	return;
     }
 
-  if (VAR_OR_FUNCTION_DECL_P (decl) && ! TREE_PUBLIC (decl)
-      && DECL_NAMESPACE_SCOPE_P (decl)
-      && decl_linkage (decl) == lk_internal)
+  if (found)
+    /* OK */;
+  else if (VAR_OR_FUNCTION_DECL_P (decl) && ! TREE_PUBLIC (decl)
+	   && DECL_NAMESPACE_SCOPE_P (decl)
+	   && decl_linkage (decl) == lk_internal)
     {
       MANGLE_TRACE_TREE ("local-source-name", decl);
       write_char ('L');
@@ -1262,6 +1264,11 @@ write_unqualified_name (const tree decl)
       else
         write_source_name (DECL_NAME (decl));
     }
+
+  tree attrs = (TREE_CODE (decl) == TYPE_DECL
+		? TYPE_ATTRIBUTES (TREE_TYPE (decl))
+		: DECL_ATTRIBUTES (decl));
+  write_abi_tags (lookup_attribute ("abi_tag", attrs));
 }
 
 /* Write the unqualified-name for a conversion operator to TYPE.  */
@@ -1289,6 +1296,51 @@ write_source_name (tree identifier)
 
   write_unsigned_number (IDENTIFIER_LENGTH (identifier));
   write_identifier (IDENTIFIER_POINTER (identifier));
+}
+
+/* Compare two TREE_STRINGs like strcmp.  */
+
+int
+tree_string_cmp (const void *p1, const void *p2)
+{
+  if (p1 == p2)
+    return 0;
+  tree s1 = *(const tree*)p1;
+  tree s2 = *(const tree*)p2;
+  return strcmp (TREE_STRING_POINTER (s1),
+		 TREE_STRING_POINTER (s2));
+}
+
+/* ID is the name of a function or type with abi_tags attribute TAGS.
+   Write out the name, suitably decorated.  */
+
+static void
+write_abi_tags (tree tags)
+{
+  if (tags == NULL_TREE)
+    return;
+
+  tags = TREE_VALUE (tags);
+
+  VEC(tree,gc)* vec = make_tree_vector();
+
+  for (tree t = tags; t; t = TREE_CHAIN (t))
+    {
+      tree str = TREE_VALUE (t);
+      VEC_safe_push (tree, gc, vec, str);
+    }
+
+  VEC_qsort (tree, vec, tree_string_cmp);
+
+  unsigned i; tree str;
+  FOR_EACH_VEC_ELT (tree, vec, i, str)
+    {
+      write_string ("B");
+      write_unsigned_number (TREE_STRING_LENGTH (str) - 1);
+      write_identifier (TREE_STRING_POINTER (str));
+    }
+
+  release_tree_vector (vec);
 }
 
 /* Write a user-defined literal operator.

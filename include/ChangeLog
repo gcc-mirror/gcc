@@ -1,3 +1,8 @@
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TAGGED_NAME.
+
 2012-10-29  Sterling Augustine <saugustine@google.com>
             Cary Coutant <ccoutant@google.com>
 

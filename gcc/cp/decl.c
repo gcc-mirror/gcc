@@ -2480,6 +2480,10 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	    }
 	}
 
+      check_abi_tag_redeclaration
+	(olddecl, lookup_attribute ("abi_tag", DECL_ATTRIBUTES (olddecl)),
+	 lookup_attribute ("abi_tag", DECL_ATTRIBUTES (newdecl)));
+
       return NULL;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)

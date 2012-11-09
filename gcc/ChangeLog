@@ -1,3 +1,7 @@
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* attribs.c (lookup_attribute_spec): Handle getting a TREE_LIST.
+
 2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR tree-optimization/55154

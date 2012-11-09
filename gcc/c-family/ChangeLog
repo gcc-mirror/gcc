@@ -1,3 +1,7 @@
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wabi-tag): New.
+
 2012-11-09  Andi Kleen  <ak@linux.intel.com>
 
 	PR 55139

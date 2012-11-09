@@ -1,3 +1,14 @@
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (cxx_attribute_table): Add abi_tag attribute.
+	(check_abi_tag_redeclaration, handle_abi_tag_attribute): New.
+	* class.c (find_abi_tags_r, check_abi_tags): New.
+	(check_bases, check_field_decl): Call check_abi_tags.
+	* decl.c (redeclaration_error_message): Call
+	check_abi_tag_redeclaration.
+	* mangle.c (tree_string_cmp, write_abi_tags): New.
+	(write_unqualified_name): Call write_abi_tags.
+
 2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55226
