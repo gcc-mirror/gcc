@@ -4320,7 +4320,6 @@ extern GTY(()) VEC(tree,gc) *local_classes;
 
 #else /* NO_DOLLAR_IN_LABEL */
 
-#define IN_CHARGE_NAME "__in_chrg"
 #define AUTO_TEMP_NAME "__tmp_"
 #define TEMP_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), AUTO_TEMP_NAME, \
