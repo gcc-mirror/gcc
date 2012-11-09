@@ -4436,9 +4436,9 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 @end html
 @heading @anchor{sparc64-x-solaris2}sparc64-*-solaris2*
 
-When configuring the GNU Multiple Precision Library (GMP) or the
-MPFR library, the canonical target triplet must be specified as
-the @command{build} parameter on the configure line.  For example
+When configuring the GNU Multiple Precision Library (GMP), the MPFR
+library or the MPC library, the canonical target triplet must be specified
+as the @command{build} parameter on the configure line.  For example
 on a Solaris 9 system:
 
 @smallexample

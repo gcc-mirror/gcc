@@ -1,5 +1,9 @@
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* doc/install.texi (sparc64-x-solaris2): Mention MPC as well.
+
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* config/i386/i386.c (release_scratch_register_on_entry): Also adjust
 	sp_offset manually.
 
