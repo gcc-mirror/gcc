@@ -1,5 +1,8 @@
 2012-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54859
+	* pt.c (check_instantiated_arg): Don't complain about dependent args.
+
 	* tree.c (cxx_attribute_table): Add abi_tag attribute.
 	(check_abi_tag_redeclaration, handle_abi_tag_attribute): New.
 	* class.c (find_abi_tags_r, check_abi_tags): New.

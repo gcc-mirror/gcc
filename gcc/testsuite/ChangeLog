@@ -1,5 +1,8 @@
 2012-11-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54859
+	* g++.dg/cpp0x/alias-decl-25.C: New.
+
 	* g++.dg/abi/abi-tag1.C: New.
 	* g++.dg/abi/abi-tag2.C: New.
 

@@ -14362,6 +14362,8 @@ tsubst_copy_and_build (tree t,
 static bool
 check_instantiated_arg (tree tmpl, tree t, tsubst_flags_t complain)
 {
+  if (dependent_template_arg_p (t))
+    return false;
   if (ARGUMENT_PACK_P (t))
     {
       tree vec = ARGUMENT_PACK_ARGS (t);
