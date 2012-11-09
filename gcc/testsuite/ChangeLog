@@ -1,8 +1,13 @@
+2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: Move ...
+	* gcc.target/i386/pr55151.c: ... here.
+
 2012-11-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/54472
-	
-	* gcc.dg/pr54472.c: New test. 
+	* gcc.dg/pr54472.c: New test.
 
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
