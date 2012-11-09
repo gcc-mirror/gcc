@@ -38,6 +38,7 @@ extern void gupcr_lock_fini (void);
 extern int gupcr_lock_cswap (size_t, size_t, void *, void *, size_t);
 extern void gupcr_lock_swap (size_t, size_t, void *, void *, size_t);
 extern void gupcr_lock_put (size_t, size_t, void *, size_t);
+extern void gupcr_lock_get (size_t, size_t, void *, size_t);
 extern void gupcr_lock_wait (void);
 
 /* See: gupcr_alloc.upc */

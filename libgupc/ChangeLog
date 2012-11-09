@@ -1,5 +1,14 @@
 2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
 
+	Prevent data tearing on accessing a pointer to shared in
+	the shared address space.
+	* portals4/gupcr_lock_sup.c (gupcr_lock_get): New.
+	* portals4/gupcr_lock_sup.h: Add extern def for gupcr_lock_get.
+	* portals4/gupcr_lock.upc (upc_unlock): Access data that can
+	be changed by other threads via Portals interface.
+
+2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
+
 	Replace the usage of spin locks to regular UPC locks in
 	the heap allocation implementation.
 	* Makefile.am (UPC_RUNTIME_SRC): Remove spin lock source

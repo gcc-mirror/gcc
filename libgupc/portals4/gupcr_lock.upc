@@ -515,10 +515,16 @@ upc_unlock (upc_lock_t *lock)
       shared void *link_next_signal_addr;
       size_t signal_addr_thread, signal_addr_offset;
       int signal = 1;
-      /* Pass ownership to the next waiting thread. Process
-         counting events one by one until 'next' link is set.  */
-      while (link->next == NULL)
+      /* Pass ownership to the next waiting thread.  Wait until
+         the link->next pointer is being set.  Use Portals call to
+	 avoid possibility of data tearing on pointer to shared.  */
+      for (;;)
 	{
+          size_t addr_offset;
+	  gupcr_lock_link_ref val;
+          addr_offset = upc_addrfield (&link->next);
+          gupcr_lock_get (MYTHREAD, addr_offset, &val, sizeof (val));
+	  if (val) break;
 	  gupcr_lock_wait ();
 	}
       /* Signal the waiting thread that it now owns the lock.  */

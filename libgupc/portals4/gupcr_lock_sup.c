@@ -179,7 +179,38 @@ gupcr_lock_put (size_t dest_thread, size_t dest_addr, void *val, size_t size)
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_lock_md_eq);
-      gupcr_fatal_error ("Thread %d: Received an error on the lock MD",
+      gupcr_fatal_error ("Thread %d: Received an error on the lock MD put",
+			 MYTHREAD);
+    }
+}
+
+/*
+ * Execute a Portals get operation on the lock-related PTE.
+ *
+ * All operations on lock/link data structures must be performed
+ * through the Portals interface to prevent data tearing.
+ */
+void
+gupcr_lock_get (size_t dest_thread, size_t dest_addr, void *val, size_t size)
+{
+  ptl_process_t rpid;
+  ptl_ct_event_t ct;
+  gupcr_debug (FC_LOCK, "%lu:0x%lx",
+                        (long unsigned) dest_thread,
+			(long unsigned) dest_addr);
+  rpid.rank = dest_thread;
+  gupcr_portals_call (PtlGet, (gupcr_lock_md, (ptl_size_t) val,
+			       size, rpid,
+			       GUPCR_PTL_PTE_LOCK, PTL_NO_MATCH_BITS,
+			       (ptl_size_t) dest_addr,
+			       PTL_NULL_USER_PTR));
+  gupcr_lock_md_count += 1;
+  gupcr_portals_call (PtlCTWait,
+		      (gupcr_lock_md_ct, gupcr_lock_md_count, &ct));
+  if (ct.failure)
+    {
+      gupcr_process_fail_events (gupcr_lock_md_eq);
+      gupcr_fatal_error ("Thread %d: Received an error on the lock MD get",
 			 MYTHREAD);
     }
 }
