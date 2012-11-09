@@ -1,3 +1,8 @@
+2012-11-08  Christian Bruel  <christian.bruel@st.com>
+
+	* tree-ssa-tail-merge.c (replace_block_by): Update bb2 profile count.
+	Do not reset dead bb1->frequency.
+
 2012-11-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR tree-optimization/55191
@@ -50,6 +55,7 @@
 	* ipa-prop.c (determine_known_aggregate_parts): Skip writes to
 	different declarations when tracking writes to a declaration.
 
+>>>>>>> .r193349
 2012-11-07  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md ("U"): Document, in detail,

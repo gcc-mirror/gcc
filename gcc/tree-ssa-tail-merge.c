@@ -1488,7 +1488,8 @@ replace_block_by (basic_block bb1, basic_block bb2)
   bb2->frequency += bb1->frequency;
   if (bb2->frequency > BB_FREQ_MAX)
     bb2->frequency = BB_FREQ_MAX;
-  bb1->frequency = 0;
+
+  bb2->count += bb1->count;
 
   /* Do updates that use bb1, before deleting bb1.  */
   release_last_vdef (bb1);
