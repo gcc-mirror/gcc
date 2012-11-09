@@ -1,3 +1,11 @@
+2012-11-09  Siddhesh Poyarekar  <siddhesh@redhat.com>
+
+	* gcc.dg/Warray-bounds-3.c (bar): Keep array access within
+	bounds for ABDAY, DAY, ABMON, MON, AM_PM.
+	* gcc.dg/vect/pr22506.c (foo): Reduce loop iterations to within
+	array bounds.
+	* gcc.dg/vect/pr34005.c (XdmcpUnwrap): Likewise.
+
 2012-11-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* g++.dg/tm/pr47530-2.C: Adjust for uninstrumented code path.
