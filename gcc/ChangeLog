@@ -1,7 +1,15 @@
+2012-11-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54385
+	* postreload.c (reload_cse_simplify): Return a bool indicating
+	whether the CFG was changed.
+	(reload_cse_regs_1): Traverse the CFG instead of the insns chain.
+	Cleanup the CFG if edges may have been removed.
+	(reload_cse_regs): Update.
+
 2012-11-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/54472
-
 	* sel-sched-ir.c (has_dependence_note_reg_set): Handle implicit sets.
 	(has_dependence_note_reg_clobber,
 	has_dependence_note_reg_use): Likewise. 
