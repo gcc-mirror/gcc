@@ -243,6 +243,12 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 #define LRA_TEMP_CLOBBER_P(x) \
   (RTL_FLAG_CHECK1 ("TEMP_CLOBBER_P", (x), CLOBBER)->unchanging)
 
+/* Cost factor for each additional reload and maximal cost reject for
+   insn reloads.  One might ask about such strange numbers.  Their
+   values occurred historically from former reload pass.  */
+#define LRA_LOSER_COST_FACTOR 6
+#define LRA_MAX_REJECT 600
+
 /* lra.c: */
 
 extern FILE *lra_dump_file;

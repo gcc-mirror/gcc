@@ -1282,12 +1282,6 @@ general_constant_p (rtx x)
   return CONSTANT_P (x) && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (x));
 }
 
-/* Cost factor for each additional reload and maximal cost bound for
-   insn reloads.  One might ask about such strange numbers.  Their
-   values occurred historically from former reload pass.  */
-#define LOSER_COST_FACTOR 6
-#define MAX_OVERALL_COST_BOUND 600
-
 /* Major function to choose the current insn alternative and what
    operands should be reloaded and how.	 If ONLY_ALTERNATIVE is not
    negative we should consider only this alternative.  Return false if
@@ -1576,6 +1570,7 @@ process_alt_operands (int only_alternative)
 		    badop = false;
 		    this_alternative = curr_alt[m];
 		    COPY_HARD_REG_SET (this_alternative_set, curr_alt_set[m]);
+		    winreg = this_alternative != NO_REGS;
 		    break;
 		  }
 
@@ -1828,7 +1823,7 @@ process_alt_operands (int only_alternative)
 		     might cost something but probably less than old
 		     reload pass believes.  */
 		  if (lra_former_scratch_p (REGNO (operand_reg[nop])))
-		    reject += LOSER_COST_FACTOR;
+		    reject += LRA_LOSER_COST_FACTOR;
 		}
 	    }
 	  else if (did_match)
@@ -1912,20 +1907,15 @@ process_alt_operands (int only_alternative)
 		      && no_input_reloads_p && ! const_to_mem))
 		goto fail;
 
-	      /* If we can't reload this value at all, reject this
-		 alternative.  Note that we could also lose due to
-		 LIMIT_RELOAD_CLASS, but we don't check that here.  */
-	      if (! CONSTANT_P (op) && ! no_regs_p)
-		{
-		  if (targetm.preferred_reload_class
-		      (op, this_alternative) == NO_REGS)
-		    reject = MAX_OVERALL_COST_BOUND;
-
-		  if (curr_static_id->operand[nop].type == OP_OUT
-		      && (targetm.preferred_output_reload_class
-			  (op, this_alternative) == NO_REGS))
-		    reject = MAX_OVERALL_COST_BOUND;
-		}
+	      /* Check strong discouragement of reload of non-constant
+		 into class THIS_ALTERNATIVE.  */
+	      if (! CONSTANT_P (op) && ! no_regs_p
+		  && (targetm.preferred_reload_class
+		      (op, this_alternative) == NO_REGS
+		      || (curr_static_id->operand[nop].type == OP_OUT
+			  && (targetm.preferred_output_reload_class
+			      (op, this_alternative) == NO_REGS))))
+		reject += LRA_MAX_REJECT;
 
 	      if (! ((const_to_mem && constmemok)
 		     || (MEM_P (op) && offmemok)))
@@ -1966,7 +1956,7 @@ process_alt_operands (int only_alternative)
 	     Should we update the cost (may be approximately) here
 	     because of early clobber register reloads or it is a rare
 	     or non-important thing to be worth to do it.  */
-	  overall = losers * LOSER_COST_FACTOR + reject;
+	  overall = losers * LRA_LOSER_COST_FACTOR + reject;
 	  if ((best_losers == 0 || losers != 0) && best_overall < overall)
 	    goto fail;
 
@@ -2019,7 +2009,7 @@ process_alt_operands (int only_alternative)
 	      {
 		curr_alt_match_win[j] = false;
 		losers++;
-		overall += LOSER_COST_FACTOR;
+		overall += LRA_LOSER_COST_FACTOR;
 	      }
 	  if (! curr_alt_match_win[i])
 	    curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = i;
@@ -2032,7 +2022,7 @@ process_alt_operands (int only_alternative)
 	    }
 	  curr_alt_win[i] = curr_alt_match_win[i] = false;
 	  losers++;
-	  overall += LOSER_COST_FACTOR;
+	  overall += LRA_LOSER_COST_FACTOR;
 	}
       small_class_operands_num = 0;
       for (nop = 0; nop < n_operands; nop++)
@@ -2635,7 +2625,7 @@ curr_insn_transform (void)
      the wrong kind of hard reg.  For this, we must consider all the
      operands together against the register constraints.  */
 
-  best_losers = best_overall = MAX_RECOG_OPERANDS * 2 + MAX_OVERALL_COST_BOUND;
+  best_losers = best_overall = INT_MAX;
   best_small_class_operands_num = best_reload_sum = 0;
 
   curr_swapped = false;
