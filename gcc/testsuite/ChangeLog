@@ -1,3 +1,9 @@
+2012-11-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/54472
+	
+	* gcc.dg/pr54472.c: New test. 
+
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/stack_check3.ad[sb]: New test.
