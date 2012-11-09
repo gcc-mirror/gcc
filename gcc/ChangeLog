@@ -1,3 +1,8 @@
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (release_scratch_register_on_entry): Also adjust
+	sp_offset manually.
+
 2012-11-08  Christian Bruel  <christian.bruel@st.com>
 
 	* tree-ssa-tail-merge.c (replace_block_by): Update bb2 profile count.
@@ -55,7 +60,6 @@
 	* ipa-prop.c (determine_known_aggregate_parts): Skip writes to
 	different declarations when tracking writes to a declaration.
 
->>>>>>> .r193349
 2012-11-07  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/constraints.md ("U"): Document, in detail,
