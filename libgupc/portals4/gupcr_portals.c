@@ -283,10 +283,10 @@ gupcr_nifailtype (ptl_ni_fail_t nitype)
 }
 
 /**
- * Return Portals data type from the specified size.
+ * Return Portals atomic data type from the specified size.
  */
 ptl_datatype_t
-gupcr_get_datatype (int size)
+gupcr_get_atomic_datatype (int size)
 {
   switch (size)
     {
@@ -299,11 +299,10 @@ gupcr_get_datatype (int size)
     case 8:
       return PTL_UINT64_T;
     case 16:
-      if (sizeof (long double) == 16)
-	return PTL_LONG_DOUBLE;
+      return PTL_DOUBLE_COMPLEX;
     default:
       gupcr_fatal_error
-	("Unable to convert size of %d into Portals data type.", size);
+	("Unable to convert size of %d into Portals atomic data type.", size);
     }
   return -1;
 }

@@ -90,7 +90,7 @@ gupcr_lock_swap (size_t dest_thread,
 				gupcr_lock_md, (ptl_size_t) val, size, rpid,
 				GUPCR_PTL_PTE_GMEM, PTL_NO_MATCH_BITS,
 				dest_offset, PTL_NULL_USER_PTR, 0, NULL,
-				PTL_SWAP, gupcr_get_datatype (size)));
+				PTL_SWAP, gupcr_get_atomic_datatype (size)));
   gupcr_lock_md_count += 1;
   gupcr_portals_call (PtlCTWait,
 		      (gupcr_lock_md_ct, gupcr_lock_md_count, &ct));
@@ -132,7 +132,7 @@ gupcr_lock_cswap (size_t dest_thread,
 				gupcr_lock_md, (ptl_size_t) val, size, rpid,
 				GUPCR_PTL_PTE_GMEM, PTL_NO_MATCH_BITS,
 				dest_offset, PTL_NULL_USER_PTR, 0, cmp,
-				PTL_CSWAP, gupcr_get_datatype (size)));
+				PTL_CSWAP, gupcr_get_atomic_datatype (size)));
   gupcr_lock_md_count += 1;
   gupcr_portals_call (PtlCTWait,
 		      (gupcr_lock_md_ct, gupcr_lock_md_count, &ct));

@@ -1,5 +1,17 @@
 2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
 
+	* portals4/gupcr_portals.c (gupcr_get_datatype): Rename
+	to gupcr_get_atomic_datatype to name it correctly.  Use
+	PTL_DOUBLE_COMPLEX atomic type as a container for 16 bytes
+	CSWAP operations.  The MCS lock implementation requires CSWAP
+	on a pointer to shared which is 16 bytes in the struct
+	configuration.
+	* portals4/gupcr_portals.h: Rename gupcr_get_datatype.
+	* portals4/gupcr_lock_sup.c (gupcr_lock_swap): Ditto.
+	(gupcr_lock_cswap): Ditto.
+
+2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
+
 	Prevent data tearing on accessing a pointer to shared in
 	the shared address space.
 	* portals4/gupcr_lock_sup.c (gupcr_lock_get): New.
