@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -254,6 +254,11 @@ parse_default_method()
       disp = GTM::dispatch_ml_wt();
       env += 5;
     }
+  else if (strncmp(env, "htm", 3) == 0)
+    {
+      disp = GTM::dispatch_htm();
+      env += 3;
+    }
   else
     goto unknown;
 
@@ -311,7 +316,15 @@ GTM::gtm_thread::number_of_threads_changed(unsigned previous, unsigned now)
 	set_default_dispatch(default_dispatch_user);
       else
 	{
-	  abi_dispatch* a = dispatch_ml_wt();
+	  // If HTM is available, use it by default with serial mode as
+	  // fallback.  Otherwise, use ml_wt because it probably scales best.
+	  abi_dispatch* a;
+#ifdef USE_HTM_FASTPATH
+	  if (htm_available())
+	    a = dispatch_htm();
+	  else
+#endif
+	    a = dispatch_ml_wt();
 	  if (a->supports(now))
 	    set_default_dispatch(a);
 	  else

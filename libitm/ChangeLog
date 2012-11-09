@@ -1,3 +1,20 @@
+2012-11-09  Torvald Riegel  <triegel@redhat.com>
+
+	* beginend.cc (htm_fastpath): New.
+	(gtm_thread::begin_transaction, _ITM_commitTransaction,
+	_ITM_commitTransactionEH): Add HTM fastpath handling.
+	* config/linux/rwlock.h (gtm_rwlock.is_write_locked): New.
+	* config/posix/rwlock.h (gtm_rwlock.is_write_locked): New.
+	* config/x86/target.h (htm_available, htm_init, htm_begin_success,
+	htm_begin, htm_commit, htm_abort, htm_abort_should_retry): New.
+	* configure.tgt: Add -mrtm to XCFLAGS.
+	* method-serial.cc (htm_mg, o_htm_mg, htm_dispatch, dispatch_htm): New.
+	(gtm_thread::serialirr_mode): Add HTM fastpath handling.
+	* libitm_i.h (htm_fastpath, dispatch_htm): Declare.
+	* retry.cc (parse_default_method): Add HTM method parsing.
+	(gtm_thread::number_of_threads_changed): Use HTM by default if
+	available.
+
 2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure: Regenerate.
