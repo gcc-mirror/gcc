@@ -1,5 +1,10 @@
 2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/55154
+	* gcc.target/i386/pr55154.c: New test.
+
+2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/55151
 	* gcc.dg/pr55151.c: Move ...
 	* gcc.target/i386/pr55151.c: ... here.

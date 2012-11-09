@@ -1,3 +1,16 @@
+2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR tree-optimization/55154
+	* lra-int.h (LRA_LOSER_COST_FACTOR, LRA_MAX_REJECT): New macros.
+	* lra.c (setup_operand_alternative): Use them.
+	* lra-constraints.c (LOSER_COST_FACTOR, MAX_OVERALL_COST_BOUND):
+	Remove.
+	(process_alt_operands): Use LRA_LOSER_COST_FACTOR and
+	LRA_MAX_REJECT.  Accumulate reject instead of setting for
+	non-const.
+	(curr_insn_transform): Initialize best_losers and best_overall by
+	INT_MAX.
+
 2012-11-09  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.c (sh_can_use_simple_return_p): Enable with
@@ -44,7 +57,6 @@
 	* config/i386/i386.c (release_scratch_register_on_entry): Also adjust
 	sp_offset manually.
 
->>>>>>> .r193360
 2012-11-08  Christian Bruel  <christian.bruel@st.com>
 
 	* tree-ssa-tail-merge.c (replace_block_by): Update bb2 profile count.
