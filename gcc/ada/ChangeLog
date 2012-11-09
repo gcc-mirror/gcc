@@ -1,5 +1,13 @@
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR other/52438
+	* s-taspri-lynxos.ads: Delete.
+	* s-osinte-kfreebsd-gnu.ads: Change license to GPL V3+.
+	* s-tpopsp-rtems.adb: Likewise.
+	* s-osinte-rtems.adb: Likewise.
+
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Subprogram_Body_Stub>: Deal
 	with a missing library unit instead of calling gnat_to_gnu on Emtpy.
 	Remove last bits of support for SCIL nodes.  Add cases for nodes that
