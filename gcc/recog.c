@@ -578,8 +578,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 			 (PLUS, GET_MODE (x), XEXP (x, 0), XEXP (x, 1)), 1);
       break;
     case MINUS:
-      if (CONST_INT_P (XEXP (x, 1))
-	  || CONST_DOUBLE_AS_INT_P (XEXP (x, 1)))
+      if (CONST_SCALAR_INT_P (XEXP (x, 1)))
 	validate_change (object, loc,
 			 simplify_gen_binary
 			 (PLUS, GET_MODE (x), XEXP (x, 0),
@@ -1730,7 +1729,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 's':
-	  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+	  if (CONST_SCALAR_INT_P (op))
 	    break;
 	  /* Fall through.  */
 
@@ -1740,7 +1739,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 'n':
-	  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+	  if (CONST_SCALAR_INT_P (op))
 	    result = 1;
 	  break;
 
@@ -2596,7 +2595,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 's':
-		if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+		if (CONST_SCALAR_INT_P (op))
 		  break;
 	      case 'i':
 		if (CONSTANT_P (op))
@@ -2604,7 +2603,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 'n':
-		if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+		if (CONST_SCALAR_INT_P (op))
 		  win = 1;
 		break;
 
