@@ -257,6 +257,10 @@ Wabi
 C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
 Warn about things that will change when compiling with an ABI-compliant compiler
 
+Wabi-tag
+C++ ObjC++ Var(warn_abi_tag) Warning
+Warn if a subobject has an abi_tag attribute that the complete object type does not have
+
 Wpsabi
 C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented
 

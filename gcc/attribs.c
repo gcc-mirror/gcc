@@ -325,12 +325,21 @@ lookup_scoped_attribute_spec (const_tree ns, const_tree name)
 			 substring_hash (attr.str, attr.length));
 }
 
-/* Return the spec for the attribute named NAME.  */
+/* Return the spec for the attribute named NAME.  If NAME is a TREE_LIST,
+   it also specifies the attribute namespace.  */
 
 const struct attribute_spec *
 lookup_attribute_spec (const_tree name)
 {
-  return lookup_scoped_attribute_spec (get_identifier ("gnu"), name);
+  tree ns;
+  if (TREE_CODE (name) == TREE_LIST)
+    {
+      ns = TREE_PURPOSE (name);
+      name = TREE_VALUE (name);
+    }
+  else
+    ns = get_identifier ("gnu");
+  return lookup_scoped_attribute_spec (ns, name);
 }
 
 

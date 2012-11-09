@@ -1,3 +1,8 @@
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/abi-tag1.C: New.
+	* g++.dg/abi/abi-tag2.C: New.
+
 2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55154
