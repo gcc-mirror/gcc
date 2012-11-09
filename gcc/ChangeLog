@@ -1,3 +1,8 @@
+2012-11-09  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.c (sh_can_use_simple_return_p): Enable with
+	-freorder-blocks-and-partition.
+
 2012-11-09  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* rtl.h (CONST_SCALAR_INT_P): New macro.
@@ -39,6 +44,7 @@
 	* config/i386/i386.c (release_scratch_register_on_entry): Also adjust
 	sp_offset manually.
 
+>>>>>>> .r193360
 2012-11-08  Christian Bruel  <christian.bruel@st.com>
 
 	* tree-ssa-tail-merge.c (replace_block_by): Update bb2 profile count.
