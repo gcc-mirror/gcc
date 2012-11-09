@@ -1,3 +1,10 @@
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Subprogram_Body_Stub>: Deal
+	with a missing library unit instead of calling gnat_to_gnu on Emtpy.
+	Remove last bits of support for SCIL nodes.  Add cases for nodes that
+	should only be present when annotating types.  Add default abort.
+
 2012-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in: Revert most changes.

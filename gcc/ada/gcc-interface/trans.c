@@ -6493,7 +6493,13 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Protected_Body_Stub:
     case N_Task_Body_Stub:
       /* Simply process whatever unit is being inserted.  */
-      gnu_result = gnat_to_gnu (Unit (Library_Unit (gnat_node)));
+      if (Present (Library_Unit (gnat_node)))
+	gnu_result = gnat_to_gnu (Unit (Library_Unit (gnat_node)));
+      else
+	{
+	  gcc_assert (type_annotate_only);
+	  gnu_result = alloc_stmt_list ();
+	}
       break;
 
     case N_Subunit:
@@ -6855,11 +6861,20 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = alloc_stmt_list ();
       break;
 
-    default:
-      /* SCIL nodes require no processing for GCC.  Other nodes should only
-	 be present when annotating types.  */
-      gcc_assert (IN (kind, N_SCIL_Node) || type_annotate_only);
+    case N_Function_Specification:
+    case N_Procedure_Specification:
+    case N_Op_Concat:
+    case N_Component_Association:
+    case N_Protected_Body:
+    case N_Task_Body:
+      /* These nodes should only be present when annotating types.  */
+      gcc_assert (type_annotate_only);
       gnu_result = alloc_stmt_list ();
+      break;
+
+    default:
+      /* Other nodes are not supposed to reach here.  */
+      gcc_unreachable ();
     }
 
   /* If we pushed the processing of the elaboration routine, pop it back.  */
