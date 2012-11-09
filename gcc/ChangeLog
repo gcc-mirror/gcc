@@ -1,3 +1,8 @@
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (release_scratch_register_on_entry): Also adjust
+	sp_offset manually.
+
 2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

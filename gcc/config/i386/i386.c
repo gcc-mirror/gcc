@@ -9604,6 +9604,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
 {
   if (sr->saved)
     {
+      struct machine_function *m = cfun->machine;
       rtx x, insn = emit_insn (gen_pop (sr->reg));
 
       /* The RTX_FRAME_RELATED_P mechanism doesn't know about pop.  */
@@ -9611,6 +9612,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
       x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
       x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
+      m->fs.sp_offset -= UNITS_PER_WORD;
     }
 }
 
