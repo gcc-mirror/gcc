@@ -13023,8 +13023,8 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 
     case CONST:
       if (mode == VOIDmode
-	  || GET_CODE (XEXP (rtl, 0)) == CONST_INT
-	  || GET_CODE (XEXP (rtl, 0)) == CONST_DOUBLE
+	  || CONST_SCALAR_INT_P (XEXP (rtl, 0))
+	  || CONST_DOUBLE_AS_FLOAT_P (XEXP (rtl, 0))
 	  || GET_CODE (XEXP (rtl, 0)) == CONST_VECTOR)
 	{
 	  loc_result = loc_descriptor (XEXP (rtl, 0), mode, initialized);

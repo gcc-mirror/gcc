@@ -1,3 +1,23 @@
+2012-11-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* rtl.h (CONST_SCALAR_INT_P): New macro.
+   	* cfgexpand.c (expand_debug_locations): Changed to use
+	CONST_SCALAR_INT_P macro.
+	* combine.c (try_combine, subst, make_extraction,
+	gen_lowpart_for_combine): Ditto.
+	* cselib.c (entry_and_rtx_equal_p, rtx_equal_for_cselib_1): Ditto.
+	* dwarf2out.c (loc_descriptor): Ditto.
+	* emit-rtl.c (gen_lowpart_common): Ditto.
+	* ira-costs.c (record_reg_classes, record_address_regs): Ditto.
+	* ira-lives.c (single_reg_class): Ditto.
+	* recog.c (simplify_while_replacing, asm_operand_ok,
+	constrain_operands): Ditto.
+	* reload.c (find_reloads): Ditto.
+	* simplify-rtx.c (simplify_unary_operation_1,
+	simplify_const_unary_operation, simplify_binary_operation_1,
+	simplify_const_binary_operation, simplify_relational_operation_1,
+	simplify_subreg): Ditto.
+
 2012-11-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/54385

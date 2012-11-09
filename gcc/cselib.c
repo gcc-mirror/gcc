@@ -537,17 +537,15 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
   rtx x = CONST_CAST_RTX ((const_rtx)x_arg);
   enum machine_mode mode = GET_MODE (x);
 
-  gcc_assert (!CONST_INT_P (x) && GET_CODE (x) != CONST_FIXED
-	      && (mode != VOIDmode || GET_CODE (x) != CONST_DOUBLE));
+  gcc_assert (!CONST_SCALAR_INT_P (x) && GET_CODE (x) != CONST_FIXED);
 
   if (mode != GET_MODE (v->val_rtx))
     return 0;
 
   /* Unwrap X if necessary.  */
   if (GET_CODE (x) == CONST
-      && (CONST_INT_P (XEXP (x, 0))
-	  || GET_CODE (XEXP (x, 0)) == CONST_FIXED
-	  || GET_CODE (XEXP (x, 0)) == CONST_DOUBLE))
+      && (CONST_SCALAR_INT_P (XEXP (x, 0))
+	  || GET_CODE (XEXP (x, 0)) == CONST_FIXED))
     x = XEXP (x, 0);
 
   /* We don't guarantee that distinct rtx's have different hash values,
@@ -1030,9 +1028,7 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
 static rtx
 wrap_constant (enum machine_mode mode, rtx x)
 {
-  if (!CONST_INT_P (x) 
-      && GET_CODE (x) != CONST_FIXED
-      && !CONST_DOUBLE_AS_INT_P (x))
+  if ((!CONST_SCALAR_INT_P (x)) && GET_CODE (x) != CONST_FIXED)
     return x;
   gcc_assert (mode != VOIDmode);
   return gen_rtx_CONST (mode, x);

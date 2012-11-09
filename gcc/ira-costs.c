@@ -667,7 +667,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		case 's':
-		  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op)) 
+		  if (CONST_SCALAR_INT_P (op)) 
 		    break;
 
 		case 'i':
@@ -677,7 +677,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		case 'n':
-		  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op)) 
+		  if (CONST_SCALAR_INT_P (op)) 
 		    win = 1;
 		  break;
 
@@ -1068,7 +1068,7 @@ record_address_regs (enum machine_mode mode, addr_space_t as, rtx x,
 
 	/* If the second operand is a constant integer, it doesn't
 	   change what class the first operand must be.  */
-	else if (code1 == CONST_INT || code1 == CONST_DOUBLE)
+	else if (CONST_SCALAR_INT_P (arg1))
 	  record_address_regs (mode, as, arg0, context, PLUS, code1, scale);
 	/* If the second operand is a symbolic constant, the first
 	   operand must be an index register.  */
