@@ -1,3 +1,11 @@
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR other/52438
+	* s-taspri-lynxos.ads: Delete.
+	* s-osinte-kfreebsd-gnu.ads: Change license to GPL V3+.
+	* s-tpopsp-rtems.adb: Likewise.
+	* s-osinte-rtems.adb: Likewise.
+
 2012-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in: Fix and clean up rules for C files.
