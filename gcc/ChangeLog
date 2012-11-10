@@ -1,3 +1,15 @@
+2012-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): Remove TYPE parameter.  Remove block of code
+	dealing with BLKmode in registers.  Reimplement this support using
+	pseudo-registers and bit-field techniques.
+	(store_constructor_field): Remove TYPE parameter and adjust calls to
+	store_field.
+	(expand_assignment): Adjust calls to store_field.  Add comment.
+	(store_expr): Add comment.
+	(store_constructor): Adjust calls to store_constructor_field.
+	(expand_expr_real_2): Adjust call to store_field.
+
 2012-11-10  Vladimir Makarov  <vmakarov@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

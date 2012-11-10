@@ -137,12 +137,11 @@ static rtx compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
 				     HOST_WIDE_INT, enum machine_mode,
-				     tree, tree, int, alias_set_type);
+				     tree, int, alias_set_type);
 static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT,
 			unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-			enum machine_mode,
-			tree, tree, alias_set_type, bool);
+			enum machine_mode, tree, alias_set_type, bool);
 
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
 
@@ -4772,15 +4771,14 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  else if (bitpos + bitsize <= mode_bitsize / 2)
 	    result = store_field (XEXP (to_rtx, 0), bitsize, bitpos,
 				  bitregion_start, bitregion_end,
-				  mode1, from, TREE_TYPE (tem),
+				  mode1, from,
 				  get_alias_set (to), nontemporal);
 	  else if (bitpos >= mode_bitsize / 2)
 	    result = store_field (XEXP (to_rtx, 1), bitsize,
 				  bitpos - mode_bitsize / 2,
 				  bitregion_start, bitregion_end,
 				  mode1, from,
-				  TREE_TYPE (tem), get_alias_set (to),
-				  nontemporal);
+				  get_alias_set (to), nontemporal);
 	  else if (bitpos == 0 && bitsize == mode_bitsize)
 	    {
 	      rtx from_rtx;
@@ -4801,8 +4799,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      result = store_field (temp, bitsize, bitpos,
 				    bitregion_start, bitregion_end,
 				    mode1, from,
-				    TREE_TYPE (tem), get_alias_set (to),
-				    nontemporal);
+				    get_alias_set (to), nontemporal);
 	      emit_move_insn (XEXP (to_rtx, 0), read_complex_part (temp, false));
 	      emit_move_insn (XEXP (to_rtx, 1), read_complex_part (temp, true));
 	    }
@@ -4834,8 +4831,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    result = store_field (to_rtx, bitsize, bitpos,
 				  bitregion_start, bitregion_end,
 				  mode1, from,
-				  TREE_TYPE (tem), get_alias_set (to),
-				  nontemporal);
+				  get_alias_set (to), nontemporal);
 	}
 
       if (misalignp)
@@ -4896,6 +4892,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 			  int_size_in_bytes (TREE_TYPE (from)));
       else if (GET_MODE (to_rtx) == BLKmode)
 	{
+	  /* Handle calls that return BLKmode values in registers.  */
 	  if (REG_P (value))
 	    copy_blkmode_from_reg (to_rtx, value, TREE_TYPE (from));
 	  else
@@ -5246,6 +5243,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 	{
 	  if (GET_MODE (target) == BLKmode)
 	    {
+	      /* Handle calls that return BLKmode values in registers.  */
 	      if (REG_P (temp) && TREE_CODE (exp) == CALL_EXPR)
 		copy_blkmode_from_reg (target, temp, TREE_TYPE (exp));
 	      else
@@ -5680,7 +5678,6 @@ all_zeros_p (const_tree exp)
 
 /* Helper function for store_constructor.
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
-   TYPE is the type of the CONSTRUCTOR, not the element type.
    CLEARED is as for store_constructor.
    ALIAS_SET is the alias set to use for any stores.
 
@@ -5692,8 +5689,7 @@ all_zeros_p (const_tree exp)
 static void
 store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 			 HOST_WIDE_INT bitpos, enum machine_mode mode,
-			 tree exp, tree type, int cleared,
-			 alias_set_type alias_set)
+			 tree exp, int cleared, alias_set_type alias_set)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
       /* We can only call store_constructor recursively if the size and
@@ -5725,8 +5721,7 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
       store_constructor (exp, target, cleared, bitsize / BITS_PER_UNIT);
     }
   else
-    store_field (target, bitsize, bitpos, 0, 0, mode, exp, type, alias_set,
-		 false);
+    store_field (target, bitsize, bitpos, 0, 0, mode, exp, alias_set, false);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
@@ -5897,7 +5892,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      }
 
 	    store_constructor_field (to_rtx, bitsize, bitpos, mode,
-				     value, type, cleared,
+				     value, cleared,
 				     get_alias_set (TREE_TYPE (field)));
 	  }
 	break;
@@ -6052,7 +6047,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 			  }
 
 			store_constructor_field
-			  (target, bitsize, bitpos, mode, value, type, cleared,
+			  (target, bitsize, bitpos, mode, value, cleared,
 			   get_alias_set (elttype));
 		      }
 		  }
@@ -6156,7 +6151,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    MEM_KEEP_ALIAS_SET_P (target) = 1;
 		  }
 		store_constructor_field (target, bitsize, bitpos, mode, value,
-					 type, cleared, get_alias_set (elttype));
+					 cleared, get_alias_set (elttype));
 	      }
 	  }
 	break;
@@ -6276,9 +6271,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  ? TYPE_MODE (TREE_TYPE (value))
 		  : eltmode;
 		bitpos = eltpos * elt_size;
-		store_constructor_field (target, bitsize, bitpos,
-					 value_mode, value, type,
-					 cleared, alias);
+		store_constructor_field (target, bitsize, bitpos, value_mode,
+					 value, cleared, alias);
 	      }
 	  }
 
@@ -6307,8 +6301,6 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
    Always return const0_rtx unless we have something particular to
    return.
 
-   TYPE is the type of the underlying object,
-
    ALIAS_SET is the alias set for the destination.  This value will
    (in general) be different from that for TARGET, since TARGET is a
    reference to the containing structure.
@@ -6319,7 +6311,7 @@ static rtx
 store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	     unsigned HOST_WIDE_INT bitregion_start,
 	     unsigned HOST_WIDE_INT bitregion_end,
-	     enum machine_mode mode, tree exp, tree type,
+	     enum machine_mode mode, tree exp,
 	     alias_set_type alias_set, bool nontemporal)
 {
   if (TREE_CODE (exp) == ERROR_MARK)
@@ -6329,38 +6321,6 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
      side-effects.  */
   if (bitsize == 0)
     return expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  /* If we are storing into an unaligned field of an aligned union that is
-     in a register, we may have the mode of TARGET being an integer mode but
-     MODE == BLKmode.  In that case, get an aligned object whose size and
-     alignment are the same as TARGET and store TARGET into it (we can avoid
-     the store if the field being stored is the entire width of TARGET).  Then
-     call ourselves recursively to store the field into a BLKmode version of
-     that object.  Finally, load from the object into TARGET.  This is not
-     very efficient in general, but should only be slightly more expensive
-     than the otherwise-required unaligned accesses.  Perhaps this can be
-     cleaned up later.  It's tempting to make OBJECT readonly, but it's set
-     twice, once with emit_move_insn and once via store_field.  */
-
-  if (mode == BLKmode
-      && (REG_P (target) || GET_CODE (target) == SUBREG)
-      && TREE_CODE (exp) != CALL_EXPR)
-    {
-      rtx object = assign_temp (type, 1, 1);
-      rtx blk_object = adjust_address (object, BLKmode, 0);
-
-      if (bitsize != (HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target)))
-	emit_move_insn (object, target);
-
-      store_field (blk_object, bitsize, bitpos,
-		   bitregion_start, bitregion_end,
-		   mode, exp, type, MEM_ALIAS_SET (blk_object), nontemporal);
-
-      emit_move_insn (target, object);
-
-      /* We want to return the BLKmode version of the data.  */
-      return blk_object;
-    }
 
   if (GET_CODE (target) == CONCAT)
     {
@@ -6472,35 +6432,34 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (temp) == PARALLEL)
 	{
+	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 	  rtx temp_target;
-
-	  /* We are not supposed to have a true bitfield in this case.  */
-	  gcc_assert (bitsize == GET_MODE_BITSIZE (mode));
-
-	  /* If we don't store at bit 0, we need an intermediate pseudo
-	     since emit_group_store only stores at bit 0.  */
-	  if (bitpos != 0)
-	    temp_target = gen_reg_rtx (mode);
-	  else
-	    temp_target = target;
-
-	  emit_group_store (temp_target, temp, TREE_TYPE (exp),
-			    int_size_in_bytes (TREE_TYPE (exp)));
-
-	  if (temp_target == target)
-	    return const0_rtx;
-
+	  if (mode == BLKmode)
+	    mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  temp_target = gen_reg_rtx (mode);
+	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;
 	}
-
-      /* Handle calls that return BLKmode values in registers.  */
-      else if (mode == BLKmode
-	       && REG_P (temp)
-	       && TREE_CODE (exp) == CALL_EXPR)
+      else if (mode == BLKmode)
 	{
-	  rtx temp_target = gen_reg_rtx (GET_MODE (temp));
-	  copy_blkmode_from_reg (temp_target, temp, TREE_TYPE (exp));
-	  temp = temp_target;
+	  /* Handle calls that return BLKmode values in registers.  */
+	  if (REG_P (temp) && TREE_CODE (exp) == CALL_EXPR)
+	    {
+	      rtx temp_target = gen_reg_rtx (GET_MODE (temp));
+	      copy_blkmode_from_reg (temp_target, temp, TREE_TYPE (exp));
+	      temp = temp_target;
+	    }
+	  else
+	    {
+	      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
+	      rtx temp_target;
+	      mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	      temp_target = gen_reg_rtx (mode);
+	      temp_target
+	        = extract_bit_field (temp, size * BITS_PER_UNIT, 0, 1,
+				     false, temp_target, mode, mode);
+	      temp = temp_target;
+	    }
 	}
 
       /* Store the value in the bitfield.  */
@@ -8059,8 +8018,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 						    (treeop0))
 				 * BITS_PER_UNIT),
 				(HOST_WIDE_INT) GET_MODE_BITSIZE (mode)),
-			   0, 0, 0, TYPE_MODE (valtype), treeop0,
-			   type, 0, false);
+			   0, 0, 0, TYPE_MODE (valtype), treeop0, 0, false);
 	    }
 
 	  /* Return the entire union.  */
