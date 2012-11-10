@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-mabi=altivec" { target { { powerpc*-*-linux* } && ilp32 } } } */
 /* { dg-prune-output "operand types are" } */
+/* Ignore warning on some powerpc-ibm-aix configurations. */
+/* { dg-prune-output "non-standard ABI extension" } */
 
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
