@@ -1234,6 +1234,11 @@ femit-struct-debug-detailed=
 C ObjC C++ ObjC++ Joined
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs
 
+fext-numeric-literals
+C++ ObjC++ 
+Interpret imaginary, fixed-point, or other gnu number suffix as the corresponding
+number literal rather than a user-defined number literal.
+
 idirafter
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -idirafter <dir>	Add <dir> to the end of the system include path

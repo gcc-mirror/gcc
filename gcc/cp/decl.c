@@ -7567,13 +7567,13 @@ grokfndecl (tree ctype,
 	  suffix = UDLIT_OP_SUFFIX (DECL_NAME (decl));
 	  if (long_long_unsigned_p)
 	    {
-	      if (cpp_interpret_int_suffix (suffix, strlen (suffix)))
+	      if (cpp_interpret_int_suffix (parse_in, suffix, strlen (suffix)))
 		warning (0, "integer suffix %<%s%>"
 			    " shadowed by implementation", suffix);
 	    }
 	  else if (long_double_p)
 	    {
-	      if (cpp_interpret_float_suffix (suffix, strlen (suffix)))
+	      if (cpp_interpret_float_suffix (parse_in, suffix, strlen (suffix)))
 		warning (0, "floating point suffix %<%s%>"
 			    " shadowed by implementation", suffix);
 	    }

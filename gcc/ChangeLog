@@ -1,3 +1,8 @@
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* doc/invoke.texi: Document f[no-]ext-numeric-literals flag.
+
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/install.texi (sparc64-x-solaris2): Mention MPC as well.

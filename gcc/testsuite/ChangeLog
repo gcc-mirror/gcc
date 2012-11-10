@@ -1,3 +1,11 @@
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* g++.dg/cpp0x/gnu_fext-numeric-literals.C: New.
+	* g++.dg/cpp0x/std_fext-numeric-literals.C: New.
+	* g++.dg/cpp0x/gnu_fno-ext-numeric-literals.C: New.
+	* g++.dg/cpp0x/std_fno-ext-numeric-literals.C: New.
+
 2012-11-09  Siddhesh Poyarekar  <siddhesh@redhat.com>
 
 	* gcc.dg/Warray-bounds-3.c (bar): Keep array access within
