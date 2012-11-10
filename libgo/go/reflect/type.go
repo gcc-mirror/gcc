@@ -363,7 +363,7 @@ type Method struct {
 	// PkgPath is the package path that qualifies a lower case (unexported)
 	// method name.  It is empty for upper case (exported) method names.
 	// The combination of PkgPath and Name uniquely identifies a method
-	// in a method set. 
+	// in a method set.
 	// See http://golang.org/ref/spec#Uniqueness_of_identifiers
 	Name    string
 	PkgPath string
@@ -1309,8 +1309,19 @@ func haveIdenticalUnderlyingType(T, V *commonType) bool {
 		for i := range t.fields {
 			tf := &t.fields[i]
 			vf := &v.fields[i]
-			if tf.name != vf.name || tf.pkgPath != vf.pkgPath ||
-				tf.typ != vf.typ || tf.tag != vf.tag || tf.offset != vf.offset {
+			if tf.name != vf.name && (tf.name == nil || vf.name == nil || *tf.name != *vf.name) {
+				return false
+			}
+			if tf.pkgPath != vf.pkgPath && (tf.pkgPath == nil || vf.pkgPath == nil || *tf.pkgPath != *vf.pkgPath) {
+				return false
+			}
+			if tf.typ != vf.typ {
+				return false
+			}
+			if tf.tag != vf.tag && (tf.tag == nil || vf.tag == nil || *tf.tag != *vf.tag) {
+				return false
+			}
+			if tf.offset != vf.offset {
 				return false
 			}
 		}
