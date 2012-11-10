@@ -1,3 +1,10 @@
+2012-11-10  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/55202
+	* configure.ac: Set PLUGIN_LD_SUFFIX to just "ld" if it was "ld-new"
+	or "collect-ld".
+	* configure: Regenerate.
+
 2012-11-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (store_field): Remove TYPE parameter.  Remove block of code
