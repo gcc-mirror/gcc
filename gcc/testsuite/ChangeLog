@@ -1,3 +1,7 @@
+2012-11-09  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/20121108-1.c: New test.
+
 2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/54413
