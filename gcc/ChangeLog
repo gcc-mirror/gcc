@@ -1,3 +1,10 @@
+2012-11-10  Vladimir Makarov  <vmakarov@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55247
+	* config/i386/i386.md (*movti_internal_rex64): Add "!" to riF->o
+	alternative.
+
 2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/54413
@@ -23,9 +30,8 @@
 	* lra.c (setup_operand_alternative): Use them.
 	* lra-constraints.c (LOSER_COST_FACTOR, MAX_OVERALL_COST_BOUND):
 	Remove.
-	(process_alt_operands): Use LRA_LOSER_COST_FACTOR and
-	LRA_MAX_REJECT.  Accumulate reject instead of setting for
-	non-const.
+	(process_alt_operands): Use LRA_LOSER_COST_FACTOR and LRA_MAX_REJECT.
+	Accumulate reject instead of setting for non-const.
 	(curr_insn_transform): Initialize best_losers and best_overall by
 	INT_MAX.
 
@@ -67,8 +73,8 @@
 
 	PR rtl-optimization/54472
 	* sel-sched-ir.c (has_dependence_note_reg_set): Handle implicit sets.
-	(has_dependence_note_reg_clobber,
-	has_dependence_note_reg_use): Likewise. 
+	(has_dependence_note_reg_clobber, has_dependence_note_reg_use):
+	Likewise.
 
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
