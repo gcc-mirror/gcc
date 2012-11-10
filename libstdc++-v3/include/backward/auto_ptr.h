@@ -289,7 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef void element_type;
     } _GLIBCXX_DEPRECATED;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<_Lock_policy _Lp>
   template<typename _Tp>
     inline

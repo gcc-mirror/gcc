@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <type_traits> // Brings in std::declval too.
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -164,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline void
     swap(_Tp& __a, _Tp& __b)
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     noexcept(__and_<is_nothrow_move_constructible<_Tp>,
 	            is_nothrow_move_assignable<_Tp>>::value)
 #endif
@@ -183,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm>
     inline void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     noexcept(noexcept(swap(*__a, *__b)))
 #endif
     {

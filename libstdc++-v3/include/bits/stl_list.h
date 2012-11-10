@@ -58,7 +58,7 @@
 #define _STL_LIST_H 1
 
 #include <bits/concept_check.h>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
 
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       ///< User's data.
       _Tp _M_data;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename... _Args>
         _List_node(_Args&&... __args)
 	: __detail::_List_node_base(), _M_data(std::forward<_Args>(__args)...) 
@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _Node_alloc_type(__a), _M_node()
 	{ }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 	_List_impl(_Node_alloc_type&& __a)
 	: _Node_alloc_type(std::move(__a)), _M_node()
 	{ }
@@ -365,7 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_impl(__a)
       { _M_init(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       _List_base(_List_base&& __x)
       : _M_impl(std::move(__x._M_get_Node_allocator()))
       {
@@ -478,7 +478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Allocates space for a new node and constructs a copy of
        *  @a __args in it.
        */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
       _Node*
       _M_create_node(const value_type& __x)
       {
@@ -532,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       list(const allocator_type& __a)
       : _Base(_Node_alloc_type(__a)) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  Creates a %list with default constructed elements.
        *  @param  __n  The number of elements to initially create.
@@ -584,7 +584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _Base(__x._M_get_Node_allocator())
       { _M_initialize_dispatch(__x.begin(), __x.end(), __false_type()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  %List move constructor.
        *  @param  __x  A %list of identical element and allocator types.
@@ -619,7 +619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  [@a __first,@a __last).  This is linear in N (where N is
        *  distance(@a __first,@a __last)).
        */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
         list(_InputIterator __first, _InputIterator __last,
@@ -656,7 +656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       list&
       operator=(const list& __x);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  %List move assignment operator.
        *  @param  __x  A %list of identical element and allocator types.
@@ -715,7 +715,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  that the resulting %list's size is the same as the number of
        *  elements assigned.  Old data may be lost.
        */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
         void
@@ -732,7 +732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  Assigns an initializer_list to a %list.
        *  @param  __l  An initializer_list of value_type.
@@ -822,7 +822,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  Returns a read-only (constant) iterator that points to the
        *  first element in the %list.  Iteration is done in ordinary
@@ -879,7 +879,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       max_size() const _GLIBCXX_NOEXCEPT
       { return _M_get_Node_allocator().max_size(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief Resizes the %list to the specified number of elements.
        *  @param __new_size Number of elements the %list should contain.
@@ -975,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       push_front(const value_type& __x)
       { this->_M_insert(begin(), __x); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       push_front(value_type&& __x)
       { this->_M_insert(begin(), std::move(__x)); }
@@ -1016,7 +1016,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       push_back(const value_type& __x)
       { this->_M_insert(end(), __x); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       push_back(value_type&& __x)
       { this->_M_insert(end(), std::move(__x)); }
@@ -1042,7 +1042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       pop_back()
       { this->_M_erase(iterator(this->_M_impl._M_node._M_prev)); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  Constructs object in %list before specified iterator.
        *  @param  __position  A const_iterator into the %list.
@@ -1074,7 +1074,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       insert(iterator __position, const value_type& __x);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  Inserts given rvalue into %list before specified iterator.
        *  @param  __position  An iterator into the %list.
@@ -1140,7 +1140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  This operation is linear in the number of elements inserted and
        *  does not invalidate iterators and references.
        */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -1245,7 +1245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Requires this != @a __x.
        */
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x)
 #else
       splice(iterator __position, list& __x)
@@ -1259,7 +1259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x)
       { splice(__position, std::move(__x)); }
@@ -1275,7 +1275,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  inserts it into the current list before @a __position.
        */
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x, iterator __i)
 #else
       splice(iterator __position, list& __x, iterator __i)
@@ -1292,7 +1292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_transfer(__position, __i, __j);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x, iterator __i)
       { splice(__position, std::move(__x), __i); }
@@ -1311,7 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Undefined if @a __position is in [__first,__last).
        */
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x, iterator __first,
 	     iterator __last)
 #else
@@ -1328,7 +1328,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x, iterator __first, iterator __last)
       { splice(__position, std::move(__x), __first, __last); }
@@ -1401,7 +1401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  sorted order, leaving @a __x empty when complete.  Elements in
        *  this list precede elements in @a __x that are equal.
        */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       merge(list&& __x);
 
@@ -1426,7 +1426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  in this list precede elements in @a __x that are equivalent
        *  according to StrictWeakOrdering().
        */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _StrictWeakOrdering>
         void
         merge(list&& __x, _StrictWeakOrdering __comp);
@@ -1500,7 +1500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  push_back(__x);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       // Called by list(n).
       void
       _M_default_initialize(size_type __n)
@@ -1543,7 +1543,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { __position._M_node->_M_transfer(__first._M_node, __last._M_node); }
 
       // Inserts new element at position given and with value given.
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
       void
       _M_insert(iterator __position, const value_type& __x)
       {
@@ -1566,7 +1566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
         __position._M_node->_M_unhook();
         _Node* __n = static_cast<_Node*>(__position._M_node);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
         _M_get_Node_allocator().destroy(__n);
 #else
 	_M_get_Tp_allocator().destroy(std::__addressof(__n->_M_data));

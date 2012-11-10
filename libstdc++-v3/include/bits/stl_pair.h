@@ -60,7 +60,7 @@
 
 #include <bits/move.h> // for std::move / std::forward, and std::swap
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <type_traits> // for std::__decay_and_strip too
 #endif
 
@@ -68,7 +68,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   /// piecewise_construct_t
   struct piecewise_construct_t { };
 
@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : first(__a), second(__b) { }
 
       /** There is also a templated copy ctor for the @c pair class itself.  */
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
       template<class _U1, class _U2>
 	pair(const pair<_U1, _U2>& __p)
 	: first(__p.first), second(__p.second) { }
@@ -242,7 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x < __y); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   /// See std::pair::swap().
   // Note:  no std::swap overloads in C++03 mode, this has performance
   //        implications, see, eg, libstdc++/38466.
@@ -265,7 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 181.  make_pair() unintended behavior
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   // NB: DR 706.
   template<class _T1, class _T2>
     constexpr pair<typename __decay_and_strip<_T1>::__type,

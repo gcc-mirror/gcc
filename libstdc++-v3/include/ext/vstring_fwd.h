@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 std::allocator<wchar_t>, __rc_string_base> __wrc_string;
 #endif  
 
-#if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
+#if ((__cplusplus >= 201103L) \
      && defined(_GLIBCXX_USE_C99_STDINT_TR1))
 
   typedef __versa_string<char16_t>                          __u16vstring;

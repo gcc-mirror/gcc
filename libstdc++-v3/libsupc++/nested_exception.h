@@ -32,7 +32,7 @@
 
 #pragma GCC visibility push(default)
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
@@ -159,7 +159,7 @@ namespace std
 
 } // extern "C++"
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #pragma GCC visibility pop
 

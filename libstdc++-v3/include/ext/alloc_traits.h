@@ -31,7 +31,7 @@
 
 #pragma GCC system_header
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 # include <bits/alloc_traits.h>
 #else
 # include <bits/allocator.h>  // for __alloc_swap
@@ -48,7 +48,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Alloc>
     struct __allocator_always_compares_equal
     { static const bool value = false; };
@@ -107,12 +107,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 */
 template<typename _Alloc>
   struct __alloc_traits
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   : std::allocator_traits<_Alloc>
 #endif
   {
     typedef _Alloc allocator_type;
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     typedef std::allocator_traits<_Alloc>           _Base_type;
     typedef typename _Base_type::value_type         value_type;
     typedef typename _Base_type::pointer            pointer;

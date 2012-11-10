@@ -113,7 +113,7 @@ namespace __gnu_debug
 	      __gnu_debug::__base(__end), __a)
       { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     basic_string(basic_string&& __str) noexcept
     : _Base(std::move(__str))
     { }
@@ -122,7 +122,7 @@ namespace __gnu_debug
 		 const _Allocator& __a = _Allocator())
     : _Base(__l, __a)
     { }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     ~basic_string() _GLIBCXX_NOEXCEPT { }
 
@@ -151,7 +151,7 @@ namespace __gnu_debug
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     basic_string&
     operator=(basic_string&& __str)
     {
@@ -168,7 +168,7 @@ namespace __gnu_debug
       this->_M_invalidate_all();
       return *this;
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     // 21.3.2 iterators:
     iterator
@@ -203,7 +203,7 @@ namespace __gnu_debug
     rend() const _GLIBCXX_NOEXCEPT
     { return const_reverse_iterator(begin()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     const_iterator
     cbegin() const noexcept
     { return const_iterator(_Base::begin(), this); }
@@ -237,7 +237,7 @@ namespace __gnu_debug
     resize(size_type __n)
     { this->resize(__n, _CharT()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     void
     shrink_to_fit()
     {
@@ -296,7 +296,7 @@ namespace __gnu_debug
 
     using _Base::at;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     using _Base::front;
     using _Base::back;
 #endif
@@ -327,7 +327,7 @@ namespace __gnu_debug
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     basic_string&
     operator+=(std::initializer_list<_CharT> __l)
     {
@@ -335,7 +335,7 @@ namespace __gnu_debug
       this->_M_invalidate_all();
       return *this;
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     basic_string&
     append(const basic_string& __str)
@@ -407,7 +407,7 @@ namespace __gnu_debug
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     basic_string&
     assign(basic_string&& __x)
     {
@@ -415,7 +415,7 @@ namespace __gnu_debug
       this->_M_invalidate_all();
       return *this;
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     basic_string&
     assign(const basic_string& __str, size_type __pos, size_type __n)
@@ -462,7 +462,7 @@ namespace __gnu_debug
 	return *this;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     basic_string&
     assign(std::initializer_list<_CharT> __l)
     {
@@ -470,7 +470,7 @@ namespace __gnu_debug
       this->_M_invalidate_all();
       return *this;
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     basic_string&
     insert(size_type __pos1, const basic_string& __str)
@@ -542,7 +542,7 @@ namespace __gnu_debug
 	this->_M_invalidate_all();
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     void
     insert(iterator __p, std::initializer_list<_CharT> __l)
     {
@@ -550,7 +550,7 @@ namespace __gnu_debug
       _Base::insert(__p.base(), __l);
       this->_M_invalidate_all();
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     basic_string&
     erase(size_type __pos = 0, size_type __n = _Base::npos)
@@ -581,7 +581,7 @@ namespace __gnu_debug
       return iterator(__res, this);
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     void
     pop_back()
     {
@@ -589,7 +589,7 @@ namespace __gnu_debug
       _Base::pop_back();
       this->_M_invalidate_all();
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     basic_string&
     replace(size_type __pos1, size_type __n1, const basic_string& __str)
@@ -685,7 +685,7 @@ namespace __gnu_debug
 	return *this;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       basic_string& replace(iterator __i1, iterator __i2,
 			    std::initializer_list<_CharT> __l)
       {
@@ -694,7 +694,7 @@ namespace __gnu_debug
 	this->_M_invalidate_all();
 	return *this;
       }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     size_type
     copy(_CharT* __s, size_type __n, size_type __pos = 0) const

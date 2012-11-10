@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Rb_tree_node<_Val>* _Link_type;
       _Val _M_value_field;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename... _Args>
         _Rb_tree_node(_Args&&... __args)
 	: _Rb_tree_node_base(),
@@ -372,7 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_put_node(_Link_type __p)
       { _M_impl._Node_allocator::deallocate(__p, 1); }
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
       _Link_type
       _M_create_node(const value_type& __x)
       {
@@ -450,7 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_node_count(0)
 	  { _M_initialize(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 	  _Rb_tree_impl(const _Key_compare& __comp, _Node_allocator&& __a)
 	  : _Node_allocator(std::move(__a)), _M_key_compare(__comp),
 	    _M_header(), _M_node_count(0)
@@ -584,7 +584,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_get_insert_hint_equal_pos(const_iterator __pos,
 				   const key_type& __k);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Arg>
         iterator
         _M_insert_(_Base_ptr __x, _Base_ptr __y, _Arg&& __v);
@@ -661,7 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       _Rb_tree(_Rb_tree&& __x);
 #endif
 
@@ -733,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(_Rb_tree& __t);      
 
       // Insert/erase.
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Arg>
         pair<iterator, bool>
         _M_insert_unique(_Arg&& __x);
@@ -795,7 +795,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_erase_aux(const_iterator __first, const_iterator __last);
 
     public:
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 130. Associative erase should return an iterator.
       iterator
@@ -828,7 +828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type
       erase(const key_type& __x);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 130. Associative erase should return an iterator.
       iterator
@@ -951,7 +951,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
@@ -1000,12 +1000,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_(_Base_ptr __x, _Base_ptr __p, _Arg&& __v)
 #else
     _M_insert_(_Base_ptr __x, _Base_ptr __p, const _Val& __v)
@@ -1025,12 +1025,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_lower(_Base_ptr __p, _Arg&& __v)
 #else
     _M_insert_lower(_Base_ptr __p, const _Val& __v)
@@ -1050,12 +1050,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_equal_lower(_Arg&& __v)
 #else
     _M_insert_equal_lower(const _Val& __v)
@@ -1355,13 +1355,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     pair<typename _Rb_tree<_Key, _Val, _KeyOfValue,
 			   _Compare, _Alloc>::iterator, bool>
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_unique(_Arg&& __v)
 #else
     _M_insert_unique(const _Val& __v)
@@ -1381,12 +1381,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_equal(_Arg&& __v)
 #else
     _M_insert_equal(const _Val& __v)
@@ -1458,12 +1458,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_unique_(const_iterator __position, _Arg&& __v)
 #else
     _M_insert_unique_(const_iterator __position, const _Val& __v)
@@ -1535,12 +1535,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename _Arg>
 #endif
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     _M_insert_equal_(const_iterator __position, _Arg&& __v)
 #else
     _M_insert_equal_(const_iterator __position, const _Val& __v)
@@ -1556,7 +1556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _M_insert_equal_lower(_GLIBCXX_FORWARD(_Arg, __v));
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
     typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator

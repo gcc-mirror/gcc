@@ -413,7 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   pow(long double __x, long double __y)
   { return __builtin_powl(__x, __y); }
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 550. What should the return type of pow(float,int) be?
   inline double
@@ -558,7 +558,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   constexpr int
   fpclassify(float __x)
   { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
@@ -921,7 +921,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #endif /* _GLIBCXX_USE_C99_FP_MACROS_DYNAMIC */
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 #ifdef _GLIBCXX_USE_C99_MATH_TR1
 
@@ -1682,6 +1682,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // _GLIBCXX_USE_C99_MATH_TR1
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif

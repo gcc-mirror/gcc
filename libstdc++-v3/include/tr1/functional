@@ -42,13 +42,13 @@
 #include <tr1/functional_hash.h>
 #include <ext/type_traits.h>
 #include <bits/move.h> // for std::__addressof
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #  include <type_traits> // for integral_constant, true_type, false_type
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<int> struct _Placeholder;
   template<typename> class _Bind;
@@ -914,7 +914,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<int _Num>
     const int is_placeholder<_Placeholder<_Num> >::value;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<int _Num>
     struct is_placeholder<std::_Placeholder<_Num>>
     : std::integral_constant<int, _Num>
@@ -1430,7 +1430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     is_bind_expression<const volatile _Bind_result<_Result,
                                                    _Signature> >::value;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Signature>
     struct is_bind_expression<std::_Bind<_Signature>>
     : true_type { };
@@ -1889,7 +1889,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
       private _Function_base
     {
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
       /// This class is used to implement the safe_bool idiom.
       struct _Hidden_type
       {
@@ -2042,7 +2042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This function will not throw an %exception.
        */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       explicit operator bool() const
       { return !_M_empty(); }
 #else
@@ -2252,7 +2252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename> struct is_placeholder;

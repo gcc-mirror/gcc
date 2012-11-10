@@ -34,7 +34,7 @@ void test01()
   typedef char_traits<char>::off_type off_type;
 
   typedef iterator<input_iterator_tag, char, off_type, char*,
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     char>
 #else
     char&>
