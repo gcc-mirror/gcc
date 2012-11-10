@@ -1,3 +1,8 @@
+2012-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr55247.c: Require maybe_x32 target.  Add
+	-mno-sse -mno-mmx to dg-options.  Reformat.
+
 2012-11-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	* c-c++-common/scal-to-vec2.c: Ignore non-standard ABI message.
