@@ -3,6 +3,9 @@
 	* c-c++-common/scal-to-vec2.c: Ignore non-standard ABI message.
 	* c-c++-common/vector-compare-1.c: Same.
 	* c-c++-common/vector-compare-2.c: Same.
+	* g++.dg/other/unused1.C: Skip on AIX.
+	* g++.dg/other/anon5.C: Allow Undefined to be capitalized. Ignore
+	extra message on AIX.
 
 2012-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
