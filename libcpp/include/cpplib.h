@@ -431,6 +431,10 @@ struct cpp_options
      ud-suffix which does not beging with an underscore.  */
   unsigned char warn_literal_suffix;
 
+  /* Nonzero means interpret imaginary, fixed-point, or other gnu extension
+     literal number suffixes as user-defined literal number suffixes.  */
+  unsigned char ext_numeric_literals;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -854,10 +858,12 @@ extern unsigned cpp_classify_number (cpp_reader *, const cpp_token *,
 				     const char **, source_location);
 
 /* Return the classification flags for a float suffix.  */
-extern unsigned int cpp_interpret_float_suffix (const char *, size_t);
+extern unsigned int cpp_interpret_float_suffix (cpp_reader *, const char *,
+						size_t);
 
 /* Return the classification flags for an int suffix.  */
-extern unsigned int cpp_interpret_int_suffix (const char *, size_t);
+extern unsigned int cpp_interpret_int_suffix (cpp_reader *, const char *,
+					      size_t);
 
 /* Evaluate a token classified as category CPP_N_INTEGER.  */
 extern cpp_num cpp_interpret_integer (cpp_reader *, const cpp_token *,

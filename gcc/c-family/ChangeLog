@@ -1,3 +1,9 @@
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* c-opts.c (c_common_handle_option): Set new flags.
+	* c.opt: Describe new flags.
+
 2012-11-09  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wabi-tag): New.

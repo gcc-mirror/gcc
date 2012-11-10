@@ -197,6 +197,7 @@ in the following sections.
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
+-fext-numeric-literals @gol
 -Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor -Wliteral-suffix -Wnarrowing @gol
 -Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
@@ -2515,6 +2516,19 @@ struct A @{
 The compiler rearranges the member initializers for @samp{i}
 and @samp{j} to match the declaration order of the members, emitting
 a warning to that effect.  This warning is enabled by @option{-Wall}.
+
+@item -fext-numeric-literals @r{(C++ and Objective-C++ only)}
+@opindex fext-numeric-literals
+@opindex fno-ext-numeric-literals
+Accept imaginary, fixed-point, or machine-defined
+literal number suffixes as GNU extensions.
+When this option is turned off these suffixes are treated
+as C++11 user-defined literal numeric suffixes.
+This is on by default for all pre-C++11 dialects and all GNU dialects:
+@option{-std=c++98}, @option{-std=gnu++98}, @option{-std=gnu++11},
+@option{-std=gnu++1y}.
+This option is off by default
+for ISO C++11 onwards (@option{-std=c++11}, ...).
 @end table
 
 The following @option{-W@dots{}} options are not affected by @option{-Wall}.
