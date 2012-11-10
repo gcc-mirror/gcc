@@ -1674,7 +1674,7 @@ namespace __parallel
   template<typename _RAIter, typename _RandomNumberGenerator>
     void
     random_shuffle(_RAIter __begin, _RAIter __end,
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
                    _RandomNumberGenerator&& __rand)
 #else
                    _RandomNumberGenerator& __rand)

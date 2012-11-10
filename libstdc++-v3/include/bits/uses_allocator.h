@@ -25,7 +25,7 @@
 #ifndef _USES_ALLOCATOR_H
 #define _USES_ALLOCATOR_H 1
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 

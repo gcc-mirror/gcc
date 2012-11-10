@@ -33,7 +33,7 @@ struct Key
   bool operator<(const Key&) const;
 };
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 // libstdc++/47628
 void f()
 {

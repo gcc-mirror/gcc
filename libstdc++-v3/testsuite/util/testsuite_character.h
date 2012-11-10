@@ -37,7 +37,7 @@ namespace __gnu_test
   {
     int value;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     // For std::iota.
     pod_int&
     operator++()

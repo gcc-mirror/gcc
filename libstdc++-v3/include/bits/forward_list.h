@@ -33,7 +33,7 @@
 #pragma GCC system_header
 
 #include <memory>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
 

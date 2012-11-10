@@ -34,7 +34,7 @@
 #include <cerrno>
 #include <cstdlib> // atof, atoi, strtol, getenv, atexit, abort
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #define _GLIBCXX_IMPL_UNORDERED_MAP std::_GLIBCXX_STD_C::unordered_map
 #include <unordered_map>
 #else

@@ -71,7 +71,7 @@
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <bits/move.h>
 #include <initializer_list>
 

@@ -86,7 +86,7 @@ namespace __gnu_test
     NonDefaultConstructible(int) { }
     NonDefaultConstructible(const NonDefaultConstructible&) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     // For std::iota.
     NonDefaultConstructible&
     operator++()
@@ -174,7 +174,7 @@ namespace __gnu_test
     { return 1; }
   };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   struct NonCopyConstructible
   {
     NonCopyConstructible() : num(-1) { }

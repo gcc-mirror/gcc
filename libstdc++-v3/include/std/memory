@@ -66,7 +66,7 @@
 #include <bits/stl_tempbuf.h>
 #include <bits/stl_raw_storage_iter.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #  include <exception>        	  // std::exception
 #  include <typeinfo>         	  // std::type_info in get_deleter
 #  include <iosfwd>           	  // std::basic_ostream

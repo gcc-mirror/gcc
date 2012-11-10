@@ -33,7 +33,7 @@
 
 #include <bits/c++config.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 // For 8.11.1/1 (see C99, Note 184)
 # if _GLIBCXX_HAVE_INTTYPES_H
@@ -86,6 +86,6 @@ namespace std
 #  include_next <inttypes.h>
 # endif
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif // _GLIBCXX_INTTYPES_H

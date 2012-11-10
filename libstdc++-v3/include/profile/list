@@ -72,7 +72,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         __profcxx_list_construct2(this); 	// list2vector
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       explicit
       list(size_type __n)
       : _Base(__n) 
@@ -99,7 +99,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -127,7 +127,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         __profcxx_list_construct2(this); 
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       list(list&& __x) noexcept
       : _Base(std::move(__x))
       {
@@ -153,7 +153,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	return *this;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       list&
       operator=(list&& __x)
       {
@@ -176,7 +176,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       {	_Base::assign(__l); }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -237,7 +237,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const_iterator
       cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
@@ -260,7 +260,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       using _Base::size;
       using _Base::max_size;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       resize(size_type __sz)
       { _Base::resize(__sz); }
@@ -306,7 +306,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         _Base::push_front(__x);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::emplace_front;
 #endif
 
@@ -319,7 +319,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       using _Base::push_back;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::emplace_back;
 #endif
 
@@ -332,7 +332,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         __profcxx_list_rewind(this);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename... _Args>
         iterator
         emplace(iterator __position, _Args&&... __args)
@@ -350,7 +350,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
         return iterator(_Base::insert(__position.base(), __x), this);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       iterator
       insert(iterator __position, _Tp&& __x)
       { 
@@ -374,7 +374,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	_Base::insert(__position.base(), __n, __x);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -410,27 +410,27 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       // 23.2.2.4 list operations:
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x)
 #else
       splice(iterator __position, list& __x)
 #endif
       { this->splice(__position, _GLIBCXX_MOVE(__x), __x.begin(), __x.end()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x)
       { this->splice(__position, std::move(__x)); }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x, iterator __i)
       { this->splice(__position, std::move(__x), __i); }
 #endif
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x, iterator __i)
 #else
       splice(iterator __position, list& __x, iterator __i)
@@ -445,7 +445,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       }
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x, iterator __first,
 	     iterator __last)
 #else
@@ -460,7 +460,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 		      __first.base(), __last.base());
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x, iterator __first, iterator __last)
       { this->splice(__position, std::move(__x), __first, __last); }
@@ -532,7 +532,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	}
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       merge(list&& __x)
 #else
       merge(list& __x)
@@ -544,7 +544,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	  { _Base::merge(_GLIBCXX_MOVE(__x._M_base())); }
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       merge(list& __x)
       { this->merge(std::move(__x)); }
@@ -552,7 +552,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       template<class _Compare>
         void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
         merge(list&& __x, _Compare __comp)
 #else
         merge(list& __x, _Compare __comp)
@@ -564,7 +564,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 	    { _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp); }
 	}
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Compare>
         void
         merge(list& __x, _Compare __comp)

@@ -55,7 +55,7 @@
 #include <utility>
 #include <bits/functexcept.h>
 #include <bits/move.h>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 # include <functional>
 # include <random>
 #else
@@ -385,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { engine().seed(__s); }
 
   private:
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     typedef std::uniform_real_distribution<double> 	distribution_type;
     typedef std::mt19937 				engine_type;
 #else
@@ -396,7 +396,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static double
     generate()
     {
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const distribution_type distribution(0, 1);
       static auto generator = std::bind(distribution, engine());
 #else
@@ -459,7 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       throw_value_base(const throw_value_base& __v) : _M_i(__v._M_i)
       { throw_conditionally(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       // Shall not throw.
       throw_value_base(throw_value_base&&) = default;
 #endif
@@ -476,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       // Shall not throw.
       throw_value_base&
       operator=(throw_value_base&&) = default;
@@ -571,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     throw_value_limit(const throw_value_limit& __other)
     : base_type(__other._M_i) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     throw_value_limit(throw_value_limit&&) = default;
 #endif
 
@@ -585,7 +585,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     throw_value_limit&
     operator=(throw_value_limit&&) = default;
 #endif
@@ -602,7 +602,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     throw_value_random(const throw_value_random& __other)
     : base_type(__other._M_i) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     throw_value_random(throw_value_random&&) = default;
 #endif
 
@@ -616,7 +616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     throw_value_random&
     operator=(throw_value_random&&) = default;
 #endif
@@ -675,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return a;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
         void
         construct(_Up* __p, _Args&&... __args)
@@ -771,7 +771,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 # include <bits/functional_hash.h>
 
