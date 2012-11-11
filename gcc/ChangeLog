@@ -1,5 +1,10 @@
 2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/extend.texi: Copy-edit to use "bit-field" consistently
+	instead of "bitfield" or "bit field".
+
+2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/extend.texi: Copy-edit to fix incorrect hyphenation phrases
 	involving "bit", "byte", "word", "precision", and "floating"
 	modifiers.

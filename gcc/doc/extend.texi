@@ -5006,9 +5006,9 @@ Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
 
 The Microsoft structure layout algorithm is fairly simple with the exception
-of the bitfield packing:
+of the bit-field packing:
 
-The padding and alignment of members of structures and whether a bit field
+The padding and alignment of members of structures and whether a bit-field
 can straddle a storage-unit boundary
 
 @enumerate
@@ -5025,19 +5025,19 @@ Every object is allocated an offset so that:
 
 offset %  alignment-requirement == 0
 
-@item Adjacent bit fields are packed into the same 1-, 2-, or 4-byte allocation
-unit if the integral types are the same size and if the next bit field fits
+@item Adjacent bit-fields are packed into the same 1-, 2-, or 4-byte allocation
+unit if the integral types are the same size and if the next bit-field fits
 into the current allocation unit without crossing the boundary imposed by the
-common alignment requirements of the bit fields.
+common alignment requirements of the bit-fields.
 @end enumerate
 
-Handling of zero-length bitfields:
+Handling of zero-length bit-fields:
 
-MSVC interprets zero-length bitfields in the following ways:
+MSVC interprets zero-length bit-fields in the following ways:
 
 @enumerate
-@item If a zero-length bitfield is inserted between two bitfields that
-are normally coalesced, the bitfields are not coalesced.
+@item If a zero-length bit-field is inserted between two bit-fields that
+are normally coalesced, the bit-fields are not coalesced.
 
 For example:
 
@@ -5050,12 +5050,12 @@ struct
  @} t1;
 @end smallexample
 
-The size of @code{t1} is 8 bytes with the zero-length bitfield.  If the
-zero-length bitfield were removed, @code{t1}'s size would be 4 bytes.
+The size of @code{t1} is 8 bytes with the zero-length bit-field.  If the
+zero-length bit-field were removed, @code{t1}'s size would be 4 bytes.
 
-@item If a zero-length bitfield is inserted after a bitfield, @code{foo}, and the
-alignment of the zero-length bitfield is greater than the member that follows it,
-@code{bar}, @code{bar} is aligned as the type of the zero-length bitfield.
+@item If a zero-length bit-field is inserted after a bit-field, @code{foo}, and the
+alignment of the zero-length bit-field is greater than the member that follows it,
+@code{bar}, @code{bar} is aligned as the type of the zero-length bit-field.
 
 For example:
 
@@ -5077,18 +5077,18 @@ struct
 
 For @code{t2}, @code{bar} is placed at offset 2, rather than offset 1.
 Accordingly, the size of @code{t2} is 4.  For @code{t3}, the zero-length
-bitfield does not affect the alignment of @code{bar} or, as a result, the size
+bit-field does not affect the alignment of @code{bar} or, as a result, the size
 of the structure.
 
 Taking this into account, it is important to note the following:
 
 @enumerate
-@item If a zero-length bitfield follows a normal bitfield, the type of the
-zero-length bitfield may affect the alignment of the structure as whole. For
-example, @code{t2} has a size of 4 bytes, since the zero-length bitfield follows a
-normal bitfield, and is of type short.
+@item If a zero-length bit-field follows a normal bit-field, the type of the
+zero-length bit-field may affect the alignment of the structure as whole. For
+example, @code{t2} has a size of 4 bytes, since the zero-length bit-field follows a
+normal bit-field, and is of type short.
 
-@item Even if a zero-length bitfield is not followed by a normal bitfield, it may
+@item Even if a zero-length bit-field is not followed by a normal bit-field, it may
 still affect the alignment of the structure:
 
 @smallexample
@@ -5102,7 +5102,7 @@ struct
 Here, @code{t4} takes up 4 bytes.
 @end enumerate
 
-@item Zero-length bitfields following non-bitfield members are ignored:
+@item Zero-length bit-fields following non-bit-field members are ignored:
 
 @smallexample
 struct
@@ -5266,7 +5266,7 @@ alignment.  See your linker documentation for further information.
 
 @item packed
 This attribute, attached to @code{struct} or @code{union} type
-definition, specifies that each member (other than zero-width bitfields)
+definition, specifies that each member (other than zero-width bit-fields)
 of the structure or union is placed to minimize the memory required.  When
 attached to an @code{enum} definition, it indicates that the smallest
 integral type should be used.
@@ -5782,11 +5782,11 @@ If you need to read the volatile object after an assignment has
 occurred, you must use a separate expression with an intervening
 sequence point.
 
-As bitfields are not individually addressable, volatile bitfields may
-be implicitly read when written to, or when adjacent bitfields are
-accessed.  Bitfield operations may be optimized such that adjacent
-bitfields are only partially accessed, if they straddle a storage unit
-boundary.  For these reasons it is unwise to use volatile bitfields to
+As bit-fields are not individually addressable, volatile bit-fields may
+be implicitly read when written to, or when adjacent bit-fields are
+accessed.  Bit-field operations may be optimized such that adjacent
+bit-fields are only partially accessed, if they straddle a storage unit
+boundary.  For these reasons it is unwise to use volatile bit-fields to
 access hardware.
 
 @node Extended Asm
@@ -14485,7 +14485,7 @@ always the C-language name.
 
 For compatibility with Microsoft Windows compilers, GCC supports a
 set of @code{#pragma} directives that change the maximum alignment of
-members of structures (other than zero-width bitfields), unions, and
+members of structures (other than zero-width bit-fields), unions, and
 classes subsequently defined. The @var{n} value below always is required
 to be a small power of two and specifies the new alignment in bytes.
 
