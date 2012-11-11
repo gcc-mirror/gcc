@@ -4,27 +4,13 @@
 
 <info><title>Configure and Build Hacking</title>
   <keywordset>
-    <keyword>
-      C++
-    </keyword>
-    <keyword>
-      build
-    </keyword>
-    <keyword>
-      configure
-    </keyword>
-    <keyword>
-      hacking
-    </keyword>
-    <keyword>
-      version
-    </keyword>
-    <keyword>
-      dynamic
-    </keyword>
-    <keyword>
-      shared
-    </keyword>
+    <keyword>C++</keyword>
+    <keyword>build</keyword>
+    <keyword>configure</keyword>
+    <keyword>hacking</keyword>
+    <keyword>version</keyword>
+    <keyword>dynamic</keyword>
+    <keyword>shared</keyword>
   </keywordset>
 </info>
 

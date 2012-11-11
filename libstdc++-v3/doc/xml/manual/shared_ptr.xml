@@ -4,12 +4,8 @@
 
 <info><title>shared_ptr</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      shared_ptr
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>shared_ptr</keyword>
   </keywordset>
 </info>
 
