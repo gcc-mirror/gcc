@@ -1,3 +1,9 @@
+2012-11-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/55263
+	* postreload.c (rest_of_handle_postreload): With non-call exceptions,
+	if edges are purged call cleanup_cfg to remove unreachable blocks.
+
 2012-11-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi: Copy-edit to use "built-in function" instead
