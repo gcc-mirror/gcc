@@ -1,5 +1,9 @@
-2012-11-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2012-11-11  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/55238
+	* testsuite/gcc.dg/torture/pr55238.c: New test.
+
+2012-11-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 	* gcc.dg/torture/pr54920.c: Add "-fno-common" option on hppa*-*-hpux*.
 	* c-c++-common/torture/vector-subscript-1.c: Likewise.
 	* c-c++-common/torture/vector-subscript-2.c: Likewise.

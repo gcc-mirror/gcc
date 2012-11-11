@@ -1312,6 +1312,19 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
   return ret;
 }
 
+/* Determine whether there is anything to propagate FROM SRC_PLATS through a
+   pass-through JFUNC and if so, whether it has conform and conforms to the
+   rules about propagating values passed by reference.  */
+
+static bool
+agg_pass_through_permissible_p (struct ipcp_param_lattices *src_plats,
+				struct ipa_jump_func *jfunc)
+{
+  return src_plats->aggs
+    && (!src_plats->aggs_by_ref
+	|| ipa_get_jf_pass_through_agg_preserved (jfunc));
+}
+
 /* Propagate scalar values across jump function JFUNC that is associated with
    edge CS and put the values into DEST_LAT.  */
 
@@ -1333,9 +1346,7 @@ propagate_aggs_accross_jump_function (struct cgraph_edge *cs,
       struct ipcp_param_lattices *src_plats;
 
       src_plats = ipa_get_parm_lattices (caller_info, src_idx);
-      if (src_plats->aggs
-	  && (!src_plats->aggs_by_ref
-	      || ipa_get_jf_pass_through_agg_preserved (jfunc)))
+      if (agg_pass_through_permissible_p (src_plats, jfunc))
 	{
 	  /* Currently we do not produce clobber aggregate jump
 	     functions, replace with merging when we do.  */
@@ -2893,23 +2904,33 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 
 	      if (caller_info->ipcp_orig_node)
 		{
-		  if (!inter)
-		    inter = agg_replacements_to_vector (cs->caller, 0);
-		  else
-		    intersect_with_agg_replacements (cs->caller, src_idx,
-						     &inter, 0);
+		  struct cgraph_node *orig_node = caller_info->ipcp_orig_node;
+		  struct ipcp_param_lattices *orig_plats;
+		  orig_plats = ipa_get_parm_lattices (IPA_NODE_REF (orig_node),
+						      src_idx);
+		  if (agg_pass_through_permissible_p (orig_plats, jfunc))
+		    {
+		      if (!inter)
+			inter = agg_replacements_to_vector (cs->caller, 0);
+		      else
+			intersect_with_agg_replacements (cs->caller, src_idx,
+							 &inter, 0);
+		    }
 		}
 	      else
 		{
 		  struct ipcp_param_lattices *src_plats;
 		  src_plats = ipa_get_parm_lattices (caller_info, src_idx);
-		  /* Currently we do not produce clobber aggregate jump
-		     functions, adjust when we do.  */
-		  gcc_checking_assert (!jfunc->agg.items);
-		  if (!inter)
-		    inter = copy_plats_to_inter (src_plats, 0);
-		  else
-		    intersect_with_plats (src_plats, &inter, 0);
+		  if (agg_pass_through_permissible_p (src_plats, jfunc))
+		    {
+		      /* Currently we do not produce clobber aggregate jump
+			 functions, adjust when we do.  */
+		      gcc_checking_assert (!jfunc->agg.items);
+		      if (!inter)
+			inter = copy_plats_to_inter (src_plats, 0);
+		      else
+			intersect_with_plats (src_plats, &inter, 0);
+		    }
 		}
 	    }
 	  else if (jfunc->type == IPA_JF_ANCESTOR
@@ -2933,7 +2954,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 		  src_plats = ipa_get_parm_lattices (caller_info, src_idx);;
 		  /* Currently we do not produce clobber aggregate jump
 		     functions, adjust when we do.  */
-		  gcc_checking_assert (!jfunc->agg.items);
+		  gcc_checking_assert (!src_plats->aggs || !jfunc->agg.items);
 		  if (!inter)
 		    inter = copy_plats_to_inter (src_plats, delta);
 		  else
