@@ -1,3 +1,8 @@
+2012-11-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sh4a-fprun.c: Add test_sinf and test_cosf noinline
+	wrappers around sinf and cosf.
+
 2012-11-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/55247
