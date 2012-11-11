@@ -1,10 +1,23 @@
+2012-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47440
+	* config/i386/i386.c (check_avx256_stores): Remove.
+	(ix86_check_avx256_register): New.
+	(ix86_avx_u128_mode_needed): Use ix86_check_avx256_register.
+	Check the whole RTX for 256bit registers using for_each_rtx.
+	(ix86_check_avx_stores): New.
+	(ix86_avx_u128_mode_after): Change mode of CALL RTX to AVX_U128_CLEAN
+	if there are no 256bit registers used in the function return register.
+	(ix86_avx_u128_mode_entry): Use ix86_check_avx256_register.
+	(ix86_avx_u128_mode_exit): Ditto.
+
 2012-11-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/48636
 	* ipa-inline.c (want_inline_small_function_p): Take aray index hint.
 	(edge_badness): Likewise.
 	* ipa-inline.h (inline_hints_vals): Add array_index and comments.
-	(inline_summary_: Add ARRAY_INDEX.
+	(inline_summary): Add ARRAY_INDEX.
 	* ipa-inline-analysis.c (dump_inline_hints): Dump array_index hint.
 	(reset_inline_summary): Handle array_index hint.
 	(inline_node_duplication_hook): Likewise.
@@ -27,7 +40,7 @@
 
 2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* doc/extend.texi: Copy-edit to fix incorrect uses of "which" 
+	* doc/extend.texi: Copy-edit to fix incorrect uses of "which"
 	and "that" throughout the file.
 
 2012-11-10  Andrew Pinski  <apinski@cavium.com>
