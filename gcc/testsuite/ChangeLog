@@ -1,3 +1,7 @@
+2012-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/cunroll-1.c: Fix bogus testcase.
+
 2012-11-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr55247.c: Require maybe_x32 target.  Add
