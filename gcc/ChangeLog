@@ -1,3 +1,8 @@
+2012-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*movti_internal_rex64): Remove "!" from
+	riF->o alternative.
+
 2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h (AS_NIAGARA3_FLAG): Tweak.
