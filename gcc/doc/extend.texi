@@ -463,7 +463,7 @@ C++ Conference Proceedings, October 17-21, 1988).
 A nested function can jump to a label inherited from a containing
 function, provided the label is explicitly declared in the containing
 function (@pxref{Local Labels}).  Such a jump returns instantly to the
-containing function, exiting the nested function which did the
+containing function, exiting the nested function that did the
 @code{goto} and any intermediate functions as well.  Here is an example:
 
 @smallexample
@@ -571,7 +571,7 @@ returned by @code{__builtin_apply}.
 
 @deftypefn {Built-in Function} {} __builtin_va_arg_pack ()
 This built-in function represents all anonymous arguments of an inline
-function.  It can be used only in inline functions which are always
+function.  It can be used only in inline functions that are always
 inlined, never compiled as a separate function, such as those using
 @code{__attribute__ ((__always_inline__))} or
 @code{__attribute__ ((__gnu_inline__))} extern inline functions.
@@ -597,7 +597,7 @@ myprintf (FILE *f, const char *format, ...)
 
 @deftypefn {Built-in Function} {size_t} __builtin_va_arg_pack_len ()
 This built-in function returns the number of anonymous arguments of
-an inline function.  It can be used only in inline functions which
+an inline function.  It can be used only in inline functions that
 are always inlined, never compiled as a separate function, such
 as those using @code{__attribute__ ((__always_inline__))} or
 @code{__attribute__ ((__gnu_inline__))} extern inline functions.
@@ -674,7 +674,7 @@ such a type.
 
 @code{typeof} is often useful in conjunction with the
 statements-within-expressions feature.  Here is how the two together can
-be used to define a safe ``maximum'' macro that operates on any
+be used to define a safe ``maximum'' macro which operates on any
 arithmetic type and evaluates each of its arguments exactly once:
 
 @smallexample
@@ -750,7 +750,7 @@ pointers to @code{char}.
 @end itemize
 
 @emph{Compatibility Note:} In addition to @code{typeof}, GCC 2 supported
-a more limited extension which permitted one to write
+a more limited extension that permitted one to write
 
 @smallexample
 typedef @var{T} = @var{expr};
@@ -759,7 +759,7 @@ typedef @var{T} = @var{expr};
 @noindent
 with the effect of declaring @var{T} to have the type of the expression
 @var{expr}.  This extension does not work with GCC 3 (versions between
-3.0 and 3.2 crash; 3.2.1 and later give an error).  Code which
+3.0 and 3.2 crash; 3.2.1 and later give an error).  Code that
 relies on it should be rewritten to use @code{typeof}:
 
 @smallexample
@@ -1417,7 +1417,7 @@ space.
 @cindex flexible array members
 
 Zero-length arrays are allowed in GNU C@.  They are very useful as the
-last element of a structure which is really a header for a variable-length
+last element of a structure that is really a header for a variable-length
 object:
 
 @smallexample
@@ -1877,7 +1877,7 @@ int a[6] = @{ 0, 0, 15, 0, 29, 0 @};
 The index values must be constant expressions, even if the array being
 initialized is automatic.
 
-An alternative syntax for this which has been obsolete since GCC 2.5 but
+An alternative syntax for this that has been obsolete since GCC 2.5 but
 GCC still accepts is to write @samp{[@var{index}]} before the element
 value, with no @samp{=}.
 
@@ -1919,7 +1919,7 @@ is equivalent to
 struct point p = @{ xvalue, yvalue @};
 @end smallexample
 
-Another syntax which has the same meaning, obsolete since GCC 2.5, is
+Another syntax that has the same meaning, obsolete since GCC 2.5, is
 @samp{@var{fieldname}:}, as shown here:
 
 @smallexample
@@ -2210,7 +2210,7 @@ if no optimization level is specified.
 
 @item gnu_inline
 @cindex @code{gnu_inline} function attribute
-This attribute should be used with a function which is also declared
+This attribute should be used with a function that is also declared
 with the @code{inline} keyword.  It directs GCC to treat the function
 as if it were defined in gnu90 mode even when compiling in C99 or
 gnu99 mode.
@@ -2248,7 +2248,7 @@ behavior.
 
 @item artificial
 @cindex @code{artificial} function attribute
-This attribute is useful for small inline wrappers which if possible
+This attribute is useful for small inline wrappers that if possible
 should appear during debugging as a unit.  Depending on the debug
 info format it either means marking the function as artificial
 or using the caller location for all instructions within the inlined
@@ -2271,7 +2271,7 @@ the current inlining parameters.
 @cindex @code{error} function attribute
 If this attribute is used on a function declaration and a call to such a function
 is not eliminated through dead code elimination or other optimizations, an error
-which includes @var{message} is diagnosed.  This is useful
+that includes @var{message} is diagnosed.  This is useful
 for compile time checking, especially together with @code{__builtin_constant_p}
 and inline functions where checking the inline function arguments is not
 possible through @code{extern char [(condition) ? 1 : -1];} tricks.
@@ -2284,7 +2284,7 @@ functions or when not emitting debugging information.
 @cindex @code{warning} function attribute
 If this attribute is used on a function declaration and a call to such a function
 is not eliminated through dead code elimination or other optimizations, a warning
-which includes @var{message} is diagnosed.  This is useful
+that includes @var{message} is diagnosed.  This is useful
 for compile time checking, especially together with @code{__builtin_constant_p}
 and inline functions.  While it is possible to define the function with
 a message in @code{.gnu.warning*} section, when using this attribute the problem
@@ -2499,7 +2499,7 @@ the effect of the @option{-fwhole-program} command-line option, so the
 object remains visible outside the current compilation unit. If @option{-fwhole-program} is used together with @option{-flto} and @command{gold} is used as the linker plugin, @code{externally_visible} attributes are automatically added to functions (not variable yet due to a current @command{gold} issue) that are accessed outside of LTO objects according to resolution file produced by @command{gold}.  For other linkers that cannot generate resolution file, explicit @code{externally_visible} attributes are still necessary.
 
 @item far
-@cindex functions which handle memory bank switching
+@cindex functions that handle memory bank switching
 On 68HC11 and 68HC12 the @code{far} attribute causes the compiler to
 use a calling convention that takes care of switching memory banks when
 entering and leaving a function.  This calling convention is also the
@@ -2516,7 +2516,7 @@ instead of using @code{rts}.  The board-specific return routine simulates
 the @code{rtc}.
 
 On MeP targets this causes the compiler to use a calling convention
-which assumes the called function is too far away for the built-in
+that assumes the called function is too far away for the built-in
 addressing modes.
 
 @item fast_interrupt
@@ -2551,7 +2551,7 @@ and for static member methods.
 @cindex @code{format} function attribute
 @opindex Wformat
 The @code{format} attribute specifies that a function takes @code{printf},
-@code{scanf}, @code{strftime} or @code{strfmon} style arguments which
+@code{scanf}, @code{strftime} or @code{strfmon} style arguments that
 should be type-checked against a format string.  For example, the
 declaration:
 
@@ -2598,7 +2598,7 @@ attribute are 2 and 3.
 @opindex ffreestanding
 @opindex fno-builtin
 The @code{format} attribute allows you to identify your own functions
-which take format strings as arguments, so that GCC can check the
+that take format strings as arguments, so that GCC can check the
 calls to these functions for errors.  The compiler always (unless
 @option{-ffreestanding} or @option{-fno-builtin} is used) checks formats
 for the standard library functions @code{printf}, @code{fprintf},
@@ -2657,7 +2657,7 @@ an implicit @code{this} argument, the arguments of such methods should
 be counted from two.
 
 The @code{format-arg} attribute allows you to identify your own
-functions which modify format strings, so that GCC can check the
+functions that modify format strings, so that GCC can check the
 calls to @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon}
 type function whose operands are a call to one of your own function.
 The compiler always treats @code{gettext}, @code{dgettext}, and
@@ -2708,7 +2708,7 @@ the code size by 2 bytes for each call generated to the
 subroutine. The argument to the attribute is the vector number entry
 from the special page vector table which contains the 16 low-order
 bits of the subroutine's entry address. Each vector table has special
-page number (18 to 255) which are used in @code{jsrs} instruction.
+page number (18 to 255) that is used in @code{jsrs} instructions.
 Jump addresses of the routines are generated by adding 0x0F0000 (in
 case of M16C targets) or 0xFF0000 (in case of M32C targets), to the 2
 byte addresses set in the vector table. Therefore you need to ensure
@@ -3079,7 +3079,7 @@ zero -, or if the callee is responsible to pop hidden pointer - @var{number}
 equal to one.  The default i386 ABI assumes that the callee pops the
 stack for hidden pointer.
 
-Note, that on 32-bit i386 Windows targets the compiler assumes that the
+Note that on 32-bit i386 Windows targets, the compiler assumes that the
 caller pops the stack for hidden pointer.
 
 @item ms_hook_prologue
@@ -3103,7 +3103,7 @@ body of an assembly function, while allowing the compiler to construct
 the requisite function declaration for the assembler.
 
 @item near
-@cindex functions which do not handle memory bank switching on 68HC11/68HC12
+@cindex functions that do not handle memory bank switching on 68HC11/68HC12
 On 68HC11 and 68HC12 the @code{near} attribute causes the compiler to
 use the normal calling convention based on @code{jsr} and @code{rts}.
 This attribute can be used to cancel the effect of the @option{-mlong-calls}
@@ -3148,7 +3148,7 @@ inlining.
 @c Don't enumerate the optimizations by name here; we try to be
 @c future-compatible with this mechanism.
 If the function does not have side-effects, there are optimizations
-other than inlining that causes function calls to be optimized away,
+other than inlining that cause function calls to be optimized away,
 although the function call is live.  To keep such calls from being
 optimized away, put
 @smallexample
@@ -3160,7 +3160,7 @@ side-effect.
 @item noclone
 @cindex @code{noclone} function attribute
 This function attribute prevents a function from being considered for
-cloning - a mechanism which produces specialized copies of functions
+cloning---a mechanism that produces specialized copies of functions
 and which is (currently) performed by interprocedural constant
 propagation.
 
@@ -3255,7 +3255,7 @@ implemented in GCC versions earlier than 3.3.
 @cindex @code{nosave_low_regs} attribute
 Use this attribute on SH targets to indicate that an @code{interrupt_handler}
 function should not save and restore registers R0..R7.  This can be used on SH3*
-and SH4* targets which have a second R0..R7 register bank for non-reentrant
+and SH4* targets that have a second R0..R7 register bank for non-reentrant
 interrupt handlers.
 
 @item optimize
@@ -3310,7 +3310,7 @@ The @code{pcs} attribute can be used to control the calling convention
 used for a function on ARM.  The attribute takes an argument that specifies
 the calling convention to use.
 
-When compiling using the AAPCS ABI (or a variant of that) then valid
+When compiling using the AAPCS ABI (or a variant of it) then valid
 values for the argument are @code{"aapcs"} and @code{"aapcs-vfp"}.  In
 order to use a variant other than @code{"aapcs"} then the compiler must
 be permitted to use the appropriate co-processor registers (i.e., the
@@ -3589,7 +3589,7 @@ more than one function to be compiled with specific target options.
 
 For instance on a 386, you could compile one function with
 @code{target("sse4.1,arch=core2")} and another with
-@code{target("sse4a,arch=amdfam10")} that is equivalent to
+@code{target("sse4a,arch=amdfam10")}.  This is equivalent to
 compiling the first function with @option{-msse4.1} and
 @option{-march=core2} options, and the second function with
 @option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
@@ -4044,7 +4044,7 @@ All visibilities are supported on many, but not all, ELF targets
 pseudo-op).  Default visibility is supported everywhere.  Hidden
 visibility is supported on Darwin targets.
 
-The visibility attribute should be applied only to declarations which
+The visibility attribute should be applied only to declarations that
 would otherwise have external linkage.  The attribute should be applied
 consistently, so that the same entity should not be declared with
 different settings of the attribute.
@@ -4109,7 +4109,7 @@ results in warning on line 5.
 @cindex @code{weak} attribute
 The @code{weak} attribute causes the declaration to be emitted as a weak
 symbol rather than a global.  This is primarily useful in defining
-library functions which can be overridden in user code, though it can
+library functions that can be overridden in user code, though it can
 also be used with non-function declarations.  Weak symbols are supported
 for ELF targets, and also for a.out targets when using the GNU assembler
 and linker.
@@ -4246,8 +4246,8 @@ specifiers, not separated by any other tokens.
 In GNU C, an attribute specifier list may appear after the colon following a
 label, other than a @code{case} or @code{default} label.  The only
 attribute it makes sense to use after a label is @code{unused}.  This
-feature is intended for code generated by programs which contains labels
-that may be unused but which is compiled with @option{-Wall}.  It is
+feature is intended for program-generated code that may contain unused labels,
+but which is compiled with @option{-Wall}.  It is
 not normally appropriate to use in it human-written code, though it
 could be useful in cases where the code that jumps to the label is
 contained within an @code{#ifdef} conditional.  GNU C++ only permits
@@ -4300,7 +4300,7 @@ specifiers and qualifiers may be an attribute specifier list with no
 other specifiers or qualifiers.
 
 At present, the first parameter in a function prototype must have some
-type specifier which is not an attribute specifier; this resolves an
+type specifier that is not an attribute specifier; this resolves an
 ambiguity in the interpretation of @code{void f(int
 (__attribute__((foo)) x))}, but is subject to change.  At present, if
 the parentheses of a function declarator contain only attributes then
@@ -4548,8 +4548,8 @@ struct foo @{ int x[2] __attribute__ ((aligned (8))); @};
 @end smallexample
 
 @noindent
-This is an alternative to creating a union with a @code{double} member
-that forces the union to be double-word aligned.
+This is an alternative to creating a union with a @code{double} member,
+which forces the union to be double-word aligned.
 
 As in the preceding examples, you can explicitly specify the alignment
 (in bytes) that you wish the compiler to use for a given variable or
@@ -4557,7 +4557,7 @@ structure field.  Alternatively, you can leave out the alignment factor
 and just ask the compiler to align a variable or field to the
 default alignment for the target architecture you are compiling for.
 The default alignment is sufficient for all scalar types, but may not be
-enough for all vector types on a target which supports vector operations.
+enough for all vector types on a target that supports vector operations.
 The default alignment is fixed for a particular target ABI.
 
 Gcc also provides a target specific macro @code{__BIGGEST_ALIGNMENT__},
@@ -4931,7 +4931,7 @@ addresses).
 The MeP target has a number of addressing modes and busses.  The
 @code{near} space spans the standard memory space's first 16 megabytes
 (24 bits).  The @code{far} space spans the entire 32-bit memory space.
-The @code{based} space is a 128 byte region in the memory space which
+The @code{based} space is a 128 byte region in the memory space that
 is addressed relative to the @code{$tp} register.  The @code{tiny}
 space is a 65536 byte region relative to the @code{$gp} register.  In
 addition to these memory regions, the MeP target has a separate 16-bit
@@ -5227,16 +5227,16 @@ struct S @{ short f[3]; @} __attribute__ ((aligned));
 
 Whenever you leave out the alignment factor in an @code{aligned}
 attribute specification, the compiler automatically sets the alignment
-for the type to the largest alignment which is ever used for any data
+for the type to the largest alignment that is ever used for any data
 type on the target machine you are compiling for.  Doing this can often
 make copy operations more efficient, because the compiler can use
 whatever instructions copy the biggest chunks of memory when performing
-copies to or from the variables which have types that you have aligned
+copies to or from the variables that have types that you have aligned
 this way.
 
 In the example above, if the size of each @code{short} is 2 bytes, then
 the size of the entire @code{struct S} type is 6 bytes.  The smallest
-power of two which is greater than or equal to that is 8, so the
+power of two that is greater than or equal to that is 8, so the
 compiler sets the alignment for the entire @code{struct S} type to 8
 bytes.
 
@@ -5299,7 +5299,7 @@ struct __attribute__ ((__packed__)) my_packed_struct
 @end smallexample
 
 You may only specify this attribute on the definition of an @code{enum},
-@code{struct} or @code{union}, not on a @code{typedef} which does not
+@code{struct} or @code{union}, not on a @code{typedef} that does not
 also define the enumerated type, structure or union.
 
 @item transparent_union
@@ -5722,7 +5722,7 @@ implementation defined as to what constitutes a volatile access.  The
 minimum requirement is that at a sequence point all previous accesses
 to volatile objects have stabilized and no subsequent accesses have
 occurred.  Thus an implementation is free to reorder and combine
-volatile accesses which occur between sequence points, but cannot do
+volatile accesses that occur between sequence points, but cannot do
 so for accesses across a sequence point.  The use of volatile does
 not allow you to violate the restriction on updating objects multiple
 times between two sequence points.
@@ -5872,7 +5872,7 @@ operand and list it with the output operands.
 You may, as an alternative, logically split its function into two
 separate operands, one input operand and one write-only output
 operand.  The connection between them is expressed by constraints
-which say they need to be in the same location when the instruction
+that say they need to be in the same location when the instruction
 executes.  You can use the same C expression for both operands, or
 different expressions.  For example, here we write the (fictitious)
 @samp{combine} instruction with @code{bar} as its read-only source
@@ -6075,7 +6075,7 @@ encapsulate them in macros that look like functions.  For example,
 @noindent
 Here the variable @code{__arg} is used to make sure that the instruction
 operates on a proper @code{double} value, and to accept only those
-arguments @code{x} which can convert automatically to a @code{double}.
+arguments @code{x} that can convert automatically to a @code{double}.
 
 Another way to make sure the instruction operates on the correct data
 type is to use a cast in the @code{asm}.  This is different from using a
@@ -6115,7 +6115,7 @@ prove that control flow never reaches the location of the
 instruction.)  Note that even a volatile @code{asm} instruction
 can be moved relative to other code, including across jump
 instructions.  For example, on many targets there is a system
-register which can be set to control the rounding mode of
+register that can be set to control the rounding mode of
 floating point operations.  You might try
 setting it with a volatile @code{asm}, like this PowerPC example:
 
@@ -6425,7 +6425,7 @@ register variable should be allocated.
 @item
 Global register variables reserve registers throughout the program.
 This may be useful in programs such as programming language
-interpreters which have a couple of global variables that are accessed
+interpreters that have a couple of global variables that are accessed
 very often.
 
 @item
@@ -6462,8 +6462,8 @@ register int *foo asm ("a5");
 @end smallexample
 
 @noindent
-Here @code{a5} is the name of the register which should be used.  Choose a
-register which is normally saved and restored by function calls on your
+Here @code{a5} is the name of the register that should be used.  Choose a
+register that is normally saved and restored by function calls on your
 machine, so that library routines will not clobber it.
 
 Naturally the register name is cpu-dependent, so you need to
@@ -6505,18 +6505,18 @@ might have put something else in that register.  (If you are prepared to
 recompile @code{qsort} with the same global register variable, you can
 solve this problem.)
 
-If you want to recompile @code{qsort} or other source files which do not
+If you want to recompile @code{qsort} or other source files that do not
 actually use your global register variable, so that they do not use that
 register for any other purpose, then it suffices to specify the compiler
 option @option{-ffixed-@var{reg}}.  You need not actually add a global
 register declaration to their source code.
 
-A function which can alter the value of a global register variable cannot
+A function that can alter the value of a global register variable cannot
 safely be called from a function compiled without this variable, because it
 could clobber the value the caller expects to find there on return.
-Therefore, the function which is the entry point into the part of the
+Therefore, the function that is the entry point into the part of the
 program that uses the global register variable must explicitly save and
-restore the value which belongs to its caller.
+restore the value that belongs to its caller.
 
 @cindex register variable after @code{longjmp}
 @cindex global register after @code{longjmp}
@@ -6561,7 +6561,7 @@ register int *foo asm ("a5");
 @end smallexample
 
 @noindent
-Here @code{a5} is the name of the register which should be used.  Note
+Here @code{a5} is the name of the register that should be used.  Note
 that this is the same syntax used for defining global register
 variables, but for a local variable it appears within a function.
 
@@ -6592,7 +6592,7 @@ according to dataflow analysis.  References to local register variables may
 be deleted or moved or simplified.
 
 As for global register variables, it's recommended that you choose a
-register which is normally saved and restored by function calls on
+register that is normally saved and restored by function calls on
 your machine, so that library routines will not clobber it.  A common
 pitfall is to initialize multiple call-clobbered registers with
 arbitrary expressions, where a function call or library call for an
@@ -6651,7 +6651,7 @@ effect aside from this.
 You can define an @code{enum} tag without specifying its possible values.
 This results in an incomplete type, much like what you get if you write
 @code{struct foo} without describing the elements.  A later declaration
-which does specify the possible values completes the type.
+that does specify the possible values completes the type.
 
 You can't allocate variables or storage using the type while it is
 incomplete.  However, you can work with pointers to that type.
@@ -6668,7 +6668,7 @@ This extension is not supported by GNU C++.
 @cindex @code{__FUNCTION__} identifier
 @cindex @code{__PRETTY_FUNCTION__} identifier
 
-GCC provides three magic variables which hold the name of the current
+GCC provides three magic variables that hold the name of the current
 function, as a string.  The first of these is @code{__func__}, which
 is part of the C99 standard:
 
@@ -6797,7 +6797,7 @@ of the function.  Calling @code{__builtin_frame_address} with a value of
 @code{1} yields the frame address of the caller of the current function,
 and so forth.
 
-The frame is the area on the stack which holds local variables and saved
+The frame is the area on the stack that holds local variables and saved
 registers.  The frame address is normally the address of the first word
 pushed on to the stack by the function.  However, the exact definition
 depends upon the processor and the calling convention.  If the processor
@@ -6817,7 +6817,7 @@ purposes.
 @node Vector Extensions
 @section Using vector instructions through built-in functions
 
-On some targets, the instruction set contains SIMD vector instructions that
+On some targets, the instruction set contains SIMD vector instructions which
 operate on multiple values contained in one large register at the same time.
 For example, on the i386 the MMX, 3DNow!@: and SSE extensions can be used
 this way.
@@ -7033,7 +7033,7 @@ All of the routines are described in the Intel documentation to take
 not clear what is meant by that; it could mean that @emph{only} the
 following variables are protected, or it could mean that these variables
 should in addition be protected.  At present GCC ignores this list and
-protects all variables which are globally accessible.  If in the future
+protects all variables that are globally accessible.  If in the future
 we make some use of this list, an empty list will continue to mean all
 globally accessible variables.
 
@@ -7158,14 +7158,14 @@ to be resolved at runtime.
 The four non-arithmetic functions (load, store, exchange, and 
 compare_exchange) all have a generic version as well.  This generic
 version works on any data type.  If the data type size maps to one
-of the integral sizes which may have lock free support, the generic
+of the integral sizes that may have lock free support, the generic
 version utilizes the lock free built-in function.  Otherwise an
 external call is left to be resolved at runtime.  This external call is
 the same format with the addition of a @samp{size_t} parameter inserted
 as the first parameter indicating the size of the object being pointed to.
 All objects must be the same size.
 
-There are 6 different memory models which can be specified.  These map
+There are 6 different memory models that can be specified.  These map
 to the same names in the C++11 standard.  Refer there or to the
 @uref{http://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync,GCC wiki on
 atomic synchronization} for more detailed definitions.  These memory
@@ -7371,7 +7371,7 @@ This built-in function returns true if objects of @var{size} bytes always
 generate lock free atomic instructions for the target architecture.  
 @var{size} must resolve to a compile time constant and the result also resolves to compile time constant.
 
-@var{ptr} is an optional pointer to the object which may be used to determine
+@var{ptr} is an optional pointer to the object that may be used to determine
 alignment.  A value of 0 indicates typical alignment should be used.  The 
 compiler may also ignore this parameter.
 
@@ -7388,7 +7388,7 @@ generate lock free atomic instructions for the target architecture.  If
 it is not known to be lock free a call is made to a runtime routine named
 @code{__atomic_is_lock_free}.
 
-@var{ptr} is an optional pointer to the object which may be used to determine
+@var{ptr} is an optional pointer to the object that may be used to determine
 alignment.  A value of 0 indicates typical alignment should be used.  The 
 compiler may also ignore this parameter.
 @end deftypefn
@@ -8542,7 +8542,7 @@ significant bit position.  If @var{x} is 0, the result is undefined.
 
 @deftypefn {Built-in Function} int __builtin_clrsb (int x)
 Returns the number of leading redundant sign bits in @var{x}, i.e. the
-number of bits following the most significant bit which are identical
+number of bits following the most significant bit that are identical
 to it.  There are no special cases for 0 or other values. 
 @end deftypefn
 
@@ -8955,7 +8955,7 @@ void __builtin_avr_delay_cycles (unsigned long ticks)
 
 @noindent
 @code{ticks} is the number of ticks to delay execution. Note that this
-built-in does not take into account the effect of interrupts which
+built-in does not take into account the effect of interrupts that
 might increase delay time. @code{ticks} must be a compile time
 integer constant; delays with a variable number of cycles are not supported.
 
@@ -9465,10 +9465,10 @@ into the data cache.  The instruction is issued in slot I1@.
 These built-in functions are available for the i386 and x86-64 family
 of computers, depending on the command-line switches used.
 
-Note that, if you specify command-line switches such as @option{-msse},
+If you specify command-line switches such as @option{-msse},
 the compiler could use the extended instruction sets even if the built-ins
 are not used explicitly in the program.  For this reason, applications
-which perform runtime CPU detection must compile separate files for each
+that perform runtime CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
@@ -9532,9 +9532,9 @@ to check CPU type and features, @code{__builtin_cpu_is} and
 executed before any constructors are called.  The CPU detection code is
 automatically executed in a very high priority constructor.
 
-For example, this function has to be used in @code{ifunc} resolvers which
+For example, this function has to be used in @code{ifunc} resolvers that
 check for CPU type using the builtins @code{__builtin_cpu_is}
-and @code{__builtin_cpu_supports}, or in constructors on targets which
+and @code{__builtin_cpu_supports}, or in constructors on targets that
 don't support constructor priority.
 @smallexample
 
@@ -11578,7 +11578,7 @@ picoChip instruction set.
 @table @code
 @item int __builtin_sbc (int @var{value})
 Sign bit count.  Return the number of consecutive bits in @var{value}
-which have the same value as the sign-bit.  The result is the number of
+that have the same value as the sign-bit.  The result is the number of
 leading sign bits minus one, giving the number of redundant sign bits in
 @var{value}.
 
@@ -14328,8 +14328,8 @@ asm ("cpfoo %0" : "=B" (x));
 @item GCC disinterrupt @var{name} , @var{name} @dots{}
 @cindex pragma, disinterrupt
 For the named functions, the compiler adds code to disable interrupts
-for the duration of those functions.  Any functions so named, which
-are not encountered in the source, cause a warning that the pragma is
+for the duration of those functions.  If any functions so named 
+are not encountered in the source, a warning is emitted that the pragma is
 not used.  Examples:
 
 @example
@@ -14445,7 +14445,7 @@ adding a call to the @code{.init} section.
 @subsection Symbol-Renaming Pragmas
 
 For compatibility with the Solaris system headers, GCC
-supports two @code{#pragma} directives which change the name used in
+supports two @code{#pragma} directives that change the name used in
 assembly for a given declaration. To get this effect
 on all platforms supported by GCC, use the asm labels extension (@pxref{Asm
 Labels}).
@@ -14484,7 +14484,7 @@ always the C-language name.
 @subsection Structure-Packing Pragmas
 
 For compatibility with Microsoft Windows compilers, GCC supports a
-set of @code{#pragma} directives which change the maximum alignment of
+set of @code{#pragma} directives that change the maximum alignment of
 members of structures (other than zero-width bitfields), unions, and
 classes subsequently defined. The @var{n} value below always is required
 to be a small power of two and specifies the new alignment in bytes.
@@ -14560,7 +14560,7 @@ are controllable and which option controls them.
 @var{kind} is @samp{error} to treat this diagnostic as an error,
 @samp{warning} to treat it like a warning (even if @option{-Werror} is
 in effect), or @samp{ignored} if the diagnostic is to be ignored.
-@var{option} is a double quoted string which matches the command-line
+@var{option} is a double quoted string that matches the command-line
 option.
 
 @example
@@ -15046,7 +15046,7 @@ duration.
 Change paragraph 1
 
 @quotation
-All objects which have neither thread storage duration, dynamic
+All objects that have neither thread storage duration, dynamic
 storage duration nor are local [@dots{}].
 @end quotation
 
@@ -15161,7 +15161,7 @@ volatile int *src = @var{somevalue};
 The C++ standard specifies that such expressions do not undergo lvalue
 to rvalue conversion, and that the type of the dereferenced object may
 be incomplete.  The C++ standard does not specify explicitly that it
-is lvalue to rvalue conversion which is responsible for causing an
+is lvalue to rvalue conversion that is responsible for causing an
 access.  There is reason to believe that it is, because otherwise
 certain simple expressions become undefined.  However, because it
 would surprise most programmers, G++ treats dereferencing a pointer to
@@ -15232,7 +15232,7 @@ definition @code{T *__restrict__ const this}.  Notice that the
 interpretation of a @code{__restrict__} member function qualifier is
 different to that of @code{const} or @code{volatile} qualifier, in that it
 is applied to the pointer rather than the object.  This is consistent with
-other compilers which implement restricted pointers.
+other compilers that implement restricted pointers.
 
 As with all outermost parameter qualifiers, @code{__restrict__} is
 ignored in function definition matching.  This means you only need to
@@ -15243,7 +15243,7 @@ in a function prototype as well.
 @section Vague Linkage
 @cindex vague linkage
 
-There are several constructs in C++ which require space in the object
+There are several constructs in C++ that require space in the object
 file but are not clearly tied to a single translation unit.  We say that
 these constructs have ``vague linkage''.  Typically such constructs are
 emitted wherever they are needed, though sometimes we can be more
@@ -15275,7 +15275,7 @@ and the vtable is only emitted in the translation unit where the key
 method is defined.
 
 @emph{Note:} If the chosen key method is later defined as inline, the
-vtable is still emitted in every translation unit which defines it.
+vtable is still emitted in every translation unit that defines it.
 Make sure that any inline virtuals are declared inline in the class
 body, even if they are not defined there.
 
@@ -15307,7 +15307,7 @@ On targets that don't support COMDAT, but do support weak symbols, GCC
 uses them.  This way one copy overrides all the others, but
 the unused copies still take up space in the executable.
 
-For targets which do not support either COMDAT or weak symbols,
+For targets that do not support either COMDAT or weak symbols,
 most entities with vague linkage are emitted as local symbols to
 avoid duplicate definition errors from the linker.  This does not happen
 for local statics in inlines, however, as having multiple copies
@@ -15472,7 +15472,7 @@ You have the following options for dealing with template instantiations:
 @opindex frepo
 Compile your template-using code with @option{-frepo}.  The compiler
 generates files with the extension @samp{.rpo} listing all of the
-template instantiations used in the corresponding object files which
+template instantiations used in the corresponding object files that
 could be instantiated there; the link wrapper, @samp{collect2},
 then updates the @samp{.rpo} files to tell the compiler where to place
 those instantiations and rebuild any affected object files.  The
@@ -15704,8 +15704,9 @@ int main()
 @node Type Traits
 @section Type Traits
 
-The C++ front-end implements syntactic extensions that allow to
-determine at compile time various characteristics of a type (or of a
+The C++ front-end implements syntactic extensions that allow
+compile-time determination of 
+various characteristics of a type (or of a
 pair of types).
 
 @table @code
@@ -15955,7 +15956,7 @@ deprecated.   @xref{Deprecated Features}.
 @table @code
 @item For scope
 If a variable is declared at for scope, it used to remain in scope until
-the end of the scope which contained the for statement (rather than just
+the end of the scope that contained the for statement (rather than just
 within the for scope).  G++ retains this, but issues a warning, if such a
 variable is accessed outside the for scope.
 

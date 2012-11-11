@@ -1,3 +1,8 @@
+2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Copy-edit to fix incorrect uses of "which" 
+	and "that" throughout the file.
+
 2012-11-10  Andrew Pinski  <apinski@cavium.com>
 
 	PR bootstrap/55202
