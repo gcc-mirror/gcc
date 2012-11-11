@@ -1,3 +1,9 @@
+2012-11-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/torture/pr54920.c: Add "-fno-common" option on hppa*-*-hpux*.
+	* c-c++-common/torture/vector-subscript-1.c: Likewise.
+	* c-c++-common/torture/vector-subscript-2.c: Likewise.
+
 2012-11-10  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/cunroll-1.c: Fix bogus testcase.
