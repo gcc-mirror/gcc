@@ -6815,7 +6815,7 @@ purposes.
 @end deftypefn
 
 @node Vector Extensions
-@section Using vector instructions through built-in functions
+@section Using Vector Instructions through Built-in Functions
 
 On some targets, the instruction set contains SIMD vector instructions which
 operate on multiple values contained in one large register at the same time.
@@ -6999,9 +6999,10 @@ may be dependent.  In either case, @var{member} may consist of a single
 identifier, or a sequence of member accesses and array references.
 
 @node __sync Builtins
-@section Legacy __sync built-in functions for atomic memory access
+@section Legacy __sync Built-in Functions for Atomic Memory Access
 
-The following builtins are intended to be compatible with those described
+The following built-in functions
+are intended to be compatible with those described
 in the @cite{Intel Itanium Processor-specific Application Binary Interface},
 section 7.4.  As such, they depart from the normal GCC practice of using
 the ``__builtin_'' prefix, and further that they are overloaded such that
@@ -7015,14 +7016,16 @@ counterparts.  GCC allows any integral scalar or pointer type that is
 Not all operations are supported by all target processors.  If a particular
 operation cannot be implemented on the target processor, a warning is
 generated and a call an external function is generated.  The external
-function carries the same name as the builtin, with an additional suffix
+function carries the same name as the built-in version,
+with an additional suffix
 @samp{_@var{n}} where @var{n} is the size of the data type.
 
 @c ??? Should we have a mechanism to suppress this warning?  This is almost
 @c useful for implementing the operation under the control of an external
 @c mutex.
 
-In most cases, these builtins are considered a @dfn{full barrier}.  That is,
+In most cases, these built-in functions are considered a @dfn{full barrier}.
+That is,
 no memory operand is moved across the operation, either forward or
 backward.  Further, instructions are issued as necessary to prevent the
 processor from speculating loads across the operation and from queuing stores
@@ -7050,7 +7053,7 @@ globally accessible variables.
 @findex __sync_fetch_and_and
 @findex __sync_fetch_and_xor
 @findex __sync_fetch_and_nand
-These builtins perform the operation suggested by the name, and
+These built-in functions perform the operation suggested by the name, and
 returns the value that had previously been in memory.  That is,
 
 @smallexample
@@ -7059,7 +7062,7 @@ returns the value that had previously been in memory.  That is,
 @end smallexample
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
-builtin as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
+as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 
 @item @var{type} __sync_add_and_fetch (@var{type} *ptr, @var{type} value, ...)
 @itemx @var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)
@@ -7073,7 +7076,7 @@ builtin as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
 @findex __sync_and_and_fetch
 @findex __sync_xor_and_fetch
 @findex __sync_nand_and_fetch
-These builtins perform the operation suggested by the name, and
+These built-in functions perform the operation suggested by the name, and
 return the new value.  That is,
 
 @smallexample
@@ -7082,14 +7085,15 @@ return the new value.  That is,
 @end smallexample
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
-builtin as @code{*ptr = ~(*ptr & value)} instead of
+as @code{*ptr = ~(*ptr & value)} instead of
 @code{*ptr = ~*ptr & value}.
 
 @item bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)
 @itemx @var{type} __sync_val_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)
 @findex __sync_bool_compare_and_swap
 @findex __sync_val_compare_and_swap
-These builtins perform an atomic compare and swap.  That is, if the current
+These built-in functions perform an atomic compare and swap.
+That is, if the current
 value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
 @code{*@var{ptr}}.
 
@@ -7099,11 +7103,11 @@ of @code{*@var{ptr}} before the operation.
 
 @item __sync_synchronize (...)
 @findex __sync_synchronize
-This builtin issues a full memory barrier.
+This built-in function issues a full memory barrier.
 
 @item @var{type} __sync_lock_test_and_set (@var{type} *ptr, @var{type} value, ...)
 @findex __sync_lock_test_and_set
-This builtin, as described by Intel, is not a traditional test-and-set
+This built-in function, as described by Intel, is not a traditional test-and-set
 operation, but rather an atomic exchange operation.  It writes @var{value}
 into @code{*@var{ptr}}, and returns the previous contents of
 @code{*@var{ptr}}.
@@ -7114,18 +7118,21 @@ functionality here by which the @emph{only} valid value to store is the
 immediate constant 1.  The exact value actually stored in @code{*@var{ptr}}
 is implementation defined.
 
-This builtin is not a full barrier, but rather an @dfn{acquire barrier}.
-This means that references after the builtin cannot move to (or be
-speculated to) before the builtin, but previous memory stores may not
+This built-in function is not a full barrier,
+but rather an @dfn{acquire barrier}.
+This means that references after the operation cannot move to (or be
+speculated to) before the operation, but previous memory stores may not
 be globally visible yet, and previous memory loads may not yet be
 satisfied.
 
 @item void __sync_lock_release (@var{type} *ptr, ...)
 @findex __sync_lock_release
-This builtin releases the lock acquired by @code{__sync_lock_test_and_set}.
+This built-in function releases the lock acquired by
+@code{__sync_lock_test_and_set}.
 Normally this means writing the constant 0 to @code{*@var{ptr}}.
 
-This builtin is not a full barrier, but rather a @dfn{release barrier}.
+This built-in function is not a full barrier,
+but rather a @dfn{release barrier}.
 This means that all previous memory stores are globally visible, and all
 previous memory loads have been satisfied, but following memory reads
 are not prevented from being speculated to before the barrier.
@@ -7394,7 +7401,7 @@ compiler may also ignore this parameter.
 @end deftypefn
 
 @node Object Size Checking
-@section Object Size Checking Builtins
+@section Object Size Checking Built-in Functions
 @findex __builtin_object_size
 @findex __builtin___memcpy_chk
 @findex __builtin___mempcpy_chk
@@ -7527,7 +7534,7 @@ format string @var{fmt}.  If the compiler is able to optimize them to
 is called and the @var{flag} argument passed to it.
 
 @node Other Builtins
-@section Other built-in functions provided by GCC
+@section Other Built-in Functions Provided by GCC
 @cindex built-in functions
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
@@ -8064,7 +8071,7 @@ prefixed.  We intend for a library implementor to be able to simply
 In the same fashion, GCC provides @code{fpclassify}, @code{isfinite},
 @code{isinf_sign} and @code{isnormal} built-ins used with
 @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
-builtins appear both with and without the @code{__builtin_} prefix.
+built-in functions appear both with and without the @code{__builtin_} prefix.
 
 @deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
 
@@ -8749,7 +8756,7 @@ long __builtin_alpha_ctlz (long)
 long __builtin_alpha_ctpop (long)
 @end smallexample
 
-The following builtins are available on systems that use the OSF/1
+The following built-in functions are available on systems that use the OSF/1
 PALcode.  Normally they invoke the @code{rduniq} and @code{wruniq}
 PAL calls, but when invoked with @option{-mtls-kernel}, they invoke
 @code{rdval} and @code{wrval}.
@@ -9526,14 +9533,14 @@ check the target platform type.
 
 @deftypefn {Built-in Function} void __builtin_cpu_init (void)
 This function runs the CPU detection code to check the type of CPU and the
-features supported.  This builtin needs to be invoked along with the builtins
+features supported.  This built-in function needs to be invoked along with the built-in functions
 to check CPU type and features, @code{__builtin_cpu_is} and
 @code{__builtin_cpu_supports}, only when used in a function that is
 executed before any constructors are called.  The CPU detection code is
 automatically executed in a very high priority constructor.
 
 For example, this function has to be used in @code{ifunc} resolvers that
-check for CPU type using the builtins @code{__builtin_cpu_is}
+check for CPU type using the built-in functions @code{__builtin_cpu_is}
 and @code{__builtin_cpu_supports}, or in constructors on targets that
 don't support constructor priority.
 @smallexample
@@ -13700,10 +13707,10 @@ void vec_vsx_st (vector bool char, int, unsigned char *);
 void vec_vsx_st (vector bool char, int, signed char *);
 @end smallexample
 
-Note that the @samp{vec_ld} and @samp{vec_st} builtins always
+Note that the @samp{vec_ld} and @samp{vec_st} built-in functions always
 generate the Altivec @samp{LVX} and @samp{STVX} instructions even
 if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
-@samp{vec_vsx_st} builtins always generate the VSX @samp{LXVD2X},
+@samp{vec_vsx_st} built-in functions always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
 @node SH Built-in Functions

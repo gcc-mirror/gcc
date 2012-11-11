@@ -1,3 +1,9 @@
+2012-11-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Copy-edit to use "built-in function" instead
+	of "builtin", per GCC coding standards.  Also use consistent
+	capitalization in titles of sections describing built-in functions.
+
 2012-11-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55238
