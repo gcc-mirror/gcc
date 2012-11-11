@@ -1,4 +1,9 @@
 2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (AS_NIAGARA3_FLAG): Tweak.
+	* config/sparc/sol2.h (TARGET_CPU_niagara4 support): Fix pasto.
+
+2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/55247
