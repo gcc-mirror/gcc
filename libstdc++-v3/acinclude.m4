@@ -686,6 +686,10 @@ if test x"$glibcxx_stylesheets" = x"yes"; then
     glibcxx_local_stylesheets=yes
     XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/docbook-xsl-ns
   fi
+  if test -d /usr/share/xml/docbook/stylesheet/nwalsh5/current; then
+    glibcxx_local_stylesheets=yes
+    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/nwalsh5/current
+  fi
 fi
 AC_MSG_RESULT($glibcxx_local_stylesheets)
 

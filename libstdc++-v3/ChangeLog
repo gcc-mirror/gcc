@@ -1,3 +1,9 @@
+2012-11-11  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE_DOCBOOK): Also check for
+	/usr/share/xml/docbook/stylesheet/nwalsh5/current.
+	* configure: Regenerate.
+
 2012-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/policy_data_structures.xml: Update reference
