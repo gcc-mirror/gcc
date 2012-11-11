@@ -5,12 +5,8 @@
  
 <info><title>allocator</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      allocator
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>allocator</keyword>
   </keywordset>
 </info>
 

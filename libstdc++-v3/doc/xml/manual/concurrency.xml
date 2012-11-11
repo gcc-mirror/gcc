@@ -7,24 +7,12 @@
   <indexterm><primary>Concurrency</primary></indexterm>
 </title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      library
-    </keyword>
-    <keyword>
-      mutex
-    </keyword>
-    <keyword>
-      thread
-    </keyword>
-    <keyword>
-      future
-    </keyword>
-    <keyword>
-      condition_variable
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>library</keyword>
+    <keyword>mutex</keyword>
+    <keyword>thread</keyword>
+    <keyword>future</keyword>
+    <keyword>condition_variable</keyword>
   </keywordset>
 </info>
 

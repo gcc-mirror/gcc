@@ -4,12 +4,8 @@
 
 <info><title>C++ TR1</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      tr1
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>tr1</keyword>
   </keywordset>
 </info>
 

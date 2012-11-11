@@ -3,36 +3,16 @@
   <info>
     <title>Policy-Based Data Structures</title>
     <keywordset>
-      <keyword>
-	ISO C++
-      </keyword>
-      <keyword>
-	policy
-      </keyword>
-      <keyword>
-	container
-      </keyword>
-      <keyword>
-	data
-      </keyword>
-      <keyword>
-	structure
-      </keyword>
-      <keyword>
-	associated
-      </keyword>
-      <keyword>
-	tree
-      </keyword>
-      <keyword>
-	trie
-      </keyword>
-      <keyword>
-	hash
-      </keyword>
-      <keyword>
-	metaprogramming
-      </keyword>
+      <keyword>ISO C++</keyword>
+      <keyword>policy</keyword>
+      <keyword>container</keyword>
+      <keyword>data</keyword>
+      <keyword>structure</keyword>
+      <keyword>associated</keyword>
+      <keyword>tree</keyword>
+      <keyword>trie</keyword>
+      <keyword>hash</keyword>
+      <keyword>metaprogramming</keyword>
     </keywordset>
   </info>
   <?dbhtml filename="policy_data_structures.html"?>

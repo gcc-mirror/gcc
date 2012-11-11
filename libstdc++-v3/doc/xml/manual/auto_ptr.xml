@@ -4,12 +4,8 @@
 
 <info><title>auto_ptr</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      auto_ptr
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>auto_ptr</keyword>
   </keywordset>
 </info>
 
