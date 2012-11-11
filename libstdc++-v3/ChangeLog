@@ -1,3 +1,8 @@
+2012-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Update reference
+	for select.
+
 2012-11-10  Jason Merrill  <jason@redhat.com>
 
 	* many: Replace uses of __GXX_EXPERIMENTAL_CXX0X__ with __cplusplus.
