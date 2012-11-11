@@ -1742,10 +1742,10 @@ extern int sparc_indent_opcode;
 #define TARGET_SUN_TLS TARGET_TLS
 #define TARGET_GNU_TLS 0
 
-#ifndef HAVE_AS_FMAF_HPC_VIS3
-#define AS_NIAGARA3_FLAG "b"
-#else
+#ifdef HAVE_AS_FMAF_HPC_VIS3
 #define AS_NIAGARA3_FLAG "d"
+#else
+#define AS_NIAGARA3_FLAG "b"
 #endif
 
 /* The number of Pmode words for the setjmp buffer.  */
