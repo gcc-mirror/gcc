@@ -659,6 +659,11 @@ dump_inline_hints (FILE *f, inline_hints hints)
       hints &= ~INLINE_HINT_declared_inline;
       fprintf (f, " declared_inline");
     }
+  if (hints & INLINE_HINT_array_index)
+    {
+      hints &= ~INLINE_HINT_array_index;
+      fprintf (f, " array_index");
+    }
   gcc_assert (!hints);
 }
 
@@ -1007,6 +1012,11 @@ reset_inline_summary (struct cgraph_node *node)
       pool_free (edge_predicate_pool, info->loop_stride);
       info->loop_stride = NULL;
     }
+  if (info->array_index)
+    {
+      pool_free (edge_predicate_pool, info->array_index);
+      info->array_index = NULL;
+    }
   VEC_free (condition, gc, info->conds);
   VEC_free (size_time_entry,gc, info->entry);
   for (e = node->callees; e; e = e->next_callee)
@@ -1201,6 +1211,9 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       remap_hint_predicate_after_duplication (&info->loop_stride,
 					      possible_truths,
 					      info);
+      remap_hint_predicate_after_duplication (&info->array_index,
+					      possible_truths,
+					      info);
 
       /* If inliner or someone after inliner will ever start producing
 	 non-trivial clones, we will get trouble with lack of information
@@ -1223,6 +1236,12 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	  predicate p = *info->loop_stride;
 	  info->loop_stride = NULL;
 	  set_hint_predicate (&info->loop_stride, p);
+	}
+      if (info->array_index)
+	{
+	  predicate p = *info->array_index;
+	  info->array_index = NULL;
+	  set_hint_predicate (&info->array_index, p);
 	}
     }
   inline_update_overall_summary (dst);
@@ -1412,6 +1431,11 @@ dump_inline_summary (FILE * f, struct cgraph_node *node)
 	{
 	  fprintf (f, "  loop stride:");
 	  dump_predicate (f, s->conds, s->loop_stride);
+	}
+      if (s->array_index)
+	{
+	  fprintf (f, "  array index:");
+	  dump_predicate (f, s->conds, s->array_index);
 	}
       fprintf (f, "  calls:\n");
       dump_inline_edge_summary (f, 4, node, s);
@@ -2262,6 +2286,28 @@ predicate_for_phi_result (struct inline_summary *summary, gimple phi,
 	       SSA_NAME_VERSION (gimple_phi_result (phi)), *p);
 }
 
+/* Return predicate specifying when array index in access OP becomes non-constant.  */
+
+static struct predicate
+array_index_predicate (struct inline_summary *info,
+		       VEC (predicate_t, heap) *nonconstant_names, tree op)
+{
+  struct predicate p = false_predicate ();
+  while (handled_component_p (op))
+    {
+      if (TREE_CODE (op) == ARRAY_REF
+	  || TREE_CODE (op) == ARRAY_RANGE_REF)
+        {
+	  if (TREE_CODE (TREE_OPERAND (op, 1)) == SSA_NAME)
+	     p = or_predicates (info->conds, &p,
+				&VEC_index (predicate_t, nonconstant_names,
+                                            SSA_NAME_VERSION (TREE_OPERAND (op, 1))));
+        }
+      op = TREE_OPERAND (op, 0);
+    }
+  return p;
+}
+
 /* Compute function body size parameters for NODE.
    When EARLY is true, we compute only simple summaries without
    non-trivial predicates to drive the early inliner.  */
@@ -2284,6 +2330,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   VEC (predicate_t, heap) *nonconstant_names = NULL;
   int nblocks, n;
   int *order;
+  predicate array_index = true_predicate ();
 
   info->conds = 0;
   info->entry = 0;
@@ -2379,6 +2426,24 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	      fprintf (dump_file, "\t\tfreq:%3.2f size:%3i time:%3i\n",
 		       ((double)freq)/CGRAPH_FREQ_BASE, this_size, this_time);
 	    }
+
+	  if (gimple_assign_load_p (stmt) && nonconstant_names)
+	    {
+	      struct predicate this_array_index;
+	      this_array_index = array_index_predicate (info, nonconstant_names,
+						        gimple_assign_rhs1 (stmt));
+	      if (!false_predicate_p (&this_array_index))
+	        array_index = and_predicates (info->conds, &array_index, &this_array_index);
+	    }
+	  if (gimple_store_p (stmt) && nonconstant_names)
+	    {
+	      struct predicate this_array_index;
+	      this_array_index = array_index_predicate (info, nonconstant_names,
+						        gimple_get_lhs (stmt));
+	      if (!false_predicate_p (&this_array_index))
+	        array_index = and_predicates (info->conds, &array_index, &this_array_index);
+	    }
+	   
 
 	  if (is_gimple_call (stmt))
 	    {
@@ -2476,21 +2541,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	    }
 	}
     }
-  FOR_ALL_BB_FN (bb, my_function)
-    {
-      edge e;
-      edge_iterator ei;
-
-      if (bb->aux)
-	pool_free (edge_predicate_pool, bb->aux);
-      bb->aux = NULL;
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (e->aux)
-	    pool_free (edge_predicate_pool, e->aux);
-	  e->aux = NULL;
-	}
-    }
+  set_hint_predicate (&inline_summary (node)->array_index, array_index);
   time = (time + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
   if (time > MAX_TIME)
     time = MAX_TIME;
@@ -2513,6 +2564,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  unsigned int j, i;
 	  struct tree_niter_desc niter_desc;
 	  basic_block *body = get_loop_body (loop);
+	  bb_predicate = *(struct predicate *)loop->header->aux;
 
 	  exits = get_loop_exit_edges (loop);
           FOR_EACH_VEC_ELT (edge, exits, j, ex)
@@ -2522,6 +2574,10 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		predicate will_be_nonconstant
 		 = will_be_nonconstant_expr_predicate (parms_info, info,
 						       niter_desc.niter, nonconstant_names);
+	        if (!true_predicate_p (&will_be_nonconstant))
+		  will_be_nonconstant = and_predicates (info->conds,
+							&bb_predicate,
+							&will_be_nonconstant);
 		if (!true_predicate_p (&will_be_nonconstant)
 		    && !false_predicate_p (&will_be_nonconstant))
 		  /* This is slightly inprecise.  We may want to represent each loop with
@@ -2533,6 +2589,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
           for (i = 0; i < loop->num_nodes; i++)
 	    {
 	      gimple_stmt_iterator gsi;
+	      bb_predicate = *(struct predicate *)body[i]->aux;
 	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 		{
 		  gimple stmt = gsi_stmt (gsi);
@@ -2550,6 +2607,10 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		      will_be_nonconstant
 		       = will_be_nonconstant_expr_predicate (parms_info, info,
 							     iv.step, nonconstant_names);
+		      if (!true_predicate_p (&will_be_nonconstant))
+			will_be_nonconstant = and_predicates (info->conds,
+							      &bb_predicate,
+							      &will_be_nonconstant);
 		      if (!true_predicate_p (&will_be_nonconstant)
 			  && !false_predicate_p (&will_be_nonconstant))
 			/* This is slightly inprecise.  We may want to represent each loop with
@@ -2563,6 +2624,21 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       set_hint_predicate (&inline_summary (node)->loop_iterations, loop_iterations);
       set_hint_predicate (&inline_summary (node)->loop_stride, loop_stride);
       scev_finalize ();
+    }
+  FOR_ALL_BB_FN (bb, my_function)
+    {
+      edge e;
+      edge_iterator ei;
+
+      if (bb->aux)
+	pool_free (edge_predicate_pool, bb->aux);
+      bb->aux = NULL;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if (e->aux)
+	    pool_free (edge_predicate_pool, e->aux);
+	  e->aux = NULL;
+	}
     }
   inline_summary (node)->self_time = time;
   inline_summary (node)->self_size = size;
@@ -2881,6 +2957,9 @@ estimate_node_size_and_time (struct cgraph_node *node,
   if (info->loop_stride
       && !evaluate_predicate (info->loop_stride, possible_truths))
     hints |=INLINE_HINT_loop_stride;
+  if (info->array_index
+      && !evaluate_predicate (info->array_index, possible_truths))
+    hints |=INLINE_HINT_array_index;
   if (info->scc_no)
     hints |= INLINE_HINT_in_scc;
   if (DECL_DECLARED_INLINE_P (node->symbol.decl))
@@ -3309,6 +3388,10 @@ inline_merge_summary (struct cgraph_edge *edge)
 			clause, &toplev_predicate);
   remap_hint_predicate (info, callee_info,
 			&callee_info->loop_stride,
+			operand_map, offset_map,
+			clause, &toplev_predicate);
+  remap_hint_predicate (info, callee_info,
+			&callee_info->array_index,
 			operand_map, offset_map,
 			clause, &toplev_predicate);
 
@@ -3803,6 +3886,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       set_hint_predicate (&info->loop_iterations, p);
       p = read_predicate (&ib);
       set_hint_predicate (&info->loop_stride, p);
+      p = read_predicate (&ib);
+      set_hint_predicate (&info->array_index, p);
       for (e = node->callees; e; e = e->next_callee)
 	read_inline_edge_summary (&ib, e);
       for (e = node->indirect_calls; e; e = e->next_callee)
@@ -3954,6 +4039,7 @@ inline_write_summary (void)
 	    }
 	  write_predicate (ob, info->loop_iterations);
 	  write_predicate (ob, info->loop_stride);
+	  write_predicate (ob, info->array_index);
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
 	  for (edge = node->indirect_calls; edge; edge = edge->next_callee)

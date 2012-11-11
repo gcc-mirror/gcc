@@ -44,16 +44,32 @@ typedef struct GTY(()) condition
     unsigned by_ref : 1;
   } condition;
 
-/* Inline hints are reasons why inline heuristics should preffer inlining given function.
-   They are represtented as bitmap of the following values.  */
+/* Inline hints are reasons why inline heuristics should preffer inlining given
+   function.  They are represtented as bitmap of the following values.  */
 enum inline_hints_vals {
+  /* When inlining turns indirect call into a direct call,
+     it is good idea to do so.  */
   INLINE_HINT_indirect_call = 1,
+  /* Inlining may make loop iterations or loop stride known.  It is good idea
+     to do so because it enables loop optimizatoins.  */
   INLINE_HINT_loop_iterations = 2,
   INLINE_HINT_loop_stride = 4,
+  /* Inlining withing same strongly connected component of callgraph is often
+     a loss due to increased stack frame usage and prologue setup costs.  */
   INLINE_HINT_same_scc = 8,
+  /* Inlining functions in strongly connected component is not such a great
+     win.  */
   INLINE_HINT_in_scc = 16,
+  /* If function is declared inline by user, it may be good idea to inline
+     it.  */
   INLINE_HINT_declared_inline = 32,
-  INLINE_HINT_cross_module = 64
+  /* Programs are usually still organized for non-LTO compilation and thus
+     if functions are in different modules, inlining may not be so important. 
+   */
+  INLINE_HINT_cross_module = 64,
+  /* If array indexes of loads/stores become known there may be room for
+     futher optimization.  */
+  INLINE_HINT_array_index = 128
 };
 typedef int inline_hints;
 
@@ -133,6 +149,8 @@ struct GTY(()) inline_summary
   /* Predicate on when some loop in the function becomes to have known
      stride.   */
   struct predicate * GTY((skip)) loop_stride;
+  /* Predicate on when some array indexes become constants.  */
+  struct predicate * GTY((skip)) array_index;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but

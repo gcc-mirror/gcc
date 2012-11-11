@@ -1,3 +1,19 @@
+2012-11-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48636
+	* ipa-inline.c (want_inline_small_function_p): Take aray index hint.
+	(edge_badness): Likewise.
+	* ipa-inline.h (inline_hints_vals): Add array_index and comments.
+	(inline_summary_: Add ARRAY_INDEX.
+	* ipa-inline-analysis.c (dump_inline_hints): Dump array_index hint.
+	(reset_inline_summary): Handle array_index hint.
+	(inline_node_duplication_hook): Likewise.
+	(dump_inline_summary): Likewise.
+	(array_index_predicate): New function.
+	(estimate_function_body_sizes): Use it.
+	(estimate_node_size_and_time): Use array_index hint.
+	(inline_merge_summary, inline_read_section): Likewise.
+
 2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi: Copy-edit to use "bit-field" consistently

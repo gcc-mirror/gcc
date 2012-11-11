@@ -541,6 +541,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && !big_speedup
 	       && !(hints & (INLINE_HINT_indirect_call
 			     | INLINE_HINT_loop_iterations
+			     | INLINE_HINT_array_index
 			     | INLINE_HINT_loop_stride)))
 	{
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
@@ -595,6 +596,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && !big_speedup
 	       && growth >= ((hints & (INLINE_HINT_indirect_call
 				       | INLINE_HINT_loop_iterations
+			               | INLINE_HINT_array_index
 				       | INLINE_HINT_loop_stride))
 			     ? MAX (MAX_INLINE_INSNS_AUTO,
 				    MAX_INLINE_INSNS_SINGLE)
@@ -919,6 +921,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       gcc_checking_assert (badness <=0 && badness >= INT_MIN / 16);
       if ((hints & (INLINE_HINT_indirect_call
 		    | INLINE_HINT_loop_iterations
+	            | INLINE_HINT_array_index
 		    | INLINE_HINT_loop_stride))
 	  || callee_info->growth <= 0)
 	badness *= 8;
