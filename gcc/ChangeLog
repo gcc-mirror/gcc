@@ -1,3 +1,12 @@
+2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/55247
+	PR middle-end/55259
+	* emit-rtl.c (adjust_address_1): If POINTERS_EXTEND_UNSIGNED > 0,
+	handle ZERO_EXTEND.
+	* recog.c (offsettable_address_addr_space_p): Likewise.
+
 2012-11-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/55263

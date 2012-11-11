@@ -1,3 +1,9 @@
+2012-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/55247
+	PR middle-end/55259
+	* gcc.target/i386/pr55247-2.c: New file.
+
 2012-11-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/55263
