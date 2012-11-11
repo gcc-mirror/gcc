@@ -1,3 +1,11 @@
+2012-11-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55238
+	* ipa-cp.c (agg_pass_through_permissible_p): New function.
+	(propagate_aggs_accross_jump_function): Use it.
+	(find_aggregate_values_for_callers_subset): Likewise and relax an
+	assert.
+
 2012-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47440
