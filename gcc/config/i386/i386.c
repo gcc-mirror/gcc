@@ -14942,20 +14942,16 @@ output_387_binary_op (rtx insn, rtx *operands)
   return buf;
 }
 
-/* Check if a 256bit AVX register is referenced in stores.   */
+/* Check if a 256bit AVX register is referenced inside of EXP.   */
 
-static void
-check_avx256_stores (rtx dest, const_rtx set, void *data)
+static int
+ix86_check_avx256_register (rtx *exp, void *data ATTRIBUTE_UNUSED)
 {
-  if (((REG_P (dest) || MEM_P (dest))
-       && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (dest)))
-      || (GET_CODE (set) == SET
-	  && (REG_P (SET_SRC (set)) || MEM_P (SET_SRC (set)))
-	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (SET_SRC (set)))))
-    {
-      bool *used = (bool *) data;
-      *used = true;
-    }
+  if (REG_P (*exp)
+      && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (*exp)))
+    return 1;
+
+  return 0;
 }
 
 /* Return needed mode for entity in optimize_mode_switching pass.  */
@@ -14963,8 +14959,6 @@ check_avx256_stores (rtx dest, const_rtx set, void *data)
 static int
 ix86_avx_u128_mode_needed (rtx insn)
 {
-  bool avx_u128_used;
-
   if (CALL_P (insn))
     {
       rtx link;
@@ -14979,8 +14973,7 @@ ix86_avx_u128_mode_needed (rtx insn)
 	    {
 	      rtx arg = XEXP (XEXP (link, 0), 0);
 
-	      if (REG_P (arg)
-		  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (arg)))
+	      if (ix86_check_avx256_register (&arg, NULL))
 		return AVX_U128_ANY;
 	    }
 	}
@@ -14988,10 +14981,11 @@ ix86_avx_u128_mode_needed (rtx insn)
       return AVX_U128_CLEAN;
     }
 
-  /* Check if a 256bit AVX register is referenced in stores.  */
-  avx_u128_used = false;
-  note_stores (PATTERN (insn), check_avx256_stores, &avx_u128_used);
-  if (avx_u128_used)
+  /* Require DIRTY mode if a 256bit AVX register is referenced.  Hardware
+     changes state only when a 256bit register is written to, but we need
+     to prevent the compiler from moving optimal insertion point above
+     eventual read from 256bit register.  */
+  if (for_each_rtx (&PATTERN (insn), ix86_check_avx256_register, NULL))
     return AVX_U128_DIRTY;
 
   return AVX_U128_ANY;
@@ -15071,28 +15065,42 @@ ix86_mode_needed (int entity, rtx insn)
   return 0;
 }
 
+/* Check if a 256bit AVX register is referenced in stores.   */
+ 
+static void
+ix86_check_avx256_stores (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
+ {
+   if (ix86_check_avx256_register (&dest, NULL))
+    {
+      bool *used = (bool *) data;
+      *used = true;
+    }
+ } 
+
 /* Calculate mode of upper 128bit AVX registers after the insn.  */
 
 static int
 ix86_avx_u128_mode_after (int mode, rtx insn)
 {
   rtx pat = PATTERN (insn);
-  bool avx_u128_used;
 
   if (vzeroupper_operation (pat, VOIDmode)
       || vzeroall_operation (pat, VOIDmode))
     return AVX_U128_CLEAN;
 
-  /* Check if a 256bit AVX register is referenced in stores.  */
-  avx_u128_used = false;
-  note_stores (pat, check_avx256_stores, &avx_u128_used);
-  if (avx_u128_used)
-    return AVX_U128_DIRTY;
   /* We know that state is clean after CALL insn if there are no
-     256bit modes used in the function return register.  */
-  else if (CALL_P (insn))
-    return AVX_U128_CLEAN;
+     256bit registers used in the function return register.  */
+  if (CALL_P (insn))
+    {
+      bool avx_reg256_found = false;
+      note_stores (pat, ix86_check_avx256_stores, &avx_reg256_found);
+      if (!avx_reg256_found)
+	return AVX_U128_CLEAN;
+    }
 
+  /* Otherwise, return current mode.  Remember that if insn
+     references AVX 256bit registers, the mode was already changed
+     to DIRTY from MODE_NEEDED.  */
   return mode;
 }
 
@@ -15127,8 +15135,7 @@ ix86_avx_u128_mode_entry (void)
     {
       rtx incoming = DECL_INCOMING_RTL (arg);
 
-      if (incoming && REG_P (incoming)
-	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (incoming)))
+      if (incoming && ix86_check_avx256_register (&incoming, NULL))
 	return AVX_U128_DIRTY;
     }
 
@@ -15162,7 +15169,7 @@ ix86_avx_u128_mode_exit (void)
 
   /* Exit mode is set to AVX_U128_DIRTY if there are
      256bit modes used in the function return register.  */
-  if (reg && REG_P (reg) && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
+  if (reg && ix86_check_avx256_register (&reg, NULL))
     return AVX_U128_DIRTY;
 
   return AVX_U128_CLEAN;
