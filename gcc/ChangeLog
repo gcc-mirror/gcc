@@ -1,5 +1,9 @@
 2012-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-ssa-ccp.c (dump_lattice_value) <CONSTANT>: Fix duplication.
+
+2012-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* common.opt (fvar-tracking-uninit): Document.
 	* toplev.c (process_options): Fix handling of flag_var_tracking_uninit.
 	* config/darwin.c (darwin_override_options): Likewise.
