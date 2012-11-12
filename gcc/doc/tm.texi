@@ -11357,6 +11357,12 @@ MIPS, where add-immediate takes a 16-bit signed value,
 is zero, which disables this optimization.
 @end deftypevr
 
+@deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_ASAN_SHADOW_OFFSET (void)
+Return the offset bitwise ored into shifted address to get corresponding
+Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not
+supported by the target.
+@end deftypefn
+
 @deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_MEMMODEL_CHECK (unsigned HOST_WIDE_INT @var{val})
 Validate target specific memory model mask bits. When NULL no target specific
 memory model bits are allowed.

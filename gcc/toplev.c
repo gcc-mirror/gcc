@@ -1541,6 +1541,13 @@ process_options (void)
       flag_omit_frame_pointer = 0;
     }
 
+  /* Address Sanitizer needs porting to each target architecture.  */
+  if (flag_asan && targetm.asan_shadow_offset == NULL)
+    {
+      warning (0, "-faddress-sanitizer not supported for this target");
+      flag_asan = 0;
+    }
+
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
   if (!global_options_set.x_warnings_are_errors

@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2012 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "asan.h"
 #include "gimple-pretty-print.h"
+#include "target.h"
 
 /*
  AddressSanitizer finds out-of-bounds and use-after-free bugs 
@@ -77,15 +78,6 @@ along with GCC; see the file COPYING3.  If not see
  In order to support out-of-bounds for stack and globals we will need
  to create redzones for stack and global object and poison them.
 */
-
-/* The shadow address is computed as (X>>asan_scale) + (1<<asan_offset_log).
- We may want to add command line flags to change these values.  */
-
-static const int asan_scale = 3;
-static const int asan_offset_log_32 = 29;
-static const int asan_offset_log_64 = 44;
-static int asan_offset_log;
-
 
 /* Construct a function tree for __asan_report_{load,store}{1,2,4,8,16}.
    IS_STORE is either 1 (for a store) or 0 (for a load).
@@ -202,15 +194,13 @@ build_check_stmt (tree base,
   gimple_set_location (g, location);
   gimple_seq_add_stmt (&seq, g);
 
-  /* Build (base_addr >> asan_scale) + (1 << asan_offset_log).  */
+  /* Build
+     (base_addr >> ASAN_SHADOW_SHIFT) | targetm.asan_shadow_offset ().  */
 
   t = build2 (RSHIFT_EXPR, uintptr_type, base_addr,
-              build_int_cst (uintptr_type, asan_scale));
+	      build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT));
   t = build2 (PLUS_EXPR, uintptr_type, t,
-              build2 (LSHIFT_EXPR, uintptr_type,
-                      build_int_cst (uintptr_type, 1),
-                      build_int_cst (uintptr_type, asan_offset_log)
-                     ));
+	      build_int_cst (uintptr_type, targetm.asan_shadow_offset ()));
   t = build1 (INDIRECT_REF, shadow_type,
               build1 (VIEW_CONVERT_EXPR, shadow_ptr_type, t));
   t = force_gimple_operand (t, &stmts, false, NULL_TREE);
@@ -367,9 +357,6 @@ static unsigned int
 asan_instrument (void)
 {
   struct gimplify_ctx gctx;
-  tree uintptr_type = lang_hooks.types.type_for_mode (ptr_mode, true);
-  int is_64 = tree_low_cst (TYPE_SIZE (uintptr_type), 0) == 64;
-  asan_offset_log = is_64 ? asan_offset_log_64 : asan_offset_log_32;
   push_gimplify_context (&gctx);
   transform_statements ();
   pop_gimplify_context (NULL);

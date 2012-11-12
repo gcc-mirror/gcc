@@ -1,3 +1,21 @@
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* toplev.c (process_options): Warn and turn off
+	-faddress-sanitizer if not supported by target.
+	* asan.c: Include target.h.
+	(asan_scale, asan_offset_log_32, asan_offset_log_64,
+	asan_offset_log): Removed.
+	(build_check_stmt): Use ASAN_SHADOW_SHIFT and
+	targetm.asan_shadow_offset ().
+	(asan_instrument): Don't initialize asan_offset_log.
+	* asan.h (ASAN_SHADOW_SHIFT): Define.
+	* target.def (TARGET_ASAN_SHADOW_OFFSET): New hook.
+	* doc/tm.texi.in (TARGET_ASAN_SHADOW_OFFSET): Add it.
+	* doc/tm.texi: Regenerated.
+	* Makefile.in (asan.o): Depend on $(TARGET_H).
+	* config/i386/i386.c (ix86_asan_shadow_offset): New function.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
+
 2012-11-12  Wei Mi <wmi@google.com>
 	    Diego Novillo <dnovillo@google.com>
 	    Dodji Seketeli <dodji@redhat.com>

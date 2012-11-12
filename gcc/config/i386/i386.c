@@ -5186,6 +5186,14 @@ ix86_legitimate_combined_insn (rtx insn)
   return true;
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+ix86_asan_shadow_offset (void)
+{
+  return (unsigned HOST_WIDE_INT) 1 << (TARGET_LP64 ? 44 : 29);
+}
+
 /* Argument support functions.  */
 
 /* Return true when register may be used to pass function parameters.  */
@@ -42011,6 +42019,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_LEGITIMATE_COMBINED_INSN
 #define TARGET_LEGITIMATE_COMBINED_INSN ix86_legitimate_combined_insn
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET ix86_asan_shadow_offset
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg

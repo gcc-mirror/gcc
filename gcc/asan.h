@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -22,5 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #define TREE_ASAN
 
 extern void asan_finish_file(void);
+
+/* Shadow memory is found at
+   (address >> ASAN_SHADOW_SHIFT) | targetm.asan_shadow_offset ().  */
+#define ASAN_SHADOW_SHIFT	3
 
 #endif /* TREE_ASAN */
