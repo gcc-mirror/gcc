@@ -1,3 +1,12 @@
+2012-11-12  Wei Mi <wmi@google.com>
+
+	* configure.ac: Add libsanitizer to target_libraries.
+	* Makefile.def: Ditto.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* libsanitizer: New directory for asan runtime.  Contains an empty
+	tsan directory.
+
 2012-11-03  Corinna Vinschen  <corinna@vinschen.de>
 
 	* configure.ac (FLAGS_FOR_TARGET,target=cygwin): Fix for building

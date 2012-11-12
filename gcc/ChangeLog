@@ -1,3 +1,8 @@
+2012-11-12  Wei Mi <wmi@google.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Add -lasan to link command if
+	-faddress-sanitizer is on.
+
 2012-11-12  Dodji Seketeli  <dodji@redhat.com>
 
 	* gimple.h (is_gimple_builtin_call): Declare ...
