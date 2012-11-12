@@ -520,16 +520,18 @@ asan_init_func (void)
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
-/* Instrument the memory access instruction BASE.
-   Insert new statements before ITER.
-   LOCATION is source code location.
-   IS_STORE is either 1 (for a store) or 0 (for a load).
+/* Instrument the memory access instruction BASE.  Insert new
+   statements before ITER.
+
+   Note that the memory access represented by BASE can be either an
+   SSA_NAME, or a non-SSA expression.  LOCATION is the source code
+   location.  IS_STORE is TRUE for a store, FALSE for a load.
    SIZE_IN_BYTES is one of 1, 2, 4, 8, 16.  */
 
 static void
-build_check_stmt (tree base,
-                  gimple_stmt_iterator *iter,
-                  location_t location, bool is_store, int size_in_bytes)
+build_check_stmt (tree base, gimple_stmt_iterator *iter,
+                  location_t location, bool is_store,
+		  int size_in_bytes)
 {
   gimple_stmt_iterator gsi;
   basic_block cond_bb, then_bb, else_bb;
@@ -540,6 +542,7 @@ build_check_stmt (tree base,
   tree shadow_type = TREE_TYPE (shadow_ptr_type);
   tree uintptr_type
     = build_nonstandard_integer_type (TYPE_PRECISION (TREE_TYPE (base)), 1);
+  tree base_ssa = base;
 
   /* We first need to split the current basic block, and start altering
      the CFG.  This allows us to insert the statements we're about to
@@ -585,15 +588,22 @@ build_check_stmt (tree base,
   base = unshare_expr (base);
 
   gsi = gsi_last_bb (cond_bb);
-  g = gimple_build_assign_with_ops (TREE_CODE (base),
-				    make_ssa_name (TREE_TYPE (base), NULL),
-				    base, NULL_TREE);
-  gimple_set_location (g, location);
-  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+  /* BASE can already be an SSA_NAME; in that case, do not create a
+     new SSA_NAME for it.  */
+  if (TREE_CODE (base) != SSA_NAME)
+    {
+      g = gimple_build_assign_with_ops (TREE_CODE (base),
+					make_ssa_name (TREE_TYPE (base), NULL),
+					base, NULL_TREE);
+      gimple_set_location (g, location);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      base_ssa = gimple_assign_lhs (g);
+    }
 
   g = gimple_build_assign_with_ops (NOP_EXPR,
 				    make_ssa_name (uintptr_type, NULL),
-				    gimple_assign_lhs (g), NULL_TREE);
+				    base_ssa, NULL_TREE);
   gimple_set_location (g, location);
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
   base_addr = gimple_assign_lhs (g);
