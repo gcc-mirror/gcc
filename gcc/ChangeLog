@@ -1,5 +1,43 @@
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (asan.o): Depend on $(EXPR_H) $(OPTABS_H).
+	(cfgexpand.o): Depend on asan.h.
+	* asan.c: Include expr.h and optabs.h.
+	(asan_shadow_set): New variable.
+	(asan_shadow_cst, asan_emit_stack_protection): New functions.
+	(asan_init_shadow_ptr_types): Initialize also asan_shadow_set.
+	* cfgexpand.c: Include asan.h.  Define HOST_WIDE_INT heap vector.
+	(partition_stack_vars): If i is large alignment and j small
+	alignment or vice versa, break out of the loop instead of continue,
+	and put the test earlier.  If flag_asan, break out of the loop
+	if for small alignment size is different.
+	(struct stack_vars_data): New type.
+	(expand_stack_vars): Add DATA argument.  Change PRED type to
+	function taking size_t argument instead of tree.  Adjust pred
+	calls.  Fill DATA in and add needed padding in between variables
+	if -faddress-sanitizer.
+	(defer_stack_allocation): Defer everything for flag_asan.
+	(stack_protect_decl_phase_1, stack_protect_decl_phase_2): Take
+	size_t index into stack_vars array instead of the decl directly.
+	(asan_decl_phase_3): New function.
+	(expand_used_vars): Return var destruction sequence.  Adjust
+	expand_stack_vars calls, add another one for flag_asan.  Call
+	asan_emit_stack_protection if expand_stack_vars added anything
+	to the vectors.
+	(expand_gimple_basic_block): Add disable_tail_calls argument.
+	(gimple_expand_cfg): Pass true to it if expand_used_vars returned
+	non-NULL.  Emit the sequence returned by expand_used_vars after
+	return_label.
+	* asan.h (asan_emit_stack_protection): New prototype.
+	(asan_shadow_set): New decl.
+	(ASAN_RED_ZONE_SIZE, ASAN_STACK_MAGIC_LEFT, ASAN_STACK_MAGIC_MIDDLE,
+	ASAN_STACK_MAGIC_RIGHT, ASAN_STACK_FRAME_MAGIC): Define.
+	(asan_protect_stack_decl): New inline.
+	* toplev.c (process_options): Also disable -faddress-sanitizer on
+	!FRAME_GROWS_DOWNWARDS targets.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
 	* asan.c (build_check_stmt): Rename join_bb variable to else_bb.
 	(gate_asan_O0): New function.
 	(pass_asan_O0): New variable.
