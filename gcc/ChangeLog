@@ -1,3 +1,8 @@
+2012-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi: Move -faddress-sanitizer from Optimization
+	Options to Debugging Options.
+
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c: Formatting cleanups.
@@ -164,7 +169,7 @@
 
 	* Makefile.in: Add asan.c and its dependencies.
 	* common.opt: Add -faddress-sanitizer option.
-	* invoke.texi: Document the new flag.
+	* doc/invoke.texi: Document the new flag.
 	* passes.c: Add the asan pass.
 	* toplev.c (compile_file): Call asan_finish_file.
 	* asan.c: New file.
