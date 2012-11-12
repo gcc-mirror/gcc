@@ -1,3 +1,9 @@
+2012-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55272
+	* gfortran.dg/coarray_29_1.f90: New.
+	* gfortran.dg/coarray_29_2.f90: New.
+
 2012-11-12  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/hoist-register-pressure-3.c: New test.
