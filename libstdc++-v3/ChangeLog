@@ -1,3 +1,8 @@
+2012-11-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (atomic_future): Remove declaration of
+	non-standard name.
+
 2012-11-11  Jason Merrill  <jason@redhat.com>
 
 	* include/std/complex (real, imag): Add ABI tag in C++11 mode.
