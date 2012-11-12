@@ -1,3 +1,8 @@
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
+	* asan.c (build_check_stmt): Accept the memory access to be
+	represented by an SSA_NAME.
+
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 	    Wei Mi <wmi@google.com>
 
