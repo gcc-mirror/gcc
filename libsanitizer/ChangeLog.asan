@@ -1,0 +1,3 @@
+2012-10-29  Wei Mi  <wmi@google.com>
+
+	Initial checkin: migrate asan runtime from llvm.

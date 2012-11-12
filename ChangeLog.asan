@@ -1,0 +1,16 @@
+2012-11-1  Wei Mi  <wmi@google.com>
+
+	* configure.ac: Change target-libasan to target-libsanitizer.
+	* configure.in: Regenerate.
+	* Makefile.def: Change libasan module to libsanitizer.  
+	* Makefile.in: Regenerate.
+	* libsanitizer: Change libasan to libsanitizer and add
+	an empty tsan directory under libsanitizer. 
+
+2012-10-29  Wei Mi  <wmi@google.com>
+
+	* configure.ac: Add libasan to target_libraries
+	* Makefile.def: Ditto
+	* configure: Regenerate
+	* Makefile.in: Regenerate
+	* libasan: New directory for asan runtime
