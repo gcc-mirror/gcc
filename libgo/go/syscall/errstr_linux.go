@@ -19,5 +19,10 @@ func Errstr(errnum int) string {
 	for b[i] != 0 {
 		i++
 	}
+	// Lowercase first letter: Bad -> bad, but STREAM -> STREAM.
+	if i > 1 && 'A' <= b[0] && b[0] <= 'Z' && 'a' <= b[1] && b[1] <= 'z' {
+		c := b[0] + 'a' - 'A'
+		return string(c) + string(b[1:i])
+	}
 	return string(b[:i])
 }

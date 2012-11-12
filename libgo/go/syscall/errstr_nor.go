@@ -25,7 +25,15 @@ func Errstr(errno int) string {
 	for b[i] != 0 {
 		i++
 	}
-	s := string(b[:i])
+
+	// Lowercase first letter: Bad -> bad, but STREAM -> STREAM.
+	var s string
+	if i > 1 && 'A' <= b[0] && b[0] <= 'Z' && 'a' <= b[1] && b[1] <= 'z' {
+		c := b[0] + 'a' - 'A'
+		s = string(c) + string(b[1:i])
+	} else {
+		s = string(b[:i])
+	}
 
 	errstr_lock.Unlock()
 
