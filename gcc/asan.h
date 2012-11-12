@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void asan_finish_file (void);
 extern rtx asan_emit_stack_protection (rtx, HOST_WIDE_INT *, tree *, int);
+extern bool asan_protect_global (tree);
 
 /* Alias set for accessing the shadow memory.  */
 extern alias_set_type asan_shadow_set;
@@ -54,6 +55,16 @@ static inline bool
 asan_protect_stack_decl (tree decl)
 {
   return DECL_P (decl) && !DECL_ARTIFICIAL (decl);
+}
+
+/* Return the size of padding needed to insert after a protected
+   decl of SIZE.  */
+
+static inline unsigned int
+asan_red_zone_size (unsigned int size)
+{
+  unsigned int c = size & (ASAN_RED_ZONE_SIZE - 1);
+  return c ? 2 * ASAN_RED_ZONE_SIZE - c : ASAN_RED_ZONE_SIZE;
 }
 
 #endif /* TREE_ASAN */

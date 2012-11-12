@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "expr.h"
 #include "optabs.h"
+#include "output.h"
 
 /*
  AddressSanitizer finds out-of-bounds and use-after-free bugs 
@@ -166,13 +167,77 @@ along with GCC; see the file COPYING3.  If not see
  non-accessible) the regions of the red zones and mark the regions of
  stack variables as accessible, and emit some epilogue code to
  un-poison (mark as accessible) the regions of red zones right before
- the function exits.  */
+ the function exits.
+
+ [Protection of global variables]
+
+ The basic idea is to insert a red zone between two global variables
+ and install a constructor function that calls the asan runtime to do
+ the populating of the relevant shadow memory regions at load time.
+
+ So the global variables are laid out as to insert a red zone between
+ them. The size of the red zones is so that each variable starts on a
+ 32 bytes boundary.
+
+ Then a constructor function is installed so that, for each global
+ variable, it calls the runtime asan library function
+ __asan_register_globals_with an instance of this type:
+
+     struct __asan_global
+     {
+       // Address of the beginning of the global variable.
+       const void *__beg;
+
+       // Initial size of the global variable.
+       uptr __size;
+
+       // Size of the global variable + size of the red zone.  This
+       //   size is 32 bytes aligned.
+       uptr __size_with_redzone;
+
+       // Name of the global variable.
+       const void *__name;
+
+       // This is always set to NULL for now.
+       uptr __has_dynamic_init;
+     }
+
+ A destructor function that calls the runtime asan library function
+ _asan_unregister_globals is also installed.  */
 
 alias_set_type asan_shadow_set = -1;
 
 /* Pointer types to 1 resp. 2 byte integers in shadow memory.  A separate
    alias set is used for all shadow memory accesses.  */
 static GTY(()) tree shadow_ptr_types[2];
+
+/* Asan pretty-printer, used for buidling of the description STRING_CSTs.  */
+static pretty_printer asan_pp;
+static bool asan_pp_initialized;
+
+/* Initialize asan_pp.  */
+
+static void
+asan_pp_initialize (void)
+{
+  pp_construct (&asan_pp, /* prefix */NULL, /* line-width */0);
+  asan_pp_initialized = true;
+}
+
+/* Create ADDR_EXPR of STRING_CST with asan_pp text.  */
+
+static tree
+asan_pp_string (void)
+{
+  const char *buf = pp_base_formatted_text (&asan_pp);
+  size_t len = strlen (buf);
+  tree ret = build_string (len + 1, buf);
+  TREE_TYPE (ret)
+    = build_array_type (char_type_node, build_index_type (size_int (len)));
+  TREE_READONLY (ret) = 1;
+  TREE_STATIC (ret) = 1;
+  return build1 (ADDR_EXPR, build_pointer_type (char_type_node), ret);
+}
 
 /* Return a CONST_INT representing 4 subsequent shadow memory bytes.  */
 
@@ -208,51 +273,38 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   HOST_WIDE_INT last_offset, last_size;
   int l;
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
-  static pretty_printer pp;
-  static bool pp_initialized;
-  const char *buf;
-  size_t len;
   tree str_cst;
 
   /* First of all, prepare the description string.  */
-  if (!pp_initialized)
-    {
-      pp_construct (&pp, /* prefix */NULL, /* line-width */0);
-      pp_initialized = true;
-    }
-  pp_clear_output_area (&pp);
+  if (!asan_pp_initialized)
+    asan_pp_initialize ();
+
+  pp_clear_output_area (&asan_pp);
   if (DECL_NAME (current_function_decl))
-    pp_base_tree_identifier (&pp, DECL_NAME (current_function_decl));
+    pp_base_tree_identifier (&asan_pp, DECL_NAME (current_function_decl));
   else
-    pp_string (&pp, "<unknown>");
-  pp_space (&pp);
-  pp_decimal_int (&pp, length / 2 - 1);
-  pp_space (&pp);
+    pp_string (&asan_pp, "<unknown>");
+  pp_space (&asan_pp);
+  pp_decimal_int (&asan_pp, length / 2 - 1);
+  pp_space (&asan_pp);
   for (l = length - 2; l; l -= 2)
     {
       tree decl = decls[l / 2 - 1];
-      pp_wide_integer (&pp, offsets[l] - base_offset);
-      pp_space (&pp);
-      pp_wide_integer (&pp, offsets[l - 1] - offsets[l]);
-      pp_space (&pp);
+      pp_wide_integer (&asan_pp, offsets[l] - base_offset);
+      pp_space (&asan_pp);
+      pp_wide_integer (&asan_pp, offsets[l - 1] - offsets[l]);
+      pp_space (&asan_pp);
       if (DECL_P (decl) && DECL_NAME (decl))
 	{
-	  pp_decimal_int (&pp, IDENTIFIER_LENGTH (DECL_NAME (decl)));
-	  pp_space (&pp);
-	  pp_base_tree_identifier (&pp, DECL_NAME (decl));
+	  pp_decimal_int (&asan_pp, IDENTIFIER_LENGTH (DECL_NAME (decl)));
+	  pp_space (&asan_pp);
+	  pp_base_tree_identifier (&asan_pp, DECL_NAME (decl));
 	}
       else
-	pp_string (&pp, "9 <unknown>");
-      pp_space (&pp);
+	pp_string (&asan_pp, "9 <unknown>");
+      pp_space (&asan_pp);
     }
-  buf = pp_base_formatted_text (&pp);
-  len = strlen (buf);
-  str_cst = build_string (len + 1, buf);
-  TREE_TYPE (str_cst)
-    = build_array_type (char_type_node, build_index_type (size_int (len)));
-  TREE_READONLY (str_cst) = 1;
-  TREE_STATIC (str_cst) = 1;
-  str_cst = build1 (ADDR_EXPR, build_pointer_type (char_type_node), str_cst);
+  str_cst = asan_pp_string ();
 
   /* Emit the prologue sequence.  */
   base = expand_binop (Pmode, add_optab, base, GEN_INT (base_offset),
@@ -355,6 +407,75 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   ret = get_insns ();
   end_sequence ();
   return ret;
+}
+
+/* Return true if DECL, a global var, might be overridden and needs
+   therefore a local alias.  */
+
+static bool
+asan_needs_local_alias (tree decl)
+{
+  return DECL_WEAK (decl) || !targetm.binds_local_p (decl);
+}
+
+/* Return true if DECL is a VAR_DECL that should be protected
+   by Address Sanitizer, by appending a red zone with protected
+   shadow memory after it and aligning it to at least
+   ASAN_RED_ZONE_SIZE bytes.  */
+
+bool
+asan_protect_global (tree decl)
+{
+  rtx rtl, symbol;
+  section *sect;
+
+  if (TREE_CODE (decl) != VAR_DECL
+      /* TLS vars aren't statically protectable.  */
+      || DECL_THREAD_LOCAL_P (decl)
+      /* Externs will be protected elsewhere.  */
+      || DECL_EXTERNAL (decl)
+      || !TREE_ASM_WRITTEN (decl)
+      || !DECL_RTL_SET_P (decl)
+      /* Comdat vars pose an ABI problem, we can't know if
+	 the var that is selected by the linker will have
+	 padding or not.  */
+      || DECL_ONE_ONLY (decl)
+      /* Similarly for common vars.  People can use -fno-common.  */
+      || DECL_COMMON (decl)
+      /* Don't protect if using user section, often vars placed
+	 into user section from multiple TUs are then assumed
+	 to be an array of such vars, putting padding in there
+	 breaks this assumption.  */
+      || (DECL_SECTION_NAME (decl) != NULL_TREE
+	  && !DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+      || DECL_SIZE (decl) == 0
+      || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
+      || !valid_constant_size_p (DECL_SIZE_UNIT (decl))
+      || DECL_ALIGN_UNIT (decl) > 2 * ASAN_RED_ZONE_SIZE)
+    return false;
+
+  rtl = DECL_RTL (decl);
+  if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
+    return false;
+  symbol = XEXP (rtl, 0);
+
+  if (CONSTANT_POOL_ADDRESS_P (symbol)
+      || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+    return false;
+
+  sect = get_variable_section (decl, false);
+  if (sect->common.flags & SECTION_COMMON)
+    return false;
+
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+    return false;
+
+#ifndef ASM_OUTPUT_DEF
+  if (asan_needs_local_alias (decl))
+    return false;
+#endif
+
+  return true;    
 }
 
 /* Construct a function tree for __asan_report_{load,store}{1,2,4,8,16}.
@@ -657,6 +778,105 @@ transform_statements (void)
     }
 }
 
+/* Build
+   struct __asan_global
+   {
+     const void *__beg;
+     uptr __size;
+     uptr __size_with_redzone;
+     const void *__name;
+     uptr __has_dynamic_init;
+   } type.  */
+
+static tree
+asan_global_struct (void)
+{
+  static const char *field_names[5]
+    = { "__beg", "__size", "__size_with_redzone",
+	"__name", "__has_dynamic_init" };
+  tree fields[5], ret;
+  int i;
+
+  ret = make_node (RECORD_TYPE);
+  for (i = 0; i < 5; i++)
+    {
+      fields[i]
+	= build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+		      get_identifier (field_names[i]),
+		      (i == 0 || i == 3) ? const_ptr_type_node
+		      : build_nonstandard_integer_type (POINTER_SIZE, 1));
+      DECL_CONTEXT (fields[i]) = ret;
+      if (i)
+	DECL_CHAIN (fields[i - 1]) = fields[i];
+    }
+  TYPE_FIELDS (ret) = fields[0];
+  TYPE_NAME (ret) = get_identifier ("__asan_global");
+  layout_type (ret);
+  return ret;
+}
+
+/* Append description of a single global DECL into vector V.
+   TYPE is __asan_global struct type as returned by asan_global_struct.  */
+
+static void
+asan_add_global (tree decl, tree type, VEC(constructor_elt, gc) *v)
+{
+  tree init, uptr = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type)));
+  unsigned HOST_WIDE_INT size;
+  tree str_cst, refdecl = decl;
+  VEC(constructor_elt, gc) *vinner = NULL;
+
+  if (!asan_pp_initialized)
+    asan_pp_initialize ();
+
+  pp_clear_output_area (&asan_pp);
+  if (DECL_NAME (decl))
+    pp_base_tree_identifier (&asan_pp, DECL_NAME (decl));
+  else
+    pp_string (&asan_pp, "<unknown>");
+  pp_space (&asan_pp);
+  pp_left_paren (&asan_pp);
+  pp_string (&asan_pp, main_input_filename);
+  pp_right_paren (&asan_pp);
+  str_cst = asan_pp_string ();
+
+  if (asan_needs_local_alias (decl))
+    {
+      char buf[20];
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LASAN",
+				   VEC_length (constructor_elt, v) + 1);
+      refdecl = build_decl (DECL_SOURCE_LOCATION (decl),
+			    VAR_DECL, get_identifier (buf), TREE_TYPE (decl));
+      TREE_ADDRESSABLE (refdecl) = TREE_ADDRESSABLE (decl);
+      TREE_READONLY (refdecl) = TREE_READONLY (decl);
+      TREE_THIS_VOLATILE (refdecl) = TREE_THIS_VOLATILE (decl);
+      DECL_GIMPLE_REG_P (refdecl) = DECL_GIMPLE_REG_P (decl);
+      DECL_ARTIFICIAL (refdecl) = DECL_ARTIFICIAL (decl);
+      DECL_IGNORED_P (refdecl) = DECL_IGNORED_P (decl);
+      TREE_STATIC (refdecl) = 1;
+      TREE_PUBLIC (refdecl) = 0;
+      TREE_USED (refdecl) = 1;
+      assemble_alias (refdecl, DECL_ASSEMBLER_NAME (decl));
+    }
+
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
+			  fold_convert (const_ptr_type_node,
+					build_fold_addr_expr (refdecl)));
+  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
+  size += asan_red_zone_size (size);
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
+			  fold_convert (const_ptr_type_node, str_cst));
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, 0));
+  init = build_constructor (type, vinner);
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
+}
+
+/* Needs to be GTY(()), because cgraph_build_static_cdtor may
+   invoke ggc_collect.  */
+static GTY(()) tree asan_ctor_statements;
+
 /* Module-level instrumentation.
    - Insert __asan_init() into the list of CTORs.
    - TODO: insert redzones around globals.
@@ -665,11 +885,61 @@ transform_statements (void)
 void
 asan_finish_file (void)
 {
-  tree ctor_statements = NULL_TREE;
+  struct varpool_node *vnode;
+  unsigned HOST_WIDE_INT gcount = 0;
+
   append_to_statement_list (build_call_expr (asan_init_func (), 0),
-                            &ctor_statements);
-  cgraph_build_static_cdtor ('I', ctor_statements,
-                             MAX_RESERVED_INIT_PRIORITY - 1);
+			    &asan_ctor_statements);
+  FOR_EACH_DEFINED_VARIABLE (vnode)
+    if (asan_protect_global (vnode->symbol.decl))
+      ++gcount;
+  if (gcount)
+    {
+      tree type = asan_global_struct (), var, ctor, decl;
+      tree uptr = build_nonstandard_integer_type (POINTER_SIZE, 1);
+      tree dtor_statements = NULL_TREE;
+      VEC(constructor_elt, gc) *v;
+      char buf[20];
+
+      type = build_array_type_nelts (type, gcount);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LASAN", 0);
+      var = build_decl (UNKNOWN_LOCATION, VAR_DECL, get_identifier (buf),
+			type);
+      TREE_STATIC (var) = 1;
+      TREE_PUBLIC (var) = 0;
+      DECL_ARTIFICIAL (var) = 1;
+      DECL_IGNORED_P (var) = 1;
+      v = VEC_alloc (constructor_elt, gc, gcount);
+      FOR_EACH_DEFINED_VARIABLE (vnode)
+	if (asan_protect_global (vnode->symbol.decl))
+	  asan_add_global (vnode->symbol.decl, TREE_TYPE (type), v);
+      ctor = build_constructor (type, v);
+      TREE_CONSTANT (ctor) = 1;
+      TREE_STATIC (ctor) = 1;
+      DECL_INITIAL (var) = ctor;
+      varpool_assemble_decl (varpool_node_for_decl (var));
+
+      type = build_function_type_list (void_type_node,
+				       build_pointer_type (TREE_TYPE (type)),
+				       uptr, NULL_TREE);
+      decl = build_fn_decl ("__asan_register_globals", type);
+      TREE_NOTHROW (decl) = 1;
+      append_to_statement_list (build_call_expr (decl, 2,
+						 build_fold_addr_expr (var),
+						 build_int_cst (uptr, gcount)),
+				&asan_ctor_statements);
+
+      decl = build_fn_decl ("__asan_unregister_globals", type);
+      TREE_NOTHROW (decl) = 1;
+      append_to_statement_list (build_call_expr (decl, 2,
+						 build_fold_addr_expr (var),
+						 build_int_cst (uptr, gcount)),
+				&dtor_statements);
+      cgraph_build_static_cdtor ('D', dtor_statements,
+				 MAX_RESERVED_INIT_PRIORITY - 1);
+    }
+  cgraph_build_static_cdtor ('I', asan_ctor_statements,
+			     MAX_RESERVED_INIT_PRIORITY - 1);
 }
 
 /* Initialize shadow_ptr_types array.  */
