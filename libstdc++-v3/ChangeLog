@@ -1,3 +1,7 @@
+2012-11-11  Jason Merrill  <jason@redhat.com>
+
+	* include/std/complex (real, imag): Add ABI tag in C++11 mode.
+
 2012-11-11  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* doc/xml/chapter.txml: Remove whitespace inside <keyword>.
