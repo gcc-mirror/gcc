@@ -1,3 +1,9 @@
+2012-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* common.opt (fvar-tracking-uninit): Document.
+	* toplev.c (process_options): Fix handling of flag_var_tracking_uninit.
+	* config/darwin.c (darwin_override_options): Likewise.
+
 2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h (AS_NIAGARA3_FLAG): Tweak.

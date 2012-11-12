@@ -1494,11 +1494,14 @@ process_options (void)
   /* If the user specifically requested variable tracking with tagging
      uninitialized variables, we need to turn on variable tracking.
      (We already determined above that variable tracking is feasible.)  */
-  if (flag_var_tracking_uninit)
+  if (flag_var_tracking_uninit == 1)
     flag_var_tracking = 1;
 
   if (flag_var_tracking == AUTODETECT_VALUE)
     flag_var_tracking = optimize >= 1;
+
+  if (flag_var_tracking_uninit == AUTODETECT_VALUE)
+    flag_var_tracking_uninit = flag_var_tracking;
 
   if (flag_var_tracking_assignments == AUTODETECT_VALUE)
     flag_var_tracking_assignments = flag_var_tracking

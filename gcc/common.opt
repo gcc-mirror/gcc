@@ -2112,6 +2112,10 @@ fvar-tracking-assignments-toggle
 Common Report Var(flag_var_tracking_assignments_toggle) Optimization
 Toggle -fvar-tracking-assignments
 
+; Positive if we should track uninitialized variables, negative if
+; we should run the var-tracking pass only to discard debug
+; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
+; will be set according to flag_var_tracking.
 fvar-tracking-uninit
 Common Report Var(flag_var_tracking_uninit) Optimization
 Perform variable tracking and also tag variables that are uninitialized

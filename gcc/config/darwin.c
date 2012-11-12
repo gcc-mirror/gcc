@@ -3024,12 +3024,12 @@ darwin_override_options (void)
       darwin_emit_branch_islands = true;
     }
 
-  if (flag_var_tracking
+  if (flag_var_tracking_uninit == 0
       && generating_for_darwin_version >= 9
       && (flag_gtoggle ? (debug_info_level == DINFO_LEVEL_NONE)
       : (debug_info_level >= DINFO_LEVEL_NORMAL))
       && write_symbols == DWARF2_DEBUG)
-    flag_var_tracking_uninit = 1;
+    flag_var_tracking_uninit = flag_var_tracking;
 
   if (MACHO_DYNAMIC_NO_PIC_P)
     {
