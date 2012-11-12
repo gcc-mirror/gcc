@@ -1,5 +1,31 @@
 2012-11-12  Dodji Seketeli  <dodji@redhat.com>
 
+	* gimple.h (is_gimple_builtin_call): Declare ...
+	* gimple.c (is_gimple_builtin_call): ... new public function.
+	* asan.c (insert_if_then_before_iter, instrument_mem_region_access,
+	instrument_strlen_call, maybe_instrument_builtin_call,
+	instrument_call): New static functions.
+	(create_cond_insert_point): Renamed
+	create_cond_insert_point_before_iter into this.  Add a new
+	parameter to decide whether to insert the condition before or
+	after the statement iterator.
+	(build_check_stmt): Adjust for the new create_cond_insert_point.
+	Add a new parameter to decide whether to add the instrumentation
+	code before or after the statement iterator.
+	(instrument_assignment): Factorize from ...
+	(transform_statements): ... here.  Use maybe_instrument_call to
+	instrument builtin function calls as well.
+	(instrument_derefs): Adjust for the new parameter of
+	build_check_stmt.  Fix detection of bit-field access.
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
+	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
+	(build_check_stmt): ... here.
+
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
 	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
 	(build_check_stmt): ... here.
 

@@ -521,9 +521,9 @@ asan_init_func (void)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
 /* Split the current basic block and create a condition statement
-   insertion point right before the statement pointed to by ITER.
-   Return an iterator to the point at which the caller might safely
-   insert the condition statement.
+   insertion point right before or after the statement pointed to by
+   ITER.  Return an iterator to the point at which the caller might
+   safely insert the condition statement.
 
    THEN_BLOCK must be set to the address of an uninitialized instance
    of basic_block.  The function will then set *THEN_BLOCK to the
@@ -537,18 +537,21 @@ asan_init_func (void)
    statements starting from *ITER, and *THEN_BLOCK is a new empty
    block.
 
-   *ITER is adjusted to still point to the same statement it was
-   *pointing to initially.  */
+   *ITER is adjusted to point to always point to the first statement
+    of the basic block * FALLTHROUGH_BLOCK.  That statement is the
+    same as what ITER was pointing to prior to calling this function,
+    if BEFORE_P is true; otherwise, it is its following statement.  */
 
 static gimple_stmt_iterator
-create_cond_insert_point_before_iter (gimple_stmt_iterator *iter,
-				      bool then_more_likely_p,
-				      basic_block *then_block,
-				      basic_block *fallthrough_block)
+create_cond_insert_point (gimple_stmt_iterator *iter,
+			  bool before_p,
+			  bool then_more_likely_p,
+			  basic_block *then_block,
+			  basic_block *fallthrough_block)
 {
   gimple_stmt_iterator gsi = *iter;
 
-  if (!gsi_end_p (gsi))
+  if (!gsi_end_p (gsi) && before_p)
     gsi_prev (&gsi);
 
   basic_block cur_bb = gsi_bb (*iter);
@@ -589,18 +592,58 @@ create_cond_insert_point_before_iter (gimple_stmt_iterator *iter,
   return gsi_last_bb (cond_bb);
 }
 
+/* Insert an if condition followed by a 'then block' right before the
+   statement pointed to by ITER.  The fallthrough block -- which is the
+   else block of the condition as well as the destination of the
+   outcoming edge of the 'then block' -- starts with the statement
+   pointed to by ITER.
+
+   COND is the condition of the if.  
+
+   If THEN_MORE_LIKELY_P is true, the probability of the edge to the
+   'then block' is higher than the probability of the edge to the
+   fallthrough block.
+
+   Upon completion of the function, *THEN_BB is set to the newly
+   inserted 'then block' and similarly, *FALLTHROUGH_BB is set to the
+   fallthrough block.
+
+   *ITER is adjusted to still point to the same statement it was
+   pointing to initially.  */
+
+static void
+insert_if_then_before_iter (gimple cond,
+			    gimple_stmt_iterator *iter,
+			    bool then_more_likely_p,
+			    basic_block *then_bb,
+			    basic_block *fallthrough_bb)
+{
+  gimple_stmt_iterator cond_insert_point =
+    create_cond_insert_point (iter,
+			      /*before_p=*/true,
+			      then_more_likely_p,
+			      then_bb,
+			      fallthrough_bb);
+  gsi_insert_after (&cond_insert_point, cond, GSI_NEW_STMT);
+}
+
 /* Instrument the memory access instruction BASE.  Insert new
-   statements before ITER.
+   statements before or after ITER.
 
    Note that the memory access represented by BASE can be either an
    SSA_NAME, or a non-SSA expression.  LOCATION is the source code
    location.  IS_STORE is TRUE for a store, FALSE for a load.
-   SIZE_IN_BYTES is one of 1, 2, 4, 8, 16.  */
+   BEFORE_P is TRUE for inserting the instrumentation code before
+   ITER, FALSE for inserting it after ITER.  SIZE_IN_BYTES is one of
+   1, 2, 4, 8, 16.
+
+   If BEFORE_P is TRUE, *ITER is arranged to still point to the
+   statement it was pointing to prior to calling this function,
+   otherwise, it points to the statement logically following it.  */
 
 static void
-build_check_stmt (tree base, gimple_stmt_iterator *iter,
-                  location_t location, bool is_store,
-		  int size_in_bytes)
+build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
+		  bool before_p, bool is_store, int size_in_bytes)
 {
   gimple_stmt_iterator gsi;
   basic_block then_bb, else_bb;
@@ -614,10 +657,10 @@ build_check_stmt (tree base, gimple_stmt_iterator *iter,
 
   /* Get an iterator on the point where we can add the condition
      statement for the instrumentation.  */
-  gsi = create_cond_insert_point_before_iter (iter,
-					      /*then_more_likely_p=*/false,
-					      &then_bb,
-					      &else_bb);
+  gsi = create_cond_insert_point (iter, before_p,
+				  /*then_more_likely_p=*/false,
+				  &then_bb,
+				  &else_bb);
 
   base = unshare_expr (base);
 
@@ -749,7 +792,7 @@ build_check_stmt (tree base, gimple_stmt_iterator *iter,
 
 /* If T represents a memory access, add instrumentation code before ITER.
    LOCATION is source code location.
-   IS_STORE is either 1 (for a store) or 0 (for a load).  */
+   IS_STORE is either TRUE (for a store) or FALSE (for a load).  */
 
 static void
 instrument_derefs (gimple_stmt_iterator *iter, tree t,
@@ -784,11 +827,538 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   int volatilep = 0, unsignedp = 0;
   get_inner_reference (t, &bitsize, &bitpos, &offset,
 		       &mode, &unsignedp, &volatilep, false);
-  if (bitpos != 0 || bitsize != size_in_bytes * BITS_PER_UNIT)
+  if (bitpos % (size_in_bytes * BITS_PER_UNIT)
+      || bitsize != size_in_bytes * BITS_PER_UNIT)
     return;
 
   base = build_fold_addr_expr (t);
-  build_check_stmt (base, iter, location, is_store, size_in_bytes);
+  build_check_stmt (location, base, iter, /*before_p=*/true,
+		    is_store, size_in_bytes);
+}
+
+/* Instrument an access to a contiguous memory region that starts at
+   the address pointed to by BASE, over a length of LEN (expressed in
+   the sizeof (*BASE) bytes).  ITER points to the instruction before
+   which the instrumentation instructions must be inserted.  LOCATION
+   is the source location that the instrumentation instructions must
+   have.  If IS_STORE is true, then the memory access is a store;
+   otherwise, it's a load.  */
+
+static void
+instrument_mem_region_access (tree base, tree len,
+			      gimple_stmt_iterator *iter,
+			      location_t location, bool is_store)
+{
+  if (integer_zerop (len))
+    return;
+
+  gimple_stmt_iterator gsi = *iter;
+
+  basic_block fallthrough_bb = NULL, then_bb = NULL;
+  if (!is_gimple_constant (len))
+    {
+      /* So, the length of the memory area to asan-protect is
+	 non-constant.  Let's guard the generated instrumentation code
+	 like:
+
+	 if (len != 0)
+	   {
+	     //asan instrumentation code goes here.
+           }
+	   // falltrough instructions, starting with *ITER.  */
+
+      gimple g = gimple_build_cond (NE_EXPR,
+				    len,
+				    build_int_cst (TREE_TYPE (len), 0),
+				    NULL_TREE, NULL_TREE);
+      gimple_set_location (g, location);
+      insert_if_then_before_iter (g, iter, /*then_more_likely_p=*/true,
+				  &then_bb, &fallthrough_bb);
+      /* Note that fallthrough_bb starts with the statement that was
+	 pointed to by ITER.  */
+
+      /* The 'then block' of the 'if (len != 0) condition is where
+	 we'll generate the asan instrumentation code now.  */
+      gsi = gsi_start_bb (then_bb);
+    }
+
+  /* Instrument the beginning of the memory region to be accessed,
+     and arrange for the rest of the intrumentation code to be
+     inserted in the then block *after* the current gsi.  */
+  build_check_stmt (location, base, &gsi, /*before_p=*/true, is_store, 1);
+
+  if (then_bb)
+    /* We are in the case where the length of the region is not
+       constant; so instrumentation code is being generated in the
+       'then block' of the 'if (len != 0) condition.  Let's arrange
+       for the subsequent instrumentation statements to go in the
+       'then block'.  */
+    gsi = gsi_last_bb (then_bb);
+  else
+    *iter = gsi;
+
+  /* We want to instrument the access at the end of the memory region,
+     which is at (base + len - 1).  */
+
+  /* offset = len - 1;  */
+  len = unshare_expr (len);
+  gimple offset =
+    gimple_build_assign_with_ops (TREE_CODE (len),
+				  make_ssa_name (TREE_TYPE (len), NULL),
+				  len, NULL);
+  gimple_set_location (offset, location);
+  gsi_insert_before (&gsi, offset, GSI_NEW_STMT);
+
+  offset =
+    gimple_build_assign_with_ops (MINUS_EXPR,
+				  make_ssa_name (size_type_node, NULL),
+				  gimple_assign_lhs (offset),
+				  build_int_cst (size_type_node, 1));
+  gimple_set_location (offset, location);
+  gsi_insert_after (&gsi, offset, GSI_NEW_STMT);
+
+  /* _1 = base;  */
+  base = unshare_expr (base);
+  gimple region_end =
+    gimple_build_assign_with_ops (TREE_CODE (base),
+				  make_ssa_name (TREE_TYPE (base), NULL),
+				  base, NULL);
+  gimple_set_location (region_end, location);
+  gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
+
+  /* _2 = _1 + offset;  */
+  region_end =
+    gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
+				  make_ssa_name (TREE_TYPE (base), NULL),
+				  gimple_assign_lhs (region_end), 
+				  gimple_assign_lhs (offset));
+  gimple_set_location (region_end, location);
+  gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
+
+  /* instrument access at _2;  */
+  build_check_stmt (location, gimple_assign_lhs (region_end),
+		    &gsi, /*before_p=*/false, is_store, 1);
+}
+
+/* Instrument the call (to the builtin strlen function) pointed to by
+   ITER.
+
+   This function instruments the access to the first byte of the
+   argument, right before the call.  After the call it instruments the
+   access to the last byte of the argument; it uses the result of the
+   call to deduce the offset of that last byte.
+
+   Upon completion, iff the call has actullay been instrumented, this
+   function returns TRUE and *ITER points to the statement logically
+   following the built-in strlen function call *ITER was initially
+   pointing to.  Otherwise, the function returns FALSE and *ITER
+   remains unchanged.  */
+
+static bool
+instrument_strlen_call (gimple_stmt_iterator *iter)
+{
+  gimple call = gsi_stmt (*iter);
+  gcc_assert (is_gimple_call (call));
+
+  tree callee = gimple_call_fndecl (call);
+  gcc_assert (is_builtin_fn (callee)
+	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_STRLEN);
+
+  tree len = gimple_call_lhs (call);
+  if (len == NULL)
+    /* Some passes might clear the return value of the strlen call;
+       bail out in that case.  Return FALSE as we are not advancing
+       *ITER.  */
+    return false;
+  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (len)));
+
+  location_t loc = gimple_location (call);
+  tree str_arg = gimple_call_arg (call, 0);
+
+  /* Instrument the access to the first byte of str_arg.  i.e:
+
+     _1 = str_arg; instrument (_1); */
+  gimple str_arg_ssa =
+    gimple_build_assign_with_ops (NOP_EXPR,
+				  make_ssa_name (build_pointer_type
+						 (char_type_node), NULL),
+				  str_arg, NULL);
+  gimple_set_location (str_arg_ssa, loc);
+  gimple_stmt_iterator gsi = *iter;
+  gsi_insert_before (&gsi, str_arg_ssa, GSI_NEW_STMT);
+  build_check_stmt (loc, gimple_assign_lhs (str_arg_ssa), &gsi,
+		    /*before_p=*/false, /*is_store=*/false, 1);
+
+  /* If we initially had an instruction like:
+
+	 int n = strlen (str)
+
+     we now want to instrument the access to str[n], after the
+     instruction above.*/
+
+  /* So let's build the access to str[n] that is, access through the
+     pointer_plus expr: (_1 + len).  */
+  gimple stmt =
+    gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
+				  make_ssa_name (TREE_TYPE (str_arg),
+						 NULL),
+				  gimple_assign_lhs (str_arg_ssa),
+				  len);
+  gimple_set_location (stmt, loc);
+  gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+
+  build_check_stmt (loc, gimple_assign_lhs (stmt), &gsi,
+		    /*before_p=*/false, /*is_store=*/false, 1);
+
+  /* Ensure that iter points to the statement logically following the
+     one it was initially pointing to.  */
+  *iter = gsi;
+  /* As *ITER has been advanced to point to the next statement, let's
+     return true to inform transform_statements that it shouldn't
+     advance *ITER anymore; otherwises it will skip that next
+     statement, which wouldn't be instrumented.  */
+  return true;
+}
+
+/* Instrument the call to a built-in memory access function that is
+   pointed to by the iterator ITER.
+
+   Upon completion, return TRUE iff *ITER has been advanced to the
+   statement following the one it was originally pointing to.  */
+
+static bool
+instrument_builtin_call (gimple_stmt_iterator *iter)
+{
+  gimple call = gsi_stmt (*iter);
+
+  gcc_assert (is_gimple_builtin_call (call));
+
+  tree callee = gimple_call_fndecl (call);
+  location_t loc = gimple_location (call);
+  tree source0 = NULL_TREE, source1 = NULL_TREE,
+    dest = NULL_TREE, len = NULL_TREE;
+  bool is_store = true;
+
+  switch (DECL_FUNCTION_CODE (callee))
+    {
+      /* (s, s, n) style memops.  */
+    case BUILT_IN_BCMP:
+    case BUILT_IN_MEMCMP:
+      len = gimple_call_arg (call, 2);
+      source0 = gimple_call_arg (call, 0);
+      source1 = gimple_call_arg (call, 1);
+      break;
+
+      /* (src, dest, n) style memops.  */
+    case BUILT_IN_BCOPY:
+      len = gimple_call_arg (call, 2);
+      source0 = gimple_call_arg (call, 0);
+      dest = gimple_call_arg (call, 2);
+      break;
+
+      /* (dest, src, n) style memops.  */
+    case BUILT_IN_MEMCPY:
+    case BUILT_IN_MEMCPY_CHK:
+    case BUILT_IN_MEMMOVE:
+    case BUILT_IN_MEMMOVE_CHK:
+    case BUILT_IN_MEMPCPY:
+    case BUILT_IN_MEMPCPY_CHK:
+      dest = gimple_call_arg (call, 0);
+      source0 = gimple_call_arg (call, 1);
+      len = gimple_call_arg (call, 2);
+      break;
+
+      /* (dest, n) style memops.  */
+    case BUILT_IN_BZERO:
+      dest = gimple_call_arg (call, 0);
+      len = gimple_call_arg (call, 1);
+      break;
+
+      /* (dest, x, n) style memops*/
+    case BUILT_IN_MEMSET:
+    case BUILT_IN_MEMSET_CHK:
+      dest = gimple_call_arg (call, 0);
+      len = gimple_call_arg (call, 2);
+      break;
+
+    case BUILT_IN_STRLEN:
+      return instrument_strlen_call (iter);
+
+    /* And now the __atomic* and __sync builtins.
+       These are handled differently from the classical memory memory
+       access builtins above.  */
+
+    case BUILT_IN_ATOMIC_LOAD:
+    case BUILT_IN_ATOMIC_LOAD_1:
+    case BUILT_IN_ATOMIC_LOAD_2:
+    case BUILT_IN_ATOMIC_LOAD_4:
+    case BUILT_IN_ATOMIC_LOAD_8:
+    case BUILT_IN_ATOMIC_LOAD_16:
+      is_store = false;
+      /* fall through.  */
+
+    case BUILT_IN_SYNC_FETCH_AND_ADD_1:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_2:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_4:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_8:
+    case BUILT_IN_SYNC_FETCH_AND_ADD_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_SUB_1:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_2:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_4:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_8:
+    case BUILT_IN_SYNC_FETCH_AND_SUB_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_OR_1:
+    case BUILT_IN_SYNC_FETCH_AND_OR_2:
+    case BUILT_IN_SYNC_FETCH_AND_OR_4:
+    case BUILT_IN_SYNC_FETCH_AND_OR_8:
+    case BUILT_IN_SYNC_FETCH_AND_OR_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_AND_1:
+    case BUILT_IN_SYNC_FETCH_AND_AND_2:
+    case BUILT_IN_SYNC_FETCH_AND_AND_4:
+    case BUILT_IN_SYNC_FETCH_AND_AND_8:
+    case BUILT_IN_SYNC_FETCH_AND_AND_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_XOR_1:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_2:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_4:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_8:
+    case BUILT_IN_SYNC_FETCH_AND_XOR_16:
+
+    case BUILT_IN_SYNC_FETCH_AND_NAND_1:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_2:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_4:
+    case BUILT_IN_SYNC_FETCH_AND_NAND_8:
+
+    case BUILT_IN_SYNC_ADD_AND_FETCH_1:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_2:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_4:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_8:
+    case BUILT_IN_SYNC_ADD_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_SUB_AND_FETCH_1:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_2:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_4:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_8:
+    case BUILT_IN_SYNC_SUB_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_OR_AND_FETCH_1:
+    case BUILT_IN_SYNC_OR_AND_FETCH_2:
+    case BUILT_IN_SYNC_OR_AND_FETCH_4:
+    case BUILT_IN_SYNC_OR_AND_FETCH_8:
+    case BUILT_IN_SYNC_OR_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_AND_AND_FETCH_1:
+    case BUILT_IN_SYNC_AND_AND_FETCH_2:
+    case BUILT_IN_SYNC_AND_AND_FETCH_4:
+    case BUILT_IN_SYNC_AND_AND_FETCH_8:
+    case BUILT_IN_SYNC_AND_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_XOR_AND_FETCH_1:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_2:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_4:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_8:
+    case BUILT_IN_SYNC_XOR_AND_FETCH_16:
+
+    case BUILT_IN_SYNC_NAND_AND_FETCH_1:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_2:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_4:
+    case BUILT_IN_SYNC_NAND_AND_FETCH_8:
+
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_8:
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_16:
+
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_1:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_2:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_4:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_8:
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_16:
+
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_1:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_2:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_4:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_8:
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_16:
+
+    case BUILT_IN_SYNC_LOCK_RELEASE_1:
+    case BUILT_IN_SYNC_LOCK_RELEASE_2:
+    case BUILT_IN_SYNC_LOCK_RELEASE_4:
+    case BUILT_IN_SYNC_LOCK_RELEASE_8:
+    case BUILT_IN_SYNC_LOCK_RELEASE_16:
+
+    case BUILT_IN_ATOMIC_TEST_AND_SET:
+    case BUILT_IN_ATOMIC_CLEAR:
+    case BUILT_IN_ATOMIC_EXCHANGE:
+    case BUILT_IN_ATOMIC_EXCHANGE_1:
+    case BUILT_IN_ATOMIC_EXCHANGE_2:
+    case BUILT_IN_ATOMIC_EXCHANGE_4:
+    case BUILT_IN_ATOMIC_EXCHANGE_8:
+    case BUILT_IN_ATOMIC_EXCHANGE_16:
+
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
+
+    case BUILT_IN_ATOMIC_STORE:
+    case BUILT_IN_ATOMIC_STORE_1:
+    case BUILT_IN_ATOMIC_STORE_2:
+    case BUILT_IN_ATOMIC_STORE_4:
+    case BUILT_IN_ATOMIC_STORE_8:
+    case BUILT_IN_ATOMIC_STORE_16:
+
+    case BUILT_IN_ATOMIC_ADD_FETCH_1:
+    case BUILT_IN_ATOMIC_ADD_FETCH_2:
+    case BUILT_IN_ATOMIC_ADD_FETCH_4:
+    case BUILT_IN_ATOMIC_ADD_FETCH_8:
+    case BUILT_IN_ATOMIC_ADD_FETCH_16:
+
+    case BUILT_IN_ATOMIC_SUB_FETCH_1:
+    case BUILT_IN_ATOMIC_SUB_FETCH_2:
+    case BUILT_IN_ATOMIC_SUB_FETCH_4:
+    case BUILT_IN_ATOMIC_SUB_FETCH_8:
+    case BUILT_IN_ATOMIC_SUB_FETCH_16:
+
+    case BUILT_IN_ATOMIC_AND_FETCH_1:
+    case BUILT_IN_ATOMIC_AND_FETCH_2:
+    case BUILT_IN_ATOMIC_AND_FETCH_4:
+    case BUILT_IN_ATOMIC_AND_FETCH_8:
+    case BUILT_IN_ATOMIC_AND_FETCH_16:
+
+    case BUILT_IN_ATOMIC_NAND_FETCH_1:
+    case BUILT_IN_ATOMIC_NAND_FETCH_2:
+    case BUILT_IN_ATOMIC_NAND_FETCH_4:
+    case BUILT_IN_ATOMIC_NAND_FETCH_8:
+    case BUILT_IN_ATOMIC_NAND_FETCH_16:
+
+    case BUILT_IN_ATOMIC_XOR_FETCH_1:
+    case BUILT_IN_ATOMIC_XOR_FETCH_2:
+    case BUILT_IN_ATOMIC_XOR_FETCH_4:
+    case BUILT_IN_ATOMIC_XOR_FETCH_8:
+    case BUILT_IN_ATOMIC_XOR_FETCH_16:
+
+    case BUILT_IN_ATOMIC_OR_FETCH_1:
+    case BUILT_IN_ATOMIC_OR_FETCH_2:
+    case BUILT_IN_ATOMIC_OR_FETCH_4:
+    case BUILT_IN_ATOMIC_OR_FETCH_8:
+    case BUILT_IN_ATOMIC_OR_FETCH_16:
+
+    case BUILT_IN_ATOMIC_FETCH_ADD_1:
+    case BUILT_IN_ATOMIC_FETCH_ADD_2:
+    case BUILT_IN_ATOMIC_FETCH_ADD_4:
+    case BUILT_IN_ATOMIC_FETCH_ADD_8:
+    case BUILT_IN_ATOMIC_FETCH_ADD_16:
+
+    case BUILT_IN_ATOMIC_FETCH_SUB_1:
+    case BUILT_IN_ATOMIC_FETCH_SUB_2:
+    case BUILT_IN_ATOMIC_FETCH_SUB_4:
+    case BUILT_IN_ATOMIC_FETCH_SUB_8:
+    case BUILT_IN_ATOMIC_FETCH_SUB_16:
+
+    case BUILT_IN_ATOMIC_FETCH_AND_1:
+    case BUILT_IN_ATOMIC_FETCH_AND_2:
+    case BUILT_IN_ATOMIC_FETCH_AND_4:
+    case BUILT_IN_ATOMIC_FETCH_AND_8:
+    case BUILT_IN_ATOMIC_FETCH_AND_16:
+
+    case BUILT_IN_ATOMIC_FETCH_NAND_1:
+    case BUILT_IN_ATOMIC_FETCH_NAND_2:
+    case BUILT_IN_ATOMIC_FETCH_NAND_4:
+    case BUILT_IN_ATOMIC_FETCH_NAND_8:
+    case BUILT_IN_ATOMIC_FETCH_NAND_16:
+
+    case BUILT_IN_ATOMIC_FETCH_XOR_1:
+    case BUILT_IN_ATOMIC_FETCH_XOR_2:
+    case BUILT_IN_ATOMIC_FETCH_XOR_4:
+    case BUILT_IN_ATOMIC_FETCH_XOR_8:
+    case BUILT_IN_ATOMIC_FETCH_XOR_16:
+
+    case BUILT_IN_ATOMIC_FETCH_OR_1:
+    case BUILT_IN_ATOMIC_FETCH_OR_2:
+    case BUILT_IN_ATOMIC_FETCH_OR_4:
+    case BUILT_IN_ATOMIC_FETCH_OR_8:
+    case BUILT_IN_ATOMIC_FETCH_OR_16:
+      {
+	dest = gimple_call_arg (call, 0);
+	/* So DEST represents the address of a memory location.
+	   instrument_derefs wants the memory location, so lets
+	   dereference the address DEST before handing it to
+	   instrument_derefs.  */
+	if (TREE_CODE (dest) == ADDR_EXPR)
+	  dest = TREE_OPERAND (dest, 0);
+	else if (TREE_CODE (dest) == SSA_NAME)
+	  dest = build2 (MEM_REF, TREE_TYPE (TREE_TYPE (dest)),
+			 dest, build_int_cst (TREE_TYPE (dest), 0));
+	else
+	  gcc_unreachable ();
+
+	instrument_derefs (iter, dest, loc, is_store);
+	return false;
+      }
+
+    default:
+      /* The other builtins memory access are not instrumented in this
+	 function because they either don't have any length parameter,
+	 or their length parameter is just a limit.  */
+      break;
+    }
+
+  if (len != NULL_TREE)
+    {
+      if (source0 != NULL_TREE)
+	instrument_mem_region_access (source0, len, iter,
+				      loc, /*is_store=*/false);
+      if (source1 != NULL_TREE)
+	instrument_mem_region_access (source1, len, iter,
+				      loc, /*is_store=*/false);
+      else if (dest != NULL_TREE)
+	instrument_mem_region_access (dest, len, iter,
+				      loc, /*is_store=*/true);
+
+      *iter = gsi_for_stmt (call);
+      return false;
+    }
+  return false;
+}
+
+/*  Instrument the assignment statement ITER if it is subject to
+    instrumentation.  */
+
+static void
+instrument_assignment (gimple_stmt_iterator *iter)
+{
+  gimple s = gsi_stmt (*iter);
+
+  gcc_assert (gimple_assign_single_p (s));
+
+  instrument_derefs (iter, gimple_assign_lhs (s),
+		     gimple_location (s), true);
+  instrument_derefs (iter, gimple_assign_rhs1 (s),
+		     gimple_location (s), false);
+}
+
+/* Instrument the function call pointed to by the iterator ITER, if it
+   is subject to instrumentation.  At the moment, the only function
+   calls that are instrumented are some built-in functions that access
+   memory.  Look at instrument_builtin_call to learn more.
+
+   Upon completion return TRUE iff *ITER was advanced to the statement
+   following the one it was originally pointing to.  */
+
+static bool
+maybe_instrument_call (gimple_stmt_iterator *iter)
+{
+  if (is_gimple_builtin_call (gsi_stmt (*iter)))
+    return instrument_builtin_call (iter);
+  return false;
 }
 
 /* asan: this looks too complex. Can this be done simpler? */
@@ -807,15 +1377,20 @@ transform_statements (void)
   FOR_EACH_BB (bb)
     {
       if (bb->index >= saved_last_basic_block) continue;
-      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+      for (i = gsi_start_bb (bb); !gsi_end_p (i);)
         {
-          gimple s = gsi_stmt (i);
-          if (!gimple_assign_single_p (s))
-	    continue;
-          instrument_derefs (&i, gimple_assign_lhs (s),
-                             gimple_location (s), true);
-          instrument_derefs (&i, gimple_assign_rhs1 (s),
-                             gimple_location (s), false);
+	  gimple s = gsi_stmt (i);
+
+	  if (gimple_assign_single_p (s))
+	    instrument_assignment (&i);
+	  else if (is_gimple_call (s))
+	    {
+	      if (maybe_instrument_call (&i))
+		/* Avoid gsi_next (&i), because maybe_instrument_call
+		   advanced the I iterator already.  */
+		continue;
+	    }
+	  gsi_next (&i);
         }
     }
 }

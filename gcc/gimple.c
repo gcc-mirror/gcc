@@ -4121,6 +4121,22 @@ gimple_decl_printable_name (tree decl, int verbosity)
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
+/* Return TRUE iff stmt is a call to a built-in function.  */
+
+bool
+is_gimple_builtin_call (gimple stmt)
+{
+  tree callee;
+
+  if (is_gimple_call (stmt)
+      && (callee = gimple_call_fndecl (stmt))
+      && is_builtin_fn (callee)
+      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+    return true;
+
+  return false;
+}
+
 /* Return true when STMT is builtins call to CODE.  */
 
 bool
