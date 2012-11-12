@@ -33,42 +33,41 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "output.h"
 
-/*
- AddressSanitizer finds out-of-bounds and use-after-free bugs 
- with <2x slowdown on average.
+/* AddressSanitizer finds out-of-bounds and use-after-free bugs
+   with <2x slowdown on average.
 
- The tool consists of two parts:
- instrumentation module (this file) and a run-time library.
- The instrumentation module adds a run-time check before every memory insn.
-   For a 8- or 16- byte load accessing address X:
-     ShadowAddr = (X >> 3) + Offset
-     ShadowValue = *(char*)ShadowAddr;  // *(short*) for 16-byte access.
-     if (ShadowValue)
-       __asan_report_load8(X);
-   For a load of N bytes (N=1, 2 or 4) from address X:
-     ShadowAddr = (X >> 3) + Offset
-     ShadowValue = *(char*)ShadowAddr;
-     if (ShadowValue)
-       if ((X & 7) + N - 1 > ShadowValue)
-         __asan_report_loadN(X);
- Stores are instrumented similarly, but using __asan_report_storeN functions.
- A call too __asan_init() is inserted to the list of module CTORs.
+   The tool consists of two parts:
+   instrumentation module (this file) and a run-time library.
+   The instrumentation module adds a run-time check before every memory insn.
+     For a 8- or 16- byte load accessing address X:
+       ShadowAddr = (X >> 3) + Offset
+       ShadowValue = *(char*)ShadowAddr;  // *(short*) for 16-byte access.
+       if (ShadowValue)
+	 __asan_report_load8(X);
+     For a load of N bytes (N=1, 2 or 4) from address X:
+       ShadowAddr = (X >> 3) + Offset
+       ShadowValue = *(char*)ShadowAddr;
+       if (ShadowValue)
+	 if ((X & 7) + N - 1 > ShadowValue)
+	   __asan_report_loadN(X);
+   Stores are instrumented similarly, but using __asan_report_storeN functions.
+   A call too __asan_init() is inserted to the list of module CTORs.
 
- The run-time library redefines malloc (so that redzone are inserted around
- the allocated memory) and free (so that reuse of free-ed memory is delayed),
- provides __asan_report* and __asan_init functions.
+   The run-time library redefines malloc (so that redzone are inserted around
+   the allocated memory) and free (so that reuse of free-ed memory is delayed),
+   provides __asan_report* and __asan_init functions.
 
- Read more:
- http://code.google.com/p/address-sanitizer/wiki/AddressSanitizerAlgorithm
+   Read more:
+   http://code.google.com/p/address-sanitizer/wiki/AddressSanitizerAlgorithm
 
- The current implementation supports detection of out-of-bounds and
- use-after-free in the heap, on the stack and for global variables.
+   The current implementation supports detection of out-of-bounds and
+   use-after-free in the heap, on the stack and for global variables.
 
- [Protection of stack variables]
+   [Protection of stack variables]
 
- To understand how detection of out-of-bounds and use-after-free works
- for stack variables, lets look at this example on x86_64 where the
- stack grows downward:
+   To understand how detection of out-of-bounds and use-after-free works
+   for stack variables, lets look at this example on x86_64 where the
+   stack grows downward:
 
      int
      foo ()
@@ -82,28 +81,28 @@ along with GCC; see the file COPYING3.  If not see
        return a[5] + b[1];
      }
 
- For this function, the stack protected by asan will be organized as
- follows, from the top of the stack to the bottom:
+   For this function, the stack protected by asan will be organized as
+   follows, from the top of the stack to the bottom:
 
- Slot 1/ [red zone of 32 bytes called 'RIGHT RedZone']
+   Slot 1/ [red zone of 32 bytes called 'RIGHT RedZone']
 
- Slot 2/ [8 bytes of red zone, that adds up to the space of 'a' to make
-	  the next slot be 32 bytes aligned; this one is called Partial
-	  Redzone; this 32 bytes alignment is an asan constraint]
+   Slot 2/ [8 bytes of red zone, that adds up to the space of 'a' to make
+	   the next slot be 32 bytes aligned; this one is called Partial
+	   Redzone; this 32 bytes alignment is an asan constraint]
 
- Slot 3/ [24 bytes for variable 'a']
+   Slot 3/ [24 bytes for variable 'a']
 
- Slot 4/ [red zone of 32 bytes called 'Middle RedZone']
+   Slot 4/ [red zone of 32 bytes called 'Middle RedZone']
 
- Slot 5/ [24 bytes of Partial Red Zone (similar to slot 2]
+   Slot 5/ [24 bytes of Partial Red Zone (similar to slot 2]
 
- Slot 6/ [8 bytes for variable 'b']
+   Slot 6/ [8 bytes for variable 'b']
 
- Slot 7/ [32 bytes of Red Zone at the bottom of the stack, called 'LEFT
-	  RedZone']
+   Slot 7/ [32 bytes of Red Zone at the bottom of the stack, called
+	    'LEFT RedZone']
 
- The 32 bytes of LEFT red zone at the bottom of the stack can be
- decomposed as such:
+   The 32 bytes of LEFT red zone at the bottom of the stack can be
+   decomposed as such:
 
      1/ The first 8 bytes contain a magical asan number that is always
      0x41B58AB3.
@@ -122,7 +121,7 @@ along with GCC; see the file COPYING3.  If not see
       3/ The following 16 bytes of the red zone have no particular
       format.
 
- The shadow memory for that stack layout is going to look like this:
+   The shadow memory for that stack layout is going to look like this:
 
      - content of shadow memory 8 bytes for slot 7: 0xF1F1F1F1.
        The F1 byte pattern is a magic number called
@@ -149,39 +148,39 @@ along with GCC; see the file COPYING3.  If not see
        seat between two 32 aligned slots of {variable,padding}.
 
      - content of shadow memory 8 bytes for slot 3 and 2:
-       0xFFFFFFFFF4000000.  This represents is the concatenation of
+       0xF4000000.  This represents is the concatenation of
        variable 'a' and the partial red zone following it, like what we
        had for variable 'b'.  The least significant 3 bytes being 00
        means that the 3 bytes of variable 'a' are addressable.
 
-     - content of shadow memory 8 bytes for slot 1: 0xFFFFFFFFF3F3F3F3.
+     - content of shadow memory 8 bytes for slot 1: 0xF3F3F3F3.
        The F3 byte pattern is a magic number called
        ASAN_STACK_MAGIC_RIGHT.  It flags the fact that the memory
        region for this shadow byte is a RIGHT red zone intended to seat
        at the top of the variables of the stack.
 
- Note that the real variable layout is done in expand_used_vars in
- cfgexpand.c.  As far as Address Sanitizer is concerned, it lays out
- stack variables as well as the different red zones, emits some
- prologue code to populate the shadow memory as to poison (mark as
- non-accessible) the regions of the red zones and mark the regions of
- stack variables as accessible, and emit some epilogue code to
- un-poison (mark as accessible) the regions of red zones right before
- the function exits.
+   Note that the real variable layout is done in expand_used_vars in
+   cfgexpand.c.  As far as Address Sanitizer is concerned, it lays out
+   stack variables as well as the different red zones, emits some
+   prologue code to populate the shadow memory as to poison (mark as
+   non-accessible) the regions of the red zones and mark the regions of
+   stack variables as accessible, and emit some epilogue code to
+   un-poison (mark as accessible) the regions of red zones right before
+   the function exits.
 
- [Protection of global variables]
+   [Protection of global variables]
 
- The basic idea is to insert a red zone between two global variables
- and install a constructor function that calls the asan runtime to do
- the populating of the relevant shadow memory regions at load time.
+   The basic idea is to insert a red zone between two global variables
+   and install a constructor function that calls the asan runtime to do
+   the populating of the relevant shadow memory regions at load time.
 
- So the global variables are laid out as to insert a red zone between
- them. The size of the red zones is so that each variable starts on a
- 32 bytes boundary.
+   So the global variables are laid out as to insert a red zone between
+   them. The size of the red zones is so that each variable starts on a
+   32 bytes boundary.
 
- Then a constructor function is installed so that, for each global
- variable, it calls the runtime asan library function
- __asan_register_globals_with an instance of this type:
+   Then a constructor function is installed so that, for each global
+   variable, it calls the runtime asan library function
+   __asan_register_globals_with an instance of this type:
 
      struct __asan_global
      {
@@ -202,8 +201,8 @@ along with GCC; see the file COPYING3.  If not see
        uptr __has_dynamic_init;
      }
 
- A destructor function that calls the runtime asan library function
- _asan_unregister_globals is also installed.  */
+   A destructor function that calls the runtime asan library function
+   _asan_unregister_globals is also installed.  */
 
 alias_set_type asan_shadow_set = -1;
 
@@ -475,7 +474,7 @@ asan_protect_global (tree decl)
     return false;
 #endif
 
-  return true;    
+  return true;
 }
 
 /* Construct a function tree for __asan_report_{load,store}{1,2,4,8,16}.
@@ -490,13 +489,13 @@ report_error_func (bool is_store, int size_in_bytes)
   char name[100];
 
   sprintf (name, "__asan_report_%s%d",
-           is_store ? "store" : "load", size_in_bytes);
+	   is_store ? "store" : "load", size_in_bytes);
   fn_type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   def = build_fn_decl (name, fn_type);
   TREE_NOTHROW (def) = 1;
   TREE_THIS_VOLATILE (def) = 1;  /* Attribute noreturn. Surprise!  */
-  DECL_ATTRIBUTES (def) = tree_cons (get_identifier ("leaf"), 
-                                     NULL, DECL_ATTRIBUTES (def));
+  DECL_ATTRIBUTES (def) = tree_cons (get_identifier ("leaf"),
+				     NULL, DECL_ATTRIBUTES (def));
   DECL_ASSEMBLER_NAME (def);
   return def;
 }
@@ -598,7 +597,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
    outcoming edge of the 'then block' -- starts with the statement
    pointed to by ITER.
 
-   COND is the condition of the if.  
+   COND is the condition of the if.
 
    If THEN_MORE_LIKELY_P is true, the probability of the edge to the
    'then block' is higher than the probability of the edge to the
@@ -796,7 +795,7 @@ build_check_stmt (location_t location, tree base, gimple_stmt_iterator *iter,
 
 static void
 instrument_derefs (gimple_stmt_iterator *iter, tree t,
-                  location_t location, bool is_store)
+		  location_t location, bool is_store)
 {
   tree type, base;
   HOST_WIDE_INT size_in_bytes;
@@ -864,7 +863,7 @@ instrument_mem_region_access (tree base, tree len,
 	 if (len != 0)
 	   {
 	     //asan instrumentation code goes here.
-           }
+	   }
 	   // falltrough instructions, starting with *ITER.  */
 
       gimple g = gimple_build_cond (NE_EXPR,
@@ -930,7 +929,7 @@ instrument_mem_region_access (tree base, tree len,
   region_end =
     gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
 				  make_ssa_name (TREE_TYPE (base), NULL),
-				  gimple_assign_lhs (region_end), 
+				  gimple_assign_lhs (region_end),
 				  gimple_assign_lhs (offset));
   gimple_set_location (region_end, location);
   gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
@@ -1378,7 +1377,7 @@ transform_statements (void)
     {
       if (bb->index >= saved_last_basic_block) continue;
       for (i = gsi_start_bb (bb); !gsi_end_p (i);)
-        {
+	{
 	  gimple s = gsi_stmt (i);
 
 	  if (gimple_assign_single_p (s))
@@ -1391,7 +1390,7 @@ transform_statements (void)
 		continue;
 	    }
 	  gsi_next (&i);
-        }
+	}
     }
 }
 
@@ -1594,18 +1593,18 @@ struct gimple_opt_pass pass_asan =
 {
  {
   GIMPLE_PASS,
-  "asan",                               /* name  */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_asan,                            /* gate  */
-  asan_instrument,                      /* execute  */
-  NULL,                                 /* sub  */
-  NULL,                                 /* next  */
-  0,                                    /* static_pass_number  */
-  TV_NONE,                              /* tv_id  */
+  "asan",				/* name  */
+  OPTGROUP_NONE,			/* optinfo_flags */
+  gate_asan,				/* gate  */
+  asan_instrument,			/* execute  */
+  NULL,					/* sub  */
+  NULL,					/* next  */
+  0,					/* static_pass_number  */
+  TV_NONE,				/* tv_id  */
   PROP_ssa | PROP_cfg | PROP_gimple_leh,/* properties_required  */
-  0,                                    /* properties_provided  */
-  0,                                    /* properties_destroyed  */
-  0,                                    /* todo_flags_start  */
+  0,					/* properties_provided  */
+  0,					/* properties_destroyed  */
+  0,					/* todo_flags_start  */
   TODO_verify_flow | TODO_verify_stmts
   | TODO_update_ssa			/* todo_flags_finish  */
  }
@@ -1622,7 +1621,7 @@ struct gimple_opt_pass pass_asan_O0 =
  {
   GIMPLE_PASS,
   "asan0",				/* name  */
-  OPTGROUP_NONE,                        /* optinfo_flags */
+  OPTGROUP_NONE,			/* optinfo_flags */
   gate_asan_O0,				/* gate  */
   asan_instrument,			/* execute  */
   NULL,					/* sub  */
