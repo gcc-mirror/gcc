@@ -123,7 +123,7 @@ build_check_stmt (tree base,
                   location_t location, bool is_store, int size_in_bytes)
 {
   gimple_stmt_iterator gsi;
-  basic_block cond_bb, then_bb, join_bb;
+  basic_block cond_bb, then_bb, else_bb;
   edge e;
   tree t, base_addr, shadow;
   gimple g;
@@ -144,23 +144,23 @@ build_check_stmt (tree base,
   else
     e = split_block_after_labels (cond_bb);
   cond_bb = e->src;
-  join_bb = e->dest;
+  else_bb = e->dest;
 
-  /* A recap at this point: join_bb is the basic block at whose head
+  /* A recap at this point: else_bb is the basic block at whose head
      is the gimple statement for which this check expression is being
      built.  cond_bb is the (possibly new, synthetic) basic block the
      end of which will contain the cache-lookup code, and a
      conditional that jumps to the cache-miss code or, much more
-     likely, over to join_bb.  */
+     likely, over to else_bb.  */
 
   /* Create the bb that contains the crash block.  */
   then_bb = create_empty_bb (cond_bb);
   e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
   e->probability = PROB_VERY_UNLIKELY;
-  make_single_succ_edge (then_bb, join_bb, EDGE_FALLTHRU);
+  make_single_succ_edge (then_bb, else_bb, EDGE_FALLTHRU);
 
-  /* Mark the pseudo-fallthrough edge from cond_bb to join_bb.  */
-  e = find_edge (cond_bb, join_bb);
+  /* Mark the pseudo-fallthrough edge from cond_bb to else_bb.  */
+  e = find_edge (cond_bb, else_bb);
   e->flags = EDGE_FALSE_VALUE;
   e->count = cond_bb->count;
   e->probability = PROB_ALWAYS - PROB_VERY_UNLIKELY;
@@ -170,7 +170,7 @@ build_check_stmt (tree base,
   if (dom_info_available_p (CDI_DOMINATORS))
     {
       set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
-      set_immediate_dominator (CDI_DOMINATORS, join_bb, cond_bb);
+      set_immediate_dominator (CDI_DOMINATORS, else_bb, cond_bb);
     }
 
   base = unshare_expr (base);
@@ -293,7 +293,7 @@ build_check_stmt (tree base,
   gimple_set_location (g, location);
   gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 
-  *iter = gsi_start_bb (join_bb);
+  *iter = gsi_start_bb (else_bb);
 }
 
 /* If T represents a memory access, add instrumentation code before ITER.
@@ -431,6 +431,33 @@ struct gimple_opt_pass pass_asan =
   0,                                    /* properties_provided  */
   0,                                    /* properties_destroyed  */
   0,                                    /* todo_flags_start  */
+  TODO_verify_flow | TODO_verify_stmts
+  | TODO_update_ssa			/* todo_flags_finish  */
+ }
+};
+
+static bool
+gate_asan_O0 (void)
+{
+  return flag_asan != 0 && !optimize;
+}
+
+struct gimple_opt_pass pass_asan_O0 =
+{
+ {
+  GIMPLE_PASS,
+  "asan0",				/* name  */
+  OPTGROUP_NONE,                        /* optinfo_flags */
+  gate_asan_O0,				/* gate  */
+  asan_instrument,			/* execute  */
+  NULL,					/* sub  */
+  NULL,					/* next  */
+  0,					/* static_pass_number  */
+  TV_NONE,				/* tv_id  */
+  PROP_ssa | PROP_cfg | PROP_gimple_leh,/* properties_required  */
+  0,					/* properties_provided  */
+  0,					/* properties_destroyed  */
+  0,					/* todo_flags_start  */
   TODO_verify_flow | TODO_verify_stmts
   | TODO_update_ssa			/* todo_flags_finish  */
  }

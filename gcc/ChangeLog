@@ -1,4 +1,12 @@
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (build_check_stmt): Rename join_bb variable to else_bb.
+	(gate_asan_O0): New function.
+	(pass_asan_O0): New variable.
+	* passes.c (init_optimization_passes): Add pass_asan_O0.
+	* tree-pass.h (pass_asan_O0): New declaration.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 	    Xinliang David Li  <davidxl@google.com>
 	    Dodji Seketeli <dodji@redhat.com>
 
