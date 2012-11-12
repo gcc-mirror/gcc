@@ -837,6 +837,10 @@ fargument-noalias-anything
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
+faddress-sanitizer
+Common Report Var(flag_asan)
+Enable AddressSanitizer, a memory error detector
+
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
 Generate unwind tables that are exact at each instruction boundary

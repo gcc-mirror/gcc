@@ -354,9 +354,10 @@ Objective-C and Objective-C++ Dialects}.
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
 @gccoptlist{-falign-functions[=@var{n}] -falign-jumps[=@var{n}] @gol
--falign-labels[=@var{n}] -falign-loops[=@var{n}] -fassociative-math @gol
--fauto-inc-dec -fbranch-probabilities -fbranch-target-load-optimize @gol
--fbranch-target-load-optimize2 -fbtr-bb-exclusive -fcaller-saves @gol
+-falign-labels[=@var{n}] -falign-loops[=@var{n}] -faddress-sanitizer @gol
+--fassociative-math fauto-inc-dec -fbranch-probabilities @gol
+--fbranch-target-load-optimize fbranch-target-load-optimize2 @gol
+--fbtr-bb-exclusive -fcaller-saves @gol
 -fcheck-data-deps -fcombine-stack-adjustments -fconserve-stack @gol
 -fcompare-elim -fcprop-registers -fcrossjumping @gol
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
@@ -6847,6 +6848,12 @@ resulting executable can find the beginning of that section and/or make
 assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
+
+@item -faddress-sanitizer
+Enable AddressSanitizer, a fast memory error detector.
+Memory access instructions will be instrumented to detect
+out-of-bounds and use-after-free bugs. So far only heap bugs will be detected.
+See @uref{http://code.google.com/p/address-sanitizer/} for more details.
 
 @item -fmudflap -fmudflapth -fmudflapir
 @opindex fmudflap

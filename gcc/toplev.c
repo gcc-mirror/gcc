@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-mudflap.h"
+#include "asan.h"
 #include "gimple.h"
 #include "tree-ssa-alias.h"
 #include "plugin.h"
@@ -569,6 +570,10 @@ compile_file (void)
       /* Likewise for mudflap static object registrations.  */
       if (flag_mudflap)
 	mudflap_finish_file ();
+
+      /* File-scope initialization for AddressSanitizer.  */
+      if (flag_asan)
+        asan_finish_file ();
 
       output_shared_constant_pool ();
       output_object_blocks ();
