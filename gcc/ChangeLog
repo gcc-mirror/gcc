@@ -1,4 +1,32 @@
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+	    Xinliang David Li  <davidxl@google.com>
+	    Dodji Seketeli <dodji@redhat.com>
+
+	* Makefile.in (GTFILES): Add $(srcdir)/asan.c.
+	(asan.o): Update the dependencies of asan.o.
+	* asan.c (tm.h, tree.h, tm_p.h, basic-block.h, flags.h
+	function.h, tree-inline.h, tree-dump.h, diagnostic.h, demangle.h,
+	langhooks.h, ggc.h, cgraph.h, gimple.h): Remove these unused but
+	included headers.
+	(shadow_ptr_types): New variable.
+	(report_error_func): Change is_store argument to bool, don't append
+	newline to function name.
+	(PROB_VERY_UNLIKELY, PROB_ALWAYS): Define.
+	(build_check_stmt): Change is_store argument to bool.  Emit GIMPLE
+	directly instead of creating trees and gimplifying them.  Mark
+	the error reporting function as very unlikely.
+	(instrument_derefs): Change is_store argument to bool.  Use
+	int_size_in_bytes to compute size_in_bytes, simplify size check.
+	Use build_fold_addr_expr instead of build_addr.
+	(transform_statements): Adjust instrument_derefs caller.
+	Use gimple_assign_single_p as stmt test.  Don't look at MEM refs
+	in rhs2.
+	(asan_init_shadow_ptr_types): New function.
+	(asan_instrument): Don't push/pop gimplify context.
+	Call asan_init_shadow_ptr_types if not yet initialized.
+	* asan.h (ASAN_SHADOW_SHIFT): Adjust comment.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* toplev.c (process_options): Warn and turn off
 	-faddress-sanitizer if not supported by target.

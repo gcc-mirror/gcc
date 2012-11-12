@@ -2208,10 +2208,10 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(PARAMS_H) $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(RTL_H) \
    $(GGC_H) $(TM_P_H) $(TARGET_H) langhooks.h $(REGS_H) gt-stor-layout.h \
    $(DIAGNOSTIC_CORE_H) $(CGRAPH_H) $(TREE_INLINE_H) $(TREE_DUMP_H) $(GIMPLE_H)
-asan.o : asan.c asan.h $(CONFIG_H) pointer-set.h \
-   $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
-   output.h $(DIAGNOSTIC_H) coretypes.h $(TREE_DUMP_H) $(FLAGS_H) \
-   tree-pretty-print.h $(TARGET_H)
+asan.o : asan.c asan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
+   output.h coretypes.h $(GIMPLE_PRETTY_PRINT_H) \
+   tree-iterator.h $(TREE_FLOW_H) $(TREE_PASS_H) \
+   $(TARGET_H)
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
@@ -3725,6 +3725,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-inline.h \
+  $(srcdir)/asan.c \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

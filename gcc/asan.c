@@ -22,24 +22,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
-#include "tm_p.h"
-#include "basic-block.h"
-#include "flags.h"
-#include "function.h"
-#include "tree-inline.h"
 #include "gimple.h"
 #include "tree-iterator.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
-#include "diagnostic.h"
-#include "demangle.h"
-#include "langhooks.h"
-#include "ggc.h"
-#include "cgraph.h"
-#include "gimple.h"
 #include "asan.h"
 #include "gimple-pretty-print.h"
 #include "target.h"
@@ -79,18 +65,22 @@ along with GCC; see the file COPYING3.  If not see
  to create redzones for stack and global object and poison them.
 */
 
+/* Pointer types to 1 resp. 2 byte integers in shadow memory.  A separate
+   alias set is used for all shadow memory accesses.  */
+static GTY(()) tree shadow_ptr_types[2];
+
 /* Construct a function tree for __asan_report_{load,store}{1,2,4,8,16}.
    IS_STORE is either 1 (for a store) or 0 (for a load).
    SIZE_IN_BYTES is one of 1, 2, 4, 8, 16.  */
 
 static tree
-report_error_func (int is_store, int size_in_bytes)
+report_error_func (bool is_store, int size_in_bytes)
 {
   tree fn_type;
   tree def;
   char name[100];
 
-  sprintf (name, "__asan_report_%s%d\n",
+  sprintf (name, "__asan_report_%s%d",
            is_store ? "store" : "load", size_in_bytes);
   fn_type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   def = build_fn_decl (name, fn_type);
@@ -118,6 +108,9 @@ asan_init_func (void)
 }
 
 
+#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
+#define PROB_ALWAYS		(REG_BR_PROB_BASE)
+
 /* Instrument the memory access instruction BASE.
    Insert new statements before ITER.
    LOCATION is source code location.
@@ -127,21 +120,17 @@ asan_init_func (void)
 static void
 build_check_stmt (tree base,
                   gimple_stmt_iterator *iter,
-                  location_t location, int is_store, int size_in_bytes)
+                  location_t location, bool is_store, int size_in_bytes)
 {
   gimple_stmt_iterator gsi;
   basic_block cond_bb, then_bb, join_bb;
   edge e;
-  tree cond, t, u;
-  tree base_addr;
-  tree shadow_value;
+  tree t, base_addr, shadow;
   gimple g;
-  gimple_seq seq, stmts;
-  tree shadow_type = size_in_bytes == 16 ?
-      short_integer_type_node : char_type_node;
-  tree shadow_ptr_type = build_pointer_type (shadow_type);
-  tree uintptr_type = lang_hooks.types.type_for_mode (ptr_mode,
-                                                      /*unsignedp=*/true);
+  tree shadow_ptr_type = shadow_ptr_types[size_in_bytes == 16 ? 1 : 0];
+  tree shadow_type = TREE_TYPE (shadow_ptr_type);
+  tree uintptr_type
+    = build_nonstandard_integer_type (TYPE_PRECISION (TREE_TYPE (base)), 1);
 
   /* We first need to split the current basic block, and start altering
      the CFG.  This allows us to insert the statements we're about to
@@ -166,14 +155,15 @@ build_check_stmt (tree base,
 
   /* Create the bb that contains the crash block.  */
   then_bb = create_empty_bb (cond_bb);
-  make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+  e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+  e->probability = PROB_VERY_UNLIKELY;
   make_single_succ_edge (then_bb, join_bb, EDGE_FALLTHRU);
 
   /* Mark the pseudo-fallthrough edge from cond_bb to join_bb.  */
   e = find_edge (cond_bb, join_bb);
   e->flags = EDGE_FALSE_VALUE;
   e->count = cond_bb->count;
-  e->probability = REG_BR_PROB_BASE;
+  e->probability = PROB_ALWAYS - PROB_VERY_UNLIKELY;
 
   /* Update dominance info.  Note that bb_join's data was
      updated by split_block.  */
@@ -183,75 +173,125 @@ build_check_stmt (tree base,
       set_immediate_dominator (CDI_DOMINATORS, join_bb, cond_bb);
     }
 
-  base_addr = create_tmp_reg (uintptr_type, "__asan_base_addr");
-
-  seq = NULL; 
-  t = fold_convert_loc (location, uintptr_type,
-                        unshare_expr (base));
-  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
-  gimple_seq_add_seq (&seq, stmts);
-  g = gimple_build_assign (base_addr, t);
-  gimple_set_location (g, location);
-  gimple_seq_add_stmt (&seq, g);
-
-  /* Build
-     (base_addr >> ASAN_SHADOW_SHIFT) | targetm.asan_shadow_offset ().  */
-
-  t = build2 (RSHIFT_EXPR, uintptr_type, base_addr,
-	      build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT));
-  t = build2 (PLUS_EXPR, uintptr_type, t,
-	      build_int_cst (uintptr_type, targetm.asan_shadow_offset ()));
-  t = build1 (INDIRECT_REF, shadow_type,
-              build1 (VIEW_CONVERT_EXPR, shadow_ptr_type, t));
-  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
-  gimple_seq_add_seq (&seq, stmts);
-  shadow_value = create_tmp_reg (shadow_type, "__asan_shadow");
-  g = gimple_build_assign (shadow_value, t);
-  gimple_set_location (g, location);
-  gimple_seq_add_stmt (&seq, g);
-  t = build2 (NE_EXPR, boolean_type_node, shadow_value,
-              build_int_cst (shadow_type, 0));
-  if (size_in_bytes < 8)
-    {
-
-      /* Slow path for 1-, 2- and 4- byte accesses.
-         Build ((base_addr & 7) + (size_in_bytes - 1)) >= shadow_value.  */
-
-      u = build2 (BIT_AND_EXPR, uintptr_type,
-                  base_addr,
-                  build_int_cst (uintptr_type, 7));
-      u = build1 (CONVERT_EXPR, shadow_type, u);
-      u = build2 (PLUS_EXPR, shadow_type, u,
-                  build_int_cst (shadow_type, size_in_bytes - 1));
-      u = build2 (GE_EXPR, uintptr_type, u, shadow_value);
-    }
-  else
-      u = build_int_cst (boolean_type_node, 1);
-  t = build2 (TRUTH_AND_EXPR, boolean_type_node, t, u);
-  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
-  gimple_seq_add_seq (&seq, stmts);
-  cond = create_tmp_reg (boolean_type_node, "__asan_crash_cond");
-  g = gimple_build_assign  (cond, t);
-  gimple_set_location (g, location);
-  gimple_seq_add_stmt (&seq, g);
-  g = gimple_build_cond (NE_EXPR, cond, boolean_false_node, NULL_TREE,
-                         NULL_TREE);
-  gimple_set_location (g, location);
-  gimple_seq_add_stmt (&seq, g);
-
-  /* Generate call to the run-time library (e.g. __asan_report_load8).  */
+  base = unshare_expr (base);
 
   gsi = gsi_last_bb (cond_bb);
-  gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
-  seq = NULL; 
-  g = gimple_build_call (report_error_func (is_store, size_in_bytes),
-                         1, base_addr);
-  gimple_seq_add_stmt (&seq, g);
+  g = gimple_build_assign_with_ops (TREE_CODE (base),
+				    make_ssa_name (TREE_TYPE (base), NULL),
+				    base, NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 
-  /* Insert the check code in the THEN block.  */
+  g = gimple_build_assign_with_ops (NOP_EXPR,
+				    make_ssa_name (uintptr_type, NULL),
+				    gimple_assign_lhs (g), NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+  base_addr = gimple_assign_lhs (g);
 
+  /* Build
+     (base_addr >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
+
+  t = build_int_cst (uintptr_type, ASAN_SHADOW_SHIFT);
+  g = gimple_build_assign_with_ops (RSHIFT_EXPR,
+				    make_ssa_name (uintptr_type, NULL),
+				    base_addr, t);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+  t = build_int_cst (uintptr_type, targetm.asan_shadow_offset ());
+  g = gimple_build_assign_with_ops (PLUS_EXPR,
+				    make_ssa_name (uintptr_type, NULL),
+				    gimple_assign_lhs (g), t);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+  g = gimple_build_assign_with_ops (NOP_EXPR,
+				    make_ssa_name (shadow_ptr_type, NULL),
+				    gimple_assign_lhs (g), NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+  t = build2 (MEM_REF, shadow_type, gimple_assign_lhs (g),
+	      build_int_cst (shadow_ptr_type, 0));
+  g = gimple_build_assign_with_ops (MEM_REF,
+				    make_ssa_name (shadow_type, NULL),
+				    t, NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+  shadow = gimple_assign_lhs (g);
+
+  if (size_in_bytes < 8)
+    {
+      /* Slow path for 1, 2 and 4 byte accesses.
+	 Test (shadow != 0)
+	      & ((base_addr & 7) + (size_in_bytes - 1)) >= shadow).  */
+      g = gimple_build_assign_with_ops (NE_EXPR,
+					make_ssa_name (boolean_type_node,
+						       NULL),
+					shadow,
+					build_int_cst (shadow_type, 0));
+      gimple_set_location (g, location);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      t = gimple_assign_lhs (g);
+
+      g = gimple_build_assign_with_ops (BIT_AND_EXPR,
+					make_ssa_name (uintptr_type,
+						       NULL),
+					base_addr,
+					build_int_cst (uintptr_type, 7));
+      gimple_set_location (g, location);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+      g = gimple_build_assign_with_ops (NOP_EXPR,
+					make_ssa_name (shadow_type,
+						       NULL),
+					gimple_assign_lhs (g), NULL_TREE);
+      gimple_set_location (g, location);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+      if (size_in_bytes > 1)
+	{
+	  g = gimple_build_assign_with_ops (PLUS_EXPR,
+					    make_ssa_name (shadow_type,
+							   NULL),
+					    gimple_assign_lhs (g),
+					    build_int_cst (shadow_type,
+							   size_in_bytes - 1));
+	  gimple_set_location (g, location);
+	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+	}
+
+      g = gimple_build_assign_with_ops (GE_EXPR,
+					make_ssa_name (boolean_type_node,
+						       NULL),
+					gimple_assign_lhs (g),
+					shadow);
+      gimple_set_location (g, location);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+      g = gimple_build_assign_with_ops (BIT_AND_EXPR,
+					make_ssa_name (boolean_type_node,
+						       NULL),
+					t, gimple_assign_lhs (g));
+      gimple_set_location (g, location);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+      t = gimple_assign_lhs (g);
+    }
+  else
+    t = shadow;
+
+  g = gimple_build_cond (NE_EXPR, t, build_int_cst (TREE_TYPE (t), 0),
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+  /* Generate call to the run-time library (e.g. __asan_report_load8).  */
   gsi = gsi_start_bb (then_bb);
-  gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
+  g = gimple_build_call (report_error_func (is_store, size_in_bytes),
+			 1, base_addr);
+  gimple_set_location (g, location);
+  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
 
   *iter = gsi_start_bb (join_bb);
 }
@@ -262,14 +302,12 @@ build_check_stmt (tree base,
 
 static void
 instrument_derefs (gimple_stmt_iterator *iter, tree t,
-                  location_t location, int is_store)
+                  location_t location, bool is_store)
 {
   tree type, base;
-  int size_in_bytes;
+  HOST_WIDE_INT size_in_bytes;
 
   type = TREE_TYPE (t);
-  if (type == error_mark_node)
-    return;
   switch (TREE_CODE (t))
     {
     case ARRAY_REF:
@@ -280,25 +318,25 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     default:
       return;
     }
-  size_in_bytes = tree_low_cst (TYPE_SIZE (type), 0) / BITS_PER_UNIT;
-  if (size_in_bytes != 1 && size_in_bytes != 2 &&
-      size_in_bytes != 4 && size_in_bytes != 8 && size_in_bytes != 16)
-      return;
-  {
-    /* For now just avoid instrumenting bit field acceses.
+
+  size_in_bytes = int_size_in_bytes (type);
+  if ((size_in_bytes & (size_in_bytes - 1)) != 0
+      || (unsigned HOST_WIDE_INT) size_in_bytes - 1 >= 16)
+    return;
+
+  /* For now just avoid instrumenting bit field acceses.
      Fixing it is doable, but expected to be messy.  */
 
-    HOST_WIDE_INT bitsize, bitpos;
-    tree offset;
-    enum machine_mode mode;
-    int volatilep = 0, unsignedp = 0;
-    get_inner_reference (t, &bitsize, &bitpos, &offset,
-                         &mode, &unsignedp, &volatilep, false);
-    if (bitpos != 0 || bitsize != size_in_bytes * BITS_PER_UNIT)
-        return;
-  }
+  HOST_WIDE_INT bitsize, bitpos;
+  tree offset;
+  enum machine_mode mode;
+  int volatilep = 0, unsignedp = 0;
+  get_inner_reference (t, &bitsize, &bitpos, &offset,
+		       &mode, &unsignedp, &volatilep, false);
+  if (bitpos != 0 || bitsize != size_in_bytes * BITS_PER_UNIT)
+    return;
 
-  base = build_addr (t, current_function_decl);
+  base = build_fold_addr_expr (t);
   build_check_stmt (base, iter, location, is_store, size_in_bytes);
 }
 
@@ -314,7 +352,6 @@ transform_statements (void)
   basic_block bb;
   gimple_stmt_iterator i;
   int saved_last_basic_block = last_basic_block;
-  enum gimple_rhs_class grhs_class;
 
   FOR_EACH_BB (bb)
     {
@@ -322,16 +359,12 @@ transform_statements (void)
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
         {
           gimple s = gsi_stmt (i);
-          if (gimple_code (s) != GIMPLE_ASSIGN)
-              continue;
+          if (!gimple_assign_single_p (s))
+	    continue;
           instrument_derefs (&i, gimple_assign_lhs (s),
-                             gimple_location (s), 1);
+                             gimple_location (s), true);
           instrument_derefs (&i, gimple_assign_rhs1 (s),
-                             gimple_location (s), 0);
-          grhs_class = get_gimple_rhs_class (gimple_assign_rhs_code (s));
-          if (grhs_class == GIMPLE_BINARY_RHS)
-            instrument_derefs (&i, gimple_assign_rhs2 (s),
-                               gimple_location (s), 0);
+                             gimple_location (s), false);
         }
     }
 }
@@ -351,15 +384,28 @@ asan_finish_file (void)
                              MAX_RESERVED_INIT_PRIORITY - 1);
 }
 
+/* Initialize shadow_ptr_types array.  */
+
+static void
+asan_init_shadow_ptr_types (void)
+{
+  alias_set_type set = new_alias_set ();
+  shadow_ptr_types[0] = build_distinct_type_copy (signed_char_type_node);
+  TYPE_ALIAS_SET (shadow_ptr_types[0]) = set;
+  shadow_ptr_types[0] = build_pointer_type (shadow_ptr_types[0]);
+  shadow_ptr_types[1] = build_distinct_type_copy (short_integer_type_node);
+  TYPE_ALIAS_SET (shadow_ptr_types[1]) = set;
+  shadow_ptr_types[1] = build_pointer_type (shadow_ptr_types[1]);
+}
+
 /* Instrument the current function.  */
 
 static unsigned int
 asan_instrument (void)
 {
-  struct gimplify_ctx gctx;
-  push_gimplify_context (&gctx);
+  if (shadow_ptr_types[0] == NULL_TREE)
+    asan_init_shadow_ptr_types ();
   transform_statements ();
-  pop_gimplify_context (NULL);
   return 0;
 }
 
@@ -386,6 +432,8 @@ struct gimple_opt_pass pass_asan =
   0,                                    /* properties_destroyed  */
   0,                                    /* todo_flags_start  */
   TODO_verify_flow | TODO_verify_stmts
-  | TODO_update_ssa    /* todo_flags_finish  */
+  | TODO_update_ssa			/* todo_flags_finish  */
  }
 };
+
+#include "gt-asan.h"
