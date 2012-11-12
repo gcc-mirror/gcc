@@ -34,11 +34,16 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 
 #include "backtrace.h"
 #include "internal.h"
+
+#ifndef HAVE_GETEXECNAME
+#define getexecname() NULL
+#endif
 
 /* Initialize the fileline information from the executable.  Returns 1
    on success, 0 on failure.  */
@@ -49,6 +54,8 @@ fileline_initialize (struct backtrace_state *state,
 {
   int failed;
   fileline fileline_fn;
+  int pass;
+  int called_error_callback;
   int descriptor;
 
   failed = state->fileline_initialization_failed;
@@ -79,12 +86,58 @@ fileline_initialize (struct backtrace_state *state,
 
   /* We have not initialized the information.  Do it now.  */
 
-  if (state->filename != NULL)
-    descriptor = backtrace_open (state->filename, error_callback, data, NULL);
-  else
-    descriptor = backtrace_open ("/proc/self/exe", error_callback, data, NULL);
+  descriptor = -1;
+  called_error_callback = 0;
+  for (pass = 0; pass < 4; ++pass)
+    {
+      const char *filename;
+      int does_not_exist;
+
+      switch (pass)
+	{
+	case 0:
+	  filename = state->filename;
+	  break;
+	case 1:
+	  filename = getexecname ();
+	  break;
+	case 2:
+	  filename = "/proc/self/exe";
+	  break;
+	case 3:
+	  filename = "/proc/curproc/file";
+	  break;
+	default:
+	  abort ();
+	}
+
+      if (filename == NULL)
+	continue;
+
+      descriptor = backtrace_open (filename, error_callback, data,
+				   &does_not_exist);
+      if (descriptor < 0 && !does_not_exist)
+	{
+	  called_error_callback = 1;
+	  break;
+	}
+      if (descriptor >= 0)
+	break;
+    }
+
   if (descriptor < 0)
-    failed = 1;
+    {
+      if (!called_error_callback)
+	{
+	  if (state->filename != NULL)
+	    error_callback (data, state->filename, ENOENT);
+	  else
+	    error_callback (data,
+			    "libbacktrace could not find executable to open",
+			    0);
+	}
+      failed = 1;
+    }
 
   if (!failed)
     {

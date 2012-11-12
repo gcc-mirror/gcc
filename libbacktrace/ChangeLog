@@ -1,3 +1,16 @@
+2012-11-12  Ian Lance Taylor  <iant@google.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* configure.ac: Check for getexecname.
+	* fileline.c: #include <errno.h>.  Define getexecname if not
+	available.
+	(fileline_initialize): Try to find the executable in a few
+	different ways.
+	* print.c (error_callback): Only print the filename if it came
+	from the backtrace state.
+	* configure, config.h.in: Rebuild.
+
 2012-10-29  Ian Lance Taylor  <iant@google.com>
 
 	* mmap.c (backtrace_vector_release): Correct last patch: add

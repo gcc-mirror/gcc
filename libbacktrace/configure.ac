@@ -289,6 +289,19 @@ fi
 
 AC_CHECK_DECLS(strnlen)
 
+# Check for getexecname function.
+if test -n "${with_target_subdir}"; then
+   case "${host}" in
+   *-*-solaris2*) have_getexecname=yes ;;
+   *) have_getexecname=no ;;
+   esac
+else
+  AC_CHECK_FUNC(getexecname, [have_getexecname=yes], [have_getexecname=no])
+fi
+if test "$have_getexecname" = "yes"; then
+  AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
+fi
+
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],
   [AC_RUN_IFELSE([AC_LANG_PROGRAM([], [return 0;])],
