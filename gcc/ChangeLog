@@ -1,3 +1,14 @@
+2012-11-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcse.c (struct bb_data): Add new fields, old_pressure, live_in
+	and backup.
+	(get_regno_pressure_class): Add prototype.
+	(update_bb_reg_pressure): New.
+	(should_hoist_expr_to_dom): Add new parameter from.
+	Monitor the change of reg pressure and use it to drive hoisting.
+	(hoist_code): Update LIVE and reg pressure information.
+	(calculate_bb_reg_pressure): Initialize live_in and backup.
+
 2012-11-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* doc/md.texi (Standard Pattern Names For Generation): Fix swapped

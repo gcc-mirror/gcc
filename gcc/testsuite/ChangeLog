@@ -1,3 +1,7 @@
+2012-11-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/hoist-register-pressure-3.c: New test.
+
 2012-11-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/sh4a-fprun.c: Add test_sinf and test_cosf noinline
