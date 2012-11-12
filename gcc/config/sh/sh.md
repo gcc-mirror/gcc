@@ -12433,11 +12433,10 @@ label:
 ;; will be expanded to the sincos pattern and one of the output values will
 ;; remain unused.
 (define_expand "sincossf3"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "")
-	(unspec:SF [(match_operand:SF 2 "fp_arith_reg_operand" "")]
-		   UNSPEC_FSINA))
-   (set (match_operand:SF 1 "nonimmediate_operand" "")
-	(unspec:SF [(match_dup 2)] UNSPEC_FCOSA))]
+  [(set (match_operand:SF 0 "nonimmediate_operand")
+	(unspec:SF [(match_operand:SF 2 "fp_arith_reg_operand")] UNSPEC_FCOSA))
+   (set (match_operand:SF 1 "nonimmediate_operand")
+	(unspec:SF [(match_dup 2)] UNSPEC_FSINA))]
   "TARGET_FPU_ANY && TARGET_FSCA"
 {
   rtx scaled = gen_reg_rtx (SFmode);
@@ -12450,8 +12449,8 @@ label:
   emit_sf_insn (gen_fsca (fsca, truncated, sh_fsca_int2sf (),
 			  get_fpscr_rtx ()));
 
-  emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 0));
-  emit_move_insn (operands[1], gen_rtx_SUBREG (SFmode, fsca, 4));
+  emit_move_insn (operands[0], gen_rtx_SUBREG (SFmode, fsca, 4));
+  emit_move_insn (operands[1], gen_rtx_SUBREG (SFmode, fsca, 0));
   DONE;
 })
 
