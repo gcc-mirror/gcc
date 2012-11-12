@@ -4884,7 +4884,7 @@ type @code{float}.
 
 @cindex @code{sincos@var{m}3} instruction pattern
 @item @samp{sincos@var{m}3}
-Store the sine of operand 2 into operand 0 and the cosine of
+Store the cosine of operand 2 into operand 0 and the sine of
 operand 2 into operand 1.
 
 The @code{sin} and @code{cos} built-in functions of C always use the

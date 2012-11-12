@@ -1,5 +1,10 @@
 2012-11-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* doc/md.texi (Standard Pattern Names For Generation): Fix swapped
+	sine and cosine operands in the sincos description.
+
+2012-11-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/53512
 	* config/sh/sh.md (sincossf3): Fix swapped sin and cos operands.
 
