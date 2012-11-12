@@ -1,3 +1,8 @@
+2012-11-12  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* parser.c (cp_parser_objc_class_ivars):
+	Index declspecs.locations by ds_typedef rather than ds_thread.
+
 2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/54413

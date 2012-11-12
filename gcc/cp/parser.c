@@ -24650,7 +24650,7 @@ cp_parser_objc_class_ivars (cp_parser* parser)
       if (decl_spec_seq_has_spec_p (&declspecs, ds_typedef))
 	{
 	  cp_parser_error (parser, "invalid type for instance variable");
-	  declspecs.locations[ds_thread] = 0;
+	  declspecs.locations[ds_typedef] = 0;
 	}
 
       prefix_attributes = declspecs.attributes;
