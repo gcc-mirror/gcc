@@ -1318,6 +1318,17 @@
    (set_attr "mode" "<MODE>")]
 )
 
+(define_insn "*compare_neg<mode>"
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	 (match_operand:GPI 0 "register_operand" "r")
+	 (neg:GPI (match_operand:GPI 1 "register_operand" "r"))))]
+  ""
+  "cmn\\t%<w>0, %<w>1"
+  [(set_attr "v8type" "alus")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "*add_<shift>_<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(plus:GPI (ASHIFT:GPI (match_operand:GPI 1 "register_operand" "r")
