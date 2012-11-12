@@ -1885,19 +1885,23 @@
 )
 
 (define_insn "*cmov<mode>_insn"
-  [(set (match_operand:ALLI 0 "register_operand" "=r,r,r,r")
+  [(set (match_operand:ALLI 0 "register_operand" "=r,r,r,r,r,r,r")
 	(if_then_else:ALLI
 	 (match_operator 1 "aarch64_comparison_operator"
 	  [(match_operand 2 "cc_register" "") (const_int 0)])
-	 (match_operand:ALLI 3 "aarch64_reg_zero_or_m1" "rZ,rZ,UsM,UsM")
-	 (match_operand:ALLI 4 "aarch64_reg_zero_or_m1" "rZ,UsM,rZ,UsM")))]
-  ""
-  ;; Final alternative should be unreachable, but included for completeness
+	 (match_operand:ALLI 3 "aarch64_reg_zero_or_m1_or_1" "rZ,rZ,UsM,rZ,Ui1,UsM,Ui1")
+	 (match_operand:ALLI 4 "aarch64_reg_zero_or_m1_or_1" "rZ,UsM,rZ,Ui1,rZ,UsM,Ui1")))]
+  "!((operands[3] == const1_rtx && operands[4] == constm1_rtx)
+     || (operands[3] == constm1_rtx && operands[4] == const1_rtx))"
+  ;; Final two alternatives should be unreachable, but included for completeness
   "@
    csel\\t%<w>0, %<w>3, %<w>4, %m1
    csinv\\t%<w>0, %<w>3, <w>zr, %m1
    csinv\\t%<w>0, %<w>4, <w>zr, %M1
-   mov\\t%<w>0, -1"
+   csinc\\t%<w>0, %<w>3, <w>zr, %m1
+   csinc\\t%<w>0, %<w>4, <w>zr, %M1
+   mov\\t%<w>0, -1
+   mov\\t%<w>0, 1"
   [(set_attr "v8type" "csel")
    (set_attr "mode" "<MODE>")]
 )
