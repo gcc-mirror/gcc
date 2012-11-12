@@ -3790,8 +3790,12 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
   bitmap_clear (entry_block_defs);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (FUNCTION_ARG_REGNO_P (i))
-      bitmap_set_bit (entry_block_defs, INCOMING_REGNO (i));
+    {
+      if (global_regs[i])
+	bitmap_set_bit (entry_block_defs, i);
+      if (FUNCTION_ARG_REGNO_P (i))
+	bitmap_set_bit (entry_block_defs, INCOMING_REGNO (i));
+    }
 
   /* The always important stack pointer.  */
   bitmap_set_bit (entry_block_defs, STACK_POINTER_REGNUM);

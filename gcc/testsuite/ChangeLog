@@ -1,3 +1,9 @@
+2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51447
+	* gcc.c-torture/execute/pr51447.c: New test.
+
 2012-11-12  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/csinc-2.c: New test.
