@@ -520,6 +520,75 @@ asan_init_func (void)
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
+/* Split the current basic block and create a condition statement
+   insertion point right before the statement pointed to by ITER.
+   Return an iterator to the point at which the caller might safely
+   insert the condition statement.
+
+   THEN_BLOCK must be set to the address of an uninitialized instance
+   of basic_block.  The function will then set *THEN_BLOCK to the
+   'then block' of the condition statement to be inserted by the
+   caller.
+
+   Similarly, the function will set *FALLTRHOUGH_BLOCK to the 'else
+   block' of the condition statement to be inserted by the caller.
+
+   Note that *FALLTHROUGH_BLOCK is a new block that contains the
+   statements starting from *ITER, and *THEN_BLOCK is a new empty
+   block.
+
+   *ITER is adjusted to still point to the same statement it was
+   *pointing to initially.  */
+
+static gimple_stmt_iterator
+create_cond_insert_point_before_iter (gimple_stmt_iterator *iter,
+				      bool then_more_likely_p,
+				      basic_block *then_block,
+				      basic_block *fallthrough_block)
+{
+  gimple_stmt_iterator gsi = *iter;
+
+  if (!gsi_end_p (gsi))
+    gsi_prev (&gsi);
+
+  basic_block cur_bb = gsi_bb (*iter);
+
+  edge e = split_block (cur_bb, gsi_stmt (gsi));
+
+  /* Get a hold on the 'condition block', the 'then block' and the
+     'else block'.  */
+  basic_block cond_bb = e->src;
+  basic_block fallthru_bb = e->dest;
+  basic_block then_bb = create_empty_bb (cond_bb);
+
+  /* Set up the newly created 'then block'.  */
+  e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+  int fallthrough_probability
+    = then_more_likely_p
+    ? PROB_VERY_UNLIKELY
+    : PROB_ALWAYS - PROB_VERY_UNLIKELY;
+  e->probability = PROB_ALWAYS - fallthrough_probability;
+  make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
+
+  /* Set up the fallthrough basic block.  */
+  e = find_edge (cond_bb, fallthru_bb);
+  e->flags = EDGE_FALSE_VALUE;
+  e->count = cond_bb->count;
+  e->probability = fallthrough_probability;
+
+  /* Update dominance info for the newly created then_bb; note that
+     fallthru_bb's dominance info has already been updated by
+     split_bock.  */
+  if (dom_info_available_p (CDI_DOMINATORS))
+    set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+
+  *then_block = then_bb;
+  *fallthrough_block = fallthru_bb;
+  *iter = gsi_start_bb (fallthru_bb);
+
+  return gsi_last_bb (cond_bb);
+}
+
 /* Instrument the memory access instruction BASE.  Insert new
    statements before ITER.
 
@@ -534,8 +603,7 @@ build_check_stmt (tree base, gimple_stmt_iterator *iter,
 		  int size_in_bytes)
 {
   gimple_stmt_iterator gsi;
-  basic_block cond_bb, then_bb, else_bb;
-  edge e;
+  basic_block then_bb, else_bb;
   tree t, base_addr, shadow;
   gimple g;
   tree shadow_ptr_type = shadow_ptr_types[size_in_bytes == 16 ? 1 : 0];
@@ -544,50 +612,14 @@ build_check_stmt (tree base, gimple_stmt_iterator *iter,
     = build_nonstandard_integer_type (TYPE_PRECISION (TREE_TYPE (base)), 1);
   tree base_ssa = base;
 
-  /* We first need to split the current basic block, and start altering
-     the CFG.  This allows us to insert the statements we're about to
-     construct into the right basic blocks.  */
-
-  cond_bb = gimple_bb (gsi_stmt (*iter));
-  gsi = *iter;
-  gsi_prev (&gsi);
-  if (!gsi_end_p (gsi))
-    e = split_block (cond_bb, gsi_stmt (gsi));
-  else
-    e = split_block_after_labels (cond_bb);
-  cond_bb = e->src;
-  else_bb = e->dest;
-
-  /* A recap at this point: else_bb is the basic block at whose head
-     is the gimple statement for which this check expression is being
-     built.  cond_bb is the (possibly new, synthetic) basic block the
-     end of which will contain the cache-lookup code, and a
-     conditional that jumps to the cache-miss code or, much more
-     likely, over to else_bb.  */
-
-  /* Create the bb that contains the crash block.  */
-  then_bb = create_empty_bb (cond_bb);
-  e = make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
-  e->probability = PROB_VERY_UNLIKELY;
-  make_single_succ_edge (then_bb, else_bb, EDGE_FALLTHRU);
-
-  /* Mark the pseudo-fallthrough edge from cond_bb to else_bb.  */
-  e = find_edge (cond_bb, else_bb);
-  e->flags = EDGE_FALSE_VALUE;
-  e->count = cond_bb->count;
-  e->probability = PROB_ALWAYS - PROB_VERY_UNLIKELY;
-
-  /* Update dominance info.  Note that bb_join's data was
-     updated by split_block.  */
-  if (dom_info_available_p (CDI_DOMINATORS))
-    {
-      set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
-      set_immediate_dominator (CDI_DOMINATORS, else_bb, cond_bb);
-    }
+  /* Get an iterator on the point where we can add the condition
+     statement for the instrumentation.  */
+  gsi = create_cond_insert_point_before_iter (iter,
+					      /*then_more_likely_p=*/false,
+					      &then_bb,
+					      &else_bb);
 
   base = unshare_expr (base);
-
-  gsi = gsi_last_bb (cond_bb);
 
   /* BASE can already be an SSA_NAME; in that case, do not create a
      new SSA_NAME for it.  */

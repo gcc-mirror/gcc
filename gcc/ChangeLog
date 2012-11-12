@@ -1,5 +1,10 @@
 2012-11-12  Dodji Seketeli  <dodji@redhat.com>
 
+	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
+	(build_check_stmt): ... here.
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
 	* asan.c (build_check_stmt): Accept the memory access to be
 	represented by an SSA_NAME.
 
