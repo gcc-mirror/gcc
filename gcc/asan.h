@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 extern void asan_finish_file(void);
 
 /* Shadow memory is found at
-   (address >> ASAN_SHADOW_SHIFT) | targetm.asan_shadow_offset ().  */
+   (address >> ASAN_SHADOW_SHIFT) + targetm.asan_shadow_offset ().  */
 #define ASAN_SHADOW_SHIFT	3
 
 #endif /* TREE_ASAN */
