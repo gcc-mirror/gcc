@@ -1,4 +1,8 @@
-2012-11-12  Wei Mi <wmi@google.com>
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c: Formatting cleanups.
+
+2012-11-12  Wei Mi  <wmi@google.com>
 
 	* gcc.c (LINK_COMMAND_SPEC): Add -lasan to link command if
 	-faddress-sanitizer is on.
@@ -28,7 +32,6 @@
 	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
 	(build_check_stmt): ... here.
 
-
 2012-11-12  Dodji Seketeli  <dodji@redhat.com>
 
 	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
@@ -40,7 +43,7 @@
 	represented by an SSA_NAME.
 
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
-	    Wei Mi <wmi@google.com>
+	    Wei Mi  <wmi@google.com>
 
 	* varasm.c: Include asan.h.
 	(assemble_noswitch_variable): Grow size by asan_red_zone_size
@@ -111,7 +114,7 @@
 
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 	    Xinliang David Li  <davidxl@google.com>
-	    Dodji Seketeli <dodji@redhat.com>
+	    Dodji Seketeli  <dodji@redhat.com>
 
 	* Makefile.in (GTFILES): Add $(srcdir)/asan.c.
 	(asan.o): Update the dependencies of asan.o.
@@ -155,9 +158,9 @@
 	* config/i386/i386.c (ix86_asan_shadow_offset): New function.
 	(TARGET_ASAN_SHADOW_OFFSET): Define.
 
-2012-11-12  Wei Mi <wmi@google.com>
-	    Diego Novillo <dnovillo@google.com>
-	    Dodji Seketeli <dodji@redhat.com>
+2012-11-12  Wei Mi  <wmi@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+	    Dodji Seketeli  <dodji@redhat.com>
 
 	* Makefile.in: Add asan.c and its dependencies.
 	* common.opt: Add -faddress-sanitizer option.
