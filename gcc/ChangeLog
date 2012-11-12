@@ -1,3 +1,7 @@
+2012-11-12  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*compare_neg<mode>): New pattern.
+
 2012-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi: Move -faddress-sanitizer from Optimization
