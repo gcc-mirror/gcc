@@ -113,9 +113,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res>
     class shared_future;
 
-  template<typename _Res>
-    class atomic_future;
-
   template<typename _Signature>
     class packaged_task;
 
