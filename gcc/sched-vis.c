@@ -568,6 +568,12 @@ print_pattern (char *buf, const_rtx x, int verbose)
 {
   char t1[BUF_LEN], t2[BUF_LEN], t3[BUF_LEN];
 
+  if (! x)
+    {
+      sprintf (buf, "(nil)");
+      return;
+    }
+
   switch (GET_CODE (x))
     {
     case SET:

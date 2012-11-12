@@ -1,4 +1,8 @@
 2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis.c (print_pattern): Handle NULL patterns.
+
+2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/51447
