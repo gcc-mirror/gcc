@@ -102,6 +102,11 @@
   A constraint that matches the immediate constant -1."
   (match_test "op == constm1_rtx"))
 
+(define_constraint "Ui1"
+  "@internal
+  A constraint that matches the immediate constant +1."
+  (match_test "op == const1_rtx"))
+
 (define_constraint "Ui3"
   "@internal
   A constraint that matches the integers 0...4."

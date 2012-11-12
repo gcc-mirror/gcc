@@ -1,5 +1,13 @@
 2012-11-12  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.md (cmov<mode>_insn): Emit CSINC when
+	one of the alternatives is constant 1.
+	* config/aarch64/constraints.md: New constraint.
+	* config/aarch64/predicates.md: Rename predicate
+	aarch64_reg_zero_or_m1 to aarch64_reg_zero_or_m1_or_1.
+
+2012-11-12  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.md (*compare_neg<mode>): New pattern.
 
 2012-11-12  Tobias Burnus  <burnus@net-b.de>
