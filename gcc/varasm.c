@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-mudflap.h"
 #include "cgraph.h"
 #include "pointer-set.h"
+#include "asan.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -1831,6 +1832,9 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect)
   size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
   rounded = size;
 
+  if (flag_asan && asan_protect_global (decl))
+    size += asan_red_zone_size (size);
+
   /* Don't allocate zero bytes of common,
      since that means "undefined external" in the linker.  */
   if (size == 0)
@@ -1897,6 +1901,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   const char *name;
   rtx decl_rtl, symbol;
   section *sect;
+  bool asan_protected = false;
 
   /* This function is supposed to handle VARIABLES.  Ensure we have one.  */
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
@@ -1984,6 +1989,15 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   /* Compute the alignment of this data.  */
 
   align_variable (decl, dont_output_data);
+
+  if (flag_asan
+      && asan_protect_global (decl))
+    {
+      asan_protected = true;
+      DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl), 
+                               ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+    }
+
   set_mem_align (decl_rtl, DECL_ALIGN (decl));
 
   if (TREE_PUBLIC (decl))
@@ -2022,6 +2036,12 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       if (DECL_ALIGN (decl) > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DECL_ALIGN_UNIT (decl)));
       assemble_variable_contents (decl, name, dont_output_data);
+      if (asan_protected)
+	{
+	  unsigned HOST_WIDE_INT int size
+	    = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  assemble_zeros (asan_red_zone_size (size));
+	}
     }
 }
 
@@ -6926,6 +6946,8 @@ place_block_symbol (rtx symbol)
       decl = SYMBOL_REF_DECL (symbol);
       alignment = DECL_ALIGN (decl);
       size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+      if (flag_asan && asan_protect_global (decl))
+	size += asan_red_zone_size (size);
     }
 
   /* Calculate the object's offset from the start of the block.  */

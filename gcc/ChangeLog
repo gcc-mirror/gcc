@@ -1,4 +1,28 @@
 2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+	    Wei Mi <wmi@google.com>
+
+	* varasm.c: Include asan.h.
+	(assemble_noswitch_variable): Grow size by asan_red_zone_size
+	if decl is asan protected.
+	(place_block_symbol): Likewise.
+	(assemble_variable): If decl is asan protected, increase
+	DECL_ALIGN if needed, and for decls emitted using
+	assemble_variable_contents append padding zeros after it.
+	* Makefile.in (varasm.o): Depend on asan.h.
+	* asan.c: Include output.h.
+	(asan_pp, asan_pp_initialized, asan_ctor_statements): New variables.
+	(asan_pp_initialize, asan_pp_string): New functions.
+	(asan_emit_stack_protection): Use asan_pp{,_initialized}
+	instead of local pp{,_initialized} vars, use asan_pp_initialize
+	and asan_pp_string helpers.
+	(asan_needs_local_alias, asan_protect_global,
+	asan_global_struct, asan_add_global): New functions.
+	(asan_finish_file): Protect global vars that can be protected. Use
+	asan_ctor_statements instead of ctor_statements
+	* asan.h (asan_protect_global): New prototype.
+	(asan_red_zone_size): New inline function.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (asan.o): Depend on $(EXPR_H) $(OPTABS_H).
 	(cfgexpand.o): Depend on asan.h.
