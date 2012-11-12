@@ -2056,6 +2056,17 @@ DEFHOOK
  "",
  unsigned HOST_WIDE_INT, (unsigned HOST_WIDE_INT val), NULL)
 
+/* Defines an offset bitwise ored into shifted address to get corresponding
+   Address Sanitizer shadow address, or -1 if Address Sanitizer is not
+   supported by the target.  */
+DEFHOOK
+(asan_shadow_offset,
+ "Return the offset bitwise ored into shifted address to get corresponding\n\
+Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not\n\
+supported by the target.",
+ unsigned HOST_WIDE_INT, (void),
+ NULL)
+
 /* Functions relating to calls - argument passing, returns, etc.  */
 /* Members of struct call have no special macro prefix.  */
 HOOK_VECTOR (TARGET_CALLS, calls)
