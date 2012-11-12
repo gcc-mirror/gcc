@@ -1,3 +1,9 @@
+2012-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55272
+	* module.c (mio_array_spec): Correctly handle coarray
+	scalars.
+
 2012-11-07  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/51727
