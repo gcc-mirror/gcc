@@ -1,3 +1,8 @@
+2012-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	* diagnostic.c (diagnostic_append_note): Also call va_end when
+	inhibit_notes_p is true.
+
 2012-11-12  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcse.c (struct bb_data): Add new fields, old_pressure, live_in

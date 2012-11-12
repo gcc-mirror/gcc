@@ -833,7 +833,10 @@ diagnostic_append_note (diagnostic_context *context,
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, location, DK_NOTE);
   if (context->inhibit_notes_p)
-    return;
+    {
+      va_end (ap);
+      return;
+    }
   pp_set_prefix (context->printer,
                  diagnostic_build_prefix (context, &diagnostic));
   pp_newline (context->printer);
