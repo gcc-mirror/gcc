@@ -1,3 +1,12 @@
+2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51447
+	* df-scan.c (df_get_entry_block_def_set): Add global regs to the set.
+	* df-problems.c (df_lr_local_compute): Make global regs always live.
+	* dce.c (deletable_insn_p): Make insns setting a global reg
+	inherently necessary.
+
 2012-11-12  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (cmov<mode>_insn): Emit CSINC when
@@ -362,7 +371,7 @@
 2012-11-09  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* rtl.h (CONST_SCALAR_INT_P): New macro.
-   	* cfgexpand.c (expand_debug_locations): Changed to use
+	* cfgexpand.c (expand_debug_locations): Changed to use
 	CONST_SCALAR_INT_P macro.
 	* combine.c (try_combine, subst, make_extraction,
 	gen_lowpart_for_combine): Ditto.
@@ -725,7 +734,7 @@
 	is_tm_ending_fndecl calls as mergable.
 
 2012-11-06  Sterling Augustine <saugustine@google.com>
-            Cary Coutant <ccoutant@google.com>
+	    Cary Coutant <ccoutant@google.com>
 
 	* common.opt (gno-split-dwarf, gsplit-dwarf): New switches.
 	* doc/invoke.texi (Debugging Options): Document them.
@@ -1254,7 +1263,7 @@
 	(make_extraction): Adjust head comment and move up canonicalization.
 
 2012-11-04  Alexandre Oliva <aoliva@redhat.com>
-            Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek <jakub@redhat.com>
 
 	PR debug/54693
 	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Emit debug temps
@@ -1541,9 +1550,9 @@
 	(symtab_node_def::try_variable): New.  Change most calls to
 	symtab_variable_p with calls to dyn_cast <varpool_node> (p).
 	(symtab_function_p): Remove.  Change callers to use
-        is_a <cgraph_node> (p) instead.
+	is_a <cgraph_node> (p) instead.
 	(symtab_variable_p): Remove.  Change callers to use
-        is_a <varpool_node> (p) instead.
+	is_a <varpool_node> (p) instead.
 	* cgraph.c (cgraph_node_for_asm): Remove redundant call to
 	symtab_node_for_asm.
 	* cgraphunit.c (symbol_finalized_and_needed): New.
@@ -2333,7 +2342,7 @@
 2012-10-24  Sharad Singhai  <singhai@google.com>
 
 	* config/rs6000/rs6000.c (rs6000_density_test): Use dump_enabled_p
-          instead of dump_kind_p.
+	instead of dump_kind_p.
 
 2012-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -3478,7 +3487,7 @@
 	(TARGET_FSGSBASE): Likewise.
 	(TARGET_RDRND): Likewise.
 	(TARGET_F16C): Likewise.
-	(TARGET_RTM     ): Likewise.
+	(TARGET_RTM): Likewise.
 	(TARGET_HLE): Likewise.
 	(TARGET_RDSEED): Likewise.
 	(TARGET_PRFCHW): Likewise.

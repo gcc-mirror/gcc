@@ -931,13 +931,18 @@ df_lr_bb_local_compute (unsigned int bb_index)
 static void
 df_lr_local_compute (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
-  unsigned int bb_index;
+  unsigned int bb_index, i;
   bitmap_iterator bi;
 
   bitmap_clear (&df->hardware_regs_used);
 
   /* The all-important stack pointer must always be live.  */
   bitmap_set_bit (&df->hardware_regs_used, STACK_POINTER_REGNUM);
+
+  /* Global regs are always live, too.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (global_regs[i])
+      bitmap_set_bit (&df->hardware_regs_used, i);
 
   /* Before reload, there are a few registers that must be forced
      live everywhere -- which might not already be the case for

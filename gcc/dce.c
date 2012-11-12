@@ -121,6 +121,12 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
       && !insn_nothrow_p (insn))
     return false;
 
+  /* If INSN sets a global_reg, leave it untouched.  */
+  for (df_ref *def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+    if (HARD_REGISTER_NUM_P (DF_REF_REGNO (*def_rec))
+	&& global_regs[DF_REF_REGNO (*def_rec)])
+      return false;
+
   body = PATTERN (insn);
   switch (GET_CODE (body))
     {
