@@ -1276,6 +1276,8 @@ merge_aggregate_lattices (struct cgraph_edge *cs,
     return true;
   if (src_plats->aggs_bottom)
     return set_agg_lats_contain_variable (dest_plats);
+  if (src_plats->aggs_contain_variable)
+    ret |= set_agg_lats_contain_variable (dest_plats);
   dst_aglat = &dest_plats->aggs;
 
   for (struct ipcp_agg_lattice *src_aglat = src_plats->aggs;

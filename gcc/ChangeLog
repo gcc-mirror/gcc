@@ -1,3 +1,9 @@
+2012-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55253
+	* ipa-cp.c (merge_aggregate_lattices): Propagate aggs_contain_variable
+	flag.
+
 2012-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 

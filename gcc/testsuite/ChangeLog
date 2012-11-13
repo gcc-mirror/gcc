@@ -1,3 +1,9 @@
+2012-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55253
+	* gcc.dg/torture/pr55253.c: New test.
+	* gcc.dg/torture/pr55305.c: Likewise.
+
 2012-11-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/55142
