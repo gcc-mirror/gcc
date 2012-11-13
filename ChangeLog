@@ -1,3 +1,9 @@
+2012-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac: Add section for configdirs for libsanitizer.
+	Disable for cris-*-* and mmix-*-*.
+	* configure: Regenerate.
+
 2012-11-12  Wei Mi <wmi@google.com>
 
 	* configure.ac: Add libsanitizer to target_libraries.
