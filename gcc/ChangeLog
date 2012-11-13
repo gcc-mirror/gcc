@@ -1,3 +1,8 @@
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (instrument_builtin_call) <case BUILT_IN_BCOPY>: Fix up
+	dest assignment.
+
 2012-11-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/55257

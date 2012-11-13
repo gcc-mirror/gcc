@@ -1045,16 +1045,16 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
       /* (s, s, n) style memops.  */
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
-      len = gimple_call_arg (call, 2);
       source0 = gimple_call_arg (call, 0);
       source1 = gimple_call_arg (call, 1);
+      len = gimple_call_arg (call, 2);
       break;
 
       /* (src, dest, n) style memops.  */
     case BUILT_IN_BCOPY:
-      len = gimple_call_arg (call, 2);
       source0 = gimple_call_arg (call, 0);
-      dest = gimple_call_arg (call, 2);
+      dest = gimple_call_arg (call, 1);
+      len = gimple_call_arg (call, 2);
       break;
 
       /* (dest, src, n) style memops.  */
