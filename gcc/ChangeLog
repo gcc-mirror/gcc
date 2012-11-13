@@ -1,5 +1,7 @@
 2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (asan.o): Depend on $(TM_P_H).
+
 	PR tree-optimization/55281
 	* tree-vect-generic.c (expand_vector_condition): Accept any
 	is_gimple_val rather than just SSA_NAME if not COMPARISON_CLASS_P.
