@@ -478,7 +478,6 @@ set_Wall (int setting)
   gfc_option.warn_target_lifetime = setting;
 
   warn_return_type = setting;
-  warn_switch = setting;
   warn_uninitialized = setting;
   warn_maybe_uninitialized = setting;
 }

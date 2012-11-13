@@ -39,7 +39,7 @@
 #include <cmath>
 #include <algorithm>
 #include <debug/debug.h>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
 
@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ///  Copy constructor.
       valarray(const valarray&);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       ///  Move constructor.
       valarray(valarray&&) noexcept;
 #endif
@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ///  Construct an array with the same size and values in @a ia.
       valarray(const indirect_array<_Tp>&);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       ///  Construct an array with an initializer_list of values.
       valarray(initializer_list<_Tp>);
 #endif
@@ -179,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       valarray<_Tp>& operator=(const valarray<_Tp>& __v);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  Move assign elements to an array.
        *
@@ -239,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       valarray<_Tp>& operator=(const indirect_array<_Tp>& __ia);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  @brief  Assign elements to an initializer_list.
        *
@@ -467,7 +467,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	valarray<_Tp>& operator>>=(const _Expr<_Dom, _Tp>&);
 
       // _lib.valarray.members_ member functions:
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       ///  Swap.
       void swap(valarray<_Tp>& __v) noexcept;
 #endif
@@ -634,7 +634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { std::__valarray_copy_construct(__v._M_data, __v._M_data + _M_size,
 				     _M_data); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp>
     inline
     valarray<_Tp>::valarray(valarray<_Tp>&& __v) noexcept
@@ -683,7 +683,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	(__ia._M_array, __ia._M_index, _Array<_Tp>(_M_data), _M_size);
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp>
     inline
     valarray<_Tp>::valarray(initializer_list<_Tp> __l)
@@ -728,7 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp>
     inline valarray<_Tp>&
     valarray<_Tp>::operator=(valarray<_Tp>&& __v) noexcept
@@ -895,7 +895,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 _Array<size_t>(__i));
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<class _Tp>
     inline void
     valarray<_Tp>::swap(valarray<_Tp>& __v) noexcept
@@ -1174,7 +1174,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
 
 #undef _DEFINE_BINARY_OPERATOR
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   /**
    *  @brief  Return an iterator pointing to the first element of
    *          the valarray.
@@ -1214,7 +1214,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
     inline const _Tp*
     end(const valarray<_Tp>& __va)
     { return std::__addressof(__va[0]) + __va.size(); }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
   // @} group numeric_arrays
 

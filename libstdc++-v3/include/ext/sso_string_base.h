@@ -183,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __sso_string_base(const __sso_string_base& __rcs);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       __sso_string_base(__sso_string_base&& __rcs);
 #endif
 
@@ -344,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_dataplus(__rcs._M_get_allocator(), _M_local_data)
     { _M_construct(__rcs._M_data(), __rcs._M_data() + __rcs._M_length()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _CharT, typename _Traits, typename _Alloc>
     __sso_string_base<_CharT, _Traits, _Alloc>::
     __sso_string_base(__sso_string_base&& __rcs)

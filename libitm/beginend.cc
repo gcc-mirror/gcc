@@ -54,6 +54,8 @@ static pthread_mutex_t global_tid_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_key_t thr_release_key;
 static pthread_once_t thr_release_once = PTHREAD_ONCE_INIT;
 
+// See gtm_thread::begin_transaction.
+uint32_t GTM::htm_fastpath = 0;
 
 /* Allocate a transaction structure.  */
 void *
@@ -162,6 +164,70 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
   // synchronization might perform better?
   if (unlikely(prop & pr_undoLogCode))
     GTM_fatal("pr_undoLogCode not supported");
+
+#if defined(USE_HTM_FASTPATH) && !defined(HTM_CUSTOM_FASTPATH)
+  // HTM fastpath.  Only chosen in the absence of transaction_cancel to allow
+  // using an uninstrumented code path.
+  // The fastpath is enabled only by dispatch_htm's method group, which uses
+  // serial-mode methods as fallback.  Serial-mode transactions cannot execute
+  // concurrently with HW transactions because the latter monitor the serial
+  // lock's writer flag and thus abort if another thread is or becomes a
+  // serial transaction.  Therefore, if the fastpath is enabled, then a
+  // transaction is not executing as a HW transaction iff the serial lock is
+  // write-locked.  This allows us to use htm_fastpath and the serial lock's
+  // writer flag to reliable determine whether the current thread runs a HW
+  // transaction, and thus we do not need to maintain this information in
+  // per-thread state.
+  // If an uninstrumented code path is not available, we can still run
+  // instrumented code from a HW transaction because the HTM fastpath kicks
+  // in early in both begin and commit, and the transaction is not canceled.
+  // HW transactions might get requests to switch to serial-irrevocable mode,
+  // but these can be ignored because the HTM provides all necessary
+  // correctness guarantees.  Transactions cannot detect whether they are
+  // indeed in serial mode, and HW transactions should never need serial mode
+  // for any internal changes (e.g., they never abort visibly to the STM code
+  // and thus do not trigger the standard retry handling).
+  if (likely(htm_fastpath && (prop & pr_hasNoAbort)))
+    {
+      for (uint32_t t = htm_fastpath; t; t--)
+	{
+	  uint32_t ret = htm_begin();
+	  if (htm_begin_success(ret))
+	    {
+	      // We are executing a transaction now.
+	      // Monitor the writer flag in the serial-mode lock, and abort
+	      // if there is an active or waiting serial-mode transaction.
+	      if (unlikely(serial_lock.is_write_locked()))
+		htm_abort();
+	      else
+		// We do not need to set a_saveLiveVariables because of HTM.
+		return (prop & pr_uninstrumentedCode) ?
+		    a_runUninstrumentedCode : a_runInstrumentedCode;
+	    }
+	  // The transaction has aborted.  Don't retry if it's unlikely that
+	  // retrying the transaction will be successful.
+	  if (!htm_abort_should_retry(ret))
+	    break;
+	  // Wait until any concurrent serial-mode transactions have finished.
+	  // This is an empty critical section, but won't be elided.
+	  if (serial_lock.is_write_locked())
+	    {
+	      tx = gtm_thr();
+	      if (unlikely(tx == NULL))
+	        {
+	          // See below.
+	          tx = new gtm_thread();
+	          set_gtm_thr(tx);
+	        }
+	      serial_lock.read_lock(tx);
+	      serial_lock.read_unlock(tx);
+	      // TODO We should probably reset the retry count t here, unless
+	      // we have retried so often that we should go serial to avoid
+	      // starvation.
+	    }
+	}
+    }
+#endif
 
   tx = gtm_thr();
   if (unlikely(tx == NULL))
@@ -537,6 +603,17 @@ GTM::gtm_thread::restart (gtm_restart_reason r, bool finish_serial_upgrade)
 void ITM_REGPARM
 _ITM_commitTransaction(void)
 {
+#if defined(USE_HTM_FASTPATH)
+  // HTM fastpath.  If we are not executing a HW transaction, then we will be
+  // a serial-mode transaction.  If we are, then there will be no other
+  // concurrent serial-mode transaction.
+  // See gtm_thread::begin_transaction.
+  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+    {
+      htm_commit();
+      return;
+    }
+#endif
   gtm_thread *tx = gtm_thr();
   if (!tx->trycommit ())
     tx->restart (RESTART_VALIDATE_COMMIT);
@@ -545,6 +622,14 @@ _ITM_commitTransaction(void)
 void ITM_REGPARM
 _ITM_commitTransactionEH(void *exc_ptr)
 {
+#if defined(USE_HTM_FASTPATH)
+  // See _ITM_commitTransaction.
+  if (likely(htm_fastpath && !gtm_thread::serial_lock.is_write_locked()))
+    {
+      htm_commit();
+      return;
+    }
+#endif
   gtm_thread *tx = gtm_thr();
   if (!tx->trycommit ())
     {

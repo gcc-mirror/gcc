@@ -1,3 +1,956 @@
+2012-11-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55253
+	* ipa-cp.c (merge_aggregate_lattices): Propagate aggs_contain_variable
+	flag.
+
+2012-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/55142
+	* config/i386/i386.c (legitimize_pic_address): Properly handle
+	REG + CONST.
+	(ix86_print_operand_address): Set code to 'k' when forcing
+	addr32 prefix.  For x32, zero-extend negative displacement if
+	it < -16*1024*1024.
+
+2012-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41993
+	* mode-switching.c (create_pre_exit): Set return_copy to last_insn if
+	copy_start is not a function return regno. Skip debug instructions
+	in instruction scan loop.
+
+2012-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): Fix comment.
+	* config/arm/arm.md (opt, opt_enabled): New attributes.
+	(enabled): Use opt_enabled.
+	(ashldi3, ashrdi3, lshrdi3): Add TARGET_NEON case.
+	(ashldi3): Allow general operands for TARGET_NEON case.
+	* config/arm/iterators.md (rshifts): New code iterator.
+	(shift, shifttype): New code attributes.
+	* config/arm/neon.md (UNSPEC_LOAD_COUNT): New unspec type.
+	(neon_load_count, ashldi3_neon_noclobber, ashldi3_neon,
+	signed_shift_di3_neon, unsigned_shift_di3_neon,
+	ashrdi3_neon_imm_noclobber, lshrdi3_neon_imm_noclobber,
+	<shift>di3_neon): New patterns.
+
+2012-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (asan.o): Depend on $(TM_P_H).
+
+	PR tree-optimization/55281
+	* tree-vect-generic.c (expand_vector_condition): Accept any
+	is_gimple_val rather than just SSA_NAME if not COMPARISON_CLASS_P.
+	* fold-const.c (fold_ternary_loc): Fold VEC_COND_EXPR if arg0 is
+	either integer_all_onesp or integer_zerop.
+	* tree-vect-stmts.c (vectorizable_condition): Build the condition
+	using corresponding vector integer type instead of vectype.
+
+	PR rtl-optimization/54127
+	* cfgrtl.c (force_nonfallthru_and_redirect): When redirecting
+	asm goto labels from BB_HEAD (e->dest) to target bb, decrement
+	LABEL_NUSES of BB_HEAD (e->dest) and increment LABEL_NUSES of
+	BB_HEAD (target) appropriately and adjust JUMP_LABEL and/or
+	REG_LABEL_TARGET and REG_LABEL_OPERAND.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (instrument_builtin_call) <case BUILT_IN_BCOPY>: Fix up
+	dest assignment.
+
+2012-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/55257
+	* config/cris/cris.c (cris_asm_output_mi_thunk): Call
+	final_start_function and final_end_function.
+
+2012-11-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* asan.c: Include tm_p.h.
+
+2012-11-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/55195
+	* config/pa/pa.md (attr type): Add sibcall and sh_func_adrs insn types.
+	(in_branch_delay): Don't allow sibcall or sh_func_adrs insns.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+	Define delay for sibcall insns.  Adjust Z3 and Z4 insn reservations for
+	new types.  Add opaque cond to mark all calls, sibcalls, dyncalls and
+	the $$sh_func_adrs call as variable.  Update type of sibcalls and
+	$$sh_func_adrs call.
+	* config/pa/pa.c (pa_adjust_insn_length): Revise to return updated
+	length instead of adjustment.  Handle negative and undefined call
+	adjustments for insn_default_length.  Remove adjustment for millicode
+	insn with unfilled delay slot.
+	(pa_output_millicode_call): Update for revised millicode length.
+	* config/pa/pa.h (ADJUST_INSN_LENGTH): Revise to set LENGTH.
+
+2012-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-ccp.c (dump_lattice_value) <CONSTANT>: Fix duplication.
+
+2012-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* common.opt (fvar-tracking-uninit): Document.
+	* toplev.c (process_options): Fix handling of flag_var_tracking_uninit.
+	* config/darwin.c (darwin_override_options): Likewise.
+
+2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis.c (print_pattern): Handle NULL patterns.
+
+2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/51447
+	* df-scan.c (df_get_entry_block_def_set): Add global regs to the set.
+	* df-problems.c (df_lr_local_compute): Make global regs always live.
+	* dce.c (deletable_insn_p): Make insns setting a global reg
+	inherently necessary.
+
+2012-11-12  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (cmov<mode>_insn): Emit CSINC when
+	one of the alternatives is constant 1.
+	* config/aarch64/constraints.md: New constraint.
+	* config/aarch64/predicates.md: Rename predicate
+	aarch64_reg_zero_or_m1 to aarch64_reg_zero_or_m1_or_1.
+
+2012-11-12  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*compare_neg<mode>): New pattern.
+
+2012-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi: Move -faddress-sanitizer from Optimization
+	Options to Debugging Options.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c: Formatting cleanups.
+
+2012-11-12  Wei Mi  <wmi@google.com>
+
+	* gcc.c (LINK_COMMAND_SPEC): Add -lasan to link command if
+	-faddress-sanitizer is on.
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
+	* gimple.h (is_gimple_builtin_call): Declare ...
+	* gimple.c (is_gimple_builtin_call): ... new public function.
+	* asan.c (insert_if_then_before_iter, instrument_mem_region_access,
+	instrument_strlen_call, maybe_instrument_builtin_call,
+	instrument_call): New static functions.
+	(create_cond_insert_point): Renamed
+	create_cond_insert_point_before_iter into this.  Add a new
+	parameter to decide whether to insert the condition before or
+	after the statement iterator.
+	(build_check_stmt): Adjust for the new create_cond_insert_point.
+	Add a new parameter to decide whether to add the instrumentation
+	code before or after the statement iterator.
+	(instrument_assignment): Factorize from ...
+	(transform_statements): ... here.  Use maybe_instrument_call to
+	instrument builtin function calls as well.
+	(instrument_derefs): Adjust for the new parameter of
+	build_check_stmt.  Fix detection of bit-field access.
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
+	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
+	(build_check_stmt): ... here.
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
+	* asan.c (create_cond_insert_point_before_iter): Factorize out of ...
+	(build_check_stmt): ... here.
+
+2012-11-12  Dodji Seketeli  <dodji@redhat.com>
+
+	* asan.c (build_check_stmt): Accept the memory access to be
+	represented by an SSA_NAME.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+	    Wei Mi  <wmi@google.com>
+
+	* varasm.c: Include asan.h.
+	(assemble_noswitch_variable): Grow size by asan_red_zone_size
+	if decl is asan protected.
+	(place_block_symbol): Likewise.
+	(assemble_variable): If decl is asan protected, increase
+	DECL_ALIGN if needed, and for decls emitted using
+	assemble_variable_contents append padding zeros after it.
+	* Makefile.in (varasm.o): Depend on asan.h.
+	* asan.c: Include output.h.
+	(asan_pp, asan_pp_initialized, asan_ctor_statements): New variables.
+	(asan_pp_initialize, asan_pp_string): New functions.
+	(asan_emit_stack_protection): Use asan_pp{,_initialized}
+	instead of local pp{,_initialized} vars, use asan_pp_initialize
+	and asan_pp_string helpers.
+	(asan_needs_local_alias, asan_protect_global,
+	asan_global_struct, asan_add_global): New functions.
+	(asan_finish_file): Protect global vars that can be protected. Use
+	asan_ctor_statements instead of ctor_statements
+	* asan.h (asan_protect_global): New prototype.
+	(asan_red_zone_size): New inline function.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (asan.o): Depend on $(EXPR_H) $(OPTABS_H).
+	(cfgexpand.o): Depend on asan.h.
+	* asan.c: Include expr.h and optabs.h.
+	(asan_shadow_set): New variable.
+	(asan_shadow_cst, asan_emit_stack_protection): New functions.
+	(asan_init_shadow_ptr_types): Initialize also asan_shadow_set.
+	* cfgexpand.c: Include asan.h.  Define HOST_WIDE_INT heap vector.
+	(partition_stack_vars): If i is large alignment and j small
+	alignment or vice versa, break out of the loop instead of continue,
+	and put the test earlier.  If flag_asan, break out of the loop
+	if for small alignment size is different.
+	(struct stack_vars_data): New type.
+	(expand_stack_vars): Add DATA argument.  Change PRED type to
+	function taking size_t argument instead of tree.  Adjust pred
+	calls.  Fill DATA in and add needed padding in between variables
+	if -faddress-sanitizer.
+	(defer_stack_allocation): Defer everything for flag_asan.
+	(stack_protect_decl_phase_1, stack_protect_decl_phase_2): Take
+	size_t index into stack_vars array instead of the decl directly.
+	(asan_decl_phase_3): New function.
+	(expand_used_vars): Return var destruction sequence.  Adjust
+	expand_stack_vars calls, add another one for flag_asan.  Call
+	asan_emit_stack_protection if expand_stack_vars added anything
+	to the vectors.
+	(expand_gimple_basic_block): Add disable_tail_calls argument.
+	(gimple_expand_cfg): Pass true to it if expand_used_vars returned
+	non-NULL.  Emit the sequence returned by expand_used_vars after
+	return_label.
+	* asan.h (asan_emit_stack_protection): New prototype.
+	(asan_shadow_set): New decl.
+	(ASAN_RED_ZONE_SIZE, ASAN_STACK_MAGIC_LEFT, ASAN_STACK_MAGIC_MIDDLE,
+	ASAN_STACK_MAGIC_RIGHT, ASAN_STACK_FRAME_MAGIC): Define.
+	(asan_protect_stack_decl): New inline.
+	* toplev.c (process_options): Also disable -faddress-sanitizer on
+	!FRAME_GROWS_DOWNWARDS targets.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (build_check_stmt): Rename join_bb variable to else_bb.
+	(gate_asan_O0): New function.
+	(pass_asan_O0): New variable.
+	* passes.c (init_optimization_passes): Add pass_asan_O0.
+	* tree-pass.h (pass_asan_O0): New declaration.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+	    Xinliang David Li  <davidxl@google.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* Makefile.in (GTFILES): Add $(srcdir)/asan.c.
+	(asan.o): Update the dependencies of asan.o.
+	* asan.c (tm.h, tree.h, tm_p.h, basic-block.h, flags.h
+	function.h, tree-inline.h, tree-dump.h, diagnostic.h, demangle.h,
+	langhooks.h, ggc.h, cgraph.h, gimple.h): Remove these unused but
+	included headers.
+	(shadow_ptr_types): New variable.
+	(report_error_func): Change is_store argument to bool, don't append
+	newline to function name.
+	(PROB_VERY_UNLIKELY, PROB_ALWAYS): Define.
+	(build_check_stmt): Change is_store argument to bool.  Emit GIMPLE
+	directly instead of creating trees and gimplifying them.  Mark
+	the error reporting function as very unlikely.
+	(instrument_derefs): Change is_store argument to bool.  Use
+	int_size_in_bytes to compute size_in_bytes, simplify size check.
+	Use build_fold_addr_expr instead of build_addr.
+	(transform_statements): Adjust instrument_derefs caller.
+	Use gimple_assign_single_p as stmt test.  Don't look at MEM refs
+	in rhs2.
+	(asan_init_shadow_ptr_types): New function.
+	(asan_instrument): Don't push/pop gimplify context.
+	Call asan_init_shadow_ptr_types if not yet initialized.
+	* asan.h (ASAN_SHADOW_SHIFT): Adjust comment.
+
+2012-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* toplev.c (process_options): Warn and turn off
+	-faddress-sanitizer if not supported by target.
+	* asan.c: Include target.h.
+	(asan_scale, asan_offset_log_32, asan_offset_log_64,
+	asan_offset_log): Removed.
+	(build_check_stmt): Use ASAN_SHADOW_SHIFT and
+	targetm.asan_shadow_offset ().
+	(asan_instrument): Don't initialize asan_offset_log.
+	* asan.h (ASAN_SHADOW_SHIFT): Define.
+	* target.def (TARGET_ASAN_SHADOW_OFFSET): New hook.
+	* doc/tm.texi.in (TARGET_ASAN_SHADOW_OFFSET): Add it.
+	* doc/tm.texi: Regenerated.
+	* Makefile.in (asan.o): Depend on $(TARGET_H).
+	* config/i386/i386.c (ix86_asan_shadow_offset): New function.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
+
+2012-11-12  Wei Mi  <wmi@google.com>
+	    Diego Novillo  <dnovillo@google.com>
+	    Dodji Seketeli  <dodji@redhat.com>
+
+	* Makefile.in: Add asan.c and its dependencies.
+	* common.opt: Add -faddress-sanitizer option.
+	* doc/invoke.texi: Document the new flag.
+	* passes.c: Add the asan pass.
+	* toplev.c (compile_file): Call asan_finish_file.
+	* asan.c: New file.
+	* asan.h: New file.
+	* tree-pass.h: Declare pass_asan.
+
+2012-11-12  Tobias Burnus  <burnus@net-b.de>
+
+	* diagnostic.c (diagnostic_append_note): Also call va_end when
+	inhibit_notes_p is true.
+
+2012-11-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcse.c (struct bb_data): Add new fields, old_pressure, live_in
+	and backup.
+	(get_regno_pressure_class): Add prototype.
+	(update_bb_reg_pressure): New.
+	(should_hoist_expr_to_dom): Add new parameter from.
+	Monitor the change of reg pressure and use it to drive hoisting.
+	(hoist_code): Update LIVE and reg pressure information.
+	(calculate_bb_reg_pressure): Initialize live_in and backup.
+
+2012-11-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* doc/md.texi (Standard Pattern Names For Generation): Fix swapped
+	sine and cosine operands in the sincos description.
+
+2012-11-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53512
+	* config/sh/sh.md (sincossf3): Fix swapped sin and cos operands.
+
+2012-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*movti_internal_rex64): Remove "!" from
+	riF->o alternative.
+
+2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (AS_NIAGARA3_FLAG): Tweak.
+	* config/sparc/sol2.h (TARGET_CPU_niagara4 support): Fix pasto.
+
+2012-11-11  Eric Botcazou  <ebotcazou@adacore.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/55247
+	PR middle-end/55259
+	* emit-rtl.c (adjust_address_1): If POINTERS_EXTEND_UNSIGNED > 0,
+	handle ZERO_EXTEND.
+	* recog.c (offsettable_address_addr_space_p): Likewise.
+
+2012-11-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/55263
+	* postreload.c (rest_of_handle_postreload): With non-call exceptions,
+	if edges are purged call cleanup_cfg to remove unreachable blocks.
+
+2012-11-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Copy-edit to use "built-in function" instead
+	of "builtin", per GCC coding standards.  Also use consistent
+	capitalization in titles of sections describing built-in functions.
+
+2012-11-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55238
+	* ipa-cp.c (agg_pass_through_permissible_p): New function.
+	(propagate_aggs_accross_jump_function): Use it.
+	(find_aggregate_values_for_callers_subset): Likewise and relax an
+	assert.
+
+2012-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47440
+	* config/i386/i386.c (check_avx256_stores): Remove.
+	(ix86_check_avx256_register): New.
+	(ix86_avx_u128_mode_needed): Use ix86_check_avx256_register.
+	Check the whole RTX for 256bit registers using for_each_rtx.
+	(ix86_check_avx_stores): New.
+	(ix86_avx_u128_mode_after): Change mode of CALL RTX to AVX_U128_CLEAN
+	if there are no 256bit registers used in the function return register.
+	(ix86_avx_u128_mode_entry): Use ix86_check_avx256_register.
+	(ix86_avx_u128_mode_exit): Ditto.
+
+2012-11-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48636
+	* ipa-inline.c (want_inline_small_function_p): Take aray index hint.
+	(edge_badness): Likewise.
+	* ipa-inline.h (inline_hints_vals): Add array_index and comments.
+	(inline_summary): Add ARRAY_INDEX.
+	* ipa-inline-analysis.c (dump_inline_hints): Dump array_index hint.
+	(reset_inline_summary): Handle array_index hint.
+	(inline_node_duplication_hook): Likewise.
+	(dump_inline_summary): Likewise.
+	(array_index_predicate): New function.
+	(estimate_function_body_sizes): Use it.
+	(estimate_node_size_and_time): Use array_index hint.
+	(inline_merge_summary, inline_read_section): Likewise.
+
+2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Copy-edit to use "bit-field" consistently
+	instead of "bitfield" or "bit field".
+
+2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Copy-edit to fix incorrect hyphenation phrases
+	involving "bit", "byte", "word", "precision", and "floating"
+	modifiers.
+
+2012-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Copy-edit to fix incorrect uses of "which"
+	and "that" throughout the file.
+
+2012-11-10  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/55202
+	* configure.ac: Set PLUGIN_LD_SUFFIX to just "ld" if it was "ld-new"
+	or "collect-ld".
+	* configure: Regenerate.
+
+2012-11-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (store_field): Remove TYPE parameter.  Remove block of code
+	dealing with BLKmode in registers.  Reimplement this support using
+	pseudo-registers and bit-field techniques.
+	(store_constructor_field): Remove TYPE parameter and adjust calls to
+	store_field.
+	(expand_assignment): Adjust calls to store_field.  Add comment.
+	(store_expr): Add comment.
+	(store_constructor): Adjust calls to store_constructor_field.
+	(expand_expr_real_2): Adjust call to store_field.
+
+2012-11-10  Vladimir Makarov  <vmakarov@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55247
+	* config/i386/i386.md (*movti_internal_rex64): Add "!" to riF->o
+	alternative.
+
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* doc/invoke.texi: Document f[no-]ext-numeric-literals flag.
+
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (sparc64-x-solaris2): Mention MPC as well.
+
+2012-11-09  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_lra_p): Remove.
+	(TARGET_LRA_P): Use hook_bool_void_true.
+
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* attribs.c (lookup_attribute_spec): Handle getting a TREE_LIST.
+
+2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR tree-optimization/55154
+	* lra-int.h (LRA_LOSER_COST_FACTOR, LRA_MAX_REJECT): New macros.
+	* lra.c (setup_operand_alternative): Use them.
+	* lra-constraints.c (LOSER_COST_FACTOR, MAX_OVERALL_COST_BOUND):
+	Remove.
+	(process_alt_operands): Use LRA_LOSER_COST_FACTOR and LRA_MAX_REJECT.
+	Accumulate reject instead of setting for non-const.
+	(curr_insn_transform): Initialize best_losers and best_overall by
+	INT_MAX.
+
+2012-11-09  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh.c (sh_can_use_simple_return_p): Enable with
+	-freorder-blocks-and-partition.
+
+2012-11-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* rtl.h (CONST_SCALAR_INT_P): New macro.
+	* cfgexpand.c (expand_debug_locations): Changed to use
+	CONST_SCALAR_INT_P macro.
+	* combine.c (try_combine, subst, make_extraction,
+	gen_lowpart_for_combine): Ditto.
+	* cselib.c (entry_and_rtx_equal_p, rtx_equal_for_cselib_1): Ditto.
+	* dwarf2out.c (loc_descriptor): Ditto.
+	* emit-rtl.c (gen_lowpart_common): Ditto.
+	* ira-costs.c (record_reg_classes, record_address_regs): Ditto.
+	* ira-lives.c (single_reg_class): Ditto.
+	* recog.c (simplify_while_replacing, asm_operand_ok,
+	constrain_operands): Ditto.
+	* reload.c (find_reloads): Ditto.
+	* simplify-rtx.c (simplify_unary_operation_1,
+	simplify_const_unary_operation, simplify_binary_operation_1,
+	simplify_const_binary_operation, simplify_relational_operation_1,
+	simplify_subreg): Ditto.
+
+2012-11-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54385
+	* postreload.c (reload_cse_simplify): Return a bool indicating
+	whether the CFG was changed.
+	(reload_cse_regs_1): Traverse the CFG instead of the insns chain.
+	Cleanup the CFG if edges may have been removed.
+	(reload_cse_regs): Update.
+
+2012-11-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/54472
+	* sel-sched-ir.c (has_dependence_note_reg_set): Handle implicit sets.
+	(has_dependence_note_reg_clobber, has_dependence_note_reg_use):
+	Likewise.
+
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (release_scratch_register_on_entry): Also adjust
+	sp_offset manually.
+
+2012-11-08  Christian Bruel  <christian.bruel@st.com>
+
+	* tree-ssa-tail-merge.c (replace_block_by): Update bb2 profile count.
+	Do not reset dead bb1->frequency.
+
+2012-11-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/55191
+	* cfganal.c (connect_infinite_loops_to_exit): Call dfs_deadend here.
+	(flow_dfs_compute_reverse_execute): Don't call it here.
+
+2012-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/53145
+	* dwarf2out.c (gen_compile_unit_die): Don't call gen_producer_string
+	here, instead add "" if producer_string is NULL.
+	(dwarf2out_finish): Call gen_producer_string here, unconditionally
+	decrease refcount of the old indirect string and set val_str to
+	find_AT_string result.
+
+	PR debug/54499
+	* cgraphunit.c (assemble_thunk): Don't call source_line debug hook
+	here, instead call insn_locations_{init,finalize} and initialize
+	prologue_location.
+
+2012-11-08  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR driver/54789
+	* gcc.c (process_command): Use save_switch for synthesized
+	-fcompare-debug=* option; mark the switch as known.
+
+2012-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54308
+	* config/rs6000/rs6000.c (legitimate_indirect_address_p): Remove
+	inline keyword.
+
+2012-11-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/54850
+	* sched-deps.c (find_inc): Add all dependencies from the inc_insn
+	to the mem_insn.
+
+2012-11-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48636
+	* ipa-inline.c (big_speedup_p): New function.
+	(want_inline_small_function_p): Use it.
+	(edge_badness): Dump it.
+	* params.def (inline-min-speedup): New parameter.
+	* doc/invoke.texi (inline-min-speedup): Document.
+
+2012-11-08  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (determine_known_aggregate_parts): Skip writes to
+	different declarations when tracking writes to a declaration.
+
+2012-11-07  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/constraints.md ("U"): Document, in detail,
+	which this constraint is necessary.
+
+2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/55235
+	* expr.c (store_expr): Do not call emit_block_move for
+	non-BLKmode values.
+
+2012-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/55219
+	* fold-const.c (fold_binary_op_with_conditional_arg): Do not fold if
+	the argument is itself a conditional expression.
+
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55122
+	* lra-constraints.c (match_reload): Sync values for dead input pseudos.
+
+2012-11-07  Richard Henderson  <rth@redhat.com>
+
+	* trans-mem.c (pass_ipa_tm): Don't use TODO_update_ssa.
+
+2012-11-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi (-mcpu=power8): Document.
+	* config.in (HAVE_AS_POWER8): New.
+	* config.gcc: Add cpu_type power8.
+	* configure.ac: (HAVE_AS_POWER8): Check for assembler support for
+	the POWER8 instructions.
+	* configure: Regenerate.
+	* config/rs6000/rs6000.h: (ASM_CPU_POWER8_SPEC): Define.
+	(ASM_CPU_SPEC): Pass %(asm_cpu_power8) for -mcpu=power8.
+	(EXTRA_SPECS): Add asm_cpu_power8 spec string.
+	* config/rs6000/rs6000-cpus.def (processor_target_table): Alias
+	POWER8 to POWER7.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/driver-rs6000.c (ASM_CPU_SPEC): For -mcpu=power8,
+	pass %(asm_cpu_power8)/-mpwr8.
+	* config/rs6000/aix53.h: Likewise.
+	* config/rs6000/aix61.h: Likewise.
+
+2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55224
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Put back exception
+	to make a sibcall if one of the functions has void return type.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* doc/invoke.texi (Wformat): Update.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* optc-gen.awk: Factor code out to...
+	* opt-functions.awk (lang_enabled_by): ... this new function.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* common.opt (Wswitch,Wswitch-default,Wswitch-enum): Move to c.opt.
+
+2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Add the missing
+	argument 'Pmode' to the 'plus_constant' call.
+
+2012-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/53787
+	* ipa-cp.c (ipcp_value_source): New field offset.
+	(ipcp_agg_lattice): New type.
+	(ipcp_param_lattices): Likewise, move virt_call from ipcp_lattice here.
+	(ipcp_agg_lattice_pool): New variable.
+	(ipa_get_parm_lattices): New function.
+	(ipa_get_lattice): Turned into ipa_get_scalar_lat, use the above.
+	Adjusted all callers.
+	(print_lattice): New function.
+	(print_all_lattices): Use the above, also print aggregate lattices.
+	(set_agg_lats_to_bottom): New function.
+	(set_agg_lats_contain_variable): Likewise.
+	(set_all_contains_variable): Likewise.
+	(initialize_node_lattices): Also handle aggregate lattices, set
+	virt_call in ipcp_param_lattices.
+	(add_value_source): Handle offsets.
+	(add_value_to_lattice): Likewise.
+	(add_scalar_value_to_lattice): New function.
+	(propagate_vals_accross_pass_through): Use add_scalar_value_to_lattice.
+	(propagate_vals_accross_ancestor): Likewise.
+	(propagate_accross_jump_function): Renamed to
+	propagate_scalar_accross_jump_function, use
+	add_scalar_value_to_lattice.
+	(set_check_aggs_by_ref): New function.
+	(merge_agg_lats_step): Likewise.
+	(set_chain_of_aglats_contains_variable): Likewise.
+	(merge_aggregate_lattices): Likewise.
+	(propagate_constants_accross_call): Also handle aggregate lattices.
+	(hint_time_bonus): New function.
+	(context_independent_aggregate_values): Likewise.
+	(gather_context_independent_values): Also handle agggregate values.
+	(agg_jmp_p_vec_for_t_vec): New function.
+	(estimate_local_effects): Also handle agggregate values.
+	(add_all_node_vals_to_toposort): Likewise.
+	(ipcp_propagate_stage): Use struct ipcp_param_lattices.
+	(get_clone_agg_value): New function.
+	(cgraph_edge_brings_value_p): Also handle agggregate values.
+	(create_specialized_node): Likewise.
+	(find_more_values_for_callers_subset): Rename to
+	find_more_scalar_values_for_callers_subset.  Modify dump.
+	(copy_plats_to_inter): New function.
+	(intersect_with_plats): Likewise.
+	(agg_replacements_to_vector): Likewise.
+	(intersect_with_agg_replacements): Likewise.
+	(find_aggregate_values_for_callers_subset): Likewise.
+	(known_aggs_to_agg_replacement_list): Likewise.
+	(cgraph_edge_brings_all_scalars_for_node): Likewise.
+	(cgraph_edge_brings_all_agg_vals_for_node): Likewise.
+	(perhaps_add_new_callers): Old functionality moved to
+	cgraph_edge_brings_all_scalars_for_node, call it and
+	cgraph_edge_brings_all_agg_vals_for_node.
+	(ipcp_val_in_agg_replacements_p): New function.
+	(decide_about_value): New function.
+	(decide_whether_version_node): A lot of functionality moved to
+	decide_about_value.  Also handle agggregate values.
+	(ipcp_driver): Also allocate ipcp_agg_lattice_pool.
+	(pass_ipa_cp): Fill in new entries.
+	* ipa-prop.c (ipa_node_agg_replacements): New variable.
+	(free_parms_ainfo): New function.
+	(ipa_analyze_node): Use free_parms_ainfo to free stuff.
+	(ipa_find_agg_cst_for_param): Do not rely on offset ordering.
+	(ipa_set_node_agg_value_chain): New function.
+	(ipa_node_removal_hook): Also handle ipa_node_agg_replacements.
+	(ipa_node_duplication_hook): Likewise.
+	(ipa_free_all_structures_after_ipa_cp): Also free ipcp_agg_lattice_pool.
+	(ipa_free_all_structures_after_iinln): Likewise.
+	(ipa_dump_agg_replacement_values): New function.
+	(write_agg_replacement_chain): Likewise.
+	(read_agg_replacement_chain): Likewise.
+	(ipa_prop_write_all_agg_replacement): Likewise.
+	(read_replacements_section): Likewise.
+	(ipa_prop_read_all_agg_replacement): Likewise.
+	(adjust_agg_replacement_values): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-prop.h: Also define heap vector of ipa_agg_jf_item_t and of
+	ipa_agg_jump_function_t.
+	(ipa_node_params): Make lattices an array of ipcp_param_lattices.
+	(ipa_agg_replacement_value): New type and its vector.
+	(ipa_set_node_agg_value_chain) Declare.
+	(ipa_node_agg_replacements): Likewise.
+	(ipa_get_agg_replacements_for_node): New function.
+	(ipcp_agg_lattice_pool): Declare.
+	(ipa_dump_agg_replacement_values): Likewise.
+	(ipa_prop_write_all_agg_replacement): Likewise.
+	(ipa_prop_read_all_agg_replacement): Likewise.
+	(ipcp_transform_function): Likewise.
+	* ipa-inline-analysis.c (estimate_ipcp_clone_size_and_time): Pass around
+	known aggregates and hints.
+	* ipa-inline.h: include ipa-prop.h.
+	(estimate_ipcp_clone_size_and_time): Adjust declaration.
+	* lto-streamer.h (lto_section_type): New item
+	LTO_section_ipcp_transform.
+	* lto-section-in.c (lto_section_name): New element ipcp_trans.
+	* params.def (PARAM_IPA_CP_LOOP_HINT_BONUS): New parameter.
+	* Makefile.in (IPA_INLINE_H): New.  Use everywhee instead of
+	ipa-inline.h.
+
+2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (enum upper_128bits_state): Remove.
+	(check_avx256_store): Use bool pointer argument.
+	(ix86_avx_u128_mode_needed): Use note_stores also for CALL insns.
+	* config/i386/predicates.md (vzeroupper_operation): Use match_test.
+
+2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): For the
+	load-pair with writeback instruction, replace
+	aarch64_set_frame_expr with add_reg_note (REG_CFA_ADJUST_CFA);
+	add new local variable 'cfa_reg' and use it.
+
+2012-11-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR middle-end/49220
+	* mode-switching.c (create_pre_exit): Set short_block if there
+	are no copy insns.
+
+2012-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	* lto-cgraph.c: Include tree-pass.h.
+	(lto_output_node): Stream node->ipa_transforms_to_apply.
+	(input_node): Likewise.
+	* tree-pass.h (passes_by_id): Declare.
+	(passes_by_id_size): Likewise.
+	* Makefile.in (lto-cgraph.o): Add TREE_PASS_H to dependencies.
+
+2012-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (true_predicate, single_cond_predicate,
+	reset_inline_edge_summary): Fix formatting.
+	(account_size_time): Bump up the limit on number of size/time
+	entries to 256.
+	(estimate_function_body_sizes): Work in reverse postorder.
+
+2012-11-07  David S. Miller  <davem@davemloft.net>
+
+	PR bootstrap/55211
+	Revert:
+	* config/sparc/constraints.md ("U"): Delete.
+	* config/sparc/sparc.md: Use 'r' constraint instead of 'U'.
+	* config/sparc/sync.md: Likewise.
+	And revert parts of:
+	* doc/md.texi: Sync sparc constraint documentation with reality.
+
+2012-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_avx_u128_mode_after): Don't
+	look for reg in CALL operand.
+
+	PR debug/54693
+	* tree-flow.h (propagate_threaded_block_debug_into): New prototype.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): No
+	longer static.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Use it.
+
+2012-11-06  Sterling Augustine <saugustine@google.com>
+
+	* dwarf2out.c (output_comdat_type_unit): Check for OBJECT_FORMAT_ELF.
+
+2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* cfg-flags.def (TM_UNINSTRUMENTED, TM_ABORT): New.
+	* trans-mem.c (PROB_VERY_LIKELY, PROB_UNLIKELY, PROB_LIKELY): New.
+	(struct tm_region): Add tm_state, restart_block,
+	original_transaction_was_outer.
+	(tm_region_init_0): Initialize them.
+	(collect_bb2reg, get_bb_regions_instrumented): New.
+	(tm_log_emit_save_or_restores): Merge into ...
+	(expand_transaction): ... here.
+	(generate_tm_state, propagate_tm_flags_out): New.
+	(execute_tm_mark): Avoid processing blocks more than once.
+	(split_bb_make_tm_edge): Split out from ...
+	(make_tm_edge): ... here.  And merge the rest into ...
+	(expand_block_edges): ... here.
+	(execute_tm_edges): Avoid processing blocks more than once.
+	(ipa_uninstrument_transaction): New.
+	(ipa_tm_scan_calls_transaction): Use it.  Rebuild cgraph and ssa.
+	(ipa_tm_execute): Init and free original_copy_tables.
+	* trans-mem.h (PR_MULTIWAYCODE): New.
+	* tree-cfg.c (make_edges): Use EDGE_TM_ABORT.
+
+2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cfghooks.c (copy_bbs): Handle a null loop_father.
+
+	* cgraph.c (cgraph_debug_gimple_stmt): Handle a null
+	current_function_decl.
+
+2012-11-06  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-tail-merge.c (find_duplicate): Do not consider
+	is_tm_ending_fndecl calls as mergable.
+
+2012-11-06  Sterling Augustine <saugustine@google.com>
+	    Cary Coutant <ccoutant@google.com>
+
+	* common.opt (gno-split-dwarf, gsplit-dwarf): New switches.
+	* doc/invoke.texi (Debugging Options): Document them.
+	* gcc.c (replace_extension_spec_func):  New function.
+	(ASM_FINAL_SPEC): Adjust.
+	(static_spec_functions): Add new field for replace-extension.
+	(check_live_switch): Adjust comment.  Add case for 'g'.
+	* opts.c (finish_options): Set x_debug_generate_pub_sections based on
+	x_dwarf_split_debug_info.
+	(common_handle_option): Add case for OPT_gsplit_dwarf.
+	* dwarf2out.h (addr_table_entry_struct): Add forward declaration.
+	(dw_val_struct): Add val_entry pointer.
+	* dwarf2out.c (debug_skeleton_info_section,
+	debug_skeleton_abbrev_section, debug_addr_section,
+	debug_skeleton_line_section, debug_str_offsets_section): New globals.
+	(NOT_INDEXED, NO_INDEX_ASSIGNED): New defines.
+	(indirect_string_node): New field index.
+	(ate_kind): New enum with fields ate_kind_rtc, ate_kind_rtx_dtprel,
+	ate_kind_label.
+	(addr_table_entry): New structure and type.
+	(dw_loc_list_struct): Add field begin_entry.
+	(new_loc_desc): Initialize val_entry.
+	(size_of_loc_descr, output_loc_operands, output_loc_operands_raw):
+	Add cases for DW_OP_GNU_addr_index and DW_OP_const_index.
+	(build_cfa_loc): Initialize val_entry.
+	(AT_index, add_addr_table_entry, remove_addr_table_entry,
+	add_AT_lbl_id): New functions.
+	(add_AT_addr, add_AT_range_list): New parameter force_direct.
+	(output_die_abbrevs): New function.
+	(add_ranges_by_labels): New parameter force_direct.
+	(output_line_info): New parameter prologue_only.
+	(dtprel_bool): New enum with dtprel_false and dtprel_true.
+	(dw_addr_op, new_addr_loc_descr): New functions.
+	(DEBUG_DWO_INFO_SECTION, DEBUG_DWO_ABBREV_SECTION,
+	DEBUG_ADDR_SECTION, DEBUG_NORM_MACINFO_SECTION,
+	DEBUG_DWO_MACINFO_SECTION, DEBUG_MACINFO_SECTION,
+	DEBUG_NORM_MACRO_SECTION, DEBUG_DWO_MACRO_SECTION,
+	DEBUG_MACRO_SECTION, DEBUG_DWO_LINE_SECTION,
+	DEBUG_DWO_LOC_SECTION, DEBUG_NORM_STR_OFFSETS_SECTION,
+	DEBUG_DWO_STR_OFFSETS_SECTION, DEBUG_STR_OFFSETS_SECTION,
+	DEBUG_DWO_STR_SECTION, DEBUG_NORM_STR_SECTION, DEBUG_STR_SECTION,
+	DEBUG_MACRO_SECTION_FLAGS, DEBUG_SKELETON_LINE_SECTION_LABEL,
+	DEBUG_SKELETON_INFO_SECTION_LABEL, DEBUG_ADDR_SECTION_LABEL
+	DEBUG_SKELETON_ABBREV_SECTION_LABEL): New macros.
+	(DEBUG_STR_SECTION_FLAGS): Adjust.
+	(TEXT_SECTION_LABEL, COLD_TEXT_SECTION_LABEL,
+	DEBUG_LINE_SECTION_LABEL, DEBUG_INFO_SECTION_LABEL,
+	DEBUG_ABBREV_SECTION_LABEL, DEBUG_ADDR_SECTION_LABEL,
+	DEBUG_LOC_SECTION_LABEL, DEBUG_RANGES_SECTION_LABEL,
+	DEBUG_MACINFO_SECTION_LABEL, DEBUG_MACRO_SECTION_LABEL): Adjust
+	indentation.
+	(debug_skeleton_abbrev_section_label, debug_addr_section_label,
+	debug_skeleton_line_section_label, debug_skeleton_info_section_label):
+	New global variables.
+	(add_AT_flag, add_AT_int, add_AT_unsigned, add_AT_double, add_AT_vec,
+	add_AT_data8): Initialize val_entry.
+	(add_AT_low_high_pc): New parameter force_direct. Handle
+	dwarf_split_debug_info.
+	(set_indirect_string, find_AT_string_form): New functions.
+	(AT_string_form): Adjust to call find_AT_string_from.
+	(add_AT_die_ref, add_AT_fde_ref, add_AT_loc, add_AT_list):
+	Initialize val_entry.
+	(addr_index_table): New global variable.
+	(addr_table_entry_do_hash, addr_table_entry_eq, add_addr_table_entry,
+	init_addr_table_entry, remove_addr_table_entry, index_addr_table_entry,
+	remove_loc_list_addr_table_entries): New functions.
+	(add_AT_addr, add_AT_lbl_id, add_AT_range_list): New parameter
+	force_direct.  Handle dwarf_split_debug_info.
+	(add_AT_file, add_AT_vms_delta, add_AT_lineptr, add_AT_macptr,
+	add_AT_offset): Initialize val_entry.
+	(UNRELOCATED_OFFSET, RELOCATED_OFFSET): New defines.
+	(size_of_die): Handle dwarf_split_debug_info.
+	(size_of_aranges, value_format): Call AT_class.  Check AT_index.
+	(output_die_abbrevs): New function.
+	(output_abbrev_section): Call output_die_abbrevs.
+	(new_loc_list): Initialize begin_entry.
+	(output_loc_list): Handle dwarf_split_debug_info.
+	(output_range_list_offset, output_loc_list_offset,
+	output_attr_index_or_value, ): New functions.
+	(output_die): Fix call to dw2_asm_output_data.  Call
+	output_attr_index_or_value and output_range_list_offset.
+	Adjust logic around dw_val_class_str.
+	(add_top_lebel_skeleton_die_attrs, get_skeleton_type_unit,
+	output_skeleton_debug_sections): New functions.
+	(output_comdat_type_unit, output_pubname, output_aranges): Handle
+	dwarf_split_debug_info.
+	(add_ranges_by_labels): New parameter force_direct.
+	(mem_loc_descriptor, loc_descr): Call new_addr_loc_descr.
+	(loc_list_from_tree, add_const_value_attribtue): Use dtprel_bools in
+	place of generic integer.
+	(dwarf2out_vms_debug_main_pointer, gen_entry_point_die, gen_label_die,
+	gen_call_site_die, gen_subprogram_die, gen_variable_die,
+	add_high_low_attributes): Adjust calls to add_AT_lbl_id.
+	(output_macinfo_op): Adjust indirect_string_logic.
+	(save_macinfo_strings): New function.
+	(output_macinfo): Adjust.
+	(dwarf2out_init): Handle dwarf_split_debug_info.
+	(index_string, output_index_string_offset, output_index_string): New
+	functions.
+	(output_indirect_string): Adjust.
+	(output_indirect_strings, output_addr_table_entry, output_addr_table):
+	New functions.
+	(resolve_addr_in_expr, hash_loc_operands): Handle DW_OP_GNU_addr_index
+	and DW_OP_GNU_const_index.  Handle dwarf_split_debug_info.  Call
+	remove_loc_list_addr_table_entries and remove_addr_table_entry.
+	(index_location_lists): New function.
+	(dwarf2out_finish): Handle dwarf_split_debug_info.  New variable
+	main_comp_unit_die.  Adjust calls to add_AT_low_high_pc,
+	add_ranges_by_labels, add_AT_addr, and add_AT_lineptr. Call
+	save_macinfo_strings and output_indirect_strings.
+
 2012-11-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/i386/i386.c (make_dispatcher_decl): Guard with
@@ -415,7 +1368,7 @@
 	(make_extraction): Adjust head comment and move up canonicalization.
 
 2012-11-04  Alexandre Oliva <aoliva@redhat.com>
-            Jakub Jelinek <jakub@redhat.com>
+	    Jakub Jelinek <jakub@redhat.com>
 
 	PR debug/54693
 	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Emit debug temps
@@ -702,9 +1655,9 @@
 	(symtab_node_def::try_variable): New.  Change most calls to
 	symtab_variable_p with calls to dyn_cast <varpool_node> (p).
 	(symtab_function_p): Remove.  Change callers to use
-        is_a <cgraph_node> (p) instead.
+	is_a <cgraph_node> (p) instead.
 	(symtab_variable_p): Remove.  Change callers to use
-        is_a <varpool_node> (p) instead.
+	is_a <varpool_node> (p) instead.
 	* cgraph.c (cgraph_node_for_asm): Remove redundant call to
 	symtab_node_for_asm.
 	* cgraphunit.c (symbol_finalized_and_needed): New.
@@ -1494,7 +2447,7 @@
 2012-10-24  Sharad Singhai  <singhai@google.com>
 
 	* config/rs6000/rs6000.c (rs6000_density_test): Use dump_enabled_p
-          instead of dump_kind_p.
+	instead of dump_kind_p.
 
 2012-10-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -2639,7 +3592,7 @@
 	(TARGET_FSGSBASE): Likewise.
 	(TARGET_RDRND): Likewise.
 	(TARGET_F16C): Likewise.
-	(TARGET_RTM     ): Likewise.
+	(TARGET_RTM): Likewise.
 	(TARGET_HLE): Likewise.
 	(TARGET_RDSEED): Likewise.
 	(TARGET_PRFCHW): Likewise.

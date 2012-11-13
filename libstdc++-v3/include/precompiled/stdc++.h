@@ -49,7 +49,7 @@
 #include <cstring>
 #include <ctime>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <ccomplex>
 #include <cfenv>
 #include <cinttypes>
@@ -95,7 +95,7 @@
 #include <valarray>
 #include <vector>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <array>
 #include <atomic>
 #include <chrono>

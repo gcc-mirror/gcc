@@ -1273,8 +1273,8 @@ do { 									\
 
 /* Handling the special cases is going to get too complicated for a macro,
    just call `pa_adjust_insn_length' to do the real work.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
-  LENGTH += pa_adjust_insn_length (INSN, LENGTH);
+#define ADJUST_INSN_LENGTH(INSN, LENGTH) \
+  ((LENGTH) = pa_adjust_insn_length ((INSN), (LENGTH)))
 
 /* Millicode insns are actually function calls with some special
    constraints on arguments and register usage.

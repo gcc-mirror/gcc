@@ -1,3 +1,29 @@
+2012-11-13  Dodji Seketeli  <dodji@redhat.com>
+
+	* configure.ac: Enable libsanitizer just on x86 linux for now.
+	* configure: Re-generate.
+
+2012-11-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.ac: Disable libsanitizer on AIX. Merge libquadmath
+	sections.
+	* configure: Regenerate.
+
+2012-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* configure.ac: Add section for configdirs for libsanitizer.
+	Disable for cris-*-* and mmix-*-*.
+	* configure: Regenerate.
+
+2012-11-12  Wei Mi <wmi@google.com>
+
+	* configure.ac: Add libsanitizer to target_libraries.
+	* Makefile.def: Ditto.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* libsanitizer: New directory for asan runtime.  Contains an empty
+	tsan directory.
+
 2012-11-03  Corinna Vinschen  <corinna@vinschen.de>
 
 	* configure.ac (FLAGS_FOR_TARGET,target=cygwin): Fix for building

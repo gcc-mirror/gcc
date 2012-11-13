@@ -61,8 +61,8 @@ static cpp_num append_digit (cpp_num, int, int, size_t);
 static cpp_num parse_defined (cpp_reader *);
 static cpp_num eval_token (cpp_reader *, const cpp_token *, source_location);
 static struct op *reduce (cpp_reader *, struct op *, enum cpp_ttype);
-static unsigned int interpret_float_suffix (const uchar *, size_t);
-static unsigned int interpret_int_suffix (const uchar *, size_t);
+static unsigned int interpret_float_suffix (cpp_reader *, const uchar *, size_t);
+static unsigned int interpret_int_suffix (cpp_reader *, const uchar *, size_t);
 static void check_promotion (cpp_reader *, const struct op *);
 
 /* Token type abuse to create unary plus and minus operators.  */
@@ -87,7 +87,7 @@ static void check_promotion (cpp_reader *, const struct op *);
    length LEN, possibly zero.  Returns 0 for an invalid suffix, or a
    flag vector describing the suffix.  */
 static unsigned int
-interpret_float_suffix (const uchar *s, size_t len)
+interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
   size_t flags;
   size_t f, d, l, w, q, i;
@@ -115,55 +115,58 @@ interpret_float_suffix (const uchar *s, size_t len)
       }
     }
 
-  /* Recognize a fixed-point suffix.  */
-  if (len != 0)
-    switch (s[len-1])
-      {
-      case 'k': case 'K': flags = CPP_N_ACCUM; break;
-      case 'r': case 'R': flags = CPP_N_FRACT; break;
-      default: break;
-      }
-
-  /* Continue processing a fixed-point suffix.  The suffix is case
-     insensitive except for ll or LL.  Order is significant.  */
-  if (flags)
+  if (CPP_OPTION (pfile, ext_numeric_literals))
     {
-      if (len == 1)
-	return flags;
-      len--;
+      /* Recognize a fixed-point suffix.  */
+      if (len != 0)
+	switch (s[len-1])
+	  {
+	  case 'k': case 'K': flags = CPP_N_ACCUM; break;
+	  case 'r': case 'R': flags = CPP_N_FRACT; break;
+	  default: break;
+	  }
 
-      if (*s == 'u' || *s == 'U')
+      /* Continue processing a fixed-point suffix.  The suffix is case
+	 insensitive except for ll or LL.  Order is significant.  */
+      if (flags)
 	{
-	  flags |= CPP_N_UNSIGNED;
 	  if (len == 1)
 	    return flags;
 	  len--;
-	  s++;
-        }
 
-      switch (*s)
-      {
-      case 'h': case 'H':
-	if (len == 1)
-	  return flags |= CPP_N_SMALL;
-	break;
-      case 'l':
-	if (len == 1)
-	  return flags |= CPP_N_MEDIUM;
-	if (len == 2 && s[1] == 'l')
-	  return flags |= CPP_N_LARGE;
-	break;
-      case 'L':
-	if (len == 1)
-	  return flags |= CPP_N_MEDIUM;
-	if (len == 2 && s[1] == 'L')
-	  return flags |= CPP_N_LARGE;
-	break;
-      default:
-	break;
-      }
-      /* Anything left at this point is invalid.  */
-      return 0;
+	  if (*s == 'u' || *s == 'U')
+	    {
+	      flags |= CPP_N_UNSIGNED;
+	      if (len == 1)
+		return flags;
+	      len--;
+	      s++;
+            }
+
+	  switch (*s)
+	  {
+	  case 'h': case 'H':
+	    if (len == 1)
+	      return flags |= CPP_N_SMALL;
+	    break;
+	  case 'l':
+	    if (len == 1)
+	      return flags |= CPP_N_MEDIUM;
+	    if (len == 2 && s[1] == 'l')
+	      return flags |= CPP_N_LARGE;
+	    break;
+	  case 'L':
+	    if (len == 1)
+	      return flags |= CPP_N_MEDIUM;
+	    if (len == 2 && s[1] == 'L')
+	      return flags |= CPP_N_LARGE;
+	    break;
+	  default:
+	    break;
+	  }
+	  /* Anything left at this point is invalid.  */
+	  return 0;
+	}
     }
 
   /* In any remaining valid suffix, the case and order don't matter.  */
@@ -184,6 +187,12 @@ interpret_float_suffix (const uchar *s, size_t len)
   if (f + d + l + w + q > 1 || i > 1)
     return 0;
 
+  if (i && !CPP_OPTION (pfile, ext_numeric_literals))
+    return 0;
+
+  if ((w || q) && !CPP_OPTION (pfile, ext_numeric_literals))
+    return 0;
+
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (f ? CPP_N_SMALL :
 	     d ? CPP_N_MEDIUM :
@@ -194,16 +203,16 @@ interpret_float_suffix (const uchar *s, size_t len)
 
 /* Return the classification flags for a float suffix.  */
 unsigned int
-cpp_interpret_float_suffix (const char *s, size_t len)
+cpp_interpret_float_suffix (cpp_reader *pfile, const char *s, size_t len)
 {
-  return interpret_float_suffix ((const unsigned char *)s, len);
+  return interpret_float_suffix (pfile, (const unsigned char *)s, len);
 }
 
 /* Subroutine of cpp_classify_number.  S points to an integer suffix
    of length LEN, possibly zero. Returns 0 for an invalid suffix, or a
    flag vector describing the suffix.  */
 static unsigned int
-interpret_int_suffix (const uchar *s, size_t len)
+interpret_int_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 {
   size_t u, l, i;
 
@@ -227,6 +236,9 @@ interpret_int_suffix (const uchar *s, size_t len)
   if (l > 2 || u > 1 || i > 1)
     return 0;
 
+  if (i && !CPP_OPTION (pfile, ext_numeric_literals))
+    return 0;
+
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (u ? CPP_N_UNSIGNED : 0)
 	  | ((l == 0) ? CPP_N_SMALL
@@ -235,9 +247,9 @@ interpret_int_suffix (const uchar *s, size_t len)
 
 /* Return the classification flags for an int suffix.  */
 unsigned int
-cpp_interpret_int_suffix (const char *s, size_t len)
+cpp_interpret_int_suffix (cpp_reader *pfile, const char *s, size_t len)
 {
-  return interpret_int_suffix ((const unsigned char *)s, len);
+  return interpret_int_suffix (pfile, (const unsigned char *)s, len);
 }
 
 /* Return the string type corresponding to the the input user-defined string
@@ -455,7 +467,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   /* The suffix may be for decimal fixed-point constants without exponent.  */
   if (radix != 16 && float_flag == NOT_FLOAT)
     {
-      result = interpret_float_suffix (str, limit - str);
+      result = interpret_float_suffix (pfile, str, limit - str);
       if ((result & CPP_N_FRACT) || (result & CPP_N_ACCUM))
 	{
 	  result |= CPP_N_FLOATING;
@@ -519,7 +531,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	SYNTAX_ERROR_AT (virtual_location,
 			 "hexadecimal floating constants require an exponent");
 
-      result = interpret_float_suffix (str, limit - str);
+      result = interpret_float_suffix (pfile, str, limit - str);
       if (result == 0)
 	{
 	  if (CPP_OPTION (pfile, user_literals))
@@ -573,7 +585,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
     }
   else
     {
-      result = interpret_int_suffix (str, limit - str);
+      result = interpret_int_suffix (pfile, str, limit - str);
       if (result == 0)
 	{
 	  if (CPP_OPTION (pfile, user_literals))

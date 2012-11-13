@@ -3437,7 +3437,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    break;
 
 		  case 's':
-		    if (CONST_INT_P (operand) || CONST_DOUBLE_AS_INT_P (operand))
+		    if (CONST_SCALAR_INT_P (operand))
 		      break;
 		  case 'i':
 		    if (CONSTANT_P (operand)
@@ -3446,7 +3446,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    break;
 
 		  case 'n':
-		    if (CONST_INT_P (operand) || CONST_DOUBLE_AS_INT_P (operand))
+		    if (CONST_SCALAR_INT_P (operand))
 		      win = 1;
 		    break;
 

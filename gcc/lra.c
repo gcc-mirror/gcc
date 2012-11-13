@@ -784,10 +784,10 @@ setup_operand_alternative (lra_insn_recog_data_t data)
 		  break;
 
 		case '?':
-		  op_alt->reject += 6;
+		  op_alt->reject += LRA_LOSER_COST_FACTOR;
 		  break;
 		case '!':
-		  op_alt->reject += 600;
+		  op_alt->reject += LRA_MAX_REJECT;
 		  break;
 		case '&':
 		  op_alt->earlyclobber = 1;

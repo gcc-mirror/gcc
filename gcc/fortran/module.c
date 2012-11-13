@@ -2395,7 +2395,7 @@ mio_array_spec (gfc_array_spec **asp)
   if (iomode == IO_INPUT && as->corank)
     as->cotype = (as->type == AS_DEFERRED) ? AS_DEFERRED : AS_EXPLICIT;
 
-  if (as->rank > 0)
+  if (as->rank + as->corank > 0)
     for (i = 0; i < as->rank + as->corank; i++)
       {
 	mio_expr (&as->lower[i]);
@@ -5150,32 +5150,122 @@ write_symbol0 (gfc_symtree *st)
 }
 
 
-/* Recursive traversal function to write the secondary set of symbols
-   to the module file.  These are symbols that were not public yet are
-   needed by the public symbols or another dependent symbol.  The act
-   of writing a symbol can modify the pointer_info tree, so we cease
-   traversal if we find a symbol to write.  We return nonzero if a
-   symbol was written and pass that information upwards.  */
+/* Type for the temporary tree used when writing secondary symbols.  */
+
+struct sorted_pointer_info
+{
+  BBT_HEADER (sorted_pointer_info);
+
+  pointer_info *p;
+};
+
+#define gfc_get_sorted_pointer_info() XCNEW (sorted_pointer_info)
+
+/* Recursively traverse the temporary tree, free its contents.  */
+
+static void
+free_sorted_pointer_info_tree (sorted_pointer_info *p)
+{
+  if (!p)
+    return;
+
+  free_sorted_pointer_info_tree (p->left);
+  free_sorted_pointer_info_tree (p->right);
+
+  free (p);
+}
+
+/* Comparison function for the temporary tree.  */
+
+static int
+compare_sorted_pointer_info (void *_spi1, void *_spi2)
+{
+  sorted_pointer_info *spi1, *spi2;
+  spi1 = (sorted_pointer_info *)_spi1;
+  spi2 = (sorted_pointer_info *)_spi2;
+
+  if (spi1->p->integer < spi2->p->integer)
+    return -1;
+  if (spi1->p->integer > spi2->p->integer)
+    return 1;
+  return 0;
+}
+
+
+/* Finds the symbols that need to be written and collects them in the
+   sorted_pi tree so that they can be traversed in an order
+   independent of memory addresses.  */
+
+static void
+find_symbols_to_write(sorted_pointer_info **tree, pointer_info *p)
+{
+  if (!p)
+    return;
+
+  if (p->type == P_SYMBOL && p->u.wsym.state == NEEDS_WRITE)
+    {
+      sorted_pointer_info *sp = gfc_get_sorted_pointer_info();
+      sp->p = p; 
+ 
+      gfc_insert_bbt (tree, sp, compare_sorted_pointer_info);
+   }
+
+  find_symbols_to_write (tree, p->left);
+  find_symbols_to_write (tree, p->right);
+}
+
+
+/* Recursive function that traverses the tree of symbols that need to be
+   written and writes them in order.  */
+
+static void
+write_symbol1_recursion (sorted_pointer_info *sp)
+{
+  if (!sp)
+    return;
+
+  write_symbol1_recursion (sp->left);
+
+  pointer_info *p1 = sp->p;
+  gcc_assert (p1->type == P_SYMBOL && p1->u.wsym.state == NEEDS_WRITE);
+
+  p1->u.wsym.state = WRITTEN;
+  write_symbol (p1->integer, p1->u.wsym.sym);
+ 
+  write_symbol1_recursion (sp->right);
+}
+
+
+/* Write the secondary set of symbols to the module file.  These are
+   symbols that were not public yet are needed by the public symbols
+   or another dependent symbol.  The act of writing a symbol can add
+   symbols to the pointer_info tree, so we return nonzero if a symbol
+   was written and pass that information upwards.  The caller will
+   then call this function again until nothing was written.  It uses
+   the utility functions and a temporary tree to ensure a reproducible
+   ordering of the symbol output and thus the module file.  */
 
 static int
 write_symbol1 (pointer_info *p)
 {
-  int result;
-
   if (!p)
     return 0;
 
-  result = write_symbol1 (p->left);
+  /* Put symbols that need to be written into a tree sorted on the
+     integer field.  */
 
-  if (!(p->type != P_SYMBOL || p->u.wsym.state != NEEDS_WRITE))
-    {
-      p->u.wsym.state = WRITTEN;
-      write_symbol (p->integer, p->u.wsym.sym);
-      result = 1;
-    }
+  sorted_pointer_info *spi_root = NULL;
+  find_symbols_to_write (&spi_root, p);
 
-  result |= write_symbol1 (p->right);
-  return result;
+  /* No symbols to write, return.  */
+  if (!spi_root)
+    return 0;
+
+  /* Otherwise, write and free the tree again.  */
+  write_symbol1_recursion (spi_root);
+  free_sorted_pointer_info_tree (spi_root);
+
+  return 1;
 }
 
 
@@ -5205,19 +5295,18 @@ write_generic (gfc_symtree *st)
     return;
 
   write_generic (st->left);
-  write_generic (st->right);
 
   sym = st->n.sym;
-  if (!sym || check_unique_name (st->name))
-    return;
+  if (sym && !check_unique_name (st->name)
+      && sym->generic && gfc_check_symbol_access (sym))
+    {
+      if (!sym->module)
+	sym->module = module_name;
 
-  if (sym->generic == NULL || !gfc_check_symbol_access (sym))
-    return;
+      mio_symbol_interface (&st->name, &sym->module, &sym->generic);
+    }
 
-  if (sym->module == NULL)
-    sym->module = module_name;
-
-  mio_symbol_interface (&st->name, &sym->module, &sym->generic);
+  write_generic (st->right);
 }
 
 

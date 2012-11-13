@@ -13330,10 +13330,6 @@ sh_can_use_simple_return_p (void)
   if (optimize_function_for_size_p (cfun))
     return false;
 
-  /* Can't optimize CROSSING_JUMPS for now.  */
-  if (flag_reorder_blocks_and_partition)
-    return false;
-
   /* Finally, allow for pr save.  */
   d = calc_live_regs (&live_regs_mask);
 

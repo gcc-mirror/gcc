@@ -1,3 +1,48 @@
+2012-11-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54466
+	* pt.c (lookup_template_class_1): TYPE_STUB_DECL should be
+	accessed on the main variant of the type.
+
+2012-11-12  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* parser.c (cp_parser_objc_class_ivars):
+	Index declspecs.locations by ds_typedef rather than ds_thread.
+
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* decl.c (grokfndecl): Adjust calls to interpret_x_suffix.
+
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54859
+	* pt.c (check_instantiated_arg): Don't complain about dependent args.
+
+	* tree.c (cxx_attribute_table): Add abi_tag attribute.
+	(check_abi_tag_redeclaration, handle_abi_tag_attribute): New.
+	* class.c (find_abi_tags_r, check_abi_tags): New.
+	(check_bases, check_field_decl): Call check_abi_tags.
+	* decl.c (redeclaration_error_message): Call
+	check_abi_tag_redeclaration.
+	* mangle.c (tree_string_cmp, write_abi_tags): New.
+	(write_unqualified_name): Call write_abi_tags.
+
+2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55226
+	Revert:
+	2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54922
+	* semantics.c (cx_check_missing_mem_inits): Handle anonymous union
+	members.
+
+2012-11-07  Florian Weimer  <fweimer@redhat.com>
+
+	* init.c (build_new_1): Do not check for arithmetic overflow if
+	inner array size is 1.
+
 2012-11-05  Sriraman Tallam  <tmsriram@google.com>
 
 	* class.c (add_method): Change assembler names of function versions.
@@ -7,7 +52,7 @@
 	* decl.c (decls_match): Make decls unmatched for versioned
 	functions.
 	(duplicate_decls): Remove ambiguity for versioned functions.
-	Delete versioned function data for merged decls. 
+	Delete versioned function data for merged decls.
 	* decl2.c (check_classfn): Check attributes of versioned functions
 	for match.
 	* call.c (get_function_version_dispatcher): New function.

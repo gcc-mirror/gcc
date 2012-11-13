@@ -11199,6 +11199,8 @@ MIPS, where add-immediate takes a 16-bit signed value,
 is zero, which disables this optimization.
 @end deftypevr
 
+@hook TARGET_ASAN_SHADOW_OFFSET
+
 @hook TARGET_MEMMODEL_CHECK
 Validate target specific memory model mask bits. When NULL no target specific
 memory model bits are allowed.

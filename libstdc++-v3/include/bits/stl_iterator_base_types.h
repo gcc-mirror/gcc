@@ -65,7 +65,7 @@
 
 #include <bits/c++config.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 # include <type_traits>  // For _GLIBCXX_HAS_NESTED_TYPE, is_convertible
 #endif
 
@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  argument.  Specialized versions for pointers and pointers-to-const
    *  provide tighter, more correct semantics.
   */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 _GLIBCXX_HAS_NESTED_TYPE(iterator_category)
 
@@ -223,7 +223,7 @@ _GLIBCXX_HAS_NESTED_TYPE(iterator_category)
       { return __it.base(); }
     };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _InIter>
     using _RequireInputIter = typename
       enable_if<is_convertible<typename

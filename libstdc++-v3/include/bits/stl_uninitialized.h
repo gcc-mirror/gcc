@@ -444,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   // Extensions: __uninitialized_default, __uninitialized_default_n,
   // __uninitialized_default_a, __uninitialized_default_n_a.
 

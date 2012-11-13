@@ -5987,10 +5987,11 @@ fold_binary_op_with_conditional_arg (location_t loc,
     cond_code = VEC_COND_EXPR;
 
   /* This transformation is only worthwhile if we don't have to wrap ARG
-     in a SAVE_EXPR and the operation can be simplified on at least one
-     of the branches once its pushed inside the COND_EXPR.  */
+     in a SAVE_EXPR and the operation can be simplified without recursing
+     on at least one of the branches once its pushed inside the COND_EXPR.  */
   if (!TREE_CONSTANT (arg)
       && (TREE_SIDE_EFFECTS (arg)
+	  || TREE_CODE (arg) == COND_EXPR || TREE_CODE (arg) == VEC_COND_EXPR
 	  || TREE_CONSTANT (true_value) || TREE_CONSTANT (false_value)))
     return NULL_TREE;
 
@@ -14033,6 +14034,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 			    fold_convert_loc (loc, type, arg0),
 			    op2);
 
+      return NULL_TREE;
+
+    case VEC_COND_EXPR:
+      if (TREE_CODE (arg0) == VECTOR_CST)
+	{
+	  if (integer_all_onesp (arg0) && !TREE_SIDE_EFFECTS (op2))
+	    return pedantic_non_lvalue_loc (loc, op1);
+	  if (integer_zerop (arg0) && !TREE_SIDE_EFFECTS (op1))
+	    return pedantic_non_lvalue_loc (loc, op2);
+	}
       return NULL_TREE;
 
     case CALL_EXPR:

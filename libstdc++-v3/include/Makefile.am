@@ -705,6 +705,7 @@ endif
 debug_srcdir = ${glibcxx_srcdir}/include/debug
 debug_builddir = ./debug
 debug_headers = \
+	${debug_srcdir}/array \
 	${debug_srcdir}/bitset \
 	${debug_srcdir}/debug.h \
 	${debug_srcdir}/deque \
@@ -786,6 +787,7 @@ parallel_headers = \
 profile_srcdir = ${glibcxx_srcdir}/include/profile
 profile_builddir = ./profile
 profile_headers = \
+	${profile_srcdir}/array \
 	${profile_srcdir}/base.h \
 	${profile_srcdir}/unordered_map \
 	${profile_srcdir}/unordered_set \

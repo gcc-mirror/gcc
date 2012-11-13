@@ -4,12 +4,8 @@
 
 <info><title>C++ 2011</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      2011
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>2011</keyword>
   </keywordset>
 </info>
 
@@ -26,7 +22,7 @@ In this implementation <literal>-std=gnu++11</literal> or
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
-<constant>__GXX_EXPERIMENTAL_CXX0X__</constant> is used to check for the
+<constant>__cplusplus</constant> is used to check for the
 presence of the required flag.
 </para>
 

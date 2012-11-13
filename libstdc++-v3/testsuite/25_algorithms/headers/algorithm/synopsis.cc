@@ -34,7 +34,7 @@ namespace std
     _IIter
     find_if(_IIter, _IIter, _Predicate);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _IIter, typename _Predicate>
     bool
     all_of(_IIter, _IIter, _Predicate);
@@ -140,7 +140,7 @@ namespace std
     void 
     swap(_Tp&, _Tp& b);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp, size_t _Nm>
     void
     swap(_Tp (&)[_Nm], _Tp (&)[_Nm]);
@@ -211,7 +211,7 @@ namespace std
     _OIter 
     remove_copy_if(_IIter, _IIter, _OIter, _Predicate);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _IIter, typename _OIter, typename _Predicate>
     _OIter 
     copy_if(_IIter, _IIter, _OIter, _Predicate);
@@ -447,7 +447,7 @@ namespace std
     void 
     sort_heap(_RAIter, _RAIter, _Compare);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _RAIter>
     bool 
     is_heap(_RAIter, _RAIter);
@@ -514,7 +514,7 @@ namespace std
     _FIter 
     max_element(_FIter, _FIter, _Compare);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp>
     pair<const _Tp&, const _Tp&>
     minmax(const _Tp&, const _Tp&);

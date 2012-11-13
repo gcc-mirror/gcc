@@ -26,7 +26,7 @@ bool user_new_called;
 bool user_delete_called;
 
 void* operator new(std::size_t n)
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
   throw(std::bad_alloc)
 #endif
 {
@@ -41,7 +41,7 @@ void* operator new(std::size_t n)
 }
 
 void operator delete(void* p)
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   noexcept
 #else
   throw()

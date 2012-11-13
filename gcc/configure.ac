@@ -2003,6 +2003,12 @@ fi])
 
 ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
 PLUGIN_LD_SUFFIX=`basename $gcc_cv_ld | sed -e "s,$target_alias-,,"`
+# if the PLUGIN_LD is set ld-new, just have it as ld
+# as that is the installed named.
+if test x$PLUGIN_LD_SUFFIX == xld-new \
+   || test x$PLUGIN_LD_SUFFIX == xcollect-ld ; then
+  PLUGIN_LD_SUFFIX=ld
+fi
 AC_ARG_WITH(plugin-ld,
 [AS_HELP_STRING([[--with-plugin-ld=[ARG]]], [specify the plugin linker])],
 [if test x"$withval" != x; then
@@ -3862,6 +3868,19 @@ LCF0:
       [$conftest_s],,
       [AC_DEFINE(HAVE_AS_POPCNTD, 1,
 	  [Define if your assembler supports POPCNTD instructions.])])
+
+    case $target in
+      *-*-aix*) conftest_s='	.machine "pwr8"
+	.csect .text[[PR]]';;
+      *) conftest_s='	.machine power8
+	.text';;
+    esac
+
+    gcc_GAS_CHECK_FEATURE([power8 support],
+      gcc_cv_as_powerpc_power8, [2,19,2], -a32,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_POWER8, 1,
+	  [Define if your assembler supports POWER8 instructions.])])
 
     case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]

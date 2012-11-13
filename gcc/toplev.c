@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "alloc-pool.h"
 #include "tree-mudflap.h"
+#include "asan.h"
 #include "gimple.h"
 #include "tree-ssa-alias.h"
 #include "plugin.h"
@@ -569,6 +570,10 @@ compile_file (void)
       /* Likewise for mudflap static object registrations.  */
       if (flag_mudflap)
 	mudflap_finish_file ();
+
+      /* File-scope initialization for AddressSanitizer.  */
+      if (flag_asan)
+        asan_finish_file ();
 
       output_shared_constant_pool ();
       output_object_blocks ();
@@ -1416,11 +1421,14 @@ process_options (void)
   /* If the user specifically requested variable tracking with tagging
      uninitialized variables, we need to turn on variable tracking.
      (We already determined above that variable tracking is feasible.)  */
-  if (flag_var_tracking_uninit)
+  if (flag_var_tracking_uninit == 1)
     flag_var_tracking = 1;
 
   if (flag_var_tracking == AUTODETECT_VALUE)
     flag_var_tracking = optimize >= 1;
+
+  if (flag_var_tracking_uninit == AUTODETECT_VALUE)
+    flag_var_tracking_uninit = flag_var_tracking;
 
   if (flag_var_tracking_assignments == AUTODETECT_VALUE)
     flag_var_tracking_assignments = flag_var_tracking
@@ -1534,6 +1542,15 @@ process_options (void)
       warning (0, "unwind tables currently require a frame pointer "
 	       "for correctness");
       flag_omit_frame_pointer = 0;
+    }
+
+  /* Address Sanitizer needs porting to each target architecture.  */
+  if (flag_asan
+      && (targetm.asan_shadow_offset == NULL
+	  || !FRAME_GROWS_DOWNWARD))
+    {
+      warning (0, "-faddress-sanitizer not supported for this target");
+      flag_asan = 0;
     }
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error

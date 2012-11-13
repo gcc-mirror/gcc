@@ -49,7 +49,7 @@
 #include <bits/c++config.h>
 #include <bits/stl_function.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 #include <typeinfo>
 #include <new>
@@ -2438,6 +2438,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif // _GLIBCXX_FUNCTIONAL

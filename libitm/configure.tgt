@@ -61,6 +61,7 @@ case "${target_cpu}" in
 	      XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
 	    fi
 	esac
+	XCFLAGS="${XCFLAGS} -mrtm"
 	ARCH=x86
 	;;
 
@@ -101,6 +102,7 @@ case "${target_cpu}" in
 	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
 	    ;;
 	esac
+	XCFLAGS="${XCFLAGS} -mrtm"
 	ARCH=x86
 	;;
 

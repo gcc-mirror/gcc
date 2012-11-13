@@ -28,7 +28,7 @@
 #ifndef _GLIBCXX_PROFILE_UNORDERED_SET
 #define _GLIBCXX_PROFILE_UNORDERED_SET 1
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 # include <unordered_set>
@@ -573,6 +573,6 @@ namespace __profile
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif

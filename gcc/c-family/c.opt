@@ -257,6 +257,10 @@ Wabi
 C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
 Warn about things that will change when compiling with an ABI-compliant compiler
 
+Wabi-tag
+C++ ObjC++ Var(warn_abi_tag) Warning
+Warn if a subobject has an abi_tag attribute that the complete object type does not have
+
 Wpsabi
 C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented
 
@@ -267,6 +271,10 @@ Warn about suspicious uses of memory addresses
 Wall
 C ObjC C++ ObjC++ Warning
 Enable most warning messages
+
+Warray-bounds
+LangEnabledBy(C ObjC C++ ObjC++,Wall)
+; in common.opt
 
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
@@ -332,6 +340,10 @@ Wdelete-non-virtual-dtor
 C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about deleting polymorphic objects with non-virtual destructors
 
+Wdelete-non-virtual-dtor
+LangEnabledBy(C++ ObjC++,Weffc++)
+;
+
 Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
 Warn if a deprecated compiler feature, class, method, or field is used
@@ -353,8 +365,12 @@ C ObjC C++ ObjC++ Warning
 Warn about stray tokens after #elif and #endif
 
 Wenum-compare
-C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning LangEnabledBy(C ObjC,Wall)
 Warn about comparison of different enum types
+
+Wenum-compare
+LangEnabledBy(C ObjC,Wc++-compat)
+;
 
 Werror
 C ObjC C++ ObjC++
@@ -369,35 +385,36 @@ C ObjC C++ ObjC++ Var(warn_float_equal) Warning
 Warn if testing floating point numbers for equality
 
 Wformat
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Warning Alias(Wformat=, 1, 0)
 Warn about printf/scanf/strftime/strfmon format string anomalies
 
+Wformat-contains-nul
+C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+Warn about format strings that contain NUL bytes
+
 Wformat-extra-args
-C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning
+C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn if passing too many arguments to a function for its format string
 
 Wformat-nonliteral
-C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning
+C ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
 Warn about format strings that are not literals
 
-Wformat-contains-nul
-C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning
-Warn about format strings that contain NUL bytes
-
 Wformat-security
-C ObjC C++ ObjC++ Var(warn_format_security) Warning
+C ObjC C++ ObjC++ Var(warn_format_security) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
 Warn about possible security problems with format functions
 
 Wformat-y2k
-C ObjC C++ ObjC++ Var(warn_format_y2k) Warning
+C ObjC C++ ObjC++ Var(warn_format_y2k) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 2, 0)
 Warn about strftime formats yielding 2-digit years
 
 Wformat-zero-length
-C ObjC C++ ObjC++ Var(warn_format_zero_length) Warning
+C ObjC C++ ObjC++ Var(warn_format_zero_length) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 1, 0)
 Warn about zero-length formats
 
 Wformat=
-C ObjC C++ ObjC++ Joined Warning
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
+Warn about printf/scanf/strftime/strfmon format string anomalies
 
 Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
@@ -459,8 +476,12 @@ C ObjC C++ ObjC++ Var(warn_long_long) Init(-1) Warning
 Do not warn about using \"long long\" when -pedantic
 
 Wmain
-C ObjC C++ ObjC++ Var(warn_main) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_main) Init(-1) Warning LangEnabledBy(C ObjC,Wall, 2, 0)
 Warn about suspicious declarations of \"main\"
+
+Wmain
+LangEnabledBy(C ObjC C++ ObjC++,Wpedantic, 2, 0)
+;
 
 Wmissing-braces
 C ObjC C++ ObjC++ Var(warn_missing_braces) Warning LangEnabledBy(C ObjC,Wall)
@@ -480,6 +501,18 @@ C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning LangEnabledBy(C Obj
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes
+
+Wswitch
+C ObjC C++ ObjC++ Var(warn_switch) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about enumerated switches, with no default, missing a case
+
+Wswitch-default
+C ObjC C++ ObjC++ Var(warn_switch_default) Warning
+Warn about enumerated switches missing a \"default:\" statement
+
+Wswitch-enum
+C ObjC C++ ObjC++ Var(warn_switch_enum) Warning
+Warn about all enumerated switches missing a specific case
 
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Alias(Wsuggest-attribute=format)
@@ -530,8 +563,12 @@ C++ ObjC++ Var(warn_nonvdtor) Warning
 Warn about non-virtual destructors
 
 Wnonnull
-C ObjC C++ ObjC++ Var(warn_nonnull) Warning
+C ObjC C++ ObjC++ Var(warn_nonnull) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=,warn_format >= 1,0)
 Warn about NULL being passed to argument slots marked as requiring non-NULL
+
+Wnonnull
+C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
+;
 
 Wnormalized=
 C ObjC C++ ObjC++ Joined Warning
@@ -550,7 +587,7 @@ C ObjC Var(warn_old_style_definition) Warning
 Warn if an old-style parameter definition is used
 
 Woverlength-strings
-C ObjC C++ ObjC++ Var(warn_overlength_strings) Init(-1) Warning
+C ObjC C++ ObjC++ Var(warn_overlength_strings) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn if a string is longer than the maximum portable length specified by the standard
 
 Woverloaded-virtual
@@ -706,7 +743,7 @@ C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ;
 
 Wunknown-pragmas
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Warning Var(warn_unknown_pragmas) LangEnabledBy(C ObjC C++ ObjC++,Wall, 1, 0)
 Warn about unrecognized pragmas
 
 Wunsuffixed-float-constants
@@ -722,7 +759,7 @@ C ObjC C++ ObjC++ Var(warn_unused_local_typedefs) Warning EnabledBy(Wunused)
 Warn when typedefs locally defined in a function are not used
 
 Wunused-macros
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Var(cpp_warn_unused_macros) Warning
 Warn about macros defined in the main file that are not used
 
 Wunused-result
@@ -730,8 +767,8 @@ C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
-C ObjC C++ ObjC++ Warning
-Do not warn about using variadic macros when -pedantic
+C ObjC C++ ObjC++ Var(cpp_warn_variadic_macros) Init(1) Warning
+Warn about using variadic macros
 
 Wvarargs
 C ObjC C++ ObjC++ Warning Var(warn_varargs) Init(1)
@@ -1196,6 +1233,11 @@ C ObjC C++ ObjC++
 femit-struct-debug-detailed=
 C ObjC C++ ObjC++ Joined
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs
+
+fext-numeric-literals
+C++ ObjC++ 
+Interpret imaginary, fixed-point, or other gnu number suffix as the corresponding
+number literal rather than a user-defined number literal.
 
 idirafter
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)

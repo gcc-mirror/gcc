@@ -4,27 +4,13 @@
 
 <info><title>Test</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      test
-    </keyword>
-    <keyword>
-      testsuite
-    </keyword>
-    <keyword>
-      performance
-    </keyword>
-    <keyword>
-      conformance
-    </keyword>
-    <keyword>
-      ABI
-    </keyword>
-    <keyword>
-      exception safety
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>test</keyword>
+    <keyword>testsuite</keyword>
+    <keyword>performance</keyword>
+    <keyword>conformance</keyword>
+    <keyword>ABI</keyword>
+    <keyword>exception safety</keyword>
   </keywordset>
 </info>
 

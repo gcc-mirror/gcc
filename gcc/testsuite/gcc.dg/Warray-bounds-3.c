@@ -34,31 +34,31 @@ bar (struct S *time)
   iov[1].iov_base = (void *) "def";
   iov[1].iov_len = 3;
 
-  for (cnt = 0; cnt <= 7; ++cnt)
+  for (cnt = 0; cnt < 7; ++cnt)
     {
       iov[2 + cnt].iov_base = (void *) (time->abday[cnt] ?: "");
       iov[2 + cnt].iov_len = strlen (iov[2 + cnt].iov_base) + 1;
     }
 
-  for (; cnt <= 14; ++cnt)
+  for (; cnt < 14; ++cnt)
     {
       iov[2 + cnt].iov_base = (void *) (time->day[cnt - 7] ?: "");
       iov[2 + cnt].iov_len = strlen (iov[2 + cnt].iov_base) + 1;
     }
 
-  for (; cnt <= 26; ++cnt)
+  for (; cnt < 26; ++cnt)
     {
       iov[2 + cnt].iov_base = (void *) (time->abmon[cnt - 14] ?: "");
       iov[2 + cnt].iov_len = strlen (iov[2 + cnt].iov_base) + 1;
     }
 
-  for (; cnt <= 38; ++cnt)
+  for (; cnt < 38; ++cnt)
     {
       iov[2 + cnt].iov_base = (void *) (time->mon[cnt - 26] ?: "");
       iov[2 + cnt].iov_len = strlen (iov[2 + cnt].iov_base) + 1;
     }
 
-  for (; cnt <= 40; ++cnt)
+  for (; cnt < 40; ++cnt)
     {
       iov[2 + cnt].iov_base =  (void *) (time->am_pm[cnt - 38] ?: "");
       iov[2 + cnt].iov_len = strlen (iov[2 + cnt].iov_base) + 1;

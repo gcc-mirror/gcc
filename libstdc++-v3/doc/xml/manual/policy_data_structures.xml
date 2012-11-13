@@ -3,36 +3,16 @@
   <info>
     <title>Policy-Based Data Structures</title>
     <keywordset>
-      <keyword>
-	ISO C++
-      </keyword>
-      <keyword>
-	policy
-      </keyword>
-      <keyword>
-	container
-      </keyword>
-      <keyword>
-	data
-      </keyword>
-      <keyword>
-	structure
-      </keyword>
-      <keyword>
-	associated
-      </keyword>
-      <keyword>
-	tree
-      </keyword>
-      <keyword>
-	trie
-      </keyword>
-      <keyword>
-	hash
-      </keyword>
-      <keyword>
-	metaprogramming
-      </keyword>
+      <keyword>ISO C++</keyword>
+      <keyword>policy</keyword>
+      <keyword>container</keyword>
+      <keyword>data</keyword>
+      <keyword>structure</keyword>
+      <keyword>associated</keyword>
+      <keyword>tree</keyword>
+      <keyword>trie</keyword>
+      <keyword>hash</keyword>
+      <keyword>metaprogramming</keyword>
     </keywordset>
   </info>
   <?dbhtml filename="policy_data_structures.html"?>
@@ -6363,7 +6343,7 @@
     <biblioentry xml:id="biblio.select_man">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.scit.wlv.ac.uk/cgi-bin/mansec?3C+select">
+	      xlink:href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html">
 	  select
 	</link>
       </title>

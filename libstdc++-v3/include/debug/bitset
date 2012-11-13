@@ -42,7 +42,7 @@ namespace __debug
   template<size_t _Nb>
     class bitset
     : public _GLIBCXX_STD_C::bitset<_Nb>
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
     , public __gnu_debug::_Safe_sequence_base
 #endif
     {
@@ -52,7 +52,7 @@ namespace __debug
       // In C++0x we rely on normal reference type to preserve the property
       // of bitset to be use as a literal.
       // TODO: Find another solution.
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       typedef typename _Base::reference reference;
 #else
       // bit reference:
@@ -133,7 +133,7 @@ namespace __debug
       _GLIBCXX_CONSTEXPR bitset() _GLIBCXX_NOEXCEPT
       : _Base() { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       constexpr bitset(unsigned long long __val) noexcept
 #else
       bitset(unsigned long __val)
@@ -162,7 +162,7 @@ namespace __debug
 
       bitset(const _Base& __x) : _Base(__x) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _CharT>
         explicit
         bitset(const _CharT* __str,
@@ -263,7 +263,7 @@ namespace __debug
       operator[](size_t __pos)
       {
 	__glibcxx_check_subscript(__pos);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 	return _M_base()[__pos];
 #else
 	return reference(_M_base()[__pos], this);
@@ -275,7 +275,7 @@ namespace __debug
       _GLIBCXX_CONSTEXPR bool
       operator[](size_t __pos) const
       {
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 	// TODO: Check in debug-mode too.
 	__glibcxx_check_subscript(__pos);
 #endif
@@ -283,7 +283,7 @@ namespace __debug
       }
 
       using _Base::to_ulong;
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::to_ullong;
 #endif
 
@@ -409,7 +409,7 @@ namespace __debug
 
 } // namespace __debug
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   // DR 1182.
   /// std::hash specialization for bitset.
   template<size_t _Nb>

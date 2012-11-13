@@ -67,7 +67,7 @@ namespace __gnu_test
       return ret;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<template<typename...> class Property,
 	   typename Type1, typename... Types>
     bool
@@ -156,7 +156,7 @@ namespace __gnu_test
     ThrowCopyConsClass(const ThrowCopyConsClass&) throw(int);
   };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   struct ThrowMoveConsClass
   {
     ThrowMoveConsClass(ThrowMoveConsClass&&) throw(int);
@@ -308,7 +308,7 @@ namespace __gnu_test
     int j;
   };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   struct LType // literal type
   {
     int _M_i;
@@ -403,7 +403,7 @@ namespace __gnu_test
     check_ret_type(T)
     { return true; }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   namespace construct
   {
     struct Empty {};

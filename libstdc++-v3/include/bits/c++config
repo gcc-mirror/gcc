@@ -1,7 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 1997-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,7 +78,7 @@
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
 
-#if defined(__DEPRECATED) && defined(__GXX_EXPERIMENTAL_CXX0X__)
+#if defined(__DEPRECATED) && (__cplusplus >= 201103L)
 # define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
 #else
 # define _GLIBCXX_DEPRECATED
@@ -89,7 +88,7 @@
 
 // Macro for constexpr, to support in mixed 03/0x mode.
 #ifndef _GLIBCXX_CONSTEXPR
-# ifdef __GXX_EXPERIMENTAL_CXX0X__
+# if __cplusplus >= 201103L
 #  define _GLIBCXX_CONSTEXPR constexpr
 #  define _GLIBCXX_USE_CONSTEXPR constexpr
 # else
@@ -100,7 +99,7 @@
 
 // Macro for noexcept, to support in mixed 03/0x mode.
 #ifndef _GLIBCXX_NOEXCEPT
-# ifdef __GXX_EXPERIMENTAL_CXX0X__
+# if __cplusplus >= 201103L
 #  define _GLIBCXX_NOEXCEPT noexcept
 #  define _GLIBCXX_USE_NOEXCEPT noexcept
 #  define _GLIBCXX_THROW(_EXC)
@@ -113,6 +112,14 @@
 
 #ifndef _GLIBCXX_NOTHROW
 # define _GLIBCXX_NOTHROW _GLIBCXX_USE_NOEXCEPT
+#endif
+
+#ifndef _GLIBCXX_THROW_OR_ABORT
+# if __EXCEPTIONS
+#  define _GLIBCXX_THROW_OR_ABORT(_EXC) (throw (_EXC))
+# else
+#  define _GLIBCXX_THROW_OR_ABORT(_EXC) (__builtin_abort())
+# endif
 #endif
 
 // Macro for extern template, ie controling template linkage via use
@@ -173,7 +180,7 @@ namespace std
   typedef __SIZE_TYPE__ 	size_t;
   typedef __PTRDIFF_TYPE__	ptrdiff_t;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   typedef decltype(nullptr)	nullptr_t;
 #endif
 }

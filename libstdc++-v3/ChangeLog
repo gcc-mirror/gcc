@@ -1,3 +1,171 @@
+2012-11-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (atomic_future): Remove declaration of
+	non-standard name.
+
+2012-11-11  Jason Merrill  <jason@redhat.com>
+
+	* include/std/complex (real, imag): Add ABI tag in C++11 mode.
+
+2012-11-11  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/xml/chapter.txml: Remove whitespace inside <keyword>.
+	* doc/xml/class.txml: Likewise.
+	* doc/xml/manual/abi.xml: Likewise.
+	* doc/xml/manual/algorithms.xml: Likewise.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/appendix_contributing.xml: Likewise.
+	* doc/xml/manual/appendix_free.xml: Likewise.
+	* doc/xml/manual/appendix_porting.xml: Likewise.
+	* doc/xml/manual/atomics.xml: Likewise.
+	* doc/xml/manual/auto_ptr.xml: Likewise.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/bitmap_allocator.xml: Likewise.
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/xml/manual/codecvt.xml: Likewise.
+	* doc/xml/manual/concurrency.xml: Likewise.
+	* doc/xml/manual/concurrency_extensions.xml: Likewise.
+	* doc/xml/manual/configure.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/ctype.xml: Likewise.
+	* doc/xml/manual/debug.xml: Likewise.
+	* doc/xml/manual/debug_mode.xml: Likewise.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/internals.xml: Likewise.
+	* doc/xml/manual/intro.xml: Likewise.
+	* doc/xml/manual/io.xml: Likewise.
+	* doc/xml/manual/iterators.xml: Likewise.
+	* doc/xml/manual/locale.xml: Likewise.
+	* doc/xml/manual/localization.xml: Likewise.
+	* doc/xml/manual/messages.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/xml/manual/numerics.xml: Likewise.
+	* doc/xml/manual/parallel_mode.xml: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* doc/xml/manual/prerequisites.xml: Likewise.
+	* doc/xml/manual/profile_mode.xml: Likewise.
+	* doc/xml/manual/shared_ptr.xml: Likewise.
+	* doc/xml/manual/status_cxx1998.xml: Likewise.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/xml/manual/strings.xml: Likewise.
+	* doc/xml/manual/support.xml: Likewise.
+	* doc/xml/manual/test.xml: Likewise.
+	* doc/xml/manual/using_exceptions.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+	* doc/xml/spine.xml: Likewise.
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE_DOCBOOK): Also check for
+	/usr/share/xml/docbook/stylesheet/nwalsh5/current.
+	* configure: Regenerate.
+
+2012-11-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Update reference
+	for select.
+
+2012-11-10  Jason Merrill  <jason@redhat.com>
+
+	* many: Replace uses of __GXX_EXPERIMENTAL_CXX0X__ with __cplusplus.
+
+2012-11-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54075
+	* include/bits/hashtable.h (_Hashtable<>::rehash): Reset hash
+	policy state if no rehash.
+	* testsuite/23_containers/unordered_set/modifiers/reserve.cc
+	(test02): New.
+
+2012-11-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/unordered_multimap/insert/55028-debug.cc:
+	Don't pass -D_GLIBCXX_DEBUG by hand (check-debug does).
+
+2012-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* testsuite/18_support/cxa_vec.cc: Fix typo in comment.
+
+2012-11-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/profile/iterator_tracker.h (operator++): Fix returning
+	dangling reference.
+	(operator--): Likewise.
+
+2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/array (_GLIBCXX_THROW_OR_ABORT): Move...
+	* include/bits/c++config: ... here.
+	* include/bits/shared_ptr_base.h (__throw_bad_weak_ptr): Use it.
+	* include/ext/pb_ds/exception.hpp: Likewise.
+	* include/ext/throw_allocator.h (__throw_forced_error): Likewise.
+	* include/ext/concurrence.h (__throw_concurrence_lock_error,
+	__throw_concurrence_unlock_error, __throw_concurrence_broadcast_error,
+	__throw_concurrence_wait_error): Likewise.
+	* include/tr1/shared_ptr.h (__throw_bad_weak_ptr): Likewise.
+	* include/tr1/functional (function<_Res(_ArgTypes...)>::operator()
+	(_ArgTypes...)): Likewise.
+	* libsupc++/eh_aux_runtime.cc (__cxxabiv1::__cxa_bad_cast,
+	__cxxabiv1::__cxa_bad_typeid): Likewise.
+	* libsupc++/vec.cc (compute_size): Likewise.
+	* libsupc++/new_op.cc (operator new (std::size_t)): Likewise.
+	* src/c++11/functexcept.cc: Likewise.
+	* testsuite/util/io/illegal_input_error.hpp
+	(__throw_illegal_input_error): Likewise.
+	* libsupc++/eh_personality.cc: Avoid warning with -fno-exceptions.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+
+2012-11-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_vector.h (vector(size_type)): Add missing allocator
+	parameter.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/debug/vector (vector(size_type)): Likewise.
+	* include/profile/vector (vector(size_type)): Likewise. Pass allocator
+	to base constructor.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2012-11-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/51850
+	* include/debug/array: New, debug-mode implementation.
+	* include/profile/array: New.
+	* include/std/array: Adjust.
+	* include/std/tuple: Just include <array>.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* testsuite/23_containers/array/debug/front1_neg.cc: New.
+	* testsuite/23_containers/array/debug/
+	square_brackets_operator1_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/front2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/
+	square_brackets_operator2_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/back1_neg.cc: Likewise.
+	* testsuite/23_containers/array/debug/back2_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Tweak
+	to run only in normal-mode.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: New.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+
 2012-11-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/20_util/shared_ptr/cons/55123.cc: Remove duplicate

@@ -2773,6 +2773,7 @@ target_libraries="target-libgcc \
 		target-libitm \
 		target-libstdc++-v3 \
 		target-libmudflap \
+		target-libsanitizer \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
@@ -3197,10 +3198,22 @@ fi
 
 # Disable libquadmath for some systems.
 case "${target}" in
+  avr-*-*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
   # libquadmath is unused on AIX and libquadmath build process use of
   # LD_LIBRARY_PATH can break AIX bootstrap.
   powerpc-*-aix* | rs6000-*-aix*)
     noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
+
+# Disable libsanitizer on all systems but x86 linux for now.
+case "${target}" in
+  x86_64-*-linux-* | i?86-*-linux-*)
+    ;;
+  *)
+    noconfigdirs="$noconfigdirs target-libsanitizer"
     ;;
 esac
 
@@ -3218,13 +3231,6 @@ case "${target}" in
     # doesn't fault for those - instead, it gives a build-time error
     # for explicit misaligned loads.
     noconfigdirs="$noconfigdirs target-libssp"
-    ;;
-esac
-
-# Disable libquadmath for some systems.
-case "${target}" in
-  avr-*-*)
-    noconfigdirs="$noconfigdirs target-libquadmath"
     ;;
 esac
 

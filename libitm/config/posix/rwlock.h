@@ -1,4 +1,4 @@
-/* Copyright (C) 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).
@@ -73,6 +73,14 @@ class gtm_rwlock
 
   bool write_upgrade (gtm_thread *tx);
   void write_upgrade_finish (gtm_thread *tx);
+
+  // Returns true iff there is a concurrent active or waiting writer.
+  // This is primarily useful for simple HyTM approaches, and the value being
+  // checked is loaded with memory_order_relaxed.
+  bool is_write_locked()
+  {
+    return summary.load (memory_order_relaxed) & (a_writer | w_writer);
+  }
 
  protected:
   bool write_lock_generic (gtm_thread *tx);

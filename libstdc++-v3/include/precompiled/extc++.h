@@ -26,7 +26,7 @@
  *  This is an implementation file for a precompiled header.
  */
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 #include <bits/stdtr1c++.h>
 #endif
 

@@ -73,32 +73,11 @@ for (i = 0; i < n_opts; i++) {
 
     enabledby_arg = opt_args("LangEnabledBy", flags[i]);
     if (enabledby_arg != "") {
-        n_enabledby_arg_langs = split(nth_arg(0, enabledby_arg), enabledby_arg_langs, " ");
+        enabledby_langs = nth_arg(0, enabledby_arg);
         enabledby_name = nth_arg(1, enabledby_arg);
-        enabledby_posarg = nth_arg(2, enabledby_arg)
-	enabledby_negarg = nth_arg(3, enabledby_arg)
-        enabledby_index = opt_numbers[enabledby_name];
-        if (enabledby_index == "") {
-            print "#error LangEnabledby: " enabledby_name 
-        } else {
-            if (enabledby_posarg != "" && enabledby_negarg != "") {
-                with_args = "," enabledby_posarg "," enabledby_negarg
-            } else if (enabledby_posarg == "" && enabledby_negarg == "") {
-                with_args = ""
-            } else {
-                print "#error LangEnabledBy with three arguments, it should have either 2 or 4"
-            }
-
-            for (j = 1; j <= n_enabledby_arg_langs; j++) {
-                lang_name = lang_sanitized_name(enabledby_arg_langs[j]);
-                lang_index = lang_numbers[enabledby_arg_langs[j]];
-                if (enables[lang_name,enabledby_name] == "") {
-                    enabledby[lang_name,n_enabledby_lang[lang_index]] = enabledby_name;
-                    n_enabledby_lang[lang_index]++;
-                }
-                enables[lang_name,enabledby_name] = enables[lang_name,enabledby_name] opts[i] with_args ";";
-            }
-        }
+        enabledby_posarg = nth_arg(2, enabledby_arg);
+	enabledby_negarg = nth_arg(3, enabledby_arg);
+        lang_enabled_by(enabledby_langs, enabledby_name, enabledby_posarg, enabledby_negarg);
     }
 }
 

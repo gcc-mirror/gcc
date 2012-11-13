@@ -193,15 +193,6 @@ const char *pch_file;
    user's namespace.  */
 int flag_iso;
 
-/* Warn about #pragma directives that are not recognized.  */
-
-int warn_unknown_pragmas; /* Tri state variable.  */
-
-/* Warn about format/argument anomalies in calls to formatted I/O functions
-   (*printf, *scanf, strftime, strfmon, etc.).  */
-
-int warn_format;
-
 /* C/ObjC language option variables.  */
 
 
@@ -2670,22 +2661,14 @@ conversion_warning (tree type, tree expr)
 
     case COND_EXPR:
       {
-	/* In case of COND_EXPR, if both operands are constants or
-	   COND_EXPR, then we do not care about the type of COND_EXPR,
-	   only about the conversion of each operand.  */
-	tree op1 = TREE_OPERAND (expr, 1);
-	tree op2 = TREE_OPERAND (expr, 2);
-
-	if ((TREE_CODE (op1) == REAL_CST || TREE_CODE (op1) == INTEGER_CST
-	     || TREE_CODE (op1) == COND_EXPR)
-	    && (TREE_CODE (op2) == REAL_CST || TREE_CODE (op2) == INTEGER_CST
-		|| TREE_CODE (op2) == COND_EXPR))
-	  {
-	    conversion_warning (type, op1);
-	    conversion_warning (type, op2);
-	    return;
-	  }
-	/* Fall through.  */
+        /* In case of COND_EXPR, we do not care about the type of
+           COND_EXPR, only about the conversion of each operand.  */
+        tree op1 = TREE_OPERAND (expr, 1);
+        tree op2 = TREE_OPERAND (expr, 2);
+        
+        conversion_warning (type, op1);
+        conversion_warning (type, op2);
+        return;
       }
 
     default: /* 'expr' is not a constant.  */
@@ -8507,7 +8490,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 	 in position >= the number of fixed arguments.  */
       if ((nargs - 1 - pos) < len)
 	{
-	  warning (OPT_Wformat,
+	  warning (OPT_Wformat_,
 		   "not enough variable arguments to fit a sentinel");
 	  return;
 	}
@@ -8522,7 +8505,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 	     users to cast the NULL they have written there.
 	     We warn with -Wstrict-null-sentinel, though.  */
 	  && (warn_strict_null_sentinel || null_node != sentinel))
-	warning (OPT_Wformat, "missing sentinel in function call");
+	warning (OPT_Wformat_, "missing sentinel in function call");
     }
 }
 
@@ -10114,7 +10097,7 @@ get_atomic_generic_size (location_t loc, tree function, VEC(tree,gc) *params)
       if (TREE_CODE (p) == INTEGER_CST)
         {
 	  int i = tree_low_cst (p, 1);
-	  if (i < 0 || i >= MEMMODEL_LAST)
+	  if (i < 0 || (i & MEMMODEL_MASK) >= MEMMODEL_LAST)
 	    {
 	      warning_at (loc, OPT_Winvalid_memory_model,
 			  "invalid memory model argument %d of %qE", x + 1,

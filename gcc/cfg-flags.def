@@ -171,6 +171,12 @@ DEF_EDGE_FLAG(CAN_FALLTHRU, 13)
    This flag is only used for the RTL CFG.  */
 DEF_EDGE_FLAG(LOOP_EXIT, 14)
 
+/* Uninstrumented edge out of a GIMPLE_TRANSACTION statement.  */
+DEF_EDGE_FLAG(TM_UNINSTRUMENTED, 15)
+
+/* Abort (over) edge out of a GIMPLE_TRANSACTION statement.  */
+DEF_EDGE_FLAG(TM_ABORT, 16)
+
 #endif
 
 /*

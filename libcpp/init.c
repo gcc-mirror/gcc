@@ -182,6 +182,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, track_macro_expansion) = 2;
   CPP_OPTION (pfile, warn_normalize) = normalized_C;
   CPP_OPTION (pfile, warn_literal_suffix) = 1;
+  CPP_OPTION (pfile, ext_numeric_literals) = 1;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */

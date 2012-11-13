@@ -632,18 +632,6 @@ Wsuggest-attribute=noreturn
 Common Var(warn_suggest_attribute_noreturn) Warning
 Warn about functions which might be candidates for __attribute__((noreturn))
 
-Wswitch
-Common Var(warn_switch) Warning
-Warn about enumerated switches, with no default, missing a case
-
-Wswitch-default
-Common Var(warn_switch_default) Warning
-Warn about enumerated switches missing a \"default:\" statement
-
-Wswitch-enum
-Common Var(warn_switch_enum) Warning
-Warn about all enumerated switches missing a specific case
-
 Wsystem-headers
 Common Var(warn_system_headers) Warning
 Do not suppress warnings from system headers
@@ -848,6 +836,10 @@ Does nothing. Preserved for backward compatibility.
 fargument-noalias-anything
 Common Ignore
 Does nothing. Preserved for backward compatibility.
+
+faddress-sanitizer
+Common Report Var(flag_asan)
+Enable AddressSanitizer, a memory error detector
 
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
@@ -2201,6 +2193,10 @@ fvar-tracking-assignments-toggle
 Common Report Var(flag_var_tracking_assignments_toggle) Optimization
 Toggle -fvar-tracking-assignments
 
+; Positive if we should track uninitialized variables, negative if
+; we should run the var-tracking pass only to discard debug
+; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
+; will be set according to flag_var_tracking.
 fvar-tracking-uninit
 Common Report Var(flag_var_tracking_uninit) Optimization
 Perform variable tracking and also tag variables that are uninitialized
@@ -2313,6 +2309,14 @@ Don't record gcc command line switches in DWARF DW_AT_producer.
 grecord-gcc-switches
 Common RejectNegative Var(dwarf_record_gcc_switches,1)
 Record gcc command line switches in DWARF DW_AT_producer.
+
+gno-split-dwarf
+Common Driver RejectNegative Var(dwarf_split_debug_info,0) Init(0)
+Don't generate debug information in separate .dwo files
+
+gsplit-dwarf
+Common Driver RejectNegative Var(dwarf_split_debug_info,1)
+Generate debug information in separate .dwo files
 
 gstabs
 Common JoinedOrMissing Negative(gstabs+)

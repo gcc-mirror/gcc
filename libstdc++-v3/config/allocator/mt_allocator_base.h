@@ -32,7 +32,7 @@
 
 #include <ext/mt_allocator.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 namespace std
 {
   /**

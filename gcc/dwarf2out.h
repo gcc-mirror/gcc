@@ -167,11 +167,14 @@ typedef struct GTY(()) dw_vec_struct {
 }
 dw_vec_const;
 
+struct addr_table_entry_struct;
+
 /* The dw_val_node describes an attribute's value, as it is
    represented internally.  */
 
 typedef struct GTY(()) dw_val_struct {
   enum dw_val_class val_class;
+  struct addr_table_entry_struct * GTY(()) val_entry;
   union dw_val_struct_union
     {
       rtx GTY ((tag ("dw_val_class_addr"))) val_addr;

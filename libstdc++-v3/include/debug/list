@@ -75,7 +75,7 @@ namespace __debug
       list(const _Allocator& __a = _Allocator())
       : _Base(__a) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       explicit
       list(size_type __n)
       : _Base(__n) { }
@@ -90,7 +90,7 @@ namespace __debug
       : _Base(__n, __value, __a) { }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -109,7 +109,7 @@ namespace __debug
       list(const _Base& __x)
       : _Base(__x) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       list(list&& __x) noexcept
       : _Base(std::move(__x))
       { this->_M_swap(__x); }
@@ -129,7 +129,7 @@ namespace __debug
 	return *this;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       list&
       operator=(list&& __x)
       {
@@ -157,7 +157,7 @@ namespace __debug
       }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -214,7 +214,7 @@ namespace __debug
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const_iterator
       cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
@@ -237,7 +237,7 @@ namespace __debug
       using _Base::size;
       using _Base::max_size;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       resize(size_type __sz)
       {
@@ -352,7 +352,7 @@ namespace __debug
       // 23.2.2.3 modifiers:
       using _Base::push_front;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::emplace_front;
 #endif
 
@@ -366,7 +366,7 @@ namespace __debug
 
       using _Base::push_back;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::emplace_back;
 #endif
 
@@ -378,7 +378,7 @@ namespace __debug
 	_Base::pop_back();
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename... _Args>
         iterator
         emplace(iterator __position, _Args&&... __args)
@@ -396,7 +396,7 @@ namespace __debug
 	return iterator(_Base::insert(__position.base(), __x), this);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       iterator
       insert(iterator __position, _Tp&& __x)
       { return emplace(__position, std::move(__x)); }
@@ -416,7 +416,7 @@ namespace __debug
 	_Base::insert(__position.base(), __n, __x);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 #else
@@ -480,7 +480,7 @@ namespace __debug
 
       // 23.2.2.4 list operations:
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x)
 #else
       splice(iterator __position, list& __x)
@@ -493,14 +493,14 @@ namespace __debug
 	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()));
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x)
       { splice(__position, std::move(__x)); }
 #endif
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x, iterator __i)
 #else
       splice(iterator __position, list& __x, iterator __i)
@@ -525,14 +525,14 @@ namespace __debug
 		      __i.base());
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x, iterator __i)
       { splice(__position, std::move(__x), __i); }
 #endif
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       splice(iterator __position, list&& __x, iterator __first,
 	     iterator __last)
 #else
@@ -571,7 +571,7 @@ namespace __debug
 		      __first.base(), __last.base());
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       splice(iterator __position, list& __x, iterator __first, iterator __last)
       { splice(__position, std::move(__x), __first, __last); }
@@ -638,7 +638,7 @@ namespace __debug
 	}
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       merge(list&& __x)
 #else
       merge(list& __x)
@@ -655,7 +655,7 @@ namespace __debug
 	  }
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       merge(list& __x)
       { merge(std::move(__x)); }
@@ -663,7 +663,7 @@ namespace __debug
 
       template<class _Compare>
         void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
         merge(list&& __x, _Compare __comp)
 #else
         merge(list& __x, _Compare __comp)
@@ -682,7 +682,7 @@ namespace __debug
 	    }
 	}
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Compare>
         void
         merge(list& __x, _Compare __comp)

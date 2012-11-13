@@ -508,6 +508,11 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_NAME:
       printf ("name '%.*s'\n", dc->u.s_name.len, dc->u.s_name.s);
       return;
+    case DEMANGLE_COMPONENT_TAGGED_NAME:
+      printf ("tagged name\n");
+      d_dump (dc->u.s_binary.left, indent + 2);
+      d_dump (dc->u.s_binary.right, indent + 2);
+      return;
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
       printf ("template parameter %ld\n", dc->u.s_number.number);
       return;
@@ -809,6 +814,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_QUAL_NAME:
     case DEMANGLE_COMPONENT_LOCAL_NAME:
     case DEMANGLE_COMPONENT_TYPED_NAME:
+    case DEMANGLE_COMPONENT_TAGGED_NAME:
     case DEMANGLE_COMPONENT_TEMPLATE:
     case DEMANGLE_COMPONENT_CONSTRUCTION_VTABLE:
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
@@ -1202,6 +1208,23 @@ d_encoding (struct d_info *di, int top_level)
     }
 }
 
+/* <tagged-name> ::= <name> B <source-name> */
+
+static struct demangle_component *
+d_abi_tags (struct d_info *di, struct demangle_component *dc)
+{
+  char peek;
+  while (peek = d_peek_char (di),
+	 peek == 'B')
+    {
+      struct demangle_component *tag;
+      d_advance (di, 1);
+      tag = d_source_name (di);
+      dc = d_make_comp (di, DEMANGLE_COMPONENT_TAGGED_NAME, dc, tag);
+    }
+  return dc;
+}
+
 /* <name> ::= <nested-name>
           ::= <unscoped-name>
           ::= <unscoped-template-name> <template-args>
@@ -1416,15 +1439,14 @@ d_prefix (struct d_info *di)
 static struct demangle_component *
 d_unqualified_name (struct d_info *di)
 {
+  struct demangle_component *ret;
   char peek;
 
   peek = d_peek_char (di);
   if (IS_DIGIT (peek))
-    return d_source_name (di);
+    ret = d_source_name (di);
   else if (IS_LOWER (peek))
     {
-      struct demangle_component *ret;
-
       ret = d_operator_name (di);
       if (ret != NULL && ret->type == DEMANGLE_COMPONENT_OPERATOR)
 	{
@@ -1433,14 +1455,11 @@ d_unqualified_name (struct d_info *di)
 	    ret = d_make_comp (di, DEMANGLE_COMPONENT_UNARY, ret,
 			       d_source_name (di));
 	}
-      return ret;
     }
   else if (peek == 'C' || peek == 'D')
-    return d_ctor_dtor_name (di);
+    ret = d_ctor_dtor_name (di);
   else if (peek == 'L')
     {
-      struct demangle_component * ret;
-
       d_advance (di, 1);
 
       ret = d_source_name (di);
@@ -1448,22 +1467,27 @@ d_unqualified_name (struct d_info *di)
 	return NULL;
       if (! d_discriminator (di))
 	return NULL;
-      return ret;
     }
   else if (peek == 'U')
     {
       switch (d_peek_next_char (di))
 	{
 	case 'l':
-	  return d_lambda (di);
+	  ret = d_lambda (di);
+	  break;
 	case 't':
-	  return d_unnamed_type (di);
+	  ret = d_unnamed_type (di);
+	  break;
 	default:
 	  return NULL;
 	}
     }
   else
     return NULL;
+
+  if (d_peek_char (di) == 'B')
+    ret = d_abi_tags (di, ret);
+  return ret;
 }
 
 /* <source-name> ::= <(positive length) number> <identifier>  */
@@ -3745,6 +3769,7 @@ d_find_pack (struct d_print_info *dpi,
       
     case DEMANGLE_COMPONENT_LAMBDA:
     case DEMANGLE_COMPONENT_NAME:
+    case DEMANGLE_COMPONENT_TAGGED_NAME:
     case DEMANGLE_COMPONENT_OPERATOR:
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
     case DEMANGLE_COMPONENT_SUB_STD:
@@ -3828,6 +3853,13 @@ d_print_comp (struct d_print_info *dpi, int options,
 	d_append_buffer (dpi, dc->u.s_name.s, dc->u.s_name.len);
       else
 	d_print_java_identifier (dpi, dc->u.s_name.s, dc->u.s_name.len);
+      return;
+
+    case DEMANGLE_COMPONENT_TAGGED_NAME:
+      d_print_comp (dpi, options, d_left (dc));
+      d_append_string (dpi, "[abi:");
+      d_print_comp (dpi, options, d_right (dc));
+      d_append_char (dpi, ']');
       return;
 
     case DEMANGLE_COMPONENT_QUAL_NAME:

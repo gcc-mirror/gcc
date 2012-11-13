@@ -26,7 +26,7 @@
 #include <string>
 #include <system_error>
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # error "compatibility-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 

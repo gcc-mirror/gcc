@@ -1701,7 +1701,6 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = __cplusplus \
                          __GTHREADS \
                          _GLIBCXX_HAS_GTHREADS \
-                         __GXX_EXPERIMENTAL_CXX0X__ \
                          _GLIBCXX_INCLUDE_AS_CXX0X \
                          "_GLIBCXX_PURE= " \
                          "_GLIBCXX_CONST= " \

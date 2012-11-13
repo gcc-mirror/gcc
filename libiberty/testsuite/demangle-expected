@@ -4084,6 +4084,9 @@ auto& f<int>(int const&, int)
 --format=gnu-v3
 _Z1gILi1EEvR1AIXT_EER1BIXscbT_EE
 void g<1>(A<1>&, B<static_cast<bool>(1)>&)
+--format=gnu-v3
+_ZNKSt7complexIiE4realB5cxx11Ev
+std::complex<int>::real[abi:cxx11]() const
 #
 # Ada (GNAT) tests.
 #

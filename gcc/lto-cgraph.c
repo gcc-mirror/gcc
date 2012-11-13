@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "tree-streamer.h"
 #include "gcov-io.h"
+#include "tree-pass.h"
 
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (VEC (symtab_node, heap) * nodes);
@@ -377,6 +378,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   intptr_t ref;
   bool in_other_partition = false;
   struct cgraph_node *clone_of;
+  struct ipa_opt_pass_d *pass;
+  int i;
 
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, (symtab_node)node);
 
@@ -431,6 +434,12 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   lto_output_fn_decl_index (ob->decl_state, ob->main_stream, node->symbol.decl);
   streamer_write_hwi_stream (ob->main_stream, node->count);
   streamer_write_hwi_stream (ob->main_stream, node->count_materialization_scale);
+
+  streamer_write_hwi_stream (ob->main_stream,
+			     VEC_length (ipa_opt_pass,
+					 node->ipa_transforms_to_apply));
+  FOR_EACH_VEC_ELT (ipa_opt_pass, node->ipa_transforms_to_apply, i, pass)
+    streamer_write_hwi_stream (ob->main_stream, pass->pass.static_pass_number);
 
   if (tag == LTO_symtab_analyzed_node)
     {
@@ -897,6 +906,7 @@ input_node (struct lto_file_decl_data *file_data,
   int ref = LCC_NOT_FOUND, ref2 = LCC_NOT_FOUND;
   int clone_ref;
   int order;
+  int i, count;
 
   order = streamer_read_hwi (ib) + order_base;
   clone_ref = streamer_read_hwi (ib);
@@ -918,6 +928,19 @@ input_node (struct lto_file_decl_data *file_data,
 
   node->count = streamer_read_hwi (ib);
   node->count_materialization_scale = streamer_read_hwi (ib);
+
+  count = streamer_read_hwi (ib);
+  node->ipa_transforms_to_apply = NULL;
+  for (i = 0; i < count; i++)
+    {
+      struct opt_pass *pass;
+      int pid = streamer_read_hwi (ib);
+
+      gcc_assert (pid < passes_by_id_size);
+      pass = passes_by_id[pid];
+      VEC_safe_push (ipa_opt_pass, heap, node->ipa_transforms_to_apply,
+		     (struct ipa_opt_pass_d *) pass);
+    }
 
   if (tag == LTO_symtab_analyzed_node)
     ref = streamer_read_hwi (ib);

@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type max_size() const _GLIBCXX_USE_NOEXCEPT
       { return __numeric_traits<size_type>::__max / sizeof(_Tp); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
         void
         construct(_Up* __p, _Args&&... __args)

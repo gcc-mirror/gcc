@@ -99,44 +99,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Substitute for concurrence_error object in the case of -fno-exceptions.
   inline void
   __throw_concurrence_lock_error()
-  {
-#if __EXCEPTIONS
-    throw __concurrence_lock_error();
-#else
-    __builtin_abort();
-#endif
-  }
+  { _GLIBCXX_THROW_OR_ABORT(__concurrence_lock_error()); }
 
   inline void
   __throw_concurrence_unlock_error()
-  {
-#if __EXCEPTIONS
-    throw __concurrence_unlock_error();
-#else
-    __builtin_abort();
-#endif
-  }
+  { _GLIBCXX_THROW_OR_ABORT(__concurrence_unlock_error()); }
 
 #ifdef __GTHREAD_HAS_COND
   inline void
   __throw_concurrence_broadcast_error()
-  {
-#if __EXCEPTIONS
-    throw __concurrence_broadcast_error();
-#else
-    __builtin_abort();
-#endif
-  }
+  { _GLIBCXX_THROW_OR_ABORT(__concurrence_broadcast_error()); }
 
   inline void
   __throw_concurrence_wait_error()
-  {
-#if __EXCEPTIONS
-    throw __concurrence_wait_error();
-#else
-    __builtin_abort();
-#endif
-  }
+  { _GLIBCXX_THROW_OR_ABORT(__concurrence_wait_error()); }
 #endif
  
   class __mutex 

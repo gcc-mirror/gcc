@@ -31,11 +31,12 @@
        (ior (match_operand 0 "register_operand")
 	    (match_test "op == const0_rtx"))))
 
-(define_predicate "aarch64_reg_zero_or_m1"
+(define_predicate "aarch64_reg_zero_or_m1_or_1"
   (and (match_code "reg,subreg,const_int")
        (ior (match_operand 0 "register_operand")
 	    (ior (match_test "op == const0_rtx")
-		 (match_test "op == constm1_rtx")))))
+		 (ior (match_test "op == constm1_rtx")
+		      (match_test "op == const1_rtx"))))))
 
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")

@@ -30,7 +30,7 @@
 #ifndef _ALLOC_TRAITS_H
 #define _ALLOC_TRAITS_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 #include <bits/ptr_traits.h>
 #include <ext/numeric_traits.h>

@@ -6,22 +6,27 @@
 
 package syscall
 
-//sysnb	strerror_r(errnum int, buf []byte) (err error)
+//sysnb	strerror_r(errnum int, buf []byte) (err Errno)
 //strerror_r(errnum _C_int, buf *byte, buflen Size_t) _C_int
 
 func Errstr(errnum int) string {
 	for len := 128; ; len *= 2 {
 		b := make([]byte, len)
-		err := strerror_r(errnum, b)
-		if err == nil {
+		errno := strerror_r(errnum, b)
+		if errno == 0 {
 			i := 0
 			for b[i] != 0 {
 				i++
 			}
+			// Lowercase first letter: Bad -> bad, but
+			// STREAM -> STREAM.
+			if i > 1 && 'A' <= b[0] && b[0] <= 'Z' && 'a' <= b[1] && b[1] <= 'z' {
+				b[0] += 'a' - 'A'
+			}
 			return string(b[:i])
 		}
-		if err != ERANGE {
-			return "Errstr failure"
+		if errno != ERANGE {
+			return "errstr failure"
 		}
 	}
 }

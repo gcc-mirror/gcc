@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : _M_dataplus(_S_construct(__beg, __end, __a), __a)
     { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(initializer_list<_CharT> __l, const _Alloc& __a)

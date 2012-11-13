@@ -1,0 +1,605 @@
+#!/usr/bin/python
+
+# Script to statistically compare two sets of log files with -ftime-report
+# output embedded within them.
+
+# Contributed by Lawrence Crowl <crowl@google.com>
+#
+# Copyright (C) 2012 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+
+""" Compare two sets of compile-time performance numbers.
+
+The intent of this script is to compare compile-time performance of two
+different versions of the compiler.  Each version of the compiler must be
+run at least three times with the -ftime-report option.  Each log file
+represents a data point, or trial.  The set of trials for each compiler
+version constitutes a sample.  The ouput of the script is a description
+of the statistically significant difference between the two version of
+the compiler.
+
+The parameters to the script are:
+
+  Two file patterns that each match a set of log files.  You will probably
+  need to quote the patterns before passing them to the script.
+
+    Each pattern corresponds to a version of the compiler.
+
+  A regular expression that finds interesting lines in the log files.
+  If you want to match the beginning of the line, you will need to add
+  the ^ operator.  The filtering uses Python regular expression syntax.
+
+    The default is "TOTAL".
+
+    All of the interesting lines in a single log file are summed to produce
+    a single trial (data point).
+
+  A desired statistical confidence within the range 60% to 99.9%.  Due to
+  the implementation, this confidence will be rounded down to one of 60%,
+  70%, 80%, 90%, 95%, 98%, 99%, 99.5%, 99.8%, and 99.9%.
+
+    The default is 95.
+
+    If the computed confidence is lower than desired, the script will
+    estimate the number of trials needed to meet the desired confidence.
+    This estimate is not very good, as the variance tends to change as
+    you increase the number of trials.
+
+The most common use of the script is total compile-time comparison between
+logfiles stored in different directories.
+
+compare_two_ftime_report_sets "Log1/*perf" "Log2/*perf"
+
+One can also look at parsing time, but expecting a lower confidence.
+
+compare_two_ftime_report_sets "Log1/*perf" "Log2/*perf" "^phase parsing" 75
+
+"""
+
+
+import os
+import sys
+import fnmatch
+import glob
+import re
+import math
+
+
+####################################################################### Utility
+
+
+def divide(dividend, divisor):
+  """ Return the quotient, avoiding division by zero.
+  """
+  if divisor == 0:
+    return sys.float_info.max
+  else:
+    return dividend / divisor
+
+
+################################################################# File and Line
+
+
+# Should you repurpose this script, this code might help.
+#
+#def find_files(topdir, filepat):
+#  """ Find a set of file names, under a given directory,
+#  matching a Unix shell file pattern.
+#  Returns an iterator over the file names.
+#  """
+#  for path, dirlist, filelist in os.walk(topdir):
+#    for name in fnmatch.filter(filelist, filepat):
+#      yield os.path.join(path, name)
+
+
+def match_files(fileglob):
+  """ Find a set of file names matching a Unix shell glob pattern.
+  Returns an iterator over the file names.
+  """
+  return glob.iglob(os.path.expanduser(fileglob))
+
+
+def lines_in_file(filename):
+  """ Return an iterator over lines in the named file.  """
+  filedesc = open(filename, "r")
+  for line in filedesc:
+    yield line
+  filedesc.close()
+
+
+def lines_containing_pattern(pattern, lines):
+  """ Find lines by a Python regular-expression.
+  Returns an iterator over lines containing the expression.
+  """
+  parser = re.compile(pattern)
+  for line in lines:
+    if parser.search(line):
+      yield line
+
+
+############################################################# Number Formatting
+
+
+def strip_redundant_digits(numrep):
+  if numrep.find(".") == -1:
+    return numrep
+  return numrep.rstrip("0").rstrip(".")
+
+
+def text_number(number):
+  return strip_redundant_digits("%g" % number)
+
+
+def round_significant(digits, number):
+  if number == 0:
+    return 0
+  magnitude = abs(number)
+  significance = math.floor(math.log10(magnitude))
+  least_position = int(significance - digits + 1)
+  return round(number, -least_position)
+
+
+def text_significant(digits, number):
+  return text_number(round_significant(digits, number))
+
+
+def text_percent(number):
+  return text_significant(3, number*100) + "%"
+
+
+################################################################ T-Distribution
+
+
+# This section of code provides functions for using Student's t-distribution.
+
+
+# The functions are implemented using table lookup
+# to facilitate implementation of inverse functions.
+
+
+# The table is comprised of row 0 listing the alpha values,
+# column 0 listing the degree-of-freedom values,
+# and the other entries listing the corresponding t-distribution values.
+
+t_dist_table = [
+[  0, 0.200, 0.150, 0.100, 0.050, 0.025, 0.010, 0.005, .0025, 0.001, .0005],
+[  1, 1.376, 1.963, 3.078, 6.314, 12.71, 31.82, 63.66, 127.3, 318.3, 636.6],
+[  2, 1.061, 1.386, 1.886, 2.920, 4.303, 6.965, 9.925, 14.09, 22.33, 31.60],
+[  3, 0.978, 1.250, 1.638, 2.353, 3.182, 4.541, 5.841, 7.453, 10.21, 12.92],
+[  4, 0.941, 1.190, 1.533, 2.132, 2.776, 3.747, 4.604, 5.598, 7.173, 8.610],
+[  5, 0.920, 1.156, 1.476, 2.015, 2.571, 3.365, 4.032, 4.773, 5.894, 6.869],
+[  6, 0.906, 1.134, 1.440, 1.943, 2.447, 3.143, 3.707, 4.317, 5.208, 5.959],
+[  7, 0.896, 1.119, 1.415, 1.895, 2.365, 2.998, 3.499, 4.029, 4.785, 5.408],
+[  8, 0.889, 1.108, 1.397, 1.860, 2.306, 2.896, 3.355, 3.833, 4.501, 5.041],
+[  9, 0.883, 1.100, 1.383, 1.833, 2.262, 2.821, 3.250, 3.690, 4.297, 4.781],
+[ 10, 0.879, 1.093, 1.372, 1.812, 2.228, 2.764, 3.169, 3.581, 4.144, 4.587],
+[ 11, 0.876, 1.088, 1.363, 1.796, 2.201, 2.718, 3.106, 3.497, 4.025, 4.437],
+[ 12, 0.873, 1.083, 1.356, 1.782, 2.179, 2.681, 3.055, 3.428, 3.930, 4.318],
+[ 13, 0.870, 1.079, 1.350, 1.771, 2.160, 2.650, 3.012, 3.372, 3.852, 4.221],
+[ 14, 0.868, 1.076, 1.345, 1.761, 2.145, 2.624, 2.977, 3.326, 3.787, 4.140],
+[ 15, 0.866, 1.074, 1.341, 1.753, 2.131, 2.602, 2.947, 3.286, 3.733, 4.073],
+[ 16, 0.865, 1.071, 1.337, 1.746, 2.120, 2.583, 2.921, 3.252, 3.686, 4.015],
+[ 17, 0.863, 1.069, 1.333, 1.740, 2.110, 2.567, 2.898, 3.222, 3.646, 3.965],
+[ 18, 0.862, 1.067, 1.330, 1.734, 2.101, 2.552, 2.878, 3.197, 3.610, 3.922],
+[ 19, 0.861, 1.066, 1.328, 1.729, 2.093, 2.539, 2.861, 3.174, 3.579, 3.883],
+[ 20, 0.860, 1.064, 1.325, 1.725, 2.086, 2.528, 2.845, 3.153, 3.552, 3.850],
+[ 21, 0.859, 1.063, 1.323, 1.721, 2.080, 2.518, 2.831, 3.135, 3.527, 3.819],
+[ 22, 0.858, 1.061, 1.321, 1.717, 2.074, 2.508, 2.819, 3.119, 3.505, 3.792],
+[ 23, 0.858, 1.060, 1.319, 1.714, 2.069, 2.500, 2.807, 3.104, 3.485, 3.768],
+[ 24, 0.857, 1.059, 1.318, 1.711, 2.064, 2.492, 2.797, 3.091, 3.467, 3.745],
+[ 25, 0.856, 1.058, 1.316, 1.708, 2.060, 2.485, 2.787, 3.078, 3.450, 3.725],
+[ 26, 0.856, 1.058, 1.315, 1.706, 2.056, 2.479, 2.779, 3.067, 3.435, 3.707],
+[ 27, 0.855, 1.057, 1.314, 1.703, 2.052, 2.473, 2.771, 3.057, 3.421, 3.689],
+[ 28, 0.855, 1.056, 1.313, 1.701, 2.048, 2.467, 2.763, 3.047, 3.408, 3.674],
+[ 29, 0.854, 1.055, 1.311, 1.699, 2.045, 2.462, 2.756, 3.038, 3.396, 3.660],
+[ 30, 0.854, 1.055, 1.310, 1.697, 2.042, 2.457, 2.750, 3.030, 3.385, 3.646],
+[ 31, 0.853, 1.054, 1.309, 1.696, 2.040, 2.453, 2.744, 3.022, 3.375, 3.633],
+[ 32, 0.853, 1.054, 1.309, 1.694, 2.037, 2.449, 2.738, 3.015, 3.365, 3.622],
+[ 33, 0.853, 1.053, 1.308, 1.692, 2.035, 2.445, 2.733, 3.008, 3.356, 3.611],
+[ 34, 0.852, 1.052, 1.307, 1.691, 2.032, 2.441, 2.728, 3.002, 3.348, 3.601],
+[ 35, 0.852, 1.052, 1.306, 1.690, 2.030, 2.438, 2.724, 2.996, 3.340, 3.591],
+[ 36, 0.852, 1.052, 1.306, 1.688, 2.028, 2.434, 2.719, 2.990, 3.333, 3.582],
+[ 37, 0.851, 1.051, 1.305, 1.687, 2.026, 2.431, 2.715, 2.985, 3.326, 3.574],
+[ 38, 0.851, 1.051, 1.304, 1.686, 2.024, 2.429, 2.712, 2.980, 3.319, 3.566],
+[ 39, 0.851, 1.050, 1.304, 1.685, 2.023, 2.426, 2.708, 2.976, 3.313, 3.558],
+[ 40, 0.851, 1.050, 1.303, 1.684, 2.021, 2.423, 2.704, 2.971, 3.307, 3.551],
+[ 50, 0.849, 1.047, 1.299, 1.676, 2.009, 2.403, 2.678, 2.937, 3.261, 3.496],
+[ 60, 0.848, 1.045, 1.296, 1.671, 2.000, 2.390, 2.660, 2.915, 3.232, 3.460],
+[ 80, 0.846, 1.043, 1.292, 1.664, 1.990, 2.374, 2.639, 2.887, 3.195, 3.416],
+[100, 0.845, 1.042, 1.290, 1.660, 1.984, 2.364, 2.626, 2.871, 3.174, 3.390],
+[150, 0.844, 1.040, 1.287, 1.655, 1.976, 2.351, 2.609, 2.849, 3.145, 3.357] ]
+
+
+# The functions use the following parameter name conventions:
+# alpha - the alpha parameter
+# degree - the degree-of-freedom parameter
+# value - the t-distribution value for some alpha and degree
+# deviations - a confidence interval radius,
+#   expressed as a multiple of the standard deviation of the sample
+# ax - the alpha parameter index
+# dx - the degree-of-freedom parameter index
+
+# The interface to this section of code is the last three functions,
+# find_t_dist_value, find_t_dist_alpha, and find_t_dist_degree.
+
+
+def t_dist_alpha_at_index(ax):
+  if ax == 0:
+    return .25 # effectively no confidence
+  else:
+    return t_dist_table[0][ax]
+
+
+def t_dist_degree_at_index(dx):
+  return t_dist_table[dx][0]
+
+
+def t_dist_value_at_index(ax, dx):
+  return t_dist_table[dx][ax]
+
+
+def t_dist_index_of_degree(degree):
+  limit = len(t_dist_table) - 1
+  dx = 0
+  while dx < limit and t_dist_degree_at_index(dx+1) <= degree:
+    dx += 1
+  return dx
+
+
+def t_dist_index_of_alpha(alpha):
+  limit = len(t_dist_table[0]) - 1
+  ax = 0
+  while ax < limit and t_dist_alpha_at_index(ax+1) >= alpha:
+    ax += 1
+  return ax
+
+
+def t_dist_index_of_value(dx, value):
+  limit = len(t_dist_table[dx]) - 1
+  ax = 0
+  while ax < limit and t_dist_value_at_index(ax+1, dx) < value:
+    ax += 1
+  return ax
+
+
+def t_dist_value_within_deviations(dx, ax, deviations):
+  degree = t_dist_degree_at_index(dx)
+  count = degree + 1
+  root = math.sqrt(count)
+  value = t_dist_value_at_index(ax, dx)
+  nominal = value / root
+  comparison = nominal <= deviations
+  return comparison
+
+
+def t_dist_index_of_degree_for_deviations(ax, deviations):
+  limit = len(t_dist_table) - 1
+  dx = 1
+  while dx < limit and not t_dist_value_within_deviations(dx, ax, deviations):
+    dx += 1
+  return dx
+
+
+def find_t_dist_value(alpha, degree):
+  """ Return the t-distribution value.
+  The parameters are alpha and degree of freedom.
+  """
+  dx = t_dist_index_of_degree(degree)
+  ax = t_dist_index_of_alpha(alpha)
+  return t_dist_value_at_index(ax, dx)
+
+
+def find_t_dist_alpha(value, degree):
+  """ Return the alpha.
+  The parameters are the t-distribution value for a given degree of freedom.
+  """
+  dx = t_dist_index_of_degree(degree)
+  ax = t_dist_index_of_value(dx, value)
+  return t_dist_alpha_at_index(ax)
+
+
+def find_t_dist_degree(alpha, deviations):
+  """ Return the degree-of-freedom.
+  The parameters are the desired alpha and the number of standard deviations
+  away from the mean that the degree should handle.
+  """
+  ax = t_dist_index_of_alpha(alpha)
+  dx = t_dist_index_of_degree_for_deviations(ax, deviations)
+  return t_dist_degree_at_index(dx)
+
+
+############################################################## Core Statistical
+
+
+# This section provides the core statistical classes and functions.
+
+
+class Accumulator:
+
+  """ An accumulator for statistical information using arithmetic mean.  """
+
+  def __init__(self):
+    self.count = 0
+    self.mean = 0
+    self.sumsqdiff = 0
+
+  def insert(self, value):
+    self.count += 1
+    diff = value - self.mean
+    self.mean += diff / self.count
+    self.sumsqdiff += (self.count - 1) * diff * diff / self.count
+
+
+def fill_accumulator_from_values(values):
+  accumulator = Accumulator()
+  for value in values:
+    accumulator.insert(value)
+  return accumulator
+
+
+def alpha_from_confidence(confidence):
+  scrubbed = min(99.99, max(confidence, 60))
+  return (100.0 - scrubbed) / 200.0
+
+
+def confidence_from_alpha(alpha):
+  return 100 - 200 * alpha
+
+
+class Sample:
+
+  """ A description of a sample using an arithmetic mean.  """
+
+  def __init__(self, accumulator, alpha):
+    if accumulator.count < 3:
+      sys.exit("Samples must contain three trials.")
+    self.count = accumulator.count
+    self.mean = accumulator.mean
+    variance = accumulator.sumsqdiff / (self.count - 1)
+    self.deviation = math.sqrt(variance)
+    self.error = self.deviation / math.sqrt(self.count)
+    self.alpha = alpha
+    self.radius = find_t_dist_value(alpha, self.count - 1) * self.error
+
+  def alpha_for_radius(self, radius):
+    return find_t_dist_alpha(divide(radius, self.error), self.count)
+
+  def degree_for_radius(self, radius):
+    return find_t_dist_degree(self.alpha, divide(radius, self.deviation))
+
+  def __str__(self):
+    text = "trial count is " + text_number(self.count)
+    text += ", mean is " + text_number(self.mean)
+    text += " (" + text_number(confidence_from_alpha(self.alpha)) +"%"
+    text += " confidence in " + text_number(self.mean - self.radius)
+    text += " to " + text_number(self.mean + self.radius) + ")"
+    text += ",\nstd.deviation is " + text_number(self.deviation)
+    text += ", std.error is " + text_number(self.error)
+    return text
+
+
+def sample_from_values(values, alpha):
+  accumulator = fill_accumulator_from_values(values)
+  return Sample(accumulator, alpha)
+
+
+class Comparison:
+
+  """ A comparison of two samples using arithmetic means.  """
+
+  def __init__(self, first, second, alpha):
+    if first.mean > second.mean:
+      self.upper = first
+      self.lower = second
+      self.larger = "first"
+    else:
+      self.upper = second
+      self.lower = first
+      self.larger = "second"
+    self.a_wanted = alpha
+    radius = self.upper.mean - self.lower.mean
+    rising = self.lower.alpha_for_radius(radius)
+    falling = self.upper.alpha_for_radius(radius)
+    self.a_actual = max(rising, falling)
+    rising = self.lower.degree_for_radius(radius)
+    falling = self.upper.degree_for_radius(radius)
+    self.count = max(rising, falling) + 1
+
+  def __str__(self):
+    message = "The " + self.larger + " sample appears to be "
+    change = divide(self.upper.mean, self.lower.mean) - 1
+    message += text_percent(change) + " larger,\n"
+    confidence = confidence_from_alpha(self.a_actual)
+    if confidence >= 60:
+      message += "with " + text_number(confidence) + "% confidence"
+      message += " of being larger."
+    else:
+      message += "but with no confidence of actually being larger."
+    if self.a_actual > self.a_wanted:
+      confidence = confidence_from_alpha(self.a_wanted)
+      message += "\nTo reach " + text_number(confidence) + "% confidence,"
+      if self.count < 100:
+        message += " you need roughly " + text_number(self.count) + " trials,\n"
+        message += "assuming the standard deviation is stable, which is iffy."
+      else:
+        message += "\nyou need to reduce the larger deviation"
+        message += " or increase the number of trials."
+    return message
+
+
+############################################################ Single Value Files
+
+
+# This section provides functions to compare two raw data files,
+# each containing a whole sample consisting of single number per line.
+
+
+# Should you repurpose this script, this code might help.
+#
+#def values_from_data_file(filename):
+#  for line in lines_in_file(filename):
+#    yield float(line)
+
+
+# Should you repurpose this script, this code might help.
+#
+#def sample_from_data_file(filename, alpha):
+#  confidence = confidence_from_alpha(alpha)
+#  text = "\nArithmetic sample for data file\n\"" + filename + "\""
+#  text += " with desired confidence " + text_number(confidence) + " is "
+#  print text
+#  values = values_from_data_file(filename)
+#  sample = sample_from_values(values, alpha)
+#  print sample
+#  return sample
+
+
+# Should you repurpose this script, this code might help.
+#
+#def compare_two_data_files(filename1, filename2, confidence):
+#  alpha = alpha_from_confidence(confidence)
+#  sample1 = sample_from_data_file(filename1, alpha)
+#  sample2 = sample_from_data_file(filename2, alpha)
+#  print 
+#  print Comparison(sample1, sample2, alpha)
+
+
+# Should you repurpose this script, this code might help.
+#
+#def command_two_data_files():
+#  argc = len(sys.argv)
+#  if argc < 2 or 4 < argc:
+#    message = "usage: " + sys.argv[0]
+#    message += " file-name file-name [confidence]"
+#    print message
+#  else:
+#    filename1 = sys.argv[1]
+#    filename2 = sys.argv[2]
+#    if len(sys.argv) >= 4:
+#      confidence = int(sys.argv[3])
+#    else:
+#      confidence = 95
+#  compare_two_data_files(filename1, filename2, confidence)
+
+
+############################################### -ftime-report TimeVar Log Files
+
+
+# This section provides functions to compare two sets of -ftime-report log
+# files.  Each set is a sample, where each data point is derived from the
+# sum of values in a single log file.
+
+
+label = r"^ *([^:]*[^: ]) *:"
+number = r" *([0-9.]*) *"
+percent = r"\( *[0-9]*\%\)"
+numpct = number + percent
+total_format = label + number + number + number + number + " kB\n"
+total_parser = re.compile(total_format)
+tmvar_format = label + numpct + " usr" + numpct + " sys"
+tmvar_format += numpct + " wall" + number + " kB " + percent + " ggc\n"
+tmvar_parser = re.compile(tmvar_format)
+replace = r"\2\t\3\t\4\t\5\t\1"
+
+
+def split_time_report(lines, pattern):
+  if pattern == "TOTAL":
+    parser = total_parser
+  else:
+    parser = tmvar_parser
+  for line in lines:
+    modified = parser.sub(replace, line)
+    if modified != line:
+      yield re.split("\t", modified)
+
+
+def extract_cpu_time(tvtuples):
+  for tuple in tvtuples:
+    yield float(tuple[0]) + float(tuple[1])
+
+
+def sum_values(values):
+  sum = 0
+  for value in values:
+    sum += value
+  return sum
+
+
+def extract_time_for_timevar_log(filename, pattern):
+  lines = lines_in_file(filename)
+  tmvars = lines_containing_pattern(pattern, lines)
+  tuples = split_time_report(tmvars, pattern)
+  times = extract_cpu_time(tuples)
+  return sum_values(times)
+
+
+def extract_times_for_timevar_logs(filelist, pattern):
+  for filename in filelist:
+    yield extract_time_for_timevar_log(filename, pattern)
+
+
+def sample_from_timevar_logs(fileglob, pattern, alpha):
+  confidence = confidence_from_alpha(alpha)
+  text = "\nArithmetic sample for timevar log files\n\"" + fileglob + "\""
+  text += "\nand selecting lines containing \"" + pattern + "\""
+  text += " with desired confidence " + text_number(confidence) + " is "
+  print text
+  filelist = match_files(fileglob)
+  values = extract_times_for_timevar_logs(filelist, pattern)
+  sample = sample_from_values(values, alpha)
+  print sample
+  return sample
+
+
+def compare_two_timevar_logs(fileglob1, fileglob2, pattern, confidence):
+  alpha = alpha_from_confidence(confidence)
+  sample1 = sample_from_timevar_logs(fileglob1, pattern, alpha)
+  sample2 = sample_from_timevar_logs(fileglob2, pattern, alpha)
+  print
+  print Comparison(sample1, sample2, alpha)
+
+
+def command_two_timevar_logs():
+  argc = len(sys.argv)
+  if argc < 3 or 5 < argc:
+    message = "usage: " + sys.argv[0]
+    message += " file-pattern file-pattern [line-pattern [confidence]]"
+    print message
+  else:
+    filepat1 = sys.argv[1]
+    filepat2 = sys.argv[2]
+    if len(sys.argv) >= 5:
+      confidence = int(sys.argv[4])
+    else:
+      confidence = 95
+    if len(sys.argv) >= 4:
+      linepat = sys.argv[3]
+    else:
+      linepat = "TOTAL"
+    compare_two_timevar_logs(filepat1, filepat2, linepat, confidence)
+
+
+########################################################################## Main
+
+
+# This section is the main code, implementing the command.
+
+
+command_two_timevar_logs()

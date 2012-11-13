@@ -65,30 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-flow.h"
 
-enum upper_128bits_state
-{
-  unknown = 0,
-  unused,
-  used
-};
-
-/* Check if a 256bit AVX register is referenced in stores.   */
-
-static void
-check_avx256_stores (rtx dest, const_rtx set, void *data)
-{
-  if (((REG_P (dest) || MEM_P(dest))
-       && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (dest)))
-      || (GET_CODE (set) == SET
-	  && (REG_P (SET_SRC (set)) || MEM_P (SET_SRC (set)))
-	  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (SET_SRC (set)))))
-    {
-      enum upper_128bits_state *state
-	= (enum upper_128bits_state *) data;
-      *state = used;
-    }
-}
-
 static rtx legitimize_dllimport_symbol (rtx, bool);
 
 #ifndef CHECK_STACK_LIMIT
@@ -4646,6 +4622,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
       if (!rtx_equal_p (a, b))
 	return false;
     }
+  else if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
+    ;
   else if (!rtx_equal_p (a, b))
     return false;
 
@@ -5206,6 +5184,14 @@ ix86_legitimate_combined_insn (rtx insn)
     }
 
   return true;
+}
+
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+ix86_asan_shadow_offset (void)
+{
+  return (unsigned HOST_WIDE_INT) 1 << (TARGET_LP64 ? 44 : 29);
 }
 
 /* Argument support functions.  */
@@ -9484,6 +9470,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
 {
   if (sr->saved)
     {
+      struct machine_function *m = cfun->machine;
       rtx x, insn = emit_insn (gen_pop (sr->reg));
 
       /* The RTX_FRAME_RELATED_P mechanism doesn't know about pop.  */
@@ -9491,6 +9478,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
       x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
       x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
+      m->fs.sp_offset -= UNITS_PER_WORD;
     }
 }
 
@@ -12215,7 +12203,6 @@ legitimize_pic_address (rtx orig, rtx reg)
 {
   rtx addr = orig;
   rtx new_rtx = orig;
-  rtx base;
 
 #if TARGET_MACHO
   if (TARGET_MACHO && !TARGET_64BIT)
@@ -12420,20 +12407,33 @@ legitimize_pic_address (rtx orig, rtx reg)
 	    }
 	  else
 	    {
-	      base = legitimize_pic_address (XEXP (addr, 0), reg);
-	      new_rtx  = legitimize_pic_address (XEXP (addr, 1),
-						 base == reg ? NULL_RTX : reg);
+	      rtx base = legitimize_pic_address (op0, reg);
+	      enum machine_mode mode = GET_MODE (base);
+	      new_rtx
+	        = legitimize_pic_address (op1, base == reg ? NULL_RTX : reg);
 
 	      if (CONST_INT_P (new_rtx))
-		new_rtx = plus_constant (Pmode, base, INTVAL (new_rtx));
+		{
+		  if (INTVAL (new_rtx) < -16*1024*1024
+		      || INTVAL (new_rtx) >= 16*1024*1024)
+		    {
+		      if (!x86_64_immediate_operand (new_rtx, mode))
+			new_rtx = force_reg (mode, new_rtx);
+		      new_rtx
+		        = gen_rtx_PLUS (mode, force_reg (mode, base), new_rtx);
+		    }
+		  else
+		    new_rtx = plus_constant (mode, base, INTVAL (new_rtx));
+		}
 	      else
 		{
-		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
+		  if (GET_CODE (new_rtx) == PLUS
+		      && CONSTANT_P (XEXP (new_rtx, 1)))
 		    {
-		      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
+		      base = gen_rtx_PLUS (mode, base, XEXP (new_rtx, 0));
 		      new_rtx = XEXP (new_rtx, 1);
 		    }
-		  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
+		  new_rtx = gen_rtx_PLUS (mode, base, new_rtx);
 		}
 	    }
 	}
@@ -14522,7 +14522,30 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	    }
 #endif
 	  gcc_assert (!code);
-	  code = 'l';
+	  code = 'k';
+	}
+      else if (code == 0
+	       && TARGET_X32
+	       && disp
+	       && CONST_INT_P (disp)
+	       && INTVAL (disp) < -16*1024*1024)
+	{
+	  /* X32 runs in 64-bit mode, where displacement, DISP, in
+	     address DISP(%r64), is encoded as 32-bit immediate sign-
+	     extended from 32-bit to 64-bit.  For -0x40000300(%r64),
+	     address is %r64 + 0xffffffffbffffd00.  When %r64 <
+	     0x40000300, like 0x37ffe064, address is 0xfffffffff7ffdd64,
+	     which is invalid for x32.  The correct address is %r64
+	     - 0x40000300 == 0xf7ffdd64.  To properly encode
+	     -0x40000300(%r64) for x32, we zero-extend negative
+	     displacement by forcing addr32 prefix which truncates
+	     0xfffffffff7ffdd64 to 0xf7ffdd64.  In theory, we should
+	     zero-extend all negative displacements, including -1(%rsp).
+	     However, for small negative displacements, sign-extension
+	     won't cause overflow.  We only zero-extend negative
+	     displacements if they < -16*1024*1024, which is also used
+	     to check legitimate address displacements for PIC.  */
+	  code = 'k';
 	}
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
@@ -14962,28 +14985,38 @@ output_387_binary_op (rtx insn, rtx *operands)
   return buf;
 }
 
+/* Check if a 256bit AVX register is referenced inside of EXP.   */
+
+static int
+ix86_check_avx256_register (rtx *exp, void *data ATTRIBUTE_UNUSED)
+{
+  if (REG_P (*exp)
+      && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (*exp)))
+    return 1;
+
+  return 0;
+}
+
 /* Return needed mode for entity in optimize_mode_switching pass.  */
 
 static int
 ix86_avx_u128_mode_needed (rtx insn)
 {
-  rtx pat = PATTERN (insn);
-  rtx arg;
-  enum upper_128bits_state state;
-
   if (CALL_P (insn))
     {
+      rtx link;
+
       /* Needed mode is set to AVX_U128_CLEAN if there are
 	 no 256bit modes used in function arguments.  */
-      for (arg = CALL_INSN_FUNCTION_USAGE (insn); arg;
-	   arg = XEXP (arg, 1))
+      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+	   link;
+	   link = XEXP (link, 1))
 	{
-	  if (GET_CODE (XEXP (arg, 0)) == USE)
+	  if (GET_CODE (XEXP (link, 0)) == USE)
 	    {
-	      rtx reg = XEXP (XEXP (arg, 0), 0);
+	      rtx arg = XEXP (XEXP (link, 0), 0);
 
-	      if (reg && REG_P (reg)
-		  && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
+	      if (ix86_check_avx256_register (&arg, NULL))
 		return AVX_U128_ANY;
 	    }
 	}
@@ -14991,11 +15024,13 @@ ix86_avx_u128_mode_needed (rtx insn)
       return AVX_U128_CLEAN;
     }
 
-  /* Check if a 256bit AVX register is referenced in stores.  */
-  state = unused;
-  note_stores (pat, check_avx256_stores, &state);
-  if (state == used)
+  /* Require DIRTY mode if a 256bit AVX register is referenced.  Hardware
+     changes state only when a 256bit register is written to, but we need
+     to prevent the compiler from moving optimal insertion point above
+     eventual read from 256bit register.  */
+  if (for_each_rtx (&PATTERN (insn), ix86_check_avx256_register, NULL))
     return AVX_U128_DIRTY;
+
   return AVX_U128_ANY;
 }
 
@@ -15073,46 +15108,42 @@ ix86_mode_needed (int entity, rtx insn)
   return 0;
 }
 
+/* Check if a 256bit AVX register is referenced in stores.   */
+ 
+static void
+ix86_check_avx256_stores (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
+ {
+   if (ix86_check_avx256_register (&dest, NULL))
+    {
+      bool *used = (bool *) data;
+      *used = true;
+    }
+ } 
+
 /* Calculate mode of upper 128bit AVX registers after the insn.  */
 
 static int
 ix86_avx_u128_mode_after (int mode, rtx insn)
 {
   rtx pat = PATTERN (insn);
-  rtx reg = NULL;
-  int i;
-  enum upper_128bits_state state;
-
-  /* Check for CALL instruction.  */
-  if (CALL_P (insn))
-    {
-      if (GET_CODE (pat) == SET || GET_CODE (pat) == CALL)
-	reg = SET_DEST (pat);
-      else if (GET_CODE (pat) ==  PARALLEL)
-	for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
-	  {
-	    rtx x = XVECEXP (pat, 0, i);
-	    if (GET_CODE(x) == SET)
-	      reg = SET_DEST (x);
-	  }
-      /* Mode after call is set to AVX_U128_DIRTY if there are
-	 256bit modes used in the function return register.  */
-      if (reg && REG_P (reg) && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
-	return AVX_U128_DIRTY;
-      else
-	return AVX_U128_CLEAN;
-    }
 
   if (vzeroupper_operation (pat, VOIDmode)
       || vzeroall_operation (pat, VOIDmode))
     return AVX_U128_CLEAN;
 
-  /* Check if a 256bit AVX register is referenced in stores.  */
-  state = unused;
-  note_stores (pat, check_avx256_stores, &state);
-  if (state == used)
-    return AVX_U128_DIRTY;
+  /* We know that state is clean after CALL insn if there are no
+     256bit registers used in the function return register.  */
+  if (CALL_P (insn))
+    {
+      bool avx_reg256_found = false;
+      note_stores (pat, ix86_check_avx256_stores, &avx_reg256_found);
+      if (!avx_reg256_found)
+	return AVX_U128_CLEAN;
+    }
 
+  /* Otherwise, return current mode.  Remember that if insn
+     references AVX 256bit registers, the mode was already changed
+     to DIRTY from MODE_NEEDED.  */
   return mode;
 }
 
@@ -15145,9 +15176,9 @@ ix86_avx_u128_mode_entry (void)
   for (arg = DECL_ARGUMENTS (current_function_decl); arg;
        arg = TREE_CHAIN (arg))
     {
-      rtx reg = DECL_INCOMING_RTL (arg);
+      rtx incoming = DECL_INCOMING_RTL (arg);
 
-      if (reg && REG_P (reg) && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
+      if (incoming && ix86_check_avx256_register (&incoming, NULL))
 	return AVX_U128_DIRTY;
     }
 
@@ -15181,7 +15212,7 @@ ix86_avx_u128_mode_exit (void)
 
   /* Exit mode is set to AVX_U128_DIRTY if there are
      256bit modes used in the function return register.  */
-  if (reg && REG_P (reg) && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (reg)))
+  if (reg && ix86_check_avx256_register (&reg, NULL))
     return AVX_U128_DIRTY;
 
   return AVX_U128_CLEAN;
@@ -32875,13 +32906,6 @@ ix86_free_from_memory (enum machine_mode mode)
     }
 }
 
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-ix86_lra_p (void)
-{
-  return true;
-}
-
 /* Return a register priority for hard reg REGNO.  */
 static int
 ix86_register_priority (int hard_regno)
@@ -42031,6 +42055,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_LEGITIMATE_COMBINED_INSN
 #define TARGET_LEGITIMATE_COMBINED_INSN ix86_legitimate_combined_insn
 
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET ix86_asan_shadow_offset
+
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
 
@@ -42138,7 +42165,7 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #define TARGET_LEGITIMATE_ADDRESS_P ix86_legitimate_address_p
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P ix86_lra_p
+#define TARGET_LRA_P hook_bool_void_true
 
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY ix86_register_priority

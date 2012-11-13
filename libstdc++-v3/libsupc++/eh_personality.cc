@@ -768,7 +768,7 @@ __cxa_call_unexpected (void *exc_obj_in)
       if (check_exception_spec (&info, __get_exception_header_from_obj
                                   (new_ptr)->exceptionType,
 				new_ptr, xh_switch_value))
-	__throw_exception_again;
+	{ __throw_exception_again; }
 
       // If the exception spec allows std::bad_exception, throw that.
       // We don't have a thrown object to compare against, but since

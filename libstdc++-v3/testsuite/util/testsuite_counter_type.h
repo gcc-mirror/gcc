@@ -32,7 +32,7 @@ namespace __gnu_test
     static int copy_count;
     static int copy_assign_count;
     static int less_compare_count;
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     static int move_count;
     static int move_assign_count;
 #endif
@@ -62,7 +62,7 @@ namespace __gnu_test
       return *this;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     counter_type(counter_type&& in) noexcept
     {
       val = in.val;
@@ -86,7 +86,7 @@ namespace __gnu_test
       copy_count = 0;
       copy_assign_count = 0;
       less_compare_count = 0;
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       move_count = 0;
       move_assign_count = 0;
 #endif
@@ -105,7 +105,7 @@ namespace __gnu_test
   int counter_type::copy_assign_count = 0;
   int counter_type::less_compare_count = 0;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   int counter_type::move_count = 0;
   int counter_type::move_assign_count = 0;
 #endif

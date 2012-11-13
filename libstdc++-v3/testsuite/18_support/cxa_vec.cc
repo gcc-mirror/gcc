@@ -1,5 +1,5 @@
 // { dg-do run }
-// Avoid use of none-overridable new/delete operators in shared
+// Avoid use of non-overridable new/delete operators in shared
 // { dg-options "-static" { target *-*-mingw* } }
 // Test __cxa_vec routines
 // Copyright (C) 2000-2012 Free Software Foundation, Inc.
