@@ -1,3 +1,8 @@
+2012-11-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54466
+	* g++.dg/cpp0x/alias-decl-26.C: New test file.
+
 2012-11-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/avx256-unaligned-load-2.c: Requre !ia32
