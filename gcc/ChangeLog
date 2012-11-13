@@ -1,3 +1,10 @@
+2012-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41993
+	* mode-switching.c (create_pre_exit): Set return_copy to last_insn
+	when copy_start is a function return regno instead of pseudo.
+	Skip debug instructions in instruction scan loop.
+
 2012-11-13  Andrew Stubbs  <ams@codesourcery.com>
 	    Ulrich Weigand  <ulrich.weigand@linaro.org>
 
