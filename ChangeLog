@@ -1,3 +1,8 @@
+2012-11-13  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac: Move libsanitizer logic to subdirectory.
+	* configure: Regenerate.
+
 2012-11-13  Dodji Seketeli  <dodji@redhat.com>
 
 	* configure.ac: Enable libsanitizer just on x86 linux for now.
