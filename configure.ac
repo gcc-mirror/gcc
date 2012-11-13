@@ -547,6 +547,13 @@ case "${target}" in
     ;;
 esac
 
+# Disable libsanitizer for some systems.
+case "${target}" in
+  cris-*-* | crisv32-*-* | mmix-*-*)
+    noconfigdirs="$noconfigdirs target-libsanitizer"
+    ;;
+esac
+
 # Disable libssp for some systems.
 case "${target}" in
   avr-*-*)
