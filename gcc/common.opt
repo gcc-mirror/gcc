@@ -1583,19 +1583,19 @@ Common Report Var(flag_peephole2) Optimization
 Enable an RTL peephole pass before sched2
 
 fPIC
-Common Report Var(flag_pic,2)
+Common Report Var(flag_pic,2) Negative(fPIE)
 Generate position-independent code if possible (large mode)
 
 fPIE
-Common Report Var(flag_pie,2)
+Common Report Var(flag_pie,2) Negative(fpic)
 Generate position-independent code for executables if possible (large mode)
 
 fpic
-Common Report Var(flag_pic,1)
+Common Report Var(flag_pic,1) Negative(fpie)
 Generate position-independent code if possible (small mode)
 
 fpie
-Common Report Var(flag_pie,1)
+Common Report Var(flag_pie,1) Negative(fPIC)
 Generate position-independent code for executables if possible (small mode)
 
 fplugin=
