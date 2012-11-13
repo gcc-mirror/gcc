@@ -12203,7 +12203,6 @@ legitimize_pic_address (rtx orig, rtx reg)
 {
   rtx addr = orig;
   rtx new_rtx = orig;
-  rtx base;
 
 #if TARGET_MACHO
   if (TARGET_MACHO && !TARGET_64BIT)
@@ -12408,20 +12407,33 @@ legitimize_pic_address (rtx orig, rtx reg)
 	    }
 	  else
 	    {
-	      base = legitimize_pic_address (XEXP (addr, 0), reg);
-	      new_rtx  = legitimize_pic_address (XEXP (addr, 1),
-						 base == reg ? NULL_RTX : reg);
+	      rtx base = legitimize_pic_address (op0, reg);
+	      enum machine_mode mode = GET_MODE (base);
+	      new_rtx
+	        = legitimize_pic_address (op1, base == reg ? NULL_RTX : reg);
 
 	      if (CONST_INT_P (new_rtx))
-		new_rtx = plus_constant (Pmode, base, INTVAL (new_rtx));
+		{
+		  if (INTVAL (new_rtx) < -16*1024*1024
+		      || INTVAL (new_rtx) >= 16*1024*1024)
+		    {
+		      if (!x86_64_immediate_operand (new_rtx, mode))
+			new_rtx = force_reg (mode, new_rtx);
+		      new_rtx
+		        = gen_rtx_PLUS (mode, force_reg (mode, base), new_rtx);
+		    }
+		  else
+		    new_rtx = plus_constant (mode, base, INTVAL (new_rtx));
+		}
 	      else
 		{
-		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
+		  if (GET_CODE (new_rtx) == PLUS
+		      && CONSTANT_P (XEXP (new_rtx, 1)))
 		    {
-		      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
+		      base = gen_rtx_PLUS (mode, base, XEXP (new_rtx, 0));
 		      new_rtx = XEXP (new_rtx, 1);
 		    }
-		  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
+		  new_rtx = gen_rtx_PLUS (mode, base, new_rtx);
 		}
 	    }
 	}
@@ -14510,7 +14522,30 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	    }
 #endif
 	  gcc_assert (!code);
-	  code = 'l';
+	  code = 'k';
+	}
+      else if (code == 0
+	       && TARGET_X32
+	       && disp
+	       && CONST_INT_P (disp)
+	       && INTVAL (disp) < -16*1024*1024)
+	{
+	  /* X32 runs in 64-bit mode, where displacement, DISP, in
+	     address DISP(%r64), is encoded as 32-bit immediate sign-
+	     extended from 32-bit to 64-bit.  For -0x40000300(%r64),
+	     address is %r64 + 0xffffffffbffffd00.  When %r64 <
+	     0x40000300, like 0x37ffe064, address is 0xfffffffff7ffdd64,
+	     which is invalid for x32.  The correct address is %r64
+	     - 0x40000300 == 0xf7ffdd64.  To properly encode
+	     -0x40000300(%r64) for x32, we zero-extend negative
+	     displacement by forcing addr32 prefix which truncates
+	     0xfffffffff7ffdd64 to 0xf7ffdd64.  In theory, we should
+	     zero-extend all negative displacements, including -1(%rsp).
+	     However, for small negative displacements, sign-extension
+	     won't cause overflow.  We only zero-extend negative
+	     displacements if they < -16*1024*1024, which is also used
+	     to check legitimate address displacements for PIC.  */
+	  code = 'k';
 	}
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
