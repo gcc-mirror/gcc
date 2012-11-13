@@ -1,3 +1,21 @@
+2012-11-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/55195
+	* config/pa/pa.md (attr type): Add sibcall and sh_func_adrs insn types.
+	(in_branch_delay): Don't allow sibcall or sh_func_adrs insns.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+	Define delay for sibcall insns.  Adjust Z3 and Z4 insn reservations for
+	new types.  Add opaque cond to mark all calls, sibcalls, dyncalls and
+	the $$sh_func_adrs call as variable.  Update type of sibcalls and
+	$$sh_func_adrs call.
+	* config/pa/pa.c (pa_adjust_insn_length): Revise to return updated
+	length instead of adjustment.  Handle negative and undefined call
+	adjustments for insn_default_length.  Remove adjustment for millicode
+	insn with unfilled delay slot.
+	(pa_output_millicode_call): Update for revised millicode length.
+	* config/pa/pa.h (ADJUST_INSN_LENGTH): Revise to set LENGTH.
+
 2012-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-ccp.c (dump_lattice_value) <CONSTANT>: Fix duplication.
