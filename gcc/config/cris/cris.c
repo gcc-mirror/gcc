@@ -2698,6 +2698,9 @@ cris_asm_output_mi_thunk (FILE *stream,
 			  HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			  tree funcdecl)
 {
+  /* Make sure unwind info is emitted for the thunk if needed.  */
+  final_start_function (emit_barrier (), stream, 1);
+
   if (delta > 0)
     fprintf (stream, "\tadd%s " HOST_WIDE_INT_PRINT_DEC ",$%s\n",
 	     ADDITIVE_SIZE_MODIFIER (delta), delta,
@@ -2735,6 +2738,8 @@ cris_asm_output_mi_thunk (FILE *stream,
       if (TARGET_V32)
 	fprintf (stream, "\tnop\n");
     }
+
+  final_end_function ();
 }
 
 /* Boilerplate emitted at start of file.

@@ -1,3 +1,9 @@
+2012-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/55257
+	* config/cris/cris.c (cris_asm_output_mi_thunk): Call
+	final_start_function and final_end_function.
+
 2012-11-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	* asan.c: Include tm_p.h
