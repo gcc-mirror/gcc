@@ -3208,12 +3208,11 @@ case "${target}" in
     ;;
 esac
 
-# Disable libsanitizer for some systems.
+# Disable libsanitizer on all systems but x86 linux for now.
 case "${target}" in
-  cris-*-* | crisv32-*-* | mmix-*-*)
-    noconfigdirs="$noconfigdirs target-libsanitizer"
+  x86_64-*-linux-* | i?86-*-linux-*)
     ;;
-  powerpc-*-aix* | rs6000-*-aix*)
+  *)
     noconfigdirs="$noconfigdirs target-libsanitizer"
     ;;
 esac

@@ -1,3 +1,8 @@
+2012-11-13  Dodji Seketeli  <dodji@redhat.com>
+
+	* configure.ac: Enable libsanitizer just on x86 linux for now.
+	* configure: Re-generate.
+
 2012-11-13  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.ac: Disable libsanitizer on AIX. Merge libquadmath
