@@ -1,3 +1,8 @@
+2012-11-13  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt (fPIC, fPIE, fpic, fpie): Create a Negative loop such
+	that any of these options disables the others.
+
 2012-11-13  Sriraman Tallam  <tmsriram@google.com>
 
 	* cgraph.c (insert_new_cgraph_node_version): Use cgraph_get_node
