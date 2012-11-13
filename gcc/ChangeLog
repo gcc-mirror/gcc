@@ -1,3 +1,10 @@
+2012-11-13  Sriraman Tallam  <tmsriram@google.com>
+
+	* cgraph.c (insert_new_cgraph_node_version): Use cgraph_get_node
+	instead of cgraph_get_create_node.
+	* config/i386/i386.c (ix86_get_function_versions_dispatcher): Move ifunc
+	not supported code to the end.
+
 2012-11-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55253

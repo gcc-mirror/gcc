@@ -1,3 +1,9 @@
+2012-11-13  Sriraman Tallam  <tmsriram@google.com>
+
+	* testsuite/g++.dg/mv4.C: Add require ifunc. Change error message.
+	* testsuite/g++.dg/mv5.C: Add require ifunc.
+	* testsuite/g++.dg/mv6.C: Add require ifunc.
+
 2012-11-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55253

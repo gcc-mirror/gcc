@@ -7068,38 +7068,6 @@ pop_lang_context (void)
 {
   current_lang_name = VEC_pop (tree, current_lang_base);
 }
-
-/* fn is a function version dispatcher that is marked used. Mark all the 
-   semantically identical function versions it will dispatch as used.  */
-
-static void
-mark_versions_used (tree fn)
-{
-  struct cgraph_node *node;
-  struct cgraph_function_version_info *node_v;
-  struct cgraph_function_version_info *it_v;
-
-  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
-
-  node = cgraph_get_node (fn);
-  if (node == NULL)
-    return;
-
-  gcc_assert (node->dispatcher_function);
-
-  node_v = get_cgraph_node_version (node);
-  if (node_v == NULL)
-    return;
-
-  /* All semantically identical versions are chained.  Traverse and mark each
-     one of them as used.  */
-  it_v = node_v->next;
-  while (it_v != NULL)
-    {
-      mark_used (it_v->this_node->symbol.decl);
-      it_v = it_v->next;
-    }
-}
 
 /* Type instantiation routines.  */
 
@@ -7315,22 +7283,13 @@ resolve_address_of_overloaded_function (tree target_type,
 
       fn = TREE_PURPOSE (matches);
 
-      /* For multi-versioned functions, more than one match is just fine.
-	 Call decls_match to make sure they are different because they are
-	 versioned.  */
-      if (DECL_FUNCTION_VERSIONED (fn))
-	{
-          for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
-  	    if (!DECL_FUNCTION_VERSIONED (TREE_PURPOSE (match))
-	        || decls_match (fn, TREE_PURPOSE (match)))
-	      break;
-	}
-      else
-	{
-          for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
-  	    if (!decls_match (fn, TREE_PURPOSE (match)))
-	      break;
-	}
+      /* For multi-versioned functions, more than one match is just fine and
+	 decls_match will return false as they are different.  */
+      for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
+	if (!decls_match (fn, TREE_PURPOSE (match))
+	    && !targetm.target_option.function_versions
+	       (fn, TREE_PURPOSE (match)))
+          break;
 
       if (match)
 	{
@@ -7377,17 +7336,9 @@ resolve_address_of_overloaded_function (tree target_type,
      function version at run-time.  */
   if (DECL_FUNCTION_VERSIONED (fn))
     {
-      tree dispatcher_decl = NULL;
-      gcc_assert (targetm.get_function_versions_dispatcher);
-      dispatcher_decl = targetm.get_function_versions_dispatcher (fn);
-      if (!dispatcher_decl)
-	{
-	  error_at (input_location, "Pointer to a multiversioned function"
-		    " without a default is not allowed");
-	  return error_mark_node;
-	}
-      retrofit_lang_decl (dispatcher_decl);
-      fn = dispatcher_decl;
+      fn = get_function_version_dispatcher (fn);
+      if (fn == NULL)
+	return error_mark_node;
       /* Mark all the versions corresponding to the dispatcher as used.  */
       if (!(flags & tf_conv))
 	mark_versions_used (fn);

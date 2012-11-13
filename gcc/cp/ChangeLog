@@ -1,3 +1,15 @@
+2012-11-13  Sriraman Tallam  <tmsriram@google.com>
+
+	* class.c (mark_versions_used): Remove.
+	(resolve_address_of_overloaded_function): Call target hook
+	for versioned functions. Refactor to call
+	get_function_versions_dispatcher.
+	* decl.c (duplicate_decls): Add comments.
+	* cp/call.c (get_function_version_dispatcher): Expose function.
+	(mark_versions_used): Expose function.
+	* cp/cp-tree.h (mark_versions_used): New declaration.
+	(get_function_version_dispatcher): Ditto.
+
 2012-11-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/54466

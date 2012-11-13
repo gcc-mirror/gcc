@@ -6517,7 +6517,7 @@ magic_varargs_p (tree fn)
 
 /* Returns the decl of the dispatcher function if FN is a function version.  */
 
-static tree
+tree
 get_function_version_dispatcher (tree fn)
 {
   tree dispatcher_decl = NULL;
@@ -6530,8 +6530,8 @@ get_function_version_dispatcher (tree fn)
 
   if (dispatcher_decl == NULL)
     {
-      error_at (input_location, "Call to multiversioned function"
-                " without a default is not allowed");
+      error_at (input_location, "use of multiversioned function "
+				"without a default");
       return NULL;
     }
 
@@ -6543,7 +6543,7 @@ get_function_version_dispatcher (tree fn)
 /* fn is a function version dispatcher that is marked used. Mark all the 
    semantically identical function versions it will dispatch as used.  */
 
-static void
+void
 mark_versions_used (tree fn)
 {
   struct cgraph_node *node;
