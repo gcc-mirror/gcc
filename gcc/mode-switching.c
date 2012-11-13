@@ -242,8 +242,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		int copy_start, copy_num;
 		int j;
 
-		if (INSN_P (return_copy)
-		    && !DEBUG_INSN_P (return_copy))
+		if (NONDEBUG_INSN_P (return_copy))
 		  {
 		    /* When using SJLJ exceptions, the call to the
 		       unregister function is inserted between the
