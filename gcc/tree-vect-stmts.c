@@ -5310,6 +5310,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   VEC (tree, heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   VEC (tree, heap) *vec_oprnds2 = NULL, *vec_oprnds3 = NULL;
+  tree vec_cmp_type = vectype;
 
   if (slp_node || PURE_SLP_STMT (stmt_info))
     ncopies = 1;
@@ -5381,6 +5382,15 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	   && TREE_CODE (else_clause) != REAL_CST
 	   && TREE_CODE (else_clause) != FIXED_CST)
     return false;
+
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
+    {
+      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype)));
+      tree cmp_type = build_nonstandard_integer_type (prec, 1);
+      vec_cmp_type = get_same_sized_vectype (cmp_type, vectype);
+      if (vec_cmp_type == NULL_TREE)
+	return false;
+    }
 
   if (!vec_stmt)
     {
@@ -5488,8 +5498,8 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
           vec_then_clause = VEC_index (tree, vec_oprnds2, i);
           vec_else_clause = VEC_index (tree, vec_oprnds3, i);
 
-          vec_compare = build2 (TREE_CODE (cond_expr), vectype,
-  			       vec_cond_lhs, vec_cond_rhs);
+	  vec_compare = build2 (TREE_CODE (cond_expr), vec_cmp_type,
+				vec_cond_lhs, vec_cond_rhs);
           vec_cond_expr = build3 (VEC_COND_EXPR, vectype,
  		         vec_compare, vec_then_clause, vec_else_clause);
 
