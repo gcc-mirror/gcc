@@ -1,3 +1,7 @@
+2012-11-12  David S. Miller  <davem@davemloft.net>
+
+	* asan/asan_linux.cc (GetPcSpBp): Add sparc support.
+
 2012-10-29  Wei Mi  <wmi@google.com>
 
 	Initial checkin: migrate asan runtime from llvm.
