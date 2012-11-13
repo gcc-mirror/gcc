@@ -1,3 +1,19 @@
+2012-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_emit_coreregs_64bit_shift): Fix comment.
+	* config/arm/arm.md (opt, opt_enabled): New attributes.
+	(enabled): Use opt_enabled.
+	(ashldi3, ashrdi3, lshrdi3): Add TARGET_NEON case.
+	(ashldi3): Allow general operands for TARGET_NEON case.
+	* config/arm/iterators.md (rshifts): New code iterator.
+	(shift, shifttype): New code attributes.
+	* config/arm/neon.md (UNSPEC_LOAD_COUNT): New unspec type.
+	(neon_load_count, ashldi3_neon_noclobber, ashldi3_neon,
+	signed_shift_di3_neon, unsigned_shift_di3_neon,
+	ashrdi3_neon_imm_noclobber, lshrdi3_neon_imm_noclobber,
+	<shift>di3_neon): New patterns.
+
 2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (asan.o): Depend on $(TM_P_H).

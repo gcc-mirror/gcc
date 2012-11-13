@@ -188,6 +188,9 @@
 ;; A list of widening operators
 (define_code_iterator SE [sign_extend zero_extend])
 
+;; Right shifts
+(define_code_iterator rshifts [ashiftrt lshiftrt])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -449,3 +452,8 @@
 
 ;; Assembler mnemonics for signedness of widening operations.
 (define_code_attr US [(sign_extend "s") (zero_extend "u")])
+
+;; Right shifts
+(define_code_attr shift [(ashiftrt "ashr") (lshiftrt "lshr")])
+(define_code_attr shifttype [(ashiftrt "signed") (lshiftrt "unsigned")])
+
