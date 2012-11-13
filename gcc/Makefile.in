@@ -2211,7 +2211,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 asan.o : asan.c asan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
    output.h coretypes.h $(GIMPLE_PRETTY_PRINT_H) \
    tree-iterator.h $(TREE_FLOW_H) $(TREE_PASS_H) \
-   $(TARGET_H) $(EXPR_H) $(OPTABS_H)
+   $(TARGET_H) $(EXPR_H) $(OPTABS_H) $(TM_P_H)
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
