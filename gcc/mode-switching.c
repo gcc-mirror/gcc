@@ -242,7 +242,8 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		int copy_start, copy_num;
 		int j;
 
-		if (INSN_P (return_copy))
+		if (INSN_P (return_copy)
+		    && !DEBUG_INSN_P (return_copy))
 		  {
 		    /* When using SJLJ exceptions, the call to the
 		       unregister function is inserted between the
@@ -330,7 +331,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			  short_block = 1;
 			break;
 		      }
-		    if (copy_start >= FIRST_PSEUDO_REGISTER)
+		    if (!targetm.calls.function_value_regno_p (copy_start))
 		      {
 			last_insn = return_copy;
 			continue;
