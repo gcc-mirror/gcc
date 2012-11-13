@@ -1,6 +1,7 @@
 /* Test to check if member version multiversioning works correctly.  */
 
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-ifunc "" }  */
 
 class Foo
 {

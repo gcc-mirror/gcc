@@ -206,7 +206,7 @@ insert_new_cgraph_node_version (struct cgraph_node *node)
 void
 delete_function_version (tree decl)
 {
-  struct cgraph_node *decl_node = cgraph_get_create_node (decl);
+  struct cgraph_node *decl_node = cgraph_get_node (decl);
   struct cgraph_function_version_info *decl_v = NULL;
 
   if (decl_node == NULL)

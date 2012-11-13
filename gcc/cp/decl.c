@@ -2307,12 +2307,15 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   else if (DECL_PRESERVE_P (newdecl))
     DECL_PRESERVE_P (olddecl) = 1;
 
-  /* If the olddecl is a version, so is the newdecl.  */
+  /* Merge the DECL_FUNCTION_VERSIONED information.  newdecl will be copied
+     to olddecl and deleted.  */
   if (TREE_CODE (newdecl) == FUNCTION_DECL
       && DECL_FUNCTION_VERSIONED (olddecl))
     {
+      /* Set the flag for newdecl so that it gets copied to olddecl.  */
       DECL_FUNCTION_VERSIONED (newdecl) = 1;
-      /* newdecl will be purged and is no longer a version.  */
+      /* newdecl will be purged after copying to olddecl and is no longer
+         a version.  */
       delete_function_version (newdecl);
     }
 
