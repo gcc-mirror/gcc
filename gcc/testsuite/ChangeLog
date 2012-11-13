@@ -1,3 +1,11 @@
+2012-11-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/avx256-unaligned-load-2.c: Requre !ia32
+	instead of lp64.
+	* gcc.target/i386/avx256-unaligned-store-2.c: Likewise.
+	* gcc.target/i386/pr49715-2.c: Likewise.
+	* gcc.target/i386/retarg.c: Likewise.  Scan both %rdi and %edi.
+
 2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55281
