@@ -7372,9 +7372,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       if (CLASS_TYPE_P (template_type))
 	{
 	  TREE_PRIVATE (type_decl)
-	    = TREE_PRIVATE (TYPE_STUB_DECL (template_type));
+	    = TREE_PRIVATE (TYPE_MAIN_DECL (template_type));
 	  TREE_PROTECTED (type_decl)
-	    = TREE_PROTECTED (TYPE_STUB_DECL (template_type));
+	    = TREE_PROTECTED (TYPE_MAIN_DECL (template_type));
 	  if (CLASSTYPE_VISIBILITY_SPECIFIED (template_type))
 	    {
 	      DECL_VISIBILITY_SPECIFIED (type_decl) = 1;

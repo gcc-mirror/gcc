@@ -1,3 +1,9 @@
+2012-11-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54466
+	* pt.c (lookup_template_class_1): TYPE_STUB_DECL should be
+	accessed on the main variant of the type.
+
 2012-11-12  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* parser.c (cp_parser_objc_class_ivars):
