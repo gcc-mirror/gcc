@@ -1,3 +1,9 @@
+2012-11-13  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.ac: Disable libsanitizer on AIX. Merge libquadmath
+	sections.
+	* configure: Regenerate.
+
 2012-11-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.ac: Add section for configdirs for libsanitizer.
