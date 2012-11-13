@@ -1,5 +1,13 @@
 2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/55281
+	* tree-vect-generic.c (expand_vector_condition): Accept any
+	is_gimple_val rather than just SSA_NAME if not COMPARISON_CLASS_P.
+	* fold-const.c (fold_ternary_loc): Fold VEC_COND_EXPR if arg0 is
+	either integer_all_onesp or integer_zerop.
+	* tree-vect-stmts.c (vectorizable_condition): Build the condition
+	using corresponding vector integer type instead of vectype.
+
 	PR rtl-optimization/54127
 	* cfgrtl.c (force_nonfallthru_and_redirect): When redirecting
 	asm goto labels from BB_HEAD (e->dest) to target bb, decrement

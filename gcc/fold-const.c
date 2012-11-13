@@ -14036,6 +14036,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
       return NULL_TREE;
 
+    case VEC_COND_EXPR:
+      if (TREE_CODE (arg0) == VECTOR_CST)
+	{
+	  if (integer_all_onesp (arg0) && !TREE_SIDE_EFFECTS (op2))
+	    return pedantic_non_lvalue_loc (loc, op1);
+	  if (integer_zerop (arg0) && !TREE_SIDE_EFFECTS (op1))
+	    return pedantic_non_lvalue_loc (loc, op2);
+	}
+      return NULL_TREE;
+
     case CALL_EXPR:
       /* CALL_EXPRs used to be ternary exprs.  Catch any mistaken uses
 	 of fold_ternary on them.  */

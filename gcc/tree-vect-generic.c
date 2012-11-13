@@ -892,7 +892,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
-  if (TREE_CODE (a) != SSA_NAME)
+  if (!is_gimple_val (a))
     {
       gcc_assert (COMPARISON_CLASS_P (a));
       a_is_comparison = true;

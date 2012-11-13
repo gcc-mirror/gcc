@@ -1,5 +1,9 @@
 2012-11-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/55281
+	* gcc.dg/vect/fast-math-pr55281.c: New test.
+	* g++.dg/opt/pr55281.C: New test.
+
 	PR rtl-optimization/54127
 	* gcc.dg/torture/pr54127.c: New test.
 
