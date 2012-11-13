@@ -1,3 +1,8 @@
+2012-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54127
+	* gcc.dg/torture/pr54127.c: New test.
+
 2012-11-12  Steven Bosscher  <steven@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
