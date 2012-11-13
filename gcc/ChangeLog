@@ -1,3 +1,13 @@
+2012-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/55142
+	* config/i386/i386.c (legitimize_pic_address): Properly handle
+	REG + CONST.
+	(ix86_print_operand_address): Set code to 'k' when forcing
+	addr32 prefix.  For x32, zero-extend negative displacement if
+	it < -16*1024*1024.
+
 2012-11-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41993
