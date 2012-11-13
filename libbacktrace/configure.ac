@@ -120,7 +120,7 @@ ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-format-attribute -Wcast-qual],
 			  [WARN_FLAGS])
 
-if test "x$GCC" = "xyes"; then
+if test -n "${with_target_subdir}"; then
   WARN_FLAGS="$WARN_FLAGS -Werror"
 fi
 

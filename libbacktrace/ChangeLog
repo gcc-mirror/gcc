@@ -1,3 +1,8 @@
+2012-11-13  Ian Lance Taylor  <iant@google.com>
+
+	PR other/55312
+	* configure.ac: Only add -Werror if building a target library.
+
 2012-11-12  Ian Lance Taylor  <iant@google.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
