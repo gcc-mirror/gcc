@@ -1,0 +1,176 @@
+# Copyright (C) 2012 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Return 1 if compilation with -faddress-sanitizer is error-free for trivial
+# code, 0 otherwise.
+
+proc check_effective_target_faddress_sanitizer {} {
+    return [check_no_compiler_messages faddress_sanitizer object {
+	void foo (void) { }
+    } "-faddress-sanitizer"]
+}
+
+#
+# asan_link_flags -- compute library path and flags to find libasan.
+# (originally from g++.exp)
+#
+
+proc asan_link_flags { paths } {
+    global srcdir
+    global ld_library_path
+    global shlib_ext
+
+    set gccpath ${paths}
+    set flags ""
+
+    set shlib_ext [get_shlib_extension]
+
+    if { $gccpath != "" } {
+      if { [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.a"]
+	   || [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.${shlib_ext}"] } {
+	  append flags " -L${gccpath}/libsanitizer/asan/.libs "
+	  append ld_library_path ":${gccpath}/libsanitizer/asan/.libs"
+      }
+    } else {
+      global tool_root_dir
+
+      set libasan [lookfor_file ${tool_root_dir} libasan]
+      if { $libasan != "" } {
+	  append flags "-L${libasan} "
+	  append ld_library_path ":${libasan}"
+      }
+    }
+
+    set_ld_library_path_env_vars
+
+    return "$flags"
+}
+
+#
+# asan_init -- called at the start of each subdir of tests
+#
+
+proc asan_init { args } {
+    global TEST_ALWAYS_FLAGS
+    global ALWAYS_CXXFLAGS
+    global TOOL_OPTIONS
+    global asan_saved_TEST_ALWAYS_FLAGS
+
+    set link_flags ""
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    set link_flags "[asan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	} else {
+	    set link_flags "[asan_link_flags [get_multilibs]]"
+	}
+    }
+
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set asan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
+    }
+    if [info exists ALWAYS_CXXFLAGS] {
+	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
+	set ALWAYS_CXXFLAGS [concat "{additional_flags=-faddress-sanitizer -g}" $ALWAYS_CXXFLAGS]
+    } else {
+	if [info exists TEST_ALWAYS_FLAGS] {
+	    set TEST_ALWAYS_FLAGS "$link_flags -faddress-sanitizer -g $TEST_ALWAYS_FLAGS"
+	} else {
+	    set TEST_ALWAYS_FLAGS "$link_flags -faddress-sanitizer -g"
+	}
+    }
+}
+
+#
+# asan_finish -- called at the start of each subdir of tests
+#
+
+proc asan_finish { args } {
+    global TEST_ALWAYS_FLAGS
+    global asan_saved_TEST_ALWAYS_FLAGS
+
+    if [info exists asan_saved_TEST_ALWAYS_FLAGS] {
+	set TEST_ALWAYS_FLAGS $asan_saved_TEST_ALWAYS_FLAGS
+    } else {
+	unset TEST_ALWAYS_FLAGS
+    }
+}
+
+# Symbolize lines like
+#   #2 0xdeadbeef (/some/path/libsanitizer.so.0.0.0+0xbeef)
+# in $output using addr2line to
+#   #2 0xdeadbeef in foobar file:123
+proc asan_symbolize { output } {
+    set addresses [regexp -inline -all -line "^ *#\[0-9\]+ 0x\[0-9a-f\]+ \[(\](\[^)\]+)\[+\](0x\[0-9a-f\]+)\[)\]$" "$output"]
+    if { [llength $addresses] > 0 } {
+	set addr2line_name [find_binutils_prog addr2line]
+	set idx 1
+	while { $idx < [llength $addresses] } {
+	    set key [lindex $addresses $idx]
+	    set val [lindex $addresses [expr $idx + 1]]
+	    lappend arr($key) $val
+	    set idx [expr $idx + 3]
+	}
+	foreach key [array names arr] {
+	    set args "-f -e $key $arr($key)"
+	    set status [remote_exec host "$addr2line_name" $args]
+	    if { [lindex $status 0] > 0 } continue
+	    set addr2line_output [regexp -inline -all -line "^\[^\n\r]*" [lindex $status 1]]
+	    set idx 0
+	    foreach val $arr($key) {
+		if { [expr $idx + 1] < [llength $addr2line_output] } {
+		    set fnname [lindex $addr2line_output $idx]
+		    set fileline [lindex $addr2line_output [expr $idx + 1]]
+		    if { "$fnname" != "??" } {
+			set newkey "$key+$val"
+			set repl($newkey) "$fnname $fileline"
+		    }
+		}
+	    }
+	}
+	set idx 0
+	set new_output ""
+	while {[regexp -start $idx -indices " #\[0-9\]+ 0x\[0-9a-f\]+ \[(\](\[^)\]+\[+\]0x\[0-9a-f\]+)\[)\]" "$output" -> addr] > 0} {
+	    set low [lindex $addr 0]
+	    set high [lindex $addr 1]
+	    set val [string range "$output" $low $high]
+	    append new_output [string range "$output" $idx [expr $low - 2]]
+	    if [info exists repl($val)] {
+		append new_output "in $repl($val)"
+	    } else {
+		append new_output "($val)"
+	    }
+	    set idx [expr $high + 2]
+	}
+	append new_output [string range "$output" $idx [string length "$output"]]
+	return "$new_output"
+    }
+    return "$output"
+}
+
+# Replace ${tool}_load with a wrapper so that we can symbolize the output.
+if { [info procs ${tool}_load] != [list] \
+      && [info procs saved_asan_${tool}_load] == [list] } {
+    rename ${tool}_load saved_asan_${tool}_load
+
+    proc ${tool}_load { program args } {
+	global tool
+	set result [eval [list saved_asan_${tool}_load $program] $args]
+	set output [lindex $result 1]
+	set symbolized_output [asan_symbolize "$output"]
+	set result [list [lindex $result 0] $symbolized_output]
+	return $result
+    }
+}
