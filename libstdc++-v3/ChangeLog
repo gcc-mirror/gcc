@@ -1,3 +1,18 @@
+2012-11-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55320
+	* include/std/functional (function::function(F)): Set _M_manager after
+	operations that could throw.
+	(_Function_base::_Ref_manager::_M_init_functor): Use addressof.
+	* include/tr1/functional
+	(_Function_base::_Ref_manager::_M_init_functor): Use addressof.
+	(_Function_base::_Base_manager::_M_get_pointer): Likewise.
+	* testsuite/20_util/function/cons/55320.cc: New.
+	* testsuite/20_util/function/cons/addressof.cc: New.
+	* testsuite/20_util/function/cons/callable.cc: Remove header.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+	* testsuite/tr1/3_function_objects/function/10.cc: New.
+
 2012-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/26_numerics/complex/abi_tag.cc: Adjust expected
