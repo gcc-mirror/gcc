@@ -1,3 +1,11 @@
+2012-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/asan-dg.exp: New file.
+	* gcc.dg/asan/asan.exp: New file.
+	* g++.dg/dg.exp: Prune also asan tests.
+	* g++.dg/asan/asan.exp: New file.
+	* c-c++-common/asan/memcmp-1.c: New test.
+
 2012-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55323
