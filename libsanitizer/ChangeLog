@@ -1,5 +1,13 @@
 2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR other/55292
+	Backport from upstream revision 167883
+	* sanitizer_common/sanitizer_linux.cc (internal_mmap): Check
+	__x86_64__ instead of __WORDSIZE.
+	(internal_filesize): Likwise.
+
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* configure.ac (AC_CONFIG_AUX_DIR): Removed.
 	* Makefile.in: Regenerated.
 	* configure: Likewise.
