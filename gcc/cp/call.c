@@ -7652,9 +7652,15 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	    }
 	  else
 	    {
-	      /* Optimize away vtable lookup if we know that this function
-		 can't be overridden.  */
+	      /* Optimize away vtable lookup if we know that this
+		 function can't be overridden.  We need to check if
+		 the context and the instance type are the same,
+		 actually FN might be defined in a different class
+		 type because of a using-declaration. In this case, we
+		 do not want to perform a non-virtual call.  */
 	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
+		  && same_type_ignoring_top_level_qualifiers_p
+		  (DECL_CONTEXT (fn), TREE_TYPE (instance))
 		  && resolves_to_fixed_type_p (instance, 0))
 		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
