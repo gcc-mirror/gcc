@@ -1,3 +1,7 @@
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc_update: Update libsanitizer generated files.
+
 2012-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	* gcc_update: Add libquadmath generated files.
