@@ -1,15 +1,13 @@
-2012-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
+2012-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR c++/11750
-	* call.c (build_new_method_call_1): Check that the instance type
-	and the function context are the same before setting the flag
-	LOOKUP_NONVIRTUAL.
+	PR c++/55323
+	* g++.dg/cpp0x/vt-55323.C: New.
 
 2012-11-13  Sriraman Tallam  <tmsriram@google.com>
 
-	* testsuite/g++.dg/mv4.C: Add require ifunc. Change error message.
-	* testsuite/g++.dg/mv5.C: Add require ifunc.
-	* testsuite/g++.dg/mv6.C: Add require ifunc.
+	* g++.dg/mv4.C: Add require ifunc. Change error message.
+	* g++.dg/mv5.C: Add require ifunc.
+	* g++.dg/mv6.C: Add require ifunc.
 
 2012-11-13  Martin Jambor  <mjambor@suse.cz>
 
