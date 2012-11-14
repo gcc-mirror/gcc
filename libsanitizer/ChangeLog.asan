@@ -1,3 +1,24 @@
+2012-11-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/55304
+	* acinclude.m4: New file.
+	* Makefile.am (ACLOCAL_AMFLAGS): New.
+	* configure.ac (AC_PREREQ): Set to 2.64.
+	(AC_CONFIG_AUX_DIR): Set to "..".
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+
+	* config.guess: Removed.
+	* config.sub: Likewise.
+	* depcomp: Likewise.
+	* install-sh: Likewise.
+	* ltmain.sh: Likewise.
+	* missing: Likewise.
+
 2012-11-13  Richard Henderson  <rth@redhat.com>
 
 	* configure.tgt: New file.

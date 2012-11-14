@@ -1,10 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
+AC_PREREQ([2.64])
 AC_INIT(package-unused, version-unused, libsanitizer)
 AC_CONFIG_SRCDIR([include/sanitizer/common_interface_defs.h])
-AC_CONFIG_AUX_DIR(.)
+AC_CONFIG_AUX_DIR(..)
 AM_INIT_AUTOMAKE(foreign)
 
 # Checks for programs.

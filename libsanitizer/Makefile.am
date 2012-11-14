@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I .. -I ../config
+
 SUBDIRS = interception sanitizer_common asan 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
