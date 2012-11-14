@@ -28907,12 +28907,15 @@ ix86_get_function_versions_dispatcher (void *decl)
   struct cgraph_node *node = NULL;
   struct cgraph_node *default_node = NULL;
   struct cgraph_function_version_info *node_v = NULL;
-  struct cgraph_function_version_info *it_v = NULL;
   struct cgraph_function_version_info *first_v = NULL;
 
   tree dispatch_decl = NULL;
+
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+  struct cgraph_function_version_info *it_v = NULL;
   struct cgraph_node *dispatcher_node = NULL;
   struct cgraph_function_version_info *dispatcher_version_info = NULL;
+#endif
 
   struct cgraph_function_version_info *default_version_info = NULL;
  
