@@ -1,3 +1,8 @@
+2012-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/26_numerics/complex/abi_tag.cc: Adjust expected
+	demangling for 128bit long-double targets.
+
 2012-11-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/future (atomic_future): Remove declaration of
