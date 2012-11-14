@@ -1,3 +1,9 @@
+2012-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* f95-lang.c (ATTR_NOTHROW_LEAF_MALLOC_LIST): New macro.
+	(gfc_define_builtin): Use set_call_expr_flags.
+	(gfc_init_builtin_functions): Update.
+
 2012-11-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55272

@@ -535,6 +535,7 @@ gfc_builtin_function (tree decl)
 
 /* So far we need just these 4 attribute types.  */
 #define ATTR_NOTHROW_LEAF_LIST		(ECF_NOTHROW | ECF_LEAF)
+#define ATTR_NOTHROW_LEAF_MALLOC_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_MALLOC)
 #define ATTR_CONST_NOTHROW_LEAF_LIST	(ECF_NOTHROW | ECF_LEAF | ECF_CONST)
 #define ATTR_NOTHROW_LIST		(ECF_NOTHROW)
 #define ATTR_CONST_NOTHROW_LIST		(ECF_NOTHROW | ECF_CONST)
@@ -547,13 +548,7 @@ gfc_define_builtin (const char *name, tree type, enum built_in_function code,
 
   decl = add_builtin_function (name, type, code, BUILT_IN_NORMAL,
 			       library_name, NULL_TREE);
-  if (attr & ECF_CONST)
-    TREE_READONLY (decl) = 1;
-  if (attr & ECF_NOTHROW)
-    TREE_NOTHROW (decl) = 1;
-  if (attr & ECF_LEAF)
-    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
-					NULL, DECL_ATTRIBUTES (decl));
+  set_call_expr_flags (decl, attr);
 
   set_builtin_decl (code, decl, true);
 }
@@ -916,13 +911,12 @@ gfc_init_builtin_functions (void)
   ftype = build_function_type_list (pvoid_type_node,
                                     size_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_malloc", ftype, BUILT_IN_MALLOC,
-		      "malloc", ATTR_NOTHROW_LEAF_LIST);
-  DECL_IS_MALLOC (builtin_decl_explicit (BUILT_IN_MALLOC)) = 1;
+		      "malloc", ATTR_NOTHROW_LEAF_MALLOC_LIST);
 
   ftype = build_function_type_list (pvoid_type_node, size_type_node,
 				    size_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_calloc", ftype, BUILT_IN_CALLOC,
-		      "calloc", ATTR_NOTHROW_LEAF_LIST);
+		      "calloc", ATTR_NOTHROW_LEAF_MALLOC_LIST);
   DECL_IS_MALLOC (builtin_decl_explicit (BUILT_IN_CALLOC)) = 1;
 
   ftype = build_function_type_list (pvoid_type_node,
