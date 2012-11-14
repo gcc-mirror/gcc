@@ -84,6 +84,8 @@
 # This argument can be used together with MULTILIB_EXCEPTIONS and will take
 # effect after the MULTILIB_EXCEPTIONS.
 
+# The optional ninth argument is the multiarch name.
+
 # The last option should be "yes" if multilibs are enabled.  If it is not
 # "yes", all GCC multilib dir names will be ".".
 
@@ -133,7 +135,8 @@ extra=$5
 exclusions=$6
 osdirnames=$7
 multilib_required=$8
-enable_multilib=$9
+multiarch=$9
+enable_multilib=${10}
 
 echo "static const char *const multilib_raw[] = {"
 
@@ -261,6 +264,9 @@ fi
 # names.
 toosdirnames=
 defaultosdirname=
+if [ -n "${multiarch}" ]; then
+  defaultosdirname=::${multiarch}
+fi
 if [ -n "${osdirnames}" ]; then
   set x ${osdirnames}
   shift
@@ -268,6 +274,9 @@ if [ -n "${osdirnames}" ]; then
     case "$1" in
       .=*)
         defaultosdirname=`echo $1 | sed 's|^.=|:|'`
+	if [ -n "${multiarch}" ]; then
+	  defaultosdirname=${defaultosdirname}:${multiarch}
+	fi
 	shift
 	;;
       *=*)
@@ -353,13 +362,13 @@ for combo in ${combinations}; do
     dirout=`echo ${combo} | sed -e 's/=/-/g'`
   fi
   # Remove the leading and trailing slashes.
-  dirout=`echo ${dirout} | sed -e 's|^/||' -e 's|/$||g'`
+  dirout=`echo ${dirout} | sed -e 's|^/||' -e 's|/*:/*|:|' -e 's|/$||g'`
 
   # Use the OS directory names rather than the option names.
   if [ -n "${toosdirnames}" ]; then
     osdirout=`echo ${combo} | sed ${toosdirnames}`
     # Remove the leading and trailing slashes.
-    osdirout=`echo ${osdirout} | sed -e 's|^/||' -e 's|/$||g'`
+    osdirout=`echo ${osdirout} | sed -e 's|^/||' -e 's|/*:/*|:|' -e 's|/$||g'`
     if [ "x${enable_multilib}" != xyes ]; then
       dirout=".:${osdirout}"
       disable_multilib=yes

@@ -348,6 +348,9 @@ Driver Alias(print-multi-lib)
 -print-multi-os-directory
 Driver Alias(print-multi-os-directory)
 
+-print-multiarch
+Driver Alias(print-multiarch)
+
 -print-prog-name
 Driver Separate Alias(print-prog-name=)
 
@@ -2357,6 +2360,10 @@ iplugindir=
 Common Joined Var(plugindir_string) Init(0)
 -iplugindir=<dir>	Set <dir> to be the default plugin directory
 
+imultiarch
+Common Joined Separate RejectDriver Var(imultiarch) Init(0)
+-imultiarch <dir>	Set <dir> to be the multiarch include subdirectory
+
 l
 Driver Joined Separate
 
@@ -2413,6 +2420,9 @@ Driver Var(print_multi_lib)
 
 print-multi-os-directory
 Driver Var(print_multi_os_directory)
+ 
+print-multiarch
+Driver Var(print_multiarch)
 
 print-prog-name=
 Driver JoinedOrMissing Var(print_prog_name)

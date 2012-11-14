@@ -765,6 +765,8 @@ SYSROOT_CFLAGS_FOR_TARGET
 enable_shared
 enable_fixed_point
 enable_decimal_float
+with_float
+enable_multiarch
 enable_multilib
 coverage_flags
 valgrind_command
@@ -874,6 +876,7 @@ enable_coverage
 enable_gather_detailed_mem_stats
 with_stabs
 enable_multilib
+enable_multiarch
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -1574,6 +1577,7 @@ Optional Features:
   --enable-gather-detailed-mem-stats
                           enable detailed memory allocation stats gathering
   --enable-multilib       enable library support for multiple ABIs
+  --enable-multiarch      enable support for multiarch paths
   --enable-__cxa_atexit   enable __cxa_atexit for C++
   --enable-decimal-float={no,yes,bid,dpd}
 			enable decimal float extension to C.  Selecting 'bid'
@@ -7016,6 +7020,36 @@ fi
 
 
 
+# Determine whether or not multiarch is enabled.
+# Check whether --enable-multiarch was given.
+if test "${enable_multiarch+set}" = set; then :
+  enableval=$enable_multiarch; case "${withval}" in
+yes|no|auto) enable_multiarch=$withval;;
+*) as_fn_error "bad value ${withval} given for --enable-multiarch option" "$LINENO" 5 ;;
+esac
+else
+  enable_multiarch=auto
+fi
+
+if test x${enable_multiarch} = xauto; then
+  if test x${with_native_system_header_dir} != x; then
+    ma_msg_suffix=", disabled auto check (configured with --native-system-header-dir)"
+    enable_multiarch=no
+  fi
+  if test x$host != x$target && test "x$with_sysroot" = x; then
+    ma_msg_suffix=", disabled auto check (cross build configured without --with-sysroot)"
+    enable_multiarch=no
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for multiarch configuration" >&5
+$as_echo_n "checking for multiarch configuration... " >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_multiarch$ma_msg_suffix" >&5
+$as_echo "$enable_multiarch$ma_msg_suffix" >&6; }
+
+# needed for setting the multiarch name for soft-float/hard-float ABIs
+
+
 # Enable __cxa_atexit for C++.
 # Check whether --enable-__cxa_atexit was given.
 if test "${enable___cxa_atexit+set}" = set; then :
@@ -7038,7 +7072,6 @@ else
 
   case $target in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
-    i?86*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
     i?86*-*-cygwin*)
       enable_decimal_float=yes
@@ -17786,7 +17819,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17789 "configure"
+#line 17822 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17892,7 +17925,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17895 "configure"
+#line 17928 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
