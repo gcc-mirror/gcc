@@ -850,9 +850,11 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
   if (dump)
     {
-      fprintf (dump_file, "    Badness calculation for %s -> %s\n",
+      fprintf (dump_file, "    Badness calculation for %s/%i -> %s/%i\n",
 	       xstrdup (cgraph_node_name (edge->caller)),
-	       xstrdup (cgraph_node_name (callee)));
+	       edge->caller->uid,
+	       xstrdup (cgraph_node_name (callee)),
+	       edge->callee->uid);
       fprintf (dump_file, "      size growth %i, time %i ",
 	       growth,
 	       edge_time);
@@ -917,7 +919,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       badness = (relative_time_benefit (callee_info, edge, edge_time)
 		 * (INT_MIN / 16 / RELATIVE_TIME_BENEFIT_RANGE));
-      badness /= (growth * MAX (1, callee_info->growth));
+      badness /= (MIN (65536/2, growth) * MIN (65536/2, MAX (1, callee_info->growth)));
       gcc_checking_assert (badness <=0 && badness >= INT_MIN / 16);
       if ((hints & (INLINE_HINT_indirect_call
 		    | INLINE_HINT_loop_iterations
