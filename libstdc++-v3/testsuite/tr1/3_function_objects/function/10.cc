@@ -1,6 +1,3 @@
-// { dg-options "-std=gnu++0x" }
-// { dg-do compile }
-
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -18,33 +15,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <functional>
+// { dg-options "-std=gnu++0x" }
+// { dg-do compile }
 
-void* f(std::function<void()>) { return nullptr; }
-int f(std::function<void(int)>) { return 1; }
+#include <tr1/functional>
+
+struct F
+{
+  void operator()() { }
+  void operator&() const { }
+};
 
 void test01()
 {
-  void* p __attribute__((unused));
-  int i __attribute__((unused));
-
-  p = f([] { });
-  i = f([] (int) { });
-}
-
-void g(std::function<void()>) { }
-void h(std::function<int(int)>) { }
-
-void test02()
-{
-  g([] { return "ignored"; });
-  h([] (char c) { return c; });
+  F f;
+  std::tr1::function<void()> f1 = f;
+  std::tr1::function<void()> f2 = std::tr1::ref(f);
 }
 
 int main()
 {
   test01();
-  test02();
 
   return 0;
 }
