@@ -4228,6 +4228,10 @@ index_addr_table_entry (void **h, void *v)
   addr_table_entry *node = (addr_table_entry *) *h;
   unsigned int *index = (unsigned int *) v;
 
+  /* Don't index unreferenced nodes.  */
+  if (node->refcount == 0)
+    return 1;
+
   gcc_assert(node->index == NO_INDEX_ASSIGNED);
   node->index = *index;
   *index += 1;
