@@ -1,3 +1,8 @@
+2012-11-14  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/55051
+	* ipa-inline.c (edge_badness): Improve dumping; fix overflow.
+
 2012-11-14  Matthias Klose  <doko@ubuntu.com>
 
 	* config/sparc/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
