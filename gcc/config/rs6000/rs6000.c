@@ -22183,7 +22183,11 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
       else if (offset)
 	fprintf (file, ".P" HOST_WIDE_INT_PRINT_UNSIGNED, offset);
 
-      fputs ("[TC],", file);
+      /* Mark large TOC symbols on AIX with [TE] so they are mapped
+	 after other TOC symbols, reducing overflow of small TOC access
+	 to [TC] symbols.  */
+      fputs (TARGET_XCOFF && TARGET_CMODEL != CMODEL_SMALL
+	     ? "[TE]," : "[TC],", file);
     }
 
   /* Currently C++ toc references to vtables can be emitted before it
