@@ -1,3 +1,9 @@
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (AC_CONFIG_AUX_DIR): Removed.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
 2012-11-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/55304
