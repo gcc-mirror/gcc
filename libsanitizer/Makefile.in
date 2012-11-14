@@ -38,11 +38,7 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../install-sh \
 	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure ../ABOUT-NLS \
-	../COPYING ../COPYING.LIB ../ChangeLog ../README ../compile \
-	../config.guess ../config.rpath ../config.sub ../depcomp \
-	../install-sh ../ltmain.sh ../missing ../mkinstalldirs \
-	../ylwrap
+	$(srcdir)/Makefile.in $(top_srcdir)/configure ChangeLog
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
