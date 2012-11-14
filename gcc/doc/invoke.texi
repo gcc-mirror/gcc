@@ -6336,6 +6336,11 @@ sibling directories this prints e.g.@: @file{../lib64}, @file{../lib} or
 @file{../lib32}, or if OS libraries are present in @file{lib/@var{subdir}}
 subdirectories it prints e.g.@: @file{amd64}, @file{sparcv9} or @file{ev6}.
 
+@item -print-multiarch
+@opindex print-multiarch
+Print the path to OS libraries for the selected multiarch,
+relative to some @file{lib} subdirectory.
+
 @item -print-prog-name=@var{program}
 @opindex print-prog-name
 Like @option{-print-file-name}, but searches for a program such as @samp{cpp}.

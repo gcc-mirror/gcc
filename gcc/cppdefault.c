@@ -63,6 +63,7 @@ const struct default_include cpp_include_defaults[]
 #endif
 #ifdef LOCAL_INCLUDE_DIR
     /* /usr/local/include comes before the fixincluded header files.  */
+    { LOCAL_INCLUDE_DIR, 0, 0, 1, 1, 2 },
     { LOCAL_INCLUDE_DIR, 0, 0, 1, 1, 0 },
 #endif
 #ifdef PREFIX_INCLUDE_DIR
@@ -90,6 +91,7 @@ const struct default_include cpp_include_defaults[]
 #endif
 #ifdef NATIVE_SYSTEM_HEADER_DIR
     /* /usr/include comes dead last.  */
+    { NATIVE_SYSTEM_HEADER_DIR, NATIVE_SYSTEM_HEADER_COMPONENT, 0, 0, 1, 2 },
     { NATIVE_SYSTEM_HEADER_DIR, NATIVE_SYSTEM_HEADER_COMPONENT, 0, 0, 1, 0 },
 #endif
     { 0, 0, 0, 0, 0, 0 }
