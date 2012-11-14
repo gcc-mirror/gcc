@@ -27,6 +27,23 @@ maix32
 Target Report RejectNegative Negative(maix64) InverseMask(64BIT) Var(rs6000_isa_flags)
 Compile for 32-bit pointers
 
+mcmodel=
+Target RejectNegative Joined Enum(rs6000_cmodel) Var(rs6000_current_cmodel)
+Select code model
+
+Enum
+Name(rs6000_cmodel) Type(enum rs6000_cmodel)
+Known code models (for use with the -mcmodel= option):
+
+EnumValue
+Enum(rs6000_cmodel) String(small) Value(CMODEL_SMALL)
+
+EnumValue
+Enum(rs6000_cmodel) String(medium) Value(CMODEL_MEDIUM)
+
+EnumValue
+Enum(rs6000_cmodel) String(large) Value(CMODEL_LARGE)
+
 mpe
 Target Report RejectNegative Var(internal_nothing_1) Save
 Support message passing with the Parallel Environment
