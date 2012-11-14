@@ -6039,6 +6039,7 @@ extern tree build_duplicate_type (tree);
 
 extern int flags_from_decl_or_type (const_tree);
 extern int call_expr_flags (const_tree);
+extern void set_call_expr_flags (tree, int);
 
 /* Call argument flags.  */
 
