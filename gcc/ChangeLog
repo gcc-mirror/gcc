@@ -1,5 +1,12 @@
 2012-11-14  Matthias Klose  <doko@ubuntu.com>
 
+	* config/sparc/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
+	* config/sparc/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config.gcc <sparc-*-linux*> (tmake_file): Include sparc/t-linux
+	for 32bit non-biarch configurations.
+
+2012-11-14  Matthias Klose  <doko@ubuntu.com>
+
 	* doc/invoke.texi: Document -print-multiarch.
 	* doc/install.texi: Document --enable-multiarch.
 	* doc/fragments.texi: Document MULTILIB_OSDIRNAMES, MULTIARCH_DIRNAME.
