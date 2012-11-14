@@ -1047,11 +1047,16 @@ emit_mem_initializers (tree mem_inits)
   in_base_initializer = 1;
 
   /* Initialize base classes.  */
-  while (mem_inits
-	 && TREE_CODE (TREE_PURPOSE (mem_inits)) != FIELD_DECL)
+  for (; (mem_inits
+	  && TREE_CODE (TREE_PURPOSE (mem_inits)) != FIELD_DECL);
+       mem_inits = TREE_CHAIN (mem_inits))
     {
       tree subobject = TREE_PURPOSE (mem_inits);
       tree arguments = TREE_VALUE (mem_inits);
+
+      /* We already have issued an error message.  */
+      if (arguments == error_mark_node)
+	continue;
 
       if (arguments == NULL_TREE)
 	{
@@ -1085,8 +1090,6 @@ emit_mem_initializers (tree mem_inits)
                               tf_warning_or_error);
 	  expand_cleanup_for_base (subobject, NULL_TREE);
 	}
-
-      mem_inits = TREE_CHAIN (mem_inits);
     }
   in_base_initializer = 0;
 

@@ -1,3 +1,8 @@
+2012-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55323
+	* init.c (emit_mem_initializers): Skip arguments == error_mark_node.
+
 2012-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/11750
