@@ -2422,6 +2422,7 @@ sparc-*-linux*)
 		tmake_file="${tmake_file} sparc/t-linux64"
 	else
 		tm_file="${tm_file} sparc/linux.h"
+		tmake_file="${tmake_file} sparc/t-linux"
 	fi
 	;;
 sparc-*-netbsdelf*)
