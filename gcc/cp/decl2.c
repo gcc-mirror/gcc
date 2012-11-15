@@ -4534,8 +4534,8 @@ mark_used (tree decl)
      it to find out its type.  */
   if ((decl_maybe_constant_var_p (decl)
        || (TREE_CODE (decl) == FUNCTION_DECL
-	   && (DECL_DECLARED_CONSTEXPR_P (decl)
-	       || type_uses_auto (TREE_TYPE (TREE_TYPE (decl))))))
+	   && DECL_DECLARED_CONSTEXPR_P (decl))
+       || type_uses_auto (TREE_TYPE (decl)))
       && DECL_LANG_SPECIFIC (decl)
       && DECL_TEMPLATE_INFO (decl)
       && !uses_template_parms (DECL_TI_ARGS (decl)))
@@ -4550,6 +4550,14 @@ mark_used (tree decl)
       --function_depth;
     }
 
+  if (processing_template_decl)
+    return true;
+
+  /* Check this too in case we're within fold_non_dependent_expr.  */
+  if (DECL_TEMPLATE_INFO (decl)
+      && uses_template_parms (DECL_TI_ARGS (decl)))
+    return true;
+
   if (type_uses_auto (TREE_TYPE (decl)))
     {
       error ("use of %qD before deduction of %<auto%>", decl);
@@ -4558,14 +4566,6 @@ mark_used (tree decl)
 
   /* If we don't need a value, then we don't need to synthesize DECL.  */
   if (cp_unevaluated_operand != 0)
-    return true;
-
-  if (processing_template_decl)
-    return true;
-
-  /* Check this too in case we're within fold_non_dependent_expr.  */
-  if (DECL_TEMPLATE_INFO (decl)
-      && uses_template_parms (DECL_TI_ARGS (decl)))
     return true;
 
   DECL_ODR_USED (decl) = 1;

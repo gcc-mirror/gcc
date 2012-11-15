@@ -1,5 +1,8 @@
 2012-11-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54903
+	* decl2.c (mark_used): Don't complain about auto in templates.
+
 	PR c++/37276
 	* decl.c (decls_match): Remove #ifdef around earlier fix.
 
