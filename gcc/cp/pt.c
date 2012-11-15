@@ -838,6 +838,7 @@ maybe_process_partial_specialization (tree type)
 	{
 	  check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (type));
 	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
+	  DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)) = input_location;
 	  if (processing_template_decl)
 	    {
 	      if (push_template_decl (TYPE_MAIN_DECL (type))
@@ -934,6 +935,7 @@ maybe_process_partial_specialization (tree type)
 	     have one level of template argument for the innermost
 	     class template.  */
 	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
+	  DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)) = input_location;
 	  CLASSTYPE_TI_ARGS (type)
 	    = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
 	}

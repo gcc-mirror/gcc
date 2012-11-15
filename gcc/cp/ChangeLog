@@ -1,3 +1,9 @@
+2012-11-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55275
+	* pt.c (maybe_process_partial_specialization): Update
+	DECL_SOURCE_LOCATION for new specializations.
+
 2012-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55323

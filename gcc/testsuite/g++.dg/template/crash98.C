@@ -1,8 +1,8 @@
 // PR c++/43630
 
-template < typename > struct A; // { dg-error "declaration" }
+template < typename > struct A;
 
-template < typename > struct A < int > // { dg-error "not used|template\\-parameter" }
+template < typename > struct A < int > // { dg-error "not used|template\\-parameter|declaration" }
 {
   int i;
   int f ();
