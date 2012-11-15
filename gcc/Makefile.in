@@ -535,11 +535,13 @@ enable_multiarch = @enable_multiarch@
 with_float = @with_float@
 ifeq ($(enable_multiarch),yes)
   if_multiarch = $(1)
-else ifeq ($(enable_multiarch),auto)
-  # SYSTEM_HEADER_DIR is makefile syntax, cannot be evaluated in configure.ac
-  if_multiarch = $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib/*/crti.o),$(1))
 else
-  if_multiarch =
+  ifeq ($(enable_multiarch),auto)
+    # SYSTEM_HEADER_DIR is makefile syntax, cannot be evaluated in configure.ac
+    if_multiarch = $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib/*/crti.o),$(1))
+  else
+    if_multiarch =
+  endif
 endif
 
 # ------------------------

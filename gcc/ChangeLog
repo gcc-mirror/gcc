@@ -1,3 +1,7 @@
+2012-11-15  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (if_multiarch): Don't use a GNU make 3.81 feature.
+
 2012-11-14  Jan Hubicka  <jh@suse.cz>
 
 	PR bootstrap/55051
