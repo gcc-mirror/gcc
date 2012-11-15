@@ -1,3 +1,7 @@
+2012-11-15  Steve Ellcey  <sellcey@mips.com>
+
+	* expr.c (expand_cond_expr_using_cmove): Use promoted mode for temp.
+
 2012-11-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/54619
