@@ -1,5 +1,8 @@
 2012-11-13  Jason Merrill  <jason@redhat.com>
 
+	* class.c (finish_struct_1): Check virtual functions
+	for missing ABI tags.
+
 	PR c++/55275
 	* pt.c (maybe_process_partial_specialization): Update
 	DECL_SOURCE_LOCATION for new specializations.

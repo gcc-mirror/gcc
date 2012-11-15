@@ -6275,6 +6275,12 @@ finish_struct_1 (tree t)
 	/* Here we know enough to change the type of our virtual
 	   function table, but we will wait until later this function.  */
 	build_primary_vtable (CLASSTYPE_PRIMARY_BINFO (t), t);
+
+      /* If we're warning about ABI tags, check the types of the new
+	 virtual functions.  */
+      if (warn_abi_tag)
+	for (tree v = virtuals; v; v = TREE_CHAIN (v))
+	  check_abi_tags (t, TREE_VALUE (v));
     }
 
   if (TYPE_CONTAINS_VPTR_P (t))

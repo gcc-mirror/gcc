@@ -15622,7 +15622,7 @@ A redeclaration of a function or class must not add new ABI tags,
 since doing so would change the mangled name.
 
 The @option{-Wabi-tag} flag enables a warning about a class which does
-not have all the ABI tags used by its subobjects; for users with code
+not have all the ABI tags used by its subobjects and virtual functions; for users with code
 that needs to coexist with an earlier ABI, using this option can help
 to find all affected types that need to be tagged.
 
