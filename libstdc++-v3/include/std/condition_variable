@@ -107,8 +107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// DR 887 - Sync unknown clock to known clock.
 	const typename _Clock::time_point __c_entry = _Clock::now();
 	const __clock_t::time_point __s_entry = __clock_t::now();
-	const chrono::nanoseconds __delta = __atime - __c_entry;
-	const __clock_t::time_point __s_atime = __s_entry + __delta;
+	const auto __delta = __atime - __c_entry;
+	const auto __s_atime = __s_entry + __delta;
 
 	return __wait_until_impl(__lock, __s_atime);
       }
