@@ -1,3 +1,11 @@
+2012-11-15  Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* math/fmaq.c (fmaq): Merge from GLIBC. Fix fma
+	underflows with small x * y; Fix overflow results
+	outside round-to-nearest mode; make use of Dekker
+	and Knuth algorithms use round-to-nearest.
+
 2012-11-01  Tobias Burnus  <burnus@net-b.de>
 
 	* math/fmaq.c (fmaq): Fix build.

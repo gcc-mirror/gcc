@@ -14,9 +14,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 #include <math.h>
@@ -62,17 +61,18 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	 underflows to 0.  */
       if (z == 0 && x != 0 && y != 0)
 	return x * y;
-      /* If x or y or z is Inf/NaN, or if fma will certainly overflow,
-	 or if x * y is less than half of FLT128_DENORM_MIN,
-	 compute as x * y + z.  */
+      /* If x or y or z is Inf/NaN, or if x * y is zero, compute as
+	 x * y + z.  */
       if (u.ieee.exponent == 0x7fff
 	  || v.ieee.exponent == 0x7fff
 	  || w.ieee.exponent == 0x7fff
-	  || u.ieee.exponent + v.ieee.exponent
-	     > 0x7fff + IEEE854_FLOAT128_BIAS
-	  || u.ieee.exponent + v.ieee.exponent
-	     < IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG - 2)
+	  || x == 0
+	  || y == 0)
 	return x * y + z;
+      /* If fma will certainly overflow, compute as x * y.  */
+      if (u.ieee.exponent + v.ieee.exponent
+	  > 0x7fff + IEEE854_FLOAT128_BIAS)
+	return x * y;
       /* If x * y is less than 1/4 of FLT128_DENORM_MIN, neither the
 	 result nor whether there is underflow depends on its exact
 	 value, only on its sign.  */
@@ -121,8 +121,17 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	{
 	  /* Similarly.
 	     If z exponent is very large and x and y exponents are
-	     very small, it doesn't matter if we don't adjust it.  */
-	  if (u.ieee.exponent > v.ieee.exponent)
+	     very small, adjust them up to avoid spurious underflows,
+	     rather than down.  */
+	  if (u.ieee.exponent + v.ieee.exponent
+	      <= IEEE854_FLOAT128_BIAS + FLT128_MANT_DIG)
+	    {
+	      if (u.ieee.exponent > v.ieee.exponent)
+		u.ieee.exponent += 2 * FLT128_MANT_DIG + 2;
+	      else
+		v.ieee.exponent += 2 * FLT128_MANT_DIG + 2;
+	    }
+	  else if (u.ieee.exponent > v.ieee.exponent)
 	    {
 	      if (u.ieee.exponent > FLT128_MANT_DIG)
 		u.ieee.exponent -= FLT128_MANT_DIG;
@@ -175,6 +184,12 @@ fmaq (__float128 x, __float128 y, __float128 z)
   if (__builtin_expect ((x == 0 || y == 0) && z == 0, 0))
     return x * y + z;
 
+#ifdef USE_FENV_H
+  fenv_t env;
+  feholdexcept (&env);
+  fesetround (FE_TONEAREST);
+#endif
+
   /* Multiplication m1 + m2 = x * y using Dekker's algorithm.  */
 #define C ((1LL << (FLT128_MANT_DIG + 1) / 2) + 1)
   __float128 x1 = x * C;
@@ -193,10 +208,25 @@ fmaq (__float128 x, __float128 y, __float128 z)
   t1 = m1 - t1;
   t2 = z - t2;
   __float128 a2 = t1 + t2;
+#ifdef USE_FENV_H
+  feclearexcept (FE_INEXACT);
+#endif
+
+  /* If the result is an exact zero, ensure it has the correct
+     sign.  */
+  if (a1 == 0 && m2 == 0)
+    {
+#ifdef USE_FENV_H
+      feupdateenv (&env);
+#endif
+      /* Ensure that round-to-nearest value of z + m1 is not
+	 reused.  */
+      asm volatile ("" : "=m" (z) : "m" (z));
+      return z + m1;
+    }
+
 
 #ifdef USE_FENV_H
-  fenv_t env;
-  feholdexcept (&env);
   fesetround (FE_TOWARDZERO);
 #endif
   /* Perform m2 + a2 addition with round to odd.  */
