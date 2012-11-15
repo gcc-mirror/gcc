@@ -3222,6 +3222,9 @@ when the Visual Instruction Set is available.
 @item C
 The constant all-ones, for floating-point.
 
+@item A
+Signed 5-bit constant
+
 @item D
 A vector constant
 

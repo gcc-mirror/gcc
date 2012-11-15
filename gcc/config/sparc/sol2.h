@@ -54,19 +54,56 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
 
-/* This is here rather than in sparc.h because it's not known what
-   other assemblers will accept.  */
+/* If the assembler supports -xarch=sparc4, we switch to the explicit
+   word size selection mechanism available both in GNU as and Sun as,
+   for the Niagara4 and above configurations.  */
+#ifdef HAVE_AS_SPARC4
+
+#define AS_SPARC32_FLAG ""
+#define AS_SPARC64_FLAG ""
 
 #ifndef USE_GAS
-#define AS_SPARC64_FLAG	"-xarch=v9"
-#else
-#define AS_SPARC64_FLAG	"-TSO -64 -Av9"
+#undef ASM_ARCH32_SPEC
+#define ASM_ARCH32_SPEC "-m32"
+#undef ASM_ARCH64_SPEC
+#define ASM_ARCH64_SPEC "-m64"
 #endif
+
+/* Both Sun as and GNU as understand -K PIC.  */
+#undef ASM_SPEC
+#define ASM_SPEC ASM_SPEC_BASE " %(asm_arch)" ASM_PIC_SPEC
+
+#else /* HAVE_AS_SPARC4 */
+
+#define AS_SPARC32_FLAG "-xarch=v8plus"
+#define AS_SPARC64_FLAG "-xarch=v9"
+
+#undef AS_NIAGARA4_FLAG
+#define AS_NIAGARA4_FLAG AS_NIAGARA3_FLAG
+
+#undef ASM_ARCH32_SPEC
+#define ASM_ARCH32_SPEC ""
+
+#undef ASM_ARCH64_SPEC
+#define ASM_ARCH64_SPEC ""
+
+#undef ASM_ARCH_DEFAULT_SPEC
+#define ASM_ARCH_DEFAULT_SPEC ""
+
+#undef ASM_ARCH_SPEC
+#define ASM_ARCH_SPEC ""
+
+/* Both Sun as and GNU as understand -K PIC.  */
+#undef ASM_SPEC
+#define ASM_SPEC ASM_SPEC_BASE ASM_PIC_SPEC
+
+#endif /* HAVE_AS_SPARC4 */
+
 
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC	""
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC	AS_SPARC64_FLAG
+#define ASM_CPU64_DEFAULT_SPEC	"-xarch=v9"
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9
 #undef CPP_CPU64_DEFAULT_SPEC
@@ -83,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusa"
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "a"
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=v9a"
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
@@ -94,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusb"
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "b"
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=v9b"
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
@@ -105,7 +142,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusb"
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "b"
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=v9b"
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
@@ -116,7 +153,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plusb"
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG "b"
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=v9b"
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
@@ -127,7 +164,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_CPU32_DEFAULT_SPEC
 #define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plus" AS_NIAGARA3_FLAG
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG AS_NIAGARA3_FLAG
+#define ASM_CPU64_DEFAULT_SPEC "-xarch=v9" AS_NIAGARA3_FLAG
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
@@ -136,16 +173,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_CPU64_DEFAULT_SPEC
 #define CPP_CPU64_DEFAULT_SPEC ""
 #undef ASM_CPU32_DEFAULT_SPEC
-#define ASM_CPU32_DEFAULT_SPEC "-xarch=v8plus" AS_NIAGARA3_FLAG
+#define ASM_CPU32_DEFAULT_SPEC AS_SPARC32_FLAG AS_NIAGARA4_FLAG
 #undef ASM_CPU64_DEFAULT_SPEC
-#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG AS_NIAGARA3_FLAG
+#define ASM_CPU64_DEFAULT_SPEC AS_SPARC64_FLAG AS_NIAGARA4_FLAG
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC ASM_CPU32_DEFAULT_SPEC
 #endif
-
-/* Both Sun as and GNU as understand -K PIC.  */
-#undef ASM_SPEC
-#define ASM_SPEC ASM_SPEC_BASE ASM_PIC_SPEC
 
 #undef CPP_CPU_SPEC
 #define CPP_CPU_SPEC "\
@@ -235,28 +268,16 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "\
-%{mcpu=v9:" DEF_ARCH32_SPEC("-xarch=v8plus") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "} \
-%{mcpu=ultrasparc:" DEF_ARCH32_SPEC("-xarch=v8plusa") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "a") "} \
-%{mcpu=ultrasparc3:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "b") "} \
-%{mcpu=niagara:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "b") "} \
-%{mcpu=niagara2:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC(AS_SPARC64_FLAG "b") "} \
-%{mcpu=niagara3:" DEF_ARCH32_SPEC("-xarch=v8plus" AS_NIAGARA3_FLAG) DEF_ARCH64_SPEC(AS_SPARC64_FLAG AS_NIAGARA3_FLAG) "} \
-%{mcpu=niagara4:" DEF_ARCH32_SPEC("-xarch=v8plus" AS_NIAGARA3_FLAG) DEF_ARCH64_SPEC(AS_SPARC64_FLAG AS_NIAGARA3_FLAG) "} \
-%{!mcpu=niagara4:%{!mcpu=niagara3:%{!mcpu=niagara2:%{!mcpu=niagara:%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC(AS_SPARC64_FLAG) "}}}}}}}} \
+%{mcpu=v9:" DEF_ARCH32_SPEC("-xarch=v8plus") DEF_ARCH64_SPEC("-xarch=v9") "} \
+%{mcpu=ultrasparc:" DEF_ARCH32_SPEC("-xarch=v8plusa") DEF_ARCH64_SPEC("-xarch=v9a") "} \
+%{mcpu=ultrasparc3:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC("-xarch=v9b") "} \
+%{mcpu=niagara:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC("-xarch=v9b") "} \
+%{mcpu=niagara2:" DEF_ARCH32_SPEC("-xarch=v8plusb") DEF_ARCH64_SPEC("-xarch=v9b") "} \
+%{mcpu=niagara3:" DEF_ARCH32_SPEC("-xarch=v8plus" AS_NIAGARA3_FLAG) DEF_ARCH64_SPEC("-xarch=v9" AS_NIAGARA3_FLAG) "} \
+%{mcpu=niagara4:" DEF_ARCH32_SPEC(AS_SPARC32_FLAG AS_NIAGARA4_FLAG) DEF_ARCH64_SPEC(AS_SPARC64_FLAG AS_NIAGARA4_FLAG) "} \
+%{!mcpu=niagara4:%{!mcpu=niagara3:%{!mcpu=niagara2:%{!mcpu=niagara:%{!mcpu=ultrasparc3:%{!mcpu=ultrasparc:%{!mcpu=v9:%{mcpu*:" DEF_ARCH32_SPEC("-xarch=v8") DEF_ARCH64_SPEC("-xarch=v9") "}}}}}}}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
-
-#undef ASM_ARCH32_SPEC
-#define ASM_ARCH32_SPEC ""
-
-#undef ASM_ARCH64_SPEC
-#define ASM_ARCH64_SPEC ""
-
-#undef ASM_ARCH_DEFAULT_SPEC
-#define ASM_ARCH_DEFAULT_SPEC ""
-
-#undef ASM_ARCH_SPEC
-#define ASM_ARCH_SPEC ""
 
 #ifdef USE_GLD
 /* Since binutils 2.21, GNU ld supports new *_sol2 emulations to strictly
