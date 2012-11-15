@@ -840,6 +840,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "VIS2 ");
   if (flags & MASK_VIS3)
     fprintf (stderr, "VIS3 ");
+  if (flags & MASK_CBCOND)
+    fprintf (stderr, "CBCOND ");
   if (flags & MASK_DEPRECATED_V8_INSNS)
     fprintf (stderr, "DEPRECATED_V8_INSNS ");
   if (flags & MASK_SPARCLET)
@@ -946,7 +948,7 @@ sparc_option_override (void)
       MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF },
     /* UltraSPARC T4 */
     { "niagara4",	MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF },
+      MASK_V9|MASK_POPC|MASK_VIS2|MASK_VIS3|MASK_FMAF|MASK_CBCOND },
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -1073,6 +1075,9 @@ sparc_option_override (void)
 #ifndef HAVE_AS_FMAF_HPC_VIS3
 		   & ~(MASK_FMAF | MASK_VIS3)
 #endif
+#ifndef HAVE_AS_SPARC4
+		   & ~MASK_CBCOND
+#endif
 		   );
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
@@ -1088,7 +1093,8 @@ sparc_option_override (void)
   if (TARGET_VIS3)
     target_flags |= MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, or -mfmaf if FPU is disabled.  */
+  /* Don't allow -mvis, -mvis2, -mvis3, or -mfmaf if FPU is
+     disabled.  */
   if (! TARGET_FPU)
     target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_FMAF);
 
@@ -2660,6 +2666,24 @@ emit_v9_brxx_insn (enum rtx_code code, rtx op0, rtx label)
 				    pc_rtx)));
 }
 
+/* Emit a conditional jump insn for the UA2011 architecture using
+   comparison code CODE and jump target LABEL.  This function exists
+   to take advantage of the UA2011 Compare and Branch insns.  */
+
+static void
+emit_cbcond_insn (enum rtx_code code, rtx op0, rtx op1, rtx label)
+{
+  rtx if_then_else;
+
+  if_then_else = gen_rtx_IF_THEN_ELSE (VOIDmode,
+				       gen_rtx_fmt_ee(code, GET_MODE(op0),
+						      op0, op1),
+				       gen_rtx_LABEL_REF (VOIDmode, label),
+				       pc_rtx);
+
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else));
+}
+
 void
 emit_conditional_branch_insn (rtx operands[])
 {
@@ -2672,6 +2696,20 @@ emit_conditional_branch_insn (rtx operands[])
 					      GET_CODE (operands[0]));
       operands[1] = XEXP (operands[0], 0);
       operands[2] = XEXP (operands[0], 1);
+    }
+
+  /* If we can tell early on that the comparison is against a constant
+     that won't fit in the 5-bit signed immediate field of a cbcond,
+     use one of the other v9 conditional branch sequences.  */
+  if (TARGET_CBCOND
+      && GET_CODE (operands[1]) == REG
+      && (GET_MODE (operands[1]) == SImode
+	  || (TARGET_ARCH64 && GET_MODE (operands[1]) == DImode))
+      && (GET_CODE (operands[2]) != CONST_INT
+	  || SPARC_SIMM5_P (INTVAL (operands[2]))))
+    {
+      emit_cbcond_insn (GET_CODE (operands[0]), operands[1], operands[2], operands[3]);
+      return;
     }
 
   if (TARGET_ARCH64 && operands[2] == const0_rtx
@@ -3009,6 +3047,44 @@ empty_delay_slot (rtx insn)
 
   seq = NEXT_INSN (PREV_INSN (insn));
   if (GET_CODE (PATTERN (seq)) == SEQUENCE)
+    return 0;
+
+  return 1;
+}
+
+/* Return nonzero if we should emit a nop after a cbcond instruction.
+   The cbcond instruction does not have a delay slot, however there is
+   a severe performance penalty if a control transfer appears right
+   after a cbcond.  Therefore we emit a nop when we detect this
+   situation.  */
+
+int
+emit_cbcond_nop (rtx insn)
+{
+  rtx next = next_active_insn (insn);
+
+  if (!next)
+    return 1;
+
+  if (GET_CODE (next) == INSN
+      && GET_CODE (PATTERN (next)) == SEQUENCE)
+    next = XVECEXP (PATTERN (next), 0, 0);
+  else if (GET_CODE (next) == CALL_INSN
+	   && GET_CODE (PATTERN (next)) == PARALLEL)
+    {
+      rtx delay = XVECEXP (PATTERN (next), 0, 1);
+
+      if (GET_CODE (delay) == RETURN)
+	{
+	  /* It's a sibling call.  Do not emit the nop if we're going
+	     to emit something other than the jump itself as the first
+	     instruction of the sibcall sequence.  */
+	  if (sparc_leaf_function_p || TARGET_FLAT)
+	    return 0;
+	}
+    }
+
+  if (NONJUMP_INSN_P (next))
     return 0;
 
   return 1;
@@ -7102,19 +7178,49 @@ sparc_preferred_simd_mode (enum machine_mode mode)
    DEST is the destination insn (i.e. the label), INSN is the source.  */
 
 const char *
-output_ubranch (rtx dest, int label, rtx insn)
+output_ubranch (rtx dest, rtx insn)
 {
   static char string[64];
   bool v9_form = false;
+  int delta;
   char *p;
 
-  if (TARGET_V9 && INSN_ADDRESSES_SET_P ())
+  /* Even if we are trying to use cbcond for this, evaluate
+     whether we can use V9 branches as our backup plan.  */
+
+  delta = 5000000;
+  if (INSN_ADDRESSES_SET_P ())
+    delta = (INSN_ADDRESSES (INSN_UID (dest))
+	     - INSN_ADDRESSES (INSN_UID (insn)));
+
+  /* Leave some instructions for "slop".  */
+  if (TARGET_V9 && delta >= -260000 && delta < 260000)
+    v9_form = true;
+
+  if (TARGET_CBCOND)
     {
-      int delta = (INSN_ADDRESSES (INSN_UID (dest))
-		   - INSN_ADDRESSES (INSN_UID (insn)));
-      /* Leave some instructions for "slop".  */
-      if (delta >= -260000 && delta < 260000)
-	v9_form = true;
+      bool emit_nop = emit_cbcond_nop (insn);
+      bool far = false;
+      const char *rval;
+
+      if (delta < -500 || delta > 500)
+	far = true;
+
+      if (far)
+	{
+	  if (v9_form)
+	    rval = "ba,a,pt\t%%xcc, %l0";
+	  else
+	    rval = "b,a\t%l0";
+	}
+      else
+	{
+	  if (emit_nop)
+	    rval = "cwbe\t%%g0, %%g0, %l0\n\tnop";
+	  else
+	    rval = "cwbe\t%%g0, %%g0, %l0";
+	}
+      return rval;
     }
 
   if (v9_form)
@@ -7125,7 +7231,7 @@ output_ubranch (rtx dest, int label, rtx insn)
   p = strchr (string, '\0');
   *p++ = '%';
   *p++ = 'l';
-  *p++ = '0' + label;
+  *p++ = '0';
   *p++ = '%';
   *p++ = '(';
   *p = '\0';
@@ -7602,6 +7708,125 @@ sparc_emit_fixunsdi (rtx *operands, enum machine_mode mode)
   emit_insn (gen_xordi3 (out, i0, i1));
 
   emit_label (donelab);
+}
+
+/* Return the string to output a compare and branch instruction to DEST.
+   DEST is the destination insn (i.e. the label), INSN is the source,
+   and OP is the conditional expression.  */
+
+const char *
+output_cbcond (rtx op, rtx dest, rtx insn)
+{
+  enum machine_mode mode = GET_MODE (XEXP (op, 0));
+  enum rtx_code code = GET_CODE (op);
+  const char *cond_str, *tmpl;
+  int far, emit_nop, len;
+  static char string[64];
+  char size_char;
+
+  /* Compare and Branch is limited to +-2KB.  If it is too far away,
+     change
+
+     cxbne X, Y, .LC30
+
+     to
+
+     cxbe X, Y, .+16
+     nop
+     ba,pt xcc, .LC30
+      nop  */
+
+  len = get_attr_length (insn);
+
+  far = len == 4;
+  emit_nop = len == 2;
+
+  if (far)
+    code = reverse_condition (code);
+
+  size_char = ((mode == SImode) ? 'w' : 'x');
+
+  switch (code)
+    {
+    case NE:
+      cond_str = "ne";
+      break;
+
+    case EQ:
+      cond_str = "e";
+      break;
+
+    case GE:
+      if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
+	cond_str = "pos";
+      else
+	cond_str = "ge";
+      break;
+
+    case GT:
+      cond_str = "g";
+      break;
+
+    case LE:
+      cond_str = "le";
+      break;
+
+    case LT:
+      if (mode == CC_NOOVmode || mode == CCX_NOOVmode)
+	cond_str = "neg";
+      else
+	cond_str = "l";
+      break;
+
+    case GEU:
+      cond_str = "cc";
+      break;
+
+    case GTU:
+      cond_str = "gu";
+      break;
+
+    case LEU:
+      cond_str = "leu";
+      break;
+
+    case LTU:
+      cond_str = "cs";
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (far)
+    {
+      int veryfar = 1, delta;
+
+      if (INSN_ADDRESSES_SET_P ())
+	{
+	  delta = (INSN_ADDRESSES (INSN_UID (dest))
+		   - INSN_ADDRESSES (INSN_UID (insn)));
+	  /* Leave some instructions for "slop".  */
+	  if (delta >= -260000 && delta < 260000)
+	    veryfar = 0;
+	}
+
+      if (veryfar)
+	tmpl = "c%cb%s\t%%1, %%2, .+16\n\tnop\n\tb\t%%3\n\tnop";
+      else
+	tmpl = "c%cb%s\t%%1, %%2, .+16\n\tnop\n\tba,pt\t%%%%xcc, %%3\n\tnop";
+    }
+  else
+    {
+      if (emit_nop)
+	tmpl = "c%cb%s\t%%1, %%2, %%3\n\tnop";
+      else
+	tmpl = "c%cb%s\t%%1, %%2, %%3";
+    }
+
+  snprintf (string, sizeof(string), tmpl, size_char, cond_str);
+
+  return string;
 }
 
 /* Return the string to output a conditional branch to LABEL, testing

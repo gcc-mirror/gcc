@@ -1,3 +1,44 @@
+2012-11-15  David S. Miller  <davem@davemloft.net>
+
+	* configure.ac: Add check for assembler SPARC4 instruction
+	support.
+	* configure: Rebuild.
+	* config.in: Add HAVE_AS_SPARC4 section.
+	* config/sparc/sparc.opt (mcbcond): New option.
+	* doc/invoke.texi: Document it.
+	* config/sparc/constraints.md: New constraint 'A' for 5-bit signed
+	immediates.
+	* doc/md.texi: Document it.
+	* config/sparc/sparc.c (dump_target_flag_bits): Handle MASK_CBCOND.
+	(sparc_option_override): Likewise.
+	(emit_cbcond_insn): New function.
+	(emit_conditional_branch_insn): Call it.
+	(emit_cbcond_nop): New function.
+	(output_ubranch): Use cbcond, remove label arg.
+	(output_cbcond): New function.
+	* config/sparc/sparc-protos.h (output_ubranch): Update.
+	(output_cbcond): Declare it.
+	(emit_cbcond_nop): Likewise.
+	* config/sparc/sparc.md (type attribute): New types 'cbcond'
+	and uncond_cbcond.
+	(emit_cbcond_nop): New attribute.
+	(length attribute): Handle cbcond and uncond_cbcond.
+	(in_call_delay attribute): Reject cbcond and uncond_cbcond.
+	(in_branch_delay attribute): Likewise.
+	(in_uncond_branch_delay attribute): Likewise.
+	(in_annul_branch_delay attribute): Likewise.
+	(*cbcond_sp32, *cbcond_sp64): New insn patterns.
+	(jump): Rewrite into an expander.
+	(*jump_ubranch, *jump_cbcond): New patterns.
+	* config/sparc/niagara4.md: Match 'cbcond' in 'n4_cti'.
+	* config/sparc/sparc.h (AS_NIAGARA4_FLAG): New macro, use it
+	when target default is niagara4.
+	(SPARC_SIMM5_P): Define.
+	* config/sparc/sol2.h (AS_SPARC64_FLAG): Adjust.
+	(AS_SPARC32_FLAG): Define.
+	(ASM_CPU32_DEFAULT_SPEC, ASM_CPU64_DEFAULT_SPEC): Use
+	AS_NIAGARA4_FLAG as needed.
+
 2012-11-15  Steve Ellcey  <sellcey@mips.com>
 
 	* expr.c (expand_cond_expr_using_cmove): Use promoted mode for temp.
