@@ -1,7 +1,7 @@
 // <functional> -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1872,8 +1872,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	static void
 	_M_init_functor(_Any_data& __functor, reference_wrapper<_Functor> __f)
 	{
-	  // TBD: Use address_of function instead.
-	  _Base::_M_init_functor(__functor, &__f.get());
+	  _Base::_M_init_functor(__functor, std::__addressof(__f.get()));
 	}
       };
 
@@ -2295,9 +2294,9 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
 	if (_My_handler::_M_not_empty_function(__f))
 	  {
+	    _My_handler::_M_init_functor(_M_functor, std::move(__f));
 	    _M_invoker = &_My_handler::_M_invoke;
 	    _M_manager = &_My_handler::_M_manager;
-	    _My_handler::_M_init_functor(_M_functor, std::move(__f));
 	  }
       }
 
