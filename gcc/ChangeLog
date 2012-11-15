@@ -1,3 +1,12 @@
+2012-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (report_error_func): Set DECL_IGNORED_P, don't touch
+	DECL_ASSEMBLER_NAME.
+	(asan_init_func): Likewise.
+	(asan_finish_file): Use void * instead of __asan_global * as
+	type of __asan_{,un}register_globals.  Set DECL_IGNORED_P on
+	the decls.
+
 2012-11-15  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.in (if_multiarch): Don't use a GNU make 3.81 feature.

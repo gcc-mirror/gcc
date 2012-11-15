@@ -494,10 +494,10 @@ report_error_func (bool is_store, int size_in_bytes)
   fn_type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   def = build_fn_decl (name, fn_type);
   TREE_NOTHROW (def) = 1;
+  DECL_IGNORED_P (def) = 1;
   TREE_THIS_VOLATILE (def) = 1;  /* Attribute noreturn. Surprise!  */
   DECL_ATTRIBUTES (def) = tree_cons (get_identifier ("leaf"),
 				     NULL, DECL_ATTRIBUTES (def));
-  DECL_ASSEMBLER_NAME (def);
   return def;
 }
 
@@ -512,7 +512,7 @@ asan_init_func (void)
   fn_type = build_function_type_list (void_type_node, NULL_TREE);
   def = build_fn_decl ("__asan_init", fn_type);
   TREE_NOTHROW (def) = 1;
-  DECL_ASSEMBLER_NAME (def);
+  DECL_IGNORED_P (def) = 1;
   return def;
 }
 
@@ -1536,11 +1536,11 @@ asan_finish_file (void)
       DECL_INITIAL (var) = ctor;
       varpool_assemble_decl (varpool_node_for_decl (var));
 
-      type = build_function_type_list (void_type_node,
-				       build_pointer_type (TREE_TYPE (type)),
+      type = build_function_type_list (void_type_node, ptr_type_node,
 				       uptr, NULL_TREE);
       decl = build_fn_decl ("__asan_register_globals", type);
       TREE_NOTHROW (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       append_to_statement_list (build_call_expr (decl, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
@@ -1548,6 +1548,7 @@ asan_finish_file (void)
 
       decl = build_fn_decl ("__asan_unregister_globals", type);
       TREE_NOTHROW (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       append_to_statement_list (build_call_expr (decl, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
