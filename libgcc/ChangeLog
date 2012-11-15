@@ -1,3 +1,7 @@
+2012-11-15  Marcus Shawcroft <marcus.shawcroft@arm.com>
+
+	* soft-fp: Updated from glibc upstream.
+
 2012-11-06  Ian Lance Taylor  <iant@google.com>
 
 	* generic-morestack.c (__generic_morestack): Align the returned
