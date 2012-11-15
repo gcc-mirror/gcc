@@ -1,3 +1,7 @@
+2012-11-15  Dodji Seketeli  <dodji@redhat.com>
+
+	* MAINTAINERS: (asan.c, related): Add myself.
+
 2012-11-14  Roland McGrath  <mcgrathr@google.com>
 
 	* configure.ac (ENABLE_GOLD): Consider *-*-nacl* targets ELF.
