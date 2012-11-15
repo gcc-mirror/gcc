@@ -1,3 +1,12 @@
+2012-11-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53841
+	* include/std/condition_variable (condition_variable::wait_until):
+	Handle clocks with higher resolution than __clock_t.
+	(condition_variable::__wait_until_impl): Remove unnecessary _Clock
+	parameter.
+	* testsuite/30_threads/condition_variable/members/53841.cc: New.
+
 2012-11-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/55320
