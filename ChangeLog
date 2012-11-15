@@ -1,3 +1,7 @@
+2012-11-15  Roland McGrath  <roland@hack.frob.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2012-11-15  Dmitry Vyukov  <dvyukov@google.com>
 
 	* MAINTAINERS: (libsanitizer, asan.c): Add myself,
@@ -2212,7 +2216,7 @@
 2009-10-07  Rafael Avila de Espindola  <espindola@google.com>
 
 	* MAINTAINERS: Change my email address. Change plugi-in to plugin.
-	
+
 2009-10-07  Richard Guenther  <rguenther@suse.de>
 
 	* MAINTAINERS (LTO): List Diego Novillo, Rafael Avila de Espindola,
@@ -2464,7 +2468,7 @@
 
 	* configure.ac (sh*-*-elf): Don't add target-libgloss to noconfigdirs.
 	* configure: Regenerate.
-	
+
 2009-07-28  Rask Ingemann Lambertsen  <ccc94453@vip.cybercity.dk>
 
 	* MAINTAINERS (Write After Approval): Update my e-mail address.
@@ -2756,7 +2760,7 @@
 2009-03-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* MAINTAINERS: Update e-mail address.
-	
+
 2009-03-11  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* MAINTAINERS: Remove myself as auto-vectorizer maintainer.
