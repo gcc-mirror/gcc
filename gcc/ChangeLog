@@ -1,3 +1,8 @@
+2012-11-14  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/55051
+	* gcov-io.c (gcov_read_summary): Fix array bound check.
+
 2012-11-14  Sterling Augustine  <saugustine@google.com>
 
 	PR debug/55328
