@@ -7840,15 +7840,17 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   int unsignedp = TYPE_UNSIGNED (type);
   enum machine_mode mode = TYPE_MODE (type);
 
-  temp = assign_temp (type, 0, 1);
-
   /* If we cannot do a conditional move on the mode, try doing it
      with the promoted mode. */
   if (!can_conditionally_move_p (mode))
-    mode = promote_mode (type, mode, &unsignedp);
-
-  if (!can_conditionally_move_p (mode))
-    return NULL_RTX;
+    {
+      mode = promote_mode (type, mode, &unsignedp);
+      if (!can_conditionally_move_p (mode))
+	return NULL_RTX;
+      temp = assign_temp (type, 0, 0); /* Use promoted mode for temp.  */
+    }
+  else
+    temp = assign_temp (type, 0, 1);
 
   start_sequence ();
   expand_operands (treeop1, treeop2,
