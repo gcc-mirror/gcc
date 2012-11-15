@@ -1017,13 +1017,11 @@ decls_match (tree newdecl, tree olddecl)
 		&& DECL_EXTERN_C_P (olddecl)))
 	return 0;
 
-#ifdef NO_IMPLICIT_EXTERN_C
       /* A new declaration doesn't match a built-in one unless it
 	 is also extern "C".  */
       if (DECL_IS_BUILTIN (olddecl)
 	  && DECL_EXTERN_C_P (olddecl) && !DECL_EXTERN_C_P (newdecl))
 	return 0;
-#endif
 
       if (TREE_CODE (f1) != TREE_CODE (f2))
 	return 0;
