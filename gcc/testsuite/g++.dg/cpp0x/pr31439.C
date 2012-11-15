@@ -1,7 +1,7 @@
 // { dg-options "-std=c++0x" }
-template<typename...> struct A; // { dg-error "declaration" }
+template<typename...> struct A;
 
-template<char> struct A<> {}; // { dg-error "not used in partial specialization|anonymous" }
+template<char> struct A<> {}; // { dg-error "not used in partial specialization|anonymous|declaration" }
 
 template<typename T, typename... U> struct A<T, U...> : A<U...> {}; // { dg-error "incomplete type" }
 
