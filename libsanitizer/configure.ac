@@ -82,6 +82,9 @@ _EOF
    mv tmp$$ $ac_file
    rm vpsed$$
    echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   AS_UNSET([ml_norecursion])
 ])
 
 AC_OUTPUT
