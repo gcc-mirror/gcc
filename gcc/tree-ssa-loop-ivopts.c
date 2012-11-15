@@ -3009,6 +3009,28 @@ get_computation_aff (struct loop *loop,
   return true;
 }
 
+/* Return the type of USE.  */
+
+static tree
+get_use_type (struct iv_use *use)
+{
+  tree base_type = TREE_TYPE (use->iv->base);
+  tree type;
+
+  if (use->type == USE_ADDRESS)
+    {
+      /* The base_type may be a void pointer.  Create a pointer type based on
+	 the mem_ref instead.  */
+      type = build_pointer_type (TREE_TYPE (*use->op_p));
+      gcc_assert (TYPE_ADDR_SPACE (TREE_TYPE (type))
+		  == TYPE_ADDR_SPACE (TREE_TYPE (base_type)));
+    }
+  else
+    type = base_type;
+
+  return type;
+}
+
 /* Determines the expression by that USE is expressed from induction variable
    CAND at statement AT in LOOP.  The computation is unshared.  */
 
@@ -3017,7 +3039,7 @@ get_computation_at (struct loop *loop,
 		    struct iv_use *use, struct iv_cand *cand, gimple at)
 {
   aff_tree aff;
-  tree type = TREE_TYPE (use->iv->base);
+  tree type = get_use_type (use);
 
   if (!get_computation_aff (loop, use, cand, at, &aff))
     return NULL_TREE;
@@ -3934,6 +3956,9 @@ get_computation_cost_at (struct ivopts_data *data,
   comp_cost cost;
   double_int rat;
   bool speed = optimize_bb_for_speed_p (gimple_bb (at));
+  enum machine_mode mem_mode = (address_p
+				? TYPE_MODE (TREE_TYPE (*use->op_p))
+				: VOIDmode);
 
   *depends_on = NULL;
 
@@ -4041,7 +4066,7 @@ get_computation_cost_at (struct ivopts_data *data,
   else if (address_p
 	   && !POINTER_TYPE_P (ctype)
 	   && multiplier_allowed_in_address_p
-		(ratio, TYPE_MODE (TREE_TYPE (utype)),
+		(ratio, mem_mode,
 			TYPE_ADDR_SPACE (TREE_TYPE (utype))))
     {
       cbase
@@ -4085,7 +4110,7 @@ get_computation_cost_at (struct ivopts_data *data,
     return add_costs (cost,
 		      get_address_cost (symbol_present, var_present,
 					offset, ratio, cstepi,
-					TYPE_MODE (TREE_TYPE (utype)),
+					mem_mode,
 					TYPE_ADDR_SPACE (TREE_TYPE (utype)),
 					speed, stmt_is_after_inc,
 					can_autoinc));

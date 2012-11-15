@@ -1,3 +1,10 @@
+2012-11-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/54619
+	* tree-ssa-loop-ivopts.c (get_use_type): New function.
+	(get_computation_at): Use get_use_type.
+	(get_computation_cost_at): Declare and set mem_mode.  Use mem_mode.
+
 2012-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (report_error_func): Set DECL_IGNORED_P, don't touch
