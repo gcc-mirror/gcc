@@ -1,3 +1,8 @@
+2012-11-14  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac (ENABLE_GOLD): Consider *-*-nacl* targets ELF.
+	* configure: Regenerate.
+
 2012-11-13  Richard Henderson  <rth@redhat.com>
 
 	* configure.ac: Move libsanitizer logic to subdirectory.
