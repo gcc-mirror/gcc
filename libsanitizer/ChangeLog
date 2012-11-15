@@ -1,5 +1,21 @@
 2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR other/55291
+	* configure.ac (--enable-version-specific-runtime-libs): New option.
+	(AC_CANONICAL_SYSTEM): New.
+	(AM_ENABLE_MULTILIB): Moved right after AM_INIT_AUTOMAKE.
+	(toolexecdir): Support multilib.
+	(toolexeclibdir): Likewise.
+	(multilib_arg): New.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR other/55292
 	Backport from upstream revision 167883
 	* sanitizer_common/sanitizer_linux.cc (internal_mmap): Check
