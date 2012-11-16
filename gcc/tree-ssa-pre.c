@@ -3525,7 +3525,8 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 		 may cause regressions on the speed path.  */
 	      FOR_EACH_EDGE (succ, ei, block->succs)
 		{
-		  if (bitmap_set_contains_value (PA_IN (succ->dest), val))
+		  if (bitmap_set_contains_value (PA_IN (succ->dest), val)
+		      || bitmap_set_contains_value (ANTIC_IN (succ->dest), val))
 		    {
 		      if (optimize_edge_for_speed_p (succ))
 			do_insertion = true;
@@ -3539,7 +3540,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 		      fprintf (dump_file, "Skipping partial partial redundancy "
 			       "for expression ");
 		      print_pre_expr (dump_file, expr);
-		      fprintf (dump_file, " (%04d), not partially anticipated "
+		      fprintf (dump_file, " (%04d), not (partially) anticipated "
 			       "on any to be optimized for speed edges\n", val);
 		    }
 		}
