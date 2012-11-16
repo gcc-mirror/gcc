@@ -1,3 +1,9 @@
+2012-11-16  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/54717
+	* tree-ssa-pre.c (do_partial_partial_insertion): Consider also edges
+	with ANTIC_IN.
+
 2012-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (ix86_emit_mode_set): Add third argument.
