@@ -1,5 +1,10 @@
 2012-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
+	* g++.dg/mv1.C (dg-options): Add -march=x86-64.
+	* g++.dg/mv6.C (dg-options): Ditto.
+
+2012-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
 	* lib/target_suports.exp
 	(check_effective_target_has_w_floating_suffix): New procedure.
 	(check_effective_target_has_q_floating_suffix): Ditto.
