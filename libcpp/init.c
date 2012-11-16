@@ -28,6 +28,10 @@ along with this program; see the file COPYING3.  If not see
 #include "localedir.h"
 #include "filenames.h"
 
+#ifndef ENABLE_CANONICAL_SYSTEM_HEADERS
+#define ENABLE_CANONICAL_SYSTEM_HEADERS 0
+#endif
+
 static void init_library (void);
 static void mark_named_operators (cpp_reader *, int);
 static void read_original_filename (cpp_reader *);
@@ -182,6 +186,8 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, track_macro_expansion) = 2;
   CPP_OPTION (pfile, warn_normalize) = normalized_C;
   CPP_OPTION (pfile, warn_literal_suffix) = 1;
+  CPP_OPTION (pfile, canonical_system_headers)
+      = ENABLE_CANONICAL_SYSTEM_HEADERS;
   CPP_OPTION (pfile, ext_numeric_literals) = 1;
 
   /* Default CPP arithmetic to something sensible for the host for the

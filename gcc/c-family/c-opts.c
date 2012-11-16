@@ -456,6 +456,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       handle_OPT_d (arg);
       break;
 
+    case OPT_fcanonical_system_headers:
+      cpp_opts->canonical_system_headers = value;
+      break;
+
     case OPT_fcond_mismatch:
       if (!c_dialect_cxx ())
 	{
