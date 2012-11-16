@@ -1,3 +1,9 @@
+2012-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55337
+	* tree.c (cp_tree_equal) <case ALIGNOF_EXPR>: Use SIZEOF_EXPR_TYPE_P
+	only on SIZEOF_EXPR.
+
 2012-11-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54903
