@@ -1,3 +1,12 @@
+2012-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target_suports.exp
+	(check_effective_target_has_w_floating_suffix): New procedure.
+	(check_effective_target_has_q_floating_suffix): Ditto.
+	* g++.dg/cpp0x/gnu_fext-numeric-literals.C: Add dg-error directive
+	for unsupported non-standard suffix on floating constant.
+	* g++.dg/cpp0x/std_fext-numeric-literals.C: Ditto.
+
 2012-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/asan-dg.exp: New file.
