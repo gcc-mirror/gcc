@@ -1,3 +1,12 @@
+2012-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54073
+	* config/i386/i386.md (mov<mode>cc): Use comparison_operator
+	instead of ordered_comparison_operator resp.
+	ix86_fp_comparison_operator predicates.
+	* config/i386/i386.c (ix86_expand_fp_movcc): Reject TImode
+	or for -m32 DImode comparisons.
+
 2012-11-16  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/54717

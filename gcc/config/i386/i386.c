@@ -19957,6 +19957,11 @@ ix86_expand_fp_movcc (rtx operands[])
       return true;
     }
 
+  if (GET_MODE (op0) == TImode
+      || (GET_MODE (op0) == DImode
+	  && !TARGET_64BIT))
+    return false;
+
   /* The floating point conditional move instructions don't directly
      support conditions resulting from a signed integer comparison.  */
 
