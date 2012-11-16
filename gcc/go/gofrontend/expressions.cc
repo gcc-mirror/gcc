@@ -2970,6 +2970,46 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 	{
 	  if (!nc.set_type(type, true, location))
 	    return Expression::make_error(location);
+
+	  // Don't simply convert to or from a float or complex type
+	  // with a different size.  That may change the value.
+	  Type* vtype = val->type();
+	  if (vtype->is_abstract())
+	    ;
+	  else if (type->float_type() != NULL)
+	    {
+	      if (vtype->float_type() != NULL)
+		{
+		  if (type->float_type()->bits() != vtype->float_type()->bits())
+		    return this;
+		}
+	      else if (vtype->complex_type() != NULL)
+		{
+		  if (type->float_type()->bits() * 2
+		      != vtype->complex_type()->bits())
+		    return this;
+		}
+	    }
+	  else if (type->complex_type() != NULL)
+	    {
+	      if (vtype->complex_type() != NULL)
+		{
+		  if (type->complex_type()->bits()
+		      != vtype->complex_type()->bits())
+		    return this;
+		}
+	      else if (vtype->float_type() != NULL)
+		{
+		  if (type->complex_type()->bits()
+		      != vtype->float_type()->bits() * 2)
+		    return this;
+		}
+	    }
+	  else if (vtype->float_type() != NULL)
+	    return this;
+	  else if (vtype->complex_type() != NULL)
+	    return this;
+
 	  return nc.expression(location);
 	}
     }
