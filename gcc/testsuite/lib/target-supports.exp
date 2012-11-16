@@ -1746,18 +1746,26 @@ proc check_effective_target_double64plus { } {
 # 0 otherwise.
 
 proc check_effective_target_has_w_floating_suffix { } {
+    set opts ""
+    if [check_effective_target_c++] {
+        append opts "-std=gnu++03"
+    }
     return [check_no_compiler_messages w_fp_suffix object {
 	float dummy = 1.0w;
-    } "-std=gnu++03 -w"]
+    } "$opts"]
 }
 
 # Return 1 if the target supports 'q' suffix on floating constant
 # 0 otherwise.
 
 proc check_effective_target_has_q_floating_suffix { } {
+    set opts ""
+    if [check_effective_target_c++] {
+        append opts "-std=gnu++03"
+    }
     return [check_no_compiler_messages q_fp_suffix object {
 	float dummy = 1.0q;
-    } "-std=gnu++03 -w"]
+    } "$opts"]
 }
 # Return 1 if the target supports compiling fixed-point,
 # 0 otherwise.
