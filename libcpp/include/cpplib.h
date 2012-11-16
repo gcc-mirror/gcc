@@ -493,6 +493,9 @@ struct cpp_options
 
   /* True disables tokenization outside of preprocessing directives. */
   bool directives_only;
+
+  /* True enables canonicalization of system header file paths. */
+  bool canonical_system_headers;
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

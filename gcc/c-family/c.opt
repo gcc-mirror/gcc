@@ -840,6 +840,10 @@ Recognize built-in functions
 fbuiltin-
 C ObjC C++ ObjC++ Joined
 
+fcanonical-system-headers
+C ObjC C++ ObjC++
+Where shorter, use canonicalized paths to systems headers.
+
 fcheck-new
 C++ ObjC++ Var(flag_check_new)
 Check the return value of new

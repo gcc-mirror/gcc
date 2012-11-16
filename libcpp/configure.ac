@@ -132,6 +132,16 @@ if test $enable_checking != no ; then
 [Define if you want more run-time sanity checks.])
 fi
 
+AC_ARG_ENABLE(canonical-system-headers,
+[  --enable-canonical-system-headers
+                          enable or disable system headers canonicalization],
+[],
+enable_canonical_system_headers=yes)
+if test $enable_canonical_system_headers != no; then
+  AC_DEFINE(ENABLE_CANONICAL_SYSTEM_HEADERS,
+            1, [Define to enable system headers canonicalization.])
+fi
+
 m4_changequote(,)
 case $target in
 	aarch64*-*-* | \

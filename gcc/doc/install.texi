@@ -1719,6 +1719,14 @@ link time when @option{-fuse-linker-plugin} is enabled.
 This linker should have plugin support such as gold starting with
 version 2.20 or GNU ld starting with version 2.21.
 See @option{-fuse-linker-plugin} for details.
+
+@item --enable-canonical-system-headers
+@itemx --disable-canonical-system-headers
+Enable system header path canonicalization for @file{libcpp}.  This can
+produce shorter header file paths in diagnostics and dependency output
+files, but these changed header paths may conflict with some compilation
+environments.  Enabled by default, and may be disabled using
+@option{--disable-canonical-system-headers}.
 @end table
 
 @subheading Cross-Compiler-Specific Options

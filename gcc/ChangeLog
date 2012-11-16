@@ -1,3 +1,8 @@
+2012-11-16  Simon Baldwin  <simonb@google.com>
+
+	* doc/cppopts.texi: Document -f[no-]canonical-system-headers.
+	* doc/install.texi: Document --enable-canonical-system-headers.
+
 2012-11-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55330

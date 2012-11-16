@@ -11,6 +11,9 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Define to enable system headers canonicalization. */
+#undef ENABLE_CANONICAL_SYSTEM_HEADERS
+
 /* Define if you want more run-time sanity checks. */
 #undef ENABLE_CHECKING
 
