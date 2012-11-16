@@ -1,3 +1,8 @@
+2012-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55329
+	* g++.dg/opt/pr55329.C: New test.
+
 2012-11-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55297

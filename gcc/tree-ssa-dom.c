@@ -1,6 +1,6 @@
 /* SSA Dominator optimizations for trees
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -801,17 +801,21 @@ tree_ssa_dominator_optimize (void)
 
       /* Jump threading may have created forwarder blocks from blocks
 	 needing EH cleanup; the new successor of these blocks, which
-	 has inherited from the original block, needs the cleanup.  */
+	 has inherited from the original block, needs the cleanup.
+	 Don't clear bits in the bitmap, as that can break the bitmap
+	 iterator.  */
       EXECUTE_IF_SET_IN_BITMAP (need_eh_cleanup, 0, i, bi)
 	{
 	  basic_block bb = BASIC_BLOCK (i);
-	  if (bb
-	      && single_succ_p (bb)
-	      && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
-	    {
-	      bitmap_clear_bit (need_eh_cleanup, i);
-	      bitmap_set_bit (need_eh_cleanup, single_succ (bb)->index);
-	    }
+	  if (bb == NULL)
+	    continue;
+	  while (single_succ_p (bb)
+		 && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
+	    bb = single_succ (bb);
+	  if (bb == EXIT_BLOCK_PTR)
+	    continue;
+	  if ((unsigned) bb->index != i)
+	    bitmap_set_bit (need_eh_cleanup, bb->index);
 	}
 
       gimple_purge_all_dead_eh_edges (need_eh_cleanup);
