@@ -91,10 +91,10 @@ main()
   auto rfp = 1.0r; // { dg-error "fixed-point types not supported" }
   auto Rfp = 1.0R; // { dg-error "fixed-point types not supported" }
 
-  auto wfp = 1.0w;
-  auto Wfp = 1.0W;
-  auto qfp = 1.0q;
-  auto Qfp = 1.0Q;
+  auto wfp = 1.0w; // { dg-error "unsupported" "" { target { ! has_w_floating_suffix } } }
+  auto Wfp = 1.0W; // { dg-error "unsupported" "" { target { ! has_w_floating_suffix } } }
+  auto qfp = 1.0q; // { dg-error "unsupported" "" { target { ! has_q_floating_suffix } } }
+  auto Qfp = 1.0Q; // { dg-error "unsupported" "" { target { ! has_q_floating_suffix } } }
 }
 
 // { dg-warning "literal operator suffixes not preceded by" "" { target *-*-* } 7 }

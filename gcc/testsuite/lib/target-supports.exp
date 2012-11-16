@@ -1742,6 +1742,23 @@ proc check_effective_target_double64plus { } {
     }]
 }
 
+# Return 1 if the target supports 'w' suffix on floating constant
+# 0 otherwise.
+
+proc check_effective_target_has_w_floating_suffix { } {
+    return [check_no_compiler_messages w_fp_suffix object {
+	float dummy = 1.0w;
+    } "-std=gnu++03 -w"]
+}
+
+# Return 1 if the target supports 'q' suffix on floating constant
+# 0 otherwise.
+
+proc check_effective_target_has_q_floating_suffix { } {
+    return [check_no_compiler_messages q_fp_suffix object {
+	float dummy = 1.0q;
+    } "-std=gnu++03 -w"]
+}
 # Return 1 if the target supports compiling fixed-point,
 # 0 otherwise.
 
