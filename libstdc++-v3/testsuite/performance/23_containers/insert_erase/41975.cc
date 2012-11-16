@@ -18,7 +18,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <sstream>
-#include <unordered_set>
+#ifdef _USE_TR1
+#  include <tr1/unordered_set>
+#else
+#  include <unordered_set>
+#endif
 #include <testsuite_performance.h>
 
 namespace
@@ -40,11 +44,17 @@ namespace
       const int nb = 200000;
       start_counters(time, resource);
 
+#ifdef _USE_TR1
+      std::tr1::__unordered_set<int, std::hash<int>, std::equal_to<int>,
+				std::allocator<int>,
+			       	use_cache> us;
+#else
       std::__uset_hashtable<int, std::hash<int>, std::equal_to<int>,
 			    std::allocator<int>,
 			    std::__uset_traits<use_cache>> us;
+#endif
       for (int i = 0; i != nb; ++i)
-	us.insert(i);
+	  us.insert(i);
 
       stop_counters(time, resource);
       ostr.str("");
@@ -126,10 +136,17 @@ namespace
 
       start_counters(time, resource);
 
+#ifdef _USE_TR1
+      std::tr1::__unordered_set<std::string, std::hash<std::string>,
+				std::equal_to<std::string>,
+				std::allocator<std::string>,
+				use_cache> us;
+#else
       std::__uset_hashtable<std::string, std::hash<std::string>,
 			    std::equal_to<std::string>,
 			    std::allocator<std::string>,
 			    std::__uset_traits<use_cache>> us;
+#endif
       for (int i = 0; i != nb; ++i)
 	us.insert(strs[i]);
 

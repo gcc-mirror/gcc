@@ -1,3 +1,19 @@
+2012-11-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy): Remove
+	automatic shrink.
+	(_Prime_rehash_policy::_M_bkt_for_elements): Do not call
+	_M_next_bkt anymore.
+	(_Prime_rehash_policy::_M_next_bkt): Move usage of
+	_S_growth_factor ...
+	(_Prime_rehash_policy::_M_need_rehash): ... here.
+	* include/bits/hashtable.h (_Hashtable<>): Adapt.
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Add
+	_USE_TR1 to force build using std::tr1 container.
+	* testsuite/performance/23_containers/insert/unordered_set.cc:
+	Likewise.
+	* testsuite/performance/23_containers/insert/54075.cc: New.
+
 2012-11-16  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/whatis.cc: New file.
