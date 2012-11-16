@@ -1,5 +1,7 @@
 2012-11-15  David S. Miller  <davem@davemloft.net>
 
+	* expmed.c (expand_shift_1): Don't strip non-integral SUBREGs.
+
 	* configure.ac: Add check for assembler SPARC4 instruction
 	support.
 	* configure: Rebuild.
