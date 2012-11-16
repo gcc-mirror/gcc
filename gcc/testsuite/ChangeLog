@@ -1,3 +1,8 @@
+2012-11-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54875
+	* g++.dg/cpp0x/alias-decl-27.C: New test.
+
 2012-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55337

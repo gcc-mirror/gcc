@@ -1,3 +1,10 @@
+2012-11-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54875
+	* pt.c (lookup_template_class_1): Look at the type of the
+	potential member enum of class template to determine if we are
+	actually substituting into a member enum of class template.
+
 2012-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55337
