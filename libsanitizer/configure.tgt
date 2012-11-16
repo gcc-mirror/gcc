@@ -20,7 +20,7 @@
 
 # Filter out unsupported systems.
 case "${target}" in
-  x86_64-*-linux* | i?86-*-linux*)
+  x86_64-*-linux* | i?86-*-linux* | sparc*-*-linux*)
 	;;
   *)
 	UNSUPPORTED=1
