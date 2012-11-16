@@ -9615,6 +9615,9 @@ AMD family 15h Bulldozer version 1.
 @item bdver2
 AMD family 15h Bulldozer version 2.
 
+@item bdver3
+AMD family 15h Bulldozer version 3.
+
 @item btver2
 AMD family 16h CPU.
 @end table

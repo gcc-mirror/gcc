@@ -482,23 +482,23 @@
 ;; SSE logs.
 (define_insn_reservation "bdver1_sselog_load_256" 7
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "sselog,sselog1")
+			      (and (eq_attr "type" "sselog,sselog1,sseshuf,sseshuf1")
 				   (and (eq_attr "mode" "V8SF")
 				   (eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,bdver1-fmal")
 (define_insn_reservation "bdver1_sselog_256" 3
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "sselog,sselog1")
+			      (and (eq_attr "type" "sselog,sselog1,sseshuf,sseshuf1")
                                    (eq_attr "mode" "V8SF")))
 			 "bdver1-double,bdver1-fpsched,bdver1-fmal")
 (define_insn_reservation "bdver1_sselog_load" 6
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "sselog,sselog1")
+			      (and (eq_attr "type" "sselog,sselog1,sseshuf,sseshuf1")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-fxbar")
 (define_insn_reservation "bdver1_sselog" 2
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (eq_attr "type" "sselog,sselog1"))
+			      (eq_attr "type" "sselog,sselog1,sseshuf,sseshuf1"))
 			 "bdver1-direct,bdver1-fpsched,bdver1-fxbar")
 
 ;; PCMP actually executes in FMAL.

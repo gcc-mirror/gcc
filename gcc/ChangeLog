@@ -1,3 +1,38 @@
+2012-11-16  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	bdver3 Enablement
+	* doc/extend.texi: Add details about bdver3.
+	* doc/invoke.texi: Add details about bdver3.
+	* config.gcc (i[34567]86-*-linux* | ...): Add bdver3.
+	(case ${target}): Add bdver3.
+	* config/i386/i386.h (TARGET_BDVER3): New definition.
+	* config/i386/i386.md (define_attr "cpu"): Add bdver3.
+	* config/i386/sse.md (sseshuf): New type attribute.
+	* config/i386/athlon.md (sseshuf):Likewise.
+	* config/i386/atom.md (sseshuf):Likewise.
+	* config/i386/ppro.md (sseshuf):Likewise.
+	* config/i386/bdver1.md (sseshuf):Likewise.
+	* config/i386/i386.opt (flag_dispatch_scheduler): Add bdver3.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	bdver3 def_and_undef
+	* config/i386/driver-i386.c (host_detect_local_cpu): Let
+	-march=native recognize bdver3 processors.
+	* config/i386/i386.c (struct processor_costs bdver3_cost): New.
+	(m_BDVER3): New definition.
+	(m_AMD_MULTIPLE): Includes m_BDVER3.
+	(initial_ix86_tune_features): Add bdver3 tune.
+	(processor_target_table): Add bdver3 entry.
+	(static const char *const cpu_names): Add bdver3 entry.
+	(software_prefetching_beneficial_p): Add bdver3.
+	(ix86_option_override_internal): Add bdver3 instruction sets.
+	(ix86_option_override_internal): Remove XSAVEOPT for bdver1 
+	and bdver2.
+	(ix86_issue_rate): Add bdver3.
+	(ix86_adjust_cost): Add bdver3.
+	(enum target_cpu_default): Add TARGET_CPU_DEFAULT_bdver3.
+	(enum processor_type): Add PROCESSOR_BDVER3.
+	* config/i386/bdver3.md: New file describing bdver3 pipelines.
+
 2012-11-15  David S. Miller  <davem@davemloft.net>
 
 	* expmed.c (expand_shift_1): Don't strip non-integral SUBREGs.
