@@ -1,3 +1,8 @@
+2012-11-16  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (gccgo$(exeext)): Add + at start of command.
+	(go1$(exeext)): Likewise.
+
 2012-10-30  Ian Lance Taylor  <iant@google.com>
 
 	* lang.opt (-fgo-relative-import-path): New option.
