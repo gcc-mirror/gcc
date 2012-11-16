@@ -549,7 +549,7 @@ proc cleanup-saved-temps { args } {
     set suffixes {}
 
     # add the to-be-kept suffixes
-    foreach suffix {".ii" ".i" ".s" ".o" ".gkd"} {
+    foreach suffix {".mii" ".ii" ".i" ".s" ".o" ".gkd"} {
 	if {[lsearch $args $suffix] < 0} {
 	    lappend suffixes $suffix
 	}

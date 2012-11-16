@@ -20,4 +20,4 @@ main()
   return 0;
 }
 /* { dg-final-use { scan-rtl-dump "Considering unrolling loop with constant number of iterations" "loop2_unroll" } } */
-/* { dg-final-use { cleanup-rtl-dump "Not unrolling loop, doesn't roll" } } */
+/* { dg-final-use { cleanup-rtl-dump "loop2_unroll" } } */
