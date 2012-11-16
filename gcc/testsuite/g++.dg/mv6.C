@@ -2,6 +2,7 @@
 
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-ifunc "" }  */
+/* { dg-options "-march=x86-64" } */
 
 class Foo
 {

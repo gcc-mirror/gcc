@@ -1,4 +1,4 @@
-2012-11-15  Uros Bizjak  <ubizjak@gmail.com>
+2012-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target_suports.exp
 	(check_effective_target_has_w_floating_suffix): New procedure.
