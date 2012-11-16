@@ -1,3 +1,7 @@
+2012-11-16  Dodji Seketeli  <dodji@redhat.com>
+
+	* configure.tgt: Enable build on sparc linux.
+
 2012-11-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac: Properly set MULTISUBDIR.
