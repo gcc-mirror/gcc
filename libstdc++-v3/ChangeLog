@@ -1,3 +1,15 @@
+2012-11-16  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/whatis.cc: New file.
+	* testsuite/lib/gdb-test.exp (whatis-test): New proc.
+	(gdb-test): Handle 'whatis' tests.
+	(gdb_batch_check): New proc.
+	(gdb_version_check): Rewrite to use gdb_batch_check.
+	* python/libstdcxx/v6/printers.py: Import gdb.types.
+	(FilteringTypePrinter): New class.
+	(add_one_type_printer, register_type_printers): New functions.
+	(register_libstdcxx_printers): Call register_type_printers.
+
 2012-11-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/53841
