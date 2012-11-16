@@ -358,7 +358,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct _Prime_rehash_policy
   {
     _Prime_rehash_policy(float __z = 1.0)
-    : _M_max_load_factor(__z), _M_prev_resize(0), _M_next_resize(0) { }
+    : _M_max_load_factor(__z), _M_next_resize(0) { }
 
     float
     max_load_factor() const noexcept
@@ -380,25 +380,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		   std::size_t __n_ins) const;
 
-    typedef std::pair<std::size_t, std::size_t> _State;
+    typedef std::size_t _State;
 
     _State
     _M_state() const
-    { return std::make_pair(_M_prev_resize, _M_next_resize); }
+    { return _M_next_resize; }
 
     void
-    _M_reset(const _State& __state)
-    {
-      _M_prev_resize = __state.first;
-      _M_next_resize = __state.second;
-    }
+    _M_reset(_State __state)
+    { _M_next_resize = __state; }
 
     enum { _S_n_primes = sizeof(unsigned long) != 8 ? 256 : 256 + 48 };
 
     static const std::size_t _S_growth_factor = 2;
 
     float                _M_max_load_factor;
-    mutable std::size_t  _M_prev_resize;
     mutable std::size_t  _M_next_resize;
   };
 
@@ -417,35 +413,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const unsigned char __fast_bkt[12]
       = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11 };
 
-    const std::size_t __grown_n = __n * _S_growth_factor;
-    if (__grown_n <= 11)
+    if (__n <= 11)
       {
-	_M_prev_resize = 0;
 	_M_next_resize
-	  = __builtin_ceil(__fast_bkt[__grown_n]
+	  = __builtin_ceil(__fast_bkt[__n]
 			   * (long double)_M_max_load_factor);
-	return __fast_bkt[__grown_n];
+	return __fast_bkt[__n];
       }
 
     const unsigned long* __next_bkt
       = std::lower_bound(__prime_list + 5, __prime_list + _S_n_primes,
-			 __grown_n);
-    const unsigned long* __prev_bkt
-      = std::lower_bound(__prime_list + 1, __next_bkt, __n / _S_growth_factor);
-
-    _M_prev_resize
-      = __builtin_floor(*(__prev_bkt - 1) * (long double)_M_max_load_factor);
+			 __n);
     _M_next_resize
       = __builtin_ceil(*__next_bkt * (long double)_M_max_load_factor);
     return *__next_bkt;
   }
 
-  // Return the smallest prime p such that alpha p >= n, where alpha
+  // Return the smallest integer p such that alpha p >= n, where alpha
   // is the load factor.
   inline std::size_t
   _Prime_rehash_policy::
   _M_bkt_for_elements(std::size_t __n) const
-  { return _M_next_bkt(__builtin_ceil(__n / (long double)_M_max_load_factor)); }
+  { return __builtin_ceil(__n / (long double)_M_max_load_factor); }
 
   // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
   // If p > __n_bkt, return make_pair(true, p); otherwise return
@@ -467,20 +456,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 / (long double)_M_max_load_factor;
 	if (__min_bkts >= __n_bkt)
 	  return std::make_pair(true,
-				_M_next_bkt(__builtin_floor(__min_bkts) + 1));
+	    _M_next_bkt(std::max<std::size_t>(__builtin_floor(__min_bkts) + 1,
+					      __n_bkt * _S_growth_factor)));
 	else
 	  {
 	    _M_next_resize
 	      = __builtin_floor(__n_bkt * (long double)_M_max_load_factor);
 	    return std::make_pair(false, 0);
 	  }
-      }
-    else if (__n_elt + __n_ins < _M_prev_resize)
-      {
-	long double __min_bkts = (__n_elt + __n_ins)
-				 / (long double)_M_max_load_factor;
-	return std::make_pair(true,
-			      _M_next_bkt(__builtin_floor(__min_bkts) + 1));
       }
     else
       return std::make_pair(false, 0);

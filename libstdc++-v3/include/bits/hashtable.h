@@ -806,11 +806,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_rehash_policy()
     {
       _M_bucket_count = _M_rehash_policy._M_next_bkt(__bucket_hint);
-
-      // We don't want the rehash policy to ask for the hashtable to
-      // shrink on the first insertion so we need to reset its
-      // previous resize level.
-      _M_rehash_policy._M_prev_resize = 0;
       _M_buckets = _M_allocate_buckets(_M_bucket_count);
     }
 
@@ -834,16 +829,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_element_count(0),
 	_M_rehash_policy()
       {
+	auto __nb_elems = __detail::__distance_fw(__f, __l);
 	_M_bucket_count =
-	  _M_rehash_policy._M_bkt_for_elements(__detail::__distance_fw(__f,
-								       __l));
-	if (_M_bucket_count <= __bucket_hint)
-	  _M_bucket_count = _M_rehash_policy._M_next_bkt(__bucket_hint);
+	  _M_rehash_policy._M_next_bkt(
+	    std::max(_M_rehash_policy._M_bkt_for_elements(__nb_elems),
+		     __bucket_hint));
 
-	// We don't want the rehash policy to ask for the hashtable to
-	// shrink on the first insertion so we need to reset its
-	// previous resize level.
-	_M_rehash_policy._M_prev_resize = 0;
 	_M_buckets = _M_allocate_buckets(_M_bucket_count);
 	__try
 	  {
@@ -990,6 +981,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __rehash_policy(const _RehashPolicy& __pol)
     {
       size_type __n_bkt = __pol._M_bkt_for_elements(_M_element_count);
+      __n_bkt = __pol._M_next_bkt(__n_bkt);
       if (__n_bkt != _M_bucket_count)
 	_M_rehash(__n_bkt, _M_rehash_policy._M_state());
       _M_rehash_policy = __pol;
@@ -1641,19 +1633,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       const __rehash_state& __saved_state = _M_rehash_policy._M_state();
       std::size_t __buckets
-	= _M_rehash_policy._M_bkt_for_elements(_M_element_count + 1);
-      if (__buckets <= __n)
-	__buckets = _M_rehash_policy._M_next_bkt(__n);
+	= std::max(_M_rehash_policy._M_bkt_for_elements(_M_element_count + 1),
+		   __n);
+      __buckets = _M_rehash_policy._M_next_bkt(__buckets);
 
       if (__buckets != _M_bucket_count)
-	{
-	  _M_rehash(__buckets, __saved_state);
-
-	  // We don't want the rehash policy to ask for the hashtable to shrink
-	  // on the next insertion so we need to reset its previous resize
-	  // level.
-	  _M_rehash_policy._M_prev_resize = 0;
-	}
+	_M_rehash(__buckets, __saved_state);
       else
 	// No rehash, restore previous state to keep a consistent state.
 	_M_rehash_policy._M_reset(__saved_state);
