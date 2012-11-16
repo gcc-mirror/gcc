@@ -1,3 +1,11 @@
+2012-11-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/55333
+	* include/sanitizer/common_interface_defs.h (uhwptr): New type
+	for hardware pointer.
+	* sanitizer_common/sanitizer_stacktrace.cc (StackTrace::FastUnwindStack):
+	Replace uptr with uhwptr for stack unwind.
+
 2012-11-16  Dodji Seketeli  <dodji@redhat.com>
 
 	* configure.tgt: Enable build on sparc linux.
