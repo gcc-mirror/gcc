@@ -1,4 +1,11 @@
-2012-11-16  Jan HUbicka  <jh@suse.cz>
+2012-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55329
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Never clear
+	bits in needed_eh_cleanup while iterating over the bitmap.
+	Look through all forwarder blocks at once.
+
+2012-11-16  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (max-peeled-insns, max-completely-peeled-insns): Reduce to 100.
 
