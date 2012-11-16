@@ -1,3 +1,8 @@
+2012-11-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55297
+	* gfortran.dg/typebound_operator_18.f90: New.
+
 2012-11-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55330
