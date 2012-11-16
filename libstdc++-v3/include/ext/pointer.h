@@ -42,7 +42,7 @@
 #include <bits/stl_iterator_base_types.h>
 #include <ext/cast.h>
 #include <ext/type_traits.h>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 # include <bits/ptr_traits.h>
 #endif
 
@@ -562,7 +562,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

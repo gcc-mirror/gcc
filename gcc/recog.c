@@ -57,14 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
-#ifndef HAVE_ATTR_enabled
-static inline bool
-get_attr_enabled (rtx insn ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-#endif
-
 static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx, bool);
 static void validate_replace_src_1 (rtx *, void *);
 static rtx split_insn (rtx);
@@ -586,8 +578,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 			 (PLUS, GET_MODE (x), XEXP (x, 0), XEXP (x, 1)), 1);
       break;
     case MINUS:
-      if (CONST_INT_P (XEXP (x, 1))
-	  || CONST_DOUBLE_AS_INT_P (XEXP (x, 1)))
+      if (CONST_SCALAR_INT_P (XEXP (x, 1)))
 	validate_change (object, loc,
 			 simplify_gen_binary
 			 (PLUS, GET_MODE (x), XEXP (x, 0),
@@ -1738,7 +1729,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 's':
-	  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+	  if (CONST_SCALAR_INT_P (op))
 	    break;
 	  /* Fall through.  */
 
@@ -1748,7 +1739,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 'n':
-	  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+	  if (CONST_SCALAR_INT_P (op))
 	    result = 1;
 	  break;
 
@@ -1951,6 +1942,9 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
   unsigned int mode_sz = GET_MODE_SIZE (mode);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+#endif
 
   if (CONSTANT_ADDRESS_P (y))
     return 1;
@@ -2000,6 +1994,15 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
     z = gen_rtx_LO_SUM (GET_MODE (y), XEXP (y, 0),
 			plus_constant (GET_MODE (y), XEXP (y, 1),
 				       mode_sz - 1));
+#ifdef POINTERS_EXTEND_UNSIGNED
+  /* Likewise for a ZERO_EXTEND from pointer_mode.  */
+  else if (POINTERS_EXTEND_UNSIGNED > 0
+	   && GET_CODE (y) == ZERO_EXTEND
+	   && GET_MODE (XEXP (y, 0)) == pointer_mode)
+    z = gen_rtx_ZERO_EXTEND (GET_MODE (y),
+			     plus_constant (pointer_mode, XEXP (y, 0),
+					    mode_sz - 1));
+#endif
   else
     z = plus_constant (GET_MODE (y), y, mode_sz - 1);
 
@@ -2172,7 +2175,8 @@ extract_insn (rtx insn)
       for (i = 0; i < recog_data.n_alternatives; i++)
 	{
 	  which_alternative = i;
-	  recog_data.alternative_enabled_p[i] = get_attr_enabled (insn);
+	  recog_data.alternative_enabled_p[i]
+	    = HAVE_ATTR_enabled ? get_attr_enabled (insn) : 1;
 	}
     }
 
@@ -2603,7 +2607,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 's':
-		if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+		if (CONST_SCALAR_INT_P (op))
 		  break;
 	      case 'i':
 		if (CONSTANT_P (op))
@@ -2611,7 +2615,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 'n':
-		if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
+		if (CONST_SCALAR_INT_P (op))
 		  win = 1;
 		break;
 
@@ -3819,7 +3823,7 @@ struct rtl_opt_pass pass_split_after_reload =
 static bool
 gate_handle_split_before_regstack (void)
 {
-#if defined (HAVE_ATTR_length) && defined (STACK_REGS)
+#if HAVE_ATTR_length && defined (STACK_REGS)
   /* If flow2 creates new instructions which need splitting
      and scheduling after reload is not done, they might not be
      split until final which doesn't allow splitting
@@ -3905,7 +3909,7 @@ struct rtl_opt_pass pass_split_before_sched2 =
 static bool
 gate_do_final_split (void)
 {
-#if defined (HAVE_ATTR_length) && !defined (STACK_REGS)
+#if HAVE_ATTR_length && !defined (STACK_REGS)
   return 1;
 #else
   return 0;

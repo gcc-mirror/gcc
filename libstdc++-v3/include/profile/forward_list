@@ -1,6 +1,6 @@
 // <forward_list> -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@
 #ifndef _GLIBCXX_PROFILE_FORWARD_LIST
 #define _GLIBCXX_PROFILE_FORWARD_LIST 1
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
@@ -46,10 +46,14 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
 
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+        rebind<_GLIBCXX_STD_C::_Fwd_list_node<_Tp>>::other _Node_alloc_type;
+
+      typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
+
     public:
       typedef typename _Base::size_type             size_type;
 
-    public:
       // 23.2.3.1 construct/copy/destroy:
       explicit
       forward_list(const _Alloc& __al = _Alloc())
@@ -64,8 +68,8 @@ namespace __profile
       { }
 
       explicit
-      forward_list(size_type __n)
-      : _Base(__n)
+      forward_list(size_type __n, const _Alloc& __al = _Alloc())
+      : _Base(__n, __al)
       { }
 
       forward_list(size_type __n, const _Tp& __value,
@@ -73,7 +77,8 @@ namespace __profile
       : _Base(__n, __value, __al)
       { }
 
-      template<typename _InputIterator>
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
         forward_list(_InputIterator __first, _InputIterator __last,
                      const _Alloc& __al = _Alloc())
         : _Base(__first, __last, __al)
@@ -103,11 +108,9 @@ namespace __profile
 
       forward_list&
       operator=(forward_list&& __list)
+      noexcept(_Node_alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
-	_Base::clear();
-	_Base::swap(__list);
+	static_cast<_Base&>(*this) = std::move(__list);
 	return *this;
       }
 
@@ -174,6 +177,6 @@ namespace __profile
 } // namespace __profile
 } // namespace std
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif

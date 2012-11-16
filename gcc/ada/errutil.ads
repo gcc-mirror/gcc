@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,7 @@
 --  This package contains routines to output error messages and the
 --  corresponding instantiation of Styleg, suitable to instantiate Scng.
 
---  It is not dependent on the GNAT tree packages (Atree, Sinfo, ...)
-
---  It uses the same global variables as Errout, located in package
+--  It uses the same global variables as Errout, located in packages Atree and
 --  Err_Vars. Like Errout, it also uses the common variables and routines
 --  in package Erroutc.
 

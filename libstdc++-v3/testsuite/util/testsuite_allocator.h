@@ -136,7 +136,7 @@ namespace __gnu_test
     allocate(size_type n, const void* = 0)
     { return static_cast<pointer>(counter_type::allocate(n * sizeof(T))); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     template<typename U, typename... Args>
       void
       construct(U* p, Args&&... args) 
@@ -257,7 +257,7 @@ namespace __gnu_test
       typedef const Tp&                           const_reference;
       typedef Tp                                  value_type;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       typedef std::true_type                      propagate_on_container_swap;
 #endif
 
@@ -330,7 +330,7 @@ namespace __gnu_test
       max_size() const _GLIBCXX_USE_NOEXCEPT 
       { return size_type(-1) / sizeof(Tp); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename U, typename... Args>
         void
         construct(U* p, Args&&... args) 
@@ -377,7 +377,7 @@ namespace __gnu_test
       int personality;
     };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   // An uneq_allocator which can be used to test allocator propagation.
   template<typename Tp, bool Propagate>
     class propagating_allocator : public uneq_allocator<Tp>

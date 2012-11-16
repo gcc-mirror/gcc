@@ -33,7 +33,7 @@
 
 #include <bits/c++config.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 // For 8.22.1/1 (see C99, Notes 219, 220, 222)
 # if _GLIBCXX_HAVE_STDINT_H
@@ -105,6 +105,6 @@ namespace std
 #  include_next <stdint.h>
 # endif
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif // _GLIBCXX_STDINT_H

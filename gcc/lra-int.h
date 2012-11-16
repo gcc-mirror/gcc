@@ -227,10 +227,8 @@ struct lra_insn_recog_data
      value can be NULL or points to array of the hard register numbers
      ending with a negative value.  */
   int *arg_hard_regs;
-#ifdef HAVE_ATTR_enabled
   /* Alternative enabled for the insn.	NULL for debug insns.  */
   bool *alternative_enabled_p;
-#endif
   /* The alternative should be used for the insn, -1 if invalid, or we
      should try to use any alternative, or the insn is a debug
      insn.  */
@@ -244,6 +242,12 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 /* Whether the clobber is used temporary in LRA.  */
 #define LRA_TEMP_CLOBBER_P(x) \
   (RTL_FLAG_CHECK1 ("TEMP_CLOBBER_P", (x), CLOBBER)->unchanging)
+
+/* Cost factor for each additional reload and maximal cost reject for
+   insn reloads.  One might ask about such strange numbers.  Their
+   values occurred historically from former reload pass.  */
+#define LRA_LOSER_COST_FACTOR 6
+#define LRA_MAX_REJECT 600
 
 /* lra.c: */
 

@@ -7292,9 +7292,8 @@ package body Sem_Ch13 is
          --  clause in question, then there was some previous error for which
          --  we already gave a message, so just return with Comp Empty.
 
-         if No (Comp)
-           or else Component_Clause (Comp) /= CC
-         then
+         if No (Comp) or else Component_Clause (Comp) /= CC then
+            Check_Error_Detected;
             Comp := Empty;
 
          --  Normal case where we have a component clause
@@ -7897,13 +7896,20 @@ package body Sem_Ch13 is
          end if;
       end if;
 
-      --  Dismiss cases for generic types or types with previous errors
+      --  Dismiss generic types
 
-      if No (UT)
-        or else UT = Any_Type
-        or else Is_Generic_Type (UT)
-        or else Is_Generic_Type (Root_Type (UT))
+      if Is_Generic_Type (T)
+           or else
+         Is_Generic_Type (UT)
+           or else
+         Is_Generic_Type (Root_Type (UT))
       then
+         return;
+
+      --  Guard against previous errors
+
+      elsif No (UT) or else UT = Any_Type then
+         Check_Error_Detected;
          return;
 
       --  Check case of bit packed array

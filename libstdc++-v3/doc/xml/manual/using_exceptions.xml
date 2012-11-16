@@ -4,27 +4,13 @@
 
 <info><title>Exceptions</title>
   <keywordset>
-    <keyword>
-      C++
-    </keyword>
-    <keyword>
-      exception
-    </keyword>
-    <keyword>
-      error
-    </keyword>
-    <keyword>
-      exception neutrality
-    </keyword>
-    <keyword>
-      exception safety
-    </keyword>
-    <keyword>
-      exception propagation
-    </keyword>
-    <keyword>
-      -fno-exceptions
-    </keyword>
+    <keyword>C++</keyword>
+    <keyword>exception</keyword>
+    <keyword>error</keyword>
+    <keyword>exception neutrality</keyword>
+    <keyword>exception safety</keyword>
+    <keyword>exception propagation</keyword>
+    <keyword>-fno-exceptions</keyword>
   </keywordset>
 </info>
 

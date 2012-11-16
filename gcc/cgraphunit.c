@@ -630,6 +630,21 @@ cgraph_analyze_function (struct cgraph_node *node)
       cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
 			  NULL, 0, CGRAPH_FREQ_BASE);
     }
+  else if (node->dispatcher_function)
+    {
+      /* Generate the dispatcher body of multi-versioned functions.  */
+      struct cgraph_function_version_info *dispatcher_version_info
+	= get_cgraph_node_version (node);
+      if (dispatcher_version_info != NULL
+          && (dispatcher_version_info->dispatcher_resolver
+	      == NULL_TREE))
+	{
+	  tree resolver = NULL_TREE;
+	  gcc_assert (targetm.generate_version_dispatcher_body);
+	  resolver = targetm.generate_version_dispatcher_body (node);
+	  gcc_assert (resolver != NULL_TREE);
+	}
+    }
   else
     {
       push_cfun (DECL_STRUCT_FUNCTION (decl));
@@ -938,7 +953,8 @@ cgraph_analyze_functions (void)
 	      See gcc.c-torture/compile/20011119-1.c  */
 	      if (!DECL_STRUCT_FUNCTION (decl)
 		  && (!cnode->alias || !cnode->thunk.alias)
-		  && !cnode->thunk.thunk_p)
+		  && !cnode->thunk.thunk_p
+		  && !cnode->dispatcher_function)
 		{
 		  cgraph_reset_node (cnode);
 		  cnode->local.redefined_extern_inline = true;
@@ -1219,13 +1235,13 @@ mark_functions_to_output (void)
 }
 
 /* DECL is FUNCTION_DECL.  Initialize datastructures so DECL is a function
-   in lowered gimple form.
+   in lowered gimple form.  IN_SSA is true if the gimple is in SSA.
    
    Set current_function_decl and cfun to newly constructed empty function body.
    return basic block in the function body.  */
 
-static basic_block
-init_lowered_empty_function (tree decl)
+basic_block
+init_lowered_empty_function (tree decl, bool in_ssa)
 {
   basic_block bb;
 
@@ -1233,9 +1249,14 @@ init_lowered_empty_function (tree decl)
   allocate_struct_function (decl, false);
   gimple_register_cfg_hooks ();
   init_empty_tree_cfg ();
-  init_tree_ssa (cfun);
-  init_ssa_operands (cfun);
-  cfun->gimple_df->in_ssa_p = true;
+
+  if (in_ssa)
+    {
+      init_tree_ssa (cfun);
+      init_ssa_operands (cfun);
+      cfun->gimple_df->in_ssa_p = true;
+    }
+
   DECL_INITIAL (decl) = make_node (BLOCK);
 
   DECL_SAVED_TREE (decl) = error_mark_node;
@@ -1392,16 +1413,16 @@ assemble_thunk (struct cgraph_node *node)
       DECL_INITIAL (thunk_fndecl) = fn_block;
       init_function_start (thunk_fndecl);
       cfun->is_thunk = 1;
+      insn_locations_init ();
+      set_curr_insn_location (DECL_SOURCE_LOCATION (thunk_fndecl));
+      prologue_location = curr_insn_location ();
       assemble_start_function (thunk_fndecl, fnname);
-      (*debug_hooks->source_line) (DECL_SOURCE_LINE (thunk_fndecl),
-				   DECL_SOURCE_FILE (thunk_fndecl),
-				   /* discriminator */ 0,
-				   /* is_stmt */ 1);
 
       targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
 				       fixed_offset, virtual_value, alias);
 
       assemble_end_function (thunk_fndecl, fnname);
+      insn_locations_finalize ();
       init_insn_lengths ();
       free_after_compilation (cfun);
       set_cfun (NULL);
@@ -1442,7 +1463,7 @@ assemble_thunk (struct cgraph_node *node)
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
 
-      bb = then_bb = else_bb = return_bb = init_lowered_empty_function (thunk_fndecl);
+      bb = then_bb = else_bb = return_bb = init_lowered_empty_function (thunk_fndecl, true);
 
       bsi = gsi_start_bb (bb);
 

@@ -58,8 +58,10 @@ __get_errno(void)
   return errno;
 }
 
+#ifndef __ANDROID__
 void
 __set_errno(int err)
 {
   errno = err;
 }
+#endif

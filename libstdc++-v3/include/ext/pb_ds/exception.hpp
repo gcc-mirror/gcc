@@ -1,7 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2005-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -73,39 +72,21 @@ namespace __gnu_pbds
   /// A container cannot be resized.
   struct resize_error : public container_error { };
 
-#if __EXCEPTIONS
   inline void
-  __throw_container_error(void)
-  { throw container_error(); }
+  __throw_container_error()
+  { _GLIBCXX_THROW_OR_ABORT(container_error()); }
 
   inline void
-  __throw_insert_error(void)
-  { throw insert_error(); }
+  __throw_insert_error()
+  { _GLIBCXX_THROW_OR_ABORT(insert_error()); }
 
   inline void
-  __throw_join_error(void)
-  { throw join_error(); }
+  __throw_join_error()
+  { _GLIBCXX_THROW_OR_ABORT(join_error()); }
 
   inline void
-  __throw_resize_error(void)
-  { throw resize_error(); }
-#else
-  inline void
-  __throw_container_error(void)
-  { std::abort(); }
-
-  inline void
-  __throw_insert_error(void)
-  { std::abort(); }
-
-  inline void
-  __throw_join_error(void)
-  { std::abort(); }
-
-  inline void
-  __throw_resize_error(void)
-  { std::abort(); }
-#endif
+  __throw_resize_error()
+  { _GLIBCXX_THROW_OR_ABORT(resize_error()); }
   //@}
 } // namespace __gnu_pbds
 

@@ -167,8 +167,13 @@ extern bool ix86_secondary_memory_needed (enum reg_class, enum reg_class,
 					  enum machine_mode, int);
 extern bool ix86_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
+
 extern int ix86_mode_needed (int, rtx);
-extern void emit_i387_cw_initialization (int);
+extern int ix86_mode_after (int, int, rtx);
+extern int ix86_mode_entry (int);
+extern int ix86_mode_exit (int);
+extern void ix86_emit_mode_set (int, int);
+
 extern void x86_order_regs_for_local_alloc (void);
 extern void x86_function_profiler (FILE *, int);
 extern void x86_emit_floatuns (rtx [2]);

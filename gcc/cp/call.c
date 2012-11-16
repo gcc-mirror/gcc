@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-family/c-objc.h"
 #include "timevar.h"
+#include "cgraph.h"
 
 /* The various kinds of conversion.  */
 
@@ -6514,6 +6515,63 @@ magic_varargs_p (tree fn)
   return false;
 }
 
+/* Returns the decl of the dispatcher function if FN is a function version.  */
+
+static tree
+get_function_version_dispatcher (tree fn)
+{
+  tree dispatcher_decl = NULL;
+
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
+	      && DECL_FUNCTION_VERSIONED (fn));
+
+  gcc_assert (targetm.get_function_versions_dispatcher);
+  dispatcher_decl = targetm.get_function_versions_dispatcher (fn);
+
+  if (dispatcher_decl == NULL)
+    {
+      error_at (input_location, "Call to multiversioned function"
+                " without a default is not allowed");
+      return NULL;
+    }
+
+  retrofit_lang_decl (dispatcher_decl);
+  gcc_assert (dispatcher_decl != NULL);
+  return dispatcher_decl;
+}
+
+/* fn is a function version dispatcher that is marked used. Mark all the 
+   semantically identical function versions it will dispatch as used.  */
+
+static void
+mark_versions_used (tree fn)
+{
+  struct cgraph_node *node;
+  struct cgraph_function_version_info *node_v;
+  struct cgraph_function_version_info *it_v;
+
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
+
+  node = cgraph_get_node (fn);
+  if (node == NULL)
+    return;
+
+  gcc_assert (node->dispatcher_function);
+
+  node_v = get_cgraph_node_version (node);
+  if (node_v == NULL)
+    return;
+
+  /* All semantically identical versions are chained.  Traverse and mark each
+     one of them as used.  */
+  it_v = node_v->next;
+  while (it_v != NULL)
+    {
+      mark_used (it_v->this_node->symbol.decl);
+      it_v = it_v->next;
+    }
+}
+
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
    ARGS is a TREE_LIST of the unconverted arguments to the call.  FLAGS is a
@@ -6962,6 +7020,22 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	   && !DECL_DELETED_FN (fn))
     return fold_convert (void_type_node, argarray[0]);
   /* FIXME handle trivial default constructor, too.  */
+
+  /* For calls to a multi-versioned function, overload resolution
+     returns the function with the highest target priority, that is,
+     the version that will checked for dispatching first.  If this
+     version is inlinable, a direct call to this version can be made
+     otherwise the call should go through the dispatcher.  */
+
+  if (DECL_FUNCTION_VERSIONED (fn)
+      && !targetm.target_option.can_inline_p (current_function_decl, fn))
+    {
+      fn = get_function_version_dispatcher (fn);
+      if (fn == NULL)
+	return NULL;
+      if (!already_used)
+	mark_versions_used (fn);
+    }
 
   if (!already_used)
     mark_used (fn);
@@ -8478,6 +8552,38 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  else
 	    /* cand2 is built-in; prefer cand1.  */
 	    return 1;
+	}
+    }
+
+  /* For candidates of a multi-versioned function,  make the version with
+     the highest priority win.  This version will be checked for dispatching
+     first.  If this version can be inlined into the caller, the front-end
+     will simply make a direct call to this function.  */
+
+  if (TREE_CODE (cand1->fn) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (cand1->fn)
+      && TREE_CODE (cand2->fn) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (cand2->fn))
+    {
+      tree f1 = TREE_TYPE (cand1->fn);
+      tree f2 = TREE_TYPE (cand2->fn);
+      tree p1 = TYPE_ARG_TYPES (f1);
+      tree p2 = TYPE_ARG_TYPES (f2);
+     
+      /* Check if cand1->fn and cand2->fn are versions of the same function.  It
+         is possible that cand1->fn and cand2->fn are function versions but of
+         different functions.  Check types to see if they are versions of the same
+         function.  */
+      if (compparms (p1, p2)
+	  && same_type_p (TREE_TYPE (f1), TREE_TYPE (f2)))
+	{
+	  /* Always make the version with the higher priority, more
+	     specialized, win.  */
+	  gcc_assert (targetm.compare_version_priority);
+	  if (targetm.compare_version_priority (cand1->fn, cand2->fn) >= 0)
+	    return 1;
+	  else
+	    return -1;
 	}
     }
 

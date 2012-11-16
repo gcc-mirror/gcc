@@ -1537,10 +1537,10 @@ package body Exp_Ch3 is
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          end if;
 
-         --  Add _Chain (not done in the restricted profile because not used,
-         --  see comment for Create_Restricted_Task in s-tarest.ads).
+         --  Add _Chain (not done for sequential elaboration policy, see
+         --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
 
-         if not Restricted_Profile then
+         if Partition_Elaboration_Policy /= 'S' then
             Append_To (Args, Make_Identifier (Loc, Name_uChain));
          end if;
 
@@ -2004,11 +2004,10 @@ package body Exp_Ch3 is
                Append_To (Args, Make_Identifier (Loc, Name_uMaster));
             end if;
 
-            if not Restricted_Profile then
+            --  Add _Chain (not done for sequential elaboration policy, see
+            --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
 
-               --  No _Chain for the restricted profile because not used,
-               --  see comment of Create_Restricted_Task in s-tarest.ads.
-
+            if Partition_Elaboration_Policy /= 'S' then
                Append_To (Args, Make_Identifier (Loc, Name_uChain));
             end if;
 
@@ -7793,11 +7792,10 @@ package body Exp_Ch3 is
              Parameter_Type      =>
                New_Reference_To (RTE (RE_Master_Id), Loc)));
 
-         if not Restricted_Profile then
+         --  Add _Chain (not done for sequential elaboration policy, see
+         --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
 
-            --  No _Chain for the restricted profile because not used, see
-            --  comment for Create_Restricted_Task in s-tarest.ads.
-
+         if Partition_Elaboration_Policy /= 'S' then
             Append_To (Formals,
               Make_Parameter_Specification (Loc,
                 Defining_Identifier =>

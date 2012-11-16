@@ -1,7 +1,6 @@
 // New abi Support -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2003, 2004, 2009, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2000-2012 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -59,6 +58,19 @@ namespace __cxxabiv1
       globals->caughtExceptions = p->nextException;
       globals->uncaughtExceptions += 1;
     }
+
+    // Compute the total size with overflow checking.
+    std::size_t compute_size(std::size_t element_count,
+			     std::size_t element_size,
+			     std::size_t padding_size)
+    {
+      if (element_size && element_count > std::size_t(-1) / element_size)
+	_GLIBCXX_THROW_OR_ABORT(std::bad_alloc());
+      std::size_t size = element_count * element_size;
+      if (size + padding_size < size)
+	_GLIBCXX_THROW_OR_ABORT(std::bad_alloc());
+      return size + padding_size;
+    }
   }
 
   // Allocate and construct array.
@@ -83,7 +95,8 @@ namespace __cxxabiv1
 		 void *(*alloc) (std::size_t),
 		 void (*dealloc) (void *))
   {
-    std::size_t size = element_count * element_size + padding_size;
+    std::size_t size
+      = compute_size(element_count, element_size, padding_size);
     char *base = static_cast <char *> (alloc (size));
     if (!base)
       return base;
@@ -124,7 +137,8 @@ namespace __cxxabiv1
 		 void *(*alloc) (std::size_t),
 		 void (*dealloc) (void *, std::size_t))
   {
-    std::size_t size = element_count * element_size + padding_size;
+    std::size_t size
+      = compute_size(element_count, element_size, padding_size);
     char *base = static_cast<char *>(alloc (size));
     if (!base)
       return base;

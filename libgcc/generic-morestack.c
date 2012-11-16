@@ -549,6 +549,7 @@ __generic_morestack (size_t *pframe_size, void *old_stack, size_t param_size)
   char *to;
   void *ret;
   size_t i;
+  size_t aligned;
 
   current = __morestack_current_segment;
 
@@ -580,15 +581,19 @@ __generic_morestack (size_t *pframe_size, void *old_stack, size_t param_size)
 
   *pframe_size = current->size - param_size;
 
+  /* Align the returned stack to a 32-byte boundary.  */
+  aligned = (param_size + 31) & ~ (size_t) 31;
+
 #ifdef STACK_GROWS_DOWNWARD
   {
     char *bottom = (char *) (current + 1) + current->size;
-    to = bottom - param_size;
-    ret = bottom - param_size;
+    to = bottom - aligned;
+    ret = bottom - aligned;
   }
 #else
   to = current + 1;
-  ret = (char *) (current + 1) + param_size;
+  to += aligned - param_size;
+  ret = (char *) (current + 1) + aligned;
 #endif
 
   /* We don't call memcpy to avoid worrying about the dynamic linker

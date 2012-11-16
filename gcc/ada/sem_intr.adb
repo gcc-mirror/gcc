@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -271,7 +271,9 @@ package body Sem_Intr is
          --  Return if previous error in declaration, otherwise get T2 type
 
          if No (Next_Formal (First_Formal (E))) then
+            Check_Error_Detected;
             return;
+
          else
             T2 := Etype (Next_Formal (First_Formal (E)));
          end if;

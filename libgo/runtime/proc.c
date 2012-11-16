@@ -82,7 +82,7 @@ fixcontext(ucontext_t *c __attribute__ ((unused)))
 {
 }
 
-# else
+#else
 
 # if defined(__x86_64__) && defined(__sun__)
 
@@ -108,6 +108,28 @@ static inline void
 fixcontext(ucontext_t* c)
 {
 	c->uc_mcontext.gregs[REG_FSBASE] = fs;
+}
+
+# elif defined(__NetBSD__)
+
+// NetBSD has a bug: setcontext clobbers tlsbase, we need to save
+// and restore it ourselves.
+
+static __thread __greg_t tlsbase;
+
+static inline void
+initcontext(void)
+{
+	ucontext_t c;
+
+	getcontext(&c);
+	tlsbase = c.uc_mcontext._mc_tlsbase;
+}
+
+static inline void
+fixcontext(ucontext_t* c)
+{
+	c->uc_mcontext._mc_tlsbase = tlsbase;
 }
 
 # else
@@ -588,11 +610,11 @@ runtime_goroutinetrailer(G *g)
 	if(g != nil && g->gopc != 0 && g->goid != 1) {
 		String fn;
 		String file;
-		int line;
+		intgo line;
 
 		if(__go_file_line(g->gopc - 1, &fn, &file, &line)) {
 			runtime_printf("created by %S\n", fn);
-			runtime_printf("\t%S:%d\n", file, line);
+			runtime_printf("\t%S:%D\n", file, (int64) line);
 		}
 	}
 }

@@ -1,5 +1,6 @@
-// { dg-options "-std=gnu++11" }
 // { dg-do compile }
+// { dg-options "-std=gnu++11" }
+// { dg-require-normal-mode "" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
@@ -28,5 +29,5 @@ int n2 = std::get<1>(std::move(a));
 int n3 = std::get<1>(ca);
 
 // { dg-error "static assertion failed" "" { target *-*-* } 291 }
-// { dg-error "static assertion failed" "" { target *-*-* } 299 }
-// { dg-error "static assertion failed" "" { target *-*-* } 307 }
+// { dg-error "static assertion failed" "" { target *-*-* } 300 }
+// { dg-error "static assertion failed" "" { target *-*-* } 308 }

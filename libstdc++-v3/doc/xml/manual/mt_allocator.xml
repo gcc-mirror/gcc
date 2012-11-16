@@ -4,12 +4,8 @@
 
 <info><title>The mt_allocator</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      allocator
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>allocator</keyword>
   </keywordset>
 </info>
 

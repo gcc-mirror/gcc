@@ -674,9 +674,13 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
 	    continue;
 
+	  /* While finding a match, same types and params are not enough
+	     if the function is versioned.  Also check version ("target")
+	     attributes.  */
 	  if (same_type_p (TREE_TYPE (TREE_TYPE (function)),
 			   TREE_TYPE (TREE_TYPE (fndecl)))
 	      && compparms (p1, p2)
+	      && !targetm.target_option.function_versions (function, fndecl)
 	      && (!is_template
 		  || comp_template_parms (template_parms,
 					  DECL_TEMPLATE_PARMS (fndecl)))

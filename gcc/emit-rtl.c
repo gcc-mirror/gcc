@@ -1249,7 +1249,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
-	   || CONST_DOUBLE_P (x) || CONST_INT_P (x))
+	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x))
     return simplify_gen_subreg (mode, x, innermode, offset);
 
   /* Otherwise, we can't do this.  */
@@ -2071,10 +2071,12 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
   rtx new_rtx;
   enum machine_mode address_mode;
   int pbits;
-  struct mem_attrs attrs, *defattrs;
+  struct mem_attrs attrs = *get_mem_attrs (memref), *defattrs;
   unsigned HOST_WIDE_INT max_align;
-
-  attrs = *get_mem_attrs (memref);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  enum machine_mode pointer_mode
+    = targetm.addr_space.pointer_mode (attrs.addrspace);
+#endif
 
   /* If there are no changes, just return the original memory reference.  */
   if (mode == GET_MODE (memref) && !offset
@@ -2109,6 +2111,18 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
 	addr = gen_rtx_LO_SUM (address_mode, XEXP (addr, 0),
 			       plus_constant (address_mode,
 					      XEXP (addr, 1), offset));
+#ifdef POINTERS_EXTEND_UNSIGNED
+      /* If MEMREF is a ZERO_EXTEND from pointer_mode and the offset is valid
+	 in that mode, we merge it into the ZERO_EXTEND.  We take advantage of
+	 the fact that pointers are not allowed to overflow.  */
+      else if (POINTERS_EXTEND_UNSIGNED > 0
+	       && GET_CODE (addr) == ZERO_EXTEND
+	       && GET_MODE (XEXP (addr, 0)) == pointer_mode
+	       && trunc_int_for_mode (offset, pointer_mode) == offset)
+	addr = gen_rtx_ZERO_EXTEND (address_mode,
+				    plus_constant (pointer_mode,
+						   XEXP (addr, 0), offset));
+#endif
       else
 	addr = plus_constant (address_mode, addr, offset);
     }

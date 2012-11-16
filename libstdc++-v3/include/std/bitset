@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_CONSTEXPR _Base_bitset() _GLIBCXX_NOEXCEPT
       : _M_w() { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       constexpr _Base_bitset(unsigned long long __val) noexcept
       : _M_w{ _WordT(__val)
 #if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
@@ -117,7 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_getword(size_t __pos) const _GLIBCXX_NOEXCEPT
       { return _M_w[_S_whichword(__pos)]; }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const _WordT*
       _M_getdata() const noexcept
       { return _M_w; }
@@ -218,7 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       unsigned long
       _M_do_to_ulong() const;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       unsigned long long
       _M_do_to_ullong() const;
 #endif
@@ -296,7 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return _M_w[0];
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<size_t _Nw>
     unsigned long long
     _Base_bitset<_Nw>::_M_do_to_ullong() const
@@ -380,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_w(0)
       { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       constexpr _Base_bitset(unsigned long long __val) noexcept
 #else
       _Base_bitset(unsigned long __val)
@@ -412,7 +412,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_getword(size_t) const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const _WordT*
       _M_getdata() const noexcept
       { return &_M_w; }
@@ -480,7 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_do_to_ulong() const _GLIBCXX_NOEXCEPT
       { return _M_w; }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       unsigned long long
       _M_do_to_ullong() const noexcept
       { return _M_w; }
@@ -525,7 +525,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_CONSTEXPR _Base_bitset() _GLIBCXX_NOEXCEPT
       { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       constexpr _Base_bitset(unsigned long long) noexcept
 #else
       _Base_bitset(unsigned long)
@@ -626,7 +626,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_do_to_ulong() const _GLIBCXX_NOEXCEPT
       { return 0; }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       unsigned long long
       _M_do_to_ullong() const noexcept
       { return 0; }
@@ -664,7 +664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_do_sanitize(_WordT) _GLIBCXX_NOEXCEPT { } 
     };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<size_t _Nb, bool = _Nb < _GLIBCXX_BITSET_BITS_PER_ULL>
     struct _Sanitize_val
     {
@@ -761,7 +761,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__sanitize_type::_S_do_sanitize(this->_M_hiword());
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename> friend class hash;
 #endif
 
@@ -845,7 +845,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { }
 
       /// Initial bits bitwise-copied from a single word (others set to zero).
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       constexpr bitset(unsigned long long __val) noexcept
       : _Base(_Sanitize_val<_Nb>::_S_do_sanitize_val(__val)) { }
 #else
@@ -912,7 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_copy_from_string(__s, __position, __n, __zero, __one);
 	}
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       /**
        *  Construct from a character %array.
        *  @param  __str  An %array of characters @a zero and @a one.
@@ -1162,7 +1162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       to_ulong() const
       { return this->_M_do_to_ulong(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       unsigned long long
       to_ullong() const
       { return this->_M_do_to_ullong(); }
@@ -1540,7 +1540,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
 #undef _GLIBCXX_BITSET_BITS_PER_ULL
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 #include <bits/functional_hash.h>
 
@@ -1574,7 +1574,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/bitset>

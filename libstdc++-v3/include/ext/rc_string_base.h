@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __rc_string_base(const __rc_string_base& __rcs);
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       __rc_string_base(__rc_string_base&& __rcs)
       : _M_dataplus(__rcs._M_dataplus)
       { __rcs._M_data(_S_empty_rep._M_refcopy()); }

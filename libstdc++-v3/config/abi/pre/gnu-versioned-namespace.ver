@@ -64,6 +64,7 @@ GLIBCXX_7.0 {
     # vtable
     _ZTVSt*;
     _ZTVNSt*;
+    _ZTVN9__gnu_cxx3__718stdio_sync_filebufI[cw]NSt3__711char_traitsI[cw]EEEE;
 
     # thunk
     _ZTv0_n24_NS*;
@@ -144,6 +145,14 @@ GLIBCXX_7.0 {
     _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
     _ZNK11__gnu_debug16_Error_formatter8_M_error*;
     _ZNK11__gnu_debug16_Error_formatter17_M_get_max_lengthEv;
+
+    # __gnu_debug::_Safe_unordered_container_base
+    # __gnu_debug::_Safe_local_iterator_base
+    _ZN11__gnu_debug30_Safe_unordered_container_base7_M_swapERS0_;
+    _ZN11__gnu_debug30_Safe_unordered_container_base13_M_detach_allEv;
+    _ZN11__gnu_debug25_Safe_local_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
+    _ZN11__gnu_debug25_Safe_local_iterator_base9_M_detachEv;
+
 
     # parallel mode
     _ZN14__gnu_parallel9_Settings3getEv;

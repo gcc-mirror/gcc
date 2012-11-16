@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __one != __two; }
     };
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp, bool
     = __or_<is_copy_constructible<typename _Tp::value_type>,
             is_nothrow_move_constructible<typename _Tp::value_type>>::value>

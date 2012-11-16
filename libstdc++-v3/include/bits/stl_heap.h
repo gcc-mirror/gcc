@@ -502,7 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   /**
    *  @brief  Search the end of a heap.
    *  @param  __first  Start of range.

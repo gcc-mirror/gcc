@@ -62,433 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "diagnostic.h"
 #include "dumpfile.h"
-
-enum upper_128bits_state
-{
-  unknown = 0,
-  unused,
-  used
-};
-
-typedef struct block_info_def
-{
-  /* State of the upper 128bits of AVX registers at exit.  */
-  enum upper_128bits_state state;
-  /* TRUE if state of the upper 128bits of AVX registers is unchanged
-     in this block.  */
-  bool unchanged;
-  /* TRUE if block has been processed.  */
-  bool processed;
-  /* TRUE if block has been scanned.  */
-  bool scanned;
-  /* Previous state of the upper 128bits of AVX registers at entry.  */
-  enum upper_128bits_state prev;
-} *block_info;
-
-#define BLOCK_INFO(B)   ((block_info) (B)->aux)
-
-enum call_avx256_state
-{
-  /* Callee returns 256bit AVX register.  */
-  callee_return_avx256 = -1,
-  /* Callee returns and passes 256bit AVX register.  */
-  callee_return_pass_avx256,
-  /* Callee passes 256bit AVX register.  */
-  callee_pass_avx256,
-  /* Callee doesn't return nor passe 256bit AVX register, or no
-     256bit AVX register in function return.  */
-  call_no_avx256,
-  /* vzeroupper intrinsic.  */
-  vzeroupper_intrinsic
-};
-
-/* Check if a 256bit AVX register is referenced in stores.   */
-
-static void
-check_avx256_stores (rtx dest, const_rtx set, void *data)
-{
-  if ((REG_P (dest)
-       && VALID_AVX256_REG_MODE (GET_MODE (dest)))
-      || (GET_CODE (set) == SET
-	  && REG_P (SET_SRC (set))
-	  && VALID_AVX256_REG_MODE (GET_MODE (SET_SRC (set)))))
-    {
-      enum upper_128bits_state *state
-	= (enum upper_128bits_state *) data;
-      *state = used;
-    }
-}
-
-/* Helper function for move_or_delete_vzeroupper_1.  Look for vzeroupper
-   in basic block BB.  Delete it if upper 128bit AVX registers are
-   unused.  If it isn't deleted, move it to just before a jump insn.
-
-   STATE is state of the upper 128bits of AVX registers at entry.  */
-
-static void
-move_or_delete_vzeroupper_2 (basic_block bb,
-			     enum upper_128bits_state state)
-{
-  rtx insn, bb_end;
-  rtx vzeroupper_insn = NULL_RTX;
-  rtx pat;
-  int avx256;
-  bool unchanged;
-
-  if (BLOCK_INFO (bb)->unchanged)
-    {
-      if (dump_file)
-	fprintf (dump_file, " [bb %i] unchanged: upper 128bits: %d\n",
-		 bb->index, state);
-
-      BLOCK_INFO (bb)->state = state;
-      return;
-    }
-
-  if (BLOCK_INFO (bb)->scanned && BLOCK_INFO (bb)->prev == state)
-    {
-      if (dump_file)
-	fprintf (dump_file, " [bb %i] scanned: upper 128bits: %d\n",
-		 bb->index, BLOCK_INFO (bb)->state);
-      return;
-    }
-
-  BLOCK_INFO (bb)->prev = state;
-
-  if (dump_file)
-    fprintf (dump_file, " [bb %i] entry: upper 128bits: %d\n",
-	     bb->index, state);
-
-  unchanged = true;
-
-  /* BB_END changes when it is deleted.  */
-  bb_end = BB_END (bb);
-  insn = BB_HEAD (bb);
-  while (insn != bb_end)
-    {
-      insn = NEXT_INSN (insn);
-
-      if (!NONDEBUG_INSN_P (insn))
-	continue;
-
-      /* Move vzeroupper before jump/call.  */
-      if (JUMP_P (insn) || CALL_P (insn))
-	{
-	  if (!vzeroupper_insn)
-	    continue;
-
-	  if (PREV_INSN (insn) != vzeroupper_insn)
-	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Move vzeroupper after:\n");
-		  print_rtl_single (dump_file, PREV_INSN (insn));
-		  fprintf (dump_file, "before:\n");
-		  print_rtl_single (dump_file, insn);
-		}
-	      reorder_insns_nobb (vzeroupper_insn, vzeroupper_insn,
-				  PREV_INSN (insn));
-	    }
-	  vzeroupper_insn = NULL_RTX;
-	  continue;
-	}
-
-      pat = PATTERN (insn);
-
-      /* Check insn for vzeroupper intrinsic.  */
-      if (GET_CODE (pat) == UNSPEC_VOLATILE
-	  && XINT (pat, 1) == UNSPECV_VZEROUPPER)
-	{
-	  if (dump_file)
-	    {
-	      /* Found vzeroupper intrinsic.  */
-	      fprintf (dump_file, "Found vzeroupper:\n");
-	      print_rtl_single (dump_file, insn);
-	    }
-	}
-      else
-	{
-	  /* Check insn for vzeroall intrinsic.  */
-	  if (GET_CODE (pat) == PARALLEL
-	      && GET_CODE (XVECEXP (pat, 0, 0)) == UNSPEC_VOLATILE
-	      && XINT (XVECEXP (pat, 0, 0), 1) == UNSPECV_VZEROALL)
-	    {
-	      state = unused;
-	      unchanged = false;
-
-	      /* Delete pending vzeroupper insertion.  */
-	      if (vzeroupper_insn)
-		{
-		  delete_insn (vzeroupper_insn);
-		  vzeroupper_insn = NULL_RTX;
-		}
-	    }
-	  else if (state != used)
-	    {
-	      note_stores (pat, check_avx256_stores, &state);
-	      if (state == used)
-		unchanged = false;
-	    }
-	  continue;
-	}
-
-      /* Process vzeroupper intrinsic.  */
-      avx256 = INTVAL (XVECEXP (pat, 0, 0));
-
-      if (state == unused)
-	{
-	  /* Since the upper 128bits are cleared, callee must not pass
-	     256bit AVX register.  We only need to check if callee
-	     returns 256bit AVX register.  */
-	  if (avx256 == callee_return_avx256)
-	    {
-	      state = used;
-	      unchanged = false;
-	    }
-
-	  /* Remove unnecessary vzeroupper since upper 128bits are
-	     cleared.  */
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Delete redundant vzeroupper:\n");
-	      print_rtl_single (dump_file, insn);
-	    }
-	  delete_insn (insn);
-	}
-      else
-	{
-	  /* Set state to UNUSED if callee doesn't return 256bit AVX
-	     register.  */
-	  if (avx256 != callee_return_pass_avx256)
-	    state = unused;
-
-	  if (avx256 == callee_return_pass_avx256
-	      || avx256 == callee_pass_avx256)
-	    {
-	      /* Must remove vzeroupper since callee passes in 256bit
-		 AVX register.  */
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Delete callee pass vzeroupper:\n");
-		  print_rtl_single (dump_file, insn);
-		}
-	      delete_insn (insn);
-	    }
-	  else
-	    {
-	      vzeroupper_insn = insn;
-	      unchanged = false;
-	    }
-	}
-    }
-
-  BLOCK_INFO (bb)->state = state;
-  BLOCK_INFO (bb)->unchanged = unchanged;
-  BLOCK_INFO (bb)->scanned = true;
-
-  if (dump_file)
-    fprintf (dump_file, " [bb %i] exit: %s: upper 128bits: %d\n",
-	     bb->index, unchanged ? "unchanged" : "changed",
-	     state);
-}
-
-/* Helper function for move_or_delete_vzeroupper.  Process vzeroupper
-   in BLOCK and check its predecessor blocks.  Treat UNKNOWN state
-   as USED if UNKNOWN_IS_UNUSED is true.  Return TRUE if the exit
-   state is changed.  */
-
-static bool
-move_or_delete_vzeroupper_1 (basic_block block, bool unknown_is_unused)
-{
-  edge e;
-  edge_iterator ei;
-  enum upper_128bits_state state, old_state, new_state;
-  bool seen_unknown;
-
-  if (dump_file)
-    fprintf (dump_file, " Process [bb %i]: status: %d\n",
-	     block->index, BLOCK_INFO (block)->processed);
-
-  if (BLOCK_INFO (block)->processed)
-    return false;
-
-  state = unused;
-
-  /* Check all predecessor edges of this block.  */
-  seen_unknown = false;
-  FOR_EACH_EDGE (e, ei, block->preds)
-    {
-      if (e->src == block)
-	continue;
-      switch (BLOCK_INFO (e->src)->state)
-	{
-	case unknown:
-	  if (!unknown_is_unused)
-	    seen_unknown = true;
-	case unused:
-	  break;
-	case used:
-	  state = used;
-	  goto done;
-	}
-    }
-
-  if (seen_unknown)
-    state = unknown;
-
-done:
-  old_state = BLOCK_INFO (block)->state;
-  move_or_delete_vzeroupper_2 (block, state);
-  new_state = BLOCK_INFO (block)->state;
-
-  if (state != unknown || new_state == used)
-    BLOCK_INFO (block)->processed = true;
-
-  /* Need to rescan if the upper 128bits of AVX registers are changed
-     to USED at exit.  */
-  if (new_state != old_state)
-    {
-      if (new_state == used)
-	cfun->machine->rescan_vzeroupper_p = 1;
-      return true;
-    }
-  else
-    return false;
-}
-
-/* Go through the instruction stream looking for vzeroupper.  Delete
-   it if upper 128bit AVX registers are unused.  If it isn't deleted,
-   move it to just before a jump insn.  */
-
-static void
-move_or_delete_vzeroupper (void)
-{
-  edge e;
-  edge_iterator ei;
-  basic_block bb;
-  fibheap_t worklist, pending, fibheap_swap;
-  sbitmap visited, in_worklist, in_pending, sbitmap_swap;
-  int *bb_order;
-  int *rc_order;
-  int i;
-
-  /* Set up block info for each basic block.  */
-  alloc_aux_for_blocks (sizeof (struct block_info_def));
-
-  /* Process outgoing edges of entry point.  */
-  if (dump_file)
-    fprintf (dump_file, "Process outgoing edges of entry point\n");
-
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    {
-      move_or_delete_vzeroupper_2 (e->dest,
-				   cfun->machine->caller_pass_avx256_p
-				   ? used : unused);
-      BLOCK_INFO (e->dest)->processed = true;
-    }
-
-  /* Compute reverse completion order of depth first search of the CFG
-     so that the data-flow runs faster.  */
-  rc_order = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
-  bb_order = XNEWVEC (int, last_basic_block);
-  pre_and_rev_post_order_compute (NULL, rc_order, false);
-  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
-    bb_order[rc_order[i]] = i;
-  free (rc_order);
-
-  worklist = fibheap_new ();
-  pending = fibheap_new ();
-  visited = sbitmap_alloc (last_basic_block);
-  in_worklist = sbitmap_alloc (last_basic_block);
-  in_pending = sbitmap_alloc (last_basic_block);
-  bitmap_clear (in_worklist);
-
-  /* Don't check outgoing edges of entry point.  */
-  bitmap_ones (in_pending);
-  FOR_EACH_BB (bb)
-    if (BLOCK_INFO (bb)->processed)
-      bitmap_clear_bit (in_pending, bb->index);
-    else
-      {
-	move_or_delete_vzeroupper_1 (bb, false);
-	fibheap_insert (pending, bb_order[bb->index], bb);
-      }
-
-  if (dump_file)
-    fprintf (dump_file, "Check remaining basic blocks\n");
-
-  while (!fibheap_empty (pending))
-    {
-      fibheap_swap = pending;
-      pending = worklist;
-      worklist = fibheap_swap;
-      sbitmap_swap = in_pending;
-      in_pending = in_worklist;
-      in_worklist = sbitmap_swap;
-
-      bitmap_clear (visited);
-
-      cfun->machine->rescan_vzeroupper_p = 0;
-
-      while (!fibheap_empty (worklist))
-	{
-	  bb = (basic_block) fibheap_extract_min (worklist);
-	  bitmap_clear_bit (in_worklist, bb->index);
-	  gcc_assert (!bitmap_bit_p (visited, bb->index));
-	  if (!bitmap_bit_p (visited, bb->index))
-	    {
-	      edge_iterator ei;
-
-	      bitmap_set_bit (visited, bb->index);
-
-	      if (move_or_delete_vzeroupper_1 (bb, false))
-		FOR_EACH_EDGE (e, ei, bb->succs)
-		  {
-		    if (e->dest == EXIT_BLOCK_PTR
-			|| BLOCK_INFO (e->dest)->processed)
-		      continue;
-
-		    if (bitmap_bit_p (visited, e->dest->index))
-		      {
-			if (!bitmap_bit_p (in_pending, e->dest->index))
-			  {
-			    /* Send E->DEST to next round.  */
-			    bitmap_set_bit (in_pending, e->dest->index);
-			    fibheap_insert (pending,
-					    bb_order[e->dest->index],
-					    e->dest);
-			  }
-		      }
-		    else if (!bitmap_bit_p (in_worklist, e->dest->index))
-		      {
-			/* Add E->DEST to current round.  */
-			bitmap_set_bit (in_worklist, e->dest->index);
-			fibheap_insert (worklist, bb_order[e->dest->index],
-					e->dest);
-		      }
-		  }
-	    }
-	}
-
-      if (!cfun->machine->rescan_vzeroupper_p)
-	break;
-    }
-
-  free (bb_order);
-  fibheap_delete (worklist);
-  fibheap_delete (pending);
-  sbitmap_free (visited);
-  sbitmap_free (in_worklist);
-  sbitmap_free (in_pending);
-
-  if (dump_file)
-    fprintf (dump_file, "Process remaining basic blocks\n");
-
-  FOR_EACH_BB (bb)
-    move_or_delete_vzeroupper_1 (bb, true);
-
-  free_aux_for_blocks ();
-}
+#include "tree-pass.h"
+#include "tree-flow.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
 
@@ -4050,8 +3625,10 @@ ix86_option_override_internal (bool main_args_p)
 	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
 	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
-	  /* Enable 128-bit AVX instruction generation for the auto-vectorizer.  */
-	  if (TARGET_AVX128_OPTIMAL && !(target_flags_explicit & MASK_PREFER_AVX128))
+	  /* Enable 128-bit AVX instruction generation
+	     for the auto-vectorizer.  */
+	  if (TARGET_AVX128_OPTIMAL
+	      && !(target_flags_explicit & MASK_PREFER_AVX128))
 	    target_flags |= MASK_PREFER_AVX128;
 	}
     }
@@ -4121,37 +3698,6 @@ ix86_option_override_internal (bool main_args_p)
   if (main_args_p)
     target_option_default_node = target_option_current_node
       = build_target_option_node ();
-}
-
-/* Return TRUE if VAL is passed in register with 256bit AVX modes.  */
-
-static bool
-function_pass_avx256_p (const_rtx val)
-{
-  if (!val)
-    return false;
-
-  if (REG_P (val) && VALID_AVX256_REG_MODE (GET_MODE (val)))
-    return true;
-
-  if (GET_CODE (val) == PARALLEL)
-    {
-      int i;
-      rtx r;
-
-      for (i = XVECLEN (val, 0) - 1; i >= 0; i--)
-	{
-	  r = XVECEXP (val, 0, i);
-	  if (GET_CODE (r) == EXPR_LIST
-	      && XEXP (r, 0)
-	      && REG_P (XEXP (r, 0))
-	      && (GET_MODE (XEXP (r, 0)) == OImode
-		  || VALID_AVX256_REG_MODE (GET_MODE (XEXP (r, 0)))))
-	    return true;
-	}
-    }
-
-  return false;
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
@@ -5077,14 +4623,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	return false;
     }
   else if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
-    {
-      /* Disable sibcall if we need to generate vzeroupper after
-	 callee returns.  */
-      if (TARGET_VZEROUPPER
-	  && cfun->machine->callee_return_avx256_p
-	  && !cfun->machine->caller_return_avx256_p)
-	return false;
-    }
+    ;
   else if (!rtx_equal_p (a, b))
     return false;
 
@@ -5864,45 +5403,18 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		      int caller)
 {
   struct cgraph_local_info *i;
-  tree fnret_type;
 
   memset (cum, 0, sizeof (*cum));
-
-  /* Initialize for the current callee.  */
-  if (caller)
-    {
-      cfun->machine->callee_pass_avx256_p = false;
-      cfun->machine->callee_return_avx256_p = false;
-    }
 
   if (fndecl)
     {
       i = cgraph_local_info (fndecl);
       cum->call_abi = ix86_function_abi (fndecl);
-      fnret_type = TREE_TYPE (TREE_TYPE (fndecl));
     }
   else
     {
       i = NULL;
       cum->call_abi = ix86_function_type_abi (fntype);
-      if (fntype)
-	fnret_type = TREE_TYPE (fntype);
-      else
-	fnret_type = NULL;
-    }
-
-  if (TARGET_VZEROUPPER && fnret_type)
-    {
-      rtx fnret_value = ix86_function_value (fnret_type, fntype,
-					     false);
-      if (function_pass_avx256_p (fnret_value))
-	{
-	  /* The return value of this function uses 256bit AVX modes.  */
-	  if (caller)
-	    cfun->machine->callee_return_avx256_p = true;
-	  else
-	    cfun->machine->caller_return_avx256_p = true;
-	}
     }
 
   cum->caller = caller;
@@ -7203,15 +6715,6 @@ ix86_function_arg (cumulative_args_t cum_v, enum machine_mode omode,
     arg = function_arg_64 (cum, mode, omode, type, named);
   else
     arg = function_arg_32 (cum, mode, omode, type, bytes, words);
-
-  if (TARGET_VZEROUPPER && function_pass_avx256_p (arg))
-    {
-      /* This argument uses 256bit AVX modes.  */
-      if (cum->caller)
-	cfun->machine->callee_pass_avx256_p = true;
-      else
-	cfun->machine->caller_pass_avx256_p = true;
-    }
 
   return arg;
 }
@@ -9974,6 +9477,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
 {
   if (sr->saved)
     {
+      struct machine_function *m = cfun->machine;
       rtx x, insn = emit_insn (gen_pop (sr->reg));
 
       /* The RTX_FRAME_RELATED_P mechanism doesn't know about pop.  */
@@ -9981,6 +9485,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
       x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
       x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
+      m->fs.sp_offset -= UNITS_PER_WORD;
     }
 }
 
@@ -11057,17 +10562,6 @@ ix86_emit_restore_sse_regs_using_mov (HOST_WIDE_INT cfa_offset,
       }
 }
 
-/* Emit vzeroupper if needed.  */
-
-void
-ix86_maybe_emit_epilogue_vzeroupper (void)
-{
-  if (TARGET_VZEROUPPER
-      && !TREE_THIS_VOLATILE (cfun->decl)
-      && !cfun->machine->caller_return_avx256_p)
-    emit_insn (gen_avx_vzeroupper (GEN_INT (call_no_avx256)));
-}
-
 /* Restore function stack, frame, and registers.  */
 
 void
@@ -11368,9 +10862,6 @@ ix86_expand_epilogue (int style)
       m->fs = frame_state_save;
       return;
     }
-
-  /* Emit vzeroupper if needed.  */
-  ix86_maybe_emit_epilogue_vzeroupper ();
 
   if (crtl->args.pops_args && crtl->args.size)
     {
@@ -11797,10 +11288,6 @@ ix86_address_subreg_operand (rtx op)
   /* Don't allow SUBREGs that span more than a word.  It can lead to spill
      failures when the register is one word out of a two word structure.  */
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-    return false;
-
-  /* simplify_subreg does not handle stack pointer.  */
-  if (REGNO (op) == STACK_POINTER_REGNUM)
     return false;
 
   /* Allow only SUBREGs of non-eliminable hard registers.  */
@@ -14097,14 +13584,8 @@ void
 print_reg (rtx x, int code, FILE *file)
 {
   const char *reg;
+  unsigned int regno;
   bool duplicated = code == 'd' && TARGET_AVX;
-
-  gcc_assert (x == pc_rtx
-	      || (REGNO (x) != ARG_POINTER_REGNUM
-		  && REGNO (x) != FRAME_POINTER_REGNUM
-		  && REGNO (x) != FLAGS_REG
-		  && REGNO (x) != FPSR_REG
-		  && REGNO (x) != FPCR_REG));
 
   if (ASSEMBLER_DIALECT == ASM_ATT)
     putc ('%', file);
@@ -14115,6 +13596,13 @@ print_reg (rtx x, int code, FILE *file)
       fputs ("rip", file);
       return;
     }
+
+  regno = true_regnum (x);
+  gcc_assert (regno != ARG_POINTER_REGNUM
+	      && regno != FRAME_POINTER_REGNUM
+	      && regno != FLAGS_REG
+	      && regno != FPSR_REG
+	      && regno != FPCR_REG);
 
   if (code == 'w' || MMX_REG_P (x))
     code = 2;
@@ -14137,11 +13625,11 @@ print_reg (rtx x, int code, FILE *file)
 
   /* Irritatingly, AMD extended registers use different naming convention
      from the normal registers: "r%d[bwd]"  */
-  if (REX_INT_REG_P (x))
+  if (REX_INT_REGNO_P (regno))
     {
       gcc_assert (TARGET_64BIT);
       putc ('r', file);
-      fprint_ul (file, REGNO (x) - FIRST_REX_INT_REG + 8);
+      fprint_ul (file, regno - FIRST_REX_INT_REG + 8);
       switch (code)
 	{
 	  case 0:
@@ -14185,24 +13673,24 @@ print_reg (rtx x, int code, FILE *file)
     case 16:
     case 2:
     normal:
-      reg = hi_reg_name[REGNO (x)];
+      reg = hi_reg_name[regno];
       break;
     case 1:
-      if (REGNO (x) >= ARRAY_SIZE (qi_reg_name))
+      if (regno >= ARRAY_SIZE (qi_reg_name))
 	goto normal;
-      reg = qi_reg_name[REGNO (x)];
+      reg = qi_reg_name[regno];
       break;
     case 0:
-      if (REGNO (x) >= ARRAY_SIZE (qi_high_reg_name))
+      if (regno >= ARRAY_SIZE (qi_high_reg_name))
 	goto normal;
-      reg = qi_high_reg_name[REGNO (x)];
+      reg = qi_high_reg_name[regno];
       break;
     case 32:
       if (SSE_REG_P (x))
 	{
 	  gcc_assert (!duplicated);
 	  putc ('y', file);
-	  fputs (hi_reg_name[REGNO (x)] + 1, file);
+	  fputs (hi_reg_name[regno] + 1, file);
 	  return;
 	}
       break;
@@ -14958,22 +14446,6 @@ ix86_print_operand_address (FILE *file, rtx addr)
 
   gcc_assert (ok);
 
-  if (parts.base && GET_CODE (parts.base) == SUBREG)
-    {
-      rtx tmp = SUBREG_REG (parts.base);
-      parts.base = simplify_subreg (GET_MODE (parts.base),
-				    tmp, GET_MODE (tmp), 0);
-      gcc_assert (parts.base != NULL_RTX);
-    }
-
-  if (parts.index && GET_CODE (parts.index) == SUBREG)
-    {
-      rtx tmp = SUBREG_REG (parts.index);
-      parts.index = simplify_subreg (GET_MODE (parts.index),
-				     tmp, GET_MODE (tmp), 0);
-      gcc_assert (parts.index != NULL_RTX);
-    }
-
   base = parts.base;
   index = parts.index;
   disp = parts.disp;
@@ -15485,10 +14957,60 @@ output_387_binary_op (rtx insn, rtx *operands)
   return buf;
 }
 
+/* Check if a 256bit AVX register is referenced inside of EXP.   */
+
+static int
+ix86_check_avx256_register (rtx *exp, void *data ATTRIBUTE_UNUSED)
+{
+  if (REG_P (*exp)
+      && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (*exp)))
+    return 1;
+
+  return 0;
+}
+
 /* Return needed mode for entity in optimize_mode_switching pass.  */
 
-int
-ix86_mode_needed (int entity, rtx insn)
+static int
+ix86_avx_u128_mode_needed (rtx insn)
+{
+  if (CALL_P (insn))
+    {
+      rtx link;
+
+      /* Needed mode is set to AVX_U128_CLEAN if there are
+	 no 256bit modes used in function arguments.  */
+      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+	   link;
+	   link = XEXP (link, 1))
+	{
+	  if (GET_CODE (XEXP (link, 0)) == USE)
+	    {
+	      rtx arg = XEXP (XEXP (link, 0), 0);
+
+	      if (ix86_check_avx256_register (&arg, NULL))
+		return AVX_U128_ANY;
+	    }
+	}
+
+      return AVX_U128_CLEAN;
+    }
+
+  /* Require DIRTY mode if a 256bit AVX register is referenced.  Hardware
+     changes state only when a 256bit register is written to, but we need
+     to prevent the compiler from moving optimal insertion point above
+     eventual read from 256bit register.  */
+  if (for_each_rtx (&PATTERN (insn), ix86_check_avx256_register, NULL))
+    return AVX_U128_DIRTY;
+
+  return AVX_U128_ANY;
+}
+
+/* Return mode that i387 must be switched into
+   prior to the execution of insn.  */
+
+static int
+ix86_i387_mode_needed (int entity, rtx insn)
 {
   enum attr_i387_cw mode;
 
@@ -15537,11 +15059,162 @@ ix86_mode_needed (int entity, rtx insn)
   return I387_CW_ANY;
 }
 
+/* Return mode that entity must be switched into
+   prior to the execution of insn.  */
+
+int
+ix86_mode_needed (int entity, rtx insn)
+{
+  switch (entity)
+    {
+    case AVX_U128:
+      return ix86_avx_u128_mode_needed (insn);
+    case I387_TRUNC:
+    case I387_FLOOR:
+    case I387_CEIL:
+    case I387_MASK_PM:
+      return ix86_i387_mode_needed (entity, insn);
+    default:
+      gcc_unreachable ();
+    }
+  return 0;
+}
+
+/* Check if a 256bit AVX register is referenced in stores.   */
+ 
+static void
+ix86_check_avx256_stores (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
+ {
+   if (ix86_check_avx256_register (&dest, NULL))
+    {
+      bool *used = (bool *) data;
+      *used = true;
+    }
+ } 
+
+/* Calculate mode of upper 128bit AVX registers after the insn.  */
+
+static int
+ix86_avx_u128_mode_after (int mode, rtx insn)
+{
+  rtx pat = PATTERN (insn);
+
+  if (vzeroupper_operation (pat, VOIDmode)
+      || vzeroall_operation (pat, VOIDmode))
+    return AVX_U128_CLEAN;
+
+  /* We know that state is clean after CALL insn if there are no
+     256bit registers used in the function return register.  */
+  if (CALL_P (insn))
+    {
+      bool avx_reg256_found = false;
+      note_stores (pat, ix86_check_avx256_stores, &avx_reg256_found);
+      if (!avx_reg256_found)
+	return AVX_U128_CLEAN;
+    }
+
+  /* Otherwise, return current mode.  Remember that if insn
+     references AVX 256bit registers, the mode was already changed
+     to DIRTY from MODE_NEEDED.  */
+  return mode;
+}
+
+/* Return the mode that an insn results in.  */
+
+int
+ix86_mode_after (int entity, int mode, rtx insn)
+{
+  switch (entity)
+    {
+    case AVX_U128:
+      return ix86_avx_u128_mode_after (mode, insn);
+    case I387_TRUNC:
+    case I387_FLOOR:
+    case I387_CEIL:
+    case I387_MASK_PM:
+      return mode;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static int
+ix86_avx_u128_mode_entry (void)
+{
+  tree arg;
+
+  /* Entry mode is set to AVX_U128_DIRTY if there are
+     256bit modes used in function arguments.  */
+  for (arg = DECL_ARGUMENTS (current_function_decl); arg;
+       arg = TREE_CHAIN (arg))
+    {
+      rtx incoming = DECL_INCOMING_RTL (arg);
+
+      if (incoming && ix86_check_avx256_register (&incoming, NULL))
+	return AVX_U128_DIRTY;
+    }
+
+  return AVX_U128_CLEAN;
+}
+
+/* Return a mode that ENTITY is assumed to be
+   switched to at function entry.  */
+
+int
+ix86_mode_entry (int entity)
+{
+  switch (entity)
+    {
+    case AVX_U128:
+      return ix86_avx_u128_mode_entry ();
+    case I387_TRUNC:
+    case I387_FLOOR:
+    case I387_CEIL:
+    case I387_MASK_PM:
+      return I387_CW_ANY;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static int
+ix86_avx_u128_mode_exit (void)
+{
+  rtx reg = crtl->return_rtx;
+
+  /* Exit mode is set to AVX_U128_DIRTY if there are
+     256bit modes used in the function return register.  */
+  if (reg && ix86_check_avx256_register (&reg, NULL))
+    return AVX_U128_DIRTY;
+
+  return AVX_U128_CLEAN;
+}
+
+/* Return a mode that ENTITY is assumed to be
+   switched to at function exit.  */
+
+int
+ix86_mode_exit (int entity)
+{
+  switch (entity)
+    {
+    case AVX_U128:
+      return ix86_avx_u128_mode_exit ();
+    case I387_TRUNC:
+    case I387_FLOOR:
+    case I387_CEIL:
+    case I387_MASK_PM:
+      return I387_CW_ANY;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Output code to initialize control word copies used by trunc?f?i and
    rounding patterns.  CURRENT_MODE is set to current control word,
    while NEW_MODE is set to new control word.  */
 
-void
+static void
 emit_i387_cw_initialization (int mode)
 {
   rtx stored_mode = assign_386_stack_local (HImode, SLOT_CW_STORED);
@@ -15626,6 +15299,30 @@ emit_i387_cw_initialization (int mode)
 
   new_mode = assign_386_stack_local (HImode, slot);
   emit_move_insn (new_mode, reg);
+}
+
+/* Generate one or more insns to set ENTITY to MODE.  */
+
+void
+ix86_emit_mode_set (int entity, int mode)
+{
+  switch (entity)
+    {
+    case AVX_U128:
+      if (mode == AVX_U128_CLEAN)
+	emit_insn (gen_avx_vzeroupper ());
+      break;
+    case I387_TRUNC:
+    case I387_FLOOR:
+    case I387_CEIL:
+    case I387_MASK_PM:
+      if (mode != I387_CW_ANY
+	  && mode != I387_CW_UNINITIALIZED)
+	emit_i387_cw_initialization (mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Output code for INSN to convert a float to a signed int.  OPERANDS
@@ -23636,30 +23333,6 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 					  clobbered_registers[i]));
     }
 
-  /* Add UNSPEC_CALL_NEEDS_VZEROUPPER decoration.  */
-  if (TARGET_VZEROUPPER)
-    {
-      int avx256;
-      if (cfun->machine->callee_pass_avx256_p)
-	{
-	  if (cfun->machine->callee_return_avx256_p)
-	    avx256 = callee_return_pass_avx256;
-	  else
-	    avx256 = callee_pass_avx256;
-	}
-      else if (cfun->machine->callee_return_avx256_p)
-	avx256 = callee_return_avx256;
-      else
-	avx256 = call_no_avx256;
-
-      if (reload_completed)
-	emit_insn (gen_avx_vzeroupper (GEN_INT (avx256)));
-      else
-	vec[vec_len++] = gen_rtx_UNSPEC (VOIDmode,
-					 gen_rtvec (1, GEN_INT (avx256)),
-					 UNSPEC_CALL_NEEDS_VZEROUPPER);
-    }
-
   if (vec_len > 1)
     call = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (vec_len, vec));
   call = emit_call_insn (call);
@@ -23667,25 +23340,6 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     CALL_INSN_FUNCTION_USAGE (call) = use;
 
   return call;
-}
-
-void
-ix86_split_call_vzeroupper (rtx insn, rtx vzeroupper)
-{
-  rtx pat = PATTERN (insn);
-  rtvec vec = XVEC (pat, 0);
-  int len = GET_NUM_ELEM (vec) - 1;
-
-  /* Strip off the last entry of the parallel.  */
-  gcc_assert (GET_CODE (RTVEC_ELT (vec, len)) == UNSPEC);
-  gcc_assert (XINT (RTVEC_ELT (vec, len), 1) == UNSPEC_CALL_NEEDS_VZEROUPPER);
-  if (len == 1)
-    pat = RTVEC_ELT (vec, 0);
-  else
-    pat = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (len, &RTVEC_ELT (vec, 0)));
-
-  emit_insn (gen_avx_vzeroupper (vzeroupper));
-  emit_call_insn (pat);
 }
 
 /* Output the assembly for a call instruction.  */
@@ -23766,8 +23420,8 @@ ix86_init_machine_status (void)
 
   f = ggc_alloc_cleared_machine_function ();
   f->use_fast_prologue_epilogue_nregs = -1;
-  f->tls_descriptor_call_expanded_p = 0;
   f->call_abi = ix86_abi;
+  f->optimize_mode_switching[AVX_U128] = TARGET_VZEROUPPER;
 
   return f;
 }
@@ -23785,9 +23439,6 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
   gcc_assert (n < MAX_386_STACK_LOCALS);
 
-  /* Virtual slot is valid only before vregs are instantiated.  */
-  gcc_assert ((n == SLOT_VIRTUAL) == !virtuals_instantiated);
-
   for (s = ix86_stack_locals; s; s = s->next)
     if (s->mode == mode && s->n == n)
       return validize_mem (copy_rtx (s->rtl));
@@ -23800,6 +23451,16 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
   s->next = ix86_stack_locals;
   ix86_stack_locals = s;
   return validize_mem (s->rtl);
+}
+
+static void
+ix86_instantiate_decls (void)
+{
+  struct stack_local_entry *s;
+
+  for (s = ix86_stack_locals; s; s = s->next)
+    if (s->rtl != NULL_RTX)
+      instantiate_decl_rtl (s->rtl);
 }
 
 /* Calculate the length of the memory address in the instruction encoding.
@@ -27690,7 +27351,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv4hiv4di2  , "__builtin_ia32_pmovzxwq256", IX86_BUILTIN_PMOVZXWQ256, UNKNOWN, (int) V4DI_FTYPE_V8HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv4siv4di2  , "__builtin_ia32_pmovzxdq256", IX86_BUILTIN_PMOVZXDQ256, UNKNOWN, (int) V4DI_FTYPE_V4SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_smult_even_v8si, "__builtin_ia32_pmuldq256", IX86_BUILTIN_PMULDQ256, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umulhrswv16hi3 , "__builtin_ia32_pmulhrsw256", IX86_BUILTIN_PMULHRSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_pmulhrswv16hi3 , "__builtin_ia32_pmulhrsw256", IX86_BUILTIN_PMULHRSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_umulv16hi3_highpart, "__builtin_ia32_pmulhuw256" , IX86_BUILTIN_PMULHUW256 , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_smulv16hi3_highpart, "__builtin_ia32_pmulhw256"  , IX86_BUILTIN_PMULHW256  , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_mulv16hi3, "__builtin_ia32_pmullw256"  , IX86_BUILTIN_PMULLW256  , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
@@ -28497,6 +28158,971 @@ ix86_init_mmx_sse_builtins (void)
     }
 }
 
+/* This adds a condition to the basic_block NEW_BB in function FUNCTION_DECL
+   to return a pointer to VERSION_DECL if the outcome of the expression
+   formed by PREDICATE_CHAIN is true.  This function will be called during
+   version dispatch to decide which function version to execute.  It returns
+   the basic block at the end, to which more conditions can be added.  */
+
+static basic_block
+add_condition_to_bb (tree function_decl, tree version_decl,
+		     tree predicate_chain, basic_block new_bb)
+{
+  gimple return_stmt;
+  tree convert_expr, result_var;
+  gimple convert_stmt;
+  gimple call_cond_stmt;
+  gimple if_else_stmt;
+
+  basic_block bb1, bb2, bb3;
+  edge e12, e23;
+
+  tree cond_var, and_expr_var = NULL_TREE;
+  gimple_seq gseq;
+
+  tree predicate_decl, predicate_arg;
+
+  push_cfun (DECL_STRUCT_FUNCTION (function_decl));
+
+  gcc_assert (new_bb != NULL);
+  gseq = bb_seq (new_bb);
+
+
+  convert_expr = build1 (CONVERT_EXPR, ptr_type_node,
+	     		 build_fold_addr_expr (version_decl));
+  result_var = create_tmp_var (ptr_type_node, NULL);
+  convert_stmt = gimple_build_assign (result_var, convert_expr); 
+  return_stmt = gimple_build_return (result_var);
+
+  if (predicate_chain == NULL_TREE)
+    {
+      gimple_seq_add_stmt (&gseq, convert_stmt);
+      gimple_seq_add_stmt (&gseq, return_stmt);
+      set_bb_seq (new_bb, gseq);
+      gimple_set_bb (convert_stmt, new_bb);
+      gimple_set_bb (return_stmt, new_bb);
+      pop_cfun ();
+      return new_bb;
+    }
+
+  while (predicate_chain != NULL)
+    {
+      cond_var = create_tmp_var (integer_type_node, NULL);
+      predicate_decl = TREE_PURPOSE (predicate_chain);
+      predicate_arg = TREE_VALUE (predicate_chain);
+      call_cond_stmt = gimple_build_call (predicate_decl, 1, predicate_arg);
+      gimple_call_set_lhs (call_cond_stmt, cond_var);
+
+      gimple_set_block (call_cond_stmt, DECL_INITIAL (function_decl));
+      gimple_set_bb (call_cond_stmt, new_bb);
+      gimple_seq_add_stmt (&gseq, call_cond_stmt);
+
+      predicate_chain = TREE_CHAIN (predicate_chain);
+      
+      if (and_expr_var == NULL)
+        and_expr_var = cond_var;
+      else
+	{
+	  gimple assign_stmt;
+	  /* Use MIN_EXPR to check if any integer is zero?.
+	     and_expr_var = min_expr <cond_var, and_expr_var>  */
+	  assign_stmt = gimple_build_assign (and_expr_var,
+			  build2 (MIN_EXPR, integer_type_node,
+				  cond_var, and_expr_var));
+
+	  gimple_set_block (assign_stmt, DECL_INITIAL (function_decl));
+	  gimple_set_bb (assign_stmt, new_bb);
+	  gimple_seq_add_stmt (&gseq, assign_stmt);
+	}
+    }
+
+  if_else_stmt = gimple_build_cond (GT_EXPR, and_expr_var,
+	  		            integer_zero_node,
+				    NULL_TREE, NULL_TREE);
+  gimple_set_block (if_else_stmt, DECL_INITIAL (function_decl));
+  gimple_set_bb (if_else_stmt, new_bb);
+  gimple_seq_add_stmt (&gseq, if_else_stmt);
+
+  gimple_seq_add_stmt (&gseq, convert_stmt);
+  gimple_seq_add_stmt (&gseq, return_stmt);
+  set_bb_seq (new_bb, gseq);
+
+  bb1 = new_bb;
+  e12 = split_block (bb1, if_else_stmt);
+  bb2 = e12->dest;
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_TRUE_VALUE;
+
+  e23 = split_block (bb2, return_stmt);
+
+  gimple_set_bb (convert_stmt, bb2);
+  gimple_set_bb (return_stmt, bb2);
+
+  bb3 = e23->dest;
+  make_edge (bb1, bb3, EDGE_FALSE_VALUE); 
+
+  remove_edge (e23);
+  make_edge (bb2, EXIT_BLOCK_PTR, 0);
+
+  pop_cfun ();
+
+  return bb3;
+}
+
+/* This parses the attribute arguments to target in DECL and determines
+   the right builtin to use to match the platform specification.
+   It returns the priority value for this version decl.  If PREDICATE_LIST
+   is not NULL, it stores the list of cpu features that need to be checked
+   before dispatching this function.  */
+
+static unsigned int
+get_builtin_code_for_version (tree decl, tree *predicate_list)
+{
+  tree attrs;
+  struct cl_target_option cur_target;
+  tree target_node;
+  struct cl_target_option *new_target;
+  const char *arg_str = NULL;
+  const char *attrs_str = NULL;
+  char *tok_str = NULL;
+  char *token;
+
+  /* Priority of i386 features, greater value is higher priority.   This is
+     used to decide the order in which function dispatch must happen.  For
+     instance, a version specialized for SSE4.2 should be checked for dispatch
+     before a version for SSE3, as SSE4.2 implies SSE3.  */
+  enum feature_priority
+  {
+    P_ZERO = 0,
+    P_MMX,
+    P_SSE,
+    P_SSE2,
+    P_SSE3,
+    P_SSSE3,
+    P_PROC_SSSE3,
+    P_SSE4_a,
+    P_PROC_SSE4_a,
+    P_SSE4_1,
+    P_SSE4_2,
+    P_PROC_SSE4_2,
+    P_POPCNT,
+    P_AVX,
+    P_AVX2,
+    P_FMA,
+    P_PROC_FMA
+  };
+
+ enum feature_priority priority = P_ZERO;
+
+  /* These are the target attribute strings for which a dispatcher is
+     available, from fold_builtin_cpu.  */
+
+  static struct _feature_list
+    {
+      const char *const name;
+      const enum feature_priority priority;
+    }
+  const feature_list[] =
+    {
+      {"mmx", P_MMX},
+      {"sse", P_SSE},
+      {"sse2", P_SSE2},
+      {"sse3", P_SSE3},
+      {"ssse3", P_SSSE3},
+      {"sse4.1", P_SSE4_1},
+      {"sse4.2", P_SSE4_2},
+      {"popcnt", P_POPCNT},
+      {"avx", P_AVX},
+      {"avx2", P_AVX2}
+    };
+
+
+  static unsigned int NUM_FEATURES
+    = sizeof (feature_list) / sizeof (struct _feature_list);
+
+  unsigned int i;
+
+  tree predicate_chain = NULL_TREE;
+  tree predicate_decl, predicate_arg;
+
+  attrs = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+  gcc_assert (attrs != NULL);
+
+  attrs = TREE_VALUE (TREE_VALUE (attrs));
+
+  gcc_assert (TREE_CODE (attrs) == STRING_CST);
+  attrs_str = TREE_STRING_POINTER (attrs);
+
+
+  /* Handle arch= if specified.  For priority, set it to be 1 more than
+     the best instruction set the processor can handle.  For instance, if
+     there is a version for atom and a version for ssse3 (the highest ISA
+     priority for atom), the atom version must be checked for dispatch
+     before the ssse3 version. */
+  if (strstr (attrs_str, "arch=") != NULL)
+    {
+      cl_target_option_save (&cur_target, &global_options);
+      target_node = ix86_valid_target_attribute_tree (attrs);
+    
+      gcc_assert (target_node);
+      new_target = TREE_TARGET_OPTION (target_node);
+      gcc_assert (new_target);
+      
+      if (new_target->arch_specified && new_target->arch > 0)
+	{
+	  switch (new_target->arch)
+	    {
+	    case PROCESSOR_CORE2_32:
+	    case PROCESSOR_CORE2_64:
+	      arg_str = "core2";
+	      priority = P_PROC_SSSE3;
+	      break;
+	    case PROCESSOR_COREI7_32:
+	    case PROCESSOR_COREI7_64:
+	      arg_str = "corei7";
+	      priority = P_PROC_SSE4_2;
+	      break;
+	    case PROCESSOR_ATOM:
+	      arg_str = "atom";
+	      priority = P_PROC_SSSE3;
+	      break;
+	    case PROCESSOR_AMDFAM10:
+	      arg_str = "amdfam10h";
+	      priority = P_PROC_SSE4_a;
+	      break;
+	    case PROCESSOR_BDVER1:
+	      arg_str = "bdver1";
+	      priority = P_PROC_FMA;
+	      break;
+	    case PROCESSOR_BDVER2:
+	      arg_str = "bdver2";
+	      priority = P_PROC_FMA;
+	      break;
+	    }  
+	}    
+    
+      cl_target_option_restore (&global_options, &cur_target);
+	
+      if (predicate_list && arg_str == NULL)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+	    	"No dispatcher found for the versioning attributes");
+	  return 0;
+	}
+    
+      if (predicate_list)
+	{
+          predicate_decl = ix86_builtins [(int) IX86_BUILTIN_CPU_IS];
+          /* For a C string literal the length includes the trailing NULL.  */
+          predicate_arg = build_string_literal (strlen (arg_str) + 1, arg_str);
+          predicate_chain = tree_cons (predicate_decl, predicate_arg,
+				       predicate_chain);
+	}
+    }
+
+  /* Process feature name.  */
+  tok_str =  (char *) xmalloc (strlen (attrs_str) + 1);
+  strcpy (tok_str, attrs_str);
+  token = strtok (tok_str, ",");
+  predicate_decl = ix86_builtins [(int) IX86_BUILTIN_CPU_SUPPORTS];
+
+  while (token != NULL)
+    {
+      /* Do not process "arch="  */
+      if (strncmp (token, "arch=", 5) == 0)
+	{
+	  token = strtok (NULL, ",");
+	  continue;
+	}
+      for (i = 0; i < NUM_FEATURES; ++i)
+	{
+	  if (strcmp (token, feature_list[i].name) == 0)
+	    {
+	      if (predicate_list)
+		{
+		  predicate_arg = build_string_literal (
+				  strlen (feature_list[i].name) + 1,
+				  feature_list[i].name);
+		  predicate_chain = tree_cons (predicate_decl, predicate_arg,
+					       predicate_chain);
+		}
+	      /* Find the maximum priority feature.  */
+	      if (feature_list[i].priority > priority)
+		priority = feature_list[i].priority;
+
+	      break;
+	    }
+	}
+      if (predicate_list && i == NUM_FEATURES)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "No dispatcher found for %s", token);
+	  return 0;
+	}
+      token = strtok (NULL, ",");
+    }
+  free (tok_str);
+
+  if (predicate_list && predicate_chain == NULL_TREE)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+	        "No dispatcher found for the versioning attributes : %s",
+	        attrs_str);
+      return 0;
+    }
+  else if (predicate_list)
+    {
+      predicate_chain = nreverse (predicate_chain);
+      *predicate_list = predicate_chain;
+    }
+
+  return priority; 
+}
+
+/* This compares the priority of target features in function DECL1
+   and DECL2.  It returns positive value if DECL1 is higher priority,
+   negative value if DECL2 is higher priority and 0 if they are the
+   same.  */
+
+static int
+ix86_compare_version_priority (tree decl1, tree decl2)
+{
+  unsigned int priority1 = 0;
+  unsigned int priority2 = 0;
+
+  if (lookup_attribute ("target", DECL_ATTRIBUTES (decl1)) != NULL)
+    priority1 = get_builtin_code_for_version (decl1, NULL);
+
+  if (lookup_attribute ("target", DECL_ATTRIBUTES (decl2)) != NULL)
+    priority2 = get_builtin_code_for_version (decl2, NULL);
+
+  return (int)priority1 - (int)priority2;
+}
+
+/* V1 and V2 point to function versions with different priorities
+   based on the target ISA.  This function compares their priorities.  */
+ 
+static int
+feature_compare (const void *v1, const void *v2)
+{
+  typedef struct _function_version_info
+    {
+      tree version_decl;
+      tree predicate_chain;
+      unsigned int dispatch_priority;
+    } function_version_info;
+
+  const function_version_info c1 = *(const function_version_info *)v1;
+  const function_version_info c2 = *(const function_version_info *)v2;
+  return (c2.dispatch_priority - c1.dispatch_priority);
+}
+
+/* This function generates the dispatch function for
+   multi-versioned functions.  DISPATCH_DECL is the function which will
+   contain the dispatch logic.  FNDECLS are the function choices for
+   dispatch, and is a tree chain.  EMPTY_BB is the basic block pointer
+   in DISPATCH_DECL in which the dispatch code is generated.  */
+
+static int
+dispatch_function_versions (tree dispatch_decl,
+			    void *fndecls_p,
+			    basic_block *empty_bb)
+{
+  tree default_decl;
+  gimple ifunc_cpu_init_stmt;
+  gimple_seq gseq;
+  int ix;
+  tree ele;
+  VEC (tree, heap) *fndecls;
+  unsigned int num_versions = 0;
+  unsigned int actual_versions = 0;
+  unsigned int i;
+
+  struct _function_version_info
+    {
+      tree version_decl;
+      tree predicate_chain;
+      unsigned int dispatch_priority;
+    }*function_version_info;
+
+  gcc_assert (dispatch_decl != NULL
+	      && fndecls_p != NULL
+	      && empty_bb != NULL);
+
+  /*fndecls_p is actually a vector.  */
+  fndecls = (VEC (tree, heap) *)fndecls_p;
+
+  /* At least one more version other than the default.  */
+  num_versions = VEC_length (tree, fndecls);
+  gcc_assert (num_versions >= 2);
+
+  function_version_info = (struct _function_version_info *)
+    XNEWVEC (struct _function_version_info, (num_versions - 1));
+
+  /* The first version in the vector is the default decl.  */
+  default_decl = VEC_index (tree, fndecls, 0);
+
+  push_cfun (DECL_STRUCT_FUNCTION (dispatch_decl));
+
+  gseq = bb_seq (*empty_bb);
+  /* Function version dispatch is via IFUNC.  IFUNC resolvers fire before
+     constructors, so explicity call __builtin_cpu_init here.  */
+  ifunc_cpu_init_stmt = gimple_build_call_vec (
+                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], NULL);
+  gimple_seq_add_stmt (&gseq, ifunc_cpu_init_stmt);
+  gimple_set_bb (ifunc_cpu_init_stmt, *empty_bb);
+  set_bb_seq (*empty_bb, gseq);
+
+  pop_cfun ();
+
+
+  for (ix = 1; VEC_iterate (tree, fndecls, ix, ele); ++ix)
+    {
+      tree version_decl = ele;
+      tree predicate_chain = NULL_TREE;
+      unsigned int priority;
+      /* Get attribute string, parse it and find the right predicate decl.
+         The predicate function could be a lengthy combination of many
+	 features, like arch-type and various isa-variants.  */
+      priority = get_builtin_code_for_version (version_decl,
+	 			               &predicate_chain);
+
+      if (predicate_chain == NULL_TREE)
+	continue;
+
+      actual_versions++;
+      function_version_info [ix - 1].version_decl = version_decl;
+      function_version_info [ix - 1].predicate_chain = predicate_chain;
+      function_version_info [ix - 1].dispatch_priority = priority;
+    }
+
+  /* Sort the versions according to descending order of dispatch priority.  The
+     priority is based on the ISA.  This is not a perfect solution.  There
+     could still be ambiguity.  If more than one function version is suitable
+     to execute,  which one should be dispatched?  In future, allow the user
+     to specify a dispatch  priority next to the version.  */
+  qsort (function_version_info, actual_versions,
+         sizeof (struct _function_version_info), feature_compare);
+
+  for  (i = 0; i < actual_versions; ++i)
+    *empty_bb = add_condition_to_bb (dispatch_decl,
+				     function_version_info[i].version_decl,
+				     function_version_info[i].predicate_chain,
+				     *empty_bb);
+
+  /* dispatch default version at the end.  */
+  *empty_bb = add_condition_to_bb (dispatch_decl, default_decl,
+				   NULL, *empty_bb);
+
+  free (function_version_info);
+  return 0;
+}
+
+/* This function returns true if FN1 and FN2 are versions of the same function,
+   that is, the targets of the function decls are different.  This assumes
+   that FN1 and FN2 have the same signature.  */
+
+static bool
+ix86_function_versions (tree fn1, tree fn2)
+{
+  tree attr1, attr2;
+  struct cl_target_option *target1, *target2;
+
+  if (TREE_CODE (fn1) != FUNCTION_DECL
+      || TREE_CODE (fn2) != FUNCTION_DECL)
+    return false;
+
+  attr1 = DECL_FUNCTION_SPECIFIC_TARGET (fn1);
+  attr2 = DECL_FUNCTION_SPECIFIC_TARGET (fn2);
+
+  /* Atleast one function decl should have target attribute specified.  */
+  if (attr1 == NULL_TREE && attr2 == NULL_TREE)
+    return false;
+
+  if (attr1 == NULL_TREE)
+    attr1 = target_option_default_node;
+  else if (attr2 == NULL_TREE)
+    attr2 = target_option_default_node;
+
+  target1 = TREE_TARGET_OPTION (attr1);
+  target2 = TREE_TARGET_OPTION (attr2);
+
+  /* target1 and target2 must be different in some way.  */
+  if (target1->x_ix86_isa_flags == target2->x_ix86_isa_flags
+      && target1->x_target_flags == target2->x_target_flags
+      && target1->arch == target2->arch
+      && target1->tune == target2->tune
+      && target1->x_ix86_fpmath == target2->x_ix86_fpmath
+      && target1->branch_cost == target2->branch_cost)
+    return false;
+
+  return true;
+}
+
+/* Comparator function to be used in qsort routine to sort attribute
+   specification strings to "target".  */
+
+static int
+attr_strcmp (const void *v1, const void *v2)
+{
+  const char *c1 = *(char *const*)v1;
+  const char *c2 = *(char *const*)v2;
+  return strcmp (c1, c2);
+}
+
+/* STR is the argument to target attribute.  This function tokenizes
+   the comma separated arguments, sorts them and returns a string which
+   is a unique identifier for the comma separated arguments.   It also
+   replaces non-identifier characters "=,-" with "_".  */
+
+static char *
+sorted_attr_string (const char *str)
+{
+  char **args = NULL;
+  char *attr_str, *ret_str;
+  char *attr = NULL;
+  unsigned int argnum = 1;
+  unsigned int i;
+
+  for (i = 0; i < strlen (str); i++)
+    if (str[i] == ',')
+      argnum++;
+
+  attr_str = (char *)xmalloc (strlen (str) + 1);
+  strcpy (attr_str, str);
+
+  /* Replace "=,-" with "_".  */
+  for (i = 0; i < strlen (attr_str); i++)
+    if (attr_str[i] == '=' || attr_str[i]== '-')
+      attr_str[i] = '_';
+
+  if (argnum == 1)
+    return attr_str;
+
+  args = XNEWVEC (char *, argnum);
+
+  i = 0;
+  attr = strtok (attr_str, ",");
+  while (attr != NULL)
+    {
+      args[i] = attr;
+      i++;
+      attr = strtok (NULL, ",");
+    }
+
+  qsort (args, argnum, sizeof (char*), attr_strcmp);
+
+  ret_str = (char *)xmalloc (strlen (str) + 1);
+  strcpy (ret_str, args[0]);
+  for (i = 1; i < argnum; i++)
+    {
+      strcat (ret_str, "_");
+      strcat (ret_str, args[i]);
+    }
+
+  free (args);
+  free (attr_str);
+  return ret_str;
+}
+
+/* This function changes the assembler name for functions that are
+   versions.  If DECL is a function version and has a "target"
+   attribute, it appends the attribute string to its assembler name.  */
+
+static tree
+ix86_mangle_function_version_assembler_name (tree decl, tree id)
+{
+  tree version_attr;
+  const char *orig_name, *version_string, *attr_str;
+  char *assembler_name;
+
+  if (DECL_DECLARED_INLINE_P (decl)
+      && lookup_attribute ("gnu_inline",
+			   DECL_ATTRIBUTES (decl)))
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "Function versions cannot be marked as gnu_inline,"
+	      " bodies have to be generated");
+
+  if (DECL_VIRTUAL_P (decl)
+      || DECL_VINDEX (decl))
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "Virtual function versioning not supported\n");
+
+  version_attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+
+  /* target attribute string is NULL for default functions.  */
+  if (version_attr == NULL_TREE)
+    return id;
+
+  orig_name = IDENTIFIER_POINTER (id);
+  version_string
+    = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (version_attr)));
+
+  attr_str = sorted_attr_string (version_string);
+  assembler_name = (char *) xmalloc (strlen (orig_name)
+				     + strlen (attr_str) + 2);
+
+  sprintf (assembler_name, "%s.%s", orig_name, attr_str);
+
+  /* Allow assembler name to be modified if already set.  */
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    SET_DECL_RTL (decl, NULL);
+
+  return get_identifier (assembler_name);
+}
+
+static tree 
+ix86_mangle_decl_assembler_name (tree decl, tree id)
+{
+  /* For function version, add the target suffix to the assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (decl))
+    return ix86_mangle_function_version_assembler_name (decl, id);
+
+  return id;
+}
+
+/* Return a new name by appending SUFFIX to the DECL name.  If make_unique
+   is true, append the full path name of the source file.  */
+
+static char *
+make_name (tree decl, const char *suffix, bool make_unique)
+{
+  char *global_var_name;
+  int name_len;
+  const char *name;
+  const char *unique_name = NULL;
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  /* Get a unique name that can be used globally without any chances
+     of collision at link time.  */
+  if (make_unique)
+    unique_name = IDENTIFIER_POINTER (get_file_function_name ("\0"));
+
+  name_len = strlen (name) + strlen (suffix) + 2;
+
+  if (make_unique)
+    name_len += strlen (unique_name) + 1;
+  global_var_name = XNEWVEC (char, name_len);
+
+  /* Use '.' to concatenate names as it is demangler friendly.  */
+  if (make_unique)
+      snprintf (global_var_name, name_len, "%s.%s.%s", name,
+		unique_name, suffix);
+  else
+      snprintf (global_var_name, name_len, "%s.%s", name, suffix);
+
+  return global_var_name;
+}
+
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+
+/* Make a dispatcher declaration for the multi-versioned function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher
+   by the front-end.  Return the decl created.  */
+
+static tree
+make_dispatcher_decl (const tree decl)
+{
+  tree func_decl;
+  char *func_name, *resolver_name;
+  tree fn_type, func_type;
+  bool is_uniq = false;
+
+  if (TREE_PUBLIC (decl) == 0)
+    is_uniq = true;
+
+  func_name = make_name (decl, "ifunc", is_uniq);
+  resolver_name = make_name (decl, "resolver", is_uniq);
+  gcc_assert (resolver_name);
+
+  fn_type = TREE_TYPE (decl);
+  func_type = build_function_type (TREE_TYPE (fn_type),
+				   TYPE_ARG_TYPES (fn_type));
+  
+  func_decl = build_fn_decl (func_name, func_type);
+  TREE_USED (func_decl) = 1;
+  DECL_CONTEXT (func_decl) = NULL_TREE;
+  DECL_INITIAL (func_decl) = error_mark_node;
+  DECL_ARTIFICIAL (func_decl) = 1;
+  /* Mark this func as external, the resolver will flip it again if
+     it gets generated.  */
+  DECL_EXTERNAL (func_decl) = 1;
+  /* This will be of type IFUNCs have to be externally visible.  */
+  TREE_PUBLIC (func_decl) = 1;
+
+  return func_decl;  
+}
+
+#endif
+
+/* Returns true if decl is multi-versioned and DECL is the default function,
+   that is it is not tagged with target specific optimization.  */
+
+static bool
+is_function_default_version (const tree decl)
+{
+  return (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_FUNCTION_VERSIONED (decl)
+	  && DECL_FUNCTION_SPECIFIC_TARGET (decl) == NULL_TREE);
+}
+
+/* Make a dispatcher declaration for the multi-versioned function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher
+   by the front-end.  Returns the decl of the dispatcher function.  */
+
+static tree
+ix86_get_function_versions_dispatcher (void *decl)
+{
+  tree fn = (tree) decl;
+  struct cgraph_node *node = NULL;
+  struct cgraph_node *default_node = NULL;
+  struct cgraph_function_version_info *node_v = NULL;
+  struct cgraph_function_version_info *it_v = NULL;
+  struct cgraph_function_version_info *first_v = NULL;
+
+  tree dispatch_decl = NULL;
+  struct cgraph_node *dispatcher_node = NULL;
+  struct cgraph_function_version_info *dispatcher_version_info = NULL;
+
+  struct cgraph_function_version_info *default_version_info = NULL;
+ 
+  gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
+
+  node = cgraph_get_node (fn);
+  gcc_assert (node != NULL);
+
+  node_v = get_cgraph_node_version (node);
+  gcc_assert (node_v != NULL);
+ 
+  if (node_v->dispatcher_resolver != NULL)
+    return node_v->dispatcher_resolver;
+
+  /* Find the default version and make it the first node.  */
+  first_v = node_v;
+  /* Go to the beginnig of the chain.  */
+  while (first_v->prev != NULL)
+    first_v = first_v->prev;
+  default_version_info = first_v;
+  while (default_version_info != NULL)
+    {
+      if (is_function_default_version
+	    (default_version_info->this_node->symbol.decl))
+        break;
+      default_version_info = default_version_info->next;
+    }
+
+  /* If there is no default node, just return NULL.  */
+  if (default_version_info == NULL)
+    return NULL;
+
+  /* Make default info the first node.  */
+  if (first_v != default_version_info)
+    {
+      default_version_info->prev->next = default_version_info->next;
+      if (default_version_info->next)
+        default_version_info->next->prev = default_version_info->prev;
+      first_v->prev = default_version_info;
+      default_version_info->next = first_v;
+      default_version_info->prev = NULL;
+    }
+
+  default_node = default_version_info->this_node;
+
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+  /* Right now, the dispatching is done via ifunc.  */
+  dispatch_decl = make_dispatcher_decl (default_node->symbol.decl); 
+#else
+  error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
+	    "Multiversioning needs ifunc which is not supported "
+	    "in this configuration");
+#endif
+
+  dispatcher_node = cgraph_get_create_node (dispatch_decl);
+  gcc_assert (dispatcher_node != NULL);
+  dispatcher_node->dispatcher_function = 1;
+  dispatcher_version_info
+    = insert_new_cgraph_node_version (dispatcher_node);
+  dispatcher_version_info->next = default_version_info;
+  dispatcher_node->local.finalized = 1;
+ 
+  /* Set the dispatcher for all the versions.  */ 
+  it_v = default_version_info;
+  while (it_v->next != NULL)
+    {
+      it_v->dispatcher_resolver = dispatch_decl;
+      it_v = it_v->next;
+    }
+
+  return dispatch_decl;
+}
+
+/* Makes a function attribute of the form NAME(ARG_NAME) and chains
+   it to CHAIN.  */
+
+static tree
+make_attribute (const char *name, const char *arg_name, tree chain)
+{
+  tree attr_name;
+  tree attr_arg_name;
+  tree attr_args;
+  tree attr;
+
+  attr_name = get_identifier (name);
+  attr_arg_name = build_string (strlen (arg_name), arg_name);
+  attr_args = tree_cons (NULL_TREE, attr_arg_name, NULL_TREE);
+  attr = tree_cons (attr_name, attr_args, chain);
+  return attr;
+}
+
+/* Make the resolver function decl to dispatch the versions of
+   a multi-versioned function,  DEFAULT_DECL.  Create an
+   empty basic block in the resolver and store the pointer in
+   EMPTY_BB.  Return the decl of the resolver function.  */
+
+static tree
+make_resolver_func (const tree default_decl,
+		    const tree dispatch_decl,
+		    basic_block *empty_bb)
+{
+  char *resolver_name;
+  tree decl, type, decl_name, t;
+  bool is_uniq = false;
+
+  /* IFUNC's have to be globally visible.  So, if the default_decl is
+     not, then the name of the IFUNC should be made unique.  */
+  if (TREE_PUBLIC (default_decl) == 0)
+    is_uniq = true;
+
+  /* Append the filename to the resolver function if the versions are
+     not externally visible.  This is because the resolver function has
+     to be externally visible for the loader to find it.  So, appending
+     the filename will prevent conflicts with a resolver function from
+     another module which is based on the same version name.  */
+  resolver_name = make_name (default_decl, "resolver", is_uniq);
+
+  /* The resolver function should return a (void *). */
+  type = build_function_type_list (ptr_type_node, NULL_TREE);
+
+  decl = build_fn_decl (resolver_name, type);
+  decl_name = get_identifier (resolver_name);
+  SET_DECL_ASSEMBLER_NAME (decl, decl_name);
+
+  DECL_NAME (decl) = decl_name;
+  TREE_USED (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_IGNORED_P (decl) = 0;
+  /* IFUNC resolvers have to be externally visible.  */
+  TREE_PUBLIC (decl) = 1;
+  DECL_UNINLINABLE (decl) = 0;
+
+  /* Resolver is not external, body is generated.  */
+  DECL_EXTERNAL (decl) = 0;
+  DECL_EXTERNAL (dispatch_decl) = 0;
+
+  DECL_CONTEXT (decl) = NULL_TREE;
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  DECL_STATIC_CONSTRUCTOR (decl) = 0;
+
+  if (DECL_COMDAT_GROUP (default_decl)
+      || TREE_PUBLIC (default_decl))
+    {
+      /* In this case, each translation unit with a call to this
+	 versioned function will put out a resolver.  Ensure it
+	 is comdat to keep just one copy.  */
+      DECL_COMDAT (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+  /* Build result decl and add to function_decl. */
+  t = build_decl (UNKNOWN_LOCATION, RESULT_DECL, NULL_TREE, ptr_type_node);
+  DECL_ARTIFICIAL (t) = 1;
+  DECL_IGNORED_P (t) = 1;
+  DECL_RESULT (decl) = t;
+
+  gimplify_function_tree (decl);
+  push_cfun (DECL_STRUCT_FUNCTION (decl));
+  *empty_bb = init_lowered_empty_function (decl, false);
+
+  cgraph_add_new_function (decl, true);
+  cgraph_call_function_insertion_hooks (cgraph_get_create_node (decl));
+
+  pop_cfun ();
+
+  gcc_assert (dispatch_decl != NULL);
+  /* Mark dispatch_decl as "ifunc" with resolver as resolver_name.  */
+  DECL_ATTRIBUTES (dispatch_decl) 
+    = make_attribute ("ifunc", resolver_name, DECL_ATTRIBUTES (dispatch_decl));
+
+  /* Create the alias for dispatch to resolver here.  */
+  /*cgraph_create_function_alias (dispatch_decl, decl);*/
+  cgraph_same_body_alias (NULL, dispatch_decl, decl);
+  return decl;
+}
+
+/* Generate the dispatching code body to dispatch multi-versioned function
+   DECL.  The target hook is called to process the "target" attributes and
+   provide the code to dispatch the right function at run-time.  NODE points
+   to the dispatcher decl whose body will be created.  */
+
+static tree 
+ix86_generate_version_dispatcher_body (void *node_p)
+{
+  tree resolver_decl;
+  basic_block empty_bb;
+  VEC (tree, heap) *fn_ver_vec = NULL;
+  tree default_ver_decl;
+  struct cgraph_node *versn;
+  struct cgraph_node *node;
+
+  struct cgraph_function_version_info *node_version_info = NULL;
+  struct cgraph_function_version_info *versn_info = NULL;
+
+  node = (cgraph_node *)node_p;
+
+  node_version_info = get_cgraph_node_version (node);
+  gcc_assert (node->dispatcher_function
+	      && node_version_info != NULL);
+
+  if (node_version_info->dispatcher_resolver)
+    return node_version_info->dispatcher_resolver;
+
+  /* The first version in the chain corresponds to the default version.  */
+  default_ver_decl = node_version_info->next->this_node->symbol.decl;
+
+  /* node is going to be an alias, so remove the finalized bit.  */
+  node->local.finalized = false;
+
+  resolver_decl = make_resolver_func (default_ver_decl,
+				      node->symbol.decl, &empty_bb);
+
+  node_version_info->dispatcher_resolver = resolver_decl;
+
+  push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
+
+  fn_ver_vec = VEC_alloc (tree, heap, 2);
+
+  for (versn_info = node_version_info->next; versn_info;
+       versn_info = versn_info->next)
+    {
+      versn = versn_info->this_node;
+      /* Check for virtual functions here again, as by this time it should
+	 have been determined if this function needs a vtable index or
+	 not.  This happens for methods in derived classes that override
+	 virtual methods in base classes but are not explicitly marked as
+	 virtual.  */
+      if (DECL_VINDEX (versn->symbol.decl))
+        error_at (DECL_SOURCE_LOCATION (versn->symbol.decl),
+		  "Virtual function multiversioning not supported");
+      VEC_safe_push (tree, heap, fn_ver_vec, versn->symbol.decl);
+    }
+
+  dispatch_function_versions (resolver_decl, fn_ver_vec, &empty_bb);
+
+  rebuild_cgraph_edges (); 
+  pop_cfun ();
+  return resolver_decl;
+}
 /* This builds the processor_model struct type defined in
    libgcc/config/i386/cpuinfo.c  */
 
@@ -28685,6 +29311,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     {
       tree ref;
       tree field;
+      tree final;
+
       unsigned int field_val = 0;
       unsigned int NUM_ARCH_NAMES
 	= sizeof (arch_names_table) / sizeof (struct _arch_names_table);
@@ -28724,14 +29352,17 @@ fold_builtin_cpu (tree fndecl, tree *args)
 		     field, NULL_TREE);
 
       /* Check the value.  */
-      return build2 (EQ_EXPR, unsigned_type_node, ref,
-		     build_int_cstu (unsigned_type_node, field_val));
+      final = build2 (EQ_EXPR, unsigned_type_node, ref,
+		      build_int_cstu (unsigned_type_node, field_val));
+      return build1 (CONVERT_EXPR, integer_type_node, final);
     }
   else if (fn_code == IX86_BUILTIN_CPU_SUPPORTS)
     {
       tree ref;
       tree array_elt;
       tree field;
+      tree final;
+
       unsigned int field_val = 0;
       unsigned int NUM_ISA_NAMES
 	= sizeof (isa_names_table) / sizeof (struct _isa_names_table);
@@ -28763,8 +29394,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       field_val = (1 << isa_names_table[i].feature);
       /* Return __cpu_model.__cpu_features[0] & field_val  */
-      return build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
-		     build_int_cstu (unsigned_type_node, field_val));
+      final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
+		      build_int_cstu (unsigned_type_node, field_val));
+      return build1 (CONVERT_EXPR, integer_type_node, final);
     }
   gcc_unreachable ();
 }
@@ -30202,8 +30834,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   switch ((enum ix86_builtin_func_type) d->flag)
     {
     case VOID_FTYPE_VOID:
-      if (icode == CODE_FOR_avx_vzeroupper)
-	target = GEN_INT (vzeroupper_intrinsic);
       emit_insn (GEN_FCN (icode) (target));
       return 0;
     case VOID_FTYPE_UINT64:
@@ -30620,13 +31250,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case IX86_BUILTIN_LDMXCSR:
       op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
-      target = assign_386_stack_local (SImode, SLOT_VIRTUAL);
+      target = assign_386_stack_local (SImode, SLOT_TEMP);
       emit_move_insn (target, op0);
       emit_insn (gen_sse_ldmxcsr (target));
       return 0;
 
     case IX86_BUILTIN_STMXCSR:
-      target = assign_386_stack_local (SImode, SLOT_VIRTUAL);
+      target = assign_386_stack_local (SImode, SLOT_TEMP);
       emit_insn (gen_sse_stmxcsr (target));
       return copy_to_mode_reg (SImode, target);
 
@@ -32246,13 +32876,6 @@ ix86_free_from_memory (enum machine_mode mode)
 			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 					    GEN_INT (size))));
     }
-}
-
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-ix86_lra_p (void)
-{
-  return true;
 }
 
 /* Return a register priority for hard reg REGNO.  */
@@ -34436,10 +35059,6 @@ ix86_reorg (void)
   /* We are freeing block_for_insn in the toplev to keep compatibility
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
-
-  /* Run the vzeroupper optimization if needed.  */
-  if (TARGET_VZEROUPPER)
-    move_or_delete_vzeroupper ();
 
   if (optimize && optimize_function_for_speed_p (cfun))
     {
@@ -41252,6 +41871,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_PROFILE_BEFORE_PROLOGUE
 #define TARGET_PROFILE_BEFORE_PROLOGUE ix86_profile_before_prologue
 
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME ix86_mangle_decl_assembler_name
+
 #undef TARGET_ASM_UNALIGNED_HI_OP
 #define TARGET_ASM_UNALIGNED_HI_OP TARGET_ASM_ALIGNED_HI_OP
 #undef TARGET_ASM_UNALIGNED_SI_OP
@@ -41345,6 +41967,17 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_FOLD_BUILTIN
 #define TARGET_FOLD_BUILTIN ix86_fold_builtin
 
+#undef TARGET_COMPARE_VERSION_PRIORITY
+#define TARGET_COMPARE_VERSION_PRIORITY ix86_compare_version_priority
+
+#undef TARGET_GENERATE_VERSION_DISPATCHER_BODY
+#define TARGET_GENERATE_VERSION_DISPATCHER_BODY \
+  ix86_generate_version_dispatcher_body
+
+#undef TARGET_GET_FUNCTION_VERSIONS_DISPATCHER
+#define TARGET_GET_FUNCTION_VERSIONS_DISPATCHER \
+  ix86_get_function_versions_dispatcher
+
 #undef TARGET_ENUM_VA_LIST_P
 #define TARGET_ENUM_VA_LIST_P ix86_enum_va_list
 
@@ -41436,6 +42069,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_MEMBER_TYPE_FORCES_BLK
 #define TARGET_MEMBER_TYPE_FORCES_BLK ix86_member_type_forces_blk
 
+#undef TARGET_INSTANTIATE_DECLS
+#define TARGET_INSTANTIATE_DECLS ix86_instantiate_decls
+
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
 
@@ -41485,6 +42121,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT ix86_function_specific_print
 
+#undef TARGET_OPTION_FUNCTION_VERSIONS
+#define TARGET_OPTION_FUNCTION_VERSIONS ix86_function_versions
+
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P ix86_can_inline_p
 
@@ -41495,7 +42134,7 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #define TARGET_LEGITIMATE_ADDRESS_P ix86_legitimate_address_p
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P ix86_lra_p
+#define TARGET_LRA_P hook_bool_void_true
 
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY ix86_register_priority

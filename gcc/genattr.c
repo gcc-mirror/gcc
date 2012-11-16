@@ -44,7 +44,7 @@ gen_attr (rtx attr)
   if (is_const)
     VEC_safe_push (rtx, heap, const_attrs, attr);
 
-  printf ("#define HAVE_ATTR_%s\n", XSTR (attr, 0));
+  printf ("#define HAVE_ATTR_%s 1\n", XSTR (attr, 0));
 
   /* If numeric attribute, don't need to write an enum.  */
   if (GET_CODE (attr) == DEFINE_ENUM_ATTR)
@@ -158,12 +158,6 @@ main (int argc, char **argv)
   puts ("#define GCC_INSN_ATTR_H\n");
 
   puts ("#include \"insn-attr-common.h\"\n");
-
-  /* For compatibility, define the attribute `alternative', which is just
-     a reference to the variable `which_alternative'.  */
-
-  puts ("#define HAVE_ATTR_alternative");
-  puts ("#define get_attr_alternative(insn) which_alternative");
 
   /* Read the machine description.  */
 
@@ -341,6 +335,29 @@ main (int argc, char **argv)
 	 in order to avoid uglifying other code with more ifdefs.  */
       printf ("typedef void *state_t;\n\n");
     }
+
+  /* Special-purpose atributes should be tested with if, not #ifdef.  */
+  const char * const special_attrs[] = { "length", "enabled", 0 };
+  for (const char * const *p = special_attrs; *p; p++)
+    {
+      printf ("#ifndef HAVE_ATTR_%s\n"
+	      "#define HAVE_ATTR_%s 0\n"
+	      "#endif\n", *p, *p);
+    }
+  /* We make an exception here to provide stub definitions for
+     insn_*_length* / get_attr_enabled functions.  */
+  puts ("#if !HAVE_ATTR_length\n"
+	"extern int hook_int_rtx_unreachable (rtx);\n"
+	"#define insn_default_length hook_int_rtx_unreachable\n"
+	"#define insn_min_length hook_int_rtx_unreachable\n"
+	"#define insn_variable_length_p hook_int_rtx_unreachable\n"
+	"#define insn_current_length hook_int_rtx_unreachable\n"
+	"#include \"insn-addr.h\"\n"
+	"#endif\n"
+	"#if !HAVE_ATTR_enabled\n"
+	"extern int hook_int_rtx_1 (rtx);\n"
+	"#define get_attr_enabled hook_int_rtx_1\n"
+	"#endif\n");
 
   /* Output flag masks for use by reorg.
 

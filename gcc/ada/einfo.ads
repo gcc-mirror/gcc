@@ -2959,6 +2959,10 @@ package Einfo is
 --       the nature and use of this entity for implementing the Image and
 --       Value attributes for the enumeration type in question.
 
+--    Loop_Entry_Attributes (Elist10)
+--       Defined for loop statement scopes. The list contains all Loop_Entry
+--       attribute references related to the target loop.
+
 --    Low_Bound_Tested (Flag205)
 --       Defined in all entities. Currently this can only be set True for
 --       formal parameter entries of a standard unconstrained one-dimensional
@@ -5389,6 +5393,7 @@ package Einfo is
 
    --  E_Loop
    --    First_Exit_Statement                (Node8)
+   --    Loop_Entry_Attributes               (Elist10)
    --    Has_Exit                            (Flag47)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
@@ -6309,6 +6314,7 @@ package Einfo is
    function Limited_View                        (Id : E) return E;
    function Lit_Indexes                         (Id : E) return E;
    function Lit_Strings                         (Id : E) return E;
+   function Loop_Entry_Attributes               (Id : E) return L;
    function Low_Bound_Tested                    (Id : E) return B;
    function Machine_Radix_10                    (Id : E) return B;
    function Master_Id                           (Id : E) return E;
@@ -6905,6 +6911,7 @@ package Einfo is
    procedure Set_Limited_View                    (Id : E; V : E);
    procedure Set_Lit_Indexes                     (Id : E; V : E);
    procedure Set_Lit_Strings                     (Id : E; V : E);
+   procedure Set_Loop_Entry_Attributes           (Id : E; V : L);
    procedure Set_Low_Bound_Tested                (Id : E; V : B := True);
    procedure Set_Machine_Radix_10                (Id : E; V : B := True);
    procedure Set_Master_Id                       (Id : E; V : E);
@@ -7623,6 +7630,7 @@ package Einfo is
    pragma Inline (Limited_View);
    pragma Inline (Lit_Indexes);
    pragma Inline (Lit_Strings);
+   pragma Inline (Loop_Entry_Attributes);
    pragma Inline (Low_Bound_Tested);
    pragma Inline (Machine_Radix_10);
    pragma Inline (Master_Id);
@@ -8028,6 +8036,7 @@ package Einfo is
    pragma Inline (Set_Limited_View);
    pragma Inline (Set_Lit_Indexes);
    pragma Inline (Set_Lit_Strings);
+   pragma Inline (Set_Loop_Entry_Attributes);
    pragma Inline (Set_Low_Bound_Tested);
    pragma Inline (Set_Machine_Radix_10);
    pragma Inline (Set_Master_Id);

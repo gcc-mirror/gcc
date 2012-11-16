@@ -28,7 +28,7 @@
 
 #include <bits/c++config.h>
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 # include <ctgmath>
 #else
 # if _GLIBCXX_HAVE_TGMATH_H

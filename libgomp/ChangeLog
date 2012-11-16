@@ -1,3 +1,12 @@
+2012-11-07  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* testsuite/libgomp.c++/pr24455.C: Use
+	-Wl,-undefined,dynamic_lookup on darwin.
+
+2012-11-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/libgomp.c++/pr24455.C: Use -Wl,-G on AIX.
+
 2012-10-24  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* testsuite/libgomp.graphite/force-parallel-6.c: Adjust the loops.

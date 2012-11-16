@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;    use Atree;
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Osint;    use Osint;
@@ -690,7 +691,7 @@ package body Prj.Part is
       --  If there were any kind of error during the parsing, serious
       --  or not, then the parsing fails.
 
-      if Err_Vars.Total_Errors_Detected > 0 then
+      if Total_Errors_Detected > 0 then
          Project := Empty_Node;
       end if;
 

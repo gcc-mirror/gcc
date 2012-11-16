@@ -1,3 +1,344 @@
+2012-11-12  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/hoist-register-pressure-3.c: New test.
+
+2012-11-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sh4a-fprun.c: Add test_sinf and test_cosf noinline
+	wrappers around sinf and cosf.
+
+2012-11-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/55247
+	PR middle-end/55259
+	* gcc.target/i386/pr55247-2.c: New file.
+
+2012-11-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/55263
+	* g++.dg/pr55263.C: New test.
+
+2012-11-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55238
+	* testsuite/gcc.dg/torture/pr55238.c: New test.
+
+2012-11-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	* gcc.dg/torture/pr54920.c: Add "-fno-common" option on hppa*-*-hpux*.
+	* c-c++-common/torture/vector-subscript-1.c: Likewise.
+	* c-c++-common/torture/vector-subscript-2.c: Likewise.
+
+2012-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/cunroll-1.c: Fix bogus testcase.
+
+2012-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr55247.c: Require maybe_x32 target.  Add
+	-mno-sse -mno-mmx to dg-options.  Reformat.
+
+2012-11-10  David Edelsohn  <dje.gcc@gmail.com>
+
+	* c-c++-common/scal-to-vec2.c: Ignore non-standard ABI message.
+	* c-c++-common/vector-compare-1.c: Same.
+	* c-c++-common/vector-compare-2.c: Same.
+	* g++.dg/other/unused1.C: Skip on AIX.
+	* g++.dg/other/anon5.C: Allow Undefined to be capitalized. Ignore
+	extra message on AIX.
+
+2012-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55247
+	* gcc.target/i386/pr55247.c: New test.
+
+2012-11-09  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/20121108-1.c: New test.
+
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* g++.dg/cpp0x/gnu_fext-numeric-literals.C: New.
+	* g++.dg/cpp0x/std_fext-numeric-literals.C: New.
+	* g++.dg/cpp0x/gnu_fno-ext-numeric-literals.C: New.
+	* g++.dg/cpp0x/std_fno-ext-numeric-literals.C: New.
+
+2012-11-09  Siddhesh Poyarekar  <siddhesh@redhat.com>
+
+	* gcc.dg/Warray-bounds-3.c (bar): Keep array access within
+	bounds for ABDAY, DAY, ABMON, MON, AM_PM.
+	* gcc.dg/vect/pr22506.c (foo): Reduce loop iterations to within
+	array bounds.
+	* gcc.dg/vect/pr34005.c (XdmcpUnwrap): Likewise.
+
+2012-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tm/pr47530-2.C: Adjust for uninstrumented code path.
+	* g++.dg/tm/pr47530.C: Same.
+
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54859
+	* g++.dg/cpp0x/alias-decl-25.C: New.
+
+	* g++.dg/abi/abi-tag1.C: New.
+	* g++.dg/abi/abi-tag2.C: New.
+
+2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55154
+	* gcc.target/i386/pr55154.c: New test.
+
+2012-11-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: Move ...
+	* gcc.target/i386/pr55151.c: ... here.
+
+2012-11-09  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/54472
+	* gcc.dg/pr54472.c: New test.
+
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_check3.ad[sb]: New test.
+
+2012-11-08  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Handle runoutput test type
+	with arguments.  Handle errorcheckoutput and rundir test types.
+
+2012-11-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/55191
+	* gcc.dg/pr55191.c: New test.
+
+2012-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54499
+	* g++.dg/debug/pr54499.C: New test.
+
+2012-11-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/48636
+	* gcc.dg/winline-3.c: Update.
+
+2012-11-08  Martin Jambor  <mjambor@suse.cz>
+
+	* gfortran.dg/ipcp-array-1.f90: New test.
+
+2012-11-08  Florian Weimer  <fweimer@redhat.com>
+
+	* g++.old-deja/g++.abi/cxa_vec.C: Fix typo in comment.
+
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: Use ia32 instead of x86_64.
+
+2012-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/cunroll-1.c: Scan cunrolli dump.
+
+2012-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/compile/20121107-1.c: New test.
+
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: Compile it only for x86_64.
+
+2012-11-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55122
+	* gcc.dg/pr55122.c: New test.
+
+2012-11-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr46728-[1234578].c: Tighten regex to ignore
+	word powerpc.
+	* gcc.target/powerpc/vsx-mass-1.c: Escape [ and ] in regex.
+	* gcc.target/powerpc/loop_align.c: Skip on AIX.
+	* gcc.target/powerpc/ppc-pow.c: Allow dot symbols in branch.
+	* gcc.target/powerpc/tfmode_off.c: Skip on AIX.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* gcc.dg/warn-nsstring.c: Use -Wformat explicitly.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/51294
+	* c-c++-common/pr51294.c: New.
+
+2012-11-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/53787
+	* gcc.dg/ipa/ipa-5.c: Adjust.
+	* gcc.dg/ipa/ipcp-agg-1.c: New test.
+	* gcc.dg/ipa/ipcp-agg-2.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-3.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-4.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-5.c: Likewise.
+	* gcc.dg/ipa/ipcp-agg-6.c: Likewise.
+	* gfortran.dg/pr48636.f90: Add -fno-ipa-cp.
+	* gfortran.dg/pr48636-2.f90: New test.
+	* gfortran.dg/pr53787.f90: Likewise.
+
+2012-11-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55226
+	Revert:
+	2012-10-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54922
+	* g++.dg/cpp0x/constexpr-union4.C: New.
+
+2012-11-07  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/aarch64/dwarf-cfa-reg.c: New test.
+
+2012-11-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/49220
+	* gcc.c-torture/compile/pr49220.c: New test.
+
+2012-11-07  Florian Weimer  <fweimer@redhat.com>
+
+	* g++.dg/init/new40.C: New.
+
+2012-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54693
+	* gcc.dg/guality/pr54693-2.c: New test.
+
+2012-11-06  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: Add
+	-fno-vect-cost-model.
+
+2012-11-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-c++-common/tm/trxn-expr-3.c: Adjust for uninstrumented code path.
+	* gcc.dg/tm/debug-1.c: Same.
+	* gcc.dg/tm/irrevocable-3.c: Same.
+	* gcc.dg/tm/irrevocable-4.c: Same.
+	* gcc.dg/tm/memopt-10.c: Same.
+	* gcc.dg/tm/memopt-11.c: Same.
+	* gcc.dg/tm/props-4.c: Same.
+	* gcc.dg/tm/wrap-3.c: Same.
+	* gcc.dg/tm/wrap-4.c: Same.
+
+2012-11-06  Andrew Pinski  <apinski@cavium.com>
+
+	* g++.dg/abi/aarch64_guard1.C: Add -fno-section-anchors.
+
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-1.c: Make to look like a good unroling
+	candidate still.
+	* gcc.dg/tree-ssa/loop-23.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-1.c: Unrolling now happens early.
+	* gcc.dg/tree-prof/unroll-1.c: Remove confused dg-options.
+
+2012-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* const-uniq-1.c: Expand regex to match AIX XCOFF labels.
+
+2012-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/41993
+	* gcc.dg/torture/pr41993.c: New test.
+
+2012-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/l_fma_float_?.c: Update.
+	* gcc.target/i386/l_fma_double_?.c: Update.
+
+2012-11-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-8.c: New.
+	* gcc.target/sh/pr54089-9.c: New.
+
+2012-11-06  Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	PR target/47440
+	* gcc.target/i386/avx-vzeroupper-5.c: Changed scan-assembler-times.
+	* gcc.target/i386/avx-vzeroupper-8.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-9.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-10.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-11.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-12.c: Likewise.
+	* gcc.target/i386/avx-vzeroupper-19.c: Likewis.
+	* gcc.target/i386/avx-vzeroupper-27.c: New.
+
+2012-11-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54917
+	* gfortran.dg/transfer_class_1.f90: New.
+	* gfortran.dg/transfer_class_2.f90: New.
+
+2012-11-05  Sriraman Tallam  <tmsriram@google.com>
+
+	* testsuite/g++.dg/mv1.C: New test.
+	* testsuite/g++.dg/mv2.C: New test.
+	* testsuite/g++.dg/mv3.C: New test.
+	* testsuite/g++.dg/mv4.C: New test.
+	* testsuite/g++.dg/mv5.C: New test.
+	* testsuite/g++.dg/mv6.C: New test.
+
+2012-11-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/55186
+	* gcc.dg/const-uniq-1.c (a): Increase length four times.
+
+2012-11-05  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* gcc.dg/torture/pr53922.c: Use -Wl,-undefined,dynamic_lookup on
+	darwin.
+
+2012-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/torture/20121105-1.C: New test.
+
+2012-11-05  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/torture/fp-compare.c: New testcase.
+
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/const-1.c: Update.
+	* gcc.dg/pure-1.c: Update.
+
+2012-11-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55151
+	* gcc.dg/pr55151.c: New test.
+
+2012-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54970
+	PR debug/54971
+	* gcc.dg/guality/pr54970.c: Use NOP instead of "NOP" in inline-asm.
+
+2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/51128
+	* gcc.dg/torture/pr55018.c: Skip if -fno-fat-lto-objects was passed.
+
+2012-11-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/autopar/pr49960.c: Fix testcase.
+
+2012-11-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/cunroll-9.c: Dump cunrolli details.
+	Fix scan-tree-dump-times directive.
+
 2012-11-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55199
@@ -565,7 +906,7 @@
 2012-10-23  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR gcc/52945
-	* gcc.dg/lto/pr52634_0.c: skip the test on Darwin.
+	* gcc.dg/lto/pr52634_0.c: Skip the test on Darwin.
 
 2012-10-23  Joseph Myers  <joseph@codesourcery.com>
 
@@ -9579,8 +9920,7 @@
 2012-01-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/51502
-	* lib/gcc-dg.exp (scan-module-absence):  Really commit last
-	change.
+	* lib/gcc-dg.exp (scan-module-absence):  Really commit last change.
 
 2012-01-01  Ira Rosen  <irar@il.ibm.com>
 

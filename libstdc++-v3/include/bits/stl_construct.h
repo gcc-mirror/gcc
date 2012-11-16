@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Constructs an object in existing memory by invoking an allocated
    * object's constructor with an initializer.
    */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _T1, typename... _Args>
     inline void
     _Construct(_T1* __p, _Args&&... __args)

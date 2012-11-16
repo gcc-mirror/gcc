@@ -4,24 +4,12 @@
 
 <info><title>ABI Policy and Guidelines</title>
   <keywordset>
-    <keyword>
-      C++
-    </keyword>
-    <keyword>
-      ABI
-    </keyword>
-    <keyword>
-      version
-    </keyword>
-    <keyword>
-      dynamic
-    </keyword>
-    <keyword>
-      shared
-    </keyword>
-    <keyword>
-      compatibility
-    </keyword>
+    <keyword>C++</keyword>
+    <keyword>ABI</keyword>
+    <keyword>version</keyword>
+    <keyword>dynamic</keyword>
+    <keyword>shared</keyword>
+    <keyword>compatibility</keyword>
   </keywordset>
 </info>
 

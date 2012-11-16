@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  _Node* __tmp = __cur;
 	  __cur = static_cast<_Node*>(__cur->_M_next);
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 	  _M_get_Node_allocator().destroy(__tmp);
 #else
 	  _M_get_Tp_allocator().destroy(std::__addressof(__tmp->_M_data));
@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
       typename list<_Tp, _Alloc>::iterator
@@ -114,7 +114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return __ret;
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp, _Alloc>::
@@ -285,7 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     void
     list<_Tp, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     merge(list&& __x)
 #else
     merge(list& __x)
@@ -319,7 +319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     template <typename _StrictWeakOrdering>
       void
       list<_Tp, _Alloc>::
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       merge(list&& __x, _StrictWeakOrdering __comp)
 #else
       merge(list& __x, _StrictWeakOrdering __comp)

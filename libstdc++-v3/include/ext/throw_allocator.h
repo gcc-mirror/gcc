@@ -1,7 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2005-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -56,7 +55,7 @@
 #include <utility>
 #include <bits/functexcept.h>
 #include <bits/move.h>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 # include <functional>
 # include <random>
 #else
@@ -78,14 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Substitute for forced_error object when -fno-exceptions.
   inline void
   __throw_forced_error()
-  {
-#if __EXCEPTIONS
-    throw forced_error();
-#else
-    __builtin_abort();
-#endif
-  }
-
+  { _GLIBCXX_THROW_OR_ABORT(forced_error()); }
 
   /**
    *  @brief Base class for checking address and label information
@@ -393,7 +385,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { engine().seed(__s); }
 
   private:
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     typedef std::uniform_real_distribution<double> 	distribution_type;
     typedef std::mt19937 				engine_type;
 #else
@@ -404,7 +396,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static double
     generate()
     {
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const distribution_type distribution(0, 1);
       static auto generator = std::bind(distribution, engine());
 #else
@@ -467,6 +459,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       throw_value_base(const throw_value_base& __v) : _M_i(__v._M_i)
       { throw_conditionally(); }
 
+#if __cplusplus >= 201103L
+      // Shall not throw.
+      throw_value_base(throw_value_base&&) = default;
+#endif
+
       explicit throw_value_base(const std::size_t __i) : _M_i(__i)
       { throw_conditionally(); }
 #endif
@@ -478,6 +475,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_i = __v._M_i;
 	return *this;
       }
+
+#if __cplusplus >= 201103L
+      // Shall not throw.
+      throw_value_base&
+      operator=(throw_value_base&&) = default;
+#endif
 
       throw_value_base&
       operator++()
@@ -568,7 +571,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     throw_value_limit(const throw_value_limit& __other)
     : base_type(__other._M_i) { }
 
+#if __cplusplus >= 201103L
+    throw_value_limit(throw_value_limit&&) = default;
+#endif
+
     explicit throw_value_limit(const std::size_t __i) : base_type(__i) { }
+#endif
+
+    throw_value_limit&
+    operator=(const throw_value_limit& __other)
+    {
+      base_type::operator=(__other);
+      return *this;
+    }
+
+#if __cplusplus >= 201103L
+    throw_value_limit&
+    operator=(throw_value_limit&&) = default;
 #endif
   };
 
@@ -583,8 +602,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     throw_value_random(const throw_value_random& __other)
     : base_type(__other._M_i) { }
 
+#if __cplusplus >= 201103L
+    throw_value_random(throw_value_random&&) = default;
+#endif
 
     explicit throw_value_random(const std::size_t __i) : base_type(__i) { }
+#endif
+
+    throw_value_random&
+    operator=(const throw_value_random& __other)
+    {
+      base_type::operator=(__other);
+      return *this;
+    }
+
+#if __cplusplus >= 201103L
+    throw_value_random&
+    operator=(throw_value_random&&) = default;
 #endif
   };
 
@@ -641,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return a;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
         void
         construct(_Up* __p, _Args&&... __args)
@@ -737,7 +771,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 # include <bits/functional_hash.h>
 

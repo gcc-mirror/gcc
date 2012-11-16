@@ -34,7 +34,7 @@
 #pragma GCC system_header
 
 #include <exception>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <bits/hash_bytes.h>
 #endif
 
@@ -138,7 +138,7 @@ namespace std
     bool operator!=(const type_info& __arg) const _GLIBCXX_NOEXCEPT
     { return !operator==(__arg); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
     size_t hash_code() const noexcept
     {
 #  if !__GXX_MERGED_TYPEINFO_NAMES
@@ -148,7 +148,7 @@ namespace std
       return reinterpret_cast<size_t>(__name);
 #  endif
     }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
     // Return true if this is a pointer type of some kind
     virtual bool __is_pointer_p() const;

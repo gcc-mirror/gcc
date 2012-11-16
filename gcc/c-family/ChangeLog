@@ -1,3 +1,65 @@
+2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/54413
+	* c-opts.c (c_common_handle_option): Set new flags.
+	* c.opt: Describe new flags.
+
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wabi-tag): New.
+
+2012-11-09  Andi Kleen  <ak@linux.intel.com>
+
+	PR 55139
+	* c-common.c (get_atomic_generic_size): Mask with
+        MEMMODEL_MASK
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* c.opt (Wformat): Make it Alias Wformat=1.
+	(Wformat-contains-nul,Wformat-extra-args,Wformat-nonliteral,
+	Wformat-security,Wformat-y2k,Wformat-zero-length): Use
+	LangEnabledBy.
+	(Wformat=): RejectNegative. Use LangEnabledBy.
+	(Wnonnull): Use LangEnabledBy.
+	* c-opts.c (c_common_handle_option): Do not handle Wformat here.
+	* c-format.c (set_Wformat): Delete.
+	(decode_format_attr): Replace OPT_Wformat with OPT_Wformat_.
+        (maybe_read_dollar_number):  Likewise.
+        (avoid_dollar_number):  Likewise.
+        (finish_dollar_format_checking):  Likewise.
+        (check_format_info):  Likewise.
+        (check_format_info_main):  Likewise.
+        (check_format_types):  Likewise.
+        (format_type_warning):  Likewise.
+        * c-common.c (int):  Likewise.
+        (check_function_sentinel):  Likewise.
+        * c-common.h (warn_format,set_Wformat): Do not declare here.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/53063
+	* c.opt(Warray-bounds,Wdelete-non-virtual-dtor,Wenum-compare,
+	Wmain,Woverlength-strings, Wunknown-pragmas,Wunused-macros):
+	Use LangEnabledBy.
+	(Wswitch,Wswitch-default,Wswitch-enum): Likewise. Move here from
+	common.opt.
+	(Wvariadic-macros): Init(1).
+	* c-opts.c (c_common_handle_option): Do not handle them
+	explicitly.
+	(c_common_post_options): Likewise.
+	(sanitize_cpp_opts): warn_unused_macros is now
+	cpp_warn_unused_macros.
+	(push_command_line_include): Likewise.
+	* c-common.c (warn_unknown_pragmas): Do not define.
+	* c-common.h (warn_unknown_pragmas): Do not declare.
+
+2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/51294
+	* c-common.c (conversion_warning): Handle conditional expressions.
+
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/54930

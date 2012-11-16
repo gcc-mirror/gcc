@@ -1,3 +1,14 @@
+2012-11-06  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c (__generic_morestack): Align the returned
+	stack pointer to a 32 byte boundary.
+	* config/i386/morestack.S (__morestack_non_split) [32-bit]: Don't
+	increment the return address until we have decided that we don't
+	have a varargs function.
+	(__morestack) [32-bit]: Align stack correctly when calling C
+	functions.
+	(__morestack) [64-bit]: Likewise.
+
 2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure: Regenerate.

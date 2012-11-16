@@ -4,12 +4,8 @@
 
 <info><title>Porting to New Hardware or Operating Systems</title>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      internals
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>internals</keyword>
   </keywordset>
 </info>
 

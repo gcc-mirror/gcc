@@ -332,8 +332,13 @@ extern abi_dispatch *dispatch_serialirr();
 extern abi_dispatch *dispatch_serialirr_onwrite();
 extern abi_dispatch *dispatch_gl_wt();
 extern abi_dispatch *dispatch_ml_wt();
+extern abi_dispatch *dispatch_htm();
 
 extern gtm_cacheline_mask gtm_mask_stack(gtm_cacheline *, gtm_cacheline_mask);
+
+// Control variable for the HTM fastpath that uses serial mode as fallback.
+// Non-zero if the HTM fastpath is enabled. See gtm_thread::begin_transaction.
+extern uint32_t htm_fastpath;
 
 } // namespace GTM
 

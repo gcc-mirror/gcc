@@ -674,6 +674,10 @@ package Sem_Util is
    function Has_Declarations (N : Node_Id) return Boolean;
    --  Determines if the node can have declarations
 
+   function Has_Denormals (E : Entity_Id) return Boolean;
+   --  Determines if the floating-point type E supports denormal numbers.
+   --  Returns False if E is not a floating-point type.
+
    function Has_Discriminant_Dependent_Constraint
      (Comp : Entity_Id) return Boolean;
    --  Returns True if and only if Comp has a constrained subtype that depends
@@ -707,6 +711,10 @@ package Sem_Util is
    function Has_Private_Component (Type_Id : Entity_Id) return Boolean;
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
+
+   function Has_Signed_Zeros (E : Entity_Id) return Boolean;
+   --  Determines if the floating-point type E supports signed zeros.
+   --  Returns False if E is not a floating-point type.
 
    function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean;
    --  Return whether an array type has static bounds

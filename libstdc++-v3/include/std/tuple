@@ -1,7 +1,6 @@
 // <tuple> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
-// Free Software Foundation, Inc.
+// Copyright (C) 2007-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,11 +31,12 @@
 
 #pragma GCC system_header
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
 #include <utility>
+#include <array>
 #include <bits/uses_allocator.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -862,18 +862,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     forward_as_tuple(_Elements&&... __args) noexcept
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
-
-  template<typename, std::size_t> struct array;
-
-  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    constexpr _Tp& get(array<_Tp, _Nm>&) noexcept;
-
-  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    constexpr _Tp&& get(array<_Tp, _Nm>&&) noexcept;
-
-  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
-    constexpr const _Tp& get(const array<_Tp, _Nm>&) noexcept;
-
   template<typename>
     struct __is_tuple_like_impl : false_type
     { };
@@ -1095,6 +1083,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif // _GLIBCXX_TUPLE

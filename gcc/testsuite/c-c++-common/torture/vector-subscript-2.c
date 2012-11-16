@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-fno-common" { target hppa*-*-hpux* } } */
 #define vector __attribute__((vector_size(sizeof(int)*4) ))
 
 /* Check to make sure that we extract and insert the vector at the same

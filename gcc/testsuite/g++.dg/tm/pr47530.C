@@ -73,7 +73,8 @@ void LinkedList::insert(int val)
   }
 }
 
-// Make sure we don't do tail optimization on the commit.
-// { dg-final { scan-tree-dump-times "commitTransaction...; .tail call" 0 "optimized" } }
+// Make sure we don't do tail optimization on the commit, except on
+// the uninstrumented code path.
+// { dg-final { scan-tree-dump-times "commitTransaction...; .tail call" 1 "optimized" } }
 // { dg-final { cleanup-tree-dump "optimized" } }
 

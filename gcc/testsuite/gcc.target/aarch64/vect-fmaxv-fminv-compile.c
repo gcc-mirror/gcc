@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -ffast-math" } */
+/* { dg-options "-O3 -ffast-math -fno-vect-cost-model" } */
 
 #include "vect-fmaxv-fminv.x"
 

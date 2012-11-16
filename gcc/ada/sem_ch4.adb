@@ -1921,6 +1921,7 @@ package body Sem_Ch4 is
       --  Defend against error of missing expressions from previous error
 
       if No (Then_Expr) then
+         Check_Error_Detected;
          return;
       end if;
 
@@ -3917,8 +3918,7 @@ package body Sem_Ch4 is
          --  subsequent semantic checks might examine the original node.
 
          Set_Entity (Sel, Comp);
-         Rewrite (Selector_Name (N),
-           New_Occurrence_Of (Comp, Sloc (N)));
+         Rewrite (Selector_Name (N), New_Occurrence_Of (Comp, Sloc (N)));
          Set_Original_Discriminant (Selector_Name (N), Comp);
          Set_Etype (N, Etype (Comp));
          Check_Implicit_Dereference (N, Etype (Comp));
@@ -3930,9 +3930,9 @@ package body Sem_Ch4 is
 
       elsif Is_Record_Type (Prefix_Type) then
 
-         --  Find component with given name
-         --  In an instance, if the node is known as a prefixed call, do
-         --  not examine components whose visibility may be accidental.
+         --  Find component with given name. In an instance, if the node is
+         --  known as a prefixed call, do not examine components whose
+         --  visibility may be accidental.
 
          while Present (Comp) and then not Is_Prefixed_Call (N) loop
             if Chars (Comp) = Chars (Sel)

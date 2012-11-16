@@ -49,6 +49,7 @@ static tree build_local_temp (tree);
 static tree handle_java_interface_attribute (tree *, tree, tree, int, bool *);
 static tree handle_com_interface_attribute (tree *, tree, tree, int, bool *);
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
+static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  */
@@ -3000,6 +3001,8 @@ const struct attribute_spec cxx_attribute_table[] =
     handle_com_interface_attribute, false },
   { "init_priority",  1, 1, true,  false, false,
     handle_init_priority_attribute, false },
+  { "abi_tag", 1, -1, false, false, false,
+    handle_abi_tag_attribute, true },
   { NULL,	      0, 0, false, false, false, NULL, false }
 };
 
@@ -3129,6 +3132,96 @@ handle_init_priority_attribute (tree* node,
       *no_add_attrs = true;
       return NULL_TREE;
     }
+}
+
+/* DECL is being redeclared; the old declaration had the abi tags in OLD,
+   and the new one has the tags in NEW_.  Give an error if there are tags
+   in NEW_ that weren't in OLD.  */
+
+bool
+check_abi_tag_redeclaration (const_tree decl, const_tree old, const_tree new_)
+{
+  if (old && TREE_CODE (TREE_VALUE (old)) == TREE_LIST)
+    old = TREE_VALUE (old);
+  if (new_ && TREE_CODE (TREE_VALUE (new_)) == TREE_LIST)
+    new_ = TREE_VALUE (new_);
+  bool err = false;
+  for (const_tree t = new_; t; t = TREE_CHAIN (t))
+    {
+      tree str = TREE_VALUE (t);
+      for (const_tree in = old; in; in = TREE_CHAIN (in))
+	{
+	  tree ostr = TREE_VALUE (in);
+	  if (cp_tree_equal (str, ostr))
+	    goto found;
+	}
+      error ("redeclaration of %qD adds abi tag %E", decl, str);
+      err = true;
+    found:;
+    }
+  if (err)
+    {
+      inform (DECL_SOURCE_LOCATION (decl), "previous declaration here");
+      return false;
+    }
+  return true;
+}
+
+/* Handle an "abi_tag" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_abi_tag_attribute (tree* node, tree name, tree args,
+			  int flags, bool* no_add_attrs)
+{
+  if (TYPE_P (*node))
+    {
+      if (!TAGGED_TYPE_P (*node))
+	{
+	  error ("%qE attribute applied to non-class, non-enum type %qT",
+		 name, *node);
+	  goto fail;
+	}
+      else if (!(flags & (int)ATTR_FLAG_TYPE_IN_PLACE))
+	{
+	  error ("%qE attribute applied to %qT after its definition",
+		 name, *node);
+	  goto fail;
+	}
+
+      tree attributes = TYPE_ATTRIBUTES (*node);
+      tree decl = TYPE_NAME (*node);
+
+      /* Make sure all declarations have the same abi tags.  */
+      if (DECL_SOURCE_LOCATION (decl) != input_location)
+	{
+	  if (!check_abi_tag_redeclaration (decl,
+					    lookup_attribute ("abi_tag",
+							      attributes),
+					    args))
+	    goto fail;
+	}
+    }
+  else
+    {
+      if (TREE_CODE (*node) != FUNCTION_DECL)
+	{
+	  error ("%qE attribute applied to non-function %qD", name, *node);
+	  goto fail;
+	}
+      else if (DECL_LANGUAGE (*node) == lang_c)
+	{
+	  error ("%qE attribute applied to extern \"C\" function %qD",
+		 name, *node);
+	  goto fail;
+	}
+    }
+
+  return NULL_TREE;
+
+ fail:
+  *no_add_attrs = true;
+  return NULL_TREE;
 }
 
 /* Return a new PTRMEM_CST of the indicated TYPE.  The MEMBER is the

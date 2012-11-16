@@ -725,6 +725,7 @@ package body Sem_Ch10 is
          --  ignore the entire analysis effort
 
          if No (Lib_Unit) then
+            Check_Error_Detected;
             return;
 
          else
@@ -2677,7 +2678,7 @@ package body Sem_Ch10 is
             --  Abandon processing in case of previous errors
 
             if No (Par_Name) then
-               pragma Assert (Serious_Errors_Detected /= 0);
+               Check_Error_Detected;
                return;
             end if;
          end loop;
@@ -5105,7 +5106,7 @@ package body Sem_Ch10 is
             --  Abandon processing in case of previous errors
 
             if No (Scope (Uname)) then
-               pragma Assert (Serious_Errors_Detected /= 0);
+               Check_Error_Detected;
                return;
             end if;
 

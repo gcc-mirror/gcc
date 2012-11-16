@@ -29,13 +29,13 @@ runtime_printtrace (uintptr *pcbuf, int32 c)
     {
       String fn;
       String file;
-      int line;
+      intgo line;
 
       if (__go_file_line (pcbuf[i], &fn, &file, &line)
 	  && runtime_showframe (fn.str))
 	{
 	  runtime_printf ("%S\n", fn);
-	  runtime_printf ("\t%S:%d\n", file, line);
+	  runtime_printf ("\t%S:%D\n", file, (int64) line);
 	}
     }
 }

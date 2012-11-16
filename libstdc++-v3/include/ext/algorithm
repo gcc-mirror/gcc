@@ -427,7 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     __out_last - __out_first);
     }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   using std::is_heap;
 #else
   /**
@@ -471,7 +471,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   using std::is_sorted;
 #else
   // is_sorted, a predicated testing whether a range is sorted in
@@ -529,7 +529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return false;
       return true;
     }
-#endif  // __GXX_EXPERIMENTAL_CXX0X__
+#endif  // C++11
 
   /**
    *  @brief Find the median of three values.

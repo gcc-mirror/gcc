@@ -23,8 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;    use Atree;
 with Csets;
-with Err_Vars; use Err_Vars;
 with Errutil;
 with Namet;    use Namet;
 with Opt;
@@ -524,13 +524,13 @@ package body GPrep is
 
          --  In verbose mode, if there is no error, report it
 
-         if Opt.Verbose_Mode and then Err_Vars.Total_Errors_Detected = 0 then
+         if Opt.Verbose_Mode and then Total_Errors_Detected = 0 then
             Errutil.Finalize (Source_Type => "input");
          end if;
 
          --  If we had some errors, delete the output file, and report them
 
-         if Err_Vars.Total_Errors_Detected > 0 then
+         if Total_Errors_Detected > 0 then
             if Outfile /= Standard_Output then
                Delete (Text_Outfile);
             end if;

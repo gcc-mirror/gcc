@@ -4700,16 +4700,14 @@ find_inc (struct mem_inc_info *mii, bool backwards)
 	  if (backwards)
 	    {
 	      FOR_EACH_DEP (mii->inc_insn, SD_LIST_BACK, sd_it, dep)
-		if (modified_in_p (mii->inc_input, DEP_PRO (dep)))
-		  add_dependence_1 (mii->mem_insn, DEP_PRO (dep),
-				    REG_DEP_TRUE);
+		add_dependence_1 (mii->mem_insn, DEP_PRO (dep),
+				  REG_DEP_TRUE);
 	    }
 	  else
 	    {
 	      FOR_EACH_DEP (mii->inc_insn, SD_LIST_FORW, sd_it, dep)
-		if (modified_in_p (mii->inc_input, DEP_CON (dep)))
-		  add_dependence_1 (DEP_CON (dep), mii->mem_insn,
-				    REG_DEP_ANTI);
+		add_dependence_1 (DEP_CON (dep), mii->mem_insn,
+				  REG_DEP_ANTI);
 	    }
 	  return true;
 	}

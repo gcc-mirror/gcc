@@ -61,7 +61,7 @@
 #include <debug/debug.h>
 #include <bits/move.h> // For _GLIBCXX_MOVE
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

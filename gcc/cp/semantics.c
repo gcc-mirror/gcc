@@ -6139,23 +6139,17 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
   for (i = 0; i <= nelts; ++i)
     {
       tree index;
-      tree anon_union_init_type = NULL_TREE;
       if (i == nelts)
 	index = NULL_TREE;
       else
 	{
 	  index = CONSTRUCTOR_ELT (body, i)->index;
-	  /* Handle anonymous union members.  */
-	  if (TREE_CODE (index) == COMPONENT_REF
-	      && ANON_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (index, 0))))
-	    anon_union_init_type = TREE_TYPE (TREE_OPERAND (index, 0));
 	  /* Skip base and vtable inits.  */
-	  else if (TREE_CODE (index) != FIELD_DECL
-		   || DECL_ARTIFICIAL (index))
+	  if (TREE_CODE (index) != FIELD_DECL
+	      || DECL_ARTIFICIAL (index))
 	    continue;
 	}
-      for (; field != index && TREE_TYPE (field) != anon_union_init_type;
-	   field = DECL_CHAIN (field))
+      for (; field != index; field = DECL_CHAIN (field))
 	{
 	  tree ftype;
 	  if (TREE_CODE (field) != FIELD_DECL

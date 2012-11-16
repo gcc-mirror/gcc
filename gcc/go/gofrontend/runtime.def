@@ -29,7 +29,7 @@
 // result types.
 
 // The standard C memcmp function, used for struct comparisons.
-DEF_GO_RUNTIME(MEMCMP, "memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT))
+DEF_GO_RUNTIME(MEMCMP, "__go_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT))
 
 // Range over a string, returning the next index.
 DEF_GO_RUNTIME(STRINGITER, "runtime.stringiter", P2(STRING, INT), R1(INT))

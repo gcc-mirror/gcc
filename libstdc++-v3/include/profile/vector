@@ -1,6 +1,6 @@
 // Profiling vector implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::vector<_Tp, _Allocator> _Base;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       typedef __gnu_cxx::__alloc_traits<_Allocator>  _Alloc_traits;
 #endif
 
@@ -82,10 +82,10 @@ namespace __profile
         __profcxx_vector_construct2(this);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       explicit
-      vector(size_type __n)
-      : _Base(__n)
+      vector(size_type __n, const _Allocator& __a = _Allocator())
+      : _Base(__n, __a)
       {
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);
@@ -109,7 +109,12 @@ namespace __profile
       }
 #endif
 
-      template<class _InputIterator>
+#if __cplusplus >= 201103L
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
+      template<typename _InputIterator>
+#endif
         vector(_InputIterator __first, _InputIterator __last,
 	       const _Allocator& __a = _Allocator())
 	: _Base(__first, __last, __a)
@@ -133,7 +138,7 @@ namespace __profile
         __profcxx_vector_construct2(this);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       vector(vector&& __x) noexcept
       : _Base(std::move(__x))
       {
@@ -142,7 +147,7 @@ namespace __profile
       }
 
       vector(const _Base& __x, const _Allocator& __a)
-      : _Base(__x) 
+      : _Base(__x, __a)
       { 
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);
@@ -173,7 +178,7 @@ namespace __profile
         return *this;
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       vector&
       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
@@ -228,7 +233,7 @@ namespace __profile
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       const_iterator
       cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
@@ -250,7 +255,7 @@ namespace __profile
       using _Base::size;
       using _Base::max_size;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       resize(size_type __sz)
       {
@@ -276,7 +281,7 @@ namespace __profile
       }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::shrink_to_fit;
 #endif
 
@@ -335,7 +340,7 @@ namespace __profile
         _M_profile_resize(this, __old_size, this->capacity());
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       push_back(_Tp&& __x)
       {
@@ -357,7 +362,7 @@ namespace __profile
 	return iterator(__res, this);
       }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       iterator
       insert(iterator __position, _Tp&& __x)
       {
@@ -374,7 +379,7 @@ namespace __profile
       { this->insert(__position, __l.begin(), __l.end()); }
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       void
       swap(vector&& __x)
       {
@@ -384,7 +389,7 @@ namespace __profile
 
       void
       swap(vector& __x)
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 			noexcept(_Alloc_traits::_S_nothrow_swap())
 #endif
       {
@@ -401,7 +406,12 @@ namespace __profile
         _M_profile_resize(this, __old_size, this->capacity());
       }
 
-      template<class _InputIterator>
+#if __cplusplus >= 201103L
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
+      template<typename _InputIterator>
+#endif
       void
       insert(iterator __position,
              _InputIterator __first, _InputIterator __last)
@@ -501,7 +511,7 @@ namespace __profile
     swap(vector<_Tp, _Alloc>& __lhs, vector<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     inline void
     swap(vector<_Tp, _Alloc>&& __lhs, vector<_Tp, _Alloc>& __rhs)
@@ -515,7 +525,7 @@ namespace __profile
 
 } // namespace __profile
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   // DR 1182.
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>

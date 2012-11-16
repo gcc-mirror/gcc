@@ -36,7 +36,7 @@
 # include_next <fenv.h>
 #endif
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 
 #if _GLIBCXX_USE_C99_FENV_TR1
 
@@ -76,6 +76,6 @@ namespace std
 
 #endif // _GLIBCXX_USE_C99_FENV_TR1
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 #endif // _GLIBCXX_FENV_H

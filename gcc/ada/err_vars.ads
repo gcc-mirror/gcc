@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,25 +38,11 @@ package Err_Vars is
    --  been initialized, so we initialize some variables to avoid exceptions
    --  from invalid values in such cases.
 
-   ------------------
-   -- Error Counts --
-   ------------------
-
-   Serious_Errors_Detected : Nat := 0;
-   --  This is a count of errors that are serious enough to stop expansion,
-   --  and hence to prevent generation of an object file even if the
-   --  switch -gnatQ is set. Initialized to zero at the start of compilation.
-   --  Initialized for -gnatVa use, see comment above.
-
-   Total_Errors_Detected : Nat := 0;
-   --  Number of errors detected so far. Includes count of serious errors and
-   --  non-serious errors, so this value is always greater than or equal to the
-   --  Serious_Errors_Detected value. Initialized to zero at the start of
-   --  compilation. Initialized for -gnatVa use, see comment above.
-
-   Warnings_Detected : Nat := 0;
-   --  Number of warnings detected. Initialized to zero at the start of
-   --  compilation. Initialized for -gnatVa use, see comment above.
+   --  Note on error counts (Serious_Errors_Detected, Total_Errors_Detected,
+   --  Warnings_Detected). These counts might more logically appear in this
+   --  unit, but we place them in atree.adb, because of licensing issues. We
+   --  need to be able to access these counts from units that have the more
+   --  general licensing conditions.
 
    ----------------------------------
    -- Error Message Mode Variables --

@@ -98,7 +98,7 @@ namespace __profile
       _GLIBCXX_CONSTEXPR bitset() _GLIBCXX_NOEXCEPT
       : _Base() { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       constexpr bitset(unsigned long long __val) noexcept
 #else
       bitset(unsigned long __val)
@@ -127,7 +127,7 @@ namespace __profile
 
       bitset(const _Base& __x) : _Base(__x) { }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       template<typename _CharT>
         explicit
         bitset(const _CharT* __str,
@@ -239,7 +239,7 @@ namespace __profile
       }
 
       using _Base::to_ulong;
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       using _Base::to_ullong;
 #endif
 
@@ -364,7 +364,7 @@ namespace __profile
     { return __os << __x._M_base(); }
 } // namespace __profile
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   // DR 1182.
   /// std::hash specialization for bitset.
   template<size_t _Nb>

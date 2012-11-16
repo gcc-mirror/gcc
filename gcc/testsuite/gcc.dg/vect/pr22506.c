@@ -7,8 +7,8 @@ void foo()
 {
     int i;
 
-    for (i=0; i<5; ++i) x[i]=0;
-    for (i=0; i<4; ++i) ;
+    for (i=0; i<3; ++i) x[i]=0;
+    for (i=0; i<2; ++i) ;
 }
 
 /* { dg-final { cleanup-tree-dump "vect" } } */

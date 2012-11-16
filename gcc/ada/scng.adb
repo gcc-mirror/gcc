@@ -23,8 +23,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;    use Atree;
 with Csets;    use Csets;
-with Err_Vars; use Err_Vars;
 with Hostparm; use Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;

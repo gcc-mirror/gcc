@@ -2362,6 +2362,11 @@ package body Ch4 is
       Scan_State : Saved_Scan_State;
       Node1      : Node_Id;
 
+      Lparen : constant Boolean := Prev_Token = Tok_Left_Paren;
+      --  Remember if previous token is a left parenthesis. This is used to
+      --  deal with checking whether IF/CASE/FOR expressions appearing as
+      --  primaries require extra parenthesization.
+
    begin
       --  The loop runs more than once only if misplaced pragmas are found
       --  or if a misplaced unary minus is skipped.
@@ -2475,11 +2480,18 @@ package body Ch4 is
                   return Error;
 
                --  If this looks like an if expression, then treat it that way
-               --  with an error message.
+               --  with an error message if not explicitly surrounded by
+               --  parentheses.
 
                elsif Ada_Version >= Ada_2012 then
-                  Error_Msg_SC ("if expression must be parenthesized");
-                  return P_If_Expression;
+                  Node1 := P_If_Expression;
+
+                  if not (Lparen and then Token = Tok_Right_Paren) then
+                     Error_Msg
+                       ("if expression must be parenthesized", Sloc (Node1));
+                  end if;
+
+                  return Node1;
 
                --  Otherwise treat as misused identifier
 
@@ -2507,11 +2519,17 @@ package body Ch4 is
                   return Error;
 
                --  If this looks like a case expression, then treat it that way
-               --  with an error message.
+               --  with an error message if not within parentheses.
 
                elsif Ada_Version >= Ada_2012 then
-                  Error_Msg_SC ("case expression must be parenthesized");
-                  return P_Case_Expression;
+                  Node1 := P_Case_Expression;
+
+                  if not (Lparen and then Token = Tok_Right_Paren) then
+                     Error_Msg
+                       ("case expression must be parenthesized", Sloc (Node1));
+                  end if;
+
+                  return Node1;
 
                --  Otherwise treat as misused identifier
 
@@ -2522,19 +2540,24 @@ package body Ch4 is
             --  For [all | some]  indicates a quantified expression
 
             when Tok_For =>
-
                if Token_Is_At_Start_Of_Line then
                   Error_Msg_AP ("misplaced loop");
                   return Error;
 
                elsif Ada_Version >= Ada_2012 then
-                  Error_Msg_SC ("quantified expression must be parenthesized");
-                  return P_Quantified_Expression;
+                  Node1 := P_Quantified_Expression;
 
-               else
+                  if not (Lparen and then Token = Tok_Right_Paren) then
+                     Error_Msg
+                      ("quantified expression must be parenthesized",
+                        Sloc (Node1));
+                  end if;
+
+                  return Node1;
 
                --  Otherwise treat as misused identifier
 
+               else
                   return P_Identifier;
                end if;
 

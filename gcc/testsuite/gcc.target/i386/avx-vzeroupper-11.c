@@ -16,4 +16,4 @@ foo ()
 }
 
 /* { dg-final { scan-assembler-times "\\*avx_vzeroall" 1 } } */
-/* { dg-final { scan-assembler-not "avx_vzeroupper" } } */
+/* { dg-final { scan-assembler-times "avx_vzeroupper" 3 } } */

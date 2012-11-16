@@ -405,6 +405,7 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
+   Name_Loop_Assertion                 : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
@@ -664,12 +665,12 @@ package Snames is
    Name_By_Protected_Procedure         : constant Name_Id := N + $;
    Name_Casing                         : constant Name_Id := N + $;
    Name_Check_All                      : constant Name_Id := N + $;
-   Name_Checked                        : constant Name_Id := N + $;
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
+   Name_Decreasing                     : constant Name_Id := N + $;
    Name_Descriptor                     : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
@@ -689,6 +690,7 @@ package Snames is
    Name_GPL                            : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
+   Name_Increasing                     : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
@@ -736,6 +738,7 @@ package Snames is
    Name_State                          : constant Name_Id := N + $;
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
+   Name_Strict                         : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
    Name_Suppressed                     : constant Name_Id := N + $;
    Name_Task_Stack_Size_Default        : constant Name_Id := N + $;
@@ -750,6 +753,7 @@ package Snames is
    Name_Unrestricted                   : constant Name_Id := N + $;
    Name_Uppercase                      : constant Name_Id := N + $;
    Name_User                           : constant Name_Id := N + $;
+   Name_Variant                        : constant Name_Id := N + $;
    Name_VAX_Float                      : constant Name_Id := N + $;
    Name_VMS                            : constant Name_Id := N + $;
    Name_Vtable_Ptr                     : constant Name_Id := N + $;
@@ -766,6 +770,10 @@ package Snames is
 
    --  The entries marked VMS are recognized only in OpenVMS implementations
    --  of GNAT, and are treated as illegal in all other contexts.
+
+   --  The entries marked HiLite are attributes that are defined by Hi-Lite
+   --  and implemented in GNAT operating under formal verification mode. The
+   --  entries are treated as illegal in all other contexts.
 
    First_Attribute_Name                : constant Name_Id := N + $;
    Name_Abort_Signal                   : constant Name_Id := N + $; -- GNAT
@@ -828,6 +836,7 @@ package Snames is
    Name_Leading_Part                   : constant Name_Id := N + $;
    Name_Length                         : constant Name_Id := N + $;
    Name_Lock_Free                      : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Entry                     : constant Name_Id := N + $; -- HiLite
    Name_Machine_Emax                   : constant Name_Id := N + $;
    Name_Machine_Emin                   : constant Name_Id := N + $;
    Name_Machine_Mantissa               : constant Name_Id := N + $;
@@ -1438,6 +1447,7 @@ package Snames is
       Attribute_Leading_Part,
       Attribute_Length,
       Attribute_Lock_Free,
+      Attribute_Loop_Entry,
       Attribute_Machine_Emax,
       Attribute_Machine_Emin,
       Attribute_Machine_Mantissa,
@@ -1675,6 +1685,7 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Long_Float,
+      Pragma_Loop_Assertion,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,

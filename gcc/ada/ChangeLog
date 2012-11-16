@@ -1,3 +1,411 @@
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR other/52438
+	* s-taspri-lynxos.ads: Delete.
+	* s-osinte-kfreebsd-gnu.ads: Change license to GPL V3+.
+	* s-tpopsp-rtems.adb: Likewise.
+	* s-osinte-rtems.adb: Likewise.
+
+2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Subprogram_Body_Stub>: Deal
+	with a missing library unit instead of calling gnat_to_gnu on Emtpy.
+	Remove last bits of support for SCIL nodes.  Add cases for nodes that
+	should only be present when annotating types.  Add default abort.
+
+2012-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in: Revert most changes.
+	* gcc-interface/Make-lang.in (gnatlib): Remove ada/s-oscons.ads.
+
+2012-11-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in (copy-s-oscons): New target.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads, atree.ads: Minor reformatting.
+
+2012-11-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/Makefile.in: Add runtime pairs for Android.
+	Rework handling of s-oscons.ads.
+	* s-osinte-android.ads, s-osinte-android.adb: New files.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): For N_Real_Literal, create the
+	binary representation of vax floats.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Fix thinko
+	in previous commit.
+
+2012-11-06  Jose Ruiz  <ruiz@adacore.com>
+
+	* ali.adb (Scan_ALI): Fix parsing mechanism for -fstack-check.
+
+2012-11-06  Thomas Quinot  <quinot@adacore.com>
+
+	* atree.adb, atree.ads, einfo.adb, errout.adb, errout.ads, erroutc.adb,
+	erroutc.ads, errutil.adb, errutil.ads, err_vars.ads, expander.adb,
+	exp_ch13.adb, exp_ch2.adb, exp_ch6.adb, exp_dist.adb, fe.h,
+	fmap.adb, fmap.ads, gprep.adb, makeutl.adb, osint.adb, osint.ads,
+	par_sco.adb, prepcomp.adb, prj-part.adb, prj-proc.adb, scng.adb,
+	sdefault.ads, sem_ch10.adb, sem_ch13.adb, sem_ch2.adb, sem_ch3.adb,
+	sem_ch4.adb, sem_ch5.adb, sem_dim.adb, sem_elab.adb, sem_eval.adb,
+	sem_intr.adb, sem_prag.adb, sem_type.adb, sem_warn.adb, stylesw.adb,
+	stylesw.ads, targparm.adb, targparm.ads (Cascaded_Error): Rename to
+	more descriptive name 'Check_Error_Detected'. Add calls to
+	Check_Error_Detected at places where semantic analysis is abandoned
+	assuming a previously detected error.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor comment change.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Extensive revision of documentation of overflow
+	checking.
+	* vms_data.ads: Overflow check numbers must be in range 1-3,
+	not 0-3.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch9.adb (Analyze_Protected_Type_Declaration): Emit a
+	warning if pragma Priority is used in presence of an interrupt
+	handler.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb, exp_ch4.adb: Minor changes throughout for
+	new overflow checking.
+	* exp_util.adb (Insert_Actions): Remove special casing of
+	Overflow_Check.
+	* gnat1drv.adb (Adjust_Global_Switches): Fixes for new handling
+	of overflow checks.
+	* sem.adb (Analyze): Remove special casing of Overflow_Check
+	(Analyze_List): ditto.
+	* sem_prag.adb (Analyze_Pragma, case Overflow_Checks): Remove
+	SUPPRESSED and change CHECKED to STRICT.
+	* sem_res.adb (Analyze_And_Resolve): No longer treat
+	Overflow_Check specially.
+	(Preanalyze_And_Resolve): ditto.
+	(Resolve): ditto.
+	* snames.ads-tmpl: Replace Name_Checked by Name_Strict.
+	* switch-c.adb (Get_Overflow_Mode): Eliminate 0 setting,
+	CHECKED => STRICT.
+	* types.ads (Overflow_Check_Type): Remove Suppressed, change
+	Checked to Strict (Suppress_Record): Overflow check controlled
+	by Suppress array.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Preanalyze_And_Resolve): In Alfa mode do not
+	disable checks, so that flags can be properly set on expressions
+	that are not further expanded.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, sem_attr.adb: Minor reformatting.
+
+2012-11-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Apply a predicate
+	check when evaluating the attribute Valid, and issue a warning
+	about infinite recursion when the check occurs within the
+	predicate function of the prefix's subtype.
+	* exp_ch4.adb (Expand_N_In): Remove test for Is_Discrete_Type
+	when we're checking that there's no predicate check function as a
+	condition for substituting a Valid check for a scalar membership
+	test (substitution should be suppressed for any kind of scalar
+	subtype with a predicate check). Also, don't emit a predicate
+	check when the right operand is a range.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, bindgen.adb, exp_vfpt.adb, exp_vfpt.ads, exp_ch2.adb,
+	errout.adb, sem_ch8.adb: Minor reformatting.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Include Loop_Entry_Attributes to the list of
+	Node/List/Elist10 usage.
+	(Loop_Entry_Attributes): New routine.
+	(Set_Loop_Entry_Attributes): New routine.
+	(Write_Field10_Name): Add an output string for Loop_Entry_Attributes.
+	* einfo.ads: Define new attribute Loop_Entry_Attributes along
+	with its usage in nodes.
+	(Loop_Entry_Attributes): New routine and dedicated pragma Inline.
+	(Set_Loop_Entry_Attributes): New routine and dedicated pragma Inline.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Do not expand
+	Attribute_Loop_Entry here.
+	* exp_ch5.adb: Add with and use clause for Elists;
+	(Expand_Loop_Entry_Attributes): New routine.
+	(Expand_N_Loop_Statement): Add a call to Expand_Loop_Entry_Attributes.
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Specialize the
+	search to include multiple nested loops produced by the expansion
+	of Ada 2012 array iterator.
+	* sem_attr.adb: Add with and use clause for Elists.
+	(Analyze_Attribute): Check the legality of attribute Loop_Entry.
+	(Resolve_Attribute): Nothing to do for Loop_Entry.
+	(S14_Attribute): New routine.
+	* snames.ads-tmpl: Add a comment on entries marked with
+	HiLite. Add new name Name_Loop_Entry. Add new attribute
+	Attribute_Loop_Entry.
+
+2012-11-06  Geert Bosch  <bosch@adacore.com>
+
+	* eval_fat.adb (Machine, Succ): Fix front end to support static
+	evaluation of attributes on targets with both VAX and IEEE float.
+	* sem_util.ads, sem_util.adb (Has_Denormals, Has_Signed_Zeros):
+	New type-specific functions. Previously we used Denorm_On_Target
+	and Signed_Zeros_On_Target directly, but that doesn't work well
+	for OpenVMS where a single target supports both floating point
+	with and without signed zeros.
+	* sem_attr.adb (Attribute_Denorm, Attribute_Signed_Zeros): Use
+	new Has_Denormals and Has_Signed_Zeros functions to support both
+	IEEE and VAX floating point on a single target.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb (System_Interrupts_Used): New variable.
+	(Gen_Adainit): Declare and call
+	Install_Restricted_Handlers_Sequential if System.Interrupts is
+	used when elaboration policy is sequential.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: Complete previous change.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* fe.h (Get_Vax_Real_Literal_As_Signed): Declare.
+	* eval_fat.adb, eval_fat.ads (Decompose_Int): Move spec in package spec.
+	* exp_vfpt.adb, exp_vfpt.ads (Vax_Real_Literal_As_Signed): New function.
+	(Expand_Vax_Real_Literal): Remove.
+	* exp_ch2.adb (Expand_N_Real_Literal): Do nothing.
+	* sem_eval.adb (Expr_Value_R): Remove special Vax float case,
+	as this is not anymore a special case.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* uintp.ads: Minor correction of typo in comment.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragnma, case Unchecked_Union): remove
+	requirement that discriminants of an unchecked_union must have
+	defaults.
+
+2012-11-06  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* projects.texi: Minor wordsmithing.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb, exp_vfpt.adb, xoscons.adb: Minor reformatting.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_vfpt.adb: Document VAX float point layout.
+
+2012-11-06  Geert Bosch  <bosch@adacore.com>
+
+	* eval_fat.adb (Machine): Don't return -0.0 on targets without
+	signed zeros.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Entry_Call_Alternative,
+	Check_Triggering_Statement): Reject properly an indirect call.
+
+2012-11-06  Pascal Obry  <obry@adacore.com>
+
+	* xoscons.adb, xutil.adb, xutil.ads: Add support for post-processing.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* s-bignum.adb (Div_Rem): Fix another bug in step D3.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tarest.adb (Create_Restricted_Task): Call
+	Create_Restricted_Task_Sequential in sequential case.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Do not rewrite the
+	pragma into a null statement as its presence is desirable in -gnatG
+	output.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): Do nothing if the
+	renamed object is a limited record.
+
+2012-11-06  Bernard Banner  <banner@adacore.com>
+
+	* sysdep.c (_getpagesize): New. Minor reformatting.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-bignum.adb (Div_Rem): Fix bug in step D3.
+	* uintp.adb (UI_Div_Rem): Add comment on bug in step D3.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion): Update the comment
+	on intended expansion.	Reimplement the logic which expands the
+	termination variants.
+	(Process_Increase_Decrease): Update the parameter profile and the
+	comment related to it. Accommodate the new aggregate-like appearance of
+	the termination variants.
+	* sem_prag.adb (Analyze_Pragma): Update the syntax of pragma
+	Loop_Assertion. Reimplement the semantic analysis of the pragma
+	to accommodate the new aggregate-like variant.
+	(Check_Variant): New routine.
+	* snames.ads-tmpl: Change names Name_Decreases and Name_Increases
+	to Name_Decreasing and Name_Increasing respectively. Add name
+	Variant.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb: Static evaluation of case expressions.
+
+2012-11-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, impunit.adb, exp_ch9.adb, par-ch4.adb,
+	s-tarest.adb: Minor reformatting.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tposen.ads: Minor comment update.
+
+2012-11-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sysdep.c: Rename sig* wrappers to use unique names.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* exp_dbug.adb (Qualify_Entity_Name): Mark entity as having a qualified
+	name after being treated, in formal verification mode.
+
+2012-11-06  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Updating gnattest section to reflect changes
+	in default behaviour of the tool.
+
+2012-11-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Interfaces.C now needs to be WITH'd even
+	on platforms that do not support sockets (for the benefit of
+	subtype IOCTL_Req_T).
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_Primary): if-expressions, case-expressions,
+	and quantified expressions are legal if surrounded by parentheses
+	from an enclosing context, such as a call or an instantiation.
+
+2012-11-06  Yannick Moy  <moy@adacore.com>
+
+	* impunit.adb (Get_Kind_Of_Unit): Return appropriate kind for
+	predefined implementation files, instead of returning
+	Not_Predefined_Unit on all .adb files.
+
+2012-11-06  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Activation_Chain_Entity): Return immediately if
+	partition elaboration policy is sequential.
+	(Build_Task_Activation_Call): Likewise. Use
+	Activate_Restricted_Tasks on restricted profile.
+	(Make_Task_Create_Call): Do not use the _Chain
+	parameter if elaboration policy is sequential. Call
+	Create_Restricted_Task_Sequential in that case.
+	* exp_ch3.adb (Build_Initialization_Call): Change condition to
+	support concurrent elaboration policy.
+	(Build_Record_Init_Proc): Likewise.
+	(Init_Formals): Likewise.
+	* bindgen.adb (Gen_Adainit): Declare Partition_Elaboration_Policy
+	and set it in generated code if the elaboration policy is
+	sequential. The procedure called to activate all tasks is now
+	named __gnat_activate_all_tasks.
+	* rtsfind.adb (RE_Activate_Restricted_Task,
+	RE_Create_Restricted_Task_Sequential): New RE_Id literals.
+	* s-tarest.adb (Create_Restricted_Task): Added to create a task without
+	adding it on an activation chain.
+	(Activate_Tasks): Has now a Chain parameter.
+	(Activate_All_Tasks_Sequential): Added. Called by the binder to
+	activate all tasks.
+	(Activate_Restricted_Tasks): Added. Called during elaboration to
+	activate tasks of the units.
+	* s-tarest.ads: Remove pragma Partition_Elaboration_Policy.
+	(Partition_Elaboration_Policy): New variable (set by the binder).
+	(Create_Restricted_Task): Revert removal of the chain parameter.
+	(Create_Restricted_Task_Sequential): New procedure.
+	(Activate_Restricted_Tasks): Revert removal.
+	(Activate_All_Tasks_Sequential): New procedure.
+
+2012-11-06  Bernard Banner  <banner@adacore.com>
+
+	* adaint.c Add file macro definitions missing on Android.
+	* adaint.h Avoid definitions related to task affinity and CPU
+	sets since this functionality is missing on the Android
+	* errno.c (__set_errno): Android already contains such a named
+	procedure so do include again.
+	* gsocket.h: Sockets not supported on Android.
+	* init.c: Avoid linux related code not supported on Android.
+	* sysdep.c (sigismember, sigaddset, sigdelset, sigemptyset,
+	sigfillset): wrapper functions since sig routines are defined
+	as inline macros on Android.
+	* terminals.c: Add stubs for terminal related functions not
+	supported on Android.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Do not
+	output the characters of an illegal argument as it may not have
+	characters to begin with.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Assertion):
+	Change the order of argument processing to avoid disappearing
+	increase / decrease expressions.
+
+2012-11-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb: Add with and use clause for Sem_Ch8.
+	(Expand_N_Pragma): Add a new variant to expand pragma Loop_Assertion.
+	(Expand_Pragma_Loop_Assertion): New routine.
+	* par-prag.adb (Prag): The semantic analysis of pragma
+	Loop_Assertion is carried out by Analyze_Pragma. No need for
+	checks in the parser.
+	* sem_prag.adb: Add a reference position value for pragma
+	Loop_Assertion in Sig_Flags.
+	(Analyze_Pragma): Add semantic analysis for pragma Loop_Assertion.
+	* snames.ads-tmpl: Add the following new names:
+	Name_Decreases Name_Increases Name_Loop_Assertion.
+	Add new pragma id Pragma_Loop_Assertion.
+
+2012-11-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb: Identifier in iterator must have debug
+	information.
+
+2012-11-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Remove
+	duplicate rules handled by Make-generated.in.
+
 2012-10-31  Lawrence Crowl  <crowl@google.com>
 
 	* gcc-interface/utils.c (gnat_write_global_declarations):

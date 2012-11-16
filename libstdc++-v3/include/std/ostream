@@ -445,7 +445,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  For ease of use, sentries may be converted to booleans.  The
        *  return value is that of the sentry state (true == okay).
       */
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       explicit
 #endif
       operator bool() const
@@ -588,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     flush(basic_ostream<_CharT, _Traits>& __os)
     { return __os.flush(); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
   /**
    *  @brief  Generic inserter for rvalue stream
    *  @param  __os  An input stream.
@@ -603,7 +603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>&& __os, const _Tp& __x)
     { return (__os << __x); }
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#endif // C++11
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

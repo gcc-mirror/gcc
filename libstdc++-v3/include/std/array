@@ -31,7 +31,7 @@
 
 #pragma GCC system_header
 
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
@@ -41,7 +41,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, std::size_t _Nm>
     struct __array_traits
@@ -93,8 +93,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
 
       // Support for zero-sized arrays mandatory.
-      typedef std::__array_traits<_Tp, _Nm>           _AT_Type;
-      typename _AT_Type::_Type                        _M_elems;
+      typedef _GLIBCXX_STD_C::__array_traits<_Tp, _Nm> _AT_Type;
+      typename _AT_Type::_Type                         _M_elems;
 
       // No explicit construct/copy/destroy for aggregate type.
 
@@ -210,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       back() const
       { 
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1) 
- 	           : _AT_Type::_S_ref(_M_elems, _Nm); 
+ 	           : _AT_Type::_S_ref(_M_elems, 0);
       }
 
       pointer
@@ -289,7 +289,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     get(array<_Tp, _Nm>& __arr) noexcept
     {
       static_assert(_Int < _Nm, "index is out of bounds");
-      return std::__array_traits<_Tp, _Nm>::_S_ref(__arr._M_elems, _Int);
+      return _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::
+	_S_ref(__arr._M_elems, _Int);
     }
 
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
@@ -305,12 +306,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     get(const array<_Tp, _Nm>& __arr) noexcept
     {
       static_assert(_Int < _Nm, "index is out of bounds");
-      return std::__array_traits<_Tp, _Nm>::_S_ref(__arr._M_elems, _Int);
+      return _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::
+	_S_ref(__arr._M_elems, _Int);
     }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
-#endif // __GXX_EXPERIMENTAL_CXX0X__
+#ifdef _GLIBCXX_DEBUG
+# include <debug/array>
+#endif
+
+#ifdef _GLIBCXX_PROFILE
+# include <profile/array>
+#endif
+
+#endif // C++11
 
 #endif // _GLIBCXX_ARRAY

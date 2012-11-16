@@ -5465,7 +5465,7 @@ avoiding_indexed_address_p (enum machine_mode mode)
   return (TARGET_AVOID_XFORM && VECTOR_MEM_NONE_P (mode));
 }
 
-inline bool
+bool
 legitimate_indirect_address_p (rtx x, int strict)
 {
   return GET_CODE (x) == REG && INT_REG_OK_FOR_BASE_P (x, strict);

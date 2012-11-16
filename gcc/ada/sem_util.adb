@@ -5398,6 +5398,17 @@ package body Sem_Util is
                                   N_Package_Specification);
    end Has_Declarations;
 
+   -------------------
+   -- Has_Denormals --
+   -------------------
+
+   function Has_Denormals (E : Entity_Id) return Boolean is
+   begin
+      return Is_Floating_Point_Type (E)
+        and then Denorm_On_Target
+        and then not Vax_Float (E);
+   end Has_Denormals;
+
    -------------------------------------------
    -- Has_Discriminant_Dependent_Constraint --
    -------------------------------------------
@@ -6075,6 +6086,17 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Private_Component;
+
+   ----------------------
+   -- Has_Signed_Zeros --
+   ----------------------
+
+   function Has_Signed_Zeros (E : Entity_Id) return Boolean is
+   begin
+      return Is_Floating_Point_Type (E)
+        and then Signed_Zeros_On_Target
+        and then not Vax_Float (E);
+   end Has_Signed_Zeros;
 
    -----------------------------
    -- Has_Static_Array_Bounds --

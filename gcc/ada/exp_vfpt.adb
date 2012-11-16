@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,10 +32,86 @@ with Sem_Res;  use Sem_Res;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
 with Urealp;   use Urealp;
+with Eval_Fat; use Eval_Fat;
 
 package body Exp_VFpt is
+
+   --  Vax floating point format (from Vax Architecture Reference Manual
+   --  version 6):
+
+   --  Float F:
+   --  --------
+
+   --   1 1
+   --   5 4             7 6            0
+   --  +-+---------------+--------------+
+   --  |S|     exp       |   fraction   |  A
+   --  +-+---------------+--------------+
+   --  |             fraction           |  A + 2
+   --  +--------------------------------+
+
+   --  bit 15 is the sign bit,
+   --  bits 14:7 is the excess 128 binary exponent,
+   --  bits 6:0 and 31:16 the normalized 24-bit fraction with the redundant
+   --    most significant fraction bit not represented.
+
+   --  An exponent value of 0 together with a sign bit of 0, is taken to
+   --  indicate that the datum has a value of 0. Exponent values of 1 through
+   --  255 indicate true binary exponents of -127 to +127. An exponent value
+   --  of 0, together with a sign bit of 1, is taken as reserved.
+
+   --  Note that fraction bits are not continuous in memory, VAX is little
+   --  endian (LSB first).
+
+   --  Float D:
+   --  --------
+
+   --   1 1
+   --   5 4             7 6            0
+   --  +-+---------------+--------------+
+   --  |S|     exp       |   fraction   |  A
+   --  +-+---------------+--------------+
+   --  |             fraction           |  A + 2
+   --  +--------------------------------+
+   --  |             fraction           |  A + 4
+   --  +--------------------------------+
+   --  |             fraction (low)     |  A + 6
+   --  +--------------------------------+
+
+   --  Note that the fraction bits are not continuous in memory. Bytes in a
+   --  words are stored in little endian format, but words are stored using
+   --  big endian format (PDP endian).
+
+   --  Like Float F but with 55 bits for the fraction.
+
+   --  Float G:
+   --  --------
+
+   --   1 1
+   --   5 4                   4 3      0
+   --  +-+---------------------+--------+
+   --  |S|     exp             |  fract |  A
+   --  +-+---------------------+--------+
+   --  |             fraction           |  A + 2
+   --  +--------------------------------+
+   --  |             fraction           |  A + 4
+   --  +--------------------------------+
+   --  |             fraction (low)     |  A + 6
+   --  +--------------------------------+
+
+   --  Exponent values of 1 through 2047 indicate true binary exponents of
+   --  -1023 to +1023.
+
+   --  Main differences compared to IEEE 754:
+
+   --  * No denormalized numbers
+   --  * No infinity
+   --  * No NaN
+   --  * No -0.0
+   --  * Reserved values (exp = 0, sign = 1)
+   --  * Vax mantissa represent values [0.5, 1)
+   --  * Bias is shifted by 1 (for single float: 128 on Vax, 127 on IEEE)
 
    VAXFF_Digits : constant := 6;
    VAXDF_Digits : constant := 9;
@@ -481,93 +557,101 @@ package body Exp_VFpt is
       Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
    end Expand_Vax_Foreign_Return;
 
-   -----------------------------
-   -- Expand_Vax_Real_Literal --
-   -----------------------------
+   --------------------------------
+   -- Vax_Real_Literal_As_Signed --
+   --------------------------------
 
-   procedure Expand_Vax_Real_Literal (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Typ  : constant Entity_Id  := Etype (N);
-      Btyp : constant Entity_Id  := Base_Type (Typ);
-      Stat : constant Boolean    := Is_Static_Expression (N);
-      Nod  : Node_Id;
+   function Get_Vax_Real_Literal_As_Signed (N : Node_Id) return Uint is
+      Btyp     : constant Entity_Id :=
+                   Base_Type (Underlying_Type (Etype (N)));
 
-      RE_Source : RE_Id;
-      RE_Target : RE_Id;
-      RE_Fncall : RE_Id;
-      --  Entities for source, target and function call in conversion
+      Value    : constant Ureal := Realval (N);
+      Negative : Boolean;
+      Fraction : UI;
+      Exponent : UI;
+      Res      : UI;
 
+      Exponent_Size : Uint;
+      --  Number of bits for the exponent
+
+      Fraction_Size : Uint;
+      --  Number of bits for the fraction
+
+      Uintp_Mark : constant Uintp.Save_Mark := Mark;
+      --  Use the mark & release feature to delete temporaries
    begin
-      --  We do not know how to convert Vax format real literals, so what
-      --  we do is to convert these to be IEEE literals, and introduce the
-      --  necessary conversion operation.
+      --  Extract the sign now
 
-      if Vax_Float (Btyp) then
-         --  What we want to construct here is
+      Negative := UR_Is_Negative (Value);
 
-         --    x!(y_to_z (1.0E0))
+      --  Decompose the number
 
-         --  where
+      Decompose_Int (Btyp, abs Value, Fraction, Exponent, Round_Even);
 
-         --    x is the base type of the literal (Btyp)
+      --  Number of bits for the fraction, leading fraction bit is implicit
 
-         --    y_to_z is
+      Fraction_Size := Machine_Mantissa_Value (Btyp) - Int'(1);
 
-         --      s_to_f for F_Float
-         --      t_to_g for G_Float
-         --      t_to_d for D_Float
+      --  Number of bits for the exponent (one bit for the sign)
 
-         --  The literal is typed as S (for F_Float) or T otherwise
+      Exponent_Size := RM_Size (Btyp) - Fraction_Size - Int'(1);
 
-         --  We do all our own construction, analysis, and expansion here,
-         --  since things are at too low a level to use Analyze or Expand
-         --  to get this built (we get circularities and other strange
-         --  problems if we try!)
+      if Fraction = Uint_0 then
+         --  Handle zero
 
-         if Digits_Value (Btyp) = VAXFF_Digits then
-            RE_Source := RE_S;
-            RE_Target := RE_F;
-            RE_Fncall := RE_S_To_F;
+         Res := Uint_0;
 
-         elsif Digits_Value (Btyp) = VAXDF_Digits then
-            RE_Source := RE_T;
-            RE_Target := RE_D;
-            RE_Fncall := RE_T_To_D;
+      elsif Exponent <= -(Uint_2 ** (Exponent_Size - 1)) then
+         --  Underflow
 
-         else pragma Assert (Digits_Value (Btyp) = VAXGF_Digits);
-            RE_Source := RE_T;
-            RE_Target := RE_G;
-            RE_Fncall := RE_T_To_G;
+         Res := Uint_0;
+      else
+         --  Check for overflow
+
+         pragma Assert (Exponent < Uint_2 ** (Exponent_Size - 1));
+
+         --  MSB of the fraction must be 1
+
+         pragma Assert (Fraction / Uint_2 ** Fraction_Size = Uint_1);
+
+         --  Remove the redudant most significant fraction bit
+
+         Fraction := Fraction - Uint_2 ** Fraction_Size;
+
+         --  Build the fraction part. Note that this field is in mixed
+         --  endianness: words are stored using little endianness, while bytes
+         --  in words are stored using big endianness.
+
+         Res := Uint_0;
+         for I in 1 .. UI_To_Int (RM_Size (Btyp)) / 16 loop
+            Res := (Res * (Uint_2 ** 16)) + (Fraction mod (Uint_2 ** 16));
+            Fraction := Fraction / (Uint_2 ** 16);
+         end loop;
+
+         --  The sign bit
+
+         if Negative then
+            Res := Res + Int (2**15);
          end if;
 
-         Nod := Relocate_Node (N);
+         --  The exponent
 
-         Set_Etype (Nod, RTE (RE_Source));
-         Set_Analyzed (Nod, True);
+         Res := Res + (Exponent + Uint_2 ** (Exponent_Size - 1))
+           * Uint_2 ** (15 - Exponent_Size);
 
-         Nod :=
-           Make_Function_Call (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Fncall), Loc),
-             Parameter_Associations => New_List (Nod));
+         --  Until now, we have created an unsigned number, but an underlying
+         --  type is a signed type. Convert to a signed number to avoid
+         --  overflow in gigi.
 
-         Set_Etype (Nod, RTE (RE_Target));
-         Set_Analyzed (Nod, True);
-
-         Nod :=
-           Make_Unchecked_Type_Conversion (Loc,
-             Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-             Expression   => Nod);
-
-         Set_Etype (Nod, Typ);
-         Set_Analyzed (Nod, True);
-         Rewrite (N, Nod);
-
-         --  This odd expression is still a static expression. Note that
-         --  the routine Sem_Eval.Expr_Value_R understands this.
-
-         Set_Is_Static_Expression (N, Stat);
+         if Res >= Uint_2 ** (Exponent_Size + Fraction_Size) then
+            Res := Res - Uint_2 ** (Exponent_Size + Fraction_Size + 1);
+         end if;
       end if;
-   end Expand_Vax_Real_Literal;
+
+      Release_And_Save (Uintp_Mark, Res);
+
+      return Res;
+   end Get_Vax_Real_Literal_As_Signed;
 
    ----------------------
    -- Expand_Vax_Valid --

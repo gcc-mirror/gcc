@@ -544,6 +544,9 @@ extern void register_pass (struct register_pass_info *);
    directly in jump threading, and avoid peeling them next time.  */
 extern bool first_pass_instance;
 
+extern struct opt_pass **passes_by_id;
+extern int passes_by_id_size;
+
 /* Declare for plugins.  */
 extern void do_per_function_toporder (void (*) (void *), void *);
 

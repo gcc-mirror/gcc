@@ -1941,9 +1941,6 @@ find_loop_niter (struct loop *loop, edge *exit)
   *exit = NULL;
   FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
-      if (!just_once_each_iteration_p (loop, ex->src))
-	continue;
-
       if (!number_of_iterations_exit (loop, ex, &desc, false))
 	continue;
 
@@ -1997,11 +1994,7 @@ find_loop_niter (struct loop *loop, edge *exit)
 bool
 finite_loop_p (struct loop *loop)
 {
-  unsigned i;
-  VEC (edge, heap) *exits;
-  edge ex;
-  struct tree_niter_desc desc;
-  bool finite = false;
+  double_int nit;
   int flags;
 
   if (flag_unsafe_loop_optimizations)
@@ -2015,26 +2008,15 @@ finite_loop_p (struct loop *loop)
       return true;
     }
 
-  exits = get_loop_exit_edges (loop);
-  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+  if (loop->any_upper_bound
+      || max_loop_iterations (loop, &nit))
     {
-      if (!just_once_each_iteration_p (loop, ex->src))
-	continue;
-
-      if (number_of_iterations_exit (loop, ex, &desc, false))
-        {
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Found loop %i to be finite: iterating ", loop->num);
-	      print_generic_expr (dump_file, desc.niter, TDF_SLIM);
-	      fprintf (dump_file, " times\n");
-	    }
-	  finite = true;
-	  break;
-	}
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Found loop %i to be finite: upper bound found.\n",
+		 loop->num);
+      return true;
     }
-  VEC_free (edge, heap, exits);
-  return finite;
+  return false;
 }
 
 /*
@@ -3186,7 +3168,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 static void
 maybe_lower_iteration_bound (struct loop *loop)
 {
-  pointer_set_t *not_executed_last_iteration = pointer_set_create ();
+  pointer_set_t *not_executed_last_iteration = NULL;
   struct nb_iter_bound *elt;
   bool found_exit = false;
   VEC (basic_block, heap) *queue = NULL;

@@ -2121,7 +2121,8 @@ package body Sem_Prag is
               (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
-         --  Record if pragma is disabled
+         --  For a pragma in the extended main source unit, record enabled
+         --  status in SCO (note: there is never any SCO for an instance).
 
          if Check_Enabled (Pname) then
             Set_SCO_Pragma_Enabled (Loc);
@@ -5058,7 +5059,8 @@ package body Sem_Prag is
 
                   --  If previous error, avoid cascaded errors
 
-                  Applies := True;
+                  Check_Error_Detected;
+                  Applies   := True;
                   Effective := True;
 
                else
@@ -5701,18 +5703,6 @@ package body Sem_Prag is
          if C = No_Check_Id then
             Error_Pragma_Arg
               ("argument of pragma% is not valid check name", Arg1);
-         end if;
-
-         --  Special processing for overflow check case
-
-         if C = All_Checks or else C = Overflow_Check then
-            if Suppress_Case then
-               Scope_Suppress.Overflow_Checks_General    := Suppressed;
-               Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
-            else
-               Scope_Suppress.Overflow_Checks_General    := Checked;
-               Scope_Suppress.Overflow_Checks_Assertions := Checked;
-            end if;
          end if;
 
          if Arg_Count = 1 then
@@ -11284,6 +11274,135 @@ package body Sem_Prag is
             Set_Standard_Fpt_Formats;
          end Long_Float;
 
+         --------------------
+         -- Loop_Assertion --
+         --------------------
+
+         --  pragma Loop_Assertion
+         --        (  [Invariant =>] boolean_Expression );
+         --     |  ( [[Invariant =>] boolean_Expression ,]
+         --            Variant   =>
+         --              ( TERMINATION_VARIANT {, TERMINATION_VARIANT ) );
+
+         --  TERMINATION_VARIANT ::= CHANGE_MODIFIER => discrete_EXPRESSION
+
+         --  CHANGE_MODIFIER ::= Increasing | Decreasing
+
+         when Pragma_Loop_Assertion => Loop_Assertion : declare
+            procedure Check_Variant (Arg : Node_Id);
+            --  Verify the legality of a variant
+
+            -------------------
+            -- Check_Variant --
+            -------------------
+
+            procedure Check_Variant (Arg : Node_Id) is
+               Expr : constant Node_Id := Expression (Arg);
+
+            begin
+               --  Variants appear in aggregate form
+
+               if Nkind (Expr) = N_Aggregate then
+                  declare
+                     Comp  : Node_Id;
+                     Extra : Node_Id;
+                     Modif : Node_Id;
+
+                  begin
+                     Comp := First (Component_Associations (Expr));
+                     while Present (Comp) loop
+                        Modif := First (Choices (Comp));
+                        Extra := Next (Modif);
+
+                        Check_Arg_Is_One_Of
+                          (Modif, Name_Decreasing, Name_Increasing);
+
+                        if Present (Extra) then
+                           Error_Pragma_Arg
+                             ("only one modifier allowed in argument", Expr);
+                        end if;
+
+                        Preanalyze_And_Resolve
+                          (Expression (Comp), Any_Discrete);
+
+                        Next (Comp);
+                     end loop;
+                  end;
+               else
+                  Error_Pragma_Arg
+                    ("expression on variant must be an aggregate", Expr);
+               end if;
+            end Check_Variant;
+
+            --  Local variables
+
+            Stmt : Node_Id;
+
+         --  Start of processing for Loop_Assertion
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+
+            --  Completely ignore if disabled
+
+            if Check_Disabled (Pname) then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+            end if;
+
+            --  Verify that the pragma appears inside a loop
+
+            Stmt := N;
+            while Present (Stmt) and then Nkind (Stmt) /= N_Loop_Statement loop
+               Stmt := Parent (Stmt);
+            end loop;
+
+            if No (Stmt) then
+               Error_Pragma ("pragma % must appear inside a loop");
+            end if;
+
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments  (2);
+
+            --  Process the first argument
+
+            if Chars (Arg1) = Name_Variant then
+               Check_Variant (Arg1);
+
+            elsif Chars (Arg1) = No_Name
+              or else Chars (Arg1) = Name_Invariant
+            then
+               Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
+
+            else
+               Error_Pragma_Arg ("argument not allowed in pragma %", Arg1);
+            end if;
+
+            --  Process the second argument
+
+            if Present (Arg2) then
+               if Chars (Arg2) = Name_Variant then
+                  if Chars (Arg1) = Name_Variant then
+                     Error_Pragma ("only one variant allowed in pragma %");
+                  else
+                     Check_Variant (Arg2);
+                  end if;
+
+               elsif Chars (Arg2) = Name_Invariant then
+                  if Chars (Arg1) = Name_Variant then
+                     Error_Pragma_Arg ("invariant must precede variant", Arg2);
+                  else
+                     Error_Pragma ("only one invariant allowed in pragma %");
+                  end if;
+
+               else
+                  Error_Pragma_Arg ("argument not allowed in pragma %", Arg2);
+               end if;
+            end if;
+         end Loop_Assertion;
+
          -----------------------
          -- Machine_Attribute --
          -----------------------
@@ -11878,10 +11997,11 @@ package body Sem_Prag is
          --  pragma Overflow_Checks
          --    ([General => ] MODE [, [Assertions => ] MODE]);
 
-         --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
+         --  MODE := STRICT | MINIMIZED | ELIMINATED
 
          --  Note: ELIMINATED is allowed only if Long_Long_Integer'Size is 64
-         --  since System.Bignums makes this assumption.
+         --  since System.Bignums makes this assumption. This is true of nearly
+         --  all (all?) targets.
 
          when Pragma_Overflow_Checks => Overflow_Checks : declare
             function Get_Check_Mode
@@ -11905,19 +12025,8 @@ package body Sem_Prag is
                Check_Optional_Identifier (Arg, Name);
                Check_Arg_Is_Identifier (Argx);
 
-               --  Do not suppress overflow checks for formal verification.
-               --  Instead, require that a check is inserted so that formal
-               --  verification can detect wraparound errors.
-
-               if Chars (Argx) = Name_Suppressed then
-                  if Alfa_Mode then
-                     return Checked;
-                  else
-                     return Suppressed;
-                  end if;
-
-               elsif Chars (Argx) = Name_Checked then
-                  return Checked;
+               if Chars (Argx) = Name_Strict then
+                  return Strict;
 
                elsif Chars (Argx) = Name_Minimized then
                   return Minimized;
@@ -14366,7 +14475,6 @@ package body Sem_Prag is
             Assoc   : constant Node_Id := Arg1;
             Type_Id : constant Node_Id := Get_Pragma_Arg (Assoc);
             Typ     : Entity_Id;
-            Discr   : Entity_Id;
             Tdef    : Node_Id;
             Clist   : Node_Id;
             Vpart   : Node_Id;
@@ -14418,20 +14526,12 @@ package body Sem_Prag is
             --  types and give an error, but in fact the standard does allow
             --  Unchecked_Union on limited types, so this check was removed.
 
+            --  Similarly, GNAT used to require that all discriminants have
+            --  default values, but this is not mandated by the RM.
+
             --  Proceed with basic error checks completed
 
             else
-               Discr := First_Discriminant (Typ);
-               while Present (Discr) loop
-                  if No (Discriminant_Default_Value (Discr)) then
-                     Error_Msg_N
-                       ("unchecked union discriminant must have default value",
-                        Discr);
-                  end if;
-
-                  Next_Discriminant (Discr);
-               end loop;
-
                Tdef  := Type_Definition (Declaration_Node (Typ));
                Clist := Component_List (Tdef);
 
@@ -15428,6 +15528,7 @@ package body Sem_Prag is
       Pragma_Lock_Free                      => -1,
       Pragma_Locking_Policy                 => -1,
       Pragma_Long_Float                     => -1,
+      Pragma_Loop_Assertion                 => -1,
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,

@@ -5136,62 +5136,54 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Real_Literal:
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
       /* If this is of a fixed-point type, the value we want is the
 	 value of the corresponding integer.  */
       if (IN (Ekind (Underlying_Type (Etype (gnat_node))), Fixed_Point_Kind))
 	{
-	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	  gnu_result = UI_To_gnu (Corresponding_Integer_Value (gnat_node),
 				  gnu_result_type);
 	  gcc_assert (!TREE_OVERFLOW (gnu_result));
 	}
 
-      /* We should never see a Vax_Float type literal, since the front end
-	 is supposed to transform these using appropriate conversions.  */
+      /* Convert the Ureal to a vax float (represented on a signed type).  */
       else if (Vax_Float (Underlying_Type (Etype (gnat_node))))
-	gcc_unreachable ();
+	{
+	  gnu_result = UI_To_gnu (Get_Vax_Real_Literal_As_Signed (gnat_node),
+				  gnu_result_type);
+	}
 
       else
 	{
 	  Ureal ur_realval = Realval (gnat_node);
 
-	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
+	  /* First convert the real value to a machine number if it isn't
+	     already. That forces BASE to 2 for non-zero values and simplifies
+             the rest of our logic.  */
 
-	  /* If the real value is zero, so is the result.  Otherwise,
-	     convert it to a machine number if it isn't already.  That
-	     forces BASE to 0 or 2 and simplifies the rest of our logic.  */
+	  if (!Is_Machine_Number (gnat_node))
+	    ur_realval
+	      = Machine (Base_Type (Underlying_Type (Etype (gnat_node))),
+			 ur_realval, Round_Even, gnat_node);
+
 	  if (UR_Is_Zero (ur_realval))
 	    gnu_result = convert (gnu_result_type, integer_zero_node);
 	  else
 	    {
-	      if (!Is_Machine_Number (gnat_node))
-		ur_realval
-		  = Machine (Base_Type (Underlying_Type (Etype (gnat_node))),
-			     ur_realval, Round_Even, gnat_node);
+	      REAL_VALUE_TYPE tmp;
 
 	      gnu_result
 		= UI_To_gnu (Numerator (ur_realval), gnu_result_type);
 
-	      /* If we have a base of zero, divide by the denominator.
-		 Otherwise, the base must be 2 and we scale the value, which
-		 we know can fit in the mantissa of the type (hence the use
-		 of that type above).  */
-	      if (No (Rbase (ur_realval)))
-		gnu_result
-		  = build_binary_op (RDIV_EXPR,
-				     get_base_type (gnu_result_type),
-				     gnu_result,
-				     UI_To_gnu (Denominator (ur_realval),
-						gnu_result_type));
-	      else
-		{
-		  REAL_VALUE_TYPE tmp;
+	      /* The base must be 2 as Machine guarantees this, so we scale
+                 the value, which we know can fit in the mantissa of the type
+                 (hence the use of that type above).  */
 
-		  gcc_assert (Rbase (ur_realval) == 2);
-		  real_ldexp (&tmp, &TREE_REAL_CST (gnu_result),
-			      - UI_To_Int (Denominator (ur_realval)));
-		  gnu_result = build_real (gnu_result_type, tmp);
-		}
+	      gcc_assert (Rbase (ur_realval) == 2);
+	      real_ldexp (&tmp, &TREE_REAL_CST (gnu_result),
+			  - UI_To_Int (Denominator (ur_realval)));
+	      gnu_result = build_real (gnu_result_type, tmp);
 	    }
 
 	  /* Now see if we need to negate the result.  Do it this way to
@@ -6501,7 +6493,13 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Protected_Body_Stub:
     case N_Task_Body_Stub:
       /* Simply process whatever unit is being inserted.  */
-      gnu_result = gnat_to_gnu (Unit (Library_Unit (gnat_node)));
+      if (Present (Library_Unit (gnat_node)))
+	gnu_result = gnat_to_gnu (Unit (Library_Unit (gnat_node)));
+      else
+	{
+	  gcc_assert (type_annotate_only);
+	  gnu_result = alloc_stmt_list ();
+	}
       break;
 
     case N_Subunit:
@@ -6863,11 +6861,20 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = alloc_stmt_list ();
       break;
 
-    default:
-      /* SCIL nodes require no processing for GCC.  Other nodes should only
-	 be present when annotating types.  */
-      gcc_assert (IN (kind, N_SCIL_Node) || type_annotate_only);
+    case N_Function_Specification:
+    case N_Procedure_Specification:
+    case N_Op_Concat:
+    case N_Component_Association:
+    case N_Protected_Body:
+    case N_Task_Body:
+      /* These nodes should only be present when annotating types.  */
+      gcc_assert (type_annotate_only);
       gnu_result = alloc_stmt_list ();
+      break;
+
+    default:
+      /* Other nodes are not supposed to reach here.  */
+      gcc_unreachable ();
     }
 
   /* If we pushed the processing of the elaboration routine, pop it back.  */

@@ -6,14 +6,16 @@
 
 #include <syslog.h>
 
+#include "runtime.h"
+
 /* We need to use a C function to call the syslog function, because we
    can't represent a C varargs function in Go.  */
 
-void syslog_c(int, const char*)
+void syslog_c(intgo, const char*)
   asm ("log_syslog.syslog_c");
 
 void
-syslog_c (int priority, const char *msg)
+syslog_c (intgo priority, const char *msg)
 {
   syslog (priority, "%s", msg);
 }

@@ -82,7 +82,13 @@ package body Bindgen is
    --  Flag indicating whether the unit System.Tasking.Restricted.Stages is in
    --  the closure of the partition. This is set by Resolve_Binder_Options,
    --  and it used to call a routine to active all the tasks at the end of
-   --  the elaboration.
+   --  the elaboration when partition elaboration policy is sequential.
+
+   System_Interrupts_Used : Boolean := False;
+   --  Flag indicating whether the unit System.Interrups is in the closure of
+   --  the partition. This is set by Resolve_Binder_Options, and it used to
+   --  attach interrupt handlers at the end of the elaboration when partition
+   --  elaboration policy is sequential.
 
    Lib_Final_Built : Boolean := False;
    --  Flag indicating whether the finalize_library rountine has been built
@@ -488,10 +494,26 @@ package body Bindgen is
             WBI ("");
          end if;
 
-         if System_Tasking_Restricted_Stages_Used then
-            WBI ("      procedure Activate_Tasks;");
-            WBI ("      pragma Import (C, Activate_Tasks," &
-                 " ""__gnat_activate_tasks"");");
+         if System_Interrupts_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      procedure Install_Restricted_Handlers_Sequential;");
+            WBI ("      pragma Import (C," &
+                 "Install_Restricted_Handlers_Sequential," &
+                 " ""__gnat_attach_all_handlers"");");
+            WBI ("");
+         end if;
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      Partition_Elaboration_Policy : Character;");
+            WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
+                 " ""__gnat_partition_elaboration_policy"");");
+            WBI ("");
+            WBI ("      procedure Activate_All_Tasks_Sequential;");
+            WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
+                 " ""__gnat_activate_all_tasks"");");
          end if;
 
          WBI ("   begin");
@@ -510,8 +532,18 @@ package body Bindgen is
             Write_Statement_Buffer;
          end if;
 
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            Set_String ("      Partition_Elaboration_Policy := '");
+            Set_Char   (Partition_Elaboration_Policy_Specified);
+            Set_String ("';");
+            Write_Statement_Buffer;
+         end if;
+
          if Main_Priority = No_Main_Priority
            and then Main_CPU = No_Main_CPU
+           and then not System_Tasking_Restricted_Stages_Used
          then
             WBI ("      null;");
          end if;
@@ -585,12 +617,31 @@ package body Bindgen is
          WBI ("      pragma Import (C, Handler_Installed, " &
               """__gnat_handler_installed"");");
 
-         --  Import task activation procedure for ravenscar
+         --  Import handlers attach procedure for sequential elaboration policy
 
-         if System_Tasking_Restricted_Stages_Used then
-            WBI ("      procedure Activate_Tasks;");
-            WBI ("      pragma Import (C, Activate_Tasks," &
-                 " ""__gnat_activate_tasks"");");
+         if System_Interrupts_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      procedure Install_Restricted_Handlers_Sequential;");
+            WBI ("      pragma Import (C," &
+                 "Install_Restricted_Handlers_Sequential," &
+                 " ""__gnat_attach_all_handlers"");");
+            WBI ("");
+         end if;
+
+         --  Import task activation procedure for sequential elaboration
+         --  policy.
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            WBI ("      Partition_Elaboration_Policy : Character;");
+            WBI ("      pragma Import (C, Partition_Elaboration_Policy," &
+                 " ""__gnat_partition_elaboration_policy"");");
+            WBI ("");
+            WBI ("      procedure Activate_All_Tasks_Sequential;");
+            WBI ("      pragma Import (C, Activate_All_Tasks_Sequential," &
+                 " ""__gnat_activate_all_tasks"");");
          end if;
 
          --  The import of the soft link which performs library-level object
@@ -726,6 +777,15 @@ package body Bindgen is
          Set_Char   (Task_Dispatching_Policy_Specified);
          Set_String ("';");
          Write_Statement_Buffer;
+
+         if System_Tasking_Restricted_Stages_Used
+           and then Partition_Elaboration_Policy_Specified = 'S'
+         then
+            Set_String ("      Partition_Elaboration_Policy := '");
+            Set_Char   (Partition_Elaboration_Policy_Specified);
+            Set_String ("';");
+            Write_Statement_Buffer;
+         end if;
 
          Gen_Restrictions;
 
@@ -913,8 +973,16 @@ package body Bindgen is
          WBI ("      Freeze_Dispatching_Domains;");
       end if;
 
-      if System_Tasking_Restricted_Stages_Used then
-         WBI ("      Activate_Tasks;");
+      --  Sequential partition elaboration policy
+
+      if Partition_Elaboration_Policy_Specified = 'S' then
+         if System_Interrupts_Used then
+            WBI ("      Install_Restricted_Handlers_Sequential;");
+         end if;
+
+         if System_Tasking_Restricted_Stages_Used then
+            WBI ("      Activate_All_Tasks_Sequential;");
+         end if;
       end if;
 
       --  Case of main program is CIL function or procedure
@@ -2862,6 +2930,10 @@ package body Bindgen is
          Check_Package
            (System_Tasking_Restricted_Stages_Used,
             "system.tasking.restricted.stages%s");
+
+         --  Ditto for the use of interrupts
+
+         Check_Package (System_Interrupts_Used, "system.interrupts%s");
 
          --  Ditto for the use of dispatching domains
 

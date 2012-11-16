@@ -6,15 +6,9 @@
 
 <info>
   <keywordset>
-    <keyword>
-      ISO C++
-    </keyword>
-    <keyword>
-      runtime
-    </keyword>
-    <keyword>
-      library
-    </keyword>
+    <keyword>ISO C++</keyword>
+    <keyword>runtime</keyword>
+    <keyword>library</keyword>
   </keywordset>
   <abstract xml:id="contents">
     <title>Short Contents</title>

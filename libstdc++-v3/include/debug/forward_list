@@ -49,6 +49,12 @@ namespace __debug
 
       typedef typename _Base::iterator       _Base_iterator;
       typedef typename _Base::const_iterator _Base_const_iterator;
+
+      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
+        rebind<_GLIBCXX_STD_C::_Fwd_list_node<_Tp>>::other _Node_alloc_type;
+
+      typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
+
     public:
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
@@ -78,12 +84,15 @@ namespace __debug
       forward_list(forward_list&& __list, const _Alloc& __al)
       : _Base(std::move(__list._M_base()), __al)
       {
-	this->_M_swap(__list);
+	if (__list.get_allocator() == __al)
+	  this->_M_swap(__list);
+	else
+	  __list._M_invalidate_all();
       }
 
       explicit
-      forward_list(size_type __n)
-      : _Base(__n)
+      forward_list(size_type __n, const _Alloc& __al = _Alloc())
+      : _Base(__n, __al)
       { }
 
       forward_list(size_type __n, const _Tp& __value,
@@ -128,12 +137,17 @@ namespace __debug
 
       forward_list&
       operator=(forward_list&& __list)
+      noexcept(_Node_alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
 	__glibcxx_check_self_move_assign(__list);
-	clear();
-	swap(__list);
+	bool xfer_memory = _Node_alloc_traits::_S_propagate_on_move_assign()
+	    || __list.get_allocator() == this->get_allocator();
+	static_cast<_Base&>(*this) = std::move(__list);
+	if (xfer_memory)
+	  this->_M_swap(__list);
+	else
+	  this->_M_invalidate_all();
+	__list._M_invalidate_all();
 	return *this;
       }
 
@@ -333,7 +347,10 @@ namespace __debug
 
       void
       swap(forward_list& __list)
+      noexcept(_Node_alloc_traits::_S_nothrow_swap())
       {
+	if (!_Node_alloc_traits::_S_propagate_on_swap())
+	  __glibcxx_check_equal_allocs(__list);
 	_Base::swap(__list);
 	this->_M_swap(__list);
       }

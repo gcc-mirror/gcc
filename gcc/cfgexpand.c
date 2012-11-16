@@ -3647,9 +3647,8 @@ expand_debug_locations (void)
 
 	    gcc_assert (mode == GET_MODE (val)
 			|| (GET_MODE (val) == VOIDmode
-			    && (CONST_INT_P (val)
+			    && (CONST_SCALAR_INT_P (val)
 				|| GET_CODE (val) == CONST_FIXED
-				|| CONST_DOUBLE_AS_INT_P (val) 
 				|| GET_CODE (val) == LABEL_REF)));
 	  }
 

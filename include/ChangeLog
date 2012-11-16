@@ -1,3 +1,16 @@
+2012-11-09  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TAGGED_NAME.
+
+2012-10-29  Sterling Augustine <saugustine@google.com>
+            Cary Coutant <ccoutant@google.com>
+
+	* dwarf2.h (dwarf_location_list_entry_type): New enum with fields
+	DW_LLE_GNU_end_of_list_entry, DW_LLE_GNU_base_address_selection_entry,
+	DW_LLE_GNU_start_end_entry and DW_LLE_GNU_start_length_entry.
+
+
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

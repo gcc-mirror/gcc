@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "splay-tree.h"
 #include "plugin.h"
+#include "cgraph.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -981,6 +982,36 @@ decls_match (tree newdecl, tree olddecl)
       if (t1 != t2)
 	return 0;
 
+      /* The decls dont match if they correspond to two different versions
+	 of the same function.   Disallow extern "C" functions to be
+	 versions for now.  */
+      if (compparms (p1, p2)
+	  && same_type_p (TREE_TYPE (f1), TREE_TYPE (f2))
+	  && !DECL_EXTERN_C_P (newdecl)
+	  && !DECL_EXTERN_C_P (olddecl)
+	  && targetm.target_option.function_versions (newdecl, olddecl))
+	{
+	  /* Mark functions as versions if necessary.  Modify the mangled decl
+	     name if necessary.  */
+	  if (DECL_FUNCTION_VERSIONED (newdecl)
+	      && DECL_FUNCTION_VERSIONED (olddecl))
+	    return 0;
+	  if (!DECL_FUNCTION_VERSIONED (newdecl))
+	    {
+	      DECL_FUNCTION_VERSIONED (newdecl) = 1;
+	      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
+	        mangle_decl (newdecl);
+	    }
+	  if (!DECL_FUNCTION_VERSIONED (olddecl))
+	    {
+	      DECL_FUNCTION_VERSIONED (olddecl) = 1;
+	      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
+	       mangle_decl (olddecl);
+	    }
+	  record_function_versions (olddecl, newdecl);
+	  return 0;
+	}
+
       if (CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl)
 	  && ! (DECL_EXTERN_C_P (newdecl)
 		&& DECL_EXTERN_C_P (olddecl)))
@@ -1499,7 +1530,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      error ("previous declaration %q+#D here", olddecl);
 	      return NULL_TREE;
 	    }
-	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
+	  /* For function versions, params and types match, but they
+	     are not ambiguous.  */
+	  else if ((!DECL_FUNCTION_VERSIONED (newdecl)
+		    && !DECL_FUNCTION_VERSIONED (olddecl))
+		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 			      TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
 	    {
 	      error ("new declaration %q#D", newdecl);
@@ -2272,6 +2307,15 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   else if (DECL_PRESERVE_P (newdecl))
     DECL_PRESERVE_P (olddecl) = 1;
 
+  /* If the olddecl is a version, so is the newdecl.  */
+  if (TREE_CODE (newdecl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (olddecl))
+    {
+      DECL_FUNCTION_VERSIONED (newdecl) = 1;
+      /* newdecl will be purged and is no longer a version.  */
+      delete_function_version (newdecl);
+    }
+
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       int function_size;
@@ -2435,6 +2479,10 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 			  "%<gnu_inline%> attribute");
 	    }
 	}
+
+      check_abi_tag_redeclaration
+	(olddecl, lookup_attribute ("abi_tag", DECL_ATTRIBUTES (olddecl)),
+	 lookup_attribute ("abi_tag", DECL_ATTRIBUTES (newdecl)));
 
       return NULL;
     }
@@ -7519,13 +7567,13 @@ grokfndecl (tree ctype,
 	  suffix = UDLIT_OP_SUFFIX (DECL_NAME (decl));
 	  if (long_long_unsigned_p)
 	    {
-	      if (cpp_interpret_int_suffix (suffix, strlen (suffix)))
+	      if (cpp_interpret_int_suffix (parse_in, suffix, strlen (suffix)))
 		warning (0, "integer suffix %<%s%>"
 			    " shadowed by implementation", suffix);
 	    }
 	  else if (long_double_p)
 	    {
-	      if (cpp_interpret_float_suffix (suffix, strlen (suffix)))
+	      if (cpp_interpret_float_suffix (parse_in, suffix, strlen (suffix)))
 		warning (0, "floating point suffix %<%s%>"
 			    " shadowed by implementation", suffix);
 	    }

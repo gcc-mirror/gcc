@@ -2196,7 +2196,8 @@ fill_simple_delay_slots (int non_jumps_p)
       if (slots_filled != slots_to_fill
 	  && delay_list == 0
 	  && JUMP_P (insn)
-	  && (condjump_p (insn) || condjump_in_parallel_p (insn)))
+	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
+	  && !ANY_RETURN_P (JUMP_LABEL (insn)))
 	{
 	  delay_list = optimize_skip (insn);
 	  if (delay_list)

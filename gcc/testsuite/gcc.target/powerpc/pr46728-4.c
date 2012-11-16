@@ -29,4 +29,4 @@ main (int argc, char *argv[])
 
 
 /* { dg-final { scan-assembler-times "cbrt" 2 { target powerpc*-*-* } } } */
-/* { dg-final { scan-assembler-not "pow" { target powerpc*-*-* } } } */
+/* { dg-final { scan-assembler-not "bl\[\\. \]+pow" { target powerpc*-*-* } } } */

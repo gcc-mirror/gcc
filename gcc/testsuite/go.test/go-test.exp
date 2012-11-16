@@ -449,15 +449,23 @@ proc go-gc-tests { } {
 	    # This is a vanilla compile and link test.
 	    set dg-do-what-default "link"
 	    go-dg-runtest $test "-w $DEFAULT_GOCFLAGS"
-	} elseif { $test_line == "// runoutput" \
+	} elseif { [string match "// runoutput*" $test_line] \
 		       || ($test_line == "// \$G \$D/\$F.go && \$L \$F.\$A &&"
 			   && $test_line2 == "// ./\$A.out >tmp.go && \$G tmp.go && \$L -o \$A.out1 tmp.\$A && ./\$A.out1") } {
 	    # Run the test to get a .go program to run.
 	    set go_execute_args ""
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
+	    set files [list]
+	    if { [string match "// runoutput*" $test_line] } {
+		set args ""
+		regsub "// runoutput\(.*\)" $test_line "\\1" args
+		foreach f $args {
+		    lappend files "[file dirname $test]/$f"
+		}
+	    }
 	    set dg-do-what-default "link"
-	    dg-test -keep-output $test "-O" "-w $DEFAULT_GOCFLAGS"
+	    dg-test -keep-output $test "-O" "$files -w $DEFAULT_GOCFLAGS"
 	    set output_file "./[file rootname [file tail $test]].exe"
 	    set base "[file rootname [file tail $test]]"
 	    if [isnative] {
@@ -507,6 +515,31 @@ proc go-gc-tests { } {
 	    go-execute-xfail $test
 	} elseif { $test_line == "// errorcheck" } {
 	    errchk $test ""
+	} elseif { [string match "// errorcheckoutput*" $test_line] } {
+	    # Run the test to get a .go program to error check.
+	    set go_execute_args ""
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set files [list]
+	    regsub "// errorcheckoutput\(.*\)" $test_line "\\1" args
+	    foreach f $args {
+		lappend files "[file dirname $test]/$f"
+	    }
+	    set dg-do-what-default "link"
+	    dg-test -keep-output $test "-O" "$files -w $DEFAULT_GOCFLAGS"
+	    set output_file "./[file rootname [file tail $test]].exe"
+	    set base "[file rootname [file tail $test]]"
+	    if [isnative] {
+		if { [catch "exec $output_file >$base-out.go"] != 0 } {
+		    fail "$name execution"
+		} else {
+		    pass "$name execution"
+		    errchk "$base-out.go" ""
+		}
+		file delete $base-out.go
+	    }
+	    file delete $output_file
+	    set runtests $hold_runtests
 	} elseif { $test_line == "// compiledir" } {
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
@@ -517,6 +550,26 @@ proc go-gc-tests { } {
 		dg-test -keep-output $f "-O" "-w $DEFAULT_GOCFLAGS"
 		lappend del "[file rootname [file tail $f]].o"
 	    }
+	    foreach f $del {
+		file delete $f
+	    }
+	    set runtests $hold_runtests
+	} elseif { $test_line == "// rundir" } {
+	    set hold_runtests $runtests
+	    set runtests "go-test.exp"
+	    set dg-do-what-default "assemble"
+	    set dir "[file rootname $test].dir"
+	    set del {}
+	    set files [lsort [glob "$dir/*.go"]]
+	    set last [lindex $files end]
+	    set files [lreplace $files end end]
+	    foreach f $files {
+		dg-test -keep-output $f "-O" "-w $DEFAULT_GOCFLAGS"
+		lappend del "[file rootname [file tail $f]].o"
+	    }
+	    set dg-do-what-default "link"
+	    set go_compile_args $del
+	    go-torture-execute $last
 	    foreach f $del {
 		file delete $f
 	    }

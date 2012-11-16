@@ -779,22 +779,16 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  break;
 
 	case 'n':
-	  if (CONST_INT_P (op)
-	      || CONST_DOUBLE_AS_INT_P (op)
-	      || (equiv_const != NULL_RTX
-		  && (CONST_INT_P (equiv_const)
-		      || CONST_DOUBLE_AS_INT_P (equiv_const))))
+	  if (CONST_SCALAR_INT_P (op)
+	      || (equiv_const != NULL_RTX && CONST_SCALAR_INT_P (equiv_const)))
 	    return NO_REGS;
 	  break;
 
 	case 's':
-	  if ((CONSTANT_P (op) 
-	       && !CONST_INT_P (op) 
-	       && !CONST_DOUBLE_AS_INT_P (op))
+	  if ((CONSTANT_P (op) && !CONST_SCALAR_INT_P (op))
 	      || (equiv_const != NULL_RTX
 		  && CONSTANT_P (equiv_const)
-		  && !CONST_INT_P (equiv_const)
-		  && !CONST_DOUBLE_AS_INT_P (equiv_const)))
+		  && !CONST_SCALAR_INT_P (equiv_const)))
 	    return NO_REGS;
 	  break;
 

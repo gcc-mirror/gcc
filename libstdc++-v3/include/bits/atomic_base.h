@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2008-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,6 @@
 #include <bits/c++config.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <cstddef>
 #include <bits/atomic_lockfree_defines.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -423,11 +422,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(sizeof(_M_i), NULL); }
+      { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(sizeof(_M_i), NULL); }
+      { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
 
       void
       store(__int_type __i, memory_order __m = memory_order_seq_cst) noexcept
@@ -717,11 +716,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(_M_type_size(1), NULL); }
+      { return __atomic_is_lock_free(_M_type_size(1), nullptr); }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(_M_type_size(1), NULL); }
+      { return __atomic_is_lock_free(_M_type_size(1), nullptr); }
 
       void
       store(__pointer_type __p,

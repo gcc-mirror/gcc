@@ -25,6 +25,6 @@
 
 // N.B. In C++0x mode we cannot instantiate with T == NonDefaultConstructible
 // because of 23.3.4.1.4
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 template class std::list<__gnu_test::NonDefaultConstructible>;
 #endif
