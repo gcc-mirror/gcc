@@ -1,3 +1,9 @@
+2012-11-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55297
+	* resolve.c (resolve_typebound_intrinsic_op): Only add typebound
+	operators to the operator list in the namespace of the derived type.
+
 2012-11-12  Jan Hubicka  <jh@suse.cz>
 
 	* f95-lang.c (ATTR_NOTHROW_LEAF_MALLOC_LIST): New macro.
