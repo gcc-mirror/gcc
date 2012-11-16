@@ -6,8 +6,8 @@
 #   nmake -f win32/Makefile.msc LOC=-DFOO                (nonstandard build)
 #   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" \
 #         OBJA="inffas32.obj match686.obj"               (use ASM code, x86)
-#   nmake -f win32/Makefile.msc AS=ml64 LOC="-DASMV -DASMINF" \
-#         OBJA="inffasx64.obj gvmat64.obj inffas8664.c"  (use ASM code, x64)
+#   nmake -f win32/Makefile.msc AS=ml64 LOC="-DASMV -DASMINF -I." \
+#         OBJA="inffasx64.obj gvmat64.obj inffas8664.obj"  (use ASM code, x64)
 
 # optional build flags
 LOC =
@@ -30,7 +30,7 @@ ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj \
-       gzwrite.obj infback.obj inflate.obj inftrees.obj trees.obj uncompr.obj zutil.obj
+       gzwrite.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj
 OBJA =
 
 
@@ -71,6 +71,9 @@ minigzip_d.exe: minigzip.obj $(IMPLIB)
 
 .c.obj:
 	$(CC) -c $(WFLAGS) $(CFLAGS) $<
+
+{test}.c.obj:
+	$(CC) -c -I. $(WFLAGS) $(CFLAGS) $<
 
 {contrib/masmx64}.c.obj:
 	$(CC) -c $(WFLAGS) $(CFLAGS) $<
@@ -125,9 +128,9 @@ inffas32.obj: contrib\masmx86\inffas32.asm
 
 match686.obj: contrib\masmx86\match686.asm
 
-example.obj: example.c zlib.h zconf.h
+example.obj: test/example.c zlib.h zconf.h
 
-minigzip.obj: minigzip.c zlib.h zconf.h
+minigzip.obj: test/minigzip.c zlib.h zconf.h
 
 zlib1.res: win32/zlib1.rc
 	$(RC) $(RCFLAGS) /fo$@ win32/zlib1.rc
