@@ -24,6 +24,7 @@ AC_SUBST(target_alias)
 
 AM_INIT_AUTOMAKE(foreign)
 AM_ENABLE_MULTILIB(, ..)
+AM_MAINTAINER_MODE
 
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
