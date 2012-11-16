@@ -2226,7 +2226,7 @@ enum avx_u128_state
    are to be inserted.  */
 
 #define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) \
-  ix86_emit_mode_set ((ENTITY), (MODE))
+  ix86_emit_mode_set ((ENTITY), (MODE), (HARD_REGS_LIVE))
 
 /* Avoid renaming of stack registers, as doing so in combination with
    scheduling just increases amount of live registers at time and in

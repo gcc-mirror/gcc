@@ -15477,16 +15477,38 @@ emit_i387_cw_initialization (int mode)
   emit_move_insn (new_mode, reg);
 }
 
+/* Emit vzeroupper.  */
+
+void
+ix86_avx_emit_vzeroupper (HARD_REG_SET regs_live)
+{
+  int i;
+
+  /* Cancel automatic vzeroupper insertion if there are
+     live call-saved SSE registers at the insertion point.  */
+
+  for (i = FIRST_SSE_REG; i <= LAST_SSE_REG; i++)
+    if (TEST_HARD_REG_BIT (regs_live, i) && !call_used_regs[i])
+      return;
+
+  if (TARGET_64BIT)
+    for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+      if (TEST_HARD_REG_BIT (regs_live, i) && !call_used_regs[i])
+	return;
+
+  emit_insn (gen_avx_vzeroupper ());
+}
+
 /* Generate one or more insns to set ENTITY to MODE.  */
 
 void
-ix86_emit_mode_set (int entity, int mode)
+ix86_emit_mode_set (int entity, int mode, HARD_REG_SET regs_live)
 {
   switch (entity)
     {
     case AVX_U128:
       if (mode == AVX_U128_CLEAN)
-	emit_insn (gen_avx_vzeroupper ());
+	ix86_avx_emit_vzeroupper (regs_live);
       break;
     case I387_TRUNC:
     case I387_FLOOR:
