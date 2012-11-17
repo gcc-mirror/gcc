@@ -1,5 +1,9 @@
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/55188
+	* gcc.dg/pr19105.c: Accept also optimizing
+	-[2, 2] and -[3, 3] and -[4, 4] range tests together.
+
 	* lib/asan-dg.exp (asan_symbolize): Prune BFD: prefixed error messages
 	from addr2line_output.  Increment idx if asking for more than one address
 	in one object.
