@@ -7341,8 +7341,8 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 	}
 
       tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
-      tmp = build_call_expr_loc (input_location, tmp, 3,
-				 dest, src, size);
+      tmp = build_call_expr_loc (input_location, tmp, 3, dest, src,
+				 fold_convert (size_type_node, size));
     }
   else
     {
@@ -7367,7 +7367,8 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
       tmp = build_call_expr_loc (input_location,
 			tmp, 3, gfc_conv_descriptor_data_get (dest),
-			gfc_conv_descriptor_data_get (src), size);
+			gfc_conv_descriptor_data_get (src),
+			fold_convert (size_type_node, size));
     }
 
   gfc_add_expr_to_block (&block, tmp);

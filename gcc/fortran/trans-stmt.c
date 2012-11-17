@@ -337,7 +337,8 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	      tmp = gfc_conv_descriptor_data_get (tmp);
 	      tmp = build_call_expr_loc (input_location,
 					 builtin_decl_explicit (BUILT_IN_MEMCPY),
-					 3, tmp, data, size);
+					 3, tmp, data,
+					 fold_convert (size_type_node, size));
 	    }
 	  gfc_add_expr_to_block (&se->post, tmp);
 
