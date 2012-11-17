@@ -3880,6 +3880,17 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
       return arg0;
 
     case NEGATE_EXPR:
+      /* If flag_wrapv and ARG0_TYPE is signed, make sure
+	 low and high are non-NULL, then normalize will DTRT.  */
+      if (!TYPE_UNSIGNED (arg0_type)
+	  && !TYPE_OVERFLOW_UNDEFINED (arg0_type))
+	{
+	  if (low == NULL_TREE)
+	    low = TYPE_MIN_VALUE (arg0_type);
+	  if (high == NULL_TREE)
+	    high = TYPE_MAX_VALUE (arg0_type);
+	}
+
       /* (-x) IN [a,b] -> x in [-b, -a]  */
       n_low = range_binop (MINUS_EXPR, exp_type,
 			   build_int_cst (exp_type, 0),
