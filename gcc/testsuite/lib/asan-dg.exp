@@ -127,7 +127,9 @@ proc asan_symbolize { output } {
 	    set args "-f -e $key $arr($key)"
 	    set status [remote_exec host "$addr2line_name" $args]
 	    if { [lindex $status 0] > 0 } continue
-	    set addr2line_output [regexp -inline -all -line "^\[^\n\r]*" [lindex $status 1]]
+	    regsub -all "\r\n" [lindex $status 1] "\n" addr2line_output
+	    regsub -all "(^|\n|\r)BFD: \[^\n\r\]*" $addr2line_output "" addr2line_output
+	    set addr2line_output [regexp -inline -all -line "^\[^\n\r]*" $addr2line_output]
 	    set idx 0
 	    foreach val $arr($key) {
 		if { [expr $idx + 1] < [llength $addr2line_output] } {
@@ -137,6 +139,7 @@ proc asan_symbolize { output } {
 			set newkey "$key+$val"
 			set repl($newkey) "$fnname $fileline"
 		    }
+		    set idx [expr $idx + 2]
 		}
 	    }
 	}
