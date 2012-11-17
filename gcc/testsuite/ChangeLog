@@ -1,5 +1,8 @@
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/55236
+	* gcc.dg/pr55236.c: New test.
+
 	PR testsuite/55188
 	* gcc.dg/pr19105.c: Accept also optimizing
 	-[2, 2] and -[3, 3] and -[4, 4] range tests together.
