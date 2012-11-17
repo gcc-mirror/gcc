@@ -5600,14 +5600,16 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tmp = fold_convert (pvoid_type_node, tmp);
 
   /* Use memcpy to do the transfer.  */
-  tmp = build_call_expr_loc (input_location,
-			 builtin_decl_explicit (BUILT_IN_MEMCPY),
-			 3,
-			 tmp,
-			 fold_convert (pvoid_type_node, source),
-			 fold_build2_loc (input_location, MIN_EXPR,
-					  gfc_array_index_type,
-					  size_bytes, source_bytes));
+  tmp
+    = build_call_expr_loc (input_location,
+			   builtin_decl_explicit (BUILT_IN_MEMCPY), 3, tmp,
+			   fold_convert (pvoid_type_node, source),
+			   fold_convert (size_type_node,
+					 fold_build2_loc (input_location,
+							  MIN_EXPR,
+							  gfc_array_index_type,
+							  size_bytes,
+							  source_bytes)));
   gfc_add_expr_to_block (&se->pre, tmp);
 
   se->expr = info->descriptor;
@@ -5649,7 +5651,7 @@ scalar_transfer:
 			     builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 			     fold_convert (pvoid_type_node, tmpdecl),
 			     fold_convert (pvoid_type_node, ptr),
-			     extent);
+			     fold_convert (size_type_node, extent));
       gfc_add_expr_to_block (&block, tmp);
       indirect = gfc_finish_block (&block);
 
@@ -5687,7 +5689,7 @@ scalar_transfer:
 			     builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 			     fold_convert (pvoid_type_node, tmp),
 			     fold_convert (pvoid_type_node, ptr),
-			     extent);
+			     fold_convert (size_type_node, extent));
       gfc_add_expr_to_block (&se->pre, tmp);
 
       /* For CLASS results, set the _vptr.  */
