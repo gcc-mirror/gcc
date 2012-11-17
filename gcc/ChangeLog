@@ -1,3 +1,10 @@
+2012-11-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* common.opt (static-libasan): New option.
+	* gcc.c (LIBASAN_SPEC): New macro.
+	(LINK_COMMAND_SPEC): Replace -lasan with LIBASAN_SPEC.
+	* doc/invoke.texi: Document -static-libasan.
+
 2012-11-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55342

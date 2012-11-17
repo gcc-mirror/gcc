@@ -544,6 +544,15 @@ proper position among the other output files.  */
    wrapping.  */
 #define STACK_SPLIT_SPEC " %{fsplit-stack: --wrap=pthread_create}"
 
+#ifndef LIBASAN_SPEC
+#ifdef HAVE_LD_STATIC_DYNAMIC
+#define LIBASAN_SPEC "%{static-libasan:" LD_STATIC_OPTION \
+		     "} -lasan %{static-libasan:" LD_DYNAMIC_OPTION "}"
+#else
+#define LIBASAN_SPEC "-lasan"
+#endif
+#endif
+
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
    included.  */
 #ifndef LIBGCC_SPEC
@@ -687,7 +696,7 @@ proper position among the other output files.  */
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
-    %{faddress-sanitizer:-lasan}\
+    %{faddress-sanitizer:" LIBASAN_SPEC "}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif
