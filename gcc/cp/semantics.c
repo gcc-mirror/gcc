@@ -3041,7 +3041,7 @@ finish_id_expression (tree id_expression,
 	  else
 	    {
 	      error (TREE_CODE (decl) == VAR_DECL
-		     ? G_("use of %<auto%> variable from containing function")
+		     ? G_("use of local variable with automatic storage from containing function")
 		     : G_("use of parameter from containing function"));
 	      error ("  %q+#D declared here", decl);
 	      return error_mark_node;
