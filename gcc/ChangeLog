@@ -1,3 +1,10 @@
+2012-11-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Various copy-edits to comply with GCC coding
+	standards for spelling, terminology, and markup, including use of
+	American spelling, correct use of terms like "back end" and
+	"run time", use correct name for GCC, use "@:" markup.
+
 2012-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55329
