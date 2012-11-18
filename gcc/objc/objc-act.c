@@ -246,7 +246,7 @@ static char *errbuf;	/* Buffer for error diagnostics */
 
 /* An array of all the local variables in the current function that
    need to be marked as volatile.  */
-VEC(tree,gc) *local_variables_to_volatilize = NULL;
+vec<tree, va_gc> *local_variables_to_volatilize = NULL;
 
 /* Store all constructed constant strings in a hash table so that
    they get uniqued properly.  */
@@ -2067,7 +2067,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
   tree s = objc_start_struct (name);
   tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
   tree t;
-  VEC(tree,heap) *objc_info = NULL;
+  vec<tree> objc_info = vec<tree>();
   int i;
 
   if (super)
@@ -2127,7 +2127,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
   for (t = TYPE_MAIN_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t))
     {
       INIT_TYPE_OBJC_INFO (t);
-      VEC_safe_push (tree, heap, objc_info, TYPE_OBJC_INFO (t));
+      objc_info.safe_push (TYPE_OBJC_INFO (t));
     }
 
   s = objc_finish_struct (s, fields);
@@ -2158,12 +2158,12 @@ objc_build_struct (tree klass, tree fields, tree super_name)
       /* Replace TYPE_OBJC_INFO with the saved one.  This restores any
 	 protocol information that may have been associated with the
 	 type.  */
-      TYPE_OBJC_INFO (t) = VEC_index (tree, objc_info, i);
+      TYPE_OBJC_INFO (t) = objc_info[i];
       /* Replace the IDENTIFIER_NODE with an actual @interface now
 	 that we have it.  */
       TYPE_OBJC_INTERFACE (t) = klass;
     }
-  VEC_free (tree, heap, objc_info);
+  objc_info.release ();
 
   /* Use TYPE_BINFO structures to point at the super class, if any.  */
   objc_xref_basetypes (s, super);
@@ -2187,9 +2187,9 @@ objc_volatilize_decl (tree decl)
 	  || TREE_CODE (decl) == PARM_DECL))
     {
       if (local_variables_to_volatilize == NULL)
-	local_variables_to_volatilize = VEC_alloc (tree, gc, 8);
+	vec_alloc (local_variables_to_volatilize, 8);
 
-      VEC_safe_push (tree, gc, local_variables_to_volatilize, decl);
+      vec_safe_push (local_variables_to_volatilize, decl);
     }
 }
 
@@ -2208,7 +2208,7 @@ objc_finish_function (void)
     {
       int i;
       tree decl;
-      FOR_EACH_VEC_ELT (tree, local_variables_to_volatilize, i, decl)
+      FOR_EACH_VEC_ELT (*local_variables_to_volatilize, i, decl)
 	{
 	  tree t = TREE_TYPE (decl);
 
@@ -2223,7 +2223,7 @@ objc_finish_function (void)
 	}
 
       /* Now we delete the vector.  This sets it to NULL as well.  */
-      VEC_free (tree, gc, local_variables_to_volatilize);
+      vec_free (local_variables_to_volatilize);
     }
 }
 
@@ -2688,7 +2688,7 @@ objc_xref_basetypes (tree ref, tree basetype)
       tree base_binfo = objc_copy_binfo (TYPE_BINFO (basetype));
 
       BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
-      BINFO_BASE_ACCESSES (binfo) = VEC_alloc (tree, gc, 1);
+      vec_alloc (BINFO_BASE_ACCESSES (binfo), 1);
       BINFO_BASE_APPEND (binfo, base_binfo);
       BINFO_BASE_ACCESS_APPEND (binfo, access_public_node);
     }
@@ -3198,7 +3198,7 @@ objc_build_string_object (tree string)
    with type TYPE and elements ELTS.  */
 
 tree
-objc_build_constructor (tree type, VEC(constructor_elt,gc) *elts)
+objc_build_constructor (tree type, vec<constructor_elt, va_gc> *elts)
 {
   tree constructor = build_constructor (type, elts);
 
@@ -3209,7 +3209,7 @@ objc_build_constructor (tree type, VEC(constructor_elt,gc) *elts)
 #ifdef OBJCPLUS
   /* Adjust for impedance mismatch.  We should figure out how to build
      CONSTRUCTORs that consistently please both the C and C++ gods.  */
-  if (!VEC_index (constructor_elt, elts, 0).index)
+  if (!(*elts)[0].index)
     TREE_TYPE (constructor) = init_list_type_node;
 #endif
 
@@ -4995,7 +4995,7 @@ tree
 build_function_type_for_method (tree return_type, tree method,
 				int context, bool super_flag)
 {
-  VEC(tree,gc) *argtypes = make_tree_vector ();
+  vec<tree, va_gc> *argtypes = make_tree_vector ();
   tree t, ftype;
   bool is_varargs = false;
 
@@ -5016,7 +5016,7 @@ build_function_type_for_method (tree return_type, tree method,
          appropriate.  */
       arg_type = objc_decay_parm_type (arg_type);
 
-      VEC_safe_push (tree, gc, argtypes, arg_type);
+      vec_safe_push (argtypes, arg_type);
     }
 
   if (METHOD_ADD_ARGS (method))
@@ -5028,7 +5028,7 @@ build_function_type_for_method (tree return_type, tree method,
 
 	  arg_type = objc_decay_parm_type (arg_type);
 
-	  VEC_safe_push (tree, gc, argtypes, arg_type);
+	  vec_safe_push (argtypes, arg_type);
 	}
 
       if (METHOD_ADD_ARGS_ELLIPSIS_P (method))

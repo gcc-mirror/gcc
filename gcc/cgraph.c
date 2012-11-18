@@ -1291,8 +1291,7 @@ cgraph_release_function_body (struct cgraph_node *node)
 	free_histograms ();
       pop_cfun();
       gimple_set_body (node->symbol.decl, NULL);
-      VEC_free (ipa_opt_pass, heap,
-      		node->ipa_transforms_to_apply);
+      node->ipa_transforms_to_apply.release ();
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
       ggc_free (DECL_STRUCT_FUNCTION (node->symbol.decl));
@@ -1317,8 +1316,7 @@ cgraph_remove_node (struct cgraph_node *node)
   cgraph_call_node_removal_hooks (node);
   cgraph_node_remove_callers (node);
   cgraph_node_remove_callees (node);
-  VEC_free (ipa_opt_pass, heap,
-            node->ipa_transforms_to_apply);
+  node->ipa_transforms_to_apply.release ();
 
   /* Incremental inlining access removed nodes stored in the postorder list.
      */
@@ -2168,7 +2166,7 @@ cgraph_only_called_directly_p (struct cgraph_node *node)
 static bool
 collect_callers_of_node_1 (struct cgraph_node *node, void *data)
 {
-  VEC (cgraph_edge_p, heap) ** redirect_callers = (VEC (cgraph_edge_p, heap) **)data;
+  vec<cgraph_edge_p> *redirect_callers = (vec<cgraph_edge_p> *)data;
   struct cgraph_edge *cs;
   enum availability avail;
   cgraph_function_or_thunk_node (node, &avail);
@@ -2176,17 +2174,17 @@ collect_callers_of_node_1 (struct cgraph_node *node, void *data)
   if (avail > AVAIL_OVERWRITABLE)
     for (cs = node->callers; cs != NULL; cs = cs->next_caller)
       if (!cs->indirect_inlining_edge)
-        VEC_safe_push (cgraph_edge_p, heap, *redirect_callers, cs);
+        redirect_callers->safe_push (cs);
   return false;
 }
 
 /* Collect all callers of NODE and its aliases that are known to lead to NODE
    (i.e. are not overwritable).  */
 
-VEC (cgraph_edge_p, heap) *
+vec<cgraph_edge_p> 
 collect_callers_of_node (struct cgraph_node *node)
 {
-  VEC (cgraph_edge_p, heap) * redirect_callers = NULL;
+  vec<cgraph_edge_p> redirect_callers = vec<cgraph_edge_p>();
   cgraph_for_node_and_aliases (node, collect_callers_of_node_1,
 			       &redirect_callers, false);
   return redirect_callers;
@@ -2229,9 +2227,8 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
       /* FIXME: Inline-analysis sets frequency to 0 when edge is optimized out.
 	 Remove this once edges are actually removed from the function at that time.  */
       && (e->frequency
-	  || (inline_edge_summary_vec
-	      && ((VEC_length(inline_edge_summary_t, inline_edge_summary_vec)
-		  <= (unsigned) e->uid)
+	  || (inline_edge_summary_vec.exists ()
+	      && ((inline_edge_summary_vec.length () <= (unsigned) e->uid)
 	          || !inline_edge_summary (e)->predicate)))
       && (e->frequency
 	  != compute_call_stmt_bb_frequency (e->caller->symbol.decl,

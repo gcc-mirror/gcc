@@ -98,7 +98,7 @@ variable_size (tree size)
 }
 
 /* An array of functions used for self-referential size computation.  */
-static GTY(()) VEC (tree, gc) *size_functions;
+static GTY(()) vec<tree, va_gc> *size_functions;
 
 /* Look inside EXPR into simple arithmetic operations involving constants.
    Return the outermost non-arithmetic or non-constant node.  */
@@ -189,12 +189,12 @@ static tree
 self_referential_size (tree size)
 {
   static unsigned HOST_WIDE_INT fnno = 0;
-  VEC (tree, heap) *self_refs = NULL;
+  vec<tree> self_refs = vec<tree>();
   tree param_type_list = NULL, param_decl_list = NULL;
   tree t, ref, return_type, fntype, fnname, fndecl;
   unsigned int i;
   char buf[128];
-  VEC(tree,gc) *args = NULL;
+  vec<tree, va_gc> *args = NULL;
 
   /* Do not factor out simple operations.  */
   t = skip_simple_constant_arithmetic (size);
@@ -203,7 +203,7 @@ self_referential_size (tree size)
 
   /* Collect the list of self-references in the expression.  */
   find_placeholder_in_expr (size, &self_refs);
-  gcc_assert (VEC_length (tree, self_refs) > 0);
+  gcc_assert (self_refs.length () > 0);
 
   /* Obtain a private copy of the expression.  */
   t = size;
@@ -213,8 +213,8 @@ self_referential_size (tree size)
 
   /* Build the parameter and argument lists in parallel; also
      substitute the former for the latter in the expression.  */
-  args = VEC_alloc (tree, gc, VEC_length (tree, self_refs));
-  FOR_EACH_VEC_ELT (tree, self_refs, i, ref)
+  vec_alloc (args, self_refs.length ());
+  FOR_EACH_VEC_ELT (self_refs, i, ref)
     {
       tree subst, param_name, param_type, param_decl;
 
@@ -249,10 +249,10 @@ self_referential_size (tree size)
 
       param_type_list = tree_cons (NULL_TREE, param_type, param_type_list);
       param_decl_list = chainon (param_decl, param_decl_list);
-      VEC_quick_push (tree, args, ref);
+      args->quick_push (ref);
     }
 
-  VEC_free (tree, heap, self_refs);
+  self_refs.release ();
 
   /* Append 'void' to indicate that the number of parameters is fixed.  */
   param_type_list = tree_cons (NULL_TREE, void_type_node, param_type_list);
@@ -297,7 +297,7 @@ self_referential_size (tree size)
   TREE_STATIC (fndecl) = 1;
 
   /* Put it onto the list of size functions.  */
-  VEC_safe_push (tree, gc, size_functions, fndecl);
+  vec_safe_push (size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
   return build_call_expr_loc_vec (UNKNOWN_LOCATION, fndecl, args);
@@ -316,7 +316,7 @@ finalize_size_functions (void)
   unsigned int i;
   tree fndecl;
 
-  for (i = 0; VEC_iterate(tree, size_functions, i, fndecl); i++)
+  for (i = 0; size_functions && size_functions->iterate (i, &fndecl); i++)
     {
       dump_function (TDI_original, fndecl);
       gimplify_function_tree (fndecl);
@@ -324,7 +324,7 @@ finalize_size_functions (void)
       cgraph_finalize_function (fndecl, false);
     }
 
-  VEC_free (tree, gc, size_functions);
+  vec_free (size_functions);
 }
 
 /* Return the machine mode to use for a nonscalar of SIZE bits.  The
@@ -777,7 +777,7 @@ start_record_layout (tree t)
   rli->offset = size_zero_node;
   rli->bitpos = bitsize_zero_node;
   rli->prev_field = 0;
-  rli->pending_statics = NULL;
+  rli->pending_statics = 0;
   rli->packed_maybe_necessary = 0;
   rli->remaining_in_alignment = 0;
 
@@ -885,7 +885,7 @@ debug_rli (record_layout_info rli)
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
 
-  if (!VEC_empty (tree, rli->pending_statics))
+  if (!vec_safe_is_empty (rli->pending_statics))
     {
       fprintf (stderr, "pending statics:\n");
       debug_vec_tree (rli->pending_statics);
@@ -1099,7 +1099,7 @@ place_field (record_layout_info rli, tree field)
      it *after* the record is laid out.  */
   if (TREE_CODE (field) == VAR_DECL)
     {
-      VEC_safe_push (tree, gc, rli->pending_statics, field);
+      vec_safe_push (rli->pending_statics, field);
       return;
     }
 
@@ -1988,13 +1988,13 @@ finish_record_layout (record_layout_info rli, int free_p)
 
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
-  while (!VEC_empty (tree, rli->pending_statics))
-    layout_decl (VEC_pop (tree, rli->pending_statics), 0);
+  while (!vec_safe_is_empty (rli->pending_statics))
+    layout_decl (rli->pending_statics->pop (), 0);
 
   /* Clean up.  */
   if (free_p)
     {
-      VEC_free (tree, gc, rli->pending_statics);
+      vec_free (rli->pending_statics);
       free (rli);
     }
 }

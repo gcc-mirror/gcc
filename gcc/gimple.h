@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "pointer-set.h"
 #include "vec.h"
-#include "vecprim.h"
-#include "vecir.h"
 #include "ggc.h"
 #include "basic-block.h"
 #include "tree.h"
@@ -37,9 +35,7 @@ typedef gimple gimple_seq_node;
 
 /* For each block, the PHI nodes that need to be rewritten are stored into
    these vectors.  */
-typedef VEC(gimple, heap) *gimple_vec;
-DEF_VEC_P (gimple_vec);
-DEF_VEC_ALLOC_P (gimple_vec, heap);
+typedef vec<gimple> gimple_vec;
 
 enum gimple_code {
 #define DEFGSCODE(SYM, STRING, STRUCT)	SYM,
@@ -753,11 +749,11 @@ gimple gimple_build_debug_source_bind_stat (tree, tree, gimple MEM_STAT_DECL);
 #define gimple_build_debug_source_bind(var,val,stmt)			\
   gimple_build_debug_source_bind_stat ((var), (val), (stmt) MEM_STAT_INFO)
 
-gimple gimple_build_call_vec (tree, VEC(tree, heap) *);
+gimple gimple_build_call_vec (tree, vec<tree> );
 gimple gimple_build_call (tree, unsigned, ...);
 gimple gimple_build_call_valist (tree, unsigned, va_list);
 gimple gimple_build_call_internal (enum internal_fn, unsigned, ...);
-gimple gimple_build_call_internal_vec (enum internal_fn, VEC(tree, heap) *);
+gimple gimple_build_call_internal_vec (enum internal_fn, vec<tree> );
 gimple gimple_build_call_from_tree (tree);
 gimple gimplify_assign (tree, tree, gimple_seq *);
 gimple gimple_build_cond (enum tree_code, tree, tree, tree, tree);
@@ -765,8 +761,9 @@ gimple gimple_build_label (tree label);
 gimple gimple_build_goto (tree dest);
 gimple gimple_build_nop (void);
 gimple gimple_build_bind (tree, gimple_seq, tree);
-gimple gimple_build_asm_vec (const char *, VEC(tree,gc) *, VEC(tree,gc) *,
-                             VEC(tree,gc) *, VEC(tree,gc) *);
+gimple gimple_build_asm_vec (const char *, vec<tree, va_gc> *,
+			     vec<tree, va_gc> *, vec<tree, va_gc> *,
+			     vec<tree, va_gc> *);
 gimple gimple_build_catch (tree, gimple_seq);
 gimple gimple_build_eh_filter (tree, gimple_seq);
 gimple gimple_build_eh_must_not_throw (tree);
@@ -776,7 +773,7 @@ gimple gimple_build_wce (gimple_seq);
 gimple gimple_build_resx (int);
 gimple gimple_build_eh_dispatch (int);
 gimple gimple_build_switch_nlabels (unsigned, tree, tree);
-gimple gimple_build_switch (tree, tree, VEC(tree,heap) *);
+gimple gimple_build_switch (tree, tree, vec<tree> );
 gimple gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gimple gimple_build_omp_task (gimple_seq, tree, tree, tree, tree, tree, tree);
 gimple gimple_build_omp_for (gimple_seq, tree, size_t, gimple_seq);
@@ -795,8 +792,8 @@ gimple gimple_build_omp_atomic_store (tree);
 gimple gimple_build_transaction (gimple_seq, tree);
 gimple gimple_build_predict (enum br_predictor, enum prediction);
 enum gimple_statement_structure_enum gss_for_assign (enum tree_code);
-void sort_case_labels (VEC(tree,heap) *);
-void preprocess_case_label_vec_for_gimple (VEC(tree,heap) *, tree, tree *);
+void sort_case_labels (vec<tree> );
+void preprocess_case_label_vec_for_gimple (vec<tree> , tree, tree *);
 void gimple_set_body (tree, gimple_seq);
 gimple_seq gimple_body (tree);
 bool gimple_has_body_p (tree);
@@ -943,13 +940,13 @@ struct gimplify_ctx
 {
   struct gimplify_ctx *prev_context;
 
-  VEC(gimple,heap) *bind_expr_stack;
+  vec<gimple> bind_expr_stack;
   tree temps;
   gimple_seq conditional_cleanups;
   tree exit_label;
   tree return_temp;
 
-  VEC(tree,heap) *case_labels;
+  vec<tree> case_labels;
   /* The formal temporary table.  Should this be persistent?  */
   htab_t temp_htab;
 
@@ -991,7 +988,7 @@ extern void gimplify_and_add (tree, gimple_seq *);
 /* Miscellaneous helpers.  */
 extern void gimple_add_tmp_var (tree);
 extern gimple gimple_current_bind_expr (void);
-extern VEC(gimple, heap) *gimple_bind_expr_stack (void);
+extern vec<gimple> gimple_bind_expr_stack (void);
 extern tree voidify_wrapper_expr (tree, tree);
 extern tree build_and_jump (tree *);
 extern tree force_labels_r (tree *, int *, void *);

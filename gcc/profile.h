@@ -42,7 +42,7 @@ struct edge_info
    a minimum cost flow algorithm. */
 extern void mcf_smooth_cfg (void);
 
-extern gcov_type sum_edge_counts (VEC (edge, gc) *edges);
+extern gcov_type sum_edge_counts (vec<edge, va_gc> *edges);
 
 extern void init_node_map (void);
 extern void del_node_map (void);

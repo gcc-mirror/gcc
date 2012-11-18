@@ -2269,9 +2269,9 @@ fix_reg_equiv_init (void)
   int i, new_regno, max;
   rtx x, prev, next, insn, set;
 
-  if (VEC_length (reg_equivs_t, reg_equivs) < max_regno)
+  if (vec_safe_length (reg_equivs) < max_regno)
     {
-      max = VEC_length (reg_equivs_t, reg_equivs);
+      max = vec_safe_length (reg_equivs);
       grow_reg_equivs ();
       for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
 	for (prev = NULL_RTX, x = reg_equiv_init (i);
@@ -3871,7 +3871,7 @@ int first_moveable_pseudo, last_moveable_pseudo;
    find_movable_pseudos, with index 0 holding data for the
    first_moveable_pseudo.  */
 /* The original home register.  */
-static VEC (rtx, heap) *pseudo_replaced_reg;
+static vec<rtx> pseudo_replaced_reg;
 
 /* Look for instances where we have an instruction that is known to increase
    register pressure, and whose result is not used immediately.  If it is
@@ -3915,8 +3915,8 @@ find_moveable_pseudos (void)
   bitmap_initialize (&interesting, 0);
 
   first_moveable_pseudo = max_regs;
-  VEC_free (rtx, heap, pseudo_replaced_reg);
-  VEC_safe_grow (rtx, heap, pseudo_replaced_reg, max_regs);
+  pseudo_replaced_reg.release ();
+  pseudo_replaced_reg.safe_grow_cleared (max_regs);
 
   df_analyze ();
   calculate_dominance_info (CDI_DOMINATORS);
@@ -4213,7 +4213,7 @@ find_moveable_pseudos (void)
 	      unsigned nregno = REGNO (newreg);
 	      emit_insn_before (gen_move_insn (def_reg, newreg), use_insn);
 	      nregno -= max_regs;
-	      VEC_replace (rtx, pseudo_replaced_reg, nregno, def_reg);
+	      pseudo_replaced_reg[nregno] = def_reg;
 	    }
 	}
     }
@@ -4256,7 +4256,7 @@ move_unallocated_pseudos (void)
     if (reg_renumber[i] < 0)
       {
 	int idx = i - first_moveable_pseudo;
-	rtx other_reg = VEC_index (rtx, pseudo_replaced_reg, idx);
+	rtx other_reg = pseudo_replaced_reg[idx];
 	rtx def_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (i));
 	/* The use must follow all definitions of OTHER_REG, so we can
 	   insert the new definition immediately after any of them.  */
@@ -4624,7 +4624,7 @@ do_reload (void)
       lra (ira_dump_file);
       /* ???!!! Move it before lra () when we use ira_reg_equiv in
 	 LRA.  */
-      VEC_free (reg_equivs_t, gc, reg_equivs);
+      vec_free (reg_equivs);
       reg_equivs = NULL;
       need_dce = false;
     }

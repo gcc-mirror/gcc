@@ -234,12 +234,8 @@ struct iv_inv_expr_ent
 /* The data used by the induction variable optimizations.  */
 
 typedef struct iv_use *iv_use_p;
-DEF_VEC_P(iv_use_p);
-DEF_VEC_ALLOC_P(iv_use_p,heap);
 
 typedef struct iv_cand *iv_cand_p;
-DEF_VEC_P(iv_cand_p);
-DEF_VEC_ALLOC_P(iv_cand_p,heap);
 
 struct ivopts_data
 {
@@ -269,10 +265,10 @@ struct ivopts_data
   bitmap relevant;
 
   /* The uses of induction variables.  */
-  VEC(iv_use_p,heap) *iv_uses;
+  vec<iv_use_p> iv_uses;
 
   /* The candidates.  */
-  VEC(iv_cand_p,heap) *iv_candidates;
+  vec<iv_cand_p> iv_candidates;
 
   /* A bitmap of important candidates.  */
   bitmap important_candidates;
@@ -376,7 +372,7 @@ struct iv_ca_delta
 /* The list of trees for that the decl_rtl field must be reset is stored
    here.  */
 
-static VEC(tree,heap) *decl_rtl_to_reset;
+static vec<tree> decl_rtl_to_reset;
 
 static comp_cost force_expr_to_var_cost (tree, bool);
 
@@ -385,7 +381,7 @@ static comp_cost force_expr_to_var_cost (tree, bool);
 static inline unsigned
 n_iv_uses (struct ivopts_data *data)
 {
-  return VEC_length (iv_use_p, data->iv_uses);
+  return data->iv_uses.length ();
 }
 
 /* Ith use recorded in DATA.  */
@@ -393,7 +389,7 @@ n_iv_uses (struct ivopts_data *data)
 static inline struct iv_use *
 iv_use (struct ivopts_data *data, unsigned i)
 {
-  return VEC_index (iv_use_p, data->iv_uses, i);
+  return data->iv_uses[i];
 }
 
 /* Number of candidates recorded in DATA.  */
@@ -401,7 +397,7 @@ iv_use (struct ivopts_data *data, unsigned i)
 static inline unsigned
 n_iv_cands (struct ivopts_data *data)
 {
-  return VEC_length (iv_cand_p, data->iv_candidates);
+  return data->iv_candidates.length ();
 }
 
 /* Ith candidate recorded in DATA.  */
@@ -409,7 +405,7 @@ n_iv_cands (struct ivopts_data *data)
 static inline struct iv_cand *
 iv_cand (struct ivopts_data *data, unsigned i)
 {
-  return VEC_index (iv_cand_p, data->iv_candidates, i);
+  return data->iv_candidates[i];
 }
 
 /* The single loop exit if it dominates the latch, NULL otherwise.  */
@@ -855,12 +851,12 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->important_candidates = BITMAP_ALLOC (NULL);
   data->max_inv_id = 0;
   data->niters = NULL;
-  data->iv_uses = VEC_alloc (iv_use_p, heap, 20);
-  data->iv_candidates = VEC_alloc (iv_cand_p, heap, 20);
+  data->iv_uses.create (20);
+  data->iv_candidates.create (20);
   data->inv_expr_tab = htab_create (10, htab_inv_expr_hash,
                                     htab_inv_expr_eq, free);
   data->inv_expr_id = 0;
-  decl_rtl_to_reset = VEC_alloc (tree, heap, 20);
+  decl_rtl_to_reset.create (20);
 }
 
 /* Returns a memory object to that EXPR points.  In case we are able to
@@ -1209,7 +1205,7 @@ record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_use (dump_file, use);
 
-  VEC_safe_push (iv_use_p, heap, data->iv_uses, use);
+  data->iv_uses.safe_push (use);
 
   return use;
 }
@@ -2270,7 +2266,7 @@ add_candidate_1 (struct ivopts_data *data,
 	}
       cand->important = important;
       cand->incremented_at = incremented_at;
-      VEC_safe_push (iv_cand_p, heap, data->iv_candidates, cand);
+      data->iv_candidates.safe_push (cand);
 
       if (step
 	  && TREE_CODE (step) != INTEGER_CST)
@@ -2846,7 +2842,7 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
 
   if (x)
     {
-      VEC_safe_push (tree, heap, decl_rtl_to_reset, obj);
+      decl_rtl_to_reset.safe_push (obj);
       SET_DECL_RTL (obj, x);
     }
 
@@ -3074,8 +3070,6 @@ adjust_setup_cost (struct ivopts_data *data, unsigned cost)
    validity for a memory reference accessing memory of mode MODE in
    address space AS.  */
 
-DEF_VEC_P (sbitmap);
-DEF_VEC_ALLOC_P (sbitmap, heap);
 
 bool
 multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
@@ -3083,13 +3077,13 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
 {
 #define MAX_RATIO 128
   unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mode;
-  static VEC (sbitmap, heap) *valid_mult_list;
+  static vec<sbitmap> valid_mult_list;
   sbitmap valid_mult;
 
-  if (data_index >= VEC_length (sbitmap, valid_mult_list))
-    VEC_safe_grow_cleared (sbitmap, heap, valid_mult_list, data_index + 1);
+  if (data_index >= valid_mult_list.length ())
+    valid_mult_list.safe_grow_cleared (data_index + 1);
 
-  valid_mult = VEC_index (sbitmap, valid_mult_list, data_index);
+  valid_mult = valid_mult_list[data_index];
   if (!valid_mult)
     {
       enum machine_mode address_mode = targetm.addr_space.address_mode (as);
@@ -3117,7 +3111,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
 	  fprintf (dump_file, "\n");
 	}
 
-      VEC_replace (sbitmap, valid_mult_list, data_index, valid_mult);
+      valid_mult_list[data_index] = valid_mult;
     }
 
   if (ratio > MAX_RATIO || ratio < -MAX_RATIO)
@@ -3146,8 +3140,6 @@ typedef struct address_cost_data_s
   unsigned costs[2][2][2][2];
 } *address_cost_data;
 
-DEF_VEC_P (address_cost_data);
-DEF_VEC_ALLOC_P (address_cost_data, heap);
 
 static comp_cost
 get_address_cost (bool symbol_present, bool var_present,
@@ -3157,7 +3149,7 @@ get_address_cost (bool symbol_present, bool var_present,
 		  bool stmt_after_inc, bool *may_autoinc)
 {
   enum machine_mode address_mode = targetm.addr_space.address_mode (as);
-  static VEC(address_cost_data, heap) *address_cost_data_list;
+  static vec<address_cost_data> address_cost_data_list;
   unsigned int data_index = (int) as * MAX_MACHINE_MODE + (int) mem_mode;
   address_cost_data data;
   static bool has_preinc[MAX_MACHINE_MODE], has_postinc[MAX_MACHINE_MODE];
@@ -3168,11 +3160,10 @@ get_address_cost (bool symbol_present, bool var_present,
   unsigned HOST_WIDE_INT mask;
   unsigned bits;
 
-  if (data_index >= VEC_length (address_cost_data, address_cost_data_list))
-    VEC_safe_grow_cleared (address_cost_data, heap, address_cost_data_list,
-			   data_index + 1);
+  if (data_index >= address_cost_data_list.length ())
+    address_cost_data_list.safe_grow_cleared (data_index + 1);
 
-  data = VEC_index (address_cost_data, address_cost_data_list, data_index);
+  data = address_cost_data_list[data_index];
   if (!data)
     {
       HOST_WIDE_INT i;
@@ -3376,8 +3367,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	  fprintf (dump_file, "\n");
 	}
 
-      VEC_replace (address_cost_data, address_cost_data_list,
-		   data_index, data);
+      address_cost_data_list[data_index] = data;
     }
 
   bits = GET_MODE_BITSIZE (address_mode);
@@ -6614,7 +6604,7 @@ free_loop_data (struct ivopts_data *data)
       free (use->cost_map);
       free (use);
     }
-  VEC_truncate (iv_use_p, data->iv_uses, 0);
+  data->iv_uses.truncate (0);
 
   for (i = 0; i < n_iv_cands (data); i++)
     {
@@ -6625,7 +6615,7 @@ free_loop_data (struct ivopts_data *data)
 	BITMAP_FREE (cand->depends_on);
       free (cand);
     }
-  VEC_truncate (iv_cand_p, data->iv_candidates, 0);
+  data->iv_candidates.truncate (0);
 
   if (data->version_info_size < num_ssa_names)
     {
@@ -6636,10 +6626,10 @@ free_loop_data (struct ivopts_data *data)
 
   data->max_inv_id = 0;
 
-  FOR_EACH_VEC_ELT (tree, decl_rtl_to_reset, i, obj)
+  FOR_EACH_VEC_ELT (decl_rtl_to_reset, i, obj)
     SET_DECL_RTL (obj, NULL_RTX);
 
-  VEC_truncate (tree, decl_rtl_to_reset, 0);
+  decl_rtl_to_reset.truncate (0);
 
   htab_empty (data->inv_expr_tab);
   data->inv_expr_id = 0;
@@ -6656,9 +6646,9 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   BITMAP_FREE (data->relevant);
   BITMAP_FREE (data->important_candidates);
 
-  VEC_free (tree, heap, decl_rtl_to_reset);
-  VEC_free (iv_use_p, heap, data->iv_uses);
-  VEC_free (iv_cand_p, heap, data->iv_candidates);
+  decl_rtl_to_reset.release ();
+  data->iv_uses.release ();
+  data->iv_candidates.release ();
   htab_delete (data->inv_expr_tab);
 }
 

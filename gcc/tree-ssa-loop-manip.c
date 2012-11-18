@@ -173,7 +173,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 {
   unsigned i;
   bitmap_iterator bi;
-  VEC (basic_block, heap) *worklist;
+  vec<basic_block> worklist;
   struct loop *def_loop = def_bb->loop_father;
   unsigned def_loop_depth = loop_depth (def_loop);
   bitmap def_loop_exits;
@@ -181,7 +181,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
   /* Normally the work list size is bounded by the number of basic
      blocks in the largest loop.  We don't know this number, but we
      can be fairly sure that it will be relatively small.  */
-  worklist = VEC_alloc (basic_block, heap, MAX (8, n_basic_blocks / 128));
+  worklist.create (MAX (8, n_basic_blocks / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
     {
@@ -192,21 +192,21 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
       if (! flow_loop_nested_p (use_loop, def_loop))
 	use_bb = find_sibling_superloop (use_loop, def_loop)->header;
       if (bitmap_set_bit (live_exits, use_bb->index))
-	VEC_safe_push (basic_block, heap, worklist, use_bb);
+	worklist.safe_push (use_bb);
     }
 
   /* Iterate until the worklist is empty.  */
-  while (! VEC_empty (basic_block, worklist))
+  while (! worklist.is_empty ())
     {
       edge e;
       edge_iterator ei;
 
       /* Pull a block off the worklist.  */
-      basic_block bb = VEC_pop (basic_block, worklist);
+      basic_block bb = worklist.pop ();
 
       /* Make sure we have at least enough room in the work list
 	 for all predecessors of this block.  */
-      VEC_reserve (basic_block, heap, worklist, EDGE_COUNT (bb->preds));
+      worklist.reserve (EDGE_COUNT (bb->preds));
 
       /* For each predecessor block.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -241,10 +241,10 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 	  if (pred_visited || dominated_by_p (CDI_DOMINATORS, pred, bb))
 	    continue;
 
-	  VEC_quick_push (basic_block, worklist, pred);
+	  worklist.quick_push (pred);
 	}
     }
-  VEC_free (basic_block, heap, worklist);
+  worklist.release ();
 
   def_loop_exits = BITMAP_ALLOC (&loop_renamer_obstack);
   for (struct loop *loop = def_loop;
@@ -343,11 +343,11 @@ get_loops_exits (bitmap *loop_exits)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      VEC(edge, heap) *exit_edges = get_loop_exit_edges (loop);
+      vec<edge> exit_edges = get_loop_exit_edges (loop);
       loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);
-      FOR_EACH_VEC_ELT (edge, exit_edges, j, e)
+      FOR_EACH_VEC_ELT (exit_edges, j, e)
         bitmap_set_bit (loop_exits[loop->num], e->dest->index);
-      VEC_free (edge, heap, exit_edges);
+      exit_edges.release ();
     }
 }
 
@@ -741,7 +741,7 @@ copy_phi_node_args (unsigned first_new_block)
 bool
 gimple_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 				    unsigned int ndupl, sbitmap wont_exit,
-				    edge orig, VEC (edge, heap) **to_remove,
+				    edge orig, vec<edge> *to_remove,
 				    int flags)
 {
   unsigned first_new_block;
@@ -1038,7 +1038,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   unsigned new_est_niter, i, prob;
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   sbitmap wont_exit;
-  VEC (edge, heap) *to_remove = NULL;
+  vec<edge> to_remove = vec<edge>();
 
   est_niter = expected_loop_iterations (loop);
   determine_exit_conditions (loop, desc, factor,
@@ -1181,12 +1181,12 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   free (wont_exit);
   gcc_assert (ok);
 
-  FOR_EACH_VEC_ELT (edge, to_remove, i, e)
+  FOR_EACH_VEC_ELT (to_remove, i, e)
     {
       ok = remove_path (e);
       gcc_assert (ok);
     }
-  VEC_free (edge, heap, to_remove);
+  to_remove.release ();
   update_ssa (TODO_update_ssa);
 
   /* Ensure that the frequencies in the loop match the new estimated

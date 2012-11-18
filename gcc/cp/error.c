@@ -84,7 +84,7 @@ static void dump_exception_spec (tree, int);
 static void dump_template_argument (tree, int);
 static void dump_template_argument_list (tree, int);
 static void dump_template_parameter (tree, int);
-static void dump_template_bindings (tree, tree, VEC(tree,gc) *);
+static void dump_template_bindings (tree, tree, vec<tree, va_gc> *);
 static void dump_scope (tree, int);
 static void dump_template_parms (tree, int, int);
 static int get_non_default_template_args_count (tree, int);
@@ -259,7 +259,7 @@ dump_template_parameter (tree parm, int flags)
    TREE_VEC.  */
 
 static void
-dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
+dump_template_bindings (tree parms, tree args, vec<tree, va_gc> *typenames)
 {
   bool need_semicolon = false;
   int i;
@@ -310,10 +310,10 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
     }
 
   /* Don't bother with typenames for a partial instantiation.  */
-  if (VEC_empty (tree, typenames) || uses_template_parms (args))
+  if (vec_safe_is_empty (typenames) || uses_template_parms (args))
     return;
 
-  FOR_EACH_VEC_ELT (tree, typenames, i, t)
+  FOR_EACH_VEC_SAFE_ELT (typenames, i, t)
     {
       if (need_semicolon)
 	pp_separate_with_semicolon (cxx_pp);
@@ -1275,13 +1275,13 @@ dump_template_decl (tree t, int flags)
 }
 
 /* find_typenames looks through the type of the function template T
-   and returns a VEC containing any typedefs, decltypes or TYPENAME_TYPEs
+   and returns a vec containing any typedefs, decltypes or TYPENAME_TYPEs
    it finds.  */
 
 struct find_typenames_t
 {
   struct pointer_set_t *p_set;
-  VEC (tree,gc) *typenames;
+  vec<tree, va_gc> *typenames;
 };
 
 static tree
@@ -1299,7 +1299,7 @@ find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
     mv = TYPE_MAIN_VARIANT (*tp);
 
   if (mv && (mv == *tp || !pointer_set_insert (d->p_set, mv)))
-    VEC_safe_push (tree, gc, d->typenames, mv);
+    vec_safe_push (d->typenames, mv);
 
   /* Search into class template arguments, which cp_walk_subtrees
      doesn't do.  */
@@ -1310,7 +1310,7 @@ find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
   return NULL_TREE;
 }
 
-static VEC(tree,gc) *
+static vec<tree, va_gc> *
 find_typenames (tree t)
 {
   struct find_typenames_t ft;
@@ -1338,7 +1338,7 @@ dump_function_decl (tree t, int flags)
   int show_return = flags & TFF_RETURN_TYPE || flags & TFF_DECL_SPECIFIERS;
   int do_outer_scope = ! (flags & TFF_UNQUALIFIED_NAME);
   tree exceptions;
-  VEC(tree,gc) *typenames = NULL;
+  vec<tree, va_gc> *typenames = NULL;
 
   if (DECL_NAME (t) && LAMBDA_FUNCTION_P (t))
     {
@@ -1737,7 +1737,7 @@ dump_expr_list (tree l, int flags)
 /* Print out a vector of initializers (subr of dump_expr).  */
 
 static void
-dump_expr_init_vec (VEC(constructor_elt,gc) *v, int flags)
+dump_expr_init_vec (vec<constructor_elt, va_gc> *v, int flags)
 {
   unsigned HOST_WIDE_INT idx;
   tree value;
@@ -1745,7 +1745,7 @@ dump_expr_init_vec (VEC(constructor_elt,gc) *v, int flags)
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
     {
       dump_expr (value, flags | TFF_EXPR_IN_PARENS);
-      if (idx != VEC_length (constructor_elt, v) - 1)
+      if (idx != v->length () - 1)
 	pp_separate_with_comma (cxx_pp);
     }
 }
@@ -3208,11 +3208,11 @@ print_instantiation_context (void)
 void
 maybe_print_constexpr_context (diagnostic_context *context)
 {
-  VEC(tree,heap) *call_stack = cx_error_context ();
+  vec<tree> call_stack = cx_error_context ();
   unsigned ix;
   tree t;
 
-  FOR_EACH_VEC_ELT (tree, call_stack, ix, t)
+  FOR_EACH_VEC_ELT (call_stack, ix, t)
     {
       expanded_location xloc = expand_location (EXPR_LOCATION (t));
       const char *s = expr_as_string (t, 0);

@@ -37,7 +37,7 @@ push_stmt_list (void)
 {
   tree t;
   t = alloc_stmt_list ();
-  VEC_safe_push (tree, gc, stmt_list_stack, t);
+  vec_safe_push (stmt_list_stack, t);
   return t;
 }
 
@@ -52,10 +52,10 @@ pop_stmt_list (tree t)
      nestings will be due to outstanding cleanups.  */
   while (1)
     {
-      u = VEC_pop (tree, stmt_list_stack);
-      if (!VEC_empty (tree, stmt_list_stack))
+      u = stmt_list_stack->pop ();
+      if (!stmt_list_stack->is_empty ())
 	{
-	  tree x = VEC_last (tree, stmt_list_stack);
+	  tree x = stmt_list_stack->last ();
 	  STATEMENT_LIST_HAS_LABEL (x) |= STATEMENT_LIST_HAS_LABEL (u);
 	}
       if (t == u)

@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_INLINE_H
 #define GCC_TREE_INLINE_H
 
-#include "vecir.h" /* For VEC(gimple,heap).  */
-
 struct cgraph_edge;
 
 /* Indicate the desired behavior wrt call graph edges.  We can either
@@ -119,7 +117,7 @@ typedef struct copy_body_data
   basic_block entry_bb;
 
   /* Debug statements that need processing.  */
-  VEC(gimple,heap) *debug_stmts;
+  vec<gimple> debug_stmts;
 
   /* A map from local declarations in the inlined function to
      equivalents in the function into which it is being inlined, where

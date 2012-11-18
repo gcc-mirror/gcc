@@ -59,8 +59,6 @@ struct mapping {
 
 /* Vector definitions for the above.  */
 typedef struct mapping *mapping_ptr;
-DEF_VEC_P (mapping_ptr);
-DEF_VEC_ALLOC_P (mapping_ptr, heap);
 
 /* A structure for abstracting the common parts of iterators.  */
 struct iterator_group {
@@ -87,8 +85,6 @@ struct iterator_use {
 
 /* Vector definitions for the above.  */
 typedef struct iterator_use iterator_use;
-DEF_VEC_O (iterator_use);
-DEF_VEC_ALLOC_O (iterator_use, heap);
 
 /* Records one use of an attribute (the "<[iterator:]attribute>" syntax)
    in a non-string rtx field.  */
@@ -105,8 +101,6 @@ struct attribute_use {
 
 /* Vector definitions for the above.  */
 typedef struct attribute_use attribute_use;
-DEF_VEC_O (attribute_use);
-DEF_VEC_ALLOC_O (attribute_use, heap);
 
 static void validate_const_int (const char *);
 static rtx read_rtx_code (const char *);
@@ -117,13 +111,13 @@ static rtx read_rtx_variadic (rtx);
 static struct iterator_group modes, codes, ints;
 
 /* All iterators used in the current rtx.  */
-static VEC (mapping_ptr, heap) *current_iterators;
+static vec<mapping_ptr> current_iterators;
 
 /* The list of all iterator uses in the current rtx.  */
-static VEC (iterator_use, heap) *iterator_uses;
+static vec<iterator_use> iterator_uses;
 
 /* The list of all attribute uses in the current rtx.  */
-static VEC (attribute_use, heap) *attribute_uses;
+static vec<attribute_use> attribute_uses;
 
 /* Implementations of the iterator_group callbacks for modes.  */
 
@@ -211,7 +205,7 @@ map_attr_string (const char *p)
       attr++;
     }
 
-  FOR_EACH_VEC_ELT (mapping_ptr, current_iterators, i, iterator)
+  FOR_EACH_VEC_ELT (current_iterators, i, iterator)
     {
       /* If an iterator name was specified, check that it matches.  */
       if (iterator_name_len >= 0
@@ -372,7 +366,7 @@ apply_attribute_uses (void)
   attribute_use *ause;
   unsigned int i;
 
-  FOR_EACH_VEC_ELT (attribute_use, attribute_uses, i, ause)
+  FOR_EACH_VEC_ELT (attribute_uses, i, ause)
     {
       v = map_attr_string (ause->value);
       if (!v)
@@ -392,7 +386,7 @@ add_current_iterators (void **slot, void *data ATTRIBUTE_UNUSED)
 
   iterator = (struct mapping *) *slot;
   if (iterator->current_value)
-    VEC_safe_push (mapping_ptr, heap, current_iterators, iterator);
+    current_iterators.safe_push (iterator);
   return 1;
 }
 
@@ -409,7 +403,7 @@ apply_iterators (rtx original, rtx *queue)
   struct map_value *v;
   rtx x;
 
-  if (VEC_empty (iterator_use, iterator_uses))
+  if (iterator_uses.is_empty ())
     {
       /* Raise an error if any attributes were used.  */
       apply_attribute_uses ();
@@ -419,12 +413,12 @@ apply_iterators (rtx original, rtx *queue)
     }
 
   /* Clear out the iterators from the previous run.  */
-  FOR_EACH_VEC_ELT (mapping_ptr, current_iterators, i, iterator)
+  FOR_EACH_VEC_ELT (current_iterators, i, iterator)
     iterator->current_value = NULL;
-  VEC_truncate (mapping_ptr, current_iterators, 0);
+  current_iterators.truncate (0);
 
   /* Mark the iterators that we need this time.  */
-  FOR_EACH_VEC_ELT (iterator_use, iterator_uses, i, iuse)
+  FOR_EACH_VEC_ELT (iterator_uses, i, iuse)
     iuse->iterator->current_value = iuse->iterator->values;
 
   /* Get the list of iterators that are in use, preserving the
@@ -432,14 +426,14 @@ apply_iterators (rtx original, rtx *queue)
   htab_traverse (modes.iterators, add_current_iterators, NULL);
   htab_traverse (codes.iterators, add_current_iterators, NULL);
   htab_traverse (ints.iterators, add_current_iterators, NULL);
-  gcc_assert (!VEC_empty (mapping_ptr, current_iterators));
+  gcc_assert (!current_iterators.is_empty ());
 
   for (;;)
     {
       /* Apply the current iterator values.  Accumulate a condition to
 	 say when the resulting rtx can be used.  */
       condition = NULL;
-      FOR_EACH_VEC_ELT (iterator_use, iterator_uses, i, iuse)
+      FOR_EACH_VEC_ELT (iterator_uses, i, iuse)
 	{
 	  v = iuse->iterator->current_value;
 	  iuse->iterator->group->apply_iterator (iuse->ptr, v->number);
@@ -456,13 +450,13 @@ apply_iterators (rtx original, rtx *queue)
       /* Lexicographically increment the iterator value sequence.
 	 That is, cycle through iterator values, starting from the right,
 	 and stopping when one of them doesn't wrap around.  */
-      i = VEC_length (mapping_ptr, current_iterators);
+      i = current_iterators.length ();
       for (;;)
 	{
 	  if (i == 0)
 	    return;
 	  i--;
-	  iterator = VEC_index (mapping_ptr, current_iterators, i);
+	  iterator = current_iterators[i];
 	  iterator->current_value = iterator->current_value->next;
 	  if (iterator->current_value)
 	    break;
@@ -685,7 +679,7 @@ static void
 record_iterator_use (struct mapping *iterator, void *ptr)
 {
   struct iterator_use iuse = {iterator, ptr};
-  VEC_safe_push (iterator_use, heap, iterator_uses, iuse);
+  iterator_uses.safe_push (iuse);
 }
 
 /* Record that PTR uses attribute VALUE, which must match a built-in
@@ -696,7 +690,7 @@ record_attribute_use (struct iterator_group *group, void *ptr,
 		      const char *value)
 {
   struct attribute_use ause = {group, value, ptr};
-  VEC_safe_push (attribute_use, heap, attribute_uses, ause);
+  attribute_uses.safe_push (ause);
 }
 
 /* Interpret NAME as either a built-in value, iterator or attribute
@@ -858,8 +852,8 @@ read_rtx (const char *rtx_name, rtx *x)
     }
 
   apply_iterators (read_rtx_code (rtx_name), &queue_head);
-  VEC_truncate (iterator_use, iterator_uses, 0);
-  VEC_truncate (attribute_use, attribute_uses, 0);
+  iterator_uses.truncate (0);
+  attribute_uses.truncate (0);
 
   *x = queue_head;
   return true;

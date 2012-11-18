@@ -740,6 +740,6 @@ rtx get_personality_function (tree);
 extern void expand_case (gimple);
 
 /* Like expand_case but special-case for SJLJ exception dispatching.  */
-extern void expand_sjlj_dispatch_table (rtx, VEC(tree,heap) *);
+extern void expand_sjlj_dispatch_table (rtx, vec<tree> );
 
 #endif /* GCC_EXPR_H */

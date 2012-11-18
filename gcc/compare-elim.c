@@ -120,10 +120,8 @@ struct comparison
 };
   
 typedef struct comparison *comparison_struct_p;
-DEF_VEC_P(comparison_struct_p);
-DEF_VEC_ALLOC_P(comparison_struct_p, heap);
 
-static VEC(comparison_struct_p, heap) *all_compares;
+static vec<comparison_struct_p> all_compares;
 
 /* Look for a "conforming" comparison, as defined above.  If valid, return
    the rtx for the COMPARE itself.  */
@@ -337,7 +335,7 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
 	  last_cmp->in_a = XEXP (src, 0);
 	  last_cmp->in_b = XEXP (src, 1);
 	  last_cmp->orig_mode = src_mode;
-	  VEC_safe_push (comparison_struct_p, heap, all_compares, last_cmp);
+	  all_compares.safe_push (last_cmp);
 
 	  /* It's unusual, but be prepared for comparison patterns that
 	     also clobber an input, or perhaps a scratch.  */
@@ -623,24 +621,23 @@ execute_compare_elim_after_reload (void)
 {
   df_analyze ();
 
-  gcc_checking_assert (all_compares == NULL);
+  gcc_checking_assert (!all_compares.exists ());
 
   /* Locate all comparisons and their uses, and eliminate duplicates.  */
   find_comparisons ();
-  if (all_compares)
+  if (all_compares.exists ())
     {
       struct comparison *cmp;
       size_t i;
 
       /* Eliminate comparisons that are redundant with flags computation.  */
-      FOR_EACH_VEC_ELT (comparison_struct_p, all_compares, i, cmp)
+      FOR_EACH_VEC_ELT (all_compares, i, cmp)
 	{
 	  try_eliminate_compare (cmp);
 	  XDELETE (cmp);
 	}
 
-      VEC_free (comparison_struct_p, heap, all_compares);
-      all_compares = NULL;
+      all_compares.release ();
     }
 
   return 0;

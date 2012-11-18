@@ -124,38 +124,28 @@ static struct cgraph_node_hook_list *node_removal_hook_holder;
 
 /* Vector where the reference var infos are actually stored. 
    Indexed by UID of call graph nodes.  */
-DEF_VEC_P (ipa_reference_vars_info_t);
-DEF_VEC_ALLOC_P (ipa_reference_vars_info_t, heap);
-static VEC (ipa_reference_vars_info_t, heap) *ipa_reference_vars_vector;
+static vec<ipa_reference_vars_info_t> ipa_reference_vars_vector;
 
-DEF_VEC_P (ipa_reference_optimization_summary_t);
-DEF_VEC_ALLOC_P (ipa_reference_optimization_summary_t, heap);
-static VEC (ipa_reference_optimization_summary_t, heap) *ipa_reference_opt_sum_vector;
+static vec<ipa_reference_optimization_summary_t> ipa_reference_opt_sum_vector;
 
 /* Return the ipa_reference_vars structure starting from the cgraph NODE.  */
 static inline ipa_reference_vars_info_t
 get_reference_vars_info (struct cgraph_node *node)
 {
-  if (!ipa_reference_vars_vector
-      || VEC_length (ipa_reference_vars_info_t,
-		     ipa_reference_vars_vector) <= (unsigned int) node->uid)
+  if (!ipa_reference_vars_vector.exists ()
+      || ipa_reference_vars_vector.length () <= (unsigned int) node->uid)
     return NULL;
-  return VEC_index (ipa_reference_vars_info_t, ipa_reference_vars_vector,
-		    node->uid);
+  return ipa_reference_vars_vector[node->uid];
 }
 
 /* Return the ipa_reference_vars structure starting from the cgraph NODE.  */
 static inline ipa_reference_optimization_summary_t
 get_reference_optimization_summary (struct cgraph_node *node)
 {
-  if (!ipa_reference_opt_sum_vector
-      || (VEC_length (ipa_reference_optimization_summary_t,
-		      ipa_reference_opt_sum_vector)
-	  <= (unsigned int) node->uid))
+  if (!ipa_reference_opt_sum_vector.exists ()
+      || (ipa_reference_opt_sum_vector.length () <= (unsigned int) node->uid))
     return NULL;
-  return VEC_index (ipa_reference_optimization_summary_t,
-		    ipa_reference_opt_sum_vector,
-		    node->uid);
+  return ipa_reference_opt_sum_vector[node->uid];
 }
 
 /* Return the ipa_reference_vars structure starting from the cgraph NODE.  */
@@ -163,13 +153,10 @@ static inline void
 set_reference_vars_info (struct cgraph_node *node,
 			 ipa_reference_vars_info_t info)
 {
-  if (!ipa_reference_vars_vector
-      || VEC_length (ipa_reference_vars_info_t,
-		     ipa_reference_vars_vector) <= (unsigned int) node->uid)
-    VEC_safe_grow_cleared (ipa_reference_vars_info_t, heap,
-			   ipa_reference_vars_vector, node->uid + 1);
-  VEC_replace (ipa_reference_vars_info_t, ipa_reference_vars_vector,
-	       node->uid, info);
+  if (!ipa_reference_vars_vector.exists ()
+      || ipa_reference_vars_vector.length () <= (unsigned int) node->uid)
+    ipa_reference_vars_vector.safe_grow_cleared (node->uid + 1);
+  ipa_reference_vars_vector[node->uid] = info;
 }
 
 /* Return the ipa_reference_vars structure starting from the cgraph NODE.  */
@@ -177,14 +164,10 @@ static inline void
 set_reference_optimization_summary (struct cgraph_node *node,
 				    ipa_reference_optimization_summary_t info)
 {
-  if (!ipa_reference_opt_sum_vector
-      || (VEC_length (ipa_reference_optimization_summary_t,
-		      ipa_reference_opt_sum_vector)
-	  <= (unsigned int) node->uid))
-    VEC_safe_grow_cleared (ipa_reference_optimization_summary_t,
-			   heap, ipa_reference_opt_sum_vector, node->uid + 1);
-  VEC_replace (ipa_reference_optimization_summary_t,
-	       ipa_reference_opt_sum_vector, node->uid, info);
+  if (!ipa_reference_opt_sum_vector.exists ()
+      || (ipa_reference_opt_sum_vector.length () <= (unsigned int) node->uid))
+    ipa_reference_opt_sum_vector.safe_grow_cleared (node->uid + 1);
+  ipa_reference_opt_sum_vector[node->uid] = info;
 }
 
 /* Return a bitmap indexed by DECL_UID for the static variables that
@@ -746,10 +729,10 @@ propagate (void)
 	fprintf (dump_file, "Starting cycle with %s/%i\n",
 		  cgraph_node_asm_name (node), node->symbol.order);
 
-      VEC (cgraph_node_p, heap) *cycle_nodes = ipa_get_nodes_in_cycle (node);
+      vec<cgraph_node_ptr> cycle_nodes = ipa_get_nodes_in_cycle (node);
 
       /* If any node in a cycle is read_all or write_all, they all are.  */
-      FOR_EACH_VEC_ELT (cgraph_node_p, cycle_nodes, x, w)
+      FOR_EACH_VEC_ELT (cycle_nodes, x, w)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Visiting %s/%i\n",
@@ -771,7 +754,7 @@ propagate (void)
 
       /* Merge the sets of this cycle with all sets of callees reached
          from this cycle.  */
-      FOR_EACH_VEC_ELT (cgraph_node_p, cycle_nodes, x, w)
+      FOR_EACH_VEC_ELT (cycle_nodes, x, w)
 	{
 	  if (read_all && write_all)
 	    break;
@@ -795,13 +778,13 @@ propagate (void)
 	}
 
       /* All nodes within a cycle have the same global info bitmaps.  */
-      FOR_EACH_VEC_ELT (cgraph_node_p, cycle_nodes, x, w)
+      FOR_EACH_VEC_ELT (cycle_nodes, x, w)
 	{
 	  ipa_reference_vars_info_t w_ri = get_reference_vars_info (w);
           w_ri->global = *node_g;
 	}
 
-      VEC_free (cgraph_node_p, heap, cycle_nodes);
+      cycle_nodes.release ();
     }
 
   if (dump_file)
@@ -822,8 +805,8 @@ propagate (void)
 	  ipa_reference_vars_info_t node_info = get_reference_vars_info (node);
 	  ipa_reference_global_vars_info_t node_g = &node_info->global;
 
-	  VEC (cgraph_node_p, heap) *cycle_nodes = ipa_get_nodes_in_cycle (node);
-	  FOR_EACH_VEC_ELT (cgraph_node_p, cycle_nodes, x, w)
+	  vec<cgraph_node_ptr> cycle_nodes = ipa_get_nodes_in_cycle (node);
+	  FOR_EACH_VEC_ELT (cycle_nodes, x, w)
 	    {
 	      ipa_reference_vars_info_t w_ri = get_reference_vars_info (w);
 	      ipa_reference_local_vars_info_t w_l = &w_ri->local;
@@ -835,7 +818,7 @@ propagate (void)
 	      fprintf (dump_file, "\n    locals written: ");
 	      dump_static_vars_set_to_file (dump_file, w_l->statics_written);
 	    }
-	  VEC_free (cgraph_node_p, heap, cycle_nodes);
+	  cycle_nodes.release ();
 
 	  fprintf (dump_file, "\n  globals read: ");
 	  dump_static_vars_set_to_file (dump_file, node_g->statics_read);
@@ -897,8 +880,7 @@ propagate (void)
   free (order);
 
   bitmap_obstack_release (&local_info_obstack);
-  VEC_free (ipa_reference_vars_info_t, heap, ipa_reference_vars_vector);
-  ipa_reference_vars_vector = NULL;
+  ipa_reference_vars_vector.release ();
   if (dump_file)
     splay_tree_delete (reference_vars_to_consider);
   reference_vars_to_consider = NULL;

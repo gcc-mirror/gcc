@@ -39,10 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 
 typedef const char *const_char_p; /* For DEF_VEC_P.  */
-DEF_VEC_P(const_char_p);
-DEF_VEC_ALLOC_P(const_char_p,heap);
 
-static VEC(const_char_p,heap) *ignored_options;
+static vec<const_char_p> ignored_options;
 
 /* Input file names.  */
 const char **in_fnames;
@@ -122,7 +120,7 @@ complain_wrong_lang (const struct cl_decoded_option *decoded,
 static void
 postpone_unknown_option_warning (const char *opt)
 {
-  VEC_safe_push (const_char_p, heap, ignored_options, opt);
+  ignored_options.safe_push (opt);
 }
 
 /* Produce a warning for each option previously buffered.  */
@@ -130,11 +128,11 @@ postpone_unknown_option_warning (const char *opt)
 void
 print_ignored_options (void)
 {
-  while (!VEC_empty (const_char_p, ignored_options))
+  while (!ignored_options.is_empty ())
     {
       const char *opt;
 
-      opt = VEC_pop (const_char_p, ignored_options);
+      opt = ignored_options.pop ();
       warning_at (UNKNOWN_LOCATION, 0,
 		  "unrecognized command line option \"%s\"", opt);
     }
@@ -350,8 +348,12 @@ handle_common_deferred_options (void)
 {
   unsigned int i;
   cl_deferred_option *opt;
-  VEC(cl_deferred_option,heap) *vec
-    = (VEC(cl_deferred_option,heap) *) common_deferred_options;
+  vec<cl_deferred_option> v;
+
+  if (common_deferred_options)
+    v = *((vec<cl_deferred_option> *) common_deferred_options);
+  else
+    v = vec<cl_deferred_option>();
 
   if (flag_dump_all_passed)
     enable_rtl_dump_file ();
@@ -359,7 +361,7 @@ handle_common_deferred_options (void)
   if (flag_opt_info)
     opt_info_switch_p (NULL);
 
-  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
+  FOR_EACH_VEC_ELT (v, i, opt)
     {
       switch (opt->opt_index)
 	{

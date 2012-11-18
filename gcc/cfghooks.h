@@ -119,7 +119,7 @@ struct cfg_hooks
      in loop versioning.  */
   bool (*cfg_hook_duplicate_loop_to_header_edge) (struct loop *, edge,
 						  unsigned, sbitmap,
-						  edge, VEC (edge, heap) **,
+						  edge, vec<edge> *,
 						  int);
 
   /* Add condition to new basic block and update CFG used in loop
@@ -186,7 +186,7 @@ extern bool cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge,
 						    unsigned int ndupl,
 						    sbitmap wont_exit,
 						    edge orig,
-						    VEC (edge, heap) **to_remove,
+						    vec<edge> *to_remove,
 						    int flags);
 
 extern void lv_flush_pending_stmts (edge);

@@ -550,7 +550,7 @@ do_build_copy_constructor (tree fndecl)
       int i;
       tree binfo, base_binfo;
       tree init;
-      VEC(tree,gc) *vbases;
+      vec<tree, va_gc> *vbases;
 
       /* Initialize all the base-classes with the parameter converted
 	 to their type so that we get their copy constructor and not
@@ -558,7 +558,7 @@ do_build_copy_constructor (tree fndecl)
 	 deal with the binfo's directly as a direct base might be
 	 inaccessible due to ambiguity.  */
       for (vbases = CLASSTYPE_VBASECLASSES (current_class_type), i = 0;
-	   VEC_iterate (tree, vbases, i, binfo); i++)
+	   vec_safe_iterate (vbases, i, &binfo); i++)
 	{
 	  member_init_list = add_one_base_init (binfo, parm, move_p, inh,
 						member_init_list);
@@ -655,7 +655,7 @@ do_build_copy_assign (tree fndecl)
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
 	  tree converted_parm;
-	  VEC(tree,gc) *parmvec;
+	  vec<tree, va_gc> *parmvec;
 
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
@@ -852,7 +852,7 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 		 tsubst_flags_t complain)
 {
   tree ob, fn, fns, binfo, rval;
-  VEC(tree,gc) *args;
+  vec<tree, va_gc> *args;
 
   if (TYPE_P (type))
     binfo = TYPE_BINFO (type);
@@ -875,13 +875,13 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 	      if (TREE_CODE (type) != REFERENCE_TYPE)
 		type = cp_build_reference_type (type, /*rval*/true);
 	      tree arg = build_stub_object (type);
-	      VEC_safe_push (tree, gc, args, arg);
+	      vec_safe_push (args, arg);
 	    }
 	}
       else
 	{
 	  tree arg = build_stub_object (argtype);
-	  VEC_quick_push (tree, args, arg);
+	  args->quick_push (arg);
 	}
     }
 
@@ -1157,7 +1157,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 {
   tree binfo, base_binfo, scope, fnname, rval, argtype;
   bool move_p, copy_arg_p, assign_p, expected_trivial, check_vdtor;
-  VEC(tree,gc) *vbases;
+  vec<tree, va_gc> *vbases;
   int i, quals, flags;
   tsubst_flags_t complain;
   bool ctor_p;
@@ -1351,7 +1351,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     {
       if (constexpr_p)
 	*constexpr_p = false;
-      FOR_EACH_VEC_ELT (tree, vbases, i, base_binfo)
+      FOR_EACH_VEC_ELT (*vbases, i, base_binfo)
 	{
 	  tree basetype = BINFO_TYPE (base_binfo);
 	  if (copy_arg_p)

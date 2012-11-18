@@ -58,7 +58,7 @@ static GTY(()) int unnamed_struct_number;
 
 /* Declarations whose debug info was deferred till end of compilation.  */
 
-static GTY(()) VEC(tree,gc) *deferred_global_decls;
+static GTY(()) vec<tree, va_gc> *deferred_global_decls;
 
 /* The C front end may call sdbout_symbol before sdbout_init runs.
    We save all such decls in this list and output them when we get
@@ -1427,7 +1427,7 @@ sdbout_global_decl (tree decl)
       if (!DECL_INITIAL (decl) || !TREE_PUBLIC (decl))
 	sdbout_symbol (decl, 0);
       else
-	VEC_safe_push (tree, gc, deferred_global_decls, decl);
+	vec_safe_push (deferred_global_decls, decl);
 
       /* Output COFF information for non-global file-scope initialized
 	 variables.  */
@@ -1445,7 +1445,7 @@ sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
   size_t i;
   tree decl;
 
-  FOR_EACH_VEC_ELT (tree, deferred_global_decls, i, decl)
+  FOR_EACH_VEC_SAFE_ELT (deferred_global_decls, i, decl)
     sdbout_symbol (decl, 0);
 }
 
@@ -1621,7 +1621,7 @@ sdbout_init (const char *input_file_name ATTRIBUTE_UNUSED)
 {
   tree t;
 
-  deferred_global_decls = VEC_alloc (tree, gc, 12);
+  vec_alloc (deferred_global_decls, 12);
 
   /* Emit debug information which was queued by sdbout_symbol before
      we got here.  */

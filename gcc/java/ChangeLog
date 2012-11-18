@@ -1,3 +1,17 @@
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* boehm.c: Use new vec API in vec.h.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* java-tree.h: Likewise.
+	* jcf-parse.c: Likewise.
+	* resource.c: Likewise.
+	* verify-glue.c: Likewise.
+
 2012-11-15  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (define_builtin): Accept ECF flags and

@@ -2859,7 +2859,7 @@ compare_constant (const tree t1, const tree t2)
 
     case CONSTRUCTOR:
       {
-	VEC(constructor_elt, gc) *v1, *v2;
+	vec<constructor_elt, va_gc> *v1, *v2;
 	unsigned HOST_WIDE_INT idx;
 
 	typecode = TREE_CODE (TREE_TYPE (t1));
@@ -2885,14 +2885,13 @@ compare_constant (const tree t1, const tree t2)
 
 	v1 = CONSTRUCTOR_ELTS (t1);
 	v2 = CONSTRUCTOR_ELTS (t2);
-	if (VEC_length (constructor_elt, v1)
-	    != VEC_length (constructor_elt, v2))
-	    return 0;
+	if (vec_safe_length (v1) != vec_safe_length (v2))
+	  return 0;
 
-	for (idx = 0; idx < VEC_length (constructor_elt, v1); ++idx)
+	for (idx = 0; idx < vec_safe_length (v1); ++idx)
 	  {
-	    constructor_elt *c1 = &VEC_index (constructor_elt, v1, idx);
-	    constructor_elt *c2 = &VEC_index (constructor_elt, v2, idx);
+	    constructor_elt *c1 = &(*v1)[idx];
+	    constructor_elt *c2 = &(*v2)[idx];
 
 	    /* Check that each value is the same...  */
 	    if (!compare_constant (c1->value, c2->value))
@@ -3011,16 +3010,15 @@ copy_constant (tree exp)
     case CONSTRUCTOR:
       {
 	tree copy = copy_node (exp);
-	VEC(constructor_elt, gc) *v;
+	vec<constructor_elt, va_gc> *v;
 	unsigned HOST_WIDE_INT idx;
 	tree purpose, value;
 
-	v = VEC_alloc(constructor_elt, gc, VEC_length(constructor_elt,
-						      CONSTRUCTOR_ELTS (exp)));
+	vec_alloc (v, vec_safe_length (CONSTRUCTOR_ELTS (exp)));
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), idx, purpose, value)
 	  {
 	    constructor_elt ce = {purpose, copy_constant (value)};
-	    VEC_quick_push (constructor_elt, v, ce);
+	    v->quick_push (ce);
 	  }
 	CONSTRUCTOR_ELTS (copy) = v;
 	return copy;
@@ -4532,7 +4530,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
   if (TREE_CODE (exp) == CONSTRUCTOR
-      && VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (exp)))
+      && vec_safe_is_empty (CONSTRUCTOR_ELTS (exp)))
     {
       assemble_zeros (size);
       return;
@@ -5067,7 +5065,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
     local.field = TYPE_FIELDS (local.type);
 
   for (cnt = 0;
-       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (exp), cnt, ce);
+       vec_safe_iterate (CONSTRUCTOR_ELTS (exp), cnt, &ce);
        cnt++, local.field = local.field ? DECL_CHAIN (local.field) : 0)
     {
       local.val = ce->value;
@@ -5410,7 +5408,7 @@ globalize_decl (tree decl)
   targetm.asm_out.globalize_decl_name (asm_out_file, decl);
 }
 
-VEC(alias_pair,gc) *alias_pairs;
+vec<alias_pair, va_gc> *alias_pairs;
 
 /* Output the assembler code for a define (equate) using ASM_OUTPUT_DEF
    or ASM_OUTPUT_DEF_FROM_DECLS.  The function defines the symbol whose
@@ -5583,7 +5581,7 @@ assemble_alias (tree decl, tree target)
   else
     {
       alias_pair p = {decl, target};
-      VEC_safe_push (alias_pair, gc, alias_pairs, p);
+      vec_safe_push (alias_pairs, p);
     }
 }
 
@@ -5636,8 +5634,6 @@ typedef struct tm_alias_pair
   tree to;
 } tm_alias_pair;
 
-DEF_VEC_O(tm_alias_pair);
-DEF_VEC_ALLOC_O(tm_alias_pair,heap);
 
 /* Helper function for finish_tm_clone_pairs.  Dump a hash table entry
    into a VEC in INFO.  */
@@ -5646,22 +5642,22 @@ static int
 dump_tm_clone_to_vec (void **slot, void *info)
 {
   struct tree_map *map = (struct tree_map *) *slot;
-  VEC(tm_alias_pair,heap) **tm_alias_pairs = (VEC(tm_alias_pair, heap) **) info;
+  vec<tm_alias_pair> *tm_alias_pairs = (vec<tm_alias_pair> *) info;
   tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
-  VEC_safe_push (tm_alias_pair, heap, *tm_alias_pairs, p);
+  tm_alias_pairs->safe_push (p);
   return 1;
 }
 
 /* Dump the actual pairs to the .tm_clone_table section.  */
 
 static void
-dump_tm_clone_pairs (VEC(tm_alias_pair,heap) *tm_alias_pairs)
+dump_tm_clone_pairs (vec<tm_alias_pair> tm_alias_pairs)
 {
   unsigned i;
   tm_alias_pair *p;
   bool switched = false;
 
-  FOR_EACH_VEC_ELT (tm_alias_pair, tm_alias_pairs, i, p)
+  FOR_EACH_VEC_ELT (tm_alias_pairs, i, p)
     {
       tree src = p->from;
       tree dst = p->to;
@@ -5722,7 +5718,7 @@ tm_alias_pair_cmp (const void *x, const void *y)
 void
 finish_tm_clone_pairs (void)
 {
-  VEC(tm_alias_pair,heap) *tm_alias_pairs = NULL;
+  vec<tm_alias_pair> tm_alias_pairs = vec<tm_alias_pair>();
 
   if (tm_clone_hash == NULL)
     return;
@@ -5735,14 +5731,14 @@ finish_tm_clone_pairs (void)
   htab_traverse_noresize (tm_clone_hash, dump_tm_clone_to_vec,
 			  (void *) &tm_alias_pairs);
   /* Sort it.  */
-  VEC_qsort (tm_alias_pair, tm_alias_pairs, tm_alias_pair_cmp);
+  tm_alias_pairs.qsort (tm_alias_pair_cmp);
 
   /* Dump it.  */
   dump_tm_clone_pairs (tm_alias_pairs);
 
   htab_delete (tm_clone_hash);
   tm_clone_hash = NULL;
-  VEC_free (tm_alias_pair, heap, tm_alias_pairs);
+  tm_alias_pairs.release ();
 }
 
 
@@ -6960,7 +6956,7 @@ place_block_symbol (rtx symbol)
   block->alignment = MAX (block->alignment, alignment);
   block->size = offset + size;
 
-  VEC_safe_push (rtx, gc, block->objects, symbol);
+  vec_safe_push (block->objects, symbol);
 }
 
 /* Return the anchor that should be used to address byte offset OFFSET
@@ -7019,11 +7015,11 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
   /* Do a binary search to see if there's already an anchor we can use.
      Set BEGIN to the new anchor's index if not.  */
   begin = 0;
-  end = VEC_length (rtx, block->anchors);
+  end = vec_safe_length (block->anchors);
   while (begin != end)
     {
       middle = (end + begin) / 2;
-      anchor = VEC_index (rtx, block->anchors, middle);
+      anchor = (*block->anchors)[middle];
       if (SYMBOL_REF_BLOCK_OFFSET (anchor) > offset)
 	end = middle;
       else if (SYMBOL_REF_BLOCK_OFFSET (anchor) < offset)
@@ -7043,7 +7039,7 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
   SYMBOL_REF_FLAGS (anchor) |= model << SYMBOL_FLAG_TLS_SHIFT;
 
   /* Insert it at index BEGIN.  */
-  VEC_safe_insert (rtx, gc, block->anchors, begin, anchor);
+  vec_safe_insert (block->anchors, begin, anchor);
   return anchor;
 }
 
@@ -7058,7 +7054,7 @@ output_object_block (struct object_block *block)
   tree decl;
   rtx symbol;
 
-  if (block->objects == NULL)
+  if (!block->objects)
     return;
 
   /* Switch to the section and make sure that the first byte is
@@ -7068,12 +7064,12 @@ output_object_block (struct object_block *block)
 
   /* Define the values of all anchors relative to the current section
      position.  */
-  FOR_EACH_VEC_ELT (rtx, block->anchors, i, symbol)
+  FOR_EACH_VEC_SAFE_ELT (block->anchors, i, symbol)
     targetm.asm_out.output_anchor (symbol);
 
   /* Output the objects themselves.  */
   offset = 0;
-  FOR_EACH_VEC_ELT (rtx, block->objects, i, symbol)
+  FOR_EACH_VEC_ELT (*block->objects, i, symbol)
     {
       /* Move to the object's offset, padding with zeros if necessary.  */
       assemble_zeros (SYMBOL_REF_BLOCK_OFFSET (symbol) - offset);

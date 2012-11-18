@@ -848,18 +848,15 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   set_rtl (decl, x);
 }
 
-DEF_VEC_I(HOST_WIDE_INT);
-DEF_VEC_ALLOC_I(HOST_WIDE_INT,heap);
-
 struct stack_vars_data
 {
   /* Vector of offset pairs, always end of some padding followed
      by start of the padding that needs Address Sanitizer protection.
      The vector is in reversed, highest offset pairs come first.  */
-  VEC(HOST_WIDE_INT, heap) *asan_vec;
+  vec<HOST_WIDE_INT> asan_vec;
 
   /* Vector of partition representative decls in between the paddings.  */
-  VEC(tree, heap) *asan_decl_vec;
+  vec<tree> asan_decl_vec;
 };
 
 /* A subroutine of expand_used_vars.  Give each partition representative
@@ -953,10 +950,8 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 		= alloc_stack_frame_space (stack_vars[i].size
 					   + ASAN_RED_ZONE_SIZE,
 					   MAX (alignb, ASAN_RED_ZONE_SIZE));
-	      VEC_safe_push (HOST_WIDE_INT, heap, data->asan_vec,
-			     prev_offset);
-	      VEC_safe_push (HOST_WIDE_INT, heap, data->asan_vec,
-			     offset + stack_vars[i].size);
+	      data->asan_vec.safe_push (prev_offset);
+	      data->asan_vec.safe_push (offset + stack_vars[i].size);
 	      /* Find best representative of the partition.
 		 Prefer those with DECL_NAME, even better
 		 satisfying asan_protect_stack_decl predicate.  */
@@ -973,7 +968,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 		  repr_decl = stack_vars[j].decl;
 	      if (repr_decl == NULL_TREE)
 		repr_decl = stack_vars[i].decl;
-	      VEC_safe_push (tree, heap, data->asan_decl_vec, repr_decl);
+	      data->asan_decl_vec.safe_push (repr_decl);
 	    }
 	  else
 	    offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
@@ -1526,7 +1521,7 @@ static rtx
 expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
-  VEC(tree,heap) *maybe_local_decls = NULL;
+  vec<tree> maybe_local_decls = vec<tree>();
   rtx var_end_seq = NULL_RTX;
   struct pointer_map_t *ssa_name_decls;
   unsigned i;
@@ -1585,7 +1580,7 @@ expand_used_vars (void)
   /* At this point all variables on the local_decls with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
 
-  len = VEC_length (tree, cfun->local_decls);
+  len = vec_safe_length (cfun->local_decls);
   FOR_EACH_LOCAL_DECL (cfun, i, var)
     {
       bool expand_now = false;
@@ -1630,7 +1625,7 @@ expand_used_vars (void)
 	    /* If rtl isn't set yet, which can happen e.g. with
 	       -fstack-protector, retry before returning from this
 	       function.  */
-	    VEC_safe_push (tree, heap, maybe_local_decls, var);
+	    maybe_local_decls.safe_push (var);
 	}
     }
 
@@ -1645,8 +1640,8 @@ expand_used_vars (void)
      We just want the duplicates, as those are the artificial
      non-ignored vars that we want to keep until instantiate_decls.
      Move them down and truncate the array.  */
-  if (!VEC_empty (tree, cfun->local_decls))
-    VEC_block_remove (tree, cfun->local_decls, 0, len);
+  if (!vec_safe_is_empty (cfun->local_decls))
+    cfun->local_decls->block_remove (0, len);
 
   /* At this point, all variables within the block tree with TREE_USED
      set are actually used by the optimized function.  Lay them out.  */
@@ -1680,8 +1675,8 @@ expand_used_vars (void)
     {
       struct stack_vars_data data;
 
-      data.asan_vec = NULL;
-      data.asan_decl_vec = NULL;
+      data.asan_vec = vec<HOST_WIDE_INT>();
+      data.asan_decl_vec = vec<tree>();
 
       /* Reorder decls to be protected by iterating over the variables
 	 array multiple times, and allocating out of each phase in turn.  */
@@ -1703,29 +1698,26 @@ expand_used_vars (void)
 	   in addition to phase 1 and 2.  */
 	expand_stack_vars (asan_decl_phase_3, &data);
 
-      if (!VEC_empty (HOST_WIDE_INT, data.asan_vec))
+      if (!data.asan_vec.is_empty ())
 	{
 	  HOST_WIDE_INT prev_offset = frame_offset;
 	  HOST_WIDE_INT offset
 	    = alloc_stack_frame_space (ASAN_RED_ZONE_SIZE,
 				       ASAN_RED_ZONE_SIZE);
-	  VEC_safe_push (HOST_WIDE_INT, heap, data.asan_vec, prev_offset);
-	  VEC_safe_push (HOST_WIDE_INT, heap, data.asan_vec, offset);
+	  data.asan_vec.safe_push (prev_offset);
+	  data.asan_vec.safe_push (offset);
 
 	  var_end_seq
 	    = asan_emit_stack_protection (virtual_stack_vars_rtx,
-					  VEC_address (HOST_WIDE_INT,
-						       data.asan_vec),
-					  VEC_address (tree,
-						       data.asan_decl_vec),
-					  VEC_length (HOST_WIDE_INT,
-						      data.asan_vec));
+					  data.asan_vec.address (),
+					  data.asan_decl_vec. address(),
+					  data.asan_vec.length ());
 	}
 
       expand_stack_vars (NULL, &data);
 
-      VEC_free (HOST_WIDE_INT, heap, data.asan_vec);
-      VEC_free (tree, heap, data.asan_decl_vec);
+      data.asan_vec.release ();
+      data.asan_decl_vec.release ();
     }
 
   fini_vars_expansion ();
@@ -1733,7 +1725,7 @@ expand_used_vars (void)
   /* If there were any artificial non-ignored vars without rtl
      found earlier, see if deferred stack allocation hasn't assigned
      rtl to them.  */
-  FOR_EACH_VEC_ELT_REVERSE (tree, maybe_local_decls, i, var)
+  FOR_EACH_VEC_ELT_REVERSE (maybe_local_decls, i, var)
     {
       rtx rtl = DECL_RTL_IF_SET (var);
 
@@ -1742,7 +1734,7 @@ expand_used_vars (void)
       if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
 	add_local_decl (cfun, var);
     }
-  VEC_free (tree, heap, maybe_local_decls);
+  maybe_local_decls.release ();
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
   if (STACK_ALIGNMENT_NEEDED)
@@ -2104,12 +2096,12 @@ expand_call_stmt (gimple stmt)
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))
     {
-      VEC(tree, gc) **debug_args = decl_debug_args_lookup (decl);
+      vec<tree, va_gc> **debug_args = decl_debug_args_lookup (decl);
       unsigned int ix;
       tree dtemp;
 
       if (debug_args)
-	for (ix = 1; VEC_iterate (tree, *debug_args, ix, dtemp); ix += 2)
+	for (ix = 1; (*debug_args)->iterate (ix, &dtemp); ix += 2)
 	  {
 	    gcc_assert (TREE_CODE (dtemp) == DEBUG_EXPR_DECL);
 	    expand_debug_expr (dtemp);
@@ -3657,13 +3649,13 @@ expand_debug_source_expr (tree exp)
 	    if (DECL_CONTEXT (aexp)
 		== DECL_ABSTRACT_ORIGIN (current_function_decl))
 	      {
-		VEC(tree, gc) **debug_args;
+		vec<tree, va_gc> **debug_args;
 		unsigned int ix;
 		tree ddecl;
 		debug_args = decl_debug_args_lookup (current_function_decl);
 		if (debug_args != NULL)
 		  {
-		    for (ix = 0; VEC_iterate (tree, *debug_args, ix, ddecl);
+		    for (ix = 0; vec_safe_iterate (*debug_args, ix, &ddecl);
 			 ix += 2)
 		      if (ddecl == aexp)
 			return gen_rtx_DEBUG_PARAMETER_REF (mode, aexp);

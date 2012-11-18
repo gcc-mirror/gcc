@@ -169,14 +169,14 @@ static tree build_this (tree);
 static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
 static bool any_strictly_viable (struct z_candidate *);
 static struct z_candidate *add_template_candidate
-	(struct z_candidate **, tree, tree, tree, tree, const VEC(tree,gc) *,
+	(struct z_candidate **, tree, tree, tree, tree, const vec<tree, va_gc> *,
 	 tree, tree, tree, int, unification_kind_t, tsubst_flags_t);
 static struct z_candidate *add_template_candidate_real
-	(struct z_candidate **, tree, tree, tree, tree, const VEC(tree,gc) *,
+	(struct z_candidate **, tree, tree, tree, tree, const vec<tree, va_gc> *,
 	 tree, tree, tree, int, tree, unification_kind_t, tsubst_flags_t);
 static struct z_candidate *add_template_conv_candidate
-	(struct z_candidate **, tree, tree, tree, const VEC(tree,gc) *, tree,
-	 tree, tree, tsubst_flags_t);
+	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *,
+	 tree, tree, tree, tsubst_flags_t);
 static void add_builtin_candidates
 	(struct z_candidate **, enum tree_code, enum tree_code,
 	 tree, tree *, int, tsubst_flags_t);
@@ -188,10 +188,10 @@ static void build_builtin_candidate
 	(struct z_candidate **, tree, tree, tree, tree *, tree *,
 	 int, tsubst_flags_t);
 static struct z_candidate *add_conv_candidate
-	(struct z_candidate **, tree, tree, tree, const VEC(tree,gc) *, tree,
+	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *, tree,
 	 tree, tsubst_flags_t);
 static struct z_candidate *add_function_candidate
-	(struct z_candidate **, tree, tree, tree, const VEC(tree,gc) *, tree,
+	(struct z_candidate **, tree, tree, tree, const vec<tree, va_gc> *, tree,
 	 tree, int, tsubst_flags_t);
 static conversion *implicit_conversion (tree, tree, tree, bool, int,
 					tsubst_flags_t);
@@ -205,7 +205,7 @@ static bool is_subseq (conversion *, conversion *);
 static conversion *maybe_handle_ref_bind (conversion **);
 static void maybe_handle_implicit_object (conversion **);
 static struct z_candidate *add_candidate
-	(struct z_candidate **, tree, tree, const VEC(tree,gc) *, size_t,
+	(struct z_candidate **, tree, tree, const vec<tree, va_gc> *, size_t,
 	 conversion **, tree, tree, int, struct rejection_reason *);
 static tree source_type (conversion *);
 static void add_warning (struct z_candidate *, struct z_candidate *);
@@ -215,8 +215,8 @@ static bool promoted_arithmetic_type_p (tree);
 static conversion *conditional_conversion (tree, tree, tsubst_flags_t);
 static char *name_as_c_string (tree, tree, bool *);
 static tree prep_operand (tree);
-static void add_candidates (tree, tree, const VEC(tree,gc) *, tree, tree, bool,
-			    tree, tree, int, struct z_candidate **,
+static void add_candidates (tree, tree, const vec<tree, va_gc> *, tree, tree,
+			    bool, tree, tree, int, struct z_candidate **,
 			    tsubst_flags_t);
 static conversion *merge_conversion_sequences (conversion *, conversion *);
 static bool magic_varargs_p (tree);
@@ -511,7 +511,7 @@ struct z_candidate {
   /* The rest of the arguments to use when calling this function.  If
      there are no further arguments this may be NULL or it may be an
      empty vector.  */
-  const VEC(tree,gc) *args;
+  const vec<tree, va_gc> *args;
   /* The implicit conversion sequences for each of the arguments to
      FN.  */
   conversion **convs;
@@ -1772,7 +1772,7 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
 static struct z_candidate *
 add_candidate (struct z_candidate **candidates,
-	       tree fn, tree first_arg, const VEC(tree,gc) *args,
+	       tree fn, tree first_arg, const vec<tree, va_gc> *args,
 	       size_t num_convs, conversion **convs,
 	       tree access_path, tree conversion_path,
 	       int viable, struct rejection_reason *reason)
@@ -1822,7 +1822,7 @@ remaining_arguments (tree arg)
 static struct z_candidate *
 add_function_candidate (struct z_candidate **candidates,
 			tree fn, tree ctype, tree first_arg,
-			const VEC(tree,gc) *args, tree access_path,
+			const vec<tree, va_gc> *args, tree access_path,
 			tree conversion_path, int flags,
 			tsubst_flags_t complain)
 {
@@ -1855,7 +1855,7 @@ add_function_candidate (struct z_candidate **candidates,
   else
     skip = 0;
 
-  len = VEC_length (tree, args) - skip + (first_arg != NULL_TREE ? 1 : 0);
+  len = vec_safe_length (args) - skip + (first_arg != NULL_TREE ? 1 : 0);
   convs = alloc_conversions (len);
 
   /* 13.3.2 - Viable functions [over.match.viable]
@@ -1927,8 +1927,7 @@ add_function_candidate (struct z_candidate **candidates,
 	arg = first_arg;
       else
 	arg = CONST_CAST_TREE (
-		VEC_index (tree, args,
-			   i + skip - (first_arg != NULL_TREE ? 1 : 0)));
+		(*args)[i + skip - (first_arg != NULL_TREE ? 1 : 0)]);
       argtype = lvalue_type (arg);
 
       is_this = (i == 0 && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
@@ -2032,7 +2031,7 @@ add_function_candidate (struct z_candidate **candidates,
 
 static struct z_candidate *
 add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
-		    tree first_arg, const VEC(tree,gc) *arglist,
+		    tree first_arg, const vec<tree, va_gc> *arglist,
 		    tree access_path, tree conversion_path,
 		    tsubst_flags_t complain)
 {
@@ -2046,7 +2045,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
     parmlist = TREE_TYPE (parmlist);
   parmlist = TYPE_ARG_TYPES (parmlist);
 
-  len = VEC_length (tree, arglist) + (first_arg != NULL_TREE ? 1 : 0) + 1;
+  len = vec_safe_length (arglist) + (first_arg != NULL_TREE ? 1 : 0) + 1;
   convs = alloc_conversions (len);
   parmnode = parmlist;
   viable = 1;
@@ -2067,8 +2066,7 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
       else if (i == 1 && first_arg != NULL_TREE)
 	arg = first_arg;
       else
-	arg = VEC_index (tree, arglist,
-			 i - (first_arg != NULL_TREE ? 1 : 0) - 1);
+	arg = (*arglist)[i - (first_arg != NULL_TREE ? 1 : 0) - 1];
       argtype = lvalue_type (arg);
 
       if (i == 0)
@@ -2676,7 +2674,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
   tree type, argtypes[3], t;
   /* TYPES[i] is the set of possible builtin-operator parameter types
      we will consider for the Ith argument.  */
-  VEC(tree,gc) *types[2];
+  vec<tree, va_gc> *types[2];
   unsigned ix;
 
   for (i = 0; i < 3; ++i)
@@ -2758,11 +2756,9 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	  if (code == COND_EXPR)
 	    {
 	      if (real_lvalue_p (args[i]))
-		VEC_safe_push (tree, gc, types[i],
-			       build_reference_type (argtypes[i]));
+		vec_safe_push (types[i], build_reference_type (argtypes[i]));
 
-	      VEC_safe_push (tree, gc, types[i],
-			     TYPE_MAIN_VARIANT (argtypes[i]));
+	      vec_safe_push (types[i], TYPE_MAIN_VARIANT (argtypes[i]));
 	    }
 
 	  else if (! convs)
@@ -2778,49 +2774,48 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 		continue;
 
 	      if (code == COND_EXPR && TREE_CODE (type) == REFERENCE_TYPE)
-		VEC_safe_push (tree, gc, types[i], type);
+		vec_safe_push (types[i], type);
 
 	      type = non_reference (type);
 	      if (i != 0 || ! ref1)
 		{
 		  type = cv_unqualified (type_decays_to (type));
 		  if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
-		    VEC_safe_push (tree, gc, types[i], type);
+		    vec_safe_push (types[i], type);
 		  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
 		    type = type_promotes_to (type);
 		}
 
 	      if (! vec_member (type, types[i]))
-		VEC_safe_push (tree, gc, types[i], type);
+		vec_safe_push (types[i], type);
 	    }
 	}
       else
 	{
 	  if (code == COND_EXPR && real_lvalue_p (args[i]))
-	    VEC_safe_push (tree, gc, types[i],
-			   build_reference_type (argtypes[i]));
+	    vec_safe_push (types[i], build_reference_type (argtypes[i]));
 	  type = non_reference (argtypes[i]);
 	  if (i != 0 || ! ref1)
 	    {
 	      type = cv_unqualified (type_decays_to (type));
 	      if (enum_p && UNSCOPED_ENUM_P (type))
-		VEC_safe_push (tree, gc, types[i], type);
+		vec_safe_push (types[i], type);
 	      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
 		type = type_promotes_to (type);
 	    }
-	  VEC_safe_push (tree, gc, types[i], type);
+	  vec_safe_push (types[i], type);
 	}
     }
 
   /* Run through the possible parameter types of both arguments,
      creating candidates with those parameter types.  */
-  FOR_EACH_VEC_ELT_REVERSE (tree, types[0], ix, t)
+  FOR_EACH_VEC_ELT_REVERSE (*(types[0]), ix, t)
     {
       unsigned jx;
       tree u;
 
-      if (!VEC_empty (tree, types[1]))
-	FOR_EACH_VEC_ELT_REVERSE (tree, types[1], jx, u)
+      if (!types[1]->is_empty ())
+	FOR_EACH_VEC_ELT_REVERSE (*(types[1]), jx, u)
 	  add_builtin_candidate
 	    (candidates, code, code2, fnname, t,
 	     u, args, argtypes, flags, complain);
@@ -2848,14 +2843,14 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 static struct z_candidate*
 add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 			     tree ctype, tree explicit_targs, tree first_arg,
-			     const VEC(tree,gc) *arglist, tree return_type,
+			     const vec<tree, va_gc> *arglist, tree return_type,
 			     tree access_path, tree conversion_path,
 			     int flags, tree obj, unification_kind_t strict,
 			     tsubst_flags_t complain)
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_tree_vec (ntparms);
-  unsigned int len = VEC_length (tree, arglist);
+  unsigned int len = vec_safe_length (arglist);
   unsigned int nargs = (first_arg == NULL_TREE ? 0 : 1) + len;
   unsigned int skip_without_in_chrg = 0;
   tree first_arg_without_in_chrg = first_arg;
@@ -2901,7 +2896,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       ++ia;
     }
   for (ix = skip_without_in_chrg;
-       VEC_iterate (tree, arglist, ix, arg);
+       vec_safe_iterate (arglist, ix, &arg);
        ++ix)
     {
       args_without_in_chrg[ia] = arg;
@@ -3002,7 +2997,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 static struct z_candidate *
 add_template_candidate (struct z_candidate **candidates, tree tmpl, tree ctype,
 			tree explicit_targs, tree first_arg,
-			const VEC(tree,gc) *arglist, tree return_type,
+			const vec<tree, va_gc> *arglist, tree return_type,
 			tree access_path, tree conversion_path, int flags,
 			unification_kind_t strict, tsubst_flags_t complain)
 {
@@ -3017,7 +3012,7 @@ add_template_candidate (struct z_candidate **candidates, tree tmpl, tree ctype,
 static struct z_candidate *
 add_template_conv_candidate (struct z_candidate **candidates, tree tmpl,
 			     tree obj, tree first_arg,
-			     const VEC(tree,gc) *arglist,
+			     const vec<tree, va_gc> *arglist,
 			     tree return_type, tree access_path,
 			     tree conversion_path, tsubst_flags_t complain)
 {
@@ -3336,7 +3331,7 @@ merge_conversion_sequences (conversion *user_seq, conversion *std_seq)
    non-list constructor.
 
    Parameters are as for add_candidates, except that the arguments are in
-   the form of a CONSTRUCTOR (the initializer list) rather than a VEC, and
+   the form of a CONSTRUCTOR (the initializer list) rather than a vector, and
    the RETURN_TYPE parameter is replaced by TOTYPE, the desired type.  */
 
 static void
@@ -3348,7 +3343,7 @@ add_list_candidates (tree fns, tree first_arg,
 		     struct z_candidate **candidates,
 		     tsubst_flags_t complain)
 {
-  VEC(tree,gc) *args;
+  vec<tree, va_gc> *args;
 
   gcc_assert (*candidates == NULL);
 
@@ -3403,7 +3398,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   tree conv_fns = NULL_TREE;
   conversion *conv = NULL;
   tree first_arg = NULL_TREE;
-  VEC(tree,gc) *args = NULL;
+  vec<tree, va_gc> *args = NULL;
   bool any_viable_p;
   int convflags;
 
@@ -3734,13 +3729,13 @@ build_integral_nontype_arg_conv (tree type, tree expr, tsubst_flags_t complain)
 
 /* Do any initial processing on the arguments to a function call.  */
 
-static VEC(tree,gc) *
-resolve_args (VEC(tree,gc) *args, tsubst_flags_t complain)
+static vec<tree, va_gc> *
+resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 {
   unsigned int ix;
   tree arg;
 
-  FOR_EACH_VEC_ELT (tree, args, ix, arg)
+  FOR_EACH_VEC_SAFE_ELT (args, ix, arg)
     {
       if (error_operand_p (arg))
 	return NULL;
@@ -3770,7 +3765,7 @@ resolve_args (VEC(tree,gc) *args, tsubst_flags_t complain)
 
 static struct z_candidate *
 perform_overload_resolution (tree fn,
-			     const VEC(tree,gc) *args,
+			     const vec<tree, va_gc> *args,
 			     struct z_candidate **candidates,
 			     bool *any_viable_p, tsubst_flags_t complain)
 {
@@ -3823,7 +3818,7 @@ perform_overload_resolution (tree fn,
    functions.  */
 
 static void
-print_error_for_call_failure (tree fn, VEC(tree,gc) *args, bool any_viable_p,
+print_error_for_call_failure (tree fn, vec<tree, va_gc> *args, bool any_viable_p,
 			      struct z_candidate *candidates)
 {
   tree name = DECL_NAME (OVL_CURRENT (fn));
@@ -3844,7 +3839,7 @@ print_error_for_call_failure (tree fn, VEC(tree,gc) *args, bool any_viable_p,
    ARGS.  */
 
 tree
-build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p, 
+build_new_function_call (tree fn, vec<tree, va_gc> **args, bool koenig_p, 
 			 tsubst_flags_t complain)
 {
   struct z_candidate *candidates, *cand;
@@ -3929,7 +3924,7 @@ build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p,
    function called.  */
 
 tree
-build_operator_new_call (tree fnname, VEC(tree,gc) **args,
+build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 			 tree *size, tree *cookie_size, tree size_check,
 			 tree *fn, tsubst_flags_t complain)
 {
@@ -3945,7 +3940,7 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
   if (size_check != NULL_TREE)
     *size = fold_build3 (COND_EXPR, sizetype, size_check,
 			 original_size, TYPE_MAX_VALUE (sizetype));
-  VEC_safe_insert (tree, gc, *args, 0, *size);
+  vec_safe_insert (*args, 0, *size);
   *args = resolve_args (*args, complain);
   if (*args == NULL)
     return error_mark_node;
@@ -3985,9 +3980,8 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
 	   /* In G++ 3.2, the check was implemented incorrectly; it
 	      looked at the placement expression, rather than the
 	      type of the function.  */
-	   if (VEC_length (tree, *args) == 2
-	       && same_type_p (TREE_TYPE (VEC_index (tree, *args, 1)),
-			       ptr_type_node))
+	   if ((*args)->length () == 2
+	       && same_type_p (TREE_TYPE ((**args)[1]), ptr_type_node))
 	     use_cookie = false;
 	 }
        else
@@ -4014,7 +4008,7 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
 	   *size = fold_build3 (COND_EXPR, sizetype, size_check,
 				*size, TYPE_MAX_VALUE (sizetype));
 	   /* Update the argument list to reflect the adjusted size.  */
-	   VEC_replace (tree, *args, 0, *size);
+	   (**args)[0] = *size;
 	 }
        else
 	 *cookie_size = NULL_TREE;
@@ -4031,7 +4025,7 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
 /* Build a new call to operator().  This may change ARGS.  */
 
 static tree
-build_op_call_1 (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
+build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, first_mem_arg = NULL_TREE;
@@ -4165,7 +4159,7 @@ build_op_call_1 (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
 /* Wrapper for above.  */
 
 tree
-build_op_call (tree obj, VEC(tree,gc) **args, tsubst_flags_t complain)
+build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 {
   tree ret;
   bool subtime = timevar_cond_start (TV_OVERLOAD);
@@ -4899,7 +4893,7 @@ prep_operand (tree operand)
    add_function_candidate.  */
 
 static void
-add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
+add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 		tree return_type,
 		tree explicit_targs, bool template_only,
 		tree conversion_path, tree access_path,
@@ -4908,7 +4902,7 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
 		tsubst_flags_t complain)
 {
   tree ctype;
-  const VEC(tree,gc) *non_static_args;
+  const vec<tree, va_gc> *non_static_args;
   bool check_list_ctor;
   bool check_converting;
   unification_kind_t strict;
@@ -4964,7 +4958,7 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
   for (; fns; fns = OVL_NEXT (fns))
     {
       tree fn_first_arg;
-      const VEC(tree,gc) *fn_args;
+      const vec<tree, va_gc> *fn_args;
 
       fn = OVL_CURRENT (fns);
 
@@ -4982,12 +4976,12 @@ add_candidates (tree fns, tree first_arg, const VEC(tree,gc) *args,
 	    {
 	      unsigned int ix;
 	      tree arg;
-	      VEC(tree,gc) *tempvec
-		= VEC_alloc (tree, gc, VEC_length (tree, args) - 1);
-	      for (ix = 1; VEC_iterate (tree, args, ix, arg); ++ix)
-		VEC_quick_push (tree, tempvec, arg);
+	      vec<tree, va_gc> *tempvec;
+	      vec_alloc (tempvec, args->length () - 1);
+	      for (ix = 1; args->iterate (ix, &arg); ++ix)
+		tempvec->quick_push (arg);
 	      non_static_args = tempvec;
-	      first_arg = build_this (VEC_index (tree, args, 0));
+	      first_arg = build_this ((*args)[0]);
 	    }
 
 	  fn_first_arg = first_arg;
@@ -5031,7 +5025,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		tree arg2, tree arg3, tree *overload, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
-  VEC(tree,gc) *arglist;
+  vec<tree, va_gc> *arglist;
   tree fnname;
   tree args[3];
   tree result = NULL_TREE;
@@ -5098,12 +5092,12 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
     arg2 = integer_zero_node;
 
-  arglist = VEC_alloc (tree, gc, 3);
-  VEC_quick_push (tree, arglist, arg1);
+  vec_alloc (arglist, 3);
+  arglist->quick_push (arg1);
   if (arg2 != NULL_TREE)
-    VEC_quick_push (tree, arglist, arg2);
+    arglist->quick_push (arg2);
   if (arg3 != NULL_TREE)
-    VEC_quick_push (tree, arglist, arg3);
+    arglist->quick_push (arg3);
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   p = conversion_obstack_alloc (0);
@@ -5645,12 +5639,13 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       else
 	{
 	  tree ret;
-	  VEC(tree,gc) *args = VEC_alloc (tree, gc, 2);
-	  VEC_quick_push (tree, args, addr);
+	  vec<tree, va_gc> *args;
+	  vec_alloc (args, 2);
+	  args->quick_push (addr);
 	  if (FUNCTION_ARG_CHAIN (fn) != void_list_node)
-	    VEC_quick_push (tree, args, size);
+	    args->quick_push (size);
 	  ret = cp_build_function_call_vec (fn, &args, complain);
-	  VEC_free (tree, gc, args);
+	  vec_free (args);
 	  return ret;
 	}
     }
@@ -5715,7 +5710,7 @@ build_temp (tree expr, tree type, int flags,
 	    diagnostic_t *diagnostic_kind, tsubst_flags_t complain)
 {
   int savew, savee;
-  VEC(tree,gc) *args;
+  vec<tree, va_gc> *args;
 
   savew = warningcount, savee = errorcount;
   args = make_tree_vector_single (expr);
@@ -5965,7 +5960,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	tree new_ctor = build_constructor (init_list_type_node, NULL);
 	unsigned len = CONSTRUCTOR_NELTS (expr);
 	tree array, val, field;
-	VEC(constructor_elt,gc) *vec = NULL;
+	vec<constructor_elt, va_gc> *vec = NULL;
 	unsigned ix;
 
 	/* Convert all the elements.  */
@@ -6340,13 +6335,14 @@ cxx_type_promotes_to (tree type)
    zero-based argument number.  Do any required conversions.  Return
    the converted value.  */
 
-static GTY(()) VEC(tree,gc) *default_arg_context;
+static GTY(()) vec<tree, va_gc> *default_arg_context;
 void
 push_defarg_context (tree fn)
-{ VEC_safe_push (tree, gc, default_arg_context, fn); }
+{ vec_safe_push (default_arg_context, fn); }
+
 void
 pop_defarg_context (void)
-{ VEC_pop (tree, default_arg_context); }
+{ default_arg_context->pop (); }
 
 tree
 convert_default_arg (tree type, tree arg, tree fn, int parmnum,
@@ -6359,7 +6355,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
   fn = DECL_ORIGIN (fn);
 
   /* Detect recursion.  */
-  FOR_EACH_VEC_ELT (tree, default_arg_context, i, t)
+  FOR_EACH_VEC_SAFE_ELT (default_arg_context, i, t)
     if (t == fn)
       {
 	if (complain & tf_error)
@@ -6581,7 +6577,7 @@ static tree
 build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 {
   tree fn = cand->fn;
-  const VEC(tree,gc) *args = cand->args;
+  const vec<tree, va_gc> *args = cand->args;
   tree first_arg = cand->first_arg;
   conversion **convs = cand->convs;
   conversion *conv;
@@ -6608,9 +6604,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       unsigned int nargs;
 
       return_type = TREE_TYPE (TREE_TYPE (fn));
-      nargs = VEC_length (tree, args);
+      nargs = vec_safe_length (args);
       if (first_arg == NULL_TREE)
-	argarray = VEC_address (tree, CONST_CAST (VEC(tree,gc) *, args));
+	argarray = args->address ();
       else
 	{
 	  tree *alcarray;
@@ -6620,7 +6616,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  ++nargs;
 	  alcarray = XALLOCAVEC (tree, nargs);
 	  alcarray[0] = first_arg;
-	  FOR_EACH_VEC_ELT (tree, args, ix, arg)
+	  FOR_EACH_VEC_SAFE_ELT (args, ix, arg)
 	    alcarray[ix + 1] = arg;
 	  argarray = alcarray;
 	}
@@ -6705,7 +6701,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
   /* Find maximum size of vector to hold converted arguments.  */
   parmlen = list_length (parm);
-  nargs = VEC_length (tree, args) + (first_arg != NULL_TREE ? 1 : 0);
+  nargs = vec_safe_length (args) + (first_arg != NULL_TREE ? 1 : 0);
   if (parmlen > nargs)
     nargs = parmlen;
   argarray = XALLOCAVEC (tree, nargs);
@@ -6721,7 +6717,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  argarray[j++] = VEC_index (tree, args, arg_index);
+	  argarray[j++] = (*args)[arg_index];
 	  ++arg_index;
 	}
       parm = TREE_CHAIN (parm);
@@ -6730,7 +6726,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       if (DECL_HAS_VTT_PARM_P (fn))
 	{
-	  argarray[j++] = VEC_index (tree, args, arg_index);
+	  argarray[j++] = (*args)[arg_index];
 	  ++arg_index;
 	  parm = TREE_CHAIN (parm);
 	}
@@ -6741,7 +6737,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree parmtype = TREE_VALUE (parm);
       tree arg = (first_arg != NULL_TREE
 		  ? first_arg
-		  : VEC_index (tree, args, arg_index));
+		  : (*args)[arg_index]);
       tree argtype = TREE_TYPE (arg);
       tree converted_arg;
       tree base_binfo;
@@ -6800,11 +6796,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   gcc_assert (first_arg == NULL_TREE);
-  for (; arg_index < VEC_length (tree, args) && parm;
+  for (; arg_index < vec_safe_length (args) && parm;
        parm = TREE_CHAIN (parm), ++arg_index, ++i)
     {
       tree type = TREE_VALUE (parm);
-      tree arg = VEC_index (tree, args, arg_index);
+      tree arg = (*args)[arg_index];
       bool conversion_warning = true;
 
       conv = convs[i];
@@ -6889,9 +6885,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   /* Ellipsis */
-  for (; arg_index < VEC_length (tree, args); ++arg_index)
+  for (; arg_index < vec_safe_length (args); ++arg_index)
     {
-      tree a = VEC_index (tree, args, arg_index);
+      tree a = (*args)[arg_index];
       if (magic_varargs_p (fn))
 	/* Do no conversions for magic varargs.  */
 	a = mark_type_use (a);
@@ -7221,13 +7217,13 @@ in_charge_arg_for_name (tree name)
    store the newly constructed object into a VAR_DECL.  */
 
 tree
-build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
+build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 			   tree binfo, int flags, tsubst_flags_t complain)
 {
   tree fns;
   /* The type of the subobject to be constructed or destroyed.  */
   tree class_type;
-  VEC(tree,gc) *allocated = NULL;
+  vec<tree, va_gc> *allocated = NULL;
   tree ret;
 
   gcc_assert (name == complete_ctor_identifier
@@ -7260,7 +7256,7 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
       if (name == complete_dtor_identifier
 	  || name == base_dtor_identifier
 	  || name == deleting_dtor_identifier)
-	gcc_assert (args == NULL || VEC_empty (tree, *args));
+	gcc_assert (args == NULL || vec_safe_is_empty (*args));
 
       /* Convert to the base class, if necessary.  */
       if (!same_type_ignoring_top_level_qualifiers_p
@@ -7318,7 +7314,7 @@ build_special_member_call (tree instance, tree name, VEC(tree,gc) **args,
 	  args = &allocated;
 	}
 
-      VEC_safe_insert (tree, gc, *args, 0, sub_vtt);
+      vec_safe_insert (*args, 0, sub_vtt);
     }
 
   ret = build_new_method_call (instance, fns, args,
@@ -7382,7 +7378,7 @@ name_as_c_string (tree name, tree type, bool *free_p)
    This may change ARGS.  */
 
 static tree
-build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
+build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		         tree conversion_path, int flags,
 		         tree *fn_p, tsubst_flags_t complain)
 {
@@ -7395,14 +7391,14 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
   tree instance_ptr;
   tree name;
   bool skip_first_for_error;
-  VEC(tree,gc) *user_args;
+  vec<tree, va_gc> *user_args;
   tree call;
   tree fn;
   int template_only = 0;
   bool any_viable_p;
   tree orig_instance;
   tree orig_fns;
-  VEC(tree,gc) *orig_args = NULL;
+  vec<tree, va_gc> *orig_args = NULL;
   void *p;
 
   gcc_assert (instance != NULL_TREE);
@@ -7522,14 +7518,14 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 
   /* If CONSTRUCTOR_IS_DIRECT_INIT is set, this was a T{ } form
      initializer, not T({ }).  */
-  if (DECL_CONSTRUCTOR_P (fn) && args != NULL && !VEC_empty (tree, *args)
-      && BRACE_ENCLOSED_INITIALIZER_P (VEC_index (tree, *args, 0))
-      && CONSTRUCTOR_IS_DIRECT_INIT (VEC_index (tree, *args, 0)))
+  if (DECL_CONSTRUCTOR_P (fn) && args != NULL && !vec_safe_is_empty (*args)
+      && BRACE_ENCLOSED_INITIALIZER_P ((**args)[0])
+      && CONSTRUCTOR_IS_DIRECT_INIT ((**args)[0]))
     {
-      tree init_list = VEC_index (tree, *args, 0);
+      tree init_list = (**args)[0];
       tree init = NULL_TREE;
 
-      gcc_assert (VEC_length (tree, *args) == 1
+      gcc_assert ((*args)->length () == 1
 		  && !(flags & LOOKUP_ONLYCONVERTING));
 
       /* If the initializer list has no elements and T is a class type with
@@ -7732,7 +7728,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 /* Wrapper for above.  */
 
 tree
-build_new_method_call (tree instance, tree fns, VEC(tree,gc) **args,
+build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 		       tree conversion_path, int flags,
 		       tree *fn_p, tsubst_flags_t complain)
 {
@@ -8896,7 +8892,7 @@ perform_direct_initialization_if_possible (tree type,
      ill-formed.  */
   if (CLASS_TYPE_P (type))
     {
-      VEC(tree,gc) *args = make_tree_vector_single (expr);
+      vec<tree, va_gc> *args = make_tree_vector_single (expr);
       expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&args, type, LOOKUP_NORMAL, complain);
       release_tree_vector (args);
@@ -9003,7 +8999,7 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
    code to initialize the new variable is returned through INITP.  */
 
 static tree
-set_up_extended_ref_temp (tree decl, tree expr, VEC(tree,gc) **cleanups,
+set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 			  tree *initp)
 {
   tree init;
@@ -9076,7 +9072,7 @@ set_up_extended_ref_temp (tree decl, tree expr, VEC(tree,gc) **cleanups,
 	{
 	  tree cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error);
 	  if (cleanup)
-	    VEC_safe_push (tree, gc, *cleanups, cleanup);
+	    vec_safe_push (*cleanups, cleanup);
 	}
 
       /* We must be careful to destroy the temporary only
@@ -9170,7 +9166,7 @@ initialize_reference (tree type, tree expr,
    which is bound either to a reference or a std::initializer_list.  */
 
 static tree
-extend_ref_init_temps_1 (tree decl, tree init, VEC(tree,gc) **cleanups)
+extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups)
 {
   tree sub = init;
   tree *p;
@@ -9201,7 +9197,7 @@ extend_ref_init_temps_1 (tree decl, tree init, VEC(tree,gc) **cleanups)
    lifetime to match that of DECL.  */
 
 tree
-extend_ref_init_temps (tree decl, tree init, VEC(tree,gc) **cleanups)
+extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
 {
   tree type = TREE_TYPE (init);
   if (processing_template_decl)
@@ -9226,8 +9222,8 @@ extend_ref_init_temps (tree decl, tree init, VEC(tree,gc) **cleanups)
     {
       unsigned i;
       constructor_elt *p;
-      VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (init);
-      FOR_EACH_VEC_ELT (constructor_elt, elts, i, p)
+      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (init);
+      FOR_EACH_VEC_SAFE_ELT (elts, i, p)
 	p->value = extend_ref_init_temps (decl, p->value, cleanups);
     }
 

@@ -44,7 +44,7 @@ enum symbol_class
    SYMBOL_DUPLICATE
 };
 
-VEC(ltrans_partition, heap) *ltrans_partitions;
+vec<ltrans_partition> ltrans_partitions;
 
 static void add_symbol_to_partition (ltrans_partition part, symtab_node node);
 
@@ -102,7 +102,7 @@ new_partition (const char *name)
   part->encoder = lto_symtab_encoder_new (false);
   part->name = name;
   part->insns = 0;
-  VEC_safe_push (ltrans_partition, heap, ltrans_partitions, part);
+  ltrans_partitions.safe_push (part);
   return part;
 }
 
@@ -113,14 +113,14 @@ free_ltrans_partitions (void)
 {
   unsigned int idx;
   ltrans_partition part;
-  for (idx = 0; VEC_iterate (ltrans_partition, ltrans_partitions, idx, part); idx++)
+  for (idx = 0; ltrans_partitions.iterate (idx, &part); idx++)
     {
       if (part->initializers_visited)
 	pointer_set_destroy (part->initializers_visited);
       /* Symtab encoder is freed after streaming.  */
       free (part);
     }
-  VEC_free (ltrans_partition, heap, ltrans_partitions);
+  ltrans_partitions.release ();
 }
 
 /* Return true if symbol is already in some partition.  */
@@ -344,9 +344,8 @@ lto_1_to_1_map (void)
 	      npartitions++;
 	    }
 	}
-      else if (!file_data
-	       && VEC_length (ltrans_partition, ltrans_partitions))
-	partition = VEC_index (ltrans_partition, ltrans_partitions, 0);
+      else if (!file_data && ltrans_partitions.length ())
+	partition = ltrans_partitions[0];
       else
 	{
 	  partition = new_partition ("");
@@ -790,11 +789,11 @@ lto_promote_cross_file_statics (void)
   gcc_assert (flag_wpa);
 
   /* First compute boundaries.  */
-  n_sets = VEC_length (ltrans_partition, ltrans_partitions);
+  n_sets = ltrans_partitions.length ();
   for (i = 0; i < n_sets; i++)
     {
       ltrans_partition part
-	= VEC_index (ltrans_partition, ltrans_partitions, i);
+	= ltrans_partitions[i];
       part->encoder = compute_ltrans_boundary (part->encoder);
     }
 
@@ -804,7 +803,7 @@ lto_promote_cross_file_statics (void)
       lto_symtab_encoder_iterator lsei;
       lto_symtab_encoder_t encoder;
       ltrans_partition part
-	= VEC_index (ltrans_partition, ltrans_partitions, i);
+	= ltrans_partitions[i];
 
       encoder = part->encoder;
       for (lsei = lsei_start (encoder); !lsei_end_p (lsei);

@@ -56,7 +56,7 @@ static FILE *go_dump_file;
 
 /* A queue of decls to output.  */
 
-static GTY(()) VEC(tree,gc) *queue;
+static GTY(()) vec<tree, va_gc> *queue;
 
 /* A hash table of macros we have seen.  */
 
@@ -480,7 +480,7 @@ go_decl (tree decl)
       || DECL_IS_BUILTIN (decl)
       || DECL_NAME (decl) == NULL_TREE)
     return;
-  VEC_safe_push (tree, gc, queue, decl);
+  vec_safe_push (queue, decl);
 }
 
 /* A function decl.  */
@@ -515,7 +515,7 @@ go_type_decl (tree decl, int local)
 	  || TREE_CODE (TYPE_NAME (TREE_TYPE (decl))) != IDENTIFIER_NODE)
       && TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE)
     return;
-  VEC_safe_push (tree, gc, queue, decl);
+  vec_safe_push (queue, decl);
 }
 
 /* A container for the data we pass around when generating information
@@ -1194,7 +1194,7 @@ go_finish (const char *filename)
 
   keyword_hash_init (&container);
 
-  FOR_EACH_VEC_ELT (tree, queue, ix, decl)
+  FOR_EACH_VEC_SAFE_ELT (queue, ix, decl)
     {
       switch (TREE_CODE (decl))
 	{
@@ -1228,7 +1228,7 @@ go_finish (const char *filename)
   htab_delete (container.keyword_hash);
   obstack_free (&container.type_obstack, NULL);
 
-  queue = NULL;
+  vec_free (queue);
 
   if (fclose (go_dump_file) != 0)
     error ("could not close Go dump file: %m");

@@ -162,9 +162,9 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 
 	      /* First get some local data, reusing any local data
 		 pointer we may have saved.  */
-	      if (VEC_length (void_p, walk_data->free_block_data) > 0)
+	      if (walk_data->free_block_data.length () > 0)
 		{
-		  bd = VEC_pop (void_p, walk_data->free_block_data);
+		  bd = walk_data->free_block_data.pop ();
 		  recycled = 1;
 		}
 	      else
@@ -174,7 +174,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 		}
 
 	      /* Push the local data into the local data stack.  */
-	      VEC_safe_push (void_p, heap, walk_data->block_data_stack, bd);
+	      walk_data->block_data_stack.safe_push (bd);
 
 	      /* Call the initializer.  */
 	      walk_data->initialize_block_local_data (walk_data, bb,
@@ -212,9 +212,9 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  if (walk_data->initialize_block_local_data)
 	    {
 	      /* And finally pop the record off the block local data stack.  */
-	      bd = VEC_pop (void_p, walk_data->block_data_stack);
+	      bd = walk_data->block_data_stack.pop ();
 	      /* And save the block data so that we can re-use it.  */
-	      VEC_safe_push (void_p, heap, walk_data->free_block_data, bd);
+	      walk_data->free_block_data.safe_push (bd);
 	    }
 	}
       if (sp)
@@ -261,8 +261,8 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 void
 init_walk_dominator_tree (struct dom_walk_data *walk_data)
 {
-  walk_data->free_block_data = NULL;
-  walk_data->block_data_stack = NULL;
+  walk_data->free_block_data.create (0);
+  walk_data->block_data_stack.create (0);
 }
 
 void
@@ -270,10 +270,10 @@ fini_walk_dominator_tree (struct dom_walk_data *walk_data)
 {
   if (walk_data->initialize_block_local_data)
     {
-      while (VEC_length (void_p, walk_data->free_block_data) > 0)
-	free (VEC_pop (void_p, walk_data->free_block_data));
+      while (walk_data->free_block_data.length () > 0)
+	free (walk_data->free_block_data.pop ());
     }
 
-  VEC_free (void_p, heap, walk_data->free_block_data);
-  VEC_free (void_p, heap, walk_data->block_data_stack);
+  walk_data->free_block_data.release ();
+  walk_data->block_data_stack.release ();
 }

@@ -68,7 +68,7 @@ static struct stmt_stats
 
 #define STMT_NECESSARY GF_PLF_1
 
-static VEC(gimple,heap) *worklist;
+static vec<gimple> worklist;
 
 /* Vector indicating an SSA name has already been processed and marked
    as necessary.  */
@@ -212,7 +212,7 @@ mark_stmt_necessary (gimple stmt, bool add_to_worklist)
 
   gimple_set_plf (stmt, STMT_NECESSARY, true);
   if (add_to_worklist)
-    VEC_safe_push (gimple, heap, worklist, stmt);
+    worklist.safe_push (stmt);
   if (bb_contains_live_stmts && !is_gimple_debug (stmt))
     bitmap_set_bit (bb_contains_live_stmts, gimple_bb (stmt)->index);
 }
@@ -255,7 +255,7 @@ mark_operand_necessary (tree op)
   gimple_set_plf (stmt, STMT_NECESSARY, true);
   if (bb_contains_live_stmts)
     bitmap_set_bit (bb_contains_live_stmts, gimple_bb (stmt)->index);
-  VEC_safe_push (gimple, heap, worklist, stmt);
+  worklist.safe_push (stmt);
 }
 
 
@@ -694,10 +694,10 @@ propagate_necessity (struct edge_list *el)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nProcessing worklist:\n");
 
-  while (VEC_length (gimple, worklist) > 0)
+  while (worklist.length () > 0)
     {
       /* Take STMT from worklist.  */
-      stmt = VEC_pop (gimple, worklist);
+      stmt = worklist.pop ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1256,7 +1256,7 @@ eliminate_unnecessary_stmts (void)
   gimple_stmt_iterator gsi, psi;
   gimple stmt;
   tree call;
-  VEC (basic_block, heap) *h;
+  vec<basic_block> h;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nEliminating unnecessary statements:\n");
@@ -1288,9 +1288,9 @@ eliminate_unnecessary_stmts (void)
   gcc_assert (dom_info_available_p (CDI_DOMINATORS));
   h = get_all_dominated_blocks (CDI_DOMINATORS, single_succ (ENTRY_BLOCK_PTR));
 
-  while (VEC_length (basic_block, h))
+  while (h.length ())
     {
-      bb = VEC_pop (basic_block, h);
+      bb = h.pop ();
 
       /* Remove dead statements.  */
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi = psi)
@@ -1371,7 +1371,7 @@ eliminate_unnecessary_stmts (void)
 	}
     }
 
-  VEC_free (basic_block, heap, h);
+  h.release ();
 
   /* Since we don't track liveness of virtual PHI nodes, it is possible that we
      rendered some PHI nodes unreachable while they are still in use.
@@ -1424,9 +1424,9 @@ eliminate_unnecessary_stmts (void)
 		    {
 		      h = get_all_dominated_blocks (CDI_DOMINATORS, bb);
 
-		      while (VEC_length (basic_block, h))
+		      while (h.length ())
 			{
-			  bb = VEC_pop (basic_block, h);
+			  bb = h.pop ();
 			  prev_bb = bb->prev_bb;
 			  /* Rearrangements to the CFG may have failed
 			     to update the dominators tree, so that
@@ -1437,7 +1437,7 @@ eliminate_unnecessary_stmts (void)
 			  delete_basic_block (bb);
 			}
 
-		      VEC_free (basic_block, heap, h);
+		      h.release ();
 		    }
 		}
 	    }
@@ -1497,7 +1497,7 @@ tree_dce_init (bool aggressive)
   processed = sbitmap_alloc (num_ssa_names + 1);
   bitmap_clear (processed);
 
-  worklist = VEC_alloc (gimple, heap, 64);
+  worklist.create (64);
   cfg_altered = false;
 }
 
@@ -1522,7 +1522,7 @@ tree_dce_done (bool aggressive)
 
   sbitmap_free (processed);
 
-  VEC_free (gimple, heap, worklist);
+  worklist.release ();
 }
 
 /* Main routine to eliminate dead code.

@@ -378,7 +378,7 @@ struct leh_tf_state
   struct pointer_map_t *goto_queue_map;
 
   /* The set of unique labels seen as entries in the goto queue.  */
-  VEC(tree,heap) *dest_array;
+  vec<tree> dest_array;
 
   /* A label to be added at the end of the completed transformed
      sequence.  It will be set if may_fallthru was true *at one time*,
@@ -613,20 +613,20 @@ record_in_goto_queue_label (struct leh_tf_state *tf, treemple stmt, tree label,
   if (!outside_finally_tree (temp, tf->try_finally_expr))
     return;
 
-  if (! tf->dest_array)
+  if (! tf->dest_array.exists ())
     {
-      tf->dest_array = VEC_alloc (tree, heap, 10);
-      VEC_quick_push (tree, tf->dest_array, label);
+      tf->dest_array.create (10);
+      tf->dest_array.quick_push (label);
       index = 0;
     }
   else
     {
-      int n = VEC_length (tree, tf->dest_array);
+      int n = tf->dest_array.length ();
       for (index = 0; index < n; ++index)
-        if (VEC_index (tree, tf->dest_array, index) == label)
+        if (tf->dest_array[index] == label)
           break;
       if (index == n)
-        VEC_safe_push (tree, heap, tf->dest_array, label);
+        tf->dest_array.safe_push (label);
     }
 
   /* In the case of a GOTO we want to record the destination label,
@@ -753,7 +753,7 @@ do_goto_redirection (struct goto_queue_node *q, tree finlab, gimple_seq mod,
 
   gcc_assert (q->is_label);
 
-  q->cont_stmt = gimple_build_goto (VEC_index (tree, tf->dest_array, q->index));
+  q->cont_stmt = gimple_build_goto (tf->dest_array[q->index]);
 
   if (mod)
     gimple_seq_add_seq (&q->repl_stmt, mod);
@@ -1177,7 +1177,7 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
 	do_goto_redirection (q, finally_label, NULL, tf);
       replace_goto_queue (tf);
 
-      if (VEC_index (tree, tf->dest_array, 0) == tf->fallthru_label)
+      if (tf->dest_array[0] == tf->fallthru_label)
 	{
 	  /* Reachable by goto to fallthru label only.  Redirect it
 	     to the new label (already created, sadly), and do not
@@ -1256,7 +1256,7 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
 	tree label;
       } *labels;
 
-      return_index = VEC_length (tree, tf->dest_array);
+      return_index = tf->dest_array.length ();
       labels = XCNEWVEC (struct labels_s, return_index + 1);
 
       q = tf->goto_queue;
@@ -1335,7 +1335,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   int return_index, eh_index, fallthru_index;
   int nlabels, ndests, j, last_case_index;
   tree last_case;
-  VEC (tree,heap) *case_label_vec;
+  vec<tree> case_label_vec;
   gimple_seq switch_body = NULL;
   gimple x, eh_else;
   tree tmp;
@@ -1362,7 +1362,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   lower_eh_constructs_1 (state, &finally);
 
   /* Prepare for switch statement generation.  */
-  nlabels = VEC_length (tree, tf->dest_array);
+  nlabels = tf->dest_array.length ();
   return_index = nlabels;
   eh_index = return_index + tf->may_return;
   fallthru_index = eh_index + (tf->may_throw && !eh_else);
@@ -1371,10 +1371,10 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   finally_tmp = create_tmp_var (integer_type_node, "finally_tmp");
   finally_label = create_artificial_label (finally_loc);
 
-  /* We use VEC_quick_push on case_label_vec throughout this function,
+  /* We use vec::quick_push on case_label_vec throughout this function,
      since we know the size in advance and allocate precisely as muce
      space as needed.  */
-  case_label_vec = VEC_alloc (tree, heap, ndests);
+  case_label_vec.create (ndests);
   last_case = NULL;
   last_case_index = 0;
 
@@ -1392,7 +1392,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       tmp = build_int_cst (integer_type_node, fallthru_index);
       last_case = build_case_label (tmp, NULL,
 				    create_artificial_label (tf_loc));
-      VEC_quick_push (tree, case_label_vec, last_case);
+      case_label_vec.quick_push (last_case);
       last_case_index++;
 
       x = gimple_build_label (CASE_LABEL (last_case));
@@ -1435,7 +1435,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       tmp = build_int_cst (integer_type_node, eh_index);
       last_case = build_case_label (tmp, NULL,
 				    create_artificial_label (tf_loc));
-      VEC_quick_push (tree, case_label_vec, last_case);
+      case_label_vec.quick_push (last_case);
       last_case_index++;
 
       x = gimple_build_label (CASE_LABEL (last_case));
@@ -1479,8 +1479,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 	}
 
       case_index = j + q->index;
-      if (VEC_length (tree, case_label_vec) <= case_index
-          || !VEC_index (tree, case_label_vec, case_index))
+      if (case_label_vec.length () <= case_index || !case_label_vec[case_index])
         {
           tree case_lab;
           void **slot;
@@ -1493,7 +1492,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
             cont_map = pointer_map_create ();
           slot = pointer_map_insert (cont_map, case_lab);
           *slot = q->cont_stmt;
-          VEC_quick_push (tree, case_label_vec, case_lab);
+          case_label_vec.quick_push (case_lab);
         }
     }
   for (j = last_case_index; j < last_case_index + nlabels; j++)
@@ -1501,7 +1500,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       gimple cont_stmt;
       void **slot;
 
-      last_case = VEC_index (tree, case_label_vec, j);
+      last_case = case_label_vec[j];
 
       gcc_assert (last_case);
       gcc_assert (cont_map);
@@ -1666,7 +1665,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
      how many destinations are reached by the finally block.  Use this to
      determine how we process the finally block itself.  */
 
-  ndests = VEC_length (tree, this_tf.dest_array);
+  ndests = this_tf.dest_array.length ();
   ndests += this_tf.may_fallthru;
   ndests += this_tf.may_return;
   ndests += this_tf.may_throw;
@@ -1701,7 +1700,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
       gimple_seq_add_stmt (&this_tf.top_p_seq, x);
     }
 
-  VEC_free (tree, heap, this_tf.dest_array);
+  this_tf.dest_array.release ();
   free (this_tf.goto_queue);
   if (this_tf.goto_queue_map)
     pointer_map_destroy (this_tf.goto_queue_map);
@@ -2811,7 +2810,7 @@ maybe_duplicate_eh_stmt_fn (struct function *new_fun, gimple new_stmt,
     {
       eh_landing_pad old_lp, new_lp;
 
-      old_lp = VEC_index (eh_landing_pad, old_fun->eh->lp_array, old_lp_nr);
+      old_lp = (*old_fun->eh->lp_array)[old_lp_nr];
       slot = pointer_map_contains (map, old_lp);
       new_lp = (eh_landing_pad) *slot;
       new_lp_nr = new_lp->index;
@@ -2820,7 +2819,7 @@ maybe_duplicate_eh_stmt_fn (struct function *new_fun, gimple new_stmt,
     {
       eh_region old_r, new_r;
 
-      old_r = VEC_index (eh_region, old_fun->eh->region_array, -old_lp_nr);
+      old_r = (*old_fun->eh->region_array)[-old_lp_nr];
       slot = pointer_map_contains (map, old_r);
       new_r = (eh_region) *slot;
       new_lp_nr = -new_r->index;
@@ -3333,7 +3332,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
     {
     case ERT_TRY:
       {
-	VEC (tree, heap) *labels = NULL;
+	vec<tree> labels = vec<tree>();
 	tree default_label = NULL;
 	eh_catch c;
 	edge_iterator ei;
@@ -3369,7 +3368,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 		  {
 		    tree t = build_case_label (TREE_VALUE (flt_node),
 					       NULL, lab);
-		    VEC_safe_push (tree, heap, labels, t);
+		    labels.safe_push (t);
 		    pointer_set_insert (seen_values, TREE_VALUE (flt_node));
 		    have_label = true;
 		  }
@@ -3400,7 +3399,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
 	/* Don't generate a switch if there's only a default case.
 	   This is common in the form of try { A; } catch (...) { B; }.  */
-	if (labels == NULL)
+	if (!labels.exists ())
 	  {
 	    e = single_succ_edge (src);
 	    e->flags |= EDGE_FALLTHRU;
@@ -3422,7 +3421,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	    x = gimple_build_switch (filter, default_label, labels);
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
-	    VEC_free (tree, heap, labels);
+	    labels.release ();
 	  }
 	pointer_set_destroy (seen_values);
       }
@@ -3533,9 +3532,8 @@ remove_unreachable_handlers (void)
   basic_block bb;
   int lp_nr, r_nr;
 
-  r_reachable = sbitmap_alloc (VEC_length (eh_region, cfun->eh->region_array));
-  lp_reachable
-    = sbitmap_alloc (VEC_length (eh_landing_pad, cfun->eh->lp_array));
+  r_reachable = sbitmap_alloc (cfun->eh->region_array->length ());
+  lp_reachable = sbitmap_alloc (cfun->eh->lp_array->length ());
   bitmap_clear (r_reachable);
   bitmap_clear (lp_reachable);
 
@@ -3588,7 +3586,7 @@ remove_unreachable_handlers (void)
     }
 
   for (r_nr = 1;
-       VEC_iterate (eh_region, cfun->eh->region_array, r_nr, region); ++r_nr)
+       vec_safe_iterate (cfun->eh->region_array, r_nr, &region); ++r_nr)
     if (region && !bitmap_bit_p (r_reachable, r_nr))
       {
 	if (dump_file)
@@ -3597,7 +3595,7 @@ remove_unreachable_handlers (void)
       }
 
   for (lp_nr = 1;
-       VEC_iterate (eh_landing_pad, cfun->eh->lp_array, lp_nr, lp); ++lp_nr)
+       vec_safe_iterate (cfun->eh->lp_array, lp_nr, &lp); ++lp_nr)
     if (lp && !bitmap_bit_p (lp_reachable, lp_nr))
       {
 	if (dump_file)
@@ -3632,7 +3630,7 @@ maybe_remove_unreachable_handlers (void)
   if (cfun->eh == NULL)
     return;
               
-  for (i = 1; VEC_iterate (eh_landing_pad, cfun->eh->lp_array, i, lp); ++i)
+  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
     if (lp && lp->post_landing_pad)
       {
 	if (label_to_block (lp->post_landing_pad) == NULL)
@@ -3655,7 +3653,7 @@ remove_unreachable_handlers_no_lp (void)
   sbitmap r_reachable;
   basic_block bb;
 
-  r_reachable = sbitmap_alloc (VEC_length (eh_region, cfun->eh->region_array));
+  r_reachable = sbitmap_alloc (cfun->eh->region_array->length ());
   bitmap_clear (r_reachable);
 
   FOR_EACH_BB (bb)
@@ -3676,7 +3674,7 @@ remove_unreachable_handlers_no_lp (void)
 	  }
     }
 
-  for (i = 1; VEC_iterate (eh_region, cfun->eh->region_array, i, r); ++i)
+  for (i = 1; cfun->eh->region_array->iterate (i, &r); ++i)
     if (r && r->landing_pads == NULL && r->type != ERT_MUST_NOT_THROW
 	&& !bitmap_bit_p (r_reachable, i))
       {
@@ -3802,7 +3800,7 @@ unsplit_all_eh (void)
   eh_landing_pad lp;
   int i;
 
-  for (i = 1; VEC_iterate (eh_landing_pad, cfun->eh->lp_array, i, lp); ++i)
+  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
     if (lp)
       changed |= unsplit_eh (lp);
 
@@ -4252,7 +4250,7 @@ cleanup_all_empty_eh (void)
   eh_landing_pad lp;
   int i;
 
-  for (i = 1; VEC_iterate (eh_landing_pad, cfun->eh->lp_array, i, lp); ++i)
+  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
     if (lp)
       changed |= cleanup_empty_eh (lp);
 

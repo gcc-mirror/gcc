@@ -257,8 +257,6 @@ typedef struct
   const char *arg;
   int value;
 } cl_deferred_option;
-DEF_VEC_O(cl_deferred_option);
-DEF_VEC_ALLOC_O(cl_deferred_option,heap);
 
 /* Structure describing a single option-handling callback.  */
 

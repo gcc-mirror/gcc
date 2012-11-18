@@ -43,7 +43,7 @@ static FILE *open_repo_file (const char *);
 static char *afgets (FILE *);
 static FILE *reopen_repo_file_for_write (void);
 
-static GTY(()) VEC(tree,gc) *pending_repo;
+static GTY(()) vec<tree, va_gc> *pending_repo;
 static char *repo_name;
 
 static const char *old_args, *old_dir, *old_main;
@@ -268,7 +268,7 @@ finish_repo (void)
       fprintf (repo_file, "\n");
     }
 
-  FOR_EACH_VEC_ELT_REVERSE (tree, pending_repo, ix, val)
+  FOR_EACH_VEC_SAFE_ELT_REVERSE (pending_repo, ix, val)
     {
       tree name = DECL_ASSEMBLER_NAME (val);
       char type = IDENTIFIER_REPO_CHOSEN (name) ? 'C' : 'O';
@@ -353,7 +353,7 @@ repo_emit_p (tree decl)
   if (!DECL_REPO_AVAILABLE_P (decl))
     {
       DECL_REPO_AVAILABLE_P (decl) = 1;
-      VEC_safe_push (tree, gc, pending_repo, decl);
+      vec_safe_push (pending_repo, decl);
     }
 
   return IDENTIFIER_REPO_CHOSEN (DECL_ASSEMBLER_NAME (decl)) ? 1 : ret;

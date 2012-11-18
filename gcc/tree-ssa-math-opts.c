@@ -665,18 +665,18 @@ struct gimple_opt_pass pass_cse_reciprocals =
    statements in the vector.  */
 
 static bool
-maybe_record_sincos (VEC(gimple, heap) **stmts,
+maybe_record_sincos (vec<gimple> *stmts,
 		     basic_block *top_bb, gimple use_stmt)
 {
   basic_block use_bb = gimple_bb (use_stmt);
   if (*top_bb
       && (*top_bb == use_bb
 	  || dominated_by_p (CDI_DOMINATORS, use_bb, *top_bb)))
-    VEC_safe_push (gimple, heap, *stmts, use_stmt);
+    stmts->safe_push (use_stmt);
   else if (!*top_bb
 	   || dominated_by_p (CDI_DOMINATORS, *top_bb, use_bb))
     {
-      VEC_safe_push (gimple, heap, *stmts, use_stmt);
+      stmts->safe_push (use_stmt);
       *top_bb = use_bb;
     }
   else
@@ -701,7 +701,7 @@ execute_cse_sincos_1 (tree name)
   tree fndecl, res, type;
   gimple def_stmt, use_stmt, stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
-  VEC(gimple, heap) *stmts = NULL;
+  vec<gimple> stmts = vec<gimple>();
   basic_block top_bb = NULL;
   int i;
   bool cfg_changed = false;
@@ -735,7 +735,7 @@ execute_cse_sincos_1 (tree name)
 
   if (seen_cos + seen_sin + seen_cexpi <= 1)
     {
-      VEC_free(gimple, heap, stmts);
+      stmts.release ();
       return false;
     }
 
@@ -764,7 +764,7 @@ execute_cse_sincos_1 (tree name)
   sincos_stats.inserted++;
 
   /* And adjust the recorded old call sites.  */
-  for (i = 0; VEC_iterate(gimple, stmts, i, use_stmt); ++i)
+  for (i = 0; stmts.iterate (i, &use_stmt); ++i)
     {
       tree rhs = NULL;
       fndecl = gimple_call_fndecl (use_stmt);
@@ -796,7 +796,7 @@ execute_cse_sincos_1 (tree name)
 	  cfg_changed = true;
     }
 
-  VEC_free(gimple, heap, stmts);
+  stmts.release ();
 
   return cfg_changed;
 }

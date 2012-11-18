@@ -884,7 +884,7 @@ static htab_t tm_log;
 
 /* Addresses to log with a save/restore sequence.  These should be in
    dominator order.  */
-static VEC(tree,heap) *tm_log_save_addresses;
+static vec<tree> tm_log_save_addresses;
 
 /* Map for an SSA_NAME originally pointing to a non aliased new piece
    of memory (malloc, alloc, etc).  */
@@ -947,7 +947,7 @@ static void
 tm_log_free (void *p)
 {
   struct tm_log_entry *lp = (struct tm_log_entry *) p;
-  VEC_free (gimple, heap, lp->stmts);
+  lp->stmts.release ();
   free (lp);
 }
 
@@ -957,7 +957,7 @@ tm_log_init (void)
 {
   tm_log = htab_create (10, tm_log_hash, tm_log_eq, tm_log_free);
   tm_new_mem_hash = htab_create (5, struct_ptr_hash, struct_ptr_eq, free);
-  tm_log_save_addresses = VEC_alloc (tree, heap, 5);
+  tm_log_save_addresses.create (5);
 }
 
 /* Free logging data structures.  */
@@ -966,7 +966,7 @@ tm_log_delete (void)
 {
   htab_delete (tm_log);
   htab_delete (tm_new_mem_hash);
-  VEC_free (tree, heap, tm_log_save_addresses);
+  tm_log_save_addresses.release ();
 }
 
 /* Return true if MEM is a transaction invariant memory for the TM
@@ -1031,18 +1031,18 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
 	  && !TREE_ADDRESSABLE (type))
 	{
 	  lp->save_var = create_tmp_reg (TREE_TYPE (lp->addr), "tm_save");
-	  lp->stmts = NULL;
+	  lp->stmts.create (0);
 	  lp->entry_block = entry_block;
 	  /* Save addresses separately in dominator order so we don't
 	     get confused by overlapping addresses in the save/restore
 	     sequence.  */
-	  VEC_safe_push (tree, heap, tm_log_save_addresses, lp->addr);
+	  tm_log_save_addresses.safe_push (lp->addr);
 	}
       else
 	{
 	  /* Use the logging functions.  */
-	  lp->stmts = VEC_alloc (gimple, heap, 5);
-	  VEC_quick_push (gimple, lp->stmts, stmt);
+	  lp->stmts.create (5);
+	  lp->stmts.quick_push (stmt);
 	  lp->save_var = NULL;
 	}
     }
@@ -1058,7 +1058,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
       if (lp->save_var)
 	return;
 
-      for (i = 0; VEC_iterate (gimple, lp->stmts, i, oldstmt); ++i)
+      for (i = 0; lp->stmts.iterate (i, &oldstmt); ++i)
 	{
 	  if (stmt == oldstmt)
 	    return;
@@ -1072,7 +1072,7 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
 				       gimple_bb (oldstmt), gimple_bb (stmt)));
 	}
       /* Store is on a different code path.  */
-      VEC_safe_push (gimple, heap, lp->stmts, stmt);
+      lp->stmts.safe_push (stmt);
     }
 }
 
@@ -1178,7 +1178,7 @@ tm_log_emit (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "DUMPING with logging functions\n");
-	  for (i = 0; VEC_iterate (gimple, lp->stmts, i, stmt); ++i)
+	  for (i = 0; lp->stmts.iterate (i, &stmt); ++i)
 	    tm_log_emit_stmt (lp->addr, stmt);
 	}
     }
@@ -1195,9 +1195,9 @@ tm_log_emit_saves (basic_block entry_block, basic_block bb)
   gimple stmt;
   struct tm_log_entry l, *lp;
 
-  for (i = 0; i < VEC_length (tree, tm_log_save_addresses); ++i)
+  for (i = 0; i < tm_log_save_addresses.length (); ++i)
     {
-      l.addr = VEC_index (tree, tm_log_save_addresses, i);
+      l.addr = tm_log_save_addresses[i];
       lp = (struct tm_log_entry *) *htab_find_slot (tm_log, &l, NO_INSERT);
       gcc_assert (lp->save_var != NULL);
 
@@ -1231,9 +1231,9 @@ tm_log_emit_restores (basic_block entry_block, basic_block bb)
   gimple_stmt_iterator gsi;
   gimple stmt;
 
-  for (i = VEC_length (tree, tm_log_save_addresses) - 1; i >= 0; i--)
+  for (i = tm_log_save_addresses.length () - 1; i >= 0; i--)
     {
-      l.addr = VEC_index (tree, tm_log_save_addresses, i);
+      l.addr = tm_log_save_addresses[i];
       lp = (struct tm_log_entry *) *htab_find_slot (tm_log, &l, NO_INSERT);
       gcc_assert (lp->save_var != NULL);
 
@@ -1740,8 +1740,6 @@ struct tm_region
 };
 
 typedef struct tm_region *tm_region_p;
-DEF_VEC_P (tm_region_p);
-DEF_VEC_ALLOC_P (tm_region_p, heap);
 
 /* True if there are pending edge statements to be committed for the
    current function being scanned in the tmmark pass.  */
@@ -1843,10 +1841,10 @@ tm_region_init (struct tm_region *region)
   edge_iterator ei;
   edge e;
   basic_block bb;
-  VEC(basic_block, heap) *queue = NULL;
+  vec<basic_block> queue = vec<basic_block>();
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
   struct tm_region *old_region;
-  VEC(tm_region_p, heap) *bb_regions = NULL;
+  vec<tm_region_p> bb_regions = vec<tm_region_p>();
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR);
@@ -1854,15 +1852,15 @@ tm_region_init (struct tm_region *region)
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
      using bb->aux.  */
-  VEC_safe_grow_cleared (tm_region_p, heap, bb_regions, last_basic_block);
+  bb_regions.safe_grow_cleared (last_basic_block);
 
-  VEC_safe_push (basic_block, heap, queue, bb);
-  VEC_replace (tm_region_p, bb_regions, bb->index, region);
+  queue.safe_push (bb);
+  bb_regions[bb->index] = region;
   do
     {
-      bb = VEC_pop (basic_block, queue);
-      region = VEC_index (tm_region_p, bb_regions, bb->index);
-      VEC_replace (tm_region_p, bb_regions, bb->index, NULL);
+      bb = queue.pop ();
+      region = bb_regions[bb->index];
+      bb_regions[bb->index] = NULL;
 
       /* Record exit and irrevocable blocks.  */
       region = tm_region_init_1 (region, bb);
@@ -1878,21 +1876,21 @@ tm_region_init (struct tm_region *region)
 	if (!bitmap_bit_p (visited_blocks, e->dest->index))
 	  {
 	    bitmap_set_bit (visited_blocks, e->dest->index);
-	    VEC_safe_push (basic_block, heap, queue, e->dest);
+	    queue.safe_push (e->dest);
 
 	    /* If the current block started a new region, make sure that only
 	       the entry block of the new region is associated with this region.
 	       Other successors are still part of the old region.  */
 	    if (old_region != region && e->dest != region->entry_block)
-	      VEC_replace (tm_region_p, bb_regions, e->dest->index, old_region);
+	      bb_regions[e->dest->index] = old_region;
 	    else
-	      VEC_replace (tm_region_p, bb_regions, e->dest->index, region);
+	      bb_regions[e->dest->index] = region;
 	  }
     }
-  while (!VEC_empty (basic_block, queue));
-  VEC_free (basic_block, heap, queue);
+  while (!queue.is_empty ());
+  queue.release ();
   BITMAP_FREE (visited_blocks);
-  VEC_free (tm_region_p, heap, bb_regions);
+  bb_regions.release ();
 }
 
 /* The "gate" function for all transactional memory expansion and optimization
@@ -2097,7 +2095,7 @@ build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
   if (TREE_CODE (rhs) == CONSTRUCTOR)
     {
       /* Handle the easy initialization to zero.  */
-      if (CONSTRUCTOR_ELTS (rhs) == 0)
+      if (!CONSTRUCTOR_ELTS (rhs))
 	rhs = build_int_cst (simple_type, 0);
       else
 	{
@@ -2398,26 +2396,26 @@ expand_block_tm (struct tm_region *region, basic_block bb)
    STOP_AT_IRREVOCABLE_P is true if caller is uninterested in blocks
    following a TM_IRREVOCABLE call.  */
 
-static VEC (basic_block, heap) *
+static vec<basic_block> 
 get_tm_region_blocks (basic_block entry_block,
 		      bitmap exit_blocks,
 		      bitmap irr_blocks,
 		      bitmap all_region_blocks,
 		      bool stop_at_irrevocable_p)
 {
-  VEC(basic_block, heap) *bbs = NULL;
+  vec<basic_block> bbs = vec<basic_block>();
   unsigned i;
   edge e;
   edge_iterator ei;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
 
   i = 0;
-  VEC_safe_push (basic_block, heap, bbs, entry_block);
+  bbs.safe_push (entry_block);
   bitmap_set_bit (visited_blocks, entry_block->index);
 
   do
     {
-      basic_block bb = VEC_index (basic_block, bbs, i++);
+      basic_block bb = bbs[i++];
 
       if (exit_blocks &&
 	  bitmap_bit_p (exit_blocks, bb->index))
@@ -2432,10 +2430,10 @@ get_tm_region_blocks (basic_block entry_block,
 	if (!bitmap_bit_p (visited_blocks, e->dest->index))
 	  {
 	    bitmap_set_bit (visited_blocks, e->dest->index);
-	    VEC_safe_push (basic_block, heap, bbs, e->dest);
+	    bbs.safe_push (e->dest);
 	  }
     }
-  while (i < VEC_length (basic_block, bbs));
+  while (i < bbs.length ());
 
   if (all_region_blocks)
     bitmap_ior_into (all_region_blocks, visited_blocks);
@@ -2448,8 +2446,8 @@ get_tm_region_blocks (basic_block entry_block,
 static void *
 collect_bb2reg (struct tm_region *region, void *data)
 {
-  VEC(tm_region_p, heap) *bb2reg = (VEC(tm_region_p, heap) *) data;
-  VEC (basic_block, heap) *queue;
+  vec<tm_region_p> *bb2reg = (vec<tm_region_p> *) data;
+  vec<basic_block> queue;
   unsigned int i;
   basic_block bb;
 
@@ -2461,10 +2459,10 @@ collect_bb2reg (struct tm_region *region, void *data)
 
   // We expect expand_region to perform a post-order traversal of the region
   // tree.  Therefore the last region seen for any bb is the innermost.
-  FOR_EACH_VEC_ELT (basic_block, queue, i, bb)
-    VEC_replace (tm_region_p, bb2reg, bb->index, region);
+  FOR_EACH_VEC_ELT (queue, i, bb)
+    (*bb2reg)[bb->index] = region;
 
-  VEC_free (basic_block, heap, queue);
+  queue.release ();
   return NULL;
 }
 
@@ -2490,15 +2488,15 @@ collect_bb2reg (struct tm_region *region, void *data)
 // ??? There is currently a hack inside tree-ssa-pre.c to work around the
 // only known instance of this block sharing.
 
-static VEC(tm_region_p, heap) *
+static vec<tm_region_p>
 get_bb_regions_instrumented (void)
 {
   unsigned n = last_basic_block;
-  VEC(tm_region_p, heap) *ret;
+  vec<tm_region_p> ret;
 
-  ret = VEC_alloc (tm_region_p, heap, n);
-  VEC_safe_grow_cleared (tm_region_p, heap, ret, n);
-  expand_regions (all_tm_regions, collect_bb2reg, ret);
+  ret.create (n);
+  ret.safe_grow_cleared (n);
+  expand_regions (all_tm_regions, collect_bb2reg, &ret);
 
   return ret;
 }
@@ -2510,7 +2508,7 @@ void
 compute_transaction_bits (void)
 {
   struct tm_region *region;
-  VEC (basic_block, heap) *queue;
+  vec<basic_block> queue;
   unsigned int i;
   basic_block bb;
 
@@ -2528,9 +2526,9 @@ compute_transaction_bits (void)
 				    region->irr_blocks,
 				    NULL,
 				    /*stop_at_irr_p=*/true);
-      for (i = 0; VEC_iterate (basic_block, queue, i, bb); ++i)
+      for (i = 0; queue.iterate (i, &bb); ++i)
 	bb->flags |= BB_IN_TRANSACTION;
-      VEC_free (basic_block, heap, queue);
+      queue.release ();
     }
 
   if (all_tm_regions)
@@ -2603,7 +2601,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
   }
 
   // Generate log saves.
-  if (!VEC_empty (tree, tm_log_save_addresses))
+  if (!tm_log_save_addresses.is_empty ())
     tm_log_emit_saves (region->entry_block, transaction_bb);
 
   // In the beginning, we've no tests to perform on transaction restart.
@@ -2612,7 +2610,7 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
   region->restart_block = region->entry_block;
 
   // Generate log restores.
-  if (!VEC_empty (tree, tm_log_save_addresses))
+  if (!tm_log_save_addresses.is_empty ())
     {
       basic_block test_bb = create_empty_bb (transaction_bb);
       basic_block code_bb = create_empty_bb (test_bb);
@@ -2830,13 +2828,13 @@ execute_tm_mark (void)
 
   tm_log_init ();
 
-  VEC(tm_region_p, heap) *bb_regions = get_bb_regions_instrumented ();
+  vec<tm_region_p> bb_regions = get_bb_regions_instrumented ();
   struct tm_region *r;
   unsigned i;
 
   // Expand memory operations into calls into the runtime.
   // This collects log entries as well.
-  FOR_EACH_VEC_ELT (tm_region_p, bb_regions, i, r)
+  FOR_EACH_VEC_ELT (bb_regions, i, r)
     if (r != NULL)
       expand_block_tm (r, BASIC_BLOCK (i));
 
@@ -3000,15 +2998,15 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 static unsigned int
 execute_tm_edges (void)
 {
-  VEC(tm_region_p, heap) *bb_regions = get_bb_regions_instrumented ();
+  vec<tm_region_p> bb_regions = get_bb_regions_instrumented ();
   struct tm_region *r;
   unsigned i;
 
-  FOR_EACH_VEC_ELT (tm_region_p, bb_regions, i, r)
+  FOR_EACH_VEC_ELT (bb_regions, i, r)
     if (r != NULL)
       expand_block_edges (r, BASIC_BLOCK (i));
 
-  VEC_free (tm_region_p, heap, bb_regions);
+  bb_regions.release ();
 
   /* We've got to release the dominance info now, to indicate that it
      must be rebuilt completely.  Otherwise we'll crash trying to update
@@ -3265,12 +3263,12 @@ dump_tm_memopt_set (const char *set_name, bitmap bits)
 /* Prettily dump all of the memopt sets in BLOCKS.  */
 
 static void
-dump_tm_memopt_sets (VEC (basic_block, heap) *blocks)
+dump_tm_memopt_sets (vec<basic_block> blocks)
 {
   size_t i;
   basic_block bb;
 
-  for (i = 0; VEC_iterate (basic_block, blocks, i, bb); ++i)
+  for (i = 0; blocks.iterate (i, &bb); ++i)
     {
       fprintf (dump_file, "------------BB %d---------\n", bb->index);
       dump_tm_memopt_set ("STORE_LOCAL", STORE_LOCAL (bb));
@@ -3368,7 +3366,7 @@ tm_memopt_compute_antin (basic_block bb)
 
 static void
 tm_memopt_compute_available (struct tm_region *region,
-			     VEC (basic_block, heap) *blocks)
+			     vec<basic_block> blocks)
 {
   edge e;
   basic_block *worklist, *qin, *qout, *qend, bb;
@@ -3379,12 +3377,12 @@ tm_memopt_compute_available (struct tm_region *region,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks in the region.  */
-  qlen = VEC_length (basic_block, blocks) - 1;
+  qlen = blocks.length () - 1;
   qin = qout = worklist =
     XNEWVEC (basic_block, qlen);
 
   /* Put every block in the region on the worklist.  */
-  for (i = 0; VEC_iterate (basic_block, blocks, i, bb); ++i)
+  for (i = 0; blocks.iterate (i, &bb); ++i)
     {
       /* Seed AVAIL_OUT with the LOCAL set.  */
       bitmap_ior_into (STORE_AVAIL_OUT (bb), STORE_LOCAL (bb));
@@ -3456,7 +3454,7 @@ tm_memopt_compute_available (struct tm_region *region,
 
 static void
 tm_memopt_compute_antic (struct tm_region *region,
-			 VEC (basic_block, heap) *blocks)
+			 vec<basic_block> blocks)
 {
   edge e;
   basic_block *worklist, *qin, *qout, *qend, bb;
@@ -3467,12 +3465,11 @@ tm_memopt_compute_antic (struct tm_region *region,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks in the region.  */
-  qin = qout = worklist =
-    XNEWVEC (basic_block, VEC_length (basic_block, blocks));
+  qin = qout = worklist = XNEWVEC (basic_block, blocks.length ());
 
-  for (qlen = 0, i = VEC_length (basic_block, blocks) - 1; i >= 0; --i)
+  for (qlen = 0, i = blocks.length () - 1; i >= 0; --i)
     {
-      bb = VEC_index (basic_block, blocks, i);
+      bb = blocks[i];
 
       /* Seed ANTIC_OUT with the LOCAL set.  */
       bitmap_ior_into (STORE_ANTIC_OUT (bb), STORE_LOCAL (bb));
@@ -3586,13 +3583,13 @@ tm_memopt_transform_stmt (unsigned int offset,
    basic blocks in BLOCKS.  */
 
 static void
-tm_memopt_transform_blocks (VEC (basic_block, heap) *blocks)
+tm_memopt_transform_blocks (vec<basic_block> blocks)
 {
   size_t i;
   basic_block bb;
   gimple_stmt_iterator gsi;
 
-  for (i = 0; VEC_iterate (basic_block, blocks, i, bb); ++i)
+  for (i = 0; blocks.iterate (i, &bb); ++i)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -3655,24 +3652,24 @@ tm_memopt_init_sets (void)
 /* Free sets computed for each BB.  */
 
 static void
-tm_memopt_free_sets (VEC (basic_block, heap) *blocks)
+tm_memopt_free_sets (vec<basic_block> blocks)
 {
   size_t i;
   basic_block bb;
 
-  for (i = 0; VEC_iterate (basic_block, blocks, i, bb); ++i)
+  for (i = 0; blocks.iterate (i, &bb); ++i)
     bb->aux = NULL;
 }
 
 /* Clear the visited bit for every basic block in BLOCKS.  */
 
 static void
-tm_memopt_clear_visited (VEC (basic_block, heap) *blocks)
+tm_memopt_clear_visited (vec<basic_block> blocks)
 {
   size_t i;
   basic_block bb;
 
-  for (i = 0; VEC_iterate (basic_block, blocks, i, bb); ++i)
+  for (i = 0; blocks.iterate (i, &bb); ++i)
     BB_VISITED_P (bb) = false;
 }
 
@@ -3684,7 +3681,7 @@ static unsigned int
 execute_tm_memopt (void)
 {
   struct tm_region *region;
-  VEC (basic_block, heap) *bbs;
+  vec<basic_block> bbs;
 
   tm_memopt_value_id = 0;
   tm_memopt_value_numbers = htab_create (10, tm_memop_hash, tm_memop_eq, free);
@@ -3705,7 +3702,7 @@ execute_tm_memopt (void)
 				  false);
 
       /* Collect all the memory operations.  */
-      for (i = 0; VEC_iterate (basic_block, bbs, i, bb); ++i)
+      for (i = 0; bbs.iterate (i, &bb); ++i)
 	{
 	  bb->aux = tm_memopt_init_sets ();
 	  tm_memopt_accumulate_memops (bb);
@@ -3719,7 +3716,7 @@ execute_tm_memopt (void)
       tm_memopt_transform_blocks (bbs);
 
       tm_memopt_free_sets (bbs);
-      VEC_free (basic_block, heap, bbs);
+      bbs.release ();
       bitmap_obstack_release (&tm_memopt_obstack);
       htab_empty (tm_memopt_value_numbers);
     }
@@ -3837,7 +3834,7 @@ struct tm_ipa_cg_data
   bool want_irr_scan_normal;
 };
 
-typedef VEC (cgraph_node_p, heap) *cgraph_node_queue;
+typedef vec<cgraph_node_ptr> cgraph_node_queue;
 
 /* Return the ipa data associated with NODE, allocating zeroed memory
    if necessary.  TRAVERSE_ALIASES is true if we must traverse aliases
@@ -3874,7 +3871,7 @@ maybe_push_queue (struct cgraph_node *node,
   if (!*in_queue_p)
     {
       *in_queue_p = true;
-      VEC_safe_push (cgraph_node_p, heap, *queue_p, node);
+      queue_p->safe_push (node);
     }
 }
 
@@ -3887,15 +3884,14 @@ maybe_push_queue (struct cgraph_node *node,
 
 static void
 ipa_uninstrument_transaction (struct tm_region *region,
-			      VEC (basic_block, heap) *queue)
+			      vec<basic_block> queue)
 {
   gimple transaction = region->transaction_stmt;
   basic_block transaction_bb = gimple_bb (transaction);
-  int n = VEC_length (basic_block, queue);
+  int n = queue.length ();
   basic_block *new_bbs = XNEWVEC (basic_block, n);
 
-  copy_bbs (VEC_address (basic_block, queue), n, new_bbs,
-	    NULL, 0, NULL, NULL, transaction_bb);
+  copy_bbs (queue.address (), n, new_bbs, NULL, 0, NULL, NULL, transaction_bb);
   edge e = make_edge (transaction_bb, new_bbs[0], EDGE_TM_UNINSTRUMENTED);
   add_phi_args_after_copy (new_bbs, n, e);
 
@@ -3961,7 +3957,7 @@ ipa_tm_scan_calls_transaction (struct tm_ipa_cg_data *d,
 
   for (r = all_tm_regions; r; r = r->next)
     {
-      VEC (basic_block, heap) *bbs;
+      vec<basic_block> bbs;
       basic_block bb;
       unsigned i;
 
@@ -3971,10 +3967,10 @@ ipa_tm_scan_calls_transaction (struct tm_ipa_cg_data *d,
       // Generate the uninstrumented code path for this transaction.
       ipa_uninstrument_transaction (r, bbs);
 
-      FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+      FOR_EACH_VEC_ELT (bbs, i, bb)
 	ipa_tm_scan_calls_block (callees_p, bb, false);
 
-      VEC_free (basic_block, heap, bbs);
+      bbs.release ();
     }
 
   // ??? copy_bbs should maintain cgraph edges for the blocks as it is
@@ -4138,7 +4134,7 @@ ipa_tm_scan_irr_block (basic_block bb)
    scanning past OLD_IRR or EXIT_BLOCKS.  */
 
 static bool
-ipa_tm_scan_irr_blocks (VEC (basic_block, heap) **pqueue, bitmap new_irr,
+ipa_tm_scan_irr_blocks (vec<basic_block> *pqueue, bitmap new_irr,
 			bitmap old_irr, bitmap exit_blocks)
 {
   bool any_new_irr = false;
@@ -4148,7 +4144,7 @@ ipa_tm_scan_irr_blocks (VEC (basic_block, heap) **pqueue, bitmap new_irr,
 
   do
     {
-      basic_block bb = VEC_pop (basic_block, *pqueue);
+      basic_block bb = pqueue->pop ();
 
       /* Don't re-scan blocks we know already are irrevocable.  */
       if (old_irr && bitmap_bit_p (old_irr, bb->index))
@@ -4165,11 +4161,11 @@ ipa_tm_scan_irr_blocks (VEC (basic_block, heap) **pqueue, bitmap new_irr,
 	    if (!bitmap_bit_p (visited_blocks, e->dest->index))
 	      {
 		bitmap_set_bit (visited_blocks, e->dest->index);
-		VEC_safe_push (basic_block, heap, *pqueue, e->dest);
+		pqueue->safe_push (e->dest);
 	      }
 	}
     }
-  while (!VEC_empty (basic_block, *pqueue));
+  while (!pqueue->is_empty ());
 
   BITMAP_FREE (visited_blocks);
 
@@ -4186,7 +4182,7 @@ static void
 ipa_tm_propagate_irr (basic_block entry_block, bitmap new_irr,
 		      bitmap old_irr, bitmap exit_blocks)
 {
-  VEC (basic_block, heap) *bbs;
+  vec<basic_block> bbs;
   bitmap all_region_blocks;
 
   /* If this block is in the old set, no need to rescan.  */
@@ -4198,7 +4194,7 @@ ipa_tm_propagate_irr (basic_block entry_block, bitmap new_irr,
 			      all_region_blocks, false);
   do
     {
-      basic_block bb = VEC_pop (basic_block, bbs);
+      basic_block bb = bbs.pop ();
       bool this_irr = bitmap_bit_p (new_irr, bb->index);
       bool all_son_irr = false;
       edge_iterator ei;
@@ -4245,10 +4241,10 @@ ipa_tm_propagate_irr (basic_block entry_block, bitmap new_irr,
 	    }
 	}
     }
-  while (!VEC_empty (basic_block, bbs));
+  while (!bbs.is_empty ());
 
   BITMAP_FREE (all_region_blocks);
-  VEC_free (basic_block, heap, bbs);
+  bbs.release ();
 }
 
 static void
@@ -4297,7 +4293,7 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
 {
   struct tm_ipa_cg_data *d;
   bitmap new_irr, old_irr;
-  VEC (basic_block, heap) *queue;
+  vec<basic_block> queue;
   bool ret = false;
 
   /* Builtin operators (operator new, and such).  */
@@ -4309,14 +4305,14 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   calculate_dominance_info (CDI_DOMINATORS);
 
   d = get_cg_data (&node, true);
-  queue = VEC_alloc (basic_block, heap, 10);
+  queue.create (10);
   new_irr = BITMAP_ALLOC (&tm_obstack);
 
   /* Scan each tm region, propagating irrevocable status through the tree.  */
   if (for_clone)
     {
       old_irr = d->irrevocable_blocks_clone;
-      VEC_quick_push (basic_block, queue, single_succ (ENTRY_BLOCK_PTR));
+      queue.quick_push (single_succ (ENTRY_BLOCK_PTR));
       if (ipa_tm_scan_irr_blocks (&queue, new_irr, old_irr, NULL))
 	{
 	  ipa_tm_propagate_irr (single_succ (ENTRY_BLOCK_PTR), new_irr,
@@ -4331,7 +4327,7 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
       old_irr = d->irrevocable_blocks_normal;
       for (region = d->all_tm_regions; region; region = region->next)
 	{
-	  VEC_quick_push (basic_block, queue, region->entry_block);
+	  queue.quick_push (region->entry_block);
 	  if (ipa_tm_scan_irr_blocks (&queue, new_irr, old_irr,
 				      region->exit_blocks))
 	    ipa_tm_propagate_irr (region->entry_block, new_irr, old_irr,
@@ -4374,7 +4370,7 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
   else
     BITMAP_FREE (new_irr);
 
-  VEC_free (basic_block, heap, queue);
+  queue.release ();
   pop_cfun ();
 
   return ret;
@@ -4476,7 +4472,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
       }
     else
       {
-	VEC (basic_block, heap) *bbs;
+	vec<basic_block> bbs;
 	gimple_stmt_iterator gsi;
 	basic_block bb;
 	size_t i;
@@ -4484,7 +4480,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 	bbs = get_tm_region_blocks (r->entry_block, r->exit_blocks,
 				    r->irr_blocks, NULL, false);
 
-	for (i = 0; VEC_iterate (basic_block, bbs, i, bb); ++i)
+	for (i = 0; bbs.iterate (i, &bb); ++i)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
@@ -4525,7 +4521,7 @@ ipa_tm_diagnose_transaction (struct cgraph_node *node,
 			  "atomic transaction", fndecl);
 	    }
 
-	VEC_free (basic_block, heap, bbs);
+	bbs.release ();
       }
 }
 
@@ -4682,7 +4678,9 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   if (DECL_ONE_ONLY (new_decl))
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
-  new_node = cgraph_copy_node_for_versioning (old_node, new_decl, NULL, NULL);
+  new_node = cgraph_copy_node_for_versioning (old_node, new_decl,
+					      vec<cgraph_edge_p>(),
+					      NULL);
   new_node->symbol.externally_visible = old_node->symbol.externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
@@ -4699,8 +4697,9 @@ ipa_tm_create_version (struct cgraph_node *old_node)
 	  DECL_WEAK (new_decl) = 0;
 	}
 
-      tree_function_versioning (old_decl, new_decl, NULL, false, NULL, false,
-				NULL, NULL);
+      tree_function_versioning (old_decl, new_decl,
+				NULL, false, NULL,
+				false, NULL, NULL);
     }
 
   record_tm_clone_pair (old_decl, new_decl);
@@ -4970,13 +4969,13 @@ ipa_tm_transform_calls (struct cgraph_node *node, struct tm_region *region,
   bool need_ssa_rename = false;
   edge e;
   edge_iterator ei;
-  VEC(basic_block, heap) *queue = NULL;
+  vec<basic_block> queue = vec<basic_block>();
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
 
-  VEC_safe_push (basic_block, heap, queue, bb);
+  queue.safe_push (bb);
   do
     {
-      bb = VEC_pop (basic_block, queue);
+      bb = queue.pop ();
 
       need_ssa_rename |=
 	ipa_tm_transform_calls_1 (node, region, bb, irr_blocks);
@@ -4991,12 +4990,12 @@ ipa_tm_transform_calls (struct cgraph_node *node, struct tm_region *region,
 	if (!bitmap_bit_p (visited_blocks, e->dest->index))
 	  {
 	    bitmap_set_bit (visited_blocks, e->dest->index);
-	    VEC_safe_push (basic_block, heap, queue, e->dest);
+	    queue.safe_push (e->dest);
 	  }
     }
-  while (!VEC_empty (basic_block, queue));
+  while (!queue.is_empty ());
 
-  VEC_free (basic_block, heap, queue);
+  queue.release ();
   BITMAP_FREE (visited_blocks);
 
   return need_ssa_rename;
@@ -5073,9 +5072,9 @@ ipa_tm_transform_clone (struct cgraph_node *node)
 static unsigned int
 ipa_tm_execute (void)
 {
-  cgraph_node_queue tm_callees = NULL;
+  cgraph_node_queue tm_callees = cgraph_node_queue();
   /* List of functions that will go irrevocable.  */
-  cgraph_node_queue irr_worklist = NULL;
+  cgraph_node_queue irr_worklist = cgraph_node_queue();
 
   struct cgraph_node *node;
   struct tm_ipa_cg_data *d;
@@ -5138,9 +5137,9 @@ ipa_tm_execute (void)
   /* For every local function on the callee list, scan as if we will be
      creating a transactional clone, queueing all new functions we find
      along the way.  */
-  for (i = 0; i < VEC_length (cgraph_node_p, tm_callees); ++i)
+  for (i = 0; i < tm_callees.length (); ++i)
     {
-      node = VEC_index (cgraph_node_p, tm_callees, i);
+      node = tm_callees[i];
       a = cgraph_function_body_availability (node);
       d = get_cg_data (&node, true);
 
@@ -5180,19 +5179,19 @@ ipa_tm_execute (void)
     }
 
   /* Iterate scans until no more work to be done.  Prefer not to use
-     VEC_pop because the worklist tends to follow a breadth-first
+     vec::pop because the worklist tends to follow a breadth-first
      search of the callgraph, which should allow convergance with a
      minimum number of scans.  But we also don't want the worklist
      array to grow without bound, so we shift the array up periodically.  */
-  for (i = 0; i < VEC_length (cgraph_node_p, irr_worklist); ++i)
+  for (i = 0; i < irr_worklist.length (); ++i)
     {
-      if (i > 256 && i == VEC_length (cgraph_node_p, irr_worklist) / 8)
+      if (i > 256 && i == irr_worklist.length () / 8)
 	{
-	  VEC_block_remove (cgraph_node_p, irr_worklist, 0, i);
+	  irr_worklist.block_remove (0, i);
 	  i = 0;
 	}
 
-      node = VEC_index (cgraph_node_p, irr_worklist, i);
+      node = irr_worklist[i];
       d = get_cg_data (&node, true);
       d->in_worklist = false;
 
@@ -5207,10 +5206,10 @@ ipa_tm_execute (void)
 
   /* For every function on the callee list, collect the tm_may_enter_irr
      bit on the node.  */
-  VEC_truncate (cgraph_node_p, irr_worklist, 0);
-  for (i = 0; i < VEC_length (cgraph_node_p, tm_callees); ++i)
+  irr_worklist.truncate (0);
+  for (i = 0; i < tm_callees.length (); ++i)
     {
-      node = VEC_index (cgraph_node_p, tm_callees, i);
+      node = tm_callees[i];
       if (ipa_tm_mayenterirr_function (node))
 	{
 	  d = get_cg_data (&node, true);
@@ -5220,20 +5219,20 @@ ipa_tm_execute (void)
     }
 
   /* Propagate the tm_may_enter_irr bit to callers until stable.  */
-  for (i = 0; i < VEC_length (cgraph_node_p, irr_worklist); ++i)
+  for (i = 0; i < irr_worklist.length (); ++i)
     {
       struct cgraph_node *caller;
       struct cgraph_edge *e;
       struct ipa_ref *ref;
       unsigned j;
 
-      if (i > 256 && i == VEC_length (cgraph_node_p, irr_worklist) / 8)
+      if (i > 256 && i == irr_worklist.length () / 8)
 	{
-	  VEC_block_remove (cgraph_node_p, irr_worklist, 0, i);
+	  irr_worklist.block_remove (0, i);
 	  i = 0;
 	}
 
-      node = VEC_index (cgraph_node_p, irr_worklist, i);
+      node = irr_worklist[i];
       d = get_cg_data (&node, true);
       d->in_worklist = false;
       node->local.tm_may_enter_irr = true;
@@ -5280,11 +5279,11 @@ ipa_tm_execute (void)
   /* Create clones.  Do those that are not irrevocable and have a
      positive call count.  Do those publicly visible functions that
      the user directed us to clone.  */
-  for (i = 0; i < VEC_length (cgraph_node_p, tm_callees); ++i)
+  for (i = 0; i < tm_callees.length (); ++i)
     {
       bool doit = false;
 
-      node = VEC_index (cgraph_node_p, tm_callees, i);
+      node = tm_callees[i];
       if (node->same_body_alias)
 	continue;
 
@@ -5304,9 +5303,9 @@ ipa_tm_execute (void)
     }
 
   /* Redirect calls to the new clones, and insert irrevocable marks.  */
-  for (i = 0; i < VEC_length (cgraph_node_p, tm_callees); ++i)
+  for (i = 0; i < tm_callees.length (); ++i)
     {
-      node = VEC_index (cgraph_node_p, tm_callees, i);
+      node = tm_callees[i];
       if (node->analyzed)
 	{
 	  d = get_cg_data (&node, true);
@@ -5324,8 +5323,8 @@ ipa_tm_execute (void)
       }
 
   /* Free and clear all data structures.  */
-  VEC_free (cgraph_node_p, heap, tm_callees);
-  VEC_free (cgraph_node_p, heap, irr_worklist);
+  tm_callees.release ();
+  irr_worklist.release ();
   bitmap_obstack_release (&tm_obstack);
   free_original_copy_tables ();
 

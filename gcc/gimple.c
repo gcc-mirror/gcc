@@ -222,14 +222,14 @@ gimple_build_call_1 (tree fn, unsigned nargs)
    specified in vector ARGS.  */
 
 gimple
-gimple_build_call_vec (tree fn, VEC(tree, heap) *args)
+gimple_build_call_vec (tree fn, vec<tree> args)
 {
   unsigned i;
-  unsigned nargs = VEC_length (tree, args);
+  unsigned nargs = args.length ();
   gimple call = gimple_build_call_1 (fn, nargs);
 
   for (i = 0; i < nargs; i++)
-    gimple_call_set_arg (call, i, VEC_index (tree, args, i));
+    gimple_call_set_arg (call, i, args[i]);
 
   return call;
 }
@@ -317,15 +317,15 @@ gimple_build_call_internal (enum internal_fn fn, unsigned nargs, ...)
    specified in vector ARGS.  */
 
 gimple
-gimple_build_call_internal_vec (enum internal_fn fn, VEC(tree, heap) *args)
+gimple_build_call_internal_vec (enum internal_fn fn, vec<tree> args)
 {
   unsigned i, nargs;
   gimple call;
 
-  nargs = VEC_length (tree, args);
+  nargs = args.length ();
   call = gimple_build_call_internal_1 (fn, nargs);
   for (i = 0; i < nargs; i++)
-    gimple_call_set_arg (call, i, VEC_index (tree, args, i));
+    gimple_call_set_arg (call, i, args[i]);
 
   return call;
 }
@@ -660,30 +660,30 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
    LABELS is a vector of destination labels.  */
 
 gimple
-gimple_build_asm_vec (const char *string, VEC(tree,gc)* inputs,
-                      VEC(tree,gc)* outputs, VEC(tree,gc)* clobbers,
-		      VEC(tree,gc)* labels)
+gimple_build_asm_vec (const char *string, vec<tree, va_gc> *inputs,
+                      vec<tree, va_gc> *outputs, vec<tree, va_gc> *clobbers,
+		      vec<tree, va_gc> *labels)
 {
   gimple p;
   unsigned i;
 
   p = gimple_build_asm_1 (string,
-                          VEC_length (tree, inputs),
-                          VEC_length (tree, outputs),
-                          VEC_length (tree, clobbers),
-			  VEC_length (tree, labels));
+                          vec_safe_length (inputs),
+                          vec_safe_length (outputs),
+                          vec_safe_length (clobbers),
+			  vec_safe_length (labels));
 
-  for (i = 0; i < VEC_length (tree, inputs); i++)
-    gimple_asm_set_input_op (p, i, VEC_index (tree, inputs, i));
+  for (i = 0; i < vec_safe_length (inputs); i++)
+    gimple_asm_set_input_op (p, i, (*inputs)[i]);
 
-  for (i = 0; i < VEC_length (tree, outputs); i++)
-    gimple_asm_set_output_op (p, i, VEC_index (tree, outputs, i));
+  for (i = 0; i < vec_safe_length (outputs); i++)
+    gimple_asm_set_output_op (p, i, (*outputs)[i]);
 
-  for (i = 0; i < VEC_length (tree, clobbers); i++)
-    gimple_asm_set_clobber_op (p, i, VEC_index (tree, clobbers, i));
+  for (i = 0; i < vec_safe_length (clobbers); i++)
+    gimple_asm_set_clobber_op (p, i, (*clobbers)[i]);
 
-  for (i = 0; i < VEC_length (tree, labels); i++)
-    gimple_asm_set_label_op (p, i, VEC_index (tree, labels, i));
+  for (i = 0; i < vec_safe_length (labels); i++)
+    gimple_asm_set_label_op (p, i, (*labels)[i]);
 
   return p;
 }
@@ -819,15 +819,15 @@ gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
    ARGS is a vector of labels excluding the default.  */
 
 gimple
-gimple_build_switch (tree index, tree default_label, VEC(tree, heap) *args)
+gimple_build_switch (tree index, tree default_label, vec<tree> args)
 {
-  unsigned i, nlabels = VEC_length (tree, args);
+  unsigned i, nlabels = args.length ();
 
   gimple p = gimple_build_switch_nlabels (nlabels, index, default_label);
 
   /* Copy the labels from the vector to the switch statement.  */
   for (i = 0; i < nlabels; i++)
-    gimple_switch_set_label (p, i + 1, VEC_index (tree, args, i));
+    gimple_switch_set_label (p, i + 1, args[i]);
 
   return p;
 }
@@ -2038,18 +2038,17 @@ gimple_set_bb (gimple stmt, basic_block bb)
       uid = LABEL_DECL_UID (t);
       if (uid == -1)
 	{
-	  unsigned old_len = VEC_length (basic_block, label_to_block_map);
+	  unsigned old_len = vec_safe_length (label_to_block_map);
 	  LABEL_DECL_UID (t) = uid = cfun->cfg->last_label_uid++;
 	  if (old_len <= (unsigned) uid)
 	    {
 	      unsigned new_len = 3 * uid / 2 + 1;
 
-	      VEC_safe_grow_cleared (basic_block, gc, label_to_block_map,
-				     new_len);
+	      vec_safe_grow_cleared (label_to_block_map, new_len);
 	    }
 	}
 
-      VEC_replace (basic_block, label_to_block_map, uid, bb);
+      (*label_to_block_map)[uid] = bb;
     }
 }
 
@@ -2974,19 +2973,20 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
 {
   int i;
   int nargs = gimple_call_num_args (stmt);
-  VEC(tree, heap) *vargs = VEC_alloc (tree, heap, nargs);
+  vec<tree> vargs;
+  vargs.create (nargs);
   gimple new_stmt;
 
   for (i = 0; i < nargs; i++)
     if (!bitmap_bit_p (args_to_skip, i))
-      VEC_quick_push (tree, vargs, gimple_call_arg (stmt, i));
+      vargs.quick_push (gimple_call_arg (stmt, i));
 
   if (gimple_call_internal_p (stmt))
     new_stmt = gimple_build_call_internal_vec (gimple_call_internal_fn (stmt),
 					       vargs);
   else
     new_stmt = gimple_build_call_vec (gimple_call_fn (stmt), vargs);
-  VEC_free (tree, heap, vargs);
+  vargs.release ();
   if (gimple_call_lhs (stmt))
     gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 

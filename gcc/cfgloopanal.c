@@ -129,7 +129,7 @@ mark_irreducible_loops (void)
 	    if (depth == loop_depth (act->loop_father))
 	      cloop = act->loop_father;
 	    else
-	      cloop = VEC_index (loop_p, act->loop_father->superloops, depth);
+	      cloop = (*act->loop_father->superloops)[depth];
 
 	    src = LOOP_REPR (cloop);
 	  }
@@ -454,14 +454,14 @@ edge
 single_likely_exit (struct loop *loop)
 {
   edge found = single_exit (loop);
-  VEC (edge, heap) *exits;
+  vec<edge> exits;
   unsigned i;
   edge ex;
 
   if (found)
     return found;
   exits = get_loop_exit_edges (loop);
-  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+  FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
 	continue;
@@ -476,11 +476,11 @@ single_likely_exit (struct loop *loop)
 	found = ex;
       else
 	{
-	  VEC_free (edge, heap, exits);
+	  exits.release ();
 	  return NULL;
 	}
     }
-  VEC_free (edge, heap, exits);
+  exits.release ();
   return found;
 }
 
@@ -489,11 +489,11 @@ single_likely_exit (struct loop *loop)
    order against direction of edges from latch.  Specially, if
    header != latch, latch is the 1-st block.  */
 
-VEC (basic_block, heap) *
+vec<basic_block>
 get_loop_hot_path (const struct loop *loop)
 {
   basic_block bb = loop->header;
-  VEC (basic_block, heap) *path = NULL;
+  vec<basic_block> path = vec<basic_block>();
   bitmap visited = BITMAP_ALLOC (NULL);
 
   while (true)
@@ -502,7 +502,7 @@ get_loop_hot_path (const struct loop *loop)
       edge e;
       edge best = NULL;
 
-      VEC_safe_push (basic_block, heap, path, bb);
+      path.safe_push (bb);
       bitmap_set_bit (visited, bb->index);
       FOR_EACH_EDGE (e, ei, bb->succs)
         if ((!best || e->probability > best->probability)

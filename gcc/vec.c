@@ -119,20 +119,22 @@ vec_descriptor (const char *name, int line, const char *function)
 }
 
 /* Account the overhead.  */
-static void
-register_overhead (struct vec_prefix *ptr, size_t size,
-		   const char *name, int line, const char *function)
+
+void
+vec_prefix::register_overhead (size_t size, const char *name, int line,
+			       const char *function)
 {
   struct vec_descriptor *loc = vec_descriptor (name, line, function);
   struct ptr_hash_entry *p = XNEW (struct ptr_hash_entry);
   PTR *slot;
 
-  p->ptr = ptr;
+  p->ptr = this;
   p->loc = loc;
   p->allocated = size;
   if (!ptr_hash)
     ptr_hash = htab_create (10, hash_ptr, eq_ptr, NULL);
-  slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr), INSERT);
+  slot = htab_find_slot_with_hash (ptr_hash, this, htab_hash_pointer (this),
+				   INSERT);
   gcc_assert (!*slot);
   *slot = p;
 
@@ -142,36 +144,31 @@ register_overhead (struct vec_prefix *ptr, size_t size,
   loc->times++;
 }
 
-/* Notice that the pointer has been freed.  */
-static void
-free_overhead (struct vec_prefix *ptr)
+
+/* Notice that the memory allocated for the vector has been freed.  */
+
+void
+vec_prefix::release_overhead (void)
 {
-  PTR *slot = htab_find_slot_with_hash (ptr_hash, ptr, htab_hash_pointer (ptr),
+  PTR *slot = htab_find_slot_with_hash (ptr_hash, this,
+					htab_hash_pointer (this),
 					NO_INSERT);
   struct ptr_hash_entry *p = (struct ptr_hash_entry *) *slot;
   p->loc->allocated -= p->allocated;
   htab_clear_slot (ptr_hash, slot);
-  free (p);
+  ::free (p);
 }
 
-void
-vec_heap_free (void *ptr)
-{
-  if (GATHER_STATISTICS)
-    free_overhead ((struct vec_prefix *)ptr);
-  free (ptr);
-}
 
-/* Calculate the new ALLOC value, making sure that RESERVE slots are
-   free.  If EXACT grow exactly, otherwise grow exponentially.  */
+/* Calculate the number of slots to reserve a vector, making sure that
+   RESERVE slots are free.  If EXACT grow exactly, otherwise grow
+   exponentially.  PFX is the control data for the vector.  */
 
-static inline unsigned
-calculate_allocation (const struct vec_prefix *pfx, int reserve, bool exact)
+unsigned
+vec_prefix::calculate_allocation (vec_prefix *pfx, unsigned reserve, bool exact)
 {
   unsigned alloc = 0;
   unsigned num = 0;
-
-  gcc_assert (reserve >= 0);
 
   if (pfx)
     {
@@ -179,12 +176,12 @@ calculate_allocation (const struct vec_prefix *pfx, int reserve, bool exact)
       num = pfx->num_;
     }
   else if (!reserve)
-    /* If there's no prefix, and we've not requested anything, then we
+    /* If there's no vector, and we've not requested anything, then we
        will create a NULL vector.  */
     return 0;
 
   /* We must have run out of room.  */
-  gcc_assert (alloc - num < (unsigned) reserve);
+  gcc_assert (alloc - num < reserve);
 
   if (exact)
     /* Exact size.  */
@@ -208,79 +205,9 @@ calculate_allocation (const struct vec_prefix *pfx, int reserve, bool exact)
   return alloc;
 }
 
-/* Ensure there are at least RESERVE free slots in VEC.  If EXACT grow
-   exactly, else grow exponentially.  As a special case, if VEC is
-   NULL and RESERVE is 0, no vector will be created.  The vector's
-   trailing array is at VEC_OFFSET offset and consists of ELT_SIZE
-   sized elements.  */
-
-void *
-vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
-		    bool exact MEM_STAT_DECL)
-{
-  struct vec_prefix *pfx = (struct vec_prefix *) vec;
-  unsigned alloc = calculate_allocation (pfx, reserve, exact);
-  size_t size;
-
-  if (!alloc)
-    {
-      if (pfx)
-        ggc_free (pfx);
-      return NULL;
-    }
-
-  /* Calculate the amount of space we want.  */
-  size = vec_offset + alloc * elt_size;
-  /* Ask the allocator how much space it will really give us.  */
-  size = ggc_round_alloc_size (size);
-  /* Adjust the number of slots accordingly.  */
-  alloc = (size - vec_offset) / elt_size;
-  /* And finally, recalculate the amount of space we ask for.  */
-  size = vec_offset + alloc * elt_size;
-
-  vec = ggc_realloc_stat (vec, size PASS_MEM_STAT);
-
-  ((struct vec_prefix *)vec)->alloc_ = alloc;
-  if (!pfx)
-    ((struct vec_prefix *)vec)->num_ = 0;
-
-  return vec;
-}
-
-
-/* As for vec_gc_o_reserve_1, but for heap allocated vectors.  */
-
-void *
-vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
-		      size_t elt_size, bool exact MEM_STAT_DECL)
-{
-  struct vec_prefix *pfx = (struct vec_prefix *) vec;
-  unsigned alloc = calculate_allocation (pfx, reserve, exact);
-
-  if (!alloc)
-    {
-      if (pfx)
-        vec_heap_free (pfx);
-      return NULL;
-    }
-
-  if (GATHER_STATISTICS && vec)
-    free_overhead (pfx);
-
-  vec = xrealloc (vec, vec_offset + alloc * elt_size);
-  ((struct vec_prefix *)vec)->alloc_ = alloc;
-  if (!pfx)
-    ((struct vec_prefix *)vec)->num_ = 0;
-  if (GATHER_STATISTICS && vec)
-    register_overhead ((struct vec_prefix *)vec,
-    		       vec_offset + alloc * elt_size FINAL_PASS_MEM_STAT);
-
-  return vec;
-}
-
 
 /* Stack vectors are a little different.  VEC_alloc turns into a call
-   to vec_stack_p_reserve_exact1 and passes in space allocated via a
+   to vec<T, A>::stack_reserve and passes in space allocated via a
    call to alloca.  We record that pointer so that we know that we
    shouldn't free it.  If the vector is resized, we resize it on the
    heap.  We record the pointers in a vector and search it in LIFO
@@ -289,128 +216,41 @@ vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
    the end should normally be efficient even if they are used in a
    recursive function.  */
 
-typedef void *void_p;
-DEF_VEC_P(void_p);
-DEF_VEC_ALLOC_P(void_p,heap);
+static vec<void *> stack_vecs;
 
-static VEC(void_p,heap) *stack_vecs;
-
-/* Allocate a vector which uses alloca for the initial allocation.
-   SPACE is space allocated using alloca, ALLOC is the number of
-   entries allocated.  */
-
-void *
-vec_stack_p_reserve_exact_1 (int alloc, void *space)
-{
-  struct vec_prefix *pfx = (struct vec_prefix *) space;
-
-  VEC_safe_push (void_p, heap, stack_vecs, space);
-
-  pfx->num_ = 0;
-  pfx->alloc_ = alloc;
-
-  return space;
-}
-
-/* Grow a vector allocated using alloca.  When this happens, we switch
-   back to heap allocation.  We remove the vector from stack_vecs, if
-   it is there, since we no longer need to avoid freeing it.  */
-
-static void *
-vec_stack_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
-		       size_t elt_size, bool exact MEM_STAT_DECL)
-{
-  bool found;
-  unsigned int ix;
-  void *newvec;
-
-  found = false;
-  for (ix = VEC_length (void_p, stack_vecs); ix > 0; --ix)
-    {
-      if (VEC_index (void_p, stack_vecs, ix - 1) == vec)
-	{
-	  VEC_unordered_remove (void_p, stack_vecs, ix - 1);
-	  found = true;
-	  break;
-	}
-    }
-
-  if (!found)
-    {
-      /* VEC is already on the heap.  */
-      return vec_heap_o_reserve_1 (vec, reserve, vec_offset, elt_size,
-				   exact PASS_MEM_STAT);
-    }
-
-  /* Move VEC to the heap.  */
-  reserve += ((struct vec_prefix *) vec)->num_;
-  newvec = vec_heap_o_reserve_1 (NULL, reserve, vec_offset, elt_size,
-				 exact PASS_MEM_STAT);
-  if (newvec && vec)
-    {
-      ((struct vec_prefix *) newvec)->num_ = ((struct vec_prefix *) vec)->num_;
-      memcpy (((struct vec_prefix *) newvec)+1,
-	      ((struct vec_prefix *) vec)+1,
-	      ((struct vec_prefix *) vec)->num_ * elt_size);
-    }
-  return newvec;
-}
-
-/* Grow a vector allocated on the stack.  */
-
-void *
-vec_stack_o_reserve (void *vec, int reserve, size_t vec_offset,
-		     size_t elt_size MEM_STAT_DECL)
-{
-  return vec_stack_o_reserve_1 (vec, reserve, vec_offset, elt_size, false
-				PASS_MEM_STAT);
-}
-
-/* Exact version of vec_stack_o_reserve.  */
-
-void *
-vec_stack_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
-			    size_t elt_size MEM_STAT_DECL)
-{
-  return vec_stack_o_reserve_1 (vec, reserve, vec_offset, elt_size, true
-				PASS_MEM_STAT);
-}
-
-/* Free a vector allocated on the stack.  Don't actually free it if we
-   find it in the hash table.  */
+/* Add a stack vector to STACK_VECS.  */
 
 void
-vec_stack_free (void *vec)
+register_stack_vec (void *vec)
 {
-  unsigned int ix;
-
-  for (ix = VEC_length (void_p, stack_vecs); ix > 0; --ix)
-    {
-      if (VEC_index (void_p, stack_vecs, ix - 1) == vec)
-	{
-	  VEC_unordered_remove (void_p, stack_vecs, ix - 1);
-	  return;
-	}
-    }
-
-  /* VEC was not on the list of vecs allocated on the stack, so it
-     must be allocated on the heap.  */
-  vec_heap_free (vec);
+  stack_vecs.safe_push (vec);
 }
 
-#if ENABLE_CHECKING
-/* Issue a vector domain error, and then fall over.  */
+
+/* If VEC is registered in STACK_VECS, return its index.
+   Otherwise, return -1.  */
+
+int
+stack_vec_register_index (void *vec)
+{
+  for (unsigned ix = stack_vecs.length (); ix > 0; --ix)
+    if (stack_vecs[ix - 1] == vec)
+      return static_cast<int> (ix - 1);
+  return -1;
+}
+
+
+/* Remove vector at slot IX from the list of registered stack vectors.  */
 
 void
-vec_assert_fail (const char *op, const char *struct_name,
-		 const char *file, unsigned int line, const char *function)
+unregister_stack_vec (unsigned ix)
 {
-  internal_error ("vector %s %s domain error, in %s at %s:%u",
-		  struct_name, op, function, trim_filename (file), line);
+  stack_vecs.unordered_remove (ix);
 }
-#endif
+
 
 /* Helper for qsort; sort descriptors by amount of memory consumed.  */
+
 static int
 cmp_statistic (const void *loc1, const void *loc2)
 {
@@ -426,7 +266,10 @@ cmp_statistic (const void *loc1, const void *loc2)
     diff = l1->times - l2->times;
   return diff > 0 ? 1 : diff < 0 ? -1 : 0;
 }
+
+
 /* Collect array of the descriptors from hashtable.  */
+
 static struct vec_descriptor **loc_array;
 static int
 add_statistics (void **slot, void *b)

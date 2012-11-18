@@ -30,7 +30,7 @@ struct GTY(()) tree_check {
   /* The value associated with the token.  */
   tree value;
   /* The checks that have been associated with value.  */
-  VEC (deferred_access_check, gc)* checks;
+  vec<deferred_access_check, va_gc> *checks;
   /* The token's qualifying scope (used when it is a
      CPP_NESTED_NAME_SPECIFIER).  */
   tree qualifying_scope;
@@ -69,14 +69,9 @@ typedef struct GTY (()) cp_token {
   } GTY((desc ("(%1.type == CPP_TEMPLATE_ID) || (%1.type == CPP_NESTED_NAME_SPECIFIER)"))) u;
 } cp_token;
 
-DEF_VEC_O (cp_token);
-DEF_VEC_ALLOC_O (cp_token,gc);
-DEF_VEC_ALLOC_O (cp_token,heap);
 
 /* We use a stack of token pointer for saving token sets.  */
 typedef struct cp_token *cp_token_position;
-DEF_VEC_P (cp_token_position);
-DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 /* The cp_lexer structure represents the C++ lexer.  It is responsible
    for managing the token stream from the preprocessor and supplying
@@ -86,7 +81,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 typedef struct GTY (()) cp_lexer {
   /* The memory allocated for the buffer.  NULL if this lexer does not
      own the token buffer.  */
-  VEC(cp_token,gc) *buffer;
+  vec<cp_token, va_gc> *buffer;
 
   /* A pointer just past the last available token.  The tokens
      in this lexer are [buffer, last_token).  */
@@ -100,7 +95,7 @@ typedef struct GTY (()) cp_lexer {
      called.  The top entry is the most recent position at which we
      began saving tokens.  If the stack is non-empty, we are saving
      tokens.  */
-  VEC(cp_token_position,heap) *GTY ((skip)) saved_tokens;
+  vec<cp_token_position> GTY ((skip)) saved_tokens;
 
   /* The next lexer in a linked list of lexers.  */
   struct cp_lexer *next;
@@ -113,8 +108,6 @@ typedef struct GTY (()) cp_lexer {
   bool in_pragma;
 } cp_lexer;
 
-DEF_VEC_O (cp_lexer);
-DEF_VEC_ALLOC_O (cp_lexer,heap);
 
 /* cp_token_cache is a range of tokens.  There is no need to represent
    allocate heap memory for it, since tokens are never removed from the
@@ -131,8 +124,6 @@ typedef struct GTY(()) cp_token_cache {
 } cp_token_cache;
 
 typedef cp_token_cache *cp_token_cache_ptr;
-DEF_VEC_P (cp_token_cache_ptr);
-DEF_VEC_ALLOC_P (cp_token_cache_ptr,gc);
 
 struct cp_token_ident_d
 {
@@ -156,27 +147,23 @@ typedef struct GTY(()) cp_default_arg_entry_d {
   tree decl;
 } cp_default_arg_entry;
 
-DEF_VEC_O(cp_default_arg_entry);
-DEF_VEC_ALLOC_O(cp_default_arg_entry,gc);
 
 /* An entry in a stack for member functions of local classes.  */
 
 typedef struct GTY(()) cp_unparsed_functions_entry_d {
   /* Functions with default arguments that require post-processing.
      Functions appear in this list in declaration order.  */
-  VEC(cp_default_arg_entry,gc) *funs_with_default_args;
+  vec<cp_default_arg_entry, va_gc> *funs_with_default_args;
 
   /* Functions with defintions that require post-processing.  Functions
      appear in this list in declaration order.  */
-  VEC(tree,gc) *funs_with_definitions;
+  vec<tree, va_gc> *funs_with_definitions;
 
   /* Non-static data members with initializers that require post-processing.
      FIELD_DECLs appear in this list in declaration order.  */
-  VEC(tree,gc) *nsdmis;
+  vec<tree, va_gc> *nsdmis;
 } cp_unparsed_functions_entry;
 
-DEF_VEC_O(cp_unparsed_functions_entry);
-DEF_VEC_ALLOC_O(cp_unparsed_functions_entry,gc);
 
 /* The status of a tentative parse.  */
 
@@ -344,7 +331,7 @@ typedef struct GTY(()) cp_parser {
   /* A stack used for member functions of local classes.  The lists
      contained in an individual entry can only be processed once the
      outermost class being defined is complete.  */
-  VEC(cp_unparsed_functions_entry,gc) *unparsed_queues;
+  vec<cp_unparsed_functions_entry, va_gc> *unparsed_queues;
 
   /* The number of classes whose definitions are currently in
      progress.  */
@@ -356,7 +343,7 @@ typedef struct GTY(()) cp_parser {
 } cp_parser;
 
 /* In parser.c  */
-extern void cp_lexer_debug_tokens (VEC(cp_token,gc) *);
+extern void cp_lexer_debug_tokens (vec<cp_token, va_gc> *);
 extern void cp_debug_parser (FILE *, cp_parser *);
 
 #endif  /* GCC_CP_PARSER_H  */

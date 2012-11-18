@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 LOC vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
-VEC(vec_void_p,heap) *stmt_vec_info_vec;
+vec<vec_void_p> stmt_vec_info_vec;
 
 
 /* Function vectorize_loops.

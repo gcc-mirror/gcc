@@ -130,20 +130,20 @@ int vms_file_stats_name (const char *, long long *, long *, char *, int *);
 
 /* Array of RTXes referenced by the debugging information, which therefore
    must be kept around forever.  */
-static GTY(()) VEC(rtx,gc) *used_rtx_array;
+static GTY(()) vec<rtx, va_gc> *used_rtx_array;
 
 /* A pointer to the base of a list of incomplete types which might be
    completed at some later time.  incomplete_types_list needs to be a
-   VEC(tree,gc) because we want to tell the garbage collector about
+   vec<tree, va_gc> *because we want to tell the garbage collector about
    it.  */
-static GTY(()) VEC(tree,gc) *incomplete_types;
+static GTY(()) vec<tree, va_gc> *incomplete_types;
 
 /* A pointer to the base of a table of references to declaration
    scopes.  This table is a display which tracks the nesting
    of declaration scopes at the current scope and containing
    scopes.  This table is used to find the proper place to
    define type declaration DIE's.  */
-static GTY(()) VEC(tree,gc) *decl_scope_table;
+static GTY(()) vec<tree, va_gc> *decl_scope_table;
 
 /* Pointers to various DWARF2 sections.  */
 static GTY(()) section *debug_info_section;
@@ -190,15 +190,13 @@ static GTY(()) section *debug_frame_section;
 #define DWARF_CIE_ID DW_CIE_ID
 #endif
 
-DEF_VEC_P (dw_fde_ref);
-DEF_VEC_ALLOC_P (dw_fde_ref, gc);
 
 /* A vector for a table that contains frame description
    information for each routine.  */
 #define NOT_INDEXED (-1U)
 #define NO_INDEX_ASSIGNED (-2U)
 
-static GTY(()) VEC(dw_fde_ref, gc) *fde_vec;
+static GTY(()) vec<dw_fde_ref, va_gc> *fde_vec;
 
 struct GTY(()) indirect_string_node {
   const char *str;
@@ -616,7 +614,7 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
     size_t from, until, i;
 
     from = 0;
-    until = VEC_length (dw_cfi_ref, fde->dw_fde_cfi);
+    until = vec_safe_length (fde->dw_fde_cfi);
 
     if (fde->dw_fde_second_begin == NULL)
       ;
@@ -626,7 +624,7 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
       from = fde->dw_fde_switch_cfi_index;
 
     for (i = from; i < until; i++)
-      output_cfi (VEC_index (dw_cfi_ref, fde->dw_fde_cfi, i), fde, for_eh);
+      output_cfi ((*fde->dw_fde_cfi)[i], fde, for_eh);
   }
 
   /* If we are to emit a ref/link from function bodies to their frame tables,
@@ -694,7 +692,7 @@ output_call_frame_info (int for_eh)
   int dw_cie_version;
 
   /* Don't emit a CIE if there won't be any FDEs.  */
-  if (fde_vec == NULL)
+  if (!fde_vec)
     return;
 
   /* Nothing to do if the assembler's doing it all.  */
@@ -711,7 +709,7 @@ output_call_frame_info (int for_eh)
     {
       bool any_eh_needed = false;
 
-      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, i, fde)
+      FOR_EACH_VEC_ELT (*fde_vec, i, fde)
 	{
 	  if (fde->uses_eh_lsda)
 	    any_eh_needed = any_lsda_needed = true;
@@ -863,7 +861,7 @@ output_call_frame_info (int for_eh)
 			     eh_data_format_name (fde_encoding));
     }
 
-  FOR_EACH_VEC_ELT (dw_cfi_ref, cie_cfi_vec, i, cfi)
+  FOR_EACH_VEC_ELT (*cie_cfi_vec, i, cfi)
     output_cfi (cfi, NULL, for_eh);
 
   /* Pad the CIE out to an address sized boundary.  */
@@ -872,7 +870,7 @@ output_call_frame_info (int for_eh)
   ASM_OUTPUT_LABEL (asm_out_file, l2);
 
   /* Loop through all of the FDE's.  */
-  FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, i, fde)
+  FOR_EACH_VEC_ELT (*fde_vec, i, fde)
     {
       unsigned int k;
 
@@ -951,7 +949,7 @@ dwarf2out_alloc_current_fde (void)
   fde = ggc_alloc_cleared_dw_fde_node ();
   fde->decl = current_function_decl;
   fde->funcdef_number = current_function_funcdef_no;
-  fde->fde_index = VEC_length (dw_fde_ref, fde_vec);
+  fde->fde_index = vec_safe_length (fde_vec);
   fde->all_throwers_are_sibcalls = crtl->all_throwers_are_sibcalls;
   fde->uses_eh_lsda = crtl->uses_eh_lsda;
   fde->nothrow = crtl->nothrow;
@@ -960,7 +958,7 @@ dwarf2out_alloc_current_fde (void)
 
   /* Record the FDE associated with this function.  */
   cfun->fde = fde;
-  VEC_safe_push (dw_fde_ref, gc, fde_vec, fde);
+  vec_safe_push (fde_vec, fde);
 
   return fde;
 }
@@ -1199,13 +1197,9 @@ typedef struct GTY(()) deferred_locations_struct
   dw_die_ref die;
 } deferred_locations;
 
-DEF_VEC_O(deferred_locations);
-DEF_VEC_ALLOC_O(deferred_locations,gc);
 
-static GTY(()) VEC(deferred_locations, gc) *deferred_locations_list;
+static GTY(()) vec<deferred_locations, va_gc> *deferred_locations_list;
 
-DEF_VEC_P(dw_die_ref);
-DEF_VEC_ALLOC_P(dw_die_ref,heap);
 
 /* Describe an entry into the .debug_addr section.  */
 
@@ -2474,8 +2468,6 @@ typedef struct GTY(()) dw_line_info_struct {
   unsigned int val;
 } dw_line_info_entry;
 
-DEF_VEC_O(dw_line_info_entry);
-DEF_VEC_ALLOC_O(dw_line_info_entry, gc);
 
 typedef struct GTY(()) dw_line_info_table_struct {
   /* The label that marks the end of this section.  */
@@ -2490,13 +2482,11 @@ typedef struct GTY(()) dw_line_info_table_struct {
   bool is_stmt;
   bool in_use;
 
-  VEC(dw_line_info_entry, gc) *entries;
+  vec<dw_line_info_entry, va_gc> *entries;
 } dw_line_info_table;
 
 typedef dw_line_info_table *dw_line_info_table_p;
 
-DEF_VEC_P(dw_line_info_table_p);
-DEF_VEC_ALLOC_P(dw_line_info_table_p, gc);
 
 /* Each DIE attribute has a field specifying the attribute kind,
    a link to the next attribute in the chain, and an attribute value.
@@ -2508,8 +2498,6 @@ typedef struct GTY(()) dw_attr_struct {
 }
 dw_attr_node;
 
-DEF_VEC_O(dw_attr_node);
-DEF_VEC_ALLOC_O(dw_attr_node,gc);
 
 /* The Debugging Information Entry (DIE) structure.  DIEs form a tree.
    The children of each node form a circular list linked by
@@ -2522,7 +2510,7 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
       comdat_type_node_ref GTY ((tag ("1"))) die_type_node;
     }
   GTY ((desc ("%0.comdat_type_p"))) die_id;
-  VEC(dw_attr_node,gc) * die_attr;
+  vec<dw_attr_node, va_gc> *die_attr;
   dw_die_ref die_parent;
   dw_die_ref die_child;
   dw_die_ref die_sib;
@@ -2556,8 +2544,6 @@ typedef struct GTY(()) pubname_struct {
 }
 pubname_entry;
 
-DEF_VEC_O(pubname_entry);
-DEF_VEC_ALLOC_O(pubname_entry, gc);
 
 struct GTY(()) dw_ranges_struct {
   /* If this is positive, it's a block number, otherwise it's a
@@ -2574,8 +2560,6 @@ typedef struct GTY(()) macinfo_struct {
 }
 macinfo_entry;
 
-DEF_VEC_O(macinfo_entry);
-DEF_VEC_ALLOC_O(macinfo_entry, gc);
 
 struct GTY(()) dw_ranges_by_label_struct {
   const char *begin;
@@ -2721,8 +2705,6 @@ typedef struct GTY(()) die_arg_entry_struct {
     tree arg;
 } die_arg_entry;
 
-DEF_VEC_O(die_arg_entry);
-DEF_VEC_ALLOC_O(die_arg_entry,gc);
 
 /* Node of the variable location list.  */
 struct GTY ((chain_next ("%h.next"))) var_loc_node {
@@ -2786,7 +2768,7 @@ static int tail_call_site_count = -1;
 
 /* Vector mapping block numbers to DW_TAG_{lexical_block,inlined_subroutine}
    DIEs.  */
-static VEC (dw_die_ref, heap) *block_map;
+static vec<dw_die_ref> block_map;
 
 /* A cached location list.  */
 struct GTY (()) cached_dw_loc_list_def {
@@ -2830,7 +2812,7 @@ static GTY(()) dw_line_info_table *text_section_line_info;
 static GTY(()) dw_line_info_table *cold_text_section_line_info;
 
 /* The set of all non-default tables of line number info.  */
-static GTY(()) VEC (dw_line_info_table_p, gc) *separate_line_info;
+static GTY(()) vec<dw_line_info_table_p, va_gc> *separate_line_info;
 
 /* A flag to tell pubnames/types export if there is an info section to
    refer to.  */
@@ -2838,21 +2820,21 @@ static bool info_section_emitted;
 
 /* A pointer to the base of a table that contains a list of publicly
    accessible names.  */
-static GTY (()) VEC (pubname_entry, gc) *  pubname_table;
+static GTY (()) vec<pubname_entry, va_gc> *pubname_table;
 
 /* A pointer to the base of a table that contains a list of publicly
    accessible types.  */
-static GTY (()) VEC (pubname_entry, gc) * pubtype_table;
+static GTY (()) vec<pubname_entry, va_gc> *pubtype_table;
 
 /* A pointer to the base of a table that contains a list of macro
    defines/undefines (and file start/end markers).  */
-static GTY (()) VEC (macinfo_entry, gc) * macinfo_table;
+static GTY (()) vec<macinfo_entry, va_gc> *macinfo_table;
 
 /* True if .debug_macinfo or .debug_macros section is going to be
    emitted.  */
 #define have_macinfo \
   (debug_info_level >= DINFO_LEVEL_VERBOSE \
-   && !VEC_empty (macinfo_entry, macinfo_table))
+   && !macinfo_table->is_empty ())
 
 /* Array of dies for which we should generate .debug_ranges info.  */
 static GTY ((length ("ranges_table_allocated"))) dw_ranges_ref ranges_table;
@@ -2898,20 +2880,20 @@ static GTY(()) int label_num;
 /* Cached result of previous call to lookup_filename.  */
 static GTY(()) struct dwarf_file_data * file_table_last_lookup;
 
-static GTY(()) VEC(die_arg_entry,gc) *tmpl_value_parm_die_table;
+static GTY(()) vec<die_arg_entry, va_gc> *tmpl_value_parm_die_table;
 
 /* Instances of generic types for which we need to generate debug
    info that describe their generic parameters and arguments. That
    generation needs to happen once all types are properly laid out so
    we do it at the end of compilation.  */
-static GTY(()) VEC(tree,gc) *generic_type_instances;
+static GTY(()) vec<tree, va_gc> *generic_type_instances;
 
 /* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
 static HOST_WIDE_INT frame_pointer_fb_offset;
 static bool frame_pointer_fb_offset_valid;
 
-static VEC (dw_die_ref, heap) *base_types;
+static vec<dw_die_ref> base_types;
 
 /* Forward declarations for functions defined in this file.  */
 
@@ -3053,7 +3035,7 @@ static void calc_base_type_die_sizes (void);
 static void mark_dies (dw_die_ref);
 static void unmark_dies (dw_die_ref);
 static void unmark_all_dies (dw_die_ref);
-static unsigned long size_of_pubnames (VEC (pubname_entry,gc) *);
+static unsigned long size_of_pubnames (vec<pubname_entry, va_gc> *);
 static unsigned long size_of_aranges (void);
 static enum dwarf_form value_format (dw_attr_ref);
 static void output_value_format (dw_attr_ref);
@@ -3069,7 +3051,7 @@ static void add_pubname (tree, dw_die_ref);
 static void add_enumerator_pubname (const char *, dw_die_ref);
 static void add_pubname_string (const char *, dw_die_ref);
 static void add_pubtype (tree, dw_die_ref);
-static void output_pubnames (VEC (pubname_entry,gc) *);
+static void output_pubnames (vec<pubname_entry, va_gc> *);
 static void output_aranges (unsigned long);
 static unsigned int add_ranges_num (int);
 static unsigned int add_ranges (const_tree);
@@ -3647,9 +3629,8 @@ add_dwarf_attr (dw_die_ref die, dw_attr_ref attr)
   if (die == NULL)
     return;
 
-  if (die->die_attr == NULL)
-    die->die_attr = VEC_alloc (dw_attr_node, gc, 1);
-  VEC_safe_push (dw_attr_node, gc, die->die_attr, *attr);
+  vec_safe_reserve (die->die_attr, 1);
+  vec_safe_push (die->die_attr, *attr);
 }
 
 static inline enum dw_val_class
@@ -4442,7 +4423,7 @@ get_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
   if (! die)
     return NULL;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (a->dw_attr == attr_kind)
       return a;
     else if (a->dw_attr == DW_AT_specification
@@ -4588,16 +4569,16 @@ remove_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
   if (! die)
     return;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (a->dw_attr == attr_kind)
       {
 	if (AT_class (a) == dw_val_class_str)
 	  if (a->dw_attr_val.v.val_str->refcount)
 	    a->dw_attr_val.v.val_str->refcount--;
 
-	/* VEC_ordered_remove should help reduce the number of abbrevs
+	/* vec::ordered_remove should help reduce the number of abbrevs
 	   that are needed.  */
-	VEC_ordered_remove (dw_attr_node, die->die_attr, ix);
+	die->die_attr->ordered_remove (ix);
 	return;
       }
 }
@@ -5258,7 +5239,7 @@ print_die (dw_die_ref die, FILE *outfile)
       fprintf (outfile, "\n");
     }
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       print_spaces (outfile);
       fprintf (outfile, "  %s: ", dwarf_attr_name (a->dw_attr));
@@ -5517,7 +5498,7 @@ die_checksum (dw_die_ref die, struct md5_ctx *ctx, int *mark)
 
   CHECKSUM (die->die_tag);
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     attr_checksum (a, ctx, mark);
 
   FOR_EACH_CHILD (die, c, die_checksum (c, ctx, mark));
@@ -5831,7 +5812,7 @@ collect_checksum_attributes (struct checksum_attributes *attrs, dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       switch (a->dw_attr)
         {
@@ -6268,12 +6249,11 @@ same_die_p (dw_die_ref die1, dw_die_ref die2, int *mark)
   if (die1->die_tag != die2->die_tag)
     return 0;
 
-  if (VEC_length (dw_attr_node, die1->die_attr)
-      != VEC_length (dw_attr_node, die2->die_attr))
+  if (vec_safe_length (die1->die_attr) != vec_safe_length (die2->die_attr))
     return 0;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die1->die_attr, ix, a1)
-    if (!same_attr_p (a1, &VEC_index (dw_attr_node, die2->die_attr, ix), mark))
+  FOR_EACH_VEC_SAFE_ELT (die1->die_attr, ix, a1)
+    if (!same_attr_p (a1, &(*die2->die_attr)[ix], mark))
       return 0;
 
   c1 = die1->die_child;
@@ -6668,7 +6648,7 @@ is_declaration_die (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (a->dw_attr == DW_AT_declaration)
       return 1;
 
@@ -6755,7 +6735,7 @@ clone_die (dw_die_ref die)
   clone = ggc_alloc_cleared_die_node ();
   clone->die_tag = die->die_tag;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     add_dwarf_attr (clone, a);
 
   return clone;
@@ -6801,7 +6781,7 @@ clone_as_declaration (dw_die_ref die)
   clone = ggc_alloc_cleared_die_node ();
   clone->die_tag = die->die_tag;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       /* We don't want to copy over all attributes.
          For example we don't want DW_AT_byte_size because otherwise we will no
@@ -6865,7 +6845,7 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
 
       remove_AT (die, DW_AT_specification);
 
-      FOR_EACH_VEC_ELT (dw_attr_node, decl->die_attr, ix, a)
+      FOR_EACH_VEC_SAFE_ELT (decl->die_attr, ix, a)
         {
           if (a->dw_attr != DW_AT_name
               && a->dw_attr != DW_AT_declaration
@@ -7205,7 +7185,7 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       if (AT_class (a) == dw_val_class_die_ref)
         {
@@ -7326,7 +7306,7 @@ output_location_lists (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_loc_list)
       output_loc_list (AT_loc_list (a));
 
@@ -7411,7 +7391,7 @@ optimize_external_refs_1 (dw_die_ref die, htab_t map)
 
   /* Scan the DIE references, and remember any that refer to DIEs from
      other CUs (i.e. those which are not marked).  */
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_die_ref
 	&& (c = AT_ref (a))->die_mark == 0
 	&& is_type_die (c))
@@ -7491,7 +7471,7 @@ build_abbrev_table (dw_die_ref die, htab_t extern_map)
   /* Scan the DIE references, and replace any that refer to
      DIEs from other CUs (i.e. those which are not marked) with
      the local stubs we built in optimize_external_refs.  */
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_die_ref
 	&& (c = AT_ref (a))->die_mark == 0)
       {
@@ -7518,13 +7498,12 @@ build_abbrev_table (dw_die_ref die, htab_t extern_map)
       if ((abbrev->die_child != NULL) != (die->die_child != NULL))
 	continue;
 
-      if (VEC_length (dw_attr_node, abbrev->die_attr)
-	  != VEC_length (dw_attr_node, die->die_attr))
+      if (vec_safe_length (abbrev->die_attr) != vec_safe_length (die->die_attr))
 	continue;
 
-      FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, die_a)
+      FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, die_a)
 	{
-	  abbrev_a = &VEC_index (dw_attr_node, abbrev->die_attr, ix);
+	  abbrev_a = &(*abbrev->die_attr)[ix];
 	  if ((abbrev_a->dw_attr != die_a->dw_attr)
 	      || (value_format (abbrev_a) != value_format (die_a)))
 	    {
@@ -7587,7 +7566,7 @@ size_of_die (dw_die_ref die)
   enum dwarf_form form;
 
   size += size_of_uleb128 (die->die_abbrev);
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       switch (AT_class (a))
 	{
@@ -7764,7 +7743,7 @@ calc_base_type_die_sizes (void)
 #endif
 
   die_offset += size_of_die (comp_unit_die ());
-  for (i = 0; VEC_iterate (dw_die_ref, base_types, i, base_type); i++)
+  for (i = 0; base_types.iterate (i, &base_type); i++)
     {
 #if ENABLE_ASSERT_CHECKING
       gcc_assert (base_type->die_offset == 0
@@ -7823,7 +7802,7 @@ unmark_all_dies (dw_die_ref die)
 
   FOR_EACH_CHILD (die, c, unmark_all_dies (c));
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_die_ref)
       unmark_all_dies (AT_ref (a));
 }
@@ -7832,14 +7811,14 @@ unmark_all_dies (dw_die_ref die)
    generated for the compilation unit.  */
 
 static unsigned long
-size_of_pubnames (VEC (pubname_entry, gc) * names)
+size_of_pubnames (vec<pubname_entry, va_gc> *names)
 {
   unsigned long size;
   unsigned i;
   pubname_ref p;
 
   size = DWARF_PUBNAMES_HEADER_SIZE;
-  FOR_EACH_VEC_ELT (pubname_entry, names, i, p)
+  FOR_EACH_VEC_ELT (*names, i, p)
     if (names != pubtype_table
 	|| p->die->die_offset != 0
 	|| !flag_eliminate_unused_debug_types)
@@ -7868,7 +7847,7 @@ size_of_aranges (void)
       unsigned fde_idx;
       dw_fde_ref fde;
 
-      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, fde_idx, fde)
+      FOR_EACH_VEC_ELT (*fde_vec, fde_idx, fde)
 	{
 	  if (!fde->in_std_section)
 	    size += 2 * DWARF2_ADDR_SIZE;
@@ -8086,8 +8065,7 @@ output_die_abbrevs (unsigned long abbrev_id, dw_die_ref abbrev)
   else
     dw2_asm_output_data (1, DW_children_no, "DW_children_no");
 
-  for (ix = 0; VEC_iterate (dw_attr_node, abbrev->die_attr, ix, a_attr);
-       ix++)
+  for (ix = 0; vec_safe_iterate (abbrev->die_attr, ix, &a_attr); ix++)
     {
       dw2_asm_output_data_uleb128 (a_attr->dw_attr, "(%s)",
                                    dwarf_attr_name (a_attr->dw_attr));
@@ -8344,7 +8322,7 @@ output_die (dw_die_ref die)
 			       (unsigned long)die->die_offset,
 			       dwarf_tag_name (die->die_tag));
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       const char *name = dwarf_attr_name (a->dw_attr);
 
@@ -8885,7 +8863,7 @@ add_pubname_string (const char *str, dw_die_ref die)
 
   e.die = die;
   e.name = xstrdup (str);
-  VEC_safe_push (pubname_entry, gc, pubname_table, e);
+  vec_safe_push (pubname_table, e);
 }
 
 static void
@@ -8919,7 +8897,7 @@ add_enumerator_pubname (const char *scope_name, dw_die_ref die)
   gcc_assert (scope_name);
   e.name = concat (scope_name, get_AT_string (die, DW_AT_name), NULL);
   e.die = die;
-  VEC_safe_push (pubname_entry, gc, pubname_table, e);
+  vec_safe_push (pubname_table, e);
 }
 
 /* Add a new entry to .debug_pubtypes if appropriate.  */
@@ -8962,7 +8940,7 @@ add_pubtype (tree decl, dw_die_ref die)
         {
           e.die = die;
           e.name = concat (scope_name, name, NULL);
-          VEC_safe_push (pubname_entry, gc, pubtype_table, e);
+          vec_safe_push (pubtype_table, e);
         }
 
       /* Although it might be more consistent to add the pubinfo for the
@@ -8984,7 +8962,7 @@ add_pubtype (tree decl, dw_die_ref die)
    visible names; or the public types table used to find type definitions.  */
 
 static void
-output_pubnames (VEC (pubname_entry, gc) * names)
+output_pubnames (vec<pubname_entry, va_gc> *names)
 {
   unsigned i;
   unsigned long pubnames_length = size_of_pubnames (names);
@@ -9018,7 +8996,7 @@ output_pubnames (VEC (pubname_entry, gc) * names)
   dw2_asm_output_data (DWARF_OFFSET_SIZE, next_die_offset,
 		       "Compilation Unit Length");
 
-  FOR_EACH_VEC_ELT (pubname_entry, names, i, pub)
+  FOR_EACH_VEC_ELT (*names, i, pub)
     {
       /* Enumerator names are part of the pubname table, but the parent
          DW_TAG_enumeration_type die may have been pruned.  Don't output
@@ -9121,7 +9099,7 @@ output_aranges (unsigned long aranges_length)
       unsigned fde_idx;
       dw_fde_ref fde;
 
-      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, fde_idx, fde)
+      FOR_EACH_VEC_ELT (*fde_vec, fde_idx, fde)
 	{
 	  if (DECL_IGNORED_P (fde->decl))
 	    continue;
@@ -9642,7 +9620,7 @@ output_one_line_info_table (dw_line_info_table *table)
   dw_line_info_entry *ent;
   size_t i;
 
-  FOR_EACH_VEC_ELT (dw_line_info_entry, table->entries, i, ent)
+  FOR_EACH_VEC_SAFE_ELT (table->entries, i, ent)
     {
       switch (ent->opcode)
 	{
@@ -9828,7 +9806,7 @@ output_line_info (bool prologue_only)
       dw_line_info_table *table;
       size_t i;
 
-      FOR_EACH_VEC_ELT (dw_line_info_table_p, separate_line_info, i, table)
+      FOR_EACH_VEC_ELT (*separate_line_info, i, table)
 	if (table->in_use)
 	  {
 	    output_one_line_info_table (table);
@@ -12139,7 +12117,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 
     symref:
       mem_loc_result = new_addr_loc_descr (rtl, dtprel_false);
-      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
+      vec_safe_push (used_rtx_array, rtl);
       break;
 
     case CONCAT:
@@ -13044,7 +13022,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 	{
          loc_result = new_addr_loc_descr (rtl, dtprel_false);
 	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_stack_value, 0, 0));
-	  VEC_safe_push (rtx, gc, used_rtx_array, rtl);
+	  vec_safe_push (used_rtx_array, rtl);
 	}
       break;
 
@@ -14760,7 +14738,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
           loc_result = new_addr_loc_descr (rtl, dtprel_false);
 	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_stack_value, 0, 0));
 	  add_AT_loc (die, DW_AT_location, loc_result);
-	  VEC_safe_push (rtx, gc, used_rtx_array, rtl);
+	  vec_safe_push (used_rtx_array, rtl);
 	  return true;
 	}
       return false;
@@ -14913,7 +14891,7 @@ rtl_for_decl_init (tree init, tree type)
 	  case CONSTRUCTOR:
 	    if (TREE_CONSTANT (init))
 	      {
-		VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (init);
+		vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (init);
 		bool constant_p = true;
 		tree value;
 		unsigned HOST_WIDE_INT ix;
@@ -15334,7 +15312,7 @@ defer_location (tree variable, dw_die_ref die)
   deferred_locations entry;
   entry.variable = variable;
   entry.die = die;
-  VEC_safe_push (deferred_locations, gc, deferred_locations_list, entry);
+  vec_safe_push (deferred_locations_list, entry);
 }
 
 /* Helper function for tree_add_const_value_attribute.  Natively encode
@@ -15395,7 +15373,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 
 	  min_index = tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0);
 	  memset (array, '\0', size);
-	  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce)
+	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
 	    {
 	      tree val = ce->value;
 	      tree index = ce->index;
@@ -15441,7 +15419,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	  if (TREE_CODE (type) == RECORD_TYPE)
 	    field = TYPE_FIELDS (type);
 
-	  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce)
+	  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (init), cnt, ce)
 	    {
 	      tree val = ce->value;
 	      int pos, fieldsize;
@@ -15581,7 +15559,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
 
   /* ??? Bald assumption that the CIE opcode list does not contain
      advance opcodes.  */
-  FOR_EACH_VEC_ELT (dw_cfi_ref, cie_cfi_vec, ix, cfi)
+  FOR_EACH_VEC_ELT (*cie_cfi_vec, ix, cfi)
     lookup_cfa_1 (cfi, &next_cfa, &remember);
 
   last_cfa = next_cfa;
@@ -15597,7 +15575,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
       start_label = last_label = fde->dw_fde_second_begin;
     }
 
-  FOR_EACH_VEC_ELT (dw_cfi_ref, fde->dw_fde_cfi, ix, cfi)
+  FOR_EACH_VEC_SAFE_ELT (fde->dw_fde_cfi, ix, cfi)
     {
       switch (cfi->dw_cfi_opc)
 	{
@@ -16278,7 +16256,7 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
     {
       add_AT_addr (die, DW_AT_VMS_rtnbeg_pd_address,
                   XEXP (DECL_RTL (decl), 0), false);
-      VEC_safe_push (rtx, gc, used_rtx_array, XEXP (DECL_RTL (decl), 0));
+      vec_safe_push (used_rtx_array, XEXP (DECL_RTL (decl), 0));
     }
 #endif /* VMS_DEBUGGING_INFO */
 }
@@ -16320,7 +16298,7 @@ dwarf2out_vms_debug_main_pointer (void)
 static void
 push_decl_scope (tree scope)
 {
-  VEC_safe_push (tree, gc, decl_scope_table, scope);
+  vec_safe_push (decl_scope_table, scope);
 }
 
 /* Pop a declaration scope.  */
@@ -16328,7 +16306,7 @@ push_decl_scope (tree scope)
 static inline void
 pop_decl_scope (void)
 {
-  VEC_pop (tree, decl_scope_table);
+  decl_scope_table->pop ();
 }
 
 /* walk_tree helper function for uses_local_type, below.  */
@@ -16901,10 +16879,9 @@ retry_incomplete_types (void)
 {
   int i;
 
-  for (i = VEC_length (tree, incomplete_types) - 1; i >= 0; i--)
-    if (should_emit_struct_debug (VEC_index (tree, incomplete_types, i),
-				  DINFO_USAGE_DIR_USE))
-      gen_type_die (VEC_index (tree, incomplete_types, i), comp_unit_die ());
+  for (i = vec_safe_length (incomplete_types) - 1; i >= 0; i--)
+    if (should_emit_struct_debug ((*incomplete_types)[i], DINFO_USAGE_DIR_USE))
+      gen_type_die ((*incomplete_types)[i], comp_unit_die ());
 }
 
 /* Determine what tag to use for a record type.  */
@@ -17528,8 +17505,8 @@ gen_call_site_die (tree decl, dw_die_ref subr_die,
 	 && block != DECL_INITIAL (decl)
 	 && TREE_CODE (block) == BLOCK)
     {
-      if (VEC_length (dw_die_ref, block_map) > BLOCK_NUMBER (block))
-	stmt_die = VEC_index (dw_die_ref, block_map, BLOCK_NUMBER (block));
+      if (block_map.length () > BLOCK_NUMBER (block))
+	stmt_die = block_map[BLOCK_NUMBER (block)];
       if (stmt_die)
 	break;
       block = BLOCK_SUPERCONTEXT (block);
@@ -18613,10 +18590,9 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die, int depth)
 
   if (call_arg_locations)
     {
-      if (VEC_length (dw_die_ref, block_map) <= BLOCK_NUMBER (stmt))
-	VEC_safe_grow_cleared (dw_die_ref, heap, block_map,
-			       BLOCK_NUMBER (stmt) + 1);
-      VEC_replace (dw_die_ref, block_map, BLOCK_NUMBER (stmt), stmt_die);
+      if (block_map.length () <= BLOCK_NUMBER (stmt))
+	block_map.safe_grow_cleared (BLOCK_NUMBER (stmt) + 1);
+      block_map[BLOCK_NUMBER (stmt)] = stmt_die;
     }
 
   if (! BLOCK_ABSTRACT (stmt) && TREE_ASM_WRITTEN (stmt))
@@ -18651,10 +18627,9 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
 
       if (call_arg_locations)
 	{
-	  if (VEC_length (dw_die_ref, block_map) <= BLOCK_NUMBER (stmt))
-	    VEC_safe_grow_cleared (dw_die_ref, heap, block_map,
-				   BLOCK_NUMBER (stmt) + 1);
-	  VEC_replace (dw_die_ref, block_map, BLOCK_NUMBER (stmt), subr_die);
+	  if (block_map.length () <= BLOCK_NUMBER (stmt))
+	    block_map.safe_grow_cleared (BLOCK_NUMBER (stmt) + 1);
+	  block_map[BLOCK_NUMBER (stmt)] = subr_die;
 	}
       add_abstract_origin_attribute (subr_die, decl);
       if (TREE_ASM_WRITTEN (stmt))
@@ -18755,8 +18730,6 @@ gen_ptr_to_mbr_type_die (tree type, dw_die_ref context_die)
 }
 
 typedef const char *dchar_p; /* For DEF_VEC_P.  */
-DEF_VEC_P(dchar_p);
-DEF_VEC_ALLOC_P(dchar_p,heap);
 
 static char *producer_string;
 
@@ -18767,7 +18740,7 @@ static char *
 gen_producer_string (void)
 {
   size_t j;
-  VEC(dchar_p, heap) *switches = NULL;
+  vec<dchar_p> switches = vec<dchar_p>();
   const char *language_string = lang_hooks.name;
   char *producer, *tail;
   const char *p;
@@ -18828,8 +18801,7 @@ gen_producer_string (void)
 	  default:
 	    break;
 	  }
-	VEC_safe_push (dchar_p, heap, switches,
-		       save_decoded_options[j].orig_option_with_args_text);
+	switches.safe_push (save_decoded_options[j].orig_option_with_args_text);
 	len += strlen (save_decoded_options[j].orig_option_with_args_text) + 1;
 	break;
       }
@@ -18839,7 +18811,7 @@ gen_producer_string (void)
   sprintf (tail, "%s %s", language_string, version_string);
   tail += plen;
 
-  FOR_EACH_VEC_ELT (dchar_p, switches, j, p)
+  FOR_EACH_VEC_ELT (switches, j, p)
     {
       len = strlen (p);
       *tail = ' ';
@@ -18848,7 +18820,7 @@ gen_producer_string (void)
     }
 
   *tail = '\0';
-  VEC_free (dchar_p, heap, switches);
+  switches.release ();
   return producer;
 }
 
@@ -18881,7 +18853,7 @@ gen_compile_unit_die (const char *filename)
       tree t;
       const char *common_lang = NULL;
 
-      FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+      FOR_EACH_VEC_SAFE_ELT (all_translation_units, i, t)
 	{
 	  if (!TRANSLATION_UNIT_LANGUAGE (t))
 	    continue;
@@ -18890,7 +18862,7 @@ gen_compile_unit_die (const char *filename)
 	  else if (strcmp (common_lang, TRANSLATION_UNIT_LANGUAGE (t)) == 0)
 	    ;
 	  else if (strncmp (common_lang, "GNU C", 5) == 0
-		   && strncmp (TRANSLATION_UNIT_LANGUAGE (t), "GNU C", 5) == 0)
+		    && strncmp(TRANSLATION_UNIT_LANGUAGE (t), "GNU C", 5) == 0)
 	    /* Mixing C and C++ is ok, use C++ in that case.  */
 	    common_lang = "GNU C++";
 	  else
@@ -19005,14 +18977,14 @@ gen_member_die (tree type, dw_die_ref context_die)
   /* First output info about the base classes.  */
   if (binfo)
     {
-      VEC(tree,gc) *accesses = BINFO_BASE_ACCESSES (binfo);
+      vec<tree, va_gc> *accesses = BINFO_BASE_ACCESSES (binfo);
       int i;
       tree base;
 
       for (i = 0; BINFO_BASE_ITERATE (binfo, i, base); i++)
 	gen_inheritance_die (base,
-			     (accesses ? VEC_index (tree, accesses, i)
-			      : access_public_node), context_die);
+			     (accesses ? (*accesses)[i] : access_public_node),
+			     context_die);
     }
 
   /* Now output info about the data members and type members.  */
@@ -19138,7 +19110,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
       /* We don't need to do this for function-local types.  */
       if (TYPE_STUB_DECL (type)
 	  && ! decl_function_context (TYPE_STUB_DECL (type)))
-	VEC_safe_push (tree, gc, incomplete_types, type);
+	vec_safe_push (incomplete_types, type);
     }
 
   if (get_AT (type_die, DW_AT_name))
@@ -20386,7 +20358,7 @@ dwarf2out_function_decl (tree decl)
   call_arg_loc_last = NULL;
   call_site_count = -1;
   tail_call_site_count = -1;
-  VEC_free (dw_die_ref, heap, block_map);
+  block_map.release ();
   htab_empty (decl_loc_table);
   htab_empty (cached_dw_loc_list_table);
 }
@@ -20537,14 +20509,11 @@ append_entry_to_tmpl_value_parm_die_table (dw_die_ref die, tree arg)
     return;
 
   if (!tmpl_value_parm_die_table)
-    tmpl_value_parm_die_table
-      = VEC_alloc (die_arg_entry, gc, 32);
+    vec_alloc (tmpl_value_parm_die_table, 32);
 
   entry.die = die;
   entry.arg = arg;
-  VEC_safe_push (die_arg_entry, gc,
-		 tmpl_value_parm_die_table,
-		 entry);
+  vec_safe_push (tmpl_value_parm_die_table, entry);
 }
 
 /* Return TRUE if T is an instance of generic type, FALSE
@@ -20568,10 +20537,10 @@ schedule_generic_params_dies_gen (tree t)
   if (!generic_type_p (t))
     return;
 
-  if (generic_type_instances == NULL)
-    generic_type_instances = VEC_alloc (tree, gc, 256);
+  if (!generic_type_instances)
+    vec_alloc (generic_type_instances, 256);
 
-  VEC_safe_push (tree, gc, generic_type_instances, t);
+  vec_safe_push (generic_type_instances, t);
 }
 
 /* Add a DW_AT_const_value attribute to DIEs that were scheduled
@@ -20586,7 +20555,7 @@ gen_remaining_tmpl_value_param_die_attribute (void)
       unsigned i;
       die_arg_entry *e;
 
-      FOR_EACH_VEC_ELT (die_arg_entry, tmpl_value_parm_die_table, i, e)
+      FOR_EACH_VEC_ELT (*tmpl_value_parm_die_table, i, e)
 	tree_add_const_value_attribute (e->die, e->arg);
     }
 }
@@ -20602,10 +20571,10 @@ gen_scheduled_generic_parms_dies (void)
   unsigned i;
   tree t;
 
-  if (generic_type_instances == NULL)
+  if (!generic_type_instances)
     return;
   
-  FOR_EACH_VEC_ELT (tree, generic_type_instances, i, t)
+  FOR_EACH_VEC_ELT (*generic_type_instances, i, t)
     gen_generic_params_dies (t);
 }
 
@@ -20877,7 +20846,7 @@ set_cur_line_info_table (section *sec)
       table = new_line_info_table ();
       table->end_label = end_label;
 
-      VEC_safe_push (dw_line_info_table_p, gc, separate_line_info, table);
+      vec_safe_push (separate_line_info, table);
     }
 
   if (DWARF2_ASM_LINE_DEBUG_INFO)
@@ -20926,7 +20895,7 @@ push_dw_line_info_entry (dw_line_info_table *table,
   dw_line_info_entry e;
   e.opcode = opcode;
   e.val = val;
-  VEC_safe_push (dw_line_info_entry, gc, table->entries, e);
+  vec_safe_push (table->entries, e);
 }
 
 /* Output a label to mark the beginning of a source code line entry
@@ -21046,7 +21015,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
       e.code = DW_MACINFO_start_file;
       e.lineno = lineno;
       e.info = ggc_strdup (filename);
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
+      vec_safe_push (macinfo_table, e);
     }
 }
 
@@ -21065,7 +21034,7 @@ dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
       e.code = DW_MACINFO_end_file;
       e.lineno = lineno;
       e.info = NULL;
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
+      vec_safe_push (macinfo_table, e);
     }
 }
 
@@ -21082,17 +21051,17 @@ dwarf2out_define (unsigned int lineno ATTRIBUTE_UNUSED,
       macinfo_entry e;
       /* Insert a dummy first entry to be able to optimize the whole
 	 predefined macro block using DW_MACRO_GNU_transparent_include.  */
-      if (VEC_empty (macinfo_entry, macinfo_table) && lineno <= 1)
+      if (macinfo_table->is_empty () && lineno <= 1)
 	{
 	  e.code = 0;
 	  e.lineno = 0;
 	  e.info = NULL;
-	  VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
+	  vec_safe_push (macinfo_table, e);
 	}
       e.code = DW_MACINFO_define;
       e.lineno = lineno;
       e.info = ggc_strdup (buffer);
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
+      vec_safe_push (macinfo_table, e);
     }
 }
 
@@ -21109,17 +21078,17 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
       macinfo_entry e;
       /* Insert a dummy first entry to be able to optimize the whole
 	 predefined macro block using DW_MACRO_GNU_transparent_include.  */
-      if (VEC_empty (macinfo_entry, macinfo_table) && lineno <= 1)
+      if (macinfo_table->is_empty () && lineno <= 1)
 	{
 	  e.code = 0;
 	  e.lineno = 0;
 	  e.info = NULL;
-	  VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
+	  vec_safe_push (macinfo_table, e);
 	}
       e.code = DW_MACINFO_undef;
       e.lineno = lineno;
       e.info = ggc_strdup (buffer);
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
+      vec_safe_push (macinfo_table, e);
     }
 }
 
@@ -21230,7 +21199,7 @@ output_macinfo_op (macinfo_entry *ref)
    If the define/undef entry should be emitted normally, return 0.  */
 
 static unsigned
-optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
+optimize_macinfo_range (unsigned int idx, vec<macinfo_entry, va_gc> *files,
 			htab_t *macinfo_htab)
 {
   macinfo_entry *first, *second, *cur, *inc;
@@ -21242,8 +21211,8 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
   unsigned int i, count, encoded_filename_len, linebuf_len;
   void **slot;
 
-  first = &VEC_index (macinfo_entry, macinfo_table, idx);
-  second = &VEC_index (macinfo_entry, macinfo_table, idx + 1);
+  first = &(*macinfo_table)[idx];
+  second = &(*macinfo_table)[idx + 1];
 
   /* Optimize only if there are at least two consecutive define/undef ops,
      and either all of them are before first DW_MACINFO_start_file
@@ -21251,7 +21220,7 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
      in some included header file.  */
   if (second->code != DW_MACINFO_define && second->code != DW_MACINFO_undef)
     return 0;
-  if (VEC_empty (macinfo_entry, files))
+  if (vec_safe_is_empty (files))
     {
       if (first->lineno > 1 || second->lineno > 1)
 	return 0;
@@ -21263,10 +21232,10 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
      with first and at the same time compute md5 checksum of their
      codes, linenumbers and strings.  */
   md5_init_ctx (&ctx);
-  for (i = idx; VEC_iterate (macinfo_entry, macinfo_table, i, cur); i++)
+  for (i = idx; macinfo_table->iterate (i, &cur); i++)
     if (cur->code != DW_MACINFO_define && cur->code != DW_MACINFO_undef)
       break;
-    else if (VEC_empty (macinfo_entry, files) && cur->lineno > 1)
+    else if (vec_safe_is_empty (files) && cur->lineno > 1)
       break;
     else
       {
@@ -21280,10 +21249,10 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
 
   /* From the containing include filename (if any) pick up just
      usable characters from its basename.  */
-  if (VEC_empty (macinfo_entry, files))
+  if (vec_safe_is_empty (files))
     base = "";
   else
-    base = lbasename (VEC_last (macinfo_entry, files).info);
+    base = lbasename (files->last ().info);
   for (encoded_filename_len = 0, i = 0; base[i]; i++)
     if (ISIDNUM (base[i]) || base[i] == '.')
       encoded_filename_len++;
@@ -21314,7 +21283,7 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
 
   /* Construct a macinfo_entry for DW_MACRO_GNU_transparent_include
      in the empty vector entry before the first define/undef.  */
-  inc = &VEC_index (macinfo_entry, macinfo_table, idx - 1);
+  inc = &(*macinfo_table)[idx - 1];
   inc->code = DW_MACRO_GNU_transparent_include;
   inc->lineno = 0;
   inc->info = ggc_strdup (grp_name);
@@ -21332,10 +21301,7 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
       output_macinfo_op (inc);
       /* And clear all macinfo_entry in the range to avoid emitting them
 	 in the second pass.  */
-      for (i = idx;
-	   VEC_iterate (macinfo_entry, macinfo_table, i, cur)
-	   && i < idx + count;
-	   i++)
+      for (i = idx; macinfo_table->iterate (i, &cur) && i < idx + count; i++)
 	{
 	  cur->code = 0;
 	  cur->info = NULL;
@@ -21361,7 +21327,7 @@ save_macinfo_strings (void)
   unsigned i;
   macinfo_entry *ref;
 
-  for (i = 0; VEC_iterate (macinfo_entry, macinfo_table, i, ref); i++)
+  for (i = 0; macinfo_table && macinfo_table->iterate (i, &ref); i++)
     {
       switch (ref->code)
         {
@@ -21392,9 +21358,9 @@ static void
 output_macinfo (void)
 {
   unsigned i;
-  unsigned long length = VEC_length (macinfo_entry, macinfo_table);
+  unsigned long length = vec_safe_length (macinfo_table);
   macinfo_entry *ref;
-  VEC (macinfo_entry, gc) *files = NULL;
+  vec<macinfo_entry, va_gc> *files = NULL;
   htab_t macinfo_htab = NULL;
 
   if (! length)
@@ -21427,25 +21393,25 @@ output_macinfo (void)
      DW_MACRO_GNU_transparent_include op is emitted and kept in
      the vector before the first define/undef in the range and the
      whole range of define/undef ops is not emitted and kept.  */
-  for (i = 0; VEC_iterate (macinfo_entry, macinfo_table, i, ref); i++)
+  for (i = 0; macinfo_table->iterate (i, &ref); i++)
     {
       switch (ref->code)
 	{
 	case DW_MACINFO_start_file:
-	  VEC_safe_push (macinfo_entry, gc, files, *ref);
+	  vec_safe_push (files, *ref);
 	  break;
 	case DW_MACINFO_end_file:
-	  if (!VEC_empty (macinfo_entry, files))
-	    VEC_pop (macinfo_entry, files);
+	  if (!vec_safe_is_empty (files))
+	    files->pop ();
 	  break;
 	case DW_MACINFO_define:
 	case DW_MACINFO_undef:
 	  if (!dwarf_strict
 	      && HAVE_COMDAT_GROUP
-	      && VEC_length (macinfo_entry, files) != 1
+	      && vec_safe_length (files) != 1
 	      && i > 0
 	      && i + 1 < length
-	      && VEC_index (macinfo_entry, macinfo_table, i - 1).code == 0)
+	      && (*macinfo_table)[i - 1].code == 0)
 	    {
 	      unsigned count = optimize_macinfo_range (i, files, &macinfo_htab);
 	      if (count)
@@ -21477,7 +21443,7 @@ output_macinfo (void)
      DW_MACRO_GNU_transparent_include entries terminate the
      current chain and switch to a new comdat .debug_macinfo
      section and emit the define/undef entries within it.  */
-  for (i = 0; VEC_iterate (macinfo_entry, macinfo_table, i, ref); i++)
+  for (i = 0; macinfo_table->iterate (i, &ref); i++)
     switch (ref->code)
       {
       case 0:
@@ -21539,7 +21505,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 		       cached_dw_loc_list_table_eq, NULL);
 
   /* Allocate the initial hunk of the decl_scope_table.  */
-  decl_scope_table = VEC_alloc (tree, gc, 256);
+  vec_alloc (decl_scope_table, 256);
 
   /* Allocate the initial hunk of the abbrev_die_table.  */
   abbrev_die_table = ggc_alloc_cleared_vec_dw_die_ref
@@ -21549,12 +21515,12 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   abbrev_die_table_in_use = 1;
 
   /* Allocate the pubtypes and pubnames vectors.  */
-  pubname_table = VEC_alloc (pubname_entry, gc, 32);
-  pubtype_table = VEC_alloc (pubname_entry, gc, 32);
+  vec_alloc (pubname_table, 32);
+  vec_alloc (pubtype_table, 32);
 
-  incomplete_types = VEC_alloc (tree, gc, 64);
+  vec_alloc (incomplete_types, 64);
 
-  used_rtx_array = VEC_alloc (rtx, gc, 32);
+  vec_alloc (used_rtx_array, 32);
 
   if (!dwarf_split_debug_info)
     {
@@ -21638,7 +21604,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
-    macinfo_table = VEC_alloc (macinfo_entry, gc, 64);
+    vec_alloc (macinfo_table, 64);
 
   switch_to_section (text_section);
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
@@ -21859,7 +21825,7 @@ prune_unused_types_walk_attribs (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     {
       if (a->dw_attr_val.val_class == dw_val_class_die_ref)
 	{
@@ -22073,7 +22039,7 @@ prune_unused_types_update_strings (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_str)
       {
 	struct indirect_string_node *s = a->dw_attr_val.v.val_str;
@@ -22180,10 +22146,10 @@ prune_unused_types (void)
      are unusual in that they are pubnames that are the children of pubtypes.
      They should only be marked via their parent DW_TAG_enumeration_type die,
      not as roots in themselves.  */
-  FOR_EACH_VEC_ELT (pubname_entry, pubname_table, i, pub)
+  FOR_EACH_VEC_ELT (*pubname_table, i, pub)
     if (pub->die->die_tag != DW_TAG_enumerator)
       prune_unused_types_mark (pub->die, 1);
-  for (i = 0; VEC_iterate (dw_die_ref, base_types, i, base_type); i++)
+  for (i = 0; base_types.iterate (i, &base_type); i++)
     prune_unused_types_mark (base_type, 1);
 
   if (debug_str_hash)
@@ -22249,24 +22215,24 @@ htab_ct_eq (const void *of1, const void *of2)
 static inline void
 move_linkage_attr (dw_die_ref die)
 {
-  unsigned ix = VEC_length (dw_attr_node, die->die_attr);
-  dw_attr_node linkage = VEC_index (dw_attr_node, die->die_attr, ix - 1);
+  unsigned ix = vec_safe_length (die->die_attr);
+  dw_attr_node linkage = (*die->die_attr)[ix - 1];
 
   gcc_assert (linkage.dw_attr == DW_AT_linkage_name
 	      || linkage.dw_attr == DW_AT_MIPS_linkage_name);
 
   while (--ix > 0)
     {
-      dw_attr_node *prev = &VEC_index (dw_attr_node, die->die_attr, ix - 1);
+      dw_attr_node *prev = &(*die->die_attr)[ix - 1];
 
       if (prev->dw_attr == DW_AT_decl_line || prev->dw_attr == DW_AT_name)
 	break;
     }
 
-  if (ix != VEC_length (dw_attr_node, die->die_attr) - 1)
+  if (ix != vec_safe_length (die->die_attr) - 1)
     {
-      VEC_pop (dw_attr_node, die->die_attr);
-      VEC_quick_insert (dw_attr_node, die->die_attr, ix, linkage);
+      die->die_attr->pop ();
+      die->die_attr->quick_insert (ix, linkage);
     }
 }
 
@@ -22305,7 +22271,7 @@ mark_base_types (dw_loc_descr_ref loc)
 	base_type->die_mark++;
       else
 	{
-	  VEC_safe_push (dw_die_ref, heap, base_types, base_type);
+	  base_types.safe_push (base_type);
 	  base_type->die_mark = 1;
 	}
     }
@@ -22351,12 +22317,12 @@ move_marked_base_types (void)
   unsigned int i;
   dw_die_ref base_type, die, c;
 
-  if (VEC_empty (dw_die_ref, base_types))
+  if (base_types.is_empty ())
     return;
 
   /* Sort by decreasing usage count, they will be added again in that
      order later on.  */
-  VEC_qsort (dw_die_ref, base_types, base_type_cmp);
+  base_types.qsort (base_type_cmp);
   die = comp_unit_die ();
   c = die->die_child;
   do
@@ -22375,7 +22341,7 @@ move_marked_base_types (void)
   while (c != die->die_child);
   gcc_assert (die->die_child);
   c = die->die_child;
-  for (i = 0; VEC_iterate (dw_die_ref, base_types, i, base_type); i++)
+  for (i = 0; base_types.iterate (i, &base_type); i++)
     {
       base_type->die_mark = 0;
       base_type->die_sib = c->die_sib;
@@ -22404,7 +22370,7 @@ resolve_one_addr (rtx *addr, void *data ATTRIBUTE_UNUSED)
       if (!rtl || !MEM_P (rtl))
 	return 1;
       rtl = XEXP (rtl, 0);
-      VEC_safe_push (rtx, gc, used_rtx_array, rtl);
+      vec_safe_push (used_rtx_array, rtl);
       *addr = rtl;
       return 0;
     }
@@ -22562,7 +22528,7 @@ resolve_addr (dw_die_ref die)
   dw_loc_list_ref *curr, *start, loc;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     switch (AT_class (a))
       {
       case dw_val_class_loc_list:
@@ -23144,7 +23110,7 @@ optimize_location_lists_1 (dw_die_ref die, htab_t htab)
   unsigned ix;
   void **slot;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_loc_list)
       {
 	dw_loc_list_ref list = AT_loc_list (a);
@@ -23173,7 +23139,7 @@ index_location_lists (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
+  FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_loc_list)
       {
         dw_loc_list_ref list = AT_loc_list (a);
@@ -23242,14 +23208,15 @@ dwarf2out_finish (const char *filename)
 	add_comp_dir_attribute (comp_unit_die ());
     }
 
-  for (i = 0; i < VEC_length (deferred_locations, deferred_locations_list); i++)
-    {
-      add_location_or_const_value_attribute (
-        VEC_index (deferred_locations, deferred_locations_list, i).die,
-        VEC_index (deferred_locations, deferred_locations_list, i).variable,
-	false,
-	DW_AT_location);
-    }
+  if (deferred_locations_list)
+    for (i = 0; i < deferred_locations_list->length (); i++)
+      {
+	add_location_or_const_value_attribute (
+	    (*deferred_locations_list)[i].die,
+	    (*deferred_locations_list)[i].variable,
+	    false,
+	    DW_AT_location);
+      }
 
   /* Traverse the limbo die list, and add parent/child links.  The only
      dies without parents that should be here are concrete instances of
@@ -23408,7 +23375,7 @@ dwarf2out_finish (const char *filename)
         add_ranges_by_labels (main_comp_unit_die, cold_text_section_label,
                               cold_end_label, &range_list_added, true);
 
-      FOR_EACH_VEC_ELT (dw_fde_ref, fde_vec, fde_idx, fde)
+      FOR_EACH_VEC_ELT (*fde_vec, fde_idx, fde)
 	{
 	  if (DECL_IGNORED_P (fde->decl))
 	    continue;

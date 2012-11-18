@@ -3505,8 +3505,8 @@ tree
 altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 				    void *passed_arglist)
 {
-  VEC(tree,gc) *arglist = (VEC(tree,gc) *) passed_arglist;
-  unsigned int nargs = VEC_length (tree, arglist);
+  vec<tree, va_gc> *arglist = static_cast<vec<tree, va_gc> *> (passed_arglist);
+  unsigned int nargs = vec_safe_length (arglist);
   enum rs6000_builtins fcode
     = (enum rs6000_builtins)DECL_FUNCTION_CODE (fndecl);
   tree fnargs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
@@ -3529,7 +3529,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       int size;
       int i;
       bool unsigned_p;
-      VEC(constructor_elt,gc) *vec;
+      vec<constructor_elt, va_gc> *vec;
       const char *name = fcode == ALTIVEC_BUILTIN_VEC_SPLATS ? "vec_splats": "vec_promote";
 
       if (nargs == 0)
@@ -3549,10 +3549,10 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	}
       /* Ignore promote's element argument.  */
       if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE
-	  && !INTEGRAL_TYPE_P (TREE_TYPE (VEC_index (tree, arglist, 1))))
+	  && !INTEGRAL_TYPE_P (TREE_TYPE ((*arglist)[1])))
 	goto bad;
 
-      arg = VEC_index (tree, arglist, 0);
+      arg = (*arglist)[0];
       type = TREE_TYPE (arg);
       if (!SCALAR_FLOAT_TYPE_P (type)
 	  && !INTEGRAL_TYPE_P (type))
@@ -3582,11 +3582,11 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    goto bad;
 	}
       arg = save_expr (fold_convert (TREE_TYPE (type), arg));
-      vec = VEC_alloc (constructor_elt, gc, size);
+      vec_alloc (vec, size);
       for(i = 0; i < size; i++)
 	{
 	  constructor_elt elt = {NULL_TREE, arg};
-	  VEC_quick_push (constructor_elt, vec, elt);
+	  vec->quick_push (elt);
 	}
 	return build_constructor (type, vec);
     }
@@ -3610,8 +3610,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  return error_mark_node;
 	}
 
-      arg2 = VEC_index (tree, arglist, 1);
-      arg1 = VEC_index (tree, arglist, 0);
+      arg2 = (*arglist)[1];
+      arg1 = (*arglist)[0];
       arg1_type = TREE_TYPE (arg1);
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
@@ -3686,10 +3686,10 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  return error_mark_node;
 	}
 
-      arg0 = VEC_index (tree, arglist, 0);
-      arg1 = VEC_index (tree, arglist, 1);
+      arg0 = (*arglist)[0];
+      arg1 = (*arglist)[1];
       arg1_type = TREE_TYPE (arg1);
-      arg2 = VEC_index (tree, arglist, 2);
+      arg2 = (*arglist)[2];
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
 	goto bad; 
@@ -3752,7 +3752,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
        fnargs = TREE_CHAIN (fnargs), n++)
     {
       tree decl_type = TREE_VALUE (fnargs);
-      tree arg = VEC_index (tree, arglist, n);
+      tree arg = (*arglist)[n];
       tree type;
 
       if (arg == error_mark_node)

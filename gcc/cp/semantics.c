@@ -92,7 +92,7 @@ static tree capture_decltype (tree);
 
    2. When a declaration such as a type, or a variable, is encountered,
       the function `perform_or_defer_access_check' is called.  It
-      maintains a VEC of all deferred checks.
+      maintains a vector of all deferred checks.
 
    3. The global `current_class_type' or `current_function_decl' is then
       setup by the parser.  `enforce_access' relies on these information
@@ -100,14 +100,14 @@ static tree capture_decltype (tree);
 
    4. Upon exiting the context mentioned in step 1,
       `perform_deferred_access_checks' is called to check all declaration
-      stored in the VEC. `pop_deferring_access_checks' is then
+      stored in the vector. `pop_deferring_access_checks' is then
       called to restore the previous access checking mode.
 
       In case of parsing error, we simply call `pop_deferring_access_checks'
       without `perform_deferred_access_checks'.  */
 
 typedef struct GTY(()) deferred_access {
-  /* A VEC representing name-lookups for which we have deferred
+  /* A vector representing name-lookups for which we have deferred
      checking access controls.  We cannot check the accessibility of
      names used in a decl-specifier-seq until we know what is being
      declared because code like:
@@ -120,17 +120,15 @@ typedef struct GTY(()) deferred_access {
        A::B* A::f() { return 0; }
 
      is valid, even though `A::B' is not generally accessible.  */
-  VEC (deferred_access_check,gc)* GTY(()) deferred_access_checks;
+  vec<deferred_access_check, va_gc> * GTY(()) deferred_access_checks;
 
   /* The current mode of access checks.  */
   enum deferring_kind deferring_access_checks_kind;
 
 } deferred_access;
-DEF_VEC_O (deferred_access);
-DEF_VEC_ALLOC_O (deferred_access,gc);
 
 /* Data for deferred access checking.  */
-static GTY(()) VEC(deferred_access,gc) *deferred_access_stack;
+static GTY(()) vec<deferred_access, va_gc> *deferred_access_stack;
 static GTY(()) unsigned deferred_access_no_check;
 
 /* Save the current deferred access states and start deferred
@@ -146,7 +144,7 @@ push_deferring_access_checks (deferring_kind deferring)
   else
     {
       deferred_access e = {NULL, deferring};
-      VEC_safe_push (deferred_access, gc, deferred_access_stack, e);
+      vec_safe_push (deferred_access_stack, e);
     }
 }
 
@@ -157,8 +155,7 @@ void
 resume_deferring_access_checks (void)
 {
   if (!deferred_access_no_check)
-    VEC_last (deferred_access, deferred_access_stack)
-      .deferring_access_checks_kind = dk_deferred;
+    deferred_access_stack->last().deferring_access_checks_kind = dk_deferred;
 }
 
 /* Stop deferring access checks.  */
@@ -167,8 +164,7 @@ void
 stop_deferring_access_checks (void)
 {
   if (!deferred_access_no_check)
-    VEC_last (deferred_access, deferred_access_stack)
-      .deferring_access_checks_kind = dk_no_deferred;
+    deferred_access_stack->last().deferring_access_checks_kind = dk_no_deferred;
 }
 
 /* Discard the current deferred access checks and restore the
@@ -180,7 +176,7 @@ pop_deferring_access_checks (void)
   if (deferred_access_no_check)
     deferred_access_no_check--;
   else
-    VEC_pop (deferred_access, deferred_access_stack);
+    deferred_access_stack->pop ();
 }
 
 /* Returns a TREE_LIST representing the deferred checks.
@@ -188,14 +184,13 @@ pop_deferring_access_checks (void)
    access occurred; the TREE_VALUE is the declaration named.
    */
 
-VEC (deferred_access_check,gc)*
+vec<deferred_access_check, va_gc> *
 get_deferred_access_checks (void)
 {
   if (deferred_access_no_check)
     return NULL;
   else
-    return (VEC_last (deferred_access, deferred_access_stack)
-	    .deferred_access_checks);
+    return (deferred_access_stack->last().deferred_access_checks);
 }
 
 /* Take current deferred checks and combine with the
@@ -209,14 +204,13 @@ pop_to_parent_deferring_access_checks (void)
     deferred_access_no_check--;
   else
     {
-      VEC (deferred_access_check,gc) *checks;
+      vec<deferred_access_check, va_gc> *checks;
       deferred_access *ptr;
 
-      checks = (VEC_last (deferred_access, deferred_access_stack)
-		.deferred_access_checks);
+      checks = (deferred_access_stack->last ().deferred_access_checks);
 
-      VEC_pop (deferred_access, deferred_access_stack);
-      ptr = &VEC_last (deferred_access, deferred_access_stack);
+      deferred_access_stack->pop ();
+      ptr = &deferred_access_stack->last ();
       if (ptr->deferring_access_checks_kind == dk_no_deferred)
 	{
 	  /* Check access.  */
@@ -228,10 +222,9 @@ pop_to_parent_deferring_access_checks (void)
 	  int i, j;
 	  deferred_access_check *chk, *probe;
 
-	  FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
+	  FOR_EACH_VEC_SAFE_ELT (checks, i, chk)
 	    {
-	      FOR_EACH_VEC_ELT (deferred_access_check,
-				ptr->deferred_access_checks, j, probe)
+	      FOR_EACH_VEC_SAFE_ELT (ptr->deferred_access_checks, j, probe)
 		{
 		  if (probe->binfo == chk->binfo &&
 		      probe->decl == chk->decl &&
@@ -239,8 +232,7 @@ pop_to_parent_deferring_access_checks (void)
 		    goto found;
 		}
 	      /* Insert into parent's checks.  */
-	      VEC_safe_push (deferred_access_check, gc,
-			     ptr->deferred_access_checks, *chk);
+	      vec_safe_push (ptr->deferred_access_checks, *chk);
 	    found:;
 	    }
 	}
@@ -254,7 +246,7 @@ pop_to_parent_deferring_access_checks (void)
    otherwise FALSE.  */
 
 bool
-perform_access_checks (VEC (deferred_access_check,gc)* checks,
+perform_access_checks (vec<deferred_access_check, va_gc> *checks,
 		       tsubst_flags_t complain)
 {
   int i;
@@ -265,7 +257,7 @@ perform_access_checks (VEC (deferred_access_check,gc)* checks,
   if (!checks)
     return true;
 
-  FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
+  FOR_EACH_VEC_SAFE_ELT (checks, i, chk)
     {
       input_location = chk->loc;
       ok &= enforce_access (chk->binfo, chk->decl, chk->diag_decl, complain);
@@ -317,7 +309,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
 
   gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
 
-  ptr = &VEC_last (deferred_access, deferred_access_stack);
+  ptr = &deferred_access_stack->last ();
 
   /* If we are not supposed to defer access checks, just check now.  */
   if (ptr->deferring_access_checks_kind == dk_no_deferred)
@@ -327,8 +319,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
     }
 
   /* See if we are already going to perform this check.  */
-  FOR_EACH_VEC_ELT  (deferred_access_check,
-		     ptr->deferred_access_checks, i, chk)
+  FOR_EACH_VEC_SAFE_ELT (ptr->deferred_access_checks, i, chk)
     {
       if (chk->decl == decl && chk->binfo == binfo &&
 	  chk->diag_decl == diag_decl)
@@ -338,8 +329,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
     }
   /* If not, record the check.  */
   deferred_access_check new_access = {binfo, decl, diag_decl, input_location};
-  VEC_safe_push (deferred_access_check, gc, ptr->deferred_access_checks,
-		 new_access);
+  vec_safe_push (ptr->deferred_access_checks, new_access);
 
   return true;
 }
@@ -375,7 +365,7 @@ add_stmt (tree t)
 
   /* Add T to the statement-tree.  Non-side-effect statements need to be
      recorded during statement expressions.  */
-  gcc_checking_assert (!VEC_empty (tree, stmt_list_stack));
+  gcc_checking_assert (!stmt_list_stack->is_empty ());
   append_to_statement_list_force (t, &cur_stmt_list);
 
   return t;
@@ -1972,7 +1962,7 @@ empty_expr_stmt_p (tree expr_stmt)
    Returns the functions to be considered by overload resolution.  */
 
 tree
-perform_koenig_lookup (tree fn, VEC(tree,gc) *args, bool include_std,
+perform_koenig_lookup (tree fn, vec<tree, va_gc> *args, bool include_std,
 		       tsubst_flags_t complain)
 {
   tree identifier = NULL_TREE;
@@ -2038,12 +2028,12 @@ perform_koenig_lookup (tree fn, VEC(tree,gc) *args, bool include_std,
    Returns code for the call.  */
 
 tree
-finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
+finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 		  bool koenig_p, tsubst_flags_t complain)
 {
   tree result;
   tree orig_fn;
-  VEC(tree,gc) *orig_args = NULL;
+  vec<tree, va_gc> *orig_args = NULL;
 
   if (fn == error_mark_node)
     return error_mark_node;
@@ -2172,7 +2162,7 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
       if (!result)
 	{
 	  if (warn_sizeof_pointer_memaccess
-	      && !VEC_empty(tree, *args)
+	      && !vec_safe_is_empty (*args)
 	      && !processing_template_decl)
 	    {
 	      location_t sizeof_arg_loc[3];
@@ -2184,9 +2174,9 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 
 		  sizeof_arg_loc[i] = UNKNOWN_LOCATION;
 		  sizeof_arg[i] = NULL_TREE;
-		  if (i >= VEC_length (tree, *args))
+		  if (i >= (*args)->length ())
 		    continue;
-		  t = VEC_index (tree, *args, i);
+		  t = (**args)[i];
 		  if (TREE_CODE (t) != SIZEOF_EXPR)
 		    continue;
 		  if (SIZEOF_EXPR_TYPE_P (t))
@@ -2206,7 +2196,7 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
     }
   else if (TREE_CODE (fn) == PSEUDO_DTOR_EXPR)
     {
-      if (!VEC_empty (tree, *args))
+      if (!vec_safe_is_empty (*args))
 	error ("arguments to destructor are not allowed");
       /* Mark the pseudo-destructor call as having side-effects so
 	 that we do not issue warnings about its use.  */
@@ -3448,9 +3438,9 @@ finish_underlying_type (tree type)
 tree
 calculate_direct_bases (tree type)
 {
-  VEC(tree, gc) *vector = make_tree_vector();
+  vec<tree, va_gc> *vector = make_tree_vector();
   tree bases_vec = NULL_TREE;
-  VEC(tree, none) *base_binfos;
+  vec<tree, va_gc> *base_binfos;
   tree binfo;
   unsigned i;
 
@@ -3462,29 +3452,29 @@ calculate_direct_bases (tree type)
   base_binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
 
   /* Virtual bases are initialized first */
-  for (i = 0; VEC_iterate (tree, base_binfos, i, binfo); i++)
+  for (i = 0; base_binfos->iterate (i, &binfo); i++)
     {
       if (BINFO_VIRTUAL_P (binfo))
        {
-         VEC_safe_push (tree, gc, vector, binfo);
+         vec_safe_push (vector, binfo);
        }
     }
 
   /* Now non-virtuals */
-  for (i = 0; VEC_iterate (tree, base_binfos, i, binfo); i++)
+  for (i = 0; base_binfos->iterate (i, &binfo); i++)
     {
       if (!BINFO_VIRTUAL_P (binfo))
        {
-         VEC_safe_push (tree, gc, vector, binfo);
+         vec_safe_push (vector, binfo);
        }
     }
 
 
-  bases_vec = make_tree_vec (VEC_length (tree, vector));
+  bases_vec = make_tree_vec (vector->length ());
 
-  for (i = 0; i < VEC_length (tree, vector); ++i)
+  for (i = 0; i < vector->length (); ++i)
     {
-      TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE (VEC_index (tree, vector, i));
+      TREE_VEC_ELT (bases_vec, i) = BINFO_TYPE ((*vector)[i]);
     }
   return bases_vec;
 }
@@ -3505,19 +3495,19 @@ dfs_calculate_bases_pre (tree binfo, void * /*data_*/)
 static tree
 dfs_calculate_bases_post (tree binfo, void *data_)
 {
-  VEC(tree, gc) **data = (VEC(tree, gc) **) data_;
+  vec<tree, va_gc> **data = ((vec<tree, va_gc> **) data_);
   if (!BINFO_VIRTUAL_P (binfo))
     {
-      VEC_safe_push (tree, gc, *data, BINFO_TYPE (binfo));
+      vec_safe_push (*data, BINFO_TYPE (binfo));
     }
   return NULL_TREE;
 }
 
 /* Calculates the morally non-virtual base classes of a class */
-static VEC(tree, gc) *
+static vec<tree, va_gc> *
 calculate_bases_helper (tree type)
 {
-  VEC(tree, gc) *vector = make_tree_vector();
+  vec<tree, va_gc> *vector = make_tree_vector();
 
   /* Now add non-virtual base classes in order of construction */
   dfs_walk_all (TYPE_BINFO (type),
@@ -3528,11 +3518,11 @@ calculate_bases_helper (tree type)
 tree
 calculate_bases (tree type)
 {
-  VEC(tree, gc) *vector = make_tree_vector();
+  vec<tree, va_gc> *vector = make_tree_vector();
   tree bases_vec = NULL_TREE;
   unsigned i;
-  VEC(tree, gc) *vbases;
-  VEC(tree, gc) *nonvbases;
+  vec<tree, va_gc> *vbases;
+  vec<tree, va_gc> *nonvbases;
   tree binfo;
 
   complete_type (type);
@@ -3542,24 +3532,25 @@ calculate_bases (tree type)
 
   /* First go through virtual base classes */
   for (vbases = CLASSTYPE_VBASECLASSES (type), i = 0;
-       VEC_iterate (tree, vbases, i, binfo); i++)
+       vec_safe_iterate (vbases, i, &binfo); i++)
     {
-      VEC(tree, gc) *vbase_bases = calculate_bases_helper (BINFO_TYPE (binfo));
-      VEC_safe_splice (tree, gc, vector, vbase_bases);
+      vec<tree, va_gc> *vbase_bases;
+      vbase_bases = calculate_bases_helper (BINFO_TYPE (binfo));
+      vec_safe_splice (vector, vbase_bases);
       release_tree_vector (vbase_bases);
     }
 
   /* Now for the non-virtual bases */
   nonvbases = calculate_bases_helper (type);
-  VEC_safe_splice (tree, gc, vector, nonvbases);
+  vec_safe_splice (vector, nonvbases);
   release_tree_vector (nonvbases);
 
   /* Last element is entire class, so don't copy */
-  bases_vec = make_tree_vec (VEC_length (tree, vector) - 1);
+  bases_vec = make_tree_vec (vector->length () - 1);
 
-  for (i = 0; i < VEC_length (tree, vector) - 1; ++i)
+  for (i = 0; i < vector->length () - 1; ++i)
     {
-      TREE_VEC_ELT (bases_vec, i) = VEC_index (tree, vector, i);
+      TREE_VEC_ELT (bases_vec, i) = (*vector)[i];
     }
   release_tree_vector (vector);
   return bases_vec;
@@ -5010,7 +5001,7 @@ void
 finish_omp_barrier (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_BARRIER);
-  VEC(tree,gc) *vec = make_tree_vector ();
+  vec<tree, va_gc> *vec = make_tree_vector ();
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);
@@ -5020,7 +5011,7 @@ void
 finish_omp_flush (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-  VEC(tree,gc) *vec = make_tree_vector ();
+  vec<tree, va_gc> *vec = make_tree_vector ();
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);
@@ -5030,7 +5021,7 @@ void
 finish_omp_taskwait (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKWAIT);
-  VEC(tree,gc) *vec = make_tree_vector ();
+  vec<tree, va_gc> *vec = make_tree_vector ();
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);
@@ -5040,7 +5031,7 @@ void
 finish_omp_taskyield (void)
 {
   tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKYIELD);
-  VEC(tree,gc) *vec = make_tree_vector ();
+  vec<tree, va_gc> *vec = make_tree_vector ();
   tree stmt = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
   release_tree_vector (vec);
   finish_expr_stmt (stmt);
@@ -5380,7 +5371,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
       ix = lookup_fnfields_1 (type, ansi_assopname (NOP_EXPR));
       if (ix < 0)
 	return false;
-      fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
+      fns = (*CLASSTYPE_METHOD_VEC (type))[ix];
     } 
   else if (TYPE_HAS_COPY_CTOR (type))
     {
@@ -5806,7 +5797,7 @@ is_valid_constexpr_fn (tree fun, bool complain)
    to the existing initialization pair INITS.  */
 
 static bool
-build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
+build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
 {
   tree member, init;
   if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
@@ -5933,13 +5924,13 @@ check_constexpr_ctor_body (tree last, tree list)
   return ok;
 }
 
-/* VEC is a vector of constructor elements built up for the base and member
+/* V is a vector of constructor elements built up for the base and member
    initializers of a constructor for TYPE.  They need to be in increasing
    offset order, which they might not be yet if TYPE has a primary base
    which is not first in the base-clause.  */
 
-static VEC(constructor_elt,gc) *
-sort_constexpr_mem_initializers (tree type, VEC(constructor_elt,gc) *vec)
+static vec<constructor_elt, va_gc> *
+sort_constexpr_mem_initializers (tree type, vec<constructor_elt, va_gc> *v)
 {
   tree pri = CLASSTYPE_PRIMARY_BINFO (type);
   constructor_elt elt;
@@ -5947,21 +5938,21 @@ sort_constexpr_mem_initializers (tree type, VEC(constructor_elt,gc) *vec)
 
   if (pri == NULL_TREE
       || pri == BINFO_BASE_BINFO (TYPE_BINFO (type), 0))
-    return vec;
+    return v;
 
   /* Find the element for the primary base and move it to the beginning of
      the vec.  */
-  VEC(constructor_elt,gc) &v = *vec;
+  vec<constructor_elt, va_gc> &vref = *v;
   pri = BINFO_TYPE (pri);
   for (i = 1; ; ++i)
-    if (TREE_TYPE (v[i].index) == pri)
+    if (TREE_TYPE (vref[i].index) == pri)
       break;
 
-  elt = v[i];
+  elt = vref[i];
   for (; i > 0; --i)
-    v[i] = v[i-1];
-  v[0] = elt;
-  return vec;
+    vref[i] = vref[i-1];
+  vref[0] = elt;
+  return v;
 }
 
 /* Build compile-time evalable representations of member-initializer list
@@ -5970,7 +5961,7 @@ sort_constexpr_mem_initializers (tree type, VEC(constructor_elt,gc) *vec)
 static tree
 build_constexpr_constructor_member_initializers (tree type, tree body)
 {
-  VEC(constructor_elt,gc) *vec = NULL;
+  vec<constructor_elt, va_gc> *vec = NULL;
   bool ok = true;
   if (TREE_CODE (body) == MUST_NOT_THROW_EXPR
       || TREE_CODE (body) == EH_SPEC_BLOCK)
@@ -6015,14 +6006,14 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     gcc_assert (errorcount > 0);
   if (ok)
     {
-      if (VEC_length (constructor_elt, vec) > 0)
+      if (vec_safe_length (vec) > 0)
 	{
 	  /* In a delegating constructor, return the target.  */
-	  constructor_elt *ce = &VEC_index (constructor_elt, vec, 0);
+	  constructor_elt *ce = &(*vec)[0];
 	  if (ce->index == current_class_ptr)
 	    {
 	      body = ce->value;
-	      VEC_free (constructor_elt, gc, vec);
+	      vec_free (vec);
 	      return body;
 	    }
 	}
@@ -6519,7 +6510,7 @@ cxx_bind_parameters_in_call (const constexpr_call *old_call, tree t,
    These do not need to be marked for PCH or GC.  */
 
 /* FIXME remember and print actual constant arguments.  */
-static VEC(tree,heap) *call_stack = NULL;
+static vec<tree> call_stack = vec<tree>();
 static int call_stack_tick;
 static int last_cx_error_tick;
 
@@ -6529,8 +6520,8 @@ push_cx_call_context (tree call)
   ++call_stack_tick;
   if (!EXPR_HAS_LOCATION (call))
     SET_EXPR_LOCATION (call, input_location);
-  VEC_safe_push (tree, heap, call_stack, call);
-  if (VEC_length (tree, call_stack) > (unsigned) max_constexpr_depth)
+  call_stack.safe_push (call);
+  if (call_stack.length () > (unsigned) max_constexpr_depth)
     return false;
   return true;
 }
@@ -6539,15 +6530,15 @@ static void
 pop_cx_call_context (void)
 {
   ++call_stack_tick;
-  VEC_pop (tree, call_stack);
+  call_stack.pop ();
 }
 
-VEC(tree,heap) *
+vec<tree> 
 cx_error_context (void)
 {
-  VEC(tree,heap) *r = NULL;
+  vec<tree> r = vec<tree>();
   if (call_stack_tick != last_cx_error_tick
-      && !VEC_empty (tree, call_stack))
+      && !call_stack.is_empty ())
     r = call_stack;
   last_cx_error_tick = call_stack_tick;
   return r;
@@ -6893,7 +6884,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
     }
   i = tree_low_cst (index, 0);
   if (TREE_CODE (ary) == CONSTRUCTOR)
-    return VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ary), i).value;
+    return (*CONSTRUCTOR_ELTS (ary))[i].value;
   else if (elem_nchars == 1)
     return build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
 			  TREE_STRING_POINTER (ary)[i]);
@@ -7076,7 +7067,7 @@ cxx_eval_logical_expression (const constexpr_call *call, tree t,
    initialization of the field.  */
 
 static constructor_elt *
-base_field_constructor_elt (VEC(constructor_elt,gc) *v, tree ref)
+base_field_constructor_elt (vec<constructor_elt, va_gc> *v, tree ref)
 {
   tree aggr = TREE_OPERAND (ref, 0);
   tree field = TREE_OPERAND (ref, 1);
@@ -7092,7 +7083,7 @@ base_field_constructor_elt (VEC(constructor_elt,gc) *v, tree ref)
       v = CONSTRUCTOR_ELTS (base_ce->value);
     }
 
-  for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
+  for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
     if (ce->index == field)
       return ce;
 
@@ -7109,14 +7100,14 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 			 bool allow_non_constant, bool addr,
 			 bool *non_constant_p)
 {
-  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (t);
-  VEC(constructor_elt,gc) *n = VEC_alloc (constructor_elt, gc,
-					  VEC_length (constructor_elt, v));
+  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (t);
+  vec<constructor_elt, va_gc> *n;
+  vec_alloc (n, vec_safe_length (v));
   constructor_elt *ce;
   HOST_WIDE_INT i;
   bool changed = false;
   gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (t));
-  for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
+  for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
     {
       tree elt = cxx_eval_constant_expression (call, ce->value,
 					       allow_non_constant, addr,
@@ -7146,7 +7137,7 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
   if (*non_constant_p || !changed)
     {
     fail:
-      VEC_free (constructor_elt, gc, n);
+      vec_free (n);
       return t;
     }
   t = build_constructor (TREE_TYPE (t), n);
@@ -7173,7 +7164,8 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
 {
   tree elttype = TREE_TYPE (atype);
   int max = tree_low_cst (array_type_nelts (atype), 0);
-  VEC(constructor_elt,gc) *n = VEC_alloc (constructor_elt, gc, max + 1);
+  vec<constructor_elt, va_gc> *n;
+  vec_alloc (n, max + 1);
   bool pre_init = false;
   int i;
 
@@ -7193,7 +7185,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
     }
   else if (!init)
     {
-      VEC(tree,gc) *argvec = make_tree_vector ();
+      vec<tree, va_gc> *argvec = make_tree_vector ();
       init = build_special_member_call (NULL_TREE, complete_ctor_identifier,
 					&argvec, elttype, LOOKUP_NORMAL,
 					tf_warning_or_error);
@@ -7234,7 +7226,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
       else
 	{
 	  /* Copying an element.  */
-	  VEC(tree,gc) *argvec;
+	  vec<tree, va_gc> *argvec;
 	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
 		      (atype, TREE_TYPE (init)));
 	  eltinit = cp_build_array_ref (input_location, init, idx,
@@ -7242,7 +7234,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
 	  if (!real_lvalue_p (init))
 	    eltinit = move (eltinit);
 	  argvec = make_tree_vector ();
-	  VEC_quick_push (tree, argvec, eltinit);
+	  argvec->quick_push (eltinit);
 	  eltinit = (build_special_member_call
 		     (NULL_TREE, complete_ctor_identifier, &argvec,
 		      elttype, LOOKUP_NORMAL, tf_warning_or_error));
@@ -7263,7 +7255,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
     }
 
  fail:
-  VEC_free (constructor_elt, gc, n);
+  vec_free (n);
   return init;
 }
 
@@ -8517,9 +8509,9 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 
     case CONSTRUCTOR:
       {
-        VEC(constructor_elt, gc) *v = CONSTRUCTOR_ELTS (t);
+        vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (t);
         constructor_elt *ce;
-        for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
+        for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
 	  if (!potential_constant_expression_1 (ce->value, want_rval, flags))
 	    return false;
 	return true;
@@ -8747,7 +8739,7 @@ build_lambda_object (tree lambda_expr)
   /* Build aggregate constructor call.
      - cp_parser_braced_list
      - cp_parser_functional_cast  */
-  VEC(constructor_elt,gc) *elts = NULL;
+  vec<constructor_elt, va_gc> *elts = NULL;
   tree node, expr, type;
   location_t saved_loc;
 
@@ -9067,8 +9059,7 @@ insert_capture_proxy (tree var)
 
   /* And put a DECL_EXPR in the STATEMENT_LIST for the same block.  */
   var = build_stmt (DECL_SOURCE_LOCATION (var), DECL_EXPR, var);
-  stmt_list = VEC_index (tree, stmt_list_stack,
-			 VEC_length (tree, stmt_list_stack) - 1 - skip);
+  stmt_list = (*stmt_list_stack)[stmt_list_stack->length () - 1 - skip];
   gcc_assert (stmt_list);
   append_to_statement_list_force (var, &stmt_list);
 }
@@ -9081,7 +9072,7 @@ void
 insert_pending_capture_proxies (void)
 {
   tree lam;
-  VEC(tree,gc) *proxies;
+  vec<tree, va_gc> *proxies;
   unsigned i;
 
   if (!current_function_decl || !LAMBDA_FUNCTION_P (current_function_decl))
@@ -9089,9 +9080,9 @@ insert_pending_capture_proxies (void)
 
   lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
   proxies = LAMBDA_EXPR_PENDING_PROXIES (lam);
-  for (i = 0; i < VEC_length (tree, proxies); ++i)
+  for (i = 0; i < vec_safe_length (proxies); ++i)
     {
-      tree var = VEC_index (tree, proxies, i);
+      tree var = (*proxies)[i];
       insert_capture_proxy (var);
     }
   release_tree_vector (LAMBDA_EXPR_PENDING_PROXIES (lam));
@@ -9158,7 +9149,7 @@ build_capture_proxy (tree member)
   if (fn == current_function_decl)
     insert_capture_proxy (var);
   else
-    VEC_safe_push (tree, gc, LAMBDA_EXPR_PENDING_PROXIES (lam), var);
+    vec_safe_push (LAMBDA_EXPR_PENDING_PROXIES (lam), var);
 
   return var;
 }
@@ -9405,7 +9396,7 @@ maybe_add_lambda_conv_op (tree type)
   tree callop = lambda_function (type);
   tree rettype, name, fntype, fn, body, compound_stmt;
   tree thistype, stattype, statfn, convfn, call, arg;
-  VEC (tree, gc) *argvec;
+  vec<tree, va_gc> *argvec;
 
   if (LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (type)) != NULL_TREE)
     return;
@@ -9495,14 +9486,13 @@ maybe_add_lambda_conv_op (tree type)
   arg = build1 (NOP_EXPR, TREE_TYPE (DECL_ARGUMENTS (callop)),
 		null_pointer_node);
   argvec = make_tree_vector ();
-  VEC_quick_push (tree, argvec, arg);
+  argvec->quick_push (arg);
   for (arg = DECL_ARGUMENTS (statfn); arg; arg = DECL_CHAIN (arg))
     {
       mark_exp_read (arg);
-      VEC_safe_push (tree, gc, argvec, arg);
+      vec_safe_push (argvec, arg);
     }
-  call = build_call_a (callop, VEC_length (tree, argvec),
-		       VEC_address (tree, argvec));
+  call = build_call_a (callop, argvec->length (), argvec->address ());
   CALL_FROM_THUNK_P (call) = 1;
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (call)))
     call = build_cplus_new (TREE_TYPE (call), call, tf_warning_or_error);

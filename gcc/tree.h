@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "statistics.h"
 #include "vec.h"
-#include "vecir.h"
 #include "double-int.h"
 #include "real.h"
 #include "fixed-value.h"
@@ -250,10 +249,8 @@ typedef struct GTY(()) alias_pair
 } alias_pair;
 
 /* Define gc'd vector type.  */
-DEF_VEC_O(alias_pair);
-DEF_VEC_ALLOC_O(alias_pair,gc);
 
-extern GTY(()) VEC(alias_pair,gc) * alias_pairs;
+extern GTY(()) vec<alias_pair, va_gc> *alias_pairs;
 
 
 /* Classify which part of the compiler has defined a given builtin function.
@@ -1530,17 +1527,17 @@ struct GTY(()) tree_vec {
 /* In a CONSTRUCTOR node.  */
 #define CONSTRUCTOR_ELTS(NODE) (CONSTRUCTOR_CHECK (NODE)->constructor.elts)
 #define CONSTRUCTOR_ELT(NODE,IDX) \
-  (&VEC_index (constructor_elt, CONSTRUCTOR_ELTS (NODE), IDX))
+  (&(*CONSTRUCTOR_ELTS (NODE))[IDX])
 #define CONSTRUCTOR_NELTS(NODE) \
-  (VEC_length (constructor_elt, CONSTRUCTOR_ELTS (NODE)))
+  (vec_safe_length (CONSTRUCTOR_ELTS (NODE)))
 
 /* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding the
    value of each element (stored within VAL). IX must be a scratch variable
    of unsigned integer type.  */
 #define FOR_EACH_CONSTRUCTOR_VALUE(V, IX, VAL) \
-  for (IX = 0; (IX >= VEC_length (constructor_elt, V)) \
+  for (IX = 0; (IX >= vec_safe_length (V)) \
 	       ? false \
-	       : ((VAL = VEC_index (constructor_elt, V, IX).value), \
+	       : ((VAL = (*(V))[IX].value), \
 	       true); \
        (IX)++)
 
@@ -1548,10 +1545,10 @@ struct GTY(()) tree_vec {
    the value of each element (stored within VAL) and its index (stored
    within INDEX). IX must be a scratch variable of unsigned integer type.  */
 #define FOR_EACH_CONSTRUCTOR_ELT(V, IX, INDEX, VAL) \
-  for (IX = 0; (IX >= VEC_length (constructor_elt, V)) \
+  for (IX = 0; (IX >= vec_safe_length (V)) \
 	       ? false \
-	       : (((void) (VAL = VEC_index (constructor_elt, V, IX).value)), \
-		  (INDEX = VEC_index (constructor_elt, V, IX).index), \
+	       : (((void) (VAL = (*V)[IX].value)), \
+		  (INDEX = (*V)[IX].index), \
 		  true); \
        (IX)++)
 
@@ -1559,7 +1556,7 @@ struct GTY(()) tree_vec {
 #define CONSTRUCTOR_APPEND_ELT(V, INDEX, VALUE) \
   do { \
     constructor_elt _ce___ = {INDEX, VALUE}; \
-    VEC_safe_push (constructor_elt, gc, V, _ce___); \
+    vec_safe_push ((V), _ce___); \
   } while (0)
 
 /* True if NODE, a FIELD_DECL, is to be processed as a bitfield for
@@ -1584,12 +1581,10 @@ typedef struct GTY(()) constructor_elt_d {
   tree value;
 } constructor_elt;
 
-DEF_VEC_O(constructor_elt);
-DEF_VEC_ALLOC_O(constructor_elt,gc);
 
 struct GTY(()) tree_constructor {
   struct tree_typed typed;
-  VEC(constructor_elt,gc) *elts;
+  vec<constructor_elt, va_gc> *elts;
 };
 
 /* Define fields and accessors for some nodes that represent expressions.  */
@@ -2037,9 +2032,8 @@ struct GTY(()) tree_omp_clause {
 #define BLOCK_NONLOCALIZED_VARS(NODE) \
   (BLOCK_CHECK (NODE)->block.nonlocalized_vars)
 #define BLOCK_NUM_NONLOCALIZED_VARS(NODE) \
-  VEC_length (tree, BLOCK_NONLOCALIZED_VARS (NODE))
-#define BLOCK_NONLOCALIZED_VAR(NODE,N) \
-  VEC_index (tree, BLOCK_NONLOCALIZED_VARS (NODE), N)
+  vec_safe_length (BLOCK_NONLOCALIZED_VARS (NODE))
+#define BLOCK_NONLOCALIZED_VAR(NODE,N) (*BLOCK_NONLOCALIZED_VARS (NODE))[N]
 #define BLOCK_SUBBLOCKS(NODE) (BLOCK_CHECK (NODE)->block.subblocks)
 #define BLOCK_SUPERCONTEXT(NODE) (BLOCK_CHECK (NODE)->block.supercontext)
 #define BLOCK_CHAIN(NODE) (BLOCK_CHECK (NODE)->block.chain)
@@ -2095,7 +2089,7 @@ struct GTY(()) tree_block {
   location_t locus;
 
   tree vars;
-  VEC(tree,gc) *nonlocalized_vars;
+  vec<tree, va_gc> *nonlocalized_vars;
 
   tree subblocks;
   tree supercontext;
@@ -2512,15 +2506,15 @@ struct GTY(()) tree_type_non_common {
 #define BINFO_BASE_BINFOS(NODE) (&TREE_BINFO_CHECK(NODE)->binfo.base_binfos)
 
 /* The number of basetypes for NODE.  */
-#define BINFO_N_BASE_BINFOS(NODE) (VEC_length (tree, BINFO_BASE_BINFOS (NODE)))
+#define BINFO_N_BASE_BINFOS(NODE) (BINFO_BASE_BINFOS (NODE)->length ())
 
 /* Accessor macro to get to the Nth base binfo of this binfo.  */
 #define BINFO_BASE_BINFO(NODE,N) \
- (VEC_index (tree, BINFO_BASE_BINFOS (NODE), (N)))
+ ((*BINFO_BASE_BINFOS (NODE))[(N)])
 #define BINFO_BASE_ITERATE(NODE,N,B) \
- (VEC_iterate (tree, BINFO_BASE_BINFOS (NODE), (N), (B)))
+ (BINFO_BASE_BINFOS (NODE)->iterate ((N), &(B)))
 #define BINFO_BASE_APPEND(NODE,T) \
- (VEC_quick_push (tree, BINFO_BASE_BINFOS (NODE), (T)))
+ (BINFO_BASE_BINFOS (NODE)->quick_push ((T)))
 
 /* For a BINFO record describing a virtual base class, i.e., one where
    TREE_VIA_VIRTUAL is set, this field assists in locating the virtual
@@ -2535,9 +2529,9 @@ struct GTY(()) tree_type_non_common {
 #define BINFO_BASE_ACCESSES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_accesses)
 
 #define BINFO_BASE_ACCESS(NODE,N) \
-  VEC_index (tree, BINFO_BASE_ACCESSES (NODE), (N))
+  (*BINFO_BASE_ACCESSES (NODE))[(N)]
 #define BINFO_BASE_ACCESS_APPEND(NODE,T) \
-  VEC_quick_push (tree, BINFO_BASE_ACCESSES (NODE), (T))
+  BINFO_BASE_ACCESSES (NODE)->quick_push ((T))
 
 /* The index in the VTT where this subobject's sub-VTT can be found.
    NULL_TREE if there is no sub-VTT.  */
@@ -2561,13 +2555,13 @@ struct GTY (()) tree_binfo {
   tree vtable;
   tree virtuals;
   tree vptr_field;
-  VEC(tree,gc) *base_accesses;
+  vec<tree, va_gc> *base_accesses;
   tree inheritance;
 
   tree vtt_subvtt;
   tree vtt_vptr;
 
-  VEC(tree,none) base_binfos;
+  vec<tree, va_gc> base_binfos;
 };
 
 
@@ -3443,8 +3437,8 @@ struct GTY(())
 #define DECL_DISREGARD_INLINE_LIMITS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.disregard_inline_limits)
 
-extern VEC(tree, gc) **decl_debug_args_lookup (tree);
-extern VEC(tree, gc) **decl_debug_args_insert (tree);
+extern vec<tree, va_gc> **decl_debug_args_lookup (tree);
+extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 
 /* Nonzero if a FUNCTION_DECL has DEBUG arguments attached to it.  */
 #define DECL_HAS_DEBUG_ARGS_P(NODE) \
@@ -3549,7 +3543,7 @@ struct GTY(()) tree_translation_unit_decl {
 };
 
 /* A vector of all translation-units.  */
-extern GTY (()) VEC(tree,gc) *all_translation_units;
+extern GTY (()) vec<tree, va_gc> *all_translation_units;
 
 /* For a TYPE_DECL, holds the "original" type.  (TREE_TYPE has the copy.) */
 #define DECL_ORIGINAL_TYPE(NODE) \
@@ -4645,7 +4639,7 @@ extern tree maybe_get_identifier (const char *);
 /* Construct various types of nodes.  */
 
 extern tree build_nt (enum tree_code, ...);
-extern tree build_nt_call_vec (tree, VEC(tree,gc) *);
+extern tree build_nt_call_vec (tree, vec<tree, va_gc> *);
 
 extern tree build0_stat (enum tree_code, tree MEM_STAT_DECL);
 #define build0(c,t) build0_stat (c,t MEM_STAT_INFO)
@@ -4754,9 +4748,9 @@ extern tree make_vector_stat (unsigned MEM_STAT_DECL);
 #define make_vector(n) make_vector_stat (n MEM_STAT_INFO)
 extern tree build_vector_stat (tree, tree * MEM_STAT_DECL);
 #define build_vector(t,v) build_vector_stat (t, v MEM_STAT_INFO)
-extern tree build_vector_from_ctor (tree, VEC(constructor_elt,gc) *);
+extern tree build_vector_from_ctor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_vector_from_val (tree, tree);
-extern tree build_constructor (tree, VEC(constructor_elt,gc) *);
+extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_real_from_int_cst (tree, const_tree);
@@ -4766,7 +4760,7 @@ extern tree build_zero_cst (tree);
 extern tree build_string (int, const char *);
 extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
 #define build_tree_list(t,q) build_tree_list_stat(t,q MEM_STAT_INFO)
-extern tree build_tree_list_vec_stat (const VEC(tree,gc) * MEM_STAT_DECL);
+extern tree build_tree_list_vec_stat (const vec<tree, va_gc> *MEM_STAT_DECL);
 #define build_tree_list_vec(v) build_tree_list_vec_stat (v MEM_STAT_INFO)
 extern tree build_decl_stat (location_t, enum tree_code,
 			     tree, tree MEM_STAT_DECL);
@@ -4785,7 +4779,7 @@ extern tree build_call_valist (tree, tree, int, va_list);
 #define build_call_array(T1,T2,N,T3)\
    build_call_array_loc (UNKNOWN_LOCATION, T1, T2, N, T3)
 extern tree build_call_array_loc (location_t, tree, tree, int, const tree *);
-extern tree build_call_vec (tree, tree, VEC(tree,gc) *);
+extern tree build_call_vec (tree, tree, vec<tree, va_gc> *);
 
 /* Construct various nodes representing data types.  */
 
@@ -4816,10 +4810,10 @@ extern tree build_varargs_function_type_list (tree, ...);
 extern tree build_function_type_array (tree, int, tree *);
 extern tree build_varargs_function_type_array (tree, int, tree *);
 #define build_function_type_vec(RET, V) \
-  build_function_type_array (RET, VEC_length (tree, V), VEC_address (tree, V))
+  build_function_type_array (RET, vec_safe_length (V), vec_safe_address (V))
 #define build_varargs_function_type_vec(RET, V) \
-  build_varargs_function_type_array (RET, VEC_length (tree, V), \
-				     VEC_address (tree, V))
+  build_varargs_function_type_array (RET, vec_safe_length (V), \
+				     vec_safe_address (V))
 extern tree build_method_type_directly (tree, tree, tree);
 extern tree build_method_type (tree, tree);
 extern tree build_offset_type (tree, tree);
@@ -4830,7 +4824,7 @@ extern bool range_in_array_bounds_p (tree);
 
 extern tree value_member (tree, tree);
 extern tree purpose_member (const_tree, tree);
-extern bool vec_member (const_tree, VEC(tree,gc) *);
+extern bool vec_member (const_tree, vec<tree, va_gc> *);
 extern tree chain_index (int, tree);
 
 extern int attribute_list_equal (const_tree, const_tree);
@@ -5132,7 +5126,7 @@ typedef struct record_layout_info_s
   tree prev_field;
   /* The static variables (i.e., class variables, as opposed to
      instance variables) encountered in T.  */
-  VEC(tree,gc) *pending_statics;
+  vec<tree, va_gc> *pending_statics;
   /* Bits remaining in the current alignment group */
   int remaining_in_alignment;
   /* True if we've seen a packed field that didn't have normal
@@ -5286,7 +5280,7 @@ extern bool initializer_zerop (const_tree);
 
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
 
-extern VEC(tree,gc) *ctor_to_vec (tree);
+extern vec<tree, va_gc> *ctor_to_vec (tree);
 
 extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
 				      HOST_WIDE_INT *, bool *);
@@ -5368,7 +5362,7 @@ extern bool type_contains_placeholder_p (tree);
    or CALL_EXPRs with PLACEHOLDER_EXPRs occurring only in their
    argument list.  */
 
-extern void find_placeholder_in_expr (tree, VEC (tree, heap) **);
+extern void find_placeholder_in_expr (tree, vec<tree> *);
 
 /* This macro calls the above function but short-circuits the common
    case of a constant to save time and also checks for NULL.  */
@@ -5866,7 +5860,7 @@ extern bool fold_builtin_next_arg (tree, bool);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);
 extern tree build_call_expr_loc_array (location_t, tree, int, tree *);
-extern tree build_call_expr_loc_vec (location_t, tree, VEC(tree,gc) *);
+extern tree build_call_expr_loc_vec (location_t, tree, vec<tree, va_gc> *);
 extern tree build_call_expr_loc (location_t, tree, int, ...);
 extern tree build_call_expr (tree, int, ...);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
@@ -5984,11 +5978,11 @@ extern void print_rtl (FILE *, const_rtx);
 
 /* In print-tree.c */
 extern void debug_tree (tree);
-extern void debug_vec_tree (VEC(tree,gc) *);
+extern void debug_vec_tree (vec<tree, va_gc> *);
 #ifdef BUFSIZ
 extern void dump_addr (FILE*, const char *, const void *);
 extern void print_node (FILE *, const char *, tree, int);
-extern void print_vec_tree (FILE *, const char *, VEC(tree,gc) *, int);
+extern void print_vec_tree (FILE *, const char *, vec<tree, va_gc> *, int);
 extern void print_node_brief (FILE *, const char *, const_tree, int);
 extern void indent_to (FILE *, int);
 #endif
@@ -6289,7 +6283,7 @@ struct GTY(()) tree_priority_map {
 
 struct GTY(()) tree_vec_map {
   struct tree_map_base base;
-  VEC(tree,gc) *to;
+  vec<tree, va_gc> *to;
 };
 
 #define tree_vec_map_eq tree_map_base_eq

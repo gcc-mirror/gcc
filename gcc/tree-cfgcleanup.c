@@ -50,7 +50,7 @@ bitmap cfgcleanup_altered_bbs;
 /* Remove any fallthru edge from EV.  Return true if an edge was removed.  */
 
 static bool
-remove_fallthru_edge (VEC(edge,gc) *ev)
+remove_fallthru_edge (vec<edge, va_gc> *ev)
 {
   edge_iterator ei;
   edge e;
@@ -558,9 +558,9 @@ split_bbs_on_noreturn_calls (void)
 
   /* Detect cases where a mid-block call is now known not to return.  */
   if (cfun->gimple_df)
-    while (VEC_length (gimple, MODIFIED_NORETURN_CALLS (cfun)))
+    while (vec_safe_length (MODIFIED_NORETURN_CALLS (cfun)))
       {
-	stmt = VEC_pop (gimple, MODIFIED_NORETURN_CALLS (cfun));
+	stmt = MODIFIED_NORETURN_CALLS (cfun)->pop ();
 	bb = gimple_bb (stmt);
 	/* BB might be deleted at this point, so verify first
 	   BB is present in the cfg.  */
@@ -810,7 +810,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
-	      edge_var_map_vector head;
+	      edge_var_map_vector *head;
 	      edge_var_map *vm;
 	      size_t i;
 
@@ -818,7 +818,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 		 redirection, replace it with the PHI argument that used
 		 to be on E.  */
 	      head = redirect_edge_var_map_vector (e);
-	      FOR_EACH_VEC_ELT (edge_var_map, head, i, vm)
+	      FOR_EACH_VEC_ELT (*head, i, vm)
 		{
 		  tree old_arg = redirect_edge_var_map_result (vm);
 		  tree new_arg = redirect_edge_var_map_def (vm);

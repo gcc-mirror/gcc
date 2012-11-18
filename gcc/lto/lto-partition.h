@@ -29,10 +29,8 @@ struct ltrans_partition_def
 };
 
 typedef struct ltrans_partition_def *ltrans_partition;
-DEF_VEC_P(ltrans_partition);
-DEF_VEC_ALLOC_P(ltrans_partition,heap);
 
-extern VEC(ltrans_partition, heap) *ltrans_partitions;
+extern vec<ltrans_partition> ltrans_partitions;
 
 void lto_1_to_1_map (void);
 void lto_max_map (void);

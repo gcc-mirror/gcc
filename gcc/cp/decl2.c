@@ -90,15 +90,15 @@ static bool decl_defined_p (tree);
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
    an initializer, and then initialized, statically, outside the class.  */
-static GTY(()) VEC(tree,gc) *pending_statics;
+static GTY(()) vec<tree, va_gc> *pending_statics;
 
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
-static GTY(()) VEC(tree,gc) *deferred_fns;
+static GTY(()) vec<tree, va_gc> *deferred_fns;
 
 /* A list of decls that use types with no linkage, which we need to make
    sure are defined.  */
-static GTY(()) VEC(tree,gc) *no_linkage_decls;
+static GTY(()) vec<tree, va_gc> *no_linkage_decls;
 
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
@@ -644,12 +644,12 @@ check_classfn (tree ctype, tree function, tree template_parms)
   ix = class_method_index_for_fn (complete_type (ctype), function);
   if (ix >= 0)
     {
-      VEC(tree,gc) *methods = CLASSTYPE_METHOD_VEC (ctype);
+      vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (ctype);
       tree fndecls, fndecl = 0;
       bool is_conv_op;
       const char *format = NULL;
 
-      for (fndecls = VEC_index (tree, methods, ix);
+      for (fndecls = (*methods)[ix];
 	   fndecls; fndecls = OVL_NEXT (fndecls))
 	{
 	  tree p1, p2;
@@ -705,7 +705,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
       if (is_conv_op)
 	ix = CLASSTYPE_FIRST_CONVERSION_SLOT;
-      fndecls = VEC_index (tree, methods, ix);
+      fndecls = (*methods)[ix];
       while (fndecls)
 	{
 	  fndecl = OVL_CURRENT (fndecls);
@@ -713,9 +713,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
 	  if (!fndecls && is_conv_op)
 	    {
-	      if (VEC_length (tree, methods) > (size_t) ++ix)
+	      if (methods->length () > (size_t) ++ix)
 		{
-		  fndecls = VEC_index (tree, methods, ix);
+		  fndecls = (*methods)[ix];
 		  if (!DECL_CONV_FN_P (OVL_CURRENT (fndecls)))
 		    {
 		      fndecls = NULL_TREE;
@@ -753,7 +753,7 @@ void
 note_vague_linkage_fn (tree decl)
 {
   DECL_DEFER_OUTPUT (decl) = 1;
-  VEC_safe_push (tree, gc, deferred_fns, decl);
+  vec_safe_push (deferred_fns, decl);
 }
 
 /* We have just processed the DECL, which is a static data member.
@@ -772,7 +772,7 @@ finish_static_data_member_decl (tree decl,
      the right thing, namely, to put this decl out straight away.  */
 
   if (! processing_template_decl)
-    VEC_safe_push (tree, gc, pending_statics, decl);
+    vec_safe_push (pending_statics, decl);
 
   if (LOCAL_CLASS_P (current_class_type)
       /* We already complained about the template definition.  */
@@ -1879,7 +1879,7 @@ maybe_emit_vtables (tree ctype)
 
       if (TREE_TYPE (DECL_INITIAL (vtbl)) == 0)
 	{
-	  VEC(tree,gc)* cleanups = NULL;
+	  vec<tree, va_gc> *cleanups = NULL;
 	  tree expr = store_init_value (vtbl, DECL_INITIAL (vtbl), &cleanups,
 					LOOKUP_NORMAL);
 
@@ -3063,7 +3063,7 @@ static GTY(()) tree ssdf_decl;
 
 /* All the static storage duration functions created in this
    translation unit.  */
-static GTY(()) VEC(tree,gc) *ssdf_decls;
+static GTY(()) vec<tree, va_gc> *ssdf_decls;
 
 /* A map from priority levels to information about that priority
    level.  There may be many such levels, so efficient lookup is
@@ -3108,7 +3108,7 @@ start_static_storage_duration_function (unsigned count)
      static constructors and destructors.  */
   if (!ssdf_decls)
     {
-      ssdf_decls = VEC_alloc (tree, gc, 32);
+      vec_alloc (ssdf_decls, 32);
 
       /* Take this opportunity to initialize the map from priority
 	 numbers to information about that priority level.  */
@@ -3124,7 +3124,7 @@ start_static_storage_duration_function (unsigned count)
       get_priority_info (DEFAULT_INIT_PRIORITY);
     }
 
-  VEC_safe_push (tree, gc, ssdf_decls, ssdf_decl);
+  vec_safe_push (ssdf_decls, ssdf_decl);
 
   /* Create the argument list.  */
   initialize_p_decl = cp_build_parm_decl
@@ -3568,7 +3568,7 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 
   /* Call the static storage duration function with appropriate
      arguments.  */
-  FOR_EACH_VEC_ELT (tree, ssdf_decls, i, fndecl)
+  FOR_EACH_VEC_SAFE_ELT (ssdf_decls, i, fndecl)
     {
       /* Calls to pure or const functions will expand to nothing.  */
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
@@ -3941,7 +3941,7 @@ cp_write_global_declarations (void)
 
   /* Bad parse errors.  Just forget about it.  */
   if (! global_bindings_p () || current_class_type
-      || !VEC_empty (tree,decl_namespace_list))
+      || !vec_safe_is_empty (decl_namespace_list))
     return;
 
   if (pch_file)
@@ -4031,12 +4031,12 @@ cp_write_global_declarations (void)
 	 cause other variables to be needed. New elements will be
 	 appended, and we remove from the vector those that actually
 	 get emitted.  */
-      for (i = VEC_length (tree, unemitted_tinfo_decls);
-	   VEC_iterate (tree, unemitted_tinfo_decls, --i, t);)
+      for (i = unemitted_tinfo_decls->length ();
+	   unemitted_tinfo_decls->iterate (--i, &t);)
 	if (emit_tinfo_decl (t))
 	  {
 	    reconsider = true;
-	    VEC_unordered_remove (tree, unemitted_tinfo_decls, i);
+	    unemitted_tinfo_decls->unordered_remove (i);
 	  }
 
       /* The list of objects with static storage duration is built up
@@ -4102,7 +4102,7 @@ cp_write_global_declarations (void)
       /* Go through the set of inline functions whose bodies have not
 	 been emitted yet.  If out-of-line copies of these functions
 	 are required, emit them.  */
-      FOR_EACH_VEC_ELT (tree, deferred_fns, i, decl)
+      FOR_EACH_VEC_SAFE_ELT (deferred_fns, i, decl)
 	{
 	  /* Does it need synthesizing?  */
 	  if (DECL_DEFAULTED_FN (decl) && ! DECL_INITIAL (decl)
@@ -4196,7 +4196,7 @@ cp_write_global_declarations (void)
 	reconsider = true;
 
       /* Static data members are just like namespace-scope globals.  */
-      FOR_EACH_VEC_ELT (tree, pending_statics, i, decl)
+      FOR_EACH_VEC_SAFE_ELT (pending_statics, i, decl)
 	{
 	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
@@ -4208,9 +4208,9 @@ cp_write_global_declarations (void)
 	  if (DECL_NOT_REALLY_EXTERN (decl) && decl_needed_p (decl))
 	    DECL_EXTERNAL (decl) = 0;
 	}
-      if (VEC_length (tree, pending_statics) != 0
-	  && wrapup_global_declarations (VEC_address (tree, pending_statics),
-					 VEC_length (tree, pending_statics)))
+      if (vec_safe_length (pending_statics) != 0
+	  && wrapup_global_declarations (pending_statics->address (),
+					 pending_statics->length ()))
 	reconsider = true;
 
       retries++;
@@ -4218,7 +4218,7 @@ cp_write_global_declarations (void)
   while (reconsider);
 
   /* All used inline functions must have a definition at this point.  */
-  FOR_EACH_VEC_ELT (tree, deferred_fns, i, decl)
+  FOR_EACH_VEC_SAFE_ELT (deferred_fns, i, decl)
     {
       if (/* Check online inline functions that were actually used.  */
 	  DECL_ODR_USED (decl) && DECL_DECLARED_INLINE_P (decl)
@@ -4240,7 +4240,7 @@ cp_write_global_declarations (void)
     }
 
   /* So must decls that use a type with no linkage.  */
-  FOR_EACH_VEC_ELT (tree, no_linkage_decls, i, decl)
+  FOR_EACH_VEC_SAFE_ELT (no_linkage_decls, i, decl)
     if (!decl_defined_p (decl))
       no_linkage_error (decl);
 
@@ -4292,12 +4292,12 @@ cp_write_global_declarations (void)
   /* Now, issue warnings about static, but not defined, functions,
      etc., and emit debugging information.  */
   walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
-  if (VEC_length (tree, pending_statics) != 0)
+  if (vec_safe_length (pending_statics) != 0)
     {
-      check_global_declarations (VEC_address (tree, pending_statics),
-				 VEC_length (tree, pending_statics));
-      emit_debug_global_declarations (VEC_address (tree, pending_statics),
-				      VEC_length (tree, pending_statics));
+      check_global_declarations (pending_statics->address (),
+				 pending_statics->length ());
+      emit_debug_global_declarations (pending_statics->address (),
+				      pending_statics->length ());
     }
 
   perform_deferred_noexcept_checks ();
@@ -4345,11 +4345,11 @@ cp_write_global_declarations (void)
    ARGS.  */
 
 tree
-build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args,
+build_offset_ref_call_from_tree (tree fn, vec<tree, va_gc> **args,
 				 tsubst_flags_t complain)
 {
   tree orig_fn;
-  VEC(tree,gc) *orig_args = NULL;
+  vec<tree, va_gc> *orig_args = NULL;
   tree expr;
   tree object;
 
@@ -4375,7 +4375,7 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args,
 	{
 	  if (TREE_CODE (fn) == DOTSTAR_EXPR)
 	    object = cp_build_addr_expr (object, complain);
-	  VEC_safe_insert (tree, gc, *args, 0, object);
+	  vec_safe_insert (*args, 0, object);
 	}
       /* Now that the arguments are done, transform FN.  */
       fn = build_non_dependent_expr (fn);
@@ -4393,7 +4393,7 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args,
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn,
 					     complain);
-      VEC_safe_insert (tree, gc, *args, 0, object_addr);
+      vec_safe_insert (*args, 0, object_addr);
     }
 
   if (CLASS_TYPE_P (TREE_TYPE (fn)))
@@ -4519,7 +4519,7 @@ mark_used (tree decl)
      finishes, otherwise it might recurse.  */
   if (defer_mark_used_calls)
     {
-      VEC_safe_push (tree, gc, deferred_mark_used_calls, decl);
+      vec_safe_push (deferred_mark_used_calls, decl);
       return true;
     }
 
@@ -4589,7 +4589,7 @@ mark_used (tree decl)
 	   the vector interferes with GC, so give an error now.  */
 	no_linkage_error (decl);
       else
-	VEC_safe_push (tree, gc, no_linkage_decls, decl);
+	vec_safe_push (no_linkage_decls, decl);
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)

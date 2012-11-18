@@ -170,7 +170,6 @@
 #include "tree-pass.h"
 #include "target.h"
 #include "df.h"
-#include "vecprim.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 #ifdef STACK_REGS
@@ -181,7 +180,7 @@
    Indexed by insn UIDs.  A value of zero is uninitialized, one indicates
    the insn uses stack registers, two indicates the insn does not use
    stack registers.  */
-static VEC(char,heap) *stack_regs_mentioned_data;
+static vec<char> stack_regs_mentioned_data;
 
 #define REG_STACK_SIZE (LAST_STACK_REG - FIRST_STACK_REG + 1)
 
@@ -306,25 +305,25 @@ stack_regs_mentioned (const_rtx insn)
   unsigned int uid, max;
   int test;
 
-  if (! INSN_P (insn) || !stack_regs_mentioned_data)
+  if (! INSN_P (insn) || !stack_regs_mentioned_data.exists ())
     return 0;
 
   uid = INSN_UID (insn);
-  max = VEC_length (char, stack_regs_mentioned_data);
+  max = stack_regs_mentioned_data.length ();
   if (uid >= max)
     {
       /* Allocate some extra size to avoid too many reallocs, but
 	 do not grow too quickly.  */
       max = uid + uid / 20 + 1;
-      VEC_safe_grow_cleared (char, heap, stack_regs_mentioned_data, max);
+      stack_regs_mentioned_data.safe_grow_cleared (max);
     }
 
-  test = VEC_index (char, stack_regs_mentioned_data, uid);
+  test = stack_regs_mentioned_data[uid];
   if (test == 0)
     {
       /* This insn has yet to be examined.  Do so now.  */
       test = stack_regs_mentioned_p (PATTERN (insn)) ? 1 : 2;
-      VEC_replace (char, stack_regs_mentioned_data, uid, test);
+      stack_regs_mentioned_data[uid] = test;
     }
 
   return test == 1;
@@ -3199,8 +3198,7 @@ reg_to_stack (void)
   int max_uid;
 
   /* Clean up previous run.  */
-  if (stack_regs_mentioned_data != NULL)
-    VEC_free (char, heap, stack_regs_mentioned_data);
+  stack_regs_mentioned_data.release ();
 
   /* See if there is something to do.  Flow analysis is quite
      expensive so we might save some compilation time.  */
@@ -3279,8 +3277,8 @@ reg_to_stack (void)
 
   /* Allocate a cache for stack_regs_mentioned.  */
   max_uid = get_max_uid ();
-  stack_regs_mentioned_data = VEC_alloc (char, heap, max_uid + 1);
-  memset (VEC_address (char, stack_regs_mentioned_data),
+  stack_regs_mentioned_data.create (max_uid + 1);
+  memset (stack_regs_mentioned_data.address (),
 	  0, sizeof (char) * (max_uid + 1));
 
   convert_regs ();

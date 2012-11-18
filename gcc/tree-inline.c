@@ -536,7 +536,8 @@ can_be_nonlocal (tree decl, copy_body_data *id)
 }
 
 static tree
-remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
+remap_decls (tree decls, vec<tree, va_gc> *nonlocalized_list,
+	     copy_body_data *id)
 {
   tree old_var;
   tree new_decls = NULL_TREE;
@@ -556,7 +557,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
 	      && nonlocalized_list)
-	    VEC_safe_push (tree, gc, *nonlocalized_list, old_var);
+	    vec_safe_push (nonlocalized_list, old_var);
 	  continue;
 	}
 
@@ -574,7 +575,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
 	      && nonlocalized_list)
-	    VEC_safe_push (tree, gc, *nonlocalized_list, old_var);
+	    vec_safe_push (nonlocalized_list, old_var);
 	}
       else
 	{
@@ -616,12 +617,12 @@ remap_block (tree *block, copy_body_data *id)
   BLOCK_ABSTRACT_ORIGIN (new_block) = old_block;
   BLOCK_SOURCE_LOCATION (new_block) = BLOCK_SOURCE_LOCATION (old_block);
   BLOCK_NONLOCALIZED_VARS (new_block)
-    = VEC_copy (tree, gc, BLOCK_NONLOCALIZED_VARS (old_block));
+    = vec_safe_copy (BLOCK_NONLOCALIZED_VARS (old_block));
   *block = new_block;
 
   /* Remap its variables.  */
   BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block),
-  					&BLOCK_NONLOCALIZED_VARS (new_block),
+  					BLOCK_NONLOCALIZED_VARS (new_block),
 					id);
 
   if (id->transform_lang_insert_block)
@@ -1385,7 +1386,7 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	  copy = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
 					  gimple_debug_bind_get_value (stmt),
 					  stmt);
-	  VEC_safe_push (gimple, heap, id->debug_stmts, copy);
+	  id->debug_stmts.safe_push (copy);
 	  return copy;
 	}
       if (gimple_debug_source_bind_p (stmt))
@@ -1393,7 +1394,7 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	  copy = gimple_build_debug_source_bind
 		   (gimple_debug_source_bind_get_var (stmt),
 		    gimple_debug_source_bind_get_value (stmt), stmt);
-	  VEC_safe_push (gimple, heap, id->debug_stmts, copy);
+	  id->debug_stmts.safe_push (copy);
 	  return copy;
 	}
 
@@ -1585,7 +1586,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		 all arguments corresponding to ... in the caller.  */
 	      tree p;
 	      gimple new_call;
-	      VEC(tree, heap) *argarray;
+	      vec<tree> argarray;
 	      size_t nargs = gimple_call_num_args (id->gimple_call);
 	      size_t n;
 
@@ -1594,16 +1595,16 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 
 	      /* Create the new array of arguments.  */
 	      n = nargs + gimple_call_num_args (stmt);
-	      argarray = VEC_alloc (tree, heap, n);
-	      VEC_safe_grow (tree, heap, argarray, n);
+	      argarray.create (n);
+	      argarray.safe_grow_cleared (n);
 
 	      /* Copy all the arguments before '...'  */
-	      memcpy (VEC_address (tree, argarray),
+	      memcpy (argarray.address (),
 		      gimple_call_arg_ptr (stmt, 0),
 		      gimple_call_num_args (stmt) * sizeof (tree));
 
 	      /* Append the arguments passed in '...'  */
-	      memcpy (VEC_address(tree, argarray) + gimple_call_num_args (stmt),
+	      memcpy (argarray.address () + gimple_call_num_args (stmt),
 		      gimple_call_arg_ptr (id->gimple_call, 0)
 			+ (gimple_call_num_args (id->gimple_call) - nargs),
 		      nargs * sizeof (tree));
@@ -1611,7 +1612,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      new_call = gimple_build_call_vec (gimple_call_fn (stmt),
 						argarray);
 
-	      VEC_free (tree, heap, argarray);
+	      argarray.release ();
 
 	      /* Copy all GIMPLE_CALL flags, location and block, except
 		 GF_CALL_VA_ARG_PACK.  */
@@ -2178,7 +2179,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 	  else
 	    gcc_unreachable ();
 	  gsi_insert_before (&dsi, new_stmt, GSI_SAME_STMT);
-	  VEC_safe_push (gimple, heap, id->debug_stmts, new_stmt);
+	  id->debug_stmts.safe_push (new_stmt);
 	  gsi_prev (&ssi);
 	}
     }
@@ -2383,16 +2384,15 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
 	  && TREE_CODE (t) == PARM_DECL
 	  && id->gimple_call)
 	{
-	  VEC(tree, gc) **debug_args = decl_debug_args_lookup (id->src_fn);
+	  vec<tree, va_gc> **debug_args = decl_debug_args_lookup (id->src_fn);
 	  unsigned int i;
 	  if (debug_args != NULL)
 	    {
-	      for (i = 0; i < VEC_length (tree, *debug_args); i += 2)
-		if (VEC_index (tree, *debug_args, i) == DECL_ORIGIN (t)
-		    && TREE_CODE (VEC_index (tree, *debug_args, i + 1))
-		       == DEBUG_EXPR_DECL)
+	      for (i = 0; i < vec_safe_length (*debug_args); i += 2)
+		if ((**debug_args)[i] == DECL_ORIGIN (t)
+		    && TREE_CODE ((**debug_args)[i + 1]) == DEBUG_EXPR_DECL)
 		  {
-		    t = VEC_index (tree, *debug_args, i + 1);
+		    t = (**debug_args)[i + 1];
 		    stmt->gsbase.subcode = GIMPLE_DEBUG_BIND;
 		    gimple_debug_bind_set_value (stmt, t);
 		    break;
@@ -2417,13 +2417,13 @@ copy_debug_stmts (copy_body_data *id)
   size_t i;
   gimple stmt;
 
-  if (!id->debug_stmts)
+  if (!id->debug_stmts.exists ())
     return;
 
-  FOR_EACH_VEC_ELT (gimple, id->debug_stmts, i, stmt)
+  FOR_EACH_VEC_ELT (id->debug_stmts, i, stmt)
     copy_debug_stmt (stmt, id);
 
-  VEC_free (gimple, heap, id->debug_stmts);
+  id->debug_stmts.release ();
 }
 
 /* Make a copy of the body of SRC_FN so that it can be inserted inline in
@@ -4318,7 +4318,7 @@ optimize_inline_calls (tree fn)
   fold_marked_statements (last, id.statements_to_fold);
   pointer_set_destroy (id.statements_to_fold);
 
-  gcc_assert (!id.debug_stmts);
+  gcc_assert (!id.debug_stmts.exists ());
 
   /* If we didn't inline into the function there is nothing to do.  */
   if (!inlined_p)
@@ -4398,8 +4398,7 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       if (flag_mudflap && mf_marked_p (*tp))
         mf_mark (new_tree);
 
-      CONSTRUCTOR_ELTS (new_tree) = VEC_copy (constructor_elt, gc,
-					 CONSTRUCTOR_ELTS (*tp));
+      CONSTRUCTOR_ELTS (new_tree) = vec_safe_copy (CONSTRUCTOR_ELTS (*tp));
       *tp = new_tree;
     }
   else if (code == STATEMENT_LIST)
@@ -4681,7 +4680,8 @@ replace_locals_stmt (gimple_stmt_iterator *gsip,
       /* This will remap a lot of the same decls again, but this should be
 	 harmless.  */
       if (gimple_bind_vars (stmt))
-	gimple_bind_set_vars (stmt, remap_decls (gimple_bind_vars (stmt), NULL, id));
+	gimple_bind_set_vars (stmt, remap_decls (gimple_bind_vars (stmt),
+						 NULL, id));
     }
 
   /* Keep iterating.  */
@@ -5048,10 +5048,10 @@ update_clone_info (copy_body_data * id)
       if (node->clone.tree_map)
         {
 	  unsigned int i;
-          for (i = 0; i < VEC_length (ipa_replace_map_p, node->clone.tree_map); i++)
+          for (i = 0; i < vec_safe_length (node->clone.tree_map); i++)
 	    {
 	      struct ipa_replace_map *replace_info;
-	      replace_info = VEC_index (ipa_replace_map_p, node->clone.tree_map, i);
+	      replace_info = (*node->clone.tree_map)[i];
 	      walk_tree (&replace_info->old_tree, copy_tree_body_r, id, NULL);
 	      walk_tree (&replace_info->new_tree, copy_tree_body_r, id, NULL);
 	    }
@@ -5087,7 +5087,7 @@ update_clone_info (copy_body_data * id)
 */
 void
 tree_function_versioning (tree old_decl, tree new_decl,
-			  VEC(ipa_replace_map_p,gc)* tree_map,
+			  vec<ipa_replace_map_p, va_gc> *tree_map,
 			  bool update_clones, bitmap args_to_skip,
 			  bool skip_return, bitmap blocks_to_copy,
 			  basic_block new_entry)
@@ -5099,7 +5099,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
   unsigned i;
   struct ipa_replace_map *replace_info;
   basic_block old_entry_block, bb;
-  VEC (gimple, heap) *init_stmts = VEC_alloc (gimple, heap, 10);
+  vec<gimple> init_stmts;
+  init_stmts.create (10);
   tree vars = NULL_TREE;
 
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
@@ -5114,14 +5115,14 @@ tree_function_versioning (tree old_decl, tree new_decl,
   /* Copy over debug args.  */
   if (DECL_HAS_DEBUG_ARGS_P (old_decl))
     {
-      VEC(tree, gc) **new_debug_args, **old_debug_args;
+      vec<tree, va_gc> **new_debug_args, **old_debug_args;
       gcc_checking_assert (decl_debug_args_lookup (new_decl) == NULL);
       DECL_HAS_DEBUG_ARGS_P (new_decl) = 0;
       old_debug_args = decl_debug_args_lookup (old_decl);
       if (old_debug_args)
 	{
 	  new_debug_args = decl_debug_args_insert (new_decl);
-	  *new_debug_args = VEC_copy (tree, gc, *old_debug_args);
+	  *new_debug_args = vec_safe_copy (*old_debug_args);
 	}
     }
 
@@ -5148,19 +5149,17 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.src_node = old_version_node;
   id.dst_node = new_version_node;
   id.src_cfun = DECL_STRUCT_FUNCTION (old_decl);
-  if (id.src_node->ipa_transforms_to_apply)
+  if (id.src_node->ipa_transforms_to_apply.exists ())
     {
-      VEC(ipa_opt_pass,heap) * old_transforms_to_apply = id.dst_node->ipa_transforms_to_apply;
+      vec<ipa_opt_pass> old_transforms_to_apply
+	    = id.dst_node->ipa_transforms_to_apply;
       unsigned int i;
 
-      id.dst_node->ipa_transforms_to_apply = VEC_copy (ipa_opt_pass, heap,
-					               id.src_node->ipa_transforms_to_apply);
-      for (i = 0; i < VEC_length (ipa_opt_pass, old_transforms_to_apply); i++)
-        VEC_safe_push (ipa_opt_pass, heap, id.dst_node->ipa_transforms_to_apply,
-		       VEC_index (ipa_opt_pass,
-		       		  old_transforms_to_apply,
-				  i));
-      VEC_free (ipa_opt_pass, heap, old_transforms_to_apply);
+      id.dst_node->ipa_transforms_to_apply
+	    = id.src_node->ipa_transforms_to_apply.copy ();
+      for (i = 0; i < old_transforms_to_apply.length (); i++)
+        id.dst_node->ipa_transforms_to_apply.safe_push (old_transforms_to_apply[i]);
+      old_transforms_to_apply.release ();
     }
 
   id.copy_decl = copy_decl_no_change;
@@ -5186,10 +5185,10 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   /* If there's a tree_map, prepare for substitution.  */
   if (tree_map)
-    for (i = 0; i < VEC_length (ipa_replace_map_p, tree_map); i++)
+    for (i = 0; i < tree_map->length (); i++)
       {
 	gimple init;
-	replace_info = VEC_index (ipa_replace_map_p, tree_map, i);
+	replace_info = (*tree_map)[i];
 	if (replace_info->replace_p)
 	  {
 	    tree op = replace_info->new_tree;
@@ -5214,7 +5213,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 				        NULL,
 				        &vars);
 	    if (init)
-	      VEC_safe_push (gimple, heap, init_stmts, init);
+	      init_stmts.safe_push (init);
 	  }
       }
   /* Copy the function's arguments.  */
@@ -5228,7 +5227,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   declare_inline_vars (DECL_INITIAL (new_decl), vars);
 
-  if (!VEC_empty (tree, DECL_STRUCT_FUNCTION (old_decl)->local_decls))
+  if (!vec_safe_is_empty (DECL_STRUCT_FUNCTION (old_decl)->local_decls))
     /* Add local vars.  */
     add_local_variables (DECL_STRUCT_FUNCTION (old_decl), cfun, &id);
 
@@ -5270,8 +5269,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
      debug stmts doesn't affect BB count, which may in the end cause
      codegen differences.  */
   bb = split_edge (single_succ_edge (ENTRY_BLOCK_PTR));
-  while (VEC_length (gimple, init_stmts))
-    insert_init_stmt (&id, bb, VEC_pop (gimple, init_stmts));
+  while (init_stmts.length ())
+    insert_init_stmt (&id, bb, init_stmts.pop ());
   update_clone_info (&id);
 
   /* Remap the nonlocal_goto_save_area, if any.  */
@@ -5326,8 +5325,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
-  gcc_assert (!id.debug_stmts);
-  VEC_free (gimple, heap, init_stmts);
+  gcc_assert (!id.debug_stmts.exists ());
+  init_stmts.release ();
   pop_cfun ();
   return;
 }

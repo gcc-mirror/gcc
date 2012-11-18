@@ -52,6 +52,7 @@ type_lineloc (const_type_p ty)
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
     case TYPE_USER_STRUCT:
+    case TYPE_UNDEFINED:
       return CONST_CAST (struct fileloc*, &ty->u.s.line);
     case TYPE_PARAM_STRUCT:
       return CONST_CAST (struct fileloc*, &ty->u.param_struct.line);
@@ -770,6 +771,23 @@ write_state_string_type (type_p current)
     fatal ("Unexpected type in write_state_string_type");
 }
 
+/* Write an undefined type.  */
+static void
+write_state_undefined_type (type_p current)
+{
+  DBGPRINTF ("undefined type @ %p #%d '%s'", (void *) current,
+	     current->state_number, current->u.s.tag);
+  fprintf (state_file, "undefined ");
+  gcc_assert (current->gc_used == GC_UNUSED);
+  write_state_common_type_content (current);
+  if (current->u.s.tag != NULL)
+    write_state_a_string (current->u.s.tag);
+  else
+    fprintf (state_file, "nil");
+
+  write_state_fileloc (type_lineloc (current));
+}
+
 
 /* Common code to write structure like types.  */
 static void
@@ -963,6 +981,9 @@ write_state_type (type_p current)
 	{
 	case TYPE_NONE:
 	  gcc_unreachable ();
+	case TYPE_UNDEFINED:
+	  write_state_undefined_type (current);
+	  break;
 	case TYPE_STRUCT:
 	  write_state_struct_type (current);
 	  break;
@@ -1345,6 +1366,40 @@ read_state_lang_bitmap (lang_bitmap *bitmap)
 }
 
 
+/* Read an undefined type.  */
+static void
+read_state_undefined_type (type_p type)
+{
+  struct state_token_st *t0;
+
+  type->kind = TYPE_UNDEFINED;
+  read_state_common_type_content (type);
+  t0 = peek_state_token (0);
+  if (state_token_kind (t0) == STOK_STRING)
+    {
+      if (state_token_is_name (t0, "nil"))
+	{
+	  type->u.s.tag = NULL;
+	  DBGPRINTF ("read anonymous undefined type @%p #%d",
+		     (void *) type, type->state_number);
+	}
+      else
+	{
+	  type->u.s.tag = xstrdup (t0->stok_un.stok_string);
+	  DBGPRINTF ("read undefined type @%p #%d '%s'",
+		     (void *) type, type->state_number, type->u.s.tag);
+	}
+
+      next_state_tokens (1);
+      read_state_fileloc (&(type->u.s.line));
+    }
+  else
+    {
+      fatal_reading_state (t0, "Bad tag in undefined type");
+    }
+}
+
+
 /* Read a GTY-ed struct type.  */
 static void
 read_state_struct_type (type_p type)
@@ -1672,6 +1727,12 @@ read_state_type (type_p *current)
 	    {
 	      next_state_tokens (1);
 	      read_state_string_type (current);
+	    }
+	  else if (state_token_is_name (t0, "undefined"))
+	    {
+	      *current = XCNEW (struct type);
+	      next_state_tokens (1);
+	      read_state_undefined_type (*current);
 	    }
 	  else if (state_token_is_name (t0, "struct"))
 	    {

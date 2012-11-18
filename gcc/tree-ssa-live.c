@@ -859,10 +859,10 @@ remove_unused_locals (void)
   cfun->has_local_explicit_reg_vars = false;
 
   /* Remove unmarked local and global vars from local_decls.  */
-  num = VEC_length (tree, cfun->local_decls);
+  num = vec_safe_length (cfun->local_decls);
   for (srcidx = 0, dstidx = 0; srcidx < num; srcidx++)
     {
-      var = VEC_index (tree, cfun->local_decls, srcidx);
+      var = (*cfun->local_decls)[srcidx];
       if (TREE_CODE (var) == VAR_DECL)
 	{
 	  if (!is_used_p (var))
@@ -886,11 +886,11 @@ remove_unused_locals (void)
 	cfun->has_local_explicit_reg_vars = true;
 
       if (srcidx != dstidx)
-	VEC_replace (tree, cfun->local_decls, dstidx, var);
+	(*cfun->local_decls)[dstidx] = var;
       dstidx++;
     }
   if (dstidx != num)
-    VEC_truncate (tree, cfun->local_decls, dstidx);
+    cfun->local_decls->truncate (dstidx);
 
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   clear_unused_block_pointer ();

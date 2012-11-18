@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
    to profile.  There are different histogram types (see HIST_TYPE_* in
    value-prof.h) and each transformation can request one or more histogram
    types per GIMPLE statement.  The function gimple_find_values_to_profile()
-   collects the values to profile in a VEC, and adds the number of counters
+   collects the values to profile in a vec, and adds the number of counters
    required for the different histogram types.
 
    For a -fprofile-generate run, the statements for which values should be
@@ -1085,7 +1085,8 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-static VEC(cgraph_node_ptr, heap) *cgraph_node_map = NULL;
+static vec<cgraph_node_ptr> cgraph_node_map
+    = vec<cgraph_node_ptr>();
 
 /* Initialize map from FUNCDEF_NO to CGRAPH_NODE.  */
 
@@ -1095,14 +1096,12 @@ init_node_map (void)
   struct cgraph_node *n;
 
   if (get_last_funcdef_no ())
-    VEC_safe_grow_cleared (cgraph_node_ptr, heap,
-                           cgraph_node_map, get_last_funcdef_no ());
+    cgraph_node_map.safe_grow_cleared (get_last_funcdef_no ());
 
   FOR_EACH_FUNCTION (n)
     {
       if (DECL_STRUCT_FUNCTION (n->symbol.decl))
-        VEC_replace (cgraph_node_ptr, cgraph_node_map,
-                     DECL_STRUCT_FUNCTION (n->symbol.decl)->funcdef_no, n);
+        cgraph_node_map[DECL_STRUCT_FUNCTION (n->symbol.decl)->funcdef_no] = n;
     }
 }
 
@@ -1111,8 +1110,7 @@ init_node_map (void)
 void
 del_node_map (void)
 {
-   VEC_free (cgraph_node_ptr, heap, cgraph_node_map);
-   cgraph_node_map = NULL;
+   cgraph_node_map.release ();
 }
 
 /* Return cgraph node for function with pid */
@@ -1121,9 +1119,7 @@ static inline struct cgraph_node*
 find_func_by_funcdef_no (int func_id)
 {
   int max_id = get_last_funcdef_no ();
-  if (func_id >= max_id || VEC_index (cgraph_node_ptr,
-                                      cgraph_node_map,
-                                      func_id) == NULL)
+  if (func_id >= max_id || cgraph_node_map[func_id] == NULL)
     {
       if (flag_profile_correction)
         inform (DECL_SOURCE_LOCATION (current_function_decl),
@@ -1134,7 +1130,7 @@ find_func_by_funcdef_no (int func_id)
       return NULL;
     }
 
-  return VEC_index (cgraph_node_ptr, cgraph_node_map, func_id);
+  return cgraph_node_map[func_id];
 }
 
 /* Perform sanity check on the indirect call target. Due to race conditions,
@@ -1667,13 +1663,12 @@ gimple_divmod_values_to_profile (gimple stmt, histogram_values *values)
       divisor = gimple_assign_rhs2 (stmt);
       op0 = gimple_assign_rhs1 (stmt);
 
-      VEC_reserve (histogram_value, heap, *values, 3);
+      values->reserve (3);
 
       if (TREE_CODE (divisor) == SSA_NAME)
 	/* Check for the case where the divisor is the same value most
 	   of the time.  */
-	VEC_quick_push (histogram_value, *values,
-			gimple_alloc_histogram_value (cfun,
+	values->quick_push (gimple_alloc_histogram_value (cfun,
 						      HIST_TYPE_SINGLE_VALUE,
 						      stmt, divisor));
 
@@ -1684,16 +1679,16 @@ gimple_divmod_values_to_profile (gimple stmt, histogram_values *values)
 	{
           tree val;
           /* Check for a special case where the divisor is power of 2.  */
-	  VEC_quick_push (histogram_value, *values,
-			  gimple_alloc_histogram_value (cfun, HIST_TYPE_POW2,
-							stmt, divisor));
+	  values->quick_push (gimple_alloc_histogram_value (cfun,
+		                                            HIST_TYPE_POW2,
+							    stmt, divisor));
 
 	  val = build2 (TRUNC_DIV_EXPR, type, op0, divisor);
 	  hist = gimple_alloc_histogram_value (cfun, HIST_TYPE_INTERVAL,
 					       stmt, val);
 	  hist->hdata.intvl.int_start = 0;
 	  hist->hdata.intvl.steps = 2;
-	  VEC_quick_push (histogram_value, *values, hist);
+	  values->quick_push (hist);
 	}
       return;
 
@@ -1717,11 +1712,10 @@ gimple_indirect_call_to_profile (gimple stmt, histogram_values *values)
 
   callee = gimple_call_fn (stmt);
 
-  VEC_reserve (histogram_value, heap, *values, 3);
+  values->reserve (3);
 
-  VEC_quick_push (histogram_value, *values,
-		  gimple_alloc_histogram_value (cfun, HIST_TYPE_INDIR_CALL,
-						stmt, callee));
+  values->quick_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_INDIR_CALL,
+						    stmt, callee));
 
   return;
 }
@@ -1750,17 +1744,15 @@ gimple_stringops_values_to_profile (gimple stmt, histogram_values *values)
 
   if (TREE_CODE (blck_size) != INTEGER_CST)
     {
-      VEC_safe_push (histogram_value, heap, *values,
-		     gimple_alloc_histogram_value (cfun, HIST_TYPE_SINGLE_VALUE,
-						   stmt, blck_size));
-      VEC_safe_push (histogram_value, heap, *values,
-		     gimple_alloc_histogram_value (cfun, HIST_TYPE_AVERAGE,
-						   stmt, blck_size));
+      values->safe_push (gimple_alloc_histogram_value (cfun,
+						       HIST_TYPE_SINGLE_VALUE,
+						       stmt, blck_size));
+      values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_AVERAGE,
+						       stmt, blck_size));
     }
   if (TREE_CODE (blck_size) != INTEGER_CST)
-    VEC_safe_push (histogram_value, heap, *values,
-		   gimple_alloc_histogram_value (cfun, HIST_TYPE_IOR,
-						 stmt, dest));
+    values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_IOR,
+						     stmt, dest));
 }
 
 /* Find values inside STMT for that we want to measure histograms and adds
@@ -1782,12 +1774,12 @@ gimple_find_values_to_profile (histogram_values *values)
   unsigned i;
   histogram_value hist = NULL;
 
-  *values = NULL;
+  values->create (0);
   FOR_EACH_BB (bb)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       gimple_values_to_profile (gsi_stmt (gsi), values);
 
-  FOR_EACH_VEC_ELT (histogram_value, *values, i, hist)
+  FOR_EACH_VEC_ELT (*values, i, hist)
     {
       switch (hist->type)
         {

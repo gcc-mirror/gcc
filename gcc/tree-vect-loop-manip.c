@@ -118,17 +118,13 @@ typedef struct
   basic_block bb;
 } adjust_info;
 
-DEF_VEC_O(adjust_info);
-DEF_VEC_ALLOC_O_STACK(adjust_info);
-#define VEC_adjust_info_stack_alloc(alloc) VEC_stack_alloc (adjust_info, alloc)
-
 /* A stack of values to be adjusted in debug stmts.  We have to
    process them LIFO, so that the closest substitution applies.  If we
    processed them FIFO, without the stack, we might substitute uses
    with a PHI DEF that would soon become non-dominant, and when we got
    to the suitable one, it wouldn't have anything to substitute any
    more.  */
-static VEC(adjust_info, stack) *adjust_vec;
+static vec<adjust_info, va_stack> adjust_vec;
 
 /* Adjust any debug stmts that referenced AI->from values to use the
    loop-closed AI->to, if the references are dominated by AI->bb and
@@ -185,15 +181,15 @@ adjust_vec_debug_stmts (void)
   if (!MAY_HAVE_DEBUG_STMTS)
     return;
 
-  gcc_assert (adjust_vec);
+  gcc_assert (adjust_vec.exists ());
 
-  while (!VEC_empty (adjust_info, adjust_vec))
+  while (!adjust_vec.is_empty ())
     {
-      adjust_debug_stmts_now (&VEC_last (adjust_info, adjust_vec));
-      VEC_pop (adjust_info, adjust_vec);
+      adjust_debug_stmts_now (&adjust_vec.last ());
+      adjust_vec.pop ();
     }
 
-  VEC_free (adjust_info, stack, adjust_vec);
+  adjust_vec.release ();
 }
 
 /* Adjust any debug stmts that referenced FROM values to use the
@@ -214,8 +210,8 @@ adjust_debug_stmts (tree from, tree to, basic_block bb)
       ai.to = to;
       ai.bb = bb;
 
-      if (adjust_vec)
-	VEC_safe_push (adjust_info, stack, adjust_vec, ai);
+      if (adjust_vec.exists ())
+	adjust_vec.safe_push (ai);
       else
 	adjust_debug_stmts_now (&ai);
     }
@@ -1253,8 +1249,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 
   if (MAY_HAVE_DEBUG_STMTS)
     {
-      gcc_assert (!adjust_vec);
-      adjust_vec = VEC_alloc (adjust_info, stack, 32);
+      gcc_assert (!adjust_vec.exists ());
+      vec_stack_alloc (adjust_info, adjust_vec, 32);
     }
 
   if (e == exit_e)
@@ -2138,14 +2134,14 @@ static void
 vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
 {
   unsigned int i;
-  VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
  
  if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
                      "=== vect_update_inits_of_dr ===");
 
-  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
     vect_update_init_of_dr (dr, niters);
 }
 
@@ -2267,7 +2263,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 				   gimple_seq *cond_expr_stmt_list)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  VEC(gimple,heap) *may_misalign_stmts
+  vec<gimple> may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
   gimple ref_stmt;
   int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
@@ -2290,7 +2286,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
      of the first vector of the i'th data reference. */
 
-  FOR_EACH_VEC_ELT (gimple, may_misalign_stmts, i, ref_stmt)
+  FOR_EACH_VEC_ELT (may_misalign_stmts, i, ref_stmt)
     {
       gimple_seq new_stmt_list = NULL;
       tree addr_base;
@@ -2422,7 +2418,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 				   gimple_seq * cond_expr_stmt_list)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  VEC (ddr_p, heap) * may_alias_ddrs =
+  vec<ddr_p>  may_alias_ddrs =
     LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
   int vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
@@ -2440,10 +2436,10 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
      ((store_ptr_n + store_segment_length_n) <= load_ptr_n)
      || (load_ptr_n + load_segment_length_n) <= store_ptr_n))  */
 
-  if (VEC_empty (ddr_p, may_alias_ddrs))
+  if (may_alias_ddrs.is_empty ())
     return;
 
-  FOR_EACH_VEC_ELT (ddr_p, may_alias_ddrs, i, ddr)
+  FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
       struct data_reference *dr_a, *dr_b;
       gimple dr_group_first_a, dr_group_first_b;
@@ -2518,7 +2514,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
 		     "created %u versioning for alias checks.\n",
-		     VEC_length (ddr_p, may_alias_ddrs));
+		     may_alias_ddrs.length ());
 }
 
 

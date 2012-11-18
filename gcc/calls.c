@@ -1696,7 +1696,7 @@ static struct
      based on crtl->args.internal_arg_pointer.  The element is NULL_RTX if the
      pseudo isn't based on it, a CONST_INT offset if the pseudo is based on it
      with fixed offset, or PC if this is with variable or unknown offset.  */
-  VEC(rtx, heap) *cache;
+  vec<rtx> cache;
 } internal_arg_pointer_exp_state;
 
 static rtx internal_arg_pointer_based_exp (rtx, bool);
@@ -1725,21 +1725,17 @@ internal_arg_pointer_based_exp_scan (void)
 	  rtx val = NULL_RTX;
 	  unsigned int idx = REGNO (SET_DEST (set)) - FIRST_PSEUDO_REGISTER;
 	  /* Punt on pseudos set multiple times.  */
-	  if (idx < VEC_length (rtx, internal_arg_pointer_exp_state.cache)
-	      && (VEC_index (rtx, internal_arg_pointer_exp_state.cache, idx)
+	  if (idx < internal_arg_pointer_exp_state.cache.length ()
+	      && (internal_arg_pointer_exp_state.cache[idx]
 		  != NULL_RTX))
 	    val = pc_rtx;
 	  else
 	    val = internal_arg_pointer_based_exp (SET_SRC (set), false);
 	  if (val != NULL_RTX)
 	    {
-	      if (idx
-		  >= VEC_length (rtx, internal_arg_pointer_exp_state.cache))
-		VEC_safe_grow_cleared (rtx, heap,
-				       internal_arg_pointer_exp_state.cache,
-				       idx + 1);
-	      VEC_replace (rtx, internal_arg_pointer_exp_state.cache,
-			   idx, val);
+	      if (idx >= internal_arg_pointer_exp_state.cache.length ())
+		internal_arg_pointer_exp_state.cache.safe_grow_cleared(idx + 1);
+	      internal_arg_pointer_exp_state.cache[idx] = val;
 	    }
 	}
       if (NEXT_INSN (insn) == NULL_RTX)
@@ -1799,8 +1795,8 @@ internal_arg_pointer_based_exp (rtx rtl, bool toplevel)
   if (REG_P (rtl))
     {
       unsigned int idx = REGNO (rtl) - FIRST_PSEUDO_REGISTER;
-      if (idx < VEC_length (rtx, internal_arg_pointer_exp_state.cache))
-	return VEC_index (rtx, internal_arg_pointer_exp_state.cache, idx);
+      if (idx < internal_arg_pointer_exp_state.cache.length ())
+	return internal_arg_pointer_exp_state.cache[idx];
 
       return NULL_RTX;
     }
@@ -3443,7 +3439,7 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  sbitmap_free (stored_args_map);
 	  internal_arg_pointer_exp_state.scan_start = NULL_RTX;
-	  VEC_free (rtx, heap, internal_arg_pointer_exp_state.cache);
+	  internal_arg_pointer_exp_state.cache.release ();
 	}
       else
 	{

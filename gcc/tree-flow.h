@@ -50,10 +50,10 @@ struct GTY(()) gimple_df {
      indirect call has been turned into a noreturn call.  When this
      happens, all the instructions after the call are no longer
      reachable and must be deleted as dead.  */
-  VEC(gimple,gc) *modified_noreturn_calls;
+  vec<gimple, va_gc> *modified_noreturn_calls;
 
   /* Array of all SSA_NAMEs used in the function.  */
-  VEC(tree,gc) *ssa_names;
+  vec<tree, va_gc> *ssa_names;
 
   /* Artificial variable used for the virtual operand FUD chain.  */
   tree vop;
@@ -66,7 +66,7 @@ struct GTY(()) gimple_df {
   struct pointer_map_t * GTY((skip(""))) decls_to_pointers;
 
   /* Free list of SSA_NAMEs.  */
-  VEC(tree,gc) *free_ssanames;
+  vec<tree, va_gc> *free_ssanames;
 
   /* Hashtable holding definition for symbol.  If this field is not NULL, it
      means that the first reference to this variable in the function is a
@@ -289,8 +289,8 @@ extern int int_tree_map_eq (const void *, const void *);
 extern unsigned int uid_decl_map_hash (const void *);
 extern int uid_decl_map_eq (const void *, const void *);
 
-#define num_ssa_names (VEC_length (tree, cfun->gimple_df->ssa_names))
-#define ssa_name(i) (VEC_index (tree, cfun->gimple_df->ssa_names, (i)))
+#define num_ssa_names (vec_safe_length (cfun->gimple_df->ssa_names))
+#define ssa_name(i) ((*cfun->gimple_df->ssa_names)[(i)])
 
 /* Macros for showing usage statistics.  */
 #define SCALE(x) ((unsigned long) ((x) < 1024*10	\
@@ -334,7 +334,7 @@ struct omp_region
   /* If this is a combined parallel+workshare region, this is a list
      of additional arguments needed by the combined parallel+workshare
      library call.  */
-  VEC(tree,gc) *ws_args;
+  vec<tree, va_gc> *ws_args;
 
   /* The code for the omp directive of this region.  */
   enum gimple_code type;
@@ -402,7 +402,7 @@ extern bool gimple_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 extern bool gimple_duplicate_sese_tail (edge, edge, basic_block *, unsigned,
 				      basic_block *);
 extern void gather_blocks_in_sese_region (basic_block entry, basic_block exit,
-					  VEC(basic_block,heap) **bbs_p);
+					  vec<basic_block> *bbs_p);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
 extern bool gimple_purge_dead_eh_edges (basic_block);
@@ -480,17 +480,15 @@ struct _edge_var_map {
 };
 typedef struct _edge_var_map edge_var_map;
 
-DEF_VEC_O(edge_var_map);
-DEF_VEC_ALLOC_O(edge_var_map, heap);
 
 /* A vector of var maps.  */
-typedef VEC(edge_var_map, heap) *edge_var_map_vector;
+typedef vec<edge_var_map> edge_var_map_vector;
 
 extern void init_tree_ssa (struct function *);
 extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
 extern void redirect_edge_var_map_clear (edge);
 extern void redirect_edge_var_map_dup (edge, edge);
-extern edge_var_map_vector redirect_edge_var_map_vector (edge);
+extern edge_var_map_vector *redirect_edge_var_map_vector (edge);
 extern void redirect_edge_var_map_destroy (void);
 
 extern edge ssa_redirect_edge (edge, basic_block);
@@ -654,7 +652,7 @@ basic_block ip_end_pos (struct loop *);
 basic_block ip_normal_pos (struct loop *);
 bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
 					 unsigned int, sbitmap,
-					 edge, VEC (edge, heap) **,
+					 edge, vec<edge> *,
 					 int);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
 void rename_variables_in_loop (struct loop *);
@@ -680,15 +678,15 @@ void mark_virtual_phi_result_for_renaming (gimple);
 /* In tree-ssa-threadedge.c */
 extern void threadedge_initialize_values (void);
 extern void threadedge_finalize_values (void);
-extern VEC(tree,heap) *ssa_name_values;
+extern vec<tree> ssa_name_values;
 #define SSA_NAME_VALUE(x) \
-    (SSA_NAME_VERSION(x) < VEC_length(tree, ssa_name_values) \
-     ? VEC_index(tree, ssa_name_values, SSA_NAME_VERSION(x)) \
+    (SSA_NAME_VERSION(x) < ssa_name_values.length () \
+     ? ssa_name_values[SSA_NAME_VERSION(x)] \
      : NULL_TREE)
 extern void set_ssa_name_value (tree, tree);
 extern bool potentially_threadable_block (basic_block);
 extern void thread_across_edge (gimple, edge, bool,
-				VEC(tree, heap) **, tree (*) (gimple, gimple));
+				vec<tree> *, tree (*) (gimple, gimple));
 extern void propagate_threaded_block_debug_into (basic_block, basic_block);
 
 /* In tree-ssa-loop-im.c  */

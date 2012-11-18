@@ -191,12 +191,10 @@ struct GTY(()) ipa_replace_map
   bool ref_p;
 };
 typedef struct ipa_replace_map *ipa_replace_map_p;
-DEF_VEC_P(ipa_replace_map_p);
-DEF_VEC_ALLOC_P(ipa_replace_map_p,gc);
 
 struct GTY(()) cgraph_clone_info
 {
-  VEC(ipa_replace_map_p,gc)* tree_map;
+  vec<ipa_replace_map_p, va_gc> *tree_map;
   bitmap args_to_skip;
   bitmap combined_args_to_skip;
 };
@@ -238,7 +236,7 @@ struct GTY(()) cgraph_node {
   /* Interprocedural passes scheduled to have their transform functions
      applied next time we execute local pass on them.  We maintain it
      per-function in order to allow IPA passes to introduce new functions.  */
-  VEC(ipa_opt_pass,heap) * GTY((skip)) ipa_transforms_to_apply;
+  vec<ipa_opt_pass> GTY((skip)) ipa_transforms_to_apply;
 
   struct cgraph_local_info local;
   struct cgraph_global_info global;
@@ -284,15 +282,9 @@ struct GTY(()) cgraph_node {
   unsigned dispatcher_function : 1;
 };
 
-DEF_VEC_P(symtab_node);
-DEF_VEC_ALLOC_P(symtab_node,heap);
-DEF_VEC_ALLOC_P(symtab_node,gc);
 
 typedef struct cgraph_node *cgraph_node_ptr;
 
-DEF_VEC_P(cgraph_node_ptr);
-DEF_VEC_ALLOC_P(cgraph_node_ptr,heap);
-DEF_VEC_ALLOC_P(cgraph_node_ptr,gc);
 
 /* Function Multiversioning info.  */
 struct GTY(()) cgraph_function_version_info {
@@ -340,34 +332,25 @@ void delete_function_version (tree decl);
 struct cgraph_node_set_def
 {
   struct pointer_map_t *map;
-  VEC(cgraph_node_ptr, heap) *nodes;
+  vec<cgraph_node_ptr> nodes;
 };
 
 typedef struct varpool_node *varpool_node_ptr;
 
-DEF_VEC_P(varpool_node_ptr);
-DEF_VEC_ALLOC_P(varpool_node_ptr,heap);
-DEF_VEC_ALLOC_P(varpool_node_ptr,gc);
 
 /* A varpool node set is a collection of varpool nodes.  A varpool node
    can appear in multiple sets.  */
 struct varpool_node_set_def
 {
   struct pointer_map_t * map;
-  VEC(varpool_node_ptr, heap) *nodes;
+  vec<varpool_node_ptr> nodes;
 };
 
 typedef struct cgraph_node_set_def *cgraph_node_set;
 
-DEF_VEC_P(cgraph_node_set);
-DEF_VEC_ALLOC_P(cgraph_node_set,gc);
-DEF_VEC_ALLOC_P(cgraph_node_set,heap);
 
 typedef struct varpool_node_set_def *varpool_node_set;
 
-DEF_VEC_P(varpool_node_set);
-DEF_VEC_ALLOC_P(varpool_node_set,gc);
-DEF_VEC_ALLOC_P(varpool_node_set,heap);
 
 /* Iterator structure for cgraph node sets.  */
 typedef struct
@@ -462,8 +445,6 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
 
 typedef struct cgraph_edge *cgraph_edge_p;
 
-DEF_VEC_P(cgraph_edge_p);
-DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
@@ -640,7 +621,7 @@ bool cgraph_for_node_thunks_and_aliases (struct cgraph_node *,
 bool cgraph_for_node_and_aliases (struct cgraph_node *,
 		                  bool (*) (struct cgraph_node *, void *),
 			          void *, bool);
-VEC (cgraph_edge_p, heap) * collect_callers_of_node (struct cgraph_node *node);
+vec<cgraph_edge_p>  collect_callers_of_node (struct cgraph_node *node);
 void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
 void cgraph_mark_address_taken_node (struct cgraph_node *);
@@ -691,12 +672,12 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					struct cgraph_node *, gimple,
 					unsigned, gcov_type, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
-					int, bool, VEC(cgraph_edge_p,heap) *,
+					int, bool, vec<cgraph_edge_p>,
 					bool);
 tree clone_function_name (tree decl, const char *);
 struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
-			                          VEC(cgraph_edge_p,heap)*,
-			                          VEC(ipa_replace_map_p,gc)* tree_map,
+			                          vec<cgraph_edge_p>,
+			                          vec<ipa_replace_map_p, va_gc> *tree_map,
 			                          bitmap args_to_skip,
 						  const char *clone_name);
 struct cgraph_node *cgraph_find_replacement_node (struct cgraph_node *);
@@ -708,13 +689,13 @@ void cgraph_create_edge_including_clones (struct cgraph_node *,
 					  cgraph_inline_failed_t);
 void cgraph_materialize_all_clones (void);
 struct cgraph_node * cgraph_copy_node_for_versioning (struct cgraph_node *,
-		tree, VEC(cgraph_edge_p,heap)*, bitmap);
+		tree, vec<cgraph_edge_p>, bitmap);
 struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
-						VEC(cgraph_edge_p,heap)*,
-						VEC(ipa_replace_map_p,gc)*,
+						vec<cgraph_edge_p>,
+						vec<ipa_replace_map_p, va_gc> *,
 						bitmap, bool, bitmap,
 						basic_block, const char *);
-void tree_function_versioning (tree, tree, VEC (ipa_replace_map_p,gc)*,
+void tree_function_versioning (tree, tree, vec<ipa_replace_map_p, va_gc> *,
 			       bool, bitmap, bool, bitmap, basic_block);
 
 /* In cgraphbuild.c  */
@@ -1051,7 +1032,7 @@ tree add_new_static_var (tree type);
 static inline bool
 csi_end_p (cgraph_node_set_iterator csi)
 {
-  return csi.index >= VEC_length (cgraph_node_ptr, csi.set->nodes);
+  return csi.index >= csi.set->nodes.length ();
 }
 
 /* Advance iterator CSI.  */
@@ -1065,7 +1046,7 @@ csi_next (cgraph_node_set_iterator *csi)
 static inline struct cgraph_node *
 csi_node (cgraph_node_set_iterator csi)
 {
-  return VEC_index (cgraph_node_ptr, csi.set->nodes, csi.index);
+  return csi.set->nodes[csi.index];
 }
 
 /* Return an iterator to the first node in SET.  */
@@ -1092,14 +1073,14 @@ cgraph_node_in_set_p (struct cgraph_node *node, cgraph_node_set set)
 static inline size_t
 cgraph_node_set_size (cgraph_node_set set)
 {
-  return VEC_length (cgraph_node_ptr, set->nodes);
+  return set->nodes.length ();
 }
 
 /* Return true if iterator VSI points to nothing.  */
 static inline bool
 vsi_end_p (varpool_node_set_iterator vsi)
 {
-  return vsi.index >= VEC_length (varpool_node_ptr, vsi.set->nodes);
+  return vsi.index >= vsi.set->nodes.length ();
 }
 
 /* Advance iterator VSI.  */
@@ -1113,7 +1094,7 @@ vsi_next (varpool_node_set_iterator *vsi)
 static inline struct varpool_node *
 vsi_node (varpool_node_set_iterator vsi)
 {
-  return VEC_index (varpool_node_ptr, vsi.set->nodes, vsi.index);
+  return vsi.set->nodes[vsi.index];
 }
 
 /* Return an iterator to the first node in SET.  */
@@ -1140,7 +1121,7 @@ varpool_node_in_set_p (struct varpool_node *node, varpool_node_set set)
 static inline size_t
 varpool_node_set_size (varpool_node_set set)
 {
-  return VEC_length (varpool_node_ptr, set->nodes);
+  return set->nodes.length ();
 }
 
 /* Uniquize all constants that appear in memory.
@@ -1164,14 +1145,14 @@ struct GTY(()) constant_descriptor_tree {
 static inline bool
 cgraph_node_set_nonempty_p (cgraph_node_set set)
 {
-  return !VEC_empty (cgraph_node_ptr, set->nodes);
+  return !set->nodes.is_empty ();
 }
 
 /* Return true if set is nonempty.  */
 static inline bool
 varpool_node_set_nonempty_p (varpool_node_set set)
 {
-  return !VEC_empty (varpool_node_ptr, set->nodes);
+  return !set->nodes.is_empty ();
 }
 
 /* Return true when function NODE is only called directly or it has alias.

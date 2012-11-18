@@ -42,12 +42,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "lto-compress.h"
 
-static VEC(lto_out_decl_state_ptr, heap) *decl_state_stack;
+static vec<lto_out_decl_state_ptr> decl_state_stack;
 
 /* List of out decl states used by functions.  We use this to
    generate the decl directory later. */
 
-VEC(lto_out_decl_state_ptr, heap) *lto_function_decl_states;
+vec<lto_out_decl_state_ptr> lto_function_decl_states;
 /* Returns a hash code for P.  */
 
 hashval_t
@@ -293,7 +293,7 @@ lto_output_decl_index (struct lto_output_stream *obs,
       new_slot->t = name;
       new_slot->slot_num = index;
       *slot = new_slot;
-      VEC_safe_push (tree, heap, encoder->trees, name);
+      encoder->trees.safe_push (name);
       new_entry_p = TRUE;
     }
   else
@@ -481,7 +481,7 @@ lto_delete_out_decl_state (struct lto_out_decl_state *state)
 struct lto_out_decl_state *
 lto_get_out_decl_state (void)
 {
-  return VEC_last (lto_out_decl_state_ptr, decl_state_stack);
+  return decl_state_stack.last ();
 }
 
 /* Push STATE to top of out decl stack. */
@@ -489,7 +489,7 @@ lto_get_out_decl_state (void)
 void
 lto_push_out_decl_state (struct lto_out_decl_state *state)
 {
-  VEC_safe_push (lto_out_decl_state_ptr, heap, decl_state_stack, state);
+  decl_state_stack.safe_push (state);
 }
 
 /* Pop the currently used out-decl state from top of stack. */
@@ -497,7 +497,7 @@ lto_push_out_decl_state (struct lto_out_decl_state *state)
 struct lto_out_decl_state *
 lto_pop_out_decl_state (void)
 {
-  return VEC_pop (lto_out_decl_state_ptr, decl_state_stack);
+  return decl_state_stack.pop ();
 }
 
 /* Record STATE after it has been used in serializing the body of
@@ -518,6 +518,5 @@ lto_record_function_out_decl_state (tree fn_decl,
 	state->streams[i].tree_hash_table = NULL;
       }
   state->fn_decl = fn_decl;
-  VEC_safe_push (lto_out_decl_state_ptr, heap, lto_function_decl_states,
-		 state);
+  lto_function_decl_states.safe_push (state);
 }

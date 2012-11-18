@@ -273,9 +273,7 @@ typedef struct incr_info_d incr_info, *incr_info_t;
 /* Candidates are maintained in a vector.  If candidate X dominates
    candidate Y, then X appears before Y in the vector; but the
    converse does not necessarily hold.  */
-DEF_VEC_P (slsr_cand_t);
-DEF_VEC_ALLOC_P (slsr_cand_t, heap);
-static VEC (slsr_cand_t, heap) *cand_vec;
+static vec<slsr_cand_t> cand_vec;
 
 enum cost_consts
 {
@@ -310,7 +308,7 @@ static bool address_arithmetic_p;
 static slsr_cand_t
 lookup_cand (cand_idx idx)
 {
-  return VEC_index (slsr_cand_t, cand_vec, idx - 1);
+  return cand_vec[idx - 1];
 }
 
 /* Callback to produce a hash value for a candidate chain header.  */
@@ -429,14 +427,14 @@ alloc_cand_and_find_basis (enum cand_kind kind, gimple gs, tree base,
   c->index = index;
   c->cand_type = ctype;
   c->kind = kind;
-  c->cand_num = VEC_length (slsr_cand_t, cand_vec) + 1;
+  c->cand_num = cand_vec.length () + 1;
   c->next_interp = 0;
   c->dependent = 0;
   c->sibling = 0;
   c->def_phi = NULL;
   c->dead_savings = savings;
 
-  VEC_safe_push (slsr_cand_t, heap, cand_vec, c);
+  cand_vec.safe_push (c);
   c->basis = find_basis_for_candidate (c);
   record_potential_basis (c);
 
@@ -1431,7 +1429,7 @@ dump_cand_vec (void)
 
   fprintf (dump_file, "\nStrength reduction candidate vector:\n\n");
   
-  FOR_EACH_VEC_ELT (slsr_cand_t, cand_vec, i, c)
+  FOR_EACH_VEC_ELT (cand_vec, i, c)
     dump_candidate (c);
 }
 
@@ -2538,7 +2536,7 @@ analyze_candidates_and_replace (void)
      dependent is the root of a tree of related statements.
      Analyze each tree to determine a subset of those
      statements that can be replaced with maximum benefit.  */
-  FOR_EACH_VEC_ELT (slsr_cand_t, cand_vec, i, c)
+  FOR_EACH_VEC_ELT (cand_vec, i, c)
     {
       slsr_cand_t first_dep;
 
@@ -2621,7 +2619,7 @@ execute_strength_reduction (void)
   gcc_obstack_init (&cand_obstack);
 
   /* Allocate the candidate vector.  */
-  cand_vec = VEC_alloc (slsr_cand_t, heap, 128);
+  cand_vec.create (128);
 
   /* Allocate the mapping from statements to candidate indices.  */
   stmt_cand_map = pointer_map_create ();
@@ -2665,7 +2663,7 @@ execute_strength_reduction (void)
   htab_delete (base_cand_map);
   obstack_free (&chain_obstack, NULL);
   pointer_map_destroy (stmt_cand_map);
-  VEC_free (slsr_cand_t, heap, cand_vec);
+  cand_vec.release ();
   obstack_free (&cand_obstack, NULL);
 
   return 0;

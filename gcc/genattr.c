@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static void gen_attr (rtx);
 
-static VEC (rtx, heap) *const_attrs, *reservations;
+static vec<rtx> const_attrs, reservations;
 
 
 static void
@@ -42,7 +42,7 @@ gen_attr (rtx attr)
   int is_const = GET_CODE (XEXP (attr, 2)) == CONST;
 
   if (is_const)
-    VEC_safe_push (rtx, heap, const_attrs, attr);
+    const_attrs.safe_push (attr);
 
   printf ("#define HAVE_ATTR_%s 1\n", XSTR (attr, 0));
 
@@ -119,13 +119,13 @@ find_tune_attr (rtx exp)
       if (strcmp (XSTR (exp, 0), "alternative") == 0)
 	return false;
 
-      FOR_EACH_VEC_ELT (rtx, const_attrs, i, attr)
+      FOR_EACH_VEC_ELT (const_attrs, i, attr)
 	if (strcmp (XSTR (attr, 0), XSTR (exp, 0)) == 0)
 	  {
 	    unsigned int j;
 	    rtx resv;
 
-	    FOR_EACH_VEC_ELT (rtx, reservations, j, resv)
+	    FOR_EACH_VEC_ELT (reservations, j, resv)
 	      if (! check_tune_attr (XSTR (attr, 0), XEXP (resv, 2)))
 		return false;
 	    return true;
@@ -204,14 +204,14 @@ main (int argc, char **argv)
       else if (GET_CODE (desc) == DEFINE_INSN_RESERVATION)
 	{
 	  num_insn_reservations++;
-	  VEC_safe_push (rtx, heap, reservations, desc);
+	  reservations.safe_push (desc);
 	}
     }
 
   if (num_insn_reservations > 0)
     {
       bool has_tune_attr
-	= find_tune_attr (XEXP (VEC_index (rtx, reservations, 0), 2));
+	= find_tune_attr (XEXP (reservations[0], 2));
       /* Output interface for pipeline hazards recognition based on
 	 DFA (deterministic finite state automata.  */
       printf ("\n/* DFA based pipeline interface.  */");

@@ -1458,10 +1458,10 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
    a separate section of the .o file (to cut down on paging and improve
    cache locality).  Return a vector of all edges that cross.  */
 
-static VEC(edge, heap) *
+static vec<edge> 
 find_rarely_executed_basic_blocks_and_crossing_edges (void)
 {
-  VEC(edge, heap) *crossing_edges = NULL;
+  vec<edge> crossing_edges = vec<edge>();
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -1483,7 +1483,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
       unsigned i;
       eh_landing_pad lp;
 
-      FOR_EACH_VEC_ELT (eh_landing_pad, cfun->eh->lp_array, i, lp)
+      FOR_EACH_VEC_ELT (*cfun->eh->lp_array, i, lp)
 	{
 	  bool all_same, all_diff;
 
@@ -1530,7 +1530,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
 	    && e->dest != EXIT_BLOCK_PTR
 	    && BB_PARTITION (e->src) != BB_PARTITION (e->dest))
 	  {
-	    VEC_safe_push (edge, heap, crossing_edges, e);
+	    crossing_edges.safe_push (e);
 	    flags |= EDGE_CROSSING;
 	  }
 
@@ -1583,12 +1583,12 @@ set_edge_can_fallthru_flag (void)
    Convert any easy fall-through crossing edges to unconditional jumps.  */
 
 static void
-add_labels_and_missing_jumps (VEC(edge, heap) *crossing_edges)
+add_labels_and_missing_jumps (vec<edge> crossing_edges)
 {
   size_t i;
   edge e;
 
-  FOR_EACH_VEC_ELT (edge, crossing_edges, i, e)
+  FOR_EACH_VEC_ELT (crossing_edges, i, e)
     {
       basic_block src = e->src;
       basic_block dest = e->dest;
@@ -2500,7 +2500,7 @@ gate_handle_partition_blocks (void)
 static unsigned
 partition_hot_cold_basic_blocks (void)
 {
-  VEC(edge, heap) *crossing_edges;
+  vec<edge> crossing_edges;
 
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1)
     return 0;
@@ -2508,7 +2508,7 @@ partition_hot_cold_basic_blocks (void)
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
   crossing_edges = find_rarely_executed_basic_blocks_and_crossing_edges ();
-  if (crossing_edges == NULL)
+  if (!crossing_edges.exists ())
     return 0;
 
   /* Make sure the source of any crossing edge ends in a jump and the
@@ -2539,7 +2539,7 @@ partition_hot_cold_basic_blocks (void)
   /* Clear bb->aux fields that the above routines were using.  */
   clear_aux_for_blocks ();
 
-  VEC_free (edge, heap, crossing_edges);
+  crossing_edges.release ();
 
   /* ??? FIXME: DF generates the bb info for a block immediately.
      And by immediately, I mean *during* creation of the block.
