@@ -8239,4 +8239,177 @@ expand_jump_insn (enum insn_code icode, unsigned int nops,
     gcc_unreachable ();
 }
 
+/* Reduce conditional compilation elsewhere.  */
+#ifndef HAVE_insv
+#define HAVE_insv	0
+#define CODE_FOR_insv	CODE_FOR_nothing
+#endif
+#ifndef HAVE_extv
+#define HAVE_extv	0
+#define CODE_FOR_extv	CODE_FOR_nothing
+#endif
+#ifndef HAVE_extzv
+#define HAVE_extzv	0
+#define CODE_FOR_extzv	CODE_FOR_nothing
+#endif
+
+/* Enumerates the possible types of structure operand to an
+   extraction_insn.  */
+enum extraction_type { ET_unaligned_mem, ET_reg };
+
+/* Check whether insv, extv or extzv pattern ICODE can be used for an
+   insertion or extraction of type TYPE on a structure of mode MODE.
+   Return true if so and fill in *INSN accordingly.  STRUCT_OP is the
+   operand number of the structure (the first sign_extract or zero_extract
+   operand) and FIELD_OP is the operand number of the field (the other
+   side of the set from the sign_extract or zero_extract).  */
+
+static bool
+get_traditional_extraction_insn (extraction_insn *insn,
+				 enum extraction_type type,
+				 enum machine_mode mode,
+				 enum insn_code icode,
+				 int struct_op, int field_op)
+{
+  const struct insn_data_d *data = &insn_data[icode];
+
+  enum machine_mode struct_mode = data->operand[struct_op].mode;
+  if (struct_mode == VOIDmode)
+    struct_mode = word_mode;
+  if (mode != struct_mode)
+    return false;
+
+  enum machine_mode field_mode = data->operand[field_op].mode;
+  if (field_mode == VOIDmode)
+    field_mode = word_mode;
+
+  enum machine_mode pos_mode = data->operand[struct_op + 2].mode;
+  if (pos_mode == VOIDmode)
+    pos_mode = word_mode;
+
+  insn->icode = icode;
+  insn->field_mode = field_mode;
+  insn->struct_mode = (type == ET_unaligned_mem ? byte_mode : struct_mode);
+  insn->pos_mode = pos_mode;
+  return true;
+}
+
+/* Return true if an instruction exists to perform an insertion or
+   extraction (PATTERN says which) of type TYPE in mode MODE.
+   Describe the instruction in *INSN if so.  */
+
+static bool
+get_extraction_insn (extraction_insn *insn,
+		     enum extraction_pattern pattern,
+		     enum extraction_type type,
+		     enum machine_mode mode)
+{
+  switch (pattern)
+    {
+    case EP_insv:
+      if (HAVE_insv
+	  && get_traditional_extraction_insn (insn, type, mode,
+					      CODE_FOR_insv, 0, 3))
+	return true;
+      return false;
+
+    case EP_extv:
+      if (HAVE_extv
+	  && get_traditional_extraction_insn (insn, type, mode,
+					      CODE_FOR_extv, 1, 0))
+	return true;
+      return false;
+
+    case EP_extzv:
+      if (HAVE_extzv
+	  && get_traditional_extraction_insn (insn, type, mode,
+					      CODE_FOR_extzv, 1, 0))
+	return true;
+      return false;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return true if an instruction exists to access a field of mode
+   FIELDMODE in a structure that has STRUCT_BITS significant bits.
+   Describe the "best" such instruction in *INSN if so.  PATTERN and
+   TYPE describe the type of insertion or extraction we want to perform.
+
+   For an insertion, the number of significant structure bits includes
+   all bits of the target.  For an extraction, it need only include the
+   most significant bit of the field.  Larger widths are acceptable
+   in both cases.  */
+
+static bool
+get_best_extraction_insn (extraction_insn *insn,
+			  enum extraction_pattern pattern,
+			  enum extraction_type type,
+			  unsigned HOST_WIDE_INT struct_bits,
+			  enum machine_mode field_mode)
+{
+  enum machine_mode mode = smallest_mode_for_size (struct_bits, MODE_INT);
+  while (mode != VOIDmode)
+    {
+      if (get_extraction_insn (insn, pattern, type, mode))
+	{
+	  while (mode != VOIDmode
+		 && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (field_mode)
+		 && !TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
+						    field_mode))
+	    {
+	      get_extraction_insn (insn, pattern, type, mode);
+	      mode = GET_MODE_WIDER_MODE (mode);
+	    }
+	  return true;
+	}
+      mode = GET_MODE_WIDER_MODE (mode);
+    }
+  return false;
+}
+
+/* Return true if an instruction exists to access a field of mode
+   FIELDMODE in a register structure that has STRUCT_BITS significant bits.
+   Describe the "best" such instruction in *INSN if so.  PATTERN describes
+   the type of insertion or extraction we want to perform.
+
+   For an insertion, the number of significant structure bits includes
+   all bits of the target.  For an extraction, it need only include the
+   most significant bit of the field.  Larger widths are acceptable
+   in both cases.  */
+
+bool
+get_best_reg_extraction_insn (extraction_insn *insn,
+			      enum extraction_pattern pattern,
+			      unsigned HOST_WIDE_INT struct_bits,
+			      enum machine_mode field_mode)
+{
+  return get_best_extraction_insn (insn, pattern, ET_reg, struct_bits,
+				   field_mode);
+}
+
+/* Return true if an instruction exists to access a field of BITSIZE
+   bits starting BITNUM bits into a memory structure.  Describe the
+   "best" such instruction in *INSN if so.  PATTERN describes the type
+   of insertion or extraction we want to perform and FIELDMODE is the
+   natural mode of the extracted field.
+
+   The instructions considered here only access bytes that overlap
+   the bitfield; they do not touch any surrounding bytes.  */
+
+bool
+get_best_mem_extraction_insn (extraction_insn *insn,
+			      enum extraction_pattern pattern,
+			      HOST_WIDE_INT bitsize, HOST_WIDE_INT bitnum,
+			      enum machine_mode field_mode)
+{
+  unsigned HOST_WIDE_INT struct_bits = (bitnum % BITS_PER_UNIT
+					+ bitsize
+					+ BITS_PER_UNIT - 1);
+  struct_bits -= struct_bits % BITS_PER_UNIT;
+  return get_best_extraction_insn (insn, pattern, ET_unaligned_mem,
+				   struct_bits, field_mode);
+}
+
 #include "gt-optabs.h"
