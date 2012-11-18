@@ -3323,7 +3323,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     {
       tree gnu_return_var = NULL_TREE;
 
-      vec_safe_push (gnu_return_label_stack, 
+      vec_safe_push (gnu_return_label_stack,
 		     create_artificial_label (input_location));
 
       start_stmt_group ();
@@ -4385,7 +4385,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       start_stmt_group ();
       gnat_pushlevel ();
 
-      vec_safe_push (gnu_except_ptr_stack, 
+      vec_safe_push (gnu_except_ptr_stack,
 		     create_var_decl (get_identifier ("EXCEPT_PTR"), NULL_TREE,
 				      build_pointer_type (except_type_node),
 				      build_call_n_expr (get_excptr_decl, 0),

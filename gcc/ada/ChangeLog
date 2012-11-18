@@ -1,3 +1,8 @@
+2012-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: Remove trailing spaces.
+	* gcc-interface/trans.c: Remove trailing spaces.
+
 2012-11-16  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
