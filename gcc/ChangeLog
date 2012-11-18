@@ -1,5 +1,14 @@
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* machmode.h (bit_field_mode_iterator): New class.
+	(get_best_mode): Change final parameter to bool.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator)
+	(bit_field_mode_iterator::next_mode): New functions, split out from...
+	(get_best_mode): ...here.  Change final parameter to bool.
+	Use bit_field_mode_iterator.
+
+2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* expmed.c (narrow_bit_field_mem): New function.
 	(store_bit_field_using_insv, store_bit_field_1, store_fixed_bit_field)
 	(extract_bit_field_1): Use it.

@@ -2624,14 +2624,103 @@ fixup_unsigned_type (tree type)
   layout_type (type);
 }
 
+/* Construct an iterator for a bitfield that spans BITSIZE bits,
+   starting at BITPOS.
+
+   BITREGION_START is the bit position of the first bit in this
+   sequence of bit fields.  BITREGION_END is the last bit in this
+   sequence.  If these two fields are non-zero, we should restrict the
+   memory access to that range.  Otherwise, we are allowed to touch
+   any adjacent non bit-fields.
+
+   ALIGN is the alignment of the underlying object in bits.
+   VOLATILEP says whether the bitfield is volatile.  */
+
+bit_field_mode_iterator
+::bit_field_mode_iterator (HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
+			   HOST_WIDE_INT bitregion_start,
+			   HOST_WIDE_INT bitregion_end,
+			   unsigned int align, bool volatilep)
+: mode_ (GET_CLASS_NARROWEST_MODE (MODE_INT)), bitsize_ (bitsize),
+  bitpos_ (bitpos), bitregion_start_ (bitregion_start),
+  bitregion_end_ (bitregion_end), align_ (MIN (align, BIGGEST_ALIGNMENT)),
+  volatilep_ (volatilep), count_ (0)
+{
+}
+
+/* Calls to this function return successively larger modes that can be used
+   to represent the bitfield.  Return true if another bitfield mode is
+   available, storing it in *OUT_MODE if so.  */
+
+bool
+bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
+{
+  for (; mode_ != VOIDmode; mode_ = GET_MODE_WIDER_MODE (mode_))
+    {
+      unsigned int unit = GET_MODE_BITSIZE (mode_);
+
+      /* Skip modes that don't have full precision.  */
+      if (unit != GET_MODE_PRECISION (mode_))
+	continue;
+
+      /* Skip modes that are too small.  */
+      if ((bitpos_ % unit) + bitsize_ > unit)
+	continue;
+
+      /* Stop if the mode is too wide to handle efficiently.  */
+      if (unit > MAX_FIXED_MODE_SIZE)
+	break;
+
+      /* Don't deliver more than one multiword mode; the smallest one
+	 should be used.  */
+      if (count_ > 0 && unit > BITS_PER_WORD)
+	break;
+
+      /* Stop if the mode is wider than the alignment of the containing
+	 object.
+
+	 It is tempting to omit the following line unless STRICT_ALIGNMENT
+	 is true.  But that is incorrect, since if the bitfield uses part
+	 of 3 bytes and we use a 4-byte mode, we could get a spurious segv
+	 if the extra 4th byte is past the end of memory.
+	 (Though at least one Unix compiler ignores this problem:
+	 that on the Sequent 386 machine.  */
+      if (unit > align_)
+	break;
+
+      /* Stop if the mode goes outside the bitregion.  */
+      HOST_WIDE_INT start = bitpos_ - (bitpos_ % unit);
+      if (bitregion_start_ && start < bitregion_start_)
+	break;
+      if (bitregion_end_ && start + unit > bitregion_end_ + 1)
+	break;
+
+      *out_mode = mode_;
+      mode_ = GET_MODE_WIDER_MODE (mode_);
+      count_++;
+      return true;
+    }
+  return false;
+}
+
+/* Return true if smaller modes are generally preferred for this kind
+   of bitfield.  */
+
+bool
+bit_field_mode_iterator::prefer_smaller_modes ()
+{
+  return (volatilep_
+	  ? targetm.narrow_volatile_bitfield ()
+	  : !SLOW_BYTE_ACCESS);
+}
+
 /* Find the best machine mode to use when referencing a bit field of length
    BITSIZE bits starting at BITPOS.
 
    BITREGION_START is the bit position of the first bit in this
    sequence of bit fields.  BITREGION_END is the last bit in this
    sequence.  If these two fields are non-zero, we should restrict the
-   memory access to a maximum sized chunk of
-   BITREGION_END - BITREGION_START + 1.  Otherwise, we are allowed to touch
+   memory access to that range.  Otherwise, we are allowed to touch
    any adjacent non bit-fields.
 
    The underlying object is known to be aligned to a boundary of ALIGN bits.
@@ -2655,69 +2744,21 @@ get_best_mode (int bitsize, int bitpos,
 	       unsigned HOST_WIDE_INT bitregion_start,
 	       unsigned HOST_WIDE_INT bitregion_end,
 	       unsigned int align,
-	       enum machine_mode largest_mode, int volatilep)
+	       enum machine_mode largest_mode, bool volatilep)
 {
+  bit_field_mode_iterator iter (bitsize, bitpos, bitregion_start,
+				bitregion_end, align, volatilep);
+  enum machine_mode widest_mode = VOIDmode;
   enum machine_mode mode;
-  unsigned int unit = 0;
-  unsigned HOST_WIDE_INT maxbits;
-
-  /* If unset, no restriction.  */
-  if (!bitregion_end)
-    maxbits = MAX_FIXED_MODE_SIZE;
-  else
-    maxbits = bitregion_end - bitregion_start + 1;
-
-  /* Find the narrowest integer mode that contains the bit field.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  while (iter.next_mode (&mode)
+	 && (largest_mode == VOIDmode
+	     || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (largest_mode)))
     {
-      unit = GET_MODE_BITSIZE (mode);
-      if (unit == GET_MODE_PRECISION (mode)
-	  && (bitpos % unit) + bitsize <= unit)
+      widest_mode = mode;
+      if (iter.prefer_smaller_modes ())
 	break;
     }
-
-  if (mode == VOIDmode
-      /* It is tempting to omit the following line
-	 if STRICT_ALIGNMENT is true.
-	 But that is incorrect, since if the bitfield uses part of 3 bytes
-	 and we use a 4-byte mode, we could get a spurious segv
-	 if the extra 4th byte is past the end of memory.
-	 (Though at least one Unix compiler ignores this problem:
-	 that on the Sequent 386 machine.  */
-      || MIN (unit, BIGGEST_ALIGNMENT) > align
-      || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode))
-      || unit > maxbits
-      || (bitregion_end
-	  && bitpos - (bitpos % unit) + unit > bitregion_end + 1))
-    return VOIDmode;
-
-  if ((SLOW_BYTE_ACCESS && ! volatilep)
-      || (volatilep && !targetm.narrow_volatile_bitfield ()))
-    {
-      enum machine_mode wide_mode = VOIDmode, tmode;
-
-      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT); tmode != VOIDmode;
-	   tmode = GET_MODE_WIDER_MODE (tmode))
-	{
-	  unit = GET_MODE_BITSIZE (tmode);
-	  if (unit == GET_MODE_PRECISION (tmode)
-	      && bitpos / unit == (bitpos + bitsize - 1) / unit
-	      && unit <= BITS_PER_WORD
-	      && unit <= MIN (align, BIGGEST_ALIGNMENT)
-	      && unit <= maxbits
-	      && (largest_mode == VOIDmode
-		  || unit <= GET_MODE_BITSIZE (largest_mode))
-	      && (bitregion_end == 0
-		  || bitpos - (bitpos % unit) + unit <= bitregion_end + 1))
-	    wide_mode = tmode;
-	}
-
-      if (wide_mode != VOIDmode)
-	return wide_mode;
-    }
-
-  return mode;
+  return widest_mode;
 }
 
 /* Gets minimal and maximal values for MODE (signed or unsigned depending on
