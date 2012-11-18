@@ -52,7 +52,7 @@ static bool can_alter_cfg = false;
 
 /* Instructions that have been marked but whose dependencies have not
    yet been processed.  */
-static VEC(rtx,heap) *worklist;
+static vec<rtx> worklist;
 
 /* Bitmap of instructions marked as needed indexed by INSN_UID.  */
 static sbitmap marked;
@@ -182,7 +182,7 @@ mark_insn (rtx insn, bool fast)
   if (!marked_insn_p (insn))
     {
       if (!fast)
-	VEC_safe_push (rtx, heap, worklist, insn);
+	worklist.safe_push (insn);
       bitmap_set_bit (marked, INSN_UID (insn));
       if (dump_file)
 	fprintf (dump_file, "  Adding insn %d to worklist\n", INSN_UID (insn));
@@ -760,12 +760,12 @@ rest_of_handle_ud_dce (void)
 
   prescan_insns_for_dce (false);
   mark_artificial_uses ();
-  while (VEC_length (rtx, worklist) > 0)
+  while (worklist.length () > 0)
     {
-      insn = VEC_pop (rtx, worklist);
+      insn = worklist.pop ();
       mark_reg_dependencies (insn);
     }
-  VEC_free (rtx, heap, worklist);
+  worklist.release ();
 
   if (MAY_HAVE_DEBUG_INSNS)
     reset_unmarked_insns_debug_uses ();

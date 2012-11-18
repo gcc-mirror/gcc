@@ -46,23 +46,17 @@ struct substring
   int length;
 };
 
-DEF_VEC_O (attribute_spec);
-DEF_VEC_ALLOC_O (attribute_spec, heap);
-
 /* Scoped attribute name representation.  */
 
 struct scoped_attributes
 {
   const char *ns;
-  VEC (attribute_spec, heap) *attributes;
+  vec<attribute_spec> attributes;
   htab_t attribute_hash;
 };
 
-DEF_VEC_O (scoped_attributes);
-DEF_VEC_ALLOC_O (scoped_attributes, heap);
-
 /* The table of scope attributes.  */
-static VEC(scoped_attributes, heap) *attributes_table;
+static vec<scoped_attributes> attributes_table;
 
 static scoped_attributes* find_attribute_namespace (const char*);
 static void register_scoped_attribute (const struct attribute_spec *,
@@ -140,21 +134,20 @@ register_scoped_attributes (const struct attribute_spec * attributes,
       /* We don't have any namespace NS yet.  Create one.  */
       scoped_attributes sa;
 
-      if (attributes_table == NULL)
-	attributes_table = VEC_alloc (scoped_attributes, heap, 64);
+      if (!attributes_table.is_empty ())
+	attributes_table.create (64);
 
       memset (&sa, 0, sizeof (sa));
       sa.ns = ns;
-      sa.attributes = VEC_alloc (attribute_spec, heap, 64);
-      result = VEC_safe_push (scoped_attributes, heap, attributes_table, sa);
+      sa.attributes.create (64);
+      result = attributes_table.safe_push (sa);
       result->attribute_hash = htab_create (200, hash_attr, eq_attr, NULL);
     }
 
   /* Really add the attributes to their namespace now.  */
   for (unsigned i = 0; attributes[i].name != NULL; ++i)
     {
-      VEC_safe_push (attribute_spec, heap,
-		     result->attributes, attributes[i]);
+      result->attributes.safe_push (attributes[i]);
       register_scoped_attribute (&attributes[i], result);
     }
 
@@ -171,7 +164,7 @@ find_attribute_namespace (const char* ns)
   unsigned ix;
   scoped_attributes *iter;
 
-  FOR_EACH_VEC_ELT (scoped_attributes, attributes_table, ix, iter)
+  FOR_EACH_VEC_ELT (attributes_table, ix, iter)
     if (ns == iter->ns
 	|| (iter->ns != NULL
 	    && ns != NULL

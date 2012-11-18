@@ -5937,21 +5937,22 @@ ia64_option_override (void)
 {
   unsigned int i;
   cl_deferred_option *opt;
-  VEC(cl_deferred_option,heap) *vec
-    = (VEC(cl_deferred_option,heap) *) ia64_deferred_options;
+  vec<cl_deferred_option> *v
+    = (vec<cl_deferred_option> *) ia64_deferred_options;
 
-  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
-    {
-      switch (opt->opt_index)
-	{
-	case OPT_mfixed_range_:
-	  fix_range (opt->arg);
-	  break;
+  if (v)
+    FOR_EACH_VEC_ELT (*v, i, opt)
+      {
+	switch (opt->opt_index)
+	  {
+	  case OPT_mfixed_range_:
+	    fix_range (opt->arg);
+	    break;
 
-	default:
-	  gcc_unreachable ();
-	}
-    }
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
 
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;

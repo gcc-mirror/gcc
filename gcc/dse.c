@@ -550,10 +550,8 @@ static alloc_pool rtx_group_info_pool;
 /* Index into the rtx_group_vec.  */
 static int rtx_group_next_id;
 
-DEF_VEC_P(group_info_t);
-DEF_VEC_ALLOC_P(group_info_t,heap);
 
-static VEC(group_info_t,heap) *rtx_group_vec;
+static vec<group_info_t> rtx_group_vec;
 
 
 /* This structure holds the set of changes that are being deferred
@@ -715,7 +713,7 @@ get_group_info (rtx base)
 	  gi->offset_map_size_p = 0;
 	  gi->offset_map_n = NULL;
 	  gi->offset_map_p = NULL;
-	  VEC_safe_push (group_info_t, heap, rtx_group_vec, gi);
+	  rtx_group_vec.safe_push (gi);
 	}
       return clear_alias_group;
     }
@@ -741,7 +739,7 @@ get_group_info (rtx base)
       gi->offset_map_size_p = 0;
       gi->offset_map_n = NULL;
       gi->offset_map_p = NULL;
-      VEC_safe_push (group_info_t, heap, rtx_group_vec, gi);
+      rtx_group_vec.safe_push (gi);
     }
 
   return gi;
@@ -1527,7 +1525,7 @@ record_store (rtx body, bb_info_t bb_info)
 	 frame pointer we can do global analysis.  */
 
       group_info_t group
-	= VEC_index (group_info_t, rtx_group_vec, group_id);
+	= rtx_group_vec[group_id];
       tree expr = MEM_EXPR (mem);
 
       store_info = (store_info_t) pool_alloc (rtx_store_info_pool);
@@ -1597,7 +1595,7 @@ record_store (rtx body, bb_info_t bb_info)
       else
 	{
 	  group_info_t group
-	    = VEC_index (group_info_t, rtx_group_vec, group_id);
+	    = rtx_group_vec[group_id];
 	  mem_addr = group->canon_base_addr;
 	}
       if (offset)
@@ -2214,7 +2212,7 @@ check_mem_read_rtx (rtx *loc, void *data)
       else
 	{
 	  group_info_t group
-	    = VEC_index (group_info_t, rtx_group_vec, group_id);
+	    = rtx_group_vec[group_id];
 	  mem_addr = group->canon_base_addr;
 	}
       if (offset)
@@ -2598,8 +2596,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		    store_info = store_info->next;
 
 		  if (store_info->group_id >= 0
-		      && VEC_index (group_info_t, rtx_group_vec,
-				    store_info->group_id)->frame_related)
+		      && rtx_group_vec[store_info->group_id]->frame_related)
 		    remove_store = true;
 		}
 
@@ -2826,7 +2823,7 @@ dse_step1 (void)
 		    if (store_info->group_id >= 0)
 		      {
 			group_info_t group
-			  = VEC_index (group_info_t, rtx_group_vec, store_info->group_id);
+			  = rtx_group_vec[store_info->group_id];
 			if (group->frame_related && !i_ptr->cannot_delete)
 			  delete_dead_store_insn (i_ptr);
 		      }
@@ -2917,7 +2914,7 @@ dse_step2_init (void)
   unsigned int i;
   group_info_t group;
 
-  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+  FOR_EACH_VEC_ELT (rtx_group_vec, i, group)
     {
       /* For all non stack related bases, we only consider a store to
 	 be deletable if there are two or more stores for that
@@ -2970,7 +2967,7 @@ dse_step2_nospill (void)
   /* Position 0 is unused because 0 is used in the maps to mean
      unused.  */
   current_position = 1;
-  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+  FOR_EACH_VEC_ELT (rtx_group_vec, i, group)
     {
       bitmap_iterator bi;
       unsigned int j;
@@ -3084,7 +3081,7 @@ scan_stores_nospill (store_info_t store_info, bitmap gen, bitmap kill)
     {
       HOST_WIDE_INT i;
       group_info_t group_info
-	= VEC_index (group_info_t, rtx_group_vec, store_info->group_id);
+	= rtx_group_vec[store_info->group_id];
       if (group_info->process_globally)
 	for (i = store_info->begin; i < store_info->end; i++)
 	  {
@@ -3138,7 +3135,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
   /* If this insn reads the frame, kill all the frame related stores.  */
   if (insn_info->frame_read)
     {
-      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+      FOR_EACH_VEC_ELT (rtx_group_vec, i, group)
 	if (group->process_globally && group->frame_related)
 	  {
 	    if (kill)
@@ -3153,7 +3150,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
       if (kill)
         bitmap_ior_into (kill, kill_on_calls);
       bitmap_and_compl_into (gen, kill_on_calls);
-      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+      FOR_EACH_VEC_ELT (rtx_group_vec, i, group)
 	if (group->process_globally && !group->frame_related)
 	  {
 	    if (kill)
@@ -3163,7 +3160,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
     }
   while (read_info)
     {
-      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+      FOR_EACH_VEC_ELT (rtx_group_vec, i, group)
 	{
 	  if (group->process_globally)
 	    {
@@ -3343,7 +3340,7 @@ dse_step3_exit_block_scan (bb_info_t bb_info)
       unsigned int i;
       group_info_t group;
 
-      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
+      FOR_EACH_VEC_ELT (rtx_group_vec, i, group)
 	{
 	  if (group->process_globally && group->frame_related)
 	    bitmap_ior_into (bb_info->gen, group->group_kill);
@@ -3425,7 +3422,7 @@ dse_step3 (bool for_spills)
 	      group_info_t group;
 
 	      all_ones = BITMAP_ALLOC (&dse_bitmap_obstack);
-	      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, j, group)
+	      FOR_EACH_VEC_ELT (rtx_group_vec, j, group)
 		bitmap_ior_into (all_ones, group->group_kill);
 	    }
 	  if (!bb_info->out)
@@ -3641,7 +3638,7 @@ dse_step5_nospill (void)
 		{
 		  HOST_WIDE_INT i;
 		  group_info_t group_info
-		    = VEC_index (group_info_t, rtx_group_vec, store_info->group_id);
+		    = rtx_group_vec[store_info->group_id];
 
 		  for (i = store_info->begin; i < store_info->end; i++)
 		    {
@@ -3840,7 +3837,7 @@ dse_step7 (void)
   end_alias_analysis ();
   free (bb_table);
   rtx_group_table.dispose ();
-  VEC_free (group_info_t, heap, rtx_group_vec);
+  rtx_group_vec.release ();
   BITMAP_FREE (all_blocks);
   BITMAP_FREE (scratch);
 

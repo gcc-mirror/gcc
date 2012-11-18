@@ -610,7 +610,7 @@ cgraph_analyze_function (struct cgraph_node *node)
 	    input_location = saved_loc;
 	    return;
 	  }
-      if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
+      if (!vec_safe_length (node->symbol.ref_list.references))
         ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
 			      IPA_REF_ALIAS, NULL);
       if (node->same_body_alias)
@@ -695,7 +695,7 @@ cgraph_process_same_body_aliases (void)
   struct cgraph_node *node;
   FOR_EACH_FUNCTION (node)
     if (node->same_body_alias
-	&& !VEC_length (ipa_ref_t, node->symbol.ref_list.references))
+	&& !vec_safe_length (node->symbol.ref_list.references))
       {
         struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
         ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
@@ -1060,7 +1060,7 @@ handle_alias_pairs (void)
   alias_pair *p;
   unsigned i;
   
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p);)
+  for (i = 0; alias_pairs && alias_pairs->iterate (i, &p);)
     {
       symtab_node target_node = symtab_node_for_asm (p->target);
 
@@ -1074,13 +1074,13 @@ handle_alias_pairs (void)
 	  else
 	    varpool_get_node (p->decl)->alias = true;
 	  DECL_EXTERNAL (p->decl) = 1;
-	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	  alias_pairs->unordered_remove (i);
 	  continue;
 	}
       else if (!target_node)
 	{
 	  error ("%q+D aliased to undefined symbol %qE", p->decl, p->target);
-	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	  alias_pairs->unordered_remove (i);
 	  continue;
 	}
 
@@ -1113,13 +1113,13 @@ handle_alias_pairs (void)
 	  if (src_node && src_node->local.finalized)
             cgraph_reset_node (src_node);
 	  cgraph_create_function_alias (p->decl, target_node->symbol.decl);
-	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	  alias_pairs->unordered_remove (i);
 	}
       else if (TREE_CODE (p->decl) == VAR_DECL
 	       && target_node && is_a <varpool_node> (target_node))
 	{
 	  varpool_create_variable_alias (p->decl, target_node->symbol.decl);
-	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	  alias_pairs->unordered_remove (i);
 	}
       else
 	{
@@ -1127,10 +1127,10 @@ handle_alias_pairs (void)
 		 p->decl);
 	  warning (0, "%q+D aliased declaration",
 		   target_node->symbol.decl);
-	  VEC_unordered_remove (alias_pair, alias_pairs, i);
+	  alias_pairs->unordered_remove (i);
 	}
     }
-  VEC_free (alias_pair, gc, alias_pairs);
+  vec_free (alias_pairs);
 }
 
 
@@ -1440,7 +1440,7 @@ assemble_thunk (struct cgraph_node *node)
       int i;
       tree resdecl;
       tree restmp = NULL;
-      VEC(tree, heap) *vargs;
+      vec<tree> vargs;
 
       gimple call;
       gimple ret;
@@ -1482,18 +1482,16 @@ assemble_thunk (struct cgraph_node *node)
 
       for (arg = a; arg; arg = DECL_CHAIN (arg))
         nargs++;
-      vargs = VEC_alloc (tree, heap, nargs);
+      vargs.create (nargs);
       if (this_adjusting)
-        VEC_quick_push (tree, vargs,
-			thunk_adjust (&bsi,
-				      a, 1, fixed_offset,
-				      virtual_offset));
+        vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
+					virtual_offset));
       else
-        VEC_quick_push (tree, vargs, a);
+        vargs.quick_push (a);
       for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
-	VEC_quick_push (tree, vargs, arg);
+	vargs.quick_push (arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
-      VEC_free (tree, heap, vargs);
+      vargs.release ();
       gimple_call_set_from_thunk (call, true);
       if (restmp)
         gimple_call_set_lhs (call, restmp);

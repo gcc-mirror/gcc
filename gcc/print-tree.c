@@ -65,7 +65,7 @@ debug_tree (tree node)
    down to a depth of six.  */
 
 DEBUG_FUNCTION void
-debug_vec_tree (VEC(tree,gc) *vec)
+debug_vec_tree (vec<tree, va_gc> *vec)
 {
   table = XCNEWVEC (struct bucket *, HASH_SIZE);
   print_vec_tree (stderr, "", vec, 0);
@@ -880,7 +880,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  {
 	    unsigned HOST_WIDE_INT cnt;
 	    tree index, value;
-	    len = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (node));
+	    len = vec_safe_length (CONSTRUCTOR_ELTS (node));
 	    fprintf (file, " lngt %d", len);
 	    FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node),
 				      cnt, index, value)
@@ -994,7 +994,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
    starting in column INDENT.  */
 
 void
-print_vec_tree (FILE *file, const char *prefix, VEC(tree,gc) *vec, int indent)
+print_vec_tree (FILE *file, const char *prefix, vec<tree, va_gc> *vec, int indent)
 {
   tree elt;
   unsigned ix;
@@ -1004,9 +1004,9 @@ print_vec_tree (FILE *file, const char *prefix, VEC(tree,gc) *vec, int indent)
 
   /* Print the slot this node is in, and its code, and address.  */
   fprintf (file, "%s <VEC", prefix);
-  dump_addr (file, " ", vec);
+  dump_addr (file, " ", vec->address ());
 
-  FOR_EACH_VEC_ELT (tree, vec, ix, elt)
+  FOR_EACH_VEC_ELT (*vec, ix, elt)
     {
       char temp[10];
       sprintf (temp, "elt %d", ix);

@@ -48,8 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 # define STACK_GROWS_DOWNWARD 0
 #endif
 
-DEF_VEC_P (bitmap);
-DEF_VEC_ALLOC_P (bitmap,heap);
 
 /* Decompose multi-word pseudo-registers into individual
    pseudo-registers when possible and profitable.  This is possible
@@ -98,7 +96,7 @@ static bitmap subreg_context;
 
 /* Bit N in the bitmap in element M of this array is set if there is a
    copy from reg M to reg N.  */
-static VEC(bitmap,heap) *reg_copy_graph;
+static vec<bitmap> reg_copy_graph;
 
 struct target_lower_subreg default_target_lower_subreg;
 #if SWITCHABLE_TARGET
@@ -383,11 +381,11 @@ find_pseudo_copy (rtx set)
   if (HARD_REGISTER_NUM_P (rd) || HARD_REGISTER_NUM_P (rs))
     return false;
 
-  b = VEC_index (bitmap, reg_copy_graph, rs);
+  b = reg_copy_graph[rs];
   if (b == NULL)
     {
       b = BITMAP_ALLOC (NULL);
-      VEC_replace (bitmap, reg_copy_graph, rs, b);
+      reg_copy_graph[rs] = b;
     }
 
   bitmap_set_bit (b, rd);
@@ -419,7 +417,7 @@ propagate_pseudo_copies (void)
 
       EXECUTE_IF_SET_IN_BITMAP (queue, 0, i, iter)
 	{
-	  bitmap b = VEC_index (bitmap, reg_copy_graph, i);
+	  bitmap b = reg_copy_graph[i];
 	  if (b)
 	    bitmap_ior_and_compl_into (propagate, b, non_decomposable_context);
 	}
@@ -1405,9 +1403,9 @@ decompose_multiword_subregs (bool decompose_copies)
   non_decomposable_context = BITMAP_ALLOC (NULL);
   subreg_context = BITMAP_ALLOC (NULL);
 
-  reg_copy_graph = VEC_alloc (bitmap, heap, max);
-  VEC_safe_grow (bitmap, heap, reg_copy_graph, max);
-  memset (VEC_address (bitmap, reg_copy_graph), 0, sizeof (bitmap) * max);
+  reg_copy_graph.create (max);
+  reg_copy_graph.safe_grow_cleared (max);
+  memset (reg_copy_graph.address (), 0, sizeof (bitmap) * max);
 
   speed_p = optimize_function_for_speed_p (cfun);
   FOR_EACH_BB (bb)
@@ -1622,12 +1620,12 @@ decompose_multiword_subregs (bool decompose_copies)
     unsigned int i;
     bitmap b;
 
-    FOR_EACH_VEC_ELT (bitmap, reg_copy_graph, i, b)
+    FOR_EACH_VEC_ELT (reg_copy_graph, i, b)
       if (b)
 	BITMAP_FREE (b);
   }
 
-  VEC_free (bitmap, heap, reg_copy_graph);
+  reg_copy_graph.release ();
 
   BITMAP_FREE (decomposable_context);
   BITMAP_FREE (non_decomposable_context);

@@ -107,14 +107,14 @@ clear_edges (void)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	free_edge (e);
-      VEC_truncate (edge, bb->succs, 0);
-      VEC_truncate (edge, bb->preds, 0);
+      vec_safe_truncate (bb->succs, 0);
+      vec_safe_truncate (bb->preds, 0);
     }
 
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     free_edge (e);
-  VEC_truncate (edge, EXIT_BLOCK_PTR->preds, 0);
-  VEC_truncate (edge, ENTRY_BLOCK_PTR->succs, 0);
+  vec_safe_truncate (EXIT_BLOCK_PTR->preds, 0);
+  vec_safe_truncate (ENTRY_BLOCK_PTR->succs, 0);
 
   gcc_assert (!n_edges);
 }
@@ -199,7 +199,7 @@ expunge_block (basic_block b)
 static inline void
 connect_src (edge e)
 {
-  VEC_safe_push (edge, gc, e->src->succs, e);
+  vec_safe_push (e->src->succs, e);
   df_mark_solutions_dirty ();
 }
 
@@ -209,7 +209,7 @@ static inline void
 connect_dest (edge e)
 {
   basic_block dest = e->dest;
-  VEC_safe_push (edge, gc, dest->preds, e);
+  vec_safe_push (dest->preds, e);
   e->dest_idx = EDGE_COUNT (dest->preds) - 1;
   df_mark_solutions_dirty ();
 }
@@ -227,7 +227,7 @@ disconnect_src (edge e)
     {
       if (tmp == e)
 	{
-	  VEC_unordered_remove (edge, src->succs, ei.index);
+	  src->succs->unordered_remove (ei.index);
 	  df_mark_solutions_dirty ();
 	  return;
 	}
@@ -246,7 +246,7 @@ disconnect_dest (edge e)
   basic_block dest = e->dest;
   unsigned int dest_idx = e->dest_idx;
 
-  VEC_unordered_remove (edge, dest->preds, dest_idx);
+  dest->preds->unordered_remove (dest_idx);
 
   /* If we removed an edge in the middle of the edge vector, we need
      to update dest_idx of the edge that moved into the "hole".  */

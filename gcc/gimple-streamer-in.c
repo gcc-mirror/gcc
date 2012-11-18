@@ -42,7 +42,7 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
   gimple result;
 
   ix = streamer_read_uhwi (ib);
-  phi_result = VEC_index (tree, SSANAMES (fn), ix);
+  phi_result = (*SSANAMES (fn))[ix];
   len = EDGE_COUNT (bb->preds);
   result = create_phi_node (phi_result, bb);
 

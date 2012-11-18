@@ -1,3 +1,501 @@
+2012-11-17  Diego Novillo  <dnovillo@google.com>
+
+	VEC API overhaul (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* vec.c (register_overhead): Convert it into
+	member function of vec_prefix.
+	(release_overhead): Likewise.
+	(calculate_allocation): Likewise.
+	(vec_heap_free): Remove.
+	(vec_gc_o_reserve_1): Remove.
+	(vec_heap_o_reserve_1): Remove.
+	(vec_stack_o_reserve_1): Remove.
+	(vec_stack_o_reserve_exact): Remove.
+	(register_stack_vec): New.
+	(stack_vec_register_index): New.
+	(unregister_stack_vec): New.
+	(vec_assert_fail): Remove.
+	* vec.h: Conditionally include ggc.h.  Document conditional
+	hackery.
+	Update top-level documentation.
+	(ALONE_VEC_CHECK_INFO): Remove.
+	(VEC_CHECK_INFO): Remove.
+	(ALONE_VEC_CHECK_DECL): Remove.
+	(VEC_CHECK_DECL): Remove.
+	(ALONE_VEC_CHECK_PASS): Remove.
+	(VEC_CHECK_PASS): Remove.
+	(VEC_ASSERT): Remove.
+	(vec_prefix): Add friends va_gc, va_gc_atomic, va_heap and
+	va_stack.
+	Mark fields alloc_ and num_ as protected.
+	(struct vec_t): Remove.  Remove all function members.
+	(struct vl_embed): Declare.
+	(struct vl_ptr): Declare.
+	(free): Remove.
+	(reserve_exact): Remove.
+	(reserve): Remove.
+	(safe_splice): Remove.
+	(safe_push): Remove.
+	(safe_grow): Remove.
+	(safe_grow_cleared): Remove.
+	(safe_insert): Remove.
+	(DEF_VEC_I): Remove.
+	(DEF_VEC_ALLOC_I): Remove.
+	(DEF_VEC_P): Remove.
+	(DEF_VEC_ALLOC_P): Remove.
+	(DEF_VEC_O): Remove.
+	(DEF_VEC_ALLOC_O): Remove.
+	(DEF_VEC_ALLOC_P_STACK): Remove.
+	(DEF_VEC_ALLOC_O_STACK): Remove.
+	(DEF_VEC_ALLOC_I_STACK): Remove.
+	(DEF_VEC_A): Remove.
+	(DEF_VEC_ALLOC_A): Remove.
+	(vec_stack_p_reserve_exact_1): Remove.
+	(vec_stack_o_reserve): Remove.
+	(vec_stack_o_reserve_exact): Remove.
+	(VEC_length): Remove.
+	(VEC_empty): Remove.
+	(VEC_address): Remove.
+	(vec_address): Remove.
+	(VEC_last): Remove.
+	(VEC_index): Remove.
+	(VEC_iterate): Remove.
+	(VEC_embedded_size): Remove.
+	(VEC_embedded_init): Remove.
+	(VEC_free): Remove.
+	(VEC_copy): Remove.
+	(VEC_space): Remove.
+	(VEC_reserve): Remove.
+	(VEC_reserve_exact): Remove.
+	(VEC_splice): Remove.
+	(VEC_safe_splice): Remove.
+	(VEC_quick_push): Remove.
+	(VEC_safe_push): Remove.
+	(VEC_pop): Remove.
+	(VEC_truncate): Remove.
+	(VEC_safe_grow): Remove.
+	(VEC_replace): Remove.
+	(VEC_quick_insert): Remove.
+	(VEC_safe_insert): Remove.
+	(VEC_ordered_remove): Remove.
+	(VEC_unordered_remove): Remove.
+	(VEC_block_remove): Remove.
+	(VEC_lower_bound): Remove.
+	(VEC_alloc): Remove.
+	(VEC_qsort): Remove.
+
+	(va_heap): Declare.
+	(va_heap::default_layout): New typedef to vl_ptr.
+	(va_heap::reserve): New.
+	(va_heap::release): New.
+	(va_gc): Declare.
+	(va_gc::default_layout): New typedef to vl_embed.
+	(va_gc::reserve): New.
+	(va_gc::release): New.
+	(va_gc_atomic): Declare.  Inherit from va_gc.
+	(va_stack): Declare.
+	(va_stack::default_layout): New typedef to vl_ptr.
+	(va_stack::alloc): New.
+	(va_stack::reserve): New.
+	(va_stack::release): New.
+	(register_stack_vec): Declare.
+	(stack_vec_register_index): Declare.
+	(unregister_stack_vec): Declare.
+
+	(vec<T, A = va_heap, L = typename A::default_layout>): Declare
+	empty vec template.
+	(vec<T, A, vl_embed>): Partial specialization for embedded
+	layout.
+	(vec<T, A, vl_embed>::allocated): New.
+	(vec<T, A, vl_embed>::length): New.
+	(vec<T, A, vl_embed>::is_empty): New.
+	(vec<T, A, vl_embed>::address): New.
+	(vec<T, A, vl_embed>::operator[]): New.
+	(vec<T, A, vl_embed>::last New.
+	(vec<T, A, vl_embed>::space): New.
+	(vec<T, A, vl_embed>::iterate): New.
+	(vec<T, A, vl_embed>::iterate): New.
+	(vec<T, A, vl_embed>::copy): New.
+	(vec<T, A, vl_embed>::splice): New.
+	(vec<T, A, vl_embed>::quick_push New.
+	(vec<T, A, vl_embed>::pop New.
+	(vec<T, A, vl_embed>::truncate): New.
+	(vec<T, A, vl_embed>::quick_insert): New.
+	(vec<T, A, vl_embed>::ordered_remove): New.
+	(vec<T, A, vl_embed>::unordered_remove): New.
+	(vec<T, A, vl_embed>::block_remove): New.
+	(vec<T, A, vl_embed>::qsort): New.
+	(vec<T, A, vl_embed>::lower_bound): New.
+	(vec<T, A, vl_embed>::embedded_size): New.
+	(vec<T, A, vl_embed>::embedded_init): New.
+	(vec<T, A, vl_embed>::quick_grow): New.
+	(vec<T, A, vl_embed>::quick_grow_cleared): New.
+	(vec_safe_space): New.
+	(vec_safe_length): New.
+	(vec_safe_address): New.
+	(vec_safe_is_empty): New.
+	(vec_safe_reserve): New.
+	(vec_safe_reserve_exact): New.
+	(vec_alloc): New.
+	(vec_free): New.
+	(vec_safe_grow): New.
+	(vec_safe_grow_cleared): New.
+	(vec_safe_iterate): New.
+	(vec_safe_push): New.
+	(vec_safe_insert): New.
+	(vec_safe_truncate): New.
+	(vec_safe_copy): New.
+	(vec_safe_splice): New.
+
+	(vec<T, A, vl_ptr>): New partial specialization for the space
+	efficient layout.
+	(vec<T, A, vl_ptr>::exists): New.
+	(vec<T, A, vl_ptr>::is_empty): New.
+	(vec<T, A, vl_ptr>::length): New.
+	(vec<T, A, vl_ptr>::address): New.
+	(vec<T, A, vl_ptr>::operator[]): New.
+	(vec<T, A, vl_ptr>::operator!=): New.
+	(vec<T, A, vl_ptr>::operator==): New.
+	(vec<T, A, vl_ptr>::last): New.
+	(vec<T, A, vl_ptr>::space): New.
+	(vec<T, A, vl_ptr>::iterate): New.
+	(vec<T, A, vl_ptr>::copy): New.
+	(vec<T, A, vl_ptr>::reserve): New.
+	(vec<T, A, vl_ptr>::reserve_exact): New.
+	(vec<T, A, vl_ptr>::splice): New.
+	(vec<T, A, vl_ptr>::safe_splice): New.
+	(vec<T, A, vl_ptr>::quick_push): New.
+	(vec<T, A, vl_ptr>::safe_push): New.
+	(vec<T, A, vl_ptr>::pop): New.
+	(vec<T, A, vl_ptr>::truncate): New.
+	(vec<T, A, vl_ptr>::safe_grow): New.
+	(vec<T, A, vl_ptr>::safe_grow_cleared): New.
+	(vec<T, A, vl_ptr>::quick_grow): New.
+	(vec<T, A, vl_ptr>::quick_grow_cleared): New.
+	(vec<T, A, vl_ptr>::quick_insert): New.
+	(vec<T, A, vl_ptr>::safe_insert): New.
+	(vec<T, A, vl_ptr>::ordered_remove): New.
+	(vec<T, A, vl_ptr>::unordered_remove): New.
+	(vec<T, A, vl_ptr>::block_remove): New.
+	(vec<T, A, vl_ptr>::qsort): New.
+	(vec<T, A, vl_ptr>::lower_bound): New.
+	(vec_stack_alloc): Define.
+	(FOR_EACH_VEC_SAFE_ELT): Define.
+	* vecir.h: Remove.  Update all users.
+	* vecprim.h: Remove.  Update all users.
+	Move uchar to coretypes.h.
+
+	* Makefile.in (VEC_H): Add $(GGC_H).
+	Remove vecir.h and vecprim.h dependencies everywhere.
+
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	* gengtype-lex.l (VEC): Remove.
+	Add characters in the set [\!\>\.-].
+	* gengtype-parse.c (token_names): Remove "VEC".
+	(require_template_declaration): Remove handling of VEC_TOKEN.
+	(type): Likewise.
+	Call create_user_defined_type when parsing GTY((user)).
+	* gengtype-state.c (type_lineloc): handle TYPE_UNDEFINED.
+	(write_state_undefined_type): New.
+	(write_state_type): Call write_state_undefined_type for
+	TYPE_UNDEFINED.
+	(read_state_type): Call read_state_undefined_type for
+	TYPE_UNDEFINED.
+	* gengtype.c (dbgprint_count_type_at): Handle TYPE_UNDEFINED.
+	(create_user_defined_type): Make extern.
+	(type_for_name): Factor out of resolve_typedef.
+	(create_undefined_type): New
+	(resolve_typedef): Call it when we cannot find a previous
+	typedef and the type is not a template.
+	(find_structure): Accept TYPE_UNDEFINED.
+	(set_gc_used_type): Add argument ALLOWED_UNDEFINED_TYPES,
+	default to false.
+	Emit an error for TYPE_UNDEFINED unless LEVEL is GC_UNUSED or
+	ALLOWED_UNDEFINED_TYPES is set.
+	Set ALLOWED_UNDEFINED_TYPES to true for TYPE_USER_STRUCT.
+	(filter_type_name): Accept templates with more than one
+	argument.
+	(output_mangled_typename): Handle TYPE_UNDEFINED
+	(walk_type): Likewise.
+	(write_types_process_field): Likewise.
+	(write_func_for_structure): If CHAIN_NEXT is set, ORIG_S
+	should not be a user-defined type.
+	(write_types_local_user_process_field): Handle TYPE_ARRAY,
+	TYPE_NONE and TYPE_UNDEFINED.
+	(write_types_local_process_field): Likewise.
+	(contains_scalar_p): Return 0 for TYPE_USER_STRUCT.
+	(write_root): Reject user-defined types that are not pointers.
+	Handle TYPE_NONE, TYPE_UNDEFINED, TYPE_UNION, TYPE_LANG_STRUCT
+	and TYPE_PARAM_STRUCT.
+	(output_typename): Handle TYPE_NONE, TYPE_UNDEFINED, and
+	TYPE_ARRAY.
+	(dump_typekind): Handle TYPE_UNDEFINED.
+	* gengtype.h (enum typekind): Add TYPE_UNDEFINED.
+	(create_user_defined_type): Declare.
+	(enum gty_token): Remove VEC_TOKEN.
+
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* coretypes.h (uchar): Define.
+	* alias.c: Use new vec API in vec.h.
+	* asan.c: Likewise.
+	* attribs.c: Likewise.
+	* basic-block.h: Likewise.
+	* bb-reorder.c: Likewise.
+	* builtins.c: Likewise.
+	* calls.c: Likewise.
+	* cfg.c: Likewise.
+	* cfganal.c: Likewise.
+	* cfgcleanup.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* cfghooks.c: Likewise.
+	* cfghooks.h: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloop.h: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* cgraph.c: Likewise.
+	* cgraph.h: Likewise.
+	* cgraphclones.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* combine.c: Likewise.
+	* compare-elim.c: Likewise.
+	* coverage.c: Likewise.
+	* cprop.c: Likewise.
+	* data-streamer.h: Likewise.
+	* dbxout.c: Likewise.
+	* dce.c: Likewise.
+	* df-core.c: Likewise.
+	* df-problems.c: Likewise.
+	* df-scan.c: Likewise.
+	* dominance.c: Likewise.
+	* domwalk.c: Likewise.
+	* domwalk.h: Likewise.
+	* dse.c: Likewise.
+	* dwarf2cfi.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarf2out.h: Likewise.
+	* emit-rtl.c: Likewise.
+	* except.c: Likewise.
+	* except.h: Likewise.
+	* expr.c: Likewise.
+	* expr.h: Likewise.
+	* final.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* function.h: Likewise.
+	* fwprop.c: Likewise.
+	* gcc.c: Likewise.
+	* gcse.c: Likewise.
+	* genattr.c: Likewise.
+	* genattrtab.c: Likewise.
+	* genautomata.c: Likewise.
+	* genextract.c: Likewise.
+	* genopinit.c: Likewise
+	* ggc-common.c: Likewise.
+	* ggc.h: Likewise.
+	* gimple-low.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* gimple-streamer-in.c: Likewise.
+	* gimple.c: Likewise.
+	* gimple.h: Likewise.
+	* gimplify.c: Likewise.
+	* graph.c: Likewise.
+	* graphds.c: Likewise.
+	* graphds.h: Likewise.
+	* graphite-blocking.c: Likewise.
+	* graphite-clast-to-gimple.c: Likewise.
+	* graphite-dependences.c: Likewise.
+	* graphite-interchange.c: Likewise.
+	* graphite-optimize-isl.c: Likewise.
+	* graphite-poly.c: Likewise.
+	* graphite-poly.h: Likewise.
+	* graphite-scop-detection.c: Likewise.
+	* graphite-scop-detection.h: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* graphite.c: Likewise.
+	* godump.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* hw-doloop.c: Likewise.
+	* hw-doloop.h: Likewise.
+	* ifcvt.c: Likewise.
+	* insn-addr.h: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-inline.h: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-prop.h: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* ipa-ref-inline.h: Likewise.
+	* ipa-ref.c: Likewise.
+	* ipa-ref.h: Likewise.
+	* ipa-reference.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ipa-utils.h: Likewise.
+	* ipa.c: Likewise.
+	* ira-build.c: Likewise.
+	* ira-color.c: Likewise.
+	* ira-emit.c: Likewise.
+	* ira-int.h: Likewise.
+	* ira.c: Likewise.
+	* loop-invariant.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* lower-subreg.c: Likewise.
+	* lra-lives.c: Likewise.
+	* lra.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-section-out.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* lto-streamer.h: Likewise.
+	* lto-symtab.c: Likewise.
+	* mcf.c: Likewise.
+	* modulo-sched.c: Likewise.
+	* omp-low.c: Likewise.
+	* opts-common.c: Likewise.
+	* opts-global.c: Likewise.
+	* opts.c: Likewise.
+	* opts.h: Likewise.
+	* passes.c: Likewise.
+	* predict.c: Likewise.
+	* print-tree.c: Likewise.
+	* profile.c: Likewise.
+	* profile.h: Likewise.
+	* read-rtl.c: Likewise.
+	* ree.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regrename.c: Likewise.
+	* regrename.h: Likewise.
+	* reload.c: Likewise.
+	* reload.h: Likewise.
+	* reload1.c: Likewise.
+	* rtl.h: Likewise.
+	* sched-deps.c: Likewise.
+	* sched-int.h: Likewise.
+	* sdbout.c: Likewise.
+	* sel-sched-dump.c: Likewise.
+	* sel-sched-ir.c: Likewise.
+	* sel-sched-ir.h: Likewise.
+	* sel-sched.c: Likewise.
+	* sese.c: Likewise.
+	* sese.h: Likewise.
+	* statistics.h: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* store-motion.c: Likewise.
+	* tlink.c: Likewise.
+	* toplev.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-browser.c: Likewise.
+	* tree-call-cdce.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-cfgcleanup.c: Likewise.
+	* tree-chrec.c: Likewise.
+	* tree-chrec.h: Likewise.
+	* tree-complex.c: Likewise.
+	* tree-data-ref.c: Likewise.
+	* tree-data-ref.h: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-diagnostic.c: Likewise.
+	* tree-dump.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-emutls.c: Likewise.
+	* tree-flow.h: Likewise.
+	* tree-if-conv.c: Likewise.
+	* tree-inline.c: Likewise.
+	* tree-inline.h: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-iterator.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-mudflap.c: Likewise.
+	* tree-optimize.c: Likewise.
+	* tree-outof-ssa.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-phinodes.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-scalar-evolution.c: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-address.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-coalesce.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-live.h: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-operands.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-sccvn.h: Likewise.
+	* tree-ssa-strlen.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa-tail-merge.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-ssa-threadupdate.c: Likewise.
+	* tree-ssa-uncprop.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-ssanames.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* tree-streamer-in.c: Likewise.
+	* tree-streamer-out.c: Likewise.
+	* tree-streamer.c: Likewise.
+	* tree-streamer.h: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-patterns.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* tree-vectorizer.h: Likewise.
+	* tree-vrp.c: Likewise.
+	* tree.c: Likewise.
+	* tree.h: Likewise.
+	* value-prof.c: Likewise.
+	* value-prof.h: Likewise.
+	* var-tracking.c: Likewise.
+	* varasm.c: Likewise.
+	* varpool.c: Likewise.
+	* vmsdbgout.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/rs6000/rs6000-c.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/spu/spu-c.c: Likewise.
+	* config/vms/vms.c: Likewise.
+	* config/vxworks.c: Likewise.
+	* config/epiphany/resolve-sw-modes.c: Likewise.
+
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55236

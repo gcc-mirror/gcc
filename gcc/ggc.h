@@ -50,7 +50,7 @@ typedef void (*gt_handle_reorder) (void *, void *, gt_pointer_operator,
 
 /* Used by the gt_pch_n_* routines.  Register an object in the hash table.  */
 extern int gt_pch_note_object (void *, void *, gt_note_pointers,
-			       enum gt_types_enum);
+			       enum gt_types_enum = gt_types_enum_last);
 
 /* Used by the gt_pch_n_* routines.  Register that an object has a reorder
    function.  */

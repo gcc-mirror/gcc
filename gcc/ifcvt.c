@@ -44,7 +44,6 @@
 #include "df.h"
 #include "vec.h"
 #include "pointer-set.h"
-#include "vecprim.h"
 #include "dbgcnt.h"
 
 #ifndef HAVE_conditional_move
@@ -2695,7 +2694,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 static int
 check_cond_move_block (basic_block bb,
 		       struct pointer_map_t *vals,
-		       VEC (rtx, heap) **regs,
+		       vec<rtx> *regs,
 		       rtx cond)
 {
   rtx insn;
@@ -2760,7 +2759,7 @@ check_cond_move_block (basic_block bb,
       slot = pointer_map_insert (vals, (void *) dest);
       *slot = (void *) src;
 
-      VEC_safe_push (rtx, heap, *regs, dest);
+      regs->safe_push (dest);
     }
 
   return TRUE;
@@ -2851,8 +2850,8 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   int c;
   struct pointer_map_t *then_vals;
   struct pointer_map_t *else_vals;
-  VEC (rtx, heap) *then_regs = NULL;
-  VEC (rtx, heap) *else_regs = NULL;
+  vec<rtx> then_regs = vec<rtx>();
+  vec<rtx> else_regs = vec<rtx>();
   unsigned int i;
   int success_p = FALSE;
 
@@ -2874,7 +2873,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      source register does not change after the assignment.  Also count
      the number of registers set in only one of the blocks.  */
   c = 0;
-  FOR_EACH_VEC_ELT (rtx, then_regs, i, reg)
+  FOR_EACH_VEC_ELT (then_regs, i, reg)
     {
       void **then_slot = pointer_map_contains (then_vals, reg);
       void **else_slot = pointer_map_contains (else_vals, reg);
@@ -2893,7 +2892,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
     }
 
   /* Finish off c for MAX_CONDITIONAL_EXECUTE.  */
-  FOR_EACH_VEC_ELT (rtx, else_regs, i, reg)
+  FOR_EACH_VEC_ELT (else_regs, i, reg)
     {
       gcc_checking_assert (pointer_map_contains (else_vals, reg));
       if (!pointer_map_contains (then_vals, reg))
@@ -2957,8 +2956,8 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 done:
   pointer_map_destroy (then_vals);
   pointer_map_destroy (else_vals);
-  VEC_free (rtx, heap, then_regs);
-  VEC_free (rtx, heap, else_regs);
+  then_regs.release ();
+  else_regs.release ();
   return success_p;
 }
 

@@ -1,3 +1,18 @@
+2012-11-17  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* frontend-passes.c: Use new vec API in vec.h.
+	* trans-array.c: Likewise.
+	* trans-common.c: Likewise.
+	* trans-decl.c: Likewise.
+	* trans-expr.c: Likewise.
+	* trans-intrinsic.c: Likewise.
+	* trans-openmp.c: Likewise.
+	* trans-stmt.c: Likewise.
+	* trans-types.c: Likewise.
+	* trans.h: Likewise.
+
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/55341
@@ -11,6 +26,7 @@
 	PR fortran/55297
 	* resolve.c (resolve_typebound_intrinsic_op): Only add typebound
 	operators to the operator list in the namespace of the derived type.
+
 
 2012-11-12  Jan Hubicka  <jh@suse.cz>
 

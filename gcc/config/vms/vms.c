@@ -101,7 +101,7 @@ static const struct vms_crtl_name vms_crtl_names[] =
 
 /* List of aliased identifiers.  They must be persistent across gc.  */
 
-static GTY(()) VEC(tree,gc) *aliases_id;
+static GTY(()) vec<tree, va_gc> *aliases_id;
 
 /* Add a CRTL translation.  This simply use the transparent alias
    mechanism, which is platform independent and works with the
@@ -120,7 +120,7 @@ vms_add_crtl_xlat (const char *name, size_t nlen,
   IDENTIFIER_TRANSPARENT_ALIAS (targ) = 1;
   TREE_CHAIN (targ) = get_identifier_with_length (id_str, id_len);
 
-  VEC_safe_push (tree, gc, aliases_id, targ);
+  vec_safe_push (aliases_id, targ);
 }
 
 /* Do VMS specific stuff on builtins: disable the ones that are not

@@ -266,11 +266,11 @@ memory_strides_in_loop_1 (lst_p loop, graphite_dim_t depth, mpz_t strides)
   mpz_init (s);
   mpz_init (n);
 
-  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (loop), j, l)
+  FOR_EACH_VEC_ELT (LST_SEQ (loop), j, l)
     if (LST_LOOP_P (l))
       memory_strides_in_loop_1 (l, depth, strides);
     else
-      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (LST_PBB (l)), i, pdr)
+      FOR_EACH_VEC_ELT (PBB_DRS (LST_PBB (l)), i, pdr)
 	{
 	  pdr_stride_in_loop (s, depth, pdr);
 	  mpz_set_si (n, PDR_NB_REFS (pdr));
@@ -441,7 +441,7 @@ lst_apply_interchange (lst_p lst, int depth1, int depth2)
       int i;
       lst_p l;
 
-      FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+      FOR_EACH_VEC_ELT (LST_SEQ (lst), i, l)
 	lst_apply_interchange (l, depth1, depth2);
     }
   else
@@ -460,8 +460,8 @@ lst_perfectly_nested_p (lst_p loop1, lst_p loop2)
   if (!LST_LOOP_P (loop1))
     return false;
 
-  return VEC_length (lst_p, LST_SEQ (loop1)) == 1
-    && lst_perfectly_nested_p (VEC_index (lst_p, LST_SEQ (loop1), 0), loop2);
+  return LST_SEQ (loop1).length () == 1
+         && lst_perfectly_nested_p (LST_SEQ (loop1)[0], loop2);
 }
 
 /* Transform the loop nest between LOOP1 and LOOP2 into a perfect
@@ -581,13 +581,13 @@ lst_interchange_select_inner (scop_p scop, lst_p outer_father, int outer,
 
   gcc_assert (outer_father
 	      && LST_LOOP_P (outer_father)
-	      && LST_LOOP_P (VEC_index (lst_p, LST_SEQ (outer_father), outer))
+	      && LST_LOOP_P (LST_SEQ (outer_father)[outer])
 	      && inner_father
 	      && LST_LOOP_P (inner_father));
 
-  loop1 = VEC_index (lst_p, LST_SEQ (outer_father), outer);
+  loop1 = LST_SEQ (outer_father)[outer];
 
-  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (inner_father), inner, loop2)
+  FOR_EACH_VEC_ELT (LST_SEQ (inner_father), inner, loop2)
     if (LST_LOOP_P (loop2)
 	&& (lst_try_interchange_loops (scop, loop1, loop2)
 	    || lst_interchange_select_inner (scop, outer_father, outer, loop2)))
@@ -618,12 +618,12 @@ lst_interchange_select_outer (scop_p scop, lst_p loop, int outer)
       while (lst_interchange_select_inner (scop, father, outer, loop))
 	{
 	  res++;
-	  loop = VEC_index (lst_p, LST_SEQ (father), outer);
+	  loop = LST_SEQ (father)[outer];
 	}
     }
 
   if (LST_LOOP_P (loop))
-    FOR_EACH_VEC_ELT (lst_p, LST_SEQ (loop), i, l)
+    FOR_EACH_VEC_ELT (LST_SEQ (loop), i, l)
       if (LST_LOOP_P (l))
 	res += lst_interchange_select_outer (scop, l, i);
 

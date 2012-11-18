@@ -1142,13 +1142,15 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
     case CLVC_DEFER:
 	{
-	  VEC(cl_deferred_option,heap) *vec
-	    = (VEC(cl_deferred_option,heap) *) *(void **) flag_var;
+	  vec<cl_deferred_option> *v
+	    = (vec<cl_deferred_option> *) *(void **) flag_var;
 	  cl_deferred_option p = {opt_index, arg, value};
-	  VEC_safe_push (cl_deferred_option, heap, vec, p);
-	  *(void **) flag_var = vec;
+	  if (!v)
+	    v = XCNEW (vec<cl_deferred_option>);
+	  v->safe_push (p);
+	  *(void **) flag_var = v;
 	  if (set_flag_var)
-	    *(void **) set_flag_var = vec;
+	    *(void **) set_flag_var = v;
 	}
 	break;
     }

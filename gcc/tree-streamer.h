@@ -49,7 +49,7 @@ struct streamer_tree_cache_d
   struct pointer_map_t *node_map;
 
   /* The nodes pickled so far.  */
-  VEC(tree,heap) *nodes;
+  vec<tree> nodes;
 };
 
 /* Return true if tree node EXPR should be streamed as a builtin.  For
@@ -103,7 +103,7 @@ void streamer_tree_cache_delete (struct streamer_tree_cache_d *);
 static inline tree
 streamer_tree_cache_get (struct streamer_tree_cache_d *cache, unsigned ix)
 {
-  return VEC_index (tree, cache->nodes, ix);
+  return cache->nodes[ix];
 }
 
 

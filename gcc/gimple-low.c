@@ -55,8 +55,6 @@ struct return_statements_t
 };
 typedef struct return_statements_t return_statements_t;
 
-DEF_VEC_O(return_statements_t);
-DEF_VEC_ALLOC_O(return_statements_t,heap);
 
 struct lower_data
 {
@@ -65,7 +63,7 @@ struct lower_data
 
   /* A vector of label and return statements to be moved to the end
      of the function.  */
-  VEC(return_statements_t,heap) *return_statements;
+  vec<return_statements_t> return_statements;
 
   /* True if the current statement cannot fall through.  */
   bool cannot_fallthru;
@@ -105,7 +103,7 @@ lower_function_body (void)
   BLOCK_SUBBLOCKS (data.block) = NULL_TREE;
   BLOCK_CHAIN (data.block) = NULL_TREE;
   TREE_ASM_WRITTEN (data.block) = 1;
-  data.return_statements = VEC_alloc (return_statements_t, heap, 8);
+  data.return_statements.create (8);
 
   bind = gimple_seq_first_stmt (body);
   lowered_body = NULL;
@@ -119,9 +117,8 @@ lower_function_body (void)
      If we've already got one in the return_statements vector, we don't
      need to do anything special.  Otherwise build one by hand.  */
   if (gimple_seq_may_fallthru (lowered_body)
-      && (VEC_empty (return_statements_t, data.return_statements)
-	  || gimple_return_retval (VEC_last (return_statements_t,
-			           data.return_statements).stmt) != NULL))
+      && (data.return_statements.is_empty ()
+	  || gimple_return_retval (data.return_statements.last().stmt) != NULL))
     {
       x = gimple_build_return (NULL);
       gimple_set_location (x, cfun->function_end_locus);
@@ -131,18 +128,9 @@ lower_function_body (void)
 
   /* If we lowered any return statements, emit the representative
      at the end of the function.  */
-  while (!VEC_empty (return_statements_t, data.return_statements))
+  while (!data.return_statements.is_empty ())
     {
-      return_statements_t t;
-
-      /* Unfortunately, we can't use VEC_pop because it returns void for
-	 objects.  */
-      t = VEC_last (return_statements_t, data.return_statements);
-      VEC_truncate (return_statements_t,
-	  	    data.return_statements,
-	  	    VEC_length (return_statements_t,
-		      		data.return_statements) - 1);
-
+      return_statements_t t = data.return_statements.pop ();
       x = gimple_build_label (t.label);
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
       gsi_insert_after (&i, t.stmt, GSI_CONTINUE_LINKING);
@@ -185,7 +173,7 @@ lower_function_body (void)
     = blocks_nreverse (BLOCK_SUBBLOCKS (data.block));
 
   clear_block_marks (data.block);
-  VEC_free(return_statements_t, heap, data.return_statements);
+  data.return_statements.release ();
   return 0;
 }
 
@@ -841,10 +829,10 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
   return_statements_t tmp_rs;
 
   /* Match this up with an existing return statement that's been created.  */
-  for (i = VEC_length (return_statements_t, data->return_statements) - 1;
+  for (i = data->return_statements.length () - 1;
        i >= 0; i--)
     {
-      tmp_rs = VEC_index (return_statements_t, data->return_statements, i);
+      tmp_rs = data->return_statements[i];
 
       if (gimple_return_retval (stmt) == gimple_return_retval (tmp_rs.stmt))
 	{
@@ -860,7 +848,7 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
   /* Not found.  Create a new label and record the return statement.  */
   tmp_rs.label = create_artificial_label (cfun->function_end_locus);
   tmp_rs.stmt = stmt;
-  VEC_safe_push (return_statements_t, heap, data->return_statements, tmp_rs);
+  data->return_statements.safe_push (tmp_rs);
 
   /* Generate a goto statement and remove the return statement.  */
  found:

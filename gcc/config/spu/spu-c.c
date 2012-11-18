@@ -93,8 +93,8 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 #define SCALAR_TYPE_P(t) (INTEGRAL_TYPE_P (t) \
 			  || SCALAR_FLOAT_TYPE_P (t) \
 			  || POINTER_TYPE_P (t))
-  VEC(tree,gc) *fnargs = (VEC(tree,gc) *) passed_args;
-  unsigned int nargs = VEC_length (tree, fnargs);
+  vec<tree, va_gc> *fnargs = static_cast <vec<tree, va_gc> *> (passed_args);
+  unsigned int nargs = vec_safe_length (fnargs);
   int new_fcode, fcode = DECL_FUNCTION_CODE (fndecl);
   struct spu_builtin_description *desc;
   tree match = NULL_TREE;
@@ -137,7 +137,7 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
 	      return error_mark_node;
 	    }
 
-	  var = VEC_index (tree, fnargs, p);
+	  var = (*fnargs)[p];
 
 	  if (TREE_CODE (var) == NON_LVALUE_EXPR)
 	    var = TREE_OPERAND (var, 0);

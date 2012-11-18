@@ -119,11 +119,11 @@ fix_loop_placement (struct loop *loop)
 {
   unsigned i;
   edge e;
-  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  vec<edge> exits = get_loop_exit_edges (loop);
   struct loop *father = current_loops->tree_root, *act;
   bool ret = false;
 
-  FOR_EACH_VEC_ELT (edge, exits, i, e)
+  FOR_EACH_VEC_ELT (exits, i, e)
     {
       act = find_common_loop (loop, e->dest->loop_father);
       if (flow_loop_nested_p (father, act))
@@ -139,13 +139,13 @@ fix_loop_placement (struct loop *loop)
 
       /* The exit edges of LOOP no longer exits its original immediate
 	 superloops; remove them from the appropriate exit lists.  */
-      FOR_EACH_VEC_ELT (edge, exits, i, e)
+      FOR_EACH_VEC_ELT (exits, i, e)
 	rescan_loop_exit (e, false, false);
 
       ret = true;
     }
 
-  VEC_free (edge, heap, exits);
+  exits.release ();
   return ret;
 }
 
@@ -285,7 +285,7 @@ remove_path (edge e)
 {
   edge ae;
   basic_block *rem_bbs, *bord_bbs, from, bb;
-  VEC (basic_block, heap) *dom_bbs;
+  vec<basic_block> dom_bbs;
   int i, nrem, n_bord_bbs;
   sbitmap seen;
   bool irred_invalidated = false;
@@ -354,7 +354,7 @@ remove_path (edge e)
   /* Remove the path.  */
   from = e->src;
   remove_branch (e);
-  dom_bbs = NULL;
+  dom_bbs.create (0);
 
   /* Cancel loops contained in the path.  */
   for (i = 0; i < nrem; i++)
@@ -379,14 +379,14 @@ remove_path (edge e)
 	   ldom;
 	   ldom = next_dom_son (CDI_DOMINATORS, ldom))
 	if (!dominated_by_p (CDI_DOMINATORS, from, ldom))
-	  VEC_safe_push (basic_block, heap, dom_bbs, ldom);
+	  dom_bbs.safe_push (ldom);
     }
 
   free (seen);
 
   /* Recount dominators.  */
   iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, true);
-  VEC_free (basic_block, heap, dom_bbs);
+  dom_bbs.release ();
   free (bord_bbs);
 
   /* Fix placements of basic blocks inside loops and the placement of
@@ -407,7 +407,7 @@ static void
 place_new_loop (struct loop *loop)
 {
   loop->num = number_of_loops ();
-  VEC_safe_push (loop_p, gc, current_loops->larray, loop);
+  vec_safe_push (current_loops->larray, loop);
 }
 
 /* Given LOOP structure with filled header and latch, find the body of the
@@ -588,7 +588,7 @@ scale_loop_profile (struct loop *loop, int scale, int iteration_bound)
 static void
 update_dominators_in_loop (struct loop *loop)
 {
-  VEC (basic_block, heap) *dom_bbs = NULL;
+  vec<basic_block> dom_bbs = vec<basic_block>();
   sbitmap seen;
   basic_block *body;
   unsigned i;
@@ -610,14 +610,14 @@ update_dominators_in_loop (struct loop *loop)
 	if (!bitmap_bit_p (seen, ldom->index))
 	  {
 	    bitmap_set_bit (seen, ldom->index);
-	    VEC_safe_push (basic_block, heap, dom_bbs, ldom);
+	    dom_bbs.safe_push (ldom);
 	  }
     }
 
   iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, false);
   free (body);
   free (seen);
-  VEC_free (basic_block, heap, dom_bbs);
+  dom_bbs.release ();
 }
 
 /* Creates an if region as shown above. CONDITION is used to create
@@ -1115,7 +1115,7 @@ set_zero_probability (edge e)
 bool
 duplicate_loop_to_header_edge (struct loop *loop, edge e,
 			       unsigned int ndupl, sbitmap wont_exit,
-			       edge orig, VEC (edge, heap) **to_remove,
+			       edge orig, vec<edge> *to_remove,
 			       int flags)
 {
   struct loop *target, *aloop;
@@ -1345,7 +1345,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
       if (orig && bitmap_bit_p (wont_exit, j + 1))
 	{
 	  if (to_remove)
-	    VEC_safe_push (edge, heap, *to_remove, new_spec_edges[SE_ORIG]);
+	    to_remove->safe_push (new_spec_edges[SE_ORIG]);
 	  set_zero_probability (new_spec_edges[SE_ORIG]);
 
 	  /* Scale the frequencies of the blocks dominated by the exit.  */
@@ -1381,7 +1381,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   if (orig && bitmap_bit_p (wont_exit, 0))
     {
       if (to_remove)
-	VEC_safe_push (edge, heap, *to_remove, orig);
+	to_remove->safe_push (orig);
       set_zero_probability (orig);
 
       /* Scale the frequencies of the blocks dominated by the exit.  */
@@ -1408,14 +1408,14 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   for (i = 0; i < n; i++)
     {
       basic_block dominated, dom_bb;
-      VEC (basic_block, heap) *dom_bbs;
+      vec<basic_block> dom_bbs;
       unsigned j;
 
       bb = bbs[i];
       bb->aux = 0;
 
       dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
-      FOR_EACH_VEC_ELT (basic_block, dom_bbs, j, dominated)
+      FOR_EACH_VEC_ELT (dom_bbs, j, dominated)
 	{
 	  if (flow_bb_inside_loop_p (loop, dominated))
 	    continue;
@@ -1423,7 +1423,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 			CDI_DOMINATORS, first_active[i], first_active_latch);
 	  set_immediate_dominator (CDI_DOMINATORS, dominated, dom_bb);
 	}
-      VEC_free (basic_block, heap, dom_bbs);
+      dom_bbs.release ();
     }
   free (first_active);
 

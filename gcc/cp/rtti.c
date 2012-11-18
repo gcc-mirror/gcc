@@ -72,8 +72,6 @@ typedef struct GTY (()) tinfo_s {
 		 the type_info derived type.  */
 } tinfo_s;
 
-DEF_VEC_O(tinfo_s);
-DEF_VEC_ALLOC_O(tinfo_s,gc);
 
 typedef enum tinfo_kind
 {
@@ -92,12 +90,12 @@ typedef enum tinfo_kind
 } tinfo_kind;
 
 /* A vector of all tinfo decls that haven't yet been emitted.  */
-VEC(tree,gc) *unemitted_tinfo_decls;
+vec<tree, va_gc> *unemitted_tinfo_decls;
 
 /* A vector of all type_info derived types we need.  The first few are
    fixed and created early. The remainder are for multiple inheritance
    and are generated as needed. */
-static GTY (()) VEC(tinfo_s,gc) *tinfo_descs;
+static GTY (()) vec<tinfo_s, va_gc> *tinfo_descs;
 
 static tree ifnonnull (tree, tree, tsubst_flags_t);
 static tree tinfo_name (tree, bool);
@@ -155,7 +153,7 @@ init_rtti_processing (void)
     = cp_build_qualified_type (type_info_type, TYPE_QUAL_CONST);
   type_info_ptr_type = build_pointer_type (const_type_info_type_node);
 
-  unemitted_tinfo_decls = VEC_alloc (tree, gc, 124);
+  vec_alloc (unemitted_tinfo_decls, 124);
 
   create_tinfo_types ();
 }
@@ -294,8 +292,7 @@ typeid_ok_p (void)
       return false;
     }
 
-  pseudo_type_info
-    = VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE).type;
+  pseudo_type_info = (*tinfo_descs)[TK_TYPE_INFO_TYPE].type;
   type_info_type = TYPE_MAIN_VARIANT (const_type_info_type_node);
 
   /* Make sure abi::__type_info_pseudo has the same alias set
@@ -422,7 +419,7 @@ get_tinfo_decl (tree type)
   if (!d)
     {
       int ix = get_pseudo_ti_index (type);
-      tinfo_s *ti = &VEC_index (tinfo_s, tinfo_descs, ix);
+      tinfo_s *ti = &(*tinfo_descs)[ix];
 
       d = build_lang_decl (VAR_DECL, name, ti->type);
       SET_DECL_ASSEMBLER_NAME (d, name);
@@ -444,7 +441,7 @@ get_tinfo_decl (tree type)
 	CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
 
       /* Add decl to the global array of tinfo decls.  */
-      VEC_safe_push (tree, gc, unemitted_tinfo_decls, d);
+      vec_safe_push (unemitted_tinfo_decls, d);
     }
 
   return d;
@@ -873,7 +870,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
   tree init;
   tree name_decl;
   tree vtable_ptr;
-  VEC(constructor_elt,gc) *v;
+  vec<constructor_elt, va_gc> *v;
 
   {
     tree name_name, name_string;
@@ -935,7 +932,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
       ti->vtable = vtable_ptr;
     }
 
-  v = VEC_alloc (constructor_elt, gc, 2);
+  vec_alloc (v, 2);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, vtable_ptr);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			  decay_conversion (name_decl, tf_warning_or_error));
@@ -973,7 +970,8 @@ ptr_initializer (tinfo_s *ti, tree target)
   tree to = TREE_TYPE (target);
   int flags = qualifier_flags (to);
   bool incomplete = target_incomplete_p (to);
-  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 3);
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, 3);
 
   if (incomplete)
     flags |= 8;
@@ -1001,7 +999,8 @@ ptm_initializer (tinfo_s *ti, tree target)
   tree klass = TYPE_PTRMEM_CLASS_TYPE (target);
   int flags = qualifier_flags (to);
   bool incomplete = target_incomplete_p (to);
-  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 4);
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, 4);
 
   if (incomplete)
     flags |= 0x8;
@@ -1029,7 +1028,8 @@ class_initializer (tinfo_s *ti, tree target, unsigned n, ...)
   tree init = tinfo_base_init (ti, target);
   va_list extra_inits;
   unsigned i;
-  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, n+1);
+  vec<constructor_elt, va_gc> *v;
+  vec_alloc (v, n+1);
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
   va_start (extra_inits, n);
@@ -1079,7 +1079,7 @@ typeinfo_in_lib_p (tree type)
 static tree
 get_pseudo_ti_init (tree type, unsigned tk_index)
 {
-  tinfo_s *ti = &VEC_index (tinfo_s, tinfo_descs, tk_index);
+  tinfo_s *ti = &(*tinfo_descs)[tk_index];
 
   gcc_assert (at_eof);
   switch (tk_index)
@@ -1105,7 +1105,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	tree tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
 
 	/* get_tinfo_ptr might have reallocated the tinfo_descs vector.  */
-	ti = &VEC_index (tinfo_s, tinfo_descs, tk_index);
+	ti = &(*tinfo_descs)[tk_index];
 	return class_initializer (ti, type, 1, tinfo);
       }
 
@@ -1115,16 +1115,16 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 		    | (CLASSTYPE_DIAMOND_SHAPED_P (type) << 1));
 	tree binfo = TYPE_BINFO (type);
 	int nbases = BINFO_N_BASE_BINFOS (binfo);
-	VEC(tree,gc) *base_accesses = BINFO_BASE_ACCESSES (binfo);
+	vec<tree, va_gc> *base_accesses = BINFO_BASE_ACCESSES (binfo);
 	tree offset_type = integer_types[itk_long];
 	tree base_inits = NULL_TREE;
 	int ix;
-	VEC(constructor_elt,gc) *init_vec = NULL;
+	vec<constructor_elt, va_gc> *init_vec = NULL;
 	constructor_elt *e;
 
 	gcc_assert (tk_index >= TK_FIXED);
 
-	VEC_safe_grow (constructor_elt, gc, init_vec, nbases);
+	vec_safe_grow (init_vec, nbases);
 	/* Generate the base information initializer.  */
 	for (ix = nbases; ix--;)
 	  {
@@ -1133,9 +1133,9 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	    int flags = 0;
 	    tree tinfo;
 	    tree offset;
-	    VEC(constructor_elt,gc) *v;
+	    vec<constructor_elt, va_gc> *v;
 
-	    if (VEC_index (tree, base_accesses, ix) == access_public_node)
+	    if ((*base_accesses)[ix] == access_public_node)
 	      flags |= 2;
 	    tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
 	    if (BINFO_VIRTUAL_P (base_binfo))
@@ -1156,18 +1156,18 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	    offset = fold_build2_loc (input_location,
 				  BIT_IOR_EXPR, offset_type, offset,
 				  build_int_cst (offset_type, flags));
-	    v = VEC_alloc (constructor_elt, gc, 2);
+	    vec_alloc (v, 2);
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tinfo);
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, offset);
 	    base_init = build_constructor (init_list_type_node, v);
-	    e = &VEC_index (constructor_elt, init_vec, ix);
+	    e = &(*init_vec)[ix];
 	    e->index = NULL_TREE;
 	    e->value = base_init;
 	  }
 	base_inits = build_constructor (init_list_type_node, init_vec);
 
 	/* get_tinfo_ptr might have reallocated the tinfo_descs vector.  */
-	ti = &VEC_index (tinfo_s, tinfo_descs, tk_index);
+	ti = &(*tinfo_descs)[tk_index];
 	return class_initializer (ti, type, 3,
 				  build_int_cst (NULL_TREE, hint),
 				  build_int_cst (NULL_TREE, nbases),
@@ -1213,8 +1213,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
   /* First field is the pseudo type_info base class.  */
   fields = build_decl (input_location,
 		       FIELD_DECL, NULL_TREE,
-		       VEC_index (tinfo_s, tinfo_descs,
-				  TK_TYPE_INFO_TYPE).type);
+		       (*tinfo_descs)[TK_TYPE_INFO_TYPE].type);
 
   /* Now add the derived fields.  */
   while ((field_decl = va_arg (ap, tree)))
@@ -1228,7 +1227,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
 
-  ti = &VEC_index (tinfo_s, tinfo_descs, tk);
+  ti = &(*tinfo_descs)[tk];
   ti->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
   ti->name = get_identifier (real_name);
   ti->vtable = NULL_TREE;
@@ -1293,12 +1292,12 @@ get_pseudo_ti_index (tree type)
       else
 	{
 	  tree binfo = TYPE_BINFO (type);
-	  VEC(tree,gc) *base_accesses = BINFO_BASE_ACCESSES (binfo);
+	  vec<tree, va_gc> *base_accesses = BINFO_BASE_ACCESSES (binfo);
 	  tree base_binfo = BINFO_BASE_BINFO (binfo, 0);
 	  int num_bases = BINFO_N_BASE_BINFOS (binfo);
 
 	  if (num_bases == 1
-	      && VEC_index (tree, base_accesses, 0) == access_public_node
+	      && (*base_accesses)[0] == access_public_node
 	      && !BINFO_VIRTUAL_P (base_binfo)
 	      && integer_zerop (BINFO_OFFSET (base_binfo)))
 	    {
@@ -1312,16 +1311,16 @@ get_pseudo_ti_index (tree type)
 	      tree array_domain, base_array;
 
 	      ix = TK_FIXED + num_bases;
-	      if (VEC_length (tinfo_s, tinfo_descs) <= ix)
+	      if (vec_safe_length (tinfo_descs) <= ix)
 		{
 		  /* too short, extend.  */
-		  unsigned len = VEC_length (tinfo_s, tinfo_descs);
+		  unsigned len = vec_safe_length (tinfo_descs);
 
-		  VEC_safe_grow (tinfo_s, gc, tinfo_descs, ix + 1);
-		  while (VEC_iterate (tinfo_s, tinfo_descs, len++, ti))
+		  vec_safe_grow (tinfo_descs, ix + 1);
+		  while (tinfo_descs->iterate (len++, &ti))
 		    ti->type = ti->vtable = ti->name = NULL_TREE;
 		}
-	      else if (VEC_index (tinfo_s, tinfo_descs, ix).type)
+	      else if ((*tinfo_descs)[ix].type)
 		/* already created.  */
 		break;
 
@@ -1333,10 +1332,8 @@ get_pseudo_ti_index (tree type)
 		array_domain = build_index_type (size_int (num_bases - 1));
 	      else
 		array_domain = build_index_type (size_int (num_bases));
-	      base_array =
-		build_array_type (VEC_index (tinfo_s, tinfo_descs,
-					     TK_BASE_TYPE).type,
-				  array_domain);
+	      base_array = build_array_type ((*tinfo_descs)[TK_BASE_TYPE].type,
+					     array_domain);
 
 	      push_abi_namespace ();
 	      create_pseudo_type_info
@@ -1369,7 +1366,7 @@ create_tinfo_types (void)
 
   gcc_assert (!tinfo_descs);
 
-  VEC_safe_grow (tinfo_s, gc, tinfo_descs, TK_FIXED);
+  vec_safe_grow (tinfo_descs, TK_FIXED);
 
   push_abi_namespace ();
 
@@ -1387,7 +1384,7 @@ create_tinfo_types (void)
     DECL_CHAIN (field) = fields;
     fields = field;
 
-    ti = &VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE);
+    ti = &(*tinfo_descs)[TK_TYPE_INFO_TYPE];
     ti->type = make_class_type (RECORD_TYPE);
     ti->vtable = NULL_TREE;
     ti->name = NULL_TREE;
@@ -1427,7 +1424,7 @@ create_tinfo_types (void)
     DECL_CHAIN (field) = fields;
     fields = field;
 
-    ti = &VEC_index (tinfo_s, tinfo_descs, TK_BASE_TYPE);
+    ti = &(*tinfo_descs)[TK_BASE_TYPE];
 
     ti->type = make_class_type (RECORD_TYPE);
     ti->vtable = NULL_TREE;

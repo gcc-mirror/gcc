@@ -49,17 +49,15 @@ typedef int complex_lattice_t;
 
 #define PAIR(a, b)  ((a) << 2 | (b))
 
-DEF_VEC_I(complex_lattice_t);
-DEF_VEC_ALLOC_I(complex_lattice_t, heap);
 
-static VEC(complex_lattice_t, heap) *complex_lattice_values;
+static vec<complex_lattice_t> complex_lattice_values;
 
 /* For each complex variable, a pair of variables for the components exists in
    the hashtable.  */
 static htab_t complex_variable_components;
 
 /* For each complex SSA_NAME, a pair of ssa names for the components.  */
-static VEC(tree, heap) *complex_ssa_name_components;
+static vec<tree> complex_ssa_name_components;
 
 /* Lookup UID in the complex_variable_components hashtable and return the
    associated tree.  */
@@ -143,8 +141,7 @@ find_lattice_value (tree t)
   switch (TREE_CODE (t))
     {
     case SSA_NAME:
-      return VEC_index (complex_lattice_t, complex_lattice_values,
-			SSA_NAME_VERSION (t));
+      return complex_lattice_values[SSA_NAME_VERSION (t)];
 
     case COMPLEX_CST:
       real = TREE_REALPART (t);
@@ -177,8 +174,7 @@ init_parameter_lattice_values (void)
   for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     if (is_complex_reg (parm)
 	&& (ssa_name = ssa_default_def (cfun, parm)) != NULL_TREE)
-      VEC_replace (complex_lattice_t, complex_lattice_values,
-		   SSA_NAME_VERSION (ssa_name), VARYING);
+      complex_lattice_values[SSA_NAME_VERSION (ssa_name)] = VARYING;
 }
 
 /* Initialize simulation state for each statement.  Return false if we
@@ -311,7 +307,7 @@ complex_visit_stmt (gimple stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
 
   *result_p = lhs;
   ver = SSA_NAME_VERSION (lhs);
-  old_l = VEC_index (complex_lattice_t, complex_lattice_values, ver);
+  old_l = complex_lattice_values[ver];
 
   switch (gimple_expr_code (stmt))
     {
@@ -380,7 +376,7 @@ complex_visit_stmt (gimple stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
   if (new_l == old_l)
     return SSA_PROP_NOT_INTERESTING;
 
-  VEC_replace (complex_lattice_t, complex_lattice_values, ver, new_l);
+  complex_lattice_values[ver] = new_l;
   return new_l == VARYING ? SSA_PROP_VARYING : SSA_PROP_INTERESTING;
 }
 
@@ -406,12 +402,12 @@ complex_visit_phi (gimple phi)
     new_l |= find_lattice_value (gimple_phi_arg_def (phi, i));
 
   ver = SSA_NAME_VERSION (lhs);
-  old_l = VEC_index (complex_lattice_t, complex_lattice_values, ver);
+  old_l = complex_lattice_values[ver];
 
   if (new_l == old_l)
     return SSA_PROP_NOT_INTERESTING;
 
-  VEC_replace (complex_lattice_t, complex_lattice_values, ver, new_l);
+  complex_lattice_values[ver] = new_l;
   return new_l == VARYING ? SSA_PROP_VARYING : SSA_PROP_INTERESTING;
 }
 
@@ -485,7 +481,7 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
     }
 
   ssa_name_index = SSA_NAME_VERSION (ssa_name) * 2 + imag_p;
-  ret = VEC_index (tree, complex_ssa_name_components, ssa_name_index);
+  ret = complex_ssa_name_components[ssa_name_index];
   if (ret == NULL)
     {
       if (SSA_NAME_VAR (ssa_name))
@@ -505,7 +501,7 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
 	  set_ssa_default_def (cfun, SSA_NAME_VAR (ret), ret);
 	}
 
-      VEC_replace (tree, complex_ssa_name_components, ssa_name_index, ret);
+      complex_ssa_name_components[ssa_name_index] = ret;
     }
 
   return ret;
@@ -534,7 +530,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
      This is fine.  Now we should create an initialization for the value
      we created earlier.  */
   ssa_name_index = SSA_NAME_VERSION (ssa_name) * 2 + imag_p;
-  comp = VEC_index (tree, complex_ssa_name_components, ssa_name_index);
+  comp = complex_ssa_name_components[ssa_name_index];
   if (comp)
     ;
 
@@ -544,7 +540,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
   else if (is_gimple_min_invariant (value)
 	   && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name))
     {
-      VEC_replace (tree, complex_ssa_name_components, ssa_name_index, value);
+      complex_ssa_name_components[ssa_name_index] = value;
       return NULL;
     }
   else if (TREE_CODE (value) == SSA_NAME
@@ -560,7 +556,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
 	  replace_ssa_name_symbol (value, comp);
 	}
 
-      VEC_replace (tree, complex_ssa_name_components, ssa_name_index, value);
+      complex_ssa_name_components[ssa_name_index] = value;
       return NULL;
     }
 
@@ -1567,9 +1563,8 @@ tree_lower_complex (void)
   if (!init_dont_simulate_again ())
     return 0;
 
-  complex_lattice_values = VEC_alloc (complex_lattice_t, heap, num_ssa_names);
-  VEC_safe_grow_cleared (complex_lattice_t, heap,
-			 complex_lattice_values, num_ssa_names);
+  complex_lattice_values.create (num_ssa_names);
+  complex_lattice_values.safe_grow_cleared (num_ssa_names);
 
   init_parameter_lattice_values ();
   ssa_propagate (complex_visit_stmt, complex_visit_phi);
@@ -1577,9 +1572,8 @@ tree_lower_complex (void)
   complex_variable_components = htab_create (10,  int_tree_map_hash,
 					     int_tree_map_eq, free);
 
-  complex_ssa_name_components = VEC_alloc (tree, heap, 2*num_ssa_names);
-  VEC_safe_grow_cleared (tree, heap, complex_ssa_name_components,
-			 2 * num_ssa_names);
+  complex_ssa_name_components.create (2 * num_ssa_names);
+  complex_ssa_name_components.safe_grow_cleared (2 * num_ssa_names);
 
   update_parameter_components ();
 
@@ -1598,8 +1592,8 @@ tree_lower_complex (void)
   gsi_commit_edge_inserts ();
 
   htab_delete (complex_variable_components);
-  VEC_free (tree, heap, complex_ssa_name_components);
-  VEC_free (complex_lattice_t, heap, complex_lattice_values);
+  complex_ssa_name_components.release ();
+  complex_lattice_values.release ();
   return 0;
 }
 

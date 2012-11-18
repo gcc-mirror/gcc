@@ -465,7 +465,7 @@ dump_insn_vector (rtx_vec_t succs)
   int i;
   rtx succ;
 
-  FOR_EACH_VEC_ELT (rtx, succs, i, succ)
+  FOR_EACH_VEC_ELT (succs, i, succ)
     if (succ)
       dump_insn (succ);
     else
@@ -502,7 +502,7 @@ sel_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
 
   /* '+' before insn means it is a new cycle start and it's not been
      scheduled yet.  '>' - has been scheduled.  */
-  if (s_i_d && INSN_LUID (insn) > 0)
+  if (s_i_d.exists () && INSN_LUID (insn) > 0)
     if (GET_MODE (insn) == TImode)
       sprintf (buf, "%s %4d",
                INSN_SCHED_TIMES (insn) > 0 ? "> " : "< ",
@@ -606,7 +606,7 @@ sel_dump_cfg_insn (insn_t insn, int flags)
 {
   int insn_flags = DUMP_INSN_UID | DUMP_INSN_PATTERN;
 
-  if (sched_luids != NULL && INSN_LUID (insn) > 0)
+  if (sched_luids.exists () && INSN_LUID (insn) > 0)
     {
       if (flags & SEL_DUMP_CFG_INSN_SEQNO)
 	insn_flags |= DUMP_INSN_SEQNO | DUMP_INSN_SCHED_CYCLE | DUMP_INSN_EXPR;

@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hashtab.h"
 #include "vec.h"
-#include "vecprim.h"
-#include "vecir.h"
 #include "machmode.h"
 #include "tm.h"			/* For CUMULATIVE_ARGS.  */
 #include "hard-reg-set.h"	/* For HARD_REG_SET in struct rtl_data. */
@@ -143,8 +141,6 @@ struct GTY(()) expr_status {
 };
 
 typedef struct call_site_record_d *call_site_record;
-DEF_VEC_P(call_site_record);
-DEF_VEC_ALLOC_P(call_site_record, gc);
 
 /* RTL representation of exception handling.  */
 struct GTY(()) rtl_eh {
@@ -155,9 +151,9 @@ struct GTY(()) rtl_eh {
   rtx sjlj_fc;
   rtx sjlj_exit_after;
 
-  VEC(uchar,gc) *action_record_data;
+  vec<uchar, va_gc> *action_record_data;
 
-  VEC(call_site_record,gc) *call_site_record_v[2];
+  vec<call_site_record, va_gc> *call_site_record_v[2];
 };
 
 #define pending_stack_adjust (crtl->expr.x_pending_stack_adjust)
@@ -173,13 +169,9 @@ typedef struct temp_slot *temp_slot_p;
 struct call_site_record_d;
 struct dw_fde_struct;
 
-DEF_VEC_P(temp_slot_p);
-DEF_VEC_ALLOC_P(temp_slot_p,gc);
 struct ipa_opt_pass_d;
 typedef struct ipa_opt_pass_d *ipa_opt_pass;
 
-DEF_VEC_P(ipa_opt_pass);
-DEF_VEC_ALLOC_P(ipa_opt_pass,heap);
 
 struct GTY(()) varasm_status {
   /* If we're using a per-function constant pool, this is it.  */
@@ -316,7 +308,7 @@ struct GTY(()) rtl_data {
   rtx x_parm_birth_insn;
 
   /* List of all used temporaries allocated, by level.  */
-  VEC(temp_slot_p,gc) *x_used_temp_slots;
+  vec<temp_slot_p, va_gc> *x_used_temp_slots;
 
   /* List of available temp slots.  */
   struct temp_slot *x_avail_temp_slots;
@@ -554,7 +546,7 @@ struct GTY(()) function {
   tree nonlocal_goto_save_area;
 
   /* Vector of function local variables, functions, types and constants.  */
-  VEC(tree,gc) *local_decls;
+  vec<tree, va_gc> *local_decls;
 
   /* For md files.  */
 
@@ -661,11 +653,11 @@ struct GTY(()) function {
 static inline void
 add_local_decl (struct function *fun, tree d)
 {
-  VEC_safe_push (tree, gc, fun->local_decls, d);
+  vec_safe_push (fun->local_decls, d);
 }
 
 #define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
-  FOR_EACH_VEC_ELT_REVERSE (tree, (FUN)->local_decls, I, D)
+  FOR_EACH_VEC_SAFE_ELT_REVERSE ((FUN)->local_decls, I, D)
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
    many units need to be saved.  */
@@ -705,7 +697,7 @@ void types_used_by_var_decl_insert (tree type, tree var_decl);
 
 /* During parsing of a global variable, this vector contains the types
    referenced by the global variable.  */
-extern GTY(()) VEC(tree,gc) *types_used_by_cur_var_decl;
+extern GTY(()) vec<tree, va_gc> *types_used_by_cur_var_decl;
 
 /* cfun shouldn't be set directly; use one of these functions instead.  */
 extern void set_cfun (struct function *new_cfun);

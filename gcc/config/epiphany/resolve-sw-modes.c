@@ -56,12 +56,12 @@ resolve_sw_modes (void)
 {
   basic_block bb;
   rtx insn, src;
-  VEC (basic_block, heap) *todo;
+  vec<basic_block> todo;
   sbitmap pushed;
   bool need_commit = false;
   bool finalize_fp_sets = (MACHINE_FUNCTION (cfun)->unknown_mode_sets == 0);
 
-  todo = VEC_alloc (basic_block, heap, last_basic_block);
+  todo.create (last_basic_block);
   pushed = sbitmap_alloc (last_basic_block);
   bitmap_clear (pushed);
   if (!finalize_fp_sets)
@@ -98,7 +98,7 @@ resolve_sw_modes (void)
 	       checking the total frequency of the affected edges.  */
 	    selected_mode = (enum attr_fp_mode) epiphany_normal_fp_rounding;
 
-	    VEC_quick_push (basic_block, todo, bb);
+	    todo.quick_push (bb);
 	    bitmap_set_bit (pushed, bb->index);
 	  }
 	XVECEXP (XEXP (src, 0), 0, 0) = GEN_INT (selected_mode);
@@ -106,9 +106,9 @@ resolve_sw_modes (void)
 	SET_SRC (XVECEXP (PATTERN (insn), 0, 2)) = copy_rtx (src);
 	df_insn_rescan (insn);
       }
-  while (VEC_length (basic_block, todo))
+  while (todo.length ())
     {
-      basic_block bb = VEC_pop (basic_block, todo);
+      basic_block bb = todo.pop ();
       int selected_reg, jilted_reg;
       enum attr_fp_mode jilted_mode;
       edge e;
@@ -141,7 +141,7 @@ resolve_sw_modes (void)
 	    {
 	      if (bitmap_bit_p (pushed, succ->index))
 		continue;
-	      VEC_quick_push (basic_block, todo, succ);
+	      todo.quick_push (succ);
 	      bitmap_set_bit (pushed, bb->index);
 	      continue;
 	    }
@@ -154,7 +154,7 @@ resolve_sw_modes (void)
 	  insert_insn_on_edge (seq, e);
 	}
     }
-  VEC_free (basic_block, heap, todo);
+  todo.release ();
   sbitmap_free (pushed);
   if (need_commit)
     commit_edge_insertions ();

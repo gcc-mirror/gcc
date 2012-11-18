@@ -380,7 +380,7 @@ unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
 					      struct bitpack_d *bp, tree expr)
 {
   TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (bp_unpack_string (data_in, bp));
-  VEC_safe_push (tree, gc, all_translation_units, expr);
+  vec_safe_push (all_translation_units, expr);
 }
 
 /* Unpack a TS_TARGET_OPTION tree from BP into EXPR.  */
@@ -473,14 +473,14 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
     {
       unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
       if (length > 0)
-	VEC_safe_grow (tree, gc, BINFO_BASE_ACCESSES (expr), length);
+	vec_safe_grow (BINFO_BASE_ACCESSES (expr), length);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     {
       unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
       if (length > 0)
-	VEC_safe_grow (constructor_elt, gc, CONSTRUCTOR_ELTS (expr), length);
+	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
     }
 }
 
@@ -907,14 +907,14 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 
   /* Note that the number of slots in EXPR was read in
      streamer_alloc_tree when instantiating EXPR.  However, the
-     vector is empty so we cannot rely on VEC_length to know how many
+     vector is empty so we cannot rely on vec::length to know how many
      elements to read.  So, this list is emitted as a 0-terminated
      list on the writer side.  */
   do
     {
       t = stream_read_tree (ib, data_in);
       if (t)
-	VEC_quick_push (tree, BINFO_BASE_BINFOS (expr), t);
+	BINFO_BASE_BINFOS (expr)->quick_push (t);
     }
   while (t);
 
@@ -924,10 +924,10 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
 
   /* The vector of BINFO_BASE_ACCESSES is pre-allocated during
      unpacking the bitfield section.  */
-  for (i = 0; i < VEC_length (tree, BINFO_BASE_ACCESSES (expr)); i++)
+  for (i = 0; i < vec_safe_length (BINFO_BASE_ACCESSES (expr)); i++)
     {
       tree a = stream_read_tree (ib, data_in);
-      VEC_replace (tree, BINFO_BASE_ACCESSES (expr), i, a);
+      (*BINFO_BASE_ACCESSES (expr))[i] = a;
     }
 
   BINFO_INHERITANCE_CHAIN (expr) = stream_read_tree (ib, data_in);
@@ -951,7 +951,7 @@ lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
       constructor_elt e;
       e.index = stream_read_tree (ib, data_in);
       e.value = stream_read_tree (ib, data_in);
-      VEC_replace (constructor_elt, CONSTRUCTOR_ELTS (expr), i, e);
+      (*CONSTRUCTOR_ELTS (expr))[i] = e;
     }
 }
 

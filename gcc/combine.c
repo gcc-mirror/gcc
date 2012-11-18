@@ -252,10 +252,8 @@ typedef struct reg_stat_struct {
   ENUM_BITFIELD(machine_mode)	truncated_to_mode : 8;
 } reg_stat_type;
 
-DEF_VEC_O(reg_stat_type);
-DEF_VEC_ALLOC_O(reg_stat_type,heap);
 
-static VEC(reg_stat_type,heap) *reg_stat;
+static vec<reg_stat_type> reg_stat;
 
 /* Record the luid of the last insn that invalidated memory
    (anything that writes memory, and subroutine calls, but not pushes).  */
@@ -510,8 +508,8 @@ combine_split_insns (rtx pattern, rtx insn)
 
   ret = split_insns (pattern, insn);
   nregs = max_reg_num ();
-  if (nregs > VEC_length (reg_stat_type, reg_stat))
-    VEC_safe_grow_cleared (reg_stat_type, heap, reg_stat, nregs);
+  if (nregs > reg_stat.length ())
+    reg_stat.safe_grow_cleared (nregs);
   return ret;
 }
 
@@ -1121,7 +1119,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
   rtl_hooks = combine_rtl_hooks;
 
-  VEC_safe_grow_cleared (reg_stat_type, heap, reg_stat, nregs);
+  reg_stat.safe_grow_cleared (nregs);
 
   init_recog_no_volatile ();
 
@@ -1446,7 +1444,7 @@ combine_instructions (rtx f, unsigned int nregs)
   obstack_free (&insn_link_obstack, NULL);
   free (uid_log_links);
   free (uid_insn_cost);
-  VEC_free (reg_stat_type, heap, reg_stat);
+  reg_stat.release ();
 
   {
     struct undo *undo, *next;
@@ -1480,7 +1478,7 @@ init_reg_last (void)
   unsigned int i;
   reg_stat_type *p;
 
-  FOR_EACH_VEC_ELT (reg_stat_type, reg_stat, i, p)
+  FOR_EACH_VEC_ELT (reg_stat, i, p)
     memset (p, 0, offsetof (reg_stat_type, sign_bit_copies));
 }
 
@@ -1587,7 +1585,7 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
            (DF_LR_IN (ENTRY_BLOCK_PTR->next_bb), REGNO (x))
       && HWI_COMPUTABLE_MODE_P (GET_MODE (x)))
     {
-      reg_stat_type *rsp = &VEC_index (reg_stat_type, reg_stat, REGNO (x));
+      reg_stat_type *rsp = &reg_stat[REGNO (x)];
 
       if (set == 0 || GET_CODE (set) == CLOBBER)
 	{
@@ -3637,22 +3635,18 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
 	   && ! (temp = SET_DEST (XVECEXP (newpat, 0, 1)),
 		 (REG_P (temp)
-		  && VEC_index (reg_stat_type, reg_stat,
-				REGNO (temp)).nonzero_bits != 0
+		  && reg_stat[REGNO (temp)].nonzero_bits != 0
 		  && GET_MODE_PRECISION (GET_MODE (temp)) < BITS_PER_WORD
 		  && GET_MODE_PRECISION (GET_MODE (temp)) < HOST_BITS_PER_INT
-		  && (VEC_index (reg_stat_type, reg_stat,
-				 REGNO (temp)).nonzero_bits
+		  && (reg_stat[REGNO (temp)].nonzero_bits
 		      != GET_MODE_MASK (word_mode))))
 	   && ! (GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) == SUBREG
 		 && (temp = SUBREG_REG (SET_DEST (XVECEXP (newpat, 0, 1))),
 		     (REG_P (temp)
-		      && VEC_index (reg_stat_type, reg_stat,
-				    REGNO (temp)).nonzero_bits != 0
+		      && reg_stat[REGNO (temp)].nonzero_bits != 0
 		      && GET_MODE_PRECISION (GET_MODE (temp)) < BITS_PER_WORD
 		      && GET_MODE_PRECISION (GET_MODE (temp)) < HOST_BITS_PER_INT
-		      && (VEC_index (reg_stat_type, reg_stat,
-				     REGNO (temp)).nonzero_bits
+		      && (reg_stat[REGNO (temp)].nonzero_bits
 			  != GET_MODE_MASK (word_mode)))))
 	   && ! reg_overlap_mentioned_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 					 SET_SRC (XVECEXP (newpat, 0, 1)))
@@ -9413,7 +9407,7 @@ reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
      value.  Otherwise, use the previously-computed global nonzero bits
      for this register.  */
 
-  rsp = &VEC_index (reg_stat_type, reg_stat, REGNO (x));
+  rsp = &reg_stat[REGNO (x)];
   if (rsp->last_set_value != 0
       && (rsp->last_set_mode == mode
 	  || (GET_MODE_CLASS (rsp->last_set_mode) == MODE_INT
@@ -9482,7 +9476,7 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
   rtx tem;
   reg_stat_type *rsp;
 
-  rsp = &VEC_index (reg_stat_type, reg_stat, REGNO (x));
+  rsp = &reg_stat[REGNO (x)];
   if (rsp->last_set_value != 0
       && rsp->last_set_mode == mode
       && ((rsp->last_set_label >= label_tick_ebb_start
@@ -12046,7 +12040,7 @@ update_table_tick (rtx x)
 
       for (r = regno; r < endregno; r++)
 	{
-	  reg_stat_type *rsp = &VEC_index (reg_stat_type, reg_stat, r);
+	  reg_stat_type *rsp = &reg_stat[r];
 	  rsp->last_set_table_tick = label_tick;
 	}
 
@@ -12148,7 +12142,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
      register.  */
   for (i = regno; i < endregno; i++)
     {
-      rsp = &VEC_index (reg_stat_type, reg_stat, i);
+      rsp = &reg_stat[i];
 
       if (insn)
 	rsp->last_set = insn;
@@ -12174,7 +12168,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
 
   for (i = regno; i < endregno; i++)
     {
-      rsp = &VEC_index (reg_stat_type, reg_stat, i);
+      rsp = &reg_stat[i];
       rsp->last_set_label = label_tick;
       if (!insn
 	  || (value && rsp->last_set_table_tick >= label_tick_ebb_start))
@@ -12186,7 +12180,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
   /* The value being assigned might refer to X (like in "x++;").  In that
      case, we must replace it with (clobber (const_int 0)) to prevent
      infinite loops.  */
-  rsp = &VEC_index (reg_stat_type, reg_stat, regno);
+  rsp = &reg_stat[regno];
   if (value && !get_last_value_validate (&value, insn, label_tick, 0))
     {
       value = copy_rtx (value);
@@ -12284,7 +12278,7 @@ record_dead_and_set_regs (rtx insn)
 	    {
 	      reg_stat_type *rsp;
 
-	      rsp = &VEC_index (reg_stat_type, reg_stat, i);
+	      rsp = &reg_stat[i];
 	      rsp->last_death = insn;
 	    }
 	}
@@ -12299,7 +12293,7 @@ record_dead_and_set_regs (rtx insn)
 	{
 	  reg_stat_type *rsp;
 
-	  rsp = &VEC_index (reg_stat_type, reg_stat, i);
+	  rsp = &reg_stat[i];
 	  rsp->last_set_invalid = 1;
 	  rsp->last_set = insn;
 	  rsp->last_set_value = 0;
@@ -12357,7 +12351,7 @@ record_promoted_value (rtx insn, rtx subreg)
 	  continue;
 	}
 
-      rsp = &VEC_index (reg_stat_type, reg_stat, regno);
+      rsp = &reg_stat[regno];
       if (rsp->last_set == insn)
 	{
 	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg) > 0)
@@ -12382,7 +12376,7 @@ record_promoted_value (rtx insn, rtx subreg)
 static bool
 reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
 {
-  reg_stat_type *rsp = &VEC_index (reg_stat_type, reg_stat, REGNO (x));
+  reg_stat_type *rsp = &reg_stat[REGNO (x)];
   enum machine_mode truncated = rsp->truncated_to_mode;
 
   if (truncated == 0
@@ -12427,7 +12421,7 @@ record_truncated_value (rtx *p, void *data ATTRIBUTE_UNUSED)
   else
     return 0;
 
-  rsp = &VEC_index (reg_stat_type, reg_stat, REGNO (x));
+  rsp = &reg_stat[REGNO (x)];
   if (rsp->truncated_to_mode == 0
       || rsp->truncation_label < label_tick_ebb_start
       || (GET_MODE_SIZE (truncated_mode)
@@ -12506,7 +12500,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 
       for (j = regno; j < endregno; j++)
 	{
-	  reg_stat_type *rsp = &VEC_index (reg_stat_type, reg_stat, j);
+	  reg_stat_type *rsp = &reg_stat[j];
 	  if (rsp->last_set_invalid
 	      /* If this is a pseudo-register that was only set once and not
 		 live at the beginning of the function, it is always valid.  */
@@ -12610,7 +12604,7 @@ get_last_value (const_rtx x)
     return 0;
 
   regno = REGNO (x);
-  rsp = &VEC_index (reg_stat_type, reg_stat, regno);
+  rsp = &reg_stat[regno];
   value = rsp->last_set_value;
 
   /* If we don't have a value, or if it isn't for this basic block and
@@ -12674,7 +12668,7 @@ use_crosses_set_p (const_rtx x, int from_luid)
 #endif
       for (; regno < endreg; regno++)
 	{
-	  reg_stat_type *rsp = &VEC_index (reg_stat_type, reg_stat, regno);
+	  reg_stat_type *rsp = &reg_stat[regno];
 	  if (rsp->last_set
 	      && rsp->last_set_label == label_tick
 	      && DF_INSN_LUID (rsp->last_set) > from_luid)
@@ -12920,7 +12914,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx to_insn,
   if (code == REG)
     {
       unsigned int regno = REGNO (x);
-      rtx where_dead = VEC_index (reg_stat_type, reg_stat, regno).last_death;
+      rtx where_dead = reg_stat[regno].last_death;
 
       /* Don't move the register if it gets killed in between from and to.  */
       if (maybe_kill_insn && reg_set_p (x, maybe_kill_insn)
@@ -13535,7 +13529,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  if (place && REG_NOTE_KIND (note) == REG_DEAD)
 	    {
 	      unsigned int regno = REGNO (XEXP (note, 0));
-	      reg_stat_type *rsp = &VEC_index (reg_stat_type, reg_stat, regno);
+	      reg_stat_type *rsp = &reg_stat[regno];
 
 	      if (dead_or_set_p (place, XEXP (note, 0))
 		  || reg_bitfield_target_p (XEXP (note, 0), PATTERN (place)))

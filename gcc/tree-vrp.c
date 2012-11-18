@@ -155,10 +155,8 @@ typedef struct {
   tree vec;
 } switch_update;
 
-static VEC (edge, heap) *to_remove_edges;
-DEF_VEC_O(switch_update);
-DEF_VEC_ALLOC_O(switch_update, heap);
-static VEC (switch_update, heap) *to_update_switch_stmts;
+static vec<edge> to_remove_edges;
+static vec<switch_update> to_update_switch_stmts;
 
 
 /* Return the maximum value for TYPE.  */
@@ -8568,14 +8566,14 @@ simplify_switch_using_ranges (gimple stmt)
 	{
 	  fprintf (dump_file, "removing unreachable case label\n");
 	}
-      VEC_safe_push (edge, heap, to_remove_edges, e);
+      to_remove_edges.safe_push (e);
       e->flags &= ~EDGE_EXECUTABLE;
     }
 
   /* And queue an update for the stmt.  */
   su.stmt = stmt;
   su.vec = vec2;
-  VEC_safe_push (switch_update, heap, to_update_switch_stmts, su);
+  to_update_switch_stmts.safe_push (su);
   return false;
 }
 
@@ -8918,7 +8916,7 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
 
    A NULL entry is used to mark the end of pairs which need to be
    restored.  */
-static VEC(tree,heap) *equiv_stack;
+static vec<tree> equiv_stack;
 
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
@@ -8981,12 +8979,12 @@ identify_jump_threads (void)
 
   /* Do not thread across edges we are about to remove.  Just marking
      them as EDGE_DFS_BACK will do.  */
-  FOR_EACH_VEC_ELT (edge, to_remove_edges, i, e)
+  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
     e->flags |= EDGE_DFS_BACK;
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
-  equiv_stack = VEC_alloc (tree, heap, 20);
+  equiv_stack.create (20);
 
   /* To avoid lots of silly node creation, we create a single
      conditional and just modify it in-place when attempting to
@@ -9061,7 +9059,7 @@ static void
 finalize_jump_threads (void)
 {
   thread_through_all_blocks (false);
-  VEC_free (tree, heap, equiv_stack);
+  equiv_stack.release ();
 }
 
 
@@ -9166,8 +9164,8 @@ execute_vrp (void)
 
   insert_range_assertions ();
 
-  to_remove_edges = VEC_alloc (edge, heap, 10);
-  to_update_switch_stmts = VEC_alloc (switch_update, heap, 5);
+  to_remove_edges.create (10);
+  to_update_switch_stmts.create (5);
   threadedge_initialize_values ();
 
   vrp_initialize ();
@@ -9192,10 +9190,10 @@ execute_vrp (void)
 
   /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
      CFG in a broken state and requires a cfg_cleanup run.  */
-  FOR_EACH_VEC_ELT (edge, to_remove_edges, i, e)
+  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
     remove_edge (e);
   /* Update SWITCH_EXPR case label vector.  */
-  FOR_EACH_VEC_ELT (switch_update, to_update_switch_stmts, i, su)
+  FOR_EACH_VEC_ELT (to_update_switch_stmts, i, su)
     {
       size_t j;
       size_t n = TREE_VEC_LENGTH (su->vec);
@@ -9211,11 +9209,11 @@ execute_vrp (void)
       CASE_HIGH (label) = NULL_TREE;
     }
 
-  if (VEC_length (edge, to_remove_edges) > 0)
+  if (to_remove_edges.length () > 0)
     free_dominance_info (CDI_DOMINATORS);
 
-  VEC_free (edge, heap, to_remove_edges);
-  VEC_free (switch_update, heap, to_update_switch_stmts);
+  to_remove_edges.release ();
+  to_update_switch_stmts.release ();
   threadedge_finalize_values ();
 
   scev_finalize ();

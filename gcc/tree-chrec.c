@@ -634,12 +634,12 @@ chrec_apply (unsigned var,
    expression, calls chrec_apply when the expression is not NULL.  */
 
 tree
-chrec_apply_map (tree chrec, VEC (tree, heap) *iv_map)
+chrec_apply_map (tree chrec, vec<tree> iv_map)
 {
   int i;
   tree expr;
 
-  FOR_EACH_VEC_ELT (tree, iv_map, i, expr)
+  FOR_EACH_VEC_ELT (iv_map, i, expr)
     if (expr)
       chrec = chrec_apply (i, chrec, expr);
 

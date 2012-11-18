@@ -300,54 +300,54 @@ mep_option_override (void)
   unsigned int i;
   int j;
   cl_deferred_option *opt;
-  VEC(cl_deferred_option,heap) *vec
-    = (VEC(cl_deferred_option,heap) *) mep_deferred_options;
+  vec<cl_deferred_option> *v = (vec<cl_deferred_option> *) mep_deferred_options;
 
-  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
-    {
-      switch (opt->opt_index)
-	{
-	case OPT_mivc2:
-	  for (j = 0; j < 32; j++)
-	    fixed_regs[j + 48] = 0;
-	  for (j = 0; j < 32; j++)
-	    call_used_regs[j + 48] = 1;
-	  for (j = 6; j < 8; j++)
-	    call_used_regs[j + 48] = 0;
+  if (v)
+    FOR_EACH_VEC_ELT (*v, i, opt)
+      {
+	switch (opt->opt_index)
+	  {
+	  case OPT_mivc2:
+	    for (j = 0; j < 32; j++)
+	      fixed_regs[j + 48] = 0;
+	    for (j = 0; j < 32; j++)
+	      call_used_regs[j + 48] = 1;
+	    for (j = 6; j < 8; j++)
+	      call_used_regs[j + 48] = 0;
 
 #define RN(n,s) reg_names[FIRST_CCR_REGNO + n] = s
-	  RN (0, "$csar0");
-	  RN (1, "$cc");
-	  RN (4, "$cofr0");
-	  RN (5, "$cofr1");
-	  RN (6, "$cofa0");
-	  RN (7, "$cofa1");
-	  RN (15, "$csar1");
+	    RN (0, "$csar0");
+	    RN (1, "$cc");
+	    RN (4, "$cofr0");
+	    RN (5, "$cofr1");
+	    RN (6, "$cofa0");
+	    RN (7, "$cofa1");
+	    RN (15, "$csar1");
 
-	  RN (16, "$acc0_0");
-	  RN (17, "$acc0_1");
-	  RN (18, "$acc0_2");
-	  RN (19, "$acc0_3");
-	  RN (20, "$acc0_4");
-	  RN (21, "$acc0_5");
-	  RN (22, "$acc0_6");
-	  RN (23, "$acc0_7");
+	    RN (16, "$acc0_0");
+	    RN (17, "$acc0_1");
+	    RN (18, "$acc0_2");
+	    RN (19, "$acc0_3");
+	    RN (20, "$acc0_4");
+	    RN (21, "$acc0_5");
+	    RN (22, "$acc0_6");
+	    RN (23, "$acc0_7");
 
-	  RN (24, "$acc1_0");
-	  RN (25, "$acc1_1");
-	  RN (26, "$acc1_2");
-	  RN (27, "$acc1_3");
-	  RN (28, "$acc1_4");
-	  RN (29, "$acc1_5");
-	  RN (30, "$acc1_6");
-	  RN (31, "$acc1_7");
+	    RN (24, "$acc1_0");
+	    RN (25, "$acc1_1");
+	    RN (26, "$acc1_2");
+	    RN (27, "$acc1_3");
+	    RN (28, "$acc1_4");
+	    RN (29, "$acc1_5");
+	    RN (30, "$acc1_6");
+	    RN (31, "$acc1_7");
 #undef RN
-	  break;
+	    break;
 
-	default:
-	  gcc_unreachable ();
-	}
-    }
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
 
   if (flag_pic == 1)
     warning (OPT_fpic, "-fpic is not supported");

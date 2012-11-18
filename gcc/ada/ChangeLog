@@ -1,3 +1,13 @@
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* gcc-interface/decl.c: Use new vec API in vec.h.
+	* gcc-interface/gigi.h: Likewise.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR other/52438

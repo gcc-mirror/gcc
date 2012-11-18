@@ -1,3 +1,33 @@
+2012-11-17  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* Make-lang.in: Remove dependencies on vecir.h and vecprim.h everywhere.
+	* call.c: Use new vec API in vec.h.
+	* class.c: Likewise.
+	* cp-gimplify.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* name-lookup.c: Likewise.
+	* name-lookup.h: Likewise.
+	* parser.c: Likewise.
+	* parser.h: Likewise.
+	* pt.c: Likewise.
+	* repo.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2012-11-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* semantics.c (finish_id_expression): Tidy diagnostic message.

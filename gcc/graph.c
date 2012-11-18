@@ -238,7 +238,7 @@ print_rtl_graph_with_bb (const char *base, rtx rtx_first)
   char *buf = XALLOCAVEC (char, namelen + extlen);
   FILE *fp;
 
-  if (basic_block_info == NULL)
+  if (!basic_block_info)
     return;
 
   memcpy (buf, base, namelen);

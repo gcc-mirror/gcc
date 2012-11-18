@@ -116,7 +116,6 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend
     return IGNORABLE_CXX_KEYWORD;
 }
 "GTY"/{EOID}			{ return GTY_TOKEN; }
-"VEC"/{EOID}			{ return VEC_TOKEN; }
 "union"/{EOID}			{ return UNION; }
 "struct"/{EOID}			{ return STRUCT; }
 "class"/{EOID}			{ return STRUCT; }
@@ -163,7 +162,7 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend
 }
 
 "..."				{ return ELLIPSIS; }
-[(){},*:<>;=%|+-]		{ return yytext[0]; }
+[(){},*:<>;=%|+\!\?\.-]		{ return yytext[0]; }
 
    /* ignore pp-directives */
 ^{HWS}"#"{HWS}[a-z_]+[^\n]*\n   {lexer_line.line++;}

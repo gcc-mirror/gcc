@@ -241,9 +241,9 @@ find_control_equiv_block (basic_block bb)
 
 static bool
 compute_control_dep_chain (basic_block bb, basic_block dep_bb,
-                           VEC(edge, heap) **cd_chains,
+                           vec<edge> *cd_chains,
                            size_t *num_chains,
-                           VEC(edge, heap) **cur_cd_chain)
+                           vec<edge> *cur_cd_chain)
 {
   edge_iterator ei;
   edge e;
@@ -255,13 +255,13 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
     return false;
 
   /* Could  use a set instead.  */
-  cur_chain_len = VEC_length (edge, *cur_cd_chain);
+  cur_chain_len = cur_cd_chain->length ();
   if (cur_chain_len > MAX_CHAIN_LEN)
     return false;
 
   for (i = 0; i < cur_chain_len; i++)
     {
-      edge e = VEC_index (edge, *cur_cd_chain, i);
+      edge e = (*cur_cd_chain)[i];
       /* cycle detected. */
       if (e->src == bb)
         return false;
@@ -274,7 +274,7 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
         continue;
 
       cd_bb = e->dest;
-      VEC_safe_push (edge, heap, *cur_cd_chain, e);
+      cur_cd_chain->safe_push (e);
       while (!is_non_loop_exit_postdominating (cd_bb, bb))
         {
           if (cd_bb == dep_bb)
@@ -282,8 +282,7 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
               /* Found a direct control dependence.  */
               if (*num_chains < MAX_NUM_CHAINS)
                 {
-                  cd_chains[*num_chains]
-                      = VEC_copy (edge, heap, *cur_cd_chain);
+                  cd_chains[*num_chains] = cur_cd_chain->copy ();
                   (*num_chains)++;
                 }
               found_cd_chain = true;
@@ -303,10 +302,10 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
           if (cd_bb == EXIT_BLOCK_PTR)
             break;
         }
-      VEC_pop (edge, *cur_cd_chain);
-      gcc_assert (VEC_length (edge, *cur_cd_chain) == cur_chain_len);
+      cur_cd_chain->pop ();
+      gcc_assert (cur_cd_chain->length () == cur_chain_len);
     }
-  gcc_assert (VEC_length (edge, *cur_cd_chain) == cur_chain_len);
+  gcc_assert (cur_cd_chain->length () == cur_chain_len);
 
   return found_cd_chain;
 }
@@ -317,8 +316,6 @@ typedef struct use_pred_info
   bool invert;
 } *use_pred_info_t;
 
-DEF_VEC_P(use_pred_info_t);
-DEF_VEC_ALLOC_P(use_pred_info_t, heap);
 
 
 /* Converts the chains of control dependence edges into a set of
@@ -333,9 +330,9 @@ DEF_VEC_ALLOC_P(use_pred_info_t, heap);
    *NUM_PREDS is the number of composite predictes.  */
 
 static bool
-convert_control_dep_chain_into_preds (VEC(edge, heap) **dep_chains,
+convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
                                       size_t num_chains,
-                                      VEC(use_pred_info_t, heap) ***preds,
+                                      vec<use_pred_info_t> **preds,
                                       size_t *num_preds)
 {
   bool has_valid_pred = false;
@@ -345,16 +342,16 @@ convert_control_dep_chain_into_preds (VEC(edge, heap) **dep_chains,
 
   /* Now convert the control dep chain into a set
      of predicates.  */
-  *preds = XCNEWVEC (VEC(use_pred_info_t, heap) *,
-                     num_chains);
+  typedef vec<use_pred_info_t> vec_use_pred_info_t_heap;
+  *preds = XCNEWVEC (vec_use_pred_info_t_heap, num_chains);
   *num_preds = num_chains;
 
   for (i = 0; i < num_chains; i++)
     {
-      VEC(edge, heap) *one_cd_chain = dep_chains[i];
+      vec<edge> one_cd_chain = dep_chains[i];
 
       has_valid_pred = false;
-      for (j = 0; j < VEC_length (edge, one_cd_chain); j++)
+      for (j = 0; j < one_cd_chain.length (); j++)
         {
           gimple cond_stmt;
           gimple_stmt_iterator gsi;
@@ -362,7 +359,7 @@ convert_control_dep_chain_into_preds (VEC(edge, heap) **dep_chains,
           use_pred_info_t one_pred;
           edge e;
 
-          e = VEC_index (edge, one_cd_chain, j);
+          e = one_cd_chain[j];
           guard_bb = e->src;
           gsi = gsi_last_bb (guard_bb);
           if (gsi_end_p (gsi))
@@ -404,7 +401,7 @@ convert_control_dep_chain_into_preds (VEC(edge, heap) **dep_chains,
           one_pred = XNEW (struct use_pred_info);
           one_pred->cond = cond_stmt;
           one_pred->invert = !!(e->flags & EDGE_FALSE_VALUE);
-          VEC_safe_push (use_pred_info_t, heap, (*preds)[i], one_pred);
+          (*preds)[i].safe_push (one_pred);
 	  has_valid_pred = true;
         }
 
@@ -420,18 +417,19 @@ convert_control_dep_chain_into_preds (VEC(edge, heap) **dep_chains,
    the phi whose result is used in USE_BB.  */
 
 static bool
-find_predicates (VEC(use_pred_info_t, heap) ***preds,
+find_predicates (vec<use_pred_info_t> **preds,
                  size_t *num_preds,
                  basic_block phi_bb,
                  basic_block use_bb)
 {
   size_t num_chains = 0, i;
-  VEC(edge, heap) **dep_chains = 0;
-  VEC(edge, heap) *cur_chain = 0;
+  vec<edge> *dep_chains = 0;
+  vec<edge> cur_chain = vec<edge>();
   bool has_valid_pred = false;
   basic_block cd_root = 0;
 
-  dep_chains = XCNEWVEC (VEC(edge, heap) *, MAX_NUM_CHAINS);
+  typedef vec<edge> vec_edge_heap;
+  dep_chains = XCNEWVEC (vec_edge_heap, MAX_NUM_CHAINS);
 
   /* First find the closest bb that is control equivalent to PHI_BB
      that also dominates USE_BB.  */
@@ -455,9 +453,9 @@ find_predicates (VEC(use_pred_info_t, heap) ***preds,
                                               preds,
                                               num_preds);
   /* Free individual chain  */
-  VEC_free (edge, heap, cur_chain);
+  cur_chain.release ();
   for (i = 0; i < num_chains; i++)
-      VEC_free (edge, heap, dep_chains[i]);
+    dep_chains[i].release ();
   free (dep_chains);
   return has_valid_pred;
 }
@@ -470,7 +468,7 @@ find_predicates (VEC(use_pred_info_t, heap) ***preds,
 
 static void
 collect_phi_def_edges (gimple phi, basic_block cd_root,
-                       VEC(edge, heap) **edges,
+                       vec<edge> *edges,
                        struct pointer_set_t *visited_phis)
 {
   size_t i, n;
@@ -493,7 +491,7 @@ collect_phi_def_edges (gimple phi, basic_block cd_root,
               fprintf (dump_file, "\n[CHECK] Found def edge %d in ", (int)i);
               print_gimple_stmt (dump_file, phi, 0, 0);
             }
-          VEC_safe_push (edge, heap, *edges, opnd_edge);
+          edges->safe_push (opnd_edge);
         }
       else
         {
@@ -511,7 +509,7 @@ collect_phi_def_edges (gimple phi, basic_block cd_root,
                   fprintf (dump_file, "\n[CHECK] Found def edge %d in ", (int)i);
                   print_gimple_stmt (dump_file, phi, 0, 0);
                 }
-              VEC_safe_push (edge, heap, *edges, opnd_edge);
+              edges->safe_push (opnd_edge);
             }
         }
     }
@@ -522,18 +520,19 @@ collect_phi_def_edges (gimple phi, basic_block cd_root,
    composite predicates pointed to by PREDS.  */
 
 static bool
-find_def_preds (VEC(use_pred_info_t, heap) ***preds,
+find_def_preds (vec<use_pred_info_t> **preds,
                 size_t *num_preds, gimple phi)
 {
   size_t num_chains = 0, i, n;
-  VEC(edge, heap) **dep_chains = 0;
-  VEC(edge, heap) *cur_chain = 0;
-  VEC(edge, heap) *def_edges = 0;
+  vec<edge> *dep_chains = 0;
+  vec<edge> cur_chain = vec<edge>();
+  vec<edge> def_edges = vec<edge>();
   bool has_valid_pred = false;
   basic_block phi_bb, cd_root = 0;
   struct pointer_set_t *visited_phis;
 
-  dep_chains = XCNEWVEC (VEC(edge, heap) *, MAX_NUM_CHAINS);
+  typedef vec<edge> vec_edge_heap;
+  dep_chains = XCNEWVEC (vec_edge_heap, MAX_NUM_CHAINS);
 
   phi_bb = gimple_bb (phi);
   /* First find the closest dominating bb to be
@@ -546,7 +545,7 @@ find_def_preds (VEC(use_pred_info_t, heap) ***preds,
   collect_phi_def_edges (phi, cd_root, &def_edges, visited_phis);
   pointer_set_destroy (visited_phis);
 
-  n = VEC_length (edge, def_edges);
+  n = def_edges.length ();
   if (n == 0)
     return false;
 
@@ -555,14 +554,13 @@ find_def_preds (VEC(use_pred_info_t, heap) ***preds,
       size_t prev_nc, j;
       edge opnd_edge;
 
-      opnd_edge = VEC_index (edge, def_edges, i);
+      opnd_edge = def_edges[i];
       prev_nc = num_chains;
       compute_control_dep_chain (cd_root, opnd_edge->src,
                                  dep_chains, &num_chains,
                                  &cur_chain);
       /* Free individual chain  */
-      VEC_free (edge, heap, cur_chain);
-      cur_chain = 0;
+      cur_chain.release ();
 
       /* Now update the newly added chains with
          the phi operand edge:  */
@@ -573,7 +571,7 @@ find_def_preds (VEC(use_pred_info_t, heap) ***preds,
             num_chains++;
           for (j = prev_nc; j < num_chains; j++)
             {
-              VEC_safe_push (edge, heap, dep_chains[j], opnd_edge);
+              dep_chains[j].safe_push (opnd_edge);
             }
         }
     }
@@ -584,7 +582,7 @@ find_def_preds (VEC(use_pred_info_t, heap) ***preds,
                                               preds,
                                               num_preds);
   for (i = 0; i < num_chains; i++)
-      VEC_free (edge, heap, dep_chains[i]);
+    dep_chains[i].release ();
   free (dep_chains);
   return has_valid_pred;
 }
@@ -593,11 +591,11 @@ find_def_preds (VEC(use_pred_info_t, heap) ***preds,
 
 static void
 dump_predicates (gimple usestmt, size_t num_preds,
-                 VEC(use_pred_info_t, heap) **preds,
+                 vec<use_pred_info_t> *preds,
                  const char* msg)
 {
   size_t i, j;
-  VEC(use_pred_info_t, heap) *one_pred_chain;
+  vec<use_pred_info_t> one_pred_chain;
   fprintf (dump_file, msg);
   print_gimple_stmt (dump_file, usestmt, 0, 0);
   fprintf (dump_file, "is guarded by :\n");
@@ -607,12 +605,12 @@ dump_predicates (gimple usestmt, size_t num_preds,
       size_t np;
 
       one_pred_chain = preds[i];
-      np = VEC_length (use_pred_info_t, one_pred_chain);
+      np = one_pred_chain.length ();
 
       for (j = 0; j < np; j++)
         {
           use_pred_info_t one_pred
-              = VEC_index (use_pred_info_t, one_pred_chain, j);
+              = one_pred_chain[j];
           if (one_pred->invert)
             fprintf (dump_file, " (.NOT.) ");
           print_gimple_stmt (dump_file, one_pred->cond, 0, 0);
@@ -628,14 +626,14 @@ dump_predicates (gimple usestmt, size_t num_preds,
 
 static void
 destroy_predicate_vecs (size_t n,
-                        VEC(use_pred_info_t, heap) ** preds)
+                        vec<use_pred_info_t> * preds)
 {
   size_t i, j;
   for (i = 0; i < n; i++)
     {
-      for (j = 0; j < VEC_length (use_pred_info_t, preds[i]); j++)
-        free (VEC_index (use_pred_info_t, preds[i], j));
-      VEC_free (use_pred_info_t, heap, preds[i]);
+      for (j = 0; j < preds[i].length (); j++)
+        free (preds[i][j]);
+      preds[i].release ();
     }
   free (preds);
 }
@@ -733,7 +731,7 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
 
 static bool
 find_matching_predicate_in_rest_chains (use_pred_info_t pred,
-                                        VEC(use_pred_info_t, heap) **preds,
+                                        vec<use_pred_info_t> *preds,
                                         size_t num_pred_chains)
 {
   size_t i, j, n;
@@ -745,12 +743,12 @@ find_matching_predicate_in_rest_chains (use_pred_info_t pred,
   for (i = 1; i < num_pred_chains; i++)
     {
       bool found = false;
-      VEC(use_pred_info_t, heap) *one_chain = preds[i];
-      n = VEC_length (use_pred_info_t, one_chain);
+      vec<use_pred_info_t> one_chain = preds[i];
+      n = one_chain.length ();
       for (j = 0; j < n; j++)
         {
           use_pred_info_t pred2
-              = VEC_index (use_pred_info_t, one_chain, j);
+              = one_chain[j];
           /* can relax the condition comparison to not
              use address comparison. However, the most common
              case is that multiple control dependent paths share
@@ -988,7 +986,7 @@ prune_uninit_phi_opnds_in_unrealizable_paths (
 static bool
 use_pred_not_overlap_with_undef_path_pred (
     size_t num_preds,
-    VEC(use_pred_info_t, heap) **preds,
+    vec<use_pred_info_t> *preds,
     gimple phi, unsigned uninit_opnds,
     struct pointer_set_t *visited_phis)
 {
@@ -998,7 +996,7 @@ use_pred_not_overlap_with_undef_path_pred (
   enum tree_code cmp_code;
   bool swap_cond = false;
   bool invert = false;
-  VEC(use_pred_info_t, heap) *the_pred_chain;
+  vec<use_pred_info_t> the_pred_chain;
   bitmap visited_flag_phis = NULL;
   bool all_pruned = false;
 
@@ -1007,14 +1005,14 @@ use_pred_not_overlap_with_undef_path_pred (
      a predicate that is a comparison of a flag variable against
      a constant.  */
   the_pred_chain = preds[0];
-  n = VEC_length (use_pred_info_t, the_pred_chain);
+  n = the_pred_chain.length ();
   for (i = 0; i < n; i++)
     {
       gimple cond;
       tree cond_lhs, cond_rhs, flag = 0;
 
       use_pred_info_t the_pred
-          = VEC_index (use_pred_info_t, the_pred_chain, i);
+          = the_pred_chain[i];
 
       cond = the_pred->cond;
       invert = the_pred->invert;
@@ -1089,7 +1087,7 @@ is_and_or_or (enum tree_code tc, tree typ)
 
 typedef struct norm_cond
 {
-  VEC(gimple, heap) *conds;
+  vec<gimple> conds;
   enum tree_code cond_code;
   bool invert;
 } *norm_cond_t;
@@ -1112,7 +1110,7 @@ normalize_cond_1 (gimple cond,
   gc = gimple_code (cond);
   if (gc != GIMPLE_ASSIGN)
     {
-      VEC_safe_push (gimple, heap, norm_cond->conds, cond);
+      norm_cond->conds.safe_push (cond);
       return;
     }
 
@@ -1132,7 +1130,7 @@ normalize_cond_1 (gimple cond,
             SSA_NAME_DEF_STMT (rhs2),
             norm_cond, cond_code);
       else
-        VEC_safe_push (gimple, heap, norm_cond->conds, cond);
+        norm_cond->conds.safe_push (cond);
 
       return;
     }
@@ -1148,7 +1146,7 @@ normalize_cond_1 (gimple cond,
       norm_cond->cond_code = cur_cond_code;
     }
   else
-    VEC_safe_push (gimple, heap, norm_cond->conds, cond);
+    norm_cond->conds.safe_push (cond);
 }
 
 /* See normalize_cond_1 for details. INVERT is a flag to indicate
@@ -1161,7 +1159,7 @@ normalize_cond (gimple cond, norm_cond_t norm_cond, bool invert)
 
   norm_cond->cond_code = ERROR_MARK;
   norm_cond->invert = false;
-  norm_cond->conds = NULL;
+  norm_cond->conds.create (0);
   gcc_assert (gimple_code (cond) == GIMPLE_COND);
   cond_code = gimple_cond_code (cond);
   if (invert)
@@ -1181,17 +1179,17 @@ normalize_cond (gimple cond, norm_cond_t norm_cond, bool invert)
             norm_cond, ERROR_MARK);
       else
         {
-          VEC_safe_push (gimple, heap, norm_cond->conds, cond);
+          norm_cond->conds.safe_push (cond);
           norm_cond->invert = invert;
         }
     }
   else
     {
-      VEC_safe_push (gimple, heap, norm_cond->conds, cond);
+      norm_cond->conds.safe_push (cond);
       norm_cond->invert = invert;
     }
 
-  gcc_assert (VEC_length (gimple, norm_cond->conds) == 1
+  gcc_assert (norm_cond->conds.length () == 1
               || is_and_or_or (norm_cond->cond_code, NULL));
 }
 
@@ -1337,12 +1335,12 @@ is_subset_of_any (gimple cond, bool invert,
                   norm_cond_t norm_cond, bool reverse)
 {
   size_t i;
-  size_t len = VEC_length (gimple, norm_cond->conds);
+  size_t len = norm_cond->conds.length ();
 
   for (i = 0; i < len; i++)
     {
       if (is_gcond_subset_of (cond, invert,
-                              VEC_index (gimple, norm_cond->conds, i),
+                              norm_cond->conds[i],
                               false, reverse))
         return true;
     }
@@ -1361,11 +1359,11 @@ is_or_set_subset_of (norm_cond_t norm_cond1,
                      norm_cond_t norm_cond2)
 {
   size_t i;
-  size_t len = VEC_length (gimple, norm_cond1->conds);
+  size_t len = norm_cond1->conds.length ();
 
   for (i = 0; i < len; i++)
     {
-      if (!is_subset_of_any (VEC_index (gimple, norm_cond1->conds, i),
+      if (!is_subset_of_any (norm_cond1->conds[i],
                              false, norm_cond2, false))
         return false;
     }
@@ -1382,11 +1380,11 @@ is_and_set_subset_of (norm_cond_t norm_cond1,
                       norm_cond_t norm_cond2)
 {
   size_t i;
-  size_t len = VEC_length (gimple, norm_cond2->conds);
+  size_t len = norm_cond2->conds.length ();
 
   for (i = 0; i < len; i++)
     {
-      if (!is_subset_of_any (VEC_index (gimple, norm_cond2->conds, i),
+      if (!is_subset_of_any (norm_cond2->conds[i],
                              false, norm_cond1, true))
         return false;
     }
@@ -1418,10 +1416,10 @@ is_norm_cond_subset_of (norm_cond_t norm_cond1,
       else if (code2 == BIT_IOR_EXPR)
         {
           size_t len1;
-          len1 = VEC_length (gimple, norm_cond1->conds);
+          len1 = norm_cond1->conds.length ();
           for (i = 0; i < len1; i++)
             {
-              gimple cond1 = VEC_index (gimple, norm_cond1->conds, i);
+              gimple cond1 = norm_cond1->conds[i];
               if (is_subset_of_any (cond1, false, norm_cond2, false))
                 return true;
             }
@@ -1430,8 +1428,8 @@ is_norm_cond_subset_of (norm_cond_t norm_cond1,
       else
         {
           gcc_assert (code2 == ERROR_MARK);
-          gcc_assert (VEC_length (gimple, norm_cond2->conds) == 1);
-          return is_subset_of_any (VEC_index (gimple, norm_cond2->conds, 0),
+          gcc_assert (norm_cond2->conds.length () == 1);
+          return is_subset_of_any (norm_cond2->conds[0],
                                    norm_cond2->invert, norm_cond1, true);
         }
     }
@@ -1446,21 +1444,21 @@ is_norm_cond_subset_of (norm_cond_t norm_cond1,
   else
     {
       gcc_assert (code1 == ERROR_MARK);
-      gcc_assert (VEC_length (gimple, norm_cond1->conds) == 1);
+      gcc_assert (norm_cond1->conds.length () == 1);
       /* Conservatively returns false if NORM_COND1 is non-decomposible
          and NORM_COND2 is an AND expression.  */
       if (code2 == BIT_AND_EXPR)
         return false;
 
       if (code2 == BIT_IOR_EXPR)
-        return is_subset_of_any (VEC_index (gimple, norm_cond1->conds, 0),
+        return is_subset_of_any (norm_cond1->conds[0],
                                  norm_cond1->invert, norm_cond2, false);
 
       gcc_assert (code2 == ERROR_MARK);
-      gcc_assert (VEC_length (gimple, norm_cond2->conds) == 1);
-      return is_gcond_subset_of (VEC_index (gimple, norm_cond1->conds, 0),
+      gcc_assert (norm_cond2->conds.length () == 1);
+      return is_gcond_subset_of (norm_cond1->conds[0],
                                  norm_cond1->invert,
-                                 VEC_index (gimple, norm_cond2->conds, 0),
+                                 norm_cond2->conds[0],
                                  norm_cond2->invert, false);
     }
 }
@@ -1502,8 +1500,8 @@ is_pred_expr_subset_of (use_pred_info_t expr1,
   is_subset = is_norm_cond_subset_of (&norm_cond1, &norm_cond2);
 
   /* Free memory  */
-  VEC_free (gimple, heap, norm_cond1.conds);
-  VEC_free (gimple, heap, norm_cond2.conds);
+  norm_cond1.conds.release ();
+  norm_cond2.conds.release ();
   return is_subset ;
 }
 
@@ -1511,23 +1509,23 @@ is_pred_expr_subset_of (use_pred_info_t expr1,
    of that of PRED2. Returns false if it can not be proved so.  */
 
 static bool
-is_pred_chain_subset_of (VEC(use_pred_info_t, heap) *pred1,
-                         VEC(use_pred_info_t, heap) *pred2)
+is_pred_chain_subset_of (vec<use_pred_info_t> pred1,
+                         vec<use_pred_info_t> pred2)
 {
   size_t np1, np2, i1, i2;
 
-  np1 = VEC_length (use_pred_info_t, pred1);
-  np2 = VEC_length (use_pred_info_t, pred2);
+  np1 = pred1.length ();
+  np2 = pred2.length ();
 
   for (i2 = 0; i2 < np2; i2++)
     {
       bool found = false;
       use_pred_info_t info2
-          = VEC_index (use_pred_info_t, pred2, i2);
+          = pred2[i2];
       for (i1 = 0; i1 < np1; i1++)
         {
           use_pred_info_t info1
-              = VEC_index (use_pred_info_t, pred1, i1);
+              = pred1[i1];
           if (is_pred_expr_subset_of (info1, info2))
             {
               found = true;
@@ -1550,8 +1548,8 @@ is_pred_chain_subset_of (VEC(use_pred_info_t, heap) *pred1,
    In other words, the result is conservative.  */
 
 static bool
-is_included_in (VEC(use_pred_info_t, heap) *one_pred,
-                VEC(use_pred_info_t, heap) **preds,
+is_included_in (vec<use_pred_info_t> one_pred,
+                vec<use_pred_info_t> *preds,
                 size_t n)
 {
   size_t i;
@@ -1579,13 +1577,13 @@ is_included_in (VEC(use_pred_info_t, heap) *one_pred,
    emitted.  */
 
 static bool
-is_superset_of (VEC(use_pred_info_t, heap) **preds1,
+is_superset_of (vec<use_pred_info_t> *preds1,
                 size_t n1,
-                VEC(use_pred_info_t, heap) **preds2,
+                vec<use_pred_info_t> *preds2,
                 size_t n2)
 {
   size_t i;
-  VEC(use_pred_info_t, heap) *one_pred_chain;
+  vec<use_pred_info_t> one_pred_chain;
 
   for (i = 0; i < n2; i++)
     {
@@ -1605,18 +1603,16 @@ static int
 pred_chain_length_cmp (const void *p1, const void *p2)
 {
   use_pred_info_t i1, i2;
-  VEC(use_pred_info_t, heap) * const *chain1
-      = (VEC(use_pred_info_t, heap) * const *)p1;
-  VEC(use_pred_info_t, heap) * const *chain2
-      = (VEC(use_pred_info_t, heap) * const *)p2;
+  vec<use_pred_info_t>  const *chain1
+      = (vec<use_pred_info_t>  const *)p1;
+  vec<use_pred_info_t>  const *chain2
+      = (vec<use_pred_info_t>  const *)p2;
 
-  if (VEC_length (use_pred_info_t, *chain1)
-      != VEC_length (use_pred_info_t, *chain2))
-    return (VEC_length (use_pred_info_t, *chain1)
-            - VEC_length (use_pred_info_t, *chain2));
+  if (chain1->length () != chain2->length ())
+    return (chain1->length () - chain2->length ());
 
-  i1 = VEC_index (use_pred_info_t, *chain1, 0);
-  i2 = VEC_index (use_pred_info_t, *chain2, 0);
+  i1 = (*chain1)[0];
+  i2 = (*chain2)[0];
 
   /* Allow predicates with similar prefix come together.  */
   if (!i1->invert && i2->invert)
@@ -1633,11 +1629,11 @@ pred_chain_length_cmp (const void *p1, const void *p2)
    the number of chains. Returns true if normalization happens.  */
 
 static bool
-normalize_preds (VEC(use_pred_info_t, heap) **preds, size_t *n)
+normalize_preds (vec<use_pred_info_t> *preds, size_t *n)
 {
   size_t i, j, ll;
-  VEC(use_pred_info_t, heap) *pred_chain;
-  VEC(use_pred_info_t, heap) *x = 0;
+  vec<use_pred_info_t> pred_chain;
+  vec<use_pred_info_t> x = vec<use_pred_info_t>();
   use_pred_info_t xj = 0, nxj = 0;
 
   if (*n < 2)
@@ -1646,21 +1642,21 @@ normalize_preds (VEC(use_pred_info_t, heap) **preds, size_t *n)
   /* First sort the chains in ascending order of lengths.  */
   qsort (preds, *n, sizeof (void *), pred_chain_length_cmp);
   pred_chain = preds[0];
-  ll = VEC_length (use_pred_info_t, pred_chain);
+  ll = pred_chain.length ();
   if (ll != 1)
    {
      if (ll == 2)
        {
          use_pred_info_t xx, yy, xx2, nyy;
-         VEC(use_pred_info_t, heap) *pred_chain2 = preds[1];
-         if (VEC_length (use_pred_info_t, pred_chain2) != 2)
+         vec<use_pred_info_t> pred_chain2 = preds[1];
+         if (pred_chain2.length () != 2)
            return false;
 
          /* See if simplification x AND y OR x AND !y is possible.  */
-         xx = VEC_index (use_pred_info_t, pred_chain, 0);
-         yy = VEC_index (use_pred_info_t, pred_chain, 1);
-         xx2 = VEC_index (use_pred_info_t, pred_chain2, 0);
-         nyy = VEC_index (use_pred_info_t, pred_chain2, 1);
+         xx = pred_chain[0];
+         yy = pred_chain[1];
+         xx2 = pred_chain2[0];
+         nyy = pred_chain2[1];
          if (gimple_cond_lhs (xx->cond) != gimple_cond_lhs (xx2->cond)
              || gimple_cond_rhs (xx->cond) != gimple_cond_rhs (xx2->cond)
              || gimple_cond_code (xx->cond) != gimple_cond_code (xx2->cond)
@@ -1676,36 +1672,34 @@ normalize_preds (VEC(use_pred_info_t, heap) **preds, size_t *n)
          free (yy);
          free (nyy);
          free (xx2);
-         VEC_free (use_pred_info_t, heap, pred_chain);
-         VEC_free (use_pred_info_t, heap, pred_chain2);
-         pred_chain = 0;
-         VEC_safe_push (use_pred_info_t, heap, pred_chain, xx);
+         pred_chain.release ();
+         pred_chain2.release ();
+         pred_chain.safe_push (xx);
          preds[0] = pred_chain;
          for (i = 1; i < *n - 1; i++)
            preds[i] = preds[i + 1];
 
-         preds[*n - 1] = 0;
+         preds[*n - 1].create (0);
          *n = *n - 1;
        }
      else
        return false;
    }
 
-  VEC_safe_push (use_pred_info_t, heap, x,
-                 VEC_index (use_pred_info_t, pred_chain, 0));
+  x.safe_push (pred_chain[0]);
 
   /* The loop extracts x1, x2, x3, etc from chains
      x1 OR (!x1 AND x2) OR (!x1 AND !x2 AND x3) OR ...  */
   for (i = 1; i < *n; i++)
     {
       pred_chain = preds[i];
-      if (VEC_length (use_pred_info_t, pred_chain) != i + 1)
+      if (pred_chain.length () != i + 1)
         return false;
 
       for (j = 0; j < i; j++)
         {
-          xj = VEC_index (use_pred_info_t, x, j);
-          nxj = VEC_index (use_pred_info_t, pred_chain, j);
+          xj = x[j];
+          nxj = pred_chain[j];
 
           /* Check if nxj is !xj  */
           if (gimple_cond_lhs (xj->cond) != gimple_cond_lhs (nxj->cond)
@@ -1715,32 +1709,29 @@ normalize_preds (VEC(use_pred_info_t, heap) **preds, size_t *n)
             return false;
         }
 
-      VEC_safe_push (use_pred_info_t, heap, x,
-                     VEC_index (use_pred_info_t, pred_chain, i));
+      x.safe_push (pred_chain[i]);
     }
 
   /* Now normalize the pred chains using the extraced x1, x2, x3 etc.  */
   for (j = 0; j < *n; j++)
     {
       use_pred_info_t t;
-      xj = VEC_index (use_pred_info_t, x, j);
+      xj = x[j];
 
       t = XNEW (struct use_pred_info);
       *t = *xj;
 
-      VEC_replace (use_pred_info_t, x, j, t);
+      x[j] = t;
     }
 
   for (i = 0; i < *n; i++)
     {
       pred_chain = preds[i];
-      for (j = 0; j < VEC_length (use_pred_info_t, pred_chain); j++)
-        free (VEC_index (use_pred_info_t, pred_chain, j));
-      VEC_free (use_pred_info_t, heap, pred_chain);
-      pred_chain = 0;
+      for (j = 0; j < pred_chain.length (); j++)
+        free (pred_chain[j]);
+      pred_chain.release ();
       /* A new chain.  */
-      VEC_safe_push (use_pred_info_t, heap, pred_chain,
-                     VEC_index (use_pred_info_t, x, i));
+      pred_chain.safe_push (x[i]);
       preds[i] = pred_chain;
     }
   return true;
@@ -1769,8 +1760,8 @@ is_use_properly_guarded (gimple use_stmt,
                          struct pointer_set_t *visited_phis)
 {
   basic_block phi_bb;
-  VEC(use_pred_info_t, heap) **preds = 0;
-  VEC(use_pred_info_t, heap) **def_preds = 0;
+  vec<use_pred_info_t> *preds = 0;
+  vec<use_pred_info_t> *def_preds = 0;
   size_t num_preds = 0, num_def_preds = 0;
   bool has_valid_preds = false;
   bool is_properly_guarded = false;
@@ -1840,7 +1831,7 @@ is_use_properly_guarded (gimple use_stmt,
 
 static gimple
 find_uninit_use (gimple phi, unsigned uninit_opnds,
-                 VEC(gimple, heap) **worklist,
+                 vec<gimple> *worklist,
 		 struct pointer_set_t *added_to_worklist)
 {
   tree phi_result;
@@ -1898,9 +1889,8 @@ find_uninit_use (gimple phi, unsigned uninit_opnds,
               print_gimple_stmt (dump_file, use_stmt, 0, 0);
             }
 
-          VEC_safe_push (gimple, heap, *worklist, use_stmt);
-          pointer_set_insert (possibly_undefined_names,
-	                      phi_result);
+          worklist->safe_push (use_stmt);
+          pointer_set_insert (possibly_undefined_names, phi_result);
         }
     }
 
@@ -1916,7 +1906,7 @@ find_uninit_use (gimple phi, unsigned uninit_opnds,
    a pointer set tracking if the new phi is added to the worklist or not.  */
 
 static void
-warn_uninitialized_phi (gimple phi, VEC(gimple, heap) **worklist,
+warn_uninitialized_phi (gimple phi, vec<gimple> *worklist,
                         struct pointer_set_t *added_to_worklist)
 {
   unsigned uninit_opnds;
@@ -1964,7 +1954,7 @@ execute_late_warn_uninitialized (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
-  VEC(gimple, heap) *worklist = 0;
+  vec<gimple> worklist = vec<gimple>();
   struct pointer_set_t *added_to_worklist;
 
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1998,7 +1988,7 @@ execute_late_warn_uninitialized (void)
             if (TREE_CODE (op) == SSA_NAME
                 && ssa_undefined_value_p (op))
               {
-                VEC_safe_push (gimple, heap, worklist, phi);
+                worklist.safe_push (phi);
 		pointer_set_insert (added_to_worklist, phi);
                 if (dump_file && (dump_flags & TDF_DETAILS))
                   {
@@ -2010,14 +2000,14 @@ execute_late_warn_uninitialized (void)
           }
       }
 
-  while (VEC_length (gimple, worklist) != 0)
+  while (worklist.length () != 0)
     {
       gimple cur_phi = 0;
-      cur_phi = VEC_pop (gimple, worklist);
+      cur_phi = worklist.pop ();
       warn_uninitialized_phi (cur_phi, &worklist, added_to_worklist);
     }
 
-  VEC_free (gimple, heap, worklist);
+  worklist.release ();
   pointer_set_destroy (added_to_worklist);
   pointer_set_destroy (possibly_undefined_names);
   possibly_undefined_names = NULL;

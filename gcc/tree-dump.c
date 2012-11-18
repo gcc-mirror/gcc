@@ -290,7 +290,7 @@ dequeue_and_dump (dump_info_p di)
     {
       unsigned ix;
       tree base;
-      VEC(tree,gc) *accesses = BINFO_BASE_ACCESSES (t);
+      vec<tree, va_gc> *accesses = BINFO_BASE_ACCESSES (t);
 
       dump_child ("type", BINFO_TYPE (t));
 
@@ -300,8 +300,7 @@ dequeue_and_dump (dump_info_p di)
       dump_int (di, "bases", BINFO_N_BASE_BINFOS (t));
       for (ix = 0; BINFO_BASE_ITERATE (t, ix, base); ix++)
 	{
-	  tree access = (accesses ? VEC_index (tree, accesses, ix)
-			 : access_public_node);
+	  tree access = (accesses ? (*accesses)[ix] : access_public_node);
 	  const char *string = NULL;
 
 	  if (access == access_public_node)
@@ -649,8 +648,7 @@ dequeue_and_dump (dump_info_p di)
       {
 	unsigned HOST_WIDE_INT cnt;
 	tree index, value;
-	dump_int (di, "lngt", VEC_length (constructor_elt,
-					  CONSTRUCTOR_ELTS (t)));
+	dump_int (di, "lngt", vec_safe_length (CONSTRUCTOR_ELTS (t)));
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), cnt, index, value)
 	  {
 	    dump_child ("idx", index);

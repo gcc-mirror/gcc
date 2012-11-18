@@ -38,8 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 
 
-DEF_VEC_I(source_location);
-DEF_VEC_ALLOC_I(source_location,heap);
 
 /* Used to hold all the components required to do SSA PHI elimination.
    The node and pred/succ list is a simple linear list of nodes and
@@ -67,19 +65,19 @@ typedef struct _elim_graph {
   int size;
 
   /* List of nodes in the elimination graph.  */
-  VEC(int,heap) *nodes;
+  vec<int> nodes;
 
   /*  The predecessor and successor edge list.  */
-  VEC(int,heap) *edge_list;
+  vec<int> edge_list;
 
   /* Source locus on each edge */
-  VEC(source_location,heap) *edge_locus;
+  vec<source_location> edge_locus;
 
   /* Visited vector.  */
   sbitmap visited;
 
   /* Stack for visited nodes.  */
-  VEC(int,heap) *stack;
+  vec<int> stack;
 
   /* The variable partition map.  */
   var_map map;
@@ -88,11 +86,11 @@ typedef struct _elim_graph {
   edge e;
 
   /* List of constant copies to emit.  These are pushed on in pairs.  */
-  VEC(int,heap) *const_dests;
-  VEC(tree,heap) *const_copies;
+  vec<int> const_dests;
+  vec<tree> const_copies;
 
   /* Source locations for any constant copies.  */
-  VEC(source_location,heap) *copy_locus;
+  vec<source_location> copy_locus;
 } *elim_graph;
 
 
@@ -338,13 +336,13 @@ new_elim_graph (int size)
 {
   elim_graph g = (elim_graph) xmalloc (sizeof (struct _elim_graph));
 
-  g->nodes = VEC_alloc (int, heap, 30);
-  g->const_dests = VEC_alloc (int, heap, 20);
-  g->const_copies = VEC_alloc (tree, heap, 20);
-  g->copy_locus = VEC_alloc (source_location, heap, 10);
-  g->edge_list = VEC_alloc (int, heap, 20);
-  g->edge_locus = VEC_alloc (source_location, heap, 10);
-  g->stack = VEC_alloc (int, heap, 30);
+  g->nodes.create (30);
+  g->const_dests.create (20);
+  g->const_copies.create (20);
+  g->copy_locus.create (10);
+  g->edge_list.create (20);
+  g->edge_locus.create (10);
+  g->stack.create (30);
 
   g->visited = sbitmap_alloc (size);
 
@@ -357,9 +355,9 @@ new_elim_graph (int size)
 static inline void
 clear_elim_graph (elim_graph g)
 {
-  VEC_truncate (int, g->nodes, 0);
-  VEC_truncate (int, g->edge_list, 0);
-  VEC_truncate (source_location, g->edge_locus, 0);
+  g->nodes.truncate (0);
+  g->edge_list.truncate (0);
+  g->edge_locus.truncate (0);
 }
 
 
@@ -369,13 +367,13 @@ static inline void
 delete_elim_graph (elim_graph g)
 {
   sbitmap_free (g->visited);
-  VEC_free (int, heap, g->stack);
-  VEC_free (int, heap, g->edge_list);
-  VEC_free (tree, heap, g->const_copies);
-  VEC_free (int, heap, g->const_dests);
-  VEC_free (int, heap, g->nodes);
-  VEC_free (source_location, heap, g->copy_locus);
-  VEC_free (source_location, heap, g->edge_locus);
+  g->stack.release ();
+  g->edge_list.release ();
+  g->const_copies.release ();
+  g->const_dests.release ();
+  g->nodes.release ();
+  g->copy_locus.release ();
+  g->edge_locus.release ();
 
   free (g);
 }
@@ -386,7 +384,7 @@ delete_elim_graph (elim_graph g)
 static inline int
 elim_graph_size (elim_graph g)
 {
-  return VEC_length (int, g->nodes);
+  return g->nodes.length ();
 }
 
 
@@ -398,10 +396,10 @@ elim_graph_add_node (elim_graph g, int node)
   int x;
   int t;
 
-  FOR_EACH_VEC_ELT (int, g->nodes, x, t)
+  FOR_EACH_VEC_ELT (g->nodes, x, t)
     if (t == node)
       return;
-  VEC_safe_push (int, heap, g->nodes, node);
+  g->nodes.safe_push (node);
 }
 
 
@@ -410,9 +408,9 @@ elim_graph_add_node (elim_graph g, int node)
 static inline void
 elim_graph_add_edge (elim_graph g, int pred, int succ, source_location locus)
 {
-  VEC_safe_push (int, heap, g->edge_list, pred);
-  VEC_safe_push (int, heap, g->edge_list, succ);
-  VEC_safe_push (source_location, heap, g->edge_locus, locus);
+  g->edge_list.safe_push (pred);
+  g->edge_list.safe_push (succ);
+  g->edge_locus.safe_push (locus);
 }
 
 
@@ -424,14 +422,14 @@ elim_graph_remove_succ_edge (elim_graph g, int node, source_location *locus)
 {
   int y;
   unsigned x;
-  for (x = 0; x < VEC_length (int, g->edge_list); x += 2)
-    if (VEC_index (int, g->edge_list, x) == node)
+  for (x = 0; x < g->edge_list.length (); x += 2)
+    if (g->edge_list[x] == node)
       {
-        VEC_replace (int, g->edge_list, x, -1);
-	y = VEC_index (int, g->edge_list, x + 1);
-	VEC_replace (int, g->edge_list, x + 1, -1);
-	*locus = VEC_index (source_location, g->edge_locus, x / 2);
-	VEC_replace (source_location, g->edge_locus, x / 2, UNKNOWN_LOCATION);
+        g->edge_list[x] = -1;
+	y = g->edge_list[x + 1];
+	g->edge_list[x + 1] = -1;
+	*locus = g->edge_locus[x / 2];
+	g->edge_locus[x / 2] = UNKNOWN_LOCATION;
 	return y;
       }
   *locus = UNKNOWN_LOCATION;
@@ -447,14 +445,13 @@ elim_graph_remove_succ_edge (elim_graph g, int node, source_location *locus)
 do {									\
   unsigned x_;								\
   int y_;								\
-  for (x_ = 0; x_ < VEC_length (int, (GRAPH)->edge_list); x_ += 2)	\
+  for (x_ = 0; x_ < (GRAPH)->edge_list.length (); x_ += 2)	\
     {									\
-      y_ = VEC_index (int, (GRAPH)->edge_list, x_);			\
+      y_ = (GRAPH)->edge_list[x_];					\
       if (y_ != (NODE))							\
         continue;							\
-      (void) ((VAR) = VEC_index (int, (GRAPH)->edge_list, x_ + 1));	\
-      (void) ((LOCUS) = VEC_index (source_location,			\
-				   (GRAPH)->edge_locus, x_ / 2));	\
+      (void) ((VAR) = (GRAPH)->edge_list[x_ + 1]);			\
+      (void) ((LOCUS) = (GRAPH)->edge_locus[x_ / 2]);			\
       CODE;								\
     }									\
 } while (0)
@@ -468,14 +465,13 @@ do {									\
 do {									\
   unsigned x_;								\
   int y_;								\
-  for (x_ = 0; x_ < VEC_length (int, (GRAPH)->edge_list); x_ += 2)	\
+  for (x_ = 0; x_ < (GRAPH)->edge_list.length (); x_ += 2)	\
     {									\
-      y_ = VEC_index (int, (GRAPH)->edge_list, x_ + 1);			\
+      y_ = (GRAPH)->edge_list[x_ + 1];					\
       if (y_ != (NODE))							\
         continue;							\
-      (void) ((VAR) = VEC_index (int, (GRAPH)->edge_list, x_));		\
-      (void) ((LOCUS) = VEC_index (source_location,			\
-				   (GRAPH)->edge_locus, x_ / 2));	\
+      (void) ((VAR) = (GRAPH)->edge_list[x_]);				\
+      (void) ((LOCUS) = (GRAPH)->edge_locus[x_ / 2]);			\
       CODE;								\
     }									\
 } while (0)
@@ -524,9 +520,9 @@ eliminate_build (elim_graph g)
         {
 	  /* Save constant copies until all other copies have been emitted
 	     on this edge.  */
-	  VEC_safe_push (int, heap, g->const_dests, p0);
-	  VEC_safe_push (tree, heap, g->const_copies, Ti);
-	  VEC_safe_push (source_location, heap, g->copy_locus, locus);
+	  g->const_dests.safe_push (p0);
+	  g->const_copies.safe_push (Ti);
+	  g->copy_locus.safe_push (locus);
 	}
       else
         {
@@ -556,7 +552,7 @@ elim_forward (elim_graph g, int T)
       if (!bitmap_bit_p (g->visited, S))
         elim_forward (g, S);
     });
-  VEC_safe_push (int, heap, g->stack, T);
+  g->stack.safe_push (T);
 }
 
 
@@ -655,8 +651,8 @@ eliminate_phi (edge e, elim_graph g)
 {
   int x;
 
-  gcc_assert (VEC_length (tree, g->const_copies) == 0);
-  gcc_assert (VEC_length (source_location, g->copy_locus) == 0);
+  gcc_assert (g->const_copies.length () == 0);
+  gcc_assert (g->copy_locus.length () == 0);
 
   /* Abnormal edges already have everything coalesced.  */
   if (e->flags & EDGE_ABNORMAL)
@@ -671,33 +667,33 @@ eliminate_phi (edge e, elim_graph g)
       int part;
 
       bitmap_clear (g->visited);
-      VEC_truncate (int, g->stack, 0);
+      g->stack.truncate (0);
 
-      FOR_EACH_VEC_ELT (int, g->nodes, x, part)
+      FOR_EACH_VEC_ELT (g->nodes, x, part)
         {
 	  if (!bitmap_bit_p (g->visited, part))
 	    elim_forward (g, part);
 	}
 
       bitmap_clear (g->visited);
-      while (VEC_length (int, g->stack) > 0)
+      while (g->stack.length () > 0)
 	{
-	  x = VEC_pop (int, g->stack);
+	  x = g->stack.pop ();
 	  if (!bitmap_bit_p (g->visited, x))
 	    elim_create (g, x);
 	}
     }
 
   /* If there are any pending constant copies, issue them now.  */
-  while (VEC_length (tree, g->const_copies) > 0)
+  while (g->const_copies.length () > 0)
     {
       int dest;
       tree src;
       source_location locus;
 
-      src = VEC_pop (tree, g->const_copies);
-      dest = VEC_pop (int, g->const_dests);
-      locus = VEC_pop (source_location, g->copy_locus);
+      src = g->const_copies.pop ();
+      dest = g->const_dests.pop ();
+      locus = g->copy_locus.pop ();
       insert_value_copy_on_edge (e, dest, src, locus);
     }
 }

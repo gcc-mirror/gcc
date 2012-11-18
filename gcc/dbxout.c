@@ -2184,7 +2184,7 @@ dbxout_type (tree type, int full)
 	  {
 	    int i;
 	    tree child;
-	    VEC(tree,gc) *accesses = BINFO_BASE_ACCESSES (binfo);
+	    vec<tree, va_gc> *accesses = BINFO_BASE_ACCESSES (binfo);
 
 	    if (use_gnu_debug_info_extensions)
 	      {
@@ -2197,8 +2197,7 @@ dbxout_type (tree type, int full)
 	      }
 	    for (i = 0; BINFO_BASE_ITERATE (binfo, i, child); i++)
 	      {
-		tree access = (accesses ? VEC_index (tree, accesses, i)
-			       : access_public_node);
+		tree access = (accesses ? (*accesses)[i] : access_public_node);
 
 		if (use_gnu_debug_info_extensions)
 		  {
@@ -2541,7 +2540,7 @@ static int
 output_used_types_helper (void **slot, void *data)
 {
   tree type = (tree) *slot;
-  VEC(tree, heap) **types_p = (VEC(tree, heap) **) data;
+  vec<tree> *types_p = (vec<tree> *) data;
 
   if ((TREE_CODE (type) == RECORD_TYPE
        || TREE_CODE (type) == UNION_TYPE
@@ -2550,10 +2549,10 @@ output_used_types_helper (void **slot, void *data)
       && TYPE_STUB_DECL (type)
       && DECL_P (TYPE_STUB_DECL (type))
       && ! DECL_IGNORED_P (TYPE_STUB_DECL (type)))
-    VEC_quick_push (tree, *types_p, TYPE_STUB_DECL (type));
+    types_p->quick_push (TYPE_STUB_DECL (type));
   else if (TYPE_NAME (type)
 	   && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
-    VEC_quick_push (tree, *types_p, TYPE_NAME (type));
+    types_p->quick_push (TYPE_NAME (type));
 
   return 1;
 }
@@ -2593,20 +2592,20 @@ output_used_types (void)
 {
   if (cfun && cfun->used_types_hash)
     {
-      VEC(tree, heap) *types;
+      vec<tree> types;
       int i;
       tree type;
 
-      types = VEC_alloc (tree, heap, htab_elements (cfun->used_types_hash));
+      types.create (htab_elements (cfun->used_types_hash));
       htab_traverse (cfun->used_types_hash, output_used_types_helper, &types);
 
       /* Sort by UID to prevent dependence on hash table ordering.  */
-      VEC_qsort (tree, types, output_types_sort);
+      types.qsort (output_types_sort);
 
-      FOR_EACH_VEC_ELT (tree, types, i, type)
+      FOR_EACH_VEC_ELT (types, i, type)
 	debug_queue_symbol (type);
 
-      VEC_free (tree, heap, types);
+      types.release ();
     }
 }
 

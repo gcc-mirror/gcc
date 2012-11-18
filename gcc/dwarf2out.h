@@ -62,11 +62,8 @@ typedef struct GTY(()) dw_cfi_struct {
 }
 dw_cfi_node;
 
-DEF_VEC_P (dw_cfi_ref);
-DEF_VEC_ALLOC_P (dw_cfi_ref, heap);
-DEF_VEC_ALLOC_P (dw_cfi_ref, gc);
 
-typedef VEC(dw_cfi_ref, gc) *cfi_vec;
+typedef vec<dw_cfi_ref, va_gc> *cfi_vec;
 
 typedef struct dw_fde_struct *dw_fde_ref;
 

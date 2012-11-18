@@ -171,13 +171,15 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
   int nb_types = 0, nb_scalar = 0, nb_string = 0;
   int nb_struct = 0, nb_union = 0, nb_array = 0, nb_pointer = 0;
   int nb_lang_struct = 0, nb_param_struct = 0;
-  int nb_user_struct = 0;
+  int nb_user_struct = 0, nb_undefined = 0;
   type_p p = NULL;
   for (p = t; p; p = p->next)
     {
       nb_types++;
       switch (p->kind)
 	{
+	case TYPE_UNDEFINED:
+	  nb_undefined++;
 	case TYPE_SCALAR:
 	  nb_scalar++;
 	  break;
@@ -205,7 +207,7 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 	case TYPE_PARAM_STRUCT:
 	  nb_param_struct++;
 	  break;
-	default:
+	case TYPE_NONE:
 	  gcc_unreachable ();
 	}
     }
@@ -222,6 +224,8 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 	     nb_lang_struct, nb_param_struct);
   if (nb_user_struct > 0)
     fprintf (stderr, "@@%%@@ %d user_structs\n", nb_user_struct);
+  if (nb_undefined > 0)
+    fprintf (stderr, "@@%%@@ %d undefined types\n", nb_undefined);
   fprintf (stderr, "\n");
 }
 #endif /* ENABLE_CHECKING */
@@ -553,7 +557,7 @@ do_scalar_typedef (const char *s, struct fileloc *pos)
 
 /* Define TYPE_NAME to be a user defined type at location POS.  */
 
-static type_p
+type_p
 create_user_defined_type (const char *type_name, struct fileloc *pos)
 {
   type_p ty = find_structure (type_name, TYPE_USER_STRUCT);
@@ -595,20 +599,58 @@ create_user_defined_type (const char *type_name, struct fileloc *pos)
 }
 
 
-/* Return the type previously defined for S.  Use POS to report errors.  */
+/* Given a typedef name S, return its associated type.  Return NULL if
+   S is not a registered type name.  */
 
-type_p
-resolve_typedef (const char *s, struct fileloc *pos)
+static type_p
+type_for_name (const char *s)
 {
   pair_p p;
   for (p = typedefs; p != NULL; p = p->next)
     if (strcmp (p->name, s) == 0)
       return p->type;
+  return NULL;
+}
 
-  /* If we did not find a typedef registered, assume this is a name
-     for a user-defined type which will need to provide its own
-     marking functions.  */
-  return create_user_defined_type (s, pos);
+
+/* Create an undefined type with name S and location POS.  Return the
+   newly created type.  */
+
+static type_p
+create_undefined_type (const char *s, struct fileloc *pos)
+{
+  type_p ty = find_structure (s, TYPE_UNDEFINED);
+  ty->u.s.line = *pos;
+  ty->u.s.bitmap = get_lang_bitmap (pos->file);
+  do_typedef (s, ty, pos);
+  return ty;
+}
+
+
+/* Return the type previously defined for S.  Use POS to report errors.  */
+
+type_p
+resolve_typedef (const char *s, struct fileloc *pos)
+{
+  bool is_template_instance = (strchr (s, '<') != NULL);
+  type_p p = type_for_name (s);
+
+  /* If we did not find a typedef registered, generate a TYPE_UNDEFINED
+     type for regular type identifiers.  If the type identifier S is a
+     template instantiation, however, we treat it as a user defined
+     type.
+
+     FIXME, this is actually a limitation in gengtype.  Supporting
+     template types and their instances would require keeping separate
+     track of the basic types definition and its instances.  This
+     essentially forces all template classes in GC to be marked
+     GTY((user)).  */
+  if (!p)
+    p = (is_template_instance)
+	? create_user_defined_type (s, pos)
+	: create_undefined_type (s, pos);
+
+  return p;
 }
 
 
@@ -707,7 +749,7 @@ find_structure (const char *name, enum typekind kind)
   type_p s;
   bool isunion = (kind == TYPE_UNION);
 
-  gcc_assert (union_or_struct_p (kind));
+  gcc_assert (kind == TYPE_UNDEFINED || union_or_struct_p (kind));
 
   for (s = structures; s != NULL; s = s->next)
     if (strcmp (name, s->u.s.tag) == 0 && UNION_P (s) == isunion)
@@ -1397,7 +1439,8 @@ adjust_field_type (type_p t, options_p opt)
 }
 
 
-static void set_gc_used_type (type_p, enum gc_used_enum, type_p *);
+static void set_gc_used_type (type_p, enum gc_used_enum, type_p *,
+			      bool = false);
 static void set_gc_used (pair_p);
 
 /* Handle OPT for set_gc_used_type.  */
@@ -1427,9 +1470,31 @@ process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
 }
 
 
-/* Set the gc_used field of T to LEVEL, and handle the types it references.  */
+/* Set the gc_used field of T to LEVEL, and handle the types it references.
+
+   If ALLOWED_UNDEFINED_TYPES is true, types of kind TYPE_UNDEFINED
+   are set to GC_UNUSED.  Otherwise, an error is emitted for
+   TYPE_UNDEFINED types.  This is used to support user-defined
+   template types with non-type arguments.
+
+   For instance, when we parse a template type with enum arguments
+   (e.g. MyType<AnotherType, EnumValue>), the parser created two
+   artificial fields for 'MyType', one for 'AnotherType', the other
+   one for 'EnumValue'.
+
+   At the time that we parse this type we don't know that 'EnumValue'
+   is really an enum value, so the parser creates a TYPE_UNDEFINED
+   type for it.  Since 'EnumValue' is never resolved to a known
+   structure, it will stay with TYPE_UNDEFINED.
+
+   Since 'MyType' is a TYPE_USER_STRUCT, we can simply ignore
+   'EnumValue'.  Generating marking code for it would cause
+   compilation failures since the marking routines assumes that
+   'EnumValue' is a type.  */
+
 static void
-set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
+set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM],
+		  bool allow_undefined_types)
 {
   if (t->gc_used >= level)
     return;
@@ -1445,6 +1510,7 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 	pair_p f;
 	int dummy;
 	type_p dummy2;
+	bool allow_undefined_field_types = (t->kind == TYPE_USER_STRUCT);
 
 	process_gc_options (t->u.s.opt, level, &dummy, &dummy, &dummy, &dummy,
 			    &dummy2);
@@ -1472,10 +1538,20 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 	    else if (skip)
 	      ;			/* target type is not used through this field */
 	    else
-	      set_gc_used_type (f->type, GC_USED, pass_param ? param : NULL);
+	      set_gc_used_type (f->type, GC_USED, pass_param ? param : NULL,
+				allow_undefined_field_types);
 	  }
 	break;
       }
+
+    case TYPE_UNDEFINED:
+      if (level > GC_UNUSED)
+	{
+	  if (!allow_undefined_types)
+	    error_at_line (&t->u.s.line, "undefined type `%s'", t->u.s.tag);
+	  t->gc_used = GC_UNUSED;
+	}
+      break;
 
     case TYPE_POINTER:
       set_gc_used_type (t->u.p, GC_POINTED_TO, NULL);
@@ -2397,7 +2473,7 @@ filter_type_name (const char *type_name)
       size_t i;
       char *s = xstrdup (type_name);
       for (i = 0; i < strlen (s); i++)
-	if (s[i] == '<' || s[i] == '>' || s[i] == ':')
+	if (s[i] == '<' || s[i] == '>' || s[i] == ':' || s[i] == ',')
 	  s[i] = '_';
       return s;
     }
@@ -2417,6 +2493,7 @@ output_mangled_typename (outf_p of, const_type_p t)
     switch (t->kind)
       {
       case TYPE_NONE:
+      case TYPE_UNDEFINED:
 	gcc_unreachable ();
 	break;
       case TYPE_POINTER:
@@ -3042,7 +3119,8 @@ walk_type (type_p t, struct walk_type_data *d)
       d->process_field (t, d);
       break;
 
-    default:
+    case TYPE_NONE:
+    case TYPE_UNDEFINED:
       gcc_unreachable ();
     }
 }
@@ -3059,6 +3137,7 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
   switch (f->kind)
     {
     case TYPE_NONE:
+    case TYPE_UNDEFINED:
       gcc_unreachable ();
     case TYPE_POINTER:
       oprintf (d->of, "%*s%s (%s%s", d->indent, "",
@@ -3265,7 +3344,6 @@ write_marker_function_name (outf_p of, type_p s, const char *prefix)
     gcc_unreachable ();
 }
 
-
 /* Write on OF a user-callable routine to act as an entry point for
    the marking routine for S, generated by write_func_for_structure.
    PREFIX is the prefix to use to distinguish ggc and pch markers.  */
@@ -3429,6 +3507,10 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
   oprintf (d.of, " *)x_p;\n");
   if (chain_next != NULL)
     {
+      /* TYPE_USER_STRUCTs should not occur here.  These structures
+	 are completely handled by user code.  */
+      gcc_assert (orig_s->kind != TYPE_USER_STRUCT);
+
       oprintf (d.of, "  ");
       write_type_decl (d.of, s);
       oprintf (d.of, " * xlimit = x;\n");
@@ -3760,7 +3842,9 @@ write_types_local_user_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_SCALAR:
       break;
 
-    default:
+    case TYPE_ARRAY:
+    case TYPE_NONE:
+    case TYPE_UNDEFINED:
       gcc_unreachable ();
     }
 }
@@ -3843,7 +3927,9 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_SCALAR:
       break;
 
-    default:
+    case TYPE_ARRAY:
+    case TYPE_NONE:
+    case TYPE_UNDEFINED:
       gcc_unreachable ();
     }
 }
@@ -4063,6 +4149,9 @@ contains_scalar_p (type_p t)
       return 0;
     case TYPE_ARRAY:
       return contains_scalar_p (t->u.a.p);
+    case TYPE_USER_STRUCT:
+      /* User-marked structures will typically contain pointers.  */
+      return 0;
     default:
       /* Could also check for structures that have no non-pointer
          fields, but there aren't enough of those to worry about.  */
@@ -4313,8 +4402,9 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
       break;
 
     case TYPE_USER_STRUCT:
-      write_root (f, v, type->u.a.p, name, has_length, line, if_marked,
-		  emit_pch);
+      error_at_line (line, "`%s' must be a pointer type, because it is "
+	             "a GC root and its type is marked with GTY((user))",
+		     v->name);
       break;
 
     case TYPE_POINTER:
@@ -4384,7 +4474,11 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
     case TYPE_SCALAR:
       break;
 
-    default:
+    case TYPE_NONE:
+    case TYPE_UNDEFINED:
+    case TYPE_UNION:
+    case TYPE_LANG_STRUCT:
+    case TYPE_PARAM_STRUCT:
       error_at_line (line, "global `%s' is unimplemented type", name);
     }
 }
@@ -4880,7 +4974,9 @@ output_typename (outf_p of, const_type_p t)
 	output_typename (of, t->u.param_struct.stru);
 	break;
       }
-    default:
+    case TYPE_NONE:
+    case TYPE_UNDEFINED:
+    case TYPE_ARRAY:
       gcc_unreachable ();
     }
 }
@@ -4940,6 +5036,9 @@ dump_typekind (int indent, enum typekind kind)
       break;
     case TYPE_STRUCT:
       printf ("TYPE_STRUCT");
+      break;
+    case TYPE_UNDEFINED:
+      printf ("TYPE_UNDEFINED");
       break;
     case TYPE_USER_STRUCT:
       printf ("TYPE_USER_STRUCT");

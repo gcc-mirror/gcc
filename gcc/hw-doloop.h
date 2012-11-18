@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We need to keep a vector of loops */
 typedef struct hwloop_info_d *hwloop_info;
-DEF_VEC_P (hwloop_info);
-DEF_VEC_ALLOC_P (hwloop_info,heap);
 
 /* Information about a loop we have found (or are in the process of
    finding).  */
@@ -35,17 +33,17 @@ struct GTY (()) hwloop_info_d
 
   /* Vector of blocks only within the loop, including those within
      inner loops.  */
-  VEC (basic_block, heap) *blocks;
+  vec<basic_block> blocks;
 
   /* Same information in a bitmap.  */
   bitmap block_bitmap;
 
   /* Vector of inner loops within this loop.  Includes loops of every
      nesting level.  */
-  VEC (hwloop_info, heap) *loops;
+  vec<hwloop_info> loops;
 
   /* All edges that jump into the loop.  */
-  VEC(edge, gc) *incoming;
+  vec<edge, va_gc> *incoming;
 
   /* The ports currently using this infrastructure can typically
      handle two cases: all incoming edges have the same destination

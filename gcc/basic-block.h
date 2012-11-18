@@ -61,9 +61,6 @@ struct GTY((user)) edge_def {
 				   in profile.c  */
 };
 
-DEF_VEC_P(edge);
-DEF_VEC_ALLOC_P(edge,gc);
-DEF_VEC_ALLOC_P(edge,heap);
 
 /* Garbage collection and PCH support for edge_def.  */
 extern void gt_ggc_mx (edge_def *e);
@@ -182,8 +179,8 @@ struct GTY(()) gimple_bb_info {
 /* Basic block information indexed by block number.  */
 struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_def {
   /* The edges into and out of the block.  */
-  VEC(edge,gc) *preds;
-  VEC(edge,gc) *succs;
+  vec<edge, va_gc> *preds;
+  vec<edge, va_gc> *succs;
 
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
@@ -231,9 +228,6 @@ typedef int __assert_gimple_bb_smaller_rtl_bb
               [(int)sizeof(struct rtl_bb_info)
                - (int)sizeof (struct gimple_bb_info)];
 
-DEF_VEC_P(basic_block);
-DEF_VEC_ALLOC_P(basic_block,gc);
-DEF_VEC_ALLOC_P(basic_block,heap);
 
 #define BB_FREQ_MAX 10000
 
@@ -299,7 +293,7 @@ struct GTY(()) control_flow_graph {
   basic_block x_exit_block_ptr;
 
   /* Index by basic block number, get basic block struct info.  */
-  VEC(basic_block,gc) *x_basic_block_info;
+  vec<basic_block, va_gc> *x_basic_block_info;
 
   /* Number of basic blocks in this flow graph.  */
   int x_n_basic_blocks;
@@ -315,7 +309,7 @@ struct GTY(()) control_flow_graph {
 
   /* Mapping of labels to their associated blocks.  At present
      only used for the gimple CFG.  */
-  VEC(basic_block,gc) *x_label_to_block_map;
+  vec<basic_block, va_gc> *x_label_to_block_map;
 
   enum profile_status_d x_profile_status;
 
@@ -341,9 +335,9 @@ struct GTY(()) control_flow_graph {
 #define profile_status_for_function(FN)	     ((FN)->cfg->x_profile_status)
 
 #define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
-  (VEC_index (basic_block, basic_block_info_for_function(FN), (N)))
+  ((*basic_block_info_for_function(FN))[(N)])
 #define SET_BASIC_BLOCK_FOR_FUNCTION(FN,N,BB) \
-  (VEC_replace (basic_block, basic_block_info_for_function(FN), (N), (BB)))
+  ((*basic_block_info_for_function(FN))[(N)] = (BB))
 
 /* Defines for textual backward source compatibility.  */
 #define ENTRY_BLOCK_PTR		(cfun->cfg->x_entry_block_ptr)
@@ -355,8 +349,8 @@ struct GTY(()) control_flow_graph {
 #define label_to_block_map	(cfun->cfg->x_label_to_block_map)
 #define profile_status		(cfun->cfg->x_profile_status)
 
-#define BASIC_BLOCK(N)		(VEC_index (basic_block, basic_block_info, (N)))
-#define SET_BASIC_BLOCK(N,BB)	(VEC_replace (basic_block, basic_block_info, (N), (BB)))
+#define BASIC_BLOCK(N)		((*basic_block_info)[(N)])
+#define SET_BASIC_BLOCK(N,BB)	((*basic_block_info)[(N)] = (BB))
 
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
@@ -473,7 +467,7 @@ typedef struct ce_if_block
 } ce_if_block_t;
 
 /* This structure maintains an edge list vector.  */
-/* FIXME: Make this a VEC(edge).  */
+/* FIXME: Make this a vec<edge>.  */
 struct edge_list
 {
   int num_edges;
@@ -518,10 +512,10 @@ struct edge_list
 #define EDGE_CRITICAL_P(e)		(EDGE_COUNT ((e)->src->succs) >= 2 \
 					 && EDGE_COUNT ((e)->dest->preds) >= 2)
 
-#define EDGE_COUNT(ev)			VEC_length (edge, (ev))
-#define EDGE_I(ev,i)			VEC_index  (edge, (ev), (i))
-#define EDGE_PRED(bb,i)			VEC_index  (edge, (bb)->preds, (i))
-#define EDGE_SUCC(bb,i)			VEC_index  (edge, (bb)->succs, (i))
+#define EDGE_COUNT(ev)			vec_safe_length (ev)
+#define EDGE_I(ev,i)			(*ev)[(i)]
+#define EDGE_PRED(bb,i)			(*(bb)->preds)[(i)]
+#define EDGE_SUCC(bb,i)			(*(bb)->succs)[(i)]
 
 /* Returns true if BB has precisely one successor.  */
 
@@ -581,10 +575,10 @@ single_pred (const_basic_block bb)
 
 typedef struct {
   unsigned index;
-  VEC(edge,gc) **container;
+  vec<edge, va_gc> **container;
 } edge_iterator;
 
-static inline VEC(edge,gc) *
+static inline vec<edge, va_gc> *
 ei_container (edge_iterator i)
 {
   gcc_checking_assert (i.container);
@@ -596,7 +590,7 @@ ei_container (edge_iterator i)
 
 /* Return an iterator pointing to the start of an edge vector.  */
 static inline edge_iterator
-ei_start_1 (VEC(edge,gc) **ev)
+ei_start_1 (vec<edge, va_gc> **ev)
 {
   edge_iterator i;
 
@@ -609,7 +603,7 @@ ei_start_1 (VEC(edge,gc) **ev)
 /* Return an iterator pointing to the last element of an edge
    vector.  */
 static inline edge_iterator
-ei_last_1 (VEC(edge,gc) **ev)
+ei_last_1 (vec<edge, va_gc> **ev)
 {
   edge_iterator i;
 
@@ -848,13 +842,13 @@ extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);
 extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);
 extern bool dominated_by_p (enum cdi_direction, const_basic_block, const_basic_block);
-extern VEC (basic_block, heap) *get_dominated_by (enum cdi_direction, basic_block);
-extern VEC (basic_block, heap) *get_dominated_by_region (enum cdi_direction,
+extern vec<basic_block> get_dominated_by (enum cdi_direction, basic_block);
+extern vec<basic_block> get_dominated_by_region (enum cdi_direction,
 							 basic_block *,
 							 unsigned);
-extern VEC (basic_block, heap) *get_dominated_to_depth (enum cdi_direction,
+extern vec<basic_block> get_dominated_to_depth (enum cdi_direction,
 							basic_block, int);
-extern VEC (basic_block, heap) *get_all_dominated_blocks (enum cdi_direction,
+extern vec<basic_block> get_all_dominated_blocks (enum cdi_direction,
 							  basic_block);
 extern void add_to_dominance_info (enum cdi_direction, basic_block);
 extern void delete_from_dominance_info (enum cdi_direction, basic_block);
@@ -862,7 +856,7 @@ basic_block recompute_dominator (enum cdi_direction, basic_block);
 extern void redirect_immediate_dominators (enum cdi_direction, basic_block,
 					   basic_block);
 extern void iterate_fix_dominators (enum cdi_direction,
-				    VEC (basic_block, heap) *, bool);
+				    vec<basic_block> , bool);
 extern void verify_dominators (enum cdi_direction);
 extern basic_block first_dom_son (enum cdi_direction, basic_block);
 extern basic_block next_dom_son (enum cdi_direction, basic_block);
@@ -918,7 +912,7 @@ bb_has_abnormal_pred (basic_block bb)
 
 /* Return the fallthru edge in EDGES if it exists, NULL otherwise.  */
 static inline edge
-find_fallthru_edge (VEC(edge,gc) *edges)
+find_fallthru_edge (vec<edge, va_gc> *edges)
 {
   edge e;
   edge_iterator ei;

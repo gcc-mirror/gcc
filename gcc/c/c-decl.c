@@ -286,8 +286,6 @@ struct GTY(()) c_goto_bindings {
 };
 
 typedef struct c_goto_bindings *c_goto_bindings_p;
-DEF_VEC_P(c_goto_bindings_p);
-DEF_VEC_ALLOC_P(c_goto_bindings_p,gc);
 
 /* The additional information we keep track of for a label binding.
    These fields are updated as scopes are popped.  */
@@ -302,11 +300,11 @@ struct GTY(()) c_label_vars {
      warn if a goto branches to this label from later in the function.
      Decls are added to this list as scopes are popped.  We only add
      the decls that matter.  */
-  VEC(tree,gc) *decls_in_scope;
+  vec<tree, va_gc> *decls_in_scope;
   /* A list of goto statements to this label.  This is only used for
      goto statements seen before the label was defined, so that we can
      issue appropriate warnings for them.  */
-  VEC(c_goto_bindings_p,gc) *gotos;
+  vec<c_goto_bindings_p, va_gc> *gotos;
 };
 
 /* Each c_scope structure describes the complete contents of one
@@ -496,11 +494,9 @@ static bool keep_next_level_flag;
 
 static bool next_is_function_body;
 
-/* A VEC of pointers to c_binding structures.  */
+/* A vector of pointers to c_binding structures.  */
 
 typedef struct c_binding *c_binding_ptr;
-DEF_VEC_P(c_binding_ptr);
-DEF_VEC_ALLOC_P(c_binding_ptr,heap);
 
 /* Information that we keep for a struct or union while it is being
    parsed.  */
@@ -509,15 +505,15 @@ struct c_struct_parse_info
 {
   /* If warn_cxx_compat, a list of types defined within this
      struct.  */
-  VEC(tree,heap) *struct_types;
+  vec<tree> struct_types;
   /* If warn_cxx_compat, a list of field names which have bindings,
      and which are defined in this struct, but which are not defined
      in any enclosing struct.  This is used to clear the in_struct
      field of the c_bindings structure.  */
-  VEC(c_binding_ptr,heap) *fields;
+  vec<c_binding_ptr> fields;
   /* If warn_cxx_compat, a list of typedef names used when defining
      fields in this struct.  */
-  VEC(tree,heap) *typedefs_seen;
+  vec<tree> typedefs_seen;
 };
 
 /* Information for the struct or union currently being parsed, or
@@ -1019,16 +1015,14 @@ update_label_decls (struct c_scope *scope)
 			     of B1, if any.  Save it to issue a
 			     warning if needed.  */
 			  if (decl_jump_unsafe (b1->decl))
-			    VEC_safe_push (tree, gc,
-					   label_vars->decls_in_scope,
-					   b1->decl);
+			    vec_safe_push(label_vars->decls_in_scope, b1->decl);
 			}
 		    }
 		}
 
 	      /* Update the bindings of any goto statements associated
 		 with this label.  */
-	      FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
+	      FOR_EACH_VEC_SAFE_ELT (label_vars->gotos, ix, g)
 		update_spot_bindings (scope, &g->goto_bindings);
 	    }
 	}
@@ -1375,7 +1369,7 @@ c_bindings_start_stmt_expr (struct c_spot_bindings* switch_bindings)
 	    continue;
 	  label_vars = b->u.label;
 	  ++label_vars->label_bindings.stmt_exprs;
-	  FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
+	  FOR_EACH_VEC_SAFE_ELT (label_vars->gotos, ix, g)
 	    ++g->goto_bindings.stmt_exprs;
 	}
     }
@@ -1413,7 +1407,7 @@ c_bindings_end_stmt_expr (struct c_spot_bindings *switch_bindings)
 	      label_vars->label_bindings.left_stmt_expr = true;
 	      label_vars->label_bindings.stmt_exprs = 0;
 	    }
-	  FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
+	  FOR_EACH_VEC_SAFE_ELT (label_vars->gotos, ix, g)
 	    {
 	      --g->goto_bindings.stmt_exprs;
 	      if (g->goto_bindings.stmt_exprs < 0)
@@ -3056,7 +3050,7 @@ make_label (location_t location, tree name, bool defining,
   label_vars->shadowed = NULL;
   set_spot_bindings (&label_vars->label_bindings, defining);
   label_vars->decls_in_scope = make_tree_vector ();
-  label_vars->gotos = VEC_alloc (c_goto_bindings_p, gc, 0);
+  label_vars->gotos = NULL;
   *p_label_vars = label_vars;
 
   return label;
@@ -3153,7 +3147,7 @@ lookup_label_for_goto (location_t loc, tree name)
       g = ggc_alloc_c_goto_bindings ();
       g->loc = loc;
       set_spot_bindings (&g->goto_bindings, true);
-      VEC_safe_push (c_goto_bindings_p, gc, label_vars->gotos, g);
+      vec_safe_push (label_vars->gotos, g);
       return label;
     }
 
@@ -3165,7 +3159,7 @@ lookup_label_for_goto (location_t loc, tree name)
        ...
        goto lab;
      Issue a warning or error.  */
-  FOR_EACH_VEC_ELT (tree, label_vars->decls_in_scope, ix, decl)
+  FOR_EACH_VEC_SAFE_ELT (label_vars->decls_in_scope, ix, decl)
     warn_about_goto (loc, label, decl);
 
   if (label_vars->label_bindings.left_stmt_expr)
@@ -3217,7 +3211,7 @@ check_earlier_gotos (tree label, struct c_label_vars* label_vars)
   unsigned int ix;
   struct c_goto_bindings *g;
 
-  FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
+  FOR_EACH_VEC_SAFE_ELT (label_vars->gotos, ix, g)
     {
       struct c_binding *b;
       struct c_scope *scope;
@@ -3267,7 +3261,7 @@ check_earlier_gotos (tree label, struct c_label_vars* label_vars)
 
   /* Now that the label is defined, we will issue warnings about
      subsequent gotos to this label when we see them.  */
-  VEC_truncate (c_goto_bindings_p, label_vars->gotos, 0);
+  vec_safe_truncate (label_vars->gotos, 0);
   label_vars->gotos = NULL;
 }
 
@@ -3939,10 +3933,10 @@ add_flexible_array_elts_to_size (tree decl, tree init)
 {
   tree elt, type;
 
-  if (VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (init)))
+  if (vec_safe_is_empty (CONSTRUCTOR_ELTS (init)))
     return;
 
-  elt = VEC_last (constructor_elt, CONSTRUCTOR_ELTS (init)).value;
+  elt = CONSTRUCTOR_ELTS (init)->last ().value;
   type = TREE_TYPE (elt);
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_SIZE (type) == NULL_TREE
@@ -4509,15 +4503,15 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	  tree cleanup_id = TREE_VALUE (TREE_VALUE (attr));
 	  tree cleanup_decl = lookup_name (cleanup_id);
 	  tree cleanup;
-	  VEC(tree,gc) *vec;
+	  vec<tree, va_gc> *v;
 
 	  /* Build "cleanup(&decl)" for the destructor.  */
 	  cleanup = build_unary_op (input_location, ADDR_EXPR, decl, 0);
-	  vec = VEC_alloc (tree, gc, 1);
-	  VEC_quick_push (tree, vec, cleanup);
+	  vec_alloc (v, 1);
+	  v->quick_push (cleanup);
 	  cleanup = build_function_call_vec (DECL_SOURCE_LOCATION (decl),
-	      				     cleanup_decl, vec, NULL);
-	  VEC_free (tree, gc, vec);
+	      				     cleanup_decl, v, NULL);
+	  vec_free (v);
 
 	  /* Don't warn about decl unused; the cleanup uses it.  */
 	  TREE_USED (decl) = 1;
@@ -5656,7 +5650,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	      c_arg_tag *tag;
 	      unsigned ix;
 
-	      FOR_EACH_VEC_ELT_REVERSE (c_arg_tag, arg_info->tags, ix, tag)
+	      FOR_EACH_VEC_SAFE_ELT_REVERSE (arg_info->tags, ix, tag)
 		TYPE_CONTEXT (tag->type) = type;
 	    }
 	    break;
@@ -6398,7 +6392,7 @@ get_parm_info (bool ellipsis, tree expr)
   struct c_arg_info *arg_info = build_arg_info ();
 
   tree parms    = 0;
-  VEC(c_arg_tag,gc) *tags = NULL;
+  vec<c_arg_tag, va_gc> *tags = NULL;
   tree types    = 0;
   tree others   = 0;
 
@@ -6523,7 +6517,7 @@ get_parm_info (bool ellipsis, tree expr)
 
 	  tag.id = b->id;
 	  tag.type = decl;
-	  VEC_safe_push (c_arg_tag, gc, tags, tag);
+	  vec_safe_push (tags, tag);
 	  break;
 
 	case CONST_DECL:
@@ -6735,9 +6729,9 @@ start_struct (location_t loc, enum tree_code code, tree name,
 
   *enclosing_struct_parse_info = struct_parse_info;
   struct_parse_info = XNEW (struct c_struct_parse_info);
-  struct_parse_info->struct_types = VEC_alloc (tree, heap, 0);
-  struct_parse_info->fields = VEC_alloc (c_binding_ptr, heap, 0);
-  struct_parse_info->typedefs_seen = VEC_alloc (tree, heap, 0);
+  struct_parse_info->struct_types.create (0);
+  struct_parse_info->fields.create (0);
+  struct_parse_info->typedefs_seen.create (0);
 
   /* FIXME: This will issue a warning for a use of a type defined
      within a statement expr used within sizeof, et. al.  This is not
@@ -6847,8 +6841,7 @@ grokfield (location_t loc,
 	     to be cleared when this struct is finished.  */
 	  if (!b->in_struct)
 	    {
-	      VEC_safe_push (c_binding_ptr, heap,
-			     struct_parse_info->fields, b);
+	      struct_parse_info->fields.safe_push (b);
 	      b->in_struct = 1;
 	    }
 	}
@@ -7028,7 +7021,7 @@ warn_cxx_compat_finish_struct (tree fieldlist)
      because the flag is used to issue visibility warnings, and we
      only want to issue those warnings if the type is referenced
      outside of the struct declaration.  */
-  FOR_EACH_VEC_ELT (tree, struct_parse_info->struct_types, ix, x)
+  FOR_EACH_VEC_ELT (struct_parse_info->struct_types, ix, x)
     C_TYPE_DEFINED_IN_STRUCT (x) = 1;
 
   /* The TYPEDEFS_SEEN field of STRUCT_PARSE_INFO is a list of
@@ -7037,14 +7030,14 @@ warn_cxx_compat_finish_struct (tree fieldlist)
      not parse in C++, because the C++ lookup rules say that the
      typedef name would be looked up in the context of the struct, and
      would thus be the field rather than the typedef.  */
-  if (!VEC_empty (tree, struct_parse_info->typedefs_seen)
+  if (!struct_parse_info->typedefs_seen.is_empty ()
       && fieldlist != NULL_TREE)
     {
       /* Use a pointer_set using the name of the typedef.  We can use
 	 a pointer_set because identifiers are interned.  */
       struct pointer_set_t *tset = pointer_set_create ();
 
-      FOR_EACH_VEC_ELT (tree, struct_parse_info->typedefs_seen, ix, x)
+      FOR_EACH_VEC_ELT (struct_parse_info->typedefs_seen, ix, x)
 	pointer_set_insert (tset, DECL_NAME (x));
 
       for (x = fieldlist; x != NULL_TREE; x = DECL_CHAIN (x))
@@ -7066,7 +7059,7 @@ warn_cxx_compat_finish_struct (tree fieldlist)
 
   /* For each field which has a binding and which was not defined in
      an enclosing struct, clear the in_struct field.  */
-  FOR_EACH_VEC_ELT (c_binding_ptr, struct_parse_info->fields, ix, b)
+  FOR_EACH_VEC_ELT (struct_parse_info->fields, ix, b)
     b->in_struct = 0;
 }
 
@@ -7353,9 +7346,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   if (warn_cxx_compat)
     warn_cxx_compat_finish_struct (fieldlist);
 
-  VEC_free (tree, heap, struct_parse_info->struct_types);
-  VEC_free (c_binding_ptr, heap, struct_parse_info->fields);
-  VEC_free (tree, heap, struct_parse_info->typedefs_seen);
+  struct_parse_info->struct_types.release ();
+  struct_parse_info->fields.release ();
+  struct_parse_info->typedefs_seen.release ();
   XDELETE (struct_parse_info);
 
   struct_parse_info = enclosing_struct_parse_info;
@@ -7365,7 +7358,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   if (warn_cxx_compat
       && struct_parse_info != NULL
       && !in_sizeof && !in_typeof && !in_alignof)
-    VEC_safe_push (tree, heap, struct_parse_info->struct_types, t);
+    struct_parse_info->struct_types.safe_push (t);
 
   return t;
 }
@@ -7583,7 +7576,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
   if (warn_cxx_compat
       && struct_parse_info != NULL
       && !in_sizeof && !in_typeof && !in_alignof)
-    VEC_safe_push (tree, heap, struct_parse_info->struct_types, enumtype);
+    struct_parse_info->struct_types.safe_push (enumtype);
 
   return enumtype;
 }
@@ -7981,7 +7974,7 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
     }
 
   /* And all the tag declarations.  */
-  FOR_EACH_VEC_ELT_REVERSE (c_arg_tag, arg_info->tags, ix, tag)
+  FOR_EACH_VEC_SAFE_ELT_REVERSE (arg_info->tags, ix, tag)
     if (tag->id)
       bind (tag->id, tag->type, current_scope,
 	    /*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
@@ -8598,8 +8591,7 @@ c_push_function_context (void)
     cfun->language = p = ggc_alloc_cleared_language_function ();
 
   p->base.x_stmt_tree = c_stmt_tree;
-  c_stmt_tree.x_cur_stmt_list
-    = VEC_copy (tree, gc, c_stmt_tree.x_cur_stmt_list);
+  c_stmt_tree.x_cur_stmt_list = vec_safe_copy (c_stmt_tree.x_cur_stmt_list);
   p->x_break_label = c_break_label;
   p->x_cont_label = c_cont_label;
   p->x_switch_stack = c_switch_stack;
@@ -9538,7 +9530,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	  /* If we are parsing a struct, record that a struct field
 	     used a typedef.  */
 	  if (warn_cxx_compat && struct_parse_info != NULL)
-	    VEC_safe_push (tree, heap, struct_parse_info->typedefs_seen, type);
+	    struct_parse_info->typedefs_seen.safe_push (type);
 	}
     }
   else if (TREE_CODE (type) == IDENTIFIER_NODE)
@@ -10040,7 +10032,7 @@ collect_all_refs (const char *source_file)
   tree t;
   unsigned i;
 
-  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+  FOR_EACH_VEC_ELT (*all_translation_units, i, t)
     collect_ada_nodes (BLOCK_VARS (DECL_INITIAL (t)), source_file);
 
   collect_ada_nodes (BLOCK_VARS (ext_block), source_file);
@@ -10056,7 +10048,7 @@ for_each_global_decl (void (*callback) (tree decl))
   tree decl;
   unsigned i;
 
-  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+  FOR_EACH_VEC_ELT (*all_translation_units, i, t)
     { 
       decls = DECL_INITIAL (t);
       for (decl = BLOCK_VARS (decls); decl; decl = TREE_CHAIN (decl))
@@ -10116,7 +10108,7 @@ c_write_global_declarations (void)
 
   /* Process all file scopes in this compilation, and the external_scope,
      through wrapup_global_declarations and check_global_declarations.  */
-  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+  FOR_EACH_VEC_ELT (*all_translation_units, i, t)
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
 
@@ -10135,7 +10127,7 @@ c_write_global_declarations (void)
   if (!seen_error ())
     {
       timevar_push (TV_SYMOUT);
-      FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+      FOR_EACH_VEC_ELT (*all_translation_units, i, t)
 	c_write_global_declarations_2 (BLOCK_VARS (DECL_INITIAL (t)));
       c_write_global_declarations_2 (BLOCK_VARS (ext_block));
       timevar_pop (TV_SYMOUT);

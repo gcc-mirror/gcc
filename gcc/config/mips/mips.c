@@ -4012,12 +4012,8 @@ struct mips_multi_member {
 };
 typedef struct mips_multi_member mips_multi_member;
 
-/* Vector definitions for the above.  */
-DEF_VEC_O(mips_multi_member);
-DEF_VEC_ALLOC_O(mips_multi_member, heap);
-
 /* The instructions that make up the current multi-insn sequence.  */
-static VEC (mips_multi_member, heap) *mips_multi_members;
+static vec<mips_multi_member> mips_multi_members;
 
 /* How many instructions (as opposed to labels) are in the current
    multi-insn sequence.  */
@@ -4028,7 +4024,7 @@ static unsigned int mips_multi_num_insns;
 static void
 mips_multi_start (void)
 {
-  VEC_truncate (mips_multi_member, mips_multi_members, 0);
+  mips_multi_members.truncate (0);
   mips_multi_num_insns = 0;
 }
 
@@ -4038,7 +4034,7 @@ static struct mips_multi_member *
 mips_multi_add (void)
 {
   mips_multi_member empty;
-  return VEC_safe_push (mips_multi_member, heap, mips_multi_members, empty);
+  return mips_multi_members.safe_push (empty);
 }
 
 /* Add a normal insn with the given asm format to the current multi-insn
@@ -4081,7 +4077,7 @@ mips_multi_add_label (const char *label)
 static unsigned int
 mips_multi_last_index (void)
 {
-  return VEC_length (mips_multi_member, mips_multi_members) - 1;
+  return mips_multi_members.length () - 1;
 }
 
 /* Add a copy of an existing instruction to the current multi-insn
@@ -4093,8 +4089,7 @@ mips_multi_copy_insn (unsigned int i)
   struct mips_multi_member *member;
 
   member = mips_multi_add ();
-  memcpy (member, &VEC_index (mips_multi_member, mips_multi_members, i),
-	  sizeof (*member));
+  memcpy (member, &mips_multi_members[i], sizeof (*member));
   gcc_assert (!member->is_label_p);
 }
 
@@ -4105,7 +4100,7 @@ mips_multi_copy_insn (unsigned int i)
 static void
 mips_multi_set_operand (unsigned int i, unsigned int op, rtx x)
 {
-  VEC_index (mips_multi_member, mips_multi_members, i).operands[op] = x;
+  mips_multi_members[i].operands[op] = x;
 }
 
 /* Write out the asm code for the current multi-insn sequence.  */
@@ -4116,7 +4111,7 @@ mips_multi_write (void)
   struct mips_multi_member *member;
   unsigned int i;
 
-  FOR_EACH_VEC_ELT (mips_multi_member, mips_multi_members, i, member)
+  FOR_EACH_VEC_ELT (mips_multi_members, i, member)
     if (member->is_label_p)
       fprintf (asm_out_file, "%s\n", member->format);
     else

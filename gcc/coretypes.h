@@ -200,5 +200,8 @@ enum memmodel
    is a pointer to a pointer, the second a cookie.  */
 typedef void (*gt_pointer_operator) (void *, void *);
 
-#endif /* coretypes.h */
+#if !defined (HAVE_UCHAR)
+typedef unsigned char uchar;
+#endif
 
+#endif /* coretypes.h */

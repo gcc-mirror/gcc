@@ -91,7 +91,7 @@ static tree lookup_and_check_tag (enum tag_types, tree, tag_scope, bool);
 static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static void maybe_deduce_size_from_array_init (tree, tree);
 static void layout_var_decl (tree);
-static tree check_initializer (tree, tree, int, VEC(tree,gc) **);
+static tree check_initializer (tree, tree, int, vec<tree, va_gc> **);
 static void make_rtl_for_nonlocal_decl (tree, tree, const char *);
 static void save_function_data (tree);
 static void copy_type_enum (tree , tree);
@@ -218,7 +218,7 @@ struct GTY(()) named_label_entry {
   tree names_in_scope;
   /* A vector of all decls from all binding levels that would be
      crossed by a backward branch to the label.  */
-  VEC(tree,gc) *bad_decls;
+  vec<tree, va_gc> *bad_decls;
 
   /* A list of uses of the label, before the label is defined.  */
   struct named_label_use_entry *uses;
@@ -241,7 +241,7 @@ int function_depth;
 /* To avoid unwanted recursion, finish_function defers all mark_used calls
    encountered during its execution until it finishes.  */
 bool defer_mark_used_calls;
-VEC(tree, gc) *deferred_mark_used_calls;
+vec<tree, va_gc> *deferred_mark_used_calls;
 
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)).  An object declared as
@@ -258,10 +258,8 @@ typedef struct GTY(()) incomplete_var_d {
   tree incomplete_type;
 } incomplete_var;
 
-DEF_VEC_O(incomplete_var);
-DEF_VEC_ALLOC_O(incomplete_var,gc);
 
-static GTY(()) VEC(incomplete_var,gc) *incomplete_vars;
+static GTY(()) vec<incomplete_var, va_gc> *incomplete_vars;
 
 /* Returns the kind of template specialization we are currently
    processing, given that it's declaration contained N_CLASS_SCOPES
@@ -486,7 +484,7 @@ poplevel_named_label_1 (void **slot, void *data)
 						     ? DECL_CHAIN (decl)
 						     : TREE_CHAIN (decl)))
 	if (decl_jump_unsafe (decl))
-	  VEC_safe_push (tree, gc, ent->bad_decls, decl);
+	  vec_safe_push (ent->bad_decls, decl);
 
       ent->binding_level = obl;
       ent->names_in_scope = obl->names;
@@ -567,8 +565,7 @@ poplevel (int keep, int reverse, int functionbody)
     functionbody = 0;
   subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
-  gcc_assert (!VEC_length(cp_class_binding,
-			  current_binding_level->class_shadowed));
+  gcc_assert (!vec_safe_length (current_binding_level->class_shadowed));
 
   /* We used to use KEEP == 2 to indicate that the new block should go
      at the beginning of the list of blocks at this binding level,
@@ -708,9 +705,9 @@ poplevel (int keep, int reverse, int functionbody)
 	      /* Add it to the list of dead variables in the next
 		 outermost binding to that we can remove these when we
 		 leave that binding.  */
-	      VEC_safe_push (tree, gc,
-			     current_binding_level->level_chain->dead_vars_from_for,
-			     link);
+	      vec_safe_push (
+		  current_binding_level->level_chain->dead_vars_from_for,
+		  link);
 
 	      /* Although we don't pop the cxx_binding, we do clear
 		 its SCOPE since the scope is going away now.  */
@@ -739,8 +736,8 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Remove declarations for any `for' variables from inner scopes
      that we kept around.  */
-  FOR_EACH_VEC_ELT_REVERSE (tree, current_binding_level->dead_vars_from_for,
-			    ix, decl)
+  FOR_EACH_VEC_SAFE_ELT_REVERSE (current_binding_level->dead_vars_from_for,
+			         ix, decl)
     pop_binding (DECL_NAME (decl), decl);
 
   /* Restore the IDENTIFIER_TYPE_VALUEs.  */
@@ -749,9 +746,8 @@ poplevel (int keep, int reverse, int functionbody)
     SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link), TREE_VALUE (link));
 
   /* Restore the IDENTIFIER_LABEL_VALUEs for local labels.  */
-  FOR_EACH_VEC_ELT_REVERSE (cp_label_binding,
-			    current_binding_level->shadowed_labels,
-			    ix, label_bind)
+  FOR_EACH_VEC_SAFE_ELT_REVERSE (current_binding_level->shadowed_labels,
+			         ix, label_bind)
     pop_local_label (label_bind->label, label_bind->prev_value);
 
   /* There may be OVERLOADs (wrapped in TREE_LISTs) on the BLOCK_VARs
@@ -866,9 +862,9 @@ int
 wrapup_globals_for_namespace (tree name_space, void* data)
 {
   cp_binding_level *level = NAMESPACE_LEVEL (name_space);
-  VEC(tree,gc) *statics = level->static_decls;
-  tree *vec = VEC_address (tree, statics);
-  int len = VEC_length (tree, statics);
+  vec<tree, va_gc> *statics = level->static_decls;
+  tree *vec = statics->address ();
+  int len = statics->length ();
   int last_time = (data != 0);
 
   if (last_time)
@@ -917,10 +913,10 @@ push_local_name (tree decl)
 
   name = DECL_NAME (decl);
 
-  nelts = VEC_length (tree, local_names);
+  nelts = vec_safe_length (local_names);
   for (i = 0; i < nelts; i++)
     {
-      t = VEC_index (tree, local_names, i);
+      t = (*local_names)[i];
       if (DECL_NAME (t) == name)
 	{
 	  if (!DECL_LANG_SPECIFIC (decl))
@@ -931,13 +927,13 @@ push_local_name (tree decl)
 	  else
 	    DECL_DISCRIMINATOR (decl) = 1;
 
-	  VEC_replace (tree, local_names, i, decl);
+	  (*local_names)[i] = decl;
 	  timevar_stop (TV_NAME_LOOKUP);
 	  return;
 	}
     }
 
-  VEC_safe_push (tree, gc, local_names, decl);
+  vec_safe_push (local_names, decl);
   timevar_stop (TV_NAME_LOOKUP);
 }
 
@@ -2706,8 +2702,7 @@ declare_local_label (tree id)
 
   decl = make_label_decl (id, /*local_p=*/1);
   bind.label = decl;
-  VEC_safe_push (cp_label_binding, gc, current_binding_level->shadowed_labels,
-		 bind);
+  vec_safe_push (current_binding_level->shadowed_labels, bind);
 
   return decl;
 }
@@ -2890,14 +2885,14 @@ check_goto (tree decl)
     }
 
   if (ent->in_try_scope || ent->in_catch_scope
-      || ent->in_omp_scope || !VEC_empty (tree, ent->bad_decls))
+      || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
     {
       permerror (input_location, "jump to label %q+D", decl);
       permerror (input_location, "  from here");
       identified = true;
     }
 
-  FOR_EACH_VEC_ELT (tree, ent->bad_decls, ix, bad)
+  FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
     {
       int u = decl_jump_unsafe (bad);
 
@@ -4824,10 +4819,10 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	 initializer.  */
       if (initializer && TREE_CODE (initializer) == CONSTRUCTOR)
 	{
-	  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (initializer);
+	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initializer);
 	  constructor_elt *ce;
 	  HOST_WIDE_INT i;
-	  FOR_EACH_VEC_ELT (constructor_elt, v, i, ce)
+	  FOR_EACH_VEC_SAFE_ELT (v, i, ce)
 	    if (!check_array_designated_initializer (ce, i))
 	      failure = 1;
 	}
@@ -5308,7 +5303,7 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	}
       else if (first_initializer_p && d->cur != d->end)
 	{
-	  VEC(constructor_elt, gc) *v = 0;
+	  vec<constructor_elt, va_gc> *v = 0;
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, d->cur->value);
 	  if (has_designator_problem (d, complain))
@@ -5382,10 +5377,9 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
 	 element (as allowed by [dcl.init.string]).  */
       if (!first_initializer_p
 	  && TREE_CODE (str_init) == CONSTRUCTOR
-	  && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (str_init)) == 1)
+	  && vec_safe_length (CONSTRUCTOR_ELTS (str_init)) == 1)
 	{
-	  str_init = VEC_index (constructor_elt,
-				CONSTRUCTOR_ELTS (str_init), 0).value;
+	  str_init = (*CONSTRUCTOR_ELTS (str_init))[0].value;
 	}
 
       /* If it's a string literal, then it's the initializer for the array
@@ -5453,15 +5447,15 @@ reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p,
      struct S { int a; int b; };
      struct S a[] = { 1, 2, 3, 4 };
 
-   Here INIT will hold a VEC of four elements, rather than a
-   VEC of two elements, each itself a VEC of two elements.  This
+   Here INIT will hold a vector of four elements, rather than a
+   vector of two elements, each itself a vector of two elements.  This
    routine transforms INIT from the former form into the latter.  The
    revised CONSTRUCTOR node is returned.  */
 
 tree
 reshape_init (tree type, tree init, tsubst_flags_t complain)
 {
-  VEC(constructor_elt, gc) *v;
+  vec<constructor_elt, va_gc> *v;
   reshape_iter d;
   tree new_init;
 
@@ -5471,12 +5465,12 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
 
   /* An empty constructor does not need reshaping, and it is always a valid
      initializer.  */
-  if (VEC_empty (constructor_elt, v))
+  if (vec_safe_is_empty (v))
     return init;
 
   /* Recurse on this CONSTRUCTOR.  */
-  d.cur = &VEC_index (constructor_elt, v, 0);
-  d.end = d.cur + VEC_length (constructor_elt, v);
+  d.cur = &(*v)[0];
+  d.end = d.cur + v->length ();
 
   new_init = reshape_init_r (type, &d, true, complain);
   if (new_init == error_mark_node)
@@ -5546,7 +5540,7 @@ build_aggr_init_full_exprs (tree decl, tree init, int flags)
    evaluated dynamically to initialize DECL.  */
 
 static tree
-check_initializer (tree decl, tree init, int flags, VEC(tree,gc) **cleanups)
+check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 {
   tree type = TREE_TYPE (decl);
   tree init_code = NULL;
@@ -5586,7 +5580,7 @@ check_initializer (tree decl, tree init, int flags, VEC(tree,gc) **cleanups)
 
   if (init && BRACE_ENCLOSED_INITIALIZER_P (init))
     {
-      int init_len = VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init));
+      int init_len = vec_safe_length (CONSTRUCTOR_ELTS (init));
       if (SCALAR_TYPE_P (type))
 	{
 	  if (init_len == 0)
@@ -5991,7 +5985,7 @@ initialize_local_var (tree decl, tree init)
    back end.  */
 
 void
-initialize_artificial_var (tree decl, VEC(constructor_elt,gc) *v)
+initialize_artificial_var (tree decl, vec<constructor_elt, va_gc> *v)
 {
   tree init;
   gcc_assert (DECL_ARTIFICIAL (decl));
@@ -6017,15 +6011,14 @@ type_dependent_init_p (tree init)
   else if (TREE_CODE (init) == CONSTRUCTOR)
   /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
     {
-      VEC(constructor_elt, gc) *elts;
+      vec<constructor_elt, va_gc> *elts;
       size_t nelts;
       size_t i;
 
       elts = CONSTRUCTOR_ELTS (init);
-      nelts = VEC_length (constructor_elt, elts);
+      nelts = vec_safe_length (elts);
       for (i = 0; i < nelts; ++i)
-	if (type_dependent_init_p (VEC_index (constructor_elt,
-					      elts, i).value))
+	if (type_dependent_init_p ((*elts)[i].value))
 	  return true;
     }
   else
@@ -6047,15 +6040,14 @@ value_dependent_init_p (tree init)
   else if (TREE_CODE (init) == CONSTRUCTOR)
   /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
     {
-      VEC(constructor_elt, gc) *elts;
+      vec<constructor_elt, va_gc> *elts;
       size_t nelts;
       size_t i;
 
       elts = CONSTRUCTOR_ELTS (init);
-      nelts = VEC_length (constructor_elt, elts);
+      nelts = vec_safe_length (elts);
       for (i = 0; i < nelts; ++i)
-	if (value_dependent_init_p (VEC_index (constructor_elt,
-					       elts, i).value))
+	if (value_dependent_init_p ((*elts)[i].value))
 	  return true;
     }
   else
@@ -6081,7 +6073,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		tree asmspec_tree, int flags)
 {
   tree type;
-  VEC(tree,gc) *cleanups = NULL;
+  vec<tree, va_gc> *cleanups = NULL;
   const char *asmspec = NULL;
   int was_readonly = 0;
   bool var_definition_p = false;
@@ -6489,7 +6481,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (cleanups)
     {
       unsigned i; tree t;
-      FOR_EACH_VEC_ELT (tree, cleanups, i, t)
+      FOR_EACH_VEC_ELT (*cleanups, i, t)
 	push_cleanup (decl, t, false);
       release_tree_vector (cleanups);
     }
@@ -6769,7 +6761,7 @@ register_dtor_fn (tree decl)
       /* Find the destructor.  */
       idx = lookup_fnfields_1 (type, complete_dtor_identifier);
       gcc_assert (idx >= 0);
-      cleanup = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), idx);
+      cleanup = (*CLASSTYPE_METHOD_VEC (type))[idx];
       /* Make sure it is accessible.  */
       perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup,
 				     tf_warning_or_error);
@@ -7053,13 +7045,13 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	 we should just call reshape_init here?  */
       if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
 	  && TREE_CODE (initial_value) == CONSTRUCTOR
-	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (initial_value)))
+	  && !vec_safe_is_empty (CONSTRUCTOR_ELTS (initial_value)))
 	{
-	  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (initial_value);
-	  tree value = VEC_index (constructor_elt, v, 0).value;
+	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initial_value);
+	  tree value = (*v)[0].value;
 
 	  if (TREE_CODE (value) == STRING_CST
-	      && VEC_length (constructor_elt, v) == 1)
+	      && v->length () == 1)
 	    initial_value = value;
 	}
 
@@ -12108,7 +12100,7 @@ xref_basetypes (tree ref, tree base_list)
 	  if (TREE_TYPE (*basep))
 	    max_vbases++;
 	  if (CLASS_TYPE_P (basetype))
-	    max_vbases += VEC_length (tree, CLASSTYPE_VBASECLASSES (basetype));
+	    max_vbases += vec_safe_length (CLASSTYPE_VBASECLASSES (basetype));
 	  basep = &TREE_CHAIN (*basep);
 	}
     }
@@ -12136,7 +12128,7 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_bases)
     {
-      BINFO_BASE_ACCESSES (binfo) = VEC_alloc (tree, gc, max_bases);
+      vec_alloc (BINFO_BASE_ACCESSES (binfo), max_bases);
       /* An aggregate cannot have baseclasses.  */
       CLASSTYPE_NON_AGGREGATE (ref) = 1;
 
@@ -12158,7 +12150,7 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_vbases)
     {
-      CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, gc, max_vbases);
+      vec_alloc (CLASSTYPE_VBASECLASSES (ref), max_vbases);
 
       if (TYPE_FOR_JAVA (ref))
         {
@@ -12236,7 +12228,7 @@ xref_basetypes (tree ref, tree base_list)
       BINFO_BASE_ACCESS_APPEND (binfo, access);
     }
 
-  if (VEC_length (tree, CLASSTYPE_VBASECLASSES (ref)) < max_vbases)
+  if (vec_safe_length (CLASSTYPE_VBASECLASSES (ref)) < max_vbases)
     /* If we didn't get max_vbases vbases, we must have shared at
        least one of them, and are therefore diamond shaped.  */
     CLASSTYPE_DIAMOND_SHAPED_P (ref) = 1;
@@ -13919,9 +13911,9 @@ finish_function (int flags)
       unsigned int i;
       tree decl;
 
-      FOR_EACH_VEC_ELT (tree, deferred_mark_used_calls, i, decl)
+      FOR_EACH_VEC_SAFE_ELT (deferred_mark_used_calls, i, decl)
 	mark_used (decl);
-      VEC_free (tree, gc, deferred_mark_used_calls);
+      vec_free (deferred_mark_used_calls);
     }
 
   return fndecl;
@@ -14032,7 +14024,7 @@ maybe_register_incomplete_var (tree var)
 	      && TYPE_BEING_DEFINED (inner_type)))
 	{
 	  incomplete_var iv = {var, inner_type};
-	  VEC_safe_push (incomplete_var, gc, incomplete_vars, iv);
+	  vec_safe_push (incomplete_vars, iv);
 	}
     }
 }
@@ -14047,7 +14039,7 @@ complete_vars (tree type)
   unsigned ix;
   incomplete_var *iv;
 
-  for (ix = 0; VEC_iterate (incomplete_var, incomplete_vars, ix, iv); )
+  for (ix = 0; vec_safe_iterate (incomplete_vars, ix, &iv); )
     {
       if (same_type_p (type, iv->incomplete_type))
 	{
@@ -14058,7 +14050,7 @@ complete_vars (tree type)
 	  complete_type (type);
 	  cp_apply_type_quals_to_decl (cp_type_quals (type), var);
 	  /* Remove this entry from the list.  */
-	  VEC_unordered_remove (incomplete_var, incomplete_vars, ix);
+	  incomplete_vars->unordered_remove (ix);
 	}
       else
 	ix++;

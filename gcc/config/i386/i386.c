@@ -28737,7 +28737,7 @@ dispatch_function_versions (tree dispatch_decl,
   gimple_seq gseq;
   int ix;
   tree ele;
-  VEC (tree, heap) *fndecls;
+  vec<tree> *fndecls;
   unsigned int num_versions = 0;
   unsigned int actual_versions = 0;
   unsigned int i;
@@ -28754,17 +28754,17 @@ dispatch_function_versions (tree dispatch_decl,
 	      && empty_bb != NULL);
 
   /*fndecls_p is actually a vector.  */
-  fndecls = (VEC (tree, heap) *)fndecls_p;
+  fndecls = static_cast<vec<tree> *> (fndecls_p);
 
   /* At least one more version other than the default.  */
-  num_versions = VEC_length (tree, fndecls);
+  num_versions = fndecls->length ();
   gcc_assert (num_versions >= 2);
 
   function_version_info = (struct _function_version_info *)
     XNEWVEC (struct _function_version_info, (num_versions - 1));
 
   /* The first version in the vector is the default decl.  */
-  default_decl = VEC_index (tree, fndecls, 0);
+  default_decl = (*fndecls)[0];
 
   push_cfun (DECL_STRUCT_FUNCTION (dispatch_decl));
 
@@ -28772,7 +28772,7 @@ dispatch_function_versions (tree dispatch_decl,
   /* Function version dispatch is via IFUNC.  IFUNC resolvers fire before
      constructors, so explicity call __builtin_cpu_init here.  */
   ifunc_cpu_init_stmt = gimple_build_call_vec (
-                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], NULL);
+                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], vec<tree>());
   gimple_seq_add_stmt (&gseq, ifunc_cpu_init_stmt);
   gimple_set_bb (ifunc_cpu_init_stmt, *empty_bb);
   set_bb_seq (*empty_bb, gseq);
@@ -28780,7 +28780,7 @@ dispatch_function_versions (tree dispatch_decl,
   pop_cfun ();
 
 
-  for (ix = 1; VEC_iterate (tree, fndecls, ix, ele); ++ix)
+  for (ix = 1; fndecls->iterate (ix, &ele); ++ix)
     {
       tree version_decl = ele;
       tree predicate_chain = NULL_TREE;
@@ -29276,7 +29276,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 {
   tree resolver_decl;
   basic_block empty_bb;
-  VEC (tree, heap) *fn_ver_vec = NULL;
+  vec<tree> fn_ver_vec = vec<tree>();
   tree default_ver_decl;
   struct cgraph_node *versn;
   struct cgraph_node *node;
@@ -29306,7 +29306,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 
   push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
 
-  fn_ver_vec = VEC_alloc (tree, heap, 2);
+  fn_ver_vec.create (2);
 
   for (versn_info = node_version_info->next; versn_info;
        versn_info = versn_info->next)
@@ -29320,10 +29320,10 @@ ix86_generate_version_dispatcher_body (void *node_p)
       if (DECL_VINDEX (versn->symbol.decl))
         error_at (DECL_SOURCE_LOCATION (versn->symbol.decl),
 		  "Virtual function multiversioning not supported");
-      VEC_safe_push (tree, heap, fn_ver_vec, versn->symbol.decl);
+      fn_ver_vec.safe_push (versn->symbol.decl);
     }
 
-  dispatch_function_versions (resolver_decl, fn_ver_vec, &empty_bb);
+  dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
 
   rebuild_cgraph_edges (); 
   pop_cfun ();

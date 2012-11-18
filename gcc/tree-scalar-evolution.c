@@ -873,7 +873,7 @@ get_loop_exit_condition (const struct loop *loop)
 
 static void
 get_exit_conditions_rec (struct loop *loop,
-			 VEC(gimple,heap) **exit_conditions)
+			 vec<gimple> *exit_conditions)
 {
   if (!loop)
     return;
@@ -887,7 +887,7 @@ get_exit_conditions_rec (struct loop *loop,
       gimple loop_condition = get_loop_exit_condition (loop);
 
       if (loop_condition)
-	VEC_safe_push (gimple, heap, *exit_conditions, loop_condition);
+	exit_conditions->safe_push (loop_condition);
     }
 }
 
@@ -895,7 +895,7 @@ get_exit_conditions_rec (struct loop *loop,
    initializes the EXIT_CONDITIONS array.  */
 
 static void
-select_loops_exit_conditions (VEC(gimple,heap) **exit_conditions)
+select_loops_exit_conditions (vec<gimple> *exit_conditions)
 {
   struct loop *function_body = current_loops->tree_root;
 
@@ -2866,14 +2866,14 @@ number_of_exit_cond_executions (struct loop *loop)
    from the EXIT_CONDITIONS array.  */
 
 static void
-number_of_iterations_for_all_loops (VEC(gimple,heap) **exit_conditions)
+number_of_iterations_for_all_loops (vec<gimple> *exit_conditions)
 {
   unsigned int i;
   unsigned nb_chrec_dont_know_loops = 0;
   unsigned nb_static_loops = 0;
   gimple cond;
 
-  FOR_EACH_VEC_ELT (gimple, *exit_conditions, i, cond)
+  FOR_EACH_VEC_ELT (*exit_conditions, i, cond)
     {
       tree res = number_of_latch_executions (loop_containing_stmt (cond));
       if (chrec_contains_undetermined (res))
@@ -3018,7 +3018,7 @@ gather_chrec_stats (tree chrec, struct chrec_stats *stats)
    index.  This allows the parallelization of the loop.  */
 
 static void
-analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(gimple,heap) **exit_conditions)
+analyze_scalar_evolution_for_all_loop_phi_nodes (vec<gimple> *exit_conditions)
 {
   unsigned int i;
   struct chrec_stats stats;
@@ -3027,7 +3027,7 @@ analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(gimple,heap) **exit_conditi
 
   reset_chrecs_counters (&stats);
 
-  FOR_EACH_VEC_ELT (gimple, *exit_conditions, i, cond)
+  FOR_EACH_VEC_ELT (*exit_conditions, i, cond)
     {
       struct loop *loop;
       basic_block bb;
@@ -3238,16 +3238,16 @@ simple_iv (struct loop *wrto_loop, struct loop *use_loop, tree op,
 void
 scev_analysis (void)
 {
-  VEC(gimple,heap) *exit_conditions;
+  vec<gimple> exit_conditions;
 
-  exit_conditions = VEC_alloc (gimple, heap, 37);
+  exit_conditions.create (37);
   select_loops_exit_conditions (&exit_conditions);
 
   if (dump_file && (dump_flags & TDF_STATS))
     analyze_scalar_evolution_for_all_loop_phi_nodes (&exit_conditions);
 
   number_of_iterations_for_all_loops (&exit_conditions);
-  VEC_free (gimple, heap, exit_conditions);
+  exit_conditions.release ();
 }
 
 /* Finalize the scalar evolution analysis.  */

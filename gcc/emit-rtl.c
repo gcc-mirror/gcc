@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
-#include "vecprim.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "hashtab.h"

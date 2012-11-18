@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "coverage.h"
 #include "df.h"
-#include "vecprim.h"
 #include "ggc.h"
 #include "cfgloop.h"
 #include "params.h"
@@ -309,7 +308,7 @@ dbr_sequence_length (void)
 
 static int *insn_lengths;
 
-VEC(int,heap) *insn_addresses_;
+vec<int> insn_addresses_;
 
 /* Max uid for which the above arrays are valid.  */
 static int insn_lengths_max_uid;

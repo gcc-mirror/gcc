@@ -171,7 +171,8 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  struct cgraph_node *n;
 	  n = cgraph_clone_node (e->callee, e->callee->symbol.decl,
 				 e->count, e->frequency,
-				 update_original, NULL, true);
+				 update_original, vec<cgraph_edge_p>(),
+				 true);
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }
@@ -202,7 +203,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 
 bool
 inline_call (struct cgraph_edge *e, bool update_original,
-	     VEC (cgraph_edge_p, heap) **new_edges,
+	     vec<cgraph_edge_p> *new_edges,
 	     int *overall_size, bool update_overall_summary)
 {
   int old_size = 0, new_size = 0;
@@ -351,7 +352,8 @@ save_inline_function_body (struct cgraph_node *node)
 
   /* Copy the OLD_VERSION_NODE function tree to the new version.  */
   tree_function_versioning (node->symbol.decl, first_clone->symbol.decl,
-			    NULL, true, NULL, false, NULL, NULL);
+			    NULL, true, NULL, false,
+			    NULL, NULL);
 
   /* The function will be short lived and removed after we inline all the clones,
      but make it internal so we won't confuse ourself.  */
@@ -359,9 +361,7 @@ save_inline_function_body (struct cgraph_node *node)
   DECL_COMDAT_GROUP (first_clone->symbol.decl) = NULL_TREE;
   TREE_PUBLIC (first_clone->symbol.decl) = 0;
   DECL_COMDAT (first_clone->symbol.decl) = 0;
-  VEC_free (ipa_opt_pass, heap,
-            first_clone->ipa_transforms_to_apply);
-  first_clone->ipa_transforms_to_apply = NULL;
+  first_clone->ipa_transforms_to_apply.release ();
 
   /* When doing recursive inlining, the clone may become unnecessary.
      This is possible i.e. in the case when the recursive function is proved to be
