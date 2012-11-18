@@ -1678,11 +1678,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
     attrs.align = MAX (attrs.align, TYPE_ALIGN (type));
 
   /* If the size is known, we can set that.  */
-  if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
-    {
-      attrs.size_known_p = true;
-      attrs.size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
-    }
+  tree new_size = TYPE_SIZE_UNIT (type);
 
   /* If T is not a type, we may be able to deduce some more information about
      the expression.  */
@@ -1741,13 +1737,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  attrs.offset_known_p = true;
 	  attrs.offset = 0;
 	  apply_bitpos = bitpos;
-	  if (DECL_SIZE_UNIT (t) && host_integerp (DECL_SIZE_UNIT (t), 1))
-	    {
-	      attrs.size_known_p = true;
-	      attrs.size = tree_low_cst (DECL_SIZE_UNIT (t), 1);
-	    }
-	  else
-	    attrs.size_known_p = false;
+	  new_size = DECL_SIZE_UNIT (t);
 	  attrs.align = DECL_ALIGN (t);
 	  align_computed = true;
 	}
@@ -1762,19 +1752,15 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  align_computed = true;
 	}
 
-      /* If this is a field reference and not a bit-field, record it.  */
-      /* ??? There is some information that can be gleaned from bit-fields,
-	 such as the word offset in the structure that might be modified.
-	 But skip it for now.  */
-      else if (TREE_CODE (t) == COMPONENT_REF
-	       && ! DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+      /* If this is a field reference, record it.  */
+      else if (TREE_CODE (t) == COMPONENT_REF)
 	{
 	  attrs.expr = t;
 	  attrs.offset_known_p = true;
 	  attrs.offset = 0;
 	  apply_bitpos = bitpos;
-	  /* ??? Any reason the field size would be different than
-	     the size we got from the type?  */
+	  if (DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+	    new_size = DECL_SIZE_UNIT (TREE_OPERAND (t, 1));
 	}
 
       /* If this is an array reference, look for an outer field reference.  */
@@ -1859,6 +1845,12 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
     }
   else
     as = TYPE_ADDR_SPACE (type);
+
+  if (host_integerp (new_size, 1))
+    {
+      attrs.size_known_p = true;
+      attrs.size = tree_low_cst (new_size, 1);
+    }
 
   /* If we modified OFFSET based on T, then subtract the outstanding
      bit position offset.  Similarly, increase the size of the accessed
