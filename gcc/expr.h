@@ -557,22 +557,27 @@ extern rtx change_address (rtx, enum machine_mode, rtx);
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
 #define adjust_address(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 0)
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 0, 0)
 
 /* Likewise, but the reference is not required to be valid.  */
 #define adjust_address_nv(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 0)
+  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 0, 0)
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  Assume that it's
    for a bitfield and conservatively drop the underlying object if we
    cannot be sure to stay within its bounds.  */
 #define adjust_bitfield_address(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1)
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1, 0)
+
+/* As for adjust_bitfield_address, but specify that the width of
+   BLKmode accesses is SIZE bytes.  */
+#define adjust_bitfield_address_size(MEMREF, MODE, OFFSET, SIZE) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1, SIZE)
 
 /* Likewise, but the reference is not required to be valid.  */
 #define adjust_bitfield_address_nv(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 1)
+  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 1, 0)
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR, which is assumed to be
@@ -585,7 +590,7 @@ extern rtx change_address (rtx, enum machine_mode, rtx);
   adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 0)
 
 extern rtx adjust_address_1 (rtx, enum machine_mode, HOST_WIDE_INT, int, int,
-			     int);
+			     int, HOST_WIDE_INT);
 extern rtx adjust_automodify_address_1 (rtx, enum machine_mode, rtx,
 					HOST_WIDE_INT, int);
 

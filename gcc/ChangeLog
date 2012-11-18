@@ -1,5 +1,18 @@
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expr.h (adjust_address_1): Add a size parameter.
+	(adjust_address, adjust_address_nv, adjust_bitfield_address)
+	(adjust_bitfield_address_nv): Adjust accordingly.
+	(adjust_bitfield_address_size): Define.
+	* emit-rtl.c (adjust_address_1): Add a size parameter.
+	Use it to set the size if MODE has no size.  Check whether
+	the size matches before returning the original memref.
+	Require the size to be known for adjust_object.
+	(adjust_automodify_address_1, widen_memory_access): Update calls
+	to adjust_address_1.
+
+2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* combine.c (make_extraction): Handle TRUNCATEd INNERs.
 
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>

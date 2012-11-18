@@ -2052,11 +2052,14 @@ change_address (rtx memref, enum machine_mode mode, rtx addr)
    If ADJUST_OBJECT is zero, the underlying object associated with the
    memory reference is left unchanged and the caller is responsible for
    dealing with it.  Otherwise, if the new memory reference is outside
-   the underlying object, even partially, then the object is dropped.  */
+   the underlying object, even partially, then the object is dropped.
+   SIZE, if nonzero, is the size of an access in cases where MODE
+   has no inherent size.  */
 
 rtx
 adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
-		  int validate, int adjust_address, int adjust_object)
+		  int validate, int adjust_address, int adjust_object,
+		  HOST_WIDE_INT size)
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
@@ -2069,8 +2072,14 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
     = targetm.addr_space.pointer_mode (attrs.addrspace);
 #endif
 
+  /* Take the size of non-BLKmode accesses from the mode.  */
+  defattrs = mode_mem_attrs[(int) mode];
+  if (defattrs->size_known_p)
+    size = defattrs->size;
+
   /* If there are no changes, just return the original memory reference.  */
   if (mode == GET_MODE (memref) && !offset
+      && (size == 0 || (attrs.size_known_p && attrs.size == size))
       && (!validate || memory_address_addr_space_p (mode, addr,
 						    attrs.addrspace)))
     return memref;
@@ -2155,24 +2164,23 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
       attrs.align = MIN (attrs.align, max_align);
     }
 
-  /* We can compute the size in a number of ways.  */
-  defattrs = mode_mem_attrs[(int) GET_MODE (new_rtx)];
-  if (defattrs->size_known_p)
+  if (size)
     {
       /* Drop the object if the new right end is not within its bounds.  */
-      if (adjust_object && (offset + defattrs->size) > attrs.size)
+      if (adjust_object && (offset + size) > attrs.size)
 	{
 	  attrs.expr = NULL_TREE;
 	  attrs.alias = 0;
 	}
       attrs.size_known_p = true;
-      attrs.size = defattrs->size;
+      attrs.size = size;
     }
   else if (attrs.size_known_p)
     {
+      gcc_assert (!adjust_object);
       attrs.size -= offset;
-      /* ??? The store_by_pieces machinery generates negative sizes.  */
-      gcc_assert (!(adjust_object && attrs.size < 0));
+      /* ??? The store_by_pieces machinery generates negative sizes,
+	 so don't assert for that here.  */
     }
 
   set_mem_attrs (new_rtx, &attrs);
@@ -2190,7 +2198,7 @@ adjust_automodify_address_1 (rtx memref, enum machine_mode mode, rtx addr,
 			     HOST_WIDE_INT offset, int validate)
 {
   memref = change_address_1 (memref, VOIDmode, addr, validate);
-  return adjust_address_1 (memref, mode, offset, validate, 0, 0);
+  return adjust_address_1 (memref, mode, offset, validate, 0, 0, 0);
 }
 
 /* Return a memory reference like MEMREF, but whose address is changed by
@@ -2272,7 +2280,7 @@ replace_equiv_address_nv (rtx memref, rtx addr)
 rtx
 widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 {
-  rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1, 0);
+  rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1, 0, 0);
   struct mem_attrs attrs;
   unsigned int size = GET_MODE_SIZE (mode);
 
