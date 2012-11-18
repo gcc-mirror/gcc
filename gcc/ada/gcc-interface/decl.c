@@ -7549,7 +7549,7 @@ build_position_list (tree gnu_type, bool do_not_flatten_variant, tree gnu_pos,
    of operands to SUBSTITUTE_IN_EXPR.  DEFINITION is true if this is for
    a definition of GNAT_SUBTYPE.  */
 
-static vec<subst_pair> 
+static vec<subst_pair>
 build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 {
   vec<subst_pair> gnu_list = vec<subst_pair>();
@@ -7582,7 +7582,7 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
    the substitutions described in SUBST_LIST.  GNU_LIST is a pre-existing
    list to be prepended to the newly created entries.  */
 
-static vec<variant_desc> 
+static vec<variant_desc>
 build_variant_list (tree qual_union_type, vec<subst_pair> subst_list,
 		    vec<variant_desc> gnu_list)
 {
