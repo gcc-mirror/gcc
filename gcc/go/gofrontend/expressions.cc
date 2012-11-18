@@ -180,24 +180,25 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
       // Assigning nil to an open array.
       go_assert(TREE_CODE(lhs_type_tree) == RECORD_TYPE);
 
-      VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 3);
+      vec<constructor_elt, va_gc> *init;
+      vec_alloc(init, 3);
 
       constructor_elt empty = {NULL, NULL};
-      constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+      constructor_elt* elt = init->quick_push(empty);
       tree field = TYPE_FIELDS(lhs_type_tree);
       go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),
 			"__values") == 0);
       elt->index = field;
       elt->value = fold_convert(TREE_TYPE(field), null_pointer_node);
 
-      elt = VEC_quick_push(constructor_elt, init, empty);
+      elt = init->quick_push(empty);
       field = DECL_CHAIN(field);
       go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),
 			"__count") == 0);
       elt->index = field;
       elt->value = fold_convert(TREE_TYPE(field), integer_zero_node);
 
-      elt = VEC_quick_push(constructor_elt, init, empty);
+      elt = init->quick_push(empty);
       field = DECL_CHAIN(field);
       go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),
 			"__capacity") == 0);
@@ -320,10 +321,11 @@ Expression::convert_type_to_interface(Translate_context* context,
 
   // Start building a constructor for the value we will return.
 
-  VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 2);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, 2);
 
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   tree field = TYPE_FIELDS(lhs_type_tree);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),
 		    (lhs_is_empty ? "__type_descriptor" : "__methods")) == 0);
@@ -331,7 +333,7 @@ Expression::convert_type_to_interface(Translate_context* context,
   elt->value = fold_convert_loc(location.gcc_location(), TREE_TYPE(field),
                                 first_field_value);
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__object") == 0);
   elt->index = field;
@@ -445,10 +447,11 @@ Expression::convert_interface_to_interface(Translate_context* context,
 
   // The result is going to be a two element constructor.
 
-  VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 2);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc (init, 2);
 
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   tree field = TYPE_FIELDS(lhs_type_tree);
   elt->index = field;
 
@@ -511,7 +514,7 @@ Expression::convert_interface_to_interface(Translate_context* context,
 
   // The second field is simply the object pointer.
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__object") == 0);
   elt->index = field;
@@ -10016,23 +10019,24 @@ Array_index_expression::do_get_tree(Translate_context* context)
   tree struct_tree = type_to_tree(this->type()->get_backend(gogo));
   go_assert(TREE_CODE(struct_tree) == RECORD_TYPE);
 
-  VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 3);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc (init, 3);
 
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   tree field = TYPE_FIELDS(struct_tree);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
   elt->index = field;
   elt->value = value_pointer;
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
   elt->index = field;
   elt->value = fold_convert_loc(loc.gcc_location(), TREE_TYPE(field),
                                 result_length_tree);
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__capacity") == 0);
   elt->index = field;
@@ -11385,8 +11389,8 @@ Struct_construction_expression::do_get_tree(Translate_context* context)
 
   bool is_constant = true;
   const Struct_field_list* fields = this->type_->struct_type()->fields();
-  VEC(constructor_elt,gc)* elts = VEC_alloc(constructor_elt, gc,
-					    fields->size());
+  vec<constructor_elt, va_gc> *elts;
+  vec_alloc (elts, fields->size());
   Struct_field_list::const_iterator pf = fields->begin();
   Expression_list::const_iterator pv = this->vals_->begin();
   for (tree field = TYPE_FIELDS(type_tree);
@@ -11418,7 +11422,7 @@ Struct_construction_expression::do_get_tree(Translate_context* context)
 	return error_mark_node;
 
       constructor_elt empty = {NULL, NULL};
-      constructor_elt* elt = VEC_quick_push(constructor_elt, elts, empty);
+      constructor_elt* elt = elts->quick_push(empty);
       elt->index = field;
       elt->value = val;
       if (!TREE_CONSTANT(val))
@@ -11628,10 +11632,8 @@ tree
 Array_construction_expression::get_constructor_tree(Translate_context* context,
 						    tree type_tree)
 {
-  VEC(constructor_elt,gc)* values = VEC_alloc(constructor_elt, gc,
-					      (this->vals_ == NULL
-					       ? 0
-					       : this->vals_->size()));
+  vec<constructor_elt, va_gc> *values;
+  vec_alloc (values, (this->vals_ == NULL ? 0 : this->vals_->size()));
   Type* element_type = this->type_->array_type()->element_type();
   bool is_constant = true;
   if (this->vals_ != NULL)
@@ -11647,7 +11649,7 @@ Array_construction_expression::get_constructor_tree(Translate_context* context,
 	  if (this->indexes_ != NULL)
 	    go_assert(pi != this->indexes_->end());
 	  constructor_elt empty = {NULL, NULL};
-	  constructor_elt* elt = VEC_quick_push(constructor_elt, values, empty);
+	  constructor_elt* elt = values->quick_push(empty);
 
 	  if (this->indexes_ == NULL)
 	    elt->index = size_int(i);
@@ -11856,9 +11858,10 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
 					       build_index_type(max));
       if (constructor_type == error_mark_node)
 	return error_mark_node;
-      VEC(constructor_elt,gc)* vec = VEC_alloc(constructor_elt, gc, 1);
+      vec<constructor_elt, va_gc> *vec;
+      vec_alloc(vec, 1);
       constructor_elt empty = {NULL, NULL};
-      constructor_elt* elt = VEC_quick_push(constructor_elt, vec, empty);
+      constructor_elt* elt = vec->quick_push(empty);
       elt->index = size_int(0);
       Gogo* gogo = context->gogo();
       Btype* btype = element_type->get_backend(gogo);
@@ -11949,22 +11952,23 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
     return error_mark_node;
   go_assert(TREE_CODE(type_tree) == RECORD_TYPE);
 
-  VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 3);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, 3);
 
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   tree field = TYPE_FIELDS(type_tree);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), space);
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), length_tree);
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),"__capacity") == 0);
   elt->index = field;
@@ -12157,8 +12161,8 @@ Map_construction_expression::do_get_tree(Translate_context* context)
     }
   else
     {
-      VEC(constructor_elt,gc)* values = VEC_alloc(constructor_elt, gc,
-						  this->vals_->size() / 2);
+      vec<constructor_elt, va_gc> *values;
+      vec_alloc(values, this->vals_->size() / 2);
 
       for (Expression_list::const_iterator pv = this->vals_->begin();
 	   pv != this->vals_->end();
@@ -12166,10 +12170,11 @@ Map_construction_expression::do_get_tree(Translate_context* context)
 	{
 	  bool one_is_constant = true;
 
-	  VEC(constructor_elt,gc)* one = VEC_alloc(constructor_elt, gc, 2);
+	  vec<constructor_elt, va_gc> *one;
+	  vec_alloc(one, 2);
 
 	  constructor_elt empty = {NULL, NULL};
-	  constructor_elt* elt = VEC_quick_push(constructor_elt, one, empty);
+	  constructor_elt* elt = one->quick_push(empty);
 	  elt->index = key_field;
 	  tree val_tree = (*pv)->get_tree(context);
 	  elt->value = Expression::convert_for_assignment(context, key_type,
@@ -12182,7 +12187,7 @@ Map_construction_expression::do_get_tree(Translate_context* context)
 
 	  ++pv;
 
-	  elt = VEC_quick_push(constructor_elt, one, empty);
+	  elt = one->quick_push(empty);
 	  elt->index = val_field;
 	  val_tree = (*pv)->get_tree(context);
 	  elt->value = Expression::convert_for_assignment(context, val_type,
@@ -12193,7 +12198,7 @@ Map_construction_expression::do_get_tree(Translate_context* context)
 	  if (!TREE_CONSTANT(elt->value))
 	    one_is_constant = false;
 
-	  elt = VEC_quick_push(constructor_elt, values, empty);
+	  elt = values->quick_push(empty);
 	  elt->index = size_int(i);
 	  elt->value = build_constructor(struct_type, one);
 	  if (one_is_constant)
