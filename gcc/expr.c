@@ -4818,8 +4818,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		 done for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */
 	      if (volatilep)
 		MEM_VOLATILE_P (to_rtx) = 1;
-	      if (component_uses_parent_alias_set (to))
-		MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	    }
 
 	  if (optimize_bitfield_assignment_op (bitsize, bitpos,

@@ -1,3 +1,9 @@
+2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expr.c (expand_assignment): Don't set MEM_KEEP_ALIAS_SET_P here.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Handle DECL_BIT_FIELDs,
+	using their size instead of the COMPONENT_REF's.
+
 2012-11-17  Matthias Klose  <doko@ubuntu.com>
 
 	* config/mips/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
