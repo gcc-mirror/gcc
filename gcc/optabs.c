@@ -8294,6 +8294,35 @@ get_traditional_extraction_insn (extraction_insn *insn,
   return true;
 }
 
+/* Return true if an optab exists to perform an insertion or extraction
+   of type TYPE in mode MODE.  Describe the instruction in *INSN if so.
+
+   REG_OPTAB is the optab to use for register structures and
+   MISALIGN_OPTAB is the optab to use for misaligned memory structures.
+   POS_OP is the operand number of the bit position.  */
+
+static bool
+get_optab_extraction_insn (struct extraction_insn *insn,
+			   enum extraction_type type,
+			   enum machine_mode mode, direct_optab reg_optab,
+			   direct_optab misalign_optab, int pos_op)
+{
+  direct_optab optab = (type == ET_unaligned_mem ? misalign_optab : reg_optab);
+  enum insn_code icode = direct_optab_handler (optab, mode);
+  if (icode == CODE_FOR_nothing)
+    return false;
+
+  const struct insn_data_d *data = &insn_data[icode];
+
+  insn->icode = icode;
+  insn->field_mode = mode;
+  insn->struct_mode = (type == ET_unaligned_mem ? BLKmode : mode);
+  insn->pos_mode = data->operand[pos_op].mode;
+  if (insn->pos_mode == VOIDmode)
+    insn->pos_mode = word_mode;
+  return true;
+}
+
 /* Return true if an instruction exists to perform an insertion or
    extraction (PATTERN says which) of type TYPE in mode MODE.
    Describe the instruction in *INSN if so.  */
@@ -8311,21 +8340,24 @@ get_extraction_insn (extraction_insn *insn,
 	  && get_traditional_extraction_insn (insn, type, mode,
 					      CODE_FOR_insv, 0, 3))
 	return true;
-      return false;
+      return get_optab_extraction_insn (insn, type, mode, insv_optab,
+					insvmisalign_optab, 2);
 
     case EP_extv:
       if (HAVE_extv
 	  && get_traditional_extraction_insn (insn, type, mode,
 					      CODE_FOR_extv, 1, 0))
 	return true;
-      return false;
+      return get_optab_extraction_insn (insn, type, mode, extv_optab,
+					extvmisalign_optab, 3);
 
     case EP_extzv:
       if (HAVE_extzv
 	  && get_traditional_extraction_insn (insn, type, mode,
 					      CODE_FOR_extzv, 1, 0))
 	return true;
-      return false;
+      return get_optab_extraction_insn (insn, type, mode, extzv_optab,
+					extzvmisalign_optab, 3);
 
     default:
       gcc_unreachable ();

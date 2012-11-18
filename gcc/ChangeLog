@@ -1,5 +1,37 @@
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* doc/md.texi (extv@var{m}, extvmisalign@var{m}, extzv@var{m})
+	(extzvmisalign@var{m}, insv@var{m}, insvmisalign@var{m}): Document.
+	(insv, extv, extzv): Deprecate.
+	* optabs.def (insv_optab, extv_optab, extzv_optab)
+	(insvmisalign_optab, extvmisalign_optab, extzvmisalign_optab):
+	New optabs.
+	* optabs.c (get_optab_extraction_insn): New function.
+	(get_extraction_insn): Use it.
+	* config/mips/mips.md (extv): Split into...
+	(extvmisalign<mode>, extv<mode>): ...these new patterns.  Rename
+	existing extv<mode> pattern to...
+	(*extv<mode>): ...this.
+	(extzv): Split into...
+	(extzvmisalign<mode>, extzv<mode>): ...these new patterns.  Rename
+	existing extzv<mode> pattern to...
+	(*extzv<mode>): ...this.
+	(insv): Split into...
+	(insvmisalign<mode>, insv<mode>): ...these new patterns.  Rename
+	existing insv<mode> pattern to...
+	(*insv<mode>): ...this.  Use const_int_operand rather than
+	immediate_operand.
+	* config/mips/mips.c (mips_block_move_straight): Use set_mem_size
+	to set the size of BLKmode accesses.
+	(mips_get_unaligned_mem): Require OP0 to be a BLKmode memory,
+	turning it from an "rtx *" to an rtx.
+	(mips_expand_ext_as_unaligned_load): Simplify for new optab
+	interface.  Update call to mips_get_unaligned_mem.
+	(mips_expand_ins_as_unaligned_store): Update call to
+	mips_get_unaligned_mem.
+
+2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (recog.o): Add insn-codes.h.
 	* expr.h (extraction_pattern): Move to optabs.h.
 	(mode_for_extraction): Delete.

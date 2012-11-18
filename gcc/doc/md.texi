@@ -5294,6 +5294,62 @@ Convert unsigned integer operand 1 of mode @var{m} to fixed-point mode
 When overflows or underflows happen, the instruction saturates the
 results to the maximum or the minimum.
 
+@cindex @code{extv@var{m}} instruction pattern
+@item @samp{extv@var{m}}
+Extract a bit-field from register operand 1, sign-extend it, and store
+it in operand 0.  Operand 2 specifies the width of the field in bits
+and operand 3 the starting bit, which counts from the most significant
+bit if @samp{BITS_BIG_ENDIAN} is true and from the least significant bit
+otherwise.
+
+Operands 0 and 1 both have mode @var{m}.  Operands 2 and 3 have a
+target-specific mode.
+
+@cindex @code{extvmisalign@var{m}} instruction pattern
+@item @samp{extvmisalign@var{m}}
+Extract a bit-field from memory operand 1, sign extend it, and store
+it in operand 0.  Operand 2 specifies the width in bits and operand 3
+the starting bit.  The starting bit is always somewhere in the first byte of
+operand 1; it counts from the most significant bit if @samp{BITS_BIG_ENDIAN}
+is true and from the least significant bit otherwise.
+
+Operand 0 has mode @var{m} while operand 1 has @code{BLK} mode.
+Operands 2 and 3 have a target-specific mode.
+
+The instruction must not read beyond the last byte of the bit-field.
+
+@cindex @code{extzv@var{m}} instruction pattern
+@item @samp{extzv@var{m}}
+Like @samp{extv@var{m}} except that the bit-field value is zero-extended.
+
+@cindex @code{extzvmisalign@var{m}} instruction pattern
+@item @samp{extzvmisalign@var{m}}
+Like @samp{extvmisalign@var{m}} except that the bit-field value is
+zero-extended.
+
+@cindex @code{insv@var{m}} instruction pattern
+@item @samp{insv@var{m}}
+Insert operand 3 into a bit-field of register operand 0.  Operand 1
+specifies the width of the field in bits and operand 2 the starting bit,
+which counts from the most significant bit if @samp{BITS_BIG_ENDIAN}
+is true and from the least significant bit otherwise.
+
+Operands 0 and 3 both have mode @var{m}.  Operands 1 and 2 have a
+target-specific mode.
+
+@cindex @code{insvmisalign@var{m}} instruction pattern
+@item @samp{insvmisalign@var{m}}
+Insert operand 3 into a bit-field of memory operand 0.  Operand 1
+specifies the width of the field in bits and operand 2 the starting bit.
+The starting bit is always somewhere in the first byte of operand 0;
+it counts from the most significant bit if @samp{BITS_BIG_ENDIAN}
+is true and from the least significant bit otherwise.
+
+Operand 3 has mode @var{m} while operand 0 has @code{BLK} mode.
+Operands 1 and 2 have a target-specific mode.
+
+The instruction must not read or write beyond the last byte of the bit-field.
+
 @cindex @code{extv} instruction pattern
 @item @samp{extv}
 Extract a bit-field from operand 1 (a register or memory operand), where
@@ -5309,9 +5365,15 @@ for operands 2 and 3 and the constant is never zero for operand 2.
 The bit-field value is sign-extended to a full word integer
 before it is stored in operand 0.
 
+This pattern is deprecated; please use @samp{extv@var{m}} and
+@code{extvmisalign@var{m}} instead.
+
 @cindex @code{extzv} instruction pattern
 @item @samp{extzv}
 Like @samp{extv} except that the bit-field value is zero-extended.
+
+This pattern is deprecated; please use @samp{extzv@var{m}} and
+@code{extzvmisalign@var{m}} instead.
 
 @cindex @code{insv} instruction pattern
 @item @samp{insv}
@@ -5323,6 +5385,9 @@ Operands 1 and 2 must be valid for @code{word_mode}.
 
 The RTL generation pass generates this instruction only with constants
 for operands 1 and 2 and the constant is never zero for operand 1.
+
+This pattern is deprecated; please use @samp{insv@var{m}} and
+@code{insvmisalign@var{m}} instead.
 
 @cindex @code{mov@var{mode}cc} instruction pattern
 @item @samp{mov@var{mode}cc}

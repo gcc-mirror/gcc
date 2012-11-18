@@ -7096,6 +7096,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       else
 	{
 	  rtx part = adjust_address (src, BLKmode, offset);
+	  set_mem_size (part, delta);
 	  if (!mips_expand_ext_as_unaligned_load (regs[i], part, bits, 0, 0))
 	    gcc_unreachable ();
 	}
@@ -7108,6 +7109,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
     else
       {
 	rtx part = adjust_address (dest, BLKmode, offset);
+	set_mem_size (part, delta);
 	if (!mips_expand_ins_as_unaligned_store (part, regs[i], bits, 0))
 	  gcc_unreachable ();
       }
@@ -7359,10 +7361,8 @@ mips_expand_atomic_qihi (union mips_gen_fn_ptrs generator,
 }
 
 /* Return true if it is possible to use left/right accesses for a
-   bitfield of WIDTH bits starting BITPOS bits into *OP.  When
-   returning true, update *OP, *LEFT and *RIGHT as follows:
-
-   *OP is a BLKmode reference to the whole field.
+   bitfield of WIDTH bits starting BITPOS bits into BLKmode memory OP.
+   When returning true, update *LEFT and *RIGHT as follows:
 
    *LEFT is a QImode reference to the first byte if big endian or
    the last byte if little endian.  This address can be used in the
@@ -7372,15 +7372,10 @@ mips_expand_atomic_qihi (union mips_gen_fn_ptrs generator,
    can be used in the patterning right-side instruction.  */
 
 static bool
-mips_get_unaligned_mem (rtx *op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
+mips_get_unaligned_mem (rtx op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
 			rtx *left, rtx *right)
 {
   rtx first, last;
-
-  /* Check that the operand really is a MEM.  Not all the extv and
-     extzv predicates are checked.  */
-  if (!MEM_P (*op))
-    return false;
 
   /* Check that the size is valid.  */
   if (width != 32 && (!TARGET_64BIT || width != 64))
@@ -7394,20 +7389,12 @@ mips_get_unaligned_mem (rtx *op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
 
   /* Reject aligned bitfields: we want to use a normal load or store
      instead of a left/right pair.  */
-  if (MEM_ALIGN (*op) >= width)
+  if (MEM_ALIGN (op) >= width)
     return false;
 
-  /* Create a copy of *OP that refers to the whole field.  This also has
-     the effect of legitimizing *OP's address for BLKmode, possibly
-     simplifying it.  */
-  *op = copy_rtx (adjust_address (*op, BLKmode, 0));
-  set_mem_size (*op, width / BITS_PER_UNIT);
-
-  /* Get references to both ends of the field.  We deliberately don't
-     use the original QImode *OP for FIRST since the new BLKmode one
-     might have a simpler address.  */
-  first = adjust_address (*op, QImode, 0);
-  last = adjust_address (*op, QImode, width / BITS_PER_UNIT - 1);
+  /* Get references to both ends of the field.  */
+  first = adjust_address (op, QImode, 0);
+  last = adjust_address (op, QImode, width / BITS_PER_UNIT - 1);
 
   /* Allocate to LEFT and RIGHT according to endianness.  LEFT should
      correspond to the MSB and RIGHT to the LSB.  */
@@ -7435,14 +7422,6 @@ mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
   rtx dest1 = NULL_RTX;
 
   /* If TARGET_64BIT, the destination of a 32-bit "extz" or "extzv" will
-     be a paradoxical word_mode subreg.  This is the only case in which
-     we allow the destination to be larger than the source.  */
-  if (GET_CODE (dest) == SUBREG
-      && GET_MODE (dest) == DImode
-      && GET_MODE (SUBREG_REG (dest)) == SImode)
-    dest = SUBREG_REG (dest);
-
-  /* If TARGET_64BIT, the destination of a 32-bit "extz" or "extzv" will
      be a DImode, create a new temp and emit a zero extend at the end.  */
   if (GET_MODE (dest) == DImode
       && REG_P (dest)
@@ -7452,12 +7431,7 @@ mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
       dest = gen_reg_rtx (SImode);
     }
 
-  /* After the above adjustment, the destination must be the same
-     width as the source.  */
-  if (GET_MODE_BITSIZE (GET_MODE (dest)) != width)
-    return false;
-
-  if (!mips_get_unaligned_mem (&src, width, bitpos, &left, &right))
+  if (!mips_get_unaligned_mem (src, width, bitpos, &left, &right))
     return false;
 
   temp = gen_reg_rtx (GET_MODE (dest));
@@ -7499,7 +7473,7 @@ mips_expand_ins_as_unaligned_store (rtx dest, rtx src, HOST_WIDE_INT width,
   rtx left, right;
   enum machine_mode mode;
 
-  if (!mips_get_unaligned_mem (&dest, width, bitpos, &left, &right))
+  if (!mips_get_unaligned_mem (dest, width, bitpos, &left, &right))
     return false;
 
   mode = mode_for_size (width, MODE_INT, 0);
