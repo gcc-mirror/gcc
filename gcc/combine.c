@@ -7022,6 +7022,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       if (new_rtx != 0)
 	return gen_rtx_ASHIFT (mode, new_rtx, XEXP (inner, 1));
     }
+  else if (GET_CODE (inner) == TRUNCATE)
+    inner = XEXP (inner, 0);
 
   inner_mode = GET_MODE (inner);
 
