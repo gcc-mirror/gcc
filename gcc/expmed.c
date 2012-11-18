@@ -387,6 +387,34 @@ mode_for_extraction (enum extraction_pattern pattern, int opno)
   return data->operand[opno].mode;
 }
 
+/* Adjust bitfield memory MEM so that it points to the first unit of mode
+   MODE that contains a bitfield of size BITSIZE at bit position BITNUM.
+   If MODE is BLKmode, return a reference to every byte in the bitfield.
+   Set *NEW_BITNUM to the bit position of the field within the new memory.  */
+
+static rtx
+narrow_bit_field_mem (rtx mem, enum machine_mode mode,
+		      unsigned HOST_WIDE_INT bitsize,
+		      unsigned HOST_WIDE_INT bitnum,
+		      unsigned HOST_WIDE_INT *new_bitnum)
+{
+  if (mode == BLKmode)
+    {
+      *new_bitnum = bitnum % BITS_PER_UNIT;
+      HOST_WIDE_INT offset = bitnum / BITS_PER_UNIT;
+      HOST_WIDE_INT size = ((*new_bitnum + bitsize + BITS_PER_UNIT - 1)
+			    / BITS_PER_UNIT);
+      return adjust_bitfield_address_size (mem, mode, offset, size);
+    }
+  else
+    {
+      unsigned int unit = GET_MODE_BITSIZE (mode);
+      *new_bitnum = bitnum % unit;
+      HOST_WIDE_INT offset = (bitnum - *new_bitnum) / BITS_PER_UNIT;
+      return adjust_bitfield_address (mem, mode, offset);
+    }
+}
+
 /* Return true if a bitfield of size BITSIZE at bit number BITNUM within
    a structure of mode STRUCT_MODE represents a lowpart subreg.   The subreg
    offset is then BITNUM / BITS_PER_UNIT.  */
@@ -424,11 +452,8 @@ store_bit_field_using_insv (rtx op0, unsigned HOST_WIDE_INT bitsize,
     return false;
 
   if (MEM_P (xop0))
-    {
-      /* Get a reference to the first byte of the field.  */
-      xop0 = adjust_bitfield_address (xop0, byte_mode, bitnum / BITS_PER_UNIT);
-      bitnum %= BITS_PER_UNIT;
-    }
+    /* Get a reference to the first byte of the field.  */
+    xop0 = narrow_bit_field_mem (xop0, byte_mode, bitsize, bitnum, &bitnum);
   else
     {
       /* Convert from counting within OP0 to counting in OP_MODE.  */
@@ -831,18 +856,15 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	       && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
 	{
 	  rtx last, tempreg, xop0;
-	  unsigned int unit;
-	  unsigned HOST_WIDE_INT offset, bitpos;
+	  unsigned HOST_WIDE_INT bitpos;
 
 	  last = get_last_insn ();
 
 	  /* Adjust address to point to the containing unit of
 	     that mode.  Compute the offset as a multiple of this unit,
 	     counting in bytes.  */
-	  unit = GET_MODE_BITSIZE (bestmode);
-	  offset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-	  bitpos = bitnum % unit;
-	  xop0 = adjust_bitfield_address (op0, bestmode, offset);
+	  xop0 = narrow_bit_field_mem (op0, bestmode, bitsize, bitnum,
+				       &bitpos);
 
 	  /* Fetch that unit, store the bitfield in it, then store
 	     the unit.  */
@@ -975,9 +997,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	  return;
 	}
 
-      HOST_WIDE_INT bit_offset = bitnum - bitnum % GET_MODE_BITSIZE (mode);
-      op0 = adjust_bitfield_address (op0, mode, bit_offset / BITS_PER_UNIT);
-      bitnum -= bit_offset;
+      op0 = narrow_bit_field_mem (op0, mode, bitsize, bitnum, &bitnum);
     }
 
   mode = GET_MODE (op0);
@@ -1246,11 +1266,8 @@ extract_bit_field_using_extv (rtx op0, unsigned HOST_WIDE_INT bitsize,
     return NULL_RTX;
 
   if (MEM_P (op0))
-    {
-      /* Get a reference to the first byte of the field.  */
-      op0 = adjust_bitfield_address (op0, byte_mode, bitnum / BITS_PER_UNIT);
-      bitnum %= BITS_PER_UNIT;
-    }
+    /* Get a reference to the first byte of the field.  */
+    op0 = narrow_bit_field_mem (op0, byte_mode, bitsize, bitnum, &bitnum);
   else
     {
       /* Convert from counting within OP0 to counting in EXT_MODE.  */
@@ -1640,23 +1657,20 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  && !(SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (op0))
 	       && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
 	{
-	  unsigned HOST_WIDE_INT offset, bitpos;
+	  unsigned HOST_WIDE_INT bitpos;
+	  rtx xop0 = narrow_bit_field_mem (op0, bestmode, bitsize, bitnum,
+					   &bitpos);
 
-	  /* Compute the offset as a multiple of this unit,
-	     counting in bytes.  */
-	  unsigned int unit = GET_MODE_BITSIZE (bestmode);
-	  offset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-	  bitpos = bitnum % unit;
-
-	  /* Make sure the register is big enough for the whole field.  */
-	  if (bitpos + bitsize <= unit)
+	  /* Make sure the register is big enough for the whole field.
+	     (It might not be if bestmode == GET_MODE (op0) and the input
+	     code was invalid.)  */
+	  if (bitpos + bitsize <= GET_MODE_BITSIZE (bestmode))
 	    {
-	      rtx last, result, xop0;
+	      rtx last, result;
 
 	      last = get_last_insn ();
 
 	      /* Fetch it to a register in that size.  */
-	      xop0 = adjust_bitfield_address (op0, bestmode, offset);
 	      xop0 = force_reg (bestmode, xop0);
 	      result = extract_bit_field_1 (xop0, bitsize, bitpos,
 					    unsignedp, packedp, target,
