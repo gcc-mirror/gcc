@@ -1,5 +1,13 @@
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Set up a default value of bitregion_end_.
+	(bit_field_mode_iterator::next_mode): Always apply bitregion_end_
+	check.  Include SLOW_UNALIGNED_ACCESS in the alignment check.
+	(get_best_mode): Ignore modes that are wider than the alignment.
+
+2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* machmode.h (bit_field_mode_iterator): New class.
 	(get_best_mode): Change final parameter to bool.
 	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator)
