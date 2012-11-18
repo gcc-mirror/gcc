@@ -2646,6 +2646,13 @@ bit_field_mode_iterator
   bitregion_end_ (bitregion_end), align_ (MIN (align, BIGGEST_ALIGNMENT)),
   volatilep_ (volatilep), count_ (0)
 {
+  if (!bitregion_end_)
+    {
+      /* We can assume that any aligned chunk of ALIGN_ bits that overlaps
+	 the bitfield is mapped and won't trap.  */
+      bitregion_end_ = bitpos + bitsize + align_ - 1;
+      bitregion_end_ -= bitregion_end_ % align_ + 1;
+    }
 }
 
 /* Calls to this function return successively larger modes that can be used
@@ -2676,23 +2683,15 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
       if (count_ > 0 && unit > BITS_PER_WORD)
 	break;
 
-      /* Stop if the mode is wider than the alignment of the containing
-	 object.
-
-	 It is tempting to omit the following line unless STRICT_ALIGNMENT
-	 is true.  But that is incorrect, since if the bitfield uses part
-	 of 3 bytes and we use a 4-byte mode, we could get a spurious segv
-	 if the extra 4th byte is past the end of memory.
-	 (Though at least one Unix compiler ignores this problem:
-	 that on the Sequent 386 machine.  */
-      if (unit > align_)
-	break;
-
       /* Stop if the mode goes outside the bitregion.  */
       HOST_WIDE_INT start = bitpos_ - (bitpos_ % unit);
       if (bitregion_start_ && start < bitregion_start_)
 	break;
-      if (bitregion_end_ && start + unit > bitregion_end_ + 1)
+      if (start + unit > bitregion_end_ + 1)
+	break;
+
+      /* Stop if the mode requires too much alignment.  */
+      if (unit > align_ && SLOW_UNALIGNED_ACCESS (mode_, align_))
 	break;
 
       *out_mode = mode_;
@@ -2751,6 +2750,62 @@ get_best_mode (int bitsize, int bitpos,
   enum machine_mode widest_mode = VOIDmode;
   enum machine_mode mode;
   while (iter.next_mode (&mode)
+	 /* ??? For historical reasons, reject modes that are wider than
+	    the alignment.  This has both advantages and disadvantages.
+	    Removing this check means that something like:
+
+	       struct s { unsigned int x; unsigned int y; };
+	       int f (struct s *s) { return s->x == 0 && s->y == 0; }
+
+	    can be implemented using a single load and compare on
+	    64-bit machines that have no alignment restrictions.
+	    For example, on powerpc64-linux-gnu, we would generate:
+
+		    ld 3,0(3)
+		    cntlzd 3,3
+		    srdi 3,3,6
+		    blr
+
+	    rather than:
+
+		    lwz 9,0(3)
+		    cmpwi 7,9,0
+		    bne 7,.L3
+		    lwz 3,4(3)
+		    cntlzw 3,3
+		    srwi 3,3,5
+		    extsw 3,3
+		    blr
+		    .p2align 4,,15
+	    .L3:
+		    li 3,0
+		    blr
+
+	    However, accessing more than one field can make life harder
+	    for the gimple optimizers.  For example, gcc.dg/vect/bb-slp-5.c
+	    has a series of unsigned short copies followed by a series of
+	    unsigned short comparisons.  With this check, both the copies
+	    and comparisons remain 16-bit accesses and FRE is able
+	    to eliminate the latter.  Without the check, the comparisons
+	    can be done using 2 64-bit operations, which FRE isn't able
+	    to handle in the same way.
+
+	    Either way, it would probably be worth disabling this check
+	    during expand.  One particular example where removing the
+	    check would help is the get_best_mode call in store_bit_field.
+	    If we are given a memory bitregion of 128 bits that is aligned
+	    to a 64-bit boundary, and the bitfield we want to modify is
+	    in the second half of the bitregion, this check causes
+	    store_bitfield to turn the memory into a 64-bit reference
+	    to the _first_ half of the region.  We later use
+	    adjust_bitfield_address to get a reference to the correct half,
+	    but doing so looks to adjust_bitfield_address as though we are
+	    moving past the end of the original object, so it drops the
+	    associated MEM_EXPR and MEM_OFFSET.  Removing the check
+	    causes store_bit_field to keep a 128-bit memory reference,
+	    so that the final bitfield reference still has a MEM_EXPR
+	    and MEM_OFFSET.  */
+	 && GET_MODE_BITSIZE (mode) <= align
 	 && (largest_mode == VOIDmode
 	     || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (largest_mode)))
     {
