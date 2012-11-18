@@ -7179,29 +7179,24 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
 
-  /* Get the mode to use should INNER not be a MEM, the mode for the position,
-     and the mode for the result.  */
-  if (in_dest && mode_for_extraction (EP_insv, -1) != MAX_MACHINE_MODE)
-    {
-      wanted_inner_reg_mode = mode_for_extraction (EP_insv, 0);
-      pos_mode = mode_for_extraction (EP_insv, 2);
-      extraction_mode = mode_for_extraction (EP_insv, 3);
-    }
+  enum extraction_pattern pattern = (in_dest ? EP_insv
+				     : unsignedp ? EP_extzv : EP_extv);
 
-  if (! in_dest && unsignedp
-      && mode_for_extraction (EP_extzv, -1) != MAX_MACHINE_MODE)
-    {
-      wanted_inner_reg_mode = mode_for_extraction (EP_extzv, 1);
-      pos_mode = mode_for_extraction (EP_extzv, 3);
-      extraction_mode = mode_for_extraction (EP_extzv, 0);
-    }
+  /* If INNER is not from memory, we want it to have the mode of a register
+     extraction pattern's structure operand, or word_mode if there is no
+     such pattern.  The same applies to extraction_mode and pos_mode
+     and their respective operands.
 
-  if (! in_dest && ! unsignedp
-      && mode_for_extraction (EP_extv, -1) != MAX_MACHINE_MODE)
+     For memory, assume that the desired extraction_mode and pos_mode
+     are the same as for a register operation, since at present we don't
+     have named patterns for aligned memory structures.  */
+  struct extraction_insn insn;
+  if (get_best_reg_extraction_insn (&insn, pattern,
+				    GET_MODE_BITSIZE (inner_mode), mode))
     {
-      wanted_inner_reg_mode = mode_for_extraction (EP_extv, 1);
-      pos_mode = mode_for_extraction (EP_extv, 3);
-      extraction_mode = mode_for_extraction (EP_extv, 0);
+      wanted_inner_reg_mode = insn.struct_mode;
+      pos_mode = insn.pos_mode;
+      extraction_mode = insn.field_mode;
     }
 
   /* Never narrow an object, since that might not be safe.  */
@@ -7210,9 +7205,6 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       && GET_MODE_SIZE (extraction_mode) < GET_MODE_SIZE (mode))
     extraction_mode = mode;
 
-  /* If this is not from memory, the desired mode is the preferred mode
-     for an extraction pattern's first input operand, or word_mode if there
-     is none.  */
   if (!MEM_P (inner))
     wanted_inner_mode = wanted_inner_reg_mode;
   else

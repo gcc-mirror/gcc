@@ -1,5 +1,43 @@
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (recog.o): Add insn-codes.h.
+	* expr.h (extraction_pattern): Move to optabs.h.
+	(mode_for_extraction): Delete.
+	* optabs.h (extraction_insn): New structure.
+	(extraction_pattern): Moved from expr.h.
+	(get_best_reg_extraction_insn, get_best_mem_extraction_insn): Declare.
+	* optabs.c (HAVE_insv, CODE_FOR_insv, HAVE_extv, CODE_FOR_extv)
+	(HAVE_extzv, CODE_FOR_extzv): Provide defaults.
+	(extraction_type): New enum.
+	(get_traditional_extraction_insn, get_extraction_insn)
+	(get_best_reg_extraction_insn, get_best_mem_extraction_insn):
+	New functions.
+	* combine.c (make_extraction): Use get_best_reg_extraction_insn
+	instead of mode_for_extraction.
+	* expmed.c (HAVE_insv, CODE_FOR_insv, gen_insv, HAVE_extv)
+	(CODE_FOR_extv, gen_extv, HAVE_extzv, CODE_FOR_extzv, gen_extzv):
+	Remove fallback definitions.
+	(mode_for_extraction): Delete.
+	(adjust_bit_field_mem_for_reg): New function.
+	(store_bit_field_using_insv): Replace OP_MODE parameter with
+	an extraction_insn.  Pass struct_mode to narrow_bit_field_mem.
+	(extract_bit_field_using_extv): Likewise EXT_MODE.
+	(store_bit_field_1): Use get_best_reg_extraction_insn and
+	get_best_mem_extraction_insn instead of mode_for_extraction.
+	Use adjust_bit_field_mem_for_reg when forcing memory to a
+	register and doing a register insertion.  Update calls to
+	store_bit_field_using_insv.
+	(extract_bit_field_1): Likewise extractions and calls to
+	extract_bit_field_using_extv.
+	(store_Bit_field): When narrowing to a bitregion, don't use the
+	insv mode as a limit.
+	* recog.c: (HAVE_extv, CODE_FOR_extv, HAVE_extzv, CODE_FOR_extzv):
+	Provide defaults.
+	(simplify_while_replacing): Use insn_data instead of
+	mode_for_extraction.
+
+2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
 	Set up a default value of bitregion_end_.
 	(bit_field_mode_iterator::next_mode): Always apply bitregion_end_

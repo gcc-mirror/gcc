@@ -698,14 +698,6 @@ extern void probe_stack_range (HOST_WIDE_INT, rtx);
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_libcall_value (enum machine_mode, rtx);
 
-/* Return the mode desired by operand N of a particular bitfield
-   insert/extract insn, or MAX_MACHINE_MODE if no such insn is
-   available.  */
-
-enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
-extern enum machine_mode
-mode_for_extraction (enum extraction_pattern, int);
-
 extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
 			     unsigned HOST_WIDE_INT,
