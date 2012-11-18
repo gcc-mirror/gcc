@@ -344,18 +344,19 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   // Build an initialier for the __roots array.
 
-  VEC(constructor_elt,gc)* roots_init = VEC_alloc(constructor_elt, gc,
-						  count + 1);
+  vec<constructor_elt, va_gc> *roots_init;
+  vec_alloc(roots_init, count + 1);
 
   size_t i = 0;
   for (std::vector<Named_object*>::const_iterator p = var_gc.begin();
        p != var_gc.end();
        ++p, ++i)
     {
-      VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 2);
+      vec<constructor_elt, va_gc> *init;
+      vec_alloc(init, 2);
 
       constructor_elt empty = {NULL, NULL};
-      constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+      constructor_elt* elt = init->quick_push(empty);
       tree field = TYPE_FIELDS(root_type);
       elt->index = field;
       Bvariable* bvar = (*p)->get_backend_variable(this, NULL);
@@ -363,45 +364,47 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
       go_assert(TREE_CODE(decl) == VAR_DECL);
       elt->value = build_fold_addr_expr(decl);
 
-      elt = VEC_quick_push(constructor_elt, init, empty);
+      elt = init->quick_push(empty);
       field = DECL_CHAIN(field);
       elt->index = field;
       elt->value = DECL_SIZE_UNIT(decl);
 
-      elt = VEC_quick_push(constructor_elt, roots_init, empty);
+      elt = roots_init->quick_push(empty);
       elt->index = size_int(i);
       elt->value = build_constructor(root_type, init);
     }
 
   // The list ends with a NULL entry.
 
-  VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 2);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, 2);
 
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   tree field = TYPE_FIELDS(root_type);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), null_pointer_node);
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   elt->index = field;
   elt->value = size_zero_node;
 
-  elt = VEC_quick_push(constructor_elt, roots_init, empty);
+  elt = roots_init->quick_push(empty);
   elt->index = size_int(i);
   elt->value = build_constructor(root_type, init);
 
   // Build a constructor for the struct.
 
-  VEC(constructor_elt,gc)* root_list_init = VEC_alloc(constructor_elt, gc, 2);
+  vec<constructor_elt, va_gc> *root_list_init;
+  vec_alloc(root_list_init, 2);
 
-  elt = VEC_quick_push(constructor_elt, root_list_init, empty);
+  elt = root_list_init->quick_push(empty);
   field = TYPE_FIELDS(root_list_type);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), null_pointer_node);
 
-  elt = VEC_quick_push(constructor_elt, root_list_init, empty);
+  elt = root_list_init->quick_push(empty);
   field = DECL_CHAIN(field);
   elt->index = field;
   elt->value = build_constructor(array_type, roots_init);
@@ -2030,10 +2033,11 @@ Gogo::go_string_constant_tree(const std::string& val)
 {
   tree string_type = type_to_tree(Type::make_string_type()->get_backend(this));
 
-  VEC(constructor_elt, gc)* init = VEC_alloc(constructor_elt, gc, 2);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, 2);
 
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   tree field = TYPE_FIELDS(string_type);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__data") == 0);
   elt->index = field;
@@ -2041,7 +2045,7 @@ Gogo::go_string_constant_tree(const std::string& val)
   elt->value = fold_convert(TREE_TYPE(field),
 			    build_fold_addr_expr(str));
 
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__length") == 0);
   elt->index = field;
@@ -2089,12 +2093,13 @@ Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
 {
   go_assert(TREE_CODE(slice_type_tree) == RECORD_TYPE);
 
-  VEC(constructor_elt,gc)* init = VEC_alloc(constructor_elt, gc, 3);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc(init, 3);
 
   tree field = TYPE_FIELDS(slice_type_tree);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, init, empty);
+  constructor_elt* elt = init->quick_push(empty);
   elt->index = field;
   go_assert(TYPE_MAIN_VARIANT(TREE_TYPE(field))
 	     == TYPE_MAIN_VARIANT(TREE_TYPE(values)));
@@ -2109,13 +2114,13 @@ Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
 
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), count);
 
   field = DECL_CHAIN(field);
   go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__capacity") == 0);
-  elt = VEC_quick_push(constructor_elt, init, empty);
+  elt = init->quick_push(empty);
   elt->index = field;
   elt->value = fold_convert(TREE_TYPE(field), capacity);
 
@@ -2172,12 +2177,12 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
     }
 
   size_t count = interface_methods->size();
-  VEC(constructor_elt, gc)* pointers = VEC_alloc(constructor_elt, gc,
-						 count + 1);
+  vec<constructor_elt, va_gc> *pointers;
+  vec_alloc(pointers, count + 1);
 
   // The first element is the type descriptor.
   constructor_elt empty = {NULL, NULL};
-  constructor_elt* elt = VEC_quick_push(constructor_elt, pointers, empty);
+  constructor_elt* elt = pointers->quick_push(empty);
   elt->index = size_zero_node;
   Type* td_type;
   if (!is_pointer)
@@ -2218,7 +2223,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
 	go_unreachable();
       fndecl = build_fold_addr_expr(fndecl);
 
-      elt = VEC_quick_push(constructor_elt, pointers, empty);
+      elt = pointers->quick_push(empty);
       elt->index = size_int(i);
       elt->value = fold_convert(const_ptr_type_node, fndecl);
     }
