@@ -42,5 +42,10 @@ static_assert( is_same<allocator<int>::const_reference, const int&>::value,
 static_assert( is_same<allocator<int>::value_type, int>::value,
                "value_type" );
 
-static_assert( allocator<int>::propagate_on_container_move_assignment::value,
-               "propagate_on_container_move_assignment is true" );
+static_assert( is_same<allocator<int>::rebind<char>::other,
+                       allocator<char>>::value,
+               "rebind::other" );
+
+static_assert( is_same<allocator<int>::propagate_on_container_move_assignment,
+                       std::true_type>::value,
+               "propagate_on_container_move_assignment" );
