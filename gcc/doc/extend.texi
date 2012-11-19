@@ -339,6 +339,7 @@ serves as a jump table:
 static void *array[] = @{ &&foo, &&bar, &&hack @};
 @end smallexample
 
+@noindent
 Then you can select a label with indexing, like this:
 
 @smallexample
@@ -1280,7 +1281,7 @@ Objects in this address space are located in @code{.progmem.data}.
 
 @b{Example}
 
-@example
+@smallexample
 char my_read (const __flash char ** p)
 @{
     /* p is a pointer to RAM that points to a pointer to flash.
@@ -1301,7 +1302,7 @@ int main (void)
    /* Return 17 by reading from flash memory */
    return array[array[i]];
 @}
-@end example
+@end smallexample
 
 @noindent
 For each named address space supported by avr-gcc there is an equally
@@ -1309,7 +1310,7 @@ named but uppercase built-in macro defined.
 The purpose is to facilitate testing if respective address space
 support is available or not:
 
-@example
+@smallexample
 #ifdef __FLASH
 const __flash int var = 1;
 
@@ -1327,7 +1328,7 @@ int read_var (void)
     return (int) pgm_read_word (&var);
 @}
 #endif /* __FLASH */
-@end example
+@end smallexample
 
 @noindent
 Notice that attribute @ref{AVR Variable Attributes,,@code{progmem}}
@@ -1367,10 +1368,12 @@ as immediates into operands of instructions.
 @item
 The following code initializes a variable @code{pfoo}
 located in static storage with a 24-bit address:
-@example
+@smallexample
 extern const __memx char foo;
 const __memx void *pfoo = &foo;
-@end example
+@end smallexample
+
+@noindent
 Such code requires at least binutils 2.23, see
 @w{@uref{http://sourceware.org/PR13503,PR13503}}.
 
@@ -1404,6 +1407,7 @@ belonging to another address space by qualifying the type with the
 extern int __ea i;
 @end smallexample
 
+@noindent 
 The compiler generates special code to access the variable @code{i}.
 It may use runtime library
 support, or generate special machine instructions to access that address
@@ -1620,6 +1624,7 @@ example:
 #define debug(format, ...) fprintf (stderr, format, __VA_ARGS__)
 @end smallexample
 
+@noindent
 Here @samp{@dots{}} is a @dfn{variable argument}.  In the invocation of
 such a macro, it represents the zero or more tokens until the closing
 parenthesis that ends the invocation, including any commas.  This set of
@@ -1634,6 +1639,7 @@ argument.  Here is an example:
 #define debug(format, args...) fprintf (stderr, format, args)
 @end smallexample
 
+@noindent
 This is in all ways equivalent to the ISO C example above, but arguably
 more readable and descriptive.
 
@@ -1661,6 +1667,7 @@ used with the token paste operator, @samp{##}.  If instead you write
 #define debug(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
 @end smallexample
 
+@noindent
 and if the variable arguments are omitted or empty, the @samp{##}
 operator causes the preprocessor to remove the comma before it.  If you
 do provide some variable arguments in your macro invocation, GNU CPP
@@ -2151,6 +2158,7 @@ void __f () @{ /* @r{Do something.} */; @}
 void f () __attribute__ ((weak, alias ("__f")));
 @end smallexample
 
+@noindent
 defines @samp{f} to be a weak alias for @samp{__f}.  In C++, the
 mangled name for the target must be used.  It is an error if @samp{__f}
 is not defined in the same translation unit.
@@ -2198,6 +2206,7 @@ void* my_calloc(size_t, size_t) __attribute__((alloc_size(1,2)))
 void my_realloc(void*, size_t) __attribute__((alloc_size(2)))
 @end smallexample
 
+@noindent
 declares that @code{my_calloc} returns memory of the size given by
 the product of parameter 1 and 2 and that @code{my_realloc} returns memory
 of the size given by parameter 2.
@@ -2324,6 +2333,7 @@ typedef int intfn ();
 extern const intfn square;
 @end smallexample
 
+@noindent
 This approach does not work in GNU C++ from 2.6.0 on, since the language
 specifies that the @samp{const} must be attached to the return value.
 
@@ -2762,6 +2772,7 @@ static void (*resolve_memcpy (void)) (void)
 @}
 @end smallexample
 
+@noindent
 The exported header file declaring the function the user calls would
 contain:
 
@@ -2769,6 +2780,7 @@ contain:
 extern void *memcpy (void *, const void *, size_t);
 @end smallexample
 
+@noindent
 allowing the user to call this as a regular function, unaware of the
 implementation.  Finally, the indirect function needs to be defined in
 the same translation unit as the resolver function:
@@ -3155,6 +3167,8 @@ optimized away, put
 @smallexample
 asm ("");
 @end smallexample
+
+@noindent
 (@pxref{Extended Asm}) in the called function, to serve as a special
 side-effect.
 
@@ -3241,6 +3255,7 @@ typedef void voidfn ();
 volatile voidfn fatal;
 @end smallexample
 
+@noindent
 This approach does not work in GNU C++.
 
 @item nothrow
@@ -3981,6 +3996,7 @@ for some system calls.
 extern int foo () __attribute__((version_id ("20040821")));
 @end smallexample
 
+@noindent
 Calls to @var{foo} are mapped to calls to @var{foo@{20040821@}}.
 
 @item visibility ("@var{visibility_type}")
@@ -4104,6 +4120,7 @@ int foo ()
 @}
 @end smallexample
 
+@noindent
 results in warning on line 5.
 
 @item weak
@@ -4862,7 +4879,7 @@ of the data but not how this data is accessed.
 
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
-@example
+@smallexample
 /* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual,AVR-LibC}} */
 #include <avr/pgmspace.h> 
 
@@ -4874,7 +4891,7 @@ int read_var (int i)
     /* Access var[] by accessor macro from avr/pgmspace.h */
     return (int) pgm_read_word (& var[i]);
 @}
-@end example
+@end smallexample
 
 AVR is a Harvard architecture processor and data and read-only data
 normally resides in the data memory (RAM).
@@ -4968,9 +4985,9 @@ memory-mapped peripherals.  If an address is specified, the variable
 is assigned that address, else it is not assigned an address (it is
 assumed some other module assigns an address).  Example:
 
-@example
+@smallexample
 int timer_count __attribute__((io(0x123)));
-@end example
+@end smallexample
 
 @item cb
 @itemx cb (@var{addr})
@@ -4978,9 +4995,9 @@ Variables with the @code{cb} attribute are used to access the control
 bus, using special instructions.  @code{addr} indicates the control bus
 address.  Example:
 
-@example
+@smallexample
 int cpu_clock __attribute__((cb(0x123)));
-@end example
+@end smallexample
 
 @end table
 
@@ -5051,6 +5068,7 @@ struct
  @} t1;
 @end smallexample
 
+@noindent
 The size of @code{t1} is 8 bytes with the zero-length bit-field.  If the
 zero-length bit-field were removed, @code{t1}'s size would be 4 bytes.
 
@@ -5076,6 +5094,7 @@ struct
  @} t3;
 @end smallexample
 
+@noindent
 For @code{t2}, @code{bar} is placed at offset 2, rather than offset 1.
 Accordingly, the size of @code{t2} is 4.  For @code{t3}, the zero-length
 bit-field does not affect the alignment of @code{bar} or, as a result, the size
@@ -5100,6 +5119,7 @@ struct
  @} t4;
 @end smallexample
 
+@noindent
 Here, @code{t4} takes up 4 bytes.
 @end enumerate
 
@@ -5114,6 +5134,7 @@ struct
  @} t5;
 @end smallexample
 
+@noindent
 Here, @code{t5} takes up 2 bytes.
 @end enumerate
 @end table
@@ -5343,6 +5364,7 @@ typedef union __attribute__ ((__transparent_union__))
 pid_t wait (wait_status_ptr_t);
 @end smallexample
 
+@noindent
 This interface allows either @code{int *} or @code{union wait *}
 arguments to be passed, using the @code{int *} calling convention.
 The program can call @code{wait} with arguments of either type:
@@ -5352,6 +5374,7 @@ int w1 () @{ int w; return wait (&w); @}
 int w2 () @{ union wait w; return wait (&w); @}
 @end smallexample
 
+@noindent
 With this interface, @code{wait}'s implementation might look like this:
 
 @smallexample
@@ -5434,6 +5457,7 @@ main (void)
 @}
 @end smallexample
 
+@noindent
 If you replaced @code{short_a} with @code{short} in the variable
 declaration, the above program would abort when compiled with
 @option{-fstrict-aliasing}, which is on by default at @option{-O2} or
@@ -5476,6 +5500,7 @@ __declspec(dllexport)
 C::C() @{@}
 @end smallexample
 
+@noindent
 In this code, @code{C::C} is exported from the current DLL, but the
 virtual table for @code{C} is not exported.  (You can use
 @code{__attribute__} instead of @code{__declspec} if you prefer, but
@@ -5740,6 +5765,7 @@ volatile int vobj;
 vobj = 1;
 @end smallexample
 
+@noindent
 Unless @var{*ptr} and @var{vobj} can be aliased, it is not guaranteed
 that the write to @var{*ptr} occurs by the time the update
 of @var{vobj} happens.  If you need this guarantee, you must use
@@ -6184,6 +6210,7 @@ int frob(int x)
 @}
 @end smallexample
 
+@noindent
 In this (inefficient) example, the @code{frob} instruction sets the
 carry bit to indicate an error.  The @code{jc} instruction detects
 this and branches to the @code{error} label.  Finally, the output
@@ -6214,6 +6241,7 @@ void doit(void)
 @}
 @end smallexample
 
+@noindent
 In this (also inefficient) example, the @code{mfsr} instruction reads
 an address from some out-of-band machine register, and the following
 @code{jmp} instruction branches to that address.  The address read by
@@ -6236,6 +6264,7 @@ does not in fact fall through.
 #define TRACE  TRACE1(__COUNTER__)
 @end smallexample
 
+@noindent
 In this example (which in fact inspired the @code{asm goto} feature)
 we want on rare occasions to call the @code{trace} function; on other
 occasions we'd like to keep the overhead to the absolute minimum.
@@ -6305,6 +6334,7 @@ use the input reg for an output reload.  Consider this example:
 asm ("foo" : "=t" (a) : "f" (b));
 @end smallexample
 
+@noindent
 This asm says that input B is not popped by the asm, and that
 the asm pushes a result onto the reg-stack, i.e., the stack is one
 deeper after the asm than it was before.  But, it is possible that
@@ -6353,6 +6383,7 @@ takes one input, which is internally popped, and produces two outputs.
 asm ("fsincos" : "=t" (cos), "=u" (sin) : "0" (inp));
 @end smallexample
 
+@noindent
 This asm takes two inputs, which are popped by the @code{fyl2xp1} opcode,
 and replaces them with one output.  The user must code the @code{st(1)}
 clobber for reg-stack.c to know that @code{fyl2xp1} pops both inputs.
@@ -6603,6 +6634,8 @@ assignment, for example @code{r0} below:
 register int *p1 asm ("r0") = @dots{};
 register int *p2 asm ("r1") = @dots{};
 @end smallexample
+
+@noindent
 In those cases, a solution is to use a temporary variable for
 each arbitrary expression.   @xref{Example of asm with clobbered asm reg}.
 
@@ -6830,6 +6863,7 @@ types.  This should be done using an appropriate @code{typedef}:
 typedef int v4si __attribute__ ((vector_size (16)));
 @end smallexample
 
+@noindent
 The @code{int} type specifies the base type, while the attribute specifies
 the vector size for the variable, measured in bytes.  For example, the
 declaration above causes the compiler to set the mode for the @code{v4si}
@@ -6995,6 +7029,7 @@ This extension is sufficient such that
 #define offsetof(@var{type}, @var{member})  __builtin_offsetof (@var{type}, @var{member})
 @end smallexample
 
+@noindent
 is a suitable definition of the @code{offsetof} macro.  In C++, @var{type}
 may be dependent.  In either case, @var{member} may consist of a single
 identifier, or a sequence of member accesses and array references.
@@ -8302,6 +8337,7 @@ int f (int c, int v)
 @}
 @end smallexample
 
+@noindent
 Because the @code{asm} statement unconditionally transfers control out
 of the function, control never reaches the end of the function
 body.  The @code{__builtin_unreachable} is in fact unreachable and
@@ -8341,6 +8377,7 @@ if it is nonzero means misalignment offset.  For example:
 void *x = __builtin_assume_aligned (arg, 16);
 @end smallexample
 
+@noindent
 means that the compiler can assume @code{x}, set to @code{arg}, is at least
 16-byte aligned, while:
 
@@ -8348,6 +8385,7 @@ means that the compiler can assume @code{x}, set to @code{arg}, is at least
 void *x = __builtin_assume_aligned (arg, 32, 8);
 @end smallexample
 
+@noindent
 means that the compiler can assume for @code{x}, set to @code{arg}, that
 @code{(char *) x - 8} is 32-byte aligned.
 @end deftypefn
@@ -11739,6 +11777,7 @@ does not work:
   vec_add ((vector signed int)@{1, 2, 3, 4@}, foo);
 @end smallexample
 
+@noindent
 Since @code{vec_add} is a macro, the vector constant in the example
 is treated as four separate arguments.  Wrap the entire argument in
 parentheses for this to work.
@@ -14055,6 +14094,7 @@ does not work:
   spu_add ((vector signed int)@{1, 2, 3, 4@}, foo);
 @end smallexample
 
+@noindent
 Since @code{spu_add} is a macro, the vector constant in the example
 is treated as four separate arguments.  Wrap the entire argument in
 parentheses for this to work.
@@ -14155,7 +14195,8 @@ unsigned __insn_@var{op} (...)
 
 @end smallexample
 
-Where @var{op} is the name of the instruction.  Refer to the ISA manual
+@noindent
+where @var{op} is the name of the instruction.  Refer to the ISA manual
 for the complete list of instructions.
 
 GCC also provides intrinsics to directly access the network registers.
@@ -14286,10 +14327,10 @@ compatibility with other compilers, but note that the common
 @code{1234H} numeric syntax is not supported (use @code{0x1234}
 instead).  Example:
 
-@example
+@smallexample
 #pragma ADDRESS port3 0x103
 char port3;
-@end example
+@end smallexample
 
 @end table
 
@@ -14311,9 +14352,9 @@ Specifies which coprocessor registers are available to the register
 allocator.  @var{registers} may be a single register, register range
 separated by ellipses, or comma-separated list of those.  Example:
 
-@example
+@smallexample
 #pragma GCC coprocessor available $c0...$c10, $c28
-@end example
+@end smallexample
 
 @item GCC coprocessor call_saved @var{registers}
 @cindex pragma, coprocessor call_saved
@@ -14322,9 +14363,9 @@ any function using them.  @var{registers} may be a single register,
 register range separated by ellipses, or comma-separated list of
 those.  Example:
 
-@example
+@smallexample
 #pragma GCC coprocessor call_saved $c4...$c6, $c31
-@end example
+@end smallexample
 
 @item GCC coprocessor subclass '(A|B|C|D)' = @var{registers}
 @cindex pragma, coprocessor subclass
@@ -14333,11 +14374,11 @@ used by inline @code{asm} constructs.  @var{registers} may be a single
 register, register range separated by ellipses, or comma-separated
 list of those.  Example:
 
-@example
+@smallexample
 #pragma GCC coprocessor subclass 'B' = $c2, $c4, $c6
 
 asm ("cpfoo %0" : "=B" (x));
-@end example
+@end smallexample
 
 @item GCC disinterrupt @var{name} , @var{name} @dots{}
 @cindex pragma, disinterrupt
@@ -14346,21 +14387,21 @@ for the duration of those functions.  If any functions so named
 are not encountered in the source, a warning is emitted that the pragma is
 not used.  Examples:
 
-@example
+@smallexample
 #pragma disinterrupt foo
 #pragma disinterrupt bar, grill
 int foo () @{ @dots{} @}
-@end example
+@end smallexample
 
 @item GCC call @var{name} , @var{name} @dots{}
 @cindex pragma, call
 For the named functions, the compiler always uses a register-indirect
 call model when calling the named functions.  Examples:
 
-@example
+@smallexample
 extern int foo ();
 #pragma call foo
-@end example
+@end smallexample
 
 @end table
 
@@ -14577,11 +14618,11 @@ in effect), or @samp{ignored} if the diagnostic is to be ignored.
 @var{option} is a double quoted string that matches the command-line
 option.
 
-@example
+@smallexample
 #pragma GCC diagnostic warning "-Wformat"
 #pragma GCC diagnostic error "-Wformat"
 #pragma GCC diagnostic ignored "-Wformat"
-@end example
+@end smallexample
 
 Note that these pragmas override any command-line options.  GCC keeps
 track of the location of each pragma, and issues diagnostics according
@@ -14596,17 +14637,17 @@ Causes GCC to remember the state of the diagnostics as of each
 @code{pop} has no matching @code{push}, the command-line options are
 restored.
 
-@example
+@smallexample
 #pragma GCC diagnostic error "-Wuninitialized"
-  foo(a);			/* error is given for this one */
+  foo(a);                       /* error is given for this one */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
-  foo(b);			/* no diagnostic for this one */
+  foo(b);                       /* no diagnostic for this one */
 #pragma GCC diagnostic pop
-  foo(c);			/* error is given for this one */
+  foo(c);                       /* error is given for this one */
 #pragma GCC diagnostic pop
-  foo(d);			/* depends on command-line options */
-@end example
+  foo(d);                       /* depends on command-line options */
+@end smallexample
 
 @end table
 
@@ -14634,6 +14675,7 @@ information.  For example,
 TODO(Remember to fix this)
 @end smallexample
 
+@noindent
 prints @samp{/tmp/file.c:4: note: #pragma message:
 TODO - Remember to fix this}.
 
@@ -14691,6 +14733,7 @@ For example:
 int x [X];
 @end smallexample
 
+@noindent
 In this example, the definition of X as 1 is saved by @code{#pragma
 push_macro} and restored by @code{#pragma pop_macro}.
 
@@ -14779,13 +14822,14 @@ struct @{
 @} foo;
 @end smallexample
 
+@noindent
 In this example, you are able to access members of the unnamed
 union with code like @samp{foo.b}.  Note that only unnamed structs and
 unions are allowed, you may not have, for example, an unnamed
 @code{int}.
 
 You must never create such structures that cause ambiguous field definitions.
-For example, this structure:
+For example, in this structure:
 
 @smallexample
 struct @{
@@ -14796,7 +14840,8 @@ struct @{
 @} foo;
 @end smallexample
 
-It is ambiguous which @code{a} is being referred to with @samp{foo.a}.
+@noindent
+it is ambiguous which @code{a} is being referred to with @samp{foo.a}.
 The compiler gives errors for such constructs.
 
 @opindex fms-extensions
@@ -14821,6 +14866,7 @@ extern void f1 (struct s1 *);
 void f2 (struct s2 *p) @{ f1 (p); @}
 @end smallexample
 
+@noindent
 In the call to @code{f1} inside @code{f2}, the pointer @code{p} is
 converted into a pointer to the anonymous field.
 
@@ -15529,6 +15575,7 @@ template ostream& operator <<
                 (ostream&, const Foo<int>&);
 @end smallexample
 
+@noindent
 for each of the instances you need, and create a template instantiation
 library from those.
 
