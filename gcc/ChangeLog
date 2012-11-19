@@ -9,6 +9,7 @@
 
 2012-11-19  David Edelsohn  <dje.gcc@gmail.com>
 
+	PR bootstrap/55384
 	* system.h (vec_free): Undef.
 
 2012-11-19  Jakub Jelinek  <jakub@redhat.com>
