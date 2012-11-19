@@ -1,3 +1,7 @@
+2012-11-19  Mike Stump  <mikestump@comcast.net>
+
+	* compare_tests: Add export LC_ALL=C to make sort happier.
+
 2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc_update: Update libsanitizer generated files.
