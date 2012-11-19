@@ -5685,8 +5685,11 @@ simplify_subreg (enum machine_mode outermode, rtx op,
   gcc_assert (GET_MODE (op) == innermode
 	      || GET_MODE (op) == VOIDmode);
 
-  gcc_assert ((byte % GET_MODE_SIZE (outermode)) == 0);
-  gcc_assert (byte < GET_MODE_SIZE (innermode));
+  if ((byte % GET_MODE_SIZE (outermode)) != 0)
+    return NULL_RTX;
+
+  if (byte >= GET_MODE_SIZE (innermode))
+    return NULL_RTX;
 
   if (outermode == innermode && !byte)
     return op;
