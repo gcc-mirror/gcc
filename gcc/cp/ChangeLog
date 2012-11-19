@@ -1,3 +1,9 @@
+2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55368
+	* parser.c (cp_parser_member_declaration): Emit an error in case
+	of stray comma at end of member declaration.
+
 2012-11-19  Jason Merrill  <jason@redhat.com>
 
 	* class.c (one_inheriting_sig): Don't inherit base copy ctors.
