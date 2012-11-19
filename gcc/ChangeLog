@@ -1,3 +1,66 @@
+2012-11-19  Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* doc/md.texi: Document define_subst.
+	* gensupport.c (MAX_OPERANDS): New define.
+	(operand_data): New.
+	(match_operand_entries_in_pattern): New.
+	(used_operands_numbers): New.
+	(subst_true): New.
+	(subst_false): New.
+	(define_subst_queue): New.
+	(define_subst_tail): New.
+	(define_subst_attr_queue): New.
+	(define_subst_attr_tail): New.
+	(has_subst_attribute): New.
+	(subst_pattern_match): New.
+	(get_alternatives_number): New.
+	(alter_output_for_subst_insn): New.
+	(alter_attrs_for_subst_insn): New.
+	(process_substs_on_one_elem): New.
+	(subst_dup): New.
+	(process_define_subst): New.
+	(duplicate_alternatives): New.
+	(duplicate_each_alternative): New.
+	(constraints_handler_t): New typedef.
+	(alter_constraints): New.
+	(adjust_operands_numbers): New.
+	(replace_duplicating_operands_in_pattern): New.
+	(remove_from_queue): New.
+	(process_rtx): Handle define_subst and define_subst_attr.
+	(change_subst_attribute): New.
+	(alter_predicate_for_insn): Fix formatting.
+	(alter_attrs_for_insn): Likewise.
+	(alter_output_for_insn): Likewise.
+	(mark_operands_from_match_dup): New.
+	(mark_operands_used_in_match_dup): New.
+	(find_first_unused_number_of_operand): New.
+	(renumerate_operands_in_pattern): New.
+	(generate_match_dup): New.
+	(check_define_attr_duplicates): New.
+	(init_rtx_reader_args_cb): Add checking for duplicated attrs and
+	processing of define_subst.
+	(read_md_rtx): Handle define_subst.
+	* read-rtl.c (struct subst_attr_to_iter_mapping): New.
+	(substs): New global.
+	(apply_subst_iterator): New.
+	(bind_subst_iter_and_attr): New.
+	(find_subst_iter_by_attr): New.
+	(map_attr_string): Handle subst-iterators.
+	(add_condition_to_rtx): Handle define_subst.
+	(apply_iterators): Likewise.
+	(initialize_iterators): Likewise.
+	(add_define_attr_for_define_subst): New.
+	(add_define_subst_attr): New.
+	(read_subst_mapping): New.
+	(read_rtx): Handle define_subst_attr.
+	(read_rtx_code): Add subst-attributes recognition during reading of
+	strings.
+	* rtl.def (DEFINE_EXPAND): Add vector of attributes.
+	(DEFINE_SUBST): New.
+	(DEFINE_SUBST_ATTR): New.
+
 2012-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/55315

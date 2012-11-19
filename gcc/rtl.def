@@ -906,8 +906,9 @@ DEF_RTL_EXPR(DEFINE_PEEPHOLE2, "define_peephole2", "EsES", RTX_EXTRA)
 	This might, for example, create some RTX's and store them in
 	elements of `recog_data.operand' for use by the vector of
 	insn-patterns.
-	(`operands' is an alias here for `recog_data.operand').  */
-DEF_RTL_EXPR(DEFINE_EXPAND, "define_expand", "sEss", RTX_EXTRA)
+	(`operands' is an alias here for `recog_data.operand').
+   5th: optionally, a vector of attributes for this expand.  */
+DEF_RTL_EXPR(DEFINE_EXPAND, "define_expand", "sEssV", RTX_EXTRA)
 
 /* Define a requirement for delay slots.
    1st operand: Condition involving insn attributes that, if true,
@@ -1280,6 +1281,8 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)
    true, the second operand will be used as the value of the conditional.  */
 DEF_RTL_EXPR(COND, "cond", "Ee", RTX_EXTRA)
 
+DEF_RTL_EXPR(DEFINE_SUBST, "define_subst", "sEsE", RTX_EXTRA)
+DEF_RTL_EXPR(DEFINE_SUBST_ATTR, "define_subst_attr", "ssss", RTX_EXTRA)
 #endif /* GENERATOR_FILE */
 
 /*
