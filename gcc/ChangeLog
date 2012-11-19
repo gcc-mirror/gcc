@@ -1,5 +1,9 @@
 2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
+	* trans-mem.c (execute_tm_mark): Release bb_regions.
+
+2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
+
 	* trans-mem (collect_bb2reg): Stop scanning at irrevocable blocks.
 	(get_bb_regions_instrumented): Add new traverse_clone argument and
 	use it.
