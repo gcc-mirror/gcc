@@ -1,3 +1,8 @@
+2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55368
+	* g++.dg/parse/struct-5.C: New.
+
 2012-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/55315
@@ -13,8 +18,8 @@
 	-[2, 2] and -[3, 3] and -[4, 4] range tests together.
 
 	* lib/asan-dg.exp (asan_symbolize): Prune BFD: prefixed error messages
-	from addr2line_output.  Increment idx if asking for more than one address
-	in one object.
+	from addr2line_output.  Increment idx if asking for more than one
+	address in one object.
 
 2012-11-16  Jakub Jelinek  <jakub@redhat.com>
 

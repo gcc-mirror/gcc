@@ -19407,7 +19407,15 @@ cp_parser_member_declaration (cp_parser* parser)
 	  parser->object_scope = NULL_TREE;
 	  /* If it's a `,', then there are more declarators.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-	    cp_lexer_consume_token (parser->lexer);
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+		{
+		  cp_token *token = cp_lexer_previous_token (parser->lexer);
+		  error_at (token->location,
+			    "stray %<,%> at end of member declaration");
+		}
+	    }
 	  /* If the next token isn't a `;', then we have a parse error.  */
 	  else if (cp_lexer_next_token_is_not (parser->lexer,
 					       CPP_SEMICOLON))
