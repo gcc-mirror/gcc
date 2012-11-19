@@ -1,5 +1,7 @@
 2012-11-19  Jason Merrill  <jason@redhat.com>
 
+	* class.c (one_inheriting_sig): Don't inherit base copy ctors.
+
 	PR c++/55262
 	* method.c (implicitly_declare_fn): Set DECL_PARM_INDEX on
 	the parms of an inheriting ctor.

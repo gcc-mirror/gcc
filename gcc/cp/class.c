@@ -2886,15 +2886,19 @@ static void
 one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
 {
   /* We don't declare an inheriting ctor that would be a default,
-     copy or move ctor.  */
-  if (nparms == 0
-      || (nparms == 1
-	  && TREE_CODE (parms[0]) == REFERENCE_TYPE
-	  && TYPE_MAIN_VARIANT (TREE_TYPE (parms[0])) == t))
+     copy or move ctor for derived or base.  */
+  if (nparms == 0)
     return;
-  int i;
+  if (nparms == 1
+      && TREE_CODE (parms[0]) == REFERENCE_TYPE)
+    {
+      tree parm = TYPE_MAIN_VARIANT (TREE_TYPE (parms[0]));
+      if (parm == t || parm == DECL_CONTEXT (ctor))
+	return;
+    }
+
   tree parmlist = void_list_node;
-  for (i = nparms - 1; i >= 0; i--)
+  for (int i = nparms - 1; i >= 0; i--)
     parmlist = tree_cons (NULL_TREE, parms[i], parmlist);
   tree fn = implicitly_declare_fn (sfk_inheriting_constructor,
 				   t, false, ctor, parmlist);
