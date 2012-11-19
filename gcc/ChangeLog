@@ -1,3 +1,9 @@
+2012-11-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Use @smallexample consistently.  Add @noindent
+	when continuing a sentence or paragraph past an example.  Change
+	tabs to spaces in examples.
+
 2012-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/md.texi (extv@var{m}, extvmisalign@var{m}, extzv@var{m})
