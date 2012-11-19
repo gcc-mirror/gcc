@@ -32,6 +32,8 @@ EOUSAGE
 # Written by Mike Stump <mrs@cygnus.com>
 # Subdir comparison added by Quentin Neill <quentin.neill@amd.com>
 
+export LC_ALL=C
+
 tool=gxx
 
 tmp1=/tmp/$tool-testing.$$a
