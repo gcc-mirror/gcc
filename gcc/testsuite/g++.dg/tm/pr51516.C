@@ -18,5 +18,4 @@ int main()
 }
 
 /* { dg-final { scan-assembler-not "_ITM_getTMCloneOrIrrevocable" } } */
-/* { dg-final { scan-tree-dump-times ";; Function C::C" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
