@@ -1,3 +1,9 @@
+2012-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/55315
+
+	* gcc.target/mips/pr55315.c: New test.
+
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55236
