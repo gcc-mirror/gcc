@@ -1,5 +1,10 @@
 2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Check rebind
+	and improve propagate_on_container_move_assignment check.
+
+2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/stl_algo.h (reverse_copy): Update comment per DR 2074.
 	* include/bits/unordered_map.h: Apply DR 2005 resolution.
 	* doc/xml/manual/status_cxx2011.xml: Update per DR 2048.
