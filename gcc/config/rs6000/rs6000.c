@@ -17838,8 +17838,7 @@ rs6000_stack_info (void)
   else
     info_ptr->spe_gp_size = 0;
 
-  /* Set VRSAVE register if it is saved and restored.  */
-  if (TARGET_ALTIVEC_ABI && TARGET_ALTIVEC_VRSAVE)
+  if (TARGET_ALTIVEC_ABI)
     info_ptr->vrsave_mask = compute_vrsave_mask ();
   else
     info_ptr->vrsave_mask = 0;
@@ -18027,7 +18026,8 @@ rs6000_stack_info (void)
   if (! TARGET_ALTIVEC_ABI || info_ptr->altivec_size == 0)
     info_ptr->altivec_save_offset = 0;
 
-  if (! TARGET_ALTIVEC_ABI || info_ptr->vrsave_mask == 0)
+  /* Zero VRSAVE offset if not saved and restored.  */
+  if (! TARGET_ALTIVEC_VRSAVE || info_ptr->vrsave_mask == 0)
     info_ptr->vrsave_save_offset = 0;
 
   if (! TARGET_SPE_ABI
@@ -20058,7 +20058,7 @@ rs6000_emit_prologue (void)
 	  || (info->altivec_size != 0
 	      && (info->altivec_save_offset + info->altivec_size - 16
 		  + info->total_size - frame_off) > 32767)
-	  || (info->vrsave_mask != 0
+	  || (info->vrsave_size != 0
 	      && (info->vrsave_save_offset
 		  + info->total_size - frame_off) > 32767))
 	{

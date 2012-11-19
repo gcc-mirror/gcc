@@ -1,3 +1,11 @@
+2012-11-19  Mans Rullgard  <mans@mansr.com>
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Always set vrsave_mask
+	for TARGET_ALTIVEC_ABI.  Zero vrsave_save_offset if
+	!TARGET_ALTIVEC_VRSAVE.
+	(rs6000_emit_prologue): For SAVE_INLINE_VLRs, check vrsave_size
+	not vrsave_mask.
+
 2012-11-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* system.h (vec_free): Undef.
