@@ -738,11 +738,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.8.10</entry>
       <entry>Function template <code>mem_fn</code></entry>
-      <entry>Partial</entry>
-      <entry>Missing overloads for reference-qualified member functions</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>20.8.11</entry>

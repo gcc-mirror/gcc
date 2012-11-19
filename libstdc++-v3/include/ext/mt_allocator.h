@@ -1,7 +1,6 @@
 // MT-optimized allocator -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 2003-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +34,9 @@
 #include <bits/functexcept.h>
 #include <ext/atomicity.h>
 #include <bits/move.h>
+#if __cplusplus >= 201103L
+#include <type_traits>
+#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -575,6 +577,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp&                      reference;
       typedef const _Tp&                const_reference;
       typedef _Tp                       value_type;
+
+#if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2103. propagate_on_container_move_assignment
+      typedef std::true_type propagate_on_container_move_assignment;
+#endif
 
       pointer
       address(reference __x) const _GLIBCXX_NOEXCEPT
