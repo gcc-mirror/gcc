@@ -1,3 +1,7 @@
+2012-11-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* system.h (vec_free): Undef.
+
 2012-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/54630

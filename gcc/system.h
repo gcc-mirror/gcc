@@ -228,6 +228,9 @@ extern int errno;
 # include <stdlib.h>
 #endif
 
+/* Undef vec_free from AIX stdlib.h header which conflicts with vec.h.  */
+#undef vec_free
+
 /* If we don't have an overriding definition, set SUCCESS_EXIT_CODE and
    FATAL_EXIT_CODE to EXIT_SUCCESS and EXIT_FAILURE respectively,
    or 0 and 1 if those macros are not defined.  */
