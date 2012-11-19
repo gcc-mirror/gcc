@@ -392,10 +392,8 @@ nonzero_address_p (const_rtx x)
       return nonzero_address_p (XEXP (x, 0));
 
     case PLUS:
-      if (CONST_INT_P (XEXP (x, 1)))
-        return nonzero_address_p (XEXP (x, 0));
       /* Handle PIC references.  */
-      else if (XEXP (x, 0) == pic_offset_table_rtx
+      if (XEXP (x, 0) == pic_offset_table_rtx
 	       && CONSTANT_P (XEXP (x, 1)))
 	return true;
       return false;
