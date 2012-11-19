@@ -1,3 +1,9 @@
+2012-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54630
+	* class.c (fixed_type_or_null_ref_ht): New variable.
+	(fixed_type_or_null): Use it instead of local static ht.
+
 2012-11-17  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
