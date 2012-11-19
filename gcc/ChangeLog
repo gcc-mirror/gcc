@@ -1,3 +1,8 @@
+2012-11-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/55359
+	* simplify-rtx.c (simplify_subreg): Return null for invalid offsets.
+
 2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-mem.c (execute_tm_mark): Release bb_regions.
