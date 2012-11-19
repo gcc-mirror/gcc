@@ -2941,7 +2941,7 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 	      if (t->named_type() != NULL
 		  || t->forward_declaration_type() != NULL)
 		error_at(start_loc,
-			 _("parentheses required around this composite literal"
+			 _("parentheses required around this composite literal "
 			   "to avoid parsing ambiguity"));
 	    }
 	  else if (is_parenthesized)
