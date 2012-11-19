@@ -5,6 +5,7 @@
 // { dg-require-effective-target tls_runtime }
 // { dg-require-effective-target pthread }
 // { dg-require-alias }
+// { dg-require-cxa-atexit "" }
 // { dg-options -pthread }
 
 #include <pthread.h>

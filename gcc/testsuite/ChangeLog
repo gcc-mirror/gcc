@@ -1,3 +1,15 @@
+2012-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/tls/thread_local-order1.C: Add dg-require-cxa-atexit.
+	* g++.dg/tls/thread_local3g.C: Likewise.
+	* g++.dg/tls/thread_local4g.C: Likewise.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+	* g++.dg/tls/thread_local-cse.C: XFAIL on Solaris 9.
+	* g++.dg/tls/thread_local2.C: Likewise.
+	* g++.dg/tls/thread_local2g.C: Likewise.
+	* g++.dg/tls/thread_local6.C: Likewise.
+
 2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* g++.dg/tm/pr51516.C: Adjust for uninstrumented code path.
