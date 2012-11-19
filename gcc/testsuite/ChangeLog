@@ -1,3 +1,8 @@
+2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tm/pr51516.C: Adjust for uninstrumented code path.
+	* gcc.dg/tm/clone-1.c: New test.
+
 2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55368
