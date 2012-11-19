@@ -810,6 +810,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
       _Res _Class::*__pm;
     };
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2048.  Unnecessary mem_fn overloads
   /**
    *  @brief Returns a function object that forwards to the member
    *  pointer @a pm.

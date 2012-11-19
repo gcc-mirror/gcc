@@ -1,5 +1,27 @@
 2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/stl_algo.h (reverse_copy): Update comment per DR 2074.
+	* include/bits/unordered_map.h: Apply DR 2005 resolution.
+	* doc/xml/manual/status_cxx2011.xml: Update per DR 2048.
+	* include/bits/allocator.h (allocator): Apply DR 2103 resolution.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal): Add
+	additional specializations.
+	* include/std/functional: Add comment about DR resolution.
+	* include/std/future: Likewise.
+	* include/std/scoped_allocator: Likewise.
+	* include/std/thread: Likewise.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
+2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/hashtable.h: Improve comments.
 	* include/bits/hashtable_policy.h: Likewise.
 
