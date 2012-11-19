@@ -1,3 +1,9 @@
+2012-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54630
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Remove static
+	keyword from ssa_name_hash var.
+
 2012-11-19  Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
