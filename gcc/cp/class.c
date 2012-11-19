@@ -3014,7 +3014,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       if (DECL_SELF_REFERENCE_P (decl))
 	{
 	  /* declare, then remove the decl */
-	  tree ctor_list = CLASSTYPE_CONSTRUCTORS (TREE_TYPE (decl));
+	  tree ctor_list = lookup_fnfields_slot (TREE_TYPE (decl),
+						 ctor_identifier);
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
 	  if (ctor_list)
