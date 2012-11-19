@@ -1,5 +1,9 @@
 2012-11-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55262
+	* method.c (implicitly_declare_fn): Set DECL_PARM_INDEX on
+	the parms of an inheriting ctor.
+
 	PR c++/55261
 	* class.c (add_implicitly_declared_members): Use
 	lookup_fnfields_slot to get the base constructors.
