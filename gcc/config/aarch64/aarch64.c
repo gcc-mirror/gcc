@@ -2335,9 +2335,10 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
      to return a pointer to an aggregate.  On AArch64 a result value
      pointer will be in x8.  */
   int this_regno = R0_REGNUM;
+  rtx this_rtx, temp0, temp1, addr, insn, funexp;
 
-  /* Make sure unwind info is emitted for the thunk if needed.  */
-  final_start_function (emit_barrier (), file, 1);
+  reload_completed = 1;
+  emit_note (NOTE_INSN_PROLOGUE_END);
 
   if (vcall_offset == 0)
     aarch64_add_constant (file, this_regno, IP1_REGNUM, delta);
@@ -2345,37 +2346,55 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     {
       gcc_assert ((vcall_offset & 0x7) == 0);
 
-      if (delta == 0)
-	asm_fprintf (file, "\tldr\t%r, [%r]\n", IP0_REGNUM, this_regno);
-      else if (delta >= -256 && delta < 256)
-	asm_fprintf (file, "\tldr\t%r, [%r,%wd]!\n", IP0_REGNUM, this_regno,
-		     delta);
-      else
-	{
-	  aarch64_add_constant (file, this_regno, IP1_REGNUM, delta);
+      this_rtx = gen_rtx_REG (Pmode, this_regno);
+      temp0 = gen_rtx_REG (Pmode, IP0_REGNUM);
+      temp1 = gen_rtx_REG (Pmode, IP1_REGNUM);
 
-	  asm_fprintf (file, "\tldr\t%r, [%r]\n", IP0_REGNUM, this_regno);
+      addr = this_rtx;
+      if (delta != 0)
+	{
+	  if (delta >= -256 && delta < 256)
+	    addr = gen_rtx_PRE_MODIFY (Pmode, this_rtx,
+				       plus_constant (Pmode, this_rtx, delta));
+	  else
+	    aarch64_add_constant (file, this_regno, IP1_REGNUM, delta);
 	}
 
+      aarch64_emit_move (temp0, gen_rtx_MEM (Pmode, addr));
+
       if (vcall_offset >= -256 && vcall_offset < 32768)
-	asm_fprintf (file, "\tldr\t%r, [%r,%wd]\n", IP1_REGNUM, IP0_REGNUM,
-		     vcall_offset);
+	  addr = plus_constant (Pmode, temp0, vcall_offset);
       else
 	{
 	  aarch64_build_constant (file, IP1_REGNUM, vcall_offset);
-	  asm_fprintf (file, "\tldr\t%r, [%r,%r]\n", IP1_REGNUM, IP0_REGNUM,
-		       IP1_REGNUM);
+	  addr = gen_rtx_PLUS (Pmode, temp0, temp1);
 	}
 
-      asm_fprintf (file, "\tadd\t%r, %r, %r\n", this_regno, this_regno,
-		   IP1_REGNUM);
+      aarch64_emit_move (temp1, gen_rtx_MEM (Pmode,addr));
+      emit_insn (gen_add2_insn (this_rtx, temp1));
     }
 
-  output_asm_insn ("b\t%a0", &XEXP (DECL_RTL (function), 0));
+  /* Generate a tail call to the target function.  */
+  if (!TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+  funexp = XEXP (DECL_RTL (function), 0);
+  funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  SIBLING_CALL_P (insn) = 1;
+
+  insn = get_insns ();
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
   final_end_function ();
+
+  /* Stop pretending to be a post-reload pass.  */
+  reload_completed = 0;
 }
 
-
 static int
 aarch64_tls_operand_p_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
