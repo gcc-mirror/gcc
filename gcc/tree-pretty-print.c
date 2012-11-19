@@ -546,13 +546,13 @@ dump_block_node (pretty_printer *buffer, tree block, int spc, int flags)
       newline_and_indent (buffer, spc + 2);
     }
 
-  if (VEC_length (tree, BLOCK_NONLOCALIZED_VARS (block)) > 0)
+  if (vec_safe_length (BLOCK_NONLOCALIZED_VARS (block)) > 0)
     {
       unsigned i;
-      VEC(tree,gc) *nlv = BLOCK_NONLOCALIZED_VARS (block);
+      vec<tree, va_gc> *nlv = BLOCK_NONLOCALIZED_VARS (block);
 
       pp_string (buffer, "NONLOCALIZED_VARS: ");
-      FOR_EACH_VEC_ELT (tree, nlv, i, t)
+      FOR_EACH_VEC_ELT (*nlv, i, t)
 	{
 	  dump_generic_node (buffer, t, 0, flags, false);
 	  pp_string (buffer, " ");
@@ -1359,7 +1359,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		dump_decl_name (buffer, val, flags);
 	    else
 		dump_generic_node (buffer, val, spc, flags, false);
-	    if (ix != VEC_length (constructor_elt, CONSTRUCTOR_ELTS (node)) - 1)
+	    if (ix != vec_safe_length (CONSTRUCTOR_ELTS (node)) - 1)
 	      {
 		pp_character (buffer, ',');
 		pp_space (buffer);

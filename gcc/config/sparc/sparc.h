@@ -195,7 +195,7 @@ extern enum cmodel sparc_cmodel;
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_niagara4
 #define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
-#define ASM_CPU64_DEFAULT_SPEC "-Av9" AS_NIAGARA3_FLAG
+#define ASM_CPU64_DEFAULT_SPEC AS_NIAGARA4_FLAG
 #endif
 
 #else
@@ -337,7 +337,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=niagara:%{!mv8plus:-Av9b}} \
 %{mcpu=niagara2:%{!mv8plus:-Av9b}} \
 %{mcpu=niagara3:%{!mv8plus:-Av9" AS_NIAGARA3_FLAG "}} \
-%{mcpu=niagara4:%{!mv8plus:-Av9" AS_NIAGARA3_FLAG "}} \
+%{mcpu=niagara4:%{!mv8plus:" AS_NIAGARA4_FLAG "}} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
@@ -1006,7 +1006,8 @@ extern char leaf_reg_remap[];
 /* Local macro to handle the two v9 classes of FP regs.  */
 #define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS || (CLASS) == EXTRA_FP_REGS)
 
-/* Predicates for 10-bit, 11-bit and 13-bit signed constants.  */
+/* Predicates for 5-bit, 10-bit, 11-bit and 13-bit signed constants.  */
+#define SPARC_SIMM5_P(X)  ((unsigned HOST_WIDE_INT) (X) + 0x10 < 0x20)
 #define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x200 < 0x400)
 #define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x400 < 0x800)
 #define SPARC_SIMM13_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x1000 < 0x2000)
@@ -1744,6 +1745,12 @@ extern int sparc_indent_opcode;
 #define AS_NIAGARA3_FLAG "d"
 #else
 #define AS_NIAGARA3_FLAG "b"
+#endif
+
+#ifdef HAVE_AS_SPARC4
+#define AS_NIAGARA4_FLAG "-xarch=sparc4"
+#else
+#define AS_NIAGARA4_FLAG "-Av9" AS_NIAGARA3_FLAG
 #endif
 
 /* We use gcc _mcount for profiling.  */

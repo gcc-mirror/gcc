@@ -259,13 +259,36 @@ extern enum machine_mode int_mode_for_mode (enum machine_mode);
 
 extern enum machine_mode mode_for_vector (enum machine_mode, unsigned);
 
+/* A class for iterating through possible bitfield modes.  */
+class bit_field_mode_iterator
+{
+public:
+  bit_field_mode_iterator (HOST_WIDE_INT, HOST_WIDE_INT,
+			   HOST_WIDE_INT, HOST_WIDE_INT,
+			   unsigned int, bool);
+  bool next_mode (enum machine_mode *);
+  bool prefer_smaller_modes ();
+
+private:
+  enum machine_mode mode_;
+  /* We use signed values here because the bit position can be negative
+     for invalid input such as gcc.dg/pr48335-8.c.  */
+  HOST_WIDE_INT bitsize_;
+  HOST_WIDE_INT bitpos_;
+  HOST_WIDE_INT bitregion_start_;
+  HOST_WIDE_INT bitregion_end_;
+  unsigned int align_;
+  bool volatilep_;
+  int count_;
+};
+
 /* Find the best mode to use to access a bit field.  */
 
 extern enum machine_mode get_best_mode (int, int,
 					unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT,
 					unsigned int,
-					enum machine_mode, int);
+					enum machine_mode, bool);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 

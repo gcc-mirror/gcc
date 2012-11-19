@@ -39,6 +39,23 @@ do {									\
     {									\
       error ("-maix64 required: 64-bit computation with 32-bit addressing not yet supported"); \
     }									\
+  if ((rs6000_isa_flags_explicit					\
+       & OPTION_MASK_MINIMAL_TOC) != 0)					\
+    {									\
+      if (global_options_set.x_rs6000_current_cmodel			\
+	  && rs6000_current_cmodel != CMODEL_SMALL)			\
+	error ("-mcmodel incompatible with other toc options"); 	\
+      SET_CMODEL (CMODEL_SMALL);					\
+    }									\
+  if (rs6000_current_cmodel != CMODEL_SMALL)				\
+    {									\
+      TARGET_NO_FP_IN_TOC = 0;						\
+      TARGET_NO_SUM_IN_TOC = 0;						\
+    }									\
+  if (rs6000_current_cmodel == CMODEL_MEDIUM)				\
+    {									\
+      rs6000_current_cmodel = CMODEL_LARGE;				\
+    }									\
 } while (0);
 
 #undef ASM_SPEC
@@ -72,10 +89,12 @@ do {									\
 %{mcpu=620: -m620} \
 %{mcpu=630: -m620} \
 %{mcpu=970: -m970} \
-%{mcpu=G5: -m970}"
+%{mcpu=G5: -m970} \
+%{mvsx: %{!mcpu*: -mpwr6}} \
+-many"
 
 #undef	ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mppc"
+#define ASM_DEFAULT_SPEC "-mpwr4"
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()     \
@@ -176,6 +195,15 @@ extern long long int    atoll(const char *);
 
 /* This target uses the aix64.opt file.  */
 #define TARGET_USES_AIX64_OPT 1
+
+/* Large TOC Support */
+#ifdef HAVE_LD_LARGE_TOC
+#undef TARGET_CMODEL
+#define TARGET_CMODEL rs6000_current_cmodel
+#define SET_CMODEL(opt) rs6000_current_cmodel = opt
+#else
+#define SET_CMODEL(opt) do {} while (0)
+#endif
 
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */

@@ -128,9 +128,9 @@ static void build_info_type (tree, tree);
 static tree build_fn_info (const struct coverage_data *, tree, tree);
 static tree build_info (tree, tree);
 static bool coverage_obj_init (void);
-static VEC(constructor_elt,gc) *coverage_obj_fn
-(VEC(constructor_elt,gc) *, tree, struct coverage_data const *);
-static void coverage_obj_finish (VEC(constructor_elt,gc) *);
+static vec<constructor_elt, va_gc> *coverage_obj_fn
+(vec<constructor_elt, va_gc> *, tree, struct coverage_data const *);
+static void coverage_obj_finish (vec<constructor_elt, va_gc> *);
 
 /* Return the type node for gcov_type.  */
 
@@ -764,8 +764,8 @@ build_fn_info (const struct coverage_data *data, tree type, tree key)
   tree fields = TYPE_FIELDS (type);
   tree ctr_type;
   unsigned ix;
-  VEC(constructor_elt,gc) *v1 = NULL;
-  VEC(constructor_elt,gc) *v2 = NULL;
+  vec<constructor_elt, va_gc> *v1 = NULL;
+  vec<constructor_elt, va_gc> *v2 = NULL;
 
   /* key */
   CONSTRUCTOR_APPEND_ELT (v1, fields,
@@ -795,7 +795,7 @@ build_fn_info (const struct coverage_data *data, tree type, tree key)
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if (prg_ctr_mask & (1 << ix))
       {
-	VEC(constructor_elt,gc) *ctr = NULL;
+	vec<constructor_elt, va_gc> *ctr = NULL;
 	tree var = data->ctr_vars[ix];
 	unsigned count = 0;
 
@@ -898,8 +898,8 @@ build_info (tree info_type, tree fn_ary)
   unsigned ix;
   tree filename_string;
   int da_file_name_len;
-  VEC(constructor_elt,gc) *v1 = NULL;
-  VEC(constructor_elt,gc) *v2 = NULL;
+  vec<constructor_elt, va_gc> *v1 = NULL;
+  vec<constructor_elt, va_gc> *v2 = NULL;
 
   /* Version ident */
   CONSTRUCTOR_APPEND_ELT (v1, info_fields,
@@ -1043,8 +1043,8 @@ coverage_obj_init (void)
 /* Generate the coverage function info for FN and DATA.  Append a
    pointer to that object to CTOR and return the appended CTOR.  */
 
-static VEC(constructor_elt,gc) *
-coverage_obj_fn (VEC(constructor_elt,gc) *ctor, tree fn,
+static vec<constructor_elt, va_gc> *
+coverage_obj_fn (vec<constructor_elt, va_gc> *ctor, tree fn,
 		 struct coverage_data const *data)
 {
   tree init = build_fn_info (data, gcov_fn_info_type, gcov_info_var);
@@ -1062,9 +1062,9 @@ coverage_obj_fn (VEC(constructor_elt,gc) *ctor, tree fn,
    function objects from CTOR.  Generate the gcov_info initializer.  */
 
 static void
-coverage_obj_finish (VEC(constructor_elt,gc) *ctor)
+coverage_obj_finish (vec<constructor_elt, va_gc> *ctor)
 {
-  unsigned n_functions = VEC_length(constructor_elt, ctor);
+  unsigned n_functions = vec_safe_length (ctor);
   tree fn_info_ary_type = build_array_type
     (build_qualified_type (gcov_fn_info_ptr_type, TYPE_QUAL_CONST),
      build_index_type (size_int (n_functions - 1)));
@@ -1153,7 +1153,7 @@ coverage_finish (void)
 
   if (coverage_obj_init ())
     {
-      VEC(constructor_elt,gc) *fn_ctor = NULL;
+      vec<constructor_elt, va_gc> *fn_ctor = NULL;
       struct coverage_data *fn;
       
       for (fn = functions_head; fn; fn = fn->next)

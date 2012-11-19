@@ -254,7 +254,7 @@ struct GTY(()) hashed_entry {
 
 /* An array of all the local variables in the current function that
    need to be marked as volatile.  */
-extern GTY(()) VEC(tree,gc) *local_variables_to_volatilize;
+extern GTY(()) vec<tree, va_gc> *local_variables_to_volatilize;
 
 /* Objective-C/Objective-C++ @implementation list.  */
 

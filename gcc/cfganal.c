@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "basic-block.h"
 #include "vec.h"
-#include "vecprim.h"
 #include "bitmap.h"
 #include "sbitmap.h"
 #include "timevar.h"
@@ -1139,27 +1138,27 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 {
   bitmap_iterator bi;
   unsigned bb_index, i;
-  VEC(int,heap) *work_stack;
+  vec<int> work_stack;
   bitmap phi_insertion_points;
 
-  work_stack = VEC_alloc (int, heap, n_basic_blocks);
+  work_stack.create (n_basic_blocks);
   phi_insertion_points = BITMAP_ALLOC (NULL);
 
   /* Seed the work list with all the blocks in DEF_BLOCKS.  We use
-     VEC_quick_push here for speed.  This is safe because we know that
+     vec::quick_push here for speed.  This is safe because we know that
      the number of definition blocks is no greater than the number of
      basic blocks, which is the initial capacity of WORK_STACK.  */
   EXECUTE_IF_SET_IN_BITMAP (def_blocks, 0, bb_index, bi)
-    VEC_quick_push (int, work_stack, bb_index);
+    work_stack.quick_push (bb_index);
 
   /* Pop a block off the worklist, add every block that appears in
      the original block's DF that we have not already processed to
      the worklist.  Iterate until the worklist is empty.   Blocks
      which are added to the worklist are potential sites for
      PHI nodes.  */
-  while (VEC_length (int, work_stack) > 0)
+  while (work_stack.length () > 0)
     {
-      bb_index = VEC_pop (int, work_stack);
+      bb_index = work_stack.pop ();
 
       /* Since the registration of NEW -> OLD name mappings is done
 	 separately from the call to update_ssa, when updating the SSA
@@ -1174,12 +1173,12 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 	  /* Use a safe push because if there is a definition of VAR
 	     in every basic block, then WORK_STACK may eventually have
 	     more than N_BASIC_BLOCK entries.  */
-	  VEC_safe_push (int, heap, work_stack, i);
+	  work_stack.safe_push (i);
 	  bitmap_set_bit (phi_insertion_points, i);
 	}
     }
 
-  VEC_free (int, heap, work_stack);
+  work_stack.release ();
 
   return phi_insertion_points;
 }

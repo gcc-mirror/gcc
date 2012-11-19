@@ -1,6 +1,6 @@
 // <condition_variable> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2008-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -107,8 +107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// DR 887 - Sync unknown clock to known clock.
 	const typename _Clock::time_point __c_entry = _Clock::now();
 	const __clock_t::time_point __s_entry = __clock_t::now();
-	const chrono::nanoseconds __delta = __atime - __c_entry;
-	const __clock_t::time_point __s_atime = __s_entry + __delta;
+	const auto __delta = __atime - __c_entry;
+	const auto __s_atime = __s_entry + __delta;
 
 	return __wait_until_impl(__lock, __s_atime);
       }
@@ -143,16 +143,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return &_M_cond; }
 
   private:
-    template<typename _Clock, typename _Duration>
+    template<typename _Dur>
       cv_status
       __wait_until_impl(unique_lock<mutex>& __lock,
-			const chrono::time_point<_Clock, _Duration>& __atime)
+			const chrono::time_point<__clock_t, _Dur>& __atime)
       {
-	chrono::time_point<__clock_t, chrono::seconds> __s =
-	  chrono::time_point_cast<chrono::seconds>(__atime);
-
-	chrono::nanoseconds __ns =
-	  chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
 
 	__gthread_time_t __ts =
 	  {
@@ -163,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__gthread_cond_timedwait(&_M_cond, __lock.mutex()->native_handle(),
 				 &__ts);
 
-	return (_Clock::now() < __atime
+	return (__clock_t::now() < __atime
 		? cv_status::no_timeout : cv_status::timeout);
       }
   };

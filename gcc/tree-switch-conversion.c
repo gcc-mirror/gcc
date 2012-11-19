@@ -301,7 +301,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
   edge default_edge;
   bool update_dom = dom_info_available_p (CDI_DOMINATORS);
 
-  VEC (basic_block, heap) *bbs_to_fix_dom = NULL;
+  vec<basic_block> bbs_to_fix_dom = vec<basic_block>();
 
   tree index_type = TREE_TYPE (index_expr);
   tree unsigned_index_type = unsigned_type_for (index_type);
@@ -374,10 +374,10 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
 
   if (update_dom)
     {
-      bbs_to_fix_dom = VEC_alloc (basic_block, heap, 10);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, switch_bb);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, default_bb);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, new_default_bb);
+      bbs_to_fix_dom.create (10);
+      bbs_to_fix_dom.quick_push (switch_bb);
+      bbs_to_fix_dom.quick_push (default_bb);
+      bbs_to_fix_dom.quick_push (new_default_bb);
     }
 
   /* Now build the test-and-branch code.  */
@@ -400,7 +400,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
   tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
   new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, default_edge, update_dom);
   if (update_dom)
-    VEC_quick_push (basic_block, bbs_to_fix_dom, new_bb);
+    bbs_to_fix_dom.quick_push (new_bb);
   gcc_assert (gimple_bb (swtch) == new_bb);
   gsi = gsi_last_bb (new_bb);
 
@@ -408,19 +408,19 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
      of NEW_BB, are still immediately dominated by SWITCH_BB.  Make it so.  */
   if (update_dom)
     {
-      VEC (basic_block, heap) *dom_bbs;
+      vec<basic_block> dom_bbs;
       basic_block dom_son;
 
       dom_bbs = get_dominated_by (CDI_DOMINATORS, new_bb);
-      FOR_EACH_VEC_ELT (basic_block, dom_bbs, i, dom_son)
+      FOR_EACH_VEC_ELT (dom_bbs, i, dom_son)
 	{
 	  edge e = find_edge (new_bb, dom_son);
 	  if (e && single_pred_p (e->dest))
 	    continue;
 	  set_immediate_dominator (CDI_DOMINATORS, dom_son, switch_bb);
-	  VEC_safe_push (basic_block, heap, bbs_to_fix_dom, dom_son);
+	  bbs_to_fix_dom.safe_push (dom_son);
 	}
-      VEC_free (basic_block, heap, dom_bbs);
+      dom_bbs.release ();
     }
 
   /* csui = (1 << (word_mode) idx) */
@@ -447,7 +447,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_edge,
 					      update_dom);
       if (update_dom)
-	VEC_safe_push (basic_block, heap, bbs_to_fix_dom, new_bb);
+	bbs_to_fix_dom.safe_push (new_bb);
       gcc_assert (gimple_bb (swtch) == new_bb);
       gsi = gsi_last_bb (new_bb);
     }
@@ -465,7 +465,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
     {
       /* Fix up the dominator tree.  */
       iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
-      VEC_free (basic_block, heap, bbs_to_fix_dom);
+      bbs_to_fix_dom.release ();
     }
 }
 
@@ -571,7 +571,7 @@ struct switch_conv_info
   tree *default_values;
 
   /* Constructors of new static arrays.  */
-  VEC (constructor_elt, gc) **constructors;
+  vec<constructor_elt, va_gc> **constructors;
 
   /* Array of ssa names that are initialized with a value from a new static
      array.  */
@@ -792,12 +792,14 @@ create_temp_arrays (struct switch_conv_info *info)
   int i;
 
   info->default_values = XCNEWVEC (tree, info->phi_count * 3);
-  info->constructors = XCNEWVEC (VEC (constructor_elt, gc) *, info->phi_count);
+  /* ??? Macros do not support multi argument templates in their
+     argument list.  We create a typedef to work around that problem.  */
+  typedef vec<constructor_elt, va_gc> *vec_constructor_elt_gc;
+  info->constructors = XCNEWVEC (vec_constructor_elt_gc, info->phi_count);
   info->target_inbound_names = info->default_values + info->phi_count;
   info->target_outbound_names = info->target_inbound_names + info->phi_count;
   for (i = 0; i < info->phi_count; i++)
-    info->constructors[i]
-      = VEC_alloc (constructor_elt, gc, tree_low_cst (info->range_size, 1) + 1);
+    vec_alloc (info->constructors[i], tree_low_cst (info->range_size, 1) + 1);
 }
 
 /* Free the arrays created by create_temp_arrays().  The vectors that are
@@ -872,7 +874,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 
 	      elt.index = int_const_binop (MINUS_EXPR, pos, info->range_min);
 	      elt.value = info->default_values[k];
-	      VEC_quick_push (constructor_elt, info->constructors[k], elt);
+	      info->constructors[k]->quick_push (elt);
 	    }
 
 	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
@@ -898,7 +900,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 
 	      elt.index = int_const_binop (MINUS_EXPR, pos, info->range_min);
 	      elt.value = val;
-	      VEC_quick_push (constructor_elt, info->constructors[j], elt);
+	      info->constructors[j]->quick_push (elt);
 
 	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
 	    } while (!tree_int_cst_lt (high, pos)
@@ -913,13 +915,13 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
    vectors.  */
 
 static tree
-constructor_contains_same_values_p (VEC (constructor_elt, gc) *vec)
+constructor_contains_same_values_p (vec<constructor_elt, va_gc> *vec)
 {
   unsigned int i;
   tree prev = NULL_TREE;
   constructor_elt *elt;
 
-  FOR_EACH_VEC_ELT (constructor_elt, vec, i, elt)
+  FOR_EACH_VEC_SAFE_ELT (vec, i, elt)
     {
       if (!prev)
 	prev = elt->value;
@@ -937,7 +939,7 @@ static tree
 array_value_type (gimple swtch, tree type, int num,
 		  struct switch_conv_info *info)
 {
-  unsigned int i, len = VEC_length (constructor_elt, info->constructors[num]);
+  unsigned int i, len = vec_safe_length (info->constructors[num]);
   constructor_elt *elt;
   enum machine_mode mode;
   int sign = 0;
@@ -953,7 +955,7 @@ array_value_type (gimple swtch, tree type, int num,
   if (len < (optimize_bb_for_size_p (gimple_bb (swtch)) ? 2 : 32))
     return type;
 
-  FOR_EACH_VEC_ELT (constructor_elt, info->constructors[num], i, elt)
+  FOR_EACH_VEC_SAFE_ELT (info->constructors[num], i, elt)
     {
       double_int cst;
 
@@ -1039,7 +1041,7 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
 	  unsigned int i;
 	  constructor_elt *elt;
 
-	  FOR_EACH_VEC_ELT (constructor_elt, info->constructors[num], i, elt)
+	  FOR_EACH_VEC_SAFE_ELT (info->constructors[num], i, elt)
 	    elt->value = fold_convert (value_type, elt->value);
 	}
       ctor = build_constructor (array_type, info->constructors[num]);
@@ -1292,7 +1294,7 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
   /* Fix the dominator tree, if it is available.  */
   if (dom_info_available_p (CDI_DOMINATORS))
     {
-      VEC (basic_block, heap) *bbs_to_fix_dom;
+      vec<basic_block> bbs_to_fix_dom;
 
       set_immediate_dominator (CDI_DOMINATORS, bb1, bb0);
       set_immediate_dominator (CDI_DOMINATORS, bb2, bb0);
@@ -1300,14 +1302,14 @@ gen_inbound_check (gimple swtch, struct switch_conv_info *info)
 	/* If bbD was the immediate dominator ...  */
 	set_immediate_dominator (CDI_DOMINATORS, bbf, bb0);
 
-      bbs_to_fix_dom = VEC_alloc (basic_block, heap, 4);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, bb0);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, bb1);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, bb2);
-      VEC_quick_push (basic_block, bbs_to_fix_dom, bbf);
+      bbs_to_fix_dom.create (4);
+      bbs_to_fix_dom.quick_push (bb0);
+      bbs_to_fix_dom.quick_push (bb1);
+      bbs_to_fix_dom.quick_push (bb2);
+      bbs_to_fix_dom.quick_push (bbf);
 
       iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
-      VEC_free (basic_block, heap, bbs_to_fix_dom);
+      bbs_to_fix_dom.release ();
     }
 }
 

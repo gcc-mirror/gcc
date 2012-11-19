@@ -494,10 +494,10 @@ report_error_func (bool is_store, int size_in_bytes)
   fn_type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   def = build_fn_decl (name, fn_type);
   TREE_NOTHROW (def) = 1;
+  DECL_IGNORED_P (def) = 1;
   TREE_THIS_VOLATILE (def) = 1;  /* Attribute noreturn. Surprise!  */
   DECL_ATTRIBUTES (def) = tree_cons (get_identifier ("leaf"),
 				     NULL, DECL_ATTRIBUTES (def));
-  DECL_ASSEMBLER_NAME (def);
   return def;
 }
 
@@ -512,7 +512,7 @@ asan_init_func (void)
   fn_type = build_function_type_list (void_type_node, NULL_TREE);
   def = build_fn_decl ("__asan_init", fn_type);
   TREE_NOTHROW (def) = 1;
-  DECL_ASSEMBLER_NAME (def);
+  DECL_IGNORED_P (def) = 1;
   return def;
 }
 
@@ -1436,12 +1436,12 @@ asan_global_struct (void)
    TYPE is __asan_global struct type as returned by asan_global_struct.  */
 
 static void
-asan_add_global (tree decl, tree type, VEC(constructor_elt, gc) *v)
+asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 {
   tree init, uptr = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type)));
   unsigned HOST_WIDE_INT size;
   tree str_cst, refdecl = decl;
-  VEC(constructor_elt, gc) *vinner = NULL;
+  vec<constructor_elt, va_gc> *vinner = NULL;
 
   if (!asan_pp_initialized)
     asan_pp_initialize ();
@@ -1460,8 +1460,7 @@ asan_add_global (tree decl, tree type, VEC(constructor_elt, gc) *v)
   if (asan_needs_local_alias (decl))
     {
       char buf[20];
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LASAN",
-				   VEC_length (constructor_elt, v) + 1);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LASAN", vec_safe_length (v) + 1);
       refdecl = build_decl (DECL_SOURCE_LOCATION (decl),
 			    VAR_DECL, get_identifier (buf), TREE_TYPE (decl));
       TREE_ADDRESSABLE (refdecl) = TREE_ADDRESSABLE (decl);
@@ -1515,7 +1514,7 @@ asan_finish_file (void)
       tree type = asan_global_struct (), var, ctor, decl;
       tree uptr = build_nonstandard_integer_type (POINTER_SIZE, 1);
       tree dtor_statements = NULL_TREE;
-      VEC(constructor_elt, gc) *v;
+      vec<constructor_elt, va_gc> *v;
       char buf[20];
 
       type = build_array_type_nelts (type, gcount);
@@ -1526,7 +1525,7 @@ asan_finish_file (void)
       TREE_PUBLIC (var) = 0;
       DECL_ARTIFICIAL (var) = 1;
       DECL_IGNORED_P (var) = 1;
-      v = VEC_alloc (constructor_elt, gc, gcount);
+      vec_alloc (v, gcount);
       FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (asan_protect_global (vnode->symbol.decl))
 	  asan_add_global (vnode->symbol.decl, TREE_TYPE (type), v);
@@ -1536,11 +1535,11 @@ asan_finish_file (void)
       DECL_INITIAL (var) = ctor;
       varpool_assemble_decl (varpool_node_for_decl (var));
 
-      type = build_function_type_list (void_type_node,
-				       build_pointer_type (TREE_TYPE (type)),
+      type = build_function_type_list (void_type_node, ptr_type_node,
 				       uptr, NULL_TREE);
       decl = build_fn_decl ("__asan_register_globals", type);
       TREE_NOTHROW (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       append_to_statement_list (build_call_expr (decl, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
@@ -1548,6 +1547,7 @@ asan_finish_file (void)
 
       decl = build_fn_decl ("__asan_unregister_globals", type);
       TREE_NOTHROW (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       append_to_statement_list (build_call_expr (decl, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),

@@ -1189,13 +1189,14 @@ static void
 simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
 {
   unsigned int branch_num = gimple_switch_num_labels (stmt);
-  VEC(tree, heap) *labels = VEC_alloc (tree, heap, branch_num);
+  vec<tree> labels;
+  labels.create (branch_num);
   unsigned int i, len;
 
   /* Collect the existing case labels in a VEC, and preprocess it as if
      we are gimplifying a GENERIC SWITCH_EXPR.  */
   for (i = 1; i < branch_num; i++)
-    VEC_quick_push (tree, labels, gimple_switch_label (stmt, i));
+    labels.quick_push (gimple_switch_label (stmt, i));
   preprocess_case_label_vec_for_gimple (labels, index_type, NULL);
 
   /* If any labels were removed, replace the existing case labels
@@ -1203,7 +1204,7 @@ simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
      Note that the type updates were done in-place on the case labels,
      so we only have to replace the case labels in the GIMPLE_SWITCH
      if the number of labels changed.  */
-  len = VEC_length (tree, labels);
+  len = labels.length ();
   if (len < branch_num - 1)
     {
       bitmap target_blocks;
@@ -1219,12 +1220,12 @@ simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
 
 	  label = CASE_LABEL (gimple_switch_default_label (stmt));
 	  elt = build_case_label (build_int_cst (index_type, 0), NULL, label);
-	  VEC_quick_push (tree, labels, elt);
+	  labels.quick_push (elt);
 	  len = 1;
 	}
 
-      for (i = 0; i < VEC_length (tree, labels); i++)
-	gimple_switch_set_label (stmt, i + 1, VEC_index (tree, labels, i));
+      for (i = 0; i < labels.length (); i++)
+	gimple_switch_set_label (stmt, i + 1, labels[i]);
       for (i++ ; i < branch_num; i++)
 	gimple_switch_set_label (stmt, i, NULL_TREE);
       gimple_switch_set_num_labels (stmt, len + 1);
@@ -1251,7 +1252,7 @@ simplify_gimple_switch_label_vec (gimple stmt, tree index_type)
       BITMAP_FREE (target_blocks);
     }
 
-  VEC_free (tree, heap, labels);
+  labels.release ();
 }
 
 /* STMT is a SWITCH_EXPR for which we attempt to find equivalent forms of
@@ -2817,7 +2818,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   sel = XALLOCAVEC (unsigned char, nelts);
   orig = NULL;
   maybe_ident = true;
-  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (op), i, elt)
+  FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (op), i, elt)
     {
       tree ref, op1;
 

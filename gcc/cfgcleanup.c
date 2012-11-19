@@ -2816,12 +2816,12 @@ delete_unreachable_blocks (void)
 		delete_basic_block (b);
 	      else
 		{
-		  VEC (basic_block, heap) *h
+		  vec<basic_block> h
 		    = get_all_dominated_blocks (CDI_DOMINATORS, b);
 
-		  while (VEC_length (basic_block, h))
+		  while (h.length ())
 		    {
-		      b = VEC_pop (basic_block, h);
+		      b = h.pop ();
 
 		      prev_bb = b->prev_bb;
 
@@ -2830,7 +2830,7 @@ delete_unreachable_blocks (void)
 		      delete_basic_block (b);
 		    }
 
-		  VEC_free (basic_block, heap, h);
+		  h.release ();
 		}
 
 	      changed = true;

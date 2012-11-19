@@ -1,0 +1,91 @@
+2012-11-16  Tom Tromey  <tromey@redhat.com>
+
+	* configure.ac: Invoke AM_MAINTAINER_MODE.
+	* aclocal.m4, configure, Makefile.in, asan/Makefile.in,
+	interception/Makefile.in, sanitizer_common/Makefile.in: Rebuild.
+
+2012-11-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/55333
+	* include/sanitizer/common_interface_defs.h (uhwptr): New type
+	for hardware pointer.
+	* sanitizer_common/sanitizer_stacktrace.cc (StackTrace::FastUnwindStack):
+	Replace uptr with uhwptr for stack unwind.
+
+2012-11-16  Dodji Seketeli  <dodji@redhat.com>
+
+	* configure.tgt: Enable build on sparc linux.
+
+2012-11-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Properly set MULTISUBDIR.
+	* asan/Makefile.am (gcc_version): New.
+	* interception/Makefile.am (gcc_version): Likewise.
+	* sanitizer_common/Makefile.am (gcc_version): Likewise.
+	* configure: Regenerated.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/55291
+	* configure.ac (--enable-version-specific-runtime-libs): New option.
+	(AC_CANONICAL_SYSTEM): New.
+	(AM_ENABLE_MULTILIB): Moved right after AM_INIT_AUTOMAKE.
+	(toolexecdir): Support multilib.
+	(toolexeclibdir): Likewise.
+	(multilib_arg): New.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/55292
+	Backport from upstream revision 167883
+	* sanitizer_common/sanitizer_linux.cc (internal_mmap): Check
+	__x86_64__ instead of __WORDSIZE.
+	(internal_filesize): Likwise.
+
+2012-11-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (AC_CONFIG_AUX_DIR): Removed.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2012-11-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/55304
+	* acinclude.m4: New file.
+	* Makefile.am (ACLOCAL_AMFLAGS): New.
+	* configure.ac (AC_PREREQ): Set to 2.64.
+	(AC_CONFIG_AUX_DIR): Set to "..".
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+
+	* config.guess: Removed.
+	* config.sub: Likewise.
+	* depcomp: Likewise.
+	* install-sh: Likewise.
+	* ltmain.sh: Likewise.
+	* missing: Likewise.
+
+2012-11-13  Richard Henderson  <rth@redhat.com>
+
+	* configure.tgt: New file.
+
+2012-11-12  David S. Miller  <davem@davemloft.net>
+
+	* asan/asan_linux.cc (GetPcSpBp): Add sparc support.
+
+2012-10-29  Wei Mi  <wmi@google.com>
+
+	Initial checkin: migrate asan runtime from llvm.

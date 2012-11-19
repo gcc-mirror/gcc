@@ -144,10 +144,8 @@ typedef struct pattern_d
   unsigned int sort_num;
 } pattern;
 
-DEF_VEC_O(pattern);
-DEF_VEC_ALLOC_O(pattern, heap);
 
-static VEC(pattern, heap) *patterns;
+static vec<pattern> patterns;
 
 static bool
 match_pattern (pattern *p, const char *name, const char *pat)
@@ -265,7 +263,7 @@ gen_insn (rtx insn)
 	{
 	  p.op = optabs[pindex].op;
 	  p.sort_num = (p.op << 16) | (p.m2 << 8) | p.m1;
-	  VEC_safe_push (pattern, heap, patterns, p);
+	  patterns.safe_push (p);
 	  return;
 	}
     }
@@ -359,7 +357,7 @@ main (int argc, char **argv)
     }
 
   /* Sort the collected patterns.  */
-  qsort (VEC_address (pattern, patterns), VEC_length (pattern, patterns),
+  qsort (patterns.address (), patterns.length (),
 	 sizeof (pattern), pattern_cmp);
 
   /* Now that we've handled the "extra" patterns, eliminate them from
@@ -399,7 +397,7 @@ main (int argc, char **argv)
   fprintf (h_file, "#define NUM_NORMLIB_OPTABS  %u\n",
 	   last_kind[3] - last_kind[2]);
   fprintf (h_file, "#define NUM_OPTAB_PATTERNS  %u\n",
-	   (unsigned) VEC_length (pattern, patterns));
+	   (unsigned) patterns.length ());
 
   fprintf (s_file,
 	   "#include \"config.h\"\n"
@@ -420,13 +418,13 @@ main (int argc, char **argv)
 
   fprintf (s_file,
 	   "static const struct optab_pat pats[NUM_OPTAB_PATTERNS] = {\n");
-  for (i = 0; VEC_iterate (pattern, patterns, i, p); ++i)
+  for (i = 0; patterns.iterate (i, &p); ++i)
     fprintf (s_file, "  { %#08x, CODE_FOR_%s },\n", p->sort_num, p->name);
   fprintf (s_file, "};\n\n");
 
   fprintf (s_file, "void\ninit_all_optabs (void)\n{\n");
   fprintf (s_file, "  bool *ena = this_target_optabs->pat_enable;\n");
-  for (i = 0; VEC_iterate (pattern, patterns, i, p); ++i)
+  for (i = 0; patterns.iterate (i, &p); ++i)
     fprintf (s_file, "  ena[%u] = HAVE_%s;\n", i, p->name);
   fprintf (s_file, "}\n\n");
 

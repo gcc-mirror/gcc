@@ -346,11 +346,11 @@ add_objc_string (tree ident, string_section section)
 tree
 build_descriptor_table_initializer (tree type, tree entries)
 {
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
 
   do
     {
-      VEC(constructor_elt,gc) *elts = NULL;
+      vec<constructor_elt, va_gc> *elts = NULL;
 
       CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
 			      build_selector (METHOD_SEL_NAME (entries)));
@@ -371,11 +371,11 @@ build_descriptor_table_initializer (tree type, tree entries)
 tree
 build_dispatch_table_initializer (tree type, tree entries)
 {
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
 
   do
     {
-      VEC(constructor_elt,gc) *elems = NULL;
+      vec<constructor_elt, va_gc> *elems = NULL;
       tree expr;
 
       CONSTRUCTOR_APPEND_ELT (elems, NULL_TREE,
@@ -433,7 +433,7 @@ init_module_descriptor (tree type, long vers)
 {
   tree expr, ltyp;
   location_t loc;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* No really useful place to point to.  */
   loc = UNKNOWN_LOCATION;
@@ -528,11 +528,11 @@ build_module_descriptor (long vers, tree attr)
 tree
 build_ivar_list_initializer (tree type, tree field_decl)
 {
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
 
   do
     {
-      VEC(constructor_elt,gc) *ivar = NULL;
+      vec<constructor_elt, va_gc> *ivar = NULL;
       tree id;
 
       /* Set name.  */

@@ -80,8 +80,8 @@ static int function_types_compatible_p (const_tree, const_tree, bool *,
 					bool *);
 static int type_lists_compatible_p (const_tree, const_tree, bool *, bool *);
 static tree lookup_field (tree, tree);
-static int convert_arguments (tree, VEC(tree,gc) *, VEC(tree,gc) *, tree,
-			      tree);
+static int convert_arguments (tree, vec<tree, va_gc> *, vec<tree, va_gc> *,
+			      tree, tree);
 static tree pointer_diff (location_t, tree, tree);
 static tree convert_for_assignment (location_t, tree, tree, tree,
 				    enum impl_conv, bool, tree, tree, int);
@@ -2662,14 +2662,14 @@ c_expr_sizeof_type (location_t loc, struct c_type_name *t)
 tree
 build_function_call (location_t loc, tree function, tree params)
 {
-  VEC(tree,gc) *vec;
+  vec<tree, va_gc> *v;
   tree ret;
 
-  vec = VEC_alloc (tree, gc, list_length (params));
+  vec_alloc (v, list_length (params));
   for (; params; params = TREE_CHAIN (params))
-    VEC_quick_push (tree, vec, TREE_VALUE (params));
-  ret = build_function_call_vec (loc, function, vec, NULL);
-  VEC_free (tree, gc, vec);
+    v->quick_push (TREE_VALUE (params));
+  ret = build_function_call_vec (loc, function, v, NULL);
+  vec_free (v);
   return ret;
 }
 
@@ -2690,8 +2690,9 @@ static void inform_declaration (tree decl)
    PARAMS.  */
 
 tree
-build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
-			 VEC(tree,gc) *origtypes)
+build_function_call_vec (location_t loc, tree function,
+			 vec<tree, va_gc> *params,
+			 vec<tree, va_gc> *origtypes)
 {
   tree fntype, fundecl = 0;
   tree name = NULL_TREE, result;
@@ -2729,9 +2730,8 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 
   /* For Objective-C, convert any calls via a cast to OBJC_TYPE_REF
      expressions, like those used for ObjC messenger dispatches.  */
-  if (!VEC_empty (tree, params))
-    function = objc_rewrite_function_call (function,
-					   VEC_index (tree, params, 0));
+  if (params && !params->is_empty ())
+    function = objc_rewrite_function_call (function, (*params)[0]);
 
   function = c_fully_fold (function, false, NULL);
 
@@ -2800,8 +2800,7 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
       /* Before the abort, allow the function arguments to exit or
 	 call longjmp.  */
       for (i = 0; i < nargs; i++)
-	trap = build2 (COMPOUND_EXPR, void_type_node,
-		       VEC_index (tree, params, i), trap);
+	trap = build2 (COMPOUND_EXPR, void_type_node, (*params)[i], trap);
 
       if (VOID_TYPE_P (return_type))
 	{
@@ -2816,7 +2815,8 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 
 	  if (AGGREGATE_TYPE_P (return_type))
 	    rhs = build_compound_literal (loc, return_type,
-					  build_constructor (return_type, 0),
+					  build_constructor (return_type,
+					    NULL),
 					  false);
 	  else
 	    rhs = build_zero_cst (return_type);
@@ -2826,7 +2826,7 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
 	}
     }
 
-  argarray = VEC_address (tree, params);
+  argarray = vec_safe_address (params);
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fundecl
@@ -2886,8 +2886,8 @@ build_function_call_vec (location_t loc, tree function, VEC(tree,gc) *params,
    failure.  */
 
 static int
-convert_arguments (tree typelist, VEC(tree,gc) *values,
-		   VEC(tree,gc) *origtypes, tree function, tree fundecl)
+convert_arguments (tree typelist, vec<tree, va_gc> *values,
+		   vec<tree, va_gc> *origtypes, tree function, tree fundecl)
 {
   tree typetail, val;
   unsigned int parmnum;
@@ -2934,7 +2934,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
      converted arguments.  */
 
   for (typetail = typelist, parmnum = 0;
-       VEC_iterate (tree, values, parmnum, val);
+       values && values->iterate (parmnum, &val);
        ++parmnum)
     {
       tree type = typetail ? TREE_VALUE (typetail) : 0;
@@ -3127,9 +3127,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 		 sake of better warnings from convert_and_check.  */
 	      if (excess_precision)
 		val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
-	      origtype = (origtypes == NULL
-			  ? NULL_TREE
-			  : VEC_index (tree, origtypes, parmnum));
+	      origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
 	      parmval = convert_for_assignment (input_location, type, val,
 						origtype, ic_argpass, npc,
 						fundecl, function,
@@ -3173,7 +3171,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 	/* Convert `short' and `char' to full-size `int'.  */
 	parmval = default_conversion (val);
 
-      VEC_replace (tree, values, parmnum, parmval);
+      (*values)[parmnum] = parmval;
       if (parmval == error_mark_node)
 	error_args = true;
 
@@ -3181,7 +3179,7 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 	typetail = TREE_CHAIN (typetail);
     }
 
-  gcc_assert (parmnum == VEC_length (tree, values));
+  gcc_assert (parmnum == vec_safe_length (values));
 
   if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
@@ -6341,7 +6339,7 @@ static tree constructor_bit_index;
 /* If we are saving up the elements rather than allocating them,
    this is the list of elements so far (in reverse order,
    most recent first).  */
-static VEC(constructor_elt,gc) *constructor_elements;
+static vec<constructor_elt, va_gc> *constructor_elements;
 
 /* 1 if constructor should be incrementally stored into a constructor chain,
    0 if all the elements should be kept in AVL tree.  */
@@ -6417,7 +6415,7 @@ struct constructor_stack
   tree unfilled_index;
   tree unfilled_fields;
   tree bit_index;
-  VEC(constructor_elt,gc) *elements;
+  vec<constructor_elt, va_gc> *elements;
   struct init_node *pending_elts;
   int offset;
   int depth;
@@ -6462,7 +6460,7 @@ struct initializer_stack
   tree decl;
   struct constructor_stack *constructor_stack;
   struct constructor_range_stack *constructor_range_stack;
-  VEC(constructor_elt,gc) *elements;
+  vec<constructor_elt, va_gc> *elements;
   struct spelling *spelling;
   struct spelling *spelling_base;
   int spelling_size;
@@ -6611,7 +6609,7 @@ really_start_incremental_init (tree type)
   constructor_simple = 1;
   constructor_nonconst = 0;
   constructor_depth = SPELLING_DEPTH ();
-  constructor_elements = 0;
+  constructor_elements = NULL;
   constructor_pending_elts = 0;
   constructor_type = type;
   constructor_incremental = 1;
@@ -6757,7 +6755,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   constructor_simple = 1;
   constructor_nonconst = 0;
   constructor_depth = SPELLING_DEPTH ();
-  constructor_elements = 0;
+  constructor_elements = NULL;
   constructor_incremental = 1;
   constructor_designated = 0;
   constructor_pending_elts = 0;
@@ -6807,7 +6805,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
       constructor_simple = TREE_STATIC (value);
       constructor_nonconst = CONSTRUCTOR_NON_CONST (value);
       constructor_elements = CONSTRUCTOR_ELTS (value);
-      if (!VEC_empty (constructor_elt, constructor_elements)
+      if (!vec_safe_is_empty (constructor_elements)
 	  && (TREE_CODE (constructor_type) == RECORD_TYPE
 	      || TREE_CODE (constructor_type) == ARRAY_TYPE))
 	set_nonincremental_init (braced_init_obstack);
@@ -6957,9 +6955,8 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
       && constructor_unfilled_fields)
     {
 	bool constructor_zeroinit =
-	 (VEC_length (constructor_elt, constructor_elements) == 1
-	  && integer_zerop
-	      (VEC_index (constructor_elt, constructor_elements, 0).value));
+	 (vec_safe_length (constructor_elements) == 1
+	  && integer_zerop ((*constructor_elements)[0].value));
 
 	/* Do not warn for flexible array members or zero-length arrays.  */
 	while (constructor_unfilled_fields
@@ -6997,19 +6994,19 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
     {
       /* A nonincremental scalar initializer--just return
 	 the element, after verifying there is just one.  */
-      if (VEC_empty (constructor_elt,constructor_elements))
+      if (vec_safe_is_empty (constructor_elements))
 	{
 	  if (!constructor_erroneous)
 	    error_init ("empty scalar initializer");
 	  ret.value = error_mark_node;
 	}
-      else if (VEC_length (constructor_elt,constructor_elements) != 1)
+      else if (vec_safe_length (constructor_elements) != 1)
 	{
 	  error_init ("extra elements in scalar initializer");
-	  ret.value = VEC_index (constructor_elt,constructor_elements,0).value;
+	  ret.value = (*constructor_elements)[0].value;
 	}
       else
-	ret.value = VEC_index (constructor_elt,constructor_elements,0).value;
+	ret.value = (*constructor_elements)[0].value;
     }
   else
     {
@@ -7534,7 +7531,7 @@ set_nonincremental_init (struct obstack * braced_init_obstack)
       add_pending_init (index, value, NULL_TREE, true,
 			braced_init_obstack);
     }
-  constructor_elements = 0;
+  constructor_elements = NULL;
   if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
       constructor_unfilled_fields = TYPE_FIELDS (constructor_type);
@@ -7679,10 +7676,9 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE)
     {
-      if (!VEC_empty (constructor_elt, constructor_elements)
-	  && (VEC_last (constructor_elt, constructor_elements).index
-	      == field))
-	return VEC_last (constructor_elt, constructor_elements).value;
+      if (!vec_safe_is_empty (constructor_elements)
+	  && (constructor_elements->last ().index == field))
+	return constructor_elements->last ().value;
     }
   return 0;
 }
@@ -7859,12 +7855,11 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
       return;
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE
-	   && !VEC_empty (constructor_elt, constructor_elements))
+	   && !vec_safe_is_empty (constructor_elements))
     {
       if (!implicit)
 	{
-	  if (TREE_SIDE_EFFECTS (VEC_last (constructor_elt,
-					   constructor_elements).value))
+	  if (TREE_SIDE_EFFECTS (constructor_elements->last ().value))
 	    warning_init (0,
 			  "initialized field with side-effects overwritten");
 	  else if (warn_override_init)
@@ -7872,14 +7867,14 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
 	}
 
       /* We can have just one union field set.  */
-      constructor_elements = 0;
+      constructor_elements = NULL;
     }
 
   /* Otherwise, output this element either to
      constructor_elements or to the assembler file.  */
 
   constructor_elt celt = {field, value};
-  VEC_safe_push (constructor_elt, gc, constructor_elements, celt);
+  vec_safe_push (constructor_elements, celt);
 
   /* Advance the variable that indicates sequential elements output.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE)

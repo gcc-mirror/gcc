@@ -1,3 +1,19 @@
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* c-common.c: Use new vec API in vec.h.
+	* c-common.h: Likewise.
+	* c-gimplify.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-pretty-print.h: Likewise.
+	* c-semantics.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-tree.h: Likewise.
+	* c-typeck.c: Likewise.
+
 2012-10-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/54930

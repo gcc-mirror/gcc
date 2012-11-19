@@ -394,7 +394,7 @@ void
 vfy_note_stack_depth (vfy_method *method, int pc, int depth)
 {
   tree val = make_tree_vec (method->max_locals + depth);
-  VEC_replace (tree, type_states, pc, val);
+  (*type_states)[pc] = val;
   /* Called for side effects.  */
   lookup_label (pc);
 }
@@ -409,7 +409,7 @@ vfy_note_stack_type (vfy_method *method, int pc, int slot, vfy_jclass type)
   if (type == object_type_node)
     type = object_ptr_type_node;
 
-  vec = VEC_index (tree, type_states, pc);
+  vec = (*type_states)[pc];
   TREE_VEC_ELT (vec, slot) = type;
   /* Called for side effects.  */
   lookup_label (pc);
@@ -424,7 +424,7 @@ vfy_note_local_type (vfy_method *method ATTRIBUTE_UNUSED, int pc, int slot,
   if (type == object_type_node)
     type = object_ptr_type_node;
 
-  vec = VEC_index (tree, type_states, pc);
+  vec = (*type_states)[pc];
   TREE_VEC_ELT (vec, slot) = type;
   /* Called for side effects.  */
   lookup_label (pc);

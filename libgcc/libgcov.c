@@ -365,7 +365,9 @@ gcov_exit (void)
   struct gcov_info *gi_ptr;
   const struct gcov_fn_info *gfi_ptr;
   struct gcov_summary this_prg; /* summary for program.  */
+#if !GCOV_LOCKED
   struct gcov_summary all_prg;  /* summary for all instances of program.  */
+#endif
   struct gcov_ctr_summary *cs_ptr;
   const struct gcov_ctr_info *ci_ptr;
   unsigned t_ix;
@@ -382,7 +384,9 @@ gcov_exit (void)
   if (gcov_dump_complete)
     return;
 
+#if !GCOV_LOCKED
   memset (&all_prg, 0, sizeof (all_prg));
+#endif
   /* Find the totals for this execution.  */
   memset (&this_prg, 0, sizeof (this_prg));
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
@@ -469,7 +473,10 @@ gcov_exit (void)
       unsigned n_counts;
       struct gcov_summary prg; /* summary for this object over all
 				  program.  */
-      struct gcov_ctr_summary *cs_prg, *cs_tprg, *cs_all;
+      struct gcov_ctr_summary *cs_prg, *cs_tprg;
+#if !GCOV_LOCKED
+      struct gcov_ctr_summary *cs_all;
+#endif
       int error = 0;
       gcov_unsigned_t tag, length;
       gcov_position_t summary_pos = 0;
@@ -684,7 +691,6 @@ gcov_exit (void)
 	{
 	  cs_prg = &prg.ctrs[t_ix];
 	  cs_tprg = &this_prg.ctrs[t_ix];
-	  cs_all = &all_prg.ctrs[t_ix];
 
 	  if (gi_ptr->merge[t_ix])
 	    {
@@ -703,23 +709,34 @@ gcov_exit (void)
 	  else if (cs_prg->runs)
 	    goto read_mismatch;
 
+#if !GCOV_LOCKED
+	  cs_all = &all_prg.ctrs[t_ix];
 	  if (!cs_all->runs && cs_prg->runs)
-	    memcpy (cs_all, cs_prg, sizeof (*cs_all));
+            {
+              cs_all->num = cs_prg->num;
+              cs_all->runs = cs_prg->runs;
+              cs_all->sum_all = cs_prg->sum_all;
+              cs_all->run_max = cs_prg->run_max;
+              cs_all->sum_max = cs_prg->sum_max;
+            }
 	  else if (!all_prg.checksum
-		   && (!GCOV_LOCKED || cs_all->runs == cs_prg->runs)
                    /* Don't compare the histograms, which may have slight
                       variations depending on the order they were updated
                       due to the truncating integer divides used in the
                       merge.  */
-                   && memcmp (cs_all, cs_prg,
-                              sizeof (*cs_all) - (sizeof (gcov_bucket_type)
-                                                  * GCOV_HISTOGRAM_SIZE)))
+                   && (cs_all->num != cs_prg->num
+                       || cs_all->runs != cs_prg->runs
+                       || cs_all->sum_all != cs_prg->sum_all
+                       || cs_all->run_max != cs_prg->run_max
+                       || cs_all->sum_max != cs_prg->sum_max))
 	    {
-	      fprintf (stderr, "profiling:%s:Invocation mismatch - some data files may have been removed%s\n",
-		       gi_filename, GCOV_LOCKED
-		       ? "" : " or concurrently updated without locking support");
+	      fprintf (stderr,
+                       "profiling:%s:Data file mismatch - some data files may "
+                       "have been concurrently updated without locking support\n",
+		       gi_filename);
 	      all_prg.checksum = ~0u;
 	    }
+#endif
 	}
 
       prg.checksum = crc32;

@@ -1,3 +1,91 @@
+2012-11-17  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* Make-lang.in: Remove dependencies on vecir.h and vecprim.h everywhere.
+	* call.c: Use new vec API in vec.h.
+	* class.c: Likewise.
+	* cp-gimplify.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* name-lookup.c: Likewise.
+	* name-lookup.h: Likewise.
+	* parser.c: Likewise.
+	* parser.h: Likewise.
+	* pt.c: Likewise.
+	* repo.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
+2012-11-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* semantics.c (finish_id_expression): Tidy diagnostic message.
+
+2012-11-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54875
+	* pt.c (lookup_template_class_1): Look at the type of the
+	potential member enum of class template to determine if we are
+	actually substituting into a member enum of class template.
+
+2012-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55337
+	* tree.c (cp_tree_equal) <case ALIGNOF_EXPR>: Use SIZEOF_EXPR_TYPE_P
+	only on SIZEOF_EXPR.
+
+2012-11-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54903
+	* decl2.c (mark_used): Don't complain about auto in templates.
+
+	PR c++/37276
+	* decl.c (decls_match): Remove #ifdef around earlier fix.
+
+2012-11-13  Jason Merrill  <jason@redhat.com>
+
+	* class.c (finish_struct_1): Check virtual functions
+	for missing ABI tags.
+
+	PR c++/55275
+	* pt.c (maybe_process_partial_specialization): Update
+	DECL_SOURCE_LOCATION for new specializations.
+
+2012-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55323
+	* init.c (emit_mem_initializers): Skip arguments == error_mark_node.
+
+2012-11-14  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/11750
+	* call.c (build_new_method_call_1): Check that the instance type
+	and the function context are the same before setting the flag
+	LOOKUP_NONVIRTUAL.
+
+2012-11-13  Sriraman Tallam  <tmsriram@google.com>
+
+	* class.c (mark_versions_used): Remove.
+	(resolve_address_of_overloaded_function): Call target hook
+	for versioned functions. Refactor to call
+	get_function_versions_dispatcher.
+	* decl.c (duplicate_decls): Add comments.
+	* cp/call.c (get_function_version_dispatcher): Expose function.
+	(mark_versions_used): Expose function.
+	* cp/cp-tree.h (mark_versions_used): New declaration.
+	(get_function_version_dispatcher): Ditto.
+
 2012-11-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/54466

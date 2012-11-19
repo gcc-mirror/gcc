@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_CFGLOOP_H
 
 #include "basic-block.h"
-#include "vecprim.h"
 #include "double-int.h"
 
 #include "bitmap.h"
@@ -91,9 +90,6 @@ struct GTY (()) loop_exit {
 };
 
 typedef struct loop *loop_p;
-DEF_VEC_P (loop_p);
-DEF_VEC_ALLOC_P (loop_p, heap);
-DEF_VEC_ALLOC_P (loop_p, gc);
 
 /* An integer estimation of the number of iterations.  Estimate_state
    describes what is the state of the estimation.  */
@@ -129,7 +125,7 @@ struct GTY ((chain_next ("%h.next"))) loop {
   unsigned num_nodes;
 
   /* Superloops of the loop, starting with the outermost loop.  */
-  VEC (loop_p, gc) *superloops;
+  vec<loop_p, va_gc> *superloops;
 
   /* The first inner (child) loop or NULL if innermost loop.  */
   struct loop *inner;
@@ -198,7 +194,7 @@ struct GTY (()) loops {
   int state;
 
   /* Array of the loops.  */
-  VEC (loop_p, gc) *larray;
+  vec<loop_p, va_gc> *larray;
 
   /* Maps edges to the list of their descriptions as loop exits.  Edges
      whose sources or destinations have loop_father == NULL (which may
@@ -253,7 +249,7 @@ extern basic_block *get_loop_body_in_bfs_order (const struct loop *);
 extern basic_block *get_loop_body_in_custom_order (const struct loop *,
 			       int (*) (const void *, const void *));
 
-extern VEC (edge, heap) *get_loop_exit_edges (const struct loop *);
+extern vec<edge> get_loop_exit_edges (const struct loop *);
 extern edge single_exit (const struct loop *);
 extern edge single_likely_exit (struct loop *loop);
 extern unsigned num_loop_branches (const struct loop *);
@@ -314,7 +310,7 @@ extern void copy_loop_info (struct loop *loop, struct loop *target);
 extern void duplicate_subloops (struct loop *, struct loop *);
 extern bool duplicate_loop_to_header_edge (struct loop *, edge,
 					   unsigned, sbitmap, edge,
- 					   VEC (edge, heap) **, int);
+ 					   vec<edge> *, int);
 extern struct loop *loopify (edge, edge,
 			     basic_block, edge, edge, bool,
 			     unsigned, unsigned);
@@ -434,7 +430,7 @@ simple_loop_desc (struct loop *loop)
 static inline struct loop *
 get_loop (unsigned num)
 {
-  return VEC_index (loop_p, current_loops->larray, num);
+  return (*current_loops->larray)[num];
 }
 
 /* Returns the number of superloops of LOOP.  */
@@ -442,7 +438,7 @@ get_loop (unsigned num)
 static inline unsigned
 loop_depth (const struct loop *loop)
 {
-  return VEC_length (loop_p, loop->superloops);
+  return vec_safe_length (loop->superloops);
 }
 
 /* Returns the loop depth of the loop BB belongs to.  */
@@ -459,12 +455,12 @@ bb_loop_depth (const_basic_block bb)
 static inline struct loop *
 loop_outer (const struct loop *loop)
 {
-  unsigned n = VEC_length (loop_p, loop->superloops);
+  unsigned n = vec_safe_length (loop->superloops);
 
   if (n == 0)
     return NULL;
 
-  return VEC_index (loop_p, loop->superloops, n - 1);
+  return (*loop->superloops)[n - 1];
 }
 
 /* Returns true if LOOP has at least one exit edge.  */
@@ -477,7 +473,7 @@ loop_has_exit_edges (const struct loop *loop)
 
 /* Returns the list of loops in current_loops.  */
 
-static inline VEC (loop_p, gc) *
+static inline vec<loop_p, va_gc> *
 get_loops (void)
 {
   if (!current_loops)
@@ -495,7 +491,7 @@ number_of_loops (void)
   if (!current_loops)
     return 0;
 
-  return VEC_length (loop_p, current_loops->larray);
+  return vec_safe_length (current_loops->larray);
 }
 
 /* Returns true if state of the loops satisfies all properties
@@ -542,7 +538,7 @@ enum li_flags
 typedef struct
 {
   /* The list of loops to visit.  */
-  VEC(int,heap) *to_visit;
+  vec<int> to_visit;
 
   /* The index of the actual loop.  */
   unsigned idx;
@@ -553,7 +549,7 @@ fel_next (loop_iterator *li, loop_p *loop)
 {
   int anum;
 
-  while (VEC_iterate (int, li->to_visit, li->idx, anum))
+  while (li->to_visit.iterate (li->idx, &anum))
     {
       li->idx++;
       *loop = get_loop (anum);
@@ -561,7 +557,7 @@ fel_next (loop_iterator *li, loop_p *loop)
 	return;
     }
 
-  VEC_free (int, heap, li->to_visit);
+  li->to_visit.release ();
   *loop = NULL;
 }
 
@@ -575,21 +571,21 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
   li->idx = 0;
   if (!current_loops)
     {
-      li->to_visit = NULL;
+      li->to_visit.create (0);
       *loop = NULL;
       return;
     }
 
-  li->to_visit = VEC_alloc (int, heap, number_of_loops ());
+  li->to_visit.create (number_of_loops ());
   mn = (flags & LI_INCLUDE_ROOT) ? 0 : 1;
 
   if (flags & LI_ONLY_INNERMOST)
     {
-      for (i = 0; VEC_iterate (loop_p, current_loops->larray, i, aloop); i++)
+      for (i = 0; vec_safe_iterate (current_loops->larray, i, &aloop); i++)
 	if (aloop != NULL
 	    && aloop->inner == NULL
 	    && aloop->num >= mn)
-	  VEC_quick_push (int, li->to_visit, aloop->num);
+	  li->to_visit.quick_push (aloop->num);
     }
   else if (flags & LI_FROM_INNERMOST)
     {
@@ -602,7 +598,7 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
       while (1)
 	{
 	  if (aloop->num >= mn)
-	    VEC_quick_push (int, li->to_visit, aloop->num);
+	    li->to_visit.quick_push (aloop->num);
 
 	  if (aloop->next)
 	    {
@@ -624,7 +620,7 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
       while (1)
 	{
 	  if (aloop->num >= mn)
-	    VEC_quick_push (int, li->to_visit, aloop->num);
+	    li->to_visit.quick_push (aloop->num);
 
 	  if (aloop->inner != NULL)
 	    aloop = aloop->inner;
@@ -649,7 +645,7 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 
 #define FOR_EACH_LOOP_BREAK(LI) \
   { \
-    VEC_free (int, heap, (LI).to_visit); \
+    (LI).to_visit.release (); \
     break; \
   }
 
@@ -714,19 +710,18 @@ extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
 extern bool finite_loop_p (struct loop *);
 extern void scale_loop_profile (struct loop *loop, int scale, int iteration_bound);
-extern VEC (basic_block, heap) * get_loop_hot_path (const struct loop *loop);
+extern vec<basic_block> get_loop_hot_path (const struct loop *loop);
 
 /* Returns the outermost loop of the loop nest that contains LOOP.*/
 static inline struct loop *
 loop_outermost (struct loop *loop)
 {
-  
-  unsigned n = VEC_length (loop_p, loop->superloops);
+  unsigned n = vec_safe_length (loop->superloops);
 
   if (n <= 1)
     return loop;
 
-  return VEC_index (loop_p, loop->superloops, 1);
+  return (*loop->superloops)[1];
 }
 
 

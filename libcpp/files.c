@@ -389,7 +389,7 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
       void **pp;
 
       /* We try to canonicalize system headers.  */
-      if (file->dir->sysp)
+      if (CPP_OPTION (pfile, canonical_system_headers) && file->dir->sysp)
 	{
 	  char * canonical_path = maybe_shorter_path (path);
 	  if (canonical_path)

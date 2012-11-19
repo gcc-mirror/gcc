@@ -304,7 +304,7 @@ lambda_matrix_vector_mult (lambda_matrix matrix, int m, int n,
 static bool
 lambda_transform_legal_p (lambda_trans_matrix trans,
 			  int nb_loops,
-			  VEC (ddr_p, heap) *dependence_relations)
+			  vec<ddr_p> dependence_relations)
 {
   unsigned int i, j;
   lambda_vector distres;
@@ -314,10 +314,10 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 	      && LTM_ROWSIZE (trans) == nb_loops);
 
   /* When there are no dependences, the transformation is correct.  */
-  if (VEC_length (ddr_p, dependence_relations) == 0)
+  if (dependence_relations.length () == 0)
     return true;
 
-  ddr = VEC_index (ddr_p, dependence_relations, 0);
+  ddr = dependence_relations[0];
   if (ddr == NULL)
     return true;
 
@@ -329,7 +329,7 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
   distres = lambda_vector_new (nb_loops);
 
   /* For each distance vector in the dependence graph.  */
-  FOR_EACH_VEC_ELT (ddr_p, dependence_relations, i, ddr)
+  FOR_EACH_VEC_ELT (dependence_relations, i, ddr)
     {
       /* Don't care about relations for which we know that there is no
 	 dependence, nor about read-read (aka. output-dependences):
@@ -367,9 +367,9 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
 static bool
 loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 {
-  VEC (loop_p, heap) *loop_nest;
-  VEC (ddr_p, heap) *dependence_relations;
-  VEC (data_reference_p, heap) *datarefs;
+  vec<loop_p> loop_nest;
+  vec<ddr_p> dependence_relations;
+  vec<data_reference_p> datarefs;
   lambda_trans_matrix trans;
   bool ret = false;
 
@@ -384,9 +384,9 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 
   /* Check for problems with dependences.  If the loop can be reversed,
      the iterations are independent.  */
-  datarefs = VEC_alloc (data_reference_p, heap, 10);
-  dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
-  loop_nest = VEC_alloc (loop_p, heap, 3);
+  datarefs.create (10);
+  dependence_relations.create (10 * 10);
+  loop_nest.create (3);
   if (! compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
 					   &dependence_relations))
     {
@@ -412,7 +412,7 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 	     "  FAILED: data dependencies exist across iterations\n");
 
  end:
-  VEC_free (loop_p, heap, loop_nest);
+  loop_nest.release ();
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
 
@@ -705,7 +705,8 @@ static void
 eliminate_local_variables (edge entry, edge exit)
 {
   basic_block bb;
-  VEC (basic_block, heap) *body = VEC_alloc (basic_block, heap, 3);
+  vec<basic_block> body;
+  body.create (3);
   unsigned i;
   gimple_stmt_iterator gsi;
   bool has_debug_stmt = false;
@@ -716,7 +717,7 @@ eliminate_local_variables (edge entry, edge exit)
 
   gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
-  FOR_EACH_VEC_ELT (basic_block, body, i, bb)
+  FOR_EACH_VEC_ELT (body, i, bb)
     if (bb != entry_bb && bb != exit_bb)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	if (is_gimple_debug (gsi_stmt (gsi)))
@@ -728,14 +729,14 @@ eliminate_local_variables (edge entry, edge exit)
 	  eliminate_local_variables_stmt (entry, &gsi, decl_address);
 
   if (has_debug_stmt)
-    FOR_EACH_VEC_ELT (basic_block, body, i, bb)
+    FOR_EACH_VEC_ELT (body, i, bb)
       if (bb != entry_bb && bb != exit_bb)
 	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  if (gimple_debug_bind_p (gsi_stmt (gsi)))
 	    eliminate_local_variables_stmt (entry, &gsi, decl_address);
 
   htab_delete (decl_address);
-  VEC_free (basic_block, heap, body);
+  body.release ();
 }
 
 /* Returns true if expression EXPR is not defined between ENTRY and
@@ -1259,7 +1260,8 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
   tree type, type_name, nvar;
   gimple_stmt_iterator gsi;
   struct clsn_data clsn_data;
-  VEC (basic_block, heap) *body = VEC_alloc (basic_block, heap, 3);
+  vec<basic_block> body;
+  body.create (3);
   basic_block bb;
   basic_block entry_bb = bb1;
   basic_block exit_bb = exit->dest;
@@ -1268,7 +1270,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
   entry = single_succ_edge (entry_bb);
   gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
-  FOR_EACH_VEC_ELT (basic_block, body, i, bb)
+  FOR_EACH_VEC_ELT (body, i, bb)
     {
       if (bb != entry_bb && bb != exit_bb)
 	{
@@ -1296,7 +1298,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
      and discard those for which we know there's nothing we can
      do.  */
   if (has_debug_stmt)
-    FOR_EACH_VEC_ELT (basic_block, body, i, bb)
+    FOR_EACH_VEC_ELT (body, i, bb)
       if (bb != entry_bb && bb != exit_bb)
 	{
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
@@ -1317,7 +1319,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
 	    }
 	}
 
-  VEC_free (basic_block, heap, body);
+  body.release ();
 
   if (htab_elements (name_copies) == 0 && htab_elements (reduction_list) == 0)
     {

@@ -114,6 +114,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__bdver2");
       def_or_undef (parse_in, "__bdver2__");
       break;
+    case PROCESSOR_BDVER3:
+      def_or_undef (parse_in, "__bdver3");
+      def_or_undef (parse_in, "__bdver3__");
+      break;
     case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__btver1");
       def_or_undef (parse_in, "__btver1__");
@@ -209,7 +213,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_BDVER2:
       def_or_undef (parse_in, "__tune_bdver2__");
       break;
-   case PROCESSOR_BTVER1:
+    case PROCESSOR_BDVER3:
+      def_or_undef (parse_in, "__tune_bdver3__");
+      break;
+    case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__tune_btver1__");
       break;
     case PROCESSOR_BTVER2:

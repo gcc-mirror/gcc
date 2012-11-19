@@ -1933,13 +1933,13 @@ tree
 find_loop_niter (struct loop *loop, edge *exit)
 {
   unsigned i;
-  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  vec<edge> exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
   struct tree_niter_desc desc;
 
   *exit = NULL;
-  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+  FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (!number_of_iterations_exit (loop, ex, &desc, false))
 	continue;
@@ -1984,7 +1984,7 @@ find_loop_niter (struct loop *loop, edge *exit)
 	  continue;
 	}
     }
-  VEC_free (edge, heap, exits);
+  exits.release ();
 
   return niter ? niter : chrec_dont_know;
 }
@@ -2267,7 +2267,7 @@ tree
 find_loop_niter_by_eval (struct loop *loop, edge *exit)
 {
   unsigned i;
-  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  vec<edge> exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
 
@@ -2275,13 +2275,13 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
 
   /* Loops with multiple exits are expensive to handle and less important.  */
   if (!flag_expensive_optimizations
-      && VEC_length (edge, exits) > 1)
+      && exits.length () > 1)
     {
-      VEC_free (edge, heap, exits);
+      exits.release ();
       return chrec_dont_know;
     }
 
-  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+  FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -2297,7 +2297,7 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
       niter = aniter;
       *exit = ex;
     }
-  VEC_free (edge, heap, exits);
+  exits.release ();
 
   return niter ? niter : chrec_dont_know;
 }
@@ -2961,16 +2961,16 @@ double_int_cmp (const void *p1, const void *p2)
    Lookup by binary search.  */
 
 int
-bound_index (VEC (double_int, heap) *bounds, double_int bound)
+bound_index (vec<double_int> bounds, double_int bound)
 {
-  unsigned int end = VEC_length (double_int, bounds);
+  unsigned int end = bounds.length ();
   unsigned int begin = 0;
 
   /* Find a matching index by means of a binary search.  */
   while (begin != end)
     {
       unsigned int middle = (begin + end) / 2;
-      double_int index = VEC_index (double_int, bounds, middle);
+      double_int index = bounds[middle];
 
       if (index == bound)
 	return middle;
@@ -2983,9 +2983,7 @@ bound_index (VEC (double_int, heap) *bounds, double_int bound)
 }
 
 /* Used to hold vector of queues of basic blocks bellow.  */
-typedef VEC (basic_block, heap) *bb_queue;
-DEF_VEC_P(bb_queue);
-DEF_VEC_ALLOC_P(bb_queue,heap);
+typedef vec<basic_block> bb_queue;
 
 /* We recorded loop bounds only for statements dominating loop latch (and thus
    executed each loop iteration).  If there are any bounds on statements not
@@ -2998,9 +2996,9 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 {
   pointer_map_t *bb_bounds;
   struct nb_iter_bound *elt;
-  VEC (double_int, heap) *bounds = NULL;
-  VEC (bb_queue, heap) *queues = NULL;
-  bb_queue queue = NULL;
+  vec<double_int> bounds = vec<double_int>();
+  vec<bb_queue> queues = vec<bb_queue>();
+  bb_queue queue = bb_queue();
   ptrdiff_t queue_index;
   ptrdiff_t latch_index = 0;
   pointer_map_t *block_priority;
@@ -3017,18 +3015,18 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 
       if (!loop->any_upper_bound
 	  || bound.ult (loop->nb_iterations_upper_bound))
-        VEC_safe_push (double_int, heap, bounds, bound);
+        bounds.safe_push (bound);
     }
 
   /* Exit early if there is nothing to do.  */
-  if (!bounds)
+  if (!bounds.exists ())
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, " Trying to walk loop body to reduce the bound.\n");
 
   /* Sort the bounds in decreasing order.  */
-  qsort (VEC_address (double_int, bounds), VEC_length (double_int, bounds),
+  qsort (bounds.address (), bounds.length (),
 	 sizeof (double_int), double_int_cmp);
 
   /* For every basic block record the lowest bound that is guaranteed to
@@ -3066,7 +3064,7 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
      To avoid the need for fibonaci heap on double ints we simply compress
      double ints into indexes to BOUNDS array and then represent the queue
      as arrays of queues for every index.
-     Index of VEC_length (BOUNDS) means that the execution of given BB has
+     Index of BOUNDS.length() means that the execution of given BB has
      no bounds determined.
 
      VISITED is a pointer map translating basic block into smallest index
@@ -3074,18 +3072,17 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
   latch_index = -1;
 
   /* Start walk in loop header with index set to infinite bound.  */
-  queue_index = VEC_length (double_int, bounds);
-  VEC_safe_grow_cleared (bb_queue, heap, queues, queue_index + 1);
-  VEC_safe_push (basic_block, heap, queue, loop->header);
-  VEC_replace (bb_queue, queues, queue_index, queue);
+  queue_index = bounds.length ();
+  queues.safe_grow_cleared (queue_index + 1);
+  queue.safe_push (loop->header);
+  queues[queue_index] = queue;
   *pointer_map_insert (block_priority, loop->header) = (void *)queue_index;
 
   for (; queue_index >= 0; queue_index--)
     {
       if (latch_index < queue_index)
 	{
-	  while (VEC_length (basic_block,
-			     VEC_index (bb_queue, queues, queue_index)))
+	  while (queues[queue_index].length ())
 	    {
 	      basic_block bb;
 	      ptrdiff_t bound_index = queue_index;
@@ -3093,8 +3090,8 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
               edge e;
               edge_iterator ei;
 
-	      queue = VEC_index (bb_queue, queues, queue_index);
-	      bb = VEC_pop (basic_block, queue);
+	      queue = queues[queue_index];
+	      bb = queue.pop ();
 
 	      /* OK, we later inserted the BB with lower priority, skip it.  */
 	      if ((ptrdiff_t)*pointer_map_contains (block_priority, bb) > queue_index)
@@ -3131,32 +3128,30 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 		    
 		  if (insert)
 		    {
-		      bb_queue queue2 = VEC_index (bb_queue, queues, bound_index);
-		      VEC_safe_push (basic_block, heap, queue2, e->dest);
-		      VEC_replace (bb_queue, queues, bound_index, queue2);
+		      bb_queue queue2 = queues[bound_index];
+		      queue2.safe_push (e->dest);
+		      queues[bound_index] = queue2;
 		    }
 		}
 	    }
 	}
       else
-	VEC_free (basic_block, heap, VEC_index (bb_queue, queues, queue_index));
+	queues[queue_index].release ();
     }
 
   gcc_assert (latch_index >= 0);
-  if ((unsigned)latch_index < VEC_length (double_int, bounds))
+  if ((unsigned)latch_index < bounds.length ())
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Found better loop bound ");
-	  dump_double_int (dump_file,
-			   VEC_index (double_int, bounds, latch_index), true);
+	  dump_double_int (dump_file, bounds[latch_index], true);
 	  fprintf (dump_file, "\n");
 	}
-      record_niter_bound (loop, VEC_index (double_int, bounds, latch_index),
-			  false, true);
+      record_niter_bound (loop, bounds[latch_index], false, true);
     }
 
-  VEC_free (bb_queue, heap, queues);
+  queues.release ();
   pointer_map_destroy (bb_bounds);
   pointer_map_destroy (block_priority);
 }
@@ -3171,7 +3166,7 @@ maybe_lower_iteration_bound (struct loop *loop)
   pointer_set_t *not_executed_last_iteration = NULL;
   struct nb_iter_bound *elt;
   bool found_exit = false;
-  VEC (basic_block, heap) *queue = NULL;
+  vec<basic_block> queue = vec<basic_block>();
   bitmap visited;
 
   /* Collect all statements with interesting (i.e. lower than
@@ -3199,14 +3194,14 @@ maybe_lower_iteration_bound (struct loop *loop)
      effects that may terminate the loop otherwise) without visiting
      any of the statements known to have undefined effect on the last
      iteration.  */
-  VEC_safe_push (basic_block, heap, queue, loop->header);
+  queue.safe_push (loop->header);
   visited = BITMAP_ALLOC (NULL);
   bitmap_set_bit (visited, loop->header->index);
   found_exit = false;
 
   do
     {
-      basic_block bb = VEC_pop (basic_block, queue);
+      basic_block bb = queue.pop ();
       gimple_stmt_iterator gsi;
       bool stmt_found = false;
 
@@ -3243,11 +3238,11 @@ maybe_lower_iteration_bound (struct loop *loop)
 		  break;
 		}
 	      if (bitmap_set_bit (visited, e->dest->index))
-		VEC_safe_push (basic_block, heap, queue, e->dest);
+		queue.safe_push (e->dest);
 	    }
 	}
     }
-  while (VEC_length (basic_block, queue) && !found_exit);
+  while (queue.length () && !found_exit);
 
   /* If every path through the loop reach bounding statement before exit,
      then we know the last iteration of the loop will have undefined effect
@@ -3262,7 +3257,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 			  false, true);
     }
   BITMAP_FREE (visited);
-  VEC_free (basic_block, heap, queue);
+  queue.release ();
 }
 
 /* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
@@ -3271,7 +3266,7 @@ maybe_lower_iteration_bound (struct loop *loop)
 void
 estimate_numbers_of_iterations_loop (struct loop *loop)
 {
-  VEC (edge, heap) *exits;
+  vec<edge> exits;
   tree niter, type;
   unsigned i;
   struct tree_niter_desc niter_desc;
@@ -3289,7 +3284,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 
   exits = get_loop_exit_edges (loop);
   likely_exit = single_likely_exit (loop);
-  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+  FOR_EACH_VEC_ELT (exits, i, ex)
     {
       if (!number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	continue;
@@ -3304,7 +3299,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 		       last_stmt (ex->src),
 		       true, ex == likely_exit, true);
     }
-  VEC_free (edge, heap, exits);
+  exits.release ();
 
   infer_loop_bounds_from_undefined (loop);
 

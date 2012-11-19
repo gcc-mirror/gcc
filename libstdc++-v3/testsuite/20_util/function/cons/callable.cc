@@ -19,7 +19,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <functional>
-#include <testsuite_hooks.h>
 
 void* f(std::function<void()>) { return nullptr; }
 int f(std::function<void(int)>) { return 1; }

@@ -49,8 +49,6 @@ struct du_head
 };
 
 typedef struct du_head *du_head_p;
-DEF_VEC_P (du_head_p);
-DEF_VEC_ALLOC_P (du_head_p, heap);
 
 /* This struct describes a single occurrence of a register.  */
 struct du_chain
@@ -85,10 +83,8 @@ typedef struct
   operand_rr_info *op_info;
 } insn_rr_info;
 
-DEF_VEC_O (insn_rr_info);
-DEF_VEC_ALLOC_O (insn_rr_info, heap);
 
-extern VEC(insn_rr_info, heap) *insn_rr;
+extern vec<insn_rr_info> insn_rr;
 
 extern void regrename_init (bool);
 extern void regrename_finish (void);

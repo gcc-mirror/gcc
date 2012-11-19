@@ -243,7 +243,7 @@ varpool_analyze_node (struct varpool_node *node)
 	    node->alias = false;
 	    continue;
 	  }
-      if (!VEC_length (ipa_ref_t, node->symbol.ref_list.references))
+      if (!vec_safe_length (node->symbol.ref_list.references))
 	ipa_record_reference ((symtab_node)node, (symtab_node)tgt, IPA_REF_ALIAS, NULL);
       if (node->extra_name_alias)
 	{

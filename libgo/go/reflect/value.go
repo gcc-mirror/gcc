@@ -342,7 +342,7 @@ func (v Value) Call(in []Value) []Value {
 }
 
 // CallSlice calls the variadic function v with the input arguments in,
-// assigning the slice in[len(in)-1] to v's final variadic argument.  
+// assigning the slice in[len(in)-1] to v's final variadic argument.
 // For example, if len(in) == 3, v.Call(in) represents the Go call v(in[0], in[1], in[2]...).
 // Call panics if v's Kind is not Func or if v is not variadic.
 // It returns the output results as Values.
@@ -905,7 +905,7 @@ func valueInterface(v Value, safe bool) interface{} {
 
 	if safe && v.flag&flagRO != 0 {
 		// Do not allow access to unexported values via Interface,
-		// because they might be pointers that should not be 
+		// because they might be pointers that should not be
 		// writable or methods or function that should not be callable.
 		panic("reflect.Value.Interface: cannot return value obtained from unexported field or method")
 	}
@@ -928,7 +928,7 @@ func valueInterface(v Value, safe bool) interface{} {
 	eface.typ = v.typ.runtimeType()
 	eface.word = v.iword()
 
-	if v.flag&flagIndir != 0 && v.typ.size > ptrSize {
+	if v.flag&flagIndir != 0 && v.kind() != Ptr && v.kind() != UnsafePointer {
 		// eface.word is a pointer to the actual data,
 		// which might be changed.  We need to return
 		// a pointer to unchanging data, so make a copy.
@@ -1777,7 +1777,7 @@ func Select(cases []SelectCase) (chosen int, recv Value, recvOK bool) {
 		default:
 			panic("reflect.Select: invalid Dir")
 
-		case SelectDefault: // default	
+		case SelectDefault: // default
 			if haveDefault {
 				panic("reflect.Select: multiple default cases")
 			}

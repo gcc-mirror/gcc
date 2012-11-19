@@ -51,29 +51,25 @@ void
 redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
 {
   void **slot;
-  edge_var_map_vector old_head, head;
+  edge_var_map_vector *head;
   edge_var_map new_node;
 
   if (edge_var_maps == NULL)
     edge_var_maps = pointer_map_create ();
 
   slot = pointer_map_insert (edge_var_maps, e);
-  old_head = head = (edge_var_map_vector) *slot;
+  head = (edge_var_map_vector *) *slot;
   if (!head)
     {
-      head = VEC_alloc (edge_var_map, heap, 5);
+      head = new edge_var_map_vector;
+      head->create (5);
       *slot = head;
     }
   new_node.def = def;
   new_node.result = result;
   new_node.locus = locus;
 
-  VEC_safe_push (edge_var_map, heap, head, new_node);
-  if (old_head != head)
-    {
-      /* The push did some reallocation.  Update the pointer map.  */
-      *slot = head;
-    }
+  head->safe_push (new_node);
 }
 
 
@@ -83,7 +79,7 @@ void
 redirect_edge_var_map_clear (edge e)
 {
   void **slot;
-  edge_var_map_vector head;
+  edge_var_map_vector *head;
 
   if (!edge_var_maps)
     return;
@@ -92,8 +88,8 @@ redirect_edge_var_map_clear (edge e)
 
   if (slot)
     {
-      head = (edge_var_map_vector) *slot;
-      VEC_free (edge_var_map, heap, head);
+      head = (edge_var_map_vector *) *slot;
+      delete head;
       *slot = NULL;
     }
 }
@@ -109,7 +105,7 @@ void
 redirect_edge_var_map_dup (edge newe, edge olde)
 {
   void **new_slot, **old_slot;
-  edge_var_map_vector head;
+  edge_var_map_vector *head;
 
   if (!edge_var_maps)
     return;
@@ -118,19 +114,21 @@ redirect_edge_var_map_dup (edge newe, edge olde)
   old_slot = pointer_map_contains (edge_var_maps, olde);
   if (!old_slot)
     return;
-  head = (edge_var_map_vector) *old_slot;
+  head = (edge_var_map_vector *) *old_slot;
 
+  edge_var_map_vector *new_head = new edge_var_map_vector;
   if (head)
-    *new_slot = VEC_copy (edge_var_map, heap, head);
+    *new_head = head->copy ();
   else
-    *new_slot = VEC_alloc (edge_var_map, heap, 5);
+    new_head->create (5);
+  *new_slot = new_head;
 }
 
 
 /* Return the variable mappings for a given edge.  If there is none, return
    NULL.  */
 
-edge_var_map_vector
+edge_var_map_vector *
 redirect_edge_var_map_vector (edge e)
 {
   void **slot;
@@ -143,7 +141,7 @@ redirect_edge_var_map_vector (edge e)
   if (!slot)
     return NULL;
 
-  return (edge_var_map_vector) *slot;
+  return (edge_var_map_vector *) *slot;
 }
 
 /* Used by redirect_edge_var_map_destroy to free all memory.  */
@@ -153,8 +151,8 @@ free_var_map_entry (const void *key ATTRIBUTE_UNUSED,
 		    void **value,
 		    void *data ATTRIBUTE_UNUSED)
 {
-  edge_var_map_vector head = (edge_var_map_vector) *value;
-  VEC_free (edge_var_map, heap, head);
+  edge_var_map_vector *head = (edge_var_map_vector *) *value;
+  delete head;
   return true;
 }
 
@@ -214,7 +212,7 @@ void
 flush_pending_stmts (edge e)
 {
   gimple phi;
-  edge_var_map_vector v;
+  edge_var_map_vector *v;
   edge_var_map *vm;
   int i;
   gimple_stmt_iterator gsi;
@@ -224,7 +222,7 @@ flush_pending_stmts (edge e)
     return;
 
   for (gsi = gsi_start_phis (e->dest), i = 0;
-       !gsi_end_p (gsi) && VEC_iterate (edge_var_map, v, i, vm);
+       !gsi_end_p (gsi) && v->iterate (i, &vm);
        gsi_next (&gsi), i++)
     {
       tree def;
@@ -2043,7 +2041,7 @@ execute_update_addresses_taken (void)
     maybe_optimize_var (var, addresses_taken, not_reg_needs,
 			suitable_for_renaming);
 
-  FOR_EACH_VEC_ELT (tree, cfun->local_decls, i, var)
+  FOR_EACH_VEC_SAFE_ELT (cfun->local_decls, i, var)
     maybe_optimize_var (var, addresses_taken, not_reg_needs,
 			suitable_for_renaming);
 

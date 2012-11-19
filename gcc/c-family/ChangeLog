@@ -1,3 +1,9 @@
+2012-11-16  Simon Baldwin  <simonb@google.com>
+
+	* c.opt: Add f[no-]canonical-system-headers.
+	* c-opts.c (c_common_handle_option): Handle
+	OPT_fcanonical_system_headers.
+
 2012-11-09  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/54413

@@ -96,12 +96,12 @@ streamer_tree_cache_add_to_node_array (struct streamer_tree_cache_d *cache,
 {
   /* Make sure we're either replacing an old element or
      appending consecutively.  */
-  gcc_assert (ix <= VEC_length (tree, cache->nodes));
+  gcc_assert (ix <= cache->nodes.length ());
 
-  if (ix == VEC_length (tree, cache->nodes))
-    VEC_safe_push (tree, heap, cache->nodes, t);
+  if (ix == cache->nodes.length ())
+    cache->nodes.safe_push (t);
   else
-    VEC_replace (tree, cache->nodes, ix, t);
+    cache->nodes[ix] = t;
 }
 
 
@@ -131,7 +131,7 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
     {
       /* Determine the next slot to use in the cache.  */
       if (insert_at_next_slot_p)
-	ix = VEC_length (tree, cache->nodes);
+	ix = cache->nodes.length ();
       else
 	ix = *ix_p;
        *slot = (void *)(size_t) (ix + 1);
@@ -195,7 +195,7 @@ streamer_tree_cache_insert_at (struct streamer_tree_cache_d *cache,
 void
 streamer_tree_cache_append (struct streamer_tree_cache_d *cache, tree t)
 {
-  unsigned ix = VEC_length (tree, cache->nodes);
+  unsigned ix = cache->nodes.length ();
   streamer_tree_cache_insert_1 (cache, t, &ix, false);
 }
 
@@ -320,6 +320,6 @@ streamer_tree_cache_delete (struct streamer_tree_cache_d *c)
     return;
 
   pointer_map_destroy (c->node_map);
-  VEC_free (tree, heap, c->nodes);
+  c->nodes.release ();
   free (c);
 }

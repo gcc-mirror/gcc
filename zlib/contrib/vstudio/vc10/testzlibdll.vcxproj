@@ -139,7 +139,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>x86\ZlibDllDebug\zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)testzlib.exe</OutputFile>
+      <OutputFile>$(OutDir)testzlibdll.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)testzlib.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -169,7 +169,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>x86\ZlibDllRelease\zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)testzlib.exe</OutputFile>
+      <OutputFile>$(OutDir)testzlibdll.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -200,7 +200,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>x64\ZlibDllDebug\zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)testzlib.exe</OutputFile>
+      <OutputFile>$(OutDir)testzlibdll.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)testzlib.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -227,7 +227,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>ia64\ZlibDllDebug\zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)testzlib.exe</OutputFile>
+      <OutputFile>$(OutDir)testzlibdll.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)testzlib.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -257,7 +257,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>x64\ZlibDllRelease\zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)testzlib.exe</OutputFile>
+      <OutputFile>$(OutDir)testzlibdll.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -288,7 +288,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>ia64\ZlibDllRelease\zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)testzlib.exe</OutputFile>
+      <OutputFile>$(OutDir)testzlibdll.exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>

@@ -69,13 +69,11 @@ typedef struct file_hash_entry
 } file;
 
 typedef const char *str;
-DEF_VEC_P(str);
-DEF_VEC_ALLOC_P(str,heap);
 
 typedef struct demangled_hash_entry
 {
   const char *key;
-  VEC(str,heap) *mangled;
+  vec<str> mangled;
 } demangled;
 
 /* Hash and comparison functions for these hash tables.  */
@@ -609,7 +607,7 @@ demangle_new_symbols (void)
 	continue;
 
       dem = demangled_hash_lookup (p, true);
-      VEC_safe_push (str, heap, dem->mangled, sym->key);
+      dem->mangled.safe_push (sym->key);
     }
 }
 
@@ -775,9 +773,9 @@ scan_linker_output (const char *fname)
 	     on the next attempt we will switch all of them the other way
 	     and that will cause it to succeed.  */
 	  int chosen = 0;
-	  int len = VEC_length (str, dem->mangled);
+	  int len = dem->mangled.length ();
 	  ok = true;
-	  FOR_EACH_VEC_ELT (str, dem->mangled, ix, s)
+	  FOR_EACH_VEC_ELT (dem->mangled, ix, s)
 	    {
 	      sym = symbol_hash_lookup (s, false);
 	      if (ix == 0)

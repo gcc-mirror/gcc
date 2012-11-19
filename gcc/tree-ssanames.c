@@ -73,16 +73,16 @@ init_ssanames (struct function *fn, int size)
   if (size < 50)
     size = 50;
 
-  SSANAMES (fn) = VEC_alloc (tree, gc, size);
+  vec_alloc (SSANAMES (fn), size);
 
   /* Version 0 is special, so reserve the first slot in the table.  Though
      currently unused, we may use version 0 in alias analysis as part of
      the heuristics used to group aliases when the alias sets are too
      large.
 
-     We use VEC_quick_push here because we know that SSA_NAMES has at
+     We use vec::quick_push here because we know that SSA_NAMES has at
      least 50 elements reserved in it.  */
-  VEC_quick_push (tree, SSANAMES (fn), NULL_TREE);
+  SSANAMES (fn)->quick_push (NULL_TREE);
   FREE_SSANAMES (fn) = NULL;
 
   fn->gimple_df->ssa_renaming_needed = 0;
@@ -94,8 +94,8 @@ init_ssanames (struct function *fn, int size)
 void
 fini_ssanames (void)
 {
-  VEC_free (tree, gc, SSANAMES (cfun));
-  VEC_free (tree, gc, FREE_SSANAMES (cfun));
+  vec_free (SSANAMES (cfun));
+  vec_free (FREE_SSANAMES (cfun));
 }
 
 /* Dump some simple statistics regarding the re-use of SSA_NAME nodes.  */
@@ -124,22 +124,22 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
 	      || (TYPE_P (var) && is_gimple_reg_type (var)));
 
   /* If our free list has an element, then use it.  */
-  if (!VEC_empty (tree, FREE_SSANAMES (fn)))
+  if (!vec_safe_is_empty (FREE_SSANAMES (fn)))
     {
-      t = VEC_pop (tree, FREE_SSANAMES (fn));
+      t = FREE_SSANAMES (fn)->pop ();
       if (GATHER_STATISTICS)
 	ssa_name_nodes_reused++;
 
       /* The node was cleared out when we put it on the free list, so
 	 there is no need to do so again here.  */
       gcc_assert (ssa_name (SSA_NAME_VERSION (t)) == NULL);
-      VEC_replace (tree, SSANAMES (fn), SSA_NAME_VERSION (t), t);
+      (*SSANAMES (fn))[SSA_NAME_VERSION (t)] = t;
     }
   else
     {
       t = make_node (SSA_NAME);
-      SSA_NAME_VERSION (t) = VEC_length (tree, SSANAMES (fn));
-      VEC_safe_push (tree, gc, SSANAMES (fn), t);
+      SSA_NAME_VERSION (t) = SSANAMES (fn)->length ();
+      vec_safe_push (SSANAMES (fn), t);
       if (GATHER_STATISTICS)
 	ssa_name_nodes_created++;
     }
@@ -217,8 +217,7 @@ release_ssa_name (tree var)
       while (imm->next != imm)
 	delink_imm_use (imm->next);
 
-      VEC_replace (tree, SSANAMES (cfun),
-		   SSA_NAME_VERSION (var), NULL_TREE);
+      (*SSANAMES (cfun))[SSA_NAME_VERSION (var)] = NULL_TREE;
       memset (var, 0, tree_size (var));
 
       imm->prev = imm;
@@ -240,7 +239,7 @@ release_ssa_name (tree var)
       SSA_NAME_IN_FREE_LIST (var) = 1;
 
       /* And finally put it on the free list.  */
-      VEC_safe_push (tree, gc, FREE_SSANAMES (cfun), var);
+      vec_safe_push (FREE_SSANAMES (cfun), var);
     }
 }
 
@@ -415,15 +414,14 @@ static unsigned int
 release_dead_ssa_names (void)
 {
   unsigned i, j;
-  int n = VEC_length (tree, FREE_SSANAMES (cfun));
+  int n = vec_safe_length (FREE_SSANAMES (cfun));
 
   /* Now release the freelist.  */
-  VEC_free (tree, gc, FREE_SSANAMES (cfun));
-  FREE_SSANAMES (cfun) = NULL;
+  vec_free (FREE_SSANAMES (cfun));
 
   /* And compact the SSA number space.  We make sure to not change the
      relative order of SSA versions.  */
-  for (i = 1, j = 1; i < VEC_length (tree, cfun->gimple_df->ssa_names); ++i)
+  for (i = 1, j = 1; i < cfun->gimple_df->ssa_names->length (); ++i)
     {
       tree name = ssa_name (i);
       if (name)
@@ -431,12 +429,12 @@ release_dead_ssa_names (void)
 	  if (i != j)
 	    {
 	      SSA_NAME_VERSION (name) = j;
-	      VEC_replace (tree, cfun->gimple_df->ssa_names, j, name);
+	      (*cfun->gimple_df->ssa_names)[j] = name;
 	    }
 	  j++;
 	}
     }
-  VEC_truncate (tree, cfun->gimple_df->ssa_names, j);
+  cfun->gimple_df->ssa_names->truncate (j);
 
   statistics_counter_event (cfun, "SSA names released", n);
   statistics_counter_event (cfun, "SSA name holes removed", i - j);

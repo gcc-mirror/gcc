@@ -1,3 +1,16 @@
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* objc-act.c: Use new vec API in vec.h.
+	* objc-act.h: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-hooks.h: Likewise.
+	* objc-runtime-shared-support.c: Likewise.
+	* objc-runtime-shared-support.h: Likewise.
+
 2012-10-01  Lawrence Crowl  <crowl@google.com>
 
 	* Make-lang.in (OBJC_OBJS): Add dependence on hash-table.o.

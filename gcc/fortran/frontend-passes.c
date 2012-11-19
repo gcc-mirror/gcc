@@ -38,7 +38,7 @@ static bool optimize_comparison (gfc_expr *, gfc_intrinsic_op);
 static bool optimize_trim (gfc_expr *);
 static bool optimize_lexical_comparison (gfc_expr *);
 static void optimize_minmaxloc (gfc_expr **);
-static bool empty_string (gfc_expr *e);
+static bool is_empty_string (gfc_expr *e);
 
 /* How deep we are inside an argument list.  */
 
@@ -742,7 +742,7 @@ optimize_assignment (gfc_code * c)
       remove_trim (rhs);
 
       /* Replace a = '   ' by a = '' to optimize away a memcpy.  */
-      if (empty_string(rhs))
+      if (is_empty_string(rhs))
 	rhs->value.character.length = 0;
     }
 
@@ -865,7 +865,7 @@ optimize_op (gfc_expr *e)
 /* Return true if a constant string contains only blanks.  */
 
 static bool
-empty_string (gfc_expr *e)
+is_empty_string (gfc_expr *e)
 {
   int i;
 
@@ -967,8 +967,8 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
       && (op == INTRINSIC_EQ || op == INTRINSIC_NE))
     {
       bool empty_op1, empty_op2;
-      empty_op1 = empty_string (op1);
-      empty_op2 = empty_string (op2);
+      empty_op1 = is_empty_string (op1);
+      empty_op2 = is_empty_string (op2);
 
       if (empty_op1 || empty_op2)
 	{

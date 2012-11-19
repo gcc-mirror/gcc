@@ -505,7 +505,7 @@ dump_coalesce_list (FILE *f, coalesce_list_p cl)
 typedef struct ssa_conflicts_d
 {
   bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
-  VEC(bitmap, heap)* conflicts;
+  vec<bitmap> conflicts;
 } * ssa_conflicts_p;
 
 /* Return an empty new conflict graph for SIZE elements.  */
@@ -517,8 +517,8 @@ ssa_conflicts_new (unsigned size)
 
   ptr = XNEW (struct ssa_conflicts_d);
   bitmap_obstack_initialize (&ptr->obstack);
-  ptr->conflicts = VEC_alloc (bitmap, heap, size);
-  VEC_safe_grow_cleared (bitmap, heap, ptr->conflicts, size);
+  ptr->conflicts.create (size);
+  ptr->conflicts.safe_grow_cleared (size);
   return ptr;
 }
 
@@ -529,7 +529,7 @@ static inline void
 ssa_conflicts_delete (ssa_conflicts_p ptr)
 {
   bitmap_obstack_release (&ptr->obstack);
-  VEC_free (bitmap, heap, ptr->conflicts);
+  ptr->conflicts.release ();
   free (ptr);
 }
 
@@ -539,8 +539,8 @@ ssa_conflicts_delete (ssa_conflicts_p ptr)
 static inline bool
 ssa_conflicts_test_p (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
-  bitmap bx = VEC_index (bitmap, ptr->conflicts, x);
-  bitmap by = VEC_index (bitmap, ptr->conflicts, y);
+  bitmap bx = ptr->conflicts[x];
+  bitmap by = ptr->conflicts[y];
 
   gcc_checking_assert (x != y);
 
@@ -557,10 +557,10 @@ ssa_conflicts_test_p (ssa_conflicts_p ptr, unsigned x, unsigned y)
 static inline void
 ssa_conflicts_add_one (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
-  bitmap bx = VEC_index (bitmap, ptr->conflicts, x);
+  bitmap bx = ptr->conflicts[x];
   /* If there are no conflicts yet, allocate the bitmap and set bit.  */
   if (! bx)
-    bx = VEC_index (bitmap, ptr->conflicts, x) = BITMAP_ALLOC (&ptr->obstack);
+    bx = ptr->conflicts[x] = BITMAP_ALLOC (&ptr->obstack);
   bitmap_set_bit (bx, y);
 }
 
@@ -583,8 +583,8 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
   unsigned z;
   bitmap_iterator bi;
-  bitmap bx = VEC_index (bitmap, ptr->conflicts, x);
-  bitmap by = VEC_index (bitmap, ptr->conflicts, y);
+  bitmap bx = ptr->conflicts[x];
+  bitmap by = ptr->conflicts[y];
 
   gcc_checking_assert (x != y);
   if (! by)
@@ -595,7 +595,7 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
      conflict.  */
   EXECUTE_IF_SET_IN_BITMAP (by, 0, z, bi)
     {
-      bitmap bz = VEC_index (bitmap, ptr->conflicts, z);
+      bitmap bz = ptr->conflicts[z];
       if (bz)
 	bitmap_set_bit (bz, x);
     }
@@ -605,13 +605,13 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
       /* If X has conflicts, add Y's to X.  */
       bitmap_ior_into (bx, by);
       BITMAP_FREE (by);
-      VEC_replace (bitmap, ptr->conflicts, y, NULL);
+      ptr->conflicts[y] = NULL;
     }
   else
     {
       /* If X has no conflicts, simply use Y's.  */
-      VEC_replace (bitmap, ptr->conflicts, x, by);
-      VEC_replace (bitmap, ptr->conflicts, y, NULL);
+      ptr->conflicts[x] = by;
+      ptr->conflicts[y] = NULL;
     }
 }
 
@@ -626,7 +626,7 @@ ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
 
   fprintf (file, "\nConflict graph:\n");
 
-  FOR_EACH_VEC_ELT (bitmap, ptr->conflicts, x, b)
+  FOR_EACH_VEC_ELT (ptr->conflicts, x, b)
     if (b)
       {
 	fprintf (file, "%d: ", x);

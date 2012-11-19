@@ -2690,7 +2690,7 @@ tree
 gfc_get_function_type (gfc_symbol * sym)
 {
   tree type;
-  VEC(tree,gc) *typelist;
+  vec<tree, va_gc> *typelist;
   gfc_formal_arglist *f;
   gfc_symbol *arg;
   int alternate_return;
@@ -2713,7 +2713,7 @@ gfc_get_function_type (gfc_symbol * sym)
 
   if (sym->attr.entry_master)
     /* Additional parameter for selecting an entry point.  */
-    VEC_safe_push (tree, gc, typelist, gfc_array_index_type);
+    vec_safe_push (typelist, gfc_array_index_type);
 
   if (sym->result)
     arg = sym->result;
@@ -2732,17 +2732,16 @@ gfc_get_function_type (gfc_symbol * sym)
 	  || arg->ts.type == BT_CHARACTER)
 	type = build_reference_type (type);
 
-      VEC_safe_push (tree, gc, typelist, type);
+      vec_safe_push (typelist, type);
       if (arg->ts.type == BT_CHARACTER)
 	{
 	  if (!arg->ts.deferred)
 	    /* Transfer by value.  */
-	    VEC_safe_push (tree, gc, typelist, gfc_charlen_type_node);
+	    vec_safe_push (typelist, gfc_charlen_type_node);
 	  else
 	    /* Deferred character lengths are transferred by reference
 	       so that the value can be returned.  */
-	    VEC_safe_push (tree, gc, typelist,
-			   build_pointer_type (gfc_charlen_type_node));
+	    vec_safe_push (typelist, build_pointer_type(gfc_charlen_type_node));
 	}
     }
 
@@ -2780,7 +2779,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	     used without an explicit interface, and cannot be passed as
 	     actual parameters for a dummy procedure.  */
 
-	  VEC_safe_push (tree, gc, typelist, type);
+	  vec_safe_push (typelist, type);
 	}
       else
         {
@@ -2803,11 +2802,11 @@ gfc_get_function_type (gfc_symbol * sym)
 	       so that the value can be returned.  */
 	    type = build_pointer_type (gfc_charlen_type_node);
 
-	  VEC_safe_push (tree, gc, typelist, type);
+	  vec_safe_push (typelist, type);
 	}
     }
 
-  if (!VEC_empty (tree, typelist)
+  if (!vec_safe_is_empty (typelist)
       || sym->attr.is_main_program
       || sym->attr.if_source != IFSRC_UNKNOWN)
     is_varargs = false;

@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "vec.h"
 #include "bitmap.h"
-#include "vecprim.h"
 #include "pointer-set.h"
 #include "alloc-pool.h"
 #include "tree-ssa-alias.h"

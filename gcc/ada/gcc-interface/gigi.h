@@ -884,7 +884,7 @@ extern tree build_call_raise_column (int msg, Node_Id gnat_node);
 
 /* Return a CONSTRUCTOR of TYPE whose elements are V.  This is not the
    same as build_constructor in the language-independent tree.c.  */
-extern tree gnat_build_constructor (tree type, VEC(constructor_elt,gc) *v);
+extern tree gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v);
 
 /* Return a COMPONENT_REF to access a field that is given by COMPONENT,
    an IDENTIFIER_NODE giving the name of the field, FIELD, a FIELD_DECL,

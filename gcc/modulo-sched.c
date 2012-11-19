@@ -160,8 +160,6 @@ struct ps_reg_move_info
 };
 
 typedef struct ps_reg_move_info ps_reg_move_info;
-DEF_VEC_O (ps_reg_move_info);
-DEF_VEC_ALLOC_O (ps_reg_move_info, heap);
 
 /* Holds the partial schedule as an array of II rows.  Each entry of the
    array points to a linked list of PS_INSNs, which represents the
@@ -176,7 +174,7 @@ struct partial_schedule
 
   /* All the moves added for this partial schedule.  Index X has
      a ps_insn id of X + g->num_nodes.  */
-  VEC (ps_reg_move_info, heap) *reg_moves;
+  vec<ps_reg_move_info> reg_moves;
 
   /*  rows_length[i] holds the number of instructions in the row.
       It is used only (as an optimization) to back off quickly from
@@ -229,7 +227,7 @@ static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 
 #define NODE_ASAP(node) ((node)->aux.count)
 
-#define SCHED_PARAMS(x) (&VEC_index (node_sched_params, node_sched_param_vec, x))
+#define SCHED_PARAMS(x) (&node_sched_param_vec[x])
 #define SCHED_TIME(x) (SCHED_PARAMS (x)->time)
 #define SCHED_ROW(x) (SCHED_PARAMS (x)->row)
 #define SCHED_STAGE(x) (SCHED_PARAMS (x)->stage)
@@ -249,8 +247,6 @@ typedef struct node_sched_params
 } *node_sched_params_ptr;
 
 typedef struct node_sched_params node_sched_params;
-DEF_VEC_O (node_sched_params);
-DEF_VEC_ALLOC_O (node_sched_params, heap);
 
 /* The following three functions are copied from the current scheduler
    code in order to use sched_analyze() for computing the dependencies.
@@ -305,7 +301,7 @@ static struct ps_reg_move_info *
 ps_reg_move (partial_schedule_ptr ps, int id)
 {
   gcc_checking_assert (id >= ps->g->num_nodes);
-  return &VEC_index (ps_reg_move_info, ps->reg_moves, id - ps->g->num_nodes);
+  return &ps->reg_moves[id - ps->g->num_nodes];
 }
 
 /* Return the rtl instruction that is being scheduled by partial schedule
@@ -443,24 +439,22 @@ res_MII (ddg_ptr g)
 
 
 /* A vector that contains the sched data for each ps_insn.  */
-static VEC (node_sched_params, heap) *node_sched_param_vec;
+static vec<node_sched_params> node_sched_param_vec;
 
 /* Allocate sched_params for each node and initialize it.  */
 static void
 set_node_sched_params (ddg_ptr g)
 {
-  VEC_truncate (node_sched_params, node_sched_param_vec, 0);
-  VEC_safe_grow_cleared (node_sched_params, heap,
-			 node_sched_param_vec, g->num_nodes);
+  node_sched_param_vec.truncate (0);
+  node_sched_param_vec.safe_grow_cleared (g->num_nodes);
 }
 
 /* Make sure that node_sched_param_vec has an entry for every move in PS.  */
 static void
 extend_node_sched_params (partial_schedule_ptr ps)
 {
-  VEC_safe_grow_cleared (node_sched_params, heap, node_sched_param_vec,
-			 ps->g->num_nodes + VEC_length (ps_reg_move_info,
-							ps->reg_moves));
+  node_sched_param_vec.safe_grow_cleared (ps->g->num_nodes
+					  + ps->reg_moves.length ());
 }
 
 /* Update the sched_params (time, row and stage) for node U using the II,
@@ -747,9 +741,8 @@ schedule_reg_moves (partial_schedule_ptr ps)
 	continue;
 
       /* Create NREG_MOVES register moves.  */
-      first_move = VEC_length (ps_reg_move_info, ps->reg_moves);
-      VEC_safe_grow_cleared (ps_reg_move_info, heap, ps->reg_moves,
-			     first_move + nreg_moves);
+      first_move = ps->reg_moves.length ();
+      ps->reg_moves.safe_grow_cleared (first_move + nreg_moves);
       extend_node_sched_params (ps);
 
       /* Record the moves associated with this node.  */
@@ -824,7 +817,7 @@ apply_reg_moves (partial_schedule_ptr ps)
   ps_reg_move_info *move;
   int i;
 
-  FOR_EACH_VEC_ELT (ps_reg_move_info, ps->reg_moves, i, move)
+  FOR_EACH_VEC_ELT (ps->reg_moves, i, move)
     {
       unsigned int i_use;
       sbitmap_iterator sbi;
@@ -1758,7 +1751,7 @@ sms_schedule (void)
 	}
 
       free_partial_schedule (ps);
-      VEC_free (node_sched_params, heap, node_sched_param_vec);
+      node_sched_param_vec.release ();
       free (node_order);
       free_ddg (g);
     }
@@ -2849,7 +2842,7 @@ create_partial_schedule (int ii, ddg_ptr g, int history)
   partial_schedule_ptr ps = XNEW (struct partial_schedule);
   ps->rows = (ps_insn_ptr *) xcalloc (ii, sizeof (ps_insn_ptr));
   ps->rows_length = (int *) xcalloc (ii, sizeof (int));
-  ps->reg_moves = NULL;
+  ps->reg_moves.create (0);
   ps->ii = ii;
   ps->history = history;
   ps->min_cycle = INT_MAX;
@@ -2890,9 +2883,9 @@ free_partial_schedule (partial_schedule_ptr ps)
   if (!ps)
     return;
 
-  FOR_EACH_VEC_ELT (ps_reg_move_info, ps->reg_moves, i, move)
+  FOR_EACH_VEC_ELT (ps->reg_moves, i, move)
     sbitmap_free (move->uses);
-  VEC_free (ps_reg_move_info, heap, ps->reg_moves);
+  ps->reg_moves.release ();
 
   free_ps_insns (ps);
   free (ps->rows);

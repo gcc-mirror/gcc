@@ -65,8 +65,6 @@ struct occr
 };
 
 typedef struct occr *occr_t;
-DEF_VEC_P (occr_t);
-DEF_VEC_ALLOC_P (occr_t, heap);
 
 /* Hash table entry for assignment expressions.  */
 

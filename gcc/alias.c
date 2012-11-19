@@ -206,7 +206,7 @@ static void memory_modified_1 (rtx, const_rtx, void *);
    The ADDRESS in group (1) _may_ alias globals; it has VOIDmode to
    indicate this.  */
 
-static GTY(()) VEC(rtx,gc) *reg_base_value;
+static GTY(()) vec<rtx, va_gc> *reg_base_value;
 static rtx *new_reg_base_value;
 
 /* The single VOIDmode ADDRESS that represents all argument bases.
@@ -219,7 +219,7 @@ static int unique_id;
 /* We preserve the copy of old array around to avoid amount of garbage
    produced.  About 8% of garbage produced were attributed to this
    array.  */
-static GTY((deletable)) VEC(rtx,gc) *old_reg_base_value;
+static GTY((deletable)) vec<rtx, va_gc> *old_reg_base_value;
 
 /* Values of XINT (address, 0) of Pmode ADDRESS rtxes for special
    registers.  */
@@ -231,14 +231,14 @@ static GTY((deletable)) VEC(rtx,gc) *old_reg_base_value;
 #define static_reg_base_value \
   (this_target_rtl->x_static_reg_base_value)
 
-#define REG_BASE_VALUE(X)				\
-  (REGNO (X) < VEC_length (rtx, reg_base_value)		\
-   ? VEC_index (rtx, reg_base_value, REGNO (X)) : 0)
+#define REG_BASE_VALUE(X)					\
+  (REGNO (X) < vec_safe_length (reg_base_value)			\
+   ? (*reg_base_value)[REGNO (X)] : 0)
 
 /* Vector indexed by N giving the initial (unchanging) value known for
    pseudo-register N.  This vector is initialized in init_alias_analysis,
    and does not change until end_alias_analysis is called.  */
-static GTY(()) VEC(rtx,gc) *reg_known_value;
+static GTY(()) vec<rtx, va_gc> *reg_known_value;
 
 /* Vector recording for each reg_known_value whether it is due to a
    REG_EQUIV note.  Future passes (viz., reload) may replace the
@@ -258,11 +258,9 @@ static sbitmap reg_known_equiv_p;
    NOTE_INSN_FUNCTION_BEG note.  */
 static bool copying_arguments;
 
-DEF_VEC_P(alias_set_entry);
-DEF_VEC_ALLOC_P(alias_set_entry,gc);
 
 /* The splay-tree used to store the various alias set entries.  */
-static GTY (()) VEC(alias_set_entry,gc) *alias_sets;
+static GTY (()) vec<alias_set_entry, va_gc> *alias_sets;
 
 /* Build a decomposed reference object for querying the alias-oracle
    from the MEM rtx and store it in *REF.
@@ -391,7 +389,7 @@ rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
 static inline alias_set_entry
 get_alias_set_entry (alias_set_type alias_set)
 {
-  return VEC_index (alias_set_entry, alias_sets, alias_set);
+  return (*alias_sets)[alias_set];
 }
 
 /* Returns nonzero if the alias sets for MEM1 and MEM2 are such that
@@ -854,9 +852,9 @@ new_alias_set (void)
   if (flag_strict_aliasing)
     {
       if (alias_sets == 0)
-	VEC_safe_push (alias_set_entry, gc, alias_sets, 0);
-      VEC_safe_push (alias_set_entry, gc, alias_sets, 0);
-      return VEC_length (alias_set_entry, alias_sets) - 1;
+	vec_safe_push (alias_sets, (alias_set_entry) 0);
+      vec_safe_push (alias_sets, (alias_set_entry) 0);
+      return alias_sets->length () - 1;
     }
   else
     return 0;
@@ -900,7 +898,7 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
 			      ggc_alloc_splay_tree_scalar_scalar_splay_tree_s,
 			      ggc_alloc_splay_tree_scalar_scalar_splay_tree_node_s);
       superset_entry->has_zero_child = 0;
-      VEC_replace (alias_set_entry, alias_sets, superset, superset_entry);
+      (*alias_sets)[superset] = superset_entry;
     }
 
   if (subset == 0)
@@ -1079,7 +1077,7 @@ find_base_value (rtx src)
 	 The test above is not sufficient because the scheduler may move
 	 a copy out of an arg reg past the NOTE_INSN_FUNCTION_BEGIN.  */
       if ((regno >= FIRST_PSEUDO_REGISTER || fixed_regs[regno])
-	  && regno < VEC_length (rtx, reg_base_value))
+	  && regno < vec_safe_length (reg_base_value))
 	{
 	  /* If we're inside init_alias_analysis, use new_reg_base_value
 	     to reduce the number of relaxation iterations.  */
@@ -1087,8 +1085,8 @@ find_base_value (rtx src)
 	      && DF_REG_DEF_COUNT (regno) == 1)
 	    return new_reg_base_value[regno];
 
-	  if (VEC_index (rtx, reg_base_value, regno))
-	    return VEC_index (rtx, reg_base_value, regno);
+	  if ((*reg_base_value)[regno])
+	    return (*reg_base_value)[regno];
 	}
 
       return 0;
@@ -1233,7 +1231,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 
   regno = REGNO (dest);
 
-  gcc_checking_assert (regno < VEC_length (rtx, reg_base_value));
+  gcc_checking_assert (regno < reg_base_value->length ());
 
   /* If this spans multiple hard registers, then we must indicate that every
      register has an unusable value.  */
@@ -1338,7 +1336,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 rtx
 get_reg_base_value (unsigned int regno)
 {
-  return VEC_index (rtx, reg_base_value, regno);
+  return (*reg_base_value)[regno];
 }
 
 /* If a value is known for REGNO, return it.  */
@@ -1349,8 +1347,8 @@ get_reg_known_value (unsigned int regno)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < VEC_length (rtx, reg_known_value))
-	return VEC_index (rtx, reg_known_value, regno);
+      if (regno < vec_safe_length (reg_known_value))
+	return (*reg_known_value)[regno];
     }
   return NULL;
 }
@@ -1363,8 +1361,8 @@ set_reg_known_value (unsigned int regno, rtx val)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < VEC_length (rtx, reg_known_value))
-	VEC_replace (rtx, reg_known_value, regno, val);
+      if (regno < vec_safe_length (reg_known_value))
+	(*reg_known_value)[regno] = val;
     }
 }
 
@@ -1376,7 +1374,7 @@ get_reg_known_equiv_p (unsigned int regno)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < VEC_length (rtx, reg_known_value))
+      if (regno < vec_safe_length (reg_known_value))
 	return bitmap_bit_p (reg_known_equiv_p, regno);
     }
   return false;
@@ -1388,7 +1386,7 @@ set_reg_known_equiv_p (unsigned int regno, bool val)
   if (regno >= FIRST_PSEUDO_REGISTER)
     {
       regno -= FIRST_PSEUDO_REGISTER;
-      if (regno < VEC_length (rtx, reg_known_value))
+      if (regno < vec_safe_length (reg_known_value))
 	{
 	  if (val)
 	    bitmap_set_bit (reg_known_equiv_p, regno);
@@ -2811,7 +2809,7 @@ init_alias_analysis (void)
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  reg_known_value = VEC_alloc (rtx, gc, maxreg - FIRST_PSEUDO_REGISTER);
+  vec_alloc (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
 
   /* If we have memory allocated from the previous run, use it.  */
@@ -2819,9 +2817,9 @@ init_alias_analysis (void)
     reg_base_value = old_reg_base_value;
 
   if (reg_base_value)
-    VEC_truncate (rtx, reg_base_value, 0);
+    reg_base_value->truncate (0);
 
-  VEC_safe_grow_cleared (rtx, gc, reg_base_value, maxreg);
+  vec_safe_grow_cleared (reg_base_value, maxreg);
 
   new_reg_base_value = XNEWVEC (rtx, maxreg);
   reg_seen = sbitmap_alloc (maxreg);
@@ -2969,11 +2967,10 @@ init_alias_analysis (void)
       for (ui = 0; ui < maxreg; ui++)
 	{
 	  if (new_reg_base_value[ui]
-	      && new_reg_base_value[ui] != VEC_index (rtx, reg_base_value, ui)
-	      && ! rtx_equal_p (new_reg_base_value[ui],
-				VEC_index (rtx, reg_base_value, ui)))
+	      && new_reg_base_value[ui] != (*reg_base_value)[ui]
+	      && ! rtx_equal_p (new_reg_base_value[ui], (*reg_base_value)[ui]))
 	    {
-	      VEC_replace (rtx, reg_base_value, ui, new_reg_base_value[ui]);
+	      (*reg_base_value)[ui] = new_reg_base_value[ui];
 	      changed = 1;
 	    }
 	}
@@ -2982,7 +2979,7 @@ init_alias_analysis (void)
   XDELETEVEC (rpo);
 
   /* Fill in the remaining entries.  */
-  FOR_EACH_VEC_ELT (rtx, reg_known_value, i, val)
+  FOR_EACH_VEC_ELT (*reg_known_value, i, val)
     {
       int regno = i + FIRST_PSEUDO_REGISTER;
       if (! val)
@@ -3003,14 +3000,14 @@ init_alias_analysis (void)
 void
 vt_equate_reg_base_value (const_rtx reg1, const_rtx reg2)
 {
-  VEC_replace (rtx, reg_base_value, REGNO (reg1), REG_BASE_VALUE (reg2));
+  (*reg_base_value)[REGNO (reg1)] = REG_BASE_VALUE (reg2);
 }
 
 void
 end_alias_analysis (void)
 {
   old_reg_base_value = reg_base_value;
-  VEC_free (rtx, gc, reg_known_value);
+  vec_free (reg_known_value);
   sbitmap_free (reg_known_equiv_p);
 }
 

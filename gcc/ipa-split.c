@@ -99,10 +99,8 @@ typedef struct
   unsigned int size;
   unsigned int time;
 } bb_info;
-DEF_VEC_O(bb_info);
-DEF_VEC_ALLOC_O(bb_info,heap);
 
-static VEC(bb_info, heap) *bb_info_vec;
+static vec<bb_info> bb_info_vec;
 
 /* Description of split point.  */
 
@@ -192,7 +190,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 		     basic_block return_bb)
 {
   bitmap seen = BITMAP_ALLOC (NULL);
-  VEC (basic_block,heap) *worklist = NULL;
+  vec<basic_block> worklist = vec<basic_block>();
   edge e;
   edge_iterator ei;
   bool ok = true;
@@ -201,14 +199,14 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
     if (e->src != ENTRY_BLOCK_PTR
 	&& !bitmap_bit_p (current->split_bbs, e->src->index))
       {
-        VEC_safe_push (basic_block, heap, worklist, e->src);
+        worklist.safe_push (e->src);
 	bitmap_set_bit (seen, e->src->index);
       }
 
-  while (!VEC_empty (basic_block, worklist))
+  while (!worklist.is_empty ())
     {
       gimple_stmt_iterator bsi;
-      basic_block bb = VEC_pop (basic_block, worklist);
+      basic_block bb = worklist.pop ();
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->src != ENTRY_BLOCK_PTR
@@ -216,7 +214,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	  {
 	    gcc_checking_assert (!bitmap_bit_p (current->split_bbs,
 					        e->src->index));
-	    VEC_safe_push (basic_block, heap, worklist, e->src);
+	    worklist.safe_push (e->src);
 	  }
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
@@ -271,7 +269,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
     }
 done:
   BITMAP_FREE (seen);
-  VEC_free (basic_block, heap, worklist);
+  worklist.release ();
   return ok;
 }
 
@@ -868,8 +866,6 @@ typedef struct
   /* When false we can not split on this BB.  */
   bool can_split;
 } stack_entry;
-DEF_VEC_O(stack_entry);
-DEF_VEC_ALLOC_O(stack_entry,heap);
 
 
 /* Find all articulations and call consider_split on them.
@@ -893,7 +889,7 @@ static void
 find_split_points (int overall_time, int overall_size)
 {
   stack_entry first;
-  VEC(stack_entry, heap) *stack = NULL;
+  vec<stack_entry> stack = vec<stack_entry>();
   basic_block bb;
   basic_block return_bb = find_return_bb ();
   struct split_point current;
@@ -912,12 +908,12 @@ find_split_points (int overall_time, int overall_size)
   first.set_ssa_names = 0;
   first.used_ssa_names = 0;
   first.bbs_visited = 0;
-  VEC_safe_push (stack_entry, heap, stack, first);
+  stack.safe_push (first);
   ENTRY_BLOCK_PTR->aux = (void *)(intptr_t)-1;
 
-  while (!VEC_empty (stack_entry, stack))
+  while (!stack.is_empty ())
     {
-      stack_entry *entry = &VEC_last (stack_entry, stack);
+      stack_entry *entry = &stack.last ();
 
       /* We are walking an acyclic graph, so edge_num counts
 	 succ and pred edges together.  However when considering
@@ -926,7 +922,7 @@ find_split_points (int overall_time, int overall_size)
       if (entry->edge_num == EDGE_COUNT (entry->bb->succs)
 	  && entry->bb != ENTRY_BLOCK_PTR)
 	{
-	  int pos = VEC_length (stack_entry, stack);
+	  int pos = stack.length ();
 	  entry->can_split &= visit_bb (entry->bb, return_bb,
 					entry->set_ssa_names,
 					entry->used_ssa_names,
@@ -984,9 +980,9 @@ find_split_points (int overall_time, int overall_size)
 	      new_entry.bb = dest;
 	      new_entry.edge_num = 0;
 	      new_entry.overall_time
-		 = VEC_index (bb_info, bb_info_vec, dest->index).time;
+		 = bb_info_vec[dest->index].time;
 	      new_entry.overall_size
-		 = VEC_index (bb_info, bb_info_vec, dest->index).size;
+		 = bb_info_vec[dest->index].size;
 	      new_entry.earliest = INT_MAX;
 	      new_entry.set_ssa_names = BITMAP_ALLOC (NULL);
 	      new_entry.used_ssa_names = BITMAP_ALLOC (NULL);
@@ -994,8 +990,8 @@ find_split_points (int overall_time, int overall_size)
 	      new_entry.non_ssa_vars = BITMAP_ALLOC (NULL);
 	      new_entry.can_split = true;
 	      bitmap_set_bit (new_entry.bbs_visited, dest->index);
-	      VEC_safe_push (stack_entry, heap, stack, new_entry);
-	      dest->aux = (void *)(intptr_t)VEC_length (stack_entry, stack);
+	      stack.safe_push (new_entry);
+	      dest->aux = (void *)(intptr_t)stack.length ();
 	    }
 	  /* Back edge found, record the earliest point.  */
 	  else if ((intptr_t)dest->aux > 0
@@ -1006,8 +1002,7 @@ find_split_points (int overall_time, int overall_size)
 	 and merge stuff we accumulate during the walk.  */
       else if (entry->bb != ENTRY_BLOCK_PTR)
 	{
-	  stack_entry *prev = &VEC_index (stack_entry, stack,
-					  VEC_length (stack_entry, stack) - 2);
+	  stack_entry *prev = &stack[stack.length () - 2];
 
 	  entry->bb->aux = (void *)(intptr_t)-1;
 	  prev->can_split &= entry->can_split;
@@ -1026,15 +1021,15 @@ find_split_points (int overall_time, int overall_size)
 	  BITMAP_FREE (entry->used_ssa_names);
 	  BITMAP_FREE (entry->bbs_visited);
 	  BITMAP_FREE (entry->non_ssa_vars);
-	  VEC_pop (stack_entry, stack);
+	  stack.pop ();
 	}
       else
-        VEC_pop (stack_entry, stack);
+        stack.pop ();
     }
   ENTRY_BLOCK_PTR->aux = NULL;
   FOR_EACH_BB (bb)
     bb->aux = NULL;
-  VEC_free (stack_entry, heap, stack);
+  stack.release ();
   BITMAP_FREE (current.ssa_names_to_pass);
 }
 
@@ -1043,7 +1038,7 @@ find_split_points (int overall_time, int overall_size)
 static void
 split_function (struct split_point *split_point)
 {
-  VEC (tree, heap) *args_to_pass = NULL;
+  vec<tree> args_to_pass = vec<tree>();
   bitmap args_to_skip;
   tree parm;
   int num = 0;
@@ -1059,7 +1054,7 @@ split_function (struct split_point *split_point)
   gimple last_stmt = NULL;
   unsigned int i;
   tree arg, ddef;
-  VEC(tree, gc) **debug_args = NULL;
+  vec<tree, va_gc> **debug_args = NULL;
 
   if (dump_file)
     {
@@ -1092,7 +1087,7 @@ split_function (struct split_point *split_point)
 
 	if (!useless_type_conversion_p (DECL_ARG_TYPE (parm), TREE_TYPE (arg)))
 	  arg = fold_convert (DECL_ARG_TYPE (parm), arg);
-	VEC_safe_push (tree, heap, args_to_pass, arg);
+	args_to_pass.safe_push (arg);
       }
 
   /* See if the split function will return.  */
@@ -1188,7 +1183,9 @@ split_function (struct split_point *split_point)
 
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
-  node = cgraph_function_versioning (cur_node, NULL, NULL, args_to_skip,
+  node = cgraph_function_versioning (cur_node, vec<cgraph_edge_p>(),
+				     NULL,
+				     args_to_skip,
 				     !split_part_return_p,
 				     split_point->split_bbs,
 				     split_point->entry_bb, "part");
@@ -1222,16 +1219,16 @@ split_function (struct split_point *split_point)
 
   /* Produce the call statement.  */
   gsi = gsi_last_bb (call_bb);
-  FOR_EACH_VEC_ELT (tree, args_to_pass, i, arg)
+  FOR_EACH_VEC_ELT (args_to_pass, i, arg)
     if (!is_gimple_val (arg))
       {
 	arg = force_gimple_operand_gsi (&gsi, arg, true, NULL_TREE,
 					false, GSI_CONTINUE_LINKING);
-	VEC_replace (tree, args_to_pass, i, arg);
+	args_to_pass[i] = arg;
       }
   call = gimple_build_call_vec (node->symbol.decl, args_to_pass);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
-  VEC_free (tree, heap, args_to_pass);
+  args_to_pass.release ();
 
   /* For optimized away parameters, add on the caller side
      before the call
@@ -1261,8 +1258,8 @@ split_function (struct split_point *split_point)
 	  DECL_ARTIFICIAL (ddecl) = 1;
 	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
 	  DECL_MODE (ddecl) = DECL_MODE (parm);
-	  VEC_safe_push (tree, gc, *debug_args, DECL_ORIGIN (parm));
-	  VEC_safe_push (tree, gc, *debug_args, ddecl);
+	  vec_safe_push (*debug_args, DECL_ORIGIN (parm));
+	  vec_safe_push (*debug_args, ddecl);
 	  def_temp = gimple_build_debug_bind (ddecl, unshare_expr (arg),
 					      call);
 	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
@@ -1284,19 +1281,18 @@ split_function (struct split_point *split_point)
 
       push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
       var = BLOCK_VARS (DECL_INITIAL (node->symbol.decl));
-      i = VEC_length (tree, *debug_args);
+      i = vec_safe_length (*debug_args);
       cgsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
       do
 	{
 	  i -= 2;
 	  while (var != NULL_TREE
-		 && DECL_ABSTRACT_ORIGIN (var)
-		    != VEC_index (tree, *debug_args, i))
+		 && DECL_ABSTRACT_ORIGIN (var) != (**debug_args)[i])
 	    var = TREE_CHAIN (var);
 	  if (var == NULL_TREE)
 	    break;
 	  vexpr = make_node (DEBUG_EXPR_DECL);
-	  parm = VEC_index (tree, *debug_args, i);
+	  parm = (**debug_args)[i];
 	  DECL_ARTIFICIAL (vexpr) = 1;
 	  TREE_TYPE (vexpr) = TREE_TYPE (parm);
 	  DECL_MODE (vexpr) = DECL_MODE (parm);
@@ -1475,7 +1471,8 @@ execute_split_functions (void)
     }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
-  if (inline_edge_summary_vec && !inline_summary (node)->inlinable)
+  if (inline_edge_summary_vec.exists ()
+      && !inline_summary (node)->inlinable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");
@@ -1537,7 +1534,7 @@ execute_split_functions (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Compute local info about basic blocks and determine function size/time.  */
-  VEC_safe_grow_cleared (bb_info, heap, bb_info_vec, last_basic_block + 1);
+  bb_info_vec.safe_grow_cleared (last_basic_block + 1);
   memset (&best_split_point, 0, sizeof (best_split_point));
   FOR_EACH_BB (bb)
     {
@@ -1568,8 +1565,8 @@ execute_split_functions (void)
 	}
       overall_time += time;
       overall_size += size;
-      VEC_index (bb_info, bb_info_vec, bb->index).time = time;
-      VEC_index (bb_info, bb_info_vec, bb->index).size = size;
+      bb_info_vec[bb->index].time = time;
+      bb_info_vec[bb->index].size = size;
     }
   find_split_points (overall_time, overall_size);
   if (best_split_point.split_bbs)
@@ -1580,8 +1577,7 @@ execute_split_functions (void)
       todo = TODO_update_ssa | TODO_cleanup_cfg;
     }
   BITMAP_FREE (forbidden_dominators);
-  VEC_free (bb_info, heap, bb_info_vec);
-  bb_info_vec = NULL;
+  bb_info_vec.release ();
   return todo;
 }
 

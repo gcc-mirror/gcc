@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "except.h"
 #include "dce.h"
-#include "vecprim.h"
 #include "valtrack.h"
 #include "dumpfile.h"
 

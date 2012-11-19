@@ -287,7 +287,7 @@ eq_clast_name_indexes (const void *e1, const void *e2)
    parameter in PARAMS.  */
 
 typedef struct ivs_params {
-  VEC (tree, heap) *params, **newivs;
+  vec<tree> params, *newivs;
   htab_t newivs_index, params_index;
   sese region;
 } *ivs_params_p;
@@ -300,19 +300,19 @@ clast_name_to_gcc (struct clast_name *name, ivs_params_p ip)
 {
   int index;
 
-  if (ip->params && ip->params_index)
+  if (ip->params.exists () && ip->params_index)
     {
       index = clast_name_to_index (name, ip->params_index);
 
       if (index >= 0)
-	return VEC_index (tree, ip->params, index);
+	return ip->params[index];
     }
 
-  gcc_assert (*(ip->newivs) && ip->newivs_index);
+  gcc_assert (ip->newivs && ip->newivs_index);
   index = clast_name_to_index (name, ip->newivs_index);
   gcc_assert (index >= 0);
 
-  return VEC_index (tree, *(ip->newivs), index);
+  return (*ip->newivs)[index];
 }
 
 /* Returns the maximal precision type for expressions TYPE1 and TYPE2.  */
@@ -699,12 +699,12 @@ type_for_clast_name (struct clast_name *name, ivs_params_p ip, mpz_t bound_one,
 {
   bool found = false;
 
-  if (ip->params && ip->params_index)
+  if (ip->params.exists () && ip->params_index)
     found = clast_name_to_lb_ub (name, ip->params_index, bound_one, bound_two);
 
   if (!found)
     {
-      gcc_assert (*(ip->newivs) && ip->newivs_index);
+      gcc_assert (ip->newivs && ip->newivs_index);
       found = clast_name_to_lb_ub (name, ip->newivs_index, bound_one,
 				   bound_two);
       gcc_assert (found);
@@ -953,10 +953,10 @@ graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
   mpz_init (up);
   compute_bounds_for_loop (stmt, low, up);
   save_clast_name_index (ip->newivs_index, stmt->iterator,
-			 VEC_length (tree, *(ip->newivs)), level, low, up);
+			 (*ip->newivs).length (), level, low, up);
   mpz_clear (low);
   mpz_clear (up);
-  VEC_safe_push (tree, heap, *(ip->newivs), iv);
+  (*ip->newivs).safe_push (iv);
   return loop;
 }
 
@@ -964,7 +964,7 @@ graphite_create_new_loop (edge entry_edge, struct clast_for *stmt,
    induction variables of the loops around GBB in SESE.  */
 
 static void
-build_iv_mapping (VEC (tree, heap) *iv_map, struct clast_user_stmt *user_stmt,
+build_iv_mapping (vec<tree> iv_map, struct clast_user_stmt *user_stmt,
 		  ivs_params_p ip)
 {
   struct clast_stmt *t;
@@ -985,7 +985,7 @@ build_iv_mapping (VEC (tree, heap) *iv_map, struct clast_user_stmt *user_stmt,
       tree new_name = clast_to_gcc_expression (type, expr, ip);
       loop_p old_loop = gbb_loop_at_index (gbb, ip->region, depth);
 
-      VEC_replace (tree, iv_map, old_loop->num, new_name);
+      iv_map[old_loop->num] = new_name;
     }
 
   mpz_clear (bound_one);
@@ -1045,7 +1045,7 @@ find_pbb_via_hash (htab_t bb_pbb_mapping, basic_block bb)
 
 scop_p
 get_loop_body_pbbs (loop_p loop, htab_t bb_pbb_mapping,
-		    VEC (poly_bb_p, heap) **pbbs)
+		    vec<poly_bb_p> *pbbs)
 {
   unsigned i;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
@@ -1059,7 +1059,7 @@ get_loop_body_pbbs (loop_p loop, htab_t bb_pbb_mapping,
 	continue;
 
       scop = PBB_SCOP (pbb);
-      VEC_safe_push (poly_bb_p, heap, *pbbs, pbb);
+      (*pbbs).safe_push (pbb);
     }
 
   free (bbs);
@@ -1080,20 +1080,20 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
   basic_block new_bb;
   poly_bb_p pbb = (poly_bb_p) stmt->statement->usr;
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  VEC (tree, heap) *iv_map;
+  vec<tree> iv_map;
 
   if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
     return next_e;
 
   nb_loops = number_of_loops ();
-  iv_map = VEC_alloc (tree, heap, nb_loops);
+  iv_map.create (nb_loops);
   for (i = 0; i < nb_loops; i++)
-    VEC_quick_push (tree, iv_map, NULL_TREE);
+    iv_map.quick_push (NULL_TREE);
 
   build_iv_mapping (iv_map, stmt, ip);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), ip->region,
 					   next_e, iv_map, &gloog_error);
-  VEC_free (tree, heap, iv_map);
+  iv_map.release ();
 
   new_bb = next_e->src;
   mark_bb_with_pbb (pbb, new_bb, bb_pbb_mapping);
@@ -1226,9 +1226,9 @@ translate_clast_assignment (struct clast_assignment *stmt, edge next_e,
     }
 
   save_clast_name_index (ip->newivs_index, stmt->LHS,
-			 VEC_length (tree, *(ip->newivs)), level,
+			 (*ip->newivs).length (), level,
 			 bound_one, bound_two);
-  VEC_safe_push (tree, heap, *(ip->newivs), new_name);
+  (*ip->newivs).safe_push (new_name);
 
   mpz_clear (bound_one);
   mpz_clear (bound_two);
@@ -1309,7 +1309,7 @@ add_names_to_union_domain (scop_p scop, CloogUnionDomain *union_domain,
   sese region = SCOP_REGION (scop);
   int i;
   int nb_iterators = scop_max_loop_depth (scop);
-  int nb_parameters = VEC_length (tree, SESE_PARAMS (region));
+  int nb_parameters = SESE_PARAMS (region).length ();
   mpz_t bound_one, bound_two;
 
   mpz_init (bound_one);
@@ -1317,7 +1317,7 @@ add_names_to_union_domain (scop_p scop, CloogUnionDomain *union_domain,
 
   for (i = 0; i < nb_parameters; i++)
     {
-      tree param = VEC_index (tree, SESE_PARAMS (region), i);
+      tree param = SESE_PARAMS (region)[i];
       const char *name = get_name (param);
       int len;
       char *parameter;
@@ -1439,7 +1439,7 @@ build_cloog_union_domain (scop_p scop, int nb_scattering_dims)
   CloogUnionDomain *union_domain =
     cloog_union_domain_alloc (scop_nb_params (scop));
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       CloogDomain *domain;
       CloogScattering *scattering;
@@ -1536,7 +1536,7 @@ int get_max_scattering_dimensions (scop_p scop)
   poly_bb_p pbb;
   int scattering_dims = 0;
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       int pbb_scatt_dims = isl_map_dim (pbb->transformed, isl_dim_out);
       if (pbb_scatt_dims > scattering_dims)
@@ -1631,7 +1631,8 @@ debug_generated_program (scop_p scop)
 bool
 gloog (scop_p scop, htab_t bb_pbb_mapping)
 {
-  VEC (tree, heap) *newivs = VEC_alloc (tree, heap, 10);
+  vec<tree> newivs;
+  newivs.create (10);
   loop_p context_loop;
   sese region = SCOP_REGION (scop);
   ifsese if_region = NULL;
@@ -1691,7 +1692,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 
   htab_delete (newivs_index);
   htab_delete (params_index);
-  VEC_free (tree, heap, newivs);
+  newivs.release ();
   cloog_clast_free (clast);
   timevar_pop (TV_GRAPHITE_CODE_GEN);
 

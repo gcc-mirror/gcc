@@ -11540,7 +11540,7 @@ resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
 
       /* Add target to non-typebound operator list.  */
       if (!target->specific->deferred && !derived->attr.use_assoc
-	  && p->access != ACCESS_PRIVATE)
+	  && p->access != ACCESS_PRIVATE && derived->ns == gfc_current_ns)
 	{
 	  gfc_interface *head, *intr;
 	  if (gfc_check_new_interface (derived->ns->op[op], target_proc,

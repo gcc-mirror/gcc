@@ -58,7 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 struct sched_deps_info_def *sched_deps_info;
 
 /* The data is specific to the Haifa scheduler.  */
-VEC(haifa_deps_insn_data_def, heap) *h_d_i_d = NULL;
+vec<haifa_deps_insn_data_def>
+    h_d_i_d = vec<haifa_deps_insn_data_def>();
 
 /* Return the major type present in the DS.  */
 enum reg_note
@@ -3932,12 +3933,9 @@ remove_from_deps (struct deps_desc *deps, rtx insn)
 static void
 init_deps_data_vector (void)
 {
-  int reserve = (sched_max_luid + 1
-                 - VEC_length (haifa_deps_insn_data_def, h_d_i_d));
-  if (reserve > 0
-      && ! VEC_space (haifa_deps_insn_data_def, h_d_i_d, reserve))
-    VEC_safe_grow_cleared (haifa_deps_insn_data_def, heap, h_d_i_d,
-                           3 * sched_max_luid / 2);
+  int reserve = (sched_max_luid + 1 - h_d_i_d.length ());
+  if (reserve > 0 && ! h_d_i_d.space (reserve))
+    h_d_i_d.safe_grow_cleared (3 * sched_max_luid / 2);
 }
 
 /* If it is profitable to use them, initialize or extend (depending on
@@ -4024,7 +4022,7 @@ sched_deps_finish (void)
   free_alloc_pool_if_empty (&dl_pool);
   gcc_assert (dn_pool == NULL && dl_pool == NULL);
 
-  VEC_free (haifa_deps_insn_data_def, heap, h_d_i_d);
+  h_d_i_d.release ();
   cache_size = 0;
 
   if (true_dependency_cache)

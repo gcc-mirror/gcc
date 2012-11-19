@@ -502,16 +502,16 @@ check_global_declaration_1 (tree decl)
 	     "%q+D defined but not used", decl);
 }
 
-/* Issue appropriate warnings for the global declarations in VEC (of
+/* Issue appropriate warnings for the global declarations in V (of
    which there are LEN).  */
 
 void
-check_global_declarations (tree *vec, int len)
+check_global_declarations (tree *v, int len)
 {
   int i;
 
   for (i = 0; i < len; i++)
-    check_global_declaration_1 (vec[i]);
+    check_global_declaration_1 (v[i]);
 }
 
 /* Emit debugging information for all global declarations in VEC.  */

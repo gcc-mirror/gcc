@@ -27,8 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "hashtab.h"
-#include "vecprim.h"
-#include "vecir.h"
 
 struct function;
 struct eh_region_d;
@@ -189,12 +187,7 @@ typedef struct eh_landing_pad_d *eh_landing_pad;
 typedef struct eh_catch_d *eh_catch;
 typedef struct eh_region_d *eh_region;
 
-DEF_VEC_P(eh_region);
-DEF_VEC_ALLOC_P(eh_region, gc);
-DEF_VEC_ALLOC_P(eh_region, heap);
 
-DEF_VEC_P(eh_landing_pad);
-DEF_VEC_ALLOC_P(eh_landing_pad, gc);
 
 
 /* The exception status for each function.  */
@@ -205,10 +198,10 @@ struct GTY(()) eh_status
   eh_region region_tree;
 
   /* The same information as an indexable array.  */
-  VEC(eh_region,gc) *region_array;
+  vec<eh_region, va_gc> *region_array;
 
   /* The landing pads as an indexable array.  */
-  VEC(eh_landing_pad,gc) *lp_array;
+  vec<eh_landing_pad, va_gc> *lp_array;
 
   /* At the gimple level, a mapping from gimple statement to landing pad
      or must-not-throw region.  See record_stmt_eh_region.  */
@@ -216,15 +209,15 @@ struct GTY(()) eh_status
 
   /* All of the runtime type data used by the function.  These objects
      are emitted to the lang-specific-data-area for the function.  */
-  VEC(tree,gc) *ttype_data;
+  vec<tree, va_gc> *ttype_data;
 
   /* The table of all action chains.  These encode the eh_region tree in
      a compact form for use by the runtime, and is also emitted to the
      lang-specific-data-area.  Note that the ARM EABI uses a different
      format for the encoding than all other ports.  */
   union eh_status_u {
-    VEC(tree,gc) * GTY((tag ("1"))) arm_eabi;
-    VEC(uchar,gc) * GTY((tag ("0"))) other;
+    vec<tree, va_gc> *GTY((tag ("1"))) arm_eabi;
+    vec<uchar, va_gc> *GTY((tag ("0"))) other;
   } GTY ((desc ("targetm.arm_eabi_unwinder"))) ehspec_data;
 };
 

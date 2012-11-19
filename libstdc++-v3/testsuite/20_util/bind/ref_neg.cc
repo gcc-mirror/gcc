@@ -1,4 +1,4 @@
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.7.11 Function template bind
+// 20.8.9 Function template bind
 
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
@@ -30,10 +30,10 @@ void test01()
 {
   const int dummy = 0;
   std::bind(&inc, _1)(0);               // { dg-error  "no match" }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1207 }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1221 }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1235 }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1249 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1206 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1220 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1234 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1248 }
   std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match" }
 }
 

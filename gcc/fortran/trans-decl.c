@@ -2284,8 +2284,8 @@ build_entry_thunks (gfc_namespace * ns, bool global)
   gfc_save_backend_locus (&old_loc);
   for (el = ns->entries; el; el = el->next)
     {
-      VEC(tree,gc) *args = NULL;
-      VEC(tree,gc) *string_args = NULL;
+      vec<tree, va_gc> *args = NULL;
+      vec<tree, va_gc> *string_args = NULL;
 
       thunk_sym = el->sym;
       
@@ -2300,16 +2300,16 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 
       /* Pass extra parameter identifying this entry point.  */
       tmp = build_int_cst (gfc_array_index_type, el->id);
-      VEC_safe_push (tree, gc, args, tmp);
+      vec_safe_push (args, tmp);
 
       if (thunk_sym->attr.function)
 	{
 	  if (gfc_return_by_reference (ns->proc_name))
 	    {
 	      tree ref = DECL_ARGUMENTS (current_function_decl);
-	      VEC_safe_push (tree, gc, args, ref);
+	      vec_safe_push (args, ref);
 	      if (ns->proc_name->ts.type == BT_CHARACTER)
-		VEC_safe_push (tree, gc, args, DECL_CHAIN (ref));
+		vec_safe_push (args, DECL_CHAIN (ref));
 	    }
 	}
 
@@ -2333,27 +2333,27 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 	    {
 	      /* Pass the argument.  */
 	      DECL_ARTIFICIAL (thunk_formal->sym->backend_decl) = 1;
-	      VEC_safe_push (tree, gc, args, thunk_formal->sym->backend_decl);
+	      vec_safe_push (args, thunk_formal->sym->backend_decl);
 	      if (formal->sym->ts.type == BT_CHARACTER)
 		{
 		  tmp = thunk_formal->sym->ts.u.cl->backend_decl;
-		  VEC_safe_push (tree, gc, string_args, tmp);
+		  vec_safe_push (string_args, tmp);
 		}
 	    }
 	  else
 	    {
 	      /* Pass NULL for a missing argument.  */
-	      VEC_safe_push (tree, gc, args, null_pointer_node);
+	      vec_safe_push (args, null_pointer_node);
 	      if (formal->sym->ts.type == BT_CHARACTER)
 		{
 		  tmp = build_int_cst (gfc_charlen_type_node, 0);
-		  VEC_safe_push (tree, gc, string_args, tmp);
+		  vec_safe_push (string_args, tmp);
 		}
 	    }
 	}
 
       /* Call the master function.  */
-      VEC_safe_splice (tree, gc, args, string_args);
+      vec_safe_splice (args, string_args);
       tmp = ns->proc_name->backend_decl;
       tmp = build_call_expr_loc_vec (input_location, tmp, args);
       if (ns->proc_name->attr.mixed_entry_master)
@@ -2616,7 +2616,7 @@ static tree
 build_library_function_decl_1 (tree name, const char *spec,
 			       tree rettype, int nargs, va_list p)
 {
-  VEC(tree,gc) *arglist;
+  vec<tree, va_gc> *arglist;
   tree fntype;
   tree fndecl;
   int n;
@@ -2625,11 +2625,11 @@ build_library_function_decl_1 (tree name, const char *spec,
   gcc_assert (current_function_decl == NULL_TREE);
 
   /* Create a list of the argument types.  */
-  arglist = VEC_alloc (tree, gc, abs (nargs));
+  vec_alloc (arglist, abs (nargs));
   for (n = abs (nargs); n > 0; n--)
     {
       tree argtype = va_arg (p, tree);
-      VEC_quick_push (tree, arglist, argtype);
+      arglist->quick_push (argtype);
     }
 
   /* Build the function type and decl.  */
@@ -5005,7 +5005,7 @@ create_main_function (tree fndecl)
      language standard parameters.  */
   {
     tree array_type, array, var;
-    VEC(constructor_elt,gc) *v = NULL;
+    vec<constructor_elt, va_gc> *v = NULL;
 
     /* Passing a new option to the library requires four modifications:
      + add it to the tree_cons list below

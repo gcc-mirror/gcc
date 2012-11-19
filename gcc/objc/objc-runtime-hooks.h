@@ -75,7 +75,7 @@ typedef struct _objc_runtime_hooks_r
   /* Receiver is class Object, check runtime-specific.  */
   tree (*receiver_is_class_object) (tree);
   /* Get the start of a method argument type list (receiver, _cmd).  */
-  void (*get_arg_type_list_base) (VEC(tree,gc) **, tree, int, int);
+  void (*get_arg_type_list_base) (vec<tree, va_gc> **, tree, int, int);
   /* Build method call.  */
   tree (*build_objc_method_call) (location_t, tree, tree, tree, tree, tree, int);
 

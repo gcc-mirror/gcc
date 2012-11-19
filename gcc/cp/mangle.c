@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct GTY(()) globals {
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
-  VEC(tree,gc) *substitutions;
+  vec<tree, va_gc> *substitutions;
 
   /* The entity that is being mangled.  */
   tree GTY ((skip)) entity;
@@ -311,7 +311,7 @@ dump_substitution_candidates (void)
   tree el;
 
   fprintf (stderr, "  ++ substitutions  ");
-  FOR_EACH_VEC_ELT (tree, G.substitutions, i, el)
+  FOR_EACH_VEC_ELT (*G.substitutions, i, el)
     {
       const char *name = "???";
 
@@ -391,7 +391,7 @@ add_substitution (tree node)
     int i;
     tree candidate;
 
-    FOR_EACH_VEC_ELT (tree, G.substitutions, i, candidate)
+    FOR_EACH_VEC_SAFE_ELT (G.substitutions, i, candidate)
       {
 	gcc_assert (!(DECL_P (node) && node == candidate));
 	gcc_assert (!(TYPE_P (node) && TYPE_P (candidate)
@@ -401,7 +401,7 @@ add_substitution (tree node)
 #endif /* ENABLE_CHECKING */
 
   /* Put the decl onto the varray of substitution candidates.  */
-  VEC_safe_push (tree, gc, G.substitutions, node);
+  vec_safe_push (G.substitutions, node);
 
   if (DEBUG_MANGLE)
     dump_substitution_candidates ();
@@ -504,7 +504,7 @@ static int
 find_substitution (tree node)
 {
   int i;
-  const int size = VEC_length (tree, G.substitutions);
+  const int size = vec_safe_length (G.substitutions);
   tree decl;
   tree type;
 
@@ -612,7 +612,7 @@ find_substitution (tree node)
      operation.  */
   for (i = 0; i < size; ++i)
     {
-      tree candidate = VEC_index (tree, G.substitutions, i);
+      tree candidate = (*G.substitutions)[i];
       /* NODE is a matched to a candidate if it's the same decl node or
 	 if it's the same type.  */
       if (decl == candidate
@@ -1322,18 +1322,18 @@ write_abi_tags (tree tags)
 
   tags = TREE_VALUE (tags);
 
-  VEC(tree,gc)* vec = make_tree_vector();
+  vec<tree, va_gc> * vec = make_tree_vector();
 
   for (tree t = tags; t; t = TREE_CHAIN (t))
     {
       tree str = TREE_VALUE (t);
-      VEC_safe_push (tree, gc, vec, str);
+      vec_safe_push (vec, str);
     }
 
-  VEC_qsort (tree, vec, tree_string_cmp);
+  vec->qsort (tree_string_cmp);
 
   unsigned i; tree str;
-  FOR_EACH_VEC_ELT (tree, vec, i, str)
+  FOR_EACH_VEC_ELT (*vec, i, str)
     {
       write_string ("B");
       write_unsigned_number (TREE_STRING_LENGTH (str) - 1);
@@ -1699,7 +1699,7 @@ local_class_index (tree entity)
   tree ctx = TYPE_CONTEXT (entity);
   for (ix = 0; ; ix++)
     {
-      tree type = VEC_index (tree, local_classes, ix);
+      tree type = (*local_classes)[ix];
       if (type == entity)
 	return discriminator;
       if (TYPE_CONTEXT (type) == ctx
@@ -2801,7 +2801,7 @@ write_expression (tree expr)
     }
   else if (code == CONSTRUCTOR)
     {
-      VEC(constructor_elt,gc)* elts = CONSTRUCTOR_ELTS (expr);
+      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (expr);
       unsigned i; tree val;
 
       if (BRACE_ENCLOSED_INITIALIZER_P (expr))
@@ -3320,7 +3320,7 @@ finish_mangling_internal (const bool warn)
 	     G.entity);
 
   /* Clear all the substitutions.  */
-  VEC_truncate (tree, G.substitutions, 0);
+  vec_safe_truncate (G.substitutions, 0);
 
   /* Null-terminate the string.  */
   write_char ('\0');
@@ -3354,7 +3354,7 @@ init_mangle (void)
 {
   gcc_obstack_init (&name_obstack);
   name_base = obstack_alloc (&name_obstack, 0);
-  G.substitutions = NULL;
+  vec_alloc (G.substitutions, 0);
 
   /* Cache these identifiers for quick comparison when checking for
      standard substitutions.  */

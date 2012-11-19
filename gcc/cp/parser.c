@@ -252,7 +252,7 @@ int cp_unevaluated_operand;
    highlighted by surrounding it in [[ ]].  */
 
 static void
-cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
+cp_lexer_dump_tokens (FILE *file, vec<cp_token, va_gc> *buffer,
 		      cp_token *start_token, unsigned num,
 		      cp_token *curr_token)
 {
@@ -260,26 +260,26 @@ cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
   cp_token *token;
   bool do_print;
 
-  fprintf (file, "%u tokens\n", VEC_length (cp_token, buffer));
+  fprintf (file, "%u tokens\n", vec_safe_length (buffer));
 
   if (buffer == NULL)
     return;
 
   if (num == 0)
-    num = VEC_length (cp_token, buffer);
+    num = buffer->length ();
 
   if (start_token == NULL)
-    start_token = VEC_address (cp_token, buffer);
+    start_token = buffer->address ();
 
-  if (start_token > VEC_address (cp_token, buffer))
+  if (start_token > buffer->address ())
     {
-      cp_lexer_print_token (file, &VEC_index (cp_token, buffer, 0));
+      cp_lexer_print_token (file, &(*buffer)[0]);
       fprintf (file, " ... ");
     }
 
   do_print = false;
   nprinted = 0;
-  for (i = 0; VEC_iterate (cp_token, buffer, i, token) && nprinted < num; i++)
+  for (i = 0; buffer->iterate (i, &token) && nprinted < num; i++)
     {
       if (token == start_token)
 	do_print = true;
@@ -310,10 +310,10 @@ cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
 	}
     }
 
-  if (i == num && i < VEC_length (cp_token, buffer))
+  if (i == num && i < buffer->length ())
     {
       fprintf (file, " ... ");
-      cp_lexer_print_token (file, &VEC_last (cp_token, buffer));
+      cp_lexer_print_token (file, &buffer->last ());
     }
 
   fprintf (file, "\n");
@@ -323,7 +323,7 @@ cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
 /* Dump all tokens in BUFFER to stderr.  */
 
 void
-cp_lexer_debug_tokens (VEC(cp_token,gc) *buffer)
+cp_lexer_debug_tokens (vec<cp_token, va_gc> *buffer)
 {
   cp_lexer_dump_tokens (stderr, buffer, NULL, 0, NULL);
 }
@@ -393,8 +393,7 @@ cp_debug_print_unparsed_function (FILE *file, cp_unparsed_functions_entry *uf)
 
   fprintf (file, "\tFunctions with default args:\n");
   for (i = 0;
-       VEC_iterate (cp_default_arg_entry, uf->funs_with_default_args, i,
-		    default_arg_fn);
+       vec_safe_iterate (uf->funs_with_default_args, i, &default_arg_fn);
        i++)
     {
       fprintf (file, "\t\tClass type: ");
@@ -406,7 +405,7 @@ cp_debug_print_unparsed_function (FILE *file, cp_unparsed_functions_entry *uf)
 
   fprintf (file, "\n\tFunctions with definitions that require "
 	   "post-processing\n\t\t");
-  for (i = 0; VEC_iterate (tree, uf->funs_with_definitions, i, fn); i++)
+  for (i = 0; vec_safe_iterate (uf->funs_with_definitions, i, &fn); i++)
     {
       print_node_brief (file, "", fn, 0);
       fprintf (file, " ");
@@ -415,7 +414,7 @@ cp_debug_print_unparsed_function (FILE *file, cp_unparsed_functions_entry *uf)
 
   fprintf (file, "\n\tNon-static data members with initializers that require "
            "post-processing\n\t\t");
-  for (i = 0; VEC_iterate (tree, uf->nsdmis, i, fn); i++)
+  for (i = 0; vec_safe_iterate (uf->nsdmis, i, &fn); i++)
     {
       print_node_brief (file, "", fn, 0);
       fprintf (file, " ");
@@ -428,13 +427,13 @@ cp_debug_print_unparsed_function (FILE *file, cp_unparsed_functions_entry *uf)
 
 static void
 cp_debug_print_unparsed_queues (FILE *file,
-				VEC(cp_unparsed_functions_entry, gc) *s)
+				vec<cp_unparsed_functions_entry, va_gc> *s)
 {
   unsigned i;
   cp_unparsed_functions_entry *uf;
 
   fprintf (file, "Unparsed functions\n");
-  for (i = 0; VEC_iterate (cp_unparsed_functions_entry, s, i, uf); i++)
+  for (i = 0; vec_safe_iterate (s, i, &uf); i++)
     {
       fprintf (file, "#%u:\n", i);
       cp_debug_print_unparsed_function (file, uf);
@@ -454,7 +453,7 @@ cp_debug_parser_tokens (FILE *file, cp_parser *parser, int window_size)
     file = stderr;
 
   next_token = parser->lexer->next_token;
-  first_token = VEC_address (cp_token, parser->lexer->buffer);
+  first_token = parser->lexer->buffer->address ();
   start_token = (next_token > first_token + window_size / 2)
 		? next_token - window_size / 2
 		: first_token;
@@ -478,7 +477,7 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 
   fprintf (file, "Parser state\n\n");
   fprintf (file, "Number of tokens: %u\n",
-	   VEC_length (cp_token, parser->lexer->buffer));
+	   vec_safe_length (parser->lexer->buffer));
   cp_debug_print_tree_if_set (file, "Lookup scope", parser->scope);
   cp_debug_print_tree_if_set (file, "Object scope",
 				     parser->object_scope);
@@ -563,11 +562,10 @@ cp_lexer_alloc (void)
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
 
-  lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
-				   CP_SAVED_TOKEN_STACK);
+  lexer->saved_tokens.create (CP_SAVED_TOKEN_STACK);
 
   /* Create the buffer.  */
-  lexer->buffer = VEC_alloc (cp_token, gc, CP_LEXER_BUFFER_SIZE);
+  vec_alloc (lexer->buffer, CP_LEXER_BUFFER_SIZE);
 
   return lexer;
 }
@@ -590,20 +588,20 @@ cp_lexer_new_main (void)
   lexer = cp_lexer_alloc ();
 
   /* Put the first token in the buffer.  */
-  VEC_quick_push (cp_token, lexer->buffer, token);
+  lexer->buffer->quick_push (token);
 
   /* Get the remaining tokens from the preprocessor.  */
   while (token.type != CPP_EOF)
     {
       cp_lexer_get_preprocessor_token (lexer, &token);
-      VEC_safe_push (cp_token, gc, lexer->buffer, token);
+      vec_safe_push (lexer->buffer, token);
     }
 
-  lexer->last_token = VEC_address (cp_token, lexer->buffer)
-                      + VEC_length (cp_token, lexer->buffer)
+  lexer->last_token = lexer->buffer->address ()
+                      + lexer->buffer->length ()
 		      - 1;
-  lexer->next_token = VEC_length (cp_token, lexer->buffer)
-		      ? VEC_address (cp_token, lexer->buffer)
+  lexer->next_token = lexer->buffer->length ()
+		      ? lexer->buffer->address ()
 		      : &eof_token;
 
   /* Subsequent preprocessor diagnostics should use compiler
@@ -629,8 +627,7 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   lexer->next_token = first == last ? &eof_token : first;
   lexer->last_token = last;
 
-  lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
-				   CP_SAVED_TOKEN_STACK);
+  lexer->saved_tokens.create (CP_SAVED_TOKEN_STACK);
 
   /* Initially we are not debugging.  */
   lexer->debugging_p = false;
@@ -644,8 +641,8 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 static void
 cp_lexer_destroy (cp_lexer *lexer)
 {
-  VEC_free (cp_token, gc, lexer->buffer);
-  VEC_free (cp_token_position, heap, lexer->saved_tokens);
+  vec_free (lexer->buffer);
+  lexer->saved_tokens.release ();
   ggc_free (lexer);
 }
 
@@ -700,7 +697,7 @@ cp_lexer_previous_token (cp_lexer *lexer)
 static inline int
 cp_lexer_saving_tokens (const cp_lexer* lexer)
 {
-  return VEC_length (cp_token_position, lexer->saved_tokens) != 0;
+  return lexer->saved_tokens.length () != 0;
 }
 
 /* Store the next token from the preprocessor in *TOKEN.  Return true
@@ -1060,8 +1057,7 @@ cp_lexer_save_tokens (cp_lexer* lexer)
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream, "cp_lexer: saving tokens\n");
 
-  VEC_safe_push (cp_token_position, heap,
-		 lexer->saved_tokens, lexer->next_token);
+  lexer->saved_tokens.safe_push (lexer->next_token);
 }
 
 /* Commit to the portion of the token stream most recently saved.  */
@@ -1073,7 +1069,7 @@ cp_lexer_commit_tokens (cp_lexer* lexer)
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream, "cp_lexer: committing tokens\n");
 
-  VEC_pop (cp_token_position, lexer->saved_tokens);
+  lexer->saved_tokens.pop ();
 }
 
 /* Return all tokens saved since the last call to cp_lexer_save_tokens
@@ -1086,7 +1082,7 @@ cp_lexer_rollback_tokens (cp_lexer* lexer)
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream, "cp_lexer: restoring tokens\n");
 
-  lexer->next_token = VEC_pop (cp_token_position, lexer->saved_tokens);
+  lexer->next_token = lexer->saved_tokens.pop ();
 }
 
 /* Print a representation of the TOKEN on the STREAM.  */
@@ -1735,24 +1731,24 @@ cp_parser_context_new (cp_parser_context* next)
 /* Managing the unparsed function queues.  */
 
 #define unparsed_funs_with_default_args \
-  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues).funs_with_default_args
+  parser->unparsed_queues->last ().funs_with_default_args
 #define unparsed_funs_with_definitions \
-  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues).funs_with_definitions
+  parser->unparsed_queues->last ().funs_with_definitions
 #define unparsed_nsdmis \
-  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues).nsdmis
+  parser->unparsed_queues->last ().nsdmis
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
 {
   cp_unparsed_functions_entry e = {NULL, make_tree_vector (), NULL};
-  VEC_safe_push (cp_unparsed_functions_entry, gc, parser->unparsed_queues, e);
+  vec_safe_push (parser->unparsed_queues, e);
 }
 
 static void
 pop_unparsed_function_queues (cp_parser *parser)
 {
   release_tree_vector (unparsed_funs_with_definitions);
-  VEC_pop (cp_unparsed_functions_entry, parser->unparsed_queues);
+  parser->unparsed_queues->pop ();
 }
 
 /* Prototypes.  */
@@ -1812,7 +1808,7 @@ static tree cp_parser_postfix_open_square_expression
   (cp_parser *, tree, bool);
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, tree, bool, cp_id_kind *, location_t);
-static VEC(tree,gc) *cp_parser_parenthesized_expression_list
+static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
   (cp_parser *, int, bool, bool, bool *);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
 enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
@@ -1824,7 +1820,7 @@ static enum tree_code cp_parser_unary_operator
   (cp_token *);
 static tree cp_parser_new_expression
   (cp_parser *);
-static VEC(tree,gc) *cp_parser_new_placement
+static vec<tree, va_gc> *cp_parser_new_placement
   (cp_parser *);
 static tree cp_parser_new_type_id
   (cp_parser *, tree *);
@@ -1832,7 +1828,7 @@ static cp_declarator *cp_parser_new_declarator_opt
   (cp_parser *);
 static cp_declarator *cp_parser_direct_new_declarator
   (cp_parser *);
-static VEC(tree,gc) *cp_parser_new_initializer
+static vec<tree, va_gc> *cp_parser_new_initializer
   (cp_parser *);
 static tree cp_parser_delete_expression
   (cp_parser *);
@@ -1964,7 +1960,7 @@ static tree cp_parser_decltype
 /* Declarators [gram.dcl.decl] */
 
 static tree cp_parser_init_declarator
-  (cp_parser *, cp_decl_specifier_seq *, VEC (deferred_access_check,gc)*, bool, bool, int, bool *, tree *);
+  (cp_parser *, cp_decl_specifier_seq *, vec<deferred_access_check, va_gc> *, bool, bool, int, bool *, tree *);
 static cp_declarator *cp_parser_declarator
   (cp_parser *, cp_parser_declarator_kind, int *, bool *, bool);
 static cp_declarator *cp_parser_direct_declarator
@@ -2004,7 +2000,7 @@ static tree cp_parser_initializer_clause
   (cp_parser *, bool *);
 static tree cp_parser_braced_list
   (cp_parser*, bool*);
-static VEC(constructor_elt,gc) *cp_parser_initializer_list
+static vec<constructor_elt, va_gc> *cp_parser_initializer_list
   (cp_parser *, bool *);
 
 static bool cp_parser_ctor_initializer_opt_and_function_body
@@ -2220,9 +2216,9 @@ static tree cp_parser_function_definition_after_declarator
 static void cp_parser_template_declaration_after_export
   (cp_parser *, bool);
 static void cp_parser_perform_template_parameter_access_checks
-  (VEC (deferred_access_check,gc)*);
+  (vec<deferred_access_check, va_gc> *);
 static tree cp_parser_single_declaration
-  (cp_parser *, VEC (deferred_access_check,gc)*, bool, bool, bool *);
+  (cp_parser *, vec<deferred_access_check, va_gc> *, bool, bool, bool *);
 static tree cp_parser_functional_cast
   (cp_parser *, tree);
 static tree cp_parser_save_member_function_body
@@ -3551,7 +3547,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 /* Look up a literal operator with the name and the exact arguments.  */
 
 static tree
-lookup_literal_operator (tree name, VEC(tree,gc) *args)
+lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 {
   tree decl, fns;
   decl = lookup_name (name);
@@ -3567,11 +3563,11 @@ lookup_literal_operator (tree name, VEC(tree,gc) *args)
       argtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
       if (argtypes != NULL_TREE)
 	{
-	  for (ix = 0; ix < VEC_length (tree, args) && argtypes != NULL_TREE;
+	  for (ix = 0; ix < vec_safe_length (args) && argtypes != NULL_TREE;
 	       ++ix, argtypes = TREE_CHAIN (argtypes))
 	    {
 	      tree targ = TREE_VALUE (argtypes);
-	      tree tparm = TREE_TYPE (VEC_index (tree, args, ix));
+	      tree tparm = TREE_TYPE ((*args)[ix]);
 	      bool ptr = TREE_CODE (targ) == POINTER_TYPE;
 	      bool arr = TREE_CODE (tparm) == ARRAY_TYPE;
 	      if ((ptr || arr || !same_type_p (targ, tparm))
@@ -3581,7 +3577,7 @@ lookup_literal_operator (tree name, VEC(tree,gc) *args)
 		found = false;
 	    }
 	  if (found
-	      && ix == VEC_length (tree, args)
+	      && ix == vec_safe_length (args)
 	      /* May be this should be sufficient_parms_p instead,
 		 depending on how exactly should user-defined literals
 		 work in presence of default arguments on the literal
@@ -3609,8 +3605,8 @@ cp_parser_userdef_char_literal (cp_parser *parser)
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  VEC(tree,gc) *args = make_tree_vector ();
-  VEC_safe_push (tree, gc, args, value);
+  vec<tree, va_gc> *args = make_tree_vector ();
+  vec_safe_push (args, value);
   decl = lookup_literal_operator (name, args);
   if (!decl || decl == error_mark_node)
     {
@@ -3668,12 +3664,12 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   tree num_string = USERDEF_LITERAL_NUM_STRING (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree decl, result;
-  VEC(tree,gc) *args;
+  vec<tree, va_gc> *args;
 
   /* Look for a literal operator taking the exact type of numeric argument
      as the literal value.  */
   args = make_tree_vector ();
-  VEC_safe_push (tree, gc, args, value);
+  vec_safe_push (args, value);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
@@ -3690,7 +3686,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
      operator taking a const char* argument consisting of the number
      in string format.  */
   args = make_tree_vector ();
-  VEC_safe_push (tree, gc, args, num_string);
+  vec_safe_push (args, num_string);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
@@ -3742,9 +3738,9 @@ cp_parser_userdef_string_literal (cp_token *token)
 
   /* Build up a call to the user-defined operator  */
   /* Lookup the name we got back from the id-expression.  */
-  VEC(tree,gc) *args = make_tree_vector ();
-  VEC_safe_push (tree, gc, args, value);
-  VEC_safe_push (tree, gc, args, build_int_cst (size_type_node, len));
+  vec<tree, va_gc> *args = make_tree_vector ();
+  vec_safe_push (args, value);
+  vec_safe_push (args, build_int_cst (size_type_node, len));
   decl = lookup_name (name);
   if (!decl || decl == error_mark_node)
     {
@@ -5496,7 +5492,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 
     case RID_BUILTIN_SHUFFLE:
       {
-	VEC(tree,gc)* vec;
+	vec<tree, va_gc> *vec;
 	unsigned int i;
 	tree p;
 	location_t loc = token->location;
@@ -5508,21 +5504,13 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	if (vec == NULL)
 	  return error_mark_node;
 
-	FOR_EACH_VEC_ELT (tree, vec, i, p)
+	FOR_EACH_VEC_ELT (*vec, i, p)
 	  mark_exp_read (p);
 
-	if (VEC_length (tree, vec) == 2)
-	  return
-	    c_build_vec_perm_expr
-	    (loc, VEC_index (tree, vec, 0),
-	     NULL_TREE, VEC_index (tree, vec, 1));
-
-	else if (VEC_length (tree, vec) == 3)
-	  return
-	    c_build_vec_perm_expr
-	    (loc, VEC_index (tree, vec, 0),
-	     VEC_index (tree, vec, 1),
-	     VEC_index (tree, vec, 2));
+	if (vec->length () == 2)
+	  return c_build_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1]); 
+	else if (vec->length () == 3)
+	  return c_build_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2]);
 	else
 	{
 	  error_at (loc, "wrong number of arguments to "
@@ -5558,7 +5546,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	if (cp_parser_allow_gnu_extensions_p (parser)
 	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	  {
-	    VEC(constructor_elt,gc) *initializer_list = NULL;
+	    vec<constructor_elt, va_gc> *initializer_list = NULL;
 	    bool saved_in_type_id_in_expr_p;
 
 	    cp_parser_parse_tentatively (parser);
@@ -5666,7 +5654,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    bool is_builtin_constant_p;
 	    bool saved_integral_constant_expression_p = false;
 	    bool saved_non_integral_constant_expression_p = false;
-	    VEC(tree,gc) *args;
+	    vec<tree, va_gc> *args;
 
             is_member_access = false;
 
@@ -5717,7 +5705,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
 		  {
-		    if (!VEC_empty (tree, args))
+		    if (!args->is_empty ())
 		      {
 			koenig_p = true;
 			if (!any_type_dependent_arguments_p (args))
@@ -5733,7 +5721,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		/* We do not perform argument-dependent lookup if
 		   normal lookup finds a non-function, in accordance
 		   with the expected resolution of DR 218.  */
-		else if (!VEC_empty (tree, args)
+		else if (!args->is_empty ()
 			 && is_overloaded_fn (postfix_expression))
 		  {
 		    tree fn = get_first_fn (postfix_expression);
@@ -6154,14 +6142,14 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
    NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P indicates whether or
    not all of the expressions in the list were constant.  */
 
-static VEC(tree,gc) *
+static vec<tree, va_gc> *
 cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 int is_attribute_list,
 					 bool cast_p,
                                          bool allow_expansion_p,
 					 bool *non_constant_p)
 {
-  VEC(tree,gc) *expression_list;
+  vec<tree, va_gc> *expression_list;
   bool fold_expr_p = is_attribute_list != non_attr;
   tree identifier = NULL_TREE;
   bool saved_greater_than_is_operator_p;
@@ -6242,7 +6230,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 		expressions to the list, so that we can still tell if
 		the correct form for a parenthesized expression-list
 		is found. That gives better errors.  */
-	    VEC_safe_push (tree, gc, expression_list, expr);
+	    vec_safe_push (expression_list, expr);
 
 	    if (expr == error_mark_node)
 	      goto skip_comma;
@@ -6286,7 +6274,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
     = saved_greater_than_is_operator_p;
 
   if (identifier)
-    VEC_safe_insert (tree, gc, expression_list, 0, identifier);
+    vec_safe_insert (expression_list, 0, identifier);
 
   return expression_list;
 }
@@ -6725,9 +6713,9 @@ static tree
 cp_parser_new_expression (cp_parser* parser)
 {
   bool global_scope_p;
-  VEC(tree,gc) *placement;
+  vec<tree, va_gc> *placement;
   tree type;
-  VEC(tree,gc) *initializer;
+  vec<tree, va_gc> *initializer;
   tree nelts = NULL_TREE;
   tree ret;
 
@@ -6819,10 +6807,10 @@ cp_parser_new_expression (cp_parser* parser)
 
    Returns the same representation as for an expression-list.  */
 
-static VEC(tree,gc) *
+static vec<tree, va_gc> *
 cp_parser_new_placement (cp_parser* parser)
 {
-  VEC(tree,gc) *expression_list;
+  vec<tree, va_gc> *expression_list;
 
   /* Parse the expression-list.  */
   expression_list = (cp_parser_parenthesized_expression_list
@@ -7014,10 +7002,10 @@ cp_parser_direct_new_declarator (cp_parser* parser)
 
    Returns a representation of the expression-list.  */
 
-static VEC(tree,gc) *
+static vec<tree, va_gc> *
 cp_parser_new_initializer (cp_parser* parser)
 {
-  VEC(tree,gc) *expression_list;
+  vec<tree, va_gc> *expression_list;
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
@@ -8084,9 +8072,7 @@ typedef struct GTY(()) tree_int
   tree t;
   int i;
 } tree_int;
-DEF_VEC_O(tree_int);
-DEF_VEC_ALLOC_O(tree_int,gc);
-static GTY(()) VEC(tree_int,gc) *lambda_scope_stack;
+static GTY(()) vec<tree_int, va_gc> *lambda_scope_stack;
 
 static void
 start_lambda_scope (tree decl)
@@ -8099,7 +8085,7 @@ start_lambda_scope (tree decl)
     decl = current_function_decl;
   ti.t = lambda_scope;
   ti.i = lambda_count;
-  VEC_safe_push (tree_int, gc, lambda_scope_stack, ti);
+  vec_safe_push (lambda_scope_stack, ti);
   if (lambda_scope != decl)
     {
       /* Don't reset the count if we're still in the same function.  */
@@ -8118,13 +8104,13 @@ record_lambda_scope (tree lambda)
 static void
 finish_lambda_scope (void)
 {
-  tree_int *p = &VEC_last (tree_int, lambda_scope_stack);
+  tree_int *p = &lambda_scope_stack->last ();
   if (lambda_scope != p->t)
     {
       lambda_scope = p->t;
       lambda_count = p->i;
     }
-  VEC_pop (tree_int, lambda_scope_stack);
+  lambda_scope_stack->pop ();
 }
 
 /* Parse a lambda expression.
@@ -9716,10 +9702,10 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       else
 	{
 	  /* Use global functions with ADL.  */
-	  VEC(tree,gc) *vec;
+	  vec<tree, va_gc> *vec;
 	  vec = make_tree_vector ();
 
-	  VEC_safe_push (tree, gc, vec, range);
+	  vec_safe_push (vec, range);
 
 	  member_begin = perform_koenig_lookup (id_begin, vec,
 						/*include_std=*/true,
@@ -9763,7 +9749,7 @@ static tree
 cp_parser_range_for_member_function (tree range, tree identifier)
 {
   tree member, res;
-  VEC(tree,gc) *vec;
+  vec<tree, va_gc> *vec;
 
   member = finish_class_member_access_expr (range, identifier,
 					    false, tf_warning_or_error);
@@ -11671,7 +11657,7 @@ cp_parser_mem_initializer (cp_parser* parser)
     }
   else
     {
-      VEC(tree,gc)* vec;
+      vec<tree, va_gc> *vec;
       vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						     /*cast_p=*/false,
 						     /*allow_expansion_p=*/true,
@@ -12566,7 +12552,7 @@ cp_parser_template_id (cp_parser *parser,
   tree template_id;
   cp_token_position start_of_id = 0;
   deferred_access_check *chk;
-  VEC (deferred_access_check,gc) *access_check;
+  vec<deferred_access_check, va_gc> *access_check;
   cp_token *next_token = NULL, *next_token_2 = NULL;
   bool is_identifier;
 
@@ -12583,7 +12569,7 @@ cp_parser_template_id (cp_parser *parser,
       access_check = check_value->checks;
       if (access_check)
 	{
-	  FOR_EACH_VEC_ELT (deferred_access_check, access_check, i, chk)
+	  FOR_EACH_VEC_ELT (*access_check, i, chk)
 	    perform_or_defer_access_check (chk->binfo,
 					   chk->decl,
 					   chk->diag_decl,
@@ -15664,7 +15650,7 @@ cp_parser_asm_definition (cp_parser* parser)
 static tree
 cp_parser_init_declarator (cp_parser* parser,
 			   cp_decl_specifier_seq *decl_specifiers,
-			   VEC (deferred_access_check,gc)* checks,
+			   vec<deferred_access_check, va_gc> *checks,
 			   bool function_definition_allowed_p,
 			   bool member_p,
 			   int declares_class_or_enum,
@@ -17744,7 +17730,7 @@ cp_parser_initializer (cp_parser* parser, bool* is_direct_init,
     }
   else if (token->type == CPP_OPEN_PAREN)
     {
-      VEC(tree,gc) *vec;
+      vec<tree, va_gc> *vec;
       vec = cp_parser_parenthesized_expression_list (parser, non_attr,
 						     /*cast_p=*/false,
 						     /*allow_expansion_p=*/true,
@@ -17861,15 +17847,15 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
      identifier :
      [ constant-expression ] =
 
-   Returns a VEC of constructor_elt.  The VALUE of each elt is an expression
+   Returns a vec of constructor_elt.  The VALUE of each elt is an expression
    for the initializer.  If the INDEX of the elt is non-NULL, it is the
    IDENTIFIER_NODE naming the field to initialize.  NON_CONSTANT_P is
    as for cp_parser_initializer.  */
 
-static VEC(constructor_elt,gc) *
+static vec<constructor_elt, va_gc> *
 cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 {
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* Assume all of the expressions are constant.  */
   *non_constant_p = false;
@@ -18370,8 +18356,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	    };
 
 	 */
-      FOR_EACH_VEC_ELT (cp_default_arg_entry, unparsed_funs_with_default_args,
-			ix, e)
+      FOR_EACH_VEC_SAFE_ELT (unparsed_funs_with_default_args, ix, e)
 	{
 	  decl = e->decl;
 	  /* If there are default arguments that have not yet been processed,
@@ -18390,11 +18375,11 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  /* Remove any template parameters from the symbol table.  */
 	  maybe_end_member_template_processing ();
 	}
-      VEC_truncate (cp_default_arg_entry, unparsed_funs_with_default_args, 0);
+      vec_safe_truncate (unparsed_funs_with_default_args, 0);
       /* Now parse any NSDMIs.  */
       save_ccp = current_class_ptr;
       save_ccr = current_class_ref;
-      FOR_EACH_VEC_ELT (tree, unparsed_nsdmis, ix, decl)
+      FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
 	{
 	  if (class_type != DECL_CONTEXT (decl))
 	    {
@@ -18406,15 +18391,15 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
 	  cp_parser_late_parsing_nsdmi (parser, decl);
 	}
-      VEC_truncate (tree, unparsed_nsdmis, 0);
+      vec_safe_truncate (unparsed_nsdmis, 0);
       current_class_ptr = save_ccp;
       current_class_ref = save_ccr;
       if (pushed_scope)
 	pop_scope (pushed_scope);
       /* Now parse the body of the functions.  */
-      FOR_EACH_VEC_ELT (tree, unparsed_funs_with_definitions, ix, decl)
+      FOR_EACH_VEC_SAFE_ELT (unparsed_funs_with_definitions, ix, decl)
 	cp_parser_late_parsing_for_member (parser, decl);
-      VEC_truncate (tree, unparsed_funs_with_definitions, 0);
+      vec_safe_truncate (unparsed_funs_with_definitions, 0);
     }
 
   /* Put back any saved access checks.  */
@@ -19453,7 +19438,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		       && !DECL_C_BIT_FIELD (decl)
 		       && DECL_INITIAL (decl))
 		/* Add DECL to the queue of NSDMI to be parsed later.  */
-		VEC_safe_push (tree, gc, unparsed_nsdmis, decl);
+		vec_safe_push (unparsed_nsdmis, decl);
 	    }
 
 	  if (assume_semicolon)
@@ -20503,7 +20488,7 @@ cp_parser_gnu_attribute_list (cp_parser* parser)
 	  /* If it's an `(', then parse the attribute arguments.  */
 	  if (token->type == CPP_OPEN_PAREN)
 	    {
-	      VEC(tree,gc) *vec;
+	      vec<tree, va_gc> *vec;
 	      int attr_flag = (attribute_takes_identifier_p (identifier)
 			       ? id_attr : normal_attr);
 	      vec = cp_parser_parenthesized_expression_list
@@ -20640,7 +20625,7 @@ cp_parser_std_attribute (cp_parser *parser)
     return attribute;
 
   {
-    VEC(tree, gc) *vec;
+    vec<tree, va_gc> *vec;
     int attr_flag = normal_attr;
 
     if (attr_ns == get_identifier ("gnu")
@@ -21672,7 +21657,7 @@ static void
 cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 {
   tree decl = NULL_TREE;
-  VEC (deferred_access_check,gc) *checks;
+  vec<deferred_access_check, va_gc> *checks;
   tree parameter_list;
   bool friend_p = false;
   bool need_lang_pop;
@@ -21824,7 +21809,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   if (member_p && decl
       && (TREE_CODE (decl) == FUNCTION_DECL
 	  || DECL_FUNCTION_TEMPLATE_P (decl)))
-    VEC_safe_push (tree, gc, unparsed_funs_with_definitions, decl);
+    vec_safe_push (unparsed_funs_with_definitions, decl);
 }
 
 /* Perform the deferred access checks from a template-parameter-list.
@@ -21832,7 +21817,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
    get_deferred_access_checks.  */
 
 static void
-cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,gc)* checks)
+cp_parser_perform_template_parameter_access_checks (vec<deferred_access_check, va_gc> *checks)
 {
   ++processing_template_parmlist;
   perform_access_checks (checks, tf_warning_or_error);
@@ -21848,7 +21833,7 @@ cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,g
 
 static tree
 cp_parser_single_declaration (cp_parser* parser,
-			      VEC (deferred_access_check,gc)* checks,
+			      vec<deferred_access_check, va_gc> *checks,
 			      bool member_p,
                               bool explicit_specialization_p,
 			      bool* friend_p)
@@ -21999,7 +21984,7 @@ cp_parser_simple_cast_expression (cp_parser *parser)
 static tree
 cp_parser_functional_cast (cp_parser* parser, tree type)
 {
-  VEC(tree,gc) *vec;
+  vec<tree, va_gc> *vec;
   tree expression_list;
   tree cast;
   bool nonconst_p;
@@ -22108,7 +22093,7 @@ cp_parser_save_member_function_body (cp_parser* parser,
   DECL_INITIALIZED_IN_CLASS_P (fn) = 1;
 
   /* Add FN to the queue of functions to be parsed later.  */
-  VEC_safe_push (tree, gc, unparsed_funs_with_definitions, fn);
+  vec_safe_push (unparsed_funs_with_definitions, fn);
 
   return fn;
 }
@@ -22319,8 +22304,7 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
     if (TREE_PURPOSE (probe))
       {
 	cp_default_arg_entry entry = {current_class_type, decl};
-	VEC_safe_push (cp_default_arg_entry, gc,
-		       unparsed_funs_with_default_args, entry);
+	vec_safe_push (unparsed_funs_with_default_args, entry);
 	break;
       }
 }
@@ -22440,7 +22424,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
     {
       tree default_arg = TREE_PURPOSE (parm);
       tree parsed_arg;
-      VEC(tree,gc) *insts;
+      vec<tree, va_gc> *insts;
       tree copy;
       unsigned ix;
 
@@ -22465,7 +22449,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 
       /* Update any instantiations we've already created.  */
       for (insts = DEFARG_INSTANTIATIONS (default_arg), ix = 0;
-	   VEC_iterate (tree, insts, ix, copy); ix++)
+	   vec_safe_iterate (insts, ix, &copy); ix++)
 	TREE_PURPOSE (copy) = parsed_arg;
     }
 
@@ -23298,7 +23282,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   int i;
   struct tree_check *check_value;
   deferred_access_check *chk;
-  VEC (deferred_access_check,gc) *checks;
+  vec<deferred_access_check, va_gc> *checks;
 
   /* Get the stored value.  */
   check_value = cp_lexer_consume_token (parser->lexer)->u.tree_check_value;
@@ -23306,7 +23290,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   checks = check_value->checks;
   if (checks)
     {
-      FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
+      FOR_EACH_VEC_SAFE_ELT (checks, i, chk)
 	perform_or_defer_access_check (chk->binfo,
 				       chk->decl,
 				       chk->diag_decl, tf_warning_or_error);
@@ -26875,7 +26859,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
   location_t loc_first;
   bool collapse_err = false;
   int i, collapse = 1, nbraces = 0;
-  VEC(tree,gc) *for_block = make_tree_vector ();
+  vec<tree, va_gc> *for_block = make_tree_vector ();
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
@@ -26994,7 +26978,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 				      LOOKUP_ONLYCONVERTING);
 		      if (CLASS_TYPE_P (TREE_TYPE (decl)))
 			{
-			  VEC_safe_push (tree, gc, for_block, this_pre_body);
+			  vec_safe_push (for_block, this_pre_body);
 			  init = NULL_TREE;
 			}
 		      else
@@ -27252,8 +27236,8 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	}
     }
 
-  while (!VEC_empty (tree, for_block))
-    add_stmt (pop_stmt_list (VEC_pop (tree, for_block)));
+  while (!for_block->is_empty ())
+    add_stmt (pop_stmt_list (for_block->pop ()));
   release_tree_vector (for_block);
 
   return ret;

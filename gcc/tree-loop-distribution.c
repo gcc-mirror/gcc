@@ -64,8 +64,6 @@ typedef struct partition_s
   data_reference_p secondary_dr;
 } *partition_t;
 
-DEF_VEC_P (partition_t);
-DEF_VEC_ALLOC_P (partition_t, heap);
 
 /* Allocate and initialize a partition from BITMAP.  */
 
@@ -618,11 +616,12 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
     if (!bitmap_bit_p (seen, v))
       {
 	unsigned i;
-	VEC (int, heap) *nodes = VEC_alloc (int, heap, 3);
+	vec<int> nodes;
+	nodes.create (3);
 
 	graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
 
-	FOR_EACH_VEC_ELT (int, nodes, i, x)
+	FOR_EACH_VEC_ELT (nodes, i, x)
 	  {
 	    if (!bitmap_set_bit (seen, x))
 	      continue;
@@ -638,7 +637,7 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
 	      }
 	  }
 
-	VEC_free (int, heap, nodes);
+	nodes.release ();
       }
 }
 
@@ -749,7 +748,8 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
 			       bitmap loops, bitmap processed)
 {
   unsigned i;
-  VEC (int, heap) *nodes = VEC_alloc (int, heap, 3);
+  vec<int> nodes;
+  nodes.create (3);
   int x;
 
   bitmap_set_bit (processed, v);
@@ -757,32 +757,32 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
   graphds_dfs (rdg, &v, 1, &nodes, false, remaining_stmts);
   rdg_flag_vertex (rdg, v, partition, loops);
 
-  FOR_EACH_VEC_ELT (int, nodes, i, x)
+  FOR_EACH_VEC_ELT (nodes, i, x)
     if (!already_processed_vertex_p (processed, x))
       rdg_flag_vertex_and_dependent (rdg, x, partition, loops, processed);
 
-  VEC_free (int, heap, nodes);
+  nodes.release ();
 }
 
 /* Initialize CONDS with all the condition statements from the basic
    blocks of LOOP.  */
 
 static void
-collect_condition_stmts (struct loop *loop, VEC (gimple, heap) **conds)
+collect_condition_stmts (struct loop *loop, vec<gimple> *conds)
 {
   unsigned i;
   edge e;
-  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  vec<edge> exits = get_loop_exit_edges (loop);
 
-  FOR_EACH_VEC_ELT (edge, exits, i, e)
+  FOR_EACH_VEC_ELT (exits, i, e)
     {
       gimple cond = last_stmt (e->src);
 
       if (cond)
-	VEC_safe_push (gimple, heap, *conds, cond);
+	conds->safe_push (cond);
     }
 
-  VEC_free (edge, heap, exits);
+  exits.release ();
 }
 
 /* Add to PARTITION all the exit condition statements for LOOPS
@@ -795,14 +795,15 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
 {
   unsigned i;
   bitmap_iterator bi;
-  VEC (gimple, heap) *conds = VEC_alloc (gimple, heap, 3);
+  vec<gimple> conds;
+  conds.create (3);
 
   EXECUTE_IF_SET_IN_BITMAP (loops, 0, i, bi)
     collect_condition_stmts (get_loop (i), &conds);
 
-  while (!VEC_empty (gimple, conds))
+  while (!conds.is_empty ())
     {
-      gimple cond = VEC_pop (gimple, conds);
+      gimple cond = conds.pop ();
       int v = rdg_vertex_for_stmt (rdg, cond);
       bitmap new_loops = BITMAP_ALLOC (NULL);
 
@@ -816,7 +817,7 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
       BITMAP_FREE (new_loops);
     }
 
-  VEC_free (gimple, heap, conds);
+  conds.release ();
 }
 
 /* Returns a bitmap in which all the statements needed for computing
@@ -831,7 +832,7 @@ build_rdg_partition_for_component (struct graph *rdg, rdgc c)
   bitmap loops = BITMAP_ALLOC (NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
 
-  FOR_EACH_VEC_ELT (int, c->vertices, i, v)
+  FOR_EACH_VEC_ELT (c->vertices, i, v)
     if (!already_processed_vertex_p (processed, v))
       rdg_flag_vertex_and_dependent (rdg, v, partition, loops, processed);
 
@@ -845,39 +846,42 @@ build_rdg_partition_for_component (struct graph *rdg, rdgc c)
 /* Free memory for COMPONENTS.  */
 
 static void
-free_rdg_components (VEC (rdgc, heap) *components)
+free_rdg_components (vec<rdgc> components)
 {
   int i;
   rdgc x;
 
-  FOR_EACH_VEC_ELT (rdgc, components, i, x)
+  FOR_EACH_VEC_ELT (components, i, x)
     {
-      VEC_free (int, heap, x->vertices);
+      x->vertices.release ();
       free (x);
     }
 
-  VEC_free (rdgc, heap, components);
+  components.release ();
 }
 
 /* Build the COMPONENTS vector with the strongly connected components
    of RDG in which the STARTING_VERTICES occur.  */
 
 static void
-rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
-		      VEC (rdgc, heap) **components)
+rdg_build_components (struct graph *rdg, vec<int> starting_vertices,
+		      vec<rdgc> *components)
 {
   int i, v;
   bitmap saved_components = BITMAP_ALLOC (NULL);
   int n_components = graphds_scc (rdg, NULL);
-  VEC (int, heap) **all_components = XNEWVEC (VEC (int, heap) *, n_components);
+  /* ??? Macros cannot process template types with more than one
+     argument, so we need this typedef.  */
+  typedef vec<int> vec_int_heap;
+  vec<int> *all_components = XNEWVEC (vec_int_heap, n_components);
 
   for (i = 0; i < n_components; i++)
-    all_components[i] = VEC_alloc (int, heap, 3);
+    all_components[i].create (3);
 
   for (i = 0; i < rdg->n_vertices; i++)
-    VEC_safe_push (int, heap, all_components[rdg->vertices[i].component], i);
+    all_components[rdg->vertices[i].component].safe_push (i);
 
-  FOR_EACH_VEC_ELT (int, starting_vertices, i, v)
+  FOR_EACH_VEC_ELT (starting_vertices, i, v)
     {
       int c = rdg->vertices[v].component;
 
@@ -887,13 +891,13 @@ rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
 	  x->num = c;
 	  x->vertices = all_components[c];
 
-	  VEC_safe_push (rdgc, heap, *components, x);
+	  components->safe_push (x);
 	}
     }
 
   for (i = 0; i < n_components; i++)
     if (!bitmap_bit_p (saved_components, i))
-      VEC_free (int, heap, all_components[i]);
+      all_components[i].release ();
 
   free (all_components);
   BITMAP_FREE (saved_components);
@@ -962,8 +966,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	return;
 
       /* But exactly one store and/or load.  */
-      for (j = 0;
-	   VEC_iterate (data_reference_p, RDG_DATAREFS (rdg, i), j, dr); ++j)
+      for (j = 0; RDG_DATAREFS (rdg, i).iterate (j, &dr); ++j)
 	{
 	  if (DR_IS_READ (dr))
 	    {
@@ -1017,16 +1020,16 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	return;
       /* Now check that if there is a dependence this dependence is
          of a suitable form for memmove.  */
-      VEC(loop_p, heap) *loops = NULL;
+      vec<loop_p> loops = vec<loop_p>();
       ddr_p ddr;
-      VEC_safe_push (loop_p, heap, loops, loop);
+      loops.safe_push (loop);
       ddr = initialize_data_dependence_relation (single_load, single_store,
 						 loops);
       compute_affine_dependence (ddr, loop);
       if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
 	{
 	  free_dependence_relation (ddr);
-	  VEC_free (loop_p, heap, loops);
+	  loops.release ();
 	  return;
 	}
       if (DDR_ARE_DEPENDENT (ddr) != chrec_known)
@@ -1034,24 +1037,24 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	  if (DDR_NUM_DIST_VECTS (ddr) == 0)
 	    {
 	      free_dependence_relation (ddr);
-	      VEC_free (loop_p, heap, loops);
+	      loops.release ();
 	      return;
 	    }
 	  lambda_vector dist_v;
-	  FOR_EACH_VEC_ELT (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v)
+	  FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
 	    {
 	      int dist = dist_v[index_in_loop_nest (loop->num,
 						    DDR_LOOP_NEST (ddr))];
 	      if (dist > 0 && !DDR_REVERSED_P (ddr))
 		{
 		  free_dependence_relation (ddr);
-		  VEC_free (loop_p, heap, loops);
+		  loops.release ();
 		  return;
 		}
 	    }
 	}
       free_dependence_relation (ddr);
-      VEC_free (loop_p, heap, loops);
+      loops.release ();
       partition->kind = PKIND_MEMCPY;
       partition->main_dr = single_store;
       partition->secondary_dr = single_load;
@@ -1099,12 +1102,11 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
 	if (RDG_MEM_WRITE_STMT (rdg, j)
 	    || RDG_MEM_READS_STMT (rdg, j))
 	  {
-	    FOR_EACH_VEC_ELT (data_reference_p, RDG_DATAREFS (rdg, i), k, ref1)
+	    FOR_EACH_VEC_ELT (RDG_DATAREFS (rdg, i), k, ref1)
 	      {
 		tree base1 = ref_base_address (ref1);
 		if (base1)
-		  FOR_EACH_VEC_ELT (data_reference_p,
-				    RDG_DATAREFS (rdg, j), l, ref2)
+		  FOR_EACH_VEC_ELT (RDG_DATAREFS (rdg, j), l, ref2)
 		    if (base1 == ref_base_address (ref2))
 		      return true;
 	      }
@@ -1118,18 +1120,18 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
    distributed in different loops.  */
 
 static void
-rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
-		      VEC (int, heap) **other_stores,
-		      VEC (partition_t, heap) **partitions, bitmap processed)
+rdg_build_partitions (struct graph *rdg, vec<rdgc> components,
+		      vec<int> *other_stores,
+		      vec<partition_t> *partitions, bitmap processed)
 {
   int i;
   rdgc x;
   partition_t partition = partition_alloc (NULL);
 
-  FOR_EACH_VEC_ELT (rdgc, components, i, x)
+  FOR_EACH_VEC_ELT (components, i, x)
     {
       partition_t np;
-      int v = VEC_index (int, x->vertices, 0);
+      int v = x->vertices[0];
 
       if (bitmap_bit_p (processed, v))
 	continue;
@@ -1148,7 +1150,7 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
 	      dump_bitmap (dump_file, partition->stmts);
 	    }
 
-	  VEC_safe_push (partition_t, heap, *partitions, partition);
+	  partitions->safe_push (partition);
 	  partition = partition_alloc (NULL);
 	}
     }
@@ -1159,26 +1161,28 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
   for (i = 0; i < rdg->n_vertices; i++)
     if (!bitmap_bit_p (processed, i)
 	&& rdg_defs_used_in_other_loops_p (rdg, i))
-      VEC_safe_push (int, heap, *other_stores, i);
+      other_stores->safe_push (i);
 
   /* If there are still statements left in the OTHER_STORES array,
      create other components and partitions with these stores and
      their dependences.  */
-  if (VEC_length (int, *other_stores) > 0)
+  if (other_stores->length () > 0)
     {
-      VEC (rdgc, heap) *comps = VEC_alloc (rdgc, heap, 3);
-      VEC (int, heap) *foo = VEC_alloc (int, heap, 3);
+      vec<rdgc> comps;
+      comps.create (3);
+      vec<int> foo;
+      foo.create (3);
 
       rdg_build_components (rdg, *other_stores, &comps);
       rdg_build_partitions (rdg, comps, &foo, partitions, processed);
 
-      VEC_free (int, heap, foo);
+      foo.release ();
       free_rdg_components (comps);
     }
 
   /* If there is something left in the last partition, save it.  */
   if (bitmap_count_bits (partition->stmts) > 0)
-    VEC_safe_push (partition_t, heap, *partitions, partition);
+    partitions->safe_push (partition);
   else
     partition_free (partition);
 }
@@ -1186,20 +1190,20 @@ rdg_build_partitions (struct graph *rdg, VEC (rdgc, heap) *components,
 /* Dump to FILE the PARTITIONS.  */
 
 static void
-dump_rdg_partitions (FILE *file, VEC (partition_t, heap) *partitions)
+dump_rdg_partitions (FILE *file, vec<partition_t> partitions)
 {
   int i;
   partition_t partition;
 
-  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partitions, i, partition)
     debug_bitmap_file (file, partition->stmts);
 }
 
 /* Debug PARTITIONS.  */
-extern void debug_rdg_partitions (VEC (partition_t, heap) *);
+extern void debug_rdg_partitions (vec<partition_t> );
 
 DEBUG_FUNCTION void
-debug_rdg_partitions (VEC (partition_t, heap) *partitions)
+debug_rdg_partitions (vec<partition_t> partitions)
 {
   dump_rdg_partitions (stderr, partitions);
 }
@@ -1249,13 +1253,14 @@ number_of_rw_in_partition (struct graph *rdg, partition_t partition)
    write operations of RDG.  */
 
 static bool
-partition_contains_all_rw (struct graph *rdg, VEC (partition_t, heap) *partitions)
+partition_contains_all_rw (struct graph *rdg,
+			   vec<partition_t> partitions)
 {
   int i;
   partition_t partition;
   int nrw = number_of_rw_in_rdg (rdg);
 
-  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partitions, i, partition)
     if (nrw == number_of_rw_in_partition (rdg, partition))
       return true;
 
@@ -1267,12 +1272,15 @@ partition_contains_all_rw (struct graph *rdg, VEC (partition_t, heap) *partition
 
 static int
 ldist_gen (struct loop *loop, struct graph *rdg,
-	   VEC (int, heap) *starting_vertices)
+	   vec<int> starting_vertices)
 {
   int i, nbp;
-  VEC (rdgc, heap) *components = VEC_alloc (rdgc, heap, 3);
-  VEC (partition_t, heap) *partitions = VEC_alloc (partition_t, heap, 3);
-  VEC (int, heap) *other_stores = VEC_alloc (int, heap, 3);
+  vec<rdgc> components;
+  components.create (3);
+  vec<partition_t> partitions;
+  partitions.create (3);
+  vec<int> other_stores;
+  other_stores.create (3);
   partition_t partition;
   bitmap processed = BITMAP_ALLOC (NULL);
   bool any_builtin;
@@ -1292,7 +1300,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	  unsigned j;
 	  bool found = false;
 
-	  FOR_EACH_VEC_ELT (int, starting_vertices, j, v)
+	  FOR_EACH_VEC_ELT (starting_vertices, j, v)
 	    if (i == v)
 	      {
 		found = true;
@@ -1300,7 +1308,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	      }
 
 	  if (!found)
-	    VEC_safe_push (int, heap, other_stores, i);
+	    other_stores.safe_push (i);
 	}
     }
 
@@ -1311,7 +1319,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   BITMAP_FREE (processed);
 
   any_builtin = false;
-  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partitions, i, partition)
     {
       classify_partition (loop, rdg, partition);
       any_builtin |= partition_builtin_p (partition);
@@ -1334,31 +1342,31 @@ ldist_gen (struct loop *loop, struct graph *rdg,
       i = 0;
       do
 	{
-	  for (; VEC_iterate (partition_t, partitions, i, into); ++i)
+	  for (; partitions.iterate (i, &into); ++i)
 	    if (!partition_builtin_p (into))
 	      break;
-	  for (++i; VEC_iterate (partition_t, partitions, i, partition); ++i)
+	  for (++i; partitions.iterate (i, &partition); ++i)
 	    if (!partition_builtin_p (partition))
 	      {
 		bitmap_ior_into (into->stmts, partition->stmts);
-		VEC_ordered_remove (partition_t, partitions, i);
+		partitions.ordered_remove (i);
 		i--;
 	      }
 	    else
 	      break;
 	}
-      while ((unsigned) i < VEC_length (partition_t, partitions));
+      while ((unsigned) i < partitions.length ());
     }
   else
     {
       partition_t into;
       int j;
-      for (i = 0; VEC_iterate (partition_t, partitions, i, into); ++i)
+      for (i = 0; partitions.iterate (i, &into); ++i)
 	{
 	  if (partition_builtin_p (into))
 	    continue;
 	  for (j = i + 1;
-	       VEC_iterate (partition_t, partitions, j, partition); ++j)
+	       partitions.iterate (j, &partition); ++j)
 	    {
 	      if (!partition_builtin_p (partition)
 		  /* ???  The following is horribly inefficient,
@@ -1375,19 +1383,17 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 			       "memory accesses\n");
 		    }
 		  bitmap_ior_into (into->stmts, partition->stmts);
-		  VEC_ordered_remove (partition_t, partitions, j);
+		  partitions.ordered_remove (j);
 		  j--;
 		}
 	    }
 	}
     }
 
-  nbp = VEC_length (partition_t, partitions);
+  nbp = partitions.length ();
   if (nbp == 0
-      || (nbp == 1
-	  && !partition_builtin_p (VEC_index (partition_t, partitions, 0)))
-      || (nbp > 1
-	  && partition_contains_all_rw (rdg, partitions)))
+      || (nbp == 1 && !partition_builtin_p (partitions[0]))
+      || (nbp > 1 && partition_contains_all_rw (rdg, partitions)))
     {
       nbp = 0;
       goto ldist_done;
@@ -1396,7 +1402,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg_partitions (dump_file, partitions);
 
-  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partitions, i, partition)
     generate_code_for_partition (loop, partition, i < nbp - 1);
 
  ldist_done:
@@ -1404,11 +1410,11 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   BITMAP_FREE (remaining_stmts);
   BITMAP_FREE (upstream_mem_writes);
 
-  FOR_EACH_VEC_ELT (partition_t, partitions, i, partition)
+  FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
 
-  VEC_free (int, heap, other_stores);
-  VEC_free (partition_t, heap, partitions);
+  other_stores.release ();
+  partitions.release ();
   free_rdg_components (components);
   return nbp;
 }
@@ -1420,20 +1426,20 @@ ldist_gen (struct loop *loop, struct graph *rdg,
    Returns the number of distributed loops.  */
 
 static int
-distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
+distribute_loop (struct loop *loop, vec<gimple> stmts)
 {
   int res = 0;
   struct graph *rdg;
   gimple s;
   unsigned i;
-  VEC (int, heap) *vertices;
-  VEC (ddr_p, heap) *dependence_relations;
-  VEC (data_reference_p, heap) *datarefs;
-  VEC (loop_p, heap) *loop_nest;
+  vec<int> vertices;
+  vec<ddr_p> dependence_relations;
+  vec<data_reference_p> datarefs;
+  vec<loop_p> loop_nest;
 
-  datarefs = VEC_alloc (data_reference_p, heap, 10);
-  dependence_relations = VEC_alloc (ddr_p, heap, 100);
-  loop_nest = VEC_alloc (loop_p, heap, 3);
+  datarefs.create (10);
+  dependence_relations.create (100);
+  loop_nest.create (3);
   rdg = build_rdg (loop, &loop_nest, &dependence_relations, &datarefs);
 
   if (!rdg)
@@ -1445,22 +1451,22 @@ distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
 
       free_dependence_relations (dependence_relations);
       free_data_refs (datarefs);
-      VEC_free (loop_p, heap, loop_nest);
+      loop_nest.release ();
       return res;
     }
 
-  vertices = VEC_alloc (int, heap, 3);
+  vertices.create (3);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
 
-  FOR_EACH_VEC_ELT (gimple, stmts, i, s)
+  FOR_EACH_VEC_ELT (stmts, i, s)
     {
       int v = rdg_vertex_for_stmt (rdg, s);
 
       if (v >= 0)
 	{
-	  VEC_safe_push (int, heap, vertices, v);
+	  vertices.safe_push (v);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
@@ -1469,11 +1475,11 @@ distribute_loop (struct loop *loop, VEC (gimple, heap) *stmts)
     }
 
   res = ldist_gen (loop, rdg, vertices);
-  VEC_free (int, heap, vertices);
+  vertices.release ();
   free_rdg (rdg);
   free_dependence_relations (dependence_relations);
   free_data_refs (datarefs);
-  VEC_free (loop_p, heap, loop_nest);
+  loop_nest.release ();
   return res;
 }
 
@@ -1500,7 +1506,7 @@ tree_loop_distribution (void)
      walking to innermost loops.  */
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
-      VEC (gimple, heap) *work_list = NULL;
+      vec<gimple> work_list = vec<gimple>();
       basic_block *bbs;
       int num = loop->num;
       int nb_generated_loops = 0;
@@ -1534,12 +1540,12 @@ tree_loop_distribution (void)
 		  || is_gimple_reg (gimple_assign_lhs (stmt)))
 		continue;
 
-	      VEC_safe_push (gimple, heap, work_list, stmt);
+	      work_list.safe_push (stmt);
 	    }
 	}
       free (bbs);
 
-      if (VEC_length (gimple, work_list) > 0)
+      if (work_list.length () > 0)
 	nb_generated_loops = distribute_loop (loop, work_list);
 
       if (nb_generated_loops > 0)
@@ -1554,7 +1560,7 @@ tree_loop_distribution (void)
 	    fprintf (dump_file, "Loop %d is the same.\n", num);
 	}
 
-      VEC_free (gimple, heap, work_list);
+      work_list.release ();
     }
 
   if (changed)

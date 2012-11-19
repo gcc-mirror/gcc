@@ -1,5 +1,5 @@
 /* Software floating-point emulation. Common operations.
-   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 1997,1998,1999,2006,2007,2012 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -134,6 +134,12 @@ do {									\
 #define _FP_PACK_SEMIRAW(fs, wc, X)				\
 do {								\
   _FP_ROUND(wc, X);						\
+  if (X##_e == 0 && !_FP_FRAC_ZEROP_##wc(X))			\
+	{ \
+	  if ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT)		\
+	      || (FP_TRAPPING_EXCEPTIONS & FP_EX_UNDERFLOW))	\
+	    FP_SET_EXCEPTION(FP_EX_UNDERFLOW);			\
+	} \
   if (_FP_FRAC_HIGH_##fs(X)					\
       & (_FP_OVERFLOW_##fs >> 1))				\
     {								\
@@ -143,20 +149,15 @@ do {								\
 	_FP_OVERFLOW_SEMIRAW(fs, wc, X);			\
     }								\
   _FP_FRAC_SRL_##wc(X, _FP_WORKBITS);				\
-  if (!_FP_EXP_NORMAL(fs, wc, X) && !_FP_FRAC_ZEROP_##wc(X))	\
+  if (X##_e == _FP_EXPMAX_##fs && !_FP_FRAC_ZEROP_##wc(X))	\
     {								\
-      if (X##_e == 0)						\
-	FP_SET_EXCEPTION(FP_EX_UNDERFLOW);			\
-      else							\
+      if (!_FP_KEEPNANFRACP)					\
 	{							\
-	  if (!_FP_KEEPNANFRACP)				\
-	    {							\
-	      _FP_FRAC_SET_##wc(X, _FP_NANFRAC_##fs);		\
-	      X##_s = _FP_NANSIGN_##fs;				\
-	    }							\
-	  else							\
-	    _FP_FRAC_HIGH_RAW_##fs(X) |= _FP_QNANBIT_##fs;	\
+	  _FP_FRAC_SET_##wc(X, _FP_NANFRAC_##fs);		\
+	  X##_s = _FP_NANSIGN_##fs;				\
 	}							\
+      else							\
+	_FP_FRAC_HIGH_RAW_##fs(X) |= _FP_QNANBIT_##fs;		\
     }								\
 } while (0)
 
@@ -226,13 +227,16 @@ do {								\
 	      {							\
 	        X##_e = 1;					\
 	        _FP_FRAC_SET_##wc(X, _FP_ZEROFRAC_##wc);	\
+		FP_SET_EXCEPTION(FP_EX_INEXACT);		\
 	      }							\
 	    else						\
 	      {							\
 		X##_e = 0;					\
 		_FP_FRAC_SRL_##wc(X, _FP_WORKBITS);		\
-		FP_SET_EXCEPTION(FP_EX_UNDERFLOW);		\
 	      }							\
+	    if ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT)		\
+		|| (FP_TRAPPING_EXCEPTIONS & FP_EX_UNDERFLOW))	\
+	      FP_SET_EXCEPTION(FP_EX_UNDERFLOW);		\
 	  }							\
 	else							\
 	  {							\

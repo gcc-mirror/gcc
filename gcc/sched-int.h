@@ -30,9 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "basic-block.h"
 
-/* For VEC (int, heap).  */
-#include "vecprim.h"
-
 /* Identificator of a scheduler pass.  */
 enum sched_pass_id_t { SCHED_PASS_UNKNOWN, SCHED_RGN_PASS, SCHED_EBB_PASS,
 		       SCHED_SMS_PASS, SCHED_SEL_PASS };
@@ -45,9 +42,9 @@ enum sched_pressure_algorithm
   SCHED_PRESSURE_MODEL
 };
 
-typedef VEC (basic_block, heap) *bb_vec_t;
-typedef VEC (rtx, heap) *insn_vec_t;
-typedef VEC (rtx, heap) *rtx_vec_t;
+typedef vec<basic_block> bb_vec_t;
+typedef vec<rtx> insn_vec_t;
+typedef vec<rtx> rtx_vec_t;
 
 extern void sched_init_bbs (void);
 
@@ -115,12 +112,12 @@ extern int sched_emulate_haifa_p;
 
 /* Mapping from INSN_UID to INSN_LUID.  In the end all other per insn data
    structures should be indexed by luid.  */
-extern VEC (int, heap) *sched_luids;
-#define INSN_LUID(INSN) (VEC_index (int, sched_luids, INSN_UID (INSN)))
-#define LUID_BY_UID(UID) (VEC_index (int, sched_luids, UID))
+extern vec<int> sched_luids;
+#define INSN_LUID(INSN) (sched_luids[INSN_UID (INSN)])
+#define LUID_BY_UID(UID) (sched_luids[UID])
 
 #define SET_INSN_LUID(INSN, LUID) \
-(VEC_replace (int, sched_luids, INSN_UID (INSN), (LUID)))
+(sched_luids[INSN_UID (INSN)] = (LUID))
 
 /* The highest INSN_LUID.  */
 extern int sched_max_luid;
@@ -893,12 +890,10 @@ struct _haifa_insn_data
 typedef struct _haifa_insn_data haifa_insn_data_def;
 typedef haifa_insn_data_def *haifa_insn_data_t;
 
-DEF_VEC_O (haifa_insn_data_def);
-DEF_VEC_ALLOC_O (haifa_insn_data_def, heap);
 
-extern VEC(haifa_insn_data_def, heap) *h_i_d;
+extern vec<haifa_insn_data_def> h_i_d;
 
-#define HID(INSN) (&VEC_index (haifa_insn_data_def, h_i_d, INSN_UID (INSN)))
+#define HID(INSN) (&h_i_d[INSN_UID (INSN)])
 
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
@@ -915,13 +910,10 @@ extern VEC(haifa_insn_data_def, heap) *h_i_d;
 typedef struct _haifa_deps_insn_data haifa_deps_insn_data_def;
 typedef haifa_deps_insn_data_def *haifa_deps_insn_data_t;
 
-DEF_VEC_O (haifa_deps_insn_data_def);
-DEF_VEC_ALLOC_O (haifa_deps_insn_data_def, heap);
 
-extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
+extern vec<haifa_deps_insn_data_def> h_d_i_d;
 
-#define HDID(INSN) (&VEC_index (haifa_deps_insn_data_def, h_d_i_d,	\
-			       INSN_LUID (INSN)))
+#define HDID(INSN) (&h_d_i_d[INSN_LUID (INSN)])
 #define INSN_DEP_COUNT(INSN)	(HDID (INSN)->dep_count)
 #define HAS_INTERNAL_DEP(INSN)  (HDID (INSN)->has_internal_dep)
 #define INSN_FORW_DEPS(INSN) (HDID (INSN)->forw_deps)
@@ -933,8 +925,7 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 #define INSN_REVERSE_COND(INSN) (HDID (INSN)->reverse_cond)
 #define INSN_COND_DEPS(INSN)	(HDID (INSN)->cond_deps)
 #define CANT_MOVE(INSN)	(HDID (INSN)->cant_move)
-#define CANT_MOVE_BY_LUID(LUID)	(VEC_index (haifa_deps_insn_data_def, h_d_i_d, \
-                                            LUID).cant_move)
+#define CANT_MOVE_BY_LUID(LUID)	(h_d_i_d[LUID].cant_move)
 
 
 #define INSN_PRIORITY(INSN)	(HID (INSN)->priority)

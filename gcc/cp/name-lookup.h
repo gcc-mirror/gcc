@@ -86,8 +86,6 @@ typedef struct GTY(()) cxx_saved_binding {
   tree real_type_value;
 } cxx_saved_binding;
 
-DEF_VEC_O(cxx_saved_binding);
-DEF_VEC_ALLOC_O(cxx_saved_binding,gc);
 
 extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
@@ -147,8 +145,6 @@ typedef struct GTY(()) cp_class_binding {
   tree identifier;
 } cp_class_binding;
 
-DEF_VEC_O(cp_class_binding);
-DEF_VEC_ALLOC_O(cp_class_binding,gc);
 
 typedef struct GTY(()) cp_label_binding {
   /* The bound LABEL_DECL.  */
@@ -157,8 +153,6 @@ typedef struct GTY(()) cp_label_binding {
   tree prev_value;
 } cp_label_binding;
 
-DEF_VEC_O(cp_label_binding);
-DEF_VEC_ALLOC_O(cp_label_binding,gc);
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
@@ -195,7 +189,7 @@ struct GTY(()) cp_binding_level {
   tree namespaces;
 
   /* An array of static functions and variables (for namespaces only) */
-  VEC(tree,gc) *static_decls;
+  vec<tree, va_gc> *static_decls;
 
   /* A list of USING_DECL nodes.  */
   tree usings;
@@ -206,7 +200,7 @@ struct GTY(()) cp_binding_level {
 
   /* For the binding level corresponding to a class, the entities
       declared in the class or its base classes.  */
-  VEC(cp_class_binding,gc) *class_shadowed;
+  vec<cp_class_binding, va_gc> *class_shadowed;
 
   /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
       is used for all binding levels. The TREE_PURPOSE is the name of
@@ -217,7 +211,7 @@ struct GTY(()) cp_binding_level {
 
   /* Similar to class_shadowed, but for IDENTIFIER_LABEL_VALUE, and
       used for all binding levels.  */
-  VEC(cp_label_binding,gc) *shadowed_labels;
+  vec<cp_label_binding, va_gc> *shadowed_labels;
 
   /* For each level (except not the global one),
       a chain of BLOCK nodes for all the levels
@@ -234,7 +228,7 @@ struct GTY(()) cp_binding_level {
   /* List of VAR_DECLS saved from a previous for statement.
       These would be dead in ISO-conforming code, but might
       be referenced in ARM-era code.  */
-  VEC(tree,gc) *dead_vars_from_for;
+  vec<tree, va_gc> *dead_vars_from_for;
 
   /* STATEMENT_LIST for statements in this binding contour.
       Only used at present for SK_CLEANUP temporary bindings.  */
@@ -327,7 +321,7 @@ extern tree lookup_qualified_name (tree, tree, bool, bool);
 extern tree lookup_name_nonclass (tree);
 extern tree lookup_name_innermost_nonclass_level (tree);
 extern bool is_local_extern (tree);
-extern tree lookup_function_nonclass (tree, VEC(tree,gc) *, bool);
+extern tree lookup_function_nonclass (tree, vec<tree, va_gc> *, bool);
 extern void push_local_binding (tree, tree, int);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree, bool);
@@ -343,7 +337,7 @@ extern void do_toplevel_using_decl (tree, tree, tree);
 extern void do_local_using_decl (tree, tree, tree);
 extern tree do_class_using_decl (tree, tree);
 extern void do_using_directive (tree);
-extern tree lookup_arg_dependent (tree, tree, VEC(tree,gc) *, bool);
+extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *, bool);
 extern bool is_associated_namespace (tree, tree);
 extern void parse_using_directive (tree, tree);
 extern tree innermost_non_namespace_value (tree);

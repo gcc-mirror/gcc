@@ -22,4 +22,4 @@ main()
 /* { dg-final-use { scan-rtl-dump "Considering simply peeling loop" "loop2_unroll" } } */
 /* In fact one peeling is enough; we however mispredict number of iterations of the loop
    at least until loop_ch is schedule ahead of profiling pass.  */
-/* { dg-final-use { cleanup-rtl-dump "Decided to simply peel the loop 2 times" } } */
+/* { dg-final-use { cleanup-rtl-dump "loop2_unroll" } } */

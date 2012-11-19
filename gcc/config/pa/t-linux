@@ -1,0 +1,1 @@
+MULTIARCH_DIRNAME = $(call if_multiarch,hppa-linux-gnu)

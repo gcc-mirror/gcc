@@ -231,7 +231,7 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
 			 tree type, tree inner_type,
 			 tree a, tree b, enum tree_code code)
 {
-  VEC(constructor_elt,gc) *v;
+  vec<constructor_elt, va_gc> *v;
   tree part_width = TYPE_SIZE (inner_type);
   tree index = bitsize_int (0);
   int nunits = TYPE_VECTOR_SUBPARTS (type);
@@ -247,13 +247,13 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
     warning_at (loc, OPT_Wvector_operation_performance,
 		"vector operation will be expanded in parallel");
 
-  v = VEC_alloc(constructor_elt, gc, (nunits + delta - 1) / delta);
+  vec_alloc (v, (nunits + delta - 1) / delta);
   for (i = 0; i < nunits;
        i += delta, index = int_const_binop (PLUS_EXPR, index, part_width))
     {
       tree result = f (gsi, inner_type, a, b, index, part_width, code);
       constructor_elt ce = {NULL_TREE, result};
-      VEC_quick_push (constructor_elt, v, ce);
+      v->quick_push (ce);
     }
 
   return build_constructor (type, v);
@@ -881,7 +881,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   bool a_is_comparison = false;
   tree b = gimple_assign_rhs2 (stmt);
   tree c = gimple_assign_rhs3 (stmt);
-  VEC(constructor_elt,gc) *v;
+  vec<constructor_elt, va_gc> *v;
   tree constr;
   tree inner_type = TREE_TYPE (type);
   tree cond_type = TREE_TYPE (TREE_TYPE (a));
@@ -909,7 +909,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   warning_at (loc, OPT_Wvector_operation_performance,
 	      "vector condition will be expanded piecewise");
 
-  v = VEC_alloc(constructor_elt, gc, nunits);
+  vec_alloc (v, nunits);
   for (i = 0; i < nunits;
        i++, index = int_const_binop (PLUS_EXPR, index, width))
     {
@@ -926,7 +926,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
 	aa = tree_vec_extract (gsi, cond_type, a, width, index);
       result = gimplify_build3 (gsi, COND_EXPR, inner_type, aa, bb, cc);
       constructor_elt ce = {NULL_TREE, result};
-      VEC_quick_push (constructor_elt, v, ce);
+      v->quick_push (ce);
     }
 
   constr = build_constructor (type, v);
@@ -1182,7 +1182,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   tree vect_elt_type = TREE_TYPE (vect_type);
   tree mask_elt_type = TREE_TYPE (mask_type);
   unsigned int elements = TYPE_VECTOR_SUBPARTS (vect_type);
-  VEC(constructor_elt,gc) *v;
+  vec<constructor_elt, va_gc> *v;
   tree constr, t, si, i_val;
   tree vec0tmp = NULL_TREE, vec1tmp = NULL_TREE, masktmp = NULL_TREE;
   bool two_operand_p = !operand_equal_p (vec0, vec1, 0);
@@ -1218,7 +1218,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   warning_at (loc, OPT_Wvector_operation_performance,
               "vector shuffling operation will be expanded piecewise");
 
-  v = VEC_alloc (constructor_elt, gc, elements);
+  vec_alloc (v, elements);
   for (i = 0; i < elements; i++)
     {
       si = size_int (i);

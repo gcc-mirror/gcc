@@ -113,7 +113,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "errors.h"
 #include "read-md.h"
 #include "gensupport.h"
-#include "vecprim.h"
 #include "fnmatch.h"
 
 #define DEBUG 0

@@ -72,7 +72,7 @@ scop_max_loop_depth (scop_p scop)
   poly_bb_p pbb;
   int max_nb_loops = 0;
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       int nb_loops = pbb_dim_iter_domain (pbb);
       if (max_nb_loops < nb_loops)
@@ -168,7 +168,7 @@ print_scattering_functions (FILE *file, scop_p scop, int verbosity)
   int i;
   poly_bb_p pbb;
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     print_scattering_function (file, pbb, verbosity);
 }
 
@@ -181,7 +181,7 @@ print_iteration_domains (FILE *file, scop_p scop, int verbosity)
   int i;
   poly_bb_p pbb;
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     print_iteration_domain (file, pbb, verbosity);
 }
 
@@ -279,7 +279,7 @@ new_poly_dr (poly_bb_p pbb, int dr_base_object_set,
   PDR_TYPE (pdr) = type;
   PDR_CDR (pdr) = cdr;
   PDR_NB_SUBSCRIPTS (pdr) = nb_subscripts;
-  VEC_safe_push (poly_dr_p, heap, PBB_DRS (pbb), pdr);
+  PBB_DRS (pbb).safe_push (pdr);
 }
 
 /* Free polyhedral data reference PDR.  */
@@ -308,7 +308,7 @@ new_poly_bb (scop_p scop, void *black_box)
   PBB_TRANSFORMED (pbb) = NULL;
   PBB_SAVED (pbb) = NULL;
   PBB_ORIGINAL (pbb) = NULL;
-  PBB_DRS (pbb) = VEC_alloc (poly_dr_p, heap, 3);
+  PBB_DRS (pbb).create (3);
   PBB_IS_REDUCTION (pbb) = false;
   GBB_PBB ((gimple_bb_p) black_box) = pbb;
 
@@ -328,11 +328,11 @@ free_poly_bb (poly_bb_p pbb)
   isl_map_free (pbb->transformed);
   isl_map_free (pbb->saved);
 
-  if (PBB_DRS (pbb))
-    FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), i, pdr)
+  if (PBB_DRS (pbb).exists ())
+    FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
       free_poly_dr (pdr);
 
-  VEC_free (poly_dr_p, heap, PBB_DRS (pbb));
+  PBB_DRS (pbb).release ();
   XDELETE (pbb);
 }
 
@@ -433,7 +433,7 @@ new_scop (void *region)
   scop->must_waw_no_source = NULL;
   scop->may_waw_no_source = NULL;
   scop_set_region (scop, region);
-  SCOP_BBS (scop) = VEC_alloc (poly_bb_p, heap, 3);
+  SCOP_BBS (scop).create (3);
   SCOP_ORIGINAL_SCHEDULE (scop) = NULL;
   SCOP_TRANSFORMED_SCHEDULE (scop) = NULL;
   SCOP_SAVED_SCHEDULE (scop) = NULL;
@@ -450,10 +450,10 @@ free_scop (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     free_poly_bb (pbb);
 
-  VEC_free (poly_bb_p, heap, SCOP_BBS (scop));
+  SCOP_BBS (scop).release ();
 
   isl_set_free (scop->context);
   isl_union_map_free (scop->must_raw);
@@ -521,18 +521,18 @@ dump_gbb_cases (FILE *file, gimple_bb_p gbb)
 {
   int i;
   gimple stmt;
-  VEC (gimple, heap) *cases;
+  vec<gimple> cases;
 
   if (!gbb)
     return;
 
   cases = GBB_CONDITION_CASES (gbb);
-  if (VEC_empty (gimple, cases))
+  if (cases.is_empty ())
     return;
 
   fprintf (file, "# cases bb_%d (\n", GBB_BB (gbb)->index);
 
-  FOR_EACH_VEC_ELT (gimple, cases, i, stmt)
+  FOR_EACH_VEC_ELT (cases, i, stmt)
     {
       fprintf (file, "# ");
       print_gimple_stmt (file, stmt, 0, 0);
@@ -548,18 +548,18 @@ dump_gbb_conditions (FILE *file, gimple_bb_p gbb)
 {
   int i;
   gimple stmt;
-  VEC (gimple, heap) *conditions;
+  vec<gimple> conditions;
 
   if (!gbb)
     return;
 
   conditions = GBB_CONDITIONS (gbb);
-  if (VEC_empty (gimple, conditions))
+  if (conditions.is_empty ())
     return;
 
   fprintf (file, "# conditions bb_%d (\n", GBB_BB (gbb)->index);
 
-  FOR_EACH_VEC_ELT (gimple, conditions, i, stmt)
+  FOR_EACH_VEC_ELT (conditions, i, stmt)
     {
       fprintf (file, "# ");
       print_gimple_stmt (file, stmt, 0, 0);
@@ -579,7 +579,7 @@ print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
   int nb_reads = 0;
   int nb_writes = 0;
 
-  if (VEC_length (poly_dr_p, PBB_DRS (pbb)) == 0)
+  if (PBB_DRS (pbb).length () == 0)
     {
       if (verbosity > 0)
 	fprintf (file, "# Access informations are not provided\n");\
@@ -594,7 +594,7 @@ print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
     fprintf (file, "# Access informations are provided\n");
   fprintf (file, "1\n");
 
-  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), i, pdr)
+  FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
     if (PDR_TYPE (pdr) == PDR_READ)
       nb_reads++;
     else
@@ -607,7 +607,7 @@ print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
     fprintf (file, "# Read access informations\n");
   fprintf (file, "%d\n", nb_reads);
 
-  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), i, pdr)
+  FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
     if (PDR_TYPE (pdr) == PDR_READ)
       print_pdr (file, pdr, verbosity);
 
@@ -621,7 +621,7 @@ print_pdrs (FILE *file, poly_bb_p pbb, int verbosity)
     fprintf (file, "# Write access informations\n");
   fprintf (file, "%d\n", nb_writes);
 
-  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), i, pdr)
+  FOR_EACH_VEC_ELT (PBB_DRS (pbb), i, pdr)
     if (PDR_TYPE (pdr) != PDR_READ)
       print_pdr (file, pdr, verbosity);
 
@@ -713,7 +713,7 @@ print_scop_params (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 1)
     fprintf (file, "# parameters (\n");
 
-  if (VEC_length (tree, SESE_PARAMS (SCOP_REGION (scop))))
+  if (SESE_PARAMS (SCOP_REGION (scop)).length ())
     {
       if (verbosity > 0)
 	fprintf (file, "# Parameter names are provided\n");
@@ -730,7 +730,7 @@ print_scop_params (FILE *file, scop_p scop, int verbosity)
       fprintf (file, "0\n");
     }
 
-  FOR_EACH_VEC_ELT (tree, SESE_PARAMS (SCOP_REGION (scop)), i, t)
+  FOR_EACH_VEC_ELT (SESE_PARAMS (SCOP_REGION (scop)), i, t)
     {
       print_generic_expr (file, t, 0);
       fprintf (file, " ");
@@ -815,9 +815,9 @@ print_scop (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     fprintf (file, "# Number of statements\n");
 
-  fprintf (file, "%d\n",VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  fprintf (file, "%d\n", SCOP_BBS (scop).length ());
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     print_pbb (file, pbb, verbosity);
 
   if (verbosity > 1)
@@ -854,9 +854,9 @@ print_cloog (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     fprintf (file, "# Number of statements\n");
 
-  fprintf (file, "%d\n", VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  fprintf (file, "%d\n", SCOP_BBS (scop).length ());
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       if (verbosity > 1)
 	fprintf (file, "# pbb_%d (\n", pbb_index (pbb));
@@ -882,9 +882,9 @@ print_cloog (FILE *file, scop_p scop, int verbosity)
   if (verbosity > 0)
     fprintf (file, "# Number of scattering functions\n");
 
-  fprintf (file, "%d\n", VEC_length (poly_bb_p, SCOP_BBS (scop)));
+  fprintf (file, "%d\n", SCOP_BBS (scop).length ());
 
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
+  FOR_EACH_VEC_ELT (SCOP_BBS (scop), i, pbb)
     {
       if (!(pbb->transformed || pbb->schedule))
 	continue;
@@ -1059,12 +1059,13 @@ pbb_number_of_iterations_at_time (poly_bb_p pbb,
 /* Translates LOOP to LST.  */
 
 static lst_p
-loop_to_lst (loop_p loop, VEC (poly_bb_p, heap) *bbs, int *i)
+loop_to_lst (loop_p loop, vec<poly_bb_p> bbs, int *i)
 {
   poly_bb_p pbb;
-  VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 5);
+  vec<lst_p> seq;
+  seq.create (5);
 
-  for (; VEC_iterate (poly_bb_p, bbs, *i, pbb); (*i)++)
+  for (; bbs.iterate (*i, &pbb); (*i)++)
     {
       lst_p stmt;
       basic_block bb = GBB_BB (PBB_BLACK_BOX (pbb));
@@ -1086,7 +1087,7 @@ loop_to_lst (loop_p loop, VEC (poly_bb_p, heap) *bbs, int *i)
 	  return new_lst_loop (seq);
 	}
 
-      VEC_safe_push (lst_p, heap, seq, stmt);
+      seq.safe_push (stmt);
     }
 
   return new_lst_loop (seq);
@@ -1099,13 +1100,14 @@ void
 scop_to_lst (scop_p scop)
 {
   lst_p res;
-  int i, n = VEC_length (poly_bb_p, SCOP_BBS (scop));
-  VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 5);
+  int i, n = SCOP_BBS (scop).length ();
+  vec<lst_p> seq;
+  seq.create (5);
   sese region = SCOP_REGION (scop);
 
   for (i = 0; i < n; i++)
     {
-      poly_bb_p pbb = VEC_index (poly_bb_p, SCOP_BBS (scop), i);
+      poly_bb_p pbb = SCOP_BBS (scop)[i];
       loop_p loop = outermost_loop_in_sese (region, GBB_BB (PBB_BLACK_BOX (pbb)));
 
       if (loop_in_sese_p (loop, region))
@@ -1113,7 +1115,7 @@ scop_to_lst (scop_p scop)
       else
 	res = new_lst_stmt (pbb);
 
-      VEC_safe_push (lst_p, heap, seq, res);
+      seq.safe_push (res);
     }
 
   res = new_lst_loop (seq);
@@ -1155,7 +1157,7 @@ print_lst (FILE *file, lst_p lst, int indent)
       else
 	fprintf (file, "#(root");
 
-      FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+      FOR_EACH_VEC_ELT (LST_SEQ (lst), i, l)
 	print_lst (file, l, indent + 2);
 
       fprintf (file, ")");
@@ -1196,7 +1198,7 @@ dot_lst_1 (FILE *file, lst_p lst)
 		 lst_depth (lst),
 		 lst_dewey_number (lst));
 
-      FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+      FOR_EACH_VEC_ELT (LST_SEQ (lst), i, l)
 	dot_lst_1 (file, l);
     }
 
@@ -1277,14 +1279,14 @@ reverse_loop_at_level (poly_bb_p pbb, int depth)
 /* Reverse the loop at level DEPTH for all the PBBS.  */
 
 isl_union_map *
-reverse_loop_for_pbbs (scop_p scop, VEC (poly_bb_p, heap) *pbbs, int depth)
+reverse_loop_for_pbbs (scop_p scop, vec<poly_bb_p> pbbs, int depth)
 {
   poly_bb_p pbb;
   int i;
   isl_space *space = isl_space_from_domain (isl_set_get_space (scop->context));
   isl_union_map *res = isl_union_map_empty (space);
 
-  for (i = 0; VEC_iterate (poly_bb_p, pbbs, i, pbb); i++)
+  for (i = 0; pbbs.iterate (i, &pbb); i++)
     res = isl_union_map_add_map (res, reverse_loop_at_level (pbb, depth));
 
   return res;

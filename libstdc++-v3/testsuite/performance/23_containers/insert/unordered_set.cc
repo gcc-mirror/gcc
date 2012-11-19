@@ -17,8 +17,17 @@
 
 // { dg-options "-std=c++11" }
 
-#include <unordered_set>
 #include <testsuite_performance.h>
+#include <sstream>
+#ifdef _USE_TR1
+#  include <tr1/unordered_set>
+using namespace std::tr1;
+const char* ns = "std::tr1::";
+#else
+#  include<unordered_set>
+using namespace std;
+const char* ns = "std::";
+#endif
 
 int main()
 {
@@ -29,14 +38,16 @@ int main()
 
   const int sz = 10000000;
 
-  std::unordered_set<int> s;
+  unordered_set<int> s;
   start_counters(time, resource);
 
   for (int i = 0; i != sz ; ++i)
     s.insert(i);
 
   stop_counters(time, resource);
-  report_performance(__FILE__, "unordered_set 10000000 insertions",
+  std::ostringstream ostr;
+  ostr << ns << "unordered_set " << sz << " insertions";
+  report_performance(__FILE__, ostr.str().c_str(),
 		     time, resource);
   return 0;
 }

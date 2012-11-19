@@ -3861,7 +3861,7 @@
 
   return "vshufps\t{%3, %2, %1, %0|%0, %1, %2, %3}";
 }
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sseshuf")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
@@ -3912,7 +3912,7 @@
     }
 }
   [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "sselog")
+   (set_attr "type" "sseshuf")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V4SF")])
@@ -4019,7 +4019,7 @@
    vmovlps\t{%2, %1, %0|%0, %1, %2}
    %vmovlps\t{%2, %0|%0, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx,*")
-   (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
+   (set_attr "type" "sseshuf,sseshuf,ssemov,ssemov,ssemov")
    (set_attr "length_immediate" "1,1,*,*,*")
    (set_attr "prefix" "orig,vex,orig,vex,maybe_vex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
@@ -4073,7 +4073,7 @@
    vbroadcastss\t{%1, %0|%0, %1}
    shufps\t{$0, %0, %0|%0, %0, 0}"
   [(set_attr "isa" "avx,avx,noavx")
-   (set_attr "type" "sselog1,ssemov,sselog1")
+   (set_attr "type" "sseshuf1,ssemov,sseshuf1")
    (set_attr "length_immediate" "1,0,1")
    (set_attr "prefix_extra" "0,1,*")
    (set_attr "prefix" "vex,vex,orig")
@@ -4803,7 +4803,7 @@
 
   return "vshufpd\t{%3, %2, %1, %0|%0, %1, %2, %3}";
 }
-  [(set_attr "type" "sselog")
+  [(set_attr "type" "sseshuf")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
@@ -4917,7 +4917,7 @@
     }
 }
   [(set_attr "isa" "noavx,avx")
-   (set_attr "type" "sselog")
+   (set_attr "type" "sseshuf")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V2DF")])

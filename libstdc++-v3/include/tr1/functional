@@ -1615,7 +1615,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_get_pointer(const _Any_data& __source)
 	{
 	  const _Functor* __ptr =
-	    __stored_locally? &__source._M_access<_Functor>()
+	    __stored_locally? std::__addressof(__source._M_access<_Functor>())
 	    /* have stored a pointer */ : __source._M_access<_Functor*>();
 	  return const_cast<_Functor*>(__ptr);
 	}
@@ -1744,8 +1744,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static void
 	_M_init_functor(_Any_data& __functor, reference_wrapper<_Functor> __f)
 	{
-	  // TBD: Use address_of function instead.
-	  _Base::_M_init_functor(__functor, &__f.get());
+	  _Base::_M_init_functor(__functor, std::__addressof(__f.get()));
 	}
       };
 

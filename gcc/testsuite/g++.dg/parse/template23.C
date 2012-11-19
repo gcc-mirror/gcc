@@ -5,6 +5,6 @@ template<int> struct A {};
 
 template<typename T> struct B
 {
-  A<T(0i)> a1; /* { dg-error "imaginary constants are a GCC extension" } */
-  A<T(0i)> a2; /* { dg-error "imaginary constants are a GCC extension" } */
+  A<T(0i)> a1; /* { dg-error "imaginary constants are a GCC extension|literal operator" } */
+  A<T(0i)> a2; /* { dg-error "imaginary constants are a GCC extension|literal operator" } */
 };

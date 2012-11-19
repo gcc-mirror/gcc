@@ -92,13 +92,11 @@ ira_emit_data_t ira_allocno_emit_data;
 
 /* Definitions for vectors of pointers.  */
 typedef void *void_p;
-DEF_VEC_P (void_p);
-DEF_VEC_ALLOC_P (void_p,heap);
 
 /* Pointers to data allocated for allocnos being created during
    emitting.  Usually there are quite few such allocnos because they
    are created only for resolving loop in register shuffling.  */
-static VEC(void_p, heap) *new_allocno_emit_data_vec;
+static vec<void_p> new_allocno_emit_data_vec;
 
 /* Allocate and initiate the emit data.  */
 void
@@ -114,7 +112,7 @@ ira_initiate_emit_data (void)
 	  ira_allocnos_num * sizeof (struct ira_emit_data));
   FOR_EACH_ALLOCNO (a, ai)
     ALLOCNO_ADD_DATA (a) = ira_allocno_emit_data + ALLOCNO_NUM (a);
-  new_allocno_emit_data_vec = VEC_alloc (void_p, heap, 50);
+  new_allocno_emit_data_vec.create (50);
 
 }
 
@@ -129,12 +127,12 @@ ira_finish_emit_data (void)
   ira_free (ira_allocno_emit_data);
   FOR_EACH_ALLOCNO (a, ai)
     ALLOCNO_ADD_DATA (a) = NULL;
-  for (;VEC_length (void_p, new_allocno_emit_data_vec) != 0;)
+  for (;new_allocno_emit_data_vec.length () != 0;)
     {
-      p = VEC_pop (void_p, new_allocno_emit_data_vec);
+      p = new_allocno_emit_data_vec.pop ();
       ira_free (p);
     }
-  VEC_free (void_p, heap, new_allocno_emit_data_vec);
+  new_allocno_emit_data_vec.release ();
 }
 
 /* Create and return a new allocno with given REGNO and
@@ -147,7 +145,7 @@ create_new_allocno (int regno, ira_loop_tree_node_t loop_tree_node)
   a = ira_create_allocno (regno, false, loop_tree_node);
   ALLOCNO_ADD_DATA (a) = ira_allocate (sizeof (struct ira_emit_data));
   memset (ALLOCNO_ADD_DATA (a), 0, sizeof (struct ira_emit_data));
-  VEC_safe_push (void_p, heap, new_allocno_emit_data_vec, ALLOCNO_ADD_DATA (a));
+  new_allocno_emit_data_vec.safe_push (ALLOCNO_ADD_DATA (a));
   return a;
 }
 
@@ -437,7 +435,7 @@ setup_entered_from_non_parent_p (void)
   loop_p loop;
 
   ira_assert (current_loops != NULL);
-  FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
+  FOR_EACH_VEC_SAFE_ELT (ira_loops.larray, i, loop)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       ira_loop_nodes[i].entered_from_non_parent_p
 	= entered_from_non_parent_p (&ira_loop_nodes[i]);
@@ -669,7 +667,7 @@ set_allocno_somewhere_renamed_p (void)
 /* Return TRUE if move lists on all edges given in vector VEC are
    equal.  */
 static bool
-eq_edge_move_lists_p (VEC(edge,gc) *vec)
+eq_edge_move_lists_p (vec<edge, va_gc> *vec)
 {
   move_t list;
   int i;
@@ -690,7 +688,7 @@ unify_moves (basic_block bb, bool start_p)
   int i;
   edge e;
   move_t list;
-  VEC(edge,gc) *vec;
+  vec<edge, va_gc> *vec;
 
   vec = (start_p ? bb->preds : bb->succs);
   if (EDGE_COUNT (vec) == 0 || ! eq_edge_move_lists_p (vec))
@@ -729,12 +727,10 @@ static move_t *allocno_last_set;
 static int *allocno_last_set_check;
 
 /* Definition of vector of moves.  */
-DEF_VEC_P(move_t);
-DEF_VEC_ALLOC_P(move_t, heap);
 
 /* This vec contains moves sorted topologically (depth-first) on their
    dependency graph.  */
-static VEC(move_t,heap) *move_vec;
+static vec<move_t> move_vec;
 
 /* The variable value is used to check correctness of values of
    elements of arrays `hard_regno_last_set' and
@@ -753,7 +749,7 @@ traverse_moves (move_t move)
   move->visited_p = true;
   for (i = move->deps_num - 1; i >= 0; i--)
     traverse_moves (move->deps[i]);
-  VEC_safe_push (move_t, heap, move_vec, move);
+  move_vec.safe_push (move);
 }
 
 /* Remove unnecessary moves in the LIST, makes topological sorting,
@@ -805,22 +801,22 @@ modify_move_list (move_t list)
 	}
     }
   /* Toplogical sorting:  */
-  VEC_truncate (move_t, move_vec, 0);
+  move_vec.truncate (0);
   for (move = list; move != NULL; move = move->next)
     traverse_moves (move);
   last = NULL;
-  for (i = (int) VEC_length (move_t, move_vec) - 1; i >= 0; i--)
+  for (i = (int) move_vec.length () - 1; i >= 0; i--)
     {
-      move = VEC_index (move_t, move_vec, i);
+      move = move_vec[i];
       move->next = NULL;
       if (last != NULL)
 	last->next = move;
       last = move;
     }
-  first = VEC_last (move_t, move_vec);
+  first = move_vec.last ();
   /* Removing cycles:  */
   curr_tick++;
-  VEC_truncate (move_t, move_vec, 0);
+  move_vec.truncate (0);
   for (move = first; move != NULL; move = move->next)
     {
       from = move->from;
@@ -868,7 +864,7 @@ modify_move_list (move_t list)
 
 		new_move = create_move (set_move->to, new_allocno);
 		set_move->to = new_allocno;
-		VEC_safe_push (move_t, heap, move_vec, new_move);
+		move_vec.safe_push (new_move);
 		ira_move_loops_num++;
 		if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 		  fprintf (ira_dump_file,
@@ -886,9 +882,9 @@ modify_move_list (move_t list)
 	  hard_regno_last_set_check[hard_regno + i] = curr_tick;
 	}
     }
-  for (i = (int) VEC_length (move_t, move_vec) - 1; i >= 0; i--)
+  for (i = (int) move_vec.length () - 1; i >= 0; i--)
     {
-      move = VEC_index (move_t, move_vec, i);
+      move = move_vec[i];
       move->next = NULL;
       last->next = move;
       last = move;
@@ -941,8 +937,7 @@ emit_move_list (move_t list, int freq)
 		  || (ira_reg_equiv[regno].invariant == NULL_RTX
 		      && ira_reg_equiv[regno].constant == NULL_RTX))
 		continue; /* regno has no equivalence.  */
-	      ira_assert ((int) VEC_length (reg_equivs_t, reg_equivs)
-			  > regno);
+	      ira_assert ((int) reg_equivs->length () > regno);
 	      reg_equiv_init (regno)
 		= gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init (regno));
 	    }
@@ -1283,7 +1278,7 @@ ira_emit (bool loops_p)
     unify_moves (bb, true);
   FOR_EACH_BB (bb)
     unify_moves (bb, false);
-  move_vec = VEC_alloc (move_t, heap, ira_allocnos_num);
+  move_vec.create (ira_allocnos_num);
   emit_moves ();
   add_ranges_and_copies ();
   /* Clean up: */
@@ -1297,7 +1292,7 @@ ira_emit (bool loops_p)
 	  e->aux = NULL;
 	}
     }
-  VEC_free (move_t, heap, move_vec);
+  move_vec.release ();
   ira_free (allocno_last_set_check);
   ira_free (allocno_last_set);
   commit_edge_insertions ();

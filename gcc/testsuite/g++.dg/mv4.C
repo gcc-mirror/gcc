@@ -3,6 +3,7 @@
    and its pointer is taken.  */
 
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-ifunc "" }  */
 /* { dg-options "-O2 -mno-sse -mno-popcnt" } */
 
 int __attribute__ ((target ("sse")))
@@ -18,6 +19,6 @@ foo ()
 
 int main ()
 {
-  int (*p)() = &foo; /* { dg-error "Pointer to a multiversioned function without a default is not allowed" {} } */
+  int (*p)() = &foo; /* { dg-error "use of multiversioned function without a default" {} } */
   return (*p)();
 }

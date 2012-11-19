@@ -171,12 +171,10 @@ static unsigned actual_stamp;
 
 typedef struct invariant *invariant_p;
 
-DEF_VEC_P(invariant_p);
-DEF_VEC_ALLOC_P(invariant_p, heap);
 
 /* The invariants.  */
 
-static VEC(invariant_p,heap) *invariants;
+static vec<invariant_p> invariants;
 
 /* Check the size of the invariant table and realloc if necessary.  */
 
@@ -504,7 +502,7 @@ find_identical_invariants (htab_t eq, struct invariant *inv)
 
   EXECUTE_IF_SET_IN_BITMAP (inv->depends_on, 0, depno, bi)
     {
-      dep = VEC_index (invariant_p, invariants, depno);
+      dep = invariants[depno];
       find_identical_invariants (eq, dep);
     }
 
@@ -528,10 +526,10 @@ merge_identical_invariants (void)
 {
   unsigned i;
   struct invariant *inv;
-  htab_t eq = htab_create (VEC_length (invariant_p, invariants),
+  htab_t eq = htab_create (invariants.length (),
 			   hash_invariant_expr, eq_invariant_expr, free);
 
-  FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
+  FOR_EACH_VEC_ELT (invariants, i, inv)
     find_identical_invariants (eq, inv);
 
   htab_delete (eq);
@@ -732,11 +730,11 @@ create_new_invariant (struct def *def, rtx insn, bitmap depends_on,
   inv->stamp = 0;
   inv->insn = insn;
 
-  inv->invno = VEC_length (invariant_p, invariants);
+  inv->invno = invariants.length ();
   inv->eqto = ~0u;
   if (def)
     def->invno = inv->invno;
-  VEC_safe_push (invariant_p, heap, invariants, inv);
+  invariants.safe_push (inv);
 
   if (dump_file)
     {
@@ -1079,7 +1077,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
   bitmap_iterator bi;
 
   /* Find the representative of the class of the equivalent invariants.  */
-  inv = VEC_index (invariant_p, invariants, inv->eqto);
+  inv = invariants[inv->eqto];
 
   *comp_cost = 0;
   if (! flag_ira_loop_pressure)
@@ -1145,7 +1143,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
     {
       bool check_p;
 
-      dep = VEC_index (invariant_p, invariants, depno);
+      dep = invariants[depno];
 
       get_inv_cost (dep, &acomp_cost, aregs_needed);
 
@@ -1276,7 +1274,7 @@ best_gain_for_invariant (struct invariant **best, unsigned *regs_needed,
   int i, gain = 0, again;
   unsigned aregs_needed[N_REG_CLASSES], invno;
 
-  FOR_EACH_VEC_ELT (invariant_p, invariants, invno, inv)
+  FOR_EACH_VEC_ELT (invariants, invno, inv)
     {
       if (inv->move)
 	continue;
@@ -1310,11 +1308,11 @@ best_gain_for_invariant (struct invariant **best, unsigned *regs_needed,
 static void
 set_move_mark (unsigned invno, int gain)
 {
-  struct invariant *inv = VEC_index (invariant_p, invariants, invno);
+  struct invariant *inv = invariants[invno];
   bitmap_iterator bi;
 
   /* Find the representative of the class of the equivalent invariants.  */
-  inv = VEC_index (invariant_p, invariants, inv->eqto);
+  inv = invariants[inv->eqto];
 
   if (inv->move)
     return;
@@ -1345,7 +1343,7 @@ find_invariants_to_move (bool speed, bool call_p)
   unsigned i, regs_used, regs_needed[N_REG_CLASSES], new_regs[N_REG_CLASSES];
   struct invariant *inv = NULL;
 
-  if (!VEC_length (invariant_p, invariants))
+  if (!invariants.length ())
     return;
 
   if (flag_ira_loop_pressure)
@@ -1425,8 +1423,8 @@ replace_uses (struct invariant *inv, rtx reg, bool in_group)
 static bool
 move_invariant_reg (struct loop *loop, unsigned invno)
 {
-  struct invariant *inv = VEC_index (invariant_p, invariants, invno);
-  struct invariant *repr = VEC_index (invariant_p, invariants, inv->eqto);
+  struct invariant *inv = invariants[invno];
+  struct invariant *repr = invariants[inv->eqto];
   unsigned i;
   basic_block preheader = loop_preheader_edge (loop)->src;
   rtx reg, set, dest, note;
@@ -1530,11 +1528,11 @@ move_invariants (struct loop *loop)
   struct invariant *inv;
   unsigned i;
 
-  FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
+  FOR_EACH_VEC_ELT (invariants, i, inv)
     move_invariant_reg (loop, i);
   if (flag_ira_loop_pressure && resize_reg_info ())
     {
-      FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
+      FOR_EACH_VEC_ELT (invariants, i, inv)
 	if (inv->reg != NULL_RTX)
 	  {
 	    if (inv->orig_regno >= 0)
@@ -1556,7 +1554,7 @@ init_inv_motion_data (void)
 {
   actual_stamp = 1;
 
-  invariants = VEC_alloc (invariant_p, heap, 100);
+  invariants.create (100);
 }
 
 /* Frees the data allocated by invariant motion.  */
@@ -1583,12 +1581,12 @@ free_inv_motion_data (void)
 	}
     }
 
-  FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
+  FOR_EACH_VEC_ELT (invariants, i, inv)
     {
       BITMAP_FREE (inv->depends_on);
       free (inv);
     }
-  VEC_free (invariant_p, heap, invariants);
+  invariants.release ();
 }
 
 /* Move the invariants out of the LOOP.  */

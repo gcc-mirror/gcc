@@ -40,7 +40,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "vecprim.h"
 #include "target.h"
 
 static tree make_method_value (tree);
@@ -98,7 +97,7 @@ static GTY(()) tree class_roots[4];
 #define class_list class_roots[2]
 #define class_dtable_decl class_roots[3]
 
-static GTY(()) VEC(tree,gc) *registered_class;
+static GTY(()) vec<tree, va_gc> *registered_class;
 
 /* A tree that returns the address of the class$ of the class
    currently being compiled.  */
@@ -106,7 +105,7 @@ static GTY(()) tree this_classdollar;
 
 /* A list of static class fields.  This is to emit proper debug
    info for them.  */
-VEC(tree,gc) *pending_static_fields;
+vec<tree, va_gc> *pending_static_fields;
 
 /* Return the node that most closely represents the class whose name
    is IDENT.  Start the search from NODE (followed by its siblings).
@@ -878,7 +877,7 @@ add_field (tree klass, tree name, tree field_type, int flags)
 	 object file.  */
       DECL_EXTERNAL (field) = (is_compiled_class (klass) != 2);
       if (!DECL_EXTERNAL (field))
-	VEC_safe_push (tree, gc, pending_static_fields, field);
+	vec_safe_push (pending_static_fields, field);
     }
 
   return field;
@@ -941,7 +940,7 @@ build_utf8_ref (tree name)
   int name_hash;
   tree ref = IDENTIFIER_UTF8_REF (name);
   tree decl;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   if (ref != NULL_TREE)
     return ref;
 
@@ -1422,7 +1421,7 @@ make_field_value (tree fdecl)
   int flags;
   tree type = TREE_TYPE (fdecl);
   int resolved = is_compiled_class (type) && ! flag_indirect_dispatch;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   START_RECORD_CONSTRUCTOR (v, field_type_node);
   PUSH_FIELD_VALUE (v, "name", build_utf8_ref (DECL_NAME (fdecl)));
@@ -1480,7 +1479,7 @@ make_method_value (tree mdecl)
   tree class_decl;
 #define ACC_TRANSLATED          0x4000
   int accflags = get_access_flags_from_decl (mdecl) | ACC_TRANSLATED;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   class_decl = DECL_CONTEXT (mdecl);
   /* For interfaces, the index field contains the dispatch index. */
@@ -1520,29 +1519,29 @@ make_method_value (tree mdecl)
     /* Compute the `throws' information for the method.  */
     tree table = null_pointer_node;
 
-    if (!VEC_empty (tree, DECL_FUNCTION_THROWS (mdecl)))
+    if (!vec_safe_is_empty (DECL_FUNCTION_THROWS (mdecl)))
       {
-	int length = 1 + VEC_length (tree, DECL_FUNCTION_THROWS (mdecl));
+	int length = 1 + DECL_FUNCTION_THROWS (mdecl)->length ();
 	tree t, type, array;
 	char buf[60];
-	VEC(constructor_elt,gc) *v = NULL;
+	vec<constructor_elt, va_gc> *v = NULL;
 	int idx = length - 1;
 	unsigned ix;
 	constructor_elt *e;
 
-	v = VEC_alloc (constructor_elt, gc, length);
-	VEC_safe_grow_cleared (constructor_elt, gc, v, length);
+	vec_alloc (v, length);
+	v->quick_grow_cleared (length);
 
-	e = &VEC_index (constructor_elt, v, idx--);
+	e = &(*v)[idx--];
 	e->value = null_pointer_node;
 
-	FOR_EACH_VEC_ELT (tree, DECL_FUNCTION_THROWS (mdecl), ix, t)
+	FOR_EACH_VEC_SAFE_ELT (DECL_FUNCTION_THROWS (mdecl), ix, t)
 	  {
 	    tree sig = DECL_NAME (TYPE_NAME (t));
 	    tree utf8
 	      = build_utf8_ref (unmangle_classname (IDENTIFIER_POINTER (sig),
 						    IDENTIFIER_LENGTH (sig)));
-	    e = &VEC_index (constructor_elt, v, idx--);
+	    e = &(*v)[idx--];
 	    e->value = utf8;
 	  }
 	gcc_assert (idx == -1);
@@ -1611,7 +1610,7 @@ get_dispatch_table (tree type, tree this_class_addr)
   int nvirtuals = TREE_VEC_LENGTH (vtable);
   int arraysize;
   tree gc_descr;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   constructor_elt *e;
   tree arraytype;
 
@@ -1620,8 +1619,8 @@ get_dispatch_table (tree type, tree this_class_addr)
     arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
   arraysize += 2;
 
-  VEC_safe_grow_cleared (constructor_elt, gc, v, arraysize);
-  e = &VEC_index (constructor_elt, v, arraysize - 1);
+  vec_safe_grow_cleared (v, arraysize);
+  e = &(*v)[arraysize - 1];
 
 #define CONSTRUCTOR_PREPEND_VALUE(E, V) E->value = V, E--
   for (i = nvirtuals;  --i >= 0; )
@@ -1674,7 +1673,7 @@ get_dispatch_table (tree type, tree this_class_addr)
   /** Pointer to type_info object (to be implemented), according to g++ ABI. */
   CONSTRUCTOR_PREPEND_VALUE (e, null_pointer_node);
   /** Offset to start of whole object.  Always (ptrdiff_t)0 for Java. */
-  gcc_assert (e == VEC_address (constructor_elt, v));
+  gcc_assert (e == v->address ());
   e->index = integer_zero_node;
   e->value = null_pointer_node;
 #undef CONSTRUCTOR_PREPEND_VALUE
@@ -1737,8 +1736,8 @@ supers_all_compiled (tree type)
 }
 
 static void
-add_table_and_syms (VEC(constructor_elt,gc) **v,
-                    VEC(method_entry,gc) *methods,
+add_table_and_syms (vec<constructor_elt, va_gc> **v,
+                    vec<method_entry, va_gc> *methods,
                     const char *table_name, tree table_slot, tree table_type,
                     const char *syms_name, tree syms_slot)
 {
@@ -1785,13 +1784,13 @@ make_class_data (tree type)
   /** Offset from start of virtual function table declaration
       to where objects actually point at, following new g++ ABI. */
   tree dtable_start_offset = size_int (2 * POINTER_SIZE / BITS_PER_UNIT);
-  VEC(int, heap) *field_indexes;
+  vec<int> field_indexes;
   tree first_real_field;
-  VEC(constructor_elt,gc) *v1 = NULL, *v2 = NULL;
+  vec<constructor_elt, va_gc> *v1 = NULL, *v2 = NULL;
   tree reflection_data;
-  VEC(constructor_elt,gc) *static_fields = NULL;
-  VEC(constructor_elt,gc) *instance_fields = NULL;
-  VEC(constructor_elt,gc) *methods = NULL;
+  vec<constructor_elt, va_gc> *static_fields = NULL;
+  vec<constructor_elt, va_gc> *instance_fields = NULL;
+  vec<constructor_elt, va_gc> *methods = NULL;
 
   this_class_addr = build_static_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
@@ -1850,7 +1849,7 @@ make_class_data (tree type)
 	}
     }
   field_count = static_field_count + instance_field_count;
-  field_indexes = VEC_alloc (int, heap, field_count);
+  field_indexes.create (field_count);
   
   /* gcj sorts fields so that static fields come first, followed by
      instance fields.  Unfortunately, by the time this takes place we
@@ -1879,7 +1878,7 @@ make_class_data (tree type)
 	    field_index = instance_count++;
 	  else
 	    continue;
-	  VEC_quick_push (int, field_indexes, field_index);
+	  field_indexes.quick_push (field_index);
 	}
     }
   }
@@ -1912,14 +1911,12 @@ make_class_data (tree type)
 	}
     }
 
-  gcc_assert (static_field_count
-              == (int) VEC_length (constructor_elt, static_fields));
-  gcc_assert (instance_field_count
-              == (int) VEC_length (constructor_elt, instance_fields));
+  gcc_assert (static_field_count == (int) vec_safe_length (static_fields));
+  gcc_assert (instance_field_count == (int) vec_safe_length (instance_fields));
 
   if (field_count > 0)
     {
-      VEC_safe_splice (constructor_elt, gc, static_fields, instance_fields);
+      vec_safe_splice (static_fields, instance_fields);
       field_array_type = build_prim_array_type (field_type_node, field_count);
       fields_decl = build_decl (input_location,
 				VAR_DECL, mangled_classname ("_FL_", type),
@@ -2021,8 +2018,8 @@ make_class_data (tree type)
     {
       int i;
       tree interface_array_type, idecl;
-      VEC(constructor_elt,gc) *init = VEC_alloc (constructor_elt, gc,
-						 interface_len);
+      vec<constructor_elt, va_gc> *init;
+      vec_alloc (init, interface_len);
       interface_array_type
 	= build_prim_array_type (class_ptr_type, interface_len);
       idecl = build_decl (input_location,
@@ -2143,7 +2140,7 @@ make_class_data (tree type)
                       "itable_syms", TYPE_ITABLE_SYMS_DECL (type));
  
   PUSH_FIELD_VALUE (v2, "catch_classes",
-		    build1 (ADDR_EXPR, ptr_type_node, TYPE_CTABLE_DECL (type))); 
+		    build1 (ADDR_EXPR, ptr_type_node, TYPE_CTABLE_DECL (type)));
   PUSH_FIELD_VALUE (v2, "interfaces", interfaces);
   PUSH_FIELD_VALUE (v2, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (v2, "interface_count",
@@ -2180,8 +2177,8 @@ make_class_data (tree type)
     {
       int i;
       int count = TYPE_REFLECTION_DATASIZE (current_class);
-      VEC (constructor_elt, gc) *v
-	= VEC_alloc (constructor_elt, gc, count);
+      vec<constructor_elt, va_gc> *v;
+      vec_alloc (v, count);
       unsigned char *data = TYPE_REFLECTION_DATA (current_class);
       tree max_index = build_int_cst (sizetype, count);
       tree index = build_index_type (max_index);
@@ -2194,14 +2191,14 @@ make_class_data (tree type)
       array = build_decl (input_location,
 			  VAR_DECL, get_identifier (buf), type);
 
-      rewrite_reflection_indexes (field_indexes);
+      rewrite_reflection_indexes (&field_indexes);
 
       for (i = 0; i < count; i++)
 	{
 	  constructor_elt elt;
  	  elt.index = build_int_cst (sizetype, i);
 	  elt.value = build_int_cstu (byte_type_node, data[i]);
-	  VEC_quick_push (constructor_elt, v, elt);
+	  v->quick_push (elt);
 	}
 
       DECL_INITIAL (array) = build_constructor (type, v);
@@ -2727,13 +2724,13 @@ register_class (void)
   tree node;
 
   if (!registered_class)
-    registered_class = VEC_alloc (tree, gc, 8);
+    vec_alloc (registered_class, 8);
 
   if (flag_indirect_classes)
     node = current_class;
   else
     node = TREE_OPERAND (build_class_ref (current_class), 0);
-  VEC_safe_push (tree, gc, registered_class, node);
+  vec_safe_push (registered_class, node);
 }
 
 /* Emit a function that calls _Jv_RegisterNewClasses with a list of
@@ -2745,15 +2742,16 @@ emit_indirect_register_classes (tree *list_p)
   tree klass, t, register_class_fn;
   int i;
 
-  int size = VEC_length (tree, registered_class) * 2 + 1;
-  VEC(constructor_elt,gc) *init = VEC_alloc (constructor_elt, gc, size);
+  int size = vec_safe_length (registered_class) * 2 + 1;
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc (init, size);
   tree class_array_type
     = build_prim_array_type (ptr_type_node, size);
   tree cdecl = build_decl (input_location,
 			   VAR_DECL, get_identifier ("_Jv_CLS"),
 			   class_array_type);
   tree reg_class_list;
-  FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
+  FOR_EACH_VEC_SAFE_ELT (registered_class, i, klass)
     {
       t = fold_convert (ptr_type_node, build_static_class_ref (klass));
       CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, t);
@@ -2792,10 +2790,11 @@ emit_register_classes_in_jcr_section (void)
 #ifdef JCR_SECTION_NAME
   tree klass, cdecl, class_array_type;
   int i;
-  int size = VEC_length (tree, registered_class);
-  VEC(constructor_elt,gc) *init = VEC_alloc (constructor_elt, gc, size);
+  int size = vec_safe_length (registered_class);
+  vec<constructor_elt, va_gc> *init;
+  vec_alloc (init, size);
 
-  FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
+  FOR_EACH_VEC_SAFE_ELT (registered_class, i, klass)
     CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, build_fold_addr_expr (klass));
 
   /* ??? I would like to use tree_output_constant_def() but there is no way
@@ -2844,7 +2843,7 @@ emit_Jv_RegisterClass_calls (tree *list_p)
   DECL_EXTERNAL (t) = 1;
   register_class_fn = t;
 
-  FOR_EACH_VEC_ELT (tree, registered_class, i, klass)
+  FOR_EACH_VEC_SAFE_ELT (registered_class, i, klass)
     {
       t = build_fold_addr_expr (klass);
       t = build_call_expr (register_class_fn, 1, t);
@@ -2890,7 +2889,7 @@ static tree
 build_symbol_table_entry (tree clname, tree name, tree signature)
 {
   tree symbol;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   START_RECORD_CONSTRUCTOR (v, symbol_type);
   PUSH_FIELD_VALUE (v, "clname", clname);
@@ -2935,22 +2934,22 @@ build_symbol_entry (tree decl, tree special)
 
 tree
 emit_symbol_table (tree name, tree the_table,
-		   VEC(method_entry,gc) *decl_table,
+		   vec<method_entry, va_gc> *decl_table,
                    tree the_syms_decl, tree the_array_element_type,
 		   int element_size)
 {
   tree table, null_symbol, table_size, the_array_type;
   unsigned index;
   method_entry *e;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   
   /* Only emit a table if this translation unit actually made any
      references via it. */
-  if (decl_table == NULL)
+  if (!decl_table)
     return the_table;
 
   /* Build a list of _Jv_MethodSymbols for each entry in otable_methods. */
-  FOR_EACH_VEC_ELT (method_entry, decl_table, index, e)
+  FOR_EACH_VEC_ELT (*decl_table, index, e)
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			    build_symbol_entry (e->method, e->special));
 
@@ -2990,7 +2989,7 @@ make_catch_class_record (tree catch_class, tree classname)
 {
   tree entry;
   tree type = TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (output_class)));
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   START_RECORD_CONSTRUCTOR (v, type);
   PUSH_FIELD_VALUE (v, "address", catch_class);
   PUSH_FIELD_VALUE (v, "classname", classname);
@@ -3008,13 +3007,12 @@ emit_catch_table (tree this_class)
   int n_catch_classes;
   constructor_elt *e;
   /* Fill in the dummy entry that make_class created.  */
-  e = &VEC_index (constructor_elt, TYPE_CATCH_CLASSES (this_class), 0);
+  e = &(*TYPE_CATCH_CLASSES (this_class))[0];
   e->value = make_catch_class_record (null_pointer_node, null_pointer_node);
   CONSTRUCTOR_APPEND_ELT (TYPE_CATCH_CLASSES (this_class), NULL_TREE,
 			  make_catch_class_record (null_pointer_node,
 						   null_pointer_node));
-  n_catch_classes = VEC_length (constructor_elt,
-				TYPE_CATCH_CLASSES (this_class));
+  n_catch_classes = TYPE_CATCH_CLASSES (this_class)->length ();
   table_size = build_index_type (build_int_cst (NULL_TREE, n_catch_classes));
   array_type 
     = build_array_type (TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (this_class))),
@@ -3052,7 +3050,7 @@ build_signature_for_libgcj (tree type)
 static tree
 build_assertion_table_entry (tree code, tree op1, tree op2)
 {
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   tree entry;
 
   START_RECORD_CONSTRUCTOR (v, assertion_entry_type);
@@ -3072,7 +3070,8 @@ add_assertion_table_entry (void **htab_entry, void *ptr)
 {
   tree entry;
   tree code_val, op1_utf8, op2_utf8;
-  VEC(constructor_elt,gc) **v = (VEC(constructor_elt,gc) **) ptr;
+  vec<constructor_elt, va_gc> **v
+      = ((vec<constructor_elt, va_gc> **) ptr);
   type_assertion *as = (type_assertion *) *htab_entry;
 
   code_val = build_int_cst (NULL_TREE, as->assertion_code);
@@ -3100,7 +3099,7 @@ emit_assertion_table (tree klass)
 {
   tree null_entry, ctor, table_decl;
   htab_t assertions_htab = TYPE_ASSERTIONS (klass);
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* Iterate through the hash table.  */
   htab_traverse (assertions_htab, add_assertion_table_entry, &v);
@@ -3266,11 +3265,11 @@ in_same_package (tree name1, tree name2)
 void
 java_write_globals (void)
 {
-  tree *vec = VEC_address (tree, pending_static_fields);
-  int len = VEC_length (tree, pending_static_fields);
+  tree *vec = vec_safe_address (pending_static_fields);
+  int len = vec_safe_length (pending_static_fields);
   write_global_declarations ();
   emit_debug_global_declarations (vec, len);
-  VEC_free (tree, gc, pending_static_fields);
+  vec_free (pending_static_fields);
 }
 
 #include "gt-java-class.h"

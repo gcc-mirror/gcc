@@ -724,7 +724,7 @@ struct GTY(()) lang_decl_func {
   int max_stack;
   int arg_slot_count;
   source_location last_line;	/* End line number for a function decl */
-  VEC(tree,gc) *throws_list;	/* Exception specified by `throws' */
+  vec<tree, va_gc> *throws_list;	/* Exception specified by `throws' */
   tree exc_obj;			/* Decl holding the exception object.  */
 
   /* Class initialization test variables  */
@@ -869,8 +869,6 @@ typedef struct GTY(()) method_entry_d {
   tree special;
 } method_entry;
 
-DEF_VEC_O(method_entry);
-DEF_VEC_ALLOC_O(method_entry,gc);
 
 /* FIXME: the variable_size annotation here is needed because these types are
    variable-sized in some other frontends.  Due to gengtype deficiency the GTY
@@ -882,24 +880,24 @@ struct GTY((variable_size)) lang_type {
   tree cpool_data_ref;		/* Cached */
   tree package_list;		/* List of package names, progressive */
 
-  VEC(method_entry,gc) *otable_methods; /* List of static decls referred
+  vec<method_entry, va_gc> *otable_methods; /* List of static decls referred
 					   to by this class.  */
   tree otable_decl;		/* The static address table.  */
   tree otable_syms_decl;
 
-  VEC(method_entry,gc) *atable_methods; /* List of abstract methods
+  vec<method_entry, va_gc> *atable_methods; /* List of abstract methods
 					   referred to by this class.  */
   tree atable_decl;		/* The static address table.  */
   tree atable_syms_decl;
 
-  VEC(method_entry,gc) *itable_methods; /* List of interface methods
+  vec<method_entry, va_gc> *itable_methods; /* List of interface methods
 					   referred to by this class.  */
   tree itable_decl;		/* The interfaces table.  */
   tree itable_syms_decl;
 
   tree ctable_decl;             /* The table of classes for the runtime
 				   type matcher.  */
-  VEC(constructor_elt,gc) *catch_classes;
+  vec<constructor_elt, va_gc> *catch_classes;
 
   htab_t GTY ((param_is (struct treetreehash_entry))) type_to_runtime_map;   
                                 /* The mapping of classes to exception region
@@ -1016,14 +1014,16 @@ extern void initialize_builtins (void);
 
 extern tree lookup_name (tree);
 extern bool special_method_p (tree);
-extern void maybe_rewrite_invocation (tree *, VEC(tree,gc) **, tree *, tree *);
-extern tree build_known_method_ref (tree, tree, tree, tree, VEC(tree,gc) *, tree);
+extern void maybe_rewrite_invocation (tree *, vec<tree, va_gc> **, tree *,
+				      tree *);
+extern tree build_known_method_ref (tree, tree, tree, tree, vec<tree, va_gc> *,
+				    tree);
 extern tree build_class_init (tree, tree);
 extern int attach_init_test_initialization_flags (void **, void *);
 extern tree build_invokevirtual (tree, tree, tree);
 extern tree build_invokeinterface (tree, tree);
 extern tree build_jni_stub (tree);
-extern tree invoke_build_dtable (int, VEC(tree,gc) *);
+extern tree invoke_build_dtable (int, vec<tree, va_gc> *);
 extern tree build_field_ref (tree, tree, tree);
 extern tree java_modify_addr_for_volatile (tree);
 extern void pushdecl_force_head (tree);
@@ -1062,7 +1062,7 @@ extern void make_class_data (tree);
 extern int alloc_name_constant (int, tree);
 extern int alloc_constant_fieldref (tree, tree);
 extern void emit_register_classes (tree *);
-extern tree emit_symbol_table (tree, tree, VEC(method_entry,gc) *,
+extern tree emit_symbol_table (tree, tree, vec<method_entry, va_gc> *,
 			       tree, tree, int);
 extern void lang_init_source (int);
 extern void write_classfile (tree);
@@ -1165,7 +1165,7 @@ extern void register_exception_range(struct eh_range *, int, int);
 extern void finish_method (tree);
 extern void java_expand_body (tree);
 
-extern int get_symbol_table_index (tree, tree, VEC(method_entry,gc) **);
+extern int get_symbol_table_index (tree, tree, vec<method_entry, va_gc> **);
 
 extern tree make_catch_class_record (tree, tree);
 extern tree emit_catch_table (tree);
@@ -1180,7 +1180,7 @@ extern void rewrite_reflection_indexes (void *);
 
 int cxx_keyword_p (const char *name, int length);
 
-extern GTY(()) VEC(tree,gc) *pending_static_fields;
+extern GTY(()) vec<tree, va_gc> *pending_static_fields;
 
 extern void java_write_globals (void);   
 
@@ -1268,7 +1268,7 @@ extern void java_write_globals (void);
 #define CLASS_COMPLETE_P(DECL) DECL_LANG_FLAG_2 (DECL) 
 
 /* A vector used to track type states for the current method.  */
-extern VEC(tree, gc) *type_states;
+extern vec<tree, va_gc> *type_states;
 
 /* This maps a bytecode offset (PC) to various flags,
    listed below (starting with BCODE_). */
@@ -1419,7 +1419,7 @@ extern tree *type_map;
 #define START_RECORD_CONSTRUCTOR(V, CTYPE) \
   do \
     { \
-      V = VEC_alloc (constructor_elt, gc, 0); \
+      vec_alloc (V, 0); \
       CONSTRUCTOR_APPEND_ELT (V, TYPE_FIELDS (CTYPE), NULL); \
     } \
   while (0)
@@ -1430,7 +1430,7 @@ extern tree *type_map;
 #define PUSH_SUPER_VALUE(V, VALUE) \
   do \
     { \
-      constructor_elt *_elt___ = &VEC_last (constructor_elt, V); \
+      constructor_elt *_elt___ = &(V)->last (); \
       tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (!DECL_NAME (_elt___->index)); \
       _elt___->value = VALUE; \
@@ -1444,7 +1444,7 @@ extern tree *type_map;
 #define PUSH_FIELD_VALUE(V, NAME, VALUE) 				\
   do \
     { \
-      constructor_elt *_elt___ = &VEC_last (constructor_elt, V); \
+      constructor_elt *_elt___ = &(V)->last (); \
       tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (strcmp (IDENTIFIER_POINTER (DECL_NAME (_elt___->index)), \
 			  NAME) == 0); \
@@ -1457,7 +1457,7 @@ extern tree *type_map;
 #define FINISH_RECORD_CONSTRUCTOR(CONS, V, CTYPE)        \
   do \
     { \
-      VEC_pop (constructor_elt, V); \
+      V->pop (); \
       CONS = build_constructor (CTYPE, V); \
       TREE_CONSTANT (CONS) = 0; \
     } \

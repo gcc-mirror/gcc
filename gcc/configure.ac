@@ -613,6 +613,31 @@ AC_ARG_ENABLE(multilib,
 [], [enable_multilib=yes])
 AC_SUBST(enable_multilib)
 
+# Determine whether or not multiarch is enabled.
+AC_ARG_ENABLE(multiarch,
+[AS_HELP_STRING([--enable-multiarch],
+		[enable support for multiarch paths])],
+[case "${withval}" in
+yes|no|auto) enable_multiarch=$withval;;
+*) AC_MSG_ERROR(bad value ${withval} given for --enable-multiarch option) ;;
+esac], [enable_multiarch=auto])
+if test x${enable_multiarch} = xauto; then
+  if test x${with_native_system_header_dir} != x; then
+    ma_msg_suffix=", disabled auto check (configured with --native-system-header-dir)"
+    enable_multiarch=no
+  fi
+  if test x$host != x$target && test "x$with_sysroot" = x; then
+    ma_msg_suffix=", disabled auto check (cross build configured without --with-sysroot)"
+    enable_multiarch=no
+  fi
+fi
+AC_MSG_CHECKING(for multiarch configuration)
+AC_SUBST(enable_multiarch)
+AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
+
+# needed for setting the multiarch name for soft-float/hard-float ABIs
+AC_SUBST(with_float)
+
 # Enable __cxa_atexit for C++.
 AC_ARG_ENABLE(__cxa_atexit,
 [AS_HELP_STRING([--enable-__cxa_atexit], [enable __cxa_atexit for C++])],
@@ -3520,6 +3545,24 @@ foo:
        fnaddd %f10, %f12, %f14],,
       [AC_DEFINE(HAVE_AS_FMAF_HPC_VIS3, 1,
                 [Define if your assembler supports FMAF, HPC, and VIS 3.0 instructions.])])
+
+    gcc_GAS_CHECK_FEATURE([SPARC4 instructions],
+      gcc_cv_as_sparc_sparc4,,
+      [-xarch=sparc4],
+      [.text
+       .register %g2, #scratch
+       .register %g3, #scratch
+       .align 4
+       cxbe %g2, %g3, 1f
+1:     cwbneg %g2, %g3, 1f
+1:     sha1
+       md5
+       aes_kexpand0 %f4, %f6, %f8
+       des_round %f38, %f40, %f42, %f44
+       camellia_f %f54, %f56, %f58, %f60
+       kasumi_fi_xor %f46, %f48, %f50, %f52],,
+      [AC_DEFINE(HAVE_AS_SPARC4, 1,
+                [Define if your assembler supports SPARC4 instructions.])])
     ;;
 
 changequote(,)dnl
@@ -4492,6 +4535,35 @@ EOF
     if test x"$gcc_cv_ld_large_toc" = xyes; then
       AC_DEFINE(HAVE_LD_LARGE_TOC, 1,
     [Define if your PowerPC64 linker supports a large TOC.])
+    fi
+    ;;
+esac
+
+case "$target" in
+  *-*-aix*)
+    AC_CACHE_CHECK(linker large toc support,
+    gcc_cv_ld_large_toc,
+    [gcc_cv_ld_large_toc=no
+    if test x$gcc_cv_as != x ; then
+      cat > conftest.s <<EOF
+	.toc
+LC..1:
+	.tc a[[TC]],a[[RW]]
+	.extern a[[RW]]
+	.csect .text[[PR]]
+.largetoctest:
+	addis 9,LC..1@u(2)
+	ld 3,LC..1@l(9)
+EOF
+      if $gcc_cv_as -a64 -o conftest.o conftest.s > /dev/null 2>&1; then
+        gcc_cv_ld_large_toc=yes
+      fi
+      rm -f conftest conftest.o conftest.s
+    fi
+    ])
+    if test x"$gcc_cv_ld_large_toc" = xyes; then
+      AC_DEFINE(HAVE_LD_LARGE_TOC, 1,
+    [Define if your AIX linker supports a large TOC.])
     fi
     ;;
 esac

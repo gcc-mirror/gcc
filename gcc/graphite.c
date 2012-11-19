@@ -183,13 +183,13 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 /* Print statistics for SCOPS to FILE.  */
 
 static void
-print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
+print_graphite_statistics (FILE* file, vec<scop_p> scops)
 {
   int i;
 
   scop_p scop;
 
-  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
+  FOR_EACH_VEC_ELT (scops, i, scop)
     print_graphite_scop_statistics (file, scop);
 }
 
@@ -255,7 +255,7 @@ graphite_transform_loops (void)
   int i;
   scop_p scop;
   bool need_cfg_cleanup_p = false;
-  VEC (scop_p, heap) *scops = NULL;
+  vec<scop_p> scops = vec<scop_p>();
   htab_t bb_pbb_mapping;
   isl_ctx *ctx;
 
@@ -280,7 +280,7 @@ graphite_transform_loops (void)
 
   bb_pbb_mapping = htab_create (10, bb_pbb_map_hash, eq_bb_pbb_map, free);
 
-  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
+  FOR_EACH_VEC_ELT (scops, i, scop)
     if (dbg_cnt (graphite_scop))
       {
 	scop->ctx = ctx;

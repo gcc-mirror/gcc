@@ -487,7 +487,7 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   tree tmp, field;
   tree init;
   unsigned char *data, *chk;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   tree type = unsigned_char_type_node;
   int i;
@@ -644,7 +644,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
   if (is_init)
     {
       tree ctor, tmp;
-      VEC(constructor_elt,gc) *v = NULL;
+      vec<constructor_elt, va_gc> *v = NULL;
 
       if (field != NULL_TREE && field_init != NULL_TREE)
 	CONSTRUCTOR_APPEND_ELT (v, field, field_init);
@@ -664,7 +664,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	      }
 	  }
 
-      gcc_assert (!VEC_empty (constructor_elt, v));
+      gcc_assert (!v->is_empty ());
       ctor = build_constructor (union_type, v);
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
