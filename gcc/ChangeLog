@@ -1,5 +1,6 @@
 2012-11-19  Mans Rullgard  <mans@mansr.com>
 
+	PR target/55276
 	* config/rs6000/rs6000.c (rs6000_stack_info): Always set vrsave_mask
 	for TARGET_ALTIVEC_ABI.  Zero vrsave_save_offset if
 	!TARGET_ALTIVEC_VRSAVE.
