@@ -2840,6 +2840,8 @@ execute_tm_mark (void)
     if (r != NULL)
       expand_block_tm (r, BASIC_BLOCK (i));
 
+  bb_regions.release ();
+
   // Propagate flags from inner transactions outwards.
   propagate_tm_flags_out (all_tm_regions);
 
