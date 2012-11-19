@@ -79,9 +79,7 @@ ggc_htab_delete (void **slot, void *info)
    tables, for instance from some plugins; this vector is on the heap
    since it is used by GGC internally.  */
 typedef const struct ggc_root_tab *const_ggc_root_tab_t;
-DEF_VEC_P(const_ggc_root_tab_t);
-DEF_VEC_ALLOC_P(const_ggc_root_tab_t, heap);
-static VEC(const_ggc_root_tab_t, heap) *extra_root_vec;
+static vec<const_ggc_root_tab_t> extra_root_vec;
 
 /* Dynamically register a new GGC root table RT. This is useful for
    plugins. */
@@ -90,7 +88,7 @@ void
 ggc_register_root_tab (const struct ggc_root_tab* rt)
 {
   if (rt)
-    VEC_safe_push (const_ggc_root_tab_t, heap, extra_root_vec, rt);
+    extra_root_vec.safe_push (rt);
 }
 
 /* This extra vector of dynamically registered cache_tab-s is used by
@@ -98,9 +96,7 @@ ggc_register_root_tab (const struct ggc_root_tab* rt)
    tables, for instance from some plugins; this vector is on the heap
    since it is used by GGC internally.  */
 typedef const struct ggc_cache_tab *const_ggc_cache_tab_t;
-DEF_VEC_P(const_ggc_cache_tab_t);
-DEF_VEC_ALLOC_P(const_ggc_cache_tab_t, heap);
-static VEC(const_ggc_cache_tab_t, heap) *extra_cache_vec;
+static vec<const_ggc_cache_tab_t> extra_cache_vec;
 
 /* Dynamically register a new GGC cache table CT. This is useful for
    plugins. */
@@ -109,7 +105,7 @@ void
 ggc_register_cache_tab (const struct ggc_cache_tab* ct)
 {
   if (ct)
-    VEC_safe_push (const_ggc_cache_tab_t, heap, extra_cache_vec, ct);
+    extra_cache_vec.safe_push (ct);
 }
 
 /* Scan a hash table that has objects which are to be deleted if they are not
@@ -160,7 +156,7 @@ ggc_mark_roots (void)
   for (rt = gt_ggc_rtab; *rt; rt++)
     ggc_mark_root_tab (*rt);
 
-  FOR_EACH_VEC_ELT (const_ggc_root_tab_t, extra_root_vec, i, rtp)
+  FOR_EACH_VEC_ELT (extra_root_vec, i, rtp)
     ggc_mark_root_tab (rtp);
 
   if (ggc_protect_identifiers)
@@ -171,7 +167,7 @@ ggc_mark_roots (void)
   for (ct = gt_ggc_cache_rtab; *ct; ct++)
     ggc_scan_cache_tab (*ct);
 
-  FOR_EACH_VEC_ELT (const_ggc_cache_tab_t, extra_cache_vec, i, ctp)
+  FOR_EACH_VEC_ELT (extra_cache_vec, i, ctp)
     ggc_scan_cache_tab (ctp);
 
   if (! ggc_protect_identifiers)

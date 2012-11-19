@@ -328,7 +328,7 @@ static int first_label_num;
 static char *offsets_known_at;
 static HOST_WIDE_INT (*offsets_at)[NUM_ELIMINABLE_REGS];
 
-VEC(reg_equivs_t,gc) *reg_equivs;
+vec<reg_equivs_t, va_gc> *reg_equivs;
 
 /* Stack of addresses where an rtx has been changed.  We can undo the 
    changes by popping items off the stack and restoring the original
@@ -341,9 +341,7 @@ VEC(reg_equivs_t,gc) *reg_equivs;
    rtx expression would be changed.  See PR 42431.  */
 
 typedef rtx *rtx_p;
-DEF_VEC_P(rtx_p);
-DEF_VEC_ALLOC_P(rtx_p,heap);
-static VEC(rtx_p,heap) *substitute_stack;
+static vec<rtx_p> substitute_stack;
 
 /* Number of labels in the current function.  */
 
@@ -656,15 +654,15 @@ has_nonexceptional_receiver (void)
 void
 grow_reg_equivs (void)
 {
-  int old_size = VEC_length (reg_equivs_t, reg_equivs);
+  int old_size = vec_safe_length (reg_equivs);
   int max_regno = max_reg_num ();
   int i;
   reg_equivs_t ze;
 
   memset (&ze, 0, sizeof (reg_equivs_t));
-  VEC_reserve (reg_equivs_t, gc, reg_equivs, max_regno);
+  vec_safe_reserve (reg_equivs, max_regno);
   for (i = old_size; i < max_regno; i++)
-    VEC_quick_insert (reg_equivs_t, reg_equivs, i, ze);
+    reg_equivs->quick_insert (i, ze);
 }
 
 
@@ -1323,7 +1321,7 @@ reload (rtx first, int global)
     REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = BITS_PER_UNIT;
 #endif
 
-  VEC_free (rtx_p, heap, substitute_stack);
+  substitute_stack.release ();
 
   gcc_assert (bitmap_empty_p (&spilled_pseudos));
 
@@ -3007,7 +3005,7 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
 
 	}
       else if (reg_renumber[regno] < 0
-	       && reg_equivs != 0
+	       && reg_equivs
 	       && reg_equiv_constant (regno)
 	       && ! function_invariant_p (reg_equiv_constant (regno)))
 	elimination_effects (reg_equiv_constant (regno), mem_mode);
@@ -3078,7 +3076,7 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
       if (REG_P (SUBREG_REG (x))
 	  && (GET_MODE_SIZE (GET_MODE (x))
 	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	  && reg_equivs != 0
+	  && reg_equivs
 	  && reg_equiv_memory_loc (REGNO (SUBREG_REG (x))) != 0)
 	return;
 
@@ -4229,7 +4227,6 @@ free_reg_equiv (void)
 {
   int i;
 
-
   free (offsets_known_at);
   free (offsets_at);
   offsets_at = 0;
@@ -4238,9 +4235,7 @@ free_reg_equiv (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (reg_equiv_alt_mem_list (i))
       free_EXPR_LIST_list (&reg_equiv_alt_mem_list (i));
-  VEC_free (reg_equivs_t, gc, reg_equivs);
-  reg_equivs = NULL;
-
+  vec_free (reg_equivs);
 }
 
 /* Kick all pseudos out of hard register REGNO.
@@ -5589,7 +5584,7 @@ substitute (rtx *where, const_rtx what, rtx repl)
   if (*where == what || rtx_equal_p (*where, what))
     {
       /* Record the location of the changed rtx.  */
-      VEC_safe_push (rtx_p, heap, substitute_stack, where);
+      substitute_stack.safe_push (where);
       *where = repl;
       return;
     }
@@ -5688,9 +5683,9 @@ gen_reload_chain_without_interm_reg_p (int r1, int r2)
     }
 
   /* Restore the original value at each changed address within R1.  */
-  while (!VEC_empty (rtx_p, substitute_stack))
+  while (!substitute_stack.is_empty ())
     {
-      rtx *where = VEC_pop (rtx_p, substitute_stack);
+      rtx *where = substitute_stack.pop ();
       *where = rld[r2].in;
     }
 

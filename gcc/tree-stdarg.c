@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool
 reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 {
-  VEC (edge, heap) *stack = NULL;
+  vec<edge> stack = vec<edge>();
   edge e;
   edge_iterator ei;
   sbitmap visited;
@@ -64,13 +64,13 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
   ret = true;
 
   FOR_EACH_EDGE (e, ei, va_arg_bb->preds)
-    VEC_safe_push (edge, heap, stack, e);
+    stack.safe_push (e);
 
-  while (! VEC_empty (edge, stack))
+  while (! stack.is_empty ())
     {
       basic_block src;
 
-      e = VEC_pop (edge, stack);
+      e = stack.pop ();
       src = e->src;
 
       if (e->flags & EDGE_COMPLEX)
@@ -95,11 +95,11 @@ reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 	{
 	  bitmap_set_bit (visited, src->index);
 	  FOR_EACH_EDGE (e, ei, src->preds)
-	    VEC_safe_push (edge, heap, stack, e);
+	    stack.safe_push (e);
 	}
     }
 
-  VEC_free (edge, heap, stack);
+  stack.release ();
   sbitmap_free (visited);
   return ret;
 }

@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
    string length of a string literal (~strlen).  */
-static VEC (int, heap) *ssa_ver_to_stridx;
+static vec<int> ssa_ver_to_stridx;
 
 /* Number of currently active string indexes plus one.  */
 static int max_stridx;
@@ -84,8 +84,6 @@ typedef struct strinfo_struct
      be invalidated.  Always cleared by maybe_invalidate.  */
   bool dont_invalidate;
 } *strinfo;
-DEF_VEC_P(strinfo);
-DEF_VEC_ALLOC_P(strinfo,heap);
 
 /* Pool for allocating strinfo_struct entries.  */
 static alloc_pool strinfo_pool;
@@ -96,7 +94,7 @@ static alloc_pool strinfo_pool;
    a basic block pointer to the owner basic_block if shared.
    If some other bb wants to modify the vector, the vector needs
    to be unshared first, and only the owner bb is supposed to free it.  */
-static VEC(strinfo, heap) *stridx_to_strinfo;
+static vec<strinfo, va_heap, vl_embed> *stridx_to_strinfo;
 
 /* One OFFSET->IDX mapping.  */
 struct stridxlist
@@ -180,7 +178,7 @@ get_stridx (tree exp)
   tree s, o;
 
   if (TREE_CODE (exp) == SSA_NAME)
-    return VEC_index (int, ssa_ver_to_stridx, SSA_NAME_VERSION (exp));
+    return ssa_ver_to_stridx[SSA_NAME_VERSION (exp)];
 
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
@@ -209,8 +207,8 @@ get_stridx (tree exp)
 static inline bool
 strinfo_shared (void)
 {
-  return VEC_length (strinfo, stridx_to_strinfo)
-	 && VEC_index (strinfo, stridx_to_strinfo, 0) != NULL;
+  return vec_safe_length (stridx_to_strinfo)
+	 && (*stridx_to_strinfo)[0] != NULL;
 }
 
 /* Unshare strinfo vector that is shared with the immediate dominator.  */
@@ -222,11 +220,11 @@ unshare_strinfo_vec (void)
   unsigned int i = 0;
 
   gcc_assert (strinfo_shared ());
-  stridx_to_strinfo = VEC_copy (strinfo, heap, stridx_to_strinfo);
-  for (i = 1; VEC_iterate (strinfo, stridx_to_strinfo, i, si); ++i)
+  stridx_to_strinfo = vec_safe_copy (stridx_to_strinfo);
+  for (i = 1; vec_safe_iterate (stridx_to_strinfo, i, &si); ++i)
     if (si != NULL)
       si->refcount++;
-  VEC_replace (strinfo, stridx_to_strinfo, 0, NULL);
+  (*stridx_to_strinfo)[0] = NULL;
 }
 
 /* Attempt to create a string index for exp, ADDR_EXPR's operand.
@@ -297,7 +295,7 @@ new_stridx (tree exp)
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp))
 	return 0;
       idx = max_stridx++;
-      VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (exp), idx);
+      ssa_ver_to_stridx[SSA_NAME_VERSION (exp)] = idx;
       return idx;
     }
   if (TREE_CODE (exp) == ADDR_EXPR)
@@ -365,9 +363,9 @@ free_strinfo (strinfo si)
 static inline strinfo
 get_strinfo (int idx)
 {
-  if (VEC_length (strinfo, stridx_to_strinfo) <= (unsigned int) idx)
+  if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
     return NULL;
-  return VEC_index (strinfo, stridx_to_strinfo, idx);
+  return (*stridx_to_strinfo)[idx];
 }
 
 /* Set strinfo in the vector entry IDX to SI.  */
@@ -375,11 +373,11 @@ get_strinfo (int idx)
 static inline void
 set_strinfo (int idx, strinfo si)
 {
-  if (VEC_length (strinfo, stridx_to_strinfo) && VEC_index (strinfo, stridx_to_strinfo, 0))
+  if (vec_safe_length (stridx_to_strinfo) && (*stridx_to_strinfo)[0])
     unshare_strinfo_vec ();
-  if (VEC_length (strinfo, stridx_to_strinfo) <= (unsigned int) idx)
-    VEC_safe_grow_cleared (strinfo, heap, stridx_to_strinfo, idx + 1);
-  VEC_replace (strinfo, stridx_to_strinfo, idx, si);
+  if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
+    vec_safe_grow_cleared (stridx_to_strinfo, idx + 1);
+  (*stridx_to_strinfo)[idx] = si;
 }
 
 /* Return string length, or NULL if it can't be computed.  */
@@ -489,7 +487,7 @@ maybe_invalidate (gimple stmt)
   unsigned int i;
   bool nonempty = false;
 
-  for (i = 1; VEC_iterate (strinfo, stridx_to_strinfo, i, si); ++i)
+  for (i = 1; vec_safe_iterate (stridx_to_strinfo, i, &si); ++i)
     if (si != NULL)
       {
 	if (!si->dont_invalidate)
@@ -605,8 +603,7 @@ zero_length_string (tree ptr, strinfo chainsi)
 		  chainsi = unshare_strinfo (chainsi);
 		  chainsi->next = 0;
 		}
-	      VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (ptr),
-			   chainsi->idx);
+	      ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] = chainsi->idx;
 	      return chainsi;
 	    }
 	}
@@ -727,12 +724,12 @@ find_equal_ptrs (tree ptr, int idx)
 
       /* We might find an endptr created in this pass.  Grow the
 	 vector in that case.  */
-      if (VEC_length (int, ssa_ver_to_stridx) <= SSA_NAME_VERSION (ptr))
-	VEC_safe_grow_cleared (int, heap, ssa_ver_to_stridx, num_ssa_names);
+      if (ssa_ver_to_stridx.length () <= SSA_NAME_VERSION (ptr))
+	ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
 
-      if (VEC_index (int, ssa_ver_to_stridx, SSA_NAME_VERSION (ptr)) != 0)
+      if (ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] != 0)
 	return;
-      VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (ptr), idx);
+      ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)] = idx;
     }
 }
 
@@ -1189,12 +1186,12 @@ handle_builtin_strcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
     case BUILT_IN_STRCPY:
       fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
       if (lhs)
-	VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (lhs), didx);
+	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)] = didx;
       break;
     case BUILT_IN_STRCPY_CHK:
       fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
       if (lhs)
-	VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (lhs), didx);
+	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)] = didx;
       break;
     case BUILT_IN_STPCPY:
       /* This would need adjustment of the lhs (subtract one),
@@ -1389,7 +1386,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       laststmt.len = dsi->length;
       laststmt.stridx = dsi->idx;
       if (lhs)
-	VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (lhs), didx);
+	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)] = didx;
       break;
     case BUILT_IN_MEMPCPY:
     case BUILT_IN_MEMPCPY_CHK:
@@ -1609,8 +1606,8 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
       if (host_integerp (off, 1)
 	  && (unsigned HOST_WIDE_INT) tree_low_cst (off, 1)
 	     <= (unsigned HOST_WIDE_INT) ~idx)
-	VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (lhs),
-		     ~(~idx - (int) tree_low_cst (off, 1)));
+	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)]
+	    = ~(~idx - (int) tree_low_cst (off, 1));
       return;
     }
 
@@ -1793,8 +1790,7 @@ strlen_optimize_stmt (gimple_stmt_iterator *gsi)
 		  && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt)))))
 	    {
 	      int idx = get_stridx (gimple_assign_rhs1 (stmt));
-	      VEC_replace (int, ssa_ver_to_stridx, SSA_NAME_VERSION (lhs),
-			   idx);
+	      ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)] = idx;
 	    }
 	  else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
 	    handle_pointer_plus (gsi);
@@ -1884,7 +1880,7 @@ strlen_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     stridx_to_strinfo = NULL;
   else
     {
-      stridx_to_strinfo = (VEC(strinfo, heap) *) dombb->aux;
+      stridx_to_strinfo = ((vec<strinfo, va_heap, vl_embed> *) dombb->aux);
       if (stridx_to_strinfo)
 	{
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1918,8 +1914,7 @@ strlen_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 		if (idx != get_stridx (gimple_phi_arg_def (phi, i)))
 		  break;
 	      if (i == n)
-		VEC_replace (int, ssa_ver_to_stridx,
-			     SSA_NAME_VERSION (result), idx);
+		ssa_ver_to_stridx[SSA_NAME_VERSION (result)] = idx;
 	    }
 	}
     }
@@ -1930,8 +1925,8 @@ strlen_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
       gsi_next (&gsi);
 
   bb->aux = stridx_to_strinfo;
-  if (VEC_length (strinfo, stridx_to_strinfo) && !strinfo_shared ())
-    VEC_replace (strinfo, stridx_to_strinfo, 0, (strinfo) bb);
+  if (vec_safe_length (stridx_to_strinfo) && !strinfo_shared ())
+    (*stridx_to_strinfo)[0] = (strinfo) bb;
 }
 
 /* Callback for walk_dominator_tree.  Free strinfo vector if it is
@@ -1943,16 +1938,16 @@ strlen_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 {
   if (bb->aux)
     {
-      stridx_to_strinfo = (VEC(strinfo, heap) *) bb->aux;
-      if (VEC_length (strinfo, stridx_to_strinfo)
-	  && VEC_index (strinfo, stridx_to_strinfo, 0) == (strinfo) bb)
+      stridx_to_strinfo = ((vec<strinfo, va_heap, vl_embed> *) bb->aux);
+      if (vec_safe_length (stridx_to_strinfo)
+	  && (*stridx_to_strinfo)[0] == (strinfo) bb)
 	{
 	  unsigned int i;
 	  strinfo si;
 
-	  for (i = 1; VEC_iterate (strinfo, stridx_to_strinfo, i, si); ++i)
+	  for (i = 1; vec_safe_iterate (stridx_to_strinfo, i, &si); ++i)
 	    free_strinfo (si);
-	  VEC_free (strinfo, heap, stridx_to_strinfo);
+	  vec_free (stridx_to_strinfo);
 	}
       bb->aux = NULL;
     }
@@ -1965,7 +1960,7 @@ tree_ssa_strlen (void)
 {
   struct dom_walk_data walk_data;
 
-  VEC_safe_grow_cleared (int, heap, ssa_ver_to_stridx, num_ssa_names);
+  ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
   max_stridx = 1;
   strinfo_pool = create_alloc_pool ("strinfo_struct pool",
 				    sizeof (struct strinfo_struct), 64);
@@ -1990,7 +1985,7 @@ tree_ssa_strlen (void)
   /* Finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
 
-  VEC_free (int, heap, ssa_ver_to_stridx);
+  ssa_ver_to_stridx.release ();
   free_alloc_pool (strinfo_pool);
   if (decl_to_stridxlist_htab)
     {

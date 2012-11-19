@@ -427,7 +427,7 @@ int gfc_is_intrinsic_libcall (gfc_expr *);
 /* Used to call ordinary functions/subroutines
    and procedure pointer components.  */
 int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
-			     gfc_expr *, VEC(tree,gc) *);
+			     gfc_expr *, vec<tree, va_gc> *);
 
 void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool);
 

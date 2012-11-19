@@ -71,7 +71,7 @@ add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
 /* Returns all the memory reads in SCOP.  */
 
 static isl_union_map *
-scop_get_reads (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+scop_get_reads (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i, j;
   poly_bb_p pbb;
@@ -79,9 +79,9 @@ scop_get_reads (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
   isl_space *space = isl_set_get_space (scop->context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (pbbs, i, pbb)
     {
-      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_read_p (pdr))
 	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
     }
@@ -92,7 +92,7 @@ scop_get_reads (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
 /* Returns all the memory must writes in SCOP.  */
 
 static isl_union_map *
-scop_get_must_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+scop_get_must_writes (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i, j;
   poly_bb_p pbb;
@@ -100,9 +100,9 @@ scop_get_must_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
   isl_space *space = isl_set_get_space (scop->context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (pbbs, i, pbb)
     {
-      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_write_p (pdr))
 	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
     }
@@ -113,7 +113,7 @@ scop_get_must_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
 /* Returns all the memory may writes in SCOP.  */
 
 static isl_union_map *
-scop_get_may_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+scop_get_may_writes (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i, j;
   poly_bb_p pbb;
@@ -121,9 +121,9 @@ scop_get_may_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
   isl_space *space = isl_set_get_space (scop->context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (pbbs, i, pbb)
     {
-      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	if (pdr_may_write_p (pdr))
 	  res = isl_union_map_add_map (res, add_pdr_constraints (pdr, pbb));
     }
@@ -134,14 +134,14 @@ scop_get_may_writes (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
 /* Returns all the original schedules in SCOP.  */
 
 static isl_union_map *
-scop_get_original_schedule (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+scop_get_original_schedule (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i;
   poly_bb_p pbb;
   isl_space *space = isl_set_get_space (scop->context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (pbbs, i, pbb)
     {
       res = isl_union_map_add_map
 	(res, constrain_domain (isl_map_copy (pbb->schedule),
@@ -154,14 +154,14 @@ scop_get_original_schedule (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
 /* Returns all the transformed schedules in SCOP.  */
 
 static isl_union_map *
-scop_get_transformed_schedule (scop_p scop, VEC (poly_bb_p, heap) *pbbs)
+scop_get_transformed_schedule (scop_p scop, vec<poly_bb_p> pbbs)
 {
   int i;
   poly_bb_p pbb;
   isl_space *space = isl_set_get_space (scop->context);
   isl_union_map *res = isl_union_map_empty (space);
 
-  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (pbbs, i, pbb)
     {
       res = isl_union_map_add_map
 	(res, constrain_domain (isl_map_copy (pbb->transformed),
@@ -334,7 +334,7 @@ carries_deps (__isl_keep isl_union_map *schedule,
 
 static void
 subtract_commutative_associative_deps (scop_p scop,
-				       VEC (poly_bb_p, heap) *pbbs,
+				       vec<poly_bb_p> pbbs,
 				       isl_union_map *original,
 				       isl_union_map **must_raw,
 				       isl_union_map **may_raw,
@@ -354,7 +354,7 @@ subtract_commutative_associative_deps (scop_p scop,
   poly_dr_p pdr;
   isl_space *space = isl_set_get_space (scop->context);
 
-  FOR_EACH_VEC_ELT (poly_bb_p, pbbs, i, pbb)
+  FOR_EACH_VEC_ELT (pbbs, i, pbb)
     if (PBB_IS_REDUCTION (pbb))
       {
 	int res;
@@ -376,16 +376,16 @@ subtract_commutative_associative_deps (scop_p scop,
 	isl_union_map *x_must_waw_no_source;
 	isl_union_map *x_may_waw_no_source;
 
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	  if (pdr_read_p (pdr))
 	    r = isl_union_map_add_map (r, add_pdr_constraints (pdr, pbb));
 
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	  if (pdr_write_p (pdr))
 	    must_w = isl_union_map_add_map (must_w,
 					    add_pdr_constraints (pdr, pbb));
 
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb), j, pdr)
+	FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
 	  if (pdr_may_write_p (pdr))
 	    may_w = isl_union_map_add_map (may_w,
 					   add_pdr_constraints (pdr, pbb));
@@ -444,7 +444,7 @@ subtract_commutative_associative_deps (scop_p scop,
    writes in PBBS.  */
 
 void
-compute_deps (scop_p scop, VEC (poly_bb_p, heap) *pbbs,
+compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
 	      isl_union_map **must_raw,
 	      isl_union_map **may_raw,
 	      isl_union_map **must_raw_no_source,
@@ -543,7 +543,7 @@ graphite_legal_transform (scop_p scop)
    the body of the loop.  */
 
 static bool
-loop_level_carries_dependences (scop_p scop, VEC (poly_bb_p, heap) *body,
+loop_level_carries_dependences (scop_p scop, vec<poly_bb_p> body,
 				int depth)
 {
   isl_union_map *transform = scop_get_transformed_schedule (scop, body);
@@ -583,12 +583,13 @@ loop_is_parallel_p (loop_p loop, htab_t bb_pbb_mapping, int depth)
 {
   bool dependences;
   scop_p scop;
-  VEC (poly_bb_p, heap) *body = VEC_alloc (poly_bb_p, heap, 3);
+  vec<poly_bb_p> body;
+  body.create (3);
 
   timevar_push (TV_GRAPHITE_DATA_DEPS);
   scop = get_loop_body_pbbs (loop, bb_pbb_mapping, &body);
   dependences = loop_level_carries_dependences (scop, body, depth);
-  VEC_free (poly_bb_p, heap, body);
+  body.release ();
   timevar_pop (TV_GRAPHITE_DATA_DEPS);
 
   return !dependences;

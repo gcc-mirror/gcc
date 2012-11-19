@@ -1626,7 +1626,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  else
 	    {
 	      /* Collect multiple scalar constants into a constructor.  */
-	      VEC(constructor_elt,gc) *v = NULL;
+	      vec<constructor_elt, va_gc> *v = NULL;
 	      tree init;
 	      tree bound;
 	      tree tmptype;
@@ -1985,7 +1985,7 @@ gfc_build_constant_array_constructor (gfc_expr * expr, tree type)
   gfc_array_spec as;
   gfc_se se;
   int i;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* First traverse the constructor list, converting the constants
      to tree to build an initializer.  */
@@ -5317,7 +5317,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
   HOST_WIDE_INT hi;
   unsigned HOST_WIDE_INT lo;
   tree index, range;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   if (expr->expr_type == EXPR_VARIABLE
       && expr->symtree->n.sym->attr.flavor == FL_PARAMETER
@@ -7341,8 +7341,8 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 	}
 
       tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
-      tmp = build_call_expr_loc (input_location, tmp, 3,
-				 dest, src, size);
+      tmp = build_call_expr_loc (input_location, tmp, 3, dest, src,
+				 fold_convert (size_type_node, size));
     }
   else
     {
@@ -7367,7 +7367,8 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
       tmp = build_call_expr_loc (input_location,
 			tmp, 3, gfc_conv_descriptor_data_get (dest),
-			gfc_conv_descriptor_data_get (src), size);
+			gfc_conv_descriptor_data_get (src),
+			fold_convert (size_type_node, size));
     }
 
   gfc_add_expr_to_block (&block, tmp);

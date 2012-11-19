@@ -98,7 +98,7 @@ variable_size (tree size)
 }
 
 /* An array of functions used for self-referential size computation.  */
-static GTY(()) VEC (tree, gc) *size_functions;
+static GTY(()) vec<tree, va_gc> *size_functions;
 
 /* Look inside EXPR into simple arithmetic operations involving constants.
    Return the outermost non-arithmetic or non-constant node.  */
@@ -189,12 +189,12 @@ static tree
 self_referential_size (tree size)
 {
   static unsigned HOST_WIDE_INT fnno = 0;
-  VEC (tree, heap) *self_refs = NULL;
+  vec<tree> self_refs = vec<tree>();
   tree param_type_list = NULL, param_decl_list = NULL;
   tree t, ref, return_type, fntype, fnname, fndecl;
   unsigned int i;
   char buf[128];
-  VEC(tree,gc) *args = NULL;
+  vec<tree, va_gc> *args = NULL;
 
   /* Do not factor out simple operations.  */
   t = skip_simple_constant_arithmetic (size);
@@ -203,7 +203,7 @@ self_referential_size (tree size)
 
   /* Collect the list of self-references in the expression.  */
   find_placeholder_in_expr (size, &self_refs);
-  gcc_assert (VEC_length (tree, self_refs) > 0);
+  gcc_assert (self_refs.length () > 0);
 
   /* Obtain a private copy of the expression.  */
   t = size;
@@ -213,8 +213,8 @@ self_referential_size (tree size)
 
   /* Build the parameter and argument lists in parallel; also
      substitute the former for the latter in the expression.  */
-  args = VEC_alloc (tree, gc, VEC_length (tree, self_refs));
-  FOR_EACH_VEC_ELT (tree, self_refs, i, ref)
+  vec_alloc (args, self_refs.length ());
+  FOR_EACH_VEC_ELT (self_refs, i, ref)
     {
       tree subst, param_name, param_type, param_decl;
 
@@ -249,10 +249,10 @@ self_referential_size (tree size)
 
       param_type_list = tree_cons (NULL_TREE, param_type, param_type_list);
       param_decl_list = chainon (param_decl, param_decl_list);
-      VEC_quick_push (tree, args, ref);
+      args->quick_push (ref);
     }
 
-  VEC_free (tree, heap, self_refs);
+  self_refs.release ();
 
   /* Append 'void' to indicate that the number of parameters is fixed.  */
   param_type_list = tree_cons (NULL_TREE, void_type_node, param_type_list);
@@ -297,7 +297,7 @@ self_referential_size (tree size)
   TREE_STATIC (fndecl) = 1;
 
   /* Put it onto the list of size functions.  */
-  VEC_safe_push (tree, gc, size_functions, fndecl);
+  vec_safe_push (size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
   return build_call_expr_loc_vec (UNKNOWN_LOCATION, fndecl, args);
@@ -316,7 +316,7 @@ finalize_size_functions (void)
   unsigned int i;
   tree fndecl;
 
-  for (i = 0; VEC_iterate(tree, size_functions, i, fndecl); i++)
+  for (i = 0; size_functions && size_functions->iterate (i, &fndecl); i++)
     {
       dump_function (TDI_original, fndecl);
       gimplify_function_tree (fndecl);
@@ -324,7 +324,7 @@ finalize_size_functions (void)
       cgraph_finalize_function (fndecl, false);
     }
 
-  VEC_free (tree, gc, size_functions);
+  vec_free (size_functions);
 }
 
 /* Return the machine mode to use for a nonscalar of SIZE bits.  The
@@ -804,7 +804,7 @@ start_record_layout (tree t)
   rli->offset = size_zero_node;
   rli->bitpos = bitsize_zero_node;
   rli->prev_field = 0;
-  rli->pending_statics = NULL;
+  rli->pending_statics = 0;
   rli->packed_maybe_necessary = 0;
   rli->remaining_in_alignment = 0;
 
@@ -912,7 +912,7 @@ debug_rli (record_layout_info rli)
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
 
-  if (!VEC_empty (tree, rli->pending_statics))
+  if (!vec_safe_is_empty (rli->pending_statics))
     {
       fprintf (stderr, "pending statics:\n");
       debug_vec_tree (rli->pending_statics);
@@ -1126,7 +1126,7 @@ place_field (record_layout_info rli, tree field)
      it *after* the record is laid out.  */
   if (TREE_CODE (field) == VAR_DECL)
     {
-      VEC_safe_push (tree, gc, rli->pending_statics, field);
+      vec_safe_push (rli->pending_statics, field);
       return;
     }
 
@@ -2015,13 +2015,13 @@ finish_record_layout (record_layout_info rli, int free_p)
 
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
-  while (!VEC_empty (tree, rli->pending_statics))
-    layout_decl (VEC_pop (tree, rli->pending_statics), 0);
+  while (!vec_safe_is_empty (rli->pending_statics))
+    layout_decl (rli->pending_statics->pop (), 0);
 
   /* Clean up.  */
   if (free_p)
     {
-      VEC_free (tree, gc, rli->pending_statics);
+      vec_free (rli->pending_statics);
       free (rli);
     }
 }
@@ -2651,14 +2651,102 @@ fixup_unsigned_type (tree type)
   layout_type (type);
 }
 
+/* Construct an iterator for a bitfield that spans BITSIZE bits,
+   starting at BITPOS.
+
+   BITREGION_START is the bit position of the first bit in this
+   sequence of bit fields.  BITREGION_END is the last bit in this
+   sequence.  If these two fields are non-zero, we should restrict the
+   memory access to that range.  Otherwise, we are allowed to touch
+   any adjacent non bit-fields.
+
+   ALIGN is the alignment of the underlying object in bits.
+   VOLATILEP says whether the bitfield is volatile.  */
+
+bit_field_mode_iterator
+::bit_field_mode_iterator (HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
+			   HOST_WIDE_INT bitregion_start,
+			   HOST_WIDE_INT bitregion_end,
+			   unsigned int align, bool volatilep)
+: mode_ (GET_CLASS_NARROWEST_MODE (MODE_INT)), bitsize_ (bitsize),
+  bitpos_ (bitpos), bitregion_start_ (bitregion_start),
+  bitregion_end_ (bitregion_end), align_ (MIN (align, BIGGEST_ALIGNMENT)),
+  volatilep_ (volatilep), count_ (0)
+{
+  if (!bitregion_end_)
+    {
+      /* We can assume that any aligned chunk of ALIGN_ bits that overlaps
+	 the bitfield is mapped and won't trap.  */
+      bitregion_end_ = bitpos + bitsize + align_ - 1;
+      bitregion_end_ -= bitregion_end_ % align_ + 1;
+    }
+}
+
+/* Calls to this function return successively larger modes that can be used
+   to represent the bitfield.  Return true if another bitfield mode is
+   available, storing it in *OUT_MODE if so.  */
+
+bool
+bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
+{
+  for (; mode_ != VOIDmode; mode_ = GET_MODE_WIDER_MODE (mode_))
+    {
+      unsigned int unit = GET_MODE_BITSIZE (mode_);
+
+      /* Skip modes that don't have full precision.  */
+      if (unit != GET_MODE_PRECISION (mode_))
+	continue;
+
+      /* Skip modes that are too small.  */
+      if ((bitpos_ % unit) + bitsize_ > unit)
+	continue;
+
+      /* Stop if the mode is too wide to handle efficiently.  */
+      if (unit > MAX_FIXED_MODE_SIZE)
+	break;
+
+      /* Don't deliver more than one multiword mode; the smallest one
+	 should be used.  */
+      if (count_ > 0 && unit > BITS_PER_WORD)
+	break;
+
+      /* Stop if the mode goes outside the bitregion.  */
+      HOST_WIDE_INT start = bitpos_ - (bitpos_ % unit);
+      if (bitregion_start_ && start < bitregion_start_)
+	break;
+      if (start + unit > bitregion_end_ + 1)
+	break;
+
+      /* Stop if the mode requires too much alignment.  */
+      if (unit > align_ && SLOW_UNALIGNED_ACCESS (mode_, align_))
+	break;
+
+      *out_mode = mode_;
+      mode_ = GET_MODE_WIDER_MODE (mode_);
+      count_++;
+      return true;
+    }
+  return false;
+}
+
+/* Return true if smaller modes are generally preferred for this kind
+   of bitfield.  */
+
+bool
+bit_field_mode_iterator::prefer_smaller_modes ()
+{
+  return (volatilep_
+	  ? targetm.narrow_volatile_bitfield ()
+	  : !SLOW_BYTE_ACCESS);
+}
+
 /* Find the best machine mode to use when referencing a bit field of length
    BITSIZE bits starting at BITPOS.
 
    BITREGION_START is the bit position of the first bit in this
    sequence of bit fields.  BITREGION_END is the last bit in this
    sequence.  If these two fields are non-zero, we should restrict the
-   memory access to a maximum sized chunk of
-   BITREGION_END - BITREGION_START + 1.  Otherwise, we are allowed to touch
+   memory access to that range.  Otherwise, we are allowed to touch
    any adjacent non bit-fields.
 
    The underlying object is known to be aligned to a boundary of ALIGN bits.
@@ -2682,69 +2770,77 @@ get_best_mode (int bitsize, int bitpos,
 	       unsigned HOST_WIDE_INT bitregion_start,
 	       unsigned HOST_WIDE_INT bitregion_end,
 	       unsigned int align,
-	       enum machine_mode largest_mode, int volatilep)
+	       enum machine_mode largest_mode, bool volatilep)
 {
+  bit_field_mode_iterator iter (bitsize, bitpos, bitregion_start,
+				bitregion_end, align, volatilep);
+  enum machine_mode widest_mode = VOIDmode;
   enum machine_mode mode;
-  unsigned int unit = 0;
-  unsigned HOST_WIDE_INT maxbits;
+  while (iter.next_mode (&mode)
+	 /* ??? For historical reasons, reject modes that are wider than
+	    the alignment.  This has both advantages and disadvantages.
+	    Removing this check means that something like:
 
-  /* If unset, no restriction.  */
-  if (!bitregion_end)
-    maxbits = MAX_FIXED_MODE_SIZE;
-  else
-    maxbits = bitregion_end - bitregion_start + 1;
+	       struct s { unsigned int x; unsigned int y; };
+	       int f (struct s *s) { return s->x == 0 && s->y == 0; }
 
-  /* Find the narrowest integer mode that contains the bit field.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+	    can be implemented using a single load and compare on
+	    64-bit machines that have no alignment restrictions.
+	    For example, on powerpc64-linux-gnu, we would generate:
+
+		    ld 3,0(3)
+		    cntlzd 3,3
+		    srdi 3,3,6
+		    blr
+
+	    rather than:
+
+		    lwz 9,0(3)
+		    cmpwi 7,9,0
+		    bne 7,.L3
+		    lwz 3,4(3)
+		    cntlzw 3,3
+		    srwi 3,3,5
+		    extsw 3,3
+		    blr
+		    .p2align 4,,15
+	    .L3:
+		    li 3,0
+		    blr
+
+	    However, accessing more than one field can make life harder
+	    for the gimple optimizers.  For example, gcc.dg/vect/bb-slp-5.c
+	    has a series of unsigned short copies followed by a series of
+	    unsigned short comparisons.  With this check, both the copies
+	    and comparisons remain 16-bit accesses and FRE is able
+	    to eliminate the latter.  Without the check, the comparisons
+	    can be done using 2 64-bit operations, which FRE isn't able
+	    to handle in the same way.
+
+	    Either way, it would probably be worth disabling this check
+	    during expand.  One particular example where removing the
+	    check would help is the get_best_mode call in store_bit_field.
+	    If we are given a memory bitregion of 128 bits that is aligned
+	    to a 64-bit boundary, and the bitfield we want to modify is
+	    in the second half of the bitregion, this check causes
+	    store_bitfield to turn the memory into a 64-bit reference
+	    to the _first_ half of the region.  We later use
+	    adjust_bitfield_address to get a reference to the correct half,
+	    but doing so looks to adjust_bitfield_address as though we are
+	    moving past the end of the original object, so it drops the
+	    associated MEM_EXPR and MEM_OFFSET.  Removing the check
+	    causes store_bit_field to keep a 128-bit memory reference,
+	    so that the final bitfield reference still has a MEM_EXPR
+	    and MEM_OFFSET.  */
+	 && GET_MODE_BITSIZE (mode) <= align
+	 && (largest_mode == VOIDmode
+	     || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (largest_mode)))
     {
-      unit = GET_MODE_BITSIZE (mode);
-      if (unit == GET_MODE_PRECISION (mode)
-	  && (bitpos % unit) + bitsize <= unit)
+      widest_mode = mode;
+      if (iter.prefer_smaller_modes ())
 	break;
     }
-
-  if (mode == VOIDmode
-      /* It is tempting to omit the following line
-	 if STRICT_ALIGNMENT is true.
-	 But that is incorrect, since if the bitfield uses part of 3 bytes
-	 and we use a 4-byte mode, we could get a spurious segv
-	 if the extra 4th byte is past the end of memory.
-	 (Though at least one Unix compiler ignores this problem:
-	 that on the Sequent 386 machine.  */
-      || MIN (unit, BIGGEST_ALIGNMENT) > align
-      || (largest_mode != VOIDmode && unit > GET_MODE_BITSIZE (largest_mode))
-      || unit > maxbits
-      || (bitregion_end
-	  && bitpos - (bitpos % unit) + unit > bitregion_end + 1))
-    return VOIDmode;
-
-  if ((SLOW_BYTE_ACCESS && ! volatilep)
-      || (volatilep && !targetm.narrow_volatile_bitfield ()))
-    {
-      enum machine_mode wide_mode = VOIDmode, tmode;
-
-      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT); tmode != VOIDmode;
-	   tmode = GET_MODE_WIDER_MODE (tmode))
-	{
-	  unit = GET_MODE_BITSIZE (tmode);
-	  if (unit == GET_MODE_PRECISION (tmode)
-	      && bitpos / unit == (bitpos + bitsize - 1) / unit
-	      && unit <= BITS_PER_WORD
-	      && unit <= MIN (align, BIGGEST_ALIGNMENT)
-	      && unit <= maxbits
-	      && (largest_mode == VOIDmode
-		  || unit <= GET_MODE_BITSIZE (largest_mode))
-	      && (bitregion_end == 0
-		  || bitpos - (bitpos % unit) + unit <= bitregion_end + 1))
-	    wide_mode = tmode;
-	}
-
-      if (wide_mode != VOIDmode)
-	return wide_mode;
-    }
-
-  return mode;
+  return widest_mode;
 }
 
 /* Gets minimal and maximal values for MODE (signed or unsigned depending on

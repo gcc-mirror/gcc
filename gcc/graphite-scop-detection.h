@@ -20,6 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-extern void build_scops (VEC (scop_p, heap) **);
-extern void dot_all_scops (VEC (scop_p, heap) *);
+extern void build_scops (vec<scop_p> *);
+extern void dot_all_scops (vec<scop_p> );
 extern void dot_scop (scop_p);

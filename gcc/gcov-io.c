@@ -552,8 +552,8 @@ gcov_read_summary (struct gcov_summary *summary)
           while (!cur_bitvector)
             {
               h_ix = bv_ix * 32;
+              gcc_assert(bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE);
               cur_bitvector = histo_bitvector[bv_ix++];
-              gcc_assert(bv_ix <= GCOV_HISTOGRAM_BITVECTOR_SIZE);
             }
           while (!(cur_bitvector & 0x1))
             {

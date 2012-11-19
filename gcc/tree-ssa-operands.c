@@ -107,7 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 #define opf_not_non_addressable (1 << 4)
 
 /* Array for building all the use operands.  */
-static VEC(tree,heap) *build_uses;
+static vec<tree> build_uses;
 
 /* The built VDEF operand.  */
 static tree build_vdef;
@@ -182,7 +182,7 @@ init_ssa_operands (struct function *fn)
 {
   if (!n_initialized++)
     {
-      build_uses = VEC_alloc (tree, heap, 10);
+      build_uses.create (10);
       build_vuse = NULL_TREE;
       build_vdef = NULL_TREE;
       bitmap_obstack_initialize (&operands_bitmap_obstack);
@@ -206,7 +206,7 @@ fini_ssa_operands (void)
 
   if (!--n_initialized)
     {
-      VEC_free (tree, heap, build_uses);
+      build_uses.release ();
       build_vdef = NULL_TREE;
       build_vuse = NULL_TREE;
     }
@@ -312,7 +312,7 @@ add_use_op (gimple stmt, tree *op, use_optype_p last)
 
 
 /* Takes elements from build_defs and turns them into def operands of STMT.
-   TODO -- Make build_defs VEC of tree *.  */
+   TODO -- Make build_defs vec of tree *.  */
 
 static inline void
 finalize_ssa_defs (gimple stmt)
@@ -351,7 +351,7 @@ finalize_ssa_defs (gimple stmt)
 
 
 /* Takes elements from build_uses and turns them into use operands of STMT.
-   TODO -- Make build_uses VEC of tree *.  */
+   TODO -- Make build_uses vec of tree *.  */
 
 static inline void
 finalize_ssa_uses (gimple stmt)
@@ -370,7 +370,7 @@ finalize_ssa_uses (gimple stmt)
       if (oldvuse != (build_vuse != NULL_TREE
 		      ? build_vuse : build_vdef))
 	gimple_set_vuse (stmt, NULL_TREE);
-      VEC_safe_insert (tree, heap, build_uses, 0, (tree)gimple_vuse_ptr (stmt));
+      build_uses.safe_insert (0, (tree)gimple_vuse_ptr (stmt));
     }
 
   new_list.next = NULL;
@@ -403,9 +403,9 @@ finalize_ssa_uses (gimple stmt)
     }
 
   /* Now create nodes for all the new nodes.  */
-  for (new_i = 0; new_i < VEC_length (tree, build_uses); new_i++)
+  for (new_i = 0; new_i < build_uses.length (); new_i++)
     {
-      tree *op = (tree *) VEC_index (tree, build_uses, new_i);
+      tree *op = (tree *) build_uses[new_i];
       last = add_use_op (stmt, op, last);
     }
 
@@ -422,7 +422,7 @@ cleanup_build_arrays (void)
 {
   build_vdef = NULL_TREE;
   build_vuse = NULL_TREE;
-  VEC_truncate (tree, build_uses, 0);
+  build_uses.truncate (0);
 }
 
 
@@ -442,7 +442,7 @@ finalize_ssa_stmt_operands (gimple stmt)
 static inline void
 start_ssa_stmt_operands (void)
 {
-  gcc_assert (VEC_length (tree, build_uses) == 0);
+  gcc_assert (build_uses.length () == 0);
   gcc_assert (build_vuse == NULL_TREE);
   gcc_assert (build_vdef == NULL_TREE);
 }
@@ -453,7 +453,7 @@ start_ssa_stmt_operands (void)
 static inline void
 append_use (tree *use_p)
 {
-  VEC_safe_push (tree, heap, build_uses, (tree) use_p);
+  build_uses.safe_push ((tree) use_p);
 }
 
 
@@ -820,7 +820,7 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 	  gimple_set_has_volatile_ops (stmt, true);
 
 	for (idx = 0;
-	     VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (expr), idx, ce);
+	     vec_safe_iterate (CONSTRUCTOR_ELTS (expr), idx, &ce);
 	     idx++)
 	  get_expr_operands (stmt, &ce->value, uflags);
 
@@ -1004,22 +1004,22 @@ verify_ssa_operands (gimple stmt)
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
-      FOR_EACH_VEC_ELT (tree, build_uses, i, use)
+      FOR_EACH_VEC_ELT (build_uses, i, use)
 	{
 	  if (use_p->use == (tree *)use)
 	    {
-	      VEC_replace (tree, build_uses, i, NULL_TREE);
+	      build_uses[i] = NULL_TREE;
 	      break;
 	    }
 	}
-      if (i == VEC_length (tree, build_uses))
+      if (i == build_uses.length ())
 	{
 	  error ("excess use operand for stmt");
 	  debug_generic_expr (USE_FROM_PTR (use_p));
 	  return true;
 	}
     }
-  FOR_EACH_VEC_ELT (tree, build_uses, i, use)
+  FOR_EACH_VEC_ELT (build_uses, i, use)
     if (use != NULL_TREE)
       {
 	error ("use operand missing for stmt");
@@ -1080,7 +1080,7 @@ update_stmt_operands (gimple stmt)
      split_bbs_on_noreturn_calls during cfg cleanup.  */
   if (is_gimple_call (stmt)
       && gimple_call_noreturn_p (stmt))
-    VEC_safe_push (gimple, gc, MODIFIED_NORETURN_CALLS (cfun), stmt);
+    vec_safe_push (MODIFIED_NORETURN_CALLS (cfun), stmt);
 
   gcc_assert (gimple_modified_p (stmt));
   build_ssa_operands (stmt);

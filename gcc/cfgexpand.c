@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "regs.h" /* For reg_renumber.  */
 #include "insn-attr.h" /* For INSN_SCHEDULING.  */
+#include "asan.h"
 
 /* This variable holds information helping the rewriting of SSA trees
    into RTL.  */
@@ -736,6 +737,7 @@ partition_stack_vars (void)
     {
       size_t i = stack_vars_sorted[si];
       unsigned int ialign = stack_vars[i].alignb;
+      HOST_WIDE_INT isize = stack_vars[i].size;
 
       /* Ignore objects that aren't partition representatives. If we
          see a var that is not a partition representative, it must
@@ -747,19 +749,28 @@ partition_stack_vars (void)
 	{
 	  size_t j = stack_vars_sorted[sj];
 	  unsigned int jalign = stack_vars[j].alignb;
+	  HOST_WIDE_INT jsize = stack_vars[j].size;
 
 	  /* Ignore objects that aren't partition representatives.  */
 	  if (stack_vars[j].representative != j)
-	    continue;
-
-	  /* Ignore conflicting objects.  */
-	  if (stack_var_conflict_p (i, j))
 	    continue;
 
 	  /* Do not mix objects of "small" (supported) alignment
 	     and "large" (unsupported) alignment.  */
 	  if ((ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	      != (jalign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT))
+	    break;
+
+	  /* For Address Sanitizer do not mix objects with different
+	     sizes, as the shorter vars wouldn't be adequately protected.
+	     Don't do that for "large" (unsupported) alignment objects,
+	     those aren't protected anyway.  */
+	  if (flag_asan && isize != jsize
+	      && ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
+	    break;
+
+	  /* Ignore conflicting objects.  */
+	  if (stack_var_conflict_p (i, j))
 	    continue;
 
 	  /* UNION the objects, placing J at OFFSET.  */
@@ -837,12 +848,23 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   set_rtl (decl, x);
 }
 
+struct stack_vars_data
+{
+  /* Vector of offset pairs, always end of some padding followed
+     by start of the padding that needs Address Sanitizer protection.
+     The vector is in reversed, highest offset pairs come first.  */
+  vec<HOST_WIDE_INT> asan_vec;
+
+  /* Vector of partition representative decls in between the paddings.  */
+  vec<tree> asan_decl_vec;
+};
+
 /* A subroutine of expand_used_vars.  Give each partition representative
    a unique location within the stack frame.  Update each partition member
    with that location.  */
 
 static void
-expand_stack_vars (bool (*pred) (tree))
+expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 {
   size_t si, i, j, n = stack_vars_num;
   HOST_WIDE_INT large_size = 0, large_alloc = 0;
@@ -913,13 +935,43 @@ expand_stack_vars (bool (*pred) (tree))
 
       /* Check the predicate to see whether this variable should be
 	 allocated in this pass.  */
-      if (pred && !pred (decl))
+      if (pred && !pred (i))
 	continue;
 
       alignb = stack_vars[i].alignb;
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
-	  offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
+	  if (flag_asan && pred)
+	    {
+	      HOST_WIDE_INT prev_offset = frame_offset;
+	      tree repr_decl = NULL_TREE;
+
+	      offset
+		= alloc_stack_frame_space (stack_vars[i].size
+					   + ASAN_RED_ZONE_SIZE,
+					   MAX (alignb, ASAN_RED_ZONE_SIZE));
+	      data->asan_vec.safe_push (prev_offset);
+	      data->asan_vec.safe_push (offset + stack_vars[i].size);
+	      /* Find best representative of the partition.
+		 Prefer those with DECL_NAME, even better
+		 satisfying asan_protect_stack_decl predicate.  */
+	      for (j = i; j != EOC; j = stack_vars[j].next)
+		if (asan_protect_stack_decl (stack_vars[j].decl)
+		    && DECL_NAME (stack_vars[j].decl))
+		  {
+		    repr_decl = stack_vars[j].decl;
+		    break;
+		  }
+		else if (repr_decl == NULL_TREE
+			 && DECL_P (stack_vars[j].decl)
+			 && DECL_NAME (stack_vars[j].decl))
+		  repr_decl = stack_vars[j].decl;
+	      if (repr_decl == NULL_TREE)
+		repr_decl = stack_vars[i].decl;
+	      data->asan_decl_vec.safe_push (repr_decl);
+	    }
+	  else
+	    offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
 	  base = virtual_stack_vars_rtx;
 	  base_align = crtl->max_used_stack_slot_alignment;
 	}
@@ -1057,8 +1109,9 @@ static bool
 defer_stack_allocation (tree var, bool toplevel)
 {
   /* If stack protection is enabled, *all* stack variables must be deferred,
-     so that we can re-order the strings to the top of the frame.  */
-  if (flag_stack_protect)
+     so that we can re-order the strings to the top of the frame.
+     Similarly for Address Sanitizer.  */
+  if (flag_stack_protect || flag_asan)
     return true;
 
   /* We handle "large" alignment via dynamic allocation.  We want to handle
@@ -1329,15 +1382,31 @@ stack_protect_decl_phase (tree decl)
    as callbacks for expand_stack_vars.  */
 
 static bool
-stack_protect_decl_phase_1 (tree decl)
+stack_protect_decl_phase_1 (size_t i)
 {
-  return stack_protect_decl_phase (decl) == 1;
+  return stack_protect_decl_phase (stack_vars[i].decl) == 1;
 }
 
 static bool
-stack_protect_decl_phase_2 (tree decl)
+stack_protect_decl_phase_2 (size_t i)
 {
-  return stack_protect_decl_phase (decl) == 2;
+  return stack_protect_decl_phase (stack_vars[i].decl) == 2;
+}
+
+/* And helper function that checks for asan phase (with stack protector
+   it is phase 3).  This is used as callback for expand_stack_vars.
+   Returns true if any of the vars in the partition need to be protected.  */
+
+static bool
+asan_decl_phase_3 (size_t i)
+{
+  while (i != EOC)
+    {
+      if (asan_protect_stack_decl (stack_vars[i].decl))
+	return true;
+      i = stack_vars[i].next;
+    }
+  return false;
 }
 
 /* Ensure that variables in different stack protection phases conflict
@@ -1448,11 +1517,12 @@ estimated_stack_frame_size (struct cgraph_node *node)
 
 /* Expand all variables used in the function.  */
 
-static void
+static rtx
 expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
-  VEC(tree,heap) *maybe_local_decls = NULL;
+  vec<tree> maybe_local_decls = vec<tree>();
+  rtx var_end_seq = NULL_RTX;
   struct pointer_map_t *ssa_name_decls;
   unsigned i;
   unsigned len;
@@ -1510,7 +1580,7 @@ expand_used_vars (void)
   /* At this point all variables on the local_decls with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
 
-  len = VEC_length (tree, cfun->local_decls);
+  len = vec_safe_length (cfun->local_decls);
   FOR_EACH_LOCAL_DECL (cfun, i, var)
     {
       bool expand_now = false;
@@ -1555,7 +1625,7 @@ expand_used_vars (void)
 	    /* If rtl isn't set yet, which can happen e.g. with
 	       -fstack-protector, retry before returning from this
 	       function.  */
-	    VEC_safe_push (tree, heap, maybe_local_decls, var);
+	    maybe_local_decls.safe_push (var);
 	}
     }
 
@@ -1570,8 +1640,8 @@ expand_used_vars (void)
      We just want the duplicates, as those are the artificial
      non-ignored vars that we want to keep until instantiate_decls.
      Move them down and truncate the array.  */
-  if (!VEC_empty (tree, cfun->local_decls))
-    VEC_block_remove (tree, cfun->local_decls, 0, len);
+  if (!vec_safe_is_empty (cfun->local_decls))
+    cfun->local_decls->block_remove (0, len);
 
   /* At this point, all variables within the block tree with TREE_USED
      set are actually used by the optimized function.  Lay them out.  */
@@ -1603,6 +1673,11 @@ expand_used_vars (void)
   /* Assign rtl to each variable based on these partitions.  */
   if (stack_vars_num > 0)
     {
+      struct stack_vars_data data;
+
+      data.asan_vec = vec<HOST_WIDE_INT>();
+      data.asan_decl_vec = vec<tree>();
+
       /* Reorder decls to be protected by iterating over the variables
 	 array multiple times, and allocating out of each phase in turn.  */
       /* ??? We could probably integrate this into the qsort we did
@@ -1611,14 +1686,38 @@ expand_used_vars (void)
       if (has_protected_decls)
 	{
 	  /* Phase 1 contains only character arrays.  */
-	  expand_stack_vars (stack_protect_decl_phase_1);
+	  expand_stack_vars (stack_protect_decl_phase_1, &data);
 
 	  /* Phase 2 contains other kinds of arrays.  */
 	  if (flag_stack_protect == 2)
-	    expand_stack_vars (stack_protect_decl_phase_2);
+	    expand_stack_vars (stack_protect_decl_phase_2, &data);
 	}
 
-      expand_stack_vars (NULL);
+      if (flag_asan)
+	/* Phase 3, any partitions that need asan protection
+	   in addition to phase 1 and 2.  */
+	expand_stack_vars (asan_decl_phase_3, &data);
+
+      if (!data.asan_vec.is_empty ())
+	{
+	  HOST_WIDE_INT prev_offset = frame_offset;
+	  HOST_WIDE_INT offset
+	    = alloc_stack_frame_space (ASAN_RED_ZONE_SIZE,
+				       ASAN_RED_ZONE_SIZE);
+	  data.asan_vec.safe_push (prev_offset);
+	  data.asan_vec.safe_push (offset);
+
+	  var_end_seq
+	    = asan_emit_stack_protection (virtual_stack_vars_rtx,
+					  data.asan_vec.address (),
+					  data.asan_decl_vec. address(),
+					  data.asan_vec.length ());
+	}
+
+      expand_stack_vars (NULL, &data);
+
+      data.asan_vec.release ();
+      data.asan_decl_vec.release ();
     }
 
   fini_vars_expansion ();
@@ -1626,7 +1725,7 @@ expand_used_vars (void)
   /* If there were any artificial non-ignored vars without rtl
      found earlier, see if deferred stack allocation hasn't assigned
      rtl to them.  */
-  FOR_EACH_VEC_ELT_REVERSE (tree, maybe_local_decls, i, var)
+  FOR_EACH_VEC_ELT_REVERSE (maybe_local_decls, i, var)
     {
       rtx rtl = DECL_RTL_IF_SET (var);
 
@@ -1635,7 +1734,7 @@ expand_used_vars (void)
       if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
 	add_local_decl (cfun, var);
     }
-  VEC_free (tree, heap, maybe_local_decls);
+  maybe_local_decls.release ();
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
   if (STACK_ALIGNMENT_NEEDED)
@@ -1645,6 +1744,8 @@ expand_used_vars (void)
 	frame_offset += align - 1;
       frame_offset &= -align;
     }
+
+  return var_end_seq;
 }
 
 
@@ -1995,12 +2096,12 @@ expand_call_stmt (gimple stmt)
   /* Ensure RTL is created for debug args.  */
   if (decl && DECL_HAS_DEBUG_ARGS_P (decl))
     {
-      VEC(tree, gc) **debug_args = decl_debug_args_lookup (decl);
+      vec<tree, va_gc> **debug_args = decl_debug_args_lookup (decl);
       unsigned int ix;
       tree dtemp;
 
       if (debug_args)
-	for (ix = 1; VEC_iterate (tree, *debug_args, ix, dtemp); ix += 2)
+	for (ix = 1; (*debug_args)->iterate (ix, &dtemp); ix += 2)
 	  {
 	    gcc_assert (TREE_CODE (dtemp) == DEBUG_EXPR_DECL);
 	    expand_debug_expr (dtemp);
@@ -3548,13 +3649,13 @@ expand_debug_source_expr (tree exp)
 	    if (DECL_CONTEXT (aexp)
 		== DECL_ABSTRACT_ORIGIN (current_function_decl))
 	      {
-		VEC(tree, gc) **debug_args;
+		vec<tree, va_gc> **debug_args;
 		unsigned int ix;
 		tree ddecl;
 		debug_args = decl_debug_args_lookup (current_function_decl);
 		if (debug_args != NULL)
 		  {
-		    for (ix = 0; VEC_iterate (tree, *debug_args, ix, ddecl);
+		    for (ix = 0; vec_safe_iterate (*debug_args, ix, &ddecl);
 			 ix += 2)
 		      if (ddecl == aexp)
 			return gen_rtx_DEBUG_PARAMETER_REF (mode, aexp);
@@ -3661,7 +3762,7 @@ expand_debug_locations (void)
 /* Expand basic block BB from GIMPLE trees to RTL.  */
 
 static basic_block
-expand_gimple_basic_block (basic_block bb)
+expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 {
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
@@ -3949,6 +4050,11 @@ expand_gimple_basic_block (basic_block bb)
 	}
       else
 	{
+	  if (is_gimple_call (stmt)
+	      && gimple_call_tail_p (stmt)
+	      && disable_tail_calls)
+	    gimple_call_set_tail (stmt, false);
+
 	  if (is_gimple_call (stmt) && gimple_call_tail_p (stmt))
 	    {
 	      bool can_fallthru;
@@ -4308,7 +4414,7 @@ gimple_expand_cfg (void)
   sbitmap blocks;
   edge_iterator ei;
   edge e;
-  rtx var_seq;
+  rtx var_seq, var_ret_seq;
   unsigned i;
 
   timevar_push (TV_OUT_OF_SSA);
@@ -4368,7 +4474,7 @@ gimple_expand_cfg (void)
   timevar_push (TV_VAR_EXPAND);
   start_sequence ();
 
-  expand_used_vars ();
+  var_ret_seq = expand_used_vars ();
 
   var_seq = get_insns ();
   end_sequence ();
@@ -4494,7 +4600,7 @@ gimple_expand_cfg (void)
 
   lab_rtx_for_bb = pointer_map_create ();
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
-    bb = expand_gimple_basic_block (bb);
+    bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);
 
   if (MAY_HAVE_DEBUG_INSNS)
     expand_debug_locations ();
@@ -4521,6 +4627,15 @@ gimple_expand_cfg (void)
 
   construct_exit_block ();
   insn_locations_finalize ();
+
+  if (var_ret_seq)
+    {
+      rtx after = return_label;
+      rtx next = NEXT_INSN (after);
+      if (next && NOTE_INSN_BASIC_BLOCK_P (next))
+	after = next;
+      emit_insn_after (var_ret_seq, after);
+    }
 
   /* Zap the tree EH table.  */
   set_eh_throw_stmt_table (cfun, NULL);

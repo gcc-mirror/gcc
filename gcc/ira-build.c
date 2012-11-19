@@ -124,7 +124,7 @@ create_loop_tree_nodes (void)
   bool skip_p;
   edge_iterator ei;
   edge e;
-  VEC (edge, heap) *edges;
+  vec<edge> edges;
   loop_p loop;
 
   ira_bb_nodes
@@ -150,8 +150,8 @@ create_loop_tree_nodes (void)
     }
   ira_loop_nodes = ((struct ira_loop_tree_node *)
 		    ira_allocate (sizeof (struct ira_loop_tree_node)
-				  * VEC_length (loop_p, ira_loops.larray)));
-  FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
+				  * vec_safe_length (ira_loops.larray)));
+  FOR_EACH_VEC_SAFE_ELT (ira_loops.larray, i, loop)
     {
       if (loop != ira_loops.tree_root)
 	{
@@ -167,13 +167,13 @@ create_loop_tree_nodes (void)
 	  if (skip_p)
 	    continue;
 	  edges = get_loop_exit_edges (loop);
-	  FOR_EACH_VEC_ELT (edge, edges, j, e)
+	  FOR_EACH_VEC_ELT (edges, j, e)
 	    if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
 	      {
 		skip_p = true;
 		break;
 	      }
-	  VEC_free (edge, heap, edges);
+	  edges.release ();
 	  if (skip_p)
 	    continue;
 	}
@@ -190,7 +190,7 @@ more_one_region_p (void)
   loop_p loop;
 
   if (current_loops != NULL)
-    FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
+    FOR_EACH_VEC_SAFE_ELT (ira_loops.larray, i, loop)
       if (ira_loop_nodes[i].regno_allocno_map != NULL
 	  && ira_loop_tree_root != &ira_loop_nodes[i])
 	return true;
@@ -223,7 +223,7 @@ finish_loop_tree_nodes (void)
   if (current_loops == NULL)
     finish_loop_tree_node (&ira_loop_nodes[0]);
   else
-    FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
+    FOR_EACH_VEC_SAFE_ELT (ira_loops.larray, i, loop)
       finish_loop_tree_node (&ira_loop_nodes[i]);
   ira_free (ira_loop_nodes);
   for (i = 0; i < (unsigned int) last_basic_block_before_change; i++)
@@ -379,7 +379,7 @@ rebuild_regno_allocno_maps (void)
 
   ira_assert (current_loops != NULL);
   max_regno = max_reg_num ();
-  FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, l, loop)
+  FOR_EACH_VEC_SAFE_ELT (ira_loops.larray, l, loop)
     if (ira_loop_nodes[l].regno_allocno_map != NULL)
       {
 	ira_free (ira_loop_nodes[l].regno_allocno_map);
@@ -415,11 +415,11 @@ static alloc_pool allocno_pool, live_range_pool, object_pool;
 
 /* Vec containing references to all created allocnos.  It is a
    container of array allocnos.  */
-static VEC(ira_allocno_t,heap) *allocno_vec;
+static vec<ira_allocno_t> allocno_vec;
 
 /* Vec containing references to all created ira_objects.  It is a
    container of ira_object_id_map.  */
-static VEC(ira_object_t,heap) *ira_object_id_map_vec;
+static vec<ira_object_t> ira_object_id_map_vec;
 
 /* Initialize data concerning allocnos.  */
 static void
@@ -432,12 +432,11 @@ initiate_allocnos (void)
     = create_alloc_pool ("allocnos", sizeof (struct ira_allocno), 100);
   object_pool
     = create_alloc_pool ("objects", sizeof (struct ira_object), 100);
-  allocno_vec = VEC_alloc (ira_allocno_t, heap, max_reg_num () * 2);
+  allocno_vec.create (max_reg_num () * 2);
   ira_allocnos = NULL;
   ira_allocnos_num = 0;
   ira_objects_num = 0;
-  ira_object_id_map_vec
-    = VEC_alloc (ira_object_t, heap, max_reg_num () * 2);
+  ira_object_id_map_vec.create (max_reg_num () * 2);
   ira_object_id_map = NULL;
   ira_regno_allocno_map
     = (ira_allocno_t *) ira_allocate (max_reg_num ()
@@ -468,10 +467,10 @@ ira_create_object (ira_allocno_t a, int subword)
   OBJECT_MAX (obj) = -1;
   OBJECT_LIVE_RANGES (obj) = NULL;
 
-  VEC_safe_push (ira_object_t, heap, ira_object_id_map_vec, obj);
+  ira_object_id_map_vec.safe_push (obj);
   ira_object_id_map
-    = VEC_address (ira_object_t, ira_object_id_map_vec);
-  ira_objects_num = VEC_length (ira_object_t, ira_object_id_map_vec);
+    = ira_object_id_map_vec.address ();
+  ira_objects_num = ira_object_id_map_vec.length ();
 
   return obj;
 }
@@ -530,9 +529,9 @@ ira_create_allocno (int regno, bool cap_p,
   ALLOCNO_NUM_OBJECTS (a) = 0;
 
   ALLOCNO_ADD_DATA (a) = NULL;
-  VEC_safe_push (ira_allocno_t, heap, allocno_vec, a);
-  ira_allocnos = VEC_address (ira_allocno_t, allocno_vec);
-  ira_allocnos_num = VEC_length (ira_allocno_t, allocno_vec);
+  allocno_vec.safe_push (a);
+  ira_allocnos = allocno_vec.address ();
+  ira_allocnos_num = allocno_vec.length ();
 
   return a;
 }
@@ -1155,8 +1154,8 @@ finish_allocnos (void)
   FOR_EACH_ALLOCNO (a, ai)
     finish_allocno (a);
   ira_free (ira_regno_allocno_map);
-  VEC_free (ira_object_t, heap, ira_object_id_map_vec);
-  VEC_free (ira_allocno_t, heap, allocno_vec);
+  ira_object_id_map_vec.release ();
+  allocno_vec.release ();
   free_alloc_pool (allocno_pool);
   free_alloc_pool (object_pool);
   free_alloc_pool (live_range_pool);
@@ -1169,7 +1168,7 @@ static alloc_pool copy_pool;
 
 /* Vec containing references to all created copies.  It is a
    container of array ira_copies.  */
-static VEC(ira_copy_t,heap) *copy_vec;
+static vec<ira_copy_t> copy_vec;
 
 /* The function initializes data concerning allocno copies.  */
 static void
@@ -1177,7 +1176,7 @@ initiate_copies (void)
 {
   copy_pool
     = create_alloc_pool ("copies", sizeof (struct ira_allocno_copy), 100);
-  copy_vec = VEC_alloc (ira_copy_t, heap, get_max_uid ());
+  copy_vec.create (get_max_uid ());
   ira_copies = NULL;
   ira_copies_num = 0;
 }
@@ -1229,9 +1228,9 @@ ira_create_copy (ira_allocno_t first, ira_allocno_t second, int freq,
   cp->constraint_p = constraint_p;
   cp->insn = insn;
   cp->loop_tree_node = loop_tree_node;
-  VEC_safe_push (ira_copy_t, heap, copy_vec, cp);
-  ira_copies = VEC_address (ira_copy_t, copy_vec);
-  ira_copies_num = VEC_length (ira_copy_t, copy_vec);
+  copy_vec.safe_push (cp);
+  ira_copies = copy_vec.address ();
+  ira_copies_num = copy_vec.length ();
   return cp;
 }
 
@@ -1399,7 +1398,7 @@ finish_copies (void)
 
   FOR_EACH_COPY (cp, ci)
     finish_copy (cp);
-  VEC_free (ira_copy_t, heap, copy_vec);
+  copy_vec.release ();
   free_alloc_pool (copy_pool);
 }
 
@@ -1472,49 +1471,47 @@ finish_cost_vectors (void)
    correct post-ordering but it would be less likely that two nodes
    connected by an edge in the CFG are neighbours in the topsort.  */
 
-static VEC (ira_loop_tree_node_t, heap) *
+static vec<ira_loop_tree_node_t>
 ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSED,
-				  VEC (ira_loop_tree_node_t, heap) *loop_preorder)
+				  vec<ira_loop_tree_node_t> loop_preorder)
 {
-  VEC (ira_loop_tree_node_t, heap) *topsort_nodes = NULL;
+  vec<ira_loop_tree_node_t> topsort_nodes = vec<ira_loop_tree_node_t>();
   unsigned int n_loop_preorder;
 
-  n_loop_preorder = VEC_length (ira_loop_tree_node_t, loop_preorder);
+  n_loop_preorder = loop_preorder.length ();
   if (n_loop_preorder != 0)
     {
       ira_loop_tree_node_t subloop_node;
       unsigned int i;
-      VEC (ira_loop_tree_node_t, heap) *dfs_stack;
+      vec<ira_loop_tree_node_t> dfs_stack;
 
       /* This is a bit of strange abuse of the BB_VISITED flag:  We use
 	 the flag to mark blocks we still have to visit to add them to
 	 our post-order.  Define an alias to avoid confusion.  */
 #define BB_TO_VISIT BB_VISITED
 
-      FOR_EACH_VEC_ELT (ira_loop_tree_node_t, loop_preorder, i, subloop_node)
+      FOR_EACH_VEC_ELT (loop_preorder, i, subloop_node)
 	{
 	  gcc_checking_assert (! (subloop_node->bb->flags & BB_TO_VISIT));
 	  subloop_node->bb->flags |= BB_TO_VISIT;
 	}
 
-      topsort_nodes = VEC_alloc (ira_loop_tree_node_t, heap, n_loop_preorder);
-      dfs_stack = VEC_alloc (ira_loop_tree_node_t, heap, n_loop_preorder);
+      topsort_nodes.create (n_loop_preorder);
+      dfs_stack.create (n_loop_preorder);
 
-      FOR_EACH_VEC_ELT_REVERSE (ira_loop_tree_node_t, loop_preorder,
-				i, subloop_node)
+      FOR_EACH_VEC_ELT_REVERSE (loop_preorder, i, subloop_node)
 	{
 	  if (! (subloop_node->bb->flags & BB_TO_VISIT))
 	    continue;
 
 	  subloop_node->bb->flags &= ~BB_TO_VISIT;
-	  VEC_quick_push (ira_loop_tree_node_t, dfs_stack, subloop_node);
-	  while (! VEC_empty (ira_loop_tree_node_t, dfs_stack))
+	  dfs_stack.quick_push (subloop_node);
+	  while (! dfs_stack.is_empty ())
 	    {
 	      edge e;
 	      edge_iterator ei;
 
-	      ira_loop_tree_node_t n = VEC_last (ira_loop_tree_node_t,
-						 dfs_stack);
+	      ira_loop_tree_node_t n = dfs_stack.last ();
 	      FOR_EACH_EDGE (e, ei, n->bb->preds)
 		{
 		  ira_loop_tree_node_t pred_node;
@@ -1528,23 +1525,22 @@ ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSE
 		      && (pred_node->bb->flags & BB_TO_VISIT))
 		    {
 		      pred_node->bb->flags &= ~BB_TO_VISIT;
-		      VEC_quick_push (ira_loop_tree_node_t, dfs_stack, pred_node);
+		      dfs_stack.quick_push (pred_node);
 		    }
 		}
-	      if (n == VEC_last (ira_loop_tree_node_t, dfs_stack))
+	      if (n == dfs_stack.last ())
 		{
-		  VEC_pop (ira_loop_tree_node_t, dfs_stack);
-		  VEC_quick_push (ira_loop_tree_node_t, topsort_nodes, n);
+		  dfs_stack.pop ();
+		  topsort_nodes.quick_push (n);
 		}
 	    }
 	}
 
 #undef BB_TO_VISIT
-      VEC_free (ira_loop_tree_node_t, heap, dfs_stack);
+      dfs_stack.release ();
     }
 
-  gcc_assert (VEC_length (ira_loop_tree_node_t, topsort_nodes)
-	      == n_loop_preorder);
+  gcc_assert (topsort_nodes.length () == n_loop_preorder);
   return topsort_nodes;
 }
 
@@ -1583,7 +1579,8 @@ ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
 
   if (bb_p)
     {
-      VEC (ira_loop_tree_node_t, heap) *loop_preorder = NULL;
+      vec<ira_loop_tree_node_t>
+	  loop_preorder = vec<ira_loop_tree_node_t>();
       unsigned int i;
 
       /* Add all nodes to the set of nodes to visit.  The IRA loop tree
@@ -1593,24 +1590,22 @@ ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
 	   subloop_node != NULL;
 	   subloop_node = subloop_node->next)
 	if (subloop_node->bb != NULL)
-	  VEC_safe_push (ira_loop_tree_node_t, heap,
-			 loop_preorder, subloop_node);
+	  loop_preorder.safe_push (subloop_node);
 
       if (preorder_func != NULL)
-	FOR_EACH_VEC_ELT (ira_loop_tree_node_t, loop_preorder, i, subloop_node)
+	FOR_EACH_VEC_ELT (loop_preorder, i, subloop_node)
 	  (*preorder_func) (subloop_node);
 
       if (postorder_func != NULL)
 	{
-	  VEC (ira_loop_tree_node_t, heap) *loop_rev_postorder =
+	  vec<ira_loop_tree_node_t> loop_rev_postorder =
 	    ira_loop_tree_body_rev_postorder (loop_node, loop_preorder);
-	  FOR_EACH_VEC_ELT_REVERSE (ira_loop_tree_node_t, loop_rev_postorder,
-				    i, subloop_node)
+	  FOR_EACH_VEC_ELT_REVERSE (loop_rev_postorder, i, subloop_node)
 	    (*postorder_func) (subloop_node);
-	  VEC_free (ira_loop_tree_node_t, heap, loop_rev_postorder);
+	  loop_rev_postorder.release ();
 	}
 
-      VEC_free (ira_loop_tree_node_t, heap, loop_preorder);
+      loop_preorder.release ();
     }
 
   for (subloop_node = loop_node->subloops;
@@ -1764,7 +1759,7 @@ create_loop_tree_node_allocnos (ira_loop_tree_node_t loop_node)
       int i;
       edge_iterator ei;
       edge e;
-      VEC (edge, heap) *edges;
+      vec<edge> edges;
 
       ira_assert (current_loops != NULL);
       FOR_EACH_EDGE (e, ei, loop_node->loop->header->preds)
@@ -1772,9 +1767,9 @@ create_loop_tree_node_allocnos (ira_loop_tree_node_t loop_node)
 	  create_loop_allocnos (e);
 
       edges = get_loop_exit_edges (loop_node->loop);
-      FOR_EACH_VEC_ELT (edge, edges, i, e)
+      FOR_EACH_VEC_ELT (edges, i, e)
 	create_loop_allocnos (e);
-      VEC_free (edge, heap, edges);
+      edges.release ();
     }
 }
 
@@ -1963,7 +1958,7 @@ loop_with_complex_edge_p (struct loop *loop)
   int i;
   edge_iterator ei;
   edge e;
-  VEC (edge, heap) *edges;
+  vec<edge> edges;
   bool res;
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
@@ -1971,13 +1966,13 @@ loop_with_complex_edge_p (struct loop *loop)
       return true;
   edges = get_loop_exit_edges (loop);
   res = false;
-  FOR_EACH_VEC_ELT (edge, edges, i, e)
+  FOR_EACH_VEC_ELT (edges, i, e)
     if (e->flags & EDGE_COMPLEX)
       {
 	res = true;
 	break;
       }
-  VEC_free (edge, heap, edges);
+  edges.release ();
   return res;
 }
 #endif
@@ -2027,9 +2022,8 @@ mark_loops_for_removal (void)
   ira_assert (current_loops != NULL);
   sorted_loops
     = (ira_loop_tree_node_t *) ira_allocate (sizeof (ira_loop_tree_node_t)
-					     * VEC_length (loop_p,
-							   ira_loops.larray));
-  for (n = i = 0; VEC_iterate (loop_p, ira_loops.larray, i, loop); i++)
+					  * vec_safe_length (ira_loops.larray));
+  for (n = i = 0; vec_safe_iterate (ira_loops.larray, i, &loop); i++)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       {
 	if (ira_loop_nodes[i].parent == NULL)
@@ -2073,7 +2067,7 @@ mark_all_loops_for_removal (void)
   loop_p loop;
 
   ira_assert (current_loops != NULL);
-  FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
+  FOR_EACH_VEC_SAFE_ELT (ira_loops.larray, i, loop)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       {
 	if (ira_loop_nodes[i].parent == NULL)
@@ -2095,14 +2089,12 @@ mark_all_loops_for_removal (void)
 }
 
 /* Definition of vector of loop tree nodes.  */
-DEF_VEC_P(ira_loop_tree_node_t);
-DEF_VEC_ALLOC_P(ira_loop_tree_node_t, heap);
 
 /* Vec containing references to all removed loop tree nodes.  */
-static VEC(ira_loop_tree_node_t,heap) *removed_loop_vec;
+static vec<ira_loop_tree_node_t> removed_loop_vec;
 
 /* Vec containing references to all children of loop tree nodes.  */
-static VEC(ira_loop_tree_node_t,heap) *children_vec;
+static vec<ira_loop_tree_node_t> children_vec;
 
 /* Remove subregions of NODE if their separate allocation will not
    improve the result.  */
@@ -2115,22 +2107,22 @@ remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_node_t node)
 
   remove_p = node->to_remove_p;
   if (! remove_p)
-    VEC_safe_push (ira_loop_tree_node_t, heap, children_vec, node);
-  start = VEC_length (ira_loop_tree_node_t, children_vec);
+    children_vec.safe_push (node);
+  start = children_vec.length ();
   for (subnode = node->children; subnode != NULL; subnode = subnode->next)
     if (subnode->bb == NULL)
       remove_uneccesary_loop_nodes_from_loop_tree (subnode);
     else
-      VEC_safe_push (ira_loop_tree_node_t, heap, children_vec, subnode);
+      children_vec.safe_push (subnode);
   node->children = node->subloops = NULL;
   if (remove_p)
     {
-      VEC_safe_push (ira_loop_tree_node_t, heap, removed_loop_vec, node);
+      removed_loop_vec.safe_push (node);
       return;
     }
-  while (VEC_length (ira_loop_tree_node_t, children_vec) > start)
+  while (children_vec.length () > start)
     {
-      subnode = VEC_pop (ira_loop_tree_node_t, children_vec);
+      subnode = children_vec.pop ();
       subnode->parent = node;
       subnode->next = node->children;
       node->children = subnode;
@@ -2385,21 +2377,17 @@ remove_unnecessary_regions (bool all_p)
     mark_all_loops_for_removal ();
   else
     mark_loops_for_removal ();
-  children_vec
-    = VEC_alloc (ira_loop_tree_node_t, heap,
-		 last_basic_block + VEC_length (loop_p, ira_loops.larray));
-  removed_loop_vec
-    = VEC_alloc (ira_loop_tree_node_t, heap,
-		 last_basic_block + VEC_length (loop_p, ira_loops.larray));
-  remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_root) ;
-  VEC_free (ira_loop_tree_node_t, heap, children_vec);
+  children_vec.create(last_basic_block + vec_safe_length(ira_loops.larray));
+  removed_loop_vec.create(last_basic_block + vec_safe_length(ira_loops.larray));
+  remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_root);
+  children_vec.release ();
   if (all_p)
     remove_low_level_allocnos ();
   else
     remove_unnecessary_allocnos ();
-  while (VEC_length (ira_loop_tree_node_t, removed_loop_vec) > 0)
-    finish_loop_tree_node (VEC_pop (ira_loop_tree_node_t, removed_loop_vec));
-  VEC_free (ira_loop_tree_node_t, heap, removed_loop_vec);
+  while (removed_loop_vec.length () > 0)
+    finish_loop_tree_node (removed_loop_vec.pop ());
+  removed_loop_vec.release ();
 }
 
 
@@ -3271,7 +3259,7 @@ ira_build (void)
 	    }
 	}
       fprintf (ira_dump_file, "  regions=%d, blocks=%d, points=%d\n",
-	       current_loops == NULL ? 1 : VEC_length (loop_p, ira_loops.larray),
+	       current_loops == NULL ? 1 : vec_safe_length (ira_loops.larray),
 	       n_basic_blocks, ira_max_point);
       fprintf (ira_dump_file,
 	       "    allocnos=%d (big %d), copies=%d, conflicts=%d, ranges=%d\n",

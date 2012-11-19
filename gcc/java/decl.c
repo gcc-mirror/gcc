@@ -1953,7 +1953,7 @@ java_mark_class_local (tree klass)
     if (FIELD_STATIC (t))
       {
 	if (DECL_EXTERNAL (t))
-	  VEC_safe_push (tree, gc, pending_static_fields, t);
+	  vec_safe_push (pending_static_fields, t);
 	java_mark_decl_local (t);
       }
 

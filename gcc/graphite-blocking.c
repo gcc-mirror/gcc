@@ -175,7 +175,7 @@ lst_do_strip_mine_loop (lst_p lst, int depth, int stride)
     {
       int res = 0;
 
-      FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+      FOR_EACH_VEC_ELT (LST_SEQ (lst), i, l)
 	res += lst_do_strip_mine_loop (l, depth, stride);
 
       return res;
@@ -217,7 +217,7 @@ lst_do_strip_mine (lst_p lst, int stride)
       || !LST_LOOP_P (lst))
     return false;
 
-  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+  FOR_EACH_VEC_ELT (LST_SEQ (lst), i, l)
     res += lst_do_strip_mine (l, stride);
 
   depth = lst_depth (lst);

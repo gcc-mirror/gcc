@@ -123,6 +123,9 @@ libffi/configure: libffi/configure.ac libffi/aclocal.m4
 libffi/fficonfig.h.in: libffi/configure.ac libffi/aclocal.m4
 libgfortran/aclocal.m4: libgfortran/configure.ac libgfortran/acinclude.m4
 libgfortran/Makefile.in: libgfortran/Makefile.am libgfortran/configure.ac libgfortran/aclocal.m4
+libquadmath/configure: libquadmath/configure.ac libquadmath/aclocal.m4
+libquadmath/aclocal.m4: libquadmath/configure.ac libquadmath/acinclude.m4
+libquadmath/Makefile.in: libquadmath/Makefile.am libquadmath/configure.ac libgfortran/aclocal.m4
 libgfortran/configure: libgfortran/configure.ac libgfortran/aclocal.m4
 libjava/aclocal.m4: libjava/configure.ac
 libjava/Makefile.in: libjava/Makefile.am libjava/configure.ac libjava/aclocal.m4
@@ -154,6 +157,12 @@ libatomic/Makefile.in: libatomic/Makefile.am libatomic/aclocal.m4
 libatomic/testsuite/Makefile.in: libatomic/testsuite/Makefile.am libatomic/aclocal.m4
 libatomic/configure: libatomic/configure.ac libatomic/aclocal.m4
 libatomic/auto-config.h.in: libatomic/configure.ac libatomic/aclocal.m4
+libsanitizer/aclocal.m4: libsanitizer/configure.ac libsanitizer/acinclude.m4
+libsanitizer/Makefile.in: libsanitizer/Makefile.am libsanitizer/aclocal.m4
+libsanitizer/configure: libsanitizer/configure.ac libsanitizer/aclocal.m4
+libsanitizer/asan/Makefile.in: libsanitizer/asan/Makefile.am libsanitizer/aclocal.m4
+libsanitizer/interception/Makefile.in: libsanitizer/interception/Makefile.am libsanitizer/aclocal.m4
+libsanitizer/sanitizer_common/Makefile.in: libsanitizer/sanitizer_common/Makefile.am libsanitizer/aclocal.m4
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4

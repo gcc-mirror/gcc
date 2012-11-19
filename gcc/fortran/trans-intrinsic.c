@@ -724,7 +724,7 @@ static tree
 gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 {
   tree type;
-  VEC(tree,gc) *argtypes;
+  vec<tree, va_gc> *argtypes;
   tree fndecl;
   gfc_actual_arglist *actual;
   tree *pdecl;
@@ -809,7 +809,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
   for (actual = expr->value.function.actual; actual; actual = actual->next)
     {
       type = gfc_typenode_for_spec (&actual->expr->ts);
-      VEC_safe_push (tree, gc, argtypes, type);
+      vec_safe_push (argtypes, type);
     }
   type = build_function_type_vec (gfc_typenode_for_spec (ts), argtypes);
   fndecl = build_decl (input_location,
@@ -2341,7 +2341,7 @@ static void
 gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
   gfc_symbol *sym;
-  VEC(tree,gc) *append_args;
+  vec<tree, va_gc> *append_args;
 
   gcc_assert (!se->ss || se->ss->info->expr == expr);
 
@@ -2381,19 +2381,19 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 		gemm_fndecl = gfor_fndecl_zgemm;
 	    }
 
-	  append_args = VEC_alloc (tree, gc, 3);
-	  VEC_quick_push (tree, append_args, build_int_cst (cint, 1));
-	  VEC_quick_push (tree, append_args,
-			  build_int_cst (cint, gfc_option.blas_matmul_limit));
-	  VEC_quick_push (tree, append_args,
-			  gfc_build_addr_expr (NULL_TREE, gemm_fndecl));
+	  vec_alloc (append_args, 3);
+	  append_args->quick_push (build_int_cst (cint, 1));
+	  append_args->quick_push (build_int_cst (cint,
+		                                 gfc_option.blas_matmul_limit));
+	  append_args->quick_push (gfc_build_addr_expr (NULL_TREE,
+							gemm_fndecl));
 	}
       else
 	{
-	  append_args = VEC_alloc (tree, gc, 3);
-	  VEC_quick_push (tree, append_args, build_int_cst (cint, 0));
-	  VEC_quick_push (tree, append_args, build_int_cst (cint, 0));
-	  VEC_quick_push (tree, append_args, null_pointer_node);
+	  vec_alloc (append_args, 3);
+	  append_args->quick_push (build_int_cst (cint, 0));
+	  append_args->quick_push (build_int_cst (cint, 0));
+	  append_args->quick_push (null_pointer_node);
 	}
     }
 
@@ -4486,7 +4486,7 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
   unsigned cur_pos;
   gfc_actual_arglist* arg;
   gfc_symbol* sym;
-  VEC(tree,gc) *append_args;
+  vec<tree, va_gc> *append_args;
 
   /* Find the two arguments given as position.  */
   cur_pos = 0;
@@ -4516,8 +4516,8 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
       tree dummy;
 
       dummy = build_int_cst (gfc_charlen_type_node, 0);
-      append_args = VEC_alloc (tree, gc, 1);
-      VEC_quick_push (tree, append_args, dummy);
+      vec_alloc (append_args, 1);
+      append_args->quick_push (dummy);
     }
 
   /* Build the call itself.  */
@@ -5600,14 +5600,16 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tmp = fold_convert (pvoid_type_node, tmp);
 
   /* Use memcpy to do the transfer.  */
-  tmp = build_call_expr_loc (input_location,
-			 builtin_decl_explicit (BUILT_IN_MEMCPY),
-			 3,
-			 tmp,
-			 fold_convert (pvoid_type_node, source),
-			 fold_build2_loc (input_location, MIN_EXPR,
-					  gfc_array_index_type,
-					  size_bytes, source_bytes));
+  tmp
+    = build_call_expr_loc (input_location,
+			   builtin_decl_explicit (BUILT_IN_MEMCPY), 3, tmp,
+			   fold_convert (pvoid_type_node, source),
+			   fold_convert (size_type_node,
+					 fold_build2_loc (input_location,
+							  MIN_EXPR,
+							  gfc_array_index_type,
+							  size_bytes,
+							  source_bytes)));
   gfc_add_expr_to_block (&se->pre, tmp);
 
   se->expr = info->descriptor;
@@ -5649,7 +5651,7 @@ scalar_transfer:
 			     builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 			     fold_convert (pvoid_type_node, tmpdecl),
 			     fold_convert (pvoid_type_node, ptr),
-			     extent);
+			     fold_convert (size_type_node, extent));
       gfc_add_expr_to_block (&block, tmp);
       indirect = gfc_finish_block (&block);
 
@@ -5687,7 +5689,7 @@ scalar_transfer:
 			     builtin_decl_explicit (BUILT_IN_MEMCPY), 3,
 			     fold_convert (pvoid_type_node, tmp),
 			     fold_convert (pvoid_type_node, ptr),
-			     extent);
+			     fold_convert (size_type_node, extent));
       gfc_add_expr_to_block (&se->pre, tmp);
 
       /* For CLASS results, set the _vptr.  */
@@ -5983,7 +5985,7 @@ gfc_conv_intrinsic_sr_kind (gfc_se *se, gfc_expr *expr)
   gfc_actual_arglist *actual;
   tree type;
   gfc_se argse;
-  VEC(tree,gc) *args = NULL;
+  vec<tree, va_gc> *args = NULL;
 
   for (actual = expr->value.function.actual; actual; actual = actual->next)
     {
@@ -6009,7 +6011,7 @@ gfc_conv_intrinsic_sr_kind (gfc_se *se, gfc_expr *expr)
 
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
-      VEC_safe_push (tree, gc, args, argse.expr);
+      vec_safe_push (args, argse.expr);
     }
 
   /* Convert it to the required type.  */

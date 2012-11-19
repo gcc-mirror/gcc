@@ -40,33 +40,30 @@ ipa_record_reference (symtab_node referring_node,
 {
   struct ipa_ref *ref;
   struct ipa_ref_list *list, *list2;
-  VEC(ipa_ref_t,gc) *old_references;
+  ipa_ref_t *old_references;
 
   gcc_checking_assert (!stmt || is_a <cgraph_node> (referring_node));
   gcc_checking_assert (use_type != IPA_REF_ALIAS || !stmt);
 
   list = &referring_node->symbol.ref_list;
-  old_references = list->references;
-  VEC_safe_grow (ipa_ref_t, gc, list->references,
-		 VEC_length (ipa_ref_t, list->references) + 1);
-  ref = &VEC_last (ipa_ref_t, list->references);
+  old_references = vec_safe_address (list->references);
+  vec_safe_grow (list->references, vec_safe_length (list->references) + 1);
+  ref = &list->references->last ();
 
   list2 = &referred_node->symbol.ref_list;
-  VEC_safe_push (ipa_ref_ptr, heap, list2->referring, ref);
-  ref->referred_index = VEC_length (ipa_ref_ptr, list2->referring) - 1;
+  list2->referring.safe_push (ref);
+  ref->referred_index = list2->referring.length () - 1;
   ref->referring = referring_node;
   ref->referred = referred_node;
   ref->stmt = stmt;
   ref->use = use_type;
 
   /* If vector was moved in memory, update pointers.  */
-  if (old_references != list->references)
+  if (old_references != list->references->address ())
     {
       int i;
       for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-	VEC_replace (ipa_ref_ptr,
-		     ipa_ref_referred_ref_list (ref)->referring,
-		     ref->referred_index, ref);
+	ipa_ref_referred_ref_list (ref)->referring[ref->referred_index] = ref;
     }
   return ref;
 }
@@ -78,30 +75,26 @@ ipa_remove_reference (struct ipa_ref *ref)
 {
   struct ipa_ref_list *list = ipa_ref_referred_ref_list (ref);
   struct ipa_ref_list *list2 = ipa_ref_referring_ref_list (ref);
-  VEC(ipa_ref_t,gc) *old_references = list2->references;
+  vec<ipa_ref_t, va_gc> *old_references = list2->references;
   struct ipa_ref *last;
 
-  gcc_assert (VEC_index (ipa_ref_ptr, list->referring, ref->referred_index) == ref);
-  last = VEC_last (ipa_ref_ptr, list->referring);
+  gcc_assert (list->referring[ref->referred_index] == ref);
+  last = list->referring.last ();
   if (ref != last)
     {
-      VEC_replace (ipa_ref_ptr, list->referring,
-		   ref->referred_index,
-		   VEC_last (ipa_ref_ptr, list->referring));
-      VEC_index (ipa_ref_ptr, list->referring,
-		 ref->referred_index)->referred_index = ref->referred_index;
+      list->referring[ref->referred_index] = list->referring.last ();
+      list->referring[ref->referred_index]->referred_index 
+	  = ref->referred_index;
     }
-  VEC_pop (ipa_ref_ptr, list->referring);
+  list->referring.pop ();
 
-  last = &VEC_last (ipa_ref_t, list2->references);
+  last = &list2->references->last ();
   if (ref != last)
     {
       *ref = *last;
-      VEC_replace (ipa_ref_ptr,
-		   ipa_ref_referred_ref_list (ref)->referring,
-		   ref->referred_index, ref);
+      ipa_ref_referred_ref_list (ref)->referring[ref->referred_index] = ref;
     }
-  VEC_pop (ipa_ref_t, list2->references);
+  list2->references->pop ();
   gcc_assert (list2->references == old_references);
 }
 
@@ -110,10 +103,9 @@ ipa_remove_reference (struct ipa_ref *ref)
 void
 ipa_remove_all_references (struct ipa_ref_list *list)
 {
-  while (VEC_length (ipa_ref_t, list->references))
-    ipa_remove_reference (&VEC_last (ipa_ref_t, list->references));
-  VEC_free (ipa_ref_t, gc, list->references);
-  list->references = NULL;
+  while (vec_safe_length (list->references))
+    ipa_remove_reference (&list->references->last ());
+  vec_free (list->references);
 }
 
 /* Remove all references in ref list LIST.  */
@@ -121,10 +113,9 @@ ipa_remove_all_references (struct ipa_ref_list *list)
 void
 ipa_remove_all_referring (struct ipa_ref_list *list)
 {
-  while (VEC_length (ipa_ref_ptr, list->referring))
-    ipa_remove_reference (VEC_last (ipa_ref_ptr, list->referring));
-  VEC_free (ipa_ref_ptr, heap, list->referring);
-  list->referring = NULL;
+  while (list->referring.length ())
+    ipa_remove_reference (list->referring.last ());
+  list->referring.release ();
 }
 
 /* Dump references in LIST to FILE.  */

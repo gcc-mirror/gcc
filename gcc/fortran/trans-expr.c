@@ -661,7 +661,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems)
   tree to_data;
   tree to_ref;
   tree from_ref;
-  VEC(tree,gc) *args;
+  vec<tree, va_gc> *args;
   tree tmp;
   tree index;
   stmtblock_t loopbody;
@@ -696,13 +696,13 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems)
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data)))
 	{
 	  from_ref = gfc_get_class_array_ref (index, from);
-	  VEC_safe_push (tree, gc, args, from_ref);
+	  vec_safe_push (args, from_ref);
 	}
       else
-        VEC_safe_push (tree, gc, args, from_data);
+        vec_safe_push (args, from_data);
 
       to_ref = gfc_get_class_array_ref (index, to);
-      VEC_safe_push (tree, gc, args, to_ref);
+      vec_safe_push (args, to_ref);
 
       tmp = build_call_vec (fcn_type, fcn, args);
 
@@ -724,8 +724,8 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems)
   else
     {
       gcc_assert (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (from_data)));
-      VEC_safe_push (tree, gc, args, from_data);
-      VEC_safe_push (tree, gc, args, to_data);
+      vec_safe_push (args, from_data);
+      vec_safe_push (args, to_data);
       tmp = build_call_vec (fcn_type, fcn, args);
     }
 
@@ -3822,11 +3822,11 @@ conv_isocbinding_procedure (gfc_se * se, gfc_symbol * sym,
 int
 gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			 gfc_actual_arglist * args, gfc_expr * expr,
-			 VEC(tree,gc) *append_args)
+			 vec<tree, va_gc> *append_args)
 {
   gfc_interface_mapping mapping;
-  VEC(tree,gc) *arglist;
-  VEC(tree,gc) *retargs;
+  vec<tree, va_gc> *arglist;
+  vec<tree, va_gc> *retargs;
   tree tmp;
   tree fntype;
   gfc_se parmse;
@@ -3837,7 +3837,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   tree var;
   tree len;
   tree base_object;
-  VEC(tree,gc) *stringargs;
+  vec<tree, va_gc> *stringargs;
   tree result = NULL;
   gfc_formal_arglist *formal;
   gfc_actual_arglist *arg;
@@ -4608,7 +4608,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       /* Character strings are passed as two parameters, a length and a
          pointer - except for Bind(c) which only passes the pointer.  */
       if (parmse.string_length != NULL_TREE && !sym->attr.is_bind_c)
-	VEC_safe_push (tree, gc, stringargs, parmse.string_length);
+	vec_safe_push (stringargs, parmse.string_length);
 
       /* For descriptorless coarrays and assumed-shape coarray dummies, we
 	 pass the token and the offset as additional arguments.  */
@@ -4618,9 +4618,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  && e == NULL)
 	{
 	  /* Token and offset. */
-	  VEC_safe_push (tree, gc, stringargs, null_pointer_node);
-	  VEC_safe_push (tree, gc, stringargs,
-			 build_int_cst (gfc_array_index_type, 0));
+	  vec_safe_push (stringargs, null_pointer_node);
+	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
 	}
       else if (fsym && fsym->attr.codimension
@@ -4646,7 +4645,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      tmp = GFC_TYPE_ARRAY_CAF_TOKEN (caf_type);
 	    }
 	  
-	  VEC_safe_push (tree, gc, stringargs, tmp);
+	  vec_safe_push (stringargs, tmp);
 
 	  if (GFC_DESCRIPTOR_TYPE_P (caf_type)
 	      && GFC_TYPE_ARRAY_AKIND (caf_type) == GFC_ARRAY_ALLOCATABLE)
@@ -4692,10 +4691,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  offset = fold_build2_loc (input_location, PLUS_EXPR,
 				    gfc_array_index_type, offset, tmp);
 
-	  VEC_safe_push (tree, gc, stringargs, offset);
+	  vec_safe_push (stringargs, offset);
 	}
 
-      VEC_safe_push (tree, gc, arglist, parmse.expr);
+      vec_safe_push (arglist, parmse.expr);
     }
   gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
 
@@ -4719,7 +4718,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  if (ts.deferred)
 	    cl.backend_decl = gfc_create_var (gfc_charlen_type_node, "slen");
 	  else if (!sym->attr.dummy)
-	    cl.backend_decl = VEC_index (tree, stringargs, 0);
+	    cl.backend_decl = (*stringargs)[0];
 	  else
 	    {
 	      formal = sym->ns->proc_name->formal;
@@ -4796,7 +4795,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    result = build_fold_indirect_ref_loc (input_location,
 						  se->expr);
-	  VEC_safe_push (tree, gc, retargs, se->expr);
+	  vec_safe_push (retargs, se->expr);
 	}
       else if (comp && comp->attr.dimension)
 	{
@@ -4832,7 +4831,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* Pass the temporary as the first argument.  */
 	  result = info->descriptor;
 	  tmp = gfc_build_addr_expr (NULL_TREE, result);
-	  VEC_safe_push (tree, gc, retargs, tmp);
+	  vec_safe_push (retargs, tmp);
 	}
       else if (!comp && sym->result->attr.dimension)
 	{
@@ -4868,7 +4867,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* Pass the temporary as the first argument.  */
 	  result = info->descriptor;
 	  tmp = gfc_build_addr_expr (NULL_TREE, result);
-	  VEC_safe_push (tree, gc, retargs, tmp);
+	  vec_safe_push (retargs, tmp);
 	}
       else if (ts.type == BT_CHARACTER)
 	{
@@ -4899,7 +4898,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  else
 	    var = gfc_conv_string_tmp (se, type, len);
 
-	  VEC_safe_push (tree, gc, retargs, var);
+	  vec_safe_push (retargs, var);
 	}
       else
 	{
@@ -4907,7 +4906,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  type = gfc_get_complex_type (ts.kind);
 	  var = gfc_build_addr_expr (NULL_TREE, gfc_create_var (type, "cmplx"));
-	  VEC_safe_push (tree, gc, retargs, var);
+	  vec_safe_push (retargs, var);
 	}
 
       /* Add the string length to the argument list.  */
@@ -4917,28 +4916,28 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  if (TREE_CODE (tmp) != VAR_DECL)
 	    tmp = gfc_evaluate_now (len, &se->pre);
 	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
-	  VEC_safe_push (tree, gc, retargs, tmp);
+	  vec_safe_push (retargs, tmp);
 	}
       else if (ts.type == BT_CHARACTER)
-	VEC_safe_push (tree, gc, retargs, len);
+	vec_safe_push (retargs, len);
     }
   gfc_free_interface_mapping (&mapping);
 
   /* We need to glom RETARGS + ARGLIST + STRINGARGS + APPEND_ARGS.  */
-  arglen = (VEC_length (tree, arglist)
-	    + VEC_length (tree, stringargs) + VEC_length (tree, append_args));
-  VEC_reserve_exact (tree, gc, retargs, arglen);
+  arglen = (vec_safe_length (arglist) + vec_safe_length (stringargs)
+	    + vec_safe_length (append_args));
+  vec_safe_reserve (retargs, arglen);
 
   /* Add the return arguments.  */
-  VEC_splice (tree, retargs, arglist);
+  retargs->splice (arglist);
 
   /* Add the hidden string length parameters to the arguments.  */
-  VEC_splice (tree, retargs, stringargs);
+  retargs->splice (stringargs);
 
   /* We may want to append extra arguments here.  This is used e.g. for
      calls to libgfortran_matmul_??, which need extra information.  */
-  if (!VEC_empty (tree, append_args))
-    VEC_splice (tree, retargs, append_args);
+  if (!vec_safe_is_empty (append_args))
+    retargs->splice (append_args);
   arglist = retargs;
 
   /* Generate the actual call.  */
@@ -5423,7 +5422,8 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
   if (!sym)
     sym = expr->symtree->n.sym;
 
-  gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr, NULL);
+  gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
+			   NULL);
 }
 
 
@@ -5965,7 +5965,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
   tree val;
   tree type;
   tree tmp;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   gcc_assert (se->ss == NULL);
   gcc_assert (expr->expr_type == EXPR_STRUCTURE);
@@ -7139,7 +7139,8 @@ gfc_trans_zero_assign (gfc_expr * expr)
      a = {} instead.  */
   if (!POINTER_TYPE_P (TREE_TYPE (dest)))
     return build2_loc (input_location, MODIFY_EXPR, void_type_node,
-		       dest, build_constructor (TREE_TYPE (dest), NULL));
+		       dest, build_constructor (TREE_TYPE (dest),
+					      NULL));
 
   /* Convert arguments to the correct types.  */
   dest = fold_convert (pvoid_type_node, dest);

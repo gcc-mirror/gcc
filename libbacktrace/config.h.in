@@ -16,6 +16,9 @@
 /* Define to 1 if you have the fcntl function */
 #undef HAVE_FCNTL
 
+/* Define if getexecname is available. */
+#undef HAVE_GETEXECNAME
+
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 

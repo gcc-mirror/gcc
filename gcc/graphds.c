@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "bitmap.h"
 #include "vec.h"
-#include "vecprim.h"
 #include "graphds.h"
 
 /* Dumps graph G into F.  */
@@ -187,7 +186,7 @@ dfs_next_edge (struct graph_edge *e, bool forward, bitmap subgraph)
    of the graph (number of the restarts of DFS).  */
 
 int
-graphds_dfs (struct graph *g, int *qs, int nq, VEC (int, heap) **qt,
+graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
 	     bool forward, bitmap subgraph)
 {
   int i, tick = 0, v, comp = 0, top;
@@ -236,7 +235,7 @@ graphds_dfs (struct graph *g, int *qs, int nq, VEC (int, heap) **qt,
 	  if (!e)
 	    {
 	      if (qt)
-		VEC_safe_push (int, heap, *qt, v);
+		qt->safe_push (v);
 	      g->vertices[v].post = tick++;
 
 	      if (!top)
@@ -275,7 +274,7 @@ int
 graphds_scc (struct graph *g, bitmap subgraph)
 {
   int *queue = XNEWVEC (int, g->n_vertices);
-  VEC (int, heap) *postorder = NULL;
+  vec<int> postorder = vec<int>();
   int nq, i, comp;
   unsigned v;
   bitmap_iterator bi;
@@ -296,14 +295,14 @@ graphds_scc (struct graph *g, bitmap subgraph)
     }
 
   graphds_dfs (g, queue, nq, &postorder, false, subgraph);
-  gcc_assert (VEC_length (int, postorder) == (unsigned) nq);
+  gcc_assert (postorder.length () == (unsigned) nq);
 
   for (i = 0; i < nq; i++)
-    queue[i] = VEC_index (int, postorder, nq - i - 1);
+    queue[i] = postorder[nq - i - 1];
   comp = graphds_dfs (g, queue, nq, NULL, true, subgraph);
 
   free (queue);
-  VEC_free (int, heap, postorder);
+  postorder.release ();
 
   return comp;
 }
@@ -401,7 +400,7 @@ void
 graphds_domtree (struct graph *g, int entry,
 		 int *parent, int *son, int *brother)
 {
-  VEC (int, heap) *postorder = NULL;
+  vec<int> postorder = vec<int>();
   int *marks = XCNEWVEC (int, g->n_vertices);
   int mark = 1, i, v, idom;
   bool changed = true;
@@ -432,8 +431,8 @@ graphds_domtree (struct graph *g, int entry,
       brother[i] = -1;
     }
   graphds_dfs (g, &entry, 1, &postorder, true, NULL);
-  gcc_assert (VEC_length (int, postorder) == (unsigned) g->n_vertices);
-  gcc_assert (VEC_index (int, postorder, g->n_vertices - 1) == entry);
+  gcc_assert (postorder.length () == (unsigned) g->n_vertices);
+  gcc_assert (postorder[g->n_vertices - 1] == entry);
 
   while (changed)
     {
@@ -441,7 +440,7 @@ graphds_domtree (struct graph *g, int entry,
 
       for (i = g->n_vertices - 2; i >= 0; i--)
 	{
-	  v = VEC_index (int, postorder, i);
+	  v = postorder[i];
 	  idom = -1;
 	  for (e = g->vertices[v].pred; e; e = e->pred_next)
 	    {
@@ -461,7 +460,7 @@ graphds_domtree (struct graph *g, int entry,
     }
 
   free (marks);
-  VEC_free (int, heap, postorder);
+  postorder.release ();
 
   for (i = 0; i < g->n_vertices; i++)
     if (parent[i] != -1)

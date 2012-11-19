@@ -20,24 +20,22 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_INSN_ADDR_H
 #define GCC_INSN_ADDR_H
 
-#include "vecprim.h"
-
-extern VEC(int,heap) *insn_addresses_;
+extern vec<int> insn_addresses_;
 extern int insn_current_address;
 
-#define INSN_ADDRESSES(id) (*&(VEC_address (int, insn_addresses_) [id]))
+#define INSN_ADDRESSES(id) (insn_addresses_[id])
 #define INSN_ADDRESSES_ALLOC(size)			\
   do							\
     {							\
-      insn_addresses_ = VEC_alloc (int, heap, size);	\
-      VEC_safe_grow (int, heap, insn_addresses_, size);	\
-      memset (VEC_address (int, insn_addresses_),	\
+      insn_addresses_.create (size);			\
+      insn_addresses_.safe_grow_cleared (size);		\
+      memset (insn_addresses_.address (),		\
 	      0, sizeof (int) * size);			\
     }							\
   while (0)
-#define INSN_ADDRESSES_FREE() (VEC_free (int, heap, insn_addresses_))
-#define INSN_ADDRESSES_SET_P() (insn_addresses_ != 0)
-#define INSN_ADDRESSES_SIZE() (VEC_length (int, insn_addresses_))
+#define INSN_ADDRESSES_FREE() (insn_addresses_.release ())
+#define INSN_ADDRESSES_SET_P() (insn_addresses_.exists ())
+#define INSN_ADDRESSES_SIZE() (insn_addresses_.length ())
 
 static inline void
 insn_addresses_new (rtx insn, int insn_addr)
@@ -50,8 +48,8 @@ insn_addresses_new (rtx insn, int insn_addr)
       if (size <= insn_uid)
 	{
 	  int *p;
-	  VEC_safe_grow (int, heap, insn_addresses_, insn_uid + 1);
-	  p = VEC_address (int, insn_addresses_);
+	  insn_addresses_.safe_grow (insn_uid + 1);
+	  p = insn_addresses_.address ();
 	  memset (&p[size],
 		  0, sizeof (int) * (insn_uid + 1 - size));
 	}

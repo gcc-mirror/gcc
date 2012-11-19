@@ -283,6 +283,10 @@ Graphite		Daniel Berlin		dberlin@dberlin.org
 Graphite 		Tobias Grosser		grosser@fim.uni-passau.de
 Graphite		Sebastian Pop		sebastian.pop@amd.com
 libcpp			Tom Tromey		tromey@redhat.com
+libsanitizer, asan.c	Jakub Jelinek		jakub@redhat.com
+libsanitizer, asan.c	Dodji Seketeli		dodji@redhat.com
+libsanitizer, asan.c	Kostya Serebryany	kcc@google.com
+libsanitizer, asan.c	Dmitry Vyukov		dvyukov@google.com
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 LTO			Diego Novillo		dnovillo@google.com
@@ -453,6 +457,7 @@ Simon Martin					simartin@users.sourceforge.net
 Ranjit Mathew					rmathew@hotmail.com
 Michael Matz					matz@suse.de
 Greg McGary					gkm@gnu.org
+Roland McGrath					roland@hack.frob.com
 Adam Megacz					adam@xwt.org
 Bingfeng Mei					bmei@broadcom.com
 Jim Meyering					jim@meyering.net

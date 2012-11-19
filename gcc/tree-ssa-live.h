@@ -24,9 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #define _TREE_SSA_LIVE_H 1
 
 #include "partition.h"
-#include "vecprim.h"
-
-
 
 /* Used to create the variable mapping when we go out of SSA form.
 

@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
    the -2 on all the calculations below.  */
 
 #define NUM_BUCKETS 10
-static GTY ((deletable (""))) VEC(gimple,gc) *free_phinodes[NUM_BUCKETS - 2];
+static GTY ((deletable (""))) vec<gimple, va_gc> *free_phinodes[NUM_BUCKETS - 2];
 static unsigned long free_phinode_count;
 
 static int ideal_phi_node_len (int);
@@ -108,13 +108,12 @@ allocate_phi_node (size_t len)
 
   /* If our free list has an element, then use it.  */
   if (bucket < NUM_BUCKETS - 2
-      && gimple_phi_capacity (VEC_index (gimple, free_phinodes[bucket], 0))
-	 >= len)
+      && gimple_phi_capacity ((*free_phinodes[bucket])[0]) >= len)
     {
       free_phinode_count--;
-      phi = VEC_pop (gimple, free_phinodes[bucket]);
-      if (VEC_empty (gimple, free_phinodes[bucket]))
-	VEC_free (gimple, gc, free_phinodes[bucket]);
+      phi = free_phinodes[bucket]->pop ();
+      if (free_phinodes[bucket]->is_empty ())
+	vec_free (free_phinodes[bucket]);
       if (GATHER_STATISTICS)
 	phi_nodes_reused++;
     }
@@ -229,7 +228,7 @@ release_phi_node (gimple phi)
 
   bucket = len > NUM_BUCKETS - 1 ? NUM_BUCKETS - 1 : len;
   bucket -= 2;
-  VEC_safe_push (gimple, gc, free_phinodes[bucket], phi);
+  vec_safe_push (free_phinodes[bucket], phi);
   free_phinode_count++;
 }
 

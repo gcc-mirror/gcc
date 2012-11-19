@@ -71,9 +71,9 @@ ipa_ref_referred_ref_list (struct ipa_ref *ref)
 static inline struct ipa_ref *
 ipa_ref_list_first_reference (struct ipa_ref_list *list)
 {
-  if (!VEC_length (ipa_ref_t, list->references))
+  if (!vec_safe_length (list->references))
     return NULL;
-  return &VEC_index (ipa_ref_t, list->references, 0);
+  return &(*list->references)[0];
 }
 
 /* Return first referring ref in LIST or NULL if empty.  */
@@ -81,9 +81,9 @@ ipa_ref_list_first_reference (struct ipa_ref_list *list)
 static inline struct ipa_ref *
 ipa_ref_list_first_referring (struct ipa_ref_list *list)
 {
-  if (!VEC_length (ipa_ref_ptr, list->referring))
+  if (!list->referring.length ())
     return NULL;
-  return VEC_index (ipa_ref_ptr, list->referring, 0);
+  return list->referring[0];
 }
 
 /* Clear reference list.  */
@@ -91,7 +91,7 @@ ipa_ref_list_first_referring (struct ipa_ref_list *list)
 static inline void
 ipa_empty_ref_list (struct ipa_ref_list *list)
 {
-  list->referring = NULL;
+  list->referring.create (0);
   list->references = NULL;
 }
 
@@ -100,10 +100,10 @@ ipa_empty_ref_list (struct ipa_ref_list *list)
 static inline unsigned int
 ipa_ref_list_nreferences (struct ipa_ref_list *list)
 {
-  return VEC_length (ipa_ref_t, list->references);
+  return vec_safe_length (list->references);
 }
 
 #define ipa_ref_list_reference_iterate(L,I,P) \
-   VEC_iterate(ipa_ref_t, (L)->references, (I), (P))
+   vec_safe_iterate ((L)->references, (I), &(P))
 #define ipa_ref_list_referring_iterate(L,I,P) \
-   VEC_iterate(ipa_ref_ptr, (L)->referring, (I), (P))
+   (L)->referring.iterate ((I), &(P))

@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "system.h"
 #include "tree.h"
-#include "vec.h"
 #include "input.h"
 #include "c/c-tree.h"
 #include "flags.h"

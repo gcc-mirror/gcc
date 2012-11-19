@@ -65,12 +65,6 @@ typedef struct ira_allocno_copy *ira_copy_t;
 typedef struct ira_object *ira_object_t;
 
 /* Definition of vector of allocnos and copies.  */
-DEF_VEC_P(ira_allocno_t);
-DEF_VEC_ALLOC_P(ira_allocno_t, heap);
-DEF_VEC_P(ira_object_t);
-DEF_VEC_ALLOC_P(ira_object_t, heap);
-DEF_VEC_P(ira_copy_t);
-DEF_VEC_ALLOC_P(ira_copy_t, heap);
 
 /* Typedef for pointer to the subsequent structure.  */
 typedef struct ira_loop_tree_node *ira_loop_tree_node_t;

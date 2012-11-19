@@ -6581,7 +6581,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
       {
 	unsigned int nargs, z;
-	VEC(tree,gc) *vec;
+	vec<tree, va_gc> *vec;
 
 	mode = 
 	    get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1);
@@ -6592,12 +6592,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	/* If this is turned into an external library call, the weak parameter
 	   must be dropped to match the expected parameter list.  */
 	nargs = call_expr_nargs (exp);
-	vec = VEC_alloc (tree, gc, nargs - 1);
+	vec_alloc (vec, nargs - 1);
 	for (z = 0; z < 3; z++)
-	  VEC_quick_push (tree, vec, CALL_EXPR_ARG (exp, z));
+	  vec->quick_push (CALL_EXPR_ARG (exp, z));
 	/* Skip the boolean weak parameter.  */
 	for (z = 4; z < 6; z++)
-	  VEC_quick_push (tree, vec, CALL_EXPR_ARG (exp, z));
+	  vec->quick_push (CALL_EXPR_ARG (exp, z));
 	exp = build_call_vec (TREE_TYPE (exp), CALL_EXPR_FN (exp), vec);
 	break;
       }
@@ -11206,10 +11206,10 @@ build_call_expr_loc_array (location_t loc, tree fndecl, int n, tree *argarray)
    VEC.  */
 
 tree
-build_call_expr_loc_vec (location_t loc, tree fndecl, VEC(tree,gc) *vec)
+build_call_expr_loc_vec (location_t loc, tree fndecl, vec<tree, va_gc> *vec)
 {
-  return build_call_expr_loc_array (loc, fndecl, VEC_length (tree, vec),
-				    VEC_address (tree, vec));
+  return build_call_expr_loc_array (loc, fndecl, vec_safe_length (vec),
+				    vec_safe_address (vec));
 }
 
 

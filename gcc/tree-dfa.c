@@ -700,8 +700,6 @@ struct GTY(()) numbered_tree_d
 };
 typedef struct numbered_tree_d numbered_tree;
 
-DEF_VEC_O (numbered_tree);
-DEF_VEC_ALLOC_O (numbered_tree, heap);
 
 /* Compare two declarations references by their DECL_UID / sequence number.
    Called via qsort.  */
@@ -722,14 +720,14 @@ static tree
 dump_enumerated_decls_push (tree *tp, int *walk_subtrees, void *data)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  VEC (numbered_tree, heap) **list = (VEC (numbered_tree, heap) **) &wi->info;
+  vec<numbered_tree> *list = (vec<numbered_tree> *) wi->info;
   numbered_tree nt;
 
   if (!DECL_P (*tp))
     return NULL_TREE;
   nt.t = *tp;
-  nt.num = VEC_length (numbered_tree, *list);
-  VEC_safe_push (numbered_tree, heap, *list, nt);
+  nt.num = list->length ();
+  list->safe_push (nt);
   *walk_subtrees = 0;
   return NULL_TREE;
 }
@@ -747,10 +745,11 @@ dump_enumerated_decls (FILE *file, int flags)
 {
   basic_block bb;
   struct walk_stmt_info wi;
-  VEC (numbered_tree, heap) *decl_list = VEC_alloc (numbered_tree, heap, 40);
+  vec<numbered_tree> decl_list;
+  decl_list.create (40);
 
   memset (&wi, '\0', sizeof (wi));
-  wi.info = (void*) decl_list;
+  wi.info = (void *) &decl_list;
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator gsi;
@@ -759,9 +758,8 @@ dump_enumerated_decls (FILE *file, int flags)
 	if (!is_gimple_debug (gsi_stmt (gsi)))
 	  walk_gimple_stmt (&gsi, NULL, dump_enumerated_decls_push, &wi);
     }
-  decl_list = (VEC (numbered_tree, heap) *) wi.info;
-  VEC_qsort (numbered_tree, decl_list, compare_decls_by_uid);
-  if (VEC_length (numbered_tree, decl_list))
+  decl_list.qsort (compare_decls_by_uid);
+  if (decl_list.length ())
     {
       unsigned ix;
       numbered_tree *ntp;
@@ -769,7 +767,7 @@ dump_enumerated_decls (FILE *file, int flags)
 
       fprintf (file, "Declarations used by %s, sorted by DECL_UID:\n",
 	       current_function_name ());
-      FOR_EACH_VEC_ELT (numbered_tree, decl_list, ix, ntp)
+      FOR_EACH_VEC_ELT (decl_list, ix, ntp)
 	{
 	  if (ntp->t == last)
 	    continue;
@@ -779,6 +777,5 @@ dump_enumerated_decls (FILE *file, int flags)
 	  last = ntp->t;
 	}
     }
-  VEC_free (numbered_tree, heap, decl_list);
+  decl_list.release ();
 }
-

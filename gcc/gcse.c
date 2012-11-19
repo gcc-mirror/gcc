@@ -310,8 +310,6 @@ struct occr
 };
 
 typedef struct occr *occr_t;
-DEF_VEC_P (occr_t);
-DEF_VEC_ALLOC_P (occr_t, heap);
 
 /* Expression hash tables.
    Each hash table is an array of buckets.
@@ -374,7 +372,7 @@ static regset reg_set_bitmap;
 
 /* Array, indexed by basic block number for a list of insns which modify
    memory within that block.  */
-static VEC (rtx,heap) **modify_mem_list;
+static vec<rtx> *modify_mem_list;
 static bitmap modify_mem_list_set;
 
 typedef struct modify_pair_s
@@ -383,12 +381,10 @@ typedef struct modify_pair_s
   rtx dest_addr;		/* The canonical address of `dest'.  */
 } modify_pair;
 
-DEF_VEC_O(modify_pair);
-DEF_VEC_ALLOC_O(modify_pair,heap);
 
 /* This array parallels modify_mem_list, except that it stores MEMs
    being set and their canonicalized memory addresses.  */
-static VEC (modify_pair,heap) **canon_modify_mem_list;
+static vec<modify_pair> *canon_modify_mem_list;
 
 /* Bitmap indexed by block numbers to record which blocks contain
    function calls.  */
@@ -611,10 +607,12 @@ alloc_gcse_mem (void)
   reg_set_bitmap = ALLOC_REG_SET (NULL);
 
   /* Allocate array to keep a list of insns which modify memory in each
-     basic block.  */
-  modify_mem_list = GCNEWVEC (VEC (rtx,heap) *, last_basic_block);
-  canon_modify_mem_list = GCNEWVEC (VEC (modify_pair,heap) *,
-				    last_basic_block);
+     basic block.  The two typedefs are needed to work around the
+     pre-processor limitation with template types in macro arguments.  */
+  typedef vec<rtx> vec_rtx_heap;
+  typedef vec<modify_pair> vec_modify_pair_heap;
+  modify_mem_list = GCNEWVEC (vec_rtx_heap, last_basic_block);
+  canon_modify_mem_list = GCNEWVEC (vec_modify_pair_heap, last_basic_block);
   modify_mem_list_set = BITMAP_ALLOC (NULL);
   blocks_with_calls = BITMAP_ALLOC (NULL);
 }
@@ -1004,7 +1002,7 @@ static int
 load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
 			int avail_p)
 {
-  VEC (rtx,heap) *list = modify_mem_list[bb->index];
+  vec<rtx> list = modify_mem_list[bb->index];
   rtx setter;
   unsigned ix;
 
@@ -1012,7 +1010,7 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x,
   if (MEM_READONLY_P (x))
     return 0;
 
-  FOR_EACH_VEC_ELT_REVERSE (rtx, list, ix, setter)
+  FOR_EACH_VEC_ELT_REVERSE (list, ix, setter)
     {
       struct mem_conflict_info mci;
 
@@ -1466,7 +1464,7 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
 
   pair.dest = dest;
   pair.dest_addr = dest_addr;
-  VEC_safe_push (modify_pair, heap, canon_modify_mem_list[bb], pair);
+  canon_modify_mem_list[bb].safe_push (pair);
 }
 
 /* Record memory modification information for INSN.  We do not actually care
@@ -1480,7 +1478,7 @@ record_last_mem_set_info (rtx insn)
 
   /* load_killed_in_block_p will handle the case of calls clobbering
      everything.  */
-  VEC_safe_push (rtx, heap, modify_mem_list[bb], insn);
+  modify_mem_list[bb].safe_push (insn);
   bitmap_set_bit (modify_mem_list_set, bb);
 
   if (CALL_P (insn))
@@ -1622,8 +1620,8 @@ clear_modify_mem_tables (void)
 
   EXECUTE_IF_SET_IN_BITMAP (modify_mem_list_set, 0, i, bi)
     {
-      VEC_free (rtx, heap, modify_mem_list[i]);
-      VEC_free (modify_pair, heap, canon_modify_mem_list[i]);
+      modify_mem_list[i].release ();
+      canon_modify_mem_list[i].release ();
     }
   bitmap_clear (modify_mem_list_set);
   bitmap_clear (blocks_with_calls);
@@ -1693,12 +1691,12 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 					    blocks_with_calls,
 					    0, bb_index, bi)
 	      {
-		VEC (modify_pair,heap) *list
+		vec<modify_pair> list
 		  = canon_modify_mem_list[bb_index];
 		modify_pair *pair;
 		unsigned ix;
 
-		FOR_EACH_VEC_ELT_REVERSE (modify_pair, list, ix, pair)
+		FOR_EACH_VEC_ELT_REVERSE (list, ix, pair)
 		  {
 		    rtx dest = pair->dest;
 		    rtx dest_addr = pair->dest_addr;
@@ -3114,9 +3112,9 @@ static int
 hoist_code (void)
 {
   basic_block bb, dominated;
-  VEC (basic_block, heap) *dom_tree_walk;
+  vec<basic_block> dom_tree_walk;
   unsigned int dom_tree_walk_index;
-  VEC (basic_block, heap) *domby;
+  vec<basic_block> domby;
   unsigned int i, j, k;
   struct expr **index_map;
   struct expr *expr;
@@ -3175,11 +3173,11 @@ hoist_code (void)
 
   /* Walk over each basic block looking for potentially hoistable
      expressions, nothing gets hoisted from the entry block.  */
-  FOR_EACH_VEC_ELT (basic_block, dom_tree_walk, dom_tree_walk_index, bb)
+  FOR_EACH_VEC_ELT (dom_tree_walk, dom_tree_walk_index, bb)
     {
       domby = get_dominated_to_depth (CDI_DOMINATORS, bb, MAX_HOIST_DEPTH);
 
-      if (VEC_length (basic_block, domby) == 0)
+      if (domby.length () == 0)
 	continue;
 
       /* Examine each expression that is very busy at the exit of this
@@ -3195,7 +3193,7 @@ hoist_code (void)
 	      /* Number of occurrences of EXPR that can be hoisted to BB.  */
 	      int hoistable = 0;
 	      /* Occurrences reachable from BB.  */
-	      VEC (occr_t, heap) *occrs_to_hoist = NULL;
+	      vec<occr_t> occrs_to_hoist = vec<occr_t>();
 	      /* We want to insert the expression into BB only once, so
 		 note when we've inserted it.  */
 	      int insn_inserted_p;
@@ -3224,7 +3222,7 @@ hoist_code (void)
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
-	      FOR_EACH_VEC_ELT (basic_block, domby, j, dominated)
+	      FOR_EACH_VEC_ELT (domby, j, dominated)
 		{
 		  int max_distance;
 
@@ -3268,8 +3266,7 @@ hoist_code (void)
 						hoisted_bbs, occr->insn))
 		    {
 		      hoistable++;
-		      VEC_safe_push (occr_t, heap,
-				     occrs_to_hoist, occr);
+		      occrs_to_hoist.safe_push (occr);
 		      bitmap_set_bit (from_bbs, dominated->index);
 		    }
 		}
@@ -3286,11 +3283,10 @@ hoist_code (void)
 		 to nullify any benefit we get from code hoisting.  */
 	      if (hoistable > 1 && dbg_cnt (hoist_insn))
 		{
-		  /* If (hoistable != VEC_length), then there is
+		  /* If (hoistable != vec::length), then there is
 		     an occurrence of EXPR in BB itself.  Don't waste
 		     time looking for LCA in this case.  */
-		  if ((unsigned) hoistable
-		      == VEC_length (occr_t, occrs_to_hoist))
+		  if ((unsigned) hoistable == occrs_to_hoist.length ())
 		    {
 		      basic_block lca;
 
@@ -3299,15 +3295,15 @@ hoist_code (void)
 		      if (lca != bb)
 			/* Punt, it's better to hoist these occurrences to
 			   LCA.  */
-			VEC_free (occr_t, heap, occrs_to_hoist);
+			occrs_to_hoist.release ();
 		    }
 		}
 	      else
 		/* Punt, no point hoisting a single occurence.  */
-		VEC_free (occr_t, heap, occrs_to_hoist);
+		occrs_to_hoist.release ();
 
 	      if (flag_ira_hoist_pressure
-		  && !VEC_empty (occr_t, occrs_to_hoist))
+		  && !occrs_to_hoist.is_empty ())
 		{
 		  /* Increase register pressure of basic blocks to which
 		     expr is hoisted because of extended live range of
@@ -3341,7 +3337,7 @@ hoist_code (void)
 
 	      /* Walk through occurrences of I'th expressions we want
 		 to hoist to BB and make the transformations.  */
-	      FOR_EACH_VEC_ELT (occr_t, occrs_to_hoist, j, occr)
+	      FOR_EACH_VEC_ELT (occrs_to_hoist, j, occr)
 		{
 		  rtx insn;
 		  rtx set;
@@ -3377,14 +3373,14 @@ hoist_code (void)
 		    }
 		}
 
-	      VEC_free (occr_t, heap, occrs_to_hoist);
+	      occrs_to_hoist.release ();
 	      bitmap_clear (from_bbs);
 	    }
 	}
-      VEC_free (basic_block, heap, domby);
+      domby.release ();
     }
 
-  VEC_free (basic_block, heap, dom_tree_walk);
+  dom_tree_walk.release ();
   BITMAP_FREE (from_bbs);
   if (flag_ira_hoist_pressure)
     BITMAP_FREE (hoisted_bbs);

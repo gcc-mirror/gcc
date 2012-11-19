@@ -123,8 +123,8 @@ static tree next_runtime_abi_01_get_class_super_ref (location_t, struct imp_entr
 static tree next_runtime_abi_01_get_category_super_ref (location_t, struct imp_entry *, bool);
 
 static tree next_runtime_abi_01_receiver_is_class_object (tree);
-static void next_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **, tree,
-							int, int);
+static void next_runtime_abi_01_get_arg_type_list_base (vec<tree, va_gc> **,
+							tree, int, int);
 static tree next_runtime_abi_01_build_objc_method_call (location_t, tree, tree,
 							tree, tree, tree, int);
 static bool next_runtime_abi_01_setup_const_string_class_decl (void);
@@ -730,8 +730,9 @@ next_runtime_abi_01_get_class_reference (tree ident)
    prototype.  */
 
 static void
-next_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **argtypes, tree meth,
-					    int context, int superflag)
+next_runtime_abi_01_get_arg_type_list_base (vec<tree, va_gc> **argtypes,
+					    tree meth, int context,
+					    int superflag)
 {
   tree receiver_type;
 
@@ -742,9 +743,9 @@ next_runtime_abi_01_get_arg_type_list_base (VEC(tree,gc) **argtypes, tree meth,
   else
     receiver_type = objc_object_type;
 
-  VEC_safe_push (tree, gc, *argtypes, receiver_type);
+  vec_safe_push (*argtypes, receiver_type);
   /* Selector type - will eventually change to `int'.  */
-  VEC_safe_push (tree, gc, *argtypes, objc_selector_type);
+  vec_safe_push (*argtypes, objc_selector_type);
 }
 
 static tree
@@ -820,7 +821,7 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
 {
   tree sender, sender_cast, method, t;
   tree rcv_p = (super_flag ? objc_super_type : objc_object_type);
-  VEC(tree, gc) *parms;
+  vec<tree, va_gc> *parms;
   unsigned nparm = (method_params ? list_length (method_params) : 0);
 
   /* If a prototype for the method to be called exists, then cast
@@ -846,7 +847,7 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
   lookup_object = save_expr (lookup_object);
 
   /* Param list + 2 slots for object and selector.  */
-  parms = VEC_alloc (tree, gc, nparm + 2);
+  vec_alloc (parms, nparm + 2);
 
   /* If we are returning a struct in memory, and the address
      of that memory location is passed as a hidden first
@@ -869,19 +870,19 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
   method = build_fold_addr_expr_loc (loc, sender);
 
   /* Pass the object to the method.  */
-  VEC_quick_push (tree, parms, lookup_object);
+  parms->quick_push (lookup_object);
   /* Pass the selector to the method.  */
-  VEC_quick_push (tree, parms, selector);
+  parms->quick_push (selector);
   /* Now append the remainder of the parms.  */
   if (nparm)
     for (; method_params; method_params = TREE_CHAIN (method_params))
-      VEC_quick_push (tree, parms, TREE_VALUE (method_params));
+      parms->quick_push (TREE_VALUE (method_params));
 
   /* Build an obj_type_ref, with the correct cast for the method call.  */
   t = build3 (OBJ_TYPE_REF, sender_cast, method,
 			    lookup_object, size_zero_node);
   t = build_function_call_vec (loc, t, parms, NULL);
-  VEC_free (tree, gc, parms);
+  vec_free (parms);
   return t;
 }
 
@@ -1005,7 +1006,7 @@ next_runtime_abi_01_build_const_string_constructor (location_t loc, tree string,
 						   int length)
 {
   tree constructor, fields, var;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* NeXT:   (NSConstantString *) & ((__builtin_ObjCString) { isa, string, length })   */
   fields = TYPE_FIELDS (internal_const_str_type);
@@ -1145,7 +1146,7 @@ generate_v1_meth_descriptor_table (tree chain, tree protocol,
 {
   tree method_list_template, initlist, decl;
   int size;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   char buf[BUFSIZE];
 
   if (!chain || !prefix)
@@ -1186,7 +1187,7 @@ generate_v1_objc_protocol_extension (tree proto_interface,
 {
   int size;
   location_t loc;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   tree decl, expr;
   char buf[BUFSIZE];
 
@@ -1277,7 +1278,7 @@ static tree
 build_v1_property_table_initializer (tree type, tree context)
 {
   tree x;
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
 
   if (TREE_CODE (context) == PROTOCOL_INTERFACE_TYPE)
     x = CLASS_PROPERTY_DECL (context);
@@ -1286,7 +1287,7 @@ build_v1_property_table_initializer (tree type, tree context)
 
   for (; x; x = TREE_CHAIN (x))
     {
-      VEC(constructor_elt,gc) *elemlist = NULL;
+      vec<constructor_elt, va_gc> *elemlist = NULL;
       tree attribute, name_ident = PROPERTY_NAME (x);
 
       CONSTRUCTOR_APPEND_ELT (elemlist, NULL_TREE,
@@ -1313,7 +1314,7 @@ generate_v1_property_table (tree context, tree klass_ctxt)
 {
   tree x, decl, initlist, property_list_template;
   bool is_proto = false;
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
   int init_val, size = 0;
   char buf[BUFSIZE];
 
@@ -1365,7 +1366,7 @@ generate_v1_protocol_list (tree i_or_p, tree klass_ctxt)
 {
   tree array_type, ptype, refs_decl, lproto, e, plist, attr;
   int size = 0;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   char buf[BUFSIZE];
 
   switch (TREE_CODE (i_or_p))
@@ -1447,7 +1448,7 @@ build_v1_protocol_initializer (tree type, tree protocol_name, tree protocol_list
 {
   tree expr, ttyp;
   location_t loc;
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
 
   if (!objc_protocol_extension_template)
     build_v1_objc_protocol_extension_template ();
@@ -1659,7 +1660,7 @@ static tree
 generate_dispatch_table (tree chain, const char *name, tree attr)
 {
   tree decl, method_list_template, initlist;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   int size;;
 
   if (!chain || !name || !(size = list_length (chain)))
@@ -1694,7 +1695,7 @@ build_v1_category_initializer (tree type, tree cat_name, tree class_name,
 				location_t loc)
 {
   tree expr, ltyp;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, cat_name);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, class_name);
@@ -1807,7 +1808,7 @@ generate_objc_class_ext (tree property_list, tree context)
   tree weak_ivar_layout_tree;
   int size;
   location_t loc;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   char buf[BUFSIZE];
 
   /* TODO: pass the loc in or find it from args.  */
@@ -1879,7 +1880,7 @@ build_v1_shared_structure_initializer (tree type, tree isa, tree super,
 {
   tree expr, ltyp;
   location_t loc;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* TODO: fish the location out of the input data.  */
   loc = UNKNOWN_LOCATION;
@@ -1964,7 +1965,7 @@ generate_ivars_list (tree chain, const char *name, tree attr)
 {
   tree initlist, ivar_list_template, decl;
   int size;
-  VEC(constructor_elt,gc) *inits = NULL;
+  vec<constructor_elt, va_gc> *inits = NULL;
 
   if (!chain)
     return NULL_TREE;
@@ -2138,7 +2139,7 @@ init_def_list (tree type)
   tree expr;
   location_t loc;
   struct imp_entry *impent;
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   if (imp_count)
     for (impent = imp_list; impent; impent = impent->next)
@@ -2215,7 +2216,7 @@ build_objc_symtab_template (void)
 static tree
 init_objc_symtab (tree type)
 {
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
 
   /* sel_ref_cnt = { ..., 5, ... } */
 
@@ -2345,7 +2346,7 @@ generate_objc_image_info (void)
   int flags
     = ((flag_replace_objc_classes && imp_count ? 1 : 0)
        | (flag_objc_gc ? 2 : 0));
-  VEC(constructor_elt,gc) *v = NULL;
+  vec<constructor_elt, va_gc> *v = NULL;
   tree array_type;
 
   array_type  = build_sized_array_type (integer_type_node, 2);
@@ -2892,12 +2893,13 @@ static tree
 build_throw_stmt (location_t loc, tree throw_expr, bool rethrown ATTRIBUTE_UNUSED)
 {
   tree t;
-  VEC(tree, gc) *parms = VEC_alloc (tree, gc, 1);
+  vec<tree, va_gc> *parms;
+  vec_alloc (parms, 1);
   /* A throw is just a call to the runtime throw function with the
      object as a parameter.  */
-  VEC_quick_push (tree, parms, throw_expr);
+  parms->quick_push (throw_expr);
   t = build_function_call_vec (loc, objc_exception_throw_decl, parms, NULL);
-  VEC_free (tree, gc, parms);
+  vec_free (parms);
   return add_stmt (t);
 }
 

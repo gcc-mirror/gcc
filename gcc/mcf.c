@@ -95,13 +95,11 @@ typedef struct fixup_edge_d
 
 typedef fixup_edge_type *fixup_edge_p;
 
-DEF_VEC_P (fixup_edge_p);
-DEF_VEC_ALLOC_P (fixup_edge_p, heap);
 
 /* Structure to represent a vertex in the fixup graph.  */
 typedef struct fixup_vertex_d
 {
-  VEC (fixup_edge_p, heap) *succ_edges;
+  vec<fixup_edge_p> succ_edges;
 } fixup_vertex_type;
 
 typedef fixup_vertex_type *fixup_vertex_p;
@@ -295,9 +293,9 @@ dump_fixup_graph (FILE *file, fixup_graph_type *fixup_graph, const char *msg)
     {
       pfvertex = fvertex_list + i;
       fprintf (file, "vertex_list[%d]: %d succ fixup edges.\n",
-	       i, VEC_length (fixup_edge_p, pfvertex->succ_edges));
+	       i, pfvertex->succ_edges.length ());
 
-      for (j = 0; VEC_iterate (fixup_edge_p, pfvertex->succ_edges, j, pfedge);
+      for (j = 0; pfvertex->succ_edges.iterate (j, &pfedge);
 	   j++)
 	{
 	  /* Distinguish forward edges and backward edges in the residual flow
@@ -375,7 +373,7 @@ add_edge (fixup_graph_type *fixup_graph, int src, int dest, gcov_type cost)
   fixup_graph->num_edges++;
   if (dump_file)
     dump_fixup_edge (dump_file, fixup_graph, curr_edge);
-  VEC_safe_push (fixup_edge_p, heap, curr_vertex->succ_edges, curr_edge);
+  curr_vertex->succ_edges.safe_push (curr_edge);
   return curr_edge;
 }
 
@@ -424,7 +422,7 @@ find_fixup_edge (fixup_graph_type *fixup_graph, int src, int dest)
 
   pfvertex = fixup_graph->vertex_list + src;
 
-  for (j = 0; VEC_iterate (fixup_edge_p, pfvertex->succ_edges, j, pfedge);
+  for (j = 0; pfvertex->succ_edges.iterate (j, &pfedge);
        j++)
     if (pfedge->dest == dest)
       return pfedge;
@@ -443,7 +441,7 @@ delete_fixup_graph (fixup_graph_type *fixup_graph)
   fixup_vertex_p pfvertex = fixup_graph->vertex_list;
 
   for (i = 0; i < fnum_vertices; i++, pfvertex++)
-    VEC_free (fixup_edge_p, heap, pfvertex->succ_edges);
+    pfvertex->succ_edges.release ();
 
   free (fixup_graph->vertex_list);
   free (fixup_graph->edge_list);
@@ -990,7 +988,7 @@ find_augmenting_path (fixup_graph_type *fixup_graph,
       u = dequeue (queue_list);
       is_visited[u] = 1;
       pfvertex = fvertex_list + u;
-      for (i = 0; VEC_iterate (fixup_edge_p, pfvertex->succ_edges, i, pfedge);
+      for (i = 0; pfvertex->succ_edges.iterate (i, &pfedge);
 	   i++)
 	{
 	  int dest = pfedge->dest;
@@ -1365,7 +1363,7 @@ find_minimum_cost_flow (fixup_graph_type *fixup_graph)
 /* Compute the sum of the edge counts in TO_EDGES.  */
 
 gcov_type
-sum_edge_counts (VEC (edge, gc) *to_edges)
+sum_edge_counts (vec<edge, va_gc> *to_edges)
 {
   gcov_type sum = 0;
   edge e;

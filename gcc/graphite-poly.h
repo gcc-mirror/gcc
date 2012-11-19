@@ -23,16 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_GRAPHITE_POLY_H
 
 typedef struct poly_dr *poly_dr_p;
-DEF_VEC_P(poly_dr_p);
-DEF_VEC_ALLOC_P (poly_dr_p, heap);
 
 typedef struct poly_bb *poly_bb_p;
-DEF_VEC_P(poly_bb_p);
-DEF_VEC_ALLOC_P (poly_bb_p, heap);
 
 typedef struct scop *scop_p;
-DEF_VEC_P(scop_p);
-DEF_VEC_ALLOC_P (scop_p, heap);
 
 typedef unsigned graphite_dim_t;
 
@@ -341,7 +335,7 @@ struct poly_bb
   isl_set *domain;
 
   /* The data references we access.  */
-  VEC (poly_dr_p, heap) *drs;
+  vec<poly_dr_p> drs;
 
   /* The original scattering.  */
   poly_scattering_p _original;
@@ -422,7 +416,7 @@ number_of_write_pdrs (poly_bb_p pbb)
   int i;
   poly_dr_p pdr;
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb), i, pdr); i++)
+  for (i = 0; PBB_DRS (pbb).iterate (i, &pdr); i++)
     if (PDR_TYPE (pdr) == PDR_WRITE)
       res++;
 
@@ -672,8 +666,6 @@ psct_add_local_variable (poly_bb_p pbb ATTRIBUTE_UNUSED)
 }
 
 typedef struct lst *lst_p;
-DEF_VEC_P(lst_p);
-DEF_VEC_ALLOC_P (lst_p, heap);
 
 /* Loops and Statements Tree.  */
 struct lst {
@@ -691,7 +683,7 @@ struct lst {
      contain a pointer to their polyhedral representation PBB.  */
   union {
     poly_bb_p pbb;
-    VEC (lst_p, heap) *seq;
+    vec<lst_p> seq;
   } node;
 };
 
@@ -709,7 +701,7 @@ void dot_lst (lst_p);
 /* Creates a new LST loop with SEQ.  */
 
 static inline lst_p
-new_lst_loop (VEC (lst_p, heap) *seq)
+new_lst_loop (vec<lst_p> seq)
 {
   lst_p lst = XNEW (struct lst);
   int i;
@@ -721,7 +713,7 @@ new_lst_loop (VEC (lst_p, heap) *seq)
   mpz_init (LST_LOOP_MEMORY_STRIDES (lst));
   mpz_set_si (LST_LOOP_MEMORY_STRIDES (lst), -1);
 
-  for (i = 0; VEC_iterate (lst_p, seq, i, l); i++)
+  for (i = 0; seq.iterate (i, &l); i++)
     LST_LOOP_FATHER (l) = lst;
 
   return lst;
@@ -753,11 +745,11 @@ free_lst (lst_p lst)
       int i;
       lst_p l;
 
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+      for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
 	free_lst (l);
 
       mpz_clear (LST_LOOP_MEMORY_STRIDES (lst));
-      VEC_free (lst_p, heap, LST_SEQ (lst));
+      LST_SEQ (lst).release ();
     }
 
   free (lst);
@@ -775,10 +767,11 @@ copy_lst (lst_p lst)
     {
       int i;
       lst_p l;
-      VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 5);
+      vec<lst_p> seq;
+      seq.create (5);
 
-      for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
-	VEC_safe_push (lst_p, heap, seq, copy_lst (l));
+      for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
+	seq.safe_push (copy_lst (l));
 
       return new_lst_loop (seq);
     }
@@ -791,13 +784,14 @@ copy_lst (lst_p lst)
 static inline void
 lst_add_loop_under_loop (lst_p lst)
 {
-  VEC (lst_p, heap) *seq = VEC_alloc (lst_p, heap, 1);
+  vec<lst_p> seq;
+  seq.create (1);
   lst_p l = new_lst_loop (LST_SEQ (lst));
 
   gcc_assert (LST_LOOP_P (lst));
 
   LST_LOOP_FATHER (l) = lst;
-  VEC_quick_push (lst_p, seq, l);
+  seq.quick_push (l);
   LST_SEQ (lst) = seq;
 }
 
@@ -832,7 +826,7 @@ lst_dewey_number (lst_p lst)
   if (!LST_LOOP_FATHER (lst))
     return 0;
 
-  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (LST_LOOP_FATHER (lst)), i, l)
+  FOR_EACH_VEC_ELT (LST_SEQ (LST_LOOP_FATHER (lst)), i, l)
     if (l == lst)
       return i;
 
@@ -869,7 +863,7 @@ lst_pred (lst_p lst)
     return NULL;
 
   father = LST_LOOP_FATHER (lst);
-  return VEC_index (lst_p, LST_SEQ (father), dewey - 1);
+  return LST_SEQ (father)[dewey - 1];
 }
 
 /* Returns the successor of LST in the sequence of its loop father.
@@ -887,10 +881,10 @@ lst_succ (lst_p lst)
   dewey = lst_dewey_number (lst);
   father = LST_LOOP_FATHER (lst);
 
-  if (VEC_length (lst_p, LST_SEQ (father)) == (unsigned) dewey + 1)
+  if (LST_SEQ (father).length () == (unsigned) dewey + 1)
     return NULL;
 
-  return VEC_index (lst_p, LST_SEQ (father), dewey + 1);
+  return LST_SEQ (father)[dewey + 1];
 }
 
 
@@ -908,7 +902,7 @@ lst_find_pbb (lst_p lst, poly_bb_p pbb)
   if (!LST_LOOP_P (lst))
     return (pbb == LST_PBB (lst)) ? lst : NULL;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+  for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
     {
       lst_p res = lst_find_pbb (l, pbb);
       if (res)
@@ -948,7 +942,7 @@ lst_find_first_pbb (lst_p lst)
   if (!LST_LOOP_P (lst))
     return lst;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+  for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
     {
       lst_p res = lst_find_first_pbb (l);
       if (res)
@@ -981,7 +975,7 @@ lst_find_last_pbb (lst_p lst)
   if (!LST_LOOP_P (lst))
     return lst;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+  for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
     {
       lst_p last = lst_find_last_pbb (l);
 
@@ -1023,14 +1017,14 @@ static inline lst_p
 lst_create_nest (int nb_loops, lst_p lst)
 {
   lst_p res, loop;
-  VEC (lst_p, heap) *seq;
+  vec<lst_p> seq;
 
   if (nb_loops == 0)
     return lst;
 
-  seq = VEC_alloc (lst_p, heap, 1);
+  seq.create (1);
   loop = lst_create_nest (nb_loops - 1, lst);
-  VEC_quick_push (lst_p, seq, loop);
+  seq.quick_push (loop);
   res = new_lst_loop (seq);
   LST_LOOP_FATHER (loop) = res;
 
@@ -1047,7 +1041,7 @@ lst_remove_from_sequence (lst_p lst)
 
   gcc_assert (lst && father && dewey >= 0);
 
-  VEC_ordered_remove (lst_p, LST_SEQ (father), dewey);
+  LST_SEQ (father).ordered_remove (dewey);
   LST_LOOP_FATHER (lst) = NULL;
 }
 
@@ -1061,12 +1055,12 @@ lst_remove_loop_and_inline_stmts_in_loop_father (lst_p lst)
 
   gcc_assert (lst && father && dewey >= 0);
 
-  VEC_ordered_remove (lst_p, LST_SEQ (father), dewey);
+  LST_SEQ (father).ordered_remove (dewey);
   LST_LOOP_FATHER (lst) = NULL;
 
-  FOR_EACH_VEC_ELT (lst_p, LST_SEQ (lst), i, l)
+  FOR_EACH_VEC_ELT (LST_SEQ (lst), i, l)
     {
-      VEC_safe_insert (lst_p, heap, LST_SEQ (father), dewey + i, l);
+      LST_SEQ (father).safe_insert (dewey + i, l);
       LST_LOOP_FATHER (l) = father;
     }
 }
@@ -1118,7 +1112,7 @@ lst_update_scattering_under (lst_p lst, int level, int dewey)
   gcc_assert (lst && level >= 0 && dewey >= 0);
 
   if (LST_LOOP_P (lst))
-    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
       lst_update_scattering_under (l, level, dewey);
   else
     pbb_update_scattering (LST_PBB (lst), level, dewey);
@@ -1144,12 +1138,12 @@ lst_update_scattering (lst_p lst)
 
       gcc_assert (lst && father && dewey >= 0 && level >= 0);
 
-      for (i = dewey; VEC_iterate (lst_p, LST_SEQ (father), i, l); i++)
+      for (i = dewey; LST_SEQ (father).iterate (i, &l); i++)
 	lst_update_scattering_under (l, level, i);
     }
 
   if (LST_LOOP_P (lst))
-    for (i = 0; VEC_iterate (lst_p, LST_SEQ (lst), i, l); i++)
+    for (i = 0; LST_SEQ (lst).iterate (i, &l); i++)
       lst_update_scattering (l);
 }
 
@@ -1171,8 +1165,7 @@ lst_insert_in_sequence (lst_p lst1, lst_p lst2, bool before)
 
   gcc_assert (lst2 && father && dewey >= 0);
 
-  VEC_safe_insert (lst_p, heap, LST_SEQ (father), before ? dewey : dewey + 1,
-		   lst1);
+  LST_SEQ (father).safe_insert (before ? dewey : dewey + 1, lst1);
   LST_LOOP_FATHER (lst1) = father;
 }
 
@@ -1190,7 +1183,7 @@ lst_replace (lst_p lst1, lst_p lst2)
   father = LST_LOOP_FATHER (lst1);
   dewey = lst_dewey_number (lst1);
   LST_LOOP_FATHER (lst2) = father;
-  VEC_replace (lst_p, LST_SEQ (father), dewey, lst2);
+  LST_SEQ (father)[dewey] = lst2;
 }
 
 /* Returns a copy of ROOT where LST has been replaced by a copy of the
@@ -1201,7 +1194,7 @@ lst_substitute_3 (lst_p root, lst_p lst, lst_p a, lst_p b, lst_p c)
 {
   int i;
   lst_p l;
-  VEC (lst_p, heap) *seq;
+  vec<lst_p> seq;
 
   if (!root)
     return NULL;
@@ -1211,19 +1204,19 @@ lst_substitute_3 (lst_p root, lst_p lst, lst_p a, lst_p b, lst_p c)
   if (!LST_LOOP_P (root))
     return new_lst_stmt (LST_PBB (root));
 
-  seq = VEC_alloc (lst_p, heap, 5);
+  seq.create (5);
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (root), i, l); i++)
+  for (i = 0; LST_SEQ (root).iterate (i, &l); i++)
     if (l != lst)
-      VEC_safe_push (lst_p, heap, seq, lst_substitute_3 (l, lst, a, b, c));
+      seq.safe_push (lst_substitute_3 (l, lst, a, b, c));
     else
       {
 	if (!lst_empty_p (a))
-	  VEC_safe_push (lst_p, heap, seq, copy_lst (a));
+	  seq.safe_push (copy_lst (a));
 	if (!lst_empty_p (b))
-	  VEC_safe_push (lst_p, heap, seq, copy_lst (b));
+	  seq.safe_push (copy_lst (b));
 	if (!lst_empty_p (c))
-	  VEC_safe_push (lst_p, heap, seq, copy_lst (c));
+	  seq.safe_push (copy_lst (c));
       }
 
   return new_lst_loop (seq);
@@ -1258,14 +1251,14 @@ lst_remove_all_before_including_pbb (lst_p loop, poly_bb_p pbb, bool before)
   if (!loop || !LST_LOOP_P (loop))
     return before;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (loop), i, l);)
+  for (i = 0; LST_SEQ (loop).iterate (i, &l);)
     if (LST_LOOP_P (l))
       {
 	before = lst_remove_all_before_including_pbb (l, pbb, before);
 
-	if (VEC_length (lst_p, LST_SEQ (l)) == 0)
+	if (LST_SEQ (l).length () == 0)
 	  {
-	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    LST_SEQ (loop).ordered_remove (i);
 	    free_lst (l);
 	  }
 	else
@@ -1278,13 +1271,13 @@ lst_remove_all_before_including_pbb (lst_p loop, poly_bb_p pbb, bool before)
 	    if (LST_PBB (l) == pbb)
 	      before = false;
 
-	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    LST_SEQ (loop).ordered_remove (i);
 	    free_lst (l);
 	  }
 	else if (LST_PBB (l) == pbb)
 	  {
 	    before = true;
-	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    LST_SEQ (loop).ordered_remove (i);
 	    free_lst (l);
 	  }
 	else
@@ -1307,14 +1300,14 @@ lst_remove_all_before_excluding_pbb (lst_p loop, poly_bb_p pbb, bool before)
   if (!loop || !LST_LOOP_P (loop))
     return before;
 
-  for (i = 0; VEC_iterate (lst_p, LST_SEQ (loop), i, l);)
+  for (i = 0; LST_SEQ (loop).iterate (i, &l);)
     if (LST_LOOP_P (l))
       {
 	before = lst_remove_all_before_excluding_pbb (l, pbb, before);
 
-	if (VEC_length (lst_p, LST_SEQ (l)) == 0)
+	if (LST_SEQ (l).length () == 0)
 	  {
-	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    LST_SEQ (loop).ordered_remove (i);
 	    free_lst (l);
 	    continue;
 	  }
@@ -1325,7 +1318,7 @@ lst_remove_all_before_excluding_pbb (lst_p loop, poly_bb_p pbb, bool before)
       {
 	if (before && LST_PBB (l) != pbb)
 	  {
-	    VEC_ordered_remove (lst_p, LST_SEQ (loop), i);
+	    LST_SEQ (loop).ordered_remove (i);
 	    free_lst (l);
 	    continue;
 	  }
@@ -1352,7 +1345,7 @@ struct scop
   /* All the basic blocks in this scop that contain memory references
      and that will be represented as statements in the polyhedral
      representation.  */
-  VEC (poly_bb_p, heap) *bbs;
+  vec<poly_bb_p> bbs;
 
   /* Original, transformed and saved schedules.  */
   lst_p original_schedule, transformed_schedule, saved_schedule;
@@ -1403,7 +1396,7 @@ struct scop
 
 extern scop_p new_scop (void *);
 extern void free_scop (scop_p);
-extern void free_scops (VEC (scop_p, heap) *);
+extern void free_scops (vec<scop_p> );
 extern void print_generated_program (FILE *, scop_p);
 extern void debug_generated_program (scop_p);
 extern void print_scattering_function (FILE *, poly_bb_p, int);
@@ -1511,7 +1504,7 @@ store_scattering (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  for (i = 0; SCOP_BBS (scop).iterate (i, &pbb); i++)
     store_scattering_pbb (pbb);
 
   store_lst_schedule (scop);
@@ -1536,7 +1529,7 @@ restore_scattering (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  for (i = 0; SCOP_BBS (scop).iterate (i, &pbb); i++)
     restore_scattering_pbb (pbb);
 
   restore_lst_schedule (scop);
@@ -1545,14 +1538,14 @@ restore_scattering (scop_p scop)
 bool graphite_legal_transform (scop_p);
 poly_bb_p find_pbb_via_hash (htab_t, basic_block);
 bool loop_is_parallel_p (loop_p, htab_t, int);
-scop_p get_loop_body_pbbs (loop_p, htab_t, VEC (poly_bb_p, heap) **);
+scop_p get_loop_body_pbbs (loop_p, htab_t, vec<poly_bb_p> *);
 isl_map *reverse_loop_at_level (poly_bb_p, int);
-isl_union_map *reverse_loop_for_pbbs (scop_p, VEC (poly_bb_p, heap) *, int);
+isl_union_map *reverse_loop_for_pbbs (scop_p, vec<poly_bb_p> , int);
 __isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);
 
 
 void
-compute_deps (scop_p scop, VEC (poly_bb_p, heap) *pbbs,
+compute_deps (scop_p scop, vec<poly_bb_p> pbbs,
 	      isl_union_map **must_raw,
 	      isl_union_map **may_raw,
 	      isl_union_map **must_raw_no_source,

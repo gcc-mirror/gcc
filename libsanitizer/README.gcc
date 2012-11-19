@@ -1,0 +1,4 @@
+The AddressSanitizer (http://code.google.com/p/address-sanitizer) is
+a project developed by Google Inc. The source files of the project
+are hosted at http://llvm.org/svn/llvm-project/compiler-rt. These files
+are the ones in the asan subdirectory of that project.

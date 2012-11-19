@@ -18,4 +18,9 @@
 
 MULTILIB_OPTIONS = mabi=n32/mabi=32/mabi=64
 MULTILIB_DIRNAMES = n32 32 64
-MULTILIB_OSDIRNAMES = ../lib32 ../lib ../lib64
+MIPS_EL = $(if $(filter %el, $(firstword $(subst -, ,$(target)))),el)
+MIPS_SOFT = $(if $(strip $(filter MASK_SOFT_FLOAT_ABI, $(target_cpu_default)) $(filter soft, $(with_float))),soft)
+MULTILIB_OSDIRNAMES = \
+	../lib32$(call if_multiarch,:mips64$(MIPS_EL)-linux-gnuabin32$(MIPS_SOFT)) \
+	../lib$(call if_multiarch,:mips$(MIPS_EL)-linux-gnu$(MIPS_SOFT)) \
+	../lib64$(call if_multiarch,:mips64$(MIPS_EL)-linux-gnuabi64$(MIPS_SOFT))

@@ -11575,7 +11575,7 @@ fi
 CFLAGS="$save_CFLAGS"
 
 
-if test "x$GCC" = "xyes"; then
+if test -n "${with_target_subdir}"; then
   WARN_FLAGS="$WARN_FLAGS -Werror"
 fi
 
@@ -12318,6 +12318,27 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_STRNLEN $ac_have_decl
 _ACEOF
 
+
+# Check for getexecname function.
+if test -n "${with_target_subdir}"; then
+   case "${host}" in
+   *-*-solaris2*) have_getexecname=yes ;;
+   *) have_getexecname=no ;;
+   esac
+else
+  ac_fn_c_check_func "$LINENO" "getexecname" "ac_cv_func_getexecname"
+if test "x$ac_cv_func_getexecname" = x""yes; then :
+  have_getexecname=yes
+else
+  have_getexecname=no
+fi
+
+fi
+if test "$have_getexecname" = "yes"; then
+
+$as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
+
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether tests can run" >&5
 $as_echo_n "checking whether tests can run... " >&6; }

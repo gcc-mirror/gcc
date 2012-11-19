@@ -518,7 +518,7 @@ MCache*	runtime_allocmcache(void);
 void	free(void *v);
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 #define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
-#define runtime_cas64(pval, pold, new) __atomic_compare_exchange_n (pval, pold, new, 1, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED)
+#define runtime_cas64(pval, pold, new) __atomic_compare_exchange_n (pval, pold, new, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)
 #define runtime_xadd(p, v) __sync_add_and_fetch (p, v)
 #define runtime_xadd64(p, v) __sync_add_and_fetch (p, v)
 #define runtime_xchg(p, v) __atomic_exchange_n (p, v, __ATOMIC_SEQ_CST)

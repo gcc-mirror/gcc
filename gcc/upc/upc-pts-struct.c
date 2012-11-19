@@ -241,12 +241,12 @@ upc_pts_struct_is_null_p (tree exp)
 	  && (TREE_TYPE (value) == upc_pts_rep_type_node)
 	  && TREE_CONSTANT (value))
 	{
-	  VEC (constructor_elt, gc) *c = CONSTRUCTOR_ELTS (value);
+	  vec<constructor_elt, va_gc> *c = CONSTRUCTOR_ELTS (value);
 	  /* Check that all the fields are zero, independent
 	     of whether vaddr comes first/last.  */
-	  const tree phase_or_vaddr = VEC_index (constructor_elt, c, 0).value;
-	  const tree thread = VEC_index (constructor_elt, c, 1).value;
-	  const tree vaddr_or_phase = VEC_index (constructor_elt, c, 2).value;
+	  const tree phase_or_vaddr = (*c)[0].value;
+	  const tree thread = (*c)[1].value;
+	  const tree vaddr_or_phase = (*c)[2].value;
 	  result = integer_zerop (phase_or_vaddr) && integer_zerop (thread)
 	           && integer_zerop (vaddr_or_phase);
 	}

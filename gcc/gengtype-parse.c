@@ -76,7 +76,6 @@ static const char *const token_names[] = {
   "union",
   "struct",
   "enum",
-  "VEC",
   "...",
   "ptr_alias",
   "nested_ptr",
@@ -245,31 +244,12 @@ require_template_declaration (const char *tmpl_name)
 }
 
 
-/* typedef_name: either an ID, or VEC(x,y), or a template type
-   specification of the form ID<t1,t2,...,tn>.
-
-   FIXME cxx-conversion.  VEC(x,y) is currently translated to the
-   template 'vec_t<x>'.  This is to support the transition to C++ and
-   avoid re-writing all the 'VEC(x,y)' declarations in the code.  This
-   needs to be fixed when the branch is merged into trunk.  */
+/* typedef_name: either an ID, or a template type
+   specification of the form ID<t1,t2,...,tn>.  */
 
 static const char *
 typedef_name (void)
 {
-  if (token () == VEC_TOKEN)
-    {
-      const char *c1, *r;
-      advance ();
-      require ('(');
-      c1 = require2 (ID, SCALAR);
-      require (',');
-      require (ID);
-      require (')');
-      r = concat ("vec_t<", c1, ">", (char *) 0);
-      free (CONST_CAST (char *, c1));
-      return r;
-    }
-
   const char *id = require (ID);
   if (token () == '<')
     return require_template_declaration (id);
@@ -826,7 +806,6 @@ type (options_p *optsp, bool nested)
       return create_scalar_type (s);
 
     case ID:
-    case VEC_TOKEN:
       s = typedef_name ();
       return resolve_typedef (s, &lexer_line);
 
@@ -907,6 +886,7 @@ type (options_p *optsp, bool nested)
 		    fields = NULL;
 		    kind = TYPE_USER_STRUCT;
 		    consume_balanced ('{', '}');
+		    return create_user_defined_type (s, &lexer_line);
 		  }
 
 		return new_structure (s, kind, &lexer_line, fields, opts);

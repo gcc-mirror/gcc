@@ -29,7 +29,7 @@ extern tree add_field_decl (tree, const char *, tree **);
 extern tree build_sized_array_type (tree, int);
 
 extern tree lookup_interface (tree);
-extern tree objc_build_constructor (tree, VEC(constructor_elt,gc) *);
+extern tree objc_build_constructor (tree, vec<constructor_elt, va_gc> *);
 
 extern tree start_var_decl (tree, const char *);
 extern void finish_var_decl (tree, tree);

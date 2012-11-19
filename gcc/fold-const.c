@@ -3880,6 +3880,17 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
       return arg0;
 
     case NEGATE_EXPR:
+      /* If flag_wrapv and ARG0_TYPE is signed, make sure
+	 low and high are non-NULL, then normalize will DTRT.  */
+      if (!TYPE_UNSIGNED (arg0_type)
+	  && !TYPE_OVERFLOW_UNDEFINED (arg0_type))
+	{
+	  if (low == NULL_TREE)
+	    low = TYPE_MIN_VALUE (arg0_type);
+	  if (high == NULL_TREE)
+	    high = TYPE_MAX_VALUE (arg0_type);
+	}
+
       /* (-x) IN [a,b] -> x in [-b, -a]  */
       n_low = range_binop (MINUS_EXPR, exp_type,
 			   build_int_cst (exp_type, 0),
@@ -9630,7 +9641,7 @@ vec_cst_ctor_to_array (tree arg, tree *elts)
     {
       constructor_elt *elt;
 
-      FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (arg), i, elt)
+      FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (arg), i, elt)
 	if (i >= nelts || TREE_CODE (TREE_TYPE (elt->value)) == VECTOR_TYPE)
 	  return false;
 	else
@@ -9675,7 +9686,8 @@ fold_vec_perm (tree type, tree arg0, tree arg1, const unsigned char *sel)
 
   if (need_ctor)
     {
-      VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, nelts);
+      vec<constructor_elt, va_gc> *v;
+      vec_alloc (v, nelts);
       for (i = 0; i < nelts; i++)
 	CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[2 * nelts + i]);
       return build_constructor (type, v);
@@ -14084,6 +14096,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
       return NULL_TREE;
 
+    case VEC_COND_EXPR:
+      if (TREE_CODE (arg0) == VECTOR_CST)
+	{
+	  if (integer_all_onesp (arg0) && !TREE_SIDE_EFFECTS (op2))
+	    return pedantic_non_lvalue_loc (loc, op1);
+	  if (integer_zerop (arg0) && !TREE_SIDE_EFFECTS (op1))
+	    return pedantic_non_lvalue_loc (loc, op2);
+	}
+      return NULL_TREE;
+
     case CALL_EXPR:
       /* CALL_EXPRs used to be ternary exprs.  Catch any mistaken uses
 	 of fold_ternary on them.  */
@@ -14121,15 +14143,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		    }
 		  else
 		    {
-		      VEC(constructor_elt, gc) *vals;
+		      vec<constructor_elt, va_gc> *vals;
 		      unsigned i;
 		      if (CONSTRUCTOR_NELTS (arg0) == 0)
-			return build_constructor (type, NULL);
+			return build_constructor (type,
+					      NULL);
 		      if (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (arg0,
 								 0)->value))
 			  != VECTOR_TYPE)
 			{
-			  vals = VEC_alloc (constructor_elt, gc, n);
+			  vec_alloc (vals, n);
 			  for (i = 0;
 			       i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
 			       ++i)
@@ -14374,15 +14397,15 @@ fold (tree expr)
 	    && TREE_CODE (op0) == CONSTRUCTOR
 	    && ! type_contains_placeholder_p (TREE_TYPE (op0)))
 	  {
-	    VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (op0);
-	    unsigned HOST_WIDE_INT end = VEC_length (constructor_elt, elts);
+	    vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (op0);
+	    unsigned HOST_WIDE_INT end = vec_safe_length (elts);
 	    unsigned HOST_WIDE_INT begin = 0;
 
 	    /* Find a matching index by means of a binary search.  */
 	    while (begin != end)
 	      {
 		unsigned HOST_WIDE_INT middle = (begin + end) / 2;
-		tree index = VEC_index (constructor_elt, elts, middle).index;
+		tree index = (*elts)[middle].index;
 
 		if (TREE_CODE (index) == INTEGER_CST
 		    && tree_int_cst_lt (index, op1))
@@ -14397,7 +14420,7 @@ fold (tree expr)
 			 && tree_int_cst_lt (op1, TREE_OPERAND (index, 0)))
 		  end = middle;
 		else
-		  return VEC_index (constructor_elt, elts, middle).value;
+		  return (*elts)[middle].value;
 	      }
 	  }
 

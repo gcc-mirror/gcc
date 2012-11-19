@@ -213,20 +213,8 @@ static struct obstack irp;
 
 /* Declare vector types for various data structures: */
 
-DEF_VEC_P(alt_state_t);
-DEF_VEC_ALLOC_P(alt_state_t, heap);
-DEF_VEC_P(ainsn_t);
-DEF_VEC_ALLOC_P(ainsn_t, heap);
-DEF_VEC_P(state_t);
-DEF_VEC_ALLOC_P(state_t, heap);
-DEF_VEC_P(decl_t);
-DEF_VEC_ALLOC_P(decl_t, heap);
-DEF_VEC_P(reserv_sets_t);
-DEF_VEC_ALLOC_P(reserv_sets_t, heap);
 
-DEF_VEC_I(vect_el_t);
-DEF_VEC_ALLOC_I(vect_el_t, heap);
-typedef VEC(vect_el_t, heap) *vla_hwint_t;
+typedef vec<vect_el_t> vla_hwint_t;
 
 /* Forward declarations of functions used before their definitions, only.  */
 static regexp_t gen_regexp_sequence    (const char *);
@@ -1150,7 +1138,7 @@ check_name (const char * name, pos_t pos ATTRIBUTE_UNUSED)
 
 /* Pointers to all declarations during IR generation are stored in the
    following.  */
-static VEC(decl_t, heap) *decls;
+static vec<decl_t> decls;
 
 /* Given a pointer to a (char *) and a separator, return an alloc'ed
    string containing the next separated element, taking parentheses
@@ -1278,7 +1266,7 @@ gen_cpu_unit (rtx def)
       DECL_UNIT (decl)->query_p = 0;
       DECL_UNIT (decl)->min_occ_cycle_num = -1;
       DECL_UNIT (decl)->in_set_p = 0;
-      VEC_safe_push (decl_t, heap, decls, decl);
+      decls.safe_push (decl);
     }
 }
 
@@ -1306,7 +1294,7 @@ gen_query_cpu_unit (rtx def)
       DECL_UNIT (decl)->name = check_name (str_cpu_units [i], decl->pos);
       DECL_UNIT (decl)->automaton_name = XSTR (def, 1);
       DECL_UNIT (decl)->query_p = 1;
-      VEC_safe_push (decl_t, heap, decls, decl);
+      decls.safe_push (decl);
     }
 }
 
@@ -1341,7 +1329,7 @@ gen_bypass (rtx def)
 	DECL_BYPASS (decl)->out_pattern = out_patterns[i];
 	DECL_BYPASS (decl)->in_pattern = in_patterns[j];
 	DECL_BYPASS (decl)->bypass_guard_name = XSTR (def, 3);
-	VEC_safe_push (decl_t, heap, decls, decl);
+	decls.safe_push (decl);
       }
 }
 
@@ -1380,7 +1368,7 @@ gen_excl_set (rtx def)
     else
       DECL_EXCL (decl)->names [i]
 	= second_str_cpu_units [i - first_vect_length];
-  VEC_safe_push (decl_t, heap, decls, decl);
+  decls.safe_push (decl);
 }
 
 /* Process a PRESENCE_SET, a FINAL_PRESENCE_SET, an ABSENCE_SET,
@@ -1449,7 +1437,7 @@ gen_presence_absence_set (rtx def, int presence_p, int final_p)
       DECL_ABSENCE (decl)->patterns_num = patterns_length;
       DECL_ABSENCE (decl)->final_p = final_p;
     }
-  VEC_safe_push (decl_t, heap, decls, decl);
+  decls.safe_push (decl);
 }
 
 /* Process a PRESENCE_SET.
@@ -1518,7 +1506,7 @@ gen_automaton (rtx def)
       decl->mode = dm_automaton;
       decl->pos = 0;
       DECL_AUTOMATON (decl)->name = check_name (str_automata [i], decl->pos);
-      VEC_safe_push (decl_t, heap, decls, decl);
+      decls.safe_push (decl);
     }
 }
 
@@ -1723,7 +1711,7 @@ gen_reserv (rtx def)
   decl->pos = 0;
   DECL_RESERV (decl)->name = check_name (XSTR (def, 0), decl->pos);
   DECL_RESERV (decl)->regexp = gen_regexp (XSTR (def, 1));
-  VEC_safe_push (decl_t, heap, decls, decl);
+  decls.safe_push (decl);
 }
 
 /* Process a DEFINE_INSN_RESERVATION.
@@ -1744,7 +1732,7 @@ gen_insn_reserv (rtx def)
   DECL_INSN_RESERV (decl)->default_latency = XINT (def, 1);
   DECL_INSN_RESERV (decl)->condexp = XEXP (def, 2);
   DECL_INSN_RESERV (decl)->regexp = gen_regexp (XSTR (def, 3));
-  VEC_safe_push (decl_t, heap, decls, decl);
+  decls.safe_push (decl);
 }
 
 
@@ -3349,7 +3337,7 @@ static alt_state_t
 uniq_sort_alt_states (alt_state_t alt_states_list)
 {
   alt_state_t curr_alt_state;
-  VEC(alt_state_t, heap) *alt_states;
+  vec<alt_state_t> alt_states;
   size_t i;
   size_t prev_unique_state_ind;
   alt_state_t result;
@@ -3359,33 +3347,31 @@ uniq_sort_alt_states (alt_state_t alt_states_list)
   if (alt_states_list->next_alt_state == 0)
     return alt_states_list;
 
-  alt_states = VEC_alloc (alt_state_t, heap, 150);
+  alt_states.create (150);
   for (curr_alt_state = alt_states_list;
        curr_alt_state != NULL;
        curr_alt_state = curr_alt_state->next_alt_state)
-    VEC_safe_push (alt_state_t, heap, alt_states, curr_alt_state);
+    alt_states.safe_push (curr_alt_state);
 
-  VEC_qsort (alt_state_t, alt_states, alt_state_cmp);
+  alt_states.qsort (alt_state_cmp);
 
   prev_unique_state_ind = 0;
-  for (i = 1; i < VEC_length (alt_state_t, alt_states); i++)
-    if (VEC_index (alt_state_t, alt_states, prev_unique_state_ind)->state
-	!= VEC_index (alt_state_t, alt_states, i)->state)
+  for (i = 1; i < alt_states.length (); i++)
+    if (alt_states[prev_unique_state_ind]->state != alt_states[i]->state)
       {
 	prev_unique_state_ind++;
-	VEC_replace (alt_state_t, alt_states, prev_unique_state_ind,
-		     VEC_index (alt_state_t, alt_states, i));
+	alt_states[prev_unique_state_ind] = alt_states[i];
       }
-  VEC_truncate (alt_state_t, alt_states, prev_unique_state_ind + 1);
+  alt_states.truncate (prev_unique_state_ind + 1);
 
-  for (i = 1; i < VEC_length (alt_state_t, alt_states); i++)
-    VEC_index (alt_state_t, alt_states, i-1)->next_sorted_alt_state
-      = VEC_index (alt_state_t, alt_states, i);
-  VEC_last (alt_state_t, alt_states)->next_sorted_alt_state = 0;
+  for (i = 1; i < alt_states.length (); i++)
+    alt_states[i-1]->next_sorted_alt_state
+      = alt_states[i];
+  alt_states.last ()->next_sorted_alt_state = 0;
 
-  result = VEC_index (alt_state_t, alt_states, 0);
+  result = alt_states[0];
 
-  VEC_free (alt_state_t, heap, alt_states);
+  alt_states.release ();
   return result;
 }
 
@@ -5030,7 +5016,7 @@ transform_insn_regexps (void)
 static int annotation_message_reported_p;
 
 /* The vector contains all decls which are automata.  */
-static VEC(decl_t, heap) *automaton_decls;
+static vec<decl_t> automaton_decls;
 
 /* The following structure describes usage of a unit in a reservation.  */
 struct unit_usage
@@ -5044,8 +5030,6 @@ struct unit_usage
 };
 typedef struct unit_usage *unit_usage_t;
 
-DEF_VEC_P(unit_usage_t);
-DEF_VEC_ALLOC_P(unit_usage_t, heap);
 
 /* Obstack for unit_usage structures.  */
 static struct obstack unit_usages;
@@ -5056,7 +5040,7 @@ static struct obstack unit_usages;
    alternative with given number are referred through element with
    index equals to the cycle * number of all alternatives in the
    regexp + the alternative number.  */
-static VEC(unit_usage_t, heap) *cycle_alt_unit_usages;
+static vec<unit_usage_t> cycle_alt_unit_usages;
 
 /* The following function creates the structure unit_usage for UNIT on
    CYCLE in REGEXP alternative with ALT_NUM.  The structure is made
@@ -5075,13 +5059,12 @@ store_alt_unit_usage (regexp_t regexp, regexp_t unit, int cycle,
   unit_decl = REGEXP_UNIT (unit)->unit_decl;
 
   length = (cycle + 1) * REGEXP_ONEOF (regexp)->regexps_num;
-  while (VEC_length (unit_usage_t, cycle_alt_unit_usages) < length)
-    VEC_safe_push (unit_usage_t, heap, cycle_alt_unit_usages,
-		   (unit_usage_t) NULL);
+  while (cycle_alt_unit_usages.length () < length)
+    cycle_alt_unit_usages.safe_push (NULL);
 
   index = cycle * REGEXP_ONEOF (regexp)->regexps_num + alt_num;
   prev = NULL;
-  for (curr = VEC_index (unit_usage_t, cycle_alt_unit_usages, index);
+  for (curr = cycle_alt_unit_usages[index];
        curr != NULL;
        prev = curr, curr = curr->next)
     if (curr->unit_decl >= unit_decl)
@@ -5095,7 +5078,7 @@ store_alt_unit_usage (regexp_t regexp, regexp_t unit, int cycle,
   unit_decl->last_distribution_check_cycle = -1; /* undefined */
   unit_usage_ptr->next = curr;
   if (prev == NULL)
-    VEC_replace (unit_usage_t, cycle_alt_unit_usages, index, unit_usage_ptr);
+    cycle_alt_unit_usages[index] = unit_usage_ptr;
   else
     prev->next = unit_usage_ptr;
 }
@@ -5124,11 +5107,11 @@ equal_alternatives_p (int alt1, int alt2, int n_alts,
   unit_usage_t list1, list2;
 
   for (i = 0;
-       i < (int) VEC_length (unit_usage_t, cycle_alt_unit_usages);
+       i < (int) cycle_alt_unit_usages.length ();
        i += n_alts)
     {
-      for (list1 = VEC_index (unit_usage_t, cycle_alt_unit_usages, i + alt1),
-	     list2 = VEC_index (unit_usage_t, cycle_alt_unit_usages, i + alt2);;
+      for (list1 = cycle_alt_unit_usages[i + alt1],
+	     list2 = cycle_alt_unit_usages[i + alt2];;
 	   list1 = list1->next, list2 = list2->next)
 	{
 	  while (list1 != NULL
@@ -5151,8 +5134,6 @@ equal_alternatives_p (int alt1, int alt2, int n_alts,
   return true;
 }
 
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int, heap);
 
 /* The function processes given REGEXP to find units with the wrong
    distribution.  */
@@ -5164,13 +5145,13 @@ check_regexp_units_distribution (const char *insn_reserv_name,
   bool annotation_reservation_message_reported_p;
   regexp_t seq, allof, unit;
   struct unit_usage *unit_usage_ptr;
-  VEC(int, heap) *marked;
+  vec<int> marked;
 
   if (regexp == NULL || regexp->mode != rm_oneof)
     return;
   /* Store all unit usages in the regexp:  */
   obstack_init (&unit_usages);
-  cycle_alt_unit_usages = VEC_alloc (unit_usage_t, heap, 10);
+  cycle_alt_unit_usages.create (10);
 
   for (i = REGEXP_ONEOF (regexp)->regexps_num - 1; i >= 0; i--)
     {
@@ -5238,21 +5219,21 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 	}
     }
   /* Check distribution:  */
-  for (i = 0; i < (int) VEC_length (unit_usage_t, cycle_alt_unit_usages); i++)
-    for (unit_usage_ptr = VEC_index (unit_usage_t, cycle_alt_unit_usages, i);
+  for (i = 0; i < (int) cycle_alt_unit_usages.length (); i++)
+    for (unit_usage_ptr = cycle_alt_unit_usages[i];
 	 unit_usage_ptr != NULL;
 	 unit_usage_ptr = unit_usage_ptr->next)
       unit_usage_ptr->unit_decl->last_distribution_check_cycle = -1;
   n_alts = REGEXP_ONEOF (regexp)->regexps_num;
-  marked = VEC_alloc (int, heap, n_alts);
+  marked.create (n_alts);
   for (i = 0; i < n_alts; i++)
-    VEC_safe_push (int, heap, marked, 0);
+    marked.safe_push (0);
   annotation_reservation_message_reported_p = false;
-  for (i = 0; i < (int) VEC_length (unit_usage_t, cycle_alt_unit_usages); i++)
+  for (i = 0; i < (int) cycle_alt_unit_usages.length (); i++)
     {
       cycle = i / n_alts;
       start = cycle * n_alts;
-      for (unit_usage_ptr = VEC_index (unit_usage_t, cycle_alt_unit_usages, i);
+      for (unit_usage_ptr = cycle_alt_unit_usages[i];
 	   unit_usage_ptr != NULL;
 	   unit_usage_ptr = unit_usage_ptr->next)
 	{
@@ -5260,40 +5241,35 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 	    continue;
 	  unit_usage_ptr->unit_decl->last_distribution_check_cycle = cycle;
 	  for (alt = 0; alt < n_alts; alt++)
-	    if (! unit_present_on_list_p (VEC_index (unit_usage_t,
-						     cycle_alt_unit_usages,
-						     start + alt),
+	    if (! unit_present_on_list_p (cycle_alt_unit_usages[start + alt],
 					  unit_usage_ptr->unit_decl))
 	      break;
 	  if (alt >= n_alts)
 	    continue;
-	  memset (VEC_address (int, marked), 0, n_alts * sizeof (int));
+	  memset (marked.address (), 0, n_alts * sizeof (int));
 	  for (alt = 0; alt < n_alts; alt++)
 	    {
-	      if (! unit_present_on_list_p (VEC_index (unit_usage_t,
-						       cycle_alt_unit_usages,
-						       start + alt),
+	      if (! unit_present_on_list_p (cycle_alt_unit_usages[start + alt],
 					    unit_usage_ptr->unit_decl))
 		continue;
 	      for (j = 0;
-		   j < (int) VEC_length (unit_usage_t, cycle_alt_unit_usages);
+		   j < (int) cycle_alt_unit_usages.length ();
 		   j++)
 		{
 		  alt2 = j % n_alts;
 		  if (! unit_present_on_list_p
-		        (VEC_index (unit_usage_t, cycle_alt_unit_usages,
-				    start + alt2),
+		        (cycle_alt_unit_usages[start + alt2],
 			 unit_usage_ptr->unit_decl)
 		      && equal_alternatives_p (alt, alt2, n_alts,
 					       unit_usage_ptr
 					       ->unit_decl->automaton_decl))
 		    {
-		      VEC_replace (int, marked, alt, 1);
-		      VEC_replace (int, marked, alt2, 1);
+		      marked[alt] = 1;
+		      marked[alt2] = 1;
 		    }
 		}
 	    }
-	  for (alt = 0; alt < n_alts && VEC_index (int, marked, alt); alt++)
+	  for (alt = 0; alt < n_alts && marked[alt]; alt++)
 	    ;
 	  if (alt < n_alts && 0)
 	    {
@@ -5315,8 +5291,8 @@ check_regexp_units_distribution (const char *insn_reserv_name,
 	    }
 	}
     }
-  VEC_free (int, heap, marked);
-  VEC_free (unit_usage_t, heap, cycle_alt_unit_usages);
+  marked.release ();
+  cycle_alt_unit_usages.release ();
   obstack_free (&unit_usages, NULL);
 }
 
@@ -5330,14 +5306,14 @@ check_unit_distributions_to_automata (void)
 
   if (progress_flag)
     fprintf (stderr, "Check unit distributions to automata...");
-  automaton_decls = NULL;
+  automaton_decls.create (0);
   for (i = 0; i < description->decls_num; i++)
     {
       decl = description->decls [i];
       if (decl->mode == dm_automaton)
-	VEC_safe_push (decl_t, heap, automaton_decls, decl);
+	automaton_decls.safe_push (decl);
     }
-  if (VEC_length (decl_t, automaton_decls) > 1)
+  if (automaton_decls.length () > 1)
     {
       annotation_message_reported_p = FALSE;
       for (i = 0; i < description->decls_num; i++)
@@ -5349,7 +5325,7 @@ check_unit_distributions_to_automata (void)
 	       DECL_INSN_RESERV (decl)->transformed_regexp);
 	}
     }
-  VEC_free (decl_t, heap, automaton_decls);
+  automaton_decls.release ();
   if (progress_flag)
     fprintf (stderr, "done\n");
 }
@@ -5509,7 +5485,8 @@ form_ainsn_with_same_reservs (automaton_t automaton)
 {
   ainsn_t curr_ainsn;
   size_t i;
-  VEC(ainsn_t, heap) *last_insns = VEC_alloc (ainsn_t, heap, 150);
+  vec<ainsn_t> last_insns;
+  last_insns.create (150);
 
   for (curr_ainsn = automaton->ainsn_list;
        curr_ainsn != NULL;
@@ -5521,26 +5498,25 @@ form_ainsn_with_same_reservs (automaton_t automaton)
       }
     else
       {
-        for (i = 0; i < VEC_length (ainsn_t, last_insns); i++)
+        for (i = 0; i < last_insns.length (); i++)
           if (alt_states_eq
               (curr_ainsn->sorted_alt_states,
-               VEC_index (ainsn_t, last_insns, i)->sorted_alt_states))
+               last_insns[i]->sorted_alt_states))
             break;
         curr_ainsn->next_same_reservs_insn = NULL;
-        if (i < VEC_length (ainsn_t, last_insns))
+        if (i < last_insns.length ())
           {
             curr_ainsn->first_insn_with_same_reservs = 0;
-	    VEC_index (ainsn_t, last_insns, i)->next_same_reservs_insn
-	      = curr_ainsn;
-            VEC_replace (ainsn_t, last_insns, i, curr_ainsn);
+	    last_insns[i]->next_same_reservs_insn = curr_ainsn;
+            last_insns[i] = curr_ainsn;
           }
         else
           {
-            VEC_safe_push (ainsn_t, heap, last_insns, curr_ainsn);
+            last_insns.safe_push (curr_ainsn);
             curr_ainsn->first_insn_with_same_reservs = 1;
           }
       }
-  VEC_free (ainsn_t, heap, last_insns);
+  last_insns.release ();
 }
 
 /* Forming unit reservations which can affect creating the automaton
@@ -5582,7 +5558,8 @@ make_automaton (automaton_t automaton)
   state_t state;
   state_t start_state;
   state_t state2;
-  VEC(state_t, heap) *state_stack = VEC_alloc(state_t, heap, 150);
+  vec<state_t> state_stack;
+  state_stack.create (150);
   int states_n;
   reserv_sets_t reservs_matter = form_reservs_matter (automaton);
 
@@ -5590,11 +5567,11 @@ make_automaton (automaton_t automaton)
   start_state = insert_state (get_free_state (1, automaton));
   automaton->start_state = start_state;
   start_state->it_was_placed_in_stack_for_NDFA_forming = 1;
-  VEC_safe_push (state_t, heap, state_stack, start_state);
+  state_stack.safe_push (start_state);
   states_n = 1;
-  while (VEC_length (state_t, state_stack) != 0)
+  while (state_stack.length () != 0)
     {
-      state = VEC_pop (state_t, state_stack);
+      state = state_stack.pop ();
       for (ainsn = automaton->ainsn_list;
 	   ainsn != NULL;
 	   ainsn = ainsn->next_ainsn)
@@ -5617,7 +5594,7 @@ make_automaton (automaton_t automaton)
                           {
                             state2->it_was_placed_in_stack_for_NDFA_forming
 			      = 1;
-                            VEC_safe_push (state_t, heap, state_stack, state2);
+                            state_stack.safe_push (state2);
 			    states_n++;
 			    if (progress_flag && states_n % 100 == 0)
 			      fprintf (stderr, ".");
@@ -5634,14 +5611,14 @@ make_automaton (automaton_t automaton)
       if (!state2->it_was_placed_in_stack_for_NDFA_forming)
         {
           state2->it_was_placed_in_stack_for_NDFA_forming = 1;
-          VEC_safe_push (state_t, heap, state_stack, state2);
+          state_stack.safe_push (state2);
 	  states_n++;
 	  if (progress_flag && states_n % 100 == 0)
 	    fprintf (stderr, ".");
         }
       add_arc (state, state2, automaton->advance_ainsn);
     }
-  VEC_free (state_t, heap, state_stack);
+  state_stack.release ();
 }
 
 /* Form lists of all arcs of STATE marked by the same ainsn.  */
@@ -5674,7 +5651,7 @@ form_arcs_marked_by_insn (state_t state)
 
 static int
 create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
-		       VEC(state_t, heap) **state_stack)
+		       vec<state_t> *state_stack)
 {
   state_t state;
   alt_state_t alt_state, curr_alt_state;
@@ -5770,7 +5747,7 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
   if (!state->it_was_placed_in_stack_for_DFA_forming)
     {
       state->it_was_placed_in_stack_for_DFA_forming = 1;
-      VEC_safe_push (state_t, heap, *state_stack, state);
+      state_stack->safe_push (state);
     }
   return new_state_p;
 }
@@ -5784,20 +5761,20 @@ NDFA_to_DFA (automaton_t automaton)
   state_t start_state;
   state_t state;
   decl_t decl;
-  VEC(state_t, heap) *state_stack;
+  vec<state_t> state_stack;
   int i;
   int states_n;
 
-  state_stack = VEC_alloc (state_t, heap, 0);
+  state_stack.create (0);
 
   /* Create the start state (empty state).  */
   start_state = automaton->start_state;
   start_state->it_was_placed_in_stack_for_DFA_forming = 1;
-  VEC_safe_push (state_t, heap, state_stack, start_state);
+  state_stack.safe_push (start_state);
   states_n = 1;
-  while (VEC_length (state_t, state_stack) != 0)
+  while (state_stack.length () != 0)
     {
-      state = VEC_pop (state_t, state_stack);
+      state = state_stack.pop ();
       form_arcs_marked_by_insn (state);
       for (i = 0; i < description->decls_num; i++)
 	{
@@ -5822,7 +5799,7 @@ NDFA_to_DFA (automaton_t automaton)
 	      if (!state2->it_was_placed_in_stack_for_DFA_forming)
 		{
 		  state2->it_was_placed_in_stack_for_DFA_forming = 1;
-		  VEC_safe_push (state_t, heap, state_stack, state2);
+		  state_stack.safe_push (state2);
 		}
 	      add_arc (state, state2, automaton->collapse_ainsn);
 	    }
@@ -5830,7 +5807,7 @@ NDFA_to_DFA (automaton_t automaton)
 	    add_arc (state, state, automaton->collapse_ainsn);
 	}
     }
-  VEC_free (state_t, heap, state_stack);
+  state_stack.release ();
 }
 
 /* The following variable value is current number (1, 2, ...) of passing
@@ -5872,14 +5849,14 @@ initiate_pass_states (void)
 
 /* The following vla is used for storing pointers to all achieved
    states.  */
-static VEC(state_t, heap) *all_achieved_states;
+static vec<state_t> all_achieved_states;
 
 /* This function is called by function pass_states to add an achieved
    STATE.  */
 static void
 add_achieved_state (state_t state)
 {
-  VEC_safe_push (state_t, heap, all_achieved_states, state);
+  all_achieved_states.safe_push (state);
 }
 
 /* The function sets up equivalence numbers of insns which mark all
@@ -6014,24 +5991,24 @@ compare_states_for_equiv (const void *state_ptr_1,
 }
 
 /* The function makes initial partition of STATES on equivalent
-   classes and saves it into *CLASSES.  This function requires the input
+   classes and saves it into CLASSES.  This function requires the input
    to be sorted via compare_states_for_equiv().  */
 static int
-init_equiv_class (VEC(state_t, heap) *states, VEC (state_t, heap) **classes)
+init_equiv_class (vec<state_t> states, vec<state_t> *classes)
 {
   size_t i;
   state_t prev = 0;
   int class_num = 1;
 
-  *classes = VEC_alloc (state_t, heap, 150);
-  for (i = 0; i < VEC_length (state_t, states); i++)
+  classes->create (150);
+  for (i = 0; i < states.length (); i++)
     {
-      state_t state = VEC_index (state_t, states, i);
+      state_t state = states[i];
       if (prev)
         {
 	  if (compare_states_for_equiv (&prev, &state) != 0)
 	    {
-	      VEC_safe_push (state_t, heap, *classes, prev);
+	      classes->safe_push (prev);
 	      class_num++;
 	      prev = NULL;
 	    }
@@ -6041,17 +6018,17 @@ init_equiv_class (VEC(state_t, heap) *states, VEC (state_t, heap) **classes)
       prev = state;
     }
   if (prev)
-    VEC_safe_push (state_t, heap, *classes, prev);
+    classes->safe_push (prev);
   return class_num;
 }
 
 /* The function copies pointers to equivalent states from vla FROM
    into vla TO.  */
 static void
-copy_equiv_class (VEC(state_t, heap) **to, VEC(state_t, heap) *from)
+copy_equiv_class (vec<state_t> *to, vec<state_t> from)
 {
-  VEC_free (state_t, heap, *to);
-  *to = VEC_copy (state_t, heap, from);
+  to->release ();
+  *to = from.copy ();
 }
 
 /* The function processes equivalence class given by its first state,
@@ -6063,7 +6040,7 @@ copy_equiv_class (VEC(state_t, heap) **to, VEC(state_t, heap) *from)
    partitioned, the function returns nonzero value.  */
 static int
 partition_equiv_class (state_t first_state, int odd_iteration_flag,
-		       VEC(state_t, heap) **next_iteration_classes,
+		       vec<state_t> *next_iteration_classes,
 		       int *new_equiv_class_num_ptr)
 {
   state_t new_equiv_class;
@@ -6109,7 +6086,7 @@ partition_equiv_class (state_t first_state, int odd_iteration_flag,
 	  clear_arc_insns_equiv_num (first_state);
 	}
       if (new_equiv_class != NULL)
-	VEC_safe_push (state_t, heap, *next_iteration_classes, new_equiv_class);
+	next_iteration_classes->safe_push (new_equiv_class);
       first_state = new_equiv_class;
     }
   return partition_p;
@@ -6117,19 +6094,18 @@ partition_equiv_class (state_t first_state, int odd_iteration_flag,
 
 /* The function finds equivalent states of AUTOMATON.  */
 static void
-evaluate_equiv_classes (automaton_t automaton,
-			VEC(state_t, heap) **equiv_classes)
+evaluate_equiv_classes (automaton_t automaton, vec<state_t> *equiv_classes)
 {
   int new_equiv_class_num;
   int odd_iteration_flag;
   int finish_flag;
-  VEC (state_t, heap) *next_iteration_classes;
+  vec<state_t> next_iteration_classes;
   size_t i;
 
-  all_achieved_states = VEC_alloc (state_t, heap, 1500);
+  all_achieved_states.create (1500);
   pass_states (automaton, add_achieved_state);
   pass_states (automaton, cache_presence);
-  VEC_qsort (state_t, all_achieved_states, compare_states_for_equiv);
+  all_achieved_states.qsort (compare_states_for_equiv);
 
   odd_iteration_flag = 0;
   new_equiv_class_num = init_equiv_class (all_achieved_states,
@@ -6142,29 +6118,29 @@ evaluate_equiv_classes (automaton_t automaton,
       copy_equiv_class (equiv_classes, next_iteration_classes);
 
       /* Transfer equiv numbers for the next iteration.  */
-      for (i = 0; i < VEC_length (state_t, all_achieved_states); i++)
+      for (i = 0; i < all_achieved_states.length (); i++)
 	if (odd_iteration_flag)
-	  VEC_index (state_t, all_achieved_states, i)->equiv_class_num_2
-	    = VEC_index (state_t, all_achieved_states, i)->equiv_class_num_1;
+	  all_achieved_states[i]->equiv_class_num_2
+	    = all_achieved_states[i]->equiv_class_num_1;
 	else
-	  VEC_index (state_t, all_achieved_states, i)->equiv_class_num_1
-	    = VEC_index (state_t, all_achieved_states, i)->equiv_class_num_2;
+	  all_achieved_states[i]->equiv_class_num_1
+	    = all_achieved_states[i]->equiv_class_num_2;
 
-      for (i = 0; i < VEC_length (state_t, *equiv_classes); i++)
-	if (partition_equiv_class (VEC_index (state_t, *equiv_classes, i),
+      for (i = 0; i < equiv_classes->length (); i++)
+	if (partition_equiv_class ((*equiv_classes)[i],
 				   odd_iteration_flag,
 				   &next_iteration_classes,
 				   &new_equiv_class_num))
 	  finish_flag = 0;
     }
   while (!finish_flag);
-  VEC_free (state_t, heap, next_iteration_classes);
-  VEC_free (state_t, heap, all_achieved_states);
+  next_iteration_classes.release ();
+  all_achieved_states.release ();
 }
 
 /* The function merges equivalent states of AUTOMATON.  */
 static void
-merge_states (automaton_t automaton, VEC(state_t, heap) *equiv_classes)
+merge_states (automaton_t automaton, vec<state_t> equiv_classes)
 {
   state_t curr_state;
   state_t new_state;
@@ -6177,9 +6153,9 @@ merge_states (automaton_t automaton, VEC(state_t, heap) *equiv_classes)
 
   /* Create states corresponding to equivalence classes containing two
      or more states.  */
-  for (i = 0; i < VEC_length (state_t, equiv_classes); i++)
+  for (i = 0; i < equiv_classes.length (); i++)
     {
-      curr_state = VEC_index (state_t, equiv_classes, i);
+      curr_state = equiv_classes[i];
       if (curr_state->next_equiv_class_state != NULL)
 	{
 	  /* There are more one states in the class equivalence.  */
@@ -6218,9 +6194,9 @@ merge_states (automaton_t automaton, VEC(state_t, heap) *equiv_classes)
 	curr_state->equiv_class_state = curr_state;
     }
 
-  for (i = 0; i < VEC_length (state_t, equiv_classes); i++)
+  for (i = 0; i < equiv_classes.length (); i++)
     {
-      curr_state = VEC_index (state_t, equiv_classes, i);
+      curr_state = equiv_classes[i];
       if (curr_state->next_equiv_class_state != NULL)
 	{
 	  first_class_state = curr_state;
@@ -6279,13 +6255,13 @@ set_new_cycle_flags (state_t state)
 static void
 minimize_DFA (automaton_t automaton)
 {
-  VEC(state_t, heap) *equiv_classes = 0;
+  vec<state_t> equiv_classes = vec<state_t>();
 
   evaluate_equiv_classes (automaton, &equiv_classes);
   merge_states (automaton, equiv_classes);
   pass_states (automaton, set_new_cycle_flags);
 
-  VEC_free (state_t, heap, equiv_classes);
+  equiv_classes.release ();
 }
 
 /* Values of two variables are counted number of states and arcs in an
@@ -6952,7 +6928,7 @@ static void
 output_vect (vla_hwint_t vect)
 {
   int els_on_line;
-  size_t vect_length = VEC_length (vect_el_t, vect);
+  size_t vect_length = vect.length ();
   size_t i;
 
   els_on_line = 1;
@@ -6961,7 +6937,7 @@ output_vect (vla_hwint_t vect)
   else
     for (i = 0; i < vect_length; i++)
       {
-	fprintf (output_file, "%5ld", (long) VEC_index (vect_el_t, vect, i));
+	fprintf (output_file, "%5ld", (long) vect[i]);
 	if (els_on_line == 10)
 	  {
 	    els_on_line = 0;
@@ -7225,17 +7201,15 @@ output_translate_vect (automaton_t automaton)
   int insn_value;
   vla_hwint_t translate_vect;
 
-  translate_vect = VEC_alloc (vect_el_t, heap, description->insns_num);
+  translate_vect.create (description->insns_num);
 
   for (insn_value = 0; insn_value < description->insns_num; insn_value++)
     /* Undefined value */
-    VEC_quick_push (vect_el_t, translate_vect,
-		    automaton->insn_equiv_classes_num);
+    translate_vect.quick_push (automaton->insn_equiv_classes_num);
 
   for (ainsn = automaton->ainsn_list; ainsn != NULL; ainsn = ainsn->next_ainsn)
-    VEC_replace (vect_el_t, translate_vect,
-		 ainsn->insn_reserv_decl->insn_num,
-		 ainsn->insn_equiv_class_num);
+    translate_vect[ainsn->insn_reserv_decl->insn_num] =
+	  ainsn->insn_equiv_class_num;
 
   fprintf (output_file,
            "/* Vector translating external insn codes to internal ones.*/\n");
@@ -7246,7 +7220,7 @@ output_translate_vect (automaton_t automaton)
   fprintf (output_file, "[] ATTRIBUTE_UNUSED = {\n");
   output_vect (translate_vect);
   fprintf (output_file, "};\n\n");
-  VEC_free (vect_el_t, heap, translate_vect);
+  translate_vect.release ();
 }
 
 /* The value in a table state x ainsn -> something which represents
@@ -7260,8 +7234,7 @@ comb_vect_p (state_ainsn_table_t tab)
 {
   if (no_comb_flag)
     return false;
-  return  (2 * VEC_length (vect_el_t, tab->full_vect)
-           > 5 * VEC_length (vect_el_t, tab->comb_vect));
+  return  (2 * tab->full_vect.length () > 5 * tab->comb_vect.length ());
 }
 
 /* The following function creates new table for AUTOMATON.  */
@@ -7275,18 +7248,17 @@ create_state_ainsn_table (automaton_t automaton)
   tab = XCREATENODE (struct state_ainsn_table);
   tab->automaton = automaton;
 
-  tab->comb_vect  = VEC_alloc (vect_el_t, heap, 10000);
-  tab->check_vect = VEC_alloc (vect_el_t, heap, 10000);
+  tab->comb_vect.create (10000);
+  tab->check_vect.create (10000);
 
-  tab->base_vect  = 0;
-  VEC_safe_grow (vect_el_t, heap, tab->base_vect,
-		 automaton->achieved_states_num);
+  tab->base_vect.create (0);
+  tab->base_vect.safe_grow (automaton->achieved_states_num);
 
   full_vect_length = (automaton->insn_equiv_classes_num
                       * automaton->achieved_states_num);
-  tab->full_vect  = VEC_alloc (vect_el_t, heap, full_vect_length);
+  tab->full_vect.create (full_vect_length);
   for (i = 0; i < full_vect_length; i++)
-    VEC_quick_push (vect_el_t, tab->full_vect, undefined_vect_el_value);
+    tab->full_vect.quick_push (undefined_vect_el_value);
 
   tab->min_base_vect_el_value = 0;
   tab->max_base_vect_el_value = 0;
@@ -7364,27 +7336,25 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
   int i;
   unsigned long vect_mask, comb_vect_mask;
 
-  vect_length = VEC_length (vect_el_t, vect);
+  vect_length = vect.length ();
   gcc_assert (vect_length);
-  gcc_assert (VEC_last (vect_el_t, vect) != undefined_vect_el_value);
+  gcc_assert (vect.last () != undefined_vect_el_value);
   real_vect_length = tab->automaton->insn_equiv_classes_num;
   /* Form full vector in the table: */
   {
     size_t full_base = tab->automaton->insn_equiv_classes_num * vect_num;
-    if (VEC_length (vect_el_t, tab->full_vect) < full_base + vect_length)
-      VEC_safe_grow (vect_el_t, heap, tab->full_vect,
-		     full_base + vect_length);
+    if (tab->full_vect.length () < full_base + vect_length)
+      tab->full_vect.safe_grow (full_base + vect_length);
     for (i = 0; i < vect_length; i++)
-      VEC_replace (vect_el_t, tab->full_vect, full_base + i,
-		   VEC_index (vect_el_t, vect, i));
+      tab->full_vect[full_base + i] = vect[i];
   }
 
   /* The comb_vect min/max values are also used for the full vector, so
      compute them now.  */
   for (vect_index = 0; vect_index < vect_length; vect_index++)
-    if (VEC_index (vect_el_t, vect, vect_index) != undefined_vect_el_value)
+    if (vect[vect_index] != undefined_vect_el_value)
       {
-	vect_el_t x = VEC_index (vect_el_t, vect, vect_index);
+	vect_el_t x = vect[vect_index];
         gcc_assert (x >= 0);
         if (tab->max_comb_vect_el_value < x)
           tab->max_comb_vect_el_value = x;
@@ -7395,14 +7365,13 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
     return;
 
   /* Form comb vector in the table: */
-  gcc_assert (VEC_length (vect_el_t, tab->comb_vect)
-	      == VEC_length (vect_el_t, tab->check_vect));
+  gcc_assert (tab->comb_vect.length () == tab->check_vect.length ());
 
-  comb_vect_els_num = VEC_length (vect_el_t, tab->comb_vect);
+  comb_vect_els_num = tab->comb_vect.length ();
   for (first_unempty_vect_index = 0;
        first_unempty_vect_index < vect_length;
        first_unempty_vect_index++)
-    if (VEC_index (vect_el_t, vect, first_unempty_vect_index)
+    if (vect[first_unempty_vect_index]
 	!= undefined_vect_el_value)
       break;
 
@@ -7419,10 +7388,9 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
                vect_index < vect_length
                && vect_index + comb_vect_index < comb_vect_els_num;
                vect_index++)
-            if (VEC_index (vect_el_t, vect, vect_index)
+            if (vect[vect_index]
 		!= undefined_vect_el_value
-                && (VEC_index (vect_el_t, tab->comb_vect,
-			       vect_index + comb_vect_index)
+                && (tab->comb_vect[vect_index + comb_vect_index]
 		    != undefined_vect_el_value))
               break;
           if (vect_index >= vect_length
@@ -7439,7 +7407,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
        vect_index++)
     {
       vect_mask = vect_mask << 1;
-      if (VEC_index (vect_el_t, vect, vect_index) != undefined_vect_el_value)
+      if (vect[vect_index] != undefined_vect_el_value)
 	vect_mask |= 1;
     }
 
@@ -7455,7 +7423,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
     {
       comb_vect_mask <<= 1;
       if (vect_index + comb_vect_index < comb_vect_els_num
-	  && VEC_index (vect_el_t, tab->comb_vect, vect_index + comb_vect_index)
+	  && tab->comb_vect[vect_index + comb_vect_index]
 	     != undefined_vect_el_value)
 	comb_vect_mask |= 1;
     }
@@ -7466,7 +7434,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
        comb_vect_index++, i++)
     {
       comb_vect_mask = (comb_vect_mask << 1) | 1;
-      comb_vect_mask ^= (VEC_index (vect_el_t, tab->comb_vect, i)
+      comb_vect_mask ^= (tab->comb_vect[i]
 			 == undefined_vect_el_value);
       if ((vect_mask & comb_vect_mask) == 0)
 	goto found;
@@ -7488,25 +7456,22 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
   no_state_value = tab->automaton->achieved_states_num;
   while (additional_els_num > 0)
     {
-      VEC_safe_push (vect_el_t, heap, tab->comb_vect, vect_el);
-      VEC_safe_push (vect_el_t, heap, tab->check_vect, no_state_value);
+      tab->comb_vect.safe_push (vect_el);
+      tab->check_vect.safe_push (no_state_value);
       additional_els_num--;
     }
-  gcc_assert (VEC_length (vect_el_t, tab->comb_vect)
+  gcc_assert (tab->comb_vect.length ()
 	      >= comb_vect_index + real_vect_length);
   /* Fill comb and check vectors.  */
   for (vect_index = 0; vect_index < vect_length; vect_index++)
-    if (VEC_index (vect_el_t, vect, vect_index) != undefined_vect_el_value)
+    if (vect[vect_index] != undefined_vect_el_value)
       {
-	vect_el_t x = VEC_index (vect_el_t, vect, vect_index);
-        gcc_assert (VEC_index (vect_el_t, tab->comb_vect,
-			       comb_vect_index + vect_index)
+	vect_el_t x = vect[vect_index];
+        gcc_assert (tab->comb_vect[comb_vect_index + vect_index]
 		    == undefined_vect_el_value);
         gcc_assert (x >= 0);
-	VEC_replace (vect_el_t, tab->comb_vect,
-		     comb_vect_index + vect_index, x);
-	VEC_replace (vect_el_t, tab->check_vect,
-		     comb_vect_index + vect_index, vect_num);
+	tab->comb_vect[comb_vect_index + vect_index] = x;
+	tab->check_vect[comb_vect_index + vect_index] = vect_num;
       }
   if (tab->max_comb_vect_el_value < undefined_vect_el_value)
     tab->max_comb_vect_el_value = undefined_vect_el_value;
@@ -7517,7 +7482,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
   if (tab->min_base_vect_el_value > comb_vect_index)
     tab->min_base_vect_el_value = comb_vect_index;
 
-  VEC_replace (vect_el_t, tab->base_vect, vect_num, comb_vect_index);
+  tab->base_vect[vect_num] = comb_vect_index;
 }
 
 /* Return number of out arcs of STATE.  */
@@ -7558,29 +7523,29 @@ compare_transition_els_num (const void *state_ptr_1,
 /* The function adds element EL_VALUE to vector VECT for a table state
    x AINSN.  */
 static void
-add_vect_el (vla_hwint_t *vect, ainsn_t ainsn, int el_value)
+add_vect_el (vla_hwint_t &vect, ainsn_t ainsn, int el_value)
 {
   int equiv_class_num;
   int vect_index;
 
   gcc_assert (ainsn);
   equiv_class_num = ainsn->insn_equiv_class_num;
-  for (vect_index = VEC_length (vect_el_t, *vect);
+  for (vect_index = vect.length ();
        vect_index <= equiv_class_num;
        vect_index++)
-    VEC_safe_push (vect_el_t, heap, *vect, undefined_vect_el_value);
-  VEC_replace (vect_el_t, *vect, equiv_class_num, el_value);
+    vect.safe_push (undefined_vect_el_value);
+  vect[equiv_class_num] = el_value;
 }
 
 /* This is for forming vector of states of an automaton.  */
-static VEC(state_t, heap) *output_states_vect;
+static vec<state_t> output_states_vect;
 
 /* The function is called by function pass_states.  The function adds
    STATE to `output_states_vect'.  */
 static void
 add_states_vect_el (state_t state)
 {
-  VEC_safe_push (state_t, heap, output_states_vect, state);
+  output_states_vect.safe_push (state);
 }
 
 /* Form and output vectors (comb, check, base or full vector)
@@ -7590,30 +7555,30 @@ output_trans_table (automaton_t automaton)
 {
   size_t i;
   arc_t arc;
-  vla_hwint_t transition_vect = 0;
+  vla_hwint_t transition_vect = vla_hwint_t();
 
   undefined_vect_el_value = automaton->achieved_states_num;
   automaton->trans_table = create_state_ainsn_table (automaton);
   /* Create vect of pointers to states ordered by num of transitions
      from the state (state with the maximum num is the first).  */
-  output_states_vect = 0;
+  output_states_vect.create (0);
   pass_states (automaton, add_states_vect_el);
-  VEC_qsort (state_t, output_states_vect, compare_transition_els_num);
+  output_states_vect.qsort (compare_transition_els_num);
 
-  for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
+  for (i = 0; i < output_states_vect.length (); i++)
     {
-      VEC_truncate (vect_el_t, transition_vect, 0);
-      for (arc = first_out_arc (VEC_index (state_t, output_states_vect, i));
+      transition_vect.truncate (0);
+      for (arc = first_out_arc (output_states_vect[i]);
 	   arc != NULL;
 	   arc = next_out_arc (arc))
         {
           gcc_assert (arc->insn);
           if (arc->insn->first_ainsn_with_given_equivalence_num)
-            add_vect_el (&transition_vect, arc->insn,
+            add_vect_el (transition_vect, arc->insn,
                          arc->to_state->order_state_num);
         }
       add_vect (automaton->trans_table,
-		VEC_index (state_t, output_states_vect, i)->order_state_num,
+		output_states_vect[i]->order_state_num,
 		transition_vect);
     }
   output_state_ainsn_table
@@ -7621,8 +7586,8 @@ output_trans_table (automaton_t automaton)
      output_trans_full_vect_name, output_trans_comb_vect_name,
      output_trans_check_vect_name, output_trans_base_vect_name);
 
-  VEC_free (state_t, heap, output_states_vect);
-  VEC_free (vect_el_t, heap, transition_vect);
+  output_states_vect.release ();
+  transition_vect.release ();
 }
 
 /* Form and output vectors representing minimal issue delay table of
@@ -7641,14 +7606,14 @@ output_min_issue_delay_table (automaton_t automaton)
 
   /* Create vect of pointers to states ordered by num of transitions
      from the state (state with the maximum num is the first).  */
-  output_states_vect = 0;
+  output_states_vect.create (0);
   pass_states (automaton, add_states_vect_el);
 
-  min_issue_delay_len = (VEC_length (state_t, output_states_vect)
+  min_issue_delay_len = (output_states_vect.length ()
 			 * automaton->insn_equiv_classes_num);
-  min_issue_delay_vect = VEC_alloc (vect_el_t, heap, min_issue_delay_len);
+  min_issue_delay_vect.create (min_issue_delay_len);
   for (i = 0; i < min_issue_delay_len; i++)
-    VEC_quick_push (vect_el_t, min_issue_delay_vect, -1);
+    min_issue_delay_vect.quick_push (-1);
 
   automaton->max_min_delay = 0;
 
@@ -7658,10 +7623,10 @@ output_min_issue_delay_table (automaton_t automaton)
 
       changed = 0;
 
-      for (state_no = 0; state_no < VEC_length (state_t, output_states_vect);
+      for (state_no = 0; state_no < output_states_vect.length ();
            state_no++)
 	{
-	  state_t s = VEC_index (state_t, output_states_vect, state_no);
+	  state_t s = output_states_vect[state_no];
 	  arc_t arc;
 
 	  for (arc = first_out_arc (s); arc; arc = next_out_arc (arc))
@@ -7672,10 +7637,9 @@ output_min_issue_delay_table (automaton_t automaton)
 	                   * automaton->insn_equiv_classes_num
 	                   + arc->insn->insn_equiv_class_num;
 
-	      if (VEC_index (vect_el_t, min_issue_delay_vect, asn))
+	      if (min_issue_delay_vect[asn])
 		{
-		  VEC_replace (vect_el_t, min_issue_delay_vect, asn,
-			       (vect_el_t) 0);
+		  min_issue_delay_vect[asn] = (vect_el_t) 0;
 		  changed = 1;
 		}
 
@@ -7690,8 +7654,8 @@ output_min_issue_delay_table (automaton_t automaton)
 		  n1 = arc->to_state->order_state_num
 		       * automaton->insn_equiv_classes_num
 		       + k;
-		  delay0 = VEC_index (vect_el_t, min_issue_delay_vect, n0);
-		  delay1 = VEC_index (vect_el_t, min_issue_delay_vect, n1);
+		  delay0 = min_issue_delay_vect[n0];
+		  delay1 = min_issue_delay_vect[n1];
 		  if (delay1 != -1)
 		    {
 		      if (arc->insn->insn_reserv_decl
@@ -7699,7 +7663,7 @@ output_min_issue_delay_table (automaton_t automaton)
 			delay1++;
 		      if (delay1 < delay0 || delay0 == -1)
 			{
-			  VEC_replace (vect_el_t, min_issue_delay_vect, n0, delay1);
+			  min_issue_delay_vect[n0] = delay1;
 			  changed = 1;
 			}
 		    }
@@ -7714,19 +7678,18 @@ output_min_issue_delay_table (automaton_t automaton)
   for (ainsn = automaton->ainsn_list; ainsn; ainsn = ainsn->next_ainsn)
     if (ainsn->first_ainsn_with_given_equivalence_num)
       {
-	for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
+	for (i = 0; i < output_states_vect.length (); i++)
 	  {
-	    state_t s = VEC_index (state_t, output_states_vect, i);
+	    state_t s = output_states_vect[i];
 	    size_t np = s->order_state_num
 	                * automaton->insn_equiv_classes_num
 	                + ainsn->insn_equiv_class_num;
-	    vect_el_t x = VEC_index (vect_el_t, min_issue_delay_vect, np);
+	    vect_el_t x = min_issue_delay_vect[np];
 
 	    if (automaton->max_min_delay < x)
 	      automaton->max_min_delay = x;
 	    if (x == -1)
-	      VEC_replace (vect_el_t, min_issue_delay_vect, np,
-			   (vect_el_t) 0);
+	      min_issue_delay_vect[np] = (vect_el_t) 0;
 	  }
       }
 
@@ -7748,26 +7711,25 @@ output_min_issue_delay_table (automaton_t automaton)
   automaton->min_issue_delay_table_compression_factor = cfactor;
 
   compressed_min_issue_delay_len = (min_issue_delay_len+cfactor-1) / cfactor;
-  compressed_min_issue_delay_vect
-    = VEC_alloc (vect_el_t, heap, compressed_min_issue_delay_len);
+  compressed_min_issue_delay_vect.create (compressed_min_issue_delay_len);
 
   for (i = 0; i < compressed_min_issue_delay_len; i++)
-    VEC_quick_push (vect_el_t, compressed_min_issue_delay_vect, 0);
+    compressed_min_issue_delay_vect.quick_push (0);
 
   for (i = 0; i < min_issue_delay_len; i++)
     {
       size_t ci = i / cfactor;
-      vect_el_t x = VEC_index (vect_el_t, min_issue_delay_vect, i);
-      vect_el_t cx = VEC_index (vect_el_t, compressed_min_issue_delay_vect, ci);
+      vect_el_t x = min_issue_delay_vect[i];
+      vect_el_t cx = compressed_min_issue_delay_vect[ci];
 
       cx |= x << (8 - (i % cfactor + 1) * (8 / cfactor));
-      VEC_replace (vect_el_t, compressed_min_issue_delay_vect, ci, cx);
+      compressed_min_issue_delay_vect[ci] = cx;
     }
   output_vect (compressed_min_issue_delay_vect);
   fprintf (output_file, "};\n\n");
-  VEC_free (state_t, heap, output_states_vect);
-  VEC_free (vect_el_t, heap, min_issue_delay_vect);
-  VEC_free (vect_el_t, heap, compressed_min_issue_delay_vect);
+  output_states_vect.release ();
+  min_issue_delay_vect.release ();
+  compressed_min_issue_delay_vect.release ();
 }
 
 /* Form and output vector representing the locked states of
@@ -7777,32 +7739,30 @@ output_dead_lock_vect (automaton_t automaton)
 {
   size_t i;
   arc_t arc;
-  vla_hwint_t dead_lock_vect = 0;
+  vla_hwint_t dead_lock_vect = vla_hwint_t();
 
   /* Create vect of pointers to states ordered by num of
      transitions from the state (state with the maximum num is the
      first).  */
   automaton->locked_states = 0;
-  output_states_vect = 0;
+  output_states_vect.create (0);
   pass_states (automaton, add_states_vect_el);
 
-  VEC_safe_grow (vect_el_t, heap, dead_lock_vect,
-		 VEC_length (state_t, output_states_vect));
-  for (i = 0; i < VEC_length (state_t, output_states_vect); i++)
+  dead_lock_vect.safe_grow (output_states_vect.length ());
+  for (i = 0; i < output_states_vect.length (); i++)
     {
-      state_t s = VEC_index (state_t, output_states_vect, i);
+      state_t s = output_states_vect[i];
       arc = first_out_arc (s);
       gcc_assert (arc);
       if (next_out_arc (arc) == NULL
 	  && (arc->insn->insn_reserv_decl
 	      == DECL_INSN_RESERV (advance_cycle_insn_decl)))
 	{
-	  VEC_replace (vect_el_t, dead_lock_vect, s->order_state_num, 1);
+	  dead_lock_vect[s->order_state_num] = 1;
 	  automaton->locked_states++;
 	}
       else
-	VEC_replace (vect_el_t, dead_lock_vect, s->order_state_num,
-		     (vect_el_t) 0);
+	dead_lock_vect[s->order_state_num] = (vect_el_t) 0;
     }
   if (automaton->locked_states == 0)
     return;
@@ -7815,8 +7775,8 @@ output_dead_lock_vect (automaton_t automaton)
   fprintf (output_file, "[] = {\n");
   output_vect (dead_lock_vect);
   fprintf (output_file, "};\n\n");
-  VEC_free (state_t, heap, output_states_vect);
-  VEC_free (vect_el_t, heap, dead_lock_vect);
+  output_states_vect.release ();
+  dead_lock_vect.release ();
 }
 
 /* Form and output vector representing reserved units of the states of
@@ -7824,7 +7784,7 @@ output_dead_lock_vect (automaton_t automaton)
 static void
 output_reserved_units_table (automaton_t automaton)
 {
-  vla_hwint_t reserved_units_table = 0;
+  vla_hwint_t reserved_units_table = vla_hwint_t();
   int state_byte_size;
   int reserved_units_size;
   size_t n;
@@ -7834,30 +7794,30 @@ output_reserved_units_table (automaton_t automaton)
     return;
 
   /* Create vect of pointers to states.  */
-  output_states_vect = 0;
+  output_states_vect.create (0);
   pass_states (automaton, add_states_vect_el);
   /* Create vector.  */
   state_byte_size = (description->query_units_num + 7) / 8;
-  reserved_units_size = (VEC_length (state_t, output_states_vect)
+  reserved_units_size = (output_states_vect.length ()
 			 * state_byte_size);
 
-  reserved_units_table = VEC_alloc (vect_el_t, heap, reserved_units_size);
+  reserved_units_table.create (reserved_units_size);
 
   for (i = 0; i < reserved_units_size; i++)
-    VEC_quick_push (vect_el_t, reserved_units_table, 0);
-  for (n = 0; n < VEC_length (state_t, output_states_vect); n++)
+    reserved_units_table.quick_push (0);
+  for (n = 0; n < output_states_vect.length (); n++)
     {
-      state_t s = VEC_index (state_t, output_states_vect, n);
+      state_t s = output_states_vect[n];
       for (i = 0; i < description->units_num; i++)
 	if (units_array [i]->query_p
 	    && first_cycle_unit_presence (s, i))
 	  {
 	    int ri = (s->order_state_num * state_byte_size
 		      + units_array [i]->query_num / 8);
-	    vect_el_t x = VEC_index (vect_el_t, reserved_units_table, ri);
+	    vect_el_t x = reserved_units_table[ri];
 
 	    x += 1 << (units_array [i]->query_num % 8);
-	    VEC_replace (vect_el_t, reserved_units_table, ri, x);
+	    reserved_units_table[ri] = x;
 	  }
     }
   fprintf (output_file, "\n#if %s\n", CPU_UNITS_QUERY_MACRO_NAME);
@@ -7871,8 +7831,8 @@ output_reserved_units_table (automaton_t automaton)
   fprintf (output_file, "};\n#endif /* #if %s */\n\n",
 	   CPU_UNITS_QUERY_MACRO_NAME);
 
-  VEC_free (state_t, heap, output_states_vect);
-  VEC_free (vect_el_t, heap, reserved_units_table);
+  output_states_vect.release ();
+  reserved_units_table.release ();
 }
 
 /* The function outputs all tables representing DFA(s) used for fast
@@ -8988,7 +8948,7 @@ output_automaton_units (automaton_t automaton)
 
 /* The following variable is used for forming array of all possible cpu unit
    reservations described by the current DFA state.  */
-static VEC(reserv_sets_t, heap) *state_reservs;
+static vec<reserv_sets_t> state_reservs;
 
 /* The function forms `state_reservs' for STATE.  */
 static void
@@ -9002,7 +8962,7 @@ add_state_reservs (state_t state)
          curr_alt_state = curr_alt_state->next_sorted_alt_state)
       add_state_reservs (curr_alt_state->state);
   else
-    VEC_safe_push (reserv_sets_t, heap, state_reservs, state->reservs);
+    state_reservs.safe_push (state->reservs);
 }
 
 /* The function outputs readable representation of all out arcs of
@@ -9070,15 +9030,13 @@ remove_state_duplicate_reservs (void)
 {
   size_t i, j;
 
-  for (i = 1, j = 0; i < VEC_length (reserv_sets_t, state_reservs); i++)
-    if (reserv_sets_cmp (VEC_index (reserv_sets_t, state_reservs, j),
-			 VEC_index (reserv_sets_t, state_reservs, i)))
+  for (i = 1, j = 0; i < state_reservs.length (); i++)
+    if (reserv_sets_cmp (state_reservs[j], state_reservs[i]))
       {
 	j++;
-	VEC_replace (reserv_sets_t, state_reservs, j,
-		     VEC_index (reserv_sets_t, state_reservs, i));
+	state_reservs[j] = state_reservs[i];
       }
-  VEC_truncate (reserv_sets_t, state_reservs, j + 1);
+  state_reservs.truncate (j + 1);
 }
 
 /* The following function output readable representation of DFA(s)
@@ -9090,24 +9048,23 @@ output_state (state_t state)
 {
   size_t i;
 
-  state_reservs = 0;
+  state_reservs.create (0);
 
   fprintf (output_description_file, "  State #%d", state->order_state_num);
   fprintf (output_description_file,
 	   state->new_cycle_p ? " (new cycle)\n" : "\n");
   add_state_reservs (state);
-  VEC_qsort (reserv_sets_t, state_reservs, state_reservs_cmp);
+  state_reservs.qsort (state_reservs_cmp);
   remove_state_duplicate_reservs ();
-  for (i = 0; i < VEC_length (reserv_sets_t, state_reservs); i++)
+  for (i = 0; i < state_reservs.length (); i++)
     {
       fprintf (output_description_file, "    ");
-      output_reserv_sets (output_description_file,
-			  VEC_index (reserv_sets_t, state_reservs, i));
+      output_reserv_sets (output_description_file, state_reservs[i]);
       fprintf (output_description_file, "\n");
     }
   fprintf (output_description_file, "\n");
   output_state_arcs (state);
-  VEC_free (reserv_sets_t, heap, state_reservs);
+  state_reservs.release ();
 }
 
 /* The following function output readable representation of
@@ -9172,8 +9129,8 @@ output_statistics (FILE *f)
 #ifndef NDEBUG
       fprintf
 	(f, "%5ld transition comb vector els, %5ld trans table els: %s\n",
-	 (long) VEC_length (vect_el_t, automaton->trans_table->comb_vect),
-	 (long) VEC_length (vect_el_t, automaton->trans_table->full_vect),
+	 (long) automaton->trans_table->comb_vect.length (),
+	 (long) automaton->trans_table->full_vect.length (),
 	 (comb_vect_p (automaton->trans_table)
 	  ? "use comb vect" : "use simple vect"));
       fprintf
@@ -9181,9 +9138,9 @@ output_statistics (FILE *f)
          (long) states_num * automaton->insn_equiv_classes_num,
 	 automaton->min_issue_delay_table_compression_factor);
       transition_comb_vect_els
-	+= VEC_length (vect_el_t, automaton->trans_table->comb_vect);
+	+= automaton->trans_table->comb_vect.length ();
       transition_full_vect_els
-        += VEC_length (vect_el_t, automaton->trans_table->full_vect);
+        += automaton->trans_table->full_vect.length ();
       min_issue_delay_vect_els
 	+= states_num * automaton->insn_equiv_classes_num;
       locked_states
@@ -9393,14 +9350,14 @@ check_automata_insn_issues (void)
 
 /* The following vla is used for storing pointers to all achieved
    states.  */
-static VEC(state_t, heap) *automaton_states;
+static vec<state_t> automaton_states;
 
 /* This function is called by function pass_states to add an achieved
    STATE.  */
 static void
 add_automaton_state (state_t state)
 {
-  VEC_safe_push (state_t, heap, automaton_states, state);
+  automaton_states.safe_push (state);
 }
 
 /* The following function forms list of important automata (whose
@@ -9415,17 +9372,17 @@ form_important_insn_automata_lists (void)
   int i;
   size_t n;
 
-  automaton_states = 0;
+  automaton_states.create (0);
   /* Mark important ainsns.  */
   for (automaton = description->first_automaton;
        automaton != NULL;
        automaton = automaton->next_automaton)
     {
-      VEC_truncate (state_t, automaton_states, 0);
+      automaton_states.truncate (0);
       pass_states (automaton, add_automaton_state);
-      for (n = 0; n < VEC_length (state_t, automaton_states); n++)
+      for (n = 0; n < automaton_states.length (); n++)
 	{
-	  state_t s = VEC_index (state_t, automaton_states, n);
+	  state_t s = automaton_states[n];
 	  for (arc = first_out_arc (s);
 	       arc != NULL;
 	       arc = next_out_arc (arc))
@@ -9439,7 +9396,7 @@ form_important_insn_automata_lists (void)
 	      }
 	}
     }
-  VEC_free (state_t, heap, automaton_states);
+  automaton_states.release ();
 
   /* Create automata sets for the insns.  */
   for (i = 0; i < description->decls_num; i++)
@@ -9477,13 +9434,13 @@ expand_automata (void)
   description = XCREATENODEVAR (struct description,
 				sizeof (struct description)
 				/* Two entries for special insns.  */
-				+ sizeof (decl_t) * (VEC_length (decl_t, decls) + 1));
-  description->decls_num = VEC_length (decl_t, decls);
+				+ sizeof (decl_t) * (decls.length () + 1));
+  description->decls_num = decls.length ();
   description->normal_decls_num = description->decls_num;
   description->query_units_num = 0;
   for (i = 0; i < description->decls_num; i++)
     {
-      description->decls [i] = VEC_index (decl_t, decls, i);
+      description->decls [i] = decls[i];
       if (description->decls [i]->mode == dm_unit
 	  && DECL_UNIT (description->decls [i])->query_p)
         DECL_UNIT (description->decls [i])->query_num
@@ -9694,7 +9651,7 @@ main (int argc, char **argv)
   if (have_error)
     return FATAL_EXIT_CODE;
 
-  if (VEC_length (decl_t, decls) > 0)
+  if (decls.length () > 0)
     {
       expand_automata ();
       if (!have_error)

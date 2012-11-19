@@ -2614,43 +2614,43 @@ rx_option_override (void)
 {
   unsigned int i;
   cl_deferred_option *opt;
-  VEC(cl_deferred_option,heap) *vec
-    = (VEC(cl_deferred_option,heap) *) rx_deferred_options;
+  vec<cl_deferred_option> *v = (vec<cl_deferred_option> *) rx_deferred_options;
 
-  FOR_EACH_VEC_ELT (cl_deferred_option, vec, i, opt)
-    {
-      switch (opt->opt_index)
-	{
-	case OPT_mint_register_:
-	  switch (opt->value)
-	    {
-	    case 4:
-	      fixed_regs[10] = call_used_regs [10] = 1;
-	      /* Fall through.  */
-	    case 3:
-	      fixed_regs[11] = call_used_regs [11] = 1;
-	      /* Fall through.  */
-	    case 2:
-	      fixed_regs[12] = call_used_regs [12] = 1;
-	      /* Fall through.  */
-	    case 1:
-	      fixed_regs[13] = call_used_regs [13] = 1;
-	      /* Fall through.  */
-	    case 0:
-	      rx_num_interrupt_regs = opt->value;
-	      break;
-	    default:
-	      rx_num_interrupt_regs = 0;
-	      /* Error message already given because rx_handle_option
-		 returned false.  */
-	      break;
-	    }
-	  break;
+  if (v)
+    FOR_EACH_VEC_ELT (*v, i, opt)
+      {
+	switch (opt->opt_index)
+	  {
+	  case OPT_mint_register_:
+	    switch (opt->value)
+	      {
+	      case 4:
+		fixed_regs[10] = call_used_regs [10] = 1;
+		/* Fall through.  */
+	      case 3:
+		fixed_regs[11] = call_used_regs [11] = 1;
+		/* Fall through.  */
+	      case 2:
+		fixed_regs[12] = call_used_regs [12] = 1;
+		/* Fall through.  */
+	      case 1:
+		fixed_regs[13] = call_used_regs [13] = 1;
+		/* Fall through.  */
+	      case 0:
+		rx_num_interrupt_regs = opt->value;
+		break;
+	      default:
+		rx_num_interrupt_regs = 0;
+		/* Error message already given because rx_handle_option
+		  returned false.  */
+		break;
+	      }
+	    break;
 
-	default:
-	  gcc_unreachable ();
-	}
-    }
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
 
   /* This target defaults to strict volatile bitfields.  */
   if (flag_strict_volatile_bitfields < 0 && abi_version_at_least(2))

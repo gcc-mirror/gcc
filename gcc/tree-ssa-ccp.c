@@ -184,10 +184,12 @@ dump_lattice_value (FILE *outf, const char *prefix, prop_value_t val)
       fprintf (outf, "%sVARYING", prefix);
       break;
     case CONSTANT:
-      fprintf (outf, "%sCONSTANT ", prefix);
       if (TREE_CODE (val.value) != INTEGER_CST
 	  || val.mask.is_zero ())
-	print_generic_expr (outf, val.value, dump_flags);
+	{
+	  fprintf (outf, "%sCONSTANT ", prefix);
+	  print_generic_expr (outf, val.value, dump_flags);
+	}
       else
 	{
 	  double_int cval = tree_to_double_int (val.value).and_not (val.mask);
@@ -1684,7 +1686,8 @@ insert_clobber_before_stack_restore (tree saved_val, tree var,
   FOR_EACH_IMM_USE_STMT (stmt, iter, saved_val)
     if (gimple_call_builtin_p (stmt, BUILT_IN_STACK_RESTORE))
       {
-	clobber = build_constructor (TREE_TYPE (var), NULL);
+	clobber = build_constructor (TREE_TYPE (var),
+				     NULL);
 	TREE_THIS_VOLATILE (clobber) = 1;
 	clobber_stmt = gimple_build_assign (var, clobber);
 

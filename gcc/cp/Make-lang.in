@@ -317,7 +317,7 @@ cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   cp/cfns.h $(TREE_INLINE_H) $(TARGET_H) gt-cp-except.h
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
-  toplev.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h vecprim.h intl.h \
+  toplev.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h intl.h \
   c-family/c-objc.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_H) \
   $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H) \

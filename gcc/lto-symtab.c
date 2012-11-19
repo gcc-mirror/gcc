@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 
 /* Vector to keep track of external variables we've seen so far.  */
-VEC(tree,gc) *lto_global_var_decls;
+vec<tree, va_gc> *lto_global_var_decls;
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
@@ -353,7 +353,7 @@ static void
 lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
 {
   symtab_node prevailing, e;
-  VEC(tree, heap) *mismatches = NULL;
+  vec<tree> mismatches = vec<tree>();
   unsigned i;
   tree decl;
 
@@ -368,13 +368,13 @@ lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
     {
       if (!lto_symtab_merge (prevailing, e)
 	  && !diagnosed_p)
-	VEC_safe_push (tree, heap, mismatches, e->symbol.decl);
+	mismatches.safe_push (e->symbol.decl);
     }
-  if (VEC_empty (tree, mismatches))
+  if (mismatches.is_empty ())
     return;
 
   /* Diagnose all mismatched re-declarations.  */
-  FOR_EACH_VEC_ELT (tree, mismatches, i, decl)
+  FOR_EACH_VEC_ELT (mismatches, i, decl)
     {
       if (!types_compatible_p (TREE_TYPE (prevailing->symbol.decl),
 			       TREE_TYPE (decl)))
@@ -395,7 +395,7 @@ lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
     inform (DECL_SOURCE_LOCATION (prevailing->symbol.decl),
 	    "previously declared here");
 
-  VEC_free (tree, heap, mismatches);
+  mismatches.release ();
 }
 
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
@@ -445,8 +445,7 @@ lto_symtab_merge_decls_1 (symtab_node first)
 
   /* Record the prevailing variable.  */
   if (TREE_CODE (prevailing->symbol.decl) == VAR_DECL)
-    VEC_safe_push (tree, gc, lto_global_var_decls,
-		   prevailing->symbol.decl);
+    vec_safe_push (lto_global_var_decls, prevailing->symbol.decl);
 
   /* Diagnose mismatched objects.  */
   for (e = prevailing->symbol.next_sharing_asm_name;

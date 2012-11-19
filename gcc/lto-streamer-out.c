@@ -543,35 +543,33 @@ output_eh_regions (struct output_block *ob, struct function *fn)
       streamer_write_hwi (ob, fn->eh->region_tree->index);
 
       /* Emit all the EH regions in the region array.  */
-      streamer_write_hwi (ob, VEC_length (eh_region, fn->eh->region_array));
-      FOR_EACH_VEC_ELT (eh_region, fn->eh->region_array, i, eh)
+      streamer_write_hwi (ob, vec_safe_length (fn->eh->region_array));
+      FOR_EACH_VEC_SAFE_ELT (fn->eh->region_array, i, eh)
 	output_eh_region (ob, eh);
 
       /* Emit all landing pads.  */
-      streamer_write_hwi (ob, VEC_length (eh_landing_pad, fn->eh->lp_array));
-      FOR_EACH_VEC_ELT (eh_landing_pad, fn->eh->lp_array, i, lp)
+      streamer_write_hwi (ob, vec_safe_length (fn->eh->lp_array));
+      FOR_EACH_VEC_SAFE_ELT (fn->eh->lp_array, i, lp)
 	output_eh_lp (ob, lp);
 
       /* Emit all the runtime type data.  */
-      streamer_write_hwi (ob, VEC_length (tree, fn->eh->ttype_data));
-      FOR_EACH_VEC_ELT (tree, fn->eh->ttype_data, i, ttype)
+      streamer_write_hwi (ob, vec_safe_length (fn->eh->ttype_data));
+      FOR_EACH_VEC_SAFE_ELT (fn->eh->ttype_data, i, ttype)
 	stream_write_tree (ob, ttype, true);
 
       /* Emit the table of action chains.  */
       if (targetm.arm_eabi_unwinder)
 	{
 	  tree t;
-	  streamer_write_hwi (ob, VEC_length (tree,
-				              fn->eh->ehspec_data.arm_eabi));
-	  FOR_EACH_VEC_ELT (tree, fn->eh->ehspec_data.arm_eabi, i, t)
+	  streamer_write_hwi (ob, vec_safe_length (fn->eh->ehspec_data.arm_eabi));
+	  FOR_EACH_VEC_SAFE_ELT (fn->eh->ehspec_data.arm_eabi, i, t)
 	    stream_write_tree (ob, t, true);
 	}
       else
 	{
 	  uchar c;
-	  streamer_write_hwi (ob, VEC_length (uchar,
-				              fn->eh->ehspec_data.other));
-	  FOR_EACH_VEC_ELT (uchar, fn->eh->ehspec_data.other, i, c)
+	  streamer_write_hwi (ob, vec_safe_length (fn->eh->ehspec_data.other));
+	  FOR_EACH_VEC_SAFE_ELT (fn->eh->ehspec_data.other, i, c)
 	    streamer_write_char_stream (ob->main_stream, c);
 	}
     }
@@ -589,12 +587,12 @@ output_ssa_names (struct output_block *ob, struct function *fn)
 {
   unsigned int i, len;
 
-  len = VEC_length (tree, SSANAMES (fn));
+  len = vec_safe_length (SSANAMES (fn));
   streamer_write_uhwi (ob, len);
 
   for (i = 1; i < len; i++)
     {
-      tree ptr = VEC_index (tree, SSANAMES (fn), i);
+      tree ptr = (*SSANAMES (fn))[i];
 
       if (ptr == NULL_TREE
 	  || SSA_NAME_IN_FREE_LIST (ptr)
@@ -730,8 +728,8 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   stream_write_tree (ob, fn->nonlocal_goto_save_area, true);
 
   /* Output all the local variables in the function.  */
-  streamer_write_hwi (ob, VEC_length (tree, fn->local_decls));
-  FOR_EACH_VEC_ELT (tree, fn->local_decls, i, t)
+  streamer_write_hwi (ob, vec_safe_length (fn->local_decls));
+  FOR_EACH_VEC_SAFE_ELT (fn->local_decls, i, t)
     stream_write_tree (ob, t, true);
 
   /* Output current IL state of the function.  */
@@ -940,7 +938,7 @@ copy_function (struct cgraph_node *node)
 	 must be empty where we reach here. */
       gcc_assert (lto_tree_ref_encoder_size (encoder) == 0);
       for (j = 0; j < n; j++)
-	VEC_safe_push (tree, heap, encoder->trees, trees[j]);
+	encoder->trees.safe_push (trees[j]);
       encoder->next_index = n;
     }
 
@@ -1342,12 +1340,12 @@ produce_asm_for_decls (void)
 
   /* Write the global symbols.  */
   out_state = lto_get_out_decl_state ();
-  num_fns = VEC_length (lto_out_decl_state_ptr, lto_function_decl_states);
+  num_fns = lto_function_decl_states.length ();
   lto_output_decl_state_streams (ob, out_state);
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =
-	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
+	lto_function_decl_states[idx];
       lto_output_decl_state_streams (ob, fn_out_state);
     }
 
@@ -1364,7 +1362,7 @@ produce_asm_for_decls (void)
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =
-	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
+	lto_function_decl_states[idx];
       decl_state_size += lto_out_decl_state_written_size (fn_out_state);
     }
   header.decl_state_size = decl_state_size;
@@ -1387,7 +1385,7 @@ produce_asm_for_decls (void)
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =
-	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
+	lto_function_decl_states[idx];
       lto_output_decl_state_refs (ob, decl_state_stream, fn_out_state);
     }
   lto_write_stream (decl_state_stream);
@@ -1410,12 +1408,11 @@ produce_asm_for_decls (void)
   for (idx = 0; idx < num_fns; idx++)
     {
       fn_out_state =
-	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
+	lto_function_decl_states[idx];
       lto_delete_out_decl_state (fn_out_state);
     }
   lto_symtab_encoder_delete (ob->decl_state->symtab_node_encoder);
-  VEC_free (lto_out_decl_state_ptr, heap, lto_function_decl_states);
-  lto_function_decl_states = NULL;
+  lto_function_decl_states.release ();
   destroy_output_block (ob);
 }
 

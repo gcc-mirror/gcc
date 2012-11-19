@@ -1,3 +1,12 @@
+2012-11-16  Diego Novillo  <dnovillo@google.com>
+
+	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
+
+	* lto-lang.c: Use new vec API in vec.h.
+	* lto-partition.c: Likewise.
+	* lto-partition.h: Likewise.
+	* lto.c: Likewise.
+
 2012-10-31  Lawrence Crowl  <crowl@google.com>
 
 	* lto.c (lto_wpa_write_files): Change symtab checking to a checked

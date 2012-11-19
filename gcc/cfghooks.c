@@ -814,11 +814,12 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
 
   if (dom_info_available_p (CDI_DOMINATORS))
     {
-      VEC (basic_block, heap) *doms_to_fix = VEC_alloc (basic_block, heap, 2);
-      VEC_quick_push (basic_block, doms_to_fix, dummy);
-      VEC_quick_push (basic_block, doms_to_fix, bb);
+      vec<basic_block> doms_to_fix;
+      doms_to_fix.create (2);
+      doms_to_fix.quick_push (dummy);
+      doms_to_fix.quick_push (bb);
       iterate_fix_dominators (CDI_DOMINATORS, doms_to_fix, false);
-      VEC_free (basic_block, heap, doms_to_fix);
+      doms_to_fix.release ();
     }
 
   if (current_loops != NULL)
@@ -1144,7 +1145,7 @@ bool
 cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge e,
 					unsigned int ndupl,
 					sbitmap wont_exit, edge orig,
-					VEC (edge, heap) **to_remove,
+					vec<edge> *to_remove,
 					int flags)
 {
   gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_to_header_edge);

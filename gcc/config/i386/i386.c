@@ -1002,6 +1002,85 @@ struct processor_costs bdver2_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
+struct processor_costs bdver3_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (1),			/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (4),			/*				 SI */
+   COSTS_N_INSNS (6),			/*				 DI */
+   COSTS_N_INSNS (6)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (35),			/*			    HI */
+   COSTS_N_INSNS (51),			/*			    SI */
+   COSTS_N_INSNS (83),			/*			    DI */
+   COSTS_N_INSNS (83)},			/*			    other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  9,					/* MOVE_RATIO */
+  4,				     /* cost for loading QImode using movzbl */
+  {5, 5, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {4, 4, 4},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {5, 5, 12},				/* cost of loading fp registers
+		   			   in SFmode, DFmode and XFmode */
+  {4, 4, 8},				/* cost of storing fp registers
+ 		   			   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {4, 4},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {4, 4},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 4, 4},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 4, 4},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  2,					/* MMX or SSE register to integer */
+  16,					/* size of l1 cache.  */
+  2048,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  /* New AMD processors never drop prefetches; if they cannot be performed
+     immediately, they are queued.  We set number of simultaneous prefetches
+     to a large constant to reflect this (it probably is not a good idea not
+     to limit number of prefetches at all, as their execution also takes some
+     time).  */
+  100,					/* number of parallel prefetches */
+  2,					/* Branch cost */
+  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (6),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (42),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (52),			/* cost of FSQRT instruction.  */
+
+  /*  BDVER3 has optimized REP instruction for medium sized blocks, but for
+      very small blocks it is better to use loop. For large blocks, libcall
+      can do nontemporary accesses and beat inline considerably.  */
+  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  6,					/* scalar_stmt_cost.  */
+  4,					/* scalar load_cost.  */
+  4,					/* scalar_store_cost.  */
+  6,					/* vec_stmt_cost.  */
+  0,					/* vec_to_scalar_cost.  */
+  2,					/* scalar_to_vec_cost.  */
+  4,					/* vec_align_load_cost.  */
+  4,					/* vec_unalign_load_cost.  */
+  4,					/* vec_store_cost.  */
+  2,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
+};
+
 struct processor_costs btver1_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -1562,7 +1641,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_AMDFAM10 (1<<PROCESSOR_AMDFAM10)
 #define m_BDVER1 (1<<PROCESSOR_BDVER1)
 #define m_BDVER2 (1<<PROCESSOR_BDVER2)
-#define m_BDVER	(m_BDVER1 | m_BDVER2)
+#define m_BDVER3 (1<<PROCESSOR_BDVER3)
+#define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3)
 #define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_BTVER1 (1<<PROCESSOR_BTVER1)
 #define m_BTVER2 (1<<PROCESSOR_BTVER2)
@@ -2265,6 +2345,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&amdfam10_cost, 32, 24, 32, 7, 32},
   {&bdver1_cost, 32, 24, 32, 7, 32},
   {&bdver2_cost, 32, 24, 32, 7, 32},
+  {&bdver3_cost, 32, 24, 32, 7, 32},
   {&btver1_cost, 32, 24, 32, 7, 32},
   {&btver2_cost, 32, 24, 32, 7, 32},
   {&atom_cost, 16, 15, 16, 7, 16}
@@ -2297,10 +2378,57 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "amdfam10",
   "bdver1",
   "bdver2",
+  "bdver3",
   "btver1",
   "btver2"
 };
 
+static bool
+gate_insert_vzeroupper (void)
+{
+  return TARGET_VZEROUPPER;
+}
+
+static unsigned int
+rest_of_handle_insert_vzeroupper (void)
+{
+  int i;
+
+  /* vzeroupper instructions are inserted immediately after reload to
+     account for possible spills from 256bit registers.  The pass
+     reuses mode switching infrastructure by re-running mode insertion
+     pass, so disable entities that have already been processed.  */
+  for (i = 0; i < MAX_386_ENTITIES; i++)
+    ix86_optimize_mode_switching[i] = 0;
+
+  ix86_optimize_mode_switching[AVX_U128] = 1;
+
+  /* Call optimize_mode_switching.  */
+  pass_mode_switching.pass.execute ();
+  return 0;
+}
+
+struct rtl_opt_pass pass_insert_vzeroupper =
+{
+ {
+  RTL_PASS,
+  "vzeroupper",				/* name */
+  OPTGROUP_NONE,			/* optinfo_flags */
+  gate_insert_vzeroupper,		/* gate */
+  rest_of_handle_insert_vzeroupper,	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_NONE,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  0,					/* todo_flags_finish */
+ }
+};
+
 /* Return true if a red-zone is in use.  */
 
 static inline bool
@@ -2748,18 +2876,24 @@ ix86_option_override_internal (bool main_args_p)
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
 	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
-	| PTA_XOP | PTA_LWP | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE
-	| PTA_XSAVEOPT},
+	| PTA_XOP | PTA_LWP | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE},
       {"bdver2", PROCESSOR_BDVER2, CPU_BDVER2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
 	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
 	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
-	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
+	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE},
+      {"bdver3", PROCESSOR_BDVER3, CPU_BDVER3,
+	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX
+	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
+	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE 
+	| PTA_XSAVEOPT},
       {"btver1", PROCESSOR_BTVER1, CPU_GENERIC64,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
-	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
+	| PTA_FXSR | PTA_XSAVE},
       {"btver2", PROCESSOR_BTVER2, CPU_GENERIC64,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_SSE4_1
@@ -3705,7 +3839,16 @@ ix86_option_override_internal (bool main_args_p)
 static void
 ix86_option_override (void)
 {
+  static struct register_pass_info insert_vzeroupper_info
+    = { &pass_insert_vzeroupper.pass, "reload",
+	1, PASS_POS_INSERT_AFTER
+      };
+
   ix86_option_override_internal (true);
+
+
+  /* This needs to be done at start up.  It's convenient to do it here.  */
+  register_pass (&insert_vzeroupper_info);
 }
 
 /* Update register usage after having seen the compiler flags.  */
@@ -5184,6 +5327,14 @@ ix86_legitimate_combined_insn (rtx insn)
     }
 
   return true;
+}
+
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+static unsigned HOST_WIDE_INT
+ix86_asan_shadow_offset (void)
+{
+  return (unsigned HOST_WIDE_INT) 1 << (TARGET_LP64 ? 44 : 29);
 }
 
 /* Argument support functions.  */
@@ -12210,7 +12361,6 @@ legitimize_pic_address (rtx orig, rtx reg)
 {
   rtx addr = orig;
   rtx new_rtx = orig;
-  rtx base;
 
 #if TARGET_MACHO
   if (TARGET_MACHO && !TARGET_64BIT)
@@ -12415,20 +12565,33 @@ legitimize_pic_address (rtx orig, rtx reg)
 	    }
 	  else
 	    {
-	      base = legitimize_pic_address (XEXP (addr, 0), reg);
-	      new_rtx  = legitimize_pic_address (XEXP (addr, 1),
-						 base == reg ? NULL_RTX : reg);
+	      rtx base = legitimize_pic_address (op0, reg);
+	      enum machine_mode mode = GET_MODE (base);
+	      new_rtx
+	        = legitimize_pic_address (op1, base == reg ? NULL_RTX : reg);
 
 	      if (CONST_INT_P (new_rtx))
-		new_rtx = plus_constant (Pmode, base, INTVAL (new_rtx));
+		{
+		  if (INTVAL (new_rtx) < -16*1024*1024
+		      || INTVAL (new_rtx) >= 16*1024*1024)
+		    {
+		      if (!x86_64_immediate_operand (new_rtx, mode))
+			new_rtx = force_reg (mode, new_rtx);
+		      new_rtx
+		        = gen_rtx_PLUS (mode, force_reg (mode, base), new_rtx);
+		    }
+		  else
+		    new_rtx = plus_constant (mode, base, INTVAL (new_rtx));
+		}
 	      else
 		{
-		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
+		  if (GET_CODE (new_rtx) == PLUS
+		      && CONSTANT_P (XEXP (new_rtx, 1)))
 		    {
-		      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
+		      base = gen_rtx_PLUS (mode, base, XEXP (new_rtx, 0));
 		      new_rtx = XEXP (new_rtx, 1);
 		    }
-		  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
+		  new_rtx = gen_rtx_PLUS (mode, base, new_rtx);
 		}
 	    }
 	}
@@ -14517,7 +14680,30 @@ ix86_print_operand_address (FILE *file, rtx addr)
 	    }
 #endif
 	  gcc_assert (!code);
-	  code = 'l';
+	  code = 'k';
+	}
+      else if (code == 0
+	       && TARGET_X32
+	       && disp
+	       && CONST_INT_P (disp)
+	       && INTVAL (disp) < -16*1024*1024)
+	{
+	  /* X32 runs in 64-bit mode, where displacement, DISP, in
+	     address DISP(%r64), is encoded as 32-bit immediate sign-
+	     extended from 32-bit to 64-bit.  For -0x40000300(%r64),
+	     address is %r64 + 0xffffffffbffffd00.  When %r64 <
+	     0x40000300, like 0x37ffe064, address is 0xfffffffff7ffdd64,
+	     which is invalid for x32.  The correct address is %r64
+	     - 0x40000300 == 0xf7ffdd64.  To properly encode
+	     -0x40000300(%r64) for x32, we zero-extend negative
+	     displacement by forcing addr32 prefix which truncates
+	     0xfffffffff7ffdd64 to 0xf7ffdd64.  In theory, we should
+	     zero-extend all negative displacements, including -1(%rsp).
+	     However, for small negative displacements, sign-extension
+	     won't cause overflow.  We only zero-extend negative
+	     displacements if they < -16*1024*1024, which is also used
+	     to check legitimate address displacements for PIC.  */
+	  code = 'k';
 	}
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
@@ -14960,10 +15146,15 @@ output_387_binary_op (rtx insn, rtx *operands)
 /* Check if a 256bit AVX register is referenced inside of EXP.   */
 
 static int
-ix86_check_avx256_register (rtx *exp, void *data ATTRIBUTE_UNUSED)
+ix86_check_avx256_register (rtx *pexp, void *data ATTRIBUTE_UNUSED)
 {
-  if (REG_P (*exp)
-      && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (*exp)))
+  rtx exp = *pexp;
+
+  if (GET_CODE (exp) == SUBREG)
+    exp = SUBREG_REG (exp);
+
+  if (REG_P (exp)
+      && VALID_AVX256_REG_OR_OI_MODE (GET_MODE (exp)))
     return 1;
 
   return 0;
@@ -15301,16 +15492,38 @@ emit_i387_cw_initialization (int mode)
   emit_move_insn (new_mode, reg);
 }
 
+/* Emit vzeroupper.  */
+
+void
+ix86_avx_emit_vzeroupper (HARD_REG_SET regs_live)
+{
+  int i;
+
+  /* Cancel automatic vzeroupper insertion if there are
+     live call-saved SSE registers at the insertion point.  */
+
+  for (i = FIRST_SSE_REG; i <= LAST_SSE_REG; i++)
+    if (TEST_HARD_REG_BIT (regs_live, i) && !call_used_regs[i])
+      return;
+
+  if (TARGET_64BIT)
+    for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+      if (TEST_HARD_REG_BIT (regs_live, i) && !call_used_regs[i])
+	return;
+
+  emit_insn (gen_avx_vzeroupper ());
+}
+
 /* Generate one or more insns to set ENTITY to MODE.  */
 
 void
-ix86_emit_mode_set (int entity, int mode)
+ix86_emit_mode_set (int entity, int mode, HARD_REG_SET regs_live)
 {
   switch (entity)
     {
     case AVX_U128:
       if (mode == AVX_U128_CLEAN)
-	emit_insn (gen_avx_vzeroupper ());
+	ix86_avx_emit_vzeroupper (regs_live);
       break;
     case I387_TRUNC:
     case I387_FLOOR:
@@ -19759,6 +19972,11 @@ ix86_expand_fp_movcc (rtx operands[])
       return true;
     }
 
+  if (GET_MODE (op0) == TImode
+      || (GET_MODE (op0) == DImode
+	  && !TARGET_64BIT))
+    return false;
+
   /* The floating point conditional move instructions don't directly
      support conditions resulting from a signed integer comparison.  */
 
@@ -23421,7 +23639,6 @@ ix86_init_machine_status (void)
   f = ggc_alloc_cleared_machine_function ();
   f->use_fast_prologue_epilogue_nregs = -1;
   f->call_abi = ix86_abi;
-  f->optimize_mode_switching[AVX_U128] = TARGET_VZEROUPPER;
 
   return f;
 }
@@ -23749,6 +23966,7 @@ ix86_issue_rate (void)
     case PROCESSOR_GENERIC64:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
+    case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
       return 3;
 
@@ -23938,6 +24156,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_AMDFAM10:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
+    case PROCESSOR_BDVER3:
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
     case PROCESSOR_ATOM:
@@ -28533,7 +28752,7 @@ dispatch_function_versions (tree dispatch_decl,
   gimple_seq gseq;
   int ix;
   tree ele;
-  VEC (tree, heap) *fndecls;
+  vec<tree> *fndecls;
   unsigned int num_versions = 0;
   unsigned int actual_versions = 0;
   unsigned int i;
@@ -28550,17 +28769,17 @@ dispatch_function_versions (tree dispatch_decl,
 	      && empty_bb != NULL);
 
   /*fndecls_p is actually a vector.  */
-  fndecls = (VEC (tree, heap) *)fndecls_p;
+  fndecls = static_cast<vec<tree> *> (fndecls_p);
 
   /* At least one more version other than the default.  */
-  num_versions = VEC_length (tree, fndecls);
+  num_versions = fndecls->length ();
   gcc_assert (num_versions >= 2);
 
   function_version_info = (struct _function_version_info *)
     XNEWVEC (struct _function_version_info, (num_versions - 1));
 
   /* The first version in the vector is the default decl.  */
-  default_decl = VEC_index (tree, fndecls, 0);
+  default_decl = (*fndecls)[0];
 
   push_cfun (DECL_STRUCT_FUNCTION (dispatch_decl));
 
@@ -28568,7 +28787,7 @@ dispatch_function_versions (tree dispatch_decl,
   /* Function version dispatch is via IFUNC.  IFUNC resolvers fire before
      constructors, so explicity call __builtin_cpu_init here.  */
   ifunc_cpu_init_stmt = gimple_build_call_vec (
-                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], NULL);
+                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], vec<tree>());
   gimple_seq_add_stmt (&gseq, ifunc_cpu_init_stmt);
   gimple_set_bb (ifunc_cpu_init_stmt, *empty_bb);
   set_bb_seq (*empty_bb, gseq);
@@ -28576,7 +28795,7 @@ dispatch_function_versions (tree dispatch_decl,
   pop_cfun ();
 
 
-  for (ix = 1; VEC_iterate (tree, fndecls, ix, ele); ++ix)
+  for (ix = 1; fndecls->iterate (ix, &ele); ++ix)
     {
       tree version_decl = ele;
       tree predicate_chain = NULL_TREE;
@@ -28879,12 +29098,15 @@ ix86_get_function_versions_dispatcher (void *decl)
   struct cgraph_node *node = NULL;
   struct cgraph_node *default_node = NULL;
   struct cgraph_function_version_info *node_v = NULL;
-  struct cgraph_function_version_info *it_v = NULL;
   struct cgraph_function_version_info *first_v = NULL;
 
   tree dispatch_decl = NULL;
+
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
+  struct cgraph_function_version_info *it_v = NULL;
   struct cgraph_node *dispatcher_node = NULL;
   struct cgraph_function_version_info *dispatcher_version_info = NULL;
+#endif
 
   struct cgraph_function_version_info *default_version_info = NULL;
  
@@ -28933,11 +29155,6 @@ ix86_get_function_versions_dispatcher (void *decl)
 #if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GNU_INDIRECT_FUNCTION
   /* Right now, the dispatching is done via ifunc.  */
   dispatch_decl = make_dispatcher_decl (default_node->symbol.decl); 
-#else
-  error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
-	    "Multiversioning needs ifunc which is not supported "
-	    "in this configuration");
-#endif
 
   dispatcher_node = cgraph_get_create_node (dispatch_decl);
   gcc_assert (dispatcher_node != NULL);
@@ -28954,7 +29171,11 @@ ix86_get_function_versions_dispatcher (void *decl)
       it_v->dispatcher_resolver = dispatch_decl;
       it_v = it_v->next;
     }
-
+#else
+  error_at (DECL_SOURCE_LOCATION (default_node->symbol.decl),
+	    "multiversioning needs ifunc which is not supported "
+	    "in this configuration");
+#endif
   return dispatch_decl;
 }
 
@@ -29070,7 +29291,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 {
   tree resolver_decl;
   basic_block empty_bb;
-  VEC (tree, heap) *fn_ver_vec = NULL;
+  vec<tree> fn_ver_vec = vec<tree>();
   tree default_ver_decl;
   struct cgraph_node *versn;
   struct cgraph_node *node;
@@ -29100,7 +29321,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 
   push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
 
-  fn_ver_vec = VEC_alloc (tree, heap, 2);
+  fn_ver_vec.create (2);
 
   for (versn_info = node_version_info->next; versn_info;
        versn_info = versn_info->next)
@@ -29114,10 +29335,10 @@ ix86_generate_version_dispatcher_body (void *node_p)
       if (DECL_VINDEX (versn->symbol.decl))
         error_at (DECL_SOURCE_LOCATION (versn->symbol.decl),
 		  "Virtual function multiversioning not supported");
-      VEC_safe_push (tree, heap, fn_ver_vec, versn->symbol.decl);
+      fn_ver_vec.safe_push (versn->symbol.decl);
     }
 
-  dispatch_function_versions (resolver_decl, fn_ver_vec, &empty_bb);
+  dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
 
   rebuild_cgraph_edges (); 
   pop_cfun ();
@@ -29232,7 +29453,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM10H_SHANGHAI,
     M_AMDFAM10H_ISTANBUL,
     M_AMDFAM15H_BDVER1,
-    M_AMDFAM15H_BDVER2
+    M_AMDFAM15H_BDVER2,
+    M_AMDFAM15H_BDVER3
   };
 
   static struct _arch_names_table
@@ -29257,6 +29479,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"amdfam15h", M_AMDFAM15H},
       {"bdver1", M_AMDFAM15H_BDVER1},
       {"bdver2", M_AMDFAM15H_BDVER2},
+      {"bdver3", M_AMDFAM15H_BDVER3},
     };
 
   static struct _isa_names_table
@@ -41596,7 +41819,7 @@ do_dispatch (rtx insn, int mode)
 static bool
 has_dispatch (rtx insn, int action)
 {
-  if ((TARGET_BDVER1 || TARGET_BDVER2)
+  if ((TARGET_BDVER1 || TARGET_BDVER2 || TARGET_BDVER3)
       && flag_dispatch_scheduler)
     switch (action)
       {
@@ -42026,6 +42249,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_LEGITIMATE_COMBINED_INSN
 #define TARGET_LEGITIMATE_COMBINED_INSN ix86_legitimate_combined_insn
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET ix86_asan_shadow_offset
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg

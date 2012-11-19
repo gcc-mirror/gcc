@@ -31,8 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 static unsigned const BITS_PER_BITPACK_WORD = HOST_BITS_PER_WIDE_INT;
 
 typedef unsigned HOST_WIDE_INT bitpack_word_t;
-DEF_VEC_I(bitpack_word_t);
-DEF_VEC_ALLOC_I(bitpack_word_t, heap);
 
 struct bitpack_d
 {

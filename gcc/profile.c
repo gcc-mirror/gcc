@@ -156,9 +156,9 @@ instrument_values (histogram_values values)
 
   /* Emit code to generate the histograms before the insns.  */
 
-  for (i = 0; i < VEC_length (histogram_value, values); i++)
+  for (i = 0; i < values.length (); i++)
     {
-      histogram_value hist = VEC_index (histogram_value, values, i);
+      histogram_value hist = values[i];
       unsigned t = COUNTER_FOR_HIST_TYPE (hist->type);
 
       if (!coverage_counter_alloc (t, hist->n_counters))
@@ -385,7 +385,7 @@ get_exec_counts (unsigned cfg_checksum, unsigned lineno_checksum)
 
 
 static bool
-is_edge_inconsistent (VEC(edge,gc) *edges)
+is_edge_inconsistent (vec<edge, va_gc> *edges)
 {
   edge e;
   edge_iterator ei;
@@ -950,9 +950,9 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
     n_histogram_counters[t] = 0;
 
-  for (i = 0; i < VEC_length (histogram_value, values); i++)
+  for (i = 0; i < values.length (); i++)
     {
-      histogram_value hist = VEC_index (histogram_value, values, i);
+      histogram_value hist = values[i];
       n_histogram_counters[(int) hist->type] += hist->n_counters;
     }
 
@@ -976,9 +976,9 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
   if (!any)
     return;
 
-  for (i = 0; i < VEC_length (histogram_value, values); i++)
+  for (i = 0; i < values.length (); i++)
     {
-      histogram_value hist = VEC_index (histogram_value, values, i);
+      histogram_value hist = values[i];
       gimple stmt = hist->hvalue.stmt;
 
       t = (int) hist->type;
@@ -1069,7 +1069,7 @@ branch_prob (void)
   unsigned num_edges, ignored_edges;
   unsigned num_instrumented;
   struct edge_list *el;
-  histogram_values values = NULL;
+  histogram_values values = histogram_values();
   unsigned cfg_checksum, lineno_checksum;
 
   total_num_times_called++;
@@ -1396,7 +1396,7 @@ branch_prob (void)
 
   free_aux_for_edges ();
 
-  VEC_free (histogram_value, heap, values);
+  values.release ();
   free_edge_list (el);
   coverage_end_function (lineno_checksum, cfg_checksum);
 }

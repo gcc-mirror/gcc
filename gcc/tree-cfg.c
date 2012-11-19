@@ -132,17 +132,13 @@ init_empty_tree_cfg_for_function (struct function *fn)
   profile_status_for_function (fn) = PROFILE_ABSENT;
   n_basic_blocks_for_function (fn) = NUM_FIXED_BLOCKS;
   last_basic_block_for_function (fn) = NUM_FIXED_BLOCKS;
-  basic_block_info_for_function (fn)
-    = VEC_alloc (basic_block, gc, initial_cfg_capacity);
-  VEC_safe_grow_cleared (basic_block, gc,
-			 basic_block_info_for_function (fn),
+  vec_alloc (basic_block_info_for_function (fn), initial_cfg_capacity);
+  vec_safe_grow_cleared (basic_block_info_for_function (fn),
 			 initial_cfg_capacity);
 
   /* Build a mapping of labels to their associated blocks.  */
-  label_to_block_map_for_function (fn)
-    = VEC_alloc (basic_block, gc, initial_cfg_capacity);
-  VEC_safe_grow_cleared (basic_block, gc,
-			 label_to_block_map_for_function (fn),
+  vec_alloc (label_to_block_map_for_function (fn), initial_cfg_capacity);
+  vec_safe_grow_cleared (label_to_block_map_for_function (fn),
 			 initial_cfg_capacity);
 
   SET_BASIC_BLOCK_FOR_FUNCTION (fn, ENTRY_BLOCK,
@@ -195,8 +191,8 @@ build_gimple_cfg (gimple_seq seq)
     create_empty_bb (ENTRY_BLOCK_PTR);
 
   /* Adjust the size of the array.  */
-  if (VEC_length (basic_block, basic_block_info) < (size_t) n_basic_blocks)
-    VEC_safe_grow_cleared (basic_block, gc, basic_block_info, n_basic_blocks);
+  if (basic_block_info->length () < (size_t) n_basic_blocks)
+    vec_safe_grow_cleared (basic_block_info, n_basic_blocks);
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -440,10 +436,10 @@ create_bb (void *h, void *e, basic_block after)
   link_block (bb, after);
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block == VEC_length (basic_block, basic_block_info))
+  if ((size_t) last_basic_block == basic_block_info->length ())
     {
       size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      VEC_safe_grow_cleared (basic_block, gc, basic_block_info, new_size);
+      vec_safe_grow_cleared (basic_block_info, new_size);
     }
 
   /* Add the newly created block to the array.  */
@@ -971,10 +967,9 @@ label_to_block_fn (struct function *ifun, tree dest)
       gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
       uid = LABEL_DECL_UID (dest);
     }
-  if (VEC_length (basic_block, ifun->cfg->x_label_to_block_map)
-      <= (unsigned int) uid)
+  if (vec_safe_length (ifun->cfg->x_label_to_block_map) <= (unsigned int) uid)
     return NULL;
-  return VEC_index (basic_block, ifun->cfg->x_label_to_block_map, uid);
+  return (*ifun->cfg->x_label_to_block_map)[uid];
 }
 
 /* Create edges for an abnormal goto statement at block BB.  If FOR_CALL
@@ -1104,7 +1099,7 @@ cleanup_dead_labels_eh (void)
   if (cfun->eh == NULL)
     return;
 
-  for (i = 1; VEC_iterate (eh_landing_pad, cfun->eh->lp_array, i, lp); ++i)
+  for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
     if (lp && lp->post_landing_pad)
       {
 	lab = main_block_label (lp->post_landing_pad);
@@ -2426,7 +2421,7 @@ stmt_ends_bb_p (gimple t)
 void
 delete_tree_cfg_annotations (void)
 {
-  label_to_block_map = NULL;
+  vec_free (label_to_block_map);
 }
 
 
@@ -2510,7 +2505,7 @@ last_and_only_stmt (basic_block bb)
 static void
 reinstall_phi_args (edge new_edge, edge old_edge)
 {
-  edge_var_map_vector v;
+  edge_var_map_vector *v;
   edge_var_map *vm;
   int i;
   gimple_stmt_iterator phis;
@@ -2520,7 +2515,7 @@ reinstall_phi_args (edge new_edge, edge old_edge)
     return;
 
   for (i = 0, phis = gsi_start_phis (new_edge->dest);
-       VEC_iterate (edge_var_map, v, i, vm) && !gsi_end_p (phis);
+       v->iterate (i, &vm) && !gsi_end_p (phis);
        i++, gsi_next (&phis))
     {
       gimple phi = gsi_stmt (phis);
@@ -4294,9 +4289,7 @@ verify_gimple_label (gimple stmt)
 
   uid = LABEL_DECL_UID (decl);
   if (cfun->cfg
-      && (uid == -1
-	  || VEC_index (basic_block,
-			label_to_block_map, uid) != gimple_bb (stmt)))
+      && (uid == -1 || (*label_to_block_map)[uid] != gimple_bb (stmt)))
     {
       error ("incorrect entry in label_to_block_map");
       err |= true;
@@ -5636,7 +5629,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   bool free_region_copy = false, copying_header = false;
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
-  VEC (basic_block, heap) *doms;
+  vec<basic_block> doms;
   edge redirected;
   int total_freq = 0, entry_freq = 0;
   gcov_type total_count = 0, entry_count = 0;
@@ -5686,7 +5679,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
-  doms = NULL;
+  doms.create (0);
   initialize_original_copy_tables ();
 
   doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
@@ -5745,9 +5738,9 @@ gimple_duplicate_sese_region (edge entry, edge exit,
      region, but was dominated by something inside needs recounting as
      well.  */
   set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
-  VEC_safe_push (basic_block, heap, doms, get_bb_original (entry->dest));
+  doms.safe_push (get_bb_original (entry->dest));
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  VEC_free (basic_block, heap, doms);
+  doms.release ();
 
   /* Add the other PHI node arguments.  */
   add_phi_args_after_copy (region_copy, n_region, NULL);
@@ -5812,7 +5805,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   struct loop *loop = exit->dest->loop_father;
   struct loop *orig_loop = entry->dest->loop_father;
   basic_block switch_bb, entry_bb, nentry_bb;
-  VEC (basic_block, heap) *doms;
+  vec<basic_block> doms;
   int total_freq = 0, exit_freq = 0;
   gcov_type total_count = 0, exit_count = 0;
   edge exits[2], nexits[2], e;
@@ -5952,7 +5945,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
   /* Anything that is outside of the region, but was dominated by something
      inside needs to update dominance info.  */
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  VEC_free (basic_block, heap, doms);
+  doms.release ();
   /* Update the SSA web.  */
   update_ssa (TODO_update_ssa);
 
@@ -5969,7 +5962,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 
 void
 gather_blocks_in_sese_region (basic_block entry, basic_block exit,
-			      VEC(basic_block,heap) **bbs_p)
+			      vec<basic_block> *bbs_p)
 {
   basic_block son;
 
@@ -5977,7 +5970,7 @@ gather_blocks_in_sese_region (basic_block entry, basic_block exit,
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
     {
-      VEC_safe_push (basic_block, heap, *bbs_p, son);
+      bbs_p->safe_push (son);
       if (son != exit)
 	gather_blocks_in_sese_region (son, exit, bbs_p);
     }
@@ -6296,7 +6289,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       }
 
   /* Remove BB from the original basic block array.  */
-  VEC_replace (basic_block, cfun->cfg->x_basic_block_info, bb->index, NULL);
+  (*cfun->cfg->x_basic_block_info)[bb->index] = NULL;
   cfun->cfg->x_n_basic_blocks--;
 
   /* Grow DEST_CFUN's basic block array if needed.  */
@@ -6305,16 +6298,14 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   if (bb->index >= cfg->x_last_basic_block)
     cfg->x_last_basic_block = bb->index + 1;
 
-  old_len = VEC_length (basic_block, cfg->x_basic_block_info);
+  old_len = vec_safe_length (cfg->x_basic_block_info);
   if ((unsigned) cfg->x_last_basic_block >= old_len)
     {
       new_len = cfg->x_last_basic_block + (cfg->x_last_basic_block + 3) / 4;
-      VEC_safe_grow_cleared (basic_block, gc, cfg->x_basic_block_info,
-			     new_len);
+      vec_safe_grow_cleared (cfg->x_basic_block_info, new_len);
     }
 
-  VEC_replace (basic_block, cfg->x_basic_block_info,
-               bb->index, bb);
+  (*cfg->x_basic_block_info)[bb->index] = bb;
 
   /* Remap the variables in phi nodes.  */
   for (si = gsi_start_phis (bb); !gsi_end_p (si); )
@@ -6378,16 +6369,15 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
 	  gcc_assert (uid > -1);
 
-	  old_len = VEC_length (basic_block, cfg->x_label_to_block_map);
+	  old_len = vec_safe_length (cfg->x_label_to_block_map);
 	  if (old_len <= (unsigned) uid)
 	    {
 	      new_len = 3 * uid / 2 + 1;
-	      VEC_safe_grow_cleared (basic_block, gc,
-				     cfg->x_label_to_block_map, new_len);
+	      vec_safe_grow_cleared (cfg->x_label_to_block_map, new_len);
 	    }
 
-	  VEC_replace (basic_block, cfg->x_label_to_block_map, uid, bb);
-	  VEC_replace (basic_block, cfun->cfg->x_label_to_block_map, uid, NULL);
+	  (*cfg->x_label_to_block_map)[uid] = bb;
+	  (*cfun->cfg->x_label_to_block_map)[uid] = NULL;
 
 	  gcc_assert (DECL_CONTEXT (label) == dest_cfun->decl);
 
@@ -6539,7 +6529,7 @@ basic_block
 move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 		        basic_block exit_bb, tree orig_block)
 {
-  VEC(basic_block,heap) *bbs, *dom_bbs;
+  vec<basic_block> bbs, dom_bbs;
   basic_block dom_entry = get_immediate_dominator (CDI_DOMINATORS, entry_bb);
   basic_block after, bb, *entry_pred, *exit_succ, abb;
   struct function *saved_cfun = cfun;
@@ -6561,15 +6551,15 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Collect all the blocks in the region.  Manually add ENTRY_BB
      because it won't be added by dfs_enumerate_from.  */
-  bbs = NULL;
-  VEC_safe_push (basic_block, heap, bbs, entry_bb);
+  bbs.create (0);
+  bbs.safe_push (entry_bb);
   gather_blocks_in_sese_region (entry_bb, exit_bb, &bbs);
 
   /* The blocks that used to be dominated by something in BBS will now be
      dominated by the new block.  */
   dom_bbs = get_dominated_by_region (CDI_DOMINATORS,
-				     VEC_address (basic_block, bbs),
-				     VEC_length (basic_block, bbs));
+				     bbs.address (),
+				     bbs.length ());
 
   /* Detach ENTRY_BB and EXIT_BB from CFUN->CFG.  We need to remember
      the predecessor edges to ENTRY_BB and the successor edges to
@@ -6624,7 +6614,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     {
       eh_region region = NULL;
 
-      FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+      FOR_EACH_VEC_ELT (bbs, i, bb)
 	region = find_outermost_region_in_block (saved_cfun, bb, region);
 
       init_eh_for_function ();
@@ -6639,7 +6629,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   pop_cfun ();
 
   /* Move blocks from BBS into DEST_CFUN.  */
-  gcc_assert (VEC_length (basic_block, bbs) >= 2);
+  gcc_assert (bbs.length () >= 2);
   after = dest_cfun->cfg->x_entry_block_ptr;
   vars_map = pointer_map_create ();
 
@@ -6653,7 +6643,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   d.eh_map = eh_map;
   d.remap_decls_p = true;
 
-  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
+  FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* No need to update edge counts on the last block.  It has
 	 already been updated earlier when we detached the region from
@@ -6718,9 +6708,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     }
 
   set_immediate_dominator (CDI_DOMINATORS, bb, dom_entry);
-  FOR_EACH_VEC_ELT (basic_block, dom_bbs, i, abb)
+  FOR_EACH_VEC_ELT (dom_bbs, i, abb)
     set_immediate_dominator (CDI_DOMINATORS, abb, bb);
-  VEC_free (basic_block, heap, dom_bbs);
+  dom_bbs.release ();
 
   if (exit_bb)
     {
@@ -6731,7 +6721,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   free (entry_prob);
   free (entry_flag);
   free (entry_pred);
-  VEC_free (basic_block, heap, bbs);
+  bbs.release ();
 
   return bb;
 }
@@ -6791,7 +6781,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
-      if (!VEC_empty (tree, fun->local_decls))
+      if (!vec_safe_is_empty (fun->local_decls))
 	FOR_EACH_LOCAL_DECL (fun, ix, var)
 	  {
 	    print_generic_decl (file, var, flags);
@@ -6818,7 +6808,8 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 	  }
     }
 
-  if (fun && fun->decl == fndecl && fun->cfg
+  if (fun && fun->decl == fndecl
+      && fun->cfg
       && basic_block_info_for_function (fun))
     {
       /* If the CFG has been built, emit a CFG-based dump.  */
@@ -7278,8 +7269,8 @@ gimple_flow_call_edges_add (sbitmap blocks)
 void
 remove_edge_and_dominated_blocks (edge e)
 {
-  VEC (basic_block, heap) *bbs_to_remove = NULL;
-  VEC (basic_block, heap) *bbs_to_fix_dom = NULL;
+  vec<basic_block> bbs_to_remove = vec<basic_block>();
+  vec<basic_block> bbs_to_fix_dom = vec<basic_block>();
   bitmap df, df_idom;
   edge f;
   edge_iterator ei;
@@ -7331,7 +7322,7 @@ remove_edge_and_dominated_blocks (edge e)
   else
     {
       bbs_to_remove = get_all_dominated_blocks (CDI_DOMINATORS, e->dest);
-      FOR_EACH_VEC_ELT (basic_block, bbs_to_remove, i, bb)
+      FOR_EACH_VEC_ELT (bbs_to_remove, i, bb)
 	{
 	  FOR_EACH_EDGE (f, ei, bb->succs)
 	    {
@@ -7339,7 +7330,7 @@ remove_edge_and_dominated_blocks (edge e)
 		bitmap_set_bit (df, f->dest->index);
 	    }
 	}
-      FOR_EACH_VEC_ELT (basic_block, bbs_to_remove, i, bb)
+      FOR_EACH_VEC_ELT (bbs_to_remove, i, bb)
 	bitmap_clear_bit (df, bb->index);
 
       EXECUTE_IF_SET_IN_BITMAP (df, 0, i, bi)
@@ -7366,8 +7357,8 @@ remove_edge_and_dominated_blocks (edge e)
 	 released DEFs into debug stmts.  See
 	 eliminate_unnecessary_stmts() in tree-ssa-dce.c for more
 	 details.  */
-      for (i = VEC_length (basic_block, bbs_to_remove); i-- > 0; )
-	delete_basic_block (VEC_index (basic_block, bbs_to_remove, i));
+      for (i = bbs_to_remove.length (); i-- > 0; )
+	delete_basic_block (bbs_to_remove[i]);
     }
 
   /* Update the dominance information.  The immediate dominator may change only
@@ -7386,15 +7377,15 @@ remove_edge_and_dominated_blocks (edge e)
       for (dbb = first_dom_son (CDI_DOMINATORS, bb);
 	   dbb;
 	   dbb = next_dom_son (CDI_DOMINATORS, dbb))
-	VEC_safe_push (basic_block, heap, bbs_to_fix_dom, dbb);
+	bbs_to_fix_dom.safe_push (dbb);
     }
 
   iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
 
   BITMAP_FREE (df);
   BITMAP_FREE (df_idom);
-  VEC_free (basic_block, heap, bbs_to_remove);
-  VEC_free (basic_block, heap, bbs_to_fix_dom);
+  bbs_to_remove.release ();
+  bbs_to_fix_dom.release ();
 }
 
 /* Purge dead EH edges from basic block BB.  */

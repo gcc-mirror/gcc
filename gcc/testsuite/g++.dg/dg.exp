@@ -1,4 +1,5 @@
-#   Copyright (C) 2000, 2007, 2009, 2010 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2007, 2009, 2010, 2011, 2012
+#   Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,6 +51,7 @@ set tests [prune $tests $srcdir/$subdir/graphite/*]
 set tests [prune $tests $srcdir/$subdir/tm/*]
 set tests [prune $tests $srcdir/$subdir/guality/*]
 set tests [prune $tests $srcdir/$subdir/simulate-thread/*]
+set tests [prune $tests $srcdir/$subdir/asan/*]
 
 # Main loop.
 g++-dg-runtest $tests $DEFAULT_CXXFLAGS

@@ -427,7 +427,7 @@ streamer_pack_tree_bitfields (struct output_block *ob,
     pack_ts_optimization (bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    bp_pack_var_len_unsigned (bp, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));
+    bp_pack_var_len_unsigned (bp, vec_safe_length (BINFO_BASE_ACCESSES (expr)));
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (bp, CONSTRUCTOR_NELTS (expr));
@@ -795,7 +795,7 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   /* Note that the number of BINFO slots has already been emitted in
      EXPR's header (see streamer_write_tree_header) because this length
      is needed to build the empty BINFO node on the reader side.  */
-  FOR_EACH_VEC_ELT (tree, BINFO_BASE_BINFOS (expr), i, t)
+  FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (expr), i, t)
     stream_write_tree (ob, t, ref_p);
   stream_write_tree (ob, NULL_TREE, false);
 
@@ -805,7 +805,7 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   /* The number of BINFO_BASE_ACCESSES has already been emitted in
      EXPR's bitfield section.  */
-  FOR_EACH_VEC_ELT (tree, BINFO_BASE_ACCESSES (expr), i, t)
+  FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
     stream_write_tree (ob, t, ref_p);
 
   stream_write_tree (ob, BINFO_INHERITANCE_CHAIN (expr), ref_p);

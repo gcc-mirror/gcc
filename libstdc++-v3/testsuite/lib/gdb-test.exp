@@ -67,6 +67,13 @@ proc regexp-test {var result} {
     lappend gdb_tests $var $result 1
 }
 
+# A test of 'whatis'.  This tests a type rather than a variable.
+proc whatis-test {var result} {
+    global gdb_tests
+
+    lappend gdb_tests $var $result whatis
+}
+
 # Utility for testing variable values using gdb, invoked via dg-final.
 # Tests all tests indicated by note-test and regexp-test.
 #
@@ -82,6 +89,12 @@ proc gdb-test { marker {selector {}} } {
 	    "F" { setup_xfail "*-*-*" }
 	    "P" { }
 	}
+    }
+
+    set do_whatis_tests [gdb_batch_check "python print gdb.type_printers" \
+			   "\\\[\\\]"]
+    if {!$do_whatis_tests} {
+	send_log "skipping 'whatis' tests - gdb too old"
     }
 
     # This assumes that we are three frames down from dg-test, and that
@@ -109,12 +122,25 @@ proc gdb-test { marker {selector {}} } {
     puts $fd "run"
 
     set count 0
-    foreach {var result is_regexp} $gdb_tests {
-	puts $fd "print $var"
+    foreach {var result kind} $gdb_tests {
 	incr count
 	set gdb_var($count) $var
 	set gdb_expected($count) $result
-	set gdb_is_regexp($count) $is_regexp
+	if {$kind == "whatis"} {
+	    if {$do_whatis_tests} {
+		set gdb_is_type($count) 1
+		set gdb_command($count) "whatis $var"
+	    } else {
+	        unsupported "$testname"
+	        close $fd
+	        return
+	    }
+	} else {
+	    set gdb_is_type($count) 0
+	    set gdb_is_regexp($count) $kind
+	    set gdb_command($count) "print $var"
+	}
+	puts $fd $gdb_command($count)
     }
     set gdb_tests {}
 
@@ -128,28 +154,36 @@ proc gdb-test { marker {selector {}} } {
 	return
     }
 
+    set test_counter 0
     remote_expect target [timeout_value] {
-	-re {^\$([0-9]+) = ([^\n\r]*)[\n\r]+} {
+	-re {^(type|\$([0-9]+)) = ([^\n\r]*)[\n\r]+} {
 	    send_log "got: $expect_out(buffer)"
 
-	    set num $expect_out(1,string)
-	    set first $expect_out(2,string)
+	    incr test_counter
+	    set first $expect_out(3,string)
 
-	    if {$gdb_is_regexp($num)} {
-		set match [regexp -- $gdb_expected($num) $first]
+	    if {$gdb_is_type($test_counter)} {
+		if {$expect_out(1,string) != "type"} {
+		    error "gdb failure"
+		}
+		set match [expr {![string compare $first \
+				     $gdb_expected($test_counter)]}]
+	    } elseif {$gdb_is_regexp($test_counter)} {
+		set match [regexp -- $gdb_expected($test_counter) $first]
 	    } else {
-		set match [expr {![string compare $first $gdb_expected($num)]}]
+		set match [expr {![string compare $first \
+				     $gdb_expected($test_counter)]}]
 	    }
 
 	    if {$match} {
-		pass "$testname print $gdb_var($num)"
+		pass "$testname $gdb_command($test_counter)"
 	    } else {
-		fail "$testname print $gdb_var($num)"
+		fail "$testname $gdb_command($test_counter)"
 		verbose "     got =>$first<="
-		verbose "expected =>$gdb_expected($num)<="
+		verbose "expected =>$gdb_expected($test_counter)<="
 	    }
 
-	    if {$num == $count} {
+	    if {$test_counter == $count} {
 		remote_close target
 		return
 	    } else {
@@ -180,16 +214,10 @@ proc gdb-test { marker {selector {}} } {
     return
 }
 
-# Check for a new-enough version of gdb.  The pretty-printer tests
-# require gdb 7.3, but we don't want to test versions, so instead we
-# check for the python "lookup_global_symbol" method, which is in 7.3
-# but not earlier versions.
-# Return 1 if the version is ok, 0 otherwise.
-proc gdb_version_check {} {
-    global gdb_version
-
+# Invoke gdb with a command and pattern-match the output.
+proc gdb_batch_check {command pattern} {
     set gdb_name $::env(GUALITY_GDB_NAME)
-    set cmd "$gdb_name -nw -nx -quiet -batch -ex \"python print gdb.lookup_global_symbol\""
+    set cmd "$gdb_name -nw -nx -quiet -batch -ex \"$command\""
     send_log "Spawning: $cmd\n"
     set res [remote_spawn target "$cmd"]
     if { $res < 0 || $res == "" } {
@@ -197,7 +225,7 @@ proc gdb_version_check {} {
     }
 
     remote_expect target [timeout_value] {
-	-re "<built-in function lookup_global_symbol>" {
+	-re $pattern {
 	    return 1
 	}
 
@@ -214,4 +242,14 @@ proc gdb_version_check {} {
 
     remote_close target
     return 0
+}
+
+# Check for a new-enough version of gdb.  The pretty-printer tests
+# require gdb 7.3, but we don't want to test versions, so instead we
+# check for the python "lookup_global_symbol" method, which is in 7.3
+# but not earlier versions.
+# Return 1 if the version is ok, 0 otherwise.
+proc gdb_version_check {} {
+    return [gdb_batch_check "python print gdb.lookup_global_symbol" \
+	      "<built-in function lookup_global_symbol>"]
 }

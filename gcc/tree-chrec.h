@@ -64,7 +64,7 @@ extern tree chrec_convert_aggressive (tree, tree);
 
 /* Operations.  */
 extern tree chrec_apply (unsigned, tree, tree);
-extern tree chrec_apply_map (tree, VEC (tree, heap) *);
+extern tree chrec_apply_map (tree, vec<tree> );
 extern tree chrec_replace_initial_condition (tree, tree);
 extern tree initial_condition (tree);
 extern tree initial_condition_in_loop_num (tree, unsigned);
