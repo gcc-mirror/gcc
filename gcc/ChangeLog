@@ -1,3 +1,18 @@
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+
+	PR middle-end/55398
+	* vec.h (class vec_prefix): Make every field public.
+	Rename field alloc_ to alloc_PRIVATE_.
+	Rename field num_ to num_PRIVATE_.
+	Update all users.
+	(class vec<T, A, vl_embed>): Make every field public.
+	Rename field pfx_ to pfx_PRIVATE_.
+	Rename field data_ to data_PRIVATE_.
+	Update all users.
+	(class vec<T, A, vl_ptr>): Make every field public.
+	Rename field vec_ to vec_PRIVATE_.
+	Update all users.
+
 2012-11-20  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55268
