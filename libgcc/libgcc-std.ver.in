@@ -1935,3 +1935,7 @@ GCC_4.7.0 {
   __splitstack_resetcontext
   __splitstack_releasecontext
 }
+
+%inherit GCC_4.8.0 GCC_4.7.0
+GCC_4.8.0 {
+}
