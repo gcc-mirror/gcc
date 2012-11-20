@@ -1,3 +1,11 @@
+2012-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/55413
+	* include/bits/hashtable.h (_Hashtable<>::_M_rehash_aux): Initialize
+	__bbegin_bkt and __prev_bkt to avoid uninitialized warnings.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+
 2012-11-20  Matthias Klose  <doko@ubuntu.com>
 
 	* doc/doxygen/user.cfg.in (ALIASES). Escape sharp braces.
