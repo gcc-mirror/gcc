@@ -1,3 +1,7 @@
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
+	* config/arm/t-linux-eabi: Define MULTIARCH_DIRNAME for linux target.
+
 2012-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* stor-layout.c (bit_field_mode_iterator::next_mode): Fix signedness.
