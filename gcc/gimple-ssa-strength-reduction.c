@@ -1643,10 +1643,19 @@ replace_dependent (slsr_cand_t c, enum tree_code cand_code)
 
   basis = lookup_cand (c->basis);
   basis_name = gimple_assign_lhs (basis->cand_stmt);
-  incr_type = TREE_TYPE (gimple_assign_rhs1 (c->cand_stmt));
-  code = PLUS_EXPR;
+  if (cand_code == POINTER_PLUS_EXPR)
+    {
+      incr_type = sizetype;
+      code = cand_code;
+    }
+  else
+    {
+      incr_type = TREE_TYPE (gimple_assign_rhs1 (c->cand_stmt));
+      code = PLUS_EXPR;
+    }
 
-  if (bump.is_negative ())
+  if (bump.is_negative ()
+      && cand_code != POINTER_PLUS_EXPR)
     {
       code = MINUS_EXPR;
       bump = -bump;
