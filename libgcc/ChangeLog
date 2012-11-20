@@ -1,3 +1,8 @@
+2012-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/55370
+	* libgcc-std.ver.in: Add GCC_4.8.0 and %inherit for it.
+
 2012-11-18  Teresa Johnson  <tejohnson@google.com>
 
 	PR bootstrap/55051
