@@ -1,3 +1,11 @@
+2012-11-20  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55268
+	* i386.c (ix86_mangle_decl_assembler_name): Use
+	SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME if defined.
+	* cygming.h (TARGET_MANGLE_DECL_ASSEMBLER_NAME): Rename
+	to SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME.
+
 2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_call): Emit CLOBBERs in VOIDmode.
