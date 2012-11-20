@@ -1,3 +1,8 @@
+2012-11-20  Andrey Turetskiy  <andrey.turetskiy@gmail.com>
+
+	* config/i386/sse.md (*<ssse3_avx2>_pmulhrsw<mode>3): Merge
+	*avx2_pmulhrswv16hi3 and *ssse3_pmulhrswv8hi3 into one pattern.
+
 2012-11-20  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.md
