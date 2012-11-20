@@ -31,27 +31,28 @@
 #include "diagnostic-core.h"
 #include "optabs.h"
 
-enum aarch64_simd_builtin_type_bits
+enum aarch64_simd_builtin_type_mode
 {
-  T_V8QI = 0x0001,
-  T_V4HI = 0x0002,
-  T_V2SI = 0x0004,
-  T_V2SF = 0x0008,
-  T_DI = 0x0010,
-  T_DF = 0x0020,
-  T_V16QI = 0x0040,
-  T_V8HI = 0x0080,
-  T_V4SI = 0x0100,
-  T_V4SF = 0x0200,
-  T_V2DI = 0x0400,
-  T_V2DF = 0x0800,
-  T_TI = 0x1000,
-  T_EI = 0x2000,
-  T_OI = 0x4000,
-  T_XI = 0x8000,
-  T_SI = 0x10000,
-  T_HI = 0x20000,
-  T_QI = 0x40000
+  T_V8QI,
+  T_V4HI,
+  T_V2SI,
+  T_V2SF,
+  T_DI,
+  T_DF,
+  T_V16QI,
+  T_V8HI,
+  T_V4SI,
+  T_V4SF,
+  T_V2DI,
+  T_V2DF,
+  T_TI,
+  T_EI,
+  T_OI,
+  T_XI,
+  T_SI,
+  T_HI,
+  T_QI,
+  T_MAX
 };
 
 #define v8qi_UP  T_V8QI
@@ -75,8 +76,6 @@ enum aarch64_simd_builtin_type_bits
 #define qi_UP    T_QI
 
 #define UP(X) X##_UP
-
-#define T_MAX 19
 
 typedef enum
 {
@@ -124,253 +123,174 @@ typedef struct
 {
   const char *name;
   const aarch64_simd_itype itype;
-  const int bits;
-  const enum insn_code codes[T_MAX];
-  const unsigned int num_vars;
-  unsigned int base_fcode;
+  enum aarch64_simd_builtin_type_mode mode;
+  const enum insn_code code;
+  unsigned int fcode;
 } aarch64_simd_builtin_datum;
 
 #define CF(N, X) CODE_FOR_aarch64_##N##X
 
 #define VAR1(T, N, A) \
-  #N, AARCH64_SIMD_##T, UP (A), { CF (N, A) }, 1, 0
+  {#N, AARCH64_SIMD_##T, UP (A), CF (N, A), 0},
 #define VAR2(T, N, A, B) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B), { CF (N, A), CF (N, B) }, 2, 0
+  VAR1 (T, N, A) \
+  VAR1 (T, N, B)
 #define VAR3(T, N, A, B, C) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C), \
-  { CF (N, A), CF (N, B), CF (N, C) }, 3, 0
+  VAR2 (T, N, A, B) \
+  VAR1 (T, N, C)
 #define VAR4(T, N, A, B, C, D) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D) }, 4, 0
+  VAR3 (T, N, A, B, C) \
+  VAR1 (T, N, D)
 #define VAR5(T, N, A, B, C, D, E) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) | UP (E), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E) }, 5, 0
+  VAR4 (T, N, A, B, C, D) \
+  VAR1 (T, N, E)
 #define VAR6(T, N, A, B, C, D, E, F) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) | UP (E) | UP (F), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F) }, 6, 0
+  VAR5 (T, N, A, B, C, D, E) \
+  VAR1 (T, N, F)
 #define VAR7(T, N, A, B, C, D, E, F, G) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) \
-			| UP (E) | UP (F) | UP (G), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F), \
-    CF (N, G) }, 7, 0
+  VAR6 (T, N, A, B, C, D, E, F) \
+  VAR1 (T, N, G)
 #define VAR8(T, N, A, B, C, D, E, F, G, H) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) \
-		| UP (E) | UP (F) | UP (G) \
-		| UP (H), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F), \
-    CF (N, G), CF (N, H) }, 8, 0
+  VAR7 (T, N, A, B, C, D, E, F, G) \
+  VAR1 (T, N, H)
 #define VAR9(T, N, A, B, C, D, E, F, G, H, I) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) \
-		| UP (E) | UP (F) | UP (G) \
-		| UP (H) | UP (I), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F), \
-    CF (N, G), CF (N, H), CF (N, I) }, 9, 0
+  VAR8 (T, N, A, B, C, D, E, F, G, H) \
+  VAR1 (T, N, I)
 #define VAR10(T, N, A, B, C, D, E, F, G, H, I, J) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) \
-		| UP (E) | UP (F) | UP (G) \
-		| UP (H) | UP (I) | UP (J), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F), \
-    CF (N, G), CF (N, H), CF (N, I), CF (N, J) }, 10, 0
-
+  VAR9 (T, N, A, B, C, D, E, F, G, H, I) \
+  VAR1 (T, N, J)
 #define VAR11(T, N, A, B, C, D, E, F, G, H, I, J, K) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) \
-		| UP (E) | UP (F) | UP (G) \
-		| UP (H) | UP (I) | UP (J) | UP (K), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F), \
-    CF (N, G), CF (N, H), CF (N, I), CF (N, J), CF (N, K) }, 11, 0
-
+  VAR10 (T, N, A, B, C, D, E, F, G, H, I, J) \
+  VAR1 (T, N, K)
 #define VAR12(T, N, A, B, C, D, E, F, G, H, I, J, K, L) \
-  #N, AARCH64_SIMD_##T, UP (A) | UP (B) | UP (C) | UP (D) \
-		| UP (E) | UP (F) | UP (G) \
-		| UP (H) | UP (I) | UP (J) | UP (K) | UP (L), \
-  { CF (N, A), CF (N, B), CF (N, C), CF (N, D), CF (N, E), CF (N, F), \
-    CF (N, G), CF (N, H), CF (N, I), CF (N, J), CF (N, K), CF (N, L) }, 12, 0
+  VAR11 (T, N, A, B, C, D, E, F, G, H, I, J, K) \
+  VAR1 (T, N, L)
 
+/* BUILTIN_<ITERATOR> macros should expand to cover the same range of
+   modes as is given for each define_mode_iterator in
+   config/aarch64/iterators.md.  */
 
-/* The mode entries in the following table correspond to the "key" type of the
-   instruction variant, i.e. equivalent to that which would be specified after
-   the assembler mnemonic, which usually refers to the last vector operand.
-   (Signed/unsigned/polynomial types are not differentiated between though, and
-   are all mapped onto the same mode for a given element size.) The modes
-   listed per instruction should be the same as those defined for that
-   instruction's pattern in aarch64_simd.md.
-   WARNING: Variants should be listed in the same increasing order as
-   aarch64_simd_builtin_type_bits.  */
+#define BUILTIN_DX(T, N) \
+  VAR2 (T, N, di, df)
+#define BUILTIN_SDQ_I(T, N) \
+  VAR4 (T, N, qi, hi, si, di)
+#define BUILTIN_SD_HSI(T, N) \
+  VAR2 (T, N, hi, si)
+#define BUILTIN_V2F(T, N) \
+  VAR2 (T, N, v2sf, v2df)
+#define BUILTIN_VALL(T, N) \
+  VAR10 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, v2sf, v4sf, v2df)
+#define BUILTIN_VB(T, N) \
+  VAR2 (T, N, v8qi, v16qi)
+#define BUILTIN_VD(T, N) \
+  VAR4 (T, N, v8qi, v4hi, v2si, v2sf)
+#define BUILTIN_VDC(T, N) \
+  VAR6 (T, N, v8qi, v4hi, v2si, v2sf, di, df)
+#define BUILTIN_VDIC(T, N) \
+  VAR3 (T, N, v8qi, v4hi, v2si)
+#define BUILTIN_VDN(T, N) \
+  VAR3 (T, N, v4hi, v2si, di)
+#define BUILTIN_VDQ(T, N) \
+  VAR7 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
+#define BUILTIN_VDQF(T, N) \
+  VAR3 (T, N, v2sf, v4sf, v2df)
+#define BUILTIN_VDQHS(T, N) \
+  VAR4 (T, N, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VDQIF(T, N) \
+  VAR9 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2sf, v4sf, v2df)
+#define BUILTIN_VDQM(T, N) \
+  VAR6 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VDQV(T, N) \
+  VAR5 (T, N, v8qi, v16qi, v4hi, v8hi, v4si)
+#define BUILTIN_VDQ_BHSI(T, N) \
+  VAR6 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VDQ_I(T, N) \
+  VAR7 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di)
+#define BUILTIN_VDW(T, N) \
+  VAR3 (T, N, v8qi, v4hi, v2si)
+#define BUILTIN_VD_BHSI(T, N) \
+  VAR3 (T, N, v8qi, v4hi, v2si)
+#define BUILTIN_VD_HSI(T, N) \
+  VAR2 (T, N, v4hi, v2si)
+#define BUILTIN_VD_RE(T, N) \
+  VAR6 (T, N, v8qi, v4hi, v2si, v2sf, di, df)
+#define BUILTIN_VQ(T, N) \
+  VAR6 (T, N, v16qi, v8hi, v4si, v2di, v4sf, v2df)
+#define BUILTIN_VQN(T, N) \
+  VAR3 (T, N, v8hi, v4si, v2di)
+#define BUILTIN_VQW(T, N) \
+  VAR3 (T, N, v16qi, v8hi, v4si)
+#define BUILTIN_VQ_HSI(T, N) \
+  VAR2 (T, N, v8hi, v4si)
+#define BUILTIN_VQ_S(T, N) \
+  VAR6 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
+#define BUILTIN_VSDQ_HSI(T, N) \
+  VAR6 (T, N, v4hi, v8hi, v2si, v4si, hi, si)
+#define BUILTIN_VSDQ_I(T, N) \
+  VAR11 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si, di)
+#define BUILTIN_VSDQ_I_BHSI(T, N) \
+  VAR10 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, qi, hi, si)
+#define BUILTIN_VSDQ_I_DI(T, N) \
+  VAR8 (T, N, v8qi, v16qi, v4hi, v8hi, v2si, v4si, v2di, di)
+#define BUILTIN_VSD_HSI(T, N) \
+  VAR4 (T, N, v4hi, v2si, hi, si)
+#define BUILTIN_VSQN_HSDI(T, N) \
+  VAR6 (T, N, v8hi, v4si, v2di, hi, si, di)
+#define BUILTIN_VSTRUCT(T, N) \
+  VAR3 (T, N, oi, ci, xi)
 
 static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
-  {VAR6 (CREATE, create, v8qi, v4hi, v2si, v2sf, di, df)},
-  {VAR6 (GETLANE, get_lane_signed,
-	  v8qi, v4hi, v2si, v16qi, v8hi, v4si)},
-  {VAR7 (GETLANE, get_lane_unsigned,
-	  v8qi, v4hi, v2si, v16qi, v8hi, v4si, v2di)},
-  {VAR4 (GETLANE, get_lane, v2sf, di, v4sf, v2df)},
-  {VAR6 (GETLANE, get_dregoi, v8qi, v4hi, v2si, v2sf, di, df)},
-  {VAR6 (GETLANE, get_qregoi, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (GETLANE, get_dregci, v8qi, v4hi, v2si, v2sf, di, df)},
-  {VAR6 (GETLANE, get_qregci, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (GETLANE, get_dregxi, v8qi, v4hi, v2si, v2sf, di, df)},
-  {VAR6 (GETLANE, get_qregxi, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (SETLANE, set_qregoi, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (SETLANE, set_qregci, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (SETLANE, set_qregxi, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-
-  {VAR5 (REINTERP, reinterpretv8qi, v8qi, v4hi, v2si, v2sf, di)},
-  {VAR5 (REINTERP, reinterpretv4hi, v8qi, v4hi, v2si, v2sf, di)},
-  {VAR5 (REINTERP, reinterpretv2si, v8qi, v4hi, v2si, v2sf, di)},
-  {VAR5 (REINTERP, reinterpretv2sf, v8qi, v4hi, v2si, v2sf, di)},
-  {VAR5 (REINTERP, reinterpretdi, v8qi, v4hi, v2si, v2sf, di)},
-  {VAR6 (REINTERP, reinterpretv16qi, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (REINTERP, reinterpretv8hi, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (REINTERP, reinterpretv4si, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (REINTERP, reinterpretv4sf, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (REINTERP, reinterpretv2di, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR6 (COMBINE, combine, v8qi, v4hi, v2si, v2sf, di, df)},
-
-  {VAR3 (BINOP, saddl, v8qi, v4hi, v2si)},
-  {VAR3 (BINOP, uaddl, v8qi, v4hi, v2si)},
-  {VAR3 (BINOP, saddl2, v16qi, v8hi, v4si)},
-  {VAR3 (BINOP, uaddl2, v16qi, v8hi, v4si)},
-  {VAR3 (BINOP, saddw, v8qi, v4hi, v2si)},
-  {VAR3 (BINOP, uaddw, v8qi, v4hi, v2si)},
-  {VAR3 (BINOP, saddw2, v16qi, v8hi, v4si)},
-  {VAR3 (BINOP, uaddw2, v16qi, v8hi, v4si)},
-  {VAR6 (BINOP, shadd, v8qi, v4hi, v2si, v16qi, v8hi, v4si)},
-  {VAR6 (BINOP, uhadd, v8qi, v4hi, v2si, v16qi, v8hi, v4si)},
-  {VAR6 (BINOP, srhadd, v8qi, v4hi, v2si, v16qi, v8hi, v4si)},
-  {VAR6 (BINOP, urhadd, v8qi, v4hi, v2si, v16qi, v8hi, v4si)},
-  {VAR3 (BINOP, addhn, v8hi, v4si, v2di)},
-  {VAR3 (BINOP, raddhn, v8hi, v4si, v2di)},
-  {VAR3 (TERNOP, addhn2, v8hi, v4si, v2di)},
-  {VAR3 (TERNOP, raddhn2, v8hi, v4si, v2di)},
-  {VAR3 (BINOP, ssubl, v8qi, v4hi, v2si)},
-  {VAR3 (BINOP, usubl, v8qi, v4hi, v2si)},
-  {VAR3 (BINOP, ssubl2, v16qi, v8hi, v4si) },
-  {VAR3 (BINOP, usubl2, v16qi, v8hi, v4si) },
-  {VAR3 (BINOP, ssubw, v8qi, v4hi, v2si) },
-  {VAR3 (BINOP, usubw, v8qi, v4hi, v2si) },
-  {VAR3 (BINOP, ssubw2, v16qi, v8hi, v4si) },
-  {VAR3 (BINOP, usubw2, v16qi, v8hi, v4si) },
-  {VAR11 (BINOP, sqadd, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi)},
-  {VAR11 (BINOP, uqadd, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi)},
-  {VAR11 (BINOP, sqsub, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi)},
-  {VAR11 (BINOP, uqsub, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi)},
-  {VAR11 (BINOP, suqadd, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi)},
-  {VAR11 (BINOP, usqadd, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi)},
-  {VAR6 (UNOP, sqmovun, di, v8hi, v4si, v2di, si, hi)},
-  {VAR6 (UNOP, sqmovn, di, v8hi, v4si, v2di, si, hi)},
-  {VAR6 (UNOP, uqmovn, di, v8hi, v4si, v2di, si, hi)},
-  {VAR10 (UNOP, sqabs, v8qi, v4hi, v2si, v16qi, v8hi, v4si, v2di, si, hi, qi)},
-  {VAR10 (UNOP, sqneg, v8qi, v4hi, v2si, v16qi, v8hi, v4si, v2di, si, hi, qi)},
-  {VAR2 (BINOP, pmul, v8qi, v16qi)},
-  {VAR4 (TERNOP, sqdmlal, v4hi, v2si, si, hi)},
-  {VAR4 (QUADOP, sqdmlal_lane, v4hi, v2si, si, hi) },
-  {VAR2 (QUADOP, sqdmlal_laneq, v4hi, v2si) },
-  {VAR2 (TERNOP, sqdmlal_n, v4hi, v2si) },
-  {VAR2 (TERNOP, sqdmlal2, v8hi, v4si)},
-  {VAR2 (QUADOP, sqdmlal2_lane, v8hi, v4si) },
-  {VAR2 (QUADOP, sqdmlal2_laneq, v8hi, v4si) },
-  {VAR2 (TERNOP, sqdmlal2_n, v8hi, v4si) },
-  {VAR4 (TERNOP, sqdmlsl, v4hi, v2si, si, hi)},
-  {VAR4 (QUADOP, sqdmlsl_lane, v4hi, v2si, si, hi) },
-  {VAR2 (QUADOP, sqdmlsl_laneq, v4hi, v2si) },
-  {VAR2 (TERNOP, sqdmlsl_n, v4hi, v2si) },
-  {VAR2 (TERNOP, sqdmlsl2, v8hi, v4si)},
-  {VAR2 (QUADOP, sqdmlsl2_lane, v8hi, v4si) },
-  {VAR2 (QUADOP, sqdmlsl2_laneq, v8hi, v4si) },
-  {VAR2 (TERNOP, sqdmlsl2_n, v8hi, v4si) },
-  {VAR4 (BINOP, sqdmull, v4hi, v2si, si, hi)},
-  {VAR4 (TERNOP, sqdmull_lane, v4hi, v2si, si, hi) },
-  {VAR2 (TERNOP, sqdmull_laneq, v4hi, v2si) },
-  {VAR2 (BINOP, sqdmull_n, v4hi, v2si) },
-  {VAR2 (BINOP, sqdmull2, v8hi, v4si) },
-  {VAR2 (TERNOP, sqdmull2_lane, v8hi, v4si) },
-  {VAR2 (TERNOP, sqdmull2_laneq, v8hi, v4si) },
-  {VAR2 (BINOP, sqdmull2_n, v8hi, v4si) },
-  {VAR6 (BINOP, sqdmulh, v4hi, v2si, v8hi, v4si, si, hi)},
-  {VAR6 (BINOP, sqrdmulh, v4hi, v2si, v8hi, v4si, si, hi)},
-  {VAR8 (BINOP, sshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR3 (SHIFTIMM, sshll_n, v8qi, v4hi, v2si) },
-  {VAR3 (SHIFTIMM, ushll_n, v8qi, v4hi, v2si) },
-  {VAR3 (SHIFTIMM, sshll2_n, v16qi, v8hi, v4si) },
-  {VAR3 (SHIFTIMM, ushll2_n, v16qi, v8hi, v4si) },
-  {VAR8 (BINOP, ushl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (BINOP, sshl_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (BINOP, ushl_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR11 (BINOP, sqshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  {VAR11 (BINOP, uqshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  {VAR8 (BINOP, srshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (BINOP, urshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR11 (BINOP, sqrshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  {VAR11 (BINOP, uqrshl, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  {VAR8 (SHIFTIMM, sshr_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTIMM, ushr_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTIMM, srshr_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTIMM, urshr_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTACC, ssra_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTACC, usra_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTACC, srsra_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTACC, ursra_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTINSERT, ssri_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTINSERT, usri_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTINSERT, ssli_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR8 (SHIFTINSERT, usli_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  {VAR11 (SHIFTIMM, sqshlu_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  {VAR11 (SHIFTIMM, sqshl_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  {VAR11 (SHIFTIMM, uqshl_n, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  { VAR6 (SHIFTIMM, sqshrun_n, di, v8hi, v4si, v2di, si, hi) },
-  { VAR6 (SHIFTIMM, sqrshrun_n, di, v8hi, v4si, v2di, si, hi) },
-  { VAR6 (SHIFTIMM, sqshrn_n, di, v8hi, v4si, v2di, si, hi) },
-  { VAR6 (SHIFTIMM, uqshrn_n, di, v8hi, v4si, v2di, si, hi) },
-  { VAR6 (SHIFTIMM, sqrshrn_n, di, v8hi, v4si, v2di, si, hi) },
-  { VAR6 (SHIFTIMM, uqrshrn_n, di, v8hi, v4si, v2di, si, hi) },
-  { VAR8 (BINOP, cmeq, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmge, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmgt, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmle, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmlt, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmhs, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmhi, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR8 (BINOP, cmtst, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di) },
-  { VAR6 (TERNOP, sqdmulh_lane, v4hi, v2si, v8hi, v4si, si, hi) },
-  { VAR6 (TERNOP, sqrdmulh_lane, v4hi, v2si, v8hi, v4si, si, hi) },
-  { VAR3 (BINOP, addp, v8qi, v4hi, v2si) },
-  { VAR1 (UNOP, addp, di) },
-  { VAR11 (BINOP, dup_lane, v8qi, v4hi, v2si, di, v16qi, v8hi, v4si, v2di,
-	  si, hi, qi) },
-  { VAR3 (BINOP, fmax, v2sf, v4sf, v2df) },
-  { VAR3 (BINOP, fmin, v2sf, v4sf, v2df) },
-  { VAR6 (BINOP, smax, v8qi, v4hi, v2si, v16qi, v8hi, v4si) },
-  { VAR6 (BINOP, smin, v8qi, v4hi, v2si, v16qi, v8hi, v4si) },
-  { VAR6 (BINOP, umax, v8qi, v4hi, v2si, v16qi, v8hi, v4si) },
-  { VAR6 (BINOP, umin, v8qi, v4hi, v2si, v16qi, v8hi, v4si) },
-  { VAR3 (UNOP, sqrt, v2sf, v4sf, v2df) },
-  {VAR12 (LOADSTRUCT, ld2,
-	 v8qi, v4hi, v2si, v2sf, di, df, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR12 (LOADSTRUCT, ld3,
-	 v8qi, v4hi, v2si, v2sf, di, df, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR12 (LOADSTRUCT, ld4,
-	 v8qi, v4hi, v2si, v2sf, di, df, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR12 (STORESTRUCT, st2,
-	 v8qi, v4hi, v2si, v2sf, di, df, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR12 (STORESTRUCT, st3,
-	 v8qi, v4hi, v2si, v2sf, di, df, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
-  {VAR12 (STORESTRUCT, st4,
-	 v8qi, v4hi, v2si, v2sf, di, df, v16qi, v8hi, v4si, v4sf, v2di, v2df)},
+#include "aarch64-simd-builtins.def"
 };
 
+#undef VAR1
+#define VAR1(T, N, A) \
+  AARCH64_SIMD_BUILTIN_##N##A,
+
+enum aarch64_builtins
+{
+  AARCH64_BUILTIN_MIN,
+  AARCH64_SIMD_BUILTIN_BASE,
+#include "aarch64-simd-builtins.def"
+  AARCH64_SIMD_BUILTIN_MAX = AARCH64_SIMD_BUILTIN_BASE
+			      + ARRAY_SIZE (aarch64_simd_builtin_data),
+  AARCH64_BUILTIN_MAX
+};
+
+#undef BUILTIN_DX
+#undef BUILTIN_SDQ_I
+#undef BUILTIN_SD_HSI
+#undef BUILTIN_V2F
+#undef BUILTIN_VALL
+#undef BUILTIN_VB
+#undef BUILTIN_VD
+#undef BUILTIN_VDC
+#undef BUILTIN_VDIC
+#undef BUILTIN_VDN
+#undef BUILTIN_VDQ
+#undef BUILTIN_VDQF
+#undef BUILTIN_VDQHS
+#undef BUILTIN_VDQIF
+#undef BUILTIN_VDQM
+#undef BUILTIN_VDQV
+#undef BUILTIN_VDQ_BHSI
+#undef BUILTIN_VDQ_I
+#undef BUILTIN_VDW
+#undef BUILTIN_VD_BHSI
+#undef BUILTIN_VD_HSI
+#undef BUILTIN_VD_RE
+#undef BUILTIN_VQ
+#undef BUILTIN_VQN
+#undef BUILTIN_VQW
+#undef BUILTIN_VQ_HSI
+#undef BUILTIN_VQ_S
+#undef BUILTIN_VSDQ_HSI
+#undef BUILTIN_VSDQ_I
+#undef BUILTIN_VSDQ_I_BHSI
+#undef BUILTIN_VSDQ_I_DI
+#undef BUILTIN_VSD_HSI
+#undef BUILTIN_VSQN_HSDI
+#undef BUILTIN_VSTRUCT
 #undef CF
 #undef VAR1
 #undef VAR2
@@ -388,9 +308,9 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 #define NUM_QREG_TYPES 6
 
 void
-init_aarch64_simd_builtins (void)
+aarch64_init_simd_builtins (void)
 {
-  unsigned int i, fcode = AARCH64_SIMD_BUILTIN_BASE;
+  unsigned int i, fcode = AARCH64_SIMD_BUILTIN_BASE + 1;
 
   /* Scalar type nodes.  */
   tree aarch64_simd_intQI_type_node;
@@ -680,417 +600,367 @@ init_aarch64_simd_builtins (void)
 	}
     }
 
-  for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++)
+  for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
     {
       aarch64_simd_builtin_datum *d = &aarch64_simd_builtin_data[i];
-      unsigned int j, codeidx = 0;
+      const char *const modenames[] =
+      {
+	"v8qi", "v4hi", "v2si", "v2sf", "di", "df",
+	"v16qi", "v8hi", "v4si", "v4sf", "v2di", "v2df",
+	"ti", "ei", "oi", "xi", "si", "hi", "qi"
+      };
+      char namebuf[60];
+      tree ftype = NULL;
+      int is_load = 0;
+      int is_store = 0;
 
-      d->base_fcode = fcode;
+      gcc_assert (ARRAY_SIZE (modenames) == T_MAX);
 
-      for (j = 0; j < T_MAX; j++)
+      d->fcode = fcode;
+
+      switch (d->itype)
 	{
-	  const char *const modenames[] = {
-	    "v8qi", "v4hi", "v2si", "v2sf", "di", "df",
-	    "v16qi", "v8hi", "v4si", "v4sf", "v2di", "v2df",
-	    "ti", "ei", "oi", "xi", "si", "hi", "qi"
-	  };
-	  char namebuf[60];
-	  tree ftype = NULL;
-	  enum insn_code icode;
-	  int is_load = 0;
-	  int is_store = 0;
+	case AARCH64_SIMD_LOAD1:
+	case AARCH64_SIMD_LOAD1LANE:
+	case AARCH64_SIMD_LOADSTRUCT:
+	case AARCH64_SIMD_LOADSTRUCTLANE:
+	    is_load = 1;
+	  /* Fall through.  */
+	case AARCH64_SIMD_STORE1:
+	case AARCH64_SIMD_STORE1LANE:
+	case AARCH64_SIMD_STORESTRUCT:
+	case AARCH64_SIMD_STORESTRUCTLANE:
+	    if (!is_load)
+	      is_store = 1;
+	  /* Fall through.  */
+	case AARCH64_SIMD_UNOP:
+	case AARCH64_SIMD_BINOP:
+	case AARCH64_SIMD_TERNOP:
+	case AARCH64_SIMD_QUADOP:
+	case AARCH64_SIMD_COMBINE:
+	case AARCH64_SIMD_CONVERT:
+	case AARCH64_SIMD_CREATE:
+	case AARCH64_SIMD_DUP:
+	case AARCH64_SIMD_DUPLANE:
+	case AARCH64_SIMD_FIXCONV:
+	case AARCH64_SIMD_GETLANE:
+	case AARCH64_SIMD_LANEMAC:
+	case AARCH64_SIMD_LANEMUL:
+	case AARCH64_SIMD_LANEMULH:
+	case AARCH64_SIMD_LANEMULL:
+	case AARCH64_SIMD_LOGICBINOP:
+	case AARCH64_SIMD_SCALARMAC:
+	case AARCH64_SIMD_SCALARMUL:
+	case AARCH64_SIMD_SCALARMULH:
+	case AARCH64_SIMD_SCALARMULL:
+	case AARCH64_SIMD_SELECT:
+	case AARCH64_SIMD_SETLANE:
+	case AARCH64_SIMD_SHIFTACC:
+	case AARCH64_SIMD_SHIFTIMM:
+	case AARCH64_SIMD_SHIFTINSERT:
+	case AARCH64_SIMD_SPLIT:
+	case AARCH64_SIMD_VTBL:
+	case AARCH64_SIMD_VTBX:
+	  {
+	    int k;
+	    tree return_type = void_type_node, args = void_list_node;
+	    tree eltype;
+	    /* Build a function type directly from the insn_data for this
+	       builtin.  The build_function_type () function takes care of
+	       removing duplicates for us.  */
 
-	  /* Skip if particular mode not supported.  */
-	  if ((d->bits & (1 << j)) == 0)
-	    continue;
-
-	  icode = d->codes[codeidx++];
-
-	  switch (d->itype)
-	    {
-	    case AARCH64_SIMD_LOAD1:
-	    case AARCH64_SIMD_LOAD1LANE:
-	    case AARCH64_SIMD_LOADSTRUCTLANE:
-	    case AARCH64_SIMD_LOADSTRUCT:
-	      is_load = 1;
-	      /* Fall through.  */
-	    case AARCH64_SIMD_STORE1:
-	    case AARCH64_SIMD_STORE1LANE:
-	    case AARCH64_SIMD_STORESTRUCTLANE:
-	    case AARCH64_SIMD_STORESTRUCT:
-	      if (!is_load)
-		is_store = 1;
-	      /* Fall through.  */
-	    case AARCH64_SIMD_UNOP:
-	    case AARCH64_SIMD_BINOP:
-	    case AARCH64_SIMD_LOGICBINOP:
-	    case AARCH64_SIMD_SHIFTINSERT:
-	    case AARCH64_SIMD_TERNOP:
-	    case AARCH64_SIMD_QUADOP:
-	    case AARCH64_SIMD_GETLANE:
-	    case AARCH64_SIMD_SETLANE:
-	    case AARCH64_SIMD_CREATE:
-	    case AARCH64_SIMD_DUP:
-	    case AARCH64_SIMD_DUPLANE:
-	    case AARCH64_SIMD_SHIFTIMM:
-	    case AARCH64_SIMD_SHIFTACC:
-	    case AARCH64_SIMD_COMBINE:
-	    case AARCH64_SIMD_SPLIT:
-	    case AARCH64_SIMD_CONVERT:
-	    case AARCH64_SIMD_FIXCONV:
-	    case AARCH64_SIMD_LANEMUL:
-	    case AARCH64_SIMD_LANEMULL:
-	    case AARCH64_SIMD_LANEMULH:
-	    case AARCH64_SIMD_LANEMAC:
-	    case AARCH64_SIMD_SCALARMUL:
-	    case AARCH64_SIMD_SCALARMULL:
-	    case AARCH64_SIMD_SCALARMULH:
-	    case AARCH64_SIMD_SCALARMAC:
-	    case AARCH64_SIMD_SELECT:
-	    case AARCH64_SIMD_VTBL:
-	    case AARCH64_SIMD_VTBX:
+	    for (k = insn_data[d->code].n_operands -1; k >= 0; k--)
 	      {
-		int k;
-		tree return_type = void_type_node, args = void_list_node;
+		/* Skip an internal operand for vget_{low, high}.  */
+		if (k == 2 && d->itype == AARCH64_SIMD_SPLIT)
+		  continue;
 
-		/* Build a function type directly from the insn_data for this
-		   builtin.  The build_function_type() function takes care of
-		   removing duplicates for us.  */
-		for (k = insn_data[icode].n_operands - 1; k >= 0; k--)
+		if (is_load && k == 1)
 		  {
-		    tree eltype;
+		    /* AdvSIMD load patterns always have the memory operand
+		       (a DImode pointer) in the operand 1 position.  We
+		       want a const pointer to the element type in that
+		       position.  */
+		    gcc_assert (insn_data[d->code].operand[k].mode == DImode);
 
-		    /* Skip an internal operand for vget_{low, high}.  */
-		    if (k == 2 && d->itype == AARCH64_SIMD_SPLIT)
-		      continue;
-
-		    if (is_load && k == 1)
+		    switch (d->mode)
 		      {
-			/* AdvSIMD load patterns always have the memory operand
-			   (a DImode pointer) in the operand 1 position.  We
-			   want a const pointer to the element type in that
-			   position.  */
-			gcc_assert (insn_data[icode].operand[k].mode ==
-				    DImode);
+		      case T_V8QI:
+		      case T_V16QI:
+			eltype = const_intQI_pointer_node;
+			break;
 
-			switch (1 << j)
-			  {
-			  case T_V8QI:
-			  case T_V16QI:
-			    eltype = const_intQI_pointer_node;
-			    break;
+		      case T_V4HI:
+		      case T_V8HI:
+			eltype = const_intHI_pointer_node;
+			break;
 
-			  case T_V4HI:
-			  case T_V8HI:
-			    eltype = const_intHI_pointer_node;
-			    break;
+		      case T_V2SI:
+		      case T_V4SI:
+			eltype = const_intSI_pointer_node;
+			break;
 
-			  case T_V2SI:
-			  case T_V4SI:
-			    eltype = const_intSI_pointer_node;
-			    break;
+		      case T_V2SF:
+		      case T_V4SF:
+			eltype = const_float_pointer_node;
+			break;
 
-			  case T_V2SF:
-			  case T_V4SF:
-			    eltype = const_float_pointer_node;
-			    break;
+		      case T_DI:
+		      case T_V2DI:
+			eltype = const_intDI_pointer_node;
+			break;
 
-			  case T_DI:
-			  case T_V2DI:
-			    eltype = const_intDI_pointer_node;
-			    break;
+		      case T_DF:
+		      case T_V2DF:
+			eltype = const_double_pointer_node;
+			break;
 
-			  case T_DF:
-			  case T_V2DF:
-			    eltype = const_double_pointer_node;
-			    break;
-
-			  default:
-			    gcc_unreachable ();
-			  }
+		      default:
+			gcc_unreachable ();
 		      }
-		    else if (is_store && k == 0)
+		  }
+		else if (is_store && k == 0)
+		  {
+		    /* Similarly, AdvSIMD store patterns use operand 0 as
+		       the memory location to store to (a DImode pointer).
+		       Use a pointer to the element type of the store in
+		       that position.  */
+		    gcc_assert (insn_data[d->code].operand[k].mode == DImode);
+
+		    switch (d->mode)
 		      {
-			/* Similarly, AdvSIMD store patterns use operand 0 as
-			   the memory location to store to (a DImode pointer).
-			   Use a pointer to the element type of the store in
-			   that position.  */
-			gcc_assert (insn_data[icode].operand[k].mode ==
-				    DImode);
+		      case T_V8QI:
+		      case T_V16QI:
+			eltype = intQI_pointer_node;
+			break;
 
-			switch (1 << j)
-			  {
-			  case T_V8QI:
-			  case T_V16QI:
-			    eltype = intQI_pointer_node;
-			    break;
+		      case T_V4HI:
+		      case T_V8HI:
+			eltype = intHI_pointer_node;
+			break;
 
-			  case T_V4HI:
-			  case T_V8HI:
-			    eltype = intHI_pointer_node;
-			    break;
+		      case T_V2SI:
+		      case T_V4SI:
+			eltype = intSI_pointer_node;
+			break;
 
-			  case T_V2SI:
-			  case T_V4SI:
-			    eltype = intSI_pointer_node;
-			    break;
+		      case T_V2SF:
+		      case T_V4SF:
+			eltype = float_pointer_node;
+			break;
 
-			  case T_V2SF:
-			  case T_V4SF:
-			    eltype = float_pointer_node;
-			    break;
+		      case T_DI:
+		      case T_V2DI:
+			eltype = intDI_pointer_node;
+			break;
 
-			  case T_DI:
-			  case T_V2DI:
-			    eltype = intDI_pointer_node;
-			    break;
+		      case T_DF:
+		      case T_V2DF:
+			eltype = double_pointer_node;
+			break;
 
-			  case T_DF:
-			  case T_V2DF:
-			    eltype = double_pointer_node;
-			    break;
-
-			  default:
-			    gcc_unreachable ();
-			  }
+		      default:
+			gcc_unreachable ();
 		      }
-		    else
+		  }
+		else
+		  {
+		    switch (insn_data[d->code].operand[k].mode)
 		      {
-			switch (insn_data[icode].operand[k].mode)
-			  {
-			  case VOIDmode:
-			    eltype = void_type_node;
-			    break;
-			    /* Scalars.  */
-			  case QImode:
-			    eltype = aarch64_simd_intQI_type_node;
-			    break;
-			  case HImode:
-			    eltype = aarch64_simd_intHI_type_node;
-			    break;
-			  case SImode:
-			    eltype = aarch64_simd_intSI_type_node;
-			    break;
-			  case SFmode:
-			    eltype = aarch64_simd_float_type_node;
-			    break;
-			  case DFmode:
-			    eltype = aarch64_simd_double_type_node;
-			    break;
-			  case DImode:
-			    eltype = aarch64_simd_intDI_type_node;
-			    break;
-			  case TImode:
-			    eltype = intTI_type_node;
-			    break;
-			  case EImode:
-			    eltype = intEI_type_node;
-			    break;
-			  case OImode:
-			    eltype = intOI_type_node;
-			    break;
-			  case CImode:
-			    eltype = intCI_type_node;
-			    break;
-			  case XImode:
-			    eltype = intXI_type_node;
-			    break;
-			    /* 64-bit vectors.  */
-			  case V8QImode:
-			    eltype = V8QI_type_node;
-			    break;
-			  case V4HImode:
-			    eltype = V4HI_type_node;
-			    break;
-			  case V2SImode:
-			    eltype = V2SI_type_node;
-			    break;
-			  case V2SFmode:
-			    eltype = V2SF_type_node;
-			    break;
-			    /* 128-bit vectors.  */
-			  case V16QImode:
-			    eltype = V16QI_type_node;
-			    break;
-			  case V8HImode:
-			    eltype = V8HI_type_node;
-			    break;
-			  case V4SImode:
-			    eltype = V4SI_type_node;
-			    break;
-			  case V4SFmode:
-			    eltype = V4SF_type_node;
-			    break;
-			  case V2DImode:
-			    eltype = V2DI_type_node;
-			    break;
-			  case V2DFmode:
-			    eltype = V2DF_type_node;
-			    break;
-			  default:
-			    gcc_unreachable ();
-			  }
+		      case VOIDmode:
+			eltype = void_type_node;
+			break;
+			/* Scalars.  */
+		      case QImode:
+			eltype = aarch64_simd_intQI_type_node;
+			break;
+		      case HImode:
+			eltype = aarch64_simd_intHI_type_node;
+			break;
+		      case SImode:
+			eltype = aarch64_simd_intSI_type_node;
+			break;
+		      case SFmode:
+			eltype = aarch64_simd_float_type_node;
+			break;
+		      case DFmode:
+			eltype = aarch64_simd_double_type_node;
+			break;
+		      case DImode:
+			eltype = aarch64_simd_intDI_type_node;
+			break;
+		      case TImode:
+			eltype = intTI_type_node;
+			break;
+		      case EImode:
+			eltype = intEI_type_node;
+			break;
+		      case OImode:
+			eltype = intOI_type_node;
+			break;
+		      case CImode:
+			eltype = intCI_type_node;
+			break;
+		      case XImode:
+			eltype = intXI_type_node;
+			break;
+			/* 64-bit vectors.  */
+		      case V8QImode:
+			eltype = V8QI_type_node;
+			break;
+		      case V4HImode:
+			eltype = V4HI_type_node;
+			break;
+		      case V2SImode:
+			eltype = V2SI_type_node;
+			break;
+		      case V2SFmode:
+			eltype = V2SF_type_node;
+			break;
+			/* 128-bit vectors.  */
+		      case V16QImode:
+			eltype = V16QI_type_node;
+			break;
+		      case V8HImode:
+			eltype = V8HI_type_node;
+			break;
+		      case V4SImode:
+			eltype = V4SI_type_node;
+			break;
+		      case V4SFmode:
+			eltype = V4SF_type_node;
+			break;
+		      case V2DImode:
+			eltype = V2DI_type_node;
+			break;
+		      case V2DFmode:
+			eltype = V2DF_type_node;
+			break;
+		      default:
+			gcc_unreachable ();
 		      }
-
-		    if (k == 0 && !is_store)
-		      return_type = eltype;
-		    else
-		      args = tree_cons (NULL_TREE, eltype, args);
 		  }
 
-		ftype = build_function_type (return_type, args);
+		if (k == 0 && !is_store)
+		  return_type = eltype;
+		else
+		  args = tree_cons (NULL_TREE, eltype, args);
 	      }
-	      break;
+	    ftype = build_function_type (return_type, args);
+	  }
+	  break;
 
-	    case AARCH64_SIMD_RESULTPAIR:
+	case AARCH64_SIMD_RESULTPAIR:
+	  {
+	    switch (insn_data[d->code].operand[1].mode)
 	      {
-		switch (insn_data[icode].operand[1].mode)
-		  {
-		  case V8QImode:
-		    ftype = void_ftype_pv8qi_v8qi_v8qi;
-		    break;
-		  case V4HImode:
-		    ftype = void_ftype_pv4hi_v4hi_v4hi;
-		    break;
-		  case V2SImode:
-		    ftype = void_ftype_pv2si_v2si_v2si;
-		    break;
-		  case V2SFmode:
-		    ftype = void_ftype_pv2sf_v2sf_v2sf;
-		    break;
-		  case DImode:
-		    ftype = void_ftype_pdi_di_di;
-		    break;
-		  case V16QImode:
-		    ftype = void_ftype_pv16qi_v16qi_v16qi;
-		    break;
-		  case V8HImode:
-		    ftype = void_ftype_pv8hi_v8hi_v8hi;
-		    break;
-		  case V4SImode:
-		    ftype = void_ftype_pv4si_v4si_v4si;
-		    break;
-		  case V4SFmode:
-		    ftype = void_ftype_pv4sf_v4sf_v4sf;
-		    break;
-		  case V2DImode:
-		    ftype = void_ftype_pv2di_v2di_v2di;
-		    break;
-		  case V2DFmode:
-		    ftype = void_ftype_pv2df_v2df_v2df;
-		    break;
-		  default:
-		    gcc_unreachable ();
-		  }
+	      case V8QImode:
+		ftype = void_ftype_pv8qi_v8qi_v8qi;
+		break;
+	      case V4HImode:
+		ftype = void_ftype_pv4hi_v4hi_v4hi;
+		break;
+	      case V2SImode:
+		ftype = void_ftype_pv2si_v2si_v2si;
+		break;
+	      case V2SFmode:
+		ftype = void_ftype_pv2sf_v2sf_v2sf;
+		break;
+	      case DImode:
+		ftype = void_ftype_pdi_di_di;
+		break;
+	      case V16QImode:
+		ftype = void_ftype_pv16qi_v16qi_v16qi;
+		break;
+	      case V8HImode:
+		ftype = void_ftype_pv8hi_v8hi_v8hi;
+		break;
+	      case V4SImode:
+		ftype = void_ftype_pv4si_v4si_v4si;
+		break;
+	      case V4SFmode:
+		ftype = void_ftype_pv4sf_v4sf_v4sf;
+		break;
+	      case V2DImode:
+		ftype = void_ftype_pv2di_v2di_v2di;
+		break;
+	      case V2DFmode:
+		ftype = void_ftype_pv2df_v2df_v2df;
+		break;
+	      default:
+		gcc_unreachable ();
 	      }
-	      break;
+	  }
+	  break;
 
-	    case AARCH64_SIMD_REINTERP:
+	case AARCH64_SIMD_REINTERP:
+	  {
+	    /* We iterate over 6 doubleword types, then 6 quadword
+	       types.  */
+	    int rhs_d = d->mode % NUM_DREG_TYPES;
+	    int rhs_q = (d->mode - NUM_DREG_TYPES) % NUM_QREG_TYPES;
+	    switch (insn_data[d->code].operand[0].mode)
 	      {
-		/* We iterate over 6 doubleword types, then 6 quadword
-		   types.  */
-		int rhs_d = j % NUM_DREG_TYPES;
-		int rhs_q = (j - NUM_DREG_TYPES) % NUM_QREG_TYPES;
-		switch (insn_data[icode].operand[0].mode)
-		  {
-		  case V8QImode:
-		    ftype = reinterp_ftype_dreg[0][rhs_d];
-		    break;
-		  case V4HImode:
-		    ftype = reinterp_ftype_dreg[1][rhs_d];
-		    break;
-		  case V2SImode:
-		    ftype = reinterp_ftype_dreg[2][rhs_d];
-		    break;
-		  case V2SFmode:
-		    ftype = reinterp_ftype_dreg[3][rhs_d];
-		    break;
-		  case DImode:
-		    ftype = reinterp_ftype_dreg[4][rhs_d];
-		    break;
-		  case DFmode:
-		    ftype = reinterp_ftype_dreg[5][rhs_d];
-		    break;
-		  case V16QImode:
-		    ftype = reinterp_ftype_qreg[0][rhs_q];
-		    break;
-		  case V8HImode:
-		    ftype = reinterp_ftype_qreg[1][rhs_q];
-		    break;
-		  case V4SImode:
-		    ftype = reinterp_ftype_qreg[2][rhs_q];
-		    break;
-		  case V4SFmode:
-		    ftype = reinterp_ftype_qreg[3][rhs_q];
-		    break;
-		  case V2DImode:
-		    ftype = reinterp_ftype_qreg[4][rhs_q];
-		    break;
-		  case V2DFmode:
-		    ftype = reinterp_ftype_qreg[5][rhs_q];
-		    break;
-		  default:
-		    gcc_unreachable ();
-		  }
+	      case V8QImode:
+		ftype = reinterp_ftype_dreg[0][rhs_d];
+		break;
+	      case V4HImode:
+		ftype = reinterp_ftype_dreg[1][rhs_d];
+		break;
+	      case V2SImode:
+		ftype = reinterp_ftype_dreg[2][rhs_d];
+		break;
+	      case V2SFmode:
+		ftype = reinterp_ftype_dreg[3][rhs_d];
+		break;
+	      case DImode:
+		ftype = reinterp_ftype_dreg[4][rhs_d];
+		break;
+	      case DFmode:
+		ftype = reinterp_ftype_dreg[5][rhs_d];
+		break;
+	      case V16QImode:
+		ftype = reinterp_ftype_qreg[0][rhs_q];
+		break;
+	      case V8HImode:
+		ftype = reinterp_ftype_qreg[1][rhs_q];
+		break;
+	      case V4SImode:
+		ftype = reinterp_ftype_qreg[2][rhs_q];
+		break;
+	      case V4SFmode:
+		ftype = reinterp_ftype_qreg[3][rhs_q];
+		break;
+	      case V2DImode:
+		ftype = reinterp_ftype_qreg[4][rhs_q];
+		break;
+	      case V2DFmode:
+		ftype = reinterp_ftype_qreg[5][rhs_q];
+		break;
+	      default:
+		gcc_unreachable ();
 	      }
-	      break;
+	  }
+	  break;
 
-	    default:
-	      gcc_unreachable ();
-	    }
-
-	  gcc_assert (ftype != NULL);
-
-	  snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s%s",
-		    d->name, modenames[j]);
-
-	  add_builtin_function (namebuf, ftype, fcode++, BUILT_IN_MD, NULL,
-				NULL_TREE);
+	default:
+	  gcc_unreachable ();
 	}
+      gcc_assert (ftype != NULL);
+
+      snprintf (namebuf, sizeof (namebuf), "__builtin_aarch64_%s%s",
+		d->name, modenames[d->mode]);
+
+      add_builtin_function (namebuf, ftype, fcode, BUILT_IN_MD, NULL,
+			    NULL_TREE);
     }
 }
 
-static int
-aarch64_simd_builtin_compare (const void *a, const void *b)
+void
+aarch64_init_builtins (void)
 {
-  const aarch64_simd_builtin_datum *const key =
-    (const aarch64_simd_builtin_datum *) a;
-  const aarch64_simd_builtin_datum *const memb =
-    (const aarch64_simd_builtin_datum *) b;
-  unsigned int soughtcode = key->base_fcode;
-
-  if (soughtcode >= memb->base_fcode
-      && soughtcode < memb->base_fcode + memb->num_vars)
-    return 0;
-  else if (soughtcode < memb->base_fcode)
-    return -1;
-  else
-    return 1;
-}
-
-
-static enum insn_code
-locate_simd_builtin_icode (int fcode, aarch64_simd_itype * itype)
-{
-  aarch64_simd_builtin_datum key
-    = { NULL, (aarch64_simd_itype) 0, 0, {CODE_FOR_nothing}, 0, 0};
-  aarch64_simd_builtin_datum *found;
-  int idx;
-
-  key.base_fcode = fcode;
-  found = (aarch64_simd_builtin_datum *)
-    bsearch (&key, &aarch64_simd_builtin_data[0],
-	     ARRAY_SIZE (aarch64_simd_builtin_data),
-	     sizeof (aarch64_simd_builtin_data[0]),
-	     aarch64_simd_builtin_compare);
-  gcc_assert (found);
-  idx = fcode - (int) found->base_fcode;
-  gcc_assert (idx >= 0 && idx < T_MAX && idx < (int) found->num_vars);
-
-  if (itype)
-    *itype = found->itype;
-
-  return found->codes[idx];
+  if (TARGET_SIMD)
+    aarch64_init_simd_builtins ();
 }
 
 typedef enum
@@ -1225,8 +1095,10 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 rtx
 aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 {
-  aarch64_simd_itype itype;
-  enum insn_code icode = locate_simd_builtin_icode (fcode, &itype);
+  aarch64_simd_builtin_datum *d =
+		&aarch64_simd_builtin_data[fcode - (AARCH64_SIMD_BUILTIN_BASE + 1)];
+  aarch64_simd_itype itype = d->itype;
+  enum insn_code icode = d->code;
 
   switch (itype)
     {
@@ -1317,4 +1189,22 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient.  */
+rtx
+aarch64_expand_builtin (tree exp,
+		     rtx target,
+		     rtx subtarget ATTRIBUTE_UNUSED,
+		     enum machine_mode mode ATTRIBUTE_UNUSED,
+		     int ignore ATTRIBUTE_UNUSED)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  if (fcode >= AARCH64_SIMD_BUILTIN_BASE)
+    return aarch64_simd_expand_builtin (fcode, exp, target);
+
+  return NULL_RTX;
 }
