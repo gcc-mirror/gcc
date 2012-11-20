@@ -1,3 +1,9 @@
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/doxygen/user.cfg.in (ALIASES). Escape sharp braces.
+	* include/bits/allocator.h: Escape sharp braces in comment.
+	* include/profile/impl/profiler_algos.h: Likewise.
+
 2012-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/ext/array_allocator.h: Replace uses of
