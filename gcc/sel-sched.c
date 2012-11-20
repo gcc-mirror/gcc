@@ -500,7 +500,7 @@ static int max_ws;
 static int num_insns_scheduled;
 
 /* A vector of expressions is used to be able to sort them.  */
-static vec<expr_t> vec_av_set = vec<expr_t>();
+static vec<expr_t> vec_av_set = vNULL;
 
 /* A vector of vinsns is used to hold temporary lists of vinsns.  */
 typedef vec<vinsn_t> vinsn_vec_t;
@@ -518,7 +518,7 @@ static vinsn_vec_t vec_target_unavailable_vinsns = vinsn_vec_t();
 
 /* Vector to store temporary nops inserted in move_op to prevent removal
    of empty bbs.  */
-static vec<insn_t> vec_temp_moveop_nops = vec<insn_t>();
+static vec<insn_t> vec_temp_moveop_nops = vNULL;
 
 /* These bitmaps record original instructions scheduled on the current
    iteration and bookkeeping copies created by them.  */

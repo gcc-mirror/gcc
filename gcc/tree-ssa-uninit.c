@@ -424,7 +424,7 @@ find_predicates (vec<use_pred_info_t> **preds,
 {
   size_t num_chains = 0, i;
   vec<edge> *dep_chains = 0;
-  vec<edge> cur_chain = vec<edge>();
+  vec<edge> cur_chain = vNULL;
   bool has_valid_pred = false;
   basic_block cd_root = 0;
 
@@ -525,8 +525,8 @@ find_def_preds (vec<use_pred_info_t> **preds,
 {
   size_t num_chains = 0, i, n;
   vec<edge> *dep_chains = 0;
-  vec<edge> cur_chain = vec<edge>();
-  vec<edge> def_edges = vec<edge>();
+  vec<edge> cur_chain = vNULL;
+  vec<edge> def_edges = vNULL;
   bool has_valid_pred = false;
   basic_block phi_bb, cd_root = 0;
   struct pointer_set_t *visited_phis;
@@ -1633,7 +1633,7 @@ normalize_preds (vec<use_pred_info_t> *preds, size_t *n)
 {
   size_t i, j, ll;
   vec<use_pred_info_t> pred_chain;
-  vec<use_pred_info_t> x = vec<use_pred_info_t>();
+  vec<use_pred_info_t> x = vNULL;
   use_pred_info_t xj = 0, nxj = 0;
 
   if (*n < 2)
@@ -1954,7 +1954,7 @@ execute_late_warn_uninitialized (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
-  vec<gimple> worklist = vec<gimple>();
+  vec<gimple> worklist = vNULL;
   struct pointer_set_t *added_to_worklist;
 
   calculate_dominance_info (CDI_DOMINATORS);

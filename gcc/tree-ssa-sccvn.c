@@ -1027,7 +1027,7 @@ copy_reference_ops_from_call (gimple call,
 static vec<vn_reference_op_s> 
 create_reference_ops_from_ref (tree ref)
 {
-  vec<vn_reference_op_s> result = vec<vn_reference_op_s>();
+  vec<vn_reference_op_s> result = vNULL;
 
   copy_reference_ops_from_ref (ref, &result);
   return result;
@@ -1039,7 +1039,7 @@ create_reference_ops_from_ref (tree ref)
 static vec<vn_reference_op_s> 
 create_reference_ops_from_call (gimple call)
 {
-  vec<vn_reference_op_s> result = vec<vn_reference_op_s>();
+  vec<vn_reference_op_s> result = vNULL;
 
   copy_reference_ops_from_call (call, &result);
   return result;
@@ -1316,7 +1316,7 @@ static vec<vn_reference_op_s>
 valueize_shared_reference_ops_from_ref (tree ref, bool *valueized_anything)
 {
   if (!ref)
-    return vec<vn_reference_op_s>();
+    return vNULL;
   shared_lookup_references.truncate (0);
   copy_reference_ops_from_ref (ref, &shared_lookup_references);
   shared_lookup_references = valueize_refs_1 (shared_lookup_references,
@@ -1332,7 +1332,7 @@ static vec<vn_reference_op_s>
 valueize_shared_reference_ops_from_call (gimple call)
 {
   if (!call)
-    return vec<vn_reference_op_s>();
+    return vNULL;
   shared_lookup_references.truncate (0);
   copy_reference_ops_from_call (call, &shared_lookup_references);
   shared_lookup_references = valueize_refs (shared_lookup_references);
@@ -1452,7 +1452,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
   tree base;
   HOST_WIDE_INT offset, maxsize;
   static vec<vn_reference_op_s>
-    lhs_ops = vec<vn_reference_op_s>();
+    lhs_ops = vNULL;
   ao_ref lhs_ref;
   bool lhs_ref_ok = false;
 
@@ -1658,7 +1658,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       HOST_WIDE_INT offset2, size2, maxsize2;
       int i, j;
       vec<vn_reference_op_s>
-	  rhs = vec<vn_reference_op_s>();
+	  rhs = vNULL;
       vn_reference_op_t vro;
       ao_ref r;
 
@@ -1715,7 +1715,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  vr->operands.safe_grow (i + 1 + rhs.length ());
 	  if (old == shared_lookup_references
 	      && vr->operands != old)
-	    shared_lookup_references = vec<vn_reference_op_s>();
+	    shared_lookup_references = vNULL;
 	}
       else
 	vr->operands.truncate (i + 1 + rhs.length ());
@@ -2507,7 +2507,7 @@ vn_phi_insert (gimple phi, tree result)
   void **slot;
   vn_phi_t vp1 = (vn_phi_t) pool_alloc (current_info->phis_pool);
   unsigned i;
-  vec<tree> args = vec<tree>();
+  vec<tree> args = vNULL;
 
   /* Canonicalize the SSA_NAME's to their value number.  */
   for (i = 0; i < gimple_phi_num_args (phi); i++)
@@ -3672,7 +3672,7 @@ process_scc (vec<tree> scc)
 static bool
 extract_and_process_scc_for_name (tree name)
 {
-  vec<tree> scc = vec<tree>();
+  vec<tree> scc = vNULL;
   tree x;
 
   /* Found an SCC, pop the components off the SCC stack and
@@ -3721,8 +3721,8 @@ extract_and_process_scc_for_name (tree name)
 static bool
 DFS (tree name)
 {
-  vec<ssa_op_iter> itervec = vec<ssa_op_iter>();
-  vec<tree> namevec = vec<tree>();
+  vec<ssa_op_iter> itervec = vNULL;
+  vec<tree> namevec = vNULL;
   use_operand_p usep = NULL;
   gimple defstmt;
   tree use;

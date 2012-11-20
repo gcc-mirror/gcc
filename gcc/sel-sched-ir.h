@@ -1050,7 +1050,7 @@ inner_loop_header_p (basic_block bb)
 static inline vec<edge> 
 get_loop_exit_edges_unique_dests (const struct loop *loop)
 {
-  vec<edge> edges = vec<edge>();
+  vec<edge> edges = vNULL;
   struct loop_exit *exit;
 
   gcc_assert (loop->latch != EXIT_BLOCK_PTR
@@ -1104,7 +1104,7 @@ sel_bb_empty_or_nop_p (basic_block bb)
 static inline vec<edge> 
 get_all_loop_exits (basic_block bb)
 {
-  vec<edge> exits = vec<edge>();
+  vec<edge> exits = vNULL;
 
   /* If bb is empty, and we're skipping to loop exits, then
      consider bb as a possible gate to the inner loop now.  */

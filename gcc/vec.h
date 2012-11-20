@@ -510,6 +510,17 @@ class GTY((user)) vec
 {
 };
 
+/* Type to provide NULL values for vec<T, A, L>.  This is used to
+   provide nil initializers for vec instances.  Since vec must be
+   a POD, we cannot have proper ctor/dtor for it.  To initialize
+   a vec instance, you can assign it the value vNULL.  */
+struct vnull
+{
+  template <typename T, typename A, typename L>
+  operator vec<T, A, L> () { return vec<T, A, L>(); }
+};
+extern vnull vNULL;
+
 
 /* Embeddable vector.  These vectors are suitable to be embedded
    in other data structures so that they can be pre-allocated in a
@@ -1432,7 +1443,7 @@ template<typename T, typename A>
 inline vec<T, A, vl_ptr>
 vec<T, A, vl_ptr>::copy (ALONE_MEM_STAT_DECL) const
 {
-  vec<T, A, vl_ptr> new_vec = vec<T, A, vl_ptr>();
+  vec<T, A, vl_ptr> new_vec = vNULL;
   if (length ())
     new_vec.vec_ = vec_->copy ();
   return new_vec;

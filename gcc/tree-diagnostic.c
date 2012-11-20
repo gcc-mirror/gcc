@@ -104,7 +104,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                  source_location where)
 {
   const struct line_map *map;
-  vec<loc_map_pair> loc_vec = vec<loc_map_pair>();
+  vec<loc_map_pair> loc_vec = vNULL;
   unsigned ix;
   loc_map_pair loc, *iter;
 

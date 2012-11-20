@@ -1575,7 +1575,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       tree target;
 
       target = ipa_get_indirect_edge_target (ie, known_csts, known_binfos,
-					vec<ipa_agg_jump_function_p>());
+					vNULL);
       if (!target)
 	continue;
 
@@ -2248,9 +2248,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
       tree target;
 
       next_ie = ie->next_callee;
-      target = ipa_get_indirect_edge_target (ie, known_vals,
-					vec<tree>(),
-					vec<ipa_agg_jump_function_p>());
+      target = ipa_get_indirect_edge_target (ie, known_vals, vNULL, vNULL);
       if (target)
 	{
 	  ipa_make_edge_direct_to_target (ie, target);
@@ -2731,10 +2729,10 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 static vec<ipa_agg_jf_item_t>
 copy_plats_to_inter (struct ipcp_param_lattices *plats, HOST_WIDE_INT offset)
 {
-  vec<ipa_agg_jf_item_t> res = vec<ipa_agg_jf_item_t>();
+  vec<ipa_agg_jf_item_t> res = vNULL;
 
   if (!plats->aggs || plats->aggs_contain_variable || plats->aggs_bottom)
-    return vec<ipa_agg_jf_item>();
+    return vNULL;
 
   for (struct ipcp_agg_lattice *aglat = plats->aggs; aglat; aglat = aglat->next)
     if (ipa_lat_is_single_const (aglat))
@@ -2796,7 +2794,7 @@ static vec<ipa_agg_jf_item_t>
 agg_replacements_to_vector (struct cgraph_node *node, HOST_WIDE_INT offset)
 {
   struct ipa_agg_replacement_value *av;
-  vec<ipa_agg_jf_item_t> res = vec<ipa_agg_jf_item_t>();
+  vec<ipa_agg_jf_item_t> res = vNULL;
 
   for (av = ipa_get_agg_replacements_for_node (node); av; av = av->next)
     {
@@ -2874,7 +2872,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
   for (i = 0; i < count ; i++)
     {
       struct cgraph_edge *cs;
-      vec<ipa_agg_jf_item_t> inter = vec<ipa_agg_jf_item_t>();
+      vec<ipa_agg_jf_item_t> inter = vNULL;
       struct ipa_agg_jf_item *item;
       int j;
 
@@ -3283,7 +3281,7 @@ decide_whether_version_node (struct cgraph_node *node)
   struct ipa_node_params *info = IPA_NODE_REF (node);
   int i, count = ipa_get_param_count (info);
   vec<tree> known_csts, known_binfos;
-  vec<ipa_agg_jump_function_t> known_aggs = vec<ipa_agg_jump_function_t>();
+  vec<ipa_agg_jump_function_t> known_aggs = vNULL;
   bool ret = false;
 
   if (count == 0)

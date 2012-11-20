@@ -3193,7 +3193,7 @@ hoist_code (void)
 	      /* Number of occurrences of EXPR that can be hoisted to BB.  */
 	      int hoistable = 0;
 	      /* Occurrences reachable from BB.  */
-	      vec<occr_t> occrs_to_hoist = vec<occr_t>();
+	      vec<occr_t> occrs_to_hoist = vNULL;
 	      /* We want to insert the expression into BB only once, so
 		 note when we've inserted it.  */
 	      int insn_inserted_p;

@@ -1086,7 +1086,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
 }
 
 static vec<cgraph_node_ptr> cgraph_node_map
-    = vec<cgraph_node_ptr>();
+    = vNULL;
 
 /* Initialize map from FUNCDEF_NO to CGRAPH_NODE.  */
 

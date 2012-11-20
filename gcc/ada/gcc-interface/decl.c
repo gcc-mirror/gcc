@@ -3327,7 +3327,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_variant_list
 		    = build_variant_list (TREE_TYPE (gnu_variant_part),
 					  gnu_subst_list,
-					  vec<variant_desc>());
+					  vNULL);
 
 		  /* If all the qualifiers are unconditionally true, the
 		     innermost variant is statically selected.  */
@@ -7552,7 +7552,7 @@ build_position_list (tree gnu_type, bool do_not_flatten_variant, tree gnu_pos,
 static vec<subst_pair>
 build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 {
-  vec<subst_pair> gnu_list = vec<subst_pair>();
+  vec<subst_pair> gnu_list = vNULL;
   Entity_Id gnat_discrim;
   Node_Id gnat_value;
 

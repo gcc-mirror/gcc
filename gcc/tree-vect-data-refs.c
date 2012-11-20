@@ -792,7 +792,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
                                    bb_vec_info bb_vinfo, int *max_vf)
 {
   unsigned int i;
-  vec<ddr_p> ddrs = vec<ddr_p>();
+  vec<ddr_p> ddrs = vNULL;
   struct data_dependence_relation *ddr;
 
   if (dump_enabled_p ())
@@ -3007,7 +3007,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	}
       if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
 				    &BB_VINFO_DDRS (bb_vinfo),
-				    vec<loop_p>(), true))
+				    vNULL, true))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
@@ -4745,7 +4745,7 @@ void
 vect_transform_grouped_load (gimple stmt, vec<tree> dr_chain, int size,
 			     gimple_stmt_iterator *gsi)
 {
-  vec<tree> result_chain = vec<tree>();
+  vec<tree> result_chain = vNULL;
 
   /* DR_CHAIN contains input data-refs that are a part of the interleaving.
      RESULT_CHAIN is the output of vect_permute_load_chain, it contains permuted

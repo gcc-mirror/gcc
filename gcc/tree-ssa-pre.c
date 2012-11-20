@@ -1534,8 +1534,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	vec<vn_reference_op_s> operands = ref->operands;
 	tree vuse = ref->vuse;
 	tree newvuse = vuse;
-	vec<vn_reference_op_s> newoperands
-	    = vec<vn_reference_op_s>();
+	vec<vn_reference_op_s> newoperands = vNULL;
 	bool changed = false, same_valid = true;
 	unsigned int i, j, n;
 	vn_reference_op_t operand;
@@ -3262,7 +3261,7 @@ do_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vec<pre_expr>();
+  vec<pre_expr> avail = vNULL;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3432,7 +3431,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vec<pre_expr>();
+  vec<pre_expr> avail = vNULL;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -3787,8 +3786,7 @@ compute_avail (void)
 	      {
 		vn_reference_t ref;
 		pre_expr result = NULL;
-		vec<vn_reference_op_s> ops
-		    = vec<vn_reference_op_s>();
+		vec<vn_reference_op_s> ops = vNULL;
 
 		/* We can value number only calls to real functions.  */
 		if (gimple_call_internal_p (stmt))

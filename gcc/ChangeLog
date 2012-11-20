@@ -58,6 +58,82 @@
 	(largetoc_low_aix<mode>): New.
 
 2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (struct vnull): Declare.
+	(vNULL): Declare.
+	* vec.c (vNULL): Define.
+	* bb-reorder.c: Replace all vec<T, A>() initializers with vNULL.
+	* cfgexpand.c: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cgraph.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* df-core.c: Likewise.
+	* dominance.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* except.c: Likewise.
+	* function.c: Likewise.
+	* gcse.c: Likewise.
+	* genautomata.c: Likewise.
+	* graphds.c: Likewise.
+	* graphite-scop-detection.c: Likewise.
+	* graphite.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* ifcvt.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ira-build.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* opts-global.c: Likewise.
+	* passes.c: Likewise.
+	* ree.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sel-sched-ir.c: Likewise.
+	* sel-sched-ir.h: Likewise.
+	* sel-sched.c: Likewise.
+	* stor-layout.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-call-cdce.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-data-ref.c: Likewise.
+	* tree-diagnostic.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* value-prof.c: Likewise.
+	* varasm.c: Likewise.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (tlink.o): Add dependency on VEC_H.
 

@@ -3698,13 +3698,13 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
   bool extract_scalar_result = false;
   gimple use_stmt, orig_stmt, reduction_phi = NULL;
   bool nested_in_vect_loop = false;
-  vec<gimple> new_phis = vec<gimple>();
-  vec<gimple> inner_phis = vec<gimple>();
+  vec<gimple> new_phis = vNULL;
+  vec<gimple> inner_phis = vNULL;
   enum vect_def_type dt = vect_unknown_def_type;
   int j, i;
-  vec<tree> scalar_results = vec<tree>();
+  vec<tree> scalar_results = vNULL;
   unsigned int group_size = 1, k, ratio;
-  vec<tree> vec_initial_defs = vec<tree>();
+  vec<tree> vec_initial_defs = vNULL;
   vec<gimple> phis;
   bool slp_reduc = false;
   tree new_phi_result;
@@ -4575,10 +4575,10 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   struct loop * def_stmt_loop, *outer_loop = NULL;
   tree def_arg;
   gimple def_arg_stmt;
-  vec<tree> vec_oprnds0 = vec<tree>();
-  vec<tree> vec_oprnds1 = vec<tree>();
-  vec<tree> vect_defs = vec<tree>();
-  vec<gimple> phis = vec<gimple>();
+  vec<tree> vec_oprnds0 = vNULL;
+  vec<tree> vec_oprnds1 = vNULL;
+  vec<tree> vect_defs = vNULL;
+  vec<gimple> phis = vNULL;
   int vec_num;
   tree def0, def1, tem, op0, op1 = NULL_TREE;
 

@@ -820,7 +820,7 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
 static void
 dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
-  vec<tree> access_fns = vec<tree>();
+  vec<tree> access_fns = vNULL;
   tree ref, op;
   tree base, off, access_fn;
   basic_block before_loop;
@@ -4615,8 +4615,7 @@ compute_data_dependences_for_bb (basic_block bb,
   if (find_data_references_in_bb (NULL, bb, datarefs) == chrec_dont_know)
     return false;
 
-  return compute_all_dependences (*datarefs, dependence_relations,
-				  vec<loop_p>(),
+  return compute_all_dependences (*datarefs, dependence_relations, vNULL,
 				  compute_self_and_read_read_dependences);
 }
 

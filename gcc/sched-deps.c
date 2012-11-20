@@ -59,7 +59,7 @@ struct sched_deps_info_def *sched_deps_info;
 
 /* The data is specific to the Haifa scheduler.  */
 vec<haifa_deps_insn_data_def>
-    h_d_i_d = vec<haifa_deps_insn_data_def>();
+    h_d_i_d = vNULL;
 
 /* Return the major type present in the DS.  */
 enum reg_note

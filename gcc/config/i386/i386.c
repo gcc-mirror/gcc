@@ -28768,7 +28768,7 @@ dispatch_function_versions (tree dispatch_decl,
   /* Function version dispatch is via IFUNC.  IFUNC resolvers fire before
      constructors, so explicity call __builtin_cpu_init here.  */
   ifunc_cpu_init_stmt = gimple_build_call_vec (
-                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], vec<tree>());
+                     ix86_builtins [(int) IX86_BUILTIN_CPU_INIT], vNULL);
   gimple_seq_add_stmt (&gseq, ifunc_cpu_init_stmt);
   gimple_set_bb (ifunc_cpu_init_stmt, *empty_bb);
   set_bb_seq (*empty_bb, gseq);
@@ -29275,7 +29275,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 {
   tree resolver_decl;
   basic_block empty_bb;
-  vec<tree> fn_ver_vec = vec<tree>();
+  vec<tree> fn_ver_vec = vNULL;
   tree default_ver_decl;
   struct cgraph_node *versn;
   struct cgraph_node *node;

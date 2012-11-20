@@ -1521,7 +1521,7 @@ static rtx
 expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
-  vec<tree> maybe_local_decls = vec<tree>();
+  vec<tree> maybe_local_decls = vNULL;
   rtx var_end_seq = NULL_RTX;
   struct pointer_map_t *ssa_name_decls;
   unsigned i;
@@ -1675,8 +1675,8 @@ expand_used_vars (void)
     {
       struct stack_vars_data data;
 
-      data.asan_vec = vec<HOST_WIDE_INT>();
-      data.asan_decl_vec = vec<tree>();
+      data.asan_vec = vNULL;
+      data.asan_decl_vec = vNULL;
 
       /* Reorder decls to be protected by iterating over the variables
 	 array multiple times, and allocating out of each phase in turn.  */

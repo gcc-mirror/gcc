@@ -2996,8 +2996,8 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 {
   pointer_map_t *bb_bounds;
   struct nb_iter_bound *elt;
-  vec<double_int> bounds = vec<double_int>();
-  vec<bb_queue> queues = vec<bb_queue>();
+  vec<double_int> bounds = vNULL;
+  vec<bb_queue> queues = vNULL;
   bb_queue queue = bb_queue();
   ptrdiff_t queue_index;
   ptrdiff_t latch_index = 0;
@@ -3166,7 +3166,7 @@ maybe_lower_iteration_bound (struct loop *loop)
   pointer_set_t *not_executed_last_iteration = NULL;
   struct nb_iter_bound *elt;
   bool found_exit = false;
-  vec<basic_block> queue = vec<basic_block>();
+  vec<basic_block> queue = vNULL;
   bitmap visited;
 
   /* Collect all statements with interesting (i.e. lower than

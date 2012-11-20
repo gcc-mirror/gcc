@@ -267,7 +267,7 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop ATTRIBUTE_UNUSED,
   unsigned i;
   int j;
   bool res = true;
-  vec<data_reference_p> drs = vec<data_reference_p>();
+  vec<data_reference_p> drs = vNULL;
   loop_p outer;
 
   for (outer = loop_containing_stmt (stmt); outer; outer = loop_outer (outer))
@@ -1585,7 +1585,7 @@ dot_all_scops (vec<scop_p> scops)
 DEBUG_FUNCTION void
 dot_scop (scop_p scop)
 {
-  vec<scop_p> scops = vec<scop_p>();
+  vec<scop_p> scops = vNULL;
 
   if (scop)
     scops.safe_push (scop);

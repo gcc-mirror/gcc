@@ -301,7 +301,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
   edge default_edge;
   bool update_dom = dom_info_available_p (CDI_DOMINATORS);
 
-  vec<basic_block> bbs_to_fix_dom = vec<basic_block>();
+  vec<basic_block> bbs_to_fix_dom = vNULL;
 
   tree index_type = TREE_TYPE (index_expr);
   tree unsigned_index_type = unsigned_type_for (index_type);
