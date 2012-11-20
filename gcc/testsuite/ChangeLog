@@ -1,3 +1,8 @@
+2012-11-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* g++.dg/torture/pr55260-1.C: New test.
+
 2012-11-20  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: New testcase.

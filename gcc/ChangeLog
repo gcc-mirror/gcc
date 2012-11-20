@@ -1,3 +1,10 @@
+2012-11-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* ipa-cp.c (find_aggregate_values_for_callers_subset): Rename info to
+	dest_info, use caller_info instead of info when determining whether
+	callee is a clone.
+
 2012-11-20  Andrey Turetskiy  <andrey.turetskiy@gmail.com>
 
 	* config/i386/sse.md (*<ssse3_avx2>_pmulhrsw<mode>3): Merge
