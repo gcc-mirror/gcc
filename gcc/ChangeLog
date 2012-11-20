@@ -1,3 +1,8 @@
+2012-11-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (largetoc_low): Revert.
+	(largetoc_low_aix<mode>): New.
+
 2012-11-20  Diego Novillo  <dnovillo@google.com>
 
 	* Makefile.in (tlink.o): Add dependency on VEC_H.
