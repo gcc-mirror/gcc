@@ -1,3 +1,16 @@
+2012-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (class vec_prefix): Change into struct.
+	Rename field alloc_PRIVATE_ back to alloc_.
+	Rename field num_PRIVATE_ to num_.
+	Update all users.
+	(class vec<T, A, vl_embed>): Rename field pfx_PRIVATE_ to vecpfx_.
+	Rename field data_PRIVATE_ to vecdata_.
+	Update all users.
+	(class vec<T, A, vl_ptr>): Make every field public.
+	Rename field vec_PRIVATE_ back to vec_.
+	Update all users.
+
 2012-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/55403
