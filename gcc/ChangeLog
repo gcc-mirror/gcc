@@ -1,3 +1,13 @@
+2012-11-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Reorder move
+	constraints so that the traditional floating point loads, stores,
+	and moves are done first, then the VSX loads, stores, and moves,
+	and finally the GPR loads, stores, and moves so that reload
+	chooses FPRs over GPRs, and uses the traditional load/store
+	instructions which provide an offset.
+	(movdf_hardfloat64): Likewise.
+
 2012-11-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/55359
