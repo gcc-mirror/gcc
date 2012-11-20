@@ -1908,7 +1908,7 @@ collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     collect2-aix.h
 
 tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-    $(OBSTACK_H) collect2.h intl.h $(DIAGNOSTIC_CORE_H)
+    $(OBSTACK_H) collect2.h intl.h $(DIAGNOSTIC_CORE_H) $(VEC_H)
 
 lto-wrapper$(exeext): lto-wrapper.o ggc-none.o libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \

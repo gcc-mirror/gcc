@@ -1,5 +1,9 @@
 2012-11-20  Diego Novillo  <dnovillo@google.com>
 
+	* Makefile.in (tlink.o): Add dependency on VEC_H.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+
 	PR middle-end/55398
 	* vec.h (class vec_prefix): Make every field public.
 	Rename field alloc_ to alloc_PRIVATE_.
