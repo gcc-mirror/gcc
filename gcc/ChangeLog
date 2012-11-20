@@ -1,3 +1,7 @@
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_call): Emit CLOBBERs in VOIDmode.
+
 2012-11-20  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_function_arg_boundary): When using the RX ABI
@@ -20,8 +24,7 @@
 	as it causes too much reload pressure.
 	* config/rx/rx.opt (mgcc-abi): New option.
 	(mrx-abi): New option.
-	* config/rx/t-rx (MULTILIB_OPTIONS): Show how to add an ABI
-	multilib.
+	* config/rx/t-rx (MULTILIB_OPTIONS): Show how to add an ABI multilib.
 	(MULTILIB_DIRNAMES): Likewise.
 
 2012-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
@@ -156,8 +159,7 @@
 	(expand_regions_1): Same.
 	(expand_region): Same.
 	(execute_tm_mark): Pass new argument to expand_regions.
-	(expand_block_edges): Pass new argument to
-	get_bb_regions_instrumented.
+	(expand_block_edges): Pass new argument to get_bb_regions_instrumented.
 
 2012-11-19  Sofiane Naci  <sofiane.naci@arm.com>
 
@@ -397,8 +399,7 @@
 	(stack_vec_register_index): New.
 	(unregister_stack_vec): New.
 	(vec_assert_fail): Remove.
-	* vec.h: Conditionally include ggc.h.  Document conditional
-	hackery.
+	* vec.h: Conditionally include ggc.h.  Document conditional hackery.
 	Update top-level documentation.
 	(ALONE_VEC_CHECK_INFO): Remove.
 	(VEC_CHECK_INFO): Remove.
@@ -407,8 +408,7 @@
 	(ALONE_VEC_CHECK_PASS): Remove.
 	(VEC_CHECK_PASS): Remove.
 	(VEC_ASSERT): Remove.
-	(vec_prefix): Add friends va_gc, va_gc_atomic, va_heap and
-	va_stack.
+	(vec_prefix): Add friends va_gc, va_gc_atomic, va_heap and va_stack.
 	Mark fields alloc_ and num_ as protected.
 	(struct vec_t): Remove.  Remove all function members.
 	(struct vl_embed): Declare.
@@ -580,10 +580,8 @@
 	Call create_user_defined_type when parsing GTY((user)).
 	* gengtype-state.c (type_lineloc): handle TYPE_UNDEFINED.
 	(write_state_undefined_type): New.
-	(write_state_type): Call write_state_undefined_type for
-	TYPE_UNDEFINED.
-	(read_state_type): Call read_state_undefined_type for
-	TYPE_UNDEFINED.
+	(write_state_type): Call write_state_undefined_type for TYPE_UNDEFINED.
+	(read_state_type): Call read_state_undefined_type for TYPE_UNDEFINED.
 	* gengtype.c (dbgprint_count_type_at): Handle TYPE_UNDEFINED.
 	(create_user_defined_type): Make extern.
 	(type_for_name): Factor out of resolve_typedef.
@@ -596,8 +594,7 @@
 	Emit an error for TYPE_UNDEFINED unless LEVEL is GC_UNUSED or
 	ALLOWED_UNDEFINED_TYPES is set.
 	Set ALLOWED_UNDEFINED_TYPES to true for TYPE_USER_STRUCT.
-	(filter_type_name): Accept templates with more than one
-	argument.
+	(filter_type_name): Accept templates with more than one argument.
 	(output_mangled_typename): Handle TYPE_UNDEFINED
 	(walk_type): Likewise.
 	(write_types_process_field): Likewise.
@@ -610,8 +607,7 @@
 	(write_root): Reject user-defined types that are not pointers.
 	Handle TYPE_NONE, TYPE_UNDEFINED, TYPE_UNION, TYPE_LANG_STRUCT
 	and TYPE_PARAM_STRUCT.
-	(output_typename): Handle TYPE_NONE, TYPE_UNDEFINED, and
-	TYPE_ARRAY.
+	(output_typename): Handle TYPE_NONE, TYPE_UNDEFINED, and TYPE_ARRAY.
 	(dump_typekind): Handle TYPE_UNDEFINED.
 	* gengtype.h (enum typekind): Add TYPE_UNDEFINED.
 	(create_user_defined_type): Declare.
@@ -913,7 +909,8 @@
 
 2012-11-16  Jan Hubicka  <jh@suse.cz>
 
-	* params.def (max-peeled-insns, max-completely-peeled-insns): Reduce to 100.
+	* params.def (max-peeled-insns, max-completely-peeled-insns): Reduce
+	to 100.
 
 2012-11-16  Simon Baldwin  <simonb@google.com>
 

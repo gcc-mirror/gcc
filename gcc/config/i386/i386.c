@@ -23528,9 +23528,8 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 				       UNSPEC_MS_TO_SYSV_CALL);
 
       for (i = 0; i < ARRAY_SIZE (clobbered_registers); i++)
-        vec[vec_len++]
-	  = gen_rtx_CLOBBER (SSE_REGNO_P (clobbered_registers[i])
-			     ? TImode : DImode,
+	vec[vec_len++]
+	  = gen_rtx_CLOBBER (VOIDmode,
 			     gen_rtx_REG (SSE_REGNO_P (clobbered_registers[i])
 					  ? TImode : DImode,
 					  clobbered_registers[i]));
