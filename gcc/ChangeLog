@@ -4,6 +4,79 @@
 
 2012-11-20  Nick Clifton  <nickc@redhat.com>
 
+	* config/v850/v850.c (F): New function.  Mark the given insn as
+	being frame related.
+	(v850_all_frame_related): New function.  Mark the given push insn
+	as being frame related.
+	(v850_pass_by_reference): When using the RH850 ABI do not pass
+	arguments by reference.
+	(v850_strict_argument_naming): Delete function.
+	(v850_function_arg): Use word alignment with the RH850 ABI.
+	(v850_arg_partial_bytes): Likewise.
+	(v850_function_arg_advance): Likewise.
+	(v850_print_operand): Handle CONST_INT and CONST_DOUBLE.
+	(compute_register_save_size): Use df_regs_ever_live_p.
+	(increment_stack): Mark prologue adjustments as being frame
+	related.
+	(expand_prologue): Handle pretend args.  Mark insns generated as
+	being frame related.
+	(expand_epilogue): Likewise.
+	(v850_return_in_memory): When using the RH850 ABI return
+	aggregates in memory.
+	(v850_setup_incoming_varargs): Delete function.
+	(v850_option_override): New function.
+	(TARGET_DEBUG_UNWIND_INFO): Delete definition.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/v850/v850.h (ASM_SPEC): Pass 8byte-align and gcc-abi
+	options on to assembler.
+	(LINK_SPEC): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Define __V850_8BYTE_ALIGN__ and
+	__V850_GCC_ABI__.
+	(STACK_BOUNDARY): Set to BIGGEST_ALIGNMENT.
+	(FUNCTION_BOUNDARY): With the RH850 ABI always 32-bit alignment.
+	(BIGGEST_ALIGNMENT): With -8byte-align set to 64-bits.
+	(BIGGEST_FIELD_ALIGNMENT): Likewise.
+	(enum reg_class): Swap EVEN_REGS and GENERAL_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(struct cum_arg): Delete anonymous_args field.
+	(INIT_CUMULATIVE_ARGS): Update.
+	(PREFERRED_DEBUG): Set to DWARF2_DEBUG.
+	(DWARF2_FRAME_INFO): Define.
+	(DWARF2_UNWIND_INFO): Define.
+	(INCOMING_RETURN_ADDR_RTX): Define.
+	(DWARF_FRAME_RETURN_COLUMN): Define.
+	(TARGET_USE_FPU): Define.
+	* config/v850/v850.md: Replace TARGET_V850E2V3 in floating point
+	insns with TARGET_USE_FPU.
+	(fixuns_truncsfsi2): New pattern.
+	(fixuns_truncdfsi2): New pattern.
+	(fix_truncsfdi2): New pattern.
+	(fixuns_truncsfdi2): New pattern.
+	(fix_truncdfdi2): New pattern.
+	(fixuns_truncdfdi2): New pattern.
+	(unsfloatsisf2): New pattern.
+	(unsfloatsidf2): New pattern.
+	(floatdisf2): New pattern.
+	(unsfloatdisf2): New pattern.
+	(floatdidf2): New pattern.
+	(unsfloatdidf2): New pattern.
+	(fnmasf4): Fix RTl description.
+	(fnmssf4): Likewise.
+	* config/v850/v850.opt (mrelax): New option.
+	(mlong-jumps): Likewise.
+	(msoft-float): Likewise.
+	(mhard-float): Likewise.
+	(mrh850-abi): Likewise.
+	(mgcc-abi): Likewise.
+	(m8byte-align): Likewise.
+	* config/v850/t-v850 (MULTILIB_OPTIONS): Update multilib options.
+	(MULTILIB_DIRNAMES): Likewise.
+
+2012-11-20  Nick Clifton  <nickc@redhat.com>
+
 	* config/rx/rx.c (rx_function_arg_boundary): When using the RX ABI
 	align stack arguments to their natural alignment.
 	(rx_narrow_volatile_bitfield): New function.  Allows narrow
