@@ -1,3 +1,26 @@
+2012-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_builtin_type_bits): Rename to...
+	(aarch64_simd_builtin_type_mode): ...this, make sequential.
+	(aarch64_simd_builtin_datum): Refactor members.
+	(VAR1, VAR2, ..., VAR12): Update accordingly.
+	(aarch64_simd_builtin_data): Include from aarch64-simd-builtins.def.
+	(aarch64_builtins): Update accordingly.
+	(init_aarch64_simd_builtins): Refactor, rename to...
+	(aarch64_init_simd_builtins): ...this.
+	(aarch64_simd_builtin_compare): Remove.
+	(locate_simd_builtin_icode): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_init_builtins): New.
+	(aarch64_expand_builtin): New.
+	* config/aarch64/aarch64-simd-builtins.def: New file.
+	* config/aarch64/aarch64.c (aarch64_init_builtins):
+	Move to aarch64-builtins.c.
+	(aarch64_expand_builtin): Likewise.
+	* config/aarch64/aarch64.h
+	(aarch64_builtins): Move to aarch64-builtins.c.
+
 2012-11-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55260
