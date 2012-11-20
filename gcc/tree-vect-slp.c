@@ -960,7 +960,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 				   prologue_cost_vec, body_cost_vec))
         {
 	  if (child)
-	    oprnd_info->def_stmts = vec<gimple>();
+	    oprnd_info->def_stmts = vNULL;
 	  vect_free_slp_tree (child);
 	  vect_free_oprnd_info (oprnds_info);
    	  return false;
@@ -1058,7 +1058,7 @@ vect_supported_slp_permutation_p (slp_instance instance)
   slp_tree node = SLP_INSTANCE_LOADS (instance)[0];
   gimple stmt = SLP_TREE_SCALAR_STMTS (node)[0];
   gimple first_load = GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt));
-  vec<slp_tree> sorted_loads = vec<slp_tree>();
+  vec<slp_tree> sorted_loads = vNULL;
   int index;
   slp_tree *tmp_loads = NULL;
   int group_size = SLP_INSTANCE_GROUP_SIZE (instance), i, j;
@@ -1102,7 +1102,7 @@ vect_supported_slp_permutation_p (slp_instance instance)
   SLP_INSTANCE_LOADS (instance) = sorted_loads;
   free (tmp_loads);
 
-  if (!vect_transform_slp_perm_load (stmt, vec<tree>(), NULL,
+  if (!vect_transform_slp_perm_load (stmt, vNULL, NULL,
                                      SLP_INSTANCE_UNROLLING_FACTOR (instance),
                                      instance, true))
     return false;
@@ -1705,8 +1705,8 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   unsigned int i;
   vec<gimple> grouped_stores;
-  vec<gimple> reductions = vec<gimple>();
-  vec<gimple> reduc_chains = vec<gimple>();
+  vec<gimple> reductions = vNULL;
+  vec<gimple> reduc_chains = vNULL;
   gimple first_element;
   bool ok = false;
 

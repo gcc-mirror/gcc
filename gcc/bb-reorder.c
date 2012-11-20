@@ -1461,7 +1461,7 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
 static vec<edge> 
 find_rarely_executed_basic_blocks_and_crossing_edges (void)
 {
-  vec<edge> crossing_edges = vec<edge>();
+  vec<edge> crossing_edges = vNULL;
   basic_block bb;
   edge e;
   edge_iterator ei;

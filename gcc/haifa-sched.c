@@ -383,13 +383,13 @@ const struct common_sched_info_def haifa_common_sched_info =
   };
 
 /* Mapping from instruction UID to its Logical UID.  */
-vec<int> sched_luids = vec<int>();
+vec<int> sched_luids = vNULL;
 
 /* Next LUID to assign to an instruction.  */
 int sched_max_luid = 1;
 
 /* Haifa Instruction Data.  */
-vec<haifa_insn_data_def> h_i_d = vec<haifa_insn_data_def>();
+vec<haifa_insn_data_def> h_i_d = vNULL;
 
 void (* sched_init_only_bb) (basic_block, basic_block);
 
@@ -4187,7 +4187,7 @@ undo_replacements_for_backtrack (struct haifa_saved_data *save)
 static void
 unschedule_insns_until (rtx insn)
 {
-  vec<rtx> recompute_vec = vec<rtx>();
+  vec<rtx> recompute_vec = vNULL;
 
   /* Make two passes over the insns to be unscheduled.  First, we clear out
      dependencies and other trivial bookkeeping.  */

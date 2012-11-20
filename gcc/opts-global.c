@@ -353,7 +353,7 @@ handle_common_deferred_options (void)
   if (common_deferred_options)
     v = *((vec<cl_deferred_option> *) common_deferred_options);
   else
-    v = vec<cl_deferred_option>();
+    v = vNULL;
 
   if (flag_dump_all_passed)
     enable_rtl_dump_file ();

@@ -1305,7 +1305,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
   stmtblock_t body;
   gfc_omp_clauses *clauses = code->ext.omp_clauses;
   int i, collapse = clauses->collapse;
-  vec<dovar_init> inits = vec<dovar_init>();
+  vec<dovar_init> inits = vNULL;
   dovar_init *di;
   unsigned ix;
 

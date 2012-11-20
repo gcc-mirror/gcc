@@ -1038,7 +1038,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   unsigned new_est_niter, i, prob;
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   sbitmap wont_exit;
-  vec<edge> to_remove = vec<edge>();
+  vec<edge> to_remove = vNULL;
 
   est_niter = expected_loop_iterations (loop);
   determine_exit_conditions (loop, desc, factor,

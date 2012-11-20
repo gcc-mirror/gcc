@@ -1020,7 +1020,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	return;
       /* Now check that if there is a dependence this dependence is
          of a suitable form for memmove.  */
-      vec<loop_p> loops = vec<loop_p>();
+      vec<loop_p> loops = vNULL;
       ddr_p ddr;
       loops.safe_push (loop);
       ddr = initialize_data_dependence_relation (single_load, single_store,
@@ -1506,7 +1506,7 @@ tree_loop_distribution (void)
      walking to innermost loops.  */
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
-      vec<gimple> work_list = vec<gimple>();
+      vec<gimple> work_list = vNULL;
       basic_block *bbs;
       int num = loop->num;
       int nb_generated_loops = 0;

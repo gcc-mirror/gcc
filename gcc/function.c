@@ -2265,7 +2265,7 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
 {
   tree fndecl = current_function_decl;
   tree fntype = TREE_TYPE (fndecl);
-  vec<tree> fnargs = vec<tree>();
+  vec<tree> fnargs = vNULL;
   tree arg;
 
   for (arg = DECL_ARGUMENTS (fndecl); arg; arg = DECL_CHAIN (arg))
@@ -5874,7 +5874,7 @@ thread_prologue_and_epilogue_insns (void)
 {
   bool inserted;
 #ifdef HAVE_simple_return
-  vec<edge> unconverted_simple_returns = vec<edge>();
+  vec<edge> unconverted_simple_returns = vNULL;
   bool nonempty_prologue;
   bitmap_head bb_flags;
   unsigned max_grow_size;
@@ -6374,7 +6374,7 @@ thread_prologue_and_epilogue_insns (void)
 
 	  if (LABEL_P (BB_HEAD (last_bb))
 	      && !active_insn_between (BB_HEAD (last_bb), BB_END (last_bb)))
-	    convert_jumps_to_returns (last_bb, false, vec<edge>());
+	    convert_jumps_to_returns (last_bb, false, vNULL);
 
 	  if (EDGE_COUNT (last_bb->preds) != 0
 	      && single_succ_p (last_bb))

@@ -92,7 +92,7 @@ get_loop_latch_edges (const struct loop *loop)
 {
   edge_iterator ei;
   edge e;
-  vec<edge> ret = vec<edge>();
+  vec<edge> ret = vNULL;
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     {
@@ -225,7 +225,7 @@ flow_loops_free (struct loops *loops)
 int
 flow_loop_nodes_find (basic_block header, struct loop *loop)
 {
-  vec<basic_block> stack = vec<basic_block>();
+  vec<basic_block> stack = vNULL;
   int num_nodes = 1;
   edge latch;
   edge_iterator latch_ei;
@@ -1117,7 +1117,7 @@ release_recorded_exits (void)
 vec<edge> 
 get_loop_exit_edges (const struct loop *loop)
 {
-  vec<edge> edges = vec<edge>();
+  vec<edge> edges = vNULL;
   edge e;
   unsigned i;
   basic_block *body;

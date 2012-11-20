@@ -1,3 +1,10 @@
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* name-lookup.c: Replace all vec<T, A>() initializers
+	with vNULL.
+	* semantics.c: Likewise.
+
 2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55368

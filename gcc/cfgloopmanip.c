@@ -588,7 +588,7 @@ scale_loop_profile (struct loop *loop, int scale, int iteration_bound)
 static void
 update_dominators_in_loop (struct loop *loop)
 {
-  vec<basic_block> dom_bbs = vec<basic_block>();
+  vec<basic_block> dom_bbs = vNULL;
   sbitmap seen;
   basic_block *body;
   unsigned i;

@@ -6510,7 +6510,7 @@ cxx_bind_parameters_in_call (const constexpr_call *old_call, tree t,
    These do not need to be marked for PCH or GC.  */
 
 /* FIXME remember and print actual constant arguments.  */
-static vec<tree> call_stack = vec<tree>();
+static vec<tree> call_stack = vNULL;
 static int call_stack_tick;
 static int last_cx_error_tick;
 
@@ -6536,7 +6536,7 @@ pop_cx_call_context (void)
 vec<tree> 
 cx_error_context (void)
 {
-  vec<tree> r = vec<tree>();
+  vec<tree> r = vNULL;
   if (call_stack_tick != last_cx_error_tick
       && !call_stack.is_empty ())
     r = call_stack;

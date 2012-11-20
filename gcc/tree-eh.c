@@ -3332,7 +3332,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
     {
     case ERT_TRY:
       {
-	vec<tree> labels = vec<tree>();
+	vec<tree> labels = vNULL;
 	tree default_label = NULL;
 	eh_catch c;
 	edge_iterator ei;

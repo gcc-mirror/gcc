@@ -1806,7 +1806,7 @@ rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
 {
   unsigned i;
   mem_ref_loc_p loc;
-  vec<mem_ref_loc_p> locs = vec<mem_ref_loc_p>();
+  vec<mem_ref_loc_p> locs = vNULL;
 
   get_all_locs_in_loop (loop, ref, &locs);
   FOR_EACH_VEC_ELT (locs, i, loc)
@@ -2078,7 +2078,7 @@ execute_sm_if_changed_flag_set (struct loop *loop, mem_ref_p ref)
   unsigned i;
   mem_ref_loc_p loc;
   tree flag;
-  vec<mem_ref_loc_p> locs = vec<mem_ref_loc_p>();
+  vec<mem_ref_loc_p> locs = vNULL;
   char *str = get_lsm_tmp_name (ref->mem, ~0);
 
   lsm_tmp_name_add ("_flag");
@@ -2199,7 +2199,7 @@ hoist_memory_references (struct loop *loop, bitmap mem_refs,
 static bool
 ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
 {
-  vec<mem_ref_loc_p> locs = vec<mem_ref_loc_p>();
+  vec<mem_ref_loc_p> locs = vNULL;
   unsigned i;
   mem_ref_loc_p loc;
   bool ret = false;

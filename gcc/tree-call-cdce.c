@@ -861,7 +861,7 @@ tree_call_cdce (void)
   basic_block bb;
   gimple_stmt_iterator i;
   bool something_changed = false;
-  vec<gimple> cond_dead_built_in_calls = vec<gimple>();
+  vec<gimple> cond_dead_built_in_calls = vNULL;
   FOR_EACH_BB (bb)
     {
       /* Collect dead call candidates.  */

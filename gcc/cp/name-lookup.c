@@ -4222,8 +4222,8 @@ remove_hidden_names (tree fns)
 void
 suggest_alternatives_for (location_t location, tree name)
 {
-  vec<tree> candidates = vec<tree>();
-  vec<tree> namespaces_to_search = vec<tree>();
+  vec<tree> candidates = vNULL;
+  vec<tree> namespaces_to_search = vNULL;
   int max_to_search = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
   int n_searched = 0;
   tree t;
@@ -5900,7 +5900,7 @@ store_binding (tree id, vec<cxx_saved_binding, va_gc> **old_bindings)
 static void
 store_bindings (tree names, vec<cxx_saved_binding, va_gc> **old_bindings)
 {
-  static vec<tree> bindings_need_stored = vec<tree>();
+  static vec<tree> bindings_need_stored = vNULL;
   tree t, id;
   size_t i;
 
@@ -5936,7 +5936,7 @@ static void
 store_class_bindings (vec<cp_class_binding, va_gc> *names,
 		      vec<cxx_saved_binding, va_gc> **old_bindings)
 {
-  static vec<tree> bindings_need_stored = vec<tree>();
+  static vec<tree> bindings_need_stored = vNULL;
   size_t i;
   cp_class_binding *cb;
 

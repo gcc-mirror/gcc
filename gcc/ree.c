@@ -829,7 +829,7 @@ add_removable_extension (const_rtx expr, rtx insn,
 static vec<ext_cand>
 find_removable_extensions (void)
 {
-  vec<ext_cand> insn_list = vec<ext_cand>();
+  vec<ext_cand> insn_list = vNULL;
   basic_block bb;
   rtx insn, set;
   unsigned *def_map = XCNEWVEC (unsigned, max_insn_uid);

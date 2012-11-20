@@ -1313,8 +1313,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	  /* We need original clone to copy around.  */
 	  master_clone = cgraph_clone_node (node, node->symbol.decl,
 					    node->count, CGRAPH_FREQ_BASE,
-					    false, vec<cgraph_edge_p>(),
-					    true);
+					    false, vNULL, true);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
 	      clone_inlined_nodes (e, true, false, NULL);
@@ -1403,7 +1402,7 @@ inline_small_functions (void)
   fibheap_t edge_heap = fibheap_new ();
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
   int min_size, max_size;
-  vec<cgraph_edge_p> new_indirect_edges = vec<cgraph_edge_p>();
+  vec<cgraph_edge_p> new_indirect_edges = vNULL;
   int initial_size = 0;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
 

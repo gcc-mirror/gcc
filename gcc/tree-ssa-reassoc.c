@@ -2519,7 +2519,7 @@ maybe_optimize_range_tests (gimple stmt)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  vec<operand_entry_t> ops = vec<operand_entry_t>();
+  vec<operand_entry_t> ops = vNULL;
 
   /* Consider only basic blocks that end with GIMPLE_COND or
      a cast statement satisfying final_range_test_p.  All
@@ -4067,7 +4067,7 @@ reassociate_bb (basic_block bb)
 
 	  if (associative_tree_code (rhs_code))
 	    {
-	      vec<operand_entry_t> ops = vec<operand_entry_t>();
+	      vec<operand_entry_t> ops = vNULL;
 	      tree powi_result = NULL_TREE;
 
 	      /* There may be no immediate uses left by the time we
@@ -4228,7 +4228,7 @@ init_reassoc (void)
 
   free (bbs);
   calculate_dominance_info (CDI_POST_DOMINATORS);
-  plus_negates = vec<tree>();
+  plus_negates = vNULL;
 }
 
 /* Cleanup after the reassociation pass, and print stats if

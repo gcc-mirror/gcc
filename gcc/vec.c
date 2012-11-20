@@ -35,6 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "hashtab.h"
 
+/* vNULL is an empty type with a template cast operation that returns
+   a zero-initialized vec<T, A, L> instance.  Use this when you want
+   to assign nil values to new vec instances or pass a nil vector as
+   a function call argument.
+
+   We use this technique because vec<T, A, L> must be PODs (they are
+   stored in unions and passed in vararg functions), this means that
+   they cannot have ctors/dtors.  */
+vnull vNULL;
+
+
 /* Store information about each particular vector.  */
 struct vec_descriptor
 {
