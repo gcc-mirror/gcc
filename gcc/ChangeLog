@@ -1,5 +1,12 @@
 2012-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/55094
+	* builtins.c (expand_builtin_trap): Add REG_ARGS_SIZE note
+	on the trap insn for !ACCUMULATE_OUTGOING_ARGS.
+	* cfgcleanup.c (outgoing_edges_match): Don't look at debug insns
+	on the first old_insns_match_p call.  For !ACCUMULATE_OUTGOING_ARGS
+	fail if the last real insn doesn't have REG_ARGS_SIZE note.
+
 	PR rtl-optimization/54921
 	* cselib.h (fp_setter_insn): New prototype.
 	* cselib.c (fp_setter_insn): New function.
