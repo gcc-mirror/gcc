@@ -1,3 +1,9 @@
+2012-11-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/55350
+	* gimple-ssa-strength-reduction.c (replace_dependent): Handle
+	POINTER_PLUS_EXPR correctly.
+
 2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fix_trunc<MODEF:mode><SWI48:mode>_sse): Macroize
