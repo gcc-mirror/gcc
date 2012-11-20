@@ -1,3 +1,25 @@
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fix_trunc<MODEF:mode><SWI48:mode>_sse): Macroize
+	insn from fix_trunc<mode>{si,di}_sse using SWI48 mode iterator.
+	(peephole2 to avoid vector decoded forms): Macroize peephole2
+	using MODEF mode iterator.  Use SWI48 mode iterator instead of SWI48x.
+
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/19398
+	* config/i386/i386.md
+	(peephole2 to shorten x87->SSE reload sequences): Remove peephole2.
+	* config/i386/i386.h (enum ix86_tune_indices)
+	<IX86_TUNE_SHORTEN_X87_SSE>: Remove.
+	* config/i386/i386.h (initial_ix86_tune_features): Update.
+
+2012-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/19398
+	* lra-constraints.c (process_alt_operands): Discourage reloads
+	through secodnary memory.
+
 2012-11-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (largetoc_low): Revert.
@@ -48,8 +70,7 @@
 	(v850_function_arg_advance): Likewise.
 	(v850_print_operand): Handle CONST_INT and CONST_DOUBLE.
 	(compute_register_save_size): Use df_regs_ever_live_p.
-	(increment_stack): Mark prologue adjustments as being frame
-	related.
+	(increment_stack): Mark prologue adjustments as being frame related.
 	(expand_prologue): Handle pretend args.  Mark insns generated as
 	being frame related.
 	(expand_epilogue): Likewise.

@@ -1942,6 +1942,19 @@ process_alt_operands (int only_alternative)
 	      if (no_regs_p && REG_P (op))
 		reject++;
 
+#ifdef SECONDARY_MEMORY_NEEDED
+	      /* If reload requires moving value through secondary
+		 memory, it will need one more insn at least.  */
+	      if (this_alternative != NO_REGS 
+		  && REG_P (op) && (cl = get_reg_class (REGNO (op))) != NO_REGS
+		  && ((curr_static_id->operand[nop].type != OP_OUT
+		       && SECONDARY_MEMORY_NEEDED (cl, this_alternative,
+						   GET_MODE (op)))
+		      || (curr_static_id->operand[nop].type != OP_IN
+			  && SECONDARY_MEMORY_NEEDED (this_alternative, cl,
+						      GET_MODE (op)))))
+		losers++;
+#endif
 	      /* Input reloads can be inherited more often than output
 		 reloads can be removed, so penalize output
 		 reloads.  */
