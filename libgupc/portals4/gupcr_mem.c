@@ -82,10 +82,29 @@ upc_memcpy (upc_shared_ptr_t dest, upc_shared_ptr_t src, size_t n)
       gupcr_gmem_sync_gets ();
     }
   else if (sthread_local)
-    gupcr_gmem_put (dthread, doffset,
-		    GUPCR_GMEM_OFF_TO_LOCAL (sthread, soffset), n);
+    {
+      if (n > (size_t) GUPCR_PORTALS_MAX_ORDERED_SIZE)
+	{
+	  gupcr_gmem_sync_puts ();
+	  gupcr_gmem_put (dthread, doffset,
+			  GUPCR_GMEM_OFF_TO_LOCAL (sthread, soffset), n);
+	  gupcr_pending_strict_put = 1;
+	}
+      else
+	gupcr_gmem_put (dthread, doffset,
+			GUPCR_GMEM_OFF_TO_LOCAL (sthread, soffset), n);
+    }
   else
-    gupcr_gmem_copy (dthread, doffset, sthread, soffset, n);
+    {
+      if (n > (size_t) GUPCR_PORTALS_MAX_ORDERED_SIZE)
+	{
+          gupcr_gmem_sync_puts ();
+          gupcr_gmem_copy (dthread, doffset, sthread, soffset, n);
+          gupcr_pending_strict_put = 1;
+	}
+      else
+        gupcr_gmem_copy (dthread, doffset, sthread, soffset, n);
+    }
   gupcr_trace (FC_MEM, "MEM MEMCPY EXIT");
 }
 
@@ -140,7 +159,16 @@ upc_memput (upc_shared_ptr_t dest, const void *src, size_t n)
   if (GUPCR_GMEM_IS_LOCAL (dthread))
     memcpy (GUPCR_GMEM_OFF_TO_LOCAL (dthread, doffset), src, n);
   else
-    gupcr_gmem_put (dthread, doffset, src, n);
+    {
+      if (n > (size_t) GUPCR_PORTALS_MAX_ORDERED_SIZE)
+	{
+	  gupcr_gmem_sync_puts ();
+	  gupcr_gmem_put (dthread, doffset, src, n);
+	  gupcr_pending_strict_put = 1;
+	}
+      else
+	gupcr_gmem_put (dthread, doffset, src, n);
+    }
   gupcr_trace (FC_MEM, "MEM MEMPUT EXIT");
 }
 
@@ -167,7 +195,16 @@ upc_memset (upc_shared_ptr_t dest, int c, size_t n)
   if (GUPCR_GMEM_IS_LOCAL (dthread))
     memset (GUPCR_GMEM_OFF_TO_LOCAL (dthread, doffset), c, n);
   else
-    gupcr_gmem_set (dthread, doffset, c, n);
+    {
+      if (n > (size_t) GUPCR_PORTALS_MAX_ORDERED_SIZE)
+	{
+	  gupcr_gmem_sync_puts ();
+	  gupcr_gmem_set (dthread, doffset, c, n);
+	  gupcr_pending_strict_put = 1;
+	}
+      else
+	gupcr_gmem_set (dthread, doffset, c, n);
+    }
   gupcr_trace (FC_MEM, "MEM MEMSET EXIT");
 }
 

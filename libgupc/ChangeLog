@@ -1,3 +1,11 @@
+2012-11-19  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* portals4/gupcr_mem.c (upc_memput): Add appropriate checks
+	for proper UPC data ordering.  All requests in size above the
+	GUPCR_PORTALS_MAX_ORDERED_SIZE must be treated as strict.
+	(upc_memcopy): Ditto.
+	(upc_memset): Ditto.
+
 2012-11-08  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_portals.c (gupcr_get_datatype): Rename
