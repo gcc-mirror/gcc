@@ -104,60 +104,6 @@
 (include "iterators.md")
 
 ;; -------------------------------------------------------------------
-;; Synchronization Builtins
-;; -------------------------------------------------------------------
-
-;; The following sync_* attributes are applied to sychronization
-;; instruction patterns to control the way in which the
-;; synchronization loop is expanded.
-;; All instruction patterns that call aarch64_output_sync_insn ()
-;; should define these attributes.  Refer to the comment above
-;; aarch64.c:aarch64_output_sync_loop () for more detail on the use of
-;; these attributes.
-
-;; Attribute specifies the operand number which contains the
-;; result of a synchronization operation.  The result is the old value
-;; loaded from SYNC_MEMORY.
-(define_attr "sync_result"          "none,0,1,2,3,4,5" (const_string "none"))
-
-;; Attribute specifies the operand number which contains the memory
-;; address to which the synchronization operation is being applied.
-(define_attr "sync_memory"          "none,0,1,2,3,4,5" (const_string "none"))
-
-;; Attribute specifies the operand number which contains the required
-;; old value expected in the memory location.  This attribute may be
-;; none if no required value test should be performed in the expanded
-;; code.
-(define_attr "sync_required_value"  "none,0,1,2,3,4,5" (const_string "none"))
-
-;; Attribute specifies the operand number of the new value to be stored
-;; into the memory location identitifed by the sync_memory attribute.
-(define_attr "sync_new_value"       "none,0,1,2,3,4,5" (const_string "none"))
-
-;; Attribute specifies the operand number of a temporary register
-;; which can be clobbered by the synchronization instruction sequence.
-;; The register provided byn SYNC_T1 may be the same as SYNC_RESULT is
-;; which case the result value will be clobbered and not available
-;; after the synchronization loop exits.
-(define_attr "sync_t1"              "none,0,1,2,3,4,5" (const_string "none"))
-
-;; Attribute specifies the operand number of a temporary register
-;; which can be clobbered by the synchronization instruction sequence.
-;; This register is used to collect the result of a store exclusive
-;; instruction.
-(define_attr "sync_t2"              "none,0,1,2,3,4,5" (const_string "none"))
-
-;; Attribute that specifies whether or not the emitted synchronization
-;; loop must contain a release barrier.
-(define_attr "sync_release_barrier" "yes,no"           (const_string "yes"))
-
-;; Attribute that specifies the operation that the synchronization
-;; loop should apply to the old and new values to generate the value
-;; written back to memory.
-(define_attr "sync_op"              "none,add,sub,ior,xor,and,nand"
-                                    (const_string "none"))
-
-;; -------------------------------------------------------------------
 ;; Instruction types and attributes
 ;; -------------------------------------------------------------------
 
@@ -370,9 +316,7 @@
 (define_attr "simd" "no,yes" (const_string "no"))
 
 (define_attr "length" ""
-  (cond [(not (eq_attr "sync_memory" "none"))
-	   (symbol_ref "aarch64_sync_loop_insns (insn, operands) * 4")
-	] (const_int 4)))
+  (const_int 4))
 
 ;; Attribute that controls whether an alternative is enabled or not.
 ;; Currently it is only used to disable alternatives which touch fp or simd
@@ -2952,5 +2896,5 @@
 ;; AdvSIMD Stuff
 (include "aarch64-simd.md")
 
-;; Synchronization Builtins
-(include "sync.md")
+;; Atomic Operations
+(include "atomics.md")

@@ -5878,382 +5878,6 @@ aarch64_preferred_simd_mode (enum machine_mode mode)
   return word_mode;
 }
 
-/* Legitimize a memory reference for sync primitive implemented using
-   LDXR/STXR instructions.  We currently force the form of the reference
-   to be indirect without offset.  */
-static rtx
-aarch64_legitimize_sync_memory (rtx memory)
-{
-  rtx addr = force_reg (Pmode, XEXP (memory, 0));
-  rtx legitimate_memory = gen_rtx_MEM (GET_MODE (memory), addr);
-
-  set_mem_alias_set (legitimate_memory, ALIAS_SET_MEMORY_BARRIER);
-  MEM_VOLATILE_P (legitimate_memory) = MEM_VOLATILE_P (memory);
-  return legitimate_memory;
-}
-
-/* An instruction emitter.  */
-typedef void (* emit_f) (int label, const char *, rtx *);
-
-/* An instruction emitter that emits via the conventional
-   output_asm_insn.  */
-static void
-aarch64_emit (int label ATTRIBUTE_UNUSED, const char *pattern, rtx *operands)
-{
-  output_asm_insn (pattern, operands);
-}
-
-/* Count the number of emitted synchronization instructions.  */
-static unsigned aarch64_insn_count;
-
-/* An emitter that counts emitted instructions but does not actually
-   emit instruction into the the instruction stream.  */
-static void
-aarch64_count (int label,
-	       const char *pattern ATTRIBUTE_UNUSED,
-	       rtx *operands ATTRIBUTE_UNUSED)
-{
-  if (! label)
-    ++ aarch64_insn_count;
-}
-
-static void
-aarch64_output_asm_insn (emit_f, int, rtx *,
-			 const char *, ...) ATTRIBUTE_PRINTF_4;
-
-/* Construct a pattern using conventional output formatting and feed
-   it to output_asm_insn.  Provides a mechanism to construct the
-   output pattern on the fly.  Note the hard limit on the pattern
-   buffer size.  */
-static void
-aarch64_output_asm_insn (emit_f emit, int label, rtx *operands,
-			 const char *pattern, ...)
-{
-  va_list ap;
-  char buffer[256];
-
-  va_start (ap, pattern);
-  vsnprintf (buffer, sizeof (buffer), pattern, ap);
-  va_end (ap);
-  emit (label, buffer, operands);
-}
-
-/* Helper to figure out the instruction suffix required on LDXR/STXR
-   instructions for operations on an object of the specified mode.  */
-static const char *
-aarch64_load_store_suffix (enum machine_mode mode)
-{
-  switch (mode)
-    {
-    case QImode: return "b";
-    case HImode: return "h";
-    case SImode: return "";
-    case DImode: return "";
-    default:
-      gcc_unreachable ();
-    }
-  return "";
-}
-
-/* Emit an excluive load instruction appropriate for the specified
-   mode.  */
-static void
-aarch64_output_sync_load (emit_f emit,
-			  enum machine_mode mode,
-			  rtx target,
-			  rtx memory,
-			  bool with_barrier)
-{
-  const char *suffix = aarch64_load_store_suffix (mode);
-  rtx operands[2];
-
-  operands[0] = target;
-  operands[1] = memory;
-  aarch64_output_asm_insn (emit, 0, operands, "ld%sxr%s\t%%%s0, %%1",
-			   with_barrier ? "a" : "", suffix,
-			   mode == DImode ? "x" : "w");
-}
-
-/* Emit an exclusive store instruction appropriate for the specified
-   mode.  */
-static void
-aarch64_output_sync_store (emit_f emit,
-			   enum machine_mode mode,
-			   rtx result,
-			   rtx value,
-			   rtx memory,
-			   bool with_barrier)
-{
-  const char *suffix = aarch64_load_store_suffix (mode);
-  rtx operands[3];
-
-  operands[0] = result;
-  operands[1] = value;
-  operands[2] = memory;
-  aarch64_output_asm_insn (emit, 0, operands,
-			   "st%sxr%s\t%%w0, %%%s1, %%2",
-			   with_barrier ? "l" : "",
-			   suffix,
-			   mode == DImode ? "x" : "w");
-}
-
-/* Helper to emit a two operand instruction.  */
-static void
-aarch64_output_op2 (emit_f emit, const char *mnemonic, rtx d, rtx s)
-{
-  rtx operands[2];
-  enum machine_mode mode;
-  const char *constraint;
-
-  mode = GET_MODE (d);
-  operands[0] = d;
-  operands[1] = s;
-  constraint = mode == DImode ? "" : "w";
-  aarch64_output_asm_insn (emit, 0, operands, "%s\t%%%s0, %%%s1", mnemonic,
-			   constraint, constraint);
-}
-
-/* Helper to emit a three operand instruction.  */
-static void
-aarch64_output_op3 (emit_f emit, const char *mnemonic, rtx d, rtx a, rtx b)
-{
-  rtx operands[3];
-  enum machine_mode mode;
-  const char *constraint;
-
-  mode = GET_MODE (d);
-  operands[0] = d;
-  operands[1] = a;
-  operands[2] = b;
-
-  constraint = mode == DImode ? "" : "w";
-  aarch64_output_asm_insn (emit, 0, operands, "%s\t%%%s0, %%%s1, %%%s2",
-			   mnemonic, constraint, constraint, constraint);
-}
-
-/* Emit a load store exclusive synchronization loop.
-
-   do
-     old_value = [mem]
-     if old_value != required_value
-       break;
-     t1 = sync_op (old_value, new_value)
-     [mem] = t1, t2 = [0|1]
-   while ! t2
-
-   Note:
-     t1 == t2 is not permitted
-     t1 == old_value is permitted
-
-   required_value:
-
-   RTX register or const_int representing the required old_value for
-   the modify to continue, if NULL no comparsion is performed.  */
-static void
-aarch64_output_sync_loop (emit_f emit,
-			  enum machine_mode mode,
-			  rtx old_value,
-			  rtx memory,
-			  rtx required_value,
-			  rtx new_value,
-			  rtx t1,
-			  rtx t2,
-			  enum attr_sync_op sync_op,
-			  int acquire_barrier,
-			  int release_barrier)
-{
-  rtx operands[1];
-
-  gcc_assert (t1 != t2);
-
-  aarch64_output_asm_insn (emit, 1, operands, "%sLSYT%%=:", LOCAL_LABEL_PREFIX);
-
-  aarch64_output_sync_load (emit, mode, old_value, memory, acquire_barrier);
-
-  if (required_value)
-    {
-      rtx operands[2];
-
-      operands[0] = old_value;
-      operands[1] = required_value;
-      aarch64_output_asm_insn (emit, 0, operands, "cmp\t%%0, %%1");
-      aarch64_output_asm_insn (emit, 0, operands, "bne\t%sLSYB%%=",
-			       LOCAL_LABEL_PREFIX);
-    }
-
-  switch (sync_op)
-    {
-    case SYNC_OP_ADD:
-      aarch64_output_op3 (emit, "add", t1, old_value, new_value);
-      break;
-
-    case SYNC_OP_SUB:
-      aarch64_output_op3 (emit, "sub", t1, old_value, new_value);
-      break;
-
-    case SYNC_OP_IOR:
-      aarch64_output_op3 (emit, "orr", t1, old_value, new_value);
-      break;
-
-    case SYNC_OP_XOR:
-      aarch64_output_op3 (emit, "eor", t1, old_value, new_value);
-      break;
-
-    case SYNC_OP_AND:
-      aarch64_output_op3 (emit,"and", t1, old_value, new_value);
-      break;
-
-    case SYNC_OP_NAND:
-      aarch64_output_op3 (emit, "and", t1, old_value, new_value);
-      aarch64_output_op2 (emit, "mvn", t1, t1);
-      break;
-
-    case SYNC_OP_NONE:
-      t1 = new_value;
-      break;
-    }
-
-  aarch64_output_sync_store (emit, mode, t2, t1, memory, release_barrier);
-  operands[0] = t2;
-  aarch64_output_asm_insn (emit, 0, operands, "cbnz\t%%w0, %sLSYT%%=",
-			   LOCAL_LABEL_PREFIX);
-
-  aarch64_output_asm_insn (emit, 1, operands, "%sLSYB%%=:", LOCAL_LABEL_PREFIX);
-}
-
-static rtx
-aarch64_get_sync_operand (rtx *operands, int index, rtx default_value)
-{
-  if (index > 0)
-    default_value = operands[index - 1];
-
-  return default_value;
-}
-
-#define FETCH_SYNC_OPERAND(NAME, DEFAULT)                                \
-  aarch64_get_sync_operand (operands, (int) get_attr_sync_##NAME (insn), \
-			    DEFAULT);
-
-/* Extract the operands for a synchroniztion instruction from the
-   instructions attributes and emit the instruction.  */
-static void
-aarch64_process_output_sync_insn (emit_f emit, rtx insn, rtx *operands)
-{
-  rtx result, memory, required_value, new_value, t1, t2;
-  int release_barrier;
-  int acquire_barrier = 1;
-  enum machine_mode mode;
-  enum attr_sync_op sync_op;
-
-  result = FETCH_SYNC_OPERAND (result, 0);
-  memory = FETCH_SYNC_OPERAND (memory, 0);
-  required_value = FETCH_SYNC_OPERAND (required_value, 0);
-  new_value = FETCH_SYNC_OPERAND (new_value, 0);
-  t1 = FETCH_SYNC_OPERAND (t1, 0);
-  t2 = FETCH_SYNC_OPERAND (t2, 0);
-  release_barrier =
-    get_attr_sync_release_barrier (insn) == SYNC_RELEASE_BARRIER_YES;
-  sync_op = get_attr_sync_op (insn);
-  mode = GET_MODE (memory);
-
-  aarch64_output_sync_loop (emit, mode, result, memory, required_value,
-			    new_value, t1, t2, sync_op, acquire_barrier,
-			    release_barrier);
-}
-
-/* Emit a synchronization instruction loop.  */
-const char *
-aarch64_output_sync_insn (rtx insn, rtx *operands)
-{
-  aarch64_process_output_sync_insn (aarch64_emit, insn, operands);
-  return "";
-}
-
-/* Emit a store release instruction appropriate for the specified
-   mode.  */
-const char *
-aarch64_output_sync_lock_release (rtx value, rtx memory)
-{
-  const char *suffix;
-  enum machine_mode mode;
-  rtx operands[2];
-  operands[0] = value;
-  operands[1] = memory;
-  mode = GET_MODE (memory);
-  suffix = aarch64_load_store_suffix (mode);
-  aarch64_output_asm_insn (aarch64_emit, 0, operands,
-			   "stlr%s\t%%%s0, %%1",
-			   suffix,
-			   mode == DImode ? "x" : "w");
-  return "";
-}
-
-/* Count the number of machine instruction that will be emitted for a
-   synchronization instruction.  Note that the emitter used does not
-   emit instructions, it just counts instructions being careful not
-   to count labels.  */
-unsigned int
-aarch64_sync_loop_insns (rtx insn, rtx *operands)
-{
-  aarch64_insn_count = 0;
-  aarch64_process_output_sync_insn (aarch64_count, insn, operands);
-  return aarch64_insn_count;
-}
-
-/* Helper to call a target sync instruction generator, dealing with
-   the variation in operands required by the different generators.  */
-static rtx
-aarch64_call_generator (struct aarch64_sync_generator *generator, rtx old_value,
-			rtx memory, rtx required_value, rtx new_value)
-{
-  switch (generator->op)
-    {
-    case aarch64_sync_generator_omn:
-      gcc_assert (! required_value);
-      return generator->u.omn (old_value, memory, new_value);
-
-    case aarch64_sync_generator_omrn:
-      gcc_assert (required_value);
-      return generator->u.omrn (old_value, memory, required_value, new_value);
-    }
-
-  return NULL;
-}
-
-/* Expand a synchronization loop.  The synchronization loop is
-   expanded as an opaque block of instructions in order to ensure that
-   we do not subsequently get extraneous memory accesses inserted
-   within the critical region.  The exclusive access property of
-   LDXR/STXR instructions is only guaranteed if there are no intervening
-   memory accesses.  */
-void
-aarch64_expand_sync (enum machine_mode mode,
-		     struct aarch64_sync_generator *generator,
-		     rtx target, rtx memory, rtx required_value, rtx new_value)
-{
-  if (target == NULL)
-    target = gen_reg_rtx (mode);
-
-  memory = aarch64_legitimize_sync_memory (memory);
-  if (mode != SImode && mode != DImode)
-    {
-      rtx load_temp = gen_reg_rtx (SImode);
-
-      if (required_value)
-	required_value = convert_modes (SImode, mode, required_value, true);
-
-      new_value = convert_modes (SImode, mode, new_value, true);
-      emit_insn (aarch64_call_generator (generator, load_temp, memory,
-					 required_value, new_value));
-      emit_move_insn (target, gen_lowpart (mode, load_temp));
-    }
-  else
-    {
-      emit_insn (aarch64_call_generator (generator, target, memory,
-					 required_value, new_value));
-    }
-}
-
 /* Return the equivalent letter for size.  */
 static unsigned char
 sizetochar (int size)
@@ -6812,6 +6436,243 @@ aarch64_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
        break;
      }
    return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
+}
+
+/* Emit load exclusive.  */
+
+static void
+aarch64_emit_load_exclusive (enum machine_mode mode, rtx rval,
+			     rtx mem, rtx model_rtx)
+{
+  rtx (*gen) (rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_aarch64_load_exclusiveqi; break;
+    case HImode: gen = gen_aarch64_load_exclusivehi; break;
+    case SImode: gen = gen_aarch64_load_exclusivesi; break;
+    case DImode: gen = gen_aarch64_load_exclusivedi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (rval, mem, model_rtx));
+}
+
+/* Emit store exclusive.  */
+
+static void
+aarch64_emit_store_exclusive (enum machine_mode mode, rtx bval,
+			      rtx rval, rtx mem, rtx model_rtx)
+{
+  rtx (*gen) (rtx, rtx, rtx, rtx);
+
+  switch (mode)
+    {
+    case QImode: gen = gen_aarch64_store_exclusiveqi; break;
+    case HImode: gen = gen_aarch64_store_exclusivehi; break;
+    case SImode: gen = gen_aarch64_store_exclusivesi; break;
+    case DImode: gen = gen_aarch64_store_exclusivedi; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (bval, rval, mem, model_rtx));
+}
+
+/* Mark the previous jump instruction as unlikely.  */
+
+static void
+aarch64_emit_unlikely_jump (rtx insn)
+{
+  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+
+  insn = emit_jump_insn (insn);
+  add_reg_note (insn, REG_BR_PROB, very_unlikely);
+}
+
+/* Expand a compare and swap pattern.  */
+
+void
+aarch64_expand_compare_and_swap (rtx operands[])
+{
+  rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
+  enum machine_mode mode, cmp_mode;
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+
+  bval = operands[0];
+  rval = operands[1];
+  mem = operands[2];
+  oldval = operands[3];
+  newval = operands[4];
+  is_weak = operands[5];
+  mod_s = operands[6];
+  mod_f = operands[7];
+  mode = GET_MODE (mem);
+  cmp_mode = mode;
+
+  /* Normally the succ memory model must be stronger than fail, but in the
+     unlikely event of fail being ACQUIRE and succ being RELEASE we need to
+     promote succ to ACQ_REL so that we don't lose the acquire semantics.  */
+
+  if (INTVAL (mod_f) == MEMMODEL_ACQUIRE
+      && INTVAL (mod_s) == MEMMODEL_RELEASE)
+    mod_s = GEN_INT (MEMMODEL_ACQ_REL);
+
+  switch (mode)
+    {
+    case QImode:
+    case HImode:
+      /* For short modes, we're going to perform the comparison in SImode,
+	 so do the zero-extension now.  */
+      cmp_mode = SImode;
+      rval = gen_reg_rtx (SImode);
+      oldval = convert_modes (SImode, mode, oldval, true);
+      /* Fall through.  */
+
+    case SImode:
+    case DImode:
+      /* Force the value into a register if needed.  */
+      if (!aarch64_plus_operand (oldval, mode))
+	oldval = force_reg (cmp_mode, oldval);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (mode)
+    {
+    case QImode: gen = gen_atomic_compare_and_swapqi_1; break;
+    case HImode: gen = gen_atomic_compare_and_swaphi_1; break;
+    case SImode: gen = gen_atomic_compare_and_swapsi_1; break;
+    case DImode: gen = gen_atomic_compare_and_swapdi_1; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+
+  if (mode == QImode || mode == HImode)
+    emit_move_insn (operands[1], gen_lowpart (mode, rval));
+
+  x = gen_rtx_REG (CCmode, CC_REGNUM);
+  x = gen_rtx_EQ (SImode, x, const0_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, bval, x));
+}
+
+/* Split a compare and swap pattern.  */
+
+void
+aarch64_split_compare_and_swap (rtx operands[])
+{
+  rtx rval, mem, oldval, newval, scratch;
+  enum machine_mode mode;
+  enum memmodel mod_s;
+  bool is_weak;
+  rtx label1, label2, x, cond;
+
+  rval = operands[0];
+  mem = operands[1];
+  oldval = operands[2];
+  newval = operands[3];
+  is_weak = (operands[4] != const0_rtx);
+  mod_s = (enum memmodel) INTVAL (operands[5]);
+  scratch = operands[7];
+  mode = GET_MODE (mem);
+
+  label1 = NULL_RTX;
+  if (!is_weak)
+    {
+      label1 = gen_label_rtx ();
+      emit_label (label1);
+    }
+  label2 = gen_label_rtx ();
+
+  aarch64_emit_load_exclusive (mode, rval, mem, operands[5]);
+
+  cond = aarch64_gen_compare_reg (NE, rval, oldval);
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+  aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+
+  aarch64_emit_store_exclusive (mode, scratch, mem, newval, operands[5]);
+
+  if (!is_weak)
+    {
+      x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
+      aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+    }
+  else
+    {
+      cond = gen_rtx_REG (CCmode, CC_REGNUM);
+      x = gen_rtx_COMPARE (CCmode, scratch, const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+    }
+
+  emit_label (label2);
+}
+
+/* Split an atomic operation.  */
+
+void
+aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
+		     rtx value, rtx model_rtx, rtx cond)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  enum machine_mode wmode = (mode == DImode ? DImode : SImode);
+  rtx label, x;
+
+  label = gen_label_rtx ();
+  emit_label (label);
+
+  if (new_out)
+    new_out = gen_lowpart (wmode, new_out);
+  if (old_out)
+    old_out = gen_lowpart (wmode, old_out);
+  else
+    old_out = new_out;
+  value = simplify_gen_subreg (wmode, value, mode, 0);
+
+  aarch64_emit_load_exclusive (mode, old_out, mem, model_rtx);
+
+  switch (code)
+    {
+    case SET:
+      new_out = value;
+      break;
+
+    case NOT:
+      x = gen_rtx_AND (wmode, old_out, value);
+      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      x = gen_rtx_NOT (wmode, new_out);
+      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      break;
+
+    case MINUS:
+      if (CONST_INT_P (value))
+	{
+	  value = GEN_INT (-INTVAL (value));
+	  code = PLUS;
+	}
+      /* Fall through.  */
+
+    default:
+      x = gen_rtx_fmt_ee (code, wmode, old_out, value);
+      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      break;
+    }
+
+  aarch64_emit_store_exclusive (mode, cond, mem,
+				gen_lowpart (mode, new_out), model_rtx);
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
+  aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
 }
 
 static void
