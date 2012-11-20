@@ -28980,7 +28980,10 @@ ix86_mangle_decl_assembler_name (tree decl, tree id)
   /* For function version, add the target suffix to the assembler name.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_FUNCTION_VERSIONED (decl))
-    return ix86_mangle_function_version_assembler_name (decl, id);
+    id = ix86_mangle_function_version_assembler_name (decl, id);
+#ifdef SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME
+  id = SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME (decl, id);
+#endif
 
   return id;
 }
