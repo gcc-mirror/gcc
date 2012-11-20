@@ -1,6 +1,6 @@
 // Test for CSE of the wrapper function: we should only call it once
 // for the two references to ir.
-// { dg-do run }
+// { dg-do run { xfail *-*-solaris2.9 } }
 // { dg-options "-std=c++11 -O -fno-inline -save-temps" }
 // { dg-require-effective-target tls_runtime }
 // { dg-require-alias }

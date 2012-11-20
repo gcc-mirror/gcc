@@ -46,6 +46,8 @@ See the next chapter for information on the C header file.
 * Insn Attributes::     Specifying the value of attributes for generated insns.
 * Conditional Execution::Generating @code{define_insn} patterns for
                          predication.
+* Define Subst::	Generating @code{define_insn} and @code{define_expand}
+			patterns from other patterns.
 * Constant Definitions::Defining symbolic constants that can be used in the
                         md file.
 * Iterators::           Using iterators to generate patterns from a template.
@@ -6756,6 +6758,10 @@ Usually these statements prepare temporary registers for use as
 internal operands in the RTL template, but they can also generate RTL
 insns directly by calling routines such as @code{emit_insn}, etc.
 Any such insns precede the ones that come from the RTL template.
+
+@item
+Optionally, a vector containing the values of attributes. @xref{Insn
+Attributes}.
 @end itemize
 
 Every RTL insn emitted by a @code{define_expand} must match some
@@ -8894,6 +8900,213 @@ generates a new pattern
 
 @end ifset
 @ifset INTERNALS
+@node Define Subst
+@section RTL Templates Transformations
+@cindex define_subst
+
+For some hardware architectures there are common cases when the RTL
+templates for the instructions can be derived from the other RTL
+templates using simple transformations.  E.g., @file{i386.md} contains
+an RTL template for the ordinary @code{sub} instruction---
+@code{*subsi_1}, and for the @code{sub} instruction with subsequent
+zero-extension---@code{*subsi_1_zext}.  Such cases can be easily
+implemented by a single meta-template capable of generating a modified
+case based on the initial one:
+
+@findex define_subst
+@smallexample
+(define_subst "@var{name}"
+  [@var{input-template}]
+  "@var{condition}"
+  [@var{output-template}])
+@end smallexample
+@var{input-template} is a pattern describing the source RTL template,
+which will be transformed.
+
+@var{condition} is a C expression that is conjunct with the condition
+from the input-template to generate a condition to be used in the
+output-template.
+
+@var{output-template} is a pattern that will be used in the resulting
+template.
+
+@code{define_subst} mechanism is tightly coupled with the notion of the
+subst attribute (@xref{Subst Iterators}).  The use of
+@code{define_subst} is triggered by a reference to a subst attribute in
+the transforming RTL template.  This reference initiates duplication of
+the source RTL template and substitution of the attributes with their
+values.  The source RTL template is left unchanged, while the copy is
+transformed by @code{define_subst}.  This transformation can fail in the
+case when the source RTL template is not matched against the
+input-template of the @code{define_subst}.  In such case the copy is
+deleted.
+
+@code{define_subst} can be used only in @code{define_insn} and
+@code{define_expand}, it cannot be used in other expressions (e.g. in
+@code{define_insn_and_split}).
+
+@menu
+* Define Subst Example::	    Example of @code{define_subst} work.
+* Define Subst Pattern Matching::   Process of template comparison.
+* Define Subst Output Template::    Generation of output template.
+@end menu
+
+@node Define Subst Example
+@subsection @code{define_subst} Example
+@cindex define_subst
+
+To illustrate how @code{define_subst} works, let us examine a simple
+template transformation.
+
+Suppose there are two kinds of instructions: one that touches flags and
+the other that does not.  The instructions of the second type could be
+generated with the following @code{define_subst}:
+
+@smallexample
+(define_subst "add_clobber_subst"
+  [(set (match_operand:SI 0 "" "")
+        (match_operand:SI 1 "" ""))]
+  ""
+  [(set (match_dup 0)
+        (match_dup 1))
+   (clobber (reg:CC FLAGS_REG))]
+@end smallexample
+
+This @code{define_subst} can be applied to any RTL pattern containing
+@code{set} of mode SI and generates a copy with clobber when it is
+applied.
+
+Assume there is an RTL template for a @code{max} instruction to be used
+in @code{define_subst} mentioned above:
+
+@smallexample
+(define_insn "maxsi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (max:SI
+          (match_operand:SI 1 "register_operand" "r")
+          (match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "max\t@{%2, %1, %0|%0, %1, %2@}"
+ [@dots{}])
+@end smallexample
+
+To mark the RTL template for @code{define_subst} application,
+subst-attributes are used.  They should be declared in advance:
+
+@smallexample
+(define_subst_attr "add_clobber_name" "add_clobber_subst" "_noclobber" "_clobber")
+@end smallexample
+
+Here @samp{add_clobber_name} is the attribute name,
+@samp{add_clobber_subst} is the name of the corresponding
+@code{define_subst}, the third argument (@samp{_noclobber}) is the
+attribute value that would be substituted into the unchanged version of
+the source RTL template, and the last argument (@samp{_clobber}) is the
+value that would be substituted into the second, transformed,
+version of the RTL template.
+
+Once the subst-attribute has been defined, it should be used in RTL
+templates which need to be processed by the @code{define_subst}.  So,
+the original RTL template should be changed:
+
+@smallexample
+(define_insn "maxsi<add_clobber_name>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (max:SI
+          (match_operand:SI 1 "register_operand" "r")
+          (match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "max\t@{%2, %1, %0|%0, %1, %2@}"
+ [@dots{}])
+@end smallexample
+
+The result of the @code{define_subst} usage would look like the following:
+
+@smallexample
+(define_insn "maxsi_noclobber"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (max:SI
+          (match_operand:SI 1 "register_operand" "r")
+          (match_operand:SI 2 "register_operand" "r")))]
+  ""
+  "max\t@{%2, %1, %0|%0, %1, %2@}"
+ [@dots{}])
+(define_insn "maxsi_clobber"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (max:SI
+          (match_operand:SI 1 "register_operand" "r")
+          (match_operand:SI 2 "register_operand" "r")))
+   (clobber (reg:CC FLAGS_REG))]
+  ""
+  "max\t@{%2, %1, %0|%0, %1, %2@}"
+ [@dots{}])
+@end smallexample
+
+@node Define Subst Pattern Matching
+@subsection Pattern Matching in @code{define_subst}
+@cindex define_subst
+
+All expressions, allowed in @code{define_insn} or @code{define_expand},
+are allowed in the input-template of @code{define_subst}, except
+@code{match_par_dup}, @code{match_scratch}, @code{match_parallel}. The
+meanings of expressions in the input-template were changed:
+
+@code{match_operand} matches any expression (possibly, a subtree in
+RTL-template), if modes of the @code{match_operand} and this expression
+are the same, or mode of the @code{match_operand} is @code{VOIDmode}, or
+this expression is @code{match_dup}, @code{match_op_dup}.  If the
+expression is @code{match_operand} too, and predicate of
+@code{match_operand} from the input pattern is not empty, then the
+predicates are compared.  That can be used for more accurate filtering
+of accepted RTL-templates.
+
+@code{match_operator} matches common operators (like @code{plus},
+@code{minus}), @code{unspec}, @code{unspec_volatile} operators and
+@code{match_operator}s from the original pattern if the modes match and
+@code{match_operator} from the input pattern has the same number of
+operands as the operator from the original pattern.
+
+@node Define Subst Output Template
+@subsection Generation of output template in @code{define_subst}
+@cindex define_subst
+
+If all necessary checks for @code{define_subst} application pass, a new
+RTL-pattern, based on the output-template, is created to replace the old
+template.  Like in input-patterns, meanings of some RTL expressions are
+changed when they are used in output-patterns of a @code{define_subst}.
+Thus, @code{match_dup} is used for copying the whole expression from the
+original pattern, which matched corresponding @code{match_operand} from
+the input pattern.
+
+@code{match_dup N} is used in the output template to be replaced with
+the expression from the original pattern, which matched
+@code{match_operand N} from the input pattern.  As a consequence,
+@code{match_dup} cannot be used to point to @code{match_operand}s from
+the output pattern, it should always refer to a @code{match_operand}
+from the input pattern.
+
+In the output template one can refer to the expressions from the
+original pattern and create new ones.  For instance, some operands could
+be added by means of standard @code{match_operand}.
+
+After replacing @code{match_dup} with some RTL-subtree from the original
+pattern, it could happen that several @code{match_operand}s in the
+output pattern have the same indexes.  It is unknown, how many and what
+indexes would be used in the expression which would replace
+@code{match_dup}, so such conflicts in indexes are inevitable.  To
+overcome this issue, @code{match_operands} and @code{match_operators},
+which were introduced into the output pattern, are renumerated when all
+@code{match_dup}s are replaced.
+
+Number of alternatives in @code{match_operand}s introduced into the
+output template @code{M} could differ from the number of alternatives in
+the original pattern @code{N}, so in the resultant pattern there would
+be @code{N*M} alternatives.  Thus, constraints from the original pattern
+would be duplicated @code{N} times, constraints from the output pattern
+would be duplicated @code{M} times, producing all possible combinations.
+@end ifset
+
+@ifset INTERNALS
 @node Constant Definitions
 @section Constant Definitions
 @cindex constant definitions
@@ -9077,6 +9290,7 @@ facilities to make this process easier.
 * Mode Iterators::         Generating variations of patterns for different modes.
 * Code Iterators::         Doing the same for codes.
 * Int Iterators::          Doing the same for integers.
+* Subst Iterators::	   Generating variations of patterns for define_subst.
 @end menu
 
 @node Mode Iterators
@@ -9424,5 +9638,52 @@ This is equivalent to:
 )
 
 @end smallexample
+
+@node Subst Iterators
+@subsection Subst Iterators
+@cindex subst iterators in @file{.md} files
+@findex define_subst
+@findex define_subst_attr
+
+Subst iterators are special type of iterators with the following
+restrictions: they could not be declared explicitly, they always have
+only two values, and they do not have explicit dedicated name.
+Subst-iterators are triggered only when corresponding subst-attribute is
+used in RTL-pattern.
+
+Subst iterators transform templates in the following way: the templates
+are duplicated, the subst-attributes in these templates are replaced
+with the corresponding values, and a new attribute is implicitly added
+to the given @code{define_insn}/@code{define_expand}.  The name of the
+added attribute matches the name of @code{define_subst}.  Such
+attributes are declared implicitly, and it is not allowed to have a
+@code{define_attr} named as a @code{define_subst}.
+
+Each subst iterator is linked to a @code{define_subst}.  It is declared
+implicitly by the first appearance of the corresponding
+@code{define_subst_attr}, and it is not allowed to define it explicitly.
+
+Declarations of subst-attributes have the following syntax:
+
+@findex define_subst_attr
+@smallexample
+(define_subst_attr "@var{name}"
+  "@var{subst-name}"
+  "@var{no-subst-value}"
+  "@var{subst-applied-value}")
+@end smallexample
+
+@var{name} is a string with which the given subst-attribute could be
+referred to.
+
+@var{subst-name} shows which @code{define_subst} should be applied to an
+RTL-template if the given subst-attribute is present in the
+RTL-template.
+
+@var{no-subst-value} is a value with which subst-attribute would be
+replaced in the first copy of the original RTL-template.
+
+@var{subst-applied-value} is a value with which subst-attribute would be
+replaced in the second copy of the original RTL-template.
 
 @end ifset

@@ -1,5 +1,5 @@
 /* Coalesce SSA_NAMES together for the out-of-ssa pass.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
@@ -1292,7 +1292,6 @@ coalesce_ssa_name (void)
   bitmap used_in_copies = BITMAP_ALLOC (NULL);
   var_map map;
   unsigned int i;
-  static hash_table <ssa_name_var_hash> ssa_name_hash;
 
   cl = create_coalesce_list ();
   map = create_outofssa_var_map (cl, used_in_copies);
@@ -1301,6 +1300,8 @@ coalesce_ssa_name (void)
      so debug info remains undisturbed.  */
   if (!optimize)
     {
+      hash_table <ssa_name_var_hash> ssa_name_hash;
+
       ssa_name_hash.create (10);
       for (i = 1; i < num_ssa_names; i++)
 	{

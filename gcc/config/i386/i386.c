@@ -1855,9 +1855,6 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_EXT_80387_CONSTANTS */
   m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
 
-  /* X86_TUNE_SHORTEN_X87_SSE */
-  ~m_K8,
-
   /* X86_TUNE_AVOID_VECTOR_DECODE */
   m_CORE2I7_64 | m_K8 | m_GENERIC64,
 
@@ -23543,9 +23540,8 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 				       UNSPEC_MS_TO_SYSV_CALL);
 
       for (i = 0; i < ARRAY_SIZE (clobbered_registers); i++)
-        vec[vec_len++]
-	  = gen_rtx_CLOBBER (SSE_REGNO_P (clobbered_registers[i])
-			     ? TImode : DImode,
+	vec[vec_len++]
+	  = gen_rtx_CLOBBER (VOIDmode,
 			     gen_rtx_REG (SSE_REGNO_P (clobbered_registers[i])
 					  ? TImode : DImode,
 					  clobbered_registers[i]));
@@ -28996,7 +28992,10 @@ ix86_mangle_decl_assembler_name (tree decl, tree id)
   /* For function version, add the target suffix to the assembler name.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_FUNCTION_VERSIONED (decl))
-    return ix86_mangle_function_version_assembler_name (decl, id);
+    id = ix86_mangle_function_version_assembler_name (decl, id);
+#ifdef SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME
+  id = SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME (decl, id);
+#endif
 
   return id;
 }

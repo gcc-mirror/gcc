@@ -24,7 +24,7 @@
 /** @file profile/impl/profiler_algos.h
  *  @brief Algorithms used by the profile extension.
  *
- *  This file is needed to avoid including <algorithm> or <bits/stl_algo.h>.
+ *  This file is needed to avoid including \<algorithm\> or \<bits/stl_algo.h\>.
  *  Including those files would result in recursive includes.
  *  These implementations are oversimplified.  In general, efficiency may be
  *  sacrificed to minimize maintenance overhead.

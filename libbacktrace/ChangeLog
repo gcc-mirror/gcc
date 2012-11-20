@@ -1,3 +1,7 @@
+2012-11-20  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c (read_attribute): Always clear val.
+
 2012-11-13  Ian Lance Taylor  <iant@google.com>
 
 	PR other/55312

@@ -654,6 +654,12 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
 		const unsigned char *dwarf_str, size_t dwarf_str_size,
 		struct attr_val *val)
 {
+  /* Avoid warnings about val.u.FIELD may be used uninitialized if
+     this function is inlined.  The warnings aren't valid but can
+     occur because the different fields are set and used
+     conditionally.  */
+  memset (val, 0, sizeof *val);
+
   switch (form)
     {
     case DW_FORM_addr:

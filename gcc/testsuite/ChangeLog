@@ -1,7 +1,65 @@
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/19398
+	* gcc.target/i386/pr19398.c: New test.
+
+2012-11-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* g++.dg/torture/pr55260-1.C: New test.
+
+2012-11-20  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: New testcase.
+	* gcc.target/aarch64/atomic-op-acq_rel.c: Likewise.
+	* gcc.target/aarch64/atomic-op-acquire.c: Likewise.
+	* gcc.target/aarch64/atomic-op-char.c: Likewise.
+	* gcc.target/aarch64/atomic-op-consume.c: Likewise.
+	* gcc.target/aarch64/atomic-op-imm.c: Likewise.
+	* gcc.target/aarch64/atomic-op-int.c: Likewise.
+	* gcc.target/aarch64/atomic-op-long.c: Likewise.
+	* gcc.target/aarch64/atomic-op-relaxed.c: Likewise.
+	* gcc.target/aarch64/atomic-op-release.c: Likewise.
+	* gcc.target/aarch64/atomic-op-seq_cst.c: Likewise.
+	* gcc.target/aarch64/atomic-op-short.c: Likewise.
+
+2012-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55094
+	* gcc.dg/pr55094.c: New test.
+
+	PR rtl-optimization/54921
+	* gcc.dg/pr54921.c: New test.
+
+2012-11-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/i386/pr55359.c: New test.
+
+2012-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/tls/thread_local-order1.C: Add dg-require-cxa-atexit.
+	* g++.dg/tls/thread_local3g.C: Likewise.
+	* g++.dg/tls/thread_local4g.C: Likewise.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+	* g++.dg/tls/thread_local-cse.C: XFAIL on Solaris 9.
+	* g++.dg/tls/thread_local2.C: Likewise.
+	* g++.dg/tls/thread_local2g.C: Likewise.
+	* g++.dg/tls/thread_local6.C: Likewise.
+
+2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tm/pr51516.C: Adjust for uninstrumented code path.
+	* gcc.dg/tm/clone-1.c: New test.
+
+2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55368
+	* g++.dg/parse/struct-5.C: New.
+
 2012-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/55315
-
 	* gcc.target/mips/pr55315.c: New test.
 
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
@@ -14,8 +72,8 @@
 	-[2, 2] and -[3, 3] and -[4, 4] range tests together.
 
 	* lib/asan-dg.exp (asan_symbolize): Prune BFD: prefixed error messages
-	from addr2line_output.  Increment idx if asking for more than one address
-	in one object.
+	from addr2line_output.  Increment idx if asking for more than one
+	address in one object.
 
 2012-11-16  Jakub Jelinek  <jakub@redhat.com>
 

@@ -79,8 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __distance_fw(__first, __last, _Tag());
     }
 
-  // Helper type used to detect when the hash functor is noexcept qualified or
-  // not
+  // Helper type used to detect whether the hash functor is noexcept.
   template <typename _Key, typename _Hash>
     struct __is_noexcept_hash : std::integral_constant<bool,
 	noexcept(declval<const _Hash&>()(declval<const _Key&>()))>
@@ -111,20 +110,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Important traits for hash tables.
    *
-   *  @tparam __cache_hash_code  Boolean value. True if the value of
+   *  @tparam _Cache_hash_code  Boolean value. True if the value of
    *  the hash function is stored along with the value. This is a
    *  time-space tradeoff.  Storing it may improve lookup speed by
    *  reducing the number of times we need to call the _Equal
    *  function.
    *
-   *  @tparam __constant_iterators  Boolean value. True if iterator and
+   *  @tparam _Constant_iterators  Boolean value. True if iterator and
    *  const_iterator are both constant iterator types. This is true
    *  for unordered_set and unordered_multiset, false for
    *  unordered_map and unordered_multimap.
    *
-   *  @tparam __unique_keys  Boolean value. True if the return value
+   *  @tparam _Unique_keys  Boolean value. True if the return value
    *  of _Hashtable::count(k) is always at most one, false if it may
-   *  be an arbitrary number. This true for unordered_set and
+   *  be an arbitrary number. This is true for unordered_set and
    *  unordered_map, false for unordered_multiset and
    *  unordered_multimap.
    */

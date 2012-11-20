@@ -643,6 +643,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef value_type& 			reference;
       typedef const value_type& 		const_reference;
 
+#if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2103. std::allocator propagate_on_container_move_assignment
+      typedef std::true_type propagate_on_container_move_assignment;
+#endif
+
     private:
       typedef _Cond				condition_type;
 

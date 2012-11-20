@@ -1486,7 +1486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  range @p [__result,__result+(__last-__first)) such that the
    *  order of the elements is reversed.  For every @c i such that @p
    *  0<=i<=(__last-__first), @p reverse_copy() performs the
-   *  assignment @p *(__result+(__last-__first)-i) = *(__first+i).
+   *  assignment @p *(__result+(__last-__first)-1-i) = *(__first+i).
    *  The ranges @p [__first,__last) and @p
    *  [__result,__result+(__last-__first)) must not overlap.
   */

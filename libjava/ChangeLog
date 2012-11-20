@@ -1,3 +1,7 @@
+2012-11-19  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+
 2012-10-15  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Match arm*-*-linux-* for ARM Linux/GNU.

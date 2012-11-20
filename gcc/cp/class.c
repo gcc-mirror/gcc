@@ -2886,15 +2886,19 @@ static void
 one_inheriting_sig (tree t, tree ctor, tree *parms, int nparms)
 {
   /* We don't declare an inheriting ctor that would be a default,
-     copy or move ctor.  */
-  if (nparms == 0
-      || (nparms == 1
-	  && TREE_CODE (parms[0]) == REFERENCE_TYPE
-	  && TYPE_MAIN_VARIANT (TREE_TYPE (parms[0])) == t))
+     copy or move ctor for derived or base.  */
+  if (nparms == 0)
     return;
-  int i;
+  if (nparms == 1
+      && TREE_CODE (parms[0]) == REFERENCE_TYPE)
+    {
+      tree parm = TYPE_MAIN_VARIANT (TREE_TYPE (parms[0]));
+      if (parm == t || parm == DECL_CONTEXT (ctor))
+	return;
+    }
+
   tree parmlist = void_list_node;
-  for (i = nparms - 1; i >= 0; i--)
+  for (int i = nparms - 1; i >= 0; i--)
     parmlist = tree_cons (NULL_TREE, parms[i], parmlist);
   tree fn = implicitly_declare_fn (sfk_inheriting_constructor,
 				   t, false, ctor, parmlist);
@@ -3014,7 +3018,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
       if (DECL_SELF_REFERENCE_P (decl))
 	{
 	  /* declare, then remove the decl */
-	  tree ctor_list = CLASSTYPE_CONSTRUCTORS (TREE_TYPE (decl));
+	  tree ctor_list = lookup_fnfields_slot (TREE_TYPE (decl),
+						 ctor_identifier);
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
 	  if (ctor_list)
@@ -6568,6 +6573,9 @@ finish_struct (tree t, tree attributes)
   return t;
 }
 
+/* Hash table to avoid endless recursion when handling references.  */
+static hash_table <pointer_hash <tree_node> > fixed_type_or_null_ref_ht;
+
 /* Return the dynamic type of INSTANCE, if known.
    Used to determine whether the virtual function table is needed
    or not.
@@ -6683,9 +6691,8 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
       else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	{
 	  /* We only need one hash table because it is always left empty.  */
-	  static hash_table <pointer_hash <tree_node> > ht;
-	  if (!ht.is_created ())
-	    ht.create (37); 
+	  if (!fixed_type_or_null_ref_ht.is_created ())
+	    fixed_type_or_null_ref_ht.create (37); 
 
 	  /* Reference variables should be references to objects.  */
 	  if (nonnull)
@@ -6697,15 +6704,15 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	  if (TREE_CODE (instance) == VAR_DECL
 	      && DECL_INITIAL (instance)
 	      && !type_dependent_expression_p_push (DECL_INITIAL (instance))
-	      && !ht.find (instance))
+	      && !fixed_type_or_null_ref_ht.find (instance))
 	    {
 	      tree type;
 	      tree_node **slot;
 
-	      slot = ht.find_slot (instance, INSERT);
+	      slot = fixed_type_or_null_ref_ht.find_slot (instance, INSERT);
 	      *slot = instance;
 	      type = RECUR (DECL_INITIAL (instance));
-	      ht.remove_elt (instance);
+	      fixed_type_or_null_ref_ht.remove_elt (instance);
 
 	      return type;
 	    }

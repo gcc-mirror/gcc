@@ -1,3 +1,386 @@
+2012-11-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/55350
+	* gimple-ssa-strength-reduction.c (replace_dependent): Handle
+	POINTER_PLUS_EXPR correctly.
+
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fix_trunc<MODEF:mode><SWI48:mode>_sse): Macroize
+	insn from fix_trunc<mode>{si,di}_sse using SWI48 mode iterator.
+	(peephole2 to avoid vector decoded forms): Macroize peephole2
+	using MODEF mode iterator.  Use SWI48 mode iterator instead of SWI48x.
+
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/19398
+	* config/i386/i386.md
+	(peephole2 to shorten x87->SSE reload sequences): Remove peephole2.
+	* config/i386/i386.h (enum ix86_tune_indices)
+	<IX86_TUNE_SHORTEN_X87_SSE>: Remove.
+	* config/i386/i386.h (initial_ix86_tune_features): Update.
+
+2012-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/19398
+	* lra-constraints.c (process_alt_operands): Discourage reloads
+	through secodnary memory.
+
+2012-11-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (largetoc_low): Revert.
+	(largetoc_low_aix<mode>): New.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (tlink.o): Add dependency on VEC_H.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+
+	PR middle-end/55398
+	* vec.h (class vec_prefix): Make every field public.
+	Rename field alloc_ to alloc_PRIVATE_.
+	Rename field num_ to num_PRIVATE_.
+	Update all users.
+	(class vec<T, A, vl_embed>): Make every field public.
+	Rename field pfx_ to pfx_PRIVATE_.
+	Rename field data_ to data_PRIVATE_.
+	Update all users.
+	(class vec<T, A, vl_ptr>): Make every field public.
+	Rename field vec_ to vec_PRIVATE_.
+	Update all users.
+
+2012-11-20  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55268
+	* i386.c (ix86_mangle_decl_assembler_name): Use
+	SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME if defined.
+	* cygming.h (TARGET_MANGLE_DECL_ASSEMBLER_NAME): Rename
+	to SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME.
+
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_call): Emit CLOBBERs in VOIDmode.
+
+2012-11-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (F): New function.  Mark the given insn as
+	being frame related.
+	(v850_all_frame_related): New function.  Mark the given push insn
+	as being frame related.
+	(v850_pass_by_reference): When using the RH850 ABI do not pass
+	arguments by reference.
+	(v850_strict_argument_naming): Delete function.
+	(v850_function_arg): Use word alignment with the RH850 ABI.
+	(v850_arg_partial_bytes): Likewise.
+	(v850_function_arg_advance): Likewise.
+	(v850_print_operand): Handle CONST_INT and CONST_DOUBLE.
+	(compute_register_save_size): Use df_regs_ever_live_p.
+	(increment_stack): Mark prologue adjustments as being frame related.
+	(expand_prologue): Handle pretend args.  Mark insns generated as
+	being frame related.
+	(expand_epilogue): Likewise.
+	(v850_return_in_memory): When using the RH850 ABI return
+	aggregates in memory.
+	(v850_setup_incoming_varargs): Delete function.
+	(v850_option_override): New function.
+	(TARGET_DEBUG_UNWIND_INFO): Delete definition.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(TARGET_STRICT_ARGUMENT_NAMING): Likewise.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/v850/v850.h (ASM_SPEC): Pass 8byte-align and gcc-abi
+	options on to assembler.
+	(LINK_SPEC): Likewise.
+	(TARGET_CPU_CPP_BUILTINS): Define __V850_8BYTE_ALIGN__ and
+	__V850_GCC_ABI__.
+	(STACK_BOUNDARY): Set to BIGGEST_ALIGNMENT.
+	(FUNCTION_BOUNDARY): With the RH850 ABI always 32-bit alignment.
+	(BIGGEST_ALIGNMENT): With -8byte-align set to 64-bits.
+	(BIGGEST_FIELD_ALIGNMENT): Likewise.
+	(enum reg_class): Swap EVEN_REGS and GENERAL_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(struct cum_arg): Delete anonymous_args field.
+	(INIT_CUMULATIVE_ARGS): Update.
+	(PREFERRED_DEBUG): Set to DWARF2_DEBUG.
+	(DWARF2_FRAME_INFO): Define.
+	(DWARF2_UNWIND_INFO): Define.
+	(INCOMING_RETURN_ADDR_RTX): Define.
+	(DWARF_FRAME_RETURN_COLUMN): Define.
+	(TARGET_USE_FPU): Define.
+	* config/v850/v850.md: Replace TARGET_V850E2V3 in floating point
+	insns with TARGET_USE_FPU.
+	(fixuns_truncsfsi2): New pattern.
+	(fixuns_truncdfsi2): New pattern.
+	(fix_truncsfdi2): New pattern.
+	(fixuns_truncsfdi2): New pattern.
+	(fix_truncdfdi2): New pattern.
+	(fixuns_truncdfdi2): New pattern.
+	(unsfloatsisf2): New pattern.
+	(unsfloatsidf2): New pattern.
+	(floatdisf2): New pattern.
+	(unsfloatdisf2): New pattern.
+	(floatdidf2): New pattern.
+	(unsfloatdidf2): New pattern.
+	(fnmasf4): Fix RTl description.
+	(fnmssf4): Likewise.
+	* config/v850/v850.opt (mrelax): New option.
+	(mlong-jumps): Likewise.
+	(msoft-float): Likewise.
+	(mhard-float): Likewise.
+	(mrh850-abi): Likewise.
+	(mgcc-abi): Likewise.
+	(m8byte-align): Likewise.
+	* config/v850/t-v850 (MULTILIB_OPTIONS): Update multilib options.
+	(MULTILIB_DIRNAMES): Likewise.
+
+2012-11-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_function_arg_boundary): When using the RX ABI
+	align stack arguments to their natural alignment.
+	(rx_narrow_volatile_bitfield): New function.  Allows narrow
+	volatile bitfields.
+	(rx_ok_to_inline): New function.  Do not inline functions with
+	local variables into a naked caller.
+	(TARGET_NARROW_VOLATILE_BITFIELD): Define.
+	(TARGET_CAN_INLINE_P): Define.
+	* config/rx/rx.c (TARGET_CPU_CPP_BUILTINS): Define __RX_ABI__ or
+	__RX_GC_ABI__.
+	(ASM_SPEC): Pass -mgcc-abi on to the assembler.
+	(STRICT_ALIGNMENT): Set to false.
+	(CTORS_SECTION_ASM_OP): Add executable attribute.
+	(DTORS_SECTION_ASM_OP): Add executable attribute.
+	(INIT_ARRAY_SECTION_ASM_OP): Add executable attribute.
+	(FINI_ARRAY_SECTION_ASM_OP): Add executable attribute.
+	* config/rx/rx.md (subdi3): Don't allow MEMs as the third operand,
+	as it causes too much reload pressure.
+	* config/rx/rx.opt (mgcc-abi): New option.
+	(mrx-abi): New option.
+	* config/rx/t-rx (MULTILIB_OPTIONS): Show how to add an ABI multilib.
+	(MULTILIB_DIRNAMES): Likewise.
+
+2012-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_builtin_type_bits): Rename to...
+	(aarch64_simd_builtin_type_mode): ...this, make sequential.
+	(aarch64_simd_builtin_datum): Refactor members.
+	(VAR1, VAR2, ..., VAR12): Update accordingly.
+	(aarch64_simd_builtin_data): Include from aarch64-simd-builtins.def.
+	(aarch64_builtins): Update accordingly.
+	(init_aarch64_simd_builtins): Refactor, rename to...
+	(aarch64_init_simd_builtins): ...this.
+	(aarch64_simd_builtin_compare): Remove.
+	(locate_simd_builtin_icode): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_init_builtins): New.
+	(aarch64_expand_builtin): New.
+	* config/aarch64/aarch64-simd-builtins.def: New file.
+	* config/aarch64/aarch64.c (aarch64_init_builtins):
+	Move to aarch64-builtins.c.
+	(aarch64_expand_builtin): Likewise.
+	* config/aarch64/aarch64.h
+	(aarch64_builtins): Move to aarch64-builtins.c.
+
+2012-11-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* ipa-cp.c (find_aggregate_values_for_callers_subset): Rename info to
+	dest_info, use caller_info instead of info when determining whether
+	callee is a clone.
+
+2012-11-20  Andrey Turetskiy  <andrey.turetskiy@gmail.com>
+
+	* config/i386/sse.md (*<ssse3_avx2>_pmulhrsw<mode>3): Merge
+	*avx2_pmulhrswv16hi3 and *ssse3_pmulhrswv8hi3 into one pattern.
+
+2012-11-20  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md
+	(define_attr "sync_*"): Remove.
+	(define_attr "length"): Update.
+	Include atomics.md.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_expand_compare_and_swap): Add function prototype.
+	(aarch64_split_compare_and_swap): Likewise.
+	(aarch64_split_atomic_op): Likewise.
+	(aarch64_expand_sync): Remove function prototype.
+	(aarch64_output_sync_insn): Likewise.
+	(aarch64_output_sync_lock_release): Likewise.
+	(aarch64_sync_loop_insns): Likewise.
+	(struct aarch64_sync_generator): Remove.
+	(enum aarch64_sync_generator_tag): Likewise.
+	* config/aarch64/aarch64.c
+	(aarch64_legitimize_sync_memory): Remove function.
+	(aarch64_emit): Likewise.
+	(aarch64_insn_count): Likewise.
+	(aarch64_output_asm_insn): Likewise.
+	(aarch64_load_store_suffix): Likewise.
+	(aarch64_output_sync_load): Likewise.
+	(aarch64_output_sync_store): Likewise.
+	(aarch64_output_op2): Likewise.
+	(aarch64_output_op3): Likewise.
+	(aarch64_output_sync_loop): Likewise.
+	(aarch64_get_sync_operand): Likewise.
+	(aarch64_process_output_sync_insn): Likewise.
+	(aarch64_output_sync_insn): Likewise.
+	(aarch64_output_sync_lock_release): Likewise.
+	(aarch64_sync_loop_insns): Likewise.
+	(aarch64_call_generator): Likewise.
+	(aarch64_expand_sync): Likewise.
+	(* emit_f): Remove variable.
+	(aarch64_insn_count): Likewise.
+	(FETCH_SYNC_OPERAND): Likewise.
+	(aarch64_emit_load_exclusive): New function.
+	(aarch64_emit_store_exclusive): Likewise.
+	(aarch64_emit_unlikely_jump): Likewise.
+	(aarch64_expand_compare_and_swap): Likewise.
+	(aarch64_split_compare_and_swap): Likewise.
+	(aarch64_split_atomic_op): Likewise.
+	* config/aarch64/iterators.md
+	(atomic_sfx): New mode attribute.
+	(atomic_optab): New code attribute.
+	(atomic_op_operand): Likewise.
+	(atomic_op_str): Likewise.
+	(syncop): Rename to atomic_op.
+	* config/aarch64/sync.md: Delete.
+	* config/aarch64/atomics.md: New file.
+
+2012-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55094
+	* builtins.c (expand_builtin_trap): Add REG_ARGS_SIZE note
+	on the trap insn for !ACCUMULATE_OUTGOING_ARGS.
+	* cfgcleanup.c (outgoing_edges_match): Don't look at debug insns
+	on the first old_insns_match_p call.  For !ACCUMULATE_OUTGOING_ARGS
+	fail if the last real insn doesn't have REG_ARGS_SIZE note.
+
+	PR rtl-optimization/54921
+	* cselib.h (fp_setter_insn): New prototype.
+	* cselib.c (fp_setter_insn): New function.
+	(cselib_process_insn): If frame_pointer_needed,
+	call cselib_invalidate_rtx (stack_pointer_rtx) after
+	processing a frame pointer setter.
+	* var-tracking.c (fp_setter): Removed.
+	(vt_initialize): Use fp_setter_insn instead of fp_setter.
+
+2012-11-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Reorder move
+	constraints so that the traditional floating point loads, stores,
+	and moves are done first, then the VSX loads, stores, and moves,
+	and finally the GPR loads, stores, and moves so that reload
+	chooses FPRs over GPRs, and uses the traditional load/store
+	instructions which provide an offset.
+	(movdf_hardfloat64): Likewise.
+
+2012-11-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/55359
+	* simplify-rtx.c (simplify_subreg): Return null for invalid offsets.
+
+2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem.c (execute_tm_mark): Release bb_regions.
+
+2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* trans-mem (collect_bb2reg): Stop scanning at irrevocable blocks.
+	(get_bb_regions_instrumented): Add new traverse_clone argument and
+	use it.
+	(expand_regions_1): Same.
+	(expand_region): Same.
+	(execute_tm_mark): Pass new argument to expand_regions.
+	(expand_block_edges): Pass new argument to get_bb_regions_instrumented.
+
+2012-11-19  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_output_mi_thunk): Refactor to generate RTL patterns.
+
+2012-11-19  Mans Rullgard  <mans@mansr.com>
+
+	PR target/55276
+	* config/rs6000/rs6000.c (rs6000_stack_info): Always set vrsave_mask
+	for TARGET_ALTIVEC_ABI.  Zero vrsave_save_offset if
+	!TARGET_ALTIVEC_VRSAVE.
+	(rs6000_emit_prologue): For SAVE_INLINE_VLRs, check vrsave_size
+	not vrsave_mask.
+
+2012-11-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR bootstrap/55384
+	* system.h (vec_free): Undef.
+
+2012-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54630
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Remove static
+	keyword from ssa_name_hash var.
+
+2012-11-19  Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* doc/md.texi: Document define_subst.
+	* gensupport.c (MAX_OPERANDS): New define.
+	(operand_data): New.
+	(match_operand_entries_in_pattern): New.
+	(used_operands_numbers): New.
+	(subst_true): New.
+	(subst_false): New.
+	(define_subst_queue): New.
+	(define_subst_tail): New.
+	(define_subst_attr_queue): New.
+	(define_subst_attr_tail): New.
+	(has_subst_attribute): New.
+	(subst_pattern_match): New.
+	(get_alternatives_number): New.
+	(alter_output_for_subst_insn): New.
+	(alter_attrs_for_subst_insn): New.
+	(process_substs_on_one_elem): New.
+	(subst_dup): New.
+	(process_define_subst): New.
+	(duplicate_alternatives): New.
+	(duplicate_each_alternative): New.
+	(constraints_handler_t): New typedef.
+	(alter_constraints): New.
+	(adjust_operands_numbers): New.
+	(replace_duplicating_operands_in_pattern): New.
+	(remove_from_queue): New.
+	(process_rtx): Handle define_subst and define_subst_attr.
+	(change_subst_attribute): New.
+	(alter_predicate_for_insn): Fix formatting.
+	(alter_attrs_for_insn): Likewise.
+	(alter_output_for_insn): Likewise.
+	(mark_operands_from_match_dup): New.
+	(mark_operands_used_in_match_dup): New.
+	(find_first_unused_number_of_operand): New.
+	(renumerate_operands_in_pattern): New.
+	(generate_match_dup): New.
+	(check_define_attr_duplicates): New.
+	(init_rtx_reader_args_cb): Add checking for duplicated attrs and
+	processing of define_subst.
+	(read_md_rtx): Handle define_subst.
+	* read-rtl.c (struct subst_attr_to_iter_mapping): New.
+	(substs): New global.
+	(apply_subst_iterator): New.
+	(bind_subst_iter_and_attr): New.
+	(find_subst_iter_by_attr): New.
+	(map_attr_string): Handle subst-iterators.
+	(add_condition_to_rtx): Handle define_subst.
+	(apply_iterators): Likewise.
+	(initialize_iterators): Likewise.
+	(add_define_attr_for_define_subst): New.
+	(add_define_subst_attr): New.
+	(read_subst_mapping): New.
+	(read_rtx): Handle define_subst_attr.
+	(read_rtx_code): Add subst-attributes recognition during reading of
+	strings.
+	* rtl.def (DEFINE_EXPAND): Add vector of attributes.
+	(DEFINE_SUBST): New.
+	(DEFINE_SUBST_ATTR): New.
+
 2012-11-19  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/55315
@@ -148,8 +531,7 @@
 	(stack_vec_register_index): New.
 	(unregister_stack_vec): New.
 	(vec_assert_fail): Remove.
-	* vec.h: Conditionally include ggc.h.  Document conditional
-	hackery.
+	* vec.h: Conditionally include ggc.h.  Document conditional hackery.
 	Update top-level documentation.
 	(ALONE_VEC_CHECK_INFO): Remove.
 	(VEC_CHECK_INFO): Remove.
@@ -158,8 +540,7 @@
 	(ALONE_VEC_CHECK_PASS): Remove.
 	(VEC_CHECK_PASS): Remove.
 	(VEC_ASSERT): Remove.
-	(vec_prefix): Add friends va_gc, va_gc_atomic, va_heap and
-	va_stack.
+	(vec_prefix): Add friends va_gc, va_gc_atomic, va_heap and va_stack.
 	Mark fields alloc_ and num_ as protected.
 	(struct vec_t): Remove.  Remove all function members.
 	(struct vl_embed): Declare.
@@ -331,10 +712,8 @@
 	Call create_user_defined_type when parsing GTY((user)).
 	* gengtype-state.c (type_lineloc): handle TYPE_UNDEFINED.
 	(write_state_undefined_type): New.
-	(write_state_type): Call write_state_undefined_type for
-	TYPE_UNDEFINED.
-	(read_state_type): Call read_state_undefined_type for
-	TYPE_UNDEFINED.
+	(write_state_type): Call write_state_undefined_type for TYPE_UNDEFINED.
+	(read_state_type): Call read_state_undefined_type for TYPE_UNDEFINED.
 	* gengtype.c (dbgprint_count_type_at): Handle TYPE_UNDEFINED.
 	(create_user_defined_type): Make extern.
 	(type_for_name): Factor out of resolve_typedef.
@@ -347,8 +726,7 @@
 	Emit an error for TYPE_UNDEFINED unless LEVEL is GC_UNUSED or
 	ALLOWED_UNDEFINED_TYPES is set.
 	Set ALLOWED_UNDEFINED_TYPES to true for TYPE_USER_STRUCT.
-	(filter_type_name): Accept templates with more than one
-	argument.
+	(filter_type_name): Accept templates with more than one argument.
 	(output_mangled_typename): Handle TYPE_UNDEFINED
 	(walk_type): Likewise.
 	(write_types_process_field): Likewise.
@@ -361,8 +739,7 @@
 	(write_root): Reject user-defined types that are not pointers.
 	Handle TYPE_NONE, TYPE_UNDEFINED, TYPE_UNION, TYPE_LANG_STRUCT
 	and TYPE_PARAM_STRUCT.
-	(output_typename): Handle TYPE_NONE, TYPE_UNDEFINED, and
-	TYPE_ARRAY.
+	(output_typename): Handle TYPE_NONE, TYPE_UNDEFINED, and TYPE_ARRAY.
 	(dump_typekind): Handle TYPE_UNDEFINED.
 	* gengtype.h (enum typekind): Add TYPE_UNDEFINED.
 	(create_user_defined_type): Declare.
@@ -664,7 +1041,8 @@
 
 2012-11-16  Jan Hubicka  <jh@suse.cz>
 
-	* params.def (max-peeled-insns, max-completely-peeled-insns): Reduce to 100.
+	* params.def (max-peeled-insns, max-completely-peeled-insns): Reduce
+	to 100.
 
 2012-11-16  Simon Baldwin  <simonb@google.com>
 

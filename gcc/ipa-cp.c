@@ -2859,10 +2859,10 @@ static struct ipa_agg_replacement_value *
 find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 					  vec<cgraph_edge_p> callers)
 {
-  struct ipa_node_params *info = IPA_NODE_REF (node);
+  struct ipa_node_params *dest_info = IPA_NODE_REF (node);
   struct ipa_agg_replacement_value *res = NULL;
   struct cgraph_edge *cs;
-  int i, j, count = ipa_get_param_count (info);
+  int i, j, count = ipa_get_param_count (dest_info);
 
   FOR_EACH_VEC_ELT (callers, j, cs)
     {
@@ -2880,7 +2880,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 
       /* Among other things, the following check should deal with all by_ref
 	 mismatches.  */
-      if (ipa_get_parm_lattices (info, i)->aggs_bottom)
+      if (ipa_get_parm_lattices (dest_info, i)->aggs_bottom)
 	continue;
 
       FOR_EACH_VEC_ELT (callers, j, cs)
@@ -2932,7 +2932,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 	      struct ipcp_param_lattices *src_plats;
 	      HOST_WIDE_INT delta = ipa_get_jf_ancestor_offset (jfunc);
 
-	      if (info->ipcp_orig_node)
+	      if (caller_info->ipcp_orig_node)
 		{
 		  if (!inter.exists ())
 		    inter = agg_replacements_to_vector (cs->caller, delta);
