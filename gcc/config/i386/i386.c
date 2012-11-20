@@ -1855,9 +1855,6 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_EXT_80387_CONSTANTS */
   m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
 
-  /* X86_TUNE_SHORTEN_X87_SSE */
-  ~m_K8,
-
   /* X86_TUNE_AVOID_VECTOR_DECODE */
   m_CORE2I7_64 | m_K8 | m_GENERIC64,
 
