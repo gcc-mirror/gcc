@@ -34,7 +34,7 @@
 #include <bits/functexcept.h>
 #include <tr1/array>
 #include <bits/move.h>
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
 #include <type_traits>
 #endif
 
@@ -115,7 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp        	value_type;
       typedef _Array		array_type;
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2103. std::allocator propagate_on_container_move_assignment
       typedef std::true_type propagate_on_container_move_assignment;
