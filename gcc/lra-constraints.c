@@ -425,7 +425,7 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
 	    fprintf (lra_dump_file, "	 Reuse r%d for reload ", regno);
 	    print_value_slim (lra_dump_file, original, 1);
 	  }
-	if (rclass != new_class)
+	if (new_class != lra_get_allocno_class (regno))
 	  change_class (regno, new_class, ", change", false);
 	if (lra_dump_file != NULL)
 	  fprintf (lra_dump_file, "\n");

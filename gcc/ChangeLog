@@ -1,3 +1,9 @@
+2012-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55396
+	* lra-constraints.c (get_reload_reg): Change class if it is
+	different from reg class.
+
 2012-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* vec.h (class vec_prefix): Change into struct.
