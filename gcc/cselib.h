@@ -78,6 +78,7 @@ extern void cselib_init (int);
 extern void cselib_clear_table (void);
 extern void cselib_finish (void);
 extern void cselib_process_insn (rtx);
+extern bool fp_setter_insn (rtx);
 extern enum machine_mode cselib_reg_set_mode (const_rtx);
 extern int rtx_equal_for_cselib_p (rtx, rtx);
 extern int references_value_p (const_rtx, int);
