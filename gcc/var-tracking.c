@@ -9522,40 +9522,6 @@ vt_add_function_parameters (void)
     }
 }
 
-/* Return true if INSN in the prologue initializes hard_frame_pointer_rtx.  */
-
-static bool
-fp_setter (rtx insn)
-{
-  rtx pat = PATTERN (insn);
-  if (RTX_FRAME_RELATED_P (insn))
-    {
-      rtx expr = find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX);
-      if (expr)
-	pat = XEXP (expr, 0);
-    }
-  if (GET_CODE (pat) == SET)
-    {
-      if (SET_DEST (pat) != hard_frame_pointer_rtx)
-	return false;
-    }
-  else if (GET_CODE (pat) == PARALLEL)
-    {
-      int i;
-      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
-	if (GET_CODE (XVECEXP (pat, 0, i)) == SET
-	    && SET_DEST (XVECEXP (pat, 0, i)) == hard_frame_pointer_rtx)
-	  break;
-      if (i < 0)
-	return false;
-    }
-  else
-    return false;
-  if (find_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx))
-    return false;
-  return true;
-}
-
 /* Initialize cfa_base_rtx, create a preserved VALUE for it and
    ensure it isn't flushed during cselib_reset_table.
    Can be called only if frame_pointer_rtx resp. arg_pointer_rtx
@@ -9859,8 +9825,7 @@ vt_initialize (void)
 
 		  if (fp_cfa_offset != -1
 		      && hard_frame_pointer_adjustment == -1
-		      && RTX_FRAME_RELATED_P (insn)
-		      && fp_setter (insn))
+		      && fp_setter_insn (insn))
 		    {
 		      vt_init_cfa_base ();
 		      hard_frame_pointer_adjustment = fp_cfa_offset;
