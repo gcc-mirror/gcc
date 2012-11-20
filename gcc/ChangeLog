@@ -1,3 +1,29 @@
+2012-11-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_function_arg_boundary): When using the RX ABI
+	align stack arguments to their natural alignment.
+	(rx_narrow_volatile_bitfield): New function.  Allows narrow
+	volatile bitfields.
+	(rx_ok_to_inline): New function.  Do not inline functions with
+	local variables into a naked caller.
+	(TARGET_NARROW_VOLATILE_BITFIELD): Define.
+	(TARGET_CAN_INLINE_P): Define.
+	* config/rx/rx.c (TARGET_CPU_CPP_BUILTINS): Define __RX_ABI__ or
+	__RX_GC_ABI__.
+	(ASM_SPEC): Pass -mgcc-abi on to the assembler.
+	(STRICT_ALIGNMENT): Set to false.
+	(CTORS_SECTION_ASM_OP): Add executable attribute.
+	(DTORS_SECTION_ASM_OP): Add executable attribute.
+	(INIT_ARRAY_SECTION_ASM_OP): Add executable attribute.
+	(FINI_ARRAY_SECTION_ASM_OP): Add executable attribute.
+	* config/rx/rx.md (subdi3): Don't allow MEMs as the third operand,
+	as it causes too much reload pressure.
+	* config/rx/rx.opt (mgcc-abi): New option.
+	(mrx-abi): New option.
+	* config/rx/t-rx (MULTILIB_OPTIONS): Show how to add an ABI
+	multilib.
+	(MULTILIB_DIRNAMES): Likewise.
+
 2012-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 
