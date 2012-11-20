@@ -150,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
     { return false; }
 
-  /// Declare uses_allocator so it can be specialized in <queue> etc.
+  /// Declare uses_allocator so it can be specialized in \<queue\> etc.
   template<typename, typename>
     struct uses_allocator;
 
