@@ -1,6 +1,6 @@
 ; Options for the NEC V850 port of the compiler.
 
-; Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010, 2011, 2012 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -38,15 +38,14 @@ Enable backend debugging
 
 mdisable-callt
 Target Report Mask(DISABLE_CALLT)
-Do not use the callt instruction
+Do not use the callt instruction (default)
 
 mep
 Target Report Mask(EP)
 Reuse r30 on a per function basis
 
 mghs
-Target Report Mask(GHS)
-Support Green Hills ABI
+Target RejectNegative InverseMask(GCC_ABI) MaskExists
 
 mlong-calls
 Target Report Mask(LONG_CALLS)
@@ -119,3 +118,31 @@ Set the max size of data eligible for the ZDA area
 
 mzda-
 Target RejectNegative Joined Undocumented Alias(mzda=)
+
+mrelax
+Target Report Mask(RELAX)
+Enable relaxing in the assembler
+
+mlong-jumps
+Target Report Mask(BIG_SWITCH) MaskExists
+Prohibit PC relative jumps
+
+msoft-float
+Target Report RejectNegative Mask(SOFT_FLOAT)
+Inhibit the use of hardware floating point instructions
+
+mhard-float
+Target Report RejectNegative InverseMask(SOFT_FLOAT) MaskExists
+Allow the use of hardware floating point instructions for V850E2V3 and up
+
+mrh850-abi
+Target RejectNegative Report InverseMask(GCC_ABI) MaskExists
+Enable support for the RH850 ABI.  This is the default
+
+mgcc-abi
+Target RejectNegative Report Mask(GCC_ABI)
+Enable support for the old GCC ABI
+
+m8byte-align
+Target Report Mask(8BYTE_ALIGN)
+Support alignments of up to 64-bits
