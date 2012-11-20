@@ -1,3 +1,10 @@
+2012-11-20  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
+
+	* sanitizer_common/sanitizer_linux.cc
+	(SANITIZER_LINUX_USES_64BIT_SYSCALLS): Define.
+	(internal_mmap): Use it.
+	(internal_filesize): Likewise.
+
 2012-11-16  Tom Tromey  <tromey@redhat.com>
 
 	* configure.ac: Invoke AM_MAINTAINER_MODE.

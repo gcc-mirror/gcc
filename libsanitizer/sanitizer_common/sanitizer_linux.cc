@@ -29,12 +29,21 @@
 #include <unistd.h>
 #include <errno.h>
 
+// Are we using 32-bit or 64-bit syscalls?
+// x32 (which defines __x86_64__) has __WORDSIZE == 32
+// but it still needs to use 64-bit syscalls.
+#if defined(__x86_64__) || __WORDSIZE == 64
+# define SANITIZER_LINUX_USES_64BIT_SYSCALLS 1
+#else
+# define SANITIZER_LINUX_USES_64BIT_SYSCALLS 0
+#endif
+
 namespace __sanitizer {
 
 // --------------- sanitizer_libc.h
 void *internal_mmap(void *addr, uptr length, int prot, int flags,
                     int fd, u64 offset) {
-#if defined __x86_64__
+#if SANITIZER_LINUX_USES_64BIT_SYSCALLS
   return (void *)syscall(__NR_mmap, addr, length, prot, flags, fd, offset);
 #else
   return (void *)syscall(__NR_mmap2, addr, length, prot, flags, fd, offset);
@@ -67,7 +76,7 @@ uptr internal_write(fd_t fd, const void *buf, uptr count) {
 }
 
 uptr internal_filesize(fd_t fd) {
-#if defined __x86_64__
+#if SANITIZER_LINUX_USES_64BIT_SYSCALLS
   struct stat st;
   if (syscall(__NR_fstat, fd, &st))
     return -1;
