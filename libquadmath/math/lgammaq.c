@@ -69,7 +69,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
 
 #include "quadmath-imp.h"
-#include <math.h>  /* For extern int signgam.  */
+
+#ifdef HAVE_MATH_H_SIGNGAM
+#include <math.h>  /* For POSIX's extern int signgam.  */
+#endif
 
 static const __float128 PIQ = 3.1415926535897932384626433832795028841972E0Q;
 static const __float128 MAXLGM = 1.0485738685148938358098967157129705071571E4928Q;
@@ -759,6 +762,9 @@ lgammaq (__float128 x)
 {
   __float128 p, q, w, z, nx;
   int i, nn;
+#ifndef HAVE_MATH_H_SIGNGAM
+  int signgam;
+#endif
 
   signgam = 1;
 

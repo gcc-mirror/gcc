@@ -1,3 +1,13 @@
+2012-11-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR libquadmath/55225
+	* math/lgammaq.c (lgammaq): Use local variable if
+	math.h does not provide signgam.
+	* acinclude.m4 (LIBQUAD_CHECK_MATH_H_SIGNGAM): New check.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2012-11-15  Tobias Burnus  <burnus@net-b.de>
 	    Joseph Myers  <joseph@codesourcery.com>
 
