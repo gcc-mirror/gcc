@@ -1,3 +1,8 @@
+2012-11-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Skip on ARM Cortex-M0.
+	* gcc.dg/tree-ssa/vrp47.c: Ditto.
+
 2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/19398
