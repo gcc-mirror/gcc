@@ -1,3 +1,16 @@
+2012-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md
+	(*float<SWI48x:mode><MODEF:mode>2_mixed_with_temp): Use SWI48 mode
+	iterator instead of SWI48x.  Update insn constraint.
+	(*float<SWI48x:mode><MODEF:mode>2_mixed_interunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_mixed_nointerunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_sse_with_temp): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_sse_interunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_sse_nointerunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2 splitters): Ditto.
+	(lrint<MODEF:mode><SWI48x:mode>2): Ditto.
+
 2012-11-21  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* Makefile.in (gengtype-lex.o): Add dependency on $(BCONFIG_H).
@@ -95,13 +108,14 @@
 	(peephole2 to shorten x87->SSE reload sequences): Remove peephole2.
 	* config/i386/i386.h (enum ix86_tune_indices)
 	<IX86_TUNE_SHORTEN_X87_SSE>: Remove.
-	* config/i386/i386.h (initial_ix86_tune_features): Update.
+	(TARGET_SHORTEN_X87_SSE): Remove.
+	* config/i386/i386.c (initial_ix86_tune_features): Update.
 
 2012-11-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/19398
 	* lra-constraints.c (process_alt_operands): Discourage reloads
-	through secodnary memory.
+	through secondary memory.
 
 2012-11-20  David Edelsohn  <dje.gcc@gmail.com>
 
