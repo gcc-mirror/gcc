@@ -1,3 +1,12 @@
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* ipa-cp.c (intersect_aggregates_with_edge): New function.
+	(find_aggregate_values_for_callers_subset): Part moved to the function
+	above.  Call it.
+	(cgraph_edge_brings_all_agg_vals_for_node): Reimplemented using
+	intersect_aggregates_with_edge.
+
 2012-11-21  Matthias Klose  <doko@ubuntu.com>
 
 	* config/s390/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
