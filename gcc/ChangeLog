@@ -1,3 +1,8 @@
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/aarch64/t-aarch64-linux: Define MULTIARCH_DIRNAME for
+	linux target.
+
 2012-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md
