@@ -1,3 +1,9 @@
+2012-11-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55414
+	* lra-constraints.c (Index): New function.
+	(lra_constraints): Check dead equiv init insns.
+
 2012-11-21  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (extvmisaligndi): Rename from extv; update
