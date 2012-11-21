@@ -113,6 +113,7 @@ AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
 AC_CHECK_HEADERS(fenv.h langinfo.h locale.h wchar.h wctype.h limits.h ctype.h printf.h errno.h)
+LIBQUAD_CHECK_MATH_H_SIGNGAM
 
 # If available, sqrtl and cbrtl speed up the calculation -
 # but they are not required

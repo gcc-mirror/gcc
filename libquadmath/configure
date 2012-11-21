@@ -11947,6 +11947,43 @@ fi
 done
 
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the math.h includes POSIX's signgam" >&5
+$as_echo_n "checking whether the math.h includes POSIX's signgam... " >&6; }
+if test "${libgfor_cv_have_math_h_signgam+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <math.h>
+void foo(void) { signgam = 1; }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgfor_cv_have_math_h_signgam=yes
+else
+  libgfor_cv_have_math_h_signgam=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$save_CFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_math_h_signgam" >&5
+$as_echo "$libgfor_cv_have_math_h_signgam" >&6; }
+  if test $libgfor_cv_have_math_h_signgam = yes; then
+
+$as_echo "#define HAVE_MATH_H_SIGNGAM 1" >>confdefs.h
+
+  fi
+
 # If available, sqrtl and cbrtl speed up the calculation -
 # but they are not required
 if test x$gcc_no_link != xyes; then
