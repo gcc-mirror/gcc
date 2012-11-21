@@ -288,11 +288,11 @@ compute_working_sets (void)
           else
             tmp_cum = cum + histo_bucket->cum_value;
 
-          /* Next walk through successive working set entries and fill in
-            the statistics for any whose size we have reached by accumulating
-            this histogram counter.  */
-          while (tmp_cum >= working_set_cum_values[ws_ix]
-                 && ws_ix < NUM_GCOV_WORKING_SETS)
+	  /* Next walk through successive working set entries and fill in
+	     the statistics for any whose size we have reached by accumulating
+	     this histogram counter.  */
+	  while (ws_ix < NUM_GCOV_WORKING_SETS
+		 && tmp_cum >= working_set_cum_values[ws_ix])
             {
               gcov_working_sets[ws_ix].num_counters = count;
               gcov_working_sets[ws_ix].min_counter

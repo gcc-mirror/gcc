@@ -1,3 +1,9 @@
+2012-11-21  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/55417
+	* profile.c (compute_working_sets): Check index first
+	to avoid out-of-bounds array access.
+
 2012-11-21  Matthias Klose  <doko@ubuntu.com>
 
 	* config/aarch64/t-aarch64-linux: Define MULTIARCH_DIRNAME for
@@ -1400,7 +1406,7 @@
 	* cppdefault.h (default_include): Document multiarch in multilib
 	member.
 	* cppdefault.c: [LOCAL_INCLUDE_DIR, STANDARD_INCLUDE_DIR] Add an
-        include directory for multiarch directories.
+	include directory for multiarch directories.
 	* common.opt: New options --print-multiarch and -imultilib.
 	* config.gcc <i[34567]86-*-linux* | x86_64-*-linux*> (tmake_file):
 	Include i386/t-linux.
