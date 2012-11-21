@@ -1,3 +1,13 @@
+2012-11-21  Wei Mi  <wmi@google.com>
+
+	* common.opt: Change faddress-sanitizer to fsanitize=address.
+	* toplev.c (process_options): Likewise.
+	* gcc.c (LINK_COMMAND_SPEC): Likewise.
+	* testsuite/lib/asan-dg.exp
+	(check_effective_target_faddress_sanitizer): Likewise.
+	(asan_init): Likewise.
+	* doc/invoke.texi (-fsanitize=address): Document.
+
 2012-11-21  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_node_params): Rename clone_for_all_contexts to

@@ -1549,7 +1549,7 @@ process_options (void)
       && (targetm.asan_shadow_offset == NULL
 	  || !FRAME_GROWS_DOWNWARD))
     {
-      warning (0, "-faddress-sanitizer not supported for this target");
+      warning (0, "-fsanitize=address not supported for this target");
       flag_asan = 0;
     }
 

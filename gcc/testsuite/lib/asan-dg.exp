@@ -14,13 +14,13 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Return 1 if compilation with -faddress-sanitizer is error-free for trivial
+# Return 1 if compilation with -fsanitize=address is error-free for trivial
 # code, 0 otherwise.
 
 proc check_effective_target_faddress_sanitizer {} {
     return [check_no_compiler_messages faddress_sanitizer object {
 	void foo (void) { }
-    } "-faddress-sanitizer"]
+    } "-fsanitize=address"]
 }
 
 #
@@ -83,12 +83,12 @@ proc asan_init { args } {
     }
     if [info exists ALWAYS_CXXFLAGS] {
 	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
-	set ALWAYS_CXXFLAGS [concat "{additional_flags=-faddress-sanitizer -g}" $ALWAYS_CXXFLAGS]
+	set ALWAYS_CXXFLAGS [concat "{additional_flags=-fsanitize=address -g}" $ALWAYS_CXXFLAGS]
     } else {
 	if [info exists TEST_ALWAYS_FLAGS] {
-	    set TEST_ALWAYS_FLAGS "$link_flags -faddress-sanitizer -g $TEST_ALWAYS_FLAGS"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g $TEST_ALWAYS_FLAGS"
 	} else {
-	    set TEST_ALWAYS_FLAGS "$link_flags -faddress-sanitizer -g"
+	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g"
 	}
     }
 }
