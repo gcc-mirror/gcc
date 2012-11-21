@@ -1,3 +1,9 @@
+2012-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/55397
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Define __SANITIZE_ADDRESS__ for flag_asan.
+
 2012-11-21  Wei Mi  <wmi@google.com>
 
 	* common.opt: Change faddress-sanitizer to fsanitize=address.
