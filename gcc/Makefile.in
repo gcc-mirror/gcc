@@ -3886,7 +3886,7 @@ build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 # the build-%: rule doesn't apply to them.
 
 gengtype-lex.o build/gengtype-lex.o : gengtype-lex.c gengtype.h $(SYSTEM_H)
-gengtype-lex.o: $(CONFIG_H)
+gengtype-lex.o: $(CONFIG_H) $(BCONFIG_H)
 CFLAGS-gengtype-lex.o += -DGENERATOR_FILE
 build/gengtype-lex.o: $(BCONFIG_H)
 

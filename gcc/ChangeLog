@@ -1,3 +1,7 @@
+2012-11-21  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* Makefile.in (gengtype-lex.o): Add dependency on $(BCONFIG_H).
+
 2012-11-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/arm/arm-cores.def (cortex-m1, cortex-m0)
