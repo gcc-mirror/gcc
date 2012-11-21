@@ -1552,7 +1552,7 @@ ia64*-*-freebsd*)
 	;;
 ia64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
-	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind"
+	tmake_file="${tmake_file} ia64/t-ia64 ia64/t-linux t-libunwind"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	;;
 ia64*-*-hpux*)
