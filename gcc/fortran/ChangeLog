@@ -1,3 +1,9 @@
+2012-11-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55352
+	* trans-decl.c (generate_local_decl): Don't warn for explicitly imported
+	but unused module variables which are in a namelist or common block.
+
 2012-11-20  Diego Novillo  <dnovillo@google.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
