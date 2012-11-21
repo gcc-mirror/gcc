@@ -1,3 +1,9 @@
+2012-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/55411
+	* team.c (gomp_free_thread): Decrease gomp_managed_threads
+	if pool had any threads_used.
+
 2012-11-07  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* testsuite/libgomp.c++/pr24455.C: Use
