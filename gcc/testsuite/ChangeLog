@@ -1,5 +1,10 @@
 2012-11-21  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/55260
+	* g++.dg/torture/pr55260-2.C: New test.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
 	* gcc.dg/torture/pr55238.c: Remove hidden attribute.
 
 2012-11-21  Bin Cheng  <bin.cheng@arm.com>

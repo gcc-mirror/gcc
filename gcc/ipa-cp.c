@@ -2850,6 +2850,127 @@ intersect_with_agg_replacements (struct cgraph_node *node, int index,
     }
 }
 
+/* Intersect values in INTER with aggregate values that come along edge CS to
+   parameter number INDEX and return it.  If INTER does not actually exist yet,
+   copy all incoming values to it.  If we determine we ended up with no values
+   whatsoever, return a released vector.  */
+
+static vec<ipa_agg_jf_item_t>
+intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
+				vec<ipa_agg_jf_item_t> inter)
+{
+  struct ipa_jump_func *jfunc;
+  jfunc = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), index);
+  if (jfunc->type == IPA_JF_PASS_THROUGH
+      && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+    {
+      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+      int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
+
+      if (caller_info->ipcp_orig_node)
+	{
+	  struct cgraph_node *orig_node = caller_info->ipcp_orig_node;
+	  struct ipcp_param_lattices *orig_plats;
+	  orig_plats = ipa_get_parm_lattices (IPA_NODE_REF (orig_node),
+					      src_idx);
+	  if (agg_pass_through_permissible_p (orig_plats, jfunc))
+	    {
+	      if (!inter.exists ())
+		inter = agg_replacements_to_vector (cs->caller, 0);
+	      else
+		intersect_with_agg_replacements (cs->caller, src_idx,
+						 &inter, 0);
+	    }
+	}
+      else
+	{
+	  struct ipcp_param_lattices *src_plats;
+	  src_plats = ipa_get_parm_lattices (caller_info, src_idx);
+	  if (agg_pass_through_permissible_p (src_plats, jfunc))
+	    {
+	      /* Currently we do not produce clobber aggregate jump
+		 functions, adjust when we do.  */
+	      gcc_checking_assert (!jfunc->agg.items);
+	      if (!inter.exists ())
+		inter = copy_plats_to_inter (src_plats, 0);
+	      else
+		intersect_with_plats (src_plats, &inter, 0);
+	    }
+	}
+    }
+  else if (jfunc->type == IPA_JF_ANCESTOR
+	   && ipa_get_jf_ancestor_agg_preserved (jfunc))
+    {
+      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+      int src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
+      struct ipcp_param_lattices *src_plats;
+      HOST_WIDE_INT delta = ipa_get_jf_ancestor_offset (jfunc);
+
+      if (caller_info->ipcp_orig_node)
+	{
+	  if (!inter.exists ())
+	    inter = agg_replacements_to_vector (cs->caller, delta);
+	  else
+	    intersect_with_agg_replacements (cs->caller, index, &inter,
+					     delta);
+	}
+      else
+	{
+	  src_plats = ipa_get_parm_lattices (caller_info, src_idx);;
+	  /* Currently we do not produce clobber aggregate jump
+	     functions, adjust when we do.  */
+	  gcc_checking_assert (!src_plats->aggs || !jfunc->agg.items);
+	  if (!inter.exists ())
+	    inter = copy_plats_to_inter (src_plats, delta);
+	  else
+	    intersect_with_plats (src_plats, &inter, delta);
+	}
+    }
+  else if (jfunc->agg.items)
+    {
+      struct ipa_agg_jf_item *item;
+      int k;
+
+      if (!inter.exists ())
+	for (unsigned i = 0; i < jfunc->agg.items->length (); i++)
+	  inter.safe_push ((*jfunc->agg.items)[i]);
+      else
+	FOR_EACH_VEC_ELT (inter, k, item)
+	  {
+	    int l = 0;
+	    bool found = false;;
+
+	    if (!item->value)
+	      continue;
+
+	    while ((unsigned) l < jfunc->agg.items->length ())
+	      {
+		struct ipa_agg_jf_item *ti;
+		ti = &(*jfunc->agg.items)[l];
+		if (ti->offset > item->offset)
+		  break;
+		if (ti->offset == item->offset)
+		  {
+		    gcc_checking_assert (ti->value);
+		    if (values_equal_for_ipcp_p (item->value,
+						 ti->value))
+		      found = true;
+		    break;
+		  }
+		l++;
+	      }
+	    if (!found)
+	      item->value = NULL;
+	  }
+    }
+  else
+    {
+      inter.release();
+      return vec<ipa_agg_jf_item_t>();
+    }
+  return inter;
+}
+
 /* Look at edges in CALLERS and collect all known aggregate values that arrive
    from all of them.  */
 
@@ -2883,111 +3004,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 
       FOR_EACH_VEC_ELT (callers, j, cs)
 	{
-	  struct ipa_jump_func *jfunc;
-	  jfunc = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  if (jfunc->type == IPA_JF_PASS_THROUGH
-	      && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
-	    {
-	      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-	      int src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
-
-	      if (caller_info->ipcp_orig_node)
-		{
-		  struct cgraph_node *orig_node = caller_info->ipcp_orig_node;
-		  struct ipcp_param_lattices *orig_plats;
-		  orig_plats = ipa_get_parm_lattices (IPA_NODE_REF (orig_node),
-						      src_idx);
-		  if (agg_pass_through_permissible_p (orig_plats, jfunc))
-		    {
-		      if (!inter.exists ())
-			inter = agg_replacements_to_vector (cs->caller, 0);
-		      else
-			intersect_with_agg_replacements (cs->caller, src_idx,
-							 &inter, 0);
-		    }
-		}
-	      else
-		{
-		  struct ipcp_param_lattices *src_plats;
-		  src_plats = ipa_get_parm_lattices (caller_info, src_idx);
-		  if (agg_pass_through_permissible_p (src_plats, jfunc))
-		    {
-		      /* Currently we do not produce clobber aggregate jump
-			 functions, adjust when we do.  */
-		      gcc_checking_assert (!jfunc->agg.items);
-		      if (!inter.exists ())
-			inter = copy_plats_to_inter (src_plats, 0);
-		      else
-			intersect_with_plats (src_plats, &inter, 0);
-		    }
-		}
-	    }
-	  else if (jfunc->type == IPA_JF_ANCESTOR
-		   && ipa_get_jf_ancestor_agg_preserved (jfunc))
-	    {
-	      struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
-	      int src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	      struct ipcp_param_lattices *src_plats;
-	      HOST_WIDE_INT delta = ipa_get_jf_ancestor_offset (jfunc);
-
-	      if (caller_info->ipcp_orig_node)
-		{
-		  if (!inter.exists ())
-		    inter = agg_replacements_to_vector (cs->caller, delta);
-		  else
-		    intersect_with_agg_replacements (cs->caller, i, &inter,
-						     delta);
-		}
-	      else
-		{
-		  src_plats = ipa_get_parm_lattices (caller_info, src_idx);;
-		  /* Currently we do not produce clobber aggregate jump
-		     functions, adjust when we do.  */
-		  gcc_checking_assert (!src_plats->aggs || !jfunc->agg.items);
-		  if (!inter.exists ())
-		    inter = copy_plats_to_inter (src_plats, delta);
-		  else
-		    intersect_with_plats (src_plats, &inter, delta);
-		}
-	    }
-	  else if (jfunc->agg.items)
-	    {
-	      int k;
-
-	      if (!inter.exists ())
-		for (unsigned i = 0; i < jfunc->agg.items->length (); i++)
-		  inter.safe_push ((*jfunc->agg.items)[i]);
-	      else
-		FOR_EACH_VEC_ELT (inter, k, item)
-		  {
-		    int l = 0;
-		    bool found = false;;
-
-		    if (!item->value)
-		      continue;
-
-		    while ((unsigned) l < jfunc->agg.items->length ())
-		      {
-			struct ipa_agg_jf_item *ti;
-		        ti = &(*jfunc->agg.items)[l];
-			if (ti->offset > item->offset)
-			  break;
-			if (ti->offset == item->offset)
-			  {
-			    gcc_checking_assert (ti->value);
-			    if (values_equal_for_ipcp_p (item->value,
-							  ti->value))
-			      found = true;
-			    break;
-			  }
-			l++;
-		      }
-		    if (!found)
-		      item->value = NULL;
-		  }
-	    }
-	  else
-	    goto next_param;
+	  inter = intersect_aggregates_with_edge (cs, i, inter);
 
 	  if (!inter.exists ())
 	    goto next_param;
@@ -3079,37 +3096,63 @@ static bool
 cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 					  struct cgraph_node *node)
 {
-  struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+  struct ipa_node_params *orig_caller_info = IPA_NODE_REF (cs->caller);
   struct ipa_agg_replacement_value *aggval;
+  int i, ec, count;
 
   aggval = ipa_get_agg_replacements_for_node (node);
-  while (aggval)
+  if (!aggval)
+    return true;
+
+  count = ipa_get_param_count (IPA_NODE_REF (node));
+  ec = ipa_get_cs_argument_count (IPA_EDGE_REF (cs));
+  if (ec < count)
+    for (struct ipa_agg_replacement_value *av = aggval; av; av = av->next)
+      if (aggval->index >= ec)
+	return false;
+
+  if (orig_caller_info->ipcp_orig_node)
+    orig_caller_info = IPA_NODE_REF (orig_caller_info->ipcp_orig_node);
+
+  for (i = 0; i < count; i++)
     {
-      bool found = false;
+      static vec<ipa_agg_jf_item_t> values = vec<ipa_agg_jf_item_t>();
       struct ipcp_param_lattices *plats;
-      plats = ipa_get_parm_lattices (caller_info, aggval->index);
-      if (plats->aggs_bottom || plats->aggs_contain_variable)
+      bool interesting = false;
+      for (struct ipa_agg_replacement_value *av = aggval; av; av = av->next)
+	if (aggval->index == i)
+	  {
+	    interesting = true;
+	    break;
+	  }
+      if (!interesting)
+	continue;
+
+      plats = ipa_get_parm_lattices (orig_caller_info, aggval->index);
+      if (plats->aggs_bottom)
 	return false;
-      for (struct ipcp_agg_lattice *aglat = plats->aggs;
-	   aglat;
-	   aglat = aglat->next)
-	  if (aglat->offset == aggval->offset)
-	    {
-	      if (ipa_lat_is_single_const (aglat)
-		  && values_equal_for_ipcp_p (aggval->value,
-					      aglat->values->value))
-		{
-		  found = true;
-		  break;
-		}
-	      else
+
+      values = intersect_aggregates_with_edge (cs, i, values);
+      if (!values.exists())
+	return false;
+
+      for (struct ipa_agg_replacement_value *av = aggval; av; av = av->next)
+	if (aggval->index == i)
+	  {
+	    struct ipa_agg_jf_item *item;
+	    int j;
+	    bool found = false;
+	    FOR_EACH_VEC_ELT (values, j, item)
+	      if (item->value
+		  && item->offset == av->offset
+		  && values_equal_for_ipcp_p (item->value, av->value))
+		found = true;
+	    if (!found)
+	      {
+		values.release();
 		return false;
-	    }
-
-      if (!found)
-	return false;
-
-      aggval = aggval->next;
+	      }
+	  }
     }
   return true;
 }
