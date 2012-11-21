@@ -1,3 +1,7 @@
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/s390/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
+
 2012-11-21  Teresa Johnson  <tejohnson@google.com>
 
 	PR gcov-profile/55417
