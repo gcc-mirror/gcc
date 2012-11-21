@@ -1828,7 +1828,7 @@ estimate_local_effects (struct cgraph_node *node)
       if (size <= 0
 	  || cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	{
-	  info->clone_for_all_contexts = true;
+	  info->do_clone_for_all_contexts = true;
 	  base_time = time;
 
 	  if (dump_file)
@@ -1841,7 +1841,7 @@ estimate_local_effects (struct cgraph_node *node)
 	{
 	  if (size + overall_size <= max_new_size)
 	    {
-	      info->clone_for_all_contexts = true;
+	      info->do_clone_for_all_contexts = true;
 	      base_time = time;
 	      overall_size += size;
 
@@ -2312,8 +2312,9 @@ cgraph_edge_brings_value_p (struct cgraph_edge *cs,
 			    struct ipcp_value_source *src)
 {
   struct ipa_node_params *caller_info = IPA_NODE_REF (cs->caller);
+  struct ipa_node_params *dst_info = IPA_NODE_REF (cs->callee);
 
-  if (IPA_NODE_REF (cs->callee)->ipcp_orig_node
+  if ((dst_info->ipcp_orig_node && !dst_info->is_all_contexts_clone)
       || caller_info->node_dead)
     return false;
   if (!src->val)
@@ -3175,8 +3176,9 @@ perhaps_add_new_callers (struct cgraph_node *node, struct ipcp_value *val)
       while (cs)
 	{
 	  enum availability availability;
-
-	  if (cgraph_function_node (cs->callee, &availability) == node
+	  struct cgraph_node *dst = cgraph_function_node (cs->callee,
+							  &availability);
+	  if ((dst == node || IPA_NODE_REF (dst)->is_all_contexts_clone)
 	      && availability > AVAIL_OVERWRITABLE
 	      && cgraph_edge_brings_value_p (cs, src))
 	    {
@@ -3335,8 +3337,8 @@ decide_whether_version_node (struct cgraph_node *node)
 	     cgraph_node_name (node), node->uid);
 
   gather_context_independent_values (info, &known_csts, &known_binfos,
-				     info->clone_for_all_contexts ? &known_aggs
-				     : NULL, NULL);
+				  info->do_clone_for_all_contexts ? &known_aggs
+				  : NULL, NULL);
 
   for (i = 0; i < count ;i++)
     {
@@ -3351,7 +3353,7 @@ decide_whether_version_node (struct cgraph_node *node)
 	  ret |= decide_about_value (node, i, -1, val, known_csts,
 				     known_binfos);
 
-      if (!plats->aggs_bottom || !plats->aggs)
+      if (!plats->aggs_bottom)
 	{
 	  struct ipcp_agg_lattice *aglat;
 	  struct ipcp_value *val;
@@ -3368,8 +3370,9 @@ decide_whether_version_node (struct cgraph_node *node)
         info = IPA_NODE_REF (node);
     }
 
-  if (info->clone_for_all_contexts)
+  if (info->do_clone_for_all_contexts)
     {
+      struct cgraph_node *clone;
       vec<cgraph_edge_p> callers;
 
       if (dump_file)
@@ -3379,11 +3382,12 @@ decide_whether_version_node (struct cgraph_node *node)
 
       callers = collect_callers_of_node (node);
       move_binfos_to_values (known_csts, known_binfos);
-      create_specialized_node (node, known_csts,
+      clone = create_specialized_node (node, known_csts,
 			       known_aggs_to_agg_replacement_list (known_aggs),
 			       callers);
       info = IPA_NODE_REF (node);
-      info->clone_for_all_contexts = false;
+      info->do_clone_for_all_contexts = false;
+      IPA_NODE_REF (clone)->is_all_contexts_clone = true;
       ret = true;
     }
   else

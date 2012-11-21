@@ -1,5 +1,16 @@
 2012-11-21  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.h (struct ipa_node_params): Rename clone_for_all_contexts to
+	do_clone_for_all_contexts.  Update all uses.  New flag
+	is_all_contexts_clone.
+	* ipa-cp.c (cgraph_edge_brings_value_p): Also consider the case when cs
+	leads to the clone for all contexts.
+	(perhaps_add_new_callers): Likewise.
+	(decide_whether_version_node): Remove bogus !plats->aggs test.  Set
+	is_all_contexts_clone when cloning for all contexts.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/55260
 	* ipa-cp.c (intersect_aggregates_with_edge): New function.
 	(find_aggregate_values_for_callers_subset): Part moved to the function
