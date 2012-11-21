@@ -136,6 +136,12 @@ log1pq (__float128 xm1)
       && (u.words32.w1 | u.words32.w2 | u.words32.w3) == 0)
     return xm1;
 
+  if ((hx & 0x7fffffff) < 0x3f8e0000)
+    {
+      if ((int) xm1 == 0)
+       return xm1;
+    }
+
   x = xm1 + 1.0Q;
 
   /* log1p(-1) = -inf */

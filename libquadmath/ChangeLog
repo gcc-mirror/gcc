@@ -1,3 +1,18 @@
+2012-11-22  David S. Miller  <davem@davemloft.net>
+	    Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* math/atanq.c (atanq): Update from GLIBC. Handle tiny and
+	very large arguments properly.
+	* math/j0q.c (y0q): Update from GLIBC. Avoid arithmetic
+	underflow when 'x' is very small.
+	* math/j1q.c (y1q): Ditto.
+	* math/log1pq.c (log1pq): Update from GLIBC. Saturate
+	nonzero exponents with absolute value below 0x1p-128 to
+	+/- 0x1p-128.
+	* math/powq.c (powq): Update from GLIBC. If xm1 is
+	smaller than LDBL_EPSILON/2.0L, just return xm1.
+
 2012-11-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR libquadmath/55225

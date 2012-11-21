@@ -148,7 +148,7 @@ powq (__float128 x, __float128 y)
 {
   __float128 z, ax, z_h, z_l, p_h, p_l;
   __float128 y1, t1, t2, r, s, t, u, v, w;
-  __float128 s2, s_h, s_l, t_h, t_l;
+  __float128 s2, s_h, s_l, t_h, t_l, ay;
   int32_t i, j, k, yisint, n;
   uint32_t ix, iy;
   int32_t hx, hy;
@@ -280,6 +280,10 @@ powq (__float128 x, __float128 y)
       if (ix > 0x3fff0000)
 	return (hy > 0) ? huge * huge : tiny * tiny;
     }
+
+  ay = y > 0 ? y : -y;
+  if (ay < 0x1p-128)
+    y = y < 0 ? -0x1p-128 : 0x1p-128;
 
   n = 0;
   /* take care subnormal number */
