@@ -1,3 +1,9 @@
+2012-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/55411
+	* team.c (gomp_free_thread): Decrease gomp_managed_threads
+	if pool had any threads_used.
+
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
