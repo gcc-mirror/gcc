@@ -1,3 +1,11 @@
+2012-11-21  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (extvmisaligndi): Rename from extv; update
+	mode of operand 1; remove ancient extract_bit_field workaround.
+	(insvmisaligndi): Rename from insv and update similarly.
+	(extzvmisaligndi): Rename from extzv and update similarly; split out...
+	(extzvdi): New expander.
+
 2012-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/cpp.texi: Document __SANITIZE_ADDRESS__.

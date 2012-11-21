@@ -4636,15 +4636,13 @@
 
 ;; Bit field extract patterns which use ext[wlq][lh]
 
-(define_expand "extv"
+(define_expand "extvmisaligndi"
   [(set (match_operand:DI 0 "register_operand")
-	(sign_extract:DI (match_operand:QI 1 "memory_operand")
-			 (match_operand:DI 2 "immediate_operand")
-			 (match_operand:DI 3 "immediate_operand")))]
+	(sign_extract:DI (match_operand:BLK 1 "memory_operand")
+			 (match_operand:DI 2 "const_int_operand")
+			 (match_operand:DI 3 "const_int_operand")))]
   ""
 {
-  int ofs;
-
   /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
   if (INTVAL (operands[3]) % 8 != 0
       || (INTVAL (operands[2]) != 16
@@ -4652,62 +4650,56 @@
 	  && INTVAL (operands[2]) != 64))
     FAIL;
 
-  /* From mips.md: extract_bit_field doesn't verify that our source
-     matches the predicate, so we force it to be a MEM here.  */
-  if (!MEM_P (operands[1]))
-    FAIL;
-
-  ofs = INTVAL (operands[3]);
-  ofs = ofs / 8;
-
   alpha_expand_unaligned_load (operands[0], operands[1],
 			       INTVAL (operands[2]) / 8,
-			       ofs, 1);
+			       INTVAL (operands[3]) / 8, 1);
   DONE;
 })
 
-(define_expand "extzv"
+(define_expand "extzvdi"
   [(set (match_operand:DI 0 "register_operand")
-	(zero_extract:DI (match_operand:DI 1 "nonimmediate_operand")
-			 (match_operand:DI 2 "immediate_operand")
-			 (match_operand:DI 3 "immediate_operand")))]
+	(zero_extract:DI (match_operand:DI 1 "register_operand")
+			 (match_operand:DI 2 "const_int_operand")
+			 (match_operand:DI 3 "const_int_operand")))]
   ""
 {
   /* We can do 8, 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
   if (INTVAL (operands[3]) % 8 != 0
       || (INTVAL (operands[2]) != 8
-	  && INTVAL (operands[2]) != 16
+          && INTVAL (operands[2]) != 16
+	  && INTVAL (operands[2]) != 32
+	  && INTVAL (operands[2]) != 64))
+    FAIL;
+})
+
+(define_expand "extzvmisaligndi"
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extract:DI (match_operand:BLK 1 "memory_operand")
+			 (match_operand:DI 2 "const_int_operand")
+			 (match_operand:DI 3 "const_int_operand")))]
+  ""
+{
+  /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.
+     We fail 8-bit fields, falling back on a simple byte load.  */
+  if (INTVAL (operands[3]) % 8 != 0
+      || (INTVAL (operands[2]) != 16
 	  && INTVAL (operands[2]) != 32
 	  && INTVAL (operands[2]) != 64))
     FAIL;
 
-  if (MEM_P (operands[1]))
-    {
-      int ofs;
-
-      /* Fail 8-bit fields, falling back on a simple byte load.  */
-      if (INTVAL (operands[2]) == 8)
-	FAIL;
-
-      ofs = INTVAL (operands[3]);
-      ofs = ofs / 8;
-
-      alpha_expand_unaligned_load (operands[0], operands[1],
-			           INTVAL (operands[2]) / 8,
-				   ofs, 0);
-      DONE;
-    }
+  alpha_expand_unaligned_load (operands[0], operands[1],
+			       INTVAL (operands[2]) / 8,
+			       INTVAL (operands[3]) / 8, 0);
+  DONE;
 })
 
-(define_expand "insv"
-  [(set (zero_extract:DI (match_operand:QI 0 "memory_operand")
-			 (match_operand:DI 1 "immediate_operand")
-			 (match_operand:DI 2 "immediate_operand"))
+(define_expand "insvmisaligndi"
+  [(set (zero_extract:DI (match_operand:BLK 0 "memory_operand")
+			 (match_operand:DI 1 "const_int_operand")
+			 (match_operand:DI 2 "const_int_operand"))
 	(match_operand:DI 3 "register_operand"))]
   ""
 {
-  int ofs;
-
   /* We can do 16, 32 and 64 bit fields, if aligned on byte boundaries.  */
   if (INTVAL (operands[2]) % 8 != 0
       || (INTVAL (operands[1]) != 16
@@ -4715,16 +4707,9 @@
 	  && INTVAL (operands[1]) != 64))
     FAIL;
 
-  /* From mips.md: store_bit_field doesn't verify that our source
-     matches the predicate, so we force it to be a MEM here.  */
-  if (!MEM_P (operands[0]))
-    FAIL;
-
-  ofs = INTVAL (operands[2]);
-  ofs = ofs / 8;
-
   alpha_expand_unaligned_store (operands[0], operands[3],
-			        INTVAL (operands[1]) / 8, ofs);
+				INTVAL (operands[1]) / 8,
+				INTVAL (operands[2]) / 8);
   DONE;
 })
 
