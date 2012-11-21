@@ -2352,6 +2352,10 @@ use.
 This macro is defined, with value 2, when @option{-fstack-protector-all} is
 in use.
 
+@item __SANITIZE_ADDRESS__
+This macro is defined, with value 1, when @option{-fsanitize=address} is
+in use.
+
 @item __TIMESTAMP__
 This macro expands to a string constant that describes the date and time
 of the last modification of the current source file. The string constant
