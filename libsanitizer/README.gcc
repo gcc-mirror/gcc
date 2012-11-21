@@ -1,4 +1,15 @@
-The AddressSanitizer (http://code.google.com/p/address-sanitizer) is
-a project developed by Google Inc. The source files of the project
-are hosted at http://llvm.org/svn/llvm-project/compiler-rt. These files
-are the ones in the asan subdirectory of that project.
+AddressSanitizer (http://code.google.com/p/address-sanitizer) and
+ThreadSanitizer (http://code.google.com/p/thread-sanitizer/) are
+projects initially developed by Google Inc.
+Both tools consist of a compiler module and a run-time library.
+The sources of the run-time library for these projects are hosted at
+http://llvm.org/svn/llvm-project/compiler-rt in the following directories:
+  include/sanitizer
+  lib/sanitizer_common
+  lib/interception
+  lib/asan
+  lib/tsan
+
+Trivial and urgent fixes (portability, build fixes, etc.) may go directly to the
+GCC tree.  All non-trivial changes, functionality improvements, etc. should go
+through the upstream tree first and then be merged back to the GCC tree.
