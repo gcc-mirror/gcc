@@ -636,6 +636,7 @@ AC_SUBST(enable_multiarch)
 AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
 
 # needed for setting the multiarch name for soft-float/hard-float ABIs
+AC_SUBST(with_cpu)
 AC_SUBST(with_float)
 
 # Enable __cxa_atexit for C++.

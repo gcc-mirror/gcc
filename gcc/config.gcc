@@ -2059,6 +2059,7 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		;;
 	    *)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
+		tmake_file="$tmake_file rs6000/t-linux"
 		;;
 	esac
 	case ${target} in
