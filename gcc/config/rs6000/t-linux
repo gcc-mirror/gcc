@@ -1,0 +1,5 @@
+# do not define the multiarch name if configured for a soft-float cpu
+# or soft-float.
+ifeq (,$(filter $(with_cpu),$(SOFT_FLOAT_CPUS))$(findstring soft,$(with_float))
+MULTIARCH_DIRNAME = powerpc-linux-gnu
+endif

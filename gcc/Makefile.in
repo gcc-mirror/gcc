@@ -532,6 +532,7 @@ host_hook_obj=@out_host_hook_obj@
 
 # Multiarch support
 enable_multiarch = @enable_multiarch@
+with_cpu = @with_cpu@
 with_float = @with_float@
 ifeq ($(enable_multiarch),yes)
   if_multiarch = $(1)

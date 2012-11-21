@@ -766,6 +766,7 @@ enable_shared
 enable_fixed_point
 enable_decimal_float
 with_float
+with_cpu
 enable_multiarch
 enable_multilib
 coverage_flags
@@ -7050,6 +7051,7 @@ $as_echo "$enable_multiarch$ma_msg_suffix" >&6; }
 # needed for setting the multiarch name for soft-float/hard-float ABIs
 
 
+
 # Enable __cxa_atexit for C++.
 # Check whether --enable-__cxa_atexit was given.
 if test "${enable___cxa_atexit+set}" = set; then :
@@ -7072,6 +7074,7 @@ else
 
   case $target in
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
+    i?86*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
     i?86*-*-cygwin*)
       enable_decimal_float=yes
@@ -17819,7 +17822,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17822 "configure"
+#line 17825 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17925,7 +17928,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17928 "configure"
+#line 17931 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

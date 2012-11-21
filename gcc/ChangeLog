@@ -1,5 +1,19 @@
 2012-11-20  Matthias Klose  <doko@ubuntu.com>
 
+	* configure.ac: Substitute `with_cpu'.
+	* configure: Regenerate.
+	* Makefile.in: Define `with_cpu'.
+	* config/rs6000/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
+	* config/rs6000/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config/rs6000/t-fprules (SOFT_FLOAT_CPUS): New macro. Add e300c2
+	to the list.
+	(MULTILIB_MATCHES_FLOAT): Define in terms of SOFT_FLOAT_CPUS.
+	* config/rs6000/t-spe: Define MULTIARCH_DIRNAME.
+	* config.gcc <powerpc-*-linux* | powerpc64-*-linux*> (tmake_file):
+	Include rs6000/t-linux for 32bit non-biarch configurations.
+
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
 	* doc/install.texi: Move multiarch paragraph out of multilib
 	documentation.
 
