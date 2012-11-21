@@ -840,7 +840,7 @@ fargument-noalias-anything
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
-faddress-sanitizer
+fsanitize=address
 Common Report Var(flag_asan)
 Enable AddressSanitizer, a memory error detector
 

@@ -289,7 +289,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--faddress-sanitizer -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
+-fsanitize=@var{style} @gol
+-fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -6855,7 +6856,7 @@ assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
 
-@item -faddress-sanitizer
+@item -fsanitize=address
 Enable AddressSanitizer, a fast memory error detector.
 Memory access instructions will be instrumented to detect
 out-of-bounds and use-after-free bugs. So far only heap bugs will be detected.
@@ -9938,7 +9939,7 @@ for the languages used in the program, or using the option
 @file{libgcc}.
 
 @item -static-libasan
-When the @option{-faddress-sanitizer} option is used to link a program,
+When the @option{-fsanitize=address} option is used to link a program,
 the GCC driver automatically links against @option{libasan}.  If
 @file{libasan} is available as a shared library, and the @option{-static}
 option is not used, then this links against the shared version of
