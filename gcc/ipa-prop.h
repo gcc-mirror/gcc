@@ -328,7 +328,9 @@ struct ipa_node_params
   unsigned node_enqueued : 1;
   /* Whether we should create a specialized version based on values that are
      known to be constant in all contexts.  */
-  unsigned clone_for_all_contexts : 1;
+  unsigned do_clone_for_all_contexts : 1;
+  /* Set if this is an IPA-CP clone for all contexts.  */
+  unsigned is_all_contexts_clone : 1;
   /* Node has been completely replaced by clones and will be removed after
      ipa-cp is finished.  */
   unsigned node_dead : 1;
