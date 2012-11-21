@@ -1,3 +1,7 @@
+2012-11-21  Kostya Serebryany  <kcc@google.com>
+
+        * README.gcc: Extend the README.gcc with mode details.
+
 2012-11-20  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
 
 	* sanitizer_common/sanitizer_linux.cc
