@@ -1,5 +1,10 @@
 2012-11-21  Matthias Klose  <doko@ubuntu.com>
 
+	* config/alpha/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config.gcc <alpha*-*-linux*> (tmake_file): Include alpha/t-linux.
+
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
 	* config/m68k/t-linux: Define MULTIARCH_DIRNAME.
 
 2012-11-21  Matthias Klose  <doko@ubuntu.com>
