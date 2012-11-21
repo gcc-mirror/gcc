@@ -9,244 +9,366 @@ package types
 import (
 	"fmt"
 	"go/ast"
-	"go/scanner"
 	"go/token"
-	"strconv"
+	"sort"
 )
 
-const debug = false
+// enable for debugging
+const trace = false
 
 type checker struct {
-	fset   *token.FileSet
-	errors scanner.ErrorList
-	types  map[ast.Expr]Type
+	fset *token.FileSet
+	pkg  *ast.Package
+	errh func(token.Pos, string)
+	mapf func(ast.Expr, Type)
+
+	// lazily initialized
+	firsterr  error
+	filenames []string                      // sorted list of package file names for reproducible iteration order
+	initexprs map[*ast.ValueSpec][]ast.Expr // "inherited" initialization expressions for constant declarations
+	functypes []*Signature                  // stack of function signatures; actively typechecked function on top
+	pos       []token.Pos                   // stack of expr positions; debugging support, used if trace is set
 }
 
-func (c *checker) errorf(pos token.Pos, format string, args ...interface{}) string {
-	msg := fmt.Sprintf(format, args...)
-	c.errors.Add(c.fset.Position(pos), msg)
-	return msg
-}
-
-// collectFields collects struct fields tok = token.STRUCT), interface methods
-// (tok = token.INTERFACE), and function arguments/results (tok = token.FUNC).
+// declare declares an object of the given kind and name (ident) in scope;
+// decl is the corresponding declaration in the AST. An error is reported
+// if the object was declared before.
 //
-func (c *checker) collectFields(tok token.Token, list *ast.FieldList, cycleOk bool) (fields ObjList, tags []string, isVariadic bool) {
-	if list != nil {
-		for _, field := range list.List {
-			ftype := field.Type
-			if t, ok := ftype.(*ast.Ellipsis); ok {
-				ftype = t.Elt
-				isVariadic = true
-			}
-			typ := c.makeType(ftype, cycleOk)
-			tag := ""
-			if field.Tag != nil {
-				assert(field.Tag.Kind == token.STRING)
-				tag, _ = strconv.Unquote(field.Tag.Value)
-			}
-			if len(field.Names) > 0 {
-				// named fields
-				for _, name := range field.Names {
-					obj := name.Obj
-					obj.Type = typ
-					fields = append(fields, obj)
-					if tok == token.STRUCT {
-						tags = append(tags, tag)
-					}
-				}
-			} else {
-				// anonymous field
-				switch tok {
-				case token.STRUCT:
-					tags = append(tags, tag)
-					fallthrough
-				case token.FUNC:
-					obj := ast.NewObj(ast.Var, "")
-					obj.Type = typ
-					fields = append(fields, obj)
-				case token.INTERFACE:
-					utyp := Underlying(typ)
-					if typ, ok := utyp.(*Interface); ok {
-						// TODO(gri) This is not good enough. Check for double declarations!
-						fields = append(fields, typ.Methods...)
-					} else if _, ok := utyp.(*Bad); !ok {
-						// if utyp is Bad, don't complain (the root cause was reported before)
-						c.errorf(ftype.Pos(), "interface contains embedded non-interface type")
-					}
-				default:
-					panic("unreachable")
-				}
-			}
-		}
-	}
-	return
-}
-
-// makeType makes a new type for an AST type specification x or returns
-// the type referred to by a type name x. If cycleOk is set, a type may
-// refer to itself directly or indirectly; otherwise cycles are errors.
+// TODO(gri) This is very similar to the declare function in go/parser; it
+// is only used to associate methods with their respective receiver base types.
+// In a future version, it might be simpler and cleaner do to all the resolution
+// in the type-checking phase. It would simplify the parser, AST, and also
+// reduce some amount of code duplication.
 //
-func (c *checker) makeType(x ast.Expr, cycleOk bool) (typ Type) {
-	if debug {
-		fmt.Printf("makeType (cycleOk = %v)\n", cycleOk)
-		ast.Print(c.fset, x)
-		defer func() {
-			fmt.Printf("-> %T %v\n\n", typ, typ)
-		}()
-	}
-
-	switch t := x.(type) {
-	case *ast.BadExpr:
-		return &Bad{}
-
-	case *ast.Ident:
-		// type name
-		obj := t.Obj
-		if obj == nil {
-			// unresolved identifier (error has been reported before)
-			return &Bad{Msg: fmt.Sprintf("%s is unresolved", t.Name)}
-		}
-		if obj.Kind != ast.Typ {
-			msg := c.errorf(t.Pos(), "%s is not a type", t.Name)
-			return &Bad{Msg: msg}
-		}
-		c.checkObj(obj, cycleOk)
-		if !cycleOk && obj.Type.(*Name).Underlying == nil {
-			msg := c.errorf(obj.Pos(), "illegal cycle in declaration of %s", obj.Name)
-			return &Bad{Msg: msg}
-		}
-		return obj.Type.(Type)
-
-	case *ast.ParenExpr:
-		return c.makeType(t.X, cycleOk)
-
-	case *ast.SelectorExpr:
-		// qualified identifier
-		// TODO (gri) eventually, this code belongs to expression
-		//            type checking - here for the time being
-		if ident, ok := t.X.(*ast.Ident); ok {
-			if obj := ident.Obj; obj != nil {
-				if obj.Kind != ast.Pkg {
-					msg := c.errorf(ident.Pos(), "%s is not a package", obj.Name)
-					return &Bad{Msg: msg}
-				}
-				// TODO(gri) we have a package name but don't
-				// have the mapping from package name to package
-				// scope anymore (created in ast.NewPackage).
-				return &Bad{} // for now
+func (check *checker) declare(scope *ast.Scope, kind ast.ObjKind, ident *ast.Ident, decl ast.Decl) {
+	assert(ident.Obj == nil) // identifier already declared or resolved
+	obj := ast.NewObj(kind, ident.Name)
+	obj.Decl = decl
+	ident.Obj = obj
+	if ident.Name != "_" {
+		if alt := scope.Insert(obj); alt != nil {
+			prevDecl := ""
+			if pos := alt.Pos(); pos.IsValid() {
+				prevDecl = fmt.Sprintf("\n\tprevious declaration at %s", check.fset.Position(pos))
 			}
+			check.errorf(ident.Pos(), fmt.Sprintf("%s redeclared in this block%s", ident.Name, prevDecl))
 		}
-		// TODO(gri) can this really happen (the parser should have excluded this)?
-		msg := c.errorf(t.Pos(), "expected qualified identifier")
-		return &Bad{Msg: msg}
-
-	case *ast.StarExpr:
-		return &Pointer{Base: c.makeType(t.X, true)}
-
-	case *ast.ArrayType:
-		if t.Len != nil {
-			// TODO(gri) compute length
-			return &Array{Elt: c.makeType(t.Elt, cycleOk)}
-		}
-		return &Slice{Elt: c.makeType(t.Elt, true)}
-
-	case *ast.StructType:
-		fields, tags, _ := c.collectFields(token.STRUCT, t.Fields, cycleOk)
-		return &Struct{Fields: fields, Tags: tags}
-
-	case *ast.FuncType:
-		params, _, isVariadic := c.collectFields(token.FUNC, t.Params, true)
-		results, _, _ := c.collectFields(token.FUNC, t.Results, true)
-		return &Func{Recv: nil, Params: params, Results: results, IsVariadic: isVariadic}
-
-	case *ast.InterfaceType:
-		methods, _, _ := c.collectFields(token.INTERFACE, t.Methods, cycleOk)
-		methods.Sort()
-		return &Interface{Methods: methods}
-
-	case *ast.MapType:
-		return &Map{Key: c.makeType(t.Key, true), Elt: c.makeType(t.Value, true)}
-
-	case *ast.ChanType:
-		return &Chan{Dir: t.Dir, Elt: c.makeType(t.Value, true)}
 	}
-
-	panic(fmt.Sprintf("unreachable (%T)", x))
 }
 
-// checkObj type checks an object.
-func (c *checker) checkObj(obj *ast.Object, ref bool) {
-	if obj.Type != nil {
-		// object has already been type checked
+func (check *checker) valueSpec(pos token.Pos, obj *ast.Object, lhs []*ast.Ident, typ ast.Expr, rhs []ast.Expr, iota int) {
+	if len(lhs) == 0 {
+		check.invalidAST(pos, "missing lhs in declaration")
 		return
 	}
 
-	switch obj.Kind {
-	case ast.Bad:
-		// ignore
+	// determine type for all of lhs, if any
+	// (but only set it for the object we typecheck!)
+	var t Type
+	if typ != nil {
+		t = check.typ(typ, false)
+	}
 
-	case ast.Con:
-		// TODO(gri) complete this
+	// len(lhs) > 0
+	if len(lhs) == len(rhs) {
+		// check only lhs and rhs corresponding to obj
+		var l, r ast.Expr
+		for i, name := range lhs {
+			if name.Obj == obj {
+				l = lhs[i]
+				r = rhs[i]
+				break
+			}
+		}
+		assert(l != nil)
+		obj.Type = t
+		check.assign1to1(l, r, nil, true, iota)
+		return
+	}
+
+	// there must be a type or initialization expressions
+	if t == nil && len(rhs) == 0 {
+		check.invalidAST(pos, "missing type or initialization expression")
+		t = Typ[Invalid]
+	}
+
+	// if we have a type, mark all of lhs
+	if t != nil {
+		for _, name := range lhs {
+			name.Obj.Type = t
+		}
+	}
+
+	// check initial values, if any
+	if len(rhs) > 0 {
+		// TODO(gri) should try to avoid this conversion
+		lhx := make([]ast.Expr, len(lhs))
+		for i, e := range lhs {
+			lhx[i] = e
+		}
+		check.assignNtoM(lhx, rhs, true, iota)
+	}
+}
+
+func (check *checker) function(typ *Signature, body *ast.BlockStmt) {
+	check.functypes = append(check.functypes, typ)
+	check.stmt(body)
+	check.functypes = check.functypes[0 : len(check.functypes)-1]
+}
+
+// object typechecks an object by assigning it a type; obj.Type must be nil.
+// Callers must check obj.Type before calling object; this eliminates a call
+// for each identifier that has been typechecked already, a common scenario.
+//
+func (check *checker) object(obj *ast.Object, cycleOk bool) {
+	assert(obj.Type == nil)
+
+	switch obj.Kind {
+	case ast.Bad, ast.Pkg:
+		// nothing to do
+
+	case ast.Con, ast.Var:
+		// The obj.Data field for constants and variables is initialized
+		// to the respective (hypothetical, for variables) iota value by
+		// the parser. The object's fields can be in one of the following
+		// states:
+		// Type != nil  =>  the constant value is Data
+		// Type == nil  =>  the object is not typechecked yet, and Data can be:
+		// Data is int  =>  Data is the value of iota for this declaration
+		// Data == nil  =>  the object's expression is being evaluated
+		if obj.Data == nil {
+			check.errorf(obj.Pos(), "illegal cycle in initialization of %s", obj.Name)
+			obj.Type = Typ[Invalid]
+			return
+		}
+		spec := obj.Decl.(*ast.ValueSpec)
+		iota := obj.Data.(int)
+		obj.Data = nil
+		// determine initialization expressions
+		values := spec.Values
+		if len(values) == 0 && obj.Kind == ast.Con {
+			values = check.initexprs[spec]
+		}
+		check.valueSpec(spec.Pos(), obj, spec.Names, spec.Type, values, iota)
 
 	case ast.Typ:
-		typ := &Name{Obj: obj}
+		typ := &NamedType{Obj: obj}
 		obj.Type = typ // "mark" object so recursion terminates
-		typ.Underlying = Underlying(c.makeType(obj.Decl.(*ast.TypeSpec).Type, ref))
-
-	case ast.Var:
-		// TODO(gri) complete this
+		typ.Underlying = underlying(check.typ(obj.Decl.(*ast.TypeSpec).Type, cycleOk))
+		// typecheck associated method signatures
+		if obj.Data != nil {
+			scope := obj.Data.(*ast.Scope)
+			switch t := typ.Underlying.(type) {
+			case *Struct:
+				// struct fields must not conflict with methods
+				for _, f := range t.Fields {
+					if m := scope.Lookup(f.Name); m != nil {
+						check.errorf(m.Pos(), "type %s has both field and method named %s", obj.Name, f.Name)
+					}
+				}
+				// ok to continue
+			case *Interface:
+				// methods cannot be associated with an interface type
+				for _, m := range scope.Objects {
+					recv := m.Decl.(*ast.FuncDecl).Recv.List[0].Type
+					check.errorf(recv.Pos(), "invalid receiver type %s (%s is an interface type)", obj.Name, obj.Name)
+				}
+				// ok to continue
+			}
+			// typecheck method signatures
+			for _, m := range scope.Objects {
+				mdecl := m.Decl.(*ast.FuncDecl)
+				// TODO(gri) At the moment, the receiver is type-checked when checking
+				// the method body. Also, we don't properly track if the receiver is
+				// a pointer (i.e., currently, method sets are too large). FIX THIS.
+				mtyp := check.typ(mdecl.Type, cycleOk).(*Signature)
+				m.Type = mtyp
+			}
+		}
 
 	case ast.Fun:
 		fdecl := obj.Decl.(*ast.FuncDecl)
-		ftyp := c.makeType(fdecl.Type, ref).(*Func)
-		obj.Type = ftyp
 		if fdecl.Recv != nil {
-			recvField := fdecl.Recv.List[0]
-			if len(recvField.Names) > 0 {
-				ftyp.Recv = recvField.Names[0].Obj
-			} else {
-				ftyp.Recv = ast.NewObj(ast.Var, "_")
-				ftyp.Recv.Decl = recvField
-			}
-			c.checkObj(ftyp.Recv, ref)
-			// TODO(axw) add method to a list in the receiver type.
+			// This will ensure that the method base type is
+			// type-checked
+			check.collectFields(token.FUNC, fdecl.Recv, true)
 		}
-		// TODO(axw) check function body, if non-nil.
+		ftyp := check.typ(fdecl.Type, cycleOk).(*Signature)
+		obj.Type = ftyp
+		check.function(ftyp, fdecl.Body)
 
 	default:
 		panic("unreachable")
 	}
 }
 
-// Check typechecks a package.
-// It augments the AST by assigning types to all ast.Objects and returns a map
-// of types for all expression nodes in statements, and a scanner.ErrorList if
-// there are errors.
+// assocInitvals associates "inherited" initialization expressions
+// with the corresponding *ast.ValueSpec in the check.initexprs map
+// for constant declarations without explicit initialization expressions.
 //
-func Check(fset *token.FileSet, pkg *ast.Package) (types map[ast.Expr]Type, err error) {
-	// Sort objects so that we get reproducible error
-	// positions (this is only needed for testing).
-	// TODO(gri): Consider ast.Scope implementation that
-	// provides both a list and a map for fast lookup.
-	// Would permit the use of scopes instead of ObjMaps
-	// elsewhere.
-	list := make(ObjList, len(pkg.Scope.Objects))
-	i := 0
-	for _, obj := range pkg.Scope.Objects {
-		list[i] = obj
-		i++
+func (check *checker) assocInitvals(decl *ast.GenDecl) {
+	var values []ast.Expr
+	for _, s := range decl.Specs {
+		if s, ok := s.(*ast.ValueSpec); ok {
+			if len(s.Values) > 0 {
+				values = s.Values
+			} else {
+				check.initexprs[s] = values
+			}
+		}
 	}
-	list.Sort()
+	if len(values) == 0 {
+		check.invalidAST(decl.Pos(), "no initialization values provided")
+	}
+}
 
-	var c checker
-	c.fset = fset
-	c.types = make(map[ast.Expr]Type)
+// assocMethod associates a method declaration with the respective
+// receiver base type. meth.Recv must exist.
+//
+func (check *checker) assocMethod(meth *ast.FuncDecl) {
+	// The receiver type is one of the following (enforced by parser):
+	// - *ast.Ident
+	// - *ast.StarExpr{*ast.Ident}
+	// - *ast.BadExpr (parser error)
+	typ := meth.Recv.List[0].Type
+	if ptr, ok := typ.(*ast.StarExpr); ok {
+		typ = ptr.X
+	}
+	// determine receiver base type object (or nil if error)
+	var obj *ast.Object
+	if ident, ok := typ.(*ast.Ident); ok && ident.Obj != nil {
+		obj = ident.Obj
+		if obj.Kind != ast.Typ {
+			check.errorf(ident.Pos(), "%s is not a type", ident.Name)
+			obj = nil
+		}
+		// TODO(gri) determine if obj was defined in this package
+		/*
+			if check.notLocal(obj) {
+				check.errorf(ident.Pos(), "cannot define methods on non-local type %s", ident.Name)
+				obj = nil
+			}
+		*/
+	} else {
+		// If it's not an identifier or the identifier wasn't declared/resolved,
+		// the parser/resolver already reported an error. Nothing to do here.
+	}
+	// determine base type scope (or nil if error)
+	var scope *ast.Scope
+	if obj != nil {
+		if obj.Data != nil {
+			scope = obj.Data.(*ast.Scope)
+		} else {
+			scope = ast.NewScope(nil)
+			obj.Data = scope
+		}
+	} else {
+		// use a dummy scope so that meth can be declared in
+		// presence of an error and get an associated object
+		// (always use a new scope so that we don't get double
+		// declaration errors)
+		scope = ast.NewScope(nil)
+	}
+	check.declare(scope, ast.Fun, meth.Name, meth)
+}
 
-	for _, obj := range list {
-		c.checkObj(obj, false)
+func (check *checker) assocInitvalsOrMethod(decl ast.Decl) {
+	switch d := decl.(type) {
+	case *ast.GenDecl:
+		if d.Tok == token.CONST {
+			check.assocInitvals(d)
+		}
+	case *ast.FuncDecl:
+		if d.Recv != nil {
+			check.assocMethod(d)
+		}
+	}
+}
+
+func (check *checker) decl(decl ast.Decl) {
+	switch d := decl.(type) {
+	case *ast.BadDecl:
+		// ignore
+	case *ast.GenDecl:
+		for _, spec := range d.Specs {
+			switch s := spec.(type) {
+			case *ast.ImportSpec:
+				// nothing to do (handled by ast.NewPackage)
+			case *ast.ValueSpec:
+				for _, name := range s.Names {
+					if obj := name.Obj; obj.Type == nil {
+						check.object(obj, false)
+					}
+				}
+			case *ast.TypeSpec:
+				if obj := s.Name.Obj; obj.Type == nil {
+					check.object(obj, false)
+				}
+			default:
+				check.invalidAST(s.Pos(), "unknown ast.Spec node %T", s)
+			}
+		}
+	case *ast.FuncDecl:
+		if d.Name.Name == "init" {
+			// initialization function
+			// TODO(gri) ignore for now (has no object associated with it)
+			// (should probably collect in a first phase and properly initialize)
+			return
+		}
+		if obj := d.Name.Obj; obj.Type == nil {
+			check.object(obj, false)
+		}
+	default:
+		check.invalidAST(d.Pos(), "unknown ast.Decl node %T", d)
+	}
+}
+
+// iterate calls f for each package-level declaration.
+func (check *checker) iterate(f func(*checker, ast.Decl)) {
+	list := check.filenames
+
+	if list == nil {
+		// initialize lazily
+		for filename := range check.pkg.Files {
+			list = append(list, filename)
+		}
+		sort.Strings(list)
+		check.filenames = list
 	}
 
-	c.errors.RemoveMultiples()
-	return c.types, c.errors.Err()
+	for _, filename := range list {
+		for _, decl := range check.pkg.Files[filename].Decls {
+			f(check, decl)
+		}
+	}
+}
+
+// A bailout panic is raised to indicate early termination.
+type bailout struct{}
+
+func check(fset *token.FileSet, pkg *ast.Package, errh func(token.Pos, string), f func(ast.Expr, Type)) (err error) {
+	// initialize checker
+	var check checker
+	check.fset = fset
+	check.pkg = pkg
+	check.errh = errh
+	check.mapf = f
+	check.initexprs = make(map[*ast.ValueSpec][]ast.Expr)
+
+	// handle bailouts
+	defer func() {
+		if p := recover(); p != nil {
+			_ = p.(bailout) // re-panic if not a bailout
+		}
+		err = check.firsterr
+	}()
+
+	// determine missing constant initialization expressions
+	// and associate methods with types
+	check.iterate((*checker).assocInitvalsOrMethod)
+
+	// typecheck all declarations
+	check.iterate((*checker).decl)
+
+	return
 }

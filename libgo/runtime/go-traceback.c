@@ -32,7 +32,7 @@ runtime_printtrace (uintptr *pcbuf, int32 c)
       intgo line;
 
       if (__go_file_line (pcbuf[i], &fn, &file, &line)
-	  && runtime_showframe (fn.str))
+	  && runtime_showframe (fn))
 	{
 	  runtime_printf ("%S\n", fn);
 	  runtime_printf ("\t%S:%D\n", file, (int64) line);

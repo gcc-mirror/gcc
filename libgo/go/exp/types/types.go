@@ -2,45 +2,108 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package types declares the types used to represent Go types
-// (UNDER CONSTRUCTION). ANY AND ALL PARTS MAY CHANGE.
+// Package types declares the data structures for representing
+// Go types and implements typechecking of an *ast.Package.
+//
+// PACKAGE UNDER CONSTRUCTION. ANY AND ALL PARTS MAY CHANGE.
 //
 package types
 
 import (
-	"bytes"
-	"fmt"
 	"go/ast"
+	"go/token"
 	"sort"
 )
 
+// Check typechecks a package pkg. It returns the first error, or nil.
+//
+// Check augments the AST by assigning types to ast.Objects. It
+// calls err with the error position and message for each error.
+// It calls f with each valid AST expression and corresponding
+// type. If err == nil, Check terminates as soon as the first error
+// is found. If f is nil, it is not invoked.
+//
+func Check(fset *token.FileSet, pkg *ast.Package, err func(token.Pos, string), f func(ast.Expr, Type)) error {
+	return check(fset, pkg, err, f)
+}
+
 // All types implement the Type interface.
+// TODO(gri) Eventually determine what common Type functionality should be exported.
 type Type interface {
-	isType()
+	aType()
 }
 
-// All concrete types embed implementsType which
-// ensures that all types implement the Type interface.
-type implementsType struct{}
+// BasicKind describes the kind of basic type.
+type BasicKind int
 
-func (t *implementsType) isType() {}
+const (
+	Invalid BasicKind = iota // type is invalid
 
-// A Bad type is a non-nil placeholder type when we don't know a type.
-type Bad struct {
-	implementsType
-	Msg string // for better error reporting/debugging
-}
+	// predeclared types
+	Bool
+	Int
+	Int8
+	Int16
+	Int32
+	Int64
+	Uint
+	Uint8
+	Uint16
+	Uint32
+	Uint64
+	Uintptr
+	Float32
+	Float64
+	Complex64
+	Complex128
+	String
+	UnsafePointer
 
-// A Basic represents a (unnamed) basic type.
+	// types for untyped values
+	UntypedBool
+	UntypedInt
+	UntypedRune
+	UntypedFloat
+	UntypedComplex
+	UntypedString
+	UntypedNil
+
+	// aliases
+	Byte = Uint8
+	Rune = Int32
+)
+
+// BasicInfo is a set of flags describing properties of a basic type.
+type BasicInfo int
+
+// Properties of basic types.
+const (
+	IsBoolean BasicInfo = 1 << iota
+	IsInteger
+	IsUnsigned
+	IsFloat
+	IsComplex
+	IsString
+	IsUntyped
+
+	IsOrdered   = IsInteger | IsFloat | IsString
+	IsNumeric   = IsInteger | IsFloat | IsComplex
+	IsConstType = IsBoolean | IsNumeric | IsString
+)
+
+// A Basic represents a basic type.
 type Basic struct {
 	implementsType
-	// TODO(gri) need a field specifying the exact basic type
+	Kind BasicKind
+	Info BasicInfo
+	Size int64 // > 0 if valid
+	Name string
 }
 
 // An Array represents an array type [Len]Elt.
 type Array struct {
 	implementsType
-	Len uint64
+	Len int64
 	Elt Type
 }
 
@@ -50,16 +113,17 @@ type Slice struct {
 	Elt Type
 }
 
+type StructField struct {
+	Name        string // unqualified type name for anonymous fields
+	Type        Type
+	Tag         string
+	IsAnonymous bool
+}
+
 // A Struct represents a struct type struct{...}.
-// Anonymous fields are represented by objects with empty names.
 type Struct struct {
 	implementsType
-	Fields ObjList  // struct fields; or nil
-	Tags   []string // corresponding tags; or nil
-	// TODO(gri) This type needs some rethinking:
-	// - at the moment anonymous fields are marked with "" object names,
-	//   and their names have to be reconstructed
-	// - there is no scope for fast lookup (but the parser creates one)
+	Fields []*StructField
 }
 
 // A Pointer represents a pointer type *Base.
@@ -68,14 +132,63 @@ type Pointer struct {
 	Base Type
 }
 
-// A Func represents a function type func(...) (...).
-// Unnamed parameters are represented by objects with empty names.
-type Func struct {
+// A tuple represents a multi-value function return.
+// TODO(gri) use better name to avoid confusion (Go doesn't have tuples).
+type tuple struct {
+	implementsType
+	list []Type
+}
+
+// A Signature represents a user-defined function type func(...) (...).
+// TODO(gri) consider using "tuples" to represent parameters and results (see comment on tuples).
+type Signature struct {
 	implementsType
 	Recv       *ast.Object // nil if not a method
 	Params     ObjList     // (incoming) parameters from left to right; or nil
 	Results    ObjList     // (outgoing) results from left to right; or nil
 	IsVariadic bool        // true if the last parameter's type is of the form ...T
+}
+
+// builtinId is an id of a builtin function.
+type builtinId int
+
+// Predeclared builtin functions.
+const (
+	// Universe scope
+	_Append builtinId = iota
+	_Cap
+	_Close
+	_Complex
+	_Copy
+	_Delete
+	_Imag
+	_Len
+	_Make
+	_New
+	_Panic
+	_Print
+	_Println
+	_Real
+	_Recover
+
+	// Unsafe package
+	_Alignof
+	_Offsetof
+	_Sizeof
+
+	// Testing support
+	_Assert
+	_Trace
+)
+
+// A builtin represents the type of a built-in function.
+type builtin struct {
+	implementsType
+	id          builtinId
+	name        string
+	nargs       int // number of arguments (minimum if variadic)
+	isVariadic  bool
+	isStatement bool // true if the built-in is valid as an expression statement
 }
 
 // An Interface represents an interface type interface{...}.
@@ -97,155 +210,11 @@ type Chan struct {
 	Elt Type
 }
 
-// A Name represents a named type as declared in a type declaration.
-type Name struct {
+// A NamedType represents a named type as declared in a type declaration.
+type NamedType struct {
 	implementsType
-	Underlying Type        // nil if not fully declared
-	Obj        *ast.Object // corresponding declared object
-	// TODO(gri) need to remember fields and methods.
-}
-
-func writeParams(buf *bytes.Buffer, params ObjList, isVariadic bool) {
-	buf.WriteByte('(')
-	for i, par := range params {
-		if i > 0 {
-			buf.WriteString(", ")
-		}
-		if par.Name != "" {
-			buf.WriteString(par.Name)
-			buf.WriteByte(' ')
-		}
-		if isVariadic && i == len(params)-1 {
-			buf.WriteString("...")
-		}
-		writeType(buf, par.Type.(Type))
-	}
-	buf.WriteByte(')')
-}
-
-func writeSignature(buf *bytes.Buffer, t *Func) {
-	writeParams(buf, t.Params, t.IsVariadic)
-	if len(t.Results) == 0 {
-		// no result
-		return
-	}
-
-	buf.WriteByte(' ')
-	if len(t.Results) == 1 && t.Results[0].Name == "" {
-		// single unnamed result
-		writeType(buf, t.Results[0].Type.(Type))
-		return
-	}
-
-	// multiple or named result(s)
-	writeParams(buf, t.Results, false)
-}
-
-func writeType(buf *bytes.Buffer, typ Type) {
-	switch t := typ.(type) {
-	case *Bad:
-		fmt.Fprintf(buf, "badType(%s)", t.Msg)
-
-	case *Basic:
-		buf.WriteString("basicType") // TODO(gri) print actual type information
-
-	case *Array:
-		fmt.Fprintf(buf, "[%d]", t.Len)
-		writeType(buf, t.Elt)
-
-	case *Slice:
-		buf.WriteString("[]")
-		writeType(buf, t.Elt)
-
-	case *Struct:
-		buf.WriteString("struct{")
-		for i, fld := range t.Fields {
-			if i > 0 {
-				buf.WriteString("; ")
-			}
-			if fld.Name != "" {
-				buf.WriteString(fld.Name)
-				buf.WriteByte(' ')
-			}
-			writeType(buf, fld.Type.(Type))
-			if i < len(t.Tags) && t.Tags[i] != "" {
-				fmt.Fprintf(buf, " %q", t.Tags[i])
-			}
-		}
-		buf.WriteByte('}')
-
-	case *Pointer:
-		buf.WriteByte('*')
-		writeType(buf, t.Base)
-
-	case *Func:
-		buf.WriteString("func")
-		writeSignature(buf, t)
-
-	case *Interface:
-		buf.WriteString("interface{")
-		for i, m := range t.Methods {
-			if i > 0 {
-				buf.WriteString("; ")
-			}
-			buf.WriteString(m.Name)
-			writeSignature(buf, m.Type.(*Func))
-		}
-		buf.WriteByte('}')
-
-	case *Map:
-		buf.WriteString("map[")
-		writeType(buf, t.Key)
-		buf.WriteByte(']')
-		writeType(buf, t.Elt)
-
-	case *Chan:
-		var s string
-		switch t.Dir {
-		case ast.SEND:
-			s = "chan<- "
-		case ast.RECV:
-			s = "<-chan "
-		default:
-			s = "chan "
-		}
-		buf.WriteString(s)
-		writeType(buf, t.Elt)
-
-	case *Name:
-		buf.WriteString(t.Obj.Name)
-
-	}
-}
-
-// TypeString returns a string representation for typ.
-func TypeString(typ Type) string {
-	var buf bytes.Buffer
-	writeType(&buf, typ)
-	return buf.String()
-}
-
-// If typ is a pointer type, Deref returns the pointer's base type;
-// otherwise it returns typ.
-func Deref(typ Type) Type {
-	if typ, ok := typ.(*Pointer); ok {
-		return typ.Base
-	}
-	return typ
-}
-
-// Underlying returns the underlying type of a type.
-func Underlying(typ Type) Type {
-	if typ, ok := typ.(*Name); ok {
-		utyp := typ.Underlying
-		if _, ok := utyp.(*Basic); !ok {
-			return utyp
-		}
-		// the underlying type of a type name referring
-		// to an (untyped) basic type is the basic type
-		// name
-	}
-	return typ
+	Obj        *ast.Object // corresponding declared object; Obj.Data.(*ast.Scope) contains methods, if any
+	Underlying Type        // nil if not fully declared yet; never a *NamedType
 }
 
 // An ObjList represents an ordered (in some fashion) list of objects.
@@ -259,119 +228,8 @@ func (list ObjList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
 // Sort sorts an object list by object name.
 func (list ObjList) Sort() { sort.Sort(list) }
 
-// identicalTypes returns true if both lists a and b have the
-// same length and corresponding objects have identical types.
-func identicalTypes(a, b ObjList) bool {
-	if len(a) == len(b) {
-		for i, x := range a {
-			y := b[i]
-			if !Identical(x.Type.(Type), y.Type.(Type)) {
-				return false
-			}
-		}
-		return true
-	}
-	return false
-}
+// All concrete types embed implementsType which
+// ensures that all types implement the Type interface.
+type implementsType struct{}
 
-// Identical returns true if two types are identical.
-func Identical(x, y Type) bool {
-	if x == y {
-		return true
-	}
-
-	switch x := x.(type) {
-	case *Bad:
-		// A Bad type is always identical to any other type
-		// (to avoid spurious follow-up errors).
-		return true
-
-	case *Basic:
-		if y, ok := y.(*Basic); ok {
-			panic("unimplemented")
-			_ = y
-		}
-
-	case *Array:
-		// Two array types are identical if they have identical element types
-		// and the same array length.
-		if y, ok := y.(*Array); ok {
-			return x.Len == y.Len && Identical(x.Elt, y.Elt)
-		}
-
-	case *Slice:
-		// Two slice types are identical if they have identical element types.
-		if y, ok := y.(*Slice); ok {
-			return Identical(x.Elt, y.Elt)
-		}
-
-	case *Struct:
-		// Two struct types are identical if they have the same sequence of fields,
-		// and if corresponding fields have the same names, and identical types,
-		// and identical tags. Two anonymous fields are considered to have the same
-		// name. Lower-case field names from different packages are always different.
-		if y, ok := y.(*Struct); ok {
-			// TODO(gri) handle structs from different packages
-			if identicalTypes(x.Fields, y.Fields) {
-				for i, f := range x.Fields {
-					g := y.Fields[i]
-					if f.Name != g.Name || x.Tags[i] != y.Tags[i] {
-						return false
-					}
-				}
-				return true
-			}
-		}
-
-	case *Pointer:
-		// Two pointer types are identical if they have identical base types.
-		if y, ok := y.(*Pointer); ok {
-			return Identical(x.Base, y.Base)
-		}
-
-	case *Func:
-		// Two function types are identical if they have the same number of parameters
-		// and result values, corresponding parameter and result types are identical,
-		// and either both functions are variadic or neither is. Parameter and result
-		// names are not required to match.
-		if y, ok := y.(*Func); ok {
-			return identicalTypes(x.Params, y.Params) &&
-				identicalTypes(x.Results, y.Results) &&
-				x.IsVariadic == y.IsVariadic
-		}
-
-	case *Interface:
-		// Two interface types are identical if they have the same set of methods with
-		// the same names and identical function types. Lower-case method names from
-		// different packages are always different. The order of the methods is irrelevant.
-		if y, ok := y.(*Interface); ok {
-			return identicalTypes(x.Methods, y.Methods) // methods are sorted
-		}
-
-	case *Map:
-		// Two map types are identical if they have identical key and value types.
-		if y, ok := y.(*Map); ok {
-			return Identical(x.Key, y.Key) && Identical(x.Elt, y.Elt)
-		}
-
-	case *Chan:
-		// Two channel types are identical if they have identical value types
-		// and the same direction.
-		if y, ok := y.(*Chan); ok {
-			return x.Dir == y.Dir && Identical(x.Elt, y.Elt)
-		}
-
-	case *Name:
-		// Two named types are identical if their type names originate
-		// in the same type declaration.
-		if y, ok := y.(*Name); ok {
-			return x.Obj == y.Obj ||
-				// permit bad objects to be equal to avoid
-				// follow up errors
-				x.Obj != nil && x.Obj.Kind == ast.Bad ||
-				y.Obj != nil && y.Obj.Kind == ast.Bad
-		}
-	}
-
-	return false
-}
+func (*implementsType) aType() {}

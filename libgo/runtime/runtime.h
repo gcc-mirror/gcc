@@ -63,6 +63,7 @@ typedef struct	GCStats		GCStats;
 typedef struct	LFNode		LFNode;
 typedef struct	ParFor		ParFor;
 typedef struct	ParForThread	ParForThread;
+typedef struct	CgoMal		CgoMal;
 
 typedef	struct	__go_open_array		Slice;
 typedef	struct	String			String;
@@ -72,13 +73,14 @@ typedef	struct	__go_type_descriptor	Type;
 typedef	struct	__go_defer_stack	Defer;
 typedef	struct	__go_panic_stack	Panic;
 
+typedef struct	__go_ptr_type		PtrType;
 typedef struct	__go_func_type		FuncType;
 typedef struct	__go_map_type		MapType;
 
 typedef struct  Traceback	Traceback;
 
 /*
- * per-cpu declaration.
+ * Per-CPU declaration.
  */
 extern M*	runtime_m(void);
 extern G*	runtime_g(void);
@@ -159,7 +161,7 @@ struct	G
 	void*	param;		// passed parameter on wakeup
 	bool	fromgogo;	// reached from gogo
 	int16	status;
-	int32	goid;
+	int64	goid;
 	uint32	selgen;		// valid sudog pointer
 	const char*	waitreason;	// if status==Gwaiting
 	G*	schedlink;
@@ -178,7 +180,7 @@ struct	G
 	uintptr	gopc;	// pc of go statement that created this goroutine
 
 	int32	ncgo;
-	struct cgoalloc *cgoalloc;
+	CgoMal*	cgomal;
 
 	Traceback* traceback;
 
@@ -201,7 +203,7 @@ struct	M
 	int32	profilehz;
 	int32	helpgc;
 	uint32	fastrand;
-	uint64	ncgocall;
+	uint64	ncgocall;	// number of cgo calls in total
 	Note	havenextg;
 	G*	nextg;
 	M*	alllink;	// on allm
@@ -316,6 +318,14 @@ struct ParFor
 	uint64 nsleep;
 };
 
+// Track memory allocated by code not written in Go during a cgo call,
+// so that the garbage collector can see them.
+struct CgoMal
+{
+	CgoMal	*next;
+	byte	*alloc;
+};
+
 /*
  * defined macros
  *    you need super-gopher-guru privilege
@@ -329,6 +339,7 @@ struct ParFor
 /*
  * external data
  */
+extern	uintptr runtime_zerobase;
 G*	runtime_allg;
 G*	runtime_lastg;
 M*	runtime_allm;
@@ -569,7 +580,7 @@ void	runtime_osyield(void);
 void	runtime_LockOSThread(void) __asm__("runtime.LockOSThread");
 void	runtime_UnlockOSThread(void) __asm__("runtime.UnlockOSThread");
 
-bool	runtime_showframe(const unsigned char*);
+bool	runtime_showframe(String);
 
 uintptr	runtime_memlimit(void);
 

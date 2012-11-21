@@ -15,6 +15,7 @@ void	runtime_raceinit(void);
 // Finalize race detection subsystem, does not return.
 void	runtime_racefini(void);
 
+void	runtime_racemapshadow(void *addr, uintptr size);
 void	runtime_racemalloc(void *p, uintptr sz, void *pc);
 void	runtime_racefree(void *p);
 void	runtime_racegostart(int32 goid, void *pc);

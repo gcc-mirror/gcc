@@ -13,8 +13,9 @@ import (
 	"testing"
 )
 
+const filename = "<src>"
+
 func makePkg(t *testing.T, src string) (*ast.Package, error) {
-	const filename = "<src>"
 	file, err := parser.ParseFile(fset, filename, src, parser.DeclarationErrors)
 	if err != nil {
 		return nil, err
@@ -24,7 +25,7 @@ func makePkg(t *testing.T, src string) (*ast.Package, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := Check(fset, pkg); err != nil {
+	if err := Check(fset, pkg, nil, nil); err != nil {
 		return nil, err
 	}
 	return pkg, nil
@@ -46,7 +47,7 @@ var testTypes = []testEntry{
 	dup("string"),
 
 	// arrays
-	{"[10]int", "[0]int"}, // TODO(gri) fix array length, add more array tests
+	dup("[10]int"),
 
 	// slices
 	dup("[]int"),
@@ -75,7 +76,7 @@ var testTypes = []testEntry{
 	{"func(x, y int)", "func(x int, y int)"},
 	{"func(x, y int, z string)", "func(x int, y int, z string)"},
 	dup("func(int)"),
-	dup("func(int, string, byte)"),
+	{"func(int, string, byte)", "func(int, string, byte)"},
 
 	dup("func() int"),
 	{"func() (string)", "func() string"},
@@ -119,8 +120,60 @@ func TestTypes(t *testing.T) {
 			t.Errorf("%s: %s", src, err)
 			continue
 		}
-		typ := Underlying(pkg.Scope.Lookup("T").Type.(Type))
-		str := TypeString(typ)
+		typ := underlying(pkg.Scope.Lookup("T").Type.(Type))
+		str := typeString(typ)
+		if str != test.str {
+			t.Errorf("%s: got %s, want %s", test.src, str, test.str)
+		}
+	}
+}
+
+var testExprs = []testEntry{
+	// basic type literals
+	dup("x"),
+	dup("true"),
+	dup("42"),
+	dup("3.1415"),
+	dup("2.71828i"),
+	dup(`'a'`),
+	dup(`"foo"`),
+	dup("`bar`"),
+
+	// arbitrary expressions
+	dup("&x"),
+	dup("*&x"),
+	dup("(x)"),
+	dup("x + y"),
+	dup("x + y * 10"),
+	dup("t.foo"),
+	dup("s[0]"),
+	dup("s[x:y]"),
+	dup("s[:y]"),
+	dup("s[x:]"),
+	dup("s[:]"),
+	dup("f(1, 2.3)"),
+	dup("-f(10, 20)"),
+	dup("f(x + y, +3.1415)"),
+	{"func(a, b int) {}", "(func literal)"},
+	{"func(a, b int) []int {}()[x]", "(func literal)()[x]"},
+	{"[]int{1, 2, 3}", "(composite literal)"},
+	{"[]int{1, 2, 3}[x:]", "(composite literal)[x:]"},
+	{"i.([]string)", "i.(...)"},
+}
+
+func TestExprs(t *testing.T) {
+	for _, test := range testExprs {
+		src := "package p; var _ = " + test.src + "; var (x, y int; s []string; f func(int, float32) int; i interface{}; t interface { foo() })"
+		pkg, err := makePkg(t, src)
+		if err != nil {
+			t.Errorf("%s: %s", src, err)
+			continue
+		}
+		// TODO(gri) writing the code below w/o the decl variable will
+		//           cause a 386 compiler error (out of fixed registers)
+		decl := pkg.Files[filename].Decls[0].(*ast.GenDecl)
+		expr := decl.Specs[0].(*ast.ValueSpec).Values[0]
+		str := exprString(expr)
 		if str != test.str {
 			t.Errorf("%s: got %s, want %s", test.src, str, test.str)
 		}

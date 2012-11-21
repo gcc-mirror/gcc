@@ -11,12 +11,13 @@ package net
 import (
 	"io"
 	"syscall"
+	"time"
 )
 
 var listenerBacklog = maxListenerBacklog()
 
 // Generic socket creation.
-func socket(net string, f, t, p int, ipv6only bool, ulsa, ursa syscall.Sockaddr, toAddr func(syscall.Sockaddr) Addr) (fd *netFD, err error) {
+func socket(net string, f, t, p int, ipv6only bool, ulsa, ursa syscall.Sockaddr, deadline time.Time, toAddr func(syscall.Sockaddr) Addr) (fd *netFD, err error) {
 	// See ../syscall/exec_unix.go for description of ForkLock.
 	syscall.ForkLock.RLock()
 	s, err := syscall.Socket(f, t, p)
@@ -32,13 +33,19 @@ func socket(net string, f, t, p int, ipv6only bool, ulsa, ursa syscall.Sockaddr,
 		return nil, err
 	}
 
-	var blsa syscall.Sockaddr
 	if ulsa != nil {
-		if blsa, err = listenerSockaddr(s, f, ulsa, toAddr); err != nil {
+		// We provide a socket that listens to a wildcard
+		// address with reusable UDP port when the given ulsa
+		// is an appropriate UDP multicast address prefix.
+		// This makes it possible for a single UDP listener
+		// to join multiple different group addresses, for
+		// multiple UDP listeners that listen on the same UDP
+		// port to join the same group address.
+		if ulsa, err = listenerSockaddr(s, f, ulsa, toAddr); err != nil {
 			closesocket(s)
 			return nil, err
 		}
-		if err = syscall.Bind(s, blsa); err != nil {
+		if err = syscall.Bind(s, ulsa); err != nil {
 			closesocket(s)
 			return nil, err
 		}
@@ -50,21 +57,20 @@ func socket(net string, f, t, p int, ipv6only bool, ulsa, ursa syscall.Sockaddr,
 	}
 
 	if ursa != nil {
+		if !deadline.IsZero() {
+			fd.wdeadline = deadline.UnixNano()
+		}
 		if err = fd.connect(ursa); err != nil {
 			closesocket(s)
 			fd.Close()
 			return nil, err
 		}
 		fd.isConnected = true
+		fd.wdeadline = 0
 	}
 
 	lsa, _ := syscall.Getsockname(s)
-	var laddr Addr
-	if ulsa != nil && blsa != ulsa {
-		laddr = toAddr(ulsa)
-	} else {
-		laddr = toAddr(lsa)
-	}
+	laddr := toAddr(lsa)
 	rsa, _ := syscall.Getpeername(s)
 	raddr := toAddr(rsa)
 	fd.setAddr(laddr, raddr)

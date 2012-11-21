@@ -113,24 +113,24 @@ func TestGcImport(t *testing.T) {
 	t.Logf("tested %d imports", nimports)
 }
 
-/*
-
-Does not work with gccgo.
-
 var importedObjectTests = []struct {
 	name string
 	kind ast.ObjKind
 	typ  string
 }{
 	{"unsafe.Pointer", ast.Typ, "Pointer"},
-	{"math.Pi", ast.Con, "basicType"}, // TODO(gri) need to complete BasicType
+	{"math.Pi", ast.Con, "untyped float"},
 	{"io.Reader", ast.Typ, "interface{Read(p []byte) (n int, err error)}"},
 	{"io.ReadWriter", ast.Typ, "interface{Read(p []byte) (n int, err error); Write(p []byte) (n int, err error)}"},
-	{"math.Sin", ast.Fun, "func(x float64) (_ float64)"},
+	{"math.Sin", ast.Fun, "func(x·2 float64) (_ float64)"},
 	// TODO(gri) add more tests
 }
 
 func TestGcImportedTypes(t *testing.T) {
+	// This package does not yet know how to read gccgo export data.
+	if runtime.Compiler == "gccgo" {
+		return
+	}
 	for _, test := range importedObjectTests {
 		s := strings.Split(test.name, ".")
 		if len(s) != 2 {
@@ -149,11 +149,9 @@ func TestGcImportedTypes(t *testing.T) {
 		if obj.Kind != test.kind {
 			t.Errorf("%s: got kind = %q; want %q", test.name, obj.Kind, test.kind)
 		}
-		typ := TypeString(Underlying(obj.Type.(Type)))
+		typ := typeString(underlying(obj.Type.(Type)))
 		if typ != test.typ {
 			t.Errorf("%s: got type = %q; want %q", test.name, typ, test.typ)
 		}
 	}
 }
-
-*/

@@ -1,0 +1,134 @@
+// Copyright 2012 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// various expressions
+
+package expr3
+
+// TODO(gri) Move the code below into function "shifts" once we check
+//           declarations with initilizations inside functions.
+var (
+	i0 int
+	u0 uint
+)
+
+var (
+	v0 = 1<<0
+	v1 = 1<<i0 /* ERROR "must be unsigned" */
+	v2 = 1<<u0
+	v3 = 1<<"foo" /* ERROR "must be unsigned" */
+	v4 = 1<<- /* ERROR "stupid shift" */ 1
+	v5 = 1<<1025 /* ERROR "stupid shift" */
+	v6 = 1 /* ERROR "overflows" */ <<100
+
+	v10 uint = 1 << 0
+	v11 uint = 1 << u0
+	v12 float32 = 1 /* ERROR "must be integer" */ << u0
+)
+
+// TODO(gri) enable commented out tests below.
+
+// from the spec
+var (
+	s uint = 33
+	i = 1<<s           // 1 has type int
+	j int32 = 1<<s     // 1 has type int32; j == 0
+	k = uint64(1<<s)   // 1 has type uint64; k == 1<<33
+	m int = 1.0<<s     // 1.0 has type int
+//	n = 1.0<<s != 0    // 1.0 has type int; n == false if ints are 32bits in size
+	o = 1<<s == 2<<s   // 1 and 2 have type int; o == true if ints are 32bits in size
+//	p = 1<<s == 1 /* ERROR "overflows" */ <<33  // illegal if ints are 32bits in size: 1 has type int, but 1<<33 overflows int
+	u = 1.0 /* ERROR "must be integer" */ <<s         // illegal: 1.0 has type float64, cannot shift
+	v float32 = 1 /* ERROR "must be integer" */ <<s   // illegal: 1 has type float32, cannot shift
+	w int64 = 1.0<<33  // 1.0<<33 is a constant shift expression
+)
+
+// TODO(gri) The error messages below depond on adjusting the spec
+//           to reflect what gc is doing at the moment (the spec
+//           asks for run-time errors at the moment - see issue 4231).
+//
+func indexes() {
+	_ = 1 /* ERROR "cannot index" */ [0]
+	_ = indexes /* ERROR "cannot index" */ [0]
+	_ = ( /* ERROR "cannot slice" */ 12 + 3)[1:2]
+
+	var a [10]int
+	_ = a[true /* ERROR "must be integer" */ ]
+	_ = a["foo" /* ERROR "must be integer" */ ]
+	_ = a[1.1 /* ERROR "must be integer" */ ]
+	_ = a[1.0]
+	_ = a[- /* ERROR "index .* negative" */ 1]
+	_ = a[- /* ERROR "index .* negative" */ 1 :]
+	_ = a[: - /* ERROR "index .* negative" */ 1]
+	var a0 int
+	a0 = a[0]
+	var a1 int32
+	a1 = a /* ERROR "cannot assign" */ [1] 
+	_ = a[9]
+	_ = a[10 /* ERROR "index .* out of bounds" */ ]
+	_ = a[10:]
+	_ = a[:10]
+	_ = a[10:10]
+	_ = a[11 /* ERROR "index .* out of bounds" */ :]
+	_ = a[: 11 /* ERROR "index .* out of bounds" */ ]
+
+	var b [0]int
+	_ = b[0 /* ERROR "index .* out of bounds" */ ]
+	_ = b[:]
+	_ = b[0:]
+	_ = b[:0]
+	_ = b[0:0]
+
+	var s []int
+	_ = s[- /* ERROR "index .* negative" */ 1]
+	_ = s[- /* ERROR "index .* negative" */ 1 :]
+	_ = s[: - /* ERROR "index .* negative" */ 1]
+	_ = s[0]
+	_ = s[1 : 2]
+	_ = s[2 /* ERROR "inverted slice range" */ : 1]
+	_ = s[2 :]
+	_ = s[: 1<<100]
+	_ = s[1<<100 :]
+	_ = s[1<<100 : 1<<100]
+	_ = s[1 /* ERROR "inverted slice range" */ <<100+1 : 1<<100]
+	_ = s[1 /* ERROR "inverted slice range" */ <<100+1 : 10]
+
+	var t string
+	_ = t[- /* ERROR "index .* negative" */ 1]
+	_ = t[- /* ERROR "index .* negative" */ 1 :]
+	_ = t[: - /* ERROR "index .* negative" */ 1]
+	var t0 byte
+	t0 = t[0]
+	var t1 rune
+	t1 = t /* ERROR "cannot assign" */ [2]
+	_ = ("foo" + "bar")[5]
+	_ = ("foo" + "bar")[6 /* ERROR "index .* out of bounds" */ ]
+
+	const c = "foo"
+	_ = c[- /* ERROR "index .* negative" */ 1]
+	_ = c[- /* ERROR "index .* negative" */ 1 :]
+	_ = c[: - /* ERROR "index .* negative" */ 1]
+	var c0 byte
+	c0 = c[0]
+	var c2 float32
+	c2 = c /* ERROR "cannot assign" */ [2]
+	_ = c[3 /* ERROR "index .* out of bounds" */ ]
+	_ = ""[0 /* ERROR "index .* out of bounds" */ ]
+
+	_ = s[1<<30] // no compile-time error here
+}
+
+type T struct {
+	x int
+}
+
+func (*T) m() {}
+
+func method_expressions() {
+	_ = T /* ERROR "no field or method" */ .a
+	_ = T /* ERROR "has no method" */ .x
+	_ = T.m
+	var f func(*T) = (*T).m
+	var g func(*T) = ( /* ERROR "cannot assign" */ T).m
+}

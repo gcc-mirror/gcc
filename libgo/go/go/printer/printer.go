@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"unicode"
 )
 
 const (
@@ -220,14 +221,6 @@ func (p *printer) writeString(pos token.Position, s string, isLit bool) {
 		// atLineBegin updates p.pos if there's indentation, but p.pos
 		// is the position of s.
 		p.pos = pos
-		// reset state if the file changed
-		// (used when printing merged ASTs of different files
-		// e.g., the result of ast.MergePackageFiles)
-		if p.last.IsValid() && p.last.Filename != pos.Filename {
-			p.indent = 0
-			p.mode = 0
-			p.wsbuf = p.wsbuf[0:0]
-		}
 	}
 
 	if isLit {
@@ -405,6 +398,7 @@ func (p *printer) writeCommentPrefix(pos, next token.Position, prev, comment *as
 // Split comment text into lines
 // (using strings.Split(text, "\n") is significantly slower for
 // this specific purpose, as measured with: go test -bench=Print)
+//
 func split(text string) []string {
 	// count lines (comment text never ends in a newline)
 	n := 1
@@ -432,6 +426,7 @@ func split(text string) []string {
 
 // Returns true if s contains only white space
 // (only tabs and blanks can appear in the printer's context).
+//
 func isBlank(s string) bool {
 	for i := 0; i < len(s); i++ {
 		if s[i] > ' ' {
@@ -441,12 +436,18 @@ func isBlank(s string) bool {
 	return true
 }
 
+// commonPrefix returns the common prefix of a and b.
 func commonPrefix(a, b string) string {
 	i := 0
 	for i < len(a) && i < len(b) && a[i] == b[i] && (a[i] <= ' ' || a[i] == '*') {
 		i++
 	}
 	return a[0:i]
+}
+
+// trimRight returns s with trailing whitespace removed.
+func trimRight(s string) string {
+	return strings.TrimRightFunc(s, unicode.IsSpace)
 }
 
 // stripCommonPrefix removes a common prefix from /*-style comment lines (unless no
@@ -611,7 +612,7 @@ func (p *printer) writeComment(comment *ast.Comment) {
 
 	// shortcut common case of //-style comments
 	if text[1] == '/' {
-		p.writeString(pos, text, true)
+		p.writeString(pos, trimRight(text), true)
 		return
 	}
 
@@ -641,7 +642,7 @@ func (p *printer) writeComment(comment *ast.Comment) {
 			pos = p.pos
 		}
 		if len(line) > 0 {
-			p.writeString(pos, line, true)
+			p.writeString(pos, trimRight(line), true)
 		}
 	}
 }
@@ -1159,7 +1160,7 @@ func (p *trimmer) Write(data []byte) (n int, err error) {
 // ----------------------------------------------------------------------------
 // Public interface
 
-// A Mode value is a set of flags (or 0). They control printing. 
+// A Mode value is a set of flags (or 0). They control printing.
 type Mode uint
 
 const (

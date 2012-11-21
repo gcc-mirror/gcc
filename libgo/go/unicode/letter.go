@@ -180,7 +180,7 @@ func isExcludingLatin(rangeTab *RangeTable, r rune) bool {
 func IsUpper(r rune) bool {
 	// See comment in IsGraphic.
 	if uint32(r) <= MaxLatin1 {
-		return properties[uint8(r)]&pLu != 0
+		return properties[uint8(r)]&pLmask == pLu
 	}
 	return isExcludingLatin(Upper, r)
 }
@@ -189,7 +189,7 @@ func IsUpper(r rune) bool {
 func IsLower(r rune) bool {
 	// See comment in IsGraphic.
 	if uint32(r) <= MaxLatin1 {
-		return properties[uint8(r)]&pLl != 0
+		return properties[uint8(r)]&pLmask == pLl
 	}
 	return isExcludingLatin(Lower, r)
 }
@@ -316,7 +316,7 @@ type foldPair struct {
 // SimpleFold iterates over Unicode code points equivalent under
 // the Unicode-defined simple case folding.  Among the code points
 // equivalent to rune (including rune itself), SimpleFold returns the
-// smallest rune >= r if one exists, or else the smallest rune >= 0. 
+// smallest rune >= r if one exists, or else the smallest rune >= 0.
 //
 // For example:
 //	SimpleFold('A') = 'a'
