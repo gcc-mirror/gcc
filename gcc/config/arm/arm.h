@@ -2012,9 +2012,15 @@ enum arm_auto_incmodes
    || (X) == arg_pointer_rtx)
 
 /* Try to generate sequences that don't involve branches, we can then use
-   conditional instructions */
+   conditional instructions.  */
 #define BRANCH_COST(speed_p, predictable_p) \
   (current_tune->branch_cost (speed_p, predictable_p))
+
+/* False if short circuit operation is preferred.  */
+#define LOGICAL_OP_NON_SHORT_CIRCUIT				\
+  ((optimize_size)						\
+   ? (TARGET_THUMB ? false : true)				\
+   : (current_tune->logical_op_non_short_circuit[TARGET_ARM]))
 
 
 /* Position Independent Code.  */

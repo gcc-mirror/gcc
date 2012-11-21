@@ -1,3 +1,17 @@
+2012-11-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm-cores.def (cortex-m1, cortex-m0)
+	(cortex-m0plus): Use v6m.
+	* config/arm/arm-protos.h (tune_params): Add
+	logical_op_non_short_circuit.
+	* config/arm/arm.c (arm_slowmul_tune, arm_fastmul_tune)
+	(arm_strongarm_tune, arm_xscale_tune, arm_9e_tune, arm_v6t2_tune)
+	(arm_cortex_tune, arm_cortex_a15_tune, arm_cortex_a5_tune)
+	(arm_cortex_a9_tune, arm_fa726te_tune): Set
+	logical_op_non_short_circuit field.
+	(arm_v6m_tune): New tune_params struct.
+	* config/arm/arm.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
+
 2012-11-20  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Substitute `with_cpu'.

@@ -243,6 +243,10 @@ struct tune_params
   int (*branch_cost) (bool, bool);
   /* Prefer STRD/LDRD instructions over PUSH/POP/LDM/STM.  */
   bool prefer_ldrd_strd;
+  /* The preference for non short cirtcuit operation when optimizing for
+     performance. The first element covers Thumb state and the second one
+     is for ARM state.  */
+  bool logical_op_non_short_circuit[2];
 };
 
 extern const struct tune_params *current_tune;
