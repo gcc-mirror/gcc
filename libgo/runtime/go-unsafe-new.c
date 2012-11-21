@@ -5,28 +5,30 @@
    license that can be found in the LICENSE file.  */
 
 #include "runtime.h"
-#include "go-alloc.h"
+#include "arch.h"
+#include "malloc.h"
 #include "go-type.h"
 #include "interface.h"
 
 /* Implement unsafe_New, called from the reflect package.  */
 
-void *unsafe_New (struct __go_empty_interface type)
+void *unsafe_New (const struct __go_type_descriptor *)
   asm ("reflect.unsafe_New");
 
 /* The dynamic type of the argument will be a pointer to a type
    descriptor.  */
 
 void *
-unsafe_New (struct __go_empty_interface type)
+unsafe_New (const struct __go_type_descriptor *descriptor)
 {
-  const struct __go_type_descriptor *descriptor;
+  uint32 flag;
+  void *ret;
 
-  if (((uintptr_t) type.__type_descriptor & reflectFlags) != 0)
-    runtime_panicstring ("invalid interface value");
+  flag = (descriptor->__code & GO_NO_POINTERS) != 0 ? FlagNoPointers : 0;
+  ret = runtime_mallocgc (descriptor->__size, flag, 1, 1);
 
-  /* FIXME: We should check __type_descriptor to verify that this is
-     really a type descriptor.  */
-  descriptor = (const struct __go_type_descriptor *) type.__object;
-  return __go_alloc (descriptor->__size);
+  if (UseSpanType && flag == 0)
+    runtime_settype (ret, (uintptr) descriptor | TypeInfo_SingleObject);
+
+  return ret;
 }

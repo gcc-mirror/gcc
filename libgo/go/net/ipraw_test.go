@@ -21,7 +21,7 @@ var icmpTests = []struct {
 	ipv6  bool // test with underlying AF_INET6 socket
 }{
 	{"ip4:icmp", "", "127.0.0.1", false},
-	{"ip6:icmp", "", "::1", true},
+	{"ip6:ipv6-icmp", "", "::1", true},
 }
 
 func TestICMP(t *testing.T) {
@@ -205,4 +205,34 @@ func parseICMPEchoReply(b []byte) (id, seqnum int) {
 	id = int(b[4])<<8 | int(b[5])
 	seqnum = int(b[6])<<8 | int(b[7])
 	return
+}
+
+var ipConnLocalNameTests = []struct {
+	net   string
+	laddr *IPAddr
+}{
+	{"ip4:icmp", &IPAddr{IP: IPv4(127, 0, 0, 1)}},
+	{"ip4:icmp", &IPAddr{}},
+	{"ip4:icmp", nil},
+}
+
+func TestIPConnLocalName(t *testing.T) {
+	if os.Getuid() != 0 {
+		t.Logf("skipping test; must be root")
+		return
+	}
+
+	for _, tt := range ipConnLocalNameTests {
+		c, err := ListenIP(tt.net, tt.laddr)
+		if err != nil {
+			t.Errorf("ListenIP failed: %v", err)
+			return
+		}
+		defer c.Close()
+		la := c.LocalAddr()
+		if la == nil {
+			t.Error("IPConn.LocalAddr failed")
+			return
+		}
+	}
 }

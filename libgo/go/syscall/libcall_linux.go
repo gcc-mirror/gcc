@@ -280,6 +280,9 @@ func ParseDirent(buf []byte, max int, names []string) (consumed int, count int, 
 //sys	sendfile(outfd int, infd int, offset *Offset_t, count int) (written int, err error)
 //sendfile64(outfd int, infd int, offset *Offset_t, count Size_t) Ssize_t
 func Sendfile(outfd int, infd int, offset *int64, count int) (written int, err error) {
+	if raceenabled {
+		raceReleaseMerge(unsafe.Pointer(&ioSync))
+	}
 	var soff Offset_t
 	var psoff *Offset_t
 	if offset != nil {

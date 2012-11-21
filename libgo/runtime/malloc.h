@@ -114,12 +114,12 @@ enum
 	HeapAllocChunk = 1<<20,		// Chunk size for heap growth
 
 	// Number of bits in page to span calculations (4k pages).
-	// On 64-bit, we limit the arena to 16G, so 22 bits suffices.
-	// On 32-bit, we don't bother limiting anything: 20 bits for 4G.
+	// On 64-bit, we limit the arena to 128GB, or 37 bits.
+	// On 32-bit, we don't bother limiting anything, so we use the full 32-bit address.
 #if __SIZEOF_POINTER__ == 8
-	MHeapMap_Bits = 22,
+	MHeapMap_Bits = 37 - PageShift,
 #else
-	MHeapMap_Bits = 20,
+	MHeapMap_Bits = 32 - PageShift,
 #endif
 
 	// Max number of threads to run garbage collection.
@@ -133,7 +133,7 @@ enum
 // This must be a #define instead of an enum because it
 // is so large.
 #if __SIZEOF_POINTER__ == 8
-#define	MaxMem	(16ULL<<30)	/* 16 GB */
+#define	MaxMem	(1ULL<<(MHeapMap_Bits+PageShift))	/* 128 GB */
 #else
 #define	MaxMem	((uintptr)-1)
 #endif
@@ -198,7 +198,7 @@ void	runtime_FixAlloc_Free(FixAlloc *f, void *p);
 
 
 // Statistics.
-// Shared with Go: if you edit this structure, also edit extern.go.
+// Shared with Go: if you edit this structure, also edit type MemStats in mem.go.
 struct MStats
 {
 	// General statistics.
@@ -358,7 +358,7 @@ struct MSpan
 	uintptr	npages;		// number of pages in span
 	MLink	*freelist;	// list of free objects
 	uint32	ref;		// number of allocated objects in this span
-	uint32	sizeclass;	// size class
+	int32	sizeclass;	// size class
 	uintptr	elemsize;	// computed from sizeclass or from npages
 	uint32	state;		// MSpanInUse etc
 	int64   unusedsince;	// First time spotted by GC in MSpanFree state
@@ -452,6 +452,8 @@ void	runtime_unmarkspan(void *v, uintptr size);
 bool	runtime_blockspecial(void*);
 void	runtime_setblockspecial(void*, bool);
 void	runtime_purgecachedstats(MCache*);
+void*	runtime_new(const Type *);
+#define runtime_cnew(T) runtime_new(T)
 
 void	runtime_settype(void*, uintptr);
 void	runtime_settype_flush(M*, bool);
@@ -487,3 +489,8 @@ enum
 	// Enables type information at the end of blocks allocated from heap	
 	DebugTypeAtBlockEnd = 0,
 };
+
+// defined in mgc0.go
+void	runtime_gc_m_ptr(Eface*);
+
+void	runtime_memorydump(void);

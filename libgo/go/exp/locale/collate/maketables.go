@@ -38,7 +38,7 @@ var (
 		`URL of the Default Unicode Collation Element Table (DUCET). This can be a zip
 file containing the file allkeys_CLDR.txt or an allkeys.txt file.`)
 	cldr = flag.String("cldr",
-		"http://www.unicode.org/Public/cldr/2.0.1/core.zip",
+		"http://www.unicode.org/Public/cldr/22/core.zip",
 		"URL of CLDR archive.")
 	test = flag.Bool("test", false,
 		"test existing tables; can be used to compare web data with package data.")
@@ -180,7 +180,7 @@ func skipAlt(a string) bool {
 
 func failOnError(e error) {
 	if e != nil {
-		log.Fatal(e)
+		log.Panic(e)
 	}
 }
 
@@ -607,7 +607,7 @@ func insertTailoring(t *build.Tailoring, r RuleElem, context, extend string) {
 			if *test {
 				testInput.add(str)
 			}
-			err := t.Insert(lmap[l[0]], str, extend)
+			err := t.Insert(lmap[l[0]], str, context+extend)
 			failOnError(err)
 		}
 	case "pc", "sc", "tc", "ic":
@@ -617,7 +617,7 @@ func insertTailoring(t *build.Tailoring, r RuleElem, context, extend string) {
 			if *test {
 				testInput.add(str)
 			}
-			err := t.Insert(level, str, extend)
+			err := t.Insert(level, str, context+extend)
 			failOnError(err)
 		}
 	default:
@@ -677,7 +677,7 @@ func testCollator(c *collate.Collator) {
 		if bytes.Compare(k0, k) != 0 {
 			failOnError(fmt.Errorf("test:%U: keys differ (%x vs %x)", []rune(str), k0, k))
 		}
-		buf.ResetKeys()
+		buf.Reset()
 	}
 	fmt.Println("PASS")
 }

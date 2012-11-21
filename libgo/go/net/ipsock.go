@@ -6,7 +6,14 @@
 
 package net
 
-var supportsIPv6, supportsIPv4map = probeIPv6Stack()
+import "time"
+
+var supportsIPv6, supportsIPv4map bool
+
+func init() {
+	sysInit()
+	supportsIPv6, supportsIPv4map = probeIPv6Stack()
+}
 
 func firstFavoriteAddr(filter func(IP) IP, addrs []string) (addr IP) {
 	if filter == nil {
@@ -98,7 +105,7 @@ func JoinHostPort(host, port string) string {
 }
 
 // Convert "host:port" into IP address and port.
-func hostPortToIP(net, hostport string) (ip IP, iport int, err error) {
+func hostPortToIP(net, hostport string, deadline time.Time) (ip IP, iport int, err error) {
 	host, port, err := SplitHostPort(hostport)
 	if err != nil {
 		return nil, 0, err
@@ -117,7 +124,7 @@ func hostPortToIP(net, hostport string) (ip IP, iport int, err error) {
 				filter = ipv6only
 			}
 			// Not an IP address.  Try as a DNS name.
-			addrs, err := LookupHost(host)
+			addrs, err := lookupHostDeadline(host, deadline)
 			if err != nil {
 				return nil, 0, err
 			}

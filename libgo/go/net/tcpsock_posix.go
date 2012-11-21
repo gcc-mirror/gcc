@@ -143,11 +143,19 @@ func (c *TCPConn) SetNoDelay(noDelay bool) error {
 // which must be "tcp", "tcp4", or "tcp6".  If laddr is not nil, it is used
 // as the local address for the connection.
 func DialTCP(net string, laddr, raddr *TCPAddr) (*TCPConn, error) {
+	switch net {
+	case "tcp", "tcp4", "tcp6":
+	default:
+		return nil, UnknownNetworkError(net)
+	}
 	if raddr == nil {
 		return nil, &OpError{"dial", net, nil, errMissingAddress}
 	}
+	return dialTCP(net, laddr, raddr, noDeadline)
+}
 
-	fd, err := internetSocket(net, laddr.toAddr(), raddr.toAddr(), syscall.SOCK_STREAM, 0, "dial", sockaddrToTCP)
+func dialTCP(net string, laddr, raddr *TCPAddr, deadline time.Time) (*TCPConn, error) {
+	fd, err := internetSocket(net, laddr.toAddr(), raddr.toAddr(), deadline, syscall.SOCK_STREAM, 0, "dial", sockaddrToTCP)
 
 	// TCP has a rarely used mechanism called a 'simultaneous connection' in
 	// which Dial("tcp", addr1, addr2) run on the machine at addr1 can
@@ -177,7 +185,7 @@ func DialTCP(net string, laddr, raddr *TCPAddr) (*TCPConn, error) {
 		if err == nil {
 			fd.Close()
 		}
-		fd, err = internetSocket(net, laddr.toAddr(), raddr.toAddr(), syscall.SOCK_STREAM, 0, "dial", sockaddrToTCP)
+		fd, err = internetSocket(net, laddr.toAddr(), raddr.toAddr(), deadline, syscall.SOCK_STREAM, 0, "dial", sockaddrToTCP)
 	}
 
 	if err != nil {
@@ -220,29 +228,10 @@ type TCPListener struct {
 	fd *netFD
 }
 
-// ListenTCP announces on the TCP address laddr and returns a TCP listener.
-// Net must be "tcp", "tcp4", or "tcp6".
-// If laddr has a port of 0, it means to listen on some available port.
-// The caller can use l.Addr() to retrieve the chosen address.
-func ListenTCP(net string, laddr *TCPAddr) (*TCPListener, error) {
-	fd, err := internetSocket(net, laddr.toAddr(), nil, syscall.SOCK_STREAM, 0, "listen", sockaddrToTCP)
-	if err != nil {
-		return nil, err
-	}
-	err = syscall.Listen(fd.sysfd, listenerBacklog)
-	if err != nil {
-		closesocket(fd.sysfd)
-		return nil, &OpError{"listen", net, laddr, err}
-	}
-	l := new(TCPListener)
-	l.fd = fd
-	return l, nil
-}
-
 // AcceptTCP accepts the next incoming call and returns the new connection
 // and the remote address.
 func (l *TCPListener) AcceptTCP() (c *TCPConn, err error) {
-	if l == nil || l.fd == nil || l.fd.sysfd < 0 {
+	if l == nil || l.fd == nil {
 		return nil, syscall.EINVAL
 	}
 	fd, err := l.fd.accept(sockaddrToTCP)
@@ -287,3 +276,30 @@ func (l *TCPListener) SetDeadline(t time.Time) error {
 // It is the caller's responsibility to close f when finished.
 // Closing l does not affect f, and closing f does not affect l.
 func (l *TCPListener) File() (f *os.File, err error) { return l.fd.dup() }
+
+// ListenTCP announces on the TCP address laddr and returns a TCP listener.
+// Net must be "tcp", "tcp4", or "tcp6".
+// If laddr has a port of 0, it means to listen on some available port.
+// The caller can use l.Addr() to retrieve the chosen address.
+func ListenTCP(net string, laddr *TCPAddr) (*TCPListener, error) {
+	switch net {
+	case "tcp", "tcp4", "tcp6":
+	default:
+		return nil, UnknownNetworkError(net)
+	}
+	if laddr == nil {
+		laddr = &TCPAddr{}
+	}
+	fd, err := internetSocket(net, laddr.toAddr(), nil, noDeadline, syscall.SOCK_STREAM, 0, "listen", sockaddrToTCP)
+	if err != nil {
+		return nil, err
+	}
+	err = syscall.Listen(fd.sysfd, listenerBacklog)
+	if err != nil {
+		closesocket(fd.sysfd)
+		return nil, &OpError{"listen", net, laddr, err}
+	}
+	l := new(TCPListener)
+	l.fd = fd
+	return l, nil
+}

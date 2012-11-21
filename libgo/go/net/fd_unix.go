@@ -7,7 +7,6 @@
 package net
 
 import (
-	"errors"
 	"io"
 	"os"
 	"runtime"
@@ -97,15 +96,11 @@ func (s *pollServer) AddFD(fd *netFD, mode int) error {
 	}
 
 	wake, err := s.poll.AddFD(intfd, mode, false)
-	if err != nil {
-		panic("pollServer AddFD " + err.Error())
-	}
-	if wake {
-		doWakeup = true
-	}
 	s.Unlock()
-
-	if doWakeup {
+	if err != nil {
+		return &OpError{"addfd", fd.net, fd.laddr, err}
+	}
+	if wake || doWakeup {
 		s.Wakeup()
 	}
 	return nil
@@ -167,7 +162,7 @@ func (s *pollServer) CheckDeadlines() {
 	// TODO(rsc): This will need to be handled more efficiently,
 	// probably with a heap indexed by wakeup time.
 
-	var next_deadline int64
+	var nextDeadline int64
 	for key, fd := range s.pending {
 		var t int64
 		var mode int
@@ -192,12 +187,12 @@ func (s *pollServer) CheckDeadlines() {
 					fd.wdeadline = -1
 				}
 				s.WakeFD(fd, mode, nil)
-			} else if next_deadline == 0 || t < next_deadline {
-				next_deadline = t
+			} else if nextDeadline == 0 || t < nextDeadline {
+				nextDeadline = t
 			}
 		}
 	}
-	s.deadline = next_deadline
+	s.deadline = nextDeadline
 }
 
 func (s *pollServer) Run() {
@@ -265,7 +260,9 @@ var pollMaxN int
 var pollservers []*pollServer
 var startServersOnce []func()
 
-func init() {
+var canCancelIO = true // used for testing current package
+
+func sysInit() {
 	pollMaxN = runtime.NumCPU()
 	if pollMaxN > 8 {
 		pollMaxN = 8 // No improvement then.
@@ -316,21 +313,29 @@ func newFD(fd, family, sotype int, net string) (*netFD, error) {
 func (fd *netFD) setAddr(laddr, raddr Addr) {
 	fd.laddr = laddr
 	fd.raddr = raddr
+	fd.sysfile = os.NewFile(uintptr(fd.sysfd), fd.net)
+}
+
+func (fd *netFD) name() string {
 	var ls, rs string
-	if laddr != nil {
-		ls = laddr.String()
+	if fd.laddr != nil {
+		ls = fd.laddr.String()
 	}
-	if raddr != nil {
-		rs = raddr.String()
+	if fd.raddr != nil {
+		rs = fd.raddr.String()
 	}
-	fd.sysfile = os.NewFile(uintptr(fd.sysfd), fd.net+":"+ls+"->"+rs)
+	return fd.net + ":" + ls + "->" + rs
 }
 
 func (fd *netFD) connect(ra syscall.Sockaddr) error {
 	err := syscall.Connect(fd.sysfd, ra)
+	hadTimeout := fd.wdeadline > 0
 	if err == syscall.EINPROGRESS {
 		if err = fd.pollServer.WaitWrite(fd); err != nil {
 			return err
+		}
+		if hadTimeout && fd.wdeadline < 0 {
+			return errTimeout
 		}
 		var e int
 		e, err = syscall.GetsockoptInt(fd.sysfd, syscall.SOL_SOCKET, syscall.SO_ERROR)
@@ -344,15 +349,10 @@ func (fd *netFD) connect(ra syscall.Sockaddr) error {
 	return err
 }
 
-var errClosing = errors.New("use of closed network connection")
-
 // Add a reference to this fd.
 // If closing==true, pollserver must be locked; mark the fd as closing.
 // Returns an error if the fd cannot be used.
 func (fd *netFD) incref(closing bool) error {
-	if fd == nil {
-		return errClosing
-	}
 	fd.sysmu.Lock()
 	if fd.closing {
 		fd.sysmu.Unlock()
@@ -369,9 +369,6 @@ func (fd *netFD) incref(closing bool) error {
 // Remove a reference to this FD and close if we've been asked to do so (and
 // there are no references left.
 func (fd *netFD) decref() {
-	if fd == nil {
-		return
-	}
 	fd.sysmu.Lock()
 	fd.sysref--
 	if fd.closing && fd.sysref == 0 && fd.sysfile != nil {
@@ -664,7 +661,7 @@ func (fd *netFD) dup() (f *os.File, err error) {
 		return nil, &OpError{"setnonblock", fd.net, fd.laddr, err}
 	}
 
-	return os.NewFile(uintptr(ns), fd.sysfile.Name()), nil
+	return os.NewFile(uintptr(ns), fd.name()), nil
 }
 
 func closesocket(s int) error {

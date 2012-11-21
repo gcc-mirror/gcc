@@ -513,7 +513,7 @@ Again:
 		// First message, be extra suspicious:
 		// this might not be a TLS client.
 		// Bail out before reading a full 'body', if possible.
-		// The current max version is 3.1. 
+		// The current max version is 3.1.
 		// If the version is >= 16.0, it's probably not real.
 		// Similarly, a clientHello message encodes in
 		// well under a kilobyte.  If the length is >= 12 kB,
@@ -604,9 +604,11 @@ Again:
 // sendAlert sends a TLS alert message.
 // c.out.Mutex <= L.
 func (c *Conn) sendAlertLocked(err alert) error {
-	c.tmp[0] = alertLevelError
-	if err == alertNoRenegotiation {
+	switch err {
+	case alertNoRenegotiation, alertCloseNotify:
 		c.tmp[0] = alertLevelWarning
+	default:
+		c.tmp[0] = alertLevelError
 	}
 	c.tmp[1] = byte(err)
 	c.writeRecord(recordTypeAlert, c.tmp[0:2])

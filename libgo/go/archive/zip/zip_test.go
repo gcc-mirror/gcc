@@ -173,3 +173,85 @@ func TestZip64(t *testing.T) {
 		t.Errorf("UncompressedSize64 %d, want %d", got, want)
 	}
 }
+
+func testInvalidHeader(h *FileHeader, t *testing.T) {
+	var buf bytes.Buffer
+	z := NewWriter(&buf)
+
+	f, err := z.CreateHeader(h)
+	if err != nil {
+		t.Fatalf("error creating header: %v", err)
+	}
+	if _, err := f.Write([]byte("hi")); err != nil {
+		t.Fatalf("error writing content: %v", err)
+	}
+	if err := z.Close(); err != nil {
+		t.Fatalf("error closing zip writer: %v", err)
+	}
+
+	b := buf.Bytes()
+	if _, err = NewReader(bytes.NewReader(b), int64(len(b))); err != ErrFormat {
+		t.Fatalf("got %v, expected ErrFormat", err)
+	}
+}
+
+func testValidHeader(h *FileHeader, t *testing.T) {
+	var buf bytes.Buffer
+	z := NewWriter(&buf)
+
+	f, err := z.CreateHeader(h)
+	if err != nil {
+		t.Fatalf("error creating header: %v", err)
+	}
+	if _, err := f.Write([]byte("hi")); err != nil {
+		t.Fatalf("error writing content: %v", err)
+	}
+	if err := z.Close(); err != nil {
+		t.Fatalf("error closing zip writer: %v", err)
+	}
+
+	b := buf.Bytes()
+	if _, err = NewReader(bytes.NewReader(b), int64(len(b))); err != nil {
+		t.Fatalf("got %v, expected nil", err)
+	}
+}
+
+// Issue 4302.
+func TestHeaderInvalidTagAndSize(t *testing.T) {
+	const timeFormat = "20060102T150405.000.txt"
+
+	ts := time.Now()
+	filename := ts.Format(timeFormat)
+
+	h := FileHeader{
+		Name:   filename,
+		Method: Deflate,
+		Extra:  []byte(ts.Format(time.RFC3339Nano)), // missing tag and len
+	}
+	h.SetModTime(ts)
+
+	testInvalidHeader(&h, t)
+}
+
+func TestHeaderTooShort(t *testing.T) {
+	h := FileHeader{
+		Name:   "foo.txt",
+		Method: Deflate,
+		Extra:  []byte{zip64ExtraId}, // missing size
+	}
+	testInvalidHeader(&h, t)
+}
+
+// Issue 4393. It is valid to have an extra data header
+// which contains no body.
+func TestZeroLengthHeader(t *testing.T) {
+	h := FileHeader{
+		Name:   "extadata.txt",
+		Method: Deflate,
+		Extra: []byte{
+			85, 84, 5, 0, 3, 154, 144, 195, 77, // tag 21589 size 5
+			85, 120, 0, 0, // tag 30805 size 0
+		},
+	}
+	testValidHeader(&h, t)
+}
