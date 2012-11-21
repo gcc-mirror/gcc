@@ -1,3 +1,8 @@
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/ia64/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config.gcc <ia64*-*-linux*> (tmake_file): Include ia64/t-linux.
+
 2012-11-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55414
