@@ -1,3 +1,30 @@
+2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (FPCMP): New mode iterator.
+	(unord): New mode attribute.
+	(*cmp<mode>_0_i387): Macroize insn from *cmpfp_0
+	using X87MODEF mode iterator.
+	(*cmp<mode>_0_cc_i387): Macroize insn from *cmpfp_0_cc using
+	X87MODEF mode iterator.
+	(*cmpxf_i387): Rename from *cmpfp_xf.
+	(*cmpxf_cc_i387): Rename from *cmpfp_xf_cc.
+	(*cmp<mode>_i387): Rename from *cmpfp_<mode>.
+	(*cmp<mode>_cc_i387): Rename from *cmpfp_<mode>_cc.
+	(*cmpu<mode>_i387): Macroize insn from *cmpfp_u using X87MODEF
+	mode iterator.
+	(*cmpu<mode>_cc_i387): Macroize insn from *cmpfp_u_cc using X87MODEF
+	mode iterator.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_i387): Macroize_insn from
+	*cmpfp_<mode> using X87MODEF mode iterator.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_cc_i387): Macroize_insn from
+	*cmpfp_<mode>_cc using X87MODEF mode iterator.
+	(*cmpi<FPCMP:unord><MODEF:mode>_mixed): Macroize insn from
+	*cmpfp_i{,u}_mixed using FPCMP and MODEF mode iterators.
+	(*cmpi<FPCMP:unord><MODEF:mode>_mixed): Macroize insn from
+	*cmpfp_i{,u}_sse using FPCMP and MODEF mode iterators.
+	(*cmpi<CCFPCMP:unord><X87MODEF:mode>_i387): Macroize insn from
+	*cmpfp_i{,u}_387 using FPCMP and X87MODEF mode iterators.
+
 2012-11-22  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (bswaphi2): New pattern.
