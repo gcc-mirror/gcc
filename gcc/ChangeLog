@@ -1,3 +1,7 @@
+2012-11-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* doc/md.texi (AArch64 family): Remove Utf.
+
 2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (FPCMP): New mode iterator.

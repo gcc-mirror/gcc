@@ -1727,9 +1727,6 @@ A memory address which uses a single base register with no offset
 A memory address suitable for a load/store pair instruction in SI, DI, SF and
 DF modes
 
-@item Utf
-A memory address suitable for a load/store pair instruction in TF mode
-
 @end table
 
 
