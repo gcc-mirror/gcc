@@ -8928,7 +8928,7 @@ output-template.
 template.
 
 @code{define_subst} mechanism is tightly coupled with the notion of the
-subst attribute (@xref{Subst Iterators}).  The use of
+subst attribute (@pxref{Subst Iterators}).  The use of
 @code{define_subst} is triggered by a reference to a subst attribute in
 the transforming RTL template.  This reference initiates duplication of
 the source RTL template and substitution of the attributes with their
