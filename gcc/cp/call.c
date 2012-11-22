@@ -9188,6 +9188,7 @@ extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups)
       *p = set_up_extended_ref_temp (decl, *p, cleanups, &subinit);
       if (subinit)
 	init = build2 (COMPOUND_EXPR, TREE_TYPE (init), subinit, init);
+      recompute_tree_invariant_for_addr_expr (sub);
     }
   return init;
 }
