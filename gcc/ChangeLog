@@ -1,3 +1,10 @@
+2012-11-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c (ADD_STATIC_LIBASAN_LIBS): New macro.  Defined
+	with STATIC_LIBASAN_LIBS.
+	(LIBASAN_SPEC): Add STATIC_LIBASAN_LIBS.
+	* config/gnu-user.h (STATIC_LIBASAN_LIBS): New macro.
+
 2012-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (*arm_abssi2): Define predicable attribute.

@@ -545,11 +545,18 @@ proper position among the other output files.  */
 #define STACK_SPLIT_SPEC " %{fsplit-stack: --wrap=pthread_create}"
 
 #ifndef LIBASAN_SPEC
+#ifdef STATIC_LIBASAN_LIBS
+#define ADD_STATIC_LIBASAN_LIBS \
+  " %{static-libasan:" STATIC_LIBASAN_LIBS "}"
+#else
+#define ADD_STATIC_LIBASAN_LIBS
+#endif
 #ifdef HAVE_LD_STATIC_DYNAMIC
 #define LIBASAN_SPEC "%{static-libasan:" LD_STATIC_OPTION \
-		     "} -lasan %{static-libasan:" LD_DYNAMIC_OPTION "}"
+		     "} -lasan %{static-libasan:" LD_DYNAMIC_OPTION "}" \
+		     ADD_STATIC_LIBASAN_LIBS
 #else
-#define LIBASAN_SPEC "-lasan"
+#define LIBASAN_SPEC "-lasan" ADD_STATIC_LIBASAN_LIBS
 #endif
 #endif
 
