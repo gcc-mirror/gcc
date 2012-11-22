@@ -6974,6 +6974,332 @@ avr_out_addto_sp (rtx *op, int *plen)
 }
 
 
+/* Outputs instructions needed for fixed point type conversion.
+   This includes converting between any fixed point type, as well
+   as converting to any integer type.  Conversion between integer
+   types is not supported.
+
+   Converting signed fractional types requires a bit shift if converting
+   to or from any unsigned fractional type because the decimal place is
+   shifted by 1 bit.  When the destination is a signed fractional, the sign
+   is stored in either the carry or T bit.  */
+
+const char*
+avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
+{
+  size_t i;
+  rtx xop[6];
+  RTX_CODE shift = UNKNOWN;
+  bool sign_in_carry = false;
+  bool msb_in_carry = false;
+  bool lsb_in_carry = false;
+  const char *code_ashift = "lsl %0";
+
+  
+#define MAY_CLOBBER(RR)                                                 \
+  /* Shorthand used below.  */                                          \
+  ((sign_bytes                                                          \
+    && IN_RANGE (RR, dest.regno_msb - sign_bytes + 1, dest.regno_msb))  \
+   || (reg_unused_after (insn, all_regs_rtx[RR])                        \
+       && !IN_RANGE (RR, dest.regno, dest.regno_msb)))
+
+  struct
+  {
+    /* bytes       : Length of operand in bytes.
+       ibyte       : Length of integral part in bytes.
+       fbyte, fbit : Length of fractional part in bytes, bits.  */
+
+    bool sbit;
+    unsigned fbit, bytes, ibyte, fbyte;
+    unsigned regno, regno_msb;
+  } dest, src, *val[2] = { &dest, &src };
+
+  if (plen)
+    *plen = 0;
+
+  /* Step 0:  Determine information on source and destination operand we
+     ======   will need in the remainder.  */
+
+  for (i = 0; i < sizeof (val) / sizeof (*val); i++)
+    {
+      enum machine_mode mode;
+
+      xop[i] = operands[i];
+
+      mode = GET_MODE (xop[i]);
+
+      val[i]->bytes = GET_MODE_SIZE (mode);
+      val[i]->regno = REGNO (xop[i]);
+      val[i]->regno_msb = REGNO (xop[i]) + val[i]->bytes - 1;
+
+      if (SCALAR_INT_MODE_P (mode))
+        {
+          val[i]->sbit = intsigned;
+          val[i]->fbit = 0;
+        }
+      else if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))
+        {
+          val[i]->sbit = SIGNED_SCALAR_FIXED_POINT_MODE_P (mode);
+          val[i]->fbit = GET_MODE_FBIT (mode);
+        }
+      else
+        fatal_insn ("unsupported fixed-point conversion", insn);
+
+      val[i]->fbyte = (1 + val[i]->fbit) / BITS_PER_UNIT;
+      val[i]->ibyte = val[i]->bytes - val[i]->fbyte;
+    }
+
+  // Byte offset of the decimal point taking into account different place
+  // of the decimal point in input and output and different register numbers
+  // of input and output.
+  int offset = dest.regno - src.regno + dest.fbyte - src.fbyte;
+
+  // Number of destination bytes that will come from sign / zero extension.
+  int sign_bytes = (dest.ibyte - src.ibyte) * (dest.ibyte > src.ibyte);
+
+  // Number of bytes at the low end to be filled with zeros.
+  int zero_bytes = (dest.fbyte - src.fbyte) * (dest.fbyte > src.fbyte);
+
+  // Do we have a 16-Bit register that is cleared?
+  rtx clrw = NULL_RTX;
+      
+  bool sign_extend = src.sbit && sign_bytes;
+
+  if (0 == dest.fbit % 8 && 7 == src.fbit % 8)
+    shift = ASHIFT;
+  else if (7 == dest.fbit % 8 && 0 == src.fbit % 8)
+    shift = ASHIFTRT;
+  else if (dest.fbit % 8 == src.fbit % 8)
+    shift = UNKNOWN;
+  else
+    gcc_unreachable();
+
+  /* Step 1:  Clear bytes at the low end and copy payload bits from source
+     ======   to destination.  */
+
+  int step = offset < 0 ? 1 : -1;
+  unsigned d0 = offset < 0 ? dest.regno : dest.regno_msb;
+
+  // We leared at least that number of registers.
+  int clr_n = 0;
+
+  for (; d0 >= dest.regno && d0 <= dest.regno_msb; d0 += step)
+    {
+      // Next regno of destination is needed for MOVW
+      unsigned d1 = d0 + step;
+
+      // Current and next regno of source
+      unsigned s0 = d0 - offset;
+      unsigned s1 = s0 + step;
+
+      // Must current resp. next regno be CLRed?  This applies to the low
+      // bytes of the destination that have no associated source bytes.
+      bool clr0 = s0 < src.regno;
+      bool clr1 = s1 < src.regno && d1 >= dest.regno;
+
+      // First gather what code to emit (if any) and additional step to
+      // apply if a MOVW is in use.  xop[2] is destination rtx and xop[3]
+      // is the source rtx for the current loop iteration.
+      const char *code = NULL;
+      int stepw = 0;
+      
+      if (clr0)
+        {
+          if (AVR_HAVE_MOVW && clr1 && clrw)
+            {
+              xop[2] = all_regs_rtx[d0 & ~1];
+              xop[3] = clrw;
+              code = "movw %2,%3";
+              stepw = step;
+            }
+          else
+            {
+              xop[2] = all_regs_rtx[d0];
+              code = "clr %2";
+
+              if (++clr_n >= 2
+                  && !clrw
+                  && d0 % 2 == (step > 0))
+                {
+                  clrw = all_regs_rtx[d0 & ~1];
+                }
+            }
+        }
+      else if (offset && s0 <= src.regno_msb)
+        {
+          int movw = AVR_HAVE_MOVW && offset % 2 == 0
+            && d0 % 2 == (offset > 0)
+            && d1 <= dest.regno_msb && d1 >= dest.regno
+            && s1 <= src.regno_msb  && s1 >= src.regno;
+
+          xop[2] = all_regs_rtx[d0 & ~movw];
+          xop[3] = all_regs_rtx[s0 & ~movw];
+          code = movw ? "movw %2,%3" : "mov %2,%3";
+          stepw = step * movw;
+        }
+
+      if (code)
+        {
+          if (sign_extend && shift != ASHIFT && !sign_in_carry
+              && (d0 == src.regno_msb || d0 + stepw == src.regno_msb))
+            {
+              /* We are going to override the sign bit.  If we sign-extend,
+                 store the sign in the Carry flag.  This is not needed if
+                 the destination will be ASHIFT is the remainder because
+                 the ASHIFT will set Carry without extra instruction.  */
+
+              avr_asm_len ("lsl %0", &all_regs_rtx[src.regno_msb], plen, 1);
+              sign_in_carry = true;
+            }
+
+          unsigned src_msb = dest.regno_msb - sign_bytes - offset + 1;
+
+          if (!sign_extend && shift == ASHIFTRT && !msb_in_carry
+              && src.ibyte > dest.ibyte
+              && (d0 == src_msb || d0 + stepw == src_msb))
+            {
+              /* We are going to override the MSB.  If we shift right,
+                 store the MSB in the Carry flag.  This is only needed if
+                 we don't sign-extend becaue with sign-extension the MSB
+                 (the sign) will be produced by the sign extension.  */
+
+              avr_asm_len ("lsr %0", &all_regs_rtx[src_msb], plen, 1);
+              msb_in_carry = true;
+            }
+
+          unsigned src_lsb = dest.regno - offset -1;
+
+          if (shift == ASHIFT && src.fbyte > dest.fbyte && !lsb_in_carry
+              && (d0 == src_lsb || d0 + stepw == src_lsb))
+            {
+              /* We are going to override the new LSB; store it into carry.  */
+
+              avr_asm_len ("lsl %0", &all_regs_rtx[src_lsb], plen, 1);
+              code_ashift = "rol %0";
+              lsb_in_carry = true;
+            }
+
+          avr_asm_len (code, xop, plen, 1);
+          d0 += stepw;
+        }
+    }
+
+  /* Step 2:  Shift destination left by 1 bit position.  This might be needed
+     ======   for signed input and unsigned output.  */
+
+  if (shift == ASHIFT && src.fbyte > dest.fbyte && !lsb_in_carry)
+    {
+      unsigned s0 = dest.regno - offset -1;
+
+      if (MAY_CLOBBER (s0))
+        avr_asm_len ("lsl %0", &all_regs_rtx[s0], plen, 1);
+      else
+        avr_asm_len ("mov __tmp_reg__,%0" CR_TAB
+                     "lsl __tmp_reg__", &all_regs_rtx[s0], plen, 2);
+
+      code_ashift = "rol %0";
+      lsb_in_carry = true;
+    }
+
+  if (shift == ASHIFT)
+    {
+      for (d0 = dest.regno + zero_bytes;
+           d0 <= dest.regno_msb - sign_bytes; d0++)
+        {
+          avr_asm_len (code_ashift, &all_regs_rtx[d0], plen, 1);
+          code_ashift = "rol %0";
+        }
+
+      lsb_in_carry = false;
+      sign_in_carry = true;
+    }
+
+  /* Step 4a:  Store MSB in carry if we don't already have it or will produce
+     =======   it in sign-extension below.  */
+
+  if (!sign_extend && shift == ASHIFTRT && !msb_in_carry
+      && src.ibyte > dest.ibyte)
+    {
+      unsigned s0 = dest.regno_msb - sign_bytes - offset + 1;
+
+      if (MAY_CLOBBER (s0))
+        avr_asm_len ("lsr %0", &all_regs_rtx[s0], plen, 1);
+      else
+        avr_asm_len ("mov __tmp_reg__,%0" CR_TAB
+                     "lsr __tmp_reg__", &all_regs_rtx[s0], plen, 2);
+
+      msb_in_carry = true;
+    }
+
+  /* Step 3:  Sign-extend or zero-extend the destination as needed.
+     ======   */
+
+  if (sign_extend && !sign_in_carry)
+    {
+      unsigned s0 = src.regno_msb;
+      
+      if (MAY_CLOBBER (s0))
+        avr_asm_len ("lsl %0", &all_regs_rtx[s0], plen, 1);
+      else
+        avr_asm_len ("mov __tmp_reg__,%0" CR_TAB
+                     "lsl __tmp_reg__", &all_regs_rtx[s0], plen, 2);
+
+      sign_in_carry = true;
+  }
+
+  gcc_assert (sign_in_carry + msb_in_carry + lsb_in_carry <= 1);
+
+  unsigned copies = 0;
+  rtx movw = sign_extend ? NULL_RTX : clrw;
+
+  for (d0 = dest.regno_msb - sign_bytes + 1; d0 <= dest.regno_msb; d0++)
+    {
+      if (AVR_HAVE_MOVW && movw
+          && d0 % 2 == 0 && d0 + 1 <= dest.regno_msb)
+        {
+          xop[2] = all_regs_rtx[d0];
+          xop[3] = movw;
+          avr_asm_len ("movw %2,%3", xop, plen, 1);
+          d0++;
+        }
+      else
+        {
+          avr_asm_len (sign_extend ? "sbc %0,%0" : "clr %0",
+                       &all_regs_rtx[d0], plen, 1);
+
+          if (++copies >= 2 && !movw && d0 % 2 == 1)
+            movw = all_regs_rtx[d0-1];
+        }
+    } /* for */
+
+
+  /* Step 4:  Right shift the destination.  This might be needed for
+     ======   conversions from unsigned to signed.  */
+
+  if (shift == ASHIFTRT)
+    {
+      const char *code_ashiftrt = "lsr %0";
+
+      if (sign_extend || msb_in_carry)
+        code_ashiftrt = "ror %0";
+
+      if (src.sbit && src.ibyte == dest.ibyte)
+        code_ashiftrt = "asr %0";
+
+      for (d0 = dest.regno_msb - sign_bytes;
+           d0 >= dest.regno + zero_bytes - 1 && d0 >= dest.regno; d0--)
+        {
+          avr_asm_len (code_ashiftrt, &all_regs_rtx[d0], plen, 1);
+          code_ashiftrt = "ror %0";
+        }
+    }
+
+#undef MAY_CLOBBER
+
+  return "";
+}
+
+
 /* Create RTL split patterns for byte sized rotate expressions.  This
   produces a series of move instructions and considers overlap situations.
   Overlapping non-HImode operands need a scratch register.  */
@@ -7120,348 +7446,6 @@ avr_rotate_bytes (rtx operands[])
 	while (blocked != -1);
       }
     return true;
-}
-
-
-/* Outputs instructions needed for fixed point type conversion.
-   This includes converting between any fixed point type, as well
-   as converting to any integer type.  Conversion between integer
-   types is not supported.
-
-   The number of instructions generated depends on the types
-   being converted and the registers assigned to them.
-
-   The number of instructions required to complete the conversion
-   is least if the registers for source and destination are overlapping
-   and are aligned at the decimal place as actual movement of data is
-   completely avoided.  In some cases, the conversion may already be
-   complete without any instructions needed.
-
-   When converting to signed types from signed types, sign extension
-   is implemented.
-
-   Converting signed fractional types requires a bit shift if converting
-   to or from any unsigned fractional type because the decimal place is
-   shifted by 1 bit.  When the destination is a signed fractional, the sign
-   is stored in either the carry or T bit.  */
-
-const char*
-avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
-{
-  int i;
-  bool sbit[2];
-  /* ilen: Length of integral part (in bytes)
-     flen: Length of fractional part (in bytes)
-     tlen: Length of operand (in bytes)
-     blen: Length of operand (in bits) */
-  int ilen[2], flen[2], tlen[2], blen[2];
-  int rdest, rsource, offset;
-  int start, end, dir;
-  bool sign_in_T = false, sign_in_Carry = false, sign_done = false;
-  bool widening_sign_extend = false;
-  int clrword = -1, lastclr = 0, clr = 0;
-  rtx xop[6];
-
-  const int dest = 0;
-  const int src = 1;
-
-  xop[dest] = operands[dest];
-  xop[src] = operands[src];
-
-  if (plen)
-    *plen = 0;
-
-  /* Determine format (integer and fractional parts)
-     of types needing conversion.  */
-
-  for (i = 0; i < 2; i++)
-    {
-      enum machine_mode mode = GET_MODE (xop[i]);
-
-      tlen[i] = GET_MODE_SIZE (mode);
-      blen[i] = GET_MODE_BITSIZE (mode);
-
-      if (SCALAR_INT_MODE_P (mode))
-        {
-          sbit[i] = intsigned;
-          ilen[i] = GET_MODE_SIZE (mode);
-          flen[i] = 0;
-        }
-      else if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))
-        {
-          sbit[i] = SIGNED_SCALAR_FIXED_POINT_MODE_P (mode);
-          ilen[i] = (GET_MODE_IBIT (mode) + 1) / 8;
-          flen[i] = (GET_MODE_FBIT (mode) + 1) / 8;
-        }
-      else
-        fatal_insn ("unsupported fixed-point conversion", insn);
-    }
-
-  /* Perform sign extension if source and dest are both signed,
-     and there are more integer parts in dest than in source.  */
-
-  widening_sign_extend = sbit[dest] && sbit[src] && ilen[dest] > ilen[src];
-
-  rdest = REGNO (xop[dest]);
-  rsource = REGNO (xop[src]);
-  offset = flen[src] - flen[dest];
-
-  /* Position of MSB resp. sign bit.  */
-
-  xop[2] = GEN_INT (blen[dest] - 1);
-  xop[3] = GEN_INT (blen[src] - 1);
-
-  /* Store the sign bit if the destination is a signed fract and the source
-     has a sign in the integer part.  */
-
-  if (sbit[dest] && ilen[dest] == 0 && sbit[src] && ilen[src] > 0)
-    {
-      /* To avoid using BST and BLD if the source and destination registers
-         overlap or the source is unused after, we can use LSL to store the
-         sign bit in carry since we don't need the integral part of the source.
-         Restoring the sign from carry saves one BLD instruction below.  */
-
-      if (reg_unused_after (insn, xop[src])
-          || (rdest < rsource + tlen[src]
-              && rdest + tlen[dest] > rsource))
-        {
-          avr_asm_len ("lsl %T1%t3", xop, plen, 1);
-          sign_in_Carry = true;
-        }
-      else
-        {
-          avr_asm_len ("bst %T1%T3", xop, plen, 1);
-          sign_in_T = true;
-        }
-    }
-
-  /* Pick the correct direction to shift bytes.  */
-
-  if (rdest < rsource + offset)
-    {
-      dir = 1;
-      start = 0;
-      end = tlen[dest];
-    }
-  else
-    {
-      dir = -1;
-      start = tlen[dest] - 1;
-      end = -1;
-    }
-
-  /* Perform conversion by moving registers into place, clearing
-     destination registers that do not overlap with any source.  */
-
-  for (i = start; i != end; i += dir)
-    {
-      int destloc = rdest + i;
-      int sourceloc = rsource + i + offset;
-
-      /* Source register location is outside range of source register,
-         so clear this byte in the dest.  */
-
-      if (sourceloc < rsource
-          || sourceloc >= rsource + tlen[src])
-        {
-          if (AVR_HAVE_MOVW
-              && i + dir != end
-              && (sourceloc + dir < rsource
-                  || sourceloc + dir >= rsource + tlen[src])
-              && ((dir == 1 && !(destloc % 2) && !(sourceloc % 2))
-                  || (dir == -1 && (destloc % 2) && (sourceloc % 2)))
-              && clrword != -1)
-            {
-              /* Use already cleared word to clear two bytes at a time.  */
-
-              int even_i = i & ~1;
-              int even_clrword = clrword & ~1;
-
-              xop[4] = GEN_INT (8 * even_i);
-              xop[5] = GEN_INT (8 * even_clrword);
-              avr_asm_len ("movw %T0%t4,%T0%t5", xop, plen, 1);
-              i += dir;
-            }
-          else
-            {
-              if (i == tlen[dest] - 1
-                  && widening_sign_extend
-                  && blen[src] - 1 - 8 * offset < 0)
-                {
-                  /* The SBRC below that sign-extends would come
-                     up with a negative bit number because the sign
-                     bit is out of reach.  ALso avoid some early-clobber
-                     situations because of premature CLR.  */
-
-                  if (reg_unused_after (insn, xop[src]))
-                    avr_asm_len ("lsl %T1%t3" CR_TAB
-                                 "sbc %T0%t2,%T0%t2", xop, plen, 2);
-                  else
-                    avr_asm_len ("mov __tmp_reg__,%T1%t3"  CR_TAB
-                                 "lsl __tmp_reg__"         CR_TAB
-                                 "sbc %T0%t2,%T0%t2", xop, plen, 3);
-                  sign_done = true;
-
-                  continue;
-                }
-              
-              /* Do not clear the register if it is going to get
-                 sign extended with a MOV later.  */
-
-              if (sbit[dest] && sbit[src]
-                  && i != tlen[dest] - 1
-                  && i >= flen[dest])
-                {
-                  continue;
-                }
-
-              xop[4] = GEN_INT (8 * i);
-              avr_asm_len ("clr %T0%t4", xop, plen, 1);
-
-              /* If the last byte was cleared too, we have a cleared
-                 word we can MOVW to clear two bytes at a time.  */
-
-              if (lastclr) 
-                clrword = i;
-
-              clr = 1;
-            }
-        }
-      else if (destloc == sourceloc)
-        {
-          /* Source byte is already in destination:  Nothing needed.  */
-
-          continue;
-        }
-      else
-        {
-          /* Registers do not line up and source register location
-             is within range:  Perform move, shifting with MOV or MOVW.  */
-
-          if (AVR_HAVE_MOVW
-              && i + dir != end
-              && sourceloc + dir >= rsource
-              && sourceloc + dir < rsource + tlen[src]
-              && ((dir == 1 && !(destloc % 2) && !(sourceloc % 2))
-                  || (dir == -1 && (destloc % 2) && (sourceloc % 2))))
-            {
-              int even_i = i & ~1;
-              int even_i_plus_offset = (i + offset) & ~1;
-
-              xop[4] = GEN_INT (8 * even_i);
-              xop[5] = GEN_INT (8 * even_i_plus_offset);
-              avr_asm_len ("movw %T0%t4,%T1%t5", xop, plen, 1);
-              i += dir;
-            }
-          else
-            {
-              xop[4] = GEN_INT (8 * i);
-              xop[5] = GEN_INT (8 * (i + offset));
-              avr_asm_len ("mov %T0%t4,%T1%t5", xop, plen, 1);
-            }
-        }
-
-      lastclr = clr;
-      clr = 0;
-    }
-      
-  /* Perform sign extension if source and dest are both signed,
-     and there are more integer parts in dest than in source.  */
-
-  if (widening_sign_extend)
-    {
-      if (!sign_done)
-        {
-          xop[4] = GEN_INT (blen[src] - 1 - 8 * offset);
-
-          /* Register was cleared above, so can become 0xff and extended.
-             Note:  Instead of the CLR/SBRC/COM the sign extension could
-             be performed after the LSL below by means of a SBC if only
-             one byte has to be shifted left.  */
-
-          avr_asm_len ("sbrc %T0%T4" CR_TAB
-                       "com %T0%t2", xop, plen, 2);
-        }
-
-      /* Sign extend additional bytes by MOV and MOVW.  */
-
-      start = tlen[dest] - 2;
-      end = flen[dest] + ilen[src] - 1;
-
-      for (i = start; i != end; i--)
-        {
-          if (AVR_HAVE_MOVW && i != start && i-1 != end)
-            {
-              i--;
-              xop[4] = GEN_INT (8 * i);
-              xop[5] = GEN_INT (8 * (tlen[dest] - 2));
-              avr_asm_len ("movw %T0%t4,%T0%t5", xop, plen, 1);
-            }
-          else
-            {
-              xop[4] = GEN_INT (8 * i);
-              xop[5] = GEN_INT (8 * (tlen[dest] - 1));
-              avr_asm_len ("mov %T0%t4,%T0%t5", xop, plen, 1);
-            }
-        }
-    }
-
-  /* If destination is a signed fract, and the source was not, a shift
-     by 1 bit is needed.  Also restore sign from carry or T.  */
-
-  if (sbit[dest] && !ilen[dest] && (!sbit[src] || ilen[src]))
-    {
-      /* We have flen[src] non-zero fractional bytes to shift.
-         Because of the right shift, handle one byte more so that the
-         LSB won't be lost.  */
-
-      int nonzero = flen[src] + 1;
-
-      /* If the LSB is in the T flag and there are no fractional
-         bits, the high byte is zero and no shift needed.  */
-      
-      if (flen[src] == 0 && sign_in_T)
-        nonzero = 0;
-
-      start = flen[dest] - 1;
-      end = start - nonzero;
-
-      for (i = start; i > end && i >= 0; i--)
-        {
-          xop[4] = GEN_INT (8 * i);
-          if (i == start && !sign_in_Carry)
-            avr_asm_len ("lsr %T0%t4", xop, plen, 1);
-          else
-            avr_asm_len ("ror %T0%t4", xop, plen, 1);
-        }
-
-      if (sign_in_T)
-        {
-          avr_asm_len ("bld %T0%T2", xop, plen, 1);
-        }
-    }
-  else if (sbit[src] && !ilen[src] && (!sbit[dest] || ilen[dest]))
-    {
-      /* If source was a signed fract and dest was not, shift 1 bit
-         other way.  */
-
-      start = flen[dest] - flen[src];
-
-      if (start < 0)
-        start = 0;
-
-      for (i = start; i < flen[dest]; i++)
-        {
-          xop[4] = GEN_INT (8 * i);
-
-          if (i == start)
-            avr_asm_len ("lsl %T0%t4", xop, plen, 1);
-          else
-            avr_asm_len ("rol %T0%t4", xop, plen, 1);
-        }
-    }
-
-  return "";
 }
 
 
