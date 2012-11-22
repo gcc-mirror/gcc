@@ -1,5 +1,13 @@
 2012-11-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55137
+	* semantics.c (verify_constant): Track overflow separately.
+	(reduced_constant_expression_p): Don't check it here.
+	(cxx_eval_constant_expression): Check it on CSTs.
+	(cxx_eval_outermost_constant_expr): Treat overflows as non-constant
+	at this point, but still return the folded version.
+	(potential_constant_expression_1): Don't check overflow.
+
 	* call.c (extend_ref_init_temps_1): Recompute TREE_CONSTANT for
 	the ADDR_EXPR.
 
