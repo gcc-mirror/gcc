@@ -1,6 +1,10 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
+if MULTISUBDIR32 
 SUBDIRS = interception sanitizer_common asan 
+else
+SUBDIRS = interception sanitizer_common asan tsan 
+endif
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

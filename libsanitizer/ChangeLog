@@ -1,3 +1,11 @@
+2012-11-22  Wei Mi  <wmi@google.com>
+
+	* tsan: New directory. Import tsan runtime from llvm.
+	* configure.ac: Add 64 bits tsan build.
+	* Makefile.am: Likewise.
+	* configure: Regenerated.
+	* Makefile.in: Likewise.
+
 2012-11-21  Kostya Serebryany  <kcc@google.com>
 
         * README.gcc: Extend the README.gcc with mode details.
