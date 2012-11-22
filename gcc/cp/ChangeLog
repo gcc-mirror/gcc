@@ -1,3 +1,8 @@
+2012-11-22  Jason Merrill  <jason@redhat.com>
+
+	* call.c (extend_ref_init_temps_1): Recompute TREE_CONSTANT for
+	the ADDR_EXPR.
+
 2012-11-20  Diego Novillo  <dnovillo@google.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
