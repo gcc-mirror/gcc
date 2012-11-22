@@ -1,3 +1,8 @@
+2012-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55432
+	* g++.dg/cpp0x/constexpr-55432.C: New.
+
 2012-11-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55352
