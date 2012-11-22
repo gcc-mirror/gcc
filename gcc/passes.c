@@ -1450,6 +1450,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_pre);
       NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_asan);
+      NEXT_PASS (pass_tsan);
       NEXT_PASS (pass_tree_loop);
 	{
 	  struct opt_pass **p = &pass_tree_loop.pass.sub;
@@ -1556,6 +1557,7 @@ init_optimization_passes (void)
     }
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_asan_O0);
+  NEXT_PASS (pass_tsan_O0);
   NEXT_PASS (pass_cleanup_eh);
   NEXT_PASS (pass_lower_resx);
   NEXT_PASS (pass_nrv);

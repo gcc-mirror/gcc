@@ -844,6 +844,10 @@ fsanitize=address
 Common Report Var(flag_asan)
 Enable AddressSanitizer, a memory error detector
 
+fsanitize=thread
+Common Report Var(flag_tsan)
+Enable ThreadSanitizer, a data race detector
+
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
 Generate unwind tables that are exact at each instruction boundary
@@ -2517,6 +2521,9 @@ Driver
 ; Documented for Go, but always accepted by driver.
 
 static-libasan
+Driver
+
+static-libtsan
 Driver
 
 symbolic
