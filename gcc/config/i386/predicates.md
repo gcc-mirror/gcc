@@ -1110,7 +1110,7 @@
                (match_operand 0 "comparison_operator")
                (match_operand 0 "ix86_trivial_fp_comparison_operator")))
 
-;; Same as above, but for swapped comparison used in fp_jcc_4_387.
+;; Same as above, but for swapped comparison used in *jcc<fp>_<int>_i387.
 (define_predicate "ix86_swapped_fp_comparison_operator"
   (match_operand 0 "comparison_operator")
 {

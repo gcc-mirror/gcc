@@ -4,6 +4,29 @@
 
 2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*jcc<mode>_0_i387): Macroize insn
+	from *fp_jcc_3_387 using X87MODEF mode iterator.
+	(*jcc<mode>_0_r_i387): New.
+	(*jccxf_i387): Ditto.
+	(*jccxf_r_i387): Ditto.
+	(*jcc<mode>_i387): Macroize insn from *fp_jcc_1_387 using
+	MODEF mode iterator.
+	(*jcc<mode>_r_i387): Macroize insn from *fp_jcc_1r_387 using
+	MODEF mode iterator.
+	(*jccu<mode>_i387): Macroize insn from *fp_jcc_2_387 using
+	X87MODEF mode iterator.
+	(*jccu<mode>_r_i387): Macroize insn from *fp_jcc_2r_387 using
+	X87MODEF mode iterator.
+	(*jcc{,u}<mode>_i387 splitters): Macroize splitters using
+	X87MODEF mode iterator.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_i387): Macroize insn
+	from *fp_jcc_4_<mode>_387 using X87MODEF mode iterator.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_r_i387): New.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_i387 splitters): Macroize
+	splitters using X87MODEF and SWI24 mode iterators.
+
+2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (FPCMP): New mode iterator.
 	(unord): New mode attribute.
 	(*cmp<mode>_0_i387): Macroize insn from *cmpfp_0
