@@ -72,6 +72,7 @@ if test "${multilib}" = "yes"; then
 else
   multilib_arg=
 fi
+AM_CONDITIONAL(MULTISUBDIR32, [test "x$with_multisubdir" = "x32"])
 
 AC_CONFIG_FILES([Makefile])
 
@@ -87,5 +88,20 @@ _EOF
    . ${multi_basedir}/config-ml.in
    AS_UNSET([ml_norecursion])
 ])
+
+if test "x$with_multisubdir" != "x32"; then
+  AC_CONFIG_FILES(AC_FOREACH([DIR], [tsan], [DIR/Makefile ]), 
+    [cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+    sed -f vpsed$$ $ac_file > tmp$$
+    mv tmp$$ $ac_file
+    rm vpsed$$
+    echo 'MULTISUBDIR =' >> $ac_file
+    ml_norecursion=yes
+    . ${multi_basedir}/config-ml.in
+    AS_UNSET([ml_norecursion])
+])
+fi
 
 AC_OUTPUT
