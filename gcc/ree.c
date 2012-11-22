@@ -475,7 +475,7 @@ enum ext_modified_kind
   EXT_MODIFIED_SEXT
 };
 
-struct ext_modified
+struct ATTRIBUTE_PACKED ext_modified
 {
   /* Mode from which ree has zero or sign extended the destination.  */
   ENUM_BITFIELD(machine_mode) mode : 8;
