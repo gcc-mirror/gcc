@@ -560,6 +560,15 @@ proper position among the other output files.  */
 #endif
 #endif
 
+#ifndef LIBTSAN_SPEC
+#ifdef HAVE_LD_STATIC_DYNAMIC
+#define LIBTSAN_SPEC "%{static-libtsan:" LD_STATIC_OPTION \
+		     "} -ltsan %{static-libtsan:" LD_DYNAMIC_OPTION "}"
+#else
+#define LIBTSAN_SPEC "-ltsan"
+#endif
+#endif
+
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
    included.  */
 #ifndef LIBGCC_SPEC
@@ -704,6 +713,7 @@ proper position among the other output files.  */
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
     %{fsanitize=address:" LIBASAN_SPEC "%{static:%ecannot specify -static with -fsanitize=address}}\
+    %{fsanitize=thread:" LIBTSAN_SPEC "}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif

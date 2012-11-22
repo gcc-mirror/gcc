@@ -1,3 +1,20 @@
+2012-11-22  Dmitry Vyukov  <dvyukov@google.com>
+	    Wei Mi  <wmi@google.com>
+
+	* builtins.def (DEF_SANITIZER_BUILTIN): Define tsan builtins. 
+	* sanitizer.def: Ditto. 
+	* Makefile.in (tsan.o): Add tsan.o target. 
+	(BUILTINS_DEF): Add sanitizer.def.
+	* passes.c (init_optimization_passes): Add tsan passes.
+	* tree-pass.h (register_pass_info): Ditto.
+	* toplev.c (compile_file): Ditto. 
+	* doc/invoke.texi: Document tsan related options.
+	* gcc.c (LINK_COMMAND_SPEC): Add LIBTSAN_SPEC in link command if
+	-fsanitize=thread.
+	* tsan.c: New file about tsan.
+	* tsan.h: Ditto.
+	* common.opt: Add -fsanitize=thread.
+
 2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/md.texi (RTL Templates Transformation): Use @pxref for

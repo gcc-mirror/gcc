@@ -453,7 +453,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
--s  -static -static-libgcc -static-libasan -static-libstdc++ @gol
+-s  -static -static-libgcc -static-libstdc++ @gol
+-static-libasan -static-libtsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -6862,6 +6863,12 @@ Memory access instructions will be instrumented to detect
 out-of-bounds and use-after-free bugs. So far only heap bugs will be detected.
 See @uref{http://code.google.com/p/address-sanitizer/} for more details.
 
+@item -fsanitize=thread
+Enable ThreadSanitizer, a fast data race detector.
+Memory access instructions will be instrumented to detect
+data race bugs. 
+See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+
 @item -fmudflap -fmudflapth -fmudflapir
 @opindex fmudflap
 @opindex fmudflapth
@@ -9945,6 +9952,15 @@ the GCC driver automatically links against @option{libasan}.  If
 option is not used, then this links against the shared version of
 @file{libasan}.  The @option{-static-libasan} option directs the GCC
 driver to link @file{libasan} statically, without necessarily linking
+other libraries statically.
+
+@item -static-libtsan
+When the @option{-fsanitize=thread} option is used to link a program,
+the GCC driver automatically links against @option{libtsan}.  If
+@file{libtsan} is available as a shared library, and the @option{-static}
+option is not used, then this links against the shared version of
+@file{libtsan}.  The @option{-static-libtsan} option directs the GCC
+driver to link @file{libtsan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libstdc++
