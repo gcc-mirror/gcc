@@ -1,5 +1,11 @@
 2012-11-22  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR sanitizer/55379
+	* gcc.c (LINK_COMMAND_SPEC): Issue an error for -static with
+	-fsanitize=address.
+
+2012-11-22  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.c (ADD_STATIC_LIBASAN_LIBS): New macro.  Defined
 	with STATIC_LIBASAN_LIBS.
 	(LIBASAN_SPEC): Add STATIC_LIBASAN_LIBS.

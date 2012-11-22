@@ -703,7 +703,7 @@ proper position among the other output files.  */
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
-    %{fsanitize=address:" LIBASAN_SPEC "}\
+    %{fsanitize=address:" LIBASAN_SPEC "%{static:%ecannot specify -static with -fsanitize=address}}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif
