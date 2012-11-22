@@ -1,3 +1,12 @@
+2012-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Adjust decimal point of signed accum mode to GCC default.
+
+	PR target/54222
+	* config/avr/avr-modes.def (HA, SA, DA): Remove mode adjustments.
+	(TA): Move decimal point one bit to the right.
+	* config/avr/avr.c (avr_out_fract): Rewrite.
+
 2012-11-21  Matthias Klose  <doko@ubuntu.com>
 
 	* config/alpha/t-linux: New file; define MULTIARCH_DIRNAME.
