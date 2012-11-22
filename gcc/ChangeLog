@@ -1,3 +1,8 @@
+2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/md.texi (RTL Templates Transformation): Use @pxref for
+	cross-reference in parentheses.
+
 2012-11-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* doc/md.texi (AArch64 family): Remove Utf.
