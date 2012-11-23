@@ -40,7 +40,7 @@ namespace __asan {
 
 void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
   ucontext_t *ucontext = (ucontext_t*)context;
-# if __WORDSIZE == 64
+# if SANITIZER_WORDSIZE == 64
   *pc = ucontext->uc_mcontext->__ss.__rip;
   *bp = ucontext->uc_mcontext->__ss.__rbp;
   *sp = ucontext->uc_mcontext->__ss.__rsp;
@@ -48,7 +48,7 @@ void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
   *pc = ucontext->uc_mcontext->__ss.__eip;
   *bp = ucontext->uc_mcontext->__ss.__ebp;
   *sp = ucontext->uc_mcontext->__ss.__esp;
-# endif  // __WORDSIZE
+# endif  // SANITIZER_WORDSIZE
 }
 
 int GetMacosVersion() {
@@ -66,6 +66,7 @@ int GetMacosVersion() {
       switch (version[1]) {
         case '0': return MACOS_VERSION_SNOW_LEOPARD;
         case '1': return MACOS_VERSION_LION;
+        case '2': return MACOS_VERSION_MOUNTAIN_LION;
         default: return MACOS_VERSION_UNKNOWN;
       }
     }
@@ -128,7 +129,14 @@ bool AsanInterceptsSignal(int signum) {
 }
 
 void AsanPlatformThreadInit() {
-  ReplaceCFAllocator();
+  // For the first program thread, we can't replace the allocator before
+  // __CFInitialize() has been called. If it hasn't, we'll call
+  // MaybeReplaceCFAllocator() later on this thread.
+  // For other threads __CFInitialize() has been called before their creation.
+  // See also asan_malloc_mac.cc.
+  if (((CFRuntimeBase*)kCFAllocatorSystemDefault)->_cfisa) {
+    MaybeReplaceCFAllocator();
+  }
 }
 
 AsanLock::AsanLock(LinkerInitialized) {
@@ -161,6 +169,10 @@ void GetStackTrace(StackTrace *stack, uptr max_s, uptr pc, uptr bp) {
   }
 }
 
+void ClearShadowMemoryForContext(void *context) {
+  UNIMPLEMENTED();
+}
+
 // The range of pages to be used for escape islands.
 // TODO(glider): instead of mapping a fixed range we must find a range of
 // unmapped pages in vmmap and take them.
@@ -169,7 +181,7 @@ void GetStackTrace(StackTrace *stack, uptr max_s, uptr pc, uptr bp) {
 // kHighMemBeg or kHighMemEnd.
 static void *island_allocator_pos = 0;
 
-#if __WORDSIZE == 32
+#if SANITIZER_WORDSIZE == 32
 # define kIslandEnd (0xffdf0000 - kPageSize)
 # define kIslandBeg (kIslandEnd - 256 * kPageSize)
 #else

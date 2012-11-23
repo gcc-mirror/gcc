@@ -14,7 +14,6 @@
 #ifndef TSAN_INTERFACE_H
 #define TSAN_INTERFACE_H
 
-#include <sanitizer/common_interface_defs.h> 
 // This header should NOT include any other headers.
 // All functions in this header are extern "C" and start with __tsan_.
 
@@ -24,24 +23,24 @@ extern "C" {
 
 // This function should be called at the very beginning of the process,
 // before any instrumented code is executed and before any call to malloc.
-void __tsan_init() SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
+void __tsan_init();
 
-void __tsan_read1(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_read2(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_read4(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_read8(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_read16(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
+void __tsan_read1(void *addr);
+void __tsan_read2(void *addr);
+void __tsan_read4(void *addr);
+void __tsan_read8(void *addr);
+void __tsan_read16(void *addr);
 
-void __tsan_write1(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_write2(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_write4(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_write8(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_write16(void *addr) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
+void __tsan_write1(void *addr);
+void __tsan_write2(void *addr);
+void __tsan_write4(void *addr);
+void __tsan_write8(void *addr);
+void __tsan_write16(void *addr);
 
-void __tsan_vptr_update(void **vptr_p, void *new_val) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
+void __tsan_vptr_update(void **vptr_p, void *new_val);
 
-void __tsan_func_entry(void *call_pc) SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
-void __tsan_func_exit() SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE;
+void __tsan_func_entry(void *call_pc);
+void __tsan_func_exit();
 
 #ifdef __cplusplus
 }  // extern "C"

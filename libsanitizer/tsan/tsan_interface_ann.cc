@@ -157,57 +157,47 @@ bool IsExpectedReport(uptr addr, uptr size) {
 using namespace __tsan;  // NOLINT
 
 extern "C" {
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateHappensBefore(char *f, int l, uptr addr) {
   SCOPED_ANNOTATION(AnnotateHappensBefore);
   Release(cur_thread(), CALLERPC, addr);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateHappensAfter(char *f, int l, uptr addr) {
   SCOPED_ANNOTATION(AnnotateHappensAfter);
   Acquire(cur_thread(), CALLERPC, addr);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateCondVarSignal(char *f, int l, uptr cv) {
   SCOPED_ANNOTATION(AnnotateCondVarSignal);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateCondVarSignalAll(char *f, int l, uptr cv) {
   SCOPED_ANNOTATION(AnnotateCondVarSignalAll);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateMutexIsNotPHB(char *f, int l, uptr mu) {
   SCOPED_ANNOTATION(AnnotateMutexIsNotPHB);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateCondVarWait(char *f, int l, uptr cv, uptr lock) {
   SCOPED_ANNOTATION(AnnotateCondVarWait);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateRWLockCreate(char *f, int l, uptr m) {
   SCOPED_ANNOTATION(AnnotateRWLockCreate);
   MutexCreate(thr, pc, m, true, true, false);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateRWLockCreateStatic(char *f, int l, uptr m) {
   SCOPED_ANNOTATION(AnnotateRWLockCreateStatic);
   MutexCreate(thr, pc, m, true, true, true);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateRWLockDestroy(char *f, int l, uptr m) {
   SCOPED_ANNOTATION(AnnotateRWLockDestroy);
   MutexDestroy(thr, pc, m);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateRWLockAcquired(char *f, int l, uptr m, uptr is_w) {
   SCOPED_ANNOTATION(AnnotateRWLockAcquired);
   if (is_w)
@@ -216,7 +206,6 @@ void AnnotateRWLockAcquired(char *f, int l, uptr m, uptr is_w) {
     MutexReadLock(thr, pc, m);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateRWLockReleased(char *f, int l, uptr m, uptr is_w) {
   SCOPED_ANNOTATION(AnnotateRWLockReleased);
   if (is_w)
@@ -225,35 +214,30 @@ void AnnotateRWLockReleased(char *f, int l, uptr m, uptr is_w) {
     MutexReadUnlock(thr, pc, m);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateTraceMemory(char *f, int l, uptr mem) {
   SCOPED_ANNOTATION(AnnotateTraceMemory);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateFlushState(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateFlushState);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateNewMemory(char *f, int l, uptr mem, uptr size) {
   SCOPED_ANNOTATION(AnnotateNewMemory);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateNoOp(char *f, int l, uptr mem) {
   SCOPED_ANNOTATION(AnnotateNoOp);
 }
 
 static void ReportMissedExpectedRace(ExpectRace *race) {
-  TsanPrintf("==================\n");
-  TsanPrintf("WARNING: ThreadSanitizer: missed expected data race\n");
-  TsanPrintf("  %s addr=%zx %s:%d\n",
+  Printf("==================\n");
+  Printf("WARNING: ThreadSanitizer: missed expected data race\n");
+  Printf("  %s addr=%zx %s:%d\n",
       race->desc, race->addr, race->file, race->line);
-  TsanPrintf("==================\n");
+  Printf("==================\n");
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateFlushExpectedRaces(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateFlushExpectedRaces);
   Lock lock(&dyn_ann_ctx->mtx);
@@ -269,38 +253,31 @@ void AnnotateFlushExpectedRaces(char *f, int l) {
   }
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateEnableRaceDetection(char *f, int l, int enable) {
   SCOPED_ANNOTATION(AnnotateEnableRaceDetection);
   // FIXME: Reconsider this functionality later. It may be irrelevant.
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateMutexIsUsedAsCondVar(char *f, int l, uptr mu) {
   SCOPED_ANNOTATION(AnnotateMutexIsUsedAsCondVar);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotatePCQGet(char *f, int l, uptr pcq) {
   SCOPED_ANNOTATION(AnnotatePCQGet);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotatePCQPut(char *f, int l, uptr pcq) {
   SCOPED_ANNOTATION(AnnotatePCQPut);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotatePCQDestroy(char *f, int l, uptr pcq) {
   SCOPED_ANNOTATION(AnnotatePCQDestroy);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotatePCQCreate(char *f, int l, uptr pcq) {
   SCOPED_ANNOTATION(AnnotatePCQCreate);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateExpectRace(char *f, int l, uptr mem, char *desc) {
   SCOPED_ANNOTATION(AnnotateExpectRace);
   Lock lock(&dyn_ann_ctx->mtx);
@@ -317,73 +294,60 @@ static void BenignRaceImpl(char *f, int l, uptr mem, uptr size, char *desc) {
 }
 
 // FIXME: Turn it off later. WTF is benign race?1?? Go talk to Hans Boehm.
-// SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateBenignRaceSized(char *f, int l, uptr mem, uptr size, char *desc) {
   SCOPED_ANNOTATION(AnnotateBenignRaceSized);
   BenignRaceImpl(f, l, mem, size, desc);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateBenignRace(char *f, int l, uptr mem, char *desc) {
   SCOPED_ANNOTATION(AnnotateBenignRace);
   BenignRaceImpl(f, l, mem, 1, desc);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateIgnoreReadsBegin(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreReadsBegin);
   IgnoreCtl(cur_thread(), false, true);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateIgnoreReadsEnd(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreReadsEnd);
   IgnoreCtl(cur_thread(), false, false);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateIgnoreWritesBegin(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreWritesBegin);
   IgnoreCtl(cur_thread(), true, true);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateIgnoreWritesEnd(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreWritesEnd);
   IgnoreCtl(cur_thread(), true, false);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotatePublishMemoryRange(char *f, int l, uptr addr, uptr size) {
   SCOPED_ANNOTATION(AnnotatePublishMemoryRange);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateUnpublishMemoryRange(char *f, int l, uptr addr, uptr size) {
   SCOPED_ANNOTATION(AnnotateUnpublishMemoryRange);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void AnnotateThreadName(char *f, int l, char *name) {
   SCOPED_ANNOTATION(AnnotateThreadName);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void WTFAnnotateHappensBefore(char *f, int l, uptr addr) {
   SCOPED_ANNOTATION(AnnotateHappensBefore);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void WTFAnnotateHappensAfter(char *f, int l, uptr addr) {
   SCOPED_ANNOTATION(AnnotateHappensAfter);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 void WTFAnnotateBenignRaceSized(char *f, int l, uptr mem, uptr sz, char *desc) {
   SCOPED_ANNOTATION(AnnotateBenignRaceSized);
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 int RunningOnValgrind() {
   return flags()->running_on_valgrind;
 }
@@ -392,7 +356,6 @@ double __attribute__((weak)) ValgrindSlowdown(void) {
   return 10.0;
 }
 
-SANITIZER_WEAK_ATTRIBUTE SANITIZER_INTERFACE_ATTRIBUTE
 const char *ThreadSanitizerQuery(const char *query) {
   if (internal_strcmp(query, "pure_happens_before") == 0)
     return "1";

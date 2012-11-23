@@ -84,7 +84,7 @@ am__objects_1 = tsan_clock.lo tsan_interface_atomic.lo tsan_mutex.lo \
 	tsan_rtl.lo tsan_stat.lo tsan_sync.lo tsan_interceptors.lo \
 	tsan_md5.lo tsan_platform_mac.lo tsan_rtl_mutex.lo \
 	tsan_suppressions.lo tsan_interface_ann.lo tsan_mman.lo \
-	tsan_printf.lo tsan_rtl_report.lo \
+	tsan_rtl_report.lo \
 	tsan_symbolize_addr2line_linux.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
@@ -261,7 +261,6 @@ tsan_files = \
         tsan_suppressions.cc \
         tsan_interface_ann.cc \
         tsan_mman.cc \
-        tsan_printf.cc \
         tsan_rtl_report.cc \
         tsan_symbolize_addr2line_linux.cc
 
@@ -395,7 +394,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_mac.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_printf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mutex.Plo@am__quote@

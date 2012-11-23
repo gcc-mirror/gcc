@@ -116,25 +116,25 @@ void AsanThread::ClearShadowForThreadStack() {
 
 const char *AsanThread::GetFrameNameByAddr(uptr addr, uptr *offset) {
   uptr bottom = 0;
-  bool is_fake_stack = false;
   if (AddrIsInStack(addr)) {
     bottom = stack_bottom();
   } else {
     bottom = fake_stack().AddrIsInFakeStack(addr);
     CHECK(bottom);
-    is_fake_stack = true;
+    *offset = addr - bottom;
+    return  (const char *)((uptr*)bottom)[1];
   }
-  uptr aligned_addr = addr & ~(__WORDSIZE/8 - 1);  // align addr.
+  uptr aligned_addr = addr & ~(SANITIZER_WORDSIZE/8 - 1);  // align addr.
   u8 *shadow_ptr = (u8*)MemToShadow(aligned_addr);
   u8 *shadow_bottom = (u8*)MemToShadow(bottom);
 
   while (shadow_ptr >= shadow_bottom &&
-      *shadow_ptr != kAsanStackLeftRedzoneMagic) {
+         *shadow_ptr != kAsanStackLeftRedzoneMagic) {
     shadow_ptr--;
   }
 
   while (shadow_ptr >= shadow_bottom &&
-      *shadow_ptr == kAsanStackLeftRedzoneMagic) {
+         *shadow_ptr == kAsanStackLeftRedzoneMagic) {
     shadow_ptr--;
   }
 
@@ -144,8 +144,7 @@ const char *AsanThread::GetFrameNameByAddr(uptr addr, uptr *offset) {
   }
 
   uptr* ptr = (uptr*)SHADOW_TO_MEM((uptr)(shadow_ptr + 1));
-  CHECK((ptr[0] == kCurrentStackFrameMagic) ||
-      (is_fake_stack && ptr[0] == kRetiredStackFrameMagic));
+  CHECK(ptr[0] == kCurrentStackFrameMagic);
   *offset = addr - (uptr)ptr;
   return (const char*)ptr[1];
 }

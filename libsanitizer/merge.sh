@@ -44,10 +44,11 @@ merge() {
       cp -v $upstream_path/$f $local_path
     elif [ -f $upstream_path/$f ]; then
       echo "FOUND IN UPSTREAM :" $f
-      echo "UNSUPPORTED YET" && exit 1
+      cp -v $upstream_path/$f $local_path
+      svn add $local_path/$f
     elif [ -f $local_path/$f ]; then
       echo "FOUND IN LOCAL    :" $f
-      echo "UNSUPPORTED YET" && exit 1
+      svn remove $local_path/$f
     fi
   done
 
@@ -65,6 +66,7 @@ CUR_REV=$(get_current_rev)
 echo Current upstream revision: $CUR_REV
 merge include/sanitizer include/sanitizer
 merge lib/asan asan
+merge lib/tsan/rtl tsan
 merge lib/sanitizer_common sanitizer_common
 merge lib/interception interception
 

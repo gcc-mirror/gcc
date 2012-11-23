@@ -38,7 +38,8 @@ enum {
   MACOS_VERSION_UNKNOWN = 0,
   MACOS_VERSION_LEOPARD,
   MACOS_VERSION_SNOW_LEOPARD,
-  MACOS_VERSION_LION
+  MACOS_VERSION_LION,
+  MACOS_VERSION_MOUNTAIN_LION
 };
 
 // Used by asan_malloc_mac.cc and asan_mac.cc
@@ -47,7 +48,7 @@ extern "C" void __CFInitialize();
 namespace __asan {
 
 int GetMacosVersion();
-void ReplaceCFAllocator();
+void MaybeReplaceCFAllocator();
 
 }  // namespace __asan
 

@@ -134,6 +134,28 @@ DEFINE_REAL(int, sigaction, int signum, const struct sigaction *act,
     struct sigaction *oldact);
 #endif  // ASAN_INTERCEPT_SIGNAL_AND_SIGACTION
 
+#if ASAN_INTERCEPT_SWAPCONTEXT
+INTERCEPTOR(int, swapcontext, struct ucontext_t *oucp,
+            struct ucontext_t *ucp) {
+  static bool reported_warning = false;
+  if (!reported_warning) {
+    Report("WARNING: ASan doesn't fully support makecontext/swapcontext "
+           "functions and may produce false positives in some cases!\n");
+    reported_warning = true;
+  }
+  // Clear shadow memory for new context (it may share stack
+  // with current context).
+  ClearShadowMemoryForContext(ucp);
+  int res = REAL(swapcontext)(oucp, ucp);
+  // swapcontext technically does not return, but program may swap context to
+  // "oucp" later, that would look as if swapcontext() returned 0.
+  // We need to clear shadow for ucp once again, as it may be in arbitrary
+  // state.
+  ClearShadowMemoryForContext(ucp);
+  return res;
+}
+#endif
+
 INTERCEPTOR(void, longjmp, void *env, int val) {
   __asan_handle_no_return();
   REAL(longjmp)(env, val);
@@ -237,13 +259,17 @@ INTERCEPTOR(void*, memcpy, void *to, const void *from, uptr size) {
     ASAN_WRITE_RANGE(from, size);
     ASAN_READ_RANGE(to, size);
   }
+#if MAC_INTERPOSE_FUNCTIONS
+  // Interposing of resolver functions is broken on Mac OS 10.7 and 10.8.
+  // See also http://code.google.com/p/address-sanitizer/issues/detail?id=116.
+  return internal_memcpy(to, from, size);
+#else
   return REAL(memcpy)(to, from, size);
+#endif
 }
 
 INTERCEPTOR(void*, memmove, void *to, const void *from, uptr size) {
-#if MAC_INTERPOSE_FUNCTIONS
-  if (!asan_inited) return REAL(memmove)(to, from, size);
-#endif
+  if (!asan_inited) return internal_memmove(to, from, size);
   if (asan_init_is_running) {
     return REAL(memmove)(to, from, size);
   }
@@ -252,7 +278,13 @@ INTERCEPTOR(void*, memmove, void *to, const void *from, uptr size) {
     ASAN_WRITE_RANGE(from, size);
     ASAN_READ_RANGE(to, size);
   }
+#if MAC_INTERPOSE_FUNCTIONS
+  // Interposing of resolver functions is broken on Mac OS 10.7 and 10.8.
+  // See also http://code.google.com/p/address-sanitizer/issues/detail?id=116.
+  return internal_memmove(to, from, size);
+#else
   return REAL(memmove)(to, from, size);
+#endif
 }
 
 INTERCEPTOR(void*, memset, void *block, int c, uptr size) {
@@ -370,6 +402,14 @@ INTERCEPTOR(char*, strcpy, char *to, const char *from) {  // NOLINT
 
 #if ASAN_INTERCEPT_STRDUP
 INTERCEPTOR(char*, strdup, const char *s) {
+#if MAC_INTERPOSE_FUNCTIONS
+  // FIXME: because internal_strdup() uses InternalAlloc(), which currently
+  // just calls malloc() on Mac, we can't use internal_strdup() with the
+  // dynamic runtime. We can remove the call to REAL(strdup) once InternalAlloc
+  // starts using mmap() instead.
+  // See also http://code.google.com/p/address-sanitizer/issues/detail?id=123.
+  if (!asan_inited) return REAL(strdup)(s);
+#endif
   if (!asan_inited) return internal_strdup(s);
   ENSURE_ASAN_INITED();
   if (flags()->replace_str) {
@@ -668,6 +708,9 @@ void InitializeAsanInterceptors() {
 #if ASAN_INTERCEPT_SIGNAL_AND_SIGACTION
   ASAN_INTERCEPT_FUNC(sigaction);
   ASAN_INTERCEPT_FUNC(signal);
+#endif
+#if ASAN_INTERCEPT_SWAPCONTEXT
+  ASAN_INTERCEPT_FUNC(swapcontext);
 #endif
 #if ASAN_INTERCEPT__LONGJMP
   ASAN_INTERCEPT_FUNC(_longjmp);

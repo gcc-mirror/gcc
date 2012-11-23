@@ -102,16 +102,20 @@ AsanStats &AsanThreadRegistry::GetCurrentThreadStats() {
   return (t) ? t->stats() : main_thread_.stats();
 }
 
-AsanStats AsanThreadRegistry::GetAccumulatedStats() {
+void AsanThreadRegistry::GetAccumulatedStats(AsanStats *stats) {
   ScopedLock lock(&mu_);
   UpdateAccumulatedStatsUnlocked();
-  return accumulated_stats_;
+  internal_memcpy(stats, &accumulated_stats_, sizeof(accumulated_stats_));
 }
 
 uptr AsanThreadRegistry::GetCurrentAllocatedBytes() {
   ScopedLock lock(&mu_);
   UpdateAccumulatedStatsUnlocked();
-  return accumulated_stats_.malloced - accumulated_stats_.freed;
+  uptr malloced = accumulated_stats_.malloced;
+  uptr freed = accumulated_stats_.freed;
+  // Return sane value if malloced < freed due to racy
+  // way we update accumulated stats.
+  return (malloced > freed) ? malloced - freed : 1;
 }
 
 uptr AsanThreadRegistry::GetHeapSize() {
@@ -123,11 +127,14 @@ uptr AsanThreadRegistry::GetHeapSize() {
 uptr AsanThreadRegistry::GetFreeBytes() {
   ScopedLock lock(&mu_);
   UpdateAccumulatedStatsUnlocked();
-  return accumulated_stats_.mmaped
-         - accumulated_stats_.malloced
-         - accumulated_stats_.malloced_redzones
-         + accumulated_stats_.really_freed
-         + accumulated_stats_.really_freed_redzones;
+  uptr total_free = accumulated_stats_.mmaped
+                  + accumulated_stats_.really_freed
+                  + accumulated_stats_.really_freed_redzones;
+  uptr total_used = accumulated_stats_.malloced
+                  + accumulated_stats_.malloced_redzones;
+  // Return sane value if total_free < total_used due to racy
+  // way we update accumulated stats.
+  return (total_free > total_used) ? total_free - total_used : 1;
 }
 
 // Return several stats counters with a single call to

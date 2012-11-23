@@ -16,7 +16,7 @@
 #define SANITIZER_ALLOCATOR_H
 
 #include "sanitizer_internal_defs.h"
-#if __WORDSIZE != 64
+#if SANITIZER_WORDSIZE != 64
 # error "sanitizer_allocator64.h can only be used on 64-bit platforms"
 #endif
 
@@ -275,7 +275,12 @@ class SizeClassAllocator64 {
     } while (idx < end_idx);
     region->allocated_user += idx - beg_idx;
     region->allocated_meta += i * kMetadataSize;
-    CHECK_LT(region->allocated_user + region->allocated_meta, kRegionSize);
+    if (region->allocated_user + region->allocated_meta > kRegionSize) {
+      Printf("Out of memory. Dying.\n");
+      Printf("The process has exhausted %zuMB for size class %zu.\n",
+          kRegionSize / 1024 / 1024, size);
+      Die();
+    }
   }
 
   void *AllocateBySizeClass(uptr class_id) {
