@@ -1,6 +1,7 @@
 /* PR middle-end/55150 */
 /* { dg-do compile } */
 /* { dg-options "-Os -g" } */
+/* { dg-require-effective-target int32plus } */
 
 typedef unsigned int KEY_TABLE_TYPE[(272 / 4)];
   typedef unsigned int u32;
