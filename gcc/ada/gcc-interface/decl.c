@@ -6650,6 +6650,30 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   return gnu_field;
 }
 
+/* Return true if at least one member of COMPONENT_LIST needs strict
+   alignment.  */
+
+static bool
+components_need_strict_alignment (Node_Id component_list)
+{
+  Node_Id component_decl;
+
+  for (component_decl = First_Non_Pragma (Component_Items (component_list));
+       Present (component_decl);
+       component_decl = Next_Non_Pragma (component_decl))
+    {
+      Entity_Id gnat_field = Defining_Entity (component_decl);
+
+      if (Is_Aliased (gnat_field))
+	return True;
+
+      if (Strict_Alignment (Etype (gnat_field)))
+	return True;
+    }
+
+  return False;
+}
+
 /* Return true if TYPE is a type with variable size or a padding type with a
    field of variable size or a record that has a field with such a type.  */
 
@@ -6880,6 +6904,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		       "XVN");
       tree gnu_union_type, gnu_union_name;
       tree this_first_free_pos, gnu_variant_list = NULL_TREE;
+      bool union_field_needs_strict_alignment = false;
 
       if (TREE_CODE (gnu_name) == TYPE_DECL)
 	gnu_name = DECL_NAME (gnu_name);
@@ -6980,8 +7005,18 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  else
 	    {
 	      /* Deal with packedness like in gnat_to_gnu_field.  */
-	      int field_packed
-		= adjust_packed (gnu_variant_type, gnu_record_type, packed);
+	      bool field_needs_strict_alignment
+	        = components_need_strict_alignment (Component_List (variant));
+	      int field_packed;
+
+	      if (field_needs_strict_alignment)
+		{
+		  field_packed = 0;
+		  union_field_needs_strict_alignment = true;
+		}
+	      else
+		field_packed
+		  = adjust_packed (gnu_variant_type, gnu_record_type, packed);
 
 	      /* Finalize the record type now.  We used to throw away
 		 empty records but we no longer do that because we need
@@ -6997,8 +7032,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 				     gnu_union_type,
 				     all_rep_and_size
 				     ? TYPE_SIZE (gnu_variant_type) : 0,
-				     all_rep_and_size
-				     ? bitsize_zero_node : 0,
+				     all_rep ? bitsize_zero_node : 0,
 				     field_packed, 0);
 
 	      DECL_INTERNAL_P (gnu_field) = 1;
@@ -7041,12 +7075,16 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 			    NULL, true, debug_info, gnat_component_list);
 
 	  /* Deal with packedness like in gnat_to_gnu_field.  */
-	  union_field_packed
-	    = adjust_packed (gnu_union_type, gnu_record_type, packed);
+	  if (union_field_needs_strict_alignment)
+	    union_field_packed = 0;
+	  else
+	    union_field_packed
+	      = adjust_packed (gnu_union_type, gnu_record_type, packed);
 
 	  gnu_variant_part
 	    = create_field_decl (gnu_var_name, gnu_union_type, gnu_record_type,
-				 all_rep ? TYPE_SIZE (gnu_union_type) : 0,
+				 all_rep_and_size
+				 ? TYPE_SIZE (gnu_union_type) : 0,
 				 all_rep || this_first_free_pos
 				 ? bitsize_zero_node : 0,
 				 union_field_packed, 0);

@@ -1,8 +1,15 @@
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_need_strict_alignment): New.
+	(components_to_record): Do not pack the variants if one of the fields
+	needs strict alignment.  Likewise for the variant part as a whole.
+	Specify the position of the variants even if the size isn't specified,
+	but do not specify the size of the variant part in this case.
+
 2012-11-20  Diego Novillo  <dnovillo@google.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
-	* gcc-interface/decl.c: Replace all vec<T,A>()
-	initializers with vNULL.
+	* gcc-interface/decl.c: Replace all vec<T,A>() initializers with vNULL.
 
 2012-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
