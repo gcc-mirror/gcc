@@ -1,6 +1,13 @@
 2012-11-23  Kostya Serebryany  <kcc@google.com>
         
-	* merge.sh: a script that will help merges from upstream.
+	* merge.sh: Support tsan, support added/removed files.
+	* tsan/Makefile.am: Remove tsan_printf.cc.
+	* tsan/Makefile.in: Regenerated.
+	* other files: Merge from upstream r168514.
+
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+        
+	* merge.sh: New file.
 
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 

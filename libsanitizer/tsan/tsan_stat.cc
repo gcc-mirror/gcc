@@ -194,7 +194,12 @@ void StatOutput(u64 *stat) {
   name[StatInt_opendir]                  = "  opendir                         ";
   name[StatInt_epoll_ctl]                = "  epoll_ctl                       ";
   name[StatInt_epoll_wait]               = "  epoll_wait                      ";
+  name[StatInt_poll]                     = "  poll                            ";
   name[StatInt_sigaction]                = "  sigaction                       ";
+  name[StatInt_sleep]                    = "  sleep                           ";
+  name[StatInt_usleep]                   = "  usleep                          ";
+  name[StatInt_nanosleep]                = "  nanosleep                       ";
+  name[StatInt_gettimeofday]             = "  gettimeofday                    ";
 
   name[StatAnnotation]                   = "Dynamic annotations               ";
   name[StatAnnotateHappensBefore]        = "  HappensBefore                   ";
@@ -239,9 +244,9 @@ void StatOutput(u64 *stat) {
   name[StatMtxAtExit]                    = "  Atexit                          ";
   name[StatMtxAnnotations]               = "  Annotations                     ";
 
-  TsanPrintf("Statistics:\n");
+  Printf("Statistics:\n");
   for (int i = 0; i < StatCnt; i++)
-    TsanPrintf("%s: %zu\n", name[i], (uptr)stat[i]);
+    Printf("%s: %zu\n", name[i], (uptr)stat[i]);
 }
 
 }  // namespace __tsan

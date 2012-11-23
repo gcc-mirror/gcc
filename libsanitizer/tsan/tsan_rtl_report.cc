@@ -26,9 +26,9 @@ namespace __tsan {
 void TsanCheckFailed(const char *file, int line, const char *cond,
                      u64 v1, u64 v2) {
   ScopedInRtl in_rtl;
-  TsanPrintf("FATAL: ThreadSanitizer CHECK failed: "
-             "%s:%d \"%s\" (0x%zx, 0x%zx)\n",
-             file, line, cond, (uptr)v1, (uptr)v2);
+  Printf("FATAL: ThreadSanitizer CHECK failed: "
+         "%s:%d \"%s\" (0x%zx, 0x%zx)\n",
+         file, line, cond, (uptr)v1, (uptr)v2);
   Die();
 }
 
@@ -383,6 +383,8 @@ bool IsFiredSuppression(Context *ctx,
 }
 
 void ReportRace(ThreadState *thr) {
+  if (!flags()->report_bugs)
+    return;
   ScopedInRtl in_rtl;
 
   bool freed = false;

@@ -1,3 +1,7 @@
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/asan/memcmp-1.c: Update to match the new libsanitizer.
+
 2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr40.ad[sb]: New test.

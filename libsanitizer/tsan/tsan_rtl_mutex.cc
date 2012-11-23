@@ -82,7 +82,7 @@ void MutexLock(ThreadState *thr, uptr pc, uptr addr) {
   } else if (s->owner_tid == thr->tid) {
     CHECK_GT(s->recursion, 0);
   } else {
-    TsanPrintf("ThreadSanitizer WARNING: double lock\n");
+    Printf("ThreadSanitizer WARNING: double lock\n");
     PrintCurrentStack(thr, pc);
   }
   if (s->recursion == 0) {
@@ -110,13 +110,13 @@ void MutexUnlock(ThreadState *thr, uptr pc, uptr addr) {
   if (s->recursion == 0) {
     if (!s->is_broken) {
       s->is_broken = true;
-      TsanPrintf("ThreadSanitizer WARNING: unlock of unlocked mutex\n");
+      Printf("ThreadSanitizer WARNING: unlock of unlocked mutex\n");
       PrintCurrentStack(thr, pc);
     }
   } else if (s->owner_tid != thr->tid) {
     if (!s->is_broken) {
       s->is_broken = true;
-      TsanPrintf("ThreadSanitizer WARNING: mutex unlock by another thread\n");
+      Printf("ThreadSanitizer WARNING: mutex unlock by another thread\n");
       PrintCurrentStack(thr, pc);
     }
   } else {
@@ -145,7 +145,7 @@ void MutexReadLock(ThreadState *thr, uptr pc, uptr addr) {
   TraceAddEvent(thr, thr->fast_state.epoch(), EventTypeRLock, addr);
   SyncVar *s = CTX()->synctab.GetAndLock(thr, pc, addr, false);
   if (s->owner_tid != SyncVar::kInvalidTid) {
-    TsanPrintf("ThreadSanitizer WARNING: read lock of a write locked mutex\n");
+    Printf("ThreadSanitizer WARNING: read lock of a write locked mutex\n");
     PrintCurrentStack(thr, pc);
   }
   thr->clock.set(thr->tid, thr->fast_state.epoch());
@@ -165,7 +165,7 @@ void MutexReadUnlock(ThreadState *thr, uptr pc, uptr addr) {
   TraceAddEvent(thr, thr->fast_state.epoch(), EventTypeRUnlock, addr);
   SyncVar *s = CTX()->synctab.GetAndLock(thr, pc, addr, true);
   if (s->owner_tid != SyncVar::kInvalidTid) {
-    TsanPrintf("ThreadSanitizer WARNING: read unlock of a write "
+    Printf("ThreadSanitizer WARNING: read unlock of a write "
                "locked mutex\n");
     PrintCurrentStack(thr, pc);
   }
@@ -213,7 +213,7 @@ void MutexReadOrWriteUnlock(ThreadState *thr, uptr pc, uptr addr) {
     }
   } else if (!s->is_broken) {
     s->is_broken = true;
-    TsanPrintf("ThreadSanitizer WARNING: mutex unlock by another thread\n");
+    Printf("ThreadSanitizer WARNING: mutex unlock by another thread\n");
     PrintCurrentStack(thr, pc);
   }
   s->mtx.Unlock();
@@ -227,6 +227,20 @@ void Acquire(ThreadState *thr, uptr pc, uptr addr) {
   thr->clock.acquire(&s->clock);
   StatInc(thr, StatSyncAcquire);
   s->mtx.ReadUnlock();
+}
+
+void AcquireGlobal(ThreadState *thr, uptr pc) {
+  Context *ctx = CTX();
+  Lock l(&ctx->thread_mtx);
+  for (unsigned i = 0; i < kMaxTid; i++) {
+    ThreadContext *tctx = ctx->threads[i];
+    if (tctx == 0)
+      continue;
+    if (tctx->status == ThreadStatusRunning)
+      thr->clock.set(i, tctx->thr->fast_state.epoch());
+    else
+      thr->clock.set(i, tctx->epoch1);
+  }
 }
 
 void Release(ThreadState *thr, uptr pc, uptr addr) {

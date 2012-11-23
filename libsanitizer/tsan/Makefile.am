@@ -26,7 +26,6 @@ tsan_files = \
         tsan_suppressions.cc \
         tsan_interface_ann.cc \
         tsan_mman.cc \
-        tsan_printf.cc \
         tsan_rtl_report.cc \
         tsan_symbolize_addr2line_linux.cc
 

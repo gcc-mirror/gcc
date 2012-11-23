@@ -50,6 +50,23 @@ void ThreadFinalize(ThreadState *thr) {
   }
 }
 
+int ThreadCount(ThreadState *thr) {
+  CHECK_GT(thr->in_rtl, 0);
+  Context *ctx = CTX();
+  Lock l(&ctx->thread_mtx);
+  int cnt = 0;
+  for (unsigned i = 0; i < kMaxTid; i++) {
+    ThreadContext *tctx = ctx->threads[i];
+    if (tctx == 0)
+      continue;
+    if (tctx->status != ThreadStatusCreated
+        && tctx->status != ThreadStatusRunning)
+      continue;
+    cnt++;
+  }
+  return cnt;
+}
+
 static void ThreadDead(ThreadState *thr, ThreadContext *tctx) {
   Context *ctx = CTX();
   CHECK_GT(thr->in_rtl, 0);
@@ -80,7 +97,7 @@ int ThreadCreate(ThreadState *thr, uptr pc, uptr uid, bool detached) {
   if (ctx->dead_list_size > kThreadQuarantineSize
       || ctx->thread_seq >= kMaxTid) {
     if (ctx->dead_list_size == 0) {
-      TsanPrintf("ThreadSanitizer: %d thread limit exceeded. Dying.\n",
+      Printf("ThreadSanitizer: %d thread limit exceeded. Dying.\n",
                  kMaxTid);
       Die();
     }
@@ -273,7 +290,7 @@ void ThreadJoin(ThreadState *thr, uptr pc, int tid) {
   Lock l(&ctx->thread_mtx);
   ThreadContext *tctx = ctx->threads[tid];
   if (tctx->status == ThreadStatusInvalid) {
-    TsanPrintf("ThreadSanitizer: join of non-existent thread\n");
+    Printf("ThreadSanitizer: join of non-existent thread\n");
     return;
   }
   CHECK_EQ(tctx->detached, false);
@@ -291,7 +308,7 @@ void ThreadDetach(ThreadState *thr, uptr pc, int tid) {
   Lock l(&ctx->thread_mtx);
   ThreadContext *tctx = ctx->threads[tid];
   if (tctx->status == ThreadStatusInvalid) {
-    TsanPrintf("ThreadSanitizer: detach of non-existent thread\n");
+    Printf("ThreadSanitizer: detach of non-existent thread\n");
     return;
   }
   if (tctx->status == ThreadStatusFinished) {
@@ -299,10 +316,6 @@ void ThreadDetach(ThreadState *thr, uptr pc, int tid) {
   } else {
     tctx->detached = true;
   }
-}
-
-void ThreadFinalizerGoroutine(ThreadState *thr) {
-  thr->clock.Disable(thr->tid);
 }
 
 void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
@@ -317,19 +330,19 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
 
 #if TSAN_DEBUG
   if (!IsAppMem(addr)) {
-    TsanPrintf("Access to non app mem %zx\n", addr);
+    Printf("Access to non app mem %zx\n", addr);
     DCHECK(IsAppMem(addr));
   }
   if (!IsAppMem(addr + size - 1)) {
-    TsanPrintf("Access to non app mem %zx\n", addr + size - 1);
+    Printf("Access to non app mem %zx\n", addr + size - 1);
     DCHECK(IsAppMem(addr + size - 1));
   }
   if (!IsShadowMem((uptr)shadow_mem)) {
-    TsanPrintf("Bad shadow addr %p (%zx)\n", shadow_mem, addr);
+    Printf("Bad shadow addr %p (%zx)\n", shadow_mem, addr);
     DCHECK(IsShadowMem((uptr)shadow_mem));
   }
   if (!IsShadowMem((uptr)(shadow_mem + size * kShadowCnt / 8 - 1))) {
-    TsanPrintf("Bad shadow addr %p (%zx)\n",
+    Printf("Bad shadow addr %p (%zx)\n",
                shadow_mem + size * kShadowCnt / 8 - 1, addr + size - 1);
     DCHECK(IsShadowMem((uptr)(shadow_mem + size * kShadowCnt / 8 - 1)));
   }
@@ -353,7 +366,7 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     Shadow cur(fast_state);
     cur.SetWrite(is_write);
     cur.SetAddr0AndSizeLog(addr & (kShadowCell - 1), kAccessSizeLog);
-    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write, fast_state,
+    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write,
         shadow_mem, cur);
   }
   if (unaligned)
@@ -364,7 +377,7 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     Shadow cur(fast_state);
     cur.SetWrite(is_write);
     cur.SetAddr0AndSizeLog(0, kAccessSizeLog);
-    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write, fast_state,
+    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write,
         shadow_mem, cur);
     shadow_mem += kShadowCnt;
   }
@@ -374,7 +387,7 @@ void MemoryAccessRange(ThreadState *thr, uptr pc, uptr addr,
     Shadow cur(fast_state);
     cur.SetWrite(is_write);
     cur.SetAddr0AndSizeLog(addr & (kShadowCell - 1), kAccessSizeLog);
-    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write, fast_state,
+    MemoryAccessImpl(thr, addr, kAccessSizeLog, is_write,
         shadow_mem, cur);
   }
 }

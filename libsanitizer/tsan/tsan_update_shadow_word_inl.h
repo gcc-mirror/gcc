@@ -32,7 +32,7 @@ do {
     if (Shadow::TidsAreEqual(old, cur)) {
       StatInc(thr, StatShadowSameThread);
       if (OldIsInSameSynchEpoch(old, thr)) {
-        if (OldIsRWStronger(old, kAccessIsWrite)) {
+        if (OldIsRWNotWeaker(old, kAccessIsWrite)) {
           // found a slot that holds effectively the same info
           // (that is, same tid, same sync epoch and same size)
           StatInc(thr, StatMopSame);
@@ -41,7 +41,7 @@ do {
         StoreIfNotYetStored(sp, &store_word);
         break;
       }
-      if (OldIsRWWeaker(old, kAccessIsWrite))
+      if (OldIsRWWeakerOrEqual(old, kAccessIsWrite))
         StoreIfNotYetStored(sp, &store_word);
       break;
     }

@@ -137,6 +137,10 @@ void AsanPlatformThreadInit() {
   // Nothing here for now.
 }
 
+void ClearShadowMemoryForContext(void *context) {
+  UNIMPLEMENTED();
+}
+
 }  // namespace __asan
 
 // ---------------------- Interface ---------------- {{{1
