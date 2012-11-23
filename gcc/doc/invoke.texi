@@ -6860,7 +6860,7 @@ The default is @option{-fzero-initialized-in-bss}.
 @item -fsanitize=address
 Enable AddressSanitizer, a fast memory error detector.
 Memory access instructions will be instrumented to detect
-out-of-bounds and use-after-free bugs. So far only heap bugs will be detected.
+out-of-bounds and use-after-free bugs.
 See @uref{http://code.google.com/p/address-sanitizer/} for more details.
 
 @item -fsanitize=thread
