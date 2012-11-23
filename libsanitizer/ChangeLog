@@ -1,3 +1,7 @@
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+        
+	* merge.sh: a script that will help merges from upstream.
+
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tsan/Makefile.am (AM_CXXFLAGS): Remove -Wno-variadic-macros.
