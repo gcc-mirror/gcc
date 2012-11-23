@@ -1,5 +1,5 @@
 /* Print floating point number in hexadecimal notation according to ISO C99.
-   Copyright (C) 1997-2002,2004,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997-2012 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -14,17 +14,18 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #define NDEBUG
 #include <assert.h>
+#include "quadmath-rounding-mode.h"
 #include "quadmath-printf.h"
 #include "_itoa.h"
 #include "_itowa.h"
@@ -115,6 +116,8 @@ __quadmath_printf_fphex (struct __quadmath_printf_file *fp,
 
   /* Nonzero if this is output on a wide character stream.  */
   int wide = info->wide;
+
+  bool do_round_away;
 
   /* Figure out the decimal point character.  */
 #ifdef USE_NL_LANGINFO
@@ -274,8 +277,8 @@ __quadmath_printf_fphex (struct __quadmath_printf_file *fp,
       /* Fill with zeroes.  */
       while (numstr > numbuf + (sizeof numbuf - 112 / 4))
 	{
-	  *--numstr = '0';
 	  *--wnumstr = L_('0');
+	  *--numstr = '0';
 	}
 
       leading = fpnum.ieee.exponent == 0 ? '0' : '1';
@@ -316,21 +319,35 @@ __quadmath_printf_fphex (struct __quadmath_printf_file *fp,
 	  --numend;
 	}
 
+      do_round_away = false;
+
+      if (precision != -1 && precision < numend - numstr)
+	{
+	  char last_digit = precision > 0 ? numstr[precision - 1] : leading;
+	  char next_digit = numstr[precision];
+	  int last_digit_value = (last_digit >= 'A' && last_digit <= 'F'
+				  ? last_digit - 'A' + 10
+				  : (last_digit >= 'a' && last_digit <= 'f'
+				     ? last_digit - 'a' + 10
+				     : last_digit - '0'));
+	  int next_digit_value = (next_digit >= 'A' && next_digit <= 'F'
+				  ? next_digit - 'A' + 10
+				  : (next_digit >= 'a' && next_digit <= 'f'
+				     ? next_digit - 'a' + 10
+				     : next_digit - '0'));
+	  bool more_bits = ((next_digit_value & 7) != 0
+			    || precision + 1 < numend - numstr);
+#ifdef HAVE_FENV_H
+	  int rounding_mode = get_rounding_mode ();
+	  do_round_away = round_away (negative, last_digit_value & 1,
+				      next_digit_value >= 8, more_bits,
+				      rounding_mode);
+#endif
+	}
+
       if (precision == -1)
 	precision = numend - numstr;
-      else if (precision < numend - numstr
-	       && (numstr[precision] > '8'
-		   || (('A' < '0' || 'a' < '0')
-		       && numstr[precision] < '0')
-		   || (numstr[precision] == '8'
-		       && (precision + 1 < numend - numstr
-			   /* Round to even.  */
-			   || (precision > 0
-			       && ((numstr[precision - 1] & 1)
-				   ^ (isdigit (numstr[precision - 1]) == 0)))
-			   || (precision == 0
-			       && ((leading & 1)
-				   ^ (isdigit (leading) == 0)))))))
+      else if (do_round_away)
 	{
 	  /* Round up.  */
 	  int cnt = precision;
