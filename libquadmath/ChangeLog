@@ -1,3 +1,16 @@
+2012-11-23  Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* quadmath-rounding-mode.h: New.
+	* printf/fpioconst.c: Update from GLIBC. Fix strtod rounding.
+	* printf/fpioconst.h: Ditto.
+	* printf/printf_fp.c (__quadmath_printf_fp): Update from GLIBC.
+	Make printf respect the rounding mode for decimal output.
+	* printf/printf_fphex.c (__quadmath_printf_fphex): Update from
+	GLIBC.  Make printf respect the rounding mode for hex output.
+	* strtod/strtod_l.c: Update from GLIBC. Make strtod respect the
+	rounding mode. Fix strtod handling of underflow.
+
 2012-11-22  David S. Miller  <davem@davemloft.net>
 	    Tobias Burnus  <burnus@net-b.de>
 	    Joseph Myers  <joseph@codesourcery.com>

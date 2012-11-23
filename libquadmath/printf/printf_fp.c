@@ -1,5 +1,5 @@
 /* Floating point output for `printf'.
-   Copyright (C) 1995-2003, 2006-2008, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1995-2012 Free Software Foundation, Inc.
 
    This file is part of the GNU C Library.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
@@ -15,16 +15,17 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #define NDEBUG
 #include <assert.h>
 #ifdef HAVE_ERRNO_H
@@ -32,6 +33,9 @@
 #endif
 #include <stdio.h>
 #include <stdarg.h>
+#ifdef HAVE_FENV_H
+#include "quadmath-rounding-mode.h"
+#endif
 #include "quadmath-printf.h"
 #include "fpioconst.h"
 
@@ -162,7 +166,8 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
   MPN_VAR(tmp);
 
   /* Digit which is result of last hack_digit() call.  */
-  wchar_t digit;
+  wchar_t last_digit, next_digit;
+  bool more_bits;
 
   /* The type of output format that will be used: 'e'/'E' or 'f'.  */
   int type;
@@ -370,11 +375,11 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
 	      special = "NAN";
 	      wspecial = L_("NAN");
 	    }
-	    else
-	      {
-		special = "nan";
+	  else
+	    {
+	      special = "nan";
 		wspecial = L_("nan");
-	      }
+	    }
 	}
       else if (isinfq (fpnum))
 	{
@@ -935,33 +940,32 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
       }
 
     /* Do rounding.  */
-    digit = hack_digit ();
-    if (digit > L_('4'))
+    last_digit = wcp[-1] != decimalwc ? wcp[-1] : wcp[-2];
+    next_digit =hack_digit ();
+
+    if (next_digit != L_('0') && next_digit != L_('5'))
+      more_bits = true;
+    else if (fracsize == 1 && frac[0] == 0)
+      /* Rest of the number is zero.  */
+      more_bits = false;
+    else if (scalesize == 0)
+      {
+	/* Here we have to see whether all limbs are zero since no
+	   normalization happened.  */
+	size_t lcnt = fracsize;
+	while (lcnt >= 1 && frac[lcnt - 1] == 0)
+	  --lcnt;
+	more_bits = lcnt > 0;
+      }
+    else
+      more_bits = true;
+
+#ifdef HAVE_FENV_H
+    int rounding_mode = get_rounding_mode ();
+    if (round_away (is_neg, (last_digit - L_('0')) & 1, next_digit >= L_('5'),
+		    more_bits, rounding_mode))
       {
 	wchar_t *wtp = wcp;
-
-	if (digit == L_('5')
-	    && ((*(wcp - 1) != decimalwc && (*(wcp - 1) & 1) == 0)
-		|| ((*(wcp - 1) == decimalwc && (*(wcp - 2) & 1) == 0))))
-	  {
-	    /* This is the critical case.	 */
-	    if (fracsize == 1 && frac[0] == 0)
-	      /* Rest of the number is zero -> round to even.
-		 (IEEE 754-1985 4.1 says this is the default rounding.)  */
-	      goto do_expo;
-	    else if (scalesize == 0)
-	      {
-		/* Here we have to see whether all limbs are zero since no
-		   normalization happened.  */
-		size_t lcnt = fracsize;
-		while (lcnt >= 1 && frac[lcnt - 1] == 0)
-		  --lcnt;
-		if (lcnt == 0)
-		  /* Rest of the number is zero -> round to even.
-		     (IEEE 754-1985 4.1 says this is the default rounding.)  */
-		  goto do_expo;
-	      }
-	  }
 
 	if (fracdig_no > 0)
 	  {
@@ -1055,8 +1059,8 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
 	      }
 	  }
       }
+#endif
 
-  do_expo:
     /* Now remove unnecessary '0' at the end of the string.  */
     while (fracdig_no > fracdig_min + added_zeros && *(wcp - 1) == L_('0'))
       {
@@ -1249,15 +1253,19 @@ guess_grouping (unsigned int intdig_max, const char *grouping)
       ++groups;
       intdig_max -= *grouping++;
 
-      if (*grouping == 0)
+      if (*grouping == CHAR_MAX
+#if CHAR_MIN < 0
+	  || *grouping < 0
+#endif
+	  )
+	/* No more grouping should be done.  */
+	break;
+      else if (*grouping == 0)
 	{
 	  /* Same grouping repeats.  */
 	  groups += (intdig_max - 1) / grouping[-1];
 	  break;
 	}
-      else if (*grouping == CHAR_MAX || *grouping <= 0)
-	/* No more grouping should be done.  */
-	break;
     }
 
   return groups;
@@ -1289,12 +1297,16 @@ group_number (wchar_t *buf, wchar_t *bufend, unsigned int intdig_no,
       while (--len > 0);
       *p-- = thousands_sep;
 
-      if (*grouping == 0)
-	/* Same grouping repeats.  */
-	--grouping;
-      else if (*grouping == CHAR_MAX || *grouping <= 0)
+      if (*grouping == CHAR_MAX
+#if CHAR_MIN < 0
+	  || *grouping < 0
+#endif
+	  )
 	/* No more grouping should be done.  */
 	break;
+      else if (*grouping == 0)
+	/* Same grouping repeats.  */
+	--grouping;
     } while (intdig_no > (unsigned int) *grouping);
 
   /* Copy the remaining ungrouped digits.  */
