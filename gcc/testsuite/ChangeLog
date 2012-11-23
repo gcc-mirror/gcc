@@ -1,5 +1,9 @@
 2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr40.ad[sb]: New test.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/discr39.adb: New test.
 
 2012-11-23  Georg-Johann Lay  <avr@gjlay.de>
