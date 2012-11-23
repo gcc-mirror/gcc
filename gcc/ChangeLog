@@ -1,5 +1,10 @@
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* tsan.c: Fix up comment formatting.
+	(instrument_gimple): Ignore gimple_clobber_p stmts.
+	(pass_tsan, pass_tsan_O0): Remove TODO_update_address_taken
+	from todo_flags_finish.
+
 	PR sanitizer/55435
 	* asan.c (gate_asan): Don't instrument functions with
 	no_address_safety_analysis attribute.
