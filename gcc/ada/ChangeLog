@@ -1,5 +1,10 @@
 2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Length>: Look through
+	a view conversion from constrained to unconstrained form.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (components_need_strict_alignment): New.
 	(components_to_record): Do not pack the variants if one of the fields
 	needs strict alignment.  Likewise for the variant part as a whole.
