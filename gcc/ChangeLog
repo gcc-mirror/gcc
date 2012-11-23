@@ -1,3 +1,32 @@
+2012-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* i386-c.c (ix86_target_macros_internal): Update handling of core
+	chips.
+	* i386.c (DUMMY_STRINGOP_ALGS): Update
+	(*_cost): Update.
+	(core_cost): Copy from generic64_cost; fix stringop descriptors.
+	(m_CORE2_32, m_CORE2_64, m_COREI7_32, m_COREI7_64, m_CORE2I7_32,
+	m_CORE2I7_64): Remove.
+	(m_CORE2, m_COREI7, m_CORE2I7): Update.
+	(initial_ix86_tune_features): Update.
+	(processor_target): Update.
+	(ix86_option_override_internal): Update.
+	(ix86_option_override_internal): Remove PROCESSOR_CORE2_64,
+	PROCESSOR_COREI7_64 special cases.
+	(decide_alg): Add noalign parameter; set it.
+	(ix86_expand_movmem, ix86_expand_setmem): Update noalign handling.
+	(ix86_issue_rate): Update.
+	(ia32_multipass_dfa_lookahead): Update.
+	(ix86_sched_init_global): Update.
+	(get_builtin_code_for_version): Update.
+	* i386.h (stringop_strategy): Add noalign flag.
+	(TARGET_CORE2_32, TARGET_CORE2_64, TARGET_COREI7_32, TARGET_COREI7_64):
+	Remove.
+	(TARGET_CORE2, TARGET_COREI7): New.
+	(enum processor_type): Remove PROCESSOR_CORE2_32, PROCESSOR_CORE2_64,
+	PROCESSOR_COREI7_32, PROCESSOR_COREI7_64; add PROCESSOR_CORE2,
+	PROCESSOR_COREI7.
+
 2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/55388

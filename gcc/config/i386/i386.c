@@ -83,7 +83,7 @@ static rtx legitimize_dllimport_symbol (rtx, bool);
 /* We assume COSTS_N_INSNS is defined as (N)*4 and an addition is 2 bytes.  */
 #define COSTS_N_BYTES(N) ((N) * 2)
 
-#define DUMMY_STRINGOP_ALGS {libcall, {{-1, libcall}}}
+#define DUMMY_STRINGOP_ALGS {libcall, {{-1, libcall, false}}}
 
 const
 struct processor_costs ix86_size_cost = {/* costs for tuning for size */
@@ -138,10 +138,10 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* cost of FABS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FCHS instruction.  */
   COSTS_N_BYTES (2),			/* cost of FSQRT instruction.  */
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
-   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
-   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
+  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
+   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}}},
+  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
+   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -209,9 +209,9 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (22),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (24),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (122),			/* cost of FSQRT instruction.  */
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
+  {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -281,9 +281,9 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (83),			/* cost of FSQRT instruction.  */
-  {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
+  {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
+  {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -351,9 +351,9 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (70),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{-1, rep_prefix_4_byte}}},
+  {{libcall, {{-1, rep_prefix_4_byte, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -426,11 +426,13 @@ struct processor_costs pentiumpro_cost = {
      noticeable win, for bigger blocks either rep movsl or rep movsb is
      way to go.  Rep movsb has apparently more expensive startup time in CPU,
      but after 4K the difference is down in the noise.  */
-  {{rep_prefix_4_byte, {{128, loop}, {1024, unrolled_loop},
-			{8192, rep_prefix_4_byte}, {-1, rep_prefix_1_byte}}},
+  {{rep_prefix_4_byte, {{128, loop, false}, {1024, unrolled_loop, false},
+			{8192, rep_prefix_4_byte, false},
+		        {-1, rep_prefix_1_byte, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{rep_prefix_4_byte, {{1024, unrolled_loop},
-  			{8192, rep_prefix_4_byte}, {-1, libcall}}},
+  {{rep_prefix_4_byte, {{1024, unrolled_loop, false},
+  			{8192, rep_prefix_4_byte, false},
+			{-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -499,9 +501,9 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -572,9 +574,9 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{256, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -645,9 +647,9 @@ struct processor_costs athlon_cost = {
   /* For some reason, Athlon deals better with REP prefix (relative to loops)
      compared to K8. Alignment becomes important after 8 bytes for memcpy and
      128 bytes for memset.  */
-  {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -723,11 +725,14 @@ struct processor_costs k8_cost = {
   /* K8 has optimized REP instruction for medium sized blocks, but for very
      small blocks it is better to use loop. For large blocks, libcall can
      do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false},
+	      {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -810,11 +815,14 @@ struct processor_costs amdfam10_cost = {
   /* AMDFAM10 has optimized REP instruction for medium sized blocks, but for
      very small blocks it is better to use loop. For large blocks, libcall can
      do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -897,11 +905,14 @@ struct processor_costs bdver1_cost = {
   /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
       very small blocks it is better to use loop. For large blocks, libcall
       can do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   6,					/* scalar_stmt_cost.  */
   4,					/* scalar load_cost.  */
   4,					/* scalar_store_cost.  */
@@ -984,11 +995,14 @@ struct processor_costs bdver2_cost = {
   /*  BDVER2 has optimized REP instruction for medium sized blocks, but for
       very small blocks it is better to use loop. For large blocks, libcall
       can do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   6,					/* scalar_stmt_cost.  */
   4,					/* scalar load_cost.  */
   4,					/* scalar_store_cost.  */
@@ -1063,11 +1077,14 @@ struct processor_costs bdver3_cost = {
   /*  BDVER3 has optimized REP instruction for medium sized blocks, but for
       very small blocks it is better to use loop. For large blocks, libcall
       can do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   6,					/* scalar_stmt_cost.  */
   4,					/* scalar load_cost.  */
   4,					/* scalar_store_cost.  */
@@ -1145,11 +1162,14 @@ struct processor_costs btver1_cost = {
   /* BTVER1 has optimized REP instruction for medium sized blocks, but for
      very small blocks it is better to use loop. For large blocks, libcall can
      do nontemporary accesses and beat inline considerably.  */
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -1224,11 +1244,14 @@ struct processor_costs btver2_cost = {
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
 
-  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {24, unrolled_loop},
-	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{6, loop, false}, {14, unrolled_loop, false},
+	      {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{16, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {24, unrolled_loop, false},
+	      {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{48, unrolled_loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   4,					/* scalar_stmt_cost.  */
   2,					/* scalar load_cost.  */
   2,					/* scalar_store_cost.  */
@@ -1295,10 +1318,10 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (43),			/* cost of FSQRT instruction.  */
-  {{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
+  {{libcall, {{12, loop_1_byte, false}, {-1, rep_prefix_4_byte, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
-   {-1, libcall}}},
+  {{libcall, {{6, loop_1_byte, false}, {48, loop, false},
+	      {20480, rep_prefix_4_byte, false}, {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -1366,13 +1389,13 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (3),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (3),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (44),			/* cost of FSQRT instruction.  */
-  {{libcall, {{12, loop_1_byte}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{32, loop}, {20000, rep_prefix_8_byte},
-	      {100000, unrolled_loop}, {-1, libcall}}}},
-  {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
-   {-1, libcall}}},
-   {libcall, {{24, loop}, {64, unrolled_loop},
-	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{12, loop_1_byte, false}, {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{32, loop, false}, {20000, rep_prefix_8_byte, false},
+	      {100000, unrolled_loop, false}, {-1, libcall, false}}}},
+  {{libcall, {{6, loop_1_byte, false}, {48, loop, false},
+	      {20480, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{24, loop, false}, {64, unrolled_loop, false},
+	      {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1439,13 +1462,13 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  {{libcall, {{11, loop}, {-1, rep_prefix_4_byte}}},
-   {libcall, {{32, loop}, {64, rep_prefix_4_byte},
-	  {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  {{libcall, {{8, loop}, {15, unrolled_loop},
-	  {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{24, loop}, {32, unrolled_loop},
-	  {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{11, loop, false}, {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{32, loop, false}, {64, rep_prefix_4_byte, false},
+	  {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {15, unrolled_loop, false},
+	  {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{24, loop, false}, {32, unrolled_loop, false},
+	  {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1520,9 +1543,92 @@ struct processor_costs generic64_cost = {
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
   {DUMMY_STRINGOP_ALGS,
-   {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
   {DUMMY_STRINGOP_ALGS,
-   {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
+	      {-1, libcall, false}}}},
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
+};
+
+/* core_cost should produce code tuned for Core familly of CPUs.  */
+static const
+struct processor_costs core_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  /* On all chips taken into consideration lea is 2 cycles and more.  With
+     this cost however our current implementation of synth_mult results in
+     use of unnecessary temporary registers causing regression on several
+     SPECfp benchmarks.  */
+  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (2)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  17,					/* MOVE_RATIO */
+  4,				     /* cost for loading QImode using movzbl */
+  {4, 4, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {4, 4, 4},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 12},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {8, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {8, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {8, 8, 8},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {8, 8, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  5,					/* MMX or SSE register to integer */
+  64,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
+  /* FIXME perhaps more appropriate value is 5.  */
+  3,					/* Branch cost */
+  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  {{libcall, {{1024, rep_prefix_4_byte, true}, {-1, libcall, false}}},
+   {libcall, {{24, loop, true}, {128, rep_prefix_8_byte, true},
+              {-1, libcall, false}}}},
+  {{libcall, {{6, loop_1_byte, true},
+              {24, loop, true},
+              {8192, rep_prefix_4_byte, true},
+              {-1, libcall, false}}},
+   {libcall, {{24, loop, true}, {512, rep_prefix_8_byte, true},
+              {-1, libcall, false}}}},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1591,9 +1697,11 @@ struct processor_costs generic32_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
+	      {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
-  {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
+  {{libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
+	      {-1, libcall, false}}},
    DUMMY_STRINGOP_ALGS},
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
@@ -1622,14 +1730,9 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_PENT4 (1<<PROCESSOR_PENTIUM4)
 #define m_NOCONA (1<<PROCESSOR_NOCONA)
 #define m_P4_NOCONA (m_PENT4 | m_NOCONA)
-#define m_CORE2_32 (1<<PROCESSOR_CORE2_32)
-#define m_CORE2_64 (1<<PROCESSOR_CORE2_64)
-#define m_COREI7_32 (1<<PROCESSOR_COREI7_32)
-#define m_COREI7_64 (1<<PROCESSOR_COREI7_64)
-#define m_COREI7 (m_COREI7_32 | m_COREI7_64)
-#define m_CORE2I7_32 (m_CORE2_32 | m_COREI7_32)
-#define m_CORE2I7_64 (m_CORE2_64 | m_COREI7_64)
-#define m_CORE2I7 (m_CORE2I7_32 | m_CORE2I7_64)
+#define m_CORE2 (1<<PROCESSOR_CORE2)
+#define m_COREI7 (1<<PROCESSOR_COREI7)
+#define m_CORE2I7 (m_CORE2 | m_COREI7)
 #define m_ATOM (1<<PROCESSOR_ATOM)
 
 #define m_GEODE (1<<PROCESSOR_GEODE)
@@ -1665,7 +1768,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      negatively, so enabling for Generic64 seems like good code size
      tradeoff.  We can't enable it for 32bit generic because it does not
      work well with PPro base chips.  */
-  m_386 | m_CORE2I7_64 | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64,
+  m_386 | m_CORE2I7 | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64,
 
   /* X86_TUNE_PUSH_MEMORY */
   m_386 | m_P4_NOCONA | m_CORE2I7 | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
@@ -1856,7 +1959,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
 
   /* X86_TUNE_AVOID_VECTOR_DECODE */
-  m_CORE2I7_64 | m_K8 | m_GENERIC64,
+  m_CORE2I7 | m_K8 | m_GENERIC64,
 
   /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
      and SImode multiply, but 386 and 486 do HImode multiply faster.  */
@@ -1864,11 +1967,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
      vector path on AMD machines.  */
-  m_CORE2I7_64 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
+  m_CORE2I7 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
 
   /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
      machines.  */
-  m_CORE2I7_64 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
+  m_CORE2I7 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
 
   /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
      than a MOV.  */
@@ -2329,14 +2432,10 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&pentium4_cost, 0, 0, 0, 0, 0},
   {&k8_cost, 16, 7, 16, 7, 16},
   {&nocona_cost, 0, 0, 0, 0, 0},
-  /* Core 2 32-bit.  */
-  {&generic32_cost, 16, 10, 16, 10, 16},
-  /* Core 2 64-bit.  */
-  {&generic64_cost, 16, 10, 16, 10, 16},
-  /* Core i7 32-bit.  */
-  {&generic32_cost, 16, 10, 16, 10, 16},
-  /* Core i7 64-bit.  */
-  {&generic64_cost, 16, 10, 16, 10, 16},
+  /* Core 2  */
+  {&core_cost, 16, 10, 16, 10, 16},
+  /* Core i7  */
+  {&core_cost, 16, 10, 16, 10, 16},
   {&generic32_cost, 16, 7, 16, 7, 16},
   {&generic64_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
@@ -2799,23 +2898,23 @@ ix86_option_override_internal (bool main_args_p)
       {"nocona", PROCESSOR_NOCONA, CPU_NONE,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_CX16 | PTA_NO_SAHF | PTA_FXSR},
-      {"core2", PROCESSOR_CORE2_64, CPU_CORE2,
+      {"core2", PROCESSOR_CORE2, CPU_CORE2,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_FXSR},
-      {"corei7", PROCESSOR_COREI7_64, CPU_COREI7,
+      {"corei7", PROCESSOR_COREI7, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_FXSR},
-      {"corei7-avx", PROCESSOR_COREI7_64, CPU_COREI7,
+      {"corei7-avx", PROCESSOR_COREI7, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL
 	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
-      {"core-avx-i", PROCESSOR_COREI7_64, CPU_COREI7,
+      {"core-avx-i", PROCESSOR_COREI7, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
 	| PTA_RDRND | PTA_F16C | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
-      {"core-avx2", PROCESSOR_COREI7_64, CPU_COREI7,
+      {"core-avx2", PROCESSOR_COREI7, CPU_COREI7,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AVX | PTA_AVX2
 	| PTA_CX16 | PTA_POPCNT | PTA_AES | PTA_PCLMUL | PTA_FSGSBASE
@@ -3325,14 +3424,6 @@ ix86_option_override_internal (bool main_args_p)
 	      case PROCESSOR_GENERIC64:
 		ix86_tune = PROCESSOR_GENERIC32;
 		ix86_schedule = CPU_PENTIUMPRO;
-		break;
-
-	      case PROCESSOR_CORE2_64:
-		ix86_tune = PROCESSOR_CORE2_32;
-		break;
-
-	      case PROCESSOR_COREI7_64:
-		ix86_tune = PROCESSOR_COREI7_32;
 		break;
 
 	      default:
@@ -22282,7 +22373,7 @@ expand_constant_setmem_prologue (rtx dst, rtx destreg, rtx value,
 /* Given COUNT and EXPECTED_SIZE, decide on codegen of string operation.  */
 static enum stringop_alg
 decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
-	    int *dynamic_check)
+	    int *dynamic_check, bool *noalign)
 {
   const struct stringop_algs * algs;
   bool optimize_for_speed;
@@ -22293,6 +22384,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
   bool rep_prefix_usable = !(fixed_regs[CX_REG] || fixed_regs[DI_REG]
                              || (memset
 				 ? fixed_regs[AX_REG] : fixed_regs[SI_REG]));
+  *noalign = false;
 
 #define ALG_USABLE_P(alg) (rep_prefix_usable			\
 			   || (alg != rep_prefix_1_byte		\
@@ -22360,7 +22452,10 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 		  break;
 		}
 	      else if (ALG_USABLE_P (candidate))
-		return candidate;
+		{
+		  *noalign = algs->size[i].noalign;
+		  return candidate;
+		}
 	    }
 	}
       gcc_assert (TARGET_INLINE_ALL_STRINGOPS || !rep_prefix_usable);
@@ -22401,7 +22496,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
         }
       if (max == -1)
 	max = 4096;
-      alg = decide_alg (count, max / 2, memset, dynamic_check);
+      alg = decide_alg (count, max / 2, memset, dynamic_check, noalign);
       gcc_assert (*dynamic_check == -1);
       gcc_assert (alg != libcall);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
@@ -22515,6 +22610,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   enum stringop_alg alg;
   int dynamic_check;
   bool need_zero_guard = false;
+  bool noalign;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -22539,10 +22635,10 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
 
-  alg = decide_alg (count, expected_size, false, &dynamic_check);
+  alg = decide_alg (count, expected_size, false, &dynamic_check, &noalign);
   desired_align = decide_alignment (align, alg, expected_size);
 
-  if (!TARGET_ALIGN_STRINGOPS)
+  if (!TARGET_ALIGN_STRINGOPS || noalign)
     align = desired_align;
 
   if (alg == libcall)
@@ -22910,6 +23006,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   bool force_loopy_epilogue = false;
   int dynamic_check;
   bool need_zero_guard = false;
+  bool noalign;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -22929,10 +23026,10 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
 
-  alg = decide_alg (count, expected_size, true, &dynamic_check);
+  alg = decide_alg (count, expected_size, true, &dynamic_check, &noalign);
   desired_align = decide_alignment (align, alg, expected_size);
 
-  if (!TARGET_ALIGN_STRINGOPS)
+  if (!TARGET_ALIGN_STRINGOPS || noalign)
     align = desired_align;
 
   if (alg == libcall)
@@ -23935,10 +24032,8 @@ ix86_issue_rate (void)
 
     case PROCESSOR_PENTIUMPRO:
     case PROCESSOR_PENTIUM4:
-    case PROCESSOR_CORE2_32:
-    case PROCESSOR_CORE2_64:
-    case PROCESSOR_COREI7_32:
-    case PROCESSOR_COREI7_64:
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
@@ -24193,10 +24288,8 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_K6:
       return 1;
 
-    case PROCESSOR_CORE2_32:
-    case PROCESSOR_CORE2_64:
-    case PROCESSOR_COREI7_32:
-    case PROCESSOR_COREI7_64:
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
     case PROCESSOR_ATOM:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
@@ -24739,10 +24832,8 @@ ix86_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
      they are actually used.  */
   switch (ix86_tune)
     {
-    case PROCESSOR_CORE2_32:
-    case PROCESSOR_CORE2_64:
-    case PROCESSOR_COREI7_32:
-    case PROCESSOR_COREI7_64:
+    case PROCESSOR_CORE2:
+    case PROCESSOR_COREI7:
       /* Do not perform multipass scheduling for pre-reload schedule
          to save compile time.  */
       if (reload_completed)
@@ -28572,13 +28663,11 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	{
 	  switch (new_target->arch)
 	    {
-	    case PROCESSOR_CORE2_32:
-	    case PROCESSOR_CORE2_64:
+	    case PROCESSOR_CORE2:
 	      arg_str = "core2";
 	      priority = P_PROC_SSSE3;
 	      break;
-	    case PROCESSOR_COREI7_32:
-	    case PROCESSOR_COREI7_64:
+	    case PROCESSOR_COREI7:
 	      arg_str = "corei7";
 	      priority = P_PROC_SSE4_2;
 	      break;
@@ -32868,7 +32957,7 @@ avx_vpermilp_parallel (rtx par, enum machine_mode mode)
 {
   unsigned i, nelt = GET_MODE_NUNITS (mode);
   unsigned mask = 0;
-  unsigned char ipar[8];
+  unsigned char ipar[8] = {};  /* Silence -Wuninitialized warning.  */
 
   if (XVECLEN (par, 0) != (int) nelt)
     return 0;
@@ -32943,7 +33032,7 @@ avx_vperm2f128_parallel (rtx par, enum machine_mode mode)
 {
   unsigned i, nelt = GET_MODE_NUNITS (mode), nelt2 = nelt / 2;
   unsigned mask = 0;
-  unsigned char ipar[8];
+  unsigned char ipar[8] = {};  /* Silence -Wuninitialized warning.  */
 
   if (XVECLEN (par, 0) != (int) nelt)
     return 0;
