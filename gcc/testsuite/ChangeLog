@@ -1,3 +1,8 @@
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55430
+	* gcc.dg/pr55430.c: New test.
+
 2012-11-23  Kostya Serebryany  <kcc@google.com>
 
 	* c-c++-common/asan/memcmp-1.c: Update to match the new libsanitizer.
