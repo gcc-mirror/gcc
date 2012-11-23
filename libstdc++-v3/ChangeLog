@@ -1,3 +1,25 @@
+2012-11-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52680
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Check for usleep and
+	sleep if nanosleep is not available. Bump libtool revision.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.18): Add __sleep_for.
+	* include/std/thread (this_thread::__sleep_for): Add.
+	(this_thread::yield, this_thread::sleep_until, this_thread::sleep_for):
+	Declare unconditionally.
+	* src/c++11/thread.cc (this_thread::__sleep_for): Define.
+	* testsuite/lib/libstdc++.exp (check_v3_target_nanosleep): Rename to
+	check_v3_target_sleep.
+	* testsuite/lib/dg-options.exp (dg-require-nanosleep): Rename to
+	dg-require-sleep.
+	* testsuite/30_threads/condition_variable_any/53830.cc: Update.
+	* testsuite/30_threads/this_thread/2.cc: Likewise.
+	* testsuite/30_threads/this_thread/3.cc: Likewise.
+	* testsuite/30_threads/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/async/54297.cc: Likewise.
+
 2012-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55413

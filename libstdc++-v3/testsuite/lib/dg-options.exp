@@ -143,8 +143,8 @@ proc dg-require-gthreads-timed { args } {
     return
 }
 
-proc dg-require-nanosleep { args } {
-    if { ![ check_v3_target_nanosleep ] } {
+proc dg-require-sleep { args } {
+    if { ![ check_v3_target_sleep ] } {
         upvar dg-do-what dg-do-what
         set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
         return

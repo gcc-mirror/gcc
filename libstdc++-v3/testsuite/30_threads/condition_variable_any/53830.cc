@@ -5,7 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-sched-yield "" }
-// { dg-require-nanosleep "" }
+// { dg-require-sleep "" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //

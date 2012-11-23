@@ -327,6 +327,9 @@
 /* Define to 1 if you have the `sinl' function. */
 #undef HAVE_SINL
 
+/* Defined if sleep exists. */
+#undef HAVE_SLEEP
+
 /* Define to 1 if you have the `sqrtf' function. */
 #undef HAVE_SQRTF
 
@@ -435,6 +438,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Defined if usleep exists. */
+#undef HAVE_USLEEP
 
 /* Defined if vfwscanf exists. */
 #undef HAVE_VFWSCANF

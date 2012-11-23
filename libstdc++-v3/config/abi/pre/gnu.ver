@@ -1339,6 +1339,9 @@ GLIBCXX_3.4.18 {
     # construction vtable
     _ZTCSt*;
 
+    # std::this_thread::__sleep_for
+    _ZNSt11this_thread11__sleep_for*;
+
 } GLIBCXX_3.4.17;
 
 # Symbols in the support library (libsupc++) have their own tag.
