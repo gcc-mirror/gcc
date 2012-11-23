@@ -1,3 +1,12 @@
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55435
+	* asan.c (gate_asan): Don't instrument functions with
+	no_address_safety_analysis attribute.
+	(gate_asan_O0): Use !optimize && gate_asan ().
+	* doc/extend.texi (no_address_safety_analysis): Document new
+	function attribute.
+
 2012-11-22  Teresa Johnson  <tejohnson@google.com>
 	    Jan Hubicka  <jh@suse.cz>
 
