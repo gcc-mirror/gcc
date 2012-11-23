@@ -84,8 +84,7 @@ am__objects_1 = tsan_clock.lo tsan_interface_atomic.lo tsan_mutex.lo \
 	tsan_rtl.lo tsan_stat.lo tsan_sync.lo tsan_interceptors.lo \
 	tsan_md5.lo tsan_platform_mac.lo tsan_rtl_mutex.lo \
 	tsan_suppressions.lo tsan_interface_ann.lo tsan_mman.lo \
-	tsan_rtl_report.lo \
-	tsan_symbolize_addr2line_linux.lo
+	tsan_rtl_report.lo tsan_symbolize_addr2line_linux.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -238,6 +237,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I $(top_srcdir) -I $(top_srcdir)/include
+
+# May be used by toolexeclibdir.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libtsan.la
