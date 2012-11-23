@@ -1,3 +1,15 @@
+2012-11-22  Teresa Johnson  <tejohnson@google.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (maybe_hot_count_p): Use threshold from profiled working
+	set instead of hard limit.
+	(cgraph_maybe_hot_edge_p): Invoke maybe_hot_count_p() instead of
+	directly checking limit.
+	* params.def (HOT_BB_COUNT_FRACTION): Remove.
+	(HOT_BB_COUNT_WS_PERMILLE): New parameter.
+	* invoke.texi (hot-bb-count-fraction): Remove.
+	(hot-bb-count-ws-permille): Document.
+
 2012-11-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55430
