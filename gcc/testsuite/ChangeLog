@@ -1,3 +1,10 @@
+2012-11-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/unroll_5.c: Add dg-require-effective-target int32plus.
+	* gcc.dg/pr55150-1.c: Same.
+	* gcc.dg/torture/pr54894.c: Add size32plus.
+
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55435
