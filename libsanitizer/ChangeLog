@@ -1,3 +1,16 @@
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan/Makefile.am (AM_CXXFLAGS): Remove -Wno-variadic-macros.
+	* Makefile.am (SUBDIRS): Guard tsan addition with TSAN_SUPPORTED
+	automake conditional instead of !MULTISUBDIR32.
+	* configure.tgt: Set TSAN_SUPPORTED=yes for x86_64/i686-linux
+	for 64-bit multilib.
+	* configure.ac: Check for void * size, source in configure.tgt,
+	define TSAN_SUPPORTED conditional instead of MULTILIBDIR32.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* tsan/Makefile.in: Regenerated.
+
 2012-11-22  Wei Mi  <wmi@google.com>
 
 	* tsan: New directory. Import tsan runtime from llvm.

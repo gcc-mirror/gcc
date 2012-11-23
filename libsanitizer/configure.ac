@@ -67,12 +67,18 @@ AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
+AC_CHECK_SIZEOF([void *])
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
   multilib_arg=
 fi
-AM_CONDITIONAL(MULTISUBDIR32, [test "x$with_multisubdir" = "x32"])
+
+# Get target configury.
+unset TSAN_SUPPORTED
+. ${srcdir}/configure.tgt
+AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 
 AC_CONFIG_FILES([Makefile])
 
@@ -89,7 +95,7 @@ _EOF
    AS_UNSET([ml_norecursion])
 ])
 
-if test "x$with_multisubdir" != "x32"; then
+if test "x$TSAN_SUPPORTED" = "xyes"; then
   AC_CONFIG_FILES(AC_FOREACH([DIR], [tsan], [DIR/Makefile ]), 
     [cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!

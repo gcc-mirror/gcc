@@ -244,8 +244,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
-@MULTISUBDIR32_FALSE@SUBDIRS = interception sanitizer_common asan tsan 
-@MULTISUBDIR32_TRUE@SUBDIRS = interception sanitizer_common asan 
+@TSAN_SUPPORTED_FALSE@SUBDIRS = interception sanitizer_common asan 
+@TSAN_SUPPORTED_TRUE@SUBDIRS = interception sanitizer_common asan tsan 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
