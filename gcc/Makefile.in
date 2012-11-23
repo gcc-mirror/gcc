@@ -2527,7 +2527,7 @@ gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
    $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) $(TREE_INLINE_H) langhooks.h \
    $(LANGHOOKS_DEF_H) $(TREE_FLOW_H) $(TM_H) coretypes.h \
    $(EXCEPT_H) $(FLAGS_H) $(RTL_H) $(FUNCTION_H) $(TREE_PASS_H) \
-   $(HASHTAB_H) $(DIAGNOSTIC_CORE_H) tree-iterator.h
+   $(HASHTAB_H) $(DIAGNOSTIC_CORE_H) tree-iterator.h langhooks.h
 omp-low.o : omp-low.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(GIMPLE_H) $(TREE_INLINE_H) langhooks.h $(DIAGNOSTIC_CORE_H) \
    $(TREE_FLOW_H) $(FLAGS_H) $(EXPR_H) $(DIAGNOSTIC_CORE_H) \
