@@ -1,3 +1,19 @@
+2012-11-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55430
+	* lra.c: Move #include "hard-reg-set.h" before #include "rtl.h".
+	(new_insn_reg): Update biggest_mode.
+	(collect_non_operand_hard_regs): Check eliminable regs too.
+	(initialize_lra_reg_info_element): Initialize biggest_mode.
+	(add_regs_to_insn_regno_info): Ignore non-allocatable
+	non-eliminable hard regs.
+	(lra.c): Move setting lra_no_alloc_regs before
+	init_insn_recog_data.
+	* lra-constraints.c (simplify_operand_subreg): Add a comment.
+	(lra_constraints): Ignore equivalent memory of
+	regs occuring in paradoxical subregs.
+	* lra-lives.c (lra_create_live_ranges): Add a comment.
+
 2012-11-22  Dmitry Vyukov  <dvyukov@google.com>
 	    Wei Mi  <wmi@google.com>
 

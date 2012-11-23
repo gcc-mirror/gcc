@@ -97,6 +97,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "hard-reg-set.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "regs.h"
@@ -105,7 +106,6 @@ along with GCC; see the file COPYING3.	If not see
 #include "recog.h"
 #include "output.h"
 #include "addresses.h"
-#include "hard-reg-set.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -461,6 +461,8 @@ new_insn_reg (int regno, enum op_type type, enum machine_mode mode,
   ir = (struct lra_insn_reg *) pool_alloc (insn_reg_pool);
   ir->type = type;
   ir->biggest_mode = mode;
+  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode))
+    lra_reg_info[regno].biggest_mode = mode;
   ir->subreg_p = subreg_p;
   ir->early_clobber = early_clobber;
   ir->regno = regno;
@@ -916,7 +918,8 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
       for (last = regno + hard_regno_nregs[regno][mode];
 	   regno < last;
 	   regno++)
-	if (! TEST_HARD_REG_BIT (lra_no_alloc_regs, regno))
+	if (! TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
+	    || TEST_HARD_REG_BIT (eliminable_regset, regno))
 	  {
 	    for (curr = list; curr != NULL; curr = curr->next)
 	      if (curr->regno == regno && curr->subreg_p == subreg_p
@@ -1384,6 +1387,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].preferred_hard_regno2 = -1;
   lra_reg_info[i].preferred_hard_regno_profit1 = 0;
   lra_reg_info[i].preferred_hard_regno_profit2 = 0;
+  lra_reg_info[i].biggest_mode = VOIDmode;
   lra_reg_info[i].live_ranges = NULL;
   lra_reg_info[i].nrefs = lra_reg_info[i].freq = 0;
   lra_reg_info[i].last_reload = 0;
@@ -1530,6 +1534,10 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
   if (REG_P (x))
     {
       regno = REGNO (x);
+      if (regno < FIRST_PSEUDO_REGISTER
+	  && TEST_HARD_REG_BIT (lra_no_alloc_regs, regno)
+	  && ! TEST_HARD_REG_BIT (eliminable_regset, regno))
+	return;
       expand_reg_info ();
       if (bitmap_set_bit (&lra_reg_info[regno].insn_bitmap, uid))
 	{
@@ -2202,13 +2210,13 @@ lra (FILE *f)
 
   timevar_push (TV_LRA);
 
+  COPY_HARD_REG_SET (lra_no_alloc_regs, ira_no_alloc_regs);
+
   init_insn_recog_data ();
 
 #ifdef ENABLE_CHECKING
   check_rtl (false);
 #endif
-
-  COPY_HARD_REG_SET (lra_no_alloc_regs, ira_no_alloc_regs);
 
   lra_live_range_iter = lra_coalesce_iter = 0;
   lra_constraint_iter = lra_constraint_iter_after_spill = 0;

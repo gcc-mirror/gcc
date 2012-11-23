@@ -1146,7 +1146,12 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
   reg = SUBREG_REG (operand);
   /* If we change address for paradoxical subreg of memory, the
      address might violate the necessary alignment or the access might
-     be slow.  So take this into consideration.	 */
+     be slow.  So take this into consideration.  We should not worry
+     about access beyond allocated memory for paradoxical memory
+     subregs as we don't substitute such equiv memory (see processing
+     equivalences in function lra_constraints) and because for spilled
+     pseudos we allocate stack memory enough for the biggest
+     corresponding paradoxical subreg.  */
   if ((MEM_P (reg)
        && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
 	   || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
@@ -3363,7 +3368,12 @@ lra_constraints (bool first_p)
 		       && (set = single_set (insn)) != NULL_RTX
 		       && REG_P (SET_DEST (set))
 		       && (int) REGNO (SET_DEST (set)) == i)
-		    && init_insn_rhs_dead_pseudo_p (i)))
+		    && init_insn_rhs_dead_pseudo_p (i))
+		/* Prevent access beyond equivalent memory for
+		   paradoxical subregs.  */
+		|| (MEM_P (x)
+		    && (GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
+			> GET_MODE_SIZE (GET_MODE (x)))))
 	      ira_reg_equiv[i].defined_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;

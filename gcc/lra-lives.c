@@ -935,6 +935,10 @@ lra_create_live_ranges (bool all_p)
 #ifdef STACK_REGS
       lra_reg_info[i].no_stack_p = false;
 #endif
+      /* The biggest mode is already set but its value might be to
+	 conservative because of recent transformation.  Here in this
+	 file we recalculate it again as it costs practically
+	 nothing.  */
       if (regno_reg_rtx[i] != NULL_RTX)
 	lra_reg_info[i].biggest_mode = GET_MODE (regno_reg_rtx[i]);
       else
