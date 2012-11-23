@@ -4586,22 +4586,25 @@ generate_local_decl (gfc_symbol * sym)
 	}
 
       /* Warn for unused variables, but not if they're inside a common
-	 block, a namelist, or are use-associated.  */
+	 block or a namelist.  */
       else if (warn_unused_variable
-	       && !(sym->attr.in_common || sym->attr.use_assoc || sym->mark
-		    || sym->attr.in_namelist))
+	       && !(sym->attr.in_common || sym->mark || sym->attr.in_namelist))
 	{
-	  gfc_warning ("Unused variable '%s' declared at %L", sym->name,
-		       &sym->declared_at);
-	  if (sym->backend_decl != NULL_TREE)
-	    TREE_NO_WARNING(sym->backend_decl) = 1;
-	}
-      else if (warn_unused_variable && sym->attr.use_only)
-	{
-	  gfc_warning ("Unused module variable '%s' which has been explicitly "
-		       "imported at %L", sym->name, &sym->declared_at);
-	  if (sym->backend_decl != NULL_TREE)
-	    TREE_NO_WARNING(sym->backend_decl) = 1;
+	  if (sym->attr.use_only)
+	    {
+	      gfc_warning ("Unused module variable '%s' which has been "
+			   "explicitly imported at %L", sym->name,
+			   &sym->declared_at);
+	      if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING(sym->backend_decl) = 1;
+	    }
+	  else if (!sym->attr.use_assoc)
+	    {
+	      gfc_warning ("Unused variable '%s' declared at %L",
+			   sym->name, &sym->declared_at);
+	      if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING(sym->backend_decl) = 1;
+	    }
 	}
 
       /* For variable length CHARACTER parameters, the PARM_DECL already
