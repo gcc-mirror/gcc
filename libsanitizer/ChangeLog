@@ -1,12 +1,18 @@
+2012-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/55450
+	* tsan/Makefile.am (gcc_version): New.
+	* tsan/Makefile.in: Regenerated.
+
 2012-11-23  Kostya Serebryany  <kcc@google.com>
-        
+
 	* merge.sh: Support tsan, support added/removed files.
 	* tsan/Makefile.am: Remove tsan_printf.cc.
 	* tsan/Makefile.in: Regenerated.
 	* other files: Merge from upstream r168514.
 
 2012-11-23  Kostya Serebryany  <kcc@google.com>
-        
+
 	* merge.sh: New file.
 
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
@@ -32,7 +38,7 @@
 
 2012-11-21  Kostya Serebryany  <kcc@google.com>
 
-        * README.gcc: Extend the README.gcc with mode details.
+	* README.gcc: Extend the README.gcc with mode details.
 
 2012-11-20  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
 
