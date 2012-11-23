@@ -1,3 +1,8 @@
+2012-11-23  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/55418
+	* method.c (implicitly_declare_fn): Properly initialize trivial_p.
+
 2012-11-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55137
