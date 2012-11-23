@@ -105,7 +105,7 @@ is_load_of_const_p (tree expr, bool is_write)
 }
 
 /* Instruments EXPR if needed. If any instrumentation is inserted,
- * return true. */
+   return true.  */
 
 static bool
 instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
@@ -159,7 +159,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
       || bitsize != size * BITS_PER_UNIT)
     return false;
 
-  /* TODO: handle other case: ARRAY_RANGE_REF. */
+  /* TODO: handle other case: ARRAY_RANGE_REF.  */
   if (tcode != ARRAY_REF
       && tcode != VAR_DECL
       && tcode != COMPONENT_REF
@@ -195,7 +195,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
     {
       /* If the call can throw, it must be the last stmt in
 	 a basic block, so the instrumented stmts need to be
-	 inserted in successor bbs. */
+	 inserted in successor bbs.  */
       if (is_ctrl_altering_stmt (stmt))
 	{
 	  edge e;
@@ -215,7 +215,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 }
 
 /* Instruments the gimple pointed to by GSI. Return
- * true if func entry/exit should be instrumented. */
+   true if func entry/exit should be instrumented.  */
 
 static bool
 instrument_gimple (gimple_stmt_iterator gsi)
@@ -229,7 +229,8 @@ instrument_gimple (gimple_stmt_iterator gsi)
       && (gimple_call_fndecl (stmt)
 	  != builtin_decl_implicit (BUILT_IN_TSAN_INIT)))
     return true;
-  else if (is_gimple_assign (stmt))
+  else if (is_gimple_assign (stmt)
+	   && !gimple_clobber_p (stmt))
     {
       if (gimple_store_p (stmt))
 	{
@@ -246,7 +247,7 @@ instrument_gimple (gimple_stmt_iterator gsi)
 }
 
 /* Instruments all interesting memory accesses in the current function.
- * Return true if func entry/exit should be instrumented. */
+   Return true if func entry/exit should be instrumented.  */
 
 static bool
 instrument_memory_accesses (void)
@@ -371,8 +372,7 @@ struct gimple_opt_pass pass_tsan =
   0,					/* properties_provided  */
   0,					/* properties_destroyed  */
   0,					/* todo_flags_start  */
-  TODO_verify_all | TODO_update_ssa
-  | TODO_update_address_taken		/* todo_flags_finish  */
+  TODO_verify_all | TODO_update_ssa	/* todo_flags_finish  */
  }
 };
 
@@ -399,7 +399,6 @@ struct gimple_opt_pass pass_tsan_O0 =
   0,					/* properties_provided  */
   0,					/* properties_destroyed  */
   0,					/* todo_flags_start  */
-  TODO_verify_all | TODO_update_ssa
-  | TODO_update_address_taken		/* todo_flags_finish  */
+  TODO_verify_all | TODO_update_ssa	/* todo_flags_finish  */
  }
 };
