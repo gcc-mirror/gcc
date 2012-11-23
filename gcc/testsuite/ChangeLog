@@ -1,5 +1,8 @@
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* lib/asan-dg.exp (asan_symbolize): Remove all "BFD: " prefixed lines
+	from the output.
+
 	PR c++/54046
 	* g++.dg/warn/Wreturn-type-8.C: New test.
 
