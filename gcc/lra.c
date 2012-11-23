@@ -2212,6 +2212,9 @@ lra (FILE *f)
 
   COPY_HARD_REG_SET (lra_no_alloc_regs, ira_no_alloc_regs);
 
+  init_reg_info ();
+  expand_reg_info ();
+
   init_insn_recog_data ();
 
 #ifdef ENABLE_CHECKING
@@ -2227,9 +2230,6 @@ lra (FILE *f)
   /* We can not set up reload_in_progress because it prevents new
      pseudo creation.  */
   lra_in_progress = 1;
-
-  init_reg_info ();
-  expand_reg_info ();
 
   /* Function remove_scratches can creates new pseudos for clobbers --
      so set up lra_constraint_new_regno_start before its call to

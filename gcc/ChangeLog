@@ -1,3 +1,8 @@
+2012-11-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra): Move init_reg_info and expand_reg_info calls before
+	init_insn_recog_data.
+
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tsan.c: Fix up comment formatting.
