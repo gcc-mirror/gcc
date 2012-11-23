@@ -2236,11 +2236,20 @@ nonoverlapping_component_refs_p (const_rtx rtlx, const_rtx rtly)
       return false;
 
     found:
-      /* If we're left with accessing different fields of a structure,
-	 then no overlap.  */
-      if (TREE_CODE (typex) == RECORD_TYPE
-	  && fieldx != fieldy)
-	return true;
+      /* If we're left with accessing different fields of a structure, then no
+	 possible overlap, unless they are both true bitfields, i.e. bitfields
+	 for which the size isn't a multiple of the (memory) unit.  */
+      if (TREE_CODE (typex) == RECORD_TYPE && fieldx != fieldy)
+	{
+	  if (!DECL_BIT_FIELD (fieldx) || !DECL_BIT_FIELD (fieldy))
+	    return true;
+
+	  if ((tree_low_cst (DECL_SIZE (fieldx), 1) % BITS_PER_UNIT) == 0
+	      || (tree_low_cst (DECL_SIZE (fieldy), 1) % BITS_PER_UNIT) == 0)
+	    return true;
+
+	  return false;
+	}
 
       /* The comparison on the current field failed.  If we're accessing
 	 a very nested structure, look at the next outer level.  */

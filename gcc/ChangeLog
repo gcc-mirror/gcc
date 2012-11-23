@@ -1,3 +1,11 @@
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/55388
+	* alias.c (nonoverlapping_component_refs_p): Handle bitfields.
+	* emit-rtl.c (adjust_address_1): Deal with VOIDmode early.
+	* expmed.c (store_bit_field): Turn the call to adjust_address
+	into a call to adjust_bitfield_address_size.
+
 2012-11-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra.c (lra): Move init_reg_info and expand_reg_info calls before
