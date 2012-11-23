@@ -2072,6 +2072,10 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
     = targetm.addr_space.pointer_mode (attrs.addrspace);
 #endif
 
+  /* VOIDmode means no mode change for change_address_1.  */
+  if (mode == VOIDmode)
+    mode = GET_MODE (memref);
+
   /* Take the size of non-BLKmode accesses from the mode.  */
   defattrs = mode_mem_attrs[(int) mode];
   if (defattrs->size_known_p)
