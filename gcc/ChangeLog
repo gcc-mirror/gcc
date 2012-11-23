@@ -1,3 +1,15 @@
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54046
+	* Makefile.in (gimple-low.o): Depend on langhooks.h.
+	* gimple-low.c: Include langhooks.c.
+	(block_may_fallthru): Handle TARGET_EXPR and ERROR_MARK,
+	by default call lang_hooks.block_may_fallthru.
+	* langhooks.h (struct lang_hooks): Add block_may_fallthru
+	langhook.
+	* langhooks-def.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Define.
+	(LANG_HOOKS_INITIALIZER): Use it.
+
 2012-11-23  Jan Hubicka  <jh@suse.cz>
 
 	* i386-c.c (ix86_target_macros_internal): Update handling of core

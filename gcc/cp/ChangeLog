@@ -1,3 +1,10 @@
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54046
+	* cp-objcp-common.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Redefine.
+	* cp-objcp-common.c (cxx_block_may_fallthru): New function.
+	* cp-tree.h (cxx_block_may_fallthru): New prototype.
+
 2012-11-23  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR c++/55418
