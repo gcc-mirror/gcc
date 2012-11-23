@@ -1,3 +1,8 @@
+2012-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize=address): Remove obsolete
+	remark.
+
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54046
@@ -75,7 +80,7 @@
 	directly checking limit.
 	* params.def (HOT_BB_COUNT_FRACTION): Remove.
 	(HOT_BB_COUNT_WS_PERMILLE): New parameter.
-	* invoke.texi (hot-bb-count-fraction): Remove.
+	* doc/invoke.texi (hot-bb-count-fraction): Remove.
 	(hot-bb-count-ws-permille): Document.
 
 2012-11-22  Vladimir Makarov  <vmakarov@redhat.com>
