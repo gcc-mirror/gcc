@@ -1,3 +1,10 @@
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55435
+	* c-common.c (handle_no_address_safety_analysis_attribute): New
+	function.
+	(c_common_attribute_table): Add no_address_safety_analysis.
+
 2012-11-16  Simon Baldwin  <simonb@google.com>
 
 	* c.opt: Add f[no-]canonical-system-headers.

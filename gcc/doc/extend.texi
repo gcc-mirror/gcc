@@ -2130,10 +2130,11 @@ attributes are currently defined for functions on all targets:
 @code{weak}, @code{malloc}, @code{alias}, @code{ifunc},
 @code{warn_unused_result}, @code{nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
-@code{error} and @code{warning}.  Several other attributes are defined
-for functions on particular target systems.  Other attributes,
-including @code{section} are supported for variables declarations
-(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
+@code{no_address_safety_analysis}, @code{error} and @code{warning}.
+Several other attributes are defined for functions on particular
+target systems.  Other attributes, including @code{section} are
+supported for variables declarations (@pxref{Variable Attributes})
+and for types (@pxref{Type Attributes}).
 
 GCC plugins may provide their own attributes.
 
@@ -3415,6 +3416,12 @@ with computed goto or @code{asm goto}.
 
 The @code{cold} attribute on labels is not implemented in GCC versions
 earlier than 4.8.
+
+@item no_address_safety_analysis
+@cindex @code{no_address_safety_analysis} function attribute
+The @code{no_address_safety_analysis} attribute on functions is used
+to inform the compiler that it should not instrument memory accesses
+in the function when compiling with the @option{-fsanitize=address} option.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
