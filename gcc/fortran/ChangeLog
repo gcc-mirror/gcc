@@ -1,3 +1,10 @@
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	* resolve.c (resolve_allocate_deallocate):  Compare all
+	subscripts when deciding if to reject a (de)allocate
+	statement.
+
 2012-11-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55352
