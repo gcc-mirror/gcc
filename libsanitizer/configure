@@ -604,6 +604,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+USING_MACH_OVERRIDE_FALSE
+USING_MACH_OVERRIDE_TRUE
 TSAN_SUPPORTED_FALSE
 TSAN_SUPPORTED_TRUE
 enable_static
@@ -11078,7 +11080,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11081 "configure"
+#line 11083 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11184,7 +11186,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11187 "configure"
+#line 11189 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14494,6 +14496,19 @@ else
 fi
 
 
+case "$host" in
+  *-*-darwin*) MACH_OVERRIDE=true ;;
+  *) MACH_OVERRIDE=false ;;
+esac
+ if $MACH_OVERRIDE; then
+  USING_MACH_OVERRIDE_TRUE=
+  USING_MACH_OVERRIDE_FALSE='#'
+else
+  USING_MACH_OVERRIDE_TRUE='#'
+  USING_MACH_OVERRIDE_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile"
 
 
@@ -14668,6 +14683,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${TSAN_SUPPORTED_TRUE}" && test -z "${TSAN_SUPPORTED_FALSE}"; then
   as_fn_error "conditional \"TSAN_SUPPORTED\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USING_MACH_OVERRIDE_TRUE}" && test -z "${USING_MACH_OVERRIDE_FALSE}"; then
+  as_fn_error "conditional \"USING_MACH_OVERRIDE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

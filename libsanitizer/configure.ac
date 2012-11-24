@@ -80,6 +80,12 @@ unset TSAN_SUPPORTED
 . ${srcdir}/configure.tgt
 AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 
+case "$host" in
+  *-*-darwin*) MACH_OVERRIDE=true ;;
+  *) MACH_OVERRIDE=false ;;
+esac
+AM_CONDITIONAL(USING_MACH_OVERRIDE, $MACH_OVERRIDE)
+
 AC_CONFIG_FILES([Makefile])
 
 AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common asan], [DIR/Makefile ]),
