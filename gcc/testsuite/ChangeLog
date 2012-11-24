@@ -1,3 +1,9 @@
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	Backport from trunk
+	* gfortran.dg/allocate_error_4.f90:  New test.
+
 2012-11-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55352
