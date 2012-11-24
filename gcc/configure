@@ -7024,9 +7024,9 @@ fi
 # Determine whether or not multiarch is enabled.
 # Check whether --enable-multiarch was given.
 if test "${enable_multiarch+set}" = set; then :
-  enableval=$enable_multiarch; case "${withval}" in
-yes|no|auto) enable_multiarch=$withval;;
-*) as_fn_error "bad value ${withval} given for --enable-multiarch option" "$LINENO" 5 ;;
+  enableval=$enable_multiarch; case "${enableval}" in
+yes|no|auto) enable_multiarch=$enableval;;
+*) as_fn_error "bad value ${enableval} given for --enable-multiarch option" "$LINENO" 5 ;;
 esac
 else
   enable_multiarch=auto
