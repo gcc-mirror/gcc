@@ -1,3 +1,9 @@
+2012-11-24  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (multiarch): Use $enableval instead of $withval.
+	* configure: Regenerate.
+	* config/i386/t-kfreebsd (MULTILIB_OSDIRNAMES): Filter out x32.
+
 2012-11-23  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-fsanitize=address): Remove obsolete
