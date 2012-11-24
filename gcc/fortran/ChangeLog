@@ -1,3 +1,11 @@
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	Backport from trunk
+	* resolve.c (resolve_allocate_deallocate):  Compare all
+	subscripts when deciding if to reject a (de)allocate
+	statement.
+
 2012-09-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54225
