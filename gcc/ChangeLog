@@ -3,6 +3,8 @@
 	* configure.ac (multiarch): Use $enableval instead of $withval.
 	* configure: Regenerate.
 	* config/i386/t-kfreebsd (MULTILIB_OSDIRNAMES): Filter out x32.
+	* gcc/config/i386/t-linux64 (MULTILIB_OSDIRNAMES): Use
+	x86_64-linux-gnux32 as multiarch name for x32.
 
 2012-11-23  Tobias Burnus  <burnus@net-b.de>
 
