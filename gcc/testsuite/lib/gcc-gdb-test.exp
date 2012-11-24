@@ -74,7 +74,9 @@ proc gdb-test { args } {
 	    if { $first == $second } {
 		pass "$testname"
 	    } else {
-		send_log "$first != $second\n"
+		# We need the -- to disambiguate $first from an option,
+		# as it may be negative.
+		send_log -- "$first != $second\n"
 		fail "$testname"
 	    }
 	    remote_close target
