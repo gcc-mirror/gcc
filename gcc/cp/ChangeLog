@@ -1,3 +1,9 @@
+2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55446
+	* init.c (build_vec_init): Do not early return error_mark_mode
+	when integer_all_onesp (maxindex).
+
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54046
