@@ -1,3 +1,9 @@
+2012-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/55455
+	* quadmath-rounding-mode.h (get_rounding_mode): Don't pass
+	void to fegetround.
+
 2012-11-23  Tobias Burnus  <burnus@net-b.de>
 	    Joseph Myers  <joseph@codesourcery.com>
 
