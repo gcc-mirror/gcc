@@ -33,7 +33,7 @@ get_rounding_mode (void)
 {
 #if defined(HAVE_FENV_H) && (defined(FE_DOWNWARD) || defined(FE_TONEAREST) \
 			     || defined(FE_TOWARDZERO) || defined(FE_UPWARD))
-  return fegetround (void);
+  return fegetround ();
 #else
   return 0;
 #endif
