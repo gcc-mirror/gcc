@@ -1,3 +1,16 @@
+2012-11-24  Kostya Serebryany kcc@google.com
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* interception/mach_override/mach_override.c: Migrate from llvm.
+	* interception/mach_override/mach_override.h: Likewise.
+	* interception/mach_override/LICENSE.txt: Likewise.
+	* configure.tgt: Add darwin to supported targets.
+	* configure.ac: Define USING_MACH_OVERRIDE when on darwin.
+	* interception/Makefile.am: Compile mach_override.c when
+	USING_MACH_OVERRIDE defined.
+	* configure: Regenerated.
+	* interception/Makefile.in: Likewise.
+
 2012-11-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/55450

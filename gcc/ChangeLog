@@ -1,3 +1,7 @@
+2012-11-24  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Deal with -fsanitize=address.
+
 2012-11-24  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac (multiarch): Use $enableval instead of $withval.
