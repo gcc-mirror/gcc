@@ -103,7 +103,7 @@ func (sa *RawSockaddrUnix) getLen() (int, error) {
 	// to be uninterpreted fixed-size binary blobs--but
 	// everyone uses this convention.
 	n := 0
-	for n < len(sa.Path) - 3 && sa.Path[n] != 0 {
+	for n < len(sa.Path) && sa.Path[n] != 0 {
 		n++
 	}
 
