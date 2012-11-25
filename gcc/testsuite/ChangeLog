@@ -1,3 +1,7 @@
+2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sw-1.c (dg-options): Add -mtune=generic.
+
 2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/30146
