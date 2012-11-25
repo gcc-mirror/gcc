@@ -1,3 +1,15 @@
+2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/30146
+	* frontend-passes.c (doloop_warn):  New function.
+	(doloop_list):  New static variable.
+	(doloop_size):  New static variable.
+	(doloop_level):  New static variable.
+	(gfc_run_passes): Call doloop_warn.
+	(doloop_code):  New function.
+	(doloop_function):  New function.
+	(gfc_code_walker):  Keep track of DO level.
+
 2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/55314
