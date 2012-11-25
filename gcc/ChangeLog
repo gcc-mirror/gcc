@@ -1,3 +1,14 @@
+2012-11-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/tm.texi.in (DELAY_SLOTS_FOR_EPILOGUE): Remove documentation.
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Likewise.
+	* doc/tm.texi: Regenerate.
+	* reorg.c (fill_simple_delay_slots): Remove code conditional on
+	DELAY_SLOTS_FOR_EPILOGUE being defined.
+	(make_return_insns, dbr_schedule): Likewise.
+	* system.h (DELAY_SLOTS_FOR_EPILOGUE): Poison.
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Likewise.
+
 2012-11-24  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Deal with -fsanitize=address.
