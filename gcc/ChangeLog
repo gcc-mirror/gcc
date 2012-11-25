@@ -1,3 +1,12 @@
+2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<sse>_loadu<ssemodesuffix><avxsizesuffix>):
+	Do not depend on TARGET_SSE_TYPELESS_STORES.
+	(<sse2>_loaddqu<avxsizesuffix>): Ditto.
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>): Fix handling of
+	TARGET_SSE_TYPELESS_STORES.
+	(<sse2>_storedqu<avxsizesuffix>): Ditto.
+
 2012-11-25  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/tm.texi.in (DELAY_SLOTS_FOR_EPILOGUE): Remove documentation.
