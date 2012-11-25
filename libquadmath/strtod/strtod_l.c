@@ -223,7 +223,7 @@ round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
 	}
       else if (shift > 0)
 	{
-#ifdef HAVE_GET_ROUNDING_MODE
+#ifdef HAVE_FENV_H
 	  if (TININESS_AFTER_ROUNDING && shift == 1)
 	    {
 	      /* Whether the result counts as tiny depends on whether,
@@ -279,7 +279,7 @@ round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
   if (exponent > MAX_EXP)
     goto overflow;
 
-#ifdef HAVE_GET_ROUNDING_MODE
+#ifdef HAVE_FENV_H
   if (round_away (negative,
 		  (retval[0] & 1) != 0,
 		  (round_limb & (((mp_limb_t) 1) << round_bit)) != 0,
