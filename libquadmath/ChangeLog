@@ -1,3 +1,9 @@
+2012-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR libquadmath/55462
+	* strtod/strtod_l.c (round_and_return): Use HAVE_FENV_H
+	instead of nonexisting HAVE_GET_ROUNDING_MODE.
+
 2012-11-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/55455
