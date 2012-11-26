@@ -1,3 +1,19 @@
+2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.h (TARGET_FPU_ARMV8): New macro.
+	* config/arm/arm.md (UNSPEC_VRINTZ, UNSPEC_VRINTP, UNSPEC_VRINTM)
+	(UNSPEC_VRINTR, UNSPEC_VRINTX, UNSPEC_VRINTA): New unspecs.
+	(f_rints, f_rintd): New types.
+	* config/arm/iterators.md (VRINT): New int iterator.
+	(F_fma_type): Remove.
+	(vfp_type): New mode attribute.
+	(vfp_double_cond): Likewise.
+	(vrint_pattern, vrint_variant, vrint_predicable): New int attribute.
+	* config/arm/vfp.md (fma<SDF:mode>4): Use vfp_type iterator
+	instead of F_fma_type.
+	(*fmsub<SDF:mode>4, *fnmsub<SDF:mode>4, *fnmadd<SDF:mode>4): Likewise.
+	(<vrint_pattern><SDF:mode>2): New pattern.
+
 2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (const_binop): Adjust comment.

@@ -111,6 +111,18 @@
   UNSPEC_UNALIGNED_STORE ; Same for str/strh.
   UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
   UNSPEC_LL		; Represent an unpaired load-register-exclusive.
+  UNSPEC_VRINTZ         ; Represent a float to integral float rounding
+                        ; towards zero.
+  UNSPEC_VRINTP         ; Represent a float to integral float rounding
+                        ; towards +Inf.
+  UNSPEC_VRINTM         ; Represent a float to integral float rounding
+                        ; towards -Inf.
+  UNSPEC_VRINTR         ; Represent a float to integral float rounding
+                        ; FPSCR rounding mode.
+  UNSPEC_VRINTX         ; Represent a float to integral float rounding
+                        ; FPSCR rounding mode and signal inexactness.
+  UNSPEC_VRINTA         ; Represent a float to integral float rounding
+                        ; towards nearest, ties away from zero.
 ])
 
 ;; UNSPEC_VOLATILE Usage:
@@ -366,6 +378,8 @@
   fmuld,\
   fmacs,\
   fmacd,\
+  f_rints,\
+  f_rintd,\
   f_flag,\
   f_loads,\
   f_loadd,\

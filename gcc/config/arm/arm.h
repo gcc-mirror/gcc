@@ -298,6 +298,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU supports fused-multiply-add operations.  */
 #define TARGET_FMA (TARGET_VFP && arm_fpu_desc->rev >= 4)
 
+/* FPU is ARMv8 compatible.  */
+#define TARGET_FPU_ARMV8 (TARGET_VFP && arm_fpu_desc->rev >= 8)
+
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (TARGET_VFP && arm_fpu_desc->crypto)
 
