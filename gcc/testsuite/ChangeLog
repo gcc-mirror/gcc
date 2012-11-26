@@ -1,3 +1,9 @@
+2012-11-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* testsuite/gcc.dg/20050811-1.c: Change -dv option to -graph option
+	to -fdump-rtl-all.
+	* testsuite/gcc.dg/pr37858.c: Remove -dv option.
+
 2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_v8_vfp_ok):

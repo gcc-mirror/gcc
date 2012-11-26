@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "ggc.h"
 #include "cgraph.h"
-#include "graph.h"
 #include "cfgloop.h"
 #include "except.h"
 #include "plugin.h"
