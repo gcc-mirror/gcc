@@ -908,7 +908,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "<F_fma_type>")]
+   (set_attr "type" "fmac<vfp_type>")]
 )
 
 (define_insn "*fmsub<SDF:mode>4"
@@ -920,7 +920,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "<F_fma_type>")]
+   (set_attr "type" "fmac<vfp_type>")]
 )
 
 (define_insn "*fnmsub<SDF:mode>4"
@@ -931,7 +931,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfnms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "<F_fma_type>")]
+   (set_attr "type" "fmac<vfp_type>")]
 )
 
 (define_insn "*fnmadd<SDF:mode>4"
@@ -943,7 +943,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
   "vfnma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "<F_fma_type>")]
+   (set_attr "type" "fmac<vfp_type>")]
 )
 
 
@@ -1248,6 +1248,20 @@
   [(set_attr "type" "f_stored")]
 )
 
+;; VRINT round to integral instructions.
+;; Invoked for the patterns: btruncsf2, btruncdf2, ceilsf2, ceildf2,
+;; roundsf2, rounddf2, floorsf2, floordf2, nearbyintsf2, nearbyintdf2,
+;; rintsf2, rintdf2.
+(define_insn "<vrint_pattern><SDF:mode>2"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+        (unspec:SDF [(match_operand:SDF 1
+		         "register_operand" "<F_constraint>")]
+         VRINT))]
+  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "vrint<vrint_variant>%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1"
+  [(set_attr "predicable" "<vrint_predicable>")
+   (set_attr "type" "f_rint<vfp_type>")]
+)
 
 ;; Unimplemented insns:
 ;; fldm*
