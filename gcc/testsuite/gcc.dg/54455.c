@@ -1,6 +1,7 @@
 /* PR rtl-optimization/54455 */
 /* { dg-do compile } */
 /* { dg-options "-O1 -fschedule-insns -fselective-scheduling --param max-sched-extend-regions-iters=2" } */
+/* { dg-require-effective-target scheduling } */
 
 extern void fn1 (void), fn2 (void);
 
