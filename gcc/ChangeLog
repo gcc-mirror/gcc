@@ -1,3 +1,24 @@
+2012-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54976
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Robustify against odd inner_mode inputs.
+
+	2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54894
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Handle over-aligned scalar types properly.
+
+	2012-10-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54735
+	* tree-ssa-pre.c (do_pre): Make sure to update virtual SSA form before
+	cleaning up the CFG.
+
 2012-11-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline

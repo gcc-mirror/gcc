@@ -1,3 +1,16 @@
+2012-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54894
+	* gcc.dg/torture/pr54894.c: New testcase.
+
+	2012-10-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54735
+	* g++.dg/torture/pr54735.C: New testcase.
+
 2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55446

@@ -4949,6 +4949,13 @@ execute_pre (bool do_fre)
     todo |= tail_merge_optimize (todo);
   free_scc_vn ();
 
+  /* Tail merging invalidates the virtual SSA web, together with
+     cfg-cleanup opportunities exposed by PRE this will wreck the
+     SSA updating machinery.  So make sure to run update-ssa
+     manually, before eventually scheduling cfg-cleanup as part of
+     the todo.  */
+  update_ssa (TODO_update_ssa_only_virtuals);
+
   return todo;
 }
 
@@ -4982,8 +4989,7 @@ struct gimple_opt_pass pass_pre =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   TODO_rebuild_alias,			/* todo_flags_start */
-  TODO_update_ssa_only_virtuals  | TODO_ggc_collect
-  | TODO_verify_ssa /* todo_flags_finish */
+  TODO_ggc_collect | TODO_verify_ssa	/* todo_flags_finish */
  }
 };
 
