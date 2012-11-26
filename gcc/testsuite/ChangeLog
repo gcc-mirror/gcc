@@ -1,3 +1,21 @@
+2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_v8_vfp_ok):
+	New procedure.
+	(add_options_for_arm_v8_vfp): New procedure.
+	* gcc.target/arm/vrintaf32.c: New test.
+	* gcc.target/arm/vrintaf64.c: Likewise.
+	* gcc.target/arm/vrintmf32.c: Likewise.
+	* gcc.target/arm/vrintmf64.c: Likewise.
+	* gcc.target/arm/vrintpf32.c: Likewise.
+	* gcc.target/arm/vrintpf64.c: Likewise.
+	* gcc.target/arm/vrintrf32.c: Likewise.
+	* gcc.target/arm/vrintrf64.c: Likewise.
+	* gcc.target/arm/vrintxf32.c: Likewise.
+	* gcc.target/arm/vrintxf64.c: Likewise.
+	* gcc.target/arm/vrintzf32.c: Likewise.
+	* gcc.target/arm/vrintzf64.c: Likewise.
+
 2012-11-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54997
