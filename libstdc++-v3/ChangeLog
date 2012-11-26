@@ -1,3 +1,11 @@
+2012-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55463
+	* include/std/functional (_Mem_fn): Handle rvalue objects. Add
+	noexcept-specifications.
+	* testsuite/20_util/function_objects/mem_fn/55463.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
 2012-11-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52680

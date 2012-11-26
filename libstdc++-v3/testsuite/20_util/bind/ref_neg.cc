@@ -30,10 +30,10 @@ void test01()
 {
   const int dummy = 0;
   std::bind(&inc, _1)(0);               // { dg-error  "no match" }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1208 }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1222 }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1236 }
-  // { dg-error "rvalue|const" "" { target *-*-* } 1250 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1224 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1238 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1252 }
+  // { dg-error "rvalue|const" "" { target *-*-* } 1266 }
   std::bind(&inc, std::ref(dummy))();	// { dg-error  "no match" }
 }
 
