@@ -1374,7 +1374,7 @@ place_field (record_layout_info rli, tree field)
 	  normalize_rli (rli);
         }
 
-      /* If we're starting a new run of same size type bitfields
+      /* If we're starting a new run of same type size bitfields
 	 (or a run of non-bitfields), set up the "first of the run"
 	 fields.
 

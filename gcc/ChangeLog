@@ -1,3 +1,12 @@
+2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (const_binop): Adjust comment.
+	(extract_muldiv_1): Likewise.
+	(fold_comparison): Likewise.
+	* stor-layout.c (place_field): Fix typo.
+	* tree.c (double_int_fits_to_tree_p): Remove obsolete comment.
+	(force_fit_type_double): Likewise.  Fix long line.
+
 2012-11-26  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.h (TARGET_LDRD): Reject Thumb1 targets.
