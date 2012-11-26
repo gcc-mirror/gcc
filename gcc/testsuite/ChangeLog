@@ -1,3 +1,10 @@
+2012-11-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	* gcc.dg/guality/pr36728-1.c, gcc.dg/guality/pr36728-2.c (foo): Don't
+	use volatile asms, use plain asms.   Where the output value for the
+	asm is unused, write a global variable.
+
 2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sw-1.c (dg-options): Add -mtune=generic.
