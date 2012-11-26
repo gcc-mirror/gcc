@@ -1,3 +1,8 @@
+2012-11-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55277
+	* lra-constraints.c (in_class_p): Check reg class contents too.
+
 2012-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_builtin_decls): New.
