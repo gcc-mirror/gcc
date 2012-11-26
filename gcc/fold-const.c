@@ -1359,7 +1359,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
   return NULL_TREE;
 }
 
-/* Create a size type INT_CST node with NUMBER sign extended.  KIND
+/* Create a sizetype INT_CST node with NUMBER sign extended.  KIND
    indicates which particular sizetype to create.  */
 
 tree
@@ -5809,11 +5809,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       else
 	break;
 
-      /* If we have an unsigned type is not a sizetype, we cannot widen
-	 the operation since it will change the result if the original
-	 computation overflowed.  */
-      if (TYPE_UNSIGNED (ctype)
-	  && ctype != type)
+      /* If we have an unsigned type, we cannot widen the operation since it
+	 will change the result if the original computation overflowed.  */
+      if (TYPE_UNSIGNED (ctype) && ctype != type)
 	break;
 
       /* If we were able to eliminate our operation from the first side,
@@ -9006,7 +9004,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	    }
 	  /* We can simplify the comparison to a comparison of the variable
 	     offset parts if the constant offset parts are equal.
-	     Be careful to use signed size type here because otherwise we
+	     Be careful to use signed sizetype here because otherwise we
 	     mess with array offsets in the wrong way.  This is possible
 	     because pointer arithmetic is restricted to retain within an
 	     object and overflow on pointer differences is undefined as of
@@ -9016,11 +9014,11 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		       || (indirect_base0 && DECL_P (base0))
 		       || POINTER_TYPE_OVERFLOW_UNDEFINED))
 	    {
-	      /* By converting to signed size type we cover middle-end pointer
+	      /* By converting to signed sizetype we cover middle-end pointer
 	         arithmetic which operates on unsigned pointer types of size
 	         type size and ARRAY_REF offsets which are properly sign or
 	         zero extended from their type in case it is narrower than
-	         size type.  */
+	         sizetype.  */
 	      if (offset0 == NULL_TREE)
 		offset0 = build_int_cst (ssizetype, 0);
 	      else
