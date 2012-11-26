@@ -1,3 +1,7 @@
+2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (redundant_insn): Do not handle DEBUG_INSNs.
+
 2012-11-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/55277
@@ -44,8 +48,7 @@
 
 2012-11-26  Marek Polacek  <polacek@redhat.com>
 
-	* cprop.c (hash_set): Remove variable.  Use regno
-	variable directly.
+	* cprop.c (hash_set): Remove variable.  Use regno variable directly.
 
 2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 

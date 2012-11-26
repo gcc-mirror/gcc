@@ -1628,7 +1628,7 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
       if (LABEL_P (trial))
 	return 0;
 
-      if (!NONDEBUG_INSN_P (trial))
+      if (!INSN_P (trial))
 	continue;
       --insns_to_search;
 
@@ -1731,7 +1731,7 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
        trial && !LABEL_P (trial) && insns_to_search > 0;
        trial = PREV_INSN (trial))
     {
-      if (!NONDEBUG_INSN_P (trial))
+      if (!INSN_P (trial))
 	continue;
       --insns_to_search;
 
