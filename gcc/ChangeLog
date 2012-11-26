@@ -1,5 +1,9 @@
 2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* doc/sourcebuild.texi: Document arm_v8_vfp_ok.
+
+2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.h (TARGET_FPU_ARMV8): New macro.
 	* config/arm/arm.md (UNSPEC_VRINTZ, UNSPEC_VRINTP, UNSPEC_VRINTM)
 	(UNSPEC_VRINTR, UNSPEC_VRINTX, UNSPEC_VRINTA): New unspecs.
