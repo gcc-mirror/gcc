@@ -1,3 +1,7 @@
+2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (gfc_finish_var_decl): Do not set DECL_RESTRICTED_P.
+
 2012-11-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54997

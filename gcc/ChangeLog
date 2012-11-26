@@ -1,3 +1,16 @@
+2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (DECL_RESTRICTED_P): Delete.
+	(DECL_READ_P): Add comment.
+	(DECL_NONSHAREABLE): Likewise.
+	(TYPE_NO_FORCE_BLK): Fix comment.
+	(struct tree_decl_common): Remove decl_restricted_flag, add decl_flag_3.
+	* tree-emutls.c (new_emutls_decl): Do not deal with DECL_RESTRICTED_P.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Likewise.
+
+	* alias.c (nonoverlapping_component_refs_p): Fix thinko.
+
 2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/sourcebuild.texi: Document arm_v8_vfp_ok.

@@ -202,7 +202,6 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       if (TREE_CODE (expr) == VAR_DECL
 	  || TREE_CODE (expr) == PARM_DECL)
 	bp_pack_value (bp, DECL_HAS_VALUE_EXPR_P (expr), 1);
-      bp_pack_value (bp, DECL_RESTRICTED_P (expr), 1);
     }
 }
 
