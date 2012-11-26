@@ -293,7 +293,9 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class)
 	  if (nregs == 1)
 	    return true;
 	  for (j = 0; j < nregs; j++)
-	    if (TEST_HARD_REG_BIT (lra_no_alloc_regs, hard_regno + j))
+	    if (TEST_HARD_REG_BIT (lra_no_alloc_regs, hard_regno + j)
+		|| ! TEST_HARD_REG_BIT (reg_class_contents[common_class],
+					hard_regno + j))
 	      break;
 	  if (j >= nregs)
 	    return true;
