@@ -1503,14 +1503,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   // Trait type used to remove std::bind() from overload set via SFINAE
   // when first argument has integer type, so that std::bind() will
   // not be a better match than ::bind() from the BSD Sockets API.
-  template<typename _Tp>
-    class __is_socketlike
-    {
-      typedef typename decay<_Tp>::type _Tp2;
-    public:
-      static const bool value =
-	is_integral<_Tp2>::value || is_enum<_Tp2>::value;
-    };
+  template<typename _Tp, typename _Tp2 = typename decay<_Tp>::type>
+    using __is_socketlike = __or_<is_integral<_Tp2>, is_enum<_Tp2>>;
 
   template<bool _SocketLike, typename _Func, typename... _BoundArgs>
     struct _Bind_helper
