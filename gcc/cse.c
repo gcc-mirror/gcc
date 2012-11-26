@@ -5661,10 +5661,9 @@ cse_insn (rtx insn)
 	  invalidate (XEXP (dest, 0), GET_MODE (dest));
       }
 
-  /* A volatile ASM invalidates everything.  */
+  /* A volatile ASM or an UNSPEC_VOLATILE invalidates everything.  */
   if (NONJUMP_INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
-      && MEM_VOLATILE_P (PATTERN (insn)))
+      && volatile_insn_p (PATTERN (insn)))
     flush_hash_table ();
 
   /* Don't cse over a call to setjmp; on some machines (eg VAX)

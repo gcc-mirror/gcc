@@ -951,7 +951,8 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 
   /* We must not allow the code we just generated to be reordered by
      scheduling.  Specifically, the update of the frame pointer must
-     happen immediately, not later.  */
+     happen immediately, not later.  Similarly, we must block
+     (frame-related) register values to be used across this code.  */
   emit_insn (gen_blockage ());
 }
 

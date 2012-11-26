@@ -1,3 +1,18 @@
+2012-11-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	* builtins.c (expand_builtin_setjmp_receiver): Update comment
+	regarding purpose of blockage.
+	* emit-rtl.c [!HAVE_blockage] (gen_blockage): Similarly for
+	the head comment.
+	* rtlanal.c (volatile_insn_p): Ditto.
+	* doc/md.texi (blockage): Update similarly.  Change wording to
+	require one of two forms, rather than implying a wider choice.
+	* cse.c (cse_insn): Where checking for blocking insns, use
+	volatile_insn_p instead of manual check for volatile ASM.
+	* dse.c (scan_insn): Ditto.
+	* cselib.c (cselib_process_insn): Ditto.
+
 2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (<sse>_loadu<ssemodesuffix><avxsizesuffix>):
