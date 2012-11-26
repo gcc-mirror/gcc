@@ -1,3 +1,7 @@
+2012-11-26  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.h (TARGET_LDRD): Reject Thumb1 targets.
+
 2012-11-26  Matthias Klose  <doko@ubuntu.com>
 
 	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Fix unbalanced
