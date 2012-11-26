@@ -611,12 +611,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (sym->attr.threadprivate
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
-
-  if (!sym->attr.target
-      && !sym->attr.pointer
-      && !sym->attr.cray_pointee
-      && !sym->attr.proc_pointer)
-    DECL_RESTRICTED_P (decl) = 1;
 }
 
 

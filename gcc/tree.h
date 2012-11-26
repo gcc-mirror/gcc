@@ -1321,18 +1321,13 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK3 (NODE, VAR_DECL, PARM_DECL, \
 		RESULT_DECL)->decl_common.decl_by_reference_flag)
 
-/* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that this decl
-   can be used as restricted tag to disambiguate against other restrict
-   pointers.  Used by fortran to capture something like non-addressability
-   (which it isn't really because the middle-end does take addresses of
-   such variables).  */
-#define DECL_RESTRICTED_P(NODE) \
-  (TREE_CHECK3 (NODE, VAR_DECL, PARM_DECL, \
-		RESULT_DECL)->decl_common.decl_restricted_flag)
-
+/* In VAR_DECL and PARM_DECL, set when the decl has been used except for
+   being set.  */
 #define DECL_READ_P(NODE) \
   (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl_common.decl_read_flag)
 
+/* In VAR_DECL or RESULT_DECL, set when significant code movement precludes
+   attempting to share the stack slot with some other variable.  */
 #define DECL_NONSHAREABLE(NODE) \
   (TREE_CHECK2 (NODE, VAR_DECL, \
 		RESULT_DECL)->decl_common.decl_nonshareable_flag)
@@ -2195,8 +2190,8 @@ extern enum machine_mode vector_type_mode (const_tree);
    get one debug info record for them.  */
 #define TYPE_STUB_DECL(NODE) (TREE_CHAIN (TYPE_CHECK (NODE)))
 
-/* In a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, it means the type
-   has BLKmode only because it lacks the alignment requirement for
+/* In a RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE or ARRAY_TYPE, it means
+   the type has BLKmode only because it lacks the alignment required for
    its size.  */
 #define TYPE_NO_FORCE_BLK(NODE) \
   (TYPE_CHECK (NODE)->type_common.no_force_blk_flag)
@@ -2848,26 +2843,22 @@ struct GTY(()) tree_decl_common {
      In VAR_DECL, PARM_DECL and RESULT_DECL, this is
      DECL_HAS_VALUE_EXPR_P.  */
   unsigned decl_flag_2 : 1;
+  /* 1 bit unused.  */
+  unsigned decl_flag_3 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
   unsigned gimple_reg_flag : 1;
   /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
   unsigned decl_by_reference_flag : 1;
-  /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_RESTRICTED_P.  */
-  unsigned decl_restricted_flag : 1;
-
-  /* In VAR_DECL and PARM_DECL set when the decl has been used except for
-     being set.  */
+  /* In a VAR_DECL and PARM_DECL, this is DECL_READ_P.  */
   unsigned decl_read_flag : 1;
-
-  /* In VAR_DECL or RESULT_DECL set when significant code movement precludes
-     attempting to share the stack slot with some other variable.  */
+  /* In a VAR_DECL or RESULT_DECL, this is DECL_NONSHAREABLE.  */
   unsigned decl_nonshareable_flag : 1;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;
 
-  /* 24-bits unused.  */
+  /* 24 bits unused.  */
 
   /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
   unsigned int align;
