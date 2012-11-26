@@ -1,3 +1,13 @@
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54881
+	* match.c (select_derived_set_tmp,select_class_set_tmp): Removed and
+	unified into ...
+	(select_type_set_tmp): ... this one. Set POINTER argument according to
+	selector.
+	* trans-intrinsic.c (gfc_conv_associated): Use 'gfc_class_data_get'
+	instead of 'gfc_add_data_component'.
+
 2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/30146

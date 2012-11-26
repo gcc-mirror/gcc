@@ -1,3 +1,9 @@
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54881
+	* gfortran.dg/associated_6.f90: New.
+	* gfortran.dg/select_type_30.f03: New.
+
 2012-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54471
