@@ -1,3 +1,7 @@
+2012-11-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/20050811-2.c: Change -dv option to -graph option.
+
 2012-11-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.dg/54455.c: Require scheduling.
