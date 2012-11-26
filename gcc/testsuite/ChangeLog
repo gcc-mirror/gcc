@@ -1,3 +1,9 @@
+2012-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54471
+	* gcc.dg/tree-ssa/vrp86.c: New test.
+	* gcc.c-torture/execute/pr54471.c: New test.
+
 2012-11-26  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR middle-end/55030
