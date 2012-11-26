@@ -5777,8 +5777,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   gfc_init_se (&arg1se, NULL);
   gfc_init_se (&arg2se, NULL);
   arg1 = expr->value.function.actual;
-  if (arg1->expr->ts.type == BT_CLASS)
-    gfc_add_data_component (arg1->expr);
   arg2 = arg1->next;
 
   /* Check whether the expression is a scalar or not; we cannot use
@@ -5800,7 +5798,10 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	      && arg1->expr->symtree->n.sym->attr.dummy)
 	    arg1se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg1se.expr);
-	  tmp2 = arg1se.expr;
+	  if (arg1->expr->ts.type == BT_CLASS)
+	      tmp2 = gfc_class_data_get (arg1se.expr);
+	  else
+	    tmp2 = arg1se.expr;
         }
       else
         {
@@ -5835,6 +5836,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	      && arg1->expr->symtree->n.sym->attr.dummy)
 	    arg1se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg1se.expr);
+	  if (arg1->expr->ts.type == BT_CLASS)
+	    arg1se.expr = gfc_class_data_get (arg1se.expr);
 
 	  arg2se.want_pointer = 1;
 	  gfc_conv_expr (&arg2se, arg2->expr);
