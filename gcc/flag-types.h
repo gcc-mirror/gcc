@@ -141,13 +141,6 @@ enum excess_precision
   EXCESS_PRECISION_STANDARD
 };
 
-/* Selection of the graph form.  */
-enum graph_dump_types
-{
-  no_graph = 0,
-  vcg
-};
-
 /* Type of stack check.  */
 enum stack_check_type
 {

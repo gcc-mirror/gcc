@@ -782,12 +782,53 @@ print_insn (char *buf, const_rtx x, int verbose)
       sprintf (buf, "i%4d: barrier", INSN_UID (x));
       break;
     case NOTE:
-      sprintf (buf, " %4d %s", INSN_UID (x),
-	       GET_NOTE_INSN_NAME (NOTE_KIND (x)));
-      break;
+      {
+        int uid = INSN_UID (x);
+        const char *note_name = GET_NOTE_INSN_NAME (NOTE_KIND (x));
+	switch (NOTE_KIND (x))
+	  {
+	  case NOTE_INSN_EH_REGION_BEG:
+	  case NOTE_INSN_EH_REGION_END:
+	    sprintf (buf, " %4d %s %d", uid, note_name,
+		     NOTE_EH_HANDLER (x));
+	    break;
+
+	  case NOTE_INSN_BLOCK_BEG:
+	  case NOTE_INSN_BLOCK_END:
+	    sprintf (buf, " %4d %s %d", uid, note_name,
+		     BLOCK_NUMBER (NOTE_BLOCK (x)));
+	    break;
+
+	  case NOTE_INSN_BASIC_BLOCK:
+	    sprintf (buf, " %4d %s %d", uid, note_name,
+		     NOTE_BASIC_BLOCK (x)->index);
+	    break;
+
+	  case NOTE_INSN_DELETED_LABEL:
+	  case NOTE_INSN_DELETED_DEBUG_LABEL:
+	    {
+	      const char *label = NOTE_DELETED_LABEL_NAME (x);
+	      if (label == NULL)
+		label = "";
+	      sprintf (buf, " %4d %s (\"%s\")", uid, note_name, label);
+	    }
+	    break;
+
+	  case NOTE_INSN_VAR_LOCATION:
+	    print_pattern (t, NOTE_VAR_LOCATION (x), verbose);
+	    sprintf (buf, " %4d %s {%s}", uid, note_name, t);
+	    break;
+
+	  default:
+	    sprintf (buf, " %4d %s", uid, note_name);
+	    break;
+	  }
+	break;
+      }
     default:
       sprintf (buf, "i%4d  <What %s?>", INSN_UID (x),
 	       GET_RTX_NAME (GET_CODE (x)));
+      break;
     }
 }				/* print_insn */
 

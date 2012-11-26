@@ -1,6 +1,6 @@
-/* Test whether -dv -fdump-rtl-all doesn't crash.  */
+/* Test whether -fdump-rtl-all-graph doesn't crash.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -dv -fdump-rtl-all" } */
+/* { dg-options "-O2 -fdump-rtl-all-graph" } */
 
 int foo (void)
 {

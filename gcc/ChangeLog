@@ -1,3 +1,33 @@
+2012-11-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/invoke.texi: Remove -dv documentation.  Fix up graph dump related
+	documentation.  Document the '-graph' dump option.  Complete the '-slim'
+	dump option documentation.
+
+	* common.opt (Variable graph_dump_format): Remove.
+	* flag-types.h (enum graph_dump_types): Remove.
+	* flags.h (dump_for_graph): Remove.
+	* opts.c (decode_d_option): Remove -dv handling.
+	* sched-int.h (print_insn, print_pattern, print_value): Move prototypes
+	from here ...
+	* rtl.h: ...to here.  Add note that these functions ought to be in
+	another file.
+	* sched-vis.c (print_insn): Add detailed dump for insn notes.
+	* print-rtl.c (dump_for_graph): Remove.
+	(print_rtx): Remove dump_for_graph related code.
+	* graph.c: Almost complete re-write to dump DOT (GraphViz) dumps
+	instead of VCG dumps.
+	* graph.h (print_rtl_graph_with_bb): Update prototype.
+	* passes.c (finish_optimization_passes): Fix profile dump finishing.
+	Unconditionally loop over graph dumps to finalize.
+	(execute_function_dump): Split code to dump graphs to separate block.
+	(execute_one_pass): Don't set TDF_GRAPH here, let the dump option
+	decoders do their job.
+
+	* ddg.c (vcg_print_ddg): Make it a DEBUG_FUNCTION.
+	* toplev.c: Don't include graph.h.
+	* tree-optimize.c: Don't include graph.h.
+
 2012-11-26  Marek Polacek  <polacek@redhat.com>
 
 	* cprop.c (hash_set): Remove variable.  Use regno

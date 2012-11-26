@@ -1578,11 +1578,5 @@ extern void sd_debug_lists (rtx, sd_list_types_def);
 
 #endif /* INSN_SCHEDULING */
 
-/* Functions in sched-vis.c.  These must be outside INSN_SCHEDULING as
-   sched-vis.c is compiled always.  */
-extern void print_insn (char *, const_rtx, int);
-extern void print_pattern (char *, const_rtx, int);
-extern void print_value (char *, const_rtx, int);
-
 #endif /* GCC_SCHED_INT_H */
 
