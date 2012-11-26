@@ -1,5 +1,10 @@
 2012-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/functional (__is_socketlike): Change from class
+	template to alias template.
+
+2012-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/55463
 	* include/std/functional (_Mem_fn): Handle rvalue objects. Add
 	noexcept-specifications.
