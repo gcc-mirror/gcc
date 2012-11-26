@@ -10,5 +10,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "foo" "original" } } */
+/* { dg-final { scan-tree-dump-not "foo" "original" { target { ! avr*-*-* } } } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
