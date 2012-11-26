@@ -9,6 +9,10 @@ struct S
 
 struct S bar (void);
 
+#if __SIZEOF_INT__ < 4
+#define int __INT32_TYPE__
+#endif
+
 int a;
 
 void

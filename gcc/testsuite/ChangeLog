@@ -1,3 +1,9 @@
+2012-11-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/20120919-1.x: New file (int32plus).
+	* gcc.dg/pr54676.c: Make work for 16-bit int.
+
 2012-11-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/55277
