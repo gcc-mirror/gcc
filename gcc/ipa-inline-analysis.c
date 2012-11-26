@@ -848,9 +848,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 {
   struct cgraph_node *callee = cgraph_function_or_thunk_node (e->callee, NULL);
   struct inline_summary *info = inline_summary (callee);
-  vec<tree> known_vals = vec<tree>();
-  vec<ipa_agg_jump_function_p> known_aggs
-      = vec<ipa_agg_jump_function_p>();
+  vec<tree> known_vals = vNULL;
+  vec<ipa_agg_jump_function_p> known_aggs = vNULL;
 
   if (clause_ptr)
     *clause_ptr = inline_p ? 0 : 1 << predicate_not_inlined_condition;
@@ -1086,7 +1085,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       vec<size_time_entry, va_gc> *entry = info->entry;
       /* Use SRC parm info since it may not be copied yet.  */
       struct ipa_node_params *parms_info = IPA_NODE_REF (src);
-      vec<tree> known_vals = vec<tree>();
+      vec<tree> known_vals = vNULL;
       int count = ipa_get_param_count (parms_info);
       int i,j;
       clause_t possible_truths;
@@ -1115,8 +1114,7 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	    }
 	}
       possible_truths = evaluate_conditions_for_known_args (dst, false,
-				    known_vals,
-				    vec<ipa_agg_jump_function_p>());
+				    known_vals, vNULL);
       known_vals.release ();
 
       account_size_time (info, 0, 0, &true_pred);
@@ -2290,7 +2288,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   struct inline_summary *info = inline_summary (node);
   struct predicate bb_predicate;
   struct ipa_node_params *parms_info = NULL;
-  vec<predicate_t> nonconstant_names = vec<predicate_t>();
+  vec<predicate_t> nonconstant_names = vNULL;
   int nblocks, n;
   int *order;
   predicate array_index = true_predicate ();
@@ -2962,8 +2960,7 @@ estimate_ipcp_clone_size_and_time (struct cgraph_node *node,
   clause = evaluate_conditions_for_known_args (node, false, known_vals,
 					       known_aggs);
   estimate_node_size_and_time (node, clause, known_vals, known_binfos,
-			       known_aggs, ret_size, ret_time, hints,
-			       vec<inline_param_summary_t>());
+			       known_aggs, ret_size, ret_time, hints, vNULL);
 }
 
 /* Translate all conditions from callee representation into caller
@@ -3255,8 +3252,8 @@ inline_merge_summary (struct cgraph_edge *edge)
   struct inline_summary *info = inline_summary (to);
   clause_t clause = 0;		/* not_inline is known to be false.  */
   size_time_entry *e;
-  vec<int> operand_map = vec<int>();
-  vec<int> offset_map = vec<int>();
+  vec<int> operand_map = vNULL;
+  vec<int> offset_map = vNULL;
   int i;
   struct predicate toplev_predicate;
   struct predicate true_p = true_predicate ();
@@ -3378,9 +3375,7 @@ inline_update_overall_summary (struct cgraph_node *node)
     }
   estimate_calls_size_and_time (node, &info->size, &info->time, NULL,
 				~(clause_t)(1 << predicate_false_condition),
-				vec<tree>(),
-				vec<tree>(),
-				vec<ipa_agg_jump_function_p>());
+				vNULL, vNULL, vNULL);
   info->time = (info->time + INLINE_TIME_SCALE / 2) / INLINE_TIME_SCALE;
   info->size = (info->size + INLINE_SIZE_SCALE / 2) / INLINE_SIZE_SCALE;
 }
@@ -3485,8 +3480,7 @@ do_estimate_edge_size (struct cgraph_edge *edge)
 				&clause, &known_vals, &known_binfos,
 				&known_aggs);
   estimate_node_size_and_time (callee, clause, known_vals, known_binfos,
-			       known_aggs, &size, NULL, NULL,
-			       vec<inline_param_summary_t>());
+			       known_aggs, &size, NULL, NULL, vNULL);
   known_vals.release ();
   known_binfos.release ();
   known_aggs.release ();
@@ -3525,8 +3519,7 @@ do_estimate_edge_hints (struct cgraph_edge *edge)
 				&clause, &known_vals, &known_binfos,
 				&known_aggs);
   estimate_node_size_and_time (callee, clause, known_vals, known_binfos,
-			       known_aggs, NULL, NULL, &hints,
-			       vec<inline_param_summary_t>());
+			       known_aggs, NULL, NULL, &hints, vNULL);
   known_vals.release ();
   known_binfos.release ();
   known_aggs.release ();
@@ -3775,8 +3768,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
-			header->string_size,
-			vec<ld_plugin_symbol_resolution_t>());
+			header->string_size, vNULL);
   f_count = streamer_read_uhwi (&ib);
   for (i = 0; i < f_count; i++)
     {

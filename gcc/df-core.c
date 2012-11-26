@@ -991,7 +991,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
   bitmap worklist = BITMAP_ALLOC (&df_bitmap_obstack);
   int age = 0;
   bool changed;
-  vec<int> last_visit_age = vec<int>();
+  vec<int> last_visit_age = vNULL;
   int prev_age;
   basic_block bb;
   int i;

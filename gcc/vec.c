@@ -35,6 +35,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "hashtab.h"
 
+/* vNULL is an empty type with a template cast operation that returns
+   a zero-initialized vec<T, A, L> instance.  Use this when you want
+   to assign nil values to new vec instances or pass a nil vector as
+   a function call argument.
+
+   We use this technique because vec<T, A, L> must be PODs (they are
+   stored in unions and passed in vararg functions), this means that
+   they cannot have ctors/dtors.  */
+vnull vNULL;
+
+
 /* Store information about each particular vector.  */
 struct vec_descriptor
 {
@@ -121,8 +132,8 @@ vec_descriptor (const char *name, int line, const char *function)
 /* Account the overhead.  */
 
 void
-vec_prefix::register_overhead_PRIVATE_ (size_t size, const char *name, int line,
-			                const char *function)
+vec_prefix::register_overhead (size_t size, const char *name, int line,
+			       const char *function)
 {
   struct vec_descriptor *loc = vec_descriptor (name, line, function);
   struct ptr_hash_entry *p = XNEW (struct ptr_hash_entry);
@@ -148,7 +159,7 @@ vec_prefix::register_overhead_PRIVATE_ (size_t size, const char *name, int line,
 /* Notice that the memory allocated for the vector has been freed.  */
 
 void
-vec_prefix::release_overhead_PRIVATE_ (void)
+vec_prefix::release_overhead (void)
 {
   PTR *slot = htab_find_slot_with_hash (ptr_hash, this,
 					htab_hash_pointer (this),
@@ -165,16 +176,16 @@ vec_prefix::release_overhead_PRIVATE_ (void)
    exponentially.  PFX is the control data for the vector.  */
 
 unsigned
-vec_prefix::calculate_allocation_PRIVATE_ (vec_prefix *pfx, unsigned reserve,
-					   bool exact)
+vec_prefix::calculate_allocation (vec_prefix *pfx, unsigned reserve,
+				  bool exact)
 {
   unsigned alloc = 0;
   unsigned num = 0;
 
   if (pfx)
     {
-      alloc = pfx->alloc_PRIVATE_;
-      num = pfx->num_PRIVATE_;
+      alloc = pfx->alloc_;
+      num = pfx->num_;
     }
   else if (!reserve)
     /* If there's no vector, and we've not requested anything, then we

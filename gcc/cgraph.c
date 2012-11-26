@@ -2184,7 +2184,7 @@ collect_callers_of_node_1 (struct cgraph_node *node, void *data)
 vec<cgraph_edge_p> 
 collect_callers_of_node (struct cgraph_node *node)
 {
-  vec<cgraph_edge_p> redirect_callers = vec<cgraph_edge_p>();
+  vec<cgraph_edge_p> redirect_callers = vNULL;
   cgraph_for_node_and_aliases (node, collect_callers_of_node_1,
 			       &redirect_callers, false);
   return redirect_callers;

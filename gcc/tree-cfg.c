@@ -7269,8 +7269,8 @@ gimple_flow_call_edges_add (sbitmap blocks)
 void
 remove_edge_and_dominated_blocks (edge e)
 {
-  vec<basic_block> bbs_to_remove = vec<basic_block>();
-  vec<basic_block> bbs_to_fix_dom = vec<basic_block>();
+  vec<basic_block> bbs_to_remove = vNULL;
+  vec<basic_block> bbs_to_fix_dom = vNULL;
   bitmap df, df_idom;
   edge f;
   edge_iterator ei;

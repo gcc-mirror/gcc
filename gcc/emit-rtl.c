@@ -363,8 +363,8 @@ get_reg_attrs (tree decl, int offset)
 
 
 #if !HAVE_blockage
-/* Generate an empty ASM_INPUT, which is used to block attempts to schedule
-   across this insn. */
+/* Generate an empty ASM_INPUT, which is used to block attempts to schedule,
+   and to block register equivalences to be seen across this insn.  */
 
 rtx
 gen_blockage (void)
@@ -2071,6 +2071,10 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
   enum machine_mode pointer_mode
     = targetm.addr_space.pointer_mode (attrs.addrspace);
 #endif
+
+  /* VOIDmode means no mode change for change_address_1.  */
+  if (mode == VOIDmode)
+    mode = GET_MODE (memref);
 
   /* Take the size of non-BLKmode accesses from the mode.  */
   defattrs = mode_mem_attrs[(int) mode];

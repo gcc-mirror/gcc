@@ -289,7 +289,8 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--faddress-sanitizer -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
+-fsanitize=@var{style} @gol
+-fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -452,7 +453,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
--s  -static -static-libgcc -static-libasan -static-libstdc++ @gol
+-s  -static -static-libgcc -static-libstdc++ @gol
+-static-libasan -static-libtsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -6855,11 +6857,17 @@ assumptions based on that.
 
 The default is @option{-fzero-initialized-in-bss}.
 
-@item -faddress-sanitizer
+@item -fsanitize=address
 Enable AddressSanitizer, a fast memory error detector.
 Memory access instructions will be instrumented to detect
-out-of-bounds and use-after-free bugs. So far only heap bugs will be detected.
+out-of-bounds and use-after-free bugs.
 See @uref{http://code.google.com/p/address-sanitizer/} for more details.
+
+@item -fsanitize=thread
+Enable ThreadSanitizer, a fast data race detector.
+Memory access instructions will be instrumented to detect
+data race bugs. 
+See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
 
 @item -fmudflap -fmudflapth -fmudflapir
 @opindex fmudflap
@@ -9216,9 +9224,9 @@ doing loop versioning for alias in the vectorizer.  See option
 The maximum number of iterations of a loop the brute-force algorithm
 for analysis of the number of iterations of the loop tries to evaluate.
 
-@item hot-bb-count-fraction
-Select fraction of the maximal count of repetitions of basic block in program
-given basic block needs to have to be considered hot.
+@item hot-bb-count-ws-permille
+A basic block profile count is considered hot if it contributes to 
+the given permillage (i.e. 0...1000) of the entire profiled execution.
 
 @item hot-bb-frequency-fraction
 Select fraction of the entry block frequency of executions of basic block in
@@ -9938,12 +9946,21 @@ for the languages used in the program, or using the option
 @file{libgcc}.
 
 @item -static-libasan
-When the @option{-faddress-sanitizer} option is used to link a program,
+When the @option{-fsanitize=address} option is used to link a program,
 the GCC driver automatically links against @option{libasan}.  If
 @file{libasan} is available as a shared library, and the @option{-static}
 option is not used, then this links against the shared version of
 @file{libasan}.  The @option{-static-libasan} option directs the GCC
 driver to link @file{libasan} statically, without necessarily linking
+other libraries statically.
+
+@item -static-libtsan
+When the @option{-fsanitize=thread} option is used to link a program,
+the GCC driver automatically links against @option{libtsan}.  If
+@file{libtsan} is available as a shared library, and the @option{-static}
+option is not used, then this links against the shared version of
+@file{libtsan}.  The @option{-static-libtsan} option directs the GCC
+driver to link @file{libtsan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libstdc++

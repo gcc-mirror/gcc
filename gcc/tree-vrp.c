@@ -2653,7 +2653,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  if (TYPE_UNSIGNED (expr_type))
 	    {
 	      double_int min2 = size - min0;
-	      if (min2.cmp (max0, true) < 0)
+	      if (!min2.is_zero () && min2.cmp (max0, true) < 0)
 		{
 		  min0 = -min2;
 		  max0 -= size;
@@ -2661,7 +2661,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		}
 
 	      min2 = size - min1;
-	      if (min2.cmp (max1, true) < 0)
+	      if (!min2.is_zero () && min2.cmp (max1, true) < 0)
 		{
 		  min1 = -min2;
 		  max1 -= size;

@@ -5718,7 +5718,7 @@ tm_alias_pair_cmp (const void *x, const void *y)
 void
 finish_tm_clone_pairs (void)
 {
-  vec<tm_alias_pair> tm_alias_pairs = vec<tm_alias_pair>();
+  vec<tm_alias_pair> tm_alias_pairs = vNULL;
 
   if (tm_clone_hash == NULL)
     return;

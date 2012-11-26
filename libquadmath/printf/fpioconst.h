@@ -35,6 +35,14 @@
 
 #define FLT128_MAX_10_EXP_LOG	12 /* = floor(log_2(FLT128_MAX_10_EXP)) */
 
+/* For strtoq, we need powers of 10 up to floor (log_2 (FLT128_MANT_DIG
+   - FLT128_MIN_EXP + 2)).  */
+#if !defined __NO_LONG_DOUBLE_MATH && FLT128_MAX_EXP > 1024
+# define FPIOCONST_POW10_ARRAY_SIZE    15
+#else
+# define FPIOCONST_POW10_ARRAY_SIZE    11
+#endif
+
 
 /* The array with the number representation. */
 #define __tens __quadmath_tens
@@ -50,7 +58,7 @@ struct mp_power
     int m_expo;			/* Exponent of the number 10^-(2^i-1).  */
   };
 #define _fpioconst_pow10 __quadmath_fpioconst_pow10
-extern const struct mp_power _fpioconst_pow10[FLT128_MAX_10_EXP_LOG + 1]
+extern const struct mp_power _fpioconst_pow10[FPIOCONST_POW10_ARRAY_SIZE]
      attribute_hidden;
 
 /* The constants in the array `_fpioconst_pow10' have an offset.  */

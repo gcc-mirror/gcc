@@ -2382,7 +2382,7 @@ class Error_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -2420,7 +2420,7 @@ class Void_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -2458,7 +2458,7 @@ class Boolean_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return true; }
 
   Btype*
@@ -3085,7 +3085,7 @@ class Sink_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -3963,7 +3963,7 @@ class Nil_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -4014,7 +4014,7 @@ class Call_multiple_result_type : public Type
   }
 
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -4291,7 +4291,7 @@ Struct_type::struct_has_hidden_fields(const Named_type* within,
 // comparisons.
 
 bool
-Struct_type::do_compare_is_identity(Gogo* gogo) const
+Struct_type::do_compare_is_identity(Gogo* gogo)
 {
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
@@ -4323,6 +4323,16 @@ Struct_type::do_compare_is_identity(Gogo* gogo) const
 	return false;
       offset += field_size;
     }
+
+  unsigned int struct_size;
+  if (!this->backend_type_size(gogo, &struct_size))
+    return false;
+  if (offset != struct_size)
+    {
+      // Trailing padding may not be zero when on the stack.
+      return false;
+    }
+
   return true;
 }
 
@@ -5267,7 +5277,7 @@ Array_type::do_verify()
 // Whether we can use memcmp to compare this array.
 
 bool
-Array_type::do_compare_is_identity(Gogo* gogo) const
+Array_type::do_compare_is_identity(Gogo* gogo)
 {
   if (this->length_ == NULL)
     return false;
@@ -7968,7 +7978,7 @@ Named_type::do_has_pointer() const
 // function.
 
 bool
-Named_type::do_compare_is_identity(Gogo* gogo) const
+Named_type::do_compare_is_identity(Gogo* gogo)
 {
   // We don't use this->seen_ here because compare_is_identity may
   // call base() later, and that will mess up if seen_ is set here.

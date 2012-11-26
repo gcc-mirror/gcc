@@ -119,3 +119,114 @@ func TestDeadlineReset(t *testing.T) {
 		t.Errorf("unexpected return from Accept; err=%v", err)
 	}
 }
+
+func TestTimeoutAccept(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9":
+		t.Logf("skipping test on %q", runtime.GOOS)
+		return
+	}
+	ln, err := Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	tl := ln.(*TCPListener)
+	tl.SetDeadline(time.Now().Add(100 * time.Millisecond))
+	errc := make(chan error, 1)
+	go func() {
+		_, err := ln.Accept()
+		errc <- err
+	}()
+	select {
+	case <-time.After(1 * time.Second):
+		// Accept shouldn't block indefinitely
+		t.Errorf("Accept didn't return in an expected time")
+	case <-errc:
+		// Pass.
+	}
+}
+
+func TestReadWriteDeadline(t *testing.T) {
+	switch runtime.GOOS {
+	case "plan9":
+		t.Logf("skipping test on %q", runtime.GOOS)
+		return
+	}
+
+	if !canCancelIO {
+		t.Logf("skipping test on this system")
+		return
+	}
+	const (
+		readTimeout  = 50 * time.Millisecond
+		writeTimeout = 250 * time.Millisecond
+	)
+	checkTimeout := func(command string, start time.Time, should time.Duration) {
+		is := time.Now().Sub(start)
+		d := is - should
+		if d < -30*time.Millisecond || !testing.Short() && 150*time.Millisecond < d {
+			t.Errorf("%s timeout test failed: is=%v should=%v\n", command, is, should)
+		}
+	}
+
+	ln, err := Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("ListenTCP on :0: %v", err)
+	}
+
+	lnquit := make(chan bool)
+
+	go func() {
+		c, err := ln.Accept()
+		if err != nil {
+			t.Fatalf("Accept: %v", err)
+		}
+		defer c.Close()
+		lnquit <- true
+	}()
+
+	c, err := Dial("tcp", ln.Addr().String())
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	defer c.Close()
+
+	start := time.Now()
+	err = c.SetReadDeadline(start.Add(readTimeout))
+	if err != nil {
+		t.Fatalf("SetReadDeadline: %v", err)
+	}
+	err = c.SetWriteDeadline(start.Add(writeTimeout))
+	if err != nil {
+		t.Fatalf("SetWriteDeadline: %v", err)
+	}
+
+	quit := make(chan bool)
+
+	go func() {
+		var buf [10]byte
+		_, err := c.Read(buf[:])
+		if err == nil {
+			t.Errorf("Read should not succeed")
+		}
+		checkTimeout("Read", start, readTimeout)
+		quit <- true
+	}()
+
+	go func() {
+		var buf [10000]byte
+		for {
+			_, err := c.Write(buf[:])
+			if err != nil {
+				break
+			}
+		}
+		checkTimeout("Write", start, writeTimeout)
+		quit <- true
+	}()
+
+	<-quit
+	<-quit
+	<-lnquit
+}

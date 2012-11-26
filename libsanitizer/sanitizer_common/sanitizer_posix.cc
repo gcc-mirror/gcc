@@ -72,10 +72,15 @@ void UnmapOrDie(void *addr, uptr size) {
 }
 
 void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
-  return internal_mmap((void*)fixed_addr, size,
-                      PROT_READ | PROT_WRITE,
-                      MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
-                      -1, 0);
+  void *p = internal_mmap((void*)(fixed_addr & ~(kPageSize - 1)),
+      RoundUpTo(size, kPageSize),
+      PROT_READ | PROT_WRITE,
+      MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
+      -1, 0);
+  if (p == (void*)-1)
+    Report("ERROR: Failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
+           size, size, fixed_addr, errno);
+  return p;
 }
 
 void *Mprotect(uptr fixed_addr, uptr size) {
@@ -180,6 +185,10 @@ int Atexit(void (*function)(void)) {
 #else
   return 0;
 #endif
+}
+
+int internal_isatty(fd_t fd) {
+  return isatty(fd);
 }
 
 }  // namespace __sanitizer

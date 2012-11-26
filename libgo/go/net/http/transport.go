@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // HTTP client implementation. See RFC 2616.
-// 
+//
 // This is the low-level Transport implementation of RoundTripper.
 // The high-level interface is in client.go.
 
@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -604,6 +605,9 @@ func (pc *persistConn) readLoop() {
 			alive = false
 		}
 
+		// TODO(bradfitz): this hasBody conflicts with the defition
+		// above which excludes HEAD requests.  Is this one
+		// incomplete?
 		hasBody := resp != nil && resp.ContentLength != 0
 		var waitForBodyRead chan bool
 		if hasBody {
@@ -706,7 +710,7 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 	// requested it.
 	requestedGzip := false
 	if !pc.t.DisableCompression && req.Header.Get("Accept-Encoding") == "" {
-		// Request gzip only, not deflate. Deflate is ambiguous and 
+		// Request gzip only, not deflate. Deflate is ambiguous and
 		// not as universally supported anyway.
 		// See: http://www.gzip.org/zlib/zlib_faq.html#faq38
 		requestedGzip = true
@@ -805,24 +809,19 @@ func canonicalAddr(url *url.URL) string {
 	return addr
 }
 
-func responseIsKeepAlive(res *Response) bool {
-	// TODO: implement.  for now just always shutting down the connection.
-	return false
-}
-
 // bodyEOFSignal wraps a ReadCloser but runs fn (if non-nil) at most
 // once, right before the final Read() or Close() call returns, but after
 // EOF has been seen.
 type bodyEOFSignal struct {
 	body     io.ReadCloser
 	fn       func()
-	isClosed bool
+	isClosed uint32 // atomic bool, non-zero if true
 	once     sync.Once
 }
 
 func (es *bodyEOFSignal) Read(p []byte) (n int, err error) {
 	n, err = es.body.Read(p)
-	if es.isClosed && n > 0 {
+	if es.closed() && n > 0 {
 		panic("http: unexpected bodyEOFSignal Read after Close; see issue 1725")
 	}
 	if err == io.EOF {
@@ -832,10 +831,10 @@ func (es *bodyEOFSignal) Read(p []byte) (n int, err error) {
 }
 
 func (es *bodyEOFSignal) Close() (err error) {
-	if es.isClosed {
+	if !es.setClosed() {
+		// already closed
 		return nil
 	}
-	es.isClosed = true
 	err = es.body.Close()
 	if err == nil {
 		es.condfn()
@@ -847,6 +846,14 @@ func (es *bodyEOFSignal) condfn() {
 	if es.fn != nil {
 		es.once.Do(es.fn)
 	}
+}
+
+func (es *bodyEOFSignal) closed() bool {
+	return atomic.LoadUint32(&es.isClosed) != 0
+}
+
+func (es *bodyEOFSignal) setClosed() bool {
+	return atomic.CompareAndSwapUint32(&es.isClosed, 0, 1)
 }
 
 type readFirstCloseBoth struct {

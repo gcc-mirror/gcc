@@ -23,16 +23,20 @@
 package types
 
 import (
-	// "fmt"
+	"flag"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/scanner"
 	"go/token"
 	"io/ioutil"
-	// "os"
+	"os"
 	"regexp"
+	"runtime"
 	"testing"
 )
+
+var listErrors = flag.Bool("list", false, "list errors")
 
 // The test filenames do not end in .go so that they are invisible
 // to gofmt since they contain comments that must not change their
@@ -42,7 +46,17 @@ var tests = []struct {
 	name  string
 	files []string
 }{
-	{"test0", []string{"testdata/test0.src"}},
+	{"decls0", []string{"testdata/decls0.src"}},
+	{"decls1", []string{"testdata/decls1.src"}},
+	{"decls2", []string{"testdata/decls2a.src", "testdata/decls2b.src"}},
+	{"const0", []string{"testdata/const0.src"}},
+	{"expr0", []string{"testdata/expr0.src"}},
+	{"expr1", []string{"testdata/expr1.src"}},
+	{"expr2", []string{"testdata/expr2.src"}},
+	{"expr3", []string{"testdata/expr3.src"}},
+	{"builtins", []string{"testdata/builtins.src"}},
+	{"conversions", []string{"testdata/conversions.src"}},
+	{"stmt0", []string{"testdata/stmt0.src"}},
 }
 
 var fset = token.NewFileSet()
@@ -96,8 +110,9 @@ var errRx = regexp.MustCompile(`^/\* *ERROR *"([^"]*)" *\*/$`)
 // expectedErrors collects the regular expressions of ERROR comments found
 // in files and returns them as a map of error positions to error messages.
 //
-func expectedErrors(t *testing.T, testname string, files map[string]*ast.File) map[token.Pos]string {
-	errors := make(map[token.Pos]string)
+func expectedErrors(t *testing.T, testname string, files map[string]*ast.File) map[token.Pos][]string {
+	errors := make(map[token.Pos][]string)
+
 	for filename := range files {
 		src, err := ioutil.ReadFile(filename)
 		if err != nil {
@@ -120,7 +135,8 @@ func expectedErrors(t *testing.T, testname string, files map[string]*ast.File) m
 			case token.COMMENT:
 				s := errRx.FindStringSubmatch(lit)
 				if len(s) == 2 {
-					errors[prev] = string(s[1])
+					list := errors[prev]
+					errors[prev] = append(list, string(s[1]))
 				}
 			case token.SEMICOLON:
 				// ignore automatically inserted semicolon
@@ -133,45 +149,51 @@ func expectedErrors(t *testing.T, testname string, files map[string]*ast.File) m
 			}
 		}
 	}
+
 	return errors
 }
 
-func eliminate(t *testing.T, expected map[token.Pos]string, errors error) {
-	if errors == nil {
+func eliminate(t *testing.T, expected map[token.Pos][]string, errors error) {
+	if *listErrors || errors == nil {
 		return
 	}
 	for _, error := range errors.(scanner.ErrorList) {
 		// error.Pos is a token.Position, but we want
 		// a token.Pos so we can do a map lookup
 		pos := getPos(error.Pos.Filename, error.Pos.Offset)
-		if msg, found := expected[pos]; found {
-			// we expect a message at pos; check if it matches
+		list := expected[pos]
+		index := -1 // list index of matching message, if any
+		// we expect one of the messages in list to match the error at pos
+		for i, msg := range list {
 			rx, err := regexp.Compile(msg)
 			if err != nil {
 				t.Errorf("%s: %v", error.Pos, err)
 				continue
 			}
-			if match := rx.MatchString(error.Msg); !match {
-				t.Errorf("%s: %q does not match %q", error.Pos, error.Msg, msg)
-				continue
+			if match := rx.MatchString(error.Msg); match {
+				index = i
+				break
 			}
-			// we have a match - eliminate this error
-			delete(expected, pos)
+		}
+		if index >= 0 {
+			// eliminate from list
+			n := len(list) - 1
+			if n > 0 {
+				// not the last entry - swap in last element and shorten list by 1
+				list[index] = list[n]
+				expected[pos] = list[:n]
+			} else {
+				// last entry - remove list from map
+				delete(expected, pos)
+			}
 		} else {
-			// To keep in mind when analyzing failed test output:
-			// If the same error position occurs multiple times in errors,
-			// this message will be triggered (because the first error at
-			// the position removes this position from the expected errors).
-			t.Errorf("%s: no (multiple?) error expected, but found: %s", error.Pos, error.Msg)
+			t.Errorf("%s: no error expected: %q", error.Pos, error.Msg)
+			continue
 		}
 	}
 }
 
-/*
-
-This test doesn't work with gccgo--it can't read gccgo imports.
-
-func check(t *testing.T, testname string, testfiles []string) {
+func checkFiles(t *testing.T, testname string, testfiles []string) {
 	// TODO(gri) Eventually all these different phases should be
 	//           subsumed into a single function call that takes
 	//           a set of files and creates a fully resolved and
@@ -192,8 +214,17 @@ func check(t *testing.T, testname string, testfiles []string) {
 	eliminate(t, errors, err)
 
 	// verify errors returned by the typechecker
-	_, err = Check(fset, pkg)
-	eliminate(t, errors, err)
+	var list scanner.ErrorList
+	errh := func(pos token.Pos, msg string) {
+		list.Add(fset.Position(pos), msg)
+	}
+	err = Check(fset, pkg, errh, nil)
+	eliminate(t, errors, list)
+
+	if *listErrors {
+		scanner.PrintError(os.Stdout, err)
+		return
+	}
 
 	// there should be no expected errors left
 	if len(errors) > 0 {
@@ -205,19 +236,28 @@ func check(t *testing.T, testname string, testfiles []string) {
 }
 
 func TestCheck(t *testing.T) {
+	// This package does not yet know how to read gccgo export data.
+	if runtime.Compiler == "gccgo" {
+		return
+	}
+
+	// Declare builtins for testing.
+	// Not done in an init func to avoid an init race with
+	// the construction of the Universe var.
+	def(ast.Fun, "assert").Type = &builtin{aType, _Assert, "assert", 1, false, true}
+	def(ast.Fun, "trace").Type = &builtin{aType, _Trace, "trace", 0, true, true}
+
 	// For easy debugging w/o changing the testing code,
 	// if there is a local test file, only test that file.
 	const testfile = "testdata/test.go"
 	if fi, err := os.Stat(testfile); err == nil && !fi.IsDir() {
 		fmt.Printf("WARNING: Testing only %s (remove it to run all tests)\n", testfile)
-		check(t, testfile, []string{testfile})
+		checkFiles(t, testfile, []string{testfile})
 		return
 	}
 
 	// Otherwise, run all the tests.
 	for _, test := range tests {
-		check(t, test.name, test.files)
+		checkFiles(t, test.name, test.files)
 	}
 }
-
-*/

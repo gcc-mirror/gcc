@@ -343,6 +343,15 @@ MHeap_FreeLocked(MHeap *h, MSpan *s)
 		runtime_MSpanList_Insert(&h->large, s);
 }
 
+static void
+forcegchelper(void *vnote)
+{
+	Note *note = (Note*)vnote;
+
+	runtime_gc(1);
+	runtime_notewakeup(note);
+}
+
 // Release (part of) unused memory to OS.
 // Goroutine created at startup.
 // Loop forever.
@@ -356,7 +365,7 @@ runtime_MHeap_Scavenger(void* dummy)
 	uintptr released, sumreleased;
 	const byte *env;
 	bool trace;
-	Note note;
+	Note note, *notep;
 
 	USED(dummy);
 
@@ -387,7 +396,15 @@ runtime_MHeap_Scavenger(void* dummy)
 		now = runtime_nanotime();
 		if(now - mstats.last_gc > forcegc) {
 			runtime_unlock(h);
-			runtime_gc(1);
+			// The scavenger can not block other goroutines,
+			// otherwise deadlock detector can fire spuriously.
+			// GC blocks other goroutines via the runtime_worldsema.
+			runtime_noteclear(&note);
+			notep = &note;
+			__go_go(forcegchelper, (void*)&notep);
+			runtime_entersyscall();
+			runtime_notesleep(&note);
+			runtime_exitsyscall();
 			runtime_lock(h);
 			now = runtime_nanotime();
 			if (trace)

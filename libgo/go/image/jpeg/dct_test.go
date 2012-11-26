@@ -42,7 +42,7 @@ func TestDCT(t *testing.T) {
 		b := block{}
 		n := r.Int() % 64
 		for j := 0; j < n; j++ {
-			b[r.Int()%len(b)] = r.Int() % 256
+			b[r.Int()%len(b)] = r.Int31() % 256
 		}
 		blocks = append(blocks, b)
 	}
@@ -112,6 +112,14 @@ func alpha(i int) float64 {
 	return math.Sqrt2
 }
 
+var cosines [32]float64 // cosines[k] = cos(π/2 * k/8)
+
+func init() {
+	for k := range cosines {
+		cosines[k] = math.Cos(math.Pi * float64(k) / 16)
+	}
+}
+
 // slowFDCT performs the 8*8 2-dimensional forward discrete cosine transform:
 //
 //	dst[u,v] = (1/8) * Σ_x Σ_y alpha(u) * alpha(v) * src[x,y] *
@@ -129,16 +137,16 @@ func slowFDCT(b *block) {
 			for y := 0; y < 8; y++ {
 				for x := 0; x < 8; x++ {
 					sum += alpha(u) * alpha(v) * float64(b[8*y+x]) *
-						math.Cos(math.Pi*float64((2*x+1)*u)/16) *
-						math.Cos(math.Pi*float64((2*y+1)*v)/16)
+						cosines[((2*x+1)*u)%32] *
+						cosines[((2*y+1)*v)%32]
 				}
 			}
 			dst[8*v+u] = sum / 8
 		}
 	}
-	// Convert from float64 to int.
+	// Convert from float64 to int32.
 	for i := range dst {
-		b[i] = int(dst[i] + 0.5)
+		b[i] = int32(dst[i] + 0.5)
 	}
 }
 
@@ -159,16 +167,16 @@ func slowIDCT(b *block) {
 			for v := 0; v < 8; v++ {
 				for u := 0; u < 8; u++ {
 					sum += alpha(u) * alpha(v) * float64(b[8*v+u]) *
-						math.Cos(math.Pi*float64((2*x+1)*u)/16) *
-						math.Cos(math.Pi*float64((2*y+1)*v)/16)
+						cosines[((2*x+1)*u)%32] *
+						cosines[((2*y+1)*v)%32]
 				}
 			}
 			dst[8*y+x] = sum / 8
 		}
 	}
-	// Convert from float64 to int.
+	// Convert from float64 to int32.
 	for i := range dst {
-		b[i] = int(dst[i] + 0.5)
+		b[i] = int32(dst[i] + 0.5)
 	}
 }
 

@@ -189,7 +189,7 @@ static tree
 self_referential_size (tree size)
 {
   static unsigned HOST_WIDE_INT fnno = 0;
-  vec<tree> self_refs = vec<tree>();
+  vec<tree> self_refs = vNULL;
   tree param_type_list = NULL, param_decl_list = NULL;
   tree t, ref, return_type, fntype, fnname, fndecl;
   unsigned int i;
@@ -2697,10 +2697,6 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
       if (unit != GET_MODE_PRECISION (mode_))
 	continue;
 
-      /* Skip modes that are too small.  */
-      if ((bitpos_ % unit) + bitsize_ > unit)
-	continue;
-
       /* Stop if the mode is too wide to handle efficiently.  */
       if (unit > MAX_FIXED_MODE_SIZE)
 	break;
@@ -2710,11 +2706,18 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
       if (count_ > 0 && unit > BITS_PER_WORD)
 	break;
 
+      /* Skip modes that are too small.  */
+      unsigned HOST_WIDE_INT substart = (unsigned HOST_WIDE_INT) bitpos_ % unit;
+      unsigned HOST_WIDE_INT subend = substart + bitsize_;
+      if (subend > unit)
+	continue;
+
       /* Stop if the mode goes outside the bitregion.  */
-      HOST_WIDE_INT start = bitpos_ - (bitpos_ % unit);
+      HOST_WIDE_INT start = bitpos_ - substart;
       if (bitregion_start_ && start < bitregion_start_)
 	break;
-      if (start + unit > bitregion_end_ + 1)
+      HOST_WIDE_INT end = start + unit;
+      if (end > bitregion_end_ + 1)
 	break;
 
       /* Stop if the mode requires too much alignment.  */

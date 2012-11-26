@@ -152,22 +152,14 @@ func (f *extFloat) floatBits(flt *floatInfo) (bits uint64, overflow bool) {
 
 	// Infinities.
 	if exp-flt.bias >= 1<<flt.expbits-1 {
-		goto overflow
-	}
-
-	// Denormalized?
-	if mant&(1<<flt.mantbits) == 0 {
+		// ±Inf
+		mant = 0
+		exp = 1<<flt.expbits - 1 + flt.bias
+		overflow = true
+	} else if mant&(1<<flt.mantbits) == 0 {
+		// Denormalized?
 		exp = flt.bias
 	}
-	goto out
-
-overflow:
-	// ±Inf
-	mant = 0
-	exp = 1<<flt.expbits - 1 + flt.bias
-	overflow = true
-
-out:
 	// Assemble bits.
 	bits = mant & (uint64(1)<<flt.mantbits - 1)
 	bits |= uint64((exp-flt.bias)&(1<<flt.expbits-1)) << flt.mantbits
@@ -394,7 +386,7 @@ func (f *extFloat) FixedDecimal(d *decimalSlice, n int) bool {
 		panic("strconv: internal error: extFloat.FixedDecimal called with n == 0")
 	}
 	// Multiply by an appropriate power of ten to have a reasonable
-	// number to process. 
+	// number to process.
 	f.Normalize()
 	exp10, _ := f.frexp10()
 
@@ -647,7 +639,7 @@ func (f *extFloat) ShortestDecimal(d *decimalSlice, lower, upper *extFloat) bool
 	return false
 }
 
-// adjustLastDigit modifies d = x-currentDiff*ε, to get closest to 
+// adjustLastDigit modifies d = x-currentDiff*ε, to get closest to
 // d = x-targetDiff*ε, without becoming smaller than x-maxDiff*ε.
 // It assumes that a decimal digit is worth ulpDecimal*ε, and that
 // all data is known with a error estimate of ulpBinary*ε.

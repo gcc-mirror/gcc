@@ -732,7 +732,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       tree fn = CALL_EXPR_FN (expr);
       unsigned i;
       unsigned nargs = call_expr_nargs (expr);
-      vec<tree> args = vec<tree>();
+      vec<tree> args = vNULL;
       gimple new_stmt;
 
       if (nargs > 0)

@@ -20,7 +20,15 @@
 
 # Filter out unsupported systems.
 case "${target}" in
-  x86_64-*-linux* | i?86-*-linux* | sparc*-*-linux*)
+  x86_64-*-linux* | i?86-*-linux*)
+	if test x$ac_cv_sizeof_void_p = x8; then
+		TSAN_SUPPORTED=yes
+	fi
+	;;
+  sparc*-*-linux*)
+	;;
+  x86_64-*-darwin* | i?86-*-darwin*)
+	TSAN_SUPPORTED=no
 	;;
   *)
 	UNSUPPORTED=1

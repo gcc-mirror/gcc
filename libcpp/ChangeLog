@@ -1,3 +1,8 @@
+2012-11-21  Steve Ellcey  <sellcey@mips.com>
+
+	PR pch/55399
+	* files.c (pch_open_file): Fix check for implicit_preinclude.
+
 2012-11-16  Simon Baldwin  <simonb@google.com>
 
 	* include/cpplib.h (struct cpp_options): Add canonical_system_headers.

@@ -2082,8 +2082,8 @@ remove_node_from_expr_list (const_rtx node, rtx *listp)
 
 /* Nonzero if X contains any volatile instructions.  These are instructions
    which may cause unpredictable machine state instructions, and thus no
-   instructions should be moved or combined across them.  This includes
-   only volatile asms and UNSPEC_VOLATILE instructions.  */
+   instructions or register uses should be moved or combined across them.
+   This includes only volatile asms and UNSPEC_VOLATILE instructions.  */
 
 int
 volatile_insn_p (const_rtx x)

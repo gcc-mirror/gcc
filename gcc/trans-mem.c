@@ -1841,10 +1841,10 @@ tm_region_init (struct tm_region *region)
   edge_iterator ei;
   edge e;
   basic_block bb;
-  vec<basic_block> queue = vec<basic_block>();
+  vec<basic_block> queue = vNULL;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
   struct tm_region *old_region;
-  vec<tm_region_p> bb_regions = vec<tm_region_p>();
+  vec<tm_region_p> bb_regions = vNULL;
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR);
@@ -2403,7 +2403,7 @@ get_tm_region_blocks (basic_block entry_block,
 		      bitmap all_region_blocks,
 		      bool stop_at_irrevocable_p)
 {
-  vec<basic_block> bbs = vec<basic_block>();
+  vec<basic_block> bbs = vNULL;
   unsigned i;
   edge e;
   edge_iterator ei;
@@ -4689,9 +4689,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   if (DECL_ONE_ONLY (new_decl))
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
-  new_node = cgraph_copy_node_for_versioning (old_node, new_decl,
-					      vec<cgraph_edge_p>(),
-					      NULL);
+  new_node = cgraph_copy_node_for_versioning (old_node, new_decl, vNULL, NULL);
   new_node->symbol.externally_visible = old_node->symbol.externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
@@ -4980,7 +4978,7 @@ ipa_tm_transform_calls (struct cgraph_node *node, struct tm_region *region,
   bool need_ssa_rename = false;
   edge e;
   edge_iterator ei;
-  vec<basic_block> queue = vec<basic_block>();
+  vec<basic_block> queue = vNULL;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
 
   queue.safe_push (bb);

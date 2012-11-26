@@ -1,3 +1,448 @@
+2012-11-26  Matthias Klose  <doko@ubuntu.com>
+
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Fix unbalanced
+	parentheses.
+
+2012-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54471
+	* tree-vrp.c (extract_range_from_binary_expr_1): For MULT_EXPR,
+	don't canonicalize range if min2 is zero.
+
+2012-11-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	* builtins.c (expand_builtin_setjmp_receiver): Update comment
+	regarding purpose of blockage.
+	* emit-rtl.c [!HAVE_blockage] (gen_blockage): Similarly for
+	the head comment.
+	* rtlanal.c (volatile_insn_p): Ditto.
+	* doc/md.texi (blockage): Update similarly.  Change wording to
+	require one of two forms, rather than implying a wider choice.
+	* cse.c (cse_insn): Where checking for blocking insns, use
+	volatile_insn_p instead of manual check for volatile ASM.
+	* dse.c (scan_insn): Ditto.
+	* cselib.c (cselib_process_insn): Ditto.
+
+2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<sse>_loadu<ssemodesuffix><avxsizesuffix>):
+	Do not depend on TARGET_SSE_TYPELESS_STORES.
+	(<sse2>_loaddqu<avxsizesuffix>): Ditto.
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>): Fix handling of
+	TARGET_SSE_TYPELESS_STORES.
+	(<sse2>_storedqu<avxsizesuffix>): Ditto.
+
+2012-11-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/tm.texi.in (DELAY_SLOTS_FOR_EPILOGUE): Remove documentation.
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Likewise.
+	* doc/tm.texi: Regenerate.
+	* reorg.c (fill_simple_delay_slots): Remove code conditional on
+	DELAY_SLOTS_FOR_EPILOGUE being defined.
+	(make_return_insns, dbr_schedule): Likewise.
+	* system.h (DELAY_SLOTS_FOR_EPILOGUE): Poison.
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Likewise.
+
+2012-11-24  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Deal with -fsanitize=address.
+
+2012-11-24  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (multiarch): Use $enableval instead of $withval.
+	* configure: Regenerate.
+	* config/i386/t-kfreebsd (MULTILIB_OSDIRNAMES): Filter out x32.
+	* gcc/config/i386/t-linux64 (MULTILIB_OSDIRNAMES): Use
+	x86_64-linux-gnux32 as multiarch name for x32.
+
+2012-11-23  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fsanitize=address): Remove obsolete
+	remark.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54046
+	* Makefile.in (gimple-low.o): Depend on langhooks.h.
+	* gimple-low.c: Include langhooks.c.
+	(block_may_fallthru): Handle TARGET_EXPR and ERROR_MARK,
+	by default call lang_hooks.block_may_fallthru.
+	* langhooks.h (struct lang_hooks): Add block_may_fallthru
+	langhook.
+	* langhooks-def.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Define.
+	(LANG_HOOKS_INITIALIZER): Use it.
+
+2012-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* i386-c.c (ix86_target_macros_internal): Update handling of core
+	chips.
+	* i386.c (DUMMY_STRINGOP_ALGS): Update
+	(*_cost): Update.
+	(core_cost): Copy from generic64_cost; fix stringop descriptors.
+	(m_CORE2_32, m_CORE2_64, m_COREI7_32, m_COREI7_64, m_CORE2I7_32,
+	m_CORE2I7_64): Remove.
+	(m_CORE2, m_COREI7, m_CORE2I7): Update.
+	(initial_ix86_tune_features): Update.
+	(processor_target): Update.
+	(ix86_option_override_internal): Update.
+	(ix86_option_override_internal): Remove PROCESSOR_CORE2_64,
+	PROCESSOR_COREI7_64 special cases.
+	(decide_alg): Add noalign parameter; set it.
+	(ix86_expand_movmem, ix86_expand_setmem): Update noalign handling.
+	(ix86_issue_rate): Update.
+	(ia32_multipass_dfa_lookahead): Update.
+	(ix86_sched_init_global): Update.
+	(get_builtin_code_for_version): Update.
+	* i386.h (stringop_strategy): Add noalign flag.
+	(TARGET_CORE2_32, TARGET_CORE2_64, TARGET_COREI7_32, TARGET_COREI7_64):
+	Remove.
+	(TARGET_CORE2, TARGET_COREI7): New.
+	(enum processor_type): Remove PROCESSOR_CORE2_32, PROCESSOR_CORE2_64,
+	PROCESSOR_COREI7_32, PROCESSOR_COREI7_64; add PROCESSOR_CORE2,
+	PROCESSOR_COREI7.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/55388
+	* alias.c (nonoverlapping_component_refs_p): Handle bitfields.
+	* emit-rtl.c (adjust_address_1): Deal with VOIDmode early.
+	* expmed.c (store_bit_field): Turn the call to adjust_address
+	into a call to adjust_bitfield_address_size.
+
+2012-11-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra): Move init_reg_info and expand_reg_info calls before
+	init_insn_recog_data.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan.c: Fix up comment formatting.
+	(instrument_gimple): Ignore gimple_clobber_p stmts.
+	(pass_tsan, pass_tsan_O0): Remove TODO_update_address_taken
+	from todo_flags_finish.
+
+	PR sanitizer/55435
+	* asan.c (gate_asan): Don't instrument functions with
+	no_address_safety_analysis attribute.
+	(gate_asan_O0): Use !optimize && gate_asan ().
+	* doc/extend.texi (no_address_safety_analysis): Document new
+	function attribute.
+
+2012-11-22  Teresa Johnson  <tejohnson@google.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (maybe_hot_count_p): Use threshold from profiled working
+	set instead of hard limit.
+	(cgraph_maybe_hot_edge_p): Invoke maybe_hot_count_p() instead of
+	directly checking limit.
+	* params.def (HOT_BB_COUNT_FRACTION): Remove.
+	(HOT_BB_COUNT_WS_PERMILLE): New parameter.
+	* doc/invoke.texi (hot-bb-count-fraction): Remove.
+	(hot-bb-count-ws-permille): Document.
+
+2012-11-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55430
+	* lra.c: Move #include "hard-reg-set.h" before #include "rtl.h".
+	(new_insn_reg): Update biggest_mode.
+	(collect_non_operand_hard_regs): Check eliminable regs too.
+	(initialize_lra_reg_info_element): Initialize biggest_mode.
+	(add_regs_to_insn_regno_info): Ignore non-allocatable
+	non-eliminable hard regs.
+	(lra.c): Move setting lra_no_alloc_regs before
+	init_insn_recog_data.
+	* lra-constraints.c (simplify_operand_subreg): Add a comment.
+	(lra_constraints): Ignore equivalent memory of
+	regs occuring in paradoxical subregs.
+	* lra-lives.c (lra_create_live_ranges): Add a comment.
+
+2012-11-22  Dmitry Vyukov  <dvyukov@google.com>
+	    Wei Mi  <wmi@google.com>
+
+	* builtins.def (DEF_SANITIZER_BUILTIN): Define tsan builtins. 
+	* sanitizer.def: Ditto. 
+	* Makefile.in (tsan.o): Add tsan.o target. 
+	(BUILTINS_DEF): Add sanitizer.def.
+	* passes.c (init_optimization_passes): Add tsan passes.
+	* tree-pass.h (register_pass_info): Ditto.
+	* toplev.c (compile_file): Ditto. 
+	* doc/invoke.texi: Document tsan related options.
+	* gcc.c (LINK_COMMAND_SPEC): Add LIBTSAN_SPEC in link command if
+	-fsanitize=thread.
+	* tsan.c: New file about tsan.
+	* tsan.h: Ditto.
+	* common.opt: Add -fsanitize=thread.
+
+2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/md.texi (RTL Templates Transformation): Use @pxref for
+	cross-reference in parentheses.
+
+2012-11-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* doc/md.texi (AArch64 family): Remove Utf.
+
+2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*jcc<mode>_0_i387): Macroize insn
+	from *fp_jcc_3_387 using X87MODEF mode iterator.
+	(*jcc<mode>_0_r_i387): New.
+	(*jccxf_i387): Ditto.
+	(*jccxf_r_i387): Ditto.
+	(*jcc<mode>_i387): Macroize insn from *fp_jcc_1_387 using
+	MODEF mode iterator.
+	(*jcc<mode>_r_i387): Macroize insn from *fp_jcc_1r_387 using
+	MODEF mode iterator.
+	(*jccu<mode>_i387): Macroize insn from *fp_jcc_2_387 using
+	X87MODEF mode iterator.
+	(*jccu<mode>_r_i387): Macroize insn from *fp_jcc_2r_387 using
+	X87MODEF mode iterator.
+	(*jcc{,u}<mode>_i387 splitters): Macroize splitters using
+	X87MODEF mode iterator.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_i387): Macroize insn
+	from *fp_jcc_4_<mode>_387 using X87MODEF mode iterator.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_r_i387): New.
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_i387 splitters): Macroize
+	splitters using X87MODEF and SWI24 mode iterators.
+
+2012-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (FPCMP): New mode iterator.
+	(unord): New mode attribute.
+	(*cmp<mode>_0_i387): Macroize insn from *cmpfp_0
+	using X87MODEF mode iterator.
+	(*cmp<mode>_0_cc_i387): Macroize insn from *cmpfp_0_cc using
+	X87MODEF mode iterator.
+	(*cmpxf_i387): Rename from *cmpfp_xf.
+	(*cmpxf_cc_i387): Rename from *cmpfp_xf_cc.
+	(*cmp<mode>_i387): Rename from *cmpfp_<mode>.
+	(*cmp<mode>_cc_i387): Rename from *cmpfp_<mode>_cc.
+	(*cmpu<mode>_i387): Macroize insn from *cmpfp_u using X87MODEF
+	mode iterator.
+	(*cmpu<mode>_cc_i387): Macroize insn from *cmpfp_u_cc using X87MODEF
+	mode iterator.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_i387): Macroize_insn from
+	*cmpfp_<mode> using X87MODEF mode iterator.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_cc_i387): Macroize_insn from
+	*cmpfp_<mode>_cc using X87MODEF mode iterator.
+	(*cmpi<FPCMP:unord><MODEF:mode>_mixed): Macroize insn from
+	*cmpfp_i{,u}_mixed using FPCMP and MODEF mode iterators.
+	(*cmpi<FPCMP:unord><MODEF:mode>_mixed): Macroize insn from
+	*cmpfp_i{,u}_sse using FPCMP and MODEF mode iterators.
+	(*cmpi<CCFPCMP:unord><X87MODEF:mode>_i387): Macroize insn from
+	*cmpfp_i{,u}_387 using FPCMP and X87MODEF mode iterators.
+
+2012-11-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (bswaphi2): New pattern.
+
+2012-11-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/55379
+	* gcc.c (LINK_COMMAND_SPEC): Issue an error for -static with
+	-fsanitize=address.
+
+2012-11-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c (ADD_STATIC_LIBASAN_LIBS): New macro.  Defined
+	with STATIC_LIBASAN_LIBS.
+	(LIBASAN_SPEC): Add STATIC_LIBASAN_LIBS.
+	* config/gnu-user.h (STATIC_LIBASAN_LIBS): New macro.
+
+2012-11-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (*arm_abssi2): Define predicable attribute.
+	(*arm_neg_abssi2): Likewise.
+	* config/arm/thumb2.md (*thumb2_abssi2): Likewise.
+	(*thumb2_neg_abssi2): Likewise.
+
+2012-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* ree.c (struct ext_modified): Add ATTRIBUTE_PACKED.
+
+2012-11-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Adjust decimal point of signed accum mode to GCC default.
+
+	PR target/54222
+	* config/avr/avr-modes.def (HA, SA, DA): Remove mode adjustments.
+	(TA): Move decimal point one bit to the right.
+	* config/avr/avr.c (avr_out_fract): Rewrite.
+
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/alpha/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config.gcc <alpha*-*-linux*> (tmake_file): Include alpha/t-linux.
+
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/m68k/t-linux: Define MULTIARCH_DIRNAME.
+
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/ia64/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config.gcc <ia64*-*-linux*> (tmake_file): Include ia64/t-linux.
+
+2012-11-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55414
+	* lra-constraints.c (Index): New function.
+	(lra_constraints): Check dead equiv init insns.
+
+2012-11-21  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (extvmisaligndi): Rename from extv; update
+	mode of operand 1; remove ancient extract_bit_field workaround.
+	(insvmisaligndi): Rename from insv and update similarly.
+	(extzvmisaligndi): Rename from extzv and update similarly; split out...
+	(extzvdi): New expander.
+
+2012-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/cpp.texi: Document __SANITIZE_ADDRESS__.
+
+2012-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/55397
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags):
+	Define __SANITIZE_ADDRESS__ for flag_asan.
+
+2012-11-21  Wei Mi  <wmi@google.com>
+
+	* common.opt: Change faddress-sanitizer to fsanitize=address.
+	* toplev.c (process_options): Likewise.
+	* gcc.c (LINK_COMMAND_SPEC): Likewise.
+	* testsuite/lib/asan-dg.exp
+	(check_effective_target_faddress_sanitizer): Likewise.
+	(asan_init): Likewise.
+	* doc/invoke.texi (-fsanitize=address): Document.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (struct ipa_node_params): Rename clone_for_all_contexts to
+	do_clone_for_all_contexts.  Update all uses.  New flag
+	is_all_contexts_clone.
+	* ipa-cp.c (cgraph_edge_brings_value_p): Also consider the case when cs
+	leads to the clone for all contexts.
+	(perhaps_add_new_callers): Likewise.
+	(decide_whether_version_node): Remove bogus !plats->aggs test.  Set
+	is_all_contexts_clone when cloning for all contexts.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* ipa-cp.c (intersect_aggregates_with_edge): New function.
+	(find_aggregate_values_for_callers_subset): Part moved to the function
+	above.  Call it.
+	(cgraph_edge_brings_all_agg_vals_for_node): Reimplemented using
+	intersect_aggregates_with_edge.
+
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/s390/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
+
+2012-11-21  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/55417
+	* profile.c (compute_working_sets): Check index first
+	to avoid out-of-bounds array access.
+
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/aarch64/t-aarch64-linux: Define MULTIARCH_DIRNAME for
+	linux target.
+
+2012-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md
+	(*float<SWI48x:mode><MODEF:mode>2_mixed_with_temp): Use SWI48 mode
+	iterator instead of SWI48x.  Update insn constraint.
+	(*float<SWI48x:mode><MODEF:mode>2_mixed_interunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_mixed_nointerunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_sse_with_temp): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_sse_interunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2_sse_nointerunit): Ditto.
+	(*float<SWI48x:mode><MODEF:mode>2 splitters): Ditto.
+	(lrint<MODEF:mode><SWI48x:mode>2): Ditto.
+
+2012-11-21  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* Makefile.in (gengtype-lex.o): Add dependency on $(BCONFIG_H).
+
+2012-11-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm-cores.def (cortex-m1, cortex-m0)
+	(cortex-m0plus): Use v6m.
+	* config/arm/arm-protos.h (tune_params): Add
+	logical_op_non_short_circuit.
+	* config/arm/arm.c (arm_slowmul_tune, arm_fastmul_tune)
+	(arm_strongarm_tune, arm_xscale_tune, arm_9e_tune, arm_v6t2_tune)
+	(arm_cortex_tune, arm_cortex_a15_tune, arm_cortex_a5_tune)
+	(arm_cortex_a9_tune, arm_fa726te_tune): Set
+	logical_op_non_short_circuit field.
+	(arm_v6m_tune): New tune_params struct.
+	* config/arm/arm.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Define.
+
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Substitute `with_cpu'.
+	* configure: Regenerate.
+	* Makefile.in: Define `with_cpu'.
+	* config/rs6000/t-linux64: Add multiarch names in MULTILIB_OSDIRNAMES.
+	* config/rs6000/t-linux: New file; define MULTIARCH_DIRNAME.
+	* config/rs6000/t-fprules (SOFT_FLOAT_CPUS): New macro. Add e300c2
+	to the list.
+	(MULTILIB_MATCHES_FLOAT): Define in terms of SOFT_FLOAT_CPUS.
+	* config/rs6000/t-spe: Define MULTIARCH_DIRNAME.
+	* config.gcc <powerpc-*-linux* | powerpc64-*-linux*> (tmake_file):
+	Include rs6000/t-linux for 32bit non-biarch configurations.
+
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/install.texi: Move multiarch paragraph out of multilib
+	documentation.
+
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
+	* config/arm/t-linux-eabi: Define MULTIARCH_DIRNAME for linux target.
+
+2012-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* stor-layout.c (bit_field_mode_iterator::next_mode): Fix signedness.
+
+2012-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55396
+	* lra-constraints.c (get_reload_reg): Change class if it is
+	different from reg class.
+
+2012-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (class vec_prefix): Change into struct.
+	Rename field alloc_PRIVATE_ back to alloc_.
+	Rename field num_PRIVATE_ to num_.
+	Update all users.
+	(class vec<T, A, vl_embed>): Rename field pfx_PRIVATE_ to vecpfx_.
+	Rename field data_PRIVATE_ to vecdata_.
+	Update all users.
+	(class vec<T, A, vl_ptr>): Make every field public.
+	Rename field vec_PRIVATE_ back to vec_.
+	Update all users.
+
+2012-11-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/55403
+	PR middle-end/55391
+	* expmed.c (store_bit_field_1): Use adjust_bitfield_address_size
+	rather than adjust_bitfield_address to change the mode of a reference.
+	(extract_bit_field_1): Likewise.
+
+2012-11-20  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Add a comment
+	explaining the register ordering preferences.
+
 2012-11-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/55350
@@ -18,18 +463,95 @@
 	(peephole2 to shorten x87->SSE reload sequences): Remove peephole2.
 	* config/i386/i386.h (enum ix86_tune_indices)
 	<IX86_TUNE_SHORTEN_X87_SSE>: Remove.
-	* config/i386/i386.h (initial_ix86_tune_features): Update.
+	(TARGET_SHORTEN_X87_SSE): Remove.
+	* config/i386/i386.c (initial_ix86_tune_features): Update.
 
 2012-11-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/19398
 	* lra-constraints.c (process_alt_operands): Discourage reloads
-	through secodnary memory.
+	through secondary memory.
 
 2012-11-20  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (largetoc_low): Revert.
 	(largetoc_low_aix<mode>): New.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* vec.h (struct vnull): Declare.
+	(vNULL): Declare.
+	* vec.c (vNULL): Define.
+	* bb-reorder.c: Replace all vec<T, A>() initializers with vNULL.
+	* cfgexpand.c: Likewise.
+	* cfgloop.c: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cfgloopmanip.c: Likewise.
+	* cgraph.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* df-core.c: Likewise.
+	* dominance.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* except.c: Likewise.
+	* function.c: Likewise.
+	* gcse.c: Likewise.
+	* genautomata.c: Likewise.
+	* graphds.c: Likewise.
+	* graphite-scop-detection.c: Likewise.
+	* graphite.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* ifcvt.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-inline-analysis.c: Likewise.
+	* ipa-inline-transform.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-split.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ira-build.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-streamer-in.c: Likewise.
+	* lto-symtab.c: Likewise.
+	* opts-global.c: Likewise.
+	* passes.c: Likewise.
+	* ree.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sel-sched-ir.c: Likewise.
+	* sel-sched-ir.h: Likewise.
+	* sel-sched.c: Likewise.
+	* stor-layout.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-call-cdce.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-data-ref.c: Likewise.
+	* tree-diagnostic.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-loop-distribution.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-ssa-loop-im.c: Likewise.
+	* tree-ssa-loop-ivcanon.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-loop-prefetch.c: Likewise.
+	* tree-ssa-math-opts.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-propagate.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa-threadedge.c: Likewise.
+	* tree-ssa-uninit.c: Likewise.
+	* tree-stdarg.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* value-prof.c: Likewise.
+	* varasm.c: Likewise.
 
 2012-11-20  Diego Novillo  <dnovillo@google.com>
 
@@ -1228,7 +1750,7 @@
 	* cppdefault.h (default_include): Document multiarch in multilib
 	member.
 	* cppdefault.c: [LOCAL_INCLUDE_DIR, STANDARD_INCLUDE_DIR] Add an
-        include directory for multiarch directories.
+	include directory for multiarch directories.
 	* common.opt: New options --print-multiarch and -imultilib.
 	* config.gcc <i[34567]86-*-linux* | x86_64-*-linux*> (tmake_file):
 	Include i386/t-linux.

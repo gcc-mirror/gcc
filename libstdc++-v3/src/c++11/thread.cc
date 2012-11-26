@@ -1,6 +1,6 @@
 // thread -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,6 +26,8 @@
 #include <thread>
 #include <system_error>
 #include <cerrno>
+
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
 #if defined(_GLIBCXX_USE_GET_NPROCS)
 # include <sys/sysinfo.h>
@@ -55,7 +57,13 @@ static inline int get_nprocs()
 # define _GLIBCXX_NPROCS 0
 #endif
 
-#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
+#ifndef _GLIBCXX_USE_NANOSLEEP
+# ifdef _GLIBCXX_HAVE_SLEEP
+#  include <unistd.h>
+# else
+#  error "No sleep function known for this target"
+# endif
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -142,6 +150,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION
+
+namespace this_thread
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  void
+  __sleep_for(chrono::seconds __s, chrono::nanoseconds __ns)
+  {
+#ifdef _GLIBCXX_USE_NANOSLEEP
+    __gthread_time_t __ts =
+      {
+	static_cast<std::time_t>(__s.count()),
+	static_cast<long>(__ns.count())
+      };
+    ::nanosleep(&__ts, 0);
+#else
+# ifdef _GLIBCXX_HAVE_SLEEP
+#  ifdef _GLIBCXX_HAVE_USLEEP
+    ::sleep(__s.count());
+    if (__ns.count() > 0)
+      {
+        long __us = __ns.count() / 1000;
+        if (__us == 0)
+          __us = 1;
+        ::usleep(__us);
+      }
+#  else
+    ::sleep(__s.count() + (__ns >= 1000000));
+#  endif
+# endif
+#endif
+  }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+
 } // namespace std
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

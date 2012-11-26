@@ -1,3 +1,7 @@
+2012-11-21  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.tgt (i[3456]86): Handle -mx32 like -m64.
+
 2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* acinclude.m4 (LIBAT_CHECK_IFUNC): Clarify message.

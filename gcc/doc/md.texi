@@ -1727,9 +1727,6 @@ A memory address which uses a single base register with no offset
 A memory address suitable for a load/store pair instruction in SI, DI, SF and
 DF modes
 
-@item Utf
-A memory address suitable for a load/store pair instruction in TF mode
-
 @end table
 
 
@@ -5975,8 +5972,9 @@ the values of operands 1 and 2.
 @item @samp{blockage}
 
 This pattern defines a pseudo insn that prevents the instruction
-scheduler from moving instructions across the boundary defined by the
-blockage insn.  Normally an UNSPEC_VOLATILE pattern.
+scheduler and other passes from moving instructions and using register
+equivalences across the boundary defined by the blockage insn.
+This needs to be an UNSPEC_VOLATILE pattern or a volatile ASM.
 
 @cindex @code{memory_barrier} instruction pattern
 @item @samp{memory_barrier}
@@ -8931,7 +8929,7 @@ output-template.
 template.
 
 @code{define_subst} mechanism is tightly coupled with the notion of the
-subst attribute (@xref{Subst Iterators}).  The use of
+subst attribute (@pxref{Subst Iterators}).  The use of
 @code{define_subst} is triggered by a reference to a subst attribute in
 the transforming RTL template.  This reference initiates duplication of
 the source RTL template and substitution of the attributes with their

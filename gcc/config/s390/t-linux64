@@ -7,4 +7,5 @@
 
 MULTILIB_OPTIONS = m64/m31
 MULTILIB_DIRNAMES = 64 32
-MULTILIB_OSDIRNAMES = ../lib64 $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)
+MULTILIB_OSDIRNAMES = ../lib64$(call if_multiarch,:s390x-linux-gnu)
+MULTILIB_OSDIRNAMES += $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:s390-linux-gnu)

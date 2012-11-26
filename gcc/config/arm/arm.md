@@ -4263,7 +4263,7 @@
    eor%?\\t%0, %1, %1, asr #31\;sub%?\\t%0, %0, %1, asr #31"
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
-   ;; predicable can't be set based on the variant, so left as no
+   (set_attr "predicable" "no, yes")
    (set_attr "length" "8")]
 )
 
@@ -4291,7 +4291,7 @@
    eor%?\\t%0, %1, %1, asr #31\;rsb%?\\t%0, %0, %1, asr #31"
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
-   ;; predicable can't be set based on the variant, so left as no
+   (set_attr "predicable" "no, yes")
    (set_attr "length" "8")]
 )
 

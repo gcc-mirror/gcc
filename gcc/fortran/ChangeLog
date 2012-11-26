@@ -1,3 +1,34 @@
+2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/30146
+	* frontend-passes.c (doloop_warn):  New function.
+	(doloop_list):  New static variable.
+	(doloop_size):  New static variable.
+	(doloop_level):  New static variable.
+	(gfc_run_passes): Call doloop_warn.
+	(doloop_code):  New function.
+	(doloop_function):  New function.
+	(gfc_code_walker):  Keep track of DO level.
+
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	* resolve.c (resolve_allocate_deallocate):  Compare all
+	subscripts when deciding if to reject a (de)allocate
+	statement.
+
+2012-11-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55352
+	* trans-decl.c (generate_local_decl): Don't warn for explicitly imported
+	but unused module variables which are in a namelist or common block.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c: Replace all vec<T, A>() initializers
+	with vNULL.
+
 2012-11-17  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)

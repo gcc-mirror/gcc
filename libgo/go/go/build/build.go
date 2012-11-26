@@ -216,6 +216,7 @@ var cgoEnabled = map[string]bool{
 	"darwin/amd64":  true,
 	"freebsd/386":   true,
 	"freebsd/amd64": true,
+	"freebsd/arm":   true,
 	"linux/386":     true,
 	"linux/amd64":   true,
 	"linux/arm":     true,
@@ -897,6 +898,8 @@ func splitQuoted(s string) (r []string, err error) {
 //	$GOARCH
 //	cgo (if cgo is enabled)
 //	!cgo (if cgo is disabled)
+//	ctxt.Compiler
+//	!ctxt.Compiler
 //	tag (if tag is listed in ctxt.BuildTags)
 //	!tag (if tag is not listed in ctxt.BuildTags)
 //	a comma-separated list of any of these
@@ -928,7 +931,7 @@ func (ctxt *Context) match(name string) bool {
 	if ctxt.CgoEnabled && name == "cgo" {
 		return true
 	}
-	if name == ctxt.GOOS || name == ctxt.GOARCH {
+	if name == ctxt.GOOS || name == ctxt.GOARCH || name == ctxt.Compiler {
 		return true
 	}
 

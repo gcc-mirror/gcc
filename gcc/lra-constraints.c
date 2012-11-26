@@ -425,7 +425,7 @@ get_reload_reg (enum op_type type, enum machine_mode mode, rtx original,
 	    fprintf (lra_dump_file, "	 Reuse r%d for reload ", regno);
 	    print_value_slim (lra_dump_file, original, 1);
 	  }
-	if (rclass != new_class)
+	if (new_class != lra_get_allocno_class (regno))
 	  change_class (regno, new_class, ", change", false);
 	if (lra_dump_file != NULL)
 	  fprintf (lra_dump_file, "\n");
@@ -1146,7 +1146,12 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
   reg = SUBREG_REG (operand);
   /* If we change address for paradoxical subreg of memory, the
      address might violate the necessary alignment or the access might
-     be slow.  So take this into consideration.	 */
+     be slow.  So take this into consideration.  We should not worry
+     about access beyond allocated memory for paradoxical memory
+     subregs as we don't substitute such equiv memory (see processing
+     equivalences in function lra_constraints) and because for spilled
+     pseudos we allocate stack memory enough for the biggest
+     corresponding paradoxical subreg.  */
   if ((MEM_P (reg)
        && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (reg))
 	   || MEM_ALIGN (reg) >= GET_MODE_ALIGNMENT (mode)))
@@ -3215,6 +3220,17 @@ multi_block_pseudo_p (int regno)
     return false;
 }
 
+/* Return true if LIST contains a deleted insn.  */
+static bool
+contains_deleted_insn_p (rtx list)
+{
+  for (; list != NULL_RTX; list = XEXP (list, 1))
+    if (NOTE_P (XEXP (list, 0))
+	&& NOTE_KIND (XEXP (list, 0)) == NOTE_INSN_DELETED)
+      return true;
+  return false;
+}
+
 /* Return true if X contains a pseudo dying in INSN.  */
 static bool
 dead_pseudo_p (rtx x, rtx insn)
@@ -3317,10 +3333,29 @@ lra_constraints (bool first_p)
 	    bool pseudo_p = contains_reg_p (x, false, false);
 	    rtx set, insn;
 
-	    /* We don't use DF for compilation speed sake.  So it is
-	       problematic to update live info when we use an
-	       equivalence containing pseudos in more than one BB.  */
-	    if ((pseudo_p && multi_block_pseudo_p (i))
+	    /* After RTL transformation, we can not guarantee that
+	       pseudo in the substitution was not reloaded which might
+	       make equivalence invalid.  For example, in reverse
+	       equiv of p0
+
+	       p0 <- ...
+	       ...
+	       equiv_mem <- p0
+
+	       the memory address register was reloaded before the 2nd
+	       insn.  */
+	    if ((! first_p && pseudo_p)
+		/* We don't use DF for compilation speed sake.  So it
+		   is problematic to update live info when we use an
+		   equivalence containing pseudos in more than one
+		   BB.  */
+		|| (pseudo_p && multi_block_pseudo_p (i))
+		/* If an init insn was deleted for some reason, cancel
+		   the equiv.  We could update the equiv insns after
+		   transformations including an equiv insn deletion
+		   but it is not worthy as such cases are extremely
+		   rare.  */ 
+		|| contains_deleted_insn_p (ira_reg_equiv[i].init_insns)
 		/* If it is not a reverse equivalence, we check that a
 		   pseudo in rhs of the init insn is not dying in the
 		   insn.  Otherwise, the live info at the beginning of
@@ -3333,20 +3368,12 @@ lra_constraints (bool first_p)
 		       && (set = single_set (insn)) != NULL_RTX
 		       && REG_P (SET_DEST (set))
 		       && (int) REGNO (SET_DEST (set)) == i)
-		    && init_insn_rhs_dead_pseudo_p (i)))
-	      ira_reg_equiv[i].defined_p = false;
-	    else if (! first_p && pseudo_p)
-	      /* After RTL transformation, we can not guarantee that
-		 pseudo in the substitution was not reloaded which
-		 might make equivalence invalid.  For example, in
-		 reverse equiv of p0
-
-		 p0 <- ...
-		 ...
-		 equiv_mem <- p0
-
-		 the memory address register was reloaded before the
-		 2nd insn.  */
+		    && init_insn_rhs_dead_pseudo_p (i))
+		/* Prevent access beyond equivalent memory for
+		   paradoxical subregs.  */
+		|| (MEM_P (x)
+		    && (GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
+			> GET_MODE_SIZE (GET_MODE (x)))))
 	      ira_reg_equiv[i].defined_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;

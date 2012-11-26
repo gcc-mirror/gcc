@@ -43,8 +43,8 @@ DEFUN __fractqqsf
     ;; Move in place for SA -> SF conversion
     clr     r22
     mov     r23, r24
-    lsl     r23
     ;; Sign-extend
+    lsl     r24
     sbc     r24, r24
     mov     r25, r24
     XJMP    __fractsasf
@@ -67,9 +67,8 @@ ENDF __fractuqqsf
 DEFUN __fracthqsf
     ;; Move in place for SA -> SF conversion
     wmov    22, 24
-    lsl     r22
-    rol     r23
     ;; Sign-extend
+    lsl     r25
     sbc     r24, r24
     mov     r25, r24
     XJMP    __fractsasf
@@ -140,11 +139,13 @@ ENDF __fractusqsf
 #if defined (L_fractsasf)
 DEFUN __fractsasf
     XCALL   __floatsisf
-    ;; Divide non-zero results by 2^16 to move the
+    ;; Divide non-zero results by 2^15 to move the
     ;; decimal point into place
-    cpse    r25, __zero_reg__
-    subi    r25, exp_hi (16)
-    ret
+    tst     r25
+    breq    0f
+    subi    r24, exp_lo (15)
+    sbci    r25, exp_hi (15)
+0:  ret
 ENDF __fractsasf
 #endif  /* L_fractsasf */
 
@@ -186,8 +187,9 @@ ENDF __fractsfuqq
 
 #if defined (L_fractsfha)
 DEFUN __fractsfha
-    ;; Multiply with 2^24 to get a HA result in r25:r24
-    subi    r25, exp_hi (-24)
+    ;; Multiply with 2^{16+7} to get a HA result in r25:r24
+    subi    r24, exp_lo (-23)
+    sbci    r25, exp_hi (-23)
     XJMP    __fixsfsi
 ENDF __fractsfha
 #endif  /* L_fractsfha */
@@ -201,8 +203,7 @@ ENDF __fractsfuha
 #endif  /* L_fractsfuha */
 
 #if defined (L_fractsfhq)
-DEFUN __fractsfsq
-ENDF  __fractsfsq
+FALIAS __fractsfsq
 
 DEFUN __fractsfhq
     ;; Multiply with 2^{16+15} to get a HQ result in r25:r24
@@ -214,8 +215,7 @@ ENDF __fractsfhq
 #endif  /* L_fractsfhq */
 
 #if defined (L_fractsfuhq)
-DEFUN __fractsfusq
-ENDF  __fractsfusq
+FALIAS __fractsfusq
 
 DEFUN __fractsfuhq
     ;; Multiply with 2^{16+16} to get a UHQ result in r25:r24
@@ -227,8 +227,9 @@ ENDF __fractsfuhq
 
 #if defined (L_fractsfsa)
 DEFUN __fractsfsa
-    ;; Multiply with 2^16 to get a SA result in r25:r22
-    subi    r25, exp_hi (-16)
+    ;; Multiply with 2^15 to get a SA result in r25:r22
+    subi    r24, exp_lo (-15)
+    sbci    r25, exp_hi (-15)
     XJMP    __fixsfsi
 ENDF __fractsfsa
 #endif  /* L_fractsfsa */
@@ -325,6 +326,9 @@ ENDF __muluhq3
 ;;; Rounding:  -0.5 LSB  <=  error  <=  0.5 LSB
 DEFUN   __mulha3
     XCALL   __mulhisi3
+    lsl     r22
+    rol     r23
+    rol     r24
     XJMP    __muluha3_round
 ENDF __mulha3
 #endif  /* L_mulha3 */
@@ -359,6 +363,9 @@ ENDF __muluha3_round
     Fixed  Multiplication  16.16 x 16.16
 *******************************************************/
 
+;; Bits outside the result (below LSB), used in the signed version
+#define GUARD __tmp_reg__
+
 #if defined (__AVR_HAVE_MUL__)
 
 ;; Multiplier
@@ -381,9 +388,16 @@ ENDF __muluha3_round
 
 #if defined (L_mulusa3)
 ;;; (C3:C0) = (A3:A0) * (B3:B0)
-;;; Clobbers: __tmp_reg__
-;;; Rounding:  -0.5 LSB  <  error  <=  0.5 LSB
-DEFUN   __mulusa3
+DEFUN __mulusa3
+    set
+    ;; Fallthru
+ENDF  __mulusa3
+
+;;; Round for last digit iff T = 1
+;;; Return guard bits in GUARD (__tmp_reg__).
+;;; Rounding, T = 0:  -1.0 LSB  <  error  <=  0   LSB
+;;; Rounding, T = 1:  -0.5 LSB  <  error  <=  0.5 LSB
+DEFUN __mulusa3_round
     ;; Some of the MUL instructions have LSBs outside the result.
     ;; Don't ignore these LSBs in order to tame rounding error.
     ;; Use C2/C3 for these LSBs.
@@ -395,9 +409,12 @@ DEFUN   __mulusa3
     mul A1, B0  $  add  C3, r0  $  adc C0, r1
     mul A0, B1  $  add  C3, r0  $  adc C0, r1  $  rol C1
     
-    ;; Round
+    ;; Round if T = 1.  Store guarding bits outside the result for rounding
+    ;; and left-shift by the signed version (function below).
+    brtc 0f
     sbrc C3, 7
     adiw C0, 1
+0:  push C3
     
     ;; The following MULs don't have LSBs outside the result.
     ;; C2/C3 is the high part.
@@ -420,25 +437,42 @@ DEFUN   __mulusa3
     mul  A2, B3  $  add C3, r0
     mul  A3, B2  $  add C3, r0
 
+    ;; Guard bits used in the signed version below.
+    pop  GUARD
     clr  __zero_reg__
     ret
-ENDF __mulusa3
+ENDF __mulusa3_round
 #endif /* L_mulusa3 */
 
 #if defined (L_mulsa3)
 ;;; (C3:C0) = (A3:A0) * (B3:B0)
-;;; Clobbers: __tmp_reg__
+;;; Clobbers: __tmp_reg__, T
 ;;; Rounding:  -0.5 LSB  <=  error  <=  0.5 LSB
 DEFUN __mulsa3
-    XCALL   __mulusa3
+    clt
+    XCALL   __mulusa3_round
+    ;; A posteriori sign extension of the operands
     tst     B3
-    brpl    1f
+    brpl 1f
     sub     C2, A0
     sbc     C3, A1
 1:  sbrs    A3, 7
-    ret
+    rjmp 2f
     sub     C2, B0
     sbc     C3, B1
+2:
+    ;;  Shift 1 bit left to adjust for 15 fractional bits
+    lsl     GUARD
+    rol     C0
+    rol     C1
+    rol     C2
+    rol     C3
+    ;; Round last digit
+    lsl     GUARD
+    adc     C0, __zero_reg__
+    adc     C1, __zero_reg__
+    adc     C2, __zero_reg__
+    adc     C3, __zero_reg__
     ret
 ENDF __mulsa3
 #endif /* L_mulsa3 */
@@ -492,27 +526,56 @@ ENDF __mulsa3
 DEFUN   __mulsa3
     push    B0
     push    B1
-    bst     B3, 7
-    XCALL   __mulusa3
-    ;; A survived in  31:30:27:26
-    rcall 1f
-    pop     AA1
-    pop     AA0
-    bst     AA3, 7
-1:  brtc  9f
-    ;; 1-extend A/B
+    push    B3
+    clt
+    XCALL   __mulusa3_round
+    pop     r30
+    ;; sign-extend B
+    bst     r30, 7
+    brtc 1f
+    ;; A1, A0 survived in  R27:R26
     sub     C2, AA0
     sbc     C3, AA1
-9:  ret
+1:
+    pop     AA1  ;; B1
+    pop     AA0  ;; B0
+
+    ;; sign-extend A.  A3 survived in  R31
+    bst     AA3, 7
+    brtc 2f
+    sub     C2, AA0
+    sbc     C3, AA1
+2:
+    ;;  Shift 1 bit left to adjust for 15 fractional bits
+    lsl     GUARD
+    rol     C0
+    rol     C1
+    rol     C2
+    rol     C3
+    ;; Round last digit
+    lsl     GUARD
+    adc     C0, __zero_reg__
+    adc     C1, __zero_reg__
+    adc     C2, __zero_reg__
+    adc     C3, __zero_reg__
+    ret
 ENDF __mulsa3
 #endif  /* L_mulsa3 */
 
 #if defined (L_mulusa3)
 ;;; (R25:R22)  *=  (R21:R18)
-;;; Clobbers: ABI, called by optabs and __mulsua
+;;; Clobbers: ABI, called by optabs
 ;;; Rounding:  -1 LSB  <=  error  <=  1 LSB
-;;; Does not clobber T and A[] survives in 26, 27, 30, 31
-DEFUN   __mulusa3
+DEFUN __mulusa3
+    set
+    ;; Fallthru
+ENDF  __mulusa3
+
+;;; A[] survives in 26, 27, 30, 31
+;;; Also used by __mulsa3 with T = 0
+;;; Round if T = 1
+;;; Return Guard bits in GUARD (__tmp_reg__), used by signed version.
+DEFUN __mulusa3_round
     push    CC2
     push    CC3
     ; clear result
@@ -560,21 +623,26 @@ DEFUN   __mulusa3
     sbci    B0, 0
     brne 5b
 
-    ;; Move result into place and round
+    ;; Save guard bits and set carry for rounding
+    push    B3
     lsl     B3
+    ;; Move result into place
     wmov    C2, CC2
     wmov    C0, CC0
     clr     __zero_reg__
+    brtc 6f
+    ;; Round iff T = 1
     adc     C0, __zero_reg__
     adc     C1, __zero_reg__
     adc     C2, __zero_reg__
     adc     C3, __zero_reg__
-    
+6:  
+    pop     GUARD
     ;; Epilogue
     pop     CC3
     pop     CC2
     ret
-ENDF __mulusa3
+ENDF __mulusa3_round
 #endif  /* L_mulusa3 */
 
 #undef A0
@@ -600,6 +668,8 @@ ENDF __mulusa3
 
 #endif /* __AVR_HAVE_MUL__ */
 
+#undef GUARD
+
 /*******************************************************
       Fractional Division 8 / 8
 *******************************************************/
@@ -607,30 +677,38 @@ ENDF __mulusa3
 #define r_divd  r25     /* dividend */
 #define r_quo   r24     /* quotient */
 #define r_div   r22     /* divisor */
+#define r_sign  __tmp_reg__
 
 #if defined (L_divqq3)
 DEFUN   __divqq3
-    mov     r0, r_divd
-    eor     r0, r_div
+    mov     r_sign, r_divd
+    eor     r_sign, r_div
     sbrc    r_div, 7
     neg     r_div
     sbrc    r_divd, 7
     neg     r_divd
-    cp      r_divd, r_div
-    breq    __divqq3_minus1  ; if equal return -1
-    XCALL   __udivuqq3
+    XCALL   __divqq_helper
     lsr     r_quo
-    sbrc    r0, 7   ; negate result if needed
+    sbrc    r_sign, 7   ; negate result if needed
     neg     r_quo
     ret
-__divqq3_minus1:
-    ldi     r_quo, 0x80
-    ret
 ENDF __divqq3
-#endif  /* defined (L_divqq3) */
+#endif  /* L_divqq3 */
 
 #if defined (L_udivuqq3)
 DEFUN   __udivuqq3
+    cp      r_divd, r_div
+    brsh    0f
+    XJMP __divqq_helper
+    ;; Result is out of [0, 1)  ==>  Return 1 - eps.
+0:  ldi     r_quo, 0xff
+    ret
+ENDF __udivuqq3
+#endif  /* L_udivuqq3 */
+
+
+#if defined (L_divqq_helper)
+DEFUN   __divqq_helper
     clr     r_quo           ; clear quotient
     inc     __zero_reg__    ; init loop counter, used per shift
 __udivuqq3_loop:
@@ -649,12 +727,13 @@ __udivuqq3_cont:
     com     r_quo           ; complement result
                             ; because C flag was complemented in loop
     ret
-ENDF __udivuqq3
-#endif  /* defined (L_udivuqq3) */
+ENDF __divqq_helper
+#endif  /* L_divqq_helper */
 
 #undef  r_divd
 #undef  r_quo
 #undef  r_div
+#undef  r_sign
 
 
 /*******************************************************
@@ -746,6 +825,8 @@ DEFUN   __divha3
     NEG2    r_divdL
 2:
     XCALL   __udivuha3
+    lsr     r_quoH  ; adjust to 7 fractional bits
+    ror     r_quoL
     sbrs    r0, 7   ; negate result if needed
     ret
     NEG2    r_quoL
@@ -806,6 +887,10 @@ DEFUN   __divsa3
     NEG4    r_arg1L
 2:
     XCALL   __udivusa3
+    lsr     r_quoHH ; adjust to 15 fractional bits
+    ror     r_quoHL
+    ror     r_quoH
+    ror     r_quoL
     sbrs    r0, 7   ; negate result if needed
     ret
     ;; negate r_quoL
@@ -1024,8 +1109,8 @@ DEFUN __usadd_8
     XCALL   __adddi3
     brcs 0f
     ret
-	;; A[] = 0xffffffff
-0:  XJMP    __sbc_8
+0:  ;; A[] = 0xffffffff
+    XJMP    __sbc_8
 ENDF __usadd_8
 #endif /* L_usadd_8 */
 
@@ -1038,8 +1123,8 @@ DEFUN __ussub_8
     XCALL   __subdi3
     brcs 0f
     ret
-	;; A[] = 0
-0:  XJMP    __clr_8
+0:  ;; A[] = 0
+    XJMP    __clr_8
 ENDF __ussub_8
 #endif /* L_ussub_8 */
 
@@ -1049,9 +1134,9 @@ FALIAS __ssaddda3
 FALIAS __ssadddq3
 
 DEFUN __ssadd_8
-    ;; A = (B >= 0) ? INT64_MAX : INT64_MIN
     XCALL   __adddi3
     brvc 0f
+    ;; A = (B >= 0) ? INT64_MAX : INT64_MIN
     cpi     B7, 0x80
     XCALL   __sbc_8
     subi    A7, 0x80
@@ -1067,7 +1152,7 @@ FALIAS __sssubdq3
 DEFUN __sssub_8
     XCALL   __subdi3
     brvc 0f
-	;; A = (B < 0) ? INT64_MAX : INT64_MIN
+    ;; A = (B < 0) ? INT64_MAX : INT64_MIN
     ldi     A7, 0x7f
     cp      A7, B7
     XCALL   __sbc_8

@@ -1027,12 +1027,6 @@ For ARM targets, possible values for @var{dialect} are @code{gnu} or
 @code{gnu2}, which select between the original GNU dialect and the GNU TLS
 descriptor-based dialect.
 
-@item --disable-multilib
-Specify that multiple target
-libraries to support different target variants, calling
-conventions, etc.@: should not be built.  The default is to build a
-predefined set of them.
-
 @item --enable-multiarch
 Specify whether to enable or disable multiarch support.  The default is
 to check for glibc start files in a multiarch location, and enable it
@@ -1041,6 +1035,12 @@ and for cross builds configured with @option{--with-sysroot}, and without
 @option{--with-native-system-header-dir}.
 More documentation about multiarch can be found at
 @uref{http://wiki.debian.org/Multiarch}.
+
+@item --disable-multilib
+Specify that multiple target
+libraries to support different target variants, calling
+conventions, etc.@: should not be built.  The default is to build a
+predefined set of them.
 
 Some targets provide finer-grained control over which multilibs are built
 (e.g., @option{--disable-softfloat}):

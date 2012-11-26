@@ -39,6 +39,7 @@ static bool optimize_trim (gfc_expr *);
 static bool optimize_lexical_comparison (gfc_expr *);
 static void optimize_minmaxloc (gfc_expr **);
 static bool is_empty_string (gfc_expr *e);
+static void doloop_warn (gfc_namespace *);
 
 /* How deep we are inside an argument list.  */
 
@@ -76,12 +77,30 @@ static bool in_omp_workshare;
 
 static int iterator_level;
 
-/* Entry point - run all passes for a namespace.  So far, only an
-   optimization pass is run.  */
+/* Keep track of DO loop levels.  */
+
+static gfc_code **doloop_list;
+static int doloop_size, doloop_level;
+
+/* Vector of gfc_expr * to keep track of DO loops.  */
+
+struct my_struct *evec;
+
+/* Entry point - run all passes for a namespace. */
 
 void
 gfc_run_passes (gfc_namespace *ns)
 {
+
+  /* Warn about dubious DO loops where the index might
+     change.  */
+
+  doloop_size = 20;
+  doloop_level = 0;
+  doloop_list = XNEWVEC(gfc_code *, doloop_size);
+  doloop_warn (ns);
+  XDELETEVEC (doloop_list);
+
   if (gfc_option.flag_frontend_optimize)
     {
       expr_size = 20;
@@ -1225,6 +1244,160 @@ optimize_minmaxloc (gfc_expr **e)
   mpz_set_ui (a->expr->value.integer, 1);
 }
 
+/* Callback function for code checking that we do not pass a DO variable to an
+   INTENT(OUT) or INTENT(INOUT) dummy variable.  */
+
+static int
+doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+	 void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co;
+  int i;
+  gfc_formal_arglist *f;
+  gfc_actual_arglist *a;
+
+  co = *c;
+
+  switch (co->op)
+    {
+    case EXEC_DO:
+
+      /* Grow the temporary storage if necessary.  */
+      if (doloop_level >= doloop_size)
+	{
+	  doloop_size = 2 * doloop_size;
+	  doloop_list = XRESIZEVEC (gfc_code *, doloop_list, doloop_size);
+	}
+
+      /* Mark the DO loop variable if there is one.  */
+      if (co->ext.iterator && co->ext.iterator->var)
+	doloop_list[doloop_level] = co;
+      else
+	doloop_list[doloop_level] = NULL;
+      break;
+
+    case EXEC_CALL:
+      f = co->symtree->n.sym->formal;
+
+      /* Withot a formal arglist, there is only unknown INTENT,
+	 which we don't check for.  */
+      if (f == NULL)
+	break;
+
+      a = co->ext.actual;
+
+      while (a && f)
+	{
+	  for (i=0; i<doloop_level; i++)
+	    {
+	      gfc_symbol *do_sym;
+	      
+	      if (doloop_list[i] == NULL)
+		break;
+
+	      do_sym = doloop_list[i]->ext.iterator->var->symtree->n.sym;
+	      
+	      if (a->expr && a->expr->symtree
+		  && a->expr->symtree->n.sym == do_sym)
+		{
+		  if (f->sym->attr.intent == INTENT_OUT)
+		    gfc_error_now("Variable '%s' at %L set to undefined value "
+				  "inside loop  beginning at %L as INTENT(OUT) "
+				  "argument to subroutine '%s'", do_sym->name,
+				  &a->expr->where, &doloop_list[i]->loc,
+				  co->symtree->n.sym->name);
+		  else if (f->sym->attr.intent == INTENT_INOUT)
+		    gfc_error_now("Variable '%s' at %L not definable inside loop "
+				  "beginning at %L as INTENT(INOUT) argument to "
+				  "subroutine '%s'", do_sym->name,
+				  &a->expr->where, &doloop_list[i]->loc,
+				  co->symtree->n.sym->name);
+		}
+	    }
+	  a = a->next;
+	  f = f->next;
+	}
+      break;
+
+    default:
+      break;
+    }
+  return 0;
+}
+
+/* Callback function for functions checking that we do not pass a DO variable
+   to an INTENT(OUT) or INTENT(INOUT) dummy variable.  */
+
+static int
+do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+	     void *data ATTRIBUTE_UNUSED)
+{
+  gfc_formal_arglist *f;
+  gfc_actual_arglist *a;
+  gfc_expr *expr;
+  int i;
+
+  expr = *e;
+  if (expr->expr_type != EXPR_FUNCTION)
+    return 0;
+
+  /* Intrinsic functions don't modify their arguments.  */
+
+  if (expr->value.function.isym)
+    return 0;
+
+  f = expr->symtree->n.sym->formal;
+
+  /* Without a formal arglist, there is only unknown INTENT,
+     which we don't check for.  */
+  if (f == NULL)
+    return 0;
+
+  a = expr->value.function.actual;
+
+  while (a && f)
+    {
+      for (i=0; i<doloop_level; i++)
+	{
+	  gfc_symbol *do_sym;
+	 
+    
+	  if (doloop_list[i] == NULL)
+	    break;
+
+	  do_sym = doloop_list[i]->ext.iterator->var->symtree->n.sym;
+	  
+	  if (a->expr && a->expr->symtree
+	      && a->expr->symtree->n.sym == do_sym)
+	    {
+	      if (f->sym->attr.intent == INTENT_OUT)
+		gfc_error_now("Variable '%s' at %L set to undefined value "
+			      "inside loop beginning at %L as INTENT(OUT) "
+			      "argument to function '%s'", do_sym->name,
+			      &a->expr->where, &doloop_list[i]->loc,
+			      expr->symtree->n.sym->name);
+	      else if (f->sym->attr.intent == INTENT_INOUT)
+		gfc_error_now("Variable '%s' at %L not definable inside loop "
+			      "beginning at %L as INTENT(INOUT) argument to "
+			      "function '%s'", do_sym->name,
+			      &a->expr->where, &doloop_list[i]->loc,
+			      expr->symtree->n.sym->name);
+	    }
+	}
+      a = a->next;
+      f = f->next;
+    }
+
+  return 0;
+}
+
+static void
+doloop_warn (gfc_namespace *ns)
+{
+  gfc_code_walker (&ns->code, doloop_code, do_function, NULL);
+}
+
+
 #define WALK_SUBEXPR(NODE) \
   do							\
     {							\
@@ -1383,6 +1556,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      break;
 
 	    case EXEC_DO:
+	      doloop_level ++;
 	      WALK_SUBEXPR (co->ext.iterator->var);
 	      WALK_SUBEXPR (co->ext.iterator->start);
 	      WALK_SUBEXPR (co->ext.iterator->end);
@@ -1600,6 +1774,9 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	  if (co->op == EXEC_FORALL)
 	    forall_level --;
+
+	  if (co->op == EXEC_DO)
+	    doloop_level --;
 
 	  in_omp_workshare = saved_in_omp_workshare;
 	}

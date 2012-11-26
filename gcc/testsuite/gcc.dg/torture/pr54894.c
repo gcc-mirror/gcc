@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target size32plus } */
 
 typedef unsigned long long uint64_t;
 

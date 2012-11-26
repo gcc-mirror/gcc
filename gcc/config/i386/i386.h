@@ -101,6 +101,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    known at compile time or estimated via feedback, the SIZE array
    is walked in order until MAX is greater then the estimate (or -1
    means infinity).  Corresponding ALG is used then.
+   When NOALIGN is true the code guaranting the alignment of the memory
+   block is skipped.
+
    For example initializer:
     {{256, loop}, {-1, rep_prefix_4_byte}}
    will use loop for blocks smaller or equal to 256 bytes, rep prefix will
@@ -111,6 +114,7 @@ struct stringop_algs
   const struct stringop_strategy {
     const int max;
     const enum stringop_alg alg;
+    int noalign;
   } size [MAX_STRINGOP_ALGS];
 };
 
@@ -242,12 +246,8 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_K8 (ix86_tune == PROCESSOR_K8)
 #define TARGET_ATHLON_K8 (TARGET_K8 || TARGET_ATHLON)
 #define TARGET_NOCONA (ix86_tune == PROCESSOR_NOCONA)
-#define TARGET_CORE2_32 (ix86_tune == PROCESSOR_CORE2_32)
-#define TARGET_CORE2_64 (ix86_tune == PROCESSOR_CORE2_64)
-#define TARGET_CORE2 (TARGET_CORE2_32 || TARGET_CORE2_64)
-#define TARGET_COREI7_32 (ix86_tune == PROCESSOR_COREI7_32)
-#define TARGET_COREI7_64 (ix86_tune == PROCESSOR_COREI7_64)
-#define TARGET_COREI7 (TARGET_COREI7_32 || TARGET_COREI7_64)
+#define TARGET_CORE2 (ix86_tune == PROCESSOR_CORE2)
+#define TARGET_COREI7 (ix86_tune == PROCESSOR_COREI7)
 #define TARGET_GENERIC32 (ix86_tune == PROCESSOR_GENERIC32)
 #define TARGET_GENERIC64 (ix86_tune == PROCESSOR_GENERIC64)
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
@@ -2092,10 +2092,8 @@ enum processor_type
   PROCESSOR_PENTIUM4,
   PROCESSOR_K8,
   PROCESSOR_NOCONA,
-  PROCESSOR_CORE2_32,
-  PROCESSOR_CORE2_64,
-  PROCESSOR_COREI7_32,
-  PROCESSOR_COREI7_64,
+  PROCESSOR_CORE2,
+  PROCESSOR_COREI7,
   PROCESSOR_GENERIC32,
   PROCESSOR_GENERIC64,
   PROCESSOR_AMDFAM10,

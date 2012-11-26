@@ -9,7 +9,7 @@
 // if a call that takes a file name fails, such as Open or Stat, the error
 // will include the failing file name when printed and will be of type
 // *PathError, which may be unpacked for more information.
-// 
+//
 // The os interface is intended to be uniform across all operating systems.
 // Features not generally available appear in the system-specific package syscall.
 //
@@ -185,7 +185,7 @@ func (f *File) Seek(offset int64, whence int) (ret int64, err error) {
 }
 
 // WriteString is like Write, but writes the contents of string s rather than
-// an array of bytes.
+// a slice of bytes.
 func (f *File) WriteString(s string) (ret int, err error) {
 	if f == nil {
 		return 0, ErrInvalid

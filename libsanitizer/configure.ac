@@ -67,11 +67,24 @@ AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
+AC_CHECK_SIZEOF([void *])
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else
   multilib_arg=
 fi
+
+# Get target configury.
+unset TSAN_SUPPORTED
+. ${srcdir}/configure.tgt
+AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
+
+case "$host" in
+  *-*-darwin*) MACH_OVERRIDE=true ;;
+  *) MACH_OVERRIDE=false ;;
+esac
+AM_CONDITIONAL(USING_MACH_OVERRIDE, $MACH_OVERRIDE)
 
 AC_CONFIG_FILES([Makefile])
 
@@ -87,5 +100,20 @@ _EOF
    . ${multi_basedir}/config-ml.in
    AS_UNSET([ml_norecursion])
 ])
+
+if test "x$TSAN_SUPPORTED" = "xyes"; then
+  AC_CONFIG_FILES(AC_FOREACH([DIR], [tsan], [DIR/Makefile ]), 
+    [cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+    sed -f vpsed$$ $ac_file > tmp$$
+    mv tmp$$ $ac_file
+    rm vpsed$$
+    echo 'MULTISUBDIR =' >> $ac_file
+    ml_norecursion=yes
+    . ${multi_basedir}/config-ml.in
+    AS_UNSET([ml_norecursion])
+])
+fi
 
 AC_OUTPUT

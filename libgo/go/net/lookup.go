@@ -4,10 +4,51 @@
 
 package net
 
+import (
+	"time"
+)
+
 // LookupHost looks up the given host using the local resolver.
 // It returns an array of that host's addresses.
 func LookupHost(host string) (addrs []string, err error) {
 	return lookupHost(host)
+}
+
+func lookupHostDeadline(host string, deadline time.Time) (addrs []string, err error) {
+	if deadline.IsZero() {
+		return lookupHost(host)
+	}
+
+	// TODO(bradfitz): consider pushing the deadline down into the
+	// name resolution functions. But that involves fixing it for
+	// the native Go resolver, cgo, Windows, etc.
+	//
+	// In the meantime, just use a goroutine. Most users affected
+	// by http://golang.org/issue/2631 are due to TCP connections
+	// to unresponsive hosts, not DNS.
+	timeout := deadline.Sub(time.Now())
+	if timeout <= 0 {
+		err = errTimeout
+		return
+	}
+	t := time.NewTimer(timeout)
+	defer t.Stop()
+	type res struct {
+		addrs []string
+		err   error
+	}
+	resc := make(chan res, 1)
+	go func() {
+		a, err := lookupHost(host)
+		resc <- res{a, err}
+	}()
+	select {
+	case <-t.C:
+		err = errTimeout
+	case r := <-resc:
+		addrs, err = r.addrs, r.err
+	}
+	return
 }
 
 // LookupIP looks up host using the local resolver.
@@ -45,6 +86,11 @@ func LookupSRV(service, proto, name string) (cname string, addrs []*SRV, err err
 // LookupMX returns the DNS MX records for the given domain name sorted by preference.
 func LookupMX(name string) (mx []*MX, err error) {
 	return lookupMX(name)
+}
+
+// LookupNS returns the DNS NS records for the given domain name.
+func LookupNS(name string) (ns []*NS, err error) {
+	return lookupNS(name)
 }
 
 // LookupTXT returns the DNS TXT records for the given domain name.

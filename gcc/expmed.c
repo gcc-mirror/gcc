@@ -645,7 +645,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     if (imode != GET_MODE (op0))
       {
 	if (MEM_P (op0))
-	  op0 = adjust_bitfield_address (op0, imode, 0);
+	  op0 = adjust_bitfield_address_size (op0, imode, 0, MEM_SIZE (op0));
 	else
 	  {
 	    gcc_assert (imode != BLKmode);
@@ -869,19 +869,20 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (MEM_P (str_rtx) && bitregion_start > 0)
     {
       enum machine_mode bestmode;
-      unsigned HOST_WIDE_INT offset;
+      HOST_WIDE_INT offset, size;
 
       gcc_assert ((bitregion_start % BITS_PER_UNIT) == 0);
 
       offset = bitregion_start / BITS_PER_UNIT;
       bitnum -= bitregion_start;
+      size = (bitnum + bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
       bitregion_end -= bitregion_start;
       bitregion_start = 0;
       bestmode = get_best_mode (bitsize, bitnum,
 				bitregion_start, bitregion_end,
 				MEM_ALIGN (str_rtx), VOIDmode,
 				MEM_VOLATILE_P (str_rtx));
-      str_rtx = adjust_address (str_rtx, bestmode, offset);
+      str_rtx = adjust_bitfield_address_size (str_rtx, bestmode, offset, size);
     }
 
   if (!store_bit_field_1 (str_rtx, bitsize, bitnum,
@@ -1380,7 +1381,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     if (imode != GET_MODE (op0))
       {
 	if (MEM_P (op0))
-	  op0 = adjust_bitfield_address (op0, imode, 0);
+	  op0 = adjust_bitfield_address_size (op0, imode, 0, MEM_SIZE (op0));
 	else if (imode != BLKmode)
 	  {
 	    op0 = gen_lowpart (imode, op0);
@@ -1403,10 +1404,10 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  }
 	else
 	  {
-	    rtx mem = assign_stack_temp (GET_MODE (op0),
-					 GET_MODE_SIZE (GET_MODE (op0)));
+	    HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (op0));
+	    rtx mem = assign_stack_temp (GET_MODE (op0), size);
 	    emit_move_insn (mem, op0);
-	    op0 = adjust_bitfield_address (mem, BLKmode, 0);
+	    op0 = adjust_bitfield_address_size (mem, BLKmode, 0, size);
 	  }
       }
   }

@@ -19,6 +19,10 @@
 # Only include multilibs for 680x0 and ColdFire CPUs with an MMU.
 M68K_MLIB_CPU += && ((CPU ~ "^m680") || (CPU ~ "^mcf")) && (FLAGS ~ "FL_MMU")
 
+ifeq ($(M68K_ARCH),m68k)
+MULTIARCH_DIRNAME = $(call if_multiarch,m68k-linux-gnu)
+endif
+
 # This rule uses MULTILIB_MATCHES to generate a definition of
 # SYSROOT_SUFFIX_SPEC.
 sysroot-suffix.h: $(srcdir)/config/m68k/print-sysroot-suffix.sh

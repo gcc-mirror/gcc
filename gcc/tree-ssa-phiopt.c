@@ -1657,9 +1657,9 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   then_ddrs.create (1);
   else_ddrs.create (1);
   if (!compute_all_dependences (then_datarefs, &then_ddrs,
-				vec<loop_p>(), false)
+				vNULL, false)
       || !compute_all_dependences (else_datarefs, &else_ddrs,
-				   vec<loop_p>(), false))
+				   vNULL, false))
     {
       free_dependence_relations (then_ddrs);
       free_dependence_relations (else_ddrs);

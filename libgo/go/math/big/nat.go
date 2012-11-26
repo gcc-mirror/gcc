@@ -421,17 +421,17 @@ func (z nat) mul(x, y nat) nat {
 	z[2*k:].clear() // upper portion of z is garbage (and 2*k <= m+n since k <= n <= m)
 
 	// If xh != 0 or yh != 0, add the missing terms to z. For
-	// 
-	//   xh = xi*b^i + ... + x2*b^2 + x1*b (0 <= xi < b) 
-	//   yh =                         y1*b (0 <= y1 < b) 
-	// 
-	// the missing terms are 
-	// 
-	//   x0*y1*b and xi*y0*b^i, xi*y1*b^(i+1) for i > 0 
-	// 
-	// since all the yi for i > 1 are 0 by choice of k: If any of them 
-	// were > 0, then yh >= b^2 and thus y >= b^2. Then k' = k*2 would 
-	// be a larger valid threshold contradicting the assumption about k. 
+	//
+	//   xh = xi*b^i + ... + x2*b^2 + x1*b (0 <= xi < b)
+	//   yh =                         y1*b (0 <= y1 < b)
+	//
+	// the missing terms are
+	//
+	//   x0*y1*b and xi*y0*b^i, xi*y1*b^(i+1) for i > 0
+	//
+	// since all the yi for i > 1 are 0 by choice of k: If any of them
+	// were > 0, then yh >= b^2 and thus y >= b^2. Then k' = k*2 would
+	// be a larger valid threshold contradicting the assumption about k.
 	//
 	if k < n || m != n {
 		var t nat
@@ -828,16 +828,16 @@ func (x nat) string(charset string) string {
 // by nat/nat division using tabulated divisors. Otherwise, it is converted iteratively using
 // repeated nat/Word divison.
 //
-// The iterative method processes n Words by n divW() calls, each of which visits every Word in the 
-// incrementally shortened q for a total of n + (n-1) + (n-2) ... + 2 + 1, or n(n+1)/2 divW()'s. 
-// Recursive conversion divides q by its approximate square root, yielding two parts, each half 
+// The iterative method processes n Words by n divW() calls, each of which visits every Word in the
+// incrementally shortened q for a total of n + (n-1) + (n-2) ... + 2 + 1, or n(n+1)/2 divW()'s.
+// Recursive conversion divides q by its approximate square root, yielding two parts, each half
 // the size of q. Using the iterative method on both halves means 2 * (n/2)(n/2 + 1)/2 divW()'s
 // plus the expensive long div(). Asymptotically, the ratio is favorable at 1/2 the divW()'s, and
-// is made better by splitting the subblocks recursively. Best is to split blocks until one more 
-// split would take longer (because of the nat/nat div()) than the twice as many divW()'s of the 
-// iterative approach. This threshold is represented by leafSize. Benchmarking of leafSize in the 
-// range 2..64 shows that values of 8 and 16 work well, with a 4x speedup at medium lengths and 
-// ~30x for 20000 digits. Use nat_test.go's BenchmarkLeafSize tests to optimize leafSize for 
+// is made better by splitting the subblocks recursively. Best is to split blocks until one more
+// split would take longer (because of the nat/nat div()) than the twice as many divW()'s of the
+// iterative approach. This threshold is represented by leafSize. Benchmarking of leafSize in the
+// range 2..64 shows that values of 8 and 16 work well, with a 4x speedup at medium lengths and
+// ~30x for 20000 digits. Use nat_test.go's BenchmarkLeafSize tests to optimize leafSize for
 // specific hardware.
 //
 func (q nat) convertWords(s []byte, charset string, b Word, ndigits int, bb Word, table []divisor) {
@@ -920,8 +920,10 @@ type divisor struct {
 	ndigits int // digit length of divisor in terms of output base digits
 }
 
-var cacheBase10 [64]divisor // cached divisors for base 10
-var cacheLock sync.Mutex    // protects cacheBase10
+var cacheBase10 struct {
+	sync.Mutex
+	table [64]divisor // cached divisors for base 10
+}
 
 // expWW computes x**y
 func (z nat) expWW(x, y Word) nat {
@@ -937,34 +939,28 @@ func divisors(m int, b Word, ndigits int, bb Word) []divisor {
 
 	// determine k where (bb**leafSize)**(2**k) >= sqrt(x)
 	k := 1
-	for words := leafSize; words < m>>1 && k < len(cacheBase10); words <<= 1 {
+	for words := leafSize; words < m>>1 && k < len(cacheBase10.table); words <<= 1 {
 		k++
 	}
 
-	// create new table of divisors or extend and reuse existing table as appropriate
-	var table []divisor
-	var cached bool
-	switch b {
-	case 10:
-		table = cacheBase10[0:k] // reuse old table for this conversion
-		cached = true
-	default:
-		table = make([]divisor, k) // new table for this conversion
+	// reuse and extend existing table of divisors or create new table as appropriate
+	var table []divisor // for b == 10, table overlaps with cacheBase10.table
+	if b == 10 {
+		cacheBase10.Lock()
+		table = cacheBase10.table[0:k] // reuse old table for this conversion
+	} else {
+		table = make([]divisor, k) // create new table for this conversion
 	}
 
 	// extend table
 	if table[k-1].ndigits == 0 {
-		if cached {
-			cacheLock.Lock() // begin critical section
-		}
-
 		// add new entries as needed
 		var larger nat
 		for i := 0; i < k; i++ {
 			if table[i].ndigits == 0 {
 				if i == 0 {
-					table[i].bbb = nat(nil).expWW(bb, Word(leafSize))
-					table[i].ndigits = ndigits * leafSize
+					table[0].bbb = nat(nil).expWW(bb, Word(leafSize))
+					table[0].ndigits = ndigits * leafSize
 				} else {
 					table[i].bbb = nat(nil).mul(table[i-1].bbb, table[i-1].bbb)
 					table[i].ndigits = 2 * table[i-1].ndigits
@@ -980,10 +976,10 @@ func divisors(m int, b Word, ndigits int, bb Word) []divisor {
 				table[i].nbits = table[i].bbb.bitLen()
 			}
 		}
+	}
 
-		if cached {
-			cacheLock.Unlock() // end critical section
-		}
+	if b == 10 {
+		cacheBase10.Unlock()
 	}
 
 	return table
@@ -1231,8 +1227,8 @@ func (z nat) random(rand *rand.Rand, limit nat, n int) nat {
 	return z.norm()
 }
 
-// If m != nil, expNN calculates x**y mod m. Otherwise it calculates x**y. It
-// reuses the storage of z if possible.
+// If m != 0 (i.e., len(m) != 0), expNN sets z to x**y mod m;
+// otherwise it sets z to x**y. The result is the value of z.
 func (z nat) expNN(x, y, m nat) nat {
 	if alias(z, x) || alias(z, y) {
 		// We cannot allow in-place modification of x or y.
@@ -1244,15 +1240,24 @@ func (z nat) expNN(x, y, m nat) nat {
 		z[0] = 1
 		return z
 	}
+	// y > 0
 
-	if m != nil {
+	if len(m) != 0 {
 		// We likely end up being as long as the modulus.
 		z = z.make(len(m))
 	}
 	z = z.set(x)
-	v := y[len(y)-1]
-	// It's invalid for the most significant word to be zero, therefore we
-	// will find a one bit.
+
+	// If the base is non-trivial and the exponent is large, we use
+	// 4-bit, windowed exponentiation. This involves precomputing 14 values
+	// (x^2...x^15) but then reduces the number of multiply-reduces by a
+	// third. Even for a 32-bit exponent, this reduces the number of
+	// operations.
+	if len(x) > 1 && len(y) > 1 && len(m) > 0 {
+		return z.expNNWindowed(x, y, m)
+	}
+
+	v := y[len(y)-1] // v > 0 because y is normalized and y > 0
 	shift := leadingZeros(v) + 1
 	v <<= shift
 	var q nat
@@ -1276,7 +1281,7 @@ func (z nat) expNN(x, y, m nat) nat {
 			zz, z = z, zz
 		}
 
-		if m != nil {
+		if len(m) != 0 {
 			zz, r = zz.div(r, z, m)
 			zz, r, q, z = q, z, zz, r
 		}
@@ -1296,12 +1301,75 @@ func (z nat) expNN(x, y, m nat) nat {
 				zz, z = z, zz
 			}
 
-			if m != nil {
+			if len(m) != 0 {
 				zz, r = zz.div(r, z, m)
 				zz, r, q, z = q, z, zz, r
 			}
 
 			v <<= 1
+		}
+	}
+
+	return z.norm()
+}
+
+// expNNWindowed calculates x**y mod m using a fixed, 4-bit window.
+func (z nat) expNNWindowed(x, y, m nat) nat {
+	// zz and r are used to avoid allocating in mul and div as otherwise
+	// the arguments would alias.
+	var zz, r nat
+
+	const n = 4
+	// powers[i] contains x^i.
+	var powers [1 << n]nat
+	powers[0] = natOne
+	powers[1] = x
+	for i := 2; i < 1<<n; i += 2 {
+		p2, p, p1 := &powers[i/2], &powers[i], &powers[i+1]
+		*p = p.mul(*p2, *p2)
+		zz, r = zz.div(r, *p, m)
+		*p, r = r, *p
+		*p1 = p1.mul(*p, x)
+		zz, r = zz.div(r, *p1, m)
+		*p1, r = r, *p1
+	}
+
+	z = z.setWord(1)
+
+	for i := len(y) - 1; i >= 0; i-- {
+		yi := y[i]
+		for j := 0; j < _W; j += n {
+			if i != len(y)-1 || j != 0 {
+				// Unrolled loop for significant performance
+				// gain.  Use go test -bench=".*" in crypto/rsa
+				// to check performance before making changes.
+				zz = zz.mul(z, z)
+				zz, z = z, zz
+				zz, r = zz.div(r, z, m)
+				z, r = r, z
+
+				zz = zz.mul(z, z)
+				zz, z = z, zz
+				zz, r = zz.div(r, z, m)
+				z, r = r, z
+
+				zz = zz.mul(z, z)
+				zz, z = z, zz
+				zz, r = zz.div(r, z, m)
+				z, r = r, z
+
+				zz = zz.mul(z, z)
+				zz, z = z, zz
+				zz, r = zz.div(r, z, m)
+				z, r = r, z
+			}
+
+			zz = zz.mul(z, powers[yi>>(_W-n)])
+			zz, z = z, zz
+			zz, r = zz.div(r, z, m)
+			z, r = r, z
+
+			yi <<= n
 		}
 	}
 

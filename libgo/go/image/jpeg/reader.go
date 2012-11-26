@@ -98,7 +98,10 @@ type decoder struct {
 	img3          *image.YCbCr
 	ri            int // Restart Interval.
 	nComp         int
+	progressive   bool
+	eobRun        uint16 // End-of-Band run, specified in section G.1.2.2.
 	comp          [nColorComponent]component
+	progCoeffs    [nColorComponent][]block // Saved state between progressive-mode scans.
 	huff          [maxTc + 1][maxTh + 1]huffman
 	quant         [maxTq + 1]block // Quantization tables, in zig-zag order.
 	tmp           [1024]byte
@@ -184,193 +187,12 @@ func (d *decoder) processDQT(n int) error {
 			return FormatError("bad Tq value")
 		}
 		for i := range d.quant[tq] {
-			d.quant[tq][i] = int(d.tmp[i+1])
+			d.quant[tq][i] = int32(d.tmp[i+1])
 		}
 	}
 	if n != 0 {
 		return FormatError("DQT has wrong length")
 	}
-	return nil
-}
-
-// makeImg allocates and initializes the destination image.
-func (d *decoder) makeImg(h0, v0, mxx, myy int) {
-	if d.nComp == nGrayComponent {
-		m := image.NewGray(image.Rect(0, 0, 8*mxx, 8*myy))
-		d.img1 = m.SubImage(image.Rect(0, 0, d.width, d.height)).(*image.Gray)
-		return
-	}
-	var subsampleRatio image.YCbCrSubsampleRatio
-	switch {
-	case h0 == 1 && v0 == 1:
-		subsampleRatio = image.YCbCrSubsampleRatio444
-	case h0 == 1 && v0 == 2:
-		subsampleRatio = image.YCbCrSubsampleRatio440
-	case h0 == 2 && v0 == 1:
-		subsampleRatio = image.YCbCrSubsampleRatio422
-	case h0 == 2 && v0 == 2:
-		subsampleRatio = image.YCbCrSubsampleRatio420
-	default:
-		panic("unreachable")
-	}
-	m := image.NewYCbCr(image.Rect(0, 0, 8*h0*mxx, 8*v0*myy), subsampleRatio)
-	d.img3 = m.SubImage(image.Rect(0, 0, d.width, d.height)).(*image.YCbCr)
-}
-
-// Specified in section B.2.3.
-func (d *decoder) processSOS(n int) error {
-	if d.nComp == 0 {
-		return FormatError("missing SOF marker")
-	}
-	if n != 4+2*d.nComp {
-		return UnsupportedError("SOS has wrong length")
-	}
-	_, err := io.ReadFull(d.r, d.tmp[0:4+2*d.nComp])
-	if err != nil {
-		return err
-	}
-	if int(d.tmp[0]) != d.nComp {
-		return UnsupportedError("SOS has wrong number of image components")
-	}
-	var scan [nColorComponent]struct {
-		td uint8 // DC table selector.
-		ta uint8 // AC table selector.
-	}
-	for i := 0; i < d.nComp; i++ {
-		cs := d.tmp[1+2*i] // Component selector.
-		if cs != d.comp[i].c {
-			return UnsupportedError("scan components out of order")
-		}
-		scan[i].td = d.tmp[2+2*i] >> 4
-		scan[i].ta = d.tmp[2+2*i] & 0x0f
-	}
-	// mxx and myy are the number of MCUs (Minimum Coded Units) in the image.
-	h0, v0 := d.comp[0].h, d.comp[0].v // The h and v values from the Y components.
-	mxx := (d.width + 8*h0 - 1) / (8 * h0)
-	myy := (d.height + 8*v0 - 1) / (8 * v0)
-	if d.img1 == nil && d.img3 == nil {
-		d.makeImg(h0, v0, mxx, myy)
-	}
-
-	mcu, expectedRST := 0, uint8(rst0Marker)
-	var (
-		b  block
-		dc [nColorComponent]int
-	)
-	for my := 0; my < myy; my++ {
-		for mx := 0; mx < mxx; mx++ {
-			for i := 0; i < d.nComp; i++ {
-				qt := &d.quant[d.comp[i].tq]
-				for j := 0; j < d.comp[i].h*d.comp[i].v; j++ {
-					// TODO(nigeltao): make this a "var b block" once the compiler's escape
-					// analysis is good enough to allocate it on the stack, not the heap.
-					// b is in natural (not zig-zag) order.
-					b = block{}
-
-					// Decode the DC coefficient, as specified in section F.2.2.1.
-					value, err := d.decodeHuffman(&d.huff[dcTable][scan[i].td])
-					if err != nil {
-						return err
-					}
-					if value > 16 {
-						return UnsupportedError("excessive DC component")
-					}
-					dcDelta, err := d.receiveExtend(value)
-					if err != nil {
-						return err
-					}
-					dc[i] += dcDelta
-					b[0] = dc[i] * qt[0]
-
-					// Decode the AC coefficients, as specified in section F.2.2.2.
-					for zig := 1; zig < blockSize; zig++ {
-						value, err := d.decodeHuffman(&d.huff[acTable][scan[i].ta])
-						if err != nil {
-							return err
-						}
-						val0 := value >> 4
-						val1 := value & 0x0f
-						if val1 != 0 {
-							zig += int(val0)
-							if zig > blockSize {
-								return FormatError("bad DCT index")
-							}
-							ac, err := d.receiveExtend(val1)
-							if err != nil {
-								return err
-							}
-							b[unzig[zig]] = ac * qt[zig]
-						} else {
-							if val0 != 0x0f {
-								break
-							}
-							zig += 0x0f
-						}
-					}
-
-					// Perform the inverse DCT and store the MCU component to the image.
-					idct(&b)
-					dst, stride := []byte(nil), 0
-					if d.nComp == nGrayComponent {
-						dst, stride = d.img1.Pix[8*(my*d.img1.Stride+mx):], d.img1.Stride
-					} else {
-						switch i {
-						case 0:
-							mx0, my0 := h0*mx, v0*my
-							if h0 == 1 {
-								my0 += j
-							} else {
-								mx0 += j % 2
-								my0 += j / 2
-							}
-							dst, stride = d.img3.Y[8*(my0*d.img3.YStride+mx0):], d.img3.YStride
-						case 1:
-							dst, stride = d.img3.Cb[8*(my*d.img3.CStride+mx):], d.img3.CStride
-						case 2:
-							dst, stride = d.img3.Cr[8*(my*d.img3.CStride+mx):], d.img3.CStride
-						}
-					}
-					// Level shift by +128, clip to [0, 255], and write to dst.
-					for y := 0; y < 8; y++ {
-						y8 := y * 8
-						yStride := y * stride
-						for x := 0; x < 8; x++ {
-							c := b[y8+x]
-							if c < -128 {
-								c = 0
-							} else if c > 127 {
-								c = 255
-							} else {
-								c += 128
-							}
-							dst[yStride+x] = uint8(c)
-						}
-					}
-				} // for j
-			} // for i
-			mcu++
-			if d.ri > 0 && mcu%d.ri == 0 && mcu < mxx*myy {
-				// A more sophisticated decoder could use RST[0-7] markers to resynchronize from corrupt input,
-				// but this one assumes well-formed input, and hence the restart marker follows immediately.
-				_, err := io.ReadFull(d.r, d.tmp[0:2])
-				if err != nil {
-					return err
-				}
-				if d.tmp[0] != 0xff || d.tmp[1] != expectedRST {
-					return FormatError("bad RST marker")
-				}
-				expectedRST++
-				if expectedRST == rst7Marker+1 {
-					expectedRST = rst0Marker
-				}
-				// Reset the Huffman decoder.
-				d.b = bits{}
-				// Reset the DC components, as per section F.2.1.3.1.
-				dc = [nColorComponent]int{}
-			}
-		} // for mx
-	} // for my
-
 	return nil
 }
 
@@ -414,6 +236,14 @@ func (d *decoder) decode(r io.Reader, configOnly bool) (image.Image, error) {
 			return nil, FormatError("missing 0xff marker start")
 		}
 		marker := d.tmp[1]
+		for marker == 0xff {
+			// Section B.1.1.2 says, "Any marker may optionally be preceded by any
+			// number of fill bytes, which are bytes assigned code X'FF'".
+			marker, err = d.r.ReadByte()
+			if err != nil {
+				return nil, err
+			}
+		}
 		if marker == eoiMarker { // End Of Image.
 			break
 		}
@@ -439,13 +269,12 @@ func (d *decoder) decode(r io.Reader, configOnly bool) (image.Image, error) {
 		}
 
 		switch {
-		case marker == sof0Marker: // Start Of Frame (Baseline).
+		case marker == sof0Marker || marker == sof2Marker: // Start Of Frame.
+			d.progressive = marker == sof2Marker
 			err = d.processSOF(n)
 			if configOnly {
 				return nil, err
 			}
-		case marker == sof2Marker: // Start Of Frame (Progressive).
-			err = UnsupportedError("progressive mode")
 		case marker == dhtMarker: // Define Huffman Table.
 			err = d.processDHT(n)
 		case marker == dqtMarker: // Define Quantization Table.

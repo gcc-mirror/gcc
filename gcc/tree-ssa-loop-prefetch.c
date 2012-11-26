@@ -1541,11 +1541,11 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 			   bool no_other_refs)
 {
   struct loop *nest, *aloop;
-  vec<data_reference_p> datarefs = vec<data_reference_p>();
-  vec<ddr_p> dependences = vec<ddr_p>();
+  vec<data_reference_p> datarefs = vNULL;
+  vec<ddr_p> dependences = vNULL;
   struct mem_ref_group *gr;
   struct mem_ref *ref, *refb;
-  vec<loop_p> vloops = vec<loop_p>();
+  vec<loop_p> vloops = vNULL;
   unsigned *loop_data_size;
   unsigned i, j, n;
   unsigned volume, dist, adist;

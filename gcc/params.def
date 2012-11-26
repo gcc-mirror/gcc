@@ -365,10 +365,11 @@ DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
 	 "A threshold on the average loop count considered by the swing modulo scheduler",
 	 0, 0, 0)
 
-DEFPARAM(HOT_BB_COUNT_FRACTION,
-	 "hot-bb-count-fraction",
-	 "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot",
-	 10000, 0, 0)
+DEFPARAM(HOT_BB_COUNT_WS_PERMILLE,
+	 "hot-bb-count-ws-permille",
+         "A basic block profile count is considered hot if it contributes to "
+         "the given permillage of the entire profiled execution",
+	 999, 0, 1000)
 DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
 	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot",
@@ -392,7 +393,7 @@ DEFPARAM (PARAM_ALIGN_LOOP_ITERATIONS,
    flatten the profile.
 
    We need to cut the maximal predicted iterations to large enough iterations
-   so the loop appears important, but safely within HOT_BB_COUNT_FRACTION
+   so the loop appears important, but safely within maximum hotness
    range.  */
 
 DEFPARAM(PARAM_MAX_PREDICTED_ITERATIONS,

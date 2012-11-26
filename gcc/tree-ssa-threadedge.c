@@ -638,7 +638,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
       i++;
     }
 
-  vec<tree, va_stack> fewvars = vec<tree, va_stack>();
+  vec<tree, va_stack> fewvars = vNULL;
   pointer_set_t *vars = NULL;
 
   /* If we're already starting with 3/4 of alloc_count, go for a

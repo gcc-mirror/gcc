@@ -2407,94 +2407,6 @@ fill_simple_delay_slots (int non_jumps_p)
 
       note_delay_statistics (slots_filled, 0);
     }
-
-#ifdef DELAY_SLOTS_FOR_EPILOGUE
-  /* See if the epilogue needs any delay slots.  Try to fill them if so.
-     The only thing we can do is scan backwards from the end of the
-     function.  If we did this in a previous pass, it is incorrect to do it
-     again.  */
-  if (crtl->epilogue_delay_list)
-    return;
-
-  slots_to_fill = DELAY_SLOTS_FOR_EPILOGUE;
-  if (slots_to_fill == 0)
-    return;
-
-  slots_filled = 0;
-  CLEAR_RESOURCE (&set);
-
-  /* The frame pointer and stack pointer are needed at the beginning of
-     the epilogue, so instructions setting them can not be put in the
-     epilogue delay slot.  However, everything else needed at function
-     end is safe, so we don't want to use end_of_function_needs here.  */
-  CLEAR_RESOURCE (&needed);
-  if (frame_pointer_needed)
-    {
-      SET_HARD_REG_BIT (needed.regs, FRAME_POINTER_REGNUM);
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      SET_HARD_REG_BIT (needed.regs, HARD_FRAME_POINTER_REGNUM);
-#endif
-      if (! EXIT_IGNORE_STACK
-	  || crtl->sp_is_unchanging)
-	SET_HARD_REG_BIT (needed.regs, STACK_POINTER_REGNUM);
-    }
-  else
-    SET_HARD_REG_BIT (needed.regs, STACK_POINTER_REGNUM);
-
-#ifdef EPILOGUE_USES
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      if (EPILOGUE_USES (i))
-	SET_HARD_REG_BIT (needed.regs, i);
-    }
-#endif
-
-  for (trial = get_last_insn (); ! stop_search_p (trial, 1);
-       trial = PREV_INSN (trial))
-    {
-      if (NOTE_P (trial))
-	continue;
-      pat = PATTERN (trial);
-      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
-	continue;
-
-      if (! insn_references_resource_p (trial, &set, true)
-	  && ! insn_sets_resource_p (trial, &needed, true)
-	  && ! insn_sets_resource_p (trial, &set, true)
-#ifdef HAVE_cc0
-	  /* Don't want to mess with cc0 here.  */
-	  && ! reg_mentioned_p (cc0_rtx, pat)
-#endif
-	  && ! can_throw_internal (trial))
-	{
-	  trial = try_split (pat, trial, 1);
-	  if (ELIGIBLE_FOR_EPILOGUE_DELAY (trial, slots_filled))
-	    {
-	      /* Here as well we are searching backward, so put the
-		 insns we find on the head of the list.  */
-
-	      crtl->epilogue_delay_list
-		= gen_rtx_INSN_LIST (VOIDmode, trial,
-				     crtl->epilogue_delay_list);
-	      mark_end_of_function_resources (trial, true);
-	      update_block (trial, trial);
-	      delete_related_insns (trial);
-
-	      /* Clear deleted bit so final.c will output the insn.  */
-	      INSN_DELETED_P (trial) = 0;
-
-	      if (slots_to_fill == ++slots_filled)
-		break;
-	      continue;
-	    }
-	}
-
-      mark_set_resources (trial, &set, 0, MARK_SRC_DEST_CALL);
-      mark_referenced_resources (trial, &needed, true);
-    }
-
-  note_delay_statistics (slots_filled, 0);
-#endif
 }
 
 /* Follow any unconditional jump at LABEL, for the purpose of redirecting JUMP;
@@ -3731,17 +3643,6 @@ make_return_insns (rtx first)
   rtx real_simple_return_label = function_simple_return_label;
   int slots, i;
 
-#ifdef DELAY_SLOTS_FOR_EPILOGUE
-  /* If a previous pass filled delay slots in the epilogue, things get a
-     bit more complicated, as those filler insns would generally (without
-     data flow analysis) have to be executed after any existing branch
-     delay slot filler insns.  It is also unknown whether such a
-     transformation would actually be profitable.  Note that the existing
-     code only cares for branches with (some) filled delay slots.  */
-  if (crtl->epilogue_delay_list != NULL)
-    return;
-#endif
-
   /* See if there is a RETURN insn in the function other than the one we
      made for END_OF_FUNCTION_LABEL.  If so, set up anything we can't change
      into a RETURN to jump to it.  */
@@ -4080,19 +3981,6 @@ dbr_schedule (rtx first)
 
   free_resource_info ();
   free (uid_to_ruid);
-#ifdef DELAY_SLOTS_FOR_EPILOGUE
-  /* SPARC assembler, for instance, emit warning when debug info is output
-     into the delay slot.  */
-  {
-    rtx link;
-
-    for (link = crtl->epilogue_delay_list;
-         link;
-         link = XEXP (link, 1))
-      INSN_LOCATION (XEXP (link, 0)) = 0;
-  }
-
-#endif
   crtl->dbr_scheduled_p = true;
 }
 #endif /* DELAY_SLOTS */

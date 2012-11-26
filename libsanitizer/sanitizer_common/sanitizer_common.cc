@@ -14,7 +14,9 @@
 
 namespace __sanitizer {
 
-static fd_t report_fd = 2;  // By default, dump to stderr.
+// By default, dump to stderr. If report_fd is kInvalidFd, try to obtain file
+// descriptor by opening file in report_path.
+static fd_t report_fd = kStderrFd;
 static char report_path[4096];  // Set via __sanitizer_set_report_path.
 
 static void (*DieCallback)(void);
@@ -44,18 +46,27 @@ void NORETURN CheckFailed(const char *file, int line, const char *cond,
   Die();
 }
 
+static void MaybeOpenReportFile() {
+  if (report_fd != kInvalidFd)
+    return;
+  fd_t fd = internal_open(report_path, true);
+  if (fd == kInvalidFd) {
+    report_fd = kStderrFd;
+    Report("ERROR: Can't open file: %s\n", report_path);
+    Die();
+  }
+  report_fd = fd;
+}
+
+bool PrintsToTty() {
+  MaybeOpenReportFile();
+  return internal_isatty(report_fd);
+}
+
 void RawWrite(const char *buffer) {
   static const char *kRawWriteError = "RawWrite can't output requested buffer!";
   uptr length = (uptr)internal_strlen(buffer);
-  if (report_fd == kInvalidFd) {
-    fd_t fd = internal_open(report_path, true);
-    if (fd == kInvalidFd) {
-      report_fd = 2;
-      Report("ERROR: Can't open file: %s\n", report_path);
-      Die();
-    }
-    report_fd = fd;
-  }
+  MaybeOpenReportFile();
   if (length != internal_write(report_fd, buffer, length)) {
     internal_write(report_fd, kRawWriteError, internal_strlen(kRawWriteError));
     Die();
@@ -136,16 +147,27 @@ void SortArray(uptr *array, uptr size) {
 
 }  // namespace __sanitizer
 
+using namespace __sanitizer;  // NOLINT
+
+extern "C" {
 void __sanitizer_set_report_path(const char *path) {
   if (!path) return;
   uptr len = internal_strlen(path);
-  if (len > sizeof(__sanitizer::report_path) - 100) {
+  if (len > sizeof(report_path) - 100) {
     Report("ERROR: Path is too long: %c%c%c%c%c%c%c%c...\n",
            path[0], path[1], path[2], path[3],
            path[4], path[5], path[6], path[7]);
     Die();
   }
-  internal_snprintf(__sanitizer::report_path,
-                    sizeof(__sanitizer::report_path), "%s.%d", path, GetPid());
-  __sanitizer::report_fd = kInvalidFd;
+  internal_snprintf(report_path, sizeof(report_path), "%s.%d", path, GetPid());
+  report_fd = kInvalidFd;
 }
+
+void __sanitizer_set_report_fd(int fd) {
+  if (report_fd != kStdoutFd &&
+      report_fd != kStderrFd &&
+      report_fd != kInvalidFd)
+    internal_close(report_fd);
+  report_fd = fd;
+}
+}  // extern "C"

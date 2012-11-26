@@ -238,9 +238,12 @@ func readDirectoryHeader(f *File, r io.Reader) error {
 
 	if len(f.Extra) > 0 {
 		b := readBuf(f.Extra)
-		for len(b) > 0 {
+		for len(b) >= 4 { // need at least tag and size
 			tag := b.uint16()
 			size := b.uint16()
+			if int(size) > len(b) {
+				return ErrFormat
+			}
 			if tag == zip64ExtraId {
 				// update directory values from the zip64 extra block
 				eb := readBuf(b)
@@ -255,6 +258,10 @@ func readDirectoryHeader(f *File, r io.Reader) error {
 				}
 			}
 			b = b[size:]
+		}
+		// Should have consumed the whole header.
+		if len(b) != 0 {
+			return ErrFormat
 		}
 	}
 	return nil

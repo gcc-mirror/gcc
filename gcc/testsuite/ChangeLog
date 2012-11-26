@@ -1,3 +1,109 @@
+2012-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54471
+	* gcc.dg/tree-ssa/vrp86.c: New test.
+	* gcc.c-torture/execute/pr54471.c: New test.
+
+2012-11-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	* gcc.dg/guality/pr36728-1.c, gcc.dg/guality/pr36728-2.c (foo): Don't
+	use volatile asms, use plain asms.   Where the output value for the
+	asm is unused, write a global variable.
+
+2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sw-1.c (dg-options): Add -mtune=generic.
+
+2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/30146
+	* gfortran.dg/do_check_7.f90:  New test.
+
+2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55446
+	* g++.dg/init/new41.C: New.
+
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	* gfortran.dg/allocate_error_4.f90:  New test.
+
+2012-11-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Pass -- as first argument
+	to send_log.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/asan-dg.exp (asan_symbolize): Remove all "BFD: " prefixed lines
+	from the output.
+
+	PR c++/54046
+	* g++.dg/warn/Wreturn-type-8.C: New test.
+
+	PR middle-end/55430
+	* gcc.dg/pr55430.c: New test.
+
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/asan/memcmp-1.c: Update to match the new libsanitizer.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr40.ad[sb]: New test.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr39.adb: New test.
+
+2012-11-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/unroll_5.c: Add dg-require-effective-target int32plus.
+	* gcc.dg/pr55150-1.c: Same.
+	* gcc.dg/torture/pr54894.c: Add size32plus.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55435
+	* c-c++-common/asan/attrib-1.c: New test.
+
+2012-11-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/builtin-bswap-1.c: New test.
+	* gcc.target/aarch64/builtin-bswap-2.c: New test.
+
+2012-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55432
+	* g++.dg/cpp0x/constexpr-55432.C: New.
+
+2012-11-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55352
+	* gfortran.dg/namelist_76.f90: New.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-agg-7.c: New test.
+	* gcc.dg/ipa/ipcp-agg-8.c: Likewise.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* g++.dg/torture/pr55260-2.C: New test.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/torture/pr55238.c: Remove hidden attribute.
+
+2012-11-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Skip on ARM Cortex-M0.
+	* gcc.dg/tree-ssa/vrp47.c: Ditto.
+
 2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/19398

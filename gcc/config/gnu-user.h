@@ -98,3 +98,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define TARGET_C99_FUNCTIONS 1
 #define TARGET_HAS_SINCOS 1
+
+/* Additional libraries needed by -static-libasan.  */
+#undef STATIC_LIBASAN_LIBS
+#define STATIC_LIBASAN_LIBS "-ldl -lpthread"

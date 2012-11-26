@@ -2300,7 +2300,7 @@ try_combine_chains (vec<chain_p> *chains)
 {
   unsigned i, j;
   chain_p ch1, ch2, cch;
-  vec<chain_p> worklist = vec<chain_p>();
+  vec<chain_p> worklist = vNULL;
 
   FOR_EACH_VEC_ELT (*chains, i, ch1)
     if (chain_can_be_combined_p (ch1))
@@ -2415,7 +2415,7 @@ tree_predictive_commoning_loop (struct loop *loop)
   vec<data_reference_p> datarefs;
   vec<ddr_p> dependences;
   struct component *components;
-  vec<chain_p> chains = vec<chain_p>();
+  vec<chain_p> chains = vNULL;
   unsigned unroll_factor;
   struct tree_niter_desc desc;
   bool unroll = false;

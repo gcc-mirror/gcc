@@ -1,3 +1,41 @@
+2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55446
+	* init.c (build_vec_init): Do not early return error_mark_mode
+	when integer_all_onesp (maxindex).
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54046
+	* cp-objcp-common.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Redefine.
+	* cp-objcp-common.c (cxx_block_may_fallthru): New function.
+	* cp-tree.h (cxx_block_may_fallthru): New prototype.
+
+2012-11-23  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/55418
+	* method.c (implicitly_declare_fn): Properly initialize trivial_p.
+
+2012-11-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55137
+	* semantics.c (verify_constant): Track overflow separately.
+	(reduced_constant_expression_p): Don't check it here.
+	(cxx_eval_constant_expression): Check it on CSTs.
+	(cxx_eval_outermost_constant_expr): Treat overflows as non-constant
+	at this point, but still return the folded version.
+	(potential_constant_expression_1): Don't check overflow.
+
+	* call.c (extend_ref_init_temps_1): Recompute TREE_CONSTANT for
+	the ADDR_EXPR.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* name-lookup.c: Replace all vec<T, A>() initializers
+	with vNULL.
+	* semantics.c: Likewise.
+
 2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55368

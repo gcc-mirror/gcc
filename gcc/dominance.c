@@ -745,12 +745,12 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index], *son = node->son, *ason;
-  vec<basic_block> bbs = vec<basic_block>();
+  vec<basic_block> bbs = vNULL;
 
   gcc_checking_assert (dom_computed[dir_index]);
 
   if (!son)
-    return vec<basic_block>();
+    return vNULL;
 
   bbs.safe_push ((basic_block) son->data);
   for (ason = son->right; ason != son; ason = ason->right)
@@ -769,7 +769,7 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 {
   unsigned i;
   basic_block dom;
-  vec<basic_block> doms = vec<basic_block>();
+  vec<basic_block> doms = vNULL;
 
   for (i = 0; i < n_region; i++)
     region[i]->flags |= BB_DUPLICATED;
@@ -793,7 +793,7 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 vec<basic_block> 
 get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 {
-  vec<basic_block> bbs = vec<basic_block>();
+  vec<basic_block> bbs = vNULL;
   unsigned i;
   unsigned next_level_start;
 

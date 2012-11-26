@@ -699,7 +699,7 @@ try_unroll_loop_completely (struct loop *loop,
       sbitmap wont_exit;
       edge e;
       unsigned i;
-      vec<edge> to_remove = vec<edge>();
+      vec<edge> to_remove = vNULL;
       if (ul == UL_SINGLE_ITER)
 	return false;
 

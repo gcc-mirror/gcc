@@ -159,13 +159,13 @@ runtime_cputicks(void)
 }
 
 bool
-runtime_showframe(const unsigned char *s)
+runtime_showframe(String s)
 {
 	static int32 traceback = -1;
 	
 	if(traceback < 0)
 		traceback = runtime_gotraceback();
-	return traceback > 1 || (s != nil && __builtin_strchr((const char*)s, '.') != nil && __builtin_memcmp(s, "runtime.", 7) != 0);
+	return traceback > 1 || (__builtin_memchr(s.str, '.', s.len) != nil && __builtin_memcmp(s.str, "runtime.", 7) != 0);
 }
 
 static Lock ticksLock;

@@ -26,7 +26,7 @@ const (
 // For normal collation elements, we assume that a collation element either has
 // a primary or non-default secondary value, not both.
 // Collation elements with a primary value are of the form
-// 010ppppp pppppppp pppppppp ssssssss
+// 01pppppp pppppppp ppppppp0 ssssssss
 //   - p* is primary collation value
 //   - s* is the secondary collation value
 // or
@@ -67,10 +67,10 @@ func makeCE(weights []int) (uint32, error) {
 			if weights[1] >= 1<<maxSecondaryCompactBits {
 				return 0, fmt.Errorf("makeCE: secondary weight with non-zero primary out of bounds: %x >= %x", weights[1], 1<<maxSecondaryCompactBits)
 			}
-			ce = uint32(weights[0]<<maxSecondaryCompactBits + weights[1])
+			ce = uint32(weights[0]<<(maxSecondaryCompactBits+1) + weights[1])
 			ce |= isPrimary
 		} else {
-			d := weights[1] - defaultSecondary
+			d := weights[1] - defaultSecondary + 4
 			if d >= 1<<maxSecondaryDiffBits || d < 0 {
 				return 0, fmt.Errorf("makeCE: secondary weight diff out of bounds: %x < 0 || %x > %x", d, d, 1<<maxSecondaryDiffBits)
 			}
@@ -132,7 +132,7 @@ func makeExpandIndex(index int) (uint32, error) {
 	return expandID + uint32(index), nil
 }
 
-// Each list of collation elements corresponding to an expansion starts with 
+// Each list of collation elements corresponding to an expansion starts with
 // a header indicating the length of the sequence.
 func makeExpansionHeader(n int) (uint32, error) {
 	return uint32(n), nil
@@ -199,7 +199,7 @@ func implicitPrimary(r rune) int {
 	return int(r) + otherOffset
 }
 
-// convertLargeWeights converts collation elements with large 
+// convertLargeWeights converts collation elements with large
 // primaries (either double primaries or for illegal runes)
 // to our own representation.
 // A CJK character C is represented in the DUCET as
@@ -258,21 +258,31 @@ func convertLargeWeights(elems [][]int) (res [][]int, err error) {
 // nextWeight computes the first possible collation weights following elems
 // for the given level.
 func nextWeight(level collate.Level, elems [][]int) [][]int {
-	nce := make([][]int, len(elems))
-	copy(nce, elems)
-
-	if level != collate.Identity {
-		nce[0] = make([]int, len(elems[0]))
-		copy(nce[0], elems[0])
-		nce[0][level]++
-		if level < collate.Secondary {
-			nce[0][collate.Secondary] = defaultSecondary
+	if level == collate.Identity {
+		next := make([][]int, len(elems))
+		copy(next, elems)
+		return next
+	}
+	next := [][]int{make([]int, len(elems[0]))}
+	copy(next[0], elems[0])
+	next[0][level]++
+	if level < collate.Secondary {
+		next[0][collate.Secondary] = defaultSecondary
+	}
+	if level < collate.Tertiary {
+		next[0][collate.Tertiary] = defaultTertiary
+	}
+	// Filter entries that cannot influence ordering.
+	for _, ce := range elems[1:] {
+		skip := true
+		for i := collate.Primary; i < level; i++ {
+			skip = skip && ce[i] == 0
 		}
-		if level < collate.Tertiary {
-			nce[0][collate.Tertiary] = defaultTertiary
+		if !skip {
+			next = append(next, ce)
 		}
 	}
-	return nce
+	return next
 }
 
 func nextVal(elems [][]int, i int, level collate.Level) (index, value int) {

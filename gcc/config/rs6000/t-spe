@@ -71,3 +71,7 @@ MULTILIB_EXCEPTIONS	= maltivec mabi=altivec mno-spe mabi=no-spe mno-isel \
 			  mabi=altivec/mlittle \
 			  maltivec/mlittle \
 			  maltivec/mabi=altivec/mlittle
+
+ifneq (,$(findstring linux, $(target)))
+MULTIARCH_DIRNAME = powerpc-linux-gnuspe$(if $(findstring rs6000/e500-double.h, $(tm_file)),,v1)
+endif

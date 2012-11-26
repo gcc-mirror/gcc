@@ -1,3 +1,53 @@
+2012-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR libquadmath/55462
+	* strtod/strtod_l.c (round_and_return): Use HAVE_FENV_H
+	instead of nonexisting HAVE_GET_ROUNDING_MODE.
+
+2012-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/55455
+	* quadmath-rounding-mode.h (get_rounding_mode): Don't pass
+	void to fegetround.
+
+2012-11-23  Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* quadmath-rounding-mode.h: New.
+	* printf/fpioconst.c: Update from GLIBC. Fix strtod rounding.
+	* printf/fpioconst.h: Ditto.
+	* printf/printf_fp.c (__quadmath_printf_fp): Update from GLIBC.
+	Make printf respect the rounding mode for decimal output.
+	* printf/printf_fphex.c (__quadmath_printf_fphex): Update from
+	GLIBC.  Make printf respect the rounding mode for hex output.
+	* strtod/strtod_l.c: Update from GLIBC. Make strtod respect the
+	rounding mode. Fix strtod handling of underflow.
+
+2012-11-22  David S. Miller  <davem@davemloft.net>
+	    Tobias Burnus  <burnus@net-b.de>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* math/atanq.c (atanq): Update from GLIBC. Handle tiny and
+	very large arguments properly.
+	* math/j0q.c (y0q): Update from GLIBC. Avoid arithmetic
+	underflow when 'x' is very small.
+	* math/j1q.c (y1q): Ditto.
+	* math/log1pq.c (log1pq): Update from GLIBC. Saturate
+	nonzero exponents with absolute value below 0x1p-128 to
+	+/- 0x1p-128.
+	* math/powq.c (powq): Update from GLIBC. If xm1 is
+	smaller than LDBL_EPSILON/2.0L, just return xm1.
+
+2012-11-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR libquadmath/55225
+	* math/lgammaq.c (lgammaq): Use local variable if
+	math.h does not provide signgam.
+	* acinclude.m4 (LIBQUAD_CHECK_MATH_H_SIGNGAM): New check.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2012-11-15  Tobias Burnus  <burnus@net-b.de>
 	    Joseph Myers  <joseph@codesourcery.com>
 

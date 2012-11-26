@@ -1700,7 +1700,20 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	      gnat_param = Entity (Prefix (gnat_prefix));
 	  }
 
-	gnu_type = TREE_TYPE (gnu_prefix);
+	/* If the prefix is the view conversion of a constrained array to an
+	   unconstrained form, we retrieve the constrained array because we
+	   might not be able to substitute the PLACEHOLDER_EXPR coming from
+	   the conversion.  This can occur with the 'Old attribute applied
+	   to a parameter with an unconstrained type, which gets rewritten
+	   into a constrained local variable very late in the game.  */
+	if (TREE_CODE (gnu_prefix) == VIEW_CONVERT_EXPR
+	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (TREE_TYPE (gnu_prefix)))
+	    && !CONTAINS_PLACEHOLDER_P
+	        (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))))
+	  gnu_type = TREE_TYPE (TREE_OPERAND (gnu_prefix, 0));
+	else
+	  gnu_type = TREE_TYPE (gnu_prefix);
+
 	prefix_unused = true;
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
