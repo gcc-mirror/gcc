@@ -1,5 +1,15 @@
 2012-11-26  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/54997
+	* decl.c (match_procedure_decl): Don't set 'referenced' attribute
+	for PROCEDURE declarations.
+	* parse.c (gfc_fixup_sibling_symbols,parse_contained): Don't set
+	'referenced' attribute for all contained procedures.
+	* trans-decl.c (gfc_get_symbol_decl): Allow for unreferenced procedures.
+	(build_function_decl): Set TREE_USED for referenced procedures.
+
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/54881
 	* match.c (select_derived_set_tmp,select_class_set_tmp): Removed and
 	unified into ...
