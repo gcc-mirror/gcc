@@ -4941,8 +4941,6 @@ match_procedure_decl (void)
 
 	}
 
-      gfc_set_sym_referenced (sym);
-
       if (gfc_match_eos () == MATCH_YES)
 	return MATCH_YES;
       if (gfc_match_char (',') != MATCH_YES)
