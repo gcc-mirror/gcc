@@ -572,7 +572,7 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	      unlink_stmt_vdef (stmt);
 	      release_defs (stmt);
 	    }
-	  gsi_remove (si_p, true);
+	  gsi_replace (si_p, gimple_build_nop (), true);
 	  return;
 	}
     }
