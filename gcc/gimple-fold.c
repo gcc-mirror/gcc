@@ -1282,14 +1282,6 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
     default:;
     }
 
-  /* If stmt folds into nothing and it was the last stmt in a bb,
-     don't call gsi_stmt.  */
-  if (gsi_end_p (*gsi))
-    {
-      gcc_assert (next_stmt == NULL);
-      return changed;
-    }
-
   stmt = gsi_stmt (*gsi);
 
   /* Fold *& on the lhs.  Don't do this if stmt folded into nothing,
