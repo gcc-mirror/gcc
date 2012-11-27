@@ -6437,11 +6437,11 @@ case ,${enable_languages},:${enable_objc_gc} in
     ;;
 esac
 
-# Disable libitm if we're not building C++
+# Disable libitm and libsanitizer if we're not building C++
 case ,${enable_languages}, in
   *,c++,*) ;;
   *)
-    noconfigdirs="$noconfigdirs target-libitm"
+    noconfigdirs="$noconfigdirs target-libitm target-libsanitizer"
     ;;
 esac
 

@@ -1,3 +1,8 @@
+2012-11-27  Siddhesh Poyarekar  <siddhesh@redhat.com>
+
+	* configure.ac: Disable libsanitizer if we're not building C++.
+	* configure: Regenerate.
+
 2012-11-15  Roland McGrath  <roland@hack.frob.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
