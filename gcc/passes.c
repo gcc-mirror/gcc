@@ -1536,6 +1536,8 @@ init_optimization_passes (void)
       /* Copy propagation also copy-propagates constants, this is necessary
          to forward object-size results properly.  */
       NEXT_PASS (pass_copy_prop);
+      NEXT_PASS (pass_asan);
+      NEXT_PASS (pass_tsan);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_dce);
       /* Fold remaining builtins.  */
