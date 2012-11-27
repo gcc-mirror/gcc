@@ -1,8 +1,4 @@
 
-#ifndef TARGET_ASM_NAMED_SECTION
-#error TARGET_ASM_NAMED_SECTION is undefined.
-#endif /* !TARGET_ASM_NAMED_SECTION */
-
 #define UPC_SHARED_SECTION_BEGIN \
 /* Establish a symbol at the beginning of the data section \
    Must take up some space, so that variables don't begin \

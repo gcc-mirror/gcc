@@ -31,7 +31,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
-#include <upc_lock_sup.h>
+#include "upc_lock_sup.h"
 
 /* UPC lock implementation.
 

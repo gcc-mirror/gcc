@@ -1,5 +1,5 @@
 /* upc-crtstuff.c: UPC specific "C Runtime Support"
-   Copyright (C) 2009, 2010, 2011
+   Copyright (C) 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
      and Nenad Vukicevic <nenad@intrepid.com>.
@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Target machine header files require this define. */
+/* Target machine header files require this define.  */
 #define IN_LIBGCC2
 
 #undef USED_FOR_TARGET
@@ -32,24 +32,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "upc-crt-config.h"
 
-/* Only define secton start/end if no link script is used */
+/* Only define section start/end if no link script is used.   */
 
 #ifdef CRT_BEGIN
 
 /* Shared begin is always defined in order to allocate space
-   at the beginnig of the section */
+   at the beginning of the section.  */
 #ifdef UPC_SHARED_SECTION_BEGIN
-/* Establish a symbol at the beginning of the data section */
+/* Establish a symbol at the beginning of the data section.  */
 UPC_SHARED_SECTION_BEGIN
 #endif /* UPC_SHARED_SECTION_BEGIN */
 
 #ifndef HAVE_UPC_LINK_SCRIPT
 #ifdef UPC_PGM_INFO_SECTION_BEGIN
-/* Establish a symbol at the beginning of the progam info data section */
+/* Establish a symbol at the beginning of the program info data section.  */
 UPC_PGM_INFO_SECTION_BEGIN
 #endif /* UPC_PGM_INFO_SECTION_BEGIN */
 #ifdef UPC_INIT_ARRAY_SECTION_BEGIN
-/* Establish a symbol at the beginning of the initialization array section. */
+/* Establish a symbol at the beginning of the initialization array section.  */
 UPC_INIT_ARRAY_SECTION_BEGIN
 #endif /* UPC_INIT_ARRAY_SECTION_BEGIN */
 #endif /* !HAVE_UPC_LINK_SCRIPT */
@@ -58,15 +58,15 @@ UPC_INIT_ARRAY_SECTION_BEGIN
 
 #ifndef HAVE_UPC_LINK_SCRIPT
 #ifdef UPC_SHARED_SECTION_END
-/* Establish a symbol at the end of the shared data section */
+/* Establish a symbol at the end of the shared data section.  */
 UPC_SHARED_SECTION_END
 #endif /* UPC_SHARED_SECTION_END */
 #ifdef UPC_PGM_INFO_SECTION_END
-/* Establish a symbol at the end of the program info data section */
+/* Establish a symbol at the end of the program info data section.  */
 UPC_PGM_INFO_SECTION_END
 #endif /* UPC_PGM_INFO_SECTION_END */
 #ifdef UPC_INIT_ARRAY_SECTION_END
-/* Establish a symbol at the end of the initialization array section. */
+/* Establish a symbol at the end of the initialization array section.  */
 UPC_INIT_ARRAY_SECTION_END
 #endif /* UPC_INIT_ARRAY_SECTION_END */
 #endif /* !HAVE_UPC_LINK_SCRIPT */

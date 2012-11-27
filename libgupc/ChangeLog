@@ -1,3 +1,11 @@
+2012-11-27  Gary Funck  <gary@intrepid.com>
+
+	* config/default/upc-crt-config.h: Remove check for
+	TARGET_ASM_NAMED_SECTION.
+	* smp/upc_config.h: Avoid multiple definition of __USE_GNU.
+	* smp/upc_lock.upc: Use local search (") quoting in #include.
+	* upc-crtstuff.c: Update copyright notice and fix minor typos.
+
 2012-11-19  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* portals4/gupcr_mem.c (upc_memput): Add appropriate checks
