@@ -1,3 +1,8 @@
+2012-11-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-cfg.c (verify_gimple_comparison): Verify that vector
+	comparison returns a vector.
+
 2012-11-27  Meador Inge  <meadori@codesourcery.com>
 
 	* collect2.c (main): Call find_file_set_debug.
