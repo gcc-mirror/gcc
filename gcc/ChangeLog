@@ -1,3 +1,9 @@
+2012-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55110
+	* tree-vect-loop.c (vectorizable_reduction): Don't assert
+	that STMT_VINFO_RELATED_STMT of orig_stmt is stmt.
+
 2012-11-27  Richard Biener  <rguenther@suse.de>
 
 	* gimple-fold.c (fold_stmt_1): Remove unnecessary code.
