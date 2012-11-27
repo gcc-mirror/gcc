@@ -1,3 +1,9 @@
+2012-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55331
+	* gimple-fold.c (gimplify_and_update_call_from_tree): Replace
+	stmt with a NOP instead of removing it.
+
 2012-11-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* loop-invariant.c (check_invariant_table_size): Take sizeof of

@@ -1,3 +1,8 @@
+2012-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55331
+	* g++.dg/opt/pr55331.C: New testcase.
+
 2012-11-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc.dg/20050811-2.c: Change -dv option to -graph option.
