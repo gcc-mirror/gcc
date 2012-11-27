@@ -187,8 +187,7 @@ static void note_delay_statistics (int, int);
 static rtx optimize_skip (rtx);
 #endif
 static int get_jump_flags (rtx, rtx);
-static int rare_destination (rtx);
-static int mostly_true_jump (rtx, rtx);
+static int mostly_true_jump (rtx);
 static rtx get_branch_condition (rtx, rtx);
 static int condition_dominates_p (rtx, rtx);
 static int redirect_with_delay_slots_safe_p (rtx, rtx, rtx);
@@ -292,18 +291,7 @@ resource_conflicts_p (struct resources *res1, struct resources *res2)
       || res1->volatil || res2->volatil)
     return 1;
 
-#ifdef HARD_REG_SET
-  return (res1->regs & res2->regs) != HARD_CONST (0);
-#else
-  {
-    int i;
-
-    for (i = 0; i < HARD_REG_SET_LONGS; i++)
-      if ((res1->regs[i] & res2->regs[i]) != 0)
-	return 1;
-    return 0;
-  }
-#endif
+  return hard_reg_set_intersect_p (res1->regs, res2->regs);
 }
 
 /* Return TRUE if any resource marked in RES, a `struct resources', is
@@ -905,72 +893,18 @@ get_jump_flags (rtx insn, rtx label)
   return flags;
 }
 
-/* Return 1 if INSN is a destination that will be branched to rarely (the
-   return point of a function); return 2 if DEST will be branched to very
-   rarely (a call to a function that doesn't return).  Otherwise,
-   return 0.  */
-
-static int
-rare_destination (rtx insn)
-{
-  int jump_count = 0;
-  rtx next;
-
-  for (; insn && !ANY_RETURN_P (insn); insn = next)
-    {
-      if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, 0);
-
-      next = NEXT_INSN (insn);
-
-      switch (GET_CODE (insn))
-	{
-	case CODE_LABEL:
-	  return 0;
-	case BARRIER:
-	  /* A BARRIER can either be after a JUMP_INSN or a CALL_INSN.  We
-	     don't scan past JUMP_INSNs, so any barrier we find here must
-	     have been after a CALL_INSN and hence mean the call doesn't
-	     return.  */
-	  return 2;
-	case JUMP_INSN:
-	  if (ANY_RETURN_P (PATTERN (insn)))
-	    return 1;
-	  else if (simplejump_p (insn)
-		   && jump_count++ < 10)
-	    next = JUMP_LABEL (insn);
-	  else
-	    return 0;
-
-	default:
-	  break;
-	}
-    }
-
-  /* If we got here it means we hit the end of the function.  So this
-     is an unlikely destination.  */
-
-  return 1;
-}
-
 /* Return truth value of the statement that this branch
    is mostly taken.  If we think that the branch is extremely likely
    to be taken, we return 2.  If the branch is slightly more likely to be
    taken, return 1.  If the branch is slightly less likely to be taken,
-   return 0 and if the branch is highly unlikely to be taken, return -1.
-
-   CONDITION, if nonzero, is the condition that JUMP_INSN is testing.  */
+   return 0 and if the branch is highly unlikely to be taken, return -1.  */
 
 static int
-mostly_true_jump (rtx jump_insn, rtx condition)
+mostly_true_jump (rtx jump_insn)
 {
-  rtx target_label = JUMP_LABEL (jump_insn);
-  rtx note;
-  int rare_dest, rare_fallthrough;
-
   /* If branch probabilities are available, then use that number since it
      always gives a correct answer.  */
-  note = find_reg_note (jump_insn, REG_BR_PROB, 0);
+  rtx note = find_reg_note (jump_insn, REG_BR_PROB, 0);
   if (note)
     {
       int prob = INTVAL (XEXP (note, 0));
@@ -985,37 +919,9 @@ mostly_true_jump (rtx jump_insn, rtx condition)
 	return -1;
     }
 
-  /* Look at the relative rarities of the fallthrough and destination.  If
-     they differ, we can predict the branch that way.  */
-  rare_dest = rare_destination (target_label);
-  rare_fallthrough = rare_destination (NEXT_INSN (jump_insn));
-
-  switch (rare_fallthrough - rare_dest)
-    {
-    case -2:
-      return -1;
-    case -1:
-      return 0;
-    case 0:
-      break;
-    case 1:
-      return 1;
-    case 2:
-      return 2;
-    }
-
-  /* If we couldn't figure out what this jump was, assume it won't be
-     taken.  This should be rare.  */
-  if (condition == 0)
+  /* If there is no note, assume branches are not taken.
+     This should be rare.  */
     return 0;
-
-  /* Predict backward branches usually take, forward branches usually not.  If
-     we don't know whether this is forward or backward, assume the branch
-     will be taken, since most are.  */
-  return (ANY_RETURN_P (target_label) || INSN_UID (jump_insn) > max_uid
-	  || INSN_UID (target_label) > max_uid
-	  || (uid_to_ruid[INSN_UID (jump_insn)]
-	      > uid_to_ruid[INSN_UID (target_label)]));
 }
 
 /* Return the condition under which INSN will branch to TARGET.  If TARGET
@@ -3007,7 +2913,7 @@ fill_eager_delay_slots (void)
 	{
 	  fallthrough_insn = next_active_insn (insn);
 	  own_fallthrough = own_thread_p (NEXT_INSN (insn), NULL_RTX, 1);
-	  prediction = mostly_true_jump (insn, condition);
+	  prediction = mostly_true_jump (insn);
 	}
 
       /* If this insn is expected to branch, first try to get insns from our
@@ -3356,9 +3262,7 @@ relax_delay_slots (rtx first)
 	  && (other = prev_active_insn (insn)) != 0
 	  && any_condjump_p (other)
 	  && no_labels_between_p (other, insn)
-	  && 0 > mostly_true_jump (other,
-				   get_branch_condition (other,
-							 JUMP_LABEL (other))))
+	  && 0 > mostly_true_jump (other))
 	{
 	  rtx other_target = JUMP_LABEL (other);
 	  target_label = JUMP_LABEL (insn);

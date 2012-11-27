@@ -1,3 +1,15 @@
+2012-11-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* loop-invariant.c (check_invariant_table_size): Take sizeof of
+	the right type.
+
+	* reorg.c (resource_conflicts_p): Use hard_reg_set_intersect_p.
+	(rare_destination): Remove.
+	(mostly_true_jump): Simplify.  Base result on REG_BR_PROP notes if
+	available, otherwise assume branches are not taken.
+	(fill_eager_delay_slots): Update mostly_true_jump call.
+	(relax_delay_slots): Likewise.
+
 2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (redundant_insn): Do not handle DEBUG_INSNs.
