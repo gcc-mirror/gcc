@@ -4624,7 +4624,6 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (orig_stmt)
     {
       orig_stmt_info = vinfo_for_stmt (orig_stmt);
-      gcc_assert (STMT_VINFO_RELATED_STMT (orig_stmt_info) == stmt);
       gcc_assert (STMT_VINFO_IN_PATTERN_P (orig_stmt_info));
       gcc_assert (!STMT_VINFO_IN_PATTERN_P (stmt_info));
     }
