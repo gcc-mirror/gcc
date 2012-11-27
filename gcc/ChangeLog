@@ -1,3 +1,9 @@
+2012-11-27  Paolo Bonzini  <pbonzini@redhat.com>
+
+	PR rtl-optimization/55489
+	* gcse.c (compute_transp): Precompute a canonical version
+	of XEXP (x, 0), and pass it to canon_true_dependence.
+
 2012-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55331
