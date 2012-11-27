@@ -75,6 +75,7 @@ enum StatType {
   StatAtomicFetchAnd,
   StatAtomicFetchOr,
   StatAtomicFetchXor,
+  StatAtomicFetchNand,
   StatAtomicCAS,
   StatAtomicFence,
   StatAtomicRelaxed,
@@ -87,6 +88,7 @@ enum StatType {
   StatAtomic2,
   StatAtomic4,
   StatAtomic8,
+  StatAtomic16,
 
   // Interceptors.
   StatInterceptor,
