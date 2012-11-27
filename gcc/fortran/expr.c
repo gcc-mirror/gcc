@@ -3693,7 +3693,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       warn = lvalue->symtree->n.sym->attr.dummy
 	     || lvalue->symtree->n.sym->attr.result
 	     || lvalue->symtree->n.sym->attr.function
-	     || lvalue->symtree->n.sym->attr.host_assoc
+	     || (lvalue->symtree->n.sym->attr.host_assoc
+		 && lvalue->symtree->n.sym->ns
+		    != rvalue->symtree->n.sym->ns)
 	     || lvalue->symtree->n.sym->attr.use_assoc
 	     || lvalue->symtree->n.sym->attr.in_common;
 

@@ -1,3 +1,9 @@
+2012-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55476
+	* expr.c (gfc_check_pointer_assign): Fix check
+	pointer-might-outlive-target check for host_assoc.
+
 2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* trans-decl.c (gfc_finish_var_decl): Do not set DECL_RESTRICTED_P.
