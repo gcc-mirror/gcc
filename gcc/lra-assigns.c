@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "rtl.h"
+#include "rtl-error.h"
 #include "tm_p.h"
 #include "target.h"
 #include "insn-config.h"
@@ -1209,7 +1210,34 @@ assign_by_spills (void)
 	}
       if (nfails == 0)
 	break;
-      lra_assert (iter == 0);
+      if (iter > 0)
+	{
+	  /* We did not assign hard regs to reload pseudos after two
+	     iteration.  It means something is wrong with asm insn
+	     constraints.  Report it.  */
+	  bool asm_p = false;
+	  bitmap_head failed_reload_insns;
+
+	  bitmap_initialize (&failed_reload_insns, &reg_obstack);
+	  for (i = 0; i < nfails; i++)
+	    bitmap_ior_into (&failed_reload_insns,
+			     &lra_reg_info[sorted_pseudos[i]].insn_bitmap);
+	  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
+	    {
+	      insn = lra_insn_recog_data[u]->insn;
+	      if (asm_noperands (PATTERN (insn)) >= 0)
+		{
+		  asm_p = true;
+		  error_for_asm (insn,
+				 "%<asm%> operand has impossible constraints");
+		  /* Avoid further trouble with this insn.	*/
+		  PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
+		  lra_invalidate_insn_data (insn);
+		}
+	    }
+	  lra_assert (asm_p);
+	  break;
+	}
       /* This is a very rare event.  We can not assign a hard
 	 register to reload pseudo because the hard register was
 	 assigned to another reload pseudo on a previous
