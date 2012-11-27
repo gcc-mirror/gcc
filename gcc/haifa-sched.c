@@ -3719,7 +3719,8 @@ schedule_insn (rtx insn)
 
       print_insn (buf, insn, 0);
       buf[40] = 0;
-      fprintf (sched_dump, ";;\t%3i--> %-40s:", clock_var, buf);
+      fprintf (sched_dump, ";;\t%3i--> %s%-40s:",
+	       clock_var, (*current_sched_info->print_insn) (insn, 1), buf);
 
       if (recog_memoized (insn) < 0)
 	fprintf (sched_dump, "nothing");

@@ -2575,14 +2575,6 @@ extern rtx make_compound_operation (rtx, enum rtx_code);
 /* In cfgcleanup.c  */
 extern void delete_dead_jumptables (void);
 
-/* In sched-vis.c.  */
-extern void debug_bb_n_slim (int);
-extern void debug_bb_slim (struct basic_block_def *);
-extern void print_value_slim (FILE *, const_rtx, int);
-extern void debug_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
-extern void dump_insn_slim (FILE *f, const_rtx x);
-extern void debug_insn_slim (const_rtx x);
-
 /* In sched-rgn.c.  */
 extern void schedule_insns (void);
 
@@ -2609,9 +2601,12 @@ extern void print_inline_rtx (FILE *, const_rtx, int);
    sched-vis.c is compiled always.  FIXME: Ideally these functions would
    not be in sched-vis.c but in rtl.c, because they are not only used
    by the scheduler anymore but for all "slim" RTL dumping.  */
-extern void print_insn (char *, const_rtx, int);
-extern void print_pattern (char *, const_rtx, int);
+extern void dump_value_slim (FILE *, const_rtx, int);
+extern void dump_insn_slim (FILE *, const_rtx);
+extern void dump_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
 extern void print_value (char *, const_rtx, int);
+extern void print_pattern (char *, const_rtx, int);
+extern void print_insn (char *, const_rtx, int);
 
 /* In function.c */
 extern void reposition_prologue_and_epilogue_notes (void);

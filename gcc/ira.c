@@ -2246,7 +2246,7 @@ ira_update_equiv_info_by_shuffle_insn (int to_regno, int from_regno, rtx insns)
 	      fprintf (ira_dump_file,
 		       "      Adding equiv note to insn %u for reg %d ",
 		       INSN_UID (insn), to_regno);
-	      print_value_slim (ira_dump_file, x, 1);
+	      dump_value_slim (ira_dump_file, x, 1);
 	      fprintf (ira_dump_file, "\n");
 	    }
 	}

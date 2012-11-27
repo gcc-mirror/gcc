@@ -1,3 +1,35 @@
+2012-11-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (debug_bb_n_slim, debug_bb_slim, debug_insn_slim): Remove
+	prototypes.
+	(debug_rtl_slim): Rename to dump_rtl_slim.
+	(print_value_slim): Rename to dump_value_slim.
+	* ira.c (ira_update_equiv_info_by_shuffle_insn): Update
+	print_value_slim user.
+	* lra.c (lra_process_new_insns): Use dump_insn_slim to dump single
+	insns.  Use dump_rtl_slim for insn chains.
+	* lra-constraints.c (get_reload_reg): Update print_value_slim user.
+	(process_addr_reg): Likewise.
+	(equiv_address_substitution): Likewise.
+	(inherit_reload_reg): Likewise.  Use dump_insn_slim to dump single
+	insns.
+	(check_and_process_move): Likewise.
+	(lra_constraints): Likewise.
+	(split_reg): Likewise.
+	(update_ebb_live_info): Likewise.
+	(remove_inheritance_pseudos): Likewise.
+	* sched-vis.c: Don't include sched-int.h.
+	Remove #ifdef INSN_SCHEDULING tests.
+	(print_value_slim): Rename to dump_value_slim.  Simplify a few
+	cases using GET_RTX_NAME.
+	(print_pattern): Do not handle UNSPEC and UNSPECV here, explain why.
+	(print_insn): Reorganize code to be independent of INSN_SCHEDULING.
+	Always print CALL_INSN patterns.  Harmonize INSN_UID dumping template.
+	Handle NOTE_INSN_CALL_ARG_LOCATION.
+	(dump_rtl_slim): Copied from debug_rtl_slim.
+	(debug_rtl_slim): Wrapper around dump_rtl_slim to stderr.
+	* haifa-sched.c (schedule_insn): Update print_insn user.
+
 2012-11-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55458

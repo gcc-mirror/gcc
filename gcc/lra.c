@@ -1817,16 +1817,16 @@ lra_process_new_insns (rtx insn, rtx before, rtx after, const char *title)
 
   if (lra_dump_file != NULL && (before != NULL_RTX || after != NULL_RTX))
     {
-      debug_rtl_slim (lra_dump_file, insn, insn, -1, 0);
+      dump_insn_slim (lra_dump_file, insn);
       if (before != NULL_RTX)
 	{
 	  fprintf (lra_dump_file,"    %s before:\n", title);
-	  debug_rtl_slim (lra_dump_file, before, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, before, NULL_RTX, -1, 0);
 	}
       if (after != NULL_RTX)
 	{
 	  fprintf (lra_dump_file, "    %s after:\n", title);
-	  debug_rtl_slim (lra_dump_file, after, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, after, NULL_RTX, -1, 0);
 	}
       fprintf (lra_dump_file, "\n");
     }
