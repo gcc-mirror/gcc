@@ -1,3 +1,8 @@
+2012-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55476
+	* gfortran.dg/warn_target_lifetime_3.f90: New.
+
 2012-11-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55458
