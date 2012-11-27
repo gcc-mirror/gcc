@@ -1471,7 +1471,7 @@ OBJS-libcommon = diagnostic.o pretty-print.o intl.o input.o version.o
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
-	hash-table.o
+	hash-table.o file-find.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
@@ -1852,19 +1852,20 @@ graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
+AR_OBJS = file-find.o
 AR_LIBS = @COLLECT2_LIBS@
 
-gcc-ar$(exeext): gcc-ar.o $(LIBDEPS)
+gcc-ar$(exeext): gcc-ar.o $(AR_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) gcc-ar.o -o $@ \
-		$(LIBS) $(AR_LIBS)
+		$(AR_OBJS) $(LIBS) $(AR_LIBS)
 
-gcc-nm$(exeext): gcc-nm.o $(LIBDEPS)
+gcc-nm$(exeext): gcc-nm.o $(AR_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) gcc-nm.o -o $@ \
-		$(LIBS) $(AR_LIBS)
+		$(AR_OBJS) $(LIBS) $(AR_LIBS)
 
-gcc-ranlib$(exeext): gcc-ranlib.o $(LIBDEPS)
+gcc-ranlib$(exeext): gcc-ranlib.o $(AR_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) gcc-ranlib.o -o $@ \
-		$(LIBS) $(AR_LIBS)
+		$(AR_OBJS) $(LIBS) $(AR_LIBS)
 
 CFLAGS-gcc-ar.o += $(DRIVER_DEFINES) \
 	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
@@ -1892,7 +1893,7 @@ gcc-ranlib.c: gcc-ar.c
 gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
-COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o
+COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o file-find.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -1904,7 +1905,7 @@ CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	@TARGET_SYSTEM_ROOT_DEFINE@
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h collect2-aix.h version.h \
-	$(DIAGNOSTIC_H)
+	$(DIAGNOSTIC_H) file-find.h
 
 collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     collect2-aix.h
@@ -3425,6 +3426,7 @@ hw-doloop.o : hw-doloop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_H)
    $(RTL_H) $(FLAGS_H) $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H) \
    $(DF_H) $(CFGLOOP_H) $(RECOG_H) $(TARGET_H) \
    $(REGS_H) hw-doloop.h
+file-find.o: file-find.c $(CONFIG_H) $(SYSTEM_H) file-find.h
 $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h conditions.h \
    output.h $(INSN_ATTR_H) $(SYSTEM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
