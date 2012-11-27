@@ -3261,7 +3261,7 @@ lra.o : lra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(FLAGS_H) $(FUNCTION_H) $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) \
    $(EXCEPT_H) ira.h $(LRA_INT_H)
 lra-assigns.o : lra-assigns.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(RTL_H) $(REGS_H) insn-config.h $(DF_H) \
+   $(TM_H) $(RTL_H) $(RTL_ERROR_H) $(REGS_H) insn-config.h $(DF_H) \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h $(FLAGS_H) $(FUNCTION_H) \
    $(EXPR_H) $(BASIC_BLOCK_H) $(TM_P_H) $(EXCEPT_H) ira.h \
    rtl-error.h sparseset.h $(LRA_INT_H)

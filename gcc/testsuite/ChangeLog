@@ -1,3 +1,8 @@
+2012-11-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55458
+	* gcc.target/i386/pr55458.c: New test.
+
 2012-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55110

@@ -1,3 +1,10 @@
+2012-11-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55458
+	* lra-assigns.c: Include rtl-error.h.
+	(assign_by_spills): Report about asm inpossible constraints.
+	* Makefile.in (lra-assigns.c): Add $(RTL_ERROR_H).
+
 2012-11-27  Paolo Bonzini  <pbonzini@redhat.com>
 
 	PR rtl-optimization/55489
