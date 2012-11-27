@@ -1,3 +1,22 @@
+2012-11-27  Diego Novillo  <dnovillo@google.com>
+
+	* vec.h: Replace 'class vec' with 'struct vec' everywhere.
+	(ggc_internal_cleared_alloc_stat): Remove.
+	(va_gc::reserve): Add PASS_MEM_STAT to ggc_realloc_stat call.
+	(va_stack::reserve): Add PASS_MEM_STAT to va_heap::reserve call.
+	(vec<T, A, vl_embed>::copy): Replace ALONE_MEM_STAT_DECL with
+	ALONE_CXX_MEM_STAT_INFO.
+	(vec_safe_reserve): Replace MEM_STAT_DECL with CXX_MEM_STAT_INFO.
+	(vec_safe_reserve_exact): Likewise.
+	(vec_alloc): Likewise.
+	(vec_safe_grow): Likewise.
+	(vec_safe_grow_cleared): Likewise.
+	(vec_safe_push): Likewise.
+	(vec_safe_insert): Likewise.
+	(vec_safe_splice): Likewise.
+	(vec_alloc): Likewise.
+	(vec_check_alloc): Likewise.
+
 2012-11-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-cfg.c (verify_gimple_comparison): Verify that vector
