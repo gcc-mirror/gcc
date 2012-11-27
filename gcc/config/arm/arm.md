@@ -7166,43 +7166,6 @@
 		(const_int 8))))]
 )
 
-;; Two peepholes to generate subtract of 0 instead of a move if the
-;; condition codes will be useful.
-(define_peephole2
-  [(set (match_operand:SI 0 "low_register_operand" "")
-	(match_operand:SI 1 "low_register_operand" ""))
-   (set (pc)
-	(if_then_else (match_operator 2 "arm_comparison_operator"
-		       [(match_dup 1) (const_int 0)])
-		      (label_ref (match_operand 3 "" ""))
-		      (pc)))]
-  "TARGET_THUMB1"
-  [(set (match_dup 0) (minus:SI (match_dup 1) (const_int 0)))
-   (set (pc)
-	(if_then_else (match_op_dup 2 [(match_dup 0) (const_int 0)])
-		      (label_ref (match_dup 3))
-		      (pc)))]
-  "")
-
-;; Sigh!  This variant shouldn't be needed, but combine often fails to
-;; merge cases like this because the op1 is a hard register in
-;; arm_class_likely_spilled_p.
-(define_peephole2
-  [(set (match_operand:SI 0 "low_register_operand" "")
-	(match_operand:SI 1 "low_register_operand" ""))
-   (set (pc)
-	(if_then_else (match_operator 2 "arm_comparison_operator"
-		       [(match_dup 0) (const_int 0)])
-		      (label_ref (match_operand 3 "" ""))
-		      (pc)))]
-  "TARGET_THUMB1"
-  [(set (match_dup 0) (minus:SI (match_dup 1) (const_int 0)))
-   (set (pc)
-	(if_then_else (match_op_dup 2 [(match_dup 0) (const_int 0)])
-		      (label_ref (match_dup 3))
-		      (pc)))]
-  "")
-
 (define_insn "*negated_cbranchsi4"
   [(set (pc)
 	(if_then_else

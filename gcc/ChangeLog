@@ -1,3 +1,11 @@
+2012-11-27  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.c (thumb1_reorg): New function.
+	(arm_reorg): Call thumb1_reorg.
+	(thumb1_final_prescan_insn): Record src operand in thumb1_cc_op0.
+	* config/arm/arm.md : Remove peephole2 patterns which rewrite move
+	into subtract of ZERO.
+
 2012-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55331
