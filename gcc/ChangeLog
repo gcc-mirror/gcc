@@ -1,3 +1,9 @@
+2012-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md
+	(*jcc<X87MODEF:mode>_<SWI24:mode>_i387 splitters): Remove
+	unneeded temporary.
+
 2012-11-27  Dehao Chen  <dehao@google.com>
 
 	* cfgrtl.c (rtl_merge_blocks): Check with UNKNOWN_LOCATION correctly.
@@ -219,8 +225,7 @@
 
 2012-11-23  Tobias Burnus  <burnus@net-b.de>
 
-	* doc/invoke.texi (-fsanitize=address): Remove obsolete
-	remark.
+	* doc/invoke.texi (-fsanitize=address): Remove obsolete remark.
 
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -229,8 +234,7 @@
 	* gimple-low.c: Include langhooks.c.
 	(block_may_fallthru): Handle TARGET_EXPR and ERROR_MARK,
 	by default call lang_hooks.block_may_fallthru.
-	* langhooks.h (struct lang_hooks): Add block_may_fallthru
-	langhook.
+	* langhooks.h (struct lang_hooks): Add block_may_fallthru langhook.
 	* langhooks-def.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Define.
 	(LANG_HOOKS_INITIALIZER): Use it.
 
@@ -321,13 +325,13 @@
 2012-11-22  Dmitry Vyukov  <dvyukov@google.com>
 	    Wei Mi  <wmi@google.com>
 
-	* builtins.def (DEF_SANITIZER_BUILTIN): Define tsan builtins. 
-	* sanitizer.def: Ditto. 
-	* Makefile.in (tsan.o): Add tsan.o target. 
+	* builtins.def (DEF_SANITIZER_BUILTIN): Define tsan builtins.
+	* sanitizer.def: Ditto.
+	* Makefile.in (tsan.o): Add tsan.o target.
 	(BUILTINS_DEF): Add sanitizer.def.
 	* passes.c (init_optimization_passes): Add tsan passes.
 	* tree-pass.h (register_pass_info): Ditto.
-	* toplev.c (compile_file): Ditto. 
+	* toplev.c (compile_file): Ditto.
 	* doc/invoke.texi: Document tsan related options.
 	* gcc.c (LINK_COMMAND_SPEC): Add LIBTSAN_SPEC in link command if
 	-fsanitize=thread.
