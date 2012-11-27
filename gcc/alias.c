@@ -2808,7 +2808,7 @@ init_alias_analysis (void)
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  vec_alloc (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
+  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
 
   /* If we have memory allocated from the previous run, use it.  */
