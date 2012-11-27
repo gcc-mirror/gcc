@@ -1,3 +1,30 @@
+2012-11-27  Meador Inge  <meadori@codesourcery.com>
+
+	* collect2.c (main): Call find_file_set_debug.
+	(find_a_find, add_prefix, prefix_from_env, prefix_from_string):
+	Factor out into ...
+	* file-find.c (New file): ... here and ...
+	* file-find.h (New file): ... here.
+	* gcc-ar.c (standard_exec_prefix): New variable.
+	(standard_libexec_prefix): Ditto.
+	(tooldir_base_prefix) Ditto.
+	(self_exec_prefix): Ditto.
+	(self_libexec_prefix): Ditto.
+	(self_tooldir_prefix): Ditto.
+	(target_version): Ditto.
+	(path): Ditto.
+	(target_path): Ditto.
+	(setup_prefixes): New function.
+	(main): Rework how wrapped programs are found.
+	* Makefile.in (OBJS-libcommon-target): Add file-find.o.
+	(AR_OBJS): New variable.
+	(gcc-ar$(exeext)): Add dependency on $(AR_OBJS).
+	(gcc-nm$(exeext)): Ditto.
+	(gcc-ranlib(exeext)): Ditto.
+	(COLLECT2_OBJS): Add file-find.o.
+	(collect2.o): Add file-find.h prerequisite.
+	(file-find.o): New rule.
+
 2010-11-27  Dehao Chen  <dehao@google.com>
 
 	* ipa-prop.c (ipa_modify_call_arguments): Set loc correctly.
