@@ -1,3 +1,7 @@
+2012-11-27  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_stmt_1): Remove unnecessary code.
+
 2012-11-27  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/arm/arm.c (thumb1_reorg): New function.
