@@ -1,3 +1,8 @@
+2012-11-27  Ollie Wild  <aaw@google.com>
+
+	* include/bits/stl_tree.h (@headername): Fix incorrect Doxygen macro
+	invocation.
+
 2012-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (__is_socketlike): Change from class
