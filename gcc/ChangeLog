@@ -1,3 +1,11 @@
+2012-11-27  Paolo Bonzini  <pbonzini@redhat.com>
+
+	PR rtl-optimization/55489
+	* gcse.c (compute_transp): Precompute a canonical version
+	of XEXP (x, 0), and pass it to canon_true_dependence.
+
+	* alias.c (init_alias_analysis): Fix allocation of reg_known_value.
+
 2012-11-27  Diego Novillo  <dnovillo@google.com>
 
 	* vec.h: Replace 'class vec' with 'struct vec' everywhere.
