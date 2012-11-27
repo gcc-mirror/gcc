@@ -54,7 +54,7 @@
 
 /** @file bits/stl_tree.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{map or set}
+ *  Do not attempt to use it directly. @headername{map,set}
  */
 
 #ifndef _STL_TREE_H
