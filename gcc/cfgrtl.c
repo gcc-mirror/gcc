@@ -890,7 +890,8 @@ rtl_merge_blocks (basic_block a, basic_block b)
   df_bb_delete (b->index);
 
   /* If B was a forwarder block, propagate the locus on the edge.  */
-  if (forwarder_p && !EDGE_SUCC (b, 0)->goto_locus)
+  if (forwarder_p
+      && LOCATION_LOCUS (EDGE_SUCC (b, 0)->goto_locus) == UNKNOWN_LOCATION)
     EDGE_SUCC (b, 0)->goto_locus = EDGE_SUCC (a, 0)->goto_locus;
 
   if (dump_file)
@@ -4149,7 +4150,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 
   /* If B was a forwarder block, propagate the locus on the edge.  */
   if (forwarder_p
-      && LOCATION_LOCUS (EDGE_SUCC (b, 0)->goto_locus) != UNKNOWN_LOCATION)
+      && LOCATION_LOCUS (EDGE_SUCC (b, 0)->goto_locus) == UNKNOWN_LOCATION)
     EDGE_SUCC (b, 0)->goto_locus = EDGE_SUCC (a, 0)->goto_locus;
 
   if (dump_file)
