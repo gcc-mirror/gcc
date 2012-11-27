@@ -51,8 +51,6 @@ along with GCC; see the file COPYING3.  If not see
      has not been included.  Sigh.  */
   extern void ggc_free (void *);
   extern size_t ggc_round_alloc_size (size_t requested_size);
-  extern void *ggc_internal_cleared_alloc_stat (size_t MEM_STAT_DECL)
-    ATTRIBUTE_MALLOC;
   extern void *ggc_realloc_stat (void *, size_t MEM_STAT_DECL);
 #  endif  // GCC_GGC_H
 #endif	// VEC_GC_ENABLED
@@ -230,7 +228,7 @@ struct vec_prefix
 
      To compensate, we make vec_prefix a field inside vec and make
      vec a friend class of vec_prefix so it can access its fields.  */
-  template <typename, typename, typename> friend class vec;
+  template <typename, typename, typename> friend struct vec;
 
   /* The allocator types also need access to our internals.  */
   friend struct va_gc;
@@ -242,7 +240,7 @@ struct vec_prefix
   unsigned num_;
 };
 
-template<typename, typename, typename> class vec;
+template<typename, typename, typename> struct vec;
 
 /* Valid vector layouts
 
@@ -367,7 +365,7 @@ va_gc::reserve (vec<T, A, vl_embed> *&v, unsigned reserve, bool exact
   size_t size = vec<T, A, vl_embed>::embedded_size (alloc);
 
   /* Ask the allocator how much space it will really give us.  */
-  size = ggc_round_alloc_size (size);
+  size = ::ggc_round_alloc_size (size);
 
   /* Adjust the number of slots accordingly.  */
   size_t vec_offset = sizeof (vec_prefix);
@@ -378,7 +376,8 @@ va_gc::reserve (vec<T, A, vl_embed> *&v, unsigned reserve, bool exact
   size = vec_offset + alloc * elt_size;
 
   unsigned nelem = v ? v->length () : 0;
-  v = static_cast <vec<T, A, vl_embed> *> (ggc_realloc_stat (v, size));
+  v = static_cast <vec<T, A, vl_embed> *> (::ggc_realloc_stat (v, size
+							       PASS_MEM_STAT));
   v->embedded_init (alloc, nelem);
 }
 
@@ -447,7 +446,7 @@ va_stack::reserve (vec<T, va_stack, vl_embed> *&v, unsigned nelems, bool exact
     {
       /* V is already on the heap.  */
       va_heap::reserve (reinterpret_cast<vec<T, va_heap, vl_embed> *&> (v),
-			nelems, exact);
+			nelems, exact PASS_MEM_STAT);
       return;
     }
 
@@ -456,7 +455,7 @@ va_stack::reserve (vec<T, va_stack, vl_embed> *&v, unsigned nelems, bool exact
   vec<T, va_stack, vl_embed> *oldvec = v;
   v = NULL;
   va_heap::reserve (reinterpret_cast<vec<T, va_heap, vl_embed> *&>(v), nelems,
-		    exact);
+		    exact PASS_MEM_STAT);
   if (v && oldvec)
     {
       v->vecpfx_.num_ = oldvec->length ();
@@ -506,7 +505,7 @@ va_stack::release (vec<T, va_stack, vl_embed> *&v)
 template<typename T,
          typename A = va_heap,
          typename L = typename A::default_layout>
-class GTY((user)) vec
+struct GTY((user)) vec
 {
 };
 
@@ -549,7 +548,7 @@ extern vnull vNULL;
   	- It requires 2 words of storage (prior to vector allocation).  */
 
 template<typename T, typename A>
-class GTY((user)) vec<T, A, vl_embed>
+struct GTY((user)) vec<T, A, vl_embed>
 {
 public:
   unsigned allocated (void) const { return vecpfx_.alloc_; }
@@ -563,7 +562,7 @@ public:
   bool space (unsigned) const;
   bool iterate (unsigned, T *) const;
   bool iterate (unsigned, T **) const;
-  vec *copy (ALONE_MEM_STAT_DECL) const;
+  vec *copy (ALONE_CXX_MEM_STAT_INFO) const;
   void splice (vec &);
   void splice (vec *src);
   T *quick_push (const T &);
@@ -581,7 +580,7 @@ public:
   void quick_grow_cleared (unsigned len);
 
   /* vec class can access our internal data and functions.  */
-  template <typename, typename, typename> friend class vec;
+  template <typename, typename, typename> friend struct vec;
 
   /* The allocator types also need access to our internals.  */
   friend struct va_gc;
@@ -651,7 +650,7 @@ vec_safe_is_empty (vec<T, A, vl_embed> *v)
 template<typename T, typename A>
 inline bool
 vec_safe_reserve (vec<T, A, vl_embed> *&v, unsigned nelems, bool exact = false
-		  MEM_STAT_DECL)
+		  CXX_MEM_STAT_INFO)
 {
   bool extend = nelems ? !vec_safe_space (v, nelems) : false;
   if (extend)
@@ -661,7 +660,8 @@ vec_safe_reserve (vec<T, A, vl_embed> *&v, unsigned nelems, bool exact = false
 
 template<typename T, typename A>
 inline bool
-vec_safe_reserve_exact (vec<T, A, vl_embed> *&v, unsigned nelems MEM_STAT_DECL)
+vec_safe_reserve_exact (vec<T, A, vl_embed> *&v, unsigned nelems
+			CXX_MEM_STAT_INFO)
 {
   return vec_safe_reserve (v, nelems, true PASS_MEM_STAT);
 }
@@ -672,10 +672,10 @@ vec_safe_reserve_exact (vec<T, A, vl_embed> *&v, unsigned nelems MEM_STAT_DECL)
 
 template<typename T, typename A>
 inline void
-vec_alloc (vec<T, A, vl_embed> *&v, unsigned nelems MEM_STAT_DECL)
+vec_alloc (vec<T, A, vl_embed> *&v, unsigned nelems CXX_MEM_STAT_INFO)
 {
   v = NULL;
-  vec_safe_reserve (v, nelems);
+  vec_safe_reserve (v, nelems, false PASS_MEM_STAT);
 }
 
 
@@ -692,19 +692,19 @@ vec_free (vec<T, A, vl_embed> *&v)
 /* Grow V to length LEN.  Allocate it, if necessary.  */
 template<typename T, typename A>
 inline void
-vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len MEM_STAT_DECL)
+vec_safe_grow (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   gcc_checking_assert (len >= oldlen);
   vec_safe_reserve_exact (v, len - oldlen PASS_MEM_STAT);
-  v->quick_grow (len PASS_MEM_STAT);
+  v->quick_grow (len);
 }
 
 
 /* If V is NULL, allocate it.  Call V->safe_grow_cleared(LEN).  */
 template<typename T, typename A>
 inline void
-vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len MEM_STAT_DECL)
+vec_safe_grow_cleared (vec<T, A, vl_embed> *&v, unsigned len CXX_MEM_STAT_INFO)
 {
   unsigned oldlen = vec_safe_length (v);
   vec_safe_grow (v, len PASS_MEM_STAT);
@@ -744,10 +744,10 @@ vec_safe_iterate (const vec<T, A, vl_embed> *v, unsigned ix, T *ptr)
    V->quick_push(OBJ).  */
 template<typename T, typename A>
 inline T *
-vec_safe_push (vec<T, A, vl_embed> *&v, const T &obj MEM_STAT_DECL)
+vec_safe_push (vec<T, A, vl_embed> *&v, const T &obj CXX_MEM_STAT_INFO)
 {
   vec_safe_reserve (v, 1, false PASS_MEM_STAT);
-  return v->quick_push (obj PASS_MEM_STAT);
+  return v->quick_push (obj);
 }
 
 
@@ -756,7 +756,7 @@ vec_safe_push (vec<T, A, vl_embed> *&v, const T &obj MEM_STAT_DECL)
 template<typename T, typename A>
 inline void
 vec_safe_insert (vec<T, A, vl_embed> *&v, unsigned ix, const T &obj
-		 MEM_STAT_DECL)
+		 CXX_MEM_STAT_INFO)
 {
   vec_safe_reserve (v, 1, false PASS_MEM_STAT);
   v->quick_insert (ix, obj);
@@ -786,12 +786,13 @@ vec_safe_copy (vec<T, A, vl_embed> *src)
 template<typename T, typename A>
 inline void
 vec_safe_splice (vec<T, A, vl_embed> *&dst, vec<T, A, vl_embed> *src
-		 MEM_STAT_DECL)
+		 CXX_MEM_STAT_INFO)
 {
   unsigned src_len = vec_safe_length (src);
   if (src_len)
     {
-      vec_safe_reserve_exact (dst, vec_safe_length (dst) + src_len);
+      vec_safe_reserve_exact (dst, vec_safe_length (dst) + src_len
+			      PASS_MEM_STAT);
       dst->splice (*src);
     }
 }
@@ -1207,7 +1208,7 @@ gt_pch_nx (vec<T, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
    destructors in classes that are stored in unions.  */
 
 template<typename T, typename A>
-class vec<T, A, vl_ptr>
+struct vec<T, A, vl_ptr>
 {
 public:
   /* Memory allocation and deallocation for the embedded vector.
@@ -1287,7 +1288,7 @@ public:
    circumvent limitations in the GTY machinery.  */
 
 template<typename T>
-class vec<T, va_gc, vl_ptr>
+struct vec<T, va_gc, vl_ptr>
 {
 };
 
@@ -1298,7 +1299,7 @@ class vec<T, va_gc, vl_ptr>
 
 template<typename T>
 inline void
-vec_alloc (vec<T> *&v, unsigned nelems MEM_STAT_DECL)
+vec_alloc (vec<T> *&v, unsigned nelems CXX_MEM_STAT_INFO)
 {
   v = new vec<T>;
   v->create (nelems PASS_MEM_STAT);
@@ -1309,7 +1310,7 @@ vec_alloc (vec<T> *&v, unsigned nelems MEM_STAT_DECL)
 
 template<typename T>
 inline void
-vec_check_alloc (vec<T, va_heap> *&vec, unsigned nelems MEM_STAT_DECL)
+vec_check_alloc (vec<T, va_heap> *&vec, unsigned nelems CXX_MEM_STAT_INFO)
 {
   if (!vec)
     vec_alloc (vec, nelems PASS_MEM_STAT);
