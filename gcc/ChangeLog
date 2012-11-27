@@ -1,3 +1,8 @@
+2010-11-27  Dehao Chen  <dehao@google.com>
+
+	* ipa-prop.c (ipa_modify_call_arguments): Set loc correctly.
+	* emit-rtl.c (last_location): Remove unused variable.
+
 2012-11-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md
