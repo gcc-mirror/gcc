@@ -393,6 +393,12 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
       struct cl_decoded_option *foption = &fdecoded_options[i];
       switch (foption->opt_index)
 	{
+	case OPT_SPECIAL_unknown:
+	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_program_name:
+	case OPT_SPECIAL_input_file:
+	  break;
+
 	default:
 	  if (!(cl_options[foption->opt_index].flags & CL_TARGET))
 	    break;
