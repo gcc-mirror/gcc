@@ -795,7 +795,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       gfc_trans_runtime_check (true, false, cond, &se.pre,
 			       &code->expr1->where, "Invalid image number "
 			       "%d in SYNC IMAGES",
-			       fold_convert (integer_type_node, se.expr));
+			       fold_convert (integer_type_node, images));
     }
 
    /* Per F2008, 8.5.1, a SYNC MEMORY is implied by calling the
