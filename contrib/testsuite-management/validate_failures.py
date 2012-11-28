@@ -226,8 +226,7 @@ def GetManifest(manifest_name):
   Each entry in the manifest file should have the format understood
   by the TestResult constructor.
 
-  If no manifest file exists for this target, it returns an empty
-  set.
+  If no manifest file exists for this target, it returns an empty set.
   """
   if os.path.exists(manifest_name):
     return ParseSummary(manifest_name)
@@ -418,7 +417,7 @@ def Main(argv):
   parser.add_option('--manifest', action='store', type='string',
                     dest='manifest', default=None,
                     help='Name of the manifest file to use (default = '
-                    'taken from contrib/testsuite-managment/<target>.xfail)')
+                    'taken from contrib/testsuite-managment/<target_alias>.xfail)')
   parser.add_option('--produce_manifest', action='store_true',
                     dest='produce_manifest', default=False,
                     help='Produce the manifest for the current '
@@ -444,6 +443,7 @@ def Main(argv):
     return 0
   else:
     return 1
+
 
 if __name__ == '__main__':
   retval = Main(sys.argv)
