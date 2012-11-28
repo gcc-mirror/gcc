@@ -165,7 +165,7 @@
   (match_code "reg,subreg,mem,const_int,const_double,const_vector")
 {
   if (GET_CODE (op) == MEM && misaligned_operand (op, mode)
-      && !address_operand (plus_constant (XEXP (op, 0), 4), SImode))
+      && !address_operand (plus_constant (Pmode, XEXP (op, 0), 4), SImode))
     return 0;
   return general_operand (op, mode);
 })
@@ -192,7 +192,7 @@
 	}
     case MEM :
       if (GET_MODE_SIZE (mode) == 8 && misaligned_operand (op, mode)
-	  && !address_operand (plus_constant (XEXP (op, 0), 4), SImode))
+	  && !address_operand (plus_constant (Pmode, XEXP (op, 0), 4), SImode))
 	return 0;
       return address_operand (XEXP (op, 0), mode);
     default :
