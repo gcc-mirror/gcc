@@ -1113,7 +1113,7 @@ use_blocks_for_decl_p (tree decl)
   if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
     return false;
 
-  return true;
+  return targetm.use_blocks_for_decl_p (decl);
 }
 
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
