@@ -1,3 +1,11 @@
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54547
+	* tree-vrp.c (set_and_canonicalize_value_range): Handle
+	1-bit anti-ranges explicitely.
+	(extract_range_from_assert): Properly canonicalize all
+	built anti-ranges.
+
 2012-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (layout_type) <ARRAY_TYPE>: Do not clear TREE_OVERFLOW

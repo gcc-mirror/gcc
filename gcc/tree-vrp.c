@@ -541,22 +541,15 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 	  return;
 	}
       else if (TYPE_PRECISION (TREE_TYPE (min)) == 1
-	       && !TYPE_UNSIGNED (TREE_TYPE (min))
 	       && (is_min || is_max))
 	{
-	  /* For signed 1-bit precision, one is not in-range and
-	     thus adding/subtracting it would result in overflows.  */
-	  if (operand_equal_p (min, max, 0))
-	    {
-	      min = max = is_min ? vrp_val_max (TREE_TYPE (min))
-				 : vrp_val_min (TREE_TYPE (min));
-	      t = VR_RANGE;
-	    }
+	  /* Non-empty boolean ranges can always be represented
+	     as a singleton range.  */
+	  if (is_min)
+	    min = max = vrp_val_max (TREE_TYPE (min));
 	  else
-	    {
-	      set_value_range_to_varying (vr);
-	      return;
-	    }
+	    min = max = vrp_val_min (TREE_TYPE (min));
+	  t = VR_RANGE;
 	}
       else if (is_min
 	       /* As a special exception preserve non-null ranges.  */
@@ -1707,7 +1700,8 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	  && vrp_val_is_max (max))
 	min = max = limit;
 
-      set_value_range (vr_p, VR_ANTI_RANGE, min, max, vr_p->equiv);
+      set_and_canonicalize_value_range (vr_p, VR_ANTI_RANGE,
+					min, max, vr_p->equiv);
     }
   else if (cond_code == LE_EXPR || cond_code == LT_EXPR)
     {
