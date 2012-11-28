@@ -1,3 +1,11 @@
+2012-11-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/55266
+	* fold-const.c (fold_ternary_loc) [BIT_FIELD_REF]: Handle
+	CONSTRUCTOR with vector elements.
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Handle CONSTRUCTOR
+	and BIT_FIELD_REF.
+
 2012-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR c/35634
