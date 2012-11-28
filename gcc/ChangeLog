@@ -1,3 +1,11 @@
+2012-11-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/predicates.md (move_double_src_operand):
+	Check that misaligned addresses are offsettable.
+	(move_dest_operand): Likewise.
+	* config/epiphany/epiphany.c (REG_OK_FOR_BASE_P): Don't force a
+	misaligned stack address to reg+index.
+
 2012-11-28  Oleg Raikhman  <oleg@adapteva.com>
 
 	* config/epiphany/epiphany.h (ASM_OUTPUT_ALIGN_WITH_NOP): Define.
