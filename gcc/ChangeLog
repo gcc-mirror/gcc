@@ -1,3 +1,11 @@
+2012-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55512
+	* lra-assigns.c (assign_by_spills): Assigned arbitrary hard regs
+	to failed reload pseudos instead of changing asm pattern.
+	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Increase
+	value.
+
 2012-11-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR other/55358
@@ -121,7 +129,7 @@
 
 	PR rtl-optimization/55458
 	* lra-assigns.c: Include rtl-error.h.
-	(assign_by_spills): Report about asm inpossible constraints.
+	(assign_by_spills): Report about asm impossible constraints.
 	* Makefile.in (lra-assigns.c): Add $(RTL_ERROR_H).
 
 2012-11-27  Paolo Bonzini  <pbonzini@redhat.com>

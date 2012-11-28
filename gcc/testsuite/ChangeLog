@@ -1,3 +1,8 @@
+2012-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55512
+	* gcc.target/i386/pr55512-[1234].c: New tests.
+
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/55505
