@@ -1,3 +1,8 @@
+2012-11-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55497
+	* g++.dg/init/pr55497.C: New.
+
 2012-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/55327
