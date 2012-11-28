@@ -1963,6 +1963,14 @@ epiphany_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
     return true;
   if (LEGITIMATE_OFFSET_ADDRESS_P (mode, x))
     return true;
+  /* If this is a misaligned stack access, don't force it to reg+index.  */
+  if (GET_MODE_SIZE (mode) == 8
+      && GET_CODE (x) == PLUS && XEXP (x, 0) == stack_pointer_rtx
+      /* Decomposed to SImode; GET_MODE_SIZE (SImode) == 4 */
+      && !(INTVAL (XEXP (x, 1)) & 3)
+      && INTVAL (XEXP (x, 1)) >= -2047 * 4
+      && INTVAL (XEXP (x, 1)) <=  2046 * 4)
+    return true;
   if (TARGET_POST_INC
       && (GET_CODE (x) == POST_DEC || GET_CODE (x) == POST_INC)
       && RTX_OK_FOR_BASE_P (XEXP ((x), 0)))
