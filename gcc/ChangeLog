@@ -1,3 +1,8 @@
+2012-11-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR other/55358
+	* dse.c (rest_of_handle_dse): Remove superfluous clearing.
+
 2012-11-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/predicates.md (move_double_src_operand):
