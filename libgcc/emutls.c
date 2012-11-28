@@ -136,7 +136,7 @@ __emutls_get_address (struct __emutls_object *obj)
 #ifndef __GTHREADS
   abort ();
 #else
-  pointer offset = obj->loc.offset;
+  pointer offset = __atomic_load_n (&obj->loc.offset, __ATOMIC_ACQUIRE);
 
   if (__builtin_expect (offset == 0, 0))
     {
@@ -147,7 +147,7 @@ __emutls_get_address (struct __emutls_object *obj)
       if (offset == 0)
 	{
 	  offset = ++emutls_size;
-	  obj->loc.offset = offset;
+	  __atomic_store_n (&obj->loc.offset, offset, __ATOMIC_RELEASE);
 	}
       __gthread_mutex_unlock (&emutls_mutex);
     }
