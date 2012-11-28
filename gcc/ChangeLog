@@ -1,3 +1,8 @@
+2012-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/55052
+	* simplify-rtx.c (simplify_subreg): Restore SCALAR_INT_MODE_P check.
+
 2012-11-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* target.def (use_blocks_for_decl_p): New hook.
