@@ -8,6 +8,9 @@
 	for misaligned memory operands.
 	* config/epiphany/predicates.md (misaligned_operand): New predicate.
 
+	* config/epiphany/epiphany.opt (-may-round-for-trunc): New option.
+	* config/epiphany/epiphany.md (*fix_truncsfsi2_i): Take it into account.
+
 2012-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54547

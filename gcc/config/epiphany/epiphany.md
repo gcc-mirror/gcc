@@ -908,7 +908,10 @@
   ""
   "fix %0, %1"
   [(set_attr "type" "fp")
-   (set_attr "fp_mode" "round_trunc")])
+   (set (attr "fp_mode")
+	(cond [(match_test "TARGET_MAY_ROUND_FOR_TRUNC")
+	       (const_string "round_unknown")]
+	      (const_string "round_trunc")))])
 
 (define_expand "fixuns_truncsfsi2"
   [(set (match_operand:SI 0 "gpr_operand" "")
