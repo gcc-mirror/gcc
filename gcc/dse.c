@@ -2869,8 +2869,6 @@ dse_step1 (void)
 				 INSN_UID (s_info->redundant_reason->insn));
 		      delete_dead_store_insn (ptr);
 		    }
-		  if (s_info)
-		    s_info->redundant_reason = NULL;
 		  free_store_info (ptr);
 		}
 	      else
