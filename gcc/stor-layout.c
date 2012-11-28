@@ -2233,12 +2233,12 @@ layout_type (tree type)
 					      size_binop (MINUS_EXPR, ub, lb)));
 	      }
 
-	    /* If we arrived at a length of zero ignore any overflow
-	       that occurred as part of the calculation.  There exists
-	       an association of the plus one where that overflow would
-	       not happen.  */
+	    /* ??? We have no way to distinguish a null-sized array from an
+	       array spanning the whole sizetype range, so we arbitrarily
+	       decide that [0, -1] is the only valid representation.  */
 	    if (integer_zerop (length)
-		&& TREE_OVERFLOW (length))
+	        && TREE_OVERFLOW (length)
+		&& integer_zerop (lb))
 	      length = size_zero_node;
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,

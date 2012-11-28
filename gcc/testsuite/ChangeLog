@@ -1,3 +1,11 @@
+2012-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/object_overflow.adb: Rename to...
+	* gnat.dg/object_overflow1.adb: ...this.
+	* gnat.dg/object_overflow2.adb: New test.
+	* gnat.dg/object_overflow3.adb: Likewise.
+	* gnat.dg/object_overflow4.adb: Likewise.
+
 2012-11-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55497
