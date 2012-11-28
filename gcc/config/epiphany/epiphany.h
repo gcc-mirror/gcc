@@ -780,8 +780,15 @@ do {							\
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
-#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+#define ASM_OUTPUT_ALIGN(FILE, LOG) \
 do { if ((LOG) != 0) fprintf (FILE, "\t.balign %d\n", 1 << (LOG)); } while (0)
+
+/* Inside the text section, align with nops rather than zeros.  */
+#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE, LOG) \
+do \
+{ \
+  if ((LOG) != 0) fprintf (FILE, "\t.balignw %d,0x01a2\n", 1 << (LOG)); \
+} while (0)
 
 /* This is how to declare the size of a function.  */
 #undef ASM_DECLARE_FUNCTION_SIZE
