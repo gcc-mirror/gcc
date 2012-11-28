@@ -14081,52 +14081,62 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	    {
 	      idx = idx / width;
 	      n = n / width;
-	      if (TREE_CODE (type) == VECTOR_TYPE)
+
+	      if (TREE_CODE (arg0) == VECTOR_CST)
 		{
-		  if (TREE_CODE (arg0) == VECTOR_CST)
-		    {
-		      tree *vals = XALLOCAVEC (tree, n);
-		      unsigned i;
-		      for (i = 0; i < n; ++i)
-			vals[i] = VECTOR_CST_ELT (arg0, idx + i);
-		      return build_vector (type, vals);
-		    }
-		  else
-		    {
-		      vec<constructor_elt, va_gc> *vals;
-		      unsigned i;
-		      if (CONSTRUCTOR_NELTS (arg0) == 0)
-			return build_constructor (type,
-					      NULL);
-		      if (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (arg0,
-								 0)->value))
-			  != VECTOR_TYPE)
-			{
-			  vec_alloc (vals, n);
-			  for (i = 0;
-			       i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
-			       ++i)
-			    CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
-						    CONSTRUCTOR_ELT
-						      (arg0, idx + i)->value);
-			  return build_constructor (type, vals);
-			}
-		    }
-		}
-	      else if (n == 1)
-		{
-		  if (TREE_CODE (arg0) == VECTOR_CST)
+		  if (n == 1)
 		    return VECTOR_CST_ELT (arg0, idx);
-		  else if (CONSTRUCTOR_NELTS (arg0) == 0)
-		    return build_zero_cst (type);
-		  else if (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (arg0,
-								  0)->value))
-			   != VECTOR_TYPE)
+
+		  tree *vals = XALLOCAVEC (tree, n);
+		  for (unsigned i = 0; i < n; ++i)
+		    vals[i] = VECTOR_CST_ELT (arg0, idx + i);
+		  return build_vector (type, vals);
+		}
+
+	      /* Constructor elements can be subvectors.  */
+	      unsigned HOST_WIDE_INT k = 1;
+	      if (CONSTRUCTOR_NELTS (arg0) != 0)
+		{
+		  tree cons_elem = TREE_TYPE (CONSTRUCTOR_ELT (arg0, 0)->value);
+		  if (TREE_CODE (cons_elem) == VECTOR_TYPE)
+		    k = TYPE_VECTOR_SUBPARTS (cons_elem);
+		}
+
+	      /* We keep an exact subset of the constructor elements.  */
+	      if ((idx % k) == 0 && (n % k) == 0)
+		{
+		  if (CONSTRUCTOR_NELTS (arg0) == 0)
+		    return build_constructor (type, NULL);
+		  idx /= k;
+		  n /= k;
+		  if (n == 1)
 		    {
 		      if (idx < CONSTRUCTOR_NELTS (arg0))
 			return CONSTRUCTOR_ELT (arg0, idx)->value;
 		      return build_zero_cst (type);
 		    }
+
+		  vec<constructor_elt, va_gc> *vals;
+		  vec_alloc (vals, n);
+		  for (unsigned i = 0;
+		       i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
+		       ++i)
+		    CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
+					    CONSTRUCTOR_ELT
+					      (arg0, idx + i)->value);
+		  return build_constructor (type, vals);
+		}
+	      /* The bitfield references a single constructor element.  */
+	      else if (idx + n <= (idx / k + 1) * k)
+		{
+		  if (CONSTRUCTOR_NELTS (arg0) <= idx / k)
+		    return build_zero_cst (type);
+		  else if (n == k)
+		    return CONSTRUCTOR_ELT (arg0, idx / k)->value;
+		  else
+		    return fold_build3_loc (loc, code, type,
+		      CONSTRUCTOR_ELT (arg0, idx / k)->value, op1,
+		      build_int_cst (TREE_TYPE (op2), (idx % k) * width));
 		}
 	    }
 	}
