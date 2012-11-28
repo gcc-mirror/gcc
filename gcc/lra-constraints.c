@@ -3184,7 +3184,7 @@ loc_equivalence_change_p (rtx *loc)
 
 /* Maximum allowed number of constraint pass iterations after the last
    spill pass.	It is for preventing LRA cycling in a bug case.	 */
-#define MAX_CONSTRAINT_ITERATION_NUMBER 15
+#define MAX_CONSTRAINT_ITERATION_NUMBER 30
 
 /* Maximum number of generated reload insns per an insn.  It is for
    preventing this pass cycling in a bug case.	*/

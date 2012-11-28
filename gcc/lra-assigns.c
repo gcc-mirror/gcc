@@ -1220,8 +1220,17 @@ assign_by_spills (void)
 
 	  bitmap_initialize (&failed_reload_insns, &reg_obstack);
 	  for (i = 0; i < nfails; i++)
-	    bitmap_ior_into (&failed_reload_insns,
-			     &lra_reg_info[sorted_pseudos[i]].insn_bitmap);
+	    {
+	      regno = sorted_pseudos[i];
+	      bitmap_ior_into (&failed_reload_insns,
+			       &lra_reg_info[regno].insn_bitmap);
+	      /* Assign an arbitrary hard register of regno class to
+		 avoid further trouble with the asm insns.  */
+	      bitmap_clear_bit (&all_spilled_pseudos, regno);
+	      assign_hard_regno
+		(ira_class_hard_regs[regno_allocno_class_array[regno]][0],
+		 regno);
+	    }
 	  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
 	    {
 	      insn = lra_insn_recog_data[u]->insn;
@@ -1230,9 +1239,6 @@ assign_by_spills (void)
 		  asm_p = true;
 		  error_for_asm (insn,
 				 "%<asm%> operand has impossible constraints");
-		  /* Avoid further trouble with this insn.	*/
-		  PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-		  lra_invalidate_insn_data (insn);
 		}
 	    }
 	  lra_assert (asm_p);
