@@ -2317,11 +2317,13 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	*EXPR_P should be stored.
 
     WANT_VALUE is nonzero iff we want to use the value of this expression
-	in another expression.  */
+	in another expression.
 
-static enum gimplify_status
+    ARITH_TYPE is the type the computation should be performed in.  */
+
+enum gimplify_status
 gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
-			bool want_value)
+			bool want_value, tree arith_type)
 {
   enum tree_code code;
   tree lhs, lvalue, rhs, t1;
@@ -2382,27 +2384,32 @@ gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	return ret;
     }
 
+  if (postfix)
+    lhs = get_initialized_tmp_var (lhs, pre_p, NULL);
+
   /* For POINTERs increment, use POINTER_PLUS_EXPR.  */
   if (POINTER_TYPE_P (TREE_TYPE (lhs)))
     {
       rhs = convert_to_ptrofftype_loc (loc, rhs);
       if (arith_code == MINUS_EXPR)
 	rhs = fold_build1_loc (loc, NEGATE_EXPR, TREE_TYPE (rhs), rhs);
-      arith_code = POINTER_PLUS_EXPR;
+      t1 = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (*expr_p), lhs, rhs);
     }
+  else
+    t1 = fold_convert (TREE_TYPE (*expr_p),
+		       fold_build2 (arith_code, arith_type,
+				    fold_convert (arith_type, lhs),
+				    fold_convert (arith_type, rhs)));
 
   if (postfix)
     {
-      tree t2 = get_initialized_tmp_var (lhs, pre_p, NULL);
-      t1 = build2 (arith_code, TREE_TYPE (*expr_p), t2, rhs);
       gimplify_assign (lvalue, t1, pre_p);
       gimplify_seq_add_seq (orig_post_p, post);
-      *expr_p = t2;
+      *expr_p = lhs;
       return GS_ALL_DONE;
     }
   else
     {
-      t1 = build2 (arith_code, TREE_TYPE (*expr_p), lhs, rhs);
       *expr_p = build2 (MODIFY_EXPR, TREE_TYPE (lvalue), lvalue, t1);
       return GS_OK;
     }
@@ -7111,7 +7118,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case PREINCREMENT_EXPR:
 	case PREDECREMENT_EXPR:
 	  ret = gimplify_self_mod_expr (expr_p, pre_p, post_p,
-					fallback != fb_none);
+					fallback != fb_none,
+					TREE_TYPE (*expr_p));
 	  break;
 
 	case ARRAY_REF:

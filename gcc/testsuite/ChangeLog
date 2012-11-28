@@ -1,3 +1,10 @@
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/35634
+	* gcc.dg/torture/pr35634.c: New testcase.
+	* g++.dg/torture/pr35634.C: Likewise.
+	* gcc.dg/vect/pr18536.c: Mark worker function noinline.
+
 2012-11-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55476

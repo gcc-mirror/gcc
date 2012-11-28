@@ -172,16 +172,37 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 {
   enum tree_code code = TREE_CODE (*expr_p);
 
-  /* This is handled mostly by gimplify.c, but we have to deal with
-     not warning about int x = x; as it is a GCC extension to turn off
-     this warning but only if warn_init_self is zero.  */
-  if (code == DECL_EXPR
-      && TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
-      && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
-      && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
-      && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
-      && !warn_init_self)
-    TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
+  switch (code)
+    {
+    case DECL_EXPR:
+      /* This is handled mostly by gimplify.c, but we have to deal with
+	 not warning about int x = x; as it is a GCC extension to turn off
+	 this warning but only if warn_init_self is zero.  */
+      if (TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
+	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
+	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
+	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
+	  && !warn_init_self)
+	TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
+      break;
+
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+      {
+	tree type = TREE_TYPE (TREE_OPERAND (*expr_p, 0));
+	if (INTEGRAL_TYPE_P (type) && c_promoting_integer_type_p (type))
+	  {
+	    if (TYPE_OVERFLOW_UNDEFINED (type))
+	      type = unsigned_type_for (type);
+	    return gimplify_self_mod_expr (expr_p, pre_p, post_p, 1, type);
+	  }
+	break;
+      }
+
+    default:;
+    }
 
   return GS_UNHANDLED;
 }

@@ -1,3 +1,13 @@
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/35634
+	* gimple.h (gimplify_self_mod_expr): Declare.
+	* gimplify.c (gimplify_self_mod_expr): Export.  Take a different
+	type for performing the arithmetic in.
+	(gimplify_expr): Adjust.
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Strip
+	sign conversions we can re-apply after adjusting the IV.
+
 2012-11-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/55006
