@@ -57,7 +57,7 @@
 ;; Insn type.  Used to default other attribute values.
 
 (define_attr "type"
-  "move,load,store,cmove,unary,compare,shift,mul,uncond_branch,branch,call,fp,fp_int,misc,sfunc,fp_sfunc,flow"
+  "move,load,store,cmove,unary,compare,shift,mul,uncond_branch,branch,call,fp,fp_int,v2fp,misc,sfunc,fp_sfunc,flow"
   (const_string "misc"))
 
 ;; Length (in # bytes)
@@ -79,7 +79,7 @@
 	(const_string "trunc")))
 
 (define_attr "fp_mode" "round_unknown,round_nearest,round_trunc,int,caller,none"
-  (cond [(eq_attr "type" "fp,fp_sfunc")
+  (cond [(eq_attr "type" "fp,v2fp,fp_sfunc")
 	 (symbol_ref "(enum attr_fp_mode) epiphany_normal_fp_rounding")
 	 (eq_attr "type" "call")
 	 (symbol_ref "(enum attr_fp_mode) epiphany_normal_fp_mode")
@@ -414,6 +414,8 @@
 {
   if (reload_in_progress || reload_completed)
     emit_insn (gen_addsi3_r (operands[0], operands[1], operands[2]));
+  else if (TARGET_FP_IARITH && add_reg_operand (operands[2], SImode))
+    emit_insn (gen_iadd (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_addsi3_i (operands[0], operands[1], operands[2]));
   DONE;
@@ -542,7 +544,23 @@
 				(plus:SI (match_dup 0) (match_dup 1)))))]
   "")
 
-(define_insn "subsi3"
+(define_expand "subsi3"
+  [(set (match_operand:SI 0 "gpr_operand" "")
+	(plus:SI (match_operand:SI 1 "add_reg_operand" "")
+		 (match_operand:SI 2 "arith_operand" "")))]
+  ""
+  "
+{
+  gcc_assert (!reload_in_progress && !reload_completed);
+
+  if (TARGET_FP_IARITH)
+    emit_insn (gen_isub (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_subsi3_i (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "subsi3_i"
   [(set (match_operand:SI 0 "gpr_operand" "=r")
 	(minus:SI (match_operand:SI 1 "add_reg_operand" "r")
 		  (match_operand:SI 2 "arith_operand" "rL")))
@@ -933,7 +951,7 @@
 
       op1si = simplify_gen_subreg (SImode, operands[1], SFmode, 0);
       emit_insn (gen_fix_truncsfsi2 (operands[0], operands[1]));
-      emit_insn (gen_subsi3 (tmp, op1si, bit31));
+      emit_insn (gen_subsi3_i (tmp, op1si, bit31));
       emit_insn (gen_ashlsi3 (tmp, tmp, GEN_INT (8)));
       emit_insn (gen_cmpsi_cc_insn (op1si, limit));
       emit_insn (gen_movsicc (operands[0], cmp, tmp, operands[0]));
@@ -962,7 +980,14 @@
   DONE;
 })
 
-(define_insn "*iadd"
+(define_expand "iadd"
+  [(parallel
+     [(set (match_operand:SF 0 "gpr_operand" "")
+	   (plus:SI (match_operand:SF 1 "gpr_operand" "")
+		    (match_operand:SF 2 "gpr_operand" "")))
+      (clobber (reg:CC_FP CCFP_REGNUM))])])
+
+(define_insn "*iadd_i"
   [(match_parallel 3 "float_operation"
      [(set (match_operand:SI 0 "gpr_operand" "=r")
 	   (plus:SI (match_operand:SI 1 "gpr_operand" "%r")
@@ -972,7 +997,14 @@
   "iadd %0, %1, %2"
   [(set_attr "type" "fp_int")])
 
-(define_insn "*isub"
+(define_expand "isub"
+  [(parallel
+     [(set (match_operand:SF 0 "gpr_operand" "")
+	   (minus:SI (match_operand:SF 1 "gpr_operand" "")
+		     (match_operand:SF 2 "gpr_operand" "")))
+      (clobber (reg:CC_FP CCFP_REGNUM))])])
+
+(define_insn "*isub_i"
   [(match_parallel 3 "float_operation"
      [(set (match_operand:SI 0 "gpr_operand" "=r")
 	   (minus:SI (match_operand:SI 1 "gpr_operand" "r")
@@ -2309,7 +2341,7 @@
   operands[11] = XVECEXP (operands[3], 0, XVECLEN (operands[3], 0) - 1);
 }
   [(set_attr "length" "8")
-   (set_attr "type" "fp")])
+   (set_attr "type" "v2fp")])
 
 (define_expand "mul<mode>3"
   [(parallel
