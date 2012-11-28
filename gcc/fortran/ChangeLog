@@ -1,3 +1,8 @@
+2012-11-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52161
+	* trans-stmt.c (gfc_trans_sync): Fix bound checking.
+
 2012-11-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55476
