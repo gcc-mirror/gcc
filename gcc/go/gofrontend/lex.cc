@@ -442,7 +442,8 @@ Token::print(FILE* file) const
 Lex::Lex(const char* input_file_name, FILE* input_file, Linemap* linemap)
   : input_file_name_(input_file_name), input_file_(input_file),
     linemap_(linemap), linebuf_(NULL), linebufsize_(120), linesize_(0),
-    lineoff_(0), lineno_(0), add_semi_at_eol_(false), extern_()
+    lineoff_(0), lineno_(0), add_semi_at_eol_(false), saw_nointerface_(false),
+    extern_()
 {
   this->linebuf_ = new char[this->linebufsize_];
   this->linemap_->start_file(input_file_name, 0);
@@ -1703,6 +1704,12 @@ Lex::skip_cpp_comment()
       if (plend > p)
 	this->extern_ = std::string(p, plend - p);
     }
+
+  // For field tracking analysis: a //go:nointerface comment means
+  // that the next interface method should not be stored in the type
+  // descriptor.  This permits it to be discarded if it is not needed.
+  if (this->lineoff_ == 2 && memcmp(p, "go:nointerface", 14) == 0)
+    this->saw_nointerface_ = true;
 
   while (p < pend)
     {

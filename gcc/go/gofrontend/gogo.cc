@@ -3074,8 +3074,8 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
   : type_(type), enclosing_(enclosing), results_(NULL),
     closure_var_(NULL), block_(block), location_(location), labels_(),
     local_type_count_(0), fndecl_(NULL), defer_stack_(NULL),
-    results_are_named_(false), calls_recover_(false), is_recover_thunk_(false),
-    has_recover_thunk_(false)
+    results_are_named_(false), nointerface_(false), calls_recover_(false),
+    is_recover_thunk_(false), has_recover_thunk_(false)
 {
 }
 

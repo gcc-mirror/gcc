@@ -349,6 +349,16 @@ class Lex
   extern_name() const
   { return this->extern_; }
 
+  // Return whether we have seen a //go:nointerface comment, clearing
+  // the flag.
+  bool
+  get_and_clear_nointerface()
+  {
+    bool ret = this->saw_nointerface_;
+    this->saw_nointerface_ = false;
+    return ret;
+  }
+
   // Return whether the identifier NAME should be exported.  NAME is a
   // mangled name which includes only ASCII characters.
   static bool
@@ -483,6 +493,8 @@ class Lex
   size_t lineno_;
   // Whether to add a semicolon if we see a newline now.
   bool add_semi_at_eol_;
+  // Whether we just saw a magic go:nointerface comment.
+  bool saw_nointerface_;
   // The external name to use for a function declaration, from a magic
   // //extern comment.
   std::string extern_;
