@@ -1,3 +1,13 @@
+2012-11-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/55006
+	* loop-unroll.c (struct iv_to_split): Add new 'orig_var' member.
+	(analyze_iv_to_split_insn): Record it.
+	(maybe_strip_eq_note_for_split_iv): New function to remove REG_EQUAL
+	notes that refer to IVs that are being split.
+	(apply_opt_in_copies): Use maybe_strip_eq_note_for_split_iv.  Twice.
+	Use FOR_BB_INSNS_SAFE.
+
 2012-11-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* rtl.h (debug_bb_n_slim, debug_bb_slim, debug_insn_slim): Remove

@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 struct iv_to_split
 {
   rtx insn;		/* The insn in that the induction variable occurs.  */
+  rtx orig_var;		/* The variable (register) for the IV before split.  */
   rtx base_var;		/* The variable on that the values in the further
 			   iterations are based.  */
   rtx step;		/* Step of the induction variable.  */
@@ -1833,6 +1834,7 @@ analyze_iv_to_split_insn (rtx insn)
   /* Record the insn to split.  */
   ivts = XNEW (struct iv_to_split);
   ivts->insn = insn;
+  ivts->orig_var = dest;
   ivts->base_var = NULL_RTX;
   ivts->step = iv.step;
   ivts->next = NULL;
@@ -2253,6 +2255,32 @@ combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
   emit_insn_after (seq, insn);
 }
 
+/* Strip away REG_EQUAL notes for IVs we're splitting.
+
+   Updating REG_EQUAL notes for IVs we split is tricky: We
+   cannot tell until after unrolling, DF-rescanning, and liveness
+   updating, whether an EQ_USE is reached by the split IV while
+   the IV reg is still live.  See PR55006.
+
+   ??? We cannot use remove_reg_equal_equiv_notes_for_regno,
+   because RTL loop-iv requires us to defer rescanning insns and
+   any notes attached to them.  So resort to old techniques...  */
+
+static void
+maybe_strip_eq_note_for_split_iv (struct opt_info *opt_info, rtx insn)
+{
+  struct iv_to_split *ivts;
+  rtx note = find_reg_equal_equiv_note (insn);
+  if (! note)
+    return;
+  for (ivts = opt_info->iv_to_split_head; ivts; ivts = ivts->next)
+    if (reg_mentioned_p (ivts->orig_var, note))
+      {
+	remove_note (insn, note);
+	return;
+      }
+}
+
 /* Apply loop optimizations in loop copies using the
    data which gathered during the unrolling.  Structure
    OPT_INFO record that data.
@@ -2293,9 +2321,8 @@ apply_opt_in_copies (struct opt_info *opt_info,
 					unrolling);
       bb->aux = 0;
       orig_insn = BB_HEAD (orig_bb);
-      for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb)); insn = next)
+      FOR_BB_INSNS_SAFE (bb, insn, next)
         {
-          next = NEXT_INSN (insn);
 	  if (!INSN_P (insn)
 	      || (DEBUG_INSN_P (insn)
 		  && TREE_CODE (INSN_VAR_LOCATION_DECL (insn)) == LABEL_DECL))
@@ -2313,6 +2340,8 @@ apply_opt_in_copies (struct opt_info *opt_info,
           /* Apply splitting iv optimization.  */
           if (opt_info->insns_to_split)
             {
+	      maybe_strip_eq_note_for_split_iv (opt_info, insn);
+
               ivts = (struct iv_to_split *)
 		htab_find (opt_info->insns_to_split, &ivts_templ);
 
@@ -2378,6 +2407,8 @@ apply_opt_in_copies (struct opt_info *opt_info,
           ivts_templ.insn = orig_insn;
           if (opt_info->insns_to_split)
             {
+	      maybe_strip_eq_note_for_split_iv (opt_info, orig_insn);
+
               ivts = (struct iv_to_split *)
 		htab_find (opt_info->insns_to_split, &ivts_templ);
               if (ivts)
