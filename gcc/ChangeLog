@@ -1,3 +1,13 @@
+2012-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36728
+	PR debug/55467
+	PR middle-end/55507
+	PR bootstrap/55511
+	* cselib.c (cselib_process_insn): If cselib_preserve_constants,
+	don't reset table and exit early on volatile insns and setjmp.
+	Reset table afterwards on setjmp.
+
 2012-11-28  Andrew Pinski  <apinski@cavium.com>
 
 	PR bootstrap/54279
