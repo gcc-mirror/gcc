@@ -1,3 +1,8 @@
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* Makefile.in (${QMTEST_DIR}/context): Use xg++ instead of g++.
+
 2012-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/55052

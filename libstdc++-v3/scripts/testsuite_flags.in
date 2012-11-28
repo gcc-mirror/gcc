@@ -45,7 +45,7 @@ case ${query} in
       ;;
     --build-cxx)
       CXX_build="@CXX@"
-      CXX=`echo "$CXX_build" | sed 's,gcc/xgcc ,gcc/g++ ,'`
+      CXX=`echo "$CXX_build" | sed 's,gcc/xgcc ,gcc/xg++ ,'`
       echo ${CXX}
       ;;
     --build-cc)

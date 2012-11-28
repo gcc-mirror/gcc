@@ -1,3 +1,9 @@
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* scripts/testsuite_flags.in (--build-cxx): Use xg++ instead of g++.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Likewise.
+
 2012-11-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (_Mem_fn): Constrain function call operators

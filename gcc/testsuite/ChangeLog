@@ -1,3 +1,10 @@
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* lib/g++.exp (g++_init): Search for xg++ instead of g++ in the build
+	directories.
+	* lib/obj-c++.exp (obj-c++_init): Likewise.
+
 2012-11-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52161

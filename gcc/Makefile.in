@@ -5184,7 +5184,7 @@ ${QMTEST_DIR}/context: stamp-qmtest
 	echo "CompilerTable.c_path=${objdir}/xgcc" >> $@
 	echo "CompilerTable.c_options=-B${objdir}/" >> $@
 	echo "CompilerTable.cplusplus_kind=GCC" >> $@
-	echo "CompilerTable.cplusplus_path=${objdir}/g++" >> $@
+	echo "CompilerTable.cplusplus_path=${objdir}/xg++" >> $@
 	echo "CompilerTable.cplusplus_options=-B${objdir}/" >> $@
 	echo "DejaGNUTest.target=${target_noncanonical}" >> $@
 

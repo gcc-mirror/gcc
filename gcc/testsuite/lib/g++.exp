@@ -210,7 +210,7 @@ proc g++_init { args } {
 	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
 		set GXX_UNDER_TEST [transform c++]
 	    } else {
-		set GXX_UNDER_TEST [findfile $base_dir/../../g++ "$base_dir/../../g++ -B$base_dir/../../" [findfile $base_dir/g++ "$base_dir/g++ -B$base_dir/" [transform c++]]]
+		set GXX_UNDER_TEST [findfile $base_dir/../../xg++ "$base_dir/../../xg++ -B$base_dir/../../" [findfile $base_dir/xg++ "$base_dir/xg++ -B$base_dir/" [transform c++]]]
 	    }
 	}
     }

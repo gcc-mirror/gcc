@@ -181,7 +181,7 @@ proc libstdc++_init { testfile } {
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     if {$gccdir != ""} {
-	set compiler ${gccdir}/g++
+	set compiler ${gccdir}/xg++
 	set ld_library_path ${ld_library_path_tmp}
 	append ld_library_path ":${blddir}/src/.libs"
 
