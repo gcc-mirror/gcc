@@ -291,6 +291,8 @@ along with GCC; see the file COPYING3.  If not see
     64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77 \
   }
 
+#define HARD_REGNO_RENAME_OK(SRC, DST) epiphany_regno_rename_ok (SRC, DST)
+
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE

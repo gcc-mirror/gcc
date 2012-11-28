@@ -1879,6 +1879,19 @@ epiphany_initial_elimination_offset (int from, int to)
   gcc_unreachable ();
 }
 
+bool
+epiphany_regno_rename_ok (unsigned, unsigned dst)
+{
+  enum epiphany_function_type fn_type;
+
+  fn_type = epiphany_compute_function_type (current_function_decl);
+  if (!EPIPHANY_INTERRUPT_P (fn_type))
+    return true;
+  if (df_regs_ever_live_p (dst))
+    return true;
+  return false;
+}
+
 static int
 epiphany_issue_rate (void)
 {
