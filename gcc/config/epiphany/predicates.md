@@ -350,3 +350,8 @@
 (define_predicate "nonsymbolic_immediate_operand"
   (ior (match_test "immediate_operand (op, mode)")
        (match_code "const_vector"))) /* Is this specific enough?  */
+
+;; Return true if OP is misaligned memory operand
+(define_predicate "misaligned_operand"
+  (and (match_code "mem")
+       (match_test "MEM_ALIGN (op) < GET_MODE_ALIGNMENT (mode)")))
