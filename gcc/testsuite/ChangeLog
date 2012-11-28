@@ -1,3 +1,15 @@
+2012-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36728
+	PR debug/55467
+	PR middle-end/55507
+	PR bootstrap/55511
+	* gcc.dg/guality/pr36728-1.c: Include "../nop.h", make sure the asm
+	are non-empty and add dependency between the first and second asm.
+	* gcc.dg/guality/pr36728-2.c: Likewise.
+	* gcc.dg/guality/pr36728-3.c: New test.
+	* gcc.dg/guality/pr36728-4.c: New test.
+
 2012-11-28  Andrew Pinski  <apinski@cavium.com>
 
 	PR bootstrap/54279
