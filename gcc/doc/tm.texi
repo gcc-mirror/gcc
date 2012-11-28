@@ -5654,6 +5654,13 @@ of @var{x}.
 The default version returns false for all constants.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_USE_BLOCKS_FOR_DECL_P (const_tree @var{decl})
+This hook should return true if pool entries for @var{decl} should
+be placed in an @code{object_block} structure.
+
+The default version returns true for all decls.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (unsigned @var{fn}, bool @var{md_fn}, bool @var{sqrt})
 This hook should return the DECL of a function that implements reciprocal of
 the builtin function with builtin function code @var{fn}, or
