@@ -54,3 +54,4 @@ extern bool epiphany_is_interrupt_p (tree);
 extern unsigned epiphany_special_round_type_align (tree, unsigned, unsigned);
 extern unsigned epiphany_adjust_field_align (tree, unsigned);
 extern void epiphany_start_function (FILE *f, const char *name, tree decl);
+extern bool epiphany_regno_rename_ok (unsigned src, unsigned dst);
