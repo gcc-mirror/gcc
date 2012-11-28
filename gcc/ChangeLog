@@ -1,3 +1,8 @@
+2012-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (layout_type) <ARRAY_TYPE>: Do not clear TREE_OVERFLOW
+	on overflowed zeroes, except in one specific case.
+
 2012-11-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/55266
