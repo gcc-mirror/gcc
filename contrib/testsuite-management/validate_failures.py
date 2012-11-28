@@ -91,9 +91,12 @@ class TestResult(object):
     state: One of UNRESOLVED, XPASS or FAIL.
     name: File name for the test.
     description: String describing the test (flags used, dejagnu message, etc)
+    ordinal: Monotonically increasing integer.
+             It is used to keep results for one .exp file sorted
+             by the order the tests were run.
   """
 
-  def __init__(self, summary_line):
+  def __init__(self, summary_line, ordinal=-1):
     try:
       self.attrs = ''
       if '|' in summary_line:
@@ -109,6 +112,7 @@ class TestResult(object):
       self.attrs = self.attrs.strip()
       self.state = self.state.strip()
       self.description = self.description.strip()
+      self.ordinal = ordinal
     except ValueError:
       Error('Cannot parse summary line "%s"' % summary_line)
 
@@ -117,7 +121,8 @@ class TestResult(object):
             self.state, summary_line, self))
 
   def __lt__(self, other):
-    return self.name < other.name
+    return (self.name < other.name or
+            (self.name == other.name and self.ordinal < other.ordinal))
 
   def __hash__(self):
     return hash(self.state) ^ hash(self.name) ^ hash(self.description)
@@ -196,10 +201,14 @@ def IsInterestingResult(line):
 def ParseSummary(sum_fname):
   """Create a set of TestResult instances from the given summary file."""
   result_set = set()
+  # ordinal is used when sorting the results so that tests within each
+  # .exp file are kept sorted.
+  ordinal=0
   sum_file = open(sum_fname)
   for line in sum_file:
     if IsInterestingResult(line):
-      result = TestResult(line)
+      result = TestResult(line, ordinal)
+      ordinal += 1
       if result.HasExpired():
         # Tests that have expired are not added to the set of expected
         # results. If they are still present in the set of actual results,
