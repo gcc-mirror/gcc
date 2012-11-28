@@ -1,3 +1,8 @@
+2012-11-28  Doug Evans  <dje@google.com>
+
+	* testsuite-management/validate_failures.py: Record ordinal with
+	TestResult.
+
 2012-11-19  Mike Stump  <mikestump@comcast.net>
 
 	* compare_tests: Add export LC_ALL=C to make sort happier.
