@@ -1,5 +1,8 @@
 2012-11-28  Doug Evans  <dje@google.com>
 
+	* testsuite-management/validate_failures.py: Use <target_alias> instead
+	of <target>.  Minor whitespace changes.
+
 	* testsuite-management/validate_failures.py: Record ordinal with
 	TestResult.
 
