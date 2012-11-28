@@ -5,7 +5,8 @@
 
 #define N 200
 
-void foo (unsigned short *__restrict__ pInput, unsigned short *__restrict__ pOutput)
+void __attribute__((noinline))
+foo (unsigned short *__restrict__ pInput, unsigned short *__restrict__ pOutput)
 {
   unsigned short i, a, b, c;
 

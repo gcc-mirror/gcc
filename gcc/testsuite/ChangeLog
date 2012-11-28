@@ -1,5 +1,11 @@
 2012-11-28  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/55327
+	* gcc.dg/vect/slp-perm-8.c: Mark worker as noinline.
+	* gcc.dg/vect/slp-perm-9.c: Likewise.
+
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
 	PR c/35634
 	* gcc.dg/torture/pr35634.c: New testcase.
 	* g++.dg/torture/pr35634.C: Likewise.
