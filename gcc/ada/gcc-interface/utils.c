@@ -3026,7 +3026,7 @@ max_size (tree exp, bool max_p)
     case tcc_unary:
       if (code == NON_LVALUE_EXPR)
 	return max_size (TREE_OPERAND (exp, 0), max_p);
- 
+
       return fold_build1 (code, type,
 			  max_size (TREE_OPERAND (exp, 0),
 				    code == NEGATE_EXPR ? !max_p : max_p));

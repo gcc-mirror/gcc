@@ -1,4 +1,4 @@
-2012-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+2012-11-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Use
 	valid_constant_size_p to detect too large objects.
