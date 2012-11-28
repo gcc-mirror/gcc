@@ -20,6 +20,8 @@
 	(fp_arith): .. this. 
 	(v2fp_arith): New insn reservation.
 
+	* config/epiphany/epiphgany.md (maddsi_combine): Fix output pattern.
+
 2012-11-28  Oleg Raikhman  <oleg@adapteva.com>
 
 	* config/epiphany/epiphany.h (ASM_OUTPUT_ALIGN_WITH_NOP): Define.
