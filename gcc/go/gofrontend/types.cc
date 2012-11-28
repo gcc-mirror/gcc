@@ -2068,6 +2068,13 @@ Type::methods_constructor(Gogo* gogo, Type* methods_type,
 	    continue;
 	  if (only_value_methods && !p->second->is_value_method())
 	    continue;
+
+	  // This is where we implement the magic //go:nointerface
+	  // comment.  If we saw that comment, we don't add this
+	  // method to the type descriptor.
+	  if (p->second->nointerface())
+	    continue;
+
 	  smethods.push_back(std::make_pair(p->first, p->second));
 	}
     }
@@ -6891,6 +6898,24 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	    }
 	  return false;
 	}
+
+      // If the magic //go:nointerface comment was used, the method
+      // may not be used to implement interfaces.
+      if (m->nointerface())
+	{
+	  if (reason != NULL)
+	    {
+	      std::string n = Gogo::message_name(p->name());
+	      size_t len = 100 + n.length();
+	      char* buf = new char[len];
+	      snprintf(buf, len,
+		       _("method %s%s%s is marked go:nointerface"),
+		       open_quote, n.c_str(), close_quote);
+	      reason->assign(buf);
+	      delete[] buf;
+	    }
+	  return false;
+	}
     }
 
   return true;
@@ -7528,6 +7553,15 @@ Named_method::do_bind_method(Expression* expr, Location location) const
       bme->set_first_argument_type(frtype);
     }
   return bme;
+}
+
+// Return whether this method should not participate in interfaces.
+
+bool
+Named_method::do_nointerface() const
+{
+  Named_object* no = this->named_object_;
+  return no->is_function() && no->func_value()->nointerface();
 }
 
 // Class Interface_method.
@@ -8834,6 +8868,9 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	  Type::build_one_stub_method(gogo, m, buf, stub_params,
 				      fntype->is_varargs(), location);
 	  gogo->finish_function(fntype->location());
+
+	  if (m->nointerface() && stub->is_function())
+	    stub->func_value()->set_nointerface();
 	}
 
       m->set_stub_object(stub);

@@ -1280,6 +1280,12 @@ void
 Parse::declaration()
 {
   const Token* token = this->peek_token();
+
+  bool saw_nointerface = this->lex_->get_and_clear_nointerface();
+  if (saw_nointerface && !token->is_keyword(KEYWORD_FUNC))
+    warning_at(token->location(), 0,
+	       "ignoring magic //go:nointerface comment before non-method");
+
   if (token->is_keyword(KEYWORD_CONST))
     this->const_decl();
   else if (token->is_keyword(KEYWORD_TYPE))
@@ -1287,7 +1293,7 @@ Parse::declaration()
   else if (token->is_keyword(KEYWORD_VAR))
     this->var_decl();
   else if (token->is_keyword(KEYWORD_FUNC))
-    this->function_decl();
+    this->function_decl(saw_nointerface);
   else
     {
       error_at(this->location(), "expected declaration");
@@ -2166,8 +2172,11 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 // inside the asm.  This extension will be removed at some future
 // date.  It has been replaced with //extern comments.
 
+// SAW_NOINTERFACE is true if we saw a magic //go:nointerface comment,
+// which means that we omit the method from the type descriptor.
+
 void
-Parse::function_decl()
+Parse::function_decl(bool saw_nointerface)
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_FUNC));
   Location location = this->location();
@@ -2179,6 +2188,12 @@ Parse::function_decl()
     {
       rec = this->receiver();
       token = this->peek_token();
+    }
+  else if (saw_nointerface)
+    {
+      warning_at(location, 0,
+		 "ignoring magic //go:nointerface comment before non-method");
+      saw_nointerface = false;
     }
 
   if (!token->is_identifier())
@@ -2256,6 +2271,11 @@ Parse::function_decl()
 		}
 	    }
 	}
+
+      if (saw_nointerface)
+	warning_at(location, 0,
+		   ("ignoring magic //go:nointerface comment "
+		    "before declaration"));
     }
   else
     {
@@ -2268,9 +2288,13 @@ Parse::function_decl()
 	    this->gogo_->add_erroneous_name(name);
 	  name = this->gogo_->pack_hidden_name("_", false);
 	}
-      this->gogo_->start_function(name, fntype, true, location);
+      named_object = this->gogo_->start_function(name, fntype, true, location);
       Location end_loc = this->block();
       this->gogo_->finish_function(end_loc);
+      if (saw_nointerface
+	  && !this->is_erroneous_function_
+	  && named_object->is_function())
+	named_object->func_value()->set_nointerface();
       this->is_erroneous_function_ = hold_is_erroneous_function;
     }
 }
