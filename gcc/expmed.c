@@ -416,6 +416,21 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
   else
     return bitnum % BITS_PER_WORD == 0;
 }
+
+/* Return true if OP is a memory and if a bitfield of size BITSIZE at
+   bit number BITNUM can be treated as a simple value of mode MODE.  */
+
+static bool
+simple_mem_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
+		       unsigned HOST_WIDE_INT bitnum, enum machine_mode mode)
+{
+  return (MEM_P (op0)
+	  && bitnum % BITS_PER_UNIT == 0
+	  && bitsize == GET_MODE_BITSIZE (mode)
+	  && (!SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
+	      || (bitnum % GET_MODE_ALIGNMENT (mode) == 0
+		  && MEM_ALIGN (op0) >= GET_MODE_ALIGNMENT (mode))));
+}
 
 /* Try to use instruction INSV to store VALUE into a field of OP0.
    BITSIZE and BITNUM are as for store_bit_field.  */
@@ -624,12 +639,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   /* If the target is memory, storing any naturally aligned field can be
      done with a simple store.  For targets that support fast unaligned
      memory, any naturally sized, unit aligned field can be done directly.  */
-  if (MEM_P (op0)
-      && bitnum % BITS_PER_UNIT == 0
-      && bitsize == GET_MODE_BITSIZE (fieldmode)
-      && (!SLOW_UNALIGNED_ACCESS (fieldmode, MEM_ALIGN (op0))
-	  || (bitnum % bitsize == 0
-	      && MEM_ALIGN (op0) % bitsize == 0)))
+  if (simple_mem_bitfield_p (op0, bitsize, bitnum, fieldmode))
     {
       op0 = adjust_bitfield_address (op0, fieldmode, bitnum / BITS_PER_UNIT);
       emit_move_insn (op0, value);
@@ -1455,12 +1465,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Extraction of a full MODE1 value can be done with a load as long as
      the field is on a byte boundary and is sufficiently aligned.  */
-  if (MEM_P (op0)
-      && bitnum % BITS_PER_UNIT == 0
-      && bitsize == GET_MODE_BITSIZE (mode1)
-      && (!SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0))
-	  || (bitnum % bitsize == 0
-	      && MEM_ALIGN (op0) % bitsize == 0)))
+  if (simple_mem_bitfield_p (op0, bitsize, bitnum, mode1))
     {
       op0 = adjust_bitfield_address (op0, mode1, bitnum / BITS_PER_UNIT);
       return convert_extracted_bit_field (op0, mode, tmode, unsignedp);

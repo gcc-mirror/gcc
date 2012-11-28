@@ -1,3 +1,17 @@
+2012-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/55438
+	* expmed.c (simple_mem_bitfield_p): New function, extracted from
+	store_bit_field_1 and extract_bit_field_1.  Use GET_MODE_ALIGNMENT
+	rather than bitsize when checking the alignment.
+	(store_bit_field_1, extract_bit_field_1): Call it.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Don't limit ALIGN_.  Assume that memory is mapped in chunks of at
+	least word size, regardless of BIGGEST_ALIGNMENT.
+	(bit_field_mode_iterator::get_mode): Use GET_MODE_ALIGNMENT rather
+	than unit when checking the alignment.
+	(get_best_mode): Use GET_MODE_ALIGNMENT.
+
 2012-11-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55512
