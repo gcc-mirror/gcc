@@ -1,5 +1,9 @@
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/55505
+	* gcc.c-torture/execute/921202-1.c: Increase size of dx and dy
+	arrays.
+
 	PR testsuite/55504
 	* gcc.c-torture/execute/20071018-1.c (foo): Add noinline/noclone
 	attributes.  Avoid clobbering memory before malloced chunk.
