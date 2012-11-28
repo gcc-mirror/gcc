@@ -1,3 +1,12 @@
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* Make-lang.in (g++$(exeext)): Rename to
+	(xg++$(exeext)): This.
+	(g++-cross$(exeext)): Use xg++$(exeext) instead of g++$(exeext).
+	(c++.start.encap): Likewise.
+	(c++.install-common): Likewise.
+
 2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55446
