@@ -1727,6 +1727,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	  return false;
 	}
 
+      STRIP_NOPS (access_fn);
       if (dump_enabled_p ())
         {
 	  dump_printf_loc (MSG_NOTE, vect_location,
