@@ -4,6 +4,10 @@
 	* config/epiphany/epiphany-protos.h (epiphany_regno_rename_ok): Declare.
 	* config/epiphany/epiphany.c (epiphany_regno_rename_ok): New function.
 
+	* config/epiphany/epiphany.md (mov<mode>, *mov<mode>_insn): Check
+	for misaligned memory operands.
+	* config/epiphany/predicates.md (misaligned_operand): New predicate.
+
 2012-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54547

@@ -325,6 +325,7 @@
       if (epiphany_vect_align != 4 /* == 8 */
 	  && !reload_in_progress
 	  && (GET_CODE (operands[0]) == MEM || GET_CODE (operands[1]) == MEM)
+	  && !misaligned_operand (operands[1], <MODE>mode)
 	  && (GET_CODE (operands[0]) != SUBREG
 	      || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[0])))
 		  != GET_MODE_SIZE (<MODE>mode)
@@ -355,7 +356,9 @@
    ldrd %0,%X1
    strd %1,%X0"
   "reload_completed
-   && ((!MEM_P (operands[0]) && !MEM_P (operands[1]))
+   && (((!MEM_P (operands[0]) || misaligned_operand (operands[0], <MODE>mode))
+	&& (!MEM_P (operands[1])
+	    || misaligned_operand (operands[1], <MODE>mode)))
        || epiphany_vect_align == 4)"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
