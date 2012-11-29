@@ -5,6 +5,10 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS 
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -Wno-c99-extensions 
+## We require libstdc++-v3 to be in the same build tree.
+AM_CXXFLAGS += -I../../libstdc++-v3/include \
+	       -I../../libstdc++-v3/include/$(target_noncanonical) \
+	       -I$(srcdir)/../../libstdc++-v3/libsupc++
 ACLOCAL_AMFLAGS = -I m4
 
 noinst_LTLIBRARIES = libsanitizer_common.la
@@ -59,8 +63,6 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \
