@@ -1,3 +1,12 @@
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55171
+	* i386.c (get_scratch_register_on_entry): Handle
+	thiscall-convention.
+	(split_stack_prologue_scratch_regno): Likewise.
+	(ix86_static_chain): Likewise.
+	(x86_output_mi_thunk): Likewise.
+
 2012-11-29  Marek Polacek  <polacek@redhat.com>
 
 	* cprop.c (bypass_block): Improve debug message.
