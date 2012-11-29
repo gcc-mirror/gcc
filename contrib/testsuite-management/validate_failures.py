@@ -292,7 +292,7 @@ def GetBuildData():
           _OPTIONS.build_dir)
   print 'Source directory: %s' % srcdir
   print 'Build target:     %s' % target
-  return srcdir, target, True
+  return srcdir, target
 
 
 def PrintSummary(msg, summary):
@@ -334,9 +334,7 @@ def PerformComparison(expected, actual, ignore_missing_failures):
 
 def CheckExpectedResults():
   if not _OPTIONS.manifest:
-    (srcdir, target, valid_build) = GetBuildData()
-    if not valid_build:
-      return False
+    (srcdir, target) = GetBuildData()
     manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
   else:
     manifest_path = _OPTIONS.manifest
@@ -356,10 +354,7 @@ def CheckExpectedResults():
 
 
 def ProduceManifest():
-  (srcdir, target, valid_build) = GetBuildData()
-  if not valid_build:
-    return False
-
+  (srcdir, target) = GetBuildData()
   manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
   if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
@@ -377,9 +372,7 @@ def ProduceManifest():
 
 
 def CompareBuilds():
-  (srcdir, target, valid_build) = GetBuildData()
-  if not valid_build:
-    return False
+  (srcdir, target) = GetBuildData()
 
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
