@@ -1,3 +1,9 @@
+2012-11-29 Kai Tietz  <ktietz@redhat.com>
+
+	PR target/53912
+	* prefix.c (lookup_key): Replace xmalloc/xrealloc
+	use by XNEWVEC/XRESIZEVEC.
+
 2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/55073
