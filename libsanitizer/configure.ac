@@ -19,6 +19,7 @@ AC_MSG_RESULT($version_specific_libs)
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 AC_CANONICAL_SYSTEM
+ACX_NONCANONICAL_TARGET
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 
