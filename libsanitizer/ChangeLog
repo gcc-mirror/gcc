@@ -1,5 +1,23 @@
 2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* Makefile.am (AM_MAKEFLAGS): Restore CC and CXX.
+	* configure.ac (ACX_NONCANONICAL_TARGET): Removed.
+	* asan/Makefile.am (AM_CXXFLAGS): Remove -I for libstdc++-v3 header
+	files.
+	(AM_MAKEFLAGS): Restore CC and CXX.
+	* interception/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
+2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* Makefile.am (AM_MAKEFLAGS): Remove CC and CXX.
 	* configure.ac (ACX_NONCANONICAL_TARGET): New.
 	* asan/Makefile.am (AM_CXXFLAGS): Add -I for libstdc++-v3 header

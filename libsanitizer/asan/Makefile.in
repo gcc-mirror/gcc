@@ -38,8 +38,7 @@ target_triplet = @target@
 subdir = asan
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
-	$(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -229,7 +228,6 @@ sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
 target_cpu = @target_cpu@
-target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
@@ -241,13 +239,7 @@ AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
-AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
-	-Wno-long-long -fPIC -fno-builtin -fno-exceptions \
-	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
-	-Wno-variadic-macros -Wno-c99-extensions \
-	-I../../libstdc++-v3/include \
-	-I../../libstdc++-v3/include/$(target_noncanonical) \
-	-I$(srcdir)/../../libstdc++-v3/libsupc++
+AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -Wno-c99-extensions 
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libasan.la
 asan_files = \
@@ -305,6 +297,8 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
+	"CC=$(CC)" \
+	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \
