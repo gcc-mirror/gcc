@@ -8866,13 +8866,8 @@ instantiate_class_template_1 (tree type)
 	      LAMBDA_EXPR_RETURN_TYPE (lambda) = NULL_TREE;
 	    }
 
-	  LAMBDA_EXPR_THIS_CAPTURE (lambda)
-	    = lookup_field_1 (type, get_identifier ("__this"), false);
-
 	  instantiate_decl (decl, false, false);
 	  maybe_add_lambda_conv_op (type);
-
-	  LAMBDA_EXPR_THIS_CAPTURE (lambda) = NULL_TREE;
 	}
       else
 	gcc_assert (errorcount);
@@ -12604,6 +12599,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		else if (is_capture_proxy (DECL_EXPR_DECL (t)))
 		  {
 		    DECL_CONTEXT (decl) = current_function_decl;
+		    if (DECL_NAME (decl) == this_identifier)
+		      {
+			tree lam = DECL_CONTEXT (current_function_decl);
+			lam = CLASSTYPE_LAMBDA_EXPR (lam);
+			LAMBDA_EXPR_THIS_CAPTURE (lam) = decl;
+		      }
 		    insert_capture_proxy (decl);
 		  }
 		else
@@ -14105,6 +14106,7 @@ tsubst_copy_and_build (tree t,
 	   wait until after we finish instantiating the type.  */
 	LAMBDA_EXPR_CAPTURE_LIST (r)
 	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
+	LAMBDA_EXPR_THIS_CAPTURE (r) = NULL_TREE;
 
 	return build_lambda_object (r);
       }
