@@ -295,6 +295,7 @@ extern lra_copy_t lra_get_copy (int);
 extern bool lra_former_scratch_p (int);
 extern bool lra_former_scratch_operand_p (rtx, int);
 
+extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
 extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;

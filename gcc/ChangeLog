@@ -1,3 +1,12 @@
+2012-11-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55456
+	* lra-int.h (lra_new_regno_start): New external.
+	* lra.c (lra_new_regno_start): New global.
+	(lra): Set up lra_new_regno_start.
+	* lra-constraints.c (match_reload): Sync values only for original
+	pseudos.
+
 2012-11-29 Kai Tietz  <ktietz@redhat.com>
 
 	PR target/53912

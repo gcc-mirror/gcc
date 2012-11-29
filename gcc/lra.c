@@ -2151,6 +2151,9 @@ update_inc_notes (void)
 /* Set to 1 while in lra.  */
 int lra_in_progress;
 
+/* Start of pseudo regnos before the LRA.  */
+int lra_new_regno_start;
+
 /* Start of reload pseudo regnos before the new spill pass.  */
 int lra_constraint_new_regno_start;
 
@@ -2235,7 +2238,7 @@ lra (FILE *f)
      so set up lra_constraint_new_regno_start before its call to
      permit changing reg classes for pseudos created by this
      simplification.  */
-  lra_constraint_new_regno_start = max_reg_num ();
+  lra_constraint_new_regno_start = lra_new_regno_start = max_reg_num ();
   remove_scratches ();
   scratch_p = lra_constraint_new_regno_start != max_reg_num ();
 
