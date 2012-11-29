@@ -1,3 +1,10 @@
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55445
+	* unwind-c.c (__SEH__): Make sure SjLj isn't active.
+	* unwind-generic.h: Likewise.
+	* unwind-seh.c: Likewise.
+
 2012-11-28  Richard Henderson  <rth@redhat.com>
 
 	PR libgcc/48076

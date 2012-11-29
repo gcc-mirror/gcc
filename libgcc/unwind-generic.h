@@ -28,7 +28,7 @@
 #ifndef _UNWIND_H
 #define _UNWIND_H
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 /* Only for _GCC_specific_handler.  */
 #include <windows.h>
 #endif
@@ -275,7 +275,7 @@ extern void * _Unwind_FindEnclosingFunction (void *pc);
 # error "What type shall we use for _sleb128_t?"
 #endif
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 /* Handles the mapping from SEH to GCC interfaces.  */
 EXCEPTION_DISPOSITION _GCC_specific_handler (PEXCEPTION_RECORD, void *,
 					     PCONTEXT, PDISPATCHER_CONTEXT,
