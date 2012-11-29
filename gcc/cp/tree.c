@@ -1097,7 +1097,7 @@ cv_unqualified (tree type)
     * If T is a type that needs structural equality
       its TYPE_CANONICAL (T) will be NULL.
     * TYPE_CANONICAL (T) desn't carry type attributes
-      and looses template parameter names.   */
+      and loses template parameter names.   */
 
 tree
 strip_typedefs (tree t)
@@ -1187,6 +1187,16 @@ strip_typedefs (tree t)
 				   TYPENAME_TYPE_FULLNAME (t),
 				   typename_type, tf_none);
       break;
+    case DECLTYPE_TYPE:
+      result = strip_typedefs_expr (DECLTYPE_TYPE_EXPR (t));
+      if (result == DECLTYPE_TYPE_EXPR (t))
+	return t;
+      else
+	result = (finish_decltype_type
+		  (result,
+		   DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t),
+		   tf_none));
+      break;
     default:
       break;
     }
@@ -1206,6 +1216,186 @@ strip_typedefs (tree t)
   if (TYPE_ATTRIBUTES (t))
     result = cp_build_type_attribute_variant (result, TYPE_ATTRIBUTES (t));
   return cp_build_qualified_type (result, cp_type_quals (t));
+}
+
+/* Like strip_typedefs above, but works on expressions, so that in
+
+   template<class T> struct A
+   {
+     typedef T TT;
+     B<sizeof(TT)> b;
+   };
+
+   sizeof(TT) is replaced by sizeof(T).  */
+
+tree
+strip_typedefs_expr (tree t)
+{
+  unsigned i,n;
+  tree r, type, *ops;
+  enum tree_code code;
+
+  if (t == NULL_TREE || t == error_mark_node)
+    return t;
+
+  if (DECL_P (t) || CONSTANT_CLASS_P (t))
+    return t;
+
+  /* Some expressions have type operands, so let's handle types here rather
+     than check TYPE_P in multiple places below.  */
+  if (TYPE_P (t))
+    return strip_typedefs (t);
+
+  code = TREE_CODE (t);
+  switch (code)
+    {
+    case IDENTIFIER_NODE:
+    case TEMPLATE_PARM_INDEX:
+    case OVERLOAD:
+    case BASELINK:
+    case ARGUMENT_PACK_SELECT:
+      return t;
+
+    case TRAIT_EXPR:
+      {
+	tree type1 = strip_typedefs (TRAIT_EXPR_TYPE1 (t));
+	tree type2 = strip_typedefs (TRAIT_EXPR_TYPE2 (t));
+	if (type1 == TRAIT_EXPR_TYPE1 (t)
+	    && type2 == TRAIT_EXPR_TYPE2 (t))
+	  return t;
+	r = copy_node (t);
+	TRAIT_EXPR_TYPE1 (t) = type1;
+	TRAIT_EXPR_TYPE2 (t) = type2;
+	return r;
+      }
+
+    case TREE_LIST:
+      {
+	VEC(tree,gc) *vec = make_tree_vector ();
+	bool changed = false;
+	tree it;
+	for (it = t; it; it = TREE_CHAIN (it))
+	  {
+	    tree val = strip_typedefs_expr (TREE_VALUE (t));
+	    VEC_safe_push (tree, gc, vec, val);
+	    if (val != TREE_VALUE (t))
+	      changed = true;
+	    gcc_assert (TREE_PURPOSE (it) == NULL_TREE);
+	  }
+	if (changed)
+	  {
+	    r = NULL_TREE;
+	    FOR_EACH_VEC_ELT_REVERSE (tree, vec, i, it)
+	      r = tree_cons (NULL_TREE, it, r);
+	  }
+	else
+	  r = t;
+	release_tree_vector (vec);
+	return r;
+      }
+
+    case TREE_VEC:
+      {
+	bool changed = false;
+	VEC(tree,gc)* vec = make_tree_vector ();
+	n = TREE_VEC_LENGTH (t);
+	VEC_reserve (tree, gc, vec, n);
+	for (i = 0; i < n; ++i)
+	  {
+	    tree op = strip_typedefs_expr (TREE_VEC_ELT (t, i));
+	    VEC_quick_push (tree, vec, op);
+	    if (op != TREE_VEC_ELT (t, i))
+	      changed = true;
+	  }
+	if (changed)
+	  {
+	    r = copy_node (t);
+	    for (i = 0; i < n; ++i)
+	      TREE_VEC_ELT (r, i) = VEC_index (tree, vec, i);
+	  }
+	else
+	  r = t;
+	release_tree_vector (vec);
+	return r;
+      }
+
+    case CONSTRUCTOR:
+      {
+	bool changed = false;
+	VEC(constructor_elt,gc) *vec
+	  = VEC_copy (constructor_elt, gc, CONSTRUCTOR_ELTS (t));
+	n = CONSTRUCTOR_NELTS (t);
+	type = strip_typedefs (TREE_TYPE (t));
+	for (i = 0; i < n; ++i)
+	  {
+	    constructor_elt *e = VEC_index (constructor_elt, vec, i);
+	    tree op = strip_typedefs_expr (e->value);
+	    if (op != e->value)
+	      {
+		changed = true;
+		e->value = op;
+	      }
+	    gcc_checking_assert (e->index == strip_typedefs_expr (e->index));
+	  }
+
+	if (!changed && type == TREE_TYPE (t))
+	  {
+	    VEC_free (constructor_elt, gc, vec);
+	    return t;
+	  }
+	else
+	  {
+	    r = copy_node (t);
+	    TREE_TYPE (r) = type;
+	    CONSTRUCTOR_ELTS (r) = vec;
+	    return r;
+	  }
+      }
+
+    case LAMBDA_EXPR:
+      gcc_unreachable ();
+
+    default:
+      break;
+    }
+
+  gcc_assert (EXPR_P (t));
+
+  n = TREE_OPERAND_LENGTH (t);
+  ops = XALLOCAVEC (tree, n);
+  type = TREE_TYPE (t);
+
+  switch (code)
+    {
+    CASE_CONVERT:
+    case IMPLICIT_CONV_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CAST_EXPR:
+    case NEW_EXPR:
+      type = strip_typedefs (type);
+      /* fallthrough */
+
+    default:
+      for (i = 0; i < n; ++i)
+	ops[i] = strip_typedefs_expr (TREE_OPERAND (t, i));
+      break;
+    }
+
+  /* If nothing changed, return t.  */
+  for (i = 0; i < n; ++i)
+    if (ops[i] != TREE_OPERAND (t, i))
+      break;
+  if (i == n && type == TREE_TYPE (t))
+    return t;
+
+  r = copy_node (t);
+  TREE_TYPE (r) = type;
+  for (i = 0; i < n; ++i)
+    TREE_OPERAND (r, i) = ops[i];
+  return r;
 }
 
 /* Makes a copy of BINFO and TYPE, which is to be inherited into a
@@ -2381,9 +2571,6 @@ cp_tree_equal (tree t1, tree t2)
 				BASELINK_FUNCTIONS (t2)));
 
     case TEMPLATE_PARM_INDEX:
-      if (TEMPLATE_PARM_NUM_SIBLINGS (t1)
-	  != TEMPLATE_PARM_NUM_SIBLINGS (t2))
-	return false;
       return (TEMPLATE_PARM_IDX (t1) == TEMPLATE_PARM_IDX (t2)
 	      && TEMPLATE_PARM_LEVEL (t1) == TEMPLATE_PARM_LEVEL (t2)
 	      && (TEMPLATE_PARM_PARAMETER_PACK (t1)

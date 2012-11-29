@@ -1,3 +1,15 @@
+2012-11-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53858
+	* g++.dg/cpp0x/alias-decl-20.C: New.
+
+	PR c++/50852
+	* g++.dg/template/typedef39.C: New.
+
+	PR c++/53039
+	* g++.dg/cpp0x/variadic133.C: New.
+	* g++.dg/template/param1.C: Adjust.
+
 2012-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55331

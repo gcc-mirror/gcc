@@ -11967,8 +11967,7 @@ cp_parser_template_parameter_list (cp_parser* parser)
 						parm_loc,
 						parameter,
 						is_non_type,
-						is_parameter_pack,
-						0);
+						is_parameter_pack);
       else
        {
          tree err_parm = build_tree_list (parameter, parameter);
@@ -21134,7 +21133,6 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
     {
       /* Parse the template parameters.  */
       parameter_list = cp_parser_template_parameter_list (parser);
-      fixup_template_parms ();
     }
 
   /* Get the deferred access checks from the parameter list.  These
