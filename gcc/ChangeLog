@@ -1,6 +1,9 @@
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55171
+	* prefix.c (lookup_key): Replace xmalloc/xrealloc
+	use by XNEWVEC/XRESIZEVEC.
+
 	* i386.c (get_scratch_register_on_entry): Handle
 	thiscall-convention.
 	(split_stack_prologue_scratch_regno): Likewise.
