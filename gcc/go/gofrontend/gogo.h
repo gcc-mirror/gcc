@@ -1032,6 +1032,11 @@ class Function
   set_has_recover_thunk()
   { this->has_recover_thunk_ = true; }
 
+  // Mark the function as going into a unique section.
+  void
+  set_in_unique_section()
+  { this->in_unique_section_ = true; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1139,6 +1144,9 @@ class Function
   bool is_recover_thunk_;
   // True if this function already has a recover thunk.
   bool has_recover_thunk_;
+  // True if this function should be put in a unique section.  This is
+  // turned on for field tracking.
+  bool in_unique_section_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1414,6 +1422,14 @@ class Variable
   set_is_type_switch_var()
   { this->is_type_switch_var_ = true; }
 
+  // Mark the variable as going into a unique section.
+  void
+  set_in_unique_section()
+  {
+    go_assert(this->is_global_);
+    this->in_unique_section_ = true;
+  }
+
   // Traverse the initializer expression.
   int
   traverse_expression(Traverse*, unsigned int traverse_mask);
@@ -1504,6 +1520,9 @@ class Variable
   bool is_type_switch_var_ : 1;
   // True if we have determined types.
   bool determined_type_ : 1;
+  // True if this variable should be put in a unique section.  This is
+  // used for field tracking.
+  bool in_unique_section_ : 1;
 };
 
 // A variable which is really the name for a function return value, or

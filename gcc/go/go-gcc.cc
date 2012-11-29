@@ -28,6 +28,7 @@
 #include "tree-iterator.h"
 #include "gimple.h"
 #include "toplev.h"
+#include "output.h"
 
 #include "go-c.h"
 
@@ -267,6 +268,7 @@ class Gcc_backend : public Backend
 		  Btype* btype,
 		  bool is_external,
 		  bool is_hidden,
+		  bool in_unique_section,
 		  Location location);
 
   void
@@ -1277,6 +1279,7 @@ Gcc_backend::global_variable(const std::string& package_name,
 			     Btype* btype,
 			     bool is_external,
 			     bool is_hidden,
+			     bool in_unique_section,
 			     Location location)
 {
   tree type_tree = btype->get_tree();
@@ -1308,6 +1311,9 @@ Gcc_backend::global_variable(const std::string& package_name,
     }
   TREE_USED(decl) = 1;
 
+  if (in_unique_section)
+    resolve_unique_section (decl, 0, 1);
+
   go_preserve_from_gc(decl);
 
   return new Bvariable(decl);
@@ -1326,6 +1332,16 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
   if (var_decl == error_mark_node)
     return;
   DECL_INITIAL(var_decl) = expr_tree;
+
+  // If this variable goes in a unique section, it may need to go into
+  // a different one now that DECL_INITIAL is set.
+  if (DECL_HAS_IMPLICIT_SECTION_NAME_P (var_decl))
+    {
+      DECL_SECTION_NAME (var_decl) = NULL_TREE;
+      resolve_unique_section (var_decl,
+			      compute_reloc_for_constant (expr_tree),
+			      1);
+    }
 }
 
 // Make a local variable.
