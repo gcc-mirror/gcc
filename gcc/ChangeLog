@@ -5,6 +5,11 @@
 	* config/epiphany/epiphany.md (isub_i+1): New peephole2.
 	* config/epiphany/epiphany-protos.h (get_attr_sched_use_fpu): Declare.
 
+	* config/epiphany/epiphany.h (EPIPHANY_LIBRARY_EXTRA_SPEC): Define.
+	(EXTRA_SPECS, DRIVER_SELF_SPECS): Likewise.
+	* config/epiphany/t-epiphany (SPECS): Set.
+	(specs): New rule.
+
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36728
