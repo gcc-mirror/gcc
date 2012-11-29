@@ -1,3 +1,10 @@
+2012-11-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53137
+	* pt.c (tsubst_expr) [DECL_EXPR]: Set LAMBDA_EXPR_THIS_CAPTURE here.
+	(tsubst_copy_and_build) [LAMBDA_EXPR]: And clear it here.
+	(instantiate_class_template_1): Not here.
+
 2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53094
