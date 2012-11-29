@@ -1,3 +1,8 @@
+2012-11-29  Doug Evans  <dje@google.com>
+
+	* testsuite-management/validate_failures.py (CompareBuilds): Pass
+	options.results to GetSumFiles for clean build.
+
 2012-11-28  Doug Evans  <dje@google.com>
 
 	* testsuite-management/validate_failures.py: Use <target_alias> instead

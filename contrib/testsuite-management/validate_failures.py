@@ -381,7 +381,7 @@ def CompareBuilds(options):
   sum_files = GetSumFiles(options.results, options.build_dir)
   actual = GetResults(sum_files)
 
-  clean_sum_files = GetSumFiles(None, options.clean_build)
+  clean_sum_files = GetSumFiles(options.results, options.clean_build)
   clean = GetResults(clean_sum_files)
 
   return PerformComparison(clean, actual, options.ignore_missing_failures)
