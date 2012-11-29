@@ -1,3 +1,7 @@
+2012-11-29  Marek Polacek  <polacek@redhat.com>
+
+	* cprop.c (bypass_block): Improve debug message.
+
 2012-11-29  Oleg Raikhman  <oleg@adapteva.com>
 
 	* config/epiphany/epiphany.h (FIXED_REGISTERS, CALL_USED_REGISTERS):
