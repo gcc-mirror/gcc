@@ -1,3 +1,33 @@
+2012-11-29  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+
+	PR target/54974
+	* config/arm/arm.md (thumb2_pool_range, pool_range): Add comment on
+	Thumb pool ranges.
+	(thumb1_extendhisi2): Reduce Thumb pool range.
+	(arm_movdi): Likewise.
+	(thumb1_movdi_insn): Likewise.
+	(thumb1_movsi_insn): Likewise.
+	(pic_load_addr_unified): Likewise.
+	(pic_load_addr_32bit): Likewise.
+	(pic_load_addr_thumb1): Likewise.
+	(thumb1_movhf): Likewise.
+	(arm_movsf_soft_insn): Likewise.
+	(thumb1_movsf_soft_insn): Likewise.
+	(movdf_soft_insn): Likewise.
+	(thumb1_movdf_soft_insn): Likewise.
+	* config/arm/neon.md (*neon_mov<mode>): Likewise.
+	(*neon_mov<mode>): Likwise.
+	* config/arm/thumb2.md: (*thumb2_movsi_insn): Likewise.
+	(*thumb2_movhi_insn): Likewise.
+	(*thumb2_extendqisi_v6): Likewise.
+	(*thumb2_zero_extendqisi_v6): Likewise.
+	(*thumb2_zero_extendqisi2_v6): Likewise.
+	* config/arm/vfp.md: (*thumb2_movsi_vfp): Likewise.
+	(*movdi_vfp): Likewise.
+	(*movdi_vfp_cortexa8): Likewise.
+	(*thumb2_movsf_vfp): Likewise.
+	(*thumb2_movdf_vfp): Likewise.
+
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55171
