@@ -1,5 +1,8 @@
 2012-11-29  Doug Evans  <dje@google.com>
 
+	* testsuite-management/validate_failures.py: Remove pass/fail
+	indicator from result of GetBuildData.
+
 	* testsuite-management/validate_failures.py: Store options in global
 	variable _OPTIONS.
 
