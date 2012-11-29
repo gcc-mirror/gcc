@@ -168,3 +168,10 @@ func BlockProfile(p []BlockProfileRecord) (n int, ok bool)
 // If all is true, Stack formats stack traces of all other goroutines
 // into buf after the trace for the current goroutine.
 func Stack(buf []byte, all bool) int
+
+// Get field tracking information.  Only fields with a tag go:"track"
+// are tracked.  This function will add every such field that is
+// referenced to the map.  The keys in the map will be
+// PkgPath.Name.FieldName.  The value will be true for each field
+// added.
+func Fieldtrack(map[string]bool)

@@ -10580,6 +10580,102 @@ Expression::make_map_index(Expression* map, Expression* index,
 
 // Class Field_reference_expression.
 
+// Lower a field reference expression.  There is nothing to lower, but
+// this is where we generate the tracking information for fields with
+// the magic go:"track" tag.
+
+Expression*
+Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
+				     Statement_inserter* inserter, int)
+{
+  Struct_type* struct_type = this->expr_->type()->struct_type();
+  if (struct_type == NULL)
+    {
+      // Error will be reported elsewhere.
+      return this;
+    }
+  const Struct_field* field = struct_type->field(this->field_index_);
+  if (field == NULL)
+    return this;
+  if (!field->has_tag())
+    return this;
+  if (field->tag().find("go:\"track\"") == std::string::npos)
+    return this;
+
+  // We have found a reference to a tracked field.  Build a call to
+  // the runtime function __go_fieldtrack with a string that describes
+  // the field.  FIXME: We should only call this once per referenced
+  // field per function, not once for each reference to the field.
+
+  if (this->called_fieldtrack_)
+    return this;
+  this->called_fieldtrack_ = true;
+
+  Location loc = this->location();
+
+  std::string s = "fieldtrack \"";
+  Named_type* nt = this->expr_->type()->named_type();
+  if (nt == NULL || nt->named_object()->package() == NULL)
+    s.append(gogo->pkgpath());
+  else
+    s.append(nt->named_object()->package()->pkgpath());
+  s.push_back('.');
+  if (nt != NULL)
+    s.append(nt->name());
+  s.push_back('.');
+  s.append(field->field_name());
+  s.push_back('"');
+
+  // We can't use a string here, because internally a string holds a
+  // pointer to the actual bytes; when the linker garbage collects the
+  // string, it won't garbage collect the bytes.  So we use a
+  // [...]byte.
+
+  mpz_t val;
+  mpz_init_set_ui(val, s.length());
+  Expression* length_expr = Expression::make_integer(&val, NULL, loc);
+  mpz_clear(val);
+
+  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* array_type = Type::make_array_type(byte_type, length_expr);
+
+  Expression_list* bytes = new Expression_list();
+  for (std::string::const_iterator p = s.begin(); p != s.end(); p++)
+    {
+      mpz_init_set_ui(val, *p);
+      Expression* byte = Expression::make_integer(&val, NULL, loc);
+      mpz_clear(val);
+      bytes->push_back(byte);
+    }
+
+  Expression* e = Expression::make_composite_literal(array_type, 0, false,
+						     bytes, loc);
+
+  Variable* var = new Variable(array_type, e, true, false, false, loc);
+
+  static int count;
+  char buf[50];
+  snprintf(buf, sizeof buf, "fieldtrack.%d", count);
+  ++count;
+
+  Named_object* no = gogo->add_variable(buf, var);
+  e = Expression::make_var_reference(no, loc);
+  e = Expression::make_unary(OPERATOR_AND, e, loc);
+
+  Expression* call = Runtime::make_call(Runtime::FIELDTRACK, loc, 1, e);
+  inserter->insert(Statement::make_statement(call, false));
+
+  // Put this function, and the global variable we just created, into
+  // unique sections.  This will permit the linker to garbage collect
+  // them if they are not referenced.  The effect is that the only
+  // strings, indicating field references, that will wind up in the
+  // executable will be those for functions that are actually needed.
+  function->func_value()->set_in_unique_section();
+  var->set_in_unique_section();
+
+  return this;
+}
+
 // Return the type of a field reference.
 
 Type*
