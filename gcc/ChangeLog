@@ -1,3 +1,9 @@
+2012-11-24  Richard Henderson  <rth@redhat.com>
+
+	PR libgcc/48076
+	* emutls.c (__emutls_get_address): Add memory barrier before
+	referencing emutls_key.
+
 2012-11-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/install.texi (sparc64-x-solaris2): Mention MPC as well.

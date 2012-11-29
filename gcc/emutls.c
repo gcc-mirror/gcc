@@ -151,6 +151,9 @@ __emutls_get_address (struct __emutls_object *obj)
       __gthread_mutex_unlock (&emutls_mutex);
     }
 
+  /* Do not allow emutls_key to be loaded before offset.  */
+  __sync_synchronize();
+
   struct __emutls_array *arr = __gthread_getspecific (emutls_key);
   if (__builtin_expect (arr == NULL, 0))
     {
