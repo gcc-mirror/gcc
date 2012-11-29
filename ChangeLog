@@ -1,5 +1,13 @@
 2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* Makefile.def (target_modules): Remove bootstrap=true and
+	raw_cxx=true from libsanitizer.
+	* configure.ac (bootstrap_target_libs): Remove libsanitizer.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* Makefile.def (target_modules): Add bootstrap=true and
 	raw_cxx=true to libsanitizer.
 	* configure.ac (bootstrap_target_libs): Add libsanitizer.
