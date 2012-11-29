@@ -1,3 +1,9 @@
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/53912
+	* class.c (dump_class_hierarchy_r): Cast from pointer via uintptr_t.
+	(dump_vtable): Likewise.
+
 2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/52654
