@@ -30,3 +30,10 @@ resolve-sw-modes.o : $(srcdir)/config/epiphany/resolve-sw-modes.c \
   insn-config.h insn-codes.h $(EMIT_RTL_H) $(RECOG_H) $(FUNCTION_H) \
   insn-attr-common.h $(TREE_PASS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $<
+
+SPECS = specs.install
+
+specs: specs.install
+	sed -e 's,epiphany_library_extra_spec,epiphany_library_stub_spec,' \
+	-e 's,epiphany_library_build_spec,epiphany_library_extra_spec,' \
+	  < specs.install > $@ ; \

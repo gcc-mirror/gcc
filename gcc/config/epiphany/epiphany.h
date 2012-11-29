@@ -58,6 +58,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
+#define EPIPHANY_LIBRARY_EXTRA_SPEC \
+  "-ffixed-r40 -ffixed-r41 -ffixed-r42 -ffixed-r43"
+
+/* In the "spec:" rule,, t-epiphany changes this to epiphany_library_stub_spec
+   and epiphany_library_extra_spec, respectively.  */
+#define EXTRA_SPECS \
+  { "epiphany_library_extra_spec", "" }, \
+  { "epiphany_library_build_spec", EPIPHANY_LIBRARY_EXTRA_SPEC }, \
+
+#define DRIVER_SELF_SPECS " %(epiphany_library_extra_spec) "
+
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 
