@@ -1,3 +1,9 @@
+2012-11-29  Oleg Raikhman  <oleg@adapteva.com>
+
+	* config/epiphany/epiphany.h (FIXED_REGISTERS, CALL_USED_REGISTERS):
+	Make r40..r43 call-used.
+	(REG_ALLOC_ORDER): Sort r40..r43 into the call-used registers.
+
 2012-11-29  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/predicates.md (addsub_operator): New predicate.
