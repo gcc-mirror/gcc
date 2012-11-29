@@ -1,3 +1,8 @@
+2012-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* loop_optimization14.ad[sb]: New test.
+	* loop_optimization14_pkg.ads: New helper.
+
 2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/55073
