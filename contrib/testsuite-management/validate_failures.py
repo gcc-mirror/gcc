@@ -220,7 +220,7 @@ def ParseSummary(sum_fname):
   return result_set
 
 
-def GetManifest(manifest_name):
+def GetManifest(manifest_path):
   """Build a set of expected failures from the manifest file.
 
   Each entry in the manifest file should have the format understood
@@ -228,8 +228,8 @@ def GetManifest(manifest_name):
 
   If no manifest file exists for this target, it returns an empty set.
   """
-  if os.path.exists(manifest_name):
-    return ParseSummary(manifest_name)
+  if os.path.exists(manifest_path):
+    return ParseManifest(manifest_path)
   else:
     return set()
 
@@ -334,14 +334,14 @@ def CheckExpectedResults(options):
     (srcdir, target, valid_build) = GetBuildData(options)
     if not valid_build:
       return False
-    manifest_name = _MANIFEST_PATH_PATTERN % (srcdir, target)
+    manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
   else:
-    manifest_name = options.manifest
-    if not os.path.exists(manifest_name):
-      Error('Manifest file %s does not exist.' % manifest_name)
+    manifest_path = options.manifest
+    if not os.path.exists(manifest_path):
+      Error('Manifest file %s does not exist.' % manifest_path)
 
-  print 'Manifest:         %s' % manifest_name
-  manifest = GetManifest(manifest_name)
+  print 'Manifest:         %s' % manifest_path
+  manifest = GetManifest(manifest_path)
   sum_files = GetSumFiles(options.results, options.build_dir)
   actual = GetResults(sum_files)
 
@@ -357,14 +357,14 @@ def ProduceManifest(options):
   if not valid_build:
     return False
 
-  manifest_name = _MANIFEST_PATH_PATTERN % (srcdir, target)
-  if os.path.exists(manifest_name) and not options.force:
+  manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
+  if os.path.exists(manifest_path) and not options.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
-          manifest_name)
+          manifest_path)
 
   sum_files = GetSumFiles(options.results, options.build_dir)
   actual = GetResults(sum_files)
-  manifest_file = open(manifest_name, 'w')
+  manifest_file = open(manifest_path, 'w')
   for result in sorted(actual):
     print result
     manifest_file.write('%s\n' % result)
