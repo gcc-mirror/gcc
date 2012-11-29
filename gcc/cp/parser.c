@@ -3529,7 +3529,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 
       if (have_suffix_p)
 	{
-	  tree literal = build_userdef_literal (suffix_id, value, NULL_TREE);
+	  tree literal = build_userdef_literal (suffix_id, value,
+						OT_NONE, NULL_TREE);
 	  tok->u.value = literal;
 	  return cp_parser_userdef_string_literal (tok);
 	}
@@ -3661,6 +3662,7 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   tree literal = token->u.value;
   tree suffix_id = USERDEF_LITERAL_SUFFIX_ID (literal);
   tree value = USERDEF_LITERAL_VALUE (literal);
+  int overflow = USERDEF_LITERAL_OVERFLOW (literal);
   tree num_string = USERDEF_LITERAL_NUM_STRING (literal);
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree decl, result;
@@ -3676,6 +3678,20 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
       result = finish_call_expr (decl, &args, false, true, tf_none);
       if (result != error_mark_node)
 	{
+	  if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE && overflow > 0)
+	    warning_at (token->location, OPT_Woverflow,
+		        "integer literal exceeds range of %qT type",
+		        long_long_unsigned_type_node);
+	  else
+	    {
+	      if (overflow > 0)
+		warning_at (token->location, OPT_Woverflow,
+			    "floating literal exceeds range of %qT type",
+			    long_double_type_node);
+	      else if (overflow < 0)
+		warning_at (token->location, OPT_Woverflow,
+			    "floating literal truncated to zero");
+	    }
 	  release_tree_vector (args);
 	  return result;
 	}
