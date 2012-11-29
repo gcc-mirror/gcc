@@ -60,6 +60,9 @@ _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
 # target triple used during the build.
 _MANIFEST_PATH_PATTERN = '%s/contrib/testsuite-management/%s.xfail'
 
+# The options passed to the program.
+_OPTIONS = None
+
 def Error(msg):
   print >>sys.stderr, '\nerror: %s' % msg
   sys.exit(1)
@@ -229,7 +232,7 @@ def GetManifest(manifest_path):
   If no manifest file exists for this target, it returns an empty set.
   """
   if os.path.exists(manifest_path):
-    return ParseManifest(manifest_path)
+    return ParseSummary(manifest_path)
   else:
     return set()
 
@@ -281,12 +284,12 @@ def CompareResults(manifest, actual):
   return actual_vs_manifest, manifest_vs_actual
 
 
-def GetBuildData(options):
-  target = GetMakefileValue('%s/Makefile' % options.build_dir, 'target_alias=')
-  srcdir = GetMakefileValue('%s/Makefile' % options.build_dir, 'srcdir =')
-  if not ValidBuildDirectory(options.build_dir, target):
+def GetBuildData():
+  target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
+  srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
+  if not ValidBuildDirectory(_OPTIONS.build_dir, target):
     Error('%s is not a valid GCC top level build directory.' %
-          options.build_dir)
+          _OPTIONS.build_dir)
   print 'Source directory: %s' % srcdir
   print 'Build target:     %s' % target
   return srcdir, target, True
@@ -329,40 +332,40 @@ def PerformComparison(expected, actual, ignore_missing_failures):
   return tests_ok
 
 
-def CheckExpectedResults(options):
-  if not options.manifest:
-    (srcdir, target, valid_build) = GetBuildData(options)
+def CheckExpectedResults():
+  if not _OPTIONS.manifest:
+    (srcdir, target, valid_build) = GetBuildData()
     if not valid_build:
       return False
     manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
   else:
-    manifest_path = options.manifest
+    manifest_path = _OPTIONS.manifest
     if not os.path.exists(manifest_path):
       Error('Manifest file %s does not exist.' % manifest_path)
 
   print 'Manifest:         %s' % manifest_path
   manifest = GetManifest(manifest_path)
-  sum_files = GetSumFiles(options.results, options.build_dir)
+  sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  if options.verbosity >= 1:
+  if _OPTIONS.verbosity >= 1:
     PrintSummary('Tests expected to fail', manifest)
     PrintSummary('\nActual test results', actual)
 
-  return PerformComparison(manifest, actual, options.ignore_missing_failures)
+  return PerformComparison(manifest, actual, _OPTIONS.ignore_missing_failures)
 
 
-def ProduceManifest(options):
-  (srcdir, target, valid_build) = GetBuildData(options)
+def ProduceManifest():
+  (srcdir, target, valid_build) = GetBuildData()
   if not valid_build:
     return False
 
   manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
-  if os.path.exists(manifest_path) and not options.force:
+  if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
           manifest_path)
 
-  sum_files = GetSumFiles(options.results, options.build_dir)
+  sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
   manifest_file = open(manifest_path, 'w')
   for result in sorted(actual):
@@ -373,18 +376,18 @@ def ProduceManifest(options):
   return True
 
 
-def CompareBuilds(options):
-  (srcdir, target, valid_build) = GetBuildData(options)
+def CompareBuilds():
+  (srcdir, target, valid_build) = GetBuildData()
   if not valid_build:
     return False
 
-  sum_files = GetSumFiles(options.results, options.build_dir)
+  sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  clean_sum_files = GetSumFiles(options.results, options.clean_build)
+  clean_sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.clean_build)
   clean = GetResults(clean_sum_files)
 
-  return PerformComparison(clean, actual, options.ignore_missing_failures)
+  return PerformComparison(clean, actual, _OPTIONS.ignore_missing_failures)
 
 
 def Main(argv):
@@ -430,14 +433,15 @@ def Main(argv):
                     '.sum files collected from the build directory).')
   parser.add_option('--verbosity', action='store', dest='verbosity',
                     type='int', default=0, help='Verbosity level (default = 0)')
-  (options, _) = parser.parse_args(argv[1:])
+  global _OPTIONS
+  (_OPTIONS, _) = parser.parse_args(argv[1:])
 
-  if options.produce_manifest:
-    retval = ProduceManifest(options)
-  elif options.clean_build:
-    retval = CompareBuilds(options)
+  if _OPTIONS.produce_manifest:
+    retval = ProduceManifest()
+  elif _OPTIONS.clean_build:
+    retval = CompareBuilds()
   else:
-    retval = CheckExpectedResults(options)
+    retval = CheckExpectedResults()
 
   if retval:
     return 0
