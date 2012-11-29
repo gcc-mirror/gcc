@@ -1,3 +1,12 @@
+2012-11-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_expr_value_id): Do not add expr
+	to the set of value expressions here.
+	(add_to_exp_gen, make_values_for_phi): Fold into ...
+	(compute_avail): ... here, and avoid useless work.  Dump
+	avail sets in processing order.
+	(do_pre): Do not dump avail sets here.
+
 2012-11-29  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
 
 	PR target/54974
