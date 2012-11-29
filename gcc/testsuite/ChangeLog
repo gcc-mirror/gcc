@@ -1,3 +1,9 @@
+2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/52654
+	* g++.dg/cpp0x/udlit-overflow.C: New.
+	* g++.dg/cpp0x/udlit-overflow-neg.C: New.
+
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36728

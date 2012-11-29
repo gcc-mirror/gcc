@@ -1,3 +1,9 @@
+2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/52654
+	* parser.c (cp_parser_string_literal): Add overflow_type arg.
+	(cp_parser_userdef_numeric_literal): Warn on numeric overflow.
+
 2012-11-28  Andrew Pinski  <apinski@cavium.com>
 
 	PR bootstrap/54279
