@@ -1,3 +1,9 @@
+2012-11-28  Richard Henderson  <rth@redhat.com>
+
+	PR libgcc/48076
+	* emutls.c (__emutls_get_address): Avoid race condition between
+	obj->loc.offset read and emutls_key initialization.
+
 2012-11-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55175
