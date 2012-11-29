@@ -1,3 +1,9 @@
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55445
+	* libsupc++/eh_personaltity.cc (__SEH__): Additional check
+	for not being SjLj.
+
 2012-11-28  Andrew Pinski  <apinski@cavium.com>
 
 	PR bootstrap/54279

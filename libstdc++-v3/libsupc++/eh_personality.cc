@@ -332,13 +332,13 @@ namespace __cxxabiv1
 #ifdef _GLIBCXX_SJLJ_EXCEPTIONS
 #define PERSONALITY_FUNCTION	__gxx_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
-#elif defined(__SEH__)
+#elif defined(__SEH__) && !defined (_GLIBCXX_SJLJ_EXCEPTIONS)
 #define PERSONALITY_FUNCTION	__gxx_personality_imp
 #else
 #define PERSONALITY_FUNCTION	__gxx_personality_v0
 #endif
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (_GLIBCXX_SJLJ_EXCEPTIONS)
 static
 #else
 extern "C"
@@ -785,7 +785,7 @@ __cxa_call_unexpected (void *exc_obj_in)
 }
 #endif
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (_GLIBCXX_SJLJ_EXCEPTIONS)
 extern "C"
 EXCEPTION_DISPOSITION
 __gxx_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
