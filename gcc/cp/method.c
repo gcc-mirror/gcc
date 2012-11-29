@@ -952,7 +952,11 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 	 really constexpr.  */
       if (DECL_DECLARED_CONSTEXPR_P (fn) && DECL_TEMPLATE_INSTANTIATION (fn)
 	  && !DECL_TEMPLATE_INSTANTIATED (fn))
-	instantiate_decl (fn, /*defer_ok*/false, /*expl_class*/false);
+	{
+	  ++function_depth;
+	  instantiate_decl (fn, /*defer_ok*/false, /*expl_class*/false);
+	  --function_depth;
+	}
       if (!DECL_DECLARED_CONSTEXPR_P (fn))
 	*constexpr_p = false;
     }
