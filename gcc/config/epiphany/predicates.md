@@ -256,6 +256,9 @@
     }
 })
 
+(define_predicate "addsub_operator"
+  (match_code "plus, minus"))
+
 (define_predicate "cc_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == CC_REGNUM || REGNO (op) == CCFP_REGNUM")))

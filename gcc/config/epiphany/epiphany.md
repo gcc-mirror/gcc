@@ -1014,6 +1014,32 @@
   "isub %0, %1, %2"
   [(set_attr "type" "fp_int")])
 
+; Try to figure out if we over-committed the FPU, and if so, move
+; some insns back over to the integer pipe.
+
+; The peephole optimizer 'consumes' the insns that are explicitly
+; mentioned.  We do not want the preceding insn reconsidered, but
+; we do want that for the following one, so that if we have a run
+; of five fpu users, two of them get changed.  Therefore, we
+; use next_active_insn to look at the 'following' insn.  That should
+; exist, because peephole2 runs after reload, and there has to be
+; a return after an fp_int insn.
+(define_peephole2
+  [(match_parallel 5 "float_operation" [(match_operand 6 "" "")])
+   (match_parallel 3 "float_operation"
+     [(set (match_operand:SI 0 "gpr_operand" "")
+	   (match_operator:SI 4 "addsub_operator"
+	     [(match_operand:SI 1 "gpr_operand" "")
+	      (match_operand:SI 2 "gpr_operand" "")]))
+      (clobber (reg:CC_FP CCFP_REGNUM))])]
+  "get_attr_sched_use_fpu (peep2_next_insn (0))
+   && peep2_regno_dead_p (2, CC_REGNUM)
+   && get_attr_sched_use_fpu (next_active_insn (peep2_next_insn (1)))"
+  [(match_dup 5)
+   (parallel [(set (match_dup 0) (match_dup 4))
+	      (clobber (reg:CC CC_REGNUM))])]
+)
+
 (define_expand "mulsi3"
   [(parallel
      [(set (match_operand:SI 0 "gpr_operand" "")

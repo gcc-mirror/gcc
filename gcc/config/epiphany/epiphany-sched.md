@@ -136,3 +136,10 @@
   (and (eq_attr "pipe_model" "epiphany")
        (eq_attr "type" "v2fp"))
   "issue,issue+F0,F0")
+
+; A boolean attribute for use by peephole2 patterns that try to figure out
+; if we overcommitted the FPU.
+; This is notionally a numeric attribute to avoid dependency problems.
+(define_attr "sched_use_fpu" ""
+  (cond [(eq_attr "type" "fp,fp_int,v2fp") (const_int 1)]
+	(const_int 0)))
