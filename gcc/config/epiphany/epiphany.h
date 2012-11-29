@@ -926,8 +926,4 @@ extern struct rtl_opt_pass pass_resolve_sw_modes;
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
   epiphany_start_function ((FILE), (NAME), (DECL))
 
-/* PR other/55523: gencondmd file includes / dependencies are messed up,
-   it uses peephole2 predicates without having all the necessary headers.  */
-extern int get_attr_sched_use_fpu (rtx);
-
 #endif /* !GCC_EPIPHANY_H */
