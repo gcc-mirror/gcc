@@ -1926,10 +1926,10 @@ epiphany_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 	  rtx set = single_set (insn);
 
 	  if (set
-	      && !reg_mentioned_p (SET_DEST (dep_set), SET_SRC (set))
+	      && !reg_overlap_mentioned_p (SET_DEST (dep_set), SET_SRC (set))
 	      && (!MEM_P (SET_DEST (set))
-		  || !reg_mentioned_p (SET_DEST (dep_set),
-				       XEXP (SET_DEST (set), 0))))
+		  || !reg_overlap_mentioned_p (SET_DEST (dep_set),
+					       XEXP (SET_DEST (set), 0))))
 	    cost = 1;
 	}
     }

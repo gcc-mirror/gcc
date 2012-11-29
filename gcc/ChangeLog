@@ -12,6 +12,9 @@
 
 	* config/epiphany/epiphany.md (isub_i+1): Work around generator bug.
 
+	* config/epiphany/epiphany.c (epiphany_adjust_cost): Use
+	reg_overlap_mentioned_p.
+
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36728
