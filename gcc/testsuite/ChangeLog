@@ -1,3 +1,8 @@
+2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/55073
+	* gcc.target/arm/pr55073.C: New test.
+
 2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53094

@@ -1,3 +1,12 @@
+2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/55073
+	* arm/neon.md (neon_vtrn<mode>_internal): Split into expand
+	and insn patterns.  Re-order insn arguments to tie inputs to
+	outputs.
+	(neon_vzip<mode>_internal): Likewise.
+	(neon_vuzp<mode>_internal): Likewise.
+
 2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53094
