@@ -1,3 +1,10 @@
+2012-11-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/predicates.md (addsub_operator): New predicate.
+	* config/epiphany/epiphany-sched.md (sched_use_fpu): New attribute.
+	* config/epiphany/epiphany.md (isub_i+1): New peephole2.
+	* config/epiphany/epiphany.h (get_attr_sched_use_fpu): Declare.
+
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36728
