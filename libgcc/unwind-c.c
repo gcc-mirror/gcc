@@ -109,7 +109,7 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Exception * ue_header,
 		      struct _Unwind_Context * context)
 #else
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 static
 #endif
 _Unwind_Reason_Code
@@ -233,7 +233,7 @@ PERSONALITY_FUNCTION (int version,
   return _URC_INSTALL_CONTEXT;
 }
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 EXCEPTION_DISPOSITION
 __gcc_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 			PCONTEXT ms_orig_context, PDISPATCHER_CONTEXT ms_disp)
