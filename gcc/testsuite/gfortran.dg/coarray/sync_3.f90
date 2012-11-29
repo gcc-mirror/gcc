@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcheck=all" }
+! { dg-shouldfail "Invalid image number -1 in SYNC IMAGES" }
 !
 ! As sync_1, but with bounds checking enabled.
 ! PR fortran/52161
@@ -65,4 +66,10 @@ n = 5
 sync images (*,errmsg=str,stat=n)
 if (n /= 0) call abort()
 
+n = -1
+sync images ( num_images() )
+sync images (n) ! Invalid: "-1"
+
 end
+
+! { dg-output "Fortran runtime error: Invalid image number -1 in SYNC IMAGES" }

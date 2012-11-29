@@ -1,3 +1,8 @@
+2012-11-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52161
+	* coarray/sync_3.f90: Extend test.
+
 2012-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/55512
