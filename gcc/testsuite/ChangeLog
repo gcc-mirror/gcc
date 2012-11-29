@@ -1,3 +1,8 @@
+2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* g++.dg/ext/vector20.C: New testcase.
+
 2012-11-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52161

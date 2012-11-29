@@ -1,3 +1,8 @@
+2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* cvt.c (ocp_convert): Call convert_to_vector.
+
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/53912
