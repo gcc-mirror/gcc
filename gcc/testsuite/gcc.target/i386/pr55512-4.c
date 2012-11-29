@@ -1,8 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-#define __builtin_unreachable() do { } while (0)
-
 int
 bar (int x)
 {
@@ -11,7 +9,6 @@ bar (int x)
 	    "r" (x + 8), "r" (x + 9), "r" (x + 10), "r" (x + 11),
 	    "r" (x + 12), "r" (x + 13), "r" (x + 14), "r" (x + 15),
 	    "r" (x + 16) : : lab);
-  __builtin_unreachable ();
  lab:
   return 0;
 }

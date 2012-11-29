@@ -1,3 +1,9 @@
+2012-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/55512
+	* gcc.target/i386/pr55512-2.c: Remove unnecessary define.
+	* gcc.target/i386/pr55512-4.c: Likewise.
+
 2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/52654
