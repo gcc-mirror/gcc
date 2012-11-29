@@ -1,5 +1,9 @@
 2012-11-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53862
+	* pt.c (tsubst_arg_types): Add "end" parameter.
+	(check_undeduced_parms): Use it.
+
 	PR c++/53039
 	* pt.c (arg_from_parm_pack_p): Go back to using same_type_p or
 	cp_tree_equal.

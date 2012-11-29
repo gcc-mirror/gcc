@@ -1,5 +1,8 @@
 2012-11-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53862
+	* g++.dg/cpp0x/variadic134.C: New.
+
 	PR c++/53858
 	* g++.dg/cpp0x/alias-decl-20.C: New.
 
