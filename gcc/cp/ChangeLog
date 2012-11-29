@@ -1,5 +1,9 @@
 2012-11-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53862
+	* pt.c (tsubst_arg_types): Add "end" parameter.
+	(check_undeduced_parms): Use it.
+
 	PR c++/51662
 	* method.c (process_subob_fn): Increment function_depth around call to
 	instantiate_decl.
