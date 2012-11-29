@@ -10,6 +10,8 @@
 	* config/epiphany/t-epiphany (SPECS): Set.
 	(specs): New rule.
 
+	* config/epiphany/epiphany.md (isub_i+1): Work around generator bug.
+
 2012-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/36728

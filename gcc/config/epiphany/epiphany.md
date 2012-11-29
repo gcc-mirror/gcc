@@ -1024,19 +1024,22 @@
 ; use next_active_insn to look at the 'following' insn.  That should
 ; exist, because peephole2 runs after reload, and there has to be
 ; a return after an fp_int insn.
+; ??? However, we can not even ordinarily match the preceding insn;
+; there is some bug in the generators such that then it leaves out
+; the check for PARALLEL before the length check for the then-second
+; main insn.  Observed when compiling compatibility-atomic-c++0x.cc
+; from libstdc++-v3.
 (define_peephole2
-  [(match_parallel 5 "float_operation" [(match_operand 6 "" "")])
-   (match_parallel 3 "float_operation"
+  [(match_parallel 3 "float_operation"
      [(set (match_operand:SI 0 "gpr_operand" "")
 	   (match_operator:SI 4 "addsub_operator"
 	     [(match_operand:SI 1 "gpr_operand" "")
 	      (match_operand:SI 2 "gpr_operand" "")]))
       (clobber (reg:CC_FP CCFP_REGNUM))])]
-  "get_attr_sched_use_fpu (peep2_next_insn (0))
-   && peep2_regno_dead_p (2, CC_REGNUM)
-   && get_attr_sched_use_fpu (next_active_insn (peep2_next_insn (1)))"
-  [(match_dup 5)
-   (parallel [(set (match_dup 0) (match_dup 4))
+  "get_attr_sched_use_fpu (prev_active_insn (peep2_next_insn (0)))
+   && peep2_regno_dead_p (1, CC_REGNUM)
+   && get_attr_sched_use_fpu (next_active_insn (peep2_next_insn (0)))"
+  [(parallel [(set (match_dup 0) (match_dup 4))
 	      (clobber (reg:CC CC_REGNUM))])]
 )
 
