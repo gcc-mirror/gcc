@@ -1,3 +1,8 @@
+2012-11-30  Doug Evans  <dje@google.com>
+
+	* testsuite-management/validate_failures.py: Add function
+	GetManifestPath.  New global _MANIFEST_SUBDIR.
+
 2012-11-29  Doug Evans  <dje@google.com>
 
 	* testsuite-management/validate_failures.py: Remove pass/fail
