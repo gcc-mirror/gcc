@@ -2650,7 +2650,7 @@ maybe_eval_c_test (const char *expr)
   const struct c_test *test;
   struct c_test dummy;
 
-  if (!expr || expr[0] == 0)
+  if (expr[0] == 0)
     return 1;
 
   dummy.expr = expr;
