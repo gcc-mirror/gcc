@@ -1,3 +1,18 @@
+2012-11-30  Teresa Johnson  <tejohnson@google.com>
+
+	* lto-cgraph.c (output_profile_summary): Stream out sum_all
+	and histogram.
+	(input_profile_summary): Stream in sum_all and histogram.
+	(merge_profile_summaries): Merge sum_all and histogram, and
+	change to use RDIV.
+	(input_symtab): Call compute_working_sets after merging
+	summaries.
+	* gcov-io.c (gcov_histo_index): Make extern for compiler.
+	* gcov-io.h (gcov_histo_index): Ditto.
+	* profile.c (compute_working_sets): Remove static keyword.
+	* profile.h (compute_working_sets): Ditto.
+	* Makefile.in (lto-cgraph.o): Depend on profile.h.
+
 2012-11-30  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/52890

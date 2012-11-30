@@ -207,7 +207,7 @@ instrument_values (histogram_values values)
    the number of counters required to cover that working set percentage and
    the minimum counter value in that working set.  */
 
-static void
+void
 compute_working_sets (void)
 {
   gcov_type working_set_cum_values[NUM_GCOV_WORKING_SETS];
