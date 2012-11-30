@@ -1,3 +1,8 @@
+2012-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55542
+	* g++.dg/cpp0x/vt-55542.C: New test.
+
 2012-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/pack9.ads: New test.
