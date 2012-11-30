@@ -37,7 +37,7 @@ executed it will:
 1- Determine the target built: TARGET
 2- Determine the source directory: SRCDIR
 3- Look for a failure manifest file in
-   <SRCDIR>/contrib/testsuite-management/<TARGET>.xfail
+   <SRCDIR>/<MANIFEST_SUBDIR>/<MANIFEST_NAME>.xfail
 4- Collect all the <tool>.sum files from the build tree.
 5- Produce a report stating:
    a- Failures expected in the manifest but not present in the build.
@@ -55,10 +55,15 @@ import sys
 # Handled test results.
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
 
-# Pattern for naming manifest files.  The first argument should be
-# the toplevel GCC source directory.  The second argument is the
-# target triple used during the build.
-_MANIFEST_PATH_PATTERN = '%s/contrib/testsuite-management/%s.xfail'
+# Subdirectory of srcdir in which to find the manifest file.
+_MANIFEST_SUBDIR = 'contrib/testsuite-management'
+
+# Pattern for naming manifest files.
+# The first argument should be the toplevel GCC(/GNU tool) source directory.
+# The second argument is the manifest subdir.
+# The third argument is the manifest target, which defaults to the target
+# triplet used during the build.
+_MANIFEST_PATH_PATTERN = '%s/%s/%s.xfail'
 
 # The options passed to the program.
 _OPTIONS = None
@@ -284,6 +289,17 @@ def CompareResults(manifest, actual):
   return actual_vs_manifest, manifest_vs_actual
 
 
+def GetManifestPath(srcdir, target, user_provided_must_exist):
+  """Return the full path to the manifest file."""
+  manifest_path = _OPTIONS.manifest
+  if manifest_path:
+    if user_provided_must_exist and not os.path.exists(manifest_path):
+      Error('Manifest does not exist: %s' % manifest_path)
+    return manifest_path
+  else:
+    return _MANIFEST_PATH_PATTERN % (srcdir, _MANIFEST_SUBDIR, target)
+
+
 def GetBuildData():
   target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
   srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
@@ -333,14 +349,8 @@ def PerformComparison(expected, actual, ignore_missing_failures):
 
 
 def CheckExpectedResults():
-  if not _OPTIONS.manifest:
-    (srcdir, target) = GetBuildData()
-    manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
-  else:
-    manifest_path = _OPTIONS.manifest
-    if not os.path.exists(manifest_path):
-      Error('Manifest file %s does not exist.' % manifest_path)
-
+  (srcdir, target) = GetBuildData()
+  manifest_path = GetManifestPath(srcdir, target, True)
   print 'Manifest:         %s' % manifest_path
   manifest = GetManifest(manifest_path)
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
@@ -355,7 +365,8 @@ def CheckExpectedResults():
 
 def ProduceManifest():
   (srcdir, target) = GetBuildData()
-  manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
+  manifest_path = GetManifestPath(srcdir, target, False)
+  print 'Manifest:         %s' % manifest_path
   if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
           manifest_path)
