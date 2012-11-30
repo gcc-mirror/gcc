@@ -1,3 +1,7 @@
+2012-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.def (target_modules): Remove bootstrap=true and
