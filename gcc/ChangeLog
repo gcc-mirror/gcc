@@ -1,5 +1,10 @@
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids
+	here.
+
+2012-11-30  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (run_scc_vn): Remove iteration propagating
 	value_ids.
 
