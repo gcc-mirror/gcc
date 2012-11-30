@@ -1,3 +1,8 @@
+2012-11-30  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/mingw32.h (SHARED_LIBGCC_SPEC): Synchronize with
+	cygwin-host.
+
 2012-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/55321
