@@ -24,6 +24,7 @@
 	(tle_get_tpointer_internal): New.
 	(tls_get_addr<mode>): New.
 	(tls_get_addr_internal<mode>): New.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_TLS_COMMON): Define.
 
 2012-11-30  Teresa Johnson  <tejohnson@google.com>
 
