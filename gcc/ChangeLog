@@ -1,3 +1,30 @@
+2012-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* xcoffout.c (xcoff_tls_data_section_name): Define.
+	* xcoffout.h (xcoff_tls_data_section_name): Declare.
+	* config/rs6000/rs6000.c (tls_data_section): Define.
+	(TARGET_USE_BLOCKS_FOR_DECL_P): Define.
+	(rs6000_legitimize_tls_address_aix): New function.
+	(rs6000_legitimize_tls_address): Use new function for AIX.
+	(rs6000_cannot_force_const_mem): No sum in TLS TOC symbols.
+	Allow TLS symbol in constant pool other than ELF.
+	(rs6000_legitimate_address_p): Allow TLS symbol other than ELF.
+	(rs6000_assemble_visibility): Do not emit anything on AIX.
+	(output_toc): Handle alias of TLS general-dynamic symbols.
+	Emit TLS decorations on symbols.
+	(rs6000_use_blocks_for_decl_p): New function.
+	(rs6000_xcoff_output_tls_section_asm_op): New function.
+	(rs6000_xcoff_asm_init_sections): Initialize tls_data_section.
+	(rs6000_xcoff_select_section): Choose tls_data_section for
+	thread-local storage.
+	(rs6000_xcoff_file_start): Generate xcoff_tls_data_section_name.
+	(rs6000_legitimate_constant_p): Allow TLS symbol other than ELF.
+	* config/rs6000/rs6000.md (tls_tls_): Restrict to ELF.
+	(tls_get_tpointer): New.
+	(tle_get_tpointer_internal): New.
+	(tls_get_addr<mode>): New.
+	(tls_get_addr_internal<mode>): New.
+
 2012-11-30  Teresa Johnson  <tejohnson@google.com>
 
 	* lto-cgraph.c (output_profile_summary): Stream out sum_all
