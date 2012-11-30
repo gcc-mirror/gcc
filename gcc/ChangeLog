@@ -1,3 +1,15 @@
+2012-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52890
+	PR tree-optimization/55415
+	PR tree-optimization/54386
+	PR target/55448
+	* ipa-prop.c (ipa_modify_call_arguments): Be optimistic when
+	get_pointer_alignment_1 returns false and the base was not a
+	dereference.
+	* tree-sra.c (access_precludes_ipa_sra_p): New parameter req_align,
+	added check for required alignment.  Update the user.
+
 2012-11-30  Ramana Radhakrishnan <Ramana.Radhakrishnan@arm.com>
             Greta Yorsh  <Greta.Yorsh@arm.com>
 
