@@ -2905,6 +2905,8 @@ make_ith_pack_parameter_name (tree name, int i)
   char* newname;
   int newname_len;
 
+  if (name == NULL_TREE)
+    return name;
   snprintf (numbuf, NUMBUF_LEN, "%i", i);
   newname_len = IDENTIFIER_LENGTH (name)
 	        + strlen (numbuf) + 2;
@@ -10261,10 +10263,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
                 /* Get the Ith type.  */
                 type = TREE_VEC_ELT (expanded_types, i);
 
-                if (DECL_NAME (r))
-                  /* Rename the parameter to include the index.  */
-                  DECL_NAME (r) =
-                    make_ith_pack_parameter_name (DECL_NAME (r), i);
+		/* Rename the parameter to include the index.  */
+		DECL_NAME (r)
+		  = make_ith_pack_parameter_name (DECL_NAME (r), i);
               }
             else if (!type)
               /* We're dealing with a normal parameter.  */
