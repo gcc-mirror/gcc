@@ -10621,7 +10621,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
     s.append(nt->named_object()->package()->pkgpath());
   s.push_back('.');
   if (nt != NULL)
-    s.append(nt->name());
+    s.append(Gogo::unpack_hidden_name(nt->name()));
   s.push_back('.');
   s.append(field->field_name());
   s.push_back('"');
