@@ -315,8 +315,7 @@ runtime_blockevent(int64 cycles, int32 skip)
 	runtime_unlock(&proflock);
 }
 
-// Go interface to profile data.  (Declared in extern.go)
-// Assumes Go sizeof(int) == sizeof(int32)
+// Go interface to profile data.  (Declared in debug.go)
 
 // Must match MemProfileRecord in debug.go.
 typedef struct Record Record;

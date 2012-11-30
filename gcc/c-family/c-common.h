@@ -1089,11 +1089,18 @@ extern tree find_tm_attribute (tree);
 
 /* A suffix-identifier value doublet that represents user-defined literals
    for C++-0x.  */
+enum overflow_type {
+  OT_UNDERFLOW = -1,
+  OT_NONE,
+  OT_OVERFLOW
+};
+
 struct GTY(()) tree_userdef_literal {
   struct tree_base base;
   tree suffix_id;
   tree value;
   tree num_string;
+  enum overflow_type overflow;
 };
 
 #define USERDEF_LITERAL_SUFFIX_ID(NODE) \
@@ -1102,13 +1109,18 @@ struct GTY(()) tree_userdef_literal {
 #define USERDEF_LITERAL_VALUE(NODE) \
   (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->value)
 
+#define USERDEF_LITERAL_OVERFLOW(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->overflow)
+
 #define USERDEF_LITERAL_NUM_STRING(NODE) \
   (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->num_string)
 
 #define USERDEF_LITERAL_TYPE(NODE) \
   (TREE_TYPE (USERDEF_LITERAL_VALUE (NODE)))
 
-extern tree build_userdef_literal (tree suffix_id, tree value, tree num_string);
+extern tree build_userdef_literal (tree suffix_id, tree value,
+				   enum overflow_type overflow,
+				   tree num_string);
 
 extern void convert_vector_to_pointer_for_subscript (location_t, tree*, tree);
 

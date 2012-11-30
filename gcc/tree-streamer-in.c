@@ -236,7 +236,6 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       if (TREE_CODE (expr) == VAR_DECL
 	  || TREE_CODE (expr) == PARM_DECL)
 	DECL_HAS_VALUE_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_RESTRICTED_P (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
 }
 

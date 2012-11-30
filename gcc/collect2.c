@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "filenames.h"
+#include "file-find.h"
 
 /* TARGET_64BIT may be defined to use driver specific functionality. */
 #undef TARGET_64BIT
@@ -243,22 +244,6 @@ static const char *target_system_root = "";
    would leave untouched.  */
 bool may_unlink_output_file = false;
 
-/* Structure to hold all the directories in which to search for files to
-   execute.  */
-
-struct prefix_list
-{
-  const char *prefix;         /* String to prepend to the path.  */
-  struct prefix_list *next;   /* Next in linked list.  */
-};
-
-struct path_prefix
-{
-  struct prefix_list *plist;  /* List of prefixes to try */
-  int max_len;                /* Max length of a prefix in PLIST */
-  const char *name;           /* Name of this list (used in config stuff) */
-};
-
 #ifdef COLLECT_EXPORT_LIST
 /* Lists to keep libraries to be scanned for global constructors/destructors.  */
 static struct head libs;                    /* list of libraries */
@@ -302,10 +287,6 @@ typedef enum {
 static symkind is_ctor_dtor (const char *);
 
 static void handler (int);
-static char *find_a_file (struct path_prefix *, const char *);
-static void add_prefix (struct path_prefix *, const char *);
-static void prefix_from_env (const char *, struct path_prefix *);
-static void prefix_from_string (const char *, struct path_prefix *);
 static void do_wait (const char *, struct pex_obj *);
 static void fork_execute (const char *, char **);
 static void maybe_unlink (const char *);
@@ -652,168 +633,6 @@ static const char *const target_machine = TARGET_MACHINE;
    files.
 
    Return 0 if not found, otherwise return its name, allocated with malloc.  */
-
-static char *
-find_a_file (struct path_prefix *pprefix, const char *name)
-{
-  char *temp;
-  struct prefix_list *pl;
-  int len = pprefix->max_len + strlen (name) + 1;
-
-  if (debug)
-    fprintf (stderr, "Looking for '%s'\n", name);
-
-#ifdef HOST_EXECUTABLE_SUFFIX
-  len += strlen (HOST_EXECUTABLE_SUFFIX);
-#endif
-
-  temp = XNEWVEC (char, len);
-
-  /* Determine the filename to execute (special case for absolute paths).  */
-
-  if (IS_ABSOLUTE_PATH (name))
-    {
-      if (access (name, X_OK) == 0)
-	{
-	  strcpy (temp, name);
-
-	  if (debug)
-	    fprintf (stderr, "  - found: absolute path\n");
-
-	  return temp;
-	}
-
-#ifdef HOST_EXECUTABLE_SUFFIX
-	/* Some systems have a suffix for executable files.
-	   So try appending that.  */
-      strcpy (temp, name);
-	strcat (temp, HOST_EXECUTABLE_SUFFIX);
-
-	if (access (temp, X_OK) == 0)
-	  return temp;
-#endif
-
-      if (debug)
-	fprintf (stderr, "  - failed to locate using absolute path\n");
-    }
-  else
-    for (pl = pprefix->plist; pl; pl = pl->next)
-      {
-	struct stat st;
-
-	strcpy (temp, pl->prefix);
-	strcat (temp, name);
-
-	if (stat (temp, &st) >= 0
-	    && ! S_ISDIR (st.st_mode)
-	    && access (temp, X_OK) == 0)
-	  return temp;
-
-#ifdef HOST_EXECUTABLE_SUFFIX
-	/* Some systems have a suffix for executable files.
-	   So try appending that.  */
-	strcat (temp, HOST_EXECUTABLE_SUFFIX);
-
-	if (stat (temp, &st) >= 0
-	    && ! S_ISDIR (st.st_mode)
-	    && access (temp, X_OK) == 0)
-	  return temp;
-#endif
-      }
-
-  if (debug && pprefix->plist == NULL)
-    fprintf (stderr, "  - failed: no entries in prefix list\n");
-
-  free (temp);
-  return 0;
-}
-
-/* Add an entry for PREFIX to prefix list PPREFIX.  */
-
-static void
-add_prefix (struct path_prefix *pprefix, const char *prefix)
-{
-  struct prefix_list *pl, **prev;
-  int len;
-
-  if (pprefix->plist)
-    {
-      for (pl = pprefix->plist; pl->next; pl = pl->next)
-	;
-      prev = &pl->next;
-    }
-  else
-    prev = &pprefix->plist;
-
-  /* Keep track of the longest prefix.  */
-
-  len = strlen (prefix);
-  if (len > pprefix->max_len)
-    pprefix->max_len = len;
-
-  pl = XNEW (struct prefix_list);
-  pl->prefix = xstrdup (prefix);
-
-  if (*prev)
-    pl->next = *prev;
-  else
-    pl->next = (struct prefix_list *) 0;
-  *prev = pl;
-}
-
-/* Take the value of the environment variable ENV, break it into a path, and
-   add of the entries to PPREFIX.  */
-
-static void
-prefix_from_env (const char *env, struct path_prefix *pprefix)
-{
-  const char *p;
-  p = getenv (env);
-
-  if (p)
-    prefix_from_string (p, pprefix);
-}
-
-static void
-prefix_from_string (const char *p, struct path_prefix *pprefix)
-{
-  const char *startp, *endp;
-  char *nstore = XNEWVEC (char, strlen (p) + 3);
-
-  if (debug)
-    fprintf (stderr, "Convert string '%s' into prefixes, separator = '%c'\n", p, PATH_SEPARATOR);
-
-  startp = endp = p;
-  while (1)
-    {
-      if (*endp == PATH_SEPARATOR || *endp == 0)
-	{
-	  strncpy (nstore, startp, endp-startp);
-	  if (endp == startp)
-	    {
-	      strcpy (nstore, "./");
-	    }
-	  else if (! IS_DIR_SEPARATOR (endp[-1]))
-	    {
-	      nstore[endp-startp] = DIR_SEPARATOR;
-	      nstore[endp-startp+1] = 0;
-	    }
-	  else
-	    nstore[endp-startp] = 0;
-
-	  if (debug)
-	    fprintf (stderr, "  - add prefix: %s\n", nstore);
-
-	  add_prefix (pprefix, nstore);
-	  if (*endp == 0)
-	    break;
-	  endp = startp = endp + 1;
-	}
-      else
-	endp++;
-    }
-  free (nstore);
-}
 
 #ifdef OBJECT_FORMAT_NONE
 
@@ -1198,6 +1017,7 @@ main (int argc, char **argv)
 #endif
       }
     vflag = debug;
+    find_file_set_debug (debug);
     if (no_partition && lto_mode == LTO_MODE_WHOPR)
       lto_mode = LTO_MODE_LTO;
   }

@@ -349,6 +349,7 @@ func testServeRequest(t *testing.T, server *Server) {
 type ReplyNotPointer int
 type ArgNotPublic int
 type ReplyNotPublic int
+type NeedsPtrType int
 type local struct{}
 
 func (t *ReplyNotPointer) ReplyNotPointer(args *Args, reply Reply) error {
@@ -363,19 +364,29 @@ func (t *ReplyNotPublic) ReplyNotPublic(args *Args, reply *local) error {
 	return nil
 }
 
+func (t *NeedsPtrType) NeedsPtrType(args *Args, reply *Reply) error {
+	return nil
+}
+
 // Check that registration handles lots of bad methods and a type with no suitable methods.
 func TestRegistrationError(t *testing.T) {
 	err := Register(new(ReplyNotPointer))
 	if err == nil {
-		t.Errorf("expected error registering ReplyNotPointer")
+		t.Error("expected error registering ReplyNotPointer")
 	}
 	err = Register(new(ArgNotPublic))
 	if err == nil {
-		t.Errorf("expected error registering ArgNotPublic")
+		t.Error("expected error registering ArgNotPublic")
 	}
 	err = Register(new(ReplyNotPublic))
 	if err == nil {
-		t.Errorf("expected error registering ReplyNotPublic")
+		t.Error("expected error registering ReplyNotPublic")
+	}
+	err = Register(NeedsPtrType(0))
+	if err == nil {
+		t.Error("expected error registering NeedsPtrType")
+	} else if !strings.Contains(err.Error(), "pointer") {
+		t.Error("expected hint when registering NeedsPtrType")
 	}
 }
 
@@ -497,6 +508,27 @@ func TestClientWriteError(t *testing.T) {
 		t.Error("unexpected value of error:", err)
 	}
 	w.done <- true
+}
+
+func TestTCPClose(t *testing.T) {
+	once.Do(startServer)
+
+	client, err := dialHTTP()
+	if err != nil {
+		t.Fatalf("dialing: %v", err)
+	}
+	defer client.Close()
+
+	args := Args{17, 8}
+	var reply Reply
+	err = client.Call("Arith.Mul", args, &reply)
+	if err != nil {
+		t.Fatal("arith error:", err)
+	}
+	t.Logf("Arith: %d*%d=%d\n", args.A, args.B, reply)
+	if reply.C != args.A*args.B {
+		t.Errorf("Add: expected %d got %d", reply.C, args.A*args.B)
+	}
 }
 
 func benchmarkEndToEnd(dial func() (*Client, error), b *testing.B) {

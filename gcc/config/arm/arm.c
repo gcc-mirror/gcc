@@ -893,7 +893,8 @@ const struct tune_params arm_slowmul_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -905,7 +906,8 @@ const struct tune_params arm_fastmul_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -920,7 +922,8 @@ const struct tune_params arm_strongarm_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_xscale_tune =
@@ -932,7 +935,8 @@ const struct tune_params arm_xscale_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_9e_tune =
@@ -944,7 +948,8 @@ const struct tune_params arm_9e_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -956,7 +961,8 @@ const struct tune_params arm_v6t2_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
@@ -969,7 +975,8 @@ const struct tune_params arm_cortex_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_cortex_a15_tune =
@@ -981,7 +988,8 @@ const struct tune_params arm_cortex_a15_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
-  true                                          /* Prefer LDRD/STRD.  */
+  true,						/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -996,7 +1004,8 @@ const struct tune_params arm_cortex_a5_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_cortex_a5_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {false, false},				/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -1008,7 +1017,23 @@ const struct tune_params arm_cortex_a9_tune =
   ARM_PREFETCH_BENEFICIAL(4,32,32),
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
+};
+
+/* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
+   arm_v6t2_tune. It is used for cortex-m0, cortex-m1 and cortex-m0plus.  */
+const struct tune_params arm_v6m_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost,
+  false,					/* Prefer LDRD/STRD.  */
+  {false, false},				/* Prefer non short circuit.  */
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -1020,7 +1045,8 @@ const struct tune_params arm_fa726te_tune =
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
   arm_default_branch_cost,
-  false                                         /* Prefer LDRD/STRD.  */
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
 };
 
 
@@ -13370,6 +13396,62 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
   return;
 }
 
+/* Rewrite move insn into subtract of 0 if the condition codes will
+   be useful in next conditional jump insn.  */
+
+static void
+thumb1_reorg (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      rtx set, dest, src;
+      rtx pat, op0;
+      rtx prev, insn = BB_END (bb);
+
+      while (insn != BB_HEAD (bb) && DEBUG_INSN_P (insn))
+	insn = PREV_INSN (insn);
+
+      /* Find the last cbranchsi4_insn in basic block BB.  */
+      if (INSN_CODE (insn) != CODE_FOR_cbranchsi4_insn)
+	continue;
+
+      /* Find the first non-note insn before INSN in basic block BB.  */
+      gcc_assert (insn != BB_HEAD (bb));
+      prev = PREV_INSN (insn);
+      while (prev != BB_HEAD (bb) && (NOTE_P (prev) || DEBUG_INSN_P (prev)))
+	prev = PREV_INSN (prev);
+
+      set = single_set (prev);
+      if (!set)
+	continue;
+
+      dest = SET_DEST (set);
+      src = SET_SRC (set);
+      if (!low_register_operand (dest, SImode)
+	  || !low_register_operand (src, SImode))
+	continue;
+
+      pat = PATTERN (insn);
+      op0 = XEXP (XEXP (SET_SRC (pat), 0), 0);
+      /* Rewrite move into subtract of 0 if its operand is compared with ZERO
+	 in INSN. Don't need to check dest since cprop_hardreg pass propagates
+	 src into INSN.  */
+      if (REGNO (op0) == REGNO (src))
+	{
+	  dest = copy_rtx (dest);
+	  src = copy_rtx (src);
+	  src = gen_rtx_MINUS (SImode, src, const0_rtx);
+	  PATTERN (prev) = gen_rtx_SET (VOIDmode, dest, src);
+	  INSN_CODE (prev) = -1;
+	  /* Set test register in INSN to dest.  */
+	  XEXP (XEXP (SET_SRC (pat), 0), 0) = copy_rtx (dest);
+	  INSN_CODE (insn) = -1;
+	}
+    }
+}
+
 /* Convert instructions to their cc-clobbering variant if possible, since
    that allows us to use smaller encodings.  */
 
@@ -13566,7 +13648,9 @@ arm_reorg (void)
   HOST_WIDE_INT address = 0;
   Mfix * fix;
 
-  if (TARGET_THUMB2)
+  if (TARGET_THUMB1)
+    thumb1_reorg ();
+  else if (TARGET_THUMB2)
     thumb2_reorg ();
 
   /* Ensure all insns that must be split have been split at this point.
@@ -22128,6 +22212,12 @@ thumb1_final_prescan_insn (rtx insn)
 	      rtx src1 = XEXP (SET_SRC (set), 1);
 	      if (src1 == const0_rtx)
 		cfun->machine->thumb1_cc_mode = CCmode;
+	    }
+	  else if (REG_P (SET_DEST (set)) && REG_P (SET_SRC (set)))
+	    {
+	      /* Record the src register operand instead of dest because
+		 cprop_hardreg pass propagates src.  */
+	      cfun->machine->thumb1_cc_op0 = SET_SRC (set);
 	    }
 	}
       else if (conds != CONDS_NOCOND)

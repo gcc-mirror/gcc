@@ -1,5 +1,5 @@
 # Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009, 2010,
-# 2011 Free Software Foundation, Inc.
+# 2011, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -18,9 +18,8 @@
 # <http://www.gnu.org/licenses/>.
 
 # Create target-specific versions of the libraries
-MULTILIB_OPTIONS  = mv850/mv850e/mv850e2/mv850e2v3
-MULTILIB_DIRNAMES = v850 v850e v850e2 v850e2v3
-MULTILIB_MATCHES  = mv850e=mv850e1 
+MULTILIB_OPTIONS  = m8byte-align mgcc-abi msoft-float
+MULTILIB_DIRNAMES =  8byte        gcc-abi  soft-float
 
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 

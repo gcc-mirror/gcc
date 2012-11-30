@@ -1,3 +1,8 @@
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* lto.c: Replace all vec<T, A>() initializers with vNULL.
+
 2012-11-16  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)

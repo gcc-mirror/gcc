@@ -3420,7 +3420,7 @@ try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
   int i;
   unsigned tmp_mask;
   int best_reg, old_reg;
-  vec<du_head_p> involved_chains = vec<du_head_p>();
+  vec<du_head_p> involved_chains = vNULL;
   unit_req_table new_reqs;
 
   for (i = 0, tmp_mask = op_mask; tmp_mask; i++)

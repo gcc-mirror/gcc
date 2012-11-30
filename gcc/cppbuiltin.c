@@ -91,6 +91,9 @@ define_builtin_macros_for_compilation_flags (cpp_reader *pfile)
       cpp_define_formatted (pfile, "__PIE__=%d", flag_pie);
     }
 
+  if (flag_asan)
+    cpp_define (pfile, "__SANITIZE_ADDRESS__");
+
   if (optimize_size)
     cpp_define (pfile, "__OPTIMIZE_SIZE__");
   if (optimize)

@@ -61,15 +61,15 @@ g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 
 # Create the compiler driver for g++.
 GXX_OBJS = $(GCC_OBJS) g++spec.o
-g++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+xg++$(exeext): $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GXX_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # Create a version of the g++ driver which calls the cross-compiler.
-g++-cross$(exeext): g++$(exeext)
+g++-cross$(exeext): xg++$(exeext)
 	-rm -f g++-cross$(exeext)
-	cp g++$(exeext) g++-cross$(exeext)
+	cp xg++$(exeext) g++-cross$(exeext)
 
 # The compiler itself.
 # Shared with C front end:
@@ -124,7 +124,7 @@ endif
 # Build hooks:
 
 c++.all.cross: g++-cross$(exeext)
-c++.start.encap: g++$(exeext)
+c++.start.encap: xg++$(exeext)
 c++.rest.encap:
 c++.info:
 c++.install-info:
@@ -172,7 +172,7 @@ check_g++_parallelize = old-deja.exp dg.exp dg-torture.exp
 # and also as either g++ (if native) or $(tooldir)/bin/g++.
 c++.install-common: installdirs
 	-rm -f $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
-	-$(INSTALL_PROGRAM) g++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
+	-$(INSTALL_PROGRAM) xg++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
 	-chmod a+x $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext)
 	-( cd $(DESTDIR)$(bindir) && \

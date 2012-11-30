@@ -1879,6 +1879,19 @@ epiphany_initial_elimination_offset (int from, int to)
   gcc_unreachable ();
 }
 
+bool
+epiphany_regno_rename_ok (unsigned, unsigned dst)
+{
+  enum epiphany_function_type fn_type;
+
+  fn_type = epiphany_compute_function_type (current_function_decl);
+  if (!EPIPHANY_INTERRUPT_P (fn_type))
+    return true;
+  if (df_regs_ever_live_p (dst))
+    return true;
+  return false;
+}
+
 static int
 epiphany_issue_rate (void)
 {
@@ -1913,10 +1926,10 @@ epiphany_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 	  rtx set = single_set (insn);
 
 	  if (set
-	      && !reg_mentioned_p (SET_DEST (dep_set), SET_SRC (set))
+	      && !reg_overlap_mentioned_p (SET_DEST (dep_set), SET_SRC (set))
 	      && (!MEM_P (SET_DEST (set))
-		  || !reg_mentioned_p (SET_DEST (dep_set),
-				       XEXP (SET_DEST (set), 0))))
+		  || !reg_overlap_mentioned_p (SET_DEST (dep_set),
+					       XEXP (SET_DEST (set), 0))))
 	    cost = 1;
 	}
     }
@@ -1949,6 +1962,14 @@ epiphany_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
   if (RTX_FRAME_OFFSET_P (x))
     return true;
   if (LEGITIMATE_OFFSET_ADDRESS_P (mode, x))
+    return true;
+  /* If this is a misaligned stack access, don't force it to reg+index.  */
+  if (GET_MODE_SIZE (mode) == 8
+      && GET_CODE (x) == PLUS && XEXP (x, 0) == stack_pointer_rtx
+      /* Decomposed to SImode; GET_MODE_SIZE (SImode) == 4 */
+      && !(INTVAL (XEXP (x, 1)) & 3)
+      && INTVAL (XEXP (x, 1)) >= -2047 * 4
+      && INTVAL (XEXP (x, 1)) <=  2046 * 4)
     return true;
   if (TARGET_POST_INC
       && (GET_CODE (x) == POST_DEC || GET_CODE (x) == POST_INC)

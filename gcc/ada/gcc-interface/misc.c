@@ -604,8 +604,8 @@ gnat_get_subrange_bounds (const_tree gnu_type, tree *lowval, tree *highval)
 bool
 default_pass_by_ref (tree gnu_type)
 {
-  /* We pass aggregates by reference if they are sufficiently large.  The
-     choice of constant here is somewhat arbitrary.  We also pass by
+  /* We pass aggregates by reference if they are sufficiently large for
+     their alignment.  The ratio is somewhat arbitrary.  We also pass by
      reference if the target machine would either pass or return by
      reference.  Strictly speaking, we need only check the return if this
      is an In Out parameter, but it's probably best to err on the side of
@@ -618,9 +618,9 @@ default_pass_by_ref (tree gnu_type)
     return true;
 
   if (AGGREGATE_TYPE_P (gnu_type)
-      && (!host_integerp (TYPE_SIZE (gnu_type), 1)
-	  || 0 < compare_tree_int (TYPE_SIZE (gnu_type),
-				   8 * TYPE_ALIGN (gnu_type))))
+      && (!valid_constant_size_p (TYPE_SIZE_UNIT (gnu_type))
+	  || 0 < compare_tree_int (TYPE_SIZE_UNIT (gnu_type),
+				   TYPE_ALIGN (gnu_type))))
     return true;
 
   return false;
@@ -639,8 +639,8 @@ must_pass_by_ref (tree gnu_type)
      not have such objects.  */
   return (TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE
 	  || TYPE_IS_BY_REFERENCE_P (gnu_type)
-	  || (TYPE_SIZE (gnu_type)
-	      && TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST));
+	  || (TYPE_SIZE_UNIT (gnu_type)
+	      && TREE_CODE (TYPE_SIZE_UNIT (gnu_type)) != INTEGER_CST));
 }
 
 /* This function is called by the front-end to enumerate all the supported

@@ -274,7 +274,7 @@ int
 graphds_scc (struct graph *g, bitmap subgraph)
 {
   int *queue = XNEWVEC (int, g->n_vertices);
-  vec<int> postorder = vec<int>();
+  vec<int> postorder = vNULL;
   int nq, i, comp;
   unsigned v;
   bitmap_iterator bi;
@@ -400,7 +400,7 @@ void
 graphds_domtree (struct graph *g, int entry,
 		 int *parent, int *son, int *brother)
 {
-  vec<int> postorder = vec<int>();
+  vec<int> postorder = vNULL;
   int *marks = XCNEWVEC (int, g->n_vertices);
   int mark = 1, i, v, idom;
   bool changed = true;

@@ -15,9 +15,9 @@ const maxNumValues = 256
 // Bit stream for the Huffman decoder.
 // The n least significant bits of a form the unread bits, to be read in MSB to LSB order.
 type bits struct {
-	a int // accumulator.
-	n int // the number of unread bits in a.
-	m int // mask. m==1<<(n-1) when n>0, with m==0 when n==0.
+	a uint32 // accumulator.
+	m uint32 // mask. m==1<<(n-1) when n>0, with m==0 when n==0.
+	n int    // the number of unread bits in a.
 }
 
 // Huffman table decoder, specified in section C.
@@ -39,7 +39,7 @@ func (d *decoder) ensureNBits(n int) error {
 		if err != nil {
 			return err
 		}
-		d.b.a = d.b.a<<8 | int(c)
+		d.b.a = d.b.a<<8 | uint32(c)
 		d.b.n += 8
 		if d.b.m == 0 {
 			d.b.m = 1 << 7
@@ -61,15 +61,16 @@ func (d *decoder) ensureNBits(n int) error {
 }
 
 // The composition of RECEIVE and EXTEND, specified in section F.2.2.1.
-func (d *decoder) receiveExtend(t uint8) (int, error) {
-	err := d.ensureNBits(int(t))
-	if err != nil {
-		return 0, err
+func (d *decoder) receiveExtend(t uint8) (int32, error) {
+	if d.b.n < int(t) {
+		if err := d.ensureNBits(int(t)); err != nil {
+			return 0, err
+		}
 	}
 	d.b.n -= int(t)
 	d.b.m >>= t
-	s := 1 << t
-	x := (d.b.a >> uint8(d.b.n)) & (s - 1)
+	s := int32(1) << t
+	x := int32(d.b.a>>uint8(d.b.n)) & (s - 1)
 	if x < s>>1 {
 		x += ((-1) << t) + 1
 	}
@@ -92,8 +93,7 @@ func (d *decoder) processDHT(n int) error {
 			return FormatError("bad Tc value")
 		}
 		th := d.tmp[0] & 0x0f
-		const isBaseline = true // Progressive mode is not yet supported.
-		if th > maxTh || isBaseline && th > 1 {
+		if th > maxTh || !d.progressive && th > 1 {
 			return FormatError("bad Th value")
 		}
 		h := &d.huff[tc][th]
@@ -169,9 +169,10 @@ func (d *decoder) decodeHuffman(h *huffman) (uint8, error) {
 		return 0, FormatError("uninitialized Huffman table")
 	}
 	for i, code := 0, 0; i < maxCodeLength; i++ {
-		err := d.ensureNBits(1)
-		if err != nil {
-			return 0, err
+		if d.b.n == 0 {
+			if err := d.ensureNBits(1); err != nil {
+				return 0, err
+			}
 		}
 		if d.b.a&d.b.m != 0 {
 			code |= 1
@@ -184,4 +185,29 @@ func (d *decoder) decodeHuffman(h *huffman) (uint8, error) {
 		code <<= 1
 	}
 	return 0, FormatError("bad Huffman code")
+}
+
+func (d *decoder) decodeBit() (bool, error) {
+	if d.b.n == 0 {
+		if err := d.ensureNBits(1); err != nil {
+			return false, err
+		}
+	}
+	ret := d.b.a&d.b.m != 0
+	d.b.n--
+	d.b.m >>= 1
+	return ret, nil
+}
+
+func (d *decoder) decodeBits(n int) (uint32, error) {
+	if d.b.n < n {
+		if err := d.ensureNBits(n); err != nil {
+			return 0, err
+		}
+	}
+	ret := d.b.a >> uint(d.b.n-n)
+	ret &= (1 << uint(n)) - 1
+	d.b.n -= n
+	d.b.m >>= uint(n)
+	return ret, nil
 }

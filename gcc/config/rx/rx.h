@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RX processor.
-   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -49,6 +49,11 @@
 	builtin_define ("__RX_AS100_SYNTAX__"); \
       else					\
 	builtin_define ("__RX_GAS_SYNTAX__");   \
+						\
+      if (TARGET_GCC_ABI)			\
+	builtin_define ("__RX_GCC_ABI__");	\
+      else					\
+	builtin_define ("__RX_ABI__");		\
     }                                           \
   while (0)
 
@@ -79,6 +84,7 @@
 %{mrelax:-relax} \
 %{mpid} \
 %{mint-register=*} \
+%{mgcc-abi:-mgcc-abi} %{!mgcc-abi:-mrx-abi} \
 "
 
 #undef  LIB_SPEC
@@ -119,7 +125,8 @@
 
 #define DEFAULT_SIGNED_CHAR		0
 
-#define STRICT_ALIGNMENT 		1
+/* RX load/store instructions can handle unaligned addresses.  */
+#define STRICT_ALIGNMENT 		0
 #define FUNCTION_BOUNDARY 		8
 #define BIGGEST_ALIGNMENT 		32
 #define STACK_BOUNDARY 			32
@@ -370,13 +377,13 @@ typedef unsigned int CUMULATIVE_ARGS;
 # else
 #  define TEXT_SECTION_ASM_OP	      "\t.section P,\"ax\""
 #  define CTORS_SECTION_ASM_OP	      \
-  "\t.section\t.init_array,\"aw\",@init_array"
+  "\t.section\t.init_array,\"awx\",@init_array"
 #  define DTORS_SECTION_ASM_OP	      \
-  "\t.section\t.fini_array,\"aw\",@fini_array"
+  "\t.section\t.fini_array,\"awx\",@fini_array"
 #  define INIT_ARRAY_SECTION_ASM_OP   \
-  "\t.section\t.init_array,\"aw\",@init_array"
+  "\t.section\t.init_array,\"awx\",@init_array"
 #  define FINI_ARRAY_SECTION_ASM_OP   \
-  "\t.section\t.fini_array,\"aw\",@fini_array"
+  "\t.section\t.fini_array,\"awx\",@fini_array"
 # endif
 #else
 # define TEXT_SECTION_ASM_OP	      \
@@ -384,19 +391,19 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 # define CTORS_SECTION_ASM_OP			      \
   (TARGET_AS100_SYNTAX ? "\t.SECTION init_array,CODE" \
-   : "\t.section\t.init_array,\"aw\",@init_array")
+   : "\t.section\t.init_array,\"awx\",@init_array")
 
 # define DTORS_SECTION_ASM_OP			      \
   (TARGET_AS100_SYNTAX ? "\t.SECTION fini_array,CODE" \
-   : "\t.section\t.fini_array,\"aw\",@fini_array")
+   : "\t.section\t.fini_array,\"awx\",@fini_array")
 
 # define INIT_ARRAY_SECTION_ASM_OP		      \
   (TARGET_AS100_SYNTAX ? "\t.SECTION init_array,CODE" \
-   : "\t.section\t.init_array,\"aw\",@init_array")
+   : "\t.section\t.init_array,\"awx\",@init_array")
 
 # define FINI_ARRAY_SECTION_ASM_OP		      \
   (TARGET_AS100_SYNTAX ? "\t.SECTION fini_array,CODE" \
-   : "\t.section\t.fini_array,\"aw\",@fini_array")
+   : "\t.section\t.fini_array,\"awx\",@fini_array")
 #endif
 
 #define GLOBAL_ASM_OP 		\

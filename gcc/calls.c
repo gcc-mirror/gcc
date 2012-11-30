@@ -4196,13 +4196,11 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      that it should complain if nonvolatile values are live.  For
      functions that cannot return, inform flow that control does not
      fall through.  */
-
   if (flags & ECF_NORETURN)
     {
       /* The barrier note must be emitted
 	 immediately after the CALL_INSN.  Some ports emit more than
 	 just a CALL_INSN above, so we must search for it here.  */
-
       rtx last = get_last_insn ();
       while (!CALL_P (last))
 	{
@@ -4212,6 +4210,21 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	}
 
       emit_barrier_after (last);
+    }
+
+  /* Consider that "regular" libcalls, i.e. all of them except for LCT_THROW
+     and LCT_RETURNS_TWICE, cannot perform non-local gotos.  */
+  if (flags & ECF_NOTHROW)
+    {
+      rtx last = get_last_insn ();
+      while (!CALL_P (last))
+	{
+	  last = PREV_INSN (last);
+	  /* There was no CALL_INSN?  */
+	  gcc_assert (last != before_call);
+	}
+
+      make_reg_eh_region_note_nothrow_nononlocal (last);
     }
 
   /* Now restore inhibit_defer_pop to its actual original value.  */

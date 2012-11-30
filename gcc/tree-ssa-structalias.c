@@ -2441,7 +2441,7 @@ eliminate_indirect_cycles (unsigned int node)
       && !bitmap_empty_p (get_varinfo (node)->solution))
     {
       unsigned int i;
-      vec<unsigned> queue = vec<unsigned>();
+      vec<unsigned> queue = vNULL;
       int queuepos;
       unsigned int to = find (graph->indirect_cycles[node]);
       bitmap_iterator bi;
@@ -3337,7 +3337,7 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
 	    {
 	      unsigned int i;
 	      tree val;
-	      vec<ce_s> tmp = vec<ce_s>();
+	      vec<ce_s> tmp = vNULL;
 	      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, val)
 		{
 		  struct constraint_expr *rhsp;
@@ -3437,8 +3437,8 @@ static void
 do_structure_copy (tree lhsop, tree rhsop)
 {
   struct constraint_expr *lhsp, *rhsp;
-  vec<ce_s> lhsc = vec<ce_s>();
-  vec<ce_s> rhsc = vec<ce_s>();
+  vec<ce_s> lhsc = vNULL;
+  vec<ce_s> rhsc = vNULL;
   unsigned j;
 
   get_constraint_for (lhsop, &lhsc);
@@ -3524,7 +3524,7 @@ make_constraints_to (unsigned id, vec<ce_s> rhsc)
 static void
 make_constraint_to (unsigned id, tree op)
 {
-  vec<ce_s> rhsc = vec<ce_s>();
+  vec<ce_s> rhsc = vNULL;
   get_constraint_for_rhs (op, &rhsc);
   make_constraints_to (id, rhsc);
   rhsc.release ();
@@ -3798,7 +3798,7 @@ handle_rhs_call (gimple stmt, vec<ce_s> *results)
       && gimple_call_lhs (stmt) != NULL_TREE
       && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
     {
-      vec<ce_s> tmpc = vec<ce_s>();
+      vec<ce_s> tmpc = vNULL;
       struct constraint_expr lhsc, *c;
       get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
       lhsc.var = escaped_id;
@@ -3824,7 +3824,7 @@ static void
 handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
 		 tree fndecl)
 {
-  vec<ce_s> lhsc = vec<ce_s>();
+  vec<ce_s> lhsc = vNULL;
 
   get_constraint_for (lhs, &lhsc);
   /* If the store is to a global decl make sure to
@@ -3909,7 +3909,7 @@ handle_const_call (gimple stmt, vec<ce_s> *results)
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
     {
       tree arg = gimple_call_arg (stmt, k);
-      vec<ce_s> argc = vec<ce_s>();
+      vec<ce_s> argc = vNULL;
       unsigned i;
       struct constraint_expr *argp;
       get_constraint_for_rhs (arg, &argc);
@@ -4010,8 +4010,8 @@ static bool
 find_func_aliases_for_builtin_call (gimple t)
 {
   tree fndecl = gimple_call_fndecl (t);
-  vec<ce_s> lhsc = vec<ce_s>();
-  vec<ce_s> rhsc = vec<ce_s>();
+  vec<ce_s> lhsc = vNULL;
+  vec<ce_s> rhsc = vNULL;
   varinfo_t fi;
 
   if (fndecl != NULL_TREE
@@ -4155,7 +4155,7 @@ find_func_aliases_for_builtin_call (gimple t)
 	if (gimple_call_lhs (t))
 	  {
 	    handle_lhs_call (t, gimple_call_lhs (t), gimple_call_flags (t),
-			     vec<ce_s>(), fndecl);
+			     vNULL, fndecl);
 	    get_constraint_for_ptr_offset (gimple_call_lhs (t),
 					   NULL_TREE, &lhsc);
 	    get_constraint_for_ptr_offset (gimple_call_arg (t, 0),
@@ -4334,8 +4334,8 @@ static void
 find_func_aliases_for_call (gimple t)
 {
   tree fndecl = gimple_call_fndecl (t);
-  vec<ce_s> lhsc = vec<ce_s>();
-  vec<ce_s> rhsc = vec<ce_s>();
+  vec<ce_s> lhsc = vNULL;
+  vec<ce_s> rhsc = vNULL;
   varinfo_t fi;
 
   if (fndecl != NULL_TREE
@@ -4347,7 +4347,7 @@ find_func_aliases_for_call (gimple t)
   if (!in_ipa_mode
       || (fndecl && !fi->is_fn_info))
     {
-      vec<ce_s> rhsc = vec<ce_s>();
+      vec<ce_s> rhsc = vNULL;
       int flags = gimple_call_flags (t);
 
       /* Const functions can return their arguments and addresses
@@ -4404,7 +4404,7 @@ find_func_aliases_for_call (gimple t)
 	      && DECL_RESULT (fndecl)
 	      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
 	    {
-	      vec<ce_s> tem = vec<ce_s>();
+	      vec<ce_s> tem = vNULL;
 	      tem.safe_push (rhs);
 	      do_deref (&tem);
 	      rhs = tem[0];
@@ -4453,8 +4453,8 @@ static void
 find_func_aliases (gimple origt)
 {
   gimple t = origt;
-  vec<ce_s> lhsc = vec<ce_s>();
-  vec<ce_s> rhsc = vec<ce_s>();
+  vec<ce_s> lhsc = vNULL;
+  vec<ce_s> rhsc = vNULL;
   struct constraint_expr *c;
   varinfo_t fi;
 
@@ -4536,7 +4536,7 @@ find_func_aliases (gimple origt)
 	  else if (code == COND_EXPR)
 	    {
 	      /* The result is a merge of both COND_EXPR arms.  */
-	      vec<ce_s> tmp = vec<ce_s>();
+	      vec<ce_s> tmp = vNULL;
 	      struct constraint_expr *rhsp;
 	      unsigned i;
 	      get_constraint_for_rhs (gimple_assign_rhs2 (t), &rhsc);
@@ -4552,7 +4552,7 @@ find_func_aliases (gimple origt)
 	  else
 	    {
 	      /* All other operations are merges.  */
-	      vec<ce_s> tmp = vec<ce_s>();
+	      vec<ce_s> tmp = vNULL;
 	      struct constraint_expr *rhsp;
 	      unsigned i, j;
 	      get_constraint_for_rhs (gimple_assign_rhs1 (t), &rhsc);
@@ -4625,7 +4625,7 @@ find_func_aliases (gimple origt)
 	     any global memory.  */
 	  if (op)
 	    {
-	      vec<ce_s> lhsc = vec<ce_s>();
+	      vec<ce_s> lhsc = vNULL;
 	      struct constraint_expr rhsc, *lhsp;
 	      unsigned j;
 	      get_constraint_for (op, &lhsc);
@@ -4669,7 +4669,7 @@ find_func_aliases (gimple origt)
 static void
 process_ipa_clobber (varinfo_t fi, tree ptr)
 {
-  vec<ce_s> ptrc = vec<ce_s>();
+  vec<ce_s> ptrc = vNULL;
   struct constraint_expr *c, lhs;
   unsigned i;
   get_constraint_for_rhs (ptr, &ptrc);
@@ -4687,8 +4687,8 @@ static void
 find_func_clobbers (gimple origt)
 {
   gimple t = origt;
-  vec<ce_s> lhsc = vec<ce_s>();
-  vec<ce_s> rhsc = vec<ce_s>();
+  vec<ce_s> lhsc = vNULL;
+  vec<ce_s> rhsc = vNULL;
   varinfo_t fi;
 
   /* Add constraints for clobbered/used in IPA mode.
@@ -5458,7 +5458,7 @@ create_variable_info_for_1 (tree decl, const char *name)
   varinfo_t vi, newvi;
   tree decl_type = TREE_TYPE (decl);
   tree declsize = DECL_P (decl) ? DECL_SIZE (decl) : TYPE_SIZE (decl_type);
-  vec<fieldoff_s> fieldstack = vec<fieldoff_s>();
+  vec<fieldoff_s> fieldstack = vNULL;
   fieldoff_s *fo;
   unsigned int i;
 
@@ -5609,7 +5609,7 @@ create_variable_info_for (tree decl, const char *name)
 	  if (DECL_INITIAL (decl)
 	      && vnode->analyzed)
 	    {
-	      vec<ce_s> rhsc = vec<ce_s>();
+	      vec<ce_s> rhsc = vNULL;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
 	      get_constraint_for_rhs (DECL_INITIAL (decl), &rhsc);

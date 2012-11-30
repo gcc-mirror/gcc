@@ -190,7 +190,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 		     basic_block return_bb)
 {
   bitmap seen = BITMAP_ALLOC (NULL);
-  vec<basic_block> worklist = vec<basic_block>();
+  vec<basic_block> worklist = vNULL;
   edge e;
   edge_iterator ei;
   bool ok = true;
@@ -889,7 +889,7 @@ static void
 find_split_points (int overall_time, int overall_size)
 {
   stack_entry first;
-  vec<stack_entry> stack = vec<stack_entry>();
+  vec<stack_entry> stack = vNULL;
   basic_block bb;
   basic_block return_bb = find_return_bb ();
   struct split_point current;
@@ -1038,7 +1038,7 @@ find_split_points (int overall_time, int overall_size)
 static void
 split_function (struct split_point *split_point)
 {
-  vec<tree> args_to_pass = vec<tree>();
+  vec<tree> args_to_pass = vNULL;
   bitmap args_to_skip;
   tree parm;
   int num = 0;
@@ -1183,7 +1183,7 @@ split_function (struct split_point *split_point)
 
   /* Now create the actual clone.  */
   rebuild_cgraph_edges ();
-  node = cgraph_function_versioning (cur_node, vec<cgraph_edge_p>(),
+  node = cgraph_function_versioning (cur_node, vNULL,
 				     NULL,
 				     args_to_skip,
 				     !split_part_return_p,

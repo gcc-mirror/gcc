@@ -2067,7 +2067,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
   tree s = objc_start_struct (name);
   tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
   tree t;
-  vec<tree> objc_info = vec<tree>();
+  vec<tree> objc_info = vNULL;
   int i;
 
   if (super)

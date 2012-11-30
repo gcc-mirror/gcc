@@ -1,3 +1,98 @@
+2012-11-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53137
+	* pt.c (tsubst_expr) [DECL_EXPR]: Set LAMBDA_EXPR_THIS_CAPTURE here.
+	(tsubst_copy_and_build) [LAMBDA_EXPR]: And clear it here.
+	(instantiate_class_template_1): Not here.
+
+2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* cvt.c (ocp_convert): Call convert_to_vector.
+
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/53912
+	* class.c (dump_class_hierarchy_r): Cast from pointer via uintptr_t.
+	(dump_vtable): Likewise.
+
+2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/52654
+	* parser.c (cp_parser_string_literal): Add overflow_type arg.
+	(cp_parser_userdef_numeric_literal): Warn on numeric overflow.
+
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* Make-lang.in (g++$(exeext)): Rename to
+	(xg++$(exeext)): This.
+	(g++-cross$(exeext)): Use xg++$(exeext) instead of g++$(exeext).
+	(c++.start.encap): Likewise.
+	(c++.install-common): Likewise.
+
+2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55446
+	* init.c (build_vec_init): Do not early return error_mark_mode
+	when integer_all_onesp (maxindex).
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54046
+	* cp-objcp-common.h (LANG_HOOKS_BLOCK_MAY_FALLTHRU): Redefine.
+	* cp-objcp-common.c (cxx_block_may_fallthru): New function.
+	* cp-tree.h (cxx_block_may_fallthru): New prototype.
+
+2012-11-23  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR c++/55418
+	* method.c (implicitly_declare_fn): Properly initialize trivial_p.
+
+2012-11-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55137
+	* semantics.c (verify_constant): Track overflow separately.
+	(reduced_constant_expression_p): Don't check it here.
+	(cxx_eval_constant_expression): Check it on CSTs.
+	(cxx_eval_outermost_constant_expr): Treat overflows as non-constant
+	at this point, but still return the folded version.
+	(potential_constant_expression_1): Don't check overflow.
+
+	* call.c (extend_ref_init_temps_1): Recompute TREE_CONSTANT for
+	the ADDR_EXPR.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* name-lookup.c: Replace all vec<T, A>() initializers
+	with vNULL.
+	* semantics.c: Likewise.
+
+2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55368
+	* parser.c (cp_parser_member_declaration): Emit an error in case
+	of stray comma at end of member declaration.
+
+2012-11-19  Jason Merrill  <jason@redhat.com>
+
+	* class.c (one_inheriting_sig): Don't inherit base copy ctors.
+
+	PR c++/55262
+	* method.c (implicitly_declare_fn): Set DECL_PARM_INDEX on
+	the parms of an inheriting ctor.
+
+	PR c++/55261
+	* class.c (add_implicitly_declared_members): Use
+	lookup_fnfields_slot to get the base constructors.
+
+2012-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54630
+	* class.c (fixed_type_or_null_ref_ht): New variable.
+	(fixed_type_or_null): Use it instead of local static ht.
+
 2012-11-17  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)

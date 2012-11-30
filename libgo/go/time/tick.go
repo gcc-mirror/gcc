@@ -6,7 +6,7 @@ package time
 
 import "errors"
 
-// A Ticker holds a synchronous channel that delivers `ticks' of a clock
+// A Ticker holds a channel that delivers `ticks' of a clock
 // at intervals.
 type Ticker struct {
 	C <-chan Time // The channel on which the ticks are delivered.
@@ -39,6 +39,8 @@ func NewTicker(d Duration) *Ticker {
 }
 
 // Stop turns off a ticker.  After Stop, no more ticks will be sent.
+// Stop does not close the channel, to prevent a read from the channel succeeding
+// incorrectly.
 func (t *Ticker) Stop() {
 	stopTimer(&t.r)
 }

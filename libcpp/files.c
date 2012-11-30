@@ -295,7 +295,8 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
      file or the command-line it is not a valid use of PCH.  */
   if (pfile->all_files
       && pfile->all_files->next_file
-      && !pfile->all_files->next_file->implicit_preinclude)
+      && !(pfile->all_files->implicit_preinclude
+	   || pfile->all_files->next_file->implicit_preinclude))
     return false;
 
   flen = strlen (path);

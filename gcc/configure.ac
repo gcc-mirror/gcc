@@ -617,9 +617,9 @@ AC_SUBST(enable_multilib)
 AC_ARG_ENABLE(multiarch,
 [AS_HELP_STRING([--enable-multiarch],
 		[enable support for multiarch paths])],
-[case "${withval}" in
-yes|no|auto) enable_multiarch=$withval;;
-*) AC_MSG_ERROR(bad value ${withval} given for --enable-multiarch option) ;;
+[case "${enableval}" in
+yes|no|auto) enable_multiarch=$enableval;;
+*) AC_MSG_ERROR(bad value ${enableval} given for --enable-multiarch option) ;;
 esac], [enable_multiarch=auto])
 if test x${enable_multiarch} = xauto; then
   if test x${with_native_system_header_dir} != x; then
@@ -636,6 +636,7 @@ AC_SUBST(enable_multiarch)
 AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
 
 # needed for setting the multiarch name for soft-float/hard-float ABIs
+AC_SUBST(with_cpu)
 AC_SUBST(with_float)
 
 # Enable __cxa_atexit for C++.

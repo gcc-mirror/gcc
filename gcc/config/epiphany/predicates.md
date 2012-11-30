@@ -1,6 +1,5 @@
 ;; Predicate definitions for code generation on the EPIPHANY cpu.
-;; Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-;; 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+;; Copyright (C) 1994, 1995, 1997-2012
 ;; Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 ;;
@@ -164,6 +163,9 @@
 (define_predicate "move_double_src_operand"
   (match_code "reg,subreg,mem,const_int,const_double,const_vector")
 {
+  if (GET_CODE (op) == MEM && misaligned_operand (op, mode)
+      && !address_operand (plus_constant (Pmode, XEXP (op, 0), 4), SImode))
+    return 0;
   return general_operand (op, mode);
 })
 
@@ -188,6 +190,9 @@
 	  return register_operand (op, mode);
 	}
     case MEM :
+      if (GET_MODE_SIZE (mode) == 8 && misaligned_operand (op, mode)
+	  && !address_operand (plus_constant (Pmode, XEXP (op, 0), 4), SImode))
+	return 0;
       return address_operand (XEXP (op, 0), mode);
     default :
       return 0;
@@ -249,6 +254,9 @@
       gcc_unreachable ();
     }
 })
+
+(define_predicate "addsub_operator"
+  (match_code "plus, minus"))
 
 (define_predicate "cc_operand"
   (and (match_code "reg")
@@ -350,3 +358,8 @@
 (define_predicate "nonsymbolic_immediate_operand"
   (ior (match_test "immediate_operand (op, mode)")
        (match_code "const_vector"))) /* Is this specific enough?  */
+
+;; Return true if OP is misaligned memory operand
+(define_predicate "misaligned_operand"
+  (and (match_code "mem")
+       (match_test "MEM_ALIGN (op) < GET_MODE_ALIGNMENT (mode)")))

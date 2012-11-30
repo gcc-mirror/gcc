@@ -138,7 +138,7 @@
 
 static void *expand_regions (struct tm_region *,
 			     void *(*callback)(struct tm_region *, void *),
-			     void *);
+			     void *, bool);
 
 
 /* Return the attributes we want to examine for X, or NULL if it's not
@@ -1841,10 +1841,10 @@ tm_region_init (struct tm_region *region)
   edge_iterator ei;
   edge e;
   basic_block bb;
-  vec<basic_block> queue = vec<basic_block>();
+  vec<basic_block> queue = vNULL;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
   struct tm_region *old_region;
-  vec<tm_region_p> bb_regions = vec<tm_region_p>();
+  vec<tm_region_p> bb_regions = vNULL;
 
   all_tm_regions = region;
   bb = single_succ (ENTRY_BLOCK_PTR);
@@ -2403,7 +2403,7 @@ get_tm_region_blocks (basic_block entry_block,
 		      bitmap all_region_blocks,
 		      bool stop_at_irrevocable_p)
 {
-  vec<basic_block> bbs = vec<basic_block>();
+  vec<basic_block> bbs = vNULL;
   unsigned i;
   edge e;
   edge_iterator ei;
@@ -2455,7 +2455,7 @@ collect_bb2reg (struct tm_region *region, void *data)
 				region->exit_blocks,
 				region->irr_blocks,
 				NULL,
-				/*stop_at_irr_p=*/false);
+				/*stop_at_irr_p=*/true);
 
   // We expect expand_region to perform a post-order traversal of the region
   // tree.  Therefore the last region seen for any bb is the innermost.
@@ -2489,14 +2489,14 @@ collect_bb2reg (struct tm_region *region, void *data)
 // only known instance of this block sharing.
 
 static vec<tm_region_p>
-get_bb_regions_instrumented (void)
+get_bb_regions_instrumented (bool traverse_clones)
 {
   unsigned n = last_basic_block;
   vec<tm_region_p> ret;
 
   ret.create (n);
   ret.safe_grow_cleared (n);
-  expand_regions (all_tm_regions, collect_bb2reg, &ret);
+  expand_regions (all_tm_regions, collect_bb2reg, &ret, traverse_clones);
 
   return ret;
 }
@@ -2824,11 +2824,13 @@ execute_tm_mark (void)
 {
   pending_edge_inserts_p = false;
 
-  expand_regions (all_tm_regions, generate_tm_state, NULL);
+  expand_regions (all_tm_regions, generate_tm_state, NULL,
+		  /*traverse_clones=*/true);
 
   tm_log_init ();
 
-  vec<tm_region_p> bb_regions = get_bb_regions_instrumented ();
+  vec<tm_region_p> bb_regions
+    = get_bb_regions_instrumented (/*traverse_clones=*/true);
   struct tm_region *r;
   unsigned i;
 
@@ -2838,11 +2840,14 @@ execute_tm_mark (void)
     if (r != NULL)
       expand_block_tm (r, BASIC_BLOCK (i));
 
+  bb_regions.release ();
+
   // Propagate flags from inner transactions outwards.
   propagate_tm_flags_out (all_tm_regions);
 
   // Expand GIMPLE_TRANSACTIONs into calls into the runtime.
-  expand_regions (all_tm_regions, expand_transaction, NULL);
+  expand_regions (all_tm_regions, expand_transaction, NULL,
+		  /*traverse_clones=*/false);
 
   tm_log_emit ();
   tm_log_delete ();
@@ -2998,7 +3003,8 @@ expand_block_edges (struct tm_region *const region, basic_block bb)
 static unsigned int
 execute_tm_edges (void)
 {
-  vec<tm_region_p> bb_regions = get_bb_regions_instrumented ();
+  vec<tm_region_p> bb_regions
+    = get_bb_regions_instrumented (/*traverse_clones=*/false);
   struct tm_region *r;
   unsigned i;
 
@@ -3042,15 +3048,18 @@ struct gimple_opt_pass pass_tm_edges =
 /* Helper function for expand_regions.  Expand REGION and recurse to
    the inner region.  Call CALLBACK on each region.  CALLBACK returns
    NULL to continue the traversal, otherwise a non-null value which
-   this function will return as well.  */
+   this function will return as well.  TRAVERSE_CLONES is true if we
+   should traverse transactional clones.  */
 
 static void *
 expand_regions_1 (struct tm_region *region,
 		  void *(*callback)(struct tm_region *, void *),
-		  void *data)
+		  void *data,
+		  bool traverse_clones)
 {
   void *retval = NULL;
-  if (region->exit_blocks)
+  if (region->exit_blocks
+      || (traverse_clones && decl_is_tm_clone (current_function_decl)))
     {
       retval = callback (region, data);
       if (retval)
@@ -3058,7 +3067,7 @@ expand_regions_1 (struct tm_region *region,
     }
   if (region->inner)
     {
-      retval = expand_regions (region->inner, callback, data);
+      retval = expand_regions (region->inner, callback, data, traverse_clones);
       if (retval)
 	return retval;
     }
@@ -3068,17 +3077,19 @@ expand_regions_1 (struct tm_region *region,
 /* Traverse the regions enclosed and including REGION.  Execute
    CALLBACK for each region, passing DATA.  CALLBACK returns NULL to
    continue the traversal, otherwise a non-null value which this
-   function will return as well.  */
+   function will return as well.  TRAVERSE_CLONES is true if we should
+   traverse transactional clones.  */
 
 static void *
 expand_regions (struct tm_region *region,
 		void *(*callback)(struct tm_region *, void *),
-		void *data)
+		void *data,
+		bool traverse_clones)
 {
   void *retval = NULL;
   while (region)
     {
-      retval = expand_regions_1 (region, callback, data);
+      retval = expand_regions_1 (region, callback, data, traverse_clones);
       if (retval)
 	return retval;
       region = region->next;
@@ -4678,9 +4689,7 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   if (DECL_ONE_ONLY (new_decl))
     DECL_COMDAT_GROUP (new_decl) = tm_mangle (DECL_COMDAT_GROUP (old_decl));
 
-  new_node = cgraph_copy_node_for_versioning (old_node, new_decl,
-					      vec<cgraph_edge_p>(),
-					      NULL);
+  new_node = cgraph_copy_node_for_versioning (old_node, new_decl, vNULL, NULL);
   new_node->symbol.externally_visible = old_node->symbol.externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
@@ -4969,7 +4978,7 @@ ipa_tm_transform_calls (struct cgraph_node *node, struct tm_region *region,
   bool need_ssa_rename = false;
   edge e;
   edge_iterator ei;
-  vec<basic_block> queue = vec<basic_block>();
+  vec<basic_block> queue = vNULL;
   bitmap visited_blocks = BITMAP_ALLOC (NULL);
 
   queue.safe_push (bb);

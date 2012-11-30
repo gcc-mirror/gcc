@@ -60,6 +60,9 @@ _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
 # target triple used during the build.
 _MANIFEST_PATH_PATTERN = '%s/contrib/testsuite-management/%s.xfail'
 
+# The options passed to the program.
+_OPTIONS = None
+
 def Error(msg):
   print >>sys.stderr, '\nerror: %s' % msg
   sys.exit(1)
@@ -91,9 +94,12 @@ class TestResult(object):
     state: One of UNRESOLVED, XPASS or FAIL.
     name: File name for the test.
     description: String describing the test (flags used, dejagnu message, etc)
+    ordinal: Monotonically increasing integer.
+             It is used to keep results for one .exp file sorted
+             by the order the tests were run.
   """
 
-  def __init__(self, summary_line):
+  def __init__(self, summary_line, ordinal=-1):
     try:
       self.attrs = ''
       if '|' in summary_line:
@@ -109,6 +115,7 @@ class TestResult(object):
       self.attrs = self.attrs.strip()
       self.state = self.state.strip()
       self.description = self.description.strip()
+      self.ordinal = ordinal
     except ValueError:
       Error('Cannot parse summary line "%s"' % summary_line)
 
@@ -117,7 +124,8 @@ class TestResult(object):
             self.state, summary_line, self))
 
   def __lt__(self, other):
-    return self.name < other.name
+    return (self.name < other.name or
+            (self.name == other.name and self.ordinal < other.ordinal))
 
   def __hash__(self):
     return hash(self.state) ^ hash(self.name) ^ hash(self.description)
@@ -196,10 +204,14 @@ def IsInterestingResult(line):
 def ParseSummary(sum_fname):
   """Create a set of TestResult instances from the given summary file."""
   result_set = set()
+  # ordinal is used when sorting the results so that tests within each
+  # .exp file are kept sorted.
+  ordinal=0
   sum_file = open(sum_fname)
   for line in sum_file:
     if IsInterestingResult(line):
-      result = TestResult(line)
+      result = TestResult(line, ordinal)
+      ordinal += 1
       if result.HasExpired():
         # Tests that have expired are not added to the set of expected
         # results. If they are still present in the set of actual results,
@@ -211,17 +223,16 @@ def ParseSummary(sum_fname):
   return result_set
 
 
-def GetManifest(manifest_name):
+def GetManifest(manifest_path):
   """Build a set of expected failures from the manifest file.
 
   Each entry in the manifest file should have the format understood
   by the TestResult constructor.
 
-  If no manifest file exists for this target, it returns an empty
-  set.
+  If no manifest file exists for this target, it returns an empty set.
   """
-  if os.path.exists(manifest_name):
-    return ParseSummary(manifest_name)
+  if os.path.exists(manifest_path):
+    return ParseSummary(manifest_path)
   else:
     return set()
 
@@ -273,15 +284,15 @@ def CompareResults(manifest, actual):
   return actual_vs_manifest, manifest_vs_actual
 
 
-def GetBuildData(options):
-  target = GetMakefileValue('%s/Makefile' % options.build_dir, 'target_alias=')
-  srcdir = GetMakefileValue('%s/Makefile' % options.build_dir, 'srcdir =')
-  if not ValidBuildDirectory(options.build_dir, target):
+def GetBuildData():
+  target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
+  srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
+  if not ValidBuildDirectory(_OPTIONS.build_dir, target):
     Error('%s is not a valid GCC top level build directory.' %
-          options.build_dir)
+          _OPTIONS.build_dir)
   print 'Source directory: %s' % srcdir
   print 'Build target:     %s' % target
-  return srcdir, target, True
+  return srcdir, target
 
 
 def PrintSummary(msg, summary):
@@ -321,42 +332,37 @@ def PerformComparison(expected, actual, ignore_missing_failures):
   return tests_ok
 
 
-def CheckExpectedResults(options):
-  if not options.manifest:
-    (srcdir, target, valid_build) = GetBuildData(options)
-    if not valid_build:
-      return False
-    manifest_name = _MANIFEST_PATH_PATTERN % (srcdir, target)
+def CheckExpectedResults():
+  if not _OPTIONS.manifest:
+    (srcdir, target) = GetBuildData()
+    manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
   else:
-    manifest_name = options.manifest
-    if not os.path.exists(manifest_name):
-      Error('Manifest file %s does not exist.' % manifest_name)
+    manifest_path = _OPTIONS.manifest
+    if not os.path.exists(manifest_path):
+      Error('Manifest file %s does not exist.' % manifest_path)
 
-  print 'Manifest:         %s' % manifest_name
-  manifest = GetManifest(manifest_name)
-  sum_files = GetSumFiles(options.results, options.build_dir)
+  print 'Manifest:         %s' % manifest_path
+  manifest = GetManifest(manifest_path)
+  sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  if options.verbosity >= 1:
+  if _OPTIONS.verbosity >= 1:
     PrintSummary('Tests expected to fail', manifest)
     PrintSummary('\nActual test results', actual)
 
-  return PerformComparison(manifest, actual, options.ignore_missing_failures)
+  return PerformComparison(manifest, actual, _OPTIONS.ignore_missing_failures)
 
 
-def ProduceManifest(options):
-  (srcdir, target, valid_build) = GetBuildData(options)
-  if not valid_build:
-    return False
-
-  manifest_name = _MANIFEST_PATH_PATTERN % (srcdir, target)
-  if os.path.exists(manifest_name) and not options.force:
+def ProduceManifest():
+  (srcdir, target) = GetBuildData()
+  manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
+  if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
-          manifest_name)
+          manifest_path)
 
-  sum_files = GetSumFiles(options.results, options.build_dir)
+  sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
-  manifest_file = open(manifest_name, 'w')
+  manifest_file = open(manifest_path, 'w')
   for result in sorted(actual):
     print result
     manifest_file.write('%s\n' % result)
@@ -365,18 +371,16 @@ def ProduceManifest(options):
   return True
 
 
-def CompareBuilds(options):
-  (srcdir, target, valid_build) = GetBuildData(options)
-  if not valid_build:
-    return False
+def CompareBuilds():
+  (srcdir, target) = GetBuildData()
 
-  sum_files = GetSumFiles(options.results, options.build_dir)
+  sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
   actual = GetResults(sum_files)
 
-  clean_sum_files = GetSumFiles(None, options.clean_build)
+  clean_sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.clean_build)
   clean = GetResults(clean_sum_files)
 
-  return PerformComparison(clean, actual, options.ignore_missing_failures)
+  return PerformComparison(clean, actual, _OPTIONS.ignore_missing_failures)
 
 
 def Main(argv):
@@ -409,7 +413,7 @@ def Main(argv):
   parser.add_option('--manifest', action='store', type='string',
                     dest='manifest', default=None,
                     help='Name of the manifest file to use (default = '
-                    'taken from contrib/testsuite-managment/<target>.xfail)')
+                    'taken from contrib/testsuite-managment/<target_alias>.xfail)')
   parser.add_option('--produce_manifest', action='store_true',
                     dest='produce_manifest', default=False,
                     help='Produce the manifest for the current '
@@ -422,19 +426,21 @@ def Main(argv):
                     '.sum files collected from the build directory).')
   parser.add_option('--verbosity', action='store', dest='verbosity',
                     type='int', default=0, help='Verbosity level (default = 0)')
-  (options, _) = parser.parse_args(argv[1:])
+  global _OPTIONS
+  (_OPTIONS, _) = parser.parse_args(argv[1:])
 
-  if options.produce_manifest:
-    retval = ProduceManifest(options)
-  elif options.clean_build:
-    retval = CompareBuilds(options)
+  if _OPTIONS.produce_manifest:
+    retval = ProduceManifest()
+  elif _OPTIONS.clean_build:
+    retval = CompareBuilds()
   else:
-    retval = CheckExpectedResults(options)
+    retval = CheckExpectedResults()
 
   if retval:
     return 0
   else:
     return 1
+
 
 if __name__ == '__main__':
   retval = Main(sys.argv)

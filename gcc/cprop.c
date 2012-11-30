@@ -1,6 +1,6 @@
 /* Global constant/copy propagation for RTL.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -170,10 +170,7 @@ reg_available_p (const_rtx x, const_rtx insn ATTRIBUTE_UNUSED)
 static unsigned int
 hash_set (int regno, int hash_table_size)
 {
-  unsigned int hash;
-
-  hash = regno;
-  return hash % hash_table_size;
+  return (unsigned) regno % hash_table_size;
 }
 
 /* Insert assignment DEST:=SET from INSN in the hash table.
@@ -1635,8 +1632,10 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 				      "in jump_insn %d equals constant ",
 			   regno, INSN_UID (jump));
 		  print_rtl (dump_file, set->src);
-		  fprintf (dump_file, "\nBypass edge from %d->%d to %d\n",
-			   e->src->index, old_dest->index, dest->index);
+		  fprintf (dump_file, "\n\t     when BB %d is entered from "
+				      "BB %d.  Redirect edge %d->%d to %d.\n",
+			   old_dest->index, e->src->index, e->src->index,
+			   old_dest->index, dest->index);
 		}
 	      change = 1;
 	      removed_p = 1;

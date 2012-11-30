@@ -1,3 +1,350 @@
+2012-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* loop_optimization14.ad[sb]: New test.
+	* loop_optimization14_pkg.ads: New helper.
+
+2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/55073
+	* gcc.target/arm/pr55073.C: New test.
+
+2012-11-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* g++.dg/ext/vector20.C: New testcase.
+
+2012-11-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52161
+	* coarray/sync_3.f90: Extend test.
+
+2012-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/55512
+	* gcc.target/i386/pr55512-2.c: Remove unnecessary define.
+	* gcc.target/i386/pr55512-4.c: Likewise.
+
+2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/52654
+	* g++.dg/cpp0x/udlit-overflow.C: New.
+	* g++.dg/cpp0x/udlit-overflow-neg.C: New.
+
+2012-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/36728
+	PR debug/55467
+	PR middle-end/55507
+	PR bootstrap/55511
+	* gcc.dg/guality/pr36728-1.c: Include "../nop.h", make sure the asm
+	are non-empty and add dependency between the first and second asm.
+	* gcc.dg/guality/pr36728-2.c: Likewise.
+	* gcc.dg/guality/pr36728-3.c: New test.
+	* gcc.dg/guality/pr36728-4.c: New test.
+
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* lib/g++.exp (g++_init): Search for xg++ instead of g++ in the build
+	directories.
+	* lib/obj-c++.exp (obj-c++_init): Likewise.
+
+2012-11-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52161
+	* coarray/sync_3.f90: New.
+
+2012-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr55458.c: Require ia32 target instead of ilp32.
+
+2012-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55512
+	* gcc.target/i386/pr55512-[1234].c: New tests.
+
+2012-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/55505
+	* gcc.c-torture/execute/921202-1.c: Increase size of dx and dy arrays.
+
+	PR testsuite/55504
+	* gcc.c-torture/execute/20071018-1.c (foo): Add noinline/noclone
+	attributes.  Avoid clobbering memory before malloced chunk.
+	(main): Pass 1 instead of 0 as argument.
+
+2012-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/object_overflow.adb: Rename to...
+	* gnat.dg/object_overflow1.adb: ...this.
+	* gnat.dg/object_overflow2.adb: New test.
+	* gnat.dg/object_overflow3.adb: Likewise.
+	* gnat.dg/object_overflow4.adb: Likewise.
+
+2012-11-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55497
+	* g++.dg/init/pr55497.C: New.
+
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/55327
+	* gcc.dg/vect/slp-perm-8.c: Mark worker as noinline.
+	* gcc.dg/vect/slp-perm-9.c: Likewise.
+
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/35634
+	* gcc.dg/torture/pr35634.c: New testcase.
+	* g++.dg/torture/pr35634.C: Likewise.
+	* gcc.dg/vect/pr18536.c: Mark worker function noinline.
+
+2012-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55476
+	* gfortran.dg/warn_target_lifetime_3.f90: New.
+
+2012-11-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55458
+	* gcc.target/i386/pr55458.c: New test.
+
+2012-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55110
+	* gcc.dg/pr55110.c: New test.
+
+2012-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55331
+	* g++.dg/opt/pr55331.C: New testcase.
+
+2012-11-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/20050811-2.c: Change -dv option to -graph option.
+
+2012-11-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/54455.c: Require scheduling.
+	* gcc.dg/c1x-align-4.c: Skip avr.
+	* gcc.dg/pr44024.c: Skip avr in final scan.
+
+2012-11-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/20120919-1.x: New file (int32plus).
+	* gcc.dg/pr54676.c: Make work for 16-bit int.
+
+2012-11-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/55277
+	* gcc.target/i386/pr55227.c: New test.
+
+2012-11-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* testsuite/gcc.dg/20050811-1.c: Change -dv option to -graph option
+	to -fdump-rtl-all.
+	* testsuite/gcc.dg/pr37858.c: Remove -dv option.
+
+2012-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_v8_vfp_ok):
+	New procedure.
+	(add_options_for_arm_v8_vfp): New procedure.
+	* gcc.target/arm/vrintaf32.c: New test.
+	* gcc.target/arm/vrintaf64.c: Likewise.
+	* gcc.target/arm/vrintmf32.c: Likewise.
+	* gcc.target/arm/vrintmf64.c: Likewise.
+	* gcc.target/arm/vrintpf32.c: Likewise.
+	* gcc.target/arm/vrintpf64.c: Likewise.
+	* gcc.target/arm/vrintrf32.c: Likewise.
+	* gcc.target/arm/vrintrf64.c: Likewise.
+	* gcc.target/arm/vrintxf32.c: Likewise.
+	* gcc.target/arm/vrintxf64.c: Likewise.
+	* gcc.target/arm/vrintzf32.c: Likewise.
+	* gcc.target/arm/vrintzf64.c: Likewise.
+
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54997
+	* gfortran.dg/warn_unused_function_2.f90: New.
+
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54881
+	* gfortran.dg/associated_6.f90: New.
+	* gfortran.dg/select_type_30.f03: New.
+
+2012-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54471
+	* gcc.dg/tree-ssa/vrp86.c: New test.
+	* gcc.c-torture/execute/pr54471.c: New test.
+
+2012-11-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	* gcc.dg/guality/pr36728-1.c, gcc.dg/guality/pr36728-2.c (foo): Don't
+	use volatile asms, use plain asms.   Where the output value for the
+	asm is unused, write a global variable.
+
+2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sw-1.c (dg-options): Add -mtune=generic.
+
+2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/30146
+	* gfortran.dg/do_check_7.f90:  New test.
+
+2012-11-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55446
+	* g++.dg/init/new41.C: New.
+
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	* gfortran.dg/allocate_error_4.f90:  New test.
+
+2012-11-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Pass -- as first argument
+	to send_log.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/asan-dg.exp (asan_symbolize): Remove all "BFD: " prefixed lines
+	from the output.
+
+	PR c++/54046
+	* g++.dg/warn/Wreturn-type-8.C: New test.
+
+	PR middle-end/55430
+	* gcc.dg/pr55430.c: New test.
+
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/asan/memcmp-1.c: Update to match the new libsanitizer.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr40.ad[sb]: New test.
+
+2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr39.adb: New test.
+
+2012-11-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/unroll_5.c: Add dg-require-effective-target int32plus.
+	* gcc.dg/pr55150-1.c: Same.
+	* gcc.dg/torture/pr54894.c: Add size32plus.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55435
+	* c-c++-common/asan/attrib-1.c: New test.
+
+2012-11-22  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/builtin-bswap-1.c: New test.
+	* gcc.target/aarch64/builtin-bswap-2.c: New test.
+
+2012-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55432
+	* g++.dg/cpp0x/constexpr-55432.C: New.
+
+2012-11-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55352
+	* gfortran.dg/namelist_76.f90: New.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-agg-7.c: New test.
+	* gcc.dg/ipa/ipcp-agg-8.c: Likewise.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* g++.dg/torture/pr55260-2.C: New test.
+
+2012-11-21  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/torture/pr55238.c: Remove hidden attribute.
+
+2012-11-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Skip on ARM Cortex-M0.
+	* gcc.dg/tree-ssa/vrp47.c: Ditto.
+
+2012-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/19398
+	* gcc.target/i386/pr19398.c: New test.
+
+2012-11-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55260
+	* g++.dg/torture/pr55260-1.C: New test.
+
+2012-11-20  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: New testcase.
+	* gcc.target/aarch64/atomic-op-acq_rel.c: Likewise.
+	* gcc.target/aarch64/atomic-op-acquire.c: Likewise.
+	* gcc.target/aarch64/atomic-op-char.c: Likewise.
+	* gcc.target/aarch64/atomic-op-consume.c: Likewise.
+	* gcc.target/aarch64/atomic-op-imm.c: Likewise.
+	* gcc.target/aarch64/atomic-op-int.c: Likewise.
+	* gcc.target/aarch64/atomic-op-long.c: Likewise.
+	* gcc.target/aarch64/atomic-op-relaxed.c: Likewise.
+	* gcc.target/aarch64/atomic-op-release.c: Likewise.
+	* gcc.target/aarch64/atomic-op-seq_cst.c: Likewise.
+	* gcc.target/aarch64/atomic-op-short.c: Likewise.
+
+2012-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55094
+	* gcc.dg/pr55094.c: New test.
+
+	PR rtl-optimization/54921
+	* gcc.dg/pr54921.c: New test.
+
+2012-11-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/i386/pr55359.c: New test.
+
+2012-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/tls/thread_local-order1.C: Add dg-require-cxa-atexit.
+	* g++.dg/tls/thread_local3g.C: Likewise.
+	* g++.dg/tls/thread_local4g.C: Likewise.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+	* g++.dg/tls/thread_local-cse.C: XFAIL on Solaris 9.
+	* g++.dg/tls/thread_local2.C: Likewise.
+	* g++.dg/tls/thread_local2g.C: Likewise.
+	* g++.dg/tls/thread_local6.C: Likewise.
+
+2012-11-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tm/pr51516.C: Adjust for uninstrumented code path.
+	* gcc.dg/tm/clone-1.c: New test.
+
+2012-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55368
+	* g++.dg/parse/struct-5.C: New.
+
+2012-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/55315
+	* gcc.target/mips/pr55315.c: New test.
+
 2012-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55236
@@ -8,8 +355,8 @@
 	-[2, 2] and -[3, 3] and -[4, 4] range tests together.
 
 	* lib/asan-dg.exp (asan_symbolize): Prune BFD: prefixed error messages
-	from addr2line_output.  Increment idx if asking for more than one address
-	in one object.
+	from addr2line_output.  Increment idx if asking for more than one
+	address in one object.
 
 2012-11-16  Jakub Jelinek  <jakub@redhat.com>
 

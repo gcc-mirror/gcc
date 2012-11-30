@@ -192,6 +192,13 @@
 (define_code_iterator rshifts [ashiftrt lshiftrt])
 
 ;;----------------------------------------------------------------------------
+;; Int iterators
+;;----------------------------------------------------------------------------
+
+(define_int_iterator VRINT [UNSPEC_VRINTZ UNSPEC_VRINTP UNSPEC_VRINTM
+                            UNSPEC_VRINTR UNSPEC_VRINTX UNSPEC_VRINTA])
+
+;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
 
@@ -431,9 +438,10 @@
 ;; Mode attribute for vshll.
 (define_mode_attr V_innermode [(V8QI "QI") (V4HI "HI") (V2SI "SI")])
 
-;; Mode attributes used for fused-multiply-accumulate VFP support
+;; Mode attributes used for VFP support.
 (define_mode_attr F_constraint [(SF "t") (DF "w")])
-(define_mode_attr F_fma_type [(SF "fmacs") (DF "fmacd")])
+(define_mode_attr vfp_type [(SF "s") (DF "d")])
+(define_mode_attr vfp_double_cond [(SF "") (DF "&& TARGET_VFP_DOUBLE")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes
@@ -457,3 +465,21 @@
 (define_code_attr shift [(ashiftrt "ashr") (lshiftrt "lshr")])
 (define_code_attr shifttype [(ashiftrt "signed") (lshiftrt "unsigned")])
 
+;;----------------------------------------------------------------------------
+;; Int attributes
+;;----------------------------------------------------------------------------
+
+;; Standard names for floating point to integral rounding instructions.
+(define_int_attr vrint_pattern [(UNSPEC_VRINTZ "btrunc") (UNSPEC_VRINTP "ceil")
+                         (UNSPEC_VRINTA "round") (UNSPEC_VRINTM "floor")
+                         (UNSPEC_VRINTR "nearbyint") (UNSPEC_VRINTX "rint")])
+
+;; Suffixes for vrint instructions specifying rounding modes.
+(define_int_attr vrint_variant [(UNSPEC_VRINTZ "z") (UNSPEC_VRINTP "p")
+                               (UNSPEC_VRINTA "a") (UNSPEC_VRINTM "m")
+                               (UNSPEC_VRINTR "r") (UNSPEC_VRINTX "x")])
+
+;; Some of the vrint instuctions are predicable.
+(define_int_attr vrint_predicable [(UNSPEC_VRINTZ "yes") (UNSPEC_VRINTP "no")
+                                  (UNSPEC_VRINTA "no") (UNSPEC_VRINTM "no")
+                                  (UNSPEC_VRINTR "yes") (UNSPEC_VRINTX "yes")])

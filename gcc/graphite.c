@@ -255,7 +255,7 @@ graphite_transform_loops (void)
   int i;
   scop_p scop;
   bool need_cfg_cleanup_p = false;
-  vec<scop_p> scops = vec<scop_p>();
+  vec<scop_p> scops = vNULL;
   htab_t bb_pbb_mapping;
   isl_ctx *ctx;
 

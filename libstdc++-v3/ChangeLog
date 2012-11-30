@@ -1,3 +1,115 @@
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55445
+	* libsupc++/eh_personaltity.cc (__SEH__): Additional check
+	for not being SjLj.
+
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* scripts/testsuite_flags.in (--build-cxx): Use xg++ instead of g++.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Likewise.
+
+2012-11-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (_Mem_fn): Constrain function call operators
+	to avoid ambiguities. Use perfect forwarding.
+	* testsuite/20_util/function_objects/mem_fn/55463.cc: Additional
+	tests.
+	* testsuite/20_util/function_objects/mem_fn/forward.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
+2012-11-27  Ollie Wild  <aaw@google.com>
+
+	* include/bits/stl_tree.h (@headername): Fix incorrect Doxygen macro
+	invocation.
+
+2012-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (__is_socketlike): Change from class
+	template to alias template.
+
+2012-11-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55463
+	* include/std/functional (_Mem_fn): Handle rvalue objects. Add
+	noexcept-specifications.
+	* testsuite/20_util/function_objects/mem_fn/55463.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
+2012-11-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52680
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Check for usleep and
+	sleep if nanosleep is not available. Bump libtool revision.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.18): Add __sleep_for.
+	* include/std/thread (this_thread::__sleep_for): Add.
+	(this_thread::yield, this_thread::sleep_until, this_thread::sleep_for):
+	Declare unconditionally.
+	* src/c++11/thread.cc (this_thread::__sleep_for): Define.
+	* testsuite/lib/libstdc++.exp (check_v3_target_nanosleep): Rename to
+	check_v3_target_sleep.
+	* testsuite/lib/dg-options.exp (dg-require-nanosleep): Rename to
+	dg-require-sleep.
+	* testsuite/30_threads/condition_variable_any/53830.cc: Update.
+	* testsuite/30_threads/this_thread/2.cc: Likewise.
+	* testsuite/30_threads/this_thread/3.cc: Likewise.
+	* testsuite/30_threads/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/async/54297.cc: Likewise.
+
+2012-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/55413
+	* include/bits/hashtable.h (_Hashtable<>::_M_rehash_aux): Initialize
+	__bbegin_bkt and __prev_bkt to avoid uninitialized warnings.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+
+2012-11-20  Matthias Klose  <doko@ubuntu.com>
+
+	* doc/doxygen/user.cfg.in (ALIASES). Escape sharp braces.
+	* include/bits/allocator.h: Escape sharp braces in comment.
+	* include/profile/impl/profiler_algos.h: Likewise.
+
+2012-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/array_allocator.h: Replace uses of
+	__GXX_EXPERIMENTAL_CXX0X__ with __cplusplus.
+
+2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Check rebind
+	and improve propagate_on_container_move_assignment check.
+
+2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_algo.h (reverse_copy): Update comment per DR 2074.
+	* include/bits/unordered_map.h: Apply DR 2005 resolution.
+	* doc/xml/manual/status_cxx2011.xml: Update per DR 2048.
+	* include/bits/allocator.h (allocator): Apply DR 2103 resolution.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal): Add
+	additional specializations.
+	* include/std/functional: Add comment about DR resolution.
+	* include/std/future: Likewise.
+	* include/std/scoped_allocator: Likewise.
+	* include/std/thread: Likewise.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
+2012-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/hashtable.h: Improve comments.
+	* include/bits/hashtable_policy.h: Likewise.
+
 2012-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55363

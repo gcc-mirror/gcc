@@ -353,7 +353,7 @@ static void
 lto_symtab_merge_decls_2 (symtab_node first, bool diagnosed_p)
 {
   symtab_node prevailing, e;
-  vec<tree> mismatches = vec<tree>();
+  vec<tree> mismatches = vNULL;
   unsigned i;
   tree decl;
 

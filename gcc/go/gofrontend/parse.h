@@ -214,7 +214,7 @@ class Parse
   void simple_var_decl_or_assignment(const std::string&, Location,
 				     bool may_be_composite_lit,
 				     Range_clause*, Type_switch*);
-  void function_decl();
+  void function_decl(bool saw_nointerface);
   Typed_identifier* receiver();
   Expression* operand(bool may_be_sink);
   Expression* enclosing_var_reference(Named_object*, Named_object*,

@@ -2236,11 +2236,10 @@ nonoverlapping_component_refs_p (const_rtx rtlx, const_rtx rtly)
       return false;
 
     found:
-      /* If we're left with accessing different fields of a structure,
-	 then no overlap.  */
-      if (TREE_CODE (typex) == RECORD_TYPE
-	  && fieldx != fieldy)
-	return true;
+      /* If we're left with accessing different fields of a structure, then no
+	 possible overlap, unless they are both bitfields.  */
+      if (TREE_CODE (typex) == RECORD_TYPE && fieldx != fieldy)
+	return !(DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy));
 
       /* The comparison on the current field failed.  If we're accessing
 	 a very nested structure, look at the next outer level.  */
@@ -2809,7 +2808,7 @@ init_alias_analysis (void)
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  vec_alloc (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
+  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
 
   /* If we have memory allocated from the previous run, use it.  */

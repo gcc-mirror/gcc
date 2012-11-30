@@ -44,7 +44,7 @@ func bytePtrToString(p *byte) string {
 	return string(a[:i])
 }
 
-// Current returns the current user. 
+// Current returns the current user.
 func Current() (*User, error) {
 	return lookup(syscall.Getuid(), "", false)
 }

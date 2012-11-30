@@ -612,28 +612,28 @@ bitmap_set_new (void)
 static unsigned int
 get_expr_value_id (pre_expr expr)
 {
+  unsigned int id;
   switch (expr->kind)
     {
     case CONSTANT:
-      {
-	unsigned int id;
-	id = get_constant_value_id (PRE_EXPR_CONSTANT (expr));
-	if (id == 0)
-	  {
-	    id = get_or_alloc_constant_value_id (PRE_EXPR_CONSTANT (expr));
-	    add_to_value (id, expr);
-	  }
-	return id;
-      }
+      id = get_or_alloc_constant_value_id (PRE_EXPR_CONSTANT (expr));
+      break;
     case NAME:
-      return VN_INFO (PRE_EXPR_NAME (expr))->value_id;
+      id = VN_INFO (PRE_EXPR_NAME (expr))->value_id;
+      break;
     case NARY:
-      return PRE_EXPR_NARY (expr)->value_id;
+      id = PRE_EXPR_NARY (expr)->value_id;
+      break;
     case REFERENCE:
-      return PRE_EXPR_REFERENCE (expr)->value_id;
+      id = PRE_EXPR_REFERENCE (expr)->value_id;
+      break;
     default:
       gcc_unreachable ();
     }
+  /* ???  We cannot assert that expr has a value-id (it can be 0), because
+     we assign value-ids only to expressions that have a result
+     in set_hashtable_value_ids.  */
+  return id;
 }
 
 /* Return a SCCVN valnum (SSA name or constant) for the PRE value-id VAL.  */
@@ -1534,8 +1534,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	vec<vn_reference_op_s> operands = ref->operands;
 	tree vuse = ref->vuse;
 	tree newvuse = vuse;
-	vec<vn_reference_op_s> newoperands
-	    = vec<vn_reference_op_s>();
+	vec<vn_reference_op_s> newoperands = vNULL;
 	bool changed = false, same_valid = true;
 	unsigned int i, j, n;
 	vn_reference_op_t operand;
@@ -3262,7 +3261,7 @@ do_regular_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vec<pre_expr>();
+  vec<pre_expr> avail = vNULL;
   int i;
 
   exprs = sorted_array_from_bitmap_set (ANTIC_IN (block));
@@ -3432,7 +3431,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vec<pre_expr>();
+  vec<pre_expr> avail = vNULL;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -3625,48 +3624,6 @@ insert (void)
 }
 
 
-/* Add OP to EXP_GEN (block), and possibly to the maximal set.  */
-
-static void
-add_to_exp_gen (basic_block block, tree op)
-{
-  pre_expr result;
-
-  if (TREE_CODE (op) == SSA_NAME && ssa_undefined_value_p (op))
-    return;
-
-  result = get_or_alloc_expr_for_name (op);
-  bitmap_value_insert_into_set (EXP_GEN (block), result);
-}
-
-/* Create value ids for PHI in BLOCK.  */
-
-static void
-make_values_for_phi (gimple phi, basic_block block)
-{
-  tree result = gimple_phi_result (phi);
-  unsigned i;
-
-  /* We have no need for virtual phis, as they don't represent
-     actual computations.  */
-  if (virtual_operand_p (result))
-    return;
-
-  pre_expr e = get_or_alloc_expr_for_name (result);
-  add_to_value (get_expr_value_id (e), e);
-  bitmap_value_insert_into_set (AVAIL_OUT (block), e);
-  bitmap_insert_into_set (PHI_GEN (block), e);
-  for (i = 0; i < gimple_phi_num_args (phi); ++i)
-    {
-      tree arg = gimple_phi_arg_def (phi, i);
-      if (TREE_CODE (arg) == SSA_NAME)
-	{
-	  e = get_or_alloc_expr_for_name (arg);
-	  add_to_value (get_expr_value_id (e), e);
-	}
-    }
-}
-
 /* Compute the AVAIL set for all basic blocks.
 
    This function performs value numbering of the statements in each basic
@@ -3704,6 +3661,14 @@ compute_avail (void)
       bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), e);
     }
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR),
+			"tmp_gen", ENTRY_BLOCK);
+      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR),
+			"avail_out", ENTRY_BLOCK);
+    }
+
   /* Allocate the worklist.  */
   worklist = XNEWVEC (basic_block, n_basic_blocks);
 
@@ -3732,7 +3697,19 @@ compute_avail (void)
 
       /* Generate values for PHI nodes.  */
       for (gsi = gsi_start_phis (block); !gsi_end_p (gsi); gsi_next (&gsi))
-	make_values_for_phi (gsi_stmt (gsi), block);
+	{
+	  tree result = gimple_phi_result (gsi_stmt (gsi));
+
+	  /* We have no need for virtual phis, as they don't represent
+	     actual computations.  */
+	  if (virtual_operand_p (result))
+	    continue;
+
+	  pre_expr e = get_or_alloc_expr_for_name (result);
+	  add_to_value (get_expr_value_id (e), e);
+	  bitmap_value_insert_into_set (AVAIL_OUT (block), e);
+	  bitmap_insert_into_set (PHI_GEN (block), e);
+	}
 
       BB_MAY_NOTRETURN (block) = 0;
 
@@ -3776,7 +3753,12 @@ compute_avail (void)
 	    continue;
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-	    add_to_exp_gen (block, op);
+	    {
+	      if (ssa_undefined_value_p (op))
+		continue;
+	      pre_expr e = get_or_alloc_expr_for_name (op);
+	      bitmap_value_insert_into_set (EXP_GEN (block), e);
+	    }
 
 	  switch (gimple_code (stmt))
 	    {
@@ -3787,8 +3769,7 @@ compute_avail (void)
 	      {
 		vn_reference_t ref;
 		pre_expr result = NULL;
-		vec<vn_reference_op_s> ops
-		    = vec<vn_reference_op_s>();
+		vec<vn_reference_op_s> ops = vNULL;
 
 		/* We can value number only calls to real functions.  */
 		if (gimple_call_internal_p (stmt))
@@ -3911,6 +3892,18 @@ compute_avail (void)
 	    default:
 	      break;
 	    }
+	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  print_bitmap_set (dump_file, EXP_GEN (block),
+			    "exp_gen", block->index);
+	  print_bitmap_set (dump_file, PHI_GEN (block),
+			    "phi_gen", block->index);
+	  print_bitmap_set (dump_file, TMP_GEN (block),
+			    "tmp_gen", block->index);
+	  print_bitmap_set (dump_file, AVAIL_OUT (block),
+			    "avail_out", block->index);
 	}
 
       /* Put the dominator children of BLOCK on the worklist of blocks
@@ -4668,22 +4661,6 @@ do_pre (void)
 
   /* Collect and value number expressions computed in each basic block.  */
   compute_avail ();
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      basic_block bb;
-      FOR_ALL_BB (bb)
-	{
-	  print_bitmap_set (dump_file, EXP_GEN (bb),
-			    "exp_gen", bb->index);
-	  print_bitmap_set (dump_file, PHI_GEN (bb),
-			    "phi_gen", bb->index);
-	  print_bitmap_set (dump_file, TMP_GEN (bb),
-			    "tmp_gen", bb->index);
-	  print_bitmap_set (dump_file, AVAIL_OUT (bb),
-			    "avail_out", bb->index);
-	}
-    }
 
   /* Insert can get quite slow on an incredibly large number of basic
      blocks due to some quadratic behavior.  Until this behavior is

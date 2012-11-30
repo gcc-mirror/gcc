@@ -27,6 +27,7 @@ s64 internal_atoll(const char *nptr);
 void *internal_memchr(const void *s, int c, uptr n);
 int internal_memcmp(const void* s1, const void* s2, uptr n);
 void *internal_memcpy(void *dest, const void *src, uptr n);
+void *internal_memmove(void *dest, const void *src, uptr n);
 // Should not be used in performance-critical places.
 void *internal_memset(void *s, int c, uptr n);
 char* internal_strchr(const char *s, int c);
@@ -52,7 +53,11 @@ int internal_munmap(void *addr, uptr length);
 // I/O
 typedef int fd_t;
 const fd_t kInvalidFd = -1;
+const fd_t kStdinFd = 0;
+const fd_t kStdoutFd = 1;
+const fd_t kStderrFd = 2;
 int internal_close(fd_t fd);
+int internal_isatty(fd_t fd);
 fd_t internal_open(const char *filename, bool write);
 uptr internal_read(fd_t fd, void *buf, uptr count);
 uptr internal_write(fd_t fd, const void *buf, uptr count);

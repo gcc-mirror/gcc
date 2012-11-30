@@ -64,12 +64,12 @@ LIB1ASMFUNCS += \
 	\
 	_fractsfqq _fractsfuqq \
 	_fractsfhq _fractsfuhq _fractsfha _fractsfuha \
-	_fractsfsa _fractsfusa \
+	_fractsfsq _fractsfusq _fractsfsa _fractsfusa \
 	_mulqq3 \
 	_mulhq3 _muluhq3 \
 	_mulha3 _muluha3 _muluha3_round \
 	_mulsa3 _mulusa3 \
-	_divqq3 _udivuqq3 \
+	_divqq3 _udivuqq3 _divqq_helper \
 	_divhq3 _udivuhq3 \
 	_divha3 _udivuha3 \
 	_divsa3 _udivusa3 \

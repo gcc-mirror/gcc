@@ -5,8 +5,8 @@
 #endif
 main ()
 {
-  long dx[VLEN];
-  long dy[VLEN];
+  long dx[VLEN+1];
+  long dy[VLEN+1];
   long s1[VLEN];
   int cyx, cyy;
   int i;

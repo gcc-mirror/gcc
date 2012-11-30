@@ -450,6 +450,7 @@ runtime_files = \
 	runtime/go-deferred-recover.c \
 	runtime/go-eface-compare.c \
 	runtime/go-eface-val-compare.c \
+	runtime/go-fieldtrack.c \
 	runtime/go-getgoroot.c \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
@@ -773,7 +774,6 @@ go_net_files = \
 	go/net/lookup_unix.go \
 	go/net/mac.go \
 	go/net/net.go \
-	go/net/net_posix.go \
 	go/net/parse.go \
 	go/net/pipe.go \
 	go/net/port.go \
@@ -1117,6 +1117,7 @@ go_crypto_x509_files = \
 	go/crypto/x509/pkcs8.go \
 	go/crypto/x509/root.go \
 	go/crypto/x509/root_unix.go \
+	go/crypto/x509/sec1.go \
 	go/crypto/x509/verify.go \
 	go/crypto/x509/x509.go
 
@@ -1245,10 +1246,17 @@ go_exp_terminal_files = \
 	go/exp/terminal/terminal.go \
 	go/exp/terminal/util.go
 go_exp_types_files = \
+	go/exp/types/builtins.go \
 	go/exp/types/check.go \
 	go/exp/types/const.go \
+	go/exp/types/conversions.go \
+	go/exp/types/errors.go \
 	go/exp/types/exportdata.go \
+	go/exp/types/expr.go \
 	go/exp/types/gcimporter.go \
+	go/exp/types/operand.go \
+	go/exp/types/predicates.go \
+	go/exp/types/stmt.go \
 	go/exp/types/types.go \
 	go/exp/types/universe.go
 go_exp_utf8string_files = \
@@ -1329,6 +1337,7 @@ go_image_jpeg_files = \
 	go/image/jpeg/huffman.go \
 	go/image/jpeg/idct.go \
 	go/image/jpeg/reader.go \
+	go/image/jpeg/scan.go \
 	go/image/jpeg/writer.go
 
 go_image_png_files = \

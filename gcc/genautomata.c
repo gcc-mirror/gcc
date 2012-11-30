@@ -6255,7 +6255,7 @@ set_new_cycle_flags (state_t state)
 static void
 minimize_DFA (automaton_t automaton)
 {
-  vec<state_t> equiv_classes = vec<state_t>();
+  vec<state_t> equiv_classes = vNULL;
 
   evaluate_equiv_classes (automaton, &equiv_classes);
   merge_states (automaton, equiv_classes);

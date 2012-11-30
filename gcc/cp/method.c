@@ -1518,7 +1518,6 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   tree name;
   HOST_WIDE_INT saved_processing_template_decl;
   bool deleted_p;
-  bool trivial_p;
   bool constexpr_p;
 
   /* Because we create declarations for implicitly declared functions
@@ -1597,12 +1596,13 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   tree inherited_base = (inherited_ctor
 			 ? DECL_CONTEXT (inherited_ctor)
 			 : NULL_TREE);
+  bool trivial_p = false;
+
   if (inherited_ctor && TREE_CODE (inherited_ctor) == TEMPLATE_DECL)
     {
       /* For an inheriting constructor template, just copy these flags from
 	 the inherited constructor template for now.  */
       raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (inherited_ctor));
-      trivial_p = false;
       deleted_p = DECL_DELETED_FN (DECL_TEMPLATE_RESULT (inherited_ctor));
       constexpr_p
 	= DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT (inherited_ctor));
@@ -1663,10 +1663,14 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   else if (kind == sfk_inheriting_constructor)
     {
       tree *p = &DECL_ARGUMENTS (fn);
+      int index = 1;
       for (tree parm = inherited_parms; parm != void_list_node;
 	   parm = TREE_CHAIN (parm))
 	{
 	  *p = cp_build_parm_decl (NULL_TREE, TREE_VALUE (parm));
+	  retrofit_lang_decl (*p);
+	  DECL_PARM_LEVEL (*p) = 1;
+	  DECL_PARM_INDEX (*p) = index++;
 	  DECL_CONTEXT (*p) = fn;
 	  p = &DECL_CHAIN (*p);
 	}

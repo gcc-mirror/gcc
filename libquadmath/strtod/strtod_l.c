@@ -1,6 +1,5 @@
 /* Convert string representing a number to float value, using given locale.
-   Copyright (C) 1997,1998,2002,2004,2005,2006,2007,2008,2009,2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1997-2012 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -15,13 +14,14 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <float.h>
 #include <math.h>
 #define NDEBUG 1
@@ -29,9 +29,16 @@
 #ifdef HAVE_ERRNO_H
 #include <errno.h>
 #endif
+
+#ifdef HAVE_FENV_H
+#include <fenv.h>
+#endif
+
+#ifdef HAVE_FENV_H
+#include "quadmath-rounding-mode.h"
+#endif
 #include "../printf/quadmath-printf.h"
 #include "../printf/fpioconst.h"
-
 
 #undef L_
 #ifdef USE_WIDE_CHAR
@@ -89,6 +96,8 @@ __quadmath_strncasecmp_c (const char *s1, const char *s2, size_t n)
 #define	MIN_EXP		PASTE(FLT,_MIN_EXP)
 #define MAX_10_EXP	PASTE(FLT,_MAX_10_EXP)
 #define MIN_10_EXP	PASTE(FLT,_MIN_10_EXP)
+#define MAX_VALUE	PASTE(FLT,_MAX)
+#define MIN_VALUE	PASTE(FLT,_MIN)
 
 /* Extra macros required to get FLT expanded before the pasting.  */
 #define PASTE(a,b)	PASTE1(a,b)
@@ -125,33 +134,62 @@ extern const mp_limb_t _tens_in_limb[MAX_DIG_PER_LIMB + 1] attribute_hidden;
     do { if (endptr != NULL) *endptr = (STRING_TYPE *) (end);		      \
 	 return val; } while (0)
 
-/* Maximum size necessary for mpn integers to hold floating point numbers.  */
-#define	MPNSIZE		(howmany (MAX_EXP + 2 * MANT_DIG, BITS_PER_MP_LIMB) \
-			 + 2)
+/* Maximum size necessary for mpn integers to hold floating point
+   numbers.  The largest number we need to hold is 10^n where 2^-n is
+   1/4 ulp of the smallest representable value (that is, n = MANT_DIG
+   - MIN_EXP + 2).  Approximate using 10^3 < 2^10.  */
+#define	MPNSIZE		(howmany (1 + ((MANT_DIG - MIN_EXP + 2) * 10) / 3, \
+				  BITS_PER_MP_LIMB) + 2)
 /* Declare an mpn integer variable that big.  */
 #define	MPN_VAR(name)	mp_limb_t name[MPNSIZE]; mp_size_t name##size
 /* Copy an mpn integer value.  */
 #define MPN_ASSIGN(dst, src) \
 	memcpy (dst, src, (dst##size = src##size) * sizeof (mp_limb_t))
 
+/* Set errno and return an overflowing value with sign specified by
+   NEGATIVE.  */
+static FLOAT
+overflow_value (int negative)
+{
+#if defined HAVE_ERRNO_H && defined ERANGE
+  errno = ERANGE;
+#endif
+  FLOAT result = (negative ? -MAX_VALUE : MAX_VALUE) * MAX_VALUE;
+  return result;
+}
+
+/* Set errno and return an underflowing value with sign specified by
+   NEGATIVE.  */
+static FLOAT
+underflow_value (int negative)
+{
+#if defined HAVE_ERRNO_H && defined ERANGE
+  errno = ERANGE;
+#endif
+  FLOAT result = (negative ? -MIN_VALUE : MIN_VALUE) * MIN_VALUE;
+  return result;
+}
 
 /* Return a floating point number of the needed type according to the given
    multi-precision number after possible rounding.  */
 static FLOAT
-round_and_return (mp_limb_t *retval, int exponent, int negative,
+round_and_return (mp_limb_t *retval, intmax_t exponent, int negative,
 		  mp_limb_t round_limb, mp_size_t round_bit, int more_bits)
 {
+#ifdef HAVE_FENV_H
+  int mode = get_rounding_mode ();
+#endif
+
   if (exponent < MIN_EXP - 1)
     {
-      mp_size_t shift = MIN_EXP - 1 - exponent;
+      mp_size_t shift;
+      bool is_tiny;
 
-      if (shift > MANT_DIG)
-	{
-#if defined HAVE_ERRNO_H && defined EDOM
-	  errno = EDOM;
-#endif
-	  return 0.0;
-	}
+      if (exponent < MIN_EXP - 1 - MANT_DIG)
+	return underflow_value (negative);
+
+      shift = MIN_EXP - 1 - exponent;
+      is_tiny = true;
 
       more_bits |= (round_limb & ((((mp_limb_t) 1) << round_bit) - 1)) != 0;
       if (shift == MANT_DIG)
@@ -185,6 +223,35 @@ round_and_return (mp_limb_t *retval, int exponent, int negative,
 	}
       else if (shift > 0)
 	{
+#ifdef HAVE_FENV_H
+	  if (TININESS_AFTER_ROUNDING && shift == 1)
+	    {
+	      /* Whether the result counts as tiny depends on whether,
+		 after rounding to the normal precision, it still has
+		 a subnormal exponent.  */
+	      mp_limb_t retval_normal[RETURN_LIMB_SIZE];
+	      if (round_away (negative,
+			      (retval[0] & 1) != 0,
+			      (round_limb
+			       & (((mp_limb_t) 1) << round_bit)) != 0,
+			      (more_bits
+			       || ((round_limb
+				    & ((((mp_limb_t) 1) << round_bit) - 1))
+				   != 0)),
+			      mode))
+		{
+		  mp_limb_t cy = mpn_add_1 (retval_normal, retval,
+					      RETURN_LIMB_SIZE, 1);
+
+		  if (((MANT_DIG % BITS_PER_MP_LIMB) == 0 && cy) ||
+		      ((MANT_DIG % BITS_PER_MP_LIMB) != 0 &&
+		       ((retval_normal[RETURN_LIMB_SIZE - 1]
+			& (((mp_limb_t) 1) << (MANT_DIG % BITS_PER_MP_LIMB)))
+			!= 0)))
+		    is_tiny = false;
+		}
+	    }
+#endif
 	  round_limb = retval[0];
 	  round_bit = shift - 1;
 	  (void) mpn_rshift (retval, retval, RETURN_LIMB_SIZE, shift);
@@ -196,14 +263,29 @@ round_and_return (mp_limb_t *retval, int exponent, int negative,
 # define DENORM_EXP (MIN_EXP - 2)
 #endif
       exponent = DENORM_EXP;
+      if (is_tiny
+	  && ((round_limb & (((mp_limb_t) 1) << round_bit)) != 0
+	      || more_bits
+	      || (round_limb & ((((mp_limb_t) 1) << round_bit) - 1)) != 0))
+	{
 #if defined HAVE_ERRNO_H && defined ERANGE
-      errno = ERANGE;
+	  errno = ERANGE;
 #endif
+	  volatile FLOAT force_underflow_exception = MIN_VALUE * MIN_VALUE;
+	  (void) force_underflow_exception;
+	}
     }
 
-  if ((round_limb & (((mp_limb_t) 1) << round_bit)) != 0
-      && (more_bits || (retval[0] & 1) != 0
-	  || (round_limb & ((((mp_limb_t) 1) << round_bit) - 1)) != 0))
+  if (exponent > MAX_EXP)
+    goto overflow;
+
+#ifdef HAVE_FENV_H
+  if (round_away (negative,
+		  (retval[0] & 1) != 0,
+		  (round_limb & (((mp_limb_t) 1) << round_bit)) != 0,
+		  (more_bits
+		   || (round_limb & ((((mp_limb_t) 1) << round_bit) - 1)) != 0),
+		  mode))
     {
       mp_limb_t cy = mpn_add_1 (retval, retval, RETURN_LIMB_SIZE, 1);
 
@@ -224,9 +306,11 @@ round_and_return (mp_limb_t *retval, int exponent, int negative,
 	  /* The number was denormalized but now normalized.  */
 	exponent = MIN_EXP - 1;
     }
+#endif
 
   if (exponent > MAX_EXP)
-    return negative ? -FLOAT_HUGE_VAL : FLOAT_HUGE_VAL;
+  overflow:
+    return overflow_value (negative);
 
   return MPN2FLOAT (retval, exponent, negative);
 }
@@ -239,7 +323,7 @@ round_and_return (mp_limb_t *retval, int exponent, int negative,
    factor for the resulting number (see code) multiply by it.  */
 static const STRING_TYPE *
 str_to_mpn (const STRING_TYPE *str, int digcnt, mp_limb_t *n, mp_size_t *nsize,
-	    int *exponent
+	    intmax_t *exponent
 #ifndef USE_WIDE_CHAR
 	    , const char *decimal, size_t decimal_len, const char *thousands
 #endif
@@ -269,6 +353,7 @@ str_to_mpn (const STRING_TYPE *str, int digcnt, mp_limb_t *n, mp_size_t *nsize,
 	      cy += mpn_add_1 (n, n, *nsize, low);
 	      if (cy != 0)
 		{
+		  assert (*nsize < MPNSIZE);
 		  n[*nsize] = cy;
 		  ++(*nsize);
 		}
@@ -303,7 +388,7 @@ str_to_mpn (const STRING_TYPE *str, int digcnt, mp_limb_t *n, mp_size_t *nsize,
     }
   while (--digcnt > 0);
 
-  if (*exponent > 0 && cnt + *exponent <= MAX_DIG_PER_LIMB)
+  if (*exponent > 0 && *exponent <= MAX_DIG_PER_LIMB - cnt)
     {
       low *= _tens_in_limb[*exponent];
       start = _tens_in_limb[cnt + *exponent];
@@ -323,7 +408,10 @@ str_to_mpn (const STRING_TYPE *str, int digcnt, mp_limb_t *n, mp_size_t *nsize,
       cy = mpn_mul_1 (n, n, *nsize, start);
       cy += mpn_add_1 (n, n, *nsize, low);
       if (cy != 0)
-	n[(*nsize)++] = cy;
+	{
+	  assert (*nsize < MPNSIZE);
+	  n[(*nsize)++] = cy;
+	}
     }
 
   return str;
@@ -380,7 +468,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 {
   int negative;			/* The sign of the number.  */
   MPN_VAR (num);		/* MP representation of the number.  */
-  int exponent;			/* Exponent of the number.  */
+  intmax_t exponent;		/* Exponent of the number.  */
 
   /* Numbers starting `0X' or `0x' have to be processed with base 16.  */
   int base = 10;
@@ -402,10 +490,15 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
   /* Points at the character following the integer and fractional digits.  */
   const STRING_TYPE *expp;
   /* Total number of digit and number of digits in integer part.  */
-  int dig_no, int_no, lead_zero;
+  size_t dig_no, int_no, lead_zero;
   /* Contains the last character read.  */
   CHAR_TYPE c;
 
+/* We should get wint_t from <stddef.h>, but not all GCC versions define it
+   there.  So define it ourselves if it remains undefined.  */
+#ifndef _WINT_T
+  typedef unsigned int wint_t;
+#endif
   /* The radix character of the current locale.  */
 #ifdef USE_WIDE_CHAR
   wchar_t decimal;
@@ -758,7 +851,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
      are all or any is really a fractional digit will be decided
      later.  */
   int_no = dig_no;
-  lead_zero = int_no == 0 ? -1 : 0;
+  lead_zero = int_no == 0 ? (size_t) -1 : 0;
 
   /* Read the fractional digits.  A special case are the 'american
      style' numbers like `16.' i.e. with decimal point but without
@@ -780,12 +873,13 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	     (base == 16 && ({ CHAR_TYPE lo = TOLOWER (c);
 			       lo >= L_('a') && lo <= L_('f'); })))
 	{
-	  if (c != L_('0') && lead_zero == -1)
+	  if (c != L_('0') && lead_zero == (size_t) -1)
 	    lead_zero = dig_no - int_no;
 	  ++dig_no;
 	  c = *++cp;
 	}
     }
+  assert (dig_no <= (uintmax_t) INTMAX_MAX);
 
   /* Remember start of exponent (if any).  */
   expp = cp;
@@ -808,24 +902,80 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 
       if (c >= L_('0') && c <= L_('9'))
 	{
-	  int exp_limit;
+	  intmax_t exp_limit;
 
 	  /* Get the exponent limit. */
 	  if (base == 16)
-	    exp_limit = (exp_negative ?
-			 -MIN_EXP + MANT_DIG + 4 * int_no :
-			 MAX_EXP - 4 * int_no + 4 * lead_zero + 3);
+	    {
+	      if (exp_negative)
+		{
+		  assert (int_no <= (uintmax_t) (INTMAX_MAX
+						 + MIN_EXP - MANT_DIG) / 4);
+		  exp_limit = -MIN_EXP + MANT_DIG + 4 * (intmax_t) int_no;
+		}
+	      else
+		{
+		  if (int_no)
+		    {
+		      assert (lead_zero == 0
+			      && int_no <= (uintmax_t) INTMAX_MAX / 4);
+		      exp_limit = MAX_EXP - 4 * (intmax_t) int_no + 3;
+		    }
+		  else if (lead_zero == (size_t) -1)
+		    {
+		      /* The number is zero and this limit is
+			 arbitrary.  */
+		      exp_limit = MAX_EXP + 3;
+		    }
+		  else
+		    {
+		      assert (lead_zero
+			      <= (uintmax_t) (INTMAX_MAX - MAX_EXP - 3) / 4);
+		      exp_limit = (MAX_EXP
+				   + 4 * (intmax_t) lead_zero
+				   + 3);
+		    }
+		}
+	    }
 	  else
-	    exp_limit = (exp_negative ?
-			 -MIN_10_EXP + MANT_DIG + int_no :
-			 MAX_10_EXP - int_no + lead_zero + 1);
+	    {
+	      if (exp_negative)
+		{
+		  assert (int_no
+			  <= (uintmax_t) (INTMAX_MAX + MIN_10_EXP - MANT_DIG));
+		  exp_limit = -MIN_10_EXP + MANT_DIG + (intmax_t) int_no;
+		}
+	      else
+		{
+		  if (int_no)
+		    {
+		      assert (lead_zero == 0
+			      && int_no <= (uintmax_t) INTMAX_MAX);
+		      exp_limit = MAX_10_EXP - (intmax_t) int_no + 1;
+		    }
+		  else if (lead_zero == (size_t) -1)
+		    {
+		      /* The number is zero and this limit is
+			 arbitrary.  */
+		      exp_limit = MAX_10_EXP + 1;
+		    }
+		  else
+		    {
+		      assert (lead_zero
+			      <= (uintmax_t) (INTMAX_MAX - MAX_10_EXP - 1));
+		      exp_limit = MAX_10_EXP + (intmax_t) lead_zero + 1;
+		    }
+		}
+	    }
+
+	  if (exp_limit < 0)
+	    exp_limit = 0;
 
 	  do
 	    {
-	      exponent *= 10;
-	      exponent += c - L_('0');
-
-	      if (__builtin_expect (exponent > exp_limit, 0))
+	      if (__builtin_expect ((exponent > exp_limit / 10
+				     || (exponent == exp_limit / 10
+					 && c - L_('0') > exp_limit % 10)), 0))
 		/* The exponent is too large/small to represent a valid
 		   number.  */
 		{
@@ -834,7 +984,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 		  /* We have to take care for special situation: a joker
 		     might have written "0.0e100000" which is in fact
 		     zero.  */
-		  if (lead_zero == -1)
+		  if (lead_zero == (size_t) -1)
 		    result = negative ? -0.0 : 0.0;
 		  else
 		    {
@@ -923,7 +1073,14 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	}
 #endif
       startp += lead_zero + decimal_len;
-      exponent -= base == 16 ? 4 * lead_zero : lead_zero;
+      assert (lead_zero <= (base == 16
+			    ? (uintmax_t) INTMAX_MAX / 4
+			    : (uintmax_t) INTMAX_MAX));
+      assert (lead_zero <= (base == 16
+			    ? ((uintmax_t) exponent
+			       - (uintmax_t) INTMAX_MIN) / 4
+			    : ((uintmax_t) exponent - (uintmax_t) INTMAX_MIN)));
+      exponent -= base == 16 ? 4 * (intmax_t) lead_zero : (intmax_t) lead_zero;
       dig_no -= lead_zero;
     }
 
@@ -965,7 +1122,10 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	}
 
       /* Adjust the exponent for the bits we are shifting in.  */
-      exponent += bits - 1 + (int_no - 1) * 4;
+      assert (int_no <= (uintmax_t) (exponent < 0
+				     ? (INTMAX_MAX - bits + 1) / 4
+				     : (INTMAX_MAX - exponent - bits + 1) / 4));
+      exponent += bits - 1 + ((intmax_t) int_no - 1) * 4;
 
       while (--dig_no > 0 && idx >= 0)
 	{
@@ -986,8 +1146,20 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	      retval[idx--] |= val >> (4 - pos - 1);
 	      val <<= BITS_PER_MP_LIMB - (4 - pos - 1);
 	      if (idx < 0)
-		return round_and_return (retval, exponent, negative, val,
-					 BITS_PER_MP_LIMB - 1, dig_no > 0);
+		{
+		  int rest_nonzero = 0;
+		  while (--dig_no > 0)
+		    {
+		      if (*startp != L_('0'))
+			{
+			  rest_nonzero = 1;
+			  break;
+			}
+		      startp++;
+		    }
+		  return round_and_return (retval, exponent, negative, val,
+					   BITS_PER_MP_LIMB - 1, rest_nonzero);
+		}
 
 	      retval[idx] = val;
 	      pos = BITS_PER_MP_LIMB - 1 - (4 - pos - 1);
@@ -1005,27 +1177,19 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
      really integer digits or belong to the fractional part; i.e. we normalize
      123e-2 to 1.23.  */
   {
-    register int incr = (exponent < 0 ? MAX (-int_no, exponent)
-			 : MIN (dig_no - int_no, exponent));
+    register intmax_t incr = (exponent < 0
+			      ? MAX (-(intmax_t) int_no, exponent)
+			      : MIN ((intmax_t) dig_no - (intmax_t) int_no,
+				     exponent));
     int_no += incr;
     exponent -= incr;
   }
 
-  if (__builtin_expect (int_no + exponent > MAX_10_EXP + 1, 0))
-    {
-#if defined HAVE_ERRNO_H && defined ERANGE
-      errno = ERANGE;
-#endif
-      return negative ? -FLOAT_HUGE_VAL : FLOAT_HUGE_VAL;
-    }
+  if (__builtin_expect (exponent > MAX_10_EXP + 1 - (intmax_t) int_no, 0))
+    return overflow_value (negative);
 
   if (__builtin_expect (exponent < MIN_10_EXP - (DIG + 1), 0))
-    {
-#if defined HAVE_ERRNO_H && defined ERANGE
-      errno = ERANGE;
-#endif
-      return negative ? -0.0 : 0.0;
-    }
+    return underflow_value (negative);
 
   if (int_no > 0)
     {
@@ -1086,12 +1250,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
       /* Now we know the exponent of the number in base two.
 	 Check it against the maximum possible exponent.  */
       if (__builtin_expect (bits > MAX_EXP, 0))
-	{
-#if defined HAVE_ERRNO_H && defined ERANGE
-	  errno = ERANGE;
-#endif
-	  return negative ? -FLOAT_HUGE_VAL : FLOAT_HUGE_VAL;
-	}
+	return overflow_value (negative);
 
       /* We have already the first BITS bits of the result.  Together with
 	 the information whether more non-zero bits follow this is enough
@@ -1188,29 +1347,66 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
     int expbit;
     int neg_exp;
     int more_bits;
+    int need_frac_digits;
     mp_limb_t cy;
     mp_limb_t *psrc = den;
     mp_limb_t *pdest = num;
     const struct mp_power *ttab = &_fpioconst_pow10[0];
 
-    assert (dig_no > int_no && exponent <= 0);
+    assert (dig_no > int_no
+	    && exponent <= 0
+	    && exponent >= MIN_10_EXP - (DIG + 1));
 
-
-    /* For the fractional part we need not process too many digits.  One
-       decimal digits gives us log_2(10) ~ 3.32 bits.  If we now compute
-			ceil(BITS / 3) =: N
-       digits we should have enough bits for the result.  The remaining
-       decimal digits give us the information that more bits are following.
-       This can be used while rounding.  (Two added as a safety margin.)  */
-    if (dig_no - int_no > (MANT_DIG - bits + 2) / 3 + 2)
+    /* We need to compute MANT_DIG - BITS fractional bits that lie
+       within the mantissa of the result, the following bit for
+       rounding, and to know whether any subsequent bit is 0.
+       Computing a bit with value 2^-n means looking at n digits after
+       the decimal point.  */
+    if (bits > 0)
       {
-	dig_no = int_no + (MANT_DIG - bits + 2) / 3 + 2;
+	/* The bits required are those immediately after the point.  */
+	assert (int_no > 0 && exponent == 0);
+	need_frac_digits = 1 + MANT_DIG - bits;
+      }
+    else
+      {
+	/* The number is in the form .123eEXPONENT.  */
+	assert (int_no == 0 && *startp != L_('0'));
+	/* The number is at least 10^(EXPONENT-1), and 10^3 <
+	   2^10.  */
+	int neg_exp_2 = ((1 - exponent) * 10) / 3 + 1;
+	/* The number is at least 2^-NEG_EXP_2.  We need up to
+	   MANT_DIG bits following that bit.  */
+	need_frac_digits = neg_exp_2 + MANT_DIG;
+	/* However, we never need bits beyond 1/4 ulp of the smallest
+	   representable value.  (That 1/4 ulp bit is only needed to
+	   determine tinyness on machines where tinyness is determined
+	   after rounding.)  */
+	if (need_frac_digits > MANT_DIG - MIN_EXP + 2)
+	  need_frac_digits = MANT_DIG - MIN_EXP + 2;
+	/* At this point, NEED_FRAC_DIGITS is the total number of
+	   digits needed after the point, but some of those may be
+	   leading 0s.  */
+	need_frac_digits += exponent;
+	/* Any cases underflowing enough that none of the fractional
+	   digits are needed should have been caught earlier (such
+	   cases are on the order of 10^-n or smaller where 2^-n is
+	   the least subnormal).  */
+	assert (need_frac_digits > 0);
+      }
+
+    if (need_frac_digits > (intmax_t) dig_no - (intmax_t) int_no)
+      need_frac_digits = (intmax_t) dig_no - (intmax_t) int_no;
+
+    if ((intmax_t) dig_no > (intmax_t) int_no + need_frac_digits)
+      {
+	dig_no = int_no + need_frac_digits;
 	more_bits = 1;
       }
     else
       more_bits = 0;
 
-    neg_exp = dig_no - int_no - exponent;
+    neg_exp = (intmax_t) dig_no - (intmax_t) int_no - exponent;
 
     /* Construct the denominator.  */
     densize = 0;
@@ -1510,6 +1706,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	      assert (numsize == densize);
 	      for (i = numsize; i > 0; --i)
 		num[i] = num[i - 1];
+	      num[0] = 0;
 	    }
 
 	  den[densize] = 0;
@@ -1554,6 +1751,7 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 	      n0 = num[densize] = num[densize - 1];
 	      for (i = densize - 1; i > 0; --i)
 		num[i] = num[i - 1];
+	      num[0] = 0;
 
 	      got_limb;
 	    }

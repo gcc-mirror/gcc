@@ -611,12 +611,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if (sym->attr.threadprivate
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
-
-  if (!sym->attr.target
-      && !sym->attr.pointer
-      && !sym->attr.cray_pointee
-      && !sym->attr.proc_pointer)
-    DECL_RESTRICTED_P (decl) = 1;
 }
 
 
@@ -1195,10 +1189,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   bool intrinsic_array_parameter = false;
 
   gcc_assert (sym->attr.referenced
-		|| sym->attr.use_assoc
-		|| sym->ns->proc_name->attr.if_source == IFSRC_IFBODY
-		|| (sym->module && sym->attr.if_source != IFSRC_DECL
-		    && sym->backend_decl));
+	      || sym->attr.flavor == FL_PROCEDURE
+	      || sym->attr.use_assoc
+	      || sym->ns->proc_name->attr.if_source == IFSRC_IFBODY
+	      || (sym->module && sym->attr.if_source != IFSRC_DECL
+		  && sym->backend_decl));
 
   if (sym->ns && sym->ns->proc_name && sym->ns->proc_name->attr.function)
     byref = gfc_return_by_reference (sym->ns->proc_name);
@@ -1850,6 +1845,9 @@ build_function_decl (gfc_symbol * sym, bool global)
       && (sym->attr.access != ACCESS_PRIVATE || sym->binding_label
 	  || sym->attr.public_used))
     TREE_PUBLIC (fndecl) = 1;
+
+  if (sym->attr.referenced || sym->attr.entry_master)
+    TREE_USED (fndecl) = 1;
 
   attributes = add_attributes_to_decl (attr, NULL_TREE);
   decl_attributes (&fndecl, attributes, 0);
@@ -4589,22 +4587,25 @@ generate_local_decl (gfc_symbol * sym)
 	}
 
       /* Warn for unused variables, but not if they're inside a common
-	 block, a namelist, or are use-associated.  */
+	 block or a namelist.  */
       else if (warn_unused_variable
-	       && !(sym->attr.in_common || sym->attr.use_assoc || sym->mark
-		    || sym->attr.in_namelist))
+	       && !(sym->attr.in_common || sym->mark || sym->attr.in_namelist))
 	{
-	  gfc_warning ("Unused variable '%s' declared at %L", sym->name,
-		       &sym->declared_at);
-	  if (sym->backend_decl != NULL_TREE)
-	    TREE_NO_WARNING(sym->backend_decl) = 1;
-	}
-      else if (warn_unused_variable && sym->attr.use_only)
-	{
-	  gfc_warning ("Unused module variable '%s' which has been explicitly "
-		       "imported at %L", sym->name, &sym->declared_at);
-	  if (sym->backend_decl != NULL_TREE)
-	    TREE_NO_WARNING(sym->backend_decl) = 1;
+	  if (sym->attr.use_only)
+	    {
+	      gfc_warning ("Unused module variable '%s' which has been "
+			   "explicitly imported at %L", sym->name,
+			   &sym->declared_at);
+	      if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING(sym->backend_decl) = 1;
+	    }
+	  else if (!sym->attr.use_assoc)
+	    {
+	      gfc_warning ("Unused variable '%s' declared at %L",
+			   sym->name, &sym->declared_at);
+	      if (sym->backend_decl != NULL_TREE)
+		TREE_NO_WARNING(sym->backend_decl) = 1;
+	    }
 	}
 
       /* For variable length CHARACTER parameters, the PARM_DECL already

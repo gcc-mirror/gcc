@@ -189,7 +189,7 @@ static tree
 self_referential_size (tree size)
 {
   static unsigned HOST_WIDE_INT fnno = 0;
-  vec<tree> self_refs = vec<tree>();
+  vec<tree> self_refs = vNULL;
   tree param_type_list = NULL, param_decl_list = NULL;
   tree t, ref, return_type, fntype, fnname, fndecl;
   unsigned int i;
@@ -1374,7 +1374,7 @@ place_field (record_layout_info rli, tree field)
 	  normalize_rli (rli);
         }
 
-      /* If we're starting a new run of same size type bitfields
+      /* If we're starting a new run of same type size bitfields
 	 (or a run of non-bitfields), set up the "first of the run"
 	 fields.
 
@@ -2233,12 +2233,12 @@ layout_type (tree type)
 					      size_binop (MINUS_EXPR, ub, lb)));
 	      }
 
-	    /* If we arrived at a length of zero ignore any overflow
-	       that occurred as part of the calculation.  There exists
-	       an association of the plus one where that overflow would
-	       not happen.  */
+	    /* ??? We have no way to distinguish a null-sized array from an
+	       array spanning the whole sizetype range, so we arbitrarily
+	       decide that [0, -1] is the only valid representation.  */
 	    if (integer_zerop (length)
-		&& TREE_OVERFLOW (length))
+	        && TREE_OVERFLOW (length)
+		&& integer_zerop (lb))
 	      length = size_zero_node;
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
@@ -2643,15 +2643,17 @@ bit_field_mode_iterator
 			   unsigned int align, bool volatilep)
 : mode_ (GET_CLASS_NARROWEST_MODE (MODE_INT)), bitsize_ (bitsize),
   bitpos_ (bitpos), bitregion_start_ (bitregion_start),
-  bitregion_end_ (bitregion_end), align_ (MIN (align, BIGGEST_ALIGNMENT)),
+  bitregion_end_ (bitregion_end), align_ (align),
   volatilep_ (volatilep), count_ (0)
 {
   if (!bitregion_end_)
     {
-      /* We can assume that any aligned chunk of ALIGN_ bits that overlaps
+      /* We can assume that any aligned chunk of UNITS bits that overlaps
 	 the bitfield is mapped and won't trap.  */
-      bitregion_end_ = bitpos + bitsize + align_ - 1;
-      bitregion_end_ -= bitregion_end_ % align_ + 1;
+      unsigned HOST_WIDE_INT units = MIN (align, MAX (BIGGEST_ALIGNMENT,
+						      BITS_PER_WORD));
+      bitregion_end_ = bitpos + bitsize + units - 1;
+      bitregion_end_ -= bitregion_end_ % units + 1;
     }
 }
 
@@ -2670,10 +2672,6 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
       if (unit != GET_MODE_PRECISION (mode_))
 	continue;
 
-      /* Skip modes that are too small.  */
-      if ((bitpos_ % unit) + bitsize_ > unit)
-	continue;
-
       /* Stop if the mode is too wide to handle efficiently.  */
       if (unit > MAX_FIXED_MODE_SIZE)
 	break;
@@ -2683,15 +2681,23 @@ bit_field_mode_iterator::next_mode (enum machine_mode *out_mode)
       if (count_ > 0 && unit > BITS_PER_WORD)
 	break;
 
+      /* Skip modes that are too small.  */
+      unsigned HOST_WIDE_INT substart = (unsigned HOST_WIDE_INT) bitpos_ % unit;
+      unsigned HOST_WIDE_INT subend = substart + bitsize_;
+      if (subend > unit)
+	continue;
+
       /* Stop if the mode goes outside the bitregion.  */
-      HOST_WIDE_INT start = bitpos_ - (bitpos_ % unit);
+      HOST_WIDE_INT start = bitpos_ - substart;
       if (bitregion_start_ && start < bitregion_start_)
 	break;
-      if (start + unit > bitregion_end_ + 1)
+      HOST_WIDE_INT end = start + unit;
+      if (end > bitregion_end_ + 1)
 	break;
 
       /* Stop if the mode requires too much alignment.  */
-      if (unit > align_ && SLOW_UNALIGNED_ACCESS (mode_, align_))
+      if (GET_MODE_ALIGNMENT (mode_) > align_
+	  && SLOW_UNALIGNED_ACCESS (mode_, align_))
 	break;
 
       *out_mode = mode_;
@@ -2750,8 +2756,9 @@ get_best_mode (int bitsize, int bitpos,
   enum machine_mode widest_mode = VOIDmode;
   enum machine_mode mode;
   while (iter.next_mode (&mode)
-	 /* ??? For historical reasons, reject modes that are wider than
-	    the alignment.  This has both advantages and disadvantages.
+	 /* ??? For historical reasons, reject modes that would normally
+	    receive greater alignment, even if unaligned accesses are
+	    acceptable.  This has both advantages and disadvantages.
 	    Removing this check means that something like:
 
 	       struct s { unsigned int x; unsigned int y; };
@@ -2805,7 +2812,7 @@ get_best_mode (int bitsize, int bitpos,
 	    causes store_bit_field to keep a 128-bit memory reference,
 	    so that the final bitfield reference still has a MEM_EXPR
 	    and MEM_OFFSET.  */
-	 && GET_MODE_BITSIZE (mode) <= align
+	 && GET_MODE_ALIGNMENT (mode) <= align
 	 && (largest_mode == VOIDmode
 	     || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (largest_mode)))
     {

@@ -19,8 +19,9 @@ type SysProcAttr struct {
 	Ptrace     bool        // Enable tracing.
 	Setsid     bool        // Create session.
 	Setpgid    bool        // Set process group ID to new pid (SYSV setpgrp)
-	Setctty    bool        // Set controlling terminal to fd 0
+	Setctty    bool        // Set controlling terminal to fd Ctty (only meaningful if Setsid is set)
 	Noctty     bool        // Detach fd 0 from controlling terminal
+	Ctty       int         // Controlling TTY fd (Linux only)
 	Pdeathsig  Signal      // Signal that the process will get when its parent dies (Linux only)
 }
 
@@ -227,8 +228,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	}
 
 	// Make fd 0 the tty
-	if sys.Setctty {
-		_, err1 = raw_ioctl(0, TIOCSCTTY, 0)
+	if sys.Setctty && sys.Ctty >= 0 {
+		_, err1 = raw_ioctl(0, TIOCSCTTY, sys.Ctty)
 		if err1 != 0 {
 			goto childerror
 		}

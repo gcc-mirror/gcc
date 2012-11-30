@@ -1332,7 +1332,7 @@ func TestSelect(t *testing.T) {
 
 // selectWatch and the selectWatcher are a watchdog mechanism for running Select.
 // If the selectWatcher notices that the select has been blocked for >1 second, it prints
-// an error describing the select and panics the entire test binary. 
+// an error describing the select and panics the entire test binary.
 var selectWatch struct {
 	sync.Mutex
 	once sync.Once
@@ -1700,6 +1700,20 @@ type S13 struct {
 	S8
 }
 
+// The X in S15.S11.S1 and S16.S11.S1 annihilate.
+type S14 struct {
+	S15
+	S16
+}
+
+type S15 struct {
+	S11
+}
+
+type S16 struct {
+	S11
+}
+
 var fieldTests = []FTest{
 	{struct{}{}, "", nil, 0},
 	{struct{}{}, "Foo", nil, 0},
@@ -1725,6 +1739,7 @@ var fieldTests = []FTest{
 	{S5{}, "Y", []int{2, 0, 1}, 0},
 	{S10{}, "X", nil, 0},
 	{S10{}, "Y", []int{2, 0, 0, 1}, 0},
+	{S14{}, "X", nil, 0},
 }
 
 func TestFieldByIndex(t *testing.T) {
@@ -2046,6 +2061,24 @@ func TestSmallNegativeInt(t *testing.T) {
 	}
 }
 
+func TestIndex(t *testing.T) {
+	xs := []byte{1, 2, 3, 4, 5, 6, 7, 8}
+	v := ValueOf(xs).Index(3).Interface().(byte)
+	if v != xs[3] {
+		t.Errorf("xs.Index(3) = %v; expected %v", v, xs[3])
+	}
+	xa := [8]byte{10, 20, 30, 40, 50, 60, 70, 80}
+	v = ValueOf(xa).Index(2).Interface().(byte)
+	if v != xa[2] {
+		t.Errorf("xa.Index(2) = %v; expected %v", v, xa[2])
+	}
+	s := "0123456789"
+	v = ValueOf(s).Index(3).Interface().(byte)
+	if v != s[3] {
+		t.Errorf("s.Index(3) = %v; expected %v", v, s[3])
+	}
+}
+
 func TestSlice(t *testing.T) {
 	xs := []int{1, 2, 3, 4, 5, 6, 7, 8}
 	v := ValueOf(xs).Slice(3, 5).Interface().([]int)
@@ -2058,7 +2091,6 @@ func TestSlice(t *testing.T) {
 	if !DeepEqual(v[0:5], xs[3:]) {
 		t.Errorf("xs.Slice(3, 5)[0:5] = %v", v[0:5])
 	}
-
 	xa := [8]int{10, 20, 30, 40, 50, 60, 70, 80}
 	v = ValueOf(&xa).Elem().Slice(2, 5).Interface().([]int)
 	if len(v) != 3 {
@@ -2069,6 +2101,11 @@ func TestSlice(t *testing.T) {
 	}
 	if !DeepEqual(v[0:6], xa[2:]) {
 		t.Errorf("xs.Slice(2, 5)[0:6] = %v", v[0:6])
+	}
+	s := "0123456789"
+	vs := ValueOf(s).Slice(3, 5).Interface().(string)
+	if vs != s[3:5] {
+		t.Errorf("s.Slice(3, 5) = %q; expected %q", vs, s[3:5])
 	}
 }
 
@@ -2650,6 +2687,127 @@ func TestConvert(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestOverflow(t *testing.T) {
+	if ovf := V(float64(0)).OverflowFloat(1e300); ovf {
+		t.Errorf("%v wrongly overflows float64", 1e300)
+	}
+
+	maxFloat32 := float64((1<<24 - 1) << (127 - 23))
+	if ovf := V(float32(0)).OverflowFloat(maxFloat32); ovf {
+		t.Errorf("%v wrongly overflows float32", maxFloat32)
+	}
+	ovfFloat32 := float64((1<<24-1)<<(127-23) + 1<<(127-52))
+	if ovf := V(float32(0)).OverflowFloat(ovfFloat32); !ovf {
+		t.Errorf("%v should overflow float32", ovfFloat32)
+	}
+	if ovf := V(float32(0)).OverflowFloat(-ovfFloat32); !ovf {
+		t.Errorf("%v should overflow float32", -ovfFloat32)
+	}
+
+	maxInt32 := int64(0x7fffffff)
+	if ovf := V(int32(0)).OverflowInt(maxInt32); ovf {
+		t.Errorf("%v wrongly overflows int32", maxInt32)
+	}
+	if ovf := V(int32(0)).OverflowInt(-1 << 31); ovf {
+		t.Errorf("%v wrongly overflows int32", -int64(1)<<31)
+	}
+	ovfInt32 := int64(1 << 31)
+	if ovf := V(int32(0)).OverflowInt(ovfInt32); !ovf {
+		t.Errorf("%v should overflow int32", ovfInt32)
+	}
+
+	maxUint32 := uint64(0xffffffff)
+	if ovf := V(uint32(0)).OverflowUint(maxUint32); ovf {
+		t.Errorf("%v wrongly overflows uint32", maxUint32)
+	}
+	ovfUint32 := uint64(1 << 32)
+	if ovf := V(uint32(0)).OverflowUint(ovfUint32); !ovf {
+		t.Errorf("%v should overflow uint32", ovfUint32)
+	}
+}
+
+func checkSameType(t *testing.T, x, y interface{}) {
+	if TypeOf(x) != TypeOf(y) {
+		t.Errorf("did not find preexisting type for %s (vs %s)", TypeOf(x), TypeOf(y))
+	}
+}
+
+func TestArrayOf(t *testing.T) {
+	// check construction and use of type not in binary
+	type T int
+	at := ArrayOf(10, TypeOf(T(1)))
+	v := New(at).Elem()
+	for i := 0; i < v.Len(); i++ {
+		v.Index(i).Set(ValueOf(T(i)))
+	}
+	s := fmt.Sprint(v.Interface())
+	want := "[0 1 2 3 4 5 6 7 8 9]"
+	if s != want {
+		t.Errorf("constructed array = %s, want %s", s, want)
+	}
+
+	// check that type already in binary is found
+	checkSameType(t, Zero(ArrayOf(5, TypeOf(T(1)))).Interface(), [5]T{})
+}
+
+func TestSliceOf(t *testing.T) {
+	// check construction and use of type not in binary
+	type T int
+	st := SliceOf(TypeOf(T(1)))
+	v := MakeSlice(st, 10, 10)
+	for i := 0; i < v.Len(); i++ {
+		v.Index(i).Set(ValueOf(T(i)))
+	}
+	s := fmt.Sprint(v.Interface())
+	want := "[0 1 2 3 4 5 6 7 8 9]"
+	if s != want {
+		t.Errorf("constructed slice = %s, want %s", s, want)
+	}
+
+	// check that type already in binary is found
+	type T1 int
+	checkSameType(t, Zero(SliceOf(TypeOf(T1(1)))).Interface(), []T1{})
+}
+
+func TestChanOf(t *testing.T) {
+	// check construction and use of type not in binary
+	type T string
+	ct := ChanOf(BothDir, TypeOf(T("")))
+	v := MakeChan(ct, 2)
+	v.Send(ValueOf(T("hello")))
+	v.Send(ValueOf(T("world")))
+
+	sv1, _ := v.Recv()
+	sv2, _ := v.Recv()
+	s1 := sv1.String()
+	s2 := sv2.String()
+	if s1 != "hello" || s2 != "world" {
+		t.Errorf("constructed chan: have %q, %q, want %q, %q", s1, s2, "hello", "world")
+	}
+
+	// check that type already in binary is found
+	type T1 int
+	checkSameType(t, Zero(ChanOf(BothDir, TypeOf(T1(1)))).Interface(), (chan T1)(nil))
+}
+
+func TestMapOf(t *testing.T) {
+	// check construction and use of type not in binary
+	type K string
+	type V float64
+
+	v := MakeMap(MapOf(TypeOf(K("")), TypeOf(V(0))))
+	v.SetMapIndex(ValueOf(K("a")), ValueOf(V(1)))
+
+	s := fmt.Sprint(v.Interface())
+	want := "map[a:1]"
+	if s != want {
+		t.Errorf("constructed map = %s, want %s", s, want)
+	}
+
+	// check that type already in binary is found
+	checkSameType(t, Zero(MapOf(TypeOf(V(0)), TypeOf(K("")))).Interface(), map[V]K(nil))
 }
 
 type B1 struct {

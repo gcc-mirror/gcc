@@ -611,9 +611,23 @@ valid_gimple_rhs_p (tree expr)
       return false;
 
     case tcc_exceptional:
+      if (code == CONSTRUCTOR)
+	{
+	  unsigned i;
+	  tree elt;
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), i, elt)
+	    if (!is_gimple_val (elt))
+	      return false;
+	  return true;
+	}
       if (code != SSA_NAME)
         return false;
       break;
+
+    case tcc_reference:
+      if (code == BIT_FIELD_REF)
+	return is_gimple_val (TREE_OPERAND (expr, 0));
+      return false;
 
     default:
       return false;
@@ -732,7 +746,7 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       tree fn = CALL_EXPR_FN (expr);
       unsigned i;
       unsigned nargs = call_expr_nargs (expr);
-      vec<tree> args = vec<tree>();
+      vec<tree> args = vNULL;
       gimple new_stmt;
 
       if (nargs > 0)

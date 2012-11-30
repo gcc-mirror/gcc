@@ -1,5 +1,5 @@
 ;; DFA scheduling description for EPIPHANY
-;; Copyright (C) 2004, 2006, 2007, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 
 ;; This file is part of GCC.
@@ -61,7 +61,7 @@
        (eq_attr "length" "4"))
   "issue,int")
 
-; anything but fp / fp_int has a bypass
+; anything but fp / fp_int / v2fp has a bypass
 (define_bypass 1 "simple_arith" "simple_arith,simple_arith_2,simple_arith_4,load,store,branch,call,flow")
 
 (define_insn_reservation "simple_arith_2" 2
@@ -84,7 +84,7 @@
        (eq_attr "type" "load"))
   "issue,int")
 
-; anything but fp / fp_int has a bypass
+; anything but fp / fp_int / v2fp has a bypass
 (define_bypass 2 "load" "simple_arith,simple_arith_2,simple_arith_4,load,store,branch,call,flow")
 
 (define_insn_reservation "store" 1
@@ -119,17 +119,27 @@
        (eq_attr "type" "flow"))
   "d_lock")
 
-(define_insn_reservation "fp_arith_trunc"  3
+(define_insn_reservation "fp_arith"  5
   (and (eq_attr "pipe_model" "epiphany")
-       (and (eq_attr "type" "fp,fp_int")
-	    (eq_attr "rounding" "trunc")))
+       (eq_attr "type" "fp,fp_int"))
   "issue,F0")
 
-(define_insn_reservation "fp_arith_nearest"  5
-  (and (eq_attr "pipe_model" "epiphany")
-       (and (eq_attr "type" "fp,fp_int")
-	    (eq_attr "rounding" "nearest")))
-  "issue,F0")
+(define_bypass 4 "fp_arith" "store")
 
-(define_bypass 2 "fp_arith_trunc" "store")
-(define_bypass 4 "fp_arith_nearest" "store")
+; There are two main consumers for v2fp:
+; - other v2fp operation - in that case, the latencies can dovetail to
+;   save one cycle of latency.
+; - 64 bit store operations - we need both registers, but OTOH the latency is
+; one lower to start with.
+; of the bypass saving one cyles then.
+(define_insn_reservation "v2fp_arith"  5
+  (and (eq_attr "pipe_model" "epiphany")
+       (eq_attr "type" "v2fp"))
+  "issue,issue+F0,F0")
+
+; A boolean attribute for use by peephole2 patterns that try to figure out
+; if we overcommitted the FPU.
+; This is notionally a numeric attribute to avoid dependency problems.
+(define_attr "sched_use_fpu" ""
+  (cond [(eq_attr "type" "fp,fp_int,v2fp") (const_int 1)]
+	(const_int 0)))

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Argonaut EPIPHANY cpu.
    Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2007, 2009, 2011 Free Software Foundation, Inc.
+   2007, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -57,6 +57,17 @@ along with GCC; see the file COPYING3.  If not see
   "crtbegin.o%s"
 
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
+
+#define EPIPHANY_LIBRARY_EXTRA_SPEC \
+  "-ffixed-r40 -ffixed-r41 -ffixed-r42 -ffixed-r43"
+
+/* In the "spec:" rule,, t-epiphany changes this to epiphany_library_stub_spec
+   and epiphany_library_extra_spec, respectively.  */
+#define EXTRA_SPECS \
+  { "epiphany_library_extra_spec", "" }, \
+  { "epiphany_library_build_spec", EPIPHANY_LIBRARY_EXTRA_SPEC }, \
+
+#define DRIVER_SELF_SPECS " %(epiphany_library_extra_spec) "
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
@@ -230,7 +241,7 @@ along with GCC; see the file COPYING3.  If not see
 	0, 0, 0, 0, 0, 0, 0, 0,		/* 016-023, gr16 - gr23 */	\
 	0, 0, 0, 0, 1, 1, 1, 1,		/* 024-031, gr24 - gr31 */	\
 	0, 0, 0, 0, 0, 0, 0, 0,		/* 032-039, gr32 - gr39 */	\
-	1, 1, 1, 1, 0, 0, 0, 0,		/* 040-047, gr40 - gr47 */	\
+	0, 0, 0, 0, 0, 0, 0, 0,		/* 040-047, gr40 - gr47 */	\
 	0, 0, 0, 0, 0, 0, 0, 0,		/* 048-055, gr48 - gr55 */	\
 	0, 0, 0, 0, 0, 0, 0, 0,		/* 056-063, gr56 - gr63 */	\
 	/* Other registers */						\
@@ -259,7 +270,7 @@ along with GCC; see the file COPYING3.  If not see
 	1, 1, 1, 1, 1, 1, 1, 1,		/* 016-023, gr16 - gr23 */	\
 	1, 1, 1, 1, 1, 1, 1, 1,		/* 024-031, gr24 - gr31 */	\
 	0, 0, 0, 0, 0, 0, 0, 0,		/* 032-039, gr32 - gr38 */	\
-	1, 1, 1, 1, 1, 1, 1, 1,		/* 040-047, gr40 - gr47 */	\
+	0, 0, 0, 0, 1, 1, 1, 1,		/* 040-047, gr40 - gr47 */	\
 	1, 1, 1, 1, 1, 1, 1, 1,		/* 048-055, gr48 - gr55 */	\
 	1, 1, 1, 1, 1, 1, 1, 1,		/* 056-063, gr56 - gr63 */	\
 	1,				/* 64 AP   - fake arg ptr */	\
@@ -283,13 +294,14 @@ along with GCC; see the file COPYING3.  If not see
     4, 5, 6, 7, /* Calle-saved 'small' registers.  */ \
     15, /* Calle-saved unpaired register.  */ \
     8, 9, 10, 11, /* Calle-saved registers.  */ \
-    32, 33, 34, 35, 36, 37, 38, 39, \
+    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, \
     14, 13, /* Link register, stack pointer.  */ \
-    40, 41, 42, 43, /* Usually constant, but might be made callee-saved.  */ \
     /* Can't allocate, but must name these... */ \
     28, 29, 30, 31, \
     64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77 \
   }
+
+#define HARD_REGNO_RENAME_OK(SRC, DST) epiphany_regno_rename_ok (SRC, DST)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -778,8 +790,15 @@ do {							\
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
-#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+#define ASM_OUTPUT_ALIGN(FILE, LOG) \
 do { if ((LOG) != 0) fprintf (FILE, "\t.balign %d\n", 1 << (LOG)); } while (0)
+
+/* Inside the text section, align with nops rather than zeros.  */
+#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE, LOG) \
+do \
+{ \
+  if ((LOG) != 0) fprintf (FILE, "\t.balignw %d,0x01a2\n", 1 << (LOG)); \
+} while (0)
 
 /* This is how to declare the size of a function.  */
 #undef ASM_DECLARE_FUNCTION_SIZE

@@ -1281,6 +1281,24 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   if test x"$ac_has_nanosleep" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_NANOSLEEP, 1,
       [ Defined if nanosleep is available. ])
+  else
+      AC_MSG_CHECKING([for sleep])
+      AC_TRY_COMPILE([#include <unistd.h>],
+                     [sleep(1)],
+                     [ac_has_sleep=yes],[ac_has_sleep=no])
+      if test x"$ac_has_sleep" = x"yes"; then
+        AC_DEFINE(HAVE_SLEEP,1, [Defined if sleep exists.])
+      fi
+      AC_MSG_RESULT($ac_has_sleep)
+      AC_MSG_CHECKING([for usleep])
+      AC_TRY_COMPILE([#include <unistd.h>],
+                     [sleep(1);
+                      usleep(100);],
+                     [ac_has_usleep=yes],[ac_has_usleep=no])
+      if test x"$ac_has_usleep" = x"yes"; then
+        AC_DEFINE(HAVE_USLEEP,1, [Defined if usleep exists.])
+      fi
+      AC_MSG_RESULT($ac_has_usleep)
   fi
 
   AC_SUBST(GLIBCXX_LIBS)
@@ -3201,7 +3219,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:17:0
+libtool_VERSION=6:18:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in

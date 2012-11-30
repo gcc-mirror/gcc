@@ -3266,7 +3266,16 @@ verify_gimple_comparison (tree type, tree op0, tree op1)
   if (INTEGRAL_TYPE_P (type)
       && (TREE_CODE (type) == BOOLEAN_TYPE
 	  || TYPE_PRECISION (type) == 1))
-    ;
+    {
+      if (TREE_CODE (op0_type) == VECTOR_TYPE
+	  || TREE_CODE (op1_type) == VECTOR_TYPE)
+        {
+          error ("vector comparison returning a boolean");
+          debug_generic_expr (op0_type);
+          debug_generic_expr (op1_type);
+          return true;
+        }
+    }
   /* Or an integer vector type with the same size and element count
      as the comparison operand types.  */
   else if (TREE_CODE (type) == VECTOR_TYPE
@@ -7269,8 +7278,8 @@ gimple_flow_call_edges_add (sbitmap blocks)
 void
 remove_edge_and_dominated_blocks (edge e)
 {
-  vec<basic_block> bbs_to_remove = vec<basic_block>();
-  vec<basic_block> bbs_to_fix_dom = vec<basic_block>();
+  vec<basic_block> bbs_to_remove = vNULL;
+  vec<basic_block> bbs_to_fix_dom = vNULL;
   bitmap df, df_idom;
   edge f;
   edge_iterator ei;

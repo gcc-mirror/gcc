@@ -1239,7 +1239,7 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
   eh_region r;
   edge e;
   int i, disp_index;
-  vec<tree> dispatch_labels = vec<tree>();
+  vec<tree> dispatch_labels = vNULL;
 
   fc = crtl->eh.sjlj_fc;
 

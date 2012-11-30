@@ -18,6 +18,7 @@
 #include "defs.h"
 #include "malloc.h"
 #include "race.h"
+#include "go-type.h"
 #include "go-defer.h"
 
 #ifdef USING_SPLIT_STACK
@@ -237,7 +238,7 @@ struct Sched {
 	Lock;
 
 	G *gfree;	// available g's (status == Gdead)
-	int32 goidgen;
+	int64 goidgen;
 
 	G *ghead;	// g's waiting to run
 	G *gtail;
@@ -601,7 +602,7 @@ runtime_goroutineheader(G *gp)
 		status = "???";
 		break;
 	}
-	runtime_printf("goroutine %d [%s]:\n", gp->goid, status);
+	runtime_printf("goroutine %D [%s]:\n", gp->goid, status);
 }
 
 void
@@ -745,7 +746,7 @@ gput(G *gp)
 	// If g is the idle goroutine for an m, hand it off.
 	if(gp->idlem != nil) {
 		if(gp->idlem->idleg != nil) {
-			runtime_printf("m%d idle out of sync: g%d g%d\n",
+			runtime_printf("m%d idle out of sync: g%D g%D\n",
 				gp->idlem->id,
 				gp->idlem->idleg->goid, gp->goid);
 			runtime_throw("runtime: double idle");
@@ -847,7 +848,7 @@ readylocked(G *gp)
 
 	// Mark runnable.
 	if(gp->status == Grunnable || gp->status == Grunning) {
-		runtime_printf("goroutine %d has status %d\n", gp->goid, gp->status);
+		runtime_printf("goroutine %D has status %d\n", gp->goid, gp->status);
 		runtime_throw("bad g->status in ready");
 	}
 	gp->status = Grunnable;
@@ -1204,7 +1205,16 @@ runtime_newm(void)
 	pthread_t tid;
 	size_t stacksize;
 
-	mp = runtime_malloc(sizeof(M));
+#if 0
+	static const Type *mtype;  // The Go type M
+	if(mtype == nil) {
+		Eface e;
+		runtime_gc_m_ptr(&e);
+		mtype = ((const PtrType*)e.__type_descriptor)->__element_type;
+	}
+#endif
+
+	mp = runtime_mal(sizeof *mp);
 	mcommoninit(mp);
 	mp->g0 = runtime_malg(-1, nil, nil);
 
@@ -1513,9 +1523,9 @@ __go_go(void (*fn)(void*), void* arg)
 	byte *sp;
 	size_t spsize;
 	G *newg;
-	int32 goid;
+	int64 goid;
 
-	goid = runtime_xadd((uint32*)&runtime_sched.goidgen, 1);
+	goid = runtime_xadd64((uint64*)&runtime_sched.goidgen, 1);
 	if(raceenabled)
 		runtime_racegostart(goid, runtime_getcallerpc(&fn));
 

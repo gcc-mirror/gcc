@@ -141,7 +141,7 @@
    eor%?\\t%0, %1, %1, asr #31\;sub%?\\t%0, %0, %1, asr #31"
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
-   ;; predicable can't be set based on the variant, so left as no
+   (set_attr "predicable" "no, yes")
    (set_attr "length" "10,8")]
 )
 
@@ -155,7 +155,7 @@
    eor%?\\t%0, %1, %1, asr #31\;rsb%?\\t%0, %0, %1, asr #31"
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
-   ;; predicable can't be set based on the variant, so left as no
+   (set_attr "predicable" "no, yes")
    (set_attr "length" "10,8")]
 )
 
@@ -182,7 +182,7 @@
    str%?\\t%1, %0"
   [(set_attr "type" "*,*,*,*,load1,load1,store1,store1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,*,1020,4096,*,*")
+   (set_attr "pool_range" "*,*,*,*,1018,4094,*,*")
    (set_attr "neg_pool_range" "*,*,*,*,0,0,*,*")]
 )
 
@@ -217,7 +217,7 @@
    ldr%(h%)\\t%0, %1\\t%@ movhi"
   [(set_attr "type" "*,*,store1,load1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,4096")
+   (set_attr "pool_range" "*,*,*,4094")
    (set_attr "neg_pool_range" "*,*,*,250")]
 )
 
@@ -570,7 +570,7 @@
    ldr%(sb%)\\t%0, %1"
   [(set_attr "type" "alu_shift,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
+   (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
 
@@ -583,7 +583,7 @@
    ldr%(h%)\\t%0, %1"
   [(set_attr "type" "alu_shift,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
+   (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
 
@@ -596,7 +596,7 @@
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
   [(set_attr "type" "alu_shift,load_byte")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
+   (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
 

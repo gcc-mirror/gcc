@@ -240,7 +240,7 @@ ipa_free_postorder_info (void)
 vec<cgraph_node_ptr> 
 ipa_get_nodes_in_cycle (struct cgraph_node *node)
 {
-  vec<cgraph_node_ptr> v = vec<cgraph_node_ptr>();
+  vec<cgraph_node_ptr> v = vNULL;
   struct ipa_dfs_info *node_dfs_info;
   while (node)
     {

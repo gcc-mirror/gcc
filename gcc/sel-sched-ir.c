@@ -50,11 +50,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* A vector holding bb info for whole scheduling pass.  */
 vec<sel_global_bb_info_def>
-    sel_global_bb_info = vec<sel_global_bb_info_def>();
+    sel_global_bb_info = vNULL;
 
 /* A vector holding bb info.  */
 vec<sel_region_bb_info_def>
-    sel_region_bb_info = vec<sel_region_bb_info_def>();
+    sel_region_bb_info = vNULL;
 
 /* A pool for allocating all lists.  */
 alloc_pool sched_lists_pool;
@@ -70,7 +70,7 @@ struct loop *current_loop_nest;
 
 /* LOOP_NESTS is a vector containing the corresponding loop nest for
    each region.  */
-static vec<loop_p> loop_nests = vec<loop_p>();
+static vec<loop_p> loop_nests = vNULL;
 
 /* Saves blocks already in loop regions, indexed by bb->index.  */
 static sbitmap bbs_in_loop_rgns = NULL;
@@ -1652,7 +1652,7 @@ init_expr (expr_t expr, vinsn_t vi, int spec, int use, int priority,
 void
 copy_expr (expr_t to, expr_t from)
 {
-  vec<expr_history_def> temp = vec<expr_history_def>();
+  vec<expr_history_def> temp = vNULL;
 
   if (EXPR_HISTORY_OF_CHANGES (from).exists ())
     {
@@ -1687,7 +1687,7 @@ copy_expr_onside (expr_t to, expr_t from)
   init_expr (to, EXPR_VINSN (from), EXPR_SPEC (from), EXPR_USEFULNESS (from),
 	     EXPR_PRIORITY (from), EXPR_SCHED_TIMES (from), 0,
 	     EXPR_SPEC_DONE_DS (from), EXPR_SPEC_TO_CHECK_DS (from), 0,
-	     vec<expr_history_def>(),
+	     vNULL,
 	     EXPR_TARGET_AVAILABLE (from), EXPR_WAS_SUBSTITUTED (from),
 	     EXPR_WAS_RENAMED (from), EXPR_NEEDS_SPEC_CHECK_P (from),
              EXPR_CANT_MOVE (from));
@@ -3004,7 +3004,7 @@ init_global_and_expr_for_insn (insn_t insn)
     /* Initialize INSN's expr.  */
     init_expr (INSN_EXPR (insn), vinsn_create (insn, force_unique_p), 0,
 	       REG_BR_PROB_BASE, INSN_PRIORITY (insn), 0, BLOCK_NUM (insn),
-	       spec_done_ds, 0, 0, vec<expr_history_def>(), true,
+	       spec_done_ds, 0, 0, vNULL, true,
 	       false, false, false, CANT_MOVE (insn));
   }
 
@@ -4135,7 +4135,7 @@ finish_region_bb_info (void)
 
 
 /* Data for each insn in current region.  */
-vec<sel_insn_data_def> s_i_d = vec<sel_insn_data_def>();
+vec<sel_insn_data_def> s_i_d = vNULL;
 
 /* Extend data structures for insns from current region.  */
 static void
@@ -4253,7 +4253,7 @@ init_simplejump_data (insn_t insn)
 {
   init_expr (INSN_EXPR (insn), vinsn_create (insn, false), 0,
 	     REG_BR_PROB_BASE, 0, 0, 0, 0, 0, 0,
-	     vec<expr_history_def>(), true, false, false,
+	     vNULL, true, false, false,
 	     false, true);
   INSN_SEQNO (insn) = get_seqno_for_a_jump (insn);
   init_first_time_insn_data (insn);
@@ -4504,7 +4504,7 @@ get_av_level (insn_t insn)
 /* The basic block that already has been processed by the sched_data_update (),
    but hasn't been in sel_add_bb () yet.  */
 static vec<basic_block>
-    last_added_blocks = vec<basic_block>();
+    last_added_blocks = vNULL;
 
 /* A pool for allocating successor infos.  */
 static struct

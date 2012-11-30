@@ -181,7 +181,7 @@ proc libstdc++_init { testfile } {
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     if {$gccdir != ""} {
-	set compiler ${gccdir}/g++
+	set compiler ${gccdir}/xg++
 	set ld_library_path ${ld_library_path_tmp}
 	append ld_library_path ":${blddir}/src/.libs"
 
@@ -1352,41 +1352,43 @@ proc check_v3_target_gthreads_timed { } {
 }
 
 
-proc check_v3_target_nanosleep { } {
+proc check_v3_target_sleep { } {
     global cxxflags
     global DEFAULT_CXXFLAGS
-    global et_nanosleep
+    global et_sleep
 
     global tool
 
-    if { ![info exists et_nanosleep_target_name] } {
-        set et_nanosleep_target_name ""
+    if { ![info exists et_sleep_target_name] } {
+        set et_sleep_target_name ""
     }
 
     # If the target has changed since we set the cached value, clear it.
     set current_target [current_target_name]
-    if { $current_target != $et_nanosleep_target_name } {
-        verbose "check_v3_target_nanosleep: `$et_nanosleep_target_name'" 2
-        set et_nanosleep_target_name $current_target
-        if [info exists et_nanosleep] {
-            verbose "check_v3_target_nanosleep: removing cached result" 2
-            unset et_nanosleep
+    if { $current_target != $et_sleep_target_name } {
+        verbose "check_v3_target_sleep: `$et_sleep_target_name'" 2
+        set et_sleep_target_name $current_target
+        if [info exists et_sleep] {
+            verbose "check_v3_target_sleep: removing cached result" 2
+            unset et_sleep
         }
     }
 
-    if [info exists et_nanosleep] {
-        verbose "check_v3_target_nanosleep: using cached result" 2
+    if [info exists et_sleep] {
+        verbose "check_v3_target_sleep: using cached result" 2
     } else {
-        set et_nanosleep 0
+        set et_sleep 0
 	
-	# Set up and preprocess a C++0x test program that depends
-        # on the nanosleep facilities to be available.
-        set src nanosleep[pid].cc
+	# Set up and preprocess a C++11 test program that depends
+        # on the sleep facilities to be available.
+        set src sleep[pid].cc
 
         set f [open $src "w"]
         puts $f "#include <bits/c++config.h>"
         puts $f "#ifndef _GLIBCXX_USE_NANOSLEEP"
-        puts $f "#  error No nanosleep"
+        puts $f "# ifndef _GLIBCXX_HAVE_SLEEP"
+        puts $f "#  error No nanosleep or sleep"
+        puts $f "# endif"
         puts $f "#endif"
         close $f
 
@@ -1399,13 +1401,13 @@ proc check_v3_target_nanosleep { } {
 
         if [string match "" $lines] {
             # No error message, preprocessing succeeded.
-            set et_nanosleep 1
+            set et_sleep 1
         } else {
-            verbose "check_v3_target_nanosleep: compilation failed" 2
+            verbose "check_v3_target_sleep: compilation failed" 2
         }
     }
-    verbose "check_v3_target_nanosleep: $et_nanosleep" 2
-    return $et_nanosleep
+    verbose "check_v3_target_sleep: $et_sleep" 2
+    return $et_sleep
 }
 
 proc check_v3_target_sched_yield { } {

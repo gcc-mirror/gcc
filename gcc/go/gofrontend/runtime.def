@@ -354,6 +354,10 @@ DEF_GO_RUNTIME(PRINT_SPACE, "__go_print_space", P0(), R0())
 DEF_GO_RUNTIME(PRINT_NL, "__go_print_nl", P0(), R0())
 
 
+// Used for field tracking for data analysis.
+DEF_GO_RUNTIME(FIELDTRACK, "__go_fieldtrack", P1(POINTER), R0())
+
+
 // Remove helper macros.
 #undef ABFT6
 #undef ABFT2

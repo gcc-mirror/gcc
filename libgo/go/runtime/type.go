@@ -14,7 +14,7 @@ package runtime
 
 import "unsafe"
 
-type commonType struct {
+type rtype struct {
 	Kind       uint8
 	align      uint8
 	fieldAlign uint8
@@ -26,14 +26,14 @@ type commonType struct {
 
 	string *string
 	*uncommonType
-	ptrToThis *commonType
+	ptrToThis *rtype
 }
 
 type _method struct {
 	name    *string
 	pkgPath *string
-	mtyp    *commonType
-	typ     *commonType
+	mtyp    *rtype
+	typ     *rtype
 	tfn     unsafe.Pointer
 }
 
@@ -46,10 +46,10 @@ type uncommonType struct {
 type _imethod struct {
 	name    *string
 	pkgPath *string
-	typ     *commonType
+	typ     *rtype
 }
 
 type interfaceType struct {
-	commonType
+	rtype
 	methods []_imethod
 }

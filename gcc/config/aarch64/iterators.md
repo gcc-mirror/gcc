@@ -449,6 +449,10 @@
 
 (define_mode_attr VSTRUCT_DREG [(OI "TI") (CI "EI") (XI "OI")])
 
+;; Mode for atomic operation suffixes
+(define_mode_attr atomic_sfx
+  [(QI "b") (HI "h") (SI "") (DI "")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
@@ -480,7 +484,7 @@
 ;; Iterator for __sync_<op> operations that where the operation can be
 ;; represented directly RTL.  This is all of the sync operations bar
 ;; nand.
-(define_code_iterator syncop [plus minus ior xor and])
+(define_code_iterator atomic_op [plus minus ior xor and])
 
 ;; Iterator for integer conversions
 (define_code_iterator FIXUORS [fix unsigned_fix])
@@ -575,6 +579,16 @@
 ;; MLA/MLS attributes.
 (define_code_attr as [(ss_plus "a") (ss_minus "s")])
 
+;; Atomic operations
+(define_code_attr atomic_optab
+  [(ior "or") (xor "xor") (and "and") (plus "add") (minus "sub")])
+
+(define_code_attr atomic_op_operand
+  [(ior "aarch64_logical_operand")
+   (xor "aarch64_logical_operand")
+   (and "aarch64_logical_operand")
+   (plus "aarch64_plus_operand")
+   (minus "aarch64_plus_operand")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.

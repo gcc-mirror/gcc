@@ -2910,7 +2910,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 
 	  gcc_checking_assert (adj->offset % BITS_PER_UNIT == 0);
 	  base = gimple_call_arg (stmt, adj->base_index);
-	  loc = EXPR_LOCATION (base);
+	  loc = DECL_P (base) ? DECL_SOURCE_LOCATION (base)
+			      : EXPR_LOCATION (base);
 
 	  if (TREE_CODE (base) != ADDR_EXPR
 	      && POINTER_TYPE_P (TREE_TYPE (base)))
@@ -3534,8 +3535,7 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
-			header->string_size,
-			vec<ld_plugin_symbol_resolution_t>());
+			header->string_size, vNULL);
   count = streamer_read_uhwi (&ib_main);
 
   for (i = 0; i < count; i++)
@@ -3708,8 +3708,7 @@ read_replacements_section (struct lto_file_decl_data *file_data,
 			header->main_size);
 
   data_in = lto_data_in_create (file_data, (const char *) data + string_offset,
-				header->string_size,
-				vec<ld_plugin_symbol_resolution>());
+				header->string_size, vNULL);
   count = streamer_read_uhwi (&ib_main);
 
   for (i = 0; i < count; i++)
@@ -3790,7 +3789,7 @@ adjust_agg_replacement_values (struct cgraph_node *node,
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
-  vec<ipa_param_descriptor_t> descriptors = vec<ipa_param_descriptor_t>();
+  vec<ipa_param_descriptor_t> descriptors = vNULL;
   struct param_analysis_info *parms_ainfo;
   struct ipa_agg_replacement_value *aggval;
   gimple_stmt_iterator gsi;

@@ -874,6 +874,81 @@ sweepspan(ParFor *desc, uint32 idx)
 	}
 }
 
+static void
+dumpspan(uint32 idx)
+{
+	int32 sizeclass, n, npages, i, column;
+	uintptr size;
+	byte *p;
+	byte *arena_start;
+	MSpan *s;
+	bool allocated, special;
+
+	s = runtime_mheap.allspans[idx];
+	if(s->state != MSpanInUse)
+		return;
+	arena_start = runtime_mheap.arena_start;
+	p = (byte*)(s->start << PageShift);
+	sizeclass = s->sizeclass;
+	size = s->elemsize;
+	if(sizeclass == 0) {
+		n = 1;
+	} else {
+		npages = runtime_class_to_allocnpages[sizeclass];
+		n = (npages << PageShift) / size;
+	}
+	
+	runtime_printf("%p .. %p:\n", p, p+n*size);
+	column = 0;
+	for(; n>0; n--, p+=size) {
+		uintptr off, *bitp, shift, bits;
+
+		off = (uintptr*)p - (uintptr*)arena_start;
+		bitp = (uintptr*)arena_start - off/wordsPerBitmapWord - 1;
+		shift = off % wordsPerBitmapWord;
+		bits = *bitp>>shift;
+
+		allocated = ((bits & bitAllocated) != 0);
+		special = ((bits & bitSpecial) != 0);
+
+		for(i=0; (uint32)i<size; i+=sizeof(void*)) {
+			if(column == 0) {
+				runtime_printf("\t");
+			}
+			if(i == 0) {
+				runtime_printf(allocated ? "(" : "[");
+				runtime_printf(special ? "@" : "");
+				runtime_printf("%p: ", p+i);
+			} else {
+				runtime_printf(" ");
+			}
+
+			runtime_printf("%p", *(void**)(p+i));
+
+			if(i+sizeof(void*) >= size) {
+				runtime_printf(allocated ? ") " : "] ");
+			}
+
+			column++;
+			if(column == 8) {
+				runtime_printf("\n");
+				column = 0;
+			}
+		}
+	}
+	runtime_printf("\n");
+}
+
+// A debugging function to dump the contents of memory
+void
+runtime_memorydump(void)
+{
+	uint32 spanidx;
+
+	for(spanidx=0; spanidx<runtime_mheap.nspan; spanidx++) {
+		dumpspan(spanidx);
+	}
+}
 void
 runtime_gchelper(void)
 {
@@ -1141,9 +1216,6 @@ runfinq(void* dummy __attribute__ ((unused)))
 	FinBlock *fb, *next;
 	uint32 i;
 
-	if(raceenabled)
-		runtime_racefingo();
-
 	for(;;) {
 		// There's no need for a lock in this section
 		// because it only conflicts with the garbage
@@ -1158,6 +1230,8 @@ runfinq(void* dummy __attribute__ ((unused)))
 			runtime_park(nil, nil, "finalizer wait");
 			continue;
 		}
+		if(raceenabled)
+			runtime_racefingo();
 		for(; fb; fb=next) {
 			next = fb->next;
 			for(i=0; i<(uint32)fb->cnt; i++) {

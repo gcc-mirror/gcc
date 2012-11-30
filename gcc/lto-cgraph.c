@@ -913,7 +913,7 @@ input_node (struct lto_file_decl_data *file_data,
     {
       node = cgraph_clone_node (cgraph (nodes[clone_ref]), fn_decl,
 				0, CGRAPH_FREQ_BASE, false,
-				vec<cgraph_edge_p>(), false);
+				vNULL, false);
     }
   else
     node = cgraph_get_create_node (fn_decl);
@@ -926,7 +926,7 @@ input_node (struct lto_file_decl_data *file_data,
   node->count_materialization_scale = streamer_read_hwi (ib);
 
   count = streamer_read_hwi (ib);
-  node->ipa_transforms_to_apply = vec<ipa_opt_pass>();
+  node->ipa_transforms_to_apply = vNULL;
   for (i = 0; i < count; i++)
     {
       struct opt_pass *pass;
@@ -1126,7 +1126,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 		struct lto_input_block *ib)
 {
   enum LTO_symtab_tags tag;
-  vec<symtab_node> nodes = vec<symtab_node>();
+  vec<symtab_node> nodes = vNULL;
   symtab_node node;
   unsigned i;
 
@@ -1573,8 +1573,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
-			header->string_size,
-			vec<ld_plugin_symbol_resolution_t>());
+			header->string_size, vNULL);
   count = streamer_read_uhwi (&ib_main);
 
   for (i = 0; i < count; i++)

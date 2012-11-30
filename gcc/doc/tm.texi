@@ -4849,41 +4849,6 @@ used by the exception handling mechanism, and so should be considered live
 on entry to an exception edge.
 @end defmac
 
-@defmac DELAY_SLOTS_FOR_EPILOGUE
-Define this macro if the function epilogue contains delay slots to which
-instructions from the rest of the function can be ``moved''.  The
-definition should be a C expression whose value is an integer
-representing the number of delay slots there.
-@end defmac
-
-@defmac ELIGIBLE_FOR_EPILOGUE_DELAY (@var{insn}, @var{n})
-A C expression that returns 1 if @var{insn} can be placed in delay
-slot number @var{n} of the epilogue.
-
-The argument @var{n} is an integer which identifies the delay slot now
-being considered (since different slots may have different rules of
-eligibility).  It is never negative and is always less than the number
-of epilogue delay slots (what @code{DELAY_SLOTS_FOR_EPILOGUE} returns).
-If you reject a particular insn for a given delay slot, in principle, it
-may be reconsidered for a subsequent delay slot.  Also, other insns may
-(at least in principle) be considered for the so far unfilled delay
-slot.
-
-@findex epilogue_delay_list
-@findex crtl->epilogue_delay_list
-@findex final_scan_insn
-The insns accepted to fill the epilogue delay slots are put in an RTL
-list made with @code{insn_list} objects, stored in
-@code{crtl->epilogue_delay_list}.  The insn for the first
-delay slot comes first in the list.  Your definition of the macro
-@code{TARGET_ASM_FUNCTION_EPILOGUE} should fill the delay slots by
-outputting the insns in this list, usually by calling
-@code{final_scan_insn}.
-
-You need not define this macro if you did not define
-@code{DELAY_SLOTS_FOR_EPILOGUE}.
-@end defmac
-
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_MI_THUNK (FILE *@var{file}, tree @var{thunk_fndecl}, HOST_WIDE_INT @var{delta}, HOST_WIDE_INT @var{vcall_offset}, tree @var{function})
 A function that outputs the assembler code for a thunk
 function, used to implement C++ virtual function calls with multiple
@@ -5687,6 +5652,13 @@ be placed in an @code{object_block} structure.  @var{mode} is the mode
 of @var{x}.
 
 The default version returns false for all constants.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_USE_BLOCKS_FOR_DECL_P (const_tree @var{decl})
+This hook should return true if pool entries for @var{decl} should
+be placed in an @code{object_block} structure.
+
+The default version returns true for all decls.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_BUILTIN_RECIPROCAL (unsigned @var{fn}, bool @var{md_fn}, bool @var{sqrt})

@@ -3024,59 +3024,67 @@ max_size (tree exp, bool max_p)
       return max_p ? size_one_node : size_zero_node;
 
     case tcc_unary:
+      if (code == NON_LVALUE_EXPR)
+	return max_size (TREE_OPERAND (exp, 0), max_p);
+
+      return fold_build1 (code, type,
+			  max_size (TREE_OPERAND (exp, 0),
+				    code == NEGATE_EXPR ? !max_p : max_p));
+
     case tcc_binary:
+      {
+	tree lhs = max_size (TREE_OPERAND (exp, 0), max_p);
+	tree rhs = max_size (TREE_OPERAND (exp, 1),
+			     code == MINUS_EXPR ? !max_p : max_p);
+
+	/* Special-case wanting the maximum value of a MIN_EXPR.
+	   In that case, if one side overflows, return the other.  */
+	if (max_p && code == MIN_EXPR)
+	  {
+	    if (TREE_CODE (rhs) == INTEGER_CST && TREE_OVERFLOW (rhs))
+	      return lhs;
+
+	    if (TREE_CODE (lhs) == INTEGER_CST && TREE_OVERFLOW (lhs))
+	      return rhs;
+	  }
+
+	/* Likewise, handle a MINUS_EXPR or PLUS_EXPR with the LHS
+	   overflowing and the RHS a variable.  */
+	if ((code == MINUS_EXPR || code == PLUS_EXPR)
+	    && TREE_CODE (lhs) == INTEGER_CST
+	    && TREE_OVERFLOW (lhs)
+	    && !TREE_CONSTANT (rhs))
+	  return lhs;
+
+	return size_binop (code, lhs, rhs);
+      }
+
     case tcc_expression:
       switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
 	  if (code == SAVE_EXPR)
 	    return exp;
-	  else if (code == NON_LVALUE_EXPR)
-	    return max_size (TREE_OPERAND (exp, 0), max_p);
-	  else
-	    return
-	      fold_build1 (code, type,
-			   max_size (TREE_OPERAND (exp, 0),
-				     code == NEGATE_EXPR ? !max_p : max_p));
+
+	  return fold_build1 (code, type,
+			      max_size (TREE_OPERAND (exp, 0), max_p));
 
 	case 2:
 	  if (code == COMPOUND_EXPR)
 	    return max_size (TREE_OPERAND (exp, 1), max_p);
 
-	  {
-	    tree lhs = max_size (TREE_OPERAND (exp, 0), max_p);
-	    tree rhs = max_size (TREE_OPERAND (exp, 1),
-				 code == MINUS_EXPR ? !max_p : max_p);
-
-	    /* Special-case wanting the maximum value of a MIN_EXPR.
-	       In that case, if one side overflows, return the other.
-	       sizetype is signed, but we know sizes are non-negative.
-	       Likewise, handle a MINUS_EXPR or PLUS_EXPR with the LHS
-	       overflowing and the RHS a variable.  */
-	    if (max_p
-		&& code == MIN_EXPR
-		&& TREE_CODE (rhs) == INTEGER_CST
-		&& TREE_OVERFLOW (rhs))
-	      return lhs;
-	    else if (max_p
-		     && code == MIN_EXPR
-		     && TREE_CODE (lhs) == INTEGER_CST
-		     && TREE_OVERFLOW (lhs))
-	      return rhs;
-	    else if ((code == MINUS_EXPR || code == PLUS_EXPR)
-		     && TREE_CODE (lhs) == INTEGER_CST
-		     && TREE_OVERFLOW (lhs)
-		     && !TREE_CONSTANT (rhs))
-	      return lhs;
-	    else
-	      return fold_build2 (code, type, lhs, rhs);
-	  }
+	  return fold_build2 (code, type,
+			      max_size (TREE_OPERAND (exp, 0), max_p),
+			      max_size (TREE_OPERAND (exp, 1), max_p));
 
 	case 3:
 	  if (code == COND_EXPR)
 	    return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
 				max_size (TREE_OPERAND (exp, 1), max_p),
 				max_size (TREE_OPERAND (exp, 2), max_p));
+
+	default:
+	  break;
 	}
 
       /* Other tree classes cannot happen.  */

@@ -1982,9 +1982,6 @@ decode_d_option (const char *arg, struct gcc_options *opts,
 	opts->x_flag_dump_rtl_in_asm = 1;
 	opts->x_flag_print_asm_name = 1;
 	break;
-      case 'v':
-	opts->x_graph_dump_format = vcg;
-	break;
       case 'x':
 	opts->x_rtl_dump_and_exit = 1;
 	break;

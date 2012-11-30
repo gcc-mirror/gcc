@@ -789,14 +789,6 @@ do {									     \
   extern void  __aarch64_sync_cache_range (void *, void *);	\
   __aarch64_sync_cache_range (beg, end)
 
-/* This should be integrated with the equivalent in the 32 bit
-   world.  */
-enum aarch64_builtins
-{
-  AARCH64_BUILTIN_MIN,
-  AARCH64_SIMD_BUILTIN_BASE
-};
-
 /*  VFP registers may only be accessed in the mode they
    were set.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\

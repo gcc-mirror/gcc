@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { xfail *-*-solaris2.9 } }
 // { dg-options "-std=c++11" }
 // { dg-require-effective-target tls_runtime }
 

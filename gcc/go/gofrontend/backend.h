@@ -326,8 +326,11 @@ class Backend
   // option.  NAME is the name of the variable.  BTYPE is the type of
   // the variable.  IS_EXTERNAL is true if the variable is defined in
   // some other package.  IS_HIDDEN is true if the variable is not
-  // exported (name begins with a lower case letter).  LOCATION is
-  // where the variable was defined.
+  // exported (name begins with a lower case letter).
+  // IN_UNIQUE_SECTION is true if the variable should be put into a
+  // unique section if possible; this is intended to permit the linker
+  // to garbage collect the variable if it is not referenced.
+  // LOCATION is where the variable was defined.
   virtual Bvariable*
   global_variable(const std::string& package_name,
 		  const std::string& pkgpath,
@@ -335,6 +338,7 @@ class Backend
 		  Btype* btype,
 		  bool is_external,
 		  bool is_hidden,
+		  bool in_unique_section,
 		  Location location) = 0;
 
   // A global variable will 1) be initialized to zero, or 2) be

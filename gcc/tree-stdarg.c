@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool
 reachable_at_most_once (basic_block va_arg_bb, basic_block va_start_bb)
 {
-  vec<edge> stack = vec<edge>();
+  vec<edge> stack = vNULL;
   edge e;
   edge_iterator ei;
   sbitmap visited;

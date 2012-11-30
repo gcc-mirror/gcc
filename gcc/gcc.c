@@ -545,11 +545,27 @@ proper position among the other output files.  */
 #define STACK_SPLIT_SPEC " %{fsplit-stack: --wrap=pthread_create}"
 
 #ifndef LIBASAN_SPEC
+#ifdef STATIC_LIBASAN_LIBS
+#define ADD_STATIC_LIBASAN_LIBS \
+  " %{static-libasan:" STATIC_LIBASAN_LIBS "}"
+#else
+#define ADD_STATIC_LIBASAN_LIBS
+#endif
 #ifdef HAVE_LD_STATIC_DYNAMIC
 #define LIBASAN_SPEC "%{static-libasan:" LD_STATIC_OPTION \
-		     "} -lasan %{static-libasan:" LD_DYNAMIC_OPTION "}"
+		     "} -lasan %{static-libasan:" LD_DYNAMIC_OPTION "}" \
+		     ADD_STATIC_LIBASAN_LIBS
 #else
-#define LIBASAN_SPEC "-lasan"
+#define LIBASAN_SPEC "-lasan" ADD_STATIC_LIBASAN_LIBS
+#endif
+#endif
+
+#ifndef LIBTSAN_SPEC
+#ifdef HAVE_LD_STATIC_DYNAMIC
+#define LIBTSAN_SPEC "%{static-libtsan:" LD_STATIC_OPTION \
+		     "} -ltsan %{static-libtsan:" LD_DYNAMIC_OPTION "}"
+#else
+#define LIBTSAN_SPEC "-ltsan"
 #endif
 #endif
 
@@ -696,7 +712,8 @@ proper position among the other output files.  */
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
-    %{faddress-sanitizer:" LIBASAN_SPEC "}\
+    %{fsanitize=address:" LIBASAN_SPEC "%{static:%ecannot specify -static with -fsanitize=address}}\
+    %{fsanitize=thread:" LIBTSAN_SPEC "}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif

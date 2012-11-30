@@ -89,9 +89,6 @@ extern struct target_flag_state *this_target_flag_state;
 #define flag_excess_precision \
   (this_target_flag_state->x_flag_excess_precision)
 
-/* Nonzero if we dump in VCG format, not plain text.  */
-extern int dump_for_graph;
-
 /* Returns TRUE if generated code should match ABI version N or
    greater is in use.  */
 

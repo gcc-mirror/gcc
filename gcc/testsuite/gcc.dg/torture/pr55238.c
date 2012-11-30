@@ -31,7 +31,7 @@ gzbuffer (void *file, int size)
   gz_reset (state);
 }
 
-void __attribute__ ((visibility ("hidden"))) gz_error (gz_state *state, int err, char *msg)
+void gz_error (gz_state *state, int err, char *msg)
 {
   if (state->msg != 0)
     {

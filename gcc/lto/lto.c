@@ -873,7 +873,7 @@ pop:
 static bool
 gimple_types_compatible_p (tree t1, tree t2)
 {
-  vec<type_pair_t> sccstack = vec<type_pair_t>();
+  vec<type_pair_t> sccstack = vNULL;
   struct pointer_map_t *sccstate;
   struct obstack sccstate_obstack;
   type_pair_t p = NULL;
@@ -1298,7 +1298,7 @@ static hashval_t
 gimple_type_hash (const void *p)
 {
   const_tree t = (const_tree) p;
-  vec<tree> sccstack = vec<tree>();
+  vec<tree> sccstack = vNULL;
   struct pointer_map_t *sccstate;
   struct obstack sccstate_obstack;
   hashval_t val;
@@ -2318,7 +2318,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
   const char *data;
   size_t len;
   vec<ld_plugin_symbol_resolution_t>
-	resolutions = vec<ld_plugin_symbol_resolution_t>();
+	resolutions = vNULL;
   int i;
   res_pair *rp;
 

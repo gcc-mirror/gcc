@@ -149,6 +149,15 @@ along with GCC; see the file COPYING3.  If not see
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
 	       true, true, true, ATTRS, false, flag_tm)
 
+/* Builtin used by the implementation of libsanitizer. These
+   functions are mapped to the actual implementation of the 
+   libtsan library. */
+#undef DEF_SANITIZER_BUILTIN
+#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+	       true, true, true, ATTRS, true, \
+	       flag_tsan)
+
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for
    `errno'.  If !flag_errno_math they are instead "const".  */
@@ -825,3 +834,7 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 
 /* GTM builtins. */
 #include "gtm-builtins.def"
+
+/* Sanitizer builtins. */
+#include "sanitizer.def"
+

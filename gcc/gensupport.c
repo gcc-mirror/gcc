@@ -29,6 +29,12 @@
 #include "read-md.h"
 #include "gensupport.h"
 
+#define MAX_OPERANDS 40
+
+static rtx operand_data[MAX_OPERANDS];
+static rtx match_operand_entries_in_pattern[MAX_OPERANDS];
+static char used_operands_numbers[MAX_OPERANDS];
+
 
 /* In case some macros used by files we include need it, define this here.  */
 int target_flags;
@@ -48,10 +54,14 @@ static int predicable_default;
 static const char *predicable_true;
 static const char *predicable_false;
 
+static const char *subst_true = "yes";
+static const char *subst_false = "no";
+
 static htab_t condition_table;
 
-/* We initially queue all patterns, process the define_insn and
-   define_cond_exec patterns, then return them one at a time.  */
+/* We initially queue all patterns, process the define_insn,
+   define_cond_exec and define_subst patterns, then return
+   them one at a time.  */
 
 struct queue_elem
 {
@@ -75,8 +85,12 @@ static struct queue_elem *define_insn_queue;
 static struct queue_elem **define_insn_tail = &define_insn_queue;
 static struct queue_elem *define_cond_exec_queue;
 static struct queue_elem **define_cond_exec_tail = &define_cond_exec_queue;
+static struct queue_elem *define_subst_queue;
+static struct queue_elem **define_subst_tail = &define_subst_queue;
 static struct queue_elem *other_queue;
 static struct queue_elem **other_tail = &other_queue;
+static struct queue_elem *define_subst_attr_queue;
+static struct queue_elem **define_subst_attr_tail = &define_subst_attr_queue;
 
 static struct queue_elem *queue_pattern (rtx, struct queue_elem ***,
 					 const char *, int);
@@ -99,6 +113,24 @@ static void process_one_cond_exec (struct queue_elem *);
 static void process_define_cond_exec (void);
 static void init_predicate_table (void);
 static void record_insn_name (int, const char *);
+
+static bool has_subst_attribute (struct queue_elem *, struct queue_elem *);
+static bool subst_pattern_match (rtx, rtx, int);
+static int get_alternatives_number (rtx, int *, int);
+static const char * alter_output_for_subst_insn (rtx, int);
+static void alter_attrs_for_subst_insn (struct queue_elem *, int);
+static void process_substs_on_one_elem (struct queue_elem *,
+					struct queue_elem *);
+static rtx subst_dup (rtx, int, int);
+static void process_define_subst (void);
+
+static const char * duplicate_alternatives (const char *, int);
+static const char * duplicate_each_alternative (const char * str, int n_dup);
+
+typedef const char * (*constraints_handler_t) (const char *, int);
+static rtx alter_constraints (rtx, int, constraints_handler_t);
+static rtx adjust_operands_numbers (rtx);
+static rtx replace_duplicating_operands_in_pattern (rtx);
 
 /* Make a version of gen_rtx_CONST_INT so that GEN_INT can be used in
    the gensupport programs.  */
@@ -372,6 +404,27 @@ queue_pattern (rtx pattern, struct queue_elem ***list_tail,
   return e;
 }
 
+/* Remove element ELEM from QUEUE.  */
+static void
+remove_from_queue (struct queue_elem *elem, struct queue_elem **queue)
+{
+  struct queue_elem *prev, *e;
+  prev = NULL;
+  for (e = *queue; e ; e = e->next)
+    {
+      if (e == elem)
+	break;
+      prev = e;
+    }
+  if (e == NULL)
+    return;
+
+  if (prev)
+    prev->next = elem->next;
+  else
+    *queue = elem->next;
+}
+
 /* Build a define_attr for an binary attribute with name NAME and
    possible values "yes" and "no", and queue it.  */
 static void
@@ -437,6 +490,14 @@ process_rtx (rtx desc, int lineno)
 
     case DEFINE_COND_EXEC:
       queue_pattern (desc, &define_cond_exec_tail, read_md_filename, lineno);
+      break;
+
+    case DEFINE_SUBST:
+      queue_pattern (desc, &define_subst_tail, read_md_filename, lineno);
+      break;
+
+    case DEFINE_SUBST_ATTR:
+      queue_pattern (desc, &define_subst_attr_tail, read_md_filename, lineno);
       break;
 
     case DEFINE_ATTR:
@@ -584,6 +645,267 @@ is_predicable (struct queue_elem *elem)
   return 0;
 }
 
+/* Find attribute SUBST in ELEM and assign NEW_VALUE to it.  */
+static void
+change_subst_attribute (struct queue_elem *elem,
+			struct queue_elem *subst_elem,
+			const char *new_value)
+{
+  rtvec attrs_vec = XVEC (elem->data, 4);
+  const char *subst_name = XSTR (subst_elem->data, 0);
+  int i;
+
+  if (! attrs_vec)
+    return;
+
+  for (i = GET_NUM_ELEM (attrs_vec) - 1; i >= 0; --i)
+    {
+      rtx cur_attr = RTVEC_ELT (attrs_vec, i);
+      if (GET_CODE (cur_attr) != SET_ATTR)
+	continue;
+      if (strcmp (XSTR (cur_attr, 0), subst_name) == 0)
+	{
+	  XSTR (cur_attr, 1) = new_value;
+	  return;
+	}
+    }
+}
+
+/* Return true if ELEM has the attribute with the name of DEFINE_SUBST
+   represented by SUBST_ELEM and this attribute has value SUBST_TRUE.
+   DEFINE_SUBST isn't applied to patterns without such attribute.  In other
+   words, we suppose the default value of the attribute to be 'no' since it is
+   always generated automaticaly in read-rtl.c.  */
+static bool
+has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
+{
+  rtvec attrs_vec = XVEC (elem->data, 4);
+  const char *value, *subst_name = XSTR (subst_elem->data, 0);
+  int i;
+
+  if (! attrs_vec)
+    return false;
+
+  for (i = GET_NUM_ELEM (attrs_vec) - 1; i >= 0; --i)
+    {
+      rtx cur_attr = RTVEC_ELT (attrs_vec, i);
+      switch (GET_CODE (cur_attr))
+	{
+	case SET_ATTR:
+	  if (strcmp (XSTR (cur_attr, 0), subst_name) == 0)
+	    {
+	      value = XSTR (cur_attr, 1);
+	      goto found;
+	    }
+	  break;
+
+	case SET:
+	  if (GET_CODE (SET_DEST (cur_attr)) != ATTR
+	      || strcmp (XSTR (SET_DEST (cur_attr), 0), subst_name) != 0)
+	    break;
+	  cur_attr = SET_SRC (cur_attr);
+	  if (GET_CODE (cur_attr) == CONST_STRING)
+	    {
+	      value = XSTR (cur_attr, 0);
+	      goto found;
+	    }
+
+	  /* Only (set_attr "subst" "yes/no") and
+		  (set (attr "subst" (const_string "yes/no")))
+	     are currently allowed.  */
+	  error_with_line (elem->lineno,
+			   "unsupported value for `%s'", subst_name);
+	  return false;
+
+	case SET_ATTR_ALTERNATIVE:
+	  error_with_line (elem->lineno,
+			   "%s: `set_attr_alternative' is unsupported by "
+			   "`define_subst'",
+			   XSTR (elem->data, 0));
+	  return false;
+
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  return false;
+
+ found:
+  if (strcmp (value, subst_true) == 0)
+    return true;
+  if (strcmp (value, subst_false) == 0)
+    return false;
+
+  error_with_line (elem->lineno,
+		   "unknown value `%s' for `%s' attribute", value, subst_name);
+  return false;
+}
+
+/* Compare RTL-template of original define_insn X to input RTL-template of
+   define_subst PT.  Return 1 if the templates match, 0 otherwise.
+   During the comparison, the routine also fills global_array OPERAND_DATA.  */
+static bool
+subst_pattern_match (rtx x, rtx pt, int lineno)
+{
+  RTX_CODE code, code_pt;
+  int i, j, len;
+  const char *fmt, *pred_name;
+
+  code = GET_CODE (x);
+  code_pt = GET_CODE (pt);
+
+  if (code_pt == MATCH_OPERAND)
+    {
+      /* MATCH_DUP, and MATCH_OP_DUP don't have a specified mode, so we
+	 always accept them.  */
+      if (GET_MODE (pt) != VOIDmode && GET_MODE (x) != GET_MODE (pt)
+	  && (code != MATCH_DUP && code != MATCH_OP_DUP))
+	return false; /* Modes don't match.  */
+
+      if (code == MATCH_OPERAND)
+	{
+	  pred_name = XSTR (pt, 1);
+	  if (pred_name[0] != 0)
+	    {
+	      const struct pred_data *pred_pt = lookup_predicate (pred_name);
+	      if (!pred_pt || pred_pt != lookup_predicate (XSTR (x, 1)))
+		return false; /* Predicates don't match.  */
+	    }
+	}
+
+      gcc_assert (XINT (pt, 0) >= 0 && XINT (pt, 0) < MAX_OPERANDS);
+      operand_data[XINT (pt, 0)] = x;
+      return true;
+    }
+
+  if (code_pt == MATCH_OPERATOR)
+    {
+      int x_vecexp_pos = -1;
+
+      /* Compare modes.  */
+      if (GET_MODE (pt) != VOIDmode && GET_MODE (x) != GET_MODE (pt))
+	return false;
+
+      /* In case X is also match_operator, compare predicates.  */
+      if (code == MATCH_OPERATOR)
+	{
+	  pred_name = XSTR (pt, 1);
+	  if (pred_name[0] != 0)
+	    {
+	      const struct pred_data *pred_pt = lookup_predicate (pred_name);
+	      if (!pred_pt || pred_pt != lookup_predicate (XSTR (x, 1)))
+		return false;
+	    }
+	}
+
+      /* Compare operands.
+	 MATCH_OPERATOR in input template could match in original template
+	 either 1) MATCH_OPERAND, 2) UNSPEC, 3) ordinary operation (like PLUS).
+	 In the first case operands are at (XVECEXP (x, 2, j)), in the second
+	 - at (XVECEXP (x, 0, j)), in the last one - (XEXP (x, j)).
+	 X_VECEXP_POS variable shows, where to look for these operands.  */
+      if (code == UNSPEC
+	  || code == UNSPEC_VOLATILE)
+	x_vecexp_pos = 0;
+      else if (code == MATCH_OPERATOR)
+	x_vecexp_pos = 2;
+      else
+	x_vecexp_pos = -1;
+
+      /* MATCH_OPERATOR or UNSPEC case.  */
+      if (x_vecexp_pos >= 0)
+	{
+	  /* Compare operands number in X and PT.  */
+	  if (XVECLEN (x, x_vecexp_pos) != XVECLEN (pt, 2))
+	    return false;
+	  for (j = 0; j < XVECLEN (pt, 2); j++)
+	    if (!subst_pattern_match (XVECEXP (x, x_vecexp_pos, j),
+				      XVECEXP (pt, 2, j), lineno))
+	      return false;
+	}
+
+      /* Ordinary operator.  */
+      else
+	{
+	  /* Compare operands number in X and PT.
+	     We count operands differently for X and PT since we compare
+	     an operator (with operands directly in RTX) and MATCH_OPERATOR
+	     (that has a vector with operands).  */
+	  if (GET_RTX_LENGTH (code) != XVECLEN (pt, 2))
+	    return false;
+	  for (j = 0; j < XVECLEN (pt, 2); j++)
+	    if (!subst_pattern_match (XEXP (x, j), XVECEXP (pt, 2, j), lineno))
+	      return false;
+	}
+
+      /* Store the operand to OPERAND_DATA array.  */
+      gcc_assert (XINT (pt, 0) >= 0 && XINT (pt, 0) < MAX_OPERANDS);
+      operand_data[XINT (pt, 0)] = x;
+      return true;
+    }
+
+  if (code_pt == MATCH_PAR_DUP
+      || code_pt == MATCH_DUP
+      || code_pt == MATCH_OP_DUP
+      || code_pt == MATCH_SCRATCH
+      || code_pt == MATCH_PARALLEL)
+    {
+      /* Currently interface for these constructions isn't defined -
+	 probably they aren't needed in input template of define_subst at all.
+	 So, for now their usage in define_subst is forbidden.  */
+      error_with_line (lineno, "%s cannot be used in define_subst",
+		       GET_RTX_NAME (code_pt));
+    }
+
+  gcc_assert (code != MATCH_PAR_DUP
+      && code_pt != MATCH_DUP
+      && code_pt != MATCH_OP_DUP
+      && code_pt != MATCH_SCRATCH
+      && code_pt != MATCH_PARALLEL
+      && code_pt != MATCH_OPERAND
+      && code_pt != MATCH_OPERATOR);
+  /* If PT is none of the handled above, then we match only expressions with
+     the same code in X.  */
+  if (code != code_pt)
+    return false;
+
+  fmt = GET_RTX_FORMAT (code_pt);
+  len = GET_RTX_LENGTH (code_pt);
+
+  for (i = 0; i < len; i++)
+    {
+      if (fmt[i] == '0')
+	break;
+
+      switch (fmt[i])
+	{
+	case 'i': case 'w': case 's':
+	  continue;
+
+	case 'e': case 'u':
+	  if (!subst_pattern_match (XEXP (x, i), XEXP (pt, i), lineno))
+	    return false;
+	  break;
+	case 'E':
+	  {
+	    if (XVECLEN (x, i) != XVECLEN (pt, i))
+	      return false;
+	    for (j = 0; j < XVECLEN (pt, i); j++)
+	      if (!subst_pattern_match (XVECEXP (x, i, j), XVECEXP (pt, i, j),
+					lineno))
+		return false;
+	    break;
+	  }
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  return true;
+}
+
 /* Examine the attribute "predicable"; discover its boolean values
    and its default.  */
 
@@ -660,6 +982,78 @@ n_alternatives (const char *s)
       n += (*s++ == ',');
 
   return n;
+}
+
+/* The routine scans rtl PATTERN, find match_operand in it and counts
+   number of alternatives.  If PATTERN contains several match_operands
+   with different number of alternatives, error is emitted, and the
+   routine returns 0.  If all match_operands in PATTERN have the same
+   number of alternatives, it's stored in N_ALT, and the routine returns 1.
+   Argument LINENO is used in when the error is emitted.  */
+static int
+get_alternatives_number (rtx pattern, int *n_alt, int lineno)
+{
+  const char *fmt;
+  enum rtx_code code;
+  int i, j, len;
+
+  if (!n_alt)
+    return 0;
+
+  code = GET_CODE (pattern);
+  switch (code)
+    {
+    case MATCH_OPERAND:
+      i = n_alternatives (XSTR (pattern, 2));
+      /* n_alternatives returns 1 if constraint string is empty -
+	 here we fix it up.  */
+      if (!*(XSTR (pattern, 2)))
+	i = 0;
+      if (*n_alt <= 0)
+	*n_alt = i;
+
+      else if (i && i != *n_alt)
+	{
+	  error_with_line (lineno,
+			   "wrong number of alternatives in operand %d",
+			   XINT (pattern, 0));
+	  return 0;
+	}
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  if (!get_alternatives_number (XEXP (pattern, i), n_alt, lineno))
+		return 0;
+	  break;
+
+	case 'V':
+	  if (XVEC (pattern, i) == NULL)
+	    break;
+
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    if (!get_alternatives_number (XVECEXP (pattern, i, j),
+					  n_alt, lineno))
+		return 0;
+	  break;
+
+	case 'i': case 'w': case '0': case 's': case 'S': case 'T':
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+    return 1;
 }
 
 /* Determine how many alternatives there are in INSN, and how many
@@ -746,7 +1140,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 	  {
 	    size_t c_len = strlen (c);
 	    size_t len = alt * (c_len + 1);
-	    char *new_c = XNEWVEC(char, len);
+	    char *new_c = XNEWVEC (char, len);
 
 	    memcpy (new_c, c, c_len);
 	    for (i = 1; i < alt; ++i)
@@ -800,6 +1194,64 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 
 	default:
 	  gcc_unreachable ();
+	}
+    }
+
+  return pattern;
+}
+
+/* Duplicate constraints in PATTERN.  If pattern is from original
+   rtl-template, we need to duplicate each alternative - for that we
+   need to use duplicate_each_alternative () as a functor ALTER.
+   If pattern is from output-pattern of define_subst, we need to
+   duplicate constraints in another way - with duplicate_alternatives ().
+   N_DUP is multiplication factor.  */
+static rtx
+alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
+{
+  const char *fmt;
+  enum rtx_code code;
+  int i, j, len;
+
+  code = GET_CODE (pattern);
+  switch (code)
+    {
+    case MATCH_OPERAND:
+      XSTR (pattern, 2) = alter (XSTR (pattern, 2), n_dup);
+      break;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  len = GET_RTX_LENGTH (code);
+  for (i = 0; i < len; i++)
+    {
+      rtx r;
+
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  r = alter_constraints (XEXP (pattern, i), n_dup, alter);
+	  if (r == NULL)
+	    return r;
+	  break;
+
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    {
+	      r = alter_constraints (XVECEXP (pattern, i, j), n_dup, alter);
+	      if (r == NULL)
+		return r;
+	    }
+	  break;
+
+	case 'i': case 'w': case '0': case 's':
+	  break;
+
+	default:
+	  break;
 	}
     }
 
@@ -920,7 +1372,7 @@ alter_attrs_for_insn (rtx insn)
   if (!global_changes_made)
     {
       struct queue_elem *elem;
-      
+
       global_changes_made = true;
       add_define_attr ("ce_enabled");
       add_define_attr ("nonce_enabled");
@@ -952,6 +1404,46 @@ alter_attrs_for_insn (rtx insn)
   SET_SRC (set) = modify_attr_enabled_ce (val);
   RTVEC_ELT (new_vec, i) = set;
   XVEC (insn, 4) = new_vec;
+}
+
+/* As number of constraints is changed after define_subst, we need to
+   process attributes as well - we need to duplicate them the same way
+   that we duplicated constraints in original pattern
+   ELEM is a queue element, containing our rtl-template,
+   N_DUP - multiplication factor.  */
+static void
+alter_attrs_for_subst_insn (struct queue_elem * elem, int n_dup)
+{
+  rtvec vec = XVEC (elem->data, 4);
+  int num_elem;
+  int i;
+
+  if (n_dup < 2 || ! vec)
+    return;
+
+  num_elem = GET_NUM_ELEM (vec);
+  for (i = num_elem - 1; i >= 0; --i)
+    {
+      rtx sub = RTVEC_ELT (vec, i);
+      switch (GET_CODE (sub))
+	{
+	case SET_ATTR:
+	  if (strchr (XSTR (sub, 1), ',') != NULL)
+	    XSTR (sub, 1) = duplicate_alternatives (XSTR (sub, 1), n_dup);
+	    break;
+
+	case SET_ATTR_ALTERNATIVE:
+	case SET:
+	  error_with_line (elem->lineno,
+			   "%s: `define_subst' does not support attributes "
+			   "assigned by `set' and `set_attr_alternative'",
+			   XSTR (elem->data, 0));
+	  return;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
 }
 
 /* Adjust all of the operand numbers in SRC to match the shift they'll
@@ -1008,7 +1500,7 @@ alter_output_for_insn (struct queue_elem *ce_elem,
   if (*insn_out == '@')
     {
       len = (ce_len + 1) * alt + insn_len + 1;
-      p = result = XNEWVEC(char, len);
+      p = result = XNEWVEC (char, len);
 
       do
 	{
@@ -1040,6 +1532,136 @@ alter_output_for_insn (struct queue_elem *ce_elem,
     }
 
   return result;
+}
+
+/* From string STR "a,b,c" produce "a,b,c,a,b,c,a,b,c", i.e. original
+   string, duplicated N_DUP times.  */
+
+static const char *
+duplicate_alternatives (const char * str, int n_dup)
+{
+  int i, len, new_len;
+  char *result, *sp;
+  const char *cp;
+
+  if (n_dup < 2)
+    return str;
+
+  while (ISSPACE (*str))
+    str++;
+
+  if (*str == '\0')
+    return str;
+
+  cp = str;
+  len = strlen (str);
+  new_len = (len + 1) * n_dup;
+
+  sp = result = XNEWVEC (char, new_len);
+
+  /* Global modifier characters mustn't be duplicated: skip if found.  */
+  if (*cp == '=' || *cp == '+' || *cp == '%')
+    {
+      *sp++ = *cp++;
+      len--;
+    }
+
+  /* Copy original constraints N_DUP times.  */
+  for (i = 0; i < n_dup; i++, sp += len+1)
+    {
+      memcpy (sp, cp, len);
+      *(sp+len) = (i == n_dup - 1) ? '\0' : ',';
+    }
+
+  return result;
+}
+
+/* From string STR "a,b,c" produce "a,a,a,b,b,b,c,c,c", i.e. string where
+   each alternative from the original string is duplicated N_DUP times.  */
+static const char *
+duplicate_each_alternative (const char * str, int n_dup)
+{
+  int i, len, new_len;
+  char *result, *sp, *ep, *cp;
+
+  if (n_dup < 2)
+    return str;
+
+  while (ISSPACE (*str))
+    str++;
+
+  if (*str == '\0')
+    return str;
+
+  cp = xstrdup (str);
+
+  new_len = (strlen (cp) + 1) * n_dup;
+
+  sp = result = XNEWVEC (char, new_len);
+
+  /* Global modifier characters mustn't be duplicated: skip if found.  */
+  if (*cp == '=' || *cp == '+' || *cp == '%')
+      *sp++ = *cp++;
+
+  do
+    {
+      if ((ep = strchr (cp, ',')) != NULL)
+	*ep++ = '\0';
+      len = strlen (cp);
+
+      /* Copy a constraint N_DUP times.  */
+      for (i = 0; i < n_dup; i++, sp += len + 1)
+	{
+	  memcpy (sp, cp, len);
+	  *(sp+len) = (ep == NULL && i == n_dup - 1) ? '\0' : ',';
+	}
+
+      cp = ep;
+    }
+  while (cp != NULL);
+
+  return result;
+}
+
+/* Alter the output of INSN whose pattern was modified by
+   DEFINE_SUBST.  We must replicate output strings according
+   to the new number of alternatives ALT in substituted pattern.
+   If ALT equals 1, output has one alternative or defined by C
+   code, then output is returned without any changes.  */
+
+static const char *
+alter_output_for_subst_insn (rtx insn, int alt)
+{
+  const char *insn_out, *sp ;
+  char *old_out, *new_out, *cp;
+  int i, j, new_len;
+
+  insn_out = XTMPL (insn, 3);
+
+  if (alt < 2 || *insn_out == '*' || *insn_out != '@')
+    return insn_out;
+
+  old_out = XNEWVEC (char, strlen (insn_out)),
+  sp = insn_out;
+
+  while (ISSPACE (*sp) || *sp == '@')
+    sp++;
+
+  for (i = 0; *sp;)
+    old_out[i++] = *sp++;
+
+  new_len = alt * (i + 1) + 1;
+
+  new_out = XNEWVEC (char, new_len);
+  new_out[0] = '@';
+
+  for (j = 0, cp = new_out + 1; j < alt; j++, cp += i + 1)
+    {
+      memcpy (cp, old_out, i);
+      *(cp+i) = (j == alt - 1) ? '\0' : '\n';
+    }
+
+  return new_out;
 }
 
 /* Replicate insns as appropriate for the given DEFINE_COND_EXEC.  */
@@ -1151,6 +1773,413 @@ process_one_cond_exec (struct queue_elem *ce_elem)
     }
 }
 
+/* Try to apply define_substs to the given ELEM.
+   Only define_substs, specified via attributes would be applied.
+   If attribute, requiring define_subst, is set, but no define_subst
+   was applied, ELEM would be deleted.  */
+
+static void
+process_substs_on_one_elem (struct queue_elem *elem,
+			    struct queue_elem *queue)
+{
+  struct queue_elem *subst_elem;
+  int i, j, patterns_match;
+
+  for (subst_elem = define_subst_queue;
+       subst_elem; subst_elem = subst_elem->next)
+    {
+      int alternatives, alternatives_subst;
+      rtx subst_pattern;
+      rtvec subst_pattern_vec;
+
+      if (!has_subst_attribute (elem, subst_elem))
+	continue;
+
+      /* Compare original rtl-pattern from define_insn with input
+	 pattern from define_subst.
+	 Also, check if numbers of alternatives are the same in all
+	 match_operands.  */
+      if (XVECLEN (elem->data, 1) != XVECLEN (subst_elem->data, 1))
+	continue;
+      patterns_match = 1;
+      alternatives = -1;
+      alternatives_subst = -1;
+      for (j = 0; j < XVECLEN (elem->data, 1); j++)
+	{
+	  if (!subst_pattern_match (XVECEXP (elem->data, 1, j),
+				    XVECEXP (subst_elem->data, 1, j),
+				    subst_elem->lineno))
+	    {
+	      patterns_match = 0;
+	      break;
+	    }
+
+	  if (!get_alternatives_number (XVECEXP (elem->data, 1, j),
+					&alternatives, subst_elem->lineno))
+	    {
+	      patterns_match = 0;
+	      break;
+	    }
+	}
+
+      /* Check if numbers of alternatives are the same in all
+	 match_operands in output template of define_subst.  */
+      for (j = 0; j < XVECLEN (subst_elem->data, 3); j++)
+	{
+	  if (!get_alternatives_number (XVECEXP (subst_elem->data, 3, j),
+					&alternatives_subst,
+					subst_elem->lineno))
+	    {
+	      patterns_match = 0;
+	      break;
+	    }
+	}
+
+      if (!patterns_match)
+	continue;
+
+      /* Clear array in which we save occupied indexes of operands.  */
+      memset (used_operands_numbers, 0, sizeof (used_operands_numbers));
+
+      /* Create a pattern, based on the output one from define_subst.  */
+      subst_pattern_vec = rtvec_alloc (XVECLEN (subst_elem->data, 3));
+      for (j = 0; j < XVECLEN (subst_elem->data, 3); j++)
+	{
+	  subst_pattern = copy_rtx (XVECEXP (subst_elem->data, 3, j));
+
+	  /* Duplicate constraints in substitute-pattern.  */
+	  subst_pattern = alter_constraints (subst_pattern, alternatives,
+					     duplicate_each_alternative);
+
+	  subst_pattern = adjust_operands_numbers (subst_pattern);
+
+	  /* Substitute match_dup and match_op_dup in the new pattern and
+	     duplicate constraints.  */
+	  subst_pattern = subst_dup (subst_pattern, alternatives,
+				     alternatives_subst);
+
+	  replace_duplicating_operands_in_pattern (subst_pattern);
+
+	  /* We don't need any constraints in DEFINE_EXPAND.  */
+	  if (GET_CODE (elem->data) == DEFINE_EXPAND)
+	    remove_constraints (subst_pattern);
+
+	  RTVEC_ELT (subst_pattern_vec, j) = subst_pattern;
+	}
+      XVEC (elem->data, 1) = subst_pattern_vec;
+
+      for (i = 0; i < MAX_OPERANDS; i++)
+	  match_operand_entries_in_pattern[i] = NULL;
+
+      if (GET_CODE (elem->data) == DEFINE_INSN)
+	{
+	  XTMPL (elem->data, 3) =
+	    alter_output_for_subst_insn (elem->data, alternatives_subst);
+	  alter_attrs_for_subst_insn (elem, alternatives_subst);
+	}
+
+      /* Recalculate condition, joining conditions from original and
+	 DEFINE_SUBST input patterns.  */
+      XSTR (elem->data, 2) = join_c_conditions (XSTR (subst_elem->data, 2),
+						XSTR (elem->data, 2));
+      /* Mark that subst was applied by changing attribute from "yes"
+	 to "no".  */
+      change_subst_attribute (elem, subst_elem, subst_false);
+    }
+
+  /* If ELEM contains a subst attribute with value "yes", then we
+     expected that a subst would be applied, but it wasn't - so,
+     we need to remove that elementto avoid duplicating.  */
+  for (subst_elem = define_subst_queue;
+       subst_elem; subst_elem = subst_elem->next)
+    {
+      if (has_subst_attribute (elem, subst_elem))
+	{
+	  remove_from_queue (elem, &queue);
+	  return;
+	}
+    }
+}
+
+/* This is a subroutine of mark_operands_used_in_match_dup.
+   This routine is marks all MATCH_OPERANDs inside PATTERN as occupied.  */
+static void
+mark_operands_from_match_dup (rtx pattern)
+{
+  const char *fmt;
+  int i, j, len, opno;
+
+  if (GET_CODE (pattern) == MATCH_OPERAND
+      || GET_CODE (pattern) == MATCH_OPERATOR
+      || GET_CODE (pattern) == MATCH_PARALLEL)
+    {
+      opno = XINT (pattern, 0);
+      gcc_assert (opno >= 0 && opno < MAX_OPERANDS);
+      used_operands_numbers [opno] = 1;
+    }
+  fmt = GET_RTX_FORMAT (GET_CODE (pattern));
+  len = GET_RTX_LENGTH (GET_CODE (pattern));
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  mark_operands_from_match_dup (XEXP (pattern, i));
+	  break;
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    mark_operands_from_match_dup (XVECEXP (pattern, i, j));
+	  break;
+	}
+    }
+}
+
+/* This is a subroutine of adjust_operands_numbers.
+   It goes through all expressions in PATTERN and when MATCH_DUP is
+   met, all MATCH_OPERANDs inside it is marked as occupied.  The
+   process of marking is done by routin mark_operands_from_match_dup.  */
+static void
+mark_operands_used_in_match_dup (rtx pattern)
+{
+  const char *fmt;
+  int i, j, len, opno;
+
+  if (GET_CODE (pattern) == MATCH_DUP)
+    {
+      opno = XINT (pattern, 0);
+      gcc_assert (opno >= 0 && opno < MAX_OPERANDS);
+      mark_operands_from_match_dup (operand_data[opno]);
+      return;
+    }
+  fmt = GET_RTX_FORMAT (GET_CODE (pattern));
+  len = GET_RTX_LENGTH (GET_CODE (pattern));
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  mark_operands_used_in_match_dup (XEXP (pattern, i));
+	  break;
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    mark_operands_used_in_match_dup (XVECEXP (pattern, i, j));
+	  break;
+	}
+    }
+}
+
+/* This is subroutine of renumerate_operands_in_pattern.
+   It finds first not-occupied operand-index.  */
+static int
+find_first_unused_number_of_operand ()
+{
+  int i;
+  for (i = 0; i < MAX_OPERANDS; i++)
+    if (!used_operands_numbers[i])
+      return i;
+  return MAX_OPERANDS;
+}
+
+/* This is subroutine of adjust_operands_numbers.
+   It visits all expressions in PATTERN and assigns not-occupied
+   operand indexes to MATCH_OPERANDs and MATCH_OPERATORs of this
+   PATTERN.  */
+static void
+renumerate_operands_in_pattern (rtx pattern)
+{
+  const char *fmt;
+  enum rtx_code code;
+  int i, j, len, new_opno;
+  code = GET_CODE (pattern);
+
+  if (code == MATCH_OPERAND
+      || code == MATCH_OPERATOR)
+    {
+      new_opno = find_first_unused_number_of_operand ();
+      gcc_assert (new_opno >= 0 && new_opno < MAX_OPERANDS);
+      XINT (pattern, 0) = new_opno;
+      used_operands_numbers [new_opno] = 1;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (pattern));
+  len = GET_RTX_LENGTH (GET_CODE (pattern));
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  renumerate_operands_in_pattern (XEXP (pattern, i));
+	  break;
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    renumerate_operands_in_pattern (XVECEXP (pattern, i, j));
+	  break;
+	}
+    }
+}
+
+/* If output pattern of define_subst contains MATCH_DUP, then this
+   expression would be replaced with the pattern, matched with
+   MATCH_OPERAND from input pattern.  This pattern could contain any
+   number of MATCH_OPERANDs, MATCH_OPERATORs etc., so it's possible
+   that a MATCH_OPERAND from output_pattern (if any) would have the
+   same number, as MATCH_OPERAND from copied pattern.  To avoid such
+   indexes overlapping, we assign new indexes to MATCH_OPERANDs,
+   laying in the output pattern outside of MATCH_DUPs.  */
+static rtx
+adjust_operands_numbers (rtx pattern)
+{
+  mark_operands_used_in_match_dup (pattern);
+
+  renumerate_operands_in_pattern (pattern);
+
+  return pattern;
+}
+
+/* Generate RTL expression
+   (match_dup OPNO)
+   */
+static rtx
+generate_match_dup (int opno)
+{
+  rtx return_rtx = rtx_alloc (MATCH_DUP);
+  PUT_CODE (return_rtx, MATCH_DUP);
+  XINT (return_rtx, 0) = opno;
+  return return_rtx;
+}
+
+/* This routine checks all match_operands in PATTERN and if some of
+   have the same index, it replaces all of them except the first one  to
+   match_dup.
+   Usually, match_operands with the same indexes are forbidden, but
+   after define_subst copy an RTL-expression from original template,
+   indexes of existed and just-copied match_operands could coincide.
+   To fix it, we replace one of them with match_dup.  */
+static rtx
+replace_duplicating_operands_in_pattern (rtx pattern)
+{
+  const char *fmt;
+  int i, j, len, opno;
+  rtx mdup;
+
+  if (GET_CODE (pattern) == MATCH_OPERAND)
+    {
+      opno = XINT (pattern, 0);
+      gcc_assert (opno >= 0 && opno < MAX_OPERANDS);
+      if (match_operand_entries_in_pattern[opno] == NULL)
+	{
+	  match_operand_entries_in_pattern[opno] = pattern;
+	  return NULL;
+	}
+      else
+	{
+	  /* Compare predicates before replacing with match_dup.  */
+	  if (strcmp (XSTR (pattern, 1),
+		      XSTR (match_operand_entries_in_pattern[opno], 1)))
+	    {
+	      error ("duplicated match_operands with different predicates were"
+		     " found.");
+	      return NULL;
+	    }
+	  return generate_match_dup (opno);
+	}
+    }
+  fmt = GET_RTX_FORMAT (GET_CODE (pattern));
+  len = GET_RTX_LENGTH (GET_CODE (pattern));
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  mdup = replace_duplicating_operands_in_pattern (XEXP (pattern, i));
+	  if (mdup)
+	    XEXP (pattern, i) = mdup;
+	  break;
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    {
+	      mdup =
+		replace_duplicating_operands_in_pattern (XVECEXP
+							 (pattern, i, j));
+	      if (mdup)
+		XVECEXP (pattern, i, j) = mdup;
+	    }
+	  break;
+	}
+    }
+  return NULL;
+}
+
+/* The routine modifies given input PATTERN of define_subst, replacing
+   MATCH_DUP and MATCH_OP_DUP with operands from define_insn original
+   pattern, whose operands are stored in OPERAND_DATA array.
+   It also duplicates constraints in operands - constraints from
+   define_insn operands are duplicated N_SUBST_ALT times, constraints
+   from define_subst operands are duplicated N_ALT times.
+   After the duplication, returned output rtl-pattern contains every
+   combination of input constraints Vs constraints from define_subst
+   output.  */
+static rtx
+subst_dup (rtx pattern, int n_alt, int n_subst_alt)
+{
+  const char *fmt;
+  enum rtx_code code;
+  int i, j, len, opno;
+
+  code = GET_CODE (pattern);
+  switch (code)
+    {
+    case MATCH_DUP:
+    case MATCH_OP_DUP:
+      opno = XINT (pattern, 0);
+
+      gcc_assert (opno >= 0 && opno < MAX_OPERANDS);
+
+      if (operand_data[opno])
+	{
+	  pattern = copy_rtx (operand_data[opno]);
+
+	  /* Duplicate constraints.  */
+	  pattern = alter_constraints (pattern, n_subst_alt,
+				       duplicate_alternatives);
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (pattern));
+  len = GET_RTX_LENGTH (GET_CODE (pattern));
+  for (i = 0; i < len; i++)
+    {
+      switch (fmt[i])
+	{
+	case 'e': case 'u':
+	  if (code != MATCH_DUP && code != MATCH_OP_DUP)
+	    XEXP (pattern, i) = subst_dup (XEXP (pattern, i),
+					   n_alt, n_subst_alt);
+	  break;
+	case 'V':
+	  if (XVEC (pattern, i) == NULL)
+	    break;
+	case 'E':
+	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
+	    if (code != MATCH_DUP && code != MATCH_OP_DUP)
+	      XVECEXP (pattern, i, j) = subst_dup (XVECEXP (pattern, i, j),
+						   n_alt, n_subst_alt);
+	  break;
+
+	case 'i': case 'w': case '0': case 's': case 'S': case 'T':
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  return pattern;
+}
+
 /* If we have any DEFINE_COND_EXEC patterns, expand the DEFINE_INSN
    patterns appropriately.  */
 
@@ -1165,6 +2194,42 @@ process_define_cond_exec (void)
 
   for (elem = define_cond_exec_queue; elem ; elem = elem->next)
     process_one_cond_exec (elem);
+}
+
+/* If we have any DEFINE_SUBST patterns, expand DEFINE_INSN and
+   DEFINE_EXPAND patterns appropriately.  */
+
+static void
+process_define_subst (void)
+{
+  struct queue_elem *elem, *elem_attr;
+
+  /* Check if each define_subst has corresponding define_subst_attr.  */
+  for (elem = define_subst_queue; elem ; elem = elem->next)
+    {
+      for (elem_attr = define_subst_attr_queue;
+	   elem_attr;
+	   elem_attr = elem_attr->next)
+	if (strcmp (XSTR (elem->data, 0), XSTR (elem_attr->data, 1)) == 0)
+	    goto found;
+
+	error_with_line (elem->lineno,
+			 "%s: `define_subst' must have at least one "
+			 "corresponding `define_subst_attr'",
+			 XSTR (elem->data, 0));
+	return;
+      found:
+	continue;
+    }
+
+  for (elem = define_insn_queue; elem ; elem = elem->next)
+    process_substs_on_one_elem (elem, define_insn_queue);
+  for (elem = other_queue; elem ; elem = elem->next)
+    {
+      if (GET_CODE (elem->data) != DEFINE_EXPAND)
+	continue;
+      process_substs_on_one_elem (elem, other_queue);
+    }
 }
 
 /* A read_md_files callback for reading an rtx.  */
@@ -1391,6 +2456,38 @@ gen_mnemonic_attr (void)
   XSTR (mnemonic_attr, 1) = XOBFINISH (&string_obstack, char *);
 }
 
+/* Check if there are DEFINE_ATTRs with the same name.  */
+static void
+check_define_attr_duplicates ()
+{
+  struct queue_elem *elem;
+  htab_t attr_htab;
+  char * attr_name;
+  void **slot;
+
+  attr_htab = htab_create (500, htab_hash_string, htab_eq_string, NULL);
+
+  for (elem = define_attr_queue; elem; elem = elem->next)
+    {
+      attr_name = xstrdup (XSTR (elem->data, 0));
+
+      slot = htab_find_slot (attr_htab, attr_name, INSERT);
+
+      /* Duplicate.  */
+      if (*slot)
+	{
+	  error_with_line (elem->lineno, "redefinition of attribute '%s'",
+			   attr_name);
+	  htab_delete (attr_htab);
+	  return;
+	}
+
+      *slot = attr_name;
+    }
+
+  htab_delete (attr_htab);
+}
+
 /* The entry point for initializing the reader.  */
 
 bool
@@ -1407,9 +2504,16 @@ init_rtx_reader_args_cb (int argc, char **argv,
 
   read_md_files (argc, argv, parse_opt, rtx_handle_directive);
 
+  if (define_attr_queue != NULL)
+    check_define_attr_duplicates ();
+
   /* Process define_cond_exec patterns.  */
   if (define_cond_exec_queue != NULL)
     process_define_cond_exec ();
+
+  /* Process define_subst patterns.  */
+  if (define_subst_queue != NULL)
+    process_define_subst ();
 
   if (define_attr_queue != NULL)
     gen_mnemonic_attr ();
@@ -1470,6 +2574,7 @@ read_md_rtx (int *lineno, int *seqnr)
     {
     case DEFINE_INSN:
     case DEFINE_EXPAND:
+    case DEFINE_SUBST:
       if (maybe_eval_c_test (XSTR (desc, 2)) != 0)
 	sequence_num++;
       else if (insn_elision)
@@ -1545,7 +2650,7 @@ maybe_eval_c_test (const char *expr)
   const struct c_test *test;
   struct c_test dummy;
 
-  if (expr[0] == 0)
+  if (!expr || expr[0] == 0)
     return 1;
 
   dummy.expr = expr;

@@ -1,3 +1,75 @@
+2012-11-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52161
+	* trans-stmt.c (gfc_trans_sync): Fix bound checking
+	for -fcoarray=lib.
+
+2012-11-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52161
+	* trans-stmt.c (gfc_trans_sync): Fix bound checking.
+
+2012-11-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55476
+	* expr.c (gfc_check_pointer_assign): Fix check
+	pointer-might-outlive-target check for host_assoc.
+
+2012-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans-decl.c (gfc_finish_var_decl): Do not set DECL_RESTRICTED_P.
+
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54997
+	* decl.c (match_procedure_decl): Don't set 'referenced' attribute
+	for PROCEDURE declarations.
+	* parse.c (gfc_fixup_sibling_symbols,parse_contained): Don't set
+	'referenced' attribute for all contained procedures.
+	* trans-decl.c (gfc_get_symbol_decl): Allow for unreferenced procedures.
+	(build_function_decl): Set TREE_USED for referenced procedures.
+
+2012-11-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54881
+	* match.c (select_derived_set_tmp,select_class_set_tmp): Removed and
+	unified into ...
+	(select_type_set_tmp): ... this one. Set POINTER argument according to
+	selector.
+	* trans-intrinsic.c (gfc_conv_associated): Use 'gfc_class_data_get'
+	instead of 'gfc_add_data_component'.
+
+2012-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/30146
+	* frontend-passes.c (doloop_warn):  New function.
+	(doloop_list):  New static variable.
+	(doloop_size):  New static variable.
+	(doloop_level):  New static variable.
+	(gfc_run_passes): Call doloop_warn.
+	(doloop_code):  New function.
+	(doloop_function):  New function.
+	(gfc_code_walker):  Keep track of DO level.
+
+2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55314
+	* resolve.c (resolve_allocate_deallocate):  Compare all
+	subscripts when deciding if to reject a (de)allocate
+	statement.
+
+2012-11-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55352
+	* trans-decl.c (generate_local_decl): Don't warn for explicitly imported
+	but unused module variables which are in a namelist or common block.
+
+2012-11-20  Diego Novillo  <dnovillo@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c: Replace all vec<T, A>() initializers
+	with vNULL.
+
 2012-11-17  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)

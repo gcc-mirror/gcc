@@ -1316,6 +1316,9 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	      DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
 	    }
 
+	  if (this->in_unique_section_)
+	    resolve_unique_section (decl, 0, 1);
+
 	  go_preserve_from_gc(decl);
 
 	  if (this->closure_var_ != NULL)

@@ -114,6 +114,7 @@ bool AsanInterceptsSignal(int signum);
 void SetAlternateSignalStack();
 void UnsetAlternateSignalStack();
 void InstallSignalHandlers();
+void ClearShadowMemoryForContext(void *context);
 void AsanPlatformThreadInit();
 
 // Wrapper for TLS/TSD.

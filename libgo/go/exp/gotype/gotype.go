@@ -176,8 +176,7 @@ func processPackage(fset *token.FileSet, files map[string]*ast.File) {
 		report(err)
 		return
 	}
-	_, err = types.Check(fset, pkg)
-	if err != nil {
+	if err = types.Check(fset, pkg, nil, nil); err != nil {
 		report(err)
 	}
 }

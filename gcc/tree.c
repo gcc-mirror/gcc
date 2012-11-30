@@ -1074,7 +1074,6 @@ double_int_to_tree (tree type, double_int cst)
 bool
 double_int_fits_to_tree_p (const_tree type, double_int cst)
 {
-  /* Size types *are* sign extended.  */
   bool sign_extended_type = !TYPE_UNSIGNED (type);
 
   double_int ext
@@ -1102,10 +1101,7 @@ tree
 force_fit_type_double (tree type, double_int cst, int overflowable,
 		       bool overflowed)
 {
-  bool sign_extended_type;
-
-  /* Size types *are* sign extended.  */
-  sign_extended_type = !TYPE_UNSIGNED (type);
+  bool sign_extended_type = !TYPE_UNSIGNED (type);
 
   /* If we need to set overflow flags, return a new unshared node.  */
   if (overflowed || !double_int_fits_to_tree_p(type, cst))
@@ -1115,8 +1111,8 @@ force_fit_type_double (tree type, double_int cst, int overflowable,
 	  || (overflowable > 0 && sign_extended_type))
 	{
 	  tree t = make_node (INTEGER_CST);
-	  TREE_INT_CST (t) = cst.ext (TYPE_PRECISION (type),
-					     !sign_extended_type);
+	  TREE_INT_CST (t)
+	    = cst.ext (TYPE_PRECISION (type), !sign_extended_type);
 	  TREE_TYPE (t) = type;
 	  TREE_OVERFLOW (t) = 1;
 	  return t;

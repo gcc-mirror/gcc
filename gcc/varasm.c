@@ -1113,7 +1113,7 @@ use_blocks_for_decl_p (tree decl)
   if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
     return false;
 
-  return true;
+  return targetm.use_blocks_for_decl_p (decl);
 }
 
 /* Create the DECL_RTL for a VAR_DECL or FUNCTION_DECL.  DECL should
@@ -5718,7 +5718,7 @@ tm_alias_pair_cmp (const void *x, const void *y)
 void
 finish_tm_clone_pairs (void)
 {
-  vec<tm_alias_pair> tm_alias_pairs = vec<tm_alias_pair>();
+  vec<tm_alias_pair> tm_alias_pairs = vNULL;
 
   if (tm_clone_hash == NULL)
     return;

@@ -701,7 +701,7 @@ execute_cse_sincos_1 (tree name)
   tree fndecl, res, type;
   gimple def_stmt, use_stmt, stmt;
   int seen_cos = 0, seen_sin = 0, seen_cexpi = 0;
-  vec<gimple> stmts = vec<gimple>();
+  vec<gimple> stmts = vNULL;
   basic_block top_bb = NULL;
   int i;
   bool cfg_changed = false;

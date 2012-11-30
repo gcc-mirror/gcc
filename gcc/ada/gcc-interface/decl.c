@@ -1337,7 +1337,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  }
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
-		    && TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_alloc_type)))
+		    && !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
 		  post_error ("?`Storage_Error` will be raised at run time!",
 			      gnat_entity);
 
@@ -3327,7 +3327,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_variant_list
 		    = build_variant_list (TREE_TYPE (gnu_variant_part),
 					  gnu_subst_list,
-					  vec<variant_desc>());
+					  vNULL);
 
 		  /* If all the qualifiers are unconditionally true, the
 		     innermost variant is statically selected.  */
@@ -4240,8 +4240,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       a function that returns that type.  This usage doesn't make
 	       sense anyway, so give an error here.  */
 	    if (TYPE_SIZE_UNIT (gnu_return_type)
-		&& TREE_CONSTANT (TYPE_SIZE_UNIT (gnu_return_type))
-		&& TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_return_type)))
+		&& TREE_CODE (TYPE_SIZE_UNIT (gnu_return_type)) == INTEGER_CST
+		&& !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_return_type)))
 	      {
 		post_error ("cannot return type whose size overflows",
 			    gnat_entity);
@@ -5989,10 +5989,9 @@ elaborate_entity (Entity_Id gnat_entity)
 static bool
 allocatable_size_p (tree gnu_size, bool static_p)
 {
-  /* We can allocate a fixed size if it hasn't overflowed and can be handled
-     (efficiently) on the host.  */
+  /* We can allocate a fixed size if it is a valid for the middle-end.  */
   if (TREE_CODE (gnu_size) == INTEGER_CST)
-    return !TREE_OVERFLOW (gnu_size) && host_integerp (gnu_size, 1);
+    return valid_constant_size_p (gnu_size);
 
   /* We can allocate a variable size if this isn't a static allocation.  */
   else
@@ -6650,6 +6649,30 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   return gnu_field;
 }
 
+/* Return true if at least one member of COMPONENT_LIST needs strict
+   alignment.  */
+
+static bool
+components_need_strict_alignment (Node_Id component_list)
+{
+  Node_Id component_decl;
+
+  for (component_decl = First_Non_Pragma (Component_Items (component_list));
+       Present (component_decl);
+       component_decl = Next_Non_Pragma (component_decl))
+    {
+      Entity_Id gnat_field = Defining_Entity (component_decl);
+
+      if (Is_Aliased (gnat_field))
+	return True;
+
+      if (Strict_Alignment (Etype (gnat_field)))
+	return True;
+    }
+
+  return False;
+}
+
 /* Return true if TYPE is a type with variable size or a padding type with a
    field of variable size or a record that has a field with such a type.  */
 
@@ -6880,6 +6903,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		       "XVN");
       tree gnu_union_type, gnu_union_name;
       tree this_first_free_pos, gnu_variant_list = NULL_TREE;
+      bool union_field_needs_strict_alignment = false;
 
       if (TREE_CODE (gnu_name) == TYPE_DECL)
 	gnu_name = DECL_NAME (gnu_name);
@@ -6980,8 +7004,18 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	  else
 	    {
 	      /* Deal with packedness like in gnat_to_gnu_field.  */
-	      int field_packed
-		= adjust_packed (gnu_variant_type, gnu_record_type, packed);
+	      bool field_needs_strict_alignment
+	        = components_need_strict_alignment (Component_List (variant));
+	      int field_packed;
+
+	      if (field_needs_strict_alignment)
+		{
+		  field_packed = 0;
+		  union_field_needs_strict_alignment = true;
+		}
+	      else
+		field_packed
+		  = adjust_packed (gnu_variant_type, gnu_record_type, packed);
 
 	      /* Finalize the record type now.  We used to throw away
 		 empty records but we no longer do that because we need
@@ -6997,8 +7031,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 				     gnu_union_type,
 				     all_rep_and_size
 				     ? TYPE_SIZE (gnu_variant_type) : 0,
-				     all_rep_and_size
-				     ? bitsize_zero_node : 0,
+				     all_rep ? bitsize_zero_node : 0,
 				     field_packed, 0);
 
 	      DECL_INTERNAL_P (gnu_field) = 1;
@@ -7041,12 +7074,16 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 			    NULL, true, debug_info, gnat_component_list);
 
 	  /* Deal with packedness like in gnat_to_gnu_field.  */
-	  union_field_packed
-	    = adjust_packed (gnu_union_type, gnu_record_type, packed);
+	  if (union_field_needs_strict_alignment)
+	    union_field_packed = 0;
+	  else
+	    union_field_packed
+	      = adjust_packed (gnu_union_type, gnu_record_type, packed);
 
 	  gnu_variant_part
 	    = create_field_decl (gnu_var_name, gnu_union_type, gnu_record_type,
-				 all_rep ? TYPE_SIZE (gnu_union_type) : 0,
+				 all_rep_and_size
+				 ? TYPE_SIZE (gnu_union_type) : 0,
 				 all_rep || this_first_free_pos
 				 ? bitsize_zero_node : 0,
 				 union_field_packed, 0);
@@ -7216,7 +7253,7 @@ static Uint
 annotate_value (tree gnu_size)
 {
   TCode tcode;
-  Node_Ref_Or_Val ops[3], ret;
+  Node_Ref_Or_Val ops[3], ret, pre_op1 = No_Uint;
   struct tree_int_map in;
   int i;
 
@@ -7245,24 +7282,7 @@ annotate_value (tree gnu_size)
   switch (TREE_CODE (gnu_size))
     {
     case INTEGER_CST:
-      if (TREE_OVERFLOW (gnu_size))
-	return No_Uint;
-
-      /* This may come from a conversion from some smaller type, so ensure
-	 this is in bitsizetype.  */
-      gnu_size = convert (bitsizetype, gnu_size);
-
-      /* For a negative value, build NEGATE_EXPR of the opposite.  Such values
-	 appear in expressions containing aligning patterns.  Note that, since
-	 sizetype is sign-extended but nonetheless unsigned, we don't directly
-	 use tree_int_cst_sgn.  */
-      if (TREE_INT_CST_HIGH (gnu_size) < 0)
-	{
-	  tree op_size = fold_build1 (NEGATE_EXPR, bitsizetype, gnu_size);
-	  return annotate_value (build1 (NEGATE_EXPR, bitsizetype, op_size));
-	}
-
-      return UI_From_gnu (gnu_size);
+      return TREE_OVERFLOW (gnu_size) ? No_Uint : UI_From_gnu (gnu_size);
 
     case COMPONENT_REF:
       /* The only case we handle here is a simple discriminant reference.  */
@@ -7301,13 +7321,30 @@ annotate_value (tree gnu_size)
     case TRUTH_OR_EXPR:		tcode = Truth_Or_Expr; break;
     case TRUTH_XOR_EXPR:	tcode = Truth_Xor_Expr; break;
     case TRUTH_NOT_EXPR:	tcode = Truth_Not_Expr; break;
-    case BIT_AND_EXPR:		tcode = Bit_And_Expr; break;
     case LT_EXPR:		tcode = Lt_Expr; break;
     case LE_EXPR:		tcode = Le_Expr; break;
     case GT_EXPR:		tcode = Gt_Expr; break;
     case GE_EXPR:		tcode = Ge_Expr; break;
     case EQ_EXPR:		tcode = Eq_Expr; break;
     case NE_EXPR:		tcode = Ne_Expr; break;
+
+    case BIT_AND_EXPR:
+      tcode = Bit_And_Expr;
+      /* For negative values, build NEGATE_EXPR of the opposite.  Such values
+	 appear in expressions containing aligning patterns.  Note that, since
+	 sizetype is unsigned, we have to jump through some hoops.   */
+      if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
+	{
+	  tree op1 = TREE_OPERAND (gnu_size, 1);
+	  double_int signed_op1
+	    = tree_to_double_int (op1).sext (TYPE_PRECISION (sizetype));
+	  if (signed_op1.is_negative ())
+	    {
+	      op1 = double_int_to_tree (sizetype, -signed_op1);
+	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
+	    }
+	}
+      break;
 
     case CALL_EXPR:
       {
@@ -7329,7 +7366,10 @@ annotate_value (tree gnu_size)
 
   for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (gnu_size)); i++)
     {
-      ops[i] = annotate_value (TREE_OPERAND (gnu_size, i));
+      if (i == 1 && pre_op1 != No_Uint)
+	ops[i] = pre_op1;
+      else
+	ops[i] = annotate_value (TREE_OPERAND (gnu_size, i));
       if (ops[i] == No_Uint)
 	return No_Uint;
     }
@@ -7552,7 +7592,7 @@ build_position_list (tree gnu_type, bool do_not_flatten_variant, tree gnu_pos,
 static vec<subst_pair>
 build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 {
-  vec<subst_pair> gnu_list = vec<subst_pair>();
+  vec<subst_pair> gnu_list = vNULL;
   Entity_Id gnat_discrim;
   Node_Id gnat_value;
 

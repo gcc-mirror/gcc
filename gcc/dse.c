@@ -2522,8 +2522,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
   /* Cselib clears the table for this case, so we have to essentially
      do the same.  */
   if (NONJUMP_INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
-      && MEM_VOLATILE_P (PATTERN (insn)))
+      && volatile_insn_p (PATTERN (insn)))
     {
       add_wild_read (bb_info);
       insn_info->cannot_delete = true;
@@ -2870,8 +2869,6 @@ dse_step1 (void)
 				 INSN_UID (s_info->redundant_reason->insn));
 		      delete_dead_store_insn (ptr);
 		    }
-		  if (s_info)
-		    s_info->redundant_reason = NULL;
 		  free_store_info (ptr);
 		}
 	      else

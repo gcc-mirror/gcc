@@ -2850,8 +2850,8 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   int c;
   struct pointer_map_t *then_vals;
   struct pointer_map_t *else_vals;
-  vec<rtx> then_regs = vec<rtx>();
-  vec<rtx> else_regs = vec<rtx>();
+  vec<rtx> then_regs = vNULL;
+  vec<rtx> else_regs = vNULL;
   unsigned int i;
   int success_p = FALSE;
 

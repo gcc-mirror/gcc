@@ -1475,7 +1475,7 @@ static vec<ira_loop_tree_node_t>
 ira_loop_tree_body_rev_postorder (ira_loop_tree_node_t loop_node ATTRIBUTE_UNUSED,
 				  vec<ira_loop_tree_node_t> loop_preorder)
 {
-  vec<ira_loop_tree_node_t> topsort_nodes = vec<ira_loop_tree_node_t>();
+  vec<ira_loop_tree_node_t> topsort_nodes = vNULL;
   unsigned int n_loop_preorder;
 
   n_loop_preorder = loop_preorder.length ();
@@ -1580,7 +1580,7 @@ ira_traverse_loop_tree (bool bb_p, ira_loop_tree_node_t loop_node,
   if (bb_p)
     {
       vec<ira_loop_tree_node_t>
-	  loop_preorder = vec<ira_loop_tree_node_t>();
+	  loop_preorder = vNULL;
       unsigned int i;
 
       /* Add all nodes to the set of nodes to visit.  The IRA loop tree

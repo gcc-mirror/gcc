@@ -1,3 +1,105 @@
+2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Restore CC and CXX.
+	* configure.ac (ACX_NONCANONICAL_TARGET): Removed.
+	* asan/Makefile.am (AM_CXXFLAGS): Remove -I for libstdc++-v3 header
+	files.
+	(AM_MAKEFLAGS): Restore CC and CXX.
+	* interception/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
+2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Remove CC and CXX.
+	* configure.ac (ACX_NONCANONICAL_TARGET): New.
+	* asan/Makefile.am (AM_CXXFLAGS): Add -I for libstdc++-v3 header
+	files.
+	(AM_MAKEFLAGS): Remove CC and CXX.
+	* interception/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
+2012-11-27  Kostya Serebryany  <kcc@google.com>
+
+	* All files: Merge from upstream r168699.
+
+2012-11-24  Kostya Serebryany kcc@google.com
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* interception/mach_override/mach_override.c: Migrate from llvm.
+	* interception/mach_override/mach_override.h: Likewise.
+	* interception/mach_override/LICENSE.txt: Likewise.
+	* configure.tgt: Add darwin to supported targets.
+	* configure.ac: Define USING_MACH_OVERRIDE when on darwin.
+	* interception/Makefile.am: Compile mach_override.c when
+	USING_MACH_OVERRIDE defined.
+	* configure: Regenerated.
+	* interception/Makefile.in: Likewise.
+
+2012-11-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/55450
+	* tsan/Makefile.am (gcc_version): New.
+	* tsan/Makefile.in: Regenerated.
+
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+
+	* merge.sh: Support tsan, support added/removed files.
+	* tsan/Makefile.am: Remove tsan_printf.cc.
+	* tsan/Makefile.in: Regenerated.
+	* other files: Merge from upstream r168514.
+
+2012-11-23  Kostya Serebryany  <kcc@google.com>
+
+	* merge.sh: New file.
+
+2012-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan/Makefile.am (AM_CXXFLAGS): Remove -Wno-variadic-macros.
+	* Makefile.am (SUBDIRS): Guard tsan addition with TSAN_SUPPORTED
+	automake conditional instead of !MULTISUBDIR32.
+	* configure.tgt: Set TSAN_SUPPORTED=yes for x86_64/i686-linux
+	for 64-bit multilib.
+	* configure.ac: Check for void * size, source in configure.tgt,
+	define TSAN_SUPPORTED conditional instead of MULTILIBDIR32.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* tsan/Makefile.in: Regenerated.
+
+2012-11-22  Wei Mi  <wmi@google.com>
+
+	* tsan: New directory. Import tsan runtime from llvm.
+	* configure.ac: Add 64 bits tsan build.
+	* Makefile.am: Likewise.
+	* configure: Regenerated.
+	* Makefile.in: Likewise.
+
+2012-11-21  Kostya Serebryany  <kcc@google.com>
+
+	* README.gcc: Extend the README.gcc with mode details.
+
+2012-11-20  Konstantin Serebryany  <konstantin.s.serebryany@gmail.com>
+
+	* sanitizer_common/sanitizer_linux.cc
+	(SANITIZER_LINUX_USES_64BIT_SYSCALLS): Define.
+	(internal_mmap): Use it.
+	(internal_filesize): Likewise.
+
 2012-11-16  Tom Tromey  <tromey@redhat.com>
 
 	* configure.ac: Invoke AM_MAINTAINER_MODE.

@@ -610,9 +610,6 @@
    (set (attr "mode")
 	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
 		 (const_string "<ssePSmode>")
-	       (and (eq_attr "alternative" "1")
-		    (match_test "TARGET_SSE_TYPELESS_STORES"))
-		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<MODE>")
 	       (match_test "optimize_function_for_size_p (cfun)")
@@ -640,9 +637,7 @@
    (set_attr "movu" "1")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (const_string "<ssePSmode>")
-	       (and (eq_attr "alternative" "1")
+	(cond [(ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
 		    (match_test "TARGET_SSE_TYPELESS_STORES"))
 		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
@@ -678,9 +673,6 @@
    (set (attr "mode")
 	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
 		 (const_string "<ssePSmode>")
-	       (and (eq_attr "alternative" "1")
-		    (match_test "TARGET_SSE_TYPELESS_STORES"))
-		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
 	       (match_test "optimize_function_for_size_p (cfun)")
@@ -712,9 +704,7 @@
      (const_string "1")))
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		 (const_string "<ssePSmode>")
-	       (and (eq_attr "alternative" "1")
+	(cond [(ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
 		    (match_test "TARGET_SSE_TYPELESS_STORES"))
 		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
@@ -8226,42 +8216,21 @@
   ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
 })
 
-(define_insn "*avx2_pmulhrswv16hi3"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
-	(truncate:V16HI
-	  (lshiftrt:V16SI
-	    (plus:V16SI
-	      (lshiftrt:V16SI
-		(mult:V16SI
-		  (sign_extend:V16SI
-		    (match_operand:V16HI 1 "nonimmediate_operand" "%x"))
-		  (sign_extend:V16SI
-		    (match_operand:V16HI 2 "nonimmediate_operand" "xm")))
+(define_insn "*<ssse3_avx2>_pmulhrsw<mode>3"
+  [(set (match_operand:VI2_AVX2 0 "register_operand" "=x,x")
+	(truncate:VI2_AVX2
+	  (lshiftrt:<ssedoublemode>
+	    (plus:<ssedoublemode>
+	      (lshiftrt:<ssedoublemode>
+		(mult:<ssedoublemode>
+		  (sign_extend:<ssedoublemode>
+		    (match_operand:VI2_AVX2 1 "nonimmediate_operand" "%0,x"))
+		  (sign_extend:<ssedoublemode>
+		    (match_operand:VI2_AVX2 2 "nonimmediate_operand" "xm,xm")))
 		(const_int 14))
-	      (match_operand:V16HI 3 "const1_operand"))
+	      (match_operand:VI2_AVX2 3 "const1_operand"))
 	    (const_int 1))))]
-  "TARGET_AVX2 && ix86_binary_operator_ok (MULT, V16HImode, operands)"
-  "vpmulhrsw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "type" "sseimul")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "vex")
-   (set_attr "mode" "OI")])
-
-(define_insn "*ssse3_pmulhrswv8hi3"
-  [(set (match_operand:V8HI 0 "register_operand" "=x,x")
-	(truncate:V8HI
-	  (lshiftrt:V8SI
-	    (plus:V8SI
-	      (lshiftrt:V8SI
-		(mult:V8SI
-		  (sign_extend:V8SI
-		    (match_operand:V8HI 1 "nonimmediate_operand" "%0,x"))
-		  (sign_extend:V8SI
-		    (match_operand:V8HI 2 "nonimmediate_operand" "xm,xm")))
-		(const_int 14))
-	      (match_operand:V8HI 3 "const1_operand"))
-	    (const_int 1))))]
-  "TARGET_SSSE3 && ix86_binary_operator_ok (MULT, V8HImode, operands)"
+  "TARGET_SSSE3 && ix86_binary_operator_ok (MULT, <MODE>mode, operands)"
   "@
    pmulhrsw\t{%2, %0|%0, %2}
    vpmulhrsw\t{%2, %1, %0|%0, %1, %2}"
@@ -8270,7 +8239,7 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,vex")
-   (set_attr "mode" "TI")])
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*ssse3_pmulhrswv4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y")

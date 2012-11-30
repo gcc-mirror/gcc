@@ -228,6 +228,9 @@ extern int errno;
 # include <stdlib.h>
 #endif
 
+/* Undef vec_free from AIX stdlib.h header which conflicts with vec.h.  */
+#undef vec_free
+
 /* If we don't have an overriding definition, set SUCCESS_EXIT_CODE and
    FATAL_EXIT_CODE to EXIT_SUCCESS and EXIT_FAILURE respectively,
    or 0 and 1 if those macros are not defined.  */
@@ -899,7 +902,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 	UNALIGNED_LONG_ASM_OP UNALIGNED_DOUBLE_INT_ASM_OP		   \
 	USE_COMMON_FOR_ONE_ONLY IFCVT_EXTRA_FIELDS IFCVT_INIT_EXTRA_FIELDS \
 	CASE_USE_BIT_TESTS FIXUNS_TRUNC_LIKE_FIX_TRUNC                     \
-        GO_IF_MODE_DEPENDENT_ADDRESS
+        GO_IF_MODE_DEPENDENT_ADDRESS DELAY_SLOTS_FOR_EPILOGUE              \
+        ELIGIBLE_FOR_EPILOGUE_DELAY
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\

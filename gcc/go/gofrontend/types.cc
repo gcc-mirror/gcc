@@ -2068,6 +2068,13 @@ Type::methods_constructor(Gogo* gogo, Type* methods_type,
 	    continue;
 	  if (only_value_methods && !p->second->is_value_method())
 	    continue;
+
+	  // This is where we implement the magic //go:nointerface
+	  // comment.  If we saw that comment, we don't add this
+	  // method to the type descriptor.
+	  if (p->second->nointerface())
+	    continue;
+
 	  smethods.push_back(std::make_pair(p->first, p->second));
 	}
     }
@@ -2382,7 +2389,7 @@ class Error_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -2420,7 +2427,7 @@ class Void_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -2458,7 +2465,7 @@ class Boolean_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return true; }
 
   Btype*
@@ -3085,7 +3092,7 @@ class Sink_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -3963,7 +3970,7 @@ class Nil_type : public Type
 
  protected:
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -4014,7 +4021,7 @@ class Call_multiple_result_type : public Type
   }
 
   bool
-  do_compare_is_identity(Gogo*) const
+  do_compare_is_identity(Gogo*)
   { return false; }
 
   Btype*
@@ -4291,7 +4298,7 @@ Struct_type::struct_has_hidden_fields(const Named_type* within,
 // comparisons.
 
 bool
-Struct_type::do_compare_is_identity(Gogo* gogo) const
+Struct_type::do_compare_is_identity(Gogo* gogo)
 {
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
@@ -4323,6 +4330,16 @@ Struct_type::do_compare_is_identity(Gogo* gogo) const
 	return false;
       offset += field_size;
     }
+
+  unsigned int struct_size;
+  if (!this->backend_type_size(gogo, &struct_size))
+    return false;
+  if (offset != struct_size)
+    {
+      // Trailing padding may not be zero when on the stack.
+      return false;
+    }
+
   return true;
 }
 
@@ -5267,7 +5284,7 @@ Array_type::do_verify()
 // Whether we can use memcmp to compare this array.
 
 bool
-Array_type::do_compare_is_identity(Gogo* gogo) const
+Array_type::do_compare_is_identity(Gogo* gogo)
 {
   if (this->length_ == NULL)
     return false;
@@ -6881,6 +6898,24 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	    }
 	  return false;
 	}
+
+      // If the magic //go:nointerface comment was used, the method
+      // may not be used to implement interfaces.
+      if (m->nointerface())
+	{
+	  if (reason != NULL)
+	    {
+	      std::string n = Gogo::message_name(p->name());
+	      size_t len = 100 + n.length();
+	      char* buf = new char[len];
+	      snprintf(buf, len,
+		       _("method %s%s%s is marked go:nointerface"),
+		       open_quote, n.c_str(), close_quote);
+	      reason->assign(buf);
+	      delete[] buf;
+	    }
+	  return false;
+	}
     }
 
   return true;
@@ -7520,6 +7555,15 @@ Named_method::do_bind_method(Expression* expr, Location location) const
   return bme;
 }
 
+// Return whether this method should not participate in interfaces.
+
+bool
+Named_method::do_nointerface() const
+{
+  Named_object* no = this->named_object_;
+  return no->is_function() && no->func_value()->nointerface();
+}
+
 // Class Interface_method.
 
 // Bind a method to an object.
@@ -7968,7 +8012,7 @@ Named_type::do_has_pointer() const
 // function.
 
 bool
-Named_type::do_compare_is_identity(Gogo* gogo) const
+Named_type::do_compare_is_identity(Gogo* gogo)
 {
   // We don't use this->seen_ here because compare_is_identity may
   // call base() later, and that will mess up if seen_ is set here.
@@ -8824,6 +8868,9 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	  Type::build_one_stub_method(gogo, m, buf, stub_params,
 				      fntype->is_varargs(), location);
 	  gogo->finish_function(fntype->location());
+
+	  if (m->nointerface() && stub->is_function())
+	    stub->func_value()->set_nointerface();
 	}
 
       m->set_stub_object(stub);
