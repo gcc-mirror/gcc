@@ -2648,10 +2648,14 @@ bit_field_mode_iterator
 {
   if (!bitregion_end_)
     {
-      /* We can assume that any aligned chunk of UNITS bits that overlaps
-	 the bitfield is mapped and won't trap.  */
-      unsigned HOST_WIDE_INT units = MIN (align, MAX (BIGGEST_ALIGNMENT,
-						      BITS_PER_WORD));
+      /* We can assume that any aligned chunk of ALIGN bits that overlaps
+	 the bitfield is mapped and won't trap, provided that ALIGN isn't
+	 too large.  The cap is the biggest required alignment for data,
+	 or at least the word size.  And force one such chunk at least.  */
+      unsigned HOST_WIDE_INT units
+	= MIN (align, MAX (BIGGEST_ALIGNMENT, BITS_PER_WORD));
+      if (bitsize <= 0)
+	bitsize = 1;
       bitregion_end_ = bitpos + bitsize + units - 1;
       bitregion_end_ -= bitregion_end_ % units + 1;
     }
