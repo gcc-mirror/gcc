@@ -1,3 +1,14 @@
+2012-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52890
+	PR tree-optimization/55415
+	PR tree-optimization/54386
+	PR target/55448
+	* gcc.dg/ipa/ipa-sra-7.c: New test.
+	* gcc.dg/ipa/ipa-sra-8.c: Likewise.
+	* gcc.dg/ipa/ipa-sra-9.c: Likewise.
+	* gcc.target/i386/pr55448.c: Likewise.
+
 2012-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* loop_optimization14.ad[sb]: New test.
