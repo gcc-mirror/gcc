@@ -136,12 +136,7 @@ dump_insn_rtx_1 (rtx insn, int flags)
     sel_print ("%d;", INSN_UID (insn));
 
   if (flags & DUMP_INSN_RTX_PATTERN)
-    {
-      char buf[2048];
-
-      print_insn (buf, insn, 0);
-      sel_print ("%s;", buf);
-    }
+    sel_print ("%s;", str_pattern_slim (insn));
 
   if (flags & DUMP_INSN_RTX_BBN)
     {
@@ -522,6 +517,7 @@ sel_print_insn (const_rtx insn, int aligned ATTRIBUTE_UNUSED)
 
 
 /* Functions for pretty printing of CFG.  */
+/* FIXME: Using pretty-print here could simplify this stuff.  */
 
 /* Replace all occurencies of STR1 to STR2 in BUF.
    The BUF must be large enough to hold the result.  */
@@ -564,7 +560,8 @@ replace_str_in_buf (char *buf, const char *str1, const char *str2)
   while (p);
 }
 
-/* Replace characters in BUF that have special meaning in .dot file.  */
+/* Replace characters in BUF that have special meaning in .dot file.
+   Similar to pp_write_text_as_dot_label_to_stream.  */
 static void
 sel_prepare_string_for_dot_label (char *buf)
 {

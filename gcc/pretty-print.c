@@ -99,6 +99,58 @@ pp_write_text_to_stream (pretty_printer *pp)
   pp_clear_output_area (pp);
 }
 
+/* As pp_write_text_to_stream, but for GraphViz label output.
+
+   Flush the formatted text of pretty-printer PP onto the attached stream.
+   Replace characters in PPF that have special meaning in a GraphViz .dot
+   file.
+   
+   This routine is not very fast, but it doesn't have to be as this is only
+   be used by routines dumping intermediate representations in graph form.  */
+
+void
+pp_write_text_as_dot_label_to_stream (pretty_printer *pp, bool for_record)
+{
+  const char *text = pp_formatted_text (pp);
+  const char *p = text;
+  FILE *fp = pp->buffer->stream;
+
+  while (*p)
+    {
+      switch (*p)
+	{
+	/* Print newlines as a left-aligned newline.  */
+	case '\n':
+	  fputs ("\\l\\\n", fp);
+	  break;
+
+	/* A pipe is only special for record-shape nodes.  */
+	case '|':
+	  if (for_record)
+	    fputc ('\\', fp);
+	  fputc (*p, fp);
+	  break;
+
+	/* The following characters always have to be escaped
+	   for use in labels.  */
+	case '{':
+	case '}':
+	case '<':
+	case '>':
+	case '"':
+	case ' ':
+	  fputc ('\\', fp);
+	  /* fall through */
+	default:
+	  fputc (*p, fp);
+	  break;
+	}
+      p++;
+    }
+
+  pp_clear_output_area (pp);
+}
+
 /* Wrap a text delimited by START and END into PRETTY-PRINTER.  */
 static void
 pp_wrap_text (pretty_printer *pp, const char *start, const char *end)

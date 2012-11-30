@@ -1,3 +1,39 @@
+2012-11-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* coretypes.h (struct pretty_print_info): Make a coretype.
+	(typedef pretty_printer): Likewise.
+	* pretty-print.h (typedef pretty_printer): Not needed here anymore.
+	* pretty-print.c (pp_write_text_as_dot_label_to_stream): New function.
+	* rtl.h (str_pattern_slim): New prototype.
+	(print_value, print_pattern, print_insn): Adjust prototypes to take
+	a pretty-printer rather than a char buffer.
+	* sched-vis.c (safe_concat): Remove.
+	(print_exp): Print into a pretty-printer.
+	(print_value): Likewise.
+	(print_pattern): Likewise.
+	(print_insn): Likewise.
+	(print_insn_with_notes): New static function.
+	(init_rtl_slim_pretty_print): New function.
+	(dump_value_slim): Simplify.  Print into and flush a pretty-printer.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	(str_pattern_slim): New function.
+	* haifa-sched.c (model_recompute): Use str_pattern_slim instead of
+	static buffers.
+	(model_record_pressures): Likewise.
+	(schedule_insn): Likewise.
+	* sel-sched-dump.c (dump_insn_rtx_1): Likewise.
+	(sel_prepare_string_for_dot_label): Refer to graph.c CFG dumper code.
+	* graph.c: Include pretty-print.h.
+	(init_graph_slim_pretty_print): New function.
+	(print_escaped_line): Removed here, and reincarnated as
+	pp_write_text_as_dot_label_to_stream.
+	(draw_cfg_node): Print into a pretty printer.
+	(draw_cfg_node_succ_edges): Likewise.
+	(print_rtl_graph_with_bb): Likewise.
+	* Makefile.in (graph.o): Fix dependencies.
+	(tree-optimize.o, toplev.o, sched-vis.o): Likewise.
+
 2012-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* tsan.c (is_load_of_const_p): Removed.
