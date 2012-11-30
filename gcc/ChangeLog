@@ -1,3 +1,43 @@
+2012-11-30  Ramana Radhakrishnan <Ramana.Radhakrishnan@arm.com>
+            Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/arm.md (type): Subdivide "alu" into "alu_reg"
+        and "simple_alu_imm".
+        (core_cycles): Use new names.
+        (arm_addsi3): Set type of patterns to use to alu_reg and simple_alu_imm.
+        (addsi3_compare0, addsi3_compare0_scratch): Likewise.
+        (addsi3_compare_op1, addsi3_compare_op2, compare_addsi2_op0): Likewise.
+        (compare_addsi2_op1, arm_subsi3_insn, subsi3_compare0): Likewise.
+        (subsi3_compare, arm_decscc,arm_andsi3_insn): Likewise.
+        (thumb1_andsi3_insn, andsi3_compare0_scratch): Likewise.
+        (zeroextractsi_compare0_scratch,iorsi3_insn,iorsi3_compare0): Likewise.
+        (iorsi3_compare0_scratch, arm_xorsi3, thumb1_xorsi3_insn): Likewise.
+        (xorsi3_compare0, xorsi3_compare0_scratch): Likewise.
+        (thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Likewise.
+        (thumb1_zero_extendqisi2_v, arm_zero_extendqisi2_v6): Likewise.
+	(thumb1_extendhisi2, arm_extendqisi_v6): Likewise.
+	(thumb1_extendqisi2, arm_movsi_insn): Likewise.
+        (movsi_compare0, movhi_insn_arch4, movhi_bytes): Likewise.
+        (arm_movqi_insn, thumb1_movqi_insn, arm_cmpsi_insn): Likewise.
+        (movsicc_insn, if_plus_move, if_move_plus): Likewise.
+        * config/arm/neon.md (neon_mov<mode>/VDX): Likewise.
+        (neon_mov<mode>/VQXMOV): Likewise.
+        * config/arm/arm1020e.md (1020alu_op): Likewise.
+        * config/arm/fmp626.md (mp626_alu_op): Likewise.
+        * config/arm/fa726te.md (726te_alu_op): Likewise.
+        * config/arm/fa626te.md (626te_alu_op): Likewise.
+        * config/arm/fa606te.md (606te_alu_op): Likewise.
+        * config/arm/fa526.md (526_alu_op): Likewise.
+        * config/arm/cortex-r4.md (cortex_r4_alu, cortex_r4_mov): Likewise.
+        * config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+        * config/arm/cortex-a9.md (cprtex_a9_dp): Likewise.
+        * config/arm/cortex-a8.md (cortex_a8_alu, cortex_a8_mov): Likewise.
+        * config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+        * config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+        * config/arm/arm926ejs.md (9_alu_op): Likewise.
+        * config/arm/arm1136jfs.md (11_alu_op): Likewise.
+        * config/arm/arm1026ejs.md (alu_op): Likewise.
+
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids
