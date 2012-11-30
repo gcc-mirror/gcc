@@ -1,3 +1,8 @@
+2012-11-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (run_scc_vn): Remove iteration propagating
+	value_ids.
+
 2012-11-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* coretypes.h (struct pretty_print_info): Make a coretype.
