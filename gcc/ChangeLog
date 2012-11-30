@@ -1,3 +1,11 @@
+2012-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan.c (is_load_of_const_p): Removed.
+	(instrument_expr): Use result of get_inner_reference
+	instead of get_base_address, avoid some unnecessary tests,
+	use !pt_solution_includes and !may_be_aliased tests to
+	check whether base might escape current function.
+
 2012-11-30  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* gensupport.c (maybe_eval_c_test): Remove not-null check for expr.
