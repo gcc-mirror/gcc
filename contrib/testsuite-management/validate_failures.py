@@ -44,6 +44,14 @@ executed it will:
    b- Failures in the build not expected in the manifest.
 6- If all the build failures are expected in the manifest, it exits
    with exit code 0.  Otherwise, it exits with error code 1.
+
+Manifest files contain expected DejaGNU results that are otherwise
+treated as failures.
+They may also contain additional text:
+
+# This is a comment.  - self explanatory
+@include file         - the file is a path relative to the includer
+@remove result text   - result text is removed from the expected set
 """
 
 import datetime
@@ -192,11 +200,13 @@ def ValidBuildDirectory(builddir, target):
   return True
 
 
+def IsComment(line):
+  """Return True if line is a comment."""
+  return line.startswith('#')
+
+
 def IsInterestingResult(line):
-  """Return True if the given line is one of the summary lines we care about."""
-  line = line.strip()
-  if line.startswith('#'):
-    return False
+  """Return True if line is one of the summary lines we care about."""
   if '|' in line:
     (_, line) = line.split('|', 1)
   line = line.strip()
@@ -204,6 +214,58 @@ def IsInterestingResult(line):
     if line.startswith(result):
       return True
   return False
+
+
+def IsInclude(line):
+  """Return True if line is an include of another file."""
+  return line.startswith("@include ")
+
+
+def GetIncludeFile(line, includer):
+  """Extract the name of the include file from line."""
+  includer_dir = os.path.dirname(includer)
+  include_file = line[len("@include "):]
+  return os.path.join(includer_dir, include_file.strip())
+
+
+def IsNegativeResult(line):
+  """Return True if line should be removed from the expected results."""
+  return line.startswith("@remove ")
+
+
+def GetNegativeResult(line):
+  """Extract the name of the negative result from line."""
+  line = line[len("@remove "):]
+  return line.strip()
+
+
+def ParseManifestWorker(result_set, manifest_path):
+  """Read manifest_path, adding the contents to result_set."""
+  if options.verbosity >= 1:
+    print 'Parsing manifest file %s.' % manifest_path
+  manifest_file = open(manifest_path)
+  for line in manifest_file:
+    line = line.strip()
+    if line == "":
+      pass
+    elif IsComment(line):
+      pass
+    elif IsNegativeResult(line):
+      result_set.remove(TestResult(GetNegativeResult(line)))
+    elif IsInclude(line):
+      ParseManifestWorker(result_set, GetIncludeFile(line, manifest_path))
+    elif IsInterestingResult(line):
+      result_set.add(TestResult(line))
+    else:
+      Error('Unrecognized line in manifest file: %s' % line)
+  manifest_file.close()
+
+
+def ParseManifest(manifest_path):
+  """Create a set of TestResult instances from the given manifest file."""
+  result_set = set()
+  ParseManifestWorker(result_set, manifest_path)
+  return result_set
 
 
 def ParseSummary(sum_fname):
@@ -237,7 +299,7 @@ def GetManifest(manifest_path):
   If no manifest file exists for this target, it returns an empty set.
   """
   if os.path.exists(manifest_path):
-    return ParseSummary(manifest_path)
+    return ParseManifest(manifest_path)
   else:
     return set()
 
