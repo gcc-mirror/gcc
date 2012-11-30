@@ -1,3 +1,10 @@
+2012-11-30  Gary Funck  <gary@intrepid.com>
+
+	Released GUPC 4.8.0.2 based on version 193446.
+	Date of release: 2012-11-12.
+	* DEV-PHASE: Bump release identifier to 4.8.0-3.
+	* DATESTAMP: Bump date stamp.
+
 2012-11-26 Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 193807 into gupc branch.
