@@ -1,3 +1,9 @@
+2012-11-30  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gensupport.c (maybe_eval_c_test): Remove not-null check for expr.
+	* read-rtl.c (apply_iterators): Initialize condition with "" instead
+	of NULL.
+
 2012-11-30  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/host-mingw32.c (va_granularity): Make none-const.
