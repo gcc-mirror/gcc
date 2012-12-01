@@ -1,3 +1,49 @@
+2012-12-01   Alessandro Fanfarillo <alessandro.fanfarillo@gmail.com>
+             Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46897
+	* gfortran.h : Add bit field 'defined_assign_comp' to
+	symbol_attribute structure.
+	Add primitive for gfc_add_full_array_ref.
+	* expr.c (gfc_add_full_array_ref): New function.
+	(gfc_lval_expr_from_sym): Call new function.
+	* resolve.c (add_comp_ref): New function.
+	(build_assignment): New function.
+	(get_temp_from_expr): New function
+	(add_code_to_chain): New function
+	(generate_component_assignments): New function that calls all
+	the above new functions.
+	(resolve_code): Call generate_component_assignments.
+	(check_defined_assignments): New function.
+	(resolve_fl_derived0): Call check_defined_assignments.
+	(gfc_resolve): Reset component_assignment_level in case it is
+	left in a bad state by errors.
+
+
+	* resolve.c (is_sym_host_assoc, resolve_procedure_interface,
+	resolve_contained_fntype, resolve_procedure_expression,
+	resolve_elemental_actual, resolve_global_procedure,
+	is_scalar_expr_ptr, gfc_iso_c_func_interface, resolve_function,
+	set_name_and_label, gfc_iso_c_sub_interface,
+	resolve_specific_s0, resolve_operator, compare_bound_mpz_t,
+	gfc_resolve_character_operator, resolve_typebound_function,
+	gfc_resolve_expr, forall_index, remove_last_array_ref,
+	conformable_arrays, resolve_allocate_expr,
+	resolve_allocate_deallocate, resolve_select_type,
+	resolve_transfer, resolve_where,
+	gfc_resolve_where_code_in_forall, gfc_resolve_forall_body,
+	gfc_count_forall_iterators, resolve_values,
+	resolve_bind_c_comms, resolve_bind_c_derived_types,
+	gfc_verify_binding_labels, apply_default_init,
+	build_default_init_expr, apply_default_init_local,
+	resolve_fl_var_and_proc, resolve_fl_procedure,
+	gfc_resolve_finalizers, check_generic_tbp_ambiguity,
+	resolve_typebound_intrinsic_op, resolve_typebound_procedure,
+	resolve_typebound_procedures, ensure_not_abstract,
+	resolve_fl_derived0, resolve_fl_parameter, resolve_symbol,
+	resolve_equivalence_derived): Remove trailing white space.
+	* gfortran.h : Remove trailing white space.
+
 2012-11-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/52161

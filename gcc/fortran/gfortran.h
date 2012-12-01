@@ -98,7 +98,7 @@ gfc_try;
 
 /* These are flags for identifying whether we are reading a character literal
    between quotes or normal source code.  */
-   
+
 typedef enum
 { NONSTRING = 0, INSTRING_WARN, INSTRING_NOWARN }
 gfc_instring;
@@ -162,11 +162,11 @@ typedef enum
   INTRINSIC_AND, INTRINSIC_OR, INTRINSIC_EQV, INTRINSIC_NEQV,
   /* ==, /=, >, >=, <, <=  */
   INTRINSIC_EQ, INTRINSIC_NE, INTRINSIC_GT, INTRINSIC_GE,
-  INTRINSIC_LT, INTRINSIC_LE, 
+  INTRINSIC_LT, INTRINSIC_LE,
   /* .EQ., .NE., .GT., .GE., .LT., .LE. (OS = Old-Style)  */
   INTRINSIC_EQ_OS, INTRINSIC_NE_OS, INTRINSIC_GT_OS, INTRINSIC_GE_OS,
-  INTRINSIC_LT_OS, INTRINSIC_LE_OS, 
-  INTRINSIC_NOT, INTRINSIC_USER, INTRINSIC_ASSIGN, 
+  INTRINSIC_LT_OS, INTRINSIC_LE_OS,
+  INTRINSIC_NOT, INTRINSIC_USER, INTRINSIC_ASSIGN,
   INTRINSIC_PARENTHESES, GFC_INTRINSIC_END /* Sentinel */
 }
 gfc_intrinsic_op;
@@ -199,7 +199,7 @@ typedef enum
   ST_INQUIRE, ST_INTERFACE, ST_SYNC_ALL, ST_SYNC_MEMORY, ST_SYNC_IMAGES,
   ST_PARAMETER, ST_MODULE, ST_MODULE_PROC, ST_NAMELIST, ST_NULLIFY, ST_OPEN,
   ST_PAUSE, ST_PRIVATE, ST_PROGRAM, ST_PUBLIC, ST_READ, ST_RETURN, ST_REWIND,
-  ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT, 
+  ST_STOP, ST_SUBROUTINE, ST_TYPE, ST_USE, ST_WHERE_BLOCK, ST_WHERE, ST_WAIT,
   ST_WRITE, ST_ASSIGNMENT, ST_POINTER_ASSIGNMENT, ST_SELECT_CASE, ST_SEQUENCE,
   ST_SIMPLE_IF, ST_STATEMENT_FUNCTION, ST_DERIVED_DECL, ST_LABEL_ASSIGNMENT,
   ST_ENUM, ST_ENUMERATOR, ST_END_ENUM, ST_SELECT_TYPE, ST_TYPE_IS, ST_CLASS_IS,
@@ -624,7 +624,7 @@ iso_fortran_env_symbol;
 #define NAMED_FUNCTION(a,b,c,d) a,
 typedef enum
 {
-  ISOCBINDING_INVALID = -1, 
+  ISOCBINDING_INVALID = -1,
 #include "iso-c-binding.def"
   ISOCBINDING_LAST,
   ISOCBINDING_NUMBER = ISOCBINDING_LAST
@@ -707,7 +707,7 @@ typedef struct
     use_only:1,			/* Symbol has been use-associated, with ONLY.  */
     use_rename:1,		/* Symbol has been use-associated and renamed.  */
     imported:1,			/* Symbol has been associated by IMPORT.  */
-    host_assoc:1;		/* Symbol has been host associated.  */ 
+    host_assoc:1;		/* Symbol has been host associated.  */
 
   unsigned in_namelist:1, in_common:1, in_equivalence:1;
   unsigned function:1, subroutine:1, procedure:1;
@@ -783,12 +783,14 @@ typedef struct
   /* Special attributes for Cray pointers, pointees.  */
   unsigned cray_pointer:1, cray_pointee:1;
 
-  /* The symbol is a derived type with allocatable components, pointer 
+  /* The symbol is a derived type with allocatable components, pointer
      components or private components, procedure pointer components,
      possibly nested.  zero_comp is true if the derived type has no
-     component at all.  */
+     component at all.  defined_assign_comp is true if the derived
+     type or a (sub-)component has a typebound defined assignment.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
-	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1;
+	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
+	   defined_assign_comp:1;
 
   /* This is a temporary selector for SELECT TYPE.  */
   unsigned select_type_temporary:1;
@@ -1240,7 +1242,7 @@ typedef struct gfc_symbol
   struct gfc_namespace *ns;	/* namespace containing this symbol */
 
   tree backend_decl;
-   
+
   /* Identity of the intrinsic module the symbol comes from, or
      INTMOD_NONE if it's not imported from a intrinsic module.  */
   intmod_id from_intmod;
@@ -1655,7 +1657,7 @@ typedef struct gfc_intrinsic_sym
   const char *name, *lib_name;
   gfc_intrinsic_arg *formal;
   gfc_typespec ts;
-  unsigned elemental:1, inquiry:1, transformational:1, pure:1, 
+  unsigned elemental:1, inquiry:1, transformational:1, pure:1,
     generic:1, specific:1, actual_ok:1, noreturn:1, conversion:1,
     from_module:1;
 
@@ -1722,14 +1724,14 @@ typedef struct gfc_expr
   /* Sometimes, when an error has been emitted, it is necessary to prevent
       it from recurring.  */
   unsigned int error : 1;
-  
+
   /* Mark an expression where a user operator has been substituted by
      a function call in interface.c(gfc_extend_expr).  */
   unsigned int user_operator : 1;
 
   /* Mark an expression as being a MOLD argument of ALLOCATE.  */
   unsigned int mold : 1;
-  
+
   /* If an expression comes from a Hollerith constant or compile-time
      evaluation of a transfer statement, it may have a prescribed target-
      memory representation, and these cannot always be backformed from
@@ -2040,7 +2042,7 @@ gfc_forall_iterator;
 
 typedef struct gfc_association_list
 {
-  struct gfc_association_list *next; 
+  struct gfc_association_list *next;
 
   /* Whether this is association to a variable that can be changed; otherwise,
      it's association to an expression and the name may not be used as
@@ -2351,7 +2353,7 @@ typedef struct gfc_finalizer
      still referenced or not for dereferencing it on deleting a gfc_finalizer
      structure.  */
   gfc_symbol*  proc_sym;
-  gfc_symtree* proc_tree; 
+  gfc_symtree* proc_tree;
 }
 gfc_finalizer;
 #define gfc_get_finalizer() XCNEW (gfc_finalizer)
@@ -2761,6 +2763,7 @@ gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
 bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
 gfc_expr *gfc_get_variable_expr (gfc_symtree *);
+void gfc_add_full_array_ref (gfc_expr *, gfc_array_spec *);
 gfc_expr * gfc_lval_expr_from_sym (gfc_symbol *);
 
 gfc_array_spec *gfc_get_full_arrayspec_from_expr (gfc_expr *expr);
