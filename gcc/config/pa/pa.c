@@ -4851,12 +4851,9 @@ pa_issue_rate (void)
 
 
 
-/* Return any length adjustment needed by INSN which already has its length
-   computed as LENGTH.   Return zero if no adjustment is necessary.
-
-   For the PA: function calls, millicode calls, and backwards short
-   conditional branches with unfilled delay slots need an adjustment by +1
-   (to account for the NOP which will be inserted into the instruction stream).
+/* Return any length plus adjustment needed by INSN which already has
+   its length computed as LENGTH.   Return LENGTH if no adjustment is
+   necessary.
 
    Also compute the length of an inline block move here as it is too
    complicated to express as a length attribute in pa.md.  */
@@ -4865,19 +4862,40 @@ pa_adjust_insn_length (rtx insn, int length)
 {
   rtx pat = PATTERN (insn);
 
+  /* If length is negative or undefined, provide initial length.  */
+  if ((unsigned int) length >= INT_MAX)
+    {
+      if (GET_CODE (pat) == SEQUENCE)
+	insn = XVECEXP (pat, 0, 0);
+
+      switch (get_attr_type (insn))
+	{
+	case TYPE_MILLI:
+	  length = pa_attr_length_millicode_call (insn);
+	  break;
+	case TYPE_CALL:
+	  length = pa_attr_length_call (insn, 0);
+	  break;
+	case TYPE_SIBCALL:
+	  length = pa_attr_length_call (insn, 1);
+	  break;
+	case TYPE_DYNCALL:
+	  length = pa_attr_length_indirect_call (insn);
+	  break;
+	case TYPE_SH_FUNC_ADRS:
+	  length = pa_attr_length_millicode_call (insn) + 20;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* Jumps inside switch tables which have unfilled delay slots need
      adjustment.  */
   if (GET_CODE (insn) == JUMP_INSN
       && GET_CODE (pat) == PARALLEL
       && get_attr_type (insn) == TYPE_BTABLE_BRANCH)
-    return 4;
-  /* Millicode insn with an unfilled delay slot.  */
-  else if (GET_CODE (insn) == INSN
-	   && GET_CODE (pat) != SEQUENCE
-	   && GET_CODE (pat) != USE
-	   && GET_CODE (pat) != CLOBBER
-	   && get_attr_type (insn) == TYPE_MILLI)
-    return 4;
+    length += 4;
   /* Block move pattern.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) == PARALLEL
@@ -4886,7 +4904,7 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 1)) == MEM
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 1)) == BLKmode)
-    return compute_movmem_length (insn) - 4;
+    length += compute_movmem_length (insn) - 4;
   /* Block clear pattern.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) == PARALLEL
@@ -4894,7 +4912,7 @@ pa_adjust_insn_length (rtx insn, int length)
 	   && GET_CODE (XEXP (XVECEXP (pat, 0, 0), 0)) == MEM
 	   && XEXP (XVECEXP (pat, 0, 0), 1) == const0_rtx
 	   && GET_MODE (XEXP (XVECEXP (pat, 0, 0), 0)) == BLKmode)
-    return compute_clrmem_length (insn) - 4;
+    length += compute_clrmem_length (insn) - 4;
   /* Conditional branch with an unfilled delay slot.  */
   else if (GET_CODE (insn) == JUMP_INSN && ! simplejump_p (insn))
     {
@@ -4903,11 +4921,11 @@ pa_adjust_insn_length (rtx insn, int length)
 	  && length == 4
 	  && JUMP_LABEL (insn) != NULL_RTX
 	  && ! forward_branch_p (insn))
-	return 4;
+	length += 4;
       else if (GET_CODE (pat) == PARALLEL
 	       && get_attr_type (insn) == TYPE_PARALLEL_BRANCH
 	       && length == 4)
-	return 4;
+	length += 4;
       /* Adjust dbra insn with short backwards conditional branch with
 	 unfilled delay slot -- only for case where counter is in a
 	 general register register.  */
@@ -4917,11 +4935,9 @@ pa_adjust_insn_length (rtx insn, int length)
  	       && ! FP_REG_P (XEXP (XVECEXP (pat, 0, 1), 0))
 	       && length == 4
 	       && ! forward_branch_p (insn))
-	return 4;
-      else
-	return 0;
+	length += 4;
     }
-  return 0;
+  return length;
 }
 
 /* Implement the TARGET_PRINT_OPERAND_PUNCT_VALID_P hook.  */
@@ -7481,15 +7497,13 @@ pa_output_millicode_call (rtx insn, rtx call_dest)
 
   /* Handle the common case where we are sure that the branch will
      reach the beginning of the $CODE$ subspace.  The within reach
-     form of the $$sh_func_adrs call has a length of 28.  Because
-     it has an attribute type of multi, it never has a nonzero
-     sequence length.  The length of the $$sh_func_adrs is the same
-     as certain out of reach PIC calls to other routines.  */
+     form of the $$sh_func_adrs call has a length of 28.  Because it
+     has an attribute type of sh_func_adrs, it never has a nonzero
+     sequence length (i.e., the delay slot is never filled).  */
   if (!TARGET_LONG_CALLS
-      && ((seq_length == 0
-	   && (attr_length == 12
-	       || (attr_length == 28 && get_attr_type (insn) == TYPE_MULTI)))
-	  || (seq_length != 0 && attr_length == 8)))
+      && (attr_length == 8
+	  || (attr_length == 28
+	      && get_attr_type (insn) == TYPE_SH_FUNC_ADRS)))
     {
       output_asm_insn ("{bl|b,l} %0,%2", xoperands);
     }
