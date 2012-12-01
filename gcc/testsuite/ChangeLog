@@ -1,3 +1,8 @@
+2012-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55558
+	* g++.dg/cpp0x/decltype46.C: New.
+
 2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/52450
