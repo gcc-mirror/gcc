@@ -2,7 +2,7 @@
 /* This test checks for if-conversion of one's complement
  * abs function.  */
 /* { dg-options "-O -mtune=generic" } */
-/* { dg-final { scan-assembler "sar" } } */
+/* { dg-final { scan-assembler "cltd" } } */
 /* { dg-final { scan-assembler "xor" } } */
 
 /* Check code generation for one's complement version of abs */
