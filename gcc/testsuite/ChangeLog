@@ -1,3 +1,8 @@
+2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/52450
+	* gcc.dg/torture/pr52402.c: Remove xfail for hppa*-*-hpux*.
+
 2012-12-01  Zdenek Sojka <zsojka@seznam.cz>
 
 	PR debug/53860
