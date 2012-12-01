@@ -1,3 +1,9 @@
+2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libstdc++/55503
+	* testsuite/30_threads/condition_variable/members/53841.cc: Add
+	hppa*-hp-hpux11* to -pthread dg-options.
+
 2012-11-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55413
