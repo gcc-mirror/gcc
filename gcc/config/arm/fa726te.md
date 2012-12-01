@@ -85,7 +85,7 @@
 ;; Other ALU instructions 2 cycles.
 (define_insn_reservation "726te_alu_op" 1
  (and (eq_attr "tune" "fa726te")
-      (and (eq_attr "type" "alu")
+      (and (eq_attr "type" "alu_reg,simple_alu_imm")
            (not (eq_attr "insn" "mov,mvn"))))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 

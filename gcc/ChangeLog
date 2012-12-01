@@ -1,3 +1,174 @@
+2012-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator): Deal
+	with degenerate cases where the bitsize isn't positive.  Rework comment.
+
+2012-11-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* xcoffout.c (xcoff_tls_data_section_name): Define.
+	* xcoffout.h (xcoff_tls_data_section_name): Declare.
+	* config/rs6000/rs6000.c (tls_data_section): Define.
+	(TARGET_USE_BLOCKS_FOR_DECL_P): Define.
+	(rs6000_legitimize_tls_address_aix): New function.
+	(rs6000_legitimize_tls_address): Use new function for AIX.
+	(rs6000_cannot_force_const_mem): No sum in TLS TOC symbols.
+	Allow TLS symbol in constant pool other than ELF.
+	(rs6000_legitimate_address_p): Allow TLS symbol other than ELF.
+	(rs6000_assemble_visibility): Do not emit anything on AIX.
+	(output_toc): Handle alias of TLS general-dynamic symbols.
+	Emit TLS decorations on symbols.
+	(rs6000_use_blocks_for_decl_p): New function.
+	(rs6000_xcoff_output_tls_section_asm_op): New function.
+	(rs6000_xcoff_asm_init_sections): Initialize tls_data_section.
+	(rs6000_xcoff_select_section): Choose tls_data_section for
+	thread-local storage.
+	(rs6000_xcoff_file_start): Generate xcoff_tls_data_section_name.
+	(rs6000_legitimate_constant_p): Allow TLS symbol other than ELF.
+	* config/rs6000/rs6000.md (tls_tls_): Restrict to ELF.
+	(tls_get_tpointer): New.
+	(tle_get_tpointer_internal): New.
+	(tls_get_addr<mode>): New.
+	(tls_get_addr_internal<mode>): New.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_TLS_COMMON): Define.
+
+2012-11-30  Teresa Johnson  <tejohnson@google.com>
+
+	* lto-cgraph.c (output_profile_summary): Stream out sum_all
+	and histogram.
+	(input_profile_summary): Stream in sum_all and histogram.
+	(merge_profile_summaries): Merge sum_all and histogram, and
+	change to use RDIV.
+	(input_symtab): Call compute_working_sets after merging
+	summaries.
+	* gcov-io.c (gcov_histo_index): Make extern for compiler.
+	* gcov-io.h (gcov_histo_index): Ditto.
+	* profile.c (compute_working_sets): Remove static keyword.
+	* profile.h (compute_working_sets): Ditto.
+	* Makefile.in (lto-cgraph.o): Depend on profile.h.
+
+2012-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/52890
+	PR tree-optimization/55415
+	PR tree-optimization/54386
+	PR target/55448
+	* ipa-prop.c (ipa_modify_call_arguments): Be optimistic when
+	get_pointer_alignment_1 returns false and the base was not a
+	dereference.
+	* tree-sra.c (access_precludes_ipa_sra_p): New parameter req_align,
+	added check for required alignment.  Update the user.
+
+2012-11-30  Ramana Radhakrishnan <Ramana.Radhakrishnan@arm.com>
+            Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/arm.md (type): Subdivide "alu" into "alu_reg"
+        and "simple_alu_imm".
+        (core_cycles): Use new names.
+        (arm_addsi3): Set type of patterns to use to alu_reg and simple_alu_imm.
+        (addsi3_compare0, addsi3_compare0_scratch): Likewise.
+        (addsi3_compare_op1, addsi3_compare_op2, compare_addsi2_op0): Likewise.
+        (compare_addsi2_op1, arm_subsi3_insn, subsi3_compare0): Likewise.
+        (subsi3_compare, arm_decscc,arm_andsi3_insn): Likewise.
+        (thumb1_andsi3_insn, andsi3_compare0_scratch): Likewise.
+        (zeroextractsi_compare0_scratch,iorsi3_insn,iorsi3_compare0): Likewise.
+        (iorsi3_compare0_scratch, arm_xorsi3, thumb1_xorsi3_insn): Likewise.
+        (xorsi3_compare0, xorsi3_compare0_scratch): Likewise.
+        (thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Likewise.
+        (thumb1_zero_extendqisi2_v, arm_zero_extendqisi2_v6): Likewise.
+	(thumb1_extendhisi2, arm_extendqisi_v6): Likewise.
+	(thumb1_extendqisi2, arm_movsi_insn): Likewise.
+        (movsi_compare0, movhi_insn_arch4, movhi_bytes): Likewise.
+        (arm_movqi_insn, thumb1_movqi_insn, arm_cmpsi_insn): Likewise.
+        (movsicc_insn, if_plus_move, if_move_plus): Likewise.
+        * config/arm/neon.md (neon_mov<mode>/VDX): Likewise.
+        (neon_mov<mode>/VQXMOV): Likewise.
+        * config/arm/arm1020e.md (1020alu_op): Likewise.
+        * config/arm/fmp626.md (mp626_alu_op): Likewise.
+        * config/arm/fa726te.md (726te_alu_op): Likewise.
+        * config/arm/fa626te.md (626te_alu_op): Likewise.
+        * config/arm/fa606te.md (606te_alu_op): Likewise.
+        * config/arm/fa526.md (526_alu_op): Likewise.
+        * config/arm/cortex-r4.md (cortex_r4_alu, cortex_r4_mov): Likewise.
+        * config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+        * config/arm/cortex-a9.md (cprtex_a9_dp): Likewise.
+        * config/arm/cortex-a8.md (cortex_a8_alu, cortex_a8_mov): Likewise.
+        * config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+        * config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+        * config/arm/arm926ejs.md (9_alu_op): Likewise.
+        * config/arm/arm1136jfs.md (11_alu_op): Likewise.
+        * config/arm/arm1026ejs.md (alu_op): Likewise.
+
+2012-11-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids
+	here.
+
+2012-11-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (run_scc_vn): Remove iteration propagating
+	value_ids.
+
+2012-11-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* coretypes.h (struct pretty_print_info): Make a coretype.
+	(typedef pretty_printer): Likewise.
+	* pretty-print.h (typedef pretty_printer): Not needed here anymore.
+	* pretty-print.c (pp_write_text_as_dot_label_to_stream): New function.
+	* rtl.h (str_pattern_slim): New prototype.
+	(print_value, print_pattern, print_insn): Adjust prototypes to take
+	a pretty-printer rather than a char buffer.
+	* sched-vis.c (safe_concat): Remove.
+	(print_exp): Print into a pretty-printer.
+	(print_value): Likewise.
+	(print_pattern): Likewise.
+	(print_insn): Likewise.
+	(print_insn_with_notes): New static function.
+	(init_rtl_slim_pretty_print): New function.
+	(dump_value_slim): Simplify.  Print into and flush a pretty-printer.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	(str_pattern_slim): New function.
+	* haifa-sched.c (model_recompute): Use str_pattern_slim instead of
+	static buffers.
+	(model_record_pressures): Likewise.
+	(schedule_insn): Likewise.
+	* sel-sched-dump.c (dump_insn_rtx_1): Likewise.
+	(sel_prepare_string_for_dot_label): Refer to graph.c CFG dumper code.
+	* graph.c: Include pretty-print.h.
+	(init_graph_slim_pretty_print): New function.
+	(print_escaped_line): Removed here, and reincarnated as
+	pp_write_text_as_dot_label_to_stream.
+	(draw_cfg_node): Print into a pretty printer.
+	(draw_cfg_node_succ_edges): Likewise.
+	(print_rtl_graph_with_bb): Likewise.
+	* Makefile.in (graph.o): Fix dependencies.
+	(tree-optimize.o, toplev.o, sched-vis.o): Likewise.
+
+2012-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan.c (is_load_of_const_p): Removed.
+	(instrument_expr): Use result of get_inner_reference
+	instead of get_base_address, avoid some unnecessary tests,
+	use !pt_solution_includes and !may_be_aliased tests to
+	check whether base might escape current function.
+
+2012-11-30  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gensupport.c (maybe_eval_c_test): Remove not-null check for expr.
+	* read-rtl.c (apply_iterators): Initialize condition with "" instead
+	of NULL.
+
+2012-11-30  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/host-mingw32.c (va_granularity): Make none-const.
+	(mingw32_gt_pch_alloc_granularity): Return OS' allocation
+	granularity.
+	(mingw32_gt_pch_use_address): Retry mapping of used address
+	as multiple instances might interfer.
+
+	* config/i386/mingw32.h (SHARED_LIBGCC_SPEC): Synchronize with
+	cygwin-host.
+
 2012-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/55321

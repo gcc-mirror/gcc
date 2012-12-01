@@ -546,7 +546,7 @@ apply_iterators (rtx original, rtx *queue)
     {
       /* Apply the current iterator values.  Accumulate a condition to
 	 say when the resulting rtx can be used.  */
-      condition = NULL;
+      condition = "";
       FOR_EACH_VEC_ELT (iterator_uses, i, iuse)
 	{
 	  if (iuse->iterator->group == &substs)

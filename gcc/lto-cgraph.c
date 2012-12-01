@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "gcov-io.h"
 #include "tree-pass.h"
+#include "profile.h"
 
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node>  nodes);
@@ -593,14 +594,39 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 static void
 output_profile_summary (struct lto_simple_output_block *ob)
 {
+  unsigned h_ix;
+  struct bitpack_d bp;
+
   if (profile_info)
     {
-      /* We do not output num, sum_all and run_max, they are not used by
-	 GCC profile feedback and they are difficult to merge from multiple
-	 units.  */
+      /* We do not output num and run_max, they are not used by
+         GCC profile feedback and they are difficult to merge from multiple
+         units.  */
       gcc_assert (profile_info->runs);
       streamer_write_uhwi_stream (ob->main_stream, profile_info->runs);
       streamer_write_uhwi_stream (ob->main_stream, profile_info->sum_max);
+
+      /* sum_all is needed for computing the working set with the
+         histogram.  */
+      streamer_write_uhwi_stream (ob->main_stream, profile_info->sum_all);
+
+      /* Create and output a bitpack of non-zero histogram entries indices.  */
+      bp = bitpack_create (ob->main_stream);
+      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+        bp_pack_value (&bp, profile_info->histogram[h_ix].num_counters > 0, 1);
+      streamer_write_bitpack (&bp);
+      /* Now stream out only those non-zero entries.  */
+      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+        {
+          if (!profile_info->histogram[h_ix].num_counters)
+            continue;
+          streamer_write_uhwi_stream (ob->main_stream,
+                                      profile_info->histogram[h_ix].num_counters);
+          streamer_write_uhwi_stream (ob->main_stream,
+                                      profile_info->histogram[h_ix].min_value);
+          streamer_write_uhwi_stream (ob->main_stream,
+                                      profile_info->histogram[h_ix].cum_value);
+        }
     }
   else
     streamer_write_uhwi_stream (ob->main_stream, 0);
@@ -1227,11 +1253,38 @@ static void
 input_profile_summary (struct lto_input_block *ib,
 		       struct lto_file_decl_data *file_data)
 {
+  unsigned h_ix;
+  struct bitpack_d bp;
   unsigned int runs = streamer_read_uhwi (ib);
   if (runs)
     {
       file_data->profile_info.runs = runs;
       file_data->profile_info.sum_max = streamer_read_uhwi (ib);
+      file_data->profile_info.sum_all = streamer_read_uhwi (ib);
+
+      memset (file_data->profile_info.histogram, 0,
+              sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+      /* Input the bitpack of non-zero histogram indices.  */
+      bp = streamer_read_bitpack (ib);
+      /* Read in and unpack the full bitpack, flagging non-zero
+         histogram entries by setting the num_counters non-zero.  */
+      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+        {
+          file_data->profile_info.histogram[h_ix].num_counters
+              = bp_unpack_value (&bp, 1);
+        }
+      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+        {
+          if (!file_data->profile_info.histogram[h_ix].num_counters)
+            continue;
+
+          file_data->profile_info.histogram[h_ix].num_counters
+              = streamer_read_uhwi (ib);
+          file_data->profile_info.histogram[h_ix].min_value
+              = streamer_read_uhwi (ib);
+          file_data->profile_info.histogram[h_ix].cum_value
+              = streamer_read_uhwi (ib);
+        }
     }
 
 }
@@ -1242,10 +1295,13 @@ static void
 merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 {
   struct lto_file_decl_data *file_data;
-  unsigned int j;
+  unsigned int j, h_ix;
   gcov_unsigned_t max_runs = 0;
   struct cgraph_node *node;
   struct cgraph_edge *edge;
+  gcov_type saved_sum_all = 0;
+  gcov_ctr_summary *saved_profile_info = 0;
+  int saved_scale = 0;
 
   /* Find unit with maximal number of runs.  If we ever get serious about
      roundoff errors, we might also consider computing smallest common
@@ -1269,6 +1325,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   profile_info = &lto_gcov_summary;
   lto_gcov_summary.runs = max_runs;
   lto_gcov_summary.sum_max = 0;
+  memset (lto_gcov_summary.histogram, 0,
+          sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
 
   /* Rescale all units to the maximal number of runs.
      sum_max can not be easily merged, as we have no idea what files come from
@@ -1276,15 +1334,47 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
   for (j = 0; (file_data = file_data_vec[j]) != NULL; j++)
     if (file_data->profile_info.runs)
       {
-	int scale = ((REG_BR_PROB_BASE * max_runs
-		      + file_data->profile_info.runs / 2)
-		     / file_data->profile_info.runs);
+	int scale = RDIV (REG_BR_PROB_BASE * max_runs,
+                          file_data->profile_info.runs);
 	lto_gcov_summary.sum_max = MAX (lto_gcov_summary.sum_max,
-					(file_data->profile_info.sum_max
-					 * scale
-					 + REG_BR_PROB_BASE / 2)
-					/ REG_BR_PROB_BASE);
+					RDIV (file_data->profile_info.sum_max
+                                              * scale, REG_BR_PROB_BASE));
+	lto_gcov_summary.sum_all = MAX (lto_gcov_summary.sum_all,
+					RDIV (file_data->profile_info.sum_all
+                                              * scale, REG_BR_PROB_BASE));
+        /* Save a pointer to the profile_info with the largest
+           scaled sum_all and the scale for use in merging the
+           histogram.  */
+        if (lto_gcov_summary.sum_all > saved_sum_all)
+          {
+            saved_profile_info = &file_data->profile_info;
+            saved_sum_all = lto_gcov_summary.sum_all;
+            saved_scale = scale;
+          }
       }
+
+  gcc_assert (saved_profile_info);
+
+  /* Scale up the histogram from the profile that had the largest
+     scaled sum_all above.  */
+  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+    {
+      /* Scale up the min value as we did the corresponding sum_all
+         above. Use that to find the new histogram index.  */
+      int scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
+                             * saved_scale, REG_BR_PROB_BASE);
+      unsigned new_ix = gcov_histo_index (scaled_min);
+      lto_gcov_summary.histogram[new_ix].min_value = scaled_min;
+      /* Some of the scaled counter values would ostensibly need to be placed
+         into different (larger) histogram buckets, but we keep things simple
+         here and place the scaled cumulative counter value in the bucket
+         corresponding to the scaled minimum counter value.  */
+      lto_gcov_summary.histogram[new_ix].cum_value
+          = RDIV (saved_profile_info->histogram[h_ix].cum_value
+                  * saved_scale, REG_BR_PROB_BASE);
+      lto_gcov_summary.histogram[new_ix].num_counters
+          = saved_profile_info->histogram[h_ix].num_counters;
+    }
 
   /* Watch roundoff errors.  */
   if (lto_gcov_summary.sum_max < max_runs)
@@ -1303,10 +1393,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
       {
 	int scale;
 
-	scale =
-	   ((node->count_materialization_scale * max_runs
-	     + node->symbol.lto_file_data->profile_info.runs / 2)
-	    / node->symbol.lto_file_data->profile_info.runs);
+	scale = RDIV (node->count_materialization_scale * max_runs,
+                      node->symbol.lto_file_data->profile_info.runs);
 	node->count_materialization_scale = scale;
 	if (scale < 0)
 	  fatal_error ("Profile information in %s corrupted",
@@ -1315,10 +1403,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 	if (scale == REG_BR_PROB_BASE)
 	  continue;
 	for (edge = node->callees; edge; edge = edge->next_callee)
-	  edge->count = ((edge->count * scale + REG_BR_PROB_BASE / 2)
-			 / REG_BR_PROB_BASE);
-	node->count = ((node->count * scale + REG_BR_PROB_BASE / 2)
-		       / REG_BR_PROB_BASE);
+	  edge->count = RDIV (edge->count * scale, REG_BR_PROB_BASE);
+	node->count = RDIV (node->count * scale, REG_BR_PROB_BASE);
       }
 }
 
@@ -1365,6 +1451,8 @@ input_symtab (void)
     }
 
   merge_profile_summaries (file_data_vec);
+  compute_working_sets ();
+
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */

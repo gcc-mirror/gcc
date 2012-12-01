@@ -616,7 +616,7 @@ get_expr_value_id (pre_expr expr)
   switch (expr->kind)
     {
     case CONSTANT:
-      id = get_or_alloc_constant_value_id (PRE_EXPR_CONSTANT (expr));
+      id = get_constant_value_id (PRE_EXPR_CONSTANT (expr));
       break;
     case NAME:
       id = VN_INFO (PRE_EXPR_NAME (expr))->value_id;

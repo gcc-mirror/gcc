@@ -61,7 +61,7 @@
 ;; Simple ALU without shift
 (define_insn_reservation "cortex_a15_alu" 2
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "alu")
+       (and (eq_attr "type" "alu_reg,simple_alu_imm")
             (eq_attr "neon_type" "none")))
   "ca15_issue1,(ca15_sx1,ca15_sx1_alu)|(ca15_sx2,ca15_sx2_alu)")
 

@@ -68,7 +68,7 @@
 ;; ALU operations
 (define_insn_reservation "626te_alu_op" 1
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "alu"))
+      (eq_attr "type" "alu_reg,simple_alu_imm"))
  "fa626te_core")
 
 (define_insn_reservation "626te_alu_shift_op" 2

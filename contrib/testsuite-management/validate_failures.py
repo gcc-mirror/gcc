@@ -37,13 +37,21 @@ executed it will:
 1- Determine the target built: TARGET
 2- Determine the source directory: SRCDIR
 3- Look for a failure manifest file in
-   <SRCDIR>/contrib/testsuite-management/<TARGET>.xfail
+   <SRCDIR>/<MANIFEST_SUBDIR>/<MANIFEST_NAME>.xfail
 4- Collect all the <tool>.sum files from the build tree.
 5- Produce a report stating:
    a- Failures expected in the manifest but not present in the build.
    b- Failures in the build not expected in the manifest.
 6- If all the build failures are expected in the manifest, it exits
    with exit code 0.  Otherwise, it exits with error code 1.
+
+Manifest files contain expected DejaGNU results that are otherwise
+treated as failures.
+They may also contain additional text:
+
+# This is a comment.  - self explanatory
+@include file         - the file is a path relative to the includer
+@remove result text   - result text is removed from the expected set
 """
 
 import datetime
@@ -55,10 +63,15 @@ import sys
 # Handled test results.
 _VALID_TEST_RESULTS = [ 'FAIL', 'UNRESOLVED', 'XPASS', 'ERROR' ]
 
-# Pattern for naming manifest files.  The first argument should be
-# the toplevel GCC source directory.  The second argument is the
-# target triple used during the build.
-_MANIFEST_PATH_PATTERN = '%s/contrib/testsuite-management/%s.xfail'
+# Subdirectory of srcdir in which to find the manifest file.
+_MANIFEST_SUBDIR = 'contrib/testsuite-management'
+
+# Pattern for naming manifest files.
+# The first argument should be the toplevel GCC(/GNU tool) source directory.
+# The second argument is the manifest subdir.
+# The third argument is the manifest target, which defaults to the target
+# triplet used during the build.
+_MANIFEST_PATH_PATTERN = '%s/%s/%s.xfail'
 
 # The options passed to the program.
 _OPTIONS = None
@@ -187,11 +200,13 @@ def ValidBuildDirectory(builddir, target):
   return True
 
 
+def IsComment(line):
+  """Return True if line is a comment."""
+  return line.startswith('#')
+
+
 def IsInterestingResult(line):
-  """Return True if the given line is one of the summary lines we care about."""
-  line = line.strip()
-  if line.startswith('#'):
-    return False
+  """Return True if line is one of the summary lines we care about."""
   if '|' in line:
     (_, line) = line.split('|', 1)
   line = line.strip()
@@ -199,6 +214,58 @@ def IsInterestingResult(line):
     if line.startswith(result):
       return True
   return False
+
+
+def IsInclude(line):
+  """Return True if line is an include of another file."""
+  return line.startswith("@include ")
+
+
+def GetIncludeFile(line, includer):
+  """Extract the name of the include file from line."""
+  includer_dir = os.path.dirname(includer)
+  include_file = line[len("@include "):]
+  return os.path.join(includer_dir, include_file.strip())
+
+
+def IsNegativeResult(line):
+  """Return True if line should be removed from the expected results."""
+  return line.startswith("@remove ")
+
+
+def GetNegativeResult(line):
+  """Extract the name of the negative result from line."""
+  line = line[len("@remove "):]
+  return line.strip()
+
+
+def ParseManifestWorker(result_set, manifest_path):
+  """Read manifest_path, adding the contents to result_set."""
+  if options.verbosity >= 1:
+    print 'Parsing manifest file %s.' % manifest_path
+  manifest_file = open(manifest_path)
+  for line in manifest_file:
+    line = line.strip()
+    if line == "":
+      pass
+    elif IsComment(line):
+      pass
+    elif IsNegativeResult(line):
+      result_set.remove(TestResult(GetNegativeResult(line)))
+    elif IsInclude(line):
+      ParseManifestWorker(result_set, GetIncludeFile(line, manifest_path))
+    elif IsInterestingResult(line):
+      result_set.add(TestResult(line))
+    else:
+      Error('Unrecognized line in manifest file: %s' % line)
+  manifest_file.close()
+
+
+def ParseManifest(manifest_path):
+  """Create a set of TestResult instances from the given manifest file."""
+  result_set = set()
+  ParseManifestWorker(result_set, manifest_path)
+  return result_set
 
 
 def ParseSummary(sum_fname):
@@ -232,7 +299,7 @@ def GetManifest(manifest_path):
   If no manifest file exists for this target, it returns an empty set.
   """
   if os.path.exists(manifest_path):
-    return ParseSummary(manifest_path)
+    return ParseManifest(manifest_path)
   else:
     return set()
 
@@ -284,6 +351,17 @@ def CompareResults(manifest, actual):
   return actual_vs_manifest, manifest_vs_actual
 
 
+def GetManifestPath(srcdir, target, user_provided_must_exist):
+  """Return the full path to the manifest file."""
+  manifest_path = _OPTIONS.manifest
+  if manifest_path:
+    if user_provided_must_exist and not os.path.exists(manifest_path):
+      Error('Manifest does not exist: %s' % manifest_path)
+    return manifest_path
+  else:
+    return _MANIFEST_PATH_PATTERN % (srcdir, _MANIFEST_SUBDIR, target)
+
+
 def GetBuildData():
   target = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'target_alias=')
   srcdir = GetMakefileValue('%s/Makefile' % _OPTIONS.build_dir, 'srcdir =')
@@ -333,14 +411,8 @@ def PerformComparison(expected, actual, ignore_missing_failures):
 
 
 def CheckExpectedResults():
-  if not _OPTIONS.manifest:
-    (srcdir, target) = GetBuildData()
-    manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
-  else:
-    manifest_path = _OPTIONS.manifest
-    if not os.path.exists(manifest_path):
-      Error('Manifest file %s does not exist.' % manifest_path)
-
+  (srcdir, target) = GetBuildData()
+  manifest_path = GetManifestPath(srcdir, target, True)
   print 'Manifest:         %s' % manifest_path
   manifest = GetManifest(manifest_path)
   sum_files = GetSumFiles(_OPTIONS.results, _OPTIONS.build_dir)
@@ -355,7 +427,8 @@ def CheckExpectedResults():
 
 def ProduceManifest():
   (srcdir, target) = GetBuildData()
-  manifest_path = _MANIFEST_PATH_PATTERN % (srcdir, target)
+  manifest_path = GetManifestPath(srcdir, target, False)
+  print 'Manifest:         %s' % manifest_path
   if os.path.exists(manifest_path) and not _OPTIONS.force:
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
           manifest_path)

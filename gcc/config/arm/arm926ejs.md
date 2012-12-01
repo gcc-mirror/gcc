@@ -58,7 +58,7 @@
 ;; ALU operations with no shifted operand
 (define_insn_reservation "9_alu_op" 1 
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "alu,alu_shift"))
+      (eq_attr "type" "alu_reg,simple_alu_imm,alu_shift"))
  "e,m,w")
 
 ;; ALU operations with a shift-by-register operand

@@ -3983,7 +3983,6 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
   size_t i;
   tree param;
-  bool changed = true;
 
   default_vn_walk_kind = default_vn_walk_kind_;
 
@@ -4028,25 +4027,18 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 	info->value_id = get_or_alloc_constant_value_id (info->valnum);
     }
 
-  /* Propagate until they stop changing.  */
-  while (changed)
+  /* Propagate.  */
+  for (i = 1; i < num_ssa_names; ++i)
     {
-      changed = false;
-      for (i = 1; i < num_ssa_names; ++i)
-	{
-	  tree name = ssa_name (i);
-	  vn_ssa_aux_t info;
-	  if (!name)
-	    continue;
-	  info = VN_INFO (name);
-	  if (TREE_CODE (info->valnum) == SSA_NAME
-	      && info->valnum != name
-	      && info->value_id != VN_INFO (info->valnum)->value_id)
-	    {
-	      changed = true;
-	      info->value_id = VN_INFO (info->valnum)->value_id;
-	    }
-	}
+      tree name = ssa_name (i);
+      vn_ssa_aux_t info;
+      if (!name)
+	continue;
+      info = VN_INFO (name);
+      if (TREE_CODE (info->valnum) == SSA_NAME
+	  && info->valnum != name
+	  && info->value_id != VN_INFO (info->valnum)->value_id)
+	info->value_id = VN_INFO (info->valnum)->value_id;
     }
 
   set_hashtable_value_ids ();

@@ -208,6 +208,7 @@ static short cached_can_issue_more;
 
 static GTY(()) section *read_only_data_section;
 static GTY(()) section *private_data_section;
+static GTY(()) section *tls_data_section;
 static GTY(()) section *read_only_private_data_section;
 static GTY(()) section *sdata2_section;
 static GTY(()) section *toc_section;
@@ -1405,6 +1406,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_MAX_ANCHOR_OFFSET 0x7fffffff
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P rs6000_use_blocks_for_constant_p
+#undef TARGET_USE_BLOCKS_FOR_DECL_P
+#define TARGET_USE_BLOCKS_FOR_DECL_P rs6000_use_blocks_for_decl_p
 
 #undef TARGET_BUILTIN_RECIPROCAL
 #define TARGET_BUILTIN_RECIPROCAL rs6000_builtin_reciprocal
@@ -5882,6 +5885,75 @@ rs6000_got_sym (void)
   return rs6000_got_symbol;
 }
 
+/* AIX Thread-Local Address support.  */
+
+static rtx
+rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
+{
+  rtx sym, mem, tocref, tlsreg, tmpreg, dest;
+
+  /* Place addr into TOC constant pool.  */
+  sym = force_const_mem (GET_MODE (addr), addr);
+
+  /* Output the TOC entry and create the MEM referencing the value.  */
+  if (constant_pool_expr_p (XEXP (sym, 0))
+      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (XEXP (sym, 0)), Pmode))
+    {
+      tocref = create_TOC_reference (XEXP (sym, 0), NULL_RTX);
+      mem = gen_const_mem (Pmode, tocref);
+      set_mem_alias_set (mem, get_TOC_alias_set ());
+    }
+  else
+    return sym;
+
+  /* Use global-dynamic for local-dynamic.  */
+  if (model == TLS_MODEL_GLOBAL_DYNAMIC
+      || model == TLS_MODEL_LOCAL_DYNAMIC)
+    {
+      rtx module = gen_reg_rtx (Pmode);
+      /* Create new TOC reference for @m symbol.  */
+      const char *name = XSTR (XVECEXP (XEXP (mem, 0), 0, 0), 0);
+      char *name2 = XALLOCAVEC (char, strlen (name) + 1);
+      strcpy (name2, "*LCM");
+      strcat (name2, name + 3);
+      tocref = create_TOC_reference (gen_rtx_SYMBOL_REF (Pmode,
+							 ggc_alloc_string (name2,
+									   strlen (name2))),
+				     NULL_RTX);
+      rtx mem2 = gen_const_mem (Pmode, tocref);
+      set_mem_alias_set (mem2, get_TOC_alias_set ());
+      
+      dest = gen_reg_rtx (Pmode);
+      tmpreg = gen_reg_rtx (Pmode);
+      emit_insn (gen_rtx_SET (VOIDmode, tmpreg, mem));
+      emit_insn (gen_rtx_SET (VOIDmode, module, mem2));
+      if (TARGET_32BIT)
+	emit_insn (gen_tls_get_addrsi (dest, module, tmpreg));
+      else
+	emit_insn (gen_tls_get_addrdi (dest, module, tmpreg));
+      return dest;
+    }
+  /* Obtain TLS pointer: 32 bit call or 64 bit GPR 13.  */
+  else if (TARGET_32BIT)
+    {
+      tlsreg = gen_reg_rtx (SImode);
+      emit_insn (gen_tls_get_tpointer (tlsreg));
+    }
+  else
+    tlsreg = gen_rtx_REG (DImode, 13);
+
+  /* Load the TOC value into temporary register.  */
+  tmpreg = gen_reg_rtx (Pmode);
+  emit_insn (gen_rtx_SET (VOIDmode, tmpreg, mem));
+  set_unique_reg_note (get_last_insn (), REG_EQUAL,
+		       gen_rtx_MINUS (Pmode, addr, tlsreg));
+
+  /* Add TOC symbol value to TLS pointer.  */
+  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tmpreg, tlsreg));
+
+  return dest;
+}
+
 /* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
    this (thread-local) address.  */
 
@@ -5889,6 +5961,9 @@ static rtx
 rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 {
   rtx dest, insn;
+
+  if (TARGET_XCOFF)
+    return rs6000_legitimize_tls_address_aix (addr, model);
 
   dest = gen_reg_rtx (Pmode);
   if (model == TLS_MODEL_LOCAL_EXEC && rs6000_tls_size == 16)
@@ -6085,7 +6160,15 @@ rs6000_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
       && GET_CODE (XEXP (x, 0)) == UNSPEC)
     return true;
 
-  return rs6000_tls_referenced_p (x);
+  /* A TLS symbol in the TOC cannot contain a sum.  */
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+      && SYMBOL_REF_TLS_MODEL (XEXP (XEXP (x, 0), 0)) != 0)
+    return true;
+
+  /* Do not place an ELF TLS symbol in the constant pool.  */
+  return TARGET_ELF && rs6000_tls_referenced_p (x);
 }
 
 /* Return 1 if *X is a thread-local symbol.  This is the same as
@@ -6380,7 +6463,7 @@ rs6000_legitimate_address_p (enum machine_mode mode, rtx x, bool reg_ok_strict)
       && INTVAL (XEXP (x, 1)) == -16)
     x = XEXP (x, 0);
 
-  if (RS6000_SYMBOL_REF_TLS_P (x))
+  if (TARGET_ELF && RS6000_SYMBOL_REF_TLS_P (x))
     return 0;
   if (legitimate_indirect_address_p (x, reg_ok_strict))
     return 1;
@@ -15486,6 +15569,9 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 static void
 rs6000_assemble_visibility (tree decl, int vis)
 {
+  if (TARGET_XCOFF)
+    return;
+
   /* Functions need to have their entry point symbol visibility set as
      well as their descriptor symbol visibility.  */
   if (DEFAULT_ABI == ABI_AIX
@@ -21934,6 +22020,20 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LC");
 	  fprintf (file, "%d\n", ((*(const struct toc_hash_struct **)
 					      found)->labelno));
+
+#ifdef HAVE_AS_TLS
+	  if (TARGET_XCOFF && GET_CODE (x) == SYMBOL_REF
+	      && (SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_GLOBAL_DYNAMIC
+		  || SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC))
+	    {
+	      fputs ("\t.set ", file);
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LCM");
+	      fprintf (file, "%d,", labelno);
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LCM");
+	      fprintf (file, "%d\n", ((*(const struct toc_hash_struct **)
+			       			      found)->labelno));
+	    }
+#endif
 	  return;
 	}
     }
@@ -22206,6 +22306,29 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
     }
   else
     output_addr_const (file, x);
+
+#if HAVE_AS_TLS
+  if (TARGET_XCOFF && GET_CODE (base) == SYMBOL_REF)
+    {
+      if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_LOCAL_EXEC)
+	fputs ("[TL]@le", file);
+      else if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_INITIAL_EXEC)
+	fputs ("[TL]@ie", file);
+      /* Use global-dynamic for local-dynamic.  */
+      else if (SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_GLOBAL_DYNAMIC
+	       || SYMBOL_REF_TLS_MODEL (base) == TLS_MODEL_LOCAL_DYNAMIC)
+	{
+	  fputs ("[TL]\n", file);
+	  (*targetm.asm_out.internal_label) (file, "LCM", labelno);
+	  fputs ("\t.tc .", file);
+	  RS6000_OUTPUT_BASENAME (file, name);
+	  fputs ("[TC],", file);
+	  output_addr_const (file, x);
+	  fputs ("[TL]@m", file);
+	}
+    }
+#endif
+
   putc ('\n', file);
 }
 
@@ -24884,6 +25007,14 @@ rs6000_use_blocks_for_constant_p (enum machine_mode mode, const_rtx x)
 {
   return !ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode);
 }
+
+/* Do not place thread-local symbols refs in the object blocks.  */
+
+static bool
+rs6000_use_blocks_for_decl_p (const_tree decl)
+{
+  return !DECL_THREAD_LOCAL_P (decl);
+}
 
 /* Return a REG that occurs in ADDR with coefficient 1.
    ADDR can be effectively incremented by incrementing REG.
@@ -25516,6 +25647,14 @@ rs6000_xcoff_output_readwrite_section_asm_op (const void *directive)
 	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
 }
 
+static void
+rs6000_xcoff_output_tls_section_asm_op (const void *directive)
+{
+  fprintf (asm_out_file, "\t.csect %s[TL],%s\n",
+	   *(const char *const *) directive,
+	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
+}
+
 /* A get_unnamed_section callback, used for switching to toc_section.  */
 
 static void
@@ -25552,6 +25691,11 @@ rs6000_xcoff_asm_init_sections (void)
     = get_unnamed_section (SECTION_WRITE,
 			   rs6000_xcoff_output_readwrite_section_asm_op,
 			   &xcoff_private_data_section_name);
+
+  tls_data_section
+    = get_unnamed_section (SECTION_TLS,
+			   rs6000_xcoff_output_tls_section_asm_op,
+			   &xcoff_tls_data_section_name);
 
   read_only_private_data_section
     = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
@@ -25604,7 +25748,12 @@ rs6000_xcoff_select_section (tree decl, int reloc,
     }
   else
     {
-      if (TREE_PUBLIC (decl))
+#if HAVE_AS_TLS
+      if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+	return tls_data_section;
+      else
+#endif
+	if (TREE_PUBLIC (decl))
 	return data_section;
       else
 	return private_data_section;
@@ -25700,6 +25849,8 @@ rs6000_xcoff_file_start (void)
 			   main_input_filename, ".bss_");
   rs6000_gen_section_name (&xcoff_private_data_section_name,
 			   main_input_filename, ".rw_");
+  rs6000_gen_section_name (&xcoff_tls_data_section_name,
+			   main_input_filename, ".tls_");
   rs6000_gen_section_name (&xcoff_read_only_section_name,
 			   main_input_filename, ".ro_");
 
@@ -28164,7 +28315,7 @@ rs6000_address_for_altivec (rtx x)
 static bool
 rs6000_legitimate_constant_p (enum machine_mode mode, rtx x)
 {
-  if (rs6000_tls_referenced_p (x))
+  if (TARGET_ELF && rs6000_tls_referenced_p (x))
     return false;
 
   return ((GET_CODE (x) != CONST_DOUBLE && GET_CODE (x) != CONST_VECTOR)
