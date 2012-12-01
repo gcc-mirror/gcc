@@ -869,7 +869,7 @@ class Type
 
   // Finish the backend representation of a placeholder.
   void
-  finish_backend(Gogo*);
+  finish_backend(Gogo*, Btype*);
 
   // Build a type descriptor entry for this type.  Return a pointer to
   // it.  The location is the location which causes us to need the
@@ -1191,10 +1191,18 @@ class Type
   Btype*
   get_btype_without_hash(Gogo*);
 
+  // A backend type that may be a placeholder.
+  struct Type_btype_entry
+  {
+    Btype *btype;
+    bool is_placeholder;
+  };
+
   // A mapping from Type to Btype*, used to ensure that the backend
-  // representation of identical types is identical.
-  typedef Unordered_map_hash(const Type*, Btype*, Type_hash_identical,
-			     Type_identical) Type_btypes;
+  // representation of identical types is identical.  This is only
+  // used for unnamed types.
+  typedef Unordered_map_hash(const Type*, Type_btype_entry,
+			     Type_hash_identical, Type_identical) Type_btypes;
 
   static Type_btypes type_btypes;
 
@@ -1211,9 +1219,6 @@ class Type
 
   // The type classification.
   Type_classification classification_;
-  // Whether btype_ is a placeholder type used while named types are
-  // being converted.
-  bool btype_is_placeholder_;
   // The backend representation of the type, once it has been
   // determined.
   Btype* btype_;
