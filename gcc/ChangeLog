@@ -1,3 +1,8 @@
+2010-12-01  Xinliang David Li  <davidxl@google.com>
+
+        * config/i386/i386.c: Allow sign extend instructions (cltd etc)
+        on modern CPUs.
+
 2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* reorg.c: Remove an obsolete comment.
