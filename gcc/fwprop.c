@@ -1315,9 +1315,12 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
       /* Do not replace an existing REG_EQUAL note if the insn is not
 	 recognized.  Either we're already replacing in the note, or we'll
 	 separately try plugging the definition in the note and simplifying.
-	 And only install a REQ_EQUAL note when the destination is a REG,
-	 as the note would be invalid otherwise.  */
-      set_reg_equal = (note == NULL_RTX && REG_P (SET_DEST (use_set)));
+	 And only install a REQ_EQUAL note when the destination is a REG
+	 that isn't mentioned in USE_SET, as the note would be invalid
+	 otherwise.  */
+      set_reg_equal = (note == NULL_RTX && REG_P (SET_DEST (use_set))
+		       && ! reg_mentioned_p (SET_DEST (use_set),
+					     SET_SRC (use_set)));
     }
 
   if (GET_MODE (*loc) == VOIDmode)
