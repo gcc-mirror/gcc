@@ -1,3 +1,9 @@
+2012-12-02  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/55551
+	* lto-cgraph.c (merge_profile_summaries): Handle scaled histogram
+	entries that map to the same index.
+
 2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* optabs.c (add_equal_note): Do not create self-referencing REG_EQUAL
