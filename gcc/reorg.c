@@ -100,16 +100,7 @@ along with GCC; see the file COPYING3.  If not see
    delay slot.  In that case, we point each insn at the other with REG_CC_USER
    and REG_CC_SETTER notes.  Note that these restrictions affect very few
    machines because most RISC machines with delay slots will not use CC0
-   (the RT is the only known exception at this point).
-
-   Not yet implemented:
-
-   The Acorn Risc Machine can conditionally execute most insns, so
-   it is profitable to move single insns into a position to execute
-   based on the condition code of the previous insn.
-
-   The HP-PA can conditionally nullify insns, providing a similar
-   effect to the ARM, differing mostly in which insn is "in charge".  */
+   (the RT is the only known exception at this point).  */
 
 #include "config.h"
 #include "system.h"
