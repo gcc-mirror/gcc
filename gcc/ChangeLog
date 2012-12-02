@@ -1,3 +1,14 @@
+2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* function.h (struct rtl_data): Remove epilogue_delay_list.
+	* reorg.c (find_end_label): Simplify always-true test.
+	(optimize_skip): Likewise.
+	* final.c (leaf_function_p): Don't loop over epilogue_delay_list.
+	(leaf_renumber_regs): Likewise.
+	* varasm.c (mark_constant_pool): Likewise.
+	* except.c (set_nothrow_function_flags): Likewise.
+	* cfgrtl.c (print_rtl_with_bb): Likewise.
+
 2012-12-02  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_function_value): Set the mode of the
