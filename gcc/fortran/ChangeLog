@@ -1,3 +1,9 @@
+2012-12-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	* resolve.c (resolve_allocate_deallocate,
+	resolve_typebound_intrinsic_op): Recover revisions 193568 and
+	193778, which were accidentally reverted by the previous patch.
+
 2012-12-01   Alessandro Fanfarillo <alessandro.fanfarillo@gmail.com>
              Paul Thomas  <pault@gcc.gnu.org>
 
@@ -314,7 +320,7 @@
 	(get_sym_storage_size): Remove always-true checks.
 	* io.c (format_lex): Add comment.
 	(gfc_free_wait): Free memory.
-	* match.c (gfc_match_select_type): Ditto. 
+	* match.c (gfc_match_select_type): Ditto.
 	* matchexpr.c (match_level_3): Ditto.
 	* primary.c (match_string_constant): Ditto.
 	(match_actual_arg): Check return value.
@@ -1089,7 +1095,7 @@
 	* data.c (gfc_assign_data_value): Ditto.
 	* decl.c (var_element, char_len_param_value, match_char_length,
 	gfc_verify_c_interop_param, match_pointer_init, variable_decl,
-	gfc_match_decl_type_spec, gfc_match_import, match_attr_spec, 
+	gfc_match_decl_type_spec, gfc_match_import, match_attr_spec,
 	gfc_match_prefix, gfc_match_suffix, match_ppc_decl,
 	match_procedure_in_interface, gfc_match_procedure,gfc_match_entry,
 	gfc_match_subroutine, gfc_match_end, gfc_match_codimension,
@@ -1430,15 +1436,15 @@
 	PR fortran/52158
 	PR fortran/45170
 	PR fortran/49430
-	* resolve.c (resolve_fl_derived0): Deferred character length 
+	* resolve.c (resolve_fl_derived0): Deferred character length
 	procedure components are supported.
-	* trans-expr.c (gfc_conv_procedure_call): Handle TBP with 
+	* trans-expr.c (gfc_conv_procedure_call): Handle TBP with
 	deferred-length results.
 	(gfc_string_to_single_character): Add a new check to prevent
 	NULL read.
-	(gfc_conv_procedure_call): Remove unuseful checks on 
+	(gfc_conv_procedure_call): Remove unuseful checks on
 	symbol's attributes. Add new checks to prevent NULL read on
-	string length. 
+	string length.
 
 2012-05-12  Tobias Burnus  <burnus@net-b.de>
 
@@ -1747,7 +1753,7 @@
 2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/50981
-	* trans-expr.c (gfc_conv_procedure_call): Save se->ss's value. 
+	* trans-expr.c (gfc_conv_procedure_call): Save se->ss's value.
 	Handle the case of unallocated arrays passed to elemental procedures.
 
 2012-03-04  Mikael Morin  <mikael@gcc.gnu.org>
@@ -1806,7 +1812,7 @@
 	* module.c (bt_types): Ditto.
 	* resolve.c (assumed_type_expr_allowed): New static variable.
 	(resolve_actual_arglist, resolve_variable, resolve_symbol):
-	Handle type(*). 
+	Handle type(*).
 	* trans-expr.c (gfc_conv_procedure_call): Ditto.
 	* trans-types.c (gfc_typenode_for_spec, gfc_get_dtype): Ditto.
 
@@ -2241,7 +2247,7 @@
 
 	PR fortran/50981
 	* trans-array.c (gfc_walk_elemental_function_args): Fix
-	passing of deallocated allocatables/pointers as absent argument. 
+	passing of deallocated allocatables/pointers as absent argument.
 
 2012-01-16  Tobias Burnus  <burnus@net-b.de>
 
@@ -2277,7 +2283,7 @@
 2012-01-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_create_temp_array): In the case of a
-	class array temporary, detect a null 'eltype' on entry and use 
+	class array temporary, detect a null 'eltype' on entry and use
 	'initial' to provde the class reference and so, through the
 	vtable, the element size for the dynamic type.
 	* trans-stmt.c (gfc_conv_elemental_dependencies): For class

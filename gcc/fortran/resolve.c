@@ -7622,12 +7622,18 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 
 		      if (pr->next && qr->next)
 			{
+			  int i;
 			  gfc_array_ref *par = &(pr->u.ar);
 			  gfc_array_ref *qar = &(qr->u.ar);
-			  if ((par->start[0] != NULL || qar->start[0] != NULL)
-			      && gfc_dep_compare_expr (par->start[0],
-						       qar->start[0]) != 0)
-			    break;
+
+			  for (i=0; i<par->dimen; i++)
+			    {
+			      if ((par->start[i] != NULL
+				   || qar->start[i] != NULL)
+				  && gfc_dep_compare_expr (par->start[i],
+							   qar->start[i]) != 0)
+				goto break_label;
+			    }
 			}
 		    }
 		  else
@@ -7639,6 +7645,8 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 		  pr = pr->next;
 		  qr = qr->next;
 		}
+	    break_label:
+	      ;
 	    }
 	}
     }
@@ -11948,7 +11956,7 @@ resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
 
       /* Add target to non-typebound operator list.  */
       if (!target->specific->deferred && !derived->attr.use_assoc
-	  && p->access != ACCESS_PRIVATE)
+	  && p->access != ACCESS_PRIVATE && derived->ns == gfc_current_ns)
 	{
 	  gfc_interface *head, *intr;
 	  if (gfc_check_new_interface (derived->ns->op[op], target_proc,
