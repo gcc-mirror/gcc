@@ -1,3 +1,9 @@
+2012-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/54838
+	* cprop.c (bypass_block): Determine number of latches.  Return
+	when there is more than one latch edge.
+
 2012-12-02  Teresa Johnson  <tejohnson@google.com>
 
 	PR gcov-profile/55551

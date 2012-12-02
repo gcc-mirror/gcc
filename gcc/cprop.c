@@ -1510,13 +1510,28 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
   if (note)
     find_used_regs (&XEXP (note, 0), NULL);
 
-  may_be_loop_header = false;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_DFS_BACK)
-      {
-	may_be_loop_header = true;
-	break;
-      }
+  /* Determine whether there are more latch edges.  Threading through
+     a loop header with more than one latch is delicate, see e.g.
+     tree-ssa-threadupdate.c:thread_through_loop_header.  */
+  if (current_loops)
+    {
+      may_be_loop_header = bb == bb->loop_father->header;
+      if (may_be_loop_header
+	  && bb->loop_father->latch == NULL)
+	return 0;
+    }
+  else
+    {
+      unsigned n_back_edges = 0;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->flags & EDGE_DFS_BACK)
+	  n_back_edges++;
+
+      may_be_loop_header = n_back_edges > 0;
+
+      if (n_back_edges > 1)
+        return 0;
+    }
 
   change = 0;
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
