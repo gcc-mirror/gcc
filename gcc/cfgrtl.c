@@ -2015,14 +2015,6 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
       free (end);
       free (in_bb_p);
     }
-
-  if (crtl->epilogue_delay_list != 0)
-    {
-      fprintf (outf, "\n;; Insns in epilogue delay list:\n\n");
-      for (tmp_rtx = crtl->epilogue_delay_list; tmp_rtx != 0;
-	   tmp_rtx = XEXP (tmp_rtx, 1))
-	print_rtl_single (outf, XEXP (tmp_rtx, 0));
-    }
 }
 
 /* Update the branch probability of BB if a REG_BR_PROB is present.  */

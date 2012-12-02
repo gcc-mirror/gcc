@@ -435,12 +435,7 @@ find_end_label (rtx kind)
 	     if needed.  */
 	  emit_label (label);
 #ifdef HAVE_return
-	  /* We don't bother trying to create a return insn if the
-	     epilogue has filled delay-slots; we would have to try and
-	     move the delay-slot fillers to the delay-slots for the new
-	     return insn or in front of the new return insn.  */
-	  if (crtl->epilogue_delay_list == NULL
-	      && HAVE_return)
+	  if (HAVE_return)
 	    {
 	      /* The return we make may have delay slots too.  */
 	      rtx insn = gen_return ();
@@ -804,8 +799,7 @@ optimize_skip (rtx insn)
      we have one insn followed by a branch to the same label we branch to.
      In both of these cases, inverting the jump and annulling the delay
      slot give the same effect in fewer insns.  */
-  if ((next_trial == next_active_insn (JUMP_LABEL (insn))
-       && ! (next_trial == 0 && crtl->epilogue_delay_list != 0))
+  if (next_trial == next_active_insn (JUMP_LABEL (insn))
       || (next_trial != 0
 	  && simplejump_or_return_p (next_trial)
 	  && JUMP_LABEL (insn) == JUMP_LABEL (next_trial)))
