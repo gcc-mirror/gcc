@@ -95,6 +95,7 @@ conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
 #define VTABLE_EXTENDS_FIELD 2
 #define VTABLE_DEF_INIT_FIELD 3
 #define VTABLE_COPY_FIELD 4
+#define VTABLE_FINAL_FIELD 5
 
 
 tree
@@ -180,6 +181,13 @@ gfc_vtable_copy_get (tree decl)
 }
 
 
+tree
+gfc_vtable_final_get (tree decl)
+{
+  return gfc_vtable_field_get (decl, VTABLE_FINAL_FIELD);
+}
+
+
 #undef CLASS_DATA_FIELD
 #undef CLASS_VPTR_FIELD
 #undef VTABLE_HASH_FIELD
@@ -187,6 +195,7 @@ gfc_vtable_copy_get (tree decl)
 #undef VTABLE_EXTENDS_FIELD
 #undef VTABLE_DEF_INIT_FIELD
 #undef VTABLE_COPY_FIELD
+#undef VTABLE_FINAL_FIELD
 
 
 /* Obtain the vptr of the last class reference in an expression.  */
@@ -1510,7 +1519,7 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   dt = ref->u.c.sym;
   c = ref->u.c.component;
 
-  /* Return if the component is not in the parent type.  */
+  /* Return if the component is in the parent type.  */
   for (cmp = dt->components; cmp; cmp = cmp->next)
     if (strcmp (c->name, cmp->name) == 0)
       return;
@@ -1714,6 +1723,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	    conv_parent_component_references (se, ref);
 
 	  gfc_conv_component_ref (se, ref);
+	  if (!ref->next && ref->u.c.sym->attr.codimension
+	      && se->want_pointer && se->descriptor_only)
+	    return;
 
 	  break;
 

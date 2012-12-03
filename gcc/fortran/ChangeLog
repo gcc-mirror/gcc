@@ -1,4 +1,20 @@
 2012-12-03  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/37336
+	* class.c (gfc_is_finalizable): New function.
+	* gfortran.h (gfc_is_finalizable): Its prototype.
+	* module.c (mio_component): Read initializer for vtype's _final.
+	* resolve.c (resolve_fl_derived0): Call gfc_is_finalizable.
+	* trans-expr.c (gfc_vtable_final_get): New function.
+	(conv_parent_component_references): Fix comment.
+	(gfc_conv_variable): Fix for scalar coarray components.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): For BT_CLASS,
+	pass the BT_CLASS type and not the declared type to
+	gfc_deallocate_scalar_with_status.
+	* trans.h (gfc_vtable_final_get): New prototype.
+
+2012-12-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55475
 	* scanner.c (gfc_next_char_literal): Fix setting locus
