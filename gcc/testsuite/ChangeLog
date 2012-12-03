@@ -1,3 +1,8 @@
+2012-12-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr35634.c: Use signed char.
+	* g++.dg/torture/pr35634.C: Likewise.
+
 2012-12-02  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/54838
