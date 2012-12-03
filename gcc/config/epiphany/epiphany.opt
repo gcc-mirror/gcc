@@ -1,6 +1,6 @@
 ; Options for the Adapteva EPIPHANY port of the compiler
 ;
-; Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2009, 2011, 2012 Free Software Foundation, Inc.
 ; Contributed by Embecosm on behalf of Adapteva, Inc.
 ;
 ; This file is part of GCC.
@@ -103,6 +103,10 @@ Enum(attr_fp_mode) String(truncate) Value(FP_MODE_ROUND_TRUNC)
 EnumValue
 Enum(attr_fp_mode) String(int) Value(FP_MODE_INT)
 
+may-round-for-trunc
+Target Mask(MAY_ROUND_FOR_TRUNC)
+A floatig point to integer truncation may be replaced with rounding to save mode switching
+
 mvect-double
 Target Mask(VECT_DOUBLE)
 Vectorize for double-word operations.
@@ -122,6 +126,10 @@ Enum(vect_align) String(8) Value(8)
 msplit-vecmove-early
 Target Mask(SPLIT_VECMOVE_EARLY)
 Split unaligned 8 byte vector moves before post-modify address generation.
+
+mfp-iarith
+Target Mask(FP_IARITH)
+Use the floating point unit for integer add/subtract.
 
 m1reg-
 Target RejectNegative Joined Var(epiphany_m1reg) Enum(m1reg) Init(-1)

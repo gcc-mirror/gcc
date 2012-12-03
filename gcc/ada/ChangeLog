@@ -1,3 +1,29 @@
+2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR ada/52110
+	* s-osinte-hpux-dce.ads: Declare pthread_rwlockattr_t and
+	pthread_rwlock_t subtypes.  Delete duplicate declaration of clockid_t.
+	* s-taspri-hpux-dce.ads: Change "pragma Atomic (Thread)" to comment.
+
+2012-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Use
+	valid_constant_size_p to detect too large objects.
+	<E_Subprogram_Type>: Likewise for too large return types.
+	(allocatable_size_p): Call valid_constant_size_p in the fixed case.
+	(annotate_value) <INTEGER_CST>: Simplify.
+	<BIT_AND_EXPR>: Deal with negative values here.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Use
+	valid_constant_size_p to detect too large objects on the LHS.
+	* gcc-interface/misc.c (default_pass_by_ref): Likewise for large types.
+	And use TYPE_SIZE_UNIT throughout.
+	(must_pass_by_ref): Likewise.
+	* gcc-interface/utils.c (max_size) <tcc_unary>: Split from common case.
+	<tcc_binary>: Likewise.  Call size_binop instead of fold_build2.
+	<tcc_expression>: Simplify.
+	* gcc-interface/utils2.c (build_allocator): Use valid_constant_size_p
+	to detect too large allocations.
+
 2012-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Length>: Look through

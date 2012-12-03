@@ -57,7 +57,7 @@
 ;; Insn type.  Used to default other attribute values.
 
 (define_attr "type"
-  "move,load,store,cmove,unary,compare,shift,mul,uncond_branch,branch,call,fp,fp_int,misc,sfunc,fp_sfunc,flow"
+  "move,load,store,cmove,unary,compare,shift,mul,uncond_branch,branch,call,fp,fp_int,v2fp,misc,sfunc,fp_sfunc,flow"
   (const_string "misc"))
 
 ;; Length (in # bytes)
@@ -79,7 +79,7 @@
 	(const_string "trunc")))
 
 (define_attr "fp_mode" "round_unknown,round_nearest,round_trunc,int,caller,none"
-  (cond [(eq_attr "type" "fp,fp_sfunc")
+  (cond [(eq_attr "type" "fp,v2fp,fp_sfunc")
 	 (symbol_ref "(enum attr_fp_mode) epiphany_normal_fp_rounding")
 	 (eq_attr "type" "call")
 	 (symbol_ref "(enum attr_fp_mode) epiphany_normal_fp_mode")
@@ -325,6 +325,7 @@
       if (epiphany_vect_align != 4 /* == 8 */
 	  && !reload_in_progress
 	  && (GET_CODE (operands[0]) == MEM || GET_CODE (operands[1]) == MEM)
+	  && !misaligned_operand (operands[1], <MODE>mode)
 	  && (GET_CODE (operands[0]) != SUBREG
 	      || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[0])))
 		  != GET_MODE_SIZE (<MODE>mode)
@@ -355,7 +356,9 @@
    ldrd %0,%X1
    strd %1,%X0"
   "reload_completed
-   && ((!MEM_P (operands[0]) && !MEM_P (operands[1]))
+   && (((!MEM_P (operands[0]) || misaligned_operand (operands[0], <MODE>mode))
+	&& (!MEM_P (operands[1])
+	    || misaligned_operand (operands[1], <MODE>mode)))
        || epiphany_vect_align == 4)"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
@@ -411,6 +414,8 @@
 {
   if (reload_in_progress || reload_completed)
     emit_insn (gen_addsi3_r (operands[0], operands[1], operands[2]));
+  else if (TARGET_FP_IARITH && add_reg_operand (operands[2], SImode))
+    emit_insn (gen_iadd (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_addsi3_i (operands[0], operands[1], operands[2]));
   DONE;
@@ -539,7 +544,23 @@
 				(plus:SI (match_dup 0) (match_dup 1)))))]
   "")
 
-(define_insn "subsi3"
+(define_expand "subsi3"
+  [(set (match_operand:SI 0 "gpr_operand" "")
+	(plus:SI (match_operand:SI 1 "add_reg_operand" "")
+		 (match_operand:SI 2 "arith_operand" "")))]
+  ""
+  "
+{
+  gcc_assert (!reload_in_progress && !reload_completed);
+
+  if (TARGET_FP_IARITH)
+    emit_insn (gen_isub (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_subsi3_i (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "subsi3_i"
   [(set (match_operand:SI 0 "gpr_operand" "=r")
 	(minus:SI (match_operand:SI 1 "add_reg_operand" "r")
 		  (match_operand:SI 2 "arith_operand" "rL")))
@@ -905,7 +926,10 @@
   ""
   "fix %0, %1"
   [(set_attr "type" "fp")
-   (set_attr "fp_mode" "round_trunc")])
+   (set (attr "fp_mode")
+	(cond [(match_test "TARGET_MAY_ROUND_FOR_TRUNC")
+	       (const_string "round_unknown")]
+	      (const_string "round_trunc")))])
 
 (define_expand "fixuns_truncsfsi2"
   [(set (match_operand:SI 0 "gpr_operand" "")
@@ -927,7 +951,7 @@
 
       op1si = simplify_gen_subreg (SImode, operands[1], SFmode, 0);
       emit_insn (gen_fix_truncsfsi2 (operands[0], operands[1]));
-      emit_insn (gen_subsi3 (tmp, op1si, bit31));
+      emit_insn (gen_subsi3_i (tmp, op1si, bit31));
       emit_insn (gen_ashlsi3 (tmp, tmp, GEN_INT (8)));
       emit_insn (gen_cmpsi_cc_insn (op1si, limit));
       emit_insn (gen_movsicc (operands[0], cmp, tmp, operands[0]));
@@ -956,7 +980,14 @@
   DONE;
 })
 
-(define_insn "*iadd"
+(define_expand "iadd"
+  [(parallel
+     [(set (match_operand:SF 0 "gpr_operand" "")
+	   (plus:SI (match_operand:SF 1 "gpr_operand" "")
+		    (match_operand:SF 2 "gpr_operand" "")))
+      (clobber (reg:CC_FP CCFP_REGNUM))])])
+
+(define_insn "*iadd_i"
   [(match_parallel 3 "float_operation"
      [(set (match_operand:SI 0 "gpr_operand" "=r")
 	   (plus:SI (match_operand:SI 1 "gpr_operand" "%r")
@@ -966,7 +997,14 @@
   "iadd %0, %1, %2"
   [(set_attr "type" "fp_int")])
 
-(define_insn "*isub"
+(define_expand "isub"
+  [(parallel
+     [(set (match_operand:SF 0 "gpr_operand" "")
+	   (minus:SI (match_operand:SF 1 "gpr_operand" "")
+		     (match_operand:SF 2 "gpr_operand" "")))
+      (clobber (reg:CC_FP CCFP_REGNUM))])])
+
+(define_insn "*isub_i"
   [(match_parallel 3 "float_operation"
      [(set (match_operand:SI 0 "gpr_operand" "=r")
 	   (minus:SI (match_operand:SI 1 "gpr_operand" "r")
@@ -975,6 +1013,35 @@
   ""
   "isub %0, %1, %2"
   [(set_attr "type" "fp_int")])
+
+; Try to figure out if we over-committed the FPU, and if so, move
+; some insns back over to the integer pipe.
+
+; The peephole optimizer 'consumes' the insns that are explicitly
+; mentioned.  We do not want the preceding insn reconsidered, but
+; we do want that for the following one, so that if we have a run
+; of five fpu users, two of them get changed.  Therefore, we
+; use next_active_insn to look at the 'following' insn.  That should
+; exist, because peephole2 runs after reload, and there has to be
+; a return after an fp_int insn.
+; ??? However, we can not even ordinarily match the preceding insn;
+; there is some bug in the generators such that then it leaves out
+; the check for PARALLEL before the length check for the then-second
+; main insn.  Observed when compiling compatibility-atomic-c++0x.cc
+; from libstdc++-v3.
+(define_peephole2
+  [(match_parallel 3 "float_operation"
+     [(set (match_operand:SI 0 "gpr_operand" "")
+	   (match_operator:SI 4 "addsub_operator"
+	     [(match_operand:SI 1 "gpr_operand" "")
+	      (match_operand:SI 2 "gpr_operand" "")]))
+      (clobber (reg:CC_FP CCFP_REGNUM))])]
+  "get_attr_sched_use_fpu (prev_active_insn (peep2_next_insn (0)))
+   && peep2_regno_dead_p (1, CC_REGNUM)
+   && get_attr_sched_use_fpu (next_active_insn (peep2_next_insn (0)))"
+  [(parallel [(set (match_dup 0) (match_dup 4))
+	      (clobber (reg:CC CC_REGNUM))])]
+)
 
 (define_expand "mulsi3"
   [(parallel
@@ -1011,7 +1078,7 @@
 		    (match_operand:SI 3 "gpr_operand" "0")))
       (clobber (reg:CC_FP CCFP_REGNUM))])]
   ""
-  "imsub %0, %1, %2"
+  "imadd %0, %1, %2"
   [(set_attr "type" "fp_int")])
 
 (define_insn "*imsub"
@@ -2303,7 +2370,7 @@
   operands[11] = XVECEXP (operands[3], 0, XVECLEN (operands[3], 0) - 1);
 }
   [(set_attr "length" "8")
-   (set_attr "type" "fp")])
+   (set_attr "type" "v2fp")])
 
 (define_expand "mul<mode>3"
   [(parallel

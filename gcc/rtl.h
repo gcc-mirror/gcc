@@ -2575,14 +2575,6 @@ extern rtx make_compound_operation (rtx, enum rtx_code);
 /* In cfgcleanup.c  */
 extern void delete_dead_jumptables (void);
 
-/* In sched-vis.c.  */
-extern void debug_bb_n_slim (int);
-extern void debug_bb_slim (struct basic_block_def *);
-extern void print_value_slim (FILE *, const_rtx, int);
-extern void debug_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
-extern void dump_insn_slim (FILE *f, const_rtx x);
-extern void debug_insn_slim (const_rtx x);
-
 /* In sched-rgn.c.  */
 extern void schedule_insns (void);
 
@@ -2604,6 +2596,17 @@ extern void print_simple_rtl (FILE *, const_rtx);
 extern int print_rtl_single (FILE *, const_rtx);
 extern int print_rtl_single_with_indent (FILE *, const_rtx, int);
 extern void print_inline_rtx (FILE *, const_rtx, int);
+
+/* Functions in sched-vis.c.  FIXME: Ideally these functions would
+   not be in sched-vis.c but in rtl.c, because they are not only used
+   by the scheduler anymore but for all "slim" RTL dumping.  */
+extern void dump_value_slim (FILE *, const_rtx, int);
+extern void dump_insn_slim (FILE *, const_rtx);
+extern void dump_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
+extern void print_value (pretty_printer *, const_rtx, int);
+extern void print_pattern (pretty_printer *, const_rtx, int);
+extern void print_insn (pretty_printer *, const_rtx, int);
+extern const char *str_pattern_slim (const_rtx);
 
 /* In function.c */
 extern void reposition_prologue_and_epilogue_notes (void);

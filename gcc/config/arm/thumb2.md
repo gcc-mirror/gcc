@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2007, 2008, 2010, 2012 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -180,9 +180,9 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "*,*,*,*,load1,load1,store1,store1")
+  [(set_attr "type" "*,*,simple_alu_imm,*,load1,load1,store1,store1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,*,1020,4096,*,*")
+   (set_attr "pool_range" "*,*,*,*,1018,4094,*,*")
    (set_attr "neg_pool_range" "*,*,*,*,0,0,*,*")]
 )
 
@@ -217,7 +217,7 @@
    ldr%(h%)\\t%0, %1\\t%@ movhi"
   [(set_attr "type" "*,*,store1,load1")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,4096")
+   (set_attr "pool_range" "*,*,*,4094")
    (set_attr "neg_pool_range" "*,*,*,250")]
 )
 
@@ -568,9 +568,13 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr "type" "alu_shift,load_byte")
+  [(set_attr_alternative "type"
+                         [(if_then_else (eq_attr "tune" "cortexa7")
+                                        (const_string "simple_alu_imm")
+                                        (const_string "alu_shift"))
+                          (const_string "load_byte")])
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
+   (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
 
@@ -581,9 +585,13 @@
   "@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
-  [(set_attr "type" "alu_shift,load_byte")
+  [(set_attr_alternative "type"
+                         [(if_then_else (eq_attr "tune" "cortexa7")
+                                        (const_string "simple_alu_imm")
+                                        (const_string "alu_shift"))
+                          (const_string "load_byte")])
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
+   (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
 
@@ -594,9 +602,13 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr "type" "alu_shift,load_byte")
+  [(set_attr_alternative "type"
+                         [(if_then_else (eq_attr "tune" "cortexa7")
+                                        (const_string "simple_alu_imm")
+                                        (const_string "alu_shift"))
+                          (const_string "load_byte")])
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
+   (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
 )
 
@@ -790,8 +802,8 @@
 (define_insn "*thumb2_addsi3_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
-	  (plus:SI (match_operand:SI 0 "s_register_operand" "l,  r")
-		   (match_operand:SI 1 "arm_add_operand"    "lPv,rIL"))
+	  (plus:SI (match_operand:SI 0 "s_register_operand" "l,l,  r,r")
+		   (match_operand:SI 1 "arm_add_operand"    "Pv,l,IL,r"))
 	  (const_int 0)))]
   "TARGET_THUMB2"
   "*
@@ -808,7 +820,8 @@
       return \"cmn\\t%0, %1\";
   "
   [(set_attr "conds" "set")
-   (set_attr "length" "2,4")]
+   (set_attr "length" "2,2,4,4")
+   (set_attr "type"   "simple_alu_imm,*,simple_alu_imm,*")]
 )
 
 (define_insn "*thumb2_mulsi_short"

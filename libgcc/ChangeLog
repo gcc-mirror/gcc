@@ -1,3 +1,16 @@
+2012-11-29  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55445
+	* unwind-c.c (__SEH__): Make sure SjLj isn't active.
+	* unwind-generic.h: Likewise.
+	* unwind-seh.c: Likewise.
+
+2012-11-28  Richard Henderson  <rth@redhat.com>
+
+	PR libgcc/48076
+	* emutls.c (__emutls_get_address): Avoid race condition between
+	obj->loc.offset read and emutls_key initialization.
+	
 2012-11-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	Adjust decimal point of signed accum mode to GCC default.

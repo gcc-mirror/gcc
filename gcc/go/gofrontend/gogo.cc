@@ -3074,8 +3074,9 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
   : type_(type), enclosing_(enclosing), results_(NULL),
     closure_var_(NULL), block_(block), location_(location), labels_(),
     local_type_count_(0), fndecl_(NULL), defer_stack_(NULL),
-    results_are_named_(false), calls_recover_(false), is_recover_thunk_(false),
-    has_recover_thunk_(false)
+    results_are_named_(false), nointerface_(false), calls_recover_(false),
+    is_recover_thunk_(false), has_recover_thunk_(false),
+    in_unique_section_(false)
 {
 }
 
@@ -3896,7 +3897,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
     seen_(false), init_is_lowered_(false), type_from_init_tuple_(false),
     type_from_range_index_(false), type_from_range_value_(false),
     type_from_chan_element_(false), is_type_switch_var_(false),
-    determined_type_(false)
+    determined_type_(false), in_unique_section_(false)
 {
   go_assert(type != NULL || init != NULL);
   go_assert(!is_parameter || init == NULL);
@@ -4315,6 +4316,7 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 					    btype,
 					    package != NULL,
 					    Gogo::is_hidden_name(name),
+					    this->in_unique_section_,
 					    this->location_);
 	  else if (function == NULL)
 	    {

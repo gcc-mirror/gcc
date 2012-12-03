@@ -753,7 +753,7 @@ print_ddg (FILE *file, ddg_ptr g)
 }
 
 /* Print the given DDG in VCG format.  */
-void
+DEBUG_FUNCTION void
 vcg_print_ddg (FILE *file, ddg_ptr g)
 {
   int src_cuid;

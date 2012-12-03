@@ -6736,6 +6736,9 @@ aarch64_c_mode_for_suffix (char suffix)
 #undef TARGET_CLASS_MAX_NREGS
 #define TARGET_CLASS_MAX_NREGS aarch64_class_max_nregs
 
+#undef TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL aarch64_builtin_decl
+
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN aarch64_expand_builtin
 

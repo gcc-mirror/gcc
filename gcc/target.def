@@ -1495,6 +1495,13 @@ DEFHOOK
  bool, (enum machine_mode mode, const_rtx x),
  hook_bool_mode_const_rtx_false)
 
+/* True if the given decl can be put into an object_block.  */
+DEFHOOK
+(use_blocks_for_decl_p,
+ "",
+ bool, (const_tree decl),
+ hook_bool_const_tree_true)
+
 /* The minimum and maximum byte offsets for anchored addresses.  */
 DEFHOOKPOD
 (min_anchor_offset,

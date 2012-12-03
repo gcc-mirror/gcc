@@ -1677,6 +1677,10 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 	{
 	  bitmap_iterator bi;
 	  unsigned bb_index;
+	  rtx x_addr;
+
+	  x_addr = get_addr (XEXP (x, 0));
+	  x_addr = canon_rtx (x_addr);
 
 	  /* First handle all the blocks with calls.  We don't need to
 	     do any list walking for them.  */
@@ -1685,27 +1689,27 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 	      bitmap_clear_bit (bmap[bb_index], indx);
 	    }
 
-	    /* Now iterate over the blocks which have memory modifications
-	       but which do not have any calls.  */
-	    EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set,
-					    blocks_with_calls,
-					    0, bb_index, bi)
-	      {
-		vec<modify_pair> list
-		  = canon_modify_mem_list[bb_index];
-		modify_pair *pair;
-		unsigned ix;
+	  /* Now iterate over the blocks which have memory modifications
+	     but which do not have any calls.  */
+	  EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set,
+					  blocks_with_calls,
+					  0, bb_index, bi)
+	    {
+	      vec<modify_pair> list
+		= canon_modify_mem_list[bb_index];
+	      modify_pair *pair;
+	      unsigned ix;
 
-		FOR_EACH_VEC_ELT_REVERSE (list, ix, pair)
-		  {
-		    rtx dest = pair->dest;
-		    rtx dest_addr = pair->dest_addr;
+	      FOR_EACH_VEC_ELT_REVERSE (list, ix, pair)
+		{
+		  rtx dest = pair->dest;
+		  rtx dest_addr = pair->dest_addr;
 
-		    if (canon_true_dependence (dest, GET_MODE (dest),
-					       dest_addr, x, NULL_RTX))
-		      bitmap_clear_bit (bmap[bb_index], indx);
-	          }
-	      }
+		  if (canon_true_dependence (dest, GET_MODE (dest),
+					     dest_addr, x, x_addr))
+		    bitmap_clear_bit (bmap[bb_index], indx);
+	        }
+	    }
 	}
 
       x = XEXP (x, 0);

@@ -239,19 +239,18 @@ finish_optimization_passes (void)
     {
       dump_start (pass_profile.pass.static_pass_number, NULL);
       print_combine_total_stats ();
-      dump_finish (pass_combine.pass.static_pass_number);
+      dump_finish (pass_profile.pass.static_pass_number);
     }
 
   /* Do whatever is necessary to finish printing the graphs.  */
-  if (graph_dump_format != no_graph)
-    for (i = TDI_end; (dfi = get_dump_file_info (i)) != NULL; ++i)
-      if (dump_initialized_p (i)
-	  && (dfi->pflags & TDF_GRAPH) != 0
-	  && (name = get_dump_file_name (i)) != NULL)
-	{
-	  finish_graph_dump_file (name);
-	  free (name);
-	}
+  for (i = TDI_end; (dfi = get_dump_file_info (i)) != NULL; ++i)
+    if (dump_initialized_p (i)
+	&& (dfi->pflags & TDF_GRAPH) != 0
+	&& (name = get_dump_file_name (i)) != NULL)
+      {
+	finish_graph_dump_file (name);
+	free (name);
+      }
 
   timevar_pop (TV_DUMP);
 }
@@ -1537,6 +1536,8 @@ init_optimization_passes (void)
       /* Copy propagation also copy-propagates constants, this is necessary
          to forward object-size results properly.  */
       NEXT_PASS (pass_copy_prop);
+      NEXT_PASS (pass_asan);
+      NEXT_PASS (pass_tsan);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_dce);
       /* Fold remaining builtins.  */
@@ -1777,18 +1778,16 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
       if (cfun->curr_properties & PROP_trees)
         dump_function_to_file (current_function_decl, dump_file, dump_flags);
       else
-	{
-	  print_rtl_with_bb (dump_file, get_insns (), dump_flags);
-
-	  if ((cfun->curr_properties & PROP_cfg)
-	      && graph_dump_format != no_graph
-	      && (dump_flags & TDF_GRAPH))
-	    print_rtl_graph_with_bb (dump_file_name, get_insns ());
-	}
+	print_rtl_with_bb (dump_file, get_insns (), dump_flags);
 
       /* Flush the file.  If verification fails, we won't be able to
 	 close the file before aborting.  */
       fflush (dump_file);
+
+      if ((cfun->curr_properties & PROP_cfg)
+	  && (cfun->curr_properties & PROP_rtl)
+	  && (dump_flags & TDF_GRAPH))
+	print_rtl_graph_with_bb (dump_file_name, cfun->decl);
     }
 }
 
@@ -2338,13 +2337,11 @@ execute_one_pass (struct opt_pass *pass)
 
   if (initializing_dump
       && dump_file
-      && graph_dump_format != no_graph
+      && (dump_flags & TDF_GRAPH)
       && cfun
       && (cfun->curr_properties & (PROP_cfg | PROP_rtl))
 	  == (PROP_cfg | PROP_rtl))
     {
-      get_dump_file_info (pass->static_pass_number)->pflags |= TDF_GRAPH;
-      dump_flags |= TDF_GRAPH;
       clean_graph_dump_file (dump_file_name);
     }
 

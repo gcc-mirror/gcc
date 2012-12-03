@@ -252,7 +252,6 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_BACKTRACE	        (leaf_function_p () \
 				         ? TARGET_TPCS_LEAF_FRAME \
 				         : TARGET_TPCS_FRAME)
-#define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN)
 #define TARGET_AAPCS_BASED \
     (arm_abi != ARM_ABI_APCS && arm_abi != ARM_ABI_ATPCS)
 
@@ -268,6 +267,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_THUMB2			(TARGET_THUMB && arm_arch_thumb2)
 /* Thumb-1 only.  */
 #define TARGET_THUMB1_ONLY		(TARGET_THUMB1 && !arm_arch_notm)
+
+#define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN \
+                                         && !TARGET_THUMB1)
 
 /* The following two macros concern the ability to execute coprocessor
    instructions for VFPv3 or NEON.  TARGET_VFP3/TARGET_VFPD32 are currently
@@ -295,6 +297,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 
 /* FPU supports fused-multiply-add operations.  */
 #define TARGET_FMA (TARGET_VFP && arm_fpu_desc->rev >= 4)
+
+/* FPU is ARMv8 compatible.  */
+#define TARGET_FPU_ARMV8 (TARGET_VFP && arm_fpu_desc->rev >= 8)
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (TARGET_VFP && arm_fpu_desc->crypto)

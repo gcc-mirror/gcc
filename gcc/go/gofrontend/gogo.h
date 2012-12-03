@@ -911,6 +911,24 @@ class Function
   results_are_named() const
   { return this->results_are_named_; }
 
+  // Whether this method should not be included in the type
+  // descriptor.
+  bool
+  nointerface() const
+  {
+    go_assert(this->is_method());
+    return this->nointerface_;
+  }
+
+  // Record that this method should not be included in the type
+  // descriptor.
+  void
+  set_nointerface()
+  {
+    go_assert(this->is_method());
+    this->nointerface_ = true;
+  }
+
   // Add a new field to the closure variable.
   void
   add_closure_field(Named_object* var, Location loc)
@@ -1014,6 +1032,11 @@ class Function
   set_has_recover_thunk()
   { this->has_recover_thunk_ = true; }
 
+  // Mark the function as going into a unique section.
+  void
+  set_in_unique_section()
+  { this->in_unique_section_ = true; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1113,12 +1136,17 @@ class Function
   Temporary_statement* defer_stack_;
   // True if the result variables are named.
   bool results_are_named_;
+  // True if this method should not be included in the type descriptor.
+  bool nointerface_;
   // True if this function calls the predeclared recover function.
   bool calls_recover_;
   // True if this a thunk built for a function which calls recover.
   bool is_recover_thunk_;
   // True if this function already has a recover thunk.
   bool has_recover_thunk_;
+  // True if this function should be put in a unique section.  This is
+  // turned on for field tracking.
+  bool in_unique_section_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1394,6 +1422,14 @@ class Variable
   set_is_type_switch_var()
   { this->is_type_switch_var_ = true; }
 
+  // Mark the variable as going into a unique section.
+  void
+  set_in_unique_section()
+  {
+    go_assert(this->is_global_);
+    this->in_unique_section_ = true;
+  }
+
   // Traverse the initializer expression.
   int
   traverse_expression(Traverse*, unsigned int traverse_mask);
@@ -1484,6 +1520,9 @@ class Variable
   bool is_type_switch_var_ : 1;
   // True if we have determined types.
   bool determined_type_ : 1;
+  // True if this variable should be put in a unique section.  This is
+  // used for field tracking.
+  bool in_unique_section_ : 1;
 };
 
 // A variable which is really the name for a function return value, or

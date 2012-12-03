@@ -1,3 +1,33 @@
+2012-11-30  Doug Evans  <dje@google.com>
+
+	* testsuite-management/validate_failures.py: Add support for @include,
+	@remove directives in manifest files.
+
+	* testsuite-management/validate_failures.py: Add function
+	GetManifestPath.  New global _MANIFEST_SUBDIR.
+
+2012-11-29  Doug Evans  <dje@google.com>
+
+	* testsuite-management/validate_failures.py: Remove pass/fail
+	indicator from result of GetBuildData.
+
+	* testsuite-management/validate_failures.py: Store options in global
+	variable _OPTIONS.
+
+	* testsuite-management/validate_failures.py: Rename variable
+	manifest_name to manifest_path everywhere.
+
+	* testsuite-management/validate_failures.py (CompareBuilds): Pass
+	options.results to GetSumFiles for clean build.
+
+2012-11-28  Doug Evans  <dje@google.com>
+
+	* testsuite-management/validate_failures.py: Use <target_alias> instead
+	of <target>.  Minor whitespace changes.
+
+	* testsuite-management/validate_failures.py: Record ordinal with
+	TestResult.
+
 2012-11-19  Mike Stump  <mikestump@comcast.net>
 
 	* compare_tests: Add export LC_ALL=C to make sort happier.

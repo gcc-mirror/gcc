@@ -93,6 +93,20 @@ lto_write_options (void)
     {
       struct cl_decoded_option *option = &save_decoded_options[i];
 
+      /* Skip explicitly some common options that we do not need.  */
+      switch (option->opt_index)
+      {
+	case OPT_dumpbase:
+	case OPT_SPECIAL_unknown:
+	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_program_name:
+	case OPT_SPECIAL_input_file:
+	  continue;
+
+	default:
+	  break;
+      }
+
       /* Skip frontend and driver specific options here.  */
       if (!(cl_options[option->opt_index].flags & (CL_COMMON|CL_TARGET|CL_LTO)))
 	continue;
@@ -107,17 +121,6 @@ lto_write_options (void)
 	 We do not need those.  Also drop all diagnostic options.  */
       if (cl_options[option->opt_index].flags & (CL_DRIVER|CL_WARNING))
 	continue;
-
-      /* Skip explicitly some common options that we do not need.  */
-      switch (option->opt_index)
-	{
-	case OPT_dumpbase:
-	case OPT_SPECIAL_input_file:
-	  continue;
-
-	default:
-	  break;
-	}
 
       for (j = 0; j < option->canonical_option_num_elements; ++j)
 	append_to_collect_gcc_options (&temporary_obstack, &first_p,

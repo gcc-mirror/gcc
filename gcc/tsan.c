@@ -84,64 +84,17 @@ is_vptr_store (gimple stmt, tree expr, bool is_write)
   return NULL;
 }
 
-/* Checks as to whether EXPR refers to constant var/field/param.
-   Don't bother to instrument them.  */
-
-static bool
-is_load_of_const_p (tree expr, bool is_write)
-{
-  if (is_write)
-    return false;
-  if (TREE_CODE (expr) == COMPONENT_REF)
-    expr = TREE_OPERAND (expr, 1);
-  if (TREE_CODE (expr) == VAR_DECL
-      || TREE_CODE (expr) == PARM_DECL
-      || TREE_CODE (expr) == FIELD_DECL)
-    {
-      if (TREE_READONLY (expr))
-	return true;
-    }
-  return false;
-}
-
 /* Instruments EXPR if needed. If any instrumentation is inserted,
    return true.  */
 
 static bool
 instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 {
-  enum tree_code tcode;
   tree base, rhs, expr_type, expr_ptr, builtin_decl;
   basic_block bb;
   HOST_WIDE_INT size;
   gimple stmt, g;
   location_t loc;
-
-  base = get_base_address (expr);
-  if (base == NULL_TREE
-      || TREE_CODE (base) == SSA_NAME
-      || TREE_CODE (base) == STRING_CST)
-    return false;
-
-  tcode = TREE_CODE (expr);
-
-  /* Below are things we do not instrument
-     (no possibility of races or not implemented yet).  */
-  if (/* Compiler-emitted artificial variables.  */
-      (DECL_P (expr) && DECL_ARTIFICIAL (expr))
-      /* The var does not live in memory -> no possibility of races.  */
-      || (tcode == VAR_DECL
-	  && !TREE_ADDRESSABLE (expr)
-	  && TREE_STATIC (expr) == 0)
-      /* Not implemented.  */
-      || TREE_CODE (TREE_TYPE (expr)) == RECORD_TYPE
-      /* Not implemented.  */
-      || tcode == CONSTRUCTOR
-      /* Not implemented.  */
-      || tcode == PARM_DECL
-      /* Load of a const variable/parameter/field.  */
-      || is_load_of_const_p (expr, is_write))
-    return false;
 
   size = int_size_in_bytes (TREE_TYPE (expr));
   if (size == -1)
@@ -153,18 +106,29 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   tree offset;
   enum machine_mode mode;
   int volatilep = 0, unsignedp = 0;
-  get_inner_reference (expr, &bitsize, &bitpos, &offset,
-		       &mode, &unsignedp, &volatilep, false);
-  if (bitpos % (size * BITS_PER_UNIT)
-      || bitsize != size * BITS_PER_UNIT)
+  base = get_inner_reference (expr, &bitsize, &bitpos, &offset,
+			      &mode, &unsignedp, &volatilep, false);
+
+  /* No need to instrument accesses to decls that don't escape,
+     they can't escape to other threads then.  */
+  if (DECL_P (base))
+    {
+      struct pt_solution pt;
+      memset (&pt, 0, sizeof (pt));
+      pt.escaped = 1;
+      pt.ipa_escaped = flag_ipa_pta != 0;
+      pt.nonlocal = 1;
+      if (!pt_solution_includes (&pt, base))
+	return false;
+      if (!is_global_var (base) && !may_be_aliased (base))
+	return false;
+    }
+
+  if (TREE_READONLY (base))
     return false;
 
-  /* TODO: handle other case: ARRAY_RANGE_REF.  */
-  if (tcode != ARRAY_REF
-      && tcode != VAR_DECL
-      && tcode != COMPONENT_REF
-      && tcode != INDIRECT_REF
-      && tcode != MEM_REF)
+  if (bitpos % (size * BITS_PER_UNIT)
+      || bitsize != size * BITS_PER_UNIT)
     return false;
 
   stmt = gsi_stmt (gsi);

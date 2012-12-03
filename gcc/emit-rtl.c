@@ -5954,7 +5954,7 @@ location_t epilogue_location;
 /* Hold current location information and last location information, so the
    datastructures are built lazily only when some instructions in given
    place are needed.  */
-static location_t curr_location, last_location;
+static location_t curr_location;
 
 /* Allocate insn location datastructure.  */
 void
@@ -5962,7 +5962,6 @@ insn_locations_init (void)
 {
   prologue_location = epilogue_location = 0;
   curr_location = UNKNOWN_LOCATION;
-  last_location = UNKNOWN_LOCATION;
 }
 
 /* At the end of emit stage, clear current location.  */

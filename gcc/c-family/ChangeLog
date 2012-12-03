@@ -1,3 +1,23 @@
+2012-11-29  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/52654
+	* c-common.h (overflow_type): New enum.
+	(build_userdef_literal): Add overflow_type argument.
+	(tree_userdef_literal): Add overflow_type.
+	(USERDEF_LITERAL_OVERFLOW): New access macro.
+	* c-common.c (build_userdef_literal): Add overflow_type
+	argument.
+	* c-lex.c (c_lex_with_flags): Add overflow_type to
+	build_userdef_literal calls.
+	(interpret_integer, interpret_float): Add overflow_type argument.
+
+2012-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR c/35634
+	* c-gimplify.c (c_gimplify_expr): Gimplify self-modify expressions
+	here and use a type with proper overflow behavior for types that would
+	need to be promoted for the arithmetic.
+
 2012-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/55435

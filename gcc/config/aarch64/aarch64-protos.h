@@ -234,5 +234,6 @@ rtx aarch64_expand_builtin (tree exp,
 			    rtx subtarget ATTRIBUTE_UNUSED,
 			    enum machine_mode mode ATTRIBUTE_UNUSED,
 			    int ignore ATTRIBUTE_UNUSED);
+tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
 
 #endif /* GCC_AARCH64_PROTOS_H */

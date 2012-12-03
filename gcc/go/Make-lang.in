@@ -1,6 +1,6 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for gcc Go frontend.
 
-# Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -254,7 +254,7 @@ go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 GOINCLUDES = -I $(srcdir)/go -I $(srcdir)/go/gofrontend
 
 go/go-gcc.o: go/go-gcc.cc $(GO_SYSTEM_H) $(TREE_H) tree-iterator.h \
-		$(GIMPLE_H) toplev.h $(GO_C_H) $(GO_GOGO_H) \
+		$(GIMPLE_H) toplev.h output.h $(GO_C_H) $(GO_GOGO_H) \
 		go/gofrontend/backend.h
 	$(CXX) -c $(GOINCLUDES) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $< $(OUTPUT_OPTION)
 

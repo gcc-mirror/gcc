@@ -2237,19 +2237,9 @@ nonoverlapping_component_refs_p (const_rtx rtlx, const_rtx rtly)
 
     found:
       /* If we're left with accessing different fields of a structure, then no
-	 possible overlap, unless they are both true bitfields, i.e. bitfields
-	 for which the size isn't a multiple of the (memory) unit.  */
+	 possible overlap, unless they are both bitfields.  */
       if (TREE_CODE (typex) == RECORD_TYPE && fieldx != fieldy)
-	{
-	  if (!DECL_BIT_FIELD (fieldx) || !DECL_BIT_FIELD (fieldy))
-	    return true;
-
-	  if ((tree_low_cst (DECL_SIZE (fieldx), 1) % BITS_PER_UNIT) == 0
-	      || (tree_low_cst (DECL_SIZE (fieldy), 1) % BITS_PER_UNIT) == 0)
-	    return true;
-
-	  return false;
-	}
+	return !(DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy));
 
       /* The comparison on the current field failed.  If we're accessing
 	 a very nested structure, look at the next outer level.  */
@@ -2818,7 +2808,7 @@ init_alias_analysis (void)
 
   timevar_push (TV_ALIAS_ANALYSIS);
 
-  vec_alloc (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
+  vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
 
   /* If we have memory allocated from the previous run, use it.  */

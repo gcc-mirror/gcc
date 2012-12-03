@@ -177,7 +177,8 @@ void
 dump_pointer (dump_info_p di, const char *field, void *ptr)
 {
   dump_maybe_newline (di);
-  fprintf (di->stream, "%-4s: %-8lx ", field, (unsigned long) ptr);
+  fprintf (di->stream, "%-4s: %-8" HOST_WIDE_INT_PRINT "x ", field,
+	   (unsigned HOST_WIDE_INT) (uintptr_t) ptr);
   di->column += 15;
 }
 

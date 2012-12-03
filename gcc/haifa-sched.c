@@ -2168,8 +2168,6 @@ model_recompute (rtx insn)
 
 	    if (sched_verbose >= 5)
 	      {
-		char buf[2048];
-
 		if (!print_p)
 		  {
 		    fprintf (sched_dump, MODEL_BAR);
@@ -2179,9 +2177,9 @@ model_recompute (rtx insn)
 		    print_p = true;
 		  }
 
-		print_pattern (buf, PATTERN (insn), 0);
 		fprintf (sched_dump, ";;\t\t| %3d %4d %-30s ",
-			 point, INSN_UID (insn), buf);
+			 point, INSN_UID (insn),
+			 str_pattern_slim (PATTERN (insn)));
 		for (pci = 0; pci < ira_pressure_classes_num; pci++)
 		  {
 		    cl = ira_pressure_classes[pci];
@@ -3343,18 +3341,16 @@ model_record_pressures (struct model_insn_info *insn)
   point = model_index (insn->insn);
   if (sched_verbose >= 2)
     {
-      char buf[2048];
-
       if (point == 0)
 	{
 	  fprintf (sched_dump, "\n;;\tModel schedule:\n;;\n");
 	  fprintf (sched_dump, ";;\t| idx insn | mpri hght dpth prio |\n");
 	}
-      print_pattern (buf, PATTERN (insn->insn), 0);
       fprintf (sched_dump, ";;\t| %3d %4d | %4d %4d %4d %4d | %-30s ",
 	       point, INSN_UID (insn->insn), insn->model_priority,
 	       insn->depth + insn->alap, insn->depth,
-	       INSN_PRIORITY (insn->insn), buf);
+	       INSN_PRIORITY (insn->insn),
+	       str_pattern_slim (PATTERN (insn->insn)));
     }
   calculate_reg_deaths (insn->insn, death);
   reg_pressure = INSN_REG_PRESSURE (insn->insn);
@@ -3715,11 +3711,9 @@ schedule_insn (rtx insn)
   if (sched_verbose >= 1)
     {
       struct reg_pressure_data *pressure_info;
-      char buf[2048];
-
-      print_insn (buf, insn, 0);
-      buf[40] = 0;
-      fprintf (sched_dump, ";;\t%3i--> %-40s:", clock_var, buf);
+      fprintf (sched_dump, ";;\t%3i--> %s%-40s:",
+	       clock_var, (*current_sched_info->print_insn) (insn, 1),
+	       str_pattern_slim (PATTERN (insn)));
 
       if (recog_memoized (insn) < 0)
 	fprintf (sched_dump, "nothing");

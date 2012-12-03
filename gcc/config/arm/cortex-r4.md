@@ -78,13 +78,13 @@
 ;; for the purposes of the dual-issue constraints above.
 (define_insn_reservation "cortex_r4_alu" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (and (eq_attr "type" "alu")
+       (and (eq_attr "type" "alu_reg,simple_alu_imm")
             (not (eq_attr "insn" "mov"))))
   "cortex_r4_alu")
 
 (define_insn_reservation "cortex_r4_mov" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (and (eq_attr "type" "alu")
+       (and (eq_attr "type" "alu_reg,simple_alu_imm")
             (eq_attr "insn" "mov")))
   "cortex_r4_mov")
 

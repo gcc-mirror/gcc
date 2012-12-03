@@ -2626,11 +2626,12 @@ cselib_process_insn (rtx insn)
   cselib_current_insn = insn;
 
   /* Forget everything at a CODE_LABEL, a volatile insn, or a setjmp.  */
-  if (LABEL_P (insn)
-      || (CALL_P (insn)
-	  && find_reg_note (insn, REG_SETJMP, NULL))
-      || (NONJUMP_INSN_P (insn)
-	  && volatile_insn_p (PATTERN (insn))))
+  if ((LABEL_P (insn)
+       || (CALL_P (insn)
+	   && find_reg_note (insn, REG_SETJMP, NULL))
+       || (NONJUMP_INSN_P (insn)
+	   && volatile_insn_p (PATTERN (insn))))
+      && !cselib_preserve_constants)
     {
       cselib_reset_table (next_uid);
       cselib_current_insn = NULL_RTX;
@@ -2668,9 +2669,18 @@ cselib_process_insn (rtx insn)
   /* Look for any CLOBBERs in CALL_INSN_FUNCTION_USAGE, but only
      after we have processed the insn.  */
   if (CALL_P (insn))
-    for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
-      if (GET_CODE (XEXP (x, 0)) == CLOBBER)
-	cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
+    {
+      for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+	if (GET_CODE (XEXP (x, 0)) == CLOBBER)
+	  cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
+      /* Flush evertything on setjmp.  */
+      if (cselib_preserve_constants
+	  && find_reg_note (insn, REG_SETJMP, NULL))
+	{
+	  cselib_preserve_only_values ();
+	  cselib_reset_table (next_uid);
+	}
+    }
 
   /* On setter of the hard frame pointer if frame_pointer_needed,
      invalidate stack_pointer_rtx, so that sp and {,h}fp based

@@ -1817,16 +1817,16 @@ lra_process_new_insns (rtx insn, rtx before, rtx after, const char *title)
 
   if (lra_dump_file != NULL && (before != NULL_RTX || after != NULL_RTX))
     {
-      debug_rtl_slim (lra_dump_file, insn, insn, -1, 0);
+      dump_insn_slim (lra_dump_file, insn);
       if (before != NULL_RTX)
 	{
 	  fprintf (lra_dump_file,"    %s before:\n", title);
-	  debug_rtl_slim (lra_dump_file, before, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, before, NULL_RTX, -1, 0);
 	}
       if (after != NULL_RTX)
 	{
 	  fprintf (lra_dump_file, "    %s after:\n", title);
-	  debug_rtl_slim (lra_dump_file, after, NULL_RTX, -1, 0);
+	  dump_rtl_slim (lra_dump_file, after, NULL_RTX, -1, 0);
 	}
       fprintf (lra_dump_file, "\n");
     }
@@ -2151,6 +2151,9 @@ update_inc_notes (void)
 /* Set to 1 while in lra.  */
 int lra_in_progress;
 
+/* Start of pseudo regnos before the LRA.  */
+int lra_new_regno_start;
+
 /* Start of reload pseudo regnos before the new spill pass.  */
 int lra_constraint_new_regno_start;
 
@@ -2235,7 +2238,7 @@ lra (FILE *f)
      so set up lra_constraint_new_regno_start before its call to
      permit changing reg classes for pseudos created by this
      simplification.  */
-  lra_constraint_new_regno_start = max_reg_num ();
+  lra_constraint_new_regno_start = lra_new_regno_start = max_reg_num ();
   remove_scratches ();
   scratch_p = lra_constraint_new_regno_start != max_reg_num ();
 

@@ -245,7 +245,6 @@ reload			Ulrich Weigand		uweigand@de.ibm.com
 reload			Bernd Schmidt		bernds@codesourcery.com
 dfp.c, related		Ben Elliston		bje@gnu.org
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
-RTL optimizers		Richard Sandiford	rdsandiford@googlemail.com
 auto-vectorizer		Richard Biener		rguenther@suse.de
 auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
 loop infrastructure	Zdenek Dvorak		ook@ucw.cz
@@ -529,6 +528,7 @@ Chung-Lin Tang					cltang@codesourcery.com
 Samuel Tardieu					sam@rfc1149.net
 Kresten Krab Thorup				krab@gcc.gnu.org
 Caroline Tice					ctice@apple.com
+Kyrylo Tkachov					kyrylo.tkachov@arm.com
 Konrad Trifunovic				konrad.trifunovic@inria.fr
 David Ung					davidu@mips.com
 Neil Vachharajani				nvachhar@gmail.com

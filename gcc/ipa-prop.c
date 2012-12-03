@@ -2888,6 +2888,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	{
 	  tree expr, base, off;
 	  location_t loc;
+	  unsigned int deref_align;
+	  bool deref_base = false;
 
 	  /* We create a new parameter out of the value of the old one, we can
 	     do the following kind of transformations:
@@ -2910,7 +2912,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 
 	  gcc_checking_assert (adj->offset % BITS_PER_UNIT == 0);
 	  base = gimple_call_arg (stmt, adj->base_index);
-	  loc = EXPR_LOCATION (base);
+	  loc = DECL_P (base) ? DECL_SOURCE_LOCATION (base)
+			      : EXPR_LOCATION (base);
 
 	  if (TREE_CODE (base) != ADDR_EXPR
 	      && POINTER_TYPE_P (TREE_TYPE (base)))
@@ -2920,9 +2923,15 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	    {
 	      HOST_WIDE_INT base_offset;
 	      tree prev_base;
+	      bool addrof;
 
 	      if (TREE_CODE (base) == ADDR_EXPR)
-		base = TREE_OPERAND (base, 0);
+		{
+		  base = TREE_OPERAND (base, 0);
+		  addrof = true;
+		}
+	      else
+		addrof = false;
 	      prev_base = base;
 	      base = get_addr_base_and_unit_offset (base, &base_offset);
 	      /* Aggregate arguments can have non-invariant addresses.  */
@@ -2934,6 +2943,11 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		}
 	      else if (TREE_CODE (base) == MEM_REF)
 		{
+		  if (!addrof)
+		    {
+		      deref_base = true;
+		      deref_align = TYPE_ALIGN (TREE_TYPE (base));
+		    }
 		  off = build_int_cst (adj->alias_ptr_type,
 				       base_offset
 				       + adj->offset / BITS_PER_UNIT);
@@ -2956,7 +2970,17 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	      unsigned int align;
 	      unsigned HOST_WIDE_INT misalign;
 
-	      get_pointer_alignment_1 (base, &align, &misalign);
+	      if (deref_base)
+		{
+		  align = deref_align;
+		  misalign = 0;
+		}
+	      else
+		{
+		  get_pointer_alignment_1 (base, &align, &misalign);
+		  if (TYPE_ALIGN (type) > align)
+		    align = TYPE_ALIGN (type);
+		}
 	      misalign += (tree_to_double_int (off)
 			   .sext (TYPE_PRECISION (TREE_TYPE (off))).low
 			   * BITS_PER_UNIT);

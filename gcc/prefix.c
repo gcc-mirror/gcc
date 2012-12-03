@@ -157,12 +157,12 @@ lookup_key (char *key)
     }
 
   size = 32;
-  dst = xmalloc (size);
+  dst = XNEWVEC (char, size);
 
   res = RegQueryValueExA (reg_key, key, 0, &type, (LPBYTE) dst, &size);
   if (res == ERROR_MORE_DATA && type == REG_SZ)
     {
-      dst = xrealloc (dst, size);
+      dst = XRESIZEVEC (char, dst, size);
       res = RegQueryValueExA (reg_key, key, 0, &type, (LPBYTE) dst, &size);
     }
 

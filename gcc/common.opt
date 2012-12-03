@@ -174,9 +174,6 @@ int rtl_dump_and_exit
 Variable
 int flag_print_asm_name
 
-Variable
-enum graph_dump_types graph_dump_format = no_graph
-
 ; Name of top-level original source file (what was input to cpp).
 ; This comes from the #-command at the beginning of the actual input.
 ; If there isn't any there, then this is the cc1 input file name.

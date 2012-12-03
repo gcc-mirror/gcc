@@ -784,18 +784,18 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
       else
 	{
 	  tree cond2;
-	  cond = fold_build2_loc (input_location, GE_EXPR, boolean_type_node,
+	  cond = fold_build2_loc (input_location, GT_EXPR, boolean_type_node,
 				  images, gfort_gvar_caf_num_images);
 	  cond2 = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 				   images,
 				   build_int_cst (TREE_TYPE (images), 1));
-	  cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+	  cond = fold_build2_loc (input_location, TRUTH_OR_EXPR,
 				  boolean_type_node, cond, cond2);
 	}
       gfc_trans_runtime_check (true, false, cond, &se.pre,
 			       &code->expr1->where, "Invalid image number "
 			       "%d in SYNC IMAGES",
-			       fold_convert (integer_type_node, se.expr));
+			       fold_convert (integer_type_node, images));
     }
 
    /* Per F2008, 8.5.1, a SYNC MEMORY is implied by calling the

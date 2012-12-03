@@ -5875,7 +5875,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 
   /* A SUBREG resulting from a zero extension may fold to zero if
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
-  if (GET_CODE (op) == ZERO_EXTEND)
+  if (GET_CODE (op) == ZERO_EXTEND && SCALAR_INT_MODE_P (innermode))
     {
       unsigned int bitpos = subreg_lsb_1 (outermode, innermode, byte);
       if (bitpos >= GET_MODE_PRECISION (GET_MODE (XEXP (op, 0))))

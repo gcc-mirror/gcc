@@ -193,10 +193,11 @@
     }
 }
  [(set_attr "neon_type" "neon_int_1,*,neon_vmov,*,neon_mrrc,neon_mcr_2_mcrr,*,*,*")
-  (set_attr "type" "*,f_stored,*,f_loadd,*,*,alu,load2,store2")
+  (set_attr "type" "*,f_stored,*,f_loadd,*,*,alu_reg,load2,store2")
   (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
   (set_attr "length" "4,4,4,4,4,4,8,8,8")
-  (set_attr "pool_range"     "*,*,*,1020,*,*,*,1020,*")
+  (set_attr "arm_pool_range"     "*,*,*,1020,*,*,*,1020,*")
+  (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,*,1018,*")
   (set_attr "neg_pool_range" "*,*,*,1004,*,*,*,1004,*")])
 
 (define_insn "*neon_mov<mode>"
@@ -238,10 +239,11 @@
 }
   [(set_attr "neon_type" "neon_int_1,neon_stm_2,neon_vmov,neon_ldm_2,\
                           neon_mrrc,neon_mcr_2_mcrr,*,*,*")
-   (set_attr "type" "*,*,*,*,*,*,alu,load4,store4")
+   (set_attr "type" "*,*,*,*,*,*,alu_reg,load4,store4")
    (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
    (set_attr "length" "4,8,4,8,8,8,16,8,16")
-   (set_attr "pool_range" "*,*,*,1020,*,*,*,1020,*")
+   (set_attr "arm_pool_range" "*,*,*,1020,*,*,*,1020,*")
+   (set_attr "thumb2_pool_range" "*,*,*,1018,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,996,*,*,*,996,*")])
 
 (define_expand "movti"
@@ -4409,16 +4411,29 @@
   [(set_attr "neon_type" "neon_bp_3cycle")]
 )
 
-(define_insn "neon_vtrn<mode>_internal"
+(define_expand "neon_vtrn<mode>_internal"
+  [(parallel
+    [(set (match_operand:VDQW 0 "s_register_operand" "")
+	  (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "")
+			(match_operand:VDQW 2 "s_register_operand" "")]
+	   UNSPEC_VTRN1))
+     (set (match_operand:VDQW 3 "s_register_operand" "")
+          (unspec:VDQW [(match_dup 1) (match_dup 2)] UNSPEC_VTRN2))])]
+  "TARGET_NEON"
+  ""
+)
+
+;; Note: Different operand numbering to handle tied registers correctly.
+(define_insn "*neon_vtrn<mode>_insn"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-                      (match_operand:VDQW 2 "s_register_operand" "w")]
+                      (match_operand:VDQW 3 "s_register_operand" "2")]
                      UNSPEC_VTRN1))
-   (set (match_operand:VDQW 3 "s_register_operand" "=2")
-         (unspec:VDQW [(match_dup 1) (match_dup 2)]
+   (set (match_operand:VDQW 2 "s_register_operand" "=w")
+         (unspec:VDQW [(match_dup 1) (match_dup 3)]
                      UNSPEC_VTRN2))]
   "TARGET_NEON"
-  "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
+  "vtrn.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set (attr "neon_type")
       (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")
@@ -4436,16 +4451,29 @@
   DONE;
 })
 
-(define_insn "neon_vzip<mode>_internal"
+(define_expand "neon_vzip<mode>_internal"
+  [(parallel
+    [(set (match_operand:VDQW 0 "s_register_operand" "")
+	  (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "")
+	  	        (match_operand:VDQW 2 "s_register_operand" "")]
+		       UNSPEC_VZIP1))
+    (set (match_operand:VDQW 3 "s_register_operand" "")
+	 (unspec:VDQW [(match_dup 1) (match_dup 2)] UNSPEC_VZIP2))])]
+  "TARGET_NEON"
+  ""
+)
+
+;; Note: Different operand numbering to handle tied registers correctly.
+(define_insn "*neon_vzip<mode>_insn"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-                      (match_operand:VDQW 2 "s_register_operand" "w")]
+                      (match_operand:VDQW 3 "s_register_operand" "2")]
                      UNSPEC_VZIP1))
-   (set (match_operand:VDQW 3 "s_register_operand" "=2")
-        (unspec:VDQW [(match_dup 1) (match_dup 2)]
+   (set (match_operand:VDQW 2 "s_register_operand" "=w")
+        (unspec:VDQW [(match_dup 1) (match_dup 3)]
                      UNSPEC_VZIP2))]
   "TARGET_NEON"
-  "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
+  "vzip.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set (attr "neon_type")
       (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")
@@ -4463,16 +4491,29 @@
   DONE;
 })
 
-(define_insn "neon_vuzp<mode>_internal"
+(define_expand "neon_vuzp<mode>_internal"
+  [(parallel
+    [(set (match_operand:VDQW 0 "s_register_operand" "")
+	  (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "")
+			(match_operand:VDQW 2 "s_register_operand" "")]
+	   UNSPEC_VUZP1))
+     (set (match_operand:VDQW 3 "s_register_operand" "")
+	  (unspec:VDQW [(match_dup 1) (match_dup 2)] UNSPEC_VUZP2))])]
+  "TARGET_NEON"
+  ""
+)
+
+;; Note: Different operand numbering to handle tied registers correctly.
+(define_insn "*neon_vuzp<mode>_insn"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-                      (match_operand:VDQW 2 "s_register_operand" "w")]
+                      (match_operand:VDQW 3 "s_register_operand" "2")]
                      UNSPEC_VUZP1))
-   (set (match_operand:VDQW 3 "s_register_operand" "=2")
-        (unspec:VDQW [(match_dup 1) (match_dup 2)]
+   (set (match_operand:VDQW 2 "s_register_operand" "=w")
+        (unspec:VDQW [(match_dup 1) (match_dup 3)]
                      UNSPEC_VUZP2))]
   "TARGET_NEON"
-  "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>3"
+  "vuzp.<V_sz_elem>\t%<V_reg>0, %<V_reg>2"
   [(set (attr "neon_type")
       (if_then_else (match_test "<Is_d_reg>")
                     (const_string "neon_bp_simple")

@@ -1,5 +1,5 @@
 /* Mode switching cleanup pass for the EPIPHANY cpu.
-   Copyright (C) 2000, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -166,7 +166,7 @@ struct rtl_opt_pass pass_resolve_sw_modes =
  {
   RTL_PASS,
   "resolve_sw_modes",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
+  OPTGROUP_NONE,			/* optinfo_flags */
   gate_resolve_sw_modes,		/* gate */
   resolve_sw_modes,			/* execute */
   NULL,					/* sub */

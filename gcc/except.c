@@ -1884,18 +1884,6 @@ set_nothrow_function_flags (void)
 	  }
       }
 
-  for (insn = crtl->epilogue_delay_list; insn;
-       insn = XEXP (insn, 1))
-    if (can_throw_external (insn))
-      {
-        crtl->nothrow = 0;
-
-	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
-	  {
-	    crtl->all_throwers_are_sibcalls = 0;
-	    return 0;
-	  }
-      }
   if (crtl->nothrow
       && (cgraph_function_body_availability (cgraph_get_node
 					     (current_function_decl))

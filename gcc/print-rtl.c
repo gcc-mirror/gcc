@@ -77,9 +77,6 @@ int flag_dump_unnumbered_links = 0;
 /* Nonzero means use simplified format without flags, modes, etc.  */
 int flag_simple = 0;
 
-/* Nonzero if we are dumping graphical description.  */
-int dump_for_graph;
-
 #ifndef GENERATOR_FILE
 void
 print_mem_expr (FILE *outfile, const_tree expr)
@@ -124,74 +121,62 @@ print_rtx (const_rtx in_rtx)
 
   is_insn = INSN_P (in_rtx);
 
-  /* When printing in VCG format we write INSNs, NOTE, LABEL, and BARRIER
-     in separate nodes and therefore have to handle them special here.  */
-  if (dump_for_graph
-      && (is_insn || NOTE_P (in_rtx)
-	  || LABEL_P (in_rtx) || BARRIER_P (in_rtx)))
-    {
-      i = 3;
-      indent = 0;
-    }
+  /* Print name of expression code.  */
+  if (flag_simple && CONST_INT_P (in_rtx))
+    fputc ('(', outfile);
   else
+    fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
+
+  if (! flag_simple)
     {
-      /* Print name of expression code.  */
-      if (flag_simple && CONST_INT_P (in_rtx))
-	fputc ('(', outfile);
-      else
-	fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
+      if (RTX_FLAG (in_rtx, in_struct))
+	fputs ("/s", outfile);
 
-      if (! flag_simple)
-	{
-	  if (RTX_FLAG (in_rtx, in_struct))
-	    fputs ("/s", outfile);
+      if (RTX_FLAG (in_rtx, volatil))
+	fputs ("/v", outfile);
 
-	  if (RTX_FLAG (in_rtx, volatil))
-	    fputs ("/v", outfile);
+      if (RTX_FLAG (in_rtx, unchanging))
+	fputs ("/u", outfile);
 
-	  if (RTX_FLAG (in_rtx, unchanging))
-	    fputs ("/u", outfile);
+      if (RTX_FLAG (in_rtx, frame_related))
+	fputs ("/f", outfile);
 
-	  if (RTX_FLAG (in_rtx, frame_related))
-	    fputs ("/f", outfile);
+      if (RTX_FLAG (in_rtx, jump))
+	fputs ("/j", outfile);
 
-	  if (RTX_FLAG (in_rtx, jump))
-	    fputs ("/j", outfile);
+      if (RTX_FLAG (in_rtx, call))
+	fputs ("/c", outfile);
 
-	  if (RTX_FLAG (in_rtx, call))
-	    fputs ("/c", outfile);
+      if (RTX_FLAG (in_rtx, return_val))
+	fputs ("/i", outfile);
 
-	  if (RTX_FLAG (in_rtx, return_val))
-	    fputs ("/i", outfile);
+      /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
+      if ((GET_CODE (in_rtx) == EXPR_LIST
+	   || GET_CODE (in_rtx) == INSN_LIST)
+	  && (int)GET_MODE (in_rtx) < REG_NOTE_MAX)
+	fprintf (outfile, ":%s",
+		 GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
 
-	  /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
-	  if ((GET_CODE (in_rtx) == EXPR_LIST
-	       || GET_CODE (in_rtx) == INSN_LIST)
-	      && (int)GET_MODE (in_rtx) < REG_NOTE_MAX)
-	    fprintf (outfile, ":%s",
-		     GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
-
-	  /* For other rtl, print the mode if it's not VOID.  */
-	  else if (GET_MODE (in_rtx) != VOIDmode)
-	    fprintf (outfile, ":%s", GET_MODE_NAME (GET_MODE (in_rtx)));
+      /* For other rtl, print the mode if it's not VOID.  */
+      else if (GET_MODE (in_rtx) != VOIDmode)
+	fprintf (outfile, ":%s", GET_MODE_NAME (GET_MODE (in_rtx)));
 
 #ifndef GENERATOR_FILE
-	  if (GET_CODE (in_rtx) == VAR_LOCATION)
-	    {
-	      if (TREE_CODE (PAT_VAR_LOCATION_DECL (in_rtx)) == STRING_CST)
-		fputs (" <debug string placeholder>", outfile);
-	      else
-		print_mem_expr (outfile, PAT_VAR_LOCATION_DECL (in_rtx));
-	      fputc (' ', outfile);
-	      print_rtx (PAT_VAR_LOCATION_LOC (in_rtx));
-	      if (PAT_VAR_LOCATION_STATUS (in_rtx)
-		  == VAR_INIT_STATUS_UNINITIALIZED)
-		fprintf (outfile, " [uninit]");
-	      sawclose = 1;
-	      i = GET_RTX_LENGTH (VAR_LOCATION);
-	    }
-#endif
+      if (GET_CODE (in_rtx) == VAR_LOCATION)
+	{
+	  if (TREE_CODE (PAT_VAR_LOCATION_DECL (in_rtx)) == STRING_CST)
+	    fputs (" <debug string placeholder>", outfile);
+	  else
+	    print_mem_expr (outfile, PAT_VAR_LOCATION_DECL (in_rtx));
+	  fputc (' ', outfile);
+	  print_rtx (PAT_VAR_LOCATION_LOC (in_rtx));
+	  if (PAT_VAR_LOCATION_STATUS (in_rtx)
+	      == VAR_INIT_STATUS_UNINITIALIZED)
+	    fprintf (outfile, " [uninit]");
+	  sawclose = 1;
+	  i = GET_RTX_LENGTH (VAR_LOCATION);
 	}
+#endif
     }
 
 #ifndef GENERATOR_FILE
@@ -217,14 +202,9 @@ print_rtx (const_rtx in_rtx)
       string:
 
 	if (str == 0)
-	  fputs (dump_for_graph ? " \\\"\\\"" : " \"\"", outfile);
+	  fputs (" \"\"", outfile);
 	else
-	  {
-	    if (dump_for_graph)
-	      fprintf (outfile, " (\\\"%s\\\")", str);
-	    else
-	      fprintf (outfile, " (\"%s\")", str);
-	  }
+	  fprintf (outfile, " (\"%s\")", str);
 	sawclose = 1;
 	break;
 
@@ -652,15 +632,8 @@ print_rtx (const_rtx in_rtx)
       break;
     }
 
-  if (dump_for_graph
-      && (is_insn || NOTE_P (in_rtx)
-	  || LABEL_P (in_rtx) || BARRIER_P (in_rtx)))
-    sawclose = 0;
-  else
-    {
-      fputc (')', outfile);
-      sawclose = 1;
-    }
+  fputc (')', outfile);
+  sawclose = 1;
 }
 
 /* Print an rtx on the current line of FILE.  Initially indent IND

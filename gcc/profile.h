@@ -47,4 +47,6 @@ extern gcov_type sum_edge_counts (vec<edge, va_gc> *edges);
 extern void init_node_map (void);
 extern void del_node_map (void);
 
+extern void compute_working_sets (void);
+
 #endif /* PROFILE_H */

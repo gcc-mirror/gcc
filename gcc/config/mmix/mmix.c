@@ -754,7 +754,7 @@ mmix_function_value (const_tree valtype,
 			 gen_rtx_REG (cmode, first_val_regnum + nregs - 1),
 			 const0_rtx);
 
-  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nregs, vec));
+  return gen_rtx_PARALLEL (mode, gen_rtvec_v (nregs, vec));
 }
 
 /* Implements TARGET_LIBCALL_VALUE.  */

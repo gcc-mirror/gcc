@@ -296,7 +296,6 @@ new_emutls_decl (tree decl, tree alias_of)
   DECL_WEAK (to) = DECL_WEAK (decl);
   DECL_VISIBILITY (to) = DECL_VISIBILITY (decl);
   DECL_VISIBILITY_SPECIFIED (to) = DECL_VISIBILITY_SPECIFIED (decl);
-  DECL_RESTRICTED_P (to) = DECL_RESTRICTED_P (decl);
   DECL_DLLIMPORT_P (to) = DECL_DLLIMPORT_P (decl);
 
   DECL_ATTRIBUTES (to) = targetm.merge_decl_attributes (decl, to);

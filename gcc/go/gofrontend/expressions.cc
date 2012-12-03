@@ -2965,46 +2965,6 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 	{
 	  if (!nc.set_type(type, true, location))
 	    return Expression::make_error(location);
-
-	  // Don't simply convert to or from a float or complex type
-	  // with a different size.  That may change the value.
-	  Type* vtype = val->type();
-	  if (vtype->is_abstract())
-	    ;
-	  else if (type->float_type() != NULL)
-	    {
-	      if (vtype->float_type() != NULL)
-		{
-		  if (type->float_type()->bits() != vtype->float_type()->bits())
-		    return this;
-		}
-	      else if (vtype->complex_type() != NULL)
-		{
-		  if (type->float_type()->bits() * 2
-		      != vtype->complex_type()->bits())
-		    return this;
-		}
-	    }
-	  else if (type->complex_type() != NULL)
-	    {
-	      if (vtype->complex_type() != NULL)
-		{
-		  if (type->complex_type()->bits()
-		      != vtype->complex_type()->bits())
-		    return this;
-		}
-	      else if (vtype->float_type() != NULL)
-		{
-		  if (type->complex_type()->bits()
-		      != vtype->float_type()->bits() * 2)
-		    return this;
-		}
-	    }
-	  else if (vtype->float_type() != NULL)
-	    return this;
-	  else if (vtype->complex_type() != NULL)
-	    return this;
-
 	  return nc.expression(location);
 	}
     }
@@ -9239,6 +9199,9 @@ Call_expression::do_get_tree(Translate_context* context)
 	}
     }
 
+  if (func == NULL)
+    fn = save_expr(fn);
+
   tree ret = build_call_array(excess_type != NULL_TREE ? excess_type : rettype,
 			      fn, nargs, args);
   delete[] args;
@@ -9271,6 +9234,24 @@ Call_expression::do_get_tree(Translate_context* context)
 
   if (this->results_ != NULL)
     ret = this->set_results(context, ret);
+
+  // We can't unwind the stack past a call to nil, so we need to
+  // insert an explicit check so that the panic can be recovered.
+  if (func == NULL)
+    {
+      tree compare = fold_build2_loc(location.gcc_location(), EQ_EXPR,
+				     boolean_type_node, fn,
+				     fold_convert_loc(location.gcc_location(),
+						      TREE_TYPE(fn),
+						      null_pointer_node));
+      tree crash = build3_loc(location.gcc_location(), COND_EXPR,
+			      void_type_node, compare,
+			      gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
+						  location),
+			      NULL_TREE);
+      ret = fold_build2_loc(location.gcc_location(), COMPOUND_EXPR,
+			    TREE_TYPE(ret), crash, ret);
+    }
 
   this->tree_ = ret;
 
@@ -10579,6 +10560,103 @@ Expression::make_map_index(Expression* map, Expression* index,
 }
 
 // Class Field_reference_expression.
+
+// Lower a field reference expression.  There is nothing to lower, but
+// this is where we generate the tracking information for fields with
+// the magic go:"track" tag.
+
+Expression*
+Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
+				     Statement_inserter* inserter, int)
+{
+  Struct_type* struct_type = this->expr_->type()->struct_type();
+  if (struct_type == NULL)
+    {
+      // Error will be reported elsewhere.
+      return this;
+    }
+  const Struct_field* field = struct_type->field(this->field_index_);
+  if (field == NULL)
+    return this;
+  if (!field->has_tag())
+    return this;
+  if (field->tag().find("go:\"track\"") == std::string::npos)
+    return this;
+
+  // We have found a reference to a tracked field.  Build a call to
+  // the runtime function __go_fieldtrack with a string that describes
+  // the field.  FIXME: We should only call this once per referenced
+  // field per function, not once for each reference to the field.
+
+  if (this->called_fieldtrack_)
+    return this;
+  this->called_fieldtrack_ = true;
+
+  Location loc = this->location();
+
+  std::string s = "fieldtrack \"";
+  Named_type* nt = this->expr_->type()->named_type();
+  if (nt == NULL || nt->named_object()->package() == NULL)
+    s.append(gogo->pkgpath());
+  else
+    s.append(nt->named_object()->package()->pkgpath());
+  s.push_back('.');
+  if (nt != NULL)
+    s.append(Gogo::unpack_hidden_name(nt->name()));
+  s.push_back('.');
+  s.append(field->field_name());
+  s.push_back('"');
+
+  // We can't use a string here, because internally a string holds a
+  // pointer to the actual bytes; when the linker garbage collects the
+  // string, it won't garbage collect the bytes.  So we use a
+  // [...]byte.
+
+  mpz_t val;
+  mpz_init_set_ui(val, s.length());
+  Expression* length_expr = Expression::make_integer(&val, NULL, loc);
+  mpz_clear(val);
+
+  Type* byte_type = gogo->lookup_global("byte")->type_value();
+  Type* array_type = Type::make_array_type(byte_type, length_expr);
+
+  Expression_list* bytes = new Expression_list();
+  for (std::string::const_iterator p = s.begin(); p != s.end(); p++)
+    {
+      mpz_init_set_ui(val, *p);
+      Expression* byte = Expression::make_integer(&val, NULL, loc);
+      mpz_clear(val);
+      bytes->push_back(byte);
+    }
+
+  Expression* e = Expression::make_composite_literal(array_type, 0, false,
+						     bytes, loc);
+
+  Variable* var = new Variable(array_type, e, true, false, false, loc);
+
+  static int count;
+  char buf[50];
+  snprintf(buf, sizeof buf, "fieldtrack.%d", count);
+  ++count;
+
+  Named_object* no = gogo->add_variable(buf, var);
+  e = Expression::make_var_reference(no, loc);
+  e = Expression::make_unary(OPERATOR_AND, e, loc);
+
+  Expression* call = Runtime::make_call(Runtime::FIELDTRACK, loc, 1, e);
+  inserter->insert(Statement::make_statement(call, false));
+
+  // Put this function, and the global variable we just created, into
+  // unique sections.  This will permit the linker to garbage collect
+  // them if they are not referenced.  The effect is that the only
+  // strings, indicating field references, that will wind up in the
+  // executable will be those for functions that are actually needed.
+  if (function != NULL)
+    function->func_value()->set_in_unique_section();
+  var->set_in_unique_section();
+
+  return this;
+}
 
 // Return the type of a field reference.
 
@@ -14133,7 +14211,7 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 
 bool
 Numeric_constant::check_float_type(Float_type* type, bool issue_error,
-				   Location location) const
+				   Location location)
 {
   mpfr_t val;
   switch (this->classification_)
@@ -14186,6 +14264,29 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 	}
 
       ret = exp <= max_exp;
+
+      if (ret)
+	{
+	  // Round the constant to the desired type.
+	  mpfr_t t;
+	  mpfr_init(t);
+	  switch (type->bits())
+	    {
+	    case 32:
+	      mpfr_set_prec(t, 24);
+	      break;
+	    case 64:
+	      mpfr_set_prec(t, 53);
+	      break;
+	    default:
+	      go_unreachable();
+	    }
+	  mpfr_set(t, val, GMP_RNDN);
+	  mpfr_set(val, t, GMP_RNDN);
+	  mpfr_clear(t);
+
+	  this->set_float(type, val);
+	}
     }
 
   mpfr_clear(val);
@@ -14200,7 +14301,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 
 bool
 Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
-				     Location location) const
+				     Location location)
 {
   if (type->is_abstract())
     return true;
@@ -14219,46 +14320,77 @@ Numeric_constant::check_complex_type(Complex_type* type, bool issue_error,
     }
 
   mpfr_t real;
+  mpfr_t imag;
   switch (this->classification_)
     {
     case NC_INT:
     case NC_RUNE:
       mpfr_init_set_z(real, this->u_.int_val, GMP_RNDN);
+      mpfr_init_set_ui(imag, 0, GMP_RNDN);
       break;
 
     case NC_FLOAT:
       mpfr_init_set(real, this->u_.float_val, GMP_RNDN);
+      mpfr_init_set_ui(imag, 0, GMP_RNDN);
       break;
 
     case NC_COMPLEX:
-      if (!mpfr_nan_p(this->u_.complex_val.imag)
-	  && !mpfr_inf_p(this->u_.complex_val.imag)
-	  && !mpfr_zero_p(this->u_.complex_val.imag))
-	{
-	  if (mpfr_get_exp(this->u_.complex_val.imag) > max_exp)
-	    {
-	      if (issue_error)
-		error_at(location, "complex imaginary part overflow");
-	      return false;
-	    }
-	}
       mpfr_init_set(real, this->u_.complex_val.real, GMP_RNDN);
+      mpfr_init_set(imag, this->u_.complex_val.imag, GMP_RNDN);
       break;
 
     default:
       go_unreachable();
     }
 
-  bool ret;
-  if (mpfr_nan_p(real) || mpfr_inf_p(real) || mpfr_zero_p(real))
-    ret = true;
-  else
-    ret = mpfr_get_exp(real) <= max_exp;
+  bool ret = true;
+  if (!mpfr_nan_p(real)
+      && !mpfr_inf_p(real)
+      && !mpfr_zero_p(real)
+      && mpfr_get_exp(real) > max_exp)
+    {
+      if (issue_error)
+	error_at(location, "complex real part overflow");
+      ret = false;
+    }
+
+  if (!mpfr_nan_p(imag)
+      && !mpfr_inf_p(imag)
+      && !mpfr_zero_p(imag)
+      && mpfr_get_exp(imag) > max_exp)
+    {
+      if (issue_error)
+	error_at(location, "complex imaginary part overflow");
+      ret = false;
+    }
+
+  if (ret)
+    {
+      // Round the constant to the desired type.
+      mpfr_t t;
+      mpfr_init(t);
+      switch (type->bits())
+	{
+	case 64:
+	  mpfr_set_prec(t, 24);
+	  break;
+	case 128:
+	  mpfr_set_prec(t, 53);
+	  break;
+	default:
+	  go_unreachable();
+	}
+      mpfr_set(t, real, GMP_RNDN);
+      mpfr_set(real, t, GMP_RNDN);
+      mpfr_set(t, imag, GMP_RNDN);
+      mpfr_set(imag, t, GMP_RNDN);
+      mpfr_clear(t);
+
+      this->set_complex(type, real, imag);
+    }
 
   mpfr_clear(real);
-
-  if (!ret && issue_error)
-    error_at(location, "complex real part overflow");
+  mpfr_clear(imag);
 
   return ret;
 }

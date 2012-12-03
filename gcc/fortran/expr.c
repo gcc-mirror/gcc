@@ -3693,7 +3693,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       warn = lvalue->symtree->n.sym->attr.dummy
 	     || lvalue->symtree->n.sym->attr.result
 	     || lvalue->symtree->n.sym->attr.function
-	     || lvalue->symtree->n.sym->attr.host_assoc
+	     || (lvalue->symtree->n.sym->attr.host_assoc
+		 && lvalue->symtree->n.sym->ns
+		    != rvalue->symtree->n.sym->ns)
 	     || lvalue->symtree->n.sym->attr.use_assoc
 	     || lvalue->symtree->n.sym->attr.in_common;
 
@@ -3897,6 +3899,33 @@ gfc_get_variable_expr (gfc_symtree *var)
 }
 
 
+/* Adds a full array reference to an expression, as needed.  */
+
+void
+gfc_add_full_array_ref (gfc_expr *e, gfc_array_spec *as)
+{
+  gfc_ref *ref;
+  for (ref = e->ref; ref; ref = ref->next)
+    if (!ref->next)
+      break;
+  if (ref)
+    {
+      ref->next = gfc_get_ref ();
+      ref = ref->next;
+    }
+  else
+    {
+      e->ref = gfc_get_ref ();
+      ref = e->ref;
+    }
+  ref->type = REF_ARRAY;
+  ref->u.ar.type = AR_FULL;
+  ref->u.ar.dimen = e->rank;
+  ref->u.ar.where = e->where;
+  ref->u.ar.as = as;
+}
+
+
 gfc_expr *
 gfc_lval_expr_from_sym (gfc_symbol *sym)
 {
@@ -3910,16 +3939,8 @@ gfc_lval_expr_from_sym (gfc_symbol *sym)
   /* It will always be a full array.  */
   lval->rank = sym->as ? sym->as->rank : 0;
   if (lval->rank)
-    {
-      lval->ref = gfc_get_ref ();
-      lval->ref->type = REF_ARRAY;
-      lval->ref->u.ar.type = AR_FULL;
-      lval->ref->u.ar.dimen = lval->rank;
-      lval->ref->u.ar.where = sym->declared_at;
-      lval->ref->u.ar.as = sym->ts.type == BT_CLASS
-			   ? CLASS_DATA (sym)->as : sym->as;
-    }
-
+    gfc_add_full_array_ref (lval, sym->ts.type == BT_CLASS ?
+			    CLASS_DATA (sym)->as : sym->as);
   return lval;
 }
 

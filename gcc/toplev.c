@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "intl.h"
 #include "ggc.h"
-#include "graph.h"
 #include "regs.h"
 #include "timevar.h"
 #include "diagnostic.h"

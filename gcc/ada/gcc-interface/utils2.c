@@ -2286,7 +2286,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 					     init);
 
       /* If the size overflows, pass -1 so Storage_Error will be raised.  */
-      if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
+      if (TREE_CODE (size) == INTEGER_CST && !valid_constant_size_p (size))
 	size = size_int (-1);
 
       storage = build_call_alloc_dealloc (NULL_TREE, size, storage_type,
@@ -2345,7 +2345,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
     }
 
   /* If the size overflows, pass -1 so Storage_Error will be raised.  */
-  if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
+  if (TREE_CODE (size) == INTEGER_CST && !valid_constant_size_p (size))
     size = size_int (-1);
 
   storage = convert (result_type,

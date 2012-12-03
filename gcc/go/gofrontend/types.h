@@ -179,6 +179,12 @@ class Method
     this->stub_ = no;
   }
 
+  // Return true if this method should not participate in any
+  // interfaces.
+  bool
+  nointerface() const
+  { return this->do_nointerface(); }
+
  protected:
   // These objects are only built by the child classes.
   Method(const Field_indexes* field_indexes, unsigned int depth,
@@ -203,6 +209,10 @@ class Method
   // Bind a method to an object.
   virtual Expression*
   do_bind_method(Expression* expr, Location location) const = 0;
+
+  // Return whether this method should not participate in interfaces.
+  virtual bool
+  do_nointerface() const = 0;
 
  private:
   // The sequence of field indexes used for this method.  If this is
@@ -254,6 +264,10 @@ class Named_method : public Method
   Expression*
   do_bind_method(Expression* expr, Location location) const;
 
+  // Return whether this method should not participate in interfaces.
+  bool
+  do_nointerface() const;
+
  private:
   // The method itself.  For a method which needs a stub, this starts
   // out as the underlying method, and is later replaced with the stub
@@ -294,6 +308,11 @@ class Interface_method : public Method
   // Bind a method to an object.
   Expression*
   do_bind_method(Expression* expr, Location location) const;
+
+  // Return whether this method should not participate in interfaces.
+  bool
+  do_nointerface() const
+  { return false; }
 
  private:
   // The name of the interface method to call.
@@ -869,7 +888,7 @@ class Type
 
   // Finish the backend representation of a placeholder.
   void
-  finish_backend(Gogo*);
+  finish_backend(Gogo*, Btype*);
 
   // Build a type descriptor entry for this type.  Return a pointer to
   // it.  The location is the location which causes us to need the
@@ -1191,10 +1210,18 @@ class Type
   Btype*
   get_btype_without_hash(Gogo*);
 
+  // A backend type that may be a placeholder.
+  struct Type_btype_entry
+  {
+    Btype *btype;
+    bool is_placeholder;
+  };
+
   // A mapping from Type to Btype*, used to ensure that the backend
-  // representation of identical types is identical.
-  typedef Unordered_map_hash(const Type*, Btype*, Type_hash_identical,
-			     Type_identical) Type_btypes;
+  // representation of identical types is identical.  This is only
+  // used for unnamed types.
+  typedef Unordered_map_hash(const Type*, Type_btype_entry,
+			     Type_hash_identical, Type_identical) Type_btypes;
 
   static Type_btypes type_btypes;
 
@@ -1211,9 +1238,6 @@ class Type
 
   // The type classification.
   Type_classification classification_;
-  // Whether btype_ is a placeholder type used while named types are
-  // being converted.
-  bool btype_is_placeholder_;
   // The backend representation of the type, once it has been
   // determined.
   Btype* btype_;

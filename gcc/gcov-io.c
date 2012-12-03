@@ -622,11 +622,15 @@ gcov_time (void)
 }
 #endif /* IN_GCOV */
 
-#if IN_LIBGCOV || !IN_GCOV
+#if !IN_GCOV
 /* Determine the index into histogram for VALUE. */
 
+#if IN_LIBGCOV
 static unsigned
-gcov_histo_index(gcov_type value)
+#else
+GCOV_LINKAGE unsigned
+#endif
+gcov_histo_index (gcov_type value)
 {
   gcov_type_unsigned v = (gcov_type_unsigned)value;
   unsigned r = 0;
@@ -664,8 +668,8 @@ gcov_histo_index(gcov_type value)
    its entry's original cumulative counter value when computing the
    new merged cum_value.  */
 
-static void gcov_histogram_merge(gcov_bucket_type *tgt_histo,
-                                 gcov_bucket_type *src_histo)
+static void gcov_histogram_merge (gcov_bucket_type *tgt_histo,
+                                  gcov_bucket_type *src_histo)
 {
   int src_i, tgt_i, tmp_i = 0;
   unsigned src_num, tgt_num, merge_num;
@@ -801,4 +805,4 @@ static void gcov_histogram_merge(gcov_bucket_type *tgt_histo,
   /* Finally, copy the merged histogram into tgt_histo.  */
   memcpy(tgt_histo, tmp_histo, sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
 }
-#endif /* IN_LIBGCOV || !IN_GCOV */
+#endif /* !IN_GCOV */

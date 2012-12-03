@@ -5207,83 +5207,12 @@ select_type_push (gfc_symbol *sel)
 }
 
 
-/* Set the temporary for the current derived type SELECT TYPE selector.  */
-
-static gfc_symtree *
-select_derived_set_tmp (gfc_typespec *ts)
-{
-  char name[GFC_MAX_SYMBOL_LEN];
-  gfc_symtree *tmp;
-  
-  sprintf (name, "__tmp_type_%s", ts->u.derived->name);
-  gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
-  gfc_add_type (tmp->n.sym, ts, NULL);
-
-  /* Copy across the array spec to the selector.  */
-  if (select_type_stack->selector->ts.type == BT_CLASS
-      && select_type_stack->selector->attr.class_ok
-      && (CLASS_DATA (select_type_stack->selector)->attr.dimension
-	  || CLASS_DATA (select_type_stack->selector)->attr.codimension))
-    {
-      tmp->n.sym->attr.dimension
-		= CLASS_DATA (select_type_stack->selector)->attr.dimension;
-      tmp->n.sym->attr.codimension
-		= CLASS_DATA (select_type_stack->selector)->attr.codimension;
-      tmp->n.sym->as
-	= gfc_copy_array_spec (CLASS_DATA (select_type_stack->selector)->as);
-    }
-
-  gfc_set_sym_referenced (tmp->n.sym);
-  gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
-  tmp->n.sym->attr.select_type_temporary = 1;
-
-  return tmp;
-}
-
-
-/* Set the temporary for the current class SELECT TYPE selector.  */
-
-static gfc_symtree *
-select_class_set_tmp (gfc_typespec *ts)
-{
-  char name[GFC_MAX_SYMBOL_LEN];
-  gfc_symtree *tmp;
-  
-  if (select_type_stack->selector->ts.type == BT_CLASS
-      && !select_type_stack->selector->attr.class_ok)
-    return NULL;
-
-  sprintf (name, "__tmp_class_%s", ts->u.derived->name);
-  gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
-  gfc_add_type (tmp->n.sym, ts, NULL);
-
-/* Copy across the array spec to the selector.  */
-  if (select_type_stack->selector->ts.type == BT_CLASS
-      && (CLASS_DATA (select_type_stack->selector)->attr.dimension
-	  || CLASS_DATA (select_type_stack->selector)->attr.codimension))
-    {
-      tmp->n.sym->attr.pointer = 1;
-      tmp->n.sym->attr.dimension
-		= CLASS_DATA (select_type_stack->selector)->attr.dimension;
-      tmp->n.sym->attr.codimension
-		= CLASS_DATA (select_type_stack->selector)->attr.codimension;
-      tmp->n.sym->as
-	= gfc_copy_array_spec (CLASS_DATA (select_type_stack->selector)->as);
-    }
-
-  gfc_set_sym_referenced (tmp->n.sym);
-  gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
-  tmp->n.sym->attr.select_type_temporary = 1;
-  gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
-			  &tmp->n.sym->as, false);
-
-  return tmp;
-}
-
+/* Set up a temporary for the current TYPE IS / CLASS IS branch .  */
 
 static void
 select_type_set_tmp (gfc_typespec *ts)
 {
+  char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp;
 
   if (!ts)
@@ -5295,15 +5224,39 @@ select_type_set_tmp (gfc_typespec *ts)
   if (!gfc_type_is_extensible (ts->u.derived))
     return;
 
-  /* Logic is a LOT clearer with separate functions for class and derived
-     type temporaries! There are not many more lines of code either.  */
   if (ts->type == BT_CLASS)
-    tmp = select_class_set_tmp (ts);
+    sprintf (name, "__tmp_class_%s", ts->u.derived->name);
   else
-    tmp = select_derived_set_tmp (ts);
+    sprintf (name, "__tmp_type_%s", ts->u.derived->name);
+  gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
+  gfc_add_type (tmp->n.sym, ts, NULL);
 
-  if (tmp == NULL)
-    return;
+  if (select_type_stack->selector->ts.type == BT_CLASS
+      && select_type_stack->selector->attr.class_ok)
+    {
+      tmp->n.sym->attr.pointer
+		= CLASS_DATA (select_type_stack->selector)->attr.class_pointer;
+
+      /* Copy across the array spec to the selector.  */
+      if ((CLASS_DATA (select_type_stack->selector)->attr.dimension
+	  || CLASS_DATA (select_type_stack->selector)->attr.codimension))
+	{
+	  tmp->n.sym->attr.dimension
+		    = CLASS_DATA (select_type_stack->selector)->attr.dimension;
+	  tmp->n.sym->attr.codimension
+		    = CLASS_DATA (select_type_stack->selector)->attr.codimension;
+	  tmp->n.sym->as
+	    = gfc_copy_array_spec (CLASS_DATA (select_type_stack->selector)->as);
+	}
+    }
+
+  gfc_set_sym_referenced (tmp->n.sym);
+  gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
+  tmp->n.sym->attr.select_type_temporary = 1;
+
+  if (ts->type == BT_CLASS)
+    gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
+			    &tmp->n.sym->as, false);
 
   /* Add an association for it, so the rest of the parser knows it is
      an associate-name.  The target will be set during resolution.  */

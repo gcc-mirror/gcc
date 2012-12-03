@@ -304,6 +304,15 @@
 		xcoff_bss_section_name);		\
      } while (0)
 
+#ifdef HAVE_AS_TLS
+#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)	\
+  do { fputs(COMMON_ASM_OP, (FILE));			\
+       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
+       fputs("[UL]", (FILE));					\
+       fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)); \
+  } while (0)
+#endif
+
 /* This is how we tell the assembler that two symbols have the same value.  */
 #define SET_ASM_OP "\t.set "
 

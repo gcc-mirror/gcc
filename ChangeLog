@@ -1,3 +1,40 @@
+2012-12-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* MAINTAINERS: Remove self as RTL optimization maintainer.
+
+2012-11-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.def (target_modules): Remove bootstrap=true and
+	raw_cxx=true from libsanitizer.
+	* configure.ac (bootstrap_target_libs): Remove libsanitizer.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2012-11-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.def (target_modules): Add bootstrap=true and
+	raw_cxx=true to libsanitizer.
+	* configure.ac (bootstrap_target_libs): Add libsanitizer.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2012-11-28  Andrew Pinski  <apinski@cavium.com>
+
+	PR bootstrap/54279
+	* configure.ac (CXX_FOR_TARGET): Change over to use xg++.
+	* configure: Regenerate.
+	* Makefile.tpl (POSTSTAGE1_CXX_EXPORT): Change over to use xg++.
+	* Makefile.in: Regenerate.
+
+2012-11-27  Siddhesh Poyarekar  <siddhesh@redhat.com>
+
+	* configure.ac: Disable libsanitizer if we're not building C++.
+	* configure: Regenerate.
+
 2012-11-15  Roland McGrath  <roland@hack.frob.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

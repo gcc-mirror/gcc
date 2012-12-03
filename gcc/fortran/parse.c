@@ -3928,7 +3928,6 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
   gfc_symtree *st;
   gfc_symbol *old_sym;
 
-  sym->attr.referenced = 1;
   for (ns = siblings; ns; ns = ns->sibling)
     {
       st = gfc_find_symtree (ns->sym_root, sym->name);
@@ -4050,7 +4049,6 @@ parse_contained (int module)
 	  /* Mark this as a contained function, so it isn't replaced
 	     by other module functions.  */
 	  sym->attr.contained = 1;
-	  sym->attr.referenced = 1;
 
 	  /* Set implicit_pure so that it can be reset if any of the
 	     tests for purity fail.  This is used for some optimisation

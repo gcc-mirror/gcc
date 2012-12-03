@@ -75,6 +75,11 @@ void StatOutput(u64 *stat) {
   name[StatAtomicStore]                  = "            store                 ";
   name[StatAtomicExchange]               = "            exchange              ";
   name[StatAtomicFetchAdd]               = "            fetch_add             ";
+  name[StatAtomicFetchSub]               = "            fetch_sub             ";
+  name[StatAtomicFetchAnd]               = "            fetch_and             ";
+  name[StatAtomicFetchOr]                = "            fetch_or              ";
+  name[StatAtomicFetchXor]               = "            fetch_xor             ";
+  name[StatAtomicFetchNand]              = "            fetch_nand            ";
   name[StatAtomicCAS]                    = "            compare_exchange      ";
   name[StatAtomicFence]                  = "            fence                 ";
   name[StatAtomicRelaxed]                = "  Including relaxed               ";
@@ -87,6 +92,7 @@ void StatOutput(u64 *stat) {
   name[StatAtomic2]                      = "            size 2                ";
   name[StatAtomic4]                      = "            size 4                ";
   name[StatAtomic8]                      = "            size 8                ";
+  name[StatAtomic16]                     = "            size 16               ";
 
   name[StatInterceptor]                  = "Interceptors                      ";
   name[StatInt_longjmp]                  = "  longjmp                         ";
