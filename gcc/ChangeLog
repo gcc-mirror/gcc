@@ -1,3 +1,30 @@
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer.def: Add Address Sanitizer builtins.
+	Rename BUILT_IN_TSAN_READ_* to BUILT_IN_TSAN_READ* and
+	BUILT_IN_TSAN_WRITE_* to BUILT_IN_TSAN_WRITE*.
+	* Makefile.in (asan.o): Depend on langhooks.h.
+	(tsan.o): Depend on asan.h.
+	* asan.h (initialize_sanitizer_builtins): New prototype.
+	* asan.c: Include langhooks.h.
+	(report_error_func): Use builtin_decl_implicit of corresponding
+	BUILT_IN_ASAN_REPORT_{LOAD,STORE}*.
+	(asan_init_func): Removed.
+	(initialize_sanitizer_builtins): New function.
+	(asan_finish_file): Call it.  Use builtin_decl_implicit
+	on BUILT_IN_ASAN_{INIT,{,UN}REGISTER_GLOBALS}.
+	(asan_instrument): Call initialize_sanitizer_builtins.
+	* builtins.def (DEF_SANITIZER_BUILTIN): Change condition to
+	(flag_asan || flag_tsan).
+	* tsan.c: Include asan.h and tsan.h.
+	(get_memory_access_decl): Rename BUILT_IN_TSAN_{READ,WRITE}_*
+	to BUILT_IN_TSAN_{READ,WRITE}*.
+	(tsan_pass): Call initialize_sanitizer_builtins.
+	(tsan_gate, tsan_gate_O0): Don't check if
+	builtin_decl_implicit_p (BUILT_IN_TSAN_INIT) is true.
+	(tsan_finish_file): Call initialize_sanitizer_builtins.
+	* builtin-types.def (BT_FN_VOID_PTR_PTRMODE): New fn type.
+
 2012-12-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/55401

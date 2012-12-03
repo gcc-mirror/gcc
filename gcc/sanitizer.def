@@ -1,3 +1,62 @@
+/* This file contains the definitions and documentation for the
+   Address Sanitizer and Thread Sanitizer builtins used in the GNU compiler.
+   Copyright (C) 2012 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Before including this file, you should define a macro:
+
+     DEF_SANITIZER_BUILTIN (ENUM, NAME, TYPE, ATTRS)
+
+   See builtins.def for details.
+   The builtins are created by the C-family of FEs in c-family/c-common.c,
+   for other FEs by asan.c.  */
+
+/* Address Sanitizer */
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_INIT, "__asan_init",
+		      BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_LOAD1, "__asan_report_load1",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_LOAD2, "__asan_report_load2",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_LOAD4, "__asan_report_load4",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_LOAD8, "__asan_report_load8",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_LOAD16, "__asan_report_load16",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_STORE1, "__asan_report_store1",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_STORE2, "__asan_report_store2",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_STORE4, "__asan_report_store4",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_STORE8, "__asan_report_store8",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_STORE16, "__asan_report_store16",
+		      BT_FN_VOID_PTR, ATTR_NORETURN_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REGISTER_GLOBALS,
+		      "__asan_register_globals",
+		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
+DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_UNREGISTER_GLOBALS,
+		      "__asan_unregister_globals",
+		      BT_FN_VOID_PTR_PTRMODE, ATTR_NOTHROW_LEAF_LIST)
+
+/* Thread Sanitizer */
 DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_INIT, "__tsan_init", 
 		      BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)
 DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_FUNC_ENTRY, "__tsan_func_entry",
@@ -6,23 +65,23 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_FUNC_EXIT, "__tsan_func_exit",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
 DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_VPTR_UPDATE, "__tsan_vptr_update",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ_1, "__tsan_read1",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ1, "__tsan_read1",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ_2, "__tsan_read2",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ2, "__tsan_read2",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ_4, "__tsan_read4",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ4, "__tsan_read4",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ_8, "__tsan_read8",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ8, "__tsan_read8",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ_16, "__tsan_read16",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_READ16, "__tsan_read16",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE_1, "__tsan_write1",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE1, "__tsan_write1",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE_2, "__tsan_write2",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE2, "__tsan_write2",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE_4, "__tsan_write4",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE4, "__tsan_write4",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE_8, "__tsan_write8",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE8, "__tsan_write8",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
-DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE_16, "__tsan_write16",
+DEF_SANITIZER_BUILTIN(BUILT_IN_TSAN_WRITE16, "__tsan_write16",
 		      BT_FN_VOID_PTR, ATTR_NOTHROW_LEAF_LIST)
