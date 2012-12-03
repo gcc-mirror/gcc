@@ -308,7 +308,7 @@ struct ptr_data
   enum gt_types_enum type;
 };
 
-#define POINTER_HASH(x) (hashval_t)((long)x >> 3)
+#define POINTER_HASH(x) (hashval_t)((intptr_t)x >> 3)
 
 /* Register an object in the hash table.  */
 

@@ -1,6 +1,9 @@
 2012-12-03 Kai Tietz  <ktietz@redhat.com>
 
 	PR target/53912
+	* ggc-common.c (POINTER_HASH): Cast from pointer via intptr_t.
+
+	PR target/53912
 	* tree-dump.c (dump_pointer): Print pointer via HOST_WIDE_INT_PRINT.
 
 	PR target/53912
