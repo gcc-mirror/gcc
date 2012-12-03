@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "tsan.h"
+#include "asan.h"
 
 /* Number of instrumented memory accesses in the current function.  */
 
@@ -49,20 +51,20 @@ get_memory_access_decl (bool is_write, unsigned size)
   enum built_in_function fcode;
 
   if (size <= 1)
-    fcode = is_write ? BUILT_IN_TSAN_WRITE_1
-		     : BUILT_IN_TSAN_READ_1;
+    fcode = is_write ? BUILT_IN_TSAN_WRITE1
+		     : BUILT_IN_TSAN_READ1;
   else if (size <= 3)
-    fcode = is_write ? BUILT_IN_TSAN_WRITE_2
-		     : BUILT_IN_TSAN_READ_2;
+    fcode = is_write ? BUILT_IN_TSAN_WRITE2
+		     : BUILT_IN_TSAN_READ2;
   else if (size <= 7)
-    fcode = is_write ? BUILT_IN_TSAN_WRITE_4
-		     : BUILT_IN_TSAN_READ_4;
+    fcode = is_write ? BUILT_IN_TSAN_WRITE4
+		     : BUILT_IN_TSAN_READ4;
   else if (size <= 15)
-    fcode = is_write ? BUILT_IN_TSAN_WRITE_8
-		     : BUILT_IN_TSAN_READ_8;
+    fcode = is_write ? BUILT_IN_TSAN_WRITE8
+		     : BUILT_IN_TSAN_READ8;
   else
-    fcode = is_write ? BUILT_IN_TSAN_WRITE_16
-		     : BUILT_IN_TSAN_READ_16;
+    fcode = is_write ? BUILT_IN_TSAN_WRITE16
+		     : BUILT_IN_TSAN_READ16;
 
   return builtin_decl_implicit (fcode);
 }
@@ -285,6 +287,7 @@ instrument_func_exit (void)
 static unsigned
 tsan_pass (void)
 {
+  initialize_sanitizer_builtins ();
   if (instrument_memory_accesses ())
     {
       instrument_func_entry ();
@@ -298,8 +301,7 @@ tsan_pass (void)
 static bool
 tsan_gate (void)
 {
-  return flag_tsan != 0
-	 && builtin_decl_implicit_p (BUILT_IN_TSAN_INIT);
+  return flag_tsan != 0;
 }
 
 /* Inserts __tsan_init () into the list of CTORs.  */
@@ -307,11 +309,10 @@ tsan_gate (void)
 void
 tsan_finish_file (void)
 {
-  tree ctor_statements;
-  tree init_decl;
+  tree ctor_statements = NULL_TREE;
 
-  ctor_statements = NULL_TREE;
-  init_decl = builtin_decl_implicit (BUILT_IN_TSAN_INIT);
+  initialize_sanitizer_builtins ();
+  tree init_decl = builtin_decl_implicit (BUILT_IN_TSAN_INIT);
   append_to_statement_list (build_call_expr (init_decl, 0),
 			    &ctor_statements);
   cgraph_build_static_cdtor ('I', ctor_statements,
@@ -343,8 +344,7 @@ struct gimple_opt_pass pass_tsan =
 static bool
 tsan_gate_O0 (void)
 {
-  return flag_tsan != 0 && !optimize
-	 && builtin_decl_implicit_p (BUILT_IN_TSAN_INIT);
+  return flag_tsan != 0 && !optimize;
 }
 
 struct gimple_opt_pass pass_tsan_O0 =

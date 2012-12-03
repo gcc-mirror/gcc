@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "output.h"
 #include "tm_p.h"
+#include "langhooks.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -485,37 +486,15 @@ asan_protect_global (tree decl)
 static tree
 report_error_func (bool is_store, int size_in_bytes)
 {
-  tree fn_type;
-  tree def;
-  char name[100];
-
-  sprintf (name, "__asan_report_%s%d",
-	   is_store ? "store" : "load", size_in_bytes);
-  fn_type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-  def = build_fn_decl (name, fn_type);
-  TREE_NOTHROW (def) = 1;
-  DECL_IGNORED_P (def) = 1;
-  TREE_THIS_VOLATILE (def) = 1;  /* Attribute noreturn. Surprise!  */
-  DECL_ATTRIBUTES (def) = tree_cons (get_identifier ("leaf"),
-				     NULL, DECL_ATTRIBUTES (def));
-  return def;
+  static enum built_in_function report[2][5]
+    = { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
+	  BUILT_IN_ASAN_REPORT_LOAD4, BUILT_IN_ASAN_REPORT_LOAD8,
+	  BUILT_IN_ASAN_REPORT_LOAD16 },
+	{ BUILT_IN_ASAN_REPORT_STORE1, BUILT_IN_ASAN_REPORT_STORE2,
+	  BUILT_IN_ASAN_REPORT_STORE4, BUILT_IN_ASAN_REPORT_STORE8,
+	  BUILT_IN_ASAN_REPORT_STORE16 } };
+  return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
 }
-
-/* Construct a function tree for __asan_init().  */
-
-static tree
-asan_init_func (void)
-{
-  tree fn_type;
-  tree def;
-
-  fn_type = build_function_type_list (void_type_node, NULL_TREE);
-  def = build_fn_decl ("__asan_init", fn_type);
-  TREE_NOTHROW (def) = 1;
-  DECL_IGNORED_P (def) = 1;
-  return def;
-}
-
 
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
@@ -1510,6 +1489,38 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
 
+/* Initialize sanitizer.def builtins if the FE hasn't initialized them.  */
+void
+initialize_sanitizer_builtins (void)
+{
+  tree decl;
+
+  if (builtin_decl_implicit_p (BUILT_IN_ASAN_INIT))
+    return;
+
+  tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR
+    = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR_PTRMODE
+    = build_function_type_list (void_type_node, ptr_type_node,
+				build_nonstandard_integer_type (POINTER_SIZE,
+								1), NULL_TREE);
+#undef ATTR_NOTHROW_LEAF_LIST
+#define ATTR_NOTHROW_LEAF_LIST ECF_NOTHROW | ECF_LEAF
+#undef ATTR_NORETURN_NOTHROW_LEAF_LIST
+#define ATTR_NORETURN_NOTHROW_LEAF_LIST ECF_NORETURN | ATTR_NOTHROW_LEAF_LIST
+#undef DEF_SANITIZER_BUILTIN
+#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
+			       BUILT_IN_NORMAL, NAME, NULL_TREE);	\
+  set_call_expr_flags (decl, ATTRS);					\
+  set_builtin_decl (ENUM, decl, true);
+
+#include "sanitizer.def"
+
+#undef DEF_SANITIZER_BUILTIN
+}
+
 /* Needs to be GTY(()), because cgraph_build_static_cdtor may
    invoke ggc_collect.  */
 static GTY(()) tree asan_ctor_statements;
@@ -1525,14 +1536,16 @@ asan_finish_file (void)
   struct varpool_node *vnode;
   unsigned HOST_WIDE_INT gcount = 0;
 
-  append_to_statement_list (build_call_expr (asan_init_func (), 0),
-			    &asan_ctor_statements);
+  initialize_sanitizer_builtins ();
+
+  tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
+  append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (asan_protect_global (vnode->symbol.decl))
       ++gcount;
   if (gcount)
     {
-      tree type = asan_global_struct (), var, ctor, decl;
+      tree type = asan_global_struct (), var, ctor;
       tree uptr = build_nonstandard_integer_type (POINTER_SIZE, 1);
       tree dtor_statements = NULL_TREE;
       vec<constructor_elt, va_gc> *v;
@@ -1556,20 +1569,14 @@ asan_finish_file (void)
       DECL_INITIAL (var) = ctor;
       varpool_assemble_decl (varpool_node_for_decl (var));
 
-      type = build_function_type_list (void_type_node, ptr_type_node,
-				       uptr, NULL_TREE);
-      decl = build_fn_decl ("__asan_register_globals", type);
-      TREE_NOTHROW (decl) = 1;
-      DECL_IGNORED_P (decl) = 1;
-      append_to_statement_list (build_call_expr (decl, 2,
+      fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
+      append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
 				&asan_ctor_statements);
 
-      decl = build_fn_decl ("__asan_unregister_globals", type);
-      TREE_NOTHROW (decl) = 1;
-      DECL_IGNORED_P (decl) = 1;
-      append_to_statement_list (build_call_expr (decl, 2,
+      fn = builtin_decl_implicit (BUILT_IN_ASAN_UNREGISTER_GLOBALS);
+      append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
 				&dtor_statements);
@@ -1600,7 +1607,10 @@ static unsigned int
 asan_instrument (void)
 {
   if (shadow_ptr_types[0] == NULL_TREE)
-    asan_init_shadow_ptr_types ();
+    {
+      asan_init_shadow_ptr_types ();
+      initialize_sanitizer_builtins ();
+    }
   transform_statements ();
   return 0;
 }
