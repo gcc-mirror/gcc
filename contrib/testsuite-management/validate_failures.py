@@ -241,7 +241,7 @@ def GetNegativeResult(line):
 
 def ParseManifestWorker(result_set, manifest_path):
   """Read manifest_path, adding the contents to result_set."""
-  if options.verbosity >= 1:
+  if _OPTIONS.verbosity >= 1:
     print 'Parsing manifest file %s.' % manifest_path
   manifest_file = open(manifest_path)
   for line in manifest_file:
