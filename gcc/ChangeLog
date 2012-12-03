@@ -1,3 +1,12 @@
+2012-12-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53663
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Conditional
+	native encode/interpret translation on VN_WALKREWRITE.
+
 2012-12-03 Kai Tietz  <ktietz@redhat.com>
 
 	PR target/53912
