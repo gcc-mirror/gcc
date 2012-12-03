@@ -1,3 +1,7 @@
+2012-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/quad_3.f90: New.
+
 2012-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54170

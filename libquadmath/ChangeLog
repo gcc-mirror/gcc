@@ -1,3 +1,8 @@
+2012-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	* strtod/strtod_l.c (___STRTOF_INTERNAL): Fix exponent
+	reading.
+
 2012-11-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR libquadmath/55462
