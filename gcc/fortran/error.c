@@ -387,7 +387,7 @@ show_locus (locus *loc, int c1, int c2)
   cmax -= offset;
 
   p = &(lb->line[offset]);
-  for (i = 0; i <= cmax; i++)
+  for (i = 0; i < cmax; i++)
     {
       int spaces, j;
       spaces = gfc_widechar_display_length (*p++);
@@ -400,6 +400,11 @@ show_locus (locus *loc, int c1, int c2)
       for (j = 0; j < spaces; j++)
 	error_char (' ');
     }
+
+  if (i == c1)
+    error_char ('1');
+  else if (i == c2)
+    error_char ('2');
 
   error_char ('\n');
 
