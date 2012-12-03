@@ -1,3 +1,13 @@
+2012-12-03  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_constant): Update prototype.
+	Call emit_move_insn	instead of printing movi/movn/movz instructions.
+	Call gen_insv_immdi instead of printing movk instruction.
+	(aarch64_add_constant): Update prototype.
+	Generate RTL instead of printing add/sub instructions.
+	(aarch64_output_mi_thunk): Update calls to aarch64_build_constant
+	and aarch64_add_constant.
+
 2012-12-03 Kai Tietz  <ktietz@redhat.com>
 
 	PR target/53912
