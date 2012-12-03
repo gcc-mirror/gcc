@@ -1339,10 +1339,12 @@ instrument_assignment (gimple_stmt_iterator *iter)
 
   gcc_assert (gimple_assign_single_p (s));
 
-  instrument_derefs (iter, gimple_assign_lhs (s),
-		     gimple_location (s), true);
-  instrument_derefs (iter, gimple_assign_rhs1 (s),
-		     gimple_location (s), false);
+  if (gimple_store_p (s))
+    instrument_derefs (iter, gimple_assign_lhs (s),
+		       gimple_location (s), true);
+  if (gimple_assign_load_p (s))
+    instrument_derefs (iter, gimple_assign_rhs1 (s),
+		       gimple_location (s), false);
 }
 
 /* Instrument the function call pointed to by the iterator ITER, if it
