@@ -1,3 +1,26 @@
+2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (print_insn_with_notes): Prototype.
+	* sched-vis.c (print_insn_with_notes): Export it.
+
+	* gimple-pretty-print.h (gimple_dump_bb_for_graph): Prototype.
+	* gimple-pretty-print.c (print_gimple_expr): Flush the buffer.
+	(pp_gimple_stmt_1): Don't do it here.
+	(gimple_dump_bb_for_graph): New function.
+	* tree-pretty-print.c (print_generic_expr): Flush the buffer here.
+	(dump_generic_node): Don't flush the buffer here.
+
+	* graph.h (print_rtl_graph_with_bb): Rename to print_graph_cfg.
+	* graph.c: Include gimple.h, dumpfile.h, and gimple-pretty-print.h.
+	(draw_cfg_node): Handle GIMPLE basic blocks also.
+	(print_rtl_graph_with_bb): Rename to print_graph_cfg.
+	* passes.c (finish_optimization_passes): Don't finish graph dumps here.
+	(execute_function_dump): Use print_graph_cfg. Enable dumping the CFG
+	for GIMPLE also.
+	(pass_init_dump_file): Wrap in TV_DUMP.  Set up CFG graph dumps.
+	(pass_fini_dump_file): Wrap in TV_DUMP.  Finish graph dumps.
+	(execute_one_pass): Don't set up graph dumps here.
+
 2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa.c (warn_uninitialized_var): Use OPT_Wmaybe_uninitialized tag

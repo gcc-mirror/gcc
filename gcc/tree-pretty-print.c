@@ -161,6 +161,7 @@ print_generic_expr (FILE *file, tree t, int flags)
 {
   maybe_init_pretty_print (file);
   dump_generic_node (&buffer, t, 0, flags, false);
+  pp_flush (&buffer);
 }
 
 /* Dump the name of a _DECL node and its DECL_UID if TDF_UID is set
@@ -2409,11 +2410,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
   if (is_stmt && is_expr)
     pp_semicolon (buffer);
-
-  /* If we're building a diagnostic, the formatted text will be written
-     into BUFFER's stream by the caller; otherwise, write it now.  */
-  if (!(flags & TDF_DIAGNOSTIC))
-    pp_write_text_to_stream (buffer);
 
   return spc;
 }

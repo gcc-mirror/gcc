@@ -719,7 +719,7 @@ print_insn (pretty_printer *pp, const_rtx x, int verbose)
 /* Prerry-print a slim dump of X (an insn) to PP, including any register
    note attached to the instruction.  */
 
-static void
+void
 print_insn_with_notes (pretty_printer *pp, const_rtx x)
 {
   pp_string (pp, print_rtx_head);

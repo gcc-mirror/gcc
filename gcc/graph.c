@@ -28,8 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "rtl.h"
 #include "tree.h"
+#include "gimple.h"
 #include "graph.h"
+#include "dumpfile.h"
 #include "pretty-print.h"
+#include "gimple-pretty-print.h"
 
 /* DOT files with the .dot extension are recognized as document templates
    by a well-known piece of word processing software out of Redmond, WA.
@@ -82,8 +85,6 @@ init_graph_slim_pretty_print (FILE *fp)
 static void
 draw_cfg_node (pretty_printer *pp, int fndecl_uid, basic_block bb)
 {
-  rtx insn;
-  bool first = true;
   const char *shape;
   const char *fillcolor;
 
@@ -115,27 +116,26 @@ draw_cfg_node (pretty_printer *pp, int fndecl_uid, basic_block bb)
       pp_character (pp, '{');
       pp_write_text_to_stream (pp);
 
-      /* TODO: inter-bb stuff.  */
-      FOR_BB_INSNS (bb, insn)
+      /* This would be easier if there'd be an IR independent iterator...  */
+      if (current_ir_type () == IR_GIMPLE)
+	gimple_dump_bb_for_graph (pp, bb);
+      else
 	{
-	  if (! first)
-	    {
-	      pp_character (pp, '|');
-	      pp_write_text_to_stream (pp);
-	    }
-	  first = false;
+	  rtx insn;
+	  bool first = true;
 
-	  print_insn (pp, insn, 1);
-	  pp_newline (pp);
-	  if (INSN_P (insn) && REG_NOTES (insn))
-	    for (rtx note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	      {
-		pp_printf (pp, "      %s: ",
-			   GET_REG_NOTE_NAME (REG_NOTE_KIND (note)));
-		print_pattern (pp, XEXP (note, 0), 1);
-		pp_newline (pp);
-	      }
-	  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+	  /* TODO: inter-bb stuff.  */
+	  FOR_BB_INSNS (bb, insn)
+	    {
+	      if (! first)
+		{
+		  pp_character (pp, '|');
+		  pp_write_text_to_stream (pp);
+		}
+	      first = false;
+	      print_insn_with_notes (pp, insn);
+	      pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+	    }
 	}
       pp_character (pp, '}');
     }
@@ -189,10 +189,10 @@ draw_cfg_node_succ_edges (pretty_printer *pp, int fndecl_uid, basic_block bb)
   pp_flush (pp);
 }
 
-/* Print a graphical representation of the CFG of function FUN.
-   Currently only supports RTL in cfgrtl or cfglayout mode, GIMPLE is TODO.  */
+/* Print a graphical representation of the CFG of function FUN.  */
+
 void
-print_rtl_graph_with_bb (const char *base, tree fndecl)
+print_graph_cfg (const char *base, tree fndecl)
 {
   const char *funcname = fndecl_name (fndecl);
   int fndecl_uid = DECL_UID (fndecl);
