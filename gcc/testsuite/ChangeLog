@@ -1,3 +1,17 @@
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/asan-dg.exp (asan_get_gtest_test_list,
+	asan_get_gtest_expect_death_list, asan-gtest): New procedures.
+	(proc ${tool}_load): Remember [asan_get_gtest_test_list "$output"]
+	and [asan_get_gtest_expect_death_list "$output"] in global vars.
+	(asan_symbolize): Sanitize [] characters from key.
+	* g++.dg/asan/asan_test_config.h: New file.
+	* g++.dg/asan/asan_globals_test.cc: New file.
+	* g++.dg/asan/asan_test_utils.h: New file.
+	* g++.dg/asan/dejagnu-gtest.h: New file.
+	* g++.dg/asan/asan_test.cc: New file.
+	* g++.dg/asan/asan_test.C: New test.
+
 2012-12-03  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/torture/pr35634.c: Use signed char.
