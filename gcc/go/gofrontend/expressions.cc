@@ -10651,7 +10651,8 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   // them if they are not referenced.  The effect is that the only
   // strings, indicating field references, that will wind up in the
   // executable will be those for functions that are actually needed.
-  function->func_value()->set_in_unique_section();
+  if (function != NULL)
+    function->func_value()->set_in_unique_section();
   var->set_in_unique_section();
 
   return this;
