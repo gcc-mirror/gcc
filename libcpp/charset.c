@@ -1,6 +1,6 @@
 /* CPP Library - charsets
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 2008, 2009,
-   2010 Free Software Foundation, Inc.
+   2010, 2012 Free Software Foundation, Inc.
 
    Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
 
@@ -1729,9 +1729,15 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
     iconv_close (input_cset.cd);
 
   /* Resize buffer if we allocated substantially too much, or if we
-     haven't enough space for the \n-terminator.  */
-  if (to.len + 4096 < to.asize || to.len >= to.asize)
-    to.text = XRESIZEVEC (uchar, to.text, to.len + 1);
+     haven't enough space for the \n-terminator or following
+     15 bytes of padding (used to quiet warnings from valgrind or
+     Address Sanitizer, when the optimized lexer accesses aligned
+     16-byte memory chunks, including the bytes after the malloced,
+     area, and stops lexing on '\n').  */
+  if (to.len + 4096 < to.asize || to.len + 16 > to.asize)
+    to.text = XRESIZEVEC (uchar, to.text, to.len + 16);
+
+  memset (to.text + to.len, '\0', 16);
 
   /* If the file is using old-school Mac line endings (\r only),
      terminate with another \r, not an \n, so that we do not mistake

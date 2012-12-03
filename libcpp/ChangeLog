@@ -1,3 +1,14 @@
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/55380
+	PR other/54691
+	* files.c (read_file_guts): Allocate extra 16 bytes instead of
+	1 byte at the end of buf.  Pass size + 16 instead of size
+	to _cpp_convert_input.
+	* charset.c (_cpp_convert_input): Reallocate if there aren't
+	at least 16 bytes beyond to.len in the buffer.  Clear 16 bytes
+	at to.text + to.len.
+
 2012-11-21  Steve Ellcey  <sellcey@mips.com>
 
 	PR pch/55399
