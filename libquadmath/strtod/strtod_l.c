@@ -1005,6 +1005,9 @@ ____STRTOF_INTERNAL (nptr, endptr, group)
 		  /* NOTREACHED */
 		}
 
+	      exponent *= 10;
+	      exponent += c - L_('0');
+
 	      c = *++cp;
 	    }
 	  while (c >= L_('0') && c <= L_('9'));
