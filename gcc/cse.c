@@ -6520,6 +6520,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
   int i, n_blocks;
 
   df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);
 
