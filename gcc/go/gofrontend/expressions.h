@@ -2224,10 +2224,10 @@ class Numeric_constant
   check_int_type(Integer_type*, bool, Location) const;
 
   bool
-  check_float_type(Float_type*, bool, Location) const;
+  check_float_type(Float_type*, bool, Location);
 
   bool
-  check_complex_type(Complex_type*, bool, Location) const;
+  check_complex_type(Complex_type*, bool, Location);
 
   // The kinds of constants.
   enum Classification
