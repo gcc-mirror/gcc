@@ -6741,8 +6741,8 @@ check_user_alignment (const_tree align, bool allow_zero)
 {
   int i;
 
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (align))
-      || TREE_CODE (align) != INTEGER_CST)
+  if (TREE_CODE (align) != INTEGER_CST
+      || !INTEGRAL_TYPE_P (TREE_TYPE (align)))
     {
       error ("requested alignment is not an integer constant");
       return -1;
