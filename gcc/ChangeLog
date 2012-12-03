@@ -1,3 +1,9 @@
+2012-12-03  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* Makefile.in: Add target mddump, build/genmddump.o.  Extend
+	genprogrtl with mddump.
+	* genmddump.c: New.
+
 2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* rtl.h (print_insn_with_notes): Prototype.
