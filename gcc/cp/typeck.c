@@ -7567,7 +7567,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
   /* Handle null pointer to member function conversions.  */
   if (null_ptr_cst_p (pfn))
     {
-      pfn = build_c_cast (input_location, type, nullptr_node);
+      pfn = build_c_cast (input_location, type, pfn);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node,
 				pfn);
