@@ -64,7 +64,7 @@ hash1 (const void *p, unsigned long max, unsigned long logmax)
 #endif
   const unsigned long shift = HOST_BITS_PER_LONG - logmax;
 
-  return ((A * (unsigned long) p) >> shift) & (max - 1);
+  return ((A * (uintptr_t) p) >> shift) & (max - 1);
 }
 
 /* Allocate an empty pointer set.  */
