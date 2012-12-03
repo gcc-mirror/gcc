@@ -849,7 +849,9 @@ instrument_mem_region_access (tree base, tree len,
 			      gimple_stmt_iterator *iter,
 			      location_t location, bool is_store)
 {
-  if (integer_zerop (len))
+  if (!POINTER_TYPE_P (TREE_TYPE (base))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (len))
+      || integer_zerop (len))
     return;
 
   gimple_stmt_iterator gsi = *iter;
@@ -902,20 +904,41 @@ instrument_mem_region_access (tree base, tree len,
 
   /* offset = len - 1;  */
   len = unshare_expr (len);
-  gimple offset =
-    gimple_build_assign_with_ops (TREE_CODE (len),
-				  make_ssa_name (TREE_TYPE (len), NULL),
-				  len, NULL);
-  gimple_set_location (offset, location);
-  gsi_insert_before (&gsi, offset, GSI_NEW_STMT);
+  tree offset;
+  gimple_seq seq = NULL;
+  if (TREE_CODE (len) == INTEGER_CST)
+    offset = fold_build2 (MINUS_EXPR, size_type_node,
+			  fold_convert (size_type_node, len),
+			  build_int_cst (size_type_node, 1));
+  else
+    {
+      gimple g;
+      tree t;
 
-  offset =
-    gimple_build_assign_with_ops (MINUS_EXPR,
-				  make_ssa_name (size_type_node, NULL),
-				  gimple_assign_lhs (offset),
-				  build_int_cst (size_type_node, 1));
-  gimple_set_location (offset, location);
-  gsi_insert_after (&gsi, offset, GSI_NEW_STMT);
+      if (TREE_CODE (len) != SSA_NAME)
+	{
+	  t = make_ssa_name (TREE_TYPE (len), NULL);
+	  g = gimple_build_assign_with_ops (TREE_CODE (len), t, len, NULL);
+	  gimple_set_location (g, location);
+	  gimple_seq_add_stmt_without_update (&seq, g);
+	  len = t;
+	}
+      if (!useless_type_conversion_p (size_type_node, TREE_TYPE (len)))
+	{
+	  t = make_ssa_name (size_type_node, NULL);
+	  g = gimple_build_assign_with_ops (NOP_EXPR, t, len, NULL);
+	  gimple_set_location (g, location);
+	  gimple_seq_add_stmt_without_update (&seq, g);
+	  len = t;
+	}
+
+      t = make_ssa_name (size_type_node, NULL);
+      g = gimple_build_assign_with_ops (MINUS_EXPR, t, len,
+					build_int_cst (size_type_node, 1));
+      gimple_set_location (g, location);
+      gimple_seq_add_stmt_without_update (&seq, g);
+      offset = gimple_assign_lhs (g);
+    }
 
   /* _1 = base;  */
   base = unshare_expr (base);
@@ -924,14 +947,16 @@ instrument_mem_region_access (tree base, tree len,
 				  make_ssa_name (TREE_TYPE (base), NULL),
 				  base, NULL);
   gimple_set_location (region_end, location);
-  gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
+  gimple_seq_add_stmt_without_update (&seq, region_end);
+  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+  gsi_prev (&gsi);
 
   /* _2 = _1 + offset;  */
   region_end =
     gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
 				  make_ssa_name (TREE_TYPE (base), NULL),
 				  gimple_assign_lhs (region_end),
-				  gimple_assign_lhs (offset));
+				  offset);
   gimple_set_location (region_end, location);
   gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
 
@@ -1089,7 +1114,6 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
        These are handled differently from the classical memory memory
        access builtins above.  */
 
-    case BUILT_IN_ATOMIC_LOAD:
     case BUILT_IN_ATOMIC_LOAD_1:
     case BUILT_IN_ATOMIC_LOAD_2:
     case BUILT_IN_ATOMIC_LOAD_4:
@@ -1192,23 +1216,18 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
     case BUILT_IN_SYNC_LOCK_RELEASE_8:
     case BUILT_IN_SYNC_LOCK_RELEASE_16:
 
-    case BUILT_IN_ATOMIC_TEST_AND_SET:
-    case BUILT_IN_ATOMIC_CLEAR:
-    case BUILT_IN_ATOMIC_EXCHANGE:
     case BUILT_IN_ATOMIC_EXCHANGE_1:
     case BUILT_IN_ATOMIC_EXCHANGE_2:
     case BUILT_IN_ATOMIC_EXCHANGE_4:
     case BUILT_IN_ATOMIC_EXCHANGE_8:
     case BUILT_IN_ATOMIC_EXCHANGE_16:
 
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
 
-    case BUILT_IN_ATOMIC_STORE:
     case BUILT_IN_ATOMIC_STORE_1:
     case BUILT_IN_ATOMIC_STORE_2:
     case BUILT_IN_ATOMIC_STORE_4:

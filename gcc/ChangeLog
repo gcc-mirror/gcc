@@ -1,5 +1,13 @@
 2012-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* asan.c (instrument_mem_region_access): Don't instrument
+	if base doesn't have pointer type or len integral type.
+	Add cast if len doesn't have size_t compatible type.
+	(instrument_builtin_call): Don't instrument BUILT_IN_ATOMIC_LOAD,
+	BUILT_IN_ATOMIC_TEST_AND_SET, BUILT_IN_ATOMIC_CLEAR,
+	BUILT_IN_ATOMIC_EXCHANGE, BUILT_IN_ATOMIC_COMPARE_EXCHANGE
+	and BUILT_IN_ATOMIC_STORE.
+
 	* asan.c (instrument_assignment): Instrument lhs only
 	for gimple_store_p and rhs1 only for gimple_assign_load_p.
 
