@@ -1,3 +1,8 @@
+2012-12-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55548
+	* intrinsic.texi (SYSTEM_CLOCK): Update documentation of SYSTEM_CLOCK.
+
 2012-12-03  Tobias Burnus  <burnus@net-b.de>
 	    Janus Weil  <janus@gcc.gnu.org>
 
