@@ -12014,12 +12014,11 @@ nanosecond resolution.  If a high resolution monotonic clock is not
 available, the implementation falls back to a potentially lower
 resolution realtime clock.
 
-@var{COUNT_RATE} and @var{COUNT_MAX} vary depending on the kind of the
-arguments.  For @var{kind=8} arguments, @var{COUNT} represents
-nanoseconds, and for @var{kind=4} arguments, @var{COUNT} represents
-milliseconds. Other than the kind dependency, @var{COUNT_RATE} and
-@var{COUNT_MAX} are constant, however the particular values are
-specific to @command{gfortran}.
+@var{COUNT_RATE} is system dependent and can vary depending on the kind of the
+arguments. For @var{kind=4} arguments, @var{COUNT} usually represents
+milliseconds, while for @var{kind=8} arguments, @var{COUNT} typically
+represents micro- or nanoseconds. @var{COUNT_MAX} usually equals
+@code{HUGE(COUNT_MAX)}.
 
 If there is no clock, @var{COUNT} is set to @code{-HUGE(COUNT)}, and
 @var{COUNT_RATE} and @var{COUNT_MAX} are set to zero.
