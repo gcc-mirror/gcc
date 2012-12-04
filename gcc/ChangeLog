@@ -1,3 +1,22 @@
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55439
+	* Makefile.in (tsan.o): Depend on tree-ssa-propagate.h.
+	* sanitizer.def: Add __tsan_atomic* builtins.
+	* asan.c (initialize_sanitizer_builtins): Adjust to also
+	initialize __tsan_atomic* builtins.
+	* tsan.c: Include tree-ssa-propagate.h.
+	(enum tsan_atomic_action): New enum.
+	(tsan_atomic_table): New table.
+	(instrument_builtin_call): New function.
+	(instrument_gimple): Take pointer to gimple_stmt_iterator
+	instead of gimple_stmt_iterator.  Call instrument_builtin_call
+	on builtin call stmts.
+	(instrument_memory_accesses): Adjust instrument_gimple caller.
+	* builtin-types.def (BT_FN_BOOL_VPTR_PTR_I1_INT_INT,
+	BT_FN_BOOL_VPTR_PTR_I2_INT_INT, BT_FN_BOOL_VPTR_PTR_I4_INT_INT,
+	BT_FN_BOOL_VPTR_PTR_I8_INT_INT, BT_FN_BOOL_VPTR_PTR_I16_INT_INT): New.
+
 2012-12-04  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_vector_alignment,
