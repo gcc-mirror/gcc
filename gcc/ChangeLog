@@ -1,3 +1,9 @@
+2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.c (ia64_compute_frame_size): Allocate the scratch
+	area if the function allocates dynamic stack space.
+	(ia64_initial_elimination_offset): Adjust offsets to above change.
+
 2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (struct reg_use): Remove unused struct.
