@@ -1,3 +1,8 @@
+2012-12-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_select_ccmode): Enable using CC of
+          x + imm for higher immediates on z9-109 upwards.
+
 2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.opt (cirrus-fix-invalid-insns): Delete option.
