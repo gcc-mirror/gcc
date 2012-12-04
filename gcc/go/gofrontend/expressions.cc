@@ -5610,6 +5610,11 @@ Binary_expression::do_check_types(Gogo*)
       || this->op_ == OPERATOR_GT
       || this->op_ == OPERATOR_GE)
     {
+      if (left_type->is_nil_type() && right_type->is_nil_type())
+	{
+	  this->report_error(_("invalid comparison of nil with nil"));
+	  return;
+	}
       if (!Type::are_assignable(left_type, right_type, NULL)
 	  && !Type::are_assignable(right_type, left_type, NULL))
 	{
