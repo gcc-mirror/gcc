@@ -168,6 +168,12 @@ enum {
 #ifdef TIOCGWINSZ
   TIOCGWINSZ_val = TIOCGWINSZ,
 #endif
+#ifdef TIOCNOTTY
+  TIOCNOTTY_val = TIOCNOTTY,
+#endif
+#ifdef TIOCSCTTY
+  TIOCSCTTY_val = TIOCSCTTY,
+#endif
 };
 EOF
 
@@ -723,6 +729,16 @@ grep '^const _TIOC' gen-sysinfo.go | \
 if ! grep '^const TIOCGWINSZ' ${OUT} >/dev/null 2>&1; then
   if grep '^const _TIOCGWINSZ_val' ${OUT} >/dev/null 2>&1; then
     echo 'const TIOCGWINSZ = _TIOCGWINSZ_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCNOTTY' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCNOTTY_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCNOTTY = _TIOCNOTTY_val' >> ${OUT}
+  fi
+fi
+if ! grep '^const TIOCSCTTY' ${OUT} >/dev/null 2>&1; then
+  if grep '^const _TIOCSCTTY_val' ${OUT} >/dev/null 2>&1; then
+    echo 'const TIOCSCTTY = _TIOCSCTTY_val' >> ${OUT}
   fi
 fi
 
