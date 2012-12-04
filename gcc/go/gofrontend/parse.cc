@@ -4089,13 +4089,16 @@ Parse::go_or_defer_stat()
 	     || this->peek_token()->is_keyword(KEYWORD_DEFER));
   bool is_go = this->peek_token()->is_keyword(KEYWORD_GO);
   Location stat_location = this->location();
-  this->advance_token();
+
+  const Token* token = this->advance_token();
   Location expr_location = this->location();
+  bool is_parenthesized = token->is_op(OPERATOR_LPAREN);
+
   Expression* expr = this->expression(PRECEDENCE_NORMAL, false, true, NULL);
   Call_expression* call_expr = expr->call_expression();
-  if (call_expr == NULL)
+  if (is_parenthesized || call_expr == NULL)
     {
-      error_at(expr_location, "expected call expression");
+      error_at(expr_location, "argument to go/defer must be function call");
       return;
     }
 
