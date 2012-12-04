@@ -9,13 +9,14 @@ program test_qp
    implicit none
    integer, parameter :: QP = real_kinds(ubound(real_kinds,dim=1))
    real(kind=qp) :: a,b(2), c
-   integer :: exponent
+   integer :: exponent, i
    character(len=180) :: tmp
 
    ! Run this only with libquadmath; assume that all those systems
    ! have also kind=10.
-   if (size (real_kinds) >= 4 .and. real_kinds(3) == 10 .and. qp == 16) then
-     if (real_kinds(3) /= 10) stop
+   if (size (real_kinds) >= 4 .and. qp == 16) then
+     i = 3
+     if (real_kinds(i) /= 10) stop
 
      exponent = 4000
      b(:) = huge (1.0_qp)/10.0_qp**exponent
