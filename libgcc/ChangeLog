@@ -1,3 +1,11 @@
+2012-12-04  Marcus Shawcroft <marcus.shawcroft@arm.com>
+
+	* config/aarch64/sfp-machine.h (FP_RND_MASK): Define.
+	(FP_ROUNDMODE): Use FP_RND_MASK.
+	* config/aarch64/sfp-exceptions.c: New.
+	* config/aarch64/sfp-machine.h (FP_HANDLE_EXCEPTIONS):
+	Use __sfp_handle_exceptions.
+
 2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.host: (arm*-*-freebsd*): Remove.
