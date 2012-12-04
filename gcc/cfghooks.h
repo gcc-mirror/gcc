@@ -29,6 +29,7 @@ struct cfg_hooks
   /* Debugging.  */
   int (*verify_flow_info) (void);
   void (*dump_bb) (FILE *, basic_block, int, int);
+  void (*dump_bb_for_graph) (pretty_printer *, basic_block);
 
   /* Basic CFG manipulation.  */
 
@@ -152,6 +153,8 @@ struct cfg_hooks
 
 extern void verify_flow_info (void);
 extern void dump_bb (FILE *, basic_block, int, int);
+extern void dump_bb_for_graph (pretty_printer *, basic_block);
+
 extern edge redirect_edge_and_branch (edge, basic_block);
 extern basic_block redirect_edge_and_branch_force (edge, basic_block);
 extern bool can_remove_branch_p (const_edge);

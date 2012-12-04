@@ -1770,7 +1770,7 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
 
       if ((cfun->curr_properties & PROP_cfg)
 	  && (dump_flags & TDF_GRAPH))
-	print_graph_cfg (dump_file_name, cfun->decl);
+	print_graph_cfg (dump_file_name, cfun);
     }
 }
 
