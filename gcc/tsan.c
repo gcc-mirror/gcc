@@ -93,10 +93,11 @@ is_vptr_store (gimple stmt, tree expr, bool is_write)
 static bool
 instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 {
-  tree base, rhs, expr_type, expr_ptr, builtin_decl;
+  tree base, rhs, expr_ptr, builtin_decl;
   basic_block bb;
   HOST_WIDE_INT size;
   gimple stmt, g;
+  gimple_seq seq;
   location_t loc;
 
   size = int_size_in_bytes (TREE_TYPE (expr));
@@ -139,21 +140,25 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   rhs = is_vptr_store (stmt, expr, is_write);
   gcc_checking_assert (rhs != NULL || is_gimple_addressable (expr));
   expr_ptr = build_fold_addr_expr (unshare_expr (expr));
-  if (rhs == NULL)
+  seq = NULL;
+  if (!is_gimple_val (expr_ptr))
     {
-      expr_type = TREE_TYPE (expr);
-      while (TREE_CODE (expr_type) == ARRAY_TYPE)
-	expr_type = TREE_TYPE (expr_type);
-      size = int_size_in_bytes (expr_type);
-      g = gimple_build_call (get_memory_access_decl (is_write, size),
-			     1, expr_ptr);
+      g = gimple_build_assign (make_ssa_name (TREE_TYPE (expr_ptr), NULL),
+			       expr_ptr);
+      expr_ptr = gimple_assign_lhs (g);
+      gimple_set_location (g, loc);
+      gimple_seq_add_stmt_without_update (&seq, g);
     }
+  if (rhs == NULL)
+    g = gimple_build_call (get_memory_access_decl (is_write, size),
+			   1, expr_ptr);
   else
     {
       builtin_decl = builtin_decl_implicit (BUILT_IN_TSAN_VPTR_UPDATE);
       g = gimple_build_call (builtin_decl, 1, expr_ptr);
     }
   gimple_set_location (g, loc);
+  gimple_seq_add_stmt_without_update (&seq, g);
   /* Instrumentation for assignment of a function result
      must be inserted after the call.  Instrumentation for
      reads of function arguments must be inserted before the call.
@@ -170,13 +175,13 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 	  bb = gsi_bb (gsi);
 	  e = find_fallthru_edge (bb->succs);
 	  if (e)
-	    gsi_insert_seq_on_edge_immediate (e, g);
+	    gsi_insert_seq_on_edge_immediate (e, seq);
 	}
       else
-	gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+	gsi_insert_seq_after (&gsi, seq, GSI_NEW_STMT);
     }
   else
-    gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 
   return true;
 }

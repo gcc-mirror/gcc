@@ -1,4 +1,7 @@
-2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+2012-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan.c (instrument_expr): If expr_ptr isn't a gimple val, first
+	store it into a SSA_NAME.
 
 	PR sanitizer/55439
 	* Makefile.in (tsan.o): Depend on tree-ssa-propagate.h.
