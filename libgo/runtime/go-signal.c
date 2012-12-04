@@ -144,10 +144,13 @@ static int8 badsignal[] = "runtime: signal received on thread not created by Go.
 static void
 runtime_badsignal(int32 sig)
 {
+	// Avoid -D_FORTIFY_SOURCE problems.
+	int rv __attribute__((unused));
+
 	if (sig == SIGPROF) {
 		return;  // Ignore SIGPROFs intended for a non-Go thread.
 	}
-	runtime_write(2, badsignal, sizeof badsignal - 1);
+	rv = runtime_write(2, badsignal, sizeof badsignal - 1);
 	runtime_exit(1);
 }
 
