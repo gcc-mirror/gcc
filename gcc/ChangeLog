@@ -1,3 +1,15 @@
+2012-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55124
+	* tree-ssa-pre.c (find_or_generate_expression): Instead of
+	ICEing when we are not able to generate an expression defer it
+	by signalling failure.  Fix possible wrong-code issue by
+	not picking random REFERENCE expressions as fallback.
+	(create_component_ref_by_pieces_1): Adjust.  Add failure paths.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): When expression generation failed
+	for one edge make sure to not insert a PHI node.
+
 2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.c (ia64_compute_frame_size): Allocate the scratch
