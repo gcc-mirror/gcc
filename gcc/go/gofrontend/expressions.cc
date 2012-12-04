@@ -80,10 +80,11 @@ Expression::do_traverse(Traverse*)
 // expression is being discarded.  By default, we give an error.
 // Expressions with side effects override.
 
-void
+bool
 Expression::do_discarding_value()
 {
   this->unused_value_error();
+  return false;
 }
 
 // This virtual function is called to export expressions.  This will
@@ -100,7 +101,7 @@ Expression::do_export(Export*) const
 void
 Expression::unused_value_error()
 {
-  error_at(this->location(), "value computed is not used");
+  this->report_error(_("value computed is not used"));
 }
 
 // Note that this expression is an error.  This is called by children
@@ -786,9 +787,9 @@ class Error_expression : public Expression
     return true;
   }
 
-  void
+  bool
   do_discarding_value()
-  { }
+  { return true; }
 
   Type*
   do_type()
@@ -1149,9 +1150,9 @@ class Sink_expression : public Expression
   { }
 
  protected:
-  void
+  bool
   do_discarding_value()
-  { }
+  { return true; }
 
   Type*
   do_type();
@@ -5326,13 +5327,16 @@ Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
 
 // Note that the value is being discarded.
 
-void
+bool
 Binary_expression::do_discarding_value()
 {
   if (this->op_ == OPERATOR_OROR || this->op_ == OPERATOR_ANDAND)
-    this->right_->discarding_value();
+    return this->right_->discarding_value();
   else
-    this->unused_value_error();
+    {
+      this->unused_value_error();
+      return false;
+    }
 }
 
 // Get type.
@@ -6536,7 +6540,7 @@ class Builtin_call_expression : public Call_expression
   bool
   do_numeric_constant_value(Numeric_constant*) const;
 
-  void
+  bool
   do_discarding_value();
 
   Type*
@@ -7338,7 +7342,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 // discarding the value of an ordinary function call, but we do for
 // builtin functions, purely for consistency with the gc compiler.
 
-void
+bool
 Builtin_call_expression::do_discarding_value()
 {
   switch (this->code_)
@@ -7359,7 +7363,7 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_OFFSETOF:
     case BUILTIN_SIZEOF:
       this->unused_value_error();
-      break;
+      return false;
 
     case BUILTIN_CLOSE:
     case BUILTIN_COPY:
@@ -7368,7 +7372,7 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_PRINT:
     case BUILTIN_PRINTLN:
     case BUILTIN_RECOVER:
-      break;
+      return true;
     }
 }
 
