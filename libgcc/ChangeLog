@@ -1,3 +1,8 @@
+2012-12-04  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/55571
+	* Makefile.in (libgcc_s.so): Depend on and link with libgcc.a.
+
 2012-11-28  Richard Henderson  <rth@redhat.com>
 
 	PR libgcc/48076
