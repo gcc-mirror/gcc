@@ -246,6 +246,7 @@ top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 @TSAN_SUPPORTED_FALSE@SUBDIRS = interception sanitizer_common asan 
 @TSAN_SUPPORTED_TRUE@SUBDIRS = interception sanitizer_common asan tsan 
+@USING_MAC_INTERPOSE_TRUE@SUBDIRS = sanitizer_common asan
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

@@ -35,6 +35,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@USING_MAC_INTERPOSE_TRUE@am__append_1 = -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
+@USING_MAC_INTERPOSE_TRUE@am__append_2 = dynamic/asan_interceptors_dynamic.cc
 subdir = asan
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -74,17 +76,27 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-libasan_la_DEPENDENCIES =  \
-	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/interception/libinterception.la \
-	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_FALSE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
+@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la \
+@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
+@USING_MAC_INTERPOSE_TRUE@	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
+am__libasan_la_SOURCES_DIST = asan_allocator.cc asan_interceptors.cc \
+	asan_mac.cc asan_malloc_mac.cc asan_new_delete.cc \
+	asan_posix.cc asan_rtl.cc asan_stats.cc \
+	asan_thread_registry.cc asan_globals.cc asan_linux.cc \
+	asan_malloc_linux.cc asan_malloc_win.cc asan_poisoning.cc \
+	asan_report.cc asan_stack.cc asan_thread.cc asan_win.cc \
+	dynamic/asan_interceptors_dynamic.cc
 am__objects_1 = asan_allocator.lo asan_interceptors.lo asan_mac.lo \
 	asan_malloc_mac.lo asan_new_delete.lo asan_posix.lo \
 	asan_rtl.lo asan_stats.lo asan_thread_registry.lo \
 	asan_globals.lo asan_linux.lo asan_malloc_linux.lo \
 	asan_malloc_win.lo asan_poisoning.lo asan_report.lo \
 	asan_stack.lo asan_thread.lo asan_win.lo
-am_libasan_la_OBJECTS = $(am__objects_1)
+@USING_MAC_INTERPOSE_TRUE@am__objects_2 =  \
+@USING_MAC_INTERPOSE_TRUE@	asan_interceptors_dynamic.lo
+am_libasan_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libasan_la_OBJECTS = $(am_libasan_la_OBJECTS)
 libasan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -103,7 +115,7 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libasan_la_SOURCES)
-DIST_SOURCES = $(libasan_la_SOURCES)
+DIST_SOURCES = $(am__libasan_la_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -127,7 +139,10 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -DASAN_HAS_EXCEPTIONS=1 -DASAN_FLEXIBLE_MAPPING_AND_OFFSET=0 -DASAN_NEEDS_SEGV=1
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
+	-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS \
+	-DASAN_HAS_EXCEPTIONS=1 -DASAN_FLEXIBLE_MAPPING_AND_OFFSET=0 \
+	-DASAN_NEEDS_SEGV=1 $(am__append_1)
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -262,8 +277,9 @@ asan_files = \
 	asan_thread.cc \
 	asan_win.cc
 
-libasan_la_SOURCES = $(asan_files) 
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libasan_la_SOURCES = $(asan_files) $(am__append_2)
+@USING_MAC_INTERPOSE_FALSE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_TRUE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -384,6 +400,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_globals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors_dynamic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_malloc_linux.Plo@am__quote@
@@ -420,6 +437,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+asan_interceptors_dynamic.lo: dynamic/asan_interceptors_dynamic.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT asan_interceptors_dynamic.lo -MD -MP -MF $(DEPDIR)/asan_interceptors_dynamic.Tpo -c -o asan_interceptors_dynamic.lo `test -f 'dynamic/asan_interceptors_dynamic.cc' || echo '$(srcdir)/'`dynamic/asan_interceptors_dynamic.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/asan_interceptors_dynamic.Tpo $(DEPDIR)/asan_interceptors_dynamic.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='dynamic/asan_interceptors_dynamic.cc' object='asan_interceptors_dynamic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o asan_interceptors_dynamic.lo `test -f 'dynamic/asan_interceptors_dynamic.cc' || echo '$(srcdir)/'`dynamic/asan_interceptors_dynamic.cc
 
 mostlyclean-libtool:
 	-rm -f *.lo
