@@ -15,6 +15,8 @@ program test_qp
    ! Run this only with libquadmath; assume that all those systems
    ! have also kind=10.
    if (size (real_kinds) >= 4 .and. real_kinds(3) == 10 .and. qp == 16) then
+     if (real_kinds(3) /= 10) stop
+
      exponent = 4000
      b(:) = huge (1.0_qp)/10.0_qp**exponent
 !     print *, 'real(16) big value:      ', b(1)
