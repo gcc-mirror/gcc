@@ -1,3 +1,27 @@
+2012-12-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (print_insn_with_notes): Remove prototype.
+	(rtl_dump_bb_for_graph): New prototype.
+	* sched-vis.c (print_insn_with_notes): Make static again.  Fix
+	printing of notes.
+	(rtl_dump_bb_for_graph): New function.
+	* cfghooks.h (struct cfg_hooks) <dump_bb_for_graph>: New hook.
+	(dump_bb_for_graph): New prototype.
+	* cfghooks.c (dump_bb_for_graph): New function.
+	* tree-cfg.c (gimple_cfg_hooks): Register gimple_dump_bb_for_graph
+	as dump_bb_for_graph hook implementation for GIMPLE.
+	* cfgrtl.c (rtl_cfg_hooks): Likewise for rtl_dump_bb_for_graph.
+	(cfg_layout_rtl_cfg_hooks): Likewise.
+	* graph.c (draw_cfg_node): Don't include sbitmap.h, rtl.h, tree.h,
+	gimple.h, and gimple-pretty-print.h.
+	(draw_cfg_node, draw_cfg_node_succ_edges): Use the uniqe function
+	definition number instead of the function declaration UID.
+	(print_graph_cfg): Take a struct function instead of a tree.
+	Use the dump_bb_for_graph hook to dump the basic block content.
+	* graph.h (print_graph_cfg): Update prototype.
+	* passes.c (execute_function_dump): Update print_graph_cfg call.
+	* Makefile.in (graph.o): Fixup dependencies.
+
 2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_build_builtin_va_list): Set

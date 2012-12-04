@@ -280,6 +280,22 @@ dump_bb (FILE *outf, basic_block bb, int indent, int flags)
   fputc ('\n', outf);
 }
 
+/* Dumps basic block BB to pretty-printer PP, for use as a label of
+   a DOT graph record-node.  The implementation of this hook is
+   expected to write the label to the stream that is attached to PP.
+   Field separators between instructions are pipe characters printed
+   verbatim.  Instructions should be written with some characters
+   escaped, using pp_write_text_as_dot_label_to_stream().  */
+
+void
+dump_bb_for_graph (pretty_printer *pp, basic_block bb)
+{
+  if (!cfg_hooks->dump_bb_for_graph)
+    internal_error ("%s does not support dump_bb_for_graph",
+		    cfg_hooks->name);
+  cfg_hooks->dump_bb_for_graph (pp, bb);
+}
+
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */
 void
 dump_flow_info (FILE *file, int flags)
