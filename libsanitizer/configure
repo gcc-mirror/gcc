@@ -604,8 +604,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-USING_MACH_OVERRIDE_FALSE
-USING_MACH_OVERRIDE_TRUE
+USING_MAC_INTERPOSE_FALSE
+USING_MAC_INTERPOSE_TRUE
 TSAN_SUPPORTED_FALSE
 TSAN_SUPPORTED_TRUE
 enable_static
@@ -14497,15 +14497,15 @@ fi
 
 
 case "$host" in
-  *-*-darwin*) MACH_OVERRIDE=true ;;
-  *) MACH_OVERRIDE=false ;;
+  *-*-darwin*) MAC_INTERPOSE=true ;;
+  *) MAC_INTERPOSE=false ;;
 esac
- if $MACH_OVERRIDE; then
-  USING_MACH_OVERRIDE_TRUE=
-  USING_MACH_OVERRIDE_FALSE='#'
+ if $MAC_INTERPOSE; then
+  USING_MAC_INTERPOSE_TRUE=
+  USING_MAC_INTERPOSE_FALSE='#'
 else
-  USING_MACH_OVERRIDE_TRUE='#'
-  USING_MACH_OVERRIDE_FALSE=
+  USING_MAC_INTERPOSE_TRUE='#'
+  USING_MAC_INTERPOSE_FALSE=
 fi
 
 
@@ -14685,8 +14685,8 @@ if test -z "${TSAN_SUPPORTED_TRUE}" && test -z "${TSAN_SUPPORTED_FALSE}"; then
   as_fn_error "conditional \"TSAN_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${USING_MACH_OVERRIDE_TRUE}" && test -z "${USING_MACH_OVERRIDE_FALSE}"; then
-  as_fn_error "conditional \"USING_MACH_OVERRIDE\" was never defined.
+if test -z "${USING_MAC_INTERPOSE_TRUE}" && test -z "${USING_MAC_INTERPOSE_FALSE}"; then
+  as_fn_error "conditional \"USING_MAC_INTERPOSE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
