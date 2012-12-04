@@ -1,5 +1,5 @@
 /* ARM EABI compliant unwinding routines
-   Copyright (C) 2004, 2005, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2009, 2012 Free Software Foundation, Inc.
    Contributed by Paul Brook
  
    This file is free software; you can redistribute it and/or modify it
@@ -226,15 +226,9 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 		return _URC_FAILURE;
 	      continue;
 	    }
-	  if ((op & 0xfc) == 0xb4)
-	    {
-	      /* Pop FPA E[4]-E[4+nn].  */
-	      op = 0x40000 | ((op & 3) + 1);
-	      if (_Unwind_VRS_Pop (context, _UVRSC_FPA, op, _UVRSD_FPAX)
-		  != _UVRSR_OK)
-		return _URC_FAILURE;
-	      continue;
-	    }
+	  if ((op & 0xfc) == 0xb4)  /* Obsolete FPA.  */
+	    return _URC_FAILURE;
+
 	  /* op & 0xf8 == 0xb8.  */
 	  /* Pop VFP D[8]-D[8+nnn] with fldmx.  */
 	  op = 0x80000 | ((op & 7) + 1);
@@ -278,15 +272,6 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	    }
 	  if (op == 0xc8)
 	    {
-#ifndef __VFP_FP__
- 	      /* Pop FPA registers.  */
- 	      op = next_unwind_byte (uws);
-	      op = ((op & 0xf0) << 12) | ((op & 0xf) + 1);
- 	      if (_Unwind_VRS_Pop (context, _UVRSC_FPA, op, _UVRSD_FPAX)
- 		  != _UVRSR_OK)
- 		return _URC_FAILURE;
- 	      continue;
-#else
               /* Pop VFPv3 registers D[16+ssss]-D[16+ssss+cccc] with vldm.  */
               op = next_unwind_byte (uws);
               op = (((op & 0xf0) + 16) << 12) | ((op & 0xf) + 1);
@@ -294,7 +279,6 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
                   != _UVRSR_OK)
                 return _URC_FAILURE;
               continue;
-#endif
 	    }
 	  if (op == 0xc9)
 	    {
