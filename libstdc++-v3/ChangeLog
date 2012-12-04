@@ -1,10 +1,15 @@
+2012-12-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* include/Makefile.am: Fix regexp broken by previous commit.
+	* include/Makefile.in: Likewise.
+
 2012-12-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/detail/cc_hash_table_map_/standard_policies.hpp:
 	Remove.
 	* include/ext/pb_ds/detail/gp_hash_table_map_/standard_policies.hpp:
 	Remove.
- 	* include/Makefile.am (pb_headers): Remove include files.
+	* include/Makefile.am (pb_headers): Remove include files.
 	* include/Makefile.in: Regenerated.
 
 2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
