@@ -9770,8 +9770,10 @@ Array_index_expression::do_check_types(Gogo*)
 		     && lvalnc.to_int(&lval));
   Numeric_constant inc;
   mpz_t ival;
+  bool ival_valid = false;
   if (this->start_->numeric_constant_value(&inc) && inc.to_int(&ival))
     {
+      ival_valid = true;
       if (mpz_sgn(ival) < 0
 	  || mpz_sizeinbase(ival, 2) >= int_bits
 	  || (lval_valid
@@ -9782,7 +9784,6 @@ Array_index_expression::do_check_types(Gogo*)
 	  error_at(this->start_->location(), "array index out of bounds");
 	  this->set_is_error();
 	}
-      mpz_clear(ival);
     }
   if (this->end_ != NULL && !this->end_->is_nil_expression())
     {
@@ -9797,9 +9798,13 @@ Array_index_expression::do_check_types(Gogo*)
 	      error_at(this->end_->location(), "array index out of bounds");
 	      this->set_is_error();
 	    }
+	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
+	    this->report_error(_("inverted slice range"));
 	  mpz_clear(eval);
 	}
     }
+  if (ival_valid)
+    mpz_clear(ival);
   if (lval_valid)
     mpz_clear(lval);
 
@@ -10180,15 +10185,16 @@ String_index_expression::do_check_types(Gogo*)
 
   Numeric_constant inc;
   mpz_t ival;
+  bool ival_valid = false;
   if (this->start_->numeric_constant_value(&inc) && inc.to_int(&ival))
     {
+      ival_valid = true;
       if (mpz_sgn(ival) < 0
 	  || (sval_valid && mpz_cmp_ui(ival, sval.length()) >= 0))
 	{
 	  error_at(this->start_->location(), "string index out of bounds");
 	  this->set_is_error();
 	}
-      mpz_clear(ival);
     }
   if (this->end_ != NULL && !this->end_->is_nil_expression())
     {
@@ -10202,9 +10208,13 @@ String_index_expression::do_check_types(Gogo*)
 	      error_at(this->end_->location(), "string index out of bounds");
 	      this->set_is_error();
 	    }
+	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
+	    this->report_error(_("inverted slice range"));
 	  mpz_clear(eval);
 	}
     }
+  if (ival_valid)
+    mpz_clear(ival);
 }
 
 // Get a tree for a string index.
