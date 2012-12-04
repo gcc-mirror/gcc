@@ -1,5 +1,9 @@
 2012-12-04  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/quad_3.f90: Really fix an if condition.
+
+2012-12-04  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/quad_3.f90: Fix a condition,
 	which wrongly required ordered/lazy evaluation.
 
