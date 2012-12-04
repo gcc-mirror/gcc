@@ -1,3 +1,8 @@
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_builtin_va_list): Set
+	TYPE_STUB_DECL.
+
 2012-12-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_ccmode): Enable using CC of
