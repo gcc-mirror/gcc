@@ -1,3 +1,8 @@
+2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.opt (cirrus-fix-invalid-insns): Delete option.
+	* invoke.texi (cirrus-fix-invalid-insns): Remove documentation.
+
 2012-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* tsan.c (instrument_expr): If expr_ptr isn't a gimple val, first
