@@ -2006,6 +2006,8 @@ Thunk_statement::do_determine_types()
 void
 Thunk_statement::do_check_types(Gogo*)
 {
+  if (!this->call_->discarding_value())
+    return;
   Call_expression* ce = this->call_->call_expression();
   if (ce == NULL)
     {
@@ -2471,11 +2473,15 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
       Expression_statement* es =
 	static_cast<Expression_statement*>(call_statement);
       Call_expression* ce = es->expr()->call_expression();
-      go_assert(ce != NULL);
-      if (may_call_recover)
-	ce->set_is_deferred();
-      if (recover_arg != NULL)
-	ce->set_recover_arg(recover_arg);
+      if (ce == NULL)
+	go_assert(saw_errors());
+      else
+	{
+	  if (may_call_recover)
+	    ce->set_is_deferred();
+	  if (recover_arg != NULL)
+	    ce->set_recover_arg(recover_arg);
+	}
     }
 
   // That is all the thunk has to do.
