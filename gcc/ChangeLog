@@ -1,3 +1,10 @@
+2012-12-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_vector_alignment,
+	aarch64_simd_vector_alignment_reachable): New.
+	(TARGET_VECTOR_ALIGNMENT, TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE):
+	Define.
+
 2012-12-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55124
