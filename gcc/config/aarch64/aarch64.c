@@ -6316,6 +6316,31 @@ aarch64_simd_attr_length_move (rtx insn)
   return 4;
 }
 
+/* Implement target hook TARGET_VECTOR_ALIGNMENT.  The AAPCS64 sets the maximum
+   alignment of a vector to 128 bits.  */
+static HOST_WIDE_INT
+aarch64_simd_vector_alignment (const_tree type)
+{
+  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  return MIN (align, 128);
+}
+
+/* Implement target hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE.  */
+static bool
+aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
+{
+  if (is_packed)
+    return false;
+
+  /* We guarantee alignment for vectors up to 128-bits.  */
+  if (tree_int_cst_compare (TYPE_SIZE (type),
+			    bitsize_int (BIGGEST_ALIGNMENT)) > 0)
+    return false;
+
+  /* Vectors whose size is <= BIGGEST_ALIGNMENT are naturally aligned.  */
+  return true;
+}
+
 static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (enum machine_mode mode)
 {
@@ -6863,6 +6888,13 @@ aarch64_c_mode_for_suffix (char suffix)
    to determine the size of the access.  We assume accesses are aligned.  */
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 4095
+
+#undef TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT aarch64_simd_vector_alignment
+
+#undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE \
+  aarch64_simd_vector_alignment_reachable
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
