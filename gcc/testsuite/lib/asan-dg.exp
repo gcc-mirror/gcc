@@ -91,6 +91,10 @@ proc asan_init { args } {
 	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g"
 	}
     }
+    if { $link_flags != "" } {
+	return 1
+    }
+    return 0
 }
 
 #
