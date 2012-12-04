@@ -2234,7 +2234,8 @@ tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(CGRAPH_H) $(GGC_H) \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(FUNCTION_H) \
    $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) tree-iterator.h \
-   intl.h cfghooks.h output.h options.h c-family/c-common.h tsan.h asan.h
+   intl.h cfghooks.h output.h options.h c-family/c-common.h tsan.h asan.h \
+   tree-ssa-propagate.h
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
