@@ -320,39 +320,21 @@ arm-wrs-vxworks)
 	tmake_file="$tmake_file arm/t-arm arm/t-vxworks t-fdpbit"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
-arm*-*-freebsd*)
-	tmake_file="$tmake_file arm/t-arm arm/t-strongarm-elf t-fdpbit"
-	;;
 arm*-*-netbsdelf*)
 	tmake_file="$tmake_file arm/t-arm arm/t-netbsd t-slibgcc-gld-nover"
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix"
-	case ${host} in
-	arm*-*-linux-*)
-	  tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
-	  tm_file="$tm_file arm/bpabi-lib.h"
-	  unwind_header=config/arm/unwind-arm.h
-	  ;;
-	*)
-	  tmake_file="$tmake_file arm/t-linux"
- 	  ;;
-	esac
+	tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
+	tm_file="$tm_file arm/bpabi-lib.h"
+	unwind_header=config/arm/unwind-arm.h
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
-	case ${host} in
-	arm*-*-uclinux*eabi)
-	  tmake_file="${tmake_file} arm/t-bpabi"
-	  tm_file="$tm_file arm/bpabi-lib.h"
-	  unwind_header=config/arm/unwind-arm.h
-	  ;;
-	esac
-	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
-	;;
-arm*-*-ecos-elf)
+	tmake_file="${tmake_file} arm/t-bpabi"
+	tm_file="$tm_file arm/bpabi-lib.h"
+	unwind_header=config/arm/unwind-arm.h
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
@@ -372,13 +354,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	esac
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	unwind_header=config/arm/unwind-arm.h
-	;;
-arm*-*-elf)
-	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
-	extra_parts="$extra_parts crti.o crtn.o"
-	;;
-arm*-wince-pe*)
-	tmake_file="$tmake_file arm/t-arm arm/t-wince-pe"
 	;;
 avr-*-rtems*)
 	tmake_file="$tmake_file avr/t-avr avr/t-rtems t-fpbit"

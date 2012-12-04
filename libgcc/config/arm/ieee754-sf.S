@@ -1,6 +1,7 @@
 /* ieee754-sf.S single-precision floating point support for ARM
 
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2012
+   Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -325,12 +326,7 @@ ARM_FUNC_START floatundisf
 ARM_FUNC_ALIAS aeabi_ul2f floatundisf
 
 	orrs	r2, r0, r1
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	do_it	eq, t
-	mvfeqs	f0, #0.0
-#else
 	do_it	eq
-#endif
 	RETc(eq)
 
 	mov	r3, #0
@@ -340,12 +336,7 @@ ARM_FUNC_START floatdisf
 ARM_FUNC_ALIAS aeabi_l2f floatdisf
 
 	orrs	r2, r0, r1
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	do_it	eq, t
-	mvfeqs	f0, #0.0
-#else
 	do_it	eq
-#endif
 	RETc(eq)
 
 	ands	r3, ah, #0x80000000	@ sign bit in r3
@@ -358,14 +349,6 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 	rsc	ah, ah, #0
 #endif
 1:
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	@ For hard FPA code we want to return via the tail below so that
-	@ we can return the result in f0 as well as in r0 for backwards
-	@ compatibility.
-	str	lr, [sp, #-8]!
-	adr	lr, LSYM(f0_ret)
-#endif
-
 	movs	ip, ah
 	do_it	eq, tt
 	moveq	ip, al
@@ -426,15 +409,6 @@ ARM_FUNC_ALIAS aeabi_l2f floatdisf
 	do_it	eq
 	biceq	r0, r0, ip, lsr #31
 	RET
-
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-
-LSYM(f0_ret):
-	str	r0, [sp, #-4]!
-	ldfs	f0, [sp], #4
-	RETLDM
-
-#endif
 
 	FUNC_END floatdisf
 	FUNC_END aeabi_l2f
