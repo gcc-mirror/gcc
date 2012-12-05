@@ -398,6 +398,7 @@ begin
                   Name_Len := Name_Len + 1;
                   Name_Buffer (Name_Len) := Getc;
                end loop;
+
                Nam := Name_Find;
 
             else

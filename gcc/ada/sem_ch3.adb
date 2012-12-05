@@ -1192,7 +1192,8 @@ package body Sem_Ch3 is
             --  In ASIS mode, the access_to_subprogram may be analyzed twice,
             --  when it is part of an unconstrained type and subtype expansion
             --  is disabled. To avoid back-end problems with shared profiles,
-            --  use previous subprogram type as the designated type.
+            --  use previous subprogram type as the designated type, and then
+            --  remove scope added above.
 
             if ASIS_Mode
               and then Present (Scope (Defining_Identifier (F)))
@@ -1201,6 +1202,7 @@ package body Sem_Ch3 is
                Init_Size_Align              (T_Name);
                Set_Directly_Designated_Type (T_Name,
                  Scope (Defining_Identifier (F)));
+               End_Scope;
                return;
             end if;
 
@@ -4993,10 +4995,20 @@ package body Sem_Ch3 is
                      Scope_Stack.Table (Scope_Stack.Last);
 
       Anon : constant Entity_Id := Make_Temporary (Loc, 'S');
-      Acc  : Node_Id;
+
+      Acc : Node_Id;
+      --  Access definition in declaration
+
       Comp : Node_Id;
+      --  Object definition or formal definition with an access definition
+
       Decl : Node_Id;
-      P    : Node_Id;
+      --  Declaration of anonymous access to subprogram type
+
+      Spec : Node_Id;
+      --  Original specification in access to subprogram
+
+      P : Node_Id;
 
    begin
       Set_Is_Internal (Anon);
@@ -5032,10 +5044,12 @@ package body Sem_Ch3 is
             raise Program_Error;
       end case;
 
-      Decl := Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Anon,
-                Type_Definition   =>
-                  Copy_Separate_Tree (Access_To_Subprogram_Definition (Acc)));
+      Spec := Access_To_Subprogram_Definition (Acc);
+
+      Decl :=
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Anon,
+          Type_Definition     => Relocate_Node (Spec));
 
       Mark_Rewrite_Insertion (Decl);
 

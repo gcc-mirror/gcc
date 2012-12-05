@@ -1,3 +1,12 @@
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, sem_prag.adb, put_scos.adb, get_scos.adb: Minor
+	reformatting.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Code clean up.
+
 2012-12-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

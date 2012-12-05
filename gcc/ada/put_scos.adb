@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet;   use Namet;
-with Opt;     use Opt;
-with SCOs;    use SCOs;
+with Namet; use Namet;
+with Opt;   use Opt;
+with SCOs;  use SCOs;
 
 procedure Put_SCOs is
    Current_SCO_Unit : SCO_Unit_Index := 0;
@@ -250,8 +250,7 @@ begin
 
                      loop
                         declare
-                           T : SCO_Table_Entry
-                                 renames SCO_Table.Table (Start);
+                           T : SCO_Table_Entry renames SCO_Table.Table (Start);
 
                         begin
                            Write_Info_Char (' ');
