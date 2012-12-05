@@ -1635,15 +1635,15 @@ package body Exp_Disp is
       Formals : constant List_Id    := New_List;
       Target  : constant Entity_Id  := Ultimate_Alias (Prim);
 
-      Decl_1          : Node_Id;
-      Decl_2          : Node_Id;
-      Expr            : Node_Id;
-      Formal          : Node_Id;
-      Ftyp            : Entity_Id;
-      Iface_Formal    : Node_Id;
-      New_Arg         : Node_Id;
-      Offset_To_Top   : Node_Id;
-      Target_Formal   : Entity_Id;
+      Decl_1        : Node_Id;
+      Decl_2        : Node_Id;
+      Expr          : Node_Id;
+      Formal        : Node_Id;
+      Ftyp          : Entity_Id;
+      Iface_Formal  : Node_Id;
+      New_Arg       : Node_Id;
+      Offset_To_Top : Node_Id;
+      Target_Formal : Entity_Id;
 
    begin
       Thunk_Id   := Empty;

@@ -1,3 +1,26 @@
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnatchop.adb, sem_attr.ads, sem_ch4.adb, sem_ch6.adb, exp_disp.adb,
+	atree.adb, sem_eval.adb: Minor reformatting.
+
+2012-12-05  Yannick Moy  <moy@adacore.com>
+
+	* uintp.adb (UI_Div_Rem): Correct algorithm D to remove potential
+	overflow.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Mod): Minor comment additions.
+	(Expand_N_Op_Rem): Ditto.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb: Update lines for -gnato? switch.
+
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch6.adb (P_Return_Object_Declaration): Do not check for

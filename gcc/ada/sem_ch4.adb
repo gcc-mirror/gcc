@@ -5506,6 +5506,12 @@ package body Sem_Ch4 is
    begin
       if T1 = Universal_Integer
         or else T1 = Universal_Real
+
+        --  If the left operand of an equality operator is null, the visibility
+        --  of the operator must be determined from the interpretation of the
+        --  right operand. This processing must be done for Any_Access, which
+        --  is the internal representation of the type of the literal null.
+
         or else T1 = Any_Access
       then
          if not Is_Overloaded (R) then

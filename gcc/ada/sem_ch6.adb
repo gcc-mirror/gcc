@@ -787,7 +787,6 @@ package body Sem_Ch6 is
 
             Analyze_And_Resolve (Expr, R_Type);
             Check_Limited_Return (Expr);
-
          end if;
 
          --  RETURN only allowed in SPARK as the last statement in function
@@ -808,10 +807,9 @@ package body Sem_Ch6 is
 
          declare
             Obj_Decl    : constant Node_Id :=
-                         Last (Return_Object_Declarations (N));
+                            Last (Return_Object_Declarations (N));
             Has_Aliased : constant Boolean := Aliased_Present (Obj_Decl);
-
-            HSS : constant Node_Id := Handled_Statement_Sequence (N);
+            HSS         : constant Node_Id := Handled_Statement_Sequence (N);
 
          begin
             Expr := Expression (Obj_Decl);
