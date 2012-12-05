@@ -1100,13 +1100,17 @@ package body Sem_Util is
       Loc : constant Source_Ptr := Sloc (Expr);
    begin
 
-      --  An entity of a type with implicit dereference is overloaded with
+      --  An entity of a type with a reference aspect is overloaded with
       --  both interpretations: with and without the dereference. Now that
       --  the dereference is made explicit, set the type of the node properly,
-      --  to prevent anomalies in the backend.
+      --  to prevent anomalies in the backend. Same if the expression is an
+      --  overloaded function call whose return type has a reference aspect.
 
       if Is_Entity_Name (Expr) then
          Set_Etype (Expr, Etype (Entity (Expr)));
+
+      elsif Nkind (Expr) = N_Function_Call then
+         Set_Etype (Expr, Etype (Name (Expr)));
       end if;
 
       Set_Is_Overloaded (Expr, False);
@@ -9335,6 +9339,8 @@ package body Sem_Util is
                loop
                   --  If no matching formal, that's peculiar, some kind of
                   --  previous error, so return False to be conservative.
+                  --  Actually this also happens in legal code in the case
+                  --  where P is a parameter association for an Extra_Formal???
 
                   if No (Form) then
                      return False;
@@ -9640,6 +9646,8 @@ package body Sem_Util is
                loop
                   --  If no matching formal, that's peculiar, some kind of
                   --  previous error, so return True to be conservative.
+                  --  Actually happens with legal code for an unresolved call
+                  --  where we may get the wrong homonym???
 
                   if No (Form) then
                      return True;

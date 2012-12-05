@@ -3049,7 +3049,7 @@ package body Sem_Ch5 is
          if Is_Discrete_Type (Typ) then
             null;
 
-         --  Check that the resulting object is an iterable container.
+         --  Check that the resulting object is an iterable container
 
          elsif Present (Find_Aspect (Typ, Aspect_Iterator_Element))
            or else Present (Find_Aspect (Typ, Aspect_Constant_Indexing))
@@ -3057,7 +3057,7 @@ package body Sem_Ch5 is
          then
             null;
 
-         --  The expression may yield an implcit reference to an iterable
+         --  The expression may yield an implicit reference to an iterable
          --  container. Insert explicit dereference so that proper type is
          --  visible in the loop.
 

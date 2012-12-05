@@ -1629,13 +1629,88 @@ package body Sem_Ch13 is
 
                      Aitem :=
                        Make_Pragma (Loc,
-                                    Pragma_Identifier            =>
-                                      Make_Identifier (Sloc (Id), Nam),
-                                    Pragma_Argument_Associations =>
-                                      Args);
+                         Pragma_Identifier            =>
+                           Make_Identifier (Sloc (Id), Nam),
+                         Pragma_Argument_Associations => Args);
 
                      Delay_Required := False;
                   end;
+
+               when Aspect_Contract_Cases => Contract_Cases : declare
+                  Case_Guard  : Node_Id;
+                  Extra       : Node_Id;
+                  Others_Seen : Boolean := False;
+                  Post_Case   : Node_Id;
+
+               begin
+                  if Nkind (Parent (N)) = N_Compilation_Unit then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_N ("incorrect placement of aspect `%`", E);
+                     goto Continue;
+                  end if;
+
+                  if Nkind (Expr) /= N_Aggregate then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_NE
+                       ("wrong syntax for aspect `%` for &", Id, E);
+                     goto Continue;
+                  end if;
+
+                  --  Verify the legality of individual post cases
+
+                  Post_Case := First (Component_Associations (Expr));
+                  while Present (Post_Case) loop
+                     if Nkind (Post_Case) /= N_Component_Association then
+                        Error_Msg_N ("wrong syntax in post case", Post_Case);
+                        goto Continue;
+                     end if;
+
+                     --  Each post case must have exactly one case guard
+
+                     Case_Guard := First (Choices (Post_Case));
+                     Extra      := Next (Case_Guard);
+
+                     if Present (Extra) then
+                        Error_Msg_N
+                          ("post case may have only one case guard", Extra);
+                        goto Continue;
+                     end if;
+
+                     --  Check the placement of "others" (if available)
+
+                     if Nkind (Case_Guard) = N_Others_Choice then
+                        if Others_Seen then
+                           Error_Msg_Name_1 := Nam;
+                           Error_Msg_N
+                             ("only one others choice allowed in aspect %",
+                              Case_Guard);
+                           goto Continue;
+                        else
+                           Others_Seen := True;
+                        end if;
+
+                     elsif Others_Seen then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_N
+                          ("others must be the last choice in aspect %", N);
+                        goto Continue;
+                     end if;
+
+                     Next (Post_Case);
+                  end loop;
+
+                  --  Transform the aspect into a pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Loc, Nam),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+                  Delay_Required := False;
+               end Contract_Cases;
 
                --  Case 5: Special handling for aspects with an optional
                --  boolean argument.
@@ -6764,6 +6839,7 @@ package body Sem_Ch13 is
          --  Here is the list of aspects that don't require delay analysis.
 
          when Aspect_Contract_Case        |
+              Aspect_Contract_Cases       |
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |
