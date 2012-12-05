@@ -738,6 +738,14 @@ package body Sem_Ch13 is
 
          if Is_Scalar_Type (Ent) then
             Set_Default_Aspect_Value (Ent, Expr);
+
+            --  Place default value of base type as well, because that is
+            --  the semantics of the aspect. It is convenient to link the
+            --  aspect to both the (possibly anonymous) base type and to
+            --  the given first subtype.
+
+            Set_Default_Aspect_Value (Base_Type (Ent), Expr);
+
          else
             Set_Default_Aspect_Component_Value (Ent, Expr);
          end if;
@@ -1892,6 +1900,19 @@ package body Sem_Ch13 is
                end if;
 
                Set_Is_Delayed_Aspect (Aspect);
+
+               --  In the case of Default_Value, link aspect to base type
+               --  as well, even though it appears on a first subtype. This
+               --  is mandated by the semantics of the aspect. Verify that
+               --  this a scalar type, to prevent cascaded errors.
+
+               if A_Id = Aspect_Default_Value
+                 and then Is_Scalar_Type (E)
+               then
+                  Set_Has_Delayed_Aspects (Base_Type (E));
+                  Record_Rep_Item (Base_Type (E), Aspect);
+               end if;
+
                Set_Has_Delayed_Aspects (E);
                Record_Rep_Item (E, Aspect);
 

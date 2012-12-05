@@ -6834,6 +6834,9 @@ package body Sem_Attr is
       --  non-static subtypes, even though such references are not static
       --  expressions.
 
+      --  For VAX float, the root type is an IEEE type. So make sure to use the
+      --  base type instead of the root-type for floating point attributes.
+
       case Id is
 
          --  Attributes related to Ada 2012 iterators (placeholder ???)
@@ -6858,7 +6861,7 @@ package body Sem_Attr is
       when Attribute_Adjacent =>
          Fold_Ureal (N,
            Eval_Fat.Adjacent
-             (P_Root_Type, Expr_Value_R (E1), Expr_Value_R (E2)), Static);
+             (P_Base_Type, Expr_Value_R (E1), Expr_Value_R (E2)), Static);
 
       ---------
       -- Aft --
@@ -6944,7 +6947,7 @@ package body Sem_Attr is
 
       when Attribute_Ceiling =>
          Fold_Ureal (N,
-           Eval_Fat.Ceiling (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Ceiling (P_Base_Type, Expr_Value_R (E1)), Static);
 
       --------------------
       -- Component_Size --
@@ -6962,7 +6965,7 @@ package body Sem_Attr is
       when Attribute_Compose =>
          Fold_Ureal (N,
            Eval_Fat.Compose
-             (P_Root_Type, Expr_Value_R (E1), Expr_Value (E2)),
+             (P_Base_Type, Expr_Value_R (E1), Expr_Value (E2)),
               Static);
 
       -----------------
@@ -6982,7 +6985,7 @@ package body Sem_Attr is
       when Attribute_Copy_Sign =>
          Fold_Ureal (N,
            Eval_Fat.Copy_Sign
-             (P_Root_Type, Expr_Value_R (E1), Expr_Value_R (E2)), Static);
+             (P_Base_Type, Expr_Value_R (E1), Expr_Value_R (E2)), Static);
 
       --------------
       -- Definite --
@@ -7108,7 +7111,7 @@ package body Sem_Attr is
 
       when Attribute_Exponent =>
          Fold_Uint (N,
-           Eval_Fat.Exponent (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Exponent (P_Base_Type, Expr_Value_R (E1)), Static);
 
       -----------
       -- First --
@@ -7178,7 +7181,7 @@ package body Sem_Attr is
 
       when Attribute_Floor =>
          Fold_Ureal (N,
-           Eval_Fat.Floor (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Floor (P_Base_Type, Expr_Value_R (E1)), Static);
 
       ----------
       -- Fore --
@@ -7195,7 +7198,7 @@ package body Sem_Attr is
 
       when Attribute_Fraction =>
          Fold_Ureal (N,
-           Eval_Fat.Fraction (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Fraction (P_Base_Type, Expr_Value_R (E1)), Static);
 
       -----------------------
       -- Has_Access_Values --
@@ -7415,7 +7418,7 @@ package body Sem_Attr is
       when Attribute_Leading_Part =>
          Fold_Ureal (N,
            Eval_Fat.Leading_Part
-             (P_Root_Type, Expr_Value_R (E1), Expr_Value (E2)), Static);
+             (P_Base_Type, Expr_Value_R (E1), Expr_Value (E2)), Static);
 
       ------------
       -- Length --
@@ -7497,7 +7500,7 @@ package body Sem_Attr is
       when Attribute_Machine =>
          Fold_Ureal (N,
            Eval_Fat.Machine
-             (P_Root_Type, Expr_Value_R (E1), Eval_Fat.Round, N),
+             (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round, N),
            Static);
 
       ------------------
@@ -7572,7 +7575,7 @@ package body Sem_Attr is
 
       when Attribute_Machine_Rounding =>
          Fold_Ureal (N,
-           Eval_Fat.Rounding (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Rounding (P_Base_Type, Expr_Value_R (E1)), Static);
 
       --------------------
       -- Machine_Rounds --
@@ -7803,7 +7806,7 @@ package body Sem_Attr is
 
       when Attribute_Model =>
          Fold_Ureal (N,
-           Eval_Fat.Model (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Model (P_Base_Type, Expr_Value_R (E1)), Static);
 
       ----------------
       -- Model_Emin --
@@ -7900,7 +7903,7 @@ package body Sem_Attr is
 
          if Is_Floating_Point_Type (P_Type) then
             Fold_Ureal (N,
-              Eval_Fat.Pred (P_Root_Type, Expr_Value_R (E1)), Static);
+              Eval_Fat.Pred (P_Base_Type, Expr_Value_R (E1)), Static);
 
          --  Fixed-point case
 
@@ -8017,7 +8020,7 @@ package body Sem_Attr is
             return;
          end if;
 
-         Fold_Ureal (N, Eval_Fat.Remainder (P_Root_Type, X, Y), Static);
+         Fold_Ureal (N, Eval_Fat.Remainder (P_Base_Type, X, Y), Static);
       end Remainder;
 
       -----------
@@ -8049,7 +8052,7 @@ package body Sem_Attr is
 
       when Attribute_Rounding =>
          Fold_Ureal (N,
-           Eval_Fat.Rounding (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Rounding (P_Base_Type, Expr_Value_R (E1)), Static);
 
       ---------------
       -- Safe_Emax --
@@ -8124,7 +8127,7 @@ package body Sem_Attr is
       when Attribute_Scaling =>
          Fold_Ureal (N,
            Eval_Fat.Scaling
-             (P_Root_Type, Expr_Value_R (E1), Expr_Value (E2)), Static);
+             (P_Base_Type, Expr_Value_R (E1), Expr_Value (E2)), Static);
 
       ------------------
       -- Signed_Zeros --
@@ -8238,7 +8241,7 @@ package body Sem_Attr is
 
          if Is_Floating_Point_Type (P_Type) then
             Fold_Ureal (N,
-              Eval_Fat.Succ (P_Root_Type, Expr_Value_R (E1)), Static);
+              Eval_Fat.Succ (P_Base_Type, Expr_Value_R (E1)), Static);
 
          --  Fixed-point case
 
@@ -8280,7 +8283,7 @@ package body Sem_Attr is
 
       when Attribute_Truncation =>
          Fold_Ureal (N,
-           Eval_Fat.Truncation (P_Root_Type, Expr_Value_R (E1)), Static);
+           Eval_Fat.Truncation (P_Base_Type, Expr_Value_R (E1)), Static);
 
       ----------------
       -- Type_Class --
@@ -8345,7 +8348,7 @@ package body Sem_Attr is
 
       when Attribute_Unbiased_Rounding =>
          Fold_Ureal (N,
-           Eval_Fat.Unbiased_Rounding (P_Root_Type, Expr_Value_R (E1)),
+           Eval_Fat.Unbiased_Rounding (P_Base_Type, Expr_Value_R (E1)),
            Static);
 
       -------------------------

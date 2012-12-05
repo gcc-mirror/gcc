@@ -631,12 +631,7 @@ package body Sem_Ch4 is
                                        Reason => CE_Null_Not_Allowed);
 
                begin
-                  if Ada_Version >= Ada_2012 then
-                     Error_Msg_N
-                       ("an uninitialized allocator cannot have"
-                         & " a null exclusion", N);
-
-                  elsif Expander_Active then
+                  if Expander_Active then
                      Insert_Action (N, Not_Null_Check);
                      Analyze (Not_Null_Check);
 
