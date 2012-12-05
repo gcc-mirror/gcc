@@ -389,7 +389,8 @@ struct GTY(()) rtl_data {
   bool arg_pointer_save_area_init;
 
   /* Nonzero if current function must be given a frame pointer.
-     Set in global.c if anything is allocated on the stack there.  */
+     Set in reload1.c or lra-eliminations.c if anything is allocated
+     on the stack there.  */
   bool frame_pointer_needed;
 
   /* When set, expand should optimize for speed.  */

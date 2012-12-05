@@ -577,7 +577,8 @@ enum reg_class
 #define INDEX_REG_CLASS GENERAL_REGS
 
 /* Since it uses reg_renumber, it is safe only once reg_renumber
-   has been allocated, which happens in local-alloc.c.  */
+   has been allocated, which happens in reginfo.c during register
+   allocation.  */
 #define REGNO_OK_FOR_BASE_P(REGNO)					\
  ((REGNO) <= CRIS_LAST_GENERAL_REGISTER					\
   || (REGNO) == ARG_POINTER_REGNUM					\

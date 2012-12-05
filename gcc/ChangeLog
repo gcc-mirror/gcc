@@ -1,3 +1,20 @@
+2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/tm.texi.in (TARGET_CLASS_LIKELY_SPILLED_P): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* regs.h (REG_LIVE_LENGTH): Update comments to not refer to no longer
+	existing files global.c and local-alloc.c.
+	* regmove.c (copy_src_to_dest): Likewise.
+	* function.h (struct rtl_data): Likewise.
+	* ira-color.c (allocno_priority_compare_func): Likewise.
+	* regstat.c (regstat_compute_ri): Likewise.
+	* config/epiphany/epiphany.h, config/vax/vax.h, config/cris/cris.h,
+	config/h8300/h8300.h, config/alpha/alpha.h, config/sparc/sparc.h,
+	config/rs6000/rs6000.h, config/pdp11/pdp11.h, config/pa/pa.h,
+	config/v850/v850.h, config/mn10300/mn10300.h, config/m32r/m32r.h,
+	config/i386/i386.h, config/mcore/mcore.h, config/sh/sh.h,
+	config/arm/arm.h (REGNO_OK_FOR_BASE_P): Likewise.
+
 2012-12-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR target/54160
