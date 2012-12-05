@@ -16316,7 +16316,10 @@ package body Sem_Ch3 is
    -- Is_Visible_Component --
    --------------------------
 
-   function Is_Visible_Component (C : Entity_Id) return Boolean is
+   function Is_Visible_Component
+     (C : Entity_Id;
+      N : Node_Id := Empty) return Boolean
+   is
       Original_Comp  : Entity_Id := Empty;
       Original_Scope : Entity_Id;
       Type_Scope     : Entity_Id;
@@ -16376,10 +16379,17 @@ package body Sem_Ch3 is
       elsif not Comes_From_Source (Original_Comp) then
          return True;
 
-      --  Discriminants are always visible
+      --  Discriminants are visible unless the (private) type has unknown
+      --  discriminants. If the discriminant reference is inserted for a
+      --  discriminant check on a full view it is also visible.
 
       elsif Ekind (Original_Comp) = E_Discriminant
-        and then not Has_Unknown_Discriminants (Original_Scope)
+        and then
+          (not Has_Unknown_Discriminants (Original_Scope)
+            or else (Present (N)
+                      and then Nkind (N) = N_Selected_Component
+                      and then Nkind (Prefix (N)) = N_Type_Conversion
+                      and then not Comes_From_Source (Prefix (N))))
       then
          return True;
 

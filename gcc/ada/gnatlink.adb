@@ -1649,7 +1649,7 @@ begin
    --             because bindgen uses brackets encoding for all upper
    --             half and wide characters in identifier names.
 
-   --  In addition, in CodePeer mode compile with -gnatcC
+   --  In addition, in CodePeer mode compile with -x adascil -gnatcC
 
    Binder_Options_From_ALI.Increment_Last;
    Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
@@ -1664,7 +1664,13 @@ begin
    if Opt.CodePeer_Mode then
       Binder_Options_From_ALI.Increment_Last;
       Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
-           new String'("-gnatcC");
+        new String'("-x");
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("adascil");
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatcC");
    end if;
 
    --  Locate all the necessary programs and verify required files are present

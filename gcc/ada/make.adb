@@ -7841,12 +7841,8 @@ package body Make is
             Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
 
-            --  Except in CodePeer mode, where we do want to call bind/link
-            --  in CodePeer mode (-P switch).
-
-            --  This is testing for -gnatcC, what is that??? Also why do we
-            --  want to call bind/link in the codepeer case with -gnatc
-            --  specified, seems odd.
+            --  Except in CodePeer mode (set by -gnatcC), where we do want to
+            --  call bind/link in CodePeer mode (-P switch).
 
             if Argv'Last >= 7 and then Argv (7) = 'C' then
                CodePeer_Mode := True;

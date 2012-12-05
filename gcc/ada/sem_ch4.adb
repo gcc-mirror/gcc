@@ -3938,7 +3938,7 @@ package body Sem_Ch4 is
 
          while Present (Comp) and then not Is_Prefixed_Call (N) loop
             if Chars (Comp) = Chars (Sel)
-              and then Is_Visible_Component (Comp)
+              and then Is_Visible_Component (Comp, N)
             then
                Set_Entity_With_Style_Check (Sel, Comp);
                Set_Etype (Sel, Etype (Comp));

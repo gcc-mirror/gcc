@@ -5207,6 +5207,8 @@ package body Exp_Ch4 is
       New_If  : Node_Id;
       New_N   : Node_Id;
 
+   --  Start of processing for Expand_N_If_Expression
+
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
 

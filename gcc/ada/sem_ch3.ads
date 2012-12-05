@@ -185,12 +185,18 @@ package Sem_Ch3 is
    --  is a null extension, meaning that it has an extension part without any
    --  components and does not have a known discriminant part.
 
-   function Is_Visible_Component (C : Entity_Id) return Boolean;
+   function Is_Visible_Component
+     (C : Entity_Id;
+      N : Node_Id := Empty) return Boolean;
    --  Determines if a record component C is visible in the present context.
    --  Note that even though component C could appear in the entity chain
    --  of a record type, C may not be visible in the current context. For
    --  instance, C may be a component inherited in the full view of a private
    --  extension which is not visible in the current context.
+   --
+   --  If present, N is the selected component of which C is the selector. If
+   --  the prefix of N is a type conversion inserted for a discriminant check,
+   --  C is automatically visible.
 
    procedure Make_Index
      (I            : Node_Id;
