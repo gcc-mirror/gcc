@@ -6879,6 +6879,13 @@ aarch64_c_mode_for_suffix (char suffix)
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE aarch64_preferred_simd_mode
 
+#undef TARGET_VECTORIZE_BUILTINS
+#define TARGET_VECTORIZE_BUILTINS
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
+  aarch64_builtin_vectorized_function
+
 /* Section anchor support.  */
 
 #undef TARGET_MIN_ANCHOR_OFFSET

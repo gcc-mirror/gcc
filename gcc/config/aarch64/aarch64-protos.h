@@ -236,4 +236,9 @@ rtx aarch64_expand_builtin (tree exp,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
 
+tree
+aarch64_builtin_vectorized_function (tree fndecl,
+				     tree type_out,
+				     tree type_in);
+
 #endif /* GCC_AARCH64_PROTOS_H */

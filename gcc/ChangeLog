@@ -1,3 +1,35 @@
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_builtin_vectorized_function): Declare.
+	* config/aarch64/aarch64-simd-builtins.def (frintz, frintp): Add.
+	(frintm, frinti, frintx, frinta, fcvtzs, fcvtzu): Likewise.
+	(fcvtas, fcvtau, fcvtps, fcvtpu, fcvtms, fcvtmu): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_frint_<frint_suffix><mode>): New.
+	(<frint_pattern><mode>2): Likewise.
+	(aarch64_fcvt<frint_suffix><su><mode>): Likewise.
+	(l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2): Likewise.
+	* config/aarch64/aarch64.c (TARGET_VECTORIZE_BUILTINS): Define.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Likewise.
+	* config/aarch64/aarch64.md
+	(btrunc<mode>2, ceil<mode>2, floor<mode>2)
+	(round<mode>2, rint<mode>2, nearbyint<mode>2): Consolidate as...
+	(<frint_pattern><mode>2): ...this.
+	(lceil<su_optab><mode><mode>2, lfloor<su_optab><mode><mode>2)
+	(lround<su_optab><mode><mode>2)
+	(lrint<su_optab><mode><mode>2): Consolidate as...
+	(l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2): ... this.
+	* config/aarch64/iterators.md (fcvt_target): New.
+	(FCVT_TARGET): Likewise.
+	(FRINT): Likewise.
+	(FCVT): Likewise.
+	(frint_pattern): Likewise.
+	(frint_suffix): Likewise.
+	(fcvt_pattern): Likewise.
+
 2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* passes.c (pass_init_dump_file): Only open a clean graph dump file if

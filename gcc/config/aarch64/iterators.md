@@ -453,6 +453,9 @@
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])
 
+(define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")])
+(define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
@@ -647,6 +650,12 @@
 (define_int_iterator VCMP_U [UNSPEC_CMHS UNSPEC_CMHI UNSPEC_CMTST])
 
 
+(define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
+			     UNSPEC_FRINTI UNSPEC_FRINTX UNSPEC_FRINTA])
+
+(define_int_iterator FCVT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
+			    UNSPEC_FRINTA])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
@@ -728,4 +737,20 @@
 
 (define_int_attr offsetlr [(UNSPEC_SSLI	"1") (UNSPEC_USLI "1")
 			   (UNSPEC_SSRI	"0") (UNSPEC_USRI "0")])
+
+;; Standard pattern names for floating-point rounding instructions.
+(define_int_attr frint_pattern [(UNSPEC_FRINTZ "btrunc")
+				(UNSPEC_FRINTP "ceil")
+				(UNSPEC_FRINTM "floor")
+				(UNSPEC_FRINTI "nearbyint")
+				(UNSPEC_FRINTX "rint")
+				(UNSPEC_FRINTA "round")])
+
+;; frint suffix for floating-point rounding instructions.
+(define_int_attr frint_suffix [(UNSPEC_FRINTZ "z") (UNSPEC_FRINTP "p")
+			       (UNSPEC_FRINTM "m") (UNSPEC_FRINTI "i")
+			       (UNSPEC_FRINTX "x") (UNSPEC_FRINTA "a")])
+
+(define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
+			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")])
 
