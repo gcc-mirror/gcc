@@ -2325,117 +2325,27 @@
 ;; Floating-point intrinsics
 ;; -------------------------------------------------------------------
 
-;; trunc - nothrow
+;; frint floating-point round to integral standard patterns.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round.
 
-(define_insn "btrunc<mode>2"
+(define_insn "<frint_pattern><mode>2"
   [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-	 UNSPEC_FRINTZ))]
+	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
+	 FRINT))]
   "TARGET_FLOAT"
-  "frintz\\t%<s>0, %<s>1"
+  "frint<frint_suffix>\\t%<s>0, %<s>1"
   [(set_attr "v8type" "frint")
    (set_attr "mode" "<MODE>")]
 )
 
-(define_insn "*lbtrunc<su_optab><GPF:mode><GPI:mode>2"
+;; frcvt floating-point round to integer and convert standard patterns.
+;; Expands to lbtrunc, lceil, lfloor, lround.
+(define_insn "l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (FIXUORS:GPI (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		      UNSPEC_FRINTZ)))]
+	(FIXUORS:GPI (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
+		      FCVT)))]
   "TARGET_FLOAT"
-  "fcvtz<su>\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "v8type" "fcvtf2i")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
-)
-
-;; ceil - nothrow
-
-(define_insn "ceil<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-	 UNSPEC_FRINTP))]
-  "TARGET_FLOAT"
-  "frintp\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frint")
-   (set_attr "mode" "<MODE>")]
-)
-
-(define_insn "lceil<su_optab><GPF:mode><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-        (FIXUORS:GPI (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		      UNSPEC_FRINTP)))]
-  "TARGET_FLOAT"
-  "fcvtp<su>\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "v8type" "fcvtf2i")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
-)
-
-;; floor - nothrow
-
-(define_insn "floor<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-	 UNSPEC_FRINTM))]
-  "TARGET_FLOAT"
-  "frintm\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frint")
-   (set_attr "mode" "<MODE>")]
-)
-
-(define_insn "lfloor<su_optab><GPF:mode><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-        (FIXUORS:GPI (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		      UNSPEC_FRINTM)))]
-  "TARGET_FLOAT"
-  "fcvtm<su>\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "v8type" "fcvtf2i")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
-)
-
-;; nearbyint - nothrow
-
-(define_insn "nearbyint<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-	 UNSPEC_FRINTI))]
-  "TARGET_FLOAT"
-  "frinti\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frint")
-   (set_attr "mode" "<MODE>")]
-)
-
-;; rint
-
-(define_insn "rint<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-	 UNSPEC_FRINTX))]
-  "TARGET_FLOAT"
-  "frintx\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frint")
-   (set_attr "mode" "<MODE>")]
-)
-
-;; round - nothrow
-
-(define_insn "round<mode>2"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-        (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-	 UNSPEC_FRINTA))]
-  "TARGET_FLOAT"
-  "frinta\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frint")
-   (set_attr "mode" "<MODE>")]
-)
-
-(define_insn "lround<su_optab><GPF:mode><GPI:mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-        (FIXUORS:GPI (unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		      UNSPEC_FRINTA)))]
-  "TARGET_FLOAT"
-  "fcvta<su>\\t%<GPI:w>0, %<GPF:s>1"
+  "fcvt<frint_suffix><su>\\t%<GPI:w>0, %<GPF:s>1"
   [(set_attr "v8type" "fcvtf2i")
    (set_attr "mode" "<GPF:MODE>")
    (set_attr "mode2" "<GPI:MODE>")]

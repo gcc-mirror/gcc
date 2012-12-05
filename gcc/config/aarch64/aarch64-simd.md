@@ -1240,6 +1240,46 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "aarch64_frint<frint_suffix><mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]
+		      FRINT))]
+  "TARGET_SIMD"
+  "frint<frint_suffix>\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_frint")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+;; Vector versions of the floating-point frint patterns.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round.
+(define_expand "<frint_pattern><mode>2"
+  [(set (match_operand:VDQF 0 "register_operand")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand")]
+		      FRINT))]
+  "TARGET_SIMD"
+  {})
+
+(define_insn "aarch64_fcvt<frint_suffix><su><mode>"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand" "=w")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(match_operand:VDQF 1 "register_operand" "w")]
+			       FCVT)))]
+  "TARGET_SIMD"
+  "fcvt<frint_suffix><su>\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_fcvti")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+;; Vector versions of the fcvt standard patterns.
+;; Expands to lbtrunc, lround, lceil, lfloor
+(define_expand "l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(match_operand:VDQF 1 "register_operand")]
+			       FCVT)))]
+  "TARGET_SIMD"
+  {})
+
 (define_insn "aarch64_vmls<mode>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
        (minus:VDQF (match_operand:VDQF 1 "register_operand" "0")

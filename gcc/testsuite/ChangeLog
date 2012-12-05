@@ -1,3 +1,31 @@
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/vect/vect-rounding-btrunc.c: New test.
+	* gcc.dg/vect/vect-rounding-btruncf.c: Likewise.
+	* gcc.dg/vect/vect-rounding-ceil.c: Likewise.
+	* gcc.dg/vect/vect-rounding-ceilf.c: Likewise.
+	* gcc.dg/vect/vect-rounding-floor.c: Likewise.
+	* gcc.dg/vect/vect-rounding-floorf.c: Likewise.
+	* gcc.dg/vect/vect-rounding-lceil.c: Likewise.
+	* gcc.dg/vect/vect-rounding-lfloor.c: Likewise.
+	* gcc.dg/vect/vect-rounding-nearbyint.c: Likewise.
+	* gcc.dg/vect/vect-rounding-nearbyintf.c: Likewise.
+	* gcc.dg/vect/vect-rounding-round.c: Likewise.
+	* gcc.dg/vect/vect-rounding-roundf.c: Likewise.
+	* target-supports.exp
+	(check_effective_target_vect_call_btrunc): New.
+	(check_effective_target_vect_call_btruncf): Likewise.
+	(check_effective_target_vect_call_ceil): Likewise.
+	(check_effective_target_vect_call_ceilf): Likewise.
+	(check_effective_target_vect_call_floor): Likewise.
+	(check_effective_target_vect_call_floorf): Likewise.
+	(check_effective_target_vect_call_lceil): Likewise.
+	(check_effective_target_vect_call_lfloor): Likewise.
+	(check_effective_target_vect_call_nearbyint): Likewise.
+	(check_effective_target_vect_call_nearbyintf): Likewise.
+	(check_effective_target_vect_call_round): Likewise.
+	(check_effective_target_vect_call_roundf): Likewise.
+
 2012-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/51238

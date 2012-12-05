@@ -1221,3 +1221,70 @@ aarch64_expand_builtin (tree exp,
 
   return NULL_RTX;
 }
+
+tree
+aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
+{
+  enum machine_mode in_mode, out_mode;
+  int in_n, out_n;
+
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+
+#undef AARCH64_CHECK_BUILTIN_MODE
+#define AARCH64_CHECK_BUILTIN_MODE(C, N) 1
+#define AARCH64_FIND_FRINT_VARIANT(N) \
+  (AARCH64_CHECK_BUILTIN_MODE (2, D) \
+    ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##N##v2df] \
+    : (AARCH64_CHECK_BUILTIN_MODE (4, S) \
+	? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##N##v4sf] \
+	: (AARCH64_CHECK_BUILTIN_MODE (2, S) \
+	   ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##N##v2sf] \
+	   : NULL_TREE)))
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      enum built_in_function fn = DECL_FUNCTION_CODE (fndecl);
+      switch (fn)
+	{
+#undef AARCH64_CHECK_BUILTIN_MODE
+#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
+  (out_mode == N##Fmode && out_n == C \
+   && in_mode == N##Fmode && in_n == C)
+	case BUILT_IN_FLOOR:
+	case BUILT_IN_FLOORF:
+	  return AARCH64_FIND_FRINT_VARIANT (frintm);
+	case BUILT_IN_CEIL:
+	case BUILT_IN_CEILF:
+	  return AARCH64_FIND_FRINT_VARIANT (frintp);
+	case BUILT_IN_TRUNC:
+	case BUILT_IN_TRUNCF:
+	  return AARCH64_FIND_FRINT_VARIANT (frintz);
+	case BUILT_IN_ROUND:
+	case BUILT_IN_ROUNDF:
+	  return AARCH64_FIND_FRINT_VARIANT (frinta);
+	case BUILT_IN_NEARBYINT:
+	case BUILT_IN_NEARBYINTF:
+	  return AARCH64_FIND_FRINT_VARIANT (frinti);
+#undef AARCH64_CHECK_BUILTIN_MODE
+#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
+  (out_mode == N##Imode && out_n == C \
+   && in_mode == N##Fmode && in_n == C)
+	case BUILT_IN_LFLOOR:
+	  return AARCH64_FIND_FRINT_VARIANT (fcvtms);
+	case BUILT_IN_LCEIL:
+	  return AARCH64_FIND_FRINT_VARIANT (fcvtps);
+	default:
+	  return NULL_TREE;
+      }
+    }
+
+  return NULL_TREE;
+}
+#undef AARCH64_CHECK_BUILTIN_MODE
+#undef AARCH64_FIND_FRINT_VARIANT
