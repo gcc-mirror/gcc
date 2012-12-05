@@ -313,7 +313,7 @@ package Sem_Attr is
       --  needed, and the value should never be accessed.
 
       Attribute_Loop_Entry => True,
-      --  For every object of a non-limited type, S'Loop_Entry { (Loop_Name) }
+      --  For every object of a non-limited type, S'Loop_Entry [(Loop_Name)]
       --  denotes the constant value of prefix S at the point of entry into the
       --  related loop. The type of the attribute is the type of the prefix.
 

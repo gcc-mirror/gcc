@@ -1931,6 +1931,7 @@ package body Atree is
             if Is_Syntactic_Field (Nkind (Nod), FN) then
                declare
                   Elmt : Node_Id := First (List_Id (Fld));
+
                begin
                   while Present (Elmt) loop
                      if Traverse_Func (Elmt) = Abandon then

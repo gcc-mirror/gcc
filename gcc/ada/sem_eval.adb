@@ -1314,13 +1314,14 @@ package body Sem_Eval is
       --  is at optimizing and knowing that things are constant when they are
       --  nonstatic.
 
-      --  We make an exception for expressions that evaluate to True/False, to
-      --  suppress spurious checks in ZFP mode.
-
       if Configurable_Run_Time_Mode
         and then K /= N_Null
         and then not Is_Static_Expression (Op)
       then
+         --  We make an exception for expressions that evaluate to True/False,
+         --  to suppress spurious checks in ZFP mode. So far we have not seen
+         --  any negative consequences of this exception.
+
          if Is_Entity_Name (Op)
            and then Ekind (Entity (Op)) = E_Enumeration_Literal
            and then Etype (Entity (Op)) = Standard_Boolean

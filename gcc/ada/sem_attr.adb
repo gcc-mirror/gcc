@@ -5998,8 +5998,7 @@ package body Sem_Attr is
          return
            Is_Floating_Point_Type (Typ)
              and then
-               (Float_Format = 'V'
-                  or else Float_Rep (Typ) = VAX_Native);
+               (Float_Format = 'V' or else Float_Rep (Typ) = VAX_Native);
       end Is_VAX_Float;
 
       --------------
