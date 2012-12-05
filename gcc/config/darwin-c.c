@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-target.h"
 #include "c-family/c-target-def.h"
 #include "cgraph.h"
+#include "../../libcpp/internal.h"
 
 /* Pragmas.  */
 
@@ -632,7 +633,7 @@ darwin_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__weak=");
     }
 
-  if (flag_objc_abi == 2)
+  if (CPP_OPTION (pfile, objc) && flag_objc_abi == 2)
     builtin_define ("__OBJC2__");
 }
 
