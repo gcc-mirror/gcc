@@ -1,3 +1,7 @@
+2012-12-05  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (generate_component_assignments): Fix memleak.
+
 2012-12-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55548

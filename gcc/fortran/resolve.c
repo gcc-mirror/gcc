@@ -9857,7 +9857,6 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	continue;
 
       /* Make an assigment for this component.  */
-      this_code = gfc_get_code ();
       this_code = build_assignment (EXEC_ASSIGN,
 				    (*code)->expr1, (*code)->expr2,
 				    comp1, comp2, (*code)->loc);
