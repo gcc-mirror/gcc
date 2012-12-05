@@ -28,11 +28,8 @@
 --  the ALI file, and by Get_SCO/Put_SCO to read and write the text form that
 --  is used in the ALI file.
 
-with Snames; use Snames;
---  Note: used for Pragma_Id only, no other feature from Snames should be used,
---  as a simplified version is maintained in Xcov.
-
-with Types;  use Types;
+with Namet; use Namet;
+with Types; use Types;
 
 with GNAT.Table;
 
@@ -248,17 +245,20 @@ package SCOs is
 
    --      C* sloc expression
 
-   --    Here * is one of the following characters:
+   --    Here * is one of the following:
 
-   --      E  decision in EXIT WHEN statement
-   --      G  decision in entry guard
-   --      I  decision in IF statement or if expression
-   --      P  decision in pragma Assert/Check/Pre_Condition/Post_Condition
-   --      W  decision in WHILE iteration scheme
-   --      X  decision appearing in some other expression context
+   --      E       decision in EXIT WHEN statement
+   --      G       decision in entry guard
+   --      I       decision in IF statement or if expression
+   --      P       decision in pragma Assert / Check / Pre/Post_Condition
+   --      A[name] decision in aspect Pre/Post (aspect name optional)
+   --      W       decision in WHILE iteration scheme
+   --      X       decision in some other expression context
 
    --    For E, G, I, P, W, sloc is the source location of the EXIT, ENTRY, IF,
    --    PRAGMA or WHILE token, respectively
+
+   --    For A sloc is the source location of the aspect identifier
 
    --    For X, sloc is omitted
 
@@ -369,10 +369,12 @@ package SCOs is
       Pragma_Sloc : Source_Ptr := No_Location;
       --  For the statement SCO for a pragma, or for any expression SCO nested
       --  in a pragma Debug/Assert/PPC, location of PRAGMA token (used for
-      --  control of SCO output, value not recorded in ALI file).
+      --  control of SCO output, value not recorded in ALI file). For the
+      --  decision SCO for an aspect, or for any expression SCO nested in an
+      --  aspect, location of aspect identifier token (likewise).
 
-      Pragma_Name : Pragma_Id := Unknown_Pragma;
-      --  For the statement SCO for a pragma, gives the pragma name
+      Pragma_Aspect_Name : Name_Id := No_Name;
+      --  For the SCO for a pragma/aspect, gives the pragma/apsect name
    end record;
 
    package SCO_Table is new GNAT.Table (
@@ -381,6 +383,11 @@ package SCOs is
      Table_Low_Bound      => 1,
      Table_Initial        => 500,
      Table_Increment      => 300);
+
+   Is_Decision : constant array (Character) of Boolean :=
+     ('E' | 'G' | 'I' | 'P' | 'A' | 'W' | 'X' => True,
+      others                                  => False);
+   --  Indicates which C1 values correspond to decisions
 
    --  The SCO_Table_Entry values appear as follows:
 
@@ -432,7 +439,20 @@ package SCOs is
    --    SCO contexts, the only pragmas with decisions are Assert, Check,
    --    dyadic Debug, Precondition and Postcondition). These entries will
    --    be omitted in output if the pragma is disabled (see comments for
-   --    statement entries).
+   --    statement entries). This is achieved by setting C1 to NUL for all
+   --    SCO entries of the decision.
+
+   --    Decision (ASPECT)
+   --      C1   = 'A'
+   --      C2   = ' '
+   --      From = aspect identifier
+   --      To   = No_Source_Location
+   --      Last = unused
+
+   --    Note: when the parse tree is first scanned, we unconditionally build a
+   --    pragma decision entry for any decision in an aspect (Pre/Post/
+   --    [Type_]Invariant/[Static_|Dynamic_]Predicate). Entries for disabled
+   --    Pre/Post aspects will be omitted from output.
 
    --    Decision (Expression)
    --      C1   = 'X'

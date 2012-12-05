@@ -1,3 +1,30 @@
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb, scos.ads, put_scos.adb, put_scos.ads,
+	get_scos.adb: Generation of SCOs for aspects.
+
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_prag.adb (Check_Precondition_Postcondition): Remove
+	redundant call to Set_SCO_Pragma_Enabled (the pragma will be
+	rewritten into a pragma Check later on, and the call will be
+	made when processing the rewritten pragma).
+	(Analyze_Pragma, case Pragma_Check): Omit call to
+	Set_SCO_Pragma_Enabled if Split_PPC is set.
+
+2012-12-05  Olivier Hainque  <hainque@adacore.com>
+
+	* tracebak.c: Add partial support for Lynx178.
+
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Improve
+	the error message related to loop assertions.
+
+2012-12-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* atree.ads: Minor reformatting.
+
 2012-12-05  Robert Dewar  <dewar@adacore.com>
 
 	* atree.ads, par-ch4.adb, sem_attr.adb, sem_ch13.adb: Minor
