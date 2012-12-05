@@ -1,5 +1,13 @@
 2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_simd_mangle_map_entry): New
+	typedef.
+	(aarch64_simd_mangle_map): New table.
+	(aarch64_mangle_type): Locate and return the mangled name for
+	a given AdvSIMD vector type.
+
+2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_mangle_type): New function.
 	(TARGET_MANGLE_TYPE): Define.
 
