@@ -614,6 +614,12 @@ package body Switch.C is
                      Generate_SCO := True;
                      Ptr := Ptr + 1;
 
+                  --  -gnatet (generate target dependent information)
+
+                  when 't' =>
+                     Generate_Target_Dependent_Info := True;
+                     Ptr := Ptr + 1;
+
                   --  -gnateV (validity checks on parameters)
 
                   when 'V' =>

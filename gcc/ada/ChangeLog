@@ -1,5 +1,37 @@
 2012-12-05  Robert Dewar  <dewar@adacore.com>
 
+	* lib-writ.adb (Write_ALI): Output T lines.
+	* lib-writ.ads: Minor reformatting. Add documentation of T lines.
+	* opt.ads (Generate_Target_Dependent_Info): New flag.
+	* switch-c.adb (Scan_Switches): Recognize -gnatet switch
+	(target dependent info).
+	* ttypes.ads: Add four letter codes to declarations (for target
+	dependent info).
+	* usage.adb: Add line for -gnatet switch.
+
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_N_Pragma): Add a call to expand
+	pragma Loop_Variant.
+	(Expand_Pragma_Loop_Assertion): Removed.
+	(Expand_Pragma_Loop_Variant): New routine.
+	* par-prag.adb: Remove Pragma_Loop_Assertion and add two new
+	Pragma_Loop_Invariant and Pragma_Loop_Variant entries.
+	* sem_attr.adb (Analyze_Attribute): Update the code which
+	locates the enclosing pragma.
+	* sem_prag.adb (Analyze_Pragma): Remove the code which analyzes
+	pragma Loop_Assertion as the pragma is now obsolete. Add the
+	machinery to checks the semantics of pragmas Loop_Invariant
+	and Loop_Variant.
+	(Check_Loop_Invariant_Variant_Placement): New routine.
+	* snames.ads-tmpl: Remove name Loop_Assertion. Add new names
+	Loop_Invariant and Loop_Variant.  Rename Name_Decreasing
+	to Name_Decreases and Name_Increasing to Name_Increases.
+	Remove the pragma Id for Loop_Assertion and add two new Ids for
+	Loop_Invariant and Loop_Variant.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
 	* gnatchop.adb, sem_attr.ads, sem_ch4.adb, sem_ch6.adb, exp_disp.adb,
 	atree.adb, sem_eval.adb: Minor reformatting.
 
