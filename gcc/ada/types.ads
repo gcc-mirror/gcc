@@ -704,14 +704,14 @@ package Types is
    --    5.  Add appropriate checks for the new test
 
    --  The following provides precise details on the mode used to generate
-   --  code for intermediate overflows in expressions for signed integer
+   --  code for intermediate operations in expressions for signed integer
    --  arithmetic (and how to generate overflow checks if enabled). Note
    --  that this only affects handling of intermediate results. The final
    --  result must always fit within the target range, and if overflow
    --  checking is enabled, the check on the final result is against this
    --  target range.
 
-   type Overflow_Check_Type is (
+   type Overflow_Mode_Type is (
       Not_Set,
       --  Dummy value used during initialization process to show that the
       --  corresponding value has not yet been initialized.
@@ -734,9 +734,9 @@ package Types is
       --  the overflow checking mode, since overflows are eliminated.
 
    subtype Minimized_Or_Eliminated is
-     Overflow_Check_Type range Minimized .. Eliminated;
+     Overflow_Mode_Type range Minimized .. Eliminated;
    --  Define subtype so that clients don't need to know ordering. Note that
-   --  Overflow_Check_Type is not marked as an ordered enumeration type.
+   --  Overflow_Mode_Type is not marked as an ordered enumeration type.
 
    --  The following structure captures the state of check suppression or
    --  activation at a particular point in the program execution.
@@ -745,12 +745,12 @@ package Types is
       Suppress : Suppress_Array;
       --  Indicates suppression status of each possible check
 
-      Overflow_Checks_General : Overflow_Check_Type;
+      Overflow_Mode_General : Overflow_Mode_Type;
       --  This field indicates the mode for handling code generation and
       --  overflow checking (if enabled) for intermediate expression values.
       --  This applies to general expressions outside assertions.
 
-      Overflow_Checks_Assertions : Overflow_Check_Type;
+      Overflow_Mode_Assertions : Overflow_Mode_Type;
       --  This field indicates the mode for handling code generation and
       --  overflow checking (if enabled) for intermediate expression values.
       --  This applies to any expression occuring inside assertions.

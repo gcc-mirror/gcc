@@ -2274,7 +2274,7 @@ package body Exp_Ch4 is
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Entity for Long_Long_Integer'Base
 
-      Check : constant Overflow_Check_Type := Overflow_Check_Mode;
+      Check : constant Overflow_Mode_Type := Overflow_Check_Mode;
       --  Current overflow checking mode
 
       procedure Set_True;

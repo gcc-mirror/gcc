@@ -11990,11 +11990,11 @@ package body Sem_Prag is
             Optimize_Alignment_Local := True;
          end Optimize_Alignment;
 
-         ---------------------
-         -- Overflow_Checks --
-         ---------------------
+         -------------------
+         -- Overflow_Mode --
+         -------------------
 
-         --  pragma Overflow_Checks
+         --  pragma Overflow_Mode
          --    ([General => ] MODE [, [Assertions => ] MODE]);
 
          --  MODE := STRICT | MINIMIZED | ELIMINATED
@@ -12003,21 +12003,21 @@ package body Sem_Prag is
          --  since System.Bignums makes this assumption. This is true of nearly
          --  all (all?) targets.
 
-         when Pragma_Overflow_Checks => Overflow_Checks : declare
-            function Get_Check_Mode
+         when Pragma_Overflow_Mode => Overflow_Mode : declare
+            function Get_Overflow_Mode
               (Name : Name_Id;
-               Arg  : Node_Id) return Overflow_Check_Type;
+               Arg  : Node_Id) return Overflow_Mode_Type;
             --  Function to process one pragma argument, Arg. If an identifier
-            --  is present, it must be Name. Check type is returned if a valid
+            --  is present, it must be Name. Mode type is returned if a valid
             --  argument exists, otherwise an error is signalled.
 
-            --------------------
-            -- Get_Check_Mode --
-            --------------------
+            -----------------------
+            -- Get_Overflow_Mode --
+            -----------------------
 
-            function Get_Check_Mode
+            function Get_Overflow_Mode
               (Name : Name_Id;
-               Arg  : Node_Id) return Overflow_Check_Type
+               Arg  : Node_Id) return Overflow_Mode_Type
             is
                Argx : constant Node_Id := Get_Pragma_Arg (Arg);
 
@@ -12042,9 +12042,9 @@ package body Sem_Prag is
                else
                   Error_Pragma_Arg ("invalid argument for pragma%", Argx);
                end if;
-            end Get_Check_Mode;
+            end Get_Overflow_Mode;
 
-         --  Start of processing for Overflow_Checks
+         --  Start of processing for Overflow_Mode
 
          begin
             GNAT_Pragma;
@@ -12053,22 +12053,22 @@ package body Sem_Prag is
 
             --  Process first argument
 
-            Scope_Suppress.Overflow_Checks_General :=
-              Get_Check_Mode (Name_General, Arg1);
+            Scope_Suppress.Overflow_Mode_General :=
+              Get_Overflow_Mode (Name_General, Arg1);
 
             --  Case of only one argument
 
             if Arg_Count = 1 then
-               Scope_Suppress.Overflow_Checks_Assertions :=
-                 Scope_Suppress.Overflow_Checks_General;
+               Scope_Suppress.Overflow_Mode_Assertions :=
+                 Scope_Suppress.Overflow_Mode_General;
 
             --  Case of two arguments present
 
             else
-               Scope_Suppress.Overflow_Checks_Assertions  :=
-                 Get_Check_Mode (Name_Assertions, Arg2);
+               Scope_Suppress.Overflow_Mode_Assertions  :=
+                 Get_Overflow_Mode (Name_Assertions, Arg2);
             end if;
-         end Overflow_Checks;
+         end Overflow_Mode;
 
          -------------
          -- Ordered --
@@ -15541,7 +15541,7 @@ package body Sem_Prag is
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       => -1,
       Pragma_Optimize_Alignment             => -1,
-      Pragma_Overflow_Checks                =>  0,
+      Pragma_Overflow_Mode                  =>  0,
       Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           => -1,
