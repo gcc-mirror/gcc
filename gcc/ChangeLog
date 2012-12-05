@@ -1,3 +1,11 @@
+2012-12-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/54160
+	* config/t-darwin (darwin-c.o): Depend on $(CPP_INTERNAL_H).
+	* config/darwin-c.c (darwin_cpp_builtins): Only set __OBJC2__ when
+	in obj mode.
+	Include libcpp/internal.h.
+
 2012-12-05  Michael Eager  <eager@eagercon.com>
 
 	PR rtl-optimization/54739
