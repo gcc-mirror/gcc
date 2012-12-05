@@ -201,7 +201,7 @@ package Scans is
       --  This entry is used when scanning project files (where it represents
       --  an entire comment), and in preprocessing with the -C switch set
       --  (where it represents just the "--" of a comment). For the project
-      --  file case, the text of the comment is stored in
+      --  file case, the text of the comment is stored in Comment_Id.
 
       Tok_End_Of_Line,
       --  Represents an end of line. Not used during normal compilation scans

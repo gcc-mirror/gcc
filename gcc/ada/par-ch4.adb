@@ -1233,11 +1233,16 @@ package body Ch4 is
       Lparen_Sloc := Token_Ptr;
       T_Left_Paren;
 
+      --  Note on parentheses count. For cases like an if expression, the
+      --  parens here really count as real parentheses for the paren count,
+      --  so we adjust the paren count accordingly after scanning the expr.
+
       --  If expression
 
       if Token = Tok_If then
          Expr_Node := P_If_Expression;
          T_Right_Paren;
+         Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
          return Expr_Node;
 
       --  Case expression
@@ -1245,6 +1250,7 @@ package body Ch4 is
       elsif Token = Tok_Case then
          Expr_Node := P_Case_Expression;
          T_Right_Paren;
+         Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
          return Expr_Node;
 
       --  Quantified expression
@@ -1252,6 +1258,7 @@ package body Ch4 is
       elsif Token = Tok_For then
          Expr_Node := P_Quantified_Expression;
          T_Right_Paren;
+         Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
          return Expr_Node;
 
       --  Note: the mechanism used here of rescanning the initial expression

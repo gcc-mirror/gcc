@@ -41,8 +41,8 @@ package body Style is
    -----------------------
 
    --  If the check specs mode (-gnatys) is set, then all subprograms must
-   --  have specs unless they are parameterless procedures that are not child
-   --  units at the library level (i.e. they are possible main programs).
+   --  have specs unless they are parameterless procedures at the library
+   --  level (i.e. they are possible main programs).
 
    procedure Body_With_No_Spec (N : Node_Id) is
    begin
