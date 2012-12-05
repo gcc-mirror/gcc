@@ -1,3 +1,29 @@
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Handle properly a
+	completion in a grand-child unit when the parent type is itself
+	a private type in a child unit whose full view is itself a
+	derivation from a private type.
+
+2012-12-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case
+	Attribute_Valid): Remove code for issuing warning on Valid within
+	a predicate. Moved to Sem_Attr.  Remove with and use of Errout.
+	* sem_attr.adb (Analyze_Attribute, case Attribute_Valid):
+	Test for prefix's subtype having a predicate and issue warning
+	about infinite recursion if Valid occurs within the subtype's
+	predicate. Warning moved here from Exp_Attr.
+
+2012-12-05  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb: Minor comment addition.
+
+2012-12-05  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): In CodePeer mode, check
+	overflows by default, even when the user suppresses overflow checks.
+
 2012-12-05  Thomas Quinot  <quinot@adacore.com>
 
 	* err_vars.ads: Fix minor typo in comment.
