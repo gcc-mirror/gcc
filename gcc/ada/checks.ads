@@ -74,7 +74,7 @@ package Checks is
    --  is False, then the status of the check can be determined simply by
    --  examining Scope_Suppress, so this routine is not called in that case.
 
-   function Overflow_Check_Mode return Overflow_Check_Type;
+   function Overflow_Check_Mode return Overflow_Mode_Type;
    --  Returns current overflow checking mode, taking into account whether
    --  we are inside an assertion expression.
 

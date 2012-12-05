@@ -205,9 +205,9 @@ procedure Gnat1drv is
          --  prevents suppressing of overflow checks by default, in code down
          --  below.
 
-         if Suppress_Options.Overflow_Checks_General = Not_Set then
-            Suppress_Options.Overflow_Checks_General    := Strict;
-            Suppress_Options.Overflow_Checks_Assertions := Strict;
+         if Suppress_Options.Overflow_Mode_General = Not_Set then
+            Suppress_Options.Overflow_Mode_General    := Strict;
+            Suppress_Options.Overflow_Mode_Assertions := Strict;
          end if;
 
          --  Kill debug of generated code, since it messes up sloc values
@@ -323,9 +323,9 @@ procedure Gnat1drv is
          --  prevents suppressing of overflow checks by default, in code down
          --  below.
 
-         if Suppress_Options.Overflow_Checks_General = Not_Set then
-            Suppress_Options.Overflow_Checks_General    := Strict;
-            Suppress_Options.Overflow_Checks_Assertions := Strict;
+         if Suppress_Options.Overflow_Mode_General = Not_Set then
+            Suppress_Options.Overflow_Mode_General    := Strict;
+            Suppress_Options.Overflow_Mode_Assertions := Strict;
          end if;
 
          --  Kill debug of generated code, since it messes up sloc values
@@ -463,7 +463,7 @@ procedure Gnat1drv is
       --  If already set (by -gnato or above in Alfa or CodePeer mode) then we
       --  have nothing to do.
 
-      if Opt.Suppress_Options.Overflow_Checks_General /= Not_Set then
+      if Opt.Suppress_Options.Overflow_Mode_General /= Not_Set then
          null;
 
       --  Otherwise set overflow mode defaults
@@ -480,8 +480,8 @@ procedure Gnat1drv is
          --  By default set STRICT mode if -gnatg in effect
 
          if GNAT_Mode then
-            Suppress_Options.Overflow_Checks_General    := Strict;
-            Suppress_Options.Overflow_Checks_Assertions := Strict;
+            Suppress_Options.Overflow_Mode_General    := Strict;
+            Suppress_Options.Overflow_Mode_Assertions := Strict;
 
          --  If we have backend divide and overflow checks, then by default
          --  overflow checks are STRICT. Historically this code used to also
@@ -492,16 +492,16 @@ procedure Gnat1drv is
            and
              Targparm.Backend_Overflow_Checks_On_Target
          then
-            Suppress_Options.Overflow_Checks_General    := Strict;
-            Suppress_Options.Overflow_Checks_Assertions := Strict;
+            Suppress_Options.Overflow_Mode_General    := Strict;
+            Suppress_Options.Overflow_Mode_Assertions := Strict;
 
          --  Otherwise for now, default is STRICT mode. This may change in the
          --  future, but for now this is the compatible behavior with previous
          --  versions of GNAT.
 
          else
-            Suppress_Options.Overflow_Checks_General    := Strict;
-            Suppress_Options.Overflow_Checks_Assertions := Strict;
+            Suppress_Options.Overflow_Mode_General    := Strict;
+            Suppress_Options.Overflow_Mode_Assertions := Strict;
          end if;
       end if;
 

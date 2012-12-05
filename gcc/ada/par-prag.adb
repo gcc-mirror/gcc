@@ -1202,7 +1202,7 @@ begin
            Pragma_Ordered                        |
            Pragma_Optimize                       |
            Pragma_Optimize_Alignment             |
-           Pragma_Overflow_Checks                |
+           Pragma_Overflow_Mode                  |
            Pragma_Pack                           |
            Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |

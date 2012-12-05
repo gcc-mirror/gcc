@@ -1,3 +1,17 @@
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Update overflow description. Pragma Overflow_Checks
+	changed to Overflow_Mode.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, exp_ch4.adb, gnat1drv.adb, par-prag.adb, sem_prag.adb,
+	snames.ads-tmpl, switch-c.adb, types.ads, checks.adb: Change pragma
+	Overflow_Checks to Overflow_Mode.
+	Separate overflow checking from overflow mode.
+	Several name changes to reflect this separation.
+	CHECKED mode is renamed STRICT mode.
+
 2012-12-05  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Move setting of flags for
