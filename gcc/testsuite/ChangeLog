@@ -1,5 +1,9 @@
 2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* g++.dg/abi/mangle-neon-aarch64.C: New test.
+
+2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* g++.dg/abi/arm_va_list.C: Also test on aarch64*-*-*.
 
 2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
