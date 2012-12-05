@@ -2928,6 +2928,18 @@ package body Ch4 is
          Set_Expression
            (Alloc_Node,
             P_Subtype_Indication (Type_Node, Null_Exclusion_Present));
+
+         --  AI05-0104 :  an explicit null exclusion is not allowed for an
+         --  allocator without initialization. In previous versions of the
+         --  language it just raises constraint error.
+
+         if Ada_Version >= Ada_2012
+           and then Null_Exclusion_Present
+         then
+            Error_Msg_N
+              ("an allocator with a subtype indication "
+                & "cannot have a null exclusion", Alloc_Node);
+         end if;
       end if;
 
       return Alloc_Node;
