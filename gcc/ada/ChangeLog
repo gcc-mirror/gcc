@@ -1,5 +1,54 @@
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_eval.adb: Remove spurious warnings.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Build_Explicit_Dereference): Set properly
+	the type of the prefix prior to rewriting, because subsequent
+	legality checks examine the original node.
+
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add Contract_Cases to the canonical aspects map.
+	* aspects.ads: Add aspect Contract_Cases in the various aspect
+	tables.
+	* par-prag.adb: The parser does not need to perform special
+	actions for pragma Contract_Cases.
+	* sem_ch6.adb (Expand_Contract_Cases): New routine.
+	(Process_Contract_Cases): Convert pragma Contract_Cases into pre-
+	and post- condition checks that verify the runtime state of all
+	case guards and their corresponding consequences.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Perform
+	various legality checks on aspect Contract_Cases. The aspect is
+	transformed into a pragma.
+	* sem_prag.adb: Add an entry in table Sig_Flags for pragma
+	Contract_Cases.
+	(Analyze_Pragma): Perform various legality
+	checks on pragma Contract_Cases.  The pragma is associated with
+	the contract of the related subprogram.
+	(Chain_CTC): Omit pragma
+	Contract_Cases because it does not introduce a unique case name
+	and does not follow the syntax of Contract_Case and Test_Case.
+	* snames.ads-tmpl: Add new name Name_Contract_Cases. Add a
+	Pragma_Id for Contract_Cases.
+
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting.
+
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.ads: Add an entry for attribute Loop_Entry in the
+	Attribute_Impl_Def table.
+
+2012-12-05  Bob Duff  <duff@adacore.com>
+
+	* gnatchop.adb (Read_File): Avoid storage leak, and in most cases avoid
+	an extra copy of the string.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch5.adb (Preanalyze_Range): If the expression, which
 	denotes some domain of iteration, has a type with implicit
 	dereference, and does not have any iterable aspects, insert

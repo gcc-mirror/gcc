@@ -463,6 +463,7 @@ package Snames is
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
    Name_Complex_Representation         : constant Name_Id := N + $; -- GNAT
    Name_Contract_Case                  : constant Name_Id := N + $; -- GNAT
+   Name_Contract_Cases                 : constant Name_Id := N + $; -- GNAT
    Name_Controlled                     : constant Name_Id := N + $;
    Name_Convention                     : constant Name_Id := N + $;
    Name_CPP_Class                      : constant Name_Id := N + $; -- GNAT
@@ -1736,6 +1737,7 @@ package Snames is
       Pragma_Complete_Representation,
       Pragma_Complex_Representation,
       Pragma_Contract_Case,
+      Pragma_Contract_Cases,
       Pragma_Controlled,
       Pragma_Convention,
       Pragma_CPP_Class,
