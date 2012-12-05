@@ -6512,23 +6512,27 @@ package body Sem_Ch3 is
       then
          Append_Elmt (Derived_Type, Private_Dependents (Parent_Type));
 
+         --  Check for unusual case where a type completed by a private
+         --  derivation occurs within a package nested in a child unit, and
+         --  the parent is declared in an ancestor.
+
          if Is_Child_Unit (Scope (Current_Scope))
            and then Is_Completion
            and then In_Private_Part (Current_Scope)
            and then Scope (Parent_Type) /= Current_Scope
+
+           --  Note that if the parent has a completion in the private part,
+           --  (which is itself a derivation from some other private type)
+           --  it is that completion that is visible, there is no full view
+           --  available, and no special processing is needed.
+
            and then Present (Full_View (Parent_Type))
          then
-            --  This is the unusual case where a type completed by a private
-            --  derivation occurs within a package nested in a child unit, and
-            --  the parent is declared in an ancestor. In this case, the full
-            --  view of the parent type will become visible in the body of
-            --  the enclosing child, and only then will the current type be
-            --  possibly non-private. We build a underlying full view that
-            --  will be installed when the enclosing child body is compiled.
-            --  Note that if the parent has a completion in the private part,
-            --  (which is itself a derivation from some other private type)
-            --  it is that completion that is visible, there is no full view
-            --  view available, and no special processing is needed.
+            --  In this case, the full view of the parent type will become
+            --  visible in the body of the enclosing child, and only then will
+            --  the current type be possibly non-private. We build an
+            --  underlying full view that will be installed when the enclosing
+            --  child body is compiled.
 
             Full_Der :=
               Make_Defining_Identifier
