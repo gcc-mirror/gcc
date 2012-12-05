@@ -829,6 +829,7 @@ package body Par_SCO is
                SCO_Index := SCO_Index + 1;
             end loop;
          end if;
+
          SCO_Index := SCO_Index + 1;
       end loop;
 

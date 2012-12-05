@@ -1960,7 +1960,7 @@ package body Sem_Prag is
 
             if Nkind (Stmt) = N_Block_Statement then
                if (No (Declarations (Stmt))
-                     or else List_Containing (Prev) /= Declarations (Stmt))
+                    or else List_Containing (Prev) /= Declarations (Stmt))
                  and then
                    List_Containing (Prev) /=
                      Statements (Handled_Statement_Sequence (Stmt))
@@ -7012,6 +7012,9 @@ package body Sem_Prag is
          ------------
 
          --  pragma Assume (boolean_EXPRESSION);
+
+         --  This should share pragma Assert code ???
+         --  Run-time check is missing completely ???
 
          when Pragma_Assume => Assume : declare
          begin
