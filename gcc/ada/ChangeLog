@@ -1,5 +1,11 @@
 2012-12-05  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_dist.adb (Build_From_Any_Call, Build_To_Any_Call,
+	Build_TypeCode_Call): For a used-defined subtype, always go to
+	the first subtype of the base type.
+
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_dist.adb: Minor reformatting.
 
 2012-12-05  Tristan Gingold  <gingold@adacore.com>
