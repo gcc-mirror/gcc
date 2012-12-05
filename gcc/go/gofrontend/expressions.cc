@@ -6623,7 +6623,7 @@ class Builtin_call_expression : public Call_expression
   lower_make();
 
   bool
-  check_int_value(Expression*);
+  check_int_value(Expression*, bool is_length);
 
   // A pointer back to the general IR structure.  This avoids a global
   // variable, or passing it around everywhere.
@@ -6897,11 +6897,8 @@ Builtin_call_expression::lower_make()
   else
     {
       len_arg = *parg;
-      if (!this->check_int_value(len_arg))
-	{
-	  this->report_error(_("bad size for make"));
-	  return Expression::make_error(this->location());
-	}
+      if (!this->check_int_value(len_arg, true))
+	return Expression::make_error(this->location());
       if (len_arg->type()->integer_type() != NULL
 	  && len_arg->type()->integer_type()->bits() > uintptr_bits)
 	have_big_args = true;
@@ -6912,11 +6909,23 @@ Builtin_call_expression::lower_make()
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
-      if (!this->check_int_value(cap_arg))
+      if (!this->check_int_value(cap_arg, false))
+	return Expression::make_error(this->location());
+
+      Numeric_constant nclen;
+      Numeric_constant nccap;
+      unsigned long vlen;
+      unsigned long vcap;
+      if (len_arg->numeric_constant_value(&nclen)
+	  && cap_arg->numeric_constant_value(&nccap)
+	  && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
+	  && nccap.to_unsigned_long(&vcap) == Numeric_constant::NC_UL_VALID
+	  && vlen > vcap)
 	{
-	  this->report_error(_("bad capacity when making slice"));
+	  this->report_error(_("len larger than cap"));
 	  return Expression::make_error(this->location());
 	}
+
       if (cap_arg->type()->integer_type() != NULL
 	  && cap_arg->type()->integer_type()->bits() > uintptr_bits)
 	have_big_args = true;
@@ -6973,20 +6982,36 @@ Builtin_call_expression::lower_make()
 // function.
 
 bool
-Builtin_call_expression::check_int_value(Expression* e)
+Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 {
+  Numeric_constant nc;
+  if (e->numeric_constant_value(&nc))
+    {
+      unsigned long v;
+      switch (nc.to_unsigned_long(&v))
+	{
+	case Numeric_constant::NC_UL_VALID:
+	  return true;
+	case Numeric_constant::NC_UL_NOTINT:
+	  error_at(e->location(), "non-integer %s argument to make",
+		   is_length ? "len" : "cap");
+	  return false;
+	case Numeric_constant::NC_UL_NEGATIVE:
+	  error_at(e->location(), "negative %s argument to make",
+		   is_length ? "len" : "cap");
+	  return false;
+	case Numeric_constant::NC_UL_BIG:
+	  // We don't want to give a compile-time error for a 64-bit
+	  // value on a 32-bit target.
+	  return true;
+	}
+    }
+
   if (e->type()->integer_type() != NULL)
     return true;
 
-  // Check for a floating point constant with integer value.
-  Numeric_constant nc;
-  mpz_t ival;
-  if (e->numeric_constant_value(&nc) && nc.to_int(&ival))
-    {
-      mpz_clear(ival);
-      return true;
-    }
-
+  error_at(e->location(), "non-integer %s argument to make",
+	   is_length ? "len" : "cap");
   return false;
 }
 
