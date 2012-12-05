@@ -310,11 +310,13 @@ func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n i
 	var lroff _loff_t
 	var plroff *_loff_t
 	if roff != nil {
+		lroff = _loff_t(*roff)
 		plroff = &lroff
 	}
 	var lwoff _loff_t
 	var plwoff *_loff_t
 	if woff != nil {
+		lwoff = _loff_t(*woff)
 		plwoff = &lwoff
 	}
 	n, err = splice(rfd, plroff, wfd, plwoff, len, flags)
