@@ -545,9 +545,7 @@ begin
 
    --  Test for trailing -o switch
 
-   if Opt.Output_File_Name_Present
-     and then not Output_File_Name_Seen
-   then
+   if Opt.Output_File_Name_Present and then not Output_File_Name_Seen then
       Fail ("output file name missing after -o");
    end if;
 
@@ -559,9 +557,7 @@ begin
 
    --  Check that the binder file specified has extension .adb
 
-   if Opt.Output_File_Name_Present
-     and then Output_File_Name_Seen
-   then
+   if Opt.Output_File_Name_Present and then Output_File_Name_Seen then
       Check_Extensions : declare
          Length : constant Natural := Output_File_Name'Length;
          Last   : constant Natural := Output_File_Name'Last;

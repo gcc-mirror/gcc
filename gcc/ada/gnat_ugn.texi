@@ -6951,7 +6951,7 @@ the base type range.
 @item 2 = MINIMIZED
 In MINIMIZED mode, overflows in intermediate operations are avoided
 where possible by using a larger integer type for the computation
-(typically @code{Long_Long_Integer). Overflow checking ensures that
+(typically @code{Long_Long_Integer}). Overflow checking ensures that
 the result fits in this larger integer type.
 
 @item 3 = ELIMINATED
