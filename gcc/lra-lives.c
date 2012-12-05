@@ -915,6 +915,7 @@ lra_create_live_ranges (bool all_p)
   basic_block bb;
   int i, hard_regno, max_regno = max_reg_num ();
   int curr_point;
+  bool have_referenced_pseudos = false;
 
   timevar_push (TV_LRA_CREATE_LIVE_RANGES);
 
@@ -947,10 +948,24 @@ lra_create_live_ranges (bool all_p)
       lra_reg_info[i].call_p = false;
 #endif
       if (i >= FIRST_PSEUDO_REGISTER
-	  && lra_reg_info[i].nrefs != 0 && (hard_regno = reg_renumber[i]) >= 0)
-	lra_hard_reg_usage[hard_regno] += lra_reg_info[i].freq;
+	  && lra_reg_info[i].nrefs != 0)
+	{
+	  if ((hard_regno = reg_renumber[i]) >= 0)
+	    lra_hard_reg_usage[hard_regno] += lra_reg_info[i].freq;
+	  have_referenced_pseudos = true;
+	}
     }
   lra_free_copies ();
+ 
+  /* Under some circumstances, we can have functions without pseudo
+     registers.  For such functions, lra_live_max_point will be 0,
+     see e.g. PR55604, and there's nothing more to do for us here.  */
+  if (! have_referenced_pseudos)
+    {
+      timevar_pop (TV_LRA_CREATE_LIVE_RANGES);
+      return;
+    }
+
   pseudos_live = sparseset_alloc (max_regno);
   pseudos_live_through_calls = sparseset_alloc (max_regno);
   pseudos_live_through_setjumps = sparseset_alloc (max_regno);
@@ -973,6 +988,7 @@ lra_create_live_ranges (bool all_p)
     }
   free (post_order_rev_cfg);
   lra_live_max_point = curr_point;
+  gcc_checking_assert (lra_live_max_point > 0);
   if (lra_dump_file != NULL)
     print_live_ranges (lra_dump_file);
   /* Clean up.	*/

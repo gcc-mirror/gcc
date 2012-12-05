@@ -1,5 +1,11 @@
 2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR rtl-optimization/55604
+	* lra-lives.c (lra_create_live_ranges): If there are no referenced
+	pseudos left, do not compute live ranges.
+
+2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* doc/tm.texi.in (TARGET_CLASS_LIKELY_SPILLED_P): Update documentation.
 	* doc/tm.texi: Regenerate.
 	* regs.h (REG_LIVE_LENGTH): Update comments to not refer to no longer
