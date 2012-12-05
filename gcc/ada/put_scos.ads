@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                             P U T _ S C O S                               --
+--                              P U T _ S C O S                             --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 --  the ALI file. The interface allows control over the destination of the
 --  output, so that this routine can also be used for debugging purposes.
 
+with Namet; use Namet;
 with Types; use Types;
 
 generic
@@ -42,6 +43,9 @@ generic
    with procedure Write_Info_Initiate (Key : Character) is <>;
    --  Initiates write of new line to output file, the parameter is the
    --  keyword character for the line.
+
+   with procedure Write_Info_Name (Nam : Name_Id) is <>;
+   --  Outputs one name
 
    with procedure Write_Info_Nat (N : Nat) is <>;
    --  Writes image of N to output file with no leading or trailing blanks

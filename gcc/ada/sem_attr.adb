@@ -3847,7 +3847,8 @@ package body Sem_Attr is
 
          if not In_Loop_Assertion then
             Error_Attr
-              ("attribute % must appear within pragma Loop_Assertion", N);
+              ("attribute % must appear within pragma Loop_Variant or " &
+               "Loop_Invariant", N);
          end if;
 
          --  A Loop_Entry that applies to a given loop statement shall not

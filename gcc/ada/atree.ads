@@ -107,7 +107,7 @@ package Atree is
 
    --                 Note: the required parentheses surrounding conditional
    --                 and quantified expressions count as a level of parens
-   --                 for this purposes, so e.g. in X := (if A then B else C);
+   --                 for this purpose, so e.g. in X := (if A then B else C);
    --                 Paren_Count for the right side will be 1.
 
    --   Comes_From_Source

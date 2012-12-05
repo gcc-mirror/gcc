@@ -2181,13 +2181,6 @@ package body Sem_Prag is
               (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
-         --  For a pragma in the extended main source unit, record enabled
-         --  status in SCO (note: there is never any SCO for an instance).
-
-         if Check_Enabled (Pname) then
-            Set_SCO_Pragma_Enabled (Loc);
-         end if;
-
          --  If we are within an inlined body, the legality of the pragma
          --  has been checked already.
 
@@ -7407,7 +7400,7 @@ package body Sem_Prag is
 
             Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
 
-            if Check_On then
+            if Check_On and then not Split_PPC (N) then
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
