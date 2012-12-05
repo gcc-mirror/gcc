@@ -493,14 +493,14 @@ package body Par_SCO is
 
       begin
          case T is
-            when 'I' | 'E' | 'W' | 'a' =>
+            when 'I' | 'E' | 'W' | 'a' | 'A' =>
 
                --  For IF, EXIT, WHILE, or aspects, the token SLOC is that of
                --  the parent of the expression.
 
                Loc := Sloc (Parent (N));
 
-               if T = 'a' then
+               if T = 'a' or else T = 'A' then
                   Nam := Chars (Identifier (Parent (N)));
                end if;
 
@@ -1378,11 +1378,19 @@ package body Par_SCO is
       procedure Traverse_Aspects (N : Node_Id) is
          AN : Node_Id;
          AE : Node_Id;
+         C1 : Character;
 
       begin
          AN := First (Aspect_Specifications (N));
          while Present (AN) loop
             AE := Expression (AN);
+
+            --  SCOs are generated before semantic analysis/expansion:
+            --  PPCs are not split yet.
+
+            pragma Assert (not Split_PPC (AN));
+
+            C1 := ASCII.NUL;
 
             case Get_Aspect_Id (Chars (Identifier (AN))) is
 
@@ -1394,37 +1402,24 @@ package body Par_SCO is
                when Aspect_Pre               |
                     Aspect_Precondition      |
                     Aspect_Post              |
-                    Aspect_Postcondition     =>
+                    Aspect_Postcondition     |
+                    Aspect_Invariant         =>
 
-                  --  SCOs are generated before semantic analysis/expansion:
-                  --  PPCs are not split yet.
-
-                  pragma Assert (not Split_PPC (AN));
-
-                  --  A Pre/Post aspect will be rewritten into a pragma
-                  --  Precondition/Postcondition with the same sloc.
-
-                  pragma Assert (Current_Pragma_Sloc = No_Location);
-
-                  Current_Pragma_Sloc := Sloc (AN);
-
-                  --  Create the decision as potentially disabled aspect ('a').
-                  --  Set_SCO_Pragma_Enabled will subsequently switch to 'A'.
-
-                  Process_Decisions_Defer (AE, 'a');
-                  Current_Pragma_Sloc := No_Location;
+                  C1 := 'a';
 
                --  Aspects whose checks are generated in client units,
                --  regardless of whether or not the check is activated in the
-               --  unit which contains the declaration.
+               --  unit which contains the declaration: create decision as
+               --  unconditionally enabled aspect (but still make a pragma
+               --  entry since Set_SCO_Pragma_Enabled will be called when
+               --  analyzing actual checks, possibly in other units).
 
                when Aspect_Predicate         |
                     Aspect_Static_Predicate  |
                     Aspect_Dynamic_Predicate |
-                    Aspect_Invariant         |
                     Aspect_Type_Invariant    =>
 
-                  Process_Decisions_Defer (AE, 'A');
+                  C1 := 'A';
 
                --  Other aspects: just process any decision nested in the
                --  aspect expression.
@@ -1432,10 +1427,22 @@ package body Par_SCO is
                when others =>
 
                   if Has_Decision (AE) then
-                     Process_Decisions_Defer (AE, 'X');
+                     C1 := 'X';
                   end if;
 
             end case;
+
+            if C1 /= ASCII.NUL then
+               pragma Assert (Current_Pragma_Sloc = No_Location);
+
+               if C1 = 'a' or else C1 = 'A' then
+                  Current_Pragma_Sloc := Sloc (AN);
+               end if;
+
+               Process_Decisions_Defer (AE, C1);
+
+               Current_Pragma_Sloc := No_Location;
+            end if;
 
             Next (AN);
          end loop;

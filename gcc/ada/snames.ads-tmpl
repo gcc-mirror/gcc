@@ -362,6 +362,7 @@ package Snames is
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
+   Name_Assume                         : constant Name_Id := N + $; -- GNAT
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_Attribute_Definition           : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -1660,6 +1661,7 @@ package Snames is
       Pragma_Ada_2012,
       Pragma_Annotate,
       Pragma_Assertion_Policy,
+      Pragma_Assume,
       Pragma_Assume_No_Invalid_Values,
       Pragma_Attribute_Definition,
       Pragma_C_Pass_By_Copy,

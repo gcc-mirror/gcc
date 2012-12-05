@@ -1,3 +1,23 @@
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_Aspects): Ensure we always have
+	an entry in the sloc -> SCO map for invariants, since
+	Set_SCO_Pragma_Enabled is called with that sloc when checks
+	are enabled.
+
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par-prag.adb: Checks and processing of pragma Assume are
+	carried out by Sem_Prag.
+	* sem_prag.adb (Analyze_Pragma): Check the legality of pragma
+	Assume.
+	* snames.ads-tmpl: Add new name Assume. Add a pragma identifier
+	for Assume.
+
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* aspects.ads, aspects.adb: Add aspect Relative_Deadline.

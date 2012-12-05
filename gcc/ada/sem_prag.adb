@@ -2233,6 +2233,18 @@ package body Sem_Prag is
               (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
+         --  For a pragma in the extended main source unit, record enabled
+         --  status in SCO.
+
+         --  This may seem redundant with the call to Check_Enabled occurring
+         --  later on when the pragma is rewritten into a pragma Check but
+         --  is actually required in the case of a postcondition within a
+         --  generic.
+
+         if Check_Enabled (Pname) and then not Split_PPC (N) then
+            Set_SCO_Pragma_Enabled (Loc);
+         end if;
+
          --  If we are within an inlined body, the legality of the pragma
          --  has been checked already.
 
@@ -6994,6 +7006,21 @@ package body Sem_Prag is
             Set_Next_Pragma (N, Opt.Check_Policy_List);
             Opt.Check_Policy_List := N;
          end Assertion_Policy;
+
+         ------------
+         -- Assume --
+         ------------
+
+         --  pragma Assume (boolean_EXPRESSION);
+
+         when Pragma_Assume => Assume : declare
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            Analyze_And_Resolve (Expression (Arg1), Any_Boolean);
+         end Assume;
 
          ------------------------------
          -- Assume_No_Invalid_Values --
@@ -15668,6 +15695,7 @@ package body Sem_Prag is
       Pragma_Assert                         => -1,
       Pragma_Assert_And_Cut                 => -1,
       Pragma_Assertion_Policy               =>  0,
+      Pragma_Assume                         =>  0,
       Pragma_Assume_No_Invalid_Values       =>  0,
       Pragma_Attribute_Definition           => +3,
       Pragma_Asynchronous                   => -1,
