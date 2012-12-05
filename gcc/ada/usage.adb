@@ -232,6 +232,11 @@ begin
    Write_Switch_Char ("eS");
    Write_Line ("Generate SCO (Source Coverage Obligation) information");
 
+   --  Line for -gnatet switch
+
+   Write_Switch_Char ("et");
+   Write_Line ("Generate target dependent information in ALI file");
+
    --  Line for -gnateV switch
 
    Write_Switch_Char ("eV");

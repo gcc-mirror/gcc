@@ -3795,15 +3795,17 @@ package body Sem_Attr is
          Stmt := N;
          while Present (Stmt) loop
 
-            --  Locate the enclosing Loop_Assertion pragma (if any). Note that
-            --  when Loop_Assertion is expanded, we must look for an Assertion
-            --  pragma.
+            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma (if
+            --  any). Note that when these two are expanded, we must look for
+            --  an Assertion pragma.
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
               and then
                 (Pragma_Name (Original_Node (Stmt)) = Name_Assert
                    or else
-                 Pragma_Name (Original_Node (Stmt)) = Name_Loop_Assertion)
+                 Pragma_Name (Original_Node (Stmt)) = Name_Loop_Invariant
+                   or else
+                 Pragma_Name (Original_Node (Stmt)) = Name_Loop_Variant)
             then
                In_Loop_Assertion := True;
 

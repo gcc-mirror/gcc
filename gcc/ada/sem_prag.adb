@@ -618,6 +618,10 @@ package body Sem_Prag is
       --  Common processing for first argument of pragma Interrupt_Handler or
       --  pragma Attach_Handler.
 
+      procedure Check_Loop_Invariant_Variant_Placement;
+      --  Verify whether pragma Loop_Invariant or pragma Loop_Variant appear
+      --  immediately within the statements of the related loop.
+
       procedure Check_Is_In_Decl_Part_Or_Package_Spec;
       --  Check that pragma appears in a declarative part, or in a package
       --  specification, i.e. that it does not occur in a statement sequence
@@ -1911,6 +1915,44 @@ package body Sem_Prag is
             end if;
          end if;
       end Check_Interrupt_Or_Attach_Handler;
+
+      --------------------------------------------
+      -- Check_Loop_Invariant_Variant_Placement --
+      --------------------------------------------
+
+      procedure Check_Loop_Invariant_Variant_Placement is
+         Loop_Stmt : Node_Id;
+
+      begin
+         --  Locate the enclosing loop statement (if any)
+
+         Loop_Stmt := N;
+         while Present (Loop_Stmt) loop
+            if Nkind (Loop_Stmt) = N_Loop_Statement then
+               exit;
+
+            --  Prevent the search from going too far
+
+            elsif Nkind_In (Loop_Stmt, N_Entry_Body,
+                                       N_Package_Body,
+                                       N_Package_Declaration,
+                                       N_Protected_Body,
+                                       N_Subprogram_Body,
+                                       N_Task_Body)
+            then
+               Error_Pragma ("pragma % must appear inside a loop statement");
+               return;
+
+            else
+               Loop_Stmt := Parent (Loop_Stmt);
+            end if;
+         end loop;
+
+         if List_Containing (N) /= Statements (Loop_Stmt) then
+            Error_Pragma
+              ("pragma % must occur immediately in the statements of a loop");
+         end if;
+      end Check_Loop_Invariant_Variant_Placement;
 
       -------------------------------------------
       -- Check_Is_In_Decl_Part_Or_Package_Spec --
@@ -11453,74 +11495,17 @@ package body Sem_Prag is
          end Long_Float;
 
          --------------------
-         -- Loop_Assertion --
+         -- Loop_Invariant --
          --------------------
 
-         --  pragma Loop_Assertion
-         --        (  [Invariant =>] boolean_Expression );
-         --     |  ( [[Invariant =>] boolean_Expression ,]
-         --            Variant   =>
-         --              ( TERMINATION_VARIANT {, TERMINATION_VARIANT ) );
+         --  pragma Loop_Invariant ( boolean_EXPRESSION );
 
-         --  TERMINATION_VARIANT ::= CHANGE_MODIFIER => discrete_EXPRESSION
-
-         --  CHANGE_MODIFIER ::= Increasing | Decreasing
-
-         when Pragma_Loop_Assertion => Loop_Assertion : declare
-            procedure Check_Variant (Arg : Node_Id);
-            --  Verify the legality of a variant
-
-            -------------------
-            -- Check_Variant --
-            -------------------
-
-            procedure Check_Variant (Arg : Node_Id) is
-               Expr : constant Node_Id := Expression (Arg);
-
-            begin
-               --  Variants appear in aggregate form
-
-               if Nkind (Expr) = N_Aggregate then
-                  declare
-                     Comp  : Node_Id;
-                     Extra : Node_Id;
-                     Modif : Node_Id;
-
-                  begin
-                     Comp := First (Component_Associations (Expr));
-                     while Present (Comp) loop
-                        Modif := First (Choices (Comp));
-                        Extra := Next (Modif);
-
-                        Check_Arg_Is_One_Of
-                          (Modif, Name_Decreasing, Name_Increasing);
-
-                        if Present (Extra) then
-                           Error_Pragma_Arg
-                             ("only one modifier allowed in argument", Expr);
-                        end if;
-
-                        Preanalyze_And_Resolve
-                          (Expression (Comp), Any_Discrete);
-
-                        Next (Comp);
-                     end loop;
-                  end;
-               else
-                  Error_Pragma_Arg
-                    ("expression on variant must be an aggregate", Expr);
-               end if;
-            end Check_Variant;
-
-            --  Local variables
-
-            Stmt : Node_Id;
-
-         --  Start of processing for Loop_Assertion
-
+         when Pragma_Loop_Invariant => Loop_Invariant : declare
          begin
             GNAT_Pragma;
             S14_Pragma;
+            Check_Arg_Count (1);
+            Check_Loop_Invariant_Variant_Placement;
 
             --  Completely ignore if disabled
 
@@ -11530,56 +11515,66 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  Verify that the pragma appears inside a loop
+            Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
 
-            Stmt := N;
-            while Present (Stmt) and then Nkind (Stmt) /= N_Loop_Statement loop
-               Stmt := Parent (Stmt);
-            end loop;
+            --  Transform pagma Loop_Invariant into an equivalent pragma Check.
+            --  Generate:
+            --    pragma Check (Loop_Invaraint, Arg1);
 
-            if No (Stmt) then
-               Error_Pragma ("pragma % must appear inside a loop");
-            end if;
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Check,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_Loop_Invariant)),
+                  Relocate_Node (Arg1))));
 
+            Analyze (N);
+         end Loop_Invariant;
+
+         ------------------
+         -- Loop_Variant --
+         ------------------
+
+         --  pragma Loop_Variant
+         --         ( LOOP_VARIANT_ITEM {, LOOP_VARIANT_ITEM } );
+
+         --  LOOP_VARIANT_ITEM ::= CHANGE_DIRECTION => discrete_EXPRESSION
+
+         --  CHANGE_DIRECTION ::= Increases | Decreases
+
+         when Pragma_Loop_Variant => Loop_Variant : declare
+            Variant : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
             Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments  (2);
+            Check_Loop_Invariant_Variant_Placement;
 
-            --  Process the first argument
+            --  Completely ignore if disabled
 
-            if Chars (Arg1) = Name_Variant then
-               Check_Variant (Arg1);
-
-            elsif Chars (Arg1) = No_Name
-              or else Chars (Arg1) = Name_Invariant
-            then
-               Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
-
-            else
-               Error_Pragma_Arg ("argument not allowed in pragma %", Arg1);
+            if Check_Disabled (Pname) then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
             end if;
 
-            --  Process the second argument
+            --  Process all increasing / decreasing expressions
 
-            if Present (Arg2) then
-               if Chars (Arg2) = Name_Variant then
-                  if Chars (Arg1) = Name_Variant then
-                     Error_Pragma ("only one variant allowed in pragma %");
-                  else
-                     Check_Variant (Arg2);
-                  end if;
-
-               elsif Chars (Arg2) = Name_Invariant then
-                  if Chars (Arg1) = Name_Variant then
-                     Error_Pragma_Arg ("invariant must precede variant", Arg2);
-                  else
-                     Error_Pragma ("only one invariant allowed in pragma %");
-                  end if;
-
-               else
-                  Error_Pragma_Arg ("argument not allowed in pragma %", Arg2);
+            Variant := First (Pragma_Argument_Associations (N));
+            while Present (Variant) loop
+               if Chars (Variant) /= Name_Decreases
+                 and then Chars (Variant) /= Name_Increases
+               then
+                  Error_Pragma_Arg ("wrong change modifier", Variant);
                end if;
-            end if;
-         end Loop_Assertion;
+
+               Preanalyze_And_Resolve (Expression (Variant), Any_Discrete);
+
+               Next (Variant);
+            end loop;
+         end Loop_Variant;
 
          -----------------------
          -- Machine_Attribute --
@@ -15707,7 +15702,8 @@ package body Sem_Prag is
       Pragma_Lock_Free                      => -1,
       Pragma_Locking_Policy                 => -1,
       Pragma_Long_Float                     => -1,
-      Pragma_Loop_Assertion                 => -1,
+      Pragma_Loop_Invariant                 => -1,
+      Pragma_Loop_Variant                   => -1,
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,
