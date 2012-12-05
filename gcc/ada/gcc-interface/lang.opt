@@ -28,30 +28,33 @@ Ada
 Language
 AdaWhy
 
+Language
+AdaSCIL
+
 -all-warnings
-Ada AdaWhy Alias(Wall)
+Ada AdaWhy AdaSCIL Alias(Wall)
 
 -include-barrier
-Ada AdaWhy Alias(I, -)
+Ada AdaWhy AdaSCIL Alias(I, -)
 
 -include-directory
-Ada AdaWhy Separate Alias(I)
+Ada AdaWhy AdaSCIL Separate Alias(I)
 
 -include-directory=
-Ada AdaWhy Joined Alias(I)
+Ada AdaWhy AdaSCIL Joined Alias(I)
 
 -no-standard-includes
-Ada AdaWhy Alias(nostdinc)
+Ada AdaWhy AdaSCIL Alias(nostdinc)
 
 -no-standard-libraries
-Ada AdaWhy Alias(nostdlib)
+Ada AdaWhy AdaSCIL Alias(nostdlib)
 
 I
-Ada AdaWhy Joined Separate
+Ada AdaWhy AdaSCIL Joined Separate
 ; Documented in C but it should be: -I <dir>.	Add <dir> to the end of the main source path
 
 Wall
-Ada AdaWhy
+Ada AdaWhy AdaSCIL
 Enable most warning messages
 
 k8
@@ -59,27 +62,27 @@ Driver
 Synonym of -gnatk8
 
 nostdinc
-Ada AdaWhy RejectNegative
+Ada AdaWhy AdaSCIL RejectNegative
 ; Documented in C but it should be: Do not look for source files in standard path
 
 nostdlib
-Ada AdaWhy
+Ada AdaWhy AdaSCIL
 Do not look for object files in standard path
 
 fRTS=
-Ada AdaWhy Joined RejectNegative
+Ada AdaWhy AdaSCIL Joined RejectNegative
 Select the runtime
 
 gant
-Ada AdaWhy Joined Undocumented
+Ada AdaWhy AdaSCIL Joined Undocumented
 Catch typos
 
 gnatO
-Ada AdaWhy Separate
+Ada AdaWhy AdaSCIL Separate
 Set name of output ALI file (internal switch)
 
 gnat
-Ada AdaWhy Joined
+Ada AdaWhy AdaSCIL Joined
 -gnat<options>	Specify options to GNAT
 
 ; This comment is to ensure we retain the blank line above.
