@@ -10077,7 +10077,7 @@ package body Exp_Dist is
                --  Integer types (walk back to the base type)
 
                elsif U_Type = RTE (RE_Integer_8) then
-                     Lib_RE := RE_TC_I8;
+                  Lib_RE := RE_TC_I8;
 
                elsif U_Type = RTE (RE_Integer_16) then
                   Lib_RE := RE_TC_I16;
@@ -10188,7 +10188,7 @@ package body Exp_Dist is
             --  Make a return statement that calls TC_Build with the given
             --  typecode kind, and the constructed parameters list.
 
-            procedure Return_Alias_TypeCode (Base_TypeCode  : Node_Id);
+            procedure Return_Alias_TypeCode (Base_TypeCode : Node_Id);
             --  Return a typecode that is a TC_Alias for the given typecode
 
             --------------------------
@@ -10258,7 +10258,7 @@ package body Exp_Dist is
             ---------------------------
 
             procedure Return_Alias_TypeCode
-              (Base_TypeCode  : Node_Id)
+              (Base_TypeCode : Node_Id)
             is
             begin
                Add_TypeCode_Parameter (Base_TypeCode, Parameters);
