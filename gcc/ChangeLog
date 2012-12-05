@@ -1,3 +1,30 @@
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_split_combinev16qi): New.
+	(aarch64_expand_vec_perm): Likewise.
+	(aarch64_expand_vec_perm_const): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_perm_const<mode>): New.
+	(vec_perm<mode>): Likewise.
+	(aarch64_tbl1<mode>): Likewise.
+	(aarch64_tbl2v16qi): Likewise.
+	(aarch64_combinev16qi): New.
+	* config/aarch64/aarch64.c
+	(aarch64_vectorize_vec_perm_const_ok): New.
+	(aarch64_split_combinev16qi): Likewise.
+	(MAX_VECT_LEN): Define.
+	(expand_vec_perm_d): New.
+	(aarch64_expand_vec_perm_1): Likewise.
+	(aarch64_expand_vec_perm): Likewise.
+	(aarch64_evpc_tbl): Likewise.
+	(aarch64_expand_vec_perm_const_1): Likewise.
+	(aarch64_expand_vec_perm_const): Likewise.
+	(aarch64_vectorize_vec_perm_const_ok): Likewise.
+	(TARGET_VECTORIZE_VEC_PERM_CONST_OK): Likewise.
+	* config/aarch64/iterators.md
+	(unspec): Add UNSPEC_TBL, UNSPEC_CONCAT.
+	(V_cmp_result): Add mapping for V2DF.
+
 2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_mangle_map_entry): New
