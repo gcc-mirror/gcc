@@ -180,8 +180,8 @@ procedure Gnat1drv is
          Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
          Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
 
-         --  Suppress overflow, division by zero and access checks since they
-         --  are handled implicitly by CodePeer.
+         --  Suppress division by zero and access checks since they are handled
+         --  implicitly by CodePeer.
 
          --  Turn off dynamic elaboration checks: generates inconsistencies in
          --  trees between specs compiled as part of a main unit or as part of
@@ -200,6 +200,13 @@ procedure Gnat1drv is
             others            => False);
 
          Dynamic_Elaboration_Checks := False;
+
+         --  Set STRICT mode for overflow checks if not set explicitly
+
+         if Suppress_Options.Overflow_Checks_General = Not_Set then
+            Suppress_Options.Overflow_Checks_General    := Strict;
+            Suppress_Options.Overflow_Checks_Assertions := Strict;
+         end if;
 
          --  Kill debug of generated code, since it messes up sloc values
 
@@ -328,7 +335,8 @@ procedure Gnat1drv is
 
       --  Set proper status for overflow check mechanism
 
-      --  If already set (by -gnato) then we have nothing to do
+      --  If already set (by -gnato or above in CodePeer mode) then we have
+      --  nothing to do.
 
       if Opt.Suppress_Options.Overflow_Checks_General /= Not_Set then
          null;

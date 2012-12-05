@@ -5557,6 +5557,21 @@ package body Sem_Attr is
             Error_Attr_P ("object for % attribute must be of scalar type");
          end if;
 
+         --  If the attribute appears within the subtype's own predicate
+         --  function, then issue a warning that this will cause infinite
+         --  recursion.
+
+         declare
+            Pred_Func : constant Entity_Id := Predicate_Function (P_Type);
+
+         begin
+            if Present (Pred_Func) and then Current_Scope = Pred_Func then
+               Error_Msg_N
+                 ("attribute Valid requires a predicate check?", N);
+               Error_Msg_N ("\and will result in infinite recursion?", N);
+            end if;
+         end;
+
          Set_Etype (N, Standard_Boolean);
 
       -------------------
