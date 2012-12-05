@@ -257,7 +257,6 @@ package Aspects is
 
    No_Duplicates_Allowed : constant array (Aspect_Id) of Boolean :=
                              (Aspect_Contract_Case  => False,
-                              Aspect_Contract_Cases => False,
                               Aspect_Test_Case      => False,
                               others                => True);
 

@@ -7761,11 +7761,11 @@ package body Sem_Prag is
          -- Contract_Cases --
          --------------------
 
-         --  pragma Contract_Cases (POST_CASE_LIST);
+         --  pragma Contract_Cases (CONTRACT_CASE_LIST);
 
-         --  POST_CASE_LIST ::= POST_CASE {, POST_CASE}
+         --  CONTRACT_CASE_LIST ::= CONTRACT_CASE {, CONTRACT_CASE}
 
-         --  POST_CASE ::= CASE_GUARD => CONSEQUENCE
+         --  CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
 
          --  CASE_GUARD ::= boolean_EXPRESSION | others
 
@@ -7786,11 +7786,22 @@ package body Sem_Prag is
                CTC  : Node_Id;
 
             begin
+               Check_Duplicate_Pragma (Subp);
                CTC := Spec_CTC_List (Contract (Subp));
                while Present (CTC) loop
                   if Chars (Pragma_Identifier (CTC)) = Pname then
-                     Error_Pragma ("pragma % already in use");
-                     return;
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc := Sloc (CTC);
+
+                     if From_Aspect_Specification (CTC) then
+                        Error_Msg_NE
+                          ("aspect% for & previously given#", N, Subp);
+                     else
+                        Error_Msg_NE
+                          ("pragma% for & duplicates pragma#", N, Subp);
+                     end if;
+
+                     raise Pragma_Exit;
                   end if;
 
                   CTC := Next_Pragma (CTC);
@@ -7804,12 +7815,12 @@ package body Sem_Prag is
 
             --  Local variables
 
-            Case_Guard  : Node_Id;
-            Decl        : Node_Id;
-            Extra       : Node_Id;
-            Others_Seen : Boolean := False;
-            Post_Case   : Node_Id;
-            Subp_Decl   : Node_Id;
+            Case_Guard    : Node_Id;
+            Decl          : Node_Id;
+            Extra         : Node_Id;
+            Others_Seen   : Boolean := False;
+            Contract_Case : Node_Id;
+            Subp_Decl     : Node_Id;
 
          --  Start of processing for Contract_Cases
 
@@ -7866,30 +7877,32 @@ package body Sem_Prag is
                end if;
             end loop;
 
-            --  All post cases must appear as an aggregate
+            --  All contract cases must appear as an aggregate
 
             if Nkind (Expression (Arg1)) /= N_Aggregate then
                Error_Pragma ("wrong syntax for pragma %");
                return;
             end if;
 
-            --  Verify the legality of individual post cases
+            --  Verify the legality of individual contract cases
 
-            Post_Case := First (Component_Associations (Expression (Arg1)));
-            while Present (Post_Case) loop
-               if Nkind (Post_Case) /= N_Component_Association then
-                  Error_Pragma_Arg ("wrong syntax in post case", Post_Case);
+            Contract_Case :=
+              First (Component_Associations (Expression (Arg1)));
+            while Present (Contract_Case) loop
+               if Nkind (Contract_Case) /= N_Component_Association then
+                  Error_Pragma_Arg
+                    ("wrong syntax in contract case", Contract_Case);
                   return;
                end if;
 
-               Case_Guard := First (Choices (Post_Case));
+               Case_Guard := First (Choices (Contract_Case));
 
-               --  Each post case must have exactly on case guard
+               --  Each contract case must have exactly on case guard
 
                Extra := Next (Case_Guard);
                if Present (Extra) then
                   Error_Pragma_Arg
-                    ("post case may have only one case guard", Extra);
+                    ("contract case may have only one case guard", Extra);
                   return;
                end if;
 
@@ -7911,7 +7924,7 @@ package body Sem_Prag is
                   return;
                end if;
 
-               Next (Post_Case);
+               Next (Contract_Case);
             end loop;
 
             Chain_Contract_Cases (Subp_Decl);
@@ -11517,9 +11530,11 @@ package body Sem_Prag is
 
             Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
 
-            --  Transform pagma Loop_Invariant into an equivalent pragma Check.
+            --  Transform pragma Loop_Invariant into equivalent pragma Check
             --  Generate:
             --    pragma Check (Loop_Invaraint, Arg1);
+
+            --  Seems completely wrong to hijack pragma Check this way ???
 
             Rewrite (N,
               Make_Pragma (Loc,

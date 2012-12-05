@@ -140,6 +140,9 @@ package body Exp_Attr is
    --  Handles expansion of Pred or Succ attributes for case of non-real
    --  operand with overflow checking required.
 
+   procedure Expand_Update_Attribute (N : Node_Id);
+   --  Handle the expansion of attribute Update
+
    function Get_Index_Subtype (N : Node_Id) return Entity_Id;
    --  Used for Last, Last, and Length, when the prefix is an array type.
    --  Obtains the corresponding index subtype.
@@ -5237,6 +5240,13 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end UET_Address;
 
+      ------------
+      -- Update --
+      ------------
+
+      when Attribute_Update =>
+         Expand_Update_Attribute (N);
+
       ---------------
       -- VADS_Size --
       ---------------
@@ -6159,6 +6169,197 @@ package body Exp_Attr is
              Reason => CE_Overflow_Check_Failed));
       end if;
    end Expand_Pred_Succ;
+
+   -----------------------------
+   -- Expand_Update_Attribute --
+   -----------------------------
+
+   procedure Expand_Update_Attribute (N : Node_Id) is
+      procedure Process_Component_Or_Element_Update
+        (Temp : Entity_Id;
+         Comp : Node_Id;
+         Expr : Node_Id;
+         Typ  : Entity_Id);
+      --  Generate the statements necessary to update a single component or an
+      --  element of the prefix. The code is inserted before the attribute N.
+      --  Temp denotes the entity of the anonymous object created to reflect
+      --  the changes in values. Comp is the component/index expression to be
+      --  updated. Expr is an expression yielding the new value of Comp. Typ
+      --  is the type of the prefix of attribute Update.
+
+      procedure Process_Range_Update
+        (Temp : Entity_Id;
+         Comp : Node_Id;
+         Expr : Node_Id);
+      --  Generate the statements necessary to update a slice of the prefix.
+      --  The code is inserted before the attribute N. Temp denotes the entity
+      --  of the anonymous object created to reflect the changes in values.
+      --  Comp is range of the slice to be updated. Expr is an expression
+      --  yielding the new value of Comp.
+
+      -----------------------------------------
+      -- Process_Component_Or_Element_Update --
+      -----------------------------------------
+
+      procedure Process_Component_Or_Element_Update
+        (Temp : Entity_Id;
+         Comp : Node_Id;
+         Expr : Node_Id;
+         Typ  : Entity_Id)
+      is
+         Loc   : constant Source_Ptr := Sloc (Comp);
+         Exprs : List_Id;
+         LHS   : Node_Id;
+
+      begin
+         --  An array element may be modified by the following relations
+         --  depending on the number of dimensions:
+
+         --     1 => Expr           --  one dimensional update
+         --    (1, ..., N) => Expr  --  multi dimensional update
+
+         --  The above forms are converted in assignment statements where the
+         --  left hand side is an indexed component:
+
+         --    Temp (1) := Expr;          --  one dimensional update
+         --    Temp (1, ..., N) := Expr;  --  multi dimensional update
+
+         if Is_Array_Type (Typ) then
+
+            --  The index expressions of a multi dimensional array update
+            --  appear as an aggregate.
+
+            if Nkind (Comp) = N_Aggregate then
+               Exprs := New_Copy_List_Tree (Expressions (Comp));
+            else
+               Exprs := New_List (Relocate_Node (Comp));
+            end if;
+
+            LHS :=
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Reference_To (Temp, Loc),
+                Expressions => Exprs);
+
+         --  A record component update appears in the following form:
+
+         --    Comp => Expr
+
+         --  The above relation is transformed into an assignment statement
+         --  where the left hand side is a selected component:
+
+         --    Temp.Comp := Expr;
+
+         else pragma Assert (Is_Record_Type (Typ));
+            LHS :=
+              Make_Selected_Component (Loc,
+                Prefix        => New_Reference_To (Temp, Loc),
+                Selector_Name => Relocate_Node (Comp));
+         end if;
+
+         Insert_Action (N,
+           Make_Assignment_Statement (Loc,
+             Name       => LHS,
+             Expression => Relocate_Node (Expr)));
+      end Process_Component_Or_Element_Update;
+
+      --------------------------
+      -- Process_Range_Update --
+      --------------------------
+
+      procedure Process_Range_Update
+        (Temp : Entity_Id;
+         Comp : Node_Id;
+         Expr : Node_Id)
+      is
+         Loc   : constant Source_Ptr := Sloc (Comp);
+         Index : Entity_Id;
+
+      begin
+         --  A range update appears as
+
+         --    (Low .. High => Expr)
+
+         --  The above construct is transformed into a loop that iterates over
+         --  the given range and modifies the corresponding array values to the
+         --  value of Expr:
+
+         --    for Index in Low .. High loop
+         --       Temp (Index) := Expr;
+         --    end loop;
+
+         Index := Make_Temporary (Loc, 'I');
+
+         Insert_Action (N,
+           Make_Loop_Statement (Loc,
+             Iteration_Scheme =>
+               Make_Iteration_Scheme (Loc,
+                 Loop_Parameter_Specification =>
+                   Make_Loop_Parameter_Specification (Loc,
+                     Defining_Identifier         => Index,
+                     Discrete_Subtype_Definition => Relocate_Node (Comp))),
+
+             Statements       => New_List (
+               Make_Assignment_Statement (Loc,
+                 Name       =>
+                   Make_Indexed_Component (Loc,
+                     Prefix      => New_Reference_To (Temp, Loc),
+                     Expressions => New_List (New_Reference_To (Index, Loc))),
+                 Expression => Relocate_Node (Expr))),
+
+             End_Label        => Empty));
+      end Process_Range_Update;
+
+      --  Local variables
+
+      Aggr  : constant Node_Id := First (Expressions (N));
+      Loc   : constant Source_Ptr := Sloc (N);
+      Pref  : constant Node_Id := Prefix (N);
+      Typ   : constant Entity_Id := Etype (Pref);
+      Assoc : Node_Id;
+      Comp  : Node_Id;
+      Expr  : Node_Id;
+      Temp  : Entity_Id;
+
+   --  Start of processing for Expand_Update_Attribute
+
+   begin
+      --  Create the anonymous object that stores the value of the prefix and
+      --  reflects subsequent changes in value. Generate:
+
+      --    Temp : <type of Pref> := Pref;
+
+      Temp := Make_Temporary (Loc, 'T');
+
+      Insert_Action (N,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Temp,
+          Object_Definition   => New_Reference_To (Typ, Loc),
+          Expression          => Relocate_Node (Pref)));
+
+      --  Process the update aggregate
+
+      Assoc := First (Component_Associations (Aggr));
+      while Present (Assoc) loop
+         Comp := First (Choices (Assoc));
+         Expr := Expression (Assoc);
+         while Present (Comp) loop
+            if Nkind (Comp) = N_Range then
+               Process_Range_Update (Temp, Comp, Expr);
+            else
+               Process_Component_Or_Element_Update (Temp, Comp, Expr, Typ);
+            end if;
+
+            Next (Comp);
+         end loop;
+
+         Next (Assoc);
+      end loop;
+
+      --  The attribute is replaced by a reference to the anonymous object
+
+      Rewrite (N, New_Reference_To (Temp, Loc));
+      Analyze (N);
+   end Expand_Update_Attribute;
 
    -------------------
    -- Find_Fat_Info --

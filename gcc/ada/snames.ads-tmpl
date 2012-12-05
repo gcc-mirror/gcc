@@ -901,6 +901,7 @@ package Snames is
    Name_Unconstrained_Array            : constant Name_Id := N + $;
    Name_Universal_Literal_String       : constant Name_Id := N + $; -- GNAT
    Name_Unrestricted_Access            : constant Name_Id := N + $; -- GNAT
+   Name_Update                         : constant Name_Id := N + $; -- GNAT
    Name_VADS_Size                      : constant Name_Id := N + $; -- GNAT
    Name_Val                            : constant Name_Id := N + $;
    Name_Valid                          : constant Name_Id := N + $;
@@ -1512,6 +1513,7 @@ package Snames is
       Attribute_Unconstrained_Array,
       Attribute_Universal_Literal_String,
       Attribute_Unrestricted_Access,
+      Attribute_Update,
       Attribute_VADS_Size,
       Attribute_Val,
       Attribute_Valid,

@@ -1107,14 +1107,14 @@ package body Exp_Util is
          Temps (J) := T;
 
          Append_To (Decls,
-            Make_Object_Declaration (Loc,
-               Defining_Identifier => T,
-               Object_Definition => New_Occurrence_Of (Standard_String, Loc),
-               Expression =>
-                 Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Image,
-                   Prefix         => New_Occurrence_Of (Etype (Indx), Loc),
-                   Expressions    => New_List (New_Copy_Tree (Val)))));
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => T,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Expression          =>
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_Image,
+                 Prefix         => New_Occurrence_Of (Etype (Indx), Loc),
+                 Expressions    => New_List (New_Copy_Tree (Val)))));
 
          Next_Index (Indx);
          Next (Val);
@@ -1126,22 +1126,21 @@ package body Exp_Util is
         Make_Op_Add (Loc,
           Left_Opnd => Sum,
           Right_Opnd =>
-           Make_Attribute_Reference (Loc,
-             Attribute_Name => Name_Length,
-             Prefix =>
-               New_Occurrence_Of (Pref, Loc),
-             Expressions => New_List (Make_Integer_Literal (Loc, 1))));
+            Make_Attribute_Reference (Loc,
+              Attribute_Name => Name_Length,
+              Prefix         => New_Occurrence_Of (Pref, Loc),
+              Expressions    => New_List (Make_Integer_Literal (Loc, 1))));
 
       for J in 1 .. Dims loop
          Sum :=
-            Make_Op_Add (Loc,
-             Left_Opnd => Sum,
+           Make_Op_Add (Loc,
+             Left_Opnd  => Sum,
              Right_Opnd =>
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Length,
-                Prefix =>
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_Length,
+                 Prefix         =>
                   New_Occurrence_Of (Temps (J), Loc),
-                Expressions => New_List (Make_Integer_Literal (Loc, 1))));
+                Expressions     => New_List (Make_Integer_Literal (Loc, 1))));
       end loop;
 
       Build_Task_Image_Prefix (Loc, Len, Res, Pos, Pref, Sum, Decls, Stats);
@@ -1149,44 +1148,46 @@ package body Exp_Util is
       Set_Character_Literal_Name (Char_Code (Character'Pos ('(')));
 
       Append_To (Stats,
-         Make_Assignment_Statement (Loc,
-           Name => Make_Indexed_Component (Loc,
-              Prefix => New_Occurrence_Of (Res, Loc),
+        Make_Assignment_Statement (Loc,
+          Name       =>
+            Make_Indexed_Component (Loc,
+              Prefix      => New_Occurrence_Of (Res, Loc),
               Expressions => New_List (New_Occurrence_Of (Pos, Loc))),
-           Expression =>
-             Make_Character_Literal (Loc,
-               Chars => Name_Find,
-               Char_Literal_Value =>
-                 UI_From_Int (Character'Pos ('(')))));
+          Expression =>
+            Make_Character_Literal (Loc,
+              Chars              => Name_Find,
+              Char_Literal_Value => UI_From_Int (Character'Pos ('(')))));
 
       Append_To (Stats,
-         Make_Assignment_Statement (Loc,
-            Name => New_Occurrence_Of (Pos, Loc),
-            Expression =>
-              Make_Op_Add (Loc,
-                Left_Opnd => New_Occurrence_Of (Pos, Loc),
-                Right_Opnd => Make_Integer_Literal (Loc, 1))));
+        Make_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (Pos, Loc),
+          Expression =>
+            Make_Op_Add (Loc,
+              Left_Opnd  => New_Occurrence_Of (Pos, Loc),
+              Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
       for J in 1 .. Dims loop
 
          Append_To (Stats,
-            Make_Assignment_Statement (Loc,
-              Name => Make_Slice (Loc,
-                 Prefix => New_Occurrence_Of (Res, Loc),
+           Make_Assignment_Statement (Loc,
+             Name =>
+               Make_Slice (Loc,
+                 Prefix          => New_Occurrence_Of (Res, Loc),
                  Discrete_Range  =>
                    Make_Range (Loc,
-                      Low_Bound => New_Occurrence_Of  (Pos, Loc),
-                      High_Bound => Make_Op_Subtract (Loc,
-                        Left_Opnd =>
-                          Make_Op_Add (Loc,
-                            Left_Opnd => New_Occurrence_Of (Pos, Loc),
-                            Right_Opnd =>
-                              Make_Attribute_Reference (Loc,
-                                Attribute_Name => Name_Length,
-                                Prefix =>
-                                  New_Occurrence_Of (Temps (J), Loc),
-                                Expressions =>
-                                  New_List (Make_Integer_Literal (Loc, 1)))),
+                     Low_Bound  => New_Occurrence_Of  (Pos, Loc),
+                     High_Bound =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  =>
+                           Make_Op_Add (Loc,
+                             Left_Opnd  => New_Occurrence_Of (Pos, Loc),
+                             Right_Opnd =>
+                               Make_Attribute_Reference (Loc,
+                                 Attribute_Name => Name_Length,
+                                 Prefix         =>
+                                   New_Occurrence_Of (Temps (J), Loc),
+                                 Expressions    =>
+                                   New_List (Make_Integer_Literal (Loc, 1)))),
                          Right_Opnd => Make_Integer_Literal (Loc, 1)))),
 
               Expression => New_Occurrence_Of (Temps (J), Loc)));
@@ -1194,36 +1195,35 @@ package body Exp_Util is
          if J < Dims then
             Append_To (Stats,
                Make_Assignment_Statement (Loc,
-                  Name => New_Occurrence_Of (Pos, Loc),
+                  Name       => New_Occurrence_Of (Pos, Loc),
                   Expression =>
                     Make_Op_Add (Loc,
-                      Left_Opnd => New_Occurrence_Of (Pos, Loc),
+                      Left_Opnd  => New_Occurrence_Of (Pos, Loc),
                       Right_Opnd =>
                         Make_Attribute_Reference (Loc,
                           Attribute_Name => Name_Length,
-                            Prefix => New_Occurrence_Of (Temps (J), Loc),
-                            Expressions =>
-                              New_List (Make_Integer_Literal (Loc, 1))))));
+                          Prefix         => New_Occurrence_Of (Temps (J), Loc),
+                          Expressions    =>
+                            New_List (Make_Integer_Literal (Loc, 1))))));
 
             Set_Character_Literal_Name (Char_Code (Character'Pos (',')));
 
             Append_To (Stats,
-               Make_Assignment_Statement (Loc,
-                 Name => Make_Indexed_Component (Loc,
-                    Prefix => New_Occurrence_Of (Res, Loc),
-                    Expressions => New_List (New_Occurrence_Of (Pos, Loc))),
-                 Expression =>
-                   Make_Character_Literal (Loc,
-                     Chars => Name_Find,
-                     Char_Literal_Value =>
-                       UI_From_Int (Character'Pos (',')))));
+              Make_Assignment_Statement (Loc,
+                Name => Make_Indexed_Component (Loc,
+                   Prefix => New_Occurrence_Of (Res, Loc),
+                   Expressions => New_List (New_Occurrence_Of (Pos, Loc))),
+                Expression =>
+                  Make_Character_Literal (Loc,
+                    Chars              => Name_Find,
+                    Char_Literal_Value => UI_From_Int (Character'Pos (',')))));
 
             Append_To (Stats,
               Make_Assignment_Statement (Loc,
-                Name => New_Occurrence_Of (Pos, Loc),
+                Name         => New_Occurrence_Of (Pos, Loc),
                   Expression =>
                     Make_Op_Add (Loc,
-                      Left_Opnd => New_Occurrence_Of (Pos, Loc),
+                      Left_Opnd  => New_Occurrence_Of (Pos, Loc),
                       Right_Opnd => Make_Integer_Literal (Loc, 1))));
          end if;
       end loop;
@@ -1231,15 +1231,15 @@ package body Exp_Util is
       Set_Character_Literal_Name (Char_Code (Character'Pos (')')));
 
       Append_To (Stats,
-         Make_Assignment_Statement (Loc,
-           Name => Make_Indexed_Component (Loc,
-              Prefix => New_Occurrence_Of (Res, Loc),
+        Make_Assignment_Statement (Loc,
+          Name        =>
+            Make_Indexed_Component (Loc,
+              Prefix      => New_Occurrence_Of (Res, Loc),
               Expressions => New_List (New_Occurrence_Of (Len, Loc))),
            Expression =>
              Make_Character_Literal (Loc,
-               Chars => Name_Find,
-               Char_Literal_Value =>
-                 UI_From_Int (Character'Pos (')')))));
+               Chars              => Name_Find,
+               Char_Literal_Value => UI_From_Int (Character'Pos (')')))));
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Array_Image;
 
@@ -6842,15 +6842,20 @@ package body Exp_Util is
          end if;
 
       --  For expressions that denote objects, we can use a renaming scheme.
-      --  This is needed for correctness in the case of a volatile object of a
-      --  non-volatile type because the Make_Reference call of the "default"
+      --  This is needed for correctness in the case of a volatile object of
+      --  a non-volatile type because the Make_Reference call of the "default"
       --  approach would generate an illegal access value (an access value
       --  cannot designate such an object - see Analyze_Reference). We skip
       --  using this scheme if we have an object of a volatile type and we do
       --  not have Name_Req set true (see comments above for Side_Effect_Free).
 
+      --  In Ada 2012 a qualified expression is an object, but for purposes of
+      --  removing side effects it still need to be transformed into a separate
+      --  declaration, particularly if the expression is an aggregate.
+
       elsif Is_Object_Reference (Exp)
         and then Nkind (Exp) /= N_Function_Call
+        and then Nkind (Exp) /= N_Qualified_Expression
         and then (Name_Req or else not Treat_As_Volatile (Exp_Type))
       then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
