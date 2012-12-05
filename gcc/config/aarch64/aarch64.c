@@ -5862,6 +5862,20 @@ aarch64_preferred_simd_mode (enum machine_mode mode)
   return word_mode;
 }
 
+/* Implement TARGET_MANGLE_TYPE.  */
+
+const char *
+aarch64_mangle_type (const_tree type)
+{
+  /* The AArch64 ABI documents say that "__va_list" has to be
+     managled as if it is in the "std" namespace.  */
+  if (lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
+    return "St9__va_list";
+
+  /* Use the default mangling.  */
+  return NULL;
+}
+
 /* Return the equivalent letter for size.  */
 static unsigned char
 sizetochar (int size)
@@ -6814,6 +6828,9 @@ aarch64_c_mode_for_suffix (char suffix)
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE aarch64_libgcc_cmp_return_mode
+
+#undef TARGET_MANGLE_TYPE
+#define TARGET_MANGLE_TYPE aarch64_mangle_type
 
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST aarch64_memory_move_cost
