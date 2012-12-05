@@ -8544,6 +8544,16 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
     return Expression::make_cast(this->fn_->type(), this->args_->front(),
 				 loc);
 
+  // Because do_type will return an error type and thus prevent future
+  // errors, check for that case now to ensure that the error gets
+  // reported.
+  if (this->get_function_type() == NULL)
+    {
+      if (!this->fn_->type()->is_error())
+	this->report_error(_("expected function"));
+      return Expression::make_error(loc);
+    }
+
   // Recognize a call to a builtin function.
   Func_expression* fne = this->fn_->func_expression();
   if (fne != NULL
