@@ -224,3 +224,12 @@
   BUILTIN_VDQF (UNOP, fcvtpu)
   BUILTIN_VDQF (UNOP, fcvtms)
   BUILTIN_VDQF (UNOP, fcvtmu)
+
+  /* Implemented by
+     aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>.  */
+  BUILTIN_VALL (BINOP, zip1)
+  BUILTIN_VALL (BINOP, zip2)
+  BUILTIN_VALL (BINOP, uzp1)
+  BUILTIN_VALL (BINOP, uzp2)
+  BUILTIN_VALL (BINOP, trn1)
+  BUILTIN_VALL (BINOP, trn2)

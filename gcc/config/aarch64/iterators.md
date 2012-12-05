@@ -230,6 +230,12 @@
     UNSPEC_BSL		; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
+    UNSPEC_ZIP1		; Used in vector permute patterns.
+    UNSPEC_ZIP2		; Used in vector permute patterns.
+    UNSPEC_UZP1		; Used in vector permute patterns.
+    UNSPEC_UZP2		; Used in vector permute patterns.
+    UNSPEC_TRN1		; Used in vector permute patterns.
+    UNSPEC_TRN2		; Used in vector permute patterns.
 ])
 
 ;; -------------------------------------------------------------------
@@ -652,6 +658,9 @@
 
 (define_int_iterator VCMP_U [UNSPEC_CMHS UNSPEC_CMHI UNSPEC_CMTST])
 
+(define_int_iterator PERMUTE [UNSPEC_ZIP1 UNSPEC_ZIP2
+			      UNSPEC_TRN1 UNSPEC_TRN2
+			      UNSPEC_UZP1 UNSPEC_UZP2])
 
 (define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
 			     UNSPEC_FRINTI UNSPEC_FRINTX UNSPEC_FRINTA])
@@ -757,3 +766,10 @@
 (define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
 			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")])
 
+(define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
+			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
+			    (UNSPEC_UZP1 "uzp") (UNSPEC_UZP2 "uzp")])
+
+(define_int_attr perm_hilo [(UNSPEC_ZIP1 "1") (UNSPEC_ZIP2 "2")
+			    (UNSPEC_TRN1 "1") (UNSPEC_TRN2 "2")
+			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")])
