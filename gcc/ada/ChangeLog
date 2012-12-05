@@ -1,3 +1,23 @@
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: Minor reformatting.
+
+2012-12-05  Tristan Gingold  <gingold@adacore.com>
+
+	* Make-generated.in: Remove the VMS host specific part, as VMS
+	compilers aren't built anymore on VMS.
+
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem.adb, errout.ads, atree.adb, atree.ads (Check_Error_Detected):
+	Only return quietly if a serious error of configurable run time
+	violation has been found.
+
+2012-12-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): In Alfa_Mode, do not apply
+	conversion checks.
+
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Assignment_Statement): Handle properly

@@ -39,13 +39,6 @@ with System;
 
 package Errout is
 
-   Configurable_Run_Time_Violations : Nat := 0;
-   --  Count of configurable run time violations so far. This is used to
-   --  suppress certain cascaded error messages when we know that we may not
-   --  have fully expanded some items, due to high integrity violations (i.e.
-   --  the use of constructs not permitted by the library in use, or improper
-   --  constructs in No_Run_Time mode).
-
    Current_Error_Source_File : Source_File_Index
      renames Err_Vars.Current_Error_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This

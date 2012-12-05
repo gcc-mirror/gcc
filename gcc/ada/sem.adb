@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Debug;    use Debug;
 with Debug_A;  use Debug_A;
 with Elists;   use Elists;
-with Errout;   use Errout;
 with Expander; use Expander;
 with Fname;    use Fname;
 with Lib;      use Lib;
