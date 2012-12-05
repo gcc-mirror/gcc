@@ -1,3 +1,31 @@
+2012-12-05  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Move setting of flags for
+	Alfa mode before general treatment of flags, so that overflow checks
+	settings are set appropriately in Alfa mode. Also set the mode to
+	STRICT in Alfa mode if not already set by the user.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2012-12-05  Steve Baird  <baird@adacore.com>
+
+	* sinfo.ads: Improve comments about SCIL-related node kinds and selector
+	functions.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Build_Limited_Views): Even though the unit is
+	not analyzed, place its entity on the name in the with clause,
+	so that warnings on unused with-clause are properly supported
+	for limited withs.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Update overflow description. Pragma
+	Overflow_Checks changed to Overflow_Mode.
+
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Private_Type): Handle properly a

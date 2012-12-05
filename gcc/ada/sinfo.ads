@@ -7336,29 +7336,37 @@ package Sinfo is
 
       --  SCIL nodes are special nodes added to the tree when the CodePeer
       --  mode is active. They help the CodePeer backend to locate nodes that
-      --  require special processing.
-
-      --  Major documentation on the general design of the SCIL interface, and
-      --  in particular detailed description of these nodes is missing and is
-      --  to be supplied in the future, when the design has finalized ???
-
-      --  Meanwhile these nodes should be considered in experimental form, and
-      --  should be ignored by all code generating back ends. ???
+      --  require special processing. They are only generated if SCIL
+      --  generation is enabled. A standard tree-walk will not encounter
+      --  these nodes even if they are present; these nodes are only
+      --  accessible via the function SCIL_LL.Get_SCIL_Node.
 
       --  N_SCIL_Dispatch_Table_Tag_Init
       --  Sloc references a node for a tag initialization
       --  SCIL_Entity (Node4-Sem)
+      --
+      --  An N_SCIL_Dispatch_Table_Tag_Init node may be associated (via
+      --  Get_SCIL_Node) with the N_Object_Declaration node corresponding to
+      --  the declaration of the dispatch table for a tagged type.
 
       --  N_SCIL_Dispatching_Call
       --  Sloc references the node of a dispatching call
       --  SCIL_Target_Prim (Node2-Sem)
       --  SCIL_Entity (Node4-Sem)
       --  SCIL_Controlling_Tag (Node5-Sem)
+      --
+      --  An N_Scil_Dispatching call node may be associated (via Get_SCIL_Node)
+      --  with the N_Procedure_Call or N_Function_Call node (or a rewriting
+      --  thereof) corresponding to a dispatching call.
 
       --  N_SCIL_Membership_Test
       --  Sloc references the node of a membership test
       --  SCIL_Tag_Value (Node5-Sem)
       --  SCIL_Entity (Node4-Sem)
+      --
+      --  An N_Scil_Membership_Test node may be associated (via Get_SCIL_Node)
+      --  with the N_In node (or a rewriting thereof) corresponding to a
+      --  classwide membership test.
 
       ---------------------
       -- Subprogram_Info --

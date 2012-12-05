@@ -5716,6 +5716,17 @@ package body Sem_Ch10 is
             raise Program_Error;
       end case;
 
+      --  The limited unit is not analyzed but the with clause must be
+      --  minimally decorated so that checks on unused with clause also work
+      --  with limited with clauses.
+
+      if Is_Entity_Name (Name (N)) then
+         Set_Entity (Name (N), P);
+
+      elsif Nkind (Name (N)) = N_Selected_Component then
+         Set_Entity (Selector_Name (Name (N)), P);
+      end if;
+
       --  Check if the chain is already built
 
       Spec := Specification (Unit (Library_Unit (N)));
