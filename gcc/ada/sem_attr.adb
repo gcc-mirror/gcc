@@ -5516,6 +5516,164 @@ package body Sem_Attr is
 
          Analyze_Access_Attribute;
 
+      ------------
+      -- Update --
+      ------------
+
+      when Attribute_Update => Update : declare
+         Comps : Elist_Id := No_Elist;
+
+         procedure Check_Component_Reference
+           (Comp : Entity_Id;
+            Typ  : Entity_Id);
+         --  Comp is a record component (possibly a discriminant) and Typ is a
+         --  record type. Determine whether Comp is a legal component of Typ.
+         --  Emit an error if Comp mentions a discriminant or is not a unique
+         --  component reference in the update aggregate.
+
+         -------------------------------
+         -- Check_Component_Reference --
+         -------------------------------
+
+         procedure Check_Component_Reference
+           (Comp : Entity_Id;
+            Typ  : Entity_Id)
+         is
+            Comp_Name : constant Name_Id := Chars (Comp);
+
+            function Is_Duplicate_Component return Boolean;
+            --  Determine whether component Comp already appears in list Comps
+
+            ----------------------------
+            -- Is_Duplicate_Component --
+            ----------------------------
+
+            function Is_Duplicate_Component return Boolean is
+               Comp_Elmt : Elmt_Id;
+
+            begin
+               if Present (Comps) then
+                  Comp_Elmt := First_Elmt (Comps);
+                  while Present (Comp_Elmt) loop
+                     if Chars (Node (Comp_Elmt)) = Comp_Name then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Comp_Elmt);
+                  end loop;
+               end if;
+
+               return False;
+            end Is_Duplicate_Component;
+
+            --  Local variables
+
+            Comp_Or_Discr : Entity_Id;
+
+         --  Start of processing for Check_Component_Reference
+
+         begin
+            --  Find the discriminant or component whose name corresponds to
+            --  Comp. A simple character comparison is sufficient because all
+            --  visible names within a record type are unique.
+
+            Comp_Or_Discr := First_Entity (Typ);
+            while Present (Comp_Or_Discr) loop
+               if Chars (Comp_Or_Discr) = Comp_Name then
+                  exit;
+               end if;
+
+               Comp_Or_Discr := Next_Entity (Comp_Or_Discr);
+            end loop;
+
+            --  Diagnose possible erroneous references
+
+            if Present (Comp_Or_Discr) then
+               if Ekind (Comp_Or_Discr) = E_Discriminant then
+                  Error_Attr
+                    ("attribute % may not modify record discriminants", Comp);
+
+               else pragma Assert (Ekind (Comp_Or_Discr) = E_Component);
+                  if Is_Duplicate_Component then
+                     Error_Msg_NE ("component & already updated", Comp, Comp);
+
+                  --  Mark this component as processed
+
+                  else
+                     if No (Comps) then
+                        Comps := New_Elmt_List;
+                     end if;
+
+                     Append_Elmt (Comp, Comps);
+                  end if;
+               end if;
+
+            --  The update aggregate mentions an entity that does not belong to
+            --  the record type.
+
+            else
+               Error_Msg_NE
+                 ("& is not a component of aggregate subtype", Comp, Comp);
+            end if;
+         end Check_Component_Reference;
+
+         --  Local variables
+
+         Assoc : Node_Id;
+         Comp  : Node_Id;
+
+      --  Start of processing for Update
+
+      begin
+         S14_Attribute;
+         Check_E1;
+
+         if not Is_Object_Reference (P) then
+            Error_Attr_P ("prefix of attribute % must denote an object");
+
+         elsif not Is_Array_Type (P_Type)
+           and then not Is_Record_Type (P_Type)
+         then
+            Error_Attr_P ("prefix of attribute % must be a record or array");
+
+         elsif Is_Immutably_Limited_Type (P_Type) then
+            Error_Attr ("prefix of attribute % cannot be limited", N);
+
+         elsif Nkind (E1) /= N_Aggregate then
+            Error_Attr ("attribute % requires component association list", N);
+         end if;
+
+         --  Inspect the update aggregate, looking at all the associations and
+         --  choices. Perform the following checks:
+
+         --    1) Legality of "others" in all cases
+         --    2) Component legality for records
+
+         --  The remaining checks are performed on the expanded attribute
+
+         Assoc := First (Component_Associations (E1));
+         while Present (Assoc) loop
+            Comp := First (Choices (Assoc));
+            while Present (Comp) loop
+               if Nkind (Comp) = N_Others_Choice then
+                  Error_Attr
+                    ("others choice not allowed in attribute %", Comp);
+
+               elsif Is_Record_Type (P_Type) then
+                  Check_Component_Reference (Comp, P_Type);
+               end if;
+
+               Next (Comp);
+            end loop;
+
+            Next (Assoc);
+         end loop;
+
+         --  The type of attribute Update is that of the prefix
+
+         Set_Etype (N, P_Type);
+      end Update;
+
       ---------
       -- Val --
       ---------
@@ -8209,6 +8367,15 @@ package body Sem_Attr is
          Analyze_And_Resolve (N, Standard_Boolean);
          Static := True;
       end Unconstrained_Array;
+
+      --  Attribute Update is never static
+
+      ------------
+      -- Update --
+      ------------
+
+      when Attribute_Update =>
+         null;
 
       ---------------
       -- VADS_Size --

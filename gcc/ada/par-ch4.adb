@@ -510,26 +510,36 @@ package body Ch4 is
                 Is_Parameterless_Attribute (Get_Attribute_Id (Attr_Name))
             then
                Set_Expressions (Name_Node, New_List);
-               Scan; -- past left paren
 
-               loop
-                  declare
-                     Expr : constant Node_Id := P_Expression_If_OK;
+               --  Attribute Update contains an array or record association
+               --  list which provides new values for various components or
+               --  elements. The list is parsed as an aggregate.
 
-                  begin
-                     if Token = Tok_Arrow then
-                        Error_Msg_SC
-                          ("named parameters not permitted for attributes");
-                        Scan; -- past junk arrow
+               if Attr_Name = Name_Update then
+                  Append (P_Aggregate, Expressions (Name_Node));
 
-                     else
-                        Append (Expr, Expressions (Name_Node));
-                        exit when not Comma_Present;
-                     end if;
-                  end;
-               end loop;
+               else
+                  Scan; -- past left paren
 
-               T_Right_Paren;
+                  loop
+                     declare
+                        Expr : constant Node_Id := P_Expression_If_OK;
+
+                     begin
+                        if Token = Tok_Arrow then
+                           Error_Msg_SC
+                             ("named parameters not permitted for attributes");
+                           Scan; -- past junk arrow
+
+                        else
+                           Append (Expr, Expressions (Name_Node));
+                           exit when not Comma_Present;
+                        end if;
+                     end;
+                  end loop;
+
+                  T_Right_Paren;
+               end if;
             end if;
 
             goto Scan_Name_Extension;
