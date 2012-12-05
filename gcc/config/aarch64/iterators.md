@@ -228,6 +228,8 @@
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMIN		; Used in aarch64-simd.md.
     UNSPEC_BSL		; Used in aarch64-simd.md.
+    UNSPEC_TBL		; Used in vector permute patterns.
+    UNSPEC_CONCAT	; Used in vector permute patterns.
 ])
 
 ;; -------------------------------------------------------------------
@@ -415,8 +417,9 @@
 (define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
 				(V4HI "V4HI") (V8HI  "V8HI")
 				(V2SI "V2SI") (V4SI  "V4SI")
+				(DI   "DI")   (V2DI  "V2DI")
 				(V2SF "V2SI") (V4SF  "V4SI")
-				(DI   "DI")   (V2DI  "V2DI")])
+				(V2DF "V2DI")])
 
 ;; Vm for lane instructions is restricted to FP_LO_REGS.
 (define_mode_attr vwx [(V4HI "x") (V8HI "x") (HI "x")

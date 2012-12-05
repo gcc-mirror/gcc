@@ -110,6 +110,9 @@ static unsigned bit_count (unsigned HOST_WIDE_INT);
 static bool aarch64_const_vec_all_same_int_p (rtx,
 					      HOST_WIDE_INT, HOST_WIDE_INT);
 
+static bool aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+						 const unsigned char *sel);
+
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = generic;
 
@@ -6782,6 +6785,292 @@ aarch64_c_mode_for_suffix (char suffix)
   return VOIDmode;
 }
 
+/* Split operands into moves from op[1] + op[2] into op[0].  */
+
+void
+aarch64_split_combinev16qi (rtx operands[3])
+{
+  unsigned int dest = REGNO (operands[0]);
+  unsigned int src1 = REGNO (operands[1]);
+  unsigned int src2 = REGNO (operands[2]);
+  enum machine_mode halfmode = GET_MODE (operands[1]);
+  unsigned int halfregs = HARD_REGNO_NREGS (src1, halfmode);
+  rtx destlo, desthi;
+
+  gcc_assert (halfmode == V16QImode);
+
+  if (src1 == dest && src2 == dest + halfregs)
+    {
+      /* No-op move.  Can't split to nothing; emit something.  */
+      emit_note (NOTE_INSN_DELETED);
+      return;
+    }
+
+  /* Preserve register attributes for variable tracking.  */
+  destlo = gen_rtx_REG_offset (operands[0], halfmode, dest, 0);
+  desthi = gen_rtx_REG_offset (operands[0], halfmode, dest + halfregs,
+			       GET_MODE_SIZE (halfmode));
+
+  /* Special case of reversed high/low parts.  */
+  if (reg_overlap_mentioned_p (operands[2], destlo)
+      && reg_overlap_mentioned_p (operands[1], desthi))
+    {
+      emit_insn (gen_xorv16qi3 (operands[1], operands[1], operands[2]));
+      emit_insn (gen_xorv16qi3 (operands[2], operands[1], operands[2]));
+      emit_insn (gen_xorv16qi3 (operands[1], operands[1], operands[2]));
+    }
+  else if (!reg_overlap_mentioned_p (operands[2], destlo))
+    {
+      /* Try to avoid unnecessary moves if part of the result
+	 is in the right place already.  */
+      if (src1 != dest)
+	emit_move_insn (destlo, operands[1]);
+      if (src2 != dest + halfregs)
+	emit_move_insn (desthi, operands[2]);
+    }
+  else
+    {
+      if (src2 != dest + halfregs)
+	emit_move_insn (desthi, operands[2]);
+      if (src1 != dest)
+	emit_move_insn (destlo, operands[1]);
+    }
+}
+
+/* vec_perm support.  */
+
+#define MAX_VECT_LEN 16
+
+struct expand_vec_perm_d
+{
+  rtx target, op0, op1;
+  unsigned char perm[MAX_VECT_LEN];
+  enum machine_mode vmode;
+  unsigned char nelt;
+  bool one_vector_p;
+  bool testing_p;
+};
+
+/* Generate a variable permutation.  */
+
+static void
+aarch64_expand_vec_perm_1 (rtx target, rtx op0, rtx op1, rtx sel)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  bool one_vector_p = rtx_equal_p (op0, op1);
+
+  gcc_checking_assert (vmode == V8QImode || vmode == V16QImode);
+  gcc_checking_assert (GET_MODE (op0) == vmode);
+  gcc_checking_assert (GET_MODE (op1) == vmode);
+  gcc_checking_assert (GET_MODE (sel) == vmode);
+  gcc_checking_assert (TARGET_SIMD);
+
+  if (one_vector_p)
+    {
+      if (vmode == V8QImode)
+	{
+	  /* Expand the argument to a V16QI mode by duplicating it.  */
+	  rtx pair = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op0));
+	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	}
+      else
+	{
+	  emit_insn (gen_aarch64_tbl1v16qi (target, op0, sel));
+	}
+    }
+  else
+    {
+      rtx pair;
+
+      if (vmode == V8QImode)
+	{
+	  pair = gen_reg_rtx (V16QImode);
+	  emit_insn (gen_aarch64_combinev8qi (pair, op0, op1));
+	  emit_insn (gen_aarch64_tbl1v8qi (target, pair, sel));
+	}
+      else
+	{
+	  pair = gen_reg_rtx (OImode);
+	  emit_insn (gen_aarch64_combinev16qi (pair, op0, op1));
+	  emit_insn (gen_aarch64_tbl2v16qi (target, pair, sel));
+	}
+    }
+}
+
+void
+aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
+{
+  enum machine_mode vmode = GET_MODE (target);
+  unsigned int i, nelt = GET_MODE_NUNITS (vmode);
+  bool one_vector_p = rtx_equal_p (op0, op1);
+  rtx rmask[MAX_VECT_LEN], mask;
+
+  gcc_checking_assert (!BYTES_BIG_ENDIAN);
+
+  /* The TBL instruction does not use a modulo index, so we must take care
+     of that ourselves.  */
+  mask = GEN_INT (one_vector_p ? nelt - 1 : 2 * nelt - 1);
+  for (i = 0; i < nelt; ++i)
+    rmask[i] = mask;
+  mask = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rmask));
+  sel = expand_simple_binop (vmode, AND, sel, mask, NULL, 0, OPTAB_LIB_WIDEN);
+
+  aarch64_expand_vec_perm_1 (target, op0, op1, sel);
+}
+
+static bool
+aarch64_evpc_tbl (struct expand_vec_perm_d *d)
+{
+  rtx rperm[MAX_VECT_LEN], sel;
+  enum machine_mode vmode = d->vmode;
+  unsigned int i, nelt = d->nelt;
+
+  /* TODO: ARM's TBL indexing is little-endian.  In order to handle GCC's
+     numbering of elements for big-endian, we must reverse the order.  */
+  if (BYTES_BIG_ENDIAN)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  /* Generic code will try constant permutation twice.  Once with the
+     original mode and again with the elements lowered to QImode.
+     So wait and don't do the selector expansion ourselves.  */
+  if (vmode != V8QImode && vmode != V16QImode)
+    return false;
+
+  for (i = 0; i < nelt; ++i)
+    rperm[i] = GEN_INT (d->perm[i]);
+  sel = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rperm));
+  sel = force_reg (vmode, sel);
+
+  aarch64_expand_vec_perm_1 (d->target, d->op0, d->op1, sel);
+  return true;
+}
+
+static bool
+aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
+{
+  /* The pattern matching functions above are written to look for a small
+     number to begin the sequence (0, 1, N/2).  If we begin with an index
+     from the second operand, we can swap the operands.  */
+  if (d->perm[0] >= d->nelt)
+    {
+      unsigned i, nelt = d->nelt;
+      rtx x;
+
+      for (i = 0; i < nelt; ++i)
+	d->perm[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
+
+      x = d->op0;
+      d->op0 = d->op1;
+      d->op1 = x;
+    }
+
+  if (TARGET_SIMD)
+    return aarch64_evpc_tbl (d);
+  return false;
+}
+
+/* Expand a vec_perm_const pattern.  */
+
+bool
+aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
+{
+  struct expand_vec_perm_d d;
+  int i, nelt, which;
+
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
+
+  d.vmode = GET_MODE (target);
+  gcc_assert (VECTOR_MODE_P (d.vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = false;
+
+  for (i = which = 0; i < nelt; ++i)
+    {
+      rtx e = XVECEXP (sel, 0, i);
+      int ei = INTVAL (e) & (2 * nelt - 1);
+      which |= (ei < nelt ? 1 : 2);
+      d.perm[i] = ei;
+    }
+
+  switch (which)
+    {
+    default:
+      gcc_unreachable ();
+
+    case 3:
+      d.one_vector_p = false;
+      if (!rtx_equal_p (op0, op1))
+	break;
+
+      /* The elements of PERM do not suggest that only the first operand
+	 is used, but both operands are identical.  Allow easier matching
+	 of the permutation by folding the permutation into the single
+	 input vector.  */
+      /* Fall Through.  */
+    case 2:
+      for (i = 0; i < nelt; ++i)
+	d.perm[i] &= nelt - 1;
+      d.op0 = op1;
+      d.one_vector_p = true;
+      break;
+
+    case 1:
+      d.op1 = op0;
+      d.one_vector_p = true;
+      break;
+    }
+
+  return aarch64_expand_vec_perm_const_1 (&d);
+}
+
+static bool
+aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
+				     const unsigned char *sel)
+{
+  struct expand_vec_perm_d d;
+  unsigned int i, nelt, which;
+  bool ret;
+
+  d.vmode = vmode;
+  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
+  d.testing_p = true;
+  memcpy (d.perm, sel, nelt);
+
+  /* Calculate whether all elements are in one vector.  */
+  for (i = which = 0; i < nelt; ++i)
+    {
+      unsigned char e = d.perm[i];
+      gcc_assert (e < 2 * nelt);
+      which |= (e < nelt ? 1 : 2);
+    }
+
+  /* If all elements are from the second vector, reindex as if from the
+     first vector.  */
+  if (which == 2)
+    for (i = 0; i < nelt; ++i)
+      d.perm[i] -= nelt;
+
+  /* Check whether the mask can be applied to a single vector.  */
+  d.one_vector_p = (which != 3);
+
+  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+  if (!d.one_vector_p)
+    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+  start_sequence ();
+  ret = aarch64_expand_vec_perm_const_1 (&d);
+  end_sequence ();
+
+  return ret;
+}
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST aarch64_address_cost
 
@@ -6984,6 +7273,12 @@ aarch64_c_mode_for_suffix (char suffix)
 #undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE \
   aarch64_simd_vector_alignment_reachable
+
+/* vec_perm support.  */
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
+#define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
+  aarch64_vectorize_vec_perm_const_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
