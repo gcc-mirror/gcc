@@ -209,11 +209,8 @@ def IsInterestingResult(line):
   """Return True if line is one of the summary lines we care about."""
   if '|' in line:
     (_, line) = line.split('|', 1)
-  line = line.strip()
-  for result in _VALID_TEST_RESULTS:
-    if line.startswith(result):
-      return True
-  return False
+    line = line.strip()
+  return any(line.startswith(result) for result in _VALID_TEST_RESULTS)
 
 
 def IsInclude(line):
@@ -307,8 +304,9 @@ def GetManifest(manifest_path):
 def CollectSumFiles(builddir):
   sum_files = []
   for root, dirs, files in os.walk(builddir):
-    if '.svn' in dirs:
-      dirs.remove('.svn')
+    for ignored in ('.svn', '.git'):
+      if ignored in dirs:
+        dirs.remove(ignored)
     for fname in files:
       if fname.endswith('.sum'):
         sum_files.append(os.path.join(root, fname))
