@@ -1,5 +1,20 @@
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
+	* par-ch6.adb (P_Return_Object_Declaration): Do not check for
+	legality of Aliased keyword.
+	* sem_ch6.adb (Analyze_Function_Return): The keyword aliased is
+	legal in an extended return statement only if the return type
+	is immutably limited.
+
+2012-12-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Thunk): Simplify
+	management of controlling formals.  Required to avoid problems
+	with primitives of internally generated base types associated
+	with constrained tagged types.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_eval.adb: Remove spurious warnings.
 
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>

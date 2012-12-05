@@ -787,6 +787,7 @@ package body Sem_Ch6 is
 
             Analyze_And_Resolve (Expr, R_Type);
             Check_Limited_Return (Expr);
+
          end if;
 
          --  RETURN only allowed in SPARK as the last statement in function
@@ -806,8 +807,9 @@ package body Sem_Ch6 is
          --  Analyze parts specific to extended_return_statement:
 
          declare
-            Obj_Decl : constant Node_Id :=
+            Obj_Decl    : constant Node_Id :=
                          Last (Return_Object_Declarations (N));
+            Has_Aliased : constant Boolean := Aliased_Present (Obj_Decl);
 
             HSS : constant Node_Id := Handled_Statement_Sequence (N);
 
@@ -842,6 +844,19 @@ package body Sem_Ch6 is
             Set_Referenced (Defining_Identifier (Obj_Decl));
 
             Check_References (Stm_Entity);
+
+            --  Check RM 6.5 (5.9/3)
+
+            if Has_Aliased then
+               if Ada_Version < Ada_2012 then
+                  Error_Msg_N ("aliased only allowed for limited"
+                     & " return objects in Ada 2012?", N);
+
+               elsif not Is_Immutably_Limited_Type (R_Type) then
+                  Error_Msg_N ("aliased only allowed for limited"
+                     & " return objects", N);
+               end if;
+            end if;
          end;
       end if;
 
