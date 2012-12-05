@@ -1,3 +1,10 @@
+2012-12-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite-management/validate_failures.py
+	(IsInterestingResult): Only strip line a second time if we did split.
+	Rephrase return statement while at it.
+	(CollectSumFiles): Also ignore .git directory.
+
 2012-12-03  Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py: Fix stale
