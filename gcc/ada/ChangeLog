@@ -1,5 +1,21 @@
 2012-12-05  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch5.adb (Preanalyze_Range): If the expression, which
+	denotes some domain of iteration, has a type with implicit
+	dereference, and does not have any iterable aspects, insert
+	dereference to obtain proper container type.
+
+2012-12-05  Bob Duff  <duff@adacore.com>
+
+	* par-ch8.adb (P_Use_Type_Clause): Fix the Sloc for "use all type ..."
+	to point to "use".
+
+2012-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb (Compile): Always pass -x adascil in CodePeer mode.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
 	* s-rident.ads, restrict.ads: Remove discrepancies between the
 	documentation on implementation-defined restrictions, and
 	the internal data structure used for warnings and errors on
