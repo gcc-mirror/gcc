@@ -25894,7 +25894,7 @@ The pragma @code{Suppress (Overflow_Check)} disables overflow
 checking, but it has no effect on the method used for computing
 intermediate results.
 
-The pragam @code{Unsuppress (Overflow_Check)} enables overflow
+The pragma @code{Unsuppress (Overflow_Check)} enables overflow
 checking, but it has no effect on the method used for computing
 intermediate results.
 

@@ -210,6 +210,13 @@ procedure Gnat1drv is
             Suppress_Options.Overflow_Mode_Assertions := Strict;
          end if;
 
+         --  CodePeer handles division and overflow checks directly, based on
+         --  the marks set by the frontend, hence no special expansion should
+         --  be performed in the frontend for division and overflow checks.
+
+         Backend_Divide_Checks_On_Target   := True;
+         Backend_Overflow_Checks_On_Target := True;
+
          --  Kill debug of generated code, since it messes up sloc values
 
          Debug_Generated_Code := False;
