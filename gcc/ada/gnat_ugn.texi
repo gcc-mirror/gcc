@@ -13384,6 +13384,18 @@ lower case. Overrides ^-n^/NAME_CASING^ casing setting.
 Names introduced by type and subtype declarations are always in
 mixed case. Overrides ^-n^/NAME_CASING^ casing setting.
 
+@item ^-nnU^/NUMBER_CASING=UPPER_CASE^
+Names introduced by number declarations are always in
+upper case. Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-nnL^/NUMBER_CASING=LOWER_CASE^
+Names introduced by number declarations are always in
+lower case. Overrides ^-n^/NAME_CASING^ casing setting.
+
+@item ^-nnM^/NUMBER_CASING=MIXED_CASE^
+Names introduced by number declarations are always in
+mixed case. Overrides ^-n^/NAME_CASING^ casing setting.
+
 @cindex @option{^-p@var{x}^/PRAGMA_CASING^} (@command{gnatpp})
 @item ^-pL^/PRAGMA_CASING=LOWER_CASE^
 Pragma names are lower case

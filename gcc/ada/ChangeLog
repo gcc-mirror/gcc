@@ -1,3 +1,42 @@
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* s-rident.ads, restrict.ads: Remove discrepancies between the
+	documentation on implementation-defined restrictions, and
+	the internal data structure used for warnings and errors on
+	implementation-defined restriction violations.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Chain_PPC): Pre- and postcondition aspects
+	are legal on a subprogram body that acts as a spec.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): If the selector name is
+	an overloadable entity but the name is not overloaded, generate
+	reference to it rather than delaying this until resolution.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, checks.adb (Activate_Overflow_Check): No effect for
+	MOD/REM/unary +
+	* exp_ch4.adb (Expand_N_Op_Mod): Remove call to set Do_Overflow_Check.
+
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Non_Universal_Interpretation): Use the
+	types of the right operand if the left operand is null.
+
+2012-12-05  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: document gnatpp -nn option.
+
+2012-12-05  Jose Ruiz  <ruiz@adacore.com>
+
+	* init.c (__gnat_install_handler): For the LEON VxWorks kernel
+	run-time library we need to install a trap handler directly in the
+	trap table (no support by the OS) for the software trap 0.
+
 2012-12-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat_rm.texi (Interfacing to C++): Document new restrictions.

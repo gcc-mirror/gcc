@@ -7910,7 +7910,6 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Mod (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Typ   : constant Entity_Id  := Etype (N);
-      DOC   : constant Boolean    := Do_Overflow_Check (N);
       DDC   : constant Boolean    := Do_Division_Check (N);
 
       Left  : Node_Id;
@@ -7975,7 +7974,6 @@ package body Exp_Ch4 is
 
          Set_Entity            (N, Standard_Entity (S_Op_Rem));
          Set_Etype             (N, Typ);
-         Set_Do_Overflow_Check (N, DOC);
          Set_Do_Division_Check (N, DDC);
          Expand_N_Op_Rem (N);
          Set_Analyzed (N);
