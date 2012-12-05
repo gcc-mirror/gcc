@@ -844,15 +844,16 @@ package body Exp_Prag is
    --     end loop;
 
    procedure Expand_Pragma_Loop_Variant (N : Node_Id) is
-      Last_Var    : constant Node_Id    :=
-                      Last (Pragma_Argument_Associations (N));
-      Loc         : constant Source_Ptr := Sloc (N);
-      Curr_Assign : List_Id   := No_List;
-      Flag_Id     : Entity_Id := Empty;
-      If_Stmt     : Node_Id   := Empty;
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Last_Var : constant Node_Id := Last (Pragma_Argument_Associations (N));
+
+      Curr_Assign : List_Id             := No_List;
+      Flag_Id     : Entity_Id           := Empty;
+      If_Stmt     : Node_Id             := Empty;
+      Old_Assign  : List_Id             := No_List;
       Loop_Scop   : Entity_Id;
       Loop_Stmt   : Node_Id;
-      Old_Assign  : List_Id   := No_List;
       Variant     : Node_Id;
 
       procedure Process_Variant (Variant : Node_Id; Is_Last : Boolean);
@@ -883,7 +884,6 @@ package body Exp_Prag is
          begin
             if Chars (Variant) = Name_Increases then
                return Make_Op_Gt (Loc, Curr_Val, Old_Val);
-
             else pragma Assert (Chars (Variant) = Name_Decreases);
                return Make_Op_Lt (Loc, Curr_Val, Old_Val);
             end if;
@@ -959,7 +959,7 @@ package body Exp_Prag is
          --  Generate:
          --    Old : <type of Expr>;
 
-         Old_Id  := Make_Temporary (Loc, 'P');
+         Old_Id := Make_Temporary (Loc, 'P');
 
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
