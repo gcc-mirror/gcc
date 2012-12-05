@@ -1,3 +1,16 @@
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* err_vars.ads: Fix minor typo in comment.
+
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Do not analyze the attribute
+	arguments when processing Loop_Entry. Rewrite the analysis of
+	attribute Loop_Entry to handle an optional loop name.
+	(Convert_To_Indexed_Component): New routine.
+	(Eval_Attribute): Remove ??? comment and explain
+	why Loop_Entry does not need to be evaluated.
+
 2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR ada/52110

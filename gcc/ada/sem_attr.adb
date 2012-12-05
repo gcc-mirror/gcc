@@ -875,7 +875,7 @@ package body Sem_Attr is
       procedure Bad_Attribute_For_Predicate is
       begin
          if Is_Scalar_Type (P_Type)
-           and then  Comes_From_Source (N)
+           and then Comes_From_Source (N)
          then
             Error_Msg_Name_1 := Aname;
             Bad_Predicated_Subtype_Use
@@ -2119,6 +2119,20 @@ package body Sem_Attr is
       if No (Exprs) then
          E1 := Empty;
          E2 := Empty;
+
+      --  Do not analyze the expressions of attribute Loop_Entry. Depending on
+      --  the number of arguments and/or the nature of the first argument, the
+      --  whole attribute reference may be rewritten into an indexed component.
+      --  In the case of two or more arguments, the expressions are analyzed
+      --  when the indexed component is analyzed, otherwise the sole argument
+      --  is preanalyzed to determine whether it is a loop name.
+
+      elsif Aname = Name_Loop_Entry then
+         E1 := First (Exprs);
+
+         if Present (E1) then
+            E2 := Next (E1);
+         end if;
 
       else
          E1 := First (Exprs);
@@ -3610,6 +3624,11 @@ package body Sem_Attr is
          --  Inspect the prefix for any uses of entities declared within the
          --  related loop. Loop_Id denotes the loop identifier.
 
+         procedure Convert_To_Indexed_Component;
+         --  Transform the attribute reference into an indexed component where
+         --  the prefix is Prefix'Loop_Entry and the expressions are associated
+         --  with the indexed component.
+
          --------------------------------
          -- Check_References_In_Prefix --
          --------------------------------
@@ -3682,6 +3701,25 @@ package body Sem_Attr is
             Check_References (P);
          end Check_References_In_Prefix;
 
+         ----------------------------------
+         -- Convert_To_Indexed_Component --
+         ----------------------------------
+
+         procedure Convert_To_Indexed_Component is
+            New_Loop_Entry : constant Node_Id := Relocate_Node (N);
+
+         begin
+            --  The new Loop_Entry loses its arguments. They will be converted
+            --  into the expressions of the indexed component.
+
+            Set_Expressions (New_Loop_Entry, No_List);
+
+            Rewrite (N,
+              Make_Indexed_Component (Loc,
+                Prefix      => New_Loop_Entry,
+                Expressions => Exprs));
+         end Convert_To_Indexed_Component;
+
          --  Local variables
 
          Enclosing_Loop    : Node_Id;
@@ -3694,8 +3732,48 @@ package body Sem_Attr is
 
       begin
          S14_Attribute;
-         Check_E1;
-         Analyze (E1);
+
+         --  The attribute reference appears as
+         --    Prefix'Loop_Entry (Expr1, Expr2, ... ExprN)
+
+         --  In this case, the loop name is omitted and the arguments are part
+         --  of an indexed component. Transform the whole attribute reference
+         --  to reflect this scenario.
+
+         if Present (E2) then
+            Convert_To_Indexed_Component;
+            Analyze (N);
+            return;
+
+         --  The attribute reference appears as
+         --    Prefix'Loop_Entry (Loop_Name)
+         --      or
+         --    Prefix'Loop_Entry (Expr1)
+
+         --  Depending on what Expr1 resolves to, either rewrite the reference
+         --  into an indexed component or continue with the analysis.
+
+         elsif Present (E1) then
+
+            --  Do not expand the argument as it may have side effects. Simply
+            --  preanalyze to determine whether it is a loop or something else.
+
+            Preanalyze_And_Resolve (E1);
+
+            if Is_Entity_Name (E1)
+              and then Present (Entity (E1))
+              and then Ekind (Entity (E1)) = E_Loop
+            then
+               Loop_Id := Entity (E1);
+
+            --  The argument is not a loop name
+
+            else
+               Convert_To_Indexed_Component;
+               Analyze (N);
+               return;
+            end if;
+         end if;
 
          --  The prefix must denote an object
 
@@ -3709,20 +3787,6 @@ package body Sem_Attr is
 
          if Is_Immutably_Limited_Type (Etype (P)) then
             Error_Attr_P ("prefix of attribute % cannot be limited");
-         end if;
-
-         --  The sole argument of a Loop_Entry must be a loop name
-
-         if Is_Entity_Name (E1) then
-            Loop_Id := Entity (E1);
-         end if;
-
-         if No (Loop_Id)
-           or else Ekind (Loop_Id) /= E_Loop
-           or else not In_Open_Scopes (Loop_Id)
-         then
-            Error_Attr ("argument of % must be a valid loop name", E1);
-            return;
          end if;
 
          --  Climb the parent chain to verify the location of the attribute and
@@ -3751,6 +3815,15 @@ package body Sem_Attr is
               and then Present (Identifier (Stmt))
             then
                Enclosing_Loop := Stmt;
+
+               --  The original attribute reference may lack a loop name. Use
+               --  the name of the enclosing loop because it is the related
+               --  loop.
+
+               if No (Loop_Id) then
+                  Loop_Id := Entity (Identifier (Enclosing_Loop));
+               end if;
+
                exit;
 
             --  Prevent the search from going too far
@@ -3790,7 +3863,7 @@ package body Sem_Attr is
 
             else
                Error_Attr
-                 ("cannot appear in program unit or accept statement", N);
+                 ("attribute % cannot appear in body or accept statement", N);
                exit;
             end if;
          end loop;
@@ -7235,7 +7308,10 @@ package body Sem_Attr is
       -- Loop_Entry --
       ----------------
 
-      --  This null processing requires an explanatory comment???
+      --  Loop_Entry acts as an alias of a constant initialized to the prefix
+      --  of the said attribute at the point of entry into the related loop. As
+      --  such, the attribute reference does not need to be evaluated because
+      --  the prefix is the one that is evaluted.
 
       when Attribute_Loop_Entry =>
          null;
