@@ -1,3 +1,14 @@
+2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Loop_Invariant_Variant_Placement): When pragma
+	Loop_[In]variant does not appear immediately within the statements
+	of a loop, it must appear in a chain of nested blocks.
+
+2012-12-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+	 Remove redundant assertion.
+
 2012-12-05  Thomas Quinot  <quinot@adacore.com>
 
 	* par_sco.adb, scos.ads, put_scos.adb, put_scos.ads,

@@ -620,7 +620,7 @@ package body Sem_Prag is
 
       procedure Check_Loop_Invariant_Variant_Placement;
       --  Verify whether pragma Loop_Invariant or pragma Loop_Variant appear
-      --  immediately within the statements of the related loop.
+      --  immediately within a construct restricted to loops.
 
       procedure Check_Is_In_Decl_Part_Or_Package_Spec;
       --  Check that pragma appears in a declarative part, or in a package
@@ -1921,37 +1921,89 @@ package body Sem_Prag is
       --------------------------------------------
 
       procedure Check_Loop_Invariant_Variant_Placement is
-         Loop_Stmt : Node_Id;
+         procedure Placement_Error (Constr : Node_Id);
+         --  Node Constr denotes the last loop restricted construct before we
+         --  encountered an illegal relation between enclosing constructs. Emit
+         --  an error depending on what Constr was.
+
+         ---------------------
+         -- Placement_Error --
+         ---------------------
+
+         procedure Placement_Error (Constr : Node_Id) is
+         begin
+            if Nkind (Constr) = N_Pragma then
+               Error_Pragma
+                 ("pragma % must appear immediately within the statements " &
+                  "of a loop");
+            else
+               Error_Pragma_Arg
+                 ("block containing pragma % must appear immediately within " &
+                  "the statements of a loop", Constr);
+            end if;
+         end Placement_Error;
+
+         --  Local declarations
+
+         Prev : Node_Id;
+         Stmt : Node_Id;
+
+      --  Start of processing for Check_Loop_Invariant_Variant_Placement
 
       begin
-         --  Locate the enclosing loop statement (if any)
+         Prev := N;
+         Stmt := Parent (N);
+         while Present (Stmt) loop
 
-         Loop_Stmt := N;
-         while Present (Loop_Stmt) loop
-            if Nkind (Loop_Stmt) = N_Loop_Statement then
-               exit;
+            --  The pragma or previous block must appear immediately within the
+            --  current block's declarative or statement part.
 
-            --  Prevent the search from going too far
+            if Nkind (Stmt) = N_Block_Statement then
+               if (No (Declarations (Stmt))
+                     or else List_Containing (Prev) /= Declarations (Stmt))
+                 and then
+                   List_Containing (Prev) /=
+                     Statements (Handled_Statement_Sequence (Stmt))
+               then
+                  Placement_Error (Prev);
+                  return;
 
-            elsif Nkind_In (Loop_Stmt, N_Entry_Body,
-                                       N_Package_Body,
-                                       N_Package_Declaration,
-                                       N_Protected_Body,
-                                       N_Subprogram_Body,
-                                       N_Task_Body)
-            then
-               Error_Pragma ("pragma % must appear inside a loop statement");
+               --  Keep inspecting the parents because we are now within a
+               --  chain of nested blocks.
+
+               else
+                  Prev := Stmt;
+                  Stmt := Parent (Stmt);
+               end if;
+
+            --  The pragma or previous block must appear immediately within the
+            --  statements of the loop.
+
+            elsif Nkind (Stmt) = N_Loop_Statement then
+               if List_Containing (Prev) /= Statements (Stmt) then
+                  Placement_Error (Prev);
+               end if;
+
+               --  Stop the traversal because we reached the innermost loop
+               --  regardless of whether we encountered an error or not.
+
                return;
 
+            --  Ignore a handled statement sequence. Note that this node may
+            --  be related to a subprogram body in which case we will emit an
+            --  error on the next iteration of the search.
+
+            elsif Nkind (Stmt) = N_Handled_Sequence_Of_Statements then
+               Stmt := Parent (Stmt);
+
+            --  Any other statement breaks the chain from the pragma to the
+            --  loop.
+
             else
-               Loop_Stmt := Parent (Loop_Stmt);
+               Placement_Error (Prev);
+               return;
             end if;
          end loop;
-
-         if List_Containing (N) /= Statements (Loop_Stmt) then
-            Error_Pragma
-              ("pragma % must occur immediately in the statements of a loop");
-         end if;
       end Check_Loop_Invariant_Variant_Placement;
 
       -------------------------------------------

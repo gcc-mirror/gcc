@@ -84,7 +84,7 @@ package body Sem_Ch13 is
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
-   --  then either there are pragma Invariant entries on the rep chain for the
+   --  then either there are pragma Predicate entries on the rep chain for the
    --  type (note that Predicate aspects are converted to pragma Predicate), or
    --  there are inherited aspects from a parent type, or ancestor subtypes.
    --  This procedure builds the spec and body for the Predicate function that
@@ -5423,9 +5423,9 @@ package body Sem_Ch13 is
    --  use this function even if checks are off, e.g. for membership tests.
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (Typ);
-      Spec : Node_Id;
-      SId  : Entity_Id;
+      Loc   : constant Source_Ptr := Sloc (Typ);
+      Spec  : Node_Id;
+      SId   : Entity_Id;
       FDecl : Node_Id;
       FBody : Node_Id;
 
@@ -5669,7 +5669,6 @@ package body Sem_Ch13 is
 
          --  Build function declaration
 
-         pragma Assert (Has_Predicates (Typ));
          SId :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), "Predicate"));
