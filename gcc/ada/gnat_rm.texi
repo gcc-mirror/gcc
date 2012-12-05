@@ -4034,7 +4034,7 @@ compiled in @code{Optimize_Alignment (Space)} mode, the alignment is set to 1.
 
 However, there is one case in which SPACE is ignored. If a variable length
 record (that is a discriminated record with a component which is an array
-whose length depends on a discriminant), has a pragam pack, then it is not
+whose length depends on a discriminant), has a pragma Pack, then it is not
 in general possible to set the alignment of such a record to one, so the
 pragma is ignored in this case (with a warning).
 
@@ -4200,7 +4200,7 @@ remaining declarations and statements in that scope.
 The pragma @code{Suppress (Overflow_Check)} suppresses
 overflow checking, but does not affect the overflow mode.
 
-The pragam @code{Unsuppress (Overflow_Check)} unsuppresses (enables)
+The pragma @code{Unsuppress (Overflow_Check)} unsuppresses (enables)
 overflow checking, but does not affect the overflow mode.
 
 @node Pragma Passive
@@ -16729,6 +16729,12 @@ using pragma @code{Import} with @code{Convention} = @code{CPP}.
 This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
 @end table
+
+A few restrictions are placed on the use of the @code{Access} attribute
+in conjunction with subprograms subject to convention @code{CPP}: the
+attribute may be used neither on primitive operations of a tagged
+record type with convention @code{CPP}, imported or not, nor on
+subprograms imported with pragma @code{CPP_Constructor}.
 
 In addition, C++ exceptions are propagated and can be handled in an
 @code{others} choice of an exception handler. The corresponding Ada

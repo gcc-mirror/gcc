@@ -1,3 +1,15 @@
+2012-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_rm.texi (Interfacing to C++): Document new restrictions.
+
+2012-12-05  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2012-12-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnatbind.adb: Minor reformatting.
+
 2012-12-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_ugn.texi: Fix typo.
