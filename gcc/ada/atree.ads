@@ -105,6 +105,11 @@ package Atree is
    --                 is used to indicate the real value. Set to zero for
    --                 non-subexpression nodes.
 
+   --                 Note: the required parentheses surrounding conditional
+   --                 and quantified expressions count as a level of parens
+   --                 for this purposes, so e.g. in X := (if A then B else C);
+   --                 Paren_Count for the right side will be 1.
+
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
    --                 node is built by the scanner or parser, and clear if
@@ -305,7 +310,7 @@ package Atree is
    Configurable_Run_Time_Violations : Nat := 0;
    --  Count of configurable run time violations so far. This is used to
    --  suppress certain cascaded error messages when we know that we may not
-   --  have fully expanded some items, due to high integrity violations (i.e.
+   --  have fully expanded some items, due to high integrity violations (e.g.
    --  the use of constructs not permitted by the library in use, or improper
    --  constructs in No_Run_Time mode).
 

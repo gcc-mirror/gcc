@@ -1906,9 +1906,7 @@ package body Sem_Ch13 is
                --  is mandated by the semantics of the aspect. Verify that
                --  this a scalar type, to prevent cascaded errors.
 
-               if A_Id = Aspect_Default_Value
-                 and then Is_Scalar_Type (E)
-               then
+               if A_Id = Aspect_Default_Value and then Is_Scalar_Type (E) then
                   Set_Has_Delayed_Aspects (Base_Type (E));
                   Record_Rep_Item (Base_Type (E), Aspect);
                end if;

@@ -4004,6 +4004,41 @@ cannot use this approach, because the binder must be run
 and @command{gcc} cannot be used to run the GNAT binder.
 @end ifclear
 
+@item -fcallgraph-info@r{[}=su,da@r{]}
+@cindex @option{-fcallgraph-info} (@command{gcc})
+Makes the compiler output callgraph information for the program, on a
+per-file basis. The information is generated in the VCG format.  It can
+be decorated with additional, per-node and/or per-edge information, if a
+list of comma-separated markers is additionally specified. When the
+@var{su} marker is specified, the callgraph is decorated with stack usage information; it is equivalent to @option{-fstack-usage}. When the @var{da}
+marker is specified, the callgraph is decorated with information about
+dynamically allocated objects.
+
+@item -fdump-scos
+@cindex @option{-fdump-scos} (@command{gcc})
+Generates SCO (Source Coverage Obligation) information in the ALI file.
+This information is used by advanced coverage tools. See unit @file{SCOs}
+in the compiler sources for details in files @file{scos.ads} and
+@file{scos.adb}.
+
+@item -flto@r{[}=n@r{]}
+@cindex @option{-flto} (@command{gcc})
+Enables Link Time Optimization. This switch must be used in conjunction
+with the traditional @option{-Ox} switches and instructs the compiler to
+defer most optimizations until the link stage. The advantage of this
+approach is that the compiler can do a whole-program analysis and choose
+the best interprocedural optimization strategy based on a complete view
+of the program, instead of a fragmentary view with the usual approach.
+This can also speed up the compilation of huge programs and reduce the
+size of the final executable, compared with a per-unit compilation with
+full inlining across modules enabled with the @option{-gnatn2} switch.
+The drawback of this approach is that it may require much more memory.
+The switch, as well as the accompanying @option{-Ox} switches, must be
+specified both for the compilation and the link phases.
+If the @var{n} parameter is specified, the optimization and final code
+generation at link time are executed using @var{n} parallel jobs by
+means of an installed @command{make} program.
+
 @item -fno-inline
 @cindex @option{-fno-inline} (@command{gcc})
 Suppresses all inlining, even if other optimization or inlining
@@ -4052,19 +4087,6 @@ See @ref{Stack Overflow Checking} for details.
 @cindex @option{-fstack-usage} (@command{gcc})
 Makes the compiler output stack usage information for the program, on a
 per-subprogram basis. See @ref{Static Stack Usage Analysis} for details.
-
-@item -fcallgraph-info@r{[}=su@r{]}
-@cindex @option{-fcallgraph-info} (@command{gcc})
-Makes the compiler output callgraph information for the program, on a
-per-file basis.  The information is generated in the VCG format.  It can
-be decorated with stack-usage per-node information.
-
-@item -fdump-scos
-@cindex @option{-fdump-scos} (@command{gcc})
-Generate SCO (Source Coverage Obligation) information in the ALI file.
-This information is used by advanced coverage tools. See unit @file{SCOs}
-in the compiler sources for details in files @file{scos.ads} and
-@file{scos.adb}.
 
 @item ^-g^/DEBUG^
 @cindex @option{^-g^/DEBUG^} (@command{gcc})
