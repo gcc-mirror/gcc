@@ -304,6 +304,7 @@ package body Aspects is
     Aspect_Remote_Call_Interface        => Aspect_Remote_Call_Interface,
     Aspect_Remote_Types                 => Aspect_Remote_Types,
     Aspect_Read                         => Aspect_Read,
+    Aspect_Relative_Deadline            => Aspect_Relative_Deadline,
     Aspect_Scalar_Storage_Order         => Aspect_Scalar_Storage_Order,
     Aspect_Shared                       => Aspect_Atomic,
     Aspect_Shared_Passive               => Aspect_Shared_Passive,

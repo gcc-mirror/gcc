@@ -1,3 +1,12 @@
+2012-12-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads, aspects.adb: Add aspect Relative_Deadline.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Process aspect
+	Relative_Deadline, and introduce the corresponding pragma within
+	the task definition of the task type to which it applies.
+	(Check_Aspect_At_Freeze_Point): Expression in a Relative_Deadline
+	aspect is of type Time_Span.
+
 2012-12-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_Loop_Invariant_Variant_Placement): When pragma
