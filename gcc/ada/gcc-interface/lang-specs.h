@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 1992-2011, Free Software Foundation, Inc.        *
+ *           Copyright (C) 1992-2012, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -51,6 +51,19 @@
    "\
  %{!c:%e-c required for gnat2why}\
  gnat1why %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
+    %{nostdinc*} %{nostdlib*}\
+    -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
+    %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \
+    %{a} %{d*} %{f*} \
+    %{gnatea:-gnatez} %{g*&m*} \
+    %1 %{o*:%w%*-gnatO} \
+    %i \
+    %{gnatc*|gnats*: -o %j} %{-param*} ", 0, 0, 0},
+
+  {"@adascil",
+   "\
+ %{!c:%e-c required for gnat2scil}\
+ gnat1scil %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
     %{nostdinc*} %{nostdlib*}\
     -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}%{!.adb:%{!.ads:%b.ada}}\
     %{o*:-auxbase-strip %*}%{!o*:-auxbase %b} \

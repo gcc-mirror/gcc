@@ -1,3 +1,9 @@
+2012-12-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	* gcc-interface/lang.opt: New language AdaSCIL.
+	* gcc-interface/lang-specs.h: Add specs for adascil language.
+
 2012-12-05  Thomas Quinot  <quinot@adacore.com>
 
 	* par_sco.adb (Traverse_Aspects): Ensure we always have
