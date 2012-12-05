@@ -2236,12 +2236,10 @@ aarch64_final_eh_return_addr (void)
 
 /* Output code to build up a constant in a register.  */
 static void
-aarch64_build_constant (FILE *file,
-			int regnum,
-			HOST_WIDE_INT val)
+aarch64_build_constant (int regnum, HOST_WIDE_INT val)
 {
   if (aarch64_bitmask_imm (val, DImode))
-    asm_fprintf (file, "\tmovi\t%r, %wd\n", regnum, val);
+    emit_move_insn (gen_rtx_REG (Pmode, regnum), GEN_INT (val));
   else
     {
       int i;
@@ -2272,12 +2270,14 @@ aarch64_build_constant (FILE *file,
 	 the same.  */
       if (ncount < zcount)
 	{
-	  asm_fprintf (file, "\tmovn\t%r, %wd\n", regnum, (~val) & 0xffff);
+	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
+			  GEN_INT ((~val) & 0xffff));
 	  tval = 0xffff;
 	}
       else
 	{
-	  asm_fprintf (file, "\tmovz\t%r, %wd\n", regnum, val & 0xffff);
+	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
+			  GEN_INT (val & 0xffff));
 	  tval = 0;
 	}
 
@@ -2286,39 +2286,47 @@ aarch64_build_constant (FILE *file,
       for (i = 16; i < 64; i += 16)
 	{
 	  if ((val & 0xffff) != tval)
-	    asm_fprintf (file, "\tmovk\t%r, %wd, lsl %d\n",
-			 regnum, val & 0xffff, i);
+	    emit_insn (gen_insv_immdi (gen_rtx_REG (Pmode, regnum),
+				       GEN_INT (i), GEN_INT (val & 0xffff)));
 	  val >>= 16;
 	}
     }
 }
 
 static void
-aarch64_add_constant (FILE *file, int regnum, int scratchreg,
-			     HOST_WIDE_INT delta)
+aarch64_add_constant (int regnum, int scratchreg, HOST_WIDE_INT delta)
 {
   HOST_WIDE_INT mdelta = delta;
+  rtx this_rtx = gen_rtx_REG (Pmode, regnum);
+  rtx scratch_rtx = gen_rtx_REG (Pmode, scratchreg);
 
   if (mdelta < 0)
     mdelta = -mdelta;
 
   if (mdelta >= 4096 * 4096)
     {
-      aarch64_build_constant (file, scratchreg, delta);
-      asm_fprintf (file, "\tadd\t%r, %r, %r\n", regnum, regnum,
-		   scratchreg);
+      aarch64_build_constant (scratchreg, delta);
+      emit_insn (gen_add3_insn (this_rtx, this_rtx, scratch_rtx));
     }
   else if (mdelta > 0)
     {
-      const char *const mi_op = delta < 0 ? "sub" : "add";
-
       if (mdelta >= 4096)
-	asm_fprintf (file, "\t%s\t%r, %r, %wd, lsl 12\n", mi_op, regnum, regnum,
-		     mdelta / 4096);
-
+	{
+	  emit_insn (gen_rtx_SET (Pmode, scratch_rtx, GEN_INT (mdelta / 4096)));
+	  rtx shift = gen_rtx_ASHIFT (Pmode, scratch_rtx, GEN_INT (12));
+	  if (delta < 0)
+	    emit_insn (gen_rtx_SET (Pmode, this_rtx,
+				    gen_rtx_MINUS (Pmode, this_rtx, shift)));
+	  else
+	    emit_insn (gen_rtx_SET (Pmode, this_rtx,
+				    gen_rtx_PLUS (Pmode, this_rtx, shift)));
+	}
       if (mdelta % 4096 != 0)
-	asm_fprintf (file, "\t%s\t%r, %r, %wd\n", mi_op, regnum, regnum,
-		     mdelta % 4096);
+	{
+	  scratch_rtx = GEN_INT ((delta < 0 ? -1 : 1) * (mdelta % 4096));
+	  emit_insn (gen_rtx_SET (Pmode, this_rtx,
+				  gen_rtx_PLUS (Pmode, this_rtx, scratch_rtx)));
+	}
     }
 }
 
@@ -2341,7 +2349,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   emit_note (NOTE_INSN_PROLOGUE_END);
 
   if (vcall_offset == 0)
-    aarch64_add_constant (file, this_regno, IP1_REGNUM, delta);
+    aarch64_add_constant (this_regno, IP1_REGNUM, delta);
   else
     {
       gcc_assert ((vcall_offset & 0x7) == 0);
@@ -2357,7 +2365,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    addr = gen_rtx_PRE_MODIFY (Pmode, this_rtx,
 				       plus_constant (Pmode, this_rtx, delta));
 	  else
-	    aarch64_add_constant (file, this_regno, IP1_REGNUM, delta);
+	    aarch64_add_constant (this_regno, IP1_REGNUM, delta);
 	}
 
       aarch64_emit_move (temp0, gen_rtx_MEM (Pmode, addr));
@@ -2366,7 +2374,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	  addr = plus_constant (Pmode, temp0, vcall_offset);
       else
 	{
-	  aarch64_build_constant (file, IP1_REGNUM, vcall_offset);
+	  aarch64_build_constant (IP1_REGNUM, vcall_offset);
 	  addr = gen_rtx_PLUS (Pmode, temp0, temp1);
 	}
 
@@ -5053,6 +5061,7 @@ aarch64_build_builtin_va_list (void)
 			     va_list_type);
   DECL_ARTIFICIAL (va_list_name) = 1;
   TYPE_NAME (va_list_type) = va_list_name;
+  TYPE_STUB_DECL (va_list_type) = va_list_name;
 
   /* Create the fields.  */
   f_stack = build_decl (BUILTINS_LOCATION,
@@ -6308,6 +6317,31 @@ aarch64_simd_attr_length_move (rtx insn)
   return 4;
 }
 
+/* Implement target hook TARGET_VECTOR_ALIGNMENT.  The AAPCS64 sets the maximum
+   alignment of a vector to 128 bits.  */
+static HOST_WIDE_INT
+aarch64_simd_vector_alignment (const_tree type)
+{
+  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  return MIN (align, 128);
+}
+
+/* Implement target hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE.  */
+static bool
+aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
+{
+  if (is_packed)
+    return false;
+
+  /* We guarantee alignment for vectors up to 128-bits.  */
+  if (tree_int_cst_compare (TYPE_SIZE (type),
+			    bitsize_int (BIGGEST_ALIGNMENT)) > 0)
+    return false;
+
+  /* Vectors whose size is <= BIGGEST_ALIGNMENT are naturally aligned.  */
+  return true;
+}
+
 static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (enum machine_mode mode)
 {
@@ -6855,6 +6889,13 @@ aarch64_c_mode_for_suffix (char suffix)
    to determine the size of the access.  We assume accesses are aligned.  */
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 4095
+
+#undef TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT aarch64_simd_vector_alignment
+
+#undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE \
+  aarch64_simd_vector_alignment_reachable
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

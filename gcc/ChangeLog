@@ -1,3 +1,254 @@
+2012-12-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (print_insn_with_notes): Remove prototype.
+	(rtl_dump_bb_for_graph): New prototype.
+	* sched-vis.c (print_insn_with_notes): Make static again.  Fix
+	printing of notes.
+	(rtl_dump_bb_for_graph): New function.
+	* cfghooks.h (struct cfg_hooks) <dump_bb_for_graph>: New hook.
+	(dump_bb_for_graph): New prototype.
+	* cfghooks.c (dump_bb_for_graph): New function.
+	* tree-cfg.c (gimple_cfg_hooks): Register gimple_dump_bb_for_graph
+	as dump_bb_for_graph hook implementation for GIMPLE.
+	* cfgrtl.c (rtl_cfg_hooks): Likewise for rtl_dump_bb_for_graph.
+	(cfg_layout_rtl_cfg_hooks): Likewise.
+	* graph.c (draw_cfg_node): Don't include sbitmap.h, rtl.h, tree.h,
+	gimple.h, and gimple-pretty-print.h.
+	(draw_cfg_node, draw_cfg_node_succ_edges): Use the uniqe function
+	definition number instead of the function declaration UID.
+	(print_graph_cfg): Take a struct function instead of a tree.
+	Use the dump_bb_for_graph hook to dump the basic block content.
+	* graph.h (print_graph_cfg): Update prototype.
+	* passes.c (execute_function_dump): Update print_graph_cfg call.
+	* Makefile.in (graph.o): Fixup dependencies.
+
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_builtin_va_list): Set
+	TYPE_STUB_DECL.
+
+2012-12-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_select_ccmode): Enable using CC of
+          x + imm for higher immediates on z9-109 upwards.
+
+2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.opt (cirrus-fix-invalid-insns): Delete option.
+	* invoke.texi (cirrus-fix-invalid-insns): Remove documentation.
+
+2012-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan.c (instrument_expr): If expr_ptr isn't a gimple val, first
+	store it into a SSA_NAME.
+
+	PR sanitizer/55439
+	* Makefile.in (tsan.o): Depend on tree-ssa-propagate.h.
+	* sanitizer.def: Add __tsan_atomic* builtins.
+	* asan.c (initialize_sanitizer_builtins): Adjust to also
+	initialize __tsan_atomic* builtins.
+	* tsan.c: Include tree-ssa-propagate.h.
+	(enum tsan_atomic_action): New enum.
+	(tsan_atomic_table): New table.
+	(instrument_builtin_call): New function.
+	(instrument_gimple): Take pointer to gimple_stmt_iterator
+	instead of gimple_stmt_iterator.  Call instrument_builtin_call
+	on builtin call stmts.
+	(instrument_memory_accesses): Adjust instrument_gimple caller.
+	* builtin-types.def (BT_FN_BOOL_VPTR_PTR_I1_INT_INT,
+	BT_FN_BOOL_VPTR_PTR_I2_INT_INT, BT_FN_BOOL_VPTR_PTR_I4_INT_INT,
+	BT_FN_BOOL_VPTR_PTR_I8_INT_INT, BT_FN_BOOL_VPTR_PTR_I16_INT_INT): New.
+
+2012-12-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_vector_alignment,
+	aarch64_simd_vector_alignment_reachable): New.
+	(TARGET_VECTOR_ALIGNMENT, TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE):
+	Define.
+
+2012-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55124
+	* tree-ssa-pre.c (find_or_generate_expression): Instead of
+	ICEing when we are not able to generate an expression defer it
+	by signalling failure.  Fix possible wrong-code issue by
+	not picking random REFERENCE expressions as fallback.
+	(create_component_ref_by_pieces_1): Adjust.  Add failure paths.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): When expression generation failed
+	for one edge make sure to not insert a PHI node.
+
+2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.c (ia64_compute_frame_size): Allocate the scratch
+	area if the function allocates dynamic stack space.
+	(ia64_initial_elimination_offset): Adjust offsets to above change.
+
+2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcse.c (struct reg_use): Remove unused struct.
+	(gcse_emit_move_after): Do not create REG_EQUAL notes that reference
+	the SET_DEST of the instruction the note would be attached to.
+	* cse.c (cse_main): Add the DF_NOTE problem.
+
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer.def: Add Address Sanitizer builtins.
+	Rename BUILT_IN_TSAN_READ_* to BUILT_IN_TSAN_READ* and
+	BUILT_IN_TSAN_WRITE_* to BUILT_IN_TSAN_WRITE*.
+	* Makefile.in (asan.o): Depend on langhooks.h.
+	(tsan.o): Depend on asan.h.
+	* asan.h (initialize_sanitizer_builtins): New prototype.
+	* asan.c: Include langhooks.h.
+	(report_error_func): Use builtin_decl_implicit of corresponding
+	BUILT_IN_ASAN_REPORT_{LOAD,STORE}*.
+	(asan_init_func): Removed.
+	(initialize_sanitizer_builtins): New function.
+	(asan_finish_file): Call it.  Use builtin_decl_implicit
+	on BUILT_IN_ASAN_{INIT,{,UN}REGISTER_GLOBALS}.
+	(asan_instrument): Call initialize_sanitizer_builtins.
+	* builtins.def (DEF_SANITIZER_BUILTIN): Change condition to
+	(flag_asan || flag_tsan).
+	* tsan.c: Include asan.h and tsan.h.
+	(get_memory_access_decl): Rename BUILT_IN_TSAN_{READ,WRITE}_*
+	to BUILT_IN_TSAN_{READ,WRITE}*.
+	(tsan_pass): Call initialize_sanitizer_builtins.
+	(tsan_gate, tsan_gate_O0): Don't check if
+	builtin_decl_implicit_p (BUILT_IN_TSAN_INIT) is true.
+	(tsan_finish_file): Call initialize_sanitizer_builtins.
+	* builtin-types.def (BT_FN_VOID_PTR_PTRMODE): New fn type.
+
+2012-12-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/55401
+	* trans-mem.c (get_tm_region_blocks): Exclude uninstrumented
+	blocks from vector if requested.
+	(collect_bb2reg): Pass new argument to
+	get_tm_region_blocks.
+	(get_bb_regions_instrumented): Add INCLUDE_UNINSTRUMENTED_P
+	argument, and pass it to expand_regions.
+	(execute_tm_mark): Pass new argument to
+	get_bb_regions_instrumented.
+	(execute_tm_edges): Same.
+
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (instrument_mem_region_access): Don't instrument
+	if base doesn't have pointer type or len integral type.
+	Add cast if len doesn't have size_t compatible type.
+	(instrument_builtin_call): Don't instrument BUILT_IN_ATOMIC_LOAD,
+	BUILT_IN_ATOMIC_TEST_AND_SET, BUILT_IN_ATOMIC_CLEAR,
+	BUILT_IN_ATOMIC_EXCHANGE, BUILT_IN_ATOMIC_COMPARE_EXCHANGE
+	and BUILT_IN_ATOMIC_STORE.
+
+	* asan.c (instrument_assignment): Instrument lhs only
+	for gimple_store_p and rhs1 only for gimple_assign_load_p.
+
+2012-12-03  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* Makefile.in: Add target mddump, build/genmddump.o.  Extend
+	genprogrtl with mddump.
+	* genmddump.c: New.
+
+2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (print_insn_with_notes): Prototype.
+	* sched-vis.c (print_insn_with_notes): Export it.
+
+	* gimple-pretty-print.h (gimple_dump_bb_for_graph): Prototype.
+	* gimple-pretty-print.c (print_gimple_expr): Flush the buffer.
+	(pp_gimple_stmt_1): Don't do it here.
+	(gimple_dump_bb_for_graph): New function.
+	* tree-pretty-print.c (print_generic_expr): Flush the buffer here.
+	(dump_generic_node): Don't flush the buffer here.
+
+	* graph.h (print_rtl_graph_with_bb): Rename to print_graph_cfg.
+	* graph.c: Include gimple.h, dumpfile.h, and gimple-pretty-print.h.
+	(draw_cfg_node): Handle GIMPLE basic blocks also.
+	(print_rtl_graph_with_bb): Rename to print_graph_cfg.
+	* passes.c (finish_optimization_passes): Don't finish graph dumps here.
+	(execute_function_dump): Use print_graph_cfg. Enable dumping the CFG
+	for GIMPLE also.
+	(pass_init_dump_file): Wrap in TV_DUMP.  Set up CFG graph dumps.
+	(pass_fini_dump_file): Wrap in TV_DUMP.  Finish graph dumps.
+	(execute_one_pass): Don't set up graph dumps here.
+
+2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa.c (warn_uninitialized_var): Use OPT_Wmaybe_uninitialized tag
+	in the non-always executed case.
+
+2012-12-03  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_constant): Update prototype.
+	Call emit_move_insn	instead of printing movi/movn/movz instructions.
+	Call gen_insv_immdi instead of printing movk instruction.
+	(aarch64_add_constant): Update prototype.
+	Generate RTL instead of printing add/sub instructions.
+	(aarch64_output_mi_thunk): Update calls to aarch64_build_constant
+	and aarch64_add_constant.
+
+2012-12-03 Kai Tietz  <ktietz@redhat.com>
+
+	PR target/53912
+	* ggc-common.c (POINTER_HASH): Cast from pointer via intptr_t.
+
+	PR target/53912
+	* tree-dump.c (dump_pointer): Print pointer via HOST_WIDE_INT_PRINT.
+
+	PR target/53912
+	* pointer-set.c (hash1): Cast from pointer via uintptr_t.
+
+2012-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/54838
+	* cprop.c (bypass_block): Determine number of latches.  Return
+	when there is more than one latch edge.
+
+2012-12-02  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/55551
+	* lto-cgraph.c (merge_profile_summaries): Handle scaled histogram
+	entries that map to the same index.
+
+2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* optabs.c (add_equal_note): Do not create self-referencing REG_EQUAL
+	notes.
+	* fwprop.c (forward_propagate_and_simplify): Likewise.
+
+2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* function.h (struct rtl_data): Remove epilogue_delay_list.
+	* reorg.c (find_end_label): Simplify always-true test.
+	(optimize_skip): Likewise.
+	* final.c (leaf_function_p): Don't loop over epilogue_delay_list.
+	(leaf_renumber_regs): Likewise.
+	* varasm.c (mark_constant_pool): Likewise.
+	* except.c (set_nothrow_function_flags): Likewise.
+	* cfgrtl.c (print_rtl_with_bb): Likewise.
+
+2012-12-02  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_function_value): Set the mode of the
+	returned PARALLEL to that of the return-value, not VOIDmode.
+
+2012-12-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi: Various corrections to punctuation and grammar
+	throughout the file.  Use consistent terminology and proper names.
+	Correct some minor markup issues.
+
+2010-12-01  Xinliang David Li  <davidxl@google.com>
+
+        * config/i386/i386.c: Allow sign extend instructions (cltd etc)
+        on modern CPUs.
+
+2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* reorg.c: Remove an obsolete comment.
+	* config/pa/pa.md: Add back the HP-PA comment here, with details.
+
 2012-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator): Deal

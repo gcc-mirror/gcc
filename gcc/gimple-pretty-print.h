@@ -32,5 +32,6 @@ extern void print_gimple_seq (FILE *, gimple_seq, int, int);
 extern void print_gimple_stmt (FILE *, gimple, int, int);
 extern void print_gimple_expr (FILE *, gimple, int, int);
 extern void pp_gimple_stmt_1 (pretty_printer *, gimple, int, int);
+extern void gimple_dump_bb_for_graph (pretty_printer *, basic_block);
 
 #endif /* ! GCC_GIMPLE_PRETTY_PRINT_H */

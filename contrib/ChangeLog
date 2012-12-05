@@ -1,3 +1,8 @@
+2012-12-03  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Fix stale
+	use of 'options'.
+
 2012-11-30  Doug Evans  <dje@google.com>
 
 	* testsuite-management/validate_failures.py: Add support for @include,

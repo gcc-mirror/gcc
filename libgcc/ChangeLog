@@ -1,3 +1,39 @@
+2012-12-04  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/55571
+	* Makefile.in (libgcc_s.so): Depend on and link with libgcc.a.
+
+2012-12-04  Marcus Shawcroft <marcus.shawcroft@arm.com>
+
+        * config/aarch64/sfp-machine.h (FP_EX_ALL): Define.
+	(FP_EX_SHIFT): Define.
+	(FP_TRAPPING_EXCEPTIONS): Define.
+
+2012-12-04  Marcus Shawcroft <marcus.shawcroft@arm.com>
+
+	* config/aarch64/sfp-machine.h (FP_RND_MASK): Define.
+	(FP_ROUNDMODE): Use FP_RND_MASK.
+	* config/aarch64/sfp-exceptions.c: New.
+	* config/aarch64/sfp-machine.h (FP_HANDLE_EXCEPTIONS):
+	Use __sfp_handle_exceptions.
+
+2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.host: (arm*-*-freebsd*): Remove.
+	(arm*-*-linux*, arm*-*-uclinux*): Simplify logic.
+	(arm*-*-elf*): Remove.
+	(arm*-*-wince-pe*): Remove.
+	* arm/unwind-arm.c (struct fpa_reg): Delete.
+	(struct fpa_regs): Delete.
+	(phase1_vrs): Remove fpa element.
+	(_Unwind_VRS_Get): Remove _UVRSC_FPA.
+	(_Unwind_VRS_Set, _Unwind_VRS_Pop): Likewise.
+	* arm/pr-support.c (__gnu_unwind_execute): Remove FPA support.
+	* ieee754-sf.S (floatundisf): Remove FPA support.
+	(floatdisf): Likewise.
+	* ieee75f-df.S (floatundidf): Likewise.
+	(floatdidf): Likewise.
+
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55445

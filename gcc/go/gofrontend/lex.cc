@@ -915,12 +915,8 @@ Lex::gather_identifier()
 	    }
 	  if (is_invalid && !Lex::is_invalid_identifier(buf))
 	    buf.append("$INVALID$");
+	  buf.append(p, pnext - p);
 	  p = pnext;
-	  char ubuf[50];
-	  // This assumes that all assemblers can handle an identifier
-	  // with a '$' character.
-	  snprintf(ubuf, sizeof ubuf, "$U%x$", ci);
-	  buf.append(ubuf);
 	}
     }
   Location location = this->location();

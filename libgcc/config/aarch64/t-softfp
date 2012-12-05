@@ -5,3 +5,5 @@ softfp_truncations := tfsf tfdf
 softfp_exclude_libgcc2 := n
 
 TARGET_LIBGCC2_CFLAGS += -Wno-missing-prototypes
+
+LIB2ADD += $(srcdir)/config/aarch64/sfp-exceptions.c

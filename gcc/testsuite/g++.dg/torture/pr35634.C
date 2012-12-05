@@ -14,6 +14,6 @@ void foo (int i)
 
 int main ()
 {
-    char c;
+    signed char c;
     for (c = 0; ; c++) foo (c);
 }

@@ -1,6 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-;;   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+;;   Copyright (C) 1992-2012
 ;;   Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
@@ -21,8 +20,52 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; This gcc Version 2 machine description is inspired by sparc.md and
-;; mips.md.
+;; This machine description is inspired by sparc.md and to a lesser
+;; extent mips.md.
+
+;; Possible improvements:
+;;
+;; * With PA1.1, most computational instructions can conditionally nullify
+;;   the execution of the following instruction.  A nullified instruction
+;;   does not cause the instruction pipeline to stall, making it a very
+;;   efficient alternative to e.g. branching or conditional moves.
+;;
+;;   Nullification is performed conditionally based on the outcome of a
+;;   test specified in the opcode.  The test result is stored in PSW[N]
+;;   and can only be used to nullify the instruction following immediately
+;;   after the test.  For example:
+;;
+;;	ldi 10,%r26
+;;	ldi 5,%r25
+;;	sub,< %r26,%r25,%r28
+;;	sub   %r28,%r25,%r28	; %r28 == 0
+;;	sub,> %r26,%r25,%r29
+;;	sub   %r29,%r25,%r29	; %r29 == 5
+;;
+;;   This could be tricky to implement because the result of the test has
+;;   to be propagated one instruction forward, which, in the worst case,
+;;   would involve (1) adding a fake register for PSW[N]; (2) adding the
+;;   variants of the computational instructions that set or consume this
+;;   fake register.  The cond_exec infrastructure is probably not helpful
+;;   for this.
+;;
+;; * PA-RISC includes a set of conventions for branch instruction usage
+;;   to indicate whether a particular branch is more likely to be taken
+;;   or not taken.  For example, the prediction for CMPB instructions
+;;   (CMPB,cond,n r1,r2,target) depends on the direction of the branch
+;;   (forward or backward) and on the order of the operands:
+;;
+;;     | branch    | operand  | branch     |
+;;     | direction | compare  | prediction |
+;;     +-----------+----------+------------+
+;;     | backward  | r1 < r2  | taken      |
+;;     | backward  | r1 >= r2 | not taken  |
+;;     | forward   | r1 < r2  | not taken  |
+;;     | forward   | r1 >= r2 | taken      |
+;;    
+;;   By choosing instructions and operand order carefully, the compiler
+;;   could give the CPU branch predictor some help.
+;;   
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 

@@ -341,10 +341,6 @@ struct GTY(()) rtl_data {
 
   /* For reorg.  */
 
-  /* If some insns can be deferred to the delay slots of the epilogue, the
-     delay list for them is recorded here.  */
-  rtx epilogue_delay_list;
-
   /* Nonzero if function being compiled called builtin_return_addr or
      builtin_frame_address with nonzero count.  */
   bool accesses_prior_frames;

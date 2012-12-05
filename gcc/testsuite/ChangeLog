@@ -1,3 +1,104 @@
+2012-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/quad_3.f90: Really fix an if condition.
+
+2012-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/quad_3.f90: Fix a condition,
+	which wrongly required ordered/lazy evaluation.
+
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.target/aarch64/121127.c: New test.
+
+2012-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/55587
+	* lib/asan-dg.exp (asan_init): Return 1 if libasan has been found,
+	0 if not.
+	* g++.dg/asan/asan.exp: Don't run gcc-dg-runtest if [asan_init]
+	returned 0.
+	* gcc.dg/asan/asan.exp: Likewise.
+
+2012-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55124
+	* gcc.dg/torture/pr55124.c: New testcase.
+
+2012-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/quad_3.f90: New.
+
+2012-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54170
+	* g++.dg/cpp0x/lambda/lambda-nullptr.C: New.
+
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/55452
+	* gfortran.dg/reassoc_4.f: Use --param max-completely-peeled-insns=400
+	on all targets, not just s390*.
+
+2012-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/55570
+	* gcc.dg/pr55570.c: New test.
+
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/asan-dg.exp (asan_get_gtest_test_list,
+	asan_get_gtest_expect_death_list, asan-gtest): New procedures.
+	(proc ${tool}_load): Remember [asan_get_gtest_test_list "$output"]
+	and [asan_get_gtest_expect_death_list "$output"] in global vars.
+	(asan_symbolize): Sanitize [] characters from key.
+	* g++.dg/asan/asan_test_config.h: New file.
+	* g++.dg/asan/asan_globals_test.cc: New file.
+	* g++.dg/asan/asan_test_utils.h: New file.
+	* g++.dg/asan/dejagnu-gtest.h: New file.
+	* g++.dg/asan/asan_test.cc: New file.
+	* g++.dg/asan/asan_test.C: New test.
+
+2012-12-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr35634.c: Use signed char.
+	* g++.dg/torture/pr35634.C: Likewise.
+
+2012-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/54838
+	* gcc.dg/pr54838.c: New test.
+
+2012-12-01  Xinliang David Li  <davidxl@google.com>
+
+	* gcc.target/i386/ifcvt-onecmpl-abs-1.c: Check for
+	cltd.
+
+2012-12-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55558
+	* g++.dg/cpp0x/decltype46.C: New.
+
+2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/52450
+	* gcc.dg/torture/pr52402.c: Remove xfail for hppa*-*-hpux*.
+
+2012-12-01  Zdenek Sojka <zsojka@seznam.cz>
+
+	PR debug/53860
+	* g++.dg/debug/pr53860.C: New test.
+
+2012-12-01   Alessandro Fanfarillo <alessandro.fanfarillo@gmail.com>
+	     Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46897
+	* gfortran.dg/defined_assignment_1.f90: New test.
+	* gfortran.dg/defined_assignment_2.f90: New test.
+	* gfortran.dg/defined_assignment_3.f90: New test.
+	* gfortran.dg/defined_assignment_4.f90: New test.
+	* gfortran.dg/defined_assignment_5.f90: New test.
+
 2012-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55542
@@ -527,6 +628,7 @@
 	* testsuite/gcc.dg/torture/pr55238.c: New test.
 
 2012-11-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
 	* gcc.dg/torture/pr54920.c: Add "-fno-common" option on hppa*-*-hpux*.
 	* c-c++-common/torture/vector-subscript-1.c: Likewise.
 	* c-c++-common/torture/vector-subscript-2.c: Likewise.

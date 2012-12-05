@@ -1,6 +1,7 @@
 /* ieee754-df.S double-precision floating point support for ARM
 
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2012
+   Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -36,9 +37,7 @@
  */
 
 
-@ For FPA, float words are always big-endian.
-@ For VFP, floats words follow the memory system mode.
-#if defined(__VFP_FP__) && !defined(__ARMEB__)
+#ifndef __ARMEB__
 #define xl r0
 #define xh r1
 #define yl r2
@@ -494,24 +493,10 @@ ARM_FUNC_START floatundidf
 ARM_FUNC_ALIAS aeabi_ul2d floatundidf
 
 	orrs	r2, r0, r1
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	do_it	eq, t
-	mvfeqd	f0, #0.0
-#else
 	do_it	eq
-#endif
 	RETc(eq)
 
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	@ For hard FPA code we want to return via the tail below so that
-	@ we can return the result in f0 as well as in r0/r1 for backwards
-	@ compatibility.
-	adr	ip, LSYM(f0_ret)
-	@ Push pc as well so that RETLDM works correctly.
-	do_push	{r4, r5, ip, lr, pc}
-#else
 	do_push	{r4, r5, lr}
-#endif
 
 	mov	r5, #0
 	b	2f
@@ -520,24 +505,10 @@ ARM_FUNC_START floatdidf
 ARM_FUNC_ALIAS aeabi_l2d floatdidf
 
 	orrs	r2, r0, r1
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	do_it	eq, t
-	mvfeqd	f0, #0.0
-#else
 	do_it	eq
-#endif
 	RETc(eq)
 
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-	@ For hard FPA code we want to return via the tail below so that
-	@ we can return the result in f0 as well as in r0/r1 for backwards
-	@ compatibility.
-	adr	ip, LSYM(f0_ret)
-	@ Push pc as well so that RETLDM works correctly.
-	do_push	{r4, r5, ip, lr, pc}
-#else
 	do_push	{r4, r5, lr}
-#endif
 
 	ands	r5, ah, #0x80000000	@ sign bit in r5
 	bpl	2f
@@ -552,7 +523,7 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 	mov	r4, #0x400		@ initial exponent
 	add	r4, r4, #(52-1 - 1)
 
-	@ FPA little-endian: must swap the word order.
+	@ If FP word order does not match integer word order, swap the words.
 	.ifnc	xh, ah
 	mov	ip, al
 	mov	xh, ah
@@ -579,17 +550,6 @@ ARM_FUNC_ALIAS aeabi_l2d floatdidf
 	shift1	lsr, xh, xh, r2
 	add	r4, r4, r2
 	b	LSYM(Lad_p)
-
-#if !defined (__VFP_FP__) && !defined(__SOFTFP__)
-
-	@ Legacy code expects the result to be returned in f0.  Copy it
-	@ there as well.
-LSYM(f0_ret):
-	do_push	{r0, r1}
-	ldfd	f0, [sp], #8
-	RETLDM
-
-#endif
 
 	FUNC_END floatdidf
 	FUNC_END aeabi_l2d

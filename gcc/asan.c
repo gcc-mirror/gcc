@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "output.h"
 #include "tm_p.h"
+#include "langhooks.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -485,37 +486,15 @@ asan_protect_global (tree decl)
 static tree
 report_error_func (bool is_store, int size_in_bytes)
 {
-  tree fn_type;
-  tree def;
-  char name[100];
-
-  sprintf (name, "__asan_report_%s%d",
-	   is_store ? "store" : "load", size_in_bytes);
-  fn_type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-  def = build_fn_decl (name, fn_type);
-  TREE_NOTHROW (def) = 1;
-  DECL_IGNORED_P (def) = 1;
-  TREE_THIS_VOLATILE (def) = 1;  /* Attribute noreturn. Surprise!  */
-  DECL_ATTRIBUTES (def) = tree_cons (get_identifier ("leaf"),
-				     NULL, DECL_ATTRIBUTES (def));
-  return def;
+  static enum built_in_function report[2][5]
+    = { { BUILT_IN_ASAN_REPORT_LOAD1, BUILT_IN_ASAN_REPORT_LOAD2,
+	  BUILT_IN_ASAN_REPORT_LOAD4, BUILT_IN_ASAN_REPORT_LOAD8,
+	  BUILT_IN_ASAN_REPORT_LOAD16 },
+	{ BUILT_IN_ASAN_REPORT_STORE1, BUILT_IN_ASAN_REPORT_STORE2,
+	  BUILT_IN_ASAN_REPORT_STORE4, BUILT_IN_ASAN_REPORT_STORE8,
+	  BUILT_IN_ASAN_REPORT_STORE16 } };
+  return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
 }
-
-/* Construct a function tree for __asan_init().  */
-
-static tree
-asan_init_func (void)
-{
-  tree fn_type;
-  tree def;
-
-  fn_type = build_function_type_list (void_type_node, NULL_TREE);
-  def = build_fn_decl ("__asan_init", fn_type);
-  TREE_NOTHROW (def) = 1;
-  DECL_IGNORED_P (def) = 1;
-  return def;
-}
-
 
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
@@ -849,7 +828,9 @@ instrument_mem_region_access (tree base, tree len,
 			      gimple_stmt_iterator *iter,
 			      location_t location, bool is_store)
 {
-  if (integer_zerop (len))
+  if (!POINTER_TYPE_P (TREE_TYPE (base))
+      || !INTEGRAL_TYPE_P (TREE_TYPE (len))
+      || integer_zerop (len))
     return;
 
   gimple_stmt_iterator gsi = *iter;
@@ -902,20 +883,41 @@ instrument_mem_region_access (tree base, tree len,
 
   /* offset = len - 1;  */
   len = unshare_expr (len);
-  gimple offset =
-    gimple_build_assign_with_ops (TREE_CODE (len),
-				  make_ssa_name (TREE_TYPE (len), NULL),
-				  len, NULL);
-  gimple_set_location (offset, location);
-  gsi_insert_before (&gsi, offset, GSI_NEW_STMT);
+  tree offset;
+  gimple_seq seq = NULL;
+  if (TREE_CODE (len) == INTEGER_CST)
+    offset = fold_build2 (MINUS_EXPR, size_type_node,
+			  fold_convert (size_type_node, len),
+			  build_int_cst (size_type_node, 1));
+  else
+    {
+      gimple g;
+      tree t;
 
-  offset =
-    gimple_build_assign_with_ops (MINUS_EXPR,
-				  make_ssa_name (size_type_node, NULL),
-				  gimple_assign_lhs (offset),
-				  build_int_cst (size_type_node, 1));
-  gimple_set_location (offset, location);
-  gsi_insert_after (&gsi, offset, GSI_NEW_STMT);
+      if (TREE_CODE (len) != SSA_NAME)
+	{
+	  t = make_ssa_name (TREE_TYPE (len), NULL);
+	  g = gimple_build_assign_with_ops (TREE_CODE (len), t, len, NULL);
+	  gimple_set_location (g, location);
+	  gimple_seq_add_stmt_without_update (&seq, g);
+	  len = t;
+	}
+      if (!useless_type_conversion_p (size_type_node, TREE_TYPE (len)))
+	{
+	  t = make_ssa_name (size_type_node, NULL);
+	  g = gimple_build_assign_with_ops (NOP_EXPR, t, len, NULL);
+	  gimple_set_location (g, location);
+	  gimple_seq_add_stmt_without_update (&seq, g);
+	  len = t;
+	}
+
+      t = make_ssa_name (size_type_node, NULL);
+      g = gimple_build_assign_with_ops (MINUS_EXPR, t, len,
+					build_int_cst (size_type_node, 1));
+      gimple_set_location (g, location);
+      gimple_seq_add_stmt_without_update (&seq, g);
+      offset = gimple_assign_lhs (g);
+    }
 
   /* _1 = base;  */
   base = unshare_expr (base);
@@ -924,14 +926,16 @@ instrument_mem_region_access (tree base, tree len,
 				  make_ssa_name (TREE_TYPE (base), NULL),
 				  base, NULL);
   gimple_set_location (region_end, location);
-  gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
+  gimple_seq_add_stmt_without_update (&seq, region_end);
+  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+  gsi_prev (&gsi);
 
   /* _2 = _1 + offset;  */
   region_end =
     gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
 				  make_ssa_name (TREE_TYPE (base), NULL),
 				  gimple_assign_lhs (region_end),
-				  gimple_assign_lhs (offset));
+				  offset);
   gimple_set_location (region_end, location);
   gsi_insert_after (&gsi, region_end, GSI_NEW_STMT);
 
@@ -1089,7 +1093,6 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
        These are handled differently from the classical memory memory
        access builtins above.  */
 
-    case BUILT_IN_ATOMIC_LOAD:
     case BUILT_IN_ATOMIC_LOAD_1:
     case BUILT_IN_ATOMIC_LOAD_2:
     case BUILT_IN_ATOMIC_LOAD_4:
@@ -1192,23 +1195,18 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
     case BUILT_IN_SYNC_LOCK_RELEASE_8:
     case BUILT_IN_SYNC_LOCK_RELEASE_16:
 
-    case BUILT_IN_ATOMIC_TEST_AND_SET:
-    case BUILT_IN_ATOMIC_CLEAR:
-    case BUILT_IN_ATOMIC_EXCHANGE:
     case BUILT_IN_ATOMIC_EXCHANGE_1:
     case BUILT_IN_ATOMIC_EXCHANGE_2:
     case BUILT_IN_ATOMIC_EXCHANGE_4:
     case BUILT_IN_ATOMIC_EXCHANGE_8:
     case BUILT_IN_ATOMIC_EXCHANGE_16:
 
-    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_2:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_4:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_8:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_16:
 
-    case BUILT_IN_ATOMIC_STORE:
     case BUILT_IN_ATOMIC_STORE_1:
     case BUILT_IN_ATOMIC_STORE_2:
     case BUILT_IN_ATOMIC_STORE_4:
@@ -1339,10 +1337,12 @@ instrument_assignment (gimple_stmt_iterator *iter)
 
   gcc_assert (gimple_assign_single_p (s));
 
-  instrument_derefs (iter, gimple_assign_lhs (s),
-		     gimple_location (s), true);
-  instrument_derefs (iter, gimple_assign_rhs1 (s),
-		     gimple_location (s), false);
+  if (gimple_store_p (s))
+    instrument_derefs (iter, gimple_assign_lhs (s),
+		       gimple_location (s), true);
+  if (gimple_assign_load_p (s))
+    instrument_derefs (iter, gimple_assign_rhs1 (s),
+		       gimple_location (s), false);
 }
 
 /* Instrument the function call pointed to by the iterator ITER, if it
@@ -1489,6 +1489,90 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
 
+/* Initialize sanitizer.def builtins if the FE hasn't initialized them.  */
+void
+initialize_sanitizer_builtins (void)
+{
+  tree decl;
+
+  if (builtin_decl_implicit_p (BUILT_IN_ASAN_INIT))
+    return;
+
+  tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR
+    = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR_PTRMODE
+    = build_function_type_list (void_type_node, ptr_type_node,
+				build_nonstandard_integer_type (POINTER_SIZE,
+								1), NULL_TREE);
+  tree BT_FN_VOID_INT
+    = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
+  tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
+  tree BT_FN_IX_CONST_VPTR_INT[5];
+  tree BT_FN_IX_VPTR_IX_INT[5];
+  tree BT_FN_VOID_VPTR_IX_INT[5];
+  tree vptr
+    = build_pointer_type (build_qualified_type (void_type_node,
+						TYPE_QUAL_VOLATILE));
+  tree cvptr
+    = build_pointer_type (build_qualified_type (void_type_node,
+						TYPE_QUAL_VOLATILE
+						|TYPE_QUAL_CONST));
+  tree boolt
+    = lang_hooks.types.type_for_size (BOOL_TYPE_SIZE, 1);
+  int i;
+  for (i = 0; i < 5; i++)
+    {
+      tree ix = build_nonstandard_integer_type (BITS_PER_UNIT * (1 << i), 1);
+      BT_FN_BOOL_VPTR_PTR_IX_INT_INT[i]
+	= build_function_type_list (boolt, vptr, ptr_type_node, ix,
+				    integer_type_node, integer_type_node,
+				    NULL_TREE);
+      BT_FN_IX_CONST_VPTR_INT[i]
+	= build_function_type_list (ix, cvptr, integer_type_node, NULL_TREE);
+      BT_FN_IX_VPTR_IX_INT[i]
+	= build_function_type_list (ix, vptr, ix, integer_type_node,
+				    NULL_TREE);
+      BT_FN_VOID_VPTR_IX_INT[i]
+	= build_function_type_list (void_type_node, vptr, ix,
+				    integer_type_node, NULL_TREE);
+    }
+#define BT_FN_BOOL_VPTR_PTR_I1_INT_INT BT_FN_BOOL_VPTR_PTR_IX_INT_INT[0]
+#define BT_FN_I1_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[0]
+#define BT_FN_I1_VPTR_I1_INT BT_FN_IX_VPTR_IX_INT[0]
+#define BT_FN_VOID_VPTR_I1_INT BT_FN_VOID_VPTR_IX_INT[0]
+#define BT_FN_BOOL_VPTR_PTR_I2_INT_INT BT_FN_BOOL_VPTR_PTR_IX_INT_INT[1]
+#define BT_FN_I2_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[1]
+#define BT_FN_I2_VPTR_I2_INT BT_FN_IX_VPTR_IX_INT[1]
+#define BT_FN_VOID_VPTR_I2_INT BT_FN_VOID_VPTR_IX_INT[1]
+#define BT_FN_BOOL_VPTR_PTR_I4_INT_INT BT_FN_BOOL_VPTR_PTR_IX_INT_INT[2]
+#define BT_FN_I4_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[2]
+#define BT_FN_I4_VPTR_I4_INT BT_FN_IX_VPTR_IX_INT[2]
+#define BT_FN_VOID_VPTR_I4_INT BT_FN_VOID_VPTR_IX_INT[2]
+#define BT_FN_BOOL_VPTR_PTR_I8_INT_INT BT_FN_BOOL_VPTR_PTR_IX_INT_INT[3]
+#define BT_FN_I8_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[3]
+#define BT_FN_I8_VPTR_I8_INT BT_FN_IX_VPTR_IX_INT[3]
+#define BT_FN_VOID_VPTR_I8_INT BT_FN_VOID_VPTR_IX_INT[3]
+#define BT_FN_BOOL_VPTR_PTR_I16_INT_INT BT_FN_BOOL_VPTR_PTR_IX_INT_INT[4]
+#define BT_FN_I16_CONST_VPTR_INT BT_FN_IX_CONST_VPTR_INT[4]
+#define BT_FN_I16_VPTR_I16_INT BT_FN_IX_VPTR_IX_INT[4]
+#define BT_FN_VOID_VPTR_I16_INT BT_FN_VOID_VPTR_IX_INT[4]
+#undef ATTR_NOTHROW_LEAF_LIST
+#define ATTR_NOTHROW_LEAF_LIST ECF_NOTHROW | ECF_LEAF
+#undef ATTR_NORETURN_NOTHROW_LEAF_LIST
+#define ATTR_NORETURN_NOTHROW_LEAF_LIST ECF_NORETURN | ATTR_NOTHROW_LEAF_LIST
+#undef DEF_SANITIZER_BUILTIN
+#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
+			       BUILT_IN_NORMAL, NAME, NULL_TREE);	\
+  set_call_expr_flags (decl, ATTRS);					\
+  set_builtin_decl (ENUM, decl, true);
+
+#include "sanitizer.def"
+
+#undef DEF_SANITIZER_BUILTIN
+}
+
 /* Needs to be GTY(()), because cgraph_build_static_cdtor may
    invoke ggc_collect.  */
 static GTY(()) tree asan_ctor_statements;
@@ -1504,14 +1588,16 @@ asan_finish_file (void)
   struct varpool_node *vnode;
   unsigned HOST_WIDE_INT gcount = 0;
 
-  append_to_statement_list (build_call_expr (asan_init_func (), 0),
-			    &asan_ctor_statements);
+  initialize_sanitizer_builtins ();
+
+  tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
+  append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (asan_protect_global (vnode->symbol.decl))
       ++gcount;
   if (gcount)
     {
-      tree type = asan_global_struct (), var, ctor, decl;
+      tree type = asan_global_struct (), var, ctor;
       tree uptr = build_nonstandard_integer_type (POINTER_SIZE, 1);
       tree dtor_statements = NULL_TREE;
       vec<constructor_elt, va_gc> *v;
@@ -1535,20 +1621,14 @@ asan_finish_file (void)
       DECL_INITIAL (var) = ctor;
       varpool_assemble_decl (varpool_node_for_decl (var));
 
-      type = build_function_type_list (void_type_node, ptr_type_node,
-				       uptr, NULL_TREE);
-      decl = build_fn_decl ("__asan_register_globals", type);
-      TREE_NOTHROW (decl) = 1;
-      DECL_IGNORED_P (decl) = 1;
-      append_to_statement_list (build_call_expr (decl, 2,
+      fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
+      append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
 				&asan_ctor_statements);
 
-      decl = build_fn_decl ("__asan_unregister_globals", type);
-      TREE_NOTHROW (decl) = 1;
-      DECL_IGNORED_P (decl) = 1;
-      append_to_statement_list (build_call_expr (decl, 2,
+      fn = builtin_decl_implicit (BUILT_IN_ASAN_UNREGISTER_GLOBALS);
+      append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
 						 build_int_cst (uptr, gcount)),
 				&dtor_statements);
@@ -1579,7 +1659,10 @@ static unsigned int
 asan_instrument (void)
 {
   if (shadow_ptr_types[0] == NULL_TREE)
-    asan_init_shadow_ptr_types ();
+    {
+      asan_init_shadow_ptr_types ();
+      initialize_sanitizer_builtins ();
+    }
   transform_statements ();
   return 0;
 }

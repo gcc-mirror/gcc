@@ -101,10 +101,6 @@ mcaller-super-interworking
 Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code
 
-mcirrus-fix-invalid-insns
-Target Report Mask(CIRRUS_FIX_INVALID_INSNS)
-Cirrus: Place NOPs to avoid invalid instruction combinations
-
 mcpu=
 Target RejectNegative Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
 Specify the name of the target CPU

@@ -3822,18 +3822,13 @@ mark_constants (rtx insn)
 static void
 mark_constant_pool (void)
 {
-  rtx insn, link;
+  rtx insn;
 
   if (!crtl->uses_const_pool && n_deferred_constants == 0)
     return;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     mark_constants (insn);
-
-  for (link = crtl->epilogue_delay_list;
-       link;
-       link = XEXP (link, 1))
-    mark_constants (XEXP (link, 0));
 }
 
 /* Write all the constants in POOL.  */

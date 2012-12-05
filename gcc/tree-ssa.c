@@ -1664,7 +1664,7 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 			     "%qD is used uninitialized in this function",
 			     stmt);
 	      else if (warn_possibly_uninitialized)
-		warn_uninit (OPT_Wuninitialized, use,
+		warn_uninit (OPT_Wmaybe_uninitialized, use,
 			     SSA_NAME_VAR (use), SSA_NAME_VAR (use),
 			     "%qD may be used uninitialized in this function",
 			     stmt);
@@ -1696,13 +1696,13 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 		continue;
 
 	      if (always_executed)
-		warn_uninit (OPT_Wuninitialized, use, gimple_assign_rhs1 (stmt),
-			     base,
+		warn_uninit (OPT_Wuninitialized, use, 
+			     gimple_assign_rhs1 (stmt), base,
 			     "%qE is used uninitialized in this function",
 			     stmt);
 	      else if (warn_possibly_uninitialized)
-		warn_uninit (OPT_Wuninitialized, use, gimple_assign_rhs1 (stmt),
-			     base,
+		warn_uninit (OPT_Wmaybe_uninitialized, use,
+			     gimple_assign_rhs1 (stmt), base,
 			     "%qE may be used uninitialized in this function",
 			     stmt);
 	    }

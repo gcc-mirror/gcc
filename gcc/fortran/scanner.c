@@ -1068,10 +1068,12 @@ restart:
 	  && gfc_current_locus.lb->truncated)
 	{
 	  int maxlen = gfc_option.free_line_length;
+	  gfc_char_t *current_nextc = gfc_current_locus.nextc;
+
 	  gfc_current_locus.lb->truncated = 0;
-	  gfc_current_locus.nextc += maxlen;
+	  gfc_current_locus.nextc =  gfc_current_locus.lb->line + maxlen;
 	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
-	  gfc_current_locus.nextc -= maxlen;
+	  gfc_current_locus.nextc = current_nextc;
 	}
 
       if (c != '&')

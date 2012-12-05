@@ -1345,7 +1345,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
         /* Save a pointer to the profile_info with the largest
            scaled sum_all and the scale for use in merging the
            histogram.  */
-        if (lto_gcov_summary.sum_all > saved_sum_all)
+        if (!saved_profile_info
+            || lto_gcov_summary.sum_all > saved_sum_all)
           {
             saved_profile_info = &file_data->profile_info;
             saved_sum_all = lto_gcov_summary.sum_all;
@@ -1363,17 +1364,20 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
          above. Use that to find the new histogram index.  */
       int scaled_min = RDIV (saved_profile_info->histogram[h_ix].min_value
                              * saved_scale, REG_BR_PROB_BASE);
+      /* The new index may be shared with another scaled histogram entry,
+         so we need to account for a non-zero histogram entry at new_ix.  */
       unsigned new_ix = gcov_histo_index (scaled_min);
-      lto_gcov_summary.histogram[new_ix].min_value = scaled_min;
+      lto_gcov_summary.histogram[new_ix].min_value
+          = MIN (lto_gcov_summary.histogram[new_ix].min_value, scaled_min);
       /* Some of the scaled counter values would ostensibly need to be placed
          into different (larger) histogram buckets, but we keep things simple
          here and place the scaled cumulative counter value in the bucket
          corresponding to the scaled minimum counter value.  */
       lto_gcov_summary.histogram[new_ix].cum_value
-          = RDIV (saved_profile_info->histogram[h_ix].cum_value
-                  * saved_scale, REG_BR_PROB_BASE);
+          += RDIV (saved_profile_info->histogram[h_ix].cum_value
+                   * saved_scale, REG_BR_PROB_BASE);
       lto_gcov_summary.histogram[new_ix].num_counters
-          = saved_profile_info->histogram[h_ix].num_counters;
+          += saved_profile_info->histogram[h_ix].num_counters;
     }
 
   /* Watch roundoff errors.  */

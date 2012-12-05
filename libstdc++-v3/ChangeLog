@@ -1,3 +1,29 @@
+2012-12-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* include/Makefile.am (${host_builddir}/c++config.h): Replace
+	[<space><tab>] by [<tab><space>].
+	* include/Makefile.in: Regenerate.
+
+2012-12-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* include/Makefile.am: Fix regexp broken by previous commit.
+	* include/Makefile.in: Likewise.
+
+2012-12-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/cc_hash_table_map_/standard_policies.hpp:
+	Remove.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/standard_policies.hpp:
+	Remove.
+	* include/Makefile.am (pb_headers): Remove include files.
+	* include/Makefile.in: Regenerated.
+
+2012-12-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libstdc++/55503
+	* testsuite/30_threads/condition_variable/members/53841.cc: Add
+	hppa*-hp-hpux11* to -pthread dg-options.
+
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55445

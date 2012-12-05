@@ -360,10 +360,11 @@ class Expression
 
   // This is called if the value of this expression is being
   // discarded.  This issues warnings about computed values being
-  // unused.
-  void
+  // unused.  This returns true if all is well, false if it issued an
+  // error message.
+  bool
   discarding_value()
-  { this->do_discarding_value(); }
+  { return this->do_discarding_value(); }
 
   // Return whether this is an error expression.
   bool
@@ -689,7 +690,7 @@ class Expression
   { return false; }
 
   // Called by the parser if the value is being discarded.
-  virtual void
+  virtual bool
   do_discarding_value();
 
   // Child class holds type.
@@ -1205,7 +1206,7 @@ class Binary_expression : public Expression
   bool
   do_numeric_constant_value(Numeric_constant*) const;
 
-  void
+  bool
   do_discarding_value();
 
   Type*
@@ -1373,9 +1374,9 @@ class Call_expression : public Expression
   virtual Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
-  void
+  bool
   do_discarding_value()
-  { }
+  { return true; }
 
   virtual Type*
   do_type();
@@ -2056,9 +2057,9 @@ class Receive_expression : public Expression
   do_traverse(Traverse* traverse)
   { return Expression::traverse(&this->channel_, traverse); }
 
-  void
+  bool
   do_discarding_value()
-  { }
+  { return true; }
 
   Type*
   do_type();
@@ -2224,10 +2225,10 @@ class Numeric_constant
   check_int_type(Integer_type*, bool, Location) const;
 
   bool
-  check_float_type(Float_type*, bool, Location) const;
+  check_float_type(Float_type*, bool, Location);
 
   bool
-  check_complex_type(Complex_type*, bool, Location) const;
+  check_complex_type(Complex_type*, bool, Location);
 
   // The kinds of constants.
   enum Classification

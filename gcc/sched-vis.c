@@ -716,7 +716,7 @@ print_insn (pretty_printer *pp, const_rtx x, int verbose)
     }
 }				/* print_insn */
 
-/* Prerry-print a slim dump of X (an insn) to PP, including any register
+/* Pretty-print a slim dump of X (an insn) to PP, including any register
    note attached to the instruction.  */
 
 static void
@@ -728,9 +728,9 @@ print_insn_with_notes (pretty_printer *pp, const_rtx x)
   if (INSN_P (x) && REG_NOTES (x))
     for (rtx note = REG_NOTES (x); note; note = XEXP (note, 1))
       {
-	pp_printf (pp, "%s      %s", print_rtx_head,
+	pp_printf (pp, "%s      %s ", print_rtx_head,
 		   GET_REG_NOTE_NAME (REG_NOTE_KIND (note)));
-        print_pattern (pp, XEXP (note, 0), 1);
+	print_pattern (pp, XEXP (note, 0), 1);
 	pp_newline (pp);
       }
 }
@@ -798,6 +798,29 @@ dump_rtl_slim (FILE *f, const_rtx first, const_rtx last,
     }
 
   pp_flush (pp);
+}
+
+/* Dumps basic block BB to pretty-printer PP in slim form and without and
+   no indentation, for use as a label of a DOT graph record-node.  */
+
+void
+rtl_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
+{
+  rtx insn;
+  bool first = true;
+
+  /* TODO: inter-bb stuff.  */
+  FOR_BB_INSNS (bb, insn)
+    {
+      if (! first)
+	{
+	  pp_character (pp, '|');
+	  pp_write_text_to_stream (pp);
+	}
+      first = false;
+      print_insn_with_notes (pp, insn);
+      pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+    }
 }
 
 /* Pretty-print pattern X of some insn in non-verbose mode.

@@ -156,7 +156,7 @@ along with GCC; see the file COPYING3.  If not see
 #define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
 	       true, true, true, ATTRS, true, \
-	       flag_tsan)
+	       (flag_asan || flag_tsan))
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for

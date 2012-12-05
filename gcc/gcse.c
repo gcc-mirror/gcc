@@ -255,8 +255,6 @@ int flag_rerun_cse_after_global_opts;
 /* An obstack for our working variables.  */
 static struct obstack gcse_obstack;
 
-struct reg_use {rtx reg_rtx; };
-
 /* Hash table of expressions.  */
 
 struct expr
@@ -2491,23 +2489,27 @@ gcse_emit_move_after (rtx dest, rtx src, rtx insn)
   rtx new_rtx;
   rtx set = single_set (insn), set2;
   rtx note;
-  rtx eqv;
+  rtx eqv = NULL_RTX;
 
   /* This should never fail since we're creating a reg->reg copy
      we've verified to be valid.  */
 
   new_rtx = emit_insn_after (gen_move_insn (dest, src), insn);
 
-  /* Note the equivalence for local CSE pass.  */
+  /* Note the equivalence for local CSE pass.  Take the note from the old
+     set if there was one.  Otherwise record the SET_SRC from the old set
+     unless DEST is also an operand of the SET_SRC.  */
   set2 = single_set (new_rtx);
   if (!set2 || !rtx_equal_p (SET_DEST (set2), dest))
     return new_rtx;
   if ((note = find_reg_equal_equiv_note (insn)))
     eqv = XEXP (note, 0);
-  else
+  else if (! REG_P (dest)
+	   || ! reg_mentioned_p (dest, SET_SRC (set)))
     eqv = SET_SRC (set);
 
-  set_unique_reg_note (new_rtx, REG_EQUAL, copy_insn_1 (eqv));
+  if (eqv != NULL_RTX)
+    set_unique_reg_note (new_rtx, REG_EQUAL, copy_insn_1 (eqv));
 
   return new_rtx;
 }

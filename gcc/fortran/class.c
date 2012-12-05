@@ -731,7 +731,7 @@ has_finalizer_component (gfc_symbol *derived)
 
 static void
 finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
-		    gfc_expr *stat, gfc_code **code)
+		    gfc_symbol *stat, gfc_symbol *fini_coarray, gfc_code **code)
 {
   gfc_expr *e;
   gfc_ref *ref;
@@ -779,12 +779,36 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       e->rank = ref->next->u.ar.as->rank;
     }
 
+  /* Call DEALLOCATE (comp, stat=ignore).  */
   if (comp->attr.allocatable
       || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
 	  && CLASS_DATA (comp)->attr.allocatable))
     {
-      /* Call DEALLOCATE (comp, stat=ignore).  */
-      gfc_code *dealloc;
+      gfc_code *dealloc, *block = NULL;
+
+      /* Add IF (fini_coarray).  */
+      if (comp->attr.codimension
+	  || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+	      && CLASS_DATA (comp)->attr.allocatable))
+	{
+	  block = XCNEW (gfc_code);
+	  if (*code)
+	    {
+	      (*code)->next = block;
+	      (*code) = (*code)->next;
+	    }
+	  else
+	      (*code) = block;
+
+	  block->loc = gfc_current_locus;
+	  block->op = EXEC_IF;
+
+	  block->block = XCNEW (gfc_code);
+	  block = block->block;
+	  block->loc = gfc_current_locus;
+	  block->op = EXEC_IF;
+	  block->expr1 = gfc_lval_expr_from_sym (fini_coarray);
+	}
 
       dealloc = XCNEW (gfc_code);
       dealloc->op = EXEC_DEALLOCATE;
@@ -792,9 +816,11 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
       dealloc->ext.alloc.list = gfc_get_alloc ();
       dealloc->ext.alloc.list->expr = e;
+      dealloc->expr1 = gfc_lval_expr_from_sym (stat);
 
-      dealloc->expr1 = stat;
-      if (*code)
+      if (block)
+	block->next = dealloc;
+      else if (*code)
 	{
 	  (*code)->next = dealloc;
 	  (*code) = (*code)->next;
@@ -839,7 +865,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       gfc_component *c;
 
       for (c = comp->ts.u.derived->components; c; c = c->next)
-	finalize_component (e, c->ts.u.derived, c, stat, code);
+	finalize_component (e, comp->ts.u.derived, c, stat, fini_coarray, code);
       gfc_free_expr (e);
     }
 }
@@ -847,12 +873,11 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
 /* Generate code equivalent to
    CALL C_F_POINTER (TRANSFER (TRANSFER (C_LOC (array, cptr), c_intptr)
-		     + idx * STORAGE_SIZE (array)/NUMERIC_STORAGE_SIZE., c_ptr),
-		     ptr).  */
+		     + idx * stride, c_ptr), ptr).  */
 
 static gfc_code *
 finalization_scalarizer (gfc_symbol *idx, gfc_symbol *array, gfc_symbol *ptr,
-			 gfc_namespace *sub_ns)
+			 gfc_expr *stride, gfc_namespace *sub_ns)
 {
   gfc_code *block;
   gfc_expr *expr, *expr2, *expr3;
@@ -919,40 +944,13 @@ finalization_scalarizer (gfc_symbol *idx, gfc_symbol *array, gfc_symbol *ptr,
   expr->ts.kind = gfc_index_integer_kind;
   expr2->value.function.actual->expr = expr;
 
-  /* STORAGE_SIZE (...) / NUMERIC_STORAGE_SIZE.  */
-  block->ext.actual->expr = gfc_get_expr ();
-  expr = block->ext.actual->expr;
-  expr->expr_type = EXPR_OP;
-  expr->value.op.op = INTRINSIC_DIVIDE;
-
-  /* STORAGE_SIZE (array,kind=c_intptr_t).  */
-  expr->value.op.op1 = gfc_get_expr ();
-  expr->value.op.op1->expr_type = EXPR_FUNCTION;
-  expr->value.op.op1->value.function.isym
-		= gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
-  gfc_get_sym_tree ("storage_size", sub_ns, &expr->value.op.op1->symtree,
-		    false);
-  expr->value.op.op1->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  expr->value.op.op1->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (expr->value.op.op1->symtree->n.sym);
-  expr->value.op.op1->value.function.actual = gfc_get_actual_arglist ();
-  expr->value.op.op1->value.function.actual->expr
-		= gfc_lval_expr_from_sym (array);
-  expr->value.op.op1->value.function.actual->next = gfc_get_actual_arglist ();
-  expr->value.op.op1->value.function.actual->next->expr
-		= gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
-  expr->value.op.op2 = gfc_get_int_expr (gfc_index_integer_kind, NULL,
-					 gfc_character_storage_size);
-  expr->value.op.op1->ts = expr->value.op.op2->ts;
-  expr->ts = expr->value.op.op1->ts;
-
-  /* Offset calculation: idx * (STORAGE_SIZE (...) / NUMERIC_STORAGE_SIZE).  */
+  /* Offset calculation: idx * stride (in bytes).  */
   block->ext.actual->expr = gfc_get_expr ();
   expr3 = block->ext.actual->expr;
   expr3->expr_type = EXPR_OP;
   expr3->value.op.op = INTRINSIC_TIMES;
   expr3->value.op.op1 = gfc_lval_expr_from_sym (idx);
-  expr3->value.op.op2 = expr;
+  expr3->value.op.op2 = stride;
   expr3->ts = expr->ts;
 
   /* <array addr> + <offset>.  */
@@ -972,6 +970,265 @@ finalization_scalarizer (gfc_symbol *idx, gfc_symbol *array, gfc_symbol *ptr,
 }
 
 
+/* Insert code of the following form:
+
+   if (stride == STORAGE_SIZE (array)/NUMERIC_STORAGE_SIZE
+       || 0 == STORAGE_SIZE (array)) then
+     call final_rank3 (array)
+   else
+     block
+       type(t) :: tmp(shape (array))
+
+       do i = 0, size (array)-1
+	 addr = transfer (c_loc (array), addr) + i * stride
+	 call c_f_pointer (transfer (addr, cptr), ptr)
+
+	 addr = transfer (c_loc (tmp), addr)
+			  + i * STORAGE_SIZE (array)/NUMERIC_STORAGE_SIZE
+	 call c_f_pointer (transfer (addr, cptr), ptr2)
+	 ptr2 = ptr
+       end do
+       call final_rank3 (tmp)
+     end block
+   end if  */
+
+static void
+finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
+			      gfc_symbol *array, gfc_symbol *stride,
+			      gfc_symbol *idx, gfc_symbol *ptr,
+			      gfc_symbol *nelem, gfc_symtree *size_intr,
+			      gfc_namespace *sub_ns)
+{
+  gfc_symbol *tmp_array, *ptr2;
+  gfc_expr *size_expr;
+  gfc_namespace *ns;
+  gfc_iterator *iter;
+  int i;
+
+  block->next = XCNEW (gfc_code);
+  block = block->next;
+  block->loc = gfc_current_locus;
+  block->op = EXEC_IF;
+
+  block->block = XCNEW (gfc_code);
+  block = block->block;
+  block->loc = gfc_current_locus;
+  block->op = EXEC_IF;
+
+  /* size_expr = STORAGE_SIZE (...) / NUMERIC_STORAGE_SIZE.  */
+  size_expr = gfc_get_expr ();
+  size_expr->where = gfc_current_locus;
+  size_expr->expr_type = EXPR_OP;
+  size_expr->value.op.op = INTRINSIC_DIVIDE;
+
+  /* STORAGE_SIZE (array,kind=c_intptr_t).  */
+  size_expr->value.op.op1 = gfc_get_expr ();
+  size_expr->value.op.op1->where = gfc_current_locus;
+  size_expr->value.op.op1->expr_type = EXPR_FUNCTION;
+  size_expr->value.op.op1->value.function.isym
+               = gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
+  gfc_get_sym_tree ("storage_size", sub_ns, &size_expr->value.op.op1->symtree,
+		    false);
+  size_expr->value.op.op1->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+  size_expr->value.op.op1->symtree->n.sym->attr.intrinsic = 1;
+  gfc_commit_symbol (size_expr->value.op.op1->symtree->n.sym);
+  size_expr->value.op.op1->value.function.actual = gfc_get_actual_arglist ();
+  size_expr->value.op.op1->value.function.actual->expr
+               = gfc_lval_expr_from_sym (array);
+  size_expr->value.op.op1->value.function.actual->next = gfc_get_actual_arglist ();
+  size_expr->value.op.op1->value.function.actual->next->expr
+               = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+
+  /* NUMERIC_STORAGE_SIZE.  */
+  size_expr->value.op.op2 = gfc_get_int_expr (gfc_index_integer_kind, NULL,
+					      gfc_character_storage_size);
+  size_expr->value.op.op1->ts = size_expr->value.op.op2->ts;
+  size_expr->ts = size_expr->value.op.op1->ts;
+
+  /* IF condition: stride == size_expr || 0 == size_expr.  */
+  block->expr1 = gfc_get_expr ();
+  block->expr1->expr_type = EXPR_FUNCTION;
+  block->expr1->ts.type = BT_LOGICAL;
+  block->expr1->ts.kind = 4;
+  block->expr1->expr_type = EXPR_OP;
+  block->expr1->where = gfc_current_locus;
+
+  block->expr1->value.op.op = INTRINSIC_OR;
+
+  /* stride == size_expr */
+  block->expr1->value.op.op1 = gfc_get_expr ();
+  block->expr1->value.op.op1->expr_type = EXPR_FUNCTION;
+  block->expr1->value.op.op1->ts.type = BT_LOGICAL;
+  block->expr1->value.op.op1->ts.kind = 4;
+  block->expr1->value.op.op1->expr_type = EXPR_OP;
+  block->expr1->value.op.op1->where = gfc_current_locus;
+  block->expr1->value.op.op1->value.op.op = INTRINSIC_EQ;
+  block->expr1->value.op.op1->value.op.op1 = gfc_lval_expr_from_sym (stride);
+  block->expr1->value.op.op1->value.op.op2 = size_expr;
+
+  /* 0 == size_expr */
+  block->expr1->value.op.op2 = gfc_get_expr ();
+  block->expr1->value.op.op2->expr_type = EXPR_FUNCTION;
+  block->expr1->value.op.op2->ts.type = BT_LOGICAL;
+  block->expr1->value.op.op2->ts.kind = 4;
+  block->expr1->value.op.op2->expr_type = EXPR_OP;
+  block->expr1->value.op.op2->where = gfc_current_locus;
+  block->expr1->value.op.op2->value.op.op = INTRINSIC_EQ;
+  block->expr1->value.op.op2->value.op.op1 =
+			gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+  block->expr1->value.op.op2->value.op.op2 = gfc_copy_expr (size_expr);
+
+  /* IF body: call final subroutine.  */
+  block->next = XCNEW (gfc_code);
+  block->next->op = EXEC_CALL;
+  block->next->loc = gfc_current_locus;
+  block->next->symtree = fini->proc_tree;
+  block->next->resolved_sym = fini->proc_tree->n.sym;
+  block->next->ext.actual = gfc_get_actual_arglist ();
+  block->next->ext.actual->expr = gfc_lval_expr_from_sym (array);
+
+  /* ELSE.  */
+
+  block->block = XCNEW (gfc_code);
+  block = block->block;
+  block->loc = gfc_current_locus;
+  block->op = EXEC_IF;
+
+  block->next = XCNEW (gfc_code);
+  block = block->next;
+
+  /* BLOCK ... END BLOCK.  */
+  block->op = EXEC_BLOCK;
+  block->loc = gfc_current_locus;
+  ns = gfc_build_block_ns (sub_ns);
+  block->ext.block.ns = ns;
+  block->ext.block.assoc = NULL;
+
+  gfc_get_symbol ("ptr2", ns, &ptr2);
+  ptr2->ts.type = BT_DERIVED;
+  ptr2->ts.u.derived = array->ts.u.derived;
+  ptr2->attr.flavor = FL_VARIABLE;
+  ptr2->attr.pointer = 1;
+  ptr2->attr.artificial = 1;
+  gfc_set_sym_referenced (ptr2);
+  gfc_commit_symbol (ptr2);
+
+  gfc_get_symbol ("tmp_array", ns, &tmp_array);
+  tmp_array->ts.type = BT_DERIVED;
+  tmp_array->ts.u.derived = array->ts.u.derived;
+  tmp_array->attr.flavor = FL_VARIABLE;
+  tmp_array->attr.contiguous = 1;
+  tmp_array->attr.dimension = 1;
+  tmp_array->attr.artificial = 1;
+  tmp_array->as = gfc_get_array_spec();
+  tmp_array->attr.intent = INTENT_INOUT;
+  tmp_array->as->type = AS_EXPLICIT;
+  tmp_array->as->rank = fini->proc_tree->n.sym->formal->sym->as->rank;
+
+  for (i = 0; i < tmp_array->as->rank; i++)
+    {
+      gfc_expr *shape_expr;
+      tmp_array->as->lower[i] = gfc_get_int_expr (gfc_default_integer_kind,
+						  NULL, 1);
+      /* SIZE (array, dim=i+1, kind=default_kind).  */
+      shape_expr = gfc_get_expr ();
+      shape_expr->expr_type = EXPR_FUNCTION;
+      shape_expr->value.function.isym
+				= gfc_intrinsic_function_by_id (GFC_ISYM_SIZE);
+      shape_expr->symtree = size_intr;
+      shape_expr->value.function.actual = gfc_get_actual_arglist ();
+      shape_expr->value.function.actual->expr = gfc_lval_expr_from_sym (array);
+      shape_expr->value.function.actual->next = gfc_get_actual_arglist ();
+      shape_expr->value.function.actual->next->expr
+		= gfc_get_int_expr (gfc_default_integer_kind, NULL, i+1);
+      shape_expr->value.function.actual->next->next = gfc_get_actual_arglist ();
+      shape_expr->value.function.actual->next->next->expr
+		= gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
+      shape_expr->ts = shape_expr->value.function.isym->ts;
+
+      tmp_array->as->upper[i] = shape_expr;
+    }
+  gfc_set_sym_referenced (tmp_array);
+  gfc_commit_symbol (tmp_array);
+
+  /* Create loop.  */
+  iter = gfc_get_iterator ();
+  iter->var = gfc_lval_expr_from_sym (idx);
+  iter->start = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+  iter->end = gfc_lval_expr_from_sym (nelem);
+  iter->step = gfc_get_int_expr (gfc_index_integer_kind, NULL, 1);
+
+  block = XCNEW (gfc_code);
+  ns->code = block;
+  block->op = EXEC_DO;
+  block->loc = gfc_current_locus;
+  block->ext.iterator = iter;
+  block->block = gfc_get_code ();
+  block->block->op = EXEC_DO;
+
+  /* Create code for
+     CALL C_F_POINTER (TRANSFER (TRANSFER (C_LOC (array, cptr), c_intptr)
+		       + idx * stride, c_ptr), ptr).  */
+  block->block->next = finalization_scalarizer (idx, array, ptr,
+						gfc_lval_expr_from_sym (stride),
+						sub_ns);
+  block->block->next->next = finalization_scalarizer (idx, tmp_array, ptr2,
+						      gfc_copy_expr (size_expr),
+						      sub_ns);
+  /* ptr2 = ptr.  */
+  block->block->next->next->next = XCNEW (gfc_code);
+  block->block->next->next->next->op = EXEC_ASSIGN;
+  block->block->next->next->next->loc = gfc_current_locus;
+  block->block->next->next->next->expr1 = gfc_lval_expr_from_sym (ptr2);
+  block->block->next->next->next->expr2 = gfc_lval_expr_from_sym (ptr);
+
+  block->next  = XCNEW (gfc_code);
+  block = block->next;
+  block->op = EXEC_CALL;
+  block->loc = gfc_current_locus;
+  block->symtree = fini->proc_tree;
+  block->resolved_sym = fini->proc_tree->n.sym;
+  block->ext.actual = gfc_get_actual_arglist ();
+  block->ext.actual->expr = gfc_lval_expr_from_sym (tmp_array);
+
+  if (fini->proc_tree->n.sym->formal->sym->attr.intent == INTENT_IN)
+    return;
+
+  /* Copy back.  */
+
+  /* Loop.  */
+  iter = gfc_get_iterator ();
+  iter->var = gfc_lval_expr_from_sym (idx);
+  iter->start = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+  iter->end = gfc_lval_expr_from_sym (nelem);
+  iter->step = gfc_get_int_expr (gfc_index_integer_kind, NULL, 1);
+
+  block->next = XCNEW (gfc_code);
+  block = block->next;
+  block->op = EXEC_DO;
+  block->loc = gfc_current_locus;
+  block->ext.iterator = iter;
+  block->block = gfc_get_code ();
+  block->block->op = EXEC_DO;
+
+  /* Create code for
+     CALL C_F_POINTER (TRANSFER (TRANSFER (C_LOC (array, cptr), c_intptr)
+		       + idx * stride, c_ptr), ptr).  */
+  block->block->next = finalization_scalarizer (idx, array, ptr,
+						gfc_lval_expr_from_sym (stride),
+						sub_ns);
+  block->block->next->next = finalization_scalarizer (idx, tmp_array, ptr2,
+						      gfc_copy_expr (size_expr),
+						      sub_ns);
+  /* ptr = ptr2.  */
+  block->block->next->next->next = XCNEW (gfc_code);
+  block->block->next->next->next->op = EXEC_ASSIGN;
+  block->block->next->next->next->loc = gfc_current_locus;
+  block->block->next->next->next->expr1 = gfc_lval_expr_from_sym (ptr);
+  block->block->next->next->next->expr2 = gfc_lval_expr_from_sym (ptr2);
+}
+
+
 /* Generate the finalization/polymorphic freeing wrapper subroutine for the
    derived type "derived". The function first calls the approriate FINAL
    subroutine, then it DEALLOCATEs (finalizes/frees) the allocatable
@@ -979,19 +1236,28 @@ finalization_scalarizer (gfc_symbol *idx, gfc_symbol *array, gfc_symbol *ptr,
    subroutine of the parent. The generated wrapper procedure takes as argument
    an assumed-rank array.
    If neither allocatable components nor FINAL subroutines exists, the vtab
-   will contain a NULL pointer.  */
+   will contain a NULL pointer.
+   The generated function has the form
+     _final(assumed-rank array, stride, skip_corarray)
+   where the array has to be contiguous (except of the lowest dimension). The
+   stride (in bytes) is used to allow different sizes for ancestor types by
+   skipping over the additionally added components in the scalarizer. If
+   "fini_coarray" is false, coarray components are not finalized to allow for
+   the correct semantic with intrinsic assignment.  */
 
 static void
 generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 			       const char *tname, gfc_component *vtab_final)
 {
-  gfc_symbol *final, *array, *nelem;
+  gfc_symbol *final, *array, *nelem, *fini_coarray, *stride;
   gfc_symbol *ptr = NULL, *idx = NULL;
+  gfc_symtree *size_intr;
   gfc_component *comp;
   gfc_namespace *sub_ns;
   gfc_code *last_code;
   char name[GFC_MAX_SYMBOL_LEN+1];
   bool finalizable_comp = false;
+  bool expr_null_wrapper = false;
   gfc_expr *ancestor_wrapper = NULL;
 
   /* Search for the ancestor's finalizers. */
@@ -1011,40 +1277,44 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	  }
     }
 
-  /* No wrapper of the ancestor and no own FINAL subroutines and
-     allocatable components: Return a NULL() expression.  */
+  /* No wrapper of the ancestor and no own FINAL subroutines and allocatable
+     components: Return a NULL() expression; we defer this a bit to have have
+     an interface declaration.  */
   if ((!ancestor_wrapper || ancestor_wrapper->expr_type == EXPR_NULL)
       && !derived->attr.alloc_comp
       && (!derived->f2k_derived || !derived->f2k_derived->finalizers)
       && !has_finalizer_component (derived))
-    {
-      vtab_final->initializer = gfc_get_null_expr (NULL);
-      return;
-    }
-
-  /* Check whether there are new allocatable components.  */
-  for (comp = derived->components; comp; comp = comp->next)
-    {
-      if (comp == derived->components && derived->attr.extension
-	  && ancestor_wrapper && ancestor_wrapper->expr_type != EXPR_NULL)
+    expr_null_wrapper = true;
+  else
+    /* Check whether there are new allocatable components.  */
+    for (comp = derived->components; comp; comp = comp->next)
+      {
+	if (comp == derived->components && derived->attr.extension
+	    && ancestor_wrapper && ancestor_wrapper->expr_type != EXPR_NULL)
 	continue;
 
-      if (comp->ts.type != BT_CLASS && !comp->attr.pointer
-	  && (comp->attr.alloc_comp || comp->attr.allocatable
-	      || (comp->ts.type == BT_DERIVED
-		  && has_finalizer_component (comp->ts.u.derived))))
-	finalizable_comp = true;
-      else if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
-	       && CLASS_DATA (comp)->attr.allocatable)
-	finalizable_comp = true;
-    }
+	if (comp->ts.type != BT_CLASS && !comp->attr.pointer
+	    && (comp->attr.allocatable
+		|| (comp->ts.type == BT_DERIVED
+		    && (comp->ts.u.derived->attr.alloc_comp
+			|| has_finalizer_component (comp->ts.u.derived)
+			|| (comp->ts.u.derived->f2k_derived
+			    && comp->ts.u.derived->f2k_derived->finalizers)))))
+	  finalizable_comp = true;
+	else if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+		 && CLASS_DATA (comp)->attr.allocatable)
+	  finalizable_comp = true;
+      }
 
   /* If there is no new finalizer and no new allocatable, return with
      an expr to the ancestor's one.  */
-  if ((!derived->f2k_derived || !derived->f2k_derived->finalizers)
-      && !finalizable_comp)
+  if (!expr_null_wrapper && !finalizable_comp
+      && (!derived->f2k_derived || !derived->f2k_derived->finalizers))
     {
+      gcc_assert (ancestor_wrapper && ancestor_wrapper->ref == NULL
+	          && ancestor_wrapper->expr_type == EXPR_VARIABLE);
       vtab_final->initializer = gfc_copy_expr (ancestor_wrapper);
+      vtab_final->ts.interface = vtab_final->initializer->symtree->n.sym;
       return;
     }
 
@@ -1057,12 +1327,13 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
      3. Call the ancestor's finalizer.  */
 
   /* Declare the wrapper function; it takes an assumed-rank array
-     as argument. */
+     and a VALUE logical as arguments. */
 
   /* Set up the namespace.  */
   sub_ns = gfc_get_namespace (ns, 0);
   sub_ns->sibling = ns->contained;
-  ns->contained = sub_ns;
+  if (!expr_null_wrapper)
+    ns->contained = sub_ns;
   sub_ns->resolved = 1;
 
   /* Set up the procedure symbol.  */
@@ -1070,13 +1341,17 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   gfc_get_symbol (name, sub_ns, &final);
   sub_ns->proc_name = final;
   final->attr.flavor = FL_PROCEDURE;
-  final->attr.subroutine = 1;
-  final->attr.pure = 1;
+  final->attr.function = 1;
+  final->attr.pure = 0;
+  final->result = final;
+  final->ts.type = BT_INTEGER;
+  final->ts.kind = 4;
   final->attr.artificial = 1;
-  final->attr.if_source = IFSRC_DECL;
+  final->attr.if_source = expr_null_wrapper ? IFSRC_IFBODY : IFSRC_DECL;
   if (ns->proc_name->attr.flavor == FL_MODULE)
     final->module = ns->proc_name->name;
   gfc_set_sym_referenced (final);
+  gfc_commit_symbol (final);
 
   /* Set up formal argument.  */
   gfc_get_symbol ("array", sub_ns, &array);
@@ -1096,6 +1371,50 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   final->formal->sym = array;
   gfc_commit_symbol (array);
 
+  /* Set up formal argument.  */
+  gfc_get_symbol ("stride", sub_ns, &stride);
+  stride->ts.type = BT_INTEGER;
+  stride->ts.kind = gfc_index_integer_kind;
+  stride->attr.flavor = FL_VARIABLE;
+  stride->attr.dummy = 1;
+  stride->attr.value = 1;
+  stride->attr.artificial = 1;
+  gfc_set_sym_referenced (stride);
+  final->formal->next = gfc_get_formal_arglist ();
+  final->formal->next->sym = stride;
+  gfc_commit_symbol (stride);
+
+  /* Set up formal argument.  */
+  gfc_get_symbol ("fini_coarray", sub_ns, &fini_coarray);
+  fini_coarray->ts.type = BT_LOGICAL;
+  fini_coarray->ts.kind = 4;
+  fini_coarray->attr.flavor = FL_VARIABLE;
+  fini_coarray->attr.dummy = 1;
+  fini_coarray->attr.value = 1;
+  fini_coarray->attr.artificial = 1;
+  gfc_set_sym_referenced (fini_coarray);
+  final->formal->next->next = gfc_get_formal_arglist ();
+  final->formal->next->next->sym = fini_coarray;
+  gfc_commit_symbol (fini_coarray);
+
+  /* Return with a NULL() expression but with an interface which has
+     the formal arguments.  */
+  if (expr_null_wrapper)
+    {
+      vtab_final->initializer = gfc_get_null_expr (NULL);
+      vtab_final->ts.interface = final;
+      return;
+    }
+
+
+  /* Set return value to 0.  */
+  last_code = XCNEW (gfc_code);
+  last_code->op = EXEC_ASSIGN;
+  last_code->loc = gfc_current_locus;
+  last_code->expr1 = gfc_lval_expr_from_sym (final);
+  last_code->expr2 = gfc_get_int_expr (4, NULL, 0);
+  sub_ns->code = last_code;
+
   /* Obtain the size (number of elements) of "array" MINUS ONE,
      which is used in the scalarization.  */
   gfc_get_symbol ("nelem", sub_ns, &nelem);
@@ -1107,7 +1426,8 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   gfc_commit_symbol (nelem);
 
   /* Generate: nelem = SIZE (array) - 1.  */
-  last_code = XCNEW (gfc_code);
+  last_code->next = XCNEW (gfc_code);
+  last_code = last_code->next;
   last_code->op = EXEC_ASSIGN;
   last_code->loc = gfc_current_locus;
 
@@ -1126,6 +1446,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	= gfc_intrinsic_function_by_id (GFC_ISYM_SIZE);
   gfc_get_sym_tree ("size", sub_ns, &last_code->expr2->value.op.op1->symtree,
 		    false);
+  size_intr = last_code->expr2->value.op.op1->symtree;
   last_code->expr2->value.op.op1->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   last_code->expr2->value.op.op1->symtree->n.sym->attr.intrinsic = 1;
   gfc_commit_symbol (last_code->expr2->value.op.op1->symtree->n.sym);
@@ -1154,10 +1475,11 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 
      select case (rank (array))
        case (3)
+         ! If needed, the array is packed
 	 call final_rank3 (array)
        case default:
 	 do i = 0, size (array)-1
-	   addr = transfer (c_loc (array), addr) + i * STORAGE_SIZE (array)
+	   addr = transfer (c_loc (array), addr) + i * stride
 	   call c_f_pointer (transfer (addr, cptr), ptr)
 	   call elemental_final (ptr)
 	 end do
@@ -1167,6 +1489,23 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
     {
       gfc_finalizer *fini, *fini_elem = NULL;
       gfc_code *block = NULL;
+
+      gfc_get_symbol ("idx", sub_ns, &idx);
+      idx->ts.type = BT_INTEGER;
+      idx->ts.kind = gfc_index_integer_kind;
+      idx->attr.flavor = FL_VARIABLE;
+      idx->attr.artificial = 1;
+      gfc_set_sym_referenced (idx);
+      gfc_commit_symbol (idx);
+
+      gfc_get_symbol ("ptr", sub_ns, &ptr);
+      ptr->ts.type = BT_DERIVED;
+      ptr->ts.u.derived = derived;
+      ptr->attr.flavor = FL_VARIABLE;
+      ptr->attr.pointer = 1;
+      ptr->attr.artificial = 1;
+      gfc_set_sym_referenced (ptr);
+      gfc_commit_symbol (ptr);
 
       /* SELECT CASE (RANK (array)).  */
       last_code->next = XCNEW (gfc_code);
@@ -1221,14 +1560,20 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	  block->ext.block.case_list->high
 		= block->ext.block.case_list->low;
 
-	  /* CALL fini_rank (array).  */
-	  block->next = XCNEW (gfc_code);
-	  block->next->op = EXEC_CALL;
-	  block->next->loc = gfc_current_locus;
-	  block->next->symtree = fini->proc_tree;
-	  block->next->resolved_sym = fini->proc_tree->n.sym;
-	  block->next->ext.actual = gfc_get_actual_arglist ();
-	  block->next->ext.actual->expr = gfc_lval_expr_from_sym (array);
+	  /* CALL fini_rank (array) - possibly with packing.  */
+          if (fini->proc_tree->n.sym->formal->sym->attr.dimension)
+	    finalizer_insert_packed_call (block, fini, array, stride, idx, ptr,
+					  nelem, size_intr, sub_ns);
+	  else
+	    {
+	      block->next = XCNEW (gfc_code);
+	      block->next->op = EXEC_CALL;
+	      block->next->loc = gfc_current_locus;
+	      block->next->symtree = fini->proc_tree;
+	      block->next->resolved_sym = fini->proc_tree->n.sym;
+	      block->next->ext.actual = gfc_get_actual_arglist ();
+	      block->next->ext.actual->expr = gfc_lval_expr_from_sym (array);
+	    }
 	}
 
       /* Elemental call - scalarized.  */
@@ -1251,23 +1596,6 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	  block->op = EXEC_SELECT;
 	  block->ext.block.case_list = gfc_get_case ();
 
-	  gfc_get_symbol ("idx", sub_ns, &idx);
-	  idx->ts.type = BT_INTEGER;
-	  idx->ts.kind = gfc_index_integer_kind;
-	  idx->attr.flavor = FL_VARIABLE;
-	  idx->attr.artificial = 1;
-	  gfc_set_sym_referenced (idx);
-	  gfc_commit_symbol (idx);
-
-	  gfc_get_symbol ("ptr", sub_ns, &ptr);
-	  ptr->ts.type = BT_DERIVED;
-	  ptr->ts.u.derived = derived;
-	  ptr->attr.flavor = FL_VARIABLE;
-	  ptr->attr.pointer = 1;
-	  ptr->attr.artificial = 1;
-	  gfc_set_sym_referenced (ptr);
-	  gfc_commit_symbol (ptr);
-
 	  /* Create loop.  */
 	  iter = gfc_get_iterator ();
 	  iter->var = gfc_lval_expr_from_sym (idx);
@@ -1284,8 +1612,11 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 
 	  /* Create code for
 	     CALL C_F_POINTER (TRANSFER (TRANSFER (C_LOC (array, cptr), c_intptr)
-			       + idx * STORAGE_SIZE (array), c_ptr), ptr).  */
-	  block->block->next = finalization_scalarizer (idx, array, ptr, sub_ns);
+			       + idx * stride, c_ptr), ptr).  */
+	  block->block->next
+			= finalization_scalarizer (idx, array, ptr,
+						   gfc_lval_expr_from_sym (stride),
+						   sub_ns);
 	  block = block->block->next;
 
 	  /* CALL final_elemental (array).  */
@@ -1356,8 +1687,11 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 
       /* Create code for
 	 CALL C_F_POINTER (TRANSFER (TRANSFER (C_LOC (array, cptr), c_intptr)
-			   + idx * STORAGE_SIZE (array), c_ptr), ptr).  */
-      last_code->block->next = finalization_scalarizer (idx, array, ptr, sub_ns);
+			   + idx * stride, c_ptr), ptr).  */
+      last_code->block->next
+		= finalization_scalarizer (idx, array, ptr,
+					   gfc_lval_expr_from_sym (stride),
+					   sub_ns);
       block = last_code->block->next;
 
       for (comp = derived->components; comp; comp = comp->next)
@@ -1367,7 +1701,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	    continue;
 
 	  finalize_component (gfc_lval_expr_from_sym (ptr), derived, comp,
-			      gfc_lval_expr_from_sym (stat), &block);
+			      stat, fini_coarray, &block);
 	  if (!last_code->block->next)
 	    last_code->block->next = block;
 	}
@@ -1386,9 +1720,13 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 
       last_code->ext.actual = gfc_get_actual_arglist ();
       last_code->ext.actual->expr = gfc_lval_expr_from_sym (array);
+      last_code->ext.actual->next = gfc_get_actual_arglist ();
+      last_code->ext.actual->next->expr = gfc_lval_expr_from_sym (stride);
+      last_code->ext.actual->next->next = gfc_get_actual_arglist ();
+      last_code->ext.actual->next->next->expr
+			= gfc_lval_expr_from_sym (fini_coarray);
     }
 
-  gfc_commit_symbol (final);
   vtab_final->initializer = gfc_lval_expr_from_sym (final);
   vtab_final->ts.interface = final;
 }
@@ -1419,7 +1757,7 @@ add_procs_to_declared_vtab (gfc_symbol *derived, gfc_symbol *vtype)
 }
 
 
-/* Find (or generate) the symbol for a derived type's vtab.  */
+/* Find or generate the symbol for a derived type's vtab.  */
 
 gfc_symbol *
 gfc_find_derived_vtab (gfc_symbol *derived)
@@ -1440,7 +1778,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   if (ns)
     {
       char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
-      
+
       get_unique_hashed_string (tname, derived);
       sprintf (name, "__vtab_%s", tname);
 
@@ -1464,7 +1802,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	  vtab->attr.access = ACCESS_PUBLIC;
 	  gfc_set_sym_referenced (vtab);
 	  sprintf (name, "__vtype_%s", tname);
-	  
+
 	  gfc_find_symbol (name, ns, 0, &vtype);
 	  if (vtype == NULL)
 	    {
@@ -1672,6 +2010,48 @@ cleanup:
     gfc_undo_symbols ();
 
   return found_sym;
+}
+
+
+/* Check if a derived type is finalizable. That is the case if it
+   (1) has a FINAL subroutine or
+   (2) has a nonpointer nonallocatable component of finalizable type.
+   If it is finalizable, return an expression containing the
+   finalization wrapper.  */
+
+bool
+gfc_is_finalizable (gfc_symbol *derived, gfc_expr **final_expr)
+{
+  gfc_symbol *vtab;
+  gfc_component *c;
+
+  /* (1) Check for FINAL subroutines.  */
+  if (derived->f2k_derived && derived->f2k_derived->finalizers)
+    goto yes;
+
+  /* (2) Check for components of finalizable type.  */
+  for (c = derived->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable
+	&& gfc_is_finalizable (c->ts.u.derived, NULL))
+      goto yes;
+
+  return false;
+
+yes:
+  /* Make sure vtab is generated.  */
+  vtab = gfc_find_derived_vtab (derived);
+  if (final_expr)
+    {
+      /* Return finalizer expression.  */
+      gfc_component *final;
+      final = vtab->ts.u.derived->components->next->next->next->next->next;
+      gcc_assert (strcmp (final->name, "_final") == 0);
+      gcc_assert (final->initializer
+		  && final->initializer->expr_type != EXPR_NULL);
+      *final_expr = final->initializer;
+    }
+  return true;
 }
 
 

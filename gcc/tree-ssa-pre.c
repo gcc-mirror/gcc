@@ -2564,13 +2564,21 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  fn = currop->op0;
 	else
 	  fn = find_or_generate_expression (block, currop->op0, stmts);
+	if (!fn)
+	  return NULL_TREE;
 	if (currop->op1)
-	  sc = find_or_generate_expression (block, currop->op1, stmts);
+	  {
+	    sc = find_or_generate_expression (block, currop->op1, stmts);
+	    if (!sc)
+	      return NULL_TREE;
+	  }
 	args = XNEWVEC (tree, ref->operands.length () - 1);
 	while (*operand < ref->operands.length ())
 	  {
 	    args[nargs] = create_component_ref_by_pieces_1 (block, ref,
 							    operand, stmts);
+	    if (!args[nargs])
+	      return NULL_TREE;
 	    nargs++;
 	  }
 	folded = build_call_array (currop->type,
@@ -2587,6 +2595,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       {
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts);
+	if (!baseop)
+	  return NULL_TREE;
 	tree offset = currop->op0;
 	if (TREE_CODE (baseop) == ADDR_EXPR
 	    && handled_component_p (TREE_OPERAND (baseop, 0)))
@@ -2610,10 +2620,20 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	vn_reference_op_t nextop = &ref->operands[++*operand];
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts);
+	if (!baseop)
+	  return NULL_TREE;
 	if (currop->op0)
-	  genop0 = find_or_generate_expression (block, currop->op0, stmts);
+	  {
+	    genop0 = find_or_generate_expression (block, currop->op0, stmts);
+	    if (!genop0)
+	      return NULL_TREE;
+	  }
 	if (nextop->op0)
-	  genop1 = find_or_generate_expression (block, nextop->op0, stmts);
+	  {
+	    genop1 = find_or_generate_expression (block, nextop->op0, stmts);
+	    if (!genop1)
+	      return NULL_TREE;
+	  }
 	return build5 (TARGET_MEM_REF, currop->type,
 		       baseop, currop->op2, genop0, currop->op1, genop1);
       }
@@ -2629,8 +2649,10 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       {
-	tree genop0 = create_component_ref_by_pieces_1 (block, ref,
-							operand, stmts);
+	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
+							stmts);
+	if (!genop0)
+	  return NULL_TREE;
 	return fold_build1 (currop->opcode, currop->type, genop0);
       }
 
@@ -2638,7 +2660,11 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       {
 	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts);
+	if (!genop0)
+	  return NULL_TREE;
 	tree genop1 = find_or_generate_expression (block, currop->op0, stmts);
+	if (!genop1)
+	  return NULL_TREE;
 	return fold_build2 (currop->opcode, currop->type, genop0, genop1);
       }
 
@@ -2646,6 +2672,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       {
 	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts);
+	if (!genop0)
+	  return NULL_TREE;
 	tree op1 = currop->op0;
 	tree op2 = currop->op1;
 	return fold_build3 (BIT_FIELD_REF, currop->type, genop0, op1, op2);
@@ -2661,8 +2689,13 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	tree genop1 = currop->op0;
 	tree genop2 = currop->op1;
 	tree genop3 = currop->op2;
-	genop0 = create_component_ref_by_pieces_1 (block, ref, operand, stmts);
+	genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
+						   stmts);
+	if (!genop0)
+	  return NULL_TREE;
 	genop1 = find_or_generate_expression (block, genop1, stmts);
+	if (!genop1)
+	  return NULL_TREE;
 	if (genop2)
 	  {
 	    tree domain_type = TYPE_DOMAIN (TREE_TYPE (genop0));
@@ -2672,7 +2705,11 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 		    || integer_zerop (TYPE_MIN_VALUE (domain_type))))
 	      genop2 = NULL_TREE;
 	    else
-	      genop2 = find_or_generate_expression (block, genop2, stmts);
+	      {
+		genop2 = find_or_generate_expression (block, genop2, stmts);
+		if (!genop2)
+		  return NULL_TREE;
+	      }
 	  }
 	if (genop3)
 	  {
@@ -2688,6 +2725,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 		genop3 = size_binop (EXACT_DIV_EXPR, genop3,
 				     size_int (TYPE_ALIGN_UNIT (elmt_type)));
 		genop3 = find_or_generate_expression (block, genop3, stmts);
+		if (!genop3)
+		  return NULL_TREE;
 	      }
 	  }
 	return build4 (currop->opcode, currop->type, genop0, genop1,
@@ -2699,10 +2738,16 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	tree op1;
 	tree genop2 = currop->op1;
 	op0 = create_component_ref_by_pieces_1 (block, ref, operand, stmts);
+	if (!op0)
+	  return NULL_TREE;
 	/* op1 should be a FIELD_DECL, which are represented by themselves.  */
 	op1 = currop->op0;
 	if (genop2)
-	  genop2 = find_or_generate_expression (block, genop2, stmts);
+	  {
+	    genop2 = find_or_generate_expression (block, genop2, stmts);
+	    if (!genop2)
+	      return NULL_TREE;
+	  }
 	return fold_build3 (COMPONENT_REF, TREE_TYPE (op1), op0, op1, genop2);
       }
 
@@ -2749,18 +2794,11 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
   return create_component_ref_by_pieces_1 (block, ref, &op, stmts);
 }
 
-/* Find a leader for an expression, or generate one using
-   create_expression_by_pieces if it's ANTIC but
-   complex.
+/* Find a simple leader for an expression, or generate one using
+   create_expression_by_pieces from a NARY expression for the value.
    BLOCK is the basic_block we are looking for leaders in.
    OP is the tree expression to find a leader for or generate.
-   STMTS is the statement list to put the inserted expressions on.
-   Returns the SSA_NAME of the LHS of the generated expression or the
-   leader.
-   DOMSTMT if non-NULL is a statement that should be dominated by
-   all uses in the generated expression.  If DOMSTMT is non-NULL this
-   routine can fail and return NULL_TREE.  Otherwise it will assert
-   on failure.  */
+   Returns the leader or NULL_TREE on failure.  */
 
 static tree
 find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
@@ -2774,21 +2812,30 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 	return PRE_EXPR_NAME (leader);
       else if (leader->kind == CONSTANT)
 	return PRE_EXPR_CONSTANT (leader);
+
+      /* Defer.  */
+      return NULL_TREE;
     }
 
-  /* It must be a complex expression, so generate it recursively.  */
+  /* It must be a complex expression, so generate it recursively.  Note
+     that this is only necessary to handle gcc.dg/tree-ssa/ssa-pre28.c
+     where the insert algorithm fails to insert a required expression.  */
   bitmap exprset = value_expressions[lookfor];
   bitmap_iterator bi;
   unsigned int i;
   EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
     {
       pre_expr temp = expression_for_id (i);
-      if (temp->kind != NAME)
+      /* We cannot insert random REFERENCE expressions at arbitrary
+	 places.  We can insert NARYs which eventually re-materializes
+	 its operand values.  */
+      if (temp->kind == NARY)
 	return create_expression_by_pieces (block, temp, stmts,
 					    get_expr_type (expr));
     }
 
-  gcc_unreachable ();
+  /* Defer.  */
+  return NULL_TREE;
 }
 
 #define NECESSARY GF_PLF_1
@@ -2801,15 +2848,13 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 
    This function will die if we hit some value that shouldn't be
    ANTIC but is (IE there is no leader for it, or its components).
+   The function returns NULL_TREE in case a different antic expression
+   has to be inserted first.
    This function may also generate expressions that are themselves
    partially or fully redundant.  Those that are will be either made
    fully redundant during the next iteration of insert (for partially
    redundant ones), or eliminated by eliminate (for fully redundant
-   ones).
-
-   If DOMSTMT is non-NULL then we make sure that all uses in the
-   expressions dominate that statement.  In this case the function
-   can return NULL_TREE to signal failure.  */
+   ones).  */
 
 static tree
 create_expression_by_pieces (basic_block block, pre_expr expr,
@@ -2838,6 +2883,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
       {
 	vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
 	folded = create_component_ref_by_pieces (block, ref, stmts);
+	if (!folded)
+	  return NULL_TREE;
       }
       break;
     case NARY:
@@ -2848,6 +2895,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	for (i = 0; i < nary->length; ++i)
 	  {
 	    genop[i] = find_or_generate_expression (block, nary->op[i], stmts);
+	    if (!genop[i])
+	      return NULL_TREE;
 	    /* Ensure genop[] is properly typed for POINTER_PLUS_EXPR.  It
 	       may have conversions stripped.  */
 	    if (nary->opcode == POINTER_PLUS_EXPR)
@@ -3085,6 +3134,13 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 						   &stmts, type);
 	  gcc_assert (!(pred->flags & EDGE_ABNORMAL));
 	  gsi_insert_seq_on_edge (pred, stmts);
+	  if (!builtexpr)
+	    {
+	      /* We cannot insert a PHI node if we failed to insert
+		 on one edge.  */
+	      nophi = true;
+	      continue;
+	    }
 	  avail[pred->dest_idx] = get_or_alloc_expr_for_name (builtexpr);
 	  insertions = true;
 	}

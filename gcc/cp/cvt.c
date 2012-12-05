@@ -215,16 +215,14 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
 	return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
 				 /*c_cast_p=*/false, complain);
 
-      if (TYPE_PTRDATAMEM_P (type))
-	{
-	  /* A NULL pointer-to-member is represented by -1, not by
-	     zero.  */
-	  expr = build_int_cst_type (type, -1);
-	}
-      else
-	expr = build_int_cst (type, 0);
+      /* A NULL pointer-to-data-member is represented by -1, not by
+	 zero.  */
+      tree val = (TYPE_PTRDATAMEM_P (type)
+		  ? build_int_cst_type (type, -1)
+		  : build_int_cst (type, 0));
 
-      return expr;
+      return (TREE_SIDE_EFFECTS (expr)
+	      ? build2 (COMPOUND_EXPR, type, expr, val) : val);
     }
   else if (TYPE_PTRMEM_P (type) && INTEGRAL_CODE_P (form))
     {

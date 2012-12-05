@@ -102,7 +102,9 @@ private
 
    type Private_Data is record
       Thread : aliased System.OS_Interface.pthread_t;
-      pragma Atomic (Thread);
+      --  pragma Atomic (Thread);
+      --  Unfortunately, the above fails because Thread is 64 bits.
+
       --  Thread field may be updated by two different threads of control.
       --  (See, Enter_Task and Create_Task in s-taprop.adb). They put the
       --  same value (thr_self value). We do not want to use lock on those
