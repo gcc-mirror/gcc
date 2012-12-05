@@ -1433,6 +1433,48 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
+               --  Case 2d : Aspects that correspond to a pragma with one
+               --  argument.
+
+               when Aspect_Relative_Deadline     =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations =>
+                        New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                             Expression => Relocate_Node (Expr))),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Relative_Deadline));
+
+                  --  If the aspect applies to a task, the corresponding pragma
+                  --  must appear within its declarations, not after.
+
+                  if Nkind (N) = N_Task_Type_Declaration then
+                     declare
+                        Def : Node_Id;
+                        V   : List_Id;
+
+                     begin
+                        if No (Task_Definition (N)) then
+                           Set_Task_Definition (N,
+                             Make_Task_Definition (Loc,
+                                Visible_Declarations => New_List,
+                                End_Label => Empty));
+                        end if;
+
+                        Def := Task_Definition (N);
+                        V  := Visible_Declarations (Def);
+                        if not Is_Empty_List (V) then
+                           Insert_Before (First (V), Aitem);
+
+                        else
+                           Set_Visible_Declarations (Def, New_List (Aitem));
+                        end if;
+
+                        goto Continue;
+                     end;
+                  end if;
+
                --  Case 3 : Aspects that don't correspond to pragma/attribute
                --  definition clause.
 
@@ -5186,7 +5228,11 @@ package body Sem_Ch13 is
                end if;
 
                Exp := New_Copy_Tree (Arg2);
-               Loc := Sloc (Exp);
+
+               --  Preserve sloc of original pragma Invariant (this is required
+               --  by Par_SCO).
+
+               Loc := Sloc (Ritem);
 
                --  We need to replace any occurrences of the name of the type
                --  with references to the object, converted to type'Class in
@@ -6795,6 +6841,9 @@ package body Sem_Ch13 is
 
          when Aspect_Priority | Aspect_Interrupt_Priority =>
             T := Standard_Integer;
+
+         when Aspect_Relative_Deadline =>
+            T := RTE (RE_Time_Span);
 
          when Aspect_Small =>
             T := Universal_Real;
