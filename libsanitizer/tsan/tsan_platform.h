@@ -10,10 +10,53 @@
 // Platform-specific code.
 //===----------------------------------------------------------------------===//
 
+/*
+C++ linux memory layout:
+0000 0000 0000 - 03c0 0000 0000: protected
+03c0 0000 0000 - 1000 0000 0000: shadow
+1000 0000 0000 - 6000 0000 0000: protected
+6000 0000 0000 - 6200 0000 0000: traces
+6200 0000 0000 - 7d00 0000 0000: -
+7d00 0000 0000 - 7e00 0000 0000: heap
+7e00 0000 0000 - 7fff ffff ffff: modules and main thread stack
+
+C++ COMPAT linux memory layout:
+0000 0000 0000 - 0400 0000 0000: protected
+0400 0000 0000 - 1000 0000 0000: shadow
+1000 0000 0000 - 2900 0000 0000: protected
+2900 0000 0000 - 2c00 0000 0000: modules
+2c00 0000 0000 - 6000 0000 0000: -
+6000 0000 0000 - 6200 0000 0000: traces
+6200 0000 0000 - 7d00 0000 0000: -
+7d00 0000 0000 - 7e00 0000 0000: heap
+7e00 0000 0000 - 7f00 0000 0000: -
+7f00 0000 0000 - 7fff ffff ffff: main thread stack
+
+Go linux and darwin memory layout:
+0000 0000 0000 - 0000 1000 0000: executable
+0000 1000 0000 - 00f8 0000 0000: -
+00f8 0000 0000 - 0118 0000 0000: heap
+0118 0000 0000 - 1000 0000 0000: -
+1000 0000 0000 - 1460 0000 0000: shadow
+1460 0000 0000 - 6000 0000 0000: -
+6000 0000 0000 - 6200 0000 0000: traces
+6200 0000 0000 - 7fff ffff ffff: -
+
+Go windows memory layout:
+0000 0000 0000 - 0000 1000 0000: executable
+0000 1000 0000 - 00f8 0000 0000: -
+00f8 0000 0000 - 0118 0000 0000: heap
+0118 0000 0000 - 0100 0000 0000: -
+0100 0000 0000 - 0560 0000 0000: shadow
+0560 0000 0000 - 0760 0000 0000: traces
+0760 0000 0000 - 07ff ffff ffff: -
+*/
+
 #ifndef TSAN_PLATFORM_H
 #define TSAN_PLATFORM_H
 
-#include "tsan_rtl.h"
+#include "tsan_defs.h"
+#include "tsan_trace.h"
 
 #if defined(__LP64__) || defined(_WIN64)
 namespace __tsan {
@@ -38,6 +81,13 @@ static const uptr kLinuxAppMemEnd = 0x7fffffffffffULL;
 #endif
 
 static const uptr kLinuxAppMemMsk = 0x7c0000000000ULL;
+
+#if defined(_WIN32)
+const uptr kTraceMemBegin = 0x056000000000ULL;
+#else
+const uptr kTraceMemBegin = 0x600000000000ULL;
+#endif
+const uptr kTraceMemSize = 0x020000000000ULL;
 
 // This has to be a macro to allow constant initialization of constants below.
 #ifndef TSAN_GO
@@ -85,6 +135,12 @@ void FlushShadowMemory();
 
 const char *InitializePlatform();
 void FinalizePlatform();
+void MapThreadTrace(uptr addr, uptr size);
+uptr ALWAYS_INLINE INLINE GetThreadTrace(int tid) {
+  uptr p = kTraceMemBegin + (uptr)tid * kTraceSize * sizeof(Event);
+  DCHECK_LT(p, kTraceMemBegin + kTraceMemSize);
+  return p;
+}
 
 void internal_start_thread(void(*func)(void*), void *arg);
 
