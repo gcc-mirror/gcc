@@ -101,7 +101,7 @@ void InitializeShadowMemory() {
   const uptr kClosedLowBeg  = 0x200000;
   const uptr kClosedLowEnd  = kLinuxShadowBeg - 1;
   const uptr kClosedMidBeg = kLinuxShadowEnd + 1;
-  const uptr kClosedMidEnd = kLinuxAppMemBeg - 1;
+  const uptr kClosedMidEnd = min(kLinuxAppMemBeg, kTraceMemBegin);
   ProtectRange(kClosedLowBeg, kClosedLowEnd);
   ProtectRange(kClosedMidBeg, kClosedMidEnd);
   DPrintf("kClosedLow   %zx-%zx (%zuGB)\n",
@@ -117,6 +117,16 @@ void InitializeShadowMemory() {
   DPrintf("stack        %zx\n", (uptr)&shadow);
 }
 #endif
+
+void MapThreadTrace(uptr addr, uptr size) {
+  DPrintf("Mapping trace at %p-%p(0x%zx)\n", addr, addr + size, size);
+  CHECK_GE(addr, kTraceMemBegin);
+  CHECK_LE(addr + size, kTraceMemBegin + kTraceMemSize);
+  if (addr != (uptr)MmapFixedNoReserve(addr, size)) {
+    Printf("FATAL: ThreadSanitizer can not mmap thread trace\n");
+    Die();
+  }
+}
 
 static uptr g_data_start;
 static uptr g_data_end;
@@ -190,27 +200,49 @@ static int InitTlsSize() {
 }
 #endif  // #ifndef TSAN_GO
 
+static rlim_t getlim(int res) {
+  rlimit rlim;
+  CHECK_EQ(0, getrlimit(res, &rlim));
+  return rlim.rlim_cur;
+}
+
+static void setlim(int res, rlim_t lim) {
+  // The following magic is to prevent clang from replacing it with memset.
+  volatile rlimit rlim;
+  rlim.rlim_cur = lim;
+  rlim.rlim_max = lim;
+  setrlimit(res, (rlimit*)&rlim);
+}
+
 const char *InitializePlatform() {
   void *p = 0;
   if (sizeof(p) == 8) {
     // Disable core dumps, dumping of 16TB usually takes a bit long.
-    // The following magic is to prevent clang from replacing it with memset.
-    volatile rlimit lim;
-    lim.rlim_cur = 0;
-    lim.rlim_max = 0;
-    setrlimit(RLIMIT_CORE, (rlimit*)&lim);
+    setlim(RLIMIT_CORE, 0);
   }
+  bool reexec = false;
   // TSan doesn't play well with unlimited stack size (as stack
   // overlaps with shadow memory). If we detect unlimited stack size,
   // we re-exec the program with limited stack size as a best effort.
-  if (StackSizeIsUnlimited()) {
-    const uptr kMaxStackSize = 32 * 1024 * 1024;  // 32 Mb
+  if (getlim(RLIMIT_STACK) == (rlim_t)-1) {
+    const uptr kMaxStackSize = 32 * 1024 * 1024;
     Report("WARNING: Program is run with unlimited stack size, which "
            "wouldn't work with ThreadSanitizer.\n");
     Report("Re-execing with stack size limited to %zd bytes.\n", kMaxStackSize);
     SetStackSizeLimitInBytes(kMaxStackSize);
-    ReExec();
+    reexec = true;
   }
+
+  if (getlim(RLIMIT_AS) != (rlim_t)-1) {
+    Report("WARNING: Program is run with limited virtual address space, which "
+           "wouldn't work with ThreadSanitizer.\n");
+    Report("Re-execing with unlimited virtual address space.\n");
+    setlim(RLIMIT_AS, -1);
+    reexec = true;
+  }
+
+  if (reexec)
+    ReExec();
 
 #ifndef TSAN_GO
   CheckPIE();

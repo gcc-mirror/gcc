@@ -1,25 +1,18 @@
-//===-- sanitizer_allocator64.h ---------------------------------*- C++ -*-===//
+//===-- sanitizer_allocator.h -----------------------------------*- C++ -*-===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
-// Specialized allocator which works only in 64-bit address space.
-// To be used by ThreadSanitizer, MemorySanitizer and possibly other tools.
-// The main feature of this allocator is that the header is located far away
-// from the user memory region, so that the tool does not use extra shadow
-// for the header.
 //
-// Status: not yet ready.
+// Specialized memory allocator for ThreadSanitizer, MemorySanitizer, etc.
+//
 //===----------------------------------------------------------------------===//
+
 #ifndef SANITIZER_ALLOCATOR_H
 #define SANITIZER_ALLOCATOR_H
 
 #include "sanitizer_internal_defs.h"
-#if SANITIZER_WORDSIZE != 64
-# error "sanitizer_allocator64.h can only be used on 64-bit platforms"
-#endif
-
 #include "sanitizer_common.h"
 #include "sanitizer_libc.h"
 #include "sanitizer_list.h"
@@ -28,7 +21,10 @@
 namespace __sanitizer {
 
 // Maps size class id to size and back.
-class DefaultSizeClassMap {
+template <uptr l0, uptr l1, uptr l2, uptr l3, uptr l4, uptr l5,
+          uptr s0, uptr s1, uptr s2, uptr s3, uptr s4,
+          uptr c0, uptr c1, uptr c2, uptr c3, uptr c4>
+class SplineSizeClassMap {
  private:
   // Here we use a spline composed of 5 polynomials of oder 1.
   // The first size class is l0, then the classes go with step s0
@@ -36,38 +32,20 @@ class DefaultSizeClassMap {
   // Steps should be powers of two for cheap division.
   // The size of the last size class should be a power of two.
   // There should be at most 256 size classes.
-  static const uptr l0 = 1 << 4;
-  static const uptr l1 = 1 << 9;
-  static const uptr l2 = 1 << 12;
-  static const uptr l3 = 1 << 15;
-  static const uptr l4 = 1 << 18;
-  static const uptr l5 = 1 << 21;
-
-  static const uptr s0 = 1 << 4;
-  static const uptr s1 = 1 << 6;
-  static const uptr s2 = 1 << 9;
-  static const uptr s3 = 1 << 12;
-  static const uptr s4 = 1 << 15;
-
   static const uptr u0 = 0  + (l1 - l0) / s0;
   static const uptr u1 = u0 + (l2 - l1) / s1;
   static const uptr u2 = u1 + (l3 - l2) / s2;
   static const uptr u3 = u2 + (l4 - l3) / s3;
   static const uptr u4 = u3 + (l5 - l4) / s4;
 
-  // Max cached in local cache blocks.
-  static const uptr c0 = 256;
-  static const uptr c1 = 64;
-  static const uptr c2 = 16;
-  static const uptr c3 = 4;
-  static const uptr c4 = 1;
-
  public:
+  // The number of size classes should be a power of two for fast division.
   static const uptr kNumClasses = u4 + 1;
   static const uptr kMaxSize = l5;
   static const uptr kMinSize = l0;
 
   COMPILER_CHECK(kNumClasses <= 256);
+  COMPILER_CHECK((kNumClasses & (kNumClasses - 1)) == 0);
   COMPILER_CHECK((kMaxSize & (kMaxSize - 1)) == 0);
 
   static uptr Size(uptr class_id) {
@@ -97,13 +75,30 @@ class DefaultSizeClassMap {
   }
 };
 
+class DefaultSizeClassMap: public SplineSizeClassMap<
+  /* l: */1 << 4, 1 << 9,  1 << 12, 1 << 15, 1 << 18, 1 << 21,
+  /* s: */1 << 4, 1 << 6,  1 << 9,  1 << 12, 1 << 15,
+  /* c: */256,    64,      16,      4,       1> {
+ private:
+  COMPILER_CHECK(kNumClasses == 256);
+};
+
+class CompactSizeClassMap: public SplineSizeClassMap<
+  /* l: */1 << 3, 1 << 4,  1 << 7, 1 << 8, 1 << 12, 1 << 15,
+  /* s: */1 << 3, 1 << 4,  1 << 7, 1 << 8, 1 << 12,
+  /* c: */256,    64,      16,      4,       1> {
+ private:
+  COMPILER_CHECK(kNumClasses <= 32);
+};
+
 struct AllocatorListNode {
   AllocatorListNode *next;
 };
 
 typedef IntrusiveList<AllocatorListNode> AllocatorFreeList;
 
-
+// SizeClassAllocator64 -- allocator for 64-bit address space.
+//
 // Space: a portion of address space of kSpaceSize bytes starting at
 // a fixed address (kSpaceBeg). Both constants are powers of two and
 // kSpaceBeg is kSpaceSize-aligned.
@@ -217,14 +212,15 @@ class SizeClassAllocator64 {
   static uptr AllocBeg()  { return kSpaceBeg; }
   static uptr AllocSize() { return kSpaceSize + AdditionalSize(); }
 
-  static const uptr kNumClasses = 256;  // Power of two <= 256
   typedef SizeClassMap SizeClassMapT;
+  static const uptr kNumClasses = SizeClassMap::kNumClasses;  // 2^k <= 256
 
  private:
+  static const uptr kRegionSize = kSpaceSize / kNumClasses;
   COMPILER_CHECK(kSpaceBeg % kSpaceSize == 0);
   COMPILER_CHECK(kNumClasses <= SizeClassMap::kNumClasses);
-  static const uptr kRegionSize = kSpaceSize / kNumClasses;
-  COMPILER_CHECK((kRegionSize >> 32) > 0);  // kRegionSize must be >= 2^32.
+  // kRegionSize must be >= 2^32.
+  COMPILER_CHECK((kRegionSize) >= (1ULL << (SANITIZER_WORDSIZE / 2)));
   // Populate the free list with at most this number of bytes at once
   // or with one element if its size is greater.
   static const uptr kPopulateSize = 1 << 18;
@@ -239,8 +235,9 @@ class SizeClassAllocator64 {
   COMPILER_CHECK(sizeof(RegionInfo) == kCacheLineSize);
 
   static uptr AdditionalSize() {
-    uptr res = sizeof(RegionInfo) * kNumClasses;
-    CHECK_EQ(res % GetPageSizeCached(), 0);
+    uptr PageSize = GetPageSizeCached();
+    uptr res = Max(sizeof(RegionInfo) * kNumClasses, PageSize);
+    CHECK_EQ(res % PageSize, 0);
     return res;
   }
 
@@ -305,8 +302,10 @@ class SizeClassAllocator64 {
 // Objects of this type should be used as local caches for SizeClassAllocator64.
 // Since the typical use of this class is to have one object per thread in TLS,
 // is has to be POD.
-template<const uptr kNumClasses, class SizeClassAllocator>
+template<class SizeClassAllocator>
 struct SizeClassAllocatorLocalCache {
+  typedef SizeClassAllocator Allocator;
+  static const uptr kNumClasses = SizeClassAllocator::kNumClasses;
   // Don't need to call Init if the object is a global (i.e. zero-initialized).
   void Init() {
     internal_memset(this, 0, sizeof(*this));
@@ -458,11 +457,13 @@ class LargeMmapAllocator {
   };
 
   Header *GetHeader(uptr p) {
+    CHECK_EQ(p % page_size_, 0);
     return reinterpret_cast<Header*>(p - page_size_);
   }
   Header *GetHeader(void *p) { return GetHeader(reinterpret_cast<uptr>(p)); }
 
   void *GetUser(Header *h) {
+    CHECK_EQ((uptr)h % page_size_, 0);
     return reinterpret_cast<void*>(reinterpret_cast<uptr>(h) + page_size_);
   }
 
