@@ -1,5 +1,19 @@
 2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def: Add new builtins.
+	* config/aarch64/aarch64-simd.md (simd_type): Add uzp.
+	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): New.
+	* config/aarch64/aarch64.c (aarch64_evpc_trn): New.
+	(aarch64_evpc_uzp): Likewise.
+	(aarch64_evpc_zip): Likewise.
+	(aarch64_expand_vec_perm_const_1): Check for trn, zip, uzp patterns.
+	* config/aarch64/iterators.md (unspec): Add neccessary unspecs.
+	(PERMUTE): New.
+	(perm_insn): Likewise.
+	(perm_hilo): Likewise.
+
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-protos.h
 	(aarch64_split_combinev16qi): New.
 	(aarch64_expand_vec_perm): Likewise.

@@ -6919,6 +6919,261 @@ aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   aarch64_expand_vec_perm_1 (target, op0, op1, sel);
 }
 
+/* Recognize patterns suitable for the TRN instructions.  */
+static bool
+aarch64_evpc_trn (struct expand_vec_perm_d *d)
+{
+  unsigned int i, odd, mask, nelt = d->nelt;
+  rtx out, in0, in1, x;
+  rtx (*gen) (rtx, rtx, rtx);
+  enum machine_mode vmode = d->vmode;
+
+  if (GET_MODE_UNIT_SIZE (vmode) > 8)
+    return false;
+
+  /* Note that these are little-endian tests.
+     We correct for big-endian later.  */
+  if (d->perm[0] == 0)
+    odd = 0;
+  else if (d->perm[0] == 1)
+    odd = 1;
+  else
+    return false;
+  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
+
+  for (i = 0; i < nelt; i += 2)
+    {
+      if (d->perm[i] != i + odd)
+	return false;
+      if (d->perm[i + 1] != ((i + nelt + odd) & mask))
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  in0 = d->op0;
+  in1 = d->op1;
+  if (BYTES_BIG_ENDIAN)
+    {
+      x = in0, in0 = in1, in1 = x;
+      odd = !odd;
+    }
+  out = d->target;
+
+  if (odd)
+    {
+      switch (vmode)
+	{
+	case V16QImode: gen = gen_aarch64_trn2v16qi; break;
+	case V8QImode: gen = gen_aarch64_trn2v8qi; break;
+	case V8HImode: gen = gen_aarch64_trn2v8hi; break;
+	case V4HImode: gen = gen_aarch64_trn2v4hi; break;
+	case V4SImode: gen = gen_aarch64_trn2v4si; break;
+	case V2SImode: gen = gen_aarch64_trn2v2si; break;
+	case V2DImode: gen = gen_aarch64_trn2v2di; break;
+	case V4SFmode: gen = gen_aarch64_trn2v4sf; break;
+	case V2SFmode: gen = gen_aarch64_trn2v2sf; break;
+	case V2DFmode: gen = gen_aarch64_trn2v2df; break;
+	default:
+	  return false;
+	}
+    }
+  else
+    {
+      switch (vmode)
+	{
+	case V16QImode: gen = gen_aarch64_trn1v16qi; break;
+	case V8QImode: gen = gen_aarch64_trn1v8qi; break;
+	case V8HImode: gen = gen_aarch64_trn1v8hi; break;
+	case V4HImode: gen = gen_aarch64_trn1v4hi; break;
+	case V4SImode: gen = gen_aarch64_trn1v4si; break;
+	case V2SImode: gen = gen_aarch64_trn1v2si; break;
+	case V2DImode: gen = gen_aarch64_trn1v2di; break;
+	case V4SFmode: gen = gen_aarch64_trn1v4sf; break;
+	case V2SFmode: gen = gen_aarch64_trn1v2sf; break;
+	case V2DFmode: gen = gen_aarch64_trn1v2df; break;
+	default:
+	  return false;
+	}
+    }
+
+  emit_insn (gen (out, in0, in1));
+  return true;
+}
+
+/* Recognize patterns suitable for the UZP instructions.  */
+static bool
+aarch64_evpc_uzp (struct expand_vec_perm_d *d)
+{
+  unsigned int i, odd, mask, nelt = d->nelt;
+  rtx out, in0, in1, x;
+  rtx (*gen) (rtx, rtx, rtx);
+  enum machine_mode vmode = d->vmode;
+
+  if (GET_MODE_UNIT_SIZE (vmode) > 8)
+    return false;
+
+  /* Note that these are little-endian tests.
+     We correct for big-endian later.  */
+  if (d->perm[0] == 0)
+    odd = 0;
+  else if (d->perm[0] == 1)
+    odd = 1;
+  else
+    return false;
+  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
+
+  for (i = 0; i < nelt; i++)
+    {
+      unsigned elt = (i * 2 + odd) & mask;
+      if (d->perm[i] != elt)
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  in0 = d->op0;
+  in1 = d->op1;
+  if (BYTES_BIG_ENDIAN)
+    {
+      x = in0, in0 = in1, in1 = x;
+      odd = !odd;
+    }
+  out = d->target;
+
+  if (odd)
+    {
+      switch (vmode)
+	{
+	case V16QImode: gen = gen_aarch64_uzp2v16qi; break;
+	case V8QImode: gen = gen_aarch64_uzp2v8qi; break;
+	case V8HImode: gen = gen_aarch64_uzp2v8hi; break;
+	case V4HImode: gen = gen_aarch64_uzp2v4hi; break;
+	case V4SImode: gen = gen_aarch64_uzp2v4si; break;
+	case V2SImode: gen = gen_aarch64_uzp2v2si; break;
+	case V2DImode: gen = gen_aarch64_uzp2v2di; break;
+	case V4SFmode: gen = gen_aarch64_uzp2v4sf; break;
+	case V2SFmode: gen = gen_aarch64_uzp2v2sf; break;
+	case V2DFmode: gen = gen_aarch64_uzp2v2df; break;
+	default:
+	  return false;
+	}
+    }
+  else
+    {
+      switch (vmode)
+	{
+	case V16QImode: gen = gen_aarch64_uzp1v16qi; break;
+	case V8QImode: gen = gen_aarch64_uzp1v8qi; break;
+	case V8HImode: gen = gen_aarch64_uzp1v8hi; break;
+	case V4HImode: gen = gen_aarch64_uzp1v4hi; break;
+	case V4SImode: gen = gen_aarch64_uzp1v4si; break;
+	case V2SImode: gen = gen_aarch64_uzp1v2si; break;
+	case V2DImode: gen = gen_aarch64_uzp1v2di; break;
+	case V4SFmode: gen = gen_aarch64_uzp1v4sf; break;
+	case V2SFmode: gen = gen_aarch64_uzp1v2sf; break;
+	case V2DFmode: gen = gen_aarch64_uzp1v2df; break;
+	default:
+	  return false;
+	}
+    }
+
+  emit_insn (gen (out, in0, in1));
+  return true;
+}
+
+/* Recognize patterns suitable for the ZIP instructions.  */
+static bool
+aarch64_evpc_zip (struct expand_vec_perm_d *d)
+{
+  unsigned int i, high, mask, nelt = d->nelt;
+  rtx out, in0, in1, x;
+  rtx (*gen) (rtx, rtx, rtx);
+  enum machine_mode vmode = d->vmode;
+
+  if (GET_MODE_UNIT_SIZE (vmode) > 8)
+    return false;
+
+  /* Note that these are little-endian tests.
+     We correct for big-endian later.  */
+  high = nelt / 2;
+  if (d->perm[0] == high)
+    /* Do Nothing.  */
+    ;
+  else if (d->perm[0] == 0)
+    high = 0;
+  else
+    return false;
+  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
+
+  for (i = 0; i < nelt / 2; i++)
+    {
+      unsigned elt = (i + high) & mask;
+      if (d->perm[i * 2] != elt)
+	return false;
+      elt = (elt + nelt) & mask;
+      if (d->perm[i * 2 + 1] != elt)
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  in0 = d->op0;
+  in1 = d->op1;
+  if (BYTES_BIG_ENDIAN)
+    {
+      x = in0, in0 = in1, in1 = x;
+      high = !high;
+    }
+  out = d->target;
+
+  if (high)
+    {
+      switch (vmode)
+	{
+	case V16QImode: gen = gen_aarch64_zip2v16qi; break;
+	case V8QImode: gen = gen_aarch64_zip2v8qi; break;
+	case V8HImode: gen = gen_aarch64_zip2v8hi; break;
+	case V4HImode: gen = gen_aarch64_zip2v4hi; break;
+	case V4SImode: gen = gen_aarch64_zip2v4si; break;
+	case V2SImode: gen = gen_aarch64_zip2v2si; break;
+	case V2DImode: gen = gen_aarch64_zip2v2di; break;
+	case V4SFmode: gen = gen_aarch64_zip2v4sf; break;
+	case V2SFmode: gen = gen_aarch64_zip2v2sf; break;
+	case V2DFmode: gen = gen_aarch64_zip2v2df; break;
+	default:
+	  return false;
+	}
+    }
+  else
+    {
+      switch (vmode)
+	{
+	case V16QImode: gen = gen_aarch64_zip1v16qi; break;
+	case V8QImode: gen = gen_aarch64_zip1v8qi; break;
+	case V8HImode: gen = gen_aarch64_zip1v8hi; break;
+	case V4HImode: gen = gen_aarch64_zip1v4hi; break;
+	case V4SImode: gen = gen_aarch64_zip1v4si; break;
+	case V2SImode: gen = gen_aarch64_zip1v2si; break;
+	case V2DImode: gen = gen_aarch64_zip1v2di; break;
+	case V4SFmode: gen = gen_aarch64_zip1v4sf; break;
+	case V2SFmode: gen = gen_aarch64_zip1v2sf; break;
+	case V2DFmode: gen = gen_aarch64_zip1v2df; break;
+	default:
+	  return false;
+	}
+    }
+
+  emit_insn (gen (out, in0, in1));
+  return true;
+}
+
 static bool
 aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 {
@@ -6969,7 +7224,15 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     }
 
   if (TARGET_SIMD)
-    return aarch64_evpc_tbl (d);
+    {
+      if (aarch64_evpc_zip (d))
+	return true;
+      else if (aarch64_evpc_uzp (d))
+	return true;
+      else if (aarch64_evpc_trn (d))
+	return true;
+      return aarch64_evpc_tbl (d);
+    }
   return false;
 }
 

@@ -128,7 +128,8 @@
 ; simd_store4s          store single structure from one lane for four registers (ST4 [index]).
 ; simd_tbl              table lookup.
 ; simd_trn              transpose.
-; simd_zip              zip/unzip.
+; simd_uzp              unzip.
+; simd_zip              zip.
 
 (define_attr "simd_type"
    "simd_abd,\
@@ -230,6 +231,7 @@
    simd_store4s,\
    simd_tbl,\
    simd_trn,\
+   simd_uzp,\
    simd_zip,\
    none"
   (const_string "none"))
@@ -3405,6 +3407,17 @@
   aarch64_split_combinev16qi (operands);
   DONE;
 })
+
+(define_insn "aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(unspec:VALL [(match_operand:VALL 1 "register_operand" "w")
+		      (match_operand:VALL 2 "register_operand" "w")]
+		       PERMUTE))]
+  "TARGET_SIMD"
+  "<PERMUTE:perm_insn><PERMUTE:perm_hilo>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_<PERMUTE:perm_insn>")
+   (set_attr "simd_mode" "<MODE>")]
+)
 
 (define_insn "aarch64_st2<mode>_dreg"
   [(set (match_operand:TI 0 "aarch64_simd_struct_operand" "=Utv")
