@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,7 @@ package body Ch8 is
    function P_Use_Type_Clause return Node_Id is
       Use_Node    : Node_Id;
       All_Present : Boolean;
+      Use_Sloc    : constant Source_Ptr := Prev_Token_Ptr;
 
    begin
       if Token = Tok_All then
@@ -121,7 +122,7 @@ package body Ch8 is
          All_Present := False;
       end if;
 
-      Use_Node := New_Node (N_Use_Type_Clause, Prev_Token_Ptr);
+      Use_Node := New_Node (N_Use_Type_Clause, Use_Sloc);
       Set_All_Present (Use_Node, All_Present);
       Set_Subtype_Marks (Use_Node, New_List);
       Set_Used_Operations (Use_Node, No_Elist);
