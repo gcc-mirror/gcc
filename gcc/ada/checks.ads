@@ -93,6 +93,8 @@ package Checks is
    --  Sets Do_Overflow_Check flag in node N, and handles possible local raise.
    --  Always call this routine rather than calling Set_Do_Overflow_Check to
    --  set an explicit value of True, to ensure handling the local raise case.
+   --  Note that this call has no effect for MOD, REM, and unary "+" for which
+   --  overflow is never possible in any case.
 
    procedure Activate_Range_Check (N : Node_Id);
    pragma Inline (Activate_Range_Check);

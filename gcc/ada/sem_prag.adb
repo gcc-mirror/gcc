@@ -2068,6 +2068,14 @@ package body Sem_Prag is
                Error_Pragma
                  ("aspect % requires ''Class for null procedure");
 
+            --  Pre/postconditions are legal on a subprogram body if it is not
+            --  a completion of a declaration.
+
+            elsif Nkind (PO) = N_Subprogram_Body
+              and then Acts_As_Spec (PO)
+            then
+               null;
+
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
                                     N_Expression_Function,
                                     N_Generic_Subprogram_Declaration,

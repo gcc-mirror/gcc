@@ -192,7 +192,9 @@ package body Sem_Ch4 is
    --  of the operand types. If one of the operands has a universal interpre-
    --  tation,  the legality check uses some compatible non-universal
    --  interpretation of the other operand. N can be an operator node, or
-   --  a function call whose name is an operator designator.
+   --  a function call whose name is an operator designator. Any_Access, which
+   --  is the initial type of the literal NULL, is a universal type for the
+   --  purpose of this routine.
 
    function Find_Primitive_Operation (N : Node_Id) return Boolean;
    --  Find candidate interpretations for the name Obj.Proc when it appears
@@ -5504,6 +5506,7 @@ package body Sem_Ch4 is
    begin
       if T1 = Universal_Integer
         or else T1 = Universal_Real
+        or else T1 = Any_Access
       then
          if not Is_Overloaded (R) then
             Add_One_Interp

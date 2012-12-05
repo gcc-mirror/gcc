@@ -387,8 +387,10 @@ package body Checks is
 
    procedure Activate_Overflow_Check (N : Node_Id) is
    begin
-      Set_Do_Overflow_Check (N, True);
-      Possible_Local_Raise (N, Standard_Constraint_Error);
+      if not Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
+         Set_Do_Overflow_Check (N, True);
+         Possible_Local_Raise (N, Standard_Constraint_Error);
+      end if;
    end Activate_Overflow_Check;
 
    --------------------------

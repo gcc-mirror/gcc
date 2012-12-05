@@ -5521,6 +5521,13 @@ package body Sem_Ch8 is
             null;
          end if;
       end if;
+
+      --  If there is a single interpretation for N we can generate a
+      --  reference to the unique entity found.
+
+      if Is_Overloadable (Id) and then not Is_Overloaded (N) then
+         Generate_Reference (Id, N);
+      end if;
    end Find_Expanded_Name;
 
    -------------------------
