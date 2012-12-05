@@ -2834,15 +2834,13 @@ registers of @var{rclass} are needed for spill registers.
 
 The default version of this target hook returns @code{true} if @var{rclass}
 has exactly one register and @code{false} otherwise.  On most machines, this
-default should be used.  Only use this target hook to some other expression
-if pseudos allocated by @file{local-alloc.c} end up in memory because their
-hard registers were needed for spill registers.  If this target hook returns
-@code{false} for those classes, those pseudos will only be allocated by
-@file{global.c}, which knows how to reallocate the pseudo to another
-register.  If there would not be another register available for reallocation,
-you should not change the implementation of this target hook since
-the only effect of such implementation would be to slow down register
-allocation.
+default should be used.  For generally register-starved machines, such as
+i386, or machines with right register constraints, such as SH, this hook
+can be used to avoid excessive spilling.
+
+This hook is also used by some of the global intra-procedural code
+transformations to throtle code motion, to avoid increasing register
+pressure.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned char} TARGET_CLASS_MAX_NREGS (reg_class_t @var{rclass}, enum machine_mode @var{mode})
