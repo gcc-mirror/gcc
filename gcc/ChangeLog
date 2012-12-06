@@ -1,3 +1,8 @@
+2012-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md: Use "const_int 0" instead of match_test to simplify
+	opaque cond in all call insns.
+
 2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/55604
