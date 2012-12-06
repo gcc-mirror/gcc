@@ -1,3 +1,9 @@
+2012-12-06  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR 55599/sanitizer
+        * configure.ac: Set enable_static=no on darwin.
+        * configure: Regenerated.
+
 2012-12-06  Kostya Serebryany  <kcc@google.com>
 
 	* All files: Merge from upstream r169392.

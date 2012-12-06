@@ -81,7 +81,7 @@ unset TSAN_SUPPORTED
 AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 
 case "$host" in
-  *-*-darwin*) MAC_INTERPOSE=true ;;
+  *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
   *) MAC_INTERPOSE=false ;;
 esac
 AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)
