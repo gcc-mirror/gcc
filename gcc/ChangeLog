@@ -1,3 +1,8 @@
+2012-12-06  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
+	default loop peeling limits.
+		
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55032
