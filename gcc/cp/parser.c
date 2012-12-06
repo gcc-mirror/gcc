@@ -18589,7 +18589,8 @@ cp_parser_class_head (cp_parser* parser,
 		&& CLASS_TYPE_P (scope)
 		&& CLASSTYPE_TEMPLATE_INFO (scope)
 		&& PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (scope))
-		&& !CLASSTYPE_TEMPLATE_SPECIALIZATION (scope))
+		&& (!CLASSTYPE_TEMPLATE_SPECIALIZATION (scope)
+		    || uses_template_parms (CLASSTYPE_TI_ARGS (scope))))
 	      ++num_templates;
 	}
     }
