@@ -1,3 +1,10 @@
+2012-12-06  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/55597
+	* config/i386/i386.c (legitimize_tls_address): Zero-extend x to Pmode,
+	before using it as insn or call equivalent.
+
 2012-12-06  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/sysv4.h (TARGET_ASAN_SHADOW_OFFSET): Define.
@@ -14,14 +21,14 @@
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
 	default loop peeling limits.
-		
+
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55032
 	* tree.c (build_array_type_1): Re-layout if we found it in the
 	hash table.
 
-2012-12-06  Jack Howarth <howarth@bromo.med.uc.edu>
+2012-12-06  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 55599/sanitizer
         * config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
@@ -41,8 +48,7 @@
 
 2012-12-06  Richard Biener  <rguenther@suse.de>
 
-	* gimple-fold.c (fold_stmt_1): Remove code handling folding
-	stmts away.
+	* gimple-fold.c (fold_stmt_1): Remove code handling folding stmts away.
 
 2012-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -59,7 +65,7 @@
 	* config/arm/arm.md ("unspec"): Move to unspecs.md.
 	* config/arm/iterators.md (NEON_VRINT): New int iterator.
 	(nvrint_variant): New int attribute.
-	* config/arm/neon.md 
+	* config/arm/neon.md
 	(neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>): New pattern.
 	("unspec"): Move to unspecs.md.
 	* config/arm/iwmmxt2.md ("unspec"): Move to unspecs.md.
@@ -338,12 +344,10 @@
 	PR middle-end/55401
 	* trans-mem.c (get_tm_region_blocks): Exclude uninstrumented
 	blocks from vector if requested.
-	(collect_bb2reg): Pass new argument to
-	get_tm_region_blocks.
+	(collect_bb2reg): Pass new argument to get_tm_region_blocks.
 	(get_bb_regions_instrumented): Add INCLUDE_UNINSTRUMENTED_P
 	argument, and pass it to expand_regions.
-	(execute_tm_mark): Pass new argument to
-	get_bb_regions_instrumented.
+	(execute_tm_mark): Pass new argument to get_bb_regions_instrumented.
 	(execute_tm_edges): Same.
 
 2012-12-03  Jakub Jelinek  <jakub@redhat.com>
@@ -396,7 +400,7 @@
 2012-12-03  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_build_constant): Update prototype.
-	Call emit_move_insn	instead of printing movi/movn/movz instructions.
+	Call emit_move_insn instead of printing movi/movn/movz instructions.
 	Call gen_insv_immdi instead of printing movk instruction.
 	(aarch64_add_constant): Update prototype.
 	Generate RTL instead of printing add/sub instructions.
@@ -466,8 +470,9 @@
 
 2012-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator): Deal
-	with degenerate cases where the bitsize isn't positive.  Rework comment.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Deal with degenerate cases where the bitsize isn't positive.
+	Rework comment.
 
 2012-11-30  David Edelsohn  <dje.gcc@gmail.com>
 
@@ -504,8 +509,7 @@
 	(input_profile_summary): Stream in sum_all and histogram.
 	(merge_profile_summaries): Merge sum_all and histogram, and
 	change to use RDIV.
-	(input_symtab): Call compute_working_sets after merging
-	summaries.
+	(input_symtab): Call compute_working_sets after merging summaries.
 	* gcov-io.c (gcov_histo_index): Make extern for compiler.
 	* gcov-io.h (gcov_histo_index): Ditto.
 	* profile.c (compute_working_sets): Remove static keyword.
@@ -566,8 +570,7 @@
 
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
-	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids
-	here.
+	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids here.
 
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
@@ -627,8 +630,7 @@
 2012-11-30  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/host-mingw32.c (va_granularity): Make none-const.
-	(mingw32_gt_pch_alloc_granularity): Return OS' allocation
-	granularity.
+	(mingw32_gt_pch_alloc_granularity): Return OS' allocation granularity.
 	(mingw32_gt_pch_use_address): Retry mapping of used address
 	as multiple instances might interfer.
 
@@ -658,9 +660,8 @@
 2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/55073
-	* arm/neon.md (neon_vtrn<mode>_internal): Split into expand
-	and insn patterns.  Re-order insn arguments to tie inputs to
-	outputs.
+	* config/arm/neon.md (neon_vtrn<mode>_internal): Split into expand
+	and insn patterns.  Re-order insn arguments to tie inputs to outputs.
 	(neon_vzip<mode>_internal): Likewise.
 	(neon_vuzp<mode>_internal): Likewise.
 
@@ -711,7 +712,7 @@
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55171
-	* i386.c (get_scratch_register_on_entry): Handle
+	* config/i386/i386.c (get_scratch_register_on_entry): Handle
 	thiscall-convention.
 	(split_stack_prologue_scratch_regno): Likewise.
 	(ix86_static_chain): Likewise.
@@ -770,7 +771,7 @@
 	* varasm.c (use_blocks_for_decl_p): Apply hook as final condition.
 	* doc/tm.texi.in (USE_BLOCKS_FOR_DECL_P): New description.
 	* doc/tm.texi: Regenerated.
-	
+
 2012-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/55438
@@ -790,8 +791,7 @@
 	PR rtl-optimization/55512
 	* lra-assigns.c (assign_by_spills): Assigned arbitrary hard regs
 	to failed reload pseudos instead of changing asm pattern.
-	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Increase
-	value.
+	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Increase value.
 
 2012-11-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
@@ -815,9 +815,9 @@
 	* config/epiphany/epiphgany.md (attribute type): Add v2fp.
 	(attribute fp_mode): Test for v2fp.
 	(<float_operation:insn_opname>v2sf3_i): Change type to v2fp.
-	* config/epiphany/epiphgany-sched.md (fp_arith_nearest, fp_arith_trunc):
-	Combine to ..
-	(fp_arith): .. this. 
+	* config/epiphany/epiphgany-sched.md (fp_arith_nearest,
+	fp_arith_trunc): Combine to ..
+	(fp_arith): .. this.
 	(v2fp_arith): New insn reservation.
 
 	* config/epiphany/epiphgany.md (maddsi_combine): Fix output pattern.
@@ -829,7 +829,8 @@
 2012-11-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.h (HARD_REGNO_RENAME_OK): Define.
-	* config/epiphany/epiphany-protos.h (epiphany_regno_rename_ok): Declare.
+	* config/epiphany/epiphany-protos.h (epiphany_regno_rename_ok):
+	Declare.
 	* config/epiphany/epiphany.c (epiphany_regno_rename_ok): New function.
 
 	* config/epiphany/epiphany.md (mov<mode>, *mov<mode>_insn): Check
@@ -837,7 +838,8 @@
 	* config/epiphany/predicates.md (misaligned_operand): New predicate.
 
 	* config/epiphany/epiphany.opt (-may-round-for-trunc): New option.
-	* config/epiphany/epiphany.md (*fix_truncsfsi2_i): Take it into account.
+	* config/epiphany/epiphany.md (*fix_truncsfsi2_i): Take it
+	into account.
 
 2012-11-28  Richard Biener  <rguenther@suse.de>
 
