@@ -216,7 +216,7 @@ class Parse
 				     Range_clause*, Type_switch*);
   void function_decl(bool saw_nointerface);
   Typed_identifier* receiver();
-  Expression* operand(bool may_be_sink);
+  Expression* operand(bool may_be_sink, bool *is_parenthesized);
   Expression* enclosing_var_reference(Named_object*, Named_object*,
 				      Location);
   Expression* composite_lit(Type*, int depth, Location);
@@ -224,15 +224,16 @@ class Parse
   Expression* create_closure(Named_object* function, Enclosing_vars*,
 			     Location);
   Expression* primary_expr(bool may_be_sink, bool may_be_composite_lit,
-			   bool* is_type_switch);
+			   bool* is_type_switch, bool* is_parenthesized);
   Expression* selector(Expression*, bool* is_type_switch);
   Expression* index(Expression*);
   Expression* call(Expression*);
   Expression* expression(Precedence, bool may_be_sink,
-			 bool may_be_composite_lit, bool* is_type_switch);
+			 bool may_be_composite_lit, bool* is_type_switch,
+			 bool *is_parenthesized);
   bool expression_may_start_here();
   Expression* unary_expr(bool may_be_sink, bool may_be_composite_lit,
-			 bool* is_type_switch);
+			 bool* is_type_switch, bool* is_parenthesized);
   Type* reassociate_chan_direction(Channel_type*, Location);
   Expression* qualified_expr(Expression*, Location);
   Expression* id_to_expression(const std::string&, Location);
