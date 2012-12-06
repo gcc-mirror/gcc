@@ -1,3 +1,10 @@
+2012-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-machine.h (FP_EX_ALL): Define.
+	(FP_TRAPPING_EXCEPTIONS): Define.
+	* config/i386/32/sfp-machine.h (FP_EX_SHIFT): Define.
+	* config/i386/64/sfp-machine.h (FP_EX_SHIFT): Ditto.
+
 2012-12-04  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/55571
@@ -5,7 +12,7 @@
 
 2012-12-04  Marcus Shawcroft <marcus.shawcroft@arm.com>
 
-        * config/aarch64/sfp-machine.h (FP_EX_ALL): Define.
+	* config/aarch64/sfp-machine.h (FP_EX_ALL): Define.
 	(FP_EX_SHIFT): Define.
 	(FP_TRAPPING_EXCEPTIONS): Define.
 
@@ -46,7 +53,7 @@
 	PR libgcc/48076
 	* emutls.c (__emutls_get_address): Avoid race condition between
 	obj->loc.offset read and emutls_key initialization.
-	
+
 2012-11-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	Adjust decimal point of signed accum mode to GCC default.
@@ -58,8 +65,8 @@
 	(__fractsasf, __fractsfha, __fractusqsf, __fractsfsa)
 	(__mulha3, __mulsa3)
 	(__divqq3, __divha3, __divsa3): Adjust to new position of
-	decimal point of signed accum types. 
-	
+	decimal point of signed accum types.
+
 	(__mulusa3_round): New function.
 	(__mulusa3): Use it.
 	(__divqq_helper): New function.
