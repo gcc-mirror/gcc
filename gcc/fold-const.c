@@ -10348,6 +10348,7 @@ fold_binary_loc (location_t loc,
 	{
 	  tree var0, con0, lit0, minus_lit0;
 	  tree var1, con1, lit1, minus_lit1;
+	  tree atype = type;
 	  bool ok = true;
 
 	  /* Split both trees into variables, constants, and literals.  Then
@@ -10363,10 +10364,24 @@ fold_binary_loc (location_t loc,
 	  if (code == MINUS_EXPR)
 	    code = PLUS_EXPR;
 
-	  /* With undefined overflow we can only associate constants with one
-	     variable, and constants whose association doesn't overflow.  */
+	  /* With undefined overflow prefer doing association in a type
+	     which wraps on overflow, if that is one of the operand types.  */
 	  if ((POINTER_TYPE_P (type) && POINTER_TYPE_OVERFLOW_UNDEFINED)
 	      || (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_WRAPS (type)))
+	    {
+	      if (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+		  && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
+		atype = TREE_TYPE (arg0);
+	      else if (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+		       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+		atype = TREE_TYPE (arg1);
+	      gcc_assert (TYPE_PRECISION (atype) == TYPE_PRECISION (type));
+	    }
+
+	  /* With undefined overflow we can only associate constants with one
+	     variable, and constants whose association doesn't overflow.  */
+	  if ((POINTER_TYPE_P (atype) && POINTER_TYPE_OVERFLOW_UNDEFINED)
+	      || (INTEGRAL_TYPE_P (atype) && !TYPE_OVERFLOW_WRAPS (atype)))
 	    {
 	      if (var0 && var1)
 		{
@@ -10378,29 +10393,19 @@ fold_binary_loc (location_t loc,
 		  if (CONVERT_EXPR_P (tmp0)
 		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp0, 0)))
 		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (tmp0, 0)))
-			  <= TYPE_PRECISION (type)))
+			  <= TYPE_PRECISION (atype)))
 		    tmp0 = TREE_OPERAND (tmp0, 0);
 		  if (TREE_CODE (tmp1) == NEGATE_EXPR)
 		    tmp1 = TREE_OPERAND (tmp1, 0);
 		  if (CONVERT_EXPR_P (tmp1)
 		      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp1, 0)))
 		      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (tmp1, 0)))
-			  <= TYPE_PRECISION (type)))
+			  <= TYPE_PRECISION (atype)))
 		    tmp1 = TREE_OPERAND (tmp1, 0);
 		  /* The only case we can still associate with two variables
 		     is if they are the same, modulo negation and bit-pattern
 		     preserving conversions.  */
 		  if (!operand_equal_p (tmp0, tmp1, 0))
-		    ok = false;
-		}
-
-	      if (ok && lit0 && lit1)
-		{
-		  tree tmp0 = fold_convert (type, lit0);
-		  tree tmp1 = fold_convert (type, lit1);
-
-		  if (!TREE_OVERFLOW (tmp0) && !TREE_OVERFLOW (tmp1)
-		      && TREE_OVERFLOW (fold_build2 (code, type, tmp0, tmp1)))
 		    ok = false;
 		}
 	    }
@@ -10413,10 +10418,16 @@ fold_binary_loc (location_t loc,
 		       + (lit0 != 0) + (lit1 != 0)
 		       + (minus_lit0 != 0) + (minus_lit1 != 0))))
 	    {
-	      var0 = associate_trees (loc, var0, var1, code, type);
-	      con0 = associate_trees (loc, con0, con1, code, type);
-	      lit0 = associate_trees (loc, lit0, lit1, code, type);
-	      minus_lit0 = associate_trees (loc, minus_lit0, minus_lit1, code, type);
+	      bool any_overflows = false;
+	      if (lit0) any_overflows |= TREE_OVERFLOW (lit0);
+	      if (lit1) any_overflows |= TREE_OVERFLOW (lit1);
+	      if (minus_lit0) any_overflows |= TREE_OVERFLOW (minus_lit0);
+	      if (minus_lit1) any_overflows |= TREE_OVERFLOW (minus_lit1);
+	      var0 = associate_trees (loc, var0, var1, code, atype);
+	      con0 = associate_trees (loc, con0, con1, code, atype);
+	      lit0 = associate_trees (loc, lit0, lit1, code, atype);
+	      minus_lit0 = associate_trees (loc, minus_lit0, minus_lit1,
+					    code, atype);
 
 	      /* Preserve the MINUS_EXPR if the negative part of the literal is
 		 greater than the positive part.  Otherwise, the multiplicative
@@ -10430,38 +10441,45 @@ fold_binary_loc (location_t loc,
 		      && tree_int_cst_lt (lit0, minus_lit0))
 		    {
 		      minus_lit0 = associate_trees (loc, minus_lit0, lit0,
-						    MINUS_EXPR, type);
+						    MINUS_EXPR, atype);
 		      lit0 = 0;
 		    }
 		  else
 		    {
 		      lit0 = associate_trees (loc, lit0, minus_lit0,
-					      MINUS_EXPR, type);
+					      MINUS_EXPR, atype);
 		      minus_lit0 = 0;
 		    }
 		}
+
+	      /* Don't introduce overflows through reassociation.  */
+	      if (!any_overflows
+		  && ((lit0 && TREE_OVERFLOW (lit0))
+		      || (minus_lit0 && TREE_OVERFLOW (minus_lit0))))
+		return NULL_TREE;
+
 	      if (minus_lit0)
 		{
 		  if (con0 == 0)
 		    return
 		      fold_convert_loc (loc, type,
 					associate_trees (loc, var0, minus_lit0,
-							 MINUS_EXPR, type));
+							 MINUS_EXPR, atype));
 		  else
 		    {
 		      con0 = associate_trees (loc, con0, minus_lit0,
-					      MINUS_EXPR, type);
+					      MINUS_EXPR, atype);
 		      return
 			fold_convert_loc (loc, type,
 					  associate_trees (loc, var0, con0,
-							   PLUS_EXPR, type));
+							   PLUS_EXPR, atype));
 		    }
 		}
 
-	      con0 = associate_trees (loc, con0, lit0, code, type);
+	      con0 = associate_trees (loc, con0, lit0, code, atype);
 	      return
 		fold_convert_loc (loc, type, associate_trees (loc, var0, con0,
-							      code, type));
+							      code, atype));
 	    }
 	}
 
