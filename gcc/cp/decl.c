@@ -12928,10 +12928,9 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       if (DECL_NOT_REALLY_EXTERN (decl1))
 	DECL_EXTERNAL (decl1) = 0;
 
-      if (ctx != NULL_TREE && DECL_DECLARED_INLINE_P (ctx)
-	  && TREE_PUBLIC (ctx))
+      if (ctx != NULL_TREE && vague_linkage_p (ctx))
 	/* This is a function in a local class in an extern inline
-	   function.  */
+	   or template function.  */
 	comdat_linkage (decl1);
     }
   /* If this function belongs to an interface, it is public.
