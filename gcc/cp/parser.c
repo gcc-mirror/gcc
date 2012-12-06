@@ -11592,7 +11592,7 @@ cp_parser_mem_initializer_list (cp_parser* parser)
 	}
       /* Look for a target constructor. */
       if (mem_initializer != error_mark_node
-	  && TYPE_P (TREE_PURPOSE (mem_initializer))
+	  && CLASS_TYPE_P (TREE_PURPOSE (mem_initializer))
 	  && same_type_p (TREE_PURPOSE (mem_initializer), current_class_type))
 	{
 	  maybe_warn_cpp0x (CPP0X_DELEGATING_CTORS);

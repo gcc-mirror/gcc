@@ -20079,7 +20079,16 @@ resolve_typename_type (tree type, bool only_current_p)
   /* If the SCOPE is itself a TYPENAME_TYPE, then we need to resolve
      it first before we can figure out what NAME refers to.  */
   if (TREE_CODE (scope) == TYPENAME_TYPE)
-    scope = resolve_typename_type (scope, only_current_p);
+    {
+      if (TYPENAME_IS_RESOLVING_P (scope))
+	/* Given a class template A with a dependent base with nested type C,
+	   typedef typename A::C::C C will land us here, as trying to resolve
+	   the initial A::C leads to the local C typedef, which leads back to
+	   A::C::C.  So we break the recursion now.  */
+	return type;
+      else
+	scope = resolve_typename_type (scope, only_current_p);
+    }
   /* If we don't know what SCOPE refers to, then we cannot resolve the
      TYPENAME_TYPE.  */
   if (TREE_CODE (scope) == TYPENAME_TYPE)
