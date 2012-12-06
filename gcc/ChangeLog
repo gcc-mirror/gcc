@@ -1,3 +1,9 @@
+2012-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55395
+	* varpool.c (varpool_remove_node): Don't drop DECL_INITIAL
+	if -g and emitting DWARF2+.
+
 2012-12-06  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
