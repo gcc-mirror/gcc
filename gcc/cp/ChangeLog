@@ -1,5 +1,12 @@
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54653
+	* parser.c (cp_parser_class_head): A partial specialization scope
+	counts as a template.
+	* pt.c (tsubst_template_parms): Handle template template parm parms.
+	(tsubst_decl) [TEMPLATE_DECL]: Handle getting a template template
+	argument back.
+
 	PR c++/55564
 	* pt.c (unify) [ARRAY_TYPE]: Unify the element type before the bounds.
 
