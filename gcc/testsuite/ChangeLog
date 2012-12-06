@@ -1,5 +1,10 @@
 2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/55573
+	* g++.dg/cpp0x/constexpr-55573.C: New test.
+
+2012-12-06  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/55137
 	* g++.dg/opt/pr55137.C: New test.
 	* gcc.c-torture/execute/pr55137.c: New test.
