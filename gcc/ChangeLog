@@ -1,3 +1,36 @@
+2012-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport for mainline:
+	2011-11-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/50283
+	* config/pa/pa.md (in_branch_delay): Disallow frame related insns.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+
+	2012-11-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/55195
+	* config/pa/pa.md (type): Add sibcall and sh_func_adrs insn types.
+	(in_branch_delay): Don't allow sibcall or sh_func_adrs insns.
+	(in_nullified_branch_delay): Likewise.
+	(in_call_delay): Likewise.
+	Define delay for sibcall insns.  Adjust Z3 and Z4 insn reservations for
+	new types.  Add opaque cond to mark all calls, sibcalls, dyncalls and
+	the $$sh_func_adrs call as variable.  Update type of sibcalls and
+	$$sh_func_adrs call.
+	* config/pa/pa.c (pa_adjust_insn_length): Revise to return updated
+	length instead of adjustment.  Handle negative and undefined call
+	adjustments for insn_default_length.  Remove adjustment for millicode
+	insn with unfilled delay slot.
+	(pa_output_millicode_call): Update for revised millicode length.
+	* config/pa/pa.h (ADJUST_INSN_LENGTH): Revise to set LENGTH.
+
+	2012-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md: Use "const_int 0" instead of match_test to simplify
+	opaque cond in all call insns.
+
 2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.c (ia64_compute_frame_size): Allocate the scratch
