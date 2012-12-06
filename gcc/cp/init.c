@@ -1370,8 +1370,8 @@ expand_member_init (tree name)
       tree virtual_binfo;
       int i;
 
-      if (same_type_p (basetype, current_class_type)
-	  || current_template_parms)
+      if (current_template_parms
+	  || same_type_p (basetype, current_class_type))
 	  return basetype;
 
       class_binfo = TYPE_BINFO (current_class_type);
