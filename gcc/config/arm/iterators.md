@@ -198,6 +198,9 @@
 (define_int_iterator VRINT [UNSPEC_VRINTZ UNSPEC_VRINTP UNSPEC_VRINTM
                             UNSPEC_VRINTR UNSPEC_VRINTX UNSPEC_VRINTA])
 
+(define_int_iterator NEON_VRINT [UNSPEC_NVRINTP UNSPEC_NVRINTZ UNSPEC_NVRINTM
+                              UNSPEC_NVRINTX UNSPEC_NVRINTA UNSPEC_NVRINTN])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -483,3 +486,7 @@
 (define_int_attr vrint_predicable [(UNSPEC_VRINTZ "yes") (UNSPEC_VRINTP "no")
                                   (UNSPEC_VRINTA "no") (UNSPEC_VRINTM "no")
                                   (UNSPEC_VRINTR "yes") (UNSPEC_VRINTX "yes")])
+
+(define_int_attr nvrint_variant [(UNSPEC_NVRINTZ "z") (UNSPEC_NVRINTP "p")
+                                (UNSPEC_NVRINTA "a") (UNSPEC_NVRINTM "m")
+                                (UNSPEC_NVRINTX "x") (UNSPEC_NVRINTN "n")])

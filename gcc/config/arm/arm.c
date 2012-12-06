@@ -19060,6 +19060,7 @@ typedef enum {
   NEON_GETLANE,
   NEON_SETLANE,
   NEON_CREATE,
+  NEON_RINT,
   NEON_DUP,
   NEON_DUPLANE,
   NEON_COMBINE,
@@ -19259,6 +19260,12 @@ static neon_builtin_datum neon_builtin_data[] =
   VAR4 (FIXCONV, vcvt_n, v2si, v2sf, v4si, v4sf),
   VAR10 (SELECT, vbsl,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
+  VAR2 (RINT, vrintn, v2sf, v4sf),
+  VAR2 (RINT, vrinta, v2sf, v4sf),
+  VAR2 (RINT, vrintp, v2sf, v4sf),
+  VAR2 (RINT, vrintm, v2sf, v4sf),
+  VAR2 (RINT, vrintz, v2sf, v4sf),
+  VAR2 (RINT, vrintx, v2sf, v4sf),
   VAR1 (VTBL, vtbl1, v8qi),
   VAR1 (VTBL, vtbl2, v8qi),
   VAR1 (VTBL, vtbl3, v8qi),
@@ -19886,6 +19893,7 @@ arm_init_neon_builtins (void)
 	    is_store = 1;
 	  /* Fall through.  */
 	case NEON_UNOP:
+	case NEON_RINT:
 	case NEON_BINOP:
 	case NEON_LOGICBINOP:
 	case NEON_SHIFTINSERT:
@@ -21073,6 +21081,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_DUP:
+    case NEON_RINT:
     case NEON_SPLIT:
     case NEON_REINTERP:
       return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
