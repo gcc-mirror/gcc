@@ -3120,6 +3120,14 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
+      /* Increase loop peeling limits based on performance analysis. */
+      maybe_set_param_value (PARAM_MAX_PEELED_INSNS, 400,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 400,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
 	 ap = __builtin_next_arg (0).  */
