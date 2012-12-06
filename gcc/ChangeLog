@@ -1,3 +1,8 @@
+2012-12-06  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR 55599/sanitizer
+        * config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
+
 2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/43631

@@ -14497,7 +14497,7 @@ fi
 
 
 case "$host" in
-  *-*-darwin*) MAC_INTERPOSE=true ;;
+  *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
   *) MAC_INTERPOSE=false ;;
 esac
  if $MAC_INTERPOSE; then
