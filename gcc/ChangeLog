@@ -1,3 +1,9 @@
+2012-12-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/sysv4.h (TARGET_ASAN_SHADOW_OFFSET): Define.
+	* config/rs6000/rs6000.c (rs6000_asan_shadow_offset): New function.
+	* config/rs6000/rs6000.h (FRAME_GROWS_DOWNWARD): Disable if using ASAN.
+
 2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/55395

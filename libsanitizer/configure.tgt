@@ -25,6 +25,8 @@ case "${target}" in
 		TSAN_SUPPORTED=yes
 	fi
 	;;
+  powerpc*-*-linux*)
+	;;
   sparc*-*-linux*)
 	;;
   x86_64-*-darwin* | i?86-*-darwin*)
