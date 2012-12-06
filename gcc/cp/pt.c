@@ -16593,6 +16593,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       if ((TYPE_DOMAIN (parm) == NULL_TREE)
 	  != (TYPE_DOMAIN (arg) == NULL_TREE))
 	return unify_type_mismatch (explain_p, parm, arg);
+      RECUR_AND_CHECK_FAILURE (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
+			       strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
       if (TYPE_DOMAIN (parm) != NULL_TREE)
 	{
 	  tree parm_max;
@@ -16651,8 +16653,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  RECUR_AND_CHECK_FAILURE (tparms, targs, parm_max, arg_max,
 				   UNIFY_ALLOW_INTEGER, explain_p);
 	}
-      return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
-		    strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
+      return unify_success (explain_p);
 
     case REAL_TYPE:
     case COMPLEX_TYPE:
