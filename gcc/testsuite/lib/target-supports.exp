@@ -2107,6 +2107,22 @@ proc check_effective_target_arm_v8_vfp_ok {} {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=neon-fp-armv8
+# -mfloat-abi=softfp
+proc check_effective_target_arm_v8_neon_ok {} {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_v8_neon_ok object {
+	  int foo (void)
+	  {
+	     __asm__ volatile ("vrintn.f32 q0, q0");
+	       return 0;
+	  }
+	} "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=vfp
 # -mfloat-abi=hard.  Some multilibs may be incompatible with these
 # options.
@@ -2164,6 +2180,13 @@ proc add_options_for_arm_v8_vfp { flags } {
         return "$flags"
     }
     return "$flags -mfpu=fp-armv8 -mfloat-abi=softfp"
+}
+
+proc add_options_for_arm_v8_neon { flags } {
+    if { ! [check_effective_target_arm_v8_neon_ok] } {
+        return "$flags"
+    }
+    return "$flags -mfpu=neon-fp-armv8 -mfloat-abi=softfp"
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp

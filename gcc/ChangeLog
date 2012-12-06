@@ -1,5 +1,9 @@
 2012-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* doc/sourcebuild.texi: Document arm_v8_neon_ok.
+
+2012-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (neon_itype): Define NEON_RINT enum element.
 	(neon_builtin_data): Register vrintn, vrinta, vrintp, vrintm,
 	vrintz,	vrintx neon builtins.

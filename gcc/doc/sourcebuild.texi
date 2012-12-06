@@ -1560,6 +1560,10 @@ Some multilibs may be incompatible with these options.
 ARM target supports @code{-mfpu=fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
+@item arm_v8_neon_ok
+ARM target supports @code{-mfpu=neon-fp-armv8 -mfloat-abi=softfp}.
+Some multilibs may be incompatible with these options.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
