@@ -1,9 +1,10 @@
 2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/54207
+	* g++.dg/cpp0x/noexcept18.C: New test.
+
 	PR c++/55573
 	* g++.dg/cpp0x/constexpr-55573.C: New test.
-
-2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55137
 	* g++.dg/opt/pr55137.C: New test.
