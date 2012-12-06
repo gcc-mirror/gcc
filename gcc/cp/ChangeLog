@@ -1,3 +1,12 @@
+2012-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54207
+	* except.c (build_noexcept_spec): Avoid direct comparison
+	with boolean_true_node or boolean_false_node, instead use
+	operand_equal_p and/or INTEGER_CST check.
+	* pt.c (tsubst_exception_specification): Likewise.
+	* typeck2.c (merge_exception_specifiers): Likewise.
+
 2012-12-06  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/55573

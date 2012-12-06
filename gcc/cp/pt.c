@@ -10844,7 +10844,7 @@ tsubst_exception_specification (tree fntype,
     {
       /* A noexcept-specifier.  */
       tree expr = TREE_PURPOSE (specs);
-      if (expr == boolean_true_node || expr == boolean_false_node)
+      if (TREE_CODE (expr) == INTEGER_CST)
 	new_specs = expr;
       else if (defer_ok)
 	{
