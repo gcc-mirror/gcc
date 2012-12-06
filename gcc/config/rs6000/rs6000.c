@@ -27529,6 +27529,15 @@ rs6000_final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
     }
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+#if TARGET_ELF
+static unsigned HOST_WIDE_INT
+rs6000_asan_shadow_offset (void)
+{
+  return (unsigned HOST_WIDE_INT) 1 << (TARGET_64BIT ? 41 : 29);
+}
+#endif
 
 /* Mask options that we want to support inside of attribute((target)) and
    #pragma GCC target operations.  Note, we do not include things like
