@@ -17666,11 +17666,14 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	  /* In C++11, [ could start a lambda-introducer.  */
 	  cp_parser_parse_tentatively (parser);
 	  cp_lexer_consume_token (parser->lexer);
-	  designator = cp_parser_constant_expression (parser, false, NULL);
+	  bool non_const = false;
+	  designator = cp_parser_constant_expression (parser, true, &non_const);
 	  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 	  cp_parser_require (parser, CPP_EQ, RT_EQ);
 	  if (!cp_parser_parse_definitely (parser))
 	    designator = NULL_TREE;
+	  else if (non_const)
+	    require_potential_rvalue_constant_expression (designator);
 	}
       else
 	designator = NULL_TREE;

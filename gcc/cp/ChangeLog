@@ -1,5 +1,10 @@
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54947
+	* parser.c (cp_parser_initializer_list): Don't require an
+	expression in [] to be constant until we know it's a C99
+	designator.
+
 	PR c++/55015
 	PR c++/53821
 	* semantics.c (maybe_add_lambda_conv_op): Revert earlier change.
