@@ -1,3 +1,19 @@
+2012-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (neon_itype): Define NEON_RINT enum element.
+	(neon_builtin_data): Register vrintn, vrinta, vrintp, vrintm,
+	vrintz,	vrintx neon builtins.
+	(arm_init_neon_builtins): Handle NEON_RINT.
+	(arm_expand_neon_builtin): Likewise.
+	* config/arm/unspecs.md: New file.
+	* config/arm/arm.md ("unspec"): Move to unspecs.md.
+	* config/arm/iterators.md (NEON_VRINT): New int iterator.
+	(nvrint_variant): New int attribute.
+	* config/arm/neon.md 
+	(neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>): New pattern.
+	("unspec"): Move to unspecs.md.
+	* config/arm/iwmmxt2.md ("unspec"): Move to unspecs.md.
+
 2012-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.md: Use "const_int 0" instead of match_test to simplify
