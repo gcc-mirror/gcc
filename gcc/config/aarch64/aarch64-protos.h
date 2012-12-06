@@ -236,4 +236,14 @@ rtx aarch64_expand_builtin (tree exp,
 			    int ignore ATTRIBUTE_UNUSED);
 tree aarch64_builtin_decl (unsigned, bool ATTRIBUTE_UNUSED);
 
+tree
+aarch64_builtin_vectorized_function (tree fndecl,
+				     tree type_out,
+				     tree type_in);
+
+extern void aarch64_split_combinev16qi (rtx operands[3]);
+extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
+extern bool
+aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
+
 #endif /* GCC_AARCH64_PROTOS_H */

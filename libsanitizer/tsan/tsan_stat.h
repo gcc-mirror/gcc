@@ -95,6 +95,7 @@ enum StatType {
   StatInt_longjmp,
   StatInt_siglongjmp,
   StatInt_malloc,
+  StatInt___libc_memalign,
   StatInt_calloc,
   StatInt_realloc,
   StatInt_free,

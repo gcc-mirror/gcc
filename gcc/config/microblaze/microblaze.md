@@ -722,32 +722,6 @@
   (set_attr "length"	"4,8,8,8")])
 
 
-(define_insn "anddi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(and:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))]
-  ""
-  "and\t%M0,%M1,%M2\;and\t%L0,%L1,%L2"
-  [(set_attr "type"	"darith")
-  (set_attr "mode"	"DI")
-  (set_attr "length"    "8")])
-
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(and:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))]
-  "reload_completed 
-   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
-   && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
-
-  [(set (subreg:SI (match_dup 0) 0) (and:SI (subreg:SI (match_dup 1) 0) 
-					    (subreg:SI (match_dup 2) 0)))
-  (set (subreg:SI (match_dup 0) 4) (and:SI (subreg:SI (match_dup 1) 4) 
-					   (subreg:SI (match_dup 2) 4)))]
-  "")
-
 (define_insn "iorsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
 	(ior:SI (match_operand:SI 1 "arith_operand" "%d,d,d,d")
@@ -762,34 +736,6 @@
   (set_attr "mode"	"SI,SI,SI,SI")
   (set_attr "length"	"4,8,8,8")])
 
-
-(define_insn "iordi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(ior:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))]
-  ""
-  "or\t%M0,%M1,%M2\;or\t%L0,%L1,%L2"
-  [(set_attr "type"	"darith")
-  (set_attr "mode"	"DI")
-  (set_attr "length"    "8")]
-)
-
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(ior:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))]
-  "reload_completed 
-   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
-   && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
-
-  [(set (subreg:SI (match_dup 0) 0) (ior:SI (subreg:SI (match_dup 1) 0) 
-					    (subreg:SI (match_dup 2) 0)))
-  (set (subreg:SI (match_dup 0) 4) (ior:SI (subreg:SI (match_dup 1) 4) 
-					   (subreg:SI (match_dup 2) 4)))]
-  "")
-
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d,d")
 	(xor:SI (match_operand:SI 1 "arith_operand" "%d,d,d")
@@ -802,33 +748,6 @@
   [(set_attr "type"	"arith,arith,no_delay_arith")
   (set_attr "mode"	"SI,SI,SI")
   (set_attr "length"	"4,8,8")])
-
-(define_insn "xordi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(xor:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))]
-  ""
-  "xor\t%M0,%M1,%M2\;xor\t%L0,%L1,%L2"
-  [(set_attr "type"	"darith")
-  (set_attr "mode"	"DI")
-  (set_attr "length"    "8")]
-)
-
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand" "")
-	(xor:DI (match_operand:DI 1 "register_operand" "")
-		(match_operand:DI 2 "register_operand" "")))]
-  "reload_completed 
-   && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG && GP_REG_P (REGNO (operands[1]))
-   && GET_CODE (operands[2]) == REG && GP_REG_P (REGNO (operands[2]))"
-
-  [(set (subreg:SI (match_dup 0) 0) (xor:SI (subreg:SI (match_dup 1) 0) 
-					    (subreg:SI (match_dup 2) 0)))
-  (set (subreg:SI (match_dup 0) 4) (xor:SI (subreg:SI (match_dup 1) 4) 
-					   (subreg:SI (match_dup 2) 4)))]
-  "")
 
 ;;----------------------------------------------------------------
 ;; Zero extension

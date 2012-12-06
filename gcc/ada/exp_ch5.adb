@@ -2117,10 +2117,12 @@ package body Exp_Ch5 is
       end if;
 
       --  Apply discriminant check if required. If Lhs is an access type to a
-      --  designated type with discriminants, we must always check.
+      --  designated type with discriminants, we must always check. If the
+      --  type has unknown discriminants, more elaborate processing below.
 
-      if Has_Discriminants (Etype (Lhs)) then
-
+      if Has_Discriminants (Etype (Lhs))
+        and then not Has_Unknown_Discriminants (Etype (Lhs))
+      then
          --  Skip discriminant check if change of representation. Will be
          --  done when the change of representation is expanded out.
 

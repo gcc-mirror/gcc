@@ -40,7 +40,7 @@ package Err_Vars is
 
    --  Note on error counts (Serious_Errors_Detected, Total_Errors_Detected,
    --  Warnings_Detected). These counts might more logically appear in this
-   --  unit, but we place them in atree.adb, because of licensing issues. We
+   --  unit, but we place them in atree.ads, because of licensing issues. We
    --  need to be able to access these counts from units that have the more
    --  general licensing conditions.
 

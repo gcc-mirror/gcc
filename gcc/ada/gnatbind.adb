@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -545,9 +545,7 @@ begin
 
    --  Test for trailing -o switch
 
-   if Opt.Output_File_Name_Present
-     and then not Output_File_Name_Seen
-   then
+   if Opt.Output_File_Name_Present and then not Output_File_Name_Seen then
       Fail ("output file name missing after -o");
    end if;
 
@@ -557,12 +555,9 @@ begin
       Bindusg.Display;
    end if;
 
-   --  Check that the Ada binder file specified has extension .adb and that
-   --  the C binder file has extension .c
+   --  Check that the binder file specified has extension .adb
 
-   if Opt.Output_File_Name_Present
-     and then Output_File_Name_Seen
-   then
+   if Opt.Output_File_Name_Present and then Output_File_Name_Seen then
       Check_Extensions : declare
          Length : constant Natural := Output_File_Name'Length;
          Last   : constant Natural := Output_File_Name'Last;

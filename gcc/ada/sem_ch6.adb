@@ -806,10 +806,10 @@ package body Sem_Ch6 is
          --  Analyze parts specific to extended_return_statement:
 
          declare
-            Obj_Decl : constant Node_Id :=
-                         Last (Return_Object_Declarations (N));
-
-            HSS : constant Node_Id := Handled_Statement_Sequence (N);
+            Obj_Decl    : constant Node_Id :=
+                            Last (Return_Object_Declarations (N));
+            Has_Aliased : constant Boolean := Aliased_Present (Obj_Decl);
+            HSS         : constant Node_Id := Handled_Statement_Sequence (N);
 
          begin
             Expr := Expression (Obj_Decl);
@@ -842,6 +842,19 @@ package body Sem_Ch6 is
             Set_Referenced (Defining_Identifier (Obj_Decl));
 
             Check_References (Stm_Entity);
+
+            --  Check RM 6.5 (5.9/3)
+
+            if Has_Aliased then
+               if Ada_Version < Ada_2012 then
+                  Error_Msg_N ("aliased only allowed for limited"
+                     & " return objects in Ada 2012?", N);
+
+               elsif not Is_Immutably_Limited_Type (R_Type) then
+                  Error_Msg_N ("aliased only allowed for limited"
+                     & " return objects", N);
+               end if;
+            end if;
          end;
       end if;
 
@@ -11139,6 +11152,11 @@ package body Sem_Ch6 is
       --  under the same visibility conditions as for other invariant checks,
       --  the type invariant must be applied to the returned value.
 
+      procedure Expand_Contract_Cases (CCs : Node_Id; Subp_Id : Entity_Id);
+      --  Given pragma Contract_Cases CCs, create the circuitry needed to
+      --  evaluate case guards and trigger consequence expressions. Subp_Id
+      --  denotes the related subprogram.
+
       function Grab_CC return Node_Id;
       --  Prag contains an analyzed contract case pragma. This function copies
       --  relevant components of the pragma, creates the corresponding Check
@@ -11205,6 +11223,459 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Access_Invariants;
+
+      ---------------------------
+      -- Expand_Contract_Cases --
+      ---------------------------
+
+      --  Pragma Contract_Cases is expanded in the following manner:
+
+      --    subprogram S is
+      --       Flag_1   : Boolean := False;
+      --       . . .
+      --       Flag_N   : Boolean := False;
+      --       Flag_N+1 : Boolean := False;  --  when "others" present
+      --       Count    : Natural := 0;
+
+      --       <preconditions (if any)>
+
+      --       if Case_Guard_1 then
+      --          Flag_1 := True;
+      --          Count  := Count + 1;
+      --       end if;
+      --       . . .
+      --       if Case_Guard_N then
+      --          Flag_N := True;
+      --          Count  := Count + 1;
+      --       end if;
+
+      --       if Count = 0 then
+      --          raise Assertion_Error with "contract cases incomplete";
+      --            <or>
+      --          Flag_N+1 := True;  --  when "others" present
+
+      --       elsif Count > 1 then
+      --          declare
+      --             Str0 : constant String :=
+      --                      "contract cases overlap for subprogram ABC";
+      --             Str1 : constant String :=
+      --                      (if Flag_1 then
+      --                         Str0 & "case guard at xxx evaluates to True"
+      --                       else Str0);
+      --             StrN : constant String :=
+      --                      (if Flag_N then
+      --                         StrN-1 & "case guard at xxx evaluates to True"
+      --                       else StrN-1);
+      --          begin
+      --             raise Assertion_Error with StrN;
+      --          end;
+      --       end if;
+
+      --       procedure _Postconditions is
+      --       begin
+      --          <postconditions (if any)>
+
+      --          if Flag_1 and then not Consequence_1 then
+      --             raise Assertion_Error with "failed contract case at xxx";
+      --          end if;
+      --          . . .
+      --          if Flag_N[+1] and then not Consequence_N[+1] then
+      --             raise Assertion_Error with "failed contract case at xxx";
+      --          end if;
+      --       end _Postconditions;
+      --    begin
+      --       . . .
+      --    end S;
+
+      procedure Expand_Contract_Cases (CCs : Node_Id; Subp_Id : Entity_Id) is
+         Loc : constant Source_Ptr := Sloc (CCs);
+
+         procedure Case_Guard_Error
+           (Decls     : List_Id;
+            Flag      : Entity_Id;
+            Error_Loc : Source_Ptr;
+            Msg       : in out Entity_Id);
+         --  Given a declarative list Decls, status flag Flag, the location of
+         --  the error and a string Msg, construct the following check:
+         --    Msg : constant String :=
+         --            (if Flag then
+         --                Msg & "case guard at Error_Loc evaluates to True"
+         --             else Msg);
+         --  The resulting code is added to Decls
+
+         procedure Consequence_Error
+           (Checks : in out Node_Id;
+            Flag   : Entity_Id;
+            Conseq : Node_Id);
+         --  Given an if statement Checks, status flag Flag and a consequence
+         --  Conseq, construct the following check:
+         --    [els]if Flag and then not Conseq then
+         --       raise Assertion_Error
+         --         with "failed contract case at Sloc (Conseq)";
+         --    [end if;]
+         --  The resulting code is added to Checks
+
+         function Declaration_Of (Id : Entity_Id) return Node_Id;
+         --  Given the entity Id of a boolean flag, generate:
+         --    Id : Boolean := False;
+
+         function Increment (Id : Entity_Id) return Node_Id;
+         --  Given the entity Id of a numerical variable, generate:
+         --    Id := Id + 1;
+
+         function Set (Id : Entity_Id) return Node_Id;
+         --  Given the entity Id of a boolean variable, generate:
+         --    Id := True;
+
+         ----------------------
+         -- Case_Guard_Error --
+         ----------------------
+
+         procedure Case_Guard_Error
+           (Decls     : List_Id;
+            Flag      : Entity_Id;
+            Error_Loc : Source_Ptr;
+            Msg       : in out Entity_Id)
+         is
+            New_Line : constant Character := Character'Val (10);
+            New_Msg  : constant Entity_Id := Make_Temporary (Loc, 'S');
+
+         begin
+            Start_String;
+            Store_String_Char  (New_Line);
+            Store_String_Chars ("  case guard at ");
+            Store_String_Chars (Build_Location_String (Error_Loc));
+            Store_String_Chars (" evaluates to True");
+
+            --  Generate:
+            --    New_Msg : constant String :=
+            --      (if Flag then
+            --          Msg & "case guard at Error_Loc evaluates to True"
+            --       else Msg);
+
+            Append_To (Decls,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => New_Msg,
+                Constant_Present    => True,
+                Object_Definition   => New_Reference_To (Standard_String, Loc),
+                Expression          =>
+                  Make_If_Expression (Loc,
+                    Expressions => New_List (
+                      New_Reference_To (Flag, Loc),
+
+                      Make_Op_Concat (Loc,
+                        Left_Opnd  => New_Reference_To (Msg, Loc),
+                        Right_Opnd => Make_String_Literal (Loc, End_String)),
+
+                      New_Reference_To (Msg, Loc)))));
+
+            Msg := New_Msg;
+         end Case_Guard_Error;
+
+         -----------------------
+         -- Consequence_Error --
+         -----------------------
+
+         procedure Consequence_Error
+           (Checks : in out Node_Id;
+            Flag   : Entity_Id;
+            Conseq : Node_Id)
+         is
+            Cond  : Node_Id;
+            Error : Node_Id;
+
+         begin
+            --  Generate:
+            --    Flag and then not Conseq
+
+            Cond :=
+              Make_And_Then (Loc,
+                Left_Opnd  => New_Reference_To (Flag, Loc),
+                Right_Opnd =>
+                  Make_Op_Not (Loc,
+                    Right_Opnd => Relocate_Node (Conseq)));
+
+            --  Generate:
+            --    raise Assertion_Error
+            --      with "failed contract case at Sloc (Conseq)";
+
+            Start_String;
+            Store_String_Chars ("failed contract case at ");
+            Store_String_Chars (Build_Location_String (Sloc (Conseq)));
+
+            Error :=
+              Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+                Parameter_Associations => New_List (
+                  Make_String_Literal (Loc, End_String)));
+
+            if No (Checks) then
+               Checks :=
+                 Make_If_Statement (Loc,
+                   Condition       => Cond,
+                   Then_Statements => New_List (Error));
+
+            else
+               if No (Elsif_Parts (Checks)) then
+                  Set_Elsif_Parts (Checks, New_List);
+               end if;
+
+               Append_To (Elsif_Parts (Checks),
+                 Make_Elsif_Part (Loc,
+                   Condition       => Cond,
+                   Then_Statements => New_List (Error)));
+            end if;
+         end Consequence_Error;
+
+         --------------------
+         -- Declaration_Of --
+         --------------------
+
+         function Declaration_Of (Id : Entity_Id) return Node_Id is
+         begin
+            return
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Id,
+                Object_Definition   =>
+                  New_Reference_To (Standard_Boolean, Loc),
+                Expression          =>
+                  New_Reference_To (Standard_False, Loc));
+         end Declaration_Of;
+
+         ---------------
+         -- Increment --
+         ---------------
+
+         function Increment (Id : Entity_Id) return Node_Id is
+         begin
+            return
+              Make_Assignment_Statement (Loc,
+                Name       => New_Reference_To (Id, Loc),
+                Expression =>
+                  Make_Op_Add (Loc,
+                    Left_Opnd  => New_Reference_To (Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1)));
+         end Increment;
+
+         ---------
+         -- Set --
+         ---------
+
+         function Set (Id : Entity_Id) return Node_Id is
+         begin
+            return
+              Make_Assignment_Statement (Loc,
+                Name       => New_Reference_To (Id, Loc),
+                Expression => New_Reference_To (Standard_True, Loc));
+         end Set;
+
+         --  Local variables
+
+         Aggr          : constant Node_Id :=
+                           Expression (First
+                             (Pragma_Argument_Associations (CCs)));
+         Decls         : constant List_Id := Declarations (N);
+         Multiple_PCs  : constant Boolean :=
+                           List_Length (Component_Associations (Aggr)) > 1;
+         Case_Guard    : Node_Id;
+         CG_Checks     : Node_Id;
+         CG_Stmts      : List_Id;
+         Conseq        : Node_Id;
+         Conseq_Checks : Node_Id := Empty;
+         Count         : Entity_Id;
+         Error_Decls   : List_Id;
+         Flag          : Entity_Id;
+         Msg_Str       : Entity_Id;
+         Others_Flag   : Entity_Id := Empty;
+         Post_Case     : Node_Id;
+
+      --  Start of processing for Expand_Contract_Cases
+
+      begin
+         --  Create the counter which tracks the number of case guards that
+         --  evaluate to True.
+
+         --    Count : Natural := 0;
+
+         Count := Make_Temporary (Loc, 'C');
+
+         Prepend_To (Decls,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Count,
+             Object_Definition   => New_Reference_To (Standard_Natural, Loc),
+             Expression          => Make_Integer_Literal (Loc, 0)));
+
+         --  Create the base error message for multiple overlapping case
+         --  guards.
+
+         --    Msg_Str : constant String :=
+         --                "contract cases overlap for subprogram Subp_Id";
+
+         if Multiple_PCs then
+            Msg_Str := Make_Temporary (Loc, 'S');
+
+            Start_String;
+            Store_String_Chars ("contract cases overlap for subprogram ");
+            Store_String_Chars (Get_Name_String (Chars (Subp_Id)));
+
+            Error_Decls := New_List (
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Msg_Str,
+                Constant_Present    => True,
+                Object_Definition   => New_Reference_To (Standard_String, Loc),
+                Expression          => Make_String_Literal (Loc, End_String)));
+         end if;
+
+         --  Process individual post cases
+
+         Post_Case := First (Component_Associations (Aggr));
+         while Present (Post_Case) loop
+            Case_Guard := First (Choices (Post_Case));
+            Conseq     := Expression (Post_Case);
+
+            --  The "others" choice requires special processing
+
+            if Nkind (Case_Guard) = N_Others_Choice then
+               Others_Flag := Make_Temporary (Loc, 'F');
+               Prepend_To (Decls, Declaration_Of (Others_Flag));
+
+               --  Check possible overlap between a case guard and "others"
+
+               if Multiple_PCs then
+                  Case_Guard_Error
+                    (Decls     => Error_Decls,
+                     Flag      => Others_Flag,
+                     Error_Loc => Sloc (Case_Guard),
+                     Msg       => Msg_Str);
+               end if;
+
+               --  Check the corresponding consequence of "others"
+
+               Consequence_Error
+                 (Checks => Conseq_Checks,
+                  Flag   => Others_Flag,
+                  Conseq => Conseq);
+
+            --  Regular post case
+
+            else
+               --  Create the flag which tracks the state of its associated
+               --  case guard.
+
+               Flag := Make_Temporary (Loc, 'F');
+               Prepend_To (Decls, Declaration_Of (Flag));
+
+               --  The flag is set when the case guard is evaluated to True
+               --    if Case_Guard then
+               --       Flag  := True;
+               --       Count := Count + 1;
+               --    end if;
+
+               Append_To (Decls,
+                 Make_If_Statement (Loc,
+                   Condition       => Relocate_Node (Case_Guard),
+                   Then_Statements => New_List (
+                     Set (Flag),
+                     Increment (Count))));
+
+               --  Check whether this case guard overlaps with another case
+               --  guard.
+
+               if Multiple_PCs then
+                  Case_Guard_Error
+                    (Decls     => Error_Decls,
+                     Flag      => Flag,
+                     Error_Loc => Sloc (Case_Guard),
+                     Msg       => Msg_Str);
+               end if;
+
+               --  The corresponding consequence of the case guard which
+               --  evaluated to True must hold on exit from the subprogram.
+
+               Consequence_Error (Conseq_Checks, Flag, Conseq);
+            end if;
+
+            Next (Post_Case);
+         end loop;
+
+         --  Raise Assertion_Error when none of the case guards evaluate to
+         --  True. The only exception is when we have "others", in which case
+         --  there is no error because "others" acts as a default True.
+
+         --  Generate:
+         --    Flag := True;
+
+         if Present (Others_Flag) then
+            CG_Stmts := New_List (Set (Others_Flag));
+
+         --  Generate:
+         --    raise Assetion_Error with "contract cases incomplete";
+
+         else
+            Start_String;
+            Store_String_Chars ("contract cases incomplete");
+
+            CG_Stmts := New_List (
+              Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+                Parameter_Associations => New_List (
+                  Make_String_Literal (Loc, End_String))));
+         end if;
+
+         CG_Checks :=
+           Make_If_Statement (Loc,
+             Condition       =>
+               Make_Op_Eq (Loc,
+                 Left_Opnd  => New_Reference_To (Count, Loc),
+                 Right_Opnd => Make_Integer_Literal (Loc, 0)),
+             Then_Statements => CG_Stmts);
+
+         --  Detect a possible failure due to several case guards evaluating to
+         --  True.
+
+         --  Generate:
+         --    elsif Count > 0 then
+         --       declare
+         --          <Error_Decls>
+         --       begin
+         --          raise Assertion_Error with <Msg_Str>;
+         --    end if;
+
+         if Multiple_PCs then
+            Set_Elsif_Parts (CG_Checks, New_List (
+              Make_Elsif_Part (Loc,
+                Condition       =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => New_Reference_To (Count, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1)),
+
+                Then_Statements => New_List (
+                  Make_Block_Statement (Loc,
+                    Declarations               => Error_Decls,
+                    Handled_Statement_Sequence =>
+                      Make_Handled_Sequence_Of_Statements (Loc,
+                        Statements => New_List (
+                          Make_Procedure_Call_Statement (Loc,
+                            Name                   =>
+                              New_Reference_To
+                                (RTE (RE_Raise_Assert_Failure), Loc),
+                            Parameter_Associations => New_List (
+                              New_Reference_To (Msg_Str, Loc))))))))));
+         end if;
+
+         Append_To (Decls, CG_Checks);
+
+         --  Raise Assertion_Error when the corresponding consequence of a case
+         --  guard that evaluated to True fails.
+
+         if No (Plist) then
+            Plist := New_List;
+         end if;
+
+         Append_To (Plist, Conseq_Checks);
+      end Expand_Contract_Cases;
 
       -------------
       -- Grab_CC --
@@ -11736,6 +12207,9 @@ package body Sem_Ch6 is
                      else
                         Append (Grab_CC, Plist);
                      end if;
+
+                  elsif Pragma_Name (Prag) = Name_Contract_Cases then
+                     Expand_Contract_Cases (Prag, Spec_Id);
                   end if;
 
                   Prag := Next_Pragma (Prag);
@@ -11850,7 +12324,7 @@ package body Sem_Ch6 is
                     Make_Invariant_Call (New_Occurrence_Of (Rent, Loc)));
                end if;
 
-               --  Same if return value is an access to type with invariants.
+               --  Same if return value is an access to type with invariants
 
                Check_Access_Invariants (Rent);
             end;

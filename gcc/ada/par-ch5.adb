@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1276,13 +1276,21 @@ package body Ch5 is
 
          return Cond;
 
-      --  Otherwise check for redundant parens
+      --  Otherwise check for redundant parentheses
+
+      --  If the  condition is a conditional or a quantified expression, it is
+      --  parenthesized in the context of a condition, because of a separate
+      --  syntax rule.
 
       else
-         if Style_Check
-           and then Paren_Count (Cond) > 0
-         then
-            Style.Check_Xtra_Parens (First_Sloc (Cond));
+         if Style_Check and then Paren_Count (Cond) > 0 then
+            if not Nkind_In (Cond, N_If_Expression,
+                                   N_Case_Expression,
+                                   N_Quantified_Expression)
+              or else Paren_Count (Cond) > 1
+            then
+               Style.Check_Xtra_Parens (First_Sloc (Cond));
+            end if;
          end if;
 
          --  And return the result

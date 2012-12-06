@@ -128,7 +128,8 @@
 ; simd_store4s          store single structure from one lane for four registers (ST4 [index]).
 ; simd_tbl              table lookup.
 ; simd_trn              transpose.
-; simd_zip              zip/unzip.
+; simd_uzp              unzip.
+; simd_zip              zip.
 
 (define_attr "simd_type"
    "simd_abd,\
@@ -230,6 +231,7 @@
    simd_store4s,\
    simd_tbl,\
    simd_trn,\
+   simd_uzp,\
    simd_zip,\
    none"
   (const_string "none"))
@@ -1239,6 +1241,46 @@
   [(set_attr "simd_type" "simd_fmla")
    (set_attr "simd_mode" "<MODE>")]
 )
+
+(define_insn "aarch64_frint<frint_suffix><mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")]
+		      FRINT))]
+  "TARGET_SIMD"
+  "frint<frint_suffix>\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_frint")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+;; Vector versions of the floating-point frint patterns.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round.
+(define_expand "<frint_pattern><mode>2"
+  [(set (match_operand:VDQF 0 "register_operand")
+	(unspec:VDQF [(match_operand:VDQF 1 "register_operand")]
+		      FRINT))]
+  "TARGET_SIMD"
+  {})
+
+(define_insn "aarch64_fcvt<frint_suffix><su><mode>"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand" "=w")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(match_operand:VDQF 1 "register_operand" "w")]
+			       FCVT)))]
+  "TARGET_SIMD"
+  "fcvt<frint_suffix><su>\\t%0.<Vtype>, %1.<Vtype>"
+  [(set_attr "simd_type" "simd_fcvti")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+;; Vector versions of the fcvt standard patterns.
+;; Expands to lbtrunc, lround, lceil, lfloor
+(define_expand "l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2"
+  [(set (match_operand:<FCVT_TARGET> 0 "register_operand")
+	(FIXUORS:<FCVT_TARGET> (unspec:<FCVT_TARGET>
+			       [(match_operand:VDQF 1 "register_operand")]
+			       FCVT)))]
+  "TARGET_SIMD"
+  {})
 
 (define_insn "aarch64_vmls<mode>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
@@ -3297,6 +3339,85 @@
 })
 
 ;; Permuted-store expanders for neon intrinsics.
+
+;; Permute instructions
+
+;; vec_perm support
+
+(define_expand "vec_perm_const<mode>"
+  [(match_operand:VALL 0 "register_operand")
+   (match_operand:VALL 1 "register_operand")
+   (match_operand:VALL 2 "register_operand")
+   (match_operand:<V_cmp_result> 3)]
+  "TARGET_SIMD"
+{
+  if (aarch64_expand_vec_perm_const (operands[0], operands[1],
+				     operands[2], operands[3]))
+    DONE;
+  else
+    FAIL;
+})
+
+(define_expand "vec_perm<mode>"
+  [(match_operand:VB 0 "register_operand")
+   (match_operand:VB 1 "register_operand")
+   (match_operand:VB 2 "register_operand")
+   (match_operand:VB 3 "register_operand")]
+  "TARGET_SIMD"
+{
+  aarch64_expand_vec_perm (operands[0], operands[1],
+			   operands[2], operands[3]);
+  DONE;
+})
+
+(define_insn "aarch64_tbl1<mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB [(match_operand:V16QI 1 "register_operand" "w")
+		    (match_operand:VB 2 "register_operand" "w")]
+		   UNSPEC_TBL))]
+  "TARGET_SIMD"
+  "tbl\\t%0.<Vtype>, {%1.16b}, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_tbl")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+;; Two source registers.
+
+(define_insn "aarch64_tbl2v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:OI 1 "register_operand" "w")
+		       (match_operand:V16QI 2 "register_operand" "w")]
+		      UNSPEC_TBL))]
+  "TARGET_SIMD"
+  "tbl\\t%0.16b, {%S1.16b - %T1.16b}, %2.16b"
+  [(set_attr "simd_type" "simd_tbl")
+   (set_attr "simd_mode" "V16QI")]
+)
+
+(define_insn_and_split "aarch64_combinev16qi"
+  [(set (match_operand:OI 0 "register_operand" "=w")
+	(unspec:OI [(match_operand:V16QI 1 "register_operand" "w")
+		    (match_operand:V16QI 2 "register_operand" "w")]
+		   UNSPEC_CONCAT))]
+  "TARGET_SIMD"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  aarch64_split_combinev16qi (operands);
+  DONE;
+})
+
+(define_insn "aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(unspec:VALL [(match_operand:VALL 1 "register_operand" "w")
+		      (match_operand:VALL 2 "register_operand" "w")]
+		       PERMUTE))]
+  "TARGET_SIMD"
+  "<PERMUTE:perm_insn><PERMUTE:perm_hilo>\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_<PERMUTE:perm_insn>")
+   (set_attr "simd_mode" "<MODE>")]
+)
 
 (define_insn "aarch64_st2<mode>_dreg"
   [(set (match_operand:TI 0 "aarch64_simd_struct_operand" "=Utv")

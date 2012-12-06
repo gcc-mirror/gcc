@@ -5426,11 +5426,21 @@ package body Sem_Ch8 is
                       and then
                         Nkind (Parent (Parent (N))) /= N_Attribute_Reference))
       then
-         --  It is an entry call after all, either to the current task (which
-         --  will deadlock) or to an enclosing task.
+         --  If both the task type and the entry are in scope, this may still
+         --  be the expanded name of an entry formal.
 
-         Analyze_Selected_Component (N);
-         return;
+         if In_Open_Scopes (Id)
+           and then Nkind (Parent (N)) = N_Selected_Component
+         then
+            null;
+
+         else
+            --  It is an entry call after all, either to the current task
+            --  (which will deadlock) or to an enclosing task.
+
+            Analyze_Selected_Component (N);
+            return;
+         end if;
       end if;
 
       Change_Selected_Component_To_Expanded_Name (N);
@@ -5520,6 +5530,13 @@ package body Sem_Ch8 is
          if Has_Implicit_Operator (N) then
             null;
          end if;
+      end if;
+
+      --  If there is a single interpretation for N we can generate a
+      --  reference to the unique entity found.
+
+      if Is_Overloadable (Id) and then not Is_Overloaded (N) then
+         Generate_Reference (Id, N);
       end if;
    end Find_Expanded_Name;
 

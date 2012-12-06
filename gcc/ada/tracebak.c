@@ -287,9 +287,10 @@ __gnat_backtrace (void **array,
 #error Unhandled darwin architecture.
 #endif
 
-/*------------------------ PPC AIX/Older Darwin -------------------------*/
+/*---------------------- PPC AIX/PPC Lynx 178/Older Darwin ------------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \
-(defined (__ppc__) && defined (__APPLE__)))
+       (defined (__powerpc__) && defined (__Lynx__) && !defined(__ELF__)) || \
+       (defined (__ppc__) && defined (__APPLE__)))
 
 #define USE_GENERIC_UNWINDER
 
@@ -307,9 +308,23 @@ struct layout
    should to feature a null backchain, AIX might expose a null return
    address instead.  */
 
+/* Then LynxOS-178 features yet another variation, with return_address
+   == &__start, which we only add conditionally as this symbol is not
+   necessarily present elsewhere.  Beware that &bla returns the
+   address of a descriptor when "bla" is a function.  Getting the code
+   address requires an extra dereference.  */
+
+#if defined (__Lynx__)
+extern void __start();
+#define EXTRA_STOP_CONDITION(CURRENT) ((CURRENT)->return_address == *(void**)&__start)
+#else
+#define EXTRA_STOP_CONDITION(CURRENT) (0)
+#endif
+
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   (((void *) (CURRENT) < (TOP_STACK)) \
-   || (CURRENT)->return_address == NULL)
+   || (CURRENT)->return_address == NULL \
+   || EXTRA_STOP_CONDITION(CURRENT))
 
 /* The PPC ABI has an interesting specificity: the return address saved by a
    function is located in it's caller's frame, and the save operation only

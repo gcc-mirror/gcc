@@ -1759,6 +1759,25 @@ __gnat_error_handler (int sig, void *si, struct sigcontext *sc)
 #endif
 }
 
+#if defined(__leon__) && defined(_WRS_KERNEL)
+/* For LEON VxWorks we need to install a trap handler for stack overflow */
+
+extern void excEnt (void);
+/* VxWorks exception handler entry */
+
+struct trap_entry {
+   unsigned long inst_first;
+   unsigned long inst_second;
+   unsigned long inst_third;
+   unsigned long inst_fourth;
+};
+/* Four instructions representing entries in the trap table */
+
+struct trap_entry *trap_0_entry;
+/* We will set the location of the entry for software trap 0 in the trap
+   table. */
+#endif
+
 void
 __gnat_install_handler (void)
 {
@@ -1778,6 +1797,40 @@ __gnat_install_handler (void)
   sigaction (SIGILL,  &act, NULL);
   sigaction (SIGSEGV, &act, NULL);
   sigaction (SIGBUS,  &act, NULL);
+
+#if defined(__leon__) && defined(_WRS_KERNEL)
+  /* Specific to the LEON VxWorks kernel run-time library */
+
+  /* For stack checking the compiler triggers a software trap 0 (ta 0) in
+     case of overflow (we use the stack limit mechanism). We need to install
+     the trap handler here for this software trap (the OS does not handle
+     it) as if it were a data_access_exception (trap 9). We do the same as
+     if we put in the trap table a VXSPARC_BAD_TRAP(9). Software trap 0 is
+     located at vector 0x80, and each entry takes 4 words. */
+
+  trap_0_entry = (struct trap_entry *)(intVecBaseGet () + 0x80 * 4);
+
+  /* mov 0x9, %l7 */
+
+  trap_0_entry->inst_first = 0xae102000 + 9;
+
+  /* sethi %hi(excEnt), %l6 */
+
+  /* The 22 most significant bits of excEnt are obtained shifting 10 times
+     to the right.  */
+
+  trap_0_entry->inst_second = 0x2d000000 + ((unsigned long)excEnt >> 10);
+
+  /* jmp %l6+%lo(excEnt) */
+
+  /* The 10 least significant bits of excEnt are obtained by masking */
+
+  trap_0_entry->inst_third = 0x81c5a000 + ((unsigned long)excEnt & 0x3ff);
+
+  /* rd %psr, %l0 */
+
+  trap_0_entry->inst_fourth = 0xa1480000;
+#endif
 
   __gnat_handler_installed = 1;
 }

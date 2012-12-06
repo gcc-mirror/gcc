@@ -510,26 +510,36 @@ package body Ch4 is
                 Is_Parameterless_Attribute (Get_Attribute_Id (Attr_Name))
             then
                Set_Expressions (Name_Node, New_List);
-               Scan; -- past left paren
 
-               loop
-                  declare
-                     Expr : constant Node_Id := P_Expression_If_OK;
+               --  Attribute Update contains an array or record association
+               --  list which provides new values for various components or
+               --  elements. The list is parsed as an aggregate.
 
-                  begin
-                     if Token = Tok_Arrow then
-                        Error_Msg_SC
-                          ("named parameters not permitted for attributes");
-                        Scan; -- past junk arrow
+               if Attr_Name = Name_Update then
+                  Append (P_Aggregate, Expressions (Name_Node));
 
-                     else
-                        Append (Expr, Expressions (Name_Node));
-                        exit when not Comma_Present;
-                     end if;
-                  end;
-               end loop;
+               else
+                  Scan; -- past left paren
 
-               T_Right_Paren;
+                  loop
+                     declare
+                        Expr : constant Node_Id := P_Expression_If_OK;
+
+                     begin
+                        if Token = Tok_Arrow then
+                           Error_Msg_SC
+                             ("named parameters not permitted for attributes");
+                           Scan; -- past junk arrow
+
+                        else
+                           Append (Expr, Expressions (Name_Node));
+                           exit when not Comma_Present;
+                        end if;
+                     end;
+                  end loop;
+
+                  T_Right_Paren;
+               end if;
             end if;
 
             goto Scan_Name_Extension;
@@ -1233,11 +1243,16 @@ package body Ch4 is
       Lparen_Sloc := Token_Ptr;
       T_Left_Paren;
 
+      --  Note on parentheses count. For cases like an if expression, the
+      --  parens here really count as real parentheses for the paren count,
+      --  so we adjust the paren count accordingly after scanning the expr.
+
       --  If expression
 
       if Token = Tok_If then
          Expr_Node := P_If_Expression;
          T_Right_Paren;
+         Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
          return Expr_Node;
 
       --  Case expression
@@ -1245,6 +1260,7 @@ package body Ch4 is
       elsif Token = Tok_Case then
          Expr_Node := P_Case_Expression;
          T_Right_Paren;
+         Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
          return Expr_Node;
 
       --  Quantified expression
@@ -1252,6 +1268,7 @@ package body Ch4 is
       elsif Token = Tok_For then
          Expr_Node := P_Quantified_Expression;
          T_Right_Paren;
+         Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
          return Expr_Node;
 
       --  Note: the mechanism used here of rescanning the initial expression
@@ -2911,6 +2928,16 @@ package body Ch4 is
          Set_Expression
            (Alloc_Node,
             P_Subtype_Indication (Type_Node, Null_Exclusion_Present));
+
+         --  AI05-0104: An explicit null exclusion is not allowed for an
+         --  allocator without initialization. In previous versions of the
+         --  language it just raises constraint error.
+
+         if Ada_Version >= Ada_2012 and then Null_Exclusion_Present then
+            Error_Msg_N
+              ("an allocator with a subtype indication "
+               & "cannot have a null exclusion", Alloc_Node);
+         end if;
       end if;
 
       return Alloc_Node;

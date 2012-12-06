@@ -362,6 +362,7 @@ package Snames is
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
+   Name_Assume                         : constant Name_Id := N + $; -- GNAT
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_Attribute_Definition           : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -405,12 +406,13 @@ package Snames is
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
    Name_Long_Float                     : constant Name_Id := N + $; -- VMS
-   Name_Loop_Assertion                 : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Invariant                 : constant Name_Id := N + $; -- GNAT
+   Name_Loop_Variant                   : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
-   Name_Overflow_Checks                : constant Name_Id := N + $; -- GNAT
+   Name_Overflow_Mode                  : constant Name_Id := N + $; -- GNAT
    Name_Partition_Elaboration_Policy   : constant Name_Id := N + $; -- Ada 05
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
@@ -463,6 +465,7 @@ package Snames is
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
    Name_Complex_Representation         : constant Name_Id := N + $; -- GNAT
    Name_Contract_Case                  : constant Name_Id := N + $; -- GNAT
+   Name_Contract_Cases                 : constant Name_Id := N + $; -- GNAT
    Name_Controlled                     : constant Name_Id := N + $;
    Name_Convention                     : constant Name_Id := N + $;
    Name_CPP_Class                      : constant Name_Id := N + $; -- GNAT
@@ -670,7 +673,7 @@ package Snames is
    Name_Component_Size_4               : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
-   Name_Decreasing                     : constant Name_Id := N + $;
+   Name_Decreases                      : constant Name_Id := N + $;
    Name_Descriptor                     : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
@@ -690,7 +693,7 @@ package Snames is
    Name_GPL                            : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
-   Name_Increasing                     : constant Name_Id := N + $;
+   Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
@@ -899,6 +902,7 @@ package Snames is
    Name_Unconstrained_Array            : constant Name_Id := N + $;
    Name_Universal_Literal_String       : constant Name_Id := N + $; -- GNAT
    Name_Unrestricted_Access            : constant Name_Id := N + $; -- GNAT
+   Name_Update                         : constant Name_Id := N + $; -- GNAT
    Name_VADS_Size                      : constant Name_Id := N + $; -- GNAT
    Name_Val                            : constant Name_Id := N + $;
    Name_Valid                          : constant Name_Id := N + $;
@@ -1510,6 +1514,7 @@ package Snames is
       Attribute_Unconstrained_Array,
       Attribute_Universal_Literal_String,
       Attribute_Unrestricted_Access,
+      Attribute_Update,
       Attribute_VADS_Size,
       Attribute_Val,
       Attribute_Valid,
@@ -1656,6 +1661,7 @@ package Snames is
       Pragma_Ada_2012,
       Pragma_Annotate,
       Pragma_Assertion_Policy,
+      Pragma_Assume,
       Pragma_Assume_No_Invalid_Values,
       Pragma_Attribute_Definition,
       Pragma_C_Pass_By_Copy,
@@ -1685,12 +1691,13 @@ package Snames is
       Pragma_License,
       Pragma_Locking_Policy,
       Pragma_Long_Float,
-      Pragma_Loop_Assertion,
+      Pragma_Loop_Invariant,
+      Pragma_Loop_Variant,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
-      Pragma_Overflow_Checks,
+      Pragma_Overflow_Mode,
       Pragma_Partition_Elaboration_Policy,
       Pragma_Persistent_BSS,
       Pragma_Polling,
@@ -1736,6 +1743,7 @@ package Snames is
       Pragma_Complete_Representation,
       Pragma_Complex_Representation,
       Pragma_Contract_Case,
+      Pragma_Contract_Cases,
       Pragma_Controlled,
       Pragma_Convention,
       Pragma_CPP_Class,

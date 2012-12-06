@@ -1318,7 +1318,19 @@ package body Sem_Eval is
         and then K /= N_Null
         and then not Is_Static_Expression (Op)
       then
-         return False;
+         --  We make an exception for expressions that evaluate to True/False,
+         --  to suppress spurious checks in ZFP mode. So far we have not seen
+         --  any negative consequences of this exception.
+
+         if Is_Entity_Name (Op)
+           and then Ekind (Entity (Op)) = E_Enumeration_Literal
+           and then Etype (Entity (Op)) = Standard_Boolean
+         then
+            null;
+
+         else
+            return False;
+         end if;
       end if;
 
       --  If we have an entity name, then see if it is the name of a constant

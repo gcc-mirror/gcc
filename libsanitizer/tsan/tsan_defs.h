@@ -23,8 +23,12 @@
 namespace __tsan {
 
 #ifdef TSAN_GO
+const bool kGoMode = true;
+const bool kCppMode = false;
 const char *const kTsanOptionsEnv = "GORACE";
 #else
+const bool kGoMode = false;
+const bool kCppMode = true;
 const char *const kTsanOptionsEnv = "TSAN_OPTIONS";
 #endif
 
@@ -122,9 +126,15 @@ T max(T a, T b) {
 }
 
 template<typename T>
-T RoundUp(T p, int align) {
+T RoundUp(T p, u64 align) {
   DCHECK_EQ(align & (align - 1), 0);
   return (T)(((u64)p + align - 1) & ~(align - 1));
+}
+
+template<typename T>
+T RoundDown(T p, u64 align) {
+  DCHECK_EQ(align & (align - 1), 0);
+  return (T)((u64)p & ~(align - 1));
 }
 
 struct MD5Hash {

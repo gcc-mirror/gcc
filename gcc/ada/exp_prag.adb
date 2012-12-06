@@ -69,7 +69,7 @@ package body Exp_Prag is
    procedure Expand_Pragma_Import_Export_Exception (N : Node_Id);
    procedure Expand_Pragma_Inspection_Point        (N : Node_Id);
    procedure Expand_Pragma_Interrupt_Priority      (N : Node_Id);
-   procedure Expand_Pragma_Loop_Assertion          (N : Node_Id);
+   procedure Expand_Pragma_Loop_Variant            (N : Node_Id);
    procedure Expand_Pragma_Psect_Object            (N : Node_Id);
    procedure Expand_Pragma_Relative_Deadline       (N : Node_Id);
 
@@ -191,8 +191,8 @@ package body Exp_Prag is
             when Pragma_Interrupt_Priority =>
                Expand_Pragma_Interrupt_Priority (N);
 
-            when Pragma_Loop_Assertion =>
-               Expand_Pragma_Loop_Assertion (N);
+            when Pragma_Loop_Variant =>
+               Expand_Pragma_Loop_Variant (N);
 
             when Pragma_Psect_Object =>
                Expand_Pragma_Psect_Object (N);
@@ -795,20 +795,19 @@ package body Exp_Prag is
       end if;
    end Expand_Pragma_Interrupt_Priority;
 
-   ----------------------------------
-   -- Expand_Pragma_Loop_Assertion --
-   ----------------------------------
+   --------------------------------
+   -- Expand_Pragma_Loop_Variant --
+   --------------------------------
 
-   --  Pragma Loop_Assertion is expanded in the following manner:
+   --  Pragma Loop_Variant is expanded in the following manner:
 
    --  Original code
 
    --     for | while ... loop
    --        <preceding source statements>
-   --        pragma Loop_Assertion
-   --           (Invariant => Invar_Expr,
-   --            Variant   => (Increasing => Incr_Expr,
-   --                          Decreasing => Decr_Expr));
+   --        pragma Loop_Variant
+   --                 (Increases => Incr_Expr,
+   --                  Decreases => Decr_Expr);
    --        <succeeding source statements>
    --     end loop;
 
@@ -822,8 +821,6 @@ package body Exp_Prag is
 
    --     for | while ... loop
    --        <preceding source statements>
-
-   --        pragma Assert (<Invar_Expr>);
 
    --        if Flag then
    --           Old_1 := Curr_1;
@@ -846,35 +843,34 @@ package body Exp_Prag is
    --        <succeeding source statements>
    --     end loop;
 
-   procedure Expand_Pragma_Loop_Assertion (N : Node_Id) is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Curr_Assign : List_Id   := No_List;
-      Flag_Id     : Entity_Id := Empty;
-      If_Stmt     : Node_Id   := Empty;
+   procedure Expand_Pragma_Loop_Variant (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Last_Var : constant Node_Id := Last (Pragma_Argument_Associations (N));
+
+      Curr_Assign : List_Id             := No_List;
+      Flag_Id     : Entity_Id           := Empty;
+      If_Stmt     : Node_Id             := Empty;
+      Old_Assign  : List_Id             := No_List;
       Loop_Scop   : Entity_Id;
       Loop_Stmt   : Node_Id;
-      Old_Assign  : List_Id   := No_List;
+      Variant     : Node_Id;
 
-      procedure Process_Increase_Decrease
-        (Variant : Node_Id;
-         Is_Last : Boolean);
+      procedure Process_Variant (Variant : Node_Id; Is_Last : Boolean);
       --  Process a single increasing / decreasing termination variant. Flag
       --  Is_Last should be set when processing the last variant.
 
-      -------------------------------
-      -- Process_Increase_Decrease --
-      -------------------------------
+      ---------------------
+      -- Process_Variant --
+      ---------------------
 
-      procedure Process_Increase_Decrease
-        (Variant : Node_Id;
-         Is_Last : Boolean)
-      is
+      procedure Process_Variant (Variant : Node_Id; Is_Last : Boolean) is
          function Make_Op
            (Loc      : Source_Ptr;
             Curr_Val : Node_Id;
             Old_Val  : Node_Id) return Node_Id;
          --  Generate a comparison between Curr_Val and Old_Val depending on
-         --  the argument name (Increases / Decreases).
+         --  the change mode (Increases / Decreases) of the variant.
 
          -------------
          -- Make_Op --
@@ -885,12 +881,10 @@ package body Exp_Prag is
             Curr_Val : Node_Id;
             Old_Val  : Node_Id) return Node_Id
          is
-            Modif : constant Node_Id := First (Choices (Variant));
          begin
-            if Chars (Modif) = Name_Increasing then
+            if Chars (Variant) = Name_Increases then
                return Make_Op_Gt (Loc, Curr_Val, Old_Val);
-
-            else pragma Assert (Chars (Modif) = Name_Decreasing);
+            else pragma Assert (Chars (Variant) = Name_Decreases);
                return Make_Op_Lt (Loc, Curr_Val, Old_Val);
             end if;
          end Make_Op;
@@ -898,13 +892,14 @@ package body Exp_Prag is
          --  Local variables
 
          Expr     : constant Node_Id := Expression (Variant);
+         Expr_Typ : constant Entity_Id := Etype (Expr);
          Loc      : constant Source_Ptr := Sloc (Expr);
          Loop_Loc : constant Source_Ptr := Sloc (Loop_Stmt);
          Curr_Id  : Entity_Id;
          Old_Id   : Entity_Id;
          Prag     : Node_Id;
 
-      --  Start of processing for Process_Increase_Decrease
+      --  Start of processing for Process_Variant
 
       begin
          --  All temporaries generated in this routine must be inserted before
@@ -959,19 +954,17 @@ package body Exp_Prag is
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
              Defining_Identifier => Curr_Id,
-             Object_Definition   =>
-               New_Reference_To (Etype (Expr), Loop_Loc)));
+             Object_Definition   => New_Reference_To (Expr_Typ, Loop_Loc)));
 
          --  Generate:
          --    Old : <type of Expr>;
 
-         Old_Id  := Make_Temporary (Loc, 'P');
+         Old_Id := Make_Temporary (Loc, 'P');
 
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
              Defining_Identifier => Old_Id,
-             Object_Definition   =>
-               New_Reference_To (Etype (Expr), Loop_Loc)));
+             Object_Definition   => New_Reference_To (Expr_Typ, Loop_Loc)));
 
          --  Restore original scope after all temporaries have been analyzed
 
@@ -1066,12 +1059,7 @@ package body Exp_Prag is
                     Right_Opnd => New_Reference_To (Old_Id, Loc)),
                 Then_Statements => New_List (Prag)));
          end if;
-      end Process_Increase_Decrease;
-
-      --  Local variables
-
-      Arg   : Node_Id;
-      Invar : Node_Id := Empty;
+      end Process_Variant;
 
    --  Start of processing for Expand_Pragma_Loop_Assertion
 
@@ -1093,57 +1081,14 @@ package body Exp_Prag is
 
       Loop_Scop := Entity (Identifier (Loop_Stmt));
 
-      --  Process all pragma arguments
+      --  Create the circuitry which verifies individual variants
 
-      Arg := First (Pragma_Argument_Associations (N));
-      while Present (Arg) loop
+      Variant := First (Pragma_Argument_Associations (N));
+      while Present (Variant) loop
+         Process_Variant (Variant, Is_Last => Variant = Last_Var);
 
-         --  Termination variants appear as components in an aggregate
-
-         if Chars (Arg) = Name_Variant then
-            declare
-               Variants : constant Node_Id := Expression (Arg);
-               Last_Var : constant Node_Id :=
-                            Last (Component_Associations (Variants));
-               Variant  : Node_Id;
-
-            begin
-               Variant := First (Component_Associations (Variants));
-               while Present (Variant) loop
-                  Process_Increase_Decrease
-                    (Variant => Variant,
-                     Is_Last => Variant = Last_Var);
-
-                  Next (Variant);
-               end loop;
-            end;
-
-         --  Invariant
-
-         else
-            Invar := Expression (Arg);
-         end if;
-
-         Next (Arg);
+         Next (Variant);
       end loop;
-
-      --  Verify the invariant expression, generate:
-      --    pragma Assert (<Invar>);
-
-      --  Use the Sloc of the invariant for better error reporting
-
-      if Present (Invar) then
-         declare
-            Invar_Loc : constant Source_Ptr := Sloc (Invar);
-         begin
-            Insert_Action (N,
-              Make_Pragma (Invar_Loc,
-                Chars                        => Name_Assert,
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Invar_Loc,
-                    Expression => Relocate_Node (Invar)))));
-         end;
-      end if;
 
       --  Construct the segment which stores the old values of all expressions.
       --  Generate:
@@ -1151,18 +1096,14 @@ package body Exp_Prag is
       --       <Old_Assign>
       --    end if;
 
-      if Present (Old_Assign) then
-         Insert_Action (N,
-           Make_If_Statement (Loc,
-             Condition       => New_Reference_To (Flag_Id, Loc),
-             Then_Statements => Old_Assign));
-      end if;
+      Insert_Action (N,
+        Make_If_Statement (Loc,
+          Condition       => New_Reference_To (Flag_Id, Loc),
+          Then_Statements => Old_Assign));
 
       --  Update the values of all expressions
 
-      if Present (Curr_Assign) then
-         Insert_Actions (N, Curr_Assign);
-      end if;
+      Insert_Actions (N, Curr_Assign);
 
       --  Add the assertion circuitry to test all changes in expressions.
       --  Generate:
@@ -1172,22 +1113,20 @@ package body Exp_Prag is
       --       Flag := True;
       --    end if;
 
-      if Present (If_Stmt) then
-         Insert_Action (N,
-           Make_If_Statement (Loc,
-             Condition       => New_Reference_To (Flag_Id, Loc),
-             Then_Statements => New_List (If_Stmt),
-             Else_Statements => New_List (
-               Make_Assignment_Statement (Loc,
-                 Name       => New_Reference_To (Flag_Id, Loc),
-                 Expression => New_Reference_To (Standard_True, Loc)))));
-      end if;
+      Insert_Action (N,
+        Make_If_Statement (Loc,
+          Condition       => New_Reference_To (Flag_Id, Loc),
+          Then_Statements => New_List (If_Stmt),
+          Else_Statements => New_List (
+            Make_Assignment_Statement (Loc,
+              Name       => New_Reference_To (Flag_Id, Loc),
+              Expression => New_Reference_To (Standard_True, Loc)))));
 
       --  Note: the pragma has been completely transformed into a sequence of
       --  corresponding declarations and statements. We leave it in the tree
       --  for documentation purposes. It will be ignored by the backend.
 
-   end Expand_Pragma_Loop_Assertion;
+   end Expand_Pragma_Loop_Variant;
 
    --------------------------------
    -- Expand_Pragma_Psect_Object --

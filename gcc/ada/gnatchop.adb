@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1004,7 +1004,7 @@ procedure Gnatchop is
    is
       Length      : constant File_Offset := File_Offset (File_Length (FD));
       --  Include room for EOF char
-      Buffer      : constant String_Access := new String (1 .. Length + 1);
+      Buffer      : String_Access := new String (1 .. Length + 1);
 
       This_Read   : Integer;
       Read_Ptr    : File_Offset := 1;
@@ -1020,8 +1020,19 @@ procedure Gnatchop is
       end loop;
 
       Buffer (Read_Ptr) := EOF;
-      Contents := new String (1 .. Read_Ptr);
-      Contents.all := Buffer (1 .. Read_Ptr);
+
+      --  Comment needed for the following ???
+      --  Under what circumstances can the test fail ???
+      --  What is copy doing in that case???
+
+      if Read_Ptr = Length then
+         Contents := Buffer;
+
+      else
+         Contents := new String (1 .. Read_Ptr);
+         Contents.all := Buffer (1 .. Read_Ptr);
+         Free (Buffer);
+      end if;
 
       --  Things aren't simple on VMS due to the plethora of file types and
       --  organizations. It seems clear that there shouldn't be more bytes

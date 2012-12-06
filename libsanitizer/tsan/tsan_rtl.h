@@ -25,7 +25,7 @@
 #define TSAN_RTL_H
 
 #include "sanitizer_common/sanitizer_common.h"
-#include "sanitizer_common/sanitizer_allocator64.h"
+#include "sanitizer_common/sanitizer_allocator.h"
 #include "tsan_clock.h"
 #include "tsan_defs.h"
 #include "tsan_flags.h"
@@ -33,6 +33,11 @@
 #include "tsan_trace.h"
 #include "tsan_vector.h"
 #include "tsan_report.h"
+#include "tsan_platform.h"
+
+#if SANITIZER_WORDSIZE != 64
+# error "ThreadSanitizer is supported only on 64-bit platforms"
+#endif
 
 namespace __tsan {
 
@@ -55,8 +60,7 @@ const uptr kAllocatorSize  =  0x10000000000ULL;  // 1T.
 
 typedef SizeClassAllocator64<kAllocatorSpace, kAllocatorSize, sizeof(MBlock),
     DefaultSizeClassMap> PrimaryAllocator;
-typedef SizeClassAllocatorLocalCache<PrimaryAllocator::kNumClasses,
-    PrimaryAllocator> AllocatorCache;
+typedef SizeClassAllocatorLocalCache<PrimaryAllocator> AllocatorCache;
 typedef LargeMmapAllocator SecondaryAllocator;
 typedef CombinedAllocator<PrimaryAllocator, AllocatorCache,
     SecondaryAllocator> Allocator;
@@ -67,18 +71,19 @@ void TsanCheckFailed(const char *file, int line, const char *cond,
                      u64 v1, u64 v2);
 
 // FastState (from most significant bit):
-//   unused          : 1
+//   ignore          : 1
 //   tid             : kTidBits
 //   epoch           : kClkBits
 //   unused          : -
-//   ignore_bit      : 1
+//   history_size    : 3
 class FastState {
  public:
   FastState(u64 tid, u64 epoch) {
     x_ = tid << kTidShift;
     x_ |= epoch << kClkShift;
-    DCHECK(tid == this->tid());
-    DCHECK(epoch == this->epoch());
+    DCHECK_EQ(tid, this->tid());
+    DCHECK_EQ(epoch, this->epoch());
+    DCHECK_EQ(GetIgnoreBit(), false);
   }
 
   explicit FastState(u64 x)
@@ -90,6 +95,11 @@ class FastState {
   }
 
   u64 tid() const {
+    u64 res = (x_ & ~kIgnoreBit) >> kTidShift;
+    return res;
+  }
+
+  u64 TidWithIgnore() const {
     u64 res = x_ >> kTidShift;
     return res;
   }
@@ -108,13 +118,34 @@ class FastState {
 
   void SetIgnoreBit() { x_ |= kIgnoreBit; }
   void ClearIgnoreBit() { x_ &= ~kIgnoreBit; }
-  bool GetIgnoreBit() const { return x_ & kIgnoreBit; }
+  bool GetIgnoreBit() const { return (s64)x_ < 0; }
+
+  void SetHistorySize(int hs) {
+    CHECK_GE(hs, 0);
+    CHECK_LE(hs, 7);
+    x_ = (x_ & ~7) | hs;
+  }
+
+  int GetHistorySize() const {
+    return (int)(x_ & 7);
+  }
+
+  void ClearHistorySize() {
+    x_ &= ~7;
+  }
+
+  u64 GetTracePos() const {
+    const int hs = GetHistorySize();
+    // When hs == 0, the trace consists of 2 parts.
+    const u64 mask = (1ull << (kTracePartSizeBits + hs + 1)) - 1;
+    return epoch() & mask;
+  }
 
  private:
   friend class Shadow;
   static const int kTidShift = 64 - kTidBits - 1;
   static const int kClkShift = kTidShift - kClkBits;
-  static const u64 kIgnoreBit = 1ull;
+  static const u64 kIgnoreBit = 1ull << 63;
   static const u64 kFreedBit = 1ull << 63;
   u64 x_;
 };
@@ -128,9 +159,14 @@ class FastState {
 //   addr0           : 3
 class Shadow : public FastState {
  public:
-  explicit Shadow(u64 x) : FastState(x) { }
+  explicit Shadow(u64 x)
+      : FastState(x) {
+  }
 
-  explicit Shadow(const FastState &s) : FastState(s.x_) { }
+  explicit Shadow(const FastState &s)
+      : FastState(s.x_) {
+    ClearHistorySize();
+  }
 
   void SetAddr0AndSizeLog(u64 addr0, unsigned kAccessSizeLog) {
     DCHECK_EQ(x_ & 31, 0);
@@ -152,7 +188,7 @@ class Shadow : public FastState {
 
   static inline bool TidsAreEqual(const Shadow s1, const Shadow s2) {
     u64 shifted_xor = (s1.x_ ^ s2.x_) >> kTidShift;
-    DCHECK_EQ(shifted_xor == 0, s1.tid() == s2.tid());
+    DCHECK_EQ(shifted_xor == 0, s1.TidWithIgnore() == s2.TidWithIgnore());
     return shifted_xor == 0;
   }
 
@@ -335,6 +371,7 @@ struct ThreadContext {
   StackTrace creation_stack;
   ThreadDeadInfo *dead_info;
   ThreadContext *dead_next;  // In dead thread list.
+  char *name;  // As annotated by user.
 
   explicit ThreadContext(int tid);
 };
@@ -491,6 +528,7 @@ int ThreadTid(ThreadState *thr, uptr pc, uptr uid);
 void ThreadJoin(ThreadState *thr, uptr pc, int tid);
 void ThreadDetach(ThreadState *thr, uptr pc, int tid);
 void ThreadFinalize(ThreadState *thr);
+void ThreadSetName(ThreadState *thr, const char *name);
 int ThreadCount(ThreadState *thr);
 void ProcessPendingSignals(ThreadState *thr);
 
@@ -531,19 +569,24 @@ void AfterSleep(ThreadState *thr, uptr pc);
 #endif
 
 void TraceSwitch(ThreadState *thr);
+uptr TraceTopPC(ThreadState *thr);
+uptr TraceSize();
+uptr TraceParts();
 
 extern "C" void __tsan_trace_switch();
-void ALWAYS_INLINE INLINE TraceAddEvent(ThreadState *thr, u64 epoch,
+void ALWAYS_INLINE INLINE TraceAddEvent(ThreadState *thr, FastState fs,
                                         EventType typ, uptr addr) {
   StatInc(thr, StatEvents);
-  if (UNLIKELY((epoch % kTracePartSize) == 0)) {
+  u64 pos = fs.GetTracePos();
+  if (UNLIKELY((pos % kTracePartSize) == 0)) {
 #ifndef TSAN_GO
     HACKY_CALL(__tsan_trace_switch);
 #else
     TraceSwitch(thr);
 #endif
   }
-  Event *evp = &thr->trace.events[epoch % kTraceSize];
+  Event *trace = (Event*)GetThreadTrace(fs.tid());
+  Event *evp = &trace[pos];
   Event ev = (u64)addr | ((u64)typ << 61);
   *evp = ev;
 }

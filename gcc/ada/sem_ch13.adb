@@ -84,7 +84,7 @@ package body Sem_Ch13 is
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id);
    --  If Typ has predicates (indicated by Has_Predicates being set for Typ,
-   --  then either there are pragma Invariant entries on the rep chain for the
+   --  then either there are pragma Predicate entries on the rep chain for the
    --  type (note that Predicate aspects are converted to pragma Predicate), or
    --  there are inherited aspects from a parent type, or ancestor subtypes.
    --  This procedure builds the spec and body for the Predicate function that
@@ -738,6 +738,14 @@ package body Sem_Ch13 is
 
          if Is_Scalar_Type (Ent) then
             Set_Default_Aspect_Value (Ent, Expr);
+
+            --  Place default value of base type as well, because that is
+            --  the semantics of the aspect. It is convenient to link the
+            --  aspect to both the (possibly anonymous) base type and to
+            --  the given first subtype.
+
+            Set_Default_Aspect_Value (Base_Type (Ent), Expr);
+
          else
             Set_Default_Aspect_Component_Value (Ent, Expr);
          end if;
@@ -1425,6 +1433,48 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
+               --  Case 2d : Aspects that correspond to a pragma with one
+               --  argument.
+
+               when Aspect_Relative_Deadline     =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations =>
+                        New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                             Expression => Relocate_Node (Expr))),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Relative_Deadline));
+
+                  --  If the aspect applies to a task, the corresponding pragma
+                  --  must appear within its declarations, not after.
+
+                  if Nkind (N) = N_Task_Type_Declaration then
+                     declare
+                        Def : Node_Id;
+                        V   : List_Id;
+
+                     begin
+                        if No (Task_Definition (N)) then
+                           Set_Task_Definition (N,
+                             Make_Task_Definition (Loc,
+                                Visible_Declarations => New_List,
+                                End_Label => Empty));
+                        end if;
+
+                        Def := Task_Definition (N);
+                        V  := Visible_Declarations (Def);
+                        if not Is_Empty_List (V) then
+                           Insert_Before (First (V), Aitem);
+
+                        else
+                           Set_Visible_Declarations (Def, New_List (Aitem));
+                        end if;
+
+                        goto Continue;
+                     end;
+                  end if;
+
                --  Case 3 : Aspects that don't correspond to pragma/attribute
                --  definition clause.
 
@@ -1629,13 +1679,88 @@ package body Sem_Ch13 is
 
                      Aitem :=
                        Make_Pragma (Loc,
-                                    Pragma_Identifier            =>
-                                      Make_Identifier (Sloc (Id), Nam),
-                                    Pragma_Argument_Associations =>
-                                      Args);
+                         Pragma_Identifier            =>
+                           Make_Identifier (Sloc (Id), Nam),
+                         Pragma_Argument_Associations => Args);
 
                      Delay_Required := False;
                   end;
+
+               when Aspect_Contract_Cases => Contract_Cases : declare
+                  Case_Guard  : Node_Id;
+                  Extra       : Node_Id;
+                  Others_Seen : Boolean := False;
+                  Post_Case   : Node_Id;
+
+               begin
+                  if Nkind (Parent (N)) = N_Compilation_Unit then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_N ("incorrect placement of aspect `%`", E);
+                     goto Continue;
+                  end if;
+
+                  if Nkind (Expr) /= N_Aggregate then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_NE
+                       ("wrong syntax for aspect `%` for &", Id, E);
+                     goto Continue;
+                  end if;
+
+                  --  Verify the legality of individual post cases
+
+                  Post_Case := First (Component_Associations (Expr));
+                  while Present (Post_Case) loop
+                     if Nkind (Post_Case) /= N_Component_Association then
+                        Error_Msg_N ("wrong syntax in post case", Post_Case);
+                        goto Continue;
+                     end if;
+
+                     --  Each post case must have exactly one case guard
+
+                     Case_Guard := First (Choices (Post_Case));
+                     Extra      := Next (Case_Guard);
+
+                     if Present (Extra) then
+                        Error_Msg_N
+                          ("post case may have only one case guard", Extra);
+                        goto Continue;
+                     end if;
+
+                     --  Check the placement of "others" (if available)
+
+                     if Nkind (Case_Guard) = N_Others_Choice then
+                        if Others_Seen then
+                           Error_Msg_Name_1 := Nam;
+                           Error_Msg_N
+                             ("only one others choice allowed in aspect %",
+                              Case_Guard);
+                           goto Continue;
+                        else
+                           Others_Seen := True;
+                        end if;
+
+                     elsif Others_Seen then
+                        Error_Msg_Name_1 := Nam;
+                        Error_Msg_N
+                          ("others must be the last choice in aspect %", N);
+                        goto Continue;
+                     end if;
+
+                     Next (Post_Case);
+                  end loop;
+
+                  --  Transform the aspect into a pragma
+
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Loc, Nam),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+                  Delay_Required := False;
+               end Contract_Cases;
 
                --  Case 5: Special handling for aspects with an optional
                --  boolean argument.
@@ -1817,6 +1942,17 @@ package body Sem_Ch13 is
                end if;
 
                Set_Is_Delayed_Aspect (Aspect);
+
+               --  In the case of Default_Value, link aspect to base type
+               --  as well, even though it appears on a first subtype. This
+               --  is mandated by the semantics of the aspect. Verify that
+               --  this a scalar type, to prevent cascaded errors.
+
+               if A_Id = Aspect_Default_Value and then Is_Scalar_Type (E) then
+                  Set_Has_Delayed_Aspects (Base_Type (E));
+                  Record_Rep_Item (Base_Type (E), Aspect);
+               end if;
+
                Set_Has_Delayed_Aspects (E);
                Record_Rep_Item (E, Aspect);
 
@@ -5092,7 +5228,11 @@ package body Sem_Ch13 is
                end if;
 
                Exp := New_Copy_Tree (Arg2);
-               Loc := Sloc (Exp);
+
+               --  Preserve sloc of original pragma Invariant (this is required
+               --  by Par_SCO).
+
+               Loc := Sloc (Ritem);
 
                --  We need to replace any occurrences of the name of the type
                --  with references to the object, converted to type'Class in
@@ -5329,9 +5469,9 @@ package body Sem_Ch13 is
    --  use this function even if checks are off, e.g. for membership tests.
 
    procedure Build_Predicate_Function (Typ : Entity_Id; N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (Typ);
-      Spec : Node_Id;
-      SId  : Entity_Id;
+      Loc   : constant Source_Ptr := Sloc (Typ);
+      Spec  : Node_Id;
+      SId   : Entity_Id;
       FDecl : Node_Id;
       FBody : Node_Id;
 
@@ -5575,7 +5715,6 @@ package body Sem_Ch13 is
 
          --  Build function declaration
 
-         pragma Assert (Has_Predicates (Typ));
          SId :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), "Predicate"));
@@ -6703,6 +6842,9 @@ package body Sem_Ch13 is
          when Aspect_Priority | Aspect_Interrupt_Priority =>
             T := Standard_Integer;
 
+         when Aspect_Relative_Deadline =>
+            T := RTE (RE_Time_Span);
+
          when Aspect_Small =>
             T := Universal_Real;
 
@@ -6764,6 +6906,7 @@ package body Sem_Ch13 is
          --  Here is the list of aspects that don't require delay analysis.
 
          when Aspect_Contract_Case        |
+              Aspect_Contract_Cases       |
               Aspect_Dimension            |
               Aspect_Dimension_System     |
               Aspect_Implicit_Dereference |

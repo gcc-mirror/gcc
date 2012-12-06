@@ -567,9 +567,12 @@ package body Atree is
    procedure Check_Error_Detected is
    begin
       --  An anomaly has been detected which is assumed to be a consequence of
-      --  a previous error. Raise an exception if no error found previously.
+      --  a previous serious error or configurable run time violation. Raise
+      --  an exception if no such error has been detected.
 
-      if Total_Errors_Detected = 0 then
+      if Serious_Errors_Detected = 0
+        and then Configurable_Run_Time_Violations = 0
+      then
          raise Program_Error;
       end if;
    end Check_Error_Detected;
@@ -1931,6 +1934,7 @@ package body Atree is
             if Is_Syntactic_Field (Nkind (Nod), FN) then
                declare
                   Elmt : Node_Id := First (List_Id (Fld));
+
                begin
                   while Present (Elmt) loop
                      if Traverse_Func (Elmt) = Abandon then

@@ -2983,6 +2983,7 @@ package body Sem_Ch5 is
 
    procedure Preanalyze_Range (R_Copy : Node_Id) is
       Save_Analysis : constant Boolean := Full_Analysis;
+      Typ           : Entity_Id;
 
    begin
       Full_Analysis := False;
@@ -3043,6 +3044,40 @@ package body Sem_Ch5 is
 
       elsif Nkind (R_Copy) in N_Subexpr then
          Resolve (R_Copy);
+         Typ := Etype (R_Copy);
+
+         if Is_Discrete_Type (Typ) then
+            null;
+
+         --  Check that the resulting object is an iterable container
+
+         elsif Present (Find_Aspect (Typ, Aspect_Iterator_Element))
+           or else Present (Find_Aspect (Typ, Aspect_Constant_Indexing))
+           or else Present (Find_Aspect (Typ, Aspect_Variable_Indexing))
+         then
+            null;
+
+         --  The expression may yield an implicit reference to an iterable
+         --  container. Insert explicit dereference so that proper type is
+         --  visible in the loop.
+
+         elsif Has_Implicit_Dereference (Etype (R_Copy)) then
+            declare
+               Disc : Entity_Id;
+
+            begin
+               Disc := First_Discriminant (Typ);
+               while Present (Disc) loop
+                  if Has_Implicit_Dereference (Disc) then
+                     Build_Explicit_Dereference (R_Copy, Disc);
+                     exit;
+                  end if;
+
+                  Next_Discriminant (Disc);
+               end loop;
+            end;
+
+         end if;
       end if;
 
       Expander_Mode_Restore;

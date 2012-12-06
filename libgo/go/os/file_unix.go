@@ -108,8 +108,13 @@ func (file *file) close() error {
 	}
 
 	if file.dirinfo != nil {
-		if libc_closedir(file.dirinfo.dir) < 0 && err == nil {
-			err = &PathError{"closedir", file.name, syscall.GetErrno()}
+		syscall.Entersyscall()
+		i := libc_closedir(file.dirinfo.dir)
+		errno := syscall.GetErrno()
+		syscall.Exitsyscall()
+		file.dirinfo = nil
+		if i < 0 && err == nil {
+			err = &PathError{"closedir", file.name, errno}
 		}
 	}
 

@@ -66,16 +66,6 @@ $(ADA_GEN_SUBDIR)/stamp-nmake: $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nma
 	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/nmake/nmake.adb $(ADA_GEN_SUBDIR)/nmake.adb
 	touch $(ADA_GEN_SUBDIR)/stamp-nmake
 
-ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
-OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
-             -DTARGET='""$(target)""' s-oscons-tmplt.c
-
-OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
-                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
-  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
-  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
-
-else
 # GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
 # for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons
 OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
@@ -83,7 +73,16 @@ OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
 OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
   -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
 OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
-endif
+
+# Note: if you need to build with a non-GNU compiler, you could adapt the
+# following definitions (written for VMS DEC-C)
+#OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
+#             -DTARGET='""$(target)""' s-oscons-tmplt.c
+#
+#OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
+#                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
+#  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
+#  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
 
 $(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/gsocket.h $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons

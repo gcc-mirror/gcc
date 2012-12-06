@@ -5384,7 +5384,7 @@
   "* return pa_output_mul_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
@@ -5397,7 +5397,7 @@
   "* return pa_output_mul_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_expand "muldi3"
@@ -5490,7 +5490,7 @@
    return pa_output_div_insn (operands, 0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
@@ -5506,7 +5506,7 @@
    return pa_output_div_insn (operands, 0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_expand "udivsi3"
@@ -5551,7 +5551,7 @@
    return pa_output_div_insn (operands, 1, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
@@ -5567,7 +5567,7 @@
    return pa_output_div_insn (operands, 1, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_expand "modsi3"
@@ -5608,7 +5608,7 @@
   return pa_output_mod_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
@@ -5623,7 +5623,7 @@
   return pa_output_mod_insn (0, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_expand "umodsi3"
@@ -5664,7 +5664,7 @@
   return pa_output_mod_insn (1, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
@@ -5679,7 +5679,7 @@
   return pa_output_mod_insn (1, insn);"
   [(set_attr "type" "milli")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 ;;- and instructions
@@ -7209,7 +7209,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "call")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 0)")))])
 
 (define_insn "call_symref_pic"
@@ -7285,7 +7285,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "call")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 0)")))])
 
 ;; This pattern is split if it is necessary to save and restore the
@@ -7369,7 +7369,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "call")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 0)")))])
 
 (define_insn "call_reg"
@@ -7385,7 +7385,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
 ;; This pattern is split if it is necessary to save and restore the
@@ -7462,7 +7462,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
 ;; This pattern is split if it is necessary to save and restore the
@@ -7545,7 +7545,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 12)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 12)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
 (define_expand "call_value"
@@ -7673,7 +7673,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "call")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 0)")))])
 
 (define_insn "call_val_symref_pic"
@@ -7755,7 +7755,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "call")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 0)")))])
 
 ;; This pattern is split if it is necessary to save and restore the
@@ -7845,7 +7845,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "call")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 0)")))])
 
 (define_insn "call_val_reg"
@@ -7862,7 +7862,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
 ;; This pattern is split if it is necessary to save and restore the
@@ -7945,7 +7945,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
 ;; This pattern is split if it is necessary to save and restore the
@@ -8034,7 +8034,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "dyncall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 12)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 12)]
 	      (symbol_ref "pa_attr_length_indirect_call (insn)")))])
 
 ;; Call subroutine returning any type.
@@ -8130,7 +8130,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "sibcall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 1)")))])
 
 (define_insn "sibcall_internal_symref_64bit"
@@ -8147,7 +8147,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "sibcall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 1)")))])
 
 (define_expand "sibcall_value"
@@ -8218,7 +8218,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "sibcall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 1)")))])
 
 (define_insn "sibcall_value_internal_symref_64bit"
@@ -8236,7 +8236,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "sibcall")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 8)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 8)]
 	      (symbol_ref "pa_attr_length_call (insn, 1)")))])
 
 (define_insn "nop"
@@ -9275,7 +9275,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }"
   [(set_attr "type" "sh_func_adrs")
    (set (attr "length")
-	(cond [(and (match_test "0") (eq (const_int 0) (pc))) (const_int 28)]
+	(cond [(and (const_int 0) (eq (const_int 0) (pc))) (const_int 28)]
 	      (plus (symbol_ref "pa_attr_length_millicode_call (insn)")
 		    (const_int 20))))])
 

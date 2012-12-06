@@ -94,7 +94,7 @@ package System.Rident is
       No_Allocators,                           -- (RM H.4(7))
       No_Allocators_After_Elaboration,         -- Ada 2012 (RM D.7(19.1/2))
       No_Anonymous_Allocators,                 -- Ada 2012 (RM H.4(8/1))
-      No_Asynchronous_Control,                 -- (RM D.7(10))
+      No_Asynchronous_Control,                 -- (RM J.13(3/2)
       No_Calendar,                             -- GNAT
       No_Default_Stream_Attributes,            -- Ada 2012 (RM 13.12.1(4/2))
       No_Delay,                                -- (RM H.4(21))
@@ -142,8 +142,8 @@ package System.Rident is
       No_Tasking,                              -- GNAT
       No_Terminate_Alternatives,               -- (RM D.7(6))
       No_Unchecked_Access,                     -- (RM H.4(18))
-      No_Unchecked_Conversion,                 -- (RM H.4(16))
-      No_Unchecked_Deallocation,               -- (RM H.4(9))
+      No_Unchecked_Conversion,                 -- (RM J.13(4/2))
+      No_Unchecked_Deallocation,               -- (RM J.13(5/2))
       Static_Priorities,                       -- GNAT
       Static_Storage_Size,                     -- GNAT
 
