@@ -65,7 +65,10 @@ varpool_remove_node (struct varpool_node *node)
       && !DECL_VIRTUAL_P (node->symbol.decl)
       /* dbxout output constant initializers for readonly vars.  */
       && (!host_integerp (DECL_INITIAL (node->symbol.decl), 0)
-	  || !TREE_READONLY (node->symbol.decl)))
+	  || !TREE_READONLY (node->symbol.decl))
+      /* dwarf2out can use most of the initializers.  */
+      && write_symbols != DWARF2_DEBUG
+      && write_symbols != VMS_AND_DWARF2_DEBUG)
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
   ggc_free (node);
 }
