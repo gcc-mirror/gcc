@@ -1,5 +1,5 @@
-/* Induction variable canonicalization.
-   Copyright (C) 2004, 2005, 2007, 2008, 2010
+/* Induction variable canonicalization and loop peeling.
+   Copyright (C) 2004, 2005, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -207,10 +207,12 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
    iteration of the loop.
    EDGE_TO_CANCEL (if non-NULL) is an non-exit edge eliminated in the last iteration
    of loop.
-   Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT.  */
+   Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT. 
+   Stop estimating after UPPER_BOUND is met. Return true in this case */
 
-static void
-tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, struct loop_size *size)
+static bool
+tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, struct loop_size *size,
+			 int upper_bound)
 {
   basic_block *body = get_loop_body (loop);
   gimple_stmt_iterator gsi;
@@ -316,6 +318,12 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	      if (likely_eliminated || likely_eliminated_last)
 		size->last_iteration_eliminated_by_peeling += num;
 	    }
+	  if ((size->overall * 3 / 2 - size->eliminated_by_peeling
+	      - size->last_iteration_eliminated_by_peeling) > upper_bound)
+	    {
+              free (body);
+	      return true;
+	    }
 	}
     }
   while (path.length ())
@@ -357,6 +365,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 	     size->last_iteration_eliminated_by_peeling);
 
   free (body);
+  return false;
 }
 
 /* Estimate number of insns of completely unrolled loop.
@@ -699,12 +708,22 @@ try_unroll_loop_completely (struct loop *loop,
       sbitmap wont_exit;
       edge e;
       unsigned i;
+      bool large;
       vec<edge> to_remove = vNULL;
       if (ul == UL_SINGLE_ITER)
 	return false;
 
-      tree_estimate_loop_size (loop, exit, edge_to_cancel, &size);
+      large = tree_estimate_loop_size
+		 (loop, exit, edge_to_cancel, &size,
+		  PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS));
       ninsns = size.overall;
+      if (large)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Not unrolling loop %d: it is too large.\n",
+		     loop->num);
+	  return false;
+	}
 
       unr_insns = estimated_unrolled_size (&size, n_unroll);
       if (dump_file && (dump_flags & TDF_DETAILS))
