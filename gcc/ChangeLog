@@ -1,3 +1,5 @@
+2012-12-06  Jason Merrill  <jason@redhat.com>
+
 2012-12-06  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -25,6 +27,7 @@
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55032
+	PR c++/55245
 	* tree.c (build_array_type_1): Re-layout if we found it in the
 	hash table.
 
