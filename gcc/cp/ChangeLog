@@ -1,5 +1,9 @@
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54325
+	* tree.c (build_aggr_init_expr): Don't check for abstract class.
+	(build_cplus_new): Check here instead.
+
 	PR c++/55058
 	* pt.c (tsubst): Keep the quals when looking through a typedef.
 
