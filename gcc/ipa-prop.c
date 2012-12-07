@@ -2187,49 +2187,46 @@ ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg,
 /* Try to find a destination for indirect edge IE that corresponds to a simple
    call or a call of a member function pointer and where the destination is a
    pointer formal parameter described by jump function JFUNC.  If it can be
-   determined, return the newly direct edge, otherwise return NULL.  */
+   determined, return the newly direct edge, otherwise return NULL.
+   NEW_ROOT_INFO is the node info that JFUNC lattices are relative to.  */
 
 static struct cgraph_edge *
 try_make_edge_direct_simple_call (struct cgraph_edge *ie,
-				  struct ipa_jump_func *jfunc)
+				  struct ipa_jump_func *jfunc,
+				  struct ipa_node_params *new_root_info)
 {
   tree target;
 
   if (ie->indirect_info->agg_contents)
-    {
-      target = ipa_find_agg_cst_for_param (&jfunc->agg,
-					   ie->indirect_info->offset,
-					   ie->indirect_info->by_ref);
-      if (!target)
-	return NULL;
-    }
+    target = ipa_find_agg_cst_for_param (&jfunc->agg,
+					 ie->indirect_info->offset,
+					 ie->indirect_info->by_ref);
   else
-    {
-      if (jfunc->type != IPA_JF_CONST)
-	return NULL;
-      target = ipa_get_jf_constant (jfunc);
-    }
+    target = ipa_value_from_jfunc (new_root_info, jfunc);
+  if (!target)
+    return NULL;
   return ipa_make_edge_direct_to_target (ie, target);
 }
 
-/* Try to find a destination for indirect edge IE that corresponds to a
-   virtual call based on a formal parameter which is described by jump
-   function JFUNC and if it can be determined, make it direct and return the
-   direct edge.  Otherwise, return NULL.  */
+/* Try to find a destination for indirect edge IE that corresponds to a virtual
+   call based on a formal parameter which is described by jump function JFUNC
+   and if it can be determined, make it direct and return the direct edge.
+   Otherwise, return NULL.  NEW_ROOT_INFO is the node info that JFUNC lattices
+   are relative to.  */
 
 static struct cgraph_edge *
 try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
-				   struct ipa_jump_func *jfunc)
+				   struct ipa_jump_func *jfunc,
+				   struct ipa_node_params *new_root_info)
 {
   tree binfo, target;
 
-  if (jfunc->type != IPA_JF_KNOWN_TYPE)
+  binfo = ipa_value_from_jfunc (new_root_info, jfunc);
+
+  if (!binfo || TREE_CODE (binfo) != TREE_BINFO)
     return NULL;
 
-  binfo = TYPE_BINFO (ipa_get_jf_known_type_base_type (jfunc));
-  gcc_checking_assert (binfo);
-  binfo = get_binfo_at_offset (binfo, ipa_get_jf_known_type_offset (jfunc)
-			       + ie->indirect_info->offset,
+  binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
 			       ie->indirect_info->otr_type);
   if (binfo)
     target = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
@@ -2256,10 +2253,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 {
   struct ipa_edge_args *top;
   struct cgraph_edge *ie, *next_ie, *new_direct_edge;
+  struct ipa_node_params *new_root_info;
   bool res = false;
 
   ipa_check_create_edge_args ();
   top = IPA_EDGE_REF (cs);
+  new_root_info = IPA_NODE_REF (cs->caller->global.inlined_to
+				? cs->caller->global.inlined_to
+				: cs->caller);
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {
@@ -2309,9 +2310,11 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	continue;
 
       if (ici->polymorphic)
-	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc);
+	new_direct_edge = try_make_edge_direct_virtual_call (ie, jfunc,
+							     new_root_info);
       else
-	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc);
+	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
+							    new_root_info);
 
       if (new_direct_edge)
 	{
