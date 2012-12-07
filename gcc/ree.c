@@ -243,7 +243,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This structure represents a candidate for elimination.  */
 
-typedef struct GTY(()) ext_cand
+typedef struct ext_cand
 {
   /* The expression.  */
   const_rtx expr;
