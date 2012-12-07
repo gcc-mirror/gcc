@@ -1,5 +1,8 @@
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55249
+	* tree.c (build_vec_init_elt): Use the type of the initializer.
+
 	PR c++/54744
 	* pt.c (resolve_typename_type): Check TYPENAME_IS_RESOLVING_P on scope.
 	* init.c (expand_member_init): Check for being in a template first.
