@@ -3329,8 +3329,9 @@ lra_constraints (bool first_p)
 	reg = regno_reg_rtx[i];
 	if ((hard_regno = lra_get_regno_hard_regno (i)) >= 0)
 	  {
-	    int j, nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (i)];
+	    int j, nregs;
 
+	    nregs = hard_regno_nregs[hard_regno][lra_reg_info[i].biggest_mode];
 	    for (j = 0; j < nregs; j++)
 	      df_set_regs_ever_live (hard_regno + j, true);
 	  }
