@@ -15295,6 +15295,8 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (cp_parser_error_occurred (parser))
     return error_mark_node;
 
+  cp_parser_commit_to_tentative_parse (parser);
+
   /* Now we are going to parse the type-id of the declaration.  */
 
   /*
@@ -15324,10 +15326,19 @@ cp_parser_alias_declaration (cp_parser* parser)
   if (parser->num_template_parameter_lists)
     parser->type_definition_forbidden_message = saved_message;
 
+  if (type == error_mark_node)
+    {
+      cp_parser_skip_to_end_of_block_or_statement (parser);
+      return error_mark_node;
+    }
+
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
   if (cp_parser_error_occurred (parser))
-    return error_mark_node;
+    {
+      cp_parser_skip_to_end_of_block_or_statement (parser);
+      return error_mark_node;
+    }
 
   /* A typedef-name can also be introduced by an alias-declaration. The
      identifier following the using keyword becomes a typedef-name. It has
@@ -19063,9 +19074,19 @@ cp_parser_member_declaration (cp_parser* parser)
       else
 	{
 	  tree decl;
+	  bool alias_decl_expected;
 	  cp_parser_parse_tentatively (parser);
 	  decl = cp_parser_alias_declaration (parser);
-	  if (cp_parser_parse_definitely (parser))
+	  /* Note that if we actually see the '=' token after the
+	     identifier, cp_parser_alias_declaration commits the
+	     tentative parse.  In that case, we really expects an
+	     alias-declaration.  Otherwise, we expect a using
+	     declaration.  */
+	  alias_decl_expected =
+	    !cp_parser_uncommitted_to_tentative_parse_p (parser);
+	  cp_parser_parse_definitely (parser);
+
+	  if (alias_decl_expected)
 	    finish_member_declaration (decl);
 	  else
 	    cp_parser_using_declaration (parser,
