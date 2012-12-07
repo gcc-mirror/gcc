@@ -524,7 +524,8 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
   argvec = make_tree_vector ();
   if (init)
     {
-      tree dummy = build_dummy_object (inner_type);
+      tree init_type = strip_array_types (TREE_TYPE (init));
+      tree dummy = build_dummy_object (init_type);
       if (!real_lvalue_p (init))
 	dummy = move (dummy);
       argvec->quick_push (dummy);
