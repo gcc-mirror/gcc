@@ -5762,7 +5762,7 @@ extern tree build_min_nt_loc			(location_t, enum tree_code,
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
 extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern tree build_cplus_new			(tree, tree, tsubst_flags_t);
-extern tree build_aggr_init_expr		(tree, tree, tsubst_flags_t);
+extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
 extern tree get_target_expr_sfinae		(tree, tsubst_flags_t);
 extern tree build_cplus_array_type		(tree, tree);
