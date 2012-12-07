@@ -12805,11 +12805,10 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	      insns = get_insns ();
 	      end_sequence ();
 
-	      RTL_CONST_CALL_P (insns) = 1;
-
 	      if (GET_MODE (x) != Pmode)
 		x = gen_rtx_ZERO_EXTEND (Pmode, x);
 
+	      RTL_CONST_CALL_P (insns) = 1;
 	      emit_libcall_block (insns, dest, rax, x);
 	    }
 	  else
