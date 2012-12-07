@@ -1,5 +1,16 @@
 2012-12-07  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/55078
+	* ipa-inline-transform.c (inline_call): Turn #if 0 to #ifdef
+	ENABLE_CHECKING.
+	* ipa-prop.c (try_make_edge_direct_simple_call): Use
+	ipa_value_from_jfunc.
+	(try_make_edge_direct_virtual_call): Likewise.
+	(update_indirect_edges_after_inlining): Lookup new_root_info and pass
+	it to the functions above.
+
+2012-12-07  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/55590
 	* tree-sra.c (build_ref_for_offset): Use get_object_alignment_1 to
 	get base alignment.
