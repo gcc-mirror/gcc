@@ -396,7 +396,8 @@ build_aggr_init_array (tree return_type, tree fn, tree slot, int nargs,
    callable.  */
 
 tree
-build_aggr_init_expr (tree type, tree init, tsubst_flags_t /*complain*/)
+build_aggr_init_expr (tree type, tree init,
+		      tsubst_flags_t complain ATTRIBUTE_UNUSED)
 {
   tree fn;
   tree slot;
