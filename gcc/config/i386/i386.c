@@ -12675,6 +12675,9 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 	  tp = get_thread_pointer (true);
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, dest));
 
+	  if (GET_MODE (x) != Pmode)
+	    x = gen_rtx_ZERO_EXTEND (Pmode, x);
+
 	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
 	}
       else
@@ -12683,12 +12686,16 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	  if (TARGET_64BIT)
 	    {
-	      rtx rax = gen_rtx_REG (Pmode, AX_REG), insns;
+	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
+	      rtx insns;
 
 	      start_sequence ();
 	      emit_call_insn (gen_tls_global_dynamic_64 (rax, x, caddr));
 	      insns = get_insns ();
 	      end_sequence ();
+
+	      if (GET_MODE (x) != Pmode)
+		x = gen_rtx_ZERO_EXTEND (Pmode, x);
 
 	      RTL_CONST_CALL_P (insns) = 1;
 	      emit_libcall_block (insns, dest, rax, x);
@@ -12731,7 +12738,8 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
 
 	  if (TARGET_64BIT)
 	    {
-	      rtx rax = gen_rtx_REG (Pmode, AX_REG), insns, eqv;
+	      rtx rax = gen_rtx_REG (Pmode, AX_REG);
+	      rtx insns, eqv;
 
 	      start_sequence ();
 	      emit_call_insn (gen_tls_local_dynamic_base_64 (rax, caddr));
@@ -12758,6 +12766,9 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
       if (TARGET_GNU2_TLS)
 	{
 	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, dest, tp));
+
+	  if (GET_MODE (x) != Pmode)
+	    x = gen_rtx_ZERO_EXTEND (Pmode, x);
 
 	  set_unique_reg_note (get_last_insn (), REG_EQUAL, x);
 	}
