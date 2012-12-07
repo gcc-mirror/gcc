@@ -11013,8 +11013,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return r;
 	}
       else
-	/* We don't have an instantiation yet, so drop the typedef.  */
-	t = DECL_ORIGINAL_TYPE (decl);
+	{
+	  /* We don't have an instantiation yet, so drop the typedef.  */
+	  int quals = cp_type_quals (t);
+	  t = DECL_ORIGINAL_TYPE (decl);
+	  t = cp_build_qualified_type_real (t, quals,
+					    complain | tf_ignore_bad_quals);
+	}
     }
 
   if (type

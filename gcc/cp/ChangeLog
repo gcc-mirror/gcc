@@ -1,5 +1,8 @@
 2012-12-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55058
+	* pt.c (tsubst): Keep the quals when looking through a typedef.
+
 	PR c++/55249
 	* tree.c (build_vec_init_elt): Use the type of the initializer.
 
