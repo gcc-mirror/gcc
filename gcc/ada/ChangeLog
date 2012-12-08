@@ -1,5 +1,10 @@
 2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Indexed_Component>: Assert
+	that the type of the prefix is ultimately an array.
+
+2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Be prepared for a
 	by-ref VAR_DECL in the case of an Out parameter passed by copy.
 
