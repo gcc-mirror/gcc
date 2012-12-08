@@ -5410,6 +5410,10 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	gnu_result = gnu_array_object;
 
+	/* The failure of this assertion will very likely come from a missing
+	   expansion for a packed array access.  */
+	gcc_assert (TREE_CODE (TREE_TYPE (gnu_array_object)) == ARRAY_TYPE);
+
 	/* First compute the number of dimensions of the array, then
 	   fill the expression array, the order depending on whether
 	   this is a Convention_Fortran array or not.  */
