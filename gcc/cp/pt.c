@@ -19293,6 +19293,22 @@ dependent_scope_p (tree scope)
 	  && !currently_open_class (scope));
 }
 
+/* T is a SCOPE_REF; return whether we need to consider it
+    instantiation-dependent so that we can check access at instantiation
+    time even though we know which member it resolves to.  */
+
+static bool
+instantiation_dependent_scope_ref_p (tree t)
+{
+  if (DECL_P (TREE_OPERAND (t, 1))
+      && CLASS_TYPE_P (TREE_OPERAND (t, 0))
+      && accessible_in_template_p (TREE_OPERAND (t, 0),
+				   TREE_OPERAND (t, 1)))
+    return false;
+  else
+    return true;
+}
+
 /* Returns TRUE if the EXPRESSION is value-dependent, in the sense of
    [temp.dep.constexpr].  EXPRESSION is already known to be a constant
    expression.  */
@@ -19400,10 +19416,9 @@ value_dependent_expression_p (tree expression)
       return instantiation_dependent_expression_p (expression);
 
     case SCOPE_REF:
-      /* instantiation_dependent_r treats this as dependent so that we
-	 check access at instantiation time, and all instantiation-dependent
-	 expressions should also be considered value-dependent.  */
-      return true;
+      /* All instantiation-dependent expressions should also be considered
+	 value-dependent.  */
+      return instantiation_dependent_scope_ref_p (expression);
 
     case COMPONENT_REF:
       return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
@@ -19744,10 +19759,10 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
       break;
 
     case SCOPE_REF:
-      /* Similarly, finish_qualified_id_expr builds up a SCOPE_REF in a
-	 template so that we can check access at instantiation time even
-	 though we know which member it resolves to.  */
-      return *tp;
+      if (instantiation_dependent_scope_ref_p (*tp))
+	return *tp;
+      else
+	break;
 
     default:
       break;
