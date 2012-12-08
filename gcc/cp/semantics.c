@@ -45,6 +45,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "hash-table.h"
 
+static bool verify_constant (tree, bool, bool *, bool *);
+#define VERIFY_CONSTANT(X)						\
+do {									\
+  if (verify_constant ((X), allow_non_constant, non_constant_p, overflow_p)) \
+    return t;								\
+ } while (0)
+
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
    during template instantiation, which may be regarded as a
@@ -6437,7 +6444,9 @@ cxx_eval_builtin_function_call (const constexpr_call *call, tree t,
     return t;
   new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
                                    CALL_EXPR_FN (t), nargs, args);
-  return fold (new_call);
+  new_call = fold (new_call);
+  VERIFY_CONSTANT (new_call);
+  return new_call;
 }
 
 /* TEMP is the constant value of a temporary object of type TYPE.  Adjust
@@ -6738,11 +6747,6 @@ verify_constant (tree t, bool allow_non_constant, bool *non_constant_p,
     }
   return *non_constant_p;
 }
-#define VERIFY_CONSTANT(X)						\
-do {									\
-  if (verify_constant ((X), allow_non_constant, non_constant_p, overflow_p)) \
-    return t;								\
- } while (0)
 
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce the unary expression tree T to a compile time value.
