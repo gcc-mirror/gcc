@@ -1,3 +1,8 @@
+2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Be prepared for a
+	by-ref VAR_DECL in the case of an Out parameter passed by copy.
+
 2012-12-05  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, sem_prag.adb, put_scos.adb, get_scos.adb: Minor
