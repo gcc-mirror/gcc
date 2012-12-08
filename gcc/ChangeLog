@@ -1,7 +1,7 @@
 2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-streamer-out.c (lto_write_tree): Do not reset the DECL_INITIAL of
-	variables in the global contant pool.
+	variables in the global constant pool.
 
 2012-12-08  Steven Bosscher  <steven@gcc.gnu.org>
 
