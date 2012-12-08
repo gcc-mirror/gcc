@@ -329,8 +329,6 @@ build_target_expr (tree decl, tree value, tsubst_flags_t complain)
      side-effects, then the optimizer should be able to get rid of
      whatever code is generated anyhow.  */
   TREE_SIDE_EFFECTS (t) = 1;
-  if (literal_type_p (type))
-    TREE_CONSTANT (t) = TREE_CONSTANT (value);
 
   return t;
 }
