@@ -1,8 +1,8 @@
 /* Test gcov weak ellision.  */
 
-/* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-require-weak "" } */
 /* { dg-do run { target native } } */
+/* { dg-require-weak "" } */
+/* { dg-options "-fprofile-arcs -ftest-coverage" } */
 
 int __attribute__ ((weak)) weak ()
 {
