@@ -1,3 +1,8 @@
+2012-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55593
+	* gfortran.dg/do_check_8.f90:  New test.
+
 2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/vect10.ad[sb]: New test.
