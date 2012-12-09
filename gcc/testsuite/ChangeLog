@@ -1,5 +1,8 @@
 2012-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* gcc.dg/torture/pr47917.c: Change "dg-xfail-if" to "dg-xfail-run-if"
+	for *-*-hpux10*.
+
 	* gcc.dg/20030711-1.c: Define MAP_FAILED if not defined.
 	* gcc.dg/20050826-1.c: Likewise.
 
