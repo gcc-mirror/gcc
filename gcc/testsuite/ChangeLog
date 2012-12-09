@@ -1,5 +1,8 @@
 2012-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR middle-end/54470
+	* gcc.dg/ipa/iinline-4.c: xfail hooray4 test on 32-bit hppa*-*-*.
+
 	* gcc.dg/torture/pr47917.c: Change "dg-xfail-if" to "dg-xfail-run-if"
 	for *-*-hpux10*.
 
