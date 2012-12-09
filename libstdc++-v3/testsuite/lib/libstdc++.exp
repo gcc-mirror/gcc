@@ -389,15 +389,22 @@ if { [info procs saved-dg-test] == [list] } {
     proc dg-test { args } {
 	global additional_prunes
 	global errorInfo
+	global testname_with_flags
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
 	    set additional_prunes ""
+	    if [info exists testname_with_flags] {
+		unset testname_with_flags
+	    }
 	    unset_timeout_vars
 	    error $errmsg $saved_info
 	}
 	set additional_prunes ""
 	unset_timeout_vars
+	if [info exists testname_with_flags] {
+	    unset testname_with_flags
+	}
     }
 }
 
