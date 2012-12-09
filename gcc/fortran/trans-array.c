@@ -7589,7 +7589,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 					CLASS_DATA (c)->attr.codimension);
 	      else
 		{
-		  tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
+		  tmp = gfc_deallocate_scalar_with_status (comp, NULL_TREE, true, NULL,
 							   CLASS_DATA (c)->ts);
 		  gfc_add_expr_to_block (&tmpblock, tmp);
 		  called_dealloc_with_status = true;
