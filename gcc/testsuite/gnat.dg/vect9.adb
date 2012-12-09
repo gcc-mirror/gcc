@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O" }
+-- { dg-options "-O -w" }
 
 package body Vect9 is
 

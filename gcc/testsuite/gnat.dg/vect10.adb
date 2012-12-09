@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-options "-w" }
 
 package body Vect10 is
 
