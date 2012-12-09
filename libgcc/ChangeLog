@@ -1,3 +1,8 @@
+2012-12-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55344
+	* config/alpha/linux-unwind.h: Disable when inhibit_libc is defined.
+
 2012-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-machine.h (FP_EX_ALL): Define.
