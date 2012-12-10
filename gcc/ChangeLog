@@ -1,3 +1,15 @@
+2012-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55107
+	* tree-ssa-pre.c (struct pre_stats): Remove constified field.
+	(bitmap_set_replace_value): Add gcc_unreachable.
+	(do_regular_insertion): Re-write all_same handling.  Insert
+	an assignment instead of a PHI in this case.
+	(eliminate_bb): Record availability also for SSA names defined
+	by a constant.
+	(do_pre): Do not record constified events.
+	(execute_fre): Likewise.
+
 2012-12-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/spu/spu.md: Replace "operands" with "operands != NULL" in

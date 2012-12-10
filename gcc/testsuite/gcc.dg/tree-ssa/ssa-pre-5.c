@@ -12,5 +12,6 @@ foo (int i)
 }
 /* We should detect that a+b is the same along both edges, and replace it with
    5  */
-/* { dg-final { scan-tree-dump-times "Constified: 1" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "Insertions" 0 "pre"} } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
