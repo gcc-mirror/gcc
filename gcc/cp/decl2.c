@@ -3944,8 +3944,13 @@ cp_write_global_declarations (void)
       || !vec_safe_is_empty (decl_namespace_list))
     return;
 
+  /* This is the point to write out a PCH if we're doing that.
+     In that case we do not want to do anything else.  */
   if (pch_file)
-    c_common_write_pch ();
+    {
+      c_common_write_pch ();
+      return;
+    }
 
   cgraph_process_same_body_aliases ();
 
