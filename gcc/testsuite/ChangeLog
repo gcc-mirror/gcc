@@ -1,5 +1,10 @@
 2012-12-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/octeon-bbit-2.c: Restructure loops so that no
+	code duplication is required.  Allow BNE to appear.
+
+2012-12-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/ext-2.c: Require -mlong64.
 
 2012-12-10  Richard Biener  <rguenther@suse.de>
