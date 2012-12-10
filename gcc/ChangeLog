@@ -1,5 +1,7 @@
 2012-12-10 Kai Tietz  <ktietz@redhat.com>
 
+	* stmt.c (expand_sjlj_dispatch_table): Fix off by one.
+
 	PR target/53912
 	* stmt.c (compute_cases_per_edge): Cast from pointer via intptr_t.
 	(expand_case): Likewise.
