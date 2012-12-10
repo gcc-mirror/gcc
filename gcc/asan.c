@@ -212,6 +212,21 @@ alias_set_type asan_shadow_set = -1;
    alias set is used for all shadow memory accesses.  */
 static GTY(()) tree shadow_ptr_types[2];
 
+/* Initialize shadow_ptr_types array.  */
+
+static void
+asan_init_shadow_ptr_types (void)
+{
+  asan_shadow_set = new_alias_set ();
+  shadow_ptr_types[0] = build_distinct_type_copy (signed_char_type_node);
+  TYPE_ALIAS_SET (shadow_ptr_types[0]) = asan_shadow_set;
+  shadow_ptr_types[0] = build_pointer_type (shadow_ptr_types[0]);
+  shadow_ptr_types[1] = build_distinct_type_copy (short_integer_type_node);
+  TYPE_ALIAS_SET (shadow_ptr_types[1]) = asan_shadow_set;
+  shadow_ptr_types[1] = build_pointer_type (shadow_ptr_types[1]);
+  initialize_sanitizer_builtins ();
+}
+
 /* Asan pretty-printer, used for buidling of the description STRING_CSTs.  */
 static pretty_printer asan_pp;
 static bool asan_pp_initialized;
@@ -234,10 +249,11 @@ asan_pp_string (void)
   size_t len = strlen (buf);
   tree ret = build_string (len + 1, buf);
   TREE_TYPE (ret)
-    = build_array_type (char_type_node, build_index_type (size_int (len)));
+    = build_array_type (TREE_TYPE (shadow_ptr_types[0]),
+			build_index_type (size_int (len)));
   TREE_READONLY (ret) = 1;
   TREE_STATIC (ret) = 1;
-  return build1 (ADDR_EXPR, build_pointer_type (char_type_node), ret);
+  return build1 (ADDR_EXPR, shadow_ptr_types[0], ret);
 }
 
 /* Return a CONST_INT representing 4 subsequent shadow memory bytes.  */
@@ -275,6 +291,9 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   int l;
   unsigned char cur_shadow_byte = ASAN_STACK_MAGIC_LEFT;
   tree str_cst;
+
+  if (shadow_ptr_types[0] == NULL_TREE)
+    asan_init_shadow_ptr_types ();
 
   /* First of all, prepare the description string.  */
   if (!asan_pp_initialized)
@@ -430,6 +449,16 @@ asan_protect_global (tree decl)
   rtx rtl, symbol;
   section *sect;
 
+  if (TREE_CODE (decl) == STRING_CST)
+    {
+      /* Instrument all STRING_CSTs except those created
+	 by asan_pp_string here.  */
+      if (shadow_ptr_types[0] != NULL_TREE
+	  && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+	  && TREE_TYPE (TREE_TYPE (decl)) == TREE_TYPE (shadow_ptr_types[0]))
+	return false;
+      return true;
+    }
   if (TREE_CODE (decl) != VAR_DECL
       /* TLS vars aren't statically protectable.  */
       || DECL_THREAD_LOCAL_P (decl)
@@ -1580,6 +1609,50 @@ initialize_sanitizer_builtins (void)
 #undef DEF_SANITIZER_BUILTIN
 }
 
+/* Called via htab_traverse.  Count number of emitted
+   STRING_CSTs in the constant hash table.  */
+
+static int
+count_string_csts (void **slot, void *data)
+{
+  struct constant_descriptor_tree *desc
+    = (struct constant_descriptor_tree *) *slot;
+  if (TREE_CODE (desc->value) == STRING_CST
+      && TREE_ASM_WRITTEN (desc->value)
+      && asan_protect_global (desc->value))
+    ++*((unsigned HOST_WIDE_INT *) data);
+  return 1;
+}
+
+/* Helper structure to pass two parameters to
+   add_string_csts.  */
+
+struct asan_add_string_csts_data
+{
+  tree type;
+  vec<constructor_elt, va_gc> *v;
+};
+
+/* Called via htab_traverse.  Call asan_add_global
+   on emitted STRING_CSTs from the constant hash table.  */
+
+static int
+add_string_csts (void **slot, void *data)
+{
+  struct constant_descriptor_tree *desc
+    = (struct constant_descriptor_tree *) *slot;
+  if (TREE_CODE (desc->value) == STRING_CST
+      && TREE_ASM_WRITTEN (desc->value)
+      && asan_protect_global (desc->value))
+    {
+      struct asan_add_string_csts_data *aascd
+	= (struct asan_add_string_csts_data *) data;
+      asan_add_global (SYMBOL_REF_DECL (XEXP (desc->rtl, 0)),
+		       aascd->type, aascd->v);
+    }
+  return 1;
+}
+
 /* Needs to be GTY(()), because cgraph_build_static_cdtor may
    invoke ggc_collect.  */
 static GTY(()) tree asan_ctor_statements;
@@ -1595,13 +1668,20 @@ asan_finish_file (void)
   struct varpool_node *vnode;
   unsigned HOST_WIDE_INT gcount = 0;
 
-  initialize_sanitizer_builtins ();
+  if (shadow_ptr_types[0] == NULL_TREE)
+    asan_init_shadow_ptr_types ();
+  /* Avoid instrumenting code in the asan ctors/dtors.
+     We don't need to insert padding after the description strings,
+     nor after .LASAN* array.  */
+  flag_asan = 0;
 
   tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
   append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if (asan_protect_global (vnode->symbol.decl))
       ++gcount;
+  htab_t const_desc_htab = constant_pool_htab ();
+  htab_traverse (const_desc_htab, count_string_csts, &gcount);
   if (gcount)
     {
       tree type = asan_global_struct (), var, ctor;
@@ -1622,6 +1702,10 @@ asan_finish_file (void)
       FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (asan_protect_global (vnode->symbol.decl))
 	  asan_add_global (vnode->symbol.decl, TREE_TYPE (type), v);
+      struct asan_add_string_csts_data aascd;
+      aascd.type = TREE_TYPE (type);
+      aascd.v = v;
+      htab_traverse (const_desc_htab, add_string_csts, &aascd);
       ctor = build_constructor (type, v);
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
@@ -1644,20 +1728,7 @@ asan_finish_file (void)
     }
   cgraph_build_static_cdtor ('I', asan_ctor_statements,
 			     MAX_RESERVED_INIT_PRIORITY - 1);
-}
-
-/* Initialize shadow_ptr_types array.  */
-
-static void
-asan_init_shadow_ptr_types (void)
-{
-  asan_shadow_set = new_alias_set ();
-  shadow_ptr_types[0] = build_distinct_type_copy (signed_char_type_node);
-  TYPE_ALIAS_SET (shadow_ptr_types[0]) = asan_shadow_set;
-  shadow_ptr_types[0] = build_pointer_type (shadow_ptr_types[0]);
-  shadow_ptr_types[1] = build_distinct_type_copy (short_integer_type_node);
-  TYPE_ALIAS_SET (shadow_ptr_types[1]) = asan_shadow_set;
-  shadow_ptr_types[1] = build_pointer_type (shadow_ptr_types[1]);
+  flag_asan = 1;
 }
 
 /* Instrument the current function.  */
@@ -1666,10 +1737,7 @@ static unsigned int
 asan_instrument (void)
 {
   if (shadow_ptr_types[0] == NULL_TREE)
-    {
-      asan_init_shadow_ptr_types ();
-      initialize_sanitizer_builtins ();
-    }
+    asan_init_shadow_ptr_types ();
   transform_statements ();
   return 0;
 }
