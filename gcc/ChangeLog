@@ -1,3 +1,494 @@
+2012-12-10 Kai Tietz  <ktietz@redhat.com>
+
+	* stmt.c (expand_sjlj_dispatch_table): Fix off by one.
+
+	PR target/53912
+	* stmt.c (compute_cases_per_edge): Cast from pointer via intptr_t.
+	(expand_case): Likewise.
+
+	PR target/53912
+	* print-tree.c (print_node): Cast from pointer via uintptr_t.
+
+2012-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (instrument_derefs): Handle bitfield COMPONENT_REFs
+	accesses as reads/writes to their DECL_BIT_FIELD_REPRESENTATIVE.
+
+2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-streamer-out.c (lto_write_tree): Do not reset the DECL_INITIAL of
+	variables in the global constant pool.
+
+2012-12-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/55158
+	* sched-rgn.c (bb_state_array, bb_state): Add some explaining
+	comment, and initialize to NULL explicitly.
+	(realloc_bb_state_array): New function.
+	(free_bb_state_array): New function.
+	(schedule_region): Call realloc_bb_state_array after schedule_block.
+	(sched_rgn_init): Use realloc_bb_state_array to initialize bb_state.
+	(sched_rgn_finish): Use free_bb_state_array to free it.
+
+2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-im.c (for_each_index) <CONST_DECL>: New case.
+
+2012-12-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ree.c (struct ext_cand): Remove GTY markers.
+
+2012-12-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	testsuite/gcc.target/i386/pr55141.c
+	* lra-constraints.c (lra_constraints): Use biggest mode for
+	df_set_regs_ever_live.
+
+2012-12-07  Jan Hubicka  <jh@suse.cz>
+
+ 	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add UPPER_BOUND
+ 	parameter.
+ 	(try_unroll_loop_completely) Update.
+
+2012-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55395
+	* varpool.c (varpool_remove_node): Don't drop DECL_INITIAL
+	for -g for any kind of debug info.
+
+2012-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54886
+	* graphite-sese-to-poly.c (build_loop_iteration_domains): Properly
+	free all memory.
+
+2012-12-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/55078
+	* ipa-inline-transform.c (inline_call): Turn #if 0 to #ifdef
+	ENABLE_CHECKING.
+	* ipa-prop.c (try_make_edge_direct_simple_call): Use
+	ipa_value_from_jfunc.
+	(try_make_edge_direct_virtual_call): Likewise.
+	(update_indirect_edges_after_inlining): Lookup new_root_info and pass
+	it to the functions above.
+
+2012-12-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55590
+	* tree-sra.c (build_ref_for_offset): Use get_object_alignment_1 to
+	get base alignment.
+
+2012-12-06  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/55597
+	* config/i386/i386.c (legitimize_tls_address): Zero-extend x to Pmode,
+	before using it as insn or call equivalent.
+
+2012-12-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/sysv4.h (TARGET_ASAN_SHADOW_OFFSET): Define.
+	* config/rs6000/rs6000.c (rs6000_asan_shadow_offset): New function.
+	* config/rs6000/rs6000.h (FRAME_GROWS_DOWNWARD): Disable if using ASAN.
+
+2012-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55395
+	* varpool.c (varpool_remove_node): Don't drop DECL_INITIAL
+	if -g and emitting DWARF2+.
+
+2012-12-06  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Set
+	default loop peeling limits.
+
+2012-12-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55032
+	PR c++/55245
+	* tree.c (build_array_type_1): Re-layout if we found it in the
+	hash table.
+
+2012-12-06  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR 55599/sanitizer
+        * config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
+
+2012-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43631
+	* var-tracking.c (emit_note_insn_var_location, emit_notes_in_bb):
+	Clear BLOCK_FOR_INSN on notes emitted in between basic blocks,
+	don't adjust BB_END when inserting note after BB_END of some bb.
+
+	PR c++/55137
+	* fold-const.c (fold_binary_loc) <associate>: Don't introduce
+	TREE_OVERFLOW through reassociation.  If type doesn't have defined
+	overflow, but one or both of the operands do, use the wrapping type
+	for reassociation and only convert to type at the end.
+
+2012-12-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (fold_stmt_1): Remove code handling folding stmts away.
+
+2012-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/sourcebuild.texi: Document arm_v8_neon_ok.
+
+2012-12-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (neon_itype): Define NEON_RINT enum element.
+	(neon_builtin_data): Register vrintn, vrinta, vrintp, vrintm,
+	vrintz,	vrintx neon builtins.
+	(arm_init_neon_builtins): Handle NEON_RINT.
+	(arm_expand_neon_builtin): Likewise.
+	* config/arm/unspecs.md: New file.
+	* config/arm/arm.md ("unspec"): Move to unspecs.md.
+	* config/arm/iterators.md (NEON_VRINT): New int iterator.
+	(nvrint_variant): New int attribute.
+	* config/arm/neon.md
+	(neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>): New pattern.
+	("unspec"): Move to unspecs.md.
+	* config/arm/iwmmxt2.md ("unspec"): Move to unspecs.md.
+
+2012-12-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md: Use "const_int 0" instead of match_test to simplify
+	opaque cond in all call insns.
+
+2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/55604
+	* lra-lives.c (lra_create_live_ranges): If there are no referenced
+	pseudos left, do not compute live ranges.
+
+2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/tm.texi.in (TARGET_CLASS_LIKELY_SPILLED_P): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* regs.h (REG_LIVE_LENGTH): Update comments to not refer to no longer
+	existing files global.c and local-alloc.c.
+	* regmove.c (copy_src_to_dest): Likewise.
+	* function.h (struct rtl_data): Likewise.
+	* ira-color.c (allocno_priority_compare_func): Likewise.
+	* regstat.c (regstat_compute_ri): Likewise.
+	* config/epiphany/epiphany.h, config/vax/vax.h, config/cris/cris.h,
+	config/h8300/h8300.h, config/alpha/alpha.h, config/sparc/sparc.h,
+	config/rs6000/rs6000.h, config/pdp11/pdp11.h, config/pa/pa.h,
+	config/v850/v850.h, config/mn10300/mn10300.h, config/m32r/m32r.h,
+	config/i386/i386.h, config/mcore/mcore.h, config/sh/sh.h,
+	config/arm/arm.h (REGNO_OK_FOR_BASE_P): Likewise.
+
+2012-12-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/54160
+	* config/t-darwin (darwin-c.o): Depend on $(CPP_INTERNAL_H).
+	* config/darwin-c.c (darwin_cpp_builtins): Only set __OBJC2__ when
+	in obj mode.
+	Include libcpp/internal.h.
+
+2012-12-05  Michael Eager  <eager@eagercon.com>
+
+	PR rtl-optimization/54739
+	* config/microblaze/microblaze.md: (anddi3, iordi3, xordi3): Delete
+	patterns.
+
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add new builtins.
+	* config/aarch64/aarch64-simd.md (simd_type): Add uzp.
+	(aarch64_<PERMUTE:perm_insn><PERMUTE:perm_hilo><mode>): New.
+	* config/aarch64/aarch64.c (aarch64_evpc_trn): New.
+	(aarch64_evpc_uzp): Likewise.
+	(aarch64_evpc_zip): Likewise.
+	(aarch64_expand_vec_perm_const_1): Check for trn, zip, uzp patterns.
+	* config/aarch64/iterators.md (unspec): Add neccessary unspecs.
+	(PERMUTE): New.
+	(perm_insn): Likewise.
+	(perm_hilo): Likewise.
+
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_split_combinev16qi): New.
+	(aarch64_expand_vec_perm): Likewise.
+	(aarch64_expand_vec_perm_const): Likewise.
+	* config/aarch64/aarch64-simd.md (vec_perm_const<mode>): New.
+	(vec_perm<mode>): Likewise.
+	(aarch64_tbl1<mode>): Likewise.
+	(aarch64_tbl2v16qi): Likewise.
+	(aarch64_combinev16qi): New.
+	* config/aarch64/aarch64.c
+	(aarch64_vectorize_vec_perm_const_ok): New.
+	(aarch64_split_combinev16qi): Likewise.
+	(MAX_VECT_LEN): Define.
+	(expand_vec_perm_d): New.
+	(aarch64_expand_vec_perm_1): Likewise.
+	(aarch64_expand_vec_perm): Likewise.
+	(aarch64_evpc_tbl): Likewise.
+	(aarch64_expand_vec_perm_const_1): Likewise.
+	(aarch64_expand_vec_perm_const): Likewise.
+	(aarch64_vectorize_vec_perm_const_ok): Likewise.
+	(TARGET_VECTORIZE_VEC_PERM_CONST_OK): Likewise.
+	* config/aarch64/iterators.md
+	(unspec): Add UNSPEC_TBL, UNSPEC_CONCAT.
+	(V_cmp_result): Add mapping for V2DF.
+
+2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_mangle_map_entry): New
+	typedef.
+	(aarch64_simd_mangle_map): New table.
+	(aarch64_mangle_type): Locate and return the mangled name for
+	a given AdvSIMD vector type.
+
+2012-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_mangle_type): New function.
+	(TARGET_MANGLE_TYPE): Define.
+
+2012-12-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_builtin_vectorized_function): Declare.
+	* config/aarch64/aarch64-simd-builtins.def (frintz, frintp): Add.
+	(frintm, frinti, frintx, frinta, fcvtzs, fcvtzu): Likewise.
+	(fcvtas, fcvtau, fcvtps, fcvtpu, fcvtms, fcvtmu): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_frint_<frint_suffix><mode>): New.
+	(<frint_pattern><mode>2): Likewise.
+	(aarch64_fcvt<frint_suffix><su><mode>): Likewise.
+	(l<fcvt_pattern><su_optab><fcvt_target><VDQF:mode>2): Likewise.
+	* config/aarch64/aarch64.c (TARGET_VECTORIZE_BUILTINS): Define.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Likewise.
+	* config/aarch64/aarch64.md
+	(btrunc<mode>2, ceil<mode>2, floor<mode>2)
+	(round<mode>2, rint<mode>2, nearbyint<mode>2): Consolidate as...
+	(<frint_pattern><mode>2): ...this.
+	(lceil<su_optab><mode><mode>2, lfloor<su_optab><mode><mode>2)
+	(lround<su_optab><mode><mode>2)
+	(lrint<su_optab><mode><mode>2): Consolidate as...
+	(l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2): ... this.
+	* config/aarch64/iterators.md (fcvt_target): New.
+	(FCVT_TARGET): Likewise.
+	(FRINT): Likewise.
+	(FCVT): Likewise.
+	(frint_pattern): Likewise.
+	(frint_suffix): Likewise.
+	(fcvt_pattern): Likewise.
+
+2012-12-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* passes.c (pass_init_dump_file): Only open a clean graph dump file if
+	the dump was not already initialized.
+
+	Revert:
+	2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
+	* passes.c (finish_optimization_passes): Don't finish graph dumps here.
+	(pass_fini_dump_file): Wrap in TV_DUMP.  Finish graph dumps.
+	(execute_one_pass): Don't set up graph dumps here.
+
+2012-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR lto/55525
+	* gimple-streamer-in.c (input_gimple_stmt): Fixup ARRAY_REFs as well.
+
+2012-12-04  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (find_dummy_types): Output a dummy type if we couldn't
+	output the real type.
+
+2012-12-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (print_insn_with_notes): Remove prototype.
+	(rtl_dump_bb_for_graph): New prototype.
+	* sched-vis.c (print_insn_with_notes): Make static again.  Fix
+	printing of notes.
+	(rtl_dump_bb_for_graph): New function.
+	* cfghooks.h (struct cfg_hooks) <dump_bb_for_graph>: New hook.
+	(dump_bb_for_graph): New prototype.
+	* cfghooks.c (dump_bb_for_graph): New function.
+	* tree-cfg.c (gimple_cfg_hooks): Register gimple_dump_bb_for_graph
+	as dump_bb_for_graph hook implementation for GIMPLE.
+	* cfgrtl.c (rtl_cfg_hooks): Likewise for rtl_dump_bb_for_graph.
+	(cfg_layout_rtl_cfg_hooks): Likewise.
+	* graph.c (draw_cfg_node): Don't include sbitmap.h, rtl.h, tree.h,
+	gimple.h, and gimple-pretty-print.h.
+	(draw_cfg_node, draw_cfg_node_succ_edges): Use the uniqe function
+	definition number instead of the function declaration UID.
+	(print_graph_cfg): Take a struct function instead of a tree.
+	Use the dump_bb_for_graph hook to dump the basic block content.
+	* graph.h (print_graph_cfg): Update prototype.
+	* passes.c (execute_function_dump): Update print_graph_cfg call.
+	* Makefile.in (graph.o): Fixup dependencies.
+
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_builtin_va_list): Set
+	TYPE_STUB_DECL.
+
+2012-12-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_select_ccmode): Enable using CC of
+          x + imm for higher immediates on z9-109 upwards.
+
+2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.opt (cirrus-fix-invalid-insns): Delete option.
+	* invoke.texi (cirrus-fix-invalid-insns): Remove documentation.
+
+2012-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan.c (instrument_expr): If expr_ptr isn't a gimple val, first
+	store it into a SSA_NAME.
+
+	PR sanitizer/55439
+	* Makefile.in (tsan.o): Depend on tree-ssa-propagate.h.
+	* sanitizer.def: Add __tsan_atomic* builtins.
+	* asan.c (initialize_sanitizer_builtins): Adjust to also
+	initialize __tsan_atomic* builtins.
+	* tsan.c: Include tree-ssa-propagate.h.
+	(enum tsan_atomic_action): New enum.
+	(tsan_atomic_table): New table.
+	(instrument_builtin_call): New function.
+	(instrument_gimple): Take pointer to gimple_stmt_iterator
+	instead of gimple_stmt_iterator.  Call instrument_builtin_call
+	on builtin call stmts.
+	(instrument_memory_accesses): Adjust instrument_gimple caller.
+	* builtin-types.def (BT_FN_BOOL_VPTR_PTR_I1_INT_INT,
+	BT_FN_BOOL_VPTR_PTR_I2_INT_INT, BT_FN_BOOL_VPTR_PTR_I4_INT_INT,
+	BT_FN_BOOL_VPTR_PTR_I8_INT_INT, BT_FN_BOOL_VPTR_PTR_I16_INT_INT): New.
+
+2012-12-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_vector_alignment,
+	aarch64_simd_vector_alignment_reachable): New.
+	(TARGET_VECTOR_ALIGNMENT, TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE):
+	Define.
+
+2012-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55124
+	* tree-ssa-pre.c (find_or_generate_expression): Instead of
+	ICEing when we are not able to generate an expression defer it
+	by signalling failure.  Fix possible wrong-code issue by
+	not picking random REFERENCE expressions as fallback.
+	(create_component_ref_by_pieces_1): Adjust.  Add failure paths.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): When expression generation failed
+	for one edge make sure to not insert a PHI node.
+
+2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.c (ia64_compute_frame_size): Allocate the scratch
+	area if the function allocates dynamic stack space.
+	(ia64_initial_elimination_offset): Adjust offsets to above change.
+
+2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcse.c (struct reg_use): Remove unused struct.
+	(gcse_emit_move_after): Do not create REG_EQUAL notes that reference
+	the SET_DEST of the instruction the note would be attached to.
+	* cse.c (cse_main): Add the DF_NOTE problem.
+
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer.def: Add Address Sanitizer builtins.
+	Rename BUILT_IN_TSAN_READ_* to BUILT_IN_TSAN_READ* and
+	BUILT_IN_TSAN_WRITE_* to BUILT_IN_TSAN_WRITE*.
+	* Makefile.in (asan.o): Depend on langhooks.h.
+	(tsan.o): Depend on asan.h.
+	* asan.h (initialize_sanitizer_builtins): New prototype.
+	* asan.c: Include langhooks.h.
+	(report_error_func): Use builtin_decl_implicit of corresponding
+	BUILT_IN_ASAN_REPORT_{LOAD,STORE}*.
+	(asan_init_func): Removed.
+	(initialize_sanitizer_builtins): New function.
+	(asan_finish_file): Call it.  Use builtin_decl_implicit
+	on BUILT_IN_ASAN_{INIT,{,UN}REGISTER_GLOBALS}.
+	(asan_instrument): Call initialize_sanitizer_builtins.
+	* builtins.def (DEF_SANITIZER_BUILTIN): Change condition to
+	(flag_asan || flag_tsan).
+	* tsan.c: Include asan.h and tsan.h.
+	(get_memory_access_decl): Rename BUILT_IN_TSAN_{READ,WRITE}_*
+	to BUILT_IN_TSAN_{READ,WRITE}*.
+	(tsan_pass): Call initialize_sanitizer_builtins.
+	(tsan_gate, tsan_gate_O0): Don't check if
+	builtin_decl_implicit_p (BUILT_IN_TSAN_INIT) is true.
+	(tsan_finish_file): Call initialize_sanitizer_builtins.
+	* builtin-types.def (BT_FN_VOID_PTR_PTRMODE): New fn type.
+
+2012-12-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/55401
+	* trans-mem.c (get_tm_region_blocks): Exclude uninstrumented
+	blocks from vector if requested.
+	(collect_bb2reg): Pass new argument to get_tm_region_blocks.
+	(get_bb_regions_instrumented): Add INCLUDE_UNINSTRUMENTED_P
+	argument, and pass it to expand_regions.
+	(execute_tm_mark): Pass new argument to get_bb_regions_instrumented.
+	(execute_tm_edges): Same.
+
+2012-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (instrument_mem_region_access): Don't instrument
+	if base doesn't have pointer type or len integral type.
+	Add cast if len doesn't have size_t compatible type.
+	(instrument_builtin_call): Don't instrument BUILT_IN_ATOMIC_LOAD,
+	BUILT_IN_ATOMIC_TEST_AND_SET, BUILT_IN_ATOMIC_CLEAR,
+	BUILT_IN_ATOMIC_EXCHANGE, BUILT_IN_ATOMIC_COMPARE_EXCHANGE
+	and BUILT_IN_ATOMIC_STORE.
+
+	* asan.c (instrument_assignment): Instrument lhs only
+	for gimple_store_p and rhs1 only for gimple_assign_load_p.
+
+2012-12-03  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* Makefile.in: Add target mddump, build/genmddump.o.  Extend
+	genprogrtl with mddump.
+	* genmddump.c: New.
+
+2012-12-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (print_insn_with_notes): Prototype.
+	* sched-vis.c (print_insn_with_notes): Export it.
+
+	* gimple-pretty-print.h (gimple_dump_bb_for_graph): Prototype.
+	* gimple-pretty-print.c (print_gimple_expr): Flush the buffer.
+	(pp_gimple_stmt_1): Don't do it here.
+	(gimple_dump_bb_for_graph): New function.
+	* tree-pretty-print.c (print_generic_expr): Flush the buffer here.
+	(dump_generic_node): Don't flush the buffer here.
+
+	* graph.h (print_rtl_graph_with_bb): Rename to print_graph_cfg.
+	* graph.c: Include gimple.h, dumpfile.h, and gimple-pretty-print.h.
+	(draw_cfg_node): Handle GIMPLE basic blocks also.
+	(print_rtl_graph_with_bb): Rename to print_graph_cfg.
+	* passes.c (finish_optimization_passes): Don't finish graph dumps here.
+	(execute_function_dump): Use print_graph_cfg. Enable dumping the CFG
+	for GIMPLE also.
+	(pass_init_dump_file): Wrap in TV_DUMP.  Set up CFG graph dumps.
+	(pass_fini_dump_file): Wrap in TV_DUMP.  Finish graph dumps.
+	(execute_one_pass): Don't set up graph dumps here.
+
+2012-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa.c (warn_uninitialized_var): Use OPT_Wmaybe_uninitialized tag
+	in the non-always executed case.
+
+2012-12-03  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_build_constant): Update prototype.
+	Call emit_move_insn instead of printing movi/movn/movz instructions.
+	Call gen_insv_immdi instead of printing movk instruction.
+	(aarch64_add_constant): Update prototype.
+	Generate RTL instead of printing add/sub instructions.
+	(aarch64_output_mi_thunk): Update calls to aarch64_build_constant
+	and aarch64_add_constant.
+
 2012-12-03 Kai Tietz  <ktietz@redhat.com>
 
 	PR target/53912
@@ -61,8 +552,9 @@
 
 2012-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator): Deal
-	with degenerate cases where the bitsize isn't positive.  Rework comment.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Deal with degenerate cases where the bitsize isn't positive.
+	Rework comment.
 
 2012-11-30  David Edelsohn  <dje.gcc@gmail.com>
 
@@ -99,8 +591,7 @@
 	(input_profile_summary): Stream in sum_all and histogram.
 	(merge_profile_summaries): Merge sum_all and histogram, and
 	change to use RDIV.
-	(input_symtab): Call compute_working_sets after merging
-	summaries.
+	(input_symtab): Call compute_working_sets after merging summaries.
 	* gcov-io.c (gcov_histo_index): Make extern for compiler.
 	* gcov-io.h (gcov_histo_index): Ditto.
 	* profile.c (compute_working_sets): Remove static keyword.
@@ -161,8 +652,7 @@
 
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
-	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids
-	here.
+	* tree-ssa-pre.c (get_expr_value_id): Do not allocate value-ids here.
 
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
@@ -222,8 +712,7 @@
 2012-11-30  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/host-mingw32.c (va_granularity): Make none-const.
-	(mingw32_gt_pch_alloc_granularity): Return OS' allocation
-	granularity.
+	(mingw32_gt_pch_alloc_granularity): Return OS' allocation granularity.
 	(mingw32_gt_pch_use_address): Retry mapping of used address
 	as multiple instances might interfer.
 
@@ -253,9 +742,8 @@
 2012-11-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/55073
-	* arm/neon.md (neon_vtrn<mode>_internal): Split into expand
-	and insn patterns.  Re-order insn arguments to tie inputs to
-	outputs.
+	* config/arm/neon.md (neon_vtrn<mode>_internal): Split into expand
+	and insn patterns.  Re-order insn arguments to tie inputs to outputs.
 	(neon_vzip<mode>_internal): Likewise.
 	(neon_vuzp<mode>_internal): Likewise.
 
@@ -306,7 +794,7 @@
 2012-11-29  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/55171
-	* i386.c (get_scratch_register_on_entry): Handle
+	* config/i386/i386.c (get_scratch_register_on_entry): Handle
 	thiscall-convention.
 	(split_stack_prologue_scratch_regno): Likewise.
 	(ix86_static_chain): Likewise.
@@ -365,7 +853,7 @@
 	* varasm.c (use_blocks_for_decl_p): Apply hook as final condition.
 	* doc/tm.texi.in (USE_BLOCKS_FOR_DECL_P): New description.
 	* doc/tm.texi: Regenerated.
-	
+
 2012-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR middle-end/55438
@@ -385,8 +873,7 @@
 	PR rtl-optimization/55512
 	* lra-assigns.c (assign_by_spills): Assigned arbitrary hard regs
 	to failed reload pseudos instead of changing asm pattern.
-	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Increase
-	value.
+	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Increase value.
 
 2012-11-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
@@ -410,9 +897,9 @@
 	* config/epiphany/epiphgany.md (attribute type): Add v2fp.
 	(attribute fp_mode): Test for v2fp.
 	(<float_operation:insn_opname>v2sf3_i): Change type to v2fp.
-	* config/epiphany/epiphgany-sched.md (fp_arith_nearest, fp_arith_trunc):
-	Combine to ..
-	(fp_arith): .. this. 
+	* config/epiphany/epiphgany-sched.md (fp_arith_nearest,
+	fp_arith_trunc): Combine to ..
+	(fp_arith): .. this.
 	(v2fp_arith): New insn reservation.
 
 	* config/epiphany/epiphgany.md (maddsi_combine): Fix output pattern.
@@ -424,7 +911,8 @@
 2012-11-28  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.h (HARD_REGNO_RENAME_OK): Define.
-	* config/epiphany/epiphany-protos.h (epiphany_regno_rename_ok): Declare.
+	* config/epiphany/epiphany-protos.h (epiphany_regno_rename_ok):
+	Declare.
 	* config/epiphany/epiphany.c (epiphany_regno_rename_ok): New function.
 
 	* config/epiphany/epiphany.md (mov<mode>, *mov<mode>_insn): Check
@@ -432,7 +920,8 @@
 	* config/epiphany/predicates.md (misaligned_operand): New predicate.
 
 	* config/epiphany/epiphany.opt (-may-round-for-trunc): New option.
-	* config/epiphany/epiphany.md (*fix_truncsfsi2_i): Take it into account.
+	* config/epiphany/epiphany.md (*fix_truncsfsi2_i): Take it
+	into account.
 
 2012-11-28  Richard Biener  <rguenther@suse.de>
 

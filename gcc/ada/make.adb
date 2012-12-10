@@ -704,6 +704,7 @@ package body Make is
    Output_Flag       : constant String_Access := new String'("-o");
    Ada_Flag_1        : constant String_Access := new String'("-x");
    Ada_Flag_2        : constant String_Access := new String'("ada");
+   AdaSCIL_Flag      : constant String_Access := new String'("adascil");
    No_gnat_adc       : constant String_Access := new String'("-gnatA");
    GNAT_Flag         : constant String_Access := new String'("-gnatpg");
    Do_Not_Check_Flag : constant String_Access := new String'("-x");
@@ -2989,8 +2990,16 @@ package body Make is
          --  Now check if the file name has one of the suffixes familiar to
          --  the gcc driver. If this is not the case then add the ada flag
          --  "-x ada".
+         --  Append systematically "-x adascil" in CodePeer mode instead, to
+         --  force the use of gnat1scil instead of gnat1.
 
-         if not Ada_File_Name (S) and then not Targparm.AAMP_On_Target then
+         if CodePeer_Mode then
+            Comp_Last := Comp_Last + 1;
+            Comp_Args (Comp_Last) := Ada_Flag_1;
+            Comp_Last := Comp_Last + 1;
+            Comp_Args (Comp_Last) := AdaSCIL_Flag;
+
+         elsif not Ada_File_Name (S) and then not Targparm.AAMP_On_Target then
             Comp_Last := Comp_Last + 1;
             Comp_Args (Comp_Last) := Ada_Flag_1;
             Comp_Last := Comp_Last + 1;
@@ -7832,12 +7841,8 @@ package body Make is
             Operating_Mode           := Check_Semantics;
             Check_Object_Consistency := False;
 
-            --  Except in CodePeer mode, where we do want to call bind/link
-            --  in CodePeer mode (-P switch).
-
-            --  This is testing for -gnatcC, what is that??? Also why do we
-            --  want to call bind/link in the codepeer case with -gnatc
-            --  specified, seems odd.
+            --  Except in CodePeer mode (set by -gnatcC), where we do want to
+            --  call bind/link in CodePeer mode (-P switch).
 
             if Argv'Last >= 7 and then Argv (7) = 'C' then
                CodePeer_Mode := True;

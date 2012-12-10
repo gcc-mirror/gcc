@@ -618,6 +618,10 @@ package body Sem_Prag is
       --  Common processing for first argument of pragma Interrupt_Handler or
       --  pragma Attach_Handler.
 
+      procedure Check_Loop_Invariant_Variant_Placement;
+      --  Verify whether pragma Loop_Invariant or pragma Loop_Variant appear
+      --  immediately within a construct restricted to loops.
+
       procedure Check_Is_In_Decl_Part_Or_Package_Spec;
       --  Check that pragma appears in a declarative part, or in a package
       --  specification, i.e. that it does not occur in a statement sequence
@@ -1499,7 +1503,17 @@ package body Sem_Prag is
             begin
                CTC := Spec_CTC_List (Contract (S));
                while Present (CTC) loop
-                  if String_Equal (Name, Get_Name_From_CTC_Pragma (CTC)) then
+
+                  --  Omit pragma Contract_Cases because it does not introduce
+                  --  a unique case name and it does not follow the syntax of
+                  --  Contract_Case and Test_Case.
+
+                  if Pragma_Name (CTC) = Name_Contract_Cases then
+                     null;
+
+                  elsif String_Equal
+                          (Name, Get_Name_From_CTC_Pragma (CTC))
+                  then
                      Error_Msg_Sloc := Sloc (CTC);
                      Error_Pragma ("name for pragma% is already used#");
                   end if;
@@ -1902,6 +1916,96 @@ package body Sem_Prag is
          end if;
       end Check_Interrupt_Or_Attach_Handler;
 
+      --------------------------------------------
+      -- Check_Loop_Invariant_Variant_Placement --
+      --------------------------------------------
+
+      procedure Check_Loop_Invariant_Variant_Placement is
+         procedure Placement_Error (Constr : Node_Id);
+         --  Node Constr denotes the last loop restricted construct before we
+         --  encountered an illegal relation between enclosing constructs. Emit
+         --  an error depending on what Constr was.
+
+         ---------------------
+         -- Placement_Error --
+         ---------------------
+
+         procedure Placement_Error (Constr : Node_Id) is
+         begin
+            if Nkind (Constr) = N_Pragma then
+               Error_Pragma
+                 ("pragma % must appear immediately within the statements " &
+                  "of a loop");
+            else
+               Error_Pragma_Arg
+                 ("block containing pragma % must appear immediately within " &
+                  "the statements of a loop", Constr);
+            end if;
+         end Placement_Error;
+
+         --  Local declarations
+
+         Prev : Node_Id;
+         Stmt : Node_Id;
+
+      --  Start of processing for Check_Loop_Invariant_Variant_Placement
+
+      begin
+         Prev := N;
+         Stmt := Parent (N);
+         while Present (Stmt) loop
+
+            --  The pragma or previous block must appear immediately within the
+            --  current block's declarative or statement part.
+
+            if Nkind (Stmt) = N_Block_Statement then
+               if (No (Declarations (Stmt))
+                    or else List_Containing (Prev) /= Declarations (Stmt))
+                 and then
+                   List_Containing (Prev) /=
+                     Statements (Handled_Statement_Sequence (Stmt))
+               then
+                  Placement_Error (Prev);
+                  return;
+
+               --  Keep inspecting the parents because we are now within a
+               --  chain of nested blocks.
+
+               else
+                  Prev := Stmt;
+                  Stmt := Parent (Stmt);
+               end if;
+
+            --  The pragma or previous block must appear immediately within the
+            --  statements of the loop.
+
+            elsif Nkind (Stmt) = N_Loop_Statement then
+               if List_Containing (Prev) /= Statements (Stmt) then
+                  Placement_Error (Prev);
+               end if;
+
+               --  Stop the traversal because we reached the innermost loop
+               --  regardless of whether we encountered an error or not.
+
+               return;
+
+            --  Ignore a handled statement sequence. Note that this node may
+            --  be related to a subprogram body in which case we will emit an
+            --  error on the next iteration of the search.
+
+            elsif Nkind (Stmt) = N_Handled_Sequence_Of_Statements then
+               Stmt := Parent (Stmt);
+
+            --  Any other statement breaks the chain from the pragma to the
+            --  loop.
+
+            else
+               Placement_Error (Prev);
+               return;
+            end if;
+         end loop;
+      end Check_Loop_Invariant_Variant_Placement;
+
       -------------------------------------------
       -- Check_Is_In_Decl_Part_Or_Package_Spec --
       -------------------------------------------
@@ -2068,6 +2172,14 @@ package body Sem_Prag is
                Error_Pragma
                  ("aspect % requires ''Class for null procedure");
 
+            --  Pre/postconditions are legal on a subprogram body if it is not
+            --  a completion of a declaration.
+
+            elsif Nkind (PO) = N_Subprogram_Body
+              and then Acts_As_Spec (PO)
+            then
+               null;
+
             elsif not Nkind_In (PO, N_Subprogram_Declaration,
                                     N_Expression_Function,
                                     N_Generic_Subprogram_Declaration,
@@ -2122,9 +2234,14 @@ package body Sem_Prag is
          end if;
 
          --  For a pragma in the extended main source unit, record enabled
-         --  status in SCO (note: there is never any SCO for an instance).
+         --  status in SCO.
 
-         if Check_Enabled (Pname) then
+         --  This may seem redundant with the call to Check_Enabled occurring
+         --  later on when the pragma is rewritten into a pragma Check but
+         --  is actually required in the case of a postcondition within a
+         --  generic.
+
+         if Check_Enabled (Pname) and then not Split_PPC (N) then
             Set_SCO_Pragma_Enabled (Loc);
          end if;
 
@@ -6890,6 +7007,24 @@ package body Sem_Prag is
             Opt.Check_Policy_List := N;
          end Assertion_Policy;
 
+         ------------
+         -- Assume --
+         ------------
+
+         --  pragma Assume (boolean_EXPRESSION);
+
+         --  This should share pragma Assert code ???
+         --  Run-time check is missing completely ???
+
+         when Pragma_Assume => Assume : declare
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            Analyze_And_Resolve (Expression (Arg1), Any_Boolean);
+         end Assume;
+
          ------------------------------
          -- Assume_No_Invalid_Values --
          ------------------------------
@@ -7347,7 +7482,7 @@ package body Sem_Prag is
 
             Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
 
-            if Check_On then
+            if Check_On and then not Split_PPC (N) then
                Set_SCO_Pragma_Enabled (Loc);
             end if;
 
@@ -7696,6 +7831,179 @@ package body Sem_Prag is
 
          when Pragma_Contract_Case =>
             Check_Contract_Or_Test_Case;
+
+         --------------------
+         -- Contract_Cases --
+         --------------------
+
+         --  pragma Contract_Cases (CONTRACT_CASE_LIST);
+
+         --  CONTRACT_CASE_LIST ::= CONTRACT_CASE {, CONTRACT_CASE}
+
+         --  CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
+
+         --  CASE_GUARD ::= boolean_EXPRESSION | others
+
+         --  CONSEQUENCE ::= boolean_EXPRESSION
+
+         when Pragma_Contract_Cases => Contract_Cases : declare
+            procedure Chain_Contract_Cases (Subp_Decl : Node_Id);
+            --  Chain pragma Contract_Cases to the contract of a subprogram.
+            --  Subp_Decl is the declaration of the subprogram.
+
+            --------------------------
+            -- Chain_Contract_Cases --
+            --------------------------
+
+            procedure Chain_Contract_Cases (Subp_Decl : Node_Id) is
+               Subp : constant Entity_Id :=
+                        Defining_Unit_Name (Specification (Subp_Decl));
+               CTC  : Node_Id;
+
+            begin
+               Check_Duplicate_Pragma (Subp);
+               CTC := Spec_CTC_List (Contract (Subp));
+               while Present (CTC) loop
+                  if Chars (Pragma_Identifier (CTC)) = Pname then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc := Sloc (CTC);
+
+                     if From_Aspect_Specification (CTC) then
+                        Error_Msg_NE
+                          ("aspect% for & previously given#", N, Subp);
+                     else
+                        Error_Msg_NE
+                          ("pragma% for & duplicates pragma#", N, Subp);
+                     end if;
+
+                     raise Pragma_Exit;
+                  end if;
+
+                  CTC := Next_Pragma (CTC);
+               end loop;
+
+               --  Prepend pragma Contract_Cases to the contract
+
+               Set_Next_Pragma (N, Spec_CTC_List (Contract (Subp)));
+               Set_Spec_CTC_List (Contract (Subp), N);
+            end Chain_Contract_Cases;
+
+            --  Local variables
+
+            Case_Guard    : Node_Id;
+            Decl          : Node_Id;
+            Extra         : Node_Id;
+            Others_Seen   : Boolean := False;
+            Contract_Case : Node_Id;
+            Subp_Decl     : Node_Id;
+
+         --  Start of processing for Contract_Cases
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Completely ignore if disabled
+
+            if Check_Disabled (Pname) then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
+            end if;
+
+            --  Check the placement of the pragma
+
+            if not Is_List_Member (N) then
+               Pragma_Misplaced;
+            end if;
+
+            --  Pragma Contract_Cases must be associated with a subprogram
+
+            Decl := N;
+            while Present (Prev (Decl)) loop
+               Decl := Prev (Decl);
+
+               if Nkind (Decl) in N_Generic_Declaration then
+                  Subp_Decl := Decl;
+               else
+                  Subp_Decl := Original_Node (Decl);
+               end if;
+
+               --  Skip prior pragmas
+
+               if Nkind (Subp_Decl) = N_Pragma then
+                  null;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Subp_Decl) then
+                  null;
+
+               --  We have found the related subprogram
+
+               elsif Nkind_In (Subp_Decl, N_Generic_Subprogram_Declaration,
+                                          N_Subprogram_Declaration)
+               then
+                  exit;
+
+               else
+                  Pragma_Misplaced;
+               end if;
+            end loop;
+
+            --  All contract cases must appear as an aggregate
+
+            if Nkind (Expression (Arg1)) /= N_Aggregate then
+               Error_Pragma ("wrong syntax for pragma %");
+               return;
+            end if;
+
+            --  Verify the legality of individual contract cases
+
+            Contract_Case :=
+              First (Component_Associations (Expression (Arg1)));
+            while Present (Contract_Case) loop
+               if Nkind (Contract_Case) /= N_Component_Association then
+                  Error_Pragma_Arg
+                    ("wrong syntax in contract case", Contract_Case);
+                  return;
+               end if;
+
+               Case_Guard := First (Choices (Contract_Case));
+
+               --  Each contract case must have exactly on case guard
+
+               Extra := Next (Case_Guard);
+               if Present (Extra) then
+                  Error_Pragma_Arg
+                    ("contract case may have only one case guard", Extra);
+                  return;
+               end if;
+
+               --  Check the placement of "others" (if available)
+
+               if Nkind (Case_Guard) = N_Others_Choice then
+                  if Others_Seen then
+                     Error_Pragma_Arg
+                       ("only one others choice allowed in pragma %",
+                        Case_Guard);
+                     return;
+                  else
+                     Others_Seen := True;
+                  end if;
+
+               elsif Others_Seen then
+                  Error_Pragma_Arg
+                    ("others must be the last choice in pragma %", N);
+                  return;
+               end if;
+
+               Next (Contract_Case);
+            end loop;
+
+            Chain_Contract_Cases (Subp_Decl);
+         end Contract_Cases;
 
          ----------------
          -- Controlled --
@@ -11275,74 +11583,17 @@ package body Sem_Prag is
          end Long_Float;
 
          --------------------
-         -- Loop_Assertion --
+         -- Loop_Invariant --
          --------------------
 
-         --  pragma Loop_Assertion
-         --        (  [Invariant =>] boolean_Expression );
-         --     |  ( [[Invariant =>] boolean_Expression ,]
-         --            Variant   =>
-         --              ( TERMINATION_VARIANT {, TERMINATION_VARIANT ) );
+         --  pragma Loop_Invariant ( boolean_EXPRESSION );
 
-         --  TERMINATION_VARIANT ::= CHANGE_MODIFIER => discrete_EXPRESSION
-
-         --  CHANGE_MODIFIER ::= Increasing | Decreasing
-
-         when Pragma_Loop_Assertion => Loop_Assertion : declare
-            procedure Check_Variant (Arg : Node_Id);
-            --  Verify the legality of a variant
-
-            -------------------
-            -- Check_Variant --
-            -------------------
-
-            procedure Check_Variant (Arg : Node_Id) is
-               Expr : constant Node_Id := Expression (Arg);
-
-            begin
-               --  Variants appear in aggregate form
-
-               if Nkind (Expr) = N_Aggregate then
-                  declare
-                     Comp  : Node_Id;
-                     Extra : Node_Id;
-                     Modif : Node_Id;
-
-                  begin
-                     Comp := First (Component_Associations (Expr));
-                     while Present (Comp) loop
-                        Modif := First (Choices (Comp));
-                        Extra := Next (Modif);
-
-                        Check_Arg_Is_One_Of
-                          (Modif, Name_Decreasing, Name_Increasing);
-
-                        if Present (Extra) then
-                           Error_Pragma_Arg
-                             ("only one modifier allowed in argument", Expr);
-                        end if;
-
-                        Preanalyze_And_Resolve
-                          (Expression (Comp), Any_Discrete);
-
-                        Next (Comp);
-                     end loop;
-                  end;
-               else
-                  Error_Pragma_Arg
-                    ("expression on variant must be an aggregate", Expr);
-               end if;
-            end Check_Variant;
-
-            --  Local variables
-
-            Stmt : Node_Id;
-
-         --  Start of processing for Loop_Assertion
-
+         when Pragma_Loop_Invariant => Loop_Invariant : declare
          begin
             GNAT_Pragma;
             S14_Pragma;
+            Check_Arg_Count (1);
+            Check_Loop_Invariant_Variant_Placement;
 
             --  Completely ignore if disabled
 
@@ -11352,56 +11603,68 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  Verify that the pragma appears inside a loop
+            Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
 
-            Stmt := N;
-            while Present (Stmt) and then Nkind (Stmt) /= N_Loop_Statement loop
-               Stmt := Parent (Stmt);
-            end loop;
+            --  Transform pragma Loop_Invariant into equivalent pragma Check
+            --  Generate:
+            --    pragma Check (Loop_Invaraint, Arg1);
 
-            if No (Stmt) then
-               Error_Pragma ("pragma % must appear inside a loop");
-            end if;
+            --  Seems completely wrong to hijack pragma Check this way ???
 
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Check,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_Loop_Invariant)),
+                  Relocate_Node (Arg1))));
+
+            Analyze (N);
+         end Loop_Invariant;
+
+         ------------------
+         -- Loop_Variant --
+         ------------------
+
+         --  pragma Loop_Variant
+         --         ( LOOP_VARIANT_ITEM {, LOOP_VARIANT_ITEM } );
+
+         --  LOOP_VARIANT_ITEM ::= CHANGE_DIRECTION => discrete_EXPRESSION
+
+         --  CHANGE_DIRECTION ::= Increases | Decreases
+
+         when Pragma_Loop_Variant => Loop_Variant : declare
+            Variant : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
             Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments  (2);
+            Check_Loop_Invariant_Variant_Placement;
 
-            --  Process the first argument
+            --  Completely ignore if disabled
 
-            if Chars (Arg1) = Name_Variant then
-               Check_Variant (Arg1);
-
-            elsif Chars (Arg1) = No_Name
-              or else Chars (Arg1) = Name_Invariant
-            then
-               Preanalyze_And_Resolve (Expression (Arg1), Any_Boolean);
-
-            else
-               Error_Pragma_Arg ("argument not allowed in pragma %", Arg1);
+            if Check_Disabled (Pname) then
+               Rewrite (N, Make_Null_Statement (Loc));
+               Analyze (N);
+               return;
             end if;
 
-            --  Process the second argument
+            --  Process all increasing / decreasing expressions
 
-            if Present (Arg2) then
-               if Chars (Arg2) = Name_Variant then
-                  if Chars (Arg1) = Name_Variant then
-                     Error_Pragma ("only one variant allowed in pragma %");
-                  else
-                     Check_Variant (Arg2);
-                  end if;
-
-               elsif Chars (Arg2) = Name_Invariant then
-                  if Chars (Arg1) = Name_Variant then
-                     Error_Pragma_Arg ("invariant must precede variant", Arg2);
-                  else
-                     Error_Pragma ("only one invariant allowed in pragma %");
-                  end if;
-
-               else
-                  Error_Pragma_Arg ("argument not allowed in pragma %", Arg2);
+            Variant := First (Pragma_Argument_Associations (N));
+            while Present (Variant) loop
+               if Chars (Variant) /= Name_Decreases
+                 and then Chars (Variant) /= Name_Increases
+               then
+                  Error_Pragma_Arg ("wrong change modifier", Variant);
                end if;
-            end if;
-         end Loop_Assertion;
+
+               Preanalyze_And_Resolve (Expression (Variant), Any_Discrete);
+
+               Next (Variant);
+            end loop;
+         end Loop_Variant;
 
          -----------------------
          -- Machine_Attribute --
@@ -11990,11 +12253,11 @@ package body Sem_Prag is
             Optimize_Alignment_Local := True;
          end Optimize_Alignment;
 
-         ---------------------
-         -- Overflow_Checks --
-         ---------------------
+         -------------------
+         -- Overflow_Mode --
+         -------------------
 
-         --  pragma Overflow_Checks
+         --  pragma Overflow_Mode
          --    ([General => ] MODE [, [Assertions => ] MODE]);
 
          --  MODE := STRICT | MINIMIZED | ELIMINATED
@@ -12003,21 +12266,21 @@ package body Sem_Prag is
          --  since System.Bignums makes this assumption. This is true of nearly
          --  all (all?) targets.
 
-         when Pragma_Overflow_Checks => Overflow_Checks : declare
-            function Get_Check_Mode
+         when Pragma_Overflow_Mode => Overflow_Mode : declare
+            function Get_Overflow_Mode
               (Name : Name_Id;
-               Arg  : Node_Id) return Overflow_Check_Type;
+               Arg  : Node_Id) return Overflow_Mode_Type;
             --  Function to process one pragma argument, Arg. If an identifier
-            --  is present, it must be Name. Check type is returned if a valid
+            --  is present, it must be Name. Mode type is returned if a valid
             --  argument exists, otherwise an error is signalled.
 
-            --------------------
-            -- Get_Check_Mode --
-            --------------------
+            -----------------------
+            -- Get_Overflow_Mode --
+            -----------------------
 
-            function Get_Check_Mode
+            function Get_Overflow_Mode
               (Name : Name_Id;
-               Arg  : Node_Id) return Overflow_Check_Type
+               Arg  : Node_Id) return Overflow_Mode_Type
             is
                Argx : constant Node_Id := Get_Pragma_Arg (Arg);
 
@@ -12042,9 +12305,9 @@ package body Sem_Prag is
                else
                   Error_Pragma_Arg ("invalid argument for pragma%", Argx);
                end if;
-            end Get_Check_Mode;
+            end Get_Overflow_Mode;
 
-         --  Start of processing for Overflow_Checks
+         --  Start of processing for Overflow_Mode
 
          begin
             GNAT_Pragma;
@@ -12053,22 +12316,22 @@ package body Sem_Prag is
 
             --  Process first argument
 
-            Scope_Suppress.Overflow_Checks_General :=
-              Get_Check_Mode (Name_General, Arg1);
+            Scope_Suppress.Overflow_Mode_General :=
+              Get_Overflow_Mode (Name_General, Arg1);
 
             --  Case of only one argument
 
             if Arg_Count = 1 then
-               Scope_Suppress.Overflow_Checks_Assertions :=
-                 Scope_Suppress.Overflow_Checks_General;
+               Scope_Suppress.Overflow_Mode_Assertions :=
+                 Scope_Suppress.Overflow_Mode_General;
 
             --  Case of two arguments present
 
             else
-               Scope_Suppress.Overflow_Checks_Assertions  :=
-                 Get_Check_Mode (Name_Assertions, Arg2);
+               Scope_Suppress.Overflow_Mode_Assertions  :=
+                 Get_Overflow_Mode (Name_Assertions, Arg2);
             end if;
-         end Overflow_Checks;
+         end Overflow_Mode;
 
          -------------
          -- Ordered --
@@ -15435,6 +15698,7 @@ package body Sem_Prag is
       Pragma_Assert                         => -1,
       Pragma_Assert_And_Cut                 => -1,
       Pragma_Assertion_Policy               =>  0,
+      Pragma_Assume                         =>  0,
       Pragma_Assume_No_Invalid_Values       =>  0,
       Pragma_Attribute_Definition           => +3,
       Pragma_Asynchronous                   => -1,
@@ -15460,6 +15724,7 @@ package body Sem_Prag is
       Pragma_Complex_Representation         =>  0,
       Pragma_Component_Alignment            => -1,
       Pragma_Contract_Case                  => -1,
+      Pragma_Contract_Cases                 => -1,
       Pragma_Controlled                     =>  0,
       Pragma_Convention                     =>  0,
       Pragma_Convention_Identifier          =>  0,
@@ -15528,7 +15793,8 @@ package body Sem_Prag is
       Pragma_Lock_Free                      => -1,
       Pragma_Locking_Policy                 => -1,
       Pragma_Long_Float                     => -1,
-      Pragma_Loop_Assertion                 => -1,
+      Pragma_Loop_Invariant                 => -1,
+      Pragma_Loop_Variant                   => -1,
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,
@@ -15541,7 +15807,7 @@ package body Sem_Prag is
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       => -1,
       Pragma_Optimize_Alignment             => -1,
-      Pragma_Overflow_Checks                =>  0,
+      Pragma_Overflow_Mode                  =>  0,
       Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           => -1,

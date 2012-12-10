@@ -658,6 +658,10 @@ package body Debug is
    --       reverts to the behavior of earlier compilers, which ignored
    --       indirect calls.
 
+   --  d.V  Extensions for formal verification. New attributes/aspects/pragmas
+   --       defined in GNAT for formal verification with the tool GNATprove are
+   --       only accepted under this switch.
+
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.

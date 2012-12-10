@@ -80,10 +80,11 @@ Expression::do_traverse(Traverse*)
 // expression is being discarded.  By default, we give an error.
 // Expressions with side effects override.
 
-void
+bool
 Expression::do_discarding_value()
 {
   this->unused_value_error();
+  return false;
 }
 
 // This virtual function is called to export expressions.  This will
@@ -100,7 +101,7 @@ Expression::do_export(Export*) const
 void
 Expression::unused_value_error()
 {
-  error_at(this->location(), "value computed is not used");
+  this->report_error(_("value computed is not used"));
 }
 
 // Note that this expression is an error.  This is called by children
@@ -786,9 +787,9 @@ class Error_expression : public Expression
     return true;
   }
 
-  void
+  bool
   do_discarding_value()
-  { }
+  { return true; }
 
   Type*
   do_type()
@@ -1149,9 +1150,9 @@ class Sink_expression : public Expression
   { }
 
  protected:
-  void
+  bool
   do_discarding_value()
-  { }
+  { return true; }
 
   Type*
   do_type();
@@ -5326,13 +5327,16 @@ Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
 
 // Note that the value is being discarded.
 
-void
+bool
 Binary_expression::do_discarding_value()
 {
   if (this->op_ == OPERATOR_OROR || this->op_ == OPERATOR_ANDAND)
-    this->right_->discarding_value();
+    return this->right_->discarding_value();
   else
-    this->unused_value_error();
+    {
+      this->unused_value_error();
+      return false;
+    }
 }
 
 // Get type.
@@ -5606,6 +5610,11 @@ Binary_expression::do_check_types(Gogo*)
       || this->op_ == OPERATOR_GT
       || this->op_ == OPERATOR_GE)
     {
+      if (left_type->is_nil_type() && right_type->is_nil_type())
+	{
+	  this->report_error(_("invalid comparison of nil with nil"));
+	  return;
+	}
       if (!Type::are_assignable(left_type, right_type, NULL)
 	  && !Type::are_assignable(right_type, left_type, NULL))
 	{
@@ -6536,7 +6545,7 @@ class Builtin_call_expression : public Call_expression
   bool
   do_numeric_constant_value(Numeric_constant*) const;
 
-  void
+  bool
   do_discarding_value();
 
   Type*
@@ -6614,7 +6623,7 @@ class Builtin_call_expression : public Call_expression
   lower_make();
 
   bool
-  check_int_value(Expression*);
+  check_int_value(Expression*, bool is_length);
 
   // A pointer back to the general IR structure.  This avoids a global
   // variable, or passing it around everywhere.
@@ -6888,11 +6897,8 @@ Builtin_call_expression::lower_make()
   else
     {
       len_arg = *parg;
-      if (!this->check_int_value(len_arg))
-	{
-	  this->report_error(_("bad size for make"));
-	  return Expression::make_error(this->location());
-	}
+      if (!this->check_int_value(len_arg, true))
+	return Expression::make_error(this->location());
       if (len_arg->type()->integer_type() != NULL
 	  && len_arg->type()->integer_type()->bits() > uintptr_bits)
 	have_big_args = true;
@@ -6903,11 +6909,23 @@ Builtin_call_expression::lower_make()
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
-      if (!this->check_int_value(cap_arg))
+      if (!this->check_int_value(cap_arg, false))
+	return Expression::make_error(this->location());
+
+      Numeric_constant nclen;
+      Numeric_constant nccap;
+      unsigned long vlen;
+      unsigned long vcap;
+      if (len_arg->numeric_constant_value(&nclen)
+	  && cap_arg->numeric_constant_value(&nccap)
+	  && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
+	  && nccap.to_unsigned_long(&vcap) == Numeric_constant::NC_UL_VALID
+	  && vlen > vcap)
 	{
-	  this->report_error(_("bad capacity when making slice"));
+	  this->report_error(_("len larger than cap"));
 	  return Expression::make_error(this->location());
 	}
+
       if (cap_arg->type()->integer_type() != NULL
 	  && cap_arg->type()->integer_type()->bits() > uintptr_bits)
 	have_big_args = true;
@@ -6964,20 +6982,36 @@ Builtin_call_expression::lower_make()
 // function.
 
 bool
-Builtin_call_expression::check_int_value(Expression* e)
+Builtin_call_expression::check_int_value(Expression* e, bool is_length)
 {
+  Numeric_constant nc;
+  if (e->numeric_constant_value(&nc))
+    {
+      unsigned long v;
+      switch (nc.to_unsigned_long(&v))
+	{
+	case Numeric_constant::NC_UL_VALID:
+	  return true;
+	case Numeric_constant::NC_UL_NOTINT:
+	  error_at(e->location(), "non-integer %s argument to make",
+		   is_length ? "len" : "cap");
+	  return false;
+	case Numeric_constant::NC_UL_NEGATIVE:
+	  error_at(e->location(), "negative %s argument to make",
+		   is_length ? "len" : "cap");
+	  return false;
+	case Numeric_constant::NC_UL_BIG:
+	  // We don't want to give a compile-time error for a 64-bit
+	  // value on a 32-bit target.
+	  return true;
+	}
+    }
+
   if (e->type()->integer_type() != NULL)
     return true;
 
-  // Check for a floating point constant with integer value.
-  Numeric_constant nc;
-  mpz_t ival;
-  if (e->numeric_constant_value(&nc) && nc.to_int(&ival))
-    {
-      mpz_clear(ival);
-      return true;
-    }
-
+  error_at(e->location(), "non-integer %s argument to make",
+	   is_length ? "len" : "cap");
   return false;
 }
 
@@ -7338,7 +7372,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 // discarding the value of an ordinary function call, but we do for
 // builtin functions, purely for consistency with the gc compiler.
 
-void
+bool
 Builtin_call_expression::do_discarding_value()
 {
   switch (this->code_)
@@ -7359,7 +7393,7 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_OFFSETOF:
     case BUILTIN_SIZEOF:
       this->unused_value_error();
-      break;
+      return false;
 
     case BUILTIN_CLOSE:
     case BUILTIN_COPY:
@@ -7368,7 +7402,7 @@ Builtin_call_expression::do_discarding_value()
     case BUILTIN_PRINT:
     case BUILTIN_PRINTLN:
     case BUILTIN_RECOVER:
-      break;
+      return true;
     }
 }
 
@@ -8509,6 +8543,16 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       && this->args_->size() == 1)
     return Expression::make_cast(this->fn_->type(), this->args_->front(),
 				 loc);
+
+  // Because do_type will return an error type and thus prevent future
+  // errors, check for that case now to ensure that the error gets
+  // reported.
+  if (this->get_function_type() == NULL)
+    {
+      if (!this->fn_->type()->is_error())
+	this->report_error(_("expected function"));
+      return Expression::make_error(loc);
+    }
 
   // Recognize a call to a builtin function.
   Func_expression* fne = this->fn_->func_expression();
@@ -9761,8 +9805,10 @@ Array_index_expression::do_check_types(Gogo*)
 		     && lvalnc.to_int(&lval));
   Numeric_constant inc;
   mpz_t ival;
+  bool ival_valid = false;
   if (this->start_->numeric_constant_value(&inc) && inc.to_int(&ival))
     {
+      ival_valid = true;
       if (mpz_sgn(ival) < 0
 	  || mpz_sizeinbase(ival, 2) >= int_bits
 	  || (lval_valid
@@ -9773,7 +9819,6 @@ Array_index_expression::do_check_types(Gogo*)
 	  error_at(this->start_->location(), "array index out of bounds");
 	  this->set_is_error();
 	}
-      mpz_clear(ival);
     }
   if (this->end_ != NULL && !this->end_->is_nil_expression())
     {
@@ -9788,9 +9833,13 @@ Array_index_expression::do_check_types(Gogo*)
 	      error_at(this->end_->location(), "array index out of bounds");
 	      this->set_is_error();
 	    }
+	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
+	    this->report_error(_("inverted slice range"));
 	  mpz_clear(eval);
 	}
     }
+  if (ival_valid)
+    mpz_clear(ival);
   if (lval_valid)
     mpz_clear(lval);
 
@@ -10171,15 +10220,16 @@ String_index_expression::do_check_types(Gogo*)
 
   Numeric_constant inc;
   mpz_t ival;
+  bool ival_valid = false;
   if (this->start_->numeric_constant_value(&inc) && inc.to_int(&ival))
     {
+      ival_valid = true;
       if (mpz_sgn(ival) < 0
 	  || (sval_valid && mpz_cmp_ui(ival, sval.length()) >= 0))
 	{
 	  error_at(this->start_->location(), "string index out of bounds");
 	  this->set_is_error();
 	}
-      mpz_clear(ival);
     }
   if (this->end_ != NULL && !this->end_->is_nil_expression())
     {
@@ -10193,9 +10243,13 @@ String_index_expression::do_check_types(Gogo*)
 	      error_at(this->end_->location(), "string index out of bounds");
 	      this->set_is_error();
 	    }
+	  else if (ival_valid && mpz_cmp(ival, eval) > 0)
+	    this->report_error(_("inverted slice range"));
 	  mpz_clear(eval);
 	}
     }
+  if (ival_valid)
+    mpz_clear(ival);
 }
 
 // Get a tree for a string index.

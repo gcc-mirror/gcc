@@ -658,6 +658,11 @@ package Opt is
    --  True when switch -fdebug-instances is used. When True, a table of
    --  instances is included in SCOs.
 
+   Generate_Target_Dependent_Info : Boolean := False;
+   --  GNAT
+   --  When true (-gnatet switch used). True if target dependent info is to be
+   --  generated in the ali file.
+
    Generating_Code : Boolean := False;
    --  GNAT
    --  True if the frontend finished its work and has called the backend to

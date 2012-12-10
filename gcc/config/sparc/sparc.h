@@ -1379,7 +1379,8 @@ do {									\
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in local-alloc.c.  */
+   has been allocated, which happens in reginfo.c during register
+   allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
 (SPARC_INT_REG_P (REGNO) || SPARC_INT_REG_P (reg_renumber[REGNO]) \

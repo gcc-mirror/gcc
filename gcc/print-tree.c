@@ -255,7 +255,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   /* Allow this function to be called if the table is not there.  */
   if (table)
     {
-      hash = ((unsigned long) node) % HASH_SIZE;
+      hash = ((uintptr_t) node) % HASH_SIZE;
 
       /* If node is in the table, just mention its address.  */
       for (b = table[hash]; b; b = b->next)

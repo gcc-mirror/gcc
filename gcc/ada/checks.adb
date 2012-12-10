@@ -387,8 +387,10 @@ package body Checks is
 
    procedure Activate_Overflow_Check (N : Node_Id) is
    begin
-      Set_Do_Overflow_Check (N, True);
-      Possible_Local_Raise (N, Standard_Constraint_Error);
+      if not Nkind_In (N, N_Op_Rem, N_Op_Mod, N_Op_Plus) then
+         Set_Do_Overflow_Check (N, True);
+         Possible_Local_Raise (N, Standard_Constraint_Error);
+      end if;
    end Activate_Overflow_Check;
 
    --------------------------
@@ -1091,7 +1093,7 @@ package body Checks is
       Result_Type : constant Entity_Id := Etype (Op);
       --  Original result type
 
-      Check_Mode : constant Overflow_Check_Type := Overflow_Check_Mode;
+      Check_Mode : constant Overflow_Mode_Type := Overflow_Check_Mode;
       pragma Assert (Check_Mode in Minimized_Or_Eliminated);
 
       Lo, Hi : Uint;
@@ -1682,7 +1684,7 @@ package body Checks is
       Left  : constant Node_Id    := Left_Opnd (N);
       Right : constant Node_Id    := Right_Opnd (N);
 
-      Mode : constant Overflow_Check_Type := Overflow_Check_Mode;
+      Mode : constant Overflow_Mode_Type := Overflow_Check_Mode;
       --  Current overflow checking mode
 
       LLB : Uint;
@@ -4425,7 +4427,7 @@ package body Checks is
 
    procedure Enable_Overflow_Check (N : Node_Id) is
       Typ  : constant Entity_Id           := Base_Type (Etype (N));
-      Mode : constant Overflow_Check_Type := Overflow_Check_Mode;
+      Mode : constant Overflow_Mode_Type := Overflow_Check_Mode;
       Chk  : Nat;
       OK   : Boolean;
       Ent  : Entity_Id;
@@ -6738,7 +6740,7 @@ package body Checks is
       pragma Assert (Is_Signed_Integer_Type (Rtyp));
       --  Result type, must be a signed integer type
 
-      Check_Mode : constant Overflow_Check_Type := Overflow_Check_Mode;
+      Check_Mode : constant Overflow_Mode_Type := Overflow_Check_Mode;
       pragma Assert (Check_Mode in Minimized_Or_Eliminated);
 
       Loc : constant Source_Ptr := Sloc (N);
@@ -6848,16 +6850,16 @@ package body Checks is
       ---------------
 
       procedure Reanalyze (Typ : Entity_Id; Suppress : Boolean := False) is
-         Svg : constant Overflow_Check_Type :=
-                 Scope_Suppress.Overflow_Checks_General;
-         Sva : constant Overflow_Check_Type :=
-                 Scope_Suppress.Overflow_Checks_Assertions;
+         Svg : constant Overflow_Mode_Type :=
+                 Scope_Suppress.Overflow_Mode_General;
+         Sva : constant Overflow_Mode_Type :=
+                 Scope_Suppress.Overflow_Mode_Assertions;
          Svo : constant Boolean             :=
                  Scope_Suppress.Suppress (Overflow_Check);
 
       begin
-         Scope_Suppress.Overflow_Checks_General    := Strict;
-         Scope_Suppress.Overflow_Checks_Assertions := Strict;
+         Scope_Suppress.Overflow_Mode_General    := Strict;
+         Scope_Suppress.Overflow_Mode_Assertions := Strict;
 
          if Suppress then
             Scope_Suppress.Suppress (Overflow_Check) := True;
@@ -6866,8 +6868,8 @@ package body Checks is
          Analyze_And_Resolve (N, Typ);
 
          Scope_Suppress.Suppress (Overflow_Check)  := Svo;
-         Scope_Suppress.Overflow_Checks_General    := Svg;
-         Scope_Suppress.Overflow_Checks_Assertions := Sva;
+         Scope_Suppress.Overflow_Mode_General    := Svg;
+         Scope_Suppress.Overflow_Mode_Assertions := Sva;
       end Reanalyze;
 
       --------------
@@ -6875,16 +6877,16 @@ package body Checks is
       --------------
 
       procedure Reexpand (Suppress : Boolean := False) is
-         Svg : constant Overflow_Check_Type :=
-                 Scope_Suppress.Overflow_Checks_General;
-         Sva : constant Overflow_Check_Type :=
-                 Scope_Suppress.Overflow_Checks_Assertions;
+         Svg : constant Overflow_Mode_Type :=
+                 Scope_Suppress.Overflow_Mode_General;
+         Sva : constant Overflow_Mode_Type :=
+                 Scope_Suppress.Overflow_Mode_Assertions;
          Svo : constant Boolean             :=
                  Scope_Suppress.Suppress (Overflow_Check);
 
       begin
-         Scope_Suppress.Overflow_Checks_General    := Strict;
-         Scope_Suppress.Overflow_Checks_Assertions := Strict;
+         Scope_Suppress.Overflow_Mode_General    := Strict;
+         Scope_Suppress.Overflow_Mode_Assertions := Strict;
          Set_Analyzed (N, False);
 
          if Suppress then
@@ -6894,8 +6896,8 @@ package body Checks is
          Expand (N);
 
          Scope_Suppress.Suppress (Overflow_Check)  := Svo;
-         Scope_Suppress.Overflow_Checks_General    := Svg;
-         Scope_Suppress.Overflow_Checks_Assertions := Sva;
+         Scope_Suppress.Overflow_Mode_General    := Svg;
+         Scope_Suppress.Overflow_Mode_Assertions := Sva;
       end Reexpand;
 
    --  Start of processing for Minimize_Eliminate_Overflows
@@ -7606,14 +7608,14 @@ package body Checks is
       --  MINIMIZED/ELIMINATED handling, since we are now done with that!
 
       declare
-         SG : constant Overflow_Check_Type :=
-                Scope_Suppress.Overflow_Checks_General;
-         SA : constant Overflow_Check_Type :=
-                Scope_Suppress.Overflow_Checks_Assertions;
+         SG : constant Overflow_Mode_Type :=
+                Scope_Suppress.Overflow_Mode_General;
+         SA : constant Overflow_Mode_Type :=
+                Scope_Suppress.Overflow_Mode_Assertions;
 
       begin
-         Scope_Suppress.Overflow_Checks_General    := Strict;
-         Scope_Suppress.Overflow_Checks_Assertions := Strict;
+         Scope_Suppress.Overflow_Mode_General    := Strict;
+         Scope_Suppress.Overflow_Mode_Assertions := Strict;
 
          if not Do_Overflow_Check (N) then
             Reanalyze (LLIB, Suppress => True);
@@ -7621,8 +7623,8 @@ package body Checks is
             Reanalyze (LLIB);
          end if;
 
-         Scope_Suppress.Overflow_Checks_General    := SG;
-         Scope_Suppress.Overflow_Checks_Assertions := SA;
+         Scope_Suppress.Overflow_Mode_General    := SG;
+         Scope_Suppress.Overflow_Mode_Assertions := SA;
       end;
    end Minimize_Eliminate_Overflows;
 
@@ -7630,12 +7632,12 @@ package body Checks is
    -- Overflow_Check_Mode --
    -------------------------
 
-   function Overflow_Check_Mode return Overflow_Check_Type is
+   function Overflow_Check_Mode return Overflow_Mode_Type is
    begin
       if In_Assertion_Expr = 0 then
-         return Scope_Suppress.Overflow_Checks_General;
+         return Scope_Suppress.Overflow_Mode_General;
       else
-         return Scope_Suppress.Overflow_Checks_Assertions;
+         return Scope_Suppress.Overflow_Mode_Assertions;
       end if;
    end Overflow_Check_Mode;
 

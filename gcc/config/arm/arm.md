@@ -58,112 +58,6 @@
   ]
 )
 
-;; UNSPEC Usage:
-;; Note: sin and cos are no-longer used.
-;; Unspec enumerators for Neon are defined in neon.md.
-;; Unspec enumerators for iwmmxt2 are defined in iwmmxt2.md
-
-(define_c_enum "unspec" [
-  UNSPEC_PUSH_MULT      ; `push multiple' operation:
-                        ;   operand 0 is the first register,
-                        ;   subsequent registers are in parallel (use ...)
-                        ;   expressions.
-  UNSPEC_PIC_SYM        ; A symbol that has been treated properly for pic
-                        ; usage, that is, we will add the pic_register
-                        ; value to it before trying to dereference it.
-  UNSPEC_PIC_BASE       ; Add PC and all but the last operand together,
-                        ; The last operand is the number of a PIC_LABEL
-                        ; that points at the containing instruction.
-  UNSPEC_PRLG_STK       ; A special barrier that prevents frame accesses
-                        ; being scheduled before the stack adjustment insn.
-  UNSPEC_REGISTER_USE   ; As USE insns are not meaningful after reload,
-                        ; this unspec is used to prevent the deletion of
-                        ; instructions setting registers for EH handling
-                        ; and stack frame generation.  Operand 0 is the
-                        ; register to "use".
-  UNSPEC_CHECK_ARCH     ; Set CCs to indicate 26-bit or 32-bit mode.
-  UNSPEC_WSHUFH         ; Used by the intrinsic form of the iWMMXt WSHUFH instruction.
-  UNSPEC_WACC           ; Used by the intrinsic form of the iWMMXt WACC instruction.
-  UNSPEC_TMOVMSK        ; Used by the intrinsic form of the iWMMXt TMOVMSK instruction.
-  UNSPEC_WSAD           ; Used by the intrinsic form of the iWMMXt WSAD instruction.
-  UNSPEC_WSADZ          ; Used by the intrinsic form of the iWMMXt WSADZ instruction.
-  UNSPEC_WMACS          ; Used by the intrinsic form of the iWMMXt WMACS instruction.
-  UNSPEC_WMACU          ; Used by the intrinsic form of the iWMMXt WMACU instruction.
-  UNSPEC_WMACSZ         ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
-  UNSPEC_WMACUZ         ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
-  UNSPEC_CLRDI          ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
-  UNSPEC_WALIGNI        ; Used by the intrinsic form of the iWMMXt WALIGN instruction.
-  UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
-  UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
-                        ; instruction stream.
-  UNSPEC_PIC_OFFSET     ; A symbolic 12-bit OFFSET that has been treated
-                        ; correctly for PIC usage.
-  UNSPEC_GOTSYM_OFF     ; The offset of the start of the GOT from a
-                        ; a given symbolic address.
-  UNSPEC_THUMB1_CASESI  ; A Thumb1 compressed dispatch-table call.
-  UNSPEC_RBIT           ; rbit operation.
-  UNSPEC_SYMBOL_OFFSET  ; The offset of the start of the symbol from
-                        ; another symbolic address.
-  UNSPEC_MEMORY_BARRIER ; Represent a memory barrier.
-  UNSPEC_UNALIGNED_LOAD	; Used to represent ldr/ldrh instructions that access
-			; unaligned locations, on architectures which support
-			; that.
-  UNSPEC_UNALIGNED_STORE ; Same for str/strh.
-  UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
-  UNSPEC_LL		; Represent an unpaired load-register-exclusive.
-  UNSPEC_VRINTZ         ; Represent a float to integral float rounding
-                        ; towards zero.
-  UNSPEC_VRINTP         ; Represent a float to integral float rounding
-                        ; towards +Inf.
-  UNSPEC_VRINTM         ; Represent a float to integral float rounding
-                        ; towards -Inf.
-  UNSPEC_VRINTR         ; Represent a float to integral float rounding
-                        ; FPSCR rounding mode.
-  UNSPEC_VRINTX         ; Represent a float to integral float rounding
-                        ; FPSCR rounding mode and signal inexactness.
-  UNSPEC_VRINTA         ; Represent a float to integral float rounding
-                        ; towards nearest, ties away from zero.
-])
-
-;; UNSPEC_VOLATILE Usage:
-
-(define_c_enum "unspecv" [
-  VUNSPEC_BLOCKAGE      ; `blockage' insn to prevent scheduling across an
-                        ;   insn in the code.
-  VUNSPEC_EPILOGUE      ; `epilogue' insn, used to represent any part of the
-                        ;   instruction epilogue sequence that isn't expanded
-                        ;   into normal RTL.  Used for both normal and sibcall
-                        ;   epilogues.
-  VUNSPEC_THUMB1_INTERWORK ; `prologue_thumb1_interwork' insn, used to swap
-			;   modes from arm to thumb.
-  VUNSPEC_ALIGN         ; `align' insn.  Used at the head of a minipool table
-                        ;   for inlined constants.
-  VUNSPEC_POOL_END      ; `end-of-table'.  Used to mark the end of a minipool
-                        ;   table.
-  VUNSPEC_POOL_1        ; `pool-entry(1)'.  An entry in the constant pool for
-                        ;   an 8-bit object.
-  VUNSPEC_POOL_2        ; `pool-entry(2)'.  An entry in the constant pool for
-                        ;   a 16-bit object.
-  VUNSPEC_POOL_4        ; `pool-entry(4)'.  An entry in the constant pool for
-                        ;   a 32-bit object.
-  VUNSPEC_POOL_8        ; `pool-entry(8)'.  An entry in the constant pool for
-                        ;   a 64-bit object.
-  VUNSPEC_POOL_16       ; `pool-entry(16)'.  An entry in the constant pool for
-                        ;   a 128-bit object.
-  VUNSPEC_TMRC          ; Used by the iWMMXt TMRC instruction.
-  VUNSPEC_TMCR          ; Used by the iWMMXt TMCR instruction.
-  VUNSPEC_ALIGN8        ; 8-byte alignment version of VUNSPEC_ALIGN
-  VUNSPEC_WCMP_EQ       ; Used by the iWMMXt WCMPEQ instructions
-  VUNSPEC_WCMP_GTU      ; Used by the iWMMXt WCMPGTU instructions
-  VUNSPEC_WCMP_GT       ; Used by the iwMMXT WCMPGT instructions
-  VUNSPEC_EH_RETURN     ; Use to override the return address for exception
-                        ; handling.
-  VUNSPEC_ATOMIC_CAS	; Represent an atomic compare swap.
-  VUNSPEC_ATOMIC_XCHG	; Represent an atomic exchange.
-  VUNSPEC_ATOMIC_OP	; Represent an atomic operation.
-  VUNSPEC_LL		; Represent a load-register-exclusive.
-  VUNSPEC_SC		; Represent a store-register-exclusive.
-])
 
 ;;---------------------------------------------------------------------------
 ;; Attributes
@@ -572,6 +466,11 @@
 ;; The number of machine instructions this pattern expands to.
 ;; Used for Thumb-2 conditional execution.
 (define_attr "ce_count" "" (const_int 1))
+
+;;---------------------------------------------------------------------------
+;; Unspecs
+
+(include "unspecs.md")
 
 ;;---------------------------------------------------------------------------
 ;; Mode iterators

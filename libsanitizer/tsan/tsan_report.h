@@ -56,6 +56,8 @@ struct ReportLocation {
   ReportLocationType type;
   uptr addr;
   uptr size;
+  char *module;
+  uptr offset;
   int tid;
   char *name;
   char *file;

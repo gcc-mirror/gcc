@@ -2107,6 +2107,22 @@ proc check_effective_target_arm_v8_vfp_ok {} {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=neon-fp-armv8
+# -mfloat-abi=softfp
+proc check_effective_target_arm_v8_neon_ok {} {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_v8_neon_ok object {
+	  int foo (void)
+	  {
+	     __asm__ volatile ("vrintn.f32 q0, q0");
+	       return 0;
+	  }
+	} "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=vfp
 # -mfloat-abi=hard.  Some multilibs may be incompatible with these
 # options.
@@ -2164,6 +2180,13 @@ proc add_options_for_arm_v8_vfp { flags } {
         return "$flags"
     }
     return "$flags -mfpu=fp-armv8 -mfloat-abi=softfp"
+}
+
+proc add_options_for_arm_v8_neon { flags } {
+    if { ! [check_effective_target_arm_v8_neon_ok] } {
+        return "$flags"
+    }
+    return "$flags -mfpu=neon-fp-armv8 -mfloat-abi=softfp"
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
@@ -3014,6 +3037,7 @@ proc check_effective_target_vect_perm { } {
     } else {
         set et_vect_perm_saved 0
         if { [is-effective-target arm_neon_ok]
+	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
@@ -3040,6 +3064,7 @@ proc check_effective_target_vect_perm_byte { } {
     } else {
         set et_vect_perm_byte_saved 0
         if { [is-effective-target arm_neon_ok]
+	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
             set et_vect_perm_byte_saved 1
@@ -3062,6 +3087,7 @@ proc check_effective_target_vect_perm_short { } {
     } else {
         set et_vect_perm_short_saved 0
         if { [is-effective-target arm_neon_ok]
+	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
             set et_vect_perm_short_saved 1
@@ -3697,7 +3723,8 @@ proc check_effective_target_vect_char_mult { } {
 	verbose "check_effective_target_vect_char_mult: using cached result" 2
     } else {
 	set et_vect_char_mult_saved 0
-	if { [istarget ia64-*-*]
+	if { [istarget aarch64*-*-*]
+	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
             || [check_effective_target_arm32] } {
@@ -3768,8 +3795,9 @@ proc check_effective_target_vect_extract_even_odd { } {
         verbose "check_effective_target_vect_extract_even_odd: using cached result" 2
     } else {
         set et_vect_extract_even_odd_saved 0 
-        if { [istarget powerpc*-*-*] 
-            || [is-effective-target arm_neon_ok]
+	if { [istarget aarch64*-*-*]
+	     || [istarget powerpc*-*-*]
+	     || [is-effective-target arm_neon_ok]
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
              || [istarget ia64-*-*]
@@ -3793,8 +3821,9 @@ proc check_effective_target_vect_interleave { } {
         verbose "check_effective_target_vect_interleave: using cached result" 2
     } else {
         set et_vect_interleave_saved 0
-        if { [istarget powerpc*-*-*]
-            || [is-effective-target arm_neon_ok]
+	if { [istarget aarch64*-*-*]
+	     || [istarget powerpc*-*-*]
+	     || [is-effective-target arm_neon_ok]
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
              || [istarget ia64-*-*]
@@ -3923,6 +3952,222 @@ proc check_effective_target_vect_call_lrint { } {
 
     verbose "check_effective_target_vect_call_lrint: returning $et_vect_call_lrint" 2
     return $et_vect_call_lrint
+}
+
+# Return 1 if the target supports vector btrunc calls.
+
+proc check_effective_target_vect_call_btrunc { } {
+    global et_vect_call_btrunc_saved
+
+    if [info exists et_vect_call_btrunc_saved] {
+	verbose "check_effective_target_vect_call_btrunc: using cached result" 2
+    } else {
+	set et_vect_call_btrunc_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_btrunc_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_btrunc: returning $et_vect_call_btrunc_saved" 2
+    return $et_vect_call_btrunc_saved
+}
+
+# Return 1 if the target supports vector btruncf calls.
+
+proc check_effective_target_vect_call_btruncf { } {
+    global et_vect_call_btruncf_saved
+
+    if [info exists et_vect_call_btruncf_saved] {
+	verbose "check_effective_target_vect_call_btruncf: using cached result" 2
+    } else {
+	set et_vect_call_btruncf_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_btruncf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_btruncf: returning $et_vect_call_btruncf_saved" 2
+    return $et_vect_call_btruncf_saved
+}
+
+# Return 1 if the target supports vector ceil calls.
+
+proc check_effective_target_vect_call_ceil { } {
+    global et_vect_call_ceil_saved
+
+    if [info exists et_vect_call_ceil_saved] {
+	verbose "check_effective_target_vect_call_ceil: using cached result" 2
+    } else {
+	set et_vect_call_ceil_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_ceil_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_ceil: returning $et_vect_call_ceil_saved" 2
+    return $et_vect_call_ceil_saved
+}
+
+# Return 1 if the target supports vector ceilf calls.
+
+proc check_effective_target_vect_call_ceilf { } {
+    global et_vect_call_ceilf_saved
+
+    if [info exists et_vect_call_ceilf_saved] {
+	verbose "check_effective_target_vect_call_ceilf: using cached result" 2
+    } else {
+	set et_vect_call_ceilf_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_ceilf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_ceilf: returning $et_vect_call_ceilf_saved" 2
+    return $et_vect_call_ceilf_saved
+}
+
+# Return 1 if the target supports vector floor calls.
+
+proc check_effective_target_vect_call_floor { } {
+    global et_vect_call_floor_saved
+
+    if [info exists et_vect_call_floor_saved] {
+	verbose "check_effective_target_vect_call_floor: using cached result" 2
+    } else {
+	set et_vect_call_floor_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_floor_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_floor: returning $et_vect_call_floor_saved" 2
+    return $et_vect_call_floor_saved
+}
+
+# Return 1 if the target supports vector floorf calls.
+
+proc check_effective_target_vect_call_floorf { } {
+    global et_vect_call_floorf_saved
+
+    if [info exists et_vect_call_floorf_saved] {
+	verbose "check_effective_target_vect_call_floorf: using cached result" 2
+    } else {
+	set et_vect_call_floorf_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_floorf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_floorf: returning $et_vect_call_floorf_saved" 2
+    return $et_vect_call_floorf_saved
+}
+
+# Return 1 if the target supports vector lceil calls.
+
+proc check_effective_target_vect_call_lceil { } {
+    global et_vect_call_lceil_saved
+
+    if [info exists et_vect_call_lceil_saved] {
+	verbose "check_effective_target_vect_call_lceil: using cached result" 2
+    } else {
+	set et_vect_call_lceil_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_lceil_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_lceil: returning $et_vect_call_lceil_saved" 2
+    return $et_vect_call_lceil_saved
+}
+
+# Return 1 if the target supports vector lfloor calls.
+
+proc check_effective_target_vect_call_lfloor { } {
+    global et_vect_call_lfloor_saved
+
+    if [info exists et_vect_call_lfloor_saved] {
+	verbose "check_effective_target_vect_call_lfloor: using cached result" 2
+    } else {
+	set et_vect_call_lfloor_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_lfloor_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_lfloor: returning $et_vect_call_lfloor_saved" 2
+    return $et_vect_call_lfloor_saved
+}
+
+# Return 1 if the target supports vector nearbyint calls.
+
+proc check_effective_target_vect_call_nearbyint { } {
+    global et_vect_call_nearbyint_saved
+
+    if [info exists et_vect_call_nearbyint_saved] {
+	verbose "check_effective_target_vect_call_nearbyint: using cached result" 2
+    } else {
+	set et_vect_call_nearbyint_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_nearbyint_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_nearbyint: returning $et_vect_call_nearbyint_saved" 2
+    return $et_vect_call_nearbyint_saved
+}
+
+# Return 1 if the target supports vector nearbyintf calls.
+
+proc check_effective_target_vect_call_nearbyintf { } {
+    global et_vect_call_nearbyintf_saved
+
+    if [info exists et_vect_call_nearbyintf_saved] {
+	verbose "check_effective_target_vect_call_nearbyintf: using cached result" 2
+    } else {
+	set et_vect_call_nearbyintf_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_nearbyintf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_nearbyintf: returning $et_vect_call_nearbyintf_saved" 2
+    return $et_vect_call_nearbyintf_saved
+}
+
+# Return 1 if the target supports vector round calls.
+
+proc check_effective_target_vect_call_round { } {
+    global et_vect_call_round_saved
+
+    if [info exists et_vect_call_round_saved] {
+	verbose "check_effective_target_vect_call_round: using cached result" 2
+    } else {
+	set et_vect_call_round_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_round_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_round: returning $et_vect_call_round_saved" 2
+    return $et_vect_call_round_saved
+}
+
+# Return 1 if the target supports vector roundf calls.
+
+proc check_effective_target_vect_call_roundf { } {
+    global et_vect_call_roundf_saved
+
+    if [info exists et_vect_call_roundf_saved] {
+	verbose "check_effective_target_vect_call_roundf: using cached result" 2
+    } else {
+	set et_vect_call_roundf_saved 0
+	if { [istarget aarch64*-*-*] } {
+	  set et_vect_call_roundf_saved 1
+	}
+    }
+
+    verbose "check_effective_target_vect_call_roundf: returning $et_vect_call_roundf_saved" 2
+    return $et_vect_call_roundf_saved
 }
 
 # Return 1 if the target supports section-anchors

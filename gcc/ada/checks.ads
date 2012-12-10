@@ -74,7 +74,7 @@ package Checks is
    --  is False, then the status of the check can be determined simply by
    --  examining Scope_Suppress, so this routine is not called in that case.
 
-   function Overflow_Check_Mode return Overflow_Check_Type;
+   function Overflow_Check_Mode return Overflow_Mode_Type;
    --  Returns current overflow checking mode, taking into account whether
    --  we are inside an assertion expression.
 
@@ -93,6 +93,8 @@ package Checks is
    --  Sets Do_Overflow_Check flag in node N, and handles possible local raise.
    --  Always call this routine rather than calling Set_Do_Overflow_Check to
    --  set an explicit value of True, to ensure handling the local raise case.
+   --  Note that this call has no effect for MOD, REM, and unary "+" for which
+   --  overflow is never possible in any case.
 
    procedure Activate_Range_Check (N : Node_Id);
    pragma Inline (Activate_Range_Check);

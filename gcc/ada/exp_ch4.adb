@@ -2274,7 +2274,7 @@ package body Exp_Ch4 is
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Entity for Long_Long_Integer'Base
 
-      Check : constant Overflow_Check_Type := Overflow_Check_Mode;
+      Check : constant Overflow_Mode_Type := Overflow_Check_Mode;
       --  Current overflow checking mode
 
       procedure Set_True;
@@ -5207,6 +5207,8 @@ package body Exp_Ch4 is
       New_If  : Node_Id;
       New_N   : Node_Id;
 
+   --  Start of processing for Expand_N_If_Expression
+
    begin
       --  Check for MINIMIZED/ELIMINATED overflow mode
 
@@ -7910,7 +7912,6 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Mod (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Typ   : constant Entity_Id  := Etype (N);
-      DOC   : constant Boolean    := Do_Overflow_Check (N);
       DDC   : constant Boolean    := Do_Division_Check (N);
 
       Left  : Node_Id;
@@ -7975,7 +7976,6 @@ package body Exp_Ch4 is
 
          Set_Entity            (N, Standard_Entity (S_Op_Rem));
          Set_Etype             (N, Typ);
-         Set_Do_Overflow_Check (N, DOC);
          Set_Do_Division_Check (N, DDC);
          Expand_N_Op_Rem (N);
          Set_Analyzed (N);
@@ -8003,8 +8003,15 @@ package body Exp_Ch4 is
          end if;
 
          --  Deal with annoying case of largest negative number remainder
-         --  minus one. Gigi does not handle this case correctly, because
-         --  it generates a divide instruction which may trap in this case.
+         --  minus one. Gigi may not handle this case correctly, because
+         --  on some targets, the mod value is computed using a divide
+         --  instruction which gives an overflow trap for this case.
+
+         --  It would be a bit more efficient to figure out which targets
+         --  this is really needed for, but in practice it is reasonable
+         --  to do the following special check in all cases, since it means
+         --  we get a clearer message, and also the overhead is minimal given
+         --  that division is expensive in any case.
 
          --  In fact the check is quite easy, if the right operand is -1, then
          --  the mod value is always 0, and we can just ignore the left operand
@@ -8676,8 +8683,15 @@ package body Exp_Ch4 is
       end if;
 
       --  Deal with annoying case of largest negative number remainder minus
-      --  one. Gigi does not handle this case correctly, because it generates
-      --  a divide instruction which may trap in this case.
+      --  one. Gigi may not handle this case correctly, because on some
+      --  targets, the mod value is computed using a divide instruction
+      --  which gives an overflow trap for this case.
+
+      --  It would be a bit more efficient to figure out which targets this
+      --  is really needed for, but in practice it is reasonable to do the
+      --  following special check in all cases, since it means we get a clearer
+      --  message, and also the overhead is minimal given that division is
+      --  expensive in any case.
 
       --  In fact the check is quite easy, if the right operand is -1, then
       --  the remainder is always 0, and we can just ignore the left operand
@@ -10391,14 +10405,14 @@ package body Exp_Ch4 is
             --  Convert: x(y) to x'val (ytyp'val (y))
 
             Rewrite (N,
-               Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Target_Type, Loc),
-                 Attribute_Name => Name_Val,
-                 Expressions => New_List (
-                   Make_Attribute_Reference (Loc,
-                     Prefix => New_Occurrence_Of (Operand_Type, Loc),
-                     Attribute_Name => Name_Pos,
-                     Expressions => New_List (Operand)))));
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Target_Type, Loc),
+                Attribute_Name => Name_Val,
+                Expressions    => New_List (
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Occurrence_Of (Operand_Type, Loc),
+                    Attribute_Name => Name_Pos,
+                    Expressions    => New_List (Operand)))));
 
             Analyze_And_Resolve (N, Target_Type);
          end if;

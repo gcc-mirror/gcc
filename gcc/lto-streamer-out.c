@@ -328,6 +328,7 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
       tree initial = DECL_INITIAL (expr);
       if (TREE_CODE (expr) == VAR_DECL
 	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
+	  && !DECL_IN_CONSTANT_POOL (expr)
 	  && initial)
 	{
 	  lto_symtab_encoder_t encoder;

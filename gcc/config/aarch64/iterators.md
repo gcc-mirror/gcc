@@ -228,6 +228,14 @@
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMIN		; Used in aarch64-simd.md.
     UNSPEC_BSL		; Used in aarch64-simd.md.
+    UNSPEC_TBL		; Used in vector permute patterns.
+    UNSPEC_CONCAT	; Used in vector permute patterns.
+    UNSPEC_ZIP1		; Used in vector permute patterns.
+    UNSPEC_ZIP2		; Used in vector permute patterns.
+    UNSPEC_UZP1		; Used in vector permute patterns.
+    UNSPEC_UZP2		; Used in vector permute patterns.
+    UNSPEC_TRN1		; Used in vector permute patterns.
+    UNSPEC_TRN2		; Used in vector permute patterns.
 ])
 
 ;; -------------------------------------------------------------------
@@ -415,8 +423,9 @@
 (define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
 				(V4HI "V4HI") (V8HI  "V8HI")
 				(V2SI "V2SI") (V4SI  "V4SI")
+				(DI   "DI")   (V2DI  "V2DI")
 				(V2SF "V2SI") (V4SF  "V4SI")
-				(DI   "DI")   (V2DI  "V2DI")])
+				(V2DF "V2DI")])
 
 ;; Vm for lane instructions is restricted to FP_LO_REGS.
 (define_mode_attr vwx [(V4HI "x") (V8HI "x") (HI "x")
@@ -452,6 +461,9 @@
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])
+
+(define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")])
+(define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
@@ -646,6 +658,15 @@
 
 (define_int_iterator VCMP_U [UNSPEC_CMHS UNSPEC_CMHI UNSPEC_CMTST])
 
+(define_int_iterator PERMUTE [UNSPEC_ZIP1 UNSPEC_ZIP2
+			      UNSPEC_TRN1 UNSPEC_TRN2
+			      UNSPEC_UZP1 UNSPEC_UZP2])
+
+(define_int_iterator FRINT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
+			     UNSPEC_FRINTI UNSPEC_FRINTX UNSPEC_FRINTA])
+
+(define_int_iterator FCVT [UNSPEC_FRINTZ UNSPEC_FRINTP UNSPEC_FRINTM
+			    UNSPEC_FRINTA])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
@@ -729,3 +750,26 @@
 (define_int_attr offsetlr [(UNSPEC_SSLI	"1") (UNSPEC_USLI "1")
 			   (UNSPEC_SSRI	"0") (UNSPEC_USRI "0")])
 
+;; Standard pattern names for floating-point rounding instructions.
+(define_int_attr frint_pattern [(UNSPEC_FRINTZ "btrunc")
+				(UNSPEC_FRINTP "ceil")
+				(UNSPEC_FRINTM "floor")
+				(UNSPEC_FRINTI "nearbyint")
+				(UNSPEC_FRINTX "rint")
+				(UNSPEC_FRINTA "round")])
+
+;; frint suffix for floating-point rounding instructions.
+(define_int_attr frint_suffix [(UNSPEC_FRINTZ "z") (UNSPEC_FRINTP "p")
+			       (UNSPEC_FRINTM "m") (UNSPEC_FRINTI "i")
+			       (UNSPEC_FRINTX "x") (UNSPEC_FRINTA "a")])
+
+(define_int_attr fcvt_pattern [(UNSPEC_FRINTZ "btrunc") (UNSPEC_FRINTA "round")
+			       (UNSPEC_FRINTP "ceil") (UNSPEC_FRINTM "floor")])
+
+(define_int_attr perm_insn [(UNSPEC_ZIP1 "zip") (UNSPEC_ZIP2 "zip")
+			    (UNSPEC_TRN1 "trn") (UNSPEC_TRN2 "trn")
+			    (UNSPEC_UZP1 "uzp") (UNSPEC_UZP2 "uzp")])
+
+(define_int_attr perm_hilo [(UNSPEC_ZIP1 "1") (UNSPEC_ZIP2 "2")
+			    (UNSPEC_TRN1 "1") (UNSPEC_TRN2 "2")
+			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")])

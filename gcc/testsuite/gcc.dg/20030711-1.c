@@ -11,6 +11,9 @@
 #ifndef MAP_ANON
 #define MAP_ANON 0
 #endif
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 #include <stdlib.h>
 
 void __attribute__((noinline)) test (const char *p)

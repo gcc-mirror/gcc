@@ -91,6 +91,10 @@ proc asan_init { args } {
 	    set TEST_ALWAYS_FLAGS "$link_flags -fsanitize=address -g"
 	}
     }
+    if { $link_flags != "" } {
+	return 1
+    }
+    return 0
 }
 
 #
@@ -118,14 +122,14 @@ proc asan_symbolize { output } {
 	set addr2line_name [find_binutils_prog addr2line]
 	set idx 1
 	while { $idx < [llength $addresses] } {
-	    set key [lindex $addresses $idx]
+	    set key [regsub -all "\[\]\[\]" [lindex $addresses $idx] "\\\\&"]
 	    set val [lindex $addresses [expr $idx + 1]]
 	    lappend arr($key) $val
 	    set idx [expr $idx + 3]
 	}
 	foreach key [array names arr] {
 	    set args "-f -e $key $arr($key)"
-	    set status [remote_exec host "$addr2line_name" $args]
+	    set status [remote_exec host "$addr2line_name" "$args"]
 	    if { [lindex $status 0] > 0 } continue
 	    regsub -all "\r\n" [lindex $status 1] "\n" addr2line_output
 	    regsub -all "\[\n\r\]BFD: \[^\n\r\]*" $addr2line_output "" addr2line_output
@@ -164,6 +168,45 @@ proc asan_symbolize { output } {
     return "$output"
 }
 
+# Return a list of gtest tests, printed in the form
+# DEJAGNU_GTEST_TEST AddressSanitizer_SimpleDeathTest
+# DEJAGNU_GTEST_TEST AddressSanitizer_VariousMallocsTest
+proc asan_get_gtest_test_list { output } {
+    set idx 0
+    set ret ""
+    while {[regexp -start $idx -indices "DEJAGNU_GTEST_TEST (\[^\n\r\]*)(\r\n|\n|\r)" "$output" -> testname] > 0} {
+	set low [lindex $testname 0]
+	set high [lindex $testname 1]
+	set val [string range "$output" $low $high]
+	lappend ret $val
+	set idx [expr $high + 1]
+    }
+    return $ret
+}
+
+# Return a list of gtest EXPECT_DEATH tests, printed in the form
+# DEJAGNU_GTEST_EXPECT_DEATH1 statement DEJAGNU_GTEST_EXPECT_DEATH1 regexp DEJAGNU_GTEST_EXPECT_DEATH1
+# DEJAGNU_GTEST_EXPECT_DEATH2 other statement DEJAGNU_GTEST_EXPECT_DEATH2 other regexp DEJAGNU_GTEST_EXPECT_DEATH2
+proc asan_get_gtest_expect_death_list { output } {
+    set idx 0
+    set ret ""
+    while {[regexp -start $idx -indices "DEJAGNU_GTEST_EXPECT_DEATH(\[0-9\]*)" "$output" -> id ] > 0} {
+	set low [lindex $id 0]
+	set high [lindex $id 1]
+	set val_id [string range "$output" $low $high]
+	if {[regexp -start $low -indices "$val_id (.*) DEJAGNU_GTEST_EXPECT_DEATH$val_id (.*) DEJAGNU_GTEST_EXPECT_DEATH$val_id\[\n\r\]" "$output" whole statement regexpr ] == 0} { break }
+	set low [lindex $statement 0]
+	set high [lindex $statement 1]
+	set val_statement [string range "$output" $low $high]
+	set low [lindex $regexpr 0]
+	set high [lindex $regexpr 1]
+	set val_regexpr [string range "$output" $low $high]
+	lappend ret [list "$val_id" "$val_statement" "$val_regexpr"]
+	set idx [lindex $whole 1]
+    }
+    return $ret
+}
+
 # Replace ${tool}_load with a wrapper so that we can symbolize the output.
 if { [info procs ${tool}_load] != [list] \
       && [info procs saved_asan_${tool}_load] == [list] } {
@@ -171,10 +214,94 @@ if { [info procs ${tool}_load] != [list] \
 
     proc ${tool}_load { program args } {
 	global tool
+	global asan_last_gtest_test_list
+	global asan_last_gtest_expect_death_list
 	set result [eval [list saved_asan_${tool}_load $program] $args]
 	set output [lindex $result 1]
 	set symbolized_output [asan_symbolize "$output"]
+	set asan_last_gtest_test_list [asan_get_gtest_test_list "$output"]
+	set asan_last_gtest_expect_death_list [asan_get_gtest_expect_death_list "$output"]
 	set result [list [lindex $result 0] $symbolized_output]
 	return $result
     }
+}
+
+# Utility for running gtest asan emulation under dejagnu, invoked via dg-final.
+# Call pass if variable has the desired value, otherwise fail.
+#
+# Argument 0 handles expected failures and the like
+proc asan-gtest { args } {
+    global tool
+    global asan_last_gtest_test_list
+    global asan_last_gtest_expect_death_list
+
+    if { ![info exists asan_last_gtest_test_list] } { return }
+    if { [llength $asan_last_gtest_test_list] == 0 } { return }
+    if { ![isnative] || [is_remote target] } { return }
+
+    set gtest_test_list $asan_last_gtest_test_list
+    unset asan_last_gtest_test_list
+
+    if { [llength $args] >= 1 } {
+	switch [dg-process-target [lindex $args 0]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # This assumes that we are three frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    upvar 2 prog prog
+
+    set output_file "[file rootname [file tail $prog]].exe"
+
+    foreach gtest $gtest_test_list {
+	set testname "$testcase $gtest"
+	set status -1
+
+	setenv DEJAGNU_GTEST_ARG "$gtest"
+	set result [${tool}_load ./$output_file $gtest]
+	unsetenv DEJAGNU_GTEST_ARG
+	set status [lindex $result 0]
+	set output [lindex $result 1]
+	if { "$status" == "pass" } {
+	    pass "$testname execution test"
+	    if { [info exists asan_last_gtest_expect_death_list] } {
+		set gtest_expect_death_list $asan_last_gtest_expect_death_list
+		foreach gtest_death $gtest_expect_death_list {
+		    set id [lindex $gtest_death 0]
+		    set testname "$testcase $gtest [lindex $gtest_death 1]"
+		    set regexpr [lindex $gtest_death 2]
+		    set status -1
+
+		    setenv DEJAGNU_GTEST_ARG "$gtest:$id"
+		    set result [${tool}_load ./$output_file "$gtest:$id"]
+		    unsetenv DEJAGNU_GTEST_ARG
+		    set status [lindex $result 0]
+		    set output [lindex $result 1]
+		    if { "$status" == "fail" } {
+			pass "$testname execution test"
+			if { ![regexp $regexpr ${output}] } {
+			    fail "$testname output pattern test, should match $regexpr"
+			} else {
+			    pass "$testname output pattern test, $regexpr"
+			}
+		    } elseif { "$status" == "pass" } {
+			fail "$testname execution test"
+		    } else {
+			$status "$testname execution test"
+		    }
+		}
+	    }
+	} else {
+	    $status "$testname execution test"
+	}
+	unset asan_last_gtest_expect_death_list
+    }
+
+    return
 }

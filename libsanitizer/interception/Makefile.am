@@ -14,11 +14,7 @@ interception_files = \
         interception_mac.cc \
         interception_win.cc
 
-if USING_MACH_OVERRIDE
-libinterception_la_SOURCES = $(interception_files) mach_override/mach_override.c
-else
 libinterception_la_SOURCES = $(interception_files)
-endif
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

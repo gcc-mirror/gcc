@@ -3120,6 +3120,14 @@ rs6000_option_override_internal (bool global_init_p)
 			     global_options.x_param_values,
 			     global_options_set.x_param_values);
 
+      /* Increase loop peeling limits based on performance analysis. */
+      maybe_set_param_value (PARAM_MAX_PEELED_INSNS, 400,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 400,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+
       /* If using typedef char *va_list, signal that
 	 __builtin_va_start (&ap, 0) can be optimized to
 	 ap = __builtin_next_arg (0).  */
@@ -27538,6 +27546,15 @@ rs6000_final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
     }
 }
 
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
+
+#if TARGET_ELF
+static unsigned HOST_WIDE_INT
+rs6000_asan_shadow_offset (void)
+{
+  return (unsigned HOST_WIDE_INT) 1 << (TARGET_64BIT ? 41 : 29);
+}
+#endif
 
 /* Mask options that we want to support inside of attribute((target)) and
    #pragma GCC target operations.  Note, we do not include things like

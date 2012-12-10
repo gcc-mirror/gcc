@@ -1846,7 +1846,7 @@ gcc.srcextra: gengtype-lex.c
 	-cp -p $^ $(srcdir)
 
 graph.o: graph.c graph.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-    $(DIAGNOSTIC_CORE_H) $(TM_H) $(RTL_H) $(BASIC_BLOCK_H) $(PRETTY_PRINT_H)
+    $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(PRETTY_PRINT_H) dumpfile.h
 
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
@@ -2231,13 +2231,14 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 asan.o : asan.c asan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
    output.h coretypes.h $(GIMPLE_PRETTY_PRINT_H) \
    tree-iterator.h $(TREE_FLOW_H) $(TREE_PASS_H) \
-   $(TARGET_H) $(EXPR_H) $(OPTABS_H) $(TM_P_H)
+   $(TARGET_H) $(EXPR_H) $(OPTABS_H) $(TM_P_H) langhooks.h
 tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    $(GIMPLE_H) $(DIAGNOSTIC_H) langhooks.h \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(CGRAPH_H) $(GGC_H) \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(FUNCTION_H) \
    $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) tree-iterator.h \
-   intl.h cfghooks.h output.h options.h c-family/c-common.h tsan.h
+   intl.h cfghooks.h output.h options.h c-family/c-common.h tsan.h asan.h \
+   tree-ssa-propagate.h
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
@@ -3621,6 +3622,10 @@ insn-preds.c: s-preds; @true
 tm-preds.h: s-preds-h; @true
 tm-constrs.h: s-constrs-h; @true
 
+.PHONY: mddump
+mddump: $(BUILD_RTL) $(MD_DEPS) build/genmddump$(build_exeext)
+	$(RUN_GEN) build/genmddump$(build_exeext) $(md_file) > tmp-mddump.md
+
 s-preds: $(MD_DEPS) build/genpreds$(build_exeext)
 	$(RUN_GEN) build/genpreds$(build_exeext) $(md_file) > tmp-preds.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-preds.c insn-preds.c
@@ -3938,6 +3943,8 @@ build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
   $(COMMON_TARGET_DEF) $(BCONFIG_H) $(SYSTEM_H) errors.h
+build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+  coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(COMPILER_FOR_BUILD), and associated libraries,
@@ -3946,7 +3953,7 @@ build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
 
 # All these programs use the RTL reader ($(BUILD_RTL)).
 genprogrtl = attr attr-common attrtab automata codes conditions config emit \
-	     extract flags opinit output peep preds recog
+	     extract flags opinit output peep preds recog mddump
 $(genprogrtl:%=build/gen%$(build_exeext)): $(BUILD_RTL)
 
 # All these programs use the MD reader ($(BUILD_MD)).

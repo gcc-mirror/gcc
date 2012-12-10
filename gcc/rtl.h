@@ -2606,6 +2606,7 @@ extern void dump_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
 extern void print_value (pretty_printer *, const_rtx, int);
 extern void print_pattern (pretty_printer *, const_rtx, int);
 extern void print_insn (pretty_printer *, const_rtx, int);
+extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
 extern const char *str_pattern_slim (const_rtx);
 
 /* In function.c */

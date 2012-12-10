@@ -2951,6 +2951,7 @@ void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_hash_component(e)     gfc_add_component_ref(e,"_hash")
 #define gfc_add_size_component(e)     gfc_add_component_ref(e,"_size")
 #define gfc_add_def_init_component(e) gfc_add_component_ref(e,"_def_init")
+#define gfc_add_final_component(e)    gfc_add_component_ref(e,"_final")
 bool gfc_is_class_array_ref (gfc_expr *, bool *);
 bool gfc_is_class_scalar_expr (gfc_expr *);
 bool gfc_is_class_container_ref (gfc_expr *e);
@@ -2967,6 +2968,7 @@ gfc_typebound_proc* gfc_find_typebound_intrinsic_op (gfc_symbol*, gfc_try*,
 						     gfc_intrinsic_op, bool,
 						     locus*);
 gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
+bool gfc_is_finalizable (gfc_symbol *, gfc_expr **);
 
 #define CLASS_DATA(sym) sym->ts.u.derived->components
 

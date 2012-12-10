@@ -1,3 +1,7 @@
+2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/arm/arm-config.h (__ARM_ARCH_8A__): New.
+
 2012-11-21  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.tgt (i[3456]86): Handle -mx32 like -m64.

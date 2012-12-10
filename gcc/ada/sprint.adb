@@ -1162,6 +1162,10 @@ package body Sprint is
                Alt : Node_Id;
 
             begin
+               --  The syntax for case_expression does not include parentheses,
+               --  but sometimes parentheses are required, so unconditionally
+               --  generate them here.
+
                Write_Str_With_Col_Check_Sloc ("(case ");
                Sprint_Node (Expression (Node));
                Write_Str_With_Col_Check (" is");
@@ -1963,6 +1967,10 @@ package body Sprint is
                Then_Expr : constant Node_Id := Next (Condition);
 
             begin
+               --  The syntax for if_expression does not include parentheses,
+               --  but sometimes parentheses are required, so unconditionally
+               --  generate them here.
+
                Write_Str_With_Col_Check_Sloc ("(if ");
                Sprint_Node (Condition);
                Write_Str_With_Col_Check (" then ");

@@ -78,15 +78,17 @@
 #define _FP_NANFRAC_Q		_FP_QNANBIT_Q, 0, 0, 0
 
 #ifndef _SOFT_FLOAT
+#define FP_EX_SHIFT 0
+
+#define _FP_DECL_EX \
+  unsigned short _fcw __attribute__ ((unused)) = FP_RND_NEAREST;
+
 #define FP_RND_NEAREST		0
 #define FP_RND_ZERO		0xc00
 #define FP_RND_PINF		0x800
 #define FP_RND_MINF		0x400
 
 #define FP_RND_MASK		0xc00
-
-#define _FP_DECL_EX \
-  unsigned short _fcw __attribute__ ((unused)) = FP_RND_NEAREST;
 
 #define FP_INIT_ROUNDMODE				\
   do {							\

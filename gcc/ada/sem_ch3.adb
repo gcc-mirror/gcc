@@ -1192,7 +1192,8 @@ package body Sem_Ch3 is
             --  In ASIS mode, the access_to_subprogram may be analyzed twice,
             --  when it is part of an unconstrained type and subtype expansion
             --  is disabled. To avoid back-end problems with shared profiles,
-            --  use previous subprogram type as the designated type.
+            --  use previous subprogram type as the designated type, and then
+            --  remove scope added above.
 
             if ASIS_Mode
               and then Present (Scope (Defining_Identifier (F)))
@@ -1201,6 +1202,7 @@ package body Sem_Ch3 is
                Init_Size_Align              (T_Name);
                Set_Directly_Designated_Type (T_Name,
                  Scope (Defining_Identifier (F)));
+               End_Scope;
                return;
             end if;
 
@@ -4993,10 +4995,20 @@ package body Sem_Ch3 is
                      Scope_Stack.Table (Scope_Stack.Last);
 
       Anon : constant Entity_Id := Make_Temporary (Loc, 'S');
-      Acc  : Node_Id;
+
+      Acc : Node_Id;
+      --  Access definition in declaration
+
       Comp : Node_Id;
+      --  Object definition or formal definition with an access definition
+
       Decl : Node_Id;
-      P    : Node_Id;
+      --  Declaration of anonymous access to subprogram type
+
+      Spec : Node_Id;
+      --  Original specification in access to subprogram
+
+      P : Node_Id;
 
    begin
       Set_Is_Internal (Anon);
@@ -5032,10 +5044,12 @@ package body Sem_Ch3 is
             raise Program_Error;
       end case;
 
-      Decl := Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Anon,
-                Type_Definition   =>
-                  Copy_Separate_Tree (Access_To_Subprogram_Definition (Acc)));
+      Spec := Access_To_Subprogram_Definition (Acc);
+
+      Decl :=
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Anon,
+          Type_Definition     => Relocate_Node (Spec));
 
       Mark_Rewrite_Insertion (Decl);
 
@@ -6512,18 +6526,27 @@ package body Sem_Ch3 is
       then
          Append_Elmt (Derived_Type, Private_Dependents (Parent_Type));
 
+         --  Check for unusual case where a type completed by a private
+         --  derivation occurs within a package nested in a child unit, and
+         --  the parent is declared in an ancestor.
+
          if Is_Child_Unit (Scope (Current_Scope))
            and then Is_Completion
            and then In_Private_Part (Current_Scope)
            and then Scope (Parent_Type) /= Current_Scope
+
+           --  Note that if the parent has a completion in the private part,
+           --  (which is itself a derivation from some other private type)
+           --  it is that completion that is visible, there is no full view
+           --  available, and no special processing is needed.
+
+           and then Present (Full_View (Parent_Type))
          then
-            --  This is the unusual case where a type completed by a private
-            --  derivation occurs within a package nested in a child unit, and
-            --  the parent is declared in an ancestor. In this case, the full
-            --  view of the parent type will become visible in the body of
-            --  the enclosing child, and only then will the current type be
-            --  possibly non-private. We build a underlying full view that
-            --  will be installed when the enclosing child body is compiled.
+            --  In this case, the full view of the parent type will become
+            --  visible in the body of the enclosing child, and only then will
+            --  the current type be possibly non-private. We build an
+            --  underlying full view that will be installed when the enclosing
+            --  child body is compiled.
 
             Full_Der :=
               Make_Defining_Identifier
@@ -16307,7 +16330,10 @@ package body Sem_Ch3 is
    -- Is_Visible_Component --
    --------------------------
 
-   function Is_Visible_Component (C : Entity_Id) return Boolean is
+   function Is_Visible_Component
+     (C : Entity_Id;
+      N : Node_Id := Empty) return Boolean
+   is
       Original_Comp  : Entity_Id := Empty;
       Original_Scope : Entity_Id;
       Type_Scope     : Entity_Id;
@@ -16367,10 +16393,17 @@ package body Sem_Ch3 is
       elsif not Comes_From_Source (Original_Comp) then
          return True;
 
-      --  Discriminants are always visible
+      --  Discriminants are visible unless the (private) type has unknown
+      --  discriminants. If the discriminant reference is inserted for a
+      --  discriminant check on a full view it is also visible.
 
       elsif Ekind (Original_Comp) = E_Discriminant
-        and then not Has_Unknown_Discriminants (Original_Scope)
+        and then
+          (not Has_Unknown_Discriminants (Original_Scope)
+            or else (Present (N)
+                      and then Nkind (N) = N_Selected_Component
+                      and then Nkind (Prefix (N)) = N_Type_Conversion
+                      and then not Comes_From_Source (Prefix (N))))
       then
          return True;
 

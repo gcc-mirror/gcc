@@ -9552,7 +9552,7 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
   ++processing_template_decl;
 
   for (new_parms = &r;
-       TMPL_PARMS_DEPTH (parms) > TMPL_ARGS_DEPTH (args);
+       parms && TMPL_PARMS_DEPTH (parms) > TMPL_ARGS_DEPTH (args);
        new_parms = &(TREE_CHAIN (*new_parms)),
 	 parms = TREE_CHAIN (parms))
     {
@@ -9831,6 +9831,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (new_type == error_mark_node)
 	      RETURN (error_mark_node);
+	    /* If we get a real template back, return it.  This can happen in
+	       the context of most_specialized_class.  */
+	    if (TREE_CODE (new_type) == TEMPLATE_DECL)
+	      return new_type;
 
 	    r = copy_decl (t);
 	    DECL_CHAIN (r) = NULL_TREE;
@@ -10840,7 +10844,7 @@ tsubst_exception_specification (tree fntype,
     {
       /* A noexcept-specifier.  */
       tree expr = TREE_PURPOSE (specs);
-      if (expr == boolean_true_node || expr == boolean_false_node)
+      if (TREE_CODE (expr) == INTEGER_CST)
 	new_specs = expr;
       else if (defer_ok)
 	{
@@ -11009,8 +11013,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return r;
 	}
       else
-	/* We don't have an instantiation yet, so drop the typedef.  */
-	t = DECL_ORIGINAL_TYPE (decl);
+	{
+	  /* We don't have an instantiation yet, so drop the typedef.  */
+	  int quals = cp_type_quals (t);
+	  t = DECL_ORIGINAL_TYPE (decl);
+	  t = cp_build_qualified_type_real (t, quals,
+					    complain | tf_ignore_bad_quals);
+	}
     }
 
   if (type
@@ -16593,6 +16602,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       if ((TYPE_DOMAIN (parm) == NULL_TREE)
 	  != (TYPE_DOMAIN (arg) == NULL_TREE))
 	return unify_type_mismatch (explain_p, parm, arg);
+      RECUR_AND_CHECK_FAILURE (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
+			       strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
       if (TYPE_DOMAIN (parm) != NULL_TREE)
 	{
 	  tree parm_max;
@@ -16651,8 +16662,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  RECUR_AND_CHECK_FAILURE (tparms, targs, parm_max, arg_max,
 				   UNIFY_ALLOW_INTEGER, explain_p);
 	}
-      return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
-		    strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
+      return unify_success (explain_p);
 
     case REAL_TYPE:
     case COMPLEX_TYPE:
@@ -19283,6 +19293,22 @@ dependent_scope_p (tree scope)
 	  && !currently_open_class (scope));
 }
 
+/* T is a SCOPE_REF; return whether we need to consider it
+    instantiation-dependent so that we can check access at instantiation
+    time even though we know which member it resolves to.  */
+
+static bool
+instantiation_dependent_scope_ref_p (tree t)
+{
+  if (DECL_P (TREE_OPERAND (t, 1))
+      && CLASS_TYPE_P (TREE_OPERAND (t, 0))
+      && accessible_in_template_p (TREE_OPERAND (t, 0),
+				   TREE_OPERAND (t, 1)))
+    return false;
+  else
+    return true;
+}
+
 /* Returns TRUE if the EXPRESSION is value-dependent, in the sense of
    [temp.dep.constexpr].  EXPRESSION is already known to be a constant
    expression.  */
@@ -19390,10 +19416,9 @@ value_dependent_expression_p (tree expression)
       return instantiation_dependent_expression_p (expression);
 
     case SCOPE_REF:
-      /* instantiation_dependent_r treats this as dependent so that we
-	 check access at instantiation time, and all instantiation-dependent
-	 expressions should also be considered value-dependent.  */
-      return true;
+      /* All instantiation-dependent expressions should also be considered
+	 value-dependent.  */
+      return instantiation_dependent_scope_ref_p (expression);
 
     case COMPONENT_REF:
       return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
@@ -19734,10 +19759,10 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
       break;
 
     case SCOPE_REF:
-      /* Similarly, finish_qualified_id_expr builds up a SCOPE_REF in a
-	 template so that we can check access at instantiation time even
-	 though we know which member it resolves to.  */
-      return *tp;
+      if (instantiation_dependent_scope_ref_p (*tp))
+	return *tp;
+      else
+	break;
 
     default:
       break;
@@ -20074,7 +20099,16 @@ resolve_typename_type (tree type, bool only_current_p)
   /* If the SCOPE is itself a TYPENAME_TYPE, then we need to resolve
      it first before we can figure out what NAME refers to.  */
   if (TREE_CODE (scope) == TYPENAME_TYPE)
-    scope = resolve_typename_type (scope, only_current_p);
+    {
+      if (TYPENAME_IS_RESOLVING_P (scope))
+	/* Given a class template A with a dependent base with nested type C,
+	   typedef typename A::C::C C will land us here, as trying to resolve
+	   the initial A::C leads to the local C typedef, which leads back to
+	   A::C::C.  So we break the recursion now.  */
+	return type;
+      else
+	scope = resolve_typename_type (scope, only_current_p);
+    }
   /* If we don't know what SCOPE refers to, then we cannot resolve the
      TYPENAME_TYPE.  */
   if (TREE_CODE (scope) == TYPENAME_TYPE)

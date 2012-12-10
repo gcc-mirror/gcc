@@ -180,7 +180,7 @@ Implementation Defined Pragmas
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
-* Pragma Overflow_Checks::
+* Pragma Overflow_Mode::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -919,7 +919,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
-* Pragma Overflow_Checks::
+* Pragma Overflow_Mode::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -4034,7 +4034,7 @@ compiled in @code{Optimize_Alignment (Space)} mode, the alignment is set to 1.
 
 However, there is one case in which SPACE is ignored. If a variable length
 record (that is a discriminated record with a component which is an array
-whose length depends on a discriminant), has a pragam pack, then it is not
+whose length depends on a discriminant), has a pragma Pack, then it is not
 in general possible to set the alignment of such a record to one, so the
 pragma is ignored in this case (with a warning).
 
@@ -4162,23 +4162,24 @@ as unordered, and will generate warnings for inappropriate uses.
 For additional information please refer to the description of the
 @option{-gnatw.u} switch in the @value{EDITION} User's Guide.
 
-@node Pragma Overflow_Checks
-@unnumberedsec Pragma Overflow_Checks
+@node Pragma Overflow_Mode
+@unnumberedsec Pragma Overflow_Mode
 @findex Overflow checks
-@findex pragma @code{Overflow_Checks}
+@findex Overflow mode
+@findex pragma @code{Overflow_Mode}
 @noindent
 Syntax:
 
 @smallexample @c ada
-pragma Overflow_Checks
+pragma Overflow_Mode
  (  [General    =>] MODE
   [,[Assertions =>] MODE]);
 
-MODE ::= SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
+MODE ::= STRICT | MINIMIZED | ELIMINATED
 @end smallexample
 
 @noindent
-This pragma sets the current overflow mode to the given mode. For details
+This pragma sets the current overflow mode to the given setting. For details
 of the meaning of these modes, please refer to the
 ``Overflow Check Handling in GNAT'' appendix in the
 @value{EDITION} User's Guide. If only the @code{General} parameter is present,
@@ -4190,32 +4191,17 @@ The case of the @code{MODE} parameter is ignored,
 so @code{MINIMIZED}, @code{Minimized} and
 @code{minimized} all have the same effect.
 
-The @code{Overflow_Checks} pragma has the same scoping and placement
+The @code{Overflow_Mode} pragma has the same scoping and placement
 rules as pragma @code{Suppress}, so it can occur either as a
 configuration pragma, specifying a default for the whole
 program, or in a declarative scope, where it applies to the
 remaining declarations and statements in that scope.
 
-The pragma @code{Suppress (Overflow_Check)} sets mode
+The pragma @code{Suppress (Overflow_Check)} suppresses
+overflow checking, but does not affect the overflow mode.
 
-@smallexample @c ada
-   General => Suppressed
-@end smallexample
-
-@noindent
-suppressing all overflow checking within and outside
-assertions.
-
-The pragam @code{Unsuppress (Overflow_Check)} sets mode
-
-@smallexample @c ada
-   General => Checked
-@end smallexample
-
-@noindent
-which causes overflow checking of all intermediate overflows.
-This applies both inside and outside assertions.
-
+The pragma @code{Unsuppress (Overflow_Check)} unsuppresses (enables)
+overflow checking, but does not affect the overflow mode.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
@@ -16743,6 +16729,12 @@ using pragma @code{Import} with @code{Convention} = @code{CPP}.
 This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
 @end table
+
+A few restrictions are placed on the use of the @code{Access} attribute
+in conjunction with subprograms subject to convention @code{CPP}: the
+attribute may be used neither on primitive operations of a tagged
+record type with convention @code{CPP}, imported or not, nor on
+subprograms imported with pragma @code{CPP_Constructor}.
 
 In addition, C++ exceptions are propagated and can be handled in an
 @code{others} choice of an exception handler. The corresponding Ada

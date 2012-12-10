@@ -6343,6 +6343,30 @@ package VMS_Data is
    --
    --   Replace all tabulations in comments with spaces.
 
+   S_Pretty_Numbers     : aliased constant S := "/NUMBER_CASING="          &
+                                              "AS_DECLARED "               &
+                                                 "-ntD "                   &
+                                              "LOWER_CASE "                &
+                                                 "-ntL "                   &
+                                              "UPPER_CASE "                &
+                                                 "-ntU "                   &
+                                              "MIXED_CASE "                &
+                                                 "-ntM";
+   --        /NUMBER_CASING=name-option
+   --
+   --   Specify the casing of named number names. If not specified, the casing
+   --   of these names is defined by the NAME_CASING option. 'name-option'
+   --   is one of:
+   --
+   --      AS_DECLARED       Names are cased as they appear in the declaration
+   --                        in the source file.
+   --
+   --      LOWER_CASE        Names are in lower case.
+   --
+   --      UPPER_CASE        Names are in upper case.
+   --
+   --      MIXED_CASE        Names are in mixed case.
+
    S_Pretty_Output    : aliased constant S := "/OUTPUT=@"                  &
                                               "-o@";
    --        /OUTPUT=file
@@ -6498,6 +6522,7 @@ package VMS_Data is
                         S_Pretty_Names            'Access,
                         S_Pretty_No_Labels        'Access,
                         S_Pretty_Notabs           'Access,
+                        S_Pretty_Numbers          'Access,
                         S_Pretty_Output           'Access,
                         S_Pretty_Override         'Access,
                         S_Pretty_Pragma           'Access,

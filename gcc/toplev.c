@@ -1478,12 +1478,6 @@ process_options (void)
 	}
     }
 
-  if (flag_function_sections && profile_flag)
-    {
-      warning (0, "-ffunction-sections disabled; it makes profiling impossible");
-      flag_function_sections = 0;
-    }
-
 #ifndef HAVE_prefetch
   if (flag_prefetch_loop_arrays > 0)
     {

@@ -839,7 +839,7 @@ package body Exp_Dist is
             Fnam : out Entity_Id);
          --  Build TypeCode attribute function for Typ. Loc is the reference
          --  location for generated nodes, Typ is the type for which the
-         --  conversion function is generated. On return, Decl and Fnam contain
+         --  typecode function is generated. On return, Decl and Fnam contain
          --  the declaration and entity for the newly-created function.
 
          procedure Build_Name_And_Repository_Id
@@ -8453,6 +8453,14 @@ package body Exp_Dist is
 
             if Sloc (U_Type) <= Standard_Location then
                U_Type := Base_Type (U_Type);
+
+            --  For a user subtype, go to first subtype
+
+            elsif Comes_From_Source (U_Type)
+              and then Nkind (Declaration_Node (U_Type))
+                         = N_Subtype_Declaration
+            then
+               U_Type := First_Subtype (U_Type);
             end if;
 
             --  Check first for Boolean and Character. These are enumeration
@@ -9261,6 +9269,14 @@ package body Exp_Dist is
 
             if Sloc (U_Type) <= Standard_Location then
                U_Type := Base_Type (U_Type);
+
+            --  For a user subtype, go to first subtype
+
+            elsif Comes_From_Source (U_Type)
+              and then Nkind (Declaration_Node (U_Type))
+                         = N_Subtype_Declaration
+            then
+               U_Type := First_Subtype (U_Type);
             end if;
 
             if Present (Fnam) then
@@ -10045,6 +10061,14 @@ package body Exp_Dist is
 
             if Sloc (U_Type) <= Standard_Location then
                U_Type := Base_Type (U_Type);
+
+            --  For a user subtype, go to first subtype
+
+            elsif Comes_From_Source (U_Type)
+              and then Nkind (Declaration_Node (U_Type))
+                         = N_Subtype_Declaration
+            then
+               U_Type := First_Subtype (U_Type);
             end if;
 
             if No (Fnam) then
@@ -10077,7 +10101,7 @@ package body Exp_Dist is
                --  Integer types (walk back to the base type)
 
                elsif U_Type = RTE (RE_Integer_8) then
-                     Lib_RE := RE_TC_I8;
+                  Lib_RE := RE_TC_I8;
 
                elsif U_Type = RTE (RE_Integer_16) then
                   Lib_RE := RE_TC_I16;
@@ -10188,7 +10212,7 @@ package body Exp_Dist is
             --  Make a return statement that calls TC_Build with the given
             --  typecode kind, and the constructed parameters list.
 
-            procedure Return_Alias_TypeCode (Base_TypeCode  : Node_Id);
+            procedure Return_Alias_TypeCode (Base_TypeCode : Node_Id);
             --  Return a typecode that is a TC_Alias for the given typecode
 
             --------------------------
@@ -10257,9 +10281,7 @@ package body Exp_Dist is
             -- Return_Alias_TypeCode --
             ---------------------------
 
-            procedure Return_Alias_TypeCode
-              (Base_TypeCode  : Node_Id)
-            is
+            procedure Return_Alias_TypeCode (Base_TypeCode : Node_Id) is
             begin
                Add_TypeCode_Parameter (Base_TypeCode, Parameters);
                Return_Constructed_TypeCode (RTE (RE_TC_Alias));

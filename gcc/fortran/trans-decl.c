@@ -3780,9 +3780,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 						      NULL_TREE, true, NULL,
 						      true);
 		  else
-		    tmp = gfc_deallocate_scalar_with_status (se.expr, NULL,
-							     true, NULL,
-							     sym->ts);
+		    tmp = gfc_deallocate_scalar_with_status (se.expr, NULL_TREE,
+						   true,
+						   gfc_lval_expr_from_sym (sym),
+						   sym->ts);
 		}
 	      if (sym->ts.type == BT_CLASS)
 		{

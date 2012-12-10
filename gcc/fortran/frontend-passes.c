@@ -1277,7 +1277,11 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       break;
 
     case EXEC_CALL:
-      f = co->symtree->n.sym->formal;
+
+      if (co->resolved_sym == NULL)
+	break;
+
+      f = co->resolved_sym->formal;
 
       /* Withot a formal arglist, there is only unknown INTENT,
 	 which we don't check for.  */

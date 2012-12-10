@@ -105,6 +105,11 @@ package Atree is
    --                 is used to indicate the real value. Set to zero for
    --                 non-subexpression nodes.
 
+   --                 Note: the required parentheses surrounding conditional
+   --                 and quantified expressions count as a level of parens
+   --                 for this purpose, so e.g. in X := (if A then B else C);
+   --                 Paren_Count for the right side will be 1.
+
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
    --                 node is built by the scanner or parser, and clear if
@@ -302,12 +307,20 @@ package Atree is
    --  Number of warnings detected. Initialized to zero at the start of
    --  compilation. Initialized for -gnatVa use, see comment above.
 
+   Configurable_Run_Time_Violations : Nat := 0;
+   --  Count of configurable run time violations so far. This is used to
+   --  suppress certain cascaded error messages when we know that we may not
+   --  have fully expanded some items, due to high integrity violations (e.g.
+   --  the use of constructs not permitted by the library in use, or improper
+   --  constructs in No_Run_Time mode).
+
    procedure Check_Error_Detected;
    --  When an anomaly is found in the tree, many semantic routines silently
    --  bail out, assuming that the anomaly was caused by a previously detected
-   --  error. This routine should be called in these cases, and will raise an
-   --  exception if no error has been detected. This ensure that the anomaly
-   --  is never allowed to go unnoticed.
+   --  serious error (or configurable run time violation). This routine should
+   --  be called in these cases, and will raise an exception if no such error
+   --  has been detected. This ensure that the anomaly is never allowed to go
+   --  unnoticed.
 
    -------------------------------
    -- Default Setting of Fields --

@@ -28,10 +28,12 @@ if ![check_effective_target_faddress_sanitizer] {
 
 # Initialize `dg'.
 dg-init
-asan_init
+if [asan_init] {
 
 # Main loop.
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c $srcdir/c-c++-common/asan/*.c]] ""
+
+}
 
 # All done.
 asan_finish

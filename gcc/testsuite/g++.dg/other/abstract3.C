@@ -8,5 +8,5 @@ struct A                  // { dg-message "note" }
 struct B
 {
   A a;           // { dg-error "abstract" }
-  B() : a() {}   // { dg-error "abstract" }
+  B() : a() {}
 };

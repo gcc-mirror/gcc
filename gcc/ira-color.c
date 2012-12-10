@@ -2516,8 +2516,7 @@ improve_allocation (void)
     }
 }
 
-/* Sort allocnos according to their priorities which are calculated
-   analogous to ones in file `global.c'.  */
+/* Sort allocnos according to their priorities.  */
 static int
 allocno_priority_compare_func (const void *v1p, const void *v2p)
 {

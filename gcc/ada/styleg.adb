@@ -81,7 +81,8 @@ package body Styleg is
 
    function Is_White_Space (C : Character) return Boolean;
    pragma Inline (Is_White_Space);
-   --  Returns True for space, HT, VT or FF, False otherwise
+   --  Returns True for space or HT, False otherwise
+   --  What about VT and FF, should they return True ???
 
    procedure Require_Following_Space;
    pragma Inline (Require_Following_Space);
@@ -97,12 +98,12 @@ package body Styleg is
    -- Check_Abs_Or_Not --
    ----------------------
 
-   --  In check tokens mode (-gnatyt), ABS/NOT must be followed by a space
+   --  In check token mode (-gnatyt), ABS/NOT must be followed by a space
 
    procedure Check_Abs_Not is
    begin
       if Style_Check_Tokens then
-         if Source (Scan_Ptr) > ' ' then
+         if Source (Scan_Ptr) > ' ' then -- ???
             Error_Space_Required (Scan_Ptr);
          end if;
       end if;
@@ -112,7 +113,7 @@ package body Styleg is
    -- Check_Apostrophe --
    ----------------------
 
-   --  Do not allow space before or after apostrophe
+   --  Do not allow space before or after apostrophe -- OR AFTER???
 
    procedure Check_Apostrophe is
    begin
@@ -546,7 +547,7 @@ package body Styleg is
    -- Check_Dot_Dot --
    -------------------
 
-   --  In check token mode (-gnatyt), colon must be surrounded by spaces
+   --  In check token mode (-gnatyt), ".." must be surrounded by spaces
 
    procedure Check_Dot_Dot is
    begin
@@ -630,9 +631,9 @@ package body Styleg is
    -- Check_Left_Paren --
    ----------------------
 
-   --  In tone check mode (-gnatyt), left paren must not be preceded by an
-   --  identifier character or digit (a separating space is required) and
-   --  may never be followed by a space.
+   --  In check token mode (-gnatyt), left paren must not be preceded by an
+   --  identifier character or digit (a separating space is required) and may
+   --  never be followed by a space.
 
    procedure Check_Left_Paren is
    begin
@@ -707,9 +708,9 @@ package body Styleg is
 
       if Style_Check_DOS_Line_Terminator then
 
-      --  Ignore EOF, since we only get called with an EOF if it is the last
-      --  character in the buffer (and was therefore not in the source file),
-      --  since the terminating EOF is added to stop the scan.
+         --  Ignore EOF, since we only get called with an EOF if it is the last
+         --  character in the buffer (and was therefore not in the source
+         --  file), since the terminating EOF is added to stop the scan.
 
          if Source (Scan_Ptr) = EOF then
             null;
@@ -846,7 +847,7 @@ package body Styleg is
    -- Check_Right_Paren --
    -----------------------
 
-   --  In check tokens mode (-gnatyt), right paren must not be immediately
+   --  In check token mode (-gnatyt), right paren must not be immediately
    --  followed by an identifier character, and must never be preceded by
    --  a space unless it is the initial non-blank character on the line.
 
@@ -865,7 +866,7 @@ package body Styleg is
    -- Check_Semicolon --
    ---------------------
 
-   --  In check tokens mode (-gnatyt), semicolon does not permit a preceding
+   --  In check token mode (-gnatyt), semicolon does not permit a preceding
    --  space and a following space is required.
 
    procedure Check_Semicolon is

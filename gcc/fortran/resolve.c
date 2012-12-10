@@ -9857,7 +9857,6 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	continue;
 
       /* Make an assigment for this component.  */
-      this_code = gfc_get_code ();
       this_code = build_assignment (EXEC_ASSIGN,
 				    (*code)->expr1, (*code)->expr2,
 				    comp1, comp2, (*code)->loc);
@@ -12813,6 +12812,10 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   /* Add derived type to the derived type list.  */
   add_dt_to_dt_list (sym);
+
+  /* Check if the type is finalizable. This is done in order to ensure that the
+     finalization wrapper is generated early enough.  */
+  gfc_is_finalizable (sym, NULL);
 
   return SUCCESS;
 }

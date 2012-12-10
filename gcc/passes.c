@@ -1785,9 +1785,8 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
       fflush (dump_file);
 
       if ((cfun->curr_properties & PROP_cfg)
-	  && (cfun->curr_properties & PROP_rtl)
 	  && (dump_flags & TDF_GRAPH))
-	print_rtl_graph_with_bb (dump_file_name, cfun->decl);
+	print_graph_cfg (dump_file_name, cfun);
     }
 }
 
@@ -2069,11 +2068,17 @@ pass_init_dump_file (struct opt_pass *pass)
   /* If a dump file name is present, open it if enabled.  */
   if (pass->static_pass_number != -1)
     {
+      timevar_push (TV_DUMP);
       bool initializing_dump = !dump_initialized_p (pass->static_pass_number);
       dump_file_name = get_dump_file_name (pass->static_pass_number);
       dump_start (pass->static_pass_number, &dump_flags);
       if (dump_file && current_function_decl)
         dump_function_header (dump_file, current_function_decl, dump_flags);
+      if (initializing_dump
+	  && dump_file && (dump_flags & TDF_GRAPH)
+	  && cfun && (cfun->curr_properties & PROP_cfg))
+	clean_graph_dump_file (dump_file_name);
+      timevar_pop (TV_DUMP);
       return initializing_dump;
     }
   else
@@ -2086,6 +2091,8 @@ pass_init_dump_file (struct opt_pass *pass)
 void
 pass_fini_dump_file (struct opt_pass *pass)
 {
+  timevar_push (TV_DUMP);
+
   /* Flush and close dump file.  */
   if (dump_file_name)
     {
@@ -2094,6 +2101,7 @@ pass_fini_dump_file (struct opt_pass *pass)
     }
 
   dump_finish (pass->static_pass_number);
+  timevar_pop (TV_DUMP);
 }
 
 /* After executing the pass, apply expected changes to the function
@@ -2250,7 +2258,6 @@ override_gate_status (struct opt_pass *pass, tree func, bool gate_status)
 bool
 execute_one_pass (struct opt_pass *pass)
 {
-  bool initializing_dump;
   unsigned int todo_after = 0;
 
   bool gate_status;
@@ -2308,7 +2315,7 @@ execute_one_pass (struct opt_pass *pass)
      This is a hack until the new folder is ready.  */
   in_gimple_form = (cfun && (cfun->curr_properties & PROP_trees)) != 0;
 
-  initializing_dump = pass_init_dump_file (pass);
+  pass_init_dump_file (pass);
 
   /* Run pre-pass verification.  */
   execute_todo (pass->todo_flags_start);
@@ -2334,16 +2341,6 @@ execute_one_pass (struct opt_pass *pass)
     timevar_pop (pass->tv_id);
 
   do_per_function (update_properties_after_pass, pass);
-
-  if (initializing_dump
-      && dump_file
-      && (dump_flags & TDF_GRAPH)
-      && cfun
-      && (cfun->curr_properties & (PROP_cfg | PROP_rtl))
-	  == (PROP_cfg | PROP_rtl))
-    {
-      clean_graph_dump_file (dump_file_name);
-    }
 
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
     check_profile_consistency (pass->static_pass_number, 0, true);

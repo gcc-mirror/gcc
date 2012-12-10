@@ -232,6 +232,11 @@ begin
    Write_Switch_Char ("eS");
    Write_Line ("Generate SCO (Source Coverage Obligation) information");
 
+   --  Line for -gnatet switch
+
+   Write_Switch_Char ("et");
+   Write_Line ("Generate target dependent information in ALI file");
+
    --  Line for -gnateV switch
 
    Write_Switch_Char ("eV");
@@ -321,13 +326,14 @@ begin
    Write_Switch_Char ("o");
    Write_Line ("Enable overflow checking mode to CHECKED (off by default)");
 
-   --  Line for -gnato? switch
+   --  Lines for -gnato? switches
 
    Write_Switch_Char ("o?");
-   Write_Line ("Set SUPPRESSED/CHECKED/MINIMIZED/ELIMINATED (?=0/1/2/3) mode");
-
+   Write_Line
+     ("Enable overflow checks in STRICT/MINIMIZED/ELIMINATED (1/2/3) mode ");
    Write_Switch_Char ("o??");
-   Write_Line ("Set mode for general/assertion expressions separately");
+   Write_Line
+     ("Set mode for general/assertion expressions separately");
 
    --  Line for -gnatO switch
 
@@ -366,22 +372,22 @@ begin
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 
-   --  Lines for -gnats switch
+   --  Line for -gnats switch
 
    Write_Switch_Char ("s");
    Write_Line ("Syntax check only");
 
-   --  Lines for -gnatS switch
+   --  Line for -gnatS switch
 
    Write_Switch_Char ("S");
    Write_Line ("Print listing of package Standard");
 
-   --  Lines for -gnatt switch
+   --  Line for -gnatt switch
 
    Write_Switch_Char ("t");
    Write_Line ("Tree output file to be generated");
 
-   --  Line for -gnatT switch
+   --  Line for -gnatTnn switch
 
    Write_Switch_Char ("Tnn");
    Write_Line ("All compiler tables start at nn times usual starting size");
@@ -401,7 +407,7 @@ begin
    Write_Switch_Char ("v");
    Write_Line ("Verbose mode. Full error output with source lines to stdout");
 
-   --  Line for -gnatV switch
+   --  Lines for -gnatV switch
 
    Write_Switch_Char ("Vxx");
    Write_Line

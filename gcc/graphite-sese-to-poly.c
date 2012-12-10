@@ -1058,6 +1058,8 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	  c = isl_constraint_set_constant (c, v);
 	  inner = isl_set_add_constraint (inner, c);
 	}
+      else
+	isl_pw_aff_free (aff);
     }
   else
     gcc_unreachable ();

@@ -2013,6 +2013,48 @@ cleanup:
 }
 
 
+/* Check if a derived type is finalizable. That is the case if it
+   (1) has a FINAL subroutine or
+   (2) has a nonpointer nonallocatable component of finalizable type.
+   If it is finalizable, return an expression containing the
+   finalization wrapper.  */
+
+bool
+gfc_is_finalizable (gfc_symbol *derived, gfc_expr **final_expr)
+{
+  gfc_symbol *vtab;
+  gfc_component *c;
+
+  /* (1) Check for FINAL subroutines.  */
+  if (derived->f2k_derived && derived->f2k_derived->finalizers)
+    goto yes;
+
+  /* (2) Check for components of finalizable type.  */
+  for (c = derived->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable
+	&& gfc_is_finalizable (c->ts.u.derived, NULL))
+      goto yes;
+
+  return false;
+
+yes:
+  /* Make sure vtab is generated.  */
+  vtab = gfc_find_derived_vtab (derived);
+  if (final_expr)
+    {
+      /* Return finalizer expression.  */
+      gfc_component *final;
+      final = vtab->ts.u.derived->components->next->next->next->next->next;
+      gcc_assert (strcmp (final->name, "_final") == 0);
+      gcc_assert (final->initializer
+		  && final->initializer->expr_type != EXPR_NULL);
+      *final_expr = final->initializer;
+    }
+  return true;
+}
+
+
 /* General worker function to find either a type-bound procedure or a
    type-bound user operator.  */
 

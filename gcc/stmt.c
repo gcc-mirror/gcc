@@ -2061,7 +2061,7 @@ compute_cases_per_edge (gimple stmt)
       tree lab = CASE_LABEL (elt);
       basic_block case_bb = label_to_block_fn (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);
-      case_edge->aux = (void *)((long)(case_edge->aux) + 1);
+      case_edge->aux = (void *)((intptr_t)(case_edge->aux) + 1);
     }
 }
 
@@ -2176,7 +2176,7 @@ expand_case (gimple stmt)
       edge case_edge = find_edge (bb, case_bb);
       case_list = add_case_node (
           case_list, low, high, lab,
-          case_edge->probability / (long)(case_edge->aux),
+          case_edge->probability / (intptr_t)(case_edge->aux),
           case_node_pool);
     }
   pointer_set_destroy (seen_labels);
@@ -2282,7 +2282,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
       tree range = maxval;
       rtx default_label = gen_label_rtx ();
 
-      for (int i = ncases - 1; i > 0; --i)
+      for (int i = ncases - 1; i >= 0; --i)
 	{
 	  tree elt = dispatch_table[i];
 	  tree low = CASE_LOW (elt);

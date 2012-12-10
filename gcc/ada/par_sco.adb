@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Errout;   use Errout;
@@ -125,13 +126,13 @@ package body Par_SCO is
    --  Calls above procedure for each element of the list L
 
    procedure Set_Table_Entry
-     (C1          : Character;
-      C2          : Character;
-      From        : Source_Ptr;
-      To          : Source_Ptr;
-      Last        : Boolean;
-      Pragma_Sloc : Source_Ptr := No_Location;
-      Pragma_Name : Pragma_Id  := Unknown_Pragma);
+     (C1                 : Character;
+      C2                 : Character;
+      From               : Source_Ptr;
+      To                 : Source_Ptr;
+      Last               : Boolean;
+      Pragma_Sloc        : Source_Ptr := No_Location;
+      Pragma_Aspect_Name : Name_Id    := No_Name);
    --  Append an entry to SCO_Table with fields set as per arguments
 
    type Dominant_Info is record
@@ -487,14 +488,21 @@ package body Par_SCO is
          Loc : Source_Ptr := No_Location;
          --  Node whose Sloc is used for the decision
 
+         Nam : Name_Id := No_Name;
+         --  For the case of an aspect, aspect name
+
       begin
          case T is
-            when 'I' | 'E' | 'W' =>
+            when 'I' | 'E' | 'W' | 'a' | 'A' =>
 
-               --  For IF, EXIT, WHILE, the token SLOC can be found from
-               --  the SLOC of the parent of the expression.
+               --  For IF, EXIT, WHILE, or aspects, the token SLOC is that of
+               --  the parent of the expression.
 
                Loc := Sloc (Parent (N));
+
+               if T = 'a' or else T = 'A' then
+                  Nam := Chars (Identifier (Parent (N)));
+               end if;
 
             when 'G' | 'P' =>
 
@@ -533,12 +541,20 @@ package body Par_SCO is
          end case;
 
          Set_Table_Entry
-           (C1          => T,
-            C2          => ' ',
-            From        => Loc,
-            To          => No_Location,
-            Last        => False,
-            Pragma_Sloc => Pragma_Sloc);
+           (C1                 => T,
+            C2                 => ' ',
+            From               => Loc,
+            To                 => No_Location,
+            Last               => False,
+            Pragma_Sloc        => Pragma_Sloc,
+            Pragma_Aspect_Name => Nam);
+
+         --  For an aspect specification, which will be rewritten into a
+         --  pragma, enter a hash table entry now.
+
+         if T = 'a' then
+            Condition_Pragma_Hash_Table.Set (Loc, SCO_Table.Last);
+         end if;
       end Output_Header;
 
       ------------------------------
@@ -731,6 +747,8 @@ package body Par_SCO is
       procedure Populate_SCO_Instance_Table is
         new Sinput.Iterate_On_Instances (Record_Instance);
 
+      SCO_Index : Nat;
+
    begin
       if Debug_Flag_Dot_OO then
          dsco;
@@ -796,6 +814,25 @@ package body Par_SCO is
          end;
       end loop;
 
+      --  Stamp out SCO entries for decisions in disabled constructs (pragmas
+      --  or aspects).
+
+      SCO_Index := 1;
+      while SCO_Index <= SCO_Table.Last loop
+         if Is_Decision (SCO_Table.Table (SCO_Index).C1)
+           and then SCO_Pragma_Disabled
+                      (SCO_Table.Table (SCO_Index).Pragma_Sloc)
+         then
+            loop
+               SCO_Table.Table (SCO_Index).C1 := ASCII.NUL;
+               exit when SCO_Table.Table (SCO_Index).Last;
+               SCO_Index := SCO_Index + 1;
+            end loop;
+         end if;
+
+         SCO_Index := SCO_Index + 1;
+      end loop;
+
       --  Now the tables are all setup for output to the ALI file
 
       Write_SCOs_To_ALI_File;
@@ -824,8 +861,30 @@ package body Par_SCO is
          declare
             T : SCO_Table_Entry renames SCO_Table.Table (Index);
          begin
-            pragma Assert (T.C1 = 'S');
-            return T.C2 = 'p';
+            case T.C1 is
+               when 'S' =>
+                  --  Pragma statement
+
+                  return T.C2 = 'p';
+
+               when 'A' =>
+                  --  Aspect decision (enabled)
+
+                  return False;
+
+               when 'a' =>
+                  --  Aspect decision (not enabled)
+
+                  return True;
+
+               when ASCII.NUL =>
+                  --  Nullified disabled SCO
+
+                  return True;
+
+               when others =>
+                  raise Program_Error;
+            end case;
          end;
 
       else
@@ -976,13 +1035,28 @@ package body Par_SCO is
             T : SCO_Table_Entry renames SCO_Table.Table (Index);
 
          begin
-            --  Called multiple times for the same sloc (need to allow for
-            --  C2 = 'P') ???
+            --  Note: may be called multiple times for the same sloc, so
+            --  account for the fact that the entry may already have been
+            --  marked enabled.
 
-            pragma Assert (T.C1 = 'S'
-                             and then
-                           (T.C2 = 'p' or else T.C2 = 'P'));
-            T.C2 := 'P';
+            case T.C1 is
+               --  Aspect (decision SCO)
+
+               when 'a' =>
+                  T.C1 := 'A';
+
+               when 'A' =>
+                  null;
+
+               --  Pragma (statement SCO)
+
+               when 'S' =>
+                  pragma Assert (T.C2 = 'p' or else T.C2 = 'P');
+                  T.C2 := 'P';
+
+               when others =>
+                  raise Program_Error;
+            end case;
          end;
       end if;
    end Set_SCO_Pragma_Enabled;
@@ -992,23 +1066,23 @@ package body Par_SCO is
    ---------------------
 
    procedure Set_Table_Entry
-     (C1          : Character;
-      C2          : Character;
-      From        : Source_Ptr;
-      To          : Source_Ptr;
-      Last        : Boolean;
-      Pragma_Sloc : Source_Ptr := No_Location;
-      Pragma_Name : Pragma_Id  := Unknown_Pragma)
+     (C1                 : Character;
+      C2                 : Character;
+      From               : Source_Ptr;
+      To                 : Source_Ptr;
+      Last               : Boolean;
+      Pragma_Sloc        : Source_Ptr := No_Location;
+      Pragma_Aspect_Name : Name_Id    := No_Name)
    is
    begin
       SCO_Table.Append
-        ((C1          => C1,
-          C2          => C2,
-          From        => To_Source_Location (From),
-          To          => To_Source_Location (To),
-          Last        => Last,
-          Pragma_Sloc => Pragma_Sloc,
-          Pragma_Name => Pragma_Name));
+        ((C1                 => C1,
+          C2                 => C2,
+          From               => To_Source_Location (From),
+          To                 => To_Source_Location (To),
+          Last               => Last,
+          Pragma_Sloc        => Pragma_Sloc,
+          Pragma_Aspect_Name => Pragma_Aspect_Name));
    end Set_Table_Entry;
 
    ------------------------
@@ -1133,6 +1207,9 @@ package body Par_SCO is
       procedure Traverse_One (N : Node_Id);
       --  Traverse one declaration or statement
 
+      procedure Traverse_Aspects (N : Node_Id);
+      --  Helper for Traverse_One: traverse N's aspect specifications
+
       -------------------------
       -- Set_Statement_Entry --
       -------------------------
@@ -1156,21 +1233,21 @@ package body Par_SCO is
                         To := No_Location;
                      end if;
                      Set_Table_Entry
-                       (C1          => '>',
-                        C2          => Current_Dominant.K,
-                        From        => From,
-                        To          => To,
-                        Last        => False,
-                        Pragma_Sloc => No_Location,
-                        Pragma_Name => Unknown_Pragma);
+                       (C1                 => '>',
+                        C2                 => Current_Dominant.K,
+                        From               => From,
+                        To                 => To,
+                        Last               => False,
+                        Pragma_Sloc        => No_Location,
+                        Pragma_Aspect_Name => No_Name);
                   end;
                end if;
             end if;
 
             declare
-               SCE         : SC_Entry renames SC.Table (J);
-               Pragma_Sloc : Source_Ptr := No_Location;
-               Pragma_Name : Pragma_Id  := Unknown_Pragma;
+               SCE                : SC_Entry renames SC.Table (J);
+               Pragma_Sloc        : Source_Ptr := No_Location;
+               Pragma_Aspect_Name : Name_Id    := No_Name;
             begin
                --  For the case of a statement SCO for a pragma controlled by
                --  Set_SCO_Pragma_Enabled, set Pragma_Sloc so that the SCO (and
@@ -1181,20 +1258,22 @@ package body Par_SCO is
                   Pragma_Sloc := SCE.From;
                   Condition_Pragma_Hash_Table.Set
                     (Pragma_Sloc, SCO_Table.Last + 1);
-                  Pragma_Name := Get_Pragma_Id (Sinfo.Pragma_Name (SCE.N));
+                  Pragma_Aspect_Name := Pragma_Name (SCE.N);
+                  pragma Assert (Pragma_Aspect_Name /= No_Name);
 
                elsif SCE.Typ = 'P' then
-                  Pragma_Name := Get_Pragma_Id (Sinfo.Pragma_Name (SCE.N));
+                  Pragma_Aspect_Name := Pragma_Name (SCE.N);
+                  pragma Assert (Pragma_Aspect_Name /= No_Name);
                end if;
 
                Set_Table_Entry
-                 (C1          => 'S',
-                  C2          => SCE.Typ,
-                  From        => SCE.From,
-                  To          => SCE.To,
-                  Last        => (J = SC_Last),
-                  Pragma_Sloc => Pragma_Sloc,
-                  Pragma_Name => Pragma_Name);
+                 (C1                 => 'S',
+                  C2                 => SCE.Typ,
+                  From               => SCE.From,
+                  To                 => SCE.To,
+                  Last               => (J = SC_Last),
+                  Pragma_Sloc        => Pragma_Sloc,
+                  Pragma_Aspect_Name => Pragma_Aspect_Name);
             end;
          end loop;
 
@@ -1292,6 +1371,83 @@ package body Par_SCO is
       begin
          SD.Append ((Empty, L, T, Current_Pragma_Sloc));
       end Process_Decisions_Defer;
+
+      ----------------------
+      -- Traverse_Aspects --
+      ----------------------
+
+      procedure Traverse_Aspects (N : Node_Id) is
+         AN : Node_Id;
+         AE : Node_Id;
+         C1 : Character;
+
+      begin
+         AN := First (Aspect_Specifications (N));
+         while Present (AN) loop
+            AE := Expression (AN);
+
+            --  SCOs are generated before semantic analysis/expansion:
+            --  PPCs are not split yet.
+
+            pragma Assert (not Split_PPC (AN));
+
+            C1 := ASCII.NUL;
+
+            case Get_Aspect_Id (Chars (Identifier (AN))) is
+
+               --  Aspects rewritten into pragmas controlled by a Check_Policy:
+               --  Current_Pragma_Sloc must be set to the sloc of the aspect
+               --  specification. The corresponding pragma will have the same
+               --  sloc.
+
+               when Aspect_Pre               |
+                    Aspect_Precondition      |
+                    Aspect_Post              |
+                    Aspect_Postcondition     |
+                    Aspect_Invariant         =>
+
+                  C1 := 'a';
+
+               --  Aspects whose checks are generated in client units,
+               --  regardless of whether or not the check is activated in the
+               --  unit which contains the declaration: create decision as
+               --  unconditionally enabled aspect (but still make a pragma
+               --  entry since Set_SCO_Pragma_Enabled will be called when
+               --  analyzing actual checks, possibly in other units).
+
+               when Aspect_Predicate         |
+                    Aspect_Static_Predicate  |
+                    Aspect_Dynamic_Predicate |
+                    Aspect_Type_Invariant    =>
+
+                  C1 := 'A';
+
+               --  Other aspects: just process any decision nested in the
+               --  aspect expression.
+
+               when others =>
+
+                  if Has_Decision (AE) then
+                     C1 := 'X';
+                  end if;
+
+            end case;
+
+            if C1 /= ASCII.NUL then
+               pragma Assert (Current_Pragma_Sloc = No_Location);
+
+               if C1 = 'a' or else C1 = 'A' then
+                  Current_Pragma_Sloc := Sloc (AN);
+               end if;
+
+               Process_Decisions_Defer (AE, C1);
+
+               Current_Pragma_Sloc := No_Location;
+            end if;
+
+            Next (AN);
+         end loop;
+      end Traverse_Aspects;
 
       ------------------
       -- Traverse_One --
@@ -1825,6 +1981,9 @@ package body Par_SCO is
                end if;
          end case;
 
+         --  Process aspects if present
+
+         Traverse_Aspects (N);
       end Traverse_One;
 
    --  Start of processing for Traverse_Declarations_Or_Statements

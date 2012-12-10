@@ -23,6 +23,6 @@ template<class T>
 using A3 =
     enum B3 {b = 0;}; //{ dg-error "types may not be defined in alias template" }
 
-A3<int> a3;
+A3<int> a3; // { dg-error "'A3' does not name a type" }
 
 int main() { }

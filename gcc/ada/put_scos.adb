@@ -23,10 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Opt;     use Opt;
-with Par_SCO; use Par_SCO;
-with SCOs;    use SCOs;
-with Snames;  use Snames;
+with Namet; use Namet;
+with Opt;   use Opt;
+with SCOs;  use SCOs;
 
 procedure Put_SCOs is
    Current_SCO_Unit : SCO_Unit_Index := 0;
@@ -195,18 +194,10 @@ begin
 
                               if Sent.C1 = 'S'
                                 and then (Sent.C2 = 'P' or else Sent.C2 = 'p')
-                                and then Sent.Pragma_Name /= Unknown_Pragma
+                                and then Sent.Pragma_Aspect_Name /= No_Name
                               then
-                                 --  Strip leading "PRAGMA_"
-
-                                 declare
-                                    Pnam : constant String :=
-                                             Sent.Pragma_Name'Img;
-                                 begin
-                                    Output_String
-                                      (Pnam (Pnam'First + 7 .. Pnam'Last));
-                                    Write_Info_Char (':');
-                                 end;
+                                 Write_Info_Name (Sent.Pragma_Aspect_Name);
+                                 Write_Info_Char (':');
                               end if;
                            end if;
 
@@ -240,57 +231,54 @@ begin
 
                   --  Decision
 
-                  when 'E' | 'G' | 'I' | 'P' | 'W' | 'X' =>
+                  when 'E' | 'G' | 'I' | 'P' | 'W' | 'X' | 'A' =>
                      Start := Start + 1;
 
-                     --  For disabled pragma, or nested decision therein, skip
-                     --  decision output.
+                     Write_SCO_Initiate (U);
+                     Write_Info_Char (T.C1);
 
-                     if SCO_Pragma_Disabled (T.Pragma_Sloc) then
-                        while not SCO_Table.Table (Start).Last loop
-                           Start := Start + 1;
-                        end loop;
-
-                     --  For all other cases output decision line
-
-                     else
-                        Write_SCO_Initiate (U);
-                        Write_Info_Char (T.C1);
-
-                        if T.C1 /= 'X' then
-                           Write_Info_Char (' ');
-                           Output_Source_Location (T.From);
-                        end if;
-
-                        --  Loop through table entries for this decision
-
-                        loop
-                           declare
-                              T : SCO_Table_Entry
-                                    renames SCO_Table.Table (Start);
-
-                           begin
-                              Write_Info_Char (' ');
-
-                              if T.C1 = '!' or else
-                                 T.C1 = '&' or else
-                                 T.C1 = '|'
-                              then
-                                 Write_Info_Char (T.C1);
-                                 Output_Source_Location (T.From);
-
-                              else
-                                 Write_Info_Char (T.C2);
-                                 Output_Range (T);
-                              end if;
-
-                              exit when T.Last;
-                              Start := Start + 1;
-                           end;
-                        end loop;
-
-                        Write_Info_Terminate;
+                     if T.C1 = 'A' then
+                        Write_Info_Name (T.Pragma_Aspect_Name);
                      end if;
+
+                     if T.C1 /= 'X' then
+                        Write_Info_Char (' ');
+                        Output_Source_Location (T.From);
+                     end if;
+
+                     --  Loop through table entries for this decision
+
+                     loop
+                        declare
+                           T : SCO_Table_Entry renames SCO_Table.Table (Start);
+
+                        begin
+                           Write_Info_Char (' ');
+
+                           if T.C1 = '!' or else
+                              T.C1 = '&' or else
+                              T.C1 = '|'
+                           then
+                              Write_Info_Char (T.C1);
+                              Output_Source_Location (T.From);
+
+                           else
+                              Write_Info_Char (T.C2);
+                              Output_Range (T);
+                           end if;
+
+                           exit when T.Last;
+                           Start := Start + 1;
+                        end;
+                     end loop;
+
+                     Write_Info_Terminate;
+
+                  when ASCII.NUL =>
+
+                     --  Nullified entry: skip
+
+                     null;
 
                   when others =>
                      raise Program_Error;

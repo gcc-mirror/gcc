@@ -1093,6 +1093,7 @@ begin
 
       when Pragma_Abort_Defer                    |
            Pragma_Assertion_Policy               |
+           Pragma_Assume                         |
            Pragma_Assume_No_Invalid_Values       |
            Pragma_AST_Entry                      |
            Pragma_All_Calls_Remote               |
@@ -1112,6 +1113,7 @@ begin
            Pragma_Compile_Time_Warning           |
            Pragma_Compiler_Unit                  |
            Pragma_Contract_Case                  |
+           Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |
            Pragma_CPP_Constructor                |
@@ -1188,7 +1190,8 @@ begin
            Pragma_Lock_Free                      |
            Pragma_Locking_Policy                 |
            Pragma_Long_Float                     |
-           Pragma_Loop_Assertion                 |
+           Pragma_Loop_Invariant                 |
+           Pragma_Loop_Variant                   |
            Pragma_Machine_Attribute              |
            Pragma_Main                           |
            Pragma_Main_Storage                   |
@@ -1202,7 +1205,7 @@ begin
            Pragma_Ordered                        |
            Pragma_Optimize                       |
            Pragma_Optimize_Alignment             |
-           Pragma_Overflow_Checks                |
+           Pragma_Overflow_Mode                  |
            Pragma_Pack                           |
            Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |

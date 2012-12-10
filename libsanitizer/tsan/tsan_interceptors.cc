@@ -13,7 +13,7 @@
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_placement_new.h"
 #include "sanitizer_common/sanitizer_stacktrace.h"
-#include "tsan_interceptors.h"
+#include "interception/interception.h"
 #include "tsan_interface.h"
 #include "tsan_platform.h"
 #include "tsan_rtl.h"
@@ -135,6 +135,15 @@ static SignalContext *SigCtx(ThreadState *thr) {
 
 static unsigned g_thread_finalize_key;
 
+class ScopedInterceptor {
+ public:
+  ScopedInterceptor(ThreadState *thr, const char *fname, uptr pc);
+  ~ScopedInterceptor();
+ private:
+  ThreadState *const thr_;
+  const int in_rtl_;
+};
+
 ScopedInterceptor::ScopedInterceptor(ThreadState *thr, const char *fname,
                                      uptr pc)
     : thr_(thr)
@@ -157,6 +166,30 @@ ScopedInterceptor::~ScopedInterceptor() {
   }
   CHECK_EQ(in_rtl_, thr_->in_rtl);
 }
+
+#define SCOPED_INTERCEPTOR_RAW(func, ...) \
+    ThreadState *thr = cur_thread(); \
+    StatInc(thr, StatInterceptor); \
+    StatInc(thr, StatInt_##func); \
+    const uptr caller_pc = GET_CALLER_PC(); \
+    ScopedInterceptor si(thr, #func, caller_pc); \
+    /* Subtract one from pc as we need current instruction address */ \
+    const uptr pc = __sanitizer::StackTrace::GetCurrentPc() - 1; \
+    (void)pc; \
+/**/
+
+#define SCOPED_TSAN_INTERCEPTOR(func, ...) \
+    SCOPED_INTERCEPTOR_RAW(func, __VA_ARGS__); \
+    if (REAL(func) == 0) { \
+      Printf("FATAL: ThreadSanitizer: failed to intercept %s\n", #func); \
+      Die(); \
+    } \
+    if (thr->in_rtl > 1) \
+      return REAL(func)(__VA_ARGS__); \
+/**/
+
+#define TSAN_INTERCEPTOR(ret, func, ...) INTERCEPTOR(ret, func, __VA_ARGS__)
+#define TSAN_INTERCEPT(func) INTERCEPT_FUNCTION(func)
 
 #define BLOCK_REAL(name) (BlockingCall(thr), REAL(name))
 
@@ -259,7 +292,6 @@ static void finalize(void *arg) {
 TSAN_INTERCEPTOR(int, atexit, void (*f)()) {
   SCOPED_TSAN_INTERCEPTOR(atexit, f);
   return atexit_ctx->atexit(thr, pc, f);
-  return 0;
 }
 
 TSAN_INTERCEPTOR(void, longjmp, void *env, int val) {
@@ -306,6 +338,11 @@ TSAN_INTERCEPTOR(void*, malloc, uptr size) {
   }
   invoke_malloc_hook(p, size);
   return p;
+}
+
+TSAN_INTERCEPTOR(void*, __libc_memalign, uptr align, uptr sz) {
+  SCOPED_TSAN_INTERCEPTOR(__libc_memalign, align, sz);
+  return user_alloc(thr, pc, sz, align);
 }
 
 TSAN_INTERCEPTOR(void*, calloc, uptr size, uptr n) {
@@ -580,21 +617,31 @@ TSAN_INTERCEPTOR(int, posix_memalign, void **memptr, uptr align, uptr sz) {
 }
 
 // Used in thread-safe function static initialization.
-TSAN_INTERCEPTOR(int, __cxa_guard_acquire, char *m) {
-  SCOPED_TSAN_INTERCEPTOR(__cxa_guard_acquire, m);
-  int res = REAL(__cxa_guard_acquire)(m);
-  if (res) {
-    // This thread does the init.
-  } else {
-    Acquire(thr, pc, (uptr)m);
+extern "C" int INTERFACE_ATTRIBUTE __cxa_guard_acquire(atomic_uint32_t *g) {
+  SCOPED_INTERCEPTOR_RAW(__cxa_guard_acquire, g);
+  for (;;) {
+    u32 cmp = atomic_load(g, memory_order_acquire);
+    if (cmp == 0) {
+      if (atomic_compare_exchange_strong(g, &cmp, 1<<16, memory_order_relaxed))
+        return 1;
+    } else if (cmp == 1) {
+      Acquire(thr, pc, (uptr)g);
+      return 0;
+    } else {
+      internal_sched_yield();
+    }
   }
-  return res;
 }
 
-TSAN_INTERCEPTOR(void, __cxa_guard_release, char *m) {
-  SCOPED_TSAN_INTERCEPTOR(__cxa_guard_release, m);
-  Release(thr, pc, (uptr)m);
-  REAL(__cxa_guard_release)(m);
+extern "C" void INTERFACE_ATTRIBUTE __cxa_guard_release(atomic_uint32_t *g) {
+  SCOPED_INTERCEPTOR_RAW(__cxa_guard_release, g);
+  Release(thr, pc, (uptr)g);
+  atomic_store(g, 1, memory_order_release);
+}
+
+extern "C" void INTERFACE_ATTRIBUTE __cxa_guard_abort(atomic_uint32_t *g) {
+  SCOPED_INTERCEPTOR_RAW(__cxa_guard_abort, g);
+  atomic_store(g, 0, memory_order_relaxed);
 }
 
 static void thread_finalize(void *v) {
@@ -1347,6 +1394,35 @@ TSAN_INTERCEPTOR(int, gettimeofday, void *tv, void *tz) {
   return REAL(gettimeofday)(tv, tz);
 }
 
+// Linux kernel has a bug that leads to kernel deadlock if a process
+// maps TBs of memory and then calls mlock().
+static void MlockIsUnsupported() {
+  static atomic_uint8_t printed;
+  if (atomic_exchange(&printed, 1, memory_order_relaxed))
+    return;
+  Printf("INFO: ThreadSanitizer ignores mlock/mlockall/munlock/munlockall\n");
+}
+
+TSAN_INTERCEPTOR(int, mlock, const void *addr, uptr len) {
+  MlockIsUnsupported();
+  return 0;
+}
+
+TSAN_INTERCEPTOR(int, munlock, const void *addr, uptr len) {
+  MlockIsUnsupported();
+  return 0;
+}
+
+TSAN_INTERCEPTOR(int, mlockall, int flags) {
+  MlockIsUnsupported();
+  return 0;
+}
+
+TSAN_INTERCEPTOR(int, munlockall, void) {
+  MlockIsUnsupported();
+  return 0;
+}
+
 namespace __tsan {
 
 void ProcessPendingSignals(ThreadState *thr) {
@@ -1396,6 +1472,11 @@ void ProcessPendingSignals(ThreadState *thr) {
   thr->in_signal_handler = false;
 }
 
+static void unreachable() {
+  Printf("FATAL: ThreadSanitizer: unreachable called\n");
+  Die();
+}
+
 void InitializeInterceptors() {
   CHECK_GT(cur_thread()->in_rtl, 0);
 
@@ -1408,6 +1489,7 @@ void InitializeInterceptors() {
   TSAN_INTERCEPT(siglongjmp);
 
   TSAN_INTERCEPT(malloc);
+  TSAN_INTERCEPT(__libc_memalign);
   TSAN_INTERCEPT(calloc);
   TSAN_INTERCEPT(realloc);
   TSAN_INTERCEPT(free);
@@ -1435,9 +1517,6 @@ void InitializeInterceptors() {
   TSAN_INTERCEPT(strcpy);  // NOLINT
   TSAN_INTERCEPT(strncpy);
   TSAN_INTERCEPT(strstr);
-
-  TSAN_INTERCEPT(__cxa_guard_acquire);
-  TSAN_INTERCEPT(__cxa_guard_release);
 
   TSAN_INTERCEPT(pthread_create);
   TSAN_INTERCEPT(pthread_join);
@@ -1524,6 +1603,14 @@ void InitializeInterceptors() {
   TSAN_INTERCEPT(nanosleep);
   TSAN_INTERCEPT(gettimeofday);
 
+  TSAN_INTERCEPT(mlock);
+  TSAN_INTERCEPT(munlock);
+  TSAN_INTERCEPT(mlockall);
+  TSAN_INTERCEPT(munlockall);
+
+  // Need to setup it, because interceptors check that the function is resolved.
+  // But atexit is emitted directly into the module, so can't be resolved.
+  REAL(atexit) = (int(*)(void(*)()))unreachable;
   atexit_ctx = new(internal_alloc(MBlockAtExit, sizeof(AtExitContext)))
       AtExitContext();
 

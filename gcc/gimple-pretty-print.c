@@ -111,6 +111,7 @@ print_gimple_expr (FILE *file, gimple g, int spc, int flags)
   flags |= TDF_RHS_ONLY;
   maybe_init_pretty_print (file);
   pp_gimple_stmt_1 (&buffer, g, spc, flags);
+  pp_flush (&buffer);
 }
 
 
@@ -2048,12 +2049,6 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
     default:
       GIMPLE_NIY;
     }
-
-  /* If we're building a diagnostic, the formatted text will be
-     written into BUFFER's stream by the caller; otherwise, write it
-     now.  */
-  if (!(flags & TDF_DIAGNOSTIC))
-    pp_write_text_to_stream (buffer);
 }
 
 
@@ -2271,3 +2266,45 @@ gimple_dump_bb (FILE *file, basic_block bb, int indent, int flags)
     }
   dump_gimple_bb_footer (file, bb, indent, flags);
 }
+
+/* Dumps basic block BB to pretty-printer PP with default dump flags and
+   no indentation, for use as a label of a DOT graph record-node.
+   ??? Should just use gimple_dump_bb_buff here, except that value profiling
+   histogram dumping doesn't know about pretty-printers.  */
+
+void
+gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+
+  pp_printf (pp, "<bb %d>:\n", bb->index);
+  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple phi = gsi_stmt (gsi);
+      if (!virtual_operand_p (gimple_phi_result (phi))
+	  || (dump_flags & TDF_VOPS))
+	{
+	  pp_character (pp, '|');
+	  pp_write_text_to_stream (pp);
+	  pp_string (pp, "# ");
+	  pp_gimple_stmt_1 (pp, phi, 0, dump_flags);
+	  pp_newline (pp);
+	  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+	}
+    }
+
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      pp_character (pp, '|');
+      pp_write_text_to_stream (pp);
+      pp_gimple_stmt_1 (pp, stmt, 0, dump_flags);
+      pp_newline (pp);
+      pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+    }
+  dump_implicit_edges (pp, bb, 0, dump_flags);
+  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+}
+
