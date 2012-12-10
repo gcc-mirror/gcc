@@ -2282,7 +2282,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
       tree range = maxval;
       rtx default_label = gen_label_rtx ();
 
-      for (int i = ncases - 1; i > 0; --i)
+      for (int i = ncases - 1; i >= 0; --i)
 	{
 	  tree elt = dispatch_table[i];
 	  tree low = CASE_LOW (elt);
