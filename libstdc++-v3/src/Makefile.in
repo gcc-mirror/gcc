@@ -879,7 +879,7 @@ compatibility-thread-c++0x.o: compatibility-thread-c++0x.cc
 @ENABLE_SYMVERS_TRUE@	  fi; \
 @ENABLE_SYMVERS_TRUE@	fi
 @ENABLE_SYMVERS_TRUE@	$(EGREP) -v '^[ 	]*#(#| |$$)' $@.tmp | \
-@ENABLE_SYMVERS_TRUE@	  $(CC) -E -P -include ../config.h - > $@ || (rm -f $@ ; exit 1)
+@ENABLE_SYMVERS_TRUE@	  $(CC) -E -P -include $(CONFIG_HEADER) - > $@ || (rm -f $@ ; exit 1)
 @ENABLE_SYMVERS_TRUE@	rm -f $@.tmp
 @ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver-sun : libstdc++-symbols.ver \
 @ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@		$(toplevel_srcdir)/contrib/make_sunver.pl \

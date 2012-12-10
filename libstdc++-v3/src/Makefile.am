@@ -213,7 +213,7 @@ libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 	  fi; \
 	fi
 	$(EGREP) -v '^[ 	]*#(#| |$$)' $@.tmp | \
-	  $(CC) -E -P -include ../config.h - > $@ || (rm -f $@ ; exit 1)
+	  $(CC) -E -P -include $(CONFIG_HEADER) - > $@ || (rm -f $@ ; exit 1)
 	rm -f $@.tmp
 
 CLEANFILES = libstdc++-symbols.ver
