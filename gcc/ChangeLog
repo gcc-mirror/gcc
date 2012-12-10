@@ -1,5 +1,9 @@
 2012-12-10  Steve Ellcey  <sellcey@mips.com>
 
+	* config/mips/gnu-user.h (NO_SHARED_SPECS): Add space before option.
+
+2012-12-10  Steve Ellcey  <sellcey@mips.com>
+
 	PR target/54061
 	rtl.h (IGNORED_DWARF_REGNUM): New.
 	* dwarf2out.c (reg_loc_descriptor): Check for IGNORED_DWARF_REGNUM.
