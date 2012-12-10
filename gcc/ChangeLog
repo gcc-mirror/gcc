@@ -1,3 +1,8 @@
+2012-12-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/spu/spu.md: Replace "operands" with "operands != NULL" in
+	insn conditions.
+
 2012-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* asan.c (asan_init_shadow_ptr_types): Move earlier in the file.
