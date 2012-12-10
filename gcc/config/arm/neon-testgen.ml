@@ -162,9 +162,11 @@ let effective_target features =
   try
     match List.find (fun feature ->
                        match feature with Requires_feature _ -> true
+                                        | Requires_arch _ -> true
                                         | _ -> false)
                      features with
       Requires_feature "FMA" -> "arm_neonv2"
+    | Requires_arch 8 -> "arm_v8_neon"
     | _ -> assert false
   with Not_found -> "arm_neon"
 

@@ -1,3 +1,16 @@
+2012-12-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/neon/vrndaf32.c: New test.
+	* gcc.target/arm/neon/vrndqaf32.c: Likewise.
+	* gcc.target/arm/neon/vrndf32.c: Likewise.
+	* gcc.target/arm/neon/vrndqf32.c: Likewise.
+	* gcc.target/arm/neon/vrndmf32.c: Likewise.
+	* gcc.target/arm/neon/vrndqmf32.c: Likewise.
+	* gcc.target/arm/neon/vrndnf32.c: Likewise.
+	* gcc.target/arm/neon/vrndqnf32.c: Likewise.
+	* gcc.target/arm/neon/vrndpf32.c: Likewise.
+	* gcc.target/arm/neon/vrndqpf32.c: Likewise.
+
 2012-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.misc-tests/gcov-12.c: Fix dg order.
