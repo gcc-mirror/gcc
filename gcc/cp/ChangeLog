@@ -1,3 +1,8 @@
+2012-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Make-lang.in (cp/typeck.o): Add dependency on $(PARAMS_H).
+	(cp/name-lookup.o): Likewise.
+
 2012-12-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* decl2.c (cp_write_global_declarations): Return after writing a PCH.
