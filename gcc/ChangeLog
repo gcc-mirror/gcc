@@ -1,3 +1,20 @@
+2012-12-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.ml (opcode): Add Vrintn, Vrinta, Vrintp, Vrintm,
+	Vrintz to type.
+	(type features): Add Requires_arch type constructor.
+	(ops): Define Vrintn, Vrinta, Vrintp, Vrintm, Vrintz features.
+	* config/arm/neon-docgen.ml (intrinsic_groups): Define Vrintn,
+	Vrinta, Vrintp, Vrintm, Vrintz, Vrintx.
+	* config/arm/neon-testgen.ml (effective_target): Define check for 
+	Requires_arch 8.
+	* config/arm/neon-gen.ml 
+	(print_feature_test_start): Handle Requires_arch.
+	(print_feature_test_end): Likewise.
+	Add 2012 to Copyright notice.
+	* doc/arm-neon-intrinsics.texi: Regenerate.
+	* config/arm/arm_neon.h: Regenerate.
+
 2012-12-10 Kai Tietz  <ktietz@redhat.com>
 
 	* stmt.c (expand_sjlj_dispatch_table): Fix off by one.
