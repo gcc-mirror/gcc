@@ -1,3 +1,28 @@
+2012-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (asan_init_shadow_ptr_types): Move earlier in the file.
+	Call initialize_sanitizer_builtins at the end.
+	(asan_pp_string): Use TREE_TYPE (shadow_ptr_types[0])
+	as character type instead of char_type_node.
+	(asan_emit_stack_protection): Call asan_init_shadow_ptr_types
+	if shadow_ptr_types isn't initialized.
+	(asan_protect_global): Return true for STRING_CSTs except those
+	created by asan_pp_string.
+	(count_string_csts, add_string_csts): New functions.
+	(struct asan_add_string_csts_data): New type.
+	(asan_finish_file): Clear flag_asan at the beginning, restore at the
+	end.  Traverse constant_pool_htab () to look for protected
+	STRING_CSTs.  Don't call initialize_sanitizer_builtins,
+	instead call asan_init_shadow_ptr_types if shadow_ptr_types isn't
+	initialized yet.
+	(asan_instrument): Don't call initialize_sanitizer_builtins.
+	* varasm.c (output_constant_def_contents): If STRING_CST should be
+	asan protected, align it sufficiently and emit padding after it.
+	(categorize_decl_for_section): If flag_asan, don't put STRING_CSTs
+	that should be asan protected into mergeable sections.  For
+	-fmerge-all-constants, ignore it for -fmudflap or if decl is
+	asan protected.
+
 2012-12-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.ml (opcode): Add Vrintn, Vrinta, Vrintp, Vrintm,
