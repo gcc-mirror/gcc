@@ -1,3 +1,8 @@
+2012-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (instrument_derefs): Handle bitfield COMPONENT_REFs
+	accesses as reads/writes to their DECL_BIT_FIELD_REPRESENTATIVE.
+
 2012-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lto-streamer-out.c (lto_write_tree): Do not reset the DECL_INITIAL of

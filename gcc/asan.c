@@ -797,9 +797,6 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
       || (unsigned HOST_WIDE_INT) size_in_bytes - 1 >= 16)
     return;
 
-  /* For now just avoid instrumenting bit field acceses.
-     Fixing it is doable, but expected to be messy.  */
-
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   enum machine_mode mode;
@@ -808,7 +805,17 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 		       &mode, &unsignedp, &volatilep, false);
   if (bitpos % (size_in_bytes * BITS_PER_UNIT)
       || bitsize != size_in_bytes * BITS_PER_UNIT)
-    return;
+    {
+      if (TREE_CODE (t) == COMPONENT_REF
+	  && DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1)) != NULL_TREE)
+	{
+	  tree repr = DECL_BIT_FIELD_REPRESENTATIVE (TREE_OPERAND (t, 1));
+	  instrument_derefs (iter, build3 (COMPONENT_REF, TREE_TYPE (repr),
+					   TREE_OPERAND (t, 0), repr,
+					   NULL_TREE), location, is_store);
+	}
+      return;
+    }
 
   base = build_fold_addr_expr (t);
   build_check_stmt (location, base, iter, /*before_p=*/true,
