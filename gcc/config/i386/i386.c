@@ -1919,10 +1919,10 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_PROLOGUE_USING_MOVE */
-  m_PPRO | m_CORE2I7 | m_ATOM | m_ATHLON_K8 | m_GENERIC,
+  m_PPRO | m_ATHLON_K8,
 
   /* X86_TUNE_EPILOGUE_USING_MOVE */
-  m_PPRO | m_CORE2I7 | m_ATOM | m_ATHLON_K8 | m_GENERIC,
+  m_PPRO | m_ATHLON_K8,
 
   /* X86_TUNE_SHIFT1 */
   ~m_486,
