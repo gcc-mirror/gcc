@@ -10499,7 +10499,12 @@ reg_loc_descriptor (rtx rtl, enum var_init_status initialized)
   if (hard_regno_nregs[REGNO (rtl)][GET_MODE (rtl)] > 1 || regs)
     return multiple_reg_loc_descriptor (rtl, regs, initialized);
   else
-    return one_reg_loc_descriptor (dbx_reg_number (rtl), initialized);
+    {
+      unsigned int dbx_regnum = dbx_reg_number (rtl);
+      if (dbx_regnum == IGNORED_DWARF_REGNUM)
+	return 0;
+      return one_reg_loc_descriptor (dbx_regnum, initialized);
+    }
 }
 
 /* Return a location descriptor that designates a machine register for
@@ -11926,6 +11931,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      ))
 	{
 	  dw_die_ref type_die;
+	  unsigned int dbx_regnum;
 
 	  if (dwarf_strict)
 	    break;
@@ -11935,8 +11941,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 					 GET_MODE_CLASS (mode) == MODE_INT);
 	  if (type_die == NULL)
 	    break;
+
+	  dbx_regnum = dbx_reg_number (rtl);
+	  if (dbx_regnum == IGNORED_DWARF_REGNUM)
+	    break;
 	  mem_loc_result = new_loc_descr (DW_OP_GNU_regval_type,
-					  dbx_reg_number (rtl), 0);
+					  dbx_regnum, 0);
 	  mem_loc_result->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	  mem_loc_result->dw_loc_oprnd2.v.val_die_ref.die = type_die;
 	  mem_loc_result->dw_loc_oprnd2.v.val_die_ref.external = 0;
@@ -12138,9 +12148,13 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	    op0 = mem_loc_descriptor (ENTRY_VALUE_EXP (rtl), mode,
 				      VOIDmode, VAR_INIT_STATUS_INITIALIZED);
 	  else
-	    op0
-	      = one_reg_loc_descriptor (dbx_reg_number (ENTRY_VALUE_EXP (rtl)),
-					VAR_INIT_STATUS_INITIALIZED);
+	    {
+              unsigned int dbx_regnum = dbx_reg_number (ENTRY_VALUE_EXP (rtl));
+	      if (dbx_regnum == IGNORED_DWARF_REGNUM)
+		return NULL;
+	      op0 = one_reg_loc_descriptor (dbx_regnum,
+					    VAR_INIT_STATUS_INITIALIZED);
+	    }
 	}
       else if (MEM_P (ENTRY_VALUE_EXP (rtl))
 	       && REG_P (XEXP (ENTRY_VALUE_EXP (rtl), 0)))

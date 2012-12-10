@@ -2439,6 +2439,9 @@ extern rtx gen_rtx_MEM (enum machine_mode, rtx);
 /* REGNUM never really appearing in the INSN stream.  */
 #define INVALID_REGNUM			(~(unsigned int) 0)
 
+/* REGNUM for which no debug information can be generated.  */
+#define IGNORED_DWARF_REGNUM            (INVALID_REGNUM - 1)
+
 extern rtx output_constant_def (tree, int);
 extern rtx lookup_constant_def (tree);
 

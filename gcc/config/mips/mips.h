@@ -1641,8 +1641,11 @@ struct mips_cpu_info {
 #define COP3_REG_FIRST 144
 #define COP3_REG_LAST 175
 #define COP3_REG_NUM (COP3_REG_LAST - COP3_REG_FIRST + 1)
-/* ALL_COP_REG_NUM assumes that COP0,2,and 3 are numbered consecutively.  */
-#define ALL_COP_REG_NUM (COP3_REG_LAST - COP0_REG_FIRST + 1)
+
+/* These definitions assume that COP0, 2 and 3 are numbered consecutively.  */
+#define ALL_COP_REG_FIRST COP0_REG_FIRST
+#define ALL_COP_REG_LAST COP3_REG_LAST
+#define ALL_COP_REG_NUM (ALL_COP_REG_LAST - ALL_COP_REG_FIRST + 1)
 
 #define DSP_ACC_REG_FIRST 176
 #define DSP_ACC_REG_LAST 181
