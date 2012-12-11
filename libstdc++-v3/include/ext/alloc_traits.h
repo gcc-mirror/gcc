@@ -32,6 +32,7 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201103L
+# include <bits/move.h>
 # include <bits/alloc_traits.h>
 #else
 # include <bits/allocator.h>  // for __alloc_swap

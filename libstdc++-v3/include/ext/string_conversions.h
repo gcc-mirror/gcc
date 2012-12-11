@@ -31,6 +31,10 @@
 
 #pragma GCC system_header
 
+#if __cplusplus < 201103L
+# include <bits/c++0x_warning.h>
+#else
+
 #include <bits/c++config.h>
 #include <ext/numeric_traits.h>
 #include <bits/functexcept.h>
@@ -97,5 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+#endif // C++11
 
 #endif // _STRING_CONVERSIONS_H
