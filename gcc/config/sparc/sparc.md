@@ -7757,7 +7757,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:SI 1 "register_operand" "r")))
-	(match_operand:QI 0 "register_operand" "=r"))]
+	(match_operand:QI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH32"
   "stb\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
@@ -7767,7 +7767,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:DI 1 "register_operand" "r")))
-	(match_operand:QI 0 "register_operand" "=r"))]
+	(match_operand:QI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH64"
   "stb\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
@@ -7777,7 +7777,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:SI 1 "register_operand" "r")))
-	(match_operand:HI 0 "register_operand" "=r"))]
+	(match_operand:HI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH32"
   "sth\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
@@ -7787,7 +7787,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:DI 1 "register_operand" "r")))
-	(match_operand:HI 0 "register_operand" "=r"))]
+	(match_operand:HI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH64"
   "sth\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
@@ -7797,7 +7797,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:SI 1 "register_operand" "r")))
-	(match_operand:SI 0 "register_operand" "=r"))]
+	(match_operand:SI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH32"
   "st\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
@@ -7807,7 +7807,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:DI 1 "register_operand" "r")))
-	(match_operand:SI 0 "register_operand" "=r"))]
+	(match_operand:SI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH64"
   "stw\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
@@ -7817,7 +7817,7 @@
 				     (match_operand 3 "tld_symbolic_operand" "")]
 				    UNSPEC_TLSLDO)
 			 (match_operand:DI 1 "register_operand" "r")))
-	(match_operand:DI 0 "register_operand" "=r"))]
+	(match_operand:DI 0 "register_operand" "r"))]
   "TARGET_TLS && TARGET_ARCH64"
   "stx\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
