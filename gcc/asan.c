@@ -447,7 +447,6 @@ bool
 asan_protect_global (tree decl)
 {
   rtx rtl, symbol;
-  section *sect;
 
   if (TREE_CODE (decl) == STRING_CST)
     {
@@ -471,7 +470,7 @@ asan_protect_global (tree decl)
 	 padding or not.  */
       || DECL_ONE_ONLY (decl)
       /* Similarly for common vars.  People can use -fno-common.  */
-      || DECL_COMMON (decl)
+      || (DECL_COMMON (decl) && TREE_PUBLIC (decl))
       /* Don't protect if using user section, often vars placed
 	 into user section from multiple TUs are then assumed
 	 to be an array of such vars, putting padding in there
@@ -491,10 +490,6 @@ asan_protect_global (tree decl)
 
   if (CONSTANT_POOL_ADDRESS_P (symbol)
       || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
-    return false;
-
-  sect = get_variable_section (decl, false);
-  if (sect->common.flags & SECTION_COMMON)
     return false;
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
