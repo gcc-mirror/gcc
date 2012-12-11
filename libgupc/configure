@@ -4570,6 +4570,12 @@ else
   as_fn_error "cannot create UPC from CC because it does not contain the
   string '/xgcc '; the value of CC is: \"$CC\"" "$LINENO" 5
 fi
+# The just built UPC compiler is not fully functional as it is
+# unable to auto pre-include "gcc-upc.h" and "gcc-upc-lib.h".
+# Make sure that "upc-pre-include" feature is disabled for any of the
+# UPC program checks (e.g. checking for dependency options).
+saved_UPC="$UPC"
+UPC="$UPC -fno-upc-pre-include"
 if test -n "$ac_tool_prefix"; then
   for ac_prog in upcc upc
   do
@@ -4800,6 +4806,7 @@ else
 fi
 
 
+UPC="$saved_UPC"
 
 # Find other programs we need.
 if test -n "$ac_tool_prefix"; then
@@ -11648,7 +11655,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11651 "configure"
+#line 11658 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11754,7 +11761,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11757 "configure"
+#line 11764 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -1,3 +1,8 @@
+2012-12-11  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc-act.c (upc_finish): Call c_common_finish() to
+	finalize the C language related items.
+
 2012-10-28  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Remove unused --upc-pthreads-per-process compile switch. 

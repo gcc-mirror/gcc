@@ -1502,11 +1502,12 @@ upc_write_global_declarations (void)
   upc_genericize_finish ();
 }
 
-/* UPC Language-specific 'finish' hook (currently unused).  */
+/* UPC Language-specific 'finish' hook.  */
 
 void
 upc_finish (void)
 {
+  c_common_finish ();
 }
 
 /* UPC language-specific initialization ('init' hook).  */

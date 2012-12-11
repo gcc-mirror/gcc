@@ -213,7 +213,14 @@ else
   AC_MSG_ERROR([cannot create UPC from CC because it does not contain the
   string '/xgcc '; the value of CC is: "$CC"])
 fi
+# The just built UPC compiler is not fully functional as it is
+# unable to auto pre-include "gcc-upc.h" and "gcc-upc-lib.h".
+# Make sure that "upc-pre-include" feature is disabled for any of the
+# UPC program checks (e.g. checking for dependency options).
+saved_UPC="$UPC"
+UPC="$UPC -fno-upc-pre-include"
 AM_PROG_UPC()
+UPC="$saved_UPC"
 
 # Find other programs we need.
 AC_CHECK_TOOL(AR, ar)
