@@ -1,3 +1,9 @@
+2012-12-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/predicates.md ("execute_operation"): New predicate.
+	* config/s390/s390.md ("*execute_rl", "*execute"): Use the new
+	predicate.
+
 2012-12-10  Xinliang David Li  <davidxl@google.com>
 
 	* config/i386/i386.c: Enable push/pop in pro/epilogue for mordern CPUs.
