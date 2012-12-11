@@ -243,13 +243,15 @@ described below.
 
 @heading Tools/packages necessary for building GCC
 @table @asis
-@item ISO C90 compiler
+@item ISO C++98 compiler
 Necessary to bootstrap GCC, although versions of GCC prior
-to 3.4 also allow bootstrapping with a traditional (K&R) C compiler.
+to 4.8 also allow bootstrapping with a ISO C89 compiler and versions
+of GCC prior to 3.4 also allow bootstrapping with a traditional
+(K&R) C compiler.
 
 To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
-GCC binary (version 2.95 or later) because source code for language
+GCC binary (version 3.4 or later) because source code for language
 frontends other than C might use GCC extensions.
 
 @item GNAT
