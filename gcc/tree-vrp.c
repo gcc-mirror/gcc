@@ -2349,6 +2349,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       && code != EXACT_DIV_EXPR
       && code != ROUND_DIV_EXPR
       && code != TRUNC_MOD_EXPR
+      && code != MIN_EXPR
+      && code != MAX_EXPR
       && (vr0.type == VR_VARYING
 	  || vr1.type == VR_VARYING
 	  || vr0.type != vr1.type
@@ -2602,21 +2604,49 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
   else if (code == MIN_EXPR
 	   || code == MAX_EXPR)
     {
-      if (vr0.type == VR_ANTI_RANGE)
+      if (vr0.type == VR_RANGE
+	  && !symbolic_range_p (&vr0))
 	{
-	  /* For MIN_EXPR and MAX_EXPR with two VR_ANTI_RANGEs,
-	     the resulting VR_ANTI_RANGE is the same - intersection
-	     of the two ranges.  */
-	  min = vrp_int_const_binop (MAX_EXPR, vr0.min, vr1.min);
-	  max = vrp_int_const_binop (MIN_EXPR, vr0.max, vr1.max);
+	  type = VR_RANGE;
+	  if (vr1.type == VR_RANGE
+	      && !symbolic_range_p (&vr1))
+	    {
+	      /* For operations that make the resulting range directly
+		 proportional to the original ranges, apply the operation to
+		 the same end of each range.  */
+	      min = vrp_int_const_binop (code, vr0.min, vr1.min);
+	      max = vrp_int_const_binop (code, vr0.max, vr1.max);
+	    }
+	  else if (code == MIN_EXPR)
+	    {
+	      min = vrp_val_min (expr_type);
+	      max = vr0.max;
+	    }
+	  else if (code == MAX_EXPR)
+	    {
+	      min = vr0.min;
+	      max = vrp_val_max (expr_type);
+	    }
+	}
+      else if (vr1.type == VR_RANGE
+	       && !symbolic_range_p (&vr1))
+	{
+	  type = VR_RANGE;
+	  if (code == MIN_EXPR)
+	    {
+	      min = vrp_val_min (expr_type);
+	      max = vr1.max;
+	    }
+	  else if (code == MAX_EXPR)
+	    {
+	      min = vr1.min;
+	      max = vrp_val_max (expr_type);
+	    }
 	}
       else
 	{
-	  /* For operations that make the resulting range directly
-	     proportional to the original ranges, apply the operation to
-	     the same end of each range.  */
-	  min = vrp_int_const_binop (code, vr0.min, vr1.min);
-	  max = vrp_int_const_binop (code, vr0.max, vr1.max);
+	  set_value_range_to_varying (vr);
+	  return;
 	}
     }
   else if (code == MULT_EXPR)
@@ -4707,6 +4737,45 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	}
     }
 
+  /* In the case of post-in/decrement tests like if (i++) ... and uses
+     of the in/decremented value on the edge the extra name we want to
+     assert for is not on the def chain of the name compared.  Instead
+     it is in the set of use stmts.  */
+  if ((comp_code == NE_EXPR
+       || comp_code == EQ_EXPR)
+      && TREE_CODE (val) == INTEGER_CST)
+    {
+      imm_use_iterator ui;
+      gimple use_stmt;
+      FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
+	{
+	  /* Cut off to use-stmts that are in the predecessor.  */
+	  if (gimple_bb (use_stmt) != e->src)
+	    continue;
+
+	  if (!is_gimple_assign (use_stmt))
+	    continue;
+
+	  enum tree_code code = gimple_assign_rhs_code (use_stmt);
+	  if (code != PLUS_EXPR
+	      && code != MINUS_EXPR)
+	    continue;
+
+	  tree cst = gimple_assign_rhs2 (use_stmt);
+	  if (TREE_CODE (cst) != INTEGER_CST)
+	    continue;
+
+	  tree name2 = gimple_assign_lhs (use_stmt);
+	  if (live_on_edge (e, name2))
+	    {
+	      cst = int_const_binop (code, val, cst);
+	      register_new_assert_for (name2, name2, comp_code, cst,
+				       NULL, e, bsi);
+	      retval = true;
+	    }
+	}
+    }
+ 
   if (TREE_CODE_CLASS (comp_code) == tcc_comparison
       && TREE_CODE (val) == INTEGER_CST)
     {
@@ -5943,6 +6012,11 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 	       : (tree_int_cst_lt (up_bound, up_sub)
 		  || tree_int_cst_equal (up_bound_p1, up_sub))))
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Array bound warning for ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
+	}
       warning_at (location, OPT_Warray_bounds,
 		  "array subscript is above array bounds");
       TREE_NO_WARNING (ref) = 1;
@@ -5950,6 +6024,11 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   else if (TREE_CODE (low_sub) == INTEGER_CST
            && tree_int_cst_lt (low_sub, low_bound))
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Array bound warning for ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
+	}
       warning_at (location, OPT_Warray_bounds,
 		  "array subscript is below array bounds");
       TREE_NO_WARNING (ref) = 1;
@@ -6018,6 +6097,11 @@ search_for_addr_array (tree t, location_t location)
       idx = idx.sdiv (tree_to_double_int (el_sz), TRUNC_DIV_EXPR);
       if (idx.slt (double_int_zero))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Array bound warning for ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
+	    }
 	  warning_at (location, OPT_Warray_bounds,
 		      "array subscript is below array bounds");
 	  TREE_NO_WARNING (t) = 1;
@@ -6026,6 +6110,11 @@ search_for_addr_array (tree t, location_t location)
 			- tree_to_double_int (low_bound)
 			+ double_int_one))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Array bound warning for ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, t);
+	    }
 	  warning_at (location, OPT_Warray_bounds,
 		      "array subscript is above array bounds");
 	  TREE_NO_WARNING (t) = 1;

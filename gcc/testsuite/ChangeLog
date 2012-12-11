@@ -1,3 +1,10 @@
+2012-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55079
+	* gcc.dg/Warray-bounds-9.c: New testcase.
+	* gcc.dg/Warray-bounds-10.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-1.c: Adjust.
+
 2012-12-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/52909
