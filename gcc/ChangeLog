@@ -1,3 +1,12 @@
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer.def (BUILT_IN_ASAN_HANDLE_NO_RETURN): New builtin.
+	* asan.c (instrument_builtin_call): Change is_gimple_builtin_call
+	gcc_assert to gcc_checking_assert.
+	(maybe_instrument_call): Imit __builtin___asan_handle_no_return ()
+	before noreturn calls other than __builtin_trap () and
+	__builtin_unreachable ().
+
 2012-12-11  Richard Biener  <rguenther@suse.de>
 
 	PR other/54324
