@@ -1,4 +1,11 @@
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54570
+	* gcc.dg/builtin-object-size-8.c: Xfail.
+	* gcc.dg/builtin-object-size-13.c: New test.
+
 2012-12-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	PR target/55642
 	* gcc.target/arm/pr55642.c: New testcase.
 
