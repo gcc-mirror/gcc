@@ -11491,7 +11491,7 @@ fi
 
 EXTRA_FLAGS=
 if test -n "${with_target_subdir}"; then
-  EXTRA_FLAGS=-funwind-tables
+  EXTRA_FLAGS="-funwind-tables -frandom-seed=\$@"
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -funwind-tables option" >&5
 $as_echo_n "checking for -funwind-tables option... " >&6; }
@@ -11521,9 +11521,40 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_c_unwind_tables" >&5
 $as_echo "$libbacktrace_cv_c_unwind_tables" >&6; }
-   if test "$libbacktrace_cv_c_unwind_tables" = "yes"; then
-     EXTRA_FLAGS=-funwind-tables
-   fi
+  if test "$libbacktrace_cv_c_unwind_tables" = "yes"; then
+    EXTRA_FLAGS=-funwind-tables
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -frandom-seed=string option" >&5
+$as_echo_n "checking for -frandom-seed=string option... " >&6; }
+if test "${libbacktrace_cv_c_random_seed_string+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  CFLAGS_hold="$CFLAGS"
+     CFLAGS="$CFLAGS -frandom-seed=conftest.lo"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libbacktrace_cv_c_random_seed_string=yes
+else
+  libbacktrace_cv_c_random_seed_string=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+     CFLAGS="$CFLAGS_hold"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_c_random_seed_string" >&5
+$as_echo "$libbacktrace_cv_c_random_seed_string" >&6; }
+  if test "$libbacktrace_cv_c_random_seed_string" = "yes"; then
+    EXTRA_FLAGS="$EXTRA_FLAGS -frandom-seed=\$@"
+  fi
 fi
 
 
