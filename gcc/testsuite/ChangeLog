@@ -1,5 +1,8 @@
 2012-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/55619
+	* g++.dg/ext/asm12.C: New test.
+
 	PR tree-optimization/54570
 	* gcc.dg/builtin-object-size-8.c: Xfail.
 	* gcc.dg/builtin-object-size-13.c: New test.
