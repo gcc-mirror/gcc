@@ -1,3 +1,21 @@
+2012-12-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/Makefile.am (xml_sources_manual): Add
+	policy_data_structures_biblio.xml.
+	(${docbook_outdir}/latex): Add.
+	(doc-xml-validate-docbook): Split into..
+	(doc-xml-validate-dtd-db):... this for DTD.
+	(doc-xml-validate-rng-db):... this for Relax NG.
+	(doc-pdf-docbook-dirs): Add.
+	(doc-pdf-docbook-pre): Add.
+	* doc/xml/manual/build_hacking.xml: Add literal markup.
+	* doc/xml/manual/documentation_hacking.xml: Clean whitespace in
+	<filename> markup. Add notes about debugging the generation process.
+	* doc/xml/manual/policy_data_structures.xml: Split biblio into...
+	* doc/xml/manual/policy_data_structures_biblio.xml: ... this. New.
+	* doc/xml/manual/test_policy_data_structures.xml: Fixup <filename>
+	markup.
+
 2012-12-10  Matthias Klose  <doko@ubuntu.com>
 
 	* src/Makefile.am (libstdc++-symbols.ver): Use CONFIG_HEADER.
