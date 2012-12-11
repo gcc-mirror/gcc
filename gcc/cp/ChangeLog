@@ -1,3 +1,8 @@
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55643
+	* expr.c (mark_exp_read): Handle FLOAT_EXPR similarly to NOP_EXPR.
+
 2012-12-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54416

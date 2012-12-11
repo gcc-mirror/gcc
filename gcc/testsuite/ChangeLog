@@ -1,5 +1,8 @@
 2012-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/55643
+	* g++.dg/warn/Wunused-var-19.C: New test.
+
 	* g++.dg/asan/asan_test.C: Link -lasan before -lpthread.
 
 2012-12-11  Eric Botcazou  <ebotcazou@adacore.com>
