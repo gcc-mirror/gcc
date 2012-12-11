@@ -3186,6 +3186,21 @@ loc_equivalence_change_p (rtx *loc)
   return result;
 }
 
+/* Similar to loc_equivalence_change_p, but for use as
+   simplify_replace_fn_rtx callback.  */
+static rtx
+loc_equivalence_callback (rtx loc, const_rtx, void *)
+{
+  if (!REG_P (loc))
+    return NULL_RTX;
+
+  rtx subst = get_equiv_substitution (loc);
+  if (subst != loc)
+    return subst;
+
+  return NULL_RTX;
+}
+
 /* Maximum allowed number of constraint pass iterations after the last
    spill pass.	It is for preventing LRA cycling in a bug case.	 */
 #define MAX_CONSTRAINT_ITERATION_NUMBER 30
@@ -3422,11 +3437,17 @@ lra_constraints (bool first_p)
 	  /* We need to check equivalence in debug insn and change
 	     pseudo to the equivalent value if necessary.  */
 	  curr_id = lra_get_insn_recog_data (curr_insn);
-	  if (bitmap_bit_p (&equiv_insn_bitmap, INSN_UID (curr_insn))
-	      && loc_equivalence_change_p (curr_id->operand_loc[0]))
+	  if (bitmap_bit_p (&equiv_insn_bitmap, INSN_UID (curr_insn)))
 	    {
-	      lra_update_insn_regno_info (curr_insn);
-	      changed_p = true;
+	      rtx old = *curr_id->operand_loc[0];
+	      *curr_id->operand_loc[0]
+		= simplify_replace_fn_rtx (old, NULL_RTX,
+					   loc_equivalence_callback, NULL);
+	      if (old != *curr_id->operand_loc[0])
+		{
+		  lra_update_insn_regno_info (curr_insn);
+		  changed_p = true;
+		}
 	    }
 	}
       else if (INSN_P (curr_insn))

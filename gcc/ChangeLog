@@ -1,3 +1,10 @@
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/55193
+	* lra-constraints.c (loc_equivalence_callback): New function.
+	(lra_constraints): Call simplify_replace_fn_rtx instead of
+	loc_equivalence_change_p on DEBUG_INSNs.
+
 2012-12-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/55642
