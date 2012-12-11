@@ -1,3 +1,10 @@
+2012-12-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* tree.c (cp_tree_equal): Handle VECTOR_CST.
+	* semantics.c (cxx_eval_bare_aggregate): Protect a dereference.
+	Handle VECTOR_CST.
+
 2012-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55643
