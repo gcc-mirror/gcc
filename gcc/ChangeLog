@@ -1,5 +1,13 @@
 2012-12-11  Richard Biener  <rguenther@suse.de>
 
+	PR other/54324
+	* doc/install.texi (Tools/packages necessary for building GCC):
+	State ISO C++98 host compiler requirement.  Increment minimum
+	GCC version required for building all languages for a cross-compiler
+	to 3.4 or later.
+
+2012-12-11  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55079
 	* tree-vrp.c (extract_range_from_binary_expr_1): Handle MAX/MIN_EXPR
 	for more cases.
