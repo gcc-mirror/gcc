@@ -1,3 +1,21 @@
+2012-12-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/55533
+	* Makefile.am (AM_MAKEFLAGS): Remove CC and CXX.
+	* configure.ac (GCC_LIBSTDCXX_RAW_CXX_FLAGS): New.
+	* asan/Makefile.am (AM_CXXFLAGS): Add $(LIBSTDCXX_RAW_CXX_CXXFLAGS).
+	(AM_MAKEFLAGS): Remove CC and CXX.
+	* interception/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
 2012-12-06  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* configure.tgt: Enable build on powerpc*-linux.
@@ -5,8 +23,8 @@
 2012-12-06  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR 55599/sanitizer
-        * configure.ac: Set enable_static=no on darwin.
-        * configure: Regenerated.
+	* configure.ac: Set enable_static=no on darwin.
+	* configure: Regenerated.
 
 2012-12-06  Kostya Serebryany  <kcc@google.com>
 
@@ -17,7 +35,7 @@
 	* All files: Merge from upstream r169371.
 
 2012-12-04  Kostya Serebryany  <kcc@google.com>
-            Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR 55521/sanitizer
 	* configure.ac: Define USING_MAC_INTERPOSE when on darwin.
