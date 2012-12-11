@@ -15,7 +15,7 @@
 2012-12-10  Steve Ellcey  <sellcey@mips.com>
 
 	PR target/54061
-	rtl.h (IGNORED_DWARF_REGNUM): New.
+	* rtl.h (IGNORED_DWARF_REGNUM): New.
 	* dwarf2out.c (reg_loc_descriptor): Check for IGNORED_DWARF_REGNUM.
 	(mem_loc_descriptor): Ditto.
 	* config/mips/mips.h (ALL_COP_REG_FIRST): New.
@@ -83,10 +83,10 @@
 	(ops): Define Vrintn, Vrinta, Vrintp, Vrintm, Vrintz features.
 	* config/arm/neon-docgen.ml (intrinsic_groups): Define Vrintn,
 	Vrinta, Vrintp, Vrintm, Vrintz, Vrintx.
-	* config/arm/neon-testgen.ml (effective_target): Define check for 
+	* config/arm/neon-testgen.ml (effective_target): Define check for
 	Requires_arch 8.
-	* config/arm/neon-gen.ml 
-	(print_feature_test_start): Handle Requires_arch.
+	* config/arm/neon-gen.ml (print_feature_test_start): Handle
+	Requires_arch.
 	(print_feature_test_end): Likewise.
 	Add 2012 to Copyright notice.
 	* doc/arm-neon-intrinsics.texi: Regenerate.
@@ -139,15 +139,15 @@
 
 2012-12-07  Vladimir Makarov  <vmakarov@redhat.com>
 
-	testsuite/gcc.target/i386/pr55141.c
+	PR rtl-optimization/55141
 	* lra-constraints.c (lra_constraints): Use biggest mode for
 	df_set_regs_ever_live.
 
 2012-12-07  Jan Hubicka  <jh@suse.cz>
 
- 	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add UPPER_BOUND
- 	parameter.
- 	(try_unroll_loop_completely) Update.
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add UPPER_BOUND
+	parameter.
+	(try_unroll_loop_completely) Update.
 
 2012-12-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -164,8 +164,8 @@
 2012-12-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/55078
-	* ipa-inline-transform.c (inline_call): Turn #if 0 to #ifdef
-	ENABLE_CHECKING.
+	* ipa-inline-transform.c (inline_call): Turn #if 0 to
+	#ifdef ENABLE_CHECKING.
 	* ipa-prop.c (try_make_edge_direct_simple_call): Use
 	ipa_value_from_jfunc.
 	(try_make_edge_direct_virtual_call): Likewise.
@@ -212,7 +212,7 @@
 2012-12-06  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 55599/sanitizer
-        * config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
 
 2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -432,7 +432,7 @@
 2012-12-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_ccmode): Enable using CC of
-          x + imm for higher immediates on z9-109 upwards.
+	x + imm for higher immediates on z9-109 upwards.
 
 2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -641,8 +641,8 @@
 
 2010-12-01  Xinliang David Li  <davidxl@google.com>
 
-        * config/i386/i386.c: Allow sign extend instructions (cltd etc)
-        on modern CPUs.
+	* config/i386/i386.c: Allow sign extend instructions (cltd etc)
+	on modern CPUs.
 
 2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -710,44 +710,44 @@
 	added check for required alignment.  Update the user.
 
 2012-11-30  Ramana Radhakrishnan <Ramana.Radhakrishnan@arm.com>
-            Greta Yorsh  <Greta.Yorsh@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (type): Subdivide "alu" into "alu_reg"
-        and "simple_alu_imm".
-        (core_cycles): Use new names.
-        (arm_addsi3): Set type of patterns to use to alu_reg and simple_alu_imm.
-        (addsi3_compare0, addsi3_compare0_scratch): Likewise.
-        (addsi3_compare_op1, addsi3_compare_op2, compare_addsi2_op0): Likewise.
-        (compare_addsi2_op1, arm_subsi3_insn, subsi3_compare0): Likewise.
-        (subsi3_compare, arm_decscc,arm_andsi3_insn): Likewise.
-        (thumb1_andsi3_insn, andsi3_compare0_scratch): Likewise.
-        (zeroextractsi_compare0_scratch,iorsi3_insn,iorsi3_compare0): Likewise.
-        (iorsi3_compare0_scratch, arm_xorsi3, thumb1_xorsi3_insn): Likewise.
-        (xorsi3_compare0, xorsi3_compare0_scratch): Likewise.
-        (thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Likewise.
-        (thumb1_zero_extendqisi2_v, arm_zero_extendqisi2_v6): Likewise.
+	* config/arm/arm.md (type): Subdivide "alu" into "alu_reg"
+	and "simple_alu_imm".
+	(core_cycles): Use new names.
+	(arm_addsi3): Set type of patterns to use to alu_reg and simple_alu_imm.
+	(addsi3_compare0, addsi3_compare0_scratch): Likewise.
+	(addsi3_compare_op1, addsi3_compare_op2, compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1, arm_subsi3_insn, subsi3_compare0): Likewise.
+	(subsi3_compare, arm_decscc,arm_andsi3_insn): Likewise.
+	(thumb1_andsi3_insn, andsi3_compare0_scratch): Likewise.
+	(zeroextractsi_compare0_scratch,iorsi3_insn,iorsi3_compare0): Likewise.
+	(iorsi3_compare0_scratch, arm_xorsi3, thumb1_xorsi3_insn): Likewise.
+	(xorsi3_compare0, xorsi3_compare0_scratch): Likewise.
+	(thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Likewise.
+	(thumb1_zero_extendqisi2_v, arm_zero_extendqisi2_v6): Likewise.
 	(thumb1_extendhisi2, arm_extendqisi_v6): Likewise.
 	(thumb1_extendqisi2, arm_movsi_insn): Likewise.
-        (movsi_compare0, movhi_insn_arch4, movhi_bytes): Likewise.
-        (arm_movqi_insn, thumb1_movqi_insn, arm_cmpsi_insn): Likewise.
-        (movsicc_insn, if_plus_move, if_move_plus): Likewise.
-        * config/arm/neon.md (neon_mov<mode>/VDX): Likewise.
-        (neon_mov<mode>/VQXMOV): Likewise.
-        * config/arm/arm1020e.md (1020alu_op): Likewise.
-        * config/arm/fmp626.md (mp626_alu_op): Likewise.
-        * config/arm/fa726te.md (726te_alu_op): Likewise.
-        * config/arm/fa626te.md (626te_alu_op): Likewise.
-        * config/arm/fa606te.md (606te_alu_op): Likewise.
-        * config/arm/fa526.md (526_alu_op): Likewise.
-        * config/arm/cortex-r4.md (cortex_r4_alu, cortex_r4_mov): Likewise.
-        * config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
-        * config/arm/cortex-a9.md (cprtex_a9_dp): Likewise.
-        * config/arm/cortex-a8.md (cortex_a8_alu, cortex_a8_mov): Likewise.
-        * config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
-        * config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
-        * config/arm/arm926ejs.md (9_alu_op): Likewise.
-        * config/arm/arm1136jfs.md (11_alu_op): Likewise.
-        * config/arm/arm1026ejs.md (alu_op): Likewise.
+	(movsi_compare0, movhi_insn_arch4, movhi_bytes): Likewise.
+	(arm_movqi_insn, thumb1_movqi_insn, arm_cmpsi_insn): Likewise.
+	(movsicc_insn, if_plus_move, if_move_plus): Likewise.
+	* config/arm/neon.md (neon_mov<mode>/VDX): Likewise.
+	(neon_mov<mode>/VQXMOV): Likewise.
+	* config/arm/arm1020e.md (1020alu_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_op): Likewise.
+	* config/arm/fa626te.md (626te_alu_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Likewise.
+	* config/arm/fa526.md (526_alu_op): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu, cortex_r4_mov): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-a9.md (cprtex_a9_dp): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu, cortex_a8_mov): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Likewise.
+	* config/arm/arm1026ejs.md (alu_op): Likewise.
 
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
@@ -996,7 +996,7 @@
 	* config/epiphany/epiphgany.md (attribute type): Add v2fp.
 	(attribute fp_mode): Test for v2fp.
 	(<float_operation:insn_opname>v2sf3_i): Change type to v2fp.
-	* config/epiphany/epiphgany-sched.md (fp_arith_nearest,
+	* config/epiphany/epiphany-sched.md (fp_arith_nearest,
 	fp_arith_trunc): Combine to ..
 	(fp_arith): .. this.
 	(v2fp_arith): New insn reservation.
