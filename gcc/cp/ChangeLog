@@ -1,5 +1,9 @@
 2012-12-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54416
+	* pt.c (maybe_process_partial_specialization): Don't accept
+	definition of a specialization without the appropriate header.
+
 	* pt.c (maybe_process_partial_specialization): Handle aliases first.
 
 2012-12-11  Jakub Jelinek  <jakub@redhat.com>

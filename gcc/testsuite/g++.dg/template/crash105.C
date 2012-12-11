@@ -10,5 +10,8 @@ template < typename > struct S < int >
 void
 f ()
 {
-  S < int >::f (); // { dg-error "cannot call" }
+  S < int >::f ();
 }
+
+// Don't be picky about error-recovery.
+// { dg-prune-output "." }

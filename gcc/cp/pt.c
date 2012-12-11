@@ -850,7 +850,13 @@ maybe_process_partial_specialization (tree type)
 	}
       else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
 	error ("specialization of %qT after instantiation", type);
-
+      else if (errorcount && !processing_specialization
+	        && CLASSTYPE_TEMPLATE_SPECIALIZATION (type)
+	       && !uses_template_parms (CLASSTYPE_TI_ARGS (type)))
+	/* Trying to define a specialization either without a template<> header
+	   or in an inappropriate place.  We've already given an error, so just
+	   bail now so we don't actually define the specialization.  */
+	return error_mark_node;
     }
   else if (CLASS_TYPE_P (type)
 	   && !CLASSTYPE_USE_TEMPLATE (type)
