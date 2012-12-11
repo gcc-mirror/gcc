@@ -1,5 +1,10 @@
 2012-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* varasm.c (get_variable_section): Don't return lcomm_section
+	for asan_protect_global decls.
+	* asan.c (asan_protect_global): Only avoid public common variables.
+	Don't call get_variable_section here.
+
 	PR middle-end/43631
 	PR bootstrap/55615
 	* var-tracking.c (emit_note_insn_var_location): If insn is followed
