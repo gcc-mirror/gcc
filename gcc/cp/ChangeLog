@@ -1,3 +1,8 @@
+2012-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54883
+	* decl2.c (min_vis_r): Handle anon visibility for enums.
+
 2012-12-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53094
