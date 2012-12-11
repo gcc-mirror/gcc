@@ -1072,7 +1072,7 @@ instrument_builtin_call (gimple_stmt_iterator *iter)
 {
   gimple call = gsi_stmt (*iter);
 
-  gcc_assert (is_gimple_builtin_call (call));
+  gcc_checking_assert (is_gimple_builtin_call (call));
 
   tree callee = gimple_call_fndecl (call);
   location_t loc = gimple_location (call);
@@ -1392,8 +1392,29 @@ instrument_assignment (gimple_stmt_iterator *iter)
 static bool
 maybe_instrument_call (gimple_stmt_iterator *iter)
 {
-  if (is_gimple_builtin_call (gsi_stmt (*iter)))
-    return instrument_builtin_call (iter);
+  gimple stmt = gsi_stmt (*iter);
+  bool is_builtin = is_gimple_builtin_call (stmt);
+  if (is_builtin
+      && instrument_builtin_call (iter))
+    return true;
+  if (gimple_call_noreturn_p (stmt))
+    {
+      if (is_builtin)
+	{
+	  tree callee = gimple_call_fndecl (stmt);
+	  switch (DECL_FUNCTION_CODE (callee))
+	    {
+	    case BUILT_IN_UNREACHABLE:
+	    case BUILT_IN_TRAP:
+	      /* Don't instrument these.  */
+	      return false;
+	    }
+	}
+      tree decl = builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
+      gimple g = gimple_build_call (decl, 0);
+      gimple_set_location (g, gimple_location (stmt));
+      gsi_insert_before (iter, g, GSI_SAME_STMT);
+    }
   return false;
 }
 
