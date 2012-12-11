@@ -1,5 +1,10 @@
 2012-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* sanitizer.def: Add comment about importance of ordering of
+	BUILT_IN_ASAN_REPORT* builtins.
+	* cfgcleanup.c (old_insns_match_p): Don't cross-jump __asan_report_*
+	builtins.
+
 	* sanitizer.def (BUILT_IN_ASAN_HANDLE_NO_RETURN): New builtin.
 	* asan.c (instrument_builtin_call): Change is_gimple_builtin_call
 	gcc_assert to gcc_checking_assert.

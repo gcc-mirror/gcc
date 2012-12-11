@@ -1138,6 +1138,28 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 			CALL_INSN_FUNCTION_USAGE (i2))
 	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2))
 	return dir_none;
+
+      /* For address sanitizer, never crossjump __asan_report_* builtins,
+	 otherwise errors might be reported on incorrect lines.  */
+      if (flag_asan)
+	{
+	  rtx call = get_call_rtx_from (i1);
+	  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
+	    {
+	      rtx symbol = XEXP (XEXP (call, 0), 0);
+	      if (SYMBOL_REF_DECL (symbol)
+		  && TREE_CODE (SYMBOL_REF_DECL (symbol)) == FUNCTION_DECL)
+		{
+		  if ((DECL_BUILT_IN_CLASS (SYMBOL_REF_DECL (symbol))
+		       == BUILT_IN_NORMAL)
+		      && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol))
+			 >= BUILT_IN_ASAN_REPORT_LOAD1
+		      && DECL_FUNCTION_CODE (SYMBOL_REF_DECL (symbol))
+			 <= BUILT_IN_ASAN_REPORT_STORE16)
+		    return dir_none;
+		}
+	    }
+	}
     }
 
 #ifdef STACK_REGS
