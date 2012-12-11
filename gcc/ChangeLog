@@ -1,3 +1,14 @@
+2012-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55079
+	* tree-vrp.c (extract_range_from_binary_expr_1): Handle MAX/MIN_EXPR
+	for more cases.
+	(register_edge_assert_for_2): Register asserts for post-in/decrement
+	tests.
+	(check_array_ref): Dump what expression we emit array bound
+	warnings for.
+	(search_for_addr_array): Likewise.
+
 2012-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (prepare_decl_rtl) <ADDR_EXPR>: Generate RTL
