@@ -6913,6 +6913,11 @@ if echo " ${target_configdirs} " | grep " libgomp " > /dev/null 2>&1 ; then
   bootstrap_target_libs=${bootstrap_target_libs}target-libgomp,
 fi
 
+# If we are building libsanitizer, bootstrap it.
+if echo " ${target_configdirs} " | grep " libsanitizer " > /dev/null 2>&1 ; then
+  bootstrap_target_libs=${bootstrap_target_libs}target-libsanitizer,
+fi
+
 # Determine whether gdb needs tk/tcl or not.
 # Use 'maybe' since enable_gdbtk might be true even if tk isn't available
 # and in that case we want gdb to be built without tk.  Ugh!
