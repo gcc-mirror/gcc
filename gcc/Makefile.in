@@ -1846,7 +1846,8 @@ gcc.srcextra: gengtype-lex.c
 	-cp -p $^ $(srcdir)
 
 graph.o: graph.c graph.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-    $(DIAGNOSTIC_CORE_H) $(BASIC_BLOCK_H) $(PRETTY_PRINT_H) dumpfile.h
+    $(DIAGNOSTIC_CORE_H) sbitmap.h $(BASIC_BLOCK_H) $(CFGLOOP_H) \
+    $(PRETTY_PRINT_H) dumpfile.h
 
 sbitmap.o: sbitmap.c sbitmap.h $(CONFIG_H) $(SYSTEM_H) coretypes.h
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)

@@ -24,7 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic-core.h" /* for fatal_error */
+#include "sbitmap.h"
 #include "basic-block.h"
+#include "cfgloop.h"
 #include "graph.h"
 #include "dumpfile.h"
 #include "pretty-print.h"
@@ -32,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 /* DOT files with the .dot extension are recognized as document templates
    by a well-known piece of word processing software out of Redmond, WA.
    Therefore some recommend using the .gv extension instead.  Obstinately
-   ignore that recommendatition...  */
+   ignore that recommendation...  */
 static const char *const graph_ext = ".dot";
 
 /* Open a file with MODE for dumping our graph to.
@@ -163,44 +165,144 @@ draw_cfg_node_succ_edges (pretty_printer *pp, int funcdef_no, basic_block bb)
   pp_flush (pp);
 }
 
-/* Print a graphical representation of the CFG of function FUN.  */
+/* Draw all the basic blocks in the CFG in case loops are not available.
+   First compute a topological order of the blocks to get a good ranking of
+   the nodes.  Then, if any nodes are not reachable from ENTRY, add them at
+   the end.  */
+
+static void
+draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
+{
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_function (fun));
+  int i, n;
+  sbitmap visited;
+
+  visited = sbitmap_alloc (last_basic_block);
+  bitmap_clear (visited);
+
+  /* FIXME: pre_and_rev_post_order_compute only works if fun == cfun.  */
+  n = pre_and_rev_post_order_compute (NULL, rpo, true);
+  for (i = 0; i < n; i++)
+    {
+      basic_block bb = BASIC_BLOCK (rpo[i]);
+      draw_cfg_node (pp, fun->funcdef_no, bb);
+      bitmap_set_bit (visited, bb->index);
+    }
+  free (rpo);
+
+  if (n != n_basic_blocks_for_function (fun))
+    {
+      /* Some blocks are unreachable.  We still want to dump them.  */
+      basic_block bb;
+      FOR_ALL_BB_FN (bb, fun)
+	if (! bitmap_bit_p (visited, bb->index))
+	  draw_cfg_node (pp, fun->funcdef_no, bb);
+    }
+
+  sbitmap_free (visited);
+}
+
+/* Draw all the basic blocks in LOOP.  Print the blocks in breath-first
+   order to get a good ranking of the nodes.  This function is recursive:
+   It first prints inner loops, then the body of LOOP itself.  */
+
+static void
+draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
+			 struct loop *loop)
+{
+  basic_block *body;
+  unsigned int i;
+  const char *fillcolors[3] = { "grey88", "grey77", "grey66" };
+
+  if (loop->latch != EXIT_BLOCK_PTR)
+    pp_printf (pp,
+	       "\tsubgraph cluster_%d_%d {\n"
+	       "\tstyle=\"filled\";\n"
+	       "\tcolor=\"darkgreen\";\n"
+	       "\tfillcolor=\"%s\";\n"
+	       "\tlabel=\"loop %d\";\n"
+	       "\tlabeljust=l;\n"
+	       "\tpenwidth=2;\n",
+	       funcdef_no, loop->num,
+	       fillcolors[(loop_depth (loop) - 1) % 3],
+	       loop->num);
+
+  for (struct loop *inner = loop->inner; inner; inner = inner->next)
+    draw_cfg_nodes_for_loop (pp, funcdef_no, inner);
+
+  if (loop->latch == EXIT_BLOCK_PTR)
+    body = get_loop_body (loop);
+  else
+    body = get_loop_body_in_bfs_order (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = body[i];
+      if (bb->loop_father == loop)
+	draw_cfg_node (pp, funcdef_no, bb);
+    }
+
+  free (body);
+
+  if (loop->latch != EXIT_BLOCK_PTR)
+    pp_printf (pp, "\t}\n");
+}
+
+/* Draw all the basic blocks in the CFG in case the loop tree is available.
+   All loop bodys are printed in clusters.  */
+
+static void
+draw_cfg_nodes (pretty_printer *pp, struct function *fun)
+{
+  /* ??? This x_current_loops should be enapsulated.  */
+  if (fun->x_current_loops)
+    draw_cfg_nodes_for_loop (pp, fun->funcdef_no,
+			     fun->x_current_loops->tree_root);
+  else
+    draw_cfg_nodes_no_loops (pp, fun);
+}
+
+/* Draw all edges in the CFG.  Retreating edges are drawin as not
+   constraining, this makes the layout of the graph better.
+   (??? Calling mark_dfs_back may change the compiler's behavior when
+   dumping, but computing back edges here for ourselves is also not
+   desirable.)  */
+
+static void
+draw_cfg_edges (pretty_printer *pp, struct function *fun)
+{
+  basic_block bb;
+  mark_dfs_back_edges ();
+  FOR_ALL_BB (bb)
+    draw_cfg_node_succ_edges (pp, fun->funcdef_no, bb);
+
+  /* Add an invisible edge from ENTRY to EXIT, to improve the graph layout.  */
+  pp_printf (pp,
+	     "\tfn_%d_basic_block_%d:s -> fn_%d_basic_block_%d:n "
+	     "[style=\"invis\",constraint=true];\n",
+	     fun->funcdef_no, ENTRY_BLOCK,
+	     fun->funcdef_no, EXIT_BLOCK);
+  pp_flush (pp);
+}
+
+/* Print a graphical representation of the CFG of function FUN.
+   First print all basic blocks.  Draw all edges at the end to get
+   subgraphs right for GraphViz, which requires nodes to be defined
+   before edges to cluster nodes properly.  */
 
 void
 print_graph_cfg (const char *base, struct function *fun)
 {
   const char *funcname = function_name (fun);
-  int funcdef_no = fun->funcdef_no;
   FILE *fp = open_graph_file (base, "a");
-  int *rpo = XNEWVEC (int, n_basic_blocks);
-  basic_block bb;
-  int i, n;
   pretty_printer *pp = init_graph_slim_pretty_print (fp);
-
   pp_printf (pp, "subgraph \"%s\" {\n"
 	         "\tcolor=\"black\";\n"
 		 "\tlabel=\"%s\";\n",
 		 funcname, funcname);
-
-  /* First print all basic blocks.
-     Visit the blocks in reverse post order to get a good ranking
-     of the nodes.  */
-  n = pre_and_rev_post_order_compute (NULL, rpo, true);
-  for (i = 0; i < n; i++)
-    draw_cfg_node (pp, funcdef_no, BASIC_BLOCK (rpo[i]));
-
-  /* Draw all edges at the end to get subgraphs right for GraphViz,
-     which requires nodes to be defined before edges to cluster
-     nodes properly.
-
-     Draw retreating edges as not constraining, this makes the layout
-     of the graph better.  (??? Calling mark_dfs_back may change the
-     compiler's behavior when dumping, but computing back edges here
-     for ourselves is also not desirable.)  */
-  mark_dfs_back_edges ();
-  FOR_ALL_BB (bb)
-    draw_cfg_node_succ_edges (pp, funcdef_no, bb);
-
-  pp_printf (pp, "\t}\n");
+  draw_cfg_nodes (pp, fun);
+  draw_cfg_edges (pp, fun);
+  pp_printf (pp, "}\n");
   pp_flush (pp);
   fclose (fp);
 }
