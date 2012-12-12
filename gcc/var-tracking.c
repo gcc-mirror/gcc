@@ -8538,10 +8538,7 @@ emit_note_insn_var_location (void **varp, void *data)
 
   if (where != EMIT_NOTE_BEFORE_INSN)
     {
-      rtx after = insn;
-      while (NEXT_INSN (after) && BARRIER_P (NEXT_INSN (after)))
-	after = NEXT_INSN (after);
-      note = emit_note_after (NOTE_INSN_VAR_LOCATION, after);
+      note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       if (where == EMIT_NOTE_AFTER_CALL_INSN)
 	NOTE_DURING_CALL_P (note) = true;
     }
@@ -8560,30 +8557,9 @@ emit_note_insn_var_location (void **varp, void *data)
 	      || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
 	note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       else
-	{
-	  note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
-	  /* If insn is BB_HEAD of some bb, make sure the note
-	     doesn't have BLOCK_FOR_INSN set.  The notes don't
-	     extend the extents of a basic block, and e.g. notes emitted
-	     for differences in between basic blocks should live in between
-	     the basic blocks.  */
-	  if (BLOCK_FOR_INSN (note)
-	      && BB_HEAD (BLOCK_FOR_INSN (note)) == insn)
-	    set_block_for_insn (note, NULL);
-	}
+	note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
     }
   NOTE_VAR_LOCATION (note) = note_vl;
-  /* If insn is BB_END of some bb, make sure the note
-     doesn't have BLOCK_FOR_INSN set.  The notes don't
-     extend the extents of a basic block, and e.g. a noreturn
-     call can still be followed by NOTE_INSN_CALL_ARG_LOCATION.  */
-  if (BLOCK_FOR_INSN (note)
-      && BB_END (BLOCK_FOR_INSN (note)) == note
-      && PREV_INSN (note) == insn)
-    {
-      BB_END (BLOCK_FOR_INSN (note)) = insn;
-      set_block_for_insn (note, NULL);
-    }
 
   set_dv_changed (var->dv, false);
   gcc_assert (var->in_changed_variables);
@@ -8895,11 +8871,9 @@ next_non_note_insn_var_location (rtx insn)
   while (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn == 0)
-	break;
-      if (BARRIER_P (insn))
-	continue;
-      if (!NOTE_P (insn) || NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION)
+      if (insn == 0
+	  || !NOTE_P (insn)
+	  || NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION)
 	break;
     }
 
@@ -8928,7 +8902,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	    dataflow_set_clear_at_call (set);
 	    emit_notes_for_changes (insn, EMIT_NOTE_AFTER_CALL_INSN, set->vars);
 	    {
-	      rtx arguments = mo->u.loc, *p = &arguments, note, after;
+	      rtx arguments = mo->u.loc, *p = &arguments, note;
 	      while (*p)
 		{
 		  XEXP (XEXP (*p, 0), 1)
@@ -8952,21 +8926,8 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		  else
 		    *p = XEXP (*p, 1);
 		}
-	      after = insn;
-	      while (NEXT_INSN (after) && BARRIER_P (NEXT_INSN (after)))
-		after = NEXT_INSN (after);
-	      note = emit_note_after (NOTE_INSN_CALL_ARG_LOCATION, after);
+	      note = emit_note_after (NOTE_INSN_CALL_ARG_LOCATION, insn);
 	      NOTE_VAR_LOCATION (note) = arguments;
-	      /* If insn is BB_END of some bb, make sure the note
-		 doesn't have BLOCK_FOR_INSN set.  The notes don't
-		 extend the extents of a basic block, and e.g. a noreturn
-		 call can still be followed by NOTE_INSN_CALL_ARG_LOCATION.  */
-	      if (BLOCK_FOR_INSN (note)
-		  && BB_END (BLOCK_FOR_INSN (note)) == note)
-		{
-		  BB_END (BLOCK_FOR_INSN (note)) = insn;
-		  set_block_for_insn (note, NULL);
-		}
 	    }
 	    break;
 
