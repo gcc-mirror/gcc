@@ -40,6 +40,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace.h"
 #include "internal.h"
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
 /* This file implements file views and memory allocation when mmap is
    available.  */
 
