@@ -62,9 +62,7 @@ static struct dump_file_info dump_files[TDI_end] =
    0, 0, 0, 0, 4},
   {".nested", "tree-nested", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 5},
-  {".vcg", "tree-vcg", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
-   0, 0, 0, 0, 6},
-#define FIRST_AUTO_NUMBERED_DUMP 7
+#define FIRST_AUTO_NUMBERED_DUMP 6
 
   {NULL, "tree-all", NULL, NULL, NULL, NULL, NULL, TDF_TREE,
    0, 0, 0, 0, 0},

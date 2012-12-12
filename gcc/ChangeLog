@@ -1,3 +1,13 @@
+2012-12-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dumpfile.h (enum tree_dump_index): Remove TDI_vcg.
+	* dumpfile.c (dump_files[]): Remove entry for TDI_vcg.
+	* tree-cfg.c (gimple_cfg2vcg): Remove.
+	(build_gimple_cfg): Don't call it.
+	* doc/invoke.texi (-fdump-tree-vcg): Remove documentation.
+	Correct GraphViz documentation, it does handle multiple functions
+	in a single dump.
+
 2012-12-12  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/55481
