@@ -111,7 +111,6 @@ static unsigned int split_critical_edges (void);
 static inline bool stmt_starts_bb_p (gimple, gimple);
 static int gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
-static void gimple_cfg2vcg (FILE *);
 static gimple first_non_label_stmt (basic_block);
 static bool verify_gimple_transaction (gimple);
 
@@ -208,19 +207,6 @@ build_gimple_cfg (gimple_seq seq)
   make_edges ();
   cleanup_dead_labels ();
   htab_delete (discriminator_per_locus);
-
-  /* Debugging dumps.  */
-
-  /* Write the flowgraph to a VCG file.  */
-  {
-    int local_dump_flags;
-    FILE *vcg_file = dump_begin (TDI_vcg, &local_dump_flags);
-    if (vcg_file)
-      {
-	gimple_cfg2vcg (vcg_file);
-	dump_end (TDI_vcg, vcg_file);
-      }
-  }
 }
 
 static unsigned int
@@ -2149,92 +2135,6 @@ debug_cfg_stats (void)
 {
   dump_cfg_stats (stderr);
 }
-
-
-/* Dump the flowgraph to a .vcg FILE.  */
-
-static void
-gimple_cfg2vcg (FILE *file)
-{
-  edge e;
-  edge_iterator ei;
-  basic_block bb;
-  const char *funcname = current_function_name ();
-
-  /* Write the file header.  */
-  fprintf (file, "graph: { title: \"%s\"\n", funcname);
-  fprintf (file, "node: { title: \"ENTRY\" label: \"ENTRY\" }\n");
-  fprintf (file, "node: { title: \"EXIT\" label: \"EXIT\" }\n");
-
-  /* Write blocks and edges.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    {
-      fprintf (file, "edge: { sourcename: \"ENTRY\" targetname: \"%d\"",
-	       e->dest->index);
-
-      if (e->flags & EDGE_FAKE)
-	fprintf (file, " linestyle: dotted priority: 10");
-      else
-	fprintf (file, " linestyle: solid priority: 100");
-
-      fprintf (file, " }\n");
-    }
-  fputc ('\n', file);
-
-  FOR_EACH_BB (bb)
-    {
-      enum gimple_code head_code, end_code;
-      const char *head_name, *end_name;
-      int head_line = 0;
-      int end_line = 0;
-      gimple first = first_stmt (bb);
-      gimple last = last_stmt (bb);
-
-      if (first)
-	{
-	  head_code = gimple_code (first);
-	  head_name = gimple_code_name[head_code];
-	  head_line = get_lineno (first);
-	}
-      else
-	head_name = "no-statement";
-
-      if (last)
-	{
-	  end_code = gimple_code (last);
-	  end_name = gimple_code_name[end_code];
-	  end_line = get_lineno (last);
-	}
-      else
-	end_name = "no-statement";
-
-      fprintf (file, "node: { title: \"%d\" label: \"#%d\\n%s (%d)\\n%s (%d)\"}\n",
-	       bb->index, bb->index, head_name, head_line, end_name,
-	       end_line);
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  if (e->dest == EXIT_BLOCK_PTR)
-	    fprintf (file, "edge: { sourcename: \"%d\" targetname: \"EXIT\"", bb->index);
-	  else
-	    fprintf (file, "edge: { sourcename: \"%d\" targetname: \"%d\"", bb->index, e->dest->index);
-
-	  if (e->flags & EDGE_FAKE)
-	    fprintf (file, " priority: 10 linestyle: dotted");
-	  else
-	    fprintf (file, " priority: 100 linestyle: solid");
-
-	  fprintf (file, " }\n");
-	}
-
-      if (bb->next_bb != EXIT_BLOCK_PTR)
-	fputc ('\n', file);
-    }
-
-  fputs ("}\n\n", file);
-}
-
-
 
 /*---------------------------------------------------------------------------
 			     Miscellaneous helpers
