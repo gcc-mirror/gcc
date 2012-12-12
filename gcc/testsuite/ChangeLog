@@ -1,3 +1,8 @@
+2012-12-12  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.dg/pr55150-2.c: Add pic support check.
+	* gcc.dg/lto/pr54709_0.c: Ditto.
+
 2012-12-12  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/55481

@@ -1,5 +1,6 @@
 /* PR middle-end/55150 */
 /* { dg-do compile } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-Os -g -fPIC" } */
 
 typedef unsigned char DES_cblock[8];
