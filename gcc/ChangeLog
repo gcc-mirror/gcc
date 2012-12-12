@@ -1,5 +1,10 @@
 2012-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/55665
+	* tree-inline.c (remap_decls): Change nonlocalized_list
+	to pointer to pointer to vector from pointer to vector.
+	(remap_block): Pass address of BLOCK_NONLOCALIZED_VARS.
+
 	PR sanitizer/55508
 	* builtin-attrs.def (ATTR_TMPURE_NOTHROW_LEAF_LIST,
 	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST): New.
