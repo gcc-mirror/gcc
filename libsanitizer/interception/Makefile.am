@@ -17,5 +17,7 @@ interception_files = \
 
 libinterception_la_SOURCES = $(interception_files)
 
+MAKEOVERRIDES=
+
 ## ################################################################
 

@@ -29,5 +29,7 @@ sanitizer_common_files = \
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
 
+MAKEOVERRIDES=
+
 ## ################################################################
 

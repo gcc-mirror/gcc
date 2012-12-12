@@ -37,5 +37,7 @@ libtsan_la_SOURCES = $(tsan_files)
 libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDLAGS)
 libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
+MAKEOVERRIDES=
+
 ## ################################################################
 

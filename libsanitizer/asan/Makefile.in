@@ -291,6 +291,7 @@ libasan_la_SOURCES = $(asan_files) $(am__append_2)
 @USING_MAC_INTERPOSE_TRUE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
 @USING_MAC_INTERPOSE_TRUE@	$(LIBSTDCXX_RAW_CXX_LDLAGS)
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
+MAKEOVERRIDES = 
 all: all-am
 
 .SUFFIXES:

@@ -225,6 +225,7 @@ interception_files = \
         interception_win.cc
 
 libinterception_la_SOURCES = $(interception_files)
+MAKEOVERRIDES = 
 all: all-am
 
 .SUFFIXES:
