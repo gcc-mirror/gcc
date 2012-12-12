@@ -1,3 +1,13 @@
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55508
+	* builtin-attrs.def (ATTR_TMPURE_NOTHROW_LEAF_LIST,
+	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST): New.
+	* asan.c (ATTR_TMPURE_NOTHROW_LEAF_LIST,
+	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST): Define.
+	* sanitizer.def: Make __asan_report_* and __asan_handle_no_return
+	builtins tm pure.
+
 2012-12-12  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.c (mips_option_override): Set
