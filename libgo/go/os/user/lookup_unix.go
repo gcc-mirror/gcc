@@ -44,28 +44,23 @@ func bytePtrToString(p *byte) string {
 	return string(a[:i])
 }
 
-// Current returns the current user.
-func Current() (*User, error) {
-	return lookup(syscall.Getuid(), "", false)
+func current() (*User, error) {
+	return lookupUnix(syscall.Getuid(), "", false)
 }
 
-// Lookup looks up a user by username. If the user cannot be found,
-// the returned error is of type UnknownUserError.
-func Lookup(username string) (*User, error) {
-	return lookup(-1, username, true)
+func lookup(username string) (*User, error) {
+	return lookupUnix(-1, username, true)
 }
 
-// LookupId looks up a user by userid. If the user cannot be found,
-// the returned error is of type UnknownUserIdError.
-func LookupId(uid string) (*User, error) {
+func lookupId(uid string) (*User, error) {
 	i, e := strconv.Atoi(uid)
 	if e != nil {
 		return nil, e
 	}
-	return lookup(i, "", false)
+	return lookupUnix(i, "", false)
 }
 
-func lookup(uid int, username string, lookupByName bool) (*User, error) {
+func lookupUnix(uid int, username string, lookupByName bool) (*User, error) {
 	var pwd syscall.Passwd
 	var result *syscall.Passwd
 

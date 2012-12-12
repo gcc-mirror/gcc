@@ -169,6 +169,15 @@ func (s *ioSrv) ProcessRemoteIO() {
 func (s *ioSrv) ExecIO(oi anOpIface, deadline int64) (int, error) {
 	var err error
 	o := oi.Op()
+	// Calculate timeout delta.
+	var delta int64
+	if deadline != 0 {
+		delta = deadline - time.Now().UnixNano()
+		if delta <= 0 {
+			return 0, &OpError{oi.Name(), o.fd.net, o.fd.laddr, errTimeout}
+		}
+	}
+	// Start IO.
 	if canCancelIO {
 		err = oi.Submit()
 	} else {
@@ -188,12 +197,8 @@ func (s *ioSrv) ExecIO(oi anOpIface, deadline int64) (int, error) {
 	}
 	// Setup timer, if deadline is given.
 	var timer <-chan time.Time
-	if deadline != 0 {
-		dt := deadline - time.Now().UnixNano()
-		if dt < 1 {
-			dt = 1
-		}
-		t := time.NewTimer(time.Duration(dt) * time.Nanosecond)
+	if delta > 0 {
+		t := time.NewTimer(time.Duration(delta) * time.Nanosecond)
 		defer t.Stop()
 		timer = t.C
 	}
@@ -280,11 +285,11 @@ type netFD struct {
 	errnoc      [2]chan error    // read/write submit or cancel operation errors
 	closec      chan bool        // used by Close to cancel pending IO
 
-	// owned by client
-	rdeadline int64
-	rio       sync.Mutex
-	wdeadline int64
-	wio       sync.Mutex
+	// serialize access to Read and Write methods
+	rio, wio sync.Mutex
+
+	// read and write deadlines
+	rdeadline, wdeadline deadline
 }
 
 func allocFD(fd syscall.Handle, family, sotype int, net string) *netFD {
@@ -295,7 +300,6 @@ func allocFD(fd syscall.Handle, family, sotype int, net string) *netFD {
 		net:    net,
 		closec: make(chan bool),
 	}
-	runtime.SetFinalizer(netfd, (*netFD).Close)
 	return netfd
 }
 
@@ -314,6 +318,7 @@ func newFD(fd syscall.Handle, family, proto int, net string) (*netFD, error) {
 func (fd *netFD) setAddr(laddr, raddr Addr) {
 	fd.laddr = laddr
 	fd.raddr = raddr
+	runtime.SetFinalizer(fd, (*netFD).closesocket)
 }
 
 func (fd *netFD) connect(ra syscall.Sockaddr) error {
@@ -393,6 +398,10 @@ func (fd *netFD) CloseWrite() error {
 	return fd.shutdown(syscall.SHUT_WR)
 }
 
+func (fd *netFD) closesocket() error {
+	return closesocket(fd.sysfd)
+}
+
 // Read from network.
 
 type readOp struct {
@@ -417,7 +426,7 @@ func (fd *netFD) Read(buf []byte) (int, error) {
 	defer fd.rio.Unlock()
 	var o readOp
 	o.Init(fd, buf, 'r')
-	n, err := iosrv.ExecIO(&o, fd.rdeadline)
+	n, err := iosrv.ExecIO(&o, fd.rdeadline.value())
 	if err == nil && n == 0 {
 		err = io.EOF
 	}
@@ -454,7 +463,7 @@ func (fd *netFD) ReadFrom(buf []byte) (n int, sa syscall.Sockaddr, err error) {
 	var o readFromOp
 	o.Init(fd, buf, 'r')
 	o.rsan = int32(unsafe.Sizeof(o.rsa))
-	n, err = iosrv.ExecIO(&o, fd.rdeadline)
+	n, err = iosrv.ExecIO(&o, fd.rdeadline.value())
 	if err != nil {
 		return 0, nil, err
 	}
@@ -486,7 +495,7 @@ func (fd *netFD) Write(buf []byte) (int, error) {
 	defer fd.wio.Unlock()
 	var o writeOp
 	o.Init(fd, buf, 'w')
-	return iosrv.ExecIO(&o, fd.wdeadline)
+	return iosrv.ExecIO(&o, fd.wdeadline.value())
 }
 
 // WriteTo to network.
@@ -518,7 +527,7 @@ func (fd *netFD) WriteTo(buf []byte, sa syscall.Sockaddr) (int, error) {
 	var o writeToOp
 	o.Init(fd, buf, 'w')
 	o.sa = sa
-	return iosrv.ExecIO(&o, fd.wdeadline)
+	return iosrv.ExecIO(&o, fd.wdeadline.value())
 }
 
 // Accept new network connections.
@@ -552,7 +561,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (*netFD, error) {
 	s, err := syscall.Socket(fd.family, fd.sotype, 0)
 	if err != nil {
 		syscall.ForkLock.RUnlock()
-		return nil, err
+		return nil, &OpError{"socket", fd.net, fd.laddr, err}
 	}
 	syscall.CloseOnExec(s)
 	syscall.ForkLock.RUnlock()
@@ -560,6 +569,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (*netFD, error) {
 	// Associate our new socket with IOCP.
 	onceStartServer.Do(startServer)
 	if _, err := syscall.CreateIoCompletionPort(s, resultsrv.iocp, 0, 0); err != nil {
+		closesocket(s)
 		return nil, &OpError{"CreateIoCompletionPort", fd.net, fd.laddr, err}
 	}
 
@@ -567,7 +577,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (*netFD, error) {
 	var o acceptOp
 	o.Init(fd, 'r')
 	o.newsock = s
-	_, err = iosrv.ExecIO(&o, fd.rdeadline)
+	_, err = iosrv.ExecIO(&o, fd.rdeadline.value())
 	if err != nil {
 		closesocket(s)
 		return nil, err
@@ -577,7 +587,7 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (*netFD, error) {
 	err = syscall.Setsockopt(s, syscall.SOL_SOCKET, syscall.SO_UPDATE_ACCEPT_CONTEXT, (*byte)(unsafe.Pointer(&fd.sysfd)), int32(unsafe.Sizeof(fd.sysfd)))
 	if err != nil {
 		closesocket(s)
-		return nil, err
+		return nil, &OpError{"Setsockopt", fd.net, fd.laddr, err}
 	}
 
 	// Get local and peer addr out of AcceptEx buffer.

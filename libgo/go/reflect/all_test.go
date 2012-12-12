@@ -2020,6 +2020,7 @@ func TestAddr(t *testing.T) {
 /* gccgo does do allocations here.
 
 func noAlloc(t *testing.T, n int, f func(int)) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
 	// once to prime everything
 	f(-1)
 	memstats := new(runtime.MemStats)
@@ -2029,12 +2030,9 @@ func noAlloc(t *testing.T, n int, f func(int)) {
 	for j := 0; j < n; j++ {
 		f(j)
 	}
-	// A few allocs may happen in the testing package when GOMAXPROCS > 1, so don't
-	// require zero mallocs.
-	// A new thread, one of which will be created if GOMAXPROCS>1, does 6 allocations.
 	runtime.ReadMemStats(memstats)
 	mallocs := memstats.Mallocs - oldmallocs
-	if mallocs > 10 {
+	if mallocs > 0 {
 		t.Fatalf("%d mallocs after %d iterations", mallocs, n)
 	}
 }

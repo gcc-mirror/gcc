@@ -59,11 +59,7 @@ func (f *Func) FileLine(pc uintptr) (file string, line int) {
 // implemented in symtab.c
 func funcline_go(*Func, uintptr) (string, int)
 
-// A gccgo specific hook to use debug info to get file/line info.
-func RegisterDebugLookup(func(pc uintptr, function *string, file *string, line *int) bool,
-	func(sym string, val *uintptr) bool)
-
-// mid returns the current os thread (m) id.
+// mid returns the current OS thread (m) id.
 func mid() uint32
 
 // SetFinalizer sets the finalizer associated with x to f.

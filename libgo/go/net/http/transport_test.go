@@ -281,7 +281,7 @@ func TestTransportMaxPerHostIdleConns(t *testing.T) {
 	c := &Client{Transport: tr}
 
 	// Start 3 outstanding requests and wait for the server to get them.
-	// Their responses will hang until we we write to resch, though.
+	// Their responses will hang until we write to resch, though.
 	donech := make(chan bool)
 	doReq := func() {
 		resp, err := c.Get(ts.URL)
@@ -464,7 +464,7 @@ func TestTransportHeadResponses(t *testing.T) {
 		if e, g := "123", res.Header.Get("Content-Length"); e != g {
 			t.Errorf("loop %d: expected Content-Length header of %q, got %q", i, e, g)
 		}
-		if e, g := int64(0), res.ContentLength; e != g {
+		if e, g := int64(123), res.ContentLength; e != g {
 			t.Errorf("loop %d: expected res.ContentLength of %v, got %v", i, e, g)
 		}
 	}
@@ -857,6 +857,30 @@ func TestIssue3595(t *testing.T) {
 	}
 }
 
+// From http://golang.org/issue/4454 ,
+// "client fails to handle requests with no body and chunked encoding"
+func TestChunkedNoContent(t *testing.T) {
+	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+		w.WriteHeader(StatusNoContent)
+	}))
+	defer ts.Close()
+
+	for _, closeBody := range []bool{true, false} {
+		c := &Client{Transport: &Transport{}}
+		const n = 4
+		for i := 1; i <= n; i++ {
+			res, err := c.Get(ts.URL)
+			if err != nil {
+				t.Errorf("closingBody=%v, req %d/%d: %v", closeBody, i, n, err)
+			} else {
+				if closeBody {
+					res.Body.Close()
+				}
+			}
+		}
+	}
+}
+
 func TestTransportConcurrency(t *testing.T) {
 	const maxProcs = 16
 	const numReqs = 500
@@ -901,6 +925,113 @@ func TestTransportConcurrency(t *testing.T) {
 	wg.Wait()
 }
 
+func TestIssue4191_InfiniteGetTimeout(t *testing.T) {
+	const debug = false
+	mux := NewServeMux()
+	mux.HandleFunc("/get", func(w ResponseWriter, r *Request) {
+		io.Copy(w, neverEnding('a'))
+	})
+	ts := httptest.NewServer(mux)
+
+	client := &Client{
+		Transport: &Transport{
+			Dial: func(n, addr string) (net.Conn, error) {
+				conn, err := net.Dial(n, addr)
+				if err != nil {
+					return nil, err
+				}
+				conn.SetDeadline(time.Now().Add(100 * time.Millisecond))
+				if debug {
+					conn = NewLoggingConn("client", conn)
+				}
+				return conn, nil
+			},
+			DisableKeepAlives: true,
+		},
+	}
+
+	nRuns := 5
+	if testing.Short() {
+		nRuns = 1
+	}
+	for i := 0; i < nRuns; i++ {
+		if debug {
+			println("run", i+1, "of", nRuns)
+		}
+		sres, err := client.Get(ts.URL + "/get")
+		if err != nil {
+			t.Errorf("Error issuing GET: %v", err)
+			break
+		}
+		_, err = io.Copy(ioutil.Discard, sres.Body)
+		if err == nil {
+			t.Errorf("Unexpected successful copy")
+			break
+		}
+	}
+	if debug {
+		println("tests complete; waiting for handlers to finish")
+	}
+	ts.Close()
+}
+
+func TestIssue4191_InfiniteGetToPutTimeout(t *testing.T) {
+	const debug = false
+	mux := NewServeMux()
+	mux.HandleFunc("/get", func(w ResponseWriter, r *Request) {
+		io.Copy(w, neverEnding('a'))
+	})
+	mux.HandleFunc("/put", func(w ResponseWriter, r *Request) {
+		defer r.Body.Close()
+		io.Copy(ioutil.Discard, r.Body)
+	})
+	ts := httptest.NewServer(mux)
+
+	client := &Client{
+		Transport: &Transport{
+			Dial: func(n, addr string) (net.Conn, error) {
+				conn, err := net.Dial(n, addr)
+				if err != nil {
+					return nil, err
+				}
+				conn.SetDeadline(time.Now().Add(100 * time.Millisecond))
+				if debug {
+					conn = NewLoggingConn("client", conn)
+				}
+				return conn, nil
+			},
+			DisableKeepAlives: true,
+		},
+	}
+
+	nRuns := 5
+	if testing.Short() {
+		nRuns = 1
+	}
+	for i := 0; i < nRuns; i++ {
+		if debug {
+			println("run", i+1, "of", nRuns)
+		}
+		sres, err := client.Get(ts.URL + "/get")
+		if err != nil {
+			t.Errorf("Error issuing GET: %v", err)
+			break
+		}
+		req, _ := NewRequest("PUT", ts.URL+"/put", sres.Body)
+		_, err = client.Do(req)
+		if err == nil {
+			sres.Body.Close()
+			t.Errorf("Unexpected successful PUT")
+			break
+		}
+		sres.Body.Close()
+	}
+	if debug {
+		println("tests complete; waiting for handlers to finish")
+	}
+	ts.Close()
+}
+
 type fooProto struct{}
 
 func (fooProto) RoundTrip(req *Request) (*Response, error) {
@@ -937,6 +1068,9 @@ var proxyFromEnvTests = []struct {
 	wanterr error
 }{
 	{"127.0.0.1:8080", "http://127.0.0.1:8080", nil},
+	{"cache.corp.example.com:1234", "http://cache.corp.example.com:1234", nil},
+	{"cache.corp.example.com", "http://cache.corp.example.com", nil},
+	{"https://cache.corp.example.com", "https://cache.corp.example.com", nil},
 	{"http://127.0.0.1:8080", "http://127.0.0.1:8080", nil},
 	{"https://127.0.0.1:8080", "https://127.0.0.1:8080", nil},
 	{"", "<nil>", nil},
