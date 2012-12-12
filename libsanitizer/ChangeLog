@@ -1,3 +1,17 @@
+2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Removed.
+	(MAKEOVERRIDES): Likewise.
+	* asan/Makefile.am: Likewise.
+	* interception/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* Makefile.in: Regenerated.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
 2012-12-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/55533
