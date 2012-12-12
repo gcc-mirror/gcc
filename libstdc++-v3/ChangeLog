@@ -1,3 +1,7 @@
+2012-12-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Fix validation issue.
+
 2012-12-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/55631
