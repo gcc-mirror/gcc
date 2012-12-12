@@ -1,3 +1,92 @@
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (${tool}_load): Handle non-existing
+	set_target_env_var the same as if it is empty list.
+	(dg-set-target-env-var): Fix up error message.
+	(set-target-env-var): Record both preexisting env var values
+	as well as info that env wasn't set.
+	(restore-target-env-var): Iterate on reversed list, if second
+	sublist element is 1, setenv the env var to the third sublist
+	element, otherwise unsetenv it.
+	(gcc-dg-runtest): Don't initialize set_target_env_var.
+	(dg-test): Unset set_target_env_var if it was set.
+
+	* g++.dg/asan/deep-tail-call-1.C: Whitespace fixes.  Don't rely
+	on argc being one.
+	* g++.dg/asan/interception-malloc-test-1.C: Only run on linux.
+	Whitespace fixes.  Avoid unnecessary * sizeof(char).
+	* g++.dg/asan/deep-thread-stack-1.C: Add -lasan -lpthread to
+	dg-options.  Whitespace fixes.
+	* g++.dg/asan/deep-stack-uaf-1.C: Skip for -flto.  Whitespace fixes.
+	* g++.dg/asan/interception-test-1.C: Whitespace fixes.
+	* g++.dg/asan/interception-failure-test-1.C: Whitespace fixes.
+	Avoid unnecessary * sizeof(char).  Remove // CHECK: comment.
+	* g++.dg/asan/default-options-1.C: Whitespace fixes.
+	* g++.dg/asan/symbolize-callback-1.C: Whitespace fixes.  Make
+	first __asan_symbolize argument unnamed.  Avoid unnecessary
+	* sizeof(char).
+	* g++.dg/asan/large-func-test-1.C: Whitespace fixes.  Don't rely
+	on argc being one.  Allow both _Znwj and _Znwm as operator new.
+	Ignore everything in the backtrace above operator new.  Fix up
+	dg-output regexps.
+	* c-c++-common/asan/null-deref-1.c: Add -fno-omit-frame-pointer
+	and for x86 -mno-omit-leaf-frame-pointer.  Fix up dg-output regexps.
+	* c-c++-common/asan/clone-test-1.c: Whitespace fixes.  Return non-zero
+	on failures.  Avoid pointless PASS dg-output check. Remove bogus
+	dg-shouldfail.
+	* c-c++-common/asan/sanity-check-pure-c-1.c: Fix up dg-output regexps.
+	Avoid unnecessary * sizeof(char).
+	* c-c++-common/asan/heap-overflow-1.c: Fix up dg-output regexps.
+	Don't rely on argc being one.
+	* c-c++-common/asan/sleep-before-dying-1.c: Whitespace fixes.
+	Avoid unnecessary * sizeof(char).
+	* c-c++-common/asan/rlimit-mmap-test-1.c: Whitespace fixes.
+	* c-c++-common/asan/stack-overflow-1.c: Fix up dg-output regexps.
+	* c-c++-common/asan/global-overflow-1.c: Add -fno-builtin-memset.
+	Fix up dg-output regexps.
+	* c-c++-common/asan/strncpy-overflow-1.c: Fix up dg-output regexps.
+	* c-c++-common/asan/memcmp-1.c:	Don't rely on argc being one.
+	* c-c++-common/asan/use-after-free-1.c: Fix up dg-output regexps.
+	* c-c++-common/asan/swapcontext-test-1.c: Don't rely on argc being
+	one.
+	* c-c++-common/asan/force-inline-opt0-1.c: Remove dg-skip-if.
+	* c-c++-common/asan/strip-path-prefix-1.c: Whitespace fixes.
+	Avoid unnecessary * sizeof(char).
+
+2012-12-12  Wei Mi  <wmi@google.com>
+
+	* lib/target-supports.exp (check_effective_target_dlopen,
+	check_effective_target_clone, check_effective_target_setrlimit,
+	check_effective_target_swapcontext): New procedures.
+	* lib/gcc-dg.exp (${tool}_load): Handle dg-set-target-env-var.
+	(dg-set-target-env-var, set-target-env-var,
+	restore-target-env-var): New procedures.
+	(gcc-dg-runtest): Set set_target_env_var.
+	* g++.dg/asan/symbolize-callback-1.C: New test.
+	* g++.dg/asan/shared-lib-test-1-so.cc: New file.
+	* g++.dg/asan/deep-tail-call-1.C: New test.
+	* g++.dg/asan/default-options-1.C: New test.
+	* g++.dg/asan/interception-test-1.C: New test.
+	* g++.dg/asan/dlclose-test-1-so.cc: New file.
+	* g++.dg/asan/deep-thread-stack-1.C: New test.
+	* g++.dg/asan/interception-malloc-test-1.C: New test.
+	* g++.dg/asan/deep-stack-uaf-1.C: New test.
+	* g++.dg/asan/large-func-test-1.C: New test.
+	* g++.dg/asan/interception-failure-test-1.C: New test.
+	* c-c++-common/asan/strip-path-prefix-1.c: New test.
+	* c-c++-common/asan/force-inline-opt0-1.c: New test.
+	* c-c++-common/asan/swapcontext-test-1.c: New test.
+	* c-c++-common/asan/null-deref-1.c: New test.
+	* c-c++-common/asan/global-overflow-1.c: New test.
+	* c-c++-common/asan/strncpy-overflow-1.c: New test.
+	* c-c++-common/asan/rlimit-mmap-test-1.c: New test.
+	* c-c++-common/asan/stack-overflow-1.c: New test.
+	* c-c++-common/asan/use-after-free-1.c: New test.
+	* c-c++-common/asan/sanity-check-pure-c-1.c: New test.
+	* c-c++-common/asan/clone-test-1.c: New test.
+	* c-c++-common/asan/heap-overflow-1.c: New test.
+	* c-c++-common/asan/sleep-before-dying-1.c: New test.
+
 2012-12-12  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.dg/pr55150-2.c: Add pic support check.

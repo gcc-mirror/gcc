@@ -719,6 +719,26 @@ proc check_effective_target_mmap {} {
     return [check_function_available "mmap"]
 }
 
+# Return 1 if the target supports dlopen, 0 otherwise.
+proc check_effective_target_dlopen {} {
+    return [check_function_available "dlopen"]
+}
+
+# Return 1 if the target supports clone, 0 otherwise.
+proc check_effective_target_clone {} {
+    return [check_function_available "clone"]
+}
+
+# Return 1 if the target supports setrlimit, 0 otherwise.
+proc check_effective_target_setrlimit {} {
+    return [check_function_available "setrlimit"]
+}
+
+# Return 1 if the target supports swapcontext, 0 otherwise.
+proc check_effective_target_swapcontext {} {
+    return [check_function_available "swapcontext"]
+}
+
 # Return 1 if compilation with -pthread is error-free for trivial
 # code, 0 otherwise.
 
