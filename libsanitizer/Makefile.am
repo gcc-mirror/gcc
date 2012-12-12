@@ -10,5 +10,7 @@ if USING_MAC_INTERPOSE
 SUBDIRS = sanitizer_common asan
 endif
 
+MAKEOVERRIDES=
+
 ## ################################################################
 

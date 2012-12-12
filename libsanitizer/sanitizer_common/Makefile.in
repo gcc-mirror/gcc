@@ -242,6 +242,7 @@ sanitizer_common_files = \
         sanitizer_win.cc
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
+MAKEOVERRIDES = 
 all: all-am
 
 .SUFFIXES:

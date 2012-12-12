@@ -44,5 +44,7 @@ libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDLAGS)
 
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
+MAKEOVERRIDES=
+
 ## ################################################################
 

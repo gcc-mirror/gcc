@@ -252,6 +252,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 @TSAN_SUPPORTED_FALSE@SUBDIRS = interception sanitizer_common asan 
 @TSAN_SUPPORTED_TRUE@SUBDIRS = interception sanitizer_common asan tsan 
 @USING_MAC_INTERPOSE_TRUE@SUBDIRS = sanitizer_common asan
+MAKEOVERRIDES = 
 all: all-recursive
 
 .SUFFIXES:

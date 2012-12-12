@@ -1,5 +1,18 @@
 2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* Makefile.am (MAKEOVERRIDES): Restored.
+	* asan/Makefile.am: Likewise.
+	* interception/Makefile.am: Likewise.
+	* sanitizer_common/Makefile.am: Likewise.
+	* tsan/Makefile.am: Likewise.
+	* Makefile.in: Regenerated.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
+2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* asan/Makefile.am (libasan_la_LIBADD): Use $(LIBSTDCXX_RAW_CXX_LDLAGS).
 	* tsan/Makefile.am (libtsan_la_LIBADD): Likewise.
 	* Makefile.in: Regenerated.
