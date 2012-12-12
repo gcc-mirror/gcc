@@ -16742,7 +16742,7 @@ mips_option_override (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      mips_dbx_regno[i] = INVALID_REGNUM;
+      mips_dbx_regno[i] = IGNORED_DWARF_REGNUM;
       if (GP_REG_P (i) || FP_REG_P (i) || ALL_COP_REG_P (i))
 	mips_dwarf_regno[i] = i;
       else
@@ -16756,9 +16756,6 @@ mips_option_override (void)
   start = FP_DBX_FIRST - FP_REG_FIRST;
   for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
     mips_dbx_regno[i] = i + start;
-
-  for (i = ALL_COP_REG_FIRST; i <= ALL_COP_REG_LAST; i++)
-    mips_dbx_regno[i] = IGNORED_DWARF_REGNUM;
 
   /* Accumulator debug registers use big-endian ordering.  */
   mips_dbx_regno[HI_REGNUM] = MD_DBX_FIRST + 0;
