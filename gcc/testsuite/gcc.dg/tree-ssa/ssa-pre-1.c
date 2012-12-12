@@ -9,7 +9,7 @@ int foo(int argc, char **argv)
 	b  = argc + 1;
 	c =  argc + 2;
 	a = b + c;
-	if (argc * 2)
+	if (argc > 2)
 	{
 		c = argc + 3;
 	}
