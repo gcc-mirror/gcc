@@ -6,12 +6,11 @@
 
 package net
 
-import "time"
-
 // TCPAddr represents the address of a TCP end point.
 type TCPAddr struct {
 	IP   IP
 	Port int
+	Zone string // IPv6 scoped addressing zone
 }
 
 // Network returns the address's network name, "tcp".
@@ -30,13 +29,16 @@ func (a *TCPAddr) String() string {
 // "tcp4" or "tcp6".  A literal IPv6 host address must be
 // enclosed in square brackets, as in "[::]:80".
 func ResolveTCPAddr(net, addr string) (*TCPAddr, error) {
-	return resolveTCPAddr(net, addr, noDeadline)
-}
-
-func resolveTCPAddr(net, addr string, deadline time.Time) (*TCPAddr, error) {
-	ip, port, err := hostPortToIP(net, addr, deadline)
+	switch net {
+	case "tcp", "tcp4", "tcp6":
+	case "": // a hint wildcard for Go 1.0 undocumented behavior
+		net = "tcp"
+	default:
+		return nil, UnknownNetworkError(net)
+	}
+	a, err := resolveInternetAddr(net, addr, noDeadline)
 	if err != nil {
 		return nil, err
 	}
-	return &TCPAddr{ip, port}, nil
+	return a.(*TCPAddr), nil
 }

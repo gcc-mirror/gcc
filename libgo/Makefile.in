@@ -153,26 +153,27 @@ am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	debug/pe.lo encoding/ascii85.lo encoding/asn1.lo \
 	encoding/base32.lo encoding/base64.lo encoding/binary.lo \
 	encoding/csv.lo encoding/gob.lo encoding/hex.lo \
-	encoding/json.lo encoding/pem.lo encoding/xml.lo exp/ebnf.lo \
-	exp/html.lo exp/html/atom.lo exp/locale/collate.lo \
-	exp/locale/collate/build.lo exp/norm.lo exp/proxy.lo \
-	exp/terminal.lo exp/types.lo exp/utf8string.lo \
-	html/template.lo go/ast.lo go/build.lo go/doc.lo go/parser.lo \
-	go/printer.lo go/scanner.lo go/token.lo hash/adler32.lo \
-	hash/crc32.lo hash/crc64.lo hash/fnv.lo net/http/cgi.lo \
-	net/http/fcgi.lo net/http/httptest.lo net/http/httputil.lo \
-	net/http/pprof.lo image/color.lo image/draw.lo image/gif.lo \
-	image/jpeg.lo image/png.lo index/suffixarray.lo io/ioutil.lo \
-	log/syslog.lo log/syslog/syslog_c.lo math/big.lo math/cmplx.lo \
-	math/rand.lo mime/multipart.lo net/http.lo net/mail.lo \
-	net/rpc.lo net/smtp.lo net/textproto.lo net/url.lo \
-	old/netchan.lo old/regexp.lo old/template.lo os/exec.lo \
-	$(am__DEPENDENCIES_1) os/signal.lo os/user.lo path/filepath.lo \
-	regexp/syntax.lo net/rpc/jsonrpc.lo runtime/debug.lo \
-	runtime/pprof.lo sync/atomic.lo sync/atomic_c.lo \
-	text/scanner.lo text/tabwriter.lo text/template.lo \
-	text/template/parse.lo testing/iotest.lo testing/quick.lo \
-	unicode/utf16.lo unicode/utf8.lo
+	encoding/json.lo encoding/pem.lo encoding/xml.lo \
+	exp/cookiejar.lo exp/ebnf.lo exp/html.lo exp/html/atom.lo \
+	exp/locale/collate.lo exp/locale/collate/build.lo exp/norm.lo \
+	exp/proxy.lo exp/terminal.lo exp/types.lo exp/utf8string.lo \
+	html/template.lo go/ast.lo go/build.lo go/doc.lo go/format.lo \
+	go/parser.lo go/printer.lo go/scanner.lo go/token.lo \
+	hash/adler32.lo hash/crc32.lo hash/crc64.lo hash/fnv.lo \
+	net/http/cgi.lo net/http/fcgi.lo net/http/httptest.lo \
+	net/http/httputil.lo net/http/pprof.lo image/color.lo \
+	image/draw.lo image/gif.lo image/jpeg.lo image/png.lo \
+	index/suffixarray.lo io/ioutil.lo log/syslog.lo \
+	log/syslog/syslog_c.lo math/big.lo math/cmplx.lo math/rand.lo \
+	mime/multipart.lo net/http.lo net/mail.lo net/rpc.lo \
+	net/smtp.lo net/textproto.lo net/url.lo old/netchan.lo \
+	old/regexp.lo old/template.lo os/exec.lo $(am__DEPENDENCIES_1) \
+	os/signal.lo os/user.lo path/filepath.lo regexp/syntax.lo \
+	net/rpc/jsonrpc.lo runtime/debug.lo runtime/pprof.lo \
+	sync/atomic.lo sync/atomic_c.lo text/scanner.lo \
+	text/tabwriter.lo text/template.lo text/template/parse.lo \
+	testing/iotest.lo testing/quick.lo unicode/utf16.lo \
+	unicode/utf8.lo
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
 	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -608,6 +609,7 @@ toolexeclibgoencoding_DATA = \
 @LIBGO_IS_LINUX_TRUE@exp_inotify_gox = 
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 toolexeclibgoexp_DATA = \
+	exp/cookiejar.gox \
 	exp/ebnf.gox \
 	exp/html.gox \
 	$(exp_inotify_gox) \
@@ -634,6 +636,7 @@ toolexeclibgogo_DATA = \
 	go/ast.gox \
 	go/build.gox \
 	go/doc.gox \
+	go/format.gox \
 	go/parser.gox \
 	go/printer.gox \
 	go/scanner.gox \
@@ -1403,6 +1406,10 @@ go_encoding_xml_files = \
 	go/encoding/xml/typeinfo.go \
 	go/encoding/xml/xml.go
 
+go_exp_cookiejar_files = \
+	go/exp/cookiejar/jar.go \
+	go/exp/cookiejar/storage.go
+
 go_exp_ebnf_files = \
 	go/exp/ebnf/ebnf.go \
 	go/exp/ebnf/parser.go
@@ -1505,6 +1512,9 @@ go_go_doc_files = \
 	go/go/doc/filter.go \
 	go/go/doc/reader.go \
 	go/go/doc/synopsis.go
+
+go_go_format_files = \
+	go/go/format/format.go
 
 go_go_parser_files = \
 	go/go/parser/interface.go \
@@ -1614,6 +1624,7 @@ go_math_rand_files = \
 go_mime_multipart_files = \
 	go/mime/multipart/formdata.go \
 	go/mime/multipart/multipart.go \
+	go/mime/multipart/quotedprintable.go \
 	go/mime/multipart/writer.go
 
 go_net_http_files = \
@@ -1695,6 +1706,7 @@ go_os_signal_files = \
 
 go_os_user_files = \
 	go/os/user/user.go \
+	go/os/user/lookup.go \
 	go/os/user/lookup_unix.go
 
 go_path_filepath_files = \
@@ -1948,6 +1960,7 @@ libgo_go_objs = \
 	encoding/json.lo \
 	encoding/pem.lo \
 	encoding/xml.lo \
+	exp/cookiejar.lo \
 	exp/ebnf.lo \
 	exp/html.lo \
 	exp/html/atom.lo \
@@ -1962,6 +1975,7 @@ libgo_go_objs = \
 	go/ast.lo \
 	go/build.lo \
 	go/doc.lo \
+	go/format.lo \
 	go/parser.lo \
 	go/printer.lo \
 	go/scanner.lo \
@@ -2200,6 +2214,7 @@ TEST_PACKAGES = \
 	encoding/json/check \
 	encoding/pem/check \
 	encoding/xml/check \
+	exp/cookiejar/check \
 	exp/ebnf/check \
 	exp/html/check \
 	exp/html/atom/check \
@@ -2215,6 +2230,7 @@ TEST_PACKAGES = \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \
 	go/doc/check \
+	go/format/check \
 	go/parser/check \
 	go/printer/check \
 	go/scanner/check \
@@ -5096,6 +5112,15 @@ encoding/xml/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/xml/check
 
+@go_include@ exp/cookiejar.lo.dep
+exp/cookiejar.lo.dep: $(go_exp_cookiejar_files)
+	$(BUILDDEPS)
+exp/cookiejar.lo: $(go_exp_cookiejar_files)
+	$(BUILDPACKAGE)
+exp/cookiejar/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: exp/cookiejar/check
+
 @go_include@ exp/ebnf.lo.dep
 exp/ebnf.lo.dep: $(go_exp_ebnf_files)
 	$(BUILDDEPS)
@@ -5239,6 +5264,15 @@ go/doc.lo: $(go_go_doc_files)
 go/doc/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: go/doc/check
+
+@go_include@ go/format.lo.dep
+go/format.lo.dep: $(go_go_format_files)
+	$(BUILDDEPS)
+go/format.lo: $(go_go_format_files)
+	$(BUILDPACKAGE)
+go/format/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: go/format/check
 
 @go_include@ go/parser.lo.dep
 go/parser.lo.dep: $(go_go_parser_files)
@@ -5880,6 +5914,8 @@ encoding/pem.gox: encoding/pem.lo
 encoding/xml.gox: encoding/xml.lo
 	$(BUILDGOX)
 
+exp/cookiejar.gox: exp/cookiejar.lo
+	$(BUILDGOX)
 exp/ebnf.gox: exp/ebnf.lo
 	$(BUILDGOX)
 exp/html.gox: exp/html.lo
@@ -5911,6 +5947,8 @@ go/ast.gox: go/ast.lo
 go/build.gox: go/build.lo
 	$(BUILDGOX)
 go/doc.gox: go/doc.lo
+	$(BUILDGOX)
+go/format.gox: go/format.lo
 	$(BUILDGOX)
 go/parser.gox: go/parser.lo
 	$(BUILDGOX)
