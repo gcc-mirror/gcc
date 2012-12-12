@@ -383,6 +383,8 @@
 <listitem>
   <para>
    <emphasis>refman.out</emphasis>
+  </para>
+
   <para>
     A log of the compilation of the converted LaTeX form to pdf. This
     is a linear list, from the beginning of the
@@ -394,9 +396,19 @@
     incorrect, or will have clues at the end of the file with the dump
     of the memory usage of LaTeX.
   </para>
-  </para>
 </listitem>
 </itemizedlist>
+
+	<para>
+	  If the error at hand is not obvious after examination, a
+	  fall-back strategy is to start commenting out the doxygen
+	  input sources, which can be found in
+	  <filename>doc/doxygen/user.cfg.in</filename>, look for the
+	  <literal>INPUT</literal> tag. Start by commenting out whole
+	  directories of header files, until the offending header is
+	  identified. Then, read the latex log files to try and find
+	  surround text, and look for that in the offending header.
+	</para>
 
  </section>
 
@@ -872,7 +884,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 </itemizedlist>
 
 	<para>
-	  If the issue is not obvious after examination, or if one
+	  If the error at hand is not obvious after examination, or if one
 	  encounters the inscruitable <quote>Incomplete
 	  \ifmmode</quote> error, a fall-back strategy is to start
 	  commenting out parts of the XML document (regardless of what
