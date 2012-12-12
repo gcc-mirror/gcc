@@ -1,5 +1,18 @@
 2012-12-12  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* graph.c: Include sbitmap.h and cfgloop.h.
+	(draw_cfg_nodes_no_loops): New function to dump basic blocks in
+	topological order if the function does not have a loop tree.
+	Handle unreachable blocks also.
+	(draw_cfg_nodes_for_loop): New function to dump basic blocks in
+	one loop tree node as a named cluster of nodes.
+	(draw_cfg_nodes): New function to draw all CFG nodes.
+	(draw_cfg_edges): New function to draw all CFG edges.
+	(print_graph_cfg): Simplify using the new functions.
+	* Makefile.in (graph.o): Fix dependencies.
+
+2012-12-12  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* dumpfile.h (enum tree_dump_index): Remove TDI_vcg.
 	* dumpfile.c (dump_files[]): Remove entry for TDI_vcg.
 	* tree-cfg.c (gimple_cfg2vcg): Remove.
