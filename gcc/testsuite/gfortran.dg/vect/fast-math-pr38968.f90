@@ -7,7 +7,7 @@
 program mymatmul
   implicit none
   integer, parameter :: kp = 4
-  integer, parameter :: n = 2000
+  integer, parameter :: n = 400
   real(kp), dimension(n,n) :: rr, ri
   complex(kp), dimension(n,n) :: a,b,c
   real :: t1, t2
