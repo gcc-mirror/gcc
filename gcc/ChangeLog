@@ -1,3 +1,10 @@
+2012-12-12  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/55481
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Fall
+	back to general rewriting if we cannot leave an original biv
+	definition alone.
+
 2012-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/55659
