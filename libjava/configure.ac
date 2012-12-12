@@ -24,6 +24,8 @@ _GCC_TOPLEV_NONCANONICAL_TARGET
 
 AC_SUBST(target_noncanonical)
 
+GCC_LIBSTDCXX_RAW_CXX_FLAGS
+
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is

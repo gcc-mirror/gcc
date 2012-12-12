@@ -1,3 +1,8 @@
+2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* libstdc++-raw-cxx.m4 (GCC_LIBSTDCXX_RAW_CXX_FLAGS): Also
+	AC_SUBST LIBSTDCXX_RAW_CXX_LDFLAGS.
+
 2012-12-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR sanitizer/55533

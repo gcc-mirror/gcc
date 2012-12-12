@@ -99,6 +99,7 @@ am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/libstdc++-raw-cxx.m4 \
 	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
@@ -619,6 +620,8 @@ LIBMATHSPEC = @LIBMATHSPEC@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSTDCXXSPEC = @LIBSTDCXXSPEC@
+LIBSTDCXX_RAW_CXX_CXXFLAGS = @LIBSTDCXX_RAW_CXX_CXXFLAGS@
+LIBSTDCXX_RAW_CXX_LDFLAGS = @LIBSTDCXX_RAW_CXX_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -1133,11 +1136,9 @@ lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la \
 	$(lib_gnu_awt_xlib_la_LIBADD) $(am__append_21)
 lib_gnu_awt_xlib_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
-	-I../libstdc++-v3/include \
-	-I../libstdc++-v3/include/$(target_noncanonical) \
-	-I$(srcdir)/../libstdc++-v3/libsupc++
+	$(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 
-lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
+lib_gnu_awt_xlib_la_LDFLAGS = $(LIBSTDCXX_RAW_CXX_LDLAGS) \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)

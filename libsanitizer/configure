@@ -686,6 +686,7 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
+LIBSTDCXX_RAW_CXX_LDFLAGS
 LIBSTDCXX_RAW_CXX_CXXFLAGS
 target_noncanonical
 target_os
@@ -2593,6 +2594,9 @@ esac
     -I\$(top_builddir)/../libstdc++-v3/include \
     -I\$(top_builddir)/../libstdc++-v3/include/\$(target_noncanonical) \
     -I\$(top_srcdir)/../libstdc++-v3/libsupc++"
+  LIBSTDCXX_RAW_CXX_LDFLAGS="\
+    -I\$(top_builddir)/../libstdc++-v3/src/libstdc++.la"
+
 
 
 
@@ -11107,7 +11111,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11110 "configure"
+#line 11114 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11213,7 +11217,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11216 "configure"
+#line 11220 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
