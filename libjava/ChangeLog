@@ -1,3 +1,13 @@
+2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.am (lib_gnu_awt_xlib_la_CPPFLAGS): Use
+	$(LIBSTDCXX_RAW_CXX_CXXLAGS).
+	(lib_gnu_awt_xlib_la_LDFLAGS): Use $(LIBSTDCXX_RAW_CXX_LDLAGS).
+	* configure.ac (GCC_LIBSTDCXX_RAW_CXX_FLAGS): New.
+	* aclocal.m4: Regenerated.
+	* Makefile.in:Likewise.
+	* configure: Likewise.
+
 2012-11-19  Matthias Klose  <doko@ubuntu.com>
 
 	* libtool-version: Bump soversion.

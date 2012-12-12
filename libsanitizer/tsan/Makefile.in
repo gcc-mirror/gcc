@@ -78,8 +78,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libtsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/interception/libinterception.la \
-	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
+	$(top_builddir)/interception/libinterception.la
 am__objects_1 = tsan_clock.lo tsan_interface_atomic.lo tsan_mutex.lo \
 	tsan_report.lo tsan_rtl_thread.lo tsan_symbolize.lo \
 	tsan_flags.lo tsan_interface.lo tsan_platform_linux.lo \
@@ -151,6 +150,7 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSTDCXX_RAW_CXX_CXXFLAGS = @LIBSTDCXX_RAW_CXX_CXXFLAGS@
+LIBSTDCXX_RAW_CXX_LDFLAGS = @LIBSTDCXX_RAW_CXX_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -274,7 +274,7 @@ tsan_files = \
         tsan_symbolize_addr2line_linux.cc
 
 libtsan_la_SOURCES = $(tsan_files) 
-libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDLAGS)
 libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 all: all-am
 

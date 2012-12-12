@@ -36,10 +36,11 @@ asan_files = \
 libasan_la_SOURCES = $(asan_files)
 if USING_MAC_INTERPOSE
 libasan_la_SOURCES += dynamic/asan_interceptors_dynamic.cc
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 else
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
 endif
+libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDLAGS)
 
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 

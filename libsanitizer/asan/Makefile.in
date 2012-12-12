@@ -79,10 +79,8 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @USING_MAC_INTERPOSE_FALSE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
-@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la \
-@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
-@USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
-@USING_MAC_INTERPOSE_TRUE@	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la
+@USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 am__libasan_la_SOURCES_DIST = asan_allocator.cc asan_interceptors.cc \
 	asan_mac.cc asan_malloc_mac.cc asan_new_delete.cc \
 	asan_posix.cc asan_rtl.cc asan_stats.cc \
@@ -165,6 +163,7 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSTDCXX_RAW_CXX_CXXFLAGS = @LIBSTDCXX_RAW_CXX_CXXFLAGS@
+LIBSTDCXX_RAW_CXX_LDFLAGS = @LIBSTDCXX_RAW_CXX_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -286,8 +285,11 @@ asan_files = \
 	asan_win.cc
 
 libasan_la_SOURCES = $(asan_files) $(am__append_2)
-@USING_MAC_INTERPOSE_FALSE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
-@USING_MAC_INTERPOSE_TRUE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_FALSE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
+@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la \
+@USING_MAC_INTERPOSE_FALSE@	$(LIBSTDCXX_RAW_CXX_LDLAGS)
+@USING_MAC_INTERPOSE_TRUE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
+@USING_MAC_INTERPOSE_TRUE@	$(LIBSTDCXX_RAW_CXX_LDLAGS)
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 all: all-am
 
