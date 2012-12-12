@@ -1,6 +1,6 @@
 // std::initializer_list support -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -77,7 +77,7 @@ namespace std
       // One past the last element.
       constexpr const_iterator
       end() const noexcept { return begin() + size(); }
-  };
+    };
 
   /**
    *  @brief  Return an iterator pointing to the first element of

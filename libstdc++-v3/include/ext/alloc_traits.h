@@ -32,6 +32,7 @@
 #pragma GCC system_header
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <bits/move.h>
 # include <bits/alloc_traits.h>
 #else
 # include <bits/allocator.h>  // for __alloc_swap
