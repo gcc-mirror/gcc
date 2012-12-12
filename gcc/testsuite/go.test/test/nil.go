@@ -151,9 +151,8 @@ func maptest() {
 	shouldPanic(func() {
 		m[2] = 3
 	})
-	shouldPanic(func() {
-		delete(m, 2)
-	})
+	// can delete (non-existent) entries
+	delete(m, 2)
 }
 
 // nil slice
