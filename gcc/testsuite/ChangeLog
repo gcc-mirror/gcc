@@ -1,5 +1,8 @@
 2012-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/55665
+	* g++.dg/guality/pr55665.C: New test.
+
 	* lib/gcc-dg.exp (${tool}_load): Handle non-existing
 	set_target_env_var the same as if it is empty list.
 	(dg-set-target-env-var): Fix up error message.
