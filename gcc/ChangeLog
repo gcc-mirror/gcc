@@ -1,3 +1,9 @@
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55633
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk):
+	Ignore bounds on which bound += double_int_one overflowed.
+
 2012-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/54121

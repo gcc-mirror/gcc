@@ -3011,7 +3011,12 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
       /* Exit terminates loop at given iteration, while non-exits produce undefined
 	 effect on the next iteration.  */
       if (!elt->is_exit)
-	bound += double_int_one;
+	{
+	  bound += double_int_one;
+	  /* If an overflow occurred, ignore the result.  */
+	  if (bound.is_zero ())
+	    continue;
+	}
 
       if (!loop->any_upper_bound
 	  || bound.ult (loop->nb_iterations_upper_bound))
@@ -3037,7 +3042,12 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
     {
       double_int bound = elt->bound;
       if (!elt->is_exit)
-	bound += double_int_one;
+	{
+	  bound += double_int_one;
+	  /* If an overflow occurred, ignore the result.  */
+	  if (bound.is_zero ())
+	    continue;
+	}
 
       if (!loop->any_upper_bound
 	  || bound.ult (loop->nb_iterations_upper_bound))
