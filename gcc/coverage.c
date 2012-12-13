@@ -999,6 +999,9 @@ coverage_obj_init (void)
       /* The function is not being emitted, remove from list.  */
       *fn_prev = fn->next;
 
+  if (functions_head == NULL)
+    return false;
+
   for (ix = 0; ix != GCOV_COUNTERS; ix++)
     if ((1u << ix) & prg_ctr_mask)
       n_counters++;
