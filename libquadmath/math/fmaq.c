@@ -80,7 +80,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  < IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG - 2)
 	{
 	  int neg = u.ieee.negative ^ v.ieee.negative;
-	  __float128 tiny = neg ? -0x1p-16494L : 0x1p-16494L;
+	  __float128 tiny = neg ? -0x1p-16494Q : 0x1p-16494Q;
 	  if (w.ieee.exponent >= 3)
 	    return tiny + z;
 	  /* Scaling up, adding TINY and scaling down produces the
@@ -88,7 +88,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	     TINY has no effect and in other modes double rounding is
 	     harmless.  But it may not produce required underflow
 	     exceptions.  */
-	  v.value = z * 0x1p114L + tiny;
+	  v.value = z * 0x1p114Q + tiny;
 	  if (TININESS_AFTER_ROUNDING
 	      ? v.ieee.exponent < 115
 	      : (w.ieee.exponent == 0
@@ -100,7 +100,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	      volatile __float128 force_underflow = x * y;
 	      (void) force_underflow;
 	    }
-	  return v.value * 0x1p-114L;
+	  return v.value * 0x1p-114Q;
 	}
       if (u.ieee.exponent + v.ieee.exponent
 	  >= 0x7fff + IEEE854_FLOAT128_BIAS - FLT128_MANT_DIG)
@@ -296,7 +296,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	    {
 	      w.value = a1 + u.value;
 	      if (w.ieee.exponent == 227)
-		return w.value * 0x1p-226L;
+		return w.value * 0x1p-226Q;
 	    }
 	  /* v.ieee.mant_low & 2 is LSB bit of the result before rounding,
 	     v.ieee.mant_low & 1 is the round bit and j is our sticky
@@ -305,8 +305,8 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  w.ieee.mant_low = ((v.ieee.mant_low & 3) << 1) | j;
 	  w.ieee.negative = v.ieee.negative;
 	  v.ieee.mant_low &= ~3U;
-	  v.value *= 0x1p-226L;
-	  w.value *= 0x1p-2L;
+	  v.value *= 0x1p-226Q;
+	  w.value *= 0x1p-2Q;
 	  return v.value + w.value;
 	}
       v.ieee.mant_low |= j;
