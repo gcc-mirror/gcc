@@ -19,6 +19,12 @@
 
 // 21.3.3 string capacity
 
+// { dg-options "-DMAX_SIZE=16" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE 20
+#endif
+
 #include <string>
 #include <testsuite_hooks.h>
 
@@ -34,7 +40,7 @@ void test01()
   // and shrink-to-fit (in the future, maybe this will change
   // for short strings).
   const size_type minsize = 2 << 0;
-  const size_type maxsize = 2 << 20;
+  const size_type maxsize = 2 << MAX_SIZE;
   for (size_type i = minsize; i <= maxsize; i *= 2)
     {
       wstring str(i, L'x');
