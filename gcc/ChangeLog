@@ -1,3 +1,25 @@
+2012-12-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.c (struct bitmap_descriptor): Remove forward declaration.
+	(struct bitmap_head_def): Remove desc pointer.  Add descriptor_id
+	field.  Reorder fields for pointer alignment.
+	* bitmap.c: Include vec.h.
+	(struct bitmap_descriptor): Rename to bitmap_descriptor_d.
+	(bitmap_descriptor): New typedef, pointer to bitmap_descriptor_d.
+	Update all struct bitmap_descriptor references.
+	(next_bitmap_desc_id): New running index for bitmap desciptors.
+	(bitmap_descriptors): Vec of all bitmap descriptors by descriptor id.
+	(hash_descriptor, eq_descriptor): Update for struct bitmap_descriptor
+	change.
+	(bitmap_descriptor): Rename function to get_bitmap_descriptor.
+	Stuff newly allocated bitmap descriptor into bitmap_descriptors.
+	Set the bitmap descriptor id.
+	(bitmap_register): Lookup bitmap desciptor and store its ID in
+	the passed bitmap.
+	(register_overhead): Likewise.
+	(bitmap_find_bit): Lookup descriptor by id in bitmap_descriptors.
+	(print_statistics): Update for struct bitmap_descriptor change.
+
 2012-12-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (get_representative_for): Adjust dumping.
