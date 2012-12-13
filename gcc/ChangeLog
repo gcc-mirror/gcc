@@ -1,3 +1,7 @@
+2012-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/unspecs.md: Add copyright notice.
+
 2012-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): Avoid
