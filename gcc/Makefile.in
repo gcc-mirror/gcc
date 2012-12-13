@@ -3172,7 +3172,7 @@ reginfo.o : reginfo.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) reload.h $(DIAGNOSTIC_CORE_H) \
    $(FUNCTION_H) output.h $(TM_P_H) $(EXPR_H) $(HASHTAB_H) \
    $(TARGET_H) $(TREE_PASS_H) $(DF_H) ira.h
-bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H)  coretypes.h \
+bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H) \
    $(GGC_H) gt-bitmap.h $(BITMAP_H) $(OBSTACK_H) $(HASHTAB_H)
 vec.o : vec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H) $(GGC_H) \
    $(DIAGNOSTIC_CORE_H) $(HASHTAB_H)

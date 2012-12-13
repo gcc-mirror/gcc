@@ -26,6 +26,8 @@
 	(bitmap_find_bit): Lookup descriptor by id in bitmap_descriptors.
 	(print_statistics): Update for struct bitmap_descriptor change.
 
+	* Makefile.in: Fix bitmap.o dependencies.
+
 2012-12-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (get_representative_for): Adjust dumping.
