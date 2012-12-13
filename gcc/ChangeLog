@@ -1,3 +1,10 @@
+2012-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/55660
+	* tree-streamer.c (record_common_node): Check that we are not
+	recursively pre-loading nodes we want to skip.  Handle
+	char_type_node appearing as part of va_list_type_node.
+
 2012-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/55650

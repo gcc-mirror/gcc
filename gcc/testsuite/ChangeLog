@@ -1,3 +1,9 @@
+2012-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/55660
+	* gcc.dg/lto/pr55660_0.c: New testcase.
+	* gcc.dg/lto/pr55660_1.c: Likewise.
+
 2012-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/55650
