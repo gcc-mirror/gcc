@@ -1395,31 +1395,26 @@ get_representative_for (const pre_expr e)
 	    pre_expr rep = expression_for_id (i);
 	    if (rep->kind == NAME)
 	      return PRE_EXPR_NAME (rep);
+	    else if (rep->kind == CONSTANT)
+	      return PRE_EXPR_CONSTANT (rep);
 	  }
       }
       break;
     }
+
   /* If we reached here we couldn't find an SSA_NAME.  This can
      happen when we've discovered a value that has never appeared in
-     the program as set to an SSA_NAME, most likely as the result of
-     phi translation.  */
-  if (dump_file)
-    {
-      fprintf (dump_file,
-	       "Could not find SSA_NAME representative for expression:");
-      print_pre_expr (dump_file, e);
-      fprintf (dump_file, "\n");
-    }
-
-  /* Build and insert the assignment of the end result to the temporary
-     that we will return.  */
+     the program as set to an SSA_NAME, as the result of phi translation.
+     Create one here.
+     ???  We should be able to re-use this when we insert the statement
+     to compute it.  */
   name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
   VN_INFO_GET (name)->value_id = value_id;
-  VN_INFO (name)->valnum = sccvn_valnum_from_value_id (value_id);
-  if (VN_INFO (name)->valnum == NULL_TREE)
-    VN_INFO (name)->valnum = name;
+  VN_INFO (name)->valnum = name;
+  /* ???  For now mark this SSA name for release by SCCVN.  */
+  VN_INFO (name)->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Created SSA_NAME representative ");
       print_generic_expr (dump_file, name, 0);
@@ -4170,6 +4165,7 @@ eliminate_bb (dom_walk_data *, basic_block b)
 	      if (val != VN_TOP
 		  && TREE_CODE (val) == SSA_NAME
 		  && VN_INFO (val)->needs_insertion
+		  && VN_INFO (val)->expr != NULL_TREE
 		  && (sprime = eliminate_insert (&gsi, val)) != NULL_TREE)
 		eliminate_push_avail (sprime);
 	    }
