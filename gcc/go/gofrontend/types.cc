@@ -6500,6 +6500,24 @@ Type::make_channel_type(bool send, bool receive, Type* element_type)
 
 // Class Interface_type.
 
+// Return the list of methods.
+
+const Typed_identifier_list*
+Interface_type::methods() const
+{
+  go_assert(this->methods_are_finalized_ || saw_errors());
+  return this->all_methods_;
+}
+
+// Return the number of methods.
+
+size_t
+Interface_type::method_count() const
+{
+  go_assert(this->methods_are_finalized_ || saw_errors());
+  return this->all_methods_ == NULL ? 0 : this->all_methods_->size();
+}
+
 // Traversal.
 
 int
@@ -9628,6 +9646,19 @@ Forward_declaration_type::do_traverse(Traverse* traverse)
       && Type::traverse(this->real_type(), traverse) == TRAVERSE_EXIT)
     return TRAVERSE_EXIT;
   return TRAVERSE_CONTINUE;
+}
+
+// Verify the type.
+
+bool
+Forward_declaration_type::do_verify()
+{
+  if (!this->is_defined() && !this->is_nil_constant_as_type())
+    {
+      this->warn();
+      return false;
+    }
+  return true;
 }
 
 // Get the backend representation for the type.

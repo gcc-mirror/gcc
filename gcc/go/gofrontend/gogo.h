@@ -37,8 +37,6 @@ class Channel_type;
 class Interface_type;
 class Named_type;
 class Forward_declaration_type;
-class Method;
-class Methods;
 class Named_object;
 class Label;
 class Translate_context;
@@ -1738,6 +1736,11 @@ class Type_declaration
   bool
   has_methods() const;
 
+  // Return the methods.
+  const std::vector<Named_object*>*
+  methods() const
+  { return &this->methods_; }
+
   // Define methods when the real type is known.
   void
   define_methods(Named_type*);
@@ -1748,8 +1751,6 @@ class Type_declaration
   using_type();
 
  private:
-  typedef std::vector<Named_object*> Methods;
-
   // The location of the type declaration.
   Location location_;
   // If this type is declared in a function, a pointer back to the
@@ -1758,7 +1759,7 @@ class Type_declaration
   // The index of this type in IN_FUNCTION_.
   unsigned int in_function_index_;
   // Methods defined before the type is defined.
-  Methods methods_;
+  std::vector<Named_object*> methods_;
   // True if we have issued a warning about a use of this type
   // declaration when it is undefined.
   bool issued_warning_;
