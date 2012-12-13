@@ -9253,23 +9253,26 @@ alpha_pad_function_end (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (! (CALL_P (insn)
-	     && (SIBLING_CALL_P (insn)
-		 || find_reg_note (insn, REG_NORETURN, NULL_RTX))))
+      if (!CALL_P (insn)
+	  || !(SIBLING_CALL_P (insn)
+	       || find_reg_note (insn, REG_NORETURN, NULL_RTX)))
         continue;
 
       /* Make sure we do not split a call and its corresponding
 	 CALL_ARG_LOCATION note.  */
-      if (CALL_P (insn))
+      next = NEXT_INSN (insn);
+      if (next == NULL)
+	continue;
+      if (BARRIER_P (next))
 	{
-	  next = NEXT_INSN (insn);
-	  if (next && NOTE_P (next)
-	      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-	    insn = next;
+	  next = NEXT_INSN (next);
+	  if (next == NULL)
+	    continue;
 	}
+      if (NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+	insn = next;
 
       next = next_active_insn (insn);
-
       if (next)
 	{
 	  rtx pat = PATTERN (next);
