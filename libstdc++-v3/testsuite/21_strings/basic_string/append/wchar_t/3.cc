@@ -19,6 +19,12 @@
 
 // 21.3.5 string modifiers
 
+// { dg-options "-DITERATIONS=14" { target simulator } }
+
+#ifndef ITERATIONS
+#define ITERATIONS 18
+#endif
+
 #include <string>
 #include <testsuite_hooks.h>
 
@@ -37,7 +43,7 @@ test03()
     {
       wstring one(source);
       wstring two(source);
-      for (unsigned j = 0; j < 18; ++j)
+      for (unsigned j = 0; j < ITERATIONS; ++j)
 	{
 	  VERIFY( one == two );
 	  one.append(one);
