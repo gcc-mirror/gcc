@@ -5463,13 +5463,10 @@ Binary_expression::do_determine_type(const Type_context* context)
       // Give a useful error if that happened.
       if (tleft->is_abstract()
 	  && subcontext.type != NULL
-	  && (this->left_->type()->integer_type() == NULL
-	      || (subcontext.type->integer_type() == NULL
-		  && subcontext.type->float_type() == NULL
-		  && subcontext.type->complex_type() == NULL
-		  && subcontext.type->interface_type() == NULL)))
+	  && !subcontext.may_be_abstract
+	  && subcontext.type->integer_type() == NULL)
 	this->report_error(("invalid context-determined non-integer type "
-			    "for shift operand"));
+			    "for left operand of shift"));
 
       // The context for the right hand operand is the same as for the
       // left hand operand, except for a shift operator.
