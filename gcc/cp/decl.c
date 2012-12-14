@@ -4834,14 +4834,12 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	  if (failure == 1)
 	    {
 	      error ("initializer fails to determine size of %qD", decl);
-	      TREE_TYPE (decl) = error_mark_node;
 	    }
 	  else if (failure == 2)
 	    {
 	      if (do_default)
 		{
 		  error ("array size missing in %qD", decl);
-		  TREE_TYPE (decl) = error_mark_node;
 		}
 	      /* If a `static' var's size isn't known, make it extern as
 		 well as static, so it does not get allocated.  If it's not
@@ -4853,7 +4851,6 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	  else if (failure == 3)
 	    {
 	      error ("zero-size array %qD", decl);
-	      TREE_TYPE (decl) = error_mark_node;
 	    }
 	}
 

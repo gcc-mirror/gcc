@@ -1,3 +1,9 @@
+2012-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/42315
+	* decl.c (maybe_deduce_size_from_array_init): Don't change the
+	variable type.
+
 2012-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/55652
