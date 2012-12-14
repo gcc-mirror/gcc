@@ -1,3 +1,9 @@
+2012-12-14  Teresa Johnson  <tejohnson@google.com>
+
+        PR gcov-profile/55674
+	* lto-cgraph.c (merge_profile_summaries): Set min correctly the
+        first time we merge into a histogram entry.
+
 2012-12-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55684
