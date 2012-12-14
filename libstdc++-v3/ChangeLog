@@ -1,3 +1,13 @@
+2012-12-14  Steve Ellcey  <sellcey@mips.com>
+
+	* testsuite/21_strings/basic_string/append/wchar_t/3.cc: Shrink
+	memory usage under simulator.
+	* testsuite/21_strings/basic_string/cons/wchar_t/6.cc: Ditto.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:
+	Ditto.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/11.cc:
+	Ditto.
+
 2012-12-13  Steve Ellcey  <sellcey@mips.com>
 
 	* testsuite/21_strings/basic_string/capacity/char/18654.cc: Shrink

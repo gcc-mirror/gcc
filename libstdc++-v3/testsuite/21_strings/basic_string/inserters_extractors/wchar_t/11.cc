@@ -17,6 +17,12 @@
 
 // 21.3.7.9 inserters and extractors
 
+// { dg-options "-DMAX_SIZE=466" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE 666
+#endif
+
 #include <istream>
 #include <string>
 #include <fstream>
@@ -63,7 +69,7 @@ void test01()
   const char filename[] = "inserters_extractors-3.txt";
 
   const unsigned nchunks = 10;
-  const wstring data = prepare(666, nchunks);
+  const wstring data = prepare(MAX_SIZE, nchunks);
 
   wofstream ofstrm;
   ofstrm.open(filename);
