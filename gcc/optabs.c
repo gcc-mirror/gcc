@@ -7537,8 +7537,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
     }
 
   /* Otherwise assume stores are atomic, and emit the proper barriers.  */
-  if (model == MEMMODEL_SEQ_CST || model == MEMMODEL_RELEASE)
-    expand_mem_thread_fence (model);
+  expand_mem_thread_fence (model);
 
   emit_move_insn (mem, val);
 
