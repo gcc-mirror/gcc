@@ -238,10 +238,10 @@ WRAPPER(void, free, void *buf)
   static int freeq_initialized = 0;
   DECLARE(void, free, void *);
 
-  BEGIN_PROTECT (free, buf);
-
   if (UNLIKELY(buf == NULL))
     return;
+
+  BEGIN_PROTECT (free, buf);
 
 #if PIC
   /* Check whether the given buffer might have come from a
