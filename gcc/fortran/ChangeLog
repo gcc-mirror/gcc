@@ -1,3 +1,9 @@
+2012-12-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55638
+	* resolve.c (resolve_formal_arglist): Allow VALUE without
+	INTENT for ELEMENTAL procedures.
+
 2012-12-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/52909
@@ -5,8 +11,8 @@
 
 2012-12-09  Tobias Burnus  <burnus@net-b.de>
 
-	* trans-array.c (gfc_deallocate_scalar_with_status): Use
-	NULL_TREE in the call to gfc_deallocate_scalar_with_status.
+	* trans-array.c (structure_alloc_comps): Use NULL_TREE in the
+	call to gfc_deallocate_scalar_with_status.
 	* trans-decl.c (gfc_trans_deferred_vars): Pass symbol.
 	* trans-stmt.c (gfc_trans_deallocate): Pass polymorphic variable.
 

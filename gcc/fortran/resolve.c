@@ -488,10 +488,12 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
-	  if (sym->attr.intent == INTENT_UNKNOWN)
+	  /* Fortran 2008 Corrigendum 1, C1290a.  */
+	  if (sym->attr.intent == INTENT_UNKNOWN && !sym->attr.value)
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure '%s' at %L must "
-			 "have its INTENT specified", sym->name, proc->name,
+			 "have its INTENT specified or have the VALUE "
+			 "attribute", sym->name, proc->name,
 			 &sym->declared_at);
 	      continue;
 	    }
