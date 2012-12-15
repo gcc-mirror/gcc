@@ -1,5 +1,9 @@
 2012-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* lib/scanasm.exp (get_ada_spec_filename): Use procedural form.
+
+2012-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/52735
 	* gnat.dg/nested_generic1.adb: New test.
 	* gnat.dg/nested_generic1_pkg.ad[sb]: New helper.
