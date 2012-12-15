@@ -1,3 +1,9 @@
+2012-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+	    Martin Ettl  <ettl.martin@gmx.de>
+
+	PR ada/53996
+	* gcc-interface/utils.c (gnat_type_for_size): Use %u in lieu of %d.
+
 2012-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (RTS_DIR): Define only if Ada is enabled.
