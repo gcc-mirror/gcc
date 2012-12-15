@@ -191,7 +191,7 @@ proc get_ada_spec_filename { testcase } {
     set filename  [lindex $testcase 0]
     set tailname  [file tail $filename]
     set extension [string trimleft [file extension $tailname] {.}]
-    set rootname  [regsub -all {\-} [file rootname $tailname] {_}]
+    regsub -all {\-} [file rootname $tailname] {_} rootname
 
     return [string tolower "${rootname}_${extension}.ads"]
 }
