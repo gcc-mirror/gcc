@@ -1,3 +1,8 @@
+2012-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/53766
+	* gnat.dg/controlled7.ad[sb]: New test.
+
 2012-12-14  Steve Ellcey  <sellcey@mips.com>
 
 	PR regression/55688
