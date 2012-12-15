@@ -6304,6 +6304,9 @@ extern unsigned HOST_WIDE_INT compute_builtin_object_size (tree, int);
    succeed.  */
 extern int can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
 
+/* Is it an ADDR_EXPR of a DECL that's not in memory?  */
+extern bool addr_expr_of_non_mem_decl_p (tree);
+
 extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
 extern tree build_personality_function (const char *);
 

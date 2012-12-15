@@ -4557,21 +4557,48 @@ get_bit_range (unsigned HOST_WIDE_INT *bitstart,
   *bitend = *bitstart + tree_low_cst (DECL_SIZE (repr), 1) - 1;
 }
 
+/* Returns true if ADDR is an ADDR_EXPR of a DECL that does not reside
+   in memory and has non-BLKmode.  DECL_RTL must not be a MEM; if
+   DECL_RTL was not set yet, return NORTL.  */
+
+static inline bool
+addr_expr_of_non_mem_decl_p_1 (tree addr, bool nortl)
+{
+  if (TREE_CODE (addr) != ADDR_EXPR)
+    return false;
+
+  tree base = TREE_OPERAND (addr, 0);
+
+  if (!DECL_P (base)
+      || TREE_ADDRESSABLE (base)
+      || DECL_MODE (base) == BLKmode)
+    return false;
+
+  if (!DECL_RTL_SET_P (base))
+    return nortl;
+
+  return (!MEM_P (DECL_RTL (base)));
+}
+
 /* Returns true if the MEM_REF REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
-static bool
+static inline bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
   tree base = TREE_OPERAND (ref, 0);
-  if (TREE_CODE (base) != ADDR_EXPR)
-    return false;
-  base = TREE_OPERAND (base, 0);
-  return (DECL_P (base)
-	  && !TREE_ADDRESSABLE (base)
-	  && DECL_MODE (base) != BLKmode
-	  && DECL_RTL_SET_P (base)
-	  && !MEM_P (DECL_RTL (base)));
+  return addr_expr_of_non_mem_decl_p_1 (base, false);
+}
+
+/* Return TRUE iff OP is an ADDR_EXPR of a DECL that's not
+   addressable.  This is very much like mem_ref_refers_to_non_mem_p,
+   but instead of the MEM_REF, it takes its base, and it doesn't
+   assume a DECL is in memory just because its RTL is not set yet.  */
+
+bool
+addr_expr_of_non_mem_decl_p (tree op)
+{
+  return addr_expr_of_non_mem_decl_p_1 (op, true);
 }
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL

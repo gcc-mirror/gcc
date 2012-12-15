@@ -1,3 +1,15 @@
+2012-12-15  Alexandre Oliva <aoliva@redhat.com>
+
+	PR libmudflap/53952
+	* expr.c (mem_ref_refers_to_non_mem_p): Factor out
+	implementation into...
+	(addr_expr_of_non_mem_decl_p_1): ... this new function.
+	(addr_expr_of_non_mem_decl_p): New.
+	* tree.h (addr_expr_of_non_mem_decl_p): Declare.
+	* tree-mudflap.c (mf_xform_derefs_1): Don't change MEM_REFs
+	and TARGET_MEM_REFs that have an ADDR_EXPR of a non-mem DECL
+	as base operand.
+
 2012-12-14  Yvan Roux  <yvan.roux@linaro.org>
 
 	* optabs.c (expand_atomic_store): Elide redundant model test.
