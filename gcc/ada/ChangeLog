@@ -2518,8 +2518,9 @@
 
 2012-10-01  Vincent Pucci  <pucci@adacore.com>
 
-	* s-gearop.adb (Vector_Matrix_Product): Dimensions check fixed. Index
-	of Left in S evaluation fixed.
+	PR ada/54614
+	* s-gearop.adb (Vector_Matrix_Product): Fix dimension check and index
+	of Left in S evaluation.
 
 2012-10-01  Javier Miranda  <miranda@adacore.com>
 
