@@ -1,4 +1,12 @@
 2012-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+	    Tomash Brechko  <tomash.brechko@gmail.com>
+
+	PR target/55673
+	* config/sparc/sparc.c (sparc_emit_membar_for_model): Fix reversed
+	handling of before and after cases.
+	* config/sparc/sync.md (atomic_store): Fix pasto.
+
+2012-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/55630
 	* expr.c (expand_assignment): Do not call copy_blkmode_to_reg to move

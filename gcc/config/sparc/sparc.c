@@ -11190,18 +11190,6 @@ sparc_emit_membar_for_model (enum memmodel model,
 
   if (before_after & 1)
     {
-      if (model == MEMMODEL_ACQUIRE
-          || model == MEMMODEL_ACQ_REL
-          || model == MEMMODEL_SEQ_CST)
-	{
-	  if (load_store & 1)
-	    mm |= LoadLoad | LoadStore;
-	  if (load_store & 2)
-	    mm |= StoreLoad | StoreStore;
-	}
-    }
-  if (before_after & 2)
-    {
       if (model == MEMMODEL_RELEASE
 	  || model == MEMMODEL_ACQ_REL
 	  || model == MEMMODEL_SEQ_CST)
@@ -11210,6 +11198,18 @@ sparc_emit_membar_for_model (enum memmodel model,
 	    mm |= LoadLoad | StoreLoad;
 	  if (load_store & 2)
 	    mm |= LoadStore | StoreStore;
+	}
+    }
+  if (before_after & 2)
+    {
+      if (model == MEMMODEL_ACQUIRE
+	  || model == MEMMODEL_ACQ_REL
+	  || model == MEMMODEL_SEQ_CST)
+	{
+	  if (load_store & 1)
+	    mm |= LoadLoad | LoadStore;
+	  if (load_store & 2)
+	    mm |= StoreLoad | StoreStore;
 	}
     }
 
