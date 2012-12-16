@@ -26,6 +26,7 @@
 #include <thread>
 #include <system_error>
 #include <cerrno>
+#include <cxxabi_forced.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
@@ -79,6 +80,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
       __try
 	{
 	  __t->_M_run();
+	}
+      __catch(const __cxxabiv1::__forced_unwind&)
+	{
+	  __throw_exception_again;
 	}
       __catch(...)
 	{

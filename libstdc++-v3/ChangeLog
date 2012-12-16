@@ -1,3 +1,9 @@
+2012-12-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* src/c++11/thread.cc (execute_native_thread_routine): Do not swallow
+	__forced_unwind exceptions.
+	* testsuite/30_threads/thread/native_handle/cancel.cc: New.
+
 2012-12-14  Steve Ellcey  <sellcey@mips.com>
 
 	* testsuite/21_strings/basic_string/append/wchar_t/3.cc: Shrink
