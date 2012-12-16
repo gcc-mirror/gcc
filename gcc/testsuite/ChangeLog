@@ -1,5 +1,10 @@
 2012-12-16  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/55197
+	* gfortran.dg/gomp/use_intrinsic_1.f90: New.
+
+2012-12-16  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/move_alloc_14.f90: New.
 
 2012-12-16  Tobias Burnus  <burnus@net-b.de>
