@@ -1,3 +1,8 @@
+2012-12-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac (ENABLE_GOLD): Consider *-*-gnu* targets ELF.
+	* configure: Regenerate.
+
 2012-12-12  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config.sub: Merge from config repo.
