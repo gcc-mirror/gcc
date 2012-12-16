@@ -1,3 +1,15 @@
+2012-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/55709
+	Forward port from 4.7 branch:
+	2012-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/52894
+	* varasm.c (process_pending_assemble_externals): Set
+	pending_assemble_externals_processed true.
+	(assemble_external): Call assemble_external_real if the pending
+	assemble externals have been processed.
+
 2012-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 	    Tomash Brechko  <tomash.brechko@gmail.com>
 
