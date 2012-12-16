@@ -315,7 +315,7 @@ case "${ENABLE_GOLD}" in
     is_elf=no
     case "${target}" in
       *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
-      | *-*-linux* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
+      | *-*-linux* | *-*-gnu* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
       | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* \
       | *-*-solaris2* | *-*-nto* | *-*-nacl*)
         case "${target}" in
