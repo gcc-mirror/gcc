@@ -1,5 +1,11 @@
 2012-12-16  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/55197
+	* module.c (gfc_use_module): Free rename list only for
+	internally generated intrinsic modules.
+
+2012-12-16  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-intrinsic.c (conv_intrinsic_move_alloc): Set dynamic
 	type of the FROM variable to the declared type.
 
