@@ -35,8 +35,7 @@
 
 (define_expand "membar"
   [(set (match_dup 1)
-	(unspec:BLK [(match_dup 1)
-		     (match_operand:SI 0 "const_int_operand")]
+	(unspec:BLK [(match_dup 1) (match_operand:SI 0 "const_int_operand")]
 		    UNSPEC_MEMBAR))]
   "TARGET_V8 || TARGET_V9"
 {
@@ -66,7 +65,7 @@
   "stbar"
   [(set_attr "type" "multi")])
 
-;; For V8, LDSTUB has the effect of membar #StoreLoad
+;; For V8, LDSTUB has the effect of membar #StoreLoad.
 (define_insn "*membar_storeload"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0) (const_int 2)] UNSPEC_MEMBAR))]
@@ -123,8 +122,8 @@
   [(set_attr "type" "load,fpload")])
 
 (define_expand "atomic_store<mode>"
-  [(match_operand:I 0 "register_operand" "")
-   (match_operand:I 1 "memory_operand" "")
+  [(match_operand:I 0 "memory_operand" "")
+   (match_operand:I 1 "register_operand" "")
    (match_operand:SI 2 "const_int_operand" "")]
   ""
 {
