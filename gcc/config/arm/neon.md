@@ -5932,3 +5932,65 @@
                                    (const_string "neon_fp_vadd_qqq_vabs_qq"))
                      (const_string "neon_int_5")))]
 )
+
+;; Copy from core-to-neon regs, then extend, not vice-versa
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(sign_extend:DI (match_operand:SI 1 "s_register_operand" "")))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (vec_duplicate:V2SI (match_dup 1)))
+   (set (match_dup 0) (ashiftrt:DI (match_dup 0) (const_int 32)))]
+  {
+    operands[2] = gen_rtx_REG (V2SImode, REGNO (operands[0]));
+  })
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(sign_extend:DI (match_operand:HI 1 "s_register_operand" "")))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (vec_duplicate:V4HI (match_dup 1)))
+   (set (match_dup 0) (ashiftrt:DI (match_dup 0) (const_int 48)))]
+  {
+    operands[2] = gen_rtx_REG (V4HImode, REGNO (operands[0]));
+  })
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(sign_extend:DI (match_operand:QI 1 "s_register_operand" "")))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (vec_duplicate:V8QI (match_dup 1)))
+   (set (match_dup 0) (ashiftrt:DI (match_dup 0) (const_int 56)))]
+  {
+    operands[2] = gen_rtx_REG (V8QImode, REGNO (operands[0]));
+  })
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(zero_extend:DI (match_operand:SI 1 "s_register_operand" "")))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (vec_duplicate:V2SI (match_dup 1)))
+   (set (match_dup 0) (lshiftrt:DI (match_dup 0) (const_int 32)))]
+  {
+    operands[2] = gen_rtx_REG (V2SImode, REGNO (operands[0]));
+  })
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(zero_extend:DI (match_operand:HI 1 "s_register_operand" "")))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (vec_duplicate:V4HI (match_dup 1)))
+   (set (match_dup 0) (lshiftrt:DI (match_dup 0) (const_int 48)))]
+  {
+    operands[2] = gen_rtx_REG (V4HImode, REGNO (operands[0]));
+  })
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(zero_extend:DI (match_operand:QI 1 "s_register_operand" "")))]
+  "TARGET_NEON && reload_completed && IS_VFP_REGNUM (REGNO (operands[0]))"
+  [(set (match_dup 2) (vec_duplicate:V8QI (match_dup 1)))
+   (set (match_dup 0) (lshiftrt:DI (match_dup 0) (const_int 56)))]
+  {
+    operands[2] = gen_rtx_REG (V8QImode, REGNO (operands[0]));
+  })
