@@ -170,19 +170,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     future<typename result_of<_Fn(_Args...)>::type>
     async(launch __policy, _Fn&& __fn, _Args&&... __args);
 
-  template<typename _FnCheck, typename _Fn, typename... _Args>
-    struct __async_sfinae_helper
-    {
-      typedef future<typename result_of<_Fn(_Args...)>::type> type;
-    };
-
   template<typename _Fn, typename... _Args>
-    struct __async_sfinae_helper<launch, _Fn, _Args...>
-    { };
-
-  template<typename _Fn, typename... _Args>
-    typename
-    __async_sfinae_helper<typename decay<_Fn>::type, _Fn, _Args...>::type
+    future<typename result_of<_Fn(_Args...)>::type>
     async(_Fn&& __fn, _Args&&... __args);
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
@@ -1509,8 +1498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// async, potential overload
   template<typename _Fn, typename... _Args>
-    inline typename
-    __async_sfinae_helper<typename decay<_Fn>::type, _Fn, _Args...>::type
+    inline future<typename result_of<_Fn(_Args...)>::type>
     async(_Fn&& __fn, _Args&&... __args)
     {
       return async(launch::async|launch::deferred, std::forward<_Fn>(__fn),
