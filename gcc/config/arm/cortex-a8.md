@@ -93,7 +93,7 @@
 
 (define_insn_reservation "cortex_a8_alu_shift" 2
   (and (eq_attr "tune" "cortexa8")
-       (and (eq_attr "type" "alu_shift")
+       (and (eq_attr "type" "simple_alu_shift,alu_shift")
             (not (eq_attr "insn" "mov,mvn"))))
   "cortex_a8_default")
 
@@ -107,7 +107,7 @@
 
 (define_insn_reservation "cortex_a8_mov" 1
   (and (eq_attr "tune" "cortexa8")
-       (and (eq_attr "type" "alu_reg,simple_alu_imm,alu_shift,alu_shift_reg")
+       (and (eq_attr "type" "alu_reg,simple_alu_imm,simple_alu_shift,alu_shift,alu_shift_reg")
             (eq_attr "insn" "mov,mvn")))
   "cortex_a8_default")
 

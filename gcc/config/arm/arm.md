@@ -240,6 +240,7 @@
 ;               regs or have a shifted source operand
 ;               and does not have an immediate operand. This is
 ;               also the default
+; simple_alu_shift covers UXTH, UXTB, SXTH, SXTB
 ; alu_shift	any data instruction that doesn't hit memory or fp
 ;		regs, but has a source operand shifted by a constant
 ; alu_shift_reg	any data instruction that doesn't hit memory or fp
@@ -271,6 +272,7 @@
 (define_attr "type"
  "simple_alu_imm,\
   alu_reg,\
+  simple_alu_shift,\
   alu_shift,\
   alu_shift_reg,\
   mult,\
@@ -454,7 +456,9 @@
 ; than one on the main cpu execution unit.
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
-		 "simple_alu_imm,alu_reg,alu_shift,float,fdivd,fdivs")
+		 "simple_alu_imm,alu_reg,\
+                  simple_alu_shift,alu_shift,\
+                  float,fdivd,fdivs")
 		(const_string "single")
 	        (const_string "multi")))
 
@@ -4629,11 +4633,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 				       (const_int 2) (const_int 4))
 			 (const_int 4)])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift, load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2"
@@ -4655,11 +4655,7 @@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2addsi"
@@ -4729,11 +4725,7 @@
    uxtb\\t%0, %1
    ldrb\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendqisi2"
@@ -4755,11 +4747,7 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")]
 )
 
@@ -4933,11 +4921,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 2) (const_int 4))
 			  (const_int 4)])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+   (set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "pool_range" "*,1018")]
 )
 
@@ -5010,11 +4994,7 @@
   "@
    sxth%?\\t%0, %1
    ldr%(sh%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5114,11 +5094,7 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5231,12 +5207,7 @@
 			  (const_int 2)
 			  (if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 4) (const_int 6))])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte,load_byte")]
 )
 
 (define_expand "extendsfdf2"
