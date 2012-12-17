@@ -446,10 +446,6 @@ static struct
 
   /* The number of new PHI nodes added by PRE.  */
   int phis;
-
-  /* The number of values found constant.  */
-  int constified;
-
 } pre_stats;
 
 static bool do_partial_partial;
@@ -867,6 +863,8 @@ bitmap_set_replace_value (bitmap_set_t set, unsigned int lookfor,
 	  return;
 	}
     }
+
+  gcc_unreachable ();
 }
 
 /* Return true if two bitmap sets are equal.  */
@@ -1397,31 +1395,26 @@ get_representative_for (const pre_expr e)
 	    pre_expr rep = expression_for_id (i);
 	    if (rep->kind == NAME)
 	      return PRE_EXPR_NAME (rep);
+	    else if (rep->kind == CONSTANT)
+	      return PRE_EXPR_CONSTANT (rep);
 	  }
       }
       break;
     }
+
   /* If we reached here we couldn't find an SSA_NAME.  This can
      happen when we've discovered a value that has never appeared in
-     the program as set to an SSA_NAME, most likely as the result of
-     phi translation.  */
-  if (dump_file)
-    {
-      fprintf (dump_file,
-	       "Could not find SSA_NAME representative for expression:");
-      print_pre_expr (dump_file, e);
-      fprintf (dump_file, "\n");
-    }
-
-  /* Build and insert the assignment of the end result to the temporary
-     that we will return.  */
+     the program as set to an SSA_NAME, as the result of phi translation.
+     Create one here.
+     ???  We should be able to re-use this when we insert the statement
+     to compute it.  */
   name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
   VN_INFO_GET (name)->value_id = value_id;
-  VN_INFO (name)->valnum = sccvn_valnum_from_value_id (value_id);
-  if (VN_INFO (name)->valnum == NULL_TREE)
-    VN_INFO (name)->valnum = name;
+  VN_INFO (name)->valnum = name;
+  /* ???  For now mark this SSA name for release by SCCVN.  */
+  VN_INFO (name)->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Created SSA_NAME representative ");
       print_generic_expr (dump_file, name, 0);
@@ -3325,7 +3318,8 @@ do_regular_insertion (basic_block block, basic_block dom)
 
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
-      if (expr->kind != NAME)
+      if (expr->kind == NARY
+	  || expr->kind == REFERENCE)
 	{
 	  unsigned int val;
 	  bool by_some = false;
@@ -3435,35 +3429,28 @@ do_regular_insertion (basic_block block, basic_block dom)
 	  /* If all edges produce the same value and that value is
 	     an invariant, then the PHI has the same value on all
 	     edges.  Note this.  */
-	  else if (!cant_insert && all_same && eprime
-		   && (edoubleprime->kind == CONSTANT
-		       || edoubleprime->kind == NAME)
-		   && !value_id_constant_p (val))
+	  else if (!cant_insert && all_same)
 	    {
-	      unsigned int j;
-	      bitmap_iterator bi;
-	      bitmap exprset = value_expressions[val];
+	      gcc_assert (edoubleprime->kind == CONSTANT
+			  || edoubleprime->kind == NAME);
 
-	      unsigned int new_val = get_expr_value_id (edoubleprime);
-	      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, j, bi)
-		{
-		  pre_expr expr = expression_for_id (j);
+	      tree temp = make_temp_ssa_name (get_expr_type (expr),
+					      NULL, "pretmp");
+	      gimple assign = gimple_build_assign (temp,
+						   edoubleprime->kind == CONSTANT ? PRE_EXPR_CONSTANT (edoubleprime) : PRE_EXPR_NAME (edoubleprime));
+	      gimple_stmt_iterator gsi = gsi_after_labels (block);
+	      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
-		  if (expr->kind == NAME)
-		    {
-		      vn_ssa_aux_t info = VN_INFO (PRE_EXPR_NAME (expr));
-		      /* Just reset the value id and valnum so it is
-			 the same as the constant we have discovered.  */
-		      if (edoubleprime->kind == CONSTANT)
-			{
-			  info->valnum = PRE_EXPR_CONSTANT (edoubleprime);
-			  pre_stats.constified++;
-			}
-		      else
-			info->valnum = VN_INFO (PRE_EXPR_NAME (edoubleprime))->valnum;
-		      info->value_id = new_val;
-		    }
-		}
+	      gimple_set_plf (assign, NECESSARY, false);
+	      VN_INFO_GET (temp)->value_id = val;
+	      VN_INFO (temp)->valnum = sccvn_valnum_from_value_id (val);
+	      if (VN_INFO (temp)->valnum == NULL_TREE)
+		VN_INFO (temp)->valnum = temp;
+	      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (temp));
+	      pre_expr newe = get_or_alloc_expr_for_name (temp);
+	      add_to_value (val, newe);
+	      bitmap_value_replace_in_set (AVAIL_OUT (block), newe);
+	      bitmap_insert_into_set (NEW_SETS (block), newe);
 	    }
 	}
     }
@@ -3495,7 +3482,8 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
-      if (expr->kind != NAME)
+      if (expr->kind == NARY
+	  || expr->kind == REFERENCE)
 	{
 	  unsigned int val;
 	  bool by_all = true;
@@ -4142,26 +4130,32 @@ eliminate_bb (dom_walk_data *, basic_block b)
 
       /* Lookup the RHS of the expression, see if we have an
 	 available computation for it.  If so, replace the RHS with
-	 the available computation.
-
-	 See PR43491.
-	 We don't replace global register variable when it is a the RHS of
-	 a single assign. We do replace local register variable since gcc
-	 does not guarantee local variable will be allocated in register.  */
+	 the available computation.  */
       if (gimple_has_lhs (stmt)
 	  && TREE_CODE (lhs) == SSA_NAME
-	  && !gimple_assign_ssa_name_copy_p (stmt)
-	  && (!gimple_assign_single_p (stmt)
-	      || (!is_gimple_min_invariant (rhs)
-		  && (gimple_assign_rhs_code (stmt) != VAR_DECL
-		      || !is_global_var (rhs)
-		      || !DECL_HARD_REGISTER (rhs))))
 	  && !gimple_has_volatile_ops  (stmt))
 	{
 	  tree sprime;
 	  gimple orig_stmt = stmt;
 
 	  sprime = eliminate_avail (lhs);
+	  /* If there is no usable leader mark lhs as leader for its value.  */
+	  if (!sprime)
+	    eliminate_push_avail (lhs);
+
+	  /* See PR43491.  Do not replace a global register variable when
+	     it is a the RHS of an assignment.  Do replace local register
+	     variables since gcc does not guarantee a local variable will
+	     be allocated in register.
+	     Do not perform copy propagation or undo constant propagation.  */
+	  if (gimple_assign_single_p (stmt)
+	      && (TREE_CODE (rhs) == SSA_NAME
+		  || is_gimple_min_invariant (rhs)
+		  || (TREE_CODE (rhs) == VAR_DECL
+		      && is_global_var (rhs)
+		      && DECL_HARD_REGISTER (rhs))))
+	    continue;
+
 	  if (!sprime)
 	    {
 	      /* If there is no existing usable leader but SCCVN thinks
@@ -4171,6 +4165,7 @@ eliminate_bb (dom_walk_data *, basic_block b)
 	      if (val != VN_TOP
 		  && TREE_CODE (val) == SSA_NAME
 		  && VN_INFO (val)->needs_insertion
+		  && VN_INFO (val)->expr != NULL_TREE
 		  && (sprime = eliminate_insert (&gsi, val)) != NULL_TREE)
 		eliminate_push_avail (sprime);
 	    }
@@ -4207,10 +4202,6 @@ eliminate_bb (dom_walk_data *, basic_block b)
 		}
 	      continue;
 	    }
-
-	  /* If there is no usable leader mark lhs as leader for its value.  */
-	  if (!sprime)
-	    eliminate_push_avail (lhs);
 
 	  if (sprime
 	      && sprime != lhs
@@ -4742,7 +4733,6 @@ do_pre (void)
   statistics_counter_event (cfun, "PA inserted", pre_stats.pa_insert);
   statistics_counter_event (cfun, "New PHIs", pre_stats.phis);
   statistics_counter_event (cfun, "Eliminated", pre_stats.eliminations);
-  statistics_counter_event (cfun, "Constified", pre_stats.constified);
 
   clear_expression_ids ();
   remove_dead_inserted_code ();
@@ -4823,7 +4813,6 @@ execute_fre (void)
 
   statistics_counter_event (cfun, "Insertions", pre_stats.insertions);
   statistics_counter_event (cfun, "Eliminated", pre_stats.eliminations);
-  statistics_counter_event (cfun, "Constified", pre_stats.constified);
 
   return todo;
 }

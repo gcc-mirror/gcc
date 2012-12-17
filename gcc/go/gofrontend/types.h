@@ -2534,19 +2534,11 @@ class Interface_type : public Type
   // Return the list of methods.  This will return NULL for an empty
   // interface.
   const Typed_identifier_list*
-  methods() const
-  {
-    go_assert(this->methods_are_finalized_);
-    return this->all_methods_;
-  }
+  methods() const;
 
   // Return the number of methods.
   size_t
-  method_count() const
-  {
-    go_assert(this->methods_are_finalized_);
-    return this->all_methods_ == NULL ? 0 : this->all_methods_->size();
-  }
+  method_count() const;
 
   // Return the method NAME, or NULL.
   const Typed_identifier*
@@ -3022,6 +3014,9 @@ class Forward_declaration_type : public Type
  protected:
   int
   do_traverse(Traverse* traverse);
+
+  bool
+  do_verify();
 
   bool
   do_has_pointer() const

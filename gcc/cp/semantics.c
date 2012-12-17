@@ -1369,7 +1369,15 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
       for (i = 0, t = input_operands; t; ++i, t = TREE_CHAIN (t))
 	{
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-	  operand = decay_conversion (TREE_VALUE (t), tf_warning_or_error);
+	  bool constraint_parsed
+	    = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,   
+				      oconstraints, &allows_mem, &allows_reg);
+	  /* If the operand is going to end up in memory, don't call
+	     decay_conversion.  */
+	  if (constraint_parsed && !allows_reg && allows_mem)
+	    operand = mark_lvalue_use (TREE_VALUE (t));
+	  else
+	    operand = decay_conversion (TREE_VALUE (t), tf_warning_or_error);
 
 	  /* If the type of the operand hasn't been determined (e.g.,
 	     because it involves an overloaded function), then issue
@@ -1382,8 +1390,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	      operand = error_mark_node;
 	    }
 
-	  if (parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
-				      oconstraints, &allows_mem, &allows_reg))
+	  if (constraint_parsed)
 	    {
 	      /* If the operand is going to end up in memory,
 		 mark it addressable.  */
@@ -7116,7 +7123,7 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	goto fail;
       if (elt != ce->value)
 	changed = true;
-      if (TREE_CODE (ce->index) == COMPONENT_REF)
+      if (ce->index && TREE_CODE (ce->index) == COMPONENT_REF)
 	{
 	  /* This is an initialization of a vfield inside a base
 	     subaggregate that we already initialized; push this
@@ -7124,7 +7131,7 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	  constructor_elt *inner = base_field_constructor_elt (n, ce->index);
 	  inner->value = elt;
 	}
-      else if (TREE_CODE (ce->index) == NOP_EXPR)
+      else if (ce->index && TREE_CODE (ce->index) == NOP_EXPR)
 	{
 	  /* This is an initializer for an empty base; now that we've
 	     checked that it's constant, we can ignore it.  */
@@ -7141,6 +7148,8 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
     }
   t = build_constructor (TREE_TYPE (t), n);
   TREE_CONSTANT (t) = true;
+  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+    t = fold (t);
   return t;
 }
 

@@ -142,6 +142,7 @@
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
    (set_attr "predicable" "no, yes")
+   (set_attr "ce_count" "2")
    (set_attr "length" "10,8")]
 )
 
@@ -156,6 +157,7 @@
   [(set_attr "conds" "clob,*")
    (set_attr "shift" "1")
    (set_attr "predicable" "no, yes")
+   (set_attr "ce_count" "2")
    (set_attr "length" "10,8")]
 )
 

@@ -1764,6 +1764,26 @@ Finalize_methods::type(Type* t)
 	      }
 	  }
 
+	// Finalize the types of all methods that are declared but not
+	// defined, since we won't see the declarations otherwise.
+	if (nt->named_object()->package() == NULL
+	    && nt->local_methods() != NULL)
+	  {
+	    const Bindings* methods = nt->local_methods();
+	    for (Bindings::const_declarations_iterator p =
+		   methods->begin_declarations();
+		 p != methods->end_declarations();
+		 p++)
+	      {
+		if (p->second->is_function_declaration())
+		  {
+		    Type* mt = p->second->func_declaration_value()->type();
+		    if (Type::traverse(mt, this) == TRAVERSE_EXIT)
+		      return TRAVERSE_EXIT;
+		  }
+	      }
+	  }
+
 	return TRAVERSE_SKIP_COMPONENTS;
       }
 
@@ -4491,7 +4511,7 @@ Type_declaration::has_methods() const
 void
 Type_declaration::define_methods(Named_type* nt)
 {
-  for (Methods::const_iterator p = this->methods_.begin();
+  for (std::vector<Named_object*>::const_iterator p = this->methods_.begin();
        p != this->methods_.end();
        ++p)
     nt->add_existing_method(*p);
@@ -5230,8 +5250,7 @@ Bindings::traverse(Traverse* traverse, bool is_global)
     }
 
   // If we need to traverse types, check the function declarations,
-  // which have types.  We don't need to check the type declarations,
-  // as those are just names.
+  // which have types.  Also check any methods of a type declaration.
   if ((traverse_mask & e_or_t) != 0)
     {
       for (Bindings::const_declarations_iterator p =
@@ -5245,6 +5264,27 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 				 traverse)
 		  == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
+	    }
+	  else if (p->second->is_type_declaration())
+	    {
+	      const std::vector<Named_object*>* methods =
+		p->second->type_declaration_value()->methods();
+	      for (std::vector<Named_object*>::const_iterator pm =
+		     methods->begin();
+		   pm != methods->end();
+		   pm++)
+		{
+		  Named_object* no = *pm;
+		  Type *t;
+		  if (no->is_function())
+		    t = no->func_value()->type();
+		  else if (no->is_function_declaration())
+		    t = no->func_declaration_value()->type();
+		  else
+		    continue;
+		  if (Type::traverse(t, traverse) == TRAVERSE_EXIT)
+		    return TRAVERSE_EXIT;
+		}
 	    }
 	}
     }

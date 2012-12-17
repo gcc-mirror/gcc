@@ -555,9 +555,8 @@ remove_redundant_iv_tests (struct loop *loop)
 	  /* Only when we know the actual number of iterations, not
 	     just a bound, we can remove the exit.  */
 	  if (!number_of_iterations_exit (loop, exit_edge,
-					  &niter, false, false))
-	    gcc_unreachable ();
-	  if (!integer_onep (niter.assumptions)
+					  &niter, false, false)
+	      || !integer_onep (niter.assumptions)
 	      || !integer_zerop (niter.may_be_zero)
 	      || !niter.niter
 	      || TREE_CODE (niter.niter) != INTEGER_CST

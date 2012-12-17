@@ -812,13 +812,17 @@ maybe_process_partial_specialization (tree type)
 
   context = TYPE_CONTEXT (type);
 
-  if ((CLASS_TYPE_P (type) && CLASSTYPE_USE_TEMPLATE (type))
-      /* Consider non-class instantiations of alias templates as
-	 well.  */
-      || (TYPE_P (type)
-	  && TYPE_TEMPLATE_INFO (type)
-	  && DECL_LANG_SPECIFIC (TYPE_NAME (type))
-	  && DECL_USE_TEMPLATE (TYPE_NAME (type))))
+  if (TYPE_ALIAS_P (type))
+    {
+      if (TYPE_TEMPLATE_INFO (type)
+	  && DECL_ALIAS_TEMPLATE_P (TYPE_TI_TEMPLATE (type)))
+	error ("specialization of alias template %qD",
+	       TYPE_TI_TEMPLATE (type));
+      else
+	error ("explicit specialization of non-template %qT", type);
+      return error_mark_node;
+    }
+  else if (CLASS_TYPE_P (type) && CLASSTYPE_USE_TEMPLATE (type))
     {
       /* This is for ordinary explicit specialization and partial
 	 specialization of a template class such as:
@@ -831,8 +835,7 @@ maybe_process_partial_specialization (tree type)
 
 	 Make sure that `C<int>' and `C<T*>' are implicit instantiations.  */
 
-      if (CLASS_TYPE_P (type)
-	  && CLASSTYPE_IMPLICIT_INSTANTIATION (type)
+      if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
 	  && !COMPLETE_TYPE_P (type))
 	{
 	  check_specialization_namespace (CLASSTYPE_TI_TEMPLATE (type));
@@ -845,16 +848,15 @@ maybe_process_partial_specialization (tree type)
 		return error_mark_node;
 	    }
 	}
-      else if (CLASS_TYPE_P (type)
-	       && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
 	error ("specialization of %qT after instantiation", type);
-
-      if (DECL_ALIAS_TEMPLATE_P (TYPE_TI_TEMPLATE (type)))
-	{
-	  error ("partial specialization of alias template %qD",
-		 TYPE_TI_TEMPLATE (type));
-	  return error_mark_node;
-	}
+      else if (errorcount && !processing_specialization
+	        && CLASSTYPE_TEMPLATE_SPECIALIZATION (type)
+	       && !uses_template_parms (CLASSTYPE_TI_ARGS (type)))
+	/* Trying to define a specialization either without a template<> header
+	   or in an inappropriate place.  We've already given an error, so just
+	   bail now so we don't actually define the specialization.  */
+	return error_mark_node;
     }
   else if (CLASS_TYPE_P (type)
 	   && !CLASSTYPE_USE_TEMPLATE (type)
@@ -13561,7 +13563,7 @@ tsubst_copy_and_build (tree t,
 	  {
 	    if (TREE_CODE (r) != SIZEOF_EXPR || TYPE_P (op1))
 	      {
-		if (TYPE_P (op1))
+		if (!processing_template_decl && TYPE_P (op1))
 		  {
 		    r = build_min (SIZEOF_EXPR, size_type_node,
 				   build1 (NOP_EXPR, op1, error_mark_node));

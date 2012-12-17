@@ -1,3 +1,14 @@
+2012-12-13  John Tytgat  <John@bass-software.com>
+
+	* config/arm/fp16.c (__gnu_f2h_internal): Fix inaccuracy when aexp
+	is 25.
+
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/55451
+	* fixed-bit.c (FIXED_SSADD, FIXED_SSSUB, FIXED_SSNEG): Avoid
+	undefined signed overflows.
+
 2012-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55344

@@ -13,7 +13,7 @@ CONTAINS
     (a, & ! { dg-error "must be scalar" }
      b, & ! { dg-error "POINTER attribute" }
      c, & ! { dg-error "ALLOCATABLE attribute" }
-     d) ! { dg-error "INTENT specified" }
+     d) ! { dg-error "must have its INTENT specified or have the VALUE attribute" }
     INTEGER, INTENT(IN) :: a(:)
     INTEGER, POINTER, INTENT(IN) :: b
     INTEGER, ALLOCATABLE, INTENT(IN) :: c

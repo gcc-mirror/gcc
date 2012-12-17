@@ -6157,6 +6157,8 @@ gfc_use_module (gfc_use_list *module)
 			     "intrinsic module at %C") != FAILURE)
        {
 	 use_iso_fortran_env_module ();
+	 free_rename (module->rename);
+	 module->rename = NULL;
 	 gfc_current_locus = old_locus;
 	 module->intrinsic = true;
 	 return;
@@ -6167,6 +6169,8 @@ gfc_use_module (gfc_use_list *module)
 			     "ISO_C_BINDING module at %C") != FAILURE)
 	{
 	  import_iso_c_binding_module();
+	  free_rename (module->rename);
+	  module->rename = NULL;
 	  gfc_current_locus = old_locus;
 	  module->intrinsic = true;
 	  return;
@@ -6359,8 +6363,6 @@ gfc_use_modules (void)
       next = module_list->next;
       rename_list_remove_duplicate (module_list->rename);
       gfc_use_module (module_list);
-      if (module_list->intrinsic)
-	free_rename (module_list->rename);
       free (module_list);
     }
   gfc_rename_list = NULL;

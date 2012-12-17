@@ -97,7 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_AS_NO_SHARED
 /* Default to -mno-shared for non-PIC.  */
 # define NO_SHARED_SPECS \
-  "%{mshared|mno-shared|fpic|fPIC|fpie|fPIE:;:-mno-shared}"
+  " %{mshared|mno-shared|fpic|fPIC|fpie|fPIE:;:-mno-shared}"
 #else
 # define NO_SHARED_SPECS ""
 #endif

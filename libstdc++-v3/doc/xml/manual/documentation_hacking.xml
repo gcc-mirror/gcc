@@ -102,14 +102,10 @@
 	    in the following directories:
 	  </para>
 	  <para>
-	    <filename class="directory">
-	      doc/libstdc++/libstdc++-api.html
-	    </filename>
+	    <filename>doc/libstdc++/libstdc++-api.html</filename>
 	  </para>
 	  <para>
-	    <filename class="directory">
-	      doc/libstdc++/libstdc++-manual.html
-	    </filename>
+	    <filename>doc/libstdc++/libstdc++-manual.html</filename>
 	  </para>
 	</listitem>
       </varlistentry>
@@ -345,6 +341,76 @@
       </para>
 
     </section>
+
+ <section xml:id="doxygen.debug">
+   <info><title>Debugging Generation</title></info>
+   
+	<para>
+	  Sometimes, mis-configuration of the pre-requisite tools can
+	  lead to errors when attempting to build the
+	  documentation. Here are some of the obvious errors, and ways
+	  to fix some common issues that may appear quite cryptic.
+	</para>
+	
+	<para>
+	  First, if using a rule like <code>make pdf</code>, try to
+	  narrow down the scope of the error to either docbook
+	  (<code>make doc-pdf-docbook</code>) or doxygen (<code>make
+	  doc-pdf-doxygen</code>).
+	</para>
+	<para>
+	  Working on the doxygen path only, closely examine the
+	  contents of the following build directory:
+	  <filename>build/target/libstdc++-v3/doc/doxygen/latex</filename>.
+	  Pay attention to three files enclosed within, annotated as follows.
+	</para>
+<itemizedlist>
+
+<listitem>
+  <para>
+   <emphasis>refman.tex</emphasis>
+  </para>
+
+  <para>
+    The actual latex file, or partial latex file. This is generated
+    via <command>doxygen</command>, and is the LaTeX version of the
+    Doxygen XML file <filename>libstdc++-api.xml</filename>. Go to a specific
+    line, and look at the genrated LaTeX, and try to deduce what
+    markup in <filename>libstdc++-api.xml</filename> is causing it.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+   <emphasis>refman.out</emphasis>
+  </para>
+
+  <para>
+    A log of the compilation of the converted LaTeX form to pdf. This
+    is a linear list, from the beginning of the
+    <filename>refman.tex</filename> file: the last entry of this file
+    should be the end of the LaTeX file. If it is truncated, then you
+    know that the last entry is the last part of the generated LaTeX
+    source file that is valid. Often this file contains an error with
+    a specific line number of <filename>refman.tex</filename> that is
+    incorrect, or will have clues at the end of the file with the dump
+    of the memory usage of LaTeX.
+  </para>
+</listitem>
+</itemizedlist>
+
+	<para>
+	  If the error at hand is not obvious after examination, a
+	  fall-back strategy is to start commenting out the doxygen
+	  input sources, which can be found in
+	  <filename>doc/doxygen/user.cfg.in</filename>, look for the
+	  <literal>INPUT</literal> tag. Start by commenting out whole
+	  directories of header files, until the offending header is
+	  identified. Then, read the latex log files to try and find
+	  surround text, and look for that in the offending header.
+	</para>
+
+ </section>
 
     <section xml:id="doxygen.markup"><info><title>Markup</title></info>
       
@@ -741,6 +807,95 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
       </screen>
 
       </section>
+
+    <section xml:id="docbook.debug">
+	<info><title>Debugging Generation</title></info>
+
+	<para>
+	  Sometimes, mis-configuration of the pre-requisite tools can
+	  lead to errors when attempting to build the
+	  documentation. Here are some of the obvious errors, and ways
+	  to fix some common issues that may appear quite cryptic.
+	</para>
+	
+	<para>
+	  First, if using a rule like <code>make pdf</code>, try to
+	  narrow down the scope of the error to either docbook
+	  (<code>make doc-pdf-docbook</code>) or doxygen (<code>make
+	  doc-pdf-doxygen</code>).
+	</para>
+
+	<para>
+	  Working on the docbook path only, closely examine the
+	  contents of the following build directory:
+	  <filename>build/target/libstdc++-v3/doc/docbook/latex</filename>.
+	  Pay attention to three files enclosed within, annotated as follows.
+	</para>
+
+<itemizedlist>
+
+<listitem>
+  <para>
+   <emphasis>spine.tex</emphasis>
+  </para>
+
+  <para>
+    The actual latex file, or partial latex file. This is generated
+    via <command>dblatex</command>, and is the LaTeX version of the
+    DocBook XML file <filename>spine.xml</filename>. Go to a specific
+    line, and look at the genrated LaTeX, and try to deduce what
+    markup in <filename>spine.xml</filename> is causing it.
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+   <emphasis>spine.out</emphasis>
+  </para>
+
+  <para>
+    A log of the conversion from the XML form to the LaTeX form. This
+    is a linear list, from the beginning of the
+    <filename>spine.xml</filename> file: the last entry of this file
+    should be the end of the DocBook file. If it is truncated, then
+    you know that the last entry is the last part of the XML source
+    file that is valid. The error is after this point.
+  </para>
+</listitem>
+
+
+<listitem>
+  <para>
+   <emphasis>spine.log</emphasis>
+  </para>
+
+  <para>
+    A log of the compilation of the converted LaTeX form to pdf. This
+    is a linear list, from the beginning of the
+    <filename>spine.tex</filename> file: the last entry of this file
+    should be the end of the LaTeX file. If it is truncated, then you
+    know that the last entry is the last part of the generated LaTeX
+    source file that is valid. Often this file contains an error with
+    a specific line number of <filename>spine.tex</filename> that is
+    incorrect.
+  </para>
+</listitem>
+
+</itemizedlist>
+
+	<para>
+	  If the error at hand is not obvious after examination, or if one
+	  encounters the inscruitable <quote>Incomplete
+	  \ifmmode</quote> error, a fall-back strategy is to start
+	  commenting out parts of the XML document (regardless of what
+	  this does to over-all document validity). Start by
+	  commenting out each of the largest parts of the
+	  <filename>spine.xml</filename> file, section by section,
+	  until the offending section is identified.
+	</para>
+
+
+    </section>
 
     <section xml:id="docbook.validation"><info><title>Editing and Validation</title></info>
 

@@ -1926,16 +1926,15 @@ min_vis_r (tree *tp, int *walk_subtrees, void *data)
     {
       *walk_subtrees = 0;
     }
-  else if (CLASS_TYPE_P (*tp))
+  else if (TAGGED_TYPE_P (*tp)
+	   && !TREE_PUBLIC (TYPE_MAIN_DECL (*tp)))
     {
-      if (!TREE_PUBLIC (TYPE_MAIN_DECL (*tp)))
-	{
-	  *vis_p = VISIBILITY_ANON;
-	  return *tp;
-	}
-      else if (CLASSTYPE_VISIBILITY (*tp) > *vis_p)
-	*vis_p = CLASSTYPE_VISIBILITY (*tp);
+      *vis_p = VISIBILITY_ANON;
+      return *tp;
     }
+  else if (CLASS_TYPE_P (*tp)
+	   && CLASSTYPE_VISIBILITY (*tp) > *vis_p)
+    *vis_p = CLASSTYPE_VISIBILITY (*tp);
   return NULL;
 }
 
@@ -3944,8 +3943,13 @@ cp_write_global_declarations (void)
       || !vec_safe_is_empty (decl_namespace_list))
     return;
 
+  /* This is the point to write out a PCH if we're doing that.
+     In that case we do not want to do anything else.  */
   if (pch_file)
-    c_common_write_pch ();
+    {
+      c_common_write_pch ();
+      return;
+    }
 
   cgraph_process_same_body_aliases ();
 

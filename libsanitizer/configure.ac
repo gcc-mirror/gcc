@@ -21,6 +21,7 @@ AC_MSG_RESULT($version_specific_libs)
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
+GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
 AM_INIT_AUTOMAKE(foreign)
 AM_ENABLE_MULTILIB(, ..)

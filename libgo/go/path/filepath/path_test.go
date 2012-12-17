@@ -91,6 +91,7 @@ var wincleantests = []PathTest{
 }
 
 func TestClean(t *testing.T) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
 	tests := cleantests
 	if runtime.GOOS == "windows" {
 		for i := range tests {
@@ -902,7 +903,7 @@ func TestDriveLetterInEvalSymlinks(t *testing.T) {
    differently.
 
 func TestBug3486(t *testing.T) { // http://code.google.com/p/go/issues/detail?id=3486
-	root, err := filepath.EvalSymlinks(os.Getenv("GOROOT"))
+	root, err := filepath.EvalSymlinks(runtime.GOROOT())
 	if err != nil {
 		t.Fatal(err)
 	}

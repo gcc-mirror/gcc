@@ -8557,30 +8557,9 @@ emit_note_insn_var_location (void **varp, void *data)
 	      || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
 	note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       else
-	{
-	  note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
-	  /* If insn is BB_HEAD of some bb, make sure the note
-	     doesn't have BLOCK_FOR_INSN set.  The notes don't
-	     extend the extents of a basic block, and e.g. notes emitted
-	     for differences in between basic blocks should live in between
-	     the basic blocks.  */
-	  if (BLOCK_FOR_INSN (note)
-	      && BB_HEAD (BLOCK_FOR_INSN (note)) == insn)
-	    set_block_for_insn (note, NULL);
-	}
+	note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
     }
   NOTE_VAR_LOCATION (note) = note_vl;
-  /* If insn is BB_END of some bb, make sure the note
-     doesn't have BLOCK_FOR_INSN set.  The notes don't
-     extend the extents of a basic block, and e.g. a noreturn
-     call can still be followed by NOTE_INSN_CALL_ARG_LOCATION.  */
-  if (BLOCK_FOR_INSN (note)
-      && BB_END (BLOCK_FOR_INSN (note)) == note
-      && PREV_INSN (note) == insn)
-    {
-      BB_END (BLOCK_FOR_INSN (note)) = insn;
-      set_block_for_insn (note, NULL);
-    }
 
   set_dv_changed (var->dv, false);
   gcc_assert (var->in_changed_variables);
@@ -8949,16 +8928,6 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		}
 	      note = emit_note_after (NOTE_INSN_CALL_ARG_LOCATION, insn);
 	      NOTE_VAR_LOCATION (note) = arguments;
-	      /* If insn is BB_END of some bb, make sure the note
-		 doesn't have BLOCK_FOR_INSN set.  The notes don't
-		 extend the extents of a basic block, and e.g. a noreturn
-		 call can still be followed by NOTE_INSN_CALL_ARG_LOCATION.  */
-	      if (BLOCK_FOR_INSN (note)
-		  && BB_END (BLOCK_FOR_INSN (note)) == note)
-		{
-		  BB_END (BLOCK_FOR_INSN (note)) = insn;
-		  set_block_for_insn (note, NULL);
-		}
 	    }
 	    break;
 

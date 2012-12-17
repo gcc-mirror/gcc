@@ -8,6 +8,7 @@ if USING_MAC_INTERPOSE
 DEFS += -DMAC_INTERPOSE_FUNCTIONS -DMISSING_BLOCKS_SUPPORT
 endif
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -Wno-c99-extensions 
+AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 toolexeclib_LTLIBRARIES = libasan.la
@@ -35,10 +36,11 @@ asan_files = \
 libasan_la_SOURCES = $(asan_files)
 if USING_MAC_INTERPOSE
 libasan_la_SOURCES += dynamic/asan_interceptors_dynamic.cc
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 else
-libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
 endif
+libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDLAGS)
 
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
@@ -73,8 +75,6 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \

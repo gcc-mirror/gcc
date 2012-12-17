@@ -1034,7 +1034,8 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
       && !(prefer_noswitch_p && targetm.have_switchable_bss_sections)
       && bss_initializer_p (decl))
     {
-      if (!TREE_PUBLIC (decl))
+      if (!TREE_PUBLIC (decl)
+	  && !(flag_asan && asan_protect_global (decl)))
 	return lcomm_section;
       if (bss_noswitch_section)
 	return bss_noswitch_section;
@@ -2087,7 +2088,16 @@ contains_pointers_p (tree type)
    it all the way to final.  See PR 17982 for further discussion.  */
 static GTY(()) tree pending_assemble_externals;
 
+/* Some targets delay some output to final using TARGET_ASM_FILE_END.
+   As a result, assemble_external can be called after the list of externals
+   is processed and the pointer set destroyed.  */
+static bool pending_assemble_externals_processed;
+
 #ifdef ASM_OUTPUT_EXTERNAL
+/* Avoid O(external_decls**2) lookups in the pending_assemble_externals
+   TREE_LIST in assemble_external.  */
+static struct pointer_set_t *pending_assemble_externals_set;
+
 /* True if DECL is a function decl for which no out-of-line copy exists.
    It is assumed that DECL's assembler name has been set.  */
 
@@ -2139,6 +2149,8 @@ process_pending_assemble_externals (void)
     assemble_external_real (TREE_VALUE (list));
 
   pending_assemble_externals = 0;
+  pending_assemble_externals_processed = true;
+  pointer_set_destroy (pending_assemble_externals_set);
 #endif
 }
 
@@ -2190,7 +2202,13 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
     weak_decls = tree_cons (NULL, decl, weak_decls);
 
 #ifdef ASM_OUTPUT_EXTERNAL
-  if (value_member (decl, pending_assemble_externals) == NULL_TREE)
+  if (pending_assemble_externals_processed)
+    {
+      assemble_external_real (decl);
+      return;
+    }
+
+  if (! pointer_set_insert (pending_assemble_externals_set, decl))
     pending_assemble_externals = tree_cons (NULL, decl,
 					    pending_assemble_externals);
 #endif
@@ -3249,11 +3267,23 @@ output_constant_def_contents (rtx symbol)
     place_block_symbol (symbol);
   else
     {
+      bool asan_protected = false;
       align = DECL_ALIGN (decl);
       switch_to_section (get_constant_section (exp, align));
+      if (flag_asan && TREE_CODE (exp) == STRING_CST
+	  && asan_protect_global (exp))
+	{
+	  asan_protected = true;
+	  align = MAX (align, ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+	}
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_constant_contents (exp, XSTR (symbol, 0), align);
+      if (asan_protected)
+	{
+	  HOST_WIDE_INT size = get_constant_size (exp);
+	  assemble_zeros (asan_red_zone_size (size));
+	}
     }
   if (flag_mudflap)
     mudflap_enqueue_constant (exp);
@@ -5891,6 +5921,10 @@ init_varasm_once (void)
 
   if (readonly_data_section == NULL)
     readonly_data_section = text_section;
+
+#ifdef ASM_OUTPUT_EXTERNAL
+  pending_assemble_externals_set = pointer_set_create ();
+#endif
 }
 
 enum tls_model
@@ -6170,7 +6204,9 @@ categorize_decl_for_section (const_tree decl, int reloc)
     return SECCAT_TEXT;
   else if (TREE_CODE (decl) == STRING_CST)
     {
-      if (flag_mudflap) /* or !flag_merge_constants */
+      if (flag_mudflap
+	  || (flag_asan && asan_protect_global (CONST_CAST_TREE (decl))))
+      /* or !flag_merge_constants */
         return SECCAT_RODATA;
       else
 	return SECCAT_RODATA_MERGE_STR;
@@ -6194,7 +6230,8 @@ categorize_decl_for_section (const_tree decl, int reloc)
 	}
       else if (reloc & targetm.asm_out.reloc_rw_mask ())
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
-      else if (reloc || flag_merge_constants < 2)
+      else if (reloc || flag_merge_constants < 2 || flag_mudflap
+	       || (flag_asan && asan_protect_global (CONST_CAST_TREE (decl))))
 	/* C and C++ don't allow different variables to share the same
 	   location.  -fmerge-all-constants allows even that (at the
 	   expense of not conforming).  */

@@ -131,6 +131,7 @@ mark_exp_read (tree exp)
     CASE_CONVERT:
     case ADDR_EXPR:
     case INDIRECT_REF:
+    case FLOAT_EXPR:
       mark_exp_read (TREE_OPERAND (exp, 0));
       break;
     case COMPOUND_EXPR:

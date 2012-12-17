@@ -7468,14 +7468,14 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
   if (!target || target == const0_rtx)
     target = gen_reg_rtx (mode);
 
-  /* Emit the appropriate barrier before the load.  */
-  expand_mem_thread_fence (model);
+  /* For SEQ_CST, emit a barrier before the load.  */
+  if (model == MEMMODEL_SEQ_CST)
+    expand_mem_thread_fence (model);
 
   emit_move_insn (target, mem);
 
-  /* For SEQ_CST, also emit a barrier after the load.  */
-  if (model == MEMMODEL_SEQ_CST)
-    expand_mem_thread_fence (model);
+  /* Emit the appropriate barrier after the load.  */
+  expand_mem_thread_fence (model);
 
   return target;
 }
@@ -7536,13 +7536,12 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
         return NULL_RTX;
     }
 
-  /* If there is no mem_store, default to a move with barriers */
-  if (model == MEMMODEL_SEQ_CST || model == MEMMODEL_RELEASE)
-    expand_mem_thread_fence (model);
+  /* Otherwise assume stores are atomic, and emit the proper barriers.  */
+  expand_mem_thread_fence (model);
 
   emit_move_insn (mem, val);
 
-  /* For SEQ_CST, also emit a barrier after the load.  */
+  /* For SEQ_CST, also emit a barrier after the store.  */
   if (model == MEMMODEL_SEQ_CST)
     expand_mem_thread_fence (model);
 

@@ -174,20 +174,18 @@ typedef struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_elem
   BITMAP_WORD bits[BITMAP_ELEMENT_WORDS]; /* Bits that are set.  */
 } bitmap_element;
 
-struct bitmap_descriptor;
-/* Head of bitmap linked list.  gengtype ignores ifdefs, but for
-   statistics we need to add a bitmap descriptor pointer.  As it is
-   not collected, we can just GTY((skip(""))) it.  Likewise current
-   points to something already pointed to by the chain started by first,
-   no need to walk it again.  */
+/* Head of bitmap linked list.  The 'current' member points to something
+   already pointed to by the chain started by first, so GTY((skip)) it.  */
 
 typedef struct GTY(()) bitmap_head_def {
+  unsigned int indx;			/* Index of last element looked at.  */
+  unsigned int descriptor_id;		/* Unique identifier for the allocation
+					   site of this bitmap, for detailed
+					   statistics gathering.  */
   bitmap_element *first;		/* First element in linked list.  */
   bitmap_element * GTY((skip(""))) current; /* Last element looked at.  */
-  unsigned int indx;			/* Index of last element looked at.  */
   bitmap_obstack *obstack;		/* Obstack to allocate elements from.
 					   If NULL, then use GGC allocation.  */
-  struct bitmap_descriptor GTY((skip(""))) *desc;
 } bitmap_head;
 
 /* Global data */

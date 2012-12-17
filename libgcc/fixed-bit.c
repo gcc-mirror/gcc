@@ -1,5 +1,5 @@
 /* This is a software fixed-point library.
-   Copyright (C) 2007, 2009, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,15 +80,14 @@ FIXED_SSADD (FIXED_C_TYPE a, FIXED_C_TYPE b)
   INT_C_TYPE x, y, z;
   memcpy (&x, &a, FIXED_SIZE);
   memcpy (&y, &b, FIXED_SIZE);
-  z = x + y;
+  z = x + (UINT_C_TYPE) y;
   if ((((x ^ y) >> I_F_BITS) & 1) == 0)
     {
       if (((z ^ x) >> I_F_BITS) & 1)
         {
-          z = 1;
-          z = z << I_F_BITS;
-          if (x >= 0)
-            z--;
+	  z = ((UINT_C_TYPE) 1) << I_F_BITS;
+	  if (x >= 0)
+	    z -= (UINT_C_TYPE) 1;
         }
     }
 #if HAVE_PADDING_BITS
@@ -152,15 +151,14 @@ FIXED_SSSUB (FIXED_C_TYPE a, FIXED_C_TYPE b)
   INT_C_TYPE x, y, z;
   memcpy (&x, &a, FIXED_SIZE);
   memcpy (&y, &b, FIXED_SIZE);
-  z = x - y;
+  z = x - (UINT_C_TYPE) y;
   if (((x ^ y) >> I_F_BITS) & 1)
     {
       if (((z ^ x) >> I_F_BITS) & 1)
         {
-          z = 1;
-          z = z << I_F_BITS;
-          if (x >= 0)
-            z--;
+	  z = ((UINT_C_TYPE) 1) << I_F_BITS;
+	  if (x >= 0)
+	    z -= (UINT_C_TYPE) 1;
         }
     }
 #if HAVE_PADDING_BITS
@@ -569,16 +567,11 @@ FIXED_SSNEG (FIXED_C_TYPE a)
   INT_C_TYPE x, y, z;
   memcpy (&y, &a, FIXED_SIZE);
   x = 0;
-  z = x - y;
+  z = x - (UINT_C_TYPE) y;
   if (((x ^ y) >> I_F_BITS) & 1)
     {
       if (((z ^ x) >> I_F_BITS) & 1)
-        {
-          z = 1;
-          z = z << I_F_BITS;
-          if (x >= 0)
-            z--;
-        }
+	z = (((UINT_C_TYPE) 1) << I_F_BITS) - 1;
     }
 #if HAVE_PADDING_BITS
   z = z << PADDING_BITS;

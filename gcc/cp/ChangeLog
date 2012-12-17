@@ -1,3 +1,59 @@
+2012-12-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55685
+	* pt.c (tsubst_copy_and_build): Don't use SIZEOF_EXPR_TYPE_P in
+	templates.
+
+	PR c++/42315
+	* decl.c (maybe_deduce_size_from_array_init): Don't change the
+	variable type.
+
+2012-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55652
+	* typeck2.c (merge_exception_specifiers): Don't call operand_equal_p
+	if noex is NULL.
+
+2012-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54883
+	* decl2.c (min_vis_r): Handle anon visibility for enums.
+
+2012-12-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* tree.c (cp_tree_equal): Handle VECTOR_CST.
+	* semantics.c (cxx_eval_bare_aggregate): Protect a dereference.
+	Handle VECTOR_CST.
+
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55643
+	* expr.c (mark_exp_read): Handle FLOAT_EXPR similarly to NOP_EXPR.
+
+2012-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54416
+	* pt.c (maybe_process_partial_specialization): Don't accept
+	definition of a specialization without the appropriate header.
+
+	* pt.c (maybe_process_partial_specialization): Handle aliases first.
+
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55619
+	* semantics.c (finish_asm_stmt): Don't call decay_conversion
+	on input operands that can be only in memory.
+
+2012-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Make-lang.in (cp/typeck.o): Add dependency on $(PARAMS_H).
+	(cp/name-lookup.o): Likewise.
+
+2012-12-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl2.c (cp_write_global_declarations): Return after writing a PCH.
+
 2012-12-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55127

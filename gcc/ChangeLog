@@ -1,3 +1,395 @@
+2012-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_autovectorize_vector_sizes): New.
+	(TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES): Define.
+
+2012-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/55709
+	Forward port from 4.7 branch:
+	2012-04-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/52894
+	* varasm.c (process_pending_assemble_externals): Set
+	pending_assemble_externals_processed true.
+	(assemble_external): Call assemble_external_real if the pending
+	assemble externals have been processed.
+
+2012-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+	    Tomash Brechko  <tomash.brechko@gmail.com>
+
+	PR target/55673
+	* config/sparc/sparc.c (sparc_emit_membar_for_model): Fix reversed
+	handling of before and after cases.
+	* config/sparc/sync.md (atomic_store): Fix pasto.
+
+2012-12-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/55630
+	* expr.c (expand_assignment): Do not call copy_blkmode_to_reg to move
+	BLKmode return values to the return register.
+
+2012-12-15  Alexandre Oliva <aoliva@redhat.com>
+
+	PR libmudflap/53952
+	* expr.c (mem_ref_refers_to_non_mem_p): Factor out
+	implementation into...
+	(addr_expr_of_non_mem_decl_p_1): ... this new function.
+	(addr_expr_of_non_mem_decl_p): New.
+	* tree.h (addr_expr_of_non_mem_decl_p): Declare.
+	* tree-mudflap.c (mf_xform_derefs_1): Don't change MEM_REFs
+	and TARGET_MEM_REFs that have an ADDR_EXPR of a non-mem DECL
+	as base operand.
+
+2012-12-14  Yvan Roux  <yvan.roux@linaro.org>
+
+	* optabs.c (expand_atomic_store): Elide redundant model test.
+
+2012-12-14  Teresa Johnson  <tejohnson@google.com>
+
+        PR gcov-profile/55674
+	* lto-cgraph.c (merge_profile_summaries): Set min correctly the
+        first time we merge into a histogram entry.
+
+2012-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55684
+	* tree-ssa-loop-ivcanon.c (remove_redundant_iv_tests): Handle
+	gracefully the case where we cannot compute the number of
+	iterations at an exit.
+
+2012-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55687
+	* tree-chrec.h (no_evolution_in_loop_p): Properly use
+	tree_contains_chrecs.
+
+2012-12-13  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/55492
+	* optabs.c (expand_atomic_load): Emit acquire barrier after the load.
+
+2012-12-13  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_pad_function_end): Consider barriers
+	when looking for NOTE_INSN_CALL_ARG_LOCATION.
+
+2012-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/53476
+	* varpool.c (varpool_remove_unreferenced_decls): Revert to 4.7
+	behavior.
+
+2012-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/unspecs.md: Add copyright notice.
+
+2012-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): Avoid
+	-Wsign-compare warning.
+
+2012-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/55660
+	* tree-streamer.c (record_common_node): Check that we are not
+	recursively pre-loading nodes we want to skip.  Handle
+	char_type_node appearing as part of va_list_type_node.
+
+2012-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/55650
+	* coverage.c (coverage_obj_init): Return false if no functions
+	are being emitted.
+
+2012-12-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.c (struct bitmap_descriptor): Remove forward declaration.
+	(struct bitmap_head_def): Remove desc pointer.  Add descriptor_id
+	field.  Reorder fields for pointer alignment.
+	* bitmap.c: Include vec.h.
+	(struct bitmap_descriptor): Rename to bitmap_descriptor_d.
+	(bitmap_descriptor): New typedef, pointer to bitmap_descriptor_d.
+	Update all struct bitmap_descriptor references.
+	(next_bitmap_desc_id): New running index for bitmap desciptors.
+	(bitmap_descriptors): Vec of all bitmap descriptors by descriptor id.
+	(hash_descriptor, eq_descriptor): Update for struct bitmap_descriptor
+	change.
+	(bitmap_descriptor): Rename function to get_bitmap_descriptor.
+	Stuff newly allocated bitmap descriptor into bitmap_descriptors.
+	Set the bitmap descriptor id.
+	(bitmap_register): Lookup bitmap desciptor and store its ID in
+	the passed bitmap.
+	(register_overhead): Likewise.
+	(bitmap_find_bit): Lookup descriptor by id in bitmap_descriptors.
+	(print_statistics): Update for struct bitmap_descriptor change.
+
+	* Makefile.in: Fix bitmap.o dependencies.
+
+2012-12-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (get_representative_for): Adjust dumping.
+	Mark created SSA names for release.
+	(eliminate_bb): Insert only when expr is not NULL.
+
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55665
+	* tree-inline.c (remap_decls): Change nonlocalized_list
+	to pointer to pointer to vector from pointer to vector.
+	(remap_block): Pass address of BLOCK_NONLOCALIZED_VARS.
+
+	PR sanitizer/55508
+	* builtin-attrs.def (ATTR_TMPURE_NOTHROW_LEAF_LIST,
+	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST): New.
+	* asan.c (ATTR_TMPURE_NOTHROW_LEAF_LIST,
+	ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST): Define.
+	* sanitizer.def: Make __asan_report_* and __asan_handle_no_return
+	builtins tm pure.
+
+2012-12-12  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_option_override): Set
+	mips_dbx_regno entries to IGNORED_DWARF_REGNUM by default.
+
+2012-12-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* graph.c: Include sbitmap.h and cfgloop.h.
+	(draw_cfg_nodes_no_loops): New function to dump basic blocks in
+	topological order if the function does not have a loop tree.
+	Handle unreachable blocks also.
+	(draw_cfg_nodes_for_loop): New function to dump basic blocks in
+	one loop tree node as a named cluster of nodes.
+	(draw_cfg_nodes): New function to draw all CFG nodes.
+	(draw_cfg_edges): New function to draw all CFG edges.
+	(print_graph_cfg): Simplify using the new functions.
+	* Makefile.in (graph.o): Fix dependencies.
+
+2012-12-12  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dumpfile.h (enum tree_dump_index): Remove TDI_vcg.
+	* dumpfile.c (dump_files[]): Remove entry for TDI_vcg.
+	* tree-cfg.c (gimple_cfg2vcg): Remove.
+	(build_gimple_cfg): Don't call it.
+	* doc/invoke.texi (-fdump-tree-vcg): Remove documentation.
+	Correct GraphViz documentation, it does handle multiple functions
+	in a single dump.
+
+2012-12-12  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/55481
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Fall
+	back to general rewriting if we cannot leave an original biv
+	definition alone.
+
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55659
+	Revert
+	2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43631
+	* var-tracking.c (emit_note_insn_var_location): If insn is followed
+	by BARRIER, put note after the BARRIER.
+	(next_non_note_insn_var_location): Skip over BARRIERs.
+	(emit_notes_in_bb): If call is followed by BARRIER, put note after
+	the BARRIER.
+
+	2012-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43631
+	* var-tracking.c (emit_note_insn_var_location, emit_notes_in_bb):
+	Clear BLOCK_FOR_INSN on notes emitted in between basic blocks,
+	don't adjust BB_END when inserting note after BB_END of some bb.
+
+2012-12-12  Steven Bosscher  <steven@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/52640
+	* varasm.c (pending_assemble_externals_set): New pointer set.
+	(process_pending_assemble_externals): Destroy the pointer set.
+	(assemble_external): See if decl is in pending_assemble_externals_set,
+	and add it to pending_assemble_externals if necessary.
+	(init_varasm_once): Allocate pending_assemble_externals_set.
+
+2012-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55633
+	* tree-ssa-loop-niter.c (discover_iteration_bound_by_body_walk):
+	Ignore bounds on which bound += double_int_one overflowed.
+
+2012-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/54121
+	* config/sparc/sparc.md (tldo_stb_sp32): Fix pasto.
+	(tldo_stb_sp64): Likewise.
+	(tldo_sth_sp32): Likewise.
+	(tldo_sth_sp64): Likewise.
+	(tldo_stw_sp32): Likewise.
+	(tldo_stw_sp64): Likewise.
+	(tldo_stx_sp64): Likewise.
+
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/55193
+	* lra-constraints.c (loc_equivalence_callback): New function.
+	(lra_constraints): Call simplify_replace_fn_rtx instead of
+	loc_equivalence_change_p on DEBUG_INSNs.
+
+2012-12-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/55642
+	* config/arm/thumb2.md (*thumb2_abssi2):
+	Set ce_count attribute to 2.
+	(*thumb2_neg_abssi2): Likewise.
+
+2012-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (get_variable_section): Don't return lcomm_section
+	for asan_protect_global decls.
+	* asan.c (asan_protect_global): Only avoid public common variables.
+	Don't call get_variable_section here.
+
+	PR middle-end/43631
+	PR bootstrap/55615
+	* var-tracking.c (emit_note_insn_var_location): If insn is followed
+	by BARRIER, put note after the BARRIER.
+	(next_non_note_insn_var_location): Skip over BARRIERs.
+	(emit_notes_in_bb): If call is followed by BARRIER, put note after
+	the BARRIER.
+
+	* sanitizer.def: Add comment about importance of ordering of
+	BUILT_IN_ASAN_REPORT* builtins.
+	* cfgcleanup.c (old_insns_match_p): Don't cross-jump __asan_report_*
+	builtins.
+
+	* sanitizer.def (BUILT_IN_ASAN_HANDLE_NO_RETURN): New builtin.
+	* asan.c (instrument_builtin_call): Change is_gimple_builtin_call
+	gcc_assert to gcc_checking_assert.
+	(maybe_instrument_call): Imit __builtin___asan_handle_no_return ()
+	before noreturn calls other than __builtin_trap () and
+	__builtin_unreachable ().
+
+2012-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR other/54324
+	* doc/install.texi (Tools/packages necessary for building GCC):
+	State ISO C++98 host compiler requirement.  Increment minimum
+	GCC version required for building all languages for a cross-compiler
+	to 3.4 or later.
+
+2012-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55079
+	* tree-vrp.c (extract_range_from_binary_expr_1): Handle MAX/MIN_EXPR
+	for more cases.
+	(register_edge_assert_for_2): Register asserts for post-in/decrement
+	tests.
+	(check_array_ref): Dump what expression we emit array bound
+	warnings for.
+	(search_for_addr_array): Likewise.
+
+2012-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (prepare_decl_rtl) <ADDR_EXPR>: Generate RTL
+	only for a DECL which HAS_RTL_P.
+
+2012-12-11  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/predicates.md ("execute_operation"): New predicate.
+	* config/s390/s390.md ("*execute_rl", "*execute"): Use the new
+	predicate.
+
+2012-12-10  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.c: Enable push/pop in pro/epilogue for modern CPUs.
+
+2012-12-10  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/gnu-user.h (NO_SHARED_SPECS): Add space before option.
+
+2012-12-10  Steve Ellcey  <sellcey@mips.com>
+
+	PR target/54061
+	* rtl.h (IGNORED_DWARF_REGNUM): New.
+	* dwarf2out.c (reg_loc_descriptor): Check for IGNORED_DWARF_REGNUM.
+	(mem_loc_descriptor): Ditto.
+	* config/mips/mips.h (ALL_COP_REG_FIRST): New.
+	(ALL_COP_REG_LAST): New.
+	(ALL_COP_REG_NUM): Redefine using above macros.
+	* config/mips/mips.c (mips_option_override): Set mips_dbx_regno
+	coprocessor entries to IGNORED_DWARF_REGNUM.
+
+2012-12-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR lto/55466
+	* lto-symtab.c (lto_symtab_merge_decls_1): Don't record the
+	prevailing variable.
+	* lto.c (lto_register_var_decl_in_symtab): Don't record static
+	variables.
+	(lto_main): Record the global variables if WPA isn't enabled.
+
+2012-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55107
+	* tree-ssa-pre.c (struct pre_stats): Remove constified field.
+	(bitmap_set_replace_value): Add gcc_unreachable.
+	(do_regular_insertion): Re-write all_same handling.  Insert
+	an assignment instead of a PHI in this case.
+	(eliminate_bb): Record availability also for SSA names defined
+	by a constant.
+	(do_pre): Do not record constified events.
+	(execute_fre): Likewise.
+
+2012-12-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/spu/spu.md: Replace "operands" with "operands != NULL" in
+	insn conditions.
+
+2012-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (asan_init_shadow_ptr_types): Move earlier in the file.
+	Call initialize_sanitizer_builtins at the end.
+	(asan_pp_string): Use TREE_TYPE (shadow_ptr_types[0])
+	as character type instead of char_type_node.
+	(asan_emit_stack_protection): Call asan_init_shadow_ptr_types
+	if shadow_ptr_types isn't initialized.
+	(asan_protect_global): Return true for STRING_CSTs except those
+	created by asan_pp_string.
+	(count_string_csts, add_string_csts): New functions.
+	(struct asan_add_string_csts_data): New type.
+	(asan_finish_file): Clear flag_asan at the beginning, restore at the
+	end.  Traverse constant_pool_htab () to look for protected
+	STRING_CSTs.  Don't call initialize_sanitizer_builtins,
+	instead call asan_init_shadow_ptr_types if shadow_ptr_types isn't
+	initialized yet.
+	(asan_instrument): Don't call initialize_sanitizer_builtins.
+	* varasm.c (output_constant_def_contents): If STRING_CST should be
+	asan protected, align it sufficiently and emit padding after it.
+	(categorize_decl_for_section): If flag_asan, don't put STRING_CSTs
+	that should be asan protected into mergeable sections.  For
+	-fmerge-all-constants, ignore it for -fmudflap or if decl is
+	asan protected.
+
+2012-12-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.ml (opcode): Add Vrintn, Vrinta, Vrintp, Vrintm,
+	Vrintz to type.
+	(type features): Add Requires_arch type constructor.
+	(ops): Define Vrintn, Vrinta, Vrintp, Vrintm, Vrintz features.
+	* config/arm/neon-docgen.ml (intrinsic_groups): Define Vrintn,
+	Vrinta, Vrintp, Vrintm, Vrintz, Vrintx.
+	* config/arm/neon-testgen.ml (effective_target): Define check for
+	Requires_arch 8.
+	* config/arm/neon-gen.ml (print_feature_test_start): Handle
+	Requires_arch.
+	(print_feature_test_end): Likewise.
+	Add 2012 to Copyright notice.
+	* doc/arm-neon-intrinsics.texi: Regenerate.
+	* config/arm/arm_neon.h: Regenerate.
+
 2012-12-10 Kai Tietz  <ktietz@redhat.com>
 
 	* stmt.c (expand_sjlj_dispatch_table): Fix off by one.
@@ -34,21 +426,26 @@
 
 	* tree-ssa-loop-im.c (for_each_index) <CONST_DECL>: New case.
 
+2012-12-07  Sriraman Tallan  <tmsriram@google.com>
+
+	* toplev.c (process_options): Do not warn when -ffunction-sections
+	and -fprofile are used together.
+
 2012-12-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ree.c (struct ext_cand): Remove GTY markers.
 
 2012-12-07  Vladimir Makarov  <vmakarov@redhat.com>
 
-	testsuite/gcc.target/i386/pr55141.c
+	PR rtl-optimization/55141
 	* lra-constraints.c (lra_constraints): Use biggest mode for
 	df_set_regs_ever_live.
 
 2012-12-07  Jan Hubicka  <jh@suse.cz>
 
- 	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add UPPER_BOUND
- 	parameter.
- 	(try_unroll_loop_completely) Update.
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Add UPPER_BOUND
+	parameter.
+	(try_unroll_loop_completely) Update.
 
 2012-12-07  Jakub Jelinek  <jakub@redhat.com>
 
@@ -65,8 +462,8 @@
 2012-12-07  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/55078
-	* ipa-inline-transform.c (inline_call): Turn #if 0 to #ifdef
-	ENABLE_CHECKING.
+	* ipa-inline-transform.c (inline_call): Turn #if 0 to
+	#ifdef ENABLE_CHECKING.
 	* ipa-prop.c (try_make_edge_direct_simple_call): Use
 	ipa_value_from_jfunc.
 	(try_make_edge_direct_virtual_call): Likewise.
@@ -113,7 +510,7 @@
 2012-12-06  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 55599/sanitizer
-        * config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Remove static libasan support.
 
 2012-12-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -333,7 +730,7 @@
 2012-12-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_select_ccmode): Enable using CC of
-          x + imm for higher immediates on z9-109 upwards.
+	x + imm for higher immediates on z9-109 upwards.
 
 2012-12-04  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -542,8 +939,8 @@
 
 2010-12-01  Xinliang David Li  <davidxl@google.com>
 
-        * config/i386/i386.c: Allow sign extend instructions (cltd etc)
-        on modern CPUs.
+	* config/i386/i386.c: Allow sign extend instructions (cltd etc)
+	on modern CPUs.
 
 2012-12-02  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -611,44 +1008,44 @@
 	added check for required alignment.  Update the user.
 
 2012-11-30  Ramana Radhakrishnan <Ramana.Radhakrishnan@arm.com>
-            Greta Yorsh  <Greta.Yorsh@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (type): Subdivide "alu" into "alu_reg"
-        and "simple_alu_imm".
-        (core_cycles): Use new names.
-        (arm_addsi3): Set type of patterns to use to alu_reg and simple_alu_imm.
-        (addsi3_compare0, addsi3_compare0_scratch): Likewise.
-        (addsi3_compare_op1, addsi3_compare_op2, compare_addsi2_op0): Likewise.
-        (compare_addsi2_op1, arm_subsi3_insn, subsi3_compare0): Likewise.
-        (subsi3_compare, arm_decscc,arm_andsi3_insn): Likewise.
-        (thumb1_andsi3_insn, andsi3_compare0_scratch): Likewise.
-        (zeroextractsi_compare0_scratch,iorsi3_insn,iorsi3_compare0): Likewise.
-        (iorsi3_compare0_scratch, arm_xorsi3, thumb1_xorsi3_insn): Likewise.
-        (xorsi3_compare0, xorsi3_compare0_scratch): Likewise.
-        (thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Likewise.
-        (thumb1_zero_extendqisi2_v, arm_zero_extendqisi2_v6): Likewise.
+	* config/arm/arm.md (type): Subdivide "alu" into "alu_reg"
+	and "simple_alu_imm".
+	(core_cycles): Use new names.
+	(arm_addsi3): Set type of patterns to use to alu_reg and simple_alu_imm.
+	(addsi3_compare0, addsi3_compare0_scratch): Likewise.
+	(addsi3_compare_op1, addsi3_compare_op2, compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1, arm_subsi3_insn, subsi3_compare0): Likewise.
+	(subsi3_compare, arm_decscc,arm_andsi3_insn): Likewise.
+	(thumb1_andsi3_insn, andsi3_compare0_scratch): Likewise.
+	(zeroextractsi_compare0_scratch,iorsi3_insn,iorsi3_compare0): Likewise.
+	(iorsi3_compare0_scratch, arm_xorsi3, thumb1_xorsi3_insn): Likewise.
+	(xorsi3_compare0, xorsi3_compare0_scratch): Likewise.
+	(thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Likewise.
+	(thumb1_zero_extendqisi2_v, arm_zero_extendqisi2_v6): Likewise.
 	(thumb1_extendhisi2, arm_extendqisi_v6): Likewise.
 	(thumb1_extendqisi2, arm_movsi_insn): Likewise.
-        (movsi_compare0, movhi_insn_arch4, movhi_bytes): Likewise.
-        (arm_movqi_insn, thumb1_movqi_insn, arm_cmpsi_insn): Likewise.
-        (movsicc_insn, if_plus_move, if_move_plus): Likewise.
-        * config/arm/neon.md (neon_mov<mode>/VDX): Likewise.
-        (neon_mov<mode>/VQXMOV): Likewise.
-        * config/arm/arm1020e.md (1020alu_op): Likewise.
-        * config/arm/fmp626.md (mp626_alu_op): Likewise.
-        * config/arm/fa726te.md (726te_alu_op): Likewise.
-        * config/arm/fa626te.md (626te_alu_op): Likewise.
-        * config/arm/fa606te.md (606te_alu_op): Likewise.
-        * config/arm/fa526.md (526_alu_op): Likewise.
-        * config/arm/cortex-r4.md (cortex_r4_alu, cortex_r4_mov): Likewise.
-        * config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
-        * config/arm/cortex-a9.md (cprtex_a9_dp): Likewise.
-        * config/arm/cortex-a8.md (cortex_a8_alu, cortex_a8_mov): Likewise.
-        * config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
-        * config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
-        * config/arm/arm926ejs.md (9_alu_op): Likewise.
-        * config/arm/arm1136jfs.md (11_alu_op): Likewise.
-        * config/arm/arm1026ejs.md (alu_op): Likewise.
+	(movsi_compare0, movhi_insn_arch4, movhi_bytes): Likewise.
+	(arm_movqi_insn, thumb1_movqi_insn, arm_cmpsi_insn): Likewise.
+	(movsicc_insn, if_plus_move, if_move_plus): Likewise.
+	* config/arm/neon.md (neon_mov<mode>/VDX): Likewise.
+	(neon_mov<mode>/VQXMOV): Likewise.
+	* config/arm/arm1020e.md (1020alu_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_op): Likewise.
+	* config/arm/fa626te.md (626te_alu_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Likewise.
+	* config/arm/fa526.md (526_alu_op): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu, cortex_r4_mov): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-a9.md (cprtex_a9_dp): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu, cortex_a8_mov): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Likewise.
+	* config/arm/arm1026ejs.md (alu_op): Likewise.
 
 2012-11-30  Richard Biener  <rguenther@suse.de>
 
@@ -897,7 +1294,7 @@
 	* config/epiphany/epiphgany.md (attribute type): Add v2fp.
 	(attribute fp_mode): Test for v2fp.
 	(<float_operation:insn_opname>v2sf3_i): Change type to v2fp.
-	* config/epiphany/epiphgany-sched.md (fp_arith_nearest,
+	* config/epiphany/epiphany-sched.md (fp_arith_nearest,
 	fp_arith_trunc): Combine to ..
 	(fp_arith): .. this.
 	(v2fp_arith): New insn reservation.

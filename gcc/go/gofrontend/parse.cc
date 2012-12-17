@@ -975,13 +975,13 @@ Parse::parameter_list(bool* is_varargs)
   this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error);
   while (this->peek_token()->is_op(OPERATOR_COMMA))
     {
+      if (this->advance_token()->is_op(OPERATOR_RPAREN))
+	break;
       if (is_varargs != NULL && *is_varargs)
 	{
 	  error_at(this->location(), "%<...%> must be last parameter");
 	  saw_error = true;
 	}
-      if (this->advance_token()->is_op(OPERATOR_RPAREN))
-	break;
       this->parameter_decl(parameters_have_names, ret, is_varargs, &mix_error);
     }
   if (mix_error)

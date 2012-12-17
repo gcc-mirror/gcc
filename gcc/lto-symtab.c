@@ -443,10 +443,6 @@ lto_symtab_merge_decls_1 (symtab_node first)
 
   symtab_prevail_in_asm_name_hash (prevailing);
 
-  /* Record the prevailing variable.  */
-  if (TREE_CODE (prevailing->symbol.decl) == VAR_DECL)
-    vec_safe_push (lto_global_var_decls, prevailing->symbol.decl);
-
   /* Diagnose mismatched objects.  */
   for (e = prevailing->symbol.next_sharing_asm_name;
        e; e = e->symbol.next_sharing_asm_name)

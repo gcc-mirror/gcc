@@ -5,6 +5,7 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS 
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
+AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
 toolexeclib_LTLIBRARIES = libtsan.la
@@ -33,7 +34,7 @@ tsan_files = \
         tsan_symbolize_addr2line_linux.cc
 
 libtsan_la_SOURCES = $(tsan_files) 
-libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDLAGS)
 libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -67,8 +68,6 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \

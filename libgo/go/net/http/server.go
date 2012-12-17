@@ -11,7 +11,6 @@ package http
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -21,7 +20,7 @@ import (
 	"net"
 	"net/url"
 	"path"
-	"runtime/debug"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -94,16 +93,104 @@ type Hijacker interface {
 	Hijack() (net.Conn, *bufio.ReadWriter, error)
 }
 
+// The CloseNotifier interface is implemented by ResponseWriters which
+// allow detecting when the underlying connection has gone away.
+//
+// This mechanism can be used to cancel long operations on the server
+// if the client has disconnected before the response is ready.
+type CloseNotifier interface {
+	// CloseNotify returns a channel that receives a single value
+	// when the client connection has gone away.
+	CloseNotify() <-chan bool
+}
+
 // A conn represents the server side of an HTTP connection.
 type conn struct {
 	remoteAddr string               // network address of remote side
 	server     *Server              // the Server on which the connection arrived
 	rwc        net.Conn             // i/o connection
-	lr         *io.LimitedReader    // io.LimitReader(rwc)
-	buf        *bufio.ReadWriter    // buffered(lr,rwc), reading from bufio->limitReader->rwc
-	hijacked   bool                 // connection has been hijacked by handler
+	sr         switchReader         // where the LimitReader reads from; usually the rwc
+	lr         *io.LimitedReader    // io.LimitReader(sr)
+	buf        *bufio.ReadWriter    // buffered(lr,rwc), reading from bufio->limitReader->sr->rwc
 	tlsState   *tls.ConnectionState // or nil when not using TLS
 	body       []byte
+
+	mu           sync.Mutex // guards the following
+	clientGone   bool       // if client has disconnected mid-request
+	closeNotifyc chan bool  // made lazily
+	hijackedv    bool       // connection has been hijacked by handler
+}
+
+func (c *conn) hijacked() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.hijackedv
+}
+
+func (c *conn) hijack() (rwc net.Conn, buf *bufio.ReadWriter, err error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.hijackedv {
+		return nil, nil, ErrHijacked
+	}
+	if c.closeNotifyc != nil {
+		return nil, nil, errors.New("http: Hijack is incompatible with use of CloseNotifier")
+	}
+	c.hijackedv = true
+	rwc = c.rwc
+	buf = c.buf
+	c.rwc = nil
+	c.buf = nil
+	return
+}
+
+func (c *conn) closeNotify() <-chan bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.closeNotifyc == nil {
+		c.closeNotifyc = make(chan bool)
+		if c.hijackedv {
+			// to obey the function signature, even though
+			// it'll never receive a value.
+			return c.closeNotifyc
+		}
+		pr, pw := io.Pipe()
+
+		readSource := c.sr.r
+		c.sr.Lock()
+		c.sr.r = pr
+		c.sr.Unlock()
+		go func() {
+			_, err := io.Copy(pw, readSource)
+			if err == nil {
+				err = io.EOF
+			}
+			pw.CloseWithError(err)
+			c.noteClientGone()
+		}()
+	}
+	return c.closeNotifyc
+}
+
+func (c *conn) noteClientGone() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.closeNotifyc != nil && !c.clientGone {
+		c.closeNotifyc <- true
+	}
+	c.clientGone = true
+}
+
+type switchReader struct {
+	sync.Mutex
+	r io.Reader
+}
+
+func (sr *switchReader) Read(p []byte) (n int, err error) {
+	sr.Lock()
+	r := sr.r
+	sr.Unlock()
+	return r.Read(p)
 }
 
 // A response represents the server side of an HTTP response.
@@ -127,7 +214,7 @@ type response struct {
 
 	// requestBodyLimitHit is set by requestTooLarge when
 	// maxBytesReader hits its max size. It is checked in
-	// WriteHeader, to make sure we don't consume the the
+	// WriteHeader, to make sure we don't consume the
 	// remaining request body to try to advance to the next HTTP
 	// request. Instead, when this is set, we stop reading
 	// subsequent requests on this connection and stop reading
@@ -171,16 +258,24 @@ func (w *response) ReadFrom(src io.Reader) (n int64, err error) {
 // noLimit is an effective infinite upper bound for io.LimitedReader
 const noLimit int64 = (1 << 63) - 1
 
+// debugServerConnections controls whether all server connections are wrapped
+// with a verbose logging wrapper.
+const debugServerConnections = false
+
 // Create new connection from rwc.
 func (srv *Server) newConn(rwc net.Conn) (c *conn, err error) {
 	c = new(conn)
 	c.remoteAddr = rwc.RemoteAddr().String()
 	c.server = srv
 	c.rwc = rwc
+	if debugServerConnections {
+		c.rwc = newLoggingConn("server", c.rwc)
+	}
+	c.sr = switchReader{r: c.rwc}
 	c.body = make([]byte, sniffLen)
-	c.lr = io.LimitReader(rwc, noLimit).(*io.LimitedReader)
+	c.lr = io.LimitReader(&c.sr, noLimit).(*io.LimitedReader)
 	br := bufio.NewReader(c.lr)
-	bw := bufio.NewWriter(rwc)
+	bw := bufio.NewWriter(c.rwc)
 	c.buf = bufio.NewReadWriter(br, bw)
 	return c, nil
 }
@@ -207,9 +302,9 @@ type expectContinueReader struct {
 
 func (ecr *expectContinueReader) Read(p []byte) (n int, err error) {
 	if ecr.closed {
-		return 0, errors.New("http: Read after Close on request Body")
+		return 0, ErrBodyReadAfterClose
 	}
-	if !ecr.resp.wroteContinue && !ecr.resp.conn.hijacked {
+	if !ecr.resp.wroteContinue && !ecr.resp.conn.hijacked() {
 		ecr.resp.wroteContinue = true
 		io.WriteString(ecr.resp.conn.buf, "HTTP/1.1 100 Continue\r\n\r\n")
 		ecr.resp.conn.buf.Flush()
@@ -232,7 +327,7 @@ var errTooLarge = errors.New("http: request too large")
 
 // Read next request from connection.
 func (c *conn) readRequest() (w *response, err error) {
-	if c.hijacked {
+	if c.hijacked() {
 		return nil, ErrHijacked
 	}
 	c.lr.N = int64(c.server.maxHeaderBytes()) + 4096 /* bufio slop */
@@ -273,7 +368,7 @@ func (w *response) Header() Header {
 const maxPostHandlerReadBytes = 256 << 10
 
 func (w *response) WriteHeader(code int) {
-	if w.conn.hijacked {
+	if w.conn.hijacked() {
 		log.Print("http: response.WriteHeader on hijacked connection")
 		return
 	}
@@ -363,6 +458,8 @@ func (w *response) WriteHeader(code int) {
 
 	if w.req.Method == "HEAD" || code == StatusNotModified {
 		// do nothing
+	} else if code == StatusNoContent {
+		w.header.Del("Transfer-Encoding")
 	} else if hasCL {
 		w.contentLength = contentLength
 		w.header.Del("Transfer-Encoding")
@@ -447,7 +544,7 @@ func (w *response) bodyAllowed() bool {
 }
 
 func (w *response) Write(data []byte) (n int, err error) {
-	if w.conn.hijacked {
+	if w.conn.hijacked() {
 		log.Print("http: response.Write on hijacked connection")
 		return 0, ErrHijacked
 	}
@@ -496,7 +593,7 @@ func (w *response) Write(data []byte) (n int, err error) {
 	// then there would be fewer chunk headers.
 	// On the other hand, it would make hijacking more difficult.
 	if w.chunking {
-		fmt.Fprintf(w.conn.buf, "%x\r\n", len(data)) // TODO(rsc): use strconv not fmt
+		fmt.Fprintf(w.conn.buf, "%x\r\n", len(data))
 	}
 	n, err = w.conn.buf.Write(data)
 	if err == nil && w.chunking {
@@ -517,7 +614,7 @@ func (w *response) finishRequest() {
 	// HTTP/1.0 clients keep their "keep-alive" connections alive, and for
 	// HTTP/1.1 clients is just as good as the alternative: sending a
 	// chunked response and immediately sending the zero-length EOF chunk.
-	if w.written == 0 && w.header.get("Content-Length") == "" {
+	if w.written == 0 && w.header.get("Content-Length") == "" && w.req.Method != "HEAD" {
 		w.header.Set("Content-Length", "0")
 	}
 	// If this was an HTTP/1.0 request with keep-alive and we sent a
@@ -610,10 +707,10 @@ func (c *conn) serve() {
 			return
 		}
 
-		var buf bytes.Buffer
-		fmt.Fprintf(&buf, "http: panic serving %v: %v\n", c.remoteAddr, err)
-		buf.Write(debug.Stack())
-		log.Print(buf.String())
+		const size = 4096
+		buf := make([]byte, size)
+		buf = buf[:runtime.Stack(buf, false)]
+		log.Printf("http: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
 
 		if c.rwc != nil { // may be nil if connection hijacked
 			c.rwc.Close()
@@ -665,21 +762,7 @@ func (c *conn) serve() {
 			}
 			req.Header.Del("Expect")
 		} else if req.Header.get("Expect") != "" {
-			// TODO(bradfitz): let ServeHTTP handlers handle
-			// requests with non-standard expectation[s]? Seems
-			// theoretical at best, and doesn't fit into the
-			// current ServeHTTP model anyway.  We'd need to
-			// make the ResponseWriter an optional
-			// "ExpectReplier" interface or something.
-			//
-			// For now we'll just obey RFC 2616 14.20 which says
-			// "If a server receives a request containing an
-			// Expect field that includes an expectation-
-			// extension that it does not support, it MUST
-			// respond with a 417 (Expectation Failed) status."
-			w.Header().Set("Connection", "close")
-			w.WriteHeader(StatusExpectationFailed)
-			w.finishRequest()
+			w.sendExpectationFailed()
 			break
 		}
 
@@ -694,7 +777,7 @@ func (c *conn) serve() {
 		// [*] Not strictly true: HTTP pipelining.  We could let them all process
 		// in parallel even if their responses need to be serialized.
 		handler.ServeHTTP(w, w.req)
-		if c.hijacked {
+		if c.hijacked() {
 			return
 		}
 		w.finishRequest()
@@ -708,18 +791,32 @@ func (c *conn) serve() {
 	c.close()
 }
 
+func (w *response) sendExpectationFailed() {
+	// TODO(bradfitz): let ServeHTTP handlers handle
+	// requests with non-standard expectation[s]? Seems
+	// theoretical at best, and doesn't fit into the
+	// current ServeHTTP model anyway.  We'd need to
+	// make the ResponseWriter an optional
+	// "ExpectReplier" interface or something.
+	//
+	// For now we'll just obey RFC 2616 14.20 which says
+	// "If a server receives a request containing an
+	// Expect field that includes an expectation-
+	// extension that it does not support, it MUST
+	// respond with a 417 (Expectation Failed) status."
+	w.Header().Set("Connection", "close")
+	w.WriteHeader(StatusExpectationFailed)
+	w.finishRequest()
+}
+
 // Hijack implements the Hijacker.Hijack method. Our response is both a ResponseWriter
 // and a Hijacker.
 func (w *response) Hijack() (rwc net.Conn, buf *bufio.ReadWriter, err error) {
-	if w.conn.hijacked {
-		return nil, nil, ErrHijacked
-	}
-	w.conn.hijacked = true
-	rwc = w.conn.rwc
-	buf = w.conn.buf
-	w.conn.rwc = nil
-	w.conn.buf = nil
-	return
+	return w.conn.hijack()
+}
+
+func (w *response) CloseNotify() <-chan bool {
+	return w.conn.closeNotify()
 }
 
 // The HandlerFunc type is an adapter to allow the use of
@@ -1309,4 +1406,46 @@ func (tw *timeoutWriter) WriteHeader(code int) {
 	tw.wroteHeader = true
 	tw.mu.Unlock()
 	tw.w.WriteHeader(code)
+}
+
+// loggingConn is used for debugging.
+type loggingConn struct {
+	name string
+	net.Conn
+}
+
+var (
+	uniqNameMu   sync.Mutex
+	uniqNameNext = make(map[string]int)
+)
+
+func newLoggingConn(baseName string, c net.Conn) net.Conn {
+	uniqNameMu.Lock()
+	defer uniqNameMu.Unlock()
+	uniqNameNext[baseName]++
+	return &loggingConn{
+		name: fmt.Sprintf("%s-%d", baseName, uniqNameNext[baseName]),
+		Conn: c,
+	}
+}
+
+func (c *loggingConn) Write(p []byte) (n int, err error) {
+	log.Printf("%s.Write(%d) = ....", c.name, len(p))
+	n, err = c.Conn.Write(p)
+	log.Printf("%s.Write(%d) = %d, %v", c.name, len(p), n, err)
+	return
+}
+
+func (c *loggingConn) Read(p []byte) (n int, err error) {
+	log.Printf("%s.Read(%d) = ....", c.name, len(p))
+	n, err = c.Conn.Read(p)
+	log.Printf("%s.Read(%d) = %d, %v", c.name, len(p), n, err)
+	return
+}
+
+func (c *loggingConn) Close() (err error) {
+	log.Printf("%s.Close() = ...", c.name)
+	err = c.Conn.Close()
+	log.Printf("%s.Close() = %v", c.name, err)
+	return
 }

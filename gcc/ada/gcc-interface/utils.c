@@ -2797,7 +2797,7 @@ gnat_type_for_size (unsigned precision, int unsignedp)
 
   if (!TYPE_NAME (t))
     {
-      sprintf (type_name, "%sSIGNED_%d", unsignedp ? "UN" : "", precision);
+      sprintf (type_name, "%sSIGNED_%u", unsignedp ? "UN" : "", precision);
       TYPE_NAME (t) = get_identifier (type_name);
     }
 

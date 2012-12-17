@@ -358,8 +358,7 @@ varpool_remove_unreferenced_decls (void)
 	  && (!varpool_can_remove_if_no_refs (node)
 	      /* We just expanded all function bodies.  See if any of
 		 them needed the variable.  */
-	      || (!DECL_EXTERNAL (node->symbol.decl)
-		  && DECL_RTL_SET_P (node->symbol.decl))))
+	      || DECL_RTL_SET_P (node->symbol.decl)))
 	{
 	  enqueue_node (node, &first);
           if (cgraph_dump_file)

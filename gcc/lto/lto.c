@@ -1766,7 +1766,6 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
       ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
       SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
       rest_of_decl_compilation (decl, 1, 0);
-      vec_safe_push (lto_global_var_decls, decl);
     }
 
   /* If this variable has already been declared, queue the
@@ -3380,6 +3379,8 @@ lto_main (void)
 	do_whole_program_analysis ();
       else
 	{
+	  struct varpool_node *vnode;
+
 	  timevar_start (TV_PHASE_OPT_GEN);
 
 	  materialize_cgraph ();
@@ -3397,6 +3398,10 @@ lto_main (void)
 	     this.  */
 	  if (flag_lto_report)
 	    print_lto_report_1 ();
+
+	  /* Record the global variables.  */
+	  FOR_EACH_DEFINED_VARIABLE (vnode)
+	    vec_safe_push (lto_global_var_decls, vnode->symbol.decl);
 	}
     }
 
