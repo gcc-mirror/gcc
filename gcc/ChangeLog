@@ -1,3 +1,8 @@
+2012-12-17  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* varasm.c (pending_assemble_externals_processed): Guard
+	with ASM_OUTPUT_EXTERNAL.
+
 2012-12-17  Andrew Stubbs  <ams@codesourcery.com>
 	    Ulrich Weigand  <ulrich.weigand@linaro.org>
 
