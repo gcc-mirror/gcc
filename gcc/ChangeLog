@@ -18,30 +18,30 @@
 
 2012-12-17  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.md (type): Add "simple_alu_shift" to attribute "type".
-        (core_cycles): Update for simple_alu_shift.
-        (thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Use simple_alu_shift
-        instead of a CPU-speicific condition for "type" attribute.
-        (thumb1_zero_extendqisi2_v6,arm_zero_extendqisi2_v6): Likewise.
-        (thumb1_extendhisi2,arm_extendhisi2_v6,arm_extendqisi_v6): Likewise.
-        (thumb1_extendqisi2): Likewise.
-        * config/arm/thumb2.md (thumb2_extendqisi_v6): Likewise.
-        (thumb2_zero_extendhisi2_v6,thumb2_zero_extendqisi2_v6) Likewise.
-        * config/arm/arm1020e.md (alu_shift_op): Use simple_alu_shift.
-        * config/arm/arm1026ejs.md (alu_shift_op): Likewise.
-        * config/arm/arm1136jfs.md (11_alu_shift_op): Likewise.
-        * config/arm/arm926ejs.md (9_alu_op): Likewise.
-        * config/arm/cortex-a15.md (cortex_a15_alu_shift): Likewise.
-        * config/arm/cortex-a5.md (cortex_a5_alu_shift): Likewise.
-        * config/arm/cortex-a8.md (cortex_a8_alu_shift,cortex_a8_mov): Likewise.
-        * config/arm/cortex-a9.md (cortex_a9_dp,cortex_a9_dp_shift): Likewise.
-        * config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
-        * config/arm/cortex-r4.md (cortex_r4_alu_shift): Likewise.
-        * config/arm/fa526.md (526_alu_shift_op): Likewise.
-        * config/arm/fa606te.md (fa606te_core): Likewise.
-        * config/arm/fa626te.md (626te_alu_shift_op): Likewise.
-        * config/arm/fa726te.md (726te_alu_shift_op): Likewise.
-        * config/arm/fmp626.md (mp626_alu_shift_op): Likewise.
+	* config/arm/arm.md (type): Add "simple_alu_shift" to attribute "type".
+	(core_cycles): Update for simple_alu_shift.
+	(thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Use simple_alu_shift
+	instead of a CPU-speicific condition for "type" attribute.
+	(thumb1_zero_extendqisi2_v6,arm_zero_extendqisi2_v6): Likewise.
+	(thumb1_extendhisi2,arm_extendhisi2_v6,arm_extendqisi_v6): Likewise.
+	(thumb1_extendqisi2): Likewise.
+	* config/arm/thumb2.md (thumb2_extendqisi_v6): Likewise.
+	(thumb2_zero_extendhisi2_v6,thumb2_zero_extendqisi2_v6) Likewise.
+	* config/arm/arm1020e.md (alu_shift_op): Use simple_alu_shift.
+	* config/arm/arm1026ejs.md (alu_shift_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_shift_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu_shift): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu_shift): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu_shift,cortex_a8_mov): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp,cortex_a9_dp_shift): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu_shift): Likewise.
+	* config/arm/fa526.md (526_alu_shift_op): Likewise.
+	* config/arm/fa606te.md (fa606te_core): Likewise.
+	* config/arm/fa626te.md (626te_alu_shift_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_shift_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_shift_op): Likewise.
 
 2012-12-17  Richard Biener  <rguenther@suse.de>
 
@@ -100,9 +100,9 @@
 
 2012-12-14  Teresa Johnson  <tejohnson@google.com>
 
-        PR gcov-profile/55674
+	PR gcov-profile/55674
 	* lto-cgraph.c (merge_profile_summaries): Set min correctly the
-        first time we merge into a histogram entry.
+	first time we merge into a histogram entry.
 
 2012-12-14  Richard Biener  <rguenther@suse.de>
 
