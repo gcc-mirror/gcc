@@ -95,7 +95,7 @@
 ;; it takes 3 cycles.
 (define_insn_reservation "726te_alu_shift_op" 3
  (and (eq_attr "tune" "fa726te")
-      (and (eq_attr "type" "alu_shift")
+      (and (eq_attr "type" "simple_alu_shift,alu_shift")
            (not (eq_attr "insn" "mov,mvn"))))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 

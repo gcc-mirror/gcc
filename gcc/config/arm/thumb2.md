@@ -570,11 +570,7 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
@@ -587,11 +583,7 @@
   "@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
@@ -604,11 +596,7 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
