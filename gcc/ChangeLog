@@ -1,3 +1,16 @@
+2012-12-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.md (zero_extend<mode>di2): Add extra alternatives
+	for NEON registers.
+	Add alternative for one-instruction extend-in-place.
+	(extend<mode>di2): Likewise.
+	Add constraints for Thumb-mode memory loads.
+	Prevent extend splitters doing NEON alternatives.
+	* config/arm/iterators.md (qhs_extenddi_cstr, qhs_zextenddi_cstr):
+	Adjust constraints to add new alternatives.
+	* config/arm/neon.md: Add splitters for zero- and sign-extend.
+
 2012-12-17  Greta Yorsh  <Greta.Yorsh@arm.com>
 
         * config/arm/arm.md (type): Add "simple_alu_shift" to attribute "type".
