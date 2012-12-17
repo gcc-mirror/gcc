@@ -2206,7 +2206,7 @@ proc add_options_for_arm_v8_neon { flags } {
     if { ! [check_effective_target_arm_v8_neon_ok] } {
         return "$flags"
     }
-    return "$flags -mfpu=neon-fp-armv8 -mfloat-abi=softfp"
+    return "$flags -march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=softfp"
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
