@@ -283,43 +283,24 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (base == NULL_TREE)
     return false;
 
-  /* The tree oracle doesn't like to have these.  */
-  if (TREE_CODE (base) == FUNCTION_DECL
-      || TREE_CODE (base) == LABEL_DECL)
-    return false;
-
-  /* If this is a pointer dereference of a non-SSA_NAME punt.
-     ???  We could replace it with a pointer to anything.  */
-  if ((INDIRECT_REF_P (base)
-       || TREE_CODE (base) == MEM_REF)
-      && TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME)
-    return false;
-  if (TREE_CODE (base) == TARGET_MEM_REF
-      && TMR_BASE (base)
-      && TREE_CODE (TMR_BASE (base)) != SSA_NAME)
+  /* The tree oracle doesn't like bases that are neither decls
+     nor indirect references of SSA names.  */
+  if (!(DECL_P (base)
+	|| (TREE_CODE (base) == MEM_REF
+	    && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	|| (TREE_CODE (base) == TARGET_MEM_REF
+	    && TREE_CODE (TMR_BASE (base)) == SSA_NAME)))
     return false;
 
   /* If this is a reference based on a partitioned decl replace the
-     base with an INDIRECT_REF of the pointer representative we
+     base with a MEM_REF of the pointer representative we
      created during stack slot partitioning.  */
   if (TREE_CODE (base) == VAR_DECL
-      && ! TREE_STATIC (base)
+      && ! is_global_var (base)
       && cfun->gimple_df->decls_to_pointers != NULL)
     {
       void *namep;
       namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers, base);
-      if (namep)
-	ref->base = build_simple_mem_ref (*(tree *)namep);
-    }
-  else if (TREE_CODE (base) == TARGET_MEM_REF
-	   && TREE_CODE (TMR_BASE (base)) == ADDR_EXPR
-	   && TREE_CODE (TREE_OPERAND (TMR_BASE (base), 0)) == VAR_DECL
-	   && ! TREE_STATIC (TREE_OPERAND (TMR_BASE (base), 0))
-	   && cfun->gimple_df->decls_to_pointers != NULL)
-    {
-      void *namep;
-      namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers,
-				    TREE_OPERAND (TMR_BASE (base), 0));
       if (namep)
 	ref->base = build_simple_mem_ref (*(tree *)namep);
     }

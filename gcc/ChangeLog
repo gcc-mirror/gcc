@@ -1,3 +1,9 @@
+2012-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54781
+	* alias.c (ao_ref_from_mem): More appropriately constrain the
+	base object we feed to the tree oracle.  Remove dead code.
+
 2012-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 
