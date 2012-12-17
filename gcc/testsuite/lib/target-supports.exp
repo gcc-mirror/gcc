@@ -3891,7 +3891,8 @@ proc check_effective_target_vect_multiple_sizes { } {
     global et_vect_multiple_sizes_saved
 
     set et_vect_multiple_sizes_saved 0
-    if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+    if { ([istarget aarch64*-*-*]
+	  || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])) } {
        set et_vect_multiple_sizes_saved 1
     }
     if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
