@@ -497,6 +497,7 @@ dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
 dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
+dependencies = { module=all-target-libgo; on=all-target-libatomic; };
 dependencies = { module=configure-target-libjava; on=configure-target-zlib; };
 dependencies = { module=configure-target-libjava; on=configure-target-boehm-gc; };
 dependencies = { module=configure-target-libjava; on=configure-target-libffi; };

@@ -111,6 +111,11 @@ proc go_link_flags { paths } {
           append flags "-L${gccpath}/libgo/.libs "
           append ld_library_path ":${gccpath}/libgo/.libs"
       }
+      if { [file exists "${gccpath}/libatomic/.libs/libatomic.a"] \
+	   || [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] } {
+          append flags "-L${gccpath}/libatomic/.libs "
+          append ld_library_path ":${gccpath}/libatomic/.libs"
+      }
       if [file exists "${gccpath}/libiberty/libiberty.a"] {
           append flags "-L${gccpath}/libiberty "
       }
