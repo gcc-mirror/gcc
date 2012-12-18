@@ -6382,8 +6382,6 @@ aarch64_simd_disambiguate_copy (rtx *operands, rtx *dest,
 int
 aarch64_simd_attr_length_move (rtx insn)
 {
-  rtx reg, mem, addr;
-  int load;
   enum machine_mode mode;
 
   extract_insn_cached (insn);
@@ -6666,7 +6664,6 @@ aarch64_split_compare_and_swap (rtx operands[])
 {
   rtx rval, mem, oldval, newval, scratch;
   enum machine_mode mode;
-  enum memmodel mod_s;
   bool is_weak;
   rtx label1, label2, x, cond;
 
@@ -6675,7 +6672,6 @@ aarch64_split_compare_and_swap (rtx operands[])
   oldval = operands[2];
   newval = operands[3];
   is_weak = (operands[4] != const0_rtx);
-  mod_s = (enum memmodel) INTVAL (operands[5]);
   scratch = operands[7];
   mode = GET_MODE (mem);
 
