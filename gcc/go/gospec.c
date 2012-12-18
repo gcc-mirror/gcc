@@ -45,9 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #define THREAD_LIBRARY "pthread"
 #define THREAD_LIBRARY_PROFILE THREAD_LIBRARY
 
-#define LIBATOMIC "atomic"
-#define LIBATOMIC_PROFILE LIBATOMIC
-
 #define LIBGO "go"
 #define LIBGO_PROFILE LIBGO
 #define LIBGOBEGIN "gobegin"
@@ -336,11 +333,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
       generate_option (OPT_l, saw_profile_flag ? LIBGO_PROFILE : LIBGO, 1,
 		       CL_DRIVER, &new_decoded_options[j]);
-      added_libraries++;
-      j++;
-
-      generate_option (OPT_l, saw_profile_flag ? LIBATOMIC_PROFILE : LIBATOMIC,
-		       1, CL_DRIVER, &new_decoded_options[j]);
       added_libraries++;
       j++;
 

@@ -1909,7 +1909,7 @@ libgo_la_LDFLAGS = \
 
 libgo_la_LIBADD = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
-	../libatomic/libatomic.la \
+	../libatomic/libatomic_convenience.la \
 	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \
@@ -1949,7 +1949,7 @@ GOTESTFLAGS =
 
 # Check a package.
 CHECK = \
-	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs -L `${PWD_COMMAND}`/../libatomic -L `${PWD_COMMAND}`/../libatomic/.libs"; \
+	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
 	GOLIBS="$(MATH_LIBS) $(NET_LIBS)"; \
 	export GOLIBS; \
@@ -1958,7 +1958,7 @@ CHECK = \
 	MAKE="$(MAKE)"; \
 	export MAKE; \
 	libgccdir=`${GOC} -print-libgcc-file-name | sed -e 's|/[^/]*$$||'`; \
-	LD_LIBRARY_PATH="`${PWD_COMMAND}`/.libs:`${PWD_COMMAND}`/../libatomic/.libs:$${libgccdir}:${LD_LIBRARY_PATH}"; \
+	LD_LIBRARY_PATH="`${PWD_COMMAND}`/.libs:$${libgccdir}:${LD_LIBRARY_PATH}"; \
 	LD_LIBRARY_PATH=`echo $${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LD_LIBRARY_PATH; \
 	$(MKDIR_P) $(@D); \
