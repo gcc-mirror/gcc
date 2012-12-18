@@ -133,6 +133,7 @@ loop_optimizer_finalize (void)
 			 | LOOPS_HAVE_PREHEADERS
 			 | LOOPS_HAVE_SIMPLE_LATCHES
 			 | LOOPS_HAVE_FALLTHRU_PREHEADERS);
+      loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
       goto loop_fini_done;
     }
 

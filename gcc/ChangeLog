@@ -1,5 +1,14 @@
 2012-12-18  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/54838
+	* cfgloopmanip.c (fix_loop_structure): Re-discover latch
+	edges first and mark loops for removal if no latch edges remain.
+	Properly re-create LOOPS_HAVE_FALLTHRU_PREHEADERS.
+	* loop-init.c (loop_optimizer_finalize): Set
+	LOOPS_MAY_HAVE_MULTIPLE_LATCHES.
+
+2012-12-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55555
 	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): Properly
 	analyze evolution of the index for the loop it is used in.
