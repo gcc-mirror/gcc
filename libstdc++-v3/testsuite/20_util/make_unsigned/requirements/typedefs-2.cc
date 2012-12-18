@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x -funsigned-char -fshort-enums" }
-// { dg-options "-std=gnu++0x -funsigned-char -fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux*eabi } }
+// { dg-options "-std=gnu++0x -funsigned-char -fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux*eabi* } }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //

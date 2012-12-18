@@ -340,7 +340,7 @@ case "${host}" in
         fi
     esac
     case "${host}" in
-      arm*-*-linux-*eabi)
+      arm*-*-linux-*eabi*)
 	port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
 	;;
     esac

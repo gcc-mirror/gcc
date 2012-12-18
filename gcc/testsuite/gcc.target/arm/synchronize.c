@@ -1,4 +1,4 @@
-/* { dg-final { scan-assembler "__sync_synchronize|dmb|mcr" { target arm*-*-linux-*eabi } } } */
+/* { dg-final { scan-assembler "__sync_synchronize|dmb|mcr" { target arm*-*-linux-*eabi* } } } */
 
 void *foo (void)
 {

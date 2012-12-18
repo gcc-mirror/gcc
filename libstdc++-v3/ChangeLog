@@ -1,3 +1,12 @@
+2012-12-18  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+
+	Backport from mainline
+	2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.host: Match arm*-*-linux-* for ARM Linux/GNU.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Likewise.
+
 2012-12-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/abi.xml: Update URLs for C++ ABI.

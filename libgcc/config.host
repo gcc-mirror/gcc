@@ -327,7 +327,7 @@ arm*-*-netbsdelf*)
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix"
 	case ${host} in
-	arm*-*-linux-*eabi)
+	arm*-*-linux-*eabi*)
 	  tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
 	  tm_file="$tm_file arm/bpabi-lib.h"
 	  unwind_header=config/arm/unwind-arm.h

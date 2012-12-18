@@ -1,3 +1,10 @@
+2012-12-18  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org
+
+	Backport from mainline.
+	2012-10-15  Matthias Klose  <doko@ubuntu.com>
+
+	* config.host: Match arm*-*-linux-* for ARM Linux/GNU.
+
 2012-12-17  Matthias Klose  <doko@ubuntu.com>
 
 	* config/arm/unwind-arm.h (__gnu_unwind_24bit): Mark parameters
