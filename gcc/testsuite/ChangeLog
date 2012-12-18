@@ -1,5 +1,9 @@
 2012-12-18  Richard Biener  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/reassoc-19.c: Adjust.
+
+2012-12-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55555
 	* gcc.dg/torture/pr55555.c: New testcase.
 	* gcc.dg/vect/vect-iv-11.c: Adjust.
