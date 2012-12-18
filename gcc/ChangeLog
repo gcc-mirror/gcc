@@ -1,3 +1,8 @@
+2012-12-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Update Kaveh Ghazi's entry;
+	remove broken link to Rutgers University.
+
 2012-12-17  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* varasm.c (pending_assemble_externals_processed): Guard
