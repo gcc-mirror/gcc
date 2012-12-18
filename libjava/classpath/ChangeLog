@@ -1,5 +1,6 @@
 2012-12-17  Andrew Haley  <aph@redhat.com>
 
+	PR gcc/55716
 	* tools/gnu/classpath/tools/javah/Main.java (parseClasses): Don't
 	scan inner classes if our item is a file.
 
