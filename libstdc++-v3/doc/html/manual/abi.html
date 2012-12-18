@@ -21,7 +21,7 @@
   virtual functions, etc. These details are defined as the compiler
   Application Binary Interface, or ABI. The GNU C++ compiler uses an
   industry-standard C++ ABI starting with version 3. Details can be
-  found in the <a class="link" href="http://www.codesourcery.com/public/cxx-abi/abi.html" target="_top">ABI
+  found in the <a class="link" href="http://mentorembedded.github.com/cxx-abi/abi.html" target="_top">ABI
   specification</a>.
 </p><p>
  The GNU C++ compiler, g++, has a compiler command line option to
@@ -293,7 +293,7 @@ class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of passing instances of this
 class in registers, the compiler will be forced to use memory. See the
-section on <a class="link" href="http://www.codesourcery.com/public/cxx-abi/abi.html#calls" target="_top">Function
+section on <a class="link" href="http://mentorembedded.github.com/cxx-abi/abi.html#calls" target="_top">Function
 Calling Conventions and APIs</a>
  of the C++ ABI documentation for further details.
 </p></li></ol></div></div><div class="section" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
@@ -491,42 +491,42 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 	  ABIcheck
 	</a>
       </em>. </span></p></div><div class="biblioentry" title="C++ ABI Summary"><a id="biblio.cxxabi"></a><p>[biblio.cxxabi] <span class="title"><em>
-	<a class="link" href="http://www.codesourcery.com/public/cxx-abi" target="_top">
+	<a class="link" href="http://www.codesourcery.com/cxx-abi/" target="_top">
 	  C++ ABI Summary
 	</a>
-      </em>. </span></p></div><div class="biblioentry" title="Intel Compilers for Linux Compatibility with the GNU Compilers"><a id="id738618"></a><p><span class="title"><em>
+      </em>. </span></p></div><div class="biblioentry" title="Intel Compilers for Linux Compatibility with the GNU Compilers"><a id="idp22905536"></a><p><span class="title"><em>
 	<a class="link" href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm" target="_top">
 	Intel Compilers for Linux Compatibility with the GNU Compilers
 	</a>
-      </em>. </span></p></div><div class="biblioentry" title="Linker and Libraries Guide (document 819-0690)"><a id="id738634"></a><p><span class="title"><em>
+      </em>. </span></p></div><div class="biblioentry" title="Linker and Libraries Guide (document 819-0690)"><a id="idp22907392"></a><p><span class="title"><em>
 	<a class="link" href="http://download.oracle.com/docs/cd/E19963-01/html/819-0690/index.html" target="_top">
 	Linker and Libraries Guide (document 819-0690)
 	</a>
-      </em>. </span></p></div><div class="biblioentry" title="Sun Studio 11: C++ Migration Guide (document 819-3689)"><a id="id738649"></a><p><span class="title"><em>
+      </em>. </span></p></div><div class="biblioentry" title="Sun Studio 11: C++ Migration Guide (document 819-3689)"><a id="idp22909232"></a><p><span class="title"><em>
 	<a class="link" href="http://download.oracle.com/docs/cd/E19422-01/819-3689/index.html" target="_top">
       Sun Studio 11: C++ Migration Guide (document 819-3689)
 	</a>
-      </em>. </span></p></div><div class="biblioentry" title="How to Write Shared Libraries"><a id="id738665"></a><p><span class="title"><em>
+      </em>. </span></p></div><div class="biblioentry" title="How to Write Shared Libraries"><a id="idp22911088"></a><p><span class="title"><em>
 	<a class="link" href="http://www.akkadia.org/drepper/dsohowto.pdf" target="_top">
       How to Write Shared Libraries
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry" title="C++ ABI for the ARM Architecture"><a id="id738693"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry" title="C++ ABI for the ARM Architecture"><a id="idp22914528"></a><p><span class="title"><em>
 	<a class="link" href="http://www.arm.com/miscPDFs/8033.pdf" target="_top">
       C++ ABI for the ARM Architecture
 	</a>
-      </em>. </span></p></div><div class="biblioentry" title="Dynamic Shared Objects: Survey and Issues"><a id="id738708"></a><p><span class="title"><em>
+      </em>. </span></p></div><div class="biblioentry" title="Dynamic Shared Objects: Survey and Issues"><a id="idp22916336"></a><p><span class="title"><em>
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" target="_top">
       Dynamic Shared Objects: Survey and Issues
 	</a>
       </em>. </span><span class="subtitle">
       ISO C++ J16/06-0046
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry" title="Versioning With Namespaces"><a id="id738736"></a><p><span class="title"><em>
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry" title="Versioning With Namespaces"><a id="idp22919632"></a><p><span class="title"><em>
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html" target="_top">
 	Versioning With Namespaces
 	</a>
       </em>. </span><span class="subtitle">
       ISO C++ J16/06-0083
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry" title="Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems"><a id="id738763"></a><p><span class="title"><em>
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry" title="Binary Compatibility of Shared Libraries Implemented in C++ on GNU/Linux Systems"><a id="idp22922912"></a><p><span class="title"><em>
 	<a class="link" href="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf" target="_top">
       Binary Compatibility of Shared Libraries Implemented in C++
       on GNU/Linux Systems

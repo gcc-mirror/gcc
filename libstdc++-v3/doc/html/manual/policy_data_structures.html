@@ -65,9 +65,7 @@
 	  Text <code class="function">modify</code> Up
 	</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#performance.priority_queue.text_modify_down">
 	  Text <code class="function">modify</code> Down
-	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.performance.observations">Observations</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.priority_queue">Priority_Queue</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_biblio.html">Acknowledgments</a></span></dt><dt><span class="bibliography"><a href="policy_data_structures.html#pbds.biblio">
-	Bibliography
-      </a></span></dt></dl></div><div class="section" title="Intro"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.intro"></a>Intro</h2></div></div></div><p>
+	</a></span></dt></dl></dd><dt><span class="section"><a href="policy_based_data_structures_test.html#pbds.test.performance.observations">Observations</a></span></dt><dd><dl><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.associative">Associative</a></span></dt><dt><span class="section"><a href="policy_based_data_structures_test.html#observations.priority_queue">Priority_Queue</a></span></dt></dl></dd></dl></dd></dl></dd><dt><span class="section"><a href="policy_data_structures_ack.html">Acknowledgments</a></span></dt><dt><span class="bibliography"><a href="policy_data_structures.html#pbds.biblio">Bibliography</a></span></dt></dl></div><div class="section" title="Intro"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pbds.intro"></a>Intro</h2></div></div></div><p>
       This is a library of policy-based elementary data structures:
       associative containers and priority queues. It is designed for
       high-performance, flexibility, semantic safety, and conformance to
@@ -251,7 +249,7 @@
 		these invariants, one must supply some policy that is aware
 		of these changes.  Without this, it would be better to use a
 		linked list (in itself very efficient for these purposes).
-	      </p></li></ol></div><div class="figure"><a id="id694708"></a><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_node_invariants.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /></div><div class="section" title="Underlying Data Structures"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
+	      </p></li></ol></div><div class="figure"><a id="idp17575248"></a><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_node_invariants.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /></div><div class="section" title="Underlying Data Structures"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
 	    The standard C++ library contains associative containers based on
 	    red-black trees and collision-chaining hash tables. These are
 	    very useful, but they are not ideal for all types of
@@ -259,7 +257,7 @@
 	  </p><p>
 	    The figure below shows the different underlying data structures
 	    currently supported in this library.
-	  </p><div class="figure"><a id="id694764"></a><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_1.png" align="middle" alt="Underlying Associative Data Structures" /></div></div></div><br class="figure-break" /><p>
+	  </p><div class="figure"><a id="idp17581968"></a><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_1.png" align="middle" alt="Underlying Associative Data Structures" /></div></div></div><br class="figure-break" /><p>
 	    A shows a collision-chaining hash-table, B shows a probing
 	    hash-table, C shows a red-black tree, D shows a splay tree, E shows
 	    a tree based on an ordered vector(implicit in the order of the
@@ -378,7 +376,7 @@
 	      no guarantee that the elements traversed will coincide with the
 	      <span class="emphasis"><em>logical</em></span> elements between 1 and 5, as in
 	      label B.
-	    </p><div class="figure"><a id="id695027"></a><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_1.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /><p>
+	    </p><div class="figure"><a id="idp17613664"></a><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_1.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /><p>
 	      In our opinion, this problem is not caused just because
 	      red-black trees are order preserving while
 	      collision-chaining hash tables are (generally) not - it
@@ -429,7 +427,7 @@
 	      list, as in the graphic below, label B.  Here the iterators are as
 	      light as can be, but the hash-table's operations are more
 	      complicated.
-	    </p><div class="figure"><a id="id695152"></a><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_2.png" align="middle" alt="Point Iteration in Hash Data Structures" /></div></div></div><br class="figure-break" /><p>
+	    </p><div class="figure"><a id="idp17628576"></a><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_2.png" align="middle" alt="Point Iteration in Hash Data Structures" /></div></div></div><br class="figure-break" /><p>
 	      It should be noted that containers based on collision-chaining
 	      hash-tables are not the only ones with this type of behavior;
 	      many other self-organizing data structures display it as well.
@@ -445,7 +443,7 @@
 	      container. The graphic below shows three cases: A1 and A2 show
 	      a red-black tree; B1 and B2 show a probing hash-table; C1 and C2
 	      show a collision-chaining hash table.
-	    </p><div class="figure"><a id="id695229"></a><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_invalidation_guarantee_erase.png" align="middle" alt="Effect of erase in different underlying data structures" /></div></div></div><br class="figure-break" /><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
+	    </p><div class="figure"><a id="idp17637776"></a><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_invalidation_guarantee_erase.png" align="middle" alt="Effect of erase in different underlying data structures" /></div></div></div><br class="figure-break" /><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
 		  Erasing 5 from A1 yields A2. Clearly, an iterator to 3 can
 		  be de-referenced and incremented. The sequence of iterators
 		  changed, but in a way that is well-defined by the interface.
@@ -681,7 +679,7 @@
 	    typically less structured than an associative container's tree;
 	    the third simply uses an associative container. These are
 	    shown in the figure below with labels A1 and A2, B, and C.
-	  </p><div class="figure"><a id="id695792"></a><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_2.png" align="middle" alt="Underlying Priority Queue Data Structures" /></div></div></div><br class="figure-break" /><p>
+	  </p><div class="figure"><a id="idp17705360"></a><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_2.png" align="middle" alt="Underlying Priority Queue Data Structures" /></div></div></div><br class="figure-break" /><p>
 	    No single implementation can completely replace any of the
 	    others. Some have better <code class="function">push</code>
 	    and <code class="function">pop</code> amortized performance, some have
@@ -773,9 +771,7 @@
 		<code class="classname">std::priority_queue</code>, however, this will generally
 		change the order of growth of the entire sequence of
 		operations.
-	      </p></li></ol></div></div></div></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.biblio"></a>
-	Bibliography
-      </h2></div></div></div><div class="biblioentry" title="STL Exception Handling Contract"><a id="biblio.abrahams97exception"></a><p>[biblio.abrahams97exception] <span class="title"><em>
+	      </p></li></ol></div></div></div></div></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h2 class="title"><a id="pbds.biblio"></a>Bibliography</h2></div></div></div><div class="biblioentry" title="STL Exception Handling Contract"><a id="biblio.abrahams97exception"></a><p>[biblio.abrahams97exception] <span class="title"><em>
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1075.pdf" target="_top">
 	  STL Exception Handling Contract
 	</a>
@@ -873,7 +869,7 @@
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Boost
 	. </span></span></p></div><div class="biblioentry" title="Worst-case efficient priority queues"><a id="biblio.brodal96priority"></a><p>[biblio.brodal96priority] <span class="title"><em>
-	<a class="link" href="http://portal.acm.org/citation.cfm?id=313883" target="_top">
+	<a class="link" href="https://dl.acm.org/citation.cfm?id=313883" target="_top">
 	  Worst-case efficient priority queues
 	</a>
       </em>. </span><span class="author"><span class="firstname">
@@ -1167,7 +1163,7 @@
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  Cambridge University Press
 	. </span></span></p></div><div class="biblioentry" title="COM: Component Model Object Technologies"><a id="biblio.mscom"></a><p>[biblio.mscom] <span class="title"><em>
-	<a class="link" href="http://www.microsoft.com/com" target="_top">
+	<a class="link" href="https://www.microsoft.com/com/" target="_top">
 	  COM: Component Model Object Technologies
 	</a>
       </em>. </span><span class="publisher"><span class="publishername">
@@ -1220,7 +1216,7 @@
 	    </span>. </span><span class="publisher"><span class="publishername">
 	  In Workshop on ML
 	. </span></span></p></div><div class="biblioentry" title="Standard Template Library Programmer's Guide"><a id="biblio.sgi_stl"></a><p>[biblio.sgi_stl] <span class="title"><em>
-	<a class="link" href="http://www.sgi.com/tech/stl" target="_top">
+	<a class="link" href="http://www.sgi.com/tech/stl/" target="_top">
 	  Standard Template Library Programmer's Guide
 	</a>
       </em>. </span><span class="author"><span class="firstname">
@@ -1230,7 +1226,7 @@
 	  </span>. </span><span class="publisher"><span class="publishername">
 	  SGI
 	. </span></span></p></div><div class="biblioentry" title="select"><a id="biblio.select_man"></a><p>[biblio.select_man] <span class="title"><em>
-	<a class="link" href="http://www.scit.wlv.ac.uk/cgi-bin/mansec?3C+select" target="_top">
+	<a class="link" href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html" target="_top">
 	  select
 	</a>
       </em>. </span></p></div><div class="biblioentry" title="Amortized Efficiency of List Update Problems"><a id="biblio.sleator84amortized"></a><p>[biblio.sleator84amortized] <span class="title"><em>

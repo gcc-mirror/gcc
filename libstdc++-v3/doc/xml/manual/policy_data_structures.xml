@@ -5073,6 +5073,7 @@
   <!-- S05: Reference/Acknowledgments -->
   <section xml:id="pbds.ack">
     <info><title>Acknowledgments</title></info>
+    <?dbhtml filename="policy_data_structures_ack.html"?>
 
     <para>
       Written by Ami Tavory and Vladimir Dreizin (IBM Haifa Research
