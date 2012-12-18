@@ -434,28 +434,26 @@ bitmap_and (sbitmap dst, const_sbitmap a, const_sbitmap b)
   const_sbitmap_ptr bp = b->elms;
   bool has_popcount = dst->popcount != NULL;
   unsigned char *popcountp = dst->popcount;
-  bool anychange = false;
+  SBITMAP_ELT_TYPE changed = 0;
 
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ & *bp++;
+      SBITMAP_ELT_TYPE wordchanged = *dstp ^ tmp;
       if (has_popcount)
 	{
-	  bool wordchanged = (*dstp ^ tmp) != 0;
 	  if (wordchanged)
-	    {
-	      *popcountp = do_popcount (tmp);
-	      anychange = true;
-	    }
+	    *popcountp = do_popcount (tmp);
 	  popcountp++;
 	}
       *dstp++ = tmp;
+      changed |= wordchanged;
     }
 #ifdef BITMAP_DEBUGGING
   if (has_popcount)
     sbitmap_verify_popcount (dst);
 #endif
-  return anychange;
+  return changed != 0;
 }
 
 /* Set DST to be (A xor B)).
@@ -470,28 +468,26 @@ bitmap_xor (sbitmap dst, const_sbitmap a, const_sbitmap b)
   const_sbitmap_ptr bp = b->elms;
   bool has_popcount = dst->popcount != NULL;
   unsigned char *popcountp = dst->popcount;
-  bool anychange = false;
+  SBITMAP_ELT_TYPE changed = 0;
 
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ ^ *bp++;
+      SBITMAP_ELT_TYPE wordchanged = *dstp ^ tmp;
       if (has_popcount)
 	{
-	  bool wordchanged = (*dstp ^ tmp) != 0;
 	  if (wordchanged)
-	    {
-	      *popcountp = do_popcount (tmp);
-	      anychange = true;
-	    }
+	    *popcountp = do_popcount (tmp);
 	  popcountp++;
 	}
       *dstp++ = tmp;
+      changed |= wordchanged;
     }
 #ifdef BITMAP_DEBUGGING
   if (has_popcount)
     sbitmap_verify_popcount (dst);
 #endif
-  return anychange;
+  return changed != 0;
 }
 
 /* Set DST to be (A or B)).
@@ -506,28 +502,26 @@ bitmap_ior (sbitmap dst, const_sbitmap a, const_sbitmap b)
   const_sbitmap_ptr bp = b->elms;
   bool has_popcount = dst->popcount != NULL;
   unsigned char *popcountp = dst->popcount;
-  bool anychange = false;
+  SBITMAP_ELT_TYPE changed = 0;
 
   for (i = 0; i < n; i++)
     {
       const SBITMAP_ELT_TYPE tmp = *ap++ | *bp++;
+      SBITMAP_ELT_TYPE wordchanged = *dstp ^ tmp;
       if (has_popcount)
 	{
-	  bool wordchanged = (*dstp ^ tmp) != 0;
 	  if (wordchanged)
-	    {
-	      *popcountp = do_popcount (tmp);
-	      anychange = true;
-	    }
+	    *popcountp = do_popcount (tmp);
 	  popcountp++;
 	}
       *dstp++ = tmp;
+      changed |= wordchanged;
     }
 #ifdef BITMAP_DEBUGGING
   if (has_popcount)
     sbitmap_verify_popcount (dst);
 #endif
-  return anychange;
+  return changed != 0;
 }
 
 /* Return nonzero if A is a subset of B.  */
