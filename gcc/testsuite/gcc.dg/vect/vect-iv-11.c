@@ -3,7 +3,8 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-int main1 (int len)
+int __attribute__((noinline,noclone))
+main1 (int len)
 {  
   int s = 0;
   int i = len;

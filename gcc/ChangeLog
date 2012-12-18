@@ -1,3 +1,24 @@
+2012-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55555
+	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): Properly
+	analyze evolution of the index for the loop it is used in.
+	* tree-scalar-evolution.c (instantiate_scev_name): Take
+	inner loop we will be creating a chrec for.  Generalize
+	fix for PR40281 and prune invalid SCEVs.
+	(instantiate_scev_poly): Likewise - pass down inner loop
+	we will be creating a chrec for.
+	(instantiate_scev_binary): Take and pass through inner loop.
+	(instantiate_array_ref): Likewise.
+	(instantiate_scev_convert): Likewise.
+	(instantiate_scev_not): Likewise.
+	(instantiate_scev_3): Likewise.
+	(instantiate_scev_2): Likewise.
+	(instantiate_scev_1): Likewise.
+	(instantiate_scev_r): Likewise.
+	(resolve_mixers): Adjust.
+	(instantiate_scev): Likewise.
+
 2012-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/55717
