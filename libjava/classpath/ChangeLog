@@ -1,3 +1,8 @@
+2012-12-17  Andrew Haley  <aph@redhat.com>
+
+	* tools/gnu/classpath/tools/javah/Main.java (parseClasses): Don't
+	scan inner classes if our item is a file.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.
