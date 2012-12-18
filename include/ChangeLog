@@ -1,3 +1,9 @@
+2012-12-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/54324
+	* ansidecl.h (ATTRIBUTE_UNUSED): Do not set __attribute__ for GCC
+	< 3.4.
+
 2012-11-09  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add
