@@ -1,12 +1,8 @@
 
- <!-- Policy Based Data Structures: Biblio -->
- <bibliography xml:id="pbds.biblio">
-    <info>
-      <title>
-	Bibliography
-      </title>
-    </info>
-    <?dbhtml filename="policy_data_structures_biblio.html"?>
+<!-- Policy Based Data Structures: Biblio -->
+<bibliography xmlns="http://docbook.org/ns/docbook" version="5.0"
+	      xml:id="pbds.biblio" xreflabel="Bibliography">
+    <info><title>Bibliography</title></info>
 
     <!-- 01 -->
     <biblioentry xml:id="biblio.abrahams97exception">

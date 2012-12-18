@@ -1,3 +1,19 @@
+2012-12-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/abi.xml: Update URLs for C++ ABI.
+	* doc/xml/manual/policy_data_structures_biblio.xml: Add xmlns
+	attribute.
+	* doc/xml/manual/debug_mode.xml: Give filenames to chunks.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/bitmap_allocator.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* doc/xml/manual/parallel_mode.xml: Likewise.
+	* doc/xml/manual/profile_mode.xml: Likewise.
+	* doc/xml/manual/spine.xml: Likewise. Update copyright years.
+	* doc/html/*: Regenerate.
+
 2012-12-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/future (__async_sfinae_helper): Remove.

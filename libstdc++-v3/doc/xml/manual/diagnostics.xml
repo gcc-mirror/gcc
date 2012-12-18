@@ -72,6 +72,7 @@
 </section>
 
 <section xml:id="std.diagnostics.concept_checking" xreflabel="Concept Checking"><info><title>Concept Checking</title></info>
+  <?dbhtml filename="concept_checking.html"?>
   
   <para>
     In 1999, SGI added <quote>concept checkers</quote> to their
