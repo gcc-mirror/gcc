@@ -210,6 +210,7 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 
 
 <section xml:id="manual.ext.profile_mode.design" xreflabel="Design"><info><title>Design</title></info>
+<?dbhtml filename="profile_mode_design.html"?>
   
 
 <para>
@@ -425,6 +426,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 </section>
 
 <section xml:id="manual.ext.profile_mode.api" xreflabel="API"><info><title>Extensions for Custom Containers</title></info>
+<?dbhtml filename="profile_mode_api.html"?>
 
 
   <para>
@@ -440,6 +442,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 
 
 <section xml:id="manual.ext.profile_mode.cost_model" xreflabel="Cost Model"><info><title>Empirical Cost Model</title></info>
+<?dbhtml filename="profile_mode_cost_model.html"?>
 
 
   <para>
@@ -465,6 +468,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 
 
 <section xml:id="manual.ext.profile_mode.implementation" xreflabel="Implementation"><info><title>Implementation Issues</title></info>
+<?dbhtml filename="profile_mode_impl.html"?>
 
 
 
@@ -557,6 +561,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 
 
 <section xml:id="manual.ext.profile_mode.developer" xreflabel="Developer Information"><info><title>Developer Information</title></info>
+<?dbhtml filename="profile_mode_devel.html"?>
 
 
 <section xml:id="manual.ext.profile_mode.developer.bigpic" xreflabel="Big Picture"><info><title>Big Picture</title></info>
@@ -660,6 +665,7 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 </section>
 
 <section xml:id="manual.ext.profile_mode.diagnostics"><info><title>Diagnostics</title></info>
+<?dbhtml filename="profile_mode_diagnostics.html"?>
 
 
   <para>

@@ -76,6 +76,7 @@ specific compiler flag.
 </section>
 
 <section xml:id="manual.ext.parallel_mode.semantics" xreflabel="Semantics"><info><title>Semantics</title></info>
+<?dbhtml filename="parallel_mode_semantics.html"?>
   
 
 <para> The parallel mode STL algorithms are currently not exception-safe,
@@ -93,6 +94,7 @@ It might work with other compilers, though.</para>
 </section>
 
 <section xml:id="manual.ext.parallel_mode.using" xreflabel="Using"><info><title>Using</title></info>
+<?dbhtml filename="parallel_mode_using.html"?>
   
 
 <section xml:id="parallel_mode.using.prereq_flags"><info><title>Prerequisite Compiler Flags</title></info>
@@ -457,6 +459,7 @@ flags for atomic operations.)
 </section>
 
 <section xml:id="manual.ext.parallel_mode.design" xreflabel="Design"><info><title>Design</title></info>
+<?dbhtml filename="parallel_mode_design.html"?>
   
   <para>
   </para>
@@ -783,6 +786,7 @@ the generated source documentation.
 </section>
 
 <section xml:id="manual.ext.parallel_mode.test" xreflabel="Testing"><info><title>Testing</title></info>
+<?dbhtml filename="parallel_mode_test.html"?>
   
 
   <para>
