@@ -840,8 +840,8 @@
 (define_insn "insv_imm<mode>"
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
 			  (const_int 16)
-			  (match_operand 1 "const_int_operand" "n"))
-	(match_operand 2 "const_int_operand" "n"))]
+			  (match_operand:GPI 1 "const_int_operand" "n"))
+	(match_operand:GPI 2 "const_int_operand" "n"))]
   "INTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
    && INTVAL (operands[1]) % 16 == 0
    && INTVAL (operands[2]) <= 0xffff"

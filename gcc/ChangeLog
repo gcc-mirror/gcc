@@ -1,5 +1,10 @@
 2012-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md (insv_imm<mode>): Add modes
+	for source operands.
+
+2012-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_simd_attr_length_move):
 	Remove unused variables.
 	(aarch64_split_compare_and_swap): Likewise.
