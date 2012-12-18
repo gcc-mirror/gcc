@@ -1,6 +1,12 @@
 2012-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR other/54324
+	* doc/install.texi (Tools/packages necessary for building GCC):
+	Suggest --disable-stage1-checking for older GCC's.
+
+2012-12-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/54324
 	* tree-ssa-coalesce.c (struct ssa_name_var_hash): Remove "union"
 	from template parameter.
 
