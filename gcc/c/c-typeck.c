@@ -5543,8 +5543,10 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
 	  || (target_cmp = comp_target_types (location, type, rhstype))
 	  || is_opaque_pointer
-	  || (c_common_unsigned_type (mvl)
-	      == c_common_unsigned_type (mvr)))
+	  || ((c_common_unsigned_type (mvl)
+	       == c_common_unsigned_type (mvr))
+	      && c_common_signed_type (mvl)
+		 == c_common_signed_type (mvr)))
 	{
 	  if (pedantic
 	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)
