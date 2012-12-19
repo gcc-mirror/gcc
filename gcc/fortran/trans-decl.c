@@ -1089,8 +1089,22 @@ gfc_create_string_length (gfc_symbol * sym)
       tree length;
       const char *name;
 
-      /* Also prefix the mangled name.  */
-      if (sym->module)
+      bool static_length = sym->attr.save
+			   || sym->ns->proc_name->attr.flavor == FL_MODULE
+			   || gfc_option.flag_max_stack_var_size == 0;
+
+      /* Also prefix the mangled name. We need to call GFC_PREFIX for static
+	 variables as some systems do not support the "." in the assembler name.
+	 For nonstatic variables, the "." does not appear in assembler.  */
+      if (static_length)
+	{
+	  if (sym->module)
+	    name = gfc_get_string (GFC_PREFIX ("%s_MOD_%s"), sym->module,
+				   sym->name);
+	  else
+	    name = gfc_get_string (GFC_PREFIX ("%s"), sym->name);
+	}
+      else if (sym->module)
 	name = gfc_get_string (".__%s_MOD_%s", sym->module, sym->name);
       else
 	name = gfc_get_string (".%s", sym->name);
@@ -1105,7 +1119,7 @@ gfc_create_string_length (gfc_symbol * sym)
 
       sym->ts.u.cl->backend_decl = length;
 
-      if (sym->attr.save || sym->ns->proc_name->attr.flavor == FL_MODULE)
+      if (static_length)
 	TREE_STATIC (length) = 1;
 
       if (sym->ns->proc_name->attr.flavor == FL_MODULE
@@ -3702,7 +3716,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    || (sym->ts.type == BT_CLASS
 			&& CLASS_DATA (sym)->attr.allocatable)))
 	{
-	  if (!sym->attr.save)
+	  if (!sym->attr.save && gfc_option.flag_max_stack_var_size != 0)
 	    {
 	      tree descriptor = NULL_TREE;
 
