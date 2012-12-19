@@ -46188,6 +46188,7 @@ all-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
 all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
+install-target-libgo: maybe-install-target-libatomic
 all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libtermcap
 configure-target-newlib: maybe-all-binutils
