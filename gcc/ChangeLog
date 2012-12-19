@@ -1,3 +1,8 @@
+2012-12-19  Matthias Klose  <doko@ubuntu.com>
+
+	* config/i386/t-kfreebsd (MULTIARCH_DIRNAME): Add comma to
+	separate arguments in make function.
+
 2012-12-19  Uros Bizjak  <ubizjak@gmail.com>
 	    Yuri Rumyantsev  <ysrumyan@gmail.com>
 
