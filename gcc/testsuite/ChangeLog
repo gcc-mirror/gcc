@@ -1,3 +1,8 @@
+2012-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/gomp/use_intrinsic_1.f90: Moved
+	to libgomp/testsuite/libgomp.fortran/use_intrinsic_1.f90.
+
 2012-12-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55736
