@@ -63,6 +63,15 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFIX(x) "_gfortran_" x
 #define PREFIX_LEN 10
 
+/* A prefix for internal variables, which are not user-visible.  */
+#if !defined (NO_DOT_IN_LABEL)
+# define GFC_PREFIX(x) "_F." x
+#elif !defined (NO_DOLLAR_IN_LABEL)
+# define GFC_PREFIX(x) "_F$" x
+#else
+# define GFC_PREFIX(x) "_F_" x
+#endif
+
 #define BLANK_COMMON_NAME "__BLNK__"
 
 /* Macro to initialize an mstring structure.  */
