@@ -2026,7 +2026,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
      regs instead of memory.  */
-  m_COREI7 | m_CORE2I7
+  m_COREI7 | m_CORE2I7,
+
+  /* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
+     a conditional move.  */
+  m_ATOM
 };
 
 /* Feature tests against the various architecture variations.  */
