@@ -87,7 +87,7 @@ public: // actually package-private
   ::java::util::Vector * __attribute__((aligned(__alignof__( ::java::lang::Object)))) solids;
   ::java::util::Vector * holes;
 private:
-  ::java::util::Vector * cc_intersections;
+  ::java::util::Vector * ccIntersections;
   jint windingRule;
 public:
   static ::java::lang::Class class$;

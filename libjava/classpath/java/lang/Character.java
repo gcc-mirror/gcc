@@ -4200,6 +4200,23 @@ public final class Character implements Serializable, Comparable<Character>
   }
 
   /**
+   * Compares two unboxed char values.
+   * The result is positive if the first is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   *
+   * @param x First value to compare.
+   * @param y Second value to compare.
+   *
+   * @return positive int if the first value is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   * @since 1.7
+   */
+  public static int compare(char x, char y)
+  {
+    return Character.valueOf(x).compareTo(Character.valueOf(y));
+  }
+
+  /**
    * Returns an <code>Character</code> object wrapping the value.
    * In contrast to the <code>Character</code> constructor, this method
    * will cache some values.  It is used by boxing conversion.

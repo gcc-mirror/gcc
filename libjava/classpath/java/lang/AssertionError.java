@@ -1,5 +1,5 @@
 /* AssertionError.java -- indication of a failed assertion
-   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -144,5 +144,17 @@ public class AssertionError extends Error
   public AssertionError(double msg)
   {
     super(Double.toString(msg));
+  }
+
+  /**
+   * Construct an AssertionError with detail message and cause.
+   *
+   * @param msg Detail message.
+   * @param cause The cause of this exception, may be null
+   * @since 1.7
+   */
+  public AssertionError(String msg, Throwable cause)
+  {
+    super(msg, cause);
   }
 }

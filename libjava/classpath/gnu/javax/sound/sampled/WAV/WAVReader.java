@@ -1,5 +1,5 @@
 /* WAVReader.java -- Read WAV files.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -128,7 +128,7 @@ public class WAVReader extends AudioFileReader
     boolean foundFmt = false;
     boolean foundData = false;
 
-    short compressionCode = 0, numberChannels = 0, blockAlign = 0, bitsPerSample = 0;
+    short compressionCode = 0, numberChannels = 0, bitsPerSample = 0;
     long sampleRate = 0, bytesPerSecond = 0;
     long chunkLength = 0;
 
@@ -144,7 +144,7 @@ public class WAVReader extends AudioFileReader
             numberChannels = readUnsignedShortLE(din);
             sampleRate = readUnsignedIntLE(din);
             bytesPerSecond = readUnsignedIntLE(din);
-            blockAlign = readUnsignedShortLE(din);
+            readUnsignedShortLE(din); // blockAlign
             bitsPerSample = readUnsignedShortLE(din);
             din.skip(chunkLength - 16);
             break;

@@ -36,7 +36,7 @@ dnl Modified to remove jikes by Andrew John Hughes on 2008-02-11
 
 AC_DEFUN_ONCE([AC_PROG_JAVAC],[
 AC_REQUIRE([AC_EXEEXT])dnl
-ECJ_OPTS="-warn:-deprecation,serial,unusedImport"
+ECJ_OPTS="-warn:-deprecation,serial,unusedImport,unusedPrivate,resource"
 JAVAC_OPTS="-Xlint:unchecked,cast,divzero,empty,finally,overrides"
 GCJ_OPTS="-g"
 if test "x$JAVAPREFIX" = x; then

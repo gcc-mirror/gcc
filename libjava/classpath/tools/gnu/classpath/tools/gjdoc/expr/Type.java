@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.expr.Type
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,9 +51,9 @@ class Type
    public static final Type STRING = new Type(String.class);
    public static final Type NULL = new Type(null);
 
-   private Class clazz;
+   private Class<?> clazz;
 
-   private Type(Class clazz)
+   private Type(Class<?> clazz)
    {
       this.clazz = clazz;
    }

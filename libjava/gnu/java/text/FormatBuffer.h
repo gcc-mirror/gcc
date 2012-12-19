@@ -36,7 +36,7 @@ class gnu::java::text::FormatBuffer : public ::java::lang::Object
 public:
   virtual void append(::java::lang::String *) = 0;
   virtual void append(::java::lang::String *, ::java::text::AttributedCharacterIterator$Attribute *) = 0;
-  virtual void append(::java::lang::String *, JArray< jint > *, JArray< ::java::util::HashMap * > *) = 0;
+  virtual void append(::java::lang::String *, JArray< jint > *, ::java::util::List *) = 0;
   virtual void append(jchar) = 0;
   virtual void append(jchar, ::java::text::AttributedCharacterIterator$Attribute *) = 0;
   virtual void setDefaultAttribute(::java::text::AttributedCharacterIterator$Attribute *) = 0;

@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.ClassDocProxy
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -155,13 +155,8 @@ public class ClassDocProxy implements ClassDoc, WritableType {
    }
 
    // Compares this Object with the specified Object for order.
-   public int compareTo(java.lang.Object o) {
-      if (o instanceof Doc) {
-         return Main.getInstance().getCollator().compare(name(), ((Doc)o).name());
-      }
-      else {
-         return 0;
-      }
+   public int compareTo(Doc d) {
+     return Main.getInstance().getCollator().compare(name(), d.name());
    }
 
    public TypeVariable[] typeParameters() { return new TypeVariable[0]; }

@@ -7,7 +7,7 @@
      Corporation, Norman Walsh, and the Organization for the Advancement
      of Structured Information Standards (OASIS).
 
-     $Id: dbcentx.mod,v 1.1 2008/05/27 19:26:05 jsumali Exp $
+     $Id: dbcentx.mod,v 1.1 2008-05-27 19:26:05 jsumali Exp $
 
      Permission to use, copy, modify and distribute the DocBook XML DTD
      and its accompanying documentation for any purpose and without fee

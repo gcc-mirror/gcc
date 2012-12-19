@@ -14,6 +14,7 @@ class java::lang::LinkageError : public ::java::lang::Error
 public:
   LinkageError();
   LinkageError(::java::lang::String *);
+  LinkageError(::java::lang::String *, ::java::lang::Throwable *);
 private:
   static const jlong serialVersionUID = 3579600108157160122LL;
 public:

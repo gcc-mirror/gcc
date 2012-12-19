@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.doclets.PackageMatcher
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ import com.sun.javadoc.PackageDoc;
  */
 public class PackageMatcher
 {
-   private Set patterns = new HashSet();
+   private Set<Pattern> patterns = new HashSet<Pattern>();
 
    /**
     *  Add a wildcard to be matched. Wildcards can contain asterisk
@@ -117,9 +117,9 @@ public class PackageMatcher
     *  array given will be put into the output list if it matches one
     *  or more of the wildcards added to this PackageMatcher before.
     */
-   public SortedSet filter(PackageDoc[] packageDocs)
+   public SortedSet<PackageDoc> filter(PackageDoc[] packageDocs)
    {
-      SortedSet result = new TreeSet();
+      SortedSet<PackageDoc> result = new TreeSet<PackageDoc>();
       for (int i=0; i<packageDocs.length; ++i) {
          if (match(packageDocs[i])) {
             result.add(packageDocs[i]);
@@ -134,9 +134,9 @@ public class PackageMatcher
     */
    public boolean match(PackageDoc packageDoc)
    {
-      Iterator it = patterns.iterator();
+      Iterator<Pattern> it = patterns.iterator();
       while (it.hasNext()) {
-         Pattern pattern = (Pattern)it.next();
+         Pattern pattern = it.next();
          Matcher matcher = pattern.matcher(packageDoc.name());
          if (matcher.matches()) {
             return true;

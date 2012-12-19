@@ -1,5 +1,5 @@
 /* Bidi.java -- Bidirectional Algorithm implementation
-   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -109,7 +109,7 @@ public final class Bidi
   // A list of indices where a formatting code was found.  These
   // are indicies into the original text -- not into the text after
   // the codes have been removed.
-  private ArrayList formatterIndices;
+  private ArrayList<Integer> formatterIndices;
 
   // Indices of the starts of runs in the text.
   private int[] runs;
@@ -161,13 +161,13 @@ public final class Bidi
     if (val instanceof NumericShaper)
       shaper = (NumericShaper) val;
 
-    char[] text = new char[iter.getEndIndex() - iter.getBeginIndex()];
-    this.embeddings = new byte[this.text.length];
-    this.embeddingOffset = 0;
-    this.length = text.length;
-    for (int i = 0; i < this.text.length; ++i)
+    text = new char[iter.getEndIndex() - iter.getBeginIndex()];
+    embeddings = new byte[text.length];
+    embeddingOffset = 0;
+    length = text.length;
+    for (int i = 0; i < text.length; ++i)
       {
-        this.text[i] = iter.current();
+        text[i] = iter.current();
 
         val = iter.getAttribute(TextAttribute.BIDI_EMBEDDING);
         if (val instanceof Integer)
@@ -178,13 +178,13 @@ public final class Bidi
               bval = 0;
             else
               bval = (byte) ival;
-            this.embeddings[i] = bval;
+            embeddings[i] = bval;
           }
       }
 
     // Invoke the numeric shaper, if specified.
     if (shaper != null)
-      shaper.shape(this.text, 0, this.length);
+      shaper.shape(text, 0, length);
 
     runBidi();
   }
@@ -404,7 +404,7 @@ public final class Bidi
           {
             // Mark this character for removal.
             if (formatterIndices == null)
-              formatterIndices = new ArrayList();
+              formatterIndices = new ArrayList<Integer>();
             formatterIndices.add(Integer.valueOf(i));
           }
         else if (directionalOverride != -1)
@@ -427,7 +427,7 @@ public final class Bidi
         if (i == size)
           nextFmt = length;
         else
-          nextFmt = ((Integer) formatterIndices.get(i)).intValue();
+          nextFmt = formatterIndices.get(i).intValue();
         // Non-formatter codes are from 'input' to 'nextFmt'.
         int len = nextFmt - input;
         System.arraycopy(levels, input, levels, output, len);
@@ -716,7 +716,7 @@ public final class Bidi
     // Process from the end as we are copying the array over itself here.
     for (int index = formatterIndices.size() - 1; index >= 0; --index)
       {
-        int nextFmt = ((Integer) formatterIndices.get(index)).intValue();
+        int nextFmt = formatterIndices.get(index).intValue();
 
         // nextFmt points to a location in the original array.  So,
         // nextFmt+1 is the target of our copying.  output is the location

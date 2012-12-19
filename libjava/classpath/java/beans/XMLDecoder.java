@@ -104,6 +104,7 @@ import java.util.NoSuchElementException;
  * @status updated to 1.5
  */
 public class XMLDecoder
+  implements AutoCloseable
 {
         private Object owner;
 

@@ -39,9 +39,6 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in texinfo.tex
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
-	$(top_srcdir)/../../config/lib-ld.m4 \
-	$(top_srcdir)/../../config/lib-link.m4 \
-	$(top_srcdir)/../../config/lib-prefix.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../config/override.m4 \
@@ -60,7 +57,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
 	$(top_srcdir)/m4/ax_func_which_gethostbyname_r.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs
@@ -245,6 +244,7 @@ MAKEINFO = @MAKEINFO@
 MKDIR = @MKDIR@
 MKDIR_P = @MKDIR_P@
 MOC = @MOC@
+MOC4 = @MOC4@
 MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
 MOZILLA_LIBS = @MOZILLA_LIBS@
 NM = @NM@
@@ -868,7 +868,8 @@ maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-recursive
 
-clean-am: clean-aminfo clean-generic clean-libtool mostlyclean-am
+clean-am: clean-aminfo clean-generic clean-libtool clean-local \
+	mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f Makefile
@@ -1018,10 +1019,10 @@ uninstall-man: uninstall-man1
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am all-local check check-am clean clean-aminfo \
-	clean-generic clean-libtool ctags ctags-recursive dist-info \
-	distclean distclean-generic distclean-libtool distclean-tags \
-	distdir dvi dvi-am html html-am info info-am install \
-	install-am install-data install-data-am install-dvi \
+	clean-generic clean-libtool clean-local ctags ctags-recursive \
+	dist-info distclean distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-man1 install-pdf install-pdf-am install-ps \
@@ -1034,8 +1035,9 @@ uninstall-man: uninstall-man1
 	uninstall-man uninstall-man1 uninstall-pdf-am uninstall-ps-am
 
 
+# POSIX locale necessary to make grep work; see http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=586134
 .texinfo.dvi:
-	texi2dvi $<
+	LC_ALL=POSIX texi2dvi --build-dir=$(builddir) -o $@ $<
 
 .dvi.ps:
 	dvips -o $@ $<
@@ -1112,6 +1114,9 @@ stamp-geninsrc: $(TOOLS_MANFILES) cp-tools.info
 	-cp -p gtnameserv.1 $(srcdir)/gtnameserv.1
 	-cp -p cp-tools.info $(srcdir)/cp-tools.info
 	touch $@
+
+clean-local:
+	-rm -rf *.t2d
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

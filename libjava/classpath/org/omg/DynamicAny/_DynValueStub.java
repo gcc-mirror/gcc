@@ -68,7 +68,7 @@ public class _DynValueStub
   /**
    * The purpose and value of this field are not documented.
    */
-  @SuppressWarnings("unchecked") // Needed for API compatibility
+  @SuppressWarnings("rawtypes") // Needed for API compatibility
   public static final Class _opsClass = DynValueOperations.class;
 
   /**

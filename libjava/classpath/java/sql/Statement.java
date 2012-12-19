@@ -44,6 +44,7 @@ package java.sql;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public interface Statement
+  extends AutoCloseable
 {
   int CLOSE_CURRENT_RESULT = 1;
   int KEEP_CURRENT_RESULT = 2;

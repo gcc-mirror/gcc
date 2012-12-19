@@ -586,6 +586,23 @@ public final class Integer extends Number implements Comparable<Integer>
   }
 
   /**
+   * Compares two unboxed int values.
+   * The result is positive if the first is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   *
+   * @param x First value to compare.
+   * @param y Second value to compare.
+   *
+   * @return positive int if the first value is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   * @since 1.7
+   */
+  public static int compare(int x, int y)
+  {
+    return Integer.valueOf(x).compareTo(Integer.valueOf(y));
+  }
+
+  /**
    * Return the number of bits set in x.
    * @param x value to examine
    * @since 1.5

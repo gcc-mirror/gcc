@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.RootDocImpl
-   Copyright (C) 2001, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2007, 2012 Free Software Foundation, Inc.
 
    This file is part of GNU Classpath.
 
@@ -409,11 +409,11 @@ public class RootDocImpl
       }
    }
 
-   List findSourceFiles(String relPath) {
+   List<File> findSourceFiles(String relPath) {
 
-      List result = new LinkedList();
-      for (Iterator it = sourcePath.iterator(); it.hasNext(); ) {
-         File path = (File)it.next();
+      List<File> result = new LinkedList<File>();
+      for (Iterator<File> it = sourcePath.iterator(); it.hasNext(); ) {
+         File path = it.next();
          File file = new File(path, relPath);
          if (file.exists()) {
             result.add(file);
