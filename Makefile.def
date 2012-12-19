@@ -514,6 +514,8 @@ dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v
 //  recursive make, we can't be that specific.
 dependencies = { module=all-target-libstdc++-v3; on=configure-target-libgomp; };
 
+dependencies = { module=install-target-libgo; on=install-target-libatomic; };
+
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=libtermcap; };
 lang_env_dependencies = { module=rda; };
