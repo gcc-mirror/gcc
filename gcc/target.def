@@ -2877,6 +2877,14 @@ DEFHOOK
  enum unwind_info_type, (void),
  default_debug_unwind_info)
 
+/* The code parameter should be of type enum rtx_code but this is not
+   defined at this time.  */
+DEFHOOK
+(canonicalize_comparison,
+ "",
+ void, (int *code, rtx *op0, rtx *op1, bool op0_preserve_value),
+ default_canonicalize_comparison)
+
 DEFHOOKPOD
 (atomic_test_and_set_trueval,
  "This value should be set if the result written by\

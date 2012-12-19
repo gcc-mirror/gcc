@@ -6024,25 +6024,27 @@ You should define this macro if and only if you define extra CC modes
 in @file{@var{machine}-modes.def}.
 @end defmac
 
-@defmac CANONICALIZE_COMPARISON (@var{code}, @var{op0}, @var{op1})
+@deftypefn {Target Hook} void TARGET_CANONICALIZE_COMPARISON (int *@var{code}, rtx *@var{op0}, rtx *@var{op1}, bool @var{op0_preserve_value}) (@var{code}, @var{op0}, @var{op1}, @var{op0_preserve_value})
 On some machines not all possible comparisons are defined, but you can
 convert an invalid comparison into a valid one.  For example, the Alpha
 does not have a @code{GT} comparison, but you can use an @code{LT}
 comparison instead and swap the order of the operands.
 
-On such machines, define this macro to be a C statement to do any
-required conversions.  @var{code} is the initial comparison code
-and @var{op0} and @var{op1} are the left and right operands of the
-comparison, respectively.  You should modify @var{code}, @var{op0}, and
-@var{op1} as required.
+On such machines, implement this hook to do any required conversions.
+@var{code} is the initial comparison code and @var{op0} and @var{op1}
+are the left and right operands of the comparison, respectively.  If
+@var{op0_preserve_value} is @code{true} the implementation is not
+allowed to change the value of @var{op0} since the value might be used
+in RTXs which aren't comparisons.  E.g. the implementation is not
+allowed to swap operands in that case.
 
 GCC will not assume that the comparison resulting from this macro is
 valid but will see if the resulting insn matches a pattern in the
 @file{md} file.
 
-You need not define this macro if it would never change the comparison
-code or operands.
-@end defmac
+You need not to implement this hook if it would never change the
+comparison code or operands.
+@end deftypefn
 
 @defmac REVERSIBLE_CC_MODE (@var{mode})
 A C expression whose value is one if it is always safe to reverse a

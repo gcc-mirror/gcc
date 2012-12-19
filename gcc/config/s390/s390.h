@@ -720,10 +720,6 @@ do {									\
    return the mode to be used for the comparison.  */
 #define SELECT_CC_MODE(OP, X, Y) s390_select_ccmode ((OP), (X), (Y))
 
-/* Canonicalize a comparison from one we don't have to one we do have.  */
-#define CANONICALIZE_COMPARISON(CODE, OP0, OP1) \
-  s390_canonicalize_comparison (&(CODE), &(OP0), &(OP1))
-
 /* Relative costs of operations.  */
 
 /* A C expression for the cost of a branch instruction.  A value of 1

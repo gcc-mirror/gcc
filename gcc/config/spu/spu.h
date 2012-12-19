@@ -520,18 +520,6 @@ do {									\
 
 #define NO_IMPLICIT_EXTERN_C 1
 
-/* Canonicalize a comparison from one we don't have to one we do have.  */
-#define CANONICALIZE_COMPARISON(CODE,OP0,OP1) \
-  do {                                                                    \
-    if (((CODE) == LE || (CODE) == LT || (CODE) == LEU || (CODE) == LTU)) \
-      {                                                                   \
-        rtx tem = (OP0);                                                  \
-        (OP0) = (OP1);                                                    \
-        (OP1) = tem;                                                      \
-        (CODE) = swap_condition (CODE);                                   \
-      }                                                                   \
-  } while (0)
-
 
 /* Address spaces.  */
 #define ADDR_SPACE_EA	1

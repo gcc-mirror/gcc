@@ -2078,9 +2078,6 @@ extern int making_const_table;
    ? reverse_condition_maybe_unordered (code) \
    : reverse_condition (code))
 
-#define CANONICALIZE_COMPARISON(CODE, OP0, OP1)				\
-  (CODE) = arm_canonicalize_comparison (CODE, &(OP0), &(OP1))
-
 /* The arm5 clz instruction returns 32.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)

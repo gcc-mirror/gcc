@@ -1,3 +1,42 @@
+2012-12-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* target.def: Define canonicalize_comparison hook.
+	* targhooks.h (default_canonicalize_comparison): New prototype.
+	* targhooks.c (default_canonicalize_comparison): New function.
+	* doc/tm.texi: Add documentation for the new target hook.
+	* doc/tm.texi.in: Likewise.
+	* combine.c (try_combine): Adjust to use the target hook.
+	* config/alpha/alpha.h (CANONICALIZE_COMPARISON): Remove macro
+	definition.
+	* config/alpha/alpha.c (alpha_canonicalize_comparison): New
+	function.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/arm/arm-protos.h (arm_canonicalize_comparison): Remove
+	prototype.
+	* config/arm/arm.c (arm_canonicalize_comparison): Add new
+	parameter.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/arm/arm.h (CANONICALIZE_COMPARISON): Remove macro
+	definition.
+	* config/s390/s390-protos.h (s390_canonicalize_comparison): Remove
+	prototype.
+	* config/s390/s390.c (s390_canonicalize_comparison): Add new
+	parameter.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/s390/s390.h (CANONICALIZE_COMPARISON): Remove macro
+	definition.
+	* config/sh/sh-protos.h (sh_canonicalize_comparison): Remove
+	prototype.
+	* config/sh/sh.c (sh_canonicalize_comparison): Add new prototype.  New
+	function overloading the old one.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/sh/sh.h (CANONICALIZE_COMPARISON): Remove macro
+	definition.
+	* config/spu/spu.c (spu_canonicalize_comparison): New function.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/spu/spu.h (CANONICALIZE_COMPARISON): Remove macro
+	definition.
+
 2012-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/55730

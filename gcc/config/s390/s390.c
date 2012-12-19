@@ -745,9 +745,13 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 /* Replace the comparison OP0 CODE OP1 by a semantically equivalent one
    that we can implement more efficiently.  */
 
-void
-s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
+static void
+s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			      bool op0_preserve_value)
 {
+  if (op0_preserve_value)
+    return;
+
   /* Convert ZERO_EXTRACT back to AND to enable TM patterns.  */
   if ((*code == EQ || *code == NE)
       && *op1 == const0_rtx
@@ -894,7 +898,7 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
   if (MEM_P (*op0) && REG_P (*op1))
     {
       rtx tem = *op0; *op0 = *op1; *op1 = tem;
-      *code = swap_condition (*code);
+      *code = (int)swap_condition ((enum rtx_code)*code);
     }
 }
 
@@ -11070,6 +11074,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE s390_unwind_word_mode
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON s390_canonicalize_comparison
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

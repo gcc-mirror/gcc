@@ -7095,6 +7095,20 @@ spu_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   final_end_function ();
 }
 
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+static void
+spu_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			     bool op0_preserve_value)
+{
+  if (!op0_preserve_value
+      && (*code == LE || *code == LT || *code == LEU || *code == LTU))
+    {
+      rtx tem = *op0;
+      *op0 = *op1;
+      *op1 = tem;
+      *code = (int)swap_condition ((enum rtx_code)*code);
+    }
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7307,6 +7321,9 @@ static const struct attribute_spec spu_attribute_table[] =
    change order of insns.  It also needs a valid CFG.  */
 #undef TARGET_DELAY_VARTRACK
 #define TARGET_DELAY_VARTRACK true
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON spu_canonicalize_comparison
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
