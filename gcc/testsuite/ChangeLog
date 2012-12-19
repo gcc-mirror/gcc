@@ -1,3 +1,8 @@
+2012-12-18  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55683
+	* g++.dg/ipa/devirt-9.C: New testcase.
+
 2012-12-19  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/thumb-find-work-register.c: New.

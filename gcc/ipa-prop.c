@@ -2223,8 +2223,15 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   binfo = ipa_value_from_jfunc (new_root_info, jfunc);
 
-  if (!binfo || TREE_CODE (binfo) != TREE_BINFO)
+  if (!binfo)
     return NULL;
+
+  if (TREE_CODE (binfo) != TREE_BINFO)
+    {
+      binfo = gimple_extract_devirt_binfo_from_cst (binfo);
+      if (!binfo)
+        return NULL;
+    }
 
   binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
 			       ie->indirect_info->otr_type);
