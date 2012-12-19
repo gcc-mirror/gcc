@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.DocImpl
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,8 +71,8 @@ public abstract class DocImpl implements Doc, TagContainer {
    }
 
    // Compares this Object with the specified Object for order.
-   public int compareTo(java.lang.Object o) {
-      return Main.getInstance().getCollator().compare(name(), ((Doc)o).name());
+   public int compareTo(Doc d) {
+      return Main.getInstance().getCollator().compare(name(), d.name());
    }
 
    // Return the first sentence of the comment as tags.

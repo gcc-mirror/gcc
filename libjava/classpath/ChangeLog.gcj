@@ -1,3 +1,8 @@
+2012-12-03  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac (AM_INIT_AUTOMAKE): Call with no-dist.
+	* m4/lib-ld.m4, m4/lib-link.m4,m4/lib-prefix.m4: New.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.

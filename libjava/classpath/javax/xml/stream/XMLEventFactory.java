@@ -223,7 +223,7 @@ public abstract class XMLEventFactory
   /**
    * Create a start-element event.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public abstract StartElement createStartElement(QName name,
                                                   Iterator attributes,
                                                   Iterator namespaces);
@@ -238,7 +238,7 @@ public abstract class XMLEventFactory
   /**
    * Create a start-element event.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public abstract StartElement createStartElement(String prefix,
                                                   String namespaceUri,
                                                   String localName,
@@ -248,7 +248,7 @@ public abstract class XMLEventFactory
   /**
    * Create a start-element event.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public abstract StartElement createStartElement(String prefix,
                                                   String namespaceUri,
                                                   String localName,
@@ -259,7 +259,7 @@ public abstract class XMLEventFactory
   /**
    * Create an end-element event.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public abstract EndElement createEndElement(QName name,
                                               Iterator namespaces);
 
@@ -273,7 +273,7 @@ public abstract class XMLEventFactory
   /**
    * Create an end-element event.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public abstract EndElement createEndElement(String prefix,
                                               String namespaceUri,
                                               String localName,

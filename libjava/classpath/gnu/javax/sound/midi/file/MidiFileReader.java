@@ -1,5 +1,5 @@
 /* MidiFileReader.java -- Read MIDI files.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -198,7 +198,7 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
         int Mtrk = din.readInt();
         if (Mtrk != 0x4d54726b)
           throw new InvalidMidiDataException("Invalid MIDI track header.");
-        int length = din.readInt();
+        din.readInt(); // length
 
         int runningStatus = -1;
         int click = 0;

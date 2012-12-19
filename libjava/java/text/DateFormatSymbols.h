@@ -16,6 +16,7 @@ extern "Java"
     namespace text
     {
         class DateFormatSymbols;
+        class DateFormatSymbols$DFSData;
     }
   }
 }
@@ -25,8 +26,10 @@ class java::text::DateFormatSymbols : public ::java::lang::Object
 
   static JArray< ::java::lang::String * > * getStringArray(::java::util::List *, ::java::lang::String *, jint);
   static JArray< ::java::lang::String * > * getStringArray(::java::util::List *, ::java::lang::String *, jint, JArray< ::java::lang::String * > *);
-  JArray< JArray< ::java::lang::String * > * > * getZoneStrings(::java::util::ResourceBundle *, ::java::util::Locale *);
-  JArray< ::java::lang::String * > * formatsForKey(::java::util::ResourceBundle *, ::java::lang::String *);
+  static JArray< JArray< ::java::lang::String * > * > * getZoneStrings(::java::util::List *, ::java::util::Locale *);
+  static JArray< ::java::lang::String * > * formatsForKey(::java::util::List *, ::java::lang::String *);
+  static ::java::lang::String * getString(::java::util::List *, ::java::lang::String *);
+  static ::java::text::DateFormatSymbols$DFSData * retrieveData(::java::util::Locale *);
 public:
   DateFormatSymbols(::java::util::Locale *);
   DateFormatSymbols();
@@ -55,6 +58,11 @@ public:
   virtual jint hashCode();
   static ::java::text::DateFormatSymbols * getInstance();
   static ::java::text::DateFormatSymbols * getInstance(::java::util::Locale *);
+private:
+  static ::java::util::Properties * properties;
+  static ::java::util::regex::Pattern * ZONE_SEP;
+  static ::java::util::regex::Pattern * FIELD_SEP;
+  static ::java::util::concurrent::ConcurrentMap * dataCache;
 public: // actually package-private
   JArray< ::java::lang::String * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) ampms;
   JArray< ::java::lang::String * > * eras;
@@ -66,7 +74,6 @@ public: // actually package-private
   JArray< ::java::lang::String * > * shortWeekdays;
   JArray< ::java::lang::String * > * weekdays;
 private:
-  static ::java::util::Properties * properties;
   JArray< JArray< ::java::lang::String * > * > * runtimeZoneStrings;
   JArray< JArray< ::java::lang::String * > * > * zoneStrings;
   static const jlong serialVersionUID = -5987973545549424702LL;

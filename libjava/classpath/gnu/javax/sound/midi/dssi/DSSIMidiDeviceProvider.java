@@ -1,5 +1,5 @@
 /* DSSIMidiDeviceProvider.java -- DSSI Device Provider
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -69,13 +69,16 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
    */
   private static class DSSIInfo extends Info
   {
+    String copyright;
     String soname;
     long index;
 
-    public DSSIInfo(String name, String vendor, String description,
-                    String version, String soname, long index)
+    public DSSIInfo(String name, String vendor, String label,
+                    String copyright, String version,
+                    String soname, long index)
     {
-      super(name, vendor, description, version);
+      super(name, vendor, label, version);
+      this.copyright = copyright;
       this.soname = soname;
       this.index = index;
     }
@@ -89,9 +92,9 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
   static native String getDSSIVendor_(long handle);
   static native String getDSSILabel_(long handle);
 
-  private static List examineLibrary(String soname)
+  private static List<DSSIInfo> examineLibrary(String soname)
   {
-     List list = new ArrayList();
+     List<DSSIInfo> list = new ArrayList<DSSIInfo>();
      long index = 0;
      long handle;
 
@@ -107,7 +110,7 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
        String copyright = getDSSICopyright_(handle);
        String label = getDSSIName_(handle);
        String vendor = getDSSIVendor_(handle);
-       list.add(new DSSIInfo(name, vendor, label,
+       list.add(new DSSIInfo(name, vendor, label, copyright,
                              "DSSI-1", soname, index));
        index++;
      } while (true);
@@ -133,10 +136,10 @@ public class DSSIMidiDeviceProvider extends MidiDeviceProvider
                                         return n.endsWith(".so");
                                       }
                                     });
-    List ilist = new ArrayList();
+    List<DSSIInfo> ilist = new ArrayList<DSSIInfo>();
     for (int i = 0; i < sofiles.length; i++)
       ilist.addAll(examineLibrary(new File(dssidir, sofiles[i]).getAbsolutePath()));
-    infos = (DSSIInfo[]) ilist.toArray(new DSSIInfo[ilist.size()]);
+    infos = ilist.toArray(new DSSIInfo[ilist.size()]);
   }
 
   public DSSIMidiDeviceProvider()

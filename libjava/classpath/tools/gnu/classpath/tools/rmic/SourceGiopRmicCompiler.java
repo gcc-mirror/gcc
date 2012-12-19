@@ -1,5 +1,5 @@
 /* SourceGiopRmicCompiler -- Central GIOP-based RMI stub and tie compiler class.
-   Copyright (C) 2006, 2008 Free Software Foundation
+   Copyright (C) 2006, 2008, 2012 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.util.TreeSet;
  * @author Audrius Meskauskas, Lithuania (audriusa@Bioinformatics.org)
  */
 public class SourceGiopRmicCompiler
-  extends Generator implements Comparator, RmicBackend
+  extends Generator implements Comparator<AbstractMethodGenerator>, RmicBackend
 {
   /** The package name. */
   protected String packag;
@@ -74,17 +74,18 @@ public class SourceGiopRmicCompiler
   /**
    * The Remote's, implemented by this class.
    */
-  protected Collection implementedRemotes = new HashSet();
+  protected Collection<Class<?>> implementedRemotes = new HashSet<Class<?>>();
 
   /**
    * The extra classes that must be imported.
    */
-  protected Collection extraImports = new HashSet();
+  protected Collection<String> extraImports = new HashSet<String>();
 
   /**
    * The methods we must implement.
    */
-  protected Collection methods = new HashSet();
+  protected Collection<AbstractMethodGenerator> methods =
+    new HashSet<AbstractMethodGenerator>();
 
   /**
    * The map of all code generator variables.
@@ -228,7 +229,7 @@ public class SourceGiopRmicCompiler
    * @param remote
    *          the class to compile.
    */
-  public synchronized void compile(Class remote)
+  public synchronized void compile(Class<?> remote)
   {
     reset();
     String s;
@@ -261,7 +262,7 @@ public class SourceGiopRmicCompiler
                          + implName);
 
     // Get the implemented remotes.
-    Class[] interfaces = remote.getInterfaces();
+    Class<?>[] interfaces = remote.getInterfaces();
 
     for (int i = 0; i < interfaces.length; i++)
       {
@@ -277,11 +278,11 @@ public class SourceGiopRmicCompiler
     vars.put("#idList", getIdList(implementedRemotes));
 
     // Collect and process methods.
-    Iterator iter = implementedRemotes.iterator();
+    Iterator<Class<?>> iter = implementedRemotes.iterator();
 
     while (iter.hasNext())
       {
-        Class c = (Class) iter.next();
+        Class<?> c = iter.next();
         Method[] m = c.getMethods();
 
         // Check if throws RemoteException.
@@ -374,7 +375,7 @@ public class SourceGiopRmicCompiler
    *          the interface, for that the repository Id must be created.
    * @return the repository id
    */
-  public String getId(Class c)
+  public String getId(Class<?> c)
   {
     return "RMI:" + c.getName() + ":0000000000000000";
   }
@@ -386,25 +387,25 @@ public class SourceGiopRmicCompiler
    *          the collection of interfaces
    * @return the fully formatted string array.
    */
-  public String getIdList(Collection remotes)
+  public String getIdList(Collection<Class<?>> remotes)
   {
     StringBuilder b = new StringBuilder();
 
     // Keep the Ids sorted, ensuring, that the same order will be preserved
     // between compilations.
-    TreeSet sortedIds = new TreeSet();
+    TreeSet<String> sortedIds = new TreeSet<String>();
 
-    Iterator iter = remotes.iterator();
+    Iterator<Class<?>> iter = remotes.iterator();
     while (iter.hasNext())
       {
-        sortedIds.add(getId((Class) iter.next()));
+        sortedIds.add(getId(iter.next()));
       }
 
-    iter = sortedIds.iterator();
-    while (iter.hasNext())
+    Iterator<String> iterIds = sortedIds.iterator();
+    while (iterIds.hasNext())
       {
-        b.append("      \"" + iter.next() + "\"");
-        if (iter.hasNext())
+        b.append("      \"" + iterIds.next() + "\"");
+        if (iterIds.hasNext())
           b.append(", \n");
       }
     return b.toString();
@@ -421,10 +422,10 @@ public class SourceGiopRmicCompiler
 
     // Generate methods.
     StringBuilder b = new StringBuilder();
-    Iterator iter = methods.iterator();
+    Iterator<AbstractMethodGenerator> iter = methods.iterator();
     while (iter.hasNext())
       {
-        AbstractMethodGenerator m = (AbstractMethodGenerator) iter.next();
+        AbstractMethodGenerator m = iter.next();
         b.append(m.generateStubMethod());
       }
 
@@ -474,7 +475,7 @@ public class SourceGiopRmicCompiler
     HashFinder hashFinder = new HashFinder();
 
     // Find the hash character position:
-    Iterator iter = methods.iterator();
+    Iterator<AbstractMethodGenerator> iter = methods.iterator();
     String[] names = new String[methods.size()];
     int p = 0;
 
@@ -489,7 +490,8 @@ public class SourceGiopRmicCompiler
 
     vars.put("#hashCharPos", Integer.toString(hashCharPosition));
 
-    ArrayList sortedMethods = new ArrayList(methods);
+    ArrayList<AbstractMethodGenerator> sortedMethods =
+      new ArrayList<AbstractMethodGenerator>(methods);
     Collections.sort(sortedMethods, this);
 
     iter = sortedMethods.iterator();
@@ -515,10 +517,10 @@ public class SourceGiopRmicCompiler
     return output;
   }
 
-  public int compare(Object a, Object b)
+  public int compare(AbstractMethodGenerator ag1, AbstractMethodGenerator ag2)
   {
-    MethodGenerator g1 = (MethodGenerator) a;
-    MethodGenerator g2 = (MethodGenerator) b;
+    MethodGenerator g1 = (MethodGenerator) ag1;
+    MethodGenerator g2 = (MethodGenerator) ag2;
 
     return g1.getHashChar() - g2.getHashChar();
   }
@@ -530,12 +532,12 @@ public class SourceGiopRmicCompiler
    */
   protected String getImportStatements()
   {
-    TreeSet imp = new TreeSet();
+    TreeSet<String> imp = new TreeSet<String>();
 
-    Iterator it = extraImports.iterator();
+    Iterator<String> it = extraImports.iterator();
     while (it.hasNext())
       {
-        String ic = it.next().toString();
+        String ic = it.next();
         imp.add("import " + ic + ";\n");
       }
 

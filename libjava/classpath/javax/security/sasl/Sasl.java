@@ -265,6 +265,16 @@ public class Sasl
    */
   public static final String REUSE = "javax.security.sasl.reuse";
 
+  /**
+   * <p>The name of a property which specifies the credentials to use.
+   * The value of the property is a mechanism-specific object which can
+   * be used to supply credentials to a mechanism which provides delegated
+   * authentication.</p>
+   *
+   * <p>The value of this constant is <code>"javax.security.sasl.credentials"</code>.</p>
+   */
+  public static final String CREDENTIALS = "javax.security.sasl.credentials";
+
   private static final String CLIENT_FACTORY_SVC = "SaslClientFactory.";
   private static final String SERVER_FACTORY_SVC = "SaslServerFactory.";
   private static final String ALIAS = "Alg.Alias.";

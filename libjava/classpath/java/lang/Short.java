@@ -373,6 +373,23 @@ public final class Short extends Number implements Comparable<Short>
   }
 
   /**
+   * Compares two unboxed short values.
+   * The result is positive if the first is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   *
+   * @param x First value to compare.
+   * @param y Second value to compare.
+   *
+   * @return positive int if the first value is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   * @since 1.7
+   */
+  public static int compare(short x, short y)
+  {
+    return Short.valueOf(x).compareTo(Short.valueOf(y));
+  }
+
+  /**
    * Reverse the bytes in val.
    * @since 1.5
    */

@@ -36,11 +36,11 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../../compile \
-	$(srcdir)/../../config.guess $(srcdir)/../../config.sub \
-	$(srcdir)/../../install-sh $(srcdir)/../../ltmain.sh \
-	$(srcdir)/../../missing $(srcdir)/../../mkinstalldirs \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/configure \
+	$(srcdir)/../../config.guess $(srcdir)/../../config.rpath \
+	$(srcdir)/../../config.sub $(srcdir)/../../install-sh \
+	$(srcdir)/../../ltmain.sh $(srcdir)/../../missing \
+	$(srcdir)/../../mkinstalldirs $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(top_srcdir)/configure \
 	$(top_srcdir)/gnu/classpath/Configuration.java.in \
 	$(top_srcdir)/gnu/java/security/Configuration.java.in \
 	$(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
@@ -57,9 +57,6 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../../compile \
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/../../config/lead-dot.m4 \
-	$(top_srcdir)/../../config/lib-ld.m4 \
-	$(top_srcdir)/../../config/lib-link.m4 \
-	$(top_srcdir)/../../config/lib-prefix.m4 \
 	$(top_srcdir)/../../config/multi.m4 \
 	$(top_srcdir)/../../config/no-executables.m4 \
 	$(top_srcdir)/../../config/override.m4 \
@@ -78,7 +75,9 @@ am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
 	$(top_srcdir)/m4/ax_func_which_gethostbyname_r.m4 \
 	$(top_srcdir)/m4/gcc_attribute.m4 $(top_srcdir)/m4/iconv.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -247,6 +246,7 @@ MAKEINFO = @MAKEINFO@
 MKDIR = @MKDIR@
 MKDIR_P = @MKDIR_P@
 MOC = @MOC@
+MOC4 = @MOC4@
 MOZILLA_CFLAGS = @MOZILLA_CFLAGS@
 MOZILLA_LIBS = @MOZILLA_LIBS@
 NM = @NM@

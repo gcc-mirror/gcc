@@ -6,9 +6,9 @@
 
 #pragma interface
 
-#include <java/lang/Exception.h>
+#include <java/lang/ReflectiveOperationException.h>
 
-class java::lang::ClassNotFoundException : public ::java::lang::Exception
+class java::lang::ClassNotFoundException : public ::java::lang::ReflectiveOperationException
 {
 
 public:
@@ -19,7 +19,7 @@ public:
   virtual ::java::lang::Throwable * getCause();
 private:
   static const jlong serialVersionUID = 9176873029745254542LL;
-  ::java::lang::Throwable * __attribute__((aligned(__alignof__( ::java::lang::Exception)))) ex;
+  ::java::lang::Throwable * __attribute__((aligned(__alignof__( ::java::lang::ReflectiveOperationException)))) ex;
 public:
   static ::java::lang::Class class$;
 };

@@ -6,9 +6,9 @@
 
 #pragma interface
 
-#include <java/lang/Exception.h>
+#include <java/lang/ReflectiveOperationException.h>
 
-class java::lang::reflect::InvocationTargetException : public ::java::lang::Exception
+class java::lang::reflect::InvocationTargetException : public ::java::lang::ReflectiveOperationException
 {
 
 public: // actually protected
@@ -20,7 +20,7 @@ public:
   virtual ::java::lang::Throwable * getCause();
 private:
   static const jlong serialVersionUID = 4085088731926701167LL;
-  ::java::lang::Throwable * __attribute__((aligned(__alignof__( ::java::lang::Exception)))) target;
+  ::java::lang::Throwable * __attribute__((aligned(__alignof__( ::java::lang::ReflectiveOperationException)))) target;
 public:
   static ::java::lang::Class class$;
 };

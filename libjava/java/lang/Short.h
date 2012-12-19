@@ -33,6 +33,7 @@ public:
   jint hashCode();
   jboolean equals(::java::lang::Object *);
   jint Short$compareTo(::java::lang::Short *);
+  static jint compare(jshort, jshort);
   static jshort reverseBytes(jshort);
   jint compareTo(::java::lang::Object *);
 private:

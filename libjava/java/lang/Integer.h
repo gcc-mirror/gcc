@@ -43,6 +43,7 @@ public:
   static ::java::lang::Integer * getInteger(::java::lang::String *, ::java::lang::Integer *);
   static ::java::lang::Integer * decode(::java::lang::String *);
   jint Integer$compareTo(::java::lang::Integer *);
+  static jint compare(jint, jint);
   static jint bitCount(jint);
   static jint rotateLeft(jint, jint);
   static jint rotateRight(jint, jint);

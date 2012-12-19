@@ -36,7 +36,7 @@ class gnu::java::text::FormatCharacterIterator : public ::java::lang::Object
 
 public:
   FormatCharacterIterator();
-  FormatCharacterIterator(::java::lang::String *, JArray< jint > *, JArray< ::java::util::HashMap * > *);
+  FormatCharacterIterator(::java::lang::String *, JArray< jint > *, ::java::util::List *);
   virtual ::java::util::Set * getAllAttributeKeys();
   virtual ::java::util::Map * getAttributes();
   virtual ::java::lang::Object * getAttribute(::java::text::AttributedCharacterIterator$Attribute *);
@@ -56,11 +56,11 @@ public:
   virtual jchar next();
   virtual jchar previous();
   virtual jchar setIndex(jint);
-  virtual void mergeAttributes(JArray< ::java::util::HashMap * > *, JArray< jint > *);
+  virtual void mergeAttributes(::java::util::List *, JArray< jint > *);
   virtual void append(::java::text::AttributedCharacterIterator *);
   virtual void append(::java::lang::String *, ::java::util::HashMap *);
   virtual void append(::java::lang::String *);
-  virtual void addAttributes(::java::util::HashMap *, jint, jint);
+  virtual void addAttributes(::java::util::Map *, jint, jint);
 private:
   void debug(::java::lang::String *);
   void dumpTable();
@@ -68,7 +68,7 @@ private:
   jint charIndex;
   jint attributeIndex;
   JArray< jint > * ranges;
-  JArray< ::java::util::HashMap * > * attributes;
+  ::java::util::List * attributes;
   static const jboolean DEBUG = 0;
 public:
   static ::java::lang::Class class$;

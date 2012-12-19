@@ -107,7 +107,7 @@ public interface TreeNode
    *
    * @return An enumeration of the children of this node.
    */
-  @SuppressWarnings("unchecked") // Required for API compatibility
+  @SuppressWarnings("rawtypes") // Required for API compatibility
   Enumeration children();
 
 }

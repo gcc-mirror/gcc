@@ -34,6 +34,7 @@ public: // actually protected
   void finalize();
 public:
   jboolean isValid();
+  void close();
   void release();
 private:
   jboolean __attribute__((aligned(__alignof__( ::java::nio::channels::FileLock)))) valid;

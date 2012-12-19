@@ -1,5 +1,5 @@
 /* Track.java -- A track of MIDI events
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,10 +54,10 @@ public class Track
   /**
    * The list of MidiEvents for this track.
    */
-  Vector events = new Vector();
+  Vector<MidiEvent> events = new Vector<MidiEvent>();
 
   // A HashSet to speed processing
-  private HashSet eventSet = new HashSet();
+  private HashSet<MidiEvent> eventSet = new HashSet<MidiEvent>();
 
   // This is only instantiable within this package.
   Track()
@@ -83,7 +83,7 @@ public class Track
 
       long targetTick = event.getTick();
       int i = events.size() - 1;
-      while (i >= 0 && (((MidiEvent)events.get(i)).getTick() > targetTick))
+      while (i >= 0 && (events.get(i).getTick() > targetTick))
         i--;
       events.add(i+1, event);
       return true;
@@ -127,7 +127,7 @@ public class Track
     {
       try
       {
-        return (MidiEvent) events.get(index);
+        return events.get(index);
       }
       catch (IndexOutOfBoundsException e)
       {
@@ -158,7 +158,7 @@ public class Track
     synchronized (events)
     {
       int size = events.size();
-      return ((MidiEvent) events.get(size - 1)).getTick();
+      return events.get(size - 1).getTick();
     }
   }
  }

@@ -1,5 +1,5 @@
 /* SoundbankResource.java -- An audio resource from a sound bank
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ public abstract class SoundbankResource
 {
   private final Soundbank soundbank;
   private final String name;
-  private final Class dataClass;
+  private final Class<?> dataClass;
 
   /**
    * Create a SoundbankResource object.

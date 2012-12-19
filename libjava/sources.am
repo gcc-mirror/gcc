@@ -4625,6 +4625,7 @@ classpath/java/lang/ArithmeticException.java \
 classpath/java/lang/ArrayIndexOutOfBoundsException.java \
 classpath/java/lang/ArrayStoreException.java \
 classpath/java/lang/AssertionError.java \
+classpath/java/lang/AutoCloseable.java \
 classpath/java/lang/Boolean.java \
 classpath/java/lang/Byte.java \
 classpath/java/lang/CharSequence.java \
@@ -4683,6 +4684,7 @@ java/lang/PosixProcess.java \
 classpath/java/lang/Process.java \
 classpath/java/lang/ProcessBuilder.java \
 classpath/java/lang/Readable.java \
+classpath/java/lang/ReflectiveOperationException.java \
 classpath/java/lang/Runnable.java \
 java/lang/Runtime.java \
 classpath/java/lang/RuntimeException.java \

@@ -1,5 +1,5 @@
 /* AttributedString.java -- Models text with attributes
-   Copyright (C) 1998, 1999, 2004, 2005, 2006, Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2005, 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import static java.text.AttributedCharacterIterator.Attribute;
+
 /**
  * This class models a <code>String</code> with attributes over various
  * subranges of the string.  It allows applications to access this
@@ -68,7 +70,7 @@ public class AttributedString
   {
 
     /** A Map of the attributes */
-    Map attribs;
+    Map<? extends Attribute, ?> attribs;
 
     /** The beginning index of the attributes */
     int beginIndex;
@@ -83,7 +85,8 @@ public class AttributedString
      * @param beginIndex  the start index.
      * @param endIndex  the end index.
      */
-    AttributeRange(Map attribs, int beginIndex, int endIndex)
+    AttributeRange(Map<? extends Attribute, ?> attribs,
+                   int beginIndex, int endIndex)
     {
       this.attribs = attribs;
       this.beginIndex = beginIndex;
@@ -122,7 +125,7 @@ public class AttributedString
    * @param attributes The attribute list.
    */
   public AttributedString(String str,
-                          Map<? extends AttributedCharacterIterator.Attribute, ?> attributes)
+                          Map<? extends Attribute, ?> attributes)
   {
     this(str);
 
@@ -178,7 +181,7 @@ public class AttributedString
    *                   <code>null</code> to include all attributes.
    */
   public AttributedString(AttributedCharacterIterator aci, int begin, int end,
-                          AttributedCharacterIterator.Attribute[] attributes)
+                          Attribute[] attributes)
   {
     // Validate some arguments
     if ((begin < 0) || (end < begin) || end > aci.getEndIndex())
@@ -187,29 +190,28 @@ public class AttributedString
     CPStringBuilder sb = new CPStringBuilder("");
 
     // Get the valid attribute list
-    Set allAttribs = aci.getAllAttributeKeys();
+    Set<Attribute> allAttribs = aci.getAllAttributeKeys();
     if (attributes != null)
       allAttribs.retainAll(Arrays.asList(attributes));
 
     // Loop through and extract the attributes
     char c = aci.setIndex(begin);
 
-    ArrayList accum = new ArrayList();
+    ArrayList<AttributeRange> accum = new ArrayList<AttributeRange>();
     do
       {
         sb.append(c);
 
-        Iterator iter = allAttribs.iterator();
+        Iterator<Attribute> iter = allAttribs.iterator();
         while(iter.hasNext())
           {
             Object obj = iter.next();
 
             // What should we do if this is not true?
-            if (!(obj instanceof AttributedCharacterIterator.Attribute))
+            if (!(obj instanceof Attribute))
               continue;
 
-            AttributedCharacterIterator.Attribute attrib =
-              (AttributedCharacterIterator.Attribute)obj;
+            Attribute attrib = (Attribute)obj;
 
             // Make sure the attribute is defined.
             Object attribObj = aci.getAttribute(attrib);
@@ -237,7 +239,7 @@ public class AttributedString
               }
 
             // Create a map object.  Yes this will only contain one attribute
-            Map newMap = new Hashtable();
+            Map<Attribute,Object> newMap = new Hashtable<Attribute,Object>();
             newMap.put(attrib, attribObj);
 
             // Add it to the attribute list.
@@ -249,7 +251,7 @@ public class AttributedString
     while( aci.getIndex() < end );
 
     attribs = new AttributeRange[accum.size()];
-    attribs = (AttributeRange[]) accum.toArray(attribs);
+    attribs = accum.toArray(attribs);
 
     sci = new StringCharacterIterator(sb.toString());
   }
@@ -260,8 +262,7 @@ public class AttributedString
    * @param attrib The attribute to add.
    * @param value The value of the attribute.
    */
-  public void addAttribute(AttributedCharacterIterator.Attribute attrib,
-          Object value)
+  public void addAttribute(Attribute attrib, Object value)
   {
     addAttribute(attrib, value, 0, sci.getEndIndex());
   }
@@ -278,14 +279,13 @@ public class AttributedString
    * @exception IllegalArgumentException If attribute is <code>null</code> or
    *            the subrange is not valid.
    */
-  public void addAttribute(AttributedCharacterIterator.Attribute attrib,
-          Object value, int begin, int end)
+  public void addAttribute(Attribute attrib, Object value, int begin, int end)
   {
     if (attrib == null)
       throw new IllegalArgumentException("null attribute");
     if (end <= begin)
       throw new IllegalArgumentException("Requires end > begin");
-    HashMap hm = new HashMap();
+    HashMap<Attribute,Object> hm = new HashMap<Attribute,Object>();
     hm.put(attrib, value);
 
     addAttributes(hm, begin, end);
@@ -303,7 +303,7 @@ public class AttributedString
    *         <code>null</code>.
    * @throws IllegalArgumentException if the subrange is not valid.
    */
-  public void addAttributes(Map<? extends AttributedCharacterIterator.Attribute, ?> attributes,
+  public void addAttributes(Map<? extends Attribute, ?> attributes,
                             int beginIndex, int endIndex)
   {
     if (attributes == null)
@@ -343,8 +343,7 @@ public class AttributedString
    *
    * @return An <code>AttributedCharacterIterator</code> for this string.
    */
-  public AttributedCharacterIterator getIterator(
-          AttributedCharacterIterator.Attribute[] attributes)
+  public AttributedCharacterIterator getIterator(Attribute[] attributes)
   {
     return(getIterator(attributes, 0, sci.getEndIndex()));
   }
@@ -363,8 +362,7 @@ public class AttributedString
    *
    * @return An <code>AttributedCharacterIterator</code> for this string.
    */
-  public AttributedCharacterIterator getIterator(
-          AttributedCharacterIterator.Attribute[] attributes,
+  public AttributedCharacterIterator getIterator(Attribute[] attributes,
           int beginIndex, int endIndex)
   {
     if ((beginIndex < 0) || (endIndex > sci.getEndIndex()) ||

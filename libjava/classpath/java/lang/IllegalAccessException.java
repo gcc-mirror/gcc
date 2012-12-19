@@ -1,6 +1,6 @@
 /* IllegalAccessException.java -- thrown on attempt to reflect on
    inaccessible data
-   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,9 +71,9 @@ import java.lang.reflect.Method;
  * @see Field#getDouble(Object)
  * @see Method#invoke(Object, Object[])
  * @see Constructor#newInstance(Object[])
- * @status updated to 1.4
+ * @status updated to 1.7
  */
-public class IllegalAccessException extends Exception
+public class IllegalAccessException extends ReflectiveOperationException
 {
   /**
    * Compatible with JDK 1.0+.
