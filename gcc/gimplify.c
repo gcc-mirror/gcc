@@ -1059,6 +1059,30 @@ unshare_expr (tree expr)
   walk_tree (&expr, mostly_copy_tree_r, NULL, NULL);
   return expr;
 }
+
+/* Worker for unshare_expr_without_location.  */
+
+static tree
+prune_expr_location (tree *tp, int *walk_subtrees, void *)
+{
+  if (EXPR_P (*tp))
+    SET_EXPR_LOCATION (*tp, UNKNOWN_LOCATION);
+  else
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Similar to unshare_expr but also prune all expression locations
+   from EXPR.  */
+
+tree
+unshare_expr_without_location (tree expr)
+{
+  walk_tree (&expr, mostly_copy_tree_r, NULL, NULL);
+  if (EXPR_P (expr))
+    walk_tree (&expr, prune_expr_location, NULL, NULL);
+  return expr;
+}
 
 /* WRAPPER is a code such as BIND_EXPR or CLEANUP_POINT_EXPR which can both
    contain statements and have a value.  Assign its value to a temporary
