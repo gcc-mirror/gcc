@@ -1089,9 +1089,15 @@ gfc_create_string_length (gfc_symbol * sym)
       tree length;
       const char *name;
 
+      /* The string length variable shall be in static memory if it is either
+	 explicitly SAVED, a module variable or with -fno-automatic. Only
+	 relevant is "len=:" - otherwise, it is either a constant length or
+	 it is an automatic variable.  */
       bool static_length = sym->attr.save
 			   || sym->ns->proc_name->attr.flavor == FL_MODULE
-			   || gfc_option.flag_max_stack_var_size == 0;
+			   || (gfc_option.flag_max_stack_var_size == 0
+			       && sym->ts.deferred && !sym->attr.dummy
+			       && !sym->attr.result && !sym->attr.function);
 
       /* Also prefix the mangled name. We need to call GFC_PREFIX for static
 	 variables as some systems do not support the "." in the assembler name.

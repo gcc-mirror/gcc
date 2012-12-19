@@ -1,4 +1,10 @@
 2012-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55733
+	* trans-decl.c (gfc_create_string_length): Avoid setting
+	TREE_STATIC for automatic variables with -fno-automatic.
+
+2012-12-19  Tobias Burnus  <burnus@net-b.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Janus Weil  <janus@gcc.gnu.org>
 
