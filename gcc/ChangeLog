@@ -1,5 +1,10 @@
 2012-12-19  Richard Biener  <rguenther@suse.de>
 
+	* targhooks.h (default_canonicalize_comparison): Fix prototype.
+	* targhooks.c (default_canonicalize_comparison): Define.
+
+2012-12-19  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55736
 	PR tree-optimization/55703
 	* gimplify.c (prune_expr_location): New function.

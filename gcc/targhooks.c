@@ -1540,4 +1540,11 @@ default_member_type_forces_blk (const_tree, enum machine_mode)
   return false;
 }
 
+/* Default version of canonicalize_comparison.  */
+
+void
+default_canonicalize_comparison (int *, rtx *, rtx *, bool)
+{
+}
+
 #include "gt-targhooks.h"
