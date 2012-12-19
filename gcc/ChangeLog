@@ -1,3 +1,14 @@
+2012-12-19  Uros Bizjak  <ubizjak@gmail.com>
+	    Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.h (enum ix86_tune_indices): Add
+	X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE.
+	(TARGET_AVOID_MEM_OPND_FOR_CMOVE): New define.
+	* config/i386/i386.c (initial_ix86_tune_features)
+	<X86TUNE_AVOID_MEM_OPND_FOR_CMOVE>: Initialize.
+	* config/i386/i386.md (splitters to avoid cmove memory operands): New.
+	(peephole2s to avoid cmove memory operands): New.
+
 2012-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (f_minmaxs, f_minmaxd): New types.
@@ -34,34 +45,26 @@
 	* combine.c (try_combine): Adjust to use the target hook.
 	* config/alpha/alpha.h (CANONICALIZE_COMPARISON): Remove macro
 	definition.
-	* config/alpha/alpha.c (alpha_canonicalize_comparison): New
-	function.
+	* config/alpha/alpha.c (alpha_canonicalize_comparison): New function.
 	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
 	* config/arm/arm-protos.h (arm_canonicalize_comparison): Remove
 	prototype.
-	* config/arm/arm.c (arm_canonicalize_comparison): Add new
-	parameter.
+	* config/arm/arm.c (arm_canonicalize_comparison): Add new parameter.
 	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
-	* config/arm/arm.h (CANONICALIZE_COMPARISON): Remove macro
-	definition.
+	* config/arm/arm.h (CANONICALIZE_COMPARISON): Remove macro definition.
 	* config/s390/s390-protos.h (s390_canonicalize_comparison): Remove
 	prototype.
-	* config/s390/s390.c (s390_canonicalize_comparison): Add new
-	parameter.
+	* config/s390/s390.c (s390_canonicalize_comparison): Add new parameter.
 	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
-	* config/s390/s390.h (CANONICALIZE_COMPARISON): Remove macro
-	definition.
-	* config/sh/sh-protos.h (sh_canonicalize_comparison): Remove
-	prototype.
+	* config/s390/s390.h (CANONICALIZE_COMPARISON): Remove macro definition.
+	* config/sh/sh-protos.h (sh_canonicalize_comparison): Remove prototype.
 	* config/sh/sh.c (sh_canonicalize_comparison): Add new prototype.  New
 	function overloading the old one.
 	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
-	* config/sh/sh.h (CANONICALIZE_COMPARISON): Remove macro
-	definition.
+	* config/sh/sh.h (CANONICALIZE_COMPARISON): Remove macro definition.
 	* config/spu/spu.c (spu_canonicalize_comparison): New function.
 	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
-	* config/spu/spu.h (CANONICALIZE_COMPARISON): Remove macro
-	definition.
+	* config/spu/spu.h (CANONICALIZE_COMPARISON): Remove macro definition.
 
 2012-12-19  Jakub Jelinek  <jakub@redhat.com>
 
@@ -74,7 +77,8 @@
 2012-12-18  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55683
-	* ipa-prop.c (try_make_edge_direct_virtual_call): Look into constants for binfo.
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Look into constants
+	for binfo.
 
 2012-12-19  Terry Guo  <terry.guo@arm.com>
 
@@ -100,8 +104,7 @@
 
 2012-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
-	* config/arm/driver-arm.c (arm_cpu_table):
-	Add Cortex-A7.
+	* config/arm/driver-arm.c (arm_cpu_table): Add Cortex-A7.
 
 2012-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -152,7 +155,7 @@
 	gen_lowpart_if_possible.
 	(gen_lowpart_no_emit_general): Remove prototype.
 	* rtlhooks.c (gen_lowpart_no_emit_general): Removed.
-	* simplify-rtx.c (simplify_unary_operation_1, 
+	* simplify-rtx.c (simplify_unary_operation_1,
 	simplify_binary_operation_1): Continue simplifying if
 	rtl_hooks.gen_lowpart_no_emit returns NULL_RTX.
 	* dwarf2out.c (mem_loc_descriptor) <case TRUNCATE>: Handle
