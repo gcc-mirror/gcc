@@ -286,6 +286,8 @@
   fmacd,\
   f_rints,\
   f_rintd,\
+  f_minmaxs,\
+  f_minmaxd,\
   f_flag,\
   f_loads,\
   f_loadd,\

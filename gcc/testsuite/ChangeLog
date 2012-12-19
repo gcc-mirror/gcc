@@ -1,3 +1,10 @@
+2012-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vmaxnmdf.c: New test.
+	* gcc.target/arm/vmaxnmsf.c: Likewise.
+	* gcc.target/arm/vminnmsf.c: Likewise.
+	* gcc.target/arm/vminnmdf.c: Likewise.
+
 2012-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/gomp/use_intrinsic_1.f90: Moved

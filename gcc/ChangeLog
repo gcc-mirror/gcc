@@ -1,3 +1,9 @@
+2012-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (f_minmaxs, f_minmaxd): New types.
+	* config/arm/vfp.md (smax<mode>3): New pattern.
+	(smin<mode>3): Likewise.
+
 2012-12-19  Richard Biener  <rguenther@suse.de>
 
 	* targhooks.h (default_canonicalize_comparison): Fix prototype.
