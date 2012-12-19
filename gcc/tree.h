@@ -5606,6 +5606,7 @@ extern void change_decl_assembler_name (tree, tree);
 
 /* In gimplify.c */
 extern tree unshare_expr (tree);
+extern tree unshare_expr_without_location (tree);
 
 /* In stmt.c */
 

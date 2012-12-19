@@ -1,3 +1,18 @@
+2012-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55736
+	PR tree-optimization/55703
+	* gimplify.c (prune_expr_location): New function.
+	(unshare_expr_without_location): Likewise.
+	* tree.h (unshare_expr_without_location): Declare.
+	* ipa-prop.c (prune_expression_for_jf): Remove.
+	(prune_expression_for_jf_1): Likewise.
+	(ipa_set_jf_constant): Use unshare_expr_without_location.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(determine_known_aggregate_parts): Likewise.
+	* tree-switch-conversion.c (build_constructors): Use
+	unshare_expr_without_location on all constructor elements.
+
 2012-12-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* target.def: Define canonicalize_comparison hook.
