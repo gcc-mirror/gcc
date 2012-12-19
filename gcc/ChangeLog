@@ -1,3 +1,8 @@
+2012-12-18  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55683
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Look into constants for binfo.
+
 2012-12-19  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.c (thumb_find_work_register): Check argument
