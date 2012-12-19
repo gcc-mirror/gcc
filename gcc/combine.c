@@ -494,6 +494,17 @@ static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
 static const struct rtl_hooks combine_rtl_hooks = RTL_HOOKS_INITIALIZER;
 
 
+/* Convenience wrapper for the canonicalize_comparison target hook.
+   Target hooks cannot use enum rtx_code.  */
+static inline void
+target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
+				bool op0_preserve_value)
+{
+  int code_int = (int)*code;
+  targetm.canonicalize_comparison (&code_int, op0, op1, op0_preserve_value);
+  *code = (enum rtx_code)code_int;
+}
+
 /* Try to split PATTERN found in INSN.  This returns NULL_RTX if
    PATTERN can not be split.  Otherwise, it returns an insn sequence.
    This is a wrapper around split_insns which ensures that the
@@ -2944,9 +2955,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  compare_code = orig_compare_code = GET_CODE (*cc_use_loc);
 	  compare_code = simplify_compare_const (compare_code,
 						 op0, &op1);
-#ifdef CANONICALIZE_COMPARISON
-	  CANONICALIZE_COMPARISON (compare_code, op0, op1);
-#endif
+	  target_canonicalize_comparison (&compare_code, &op0, &op1, 1);
 	}
 
       /* Do the rest only if op1 is const0_rtx, which may be the
@@ -11959,11 +11968,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 	}
 
-#ifdef CANONICALIZE_COMPARISON
   /* If this machine only supports a subset of valid comparisons, see if we
      can convert an unsupported one into a supported one.  */
-  CANONICALIZE_COMPARISON (code, op0, op1);
-#endif
+  target_canonicalize_comparison (&code, &op0, &op1, 0);
 
   *pop0 = op0;
   *pop1 = op1;

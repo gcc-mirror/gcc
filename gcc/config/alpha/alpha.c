@@ -9686,6 +9686,30 @@ alpha_conditional_register_usage (void)
     for (i = 32; i < 63; i++)
       fixed_regs[i] = call_used_regs[i] = 1;
 }
+
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+
+static void
+alpha_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			       bool op0_preserve_value)
+{
+  if (!op0_preserve_value
+      && (*code == GE || *code == GT || *code == GEU || *code == GTU)
+      && (REG_P (*op1) || *op1 == const0_rtx))
+    {
+      rtx tem = *op0;
+      *op0 = *op1;
+      *op1 = tem;
+      *code = (int)swap_condition ((enum rtx_code)*code);
+    }
+
+  if ((*code == LT || *code == LTU)
+      && CONST_INT_P (*op1) && INTVAL (*op1) == 256)
+    {
+      *code = *code == LT ? LE : LEU;
+      *op1 = GEN_INT (255);
+    }
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -9852,6 +9876,9 @@ alpha_conditional_register_usage (void)
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE alpha_conditional_register_usage
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON alpha_canonicalize_comparison
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
