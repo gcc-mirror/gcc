@@ -1,3 +1,11 @@
+2012-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55730
+	* dwarf2out.c (mem_loc_descriptor): Ignore CLOBBER.
+	* valtrack.c (gen_lowpart_for_debug): New function.
+	(propagate_for_debug): Temporarily set rtl_hooks.gen_lowpart_no_emit
+	to gen_lowpart_for_debug.
+
 2012-12-18  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55683

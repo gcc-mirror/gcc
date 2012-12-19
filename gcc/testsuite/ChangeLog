@@ -1,3 +1,8 @@
+2012-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55730
+	* gcc.dg/debug/pr55730.c: New test.
+
 2012-12-18  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55683
