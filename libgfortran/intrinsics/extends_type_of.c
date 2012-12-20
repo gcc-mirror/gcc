@@ -49,6 +49,14 @@ export_proto(is_extension_of);
 GFC_LOGICAL_4
 is_extension_of (struct vtype *v1, struct vtype *v2)
 {
+  /* Assume that only unlimited polymorphic entities will pass NULL v1 or v2
+     if they are unallocated or disassociated.  */
+
+  if (!v2)
+    return 1;
+  if (!v1)
+    return 0;
+
   while (v1)
     {
       if (v1->hash == v2->hash) return 1;

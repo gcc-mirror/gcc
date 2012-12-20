@@ -929,6 +929,10 @@ resolve_common_vars (gfc_symbol *sym, bool named_common)
 			    &csym->declared_at);
 	}
 
+      if (UNLIMITED_POLY (csym))
+	gfc_error_now ("'%s' in cannot appear in COMMON at %L "
+		       "[F2008:C5100]", csym->name, &csym->declared_at);
+
       if (csym->ts.type != BT_DERIVED)
 	continue;
 
@@ -6898,6 +6902,7 @@ resolve_deallocate_expr (gfc_expr *e)
   gfc_ref *ref;
   gfc_symbol *sym;
   gfc_component *c;
+  bool unlimited;
 
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
@@ -6906,6 +6911,7 @@ resolve_deallocate_expr (gfc_expr *e)
     goto bad;
 
   sym = e->symtree->n.sym;
+  unlimited = UNLIMITED_POLY(sym);
 
   if (sym->ts.type == BT_CLASS)
     {
@@ -6950,7 +6956,7 @@ resolve_deallocate_expr (gfc_expr *e)
 
   attr = gfc_expr_attr (e);
 
-  if (allocatable == 0 && attr.pointer == 0)
+  if (allocatable == 0 && attr.pointer == 0 && !unlimited)
     {
     bad:
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
@@ -7118,6 +7124,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   int i, pointer, allocatable, dimension, is_abstract;
   int codimension;
   bool coindexed;
+  bool unlimited;
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
   gfc_expr *e2;
@@ -7148,6 +7155,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
   /* Check whether ultimate component is abstract and CLASS.  */
   is_abstract = 0;
+
+  /* Is the allocate-object unlimited polymorphic?  */
+  unlimited = UNLIMITED_POLY(e);
 
   if (e->expr_type != EXPR_VARIABLE)
     {
@@ -7235,7 +7245,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     }
 
   /* Check for F08:C628.  */
-  if (allocatable == 0 && pointer == 0)
+  if (allocatable == 0 && pointer == 0 && !unlimited)
     {
       gfc_error ("Allocate-object at %L must be ALLOCATABLE or a POINTER",
 		 &e->where);
@@ -7254,12 +7264,12 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
 
       /* Check F03:C632 and restriction following Note 6.18.  */
-      if (code->expr3->rank > 0
+      if (code->expr3->rank > 0 && !unlimited
 	  && conformable_arrays (code->expr3, e) == FAILURE)
 	goto failure;
 
       /* Check F03:C633.  */
-      if (code->expr3->ts.kind != e->ts.kind)
+      if (code->expr3->ts.kind != e->ts.kind && !unlimited)
 	{
 	  gfc_error ("The allocate-object at %L and the source-expr at %L "
 		      "shall have the same kind type parameter",
@@ -7362,7 +7372,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       code->expr3 = rhs;
     }
 
-  if (e->ts.type == BT_CLASS)
+  if (e->ts.type == BT_CLASS && !unlimited && !UNLIMITED_POLY (code->expr3))
     {
       /* Make sure the vtab symbol is present when
 	 the module variables are generated.  */
@@ -7371,7 +7381,29 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	ts = code->expr3->ts;
       else if (code->ext.alloc.ts.type == BT_DERIVED)
 	ts = code->ext.alloc.ts;
+
       gfc_find_derived_vtab (ts.u.derived);
+
+      if (dimension)
+	e = gfc_expr_to_initialize (e);
+    }
+  else if (unlimited && !UNLIMITED_POLY (code->expr3))
+    {
+      /* Again, make sure the vtab symbol is present when
+	 the module variables are generated.  */
+      gfc_typespec *ts = NULL;
+      if (code->expr3)
+	ts = &code->expr3->ts;
+      else
+	ts = &code->ext.alloc.ts;
+
+      gcc_assert (ts);
+
+      if (ts->type == BT_CLASS || ts->type == BT_DERIVED)
+        gfc_find_derived_vtab (ts->u.derived);
+      else
+        gfc_find_intrinsic_vtab (ts);
+
       if (dimension)
 	e = gfc_expr_to_initialize (e);
     }
@@ -8206,7 +8238,9 @@ resolve_select (gfc_code *code)
 bool
 gfc_type_is_extensible (gfc_symbol *sym)
 {
-  return !(sym->attr.is_bind_c || sym->attr.sequence);
+  return !(sym->attr.is_bind_c || sym->attr.sequence
+	   || (sym->attr.is_class
+	       && sym->components->ts.u.derived->attr.unlimited_polymorphic));
 }
 
 
@@ -8312,6 +8346,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_namespace *ns;
   int error = 0;
+  int charlen = 0;
 
   ns = code->ext.block.ns;
   gfc_resolve (ns);
@@ -8344,6 +8379,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
       /* Check F03:C815.  */
       if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	  && !selector_type->attr.unlimited_polymorphic
 	  && !gfc_type_is_extensible (c->ts.u.derived))
 	{
 	  gfc_error ("Derived type '%s' at %L must be extensible",
@@ -8354,10 +8390,20 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
       /* Check F03:C816.  */
       if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	  && !selector_type->attr.unlimited_polymorphic
 	  && !gfc_type_is_extension_of (selector_type, c->ts.u.derived))
 	{
 	  gfc_error ("Derived type '%s' at %L must be an extension of '%s'",
 		     c->ts.u.derived->name, &c->where, selector_type->name);
+	  error++;
+	  continue;
+	}
+
+      /* Check F03:C814.  */
+      if (c->ts.type == BT_CHARACTER && c->ts.u.cl->length != NULL)
+	{
+	  gfc_error ("The type-spec at %L shall specify that each length "
+		     "type parameter is assumed", &c->where);
 	  error++;
 	  continue;
 	}
@@ -8420,6 +8466,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
     ns->code->next = new_st;
   code = new_st;
   code->op = EXEC_SELECT;
+
   gfc_add_vptr_component (code->expr1);
   gfc_add_hash_component (code->expr1);
 
@@ -8431,6 +8478,16 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
       if (c->ts.type == BT_DERIVED)
 	c->low = c->high = gfc_get_int_expr (gfc_default_integer_kind, NULL,
 					     c->ts.u.derived->hash_value);
+      else if (c->ts.type != BT_CLASS && c->ts.type != BT_UNKNOWN)
+	{
+	  gfc_symbol *ivtab;
+	  gfc_expr *e;
+
+	  ivtab = gfc_find_intrinsic_vtab (&c->ts);
+	  gcc_assert (ivtab);
+	  e = CLASS_DATA (ivtab)->initializer;
+	  c->low = c->high = gfc_copy_expr (e);
+	}
 
       else if (c->ts.type == BT_UNKNOWN)
 	continue;
@@ -8442,13 +8499,25 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
       if (c->ts.type == BT_CLASS)
 	sprintf (name, "__tmp_class_%s", c->ts.u.derived->name);
-      else
+      else if (c->ts.type == BT_DERIVED)
 	sprintf (name, "__tmp_type_%s", c->ts.u.derived->name);
+      else if (c->ts.type == BT_CHARACTER)
+	{
+	  if (c->ts.u.cl && c->ts.u.cl->length
+	      && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	    charlen = mpz_get_si (c->ts.u.cl->length->value.integer);
+	  sprintf (name, "__tmp_%s_%d_%d", gfc_basic_typename (c->ts.type),
+	           charlen, c->ts.kind);
+	}
+      else
+	sprintf (name, "__tmp_%s_%d", gfc_basic_typename (c->ts.type),
+	         c->ts.kind);
+
       st = gfc_find_symtree (ns->sym_root, name);
       gcc_assert (st->n.sym->assoc);
       st->n.sym->assoc->target = gfc_get_variable_expr (code->expr1->symtree);
       st->n.sym->assoc->target->where = code->expr1->where;
-      if (c->ts.type == BT_DERIVED)
+      if (c->ts.type != BT_CLASS && c->ts.type != BT_UNKNOWN)
 	gfc_add_data_component (st->n.sym->assoc->target);
 
       new_st = gfc_get_code ();
@@ -11029,6 +11098,8 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
     {
       /* F03:C502.  */
       if (sym->attr.class_ok
+	  && !sym->attr.select_type_temporary
+	  && !UNLIMITED_POLY(sym)
 	  && !gfc_type_is_extensible (CLASS_DATA (sym)->ts.u.derived))
 	{
 	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
@@ -11167,7 +11238,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	 dummy arguments.  */
       e = sym->ts.u.cl->length;
       if (e == NULL && !sym->attr.dummy && !sym->attr.result
-	  && !sym->ts.deferred)
+	  && !sym->ts.deferred && !sym->attr.select_type_temporary)
 	{
 	  gfc_error ("Entity with assumed character length at %L must be a "
 		     "dummy argument or a PARAMETER", &sym->declared_at);
@@ -12412,6 +12483,9 @@ resolve_fl_derived0 (gfc_symbol *sym)
   gfc_symbol* super_type;
   gfc_component *c;
 
+  if (sym->attr.unlimited_polymorphic)
+    return SUCCESS;
+
   super_type = gfc_get_derived_super_type (sym);
 
   /* F2008, C432. */
@@ -12764,7 +12838,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
       if (c->ts.type == BT_CLASS && c->attr.class_ok
 	  && CLASS_DATA (c)->attr.class_pointer
 	  && CLASS_DATA (c)->ts.u.derived->components == NULL
-	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp)
+	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp
+	  && !UNLIMITED_POLY (c))
 	{
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
 		     "that has not been declared", c->name, sym->name,
@@ -12833,6 +12908,9 @@ resolve_fl_derived (gfc_symbol *sym)
 {
   gfc_symbol *gen_dt = NULL;
 
+  if (sym->attr.unlimited_polymorphic)
+    return SUCCESS;
+
   if (!sym->attr.is_class)
     gfc_find_symbol (sym->name, sym->ns, 0, &gen_dt);
   if (gen_dt && gen_dt->generic && gen_dt->generic->next
@@ -12859,7 +12937,11 @@ resolve_fl_derived (gfc_symbol *sym)
       /* Fix up incomplete CLASS symbols.  */
       gfc_component *data = gfc_find_component (sym, "_data", true, true);
       gfc_component *vptr = gfc_find_component (sym, "_vptr", true, true);
-      if (vptr->ts.u.derived == NULL)
+
+      /* Nothing more to do for unlimited polymorphic entities.  */
+      if (data->ts.u.derived->attr.unlimited_polymorphic)
+	return SUCCESS;
+      else if (vptr->ts.u.derived == NULL)
 	{
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);
 	  gcc_assert (vtab);
@@ -13072,6 +13154,9 @@ resolve_symbol (gfc_symbol *sym)
   bool saved_specification_expr;
 
   if (sym->attr.artificial)
+    return;
+
+  if (sym->attr.unlimited_polymorphic)
     return;
 
   if (sym->attr.flavor == FL_UNKNOWN

@@ -5911,12 +5911,27 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
   gfc_expr *a, *b;
   gfc_se se1, se2;
   tree tmp;
+  tree conda = NULL_TREE, condb = NULL_TREE;
 
   gfc_init_se (&se1, NULL);
   gfc_init_se (&se2, NULL);
 
   a = expr->value.function.actual->expr;
   b = expr->value.function.actual->next->expr;
+
+  if (UNLIMITED_POLY (a))
+    {
+      tmp = gfc_class_vptr_get (a->symtree->n.sym->backend_decl);
+      conda = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			       tmp, build_int_cst (TREE_TYPE (tmp), 0));
+    }
+
+  if (UNLIMITED_POLY (b))
+    {
+      tmp = gfc_class_vptr_get (b->symtree->n.sym->backend_decl);
+      condb = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			       tmp, build_int_cst (TREE_TYPE (tmp), 0));
+    }
 
   if (a->ts.type == BT_CLASS)
     {
@@ -5939,8 +5954,18 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
   gfc_conv_expr (&se1, a);
   gfc_conv_expr (&se2, b);
 
-  tmp = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
-			 se1.expr, fold_convert (TREE_TYPE (se1.expr), se2.expr));
+  tmp = fold_build2_loc (input_location, EQ_EXPR,
+			 boolean_type_node, se1.expr,
+			 fold_convert (TREE_TYPE (se1.expr), se2.expr));
+
+  if (conda)
+    tmp = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+			   boolean_type_node, conda, tmp);
+
+  if (condb)
+    tmp = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+			   boolean_type_node, condb, tmp);
+
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
 }
 

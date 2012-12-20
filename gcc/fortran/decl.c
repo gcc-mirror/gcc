@@ -2735,8 +2735,36 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	return MATCH_ERROR;
       else if (m == MATCH_YES)
 	{
-	  gfc_fatal_error ("Unlimited polymorphism at %C not yet supported");
+	  gfc_symbol *upe;
+	  gfc_symtree *st;
+	  ts->type = BT_CLASS;
+	  gfc_find_symbol ("$tar", gfc_current_ns, 1, &upe);
+	  if (upe == NULL)
+	    {
+	      upe = gfc_new_symbol ("$tar", gfc_current_ns);
+	      st = gfc_new_symtree (&gfc_current_ns->sym_root, "$tar");
+	      st->n.sym = upe;
+	      gfc_set_sym_referenced (upe);
+	      upe->refs++;
+	      upe->ts.type = BT_VOID;
+	      upe->attr.unlimited_polymorphic = 1;
+	      /* This is essential to force the construction of
+		 unlimited polymorphic component class containers.  */
+	      upe->attr.zero_comp = 1;
+	      if (gfc_add_flavor (&upe->attr, FL_DERIVED,
+				  NULL, &gfc_current_locus) == FAILURE)
 	  return MATCH_ERROR;
+	}
+	  else
+	    {
+	      st = gfc_find_symtree (gfc_current_ns->sym_root, "$tar");
+	      if (st == NULL)
+		st = gfc_new_symtree (&gfc_current_ns->sym_root, "$tar");
+	      st->n.sym = upe;
+	      upe->refs++;
+	    }
+	  ts->u.derived = upe;
+	  return m;
 	}
 
       m = gfc_match (" class ( %n )", name);
@@ -4247,6 +4275,10 @@ gfc_match_data_decl (void)
       m = MATCH_NO;
       goto cleanup;
     }
+
+  if (current_ts.type == BT_CLASS
+	&& current_ts.u.derived->attr.unlimited_polymorphic)
+    goto ok;
 
   if ((current_ts.type == BT_DERIVED || current_ts.type == BT_CLASS)
       && current_ts.u.derived->components == NULL

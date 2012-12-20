@@ -1,3 +1,122 @@
+2012-12-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	* array.c (resolve_array_list): Apply C4106.
+	* check.c (gfc_check_same_type_as): Exclude polymorphic
+	entities from check for extensible types. Improved error
+	for disallowed argument types to name the offending type.
+	* class.c : Update copyright date.
+	(gfc_class_null_initializer): Add argument for initialization
+	expression and deal with unlimited polymorphic typespecs.
+	(get_unique_type_string): Give unlimited polymorphic
+	entities a type string.
+	(gfc_intrinsic_hash_value): New function.
+	(gfc_build_class_symbol): Incorporate unlimited polymorphic
+	entities.
+	(gfc_find_derived_vtab): Deal with unlimited polymorphic
+	entities.
+	(gfc_find_intrinsic_vtab): New function.
+	* decl.c (gfc_match_decl_type_spec): Match typespec for
+	unlimited polymorphic type.
+	(gfc_match_data_decl): Skip to 'ok' if unlimited polymorphic.
+	expr.c (gfc_check_pointer_assign): Apply C717.  If unlimited
+	polymorphic lvalue, find rvalue vtable for all typespecs,
+	except unlimited polymorphic expressions.
+	(gfc_check_vardef_context): Handle unlimited polymorphic
+	entities.
+	* gfortran.h : Add unlimited polymorphic attribute. Add
+	second arg to gfc_class_null_initializer primitive and
+	primitive for gfc_find_intrinsic_vtab.  Add UNLIMITED_POLY
+	to detect unlimited polymorphic expressions.
+	* interface.c (gfc_compare_types): If expr1 is unlimited
+	polymorphic, always return 1. If expr2 is unlimited polymorphic
+	enforce C717.
+	(gfc_compare_interfaces): Skip past conditions that do not
+	apply for unlimited polymorphic entities.
+	(compare_parameter): Make sure that an unlimited polymorphic,
+	allocatable or pointer, formal argument is matched by an
+	unlimited polymorphic actual argument.
+	(compare_actual_formal): Ensure that an intrinsic vtable exists
+	to match an unlimited polymorphic formal argument.
+	* match.c (gfc_match_allocate): Type kind parameter does not
+	need to match an unlimited polymorphic allocate-object.
+	(alloc_opt_list): An unlimited polymorphic allocate-object
+	requires a typespec or a SOURCE tag.
+	(select_intrinsic_set_tmp): New function.
+	(select_type_set_tmp): Call new function.  If it returns NULL,
+	build a derived type or class temporary instead.
+	(gfc_match_type_is): Remove restriction to derived types only.
+	Bind(C) or sequence derived types not permitted.
+	* misc (gfc_typename):  Printed CLASS(*) for unlimited
+	polymorphism.
+	* module.c : Add AB_UNLIMITED_POLY to pass unlimited
+	polymorphic attribute to and from modules.
+	* resolve.c (resolve_common_vars): Unlimited polymorphic
+	entities cannot appear in common blocks.
+	(resolve_deallocate_expr): Deallocate unlimited polymorphic
+	enities.
+	(resolve_allocate_expr): Likewise for allocation.  Make sure
+	vtable exists.
+	(gfc_type_is_extensible): Unlimited polymorphic entities are
+	not extensible.
+	(resolve_select_type): Handle unlimited polymorphic selectors.
+	Ensure that length type parameters are assumed and that names
+	for intrinsic types are generated.
+	(resolve_fl_var_and_proc): Exclude select type temporaries
+	from test of extensibility of type.
+	(resolve_fl_variable): Likewise for test that assumed character
+	length must be a dummy or a parameter.
+	(resolve_fl_derived0): Return SUCCESS unconditionally for
+	unlimited polymorphic entities. Also, allow unlimited
+	polymorphic components.
+	(resolve_fl_derived): Return SUCCESS unconditionally for
+	unlimited polymorphic entities.
+	(resolve_symbol): Return early with unlimited polymorphic
+	entities.
+	* simplifiy.c : Update copyright year.
+	(gfc_simplify_extends_type_of): No simplification possible
+	for unlimited polymorphic arguments.
+	* symbol.c (gfc_use_derived): Nothing to do for unlimited
+	polymorphic "derived type".
+	(gfc_type_compatible): Return unity if ts1 is unlimited
+	polymorphic.
+	* trans-decl.c (create_function_arglist) Formal arguments
+	without a character length should be treated in the same way
+	as passed lengths.
+	(gfc_trans_deferred_vars): Nullify the vptr of unlimited
+	polymorphic pointers. Avoid unlimited polymorphic entities
+	triggering gcc_unreachable.
+	* trans-expr.c (gfc_conv_intrinsic_to_class): New function.
+	(gfc_trans_class_init_assign): Make indirect reference of
+	src.expr.
+	(gfc_trans_class_assign): Expression NULL of unknown type
+	should set NULL vptr on lhs. Treat C717 cases where lhs is
+	a derived type and the rhs is unlimited polymorphic.
+	(gfc_conv_procedure_call): Handle the conversion of a non-class
+	actual argument to match an unlimited polymorphic formal
+	argument.  Suppress the passing of a character string length
+	in this case.  Make sure that calls to the character __copy
+	function have two character string length arguments.
+	(gfc_conv_initializer): Pass the initialization expression to
+	gfc_class_null_initializer.
+	(gfc_trans_subcomponent_assign): Ditto.
+	(gfc_conv_structure): Move handling of _size component.
+	trans-intrinsic.c: (gfc_conv_same_type_as): Handle conditions
+	where unlimited polymorphic arguments have null vptr.
+	* trans-stmt.c (trans_associate_var): Correctly treat array
+	temporaries associated with unlimited polymorphic selectors.
+	Recover the overwritten dtype for the descriptor. Use the _size
+	field of the vptr for character string lengths.
+	(gfc_trans_allocate): Cope with unlimited polymorphic allocate
+	objects; especially with character source tags.
+	(reset_vptr): New function.
+	(gfc_trans_deallocate): Call it.
+	* trans-types.c (gfc_get_derived_type): Detect unlimited
+	polymorphic types and deal with cases where the derived type of
+	components is null.
+	* trans.c : Update copyright year.
+	(trans_code): Call gfc_trans_class_assign for C717 cases where
+	the lhs is not unlimited polymorphic.
+
 2012-12-19  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55733
@@ -51,7 +170,7 @@
 	PR fortran/55593
 	* frontend-passes.c (doloop_code):  Use resolved_sym
 	instead of n.sym->formal for formal argument list
-	to get the correct version for all generic subroutines. 
+	to get the correct version for all generic subroutines.
 
 2012-12-05  Tobias Burnus  <burnus@net-b.de>
 

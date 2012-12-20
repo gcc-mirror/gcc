@@ -2338,15 +2338,17 @@ gfc_get_derived_type (gfc_symbol * derived)
   tree canonical = NULL_TREE;
   tree *chain = NULL;
   bool got_canonical = false;
+  bool unlimited_entity = false;
   gfc_component *c;
   gfc_dt_list *dt;
   gfc_namespace *ns;
 
+  if (derived->attr.unlimited_polymorphic)
+    return ptr_type_node;
+
   if (derived && derived->attr.flavor == FL_PROCEDURE
       && derived->attr.generic)
     derived = gfc_find_dt_in_generic (derived);
-
-  gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
   /* See if it's one of the iso_c_binding derived types.  */
   if (derived->attr.is_iso_c == 1)
@@ -2431,6 +2433,12 @@ gfc_get_derived_type (gfc_symbol * derived)
       derived->backend_decl = typenode;
     }
 
+  if (derived->components
+	&& derived->components->ts.type == BT_DERIVED
+	&& strcmp (derived->components->name, "_data") == 0
+	&& derived->components->ts.u.derived->attr.unlimited_polymorphic)
+    unlimited_entity = true;
+
   /* Go through the derived type components, building them as
      necessary. The reason for doing this now is that it is
      possible to recurse back to this derived type through a
@@ -2511,14 +2519,16 @@ gfc_get_derived_type (gfc_symbol * derived)
 						    !c->attr.target);
 	}
       else if ((c->attr.pointer || c->attr.allocatable)
-	       && !c->attr.proc_pointer)
+	       && !c->attr.proc_pointer
+	       && !(unlimited_entity && c == derived->components))
 	field_type = build_pointer_type (field_type);
 
       if (c->attr.pointer)
 	field_type = gfc_nonrestricted_type (field_type);
 
       /* vtype fields can point to different types to the base type.  */
-      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.vtype)
+      if (c->ts.type == BT_DERIVED
+	    && c->ts.u.derived && c->ts.u.derived->attr.vtype)
 	  field_type = build_pointer_type_for_mode (TREE_TYPE (field_type),
 						    ptr_mode, true);
 

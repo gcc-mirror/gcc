@@ -1955,6 +1955,9 @@ gfc_use_derived (gfc_symbol *sym)
   if (!sym)
     return NULL;
 
+  if (sym->attr.unlimited_polymorphic)
+    return sym;
+
   if (sym->attr.generic)
     sym = gfc_find_dt_in_generic (sym);
 
@@ -4904,6 +4907,11 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   bool is_class2 = (ts2->type == BT_CLASS);
   bool is_derived1 = (ts1->type == BT_DERIVED);
   bool is_derived2 = (ts2->type == BT_DERIVED);
+
+  if (is_class1
+      && ts1->u.derived->components
+      && ts1->u.derived->components->ts.u.derived->attr.unlimited_polymorphic)
+    return 1;
 
   if (!is_derived1 && !is_derived2 && !is_class1 && !is_class2)
     return (ts1->type == ts2->type);
