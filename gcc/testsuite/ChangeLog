@@ -1,3 +1,8 @@
+2012-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55750
+	* gcc.c-torture/execute/pr55750.c: New test.
+
 2012-12-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55740
