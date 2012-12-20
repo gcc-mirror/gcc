@@ -6,7 +6,7 @@
 
  type :: t1
   integer :: i
- end type 
+ end type
 
  type :: ts
   sequence
@@ -18,10 +18,10 @@
 
  integer :: i
 
- print *, SAME_TYPE_AS (i,x1)   ! { dg-error "must be of a derived type" }
+ print *, SAME_TYPE_AS (i,x1)   ! { dg-error "cannot be of type INTEGER" }
  print *, SAME_TYPE_AS (x1,x2)  ! { dg-error "must be of an extensible type" }
 
- print *, EXTENDS_TYPE_OF (i,x1)   ! { dg-error "must be of a derived type" }
+ print *, EXTENDS_TYPE_OF (i,x1)   ! { dg-error "cannot be of type INTEGER" }
  print *, EXTENDS_TYPE_OF (x1,x2)  ! { dg-error "must be of an extensible type" }
 
 end

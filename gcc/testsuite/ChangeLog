@@ -18,7 +18,7 @@
 	* gfortran.dg/unlimited_polymorphic_1.f03: New test.
 	* gfortran.dg/unlimited_polymorphic_2.f03: New test.
 	* gfortran.dg/unlimited_polymorphic_3.f03: New test.
-	* gfortran.dg/same_type_as.f03: Correct for improved message.
+	* gfortran.dg/same_type_as_1.f03: Correct for improved message.
 
 2012-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
