@@ -1,3 +1,14 @@
+2012-12-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36044
+	* gfortran.map: Add _gfortran_backtrace.
+	* libgfortran.h: Rename 'show_backtrace' and export.
+	* runtime/backtrace.c (show_backtrace): Rename to 'backtrace'.
+	Don't show message. Close file descriptor. Export.
+	* runtime/compile_options.c (backtrace_handler): Renamed
+	'show_backtrace'. Move message outside.
+	* runtime/error.c (sys_abort): Ditto.
+
 2012-12-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	* intrinsics/extends_type_of.c : Return correct results for
