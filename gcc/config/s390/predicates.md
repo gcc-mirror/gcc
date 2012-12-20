@@ -154,6 +154,12 @@
   return false;
 })
 
+(define_predicate "contiguous_bitmask_operand"
+  (match_code "const_int")
+{
+  return s390_contiguous_bitmask_p (INTVAL (op), GET_MODE_BITSIZE (mode), NULL, NULL);
+})
+
 ;; operators --------------------------------------------------------------
 
 ;; Return nonzero if OP is a valid comparison operator
