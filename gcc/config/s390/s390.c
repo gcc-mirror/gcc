@@ -5368,28 +5368,35 @@ print_operand_address (FILE *file, rtx addr)
     'C': print opcode suffix for branch condition.
     'D': print opcode suffix for inverse branch condition.
     'E': print opcode suffix for branch on index instruction.
-    'J': print tls_load/tls_gdcall/tls_ldcall suffix
     'G': print the size of the operand in bytes.
+    'J': print tls_load/tls_gdcall/tls_ldcall suffix
+    'M': print the second word of a TImode operand.
+    'N': print the second word of a DImode operand.
     'O': print only the displacement of a memory reference.
     'R': print only the base register of a memory reference.
     'S': print S-type memory reference (base+displacement).
-    'N': print the second word of a DImode operand.
-    'M': print the second word of a TImode operand.
     'Y': print shift count operand.
 
     'b': print integer X as if it's an unsigned byte.
     'c': print integer X as if it's an signed byte.
-    'x': print integer X as if it's an unsigned halfword.
+    'e': "end" of DImode contiguous bitmask X.
+    'f': "end" of SImode contiguous bitmask X.
     'h': print integer X as if it's a signed halfword.
     'i': print the first nonzero HImode part of X.
     'j': print the first HImode part unequal to -1 of X.
     'k': print the first nonzero SImode part of X.
     'm': print the first SImode part unequal to -1 of X.
-    'o': print integer X as if it's an unsigned 32bit word.  */
+    'o': print integer X as if it's an unsigned 32bit word.
+    's': "start" of DImode contiguous bitmask X.
+    't': "start" of SImode contiguous bitmask X.
+    'x': print integer X as if it's an unsigned halfword.
+*/
 
 void
 print_operand (FILE *file, rtx x, int code)
 {
+  HOST_WIDE_INT ival;
+
   switch (code)
     {
     case 'C':
@@ -5568,30 +5575,57 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case CONST_INT:
-      if (code == 'b')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xff);
-      else if (code == 'c')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xff) ^ 0x80) - 0x80);
-      else if (code == 'x')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
-      else if (code == 'h')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
-      else if (code == 'i')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 s390_extract_part (x, HImode, 0));
-      else if (code == 'j')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 s390_extract_part (x, HImode, -1));
-      else if (code == 'k')
- 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
- 		 s390_extract_part (x, SImode, 0));
-      else if (code == 'm')
- 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
- 		 s390_extract_part (x, SImode, -1));
-      else if (code == 'o')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffffffff);
-      else
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+      ival = INTVAL (x);
+      switch (code)
+	{
+	case 0:
+	  break;
+	case 'b':
+	  ival &= 0xff;
+	  break;
+	case 'c':
+	  ival = ((ival & 0xff) ^ 0x80) - 0x80;
+	  break;
+	case 'x':
+	  ival &= 0xffff;
+	  break;
+	case 'h':
+	  ival = ((ival & 0xffff) ^ 0x8000) - 0x8000;
+	  break;
+	case 'i':
+	  ival = s390_extract_part (x, HImode, 0);
+	  break;
+	case 'j':
+	  ival = s390_extract_part (x, HImode, -1);
+	  break;
+	case 'k':
+	  ival = s390_extract_part (x, SImode, 0);
+	  break;
+	case 'm':
+	  ival = s390_extract_part (x, SImode, -1);
+	  break;
+	case 'o':
+	  ival &= 0xffffffff;
+	  break;
+	case 'e': case 'f':
+	case 's': case 't':
+	  {
+	    int pos, len;
+	    bool ok;
+
+	    len = (code == 's' || code == 'e' ? 64 : 32);
+	    ok = s390_contiguous_bitmask_p (ival, len, &pos, &len);
+	    gcc_assert (ok);
+	    if (code == 's' || code == 't')
+	      ival = 64 - pos - len;
+	    else
+	      ival = 64 - 1 - pos;
+	  }
+	  break;
+	default:
+	  output_operand_lossage ("invalid constant for output modifier '%c'", code);
+	}
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
       break;
 
     case CONST_DOUBLE:
