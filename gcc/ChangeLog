@@ -36,6 +36,8 @@
 	(*r<IXOR>sbg_di_rotl, *r<IXOR>sbg_<GPR>_srl, *r<IXOR>sbg_<GPR>_sll):
 	New patterns.
 
+	* config/s390/s390.md (*insv_rnsbg_noshift, *insv_rnsbg_srl): New.
+
 2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR bootstrap/55202
