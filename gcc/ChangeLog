@@ -1,3 +1,9 @@
+2012-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55750
+	* gimplify.c (gimplify_self_mod_expr): Don't force lvalue to
+	pass is_gimple_min_lval.
+
 2012-12-20  Richard Henderson  <rth@redhat.com>
 	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
