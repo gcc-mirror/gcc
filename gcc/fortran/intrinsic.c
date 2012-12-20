@@ -2896,6 +2896,8 @@ add_subroutines (void)
 	      "value", BT_INTEGER, di, REQUIRED, INTENT_OUT,
 	      "atom", BT_INTEGER, di, REQUIRED, INTENT_IN);
 
+  add_sym_0s ("backtrace", GFC_ISYM_BACKTRACE, GFC_STD_GNU, NULL);
+
   add_sym_1s ("cpu_time", GFC_ISYM_CPU_TIME, CLASS_IMPURE, BT_UNKNOWN, 0,
 	      GFC_STD_F95, gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
 	      tm, BT_REAL, dr, REQUIRED, INTENT_OUT);

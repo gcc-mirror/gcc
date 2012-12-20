@@ -667,8 +667,8 @@ internal_proto(find_addr2line);
 
 /* backtrace.c */
 
-extern void show_backtrace (void);
-internal_proto(show_backtrace);
+extern void backtrace (void);
+iexport_proto(backtrace);
 
 /* error.c */
 
