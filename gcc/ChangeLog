@@ -16,6 +16,11 @@
 	(*anddi3_cconly, *anddi3): Likewise.
 	(*andsi3, *andsi3_cconly, *andsi3_zarch): Likewise.
 
+	* config/s390/s390.md (bitsize): New mode attr.
+	(*extzv<GPR>, *extzv<GPR>, *insv<GPR>_zEC12, *insv<GPR>_z10): Use it.
+	(extend<HQI><DSI>2, zero_extend<HQI>si2): Likewise.
+	(zero_extend<HQI>di2, fixuns_trunc<BFP><GPR>2): Likewise.
+
 2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR bootstrap/55202
