@@ -1347,6 +1347,24 @@ s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
   return true;
 }
 
+/* Check whether a rotate of ROTL followed by an AND of CONTIG is
+   equivalent to a shift followed by the AND.  In particular, CONTIG
+   should not overlap the (rotated) bit 0/bit 63 gap.  Negative values
+   for ROTL indicate a rotate to the right.  */
+
+bool
+s390_extzv_shift_ok (int bitsize, int rotl, unsigned HOST_WIDE_INT contig)
+{
+  int pos, len;
+  bool ok;
+
+  ok = s390_contiguous_bitmask_p (contig, bitsize, &pos, &len);
+  gcc_assert (ok);
+
+  return ((rotl >= 0 && rotl <= pos)
+	  || (rotl < 0 && -rotl <= bitsize - len - pos));
+}
+
 /* Check whether we can (and want to) split a double-word
    move in mode MODE from SRC to DST into two single-word
    moves, moving the subword FIRST_SUBWORD first.  */
