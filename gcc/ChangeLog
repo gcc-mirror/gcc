@@ -21,6 +21,15 @@
 	(extend<HQI><DSI>2, zero_extend<HQI>si2): Likewise.
 	(zero_extend<HQI>di2, fixuns_trunc<BFP><GPR>2): Likewise.
 
+	* config/s390/predicates.md (nonzero_shift_count_operand): New.
+	* config/s390/s390-protos.h (s390_extzv_shift_ok): Declare.
+	* config/s390/s390.c (s390_extzv_shift_ok): New function.
+	* config/s390/s390.md (extzv): New expander.
+	(*extzv<GPR>_zEC12, *extzv<GPR>_z10): New insns.
+	(*pre_z10_extzv<GPR>): Rename from *extzv<GPR>; simplify with
+	nonzero_shift_count_operand.
+	(*extzv_<mode>_srl, *extzv_<mode>_sll): New insns.
+
 2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR bootstrap/55202

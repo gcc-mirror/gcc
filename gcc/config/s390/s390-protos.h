@@ -109,5 +109,6 @@ extern bool s390_legitimate_address_without_index_p (rtx);
 extern bool s390_decompose_shift_count (rtx, rtx *, HOST_WIDE_INT *);
 extern int s390_branch_condition_mask (rtx);
 extern int s390_compare_and_branch_condition_mask (rtx);
+extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
 
 #endif /* RTX_CODE */
