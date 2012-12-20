@@ -1,3 +1,9 @@
+2012-12-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55740
+	* cfghooks.c (merge_blocks): Properly handle merging of
+	two loop headers.
+
 2012-12-20  Roland Stigge  <stigge@debian.org>
 	    Matthias Klose  <doko@ubuntu.com>
 
