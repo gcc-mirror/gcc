@@ -14,7 +14,6 @@
   u1 => chr
 ! F2003: C625
   allocate (u1) ! { dg-error "requires either a type-spec or SOURCE tag" }
-  allocate (u1, mold = 1.0) ! { dg-error "requires either a type-spec or SOURCE tag" }
   allocate (real :: u1)
   Allocate (u1, source = 1.0)
 
