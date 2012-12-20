@@ -796,10 +796,12 @@ typedef struct
      components or private components, procedure pointer components,
      possibly nested.  zero_comp is true if the derived type has no
      component at all.  defined_assign_comp is true if the derived
-     type or a (sub-)component has a typebound defined assignment.  */
+     type or a (sub-)component has a typebound defined assignment.
+     unlimited_polymorphic flags the type of the container for these
+     entities.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
-	   defined_assign_comp:1;
+	   defined_assign_comp:1, unlimited_polymorphic:1;
 
   /* This is a temporary selector for SELECT TYPE.  */
   unsigned select_type_temporary:1;
@@ -1270,7 +1272,6 @@ typedef struct gfc_symbol
   struct gfc_association_list *assoc;
 }
 gfc_symbol;
-
 
 /* This structure is used to keep track of symbols in common blocks.  */
 typedef struct gfc_common_head
@@ -2964,11 +2965,12 @@ void gfc_add_class_array_ref (gfc_expr *);
 bool gfc_is_class_array_ref (gfc_expr *, bool *);
 bool gfc_is_class_scalar_expr (gfc_expr *);
 bool gfc_is_class_container_ref (gfc_expr *e);
-gfc_expr *gfc_class_null_initializer (gfc_typespec *);
+gfc_expr *gfc_class_null_initializer (gfc_typespec *, gfc_expr *);
 unsigned int gfc_hash_value (gfc_symbol *);
 gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
 				gfc_array_spec **, bool);
 gfc_symbol *gfc_find_derived_vtab (gfc_symbol *);
+gfc_symbol *gfc_find_intrinsic_vtab (gfc_typespec *);
 gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*,
 				      const char*, bool, locus*);
 gfc_symtree* gfc_find_typebound_user_op (gfc_symbol*, gfc_try*,
@@ -2980,6 +2982,11 @@ gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 bool gfc_is_finalizable (gfc_symbol *, gfc_expr **);
 
 #define CLASS_DATA(sym) sym->ts.u.derived->components
+#define UNLIMITED_POLY(sym) \
+	(sym != NULL && sym->ts.type == BT_CLASS \
+	 && CLASS_DATA (sym) \
+	 && CLASS_DATA (sym)->ts.u.derived \
+	 && CLASS_DATA (sym)->ts.u.derived->attr.unlimited_polymorphic)
 
 /* frontend-passes.c */
 
