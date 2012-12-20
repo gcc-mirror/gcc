@@ -1,3 +1,9 @@
+2012-12-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54818
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Ensure that
+	the string length is of type gfc_charlen_type_node.
+
 2012-11-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/55314

@@ -5659,7 +5659,7 @@ scalar_transfer:
       gfc_add_expr_to_block (&se->pre, tmp);
 
       se->expr = tmpdecl;
-      se->string_length = dest_word_len;
+      se->string_length = fold_convert (gfc_charlen_type_node, dest_word_len);
     }
   else
     {
