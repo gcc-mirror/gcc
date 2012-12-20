@@ -1,3 +1,14 @@
+2012-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/55619
+	* c-parser.c (c_parser_asm_operands): Remove CONVERT_P
+	argument, don't call default_function_array_conversion
+	nor c_fully_fold here.
+	(c_parser_asm_statement): Adjust callers.
+	* c-typeck.c (build_asm_expr): Call c_fully_fold on inputs
+	and outputs here, and call default_function_array_conversion
+	on inputs that don't need to be addressable.
+
 2012-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/39464
