@@ -1,5 +1,35 @@
 2012-12-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/functional (_Require): Move to ...
+	* include/std/type_traits (_Require): ... here.
+	* include/bits/shared_ptr_base.h (__shared_count::_S_create_from_up):
+	Handle unique_ptr for arrays or with custom pointer types.
+	(__shared_ptr::__shared_ptr(unique_ptr<_Tp1, _Del>&&): Likewise.
+	* include/bits/unique_ptr.h (unique_ptr<_Tp[], _Dp>): Use
+	_Dp::pointer if defined. Implement proposed resolution of LWG 2118.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_array.cc: New.
+	* testsuite/20_util/unique_ptr/assign/cv_qual.cc: New.
+	* testsuite/20_util/unique_ptr/cons/array_convertible_neg.cc: New.
+	* testsuite/20_util/unique_ptr/cons/convertible_neg.cc: New.
+	* testsuite/20_util/unique_ptr/cons/cv_qual.cc: New.
+	* testsuite/20_util/unique_ptr/modifiers/cv_qual.cc: New.
+	* testsuite/20_util/unique_ptr/requirements/pointer_type_array.cc: New.
+	* testsuite/20_util/shared_ptr/cons/unique_ptr.cc: Adjust comments.
+	* testsuite/20_util/unique_ptr/cons/pointer_array_convertible_neg.cc:
+	Likewise.
+	* testsuite/20_util/unique_ptr/requirements/pointer_type.cc: Likewise.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line number.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/default_delete/48631_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust
+	dg-error text.
+	* testsuite/20_util/unique_ptr/cons/ptr_deleter_neg.cc: Use
+	different instantiations so static_assert fails for each.
+
+2012-12-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/55741
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Check for Sleep.
 	* config.h.in: Regenerate.

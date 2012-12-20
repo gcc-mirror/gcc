@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
+// { dg-options "-std=gnu++11" }
 
 // Copyright (C) 2010-2012 Free Software Foundation
 //
@@ -18,22 +18,32 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.9.11.2 Template class shared_ptr [util.smartptr.shared]
+// 20.7.1.3 unique_ptr for array objects [unique.ptr.runtime]
 
 #include <memory>
 
-// incomplete type
-struct X;
-
-// get an auto_ptr rvalue
-std::auto_ptr<X>&& ap();
-
-void test01()
+struct A
 {
-  X* px = 0;
-  std::shared_ptr<X> p1(px);   // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 771 }
+  void operator()(void*) const { }
+};
 
-  std::shared_ptr<X> p9(ap());  // { dg-error "here" }
-  // { dg-error "incomplete" "" { target *-*-* } 307 }
+struct B
+{
+  typedef char* pointer;
+  void operator()(pointer) const { }
+};
+
+int main()
+{
+  typedef std::unique_ptr<int[]>     up;
+  typedef std::unique_ptr<int[], A>  upA;
+  typedef std::unique_ptr<int[], B>  upB;
+  typedef std::unique_ptr<int[], A&> upAr;
+  typedef std::unique_ptr<int[], B&> upBr;
+
+  static_assert( std::is_same< up::pointer, int*>::value, "" );
+  static_assert( std::is_same< upA::pointer, int*>::value, "" );
+  static_assert( std::is_same< upB::pointer, char*>::value, "" );
+  static_assert( std::is_same< upAr::pointer, int*>::value, "" );
+  static_assert( std::is_same< upBr::pointer, char*>::value, "" );
 }
