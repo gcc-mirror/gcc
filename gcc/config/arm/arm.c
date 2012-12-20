@@ -3619,8 +3619,7 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
   /* If *op0 is (zero_extend:SI (subreg:QI (reg:SI) 0)) and comparing
      with const0_rtx, change it to (and:SI (reg:SI) (const_int 255)),
      to facilitate possible combining with a cmp into 'ands'.  */
-  if (!op0_preserve_value
-      && mode == SImode
+  if (mode == SImode
       && GET_CODE (*op0) == ZERO_EXTEND
       && GET_CODE (XEXP (*op0, 0)) == SUBREG
       && GET_MODE (XEXP (*op0, 0)) == QImode

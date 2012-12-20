@@ -1,3 +1,9 @@
+2012-12-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/55754
+	* config/arm/arm.c (arm_canonicalize_comparison): Remove
+	op0_preserve_value check for zero_extend to and transformation.
+
 2012-12-20  Teresa Johnson  <tejohnson@google.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
