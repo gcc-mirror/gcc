@@ -28,7 +28,13 @@
 	(*extzv<GPR>_zEC12, *extzv<GPR>_z10): New insns.
 	(*pre_z10_extzv<GPR>): Rename from *extzv<GPR>; simplify with
 	nonzero_shift_count_operand.
-	(*extzv_<mode>_srl, *extzv_<mode>_sll): New insns.
+	(*extzv_<GPR>_srl, *extzv_<GPR>_sll): New insns.
+
+	* config/s390/s390.md (IXOR): New code iterator.
+	(*r<IXOR>sbg_<GPR>_noshift): Rename from *insv<GPR>_or_z10_noshift;
+	macro-ize to handle XOR too.
+	(*r<IXOR>sbg_di_rotl, *r<IXOR>sbg_<GPR>_srl, *r<IXOR>sbg_<GPR>_sll):
+	New patterns.
 
 2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
 
