@@ -1,3 +1,10 @@
+2012-12-20  Roland Stigge  <stigge@debian.org>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	* config/rs6000/t-spe (MULTIARCH_DIRNAME): Remove.
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Define name for
+	powerpc-linux-gnuspe.
+
 2012-12-19  Matthias Klose  <doko@ubuntu.com>
 
 	* config/i386/t-kfreebsd (MULTIARCH_DIRNAME): Add comma to
