@@ -538,7 +538,15 @@ gcov_read_summary (struct gcov_summary *summary)
       for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
         {
           histo_bitvector[bv_ix] = gcov_read_unsigned ();
-          h_cnt += __builtin_popcountll (histo_bitvector[bv_ix]);
+#if IN_LIBGCOV
+          /* When building libgcov we don't include system.h, which includes
+             hwint.h (where popcount_hwi is declared). However, libgcov.a
+             is built by the bootstrapped compiler and therefore the builtins
+             are always available.  */
+          h_cnt += __builtin_popcount (histo_bitvector[bv_ix]);
+#else
+          h_cnt += popcount_hwi (histo_bitvector[bv_ix]);
+#endif
         }
       bv_ix = 0;
       h_ix = 0;
@@ -642,7 +650,31 @@ gcov_histo_index (gcov_type value)
 
   /* Find the place of the most-significant bit set.  */
   if (v > 0)
-    r = 63 - __builtin_clzll (v);
+    {
+#if IN_LIBGCOV
+      /* When building libgcov we don't include system.h, which includes
+         hwint.h (where floor_log2 is declared). However, libgcov.a
+         is built by the bootstrapped compiler and therefore the builtins
+         are always available.  */
+      r = sizeof (long long) * __CHAR_BIT__ - 1 - __builtin_clzll (v);
+#else
+      /* We use floor_log2 from hwint.c, which takes a HOST_WIDE_INT
+         that is either 32 or 64 bits, and gcov_type_unsigned may be 64 bits.
+         Need to check for the case where gcov_type_unsigned is 64 bits
+         and HOST_WIDE_INT is 32 bits and handle it specially.  */
+#if HOST_BITS_PER_WIDEST_INT == HOST_BITS_PER_WIDE_INT
+      r = floor_log2 (v);
+#elif HOST_BITS_PER_WIDEST_INT == 2 * HOST_BITS_PER_WIDE_INT
+      HOST_WIDE_INT hwi_v = v >> HOST_BITS_PER_WIDE_INT;
+      if (hwi_v)
+        r = floor_log2 (hwi_v) + HOST_BITS_PER_WIDE_INT;
+      else
+        r = floor_log2 ((HOST_WIDE_INT)v);
+#else
+      gcc_unreachable ();
+#endif
+#endif
+    }
 
   /* If at most the 2 least significant bits are set (value is
      0 - 3) then that value is our index into the lowest set of
