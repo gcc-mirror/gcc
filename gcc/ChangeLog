@@ -10,6 +10,8 @@
 	(*insv<GPR>_z10_noshift): Likewise.
 	(*insv<GPR>_or_z10_noshift): Likewise.
 
+	* config/s390/s390.md (*insv_l_di_reg_extimm): Un-macroize from :P.
+
 2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR bootstrap/55202
