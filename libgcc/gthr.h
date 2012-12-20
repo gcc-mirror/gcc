@@ -129,9 +129,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      int __gthread_cond_timedwait (__gthread_cond_t *cond,
                                    __gthread_mutex_t *mutex,
                                    const __gthread_time_t *abs_timeout);
-     int __gthread_cond_timedwait_recursive (__gthread_cond_t *cond,
-                                             __gthread_recursive_mutex_t *mutex,
-                                             const __gthread_time_t *abs_time)
 
 */
 
