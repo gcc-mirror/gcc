@@ -1,7 +1,7 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2008-2012 Free Software Foundation
+// Copyright (C) 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,30 @@ struct B : A
   virtual ~B() { }
 };
 
-void test01()
+// 20.7.1.3 unique_ptr for array objects [unique.ptr.runtime]
+
+struct D
 {
-  std::unique_ptr<B[]> up;
-  up.reset(new A[3]);		// { dg-error "invalid conversion" }
+  template<typename T>
+    void operator()(const T* p) const { delete[] p; }
+};
+
+// Conversion from different type of unique_ptr<T[], D>
+void
+test01()
+{
+  std::unique_ptr<B[], D> b(new B[1]);
+  std::unique_ptr<A[], D> a(std::move(b)); //{ dg-error "no matching function" }
+  a = std::move(b); //{ dg-error "no match" }
+}
+
+// Conversion from non-array form of unique_ptr
+void
+test02()
+{
+  std::unique_ptr<A> nonarray(new A);
+  std::unique_ptr<A[]> array(std::move(nonarray)); //{ dg-error "no matching function" }
+  array = std::move(nonarray); //{ dg-error "no match" }
 }
 
 // { dg-prune-output "include" }
