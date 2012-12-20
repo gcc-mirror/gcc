@@ -515,6 +515,13 @@ dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v
 dependencies = { module=all-target-libstdc++-v3; on=configure-target-libgomp; };
 
 dependencies = { module=install-target-libgo; on=install-target-libatomic; };
+dependencies = { module=install-target-libgfortran; on=install-target-libquadmath; };
+dependencies = { module=install-target-libgfortran; on=install-target-libgcc; };
+dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
+dependencies = { module=install-target-libjava; on=install-target-libgcc; };
+dependencies = { module=install-target-libitm; on=install-target-libgcc; };
+dependencies = { module=install-target-libobjc; on=install-target-libgcc; };
+dependencies = { module=install-target-libstdc++-v3; on=install-target-libgcc; };
 
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=libtermcap; };
