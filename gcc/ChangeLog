@@ -1,3 +1,13 @@
+2012-12-20  Teresa Johnson  <tejohnson@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/55734
+	* gcov-io.c (gcov_read_summary): Use __builtin_popcount instead
+	of __builtin_popcountll when building libgcov.a, otherwise use
+	popcount_hwi.
+	(gcov_histo_index): When not building libgcov.a, use floor_log2
+	instead of __builtin_clzll.
+
 2012-12-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55740
