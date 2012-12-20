@@ -2031,8 +2031,8 @@ ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
 PLUGIN_LD_SUFFIX=`basename $gcc_cv_ld | sed -e "s,$target_alias-,,"`
 # if the PLUGIN_LD is set ld-new, just have it as ld
 # as that is the installed named.
-if test x$PLUGIN_LD_SUFFIX == xld-new \
-   || test x$PLUGIN_LD_SUFFIX == xcollect-ld ; then
+if test x$PLUGIN_LD_SUFFIX = xld-new \
+   || test x$PLUGIN_LD_SUFFIX = xcollect-ld ; then
   PLUGIN_LD_SUFFIX=ld
 fi
 AC_ARG_WITH(plugin-ld,

@@ -1,3 +1,9 @@
+2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/55202
+	* configure.ac <PLUGIN_LD_SUFFIX>: Use POSIX shell syntax.
+	* configure: Regenerate.
+
 2012-12-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/55754
