@@ -701,7 +701,12 @@ type_internals_preclude_sra_p (tree type, const char **msg)
 	      {
 	        *msg = "structure field size not fixed";
 		return true;
-	      }	      
+	      }
+	    if (!host_integerp (bit_position (fld), 0))
+	      {
+	        *msg = "structure field size too big";
+		return true;
+	      }
 	    if (AGGREGATE_TYPE_P (ft)
 		    && int_bit_position (fld) % BITS_PER_UNIT != 0)
 	      {
