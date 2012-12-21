@@ -1,3 +1,9 @@
+2012-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55355
+	* tree-sra.c (type_internals_preclude_sra_p): Also check that
+	bit_position is small enough to fit a single HOST_WIDE_INT.
+
 2012-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* rtlanal.c (volatile_insn_p): Delete commented out code.
