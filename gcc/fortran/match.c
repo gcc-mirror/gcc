@@ -5293,6 +5293,9 @@ select_type_set_tmp (gfc_typespec *ts)
 
   if (tmp == NULL)
     {
+      if (!ts->u.derived)
+	return;
+
       if (ts->type == BT_CLASS)
 	sprintf (name, "__tmp_class_%s", ts->u.derived->name);
       else
