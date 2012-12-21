@@ -29,10 +29,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef __alpha_vxworks
 #include "vxWorks.h"
 #endif
@@ -47,6 +43,10 @@ extern "C" {
 #endif
 
 #include "adaint.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Routine used by Ada.Command_Line.Set_Exit_Status.  */
 

@@ -1,3 +1,17 @@
+2012-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c: Move directive around.
+	* argv.c: Likewise.
+	* cio.c: Likewise.
+	* cstreams.c: Likewise.
+	* env.c: Likewise.
+	* exit.c: Likewise.
+	* init.c: Likewise.
+	* initialize.c: Likewise.
+	* raise.c: Likewise.
+	* seh_init.c: Likewise.
+	* targext.c: Likewise.
+
 2012-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 	    Martin Ettl  <ettl.martin@gmx.de>
 

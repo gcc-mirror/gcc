@@ -42,10 +42,6 @@
    main program, and these routines are accessed from the
    Ada.Command_Line.Environment package.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -56,6 +52,10 @@ extern "C" {
 #endif
 
 #include "adaint.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* argc and argv of the main program are saved under gnat_argc and gnat_argv,
    envp of the main program is saved under gnat_envp.  */

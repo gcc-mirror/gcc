@@ -38,10 +38,6 @@
     installed by this file are used to catch the resulting signals that come
     from these probes failing (i.e. touching protected pages).  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* This file should be kept synchronized with 2sinit.ads, 2sinit.adb,
    s-init-ae653-cert.adb and s-init-xi-sparc.adb.  All these files implement
    the required functionality for different targets.  */
@@ -70,6 +66,10 @@ extern "C" {
 
 #include "adaint.h"
 #include "raise.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern void __gnat_raise_program_error (const char *, int);
 

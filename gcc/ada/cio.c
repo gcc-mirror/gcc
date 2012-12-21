@@ -29,10 +29,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -43,6 +39,10 @@ extern "C" {
 #endif
 
 #include "adaint.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
