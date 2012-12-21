@@ -128,7 +128,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   size_t
   _Hash_bytes(const void* ptr, size_t len, size_t seed)
   {
-    static const size_t mul = (0xc6a4a793UL << 32UL) + 0x5bd1e995UL;
+    static const size_t mul = (((size_t) 0xc6a4a793UL) << 32UL)
+			      + (size_t) 0x5bd1e995UL;
     const char* const buf = static_cast<const char*>(ptr);
 
     // Remove the bytes not divisible by the sizeof(size_t).  This
