@@ -1,3 +1,8 @@
+2012-12-21  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/54659
+	* gfortran.h: Do not include gmp.h here.
+
 2012-12-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55763
