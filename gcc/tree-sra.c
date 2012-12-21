@@ -666,6 +666,7 @@ type_internals_preclude_sra_p (tree type)
 		|| !DECL_FIELD_OFFSET (fld) || !DECL_SIZE (fld)
 		|| !host_integerp (DECL_FIELD_OFFSET (fld), 1)
 		|| !host_integerp (DECL_SIZE (fld), 1)
+		|| !host_integerp (bit_position (fld), 0)
 		|| (AGGREGATE_TYPE_P (ft)
 		    && int_bit_position (fld) % BITS_PER_UNIT != 0))
 	      return true;
