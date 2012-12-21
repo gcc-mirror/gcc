@@ -578,10 +578,10 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 
 proc add_options_for_tls { flags } {
     # On Solaris 9, __tls_get_addr/___tls_get_addr only lives in
-    # libthread, so always pass -pthread for native TLS.
+    # libthread, so always pass -pthread for native TLS. Same for AIX.
     # Need to duplicate native TLS check from
     # check_effective_target_tls_native to avoid recursion.
-    if { [istarget *-*-solaris2.9*] &&
+    if { ([istarget *-*-solaris2.9*] || [istarget powerpc-ibm-aix*]) &&
 	 [check_no_messages_and_pattern tls_native "!emutls" assembly {
 	     __thread int i;
 	     int f (void) { return i; }
@@ -2646,10 +2646,10 @@ proc check_effective_target_powerpc_vsx_ok { } {
     if { ([istarget powerpc*-*-*]
          && ![istarget powerpc-*-linux*paired*])
 	 || [istarget rs6000-*-*] } {
-	# AltiVec is not supported on AIX before 5.3.
+	# VSX is not supported on AIX before 7.1.
 	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
-	     || [istarget powerpc*-*-aix5.2*] } {
+	     || [istarget powerpc*-*-aix5*]
+	     || [istarget powerpc*-*-aix6*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_vsx_ok object {
