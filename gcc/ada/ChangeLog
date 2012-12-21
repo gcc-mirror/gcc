@@ -1,3 +1,10 @@
+2012-12-21  Ed Schonberg  <schonberg@adacore.com>
+
+	PR ada/53737
+	* sem_ch12.adb (Analyze_Associations): Do not check the legality of
+	actuals for RACW types if this is an internal instantiation for a formal
+	package with defaulted parameters.
+
 2012-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* adaint.c: Move directive around.
