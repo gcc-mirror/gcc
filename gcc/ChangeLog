@@ -1,3 +1,12 @@
+2012-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtlanal.c (volatile_insn_p): Delete commented out code.
+	(side_effects_p): Likewise.
+	(may_trap_p_1) <UNSPEC_VOLATILE>: Return 1 again.
+	* target.def (unspec_may_trap_p): Adjust comment.
+	* targhooks.c (default_unspec_may_trap_p): Don't handle UNSPEC_VOLATILE.
+	* config/ia64/ia64.c (ia64_unspec_may_trap_p): Adjust to above change.
+
 2012-12-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55775

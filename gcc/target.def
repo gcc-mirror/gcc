@@ -1816,7 +1816,7 @@ DEFHOOK
  "",
  rtx, (rtx hard_reg), NULL)
 
-/* Return nonzero if evaluating UNSPEC[_VOLATILE] X might cause a trap.
+/* Return nonzero if evaluating UNSPEC X might cause a trap.
    FLAGS has the same meaning as in rtlanal.c: may_trap_p_1.  */
 DEFHOOK
 (unspec_may_trap_p,
