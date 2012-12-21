@@ -1,3 +1,9 @@
+2012-12-21  Steve Ellcey  <sellcey@mips.com>
+
+	PR bootstrap/54128
+	* ira.c (build_insn_chain): Check only NONDEBUG instructions for
+	register usage.
+
 2012-12-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* varasm.c (bss_initializer_p): Remove static.
