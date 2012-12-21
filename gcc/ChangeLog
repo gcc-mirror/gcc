@@ -1,5 +1,12 @@
 2012-12-21  Richard Biener  <rguenther@suse.de>
 
+	PR rtl-optimization/52996
+	* cprop.c (bypass_block): When loops are to be preserved
+	do not bypass loop headers.  Revert earlier kludge to remove
+	loops when doing that.
+
+2012-12-21  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/54659
 	* system.h: Include gmp.h.
 	* tree-ssa-loop-niter.c: Do not include gmp.h here.
