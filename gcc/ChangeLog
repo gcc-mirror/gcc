@@ -1,3 +1,15 @@
+2012-12-21  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/cortex-a7.md: New file.
+        * config/arm/t-arm (MD_INCLUDES): Add cortex-a7.md.
+        * config/arm/arm.md: Include cortex-a7.md.
+        (generic_sched): Don't use generic scheduler for Cortex-A7.
+        (generic_vfp): Likewise.
+        * config/arm/arm.c: (TARGET_SCHED_REORDER): Use arm_sched_reorder.
+        (arm_sched_reorder,cortexa7_sched_reorder): New function.
+        (cortexa7_older_only,cortexa7_younger): Likewise.
+        (arm_issue_rate): Add Cortex-A7.
+
 2012-12-20  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc/config/aarch64/aarch64.md
