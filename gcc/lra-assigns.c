@@ -1084,6 +1084,8 @@ improve_inheritance (bitmap changed_pseudos)
   lra_copy_t cp, next_cp;
   bitmap_iterator bi;
 
+  if (lra_inheritance_iter > LRA_MAX_INHERITANCE_PASSES)
+    return;
   n = 0;
   EXECUTE_IF_SET_IN_BITMAP (&lra_inheritance_pseudos, 0, k, bi)
     if (reg_renumber[k] >= 0 && lra_reg_info[k].nrefs != 0)

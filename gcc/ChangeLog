@@ -1,3 +1,16 @@
+2012-12-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55775
+	* lra-assigns.c (improve_inheritance): Do nothing after
+	LRA_MAX_INHERITANCE_PASSES pass.
+	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Rename to
+	LRA_MAX_CONSTRAINT_ITERATION_NUMBER.  Move to lra-int.h.
+	(MAX_INHERITANCE_PASSES): Rename to LRA_MAX_INHERITANCE_PASSES.
+	Move to lra-int.h.
+	* lra-int.h (LRA_MAX_CONSTRAINT_ITERATION_NUMBER): Move from
+	lra-constraints.c.
+	(LRA_MAX_INHERITANCE_PASSES): Ditto.
+
 2012-12-21  Steve Ellcey  <sellcey@mips.com>
 
 	PR bootstrap/54128
