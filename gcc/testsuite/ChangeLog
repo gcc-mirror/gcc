@@ -1,3 +1,8 @@
+2012-12-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55775
+	* gcc.target/i386/pr55775.c: New test.
+
 2012-12-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/pthread-init-2.c (dg-options): Define _XOPEN_SOURCE=500
