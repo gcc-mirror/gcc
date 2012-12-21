@@ -8,6 +8,8 @@
 	(check_effective_target_powerpc_vsx_ok): Only test VSX on AIX 7.1
 	and above.
 
+	* gcc.c-torture/compile/pr44707.c: Do not try to assemble on AIX.
+
 2012-12-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55763
