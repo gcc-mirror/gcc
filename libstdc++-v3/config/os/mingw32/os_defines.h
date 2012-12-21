@@ -72,4 +72,8 @@
 #define _GLIBCXX_CDTOR_CALLABI __thiscall
 #endif
 
+#ifdef __x86_64__
+#define _GLIBCXX_LLP64 1
+#endif
+
 #endif

@@ -356,7 +356,11 @@ namespace __cxxabiv1
   {
   public:
     const __class_type_info* 	__base_type;  // Base class type.
+#ifdef _GLIBCXX_LLP64
+    long long			__offset_flags;  // Offset and info.
+#else
     long 			__offset_flags;  // Offset and info.
+#endif
 
     enum __offset_flags_masks
       {

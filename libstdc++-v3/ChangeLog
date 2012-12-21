@@ -1,3 +1,16 @@
+2012-12-21  Kai Tietz  <ktietz@redhat.com>
+
+	* config/os/mingw32/os_defines.h (_GLIBCXX_LLP64): Define if llp64
+	abi is used.
+	* config/os/mingw32-w64/os_defines.h: Likewise.
+	* libsupc++/cxxabi.h (__base_class_type_info): Adjust
+	type of __offset_flags for llp64.
+	* libsupc++/eh_alloc.cc (EMERGENCY_OBJ_SIZE): Define proper
+	for llp64 abi.
+	(EMERGENCY_OBJ_COUNT): Likewise.
+	(bitmask_type): Likewise.
+	* libsupc++/hash_bytes.cc (_Hash_bytes): Handle llp64.
+
 2012-12-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/functional (_Require): Move to ...
