@@ -1,3 +1,20 @@
+2012-12-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* varasm.c (bss_initializer_p): Remove static.
+	* output.h (bss_initializer_p): Declare.
+	* xcoffout.c (xcoff_tbss_section_name): Define.
+	* xcoffout.h (xcoff_tbss_section_name): Declare.
+	* config/rs6000/xcoff.h (TARGET_ENCODE_SECTION_INFO): Define.
+	(ASM_OUTPUT_TLS_COMMON): Merge strings.
+	* config/rs6000/rs6000.c (tls_private_data_section): New.
+	(output_toc): Only output CSECT decoration for TLS.
+	Output appropriate CSECT for data or bss.
+	(rs6000_xcoff_asm_init_sections) Define tls_private_data_section.
+	(rs6000_xcoff_select_section): Handle TLS bss and private data.
+	(rs6000_xcoff_file_start): Generate xcoff_tbss_section_name.
+	(rs6000_xcoff_encode_section_info): Strip SYMBOL_FLAG_HAS_BLOCK_INFO
+	from native TLS symbols.
+
 2012-12-21  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/52996
