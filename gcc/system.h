@@ -638,6 +638,8 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 #include <dlfcn.h>
 #endif
 
+#include <gmp.h>
+
 /* Get libiberty declarations.  */
 #include "libiberty.h"
 

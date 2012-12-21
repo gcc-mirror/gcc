@@ -20,10 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef DOUBLE_INT_H
 #define DOUBLE_INT_H
 
-#ifndef GENERATOR_FILE
-#include <gmp.h>
-#endif
-
 /* A large integer is currently represented as a pair of HOST_WIDE_INTs.
    It therefore represents a number with precision of
    2 * HOST_BITS_PER_WIDE_INT bits (it is however possible that the
