@@ -1448,10 +1448,15 @@ package body Sem_Ch12 is
                   --  defined aspect/pragma Remote_Access_Type. In that case
                   --  the actual must be remote as well.
 
+                  --  If the current instantiation is the construction of a
+                  --  local copy for a formal package the actuals may be
+                  --  defaulted, and there is no matching actual to check.
+
                   if Nkind (Analyzed_Formal) = N_Formal_Type_Declaration
                     and then
                       Nkind (Formal_Type_Definition (Analyzed_Formal)) =
                                             N_Access_To_Object_Definition
+                     and then Present (Match)
                   then
                      declare
                         Formal_Ent : constant Entity_Id :=
