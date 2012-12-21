@@ -11056,7 +11056,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	}
       else
 	{
-	  pointer = sym->attr.pointer;
+	  pointer = sym->attr.pointer && !sym->attr.select_type_temporary;
 	  allocatable = sym->attr.allocatable;
 	  dimension = sym->attr.dimension;
 	}
@@ -13315,7 +13315,7 @@ resolve_symbol (gfc_symbol *sym)
       gcc_assert (as->type != AS_IMPLIED_SHAPE);
       if (((as->type == AS_ASSUMED_SIZE && !as->cp_was_assumed)
 	   || as->type == AS_ASSUMED_SHAPE)
-	  && sym->attr.dummy == 0)
+	  && !sym->attr.dummy && !sym->attr.select_type_temporary)
 	{
 	  if (as->type == AS_ASSUMED_SIZE)
 	    gfc_error ("Assumed size array at %L must be a dummy argument",
@@ -13326,7 +13326,8 @@ resolve_symbol (gfc_symbol *sym)
 	  return;
 	}
       /* TS 29113, C535a.  */
-      if (as->type == AS_ASSUMED_RANK && !sym->attr.dummy)
+      if (as->type == AS_ASSUMED_RANK && !sym->attr.dummy
+	  && !sym->attr.select_type_temporary)
 	{
 	  gfc_error ("Assumed-rank array at %L must be a dummy argument",
 		     &sym->declared_at);

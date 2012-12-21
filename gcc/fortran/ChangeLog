@@ -1,3 +1,13 @@
+2012-12-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55763
+	* match.c (select_type_set_tmp): Return is a derived type or
+	class typespec has no derived type.
+	* resolve.c (resolve_fl_var_and_proc): Exclude select type
+	temporaries from 'pointer'.
+	(resolve_symbol): Exclude select type temporaries from tests
+	for assumed size and assumed rank.
+
 2012-12-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36044
