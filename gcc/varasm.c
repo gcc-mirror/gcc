@@ -927,7 +927,7 @@ decode_reg_name (const char *name)
 
 /* Return true if DECL's initializer is suitable for a BSS section.  */
 
-static bool
+bool
 bss_initializer_p (const_tree decl)
 {
   return (DECL_INITIAL (decl) == NULL
