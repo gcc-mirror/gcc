@@ -34,10 +34,6 @@
    package Osint.  Many of the subprograms in OS_Lib import standard
    library calls directly. This file contains all other routines.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef __vxworks
 
 /* No need to redefine exit here.  */
@@ -105,6 +101,10 @@ extern "C" {
 #include "config.h"
 #include "system.h"
 #include "version.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 #if defined (__MINGW32__)

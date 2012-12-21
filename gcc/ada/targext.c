@@ -35,10 +35,6 @@
     Note that, in order to have access to the TARGET_* macros used below,
     the file must be compiled with IN_GCC defined, even for the library.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -55,6 +51,10 @@ extern "C" {
 
 #ifndef TARGET_EXECUTABLE_SUFFIX
 #define TARGET_EXECUTABLE_SUFFIX ""
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 const char *__gnat_target_object_extension = TARGET_OBJECT_SUFFIX;
