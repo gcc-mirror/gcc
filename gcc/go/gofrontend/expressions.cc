@@ -8,8 +8,6 @@
 
 #include <algorithm>
 
-#include <gmp.h>
-
 #include "toplev.h"
 #include "intl.h"
 #include "tree.h"

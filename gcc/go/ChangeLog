@@ -1,3 +1,8 @@
+2012-12-21  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/54659
+	* go-system.h: Don't include <cstdio>.
+
 2012-12-18  Ian Lance Taylor  <iant@google.com>
 
 	PR go/55201

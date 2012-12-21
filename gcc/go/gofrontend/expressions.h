@@ -7,7 +7,6 @@
 #ifndef GO_EXPRESSIONS_H
 #define GO_EXPRESSIONS_H
 
-#include <gmp.h>
 #include <mpfr.h>
 
 #include "operator.h"
