@@ -1,3 +1,8 @@
+2012-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55355
+	* g++.dg/torture/pr55355.C: New test.
+
 2012-12-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/55775
