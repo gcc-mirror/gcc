@@ -1,3 +1,10 @@
+2012-12-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/30162
+	Backport from trunk
+	* io/unix.c (raw_tell):  If the lseek is done on a
+	non-seekable file, return 0.
+
 2012-10-12  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/54736

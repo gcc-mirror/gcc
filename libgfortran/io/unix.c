@@ -329,7 +329,15 @@ raw_seek (unix_stream * s, gfc_offset offset, int whence)
 static gfc_offset
 raw_tell (unix_stream * s)
 {
-  return lseek (s->fd, 0, SEEK_CUR);
+  gfc_offset x;
+  x = lseek (s->fd, 0, SEEK_CUR);
+
+  /* Non-seekable files should always be assumed to be at
+     current position.  */
+  if (x == -1 && errno == ESPIPE)
+    x = 0;
+
+  return x;
 }
 
 static gfc_offset
