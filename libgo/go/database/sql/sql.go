@@ -266,7 +266,7 @@ func (db *DB) connIfFree(wanted driver.Conn) (conn driver.Conn, ok bool) {
 var putConnHook func(*DB, driver.Conn)
 
 // putConn adds a connection to the db's free pool.
-// err is optionally the last error that occured on this connection.
+// err is optionally the last error that occurred on this connection.
 func (db *DB) putConn(c driver.Conn, err error) {
 	if err == driver.ErrBadConn {
 		// Don't reuse bad connections.
@@ -426,7 +426,7 @@ func (db *DB) begin() (tx *Tx, err error) {
 	txi, err := ci.Begin()
 	if err != nil {
 		db.putConn(ci, err)
-		return nil, fmt.Errorf("sql: failed to Begin transaction: %v", err)
+		return nil, err
 	}
 	return &Tx{
 		db:  db,

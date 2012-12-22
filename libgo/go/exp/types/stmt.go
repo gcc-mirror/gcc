@@ -12,9 +12,9 @@ import (
 )
 
 func (check *checker) assignOperand(z, x *operand) {
-	if t, ok := x.typ.(*tuple); ok {
+	if t, ok := x.typ.(*Result); ok {
 		// TODO(gri) elsewhere we use "assignment count mismatch" (consolidate)
-		check.errorf(x.pos(), "%d-valued expression %s used as single value", len(t.list), x)
+		check.errorf(x.pos(), "%d-valued expression %s used as single value", len(t.Values), x)
 		x.mode = invalid
 		return
 	}
@@ -95,7 +95,12 @@ func (check *checker) assign1to1(lhs, rhs ast.Expr, x *operand, decl bool, iota 
 		if x.mode != invalid {
 			typ = x.typ
 			if obj.Kind == ast.Var && isUntyped(typ) {
-				typ = defaultType(typ)
+				if x.isNil() {
+					check.errorf(x.pos(), "use of untyped nil")
+					x.mode = invalid
+				} else {
+					typ = defaultType(typ)
+				}
 			}
 		}
 		obj.Type = typ
@@ -177,12 +182,12 @@ func (check *checker) assignNtoM(lhs, rhs []ast.Expr, decl bool, iota int) {
 			return
 		}
 
-		if t, ok := x.typ.(*tuple); ok && len(lhs) == len(t.list) {
+		if t, ok := x.typ.(*Result); ok && len(lhs) == len(t.Values) {
 			// function result
 			x.mode = value
-			for i, typ := range t.list {
+			for i, obj := range t.Values {
 				x.expr = nil // TODO(gri) should do better here
-				x.typ = typ
+				x.typ = obj.Type.(Type)
 				check.assign1to1(lhs[i], nil, &x, decl, iota)
 			}
 			return
@@ -427,25 +432,58 @@ func (check *checker) stmt(s ast.Stmt) {
 	case *ast.SwitchStmt:
 		check.optionalStmt(s.Init)
 		var x operand
-		if s.Tag != nil {
-			check.expr(&x, s.Tag, nil, -1)
-		} else {
-			// TODO(gri) should provide a position (see IncDec) for good error messages
-			x.mode = constant
-			x.typ = Typ[UntypedBool]
-			x.val = true
+		tag := s.Tag
+		if tag == nil {
+			// use fake true tag value and position it at the opening { of the switch
+			tag = &ast.Ident{NamePos: s.Body.Lbrace, Name: "true", Obj: Universe.Lookup("true")}
 		}
+		check.expr(&x, tag, nil, -1)
 
 		check.multipleDefaults(s.Body.List)
+		seen := make(map[interface{}]token.Pos)
 		for _, s := range s.Body.List {
 			clause, _ := s.(*ast.CaseClause)
 			if clause == nil {
 				continue // error reported before
 			}
-			for _, expr := range clause.List {
-				var y operand
-				check.expr(&y, expr, nil, -1)
-				// TODO(gri) x and y must be comparable
+			if x.mode != invalid {
+				for _, expr := range clause.List {
+					x := x // copy of x (don't modify original)
+					var y operand
+					check.expr(&y, expr, nil, -1)
+					if y.mode == invalid {
+						continue // error reported before
+					}
+					// If we have a constant case value, it must appear only
+					// once in the switch statement. Determine if there is a
+					// duplicate entry, but only report an error if there are
+					// no other errors.
+					var dupl token.Pos
+					if y.mode == constant {
+						// TODO(gri) This code doesn't work correctly for
+						//           large integer, floating point, or
+						//           complex values - the respective struct
+						//           comparisons are shallow. Need to use a
+						//           hash function to index the map.
+						dupl = seen[y.val]
+						seen[y.val] = y.pos()
+					}
+					// TODO(gri) The convertUntyped call pair below appears in other places. Factor!
+					// Order matters: By comparing y against x, error positions are at the case values.
+					check.convertUntyped(&y, x.typ)
+					if y.mode == invalid {
+						continue // error reported before
+					}
+					check.convertUntyped(&x, y.typ)
+					if x.mode == invalid {
+						continue // error reported before
+					}
+					check.comparison(&y, &x, token.EQL)
+					if y.mode != invalid && dupl.IsValid() {
+						check.errorf(y.pos(), "%s is duplicate case (previous at %s)",
+							&y, check.fset.Position(dupl))
+					}
+				}
 			}
 			check.stmtList(clause.Body)
 		}

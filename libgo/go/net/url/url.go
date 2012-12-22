@@ -361,6 +361,11 @@ func parse(rawurl string, viaRequest bool) (url *URL, err error) {
 	}
 	url = new(URL)
 
+	if rawurl == "*" {
+		url.Path = "*"
+		return
+	}
+
 	// Split off possible leading "http:", "mailto:", etc.
 	// Cannot contain escaped characters.
 	if url.Scheme, rest, err = getscheme(rawurl); err != nil {
@@ -572,23 +577,33 @@ func resolvePath(basepath string, refpath string) string {
 	if len(base) == 0 {
 		base = []string{""}
 	}
+
+	rm := true
 	for idx, ref := range refs {
 		switch {
 		case ref == ".":
-			base[len(base)-1] = ""
+			if idx == 0 {
+				base[len(base)-1] = ""
+				rm = true
+			} else {
+				rm = false
+			}
 		case ref == "..":
 			newLen := len(base) - 1
 			if newLen < 1 {
 				newLen = 1
 			}
 			base = base[0:newLen]
-			base[len(base)-1] = ""
+			if rm {
+				base[len(base)-1] = ""
+			}
 		default:
 			if idx == 0 || base[len(base)-1] == "" {
 				base[len(base)-1] = ref
 			} else {
 				base = append(base, ref)
 			}
+			rm = false
 		}
 	}
 	return strings.Join(base, "/")

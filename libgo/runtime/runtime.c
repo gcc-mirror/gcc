@@ -79,33 +79,6 @@ runtime_goenvs_unix(void)
 	syscall_Envs.__capacity = n;
 }
 
-const byte*
-runtime_getenv(const char *s)
-{
-	int32 i, j, len;
-	const byte *v, *bs;
-	String* envv;
-	int32 envc;
-
-	bs = (const byte*)s;
-	len = runtime_findnull(bs);
-	envv = (String*)syscall_Envs.__values;
-	envc = syscall_Envs.__count;
-	for(i=0; i<envc; i++){
-		if(envv[i].len <= len)
-			continue;
-		v = (const byte*)envv[i].str;
-		for(j=0; j<len; j++)
-			if(bs[j] != v[j])
-				goto nomatch;
-		if(v[len] != '=')
-			goto nomatch;
-		return v+len+1;
-	nomatch:;
-	}
-	return nil;
-}
-
 int32
 runtime_atoi(const byte *p)
 {
