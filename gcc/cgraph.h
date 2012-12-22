@@ -1357,7 +1357,6 @@ static inline bool
 symtab_real_symbol_p (symtab_node node)
 {
   struct cgraph_node *cnode;
-  struct ipa_ref *ref;
 
   if (!is_a <cgraph_node> (node))
     return true;
@@ -1366,11 +1365,6 @@ symtab_real_symbol_p (symtab_node node)
     return false;
   if (cnode->abstract_and_needed)
     return false;
-  /* We keep virtual clones in symtab.  */
-  if (!cnode->analyzed
-      || DECL_EXTERNAL (cnode->symbol.decl))
-    return (cnode->callers
-	    || ipa_ref_list_referring_iterate (&cnode->symbol.ref_list, 0, ref));
   return true;
 }
 #endif  /* GCC_CGRAPH_H  */
