@@ -193,7 +193,7 @@ runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_fu
 }
 
 void
-runtime_walkfintab(void (*fn)(void*), void (*addroot)(byte *, uintptr))
+runtime_walkfintab(void (*fn)(void*), void (*addroot)(Obj))
 {
 	void **key;
 	void **ekey;
@@ -206,8 +206,8 @@ runtime_walkfintab(void (*fn)(void*), void (*addroot)(byte *, uintptr))
 		for(; key < ekey; key++)
 			if(*key != nil && *key != ((void*)-1))
 				fn(*key);
-		addroot((byte*)&fintab[i].fkey, sizeof(void*));
-		addroot((byte*)&fintab[i].val, sizeof(void*));
+		addroot((Obj){(byte*)&fintab[i].fkey, sizeof(void*), 0});
+		addroot((Obj){(byte*)&fintab[i].val, sizeof(void*), 0});
 		runtime_unlock(&fintab[i]);
 	}
 }

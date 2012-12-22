@@ -555,13 +555,13 @@ schedlock(void)
 static void
 schedunlock(void)
 {
-	M *m;
+	M *mp;
 
-	m = mwakeup;
+	mp = mwakeup;
 	mwakeup = nil;
 	runtime_unlock(&runtime_sched);
-	if(m != nil)
-		runtime_notewakeup(&m->havenextg);
+	if(mp != nil)
+		runtime_notewakeup(&mp->havenextg);
 }
 
 void

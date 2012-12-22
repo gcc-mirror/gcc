@@ -25,7 +25,9 @@ func runTest(t *testing.T, path string) {
 	} else {
 		// package directory
 		// TODO(gri) gotype should use the build package instead
-		pkg, err := build.Import(path, "", 0)
+		ctxt := build.Default
+		ctxt.CgoEnabled = false
+		pkg, err := ctxt.Import(path, "", 0)
 		if err != nil {
 			t.Errorf("build.Import error for path = %s: %s", path, err)
 			return
@@ -50,7 +52,7 @@ var tests = []string{
 
 	// directories
 	// Note: packages that don't typecheck yet are commented out
-	// "archive/tar", // investigate
+	"archive/tar",
 	"archive/zip",
 
 	"bufio",
@@ -77,13 +79,13 @@ var tests = []string{
 	"crypto/md5",
 	"crypto/rand",
 	"crypto/rc4",
-	// "crypto/rsa", // investigate (GOARCH=386)
+	// "crypto/rsa", // intermittent failure: /home/gri/go2/src/pkg/crypto/rsa/pkcs1v15.go:21:27: undeclared name: io
 	"crypto/sha1",
 	"crypto/sha256",
 	"crypto/sha512",
 	"crypto/subtle",
 	"crypto/tls",
-	// "crypto/x509", // investigate
+	"crypto/x509",
 	"crypto/x509/pkix",
 
 	"database/sql",
@@ -99,9 +101,9 @@ var tests = []string{
 	"encoding/asn1",
 	"encoding/base32",
 	"encoding/base64",
-	// "encoding/binary", // complex() doesn't work yet
+	"encoding/binary",
 	"encoding/csv",
-	// "encoding/gob", // complex() doesn't work yet
+	"encoding/gob",
 	"encoding/hex",
 	"encoding/json",
 	"encoding/pem",
@@ -117,7 +119,7 @@ var tests = []string{
 
 	"go/ast",
 	"go/build",
-	// "go/doc", // variadic parameters don't work yet fully
+	"go/doc",
 	"go/format",
 	"go/parser",
 	"go/printer",
@@ -125,7 +127,7 @@ var tests = []string{
 	"go/token",
 
 	"hash/adler32",
-	// "hash/crc32", // investigate
+	"hash/crc32",
 	"hash/crc64",
 	"hash/fnv",
 
@@ -139,54 +141,54 @@ var tests = []string{
 	"index/suffixarray",
 
 	"io",
-	// "io/ioutil", // investigate
+	"io/ioutil",
 
 	"log",
 	"log/syslog",
 
 	"math",
-	// "math/big", // investigate
-	// "math/cmplx", // complex doesn't work yet
+	"math/big",
+	"math/cmplx",
 	"math/rand",
 
 	"mime",
 	"mime/multipart",
 
-	// "net", // depends on C files
+	// "net", // c:\go\root\src\pkg\net\interface_windows.go:54:13: invalid operation: division by zero
 	"net/http",
 	"net/http/cgi",
-	// "net/http/fcgi", // investigate
+	"net/http/fcgi",
 	"net/http/httptest",
 	"net/http/httputil",
-	// "net/http/pprof", // investigate
+	"net/http/pprof",
 	"net/mail",
-	// "net/rpc", // investigate
+	"net/rpc",
 	"net/rpc/jsonrpc",
 	"net/smtp",
 	"net/textproto",
 	"net/url",
 
-	// "path", // variadic parameters don't work yet fully
-	// "path/filepath", // investigate
+	"path",
+	"path/filepath",
 
-	// "reflect", // investigate
+	// "reflect", // unsafe.Sizeof must return size > 0 for pointer types
 
 	"regexp",
 	"regexp/syntax",
 
 	"runtime",
-	// "runtime/cgo", // import "C"
+	"runtime/cgo",
 	"runtime/debug",
 	"runtime/pprof",
 
 	"sort",
-	// "strconv", // investigate
+	// "strconv", // bug in switch case duplicate detection
 	"strings",
 
-	// "sync", // platform-specific files
-	// "sync/atomic", // platform-specific files
+	"sync",
+	"sync/atomic",
 
-	// "syscall", // platform-specific files
+	// "syscall", c:\go\root\src\pkg\syscall\syscall_windows.go:35:16: cannot convert EINVAL (constant 536870951) to error
 
 	"testing",
 	"testing/iotest",
@@ -194,10 +196,10 @@ var tests = []string{
 
 	"text/scanner",
 	"text/tabwriter",
-	// "text/template", // variadic parameters don't work yet fully
-	// "text/template/parse", // variadic parameters don't work yet fully
+	"text/template",
+	"text/template/parse",
 
-	// "time", // platform-specific files
+	// "time", // local const decls without initialization expressions
 	"unicode",
 	"unicode/utf16",
 	"unicode/utf8",

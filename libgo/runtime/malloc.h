@@ -468,17 +468,25 @@ enum
 	FlagNoGC = 1<<2,	// must not free or scan for pointers
 };
 
+typedef struct Obj Obj;
+struct Obj
+{
+	byte	*p;	// data pointer
+	uintptr	n;	// size of data in bytes
+	uintptr	ti;	// type info
+};
+
 void	runtime_MProf_Malloc(void*, uintptr);
 void	runtime_MProf_Free(void*, uintptr);
 void	runtime_MProf_GC(void);
-void	runtime_MProf_Mark(void (*addroot)(byte *, uintptr));
+void	runtime_MProf_Mark(void (*addroot)(Obj));
 int32	runtime_gcprocs(void);
 void	runtime_helpgc(int32 nproc);
 void	runtime_gchelper(void);
 
 struct __go_func_type;
 bool	runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_func_type **ft);
-void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, uintptr));
+void	runtime_walkfintab(void (*fn)(void*), void (*scan)(Obj));
 
 enum
 {
@@ -494,3 +502,6 @@ enum
 void	runtime_gc_m_ptr(Eface*);
 
 void	runtime_memorydump(void);
+
+void	runtime_time_scan(void (*)(Obj));
+void	runtime_trampoline_scan(void (*)(Obj));

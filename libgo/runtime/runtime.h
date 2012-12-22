@@ -599,9 +599,6 @@ enum
 	UseSpanType = 1,
 };
 
-void	runtime_time_scan(void (*)(byte*, uintptr));
-void	runtime_trampoline_scan(void (*)(byte *, uintptr));
-
 void	runtime_setsig(int32, bool, bool);
 #define runtime_setitimer setitimer
 

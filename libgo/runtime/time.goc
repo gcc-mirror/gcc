@@ -255,7 +255,7 @@ siftdown(int32 i)
 }
 
 void
-runtime_time_scan(void (*addroot)(byte*, uintptr))
+runtime_time_scan(void (*addroot)(Obj))
 {
-	addroot((byte*)&timers, sizeof timers);
+	addroot((Obj){(byte*)&timers, sizeof timers, 0});
 }
