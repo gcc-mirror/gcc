@@ -101,6 +101,10 @@
   return true;
 })
 
+(define_predicate "nonzero_shift_count_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, GET_MODE_BITSIZE (mode) - 1)")))
+
 ;;  Return true if OP a valid operand for the LARL instruction.
 
 (define_predicate "larl_operand"
@@ -152,6 +156,12 @@
     return true;
 
   return false;
+})
+
+(define_predicate "contiguous_bitmask_operand"
+  (match_code "const_int")
+{
+  return s390_contiguous_bitmask_p (INTVAL (op), GET_MODE_BITSIZE (mode), NULL, NULL);
 })
 
 ;; operators --------------------------------------------------------------
@@ -346,6 +356,52 @@
     }
 
   return true;
+})
+
+;; For an execute pattern the target instruction is embedded into the
+;; RTX but will not get checked for validity by recog automatically.
+;; The execute_operation predicate extracts the target RTX and invokes
+;; recog.
+(define_special_predicate "execute_operation"
+  (match_code "parallel")
+{
+  rtx pattern = op;
+  rtx insn;
+  int icode;
+
+  /* This is redundant but since this predicate is evaluated
+     first when recognizing the insn we can prevent the more
+     expensive code below from being executed for many cases.  */
+  if (GET_CODE (XVECEXP (pattern, 0, 0)) != UNSPEC
+      || XINT (XVECEXP (pattern, 0, 0), 1) != UNSPEC_EXECUTE)
+    return false;
+
+  /* Keep in sync with s390_execute_target.  */
+  if (XVECLEN (pattern, 0) == 2)
+    {
+      pattern = copy_rtx (XVECEXP (pattern, 0, 1));
+    }
+  else
+    {
+      rtvec vec = rtvec_alloc (XVECLEN (pattern, 0) - 1);
+      int i;
+
+      for (i = 0; i < XVECLEN (pattern, 0) - 1; i++)
+	RTVEC_ELT (vec, i) = copy_rtx (XVECEXP (pattern, 0, i + 1));
+
+      pattern = gen_rtx_PARALLEL (VOIDmode, vec);
+    }
+
+  /* Since we do not have the wrapping insn here we have to build one.  */
+  insn = make_insn_raw (pattern);
+  icode = recog_memoized (insn);
+  if (icode < 0)
+    return false;
+
+  extract_insn (insn);
+  constrain_operands (1);
+
+  return which_alternative >= 0;
 })
 
 ;; Return true if OP is a store multiple operation.  It is known to be a

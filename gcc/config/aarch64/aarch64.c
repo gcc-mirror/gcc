@@ -5865,6 +5865,14 @@ aarch64_preferred_simd_mode (enum machine_mode mode)
   return word_mode;
 }
 
+/* Return the bitmask of possible vector sizes for the vectorizer
+   to iterate over.  */
+static unsigned int
+aarch64_autovectorize_vector_sizes (void)
+{
+  return (16 | 8);
+}
+
 /* A table to help perform AArch64-specific name mangling for AdvSIMD
    vector types in order to conform to the AAPCS64 (see "Procedure
    Call Standard for the ARM 64-bit Architecture", Appendix A).  To
@@ -6374,8 +6382,6 @@ aarch64_simd_disambiguate_copy (rtx *operands, rtx *dest,
 int
 aarch64_simd_attr_length_move (rtx insn)
 {
-  rtx reg, mem, addr;
-  int load;
   enum machine_mode mode;
 
   extract_insn_cached (insn);
@@ -6658,7 +6664,6 @@ aarch64_split_compare_and_swap (rtx operands[])
 {
   rtx rval, mem, oldval, newval, scratch;
   enum machine_mode mode;
-  enum memmodel mod_s;
   bool is_weak;
   rtx label1, label2, x, cond;
 
@@ -6667,7 +6672,6 @@ aarch64_split_compare_and_swap (rtx operands[])
   oldval = operands[2];
   newval = operands[3];
   is_weak = (operands[4] != const0_rtx);
-  mod_s = (enum memmodel) INTVAL (operands[5]);
   scratch = operands[7];
   mode = GET_MODE (mem);
 
@@ -7518,6 +7522,10 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
   aarch64_builtin_vectorized_function
+
+#undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
+#define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
+  aarch64_autovectorize_vector_sizes
 
 /* Section anchor support.  */
 

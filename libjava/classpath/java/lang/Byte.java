@@ -370,4 +370,21 @@ public final class Byte extends Number implements Comparable<Byte>
     return value - b.value;
   }
 
+  /**
+   * Compares two unboxed byte values.
+   * The result is positive if the first is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   *
+   * @param x First value to compare.
+   * @param y Second value to compare.
+   *
+   * @return positive int if the first value is greater, negative if the second
+   * is greater, and 0 if the two are equal.
+   * @since 1.7
+   */
+  public static int compare(byte x, byte y)
+  {
+    return Byte.valueOf(x).compareTo(Byte.valueOf(y));
+  }
+
 }

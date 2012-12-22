@@ -22,7 +22,6 @@
 #ifndef GCC_REALGMP_H
 #define GCC_REALGMP_H
 
-#include <gmp.h>
 #include <mpfr.h>
 #include <mpc.h>
 #include "real.h"

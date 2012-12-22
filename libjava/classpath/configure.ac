@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.99],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.99.1-pre],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -75,7 +75,7 @@ CLASSPATH_CONVENIENCE="-no-undefined"
 AC_SUBST(CLASSPATH_CONVENIENCE)
 
 AC_PREREQ(2.64)
-AM_INIT_AUTOMAKE([1.9.0 gnu std-options tar-ustar -Wno-portability])
+AM_INIT_AUTOMAKE([1.9.0 no-dist gnu std-options tar-ustar -Wno-portability])
 AC_CONFIG_HEADERS([include/config.h])
 AC_PREFIX_DEFAULT(/usr/local/classpath)
 
@@ -183,9 +183,9 @@ AC_ARG_ENABLE([Werror],
               [case "${enableval}" in
                 yes) ENABLE_WERROR=yes ;;
                 no) ENABLE_WERROR=no ;;
-                *) ENABLE_WERROR=default ;;
+                *) ENABLE_WERROR=no ;;
               esac],
-              [ENABLE_WERROR=default])
+              [ENABLE_WERROR=no])
 
 dnl -----------------------------------------------------------
 dnl Default AWT toolkit
@@ -703,7 +703,11 @@ if test "x${COMPILE_JNI}" = xyes; then
 	QT_CFLAGS="$QT_CFLAGS -I$EXTRA_QT_INCLUDE_DIR",
 	AC_MSG_WARN([QWidget not found])))
 	AC_CHECK_PROG(MOC, [moc], [moc])
-	AC_CHECK_PROG(MOC, [moc-qt4], [moc-qt4])
+	AC_CHECK_PROG(MOC4, [moc-qt4], [moc-qt4])
+	if test x"$MOC4" != x ; then
+	  AC_MSG_NOTICE([Using $MOC4 as moc])
+	  MOC=$MOC4;
+	fi
     fi
     if test "x$HAVE_QT4" = "xno"; then
       AC_MSG_NOTICE([Looking for QT_CFLAGS and QT_LIBS without pkg-config])

@@ -331,6 +331,7 @@ enum ix86_tune_indices {
   X86_TUNE_REASSOC_INT_TO_PARALLEL,
   X86_TUNE_REASSOC_FP_TO_PARALLEL,
   X86_TUNE_GENERAL_REGS_SSE_SPILL,
+  X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE,
 
   X86_TUNE_LAST
 };
@@ -436,6 +437,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_REASSOC_FP_TO_PARALLEL]
 #define TARGET_GENERAL_REGS_SSE_SPILL \
 	ix86_tune_features[X86_TUNE_GENERAL_REGS_SSE_SPILL]
+#define TARGET_AVOID_MEM_OPND_FOR_CMOVE \
+	ix86_tune_features[X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

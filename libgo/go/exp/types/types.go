@@ -126,21 +126,30 @@ type Struct struct {
 	Fields []*StructField
 }
 
+func (typ *Struct) fieldIndex(name string) int {
+	for i, f := range typ.Fields {
+		if f.Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
 // A Pointer represents a pointer type *Base.
 type Pointer struct {
 	implementsType
 	Base Type
 }
 
-// A tuple represents a multi-value function return.
-// TODO(gri) use better name to avoid confusion (Go doesn't have tuples).
-type tuple struct {
+// A Result represents a (multi-value) function call result.
+// TODO(gri) consider using an empty Result (Values == nil)
+//           as representation for the novalue operand mode.
+type Result struct {
 	implementsType
-	list []Type
+	Values ObjList // Signature.Results of the function called
 }
 
 // A Signature represents a user-defined function type func(...) (...).
-// TODO(gri) consider using "tuples" to represent parameters and results (see comment on tuples).
 type Signature struct {
 	implementsType
 	Recv       *ast.Object // nil if not a method

@@ -29,6 +29,10 @@ static char rcsid[] = "$NetBSD: $";
 #include <errno.h>
 #include "quadmath-imp.h"
 
+#ifdef HAVE_FENV_H
+# include <fenv.h>
+#endif
+
 #ifndef FP_ILOGB0
 # define FP_ILOGB0 INT_MIN
 #endif
@@ -48,8 +52,8 @@ ilogbq (__float128 x)
 	    if((hx|lx)==0)
 	      {
 		errno = EDOM;
-#ifdef USE_FENV_H
-		feraiseexcept (FE_INVALID);
+#ifdef QUADMATH_FERAISEEXCEPT
+		QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 		return FP_ILOGB0;	/* ilogbl(0) = FP_ILOGB0 */
 	      }
@@ -67,16 +71,16 @@ ilogbq (__float128 x)
 	    if (((hx^0x7fff000000000000LL)|lx) == 0)
 	      {
 		errno = EDOM;
-#ifdef USE_FENV_H
-		feraiseexcept (FE_INVALID);
+#ifdef QUADMATH_FERAISEEXCEPT
+		QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 		return INT_MAX;
 	      }
 	}
 
 	errno = EDOM;
-#ifdef USE_FENV_H
-	feraiseexcept (FE_INVALID);
+#ifdef QUADMATH_FERAISEEXCEPT
+	QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 	return FP_ILOGBNAN;
 }

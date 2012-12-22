@@ -98,7 +98,7 @@ AC_SUBST(BACKTRACE_FILE)
 
 EXTRA_FLAGS=
 if test -n "${with_target_subdir}"; then
-  EXTRA_FLAGS=-funwind-tables
+  EXTRA_FLAGS="-funwind-tables -frandom-seed=\$@"
 else
   AC_CACHE_CHECK([for -funwind-tables option],
     [libbacktrace_cv_c_unwind_tables],
@@ -109,9 +109,21 @@ else
        [libbacktrace_cv_c_unwind_tables=yes],
        [libbacktrace_cv_c_unwind_tables=no])
      CFLAGS="$CFLAGS_hold"])
-   if test "$libbacktrace_cv_c_unwind_tables" = "yes"; then
-     EXTRA_FLAGS=-funwind-tables
-   fi
+  if test "$libbacktrace_cv_c_unwind_tables" = "yes"; then
+    EXTRA_FLAGS=-funwind-tables
+  fi
+  AC_CACHE_CHECK([for -frandom-seed=string option],
+    [libbacktrace_cv_c_random_seed_string],
+    [CFLAGS_hold="$CFLAGS"
+     CFLAGS="$CFLAGS -frandom-seed=conftest.lo"
+     AC_COMPILE_IFELSE(
+       [AC_LANG_PROGRAM([], [return 0;])],
+       [libbacktrace_cv_c_random_seed_string=yes],
+       [libbacktrace_cv_c_random_seed_string=no])
+     CFLAGS="$CFLAGS_hold"])
+  if test "$libbacktrace_cv_c_random_seed_string" = "yes"; then
+    EXTRA_FLAGS="$EXTRA_FLAGS -frandom-seed=\$@"
+  fi
 fi
 AC_SUBST(EXTRA_FLAGS)
 

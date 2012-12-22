@@ -290,17 +290,21 @@ let print_feature_test_start features =
   try
     match List.find (fun feature ->
                        match feature with Requires_feature _ -> true
+                                        | Requires_arch _ -> true
                                         | _ -> false)
                      features with
       Requires_feature feature -> 
         Format.printf "#ifdef __ARM_FEATURE_%s@\n" feature
+    | Requires_arch arch ->
+        Format.printf "#if __ARM_ARCH >= %d@\n" arch
     | _ -> assert false
   with Not_found -> assert true
 
 let print_feature_test_end features =
   let feature =
     List.exists (function Requires_feature x -> true
-                                        |  _ -> false) features in
+                          | Requires_arch x -> true
+                          |  _ -> false) features in
   if feature then Format.printf "#endif@\n"
 
 
@@ -437,7 +441,7 @@ let _ =
 "/* ARM NEON intrinsics include file. This file is generated automatically";
 "   using neon-gen.ml.  Please do not edit manually.";
 "";
-"   Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.";
+"   Copyright (C) 2006, 2007, 2009, 2012 Free Software Foundation, Inc.";
 "   Contributed by CodeSourcery.";
 "";
 "   This file is part of GCC.";

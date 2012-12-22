@@ -1,5 +1,5 @@
 /* GStreamerMixer.java -- Mixer implementation.
- Copyright (C) 2007 Free Software Foundation, Inc.
+ Copyright (C) 2007, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -92,7 +92,7 @@ public class GStreamerMixer
     // and see if there is one matching the given line
     // if the format comes from the gstreamer backend
     // gstreamer will be able to deal with it
-    Class clazz = info.getLineClass();
+    Class<?> clazz = info.getLineClass();
     DataLine.Info _info = (DataLine.Info) info;
 
     if (clazz == SourceDataLine.class)

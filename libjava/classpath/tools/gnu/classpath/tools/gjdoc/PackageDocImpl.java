@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.PackageDocImpl
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,11 +46,11 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
    private String packageName;
    private File   packageDirectory;
 
-   private Set    allClassesSet       = new TreeSet();
-   private List   ordinaryClassesList = new ArrayList();
-   private List   exceptionsList      = new ArrayList();
-   private List   interfacesList      = new ArrayList();
-   private List   errorsList          = new ArrayList();
+   private Set<ClassDoc> allClassesSet = new TreeSet<ClassDoc>();
+   private List<ClassDoc> ordinaryClassesList = new ArrayList<ClassDoc>();
+   private List<ClassDoc> exceptionsList      = new ArrayList<ClassDoc>();
+   private List<ClassDoc> interfacesList      = new ArrayList<ClassDoc>();
+   private List<ClassDoc> errorsList          = new ArrayList<ClassDoc>();
 
    private ClassDoc[] allClasses;
    private ClassDoc[] ordinaryClasses;
@@ -70,8 +70,8 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
    }
 
    public void resolve() {
-      for (Iterator it=allClassesSet.iterator(); it.hasNext(); ) {
-         ClassDocImpl classDoc=(ClassDocImpl)it.next();
+      for (Iterator<ClassDoc> it = allClassesSet.iterator(); it.hasNext(); ) {
+         ClassDocImpl classDoc = (ClassDocImpl) it.next();
          try {
              classDoc.resolve();
          } catch (ParseException e) {
@@ -153,9 +153,9 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
       return this.errors;
    }
 
-   private ClassDoc[] toClassDocArray(Collection classDocList)
+   private ClassDoc[] toClassDocArray(Collection<ClassDoc> classDocList)
    {
-      ClassDoc[] result = (ClassDoc[])classDocList.toArray(new ClassDoc[classDocList.size()]);
+      ClassDoc[] result = classDocList.toArray(new ClassDoc[classDocList.size()]);
       Arrays.sort(result);
       return result;
    }
@@ -193,9 +193,9 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
       return packageName;
    }
 
-   public int compareTo(Object o) {
-      if (o!=null && o instanceof PackageDocImpl)
-         return name().compareTo(((PackageDocImpl)o).name());
+   public int compareTo(Doc d) {
+      if (d !=null && d instanceof PackageDocImpl)
+         return name().compareTo(((PackageDocImpl)d).name());
       else
          return 0;
    }

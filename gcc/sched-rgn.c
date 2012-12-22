@@ -124,8 +124,12 @@ int current_blocks;
 static basic_block *bblst_table;
 static int bblst_size, bblst_last;
 
-static char *bb_state_array;
-static state_t *bb_state;
+/* Arrays that hold the DFA state at the end of a basic block, to re-use
+   as the initial state at the start of successor blocks.  The BB_STATE
+   array holds the actual DFA state, and BB_STATE_ARRAY[I] is a pointer
+   into BB_STATE for basic block I.  FIXME: This should be a vec.  */
+static char *bb_state_array = NULL;
+static state_t *bb_state = NULL;
 
 /* Target info declarations.
 
@@ -2903,6 +2907,61 @@ compute_priorities (void)
   current_sched_info->sched_max_insns_priority++;
 }
 
+/* (Re-)initialize the arrays of DFA states at the end of each basic block.
+
+   SAVED_LAST_BASIC_BLOCK is the previous length of the arrays.  It must be
+   zero for the first call to this function, to allocate the arrays for the
+   first time.
+
+   This function is called once during initialization of the scheduler, and
+   called again to resize the arrays if new basic blocks have been created,
+   for example for speculation recovery code.  */
+
+static void
+realloc_bb_state_array (int saved_last_basic_block)
+{
+  char *old_bb_state_array = bb_state_array;
+  size_t lbb = (size_t) last_basic_block;
+  size_t slbb = (size_t) saved_last_basic_block;
+
+  /* Nothing to do if nothing changed since the last time this was called.  */
+  if (saved_last_basic_block == last_basic_block)
+    return;
+
+  /* The selective scheduler doesn't use the state arrays.  */
+  if (sel_sched_p ())
+    {
+      gcc_assert (bb_state_array == NULL && bb_state == NULL);
+      return;
+    }
+
+  gcc_checking_assert (saved_last_basic_block == 0
+		       || (bb_state_array != NULL && bb_state != NULL));
+
+  bb_state_array = XRESIZEVEC (char, bb_state_array, lbb * dfa_state_size);
+  bb_state = XRESIZEVEC (state_t, bb_state, lbb);
+
+  /* If BB_STATE_ARRAY has moved, fixup all the state pointers array.
+     Otherwise only fixup the newly allocated ones.  For the state
+     array itself, only initialize the new entries.  */
+  bool bb_state_array_moved = (bb_state_array != old_bb_state_array);
+  for (size_t i = bb_state_array_moved ? 0 : slbb; i < lbb; i++)
+    bb_state[i] = (state_t) (bb_state_array + i * dfa_state_size);
+  for (size_t i = slbb; i < lbb; i++)
+    state_reset (bb_state[i]);
+}
+
+/* Free the arrays of DFA states at the end of each basic block.  */
+
+static void
+free_bb_state_array (void)
+{
+  free (bb_state_array);
+  free (bb_state);
+  bb_state_array = NULL;
+  bb_state = NULL;
+}
+
 /* Schedule a region.  A region is either an inner loop, a loop-free
    subroutine, or a single basic block.  Each bb in the region is
    scheduled after its flow predecessors.  */
@@ -2986,10 +3045,12 @@ schedule_region (int rgn)
       if (dbg_cnt (sched_block))
         {
 	  edge f;
+	  int saved_last_basic_block = last_basic_block;
 
-          schedule_block (&curr_bb, bb_state[first_bb->index]);
-          gcc_assert (EBB_FIRST_BB (bb) == first_bb);
-          sched_rgn_n_insns += sched_n_insns;
+	  schedule_block (&curr_bb, bb_state[first_bb->index]);
+	  gcc_assert (EBB_FIRST_BB (bb) == first_bb);
+	  sched_rgn_n_insns += sched_n_insns;
+	  realloc_bb_state_array (saved_last_basic_block);
 	  f = find_fallthru_edge (last_bb->succs);
 	  if (f && f->probability * 100 / REG_BR_PROB_BASE >=
 	      PARAM_VALUE (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF))
@@ -3032,8 +3093,6 @@ schedule_region (int rgn)
 void
 sched_rgn_init (bool single_blocks_p)
 {
-  int i;
-
   min_spec_prob = ((PARAM_VALUE (PARAM_MIN_SPEC_PROB) * REG_BR_PROB_BASE)
 		    / 100);
 
@@ -3045,22 +3104,7 @@ sched_rgn_init (bool single_blocks_p)
   CONTAINING_RGN (ENTRY_BLOCK) = -1;
   CONTAINING_RGN (EXIT_BLOCK) = -1;
 
-  if (!sel_sched_p ())
-    {
-      bb_state_array = (char *) xmalloc (last_basic_block * dfa_state_size);
-      bb_state = XNEWVEC (state_t, last_basic_block);
-      for (i = 0; i < last_basic_block; i++)
-	{
-	  bb_state[i] = (state_t) (bb_state_array + i * dfa_state_size);
-      
-	  state_reset (bb_state[i]);
-	}
-    }
-  else
-    {
-      bb_state_array = NULL;
-      bb_state = NULL;
-    }
+  realloc_bb_state_array (0);
 
   /* Compute regions for scheduling.  */
   if (single_blocks_p
@@ -3098,8 +3142,7 @@ sched_rgn_init (bool single_blocks_p)
 void
 sched_rgn_finish (void)
 {
-  free (bb_state_array);
-  free (bb_state);
+  free_bb_state_array ();
 
   /* Reposition the prologue and epilogue notes in case we moved the
      prologue/epilogue insns.  */

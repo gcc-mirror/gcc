@@ -180,9 +180,7 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
-    %{fsanitize=address: \
-      %{static|static-libasan|static-libgcc|static-libgfortran: -framework CoreFoundation -lstdc++ libasan.a%s; \
-      static-libstdc++: -framework CoreFoundation libstdc++.a%s libasan.a%s; : -framework CoreFoundation -lasan } } \
+    %{fsanitize=address: -framework CoreFoundation -lasan } \
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
     %{!nostdlib:%{!nodefaultlibs:\

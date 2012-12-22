@@ -47,6 +47,7 @@ package javax.sound.midi;
  *
  */
 public interface Receiver
+  extends AutoCloseable
 {
   /**
    * Send a MIDI message and timestamp.  Some receivers don't support

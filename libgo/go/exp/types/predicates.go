@@ -6,6 +6,8 @@
 
 package types
 
+import "go/ast"
+
 func isNamed(typ Type) bool {
 	if _, ok := typ.(*Basic); ok {
 		return ok
@@ -223,27 +225,61 @@ func deref(typ Type) Type {
 }
 
 // defaultType returns the default "typed" type for an "untyped" type;
-// it returns the argument typ for all other types.
+// it returns the incoming type for all other types. If there is no
+// corresponding untyped type, the result is Typ[Invalid].
+//
 func defaultType(typ Type) Type {
 	if t, ok := typ.(*Basic); ok {
-		var k BasicKind
+		k := Invalid
 		switch t.Kind {
+		// case UntypedNil:
+		//      There is no default type for nil. For a good error message,
+		//      catch this case before calling this function.
 		case UntypedBool:
 			k = Bool
-		case UntypedRune:
-			k = Rune
 		case UntypedInt:
 			k = Int
+		case UntypedRune:
+			k = Rune
 		case UntypedFloat:
 			k = Float64
 		case UntypedComplex:
 			k = Complex128
 		case UntypedString:
 			k = String
-		default:
-			unreachable()
 		}
 		typ = Typ[k]
 	}
 	return typ
+}
+
+// missingMethod returns (nil, false) if typ implements T, otherwise
+// it returns the first missing method required by T and whether it
+// is missing or simply has the wrong type.
+//
+func missingMethod(typ Type, T *Interface) (method *ast.Object, wrongType bool) {
+	// TODO(gri): distinguish pointer and non-pointer receivers
+	// an interface type implements T if it has no methods with conflicting signatures
+	// Note: This is stronger than the current spec. Should the spec require this?
+	if ityp, _ := underlying(typ).(*Interface); ityp != nil {
+		for _, m := range T.Methods {
+			mode, sig := lookupField(ityp, m.Name) // TODO(gri) no need to go via lookupField
+			if mode != invalid && !isIdentical(sig, m.Type.(Type)) {
+				return m, true
+			}
+		}
+		return
+	}
+
+	// a concrete type implements T if it implements all methods of T.
+	for _, m := range T.Methods {
+		mode, sig := lookupField(typ, m.Name)
+		if mode == invalid {
+			return m, false
+		}
+		if !isIdentical(sig, m.Type.(Type)) {
+			return m, true
+		}
+	}
+	return
 }

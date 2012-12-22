@@ -47,6 +47,7 @@ package javax.sound.midi;
  *
  */
 public interface Transmitter
+  extends AutoCloseable
 {
   /**
    * Set the Receiver to which MIDI events will be sent.

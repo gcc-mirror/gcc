@@ -152,6 +152,11 @@ type opcode =
   | Vqdmulh_n
   | Vqdmulh_lane
   (* Unary ops.  *)
+  | Vrintn
+  | Vrinta
+  | Vrintp
+  | Vrintm
+  | Vrintz
   | Vabs
   | Vneg
   | Vcls
@@ -279,6 +284,7 @@ type features =
   | Fixed_core_reg
     (* Mark that the intrinsic requires __ARM_FEATURE_string to be defined.  *)
   | Requires_feature of string
+  | Requires_arch of int
 
 exception MixedMode of elts * elts
 
@@ -812,6 +818,27 @@ let ops =
     Vfms, [Requires_feature "FMA"], All (3, Dreg), "vfms", elts_same_io, [F32];
     Vfms, [Requires_feature "FMA"], All (3, Qreg), "vfmsQ", elts_same_io, [F32];
 
+    (* Round to integral. *)
+    Vrintn, [Builtin_name "vrintn"; Requires_arch 8], Use_operands [| Dreg; Dreg |],
+            "vrndn", elts_same_1, [F32];
+    Vrintn, [Builtin_name "vrintn"; Requires_arch 8], Use_operands [| Qreg; Qreg |],
+            "vrndqn", elts_same_1, [F32];
+    Vrinta, [Builtin_name "vrinta"; Requires_arch 8], Use_operands [| Dreg; Dreg |],
+            "vrnda", elts_same_1, [F32];
+    Vrinta, [Builtin_name "vrinta"; Requires_arch 8], Use_operands [| Qreg; Qreg |],
+            "vrndqa", elts_same_1, [F32];
+    Vrintp, [Builtin_name "vrintp"; Requires_arch 8], Use_operands [| Dreg; Dreg |],
+            "vrndp", elts_same_1, [F32];
+    Vrintp, [Builtin_name "vrintp"; Requires_arch 8], Use_operands [| Qreg; Qreg |],
+            "vrndqp", elts_same_1, [F32];
+    Vrintm, [Builtin_name "vrintm"; Requires_arch 8], Use_operands [| Dreg; Dreg |],
+            "vrndm", elts_same_1, [F32];
+    Vrintm, [Builtin_name "vrintm"; Requires_arch 8], Use_operands [| Qreg; Qreg |],
+            "vrndqm", elts_same_1, [F32];
+    Vrintz, [Builtin_name "vrintz"; Requires_arch 8], Use_operands [| Dreg; Dreg |],
+            "vrnd", elts_same_1, [F32];
+    Vrintz, [Builtin_name "vrintz"; Requires_arch 8], Use_operands [| Qreg; Qreg |],
+            "vrndq", elts_same_1, [F32];
     (* Subtraction.  *)
     Vsub, [], All (3, Dreg), "vsub", sign_invar_2, F32 :: su_8_32;
     Vsub, [No_op], All (3, Dreg), "vsub", sign_invar_2,  [S64; U64];

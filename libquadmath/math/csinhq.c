@@ -98,9 +98,9 @@ csinhq (__complex128 x)
 	      __real__ retval = copysignq (0.0Q, negate ? -1.0Q : 1.0Q);
 	      __imag__ retval = nanq ("") + nanq ("");
 
-#ifdef HAVE_FENV_H
+#ifdef QUADMATH_FERAISEEXCEPT
 	      if (icls == QUADFP_INFINITE)
-		feraiseexcept (FE_INVALID);
+		QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 	    }
 	  else
@@ -108,8 +108,8 @@ csinhq (__complex128 x)
 	      __real__ retval = nanq ("");
 	      __imag__ retval = nanq ("");
 
-#ifdef HAVE_FENV_H
-	      feraiseexcept (FE_INVALID);
+#ifdef QUADMATH_FERAISEEXCEPT
+	      QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 	    }
 	}
@@ -150,9 +150,9 @@ csinhq (__complex128 x)
 	  __real__ retval = HUGE_VALQ;
 	  __imag__ retval = nanq ("") + nanq ("");
 
-#ifdef HAVE_FENV_H
+#ifdef QUADMATH_FERAISEEXCEPT
 	  if (icls == QUADFP_INFINITE)
-	    feraiseexcept (FE_INVALID);
+	    QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 	}
     }

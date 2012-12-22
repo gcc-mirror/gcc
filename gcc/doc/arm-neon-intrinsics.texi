@@ -1004,6 +1004,86 @@
 
 
 
+@subsubsection Round to integral (to nearest, ties to even)
+
+@itemize @bullet
+@item float32x2_t vrndn_f32 (float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vrintn.f32 @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vrndqn_f32 (float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vrintn.f32 @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
+@subsubsection Round to integral (to nearest, ties away from zero)
+
+@itemize @bullet
+@item float32x2_t vrnda_f32 (float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vrinta.f32 @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vrndqa_f32 (float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vrinta.f32 @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
+@subsubsection Round to integral (towards +Inf)
+
+@itemize @bullet
+@item float32x2_t vrndp_f32 (float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vrintp.f32 @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vrndqp_f32 (float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vrintp.f32 @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
+@subsubsection Round to integral (towards -Inf)
+
+@itemize @bullet
+@item float32x2_t vrndm_f32 (float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vrintm.f32 @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vrndqm_f32 (float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vrintm.f32 @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
+@subsubsection Round to integral (towards 0)
+
+@itemize @bullet
+@item float32x2_t vrnd_f32 (float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vrintz.f32 @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x4_t vrndq_f32 (float32x4_t)
+@*@emph{Form of expected instruction(s):} @code{vrintz.f32 @var{q0}, @var{q0}}
+@end itemize
+
+
+
+
 @subsubsection Subtraction
 
 @itemize @bullet
@@ -7218,12 +7298,6 @@
 @subsubsection Transpose elements
 
 @itemize @bullet
-@item uint32x2x2_t vtrn_u32 (uint32x2_t, uint32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vtrn.32 @var{d0}, @var{d1}}
-@end itemize
-
-
-@itemize @bullet
 @item uint16x4x2_t vtrn_u16 (uint16x4_t, uint16x4_t)
 @*@emph{Form of expected instruction(s):} @code{vtrn.16 @var{d0}, @var{d1}}
 @end itemize
@@ -7232,12 +7306,6 @@
 @itemize @bullet
 @item uint8x8x2_t vtrn_u8 (uint8x8_t, uint8x8_t)
 @*@emph{Form of expected instruction(s):} @code{vtrn.8 @var{d0}, @var{d1}}
-@end itemize
-
-
-@itemize @bullet
-@item int32x2x2_t vtrn_s32 (int32x2_t, int32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vtrn.32 @var{d0}, @var{d1}}
 @end itemize
 
 
@@ -7254,12 +7322,6 @@
 
 
 @itemize @bullet
-@item float32x2x2_t vtrn_f32 (float32x2_t, float32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vtrn.32 @var{d0}, @var{d1}}
-@end itemize
-
-
-@itemize @bullet
 @item poly16x4x2_t vtrn_p16 (poly16x4_t, poly16x4_t)
 @*@emph{Form of expected instruction(s):} @code{vtrn.16 @var{d0}, @var{d1}}
 @end itemize
@@ -7268,6 +7330,24 @@
 @itemize @bullet
 @item poly8x8x2_t vtrn_p8 (poly8x8_t, poly8x8_t)
 @*@emph{Form of expected instruction(s):} @code{vtrn.8 @var{d0}, @var{d1}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x2x2_t vtrn_f32 (float32x2_t, float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vuzp.32 @var{d0}, @var{d1}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32x2x2_t vtrn_u32 (uint32x2_t, uint32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vuzp.32 @var{d0}, @var{d1}}
+@end itemize
+
+
+@itemize @bullet
+@item int32x2x2_t vtrn_s32 (int32x2_t, int32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vuzp.32 @var{d0}, @var{d1}}
 @end itemize
 
 
@@ -7330,12 +7410,6 @@
 @subsubsection Zip elements
 
 @itemize @bullet
-@item uint32x2x2_t vzip_u32 (uint32x2_t, uint32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vzip.32 @var{d0}, @var{d1}}
-@end itemize
-
-
-@itemize @bullet
 @item uint16x4x2_t vzip_u16 (uint16x4_t, uint16x4_t)
 @*@emph{Form of expected instruction(s):} @code{vzip.16 @var{d0}, @var{d1}}
 @end itemize
@@ -7344,12 +7418,6 @@
 @itemize @bullet
 @item uint8x8x2_t vzip_u8 (uint8x8_t, uint8x8_t)
 @*@emph{Form of expected instruction(s):} @code{vzip.8 @var{d0}, @var{d1}}
-@end itemize
-
-
-@itemize @bullet
-@item int32x2x2_t vzip_s32 (int32x2_t, int32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vzip.32 @var{d0}, @var{d1}}
 @end itemize
 
 
@@ -7366,12 +7434,6 @@
 
 
 @itemize @bullet
-@item float32x2x2_t vzip_f32 (float32x2_t, float32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vzip.32 @var{d0}, @var{d1}}
-@end itemize
-
-
-@itemize @bullet
 @item poly16x4x2_t vzip_p16 (poly16x4_t, poly16x4_t)
 @*@emph{Form of expected instruction(s):} @code{vzip.16 @var{d0}, @var{d1}}
 @end itemize
@@ -7380,6 +7442,24 @@
 @itemize @bullet
 @item poly8x8x2_t vzip_p8 (poly8x8_t, poly8x8_t)
 @*@emph{Form of expected instruction(s):} @code{vzip.8 @var{d0}, @var{d1}}
+@end itemize
+
+
+@itemize @bullet
+@item float32x2x2_t vzip_f32 (float32x2_t, float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vuzp.32 @var{d0}, @var{d1}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32x2x2_t vzip_u32 (uint32x2_t, uint32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vuzp.32 @var{d0}, @var{d1}}
+@end itemize
+
+
+@itemize @bullet
+@item int32x2x2_t vzip_s32 (int32x2_t, int32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vuzp.32 @var{d0}, @var{d1}}
 @end itemize
 
 
@@ -7939,13 +8019,13 @@
 
 @itemize @bullet
 @item uint64x2_t vld1q_dup_u64 (const uint64_t *)
-@*@emph{Form of expected instruction(s):} @code{vld1.64 @{@var{d0}, @var{d1}@}, [@var{r0}]}
+@*@emph{Form of expected instruction(s):} @code{vld1.64 @{@var{d0}@}, [@var{r0}]}
 @end itemize
 
 
 @itemize @bullet
 @item int64x2_t vld1q_dup_s64 (const int64_t *)
-@*@emph{Form of expected instruction(s):} @code{vld1.64 @{@var{d0}, @var{d1}@}, [@var{r0}]}
+@*@emph{Form of expected instruction(s):} @code{vld1.64 @{@var{d0}@}, [@var{r0}]}
 @end itemize
 
 

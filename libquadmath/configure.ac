@@ -150,6 +150,27 @@ else
   fi
 fi
 
+if test "x$ac_cv_header_fenv_h" = "xyes"; then
+  dnl Some versions of libc 2.16 for x86_64 have an extern inline
+  dnl definition of feraiseexcept in bits/fenv.h that requires SSE
+  dnl support, and they fail to compile with -m32 when targeting
+  dnl pre-x86_64 32-bit architectures.
+
+  dnl This wrapper enables us to bypass the inline definition and call
+  dnl the out-of-line feraiseexcept definition, because it does not
+  dnl include fenv.h itself.
+
+  AC_CACHE_CHECK([whether feraiseexcept is broken in fenv.h], [quadmath_cv_feraiseexcept_fenv_broken], [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <fenv.h>]], [feraiseexcept (FE_INVALID);])], [quadmath_cv_feraiseexcept_fenv_broken=no], [quadmath_cv_feraiseexcept_fenv_broken=yes])])
+  if test "x$quadmath_cv_feraiseexcept_fenv_broken" = "xyes"; then
+    feraiseexcept=__quadmath_feraiseexcept
+  else
+    feraiseexcept=feraiseexcept
+  fi
+  AC_DEFINE_UNQUOTED([QUADMATH_FERAISEEXCEPT], [$feraiseexcept],
+    		     [Optional replacement for compile-time broken feraiseexcept.])
+fi
+AM_CONDITIONAL([LIBQUAD_FERAISEEXCEPT], [test "x$ac_cv_header_fenv_h$quadmath_cv_feraiseexcept_fenv_broken" = "xyesyes"])
+
 # Check for hidden visibility (copied from libssp).
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -Werror"

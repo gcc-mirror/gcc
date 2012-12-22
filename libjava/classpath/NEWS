@@ -1,4 +1,27 @@
-New in release 0.99 (Mar 08, 2012)
+Key:
+
+SX  - http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=X
+RHX - https://bugzilla.redhat.com/show_bug.cgi?id=X
+DX  - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=X
+GX  - http://bugs.gentoo.org/show_bug.cgi?id=X
+CAX - http://server.complang.tuwien.ac.at/cgi-bin/bugzilla/show_bug.cgi?id=X
+LPX - https://bugs.launchpad.net/bugs/X 
+PRX - http://gcc.gnu.org/bugzilla/show_bug.cgi?id=X
+
+CVE-XXXX-YYYY: http://www.cve.mitre.org/cgi-bin/cvename.cgi?name=XXXX-YYYY
+
+New in release 0.99.1 (XXX XX, 2012)
+
+* Bug fixes:
+  - PR42134: NPE in java.text.Bidi
+  - PR54931: Classpath will not build docs with version of GJDoc included with itself
+  - PR54960: Avoid NullPointerException in SAXSerializer.
+  - PR42551: Avoid overwriting length of message when computing length representation.
+  - PR44208: Ensure a handle for the enum is registered before its constant.
+  - PR41689: javax.security.sasl.CREDIENTIALS field is missing
+  - PR55140: Addition of exception to codePointBefore breaks OpenJDK GenerateBreakIteratorData tool
+
+New in release 0.99 (Feb 15, 2012)
 
 * Addition of java.util.regex.Pattern.quote.
 * Addition of java.io.IOError.

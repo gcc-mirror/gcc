@@ -1,5 +1,5 @@
 /* DecimalFormat.java -- Formats and parses numbers
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -177,7 +177,7 @@ public class DecimalFormat extends NumberFormat
   private boolean hasFractionalPattern;
 
   /** Stores a list of attributes for use by formatToCharacterIterator. */
-  private ArrayList attributes = new ArrayList();
+  private ArrayList<FieldPosition> attributes = new ArrayList<FieldPosition>();
 
   /**
    * Constructs a <code>DecimalFormat</code> which uses the default
@@ -438,7 +438,7 @@ public class DecimalFormat extends NumberFormat
     // add NumberFormat field attributes to the AttributedString
     for (int i = 0; i < attributes.size(); i++)
       {
-        FieldPosition pos = (FieldPosition) attributes.get(i);
+        FieldPosition pos = attributes.get(i);
         Format.Field attribute = pos.getFieldAttribute();
 
         as.addAttribute(attribute, attribute, pos.getBeginIndex(),

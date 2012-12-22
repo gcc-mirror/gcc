@@ -40,8 +40,10 @@ target_triplet = @target@
 subdir = asan
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/libstdc++-raw-cxx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
@@ -77,10 +79,8 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @USING_MAC_INTERPOSE_FALSE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
-@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la \
-@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
-@USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
-@USING_MAC_INTERPOSE_TRUE@	$(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la
+@USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 am__libasan_la_SOURCES_DIST = asan_allocator.cc asan_interceptors.cc \
 	asan_mac.cc asan_malloc_mac.cc asan_new_delete.cc \
 	asan_posix.cc asan_rtl.cc asan_stats.cc \
@@ -162,6 +162,8 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LIBSTDCXX_RAW_CXX_CXXFLAGS = @LIBSTDCXX_RAW_CXX_CXXFLAGS@
+LIBSTDCXX_RAW_CXX_LDFLAGS = @LIBSTDCXX_RAW_CXX_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -243,6 +245,7 @@ sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
 target_cpu = @target_cpu@
+target_noncanonical = @target_noncanonical@
 target_os = @target_os@
 target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
@@ -254,7 +257,11 @@ AM_CPPFLAGS = -I $(top_srcdir)/include -I $(top_srcdir)
 
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
-AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros -Wno-c99-extensions 
+AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic \
+	-Wno-long-long -fPIC -fno-builtin -fno-exceptions \
+	-fomit-frame-pointer -funwind-tables -fvisibility=hidden \
+	-Wno-variadic-macros -Wno-c99-extensions \
+	$(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libasan.la
 asan_files = \
@@ -278,8 +285,11 @@ asan_files = \
 	asan_win.cc
 
 libasan_la_SOURCES = $(asan_files) $(am__append_2)
-@USING_MAC_INTERPOSE_FALSE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
-@USING_MAC_INTERPOSE_TRUE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/../libstdc++-v3/src/libstdc++.la
+@USING_MAC_INTERPOSE_FALSE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
+@USING_MAC_INTERPOSE_FALSE@	$(top_builddir)/interception/libinterception.la \
+@USING_MAC_INTERPOSE_FALSE@	$(LIBSTDCXX_RAW_CXX_LDLAGS)
+@USING_MAC_INTERPOSE_TRUE@libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
+@USING_MAC_INTERPOSE_TRUE@	$(LIBSTDCXX_RAW_CXX_LDLAGS)
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -313,8 +323,6 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \

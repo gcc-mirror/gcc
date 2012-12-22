@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 1992-2011, Free Software Foundation, Inc.      *
+ *             Copyright (C) 1992-2012, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,10 +32,6 @@
 /* Shared routines to support exception handling.  __gnat_unhandled_terminate
    is shared between all exception handling mechanisms.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -46,6 +42,10 @@ extern "C" {
 
 #include "adaint.h"
 #include "raise.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*  Wrapper to builtin_longjmp.  This is for the compiler eh only, as the sjlj
     runtime library interfaces directly to the intrinsic.  We can't yet do

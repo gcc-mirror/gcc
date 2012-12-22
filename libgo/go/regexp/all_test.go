@@ -5,6 +5,7 @@
 package regexp_test
 
 import (
+	"reflect"
 	. "regexp"
 	"strings"
 	"testing"
@@ -30,53 +31,52 @@ var good_re = []string{
 	`\!\\`,
 }
 
-/*
 type stringError struct {
 	re  string
-	err error
+	err string
 }
 
 var bad_re = []stringError{
-	{`*`, ErrBareClosure},
-	{`+`, ErrBareClosure},
-	{`?`, ErrBareClosure},
-	{`(abc`, ErrUnmatchedLpar},
-	{`abc)`, ErrUnmatchedRpar},
-	{`x[a-z`, ErrUnmatchedLbkt},
-	{`abc]`, ErrUnmatchedRbkt},
-	{`[z-a]`, ErrBadRange},
-	{`abc\`, ErrExtraneousBackslash},
-	{`a**`, ErrBadClosure},
-	{`a*+`, ErrBadClosure},
-	{`a??`, ErrBadClosure},
-	{`\x`, ErrBadBackslash},
+	{`*`, "missing argument to repetition operator: `*`"},
+	{`+`, "missing argument to repetition operator: `+`"},
+	{`?`, "missing argument to repetition operator: `?`"},
+	{`(abc`, "missing closing ): `(abc`"},
+	{`abc)`, "unexpected ): `abc)`"},
+	{`x[a-z`, "missing closing ]: `[a-z`"},
+	{`[z-a]`, "invalid character class range: `z-a`"},
+	{`abc\`, "trailing backslash at end of expression"},
+	{`a**`, "invalid nested repetition operator: `**`"},
+	{`a*+`, "invalid nested repetition operator: `*+`"},
+	{`\x`, "invalid escape sequence: `\\x`"},
 }
-*/
 
-func compileTest(t *testing.T, expr string, error error) *Regexp {
+func compileTest(t *testing.T, expr string, error string) *Regexp {
 	re, err := Compile(expr)
-	if err != error {
+	if error == "" && err != nil {
 		t.Error("compiling `", expr, "`; unexpected error: ", err.Error())
+	}
+	if error != "" && err == nil {
+		t.Error("compiling `", expr, "`; missing error")
+	} else if error != "" && !strings.Contains(err.Error(), error) {
+		t.Error("compiling `", expr, "`; wrong error: ", err.Error(), "; want ", error)
 	}
 	return re
 }
 
 func TestGoodCompile(t *testing.T) {
 	for i := 0; i < len(good_re); i++ {
-		compileTest(t, good_re[i], nil)
+		compileTest(t, good_re[i], "")
 	}
 }
 
-/*
 func TestBadCompile(t *testing.T) {
 	for i := 0; i < len(bad_re); i++ {
 		compileTest(t, bad_re[i].re, bad_re[i].err)
 	}
 }
-*/
 
 func matchTest(t *testing.T, test *FindTest) {
-	re := compileTest(t, test.pat, nil)
+	re := compileTest(t, test.pat, "")
 	if re == nil {
 		return
 	}
@@ -412,6 +412,59 @@ func TestSubexp(t *testing.T) {
 				if names[i] != c.names[i] {
 					t.Errorf("%q: SubexpNames[%d] = %q, want %q", c.input, i, names[i], c.names[i])
 				}
+			}
+		}
+	}
+}
+
+var splitTests = []struct {
+	s   string
+	r   string
+	n   int
+	out []string
+}{
+	{"foo:and:bar", ":", -1, []string{"foo", "and", "bar"}},
+	{"foo:and:bar", ":", 1, []string{"foo:and:bar"}},
+	{"foo:and:bar", ":", 2, []string{"foo", "and:bar"}},
+	{"foo:and:bar", "foo", -1, []string{"", ":and:bar"}},
+	{"foo:and:bar", "bar", -1, []string{"foo:and:", ""}},
+	{"foo:and:bar", "baz", -1, []string{"foo:and:bar"}},
+	{"baabaab", "a", -1, []string{"b", "", "b", "", "b"}},
+	{"baabaab", "a*", -1, []string{"b", "b", "b"}},
+	{"baabaab", "ba*", -1, []string{"", "", "", ""}},
+	{"foobar", "f*b*", -1, []string{"", "o", "o", "a", "r"}},
+	{"foobar", "f+.*b+", -1, []string{"", "ar"}},
+	{"foobooboar", "o{2}", -1, []string{"f", "b", "boar"}},
+	{"a,b,c,d,e,f", ",", 3, []string{"a", "b", "c,d,e,f"}},
+	{"a,b,c,d,e,f", ",", 0, nil},
+	{",", ",", -1, []string{"", ""}},
+	{",,,", ",", -1, []string{"", "", "", ""}},
+	{"", ",", -1, []string{""}},
+	{"", ".*", -1, []string{""}},
+	{"", ".+", -1, []string{""}},
+	{"", "", -1, []string{}},
+	{"foobar", "", -1, []string{"f", "o", "o", "b", "a", "r"}},
+	{"abaabaccadaaae", "a*", 5, []string{"", "b", "b", "c", "cadaaae"}},
+	{":x:y:z:", ":", -1, []string{"", "x", "y", "z", ""}},
+}
+
+func TestSplit(t *testing.T) {
+	for i, test := range splitTests {
+		re, err := Compile(test.r)
+		if err != nil {
+			t.Errorf("#%d: %q: compile error: %s", i, test.r, err.Error())
+			continue
+		}
+
+		split := re.Split(test.s, test.n)
+		if !reflect.DeepEqual(split, test.out) {
+			t.Errorf("#%d: %q: got %q; want %q", i, test.r, split, test.out)
+		}
+
+		if QuoteMeta(test.r) == test.r {
+			strsplit := strings.SplitN(test.s, test.r, test.n)
+			if !reflect.DeepEqual(split, strsplit) {
+				t.Errorf("#%d: Split(%q, %q, %d): regexp vs strings mismatch\nregexp=%q\nstrings=%q", i, test.s, test.r, test.n, split, strsplit)
 			}
 		}
 	}

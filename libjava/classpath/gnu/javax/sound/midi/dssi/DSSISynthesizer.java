@@ -1,5 +1,5 @@
 /* DSSISynthesizer.java -- DSSI Synthesizer Provider
-   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -97,8 +97,8 @@ public class DSSISynthesizer implements Synthesizer
   {
     private String name;
     private String description;
-    private List instruments = new ArrayList();
-    private List resources = new ArrayList();
+    private List<Instrument> instruments = new ArrayList<Instrument>();
+    private List<SoundbankResource> resources = new ArrayList<SoundbankResource>();
     private String vendor;
     private String version;
 
@@ -147,27 +147,25 @@ public class DSSISynthesizer implements Synthesizer
      */
     public SoundbankResource[] getResources()
     {
-      return (SoundbankResource[])
-        resources.toArray(new SoundbankResource[resources.size()]);
+      return resources.toArray(new SoundbankResource[resources.size()]);
     }
 
     /* @see javax.sound.midi.Soundbank#getInstruments()
      */
     public Instrument[] getInstruments()
     {
-      return (Instrument[])
-        instruments.toArray(new Instrument[instruments.size()]);
+      return instruments.toArray(new Instrument[instruments.size()]);
     }
 
     /* @see javax.sound.midi.Soundbank#getInstrument(javax.sound.midi.Patch)
      */
     public Instrument getInstrument(Patch patch)
     {
-      Iterator itr = instruments.iterator();
+      Iterator<Instrument> itr = instruments.iterator();
 
       while (itr.hasNext())
       {
-        Instrument i = (Instrument) itr.next();
+        Instrument i = itr.next();
         if (i.getPatch().equals(patch))
           return i;
       }
@@ -490,7 +488,7 @@ public class DSSISynthesizer implements Synthesizer
   MidiChannel channels[] = new MidiChannel[16];
 
   // The list of known soundbanks, and the default one.
-  List soundbanks = new ArrayList();
+  List<Soundbank> soundbanks = new ArrayList<Soundbank>();
   DSSISoundbank defaultSoundbank;
 
   /**
@@ -616,17 +614,16 @@ public class DSSISynthesizer implements Synthesizer
    */
   public Instrument[] getAvailableInstruments()
   {
-    List instruments = new ArrayList();
-    Iterator itr = soundbanks.iterator();
+    List<Instrument> instruments = new ArrayList<Instrument>();
+    Iterator<Soundbank> itr = soundbanks.iterator();
     while (itr.hasNext())
     {
-      Soundbank sb = (Soundbank) itr.next();
+      Soundbank sb = itr.next();
       Instrument ins[] = sb.getInstruments();
       for (int i = 0; i < ins.length; i++)
         instruments.add(ins[i]);
     }
-    return (Instrument[])
-      instruments.toArray(new Instrument[instruments.size()]);
+    return instruments.toArray(new Instrument[instruments.size()]);
   }
 
   /* (non-Javadoc)

@@ -714,7 +714,12 @@ type_internals_preclude_sra_p (tree type, const char **msg)
 	      {
 	        *msg = "structure field size not fixed";
 		return true;
-	      }	      
+	      }
+	    if (!host_integerp (bit_position (fld), 0))
+	      {
+	        *msg = "structure field size too big";
+		return true;
+	      }
 	    if (AGGREGATE_TYPE_P (ft)
 		    && int_bit_position (fld) % BITS_PER_UNIT != 0)
 	      {
@@ -1423,7 +1428,10 @@ make_fancy_name (tree expr)
    EXP_TYPE at the given OFFSET.  If BASE is something for which
    get_addr_base_and_unit_offset returns NULL, gsi must be non-NULL and is used
    to insert new statements either before or below the current one as specified
-   by INSERT_AFTER.  This function is not capable of handling bitfields.  */
+   by INSERT_AFTER.  This function is not capable of handling bitfields.
+
+   BASE must be either a declaration or a memory reference that has correct
+   alignment ifformation embeded in it (e.g. a pre-existing one in SRA).  */
 
 tree
 build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
@@ -1437,7 +1445,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   unsigned int align;
 
   gcc_checking_assert (offset % BITS_PER_UNIT == 0);
-
+  get_object_alignment_1 (base, &align, &misalign);
   base = get_addr_base_and_unit_offset (base, &base_offset);
 
   /* get_addr_base_and_unit_offset returns NULL for references with a variable
@@ -1476,22 +1484,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       base = build_fold_addr_expr (unshare_expr (base));
     }
 
-  /* If prev_base were always an originally performed access
-     we can extract more optimistic alignment information
-     by looking at the access mode.  That would constrain the
-     alignment of base + base_offset which we would need to
-     adjust according to offset.  */
-  if (!get_pointer_alignment_1 (base, &align, &misalign))
-    {
-      gcc_assert (misalign == 0);
-      if (TREE_CODE (prev_base) == MEM_REF
-	  || TREE_CODE (prev_base) == TARGET_MEM_REF)
-	align = TYPE_ALIGN (TREE_TYPE (prev_base));
-    }
-  misalign += (tree_to_double_int (off)
-	       .sext (TYPE_PRECISION (TREE_TYPE (off))).low
-	       * BITS_PER_UNIT);
-  misalign = misalign & (align - 1);
+  misalign = (misalign + offset) & (align - 1);
   if (misalign != 0)
     align = (misalign & -misalign);
   if (align < TYPE_ALIGN (exp_type))

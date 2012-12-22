@@ -256,15 +256,15 @@ in the build directory starts the build process. The <literal>all</literal> targ
 
 
   <para>
-    All the GLIBCXX_ENABLE_FOO macros use a common helper,
-    GLIBCXX_ENABLE.  (You don't have to use it, but it's easy.)  The
-    helper does two things for us:
+    All the <literal>GLIBCXX_ENABLE_FOO</literal> macros use a common
+    helper, <literal>GLIBCXX_ENABLE</literal>.  (You don't have to use
+    it, but it's easy.)  The helper does two things for us:
   </para>
 
 <orderedlist>
  <listitem>
    <para>
-     Builds the call to the AC_ARG_ENABLE macro, with --help text
+     Builds the call to the <literal>AC_ARG_ENABLE</literal> macro, with --help text
      properly quoted and aligned.  (Death to changequote!)
    </para>
  </listitem>
@@ -272,7 +272,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
    <para>
      Checks the result against a list of allowed possibilities, and
      signals a fatal error if there's no match.  This means that the
-     rest of the GLIBCXX_ENABLE_FOO macro doesn't need to test for
+     rest of the <literal>GLIBCXX_ENABLE_FOO</literal> macro doesn't need to test for
      strange arguments, nor do we need to protect against
      empty/whitespace strings with the <code>"x$foo" = "xbar"</code>
      idiom.
@@ -319,13 +319,13 @@ in the build directory starts the build process. The <literal>all</literal> targ
      not pass --enable/--disable.  It should be one of the permitted
      values passed later.  Examples: <code>[yes]</code>, or
      <code>[bar]</code>, or <code>[$1]</code> (which passes the
-     argument given to the GLIBCXX_ENABLE_FOO macro as the
-     default).
+     argument given to the <literal>GLIBCXX_ENABLE_FOO</literal> macro
+     as the default).
    </para>
    <para>
      For cases where we need to probe for particular models of things,
      it is useful to have an undocumented "auto" value here (see
-     GLIBCXX_ENABLE_CLOCALE for an example).
+     <literal>GLIBCXX_ENABLE_CLOCALE</literal> for an example).
    </para>
  </listitem>
  <listitem>

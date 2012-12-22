@@ -21,6 +21,7 @@ AC_MSG_RESULT($version_specific_libs)
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
+GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
 AM_INIT_AUTOMAKE(foreign)
 AM_ENABLE_MULTILIB(, ..)
@@ -81,7 +82,7 @@ unset TSAN_SUPPORTED
 AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 
 case "$host" in
-  *-*-darwin*) MAC_INTERPOSE=true ;;
+  *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
   *) MAC_INTERPOSE=false ;;
 esac
 AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)

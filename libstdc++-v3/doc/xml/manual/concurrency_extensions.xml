@@ -185,6 +185,7 @@ host hardware and operating system.
 
 
 <section xml:id="manual.ext.concurrency.impl" xreflabel="Implementation"><info><title>Implementation</title></info>
+  <?dbhtml filename="ext_concurrency_impl.html"?>
   
   <section xml:id="manual.ext.concurrency.impl.atomic_fallbacks" xreflabel="Atomic F"><info><title>Using Builtin Atomic Functions</title></info>
     
@@ -290,8 +291,8 @@ etc.
 </section>
 
 <section xml:id="manual.ext.concurrency.use" xreflabel="Use"><info><title>Use</title></info>
+<?dbhtml filename="ext_concurrency_use.html"?>
 
-  
 
 <para>Typical usage of the last two constructs is demonstrated as follows:
 </para>

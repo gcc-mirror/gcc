@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-type image interface {
+type timage interface {
 	Image
 	Opaque() bool
 	Set(int, int, color.Color)
@@ -24,7 +24,7 @@ func cmp(t *testing.T, cm color.Model, c0, c1 color.Color) bool {
 }
 
 func TestImage(t *testing.T) {
-	testImage := []image{
+	testImage := []timage{
 		NewRGBA(Rect(0, 0, 10, 10)),
 		NewRGBA64(Rect(0, 0, 10, 10)),
 		NewNRGBA(Rect(0, 0, 10, 10)),
@@ -52,11 +52,11 @@ func TestImage(t *testing.T) {
 			t.Errorf("%T: at (6, 3), want a non-zero color, got %v", m, m.At(6, 3))
 			continue
 		}
-		if !m.SubImage(Rect(6, 3, 7, 4)).(image).Opaque() {
+		if !m.SubImage(Rect(6, 3, 7, 4)).(timage).Opaque() {
 			t.Errorf("%T: at (6, 3) was not opaque", m)
 			continue
 		}
-		m = m.SubImage(Rect(3, 2, 9, 8)).(image)
+		m = m.SubImage(Rect(3, 2, 9, 8)).(timage)
 		if !Rect(3, 2, 9, 8).Eq(m.Bounds()) {
 			t.Errorf("%T: sub-image want bounds %v, got %v", m, Rect(3, 2, 9, 8), m.Bounds())
 			continue
@@ -97,7 +97,7 @@ func Test16BitsPerColorChannel(t *testing.T) {
 			continue
 		}
 	}
-	testImage := []image{
+	testImage := []timage{
 		NewRGBA64(Rect(0, 0, 10, 10)),
 		NewNRGBA64(Rect(0, 0, 10, 10)),
 		NewAlpha16(Rect(0, 0, 10, 10)),

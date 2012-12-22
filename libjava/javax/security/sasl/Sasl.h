@@ -53,6 +53,7 @@ public:
   static ::java::lang::String * POLICY_FORWARD_SECRECY;
   static ::java::lang::String * POLICY_PASS_CREDENTIALS;
   static ::java::lang::String * REUSE;
+  static ::java::lang::String * CREDENTIALS;
 private:
   static ::java::lang::String * CLIENT_FACTORY_SVC;
   static ::java::lang::String * SERVER_FACTORY_SVC;

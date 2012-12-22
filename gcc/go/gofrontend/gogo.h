@@ -37,8 +37,6 @@ class Channel_type;
 class Interface_type;
 class Named_type;
 class Forward_declaration_type;
-class Method;
-class Methods;
 class Named_object;
 class Label;
 class Translate_context;
@@ -379,6 +377,11 @@ class Gogo
   void
   add_named_object(Named_object*);
 
+  // Add an identifier to the list of names seen in the file block.
+  void
+  add_file_block_name(const std::string& name, Location location)
+  { this->file_block_names_[name] = location; }
+
   // Mark all local variables in current bindings as used.  This is
   // used when there is a parse error to avoid useless errors.
   void
@@ -680,6 +683,10 @@ class Gogo
   // This is used for initialization dependency analysis.
   typedef std::map<Variable*, Named_object*> Var_deps;
 
+  // Type used to map identifiers in the file block to the location
+  // where they were defined.
+  typedef Unordered_map(std::string, Location) File_block_names;
+
   // Type used to queue writing a type specific function.
   struct Specific_type_function
   {
@@ -712,6 +719,8 @@ class Gogo
   // The global binding contour.  This includes the builtin functions
   // and the package we are compiling.
   Bindings* globals_;
+  // The list of names we have seen in the file block.
+  File_block_names file_block_names_;
   // Mapping from import file names to packages.
   Imports imports_;
   // Whether the magic unsafe package was imported.
@@ -1738,6 +1747,11 @@ class Type_declaration
   bool
   has_methods() const;
 
+  // Return the methods.
+  const std::vector<Named_object*>*
+  methods() const
+  { return &this->methods_; }
+
   // Define methods when the real type is known.
   void
   define_methods(Named_type*);
@@ -1748,8 +1762,6 @@ class Type_declaration
   using_type();
 
  private:
-  typedef std::vector<Named_object*> Methods;
-
   // The location of the type declaration.
   Location location_;
   // If this type is declared in a function, a pointer back to the
@@ -1758,7 +1770,7 @@ class Type_declaration
   // The index of this type in IN_FUNCTION_.
   unsigned int in_function_index_;
   // Methods defined before the type is defined.
-  Methods methods_;
+  std::vector<Named_object*> methods_;
   // True if we have issued a warning about a use of this type
   // declaration when it is undefined.
   bool issued_warning_;
@@ -2264,7 +2276,7 @@ class Bindings
 
   // Clear all names in file scope from the bindings.
   void
-  clear_file_scope();
+  clear_file_scope(Gogo*);
 
   // Look up a name in this binding contour and in any enclosing
   // binding contours.  This returns NULL if the name is not found.

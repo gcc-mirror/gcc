@@ -224,7 +224,7 @@ public class MimeTypeParameterList
    * Returns an enumeration of all the parameter names.
    */
   // Raw type is forced by public spec.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public synchronized Enumeration getNames()
   {
     return new IteratorEnumeration(parameterNames.iterator());

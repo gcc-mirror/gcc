@@ -58,6 +58,7 @@
 </section>
 
 <section xml:id="manual.ext.debug_mode.semantics" xreflabel="Semantics"><info><title>Semantics</title></info>
+  <?dbhtml filename="debug_mode_semantics.html"?>
   
   <para>
   </para>
@@ -139,6 +140,7 @@ which always works correctly.
 </section>
 
 <section xml:id="manual.ext.debug_mode.using" xreflabel="Using"><info><title>Using</title></info>
+  <?dbhtml filename="debug_mode_using.html"?>
   
   <para>
   </para>
@@ -314,6 +316,7 @@ containers have additional debug capability.
 </section>
 
 <section xml:id="manual.ext.debug_mode.design" xreflabel="Design"><info><title>Design</title></info>
+  <?dbhtml filename="debug_mode_design.html"?>
   
   <para>
   </para>

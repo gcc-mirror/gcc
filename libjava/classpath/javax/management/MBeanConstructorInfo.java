@@ -76,7 +76,7 @@ public class MBeanConstructorInfo
    * @param cons the constructor.
    */
   // API issue with lack of <?> on Constructor
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   public MBeanConstructorInfo(String desc, Constructor cons)
   {
     super(cons.getName(), desc);

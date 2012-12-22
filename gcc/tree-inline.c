@@ -536,7 +536,7 @@ can_be_nonlocal (tree decl, copy_body_data *id)
 }
 
 static tree
-remap_decls (tree decls, vec<tree, va_gc> *nonlocalized_list,
+remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	     copy_body_data *id)
 {
   tree old_var;
@@ -557,7 +557,7 @@ remap_decls (tree decls, vec<tree, va_gc> *nonlocalized_list,
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
 	      && nonlocalized_list)
-	    vec_safe_push (nonlocalized_list, old_var);
+	    vec_safe_push (*nonlocalized_list, old_var);
 	  continue;
 	}
 
@@ -575,7 +575,7 @@ remap_decls (tree decls, vec<tree, va_gc> *nonlocalized_list,
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
 	      && nonlocalized_list)
-	    vec_safe_push (nonlocalized_list, old_var);
+	    vec_safe_push (*nonlocalized_list, old_var);
 	}
       else
 	{
@@ -622,7 +622,7 @@ remap_block (tree *block, copy_body_data *id)
 
   /* Remap its variables.  */
   BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block),
-  					BLOCK_NONLOCALIZED_VARS (new_block),
+  					&BLOCK_NONLOCALIZED_VARS (new_block),
 					id);
 
   if (id->transform_lang_insert_block)

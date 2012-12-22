@@ -254,7 +254,21 @@ if { [info procs ${tool}_load] != [list] \
     proc ${tool}_load { program args } {
 	global tool
 	global shouldfail
+	global set_target_env_var
+
+	set saved_target_env_var [list]
+	if { [info exists set_target_env_var] \
+	     && [llength $set_target_env_var] != 0 } {
+	    if { [is_remote target] } {
+		return [list "unsupported" ""]
+	    }
+	    set-target-env-var
+	}
 	set result [eval [list saved_${tool}_load $program] $args]
+	if { [info exists set_target_env_var] \
+	     && [llength $set_target_env_var] != 0 } {
+	    restore-target-env-var
+	}
 	if { $shouldfail != 0 } {
 	    switch [lindex $result 0] {
 		"pass" { set status "fail" }
@@ -263,6 +277,42 @@ if { [info procs ${tool}_load] != [list] \
 	    set result [list $status [lindex $result 1]]
 	}
 	return $result
+    }
+}
+
+proc dg-set-target-env-var { args } {
+    global set_target_env_var
+    if { [llength $args] != 3 } {
+	error "dg-set-target-env-var: need two arguments"
+	return
+    }
+    lappend set_target_env_var [list [lindex $args 1] [lindex $args 2]]
+}
+
+proc set-target-env-var { } {
+    global set_target_env_var
+    upvar 1 saved_target_env_var saved_target_env_var
+    foreach env_var $set_target_env_var {
+	set var [lindex $env_var 0]
+	set value [lindex $env_var 1]
+	if [info exists env($var)] {
+	    lappend saved_target_env_var [list $var 1 $env($var)]
+	} else {
+	    lappend saved_target_env_var [list $var 0]
+	}
+	setenv $var $value
+    }
+}
+
+proc restore-target-env-var { } {
+    upvar 1 saved_target_env_var saved_target_env_var
+    foreach env_var [lreverse $saved_target_env_var] {
+	set var [lindex $env_var 0]
+	if [lindex $env_var 1] {
+	    setenv $var [lindex $env_var 2]
+	} else {
+	    unsetenv $var
+	}
     }
 }
 
@@ -677,6 +727,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global compiler_conditional_xfail_data
 	global shouldfail
 	global testname_with_flags
+	global set_target_env_var
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
@@ -697,6 +748,9 @@ if { [info procs saved-dg-test] == [list] } {
 	set additional_sources ""
 	set additional_prunes ""
 	set shouldfail 0
+	if [info exists set_target_env_var] {
+	    unset set_target_env_var
+	}
 	unset_timeout_vars
 	if [info exists compiler_conditional_xfail_data] {
 	    unset compiler_conditional_xfail_data

@@ -832,6 +832,19 @@ dfs_accessible_post (tree binfo, void * /*data*/)
   return NULL_TREE;
 }
 
+/* Like accessible_p below, but within a template returns true iff DECL is
+   accessible in TYPE to all possible instantiations of the template.  */
+
+int
+accessible_in_template_p (tree type, tree decl)
+{
+  int save_ptd = processing_template_decl;
+  processing_template_decl = 0;
+  int val = accessible_p (type, decl, false);
+  processing_template_decl = save_ptd;
+  return val;
+}
+
 /* DECL is a declaration from a base class of TYPE, which was the
    class used to name DECL.  Return nonzero if, in the current
    context, DECL is accessible.  If TYPE is actually a BINFO node,

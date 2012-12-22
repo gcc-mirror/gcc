@@ -616,7 +616,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_create_from_up(std::unique_ptr<_Tp, _Del>&& __r,
 	  typename std::enable_if<!std::is_reference<_Del>::value>::type* = 0)
 	{
-	  return new _Sp_counted_deleter<_Tp*, _Del, std::allocator<void>,
+	  typedef typename unique_ptr<_Tp, _Del>::pointer _Ptr;
+	  return new _Sp_counted_deleter<_Ptr, _Del, std::allocator<void>,
 	    _Lp>(__r.get(), __r.get_deleter());
 	}
 
@@ -625,9 +626,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_create_from_up(std::unique_ptr<_Tp, _Del>&& __r,
 	  typename std::enable_if<std::is_reference<_Del>::value>::type* = 0)
 	{
+	  typedef typename unique_ptr<_Tp, _Del>::pointer _Ptr;
 	  typedef typename std::remove_reference<_Del>::type _Del1;
 	  typedef std::reference_wrapper<_Del1> _Del2;
-	  return new _Sp_counted_deleter<_Tp*, _Del2, std::allocator<void>,
+	  return new _Sp_counted_deleter<_Ptr, _Del2, std::allocator<void>,
 	    _Lp>(__r.get(), std::ref(__r.get_deleter()));
 	}
 
@@ -846,7 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(__r.get()), _M_refcount()
 	{
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
-	  _Tp1* __tmp = __r.get();
+	  auto __tmp = std::__addressof(*__r.get());
 	  _M_refcount = __shared_count<_Lp>(std::move(__r));
 	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);
 	}

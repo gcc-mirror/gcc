@@ -19,8 +19,6 @@ type UDPConn struct {
 	conn
 }
 
-// UDP-specific methods.
-
 // ReadFromUDP reads a UDP packet from c, copying the payload into b.
 // It returns the number of bytes copied into b and the return address
 // that was on the packet.
@@ -50,11 +48,11 @@ func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error) {
 
 	h, buf := unmarshalUDPHeader(buf)
 	n = copy(b, buf)
-	return n, &UDPAddr{h.raddr, int(h.rport)}, nil
+	return n, &UDPAddr{IP: h.raddr, Port: int(h.rport)}, nil
 }
 
 // ReadFrom implements the PacketConn ReadFrom method.
-func (c *UDPConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
+func (c *UDPConn) ReadFrom(b []byte) (int, Addr, error) {
 	if !c.ok() {
 		return 0, nil, syscall.EINVAL
 	}
@@ -77,15 +75,16 @@ func (c *UDPConn) ReadMsgUDP(b, oob []byte) (n, oobn, flags int, addr *UDPAddr, 
 // Timeout() == true after a fixed time limit; see SetDeadline and
 // SetWriteDeadline.  On packet-oriented connections, write timeouts
 // are rare.
-func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err error) {
+func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error) {
 	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
 	if c.fd.data == nil {
-		c.fd.data, err = os.OpenFile(c.fd.dir+"/data", os.O_RDWR, 0)
+		f, err := os.OpenFile(c.fd.dir+"/data", os.O_RDWR, 0)
 		if err != nil {
 			return 0, err
 		}
+		c.fd.data = f
 	}
 	h := new(udpHeader)
 	h.raddr = addr.IP.To16()
@@ -101,7 +100,7 @@ func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (n int, err error) {
 }
 
 // WriteTo implements the PacketConn WriteTo method.
-func (c *UDPConn) WriteTo(b []byte, addr Addr) (n int, err error) {
+func (c *UDPConn) WriteTo(b []byte, addr Addr) (int, error) {
 	if !c.ok() {
 		return 0, syscall.EINVAL
 	}
@@ -122,7 +121,7 @@ func (c *UDPConn) WriteMsgUDP(b, oob []byte, addr *UDPAddr) (n, oobn int, err er
 // DialUDP connects to the remote address raddr on the network net,
 // which must be "udp", "udp4", or "udp6".  If laddr is not nil, it is
 // used as the local address for the connection.
-func DialUDP(net string, laddr, raddr *UDPAddr) (c *UDPConn, err error) {
+func DialUDP(net string, laddr, raddr *UDPAddr) (*UDPConn, error) {
 	return dialUDP(net, laddr, raddr, noDeadline)
 }
 

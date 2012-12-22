@@ -405,7 +405,8 @@ func TestDirUnix(t *testing.T) {
 }
 
 func TestDirWindows(t *testing.T) {
-	if skipTest(t) || runtime.GOOS != "windows" {
+	if runtime.GOOS != "windows" {
+		t.Logf("Skipping windows specific test.")
 		return
 	}
 
@@ -415,6 +416,7 @@ func TestDirWindows(t *testing.T) {
 	var err error
 	perl, err = exec.LookPath("perl")
 	if err != nil {
+		t.Logf("Skipping test: perl not found.")
 		return
 	}
 	perl, _ = filepath.Abs(perl)
@@ -457,6 +459,7 @@ func TestEnvOverride(t *testing.T) {
 	var err error
 	perl, err = exec.LookPath("perl")
 	if err != nil {
+		t.Logf("Skipping test: perl not found.")
 		return
 	}
 	perl, _ = filepath.Abs(perl)

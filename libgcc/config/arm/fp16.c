@@ -47,11 +47,9 @@ __gnu_f2h_internal(unsigned int a, int ieee)
   mantissa |= 0x00800000;
   if (aexp < -14)
     {
-      mask = 0x007fffff;
-      if (aexp < -25)
-	aexp = -26;
-      else if (aexp != -25)
-	mask >>= 24 + aexp;
+      mask = 0x00ffffff;
+      if (aexp >= -25)
+        mask >>= 25 + aexp;
     }
   else
     mask = 0x00001fff;

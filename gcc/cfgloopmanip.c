@@ -1793,6 +1793,40 @@ fix_loop_structure (bitmap changed_bbs)
       record_exits = true;
     }
 
+  /* First re-compute loop latches.  */
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      edge_iterator ei;
+      edge e, first_latch = NULL, latch = NULL;
+
+      if (!loop->header)
+	continue;
+
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
+	  {
+	    if (!first_latch)
+	      first_latch = latch = e;
+	    else
+	      {
+		latch = NULL;
+		break;
+	      }
+	  }
+      /* If there was no latch, schedule the loop for removal.  */
+      if (!first_latch)
+	loop->header = NULL;
+      /* If there was a single latch and it belongs to the loop of the
+	 header, record it.  */
+      else if (latch
+	       && latch->src->loop_father == loop)
+	loop->latch = latch->src;
+      /* Otherwise there are multiple latches which are eventually
+         disambiguated below.  */
+      else
+	loop->latch = NULL;
+    }
+
   /* Remove the dead loops from structures.  We start from the innermost
      loops, so that when we remove the loops, we know that the loops inside
      are preserved, and do not waste time relinking loops that will be
@@ -1849,34 +1883,18 @@ fix_loop_structure (bitmap changed_bbs)
 	}
     }
 
-  /* Then re-compute the single latch if there is one.  */
-  FOR_EACH_LOOP (li, loop, 0)
-    {
-      edge_iterator ei;
-      edge e, latch = NULL;
-      FOR_EACH_EDGE (e, ei, loop->header->preds)
-	if (dominated_by_p (CDI_DOMINATORS, e->src, loop->header))
-	  {
-	    if (!latch)
-	      latch = e;
-	    else
-	      {
-		latch = NULL;
-		break;
-	      }
-	  }
-      if (latch
-	  && latch->src->loop_father == loop)
-	loop->latch = latch->src;
-      else
-	loop->latch = NULL;
-    }
-
   if (!loops_state_satisfies_p (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
     disambiguate_loops_with_multiple_latches ();
 
   if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
-    create_preheaders (CP_SIMPLE_PREHEADERS);
+    {
+      int cp_flags = CP_SIMPLE_PREHEADERS;
+
+      if (loops_state_satisfies_p (LOOPS_HAVE_FALLTHRU_PREHEADERS))
+	cp_flags |= CP_FALLTHRU_PREHEADERS;
+
+      create_preheaders (cp_flags);
+    }
 
   if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
     force_single_succ_latches ();

@@ -971,6 +971,9 @@ ncrtn.o%s"
 
 #define TARGET_ASM_FILE_END rs6000_elf_file_end
 
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET rs6000_asan_shadow_offset
+
 /* This target uses the sysv4.opt file.  */
 #define TARGET_USES_SYSV4_OPT 1
 

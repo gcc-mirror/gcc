@@ -69,6 +69,9 @@ libquadmath_la_SOURCES = \
   printf/quadmath-printf.c printf/rshift.c printf/submul_1.c printf/sub_n.c \
   strtod/strtoflt128.c strtod/mpn2flt128.c strtod/tens_in_limb.c
 
+if LIBQUAD_FERAISEEXCEPT
+libquadmath_la_SOURCES += math/feraiseexcept.c
+endif
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

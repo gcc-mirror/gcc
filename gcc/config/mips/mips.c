@@ -16742,7 +16742,7 @@ mips_option_override (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      mips_dbx_regno[i] = INVALID_REGNUM;
+      mips_dbx_regno[i] = IGNORED_DWARF_REGNUM;
       if (GP_REG_P (i) || FP_REG_P (i) || ALL_COP_REG_P (i))
 	mips_dwarf_regno[i] = i;
       else

@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.expr.Evaluator
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.classpath.tools.gjdoc.expr;
 
+import com.sun.javadoc.FieldDoc;
+
 import java.io.StringReader;
 import java.math.BigInteger;
 import antlr.RecognitionException;
@@ -68,7 +70,7 @@ public class Evaluator
     *  array access) or references unknown static fields.
     */
    public static Object evaluate(String expression,
-                                 Set visitedFields,
+                                 Set<FieldDoc> visitedFields,
                                  EvaluatorEnvironment environment)
       throws IllegalExpressionException
    {

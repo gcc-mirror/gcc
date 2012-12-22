@@ -1,6 +1,5 @@
 /* Variables.java --
-   Copyright (c) 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (c) 2004, 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,10 +43,10 @@ import java.util.Iterator;
 
 class Variables
 {
-  private final HashSet free = new HashSet();
-  private final HashMap names = new HashMap();
-  private final HashSet wides = new HashSet();
-  private final HashSet declared = new HashSet();
+  private final HashSet<Integer> free = new HashSet<Integer>();
+  private final HashMap<Object,Integer> names = new HashMap<Object,Integer>();
+  private final HashSet<Object> wides = new HashSet<Object>();
+  private final HashSet<Object> declared = new HashSet<Object>();
   private boolean allocated = false;
 
   public void declare(Object name)
@@ -77,7 +76,7 @@ class Variables
   {
     // total allocation size is first unallocated slot
     int i = free.size() + names.size() + wides.size();
-    names.put(name, new Integer(i));
+    names.put(name, Integer.valueOf(i));
     if (size == 2) wides.add(name);
     return i;
   }
@@ -103,10 +102,10 @@ class Variables
     if (size == 2)
       {
         // look for consecutive free slots
-        for (Iterator it = free.iterator(); it.hasNext(); )
+        for (Iterator<Integer> it = free.iterator(); it.hasNext(); )
           {
-            Integer i = (Integer) it.next();
-            Integer next = new Integer(i.intValue() + 1);
+            Integer i = it.next();
+            Integer next = Integer.valueOf(i.intValue() + 1);
             if (free.contains(next))
               {
                 free.remove(i);
@@ -119,7 +118,7 @@ class Variables
       }
     else if (free.size() > 0)
       {
-        Integer i = (Integer) free.iterator().next();
+        Integer i = free.iterator().next();
         free.remove(i);
         names.put(name, i);
         return i.intValue();
@@ -136,11 +135,11 @@ class Variables
     if (declared.contains(name))
       throw new IllegalStateException(name + " can't be deallocated");
 
-    Integer i = (Integer) names.get(name);
+    Integer i = names.get(name);
     names.remove(name);
     free.add(i);
     if (wides.remove(name))
-      free.add(new Integer(i.intValue() + 1));
+      free.add(Integer.valueOf(i.intValue() + 1));
     return i.intValue();
   }
 
@@ -149,6 +148,6 @@ class Variables
     if (! names.containsKey(name))
       throw new IllegalArgumentException("no variable " + name);
 
-    return ((Integer) names.get(name)).intValue();
+    return names.get(name).intValue();
   }
 }

@@ -1496,7 +1496,7 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
   rtx insn, note;
   edge e, edest;
   int change;
-  int may_be_loop_header;
+  int may_be_loop_header = false;
   unsigned removed_p;
   unsigned i;
   edge_iterator ei;
@@ -1510,27 +1510,22 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
   if (note)
     find_used_regs (&XEXP (note, 0), NULL);
 
-  /* Determine whether there are more latch edges.  Threading through
-     a loop header with more than one latch is delicate, see e.g.
-     tree-ssa-threadupdate.c:thread_through_loop_header.  */
   if (current_loops)
     {
-      may_be_loop_header = bb == bb->loop_father->header;
-      if (may_be_loop_header
-	  && bb->loop_father->latch == NULL)
+      /* If we are to preserve loop structure then do not bypass
+         a loop header.  This will either rotate the loop, create
+	 multiple entry loops or even irreducible regions.  */
+      if (bb == bb->loop_father->header)
 	return 0;
     }
   else
     {
-      unsigned n_back_edges = 0;
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->flags & EDGE_DFS_BACK)
-	  n_back_edges++;
-
-      may_be_loop_header = n_back_edges > 0;
-
-      if (n_back_edges > 1)
-        return 0;
+	  {
+	    may_be_loop_header = true;
+	    break;
+	  }
     }
 
   change = 0;
@@ -1619,17 +1614,6 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	      && dest != old_dest
 	      && dest != EXIT_BLOCK_PTR)
             {
-	      if (current_loops != NULL
-		  && e->src->loop_father->latch == e->src)
-		{
-		  /* ???  Now we are creating (or may create) a loop
-		     with multiple entries.  Simply mark it for
-		     removal.  Alternatively we could not do this
-		     threading.  */
-		  e->src->loop_father->header = NULL;
-		  e->src->loop_father->latch = NULL;
-		}
-
 	      redirect_edge_and_branch_force (e, dest);
 
 	      /* Copy the register setter to the redirected edge.

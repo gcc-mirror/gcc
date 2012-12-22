@@ -43,6 +43,7 @@
 #include <ext/cast.h>
 #include <ext/type_traits.h>
 #if __cplusplus >= 201103L
+# include <bits/move.h>
 # include <bits/ptr_traits.h>
 #endif
 

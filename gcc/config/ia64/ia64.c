@@ -5845,19 +5845,16 @@ ia64_secondary_reload_class (enum reg_class rclass,
 static int
 ia64_unspec_may_trap_p (const_rtx x, unsigned flags)
 {
-  if (GET_CODE (x) == UNSPEC)
+  switch (XINT (x, 1))
     {
-      switch (XINT (x, 1))
-	{
-	case UNSPEC_LDA:
-	case UNSPEC_LDS:
-	case UNSPEC_LDSA:
-	case UNSPEC_LDCCLR:
-	case UNSPEC_CHKACLR:
-	case UNSPEC_CHKS:
-	  /* These unspecs are just wrappers.  */
-	  return may_trap_p_1 (XVECEXP (x, 0, 0), flags);
-	}
+    case UNSPEC_LDA:
+    case UNSPEC_LDS:
+    case UNSPEC_LDSA:
+    case UNSPEC_LDCCLR:
+    case UNSPEC_CHKACLR:
+    case UNSPEC_CHKS:
+      /* These unspecs are just wrappers.  */
+      return may_trap_p_1 (XVECEXP (x, 0, 0), flags);
     }
 
   return default_unspec_may_trap_p (x, flags);

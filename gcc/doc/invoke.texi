@@ -305,7 +305,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-all @gol
 -fdump-tree-original@r{[}-@var{n}@r{]}  @gol
 -fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
--fdump-tree-cfg -fdump-tree-vcg -fdump-tree-alias @gol
+-fdump-tree-cfg -fdump-tree-alias @gol
 -fdump-tree-ch @gol
 -fdump-tree-ssa@r{[}-@var{n}@r{]} -fdump-tree-pre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-ccp@r{[}-@var{n}@r{]} -fdump-tree-dce@r{[}-@var{n}@r{]} @gol
@@ -5858,10 +5858,9 @@ Enable showing basic block boundaries (disabled in raw dumps).
 @item graph
 For each of the other indicated dump files (@option{-fdump-rtl-@var{pass}}),
 dump a representation of the control flow graph suitable for viewing with
-GraphViz to @file{@var{file}.@var{passid}.@var{pass}.dot}.  Note that if
-the file contains more than one function, the generated file cannot be
-used directly by GraphViz@.  You must cut and paste each function's
-graph into its own separate file first.
+GraphViz to @file{@var{file}.@var{passid}.@var{pass}.dot}.  Each function in
+the file is pretty-printed as a subgraph, so that GraphViz can render them
+all in a single plot.
 
 This option currently only works for RTL dumps, and the RTL is always
 dumped in slim form.
@@ -5931,14 +5930,6 @@ file name is made by appending @file{.gimple} to the source file name.
 @opindex fdump-tree-cfg
 Dump the control flow graph of each function to a file.  The file name is
 made by appending @file{.cfg} to the source file name.
-
-@item vcg
-@opindex fdump-tree-vcg
-Dump the control flow graph of each function to a file in VCG format.  The
-file name is made by appending @file{.vcg} to the source file name.  Note
-that if the file contains more than one function, the generated file cannot
-be used directly by VCG@.  You must cut and paste each function's
-graph into its own separate file first.
 
 @item ch
 @opindex fdump-tree-ch

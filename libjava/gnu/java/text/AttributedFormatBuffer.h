@@ -46,7 +46,7 @@ private:
 public:
   virtual void append(::java::lang::String *);
   virtual void append(::java::lang::String *, ::java::text::AttributedCharacterIterator$Attribute *);
-  virtual void append(::java::lang::String *, JArray< jint > *, JArray< ::java::util::HashMap * > *);
+  virtual void append(::java::lang::String *, JArray< jint > *, ::java::util::List *);
   virtual void append(jchar);
   virtual void append(jchar, ::java::text::AttributedCharacterIterator$Attribute *);
   virtual void setDefaultAttribute(::java::text::AttributedCharacterIterator$Attribute *);
@@ -57,13 +57,13 @@ public:
   virtual void sync();
   virtual ::gnu::java::lang::CPStringBuilder * getBuffer();
   virtual JArray< jint > * getRanges();
-  virtual JArray< ::java::util::HashMap * > * getAttributes();
+  virtual ::java::util::List * getAttributes();
 private:
   ::gnu::java::lang::CPStringBuilder * __attribute__((aligned(__alignof__( ::java::lang::Object)))) buffer;
   ::java::util::ArrayList * ranges;
   ::java::util::ArrayList * attributes;
-  JArray< jint > * a_ranges;
-  JArray< ::java::util::HashMap * > * a_attributes;
+  JArray< jint > * aRanges;
+  ::java::util::List * aAttributes;
   jint startingRange;
 public: // actually package-private
   ::java::text::AttributedCharacterIterator$Attribute * defaultAttr;

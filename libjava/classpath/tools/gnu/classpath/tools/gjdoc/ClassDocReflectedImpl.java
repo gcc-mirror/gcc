@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.ClassDocReflectedImpl
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2012 Free Software Foundation, Inc.
 
    This file is part of GNU Classpath.
 
@@ -37,7 +37,17 @@
 
 package gnu.classpath.tools.gjdoc;
 
-import com.sun.javadoc.*;
+import com.sun.javadoc.Doc;
+import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.ConstructorDoc;
+import com.sun.javadoc.FieldDoc;
+import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.PackageDoc;
+import com.sun.javadoc.SeeTag;
+import com.sun.javadoc.SourcePosition;
+import com.sun.javadoc.Tag;
+import com.sun.javadoc.TypeVariable;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -104,7 +114,7 @@ public class ClassDocReflectedImpl
    public boolean definesSerializableFields() { return false; }
    public FieldDoc[] fields() { return new FieldDoc[0]; }
    public FieldDoc[] fields(boolean filtered) { return new FieldDoc[0]; }
-   public ClassDoc findClass(java.lang.String className) { return null; }
+   public ClassDoc findClass(String className) { return null; }
    public ClassDoc[] importedClasses() { return new ClassDoc[0]; }
    public PackageDoc[] importedPackages() { return new PackageDoc[0]; }
    public ClassDoc[] innerClasses() { return new ClassDoc[0]; }
@@ -195,13 +205,8 @@ public class ClassDocReflectedImpl
 
    public String toString() { return "ClassDocReflectedImpl{"+qualifiedName()+"}"; }
 
-   public int compareTo(java.lang.Object o) {
-      if (o instanceof Doc) {
-         return Main.getInstance().getCollator().compare(name(), ((Doc)o).name());
-      }
-      else {
-         return 0;
-      }
+   public int compareTo(Doc d) {
+     return Main.getInstance().getCollator().compare(name(), d.name());
    }
 
    public String dimension() { return dimension; }

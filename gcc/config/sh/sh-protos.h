@@ -159,8 +159,6 @@ extern bool sh_expand_t_scc (rtx *);
 extern rtx sh_gen_truncate (enum machine_mode, rtx, int);
 extern bool sh_vector_mode_supported_p (enum machine_mode);
 extern bool sh_cfun_trap_exit_p (void);
-extern void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
-					enum machine_mode mode = VOIDmode);
 extern rtx sh_find_equiv_gbr_addr (rtx cur_insn, rtx mem);
 extern int sh_eval_treg_value (rtx op);
 

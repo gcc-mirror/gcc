@@ -46,8 +46,9 @@ extern __float128 __quadmath_kernel_cosq (__float128, __float128);
 extern __float128 __quadmath_x2y2m1q (__float128 x, __float128 y);
 extern int __quadmath_isinf_nsq (__float128 x);
 
-
-
+#ifdef HAVE_FENV_H
+extern int __quadmath_feraiseexcept (int);
+#endif
 
 
 /* Frankly, if you have __float128, you have 64-bit integers, right?  */

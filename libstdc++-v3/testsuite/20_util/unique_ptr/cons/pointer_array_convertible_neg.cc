@@ -1,7 +1,7 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008-2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@ struct B : A
   virtual ~B() { }
 };
 
-// 20.4.5.1 unique_ptr constructors [unique.ptr.cons]
+// 20.7.1.3.1 unique_ptr constructors [unique.ptr.runtime.ctor]
 
 // Construction from pointer of derived type
 void

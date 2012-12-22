@@ -45,9 +45,9 @@ ctanq (__complex128 x)
 	  __real__ res = nanq ("");
 	  __imag__ res = nanq ("");
 
-#ifdef HAVE_FENV_H
+#ifdef QUADMATH_FERAISEEXCEPT
 	  if (__quadmath_isinf_nsq (__real__ x))
-	    feraiseexcept (FE_INVALID);
+	    QUADMATH_FERAISEEXCEPT (FE_INVALID);
 #endif
 	}
     }

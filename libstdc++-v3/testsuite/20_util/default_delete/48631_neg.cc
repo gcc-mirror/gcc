@@ -27,4 +27,4 @@ struct D : B { };
 D d;
 std::default_delete<B[]> db;
 typedef decltype(db(&d)) type; // { dg-error "use of deleted function" }
-// { dg-error "declared here" "" { target *-*-* } 87 }
+// { dg-error "declared here" "" { target *-*-* } 104 }

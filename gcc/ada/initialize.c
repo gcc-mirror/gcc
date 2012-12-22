@@ -34,10 +34,6 @@
     in a separate file/object so that users can replace it easily.
     The default implementation should be null on most targets.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* The following include is here to meet the published VxWorks requirement
    that the __vxworks header appear before any other include.  */
 #ifdef __vxworks
@@ -56,6 +52,10 @@ extern "C" {
 #endif
 
 #include "raise.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /******************************************/
 /* __gnat_initialize (NT-mingw32 Version) */

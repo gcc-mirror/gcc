@@ -350,8 +350,7 @@ build_value_init (tree type, tsubst_flags_t complain)
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL, type, LOOKUP_NORMAL,
-				      complain),
-	   complain);
+				      complain));
       else if (TYPE_HAS_COMPLEX_DFLT (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
@@ -361,7 +360,7 @@ build_value_init (tree type, tsubst_flags_t complain)
 	  tree ctor = build_special_member_call
 	    (NULL_TREE, complete_ctor_identifier,
 	     NULL, type, LOOKUP_NORMAL, complain);
-	  ctor = build_aggr_init_expr (type, ctor, complain);
+	  ctor = build_aggr_init_expr (type, ctor);
 	  if (ctor != error_mark_node)
 	    AGGR_INIT_ZERO_FIRST (ctor) = 1;
 	  return ctor;
@@ -1370,8 +1369,8 @@ expand_member_init (tree name)
       tree virtual_binfo;
       int i;
 
-      if (same_type_p (basetype, current_class_type)
-	  || current_template_parms)
+      if (current_template_parms
+	  || same_type_p (basetype, current_class_type))
 	  return basetype;
 
       class_binfo = TYPE_BINFO (current_class_type);

@@ -1,5 +1,5 @@
 /* An input or output line
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,6 +43,7 @@ package javax.sound.sampled;
  * @since 1.3
  */
 public interface Line
+  extends AutoCloseable
 {
   /**
    * An object of this type holds information about a Line.
@@ -50,7 +51,7 @@ public interface Line
    */
   class Info
   {
-    private Class klass;
+    private Class<?> klass;
 
     /**
      * Create a new Info object.  The argument is the class of the line,

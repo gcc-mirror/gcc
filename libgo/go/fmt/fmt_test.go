@@ -476,6 +476,11 @@ var fmttests = []struct {
 
 	// Used to crash because nByte didn't allow for a sign.
 	{"%b", int64(-1 << 63), "-1000000000000000000000000000000000000000000000000000000000000000"},
+
+	// Complex fmt used to leave the plus flag set for future entries in the array
+	// causing +2+0i and +3+0i instead of 2+0i and 3+0i.
+	{"%v", []complex64{1, 2, 3}, "[(1+0i) (2+0i) (3+0i)]"},
+	{"%v", []complex128{1, 2, 3}, "[(1+0i) (2+0i) (3+0i)]"},
 }
 
 func TestSprintf(t *testing.T) {
@@ -583,6 +588,7 @@ var mallocTest = []struct {
 var _ bytes.Buffer
 
 func TestCountMallocs(t *testing.T) {
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
 	for _, mt := range mallocTest {
 		const N = 100
 		memstats := new(runtime.MemStats)

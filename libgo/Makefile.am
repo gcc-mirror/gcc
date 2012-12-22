@@ -221,6 +221,7 @@ endif
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 
 toolexeclibgoexp_DATA = \
+	exp/cookiejar.gox \
 	exp/ebnf.gox \
 	exp/html.gox \
 	$(exp_inotify_gox) \
@@ -251,6 +252,7 @@ toolexeclibgogo_DATA = \
 	go/ast.gox \
 	go/build.gox \
 	go/doc.gox \
+	go/format.gox \
 	go/parser.gox \
 	go/printer.gox \
 	go/scanner.gox \
@@ -500,6 +502,7 @@ runtime_files = \
 	runtime/go-unwind.c \
 	runtime/chan.c \
 	runtime/cpuprof.c \
+	runtime/env_posix.c \
 	runtime/lfstack.c \
 	$(runtime_lock_files) \
 	runtime/mcache.c \
@@ -1194,6 +1197,9 @@ go_encoding_xml_files = \
 	go/encoding/xml/typeinfo.go \
 	go/encoding/xml/xml.go
 
+go_exp_cookiejar_files = \
+	go/exp/cookiejar/jar.go \
+	go/exp/cookiejar/storage.go
 go_exp_ebnf_files = \
 	go/exp/ebnf/ebnf.go \
 	go/exp/ebnf/parser.go
@@ -1284,6 +1290,8 @@ go_go_doc_files = \
 	go/go/doc/filter.go \
 	go/go/doc/reader.go \
 	go/go/doc/synopsis.go
+go_go_format_files = \
+	go/go/format/format.go
 go_go_parser_files = \
 	go/go/parser/interface.go \
 	go/go/parser/parser.go
@@ -1384,6 +1392,7 @@ go_math_rand_files = \
 go_mime_multipart_files = \
 	go/mime/multipart/formdata.go \
 	go/mime/multipart/multipart.go \
+	go/mime/multipart/quotedprintable.go \
 	go/mime/multipart/writer.go
 
 go_net_http_files = \
@@ -1456,6 +1465,7 @@ go_os_signal_files = \
 
 go_os_user_files = \
 	go/os/user/user.go \
+	go/os/user/lookup.go \
 	go/os/user/lookup_unix.go
 
 go_path_filepath_files = \
@@ -1648,6 +1658,13 @@ else
 syscall_lsf_file =
 endif
 
+# GNU/Linux specific utimesnano support.
+if LIBGO_IS_LINUX
+syscall_utimesnano_file = go/syscall/libcall_linux_utimesnano.go
+else
+syscall_utimesnano_file = go/syscall/libcall_posix_utimesnano.go
+endif
+
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -1670,6 +1687,7 @@ go_base_syscall_files = \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
+	$(syscall_utimesnano_file) \
 	$(GO_LIBCALL_OS_FILE) \
 	$(GO_LIBCALL_OS_ARCH_FILE) \
 	$(GO_SYSCALL_OS_FILE) \
@@ -1822,6 +1840,7 @@ libgo_go_objs = \
 	encoding/json.lo \
 	encoding/pem.lo \
 	encoding/xml.lo \
+	exp/cookiejar.lo \
 	exp/ebnf.lo \
 	exp/html.lo \
 	exp/html/atom.lo \
@@ -1836,6 +1855,7 @@ libgo_go_objs = \
 	go/ast.lo \
 	go/build.lo \
 	go/doc.lo \
+	go/format.lo \
 	go/parser.lo \
 	go/printer.lo \
 	go/scanner.lo \
@@ -1898,6 +1918,7 @@ libgo_la_LDFLAGS = \
 
 libgo_la_LIBADD = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
+	../libatomic/libatomic_convenience.la \
 	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \
@@ -2658,6 +2679,15 @@ encoding/xml/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/xml/check
 
+@go_include@ exp/cookiejar.lo.dep
+exp/cookiejar.lo.dep: $(go_exp_cookiejar_files)
+	$(BUILDDEPS)
+exp/cookiejar.lo: $(go_exp_cookiejar_files)
+	$(BUILDPACKAGE)
+exp/cookiejar/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: exp/cookiejar/check
+
 @go_include@ exp/ebnf.lo.dep
 exp/ebnf.lo.dep: $(go_exp_ebnf_files)
 	$(BUILDDEPS)
@@ -2801,6 +2831,15 @@ go/doc.lo: $(go_go_doc_files)
 go/doc/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: go/doc/check
+
+@go_include@ go/format.lo.dep
+go/format.lo.dep: $(go_go_format_files)
+	$(BUILDDEPS)
+go/format.lo: $(go_go_format_files)
+	$(BUILDPACKAGE)
+go/format/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: go/format/check
 
 @go_include@ go/parser.lo.dep
 go/parser.lo.dep: $(go_go_parser_files)
@@ -3450,6 +3489,8 @@ encoding/pem.gox: encoding/pem.lo
 encoding/xml.gox: encoding/xml.lo
 	$(BUILDGOX)
 
+exp/cookiejar.gox: exp/cookiejar.lo
+	$(BUILDGOX)
 exp/ebnf.gox: exp/ebnf.lo
 	$(BUILDGOX)
 exp/html.gox: exp/html.lo
@@ -3481,6 +3522,8 @@ go/ast.gox: go/ast.lo
 go/build.gox: go/build.lo
 	$(BUILDGOX)
 go/doc.gox: go/doc.lo
+	$(BUILDGOX)
+go/format.gox: go/format.lo
 	$(BUILDGOX)
 go/parser.gox: go/parser.lo
 	$(BUILDGOX)
@@ -3681,6 +3724,7 @@ TEST_PACKAGES = \
 	encoding/json/check \
 	encoding/pem/check \
 	encoding/xml/check \
+	exp/cookiejar/check \
 	exp/ebnf/check \
 	exp/html/check \
 	exp/html/atom/check \
@@ -3696,6 +3740,7 @@ TEST_PACKAGES = \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \
 	go/doc/check \
+	go/format/check \
 	go/parser/check \
 	go/printer/check \
 	go/scanner/check \

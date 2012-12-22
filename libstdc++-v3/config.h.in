@@ -460,6 +460,9 @@
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
 
+/* Defined if Sleep exists. */
+#undef HAVE_WIN32_SLEEP
+
 /* Define if writev is available in <sys/uio.h>. */
 #undef HAVE_WRITEV
 

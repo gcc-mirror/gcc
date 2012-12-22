@@ -103,6 +103,28 @@ public final class Matcher implements MatchResult
   }
 
   /**
+   * Changes the pattern used by the {@link Matcher} to
+   * the one specified.  Existing match information is lost,
+   * but the input and the matcher's position within it is
+   * retained.
+   *
+   * @param newPattern the new pattern to use.
+   * @return this matcher.
+   * @throws IllegalArgumentException if {@code newPattern} is
+   *                                  {@code null}.
+   * @since 1.5
+   */
+  public Matcher usePattern(Pattern newPattern)
+  {
+    if (newPattern == null)
+      throw new IllegalArgumentException("The new pattern was null.");
+    pattern = newPattern;
+    match = null;
+
+    return this;
+  }
+
+  /**
    * @param sb The target string buffer
    * @param replacement The replacement string
    *
@@ -620,7 +642,7 @@ public final class Matcher implements MatchResult
    *
    * @param s the string to literalize.
    * @return the literalized string.
-   * @since 1.5
+   * @since 1.5
    */
   public static String quoteReplacement(String s)
   {

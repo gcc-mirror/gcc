@@ -53,6 +53,7 @@ exception statement from your version. */
 #include <stdlib.h>
 
 #include <jni.h>
+#include <jcl.h>
 
 #include "java_util_VMTimeZone.h"
 
@@ -169,7 +170,13 @@ Java_java_util_VMTimeZone_getSystemTimeZoneId (JNIEnv * env,
   tz1_len = strlen (tz1);
   tz2_len = strlen (tz2);
   tzoff_len = jint_to_charbuf (tzoff + 11, tzoffset);
-  tzid = (char *) malloc (tz1_len + tz2_len + tzoff_len + 1);	/* FIXME alloc */
+  tzid = (char *) malloc (tz1_len + tz2_len + tzoff_len + 1);
+  if (tzid == NULL) {
+    JCL_ThrowException (env, "java/lang/OutOfMemoryError",
+                        "malloc() failed");
+    return 0;
+  }
+
   memcpy (tzid, tz1, tz1_len);
   memcpy (tzid + tz1_len, tzoff + 11 - tzoff_len, tzoff_len);
   memcpy (tzid + tz1_len + tzoff_len, tz2, tz2_len);

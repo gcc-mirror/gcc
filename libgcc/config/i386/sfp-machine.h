@@ -47,6 +47,9 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define FP_EX_OVERFLOW		0x08
 #define FP_EX_UNDERFLOW		0x10
 #define FP_EX_INEXACT		0x20
+#define FP_EX_ALL \
+	(FP_EX_INVALID | FP_EX_DENORM | FP_EX_DIVZERO | FP_EX_OVERFLOW \
+	 | FP_EX_UNDERFLOW | FP_EX_INEXACT)
 
 void __sfp_handle_exceptions (int);
 
@@ -55,6 +58,8 @@ void __sfp_handle_exceptions (int);
     if (__builtin_expect (_fex, 0))		\
       __sfp_handle_exceptions (_fex);		\
   } while (0);
+
+#define FP_TRAPPING_EXCEPTIONS ((_fcw >> FP_EX_SHIFT) & FP_EX_ALL)
 
 #define FP_ROUNDMODE		(_fcw & FP_RND_MASK)
 #endif

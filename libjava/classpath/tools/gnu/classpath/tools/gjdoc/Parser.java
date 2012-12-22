@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.Parser
-   Copyright (C) 2001, 2005, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2008, 2012 Free Software Foundation, Inc.
 
    This file is part of GNU Classpath.
 
@@ -37,21 +37,38 @@
 
 package gnu.classpath.tools.gjdoc;
 
-import java.io.*;
+import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.ConstructorDoc;
+import com.sun.javadoc.FieldDoc;
+import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.PackageDoc;
+
+import gnu.classpath.tools.IOToolkit;
+import gnu.classpath.tools.NotifyingInputStreamReader;
+import gnu.classpath.tools.MalformedInputListener;
+import gnu.classpath.tools.MalformedInputEvent;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.Reader;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.util.*;
 
-import com.sun.javadoc.*;
-
-import gnu.classpath.tools.IOToolkit;
-import gnu.classpath.tools.NotifyingInputStreamReader;
-import gnu.classpath.tools.MalformedInputListener;
-import gnu.classpath.tools.MalformedInputEvent;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.Stack;
 
    class IgnoredFileParseException extends ParseException
    {
@@ -356,11 +373,11 @@ import gnu.classpath.tools.MalformedInputEvent;
          if (endIndex-startIndex<=1) return endIndex;
 
          //assert (parser.ctx!=null);
-         Collection fields=FieldDocImpl.createFromSource(parser.ctx.classDoc,
-                                                         parser.ctx.classDoc.containingPackage(),
-                                                         source, startIndex, endIndex);
+         Collection<FieldDoc> fields = FieldDocImpl.createFromSource(parser.ctx.classDoc,
+                                                                     parser.ctx.classDoc.containingPackage(),
+                                                                     source, startIndex, endIndex);
 
-         for (Iterator it=fields.iterator(); it.hasNext(); ) {
+         for (Iterator<FieldDoc> it=fields.iterator(); it.hasNext(); ) {
             FieldDocImpl field=(FieldDocImpl)it.next();
             boolean fieldHasSerialTag=!field.isTransient() && !field.isStatic(); //field.hasSerialTag();
             if ((field.isIncluded() || fieldHasSerialTag) && parser.getAddComments()) {
@@ -408,27 +425,26 @@ import gnu.classpath.tools.MalformedInputEvent;
          parser.setLastComment(null);
 
          if (execDoc.isMethod()) {
-            parser.ctx.methodList.add(execDoc);
-            if (execDoc.isIncluded()) {
-               parser.ctx.filteredMethodList.add(execDoc);
+            MethodDoc methDoc = (MethodDoc) execDoc;
+            parser.ctx.methodList.add(methDoc);
+            if (methDoc.isIncluded()) {
+               parser.ctx.filteredMethodList.add(methDoc);
             }
-         }
-         else {
-            parser.ctx.constructorList.add(execDoc);
-            if (execDoc.isIncluded()) {
-               parser.ctx.filteredConstructorList.add(execDoc);
-            }
-         }
-
-         if (execDoc.isMethod()
-                  && (execDoc.name().equals("readObject")
-                      || execDoc.name().equals("writeObject")
-                      || execDoc.name().equals("readExternal")
-                      || execDoc.name().equals("writeExternal")
-                      || execDoc.name().equals("readResolve"))) {
+            if (methDoc.name().equals("readObject")
+                      || methDoc.name().equals("writeObject")
+                      || methDoc.name().equals("readExternal")
+                      || methDoc.name().equals("writeExternal")
+                      || methDoc.name().equals("readResolve")) {
            // FIXME: add readExternal here?
 
-            parser.ctx.maybeSerMethodList.add(execDoc);
+            parser.ctx.maybeSerMethodList.add(methDoc);
+           }
+         } else {
+             ConstructorDoc constDoc = (ConstructorDoc) execDoc;
+             parser.ctx.constructorList.add(constDoc);
+             if (constDoc.isIncluded()) {
+               parser.ctx.filteredConstructorList.add(constDoc);
+             }
          }
 
          return endIndex;
@@ -764,7 +780,7 @@ public class Parser {
       return processedFiles.size();
    }
 
-   static Set processedFiles = new HashSet();
+   static Set<File> processedFiles = new HashSet<File>();
 
    ClassDocImpl processSourceFile(File file, boolean addComments,
                                   String encoding, String expectedPackageName)
@@ -803,8 +819,8 @@ public class Parser {
       try {
          parse(source, 0, sourceLevelComponents);
 
-         ClassDoc[] importedClasses=(ClassDoc[])importedClassesList.toArray(new ClassDoc[0]);
-         PackageDoc[] importedPackages=(PackageDoc[])importedPackagesList.toArray(new PackageDoc[0]);
+         ClassDoc[] importedClasses = importedClassesList.toArray(new ClassDoc[importedClassesList.size()]);
+         PackageDoc[] importedPackages = importedPackagesList.toArray(new PackageDoc[importedPackagesList.size()]);
 
          if (Main.DESCEND_IMPORTED) {
             for (int i=0; i<importedClasses.length; ++i) {
@@ -909,7 +925,7 @@ public class Parser {
       ClassDocImpl classDoc
          = ClassDocImpl.createInstance((ctx!=null)?(ctx.classDoc):null, currentPackage,
                                        null,
-                                       (PackageDoc[])importedPackagesList.toArray(new PackageDoc[0]),
+                                       importedPackagesList.toArray(new PackageDoc[importedPackagesList.size()]),
                                        source, startIndex, endIndex,
                                        importedStatementList);
 
@@ -921,11 +937,11 @@ public class Parser {
       }
 
       if (importedClassesList.isEmpty()) {
-         for (Iterator it=importedStringList.iterator(); it.hasNext(); ) {
-            importedClassesList.add(new ClassDocProxy((String)it.next(), classDoc));
+         for (Iterator<String> it=importedStringList.iterator(); it.hasNext(); ) {
+            importedClassesList.add(new ClassDocProxy(it.next(), classDoc));
          }
       }
-      classDoc.setImportedClasses((ClassDoc[])importedClassesList.toArray(new ClassDoc[0]));
+      classDoc.setImportedClasses(importedClassesList.toArray(new ClassDoc[importedClassesList.size()]));
 
       currentPackage.addClass(classDoc);
 
@@ -945,26 +961,24 @@ public class Parser {
       //Debug.log(9,"ctx="+ctx);
    }
 
-   private Doc[] toArray(List list, Doc[] template)
+   private <T> T[] toArray(List<T> list, T[] template)
    {
-      Doc[] result = (Doc[])list.toArray(template);
-      return result;
+      return list.toArray(template);
    }
 
    void classClosed() throws ParseException, IOException {
-      ctx.classDoc.setFields((FieldDoc[])toArray(ctx.fieldList,
-                                                             new FieldDoc[0]));
-      ctx.classDoc.setFilteredFields((FieldDoc[])toArray(ctx.filteredFieldList,
-                                                                     new FieldDoc[0]));
-      ctx.classDoc.setSerializableFields((FieldDoc[])toArray(ctx.sfieldList, new FieldDoc[0]));
-      ctx.classDoc.setMethods((MethodDoc[])toArray(ctx.methodList, new MethodDoc[0]));
-      ctx.classDoc.setFilteredMethods((MethodDoc[])toArray(ctx.filteredMethodList, new MethodDoc[0]));
+      ctx.classDoc.setFields(toArray(ctx.fieldList,new FieldDoc[ctx.fieldList.size()]));
+      ctx.classDoc.setFilteredFields(toArray(ctx.filteredFieldList,new FieldDoc[ctx.filteredFieldList.size()]));
+      ctx.classDoc.setSerializableFields(toArray(ctx.sfieldList, new FieldDoc[ctx.sfieldList.size()]));
+      ctx.classDoc.setMethods(toArray(ctx.methodList, new MethodDoc[ctx.methodList.size()]));
+      ctx.classDoc.setFilteredMethods(toArray(ctx.filteredMethodList, new MethodDoc[ctx.filteredMethodList.size()]));
       ctx.classDoc.setMaybeSerMethodList(ctx.maybeSerMethodList);
-      ctx.classDoc.setConstructors((ConstructorDoc[])toArray(ctx.constructorList, new ConstructorDoc[0]));
-      ctx.classDoc.setFilteredConstructors((ConstructorDoc[])toArray(ctx.filteredConstructorList, new ConstructorDoc[0]));
-
-      ctx.classDoc.setInnerClasses((ClassDocImpl[])toArray(ctx.innerClassesList, new ClassDocImpl[0]));
-      ctx.classDoc.setFilteredInnerClasses((ClassDocImpl[])toArray(ctx.filteredInnerClassesList, new ClassDocImpl[0]));
+      ctx.classDoc.setConstructors(toArray(ctx.constructorList, new ConstructorDoc[ctx.constructorList.size()]));
+      ctx.classDoc.setFilteredConstructors(toArray(ctx.filteredConstructorList,
+                                                   new ConstructorDoc[ctx.filteredConstructorList.size()]));
+      ctx.classDoc.setInnerClasses(toArray(ctx.innerClassesList, new ClassDocImpl[ctx.innerClassesList.size()]));
+      ctx.classDoc.setFilteredInnerClasses(toArray(ctx.filteredInnerClassesList,
+                                                   new ClassDocImpl[ctx.filteredInnerClassesList.size()]));
       ctx.classDoc.setBoilerplateComment(boilerplateComment);
 
       Main.getRootDoc().addClassDoc(ctx.classDoc);
@@ -993,16 +1007,16 @@ public class Parser {
    class Context {
       Context(ClassDocImpl classDoc) { this.classDoc=classDoc; }
       ClassDocImpl      classDoc                 = null;
-      List              fieldList                = new LinkedList();
-      List              filteredFieldList        = new LinkedList();
-      List              sfieldList               = new LinkedList();
-      List              methodList               = new LinkedList();
-      List              filteredMethodList       = new LinkedList();
-      List              maybeSerMethodList       = new LinkedList();
-      List              constructorList          = new LinkedList();
-      List              filteredConstructorList  = new LinkedList();
-      List              innerClassesList         = new LinkedList();
-      List              filteredInnerClassesList = new LinkedList();
+      List<FieldDoc> fieldList = new LinkedList<FieldDoc>();
+      List<FieldDoc> filteredFieldList = new LinkedList<FieldDoc>();
+      List<FieldDoc> sfieldList = new LinkedList<FieldDoc>();
+      List<MethodDoc> methodList = new LinkedList<MethodDoc>();
+      List<MethodDoc> filteredMethodList = new LinkedList<MethodDoc>();
+      List<MethodDoc> maybeSerMethodList = new LinkedList<MethodDoc>();
+      List<ConstructorDoc> constructorList = new LinkedList<ConstructorDoc>();
+      List<ConstructorDoc> filteredConstructorList = new LinkedList<ConstructorDoc>();
+      List<ClassDocImpl> innerClassesList = new LinkedList<ClassDocImpl>();
+      List<ClassDocImpl> filteredInnerClassesList = new LinkedList<ClassDocImpl>();
    }
 
    File currentFile = null;
@@ -1016,10 +1030,10 @@ public class Parser {
    List allClassesList       = new LinkedList();
    List interfacesList       = new LinkedList();
 
-   List importedClassesList  = new LinkedList();
-   List importedStringList   = new LinkedList();
-   List importedPackagesList = new LinkedList();
-   List importedStatementList = new LinkedList();
+   List<ClassDoc> importedClassesList = new LinkedList<ClassDoc>();
+   List<String> importedStringList   = new LinkedList<String>();
+   List<PackageDoc> importedPackagesList = new LinkedList<PackageDoc>();
+   List<String> importedStatementList = new LinkedList<String>();
 
    List referencedClassesList = new LinkedList();
 

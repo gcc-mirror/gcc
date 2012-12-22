@@ -1192,6 +1192,7 @@ GFORTRAN_1.4 {
 GFORTRAN_1.5 {
   global:
     _gfortran_ftell2;
+    _gfortran_backtrace;
 } GFORTRAN_1.4; 
 
 F2C_1.0 {

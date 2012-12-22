@@ -1265,6 +1265,31 @@
    (set_attr "type" "f_rint<vfp_type>")]
 )
 
+;; MIN_EXPR and MAX_EXPR eventually map to 'smin' and 'smax' in RTL.
+;; The 'smax' and 'smin' RTL standard pattern names do not specify which
+;; operand will be returned when both operands are zero (i.e. they may not
+;; honour signed zeroes), or when either operand is NaN.  Therefore GCC
+;; only introduces MIN_EXPR/MAX_EXPR in fast math mode or when not honouring
+;; NaNs.
+
+(define_insn "smax<mode>3"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+        (smax:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
+		  (match_operand:SDF 2 "register_operand" "<F_constraint>")))]
+  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "vmaxnm.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "type" "f_minmax<vfp_type>")]
+)
+
+(define_insn "smin<mode>3"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+        (smin:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
+		  (match_operand:SDF 2 "register_operand" "<F_constraint>")))]
+  "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
+  "vminnm.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "type" "f_minmax<vfp_type>")]
+)
+
 ;; Unimplemented insns:
 ;; fldm*
 ;; fstm*

@@ -3375,16 +3375,22 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 	if (!present_gnu_tree (gnat_param))
 	  {
 	    tree gnu_cico_entry = gnu_cico_list;
+	    tree gnu_decl;
 
 	    /* Skip any entries that have been already filled in; they must
 	       correspond to In Out parameters.  */
 	    while (gnu_cico_entry && TREE_VALUE (gnu_cico_entry))
 	      gnu_cico_entry = TREE_CHAIN (gnu_cico_entry);
 
+	    /* Do any needed dereferences for by-ref objects.  */
+	    gnu_decl = gnat_to_gnu_entity (gnat_param, NULL_TREE, 1);
+	    gcc_assert (DECL_P (gnu_decl));
+	    if (DECL_BY_REF_P (gnu_decl))
+	      gnu_decl = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_decl);
+
 	    /* Do any needed references for padded types.  */
 	    TREE_VALUE (gnu_cico_entry)
-	      = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_entry)),
-			 gnat_to_gnu_entity (gnat_param, NULL_TREE, 1));
+	      = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_entry)), gnu_decl);
 	  }
     }
   else
@@ -5403,6 +5409,10 @@ gnat_to_gnu (Node_Id gnat_node)
 		       gnu_array_object);
 
 	gnu_result = gnu_array_object;
+
+	/* The failure of this assertion will very likely come from a missing
+	   expansion for a packed array access.  */
+	gcc_assert (TREE_CODE (TREE_TYPE (gnu_array_object)) == ARRAY_TYPE);
 
 	/* First compute the number of dimensions of the array, then
 	   fill the expression array, the order depending on whether

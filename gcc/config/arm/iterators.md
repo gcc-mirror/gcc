@@ -198,6 +198,9 @@
 (define_int_iterator VRINT [UNSPEC_VRINTZ UNSPEC_VRINTP UNSPEC_VRINTM
                             UNSPEC_VRINTR UNSPEC_VRINTX UNSPEC_VRINTA])
 
+(define_int_iterator NEON_VRINT [UNSPEC_NVRINTP UNSPEC_NVRINTZ UNSPEC_NVRINTM
+                              UNSPEC_NVRINTX UNSPEC_NVRINTA UNSPEC_NVRINTN])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -426,8 +429,8 @@
 (define_mode_attr qhs_extenddi_op [(SI "s_register_operand")
 				   (HI "nonimmediate_operand")
 				   (QI "arm_reg_or_extendqisi_mem_op")])
-(define_mode_attr qhs_extenddi_cstr [(SI "r") (HI "rm") (QI "rUq")])
-(define_mode_attr qhs_zextenddi_cstr [(SI "r") (HI "rm") (QI "rm")])
+(define_mode_attr qhs_extenddi_cstr [(SI "r,0,r,r") (HI "r,0,rm,rm") (QI "r,0,rUq,rm")])
+(define_mode_attr qhs_zextenddi_cstr [(SI "r,0,r") (HI "r,0,rm") (QI "r,0,rm")])
 
 ;; Mode attributes used for fixed-point support.
 (define_mode_attr qaddsub_suf [(V4UQQ "8") (V2UHQ "16") (UQQ "8") (UHQ "16")
@@ -483,3 +486,7 @@
 (define_int_attr vrint_predicable [(UNSPEC_VRINTZ "yes") (UNSPEC_VRINTP "no")
                                   (UNSPEC_VRINTA "no") (UNSPEC_VRINTM "no")
                                   (UNSPEC_VRINTR "yes") (UNSPEC_VRINTX "yes")])
+
+(define_int_attr nvrint_variant [(UNSPEC_NVRINTZ "z") (UNSPEC_NVRINTP "p")
+                                (UNSPEC_NVRINTA "a") (UNSPEC_NVRINTM "m")
+                                (UNSPEC_NVRINTX "x") (UNSPEC_NVRINTN "n")])

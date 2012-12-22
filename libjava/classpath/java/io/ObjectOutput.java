@@ -48,7 +48,8 @@ package java.io;
   *
   * @see DataOutput
   */
-public interface ObjectOutput extends DataOutput
+public interface ObjectOutput
+  extends DataOutput, AutoCloseable
 {
   /**
     * This method writes the specified byte to the output stream.

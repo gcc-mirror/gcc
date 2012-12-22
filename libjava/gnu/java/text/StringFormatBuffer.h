@@ -38,7 +38,7 @@ public:
   StringFormatBuffer(::java::lang::StringBuffer *);
   virtual void append(::java::lang::String *);
   virtual void append(::java::lang::String *, ::java::text::AttributedCharacterIterator$Attribute *);
-  virtual void append(::java::lang::String *, JArray< jint > *, JArray< ::java::util::HashMap * > *);
+  virtual void append(::java::lang::String *, JArray< jint > *, ::java::util::List *);
   virtual void append(jchar);
   virtual void append(jchar, ::java::text::AttributedCharacterIterator$Attribute *);
   virtual void setDefaultAttribute(::java::text::AttributedCharacterIterator$Attribute *);

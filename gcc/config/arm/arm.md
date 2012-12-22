@@ -58,112 +58,6 @@
   ]
 )
 
-;; UNSPEC Usage:
-;; Note: sin and cos are no-longer used.
-;; Unspec enumerators for Neon are defined in neon.md.
-;; Unspec enumerators for iwmmxt2 are defined in iwmmxt2.md
-
-(define_c_enum "unspec" [
-  UNSPEC_PUSH_MULT      ; `push multiple' operation:
-                        ;   operand 0 is the first register,
-                        ;   subsequent registers are in parallel (use ...)
-                        ;   expressions.
-  UNSPEC_PIC_SYM        ; A symbol that has been treated properly for pic
-                        ; usage, that is, we will add the pic_register
-                        ; value to it before trying to dereference it.
-  UNSPEC_PIC_BASE       ; Add PC and all but the last operand together,
-                        ; The last operand is the number of a PIC_LABEL
-                        ; that points at the containing instruction.
-  UNSPEC_PRLG_STK       ; A special barrier that prevents frame accesses
-                        ; being scheduled before the stack adjustment insn.
-  UNSPEC_REGISTER_USE   ; As USE insns are not meaningful after reload,
-                        ; this unspec is used to prevent the deletion of
-                        ; instructions setting registers for EH handling
-                        ; and stack frame generation.  Operand 0 is the
-                        ; register to "use".
-  UNSPEC_CHECK_ARCH     ; Set CCs to indicate 26-bit or 32-bit mode.
-  UNSPEC_WSHUFH         ; Used by the intrinsic form of the iWMMXt WSHUFH instruction.
-  UNSPEC_WACC           ; Used by the intrinsic form of the iWMMXt WACC instruction.
-  UNSPEC_TMOVMSK        ; Used by the intrinsic form of the iWMMXt TMOVMSK instruction.
-  UNSPEC_WSAD           ; Used by the intrinsic form of the iWMMXt WSAD instruction.
-  UNSPEC_WSADZ          ; Used by the intrinsic form of the iWMMXt WSADZ instruction.
-  UNSPEC_WMACS          ; Used by the intrinsic form of the iWMMXt WMACS instruction.
-  UNSPEC_WMACU          ; Used by the intrinsic form of the iWMMXt WMACU instruction.
-  UNSPEC_WMACSZ         ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
-  UNSPEC_WMACUZ         ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
-  UNSPEC_CLRDI          ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
-  UNSPEC_WALIGNI        ; Used by the intrinsic form of the iWMMXt WALIGN instruction.
-  UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
-  UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
-                        ; instruction stream.
-  UNSPEC_PIC_OFFSET     ; A symbolic 12-bit OFFSET that has been treated
-                        ; correctly for PIC usage.
-  UNSPEC_GOTSYM_OFF     ; The offset of the start of the GOT from a
-                        ; a given symbolic address.
-  UNSPEC_THUMB1_CASESI  ; A Thumb1 compressed dispatch-table call.
-  UNSPEC_RBIT           ; rbit operation.
-  UNSPEC_SYMBOL_OFFSET  ; The offset of the start of the symbol from
-                        ; another symbolic address.
-  UNSPEC_MEMORY_BARRIER ; Represent a memory barrier.
-  UNSPEC_UNALIGNED_LOAD	; Used to represent ldr/ldrh instructions that access
-			; unaligned locations, on architectures which support
-			; that.
-  UNSPEC_UNALIGNED_STORE ; Same for str/strh.
-  UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
-  UNSPEC_LL		; Represent an unpaired load-register-exclusive.
-  UNSPEC_VRINTZ         ; Represent a float to integral float rounding
-                        ; towards zero.
-  UNSPEC_VRINTP         ; Represent a float to integral float rounding
-                        ; towards +Inf.
-  UNSPEC_VRINTM         ; Represent a float to integral float rounding
-                        ; towards -Inf.
-  UNSPEC_VRINTR         ; Represent a float to integral float rounding
-                        ; FPSCR rounding mode.
-  UNSPEC_VRINTX         ; Represent a float to integral float rounding
-                        ; FPSCR rounding mode and signal inexactness.
-  UNSPEC_VRINTA         ; Represent a float to integral float rounding
-                        ; towards nearest, ties away from zero.
-])
-
-;; UNSPEC_VOLATILE Usage:
-
-(define_c_enum "unspecv" [
-  VUNSPEC_BLOCKAGE      ; `blockage' insn to prevent scheduling across an
-                        ;   insn in the code.
-  VUNSPEC_EPILOGUE      ; `epilogue' insn, used to represent any part of the
-                        ;   instruction epilogue sequence that isn't expanded
-                        ;   into normal RTL.  Used for both normal and sibcall
-                        ;   epilogues.
-  VUNSPEC_THUMB1_INTERWORK ; `prologue_thumb1_interwork' insn, used to swap
-			;   modes from arm to thumb.
-  VUNSPEC_ALIGN         ; `align' insn.  Used at the head of a minipool table
-                        ;   for inlined constants.
-  VUNSPEC_POOL_END      ; `end-of-table'.  Used to mark the end of a minipool
-                        ;   table.
-  VUNSPEC_POOL_1        ; `pool-entry(1)'.  An entry in the constant pool for
-                        ;   an 8-bit object.
-  VUNSPEC_POOL_2        ; `pool-entry(2)'.  An entry in the constant pool for
-                        ;   a 16-bit object.
-  VUNSPEC_POOL_4        ; `pool-entry(4)'.  An entry in the constant pool for
-                        ;   a 32-bit object.
-  VUNSPEC_POOL_8        ; `pool-entry(8)'.  An entry in the constant pool for
-                        ;   a 64-bit object.
-  VUNSPEC_POOL_16       ; `pool-entry(16)'.  An entry in the constant pool for
-                        ;   a 128-bit object.
-  VUNSPEC_TMRC          ; Used by the iWMMXt TMRC instruction.
-  VUNSPEC_TMCR          ; Used by the iWMMXt TMCR instruction.
-  VUNSPEC_ALIGN8        ; 8-byte alignment version of VUNSPEC_ALIGN
-  VUNSPEC_WCMP_EQ       ; Used by the iWMMXt WCMPEQ instructions
-  VUNSPEC_WCMP_GTU      ; Used by the iWMMXt WCMPGTU instructions
-  VUNSPEC_WCMP_GT       ; Used by the iwMMXT WCMPGT instructions
-  VUNSPEC_EH_RETURN     ; Use to override the return address for exception
-                        ; handling.
-  VUNSPEC_ATOMIC_CAS	; Represent an atomic compare swap.
-  VUNSPEC_ATOMIC_XCHG	; Represent an atomic exchange.
-  VUNSPEC_ATOMIC_OP	; Represent an atomic operation.
-  VUNSPEC_LL		; Represent a load-register-exclusive.
-  VUNSPEC_SC		; Represent a store-register-exclusive.
-])
 
 ;;---------------------------------------------------------------------------
 ;; Attributes
@@ -346,6 +240,7 @@
 ;               regs or have a shifted source operand
 ;               and does not have an immediate operand. This is
 ;               also the default
+; simple_alu_shift covers UXTH, UXTB, SXTH, SXTB
 ; alu_shift	any data instruction that doesn't hit memory or fp
 ;		regs, but has a source operand shifted by a constant
 ; alu_shift_reg	any data instruction that doesn't hit memory or fp
@@ -377,6 +272,7 @@
 (define_attr "type"
  "simple_alu_imm,\
   alu_reg,\
+  simple_alu_shift,\
   alu_shift,\
   alu_shift_reg,\
   mult,\
@@ -390,6 +286,8 @@
   fmacd,\
   f_rints,\
   f_rintd,\
+  f_minmaxs,\
+  f_minmaxd,\
   f_flag,\
   f_loads,\
   f_loadd,\
@@ -560,7 +458,9 @@
 ; than one on the main cpu execution unit.
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
-		 "simple_alu_imm,alu_reg,alu_shift,float,fdivd,fdivs")
+		 "simple_alu_imm,alu_reg,\
+                  simple_alu_shift,alu_shift,\
+                  float,fdivd,fdivs")
 		(const_string "single")
 	        (const_string "multi")))
 
@@ -572,6 +472,11 @@
 ;; The number of machine instructions this pattern expands to.
 ;; Used for Thumb-2 conditional execution.
 (define_attr "ce_count" "" (const_int 1))
+
+;;---------------------------------------------------------------------------
+;; Unspecs
+
+(include "unspecs.md")
 
 ;;---------------------------------------------------------------------------
 ;; Mode iterators
@@ -597,7 +502,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexa15,cortexm4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa7,cortexa8,cortexa9,cortexa15,cortexm4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -605,7 +510,7 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa8,cortexa9,cortexm4")
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexm4")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -622,6 +527,7 @@
 (include "fmp626.md")
 (include "fa726te.md")
 (include "cortex-a5.md")
+(include "cortex-a7.md")
 (include "cortex-a8.md")
 (include "cortex-a9.md")
 (include "cortex-a15.md")
@@ -4585,33 +4491,36 @@
 ;; Zero and sign extension instructions.
 
 (define_insn "zero_extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r")
         (zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>"
 					    "<qhs_zextenddi_cstr>")))]
   "TARGET_32BIT <qhs_zextenddi_cond>"
   "#"
-  [(set_attr "length" "8")
+  [(set_attr "length" "8,4,8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")]
 )
 
 (define_insn "extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,?r")
         (sign_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>"
 					    "<qhs_extenddi_cstr>")))]
   "TARGET_32BIT <qhs_sextenddi_cond>"
   "#"
-  [(set_attr "length" "8")
+  [(set_attr "length" "8,4,8,8")
    (set_attr "ce_count" "2")
    (set_attr "shift" "1")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "*,*,a,t")]
 )
 
 ;; Splits for all extensions to DImode
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (zero_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && (!TARGET_NEON
+		    || (reload_completed
+			&& !(IS_VFP_REGNUM (REGNO (operands[0])))))"
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
@@ -4637,7 +4546,9 @@
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (sign_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && (!TARGET_NEON
+		    || (reload_completed
+			&& !(IS_VFP_REGNUM (REGNO (operands[0])))))"
   [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 31)))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
@@ -4730,11 +4641,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 				       (const_int 2) (const_int 4))
 			 (const_int 4)])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift, load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2"
@@ -4756,11 +4663,7 @@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2addsi"
@@ -4830,11 +4733,7 @@
    uxtb\\t%0, %1
    ldrb\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendqisi2"
@@ -4856,11 +4755,7 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")]
 )
 
@@ -5034,11 +4929,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 2) (const_int 4))
 			  (const_int 4)])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+   (set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "pool_range" "*,1018")]
 )
 
@@ -5111,11 +5002,7 @@
   "@
    sxth%?\\t%0, %1
    ldr%(sh%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5215,11 +5102,7 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5332,12 +5215,7 @@
 			  (const_int 2)
 			  (if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 4) (const_int 6))])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte,load_byte")]
 )
 
 (define_expand "extendsfdf2"

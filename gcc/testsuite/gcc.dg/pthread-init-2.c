@@ -8,6 +8,7 @@
 /* { dg-require-effective-target pthread_h } */
 /* { dg-options "-Wextra -Wall -ansi" } */
 /* { dg-options "-Wextra -Wall -ansi -D_POSIX_C_SOURCE=199506L" { target { *-*-hpux* } } } */
+/* { dg-options "-Wextra -Wall -ansi -D_XOPEN_SOURCE=500" { target { powerpc-ibm-aix* } } } */
 
 #include "pthread-init-common.h"
 

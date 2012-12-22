@@ -1,0 +1,1452 @@
+
+<!-- Policy Based Data Structures: Biblio -->
+<bibliography xmlns="http://docbook.org/ns/docbook" version="5.0"
+	      xml:id="pbds.biblio" xreflabel="Bibliography">
+    <info><title>Bibliography</title></info>
+
+    <!-- 01 -->
+    <biblioentry xml:id="biblio.abrahams97exception">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/1997/N1075.pdf">
+	  STL Exception Handling Contract
+	</link>
+      </title>
+      <date>1997</date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Dave
+	  </firstname>
+	  <surname>
+	    Abrahams
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  ISO SC22/WG21
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 02 -->
+    <biblioentry xml:id="biblio.alexandrescu01modern">
+      <title>
+	Modern C++ Design: Generic Programming and Design Patterns Applied
+      </title>
+      <date>
+	2001
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Andrei
+	  </firstname>
+	  <surname>
+	    Alexandrescu
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 03 -->
+    <biblioentry xml:id="biblio.andrew04mtf">
+      <title>
+	MTF, Bit, and COMB: A Guide to Deterministic and Randomized
+	Algorithms for the List Update Problem
+      </title>
+
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      K.
+	    </firstname>
+	    <surname>
+	      Andrew
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      D.
+	    </firstname>
+	    <surname>
+	      Gleich
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+    </biblioentry>
+
+    <!-- 04 -->
+    <biblioentry xml:id="biblio.austern00noset">
+      <title>
+	Why You Shouldn't Use set - and What You Should Use Instead
+      </title>
+      <date>
+	April, 2000
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Matthew
+	  </firstname>
+	  <surname>
+	    Austern
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  C++ Report
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 05 -->
+    <biblioentry xml:id="biblio.austern01htprop">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.open-std.org/JTC1/sc22/wg21/docs/papers/2001/n1326.html">
+	  A Proposal to Add Hashtables to the Standard Library
+	</link>
+      </title>
+      <date>
+	2001
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Matthew
+	  </firstname>
+	  <surname>
+	    Austern
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  ISO SC22/WG21
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 06 -->
+    <biblioentry xml:id="biblio.austern98segmentedit">
+      <title>
+	Segmented iterators and hierarchical algorithms
+      </title>
+      <date>
+	April, 1998
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Matthew
+	  </firstname>
+	  <surname>
+	    Austern
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Generic Programming
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 07 -->
+    <biblioentry xml:id="biblio.dawestimer">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="www.boost.org/doc/libs/release/libs/timer/">
+	  Boost Timer Library
+	</link>
+      </title>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Beeman
+	  </firstname>
+	  <surname>
+	    Dawes
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Boost
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 08 -->
+    <biblioentry xml:id="biblio.clearypool">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="www.boost.org/doc/libs/release/libs/pool/">
+	  Boost Pool Library
+	</link>
+      </title>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Stephen
+	  </firstname>
+	  <surname>
+	    Cleary
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Boost
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 09 -->
+    <biblioentry xml:id="biblio.maddocktraits">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="www.boost.org/doc/libs/release/libs/type_traits/">
+	  Boost Type Traits Library
+	</link>
+      </title>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      Maddock
+	    </firstname>
+	    <surname>
+	      John
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      Stephen
+	    </firstname>
+	    <surname>
+	      Cleary
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  Boost
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 10 -->
+    <biblioentry xml:id="biblio.brodal96priority">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="https://dl.acm.org/citation.cfm?id=313883">
+	  Worst-case efficient priority queues
+	</link>
+      </title>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Gerth
+	  </firstname>
+	  <surname>
+	    Stolting Brodal
+	  </surname>
+	</personname>
+      </author>
+
+    </biblioentry>
+
+    <!-- 11 -->
+    <biblioentry xml:id="biblio.bulkamayheweff">
+      <title>
+	Efficient C++ Programming Techniques
+      </title>
+      <date>
+	1997
+      </date>
+
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      D.
+	    </firstname>
+	    <surname>
+	      Bulka
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      D.
+	    </firstname>
+	    <surname>
+	      Mayhew
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 12 -->
+    <biblioentry xml:id="biblio.clrs2001">
+      <title>
+	Introduction to Algorithms, 2nd edition
+      </title>
+      <date>
+	2001
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      T. H.
+	    </firstname>
+	    <surname>
+	      Cormen
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      C. E.
+	    </firstname>
+	    <surname>
+	      Leiserson
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      R. L.
+	    </firstname>
+	    <surname>
+	      Rivest
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      C.
+	    </firstname>
+	    <surname>
+	      Stein
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  MIT Press
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 13 -->
+    <biblioentry xml:id="biblio.dubhashi98neg">
+      <title>
+	Balls and bins: A study in negative dependence
+      </title>
+      <date>
+	1998
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      D.
+	    </firstname>
+	    <surname>
+	      Dubashi
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      D.
+	    </firstname>
+	    <surname>
+	      Ranjan
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  Random Structures and Algorithms 13
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 14 -->
+    <biblioentry xml:id="biblio.fagin79extendible">
+      <title>
+	Extendible hashing - a fast access method for dynamic files
+      </title>
+      <date>
+	1979
+      </date>
+
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      R.
+	    </firstname>
+	    <surname>
+	      Fagin
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      J.
+	    </firstname>
+	    <surname>
+	      Nievergelt
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      N.
+	    </firstname>
+	    <surname>
+	      Pippenger
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      H. R.
+	    </firstname>
+	    <surname>
+	      Strong
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  ACM Trans. Database Syst. 4
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+
+    <!-- 15 -->
+    <biblioentry xml:id="biblio.filliatre2000ptset">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://cristal.inria.fr/~frisch/icfp06_contest/advtr/applyOmatic/ptset.ml">
+	  Ptset: Sets of integers implemented as Patricia trees
+	</link>
+      </title>
+
+      <date>
+	2000
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Jean-Christophe
+	  </firstname>
+	  <surname>
+	    Filliatre
+	  </surname>
+	</personname>
+      </author>
+    </biblioentry>
+
+
+
+    <!-- 16 -->
+    <biblioentry xml:id="biblio.fredman86pairing">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.cs.cmu.edu/~sleator/papers/pairing-heaps.pdf">
+	  The pairing heap: a new form of self-adjusting heap
+	</link>
+      </title>
+      <date>
+	1986
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      M. L.
+	    </firstname>
+	    <surname>
+	      Fredman
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      R.
+	    </firstname>
+	    <surname>
+	      Sedgewick
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      D. D.
+	    </firstname>
+	    <surname>
+	      Sleator
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      R. E.
+	    </firstname>
+	    <surname>
+	      Tarjan
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+    </biblioentry>
+
+
+    <!-- 17 -->
+    <biblioentry xml:id="biblio.gof">
+      <title>
+	Design Patterns - Elements of Reusable Object-Oriented Software
+      </title>
+      <date>
+	1995
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      E.
+	    </firstname>
+	    <surname>
+	      Gamma
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      R.
+	    </firstname>
+	    <surname>
+	      Helm
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      R.
+	    </firstname>
+	    <surname>
+	      Johnson
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      J.
+	    </firstname>
+	    <surname>
+	      Vlissides
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 18 -->
+    <biblioentry xml:id="biblio.garg86order">
+      <title>
+	Order-preserving key transformations
+      </title>
+      <date>
+	1986
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      A. K.
+	    </firstname>
+	    <surname>
+	      Garg
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      C. C.
+	    </firstname>
+	    <surname>
+	      Gotlieb
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  Trans. Database Syst. 11
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 19 -->
+    <biblioentry xml:id="biblio.hyslop02making">
+      <title>
+	Making a real hash of things
+      </title>
+      <date>
+	May 2002
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      J.
+	    </firstname>
+	    <surname>
+	      Hyslop
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      Herb
+	    </firstname>
+	    <surname>
+	      Sutter
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  C++ Report
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 20 -->
+    <biblioentry xml:id="biblio.jossutis01stl">
+      <title>
+	The C++ Standard Library - A Tutorial and Reference
+      </title>
+      <date>
+	2001
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    N. M.
+	  </firstname>
+	  <surname>
+	    Jossutis
+	  </surname>
+	</personname>
+      </author>
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 21 -->
+    <biblioentry xml:id="biblio.kt99fat_heaps">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.cs.princeton.edu/research/techreps/TR-597-99">
+	  New Heap Data Structures
+	</link>
+      </title>
+      <date>
+	1999
+      </date>
+
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      Haim
+	    </firstname>
+	    <surname>
+	      Kaplan
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      Robert E.
+	    </firstname>
+	    <surname>
+	      Tarjan
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+    </biblioentry>
+
+
+    <!-- 22 -->
+    <biblioentry xml:id="biblio.kleft00sets">
+      <title>
+	Are Set Iterators Mutable or Immutable?
+      </title>
+      <date>
+	October 2000
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      Angelika
+	    </firstname>
+	    <surname>
+	      Langer
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      Klaus
+	    </firstname>
+	    <surname>
+	      Kleft
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  C/C++ Users Jornal
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 23 -->
+    <biblioentry xml:id="biblio.knuth98sorting">
+      <title>
+	The Art of Computer Programming - Sorting and Searching
+      </title>
+      <date>
+	1998
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    D. E.
+	  </firstname>
+	  <surname>
+	    Knuth
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 24 -->
+    <biblioentry xml:id="biblio.liskov98data">
+      <title>
+	Data abstraction and hierarchy
+      </title>
+      <date>
+	May 1998
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    B.
+	  </firstname>
+	  <surname>
+	    Liskov
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  SIGPLAN Notices 23
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 25 -->
+    <biblioentry xml:id="biblio.litwin80lh">
+      <title>
+	Linear hashing: A new tool for file and table addressing
+      </title>
+      <date>
+	June 1980
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    W.
+	  </firstname>
+	  <surname>
+	    Litwin
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Proceedings of International Conference on Very Large Data Bases
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 26 -->
+    <biblioentry xml:id="biblio.maverik_lowerbounds">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps">
+	  Deamortization - Part 2: Binomial Heaps
+	</link>
+      </title>
+      <date>
+	2005
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Maverik
+	  </firstname>
+	  <surname>
+	    Woo
+	  </surname>
+	</personname>
+      </author>
+    </biblioentry>
+
+    <!-- 27 -->
+    <biblioentry xml:id="biblio.meyers96more">
+      <title>
+	More Effective C++: 35 New Ways to Improve Your Programs and Designs
+      </title>
+      <date>
+	1996
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Scott
+	  </firstname>
+	  <surname>
+	    Meyers
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 28 -->
+    <biblioentry xml:id="biblio.meyers00nonmember">
+      <title>
+	How Non-Member Functions Improve Encapsulation
+      </title>
+      <date>
+	2000
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Scott
+	  </firstname>
+	  <surname>
+	    Meyers
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  C/C++ Users Journal
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 29 -->
+    <biblioentry xml:id="biblio.meyers01stl">
+      <title>
+	Effective STL: 50 Specific Ways to Improve Your Use of the Standard Template Library
+      </title>
+      <date>
+	2001
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Scott
+	  </firstname>
+	  <surname>
+	    Meyers
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 30 -->
+    <biblioentry xml:id="biblio.meyers02both">
+      <title>
+	Class Template, Member Template - or Both?
+      </title>
+      <date>
+	2003
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Scott
+	  </firstname>
+	  <surname>
+	    Meyers
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  C/C++ Users Journal
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 31 -->
+    <biblioentry xml:id="biblio.motwani95random">
+      <title>
+	Randomized Algorithms
+      </title>
+      <date>
+	2003
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      R.
+	    </firstname>
+	    <surname>
+	      Motwani
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      P.
+	    </firstname>
+	    <surname>
+	      Raghavan
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  Cambridge University Press
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 32 -->
+    <biblioentry xml:id="biblio.mscom">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="https://www.microsoft.com/com/">
+	  COM: Component Model Object Technologies
+	</link>
+      </title>
+      <publisher>
+	<publishername>
+	  Microsoft
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 33 -->
+    <biblioentry xml:id="biblio.musser95rationale">
+      <title>
+	Rationale for Adding Hash Tables to the C++ Standard Template Library
+      </title>
+      <date>
+	1995
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    David R.
+	  </firstname>
+	  <surname>
+	    Musser
+	  </surname>
+	</personname>
+      </author>
+
+    </biblioentry>
+
+    <!-- 35 -->
+    <biblioentry xml:id="biblio.musser96stltutorial">
+      <title>
+	STL Tutorial and Reference Guide
+      </title>
+      <date>
+	1996
+      </date>
+
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      David R.
+	    </firstname>
+	    <surname>
+	      Musser
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      A.
+	    </firstname>
+	    <surname>
+	      Saini
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+
+    </biblioentry>
+
+
+    <!-- 36 -->
+    <biblioentry xml:id="biblio.nelson96stlpq">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.dogma.net/markn/articles/pq_stl/priority.htm">Priority Queues and the STL
+	</link>
+      </title>
+      <date>
+	January 1996
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Mark
+	  </firstname>
+	  <surname>
+	    Nelson
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Dr. Dobbs Journal
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 37 -->
+    <biblioentry xml:id="biblio.okasaki98mereable">
+      <title>
+	Fast mergeable integer maps
+      </title>
+      <date>
+	September 1998
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      C.
+	    </firstname>
+	    <surname>
+	      Okasaki
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      A.
+	    </firstname>
+	    <surname>
+	      Gill
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  In Workshop on ML
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 38 -->
+    <biblioentry xml:id="biblio.sgi_stl">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://www.sgi.com/tech/stl/">
+	  Standard Template Library Programmer's Guide
+	</link>
+      </title>
+      <author>
+	<personname>
+	  <firstname>
+	    Matt
+	  </firstname>
+	  <surname>
+	    Austern
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  SGI
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 39 -->
+    <biblioentry xml:id="biblio.select_man">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html">
+	  select
+	</link>
+      </title>
+    </biblioentry>
+
+
+    <!-- 40 -->
+    <biblioentry xml:id="biblio.sleator84amortized">
+      <title>
+	Amortized Efficiency of List Update Problems
+      </title>
+      <date>
+	1984
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      D. D.
+	    </firstname>
+	    <surname>
+	      Sleator
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      R. E.
+	    </firstname>
+	    <surname>
+	      Tarjan
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  ACM Symposium on Theory of Computing
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 41 -->
+    <biblioentry xml:id="biblio.sleator85self">
+      <title>
+	Self-Adjusting Binary Search Trees
+      </title>
+      <date>
+	1985
+      </date>
+
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      D. D.
+	    </firstname>
+	    <surname>
+	      Sleator
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      R. E.
+	    </firstname>
+	    <surname>
+	      Tarjan
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+
+      <publisher>
+	<publishername>
+	  ACM Symposium on Theory of Computing
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 42 -->
+    <biblioentry xml:id="biblio.stepanov94standard">
+      <title>
+	The Standard Template Library
+      </title>
+      <date>
+	1984
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      A. A.
+	    </firstname>
+	    <surname>
+	      Stepanov
+	    </surname>
+	  </personname>
+	</author>
+	<author>
+	  <personname>
+	    <firstname>
+	      M.
+	    </firstname>
+	    <surname>
+	      Lee
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+    </biblioentry>
+
+    <!-- 43 -->
+    <biblioentry xml:id="biblio.stroustrup97cpp">
+      <title>
+	The C++ Programming Langugage
+      </title>
+      <date>
+	1997
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    Bjarne
+	  </firstname>
+	  <surname>
+	    Stroustrup
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+    <!-- 44 -->
+    <biblioentry xml:id="biblio.vandevoorde2002cpptemplates">
+      <title>
+	C++ Templates: The Complete Guide
+      </title>
+      <date>
+	2002
+      </date>
+      <authorgroup>
+	<author>
+	  <personname>
+	    <firstname>
+	      D.
+	    </firstname>
+	    <surname>
+	      Vandevoorde
+	    </surname>
+	  </personname>
+	</author>
+
+	<author>
+	  <personname>
+	    <firstname>
+	      N. M.
+	    </firstname>
+	    <surname>
+	      Josuttis
+	    </surname>
+	  </personname>
+	</author>
+      </authorgroup>
+      <publisher>
+	<publishername>
+	  Addison-Wesley Publishing Company
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+
+    <!-- 45 -->
+    <biblioentry xml:id="biblio.wickland96thirty">
+      <title>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="http://myweb.wvnet.edu/~gsa00121/books/amongdead30.zip">
+	  Thirty Years Among the Dead
+	</link>
+      </title>
+      <date>
+	1996
+      </date>
+
+      <author>
+	<personname>
+	  <firstname>
+	    C. A.
+	  </firstname>
+	  <surname>
+	    Wickland
+	  </surname>
+	</personname>
+      </author>
+
+      <publisher>
+	<publishername>
+	  National Psychological Institute
+	</publishername>
+      </publisher>
+    </biblioentry>
+
+</bibliography>

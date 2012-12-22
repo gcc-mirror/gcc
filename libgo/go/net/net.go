@@ -44,7 +44,9 @@ package net
 
 import (
 	"errors"
+	"io"
 	"os"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -195,9 +197,13 @@ func (c *conn) SetWriteBuffer(bytes int) error {
 	return setWriteBuffer(c.fd, bytes)
 }
 
-// File returns a copy of the underlying os.File, set to blocking mode.
+// File sets the underlying os.File to blocking mode and returns a copy.
 // It is the caller's responsibility to close f when finished.
 // Closing c does not affect f, and closing f does not affect c.
+//
+// The returned os.File's file descriptor is different from the connection's.
+// Attempting to change properties of the original using this duplicate
+// may or may not have the desired effect.
 func (c *conn) File() (f *os.File, err error) { return c.fd.dup() }
 
 // An Error represents a network error.
@@ -363,3 +369,47 @@ func (e *DNSConfigError) Error() string {
 
 func (e *DNSConfigError) Timeout() bool   { return false }
 func (e *DNSConfigError) Temporary() bool { return false }
+
+type writerOnly struct {
+	io.Writer
+}
+
+// Fallback implementation of io.ReaderFrom's ReadFrom, when sendfile isn't
+// applicable.
+func genericReadFrom(w io.Writer, r io.Reader) (n int64, err error) {
+	// Use wrapper to hide existing r.ReadFrom from io.Copy.
+	return io.Copy(writerOnly{w}, r)
+}
+
+// deadline is an atomically-accessed number of nanoseconds since 1970
+// or 0, if no deadline is set.
+type deadline struct {
+	sync.Mutex
+	val int64
+}
+
+func (d *deadline) expired() bool {
+	t := d.value()
+	return t > 0 && time.Now().UnixNano() >= t
+}
+
+func (d *deadline) value() (v int64) {
+	d.Lock()
+	v = d.val
+	d.Unlock()
+	return
+}
+
+func (d *deadline) set(v int64) {
+	d.Lock()
+	d.val = v
+	d.Unlock()
+}
+
+func (d *deadline) setTime(t time.Time) {
+	if t.IsZero() {
+		d.set(0)
+	} else {
+		d.set(t.UnixNano())
+	}
+}

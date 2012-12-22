@@ -1059,6 +1059,30 @@ unshare_expr (tree expr)
   walk_tree (&expr, mostly_copy_tree_r, NULL, NULL);
   return expr;
 }
+
+/* Worker for unshare_expr_without_location.  */
+
+static tree
+prune_expr_location (tree *tp, int *walk_subtrees, void *)
+{
+  if (EXPR_P (*tp))
+    SET_EXPR_LOCATION (*tp, UNKNOWN_LOCATION);
+  else
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Similar to unshare_expr but also prune all expression locations
+   from EXPR.  */
+
+tree
+unshare_expr_without_location (tree expr)
+{
+  walk_tree (&expr, mostly_copy_tree_r, NULL, NULL);
+  if (EXPR_P (expr))
+    walk_tree (&expr, prune_expr_location, NULL, NULL);
+  return expr;
+}
 
 /* WRAPPER is a code such as BIND_EXPR or CLEANUP_POINT_EXPR which can both
    contain statements and have a value.  Assign its value to a temporary
@@ -2367,25 +2391,15 @@ gimplify_self_mod_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   rhs = TREE_OPERAND (*expr_p, 1);
 
   /* For postfix operator, we evaluate the LHS to an rvalue and then use
-     that as the result value and in the postqueue operation.  We also
-     make sure to make lvalue a minimal lval, see
-     gcc.c-torture/execute/20040313-1.c for an example where this matters.  */
+     that as the result value and in the postqueue operation.  */
   if (postfix)
     {
-      if (!is_gimple_min_lval (lvalue))
-	{
-	  mark_addressable (lvalue);
-	  lvalue = build_fold_addr_expr_loc (input_location, lvalue);
-	  gimplify_expr (&lvalue, pre_p, post_p, is_gimple_val, fb_rvalue);
-	  lvalue = build_fold_indirect_ref_loc (input_location, lvalue);
-	}
       ret = gimplify_expr (&lhs, pre_p, post_p, is_gimple_val, fb_rvalue);
       if (ret == GS_ERROR)
 	return ret;
-    }
 
-  if (postfix)
-    lhs = get_initialized_tmp_var (lhs, pre_p, NULL);
+      lhs = get_initialized_tmp_var (lhs, pre_p, NULL);
+    }
 
   /* For POINTERs increment, use POINTER_PLUS_EXPR.  */
   if (POINTER_TYPE_P (TREE_TYPE (lhs)))

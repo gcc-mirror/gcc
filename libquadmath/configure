@@ -611,6 +611,8 @@ LIBQUAD_USE_SYMVER_GNU_FALSE
 LIBQUAD_USE_SYMVER_GNU_TRUE
 LIBQUAD_USE_SYMVER_FALSE
 LIBQUAD_USE_SYMVER_TRUE
+LIBQUAD_FERAISEEXCEPT_FALSE
+LIBQUAD_FERAISEEXCEPT_TRUE
 toolexeclibdir
 toolexecdir
 multi_basedir
@@ -10521,7 +10523,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10524 "configure"
+#line 10526 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10627,7 +10629,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10630 "configure"
+#line 10632 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12351,6 +12353,54 @@ $as_echo "#define HAVE_FETESTEXCEPT 1" >>confdefs.h
   fi
 fi
 
+if test "x$ac_cv_header_fenv_h" = "xyes"; then
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether feraiseexcept is broken in fenv.h" >&5
+$as_echo_n "checking whether feraiseexcept is broken in fenv.h... " >&6; }
+if test "${quadmath_cv_feraiseexcept_fenv_broken+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <fenv.h>
+int
+main ()
+{
+feraiseexcept (FE_INVALID);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  quadmath_cv_feraiseexcept_fenv_broken=no
+else
+  quadmath_cv_feraiseexcept_fenv_broken=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $quadmath_cv_feraiseexcept_fenv_broken" >&5
+$as_echo "$quadmath_cv_feraiseexcept_fenv_broken" >&6; }
+  if test "x$quadmath_cv_feraiseexcept_fenv_broken" = "xyes"; then
+    feraiseexcept=__quadmath_feraiseexcept
+  else
+    feraiseexcept=feraiseexcept
+  fi
+
+cat >>confdefs.h <<_ACEOF
+#define QUADMATH_FERAISEEXCEPT $feraiseexcept
+_ACEOF
+
+fi
+ if test "x$ac_cv_header_fenv_h$quadmath_cv_feraiseexcept_fenv_broken" = "xyesyes"; then
+  LIBQUAD_FERAISEEXCEPT_TRUE=
+  LIBQUAD_FERAISEEXCEPT_FALSE='#'
+else
+  LIBQUAD_FERAISEEXCEPT_TRUE='#'
+  LIBQUAD_FERAISEEXCEPT_FALSE=
+fi
+
+
 # Check for hidden visibility (copied from libssp).
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -Werror"
@@ -13033,6 +13083,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBQUAD_FERAISEEXCEPT_TRUE}" && test -z "${LIBQUAD_FERAISEEXCEPT_FALSE}"; then
+  as_fn_error "conditional \"LIBQUAD_FERAISEEXCEPT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBQUAD_USE_SYMVER_TRUE}" && test -z "${LIBQUAD_USE_SYMVER_FALSE}"; then

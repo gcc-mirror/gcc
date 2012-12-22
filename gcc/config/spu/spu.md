@@ -1066,7 +1066,7 @@
   [(set (match_operand:CBOP 0 "spu_reg_operand" "=r")
 	(unspec:CBOP [(match_operand 1 "spu_reg_operand" "r")
 		      (match_operand 2 "spu_reg_operand" "r")] UNSPEC_CG))]
-  "operands"
+  "operands != NULL"
   "cg\t%0,%1,%2")
 
 (define_insn "cgx_<mode>"
@@ -1074,7 +1074,7 @@
 	(unspec:CBOP [(match_operand 1 "spu_reg_operand" "r")
 		      (match_operand 2 "spu_reg_operand" "r")
 		      (match_operand 3 "spu_reg_operand" "0")] UNSPEC_CGX))]
-  "operands"
+  "operands != NULL"
   "cgx\t%0,%1,%2")
 
 (define_insn "addx_<mode>"
@@ -1082,7 +1082,7 @@
 	(unspec:CBOP [(match_operand 1 "spu_reg_operand" "r")
 		      (match_operand 2 "spu_reg_operand" "r")
 		      (match_operand 3 "spu_reg_operand" "0")] UNSPEC_ADDX))]
-  "operands"
+  "operands != NULL"
   "addx\t%0,%1,%2")
 
 
@@ -1189,7 +1189,7 @@
   [(set (match_operand:CBOP 0 "spu_reg_operand" "=r")
 	(unspec:CBOP [(match_operand 1 "spu_reg_operand" "r")
 		      (match_operand 2 "spu_reg_operand" "r")] UNSPEC_BG))]
-  "operands"
+  "operands != NULL"
   "bg\t%0,%2,%1")
 
 (define_insn "bgx_<mode>"
@@ -1197,7 +1197,7 @@
 	(unspec:CBOP [(match_operand 1 "spu_reg_operand" "r")
 		      (match_operand 2 "spu_reg_operand" "r")
 		      (match_operand 3 "spu_reg_operand" "0")] UNSPEC_BGX))]
-  "operands"
+  "operands != NULL"
   "bgx\t%0,%2,%1")
 
 (define_insn "sfx_<mode>"
@@ -1205,7 +1205,7 @@
 	(unspec:CBOP [(match_operand 1 "spu_reg_operand" "r")
 		      (match_operand 2 "spu_reg_operand" "r")
 		      (match_operand 3 "spu_reg_operand" "0")] UNSPEC_SFX))]
-  "operands"
+  "operands != NULL"
   "sfx\t%0,%2,%1")
 
 (define_insn "subti3"
@@ -4018,7 +4018,7 @@ selb\t%0,%4,%0,%3"
 (define_insn "extend_compare<mode>"
   [(set (match_operand:ALL 0 "spu_reg_operand" "=r")
 	(unspec:ALL [(match_operand 1 "spu_reg_operand" "r")] UNSPEC_EXTEND_CMP))]
-  "operands"
+  "operands != NULL"
   "fsm\t%0,%1"
   [(set_attr "type" "shuf")])
 
@@ -4391,7 +4391,7 @@ selb\t%0,%4,%0,%3"
 	(unspec [(match_operand 1 "spu_reg_operand" "r")
 		 (match_operand 2 "spu_reg_operand" "r")
 		 (match_operand:TI 3 "spu_reg_operand" "r")] UNSPEC_SHUFB))]
-  "operands"
+  "operands != NULL"
   "shufb\t%0,%1,%2,%3"
   [(set_attr "type" "shuf")])
 

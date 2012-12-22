@@ -880,14 +880,6 @@ __gthread_cond_wait_recursive (__gthread_cond_t *__cond,
 }
 
 static inline int
-__gthread_cond_timedwait_recursive (__gthread_cond_t *__cond,
-				    __gthread_recursive_mutex_t *__mutex,
-				    const __gthread_time_t *__abs_timeout)
-{
-  return __gthread_cond_timedwait (__cond, __mutex, __abs_timeout);
-}
-
-static inline int
 __gthread_cond_destroy (__gthread_cond_t* __cond)
 {
   return __gthrw_(pthread_cond_destroy) (__cond);

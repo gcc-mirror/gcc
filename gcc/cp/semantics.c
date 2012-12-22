@@ -45,6 +45,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "hash-table.h"
 
+static bool verify_constant (tree, bool, bool *, bool *);
+#define VERIFY_CONSTANT(X)						\
+do {									\
+  if (verify_constant ((X), allow_non_constant, non_constant_p, overflow_p)) \
+    return t;								\
+ } while (0)
+
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
    during template instantiation, which may be regarded as a
@@ -1362,7 +1369,15 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
       for (i = 0, t = input_operands; t; ++i, t = TREE_CHAIN (t))
 	{
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-	  operand = decay_conversion (TREE_VALUE (t), tf_warning_or_error);
+	  bool constraint_parsed
+	    = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,   
+				      oconstraints, &allows_mem, &allows_reg);
+	  /* If the operand is going to end up in memory, don't call
+	     decay_conversion.  */
+	  if (constraint_parsed && !allows_reg && allows_mem)
+	    operand = mark_lvalue_use (TREE_VALUE (t));
+	  else
+	    operand = decay_conversion (TREE_VALUE (t), tf_warning_or_error);
 
 	  /* If the type of the operand hasn't been determined (e.g.,
 	     because it involves an overloaded function), then issue
@@ -1375,8 +1390,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	      operand = error_mark_node;
 	    }
 
-	  if (parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
-				      oconstraints, &allows_mem, &allows_reg))
+	  if (constraint_parsed)
 	    {
 	      /* If the operand is going to end up in memory,
 		 mark it addressable.  */
@@ -1778,8 +1792,6 @@ finish_qualified_id_expr (tree qualifying_class,
     ;
   else
     {
-      expr = convert_from_reference (expr);
-
       /* In a template, return a SCOPE_REF for most qualified-ids
 	 so that we can check access at instantiation time.  But if
 	 we're looking at a member of the current instantiation, we
@@ -1790,6 +1802,8 @@ finish_qualified_id_expr (tree qualifying_class,
 	expr = build_qualified_name (TREE_TYPE (expr),
 				     qualifying_class, expr,
 				     template_p);
+
+      expr = convert_from_reference (expr);
     }
 
   return expr;
@@ -5261,7 +5275,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
         expr = TREE_OPERAND (expr, 0);
 
       if (TREE_CODE (expr) == OFFSET_REF
-          || TREE_CODE (expr) == MEMBER_REF)
+          || TREE_CODE (expr) == MEMBER_REF
+	  || TREE_CODE (expr) == SCOPE_REF)
         /* We're only interested in the field itself. If it is a
            BASELINK, we will need to see through it in the next
            step.  */
@@ -6437,7 +6452,9 @@ cxx_eval_builtin_function_call (const constexpr_call *call, tree t,
     return t;
   new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
                                    CALL_EXPR_FN (t), nargs, args);
-  return fold (new_call);
+  new_call = fold (new_call);
+  VERIFY_CONSTANT (new_call);
+  return new_call;
 }
 
 /* TEMP is the constant value of a temporary object of type TYPE.  Adjust
@@ -6451,7 +6468,7 @@ adjust_temp_type (tree type, tree temp)
   /* Avoid wrapping an aggregate value in a NOP_EXPR.  */
   if (TREE_CODE (temp) == CONSTRUCTOR)
     return build_constructor (type, CONSTRUCTOR_ELTS (temp));
-  gcc_assert (SCALAR_TYPE_P (type));
+  gcc_assert (scalarish_type_p (type));
   return cp_fold_convert (type, temp);
 }
 
@@ -6738,11 +6755,6 @@ verify_constant (tree t, bool allow_non_constant, bool *non_constant_p,
     }
   return *non_constant_p;
 }
-#define VERIFY_CONSTANT(X)						\
-do {									\
-  if (verify_constant ((X), allow_non_constant, non_constant_p, overflow_p)) \
-    return t;								\
- } while (0)
 
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce the unary expression tree T to a compile time value.
@@ -7111,7 +7123,7 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	goto fail;
       if (elt != ce->value)
 	changed = true;
-      if (TREE_CODE (ce->index) == COMPONENT_REF)
+      if (ce->index && TREE_CODE (ce->index) == COMPONENT_REF)
 	{
 	  /* This is an initialization of a vfield inside a base
 	     subaggregate that we already initialized; push this
@@ -7119,7 +7131,7 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	  constructor_elt *inner = base_field_constructor_elt (n, ce->index);
 	  inner->value = elt;
 	}
-      else if (TREE_CODE (ce->index) == NOP_EXPR)
+      else if (ce->index && TREE_CODE (ce->index) == NOP_EXPR)
 	{
 	  /* This is an initializer for an empty base; now that we've
 	     checked that it's constant, we can ignore it.  */
@@ -7136,6 +7148,8 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
     }
   t = build_constructor (TREE_TYPE (t), n);
   TREE_CONSTANT (t) = true;
+  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+    t = fold (t);
   return t;
 }
 
@@ -9419,6 +9433,8 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_ARGUMENTS (fn) = build_this_parm (fntype, TYPE_QUAL_CONST);
+  if (nested)
+    DECL_INTERFACE_KNOWN (fn) = 1;
 
   add_method (type, fn, NULL_TREE);
 
@@ -9449,6 +9465,8 @@ maybe_add_lambda_conv_op (tree type)
   DECL_ARGUMENTS (fn) = copy_list (DECL_CHAIN (DECL_ARGUMENTS (callop)));
   for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
     DECL_CONTEXT (arg) = fn;
+  if (nested)
+    DECL_INTERFACE_KNOWN (fn) = 1;
 
   add_method (type, fn, NULL_TREE);
 

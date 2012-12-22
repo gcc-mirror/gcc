@@ -578,10 +578,10 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 
 proc add_options_for_tls { flags } {
     # On Solaris 9, __tls_get_addr/___tls_get_addr only lives in
-    # libthread, so always pass -pthread for native TLS.
+    # libthread, so always pass -pthread for native TLS. Same for AIX.
     # Need to duplicate native TLS check from
     # check_effective_target_tls_native to avoid recursion.
-    if { [istarget *-*-solaris2.9*] &&
+    if { ([istarget *-*-solaris2.9*] || [istarget powerpc-ibm-aix*]) &&
 	 [check_no_messages_and_pattern tls_native "!emutls" assembly {
 	     __thread int i;
 	     int f (void) { return i; }
@@ -717,6 +717,26 @@ proc check_effective_target_fgnu_tm {} {
 
 proc check_effective_target_mmap {} {
     return [check_function_available "mmap"]
+}
+
+# Return 1 if the target supports dlopen, 0 otherwise.
+proc check_effective_target_dlopen {} {
+    return [check_function_available "dlopen"]
+}
+
+# Return 1 if the target supports clone, 0 otherwise.
+proc check_effective_target_clone {} {
+    return [check_function_available "clone"]
+}
+
+# Return 1 if the target supports setrlimit, 0 otherwise.
+proc check_effective_target_setrlimit {} {
+    return [check_function_available "setrlimit"]
+}
+
+# Return 1 if the target supports swapcontext, 0 otherwise.
+proc check_effective_target_swapcontext {} {
+    return [check_function_available "swapcontext"]
 }
 
 # Return 1 if compilation with -pthread is error-free for trivial
@@ -2107,6 +2127,22 @@ proc check_effective_target_arm_v8_vfp_ok {} {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=neon-fp-armv8
+# -mfloat-abi=softfp
+proc check_effective_target_arm_v8_neon_ok {} {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_v8_neon_ok object {
+	  int foo (void)
+	  {
+	     __asm__ volatile ("vrintn.f32 q0, q0");
+	       return 0;
+	  }
+	} "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=vfp
 # -mfloat-abi=hard.  Some multilibs may be incompatible with these
 # options.
@@ -2164,6 +2200,13 @@ proc add_options_for_arm_v8_vfp { flags } {
         return "$flags"
     }
     return "$flags -mfpu=fp-armv8 -mfloat-abi=softfp"
+}
+
+proc add_options_for_arm_v8_neon { flags } {
+    if { ! [check_effective_target_arm_v8_neon_ok] } {
+        return "$flags"
+    }
+    return "$flags -march=armv8-a -mfpu=neon-fp-armv8 -mfloat-abi=softfp"
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
@@ -2603,10 +2646,10 @@ proc check_effective_target_powerpc_vsx_ok { } {
     if { ([istarget powerpc*-*-*]
          && ![istarget powerpc-*-linux*paired*])
 	 || [istarget rs6000-*-*] } {
-	# AltiVec is not supported on AIX before 5.3.
+	# VSX is not supported on AIX before 7.1.
 	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
-	     || [istarget powerpc*-*-aix5.2*] } {
+	     || [istarget powerpc*-*-aix5*]
+	     || [istarget powerpc*-*-aix6*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_vsx_ok object {
@@ -3848,7 +3891,8 @@ proc check_effective_target_vect_multiple_sizes { } {
     global et_vect_multiple_sizes_saved
 
     set et_vect_multiple_sizes_saved 0
-    if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
+    if { ([istarget aarch64*-*-*]
+	  || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])) } {
        set et_vect_multiple_sizes_saved 1
     }
     if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {

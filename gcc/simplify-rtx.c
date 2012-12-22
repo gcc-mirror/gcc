@@ -873,7 +873,9 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 			      simplify_gen_unary (NOT, inner_mode, const1_rtx,
 						  inner_mode),
 			      XEXP (SUBREG_REG (op), 1));
-	  return rtl_hooks.gen_lowpart_no_emit (mode, x);
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, x);
+	  if (temp)
+	    return temp;
 	}
 
       /* Apply De Morgan's laws to reduce number of patterns for machines
@@ -1029,7 +1031,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 	{
 	  if (TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op)))
-	    return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	    {
+	      temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	      if (temp)
+		return temp;
+	    }
 	  /* We can't handle truncation to a partial integer mode here
 	     because we don't know the real bitsize of the partial
 	     integer mode.  */
@@ -1048,7 +1054,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if (GET_MODE_NUNITS (mode) == 1
 	  && (TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op))
 	      || truncated_to_mode (mode, op)))
-	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	{
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  if (temp)
+	    return temp;
+	}
 
       /* A truncate of a comparison can be replaced with a subreg if
          STORE_FLAG_VALUE permits.  This is like the previous test,
@@ -1057,7 +1067,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if (HWI_COMPUTABLE_MODE_P (mode)
 	  && COMPARISON_P (op)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0)
-	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	{
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  if (temp)
+	    return temp;
+	}
 
       /* A truncate of a memory is just loading the low part of the memory
 	 if we are not changing the meaning of the address. */
@@ -1065,7 +1079,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && !VECTOR_MODE_P (mode)
 	  && !MEM_VOLATILE_P (op)
 	  && !mode_dependent_address_p (XEXP (op, 0), MEM_ADDR_SPACE (op)))
-	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	{
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  if (temp)
+	    return temp;
+	}
 
       break;
 
@@ -1298,7 +1316,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_VAR_P (op)
 	  && ! SUBREG_PROMOTED_UNSIGNED_P (op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
-	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	{
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  if (temp)
+	    return temp;
+	}
 
       /* (sign_extend:M (sign_extend:N <X>)) is (sign_extend:M <X>).
 	 (sign_extend:M (zero_extend:N <X>)) is (zero_extend:M <X>).  */
@@ -1330,9 +1352,10 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	    {
 	      rtx inner =
 		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));
-	      return simplify_gen_unary (GET_CODE (op) == ASHIFTRT
-					 ? SIGN_EXTEND : ZERO_EXTEND,
-					 mode, inner, tmode);
+	      if (inner)
+		return simplify_gen_unary (GET_CODE (op) == ASHIFTRT
+					   ? SIGN_EXTEND : ZERO_EXTEND,
+					   mode, inner, tmode);
 	    }
 	}
 
@@ -1360,7 +1383,11 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && SUBREG_PROMOTED_VAR_P (op)
 	  && SUBREG_PROMOTED_UNSIGNED_P (op) > 0
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
-	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	{
+	  temp = rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  if (temp)
+	    return temp;
+	}
 
       /* Extending a widening multiplication should be canonicalized to
 	 a wider widening multiplication.  */
@@ -1425,7 +1452,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	    {
 	      rtx inner =
 		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));
-	      return simplify_gen_unary (ZERO_EXTEND, mode, inner, tmode);
+	      if (inner)
+		return simplify_gen_unary (ZERO_EXTEND, mode, inner, tmode);
 	    }
 	}
 
@@ -3095,7 +3123,11 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	}
       /* x/1 is x.  */
       if (trueop1 == CONST1_RTX (mode))
-	return rtl_hooks.gen_lowpart_no_emit (mode, op0);
+	{
+	  tem = rtl_hooks.gen_lowpart_no_emit (mode, op0);
+	  if (tem)
+	    return tem;
+	}
       /* Convert divide by power of two into shift.  */
       if (CONST_INT_P (trueop1)
 	  && (val = exact_log2 (UINTVAL (trueop1))) > 0)
@@ -3154,12 +3186,17 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    }
 	  /* x/1 is x.  */
 	  if (trueop1 == CONST1_RTX (mode))
-	    return rtl_hooks.gen_lowpart_no_emit (mode, op0);
+	    {
+	      tem = rtl_hooks.gen_lowpart_no_emit (mode, op0);
+	      if (tem)
+		return tem;
+	    }
 	  /* x/-1 is -x.  */
 	  if (trueop1 == constm1_rtx)
 	    {
 	      rtx x = rtl_hooks.gen_lowpart_no_emit (mode, op0);
-	      return simplify_gen_unary (NEG, mode, x, mode);
+	      if (x)
+		return simplify_gen_unary (NEG, mode, x, mode);
 	    }
 	}
       break;

@@ -877,6 +877,9 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
       break;
 
     case MEM_REF:
+      if (addr_expr_of_non_mem_decl_p (TREE_OPERAND (t, 0)))
+	return;
+
       addr = fold_build_pointer_plus_loc (location, TREE_OPERAND (t, 0),
 					  TREE_OPERAND (t, 1));
       base = addr;
@@ -886,6 +889,9 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
       break;
 
     case TARGET_MEM_REF:
+      if (addr_expr_of_non_mem_decl_p (TMR_BASE (t)))
+	return;
+
       addr = tree_mem_ref_addr (ptr_type_node, t);
       base = addr;
       limit = fold_build_pointer_plus_hwi_loc (location,

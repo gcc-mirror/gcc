@@ -745,9 +745,13 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 /* Replace the comparison OP0 CODE OP1 by a semantically equivalent one
    that we can implement more efficiently.  */
 
-void
-s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
+static void
+s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			      bool op0_preserve_value)
 {
+  if (op0_preserve_value)
+    return;
+
   /* Convert ZERO_EXTRACT back to AND to enable TM patterns.  */
   if ((*code == EQ || *code == NE)
       && *op1 == const0_rtx
@@ -894,7 +898,7 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
   if (MEM_P (*op0) && REG_P (*op1))
     {
       rtx tem = *op0; *op0 = *op1; *op1 = tem;
-      *code = swap_condition (*code);
+      *code = (int)swap_condition ((enum rtx_code)*code);
     }
 }
 
@@ -1341,6 +1345,24 @@ s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
     *pos = tmp_pos;
 
   return true;
+}
+
+/* Check whether a rotate of ROTL followed by an AND of CONTIG is
+   equivalent to a shift followed by the AND.  In particular, CONTIG
+   should not overlap the (rotated) bit 0/bit 63 gap.  Negative values
+   for ROTL indicate a rotate to the right.  */
+
+bool
+s390_extzv_shift_ok (int bitsize, int rotl, unsigned HOST_WIDE_INT contig)
+{
+  int pos, len;
+  bool ok;
+
+  ok = s390_contiguous_bitmask_p (contig, bitsize, &pos, &len);
+  gcc_assert (ok);
+
+  return ((rotl >= 0 && rotl <= pos)
+	  || (rotl < 0 && -rotl <= bitsize - len - pos));
 }
 
 /* Check whether we can (and want to) split a double-word
@@ -5364,28 +5386,35 @@ print_operand_address (FILE *file, rtx addr)
     'C': print opcode suffix for branch condition.
     'D': print opcode suffix for inverse branch condition.
     'E': print opcode suffix for branch on index instruction.
-    'J': print tls_load/tls_gdcall/tls_ldcall suffix
     'G': print the size of the operand in bytes.
+    'J': print tls_load/tls_gdcall/tls_ldcall suffix
+    'M': print the second word of a TImode operand.
+    'N': print the second word of a DImode operand.
     'O': print only the displacement of a memory reference.
     'R': print only the base register of a memory reference.
     'S': print S-type memory reference (base+displacement).
-    'N': print the second word of a DImode operand.
-    'M': print the second word of a TImode operand.
     'Y': print shift count operand.
 
     'b': print integer X as if it's an unsigned byte.
     'c': print integer X as if it's an signed byte.
-    'x': print integer X as if it's an unsigned halfword.
+    'e': "end" of DImode contiguous bitmask X.
+    'f': "end" of SImode contiguous bitmask X.
     'h': print integer X as if it's a signed halfword.
     'i': print the first nonzero HImode part of X.
     'j': print the first HImode part unequal to -1 of X.
     'k': print the first nonzero SImode part of X.
     'm': print the first SImode part unequal to -1 of X.
-    'o': print integer X as if it's an unsigned 32bit word.  */
+    'o': print integer X as if it's an unsigned 32bit word.
+    's': "start" of DImode contiguous bitmask X.
+    't': "start" of SImode contiguous bitmask X.
+    'x': print integer X as if it's an unsigned halfword.
+*/
 
 void
 print_operand (FILE *file, rtx x, int code)
 {
+  HOST_WIDE_INT ival;
+
   switch (code)
     {
     case 'C':
@@ -5564,30 +5593,57 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case CONST_INT:
-      if (code == 'b')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xff);
-      else if (code == 'c')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xff) ^ 0x80) - 0x80);
-      else if (code == 'x')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffff);
-      else if (code == 'h')
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, ((INTVAL (x) & 0xffff) ^ 0x8000) - 0x8000);
-      else if (code == 'i')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 s390_extract_part (x, HImode, 0));
-      else if (code == 'j')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		 s390_extract_part (x, HImode, -1));
-      else if (code == 'k')
- 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
- 		 s390_extract_part (x, SImode, 0));
-      else if (code == 'm')
- 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
- 		 s390_extract_part (x, SImode, -1));
-      else if (code == 'o')
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffffffff);
-      else
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+      ival = INTVAL (x);
+      switch (code)
+	{
+	case 0:
+	  break;
+	case 'b':
+	  ival &= 0xff;
+	  break;
+	case 'c':
+	  ival = ((ival & 0xff) ^ 0x80) - 0x80;
+	  break;
+	case 'x':
+	  ival &= 0xffff;
+	  break;
+	case 'h':
+	  ival = ((ival & 0xffff) ^ 0x8000) - 0x8000;
+	  break;
+	case 'i':
+	  ival = s390_extract_part (x, HImode, 0);
+	  break;
+	case 'j':
+	  ival = s390_extract_part (x, HImode, -1);
+	  break;
+	case 'k':
+	  ival = s390_extract_part (x, SImode, 0);
+	  break;
+	case 'm':
+	  ival = s390_extract_part (x, SImode, -1);
+	  break;
+	case 'o':
+	  ival &= 0xffffffff;
+	  break;
+	case 'e': case 'f':
+	case 's': case 't':
+	  {
+	    int pos, len;
+	    bool ok;
+
+	    len = (code == 's' || code == 'e' ? 64 : 32);
+	    ok = s390_contiguous_bitmask_p (ival, len, &pos, &len);
+	    gcc_assert (ok);
+	    if (code == 's' || code == 't')
+	      ival = 64 - pos - len;
+	    else
+	      ival = 64 - 1 - pos;
+	  }
+	  break;
+	default:
+	  output_operand_lossage ("invalid constant for output modifier '%c'", code);
+	}
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
       break;
 
     case CONST_DOUBLE:
@@ -11070,6 +11126,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE s390_unwind_word_mode
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON s390_canonicalize_comparison
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

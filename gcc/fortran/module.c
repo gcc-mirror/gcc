@@ -1844,7 +1844,7 @@ typedef enum
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
-  AB_IMPLICIT_PURE, AB_ARTIFICIAL
+  AB_IMPLICIT_PURE, AB_ARTIFICIAL, AB_UNLIMITED_POLY
 }
 ab_attribute;
 
@@ -1898,6 +1898,7 @@ static const mstring attr_bits[] =
     minit ("VTAB", AB_VTAB),
     minit ("CLASS_POINTER", AB_CLASS_POINTER),
     minit ("IMPLICIT_PURE", AB_IMPLICIT_PURE),
+    minit ("UNLIMITED_POLY", AB_UNLIMITED_POLY),
     minit (NULL, -1)
 };
 
@@ -2036,6 +2037,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_PURE, attr_bits);
       if (attr->implicit_pure)
 	MIO_NAME (ab_attribute) (AB_IMPLICIT_PURE, attr_bits);
+      if (attr->unlimited_polymorphic)
+	MIO_NAME (ab_attribute) (AB_UNLIMITED_POLY, attr_bits);
       if (attr->recursive)
 	MIO_NAME (ab_attribute) (AB_RECURSIVE, attr_bits);
       if (attr->always_explicit)
@@ -2176,6 +2179,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_IMPLICIT_PURE:
 	      attr->implicit_pure = 1;
+	      break;
+	    case AB_UNLIMITED_POLY:
+	      attr->unlimited_polymorphic = 1;
 	      break;
 	    case AB_RECURSIVE:
 	      attr->recursive = 1;
@@ -6157,6 +6163,8 @@ gfc_use_module (gfc_use_list *module)
 			     "intrinsic module at %C") != FAILURE)
        {
 	 use_iso_fortran_env_module ();
+	 free_rename (module->rename);
+	 module->rename = NULL;
 	 gfc_current_locus = old_locus;
 	 module->intrinsic = true;
 	 return;
@@ -6167,6 +6175,8 @@ gfc_use_module (gfc_use_list *module)
 			     "ISO_C_BINDING module at %C") != FAILURE)
 	{
 	  import_iso_c_binding_module();
+	  free_rename (module->rename);
+	  module->rename = NULL;
 	  gfc_current_locus = old_locus;
 	  module->intrinsic = true;
 	  return;
@@ -6359,8 +6369,6 @@ gfc_use_modules (void)
       next = module_list->next;
       rename_list_remove_duplicate (module_list->rename);
       gfc_use_module (module_list);
-      if (module_list->intrinsic)
-	free_rename (module_list->rename);
       free (module_list);
     }
   gfc_rename_list = NULL;

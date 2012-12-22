@@ -2438,14 +2438,14 @@ with the header @samp{CVS ID}, you would specify:
 Let's say that a class javadoc comment contains
 
 @smallexample
-@@cvsid $Id: cp-tools.texinfo,v 1.9 2012/03/07 15:27:27 gnu_andrew Exp $
+@@cvsid $Id: cp-tools.texinfo,v 1.9 2012-03-07 15:27:27 gnu_andrew Exp $
 @end smallexample
 
 Then the HTML output will contain something like
 
 @smallexample
 CVS ID:
-  $Id: cp-tools.texinfo,v 1.9 2012/03/07 15:27:27 gnu_andrew Exp $
+  $Id: cp-tools.texinfo,v 1.9 2012-03-07 15:27:27 gnu_andrew Exp $
 @end smallexample
 @end table
 

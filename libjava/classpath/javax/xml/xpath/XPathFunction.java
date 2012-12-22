@@ -52,7 +52,7 @@ public interface XPathFunction
    * Evaluate the function with the specified arguments.
    * @param args the list of arguments
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   Object evaluate(List args)
     throws XPathFunctionException;
 

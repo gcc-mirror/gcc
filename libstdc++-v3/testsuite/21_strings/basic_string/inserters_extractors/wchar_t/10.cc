@@ -17,6 +17,12 @@
 
 // 21.3.7.9 inserters and extractors
 
+// { dg-options "-DMAX_SIZE=505" { target simulator } }
+
+#ifndef MAX_SIZE
+#define MAX_SIZE 777
+#endif
+
 #include <istream>
 #include <string>
 #include <fstream>
@@ -64,7 +70,7 @@ void test01()
 
   const wchar_t delim = L'|';
   const unsigned nchunks = 10;
-  const wstring data = prepare(777, nchunks, delim);
+  const wstring data = prepare(MAX_SIZE, nchunks, delim);
 
   wofstream ofstrm;
   ofstrm.open(filename);
