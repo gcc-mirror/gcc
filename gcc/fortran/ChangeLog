@@ -1,3 +1,11 @@
+2012-12-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* module.c (mio_component): Don't skip _hash's initializer.
+	* resolve.c (resolve_select_type): Add an assert.
+	* trans-expr.c (gfc_conv_procedure_call): Handle
+	INTENT(OUT) for UNLIMIT_POLY.
+
 2012-12-21  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/54659

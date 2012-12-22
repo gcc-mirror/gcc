@@ -8484,7 +8484,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  gfc_expr *e;
 
 	  ivtab = gfc_find_intrinsic_vtab (&c->ts);
-	  gcc_assert (ivtab);
+	  gcc_assert (ivtab && CLASS_DATA (ivtab)->initializer);
 	  e = CLASS_DATA (ivtab)->initializer;
 	  c->low = c->high = gfc_copy_expr (e);
 	}
