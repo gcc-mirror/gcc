@@ -9,6 +9,12 @@ unsigned char *bar (int);
 NOMIPS16 void
 foo (unsigned char *n)
 {
+  /* n starts in $4, but will be in $2 after the call to bar.
+     Encourage it to be in $2 on entry to the loop as well,
+     by doing some computation on it beforehand (D?ADDIU $2,$4,4).
+     dbr_schedule should then pull the *n load (L[WD] ...,0($2))
+     into the delay slot.  */
+  n += 4;
   do
     n = bar (*n + 1);
   while (n);
