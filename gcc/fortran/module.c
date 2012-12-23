@@ -5238,6 +5238,7 @@ write_symbol1_recursion (sorted_pointer_info *sp)
 
   p1->u.wsym.state = WRITTEN;
   write_symbol (p1->integer, p1->u.wsym.sym);
+  p1->u.wsym.sym->attr.public_used = 1;
  
   write_symbol1_recursion (sp->right);
 }

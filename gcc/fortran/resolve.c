@@ -3129,12 +3129,6 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
-  if (sym && specification_expr && sym->attr.function
-      && gfc_current_ns->proc_name
-      && gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
-    sym->attr.public_used = 1;
-
-
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
   need_full_assumed_size++;
@@ -5359,19 +5353,6 @@ resolve_variable (gfc_expr *e)
 
   if (check_assumed_size_reference (sym, e))
     return FAILURE;
-
-  /* If a PRIVATE variable is used in the specification expression of the
-     result variable, it might be accessed from outside the module and can
-     thus not be TREE_PUBLIC() = 0.
-     TODO: sym->attr.public_used only has to be set for the result variable's
-     type-parameter expression and not for dummies or automatic variables.
-     Additionally, it only has to be set if the function is either PUBLIC or
-     used in a generic interface or TBP; unfortunately,
-     proc_name->attr.public_used can get set at a later stage.  */
-  if (specification_expr && sym->attr.access == ACCESS_PRIVATE
-      && !sym->attr.function && !sym->attr.use_assoc
-      && gfc_current_ns->proc_name && gfc_current_ns->proc_name->attr.function)
-    sym->attr.public_used = 1;
 
   /* Deal with forward references to entries during resolve_code, to
      satisfy, at least partially, 12.5.2.5.  */
@@ -12146,7 +12127,6 @@ resolve_typebound_procedure (gfc_symtree* stree)
   gcc_assert (stree->n.tb->u.specific);
   proc = stree->n.tb->u.specific->n.sym;
   where = stree->n.tb->where;
-  proc->attr.public_used = 1;
 
   /* Default access should already be resolved from the parser.  */
   gcc_assert (stree->n.tb->access != ACCESS_UNKNOWN);

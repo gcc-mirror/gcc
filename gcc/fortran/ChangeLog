@@ -1,3 +1,12 @@
+2012-12-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54884
+	* module.c (write_symbol1_recursion): Set attr.public_use.
+	* interface.c (check_sym_interfaces, check_uop_interfaces,
+	gfc_check_interfaces): Remove attr.public_use code.
+	* resolve.c (resolve_function, resolve_variable,
+	resolve_typebound_procedure): Ditto.
+
 2012-12-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
