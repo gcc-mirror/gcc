@@ -32,6 +32,7 @@ MD_INCLUDES=	$(srcdir)/config/arm/arm1020e.md \
 		$(srcdir)/config/arm/constraints.md \
 		$(srcdir)/config/arm/cortex-a15.md \
 		$(srcdir)/config/arm/cortex-a5.md \
+		$(srcdir)/config/arm/cortex-a7.md \
 		$(srcdir)/config/arm/cortex-a8.md \
 		$(srcdir)/config/arm/cortex-a8-neon.md \
 		$(srcdir)/config/arm/cortex-a9.md \

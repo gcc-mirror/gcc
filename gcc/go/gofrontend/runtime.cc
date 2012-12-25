@@ -6,8 +6,6 @@
 
 #include "go-system.h"
 
-#include <gmp.h>
-
 #include "gogo.h"
 #include "types.h"
 #include "expressions.h"

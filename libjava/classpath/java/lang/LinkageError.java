@@ -1,6 +1,6 @@
 /* LinkageError.java -- thrown when classes valid at separate compile times
    cannot be linked to each other
-   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ package java.lang;
  *
  * @author Brian Jones
  * @author Tom Tromey (tromey@cygnus.com)
- * @status updated to 1.4
+ * @status updated to 1.7
  */
 public class LinkageError extends Error
 {
@@ -71,4 +71,17 @@ public class LinkageError extends Error
   {
     super(s);
   }
+
+  /**
+   * Construct an LinkageError with detail message and cause.
+   *
+   * @param msg Detail message.
+   * @param cause The cause of this exception, may be null
+   * @since 1.7
+   */
+  public LinkageError(String msg, Throwable cause)
+  {
+    super(msg, cause);
+  }
+
 }

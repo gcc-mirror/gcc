@@ -1,5 +1,5 @@
 /* CollationElementIterator.java -- Walks through collation elements
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004  Free Software Foundation
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2012  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -91,12 +91,12 @@ public final class CollationElementIterator
    * Array containing the collation decomposition of the
    * text given to the constructor.
    */
-  private RuleBasedCollator.CollationElement[] text_decomposition;
+  private RuleBasedCollator.CollationElement[] textDecomposition;
 
   /**
    * Array containing the index of the specified block.
    */
-  private int[] text_indexes;
+  private int[] textIndexes;
 
   /**
    * This method initializes a new instance of <code>CollationElementIterator</code>
@@ -130,12 +130,12 @@ public final class CollationElementIterator
 
   RuleBasedCollator.CollationElement nextBlock()
   {
-    if (index >= text_decomposition.length)
+    if (index >= textDecomposition.length)
       return null;
 
-    RuleBasedCollator.CollationElement e = text_decomposition[index];
+    RuleBasedCollator.CollationElement e = textDecomposition[index];
 
-    textIndex = text_indexes[index+1];
+    textIndex = textIndexes[index+1];
 
     index++;
 
@@ -148,9 +148,9 @@ public final class CollationElementIterator
       return null;
 
     index--;
-    RuleBasedCollator.CollationElement e = text_decomposition[index];
+    RuleBasedCollator.CollationElement e = textDecomposition[index];
 
-    textIndex = text_indexes[index+1];
+    textIndex = textIndexes[index+1];
 
     return e;
   }
@@ -268,23 +268,23 @@ public final class CollationElementIterator
 
     String work_text = text.intern();
 
-    ArrayList a_element = new ArrayList();
-    ArrayList a_idx = new ArrayList();
+    ArrayList<RuleBasedCollator.CollationElement> aElement = new ArrayList<RuleBasedCollator.CollationElement>();
+    ArrayList<Integer> aIdx = new ArrayList<Integer>();
 
     // Build element collection ordered as they come in "text".
     while (idx < work_text.length())
       {
-        String key, key_old;
+        String key, keyOld;
 
         Object object = null;
         int p = 1;
 
         // IMPROVE: use a TreeMap with a prefix-ordering rule.
-        key_old = key = null;
+        keyOld = key = null;
         do
           {
             if (object != null)
-              key_old = key;
+              keyOld = key;
             key = work_text.substring (idx, idx+p);
             object = collator.prefix_tree.get (key);
             if (object != null && idx < alreadyExpanded)
@@ -294,7 +294,7 @@ public final class CollationElementIterator
                     prefix.expansion.startsWith(work_text.substring(0, idx)))
                 {
                   object = null;
-                  key = key_old;
+                  key = keyOld;
                 }
               }
             p++;
@@ -302,7 +302,7 @@ public final class CollationElementIterator
         while (idx+p <= work_text.length());
 
         if (object == null)
-          key = key_old;
+          key = keyOld;
 
         RuleBasedCollator.CollationElement prefix =
           (RuleBasedCollator.CollationElement) collator.prefix_tree.get (key);
@@ -322,8 +322,8 @@ public final class CollationElementIterator
                 RuleBasedCollator.CollationElement e =
                   collator.getDefaultAccentedElement (work_text.charAt (idx));
 
-                a_element.add (e);
-                a_idx.add (new Integer(idx_idx));
+                aElement.add (e);
+                aIdx.add (Integer.valueOf(idx_idx));
                 idx++;
                 alreadyExpanded--;
                 if (alreadyExpanded == 0)
@@ -342,15 +342,15 @@ public final class CollationElementIterator
                 /* This is a normal character. */
                 RuleBasedCollator.CollationElement e =
                   collator.getDefaultElement (work_text.charAt (idx));
-                Integer i_ref = new Integer(idx_idx);
+                Integer iRef = Integer.valueOf(idx_idx);
 
                 /* Don't forget to mark it as a special sequence so the
                  * string can be ordered.
                  */
-                a_element.add (RuleBasedCollator.SPECIAL_UNKNOWN_SEQ);
-                a_idx.add (i_ref);
-                a_element.add (e);
-                a_idx.add (i_ref);
+                aElement.add (RuleBasedCollator.SPECIAL_UNKNOWN_SEQ);
+                aIdx.add (iRef);
+                aElement.add (e);
+                aIdx.add (iRef);
                 idx_idx++;
                 idx++;
               }
@@ -367,8 +367,8 @@ public final class CollationElementIterator
             work_text = prefix.expansion
               + work_text.substring (idx+prefix.key.length());
             idx = 0;
-            a_element.add (prefix);
-            a_idx.add (new Integer(idx_idx));
+            aElement.add (prefix);
+            aIdx.add (Integer.valueOf(idx_idx));
             if (alreadyExpanded == 0)
               idxToMove = prefix.key.length();
             alreadyExpanded += prefix.expansion.length()-prefix.key.length();
@@ -378,8 +378,8 @@ public final class CollationElementIterator
             /* Third case: the simplest. We have got the prefix and it
              * has not to be expanded.
              */
-            a_element.add (prefix);
-            a_idx.add (new Integer(idx_idx));
+            aElement.add (prefix);
+            aIdx.add (Integer.valueOf(idx_idx));
             idx += prefix.key.length();
             /* If the sequence is in an expansion, we must decrease the
              * counter.
@@ -398,14 +398,13 @@ public final class CollationElementIterator
           }
       }
 
-    text_decomposition = (RuleBasedCollator.CollationElement[])
-           a_element.toArray(new RuleBasedCollator.CollationElement[a_element.size()]);
-    text_indexes = new int[a_idx.size()+1];
-    for (int i = 0; i < a_idx.size(); i++)
+    textDecomposition = aElement.toArray(new RuleBasedCollator.CollationElement[aElement.size()]);
+    textIndexes = new int[aIdx.size()+1];
+    for (int i = 0; i < aIdx.size(); i++)
       {
-        text_indexes[i] = ((Integer)a_idx.get(i)).intValue();
+        textIndexes[i] = aIdx.get(i).intValue();
       }
-    text_indexes[a_idx.size()] = text.length();
+    textIndexes[aIdx.size()] = text.length();
   }
 
   /**
@@ -460,19 +459,19 @@ public final class CollationElementIterator
     if (offset > (text.getEndIndex() - 1))
       throw new IllegalArgumentException("Offset too large: " + offset);
 
-    for (index = 0; index < text_decomposition.length; index++)
+    for (index = 0; index < textDecomposition.length; index++)
       {
-        if (offset <= text_indexes[index])
+        if (offset <= textIndexes[index])
           break;
       }
     /*
-     * As text_indexes[0] == 0, we should not have to take care whether index is
+     * As textIndexes[0] == 0, we should not have to take care whether index is
      * greater than 0. It is always.
      */
-    if (text_indexes[index] == offset)
+    if (textIndexes[index] == offset)
       textIndex = offset;
     else
-      textIndex = text_indexes[index-1];
+      textIndex = textIndexes[index-1];
   }
 
   /**

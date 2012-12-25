@@ -163,7 +163,7 @@ done
   done
 done
 
-runtime="chan.c cpuprof.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mheap.c msize.c panic.c print.c proc.c race.h runtime.c runtime.h signal_unix.c malloc.h malloc.goc mprof.goc parfor.c runtime1.goc sema.goc sigqueue.goc string.goc time.goc"
+runtime="chan.c cpuprof.c env_posix.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mgc0.h mheap.c msize.c panic.c print.c proc.c race.h runtime.c runtime.h signal_unix.c malloc.h malloc.goc mprof.goc parfor.c runtime1.goc sema.goc sigqueue.goc string.goc time.goc"
 for f in $runtime; do
   merge_c $f $f
 done

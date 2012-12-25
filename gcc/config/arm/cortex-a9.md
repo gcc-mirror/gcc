@@ -82,7 +82,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
   (and (eq_attr "tune" "cortexa9")
          (ior (and (eq_attr "type" "alu_reg,simple_alu_imm")
                         (eq_attr "neon_type" "none"))
-	      (and (and (eq_attr "type" "alu_shift_reg, alu_shift")
+	      (and (and (eq_attr "type" "alu_shift_reg, simple_alu_shift,alu_shift")
 			(eq_attr "insn" "mov"))
                  (eq_attr "neon_type" "none"))))
   "cortex_a9_p0_default|cortex_a9_p1_default")
@@ -90,7 +90,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; An instruction using the shifter will go down E1.
 (define_insn_reservation "cortex_a9_dp_shift" 3
    (and (eq_attr "tune" "cortexa9")
-	(and (eq_attr "type" "alu_shift_reg, alu_shift")
+	(and (eq_attr "type" "alu_shift_reg, simple_alu_shift,alu_shift")
 	     (not (eq_attr "insn" "mov"))))
    "cortex_a9_p0_shift | cortex_a9_p1_shift")
 

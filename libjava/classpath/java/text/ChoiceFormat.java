@@ -1,5 +1,5 @@
 /* ChoiceFormat.java -- Format over a range of numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2012
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -98,8 +98,8 @@ public class ChoiceFormat extends NumberFormat
     // This isn't explicitly documented.  But for instance we accept
     // '#' as a literal hash in a format string.
     int index = 0, max = newPattern.length();
-    Vector stringVec = new Vector ();
-    Vector limitVec = new Vector ();
+    Vector<String> stringVec = new Vector<String> ();
+    Vector<Double> limitVec = new Vector<Double> ();
     final CPStringBuilder buf = new CPStringBuilder ();
 
     while (true)
@@ -159,7 +159,7 @@ public class ChoiceFormat extends NumberFormat
     choiceLimits = new double[limitVec.size()];
     for (int i = 0; i < choiceLimits.length; ++i)
       {
-        Double d = (Double) limitVec.elementAt(i);
+        Double d = limitVec.elementAt(i);
         choiceLimits[i] = d.doubleValue();
       }
   }

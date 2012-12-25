@@ -370,16 +370,19 @@ public class Main
         results.put(filename, klass);
         parsed.add(item.toString());
 
-        // Check to see if there are inner classes to also parse
-        Iterator<?> innerClasses = klass.innerClasses.iterator();
-        HashSet<Object> innerNames = new HashSet<Object>();
-        while (innerClasses.hasNext())
+        if (! (item instanceof File))
           {
-            String innerName = ((InnerClassNode) innerClasses.next()).name;
-            if (!parsed.contains(innerName))
-              innerNames.add(innerName);
+            // Check to see if there are inner classes to also parse
+            Iterator<?> innerClasses = klass.innerClasses.iterator();
+            HashSet<Object> innerNames = new HashSet<Object>();
+            while (innerClasses.hasNext())
+              {
+                String innerName = ((InnerClassNode) innerClasses.next()).name;
+                if (!parsed.contains(innerName))
+                  innerNames.add(innerName);
+              }
+            results.putAll(parseClasses(innerNames.iterator()));
           }
-        results.putAll(parseClasses(innerNames.iterator()));
       }
     return results;
   }

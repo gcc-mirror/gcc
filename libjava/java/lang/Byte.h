@@ -33,6 +33,7 @@ public:
   jint hashCode();
   jboolean equals(::java::lang::Object *);
   jint Byte$compareTo(::java::lang::Byte *);
+  static jint compare(jbyte, jbyte);
   jint compareTo(::java::lang::Object *);
 private:
   static const jlong serialVersionUID = -7183698231559129828LL;

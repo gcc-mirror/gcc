@@ -1,5 +1,5 @@
 /* MidiSystem.java -- Access system MIDI resources
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,9 +76,9 @@ public class MidiSystem
    */
   public static MidiDevice.Info[] getMidiDeviceInfo()
   {
-    Iterator deviceProviders =
+    Iterator<MidiDeviceProvider> deviceProviders =
         ServiceFactory.lookupProviders(MidiDeviceProvider.class);
-    List infoList = new ArrayList();
+    List<MidiDevice.Info> infoList = new ArrayList<MidiDevice.Info>();
 
     while (deviceProviders.hasNext())
     {
@@ -88,8 +88,7 @@ public class MidiSystem
         infoList.add(infos[--i]);
     }
 
-    return (MidiDevice.Info[])
-        infoList.toArray(new MidiDevice.Info[infoList.size()]);
+    return infoList.toArray(new MidiDevice.Info[infoList.size()]);
   }
 
   /**
@@ -103,7 +102,7 @@ public class MidiSystem
   public static MidiDevice getMidiDevice(MidiDevice.Info info)
     throws MidiUnavailableException
   {
-    Iterator deviceProviders =
+    Iterator<MidiDeviceProvider> deviceProviders =
         ServiceFactory.lookupProviders(MidiDeviceProvider.class);
 
     if (! deviceProviders.hasNext())
@@ -216,10 +215,11 @@ public class MidiSystem
   public static Soundbank getSoundbank(InputStream stream)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(SoundbankReader.class);
+    Iterator<SoundbankReader> readers =
+      ServiceFactory.lookupProviders(SoundbankReader.class);
     while (readers.hasNext())
     {
-      SoundbankReader sr = (SoundbankReader) readers.next();
+      SoundbankReader sr = readers.next();
       Soundbank sb = sr.getSoundbank(stream);
       if (sb != null)
         return sb;
@@ -238,10 +238,11 @@ public class MidiSystem
   public static Soundbank getSoundbank(URL url)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(SoundbankReader.class);
+    Iterator<SoundbankReader> readers =
+      ServiceFactory.lookupProviders(SoundbankReader.class);
     while (readers.hasNext())
     {
-      SoundbankReader sr = (SoundbankReader) readers.next();
+      SoundbankReader sr = readers.next();
       Soundbank sb = sr.getSoundbank(url);
       if (sb != null)
         return sb;
@@ -260,7 +261,8 @@ public class MidiSystem
   public static Soundbank getSoundbank(File file)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(SoundbankReader.class);
+    Iterator<SoundbankReader> readers =
+      ServiceFactory.lookupProviders(SoundbankReader.class);
     while (readers.hasNext())
     {
       SoundbankReader sr = (SoundbankReader) readers.next();
@@ -283,10 +285,11 @@ public class MidiSystem
   public static MidiFileFormat getMidiFileFormat(InputStream stream)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(MidiFileReader.class);
+    Iterator<MidiFileReader> readers =
+      ServiceFactory.lookupProviders(MidiFileReader.class);
     while (readers.hasNext())
     {
-      MidiFileReader sr = (MidiFileReader) readers.next();
+      MidiFileReader sr = readers.next();
       MidiFileFormat sb = sr.getMidiFileFormat(stream);
       if (sb != null)
         return sb;
@@ -305,10 +308,11 @@ public class MidiSystem
   public static MidiFileFormat getMidiFileFormat(URL url)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(MidiFileReader.class);
+    Iterator<MidiFileReader> readers =
+      ServiceFactory.lookupProviders(MidiFileReader.class);
     while (readers.hasNext())
     {
-      MidiFileReader sr = (MidiFileReader) readers.next();
+      MidiFileReader sr = readers.next();
       MidiFileFormat sb = sr.getMidiFileFormat(url);
       if (sb != null)
         return sb;
@@ -327,10 +331,11 @@ public class MidiSystem
   public static MidiFileFormat getMidiFileFormat(File file)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(MidiFileReader.class);
+    Iterator<MidiFileReader> readers =
+      ServiceFactory.lookupProviders(MidiFileReader.class);
     while (readers.hasNext())
     {
-      MidiFileReader sr = (MidiFileReader) readers.next();
+      MidiFileReader sr = readers.next();
       MidiFileFormat sb = sr.getMidiFileFormat(file);
       if (sb != null)
         return sb;
@@ -350,10 +355,11 @@ public class MidiSystem
   public static Sequence getSequence(InputStream stream)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(MidiFileReader.class);
+    Iterator<MidiFileReader> readers =
+      ServiceFactory.lookupProviders(MidiFileReader.class);
     while (readers.hasNext())
     {
-      MidiFileReader sr = (MidiFileReader) readers.next();
+      MidiFileReader sr = readers.next();
       Sequence sq = sr.getSequence(stream);
       if (sq != null)
         return sq;
@@ -372,10 +378,11 @@ public class MidiSystem
   public static Sequence getSequence(URL url)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(MidiFileReader.class);
+    Iterator<MidiFileReader> readers =
+      ServiceFactory.lookupProviders(MidiFileReader.class);
     while (readers.hasNext())
     {
-      MidiFileReader sr = (MidiFileReader) readers.next();
+      MidiFileReader sr = readers.next();
       Sequence sq = sr.getSequence(url);
       if (sq != null)
         return sq;
@@ -394,10 +401,11 @@ public class MidiSystem
   public static Sequence getSequence(File file)
     throws InvalidMidiDataException, IOException
   {
-    Iterator readers = ServiceFactory.lookupProviders(MidiFileReader.class);
+    Iterator<MidiFileReader> readers =
+      ServiceFactory.lookupProviders(MidiFileReader.class);
     while (readers.hasNext())
     {
-      MidiFileReader sr = (MidiFileReader) readers.next();
+      MidiFileReader sr = readers.next();
       Sequence sq = sr.getSequence(file);
       if (sq != null)
         return sq;
@@ -417,10 +425,11 @@ public class MidiSystem
     boolean supported[] = new boolean[3];
     // The number of supported formats.
     int count = 0;
-    Iterator writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
+    Iterator<MidiFileWriter> writers =
+      ServiceFactory.lookupProviders(MidiFileWriter.class);
     while (writers.hasNext())
     {
-      MidiFileWriter fw = (MidiFileWriter) writers.next();
+      MidiFileWriter fw = writers.next();
       int types[] = fw.getMidiFileTypes();
       for (int i = types.length; i > 0;)
       {
@@ -449,10 +458,10 @@ public class MidiSystem
    */
   public static boolean isFileTypeSupported(int fileType)
   {
-    Iterator writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
+    Iterator<MidiFileWriter> writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
     while (writers.hasNext())
     {
-      MidiFileWriter fw = (MidiFileWriter) writers.next();
+      MidiFileWriter fw = writers.next();
 
       if (fw.isFileTypeSupported(fileType))
         return true;
@@ -473,7 +482,7 @@ public class MidiSystem
     boolean supported[] = new boolean[3];
     // The number of supported formats.
     int count = 0;
-    Iterator writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
+    Iterator<MidiFileWriter> writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
     while (writers.hasNext())
     {
       MidiFileWriter fw = (MidiFileWriter) writers.next();
@@ -507,7 +516,7 @@ public class MidiSystem
    */
   public static boolean isFileTypeSupported(int fileType, Sequence sequence)
   {
-    Iterator writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
+    Iterator<MidiFileWriter> writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
     while (writers.hasNext())
     {
       MidiFileWriter fw = (MidiFileWriter) writers.next();
@@ -531,7 +540,7 @@ public class MidiSystem
   public static int write(Sequence in, int fileType, OutputStream out)
     throws IOException
   {
-    Iterator writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
+    Iterator<MidiFileWriter> writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
     while (writers.hasNext())
     {
       MidiFileWriter fw = (MidiFileWriter) writers.next();
@@ -556,7 +565,7 @@ public class MidiSystem
   public static int write(Sequence in, int fileType, File out)
     throws IOException
   {
-    Iterator writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
+    Iterator<MidiFileWriter> writers = ServiceFactory.lookupProviders(MidiFileWriter.class);
     while (writers.hasNext())
     {
       MidiFileWriter fw = (MidiFileWriter) writers.next();

@@ -240,6 +240,7 @@
 ;               regs or have a shifted source operand
 ;               and does not have an immediate operand. This is
 ;               also the default
+; simple_alu_shift covers UXTH, UXTB, SXTH, SXTB
 ; alu_shift	any data instruction that doesn't hit memory or fp
 ;		regs, but has a source operand shifted by a constant
 ; alu_shift_reg	any data instruction that doesn't hit memory or fp
@@ -271,6 +272,7 @@
 (define_attr "type"
  "simple_alu_imm,\
   alu_reg,\
+  simple_alu_shift,\
   alu_shift,\
   alu_shift_reg,\
   mult,\
@@ -284,6 +286,8 @@
   fmacd,\
   f_rints,\
   f_rintd,\
+  f_minmaxs,\
+  f_minmaxd,\
   f_flag,\
   f_loads,\
   f_loadd,\
@@ -454,7 +458,9 @@
 ; than one on the main cpu execution unit.
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
-		 "simple_alu_imm,alu_reg,alu_shift,float,fdivd,fdivs")
+		 "simple_alu_imm,alu_reg,\
+                  simple_alu_shift,alu_shift,\
+                  float,fdivd,fdivs")
 		(const_string "single")
 	        (const_string "multi")))
 
@@ -496,7 +502,7 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else
-          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa8,cortexa9,cortexa15,cortexm4")
+          (ior (eq_attr "tune" "fa526,fa626,fa606te,fa626te,fmp626,fa726te,arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa5,cortexa7,cortexa8,cortexa9,cortexa15,cortexm4")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -504,7 +510,7 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa8,cortexa9,cortexm4")
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexm4")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -521,6 +527,7 @@
 (include "fmp626.md")
 (include "fa726te.md")
 (include "cortex-a5.md")
+(include "cortex-a7.md")
 (include "cortex-a8.md")
 (include "cortex-a9.md")
 (include "cortex-a15.md")
@@ -4484,33 +4491,36 @@
 ;; Zero and sign extension instructions.
 
 (define_insn "zero_extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r")
         (zero_extend:DI (match_operand:QHSI 1 "<qhs_zextenddi_op>"
 					    "<qhs_zextenddi_cstr>")))]
   "TARGET_32BIT <qhs_zextenddi_cond>"
   "#"
-  [(set_attr "length" "8")
+  [(set_attr "length" "8,4,8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")]
 )
 
 (define_insn "extend<mode>di2"
-  [(set (match_operand:DI 0 "s_register_operand" "=r")
+  [(set (match_operand:DI 0 "s_register_operand" "=w,r,?r,?r")
         (sign_extend:DI (match_operand:QHSI 1 "<qhs_extenddi_op>"
 					    "<qhs_extenddi_cstr>")))]
   "TARGET_32BIT <qhs_sextenddi_cond>"
   "#"
-  [(set_attr "length" "8")
+  [(set_attr "length" "8,4,8,8")
    (set_attr "ce_count" "2")
    (set_attr "shift" "1")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "*,*,a,t")]
 )
 
 ;; Splits for all extensions to DImode
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (zero_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && (!TARGET_NEON
+		    || (reload_completed
+			&& !(IS_VFP_REGNUM (REGNO (operands[0])))))"
   [(set (match_dup 0) (match_dup 1))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
@@ -4536,7 +4546,9 @@
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
         (sign_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && (!TARGET_NEON
+		    || (reload_completed
+			&& !(IS_VFP_REGNUM (REGNO (operands[0])))))"
   [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 31)))]
 {
   rtx lo_part = gen_lowpart (SImode, operands[0]);
@@ -4629,11 +4641,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 				       (const_int 2) (const_int 4))
 			 (const_int 4)])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift, load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2"
@@ -4655,11 +4663,7 @@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2addsi"
@@ -4729,11 +4733,7 @@
    uxtb\\t%0, %1
    ldrb\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendqisi2"
@@ -4755,11 +4755,7 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")]
 )
 
@@ -4933,11 +4929,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 2) (const_int 4))
 			  (const_int 4)])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+   (set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "pool_range" "*,1018")]
 )
 
@@ -5010,11 +5002,7 @@
   "@
    sxth%?\\t%0, %1
    ldr%(sh%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5114,11 +5102,7 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")])
+  [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5231,12 +5215,7 @@
 			  (const_int 2)
 			  (if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 4) (const_int 6))])
-   (set_attr_alternative "type"
-                         [(if_then_else (eq_attr "tune" "cortexa7")
-                                        (const_string "simple_alu_imm")
-                                        (const_string "alu_shift"))
-                          (const_string "load_byte")
-                          (const_string "load_byte")])]
+   (set_attr "type" "simple_alu_shift,load_byte,load_byte")]
 )
 
 (define_expand "extendsfdf2"

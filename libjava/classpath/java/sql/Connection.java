@@ -46,6 +46,7 @@ import java.util.Map;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public interface Connection
+  extends AutoCloseable
 {
   /**
    * This transaction isolation level indicates that transactions are not

@@ -678,6 +678,12 @@ public final class Formatter
                conversion);
     noPrecision(precision);
 
+    if (arg == null)
+      {
+        genericFormat("null", flags, width, precision);
+        return;
+      }
+
     int theChar;
     if (arg instanceof Character)
       theChar = ((Character) arg).charValue();
@@ -748,6 +754,12 @@ public final class Formatter
                                                   int radix, char conversion)
   {
     assert radix == 8 || radix == 10 || radix == 16;
+
+    if (arg == null)
+      {
+        return new CPStringBuilder("null");
+      }
+
     noPrecision(precision);
 
     // Some error checking.
@@ -1353,9 +1365,12 @@ public final class Formatter
                   argumentIndex = previousArgumentIndex;
                 // Argument indices start at 1 but array indices at 0.
                 --argumentIndex;
-                if (argumentIndex < 0 || argumentIndex >= args.length)
-                  throw new MissingFormatArgumentException(format.substring(start, index));
-                argument = args[argumentIndex];
+                if (args != null)
+                  {
+                    if (argumentIndex < 0 || argumentIndex >= args.length)
+                      throw new MissingFormatArgumentException(format.substring(start, index));
+                    argument = args[argumentIndex];
+                  }
               }
 
             switch (conversion)

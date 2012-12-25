@@ -1,18 +1,984 @@
-2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+2012-12-17  Andrew Haley  <aph@redhat.com>
 
-	* configure: Regenerated.
+	PR gcc/55716
+	* tools/gnu/classpath/tools/javah/Main.java (parseClasses): Don't
+	scan inner classes if our item is a file.
+
+2012-11-02  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/55182
+	* configure.ac:
+	Lower required version to support autoconf
+	on RHEL6.  Make disabling Werror the default.
+	If a Qt4-specific moc is detected, use it
+	rather than the default.
+	* doc/Makefile.am:
+	Generate texi2dvi output in the build directory
+	and explicitly specify POSIX locale to work around
+	Debian bug 586134.
+	(clean-local): Remove output from texi2dvi.
+
+2012-10-30  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/55140
+	* NEWS: List fix.
+	* java/lang/String.java:
+	(codePointBefore(int)): Fix index check to match spec.
+
+2012-10-16  Ivan Maidanski  <ivmai@mail.ru>
+
+	* java/util/Collections.java:
+	(emptySet()): Don't create new instance, instead using
+	the corresponding immutable container instance.  Remove FIXME
+	and suppress resulting unchecked warning.
+	(EmptySet.iterator()): Suppress warning due to cast
+	for immutable container instance.
+	(EmptySet.equals(Object)): Add type parameters.
+	(emptyList()): Don't create new instance, instead using
+	the corresponding immutable container instance.  Remove FIXME
+	and suppress resulting unchecked warning.
+	(EmptyList.equals(Object)): Add type parameters.
+	(emptyMap()): Don't create new instance, instead using
+	the corresponding immutable container instance.  Remove FIXME
+	and suppress resulting unchecked warning.
+	(EmptyMap.entrySet()): Cast to parameterised type and
+	suppress warning.
+	(EmptyMap.equals(Object)): Add type parameters.
+	(EmptyMap.keySet()): Cast to parameterised type and
+	suppress warning.
+	(EmptyMap.values()): Likewise.
+	(SingletonList.subList(int, int)): Use emptyList() instead of
+	EMPTY_LIST to eliminate unchecked warning.
+	(SynchronizedCollection.toArray(T[])): Rename T type to E to
+	suppress compiler warning about type hiding.
+
+2012-10-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/41689
+	* javax/security/sasl/Sasl.java:
+	(CREDENTIALS): Add missing field.
+	* NEWS: Updated.
+
+2012-10-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* NEWS: Updated with latest bug fixes.
+	* THANKYOU: Add bug authors.
+
+2010-05-20  Paul Viney  <paul@diasoft.nl>
+
+	PR classpath/44208
+	* java/io/ObjectInputStream.java,
+	(parseContent(byte,boolean)): Ensure a handle
+	for the enum is registered before one for its
+	String constant.
+
+2009-12-30  Paul Fernhout  <pdfernhout@kurtz-fernhout.com>
+
+	PR classpath/42551
+	* javax/sound/midi/MetaMessage.java:
+	(setMessage(int,byte[],int)): Don't overwrite
+	length variable when computing the length representation.
+
+2012-10-17  Jeremy Singer  <Jeremy.Singer@glasgow.ac.uk>
+
+	PR classpath/54960
+	* gnu/xml/transform/SAXSerializer.java:
+	(getValue(String)): Avoid NullPointerException.
+
+2012-10-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* native/jni/midi-dssi/gnu_javax_sound_midi_dssi_DSSISynthesizer.c:
+	(Java_gnu_javax_sound_midi_dssi_DSSISynthesizer_open_1(JNIEnv*,
+	jclass, jlong)): Use jack_client_open instead of
+	deprecated jack_client_new.
+
+2012-10-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac: Set to 0.99.1pre, as
+	0.99.1 will now be next release.
+	* NEWS: Updated with last bug fix
+	and 0.99.1
+
+2012-10-15  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/54931
+	* m4/acinclude.m4:
+	(CLASSPATH_WITH_GJDOC): Allow GJDoc versions
+	included with GNU Classpath to be used to
+	build (0.98 on).
+
+2012-03-15  Pekka Enberg  <penberg@kernel.org>
+
+	* java/util/Formatter.java:
+	(icharacterFormat(Object,int,int,int,char):
+	Fix NullPointerException for null characters.
+	(basicIntegralConversion(Object, int, int, int, int, char):
+	Fix NullPointerException for null integers.
+	(format(Locale, String, Object...)):
+	Fix NullPointerException for null object.
+
+2012-03-15  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/String.java:
+	(codePointAt(int))): Fix exception type.
+	(codePointBefore(int)): Fix exception type.
+
+2011-07-20  Ivan Maidanski  <ivmai@mail.ru>
+
+	* native/jni/java-util/java_util_VMTimeZone.c:
+	Include jcl.h file.
+	(Java_java_util_VMTimeZone_getSystemTimeZoneId(JNIEnv*,jclass)):
+	Throw OutOfMemoryException in case of malloc() failure.
+
+2012-06-10  Ivan Maidanski  <ivmai@mail.ru>
+
+	* compat/.gitignore,
+	* compat/java.net/.gitignore,
+	* doc/.gitignore,
+	* doc/api/.gitignore,
+	* doc/www.gnu.org/.gitignore,
+	* doc/www.gnu.org/announce/.gitignore,
+	* doc/www.gnu.org/cp-tools/.gitignore,
+	* doc/www.gnu.org/docs/.gitignore,
+	* doc/www.gnu.org/downloads/.gitignore,
+	* doc/www.gnu.org/events/.gitignore,
+	* doc/www.gnu.org/faq/.gitignore,
+	* examples/.gitignore,
+	* external/.gitignore,
+	* external/jsr166/.gitignore,
+	* external/relaxngDatatype/.gitignore,
+	* external/sax/.gitignore,
+	* external/w3c_dom/.gitignore,
+	* gnu/classpath/.gitignore,
+	* gnu/java/locale/.gitignore,
+	* gnu/java/security/.gitignore,
+	* gnu/test/.gitignore,
+	* include/.gitignore,
+	* java/util/.gitignore,
+	* lib/.gitignore,
+	* native/.gitignore,
+	* native/fdlibm/.gitignore,
+	* native/jawt/.gitignore,
+	* native/jni/.gitignore,
+	* native/jni/classpath/.gitignore,
+	* native/jni/gconf-peer/.gitignore,
+	* native/jni/gstreamer-peer/.gitignore,
+	* native/jni/gtk-peer/.gitignore,
+	* native/jni/java-io/.gitignore,
+	* native/jni/java-lang/.gitignore,
+	* native/jni/java-math/.gitignore,
+	* native/jni/java-net/.gitignore,
+	* native/jni/java-nio/.gitignore,
+	* native/jni/java-util/.gitignore,
+	* native/jni/midi-alsa/.gitignore,
+	* native/jni/midi-dssi/.gitignore,
+	* native/jni/native-lib/.gitignore,
+	* native/jni/qt-peer/.gitignore,
+	* native/jni/xmlj/.gitignore,
+	* native/plugin/.gitignore,
+	* native/testsuite/.gitignore,
+	* native/vmi/.gitignore,
+	* resource/.gitignore,
+	* resource/META-INF/services/.gitignore,
+	* scripts/.gitignore,
+	* test/.gitignore,
+	* test/gnu.java.lang.reflect/.gitignore,
+	* test/java.io/.gitignore,
+	* test/java.lang.reflect/.gitignore,
+	* test/java.net/.gitignore,
+	* test/java.util/.gitignore,
+	* tools/.gitignore,
+	* tools/gnu/classpath/tools/doclets/.gitignore,
+	* tools/gnu/classpath/tools/doclets/debugdoclet/.gitignore,
+	* tools/gnu/classpath/tools/doclets/htmldoclet/.gitignore,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/.gitignore,
+	* tools/gnu/classpath/tools/doclets/xmldoclet/doctranslet/.gitignore,
+	* tools/gnu/classpath/tools/gjdoc/.gitignore,
+	* tools/gnu/classpath/tools/gjdoc/expr/.gitignore,
+	* tools/gnu/classpath/tools/java2xhtml/.gitignore,
+	* tools/gnu/classpath/tools/taglets/.gitignore,
+	* vm/.gitignore,
+	* vm/reference/.gitignore: Renamed from .cvsignore.
+
+2012-10-10  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/awt/geom/Area.java:
+	(solids): Add type parameter.
+	(holes): Likewise.
+	(ccIntersections): Likewise and rename to meet
+	standards.
+	(Area()): Add type parameters.
+	(Area(Shape)): Likewise and remove redundant casts.
+	(add(Area)): Likewise and remove unused nNodes variable.
+	(subtract(Area)): Likewise.
+	(intersect(Area)): Likewise.
+	(exclusiveOr(Area)): Likewise.
+	(reset()): Add type parameters.
+	(isEmpty()): Remove redundant casts.
+	(isPolygonal()): Likewise.
+	(isRectangular()): Likewise.
+	(getBounds2D()): Likewise.
+	(clone()): Likewise.
+	(equals(Area)): Add type parameters.
+	(transform(AffineTransform)): Remove redundant casts.
+	(contains(double,double)): Likewise.
+	(contains(double,double,double,double)): Likewise.
+	(intersects(double,double,double,double)): Likewise.
+	(AreaIterator.segments): Add type parameter.
+	(AreaIterator(AffineTransform)): Add type parameters.
+	Remove redundant casts.
+	(currentSegment(double[])): Remove redundant casts.
+	(currentSegment(float[])): Likewise.
+	(weilerAtherton(Vector)): Add type parameters and remove
+	redundant casts.
+	(recursiveSubdivide(CubicCurve2D,CubicCurve2D,int,int,double,
+	double,double,double)): Fix use of cc_intersections/ccIntersections.
+	(cubicCubicIntersect(CubicSegment,CubicSegment)): Likewise.
+	(lineQuadIntersect(LineSegment,QuadSegment)): Fix Javadoc typo.
+	(makeSegment(Shape)): Add type parameters.
+	(createNodes(Segment,Segment)): Remove redundant bracketing.
+	(deleteRedundantPaths(Vector)): Likewise.  Remove redundant
+	casts.  Add type parameters.
+	(setDirection(Vector,boolean)): Add type parameters and remove
+	redundant casts.
+	(cloneSegmentList()): Add type parameter.  Remove redundant
+	cast.
+	(createNodes(Segment,Intersection[])): Add type parameter.
+	Remove redundant cast.
+
+2012-10-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* gnu/javax/sound/midi/dssi/DSSIMidiDeviceProvider.java:
+	(DSSIInfo.copyright): Added field.
+	(DSSIInfo(String,String,String,String,String,String,long)):
+	Extended constructor to store copyright.
+	(examineLibrary(String)): Add type parameter.
+	Fix call to new DSSIInfo constructor.
+	(static): Add type parameters.
+	* gnu/javax/sound/midi/dssi/DSSISynthesizer.java:
+	(instruments): Add type parameter.
+	(resources): Likewise.
+	(getResources()): Remove redundant cast.
+	(getInstruments()): Likewise.
+	(getInstrument(Patch)): Add type parameter and remove
+	redundant cast.
+	(soundbanks): Add type parameter.
+	(getAvailableInstruments()): Add type parameters and
+	remove redundant casts.
+	* gnu/javax/sound/midi/file/MidiFileReader.java:
+	(getSequence(InputStream)): Don't store length as not used.
+	* gnu/javax/sound/midi/file/MidiFileWriter.java:
+	(computeTrackLength(Track,MidiDataOutputStream)): Drop unused
+	count variable.
+	* gnu/javax/sound/sampled/WAV/WAVReader.java:
+	(getAudioFileFormat(InputStream)): Drop unused blockAlign variable.
+	* gnu/javax/sound/sampled/gstreamer/GStreamerMixer.java:
+	(getLine(Line.Info)): Add type parameter to Class.
+	* javax/sound/midi/MidiSystem.java:
+	(getMidiDeviceInfo()): Add type parameters.  Remove unnecessary cast.
+	(getMidiDevice(MidiDevice.Info)): Add type parameter.
+	(getSoundbank(InputStream)): Add type parameters and remove
+	unnecessary casts.
+	(getSoundbank(URL)): Likewise.
+	(getSoundbank(File)): Likewise.
+	(getMidiFileFormat(InputStream)): Likewise.
+	(getMidiFileFormat(URL)): Likewise.
+	(getMidiFileFormat(File)): Likewise.
+	(getSequence(InputStream)): Likewise.
+	(getSequence(URL)): Likewise.
+	(getSequence(File)): Likewise.
+	(getMidiFileTypes()): Likewise.
+	(isFileTypeSupported(int)): Likewise.
+	(getMidiFileTypes(Sequence)): Likewise.
+	(isFileTypeSupported(int,Sequence)): Likewise.
+	(write(Sequence,int,OutputStream)): Likewise.
+	(write(Sequence,int,File)): Likewise.
+	* javax/sound/midi/SoundbankResource.java:
+	(dataClass): Add type parameter.
+	* javax/sound/midi/Track.java:
+	(events): Add type parameter.
+	(eventSet): Likewise.
+	(add(MidiEvent)): Remove redundant cast.
+	(get(int)): Likewise.
+	(ticks()): Likewise.
+	* javax/sound/sampled/AudioSystem.java:
+	(getAudioFileFormat(File)): Add type parameters and
+	remove unnecessary casts.
+	(getAudioFileFormat(InputStream)): Likewise.
+	(getAudioFileFormat(URL)): Likewise.
+	(getAudioFileTypes()): Likewise.
+	(getAudioFileTypes(AudioInputStream)): Likewise.
+	(getAudioInputStream(AudioFormat.Encoding,AudioInputStream)):
+	Likewise.
+	(getAudioInputStream(AudioFormat,AudioInputStream)): Likewise.
+	(getAudioInputStream(File)): Likewise.
+	(getAudioInputStream(InputStream)): Likewise.
+	(getAudioInputStream(URL)): Likewise.
+	(getMixer(Mixer.Info)): Likewise.
+	(getMixerInfo()): Likewise.
+	(getTargetEncodings(AudioFormat.Encoding)): Likewise.
+	(getTargetEncodings(AudioFormat)): Likewise.
+	(getTargetFormats(AudioFormat.Encoding,AudioFormat)): Likewise.
+	(isConversionSupported(AudioFormat.Encoding,AudioFormat)): Likewise.
+	(isConversionSupported(AudioFormat,AudioFormat)): Likewise.
+	(write(AudioInputStream,AudioFileFormat.Type,File)): Likewise.
+	(write(AudioInputStream,AudioFileFormat.Type,OutputStream)): Likewise.
+	* javax/sound/sampled/Line.java:
+	(klass): Add type parameter.
+	* m4/ac_prog_javac.m4:
+	(ECJ_OPTS): Turn of unused private field warnings for now,
+	as some may be used from native code.
+
+2012-09-26  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	PR classpath/42134
+	* java/text/Bidi.java:
+	(Bidi(AttributedCharacterIterator)): Remove shadow
+	variable text which hides the instance variable
+	of the same name.  Remove unnecessary use of this.
+	* NEWS: Updated.
+
+2012-09-24  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/com/sun/javadoc/Doc.java:
+	Add type parameter to Comparable.
+	* tools/gnu/classpath/tools/doclets/AbstractDoclet.java:
+	(tagletMap): Use type parameters.
+	(packageGroups): Likewise.
+	(tagletPath): Removed, unused.
+	(mentionedTags): Use type parameters.
+	(optionNoEmailWarn): Removed, unused.
+	(optionTagletPath): Likewise.
+	(DocletOptionTaglet): Likewise.
+	(DocletOptionGroup.set(String[])): Add type aprameters to
+	groupPackages.
+	(DocletOptionTagletPath): Removed, unused.
+	(commonOptions): Remove optionTagletPath.
+	(nameToOptionMap): Add type parameters.
+	(getOptionLength(String)): Remove unnecessary cast.
+	(getKnownDirectSubclasses(ClassDoc)): Add type parameters.
+	(IndexKey): Add type parameter to Comparable.
+	(IndexKey.compareTo(IndexKey)): Update to use specific type.
+	(categorizedIndex): Use type parameters.
+	(getCategorizedIndex()): Likewise.
+	(indexByName): Likewise.
+	(getIndexByName()): Likewise.
+	(printTaglets(Tag[],TagletContext,TagletPrinter,boolean)): Likewise.
+	(addUsedBy(Map,ClassDoc,UsageType,Doc,PackageDoc)): Likewise.
+	(collectUsage()): Likewise.
+	(usedClassToPackagesMap): Likewise.
+	(getUsageOfClass(ClassDoc)): Likewise.
+	(UsageType): Add type parameter to Comparable.
+	(UsageType.compareTo(UsageType)): Update to use specific type.
+	(getPackageGroups()): Use type parameters.
+	* tools/gnu/classpath/tools/doclets/PackageMatcher.java:
+	(patterns): Use type parameters.
+	(filter(Packagedoc[])): Likewise.
+	(match(PackageDoc)): Likewise.
+	* tools/gnu/classpath/tools/doclets/htmldoclet/HtmlDoclet.java:
+	(externalDocSets): Use type parameters.
+	(packageNameToDocSet)): Likewise.
+	(printPackagePage(File,String,PackageDoc,PackageDoc,PackageDoc)): Likewise.
+	(TreeNode): Add type parameter to Comparable.
+	(TreeNode.children): Use type parameters.
+	(TreeNode.compareTo(TreeNode)): Update to use specific type.
+	(addClassTreeNode(Map,ClassDoc)): Use type parameters.
+	(addInterfacetreeNode(Map,ClassDoc)): Likewise.
+	(printClassTree(HtmlPage,ClassDoc[])): Likewise.
+	(printInterfaceTree(HtmlPage,ClassDoc[])): Likewise.
+	(printFullTreePage()): Likewise.
+	(printIndexEntry(HtmlPage,Doc)): Likewise.
+	(printPackagesMenuPage()): Likewise.
+	(printClassMenuSection(HtmlPage,Collection,String)): Likewise.
+	(printClassMenuList(HtmlPage,ClassDoc[],boolean)): Likewise.
+	(printSplitIndex()): Likewise.
+	(printIndexPage(int,int,Character,List)): Likewise.
+	(printSerializationPage()): Likewise.
+	(printDeprecationPage()): Likewise.
+	(getMemberDocURL(HtmlPage,ProgramElementDoc)): Likewise.
+	(createTypeHref(HtmlPage,Type,boolean)): Likewise.
+	(getPackageURL(PackageDoc)): Remove redundant cast.
+	(getClassURL(ClassDoc)): Likewise.
+	* tools/gnu/classpath/tools/gjdoc/ClassDocImpl.java:
+	(primitiveNames): Add type parameters.
+	(findClassCache): Likewise.
+	(findClass(String,String): Likewise.
+	(createInstance(ClassDoc,PackageDoc,ClassDoc[],PackageDoc[],
+	char[],int,int,List)): Likewise.
+	(resolve()): Likewise.
+	(typeMap): Likewise.
+	(typeForString(String)): Likewise..
+	(equals(Object)): Likewise.
+	(maybeSerMethodList): Likewise.
+	(setMaybeSerMethodList(List)): Likewise.
+	(findFieldValue(String,ClassDoc,String,Set)): Likewise.
+	(getValue(String,Set)): Likewise.
+	(compareTo(Doc)): Use specific type.
+	(importStatementList): Use type parameters.
+	(setImportStatementList(List)): Likewise.
+	* tools/gnu/classpath/tools/gjdoc/ClassDocProxy.java:
+	(compareTo(Doc)): Use specific type.
+	* tools/gnu/classpath/tools/gjdoc/ClassDocReflectedImpl.java:
+	Expand imports.
+	(findClass(String)): Don't use full class name for String.
+	(compareTo(Doc)): Use specific type.
+	* tools/gnu/classpath/tools/gjdoc/DocImpl.java:
+	(compareTo(Doc)): Use specific type.
+	* tools/gnu/classpath/tools/gjdoc/ExecutableMemberDocImpl.java:
+	(compareTo(Doc)): Use specific type.
+	* tools/gnu/classpath/tools/gjdoc/FieldDocImpl.java:
+	(createFromSource(ClassDoc,PackageDoc,char[],int,int)):
+	Use type parameters.  Remove unused lastFieldDefStart
+	variable.
+	(constantValue(Set)): Use type parameters.
+	* tools/gnu/classpath/tools/gjdoc/Main.java:
+	(option_overview): Removed unused field.
+	(option_classpath): Likewise.
+	(option_sourcepath): Add type parameters.
+	(option_extdirs): Removed unused field.
+	(option_verbose): Likewise.
+	(option_java_flags): Likewise.
+	(option_subpackages): Add type parameters.
+	(option_exclude): Likewise.
+	(startDoclet(List)): Likewise.
+	(addFoundPackages(String,Set)): Likewise.
+	(findPackages(String,File,Set)): Likewise.
+	(start(String[])): Likewise.
+	(addJavaLangClasses()): Commented out, apparently unused.
+	(options): Add type parameters.
+	(initOptions()): Likewise.  Remove redundant variable
+	setting.
+	* tools/gnu/classpath/tools/gjdoc/MemberDocImpl.java:
+	(compareTo(Doc)): Use specific type.
+	* tools/gnu/classpath/tools/gjdoc/PackageDocImpl.java:
+	(allClassesSet): Use type parameters.
+	(ordinaryClassesList): Likewise.
+	(exceptionsList): Likewise.
+	(interfacesList): Likewise.
+	(errorsList): Likewise.
+	(resolve()): Likewise.
+	(toClassDocArray(Collection)): Likewise.
+	(compareTo(Doc)): Use specific type.
+	* tools/gnu/classpath/tools/gjdoc/Parser.java:
+	Expand import statements.
+	(process(Parser,char[],int,int)): Add type parameters.
+	(processedFiles): Add type parameters.
+	(processSourceFile(File,boolean,String,String)): Add type
+	parameters.
+	(classOpened(char[],int,int)): Likewise.
+	(toArray(List,T[])): Likewise.
+	(classClosed()): Likewise.
+	(Context.fieldList): Likewise.
+	(Context.filteredFieldList): Likewise.
+	(Context.sfieldList): Likewise.
+	(Context.methodList): Likewise.
+	(Context.filteredMethodList): Likewise.
+	(Context.maybeSerMethodList): Likewise.
+	(Context.constructorList): Likewise.
+	(Context.filteredConstructorList): Likewise.
+	(Context.innerClassesList): Likewise.
+	(Context.filteredInnerClassesList): Likewise.
+	* tools/gnu/classpath/tools/gjdoc/RootDocImpl.java:
+	(findSourceFiles(String)): Add type parameters.
+	* tools/gnu/classpath/tools/gjdoc/expr/Evaluator.java:
+	(evaluate(String,Set,EvaluatorEnvironment)): Add type parameters.
+	* tools/gnu/classpath/tools/gjdoc/expr/EvaluatorEnvironment.java:
+	(getValue(String,Set)): Add type parameters.
+	* tools/gnu/classpath/tools/gjdoc/expr/Type.java:
+	(clazz): Add type parameters.
+	(Type(Class)): Likewise.
+	* tools/gnu/classpath/tools/rmic/ClassRmicCompiler.java:
+	(keep): Remove unused field.
+	(errors): Add type parameter.
+	(compile): Remove unused field.
+	(classpath): Likewise.
+	(clazz): Add type parameter.
+	(mRemoteInterfaces): Likewise.
+	(run(String[])): Add type parameters.
+	(processClass(String)): Likewise.
+	(getException()): Remove unnecessary cast.
+	(typeArray(Class[])): Add type parameter.
+	(param(Method,int)): Add type parameter.  Use Integer.valueOf.
+	(generateClassConstant(MethodVisitor,Class)): Add type parameters.
+	(generateClassArray(MethodVisitor,Class)): Likewise.
+	(generateStub()): Remove unused variables stubclassname, size
+	& endReturnTryCatch.  Remove unnecessary casts and add type
+	parameters.
+	(generateSkel()): Remove unused variable skelclassname.
+	Use Long.valueOf.
+	(generateMethodSkel(MethodVisitor,Method,Variables)):
+	Add type parameters.
+	(typeArg(Class)): Add type parameter.
+	(readMethod(Class)): Likewise.
+	(writeMethod(Class)): Likewise.
+	(returnOpcode(Class)): Likewise.
+	(loadOpcode(Class)): Likewise.
+	(storeOpcode(Class)): Likewise.
+	(unboxMethod(Class)): Likewise.
+	(box(Class)): Likewise.
+	(size(Class)): Likewise.
+	(sortExceptions(Class[])): Add type parameters.
+	(setup(boolean,boolean,boolean,boolean,boolean,boolean,
+	boolean,boolean,boolean,boolean,String,String,String,String)):
+	Remove unused variables keep & classpath.
+	(findRemoteMethods()): Add type parameters.
+	(MethodRef.exceptions): Add type parameter.
+	(MethodRef.removeSubclasses(Class[])): Add type parameters.
+	(MethodRef.intersectExceptions(Method)): Likewise.
+	* tools/gnu/classpath/tools/rmic/Main.java:
+	(backends): Add type parameter.
+	(run(String[])): Remove redundant cast.
+	* tools/gnu/classpath/tools/rmic/RmiMethodGenerator.java:
+	(getArgumentList()): Add type parameters.
+	(getArgumentNames()): Likewise.
+	(getThrows()): Likewise.
+	(getStaticMethodDeclarations()): Likewise.
+	* tools/gnu/classpath/tools/rmic/SourceGiopRmicCompiler.java:
+	Add type parameter to Comparable.
+	(implementedRemotes): Add type parameter.
+	(extraImports): Likewise.
+	(methods): Likewise.
+	(interfaces): Likewise.
+	(compile(Class)): Add type parameters.
+	(getId(Class)): Add type parameter.
+	(getIdList(Collection)): Add type parameters.
+	(generateStub()): Add type parameters.
+	(generateTie()): Likewise.
+	(compare(AbstractMethodGenerator,AbstractMethodGenerator)): Use
+	more specific types.
+	(getImportStatements()): Add type parameters.
+	* tools/gnu/classpath/tools/rmic/Variables.java:
+	(free): Add type parameter.
+	(names): Add type parameters.
+	(wides): Add type parameter.
+	(declared): Likewise.
+	(allocateNow(Object,int)): Use Integer.valueOf.
+	(allocate(Object,int)): Add type parameters.
+	(deallocate(Object)): Remove redundant cast.
+	Use Integer.valueOf.
+	(get(Object)): Remove redundant cast.
 
 2012-08-09  Dodji Seketeli  <dodji@redhat.com>
 
 	Use accessor functions to manipulate xmlOutputBuffer
 	* native/jni/xmlj/xmlj_io.c (GET_XML_OUTPUT_BUFFER_CONTENT)
-    	(GET_XML_OUTPUT_BUFFER_SIZE): New macros.
-    	(xmljOutputWriteCallback): Use them.
+	(GET_XML_OUTPUT_BUFFER_SIZE): New macros.
+	(xmljOutputWriteCallback): Use them.
 
-2012-03-08  Andrew John Hughes  <ahughes@redhat.com>
+2012-08-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
-	* NEWS: Set correct release date.
-	* configure.ac: Bump to 0.99 proper.
+	* java/util/TimeZone.java:
+	(defaultZone()): Use parameterized PrivilegedAction.
+	(aliases0): Add type parameters.
+	(timezones0); Likewise.
+	(timezones()): Likewise.
+	(getDateParams(String)): Fix indenting.
+	(getTimeZoneInternal(String)): Remove redundant casts.
+	(getAvailableIDs(int)): Add type parameters.
+	(getAvailableIDs(File,String,ArrayList)): Likewise.
+	(getAvailableIDs()): Likewise.
+
+2012-07-03  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	Update copyright headers throughout.
+	* gnu/java/text/AttributedFormatBuffer.java:
+	(ranges): Add generic type information.
+	(attributes): Likewise.
+	(aRanges): Rename from a_ranges.
+	(aAttributes): Add generic type information and
+	rename from a_attributes.  Convert to a list of
+	maps rather than an array for type safety.
+	(defaultAttr): Replace prefix with static import.
+	(AttributedFormatBuffer(CPStringBuilder): Add generic
+	typing.
+	(addAttribute(int,Attribute)): Drop prefix, rename
+	new_range to newRange.  Add generic types.
+	Use Integer.valueOf in place of new Integer.
+	(append(String,Attribute)): Drop prefix.
+	(append(String,int[],List)): Replace array with list.
+	Use Integer.valueOf instead of new Integer.
+	(append(char,Attribute)): Drop prefix.
+	(setDefaultAttribute(Attribute)): Likewise.
+	(getDefaultAttribute()): Likewise.
+	(sync()): Rename a_ranges to aRanges.  Drop unneeded casts.
+	Replace array with list.
+	(getRanges()): Rename a_ranges to aRanges.
+	(getAttributes()): Replace map with list.  Rename a_attributes
+	to aAttributes.
+	* gnu/java/text/FormatBuffer.java:
+	Add static import for Attribute.
+	* gnu/java/text/FormatCharacterIterator.java:
+	(attributes): Replace array with list.
+	(FormatCharacterIterator()): Likewise.
+	(FormatCharacterIterator(String,int,List)): Switch from
+	array to list.  Update documentation.
+	(getAllAttributeKeys()): Add generic type.  Switch
+	from array to list.
+	(getAttributes()): Likewise.
+	(getAttribute(Attribute)): Likewise.
+	(getRunLimit(Set)): Likewise.
+	(getRunLimit(Attribute)): Likewise.
+	(getRunStart(Set)): Likewise.
+	(getRunStart(Attribute)): Likewise.
+	(mergeAttributes(List,int[])): Likewise.  Use List
+	in preference to Vector.  Use newRanges & newAttributes
+	rather than new_ranges and new_attributes.
+	(append(AttributedCharacterIterator)): Likewise.
+	(append(String,HashMap)): Likewise.
+	(addAttributes(Map,int,int)): Likewise.
+	(dumpTable()): Use startRange instead of start_range.
+	Add generic types.
+	* gnu/java/text/StringFormatBuffer.java,
+	Add static import for Attribute.
+	* java/text/AttributedString.java:
+	Add static import for Attribute.
+	(attribs): Add generic type.
+	(AttributeRange(Map,int,int)): Likewise.
+	(AttributedString(String,Map)): Likewise.
+	(AttributedString(AttributedCharacterIterator, int, int,
+	Attribute)): Drop prefix, add generic types.
+	(addAttribute(Attribute,Object)): Drop prefix.
+	(addAttribute(Attribute,Object,int,int)): Likewise
+	and add generic types.
+	(addAttributes(Map,int,int)): Add generic types.
+	(getIterator(Attribute)): Drop prefix.
+	(getIterator(Attribute[])): Likewise.
+	* java/text/AttributedStringIterator.java:
+	Add static import for Attribute.
+	(getAllAttributeKeys()): Add generic type.
+	(getRunLimit(Attribute)): Add generic type, drop
+	prefix.
+	(getRunLimit(Set)): Add generic types.
+	(getRunStart(Attribute)): Add generic type, drop
+	prefix.
+	(getRunStart(Set)): Add generic types.
+	(getAttributes()): Likewise.
+	* java/text/Bidi.java:
+	(formatterIndices): Add generic type.
+	(reinsertFormattingCodes()): Drop redundant cast.
+	* java/text/BreakIterator.java:
+	(getInstance(String,Locale)): Add generic type to Class.
+	* java/text/ChoiceFormat.java:
+	(stringVec): Add generic type.
+	(limitVec): Likewise.
+	(applyPattern(String)): Remove redundant cast.
+	* java/text/CollationElementIterator.java:
+	(textDecomposition): Renamed from text_decomposition.
+	(textIndexes): Renamed from text_indexes.
+	(setText(String)): Add generic types.  Rename a_element
+	to aElement.  Rename a_idx to aIdx.  Rename key_old to
+	keyOld.  Use Integer.valueOf rather than new Integer.
+	* java/text/DecimalFormat.java:
+	(attributes): Add generic type.
+	(formatToCharacterIterator(Object)): Remove redundant cast.
+	* java/text/MessageFormat.java:
+	(Field()): Remove unneeded warning suppression.
+	* java/text/NumberFormat.java:
+	(Field()): Likewise.
+
+2012-07-01  Andrew John Hughes  <ahughes@redhat.com>
+
+	PR classpath/44052
+	* java/text/DateFormatSymbols.java:
+	(DFSData): Inner immutable class for storing parsed
+	locale data.
+	(DFSData.DFSData(String[],String[],String,String[],
+	String[],String[],String[],String[],String[],
+	String[][])): Constructor to initialise a new instance
+	with property data.
+	(DFSData.getAMPMs()): Return a clone of the ampms array.
+	(DFSData.getEras()): Likewise for eras.
+	(DFSData.getLocalPatternChars()): Return the local pattern
+	characters.
+	(DFSData.getMonths()): Return a clone of the (long) months
+	array.
+	(DFSData.getShortMonths()): Likewise for the short months array.
+	(DFSData.getWeekdays()): Likewise for (long) weekdays.
+	(DFSData.getShortWeekdays()): Likewise for short weekdays.
+	(DFSData.getDateFormats()): Likewise for date formats.
+	(DFSData.getTimeFormats()): Likewise for time formats.
+	(DFSData.getZoneStrings()): Likewise for zone strings.
+	(dataCache): Cache of parsed locale data.
+	(getZoneStrings(List<ResourceBundle>,Locale)):
+	Make static so it can be called by retrieveData.
+	(formatsForKey(List<ResourceBundle>,String)):
+	Likewise.
+	(getString(List<ResourceBundle>, String)): Likewise.
+	(retrieveData(Locale)): Separate out retrieval of
+	locale data from constructor and store it in the cache.
+	(DateFormatSymbols(Locale)): Modify to call retrieveData
+	and set fields from the returned DFSData instance.
+
+2012-05-30  Andrew John Hughes  <ahughes@redhat.com>
+
+	* java/text/DateFormatSymbols.java:
+	(getZoneStrings(List<ResourceBundle>, Locale)):
+	Refactor to use existing list of resource bundles.
+	(formatsForKey(List<ResourceBundle>, String)):
+	Likewise and use new local getString method.
+	(getString(List<ResourceBundle>, String)):
+	Use first available String from most-specific locale
+	rather than the least-specific.
+	(DateFormatSymbols(Locale)): Use bundles for resolving
+	localPatternChars, dateFormats, timeFormats and runtimeZoneStrings
+	as well.
+
+2012-05-04  Andrew John Hughes  <ahughes@redhat.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c,
+	(font_map): Renamed from ft2_map.
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_initStaticState(JNIEnv,
+	jclass)): Remove cast to pango_ft2_font_map_new.
+	(Java_gnu_java_awt_peer_gtk_GdKFontPeer_setFont(JNIEnv,
+	jobject,jstring,jint,jint)): Call pango_font_map_create_context
+	rather than deprecated pango_ft2_font_map_create_context.
+
+2012-05-01  Andrew John Hughes  <ahughes@redhat.com>
+
+	* java/text/DateFormatSymbols.java:
+	Rename U00AE and U000A9 as the more memorable
+	FIELD_SPLIT and ZONE_SPLIT respectively.
+	* THANKYOU: Add Andreas Sewe.
+
+2012-04-30  Andreas Sewe  <sewe@st.informatik.tu-darmstadt.de>
+
+	PR classpath/53171
+	* java/text/DateFormatSymbols.java:
+	(U00A9): Pre-compile pattern for zone separation.
+	(U00AE): Likewise for fields.
+	(getStringArray(List,String,int,String)): Use U00AE.split
+	in place of String.split.
+	(getZoneStrings(ResourceBundle,Locale)): Use U00AE.split
+	and U00A9.split in place of String.split.
+
+2012-04-25  Andrew John Hughes  <ahughes@redhat.com>
+
+	Update warning suppression so it still works
+	with newer compilers.
+	* javax/activation/ActivationDataFlavor.java:
+	(ActivationDataFlavor(Class,String,String)): Suppress
+	rawtypes not unchecked.
+	(ActivationDataFlavor(Class,String)): Likewise.
+	(getRepresentationClass()): Likewise.
+	* javax/activation/MimeTypeParameterList.java:
+	(getNames()): Likewise.
+	* javax/management/DefaultLoaderRepository.java:
+	(loadClass(String)): Likewise.
+	(loadClassWithout(ClassLoader,String)): Likewise.
+	* javax/management/MBeanConstructorInfo.java:
+	(MBeanConstructorInof(String,Constructor)): Likewise.
+	* javax/management/remote/rmi/RMIConnection.java:
+	(addNotificationListener(ObjectName,ObjectName,MarshelledObject,
+	MarshelledObject,Subject)): Likewise.
+	(addNotificationListeners(ObjectName[],MarshelledObject[], Subject[])):
+	Likewise.
+	(createMBean(String,ObjectName,MarshalledObject,String,Subject)): Likewise.
+	(createMBean(String,ObjectName,ObjectName,MarshalledObject,String[],Subject)):
+	Likewise.
+	(invoke(ObjectName,String,MarshalledObject,String[],Subject)): Likewise.
+	(queryMBeans(ObjectName,MarshalledObject,Subject)): Likewise.
+	(queryNames(ObjectName,MarshalledObject,Subject)): Likewise.
+	(removeNotificationListener(ObjectName,ObjectName,MarshalledObject,
+	MarshalledObject,Subject)): Likewise.
+	(setAttribute(ObjectName,MarshalledObject,Subject)): Likewise.
+	(setAttributes(ObjectName,MarshalledObject,Subject)): Likewise.
+	* javax/swing/tree/DefaultMutableTreeNode.java:
+	(children()): Likewise.
+	(preorderEnumeration()): Likewise.
+	(postorderEnumeration()): Likewise.
+	(breadthFirstEnumeration()): Likewise.
+	(depthFirstEnumeration()): Likewise.
+	(pathFromAncestorEnumeration(TreeNode)): Likewise.
+	(BreadthFirstEnumeration.nextElement()): Move annotation down to assignment level.
+	(PreorderEnumeration.PreorderEnumeration(TreeNode)): Likewise.
+	(PreorderEnumeration.traverse(Enumeration)): Likewise.
+	(PostorderEnumeration.PostorderEnumeration(TreeNode)): Likewise.
+	(PostorderEnumeration.traverse(Enumeration()): Likewise.
+	* javax/swing/tree/TreeNode.java:
+	(children()): Suppress rawtypes not unchecked.
+	* javax/xml/namespace/NamespaceContext.java:
+	(getPrefixes(String)): Likewise.
+	* javax/xml/stream/XMLEventFactory.java:
+	(createStartElement(QName,Iterator,Iterator)): Likewise.
+	(createStartElement(String,String,String,Iterator,Iterator)): Likewise.
+	(createStartElement(String,String,String,Iterator,Iterator,NamespaceContext)):
+	Likewise.
+	(createEndElement(QName,Iterator)): Likewise.
+	(createEndElement(String,String,String,Iterator)): Likewise.
+	* javax/xml/stream/XMLEventReader.java: Likewise (at class level
+	due to inheritance).
+	* javax/xml/stream/events/DTD.java:
+	(getNotations()): Likewise.
+	(getEntities()): Likewise.
+	* javax/xml/stream/events/EndElement.java:
+	(getNamespaces()): Likewise.
+	* javax/xml/stream/events/StartElement.java:
+	(getAttributes()): Likewise.
+	(getNamespaces()): Likewise.
+	* javax/xml/xpath/XPathFunction.java:
+	(evaluate(List)): Likewise.
+	* org/omg/CORBA/LocalObject.java:
+	(_servant_preinvoke(String,Class)): Likewise.
+	* org/omg/CORBA/portable/Delegate.java:
+	(servant_preinvoke(org.omg.CORBA.Object,String,Class)): Likewise.
+	* org/omg/CORBA/portable/InputStream.java:
+	(read_Object(Class)): Likewise.
+	* org/omg/CORBA/portable/ObjectImpl.java:
+	(_servant_preinvoke(String,Class)): Likewise.
+	* org/omg/CORBA_2_3/portable/InputStream.java:
+	(read_abstract_interface(Class)): Likewise.
+	(read_value(Class)): Likewise.
+	* org/omg/CORBA_2_3/portable/OutputStream.java:
+	(write_value(Serializable,Class)): Likewise.
+	* org/omg/DynamicAny/_DynAnyFactoryStub.java:
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynAnyStub.java:
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynArrayStub.java,
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynEnumStub.java,
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynFixedStub.java,
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynSequenceStub.java,
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynStructStub.java,
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynUnionStub.java,
+	(_opsClass): Likewise.
+	* org/omg/DynamicAny/_DynValueStub.java,
+	(_opsClass): Likewise.
+	* org/omg/PortableServer/_ServantActivatorStub.java,
+	(_opsClass): Likewise.
+	* org/omg/PortableServer/_ServantLocatorStub.java,
+	(_opsClass): Likewise.
+
+2012-04-24  Andrew John Hughes  <ahughes@redhat.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImage.c:
+	(Java_gnu_java_awt_peer_gtk_GtkImage_freePixbuf):
+	Use g_object_unref rather than deprecated gdk_pixbuf_unref
+	to avoid warning.
+
+2012-04-03  Andrew John Hughes  <ahughes@redhat.com>
+
+	* .gitignore: Renamed from .cvsignore.
+
+2012-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnu/java/rmi/registry/RegistryImpl.java (version): Update
+	copyright notice dates.
+	* tools/gnu/classpath/tools/orbd/Main.java (run): Likewise.
+
+2007-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* java/util/TimeZone.java (getDefaultDisplayName): Don't
+	check if TimeZone is instanceof SimpleTimeZone.
+
+2006-09-13  Andrew Haley  <aph@redhat.com>
+
+	* java/util/PriorityQueue.java: Throw IllegalArgumentException for
+	capacity < 1.
+	(Iterator.remove()): Decrement index after removing element.
+
+2007-02-14  Jakub Jelinek  <jakub@redhat.com>
+	Andrew Haley  <aph@redhat.com>
+
+	* java/util/TimeZone.java (getDateParams): Negate dayOfWeek.
+
+2012-03-22  Andrew John Hughes  <ahughes@redhat.com>
+
+	* java/util/regex/Matcher.java:
+	(usePattern(Pattern)): Implemented.
+
+2012-03-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+        PR libgcj/52694
+	* native/jni/java-io/java_io_VMConsole.c (IUCLC): Define, if
+	undefined.
+
+2012-03-16  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS: Add key along the same lines
+	as IcedTea.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* gnu/java/nio/FileLockImpl.java,
+	* java/beans/XMLDecoder.java,
+	* java/beans/XMLEncoder.java,
+	* java/io/Closeable.java,
+	* java/io/ObjectInput.java,
+	* java/io/ObjectOutput.java,
+	* java/lang/AutoCloseable.java,
+	* java/nio/channels/FileLock.java,
+	* java/sql/Connection.java,
+	* java/sql/ResultSet.java,
+	* java/sql/Statement.java,
+	* javax/sound/midi/MidiDevice.java,
+	* javax/sound/midi/Receiver.java,
+	* javax/sound/midi/Transmitter.java,
+	* javax/sound/sampled/Line.java:
+	Add missing interface.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/reflect/Modifier.java:
+	(classModifiers): Add missing method.
+	(interfaceModifiers): Add missing method.
+	(constructorModifiers): Add missing method.
+	(methodModifiers): Add missing method.
+	(fieldModifiers): Add missing method.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/ClassNotFoundException,
+	* java/lang/IllegalAccessException.java,
+	* java/lang/InstantiationException.java,
+	* java/lang/NoSuchFieldException.java,
+	* java/lang/NoSuchMethodException.java,
+	* java/lang/ReflectiveOperationException.java,
+	* java/lang/reflect/InvocationTargetException.java:
+	Add ReflectiveOperationException class.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/AssertionError.java:
+	(AssertionError): Add missing constructor.
+	* java/lang/LinkageError.java:
+	(LinkageError): Add missing constructor.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/Boolean.java:
+	(compare): Add missing method.
+	* java/lang/Byte.java:
+	(compare): Add missing method.
+	* java/lang/Character.java:
+	(compare): Add missing method.
+	* java/lang/Integer.java:
+	(compare): Add missing method.
+	* java/lang/Long.java:
+	(compare): Add missing method.
+	* java/lang/Short.java:
+	(compare): Add missing method.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/System.java:
+	(lineSeparator): Add missing method.
+
+2012-03-12  Pekka Enberg  <penberg@kernel.org>
+
+	* java/lang/reflect/Member.java:
+	(getDeclaringClass): Fix return type.
+
+2012-03-07  Andrew John Hughes  <ahughes@redhat.com>
+
+	* NEWS:
+	Add section for 1.0 release.
+	* configure.ac:
+	Bump to 1.0pre.
 
 2012-03-07  Andrew John Hughes  <ahughes@redhat.com>
 

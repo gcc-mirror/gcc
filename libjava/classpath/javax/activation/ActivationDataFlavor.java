@@ -63,7 +63,7 @@ public class ActivationDataFlavor extends DataFlavor
      * flavor
      */
   // Raw types enforced as part of spec.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
     public ActivationDataFlavor(Class representationClass, String mimeType,
             String humanPresentableName)
     {
@@ -80,7 +80,7 @@ public class ActivationDataFlavor extends DataFlavor
      * flavor
      */
   // Raw types enforced as part of spec.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
     public ActivationDataFlavor(Class representationClass,
             String humanPresentableName)
     {
@@ -110,7 +110,7 @@ public class ActivationDataFlavor extends DataFlavor
     }
 
   // Raw types enforced as part of spec.
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
     public Class getRepresentationClass()
     {
         return representationClass;

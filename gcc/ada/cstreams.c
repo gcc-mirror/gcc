@@ -31,10 +31,6 @@
 
 /* Routines required for implementing routines in Interfaces.C.Streams.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef __vxworks
 #include "vxWorks.h"
 #endif
@@ -49,6 +45,10 @@ extern "C" {
 #endif
 
 #include "adaint.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef VMS
 #include <unixlib.h>

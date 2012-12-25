@@ -14,6 +14,7 @@ class java::util::TimeZone$1 : public ::java::lang::Object
 public: // actually package-private
   TimeZone$1();
 public:
+  virtual ::java::util::TimeZone * TimeZone$1$run();
   virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };

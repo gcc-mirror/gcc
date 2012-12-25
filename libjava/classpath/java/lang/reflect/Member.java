@@ -79,7 +79,7 @@ public interface Member
    *
    * @return the class that declared this member
    */
-  Class getDeclaringClass();
+  Class<?> getDeclaringClass();
 
   /**
    * Gets the simple name of this member. This will be a valid Java

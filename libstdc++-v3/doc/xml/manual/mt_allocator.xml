@@ -41,6 +41,7 @@
 
 
 <section xml:id="allocator.mt.design_issues"><info><title>Design Issues</title></info>
+<?dbhtml filename="mt_allocator_design.html"?>
 
 
 <section xml:id="allocator.mt.overview"><info><title>Overview</title></info>
@@ -105,6 +106,7 @@ classes, namely member functions <code>allocate</code> and
 </section>
 
 <section xml:id="allocator.mt.impl"><info><title>Implementation</title></info>
+<?dbhtml filename="mt_allocator_impl.html"?>
 
 
 
@@ -314,6 +316,7 @@ pool that frees memory, see the following
 </section>
 
 <section xml:id="allocator.mt.example_single"><info><title>Single Thread Example</title></info>
+<?dbhtml filename="mt_allocator_ex_single.html"?>
 
 
 <para>
@@ -408,6 +411,7 @@ faster than maintaining a set of "last pointers" as well.
 </section>
 
 <section xml:id="allocator.mt.example_multi"><info><title>Multiple Thread Example</title></info>
+<?dbhtml filename="mt_allocator_ex_multi.html"?>
 
 
 <para>

@@ -1,3 +1,8 @@
+2012-12-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* gthr.h (__gthread_cond_timedwait_recursive): Do not require.
+	* gthr-posix.h (__gthread_cond_timedwait_recursive): Remove.
+
 2012-12-13  John Tytgat  <John@bass-software.com>
 
 	* config/arm/fp16.c (__gnu_f2h_internal): Fix inaccuracy when aexp

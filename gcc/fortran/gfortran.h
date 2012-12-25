@@ -63,6 +63,15 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFIX(x) "_gfortran_" x
 #define PREFIX_LEN 10
 
+/* A prefix for internal variables, which are not user-visible.  */
+#if !defined (NO_DOT_IN_LABEL)
+# define GFC_PREFIX(x) "_F." x
+#elif !defined (NO_DOLLAR_IN_LABEL)
+# define GFC_PREFIX(x) "_F$" x
+#else
+# define GFC_PREFIX(x) "_F_" x
+#endif
+
 #define BLANK_COMMON_NAME "__BLNK__"
 
 /* Macro to initialize an mstring structure.  */
@@ -496,6 +505,7 @@ enum gfc_isym_id
   GFC_ISYM_SHIFTA,
   GFC_ISYM_SHIFTL,
   GFC_ISYM_SHIFTR,
+  GFC_ISYM_BACKTRACE,
   GFC_ISYM_SIGN,
   GFC_ISYM_SIGNAL,
   GFC_ISYM_SI_KIND,
@@ -787,10 +797,12 @@ typedef struct
      components or private components, procedure pointer components,
      possibly nested.  zero_comp is true if the derived type has no
      component at all.  defined_assign_comp is true if the derived
-     type or a (sub-)component has a typebound defined assignment.  */
+     type or a (sub-)component has a typebound defined assignment.
+     unlimited_polymorphic flags the type of the container for these
+     entities.  */
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
-	   defined_assign_comp:1;
+	   defined_assign_comp:1, unlimited_polymorphic:1;
 
   /* This is a temporary selector for SELECT TYPE.  */
   unsigned select_type_temporary:1;
@@ -1262,7 +1274,6 @@ typedef struct gfc_symbol
 }
 gfc_symbol;
 
-
 /* This structure is used to keep track of symbols in common blocks.  */
 typedef struct gfc_common_head
 {
@@ -1688,7 +1699,6 @@ gfc_intrinsic_sym;
    EXPR_COMPCALL   Function (or subroutine) call of a procedure pointer
 		   component or type-bound procedure.  */
 
-#include <gmp.h>
 #include <mpfr.h>
 #include <mpc.h>
 #define GFC_RND_MODE GMP_RNDN
@@ -2955,11 +2965,12 @@ void gfc_add_class_array_ref (gfc_expr *);
 bool gfc_is_class_array_ref (gfc_expr *, bool *);
 bool gfc_is_class_scalar_expr (gfc_expr *);
 bool gfc_is_class_container_ref (gfc_expr *e);
-gfc_expr *gfc_class_null_initializer (gfc_typespec *);
+gfc_expr *gfc_class_null_initializer (gfc_typespec *, gfc_expr *);
 unsigned int gfc_hash_value (gfc_symbol *);
 gfc_try gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
 				gfc_array_spec **, bool);
 gfc_symbol *gfc_find_derived_vtab (gfc_symbol *);
+gfc_symbol *gfc_find_intrinsic_vtab (gfc_typespec *);
 gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*,
 				      const char*, bool, locus*);
 gfc_symtree* gfc_find_typebound_user_op (gfc_symbol*, gfc_try*,
@@ -2971,6 +2982,11 @@ gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 bool gfc_is_finalizable (gfc_symbol *, gfc_expr **);
 
 #define CLASS_DATA(sym) sym->ts.u.derived->components
+#define UNLIMITED_POLY(sym) \
+	(sym != NULL && sym->ts.type == BT_CLASS \
+	 && CLASS_DATA (sym) \
+	 && CLASS_DATA (sym)->ts.u.derived \
+	 && CLASS_DATA (sym)->ts.u.derived->attr.unlimited_polymorphic)
 
 /* frontend-passes.c */
 

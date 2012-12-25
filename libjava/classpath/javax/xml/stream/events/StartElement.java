@@ -56,13 +56,13 @@ public interface StartElement
   /**
    * Returns the attributes declared on this element.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   Iterator getAttributes();
 
   /**
    * Returns the namespaces declared on this element.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   Iterator getNamespaces();
 
   /**

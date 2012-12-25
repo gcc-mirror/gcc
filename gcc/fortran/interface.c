@@ -214,7 +214,7 @@ gfc_match_interface (void)
       if (gfc_get_symbol (name, NULL, &sym))
 	return MATCH_ERROR;
 
-      if (!sym->attr.generic 
+      if (!sym->attr.generic
 	  && gfc_add_generic (&sym->attr, sym->name, NULL) == FAILURE)
 	return MATCH_ERROR;
 
@@ -351,7 +351,7 @@ gfc_match_end_interface (void)
 	      gfc_error ("Expecting 'END INTERFACE OPERATOR (%s)' at %C, "
 			 "but got %s", s1, s2);
 	    }
-		
+
 	}
 
       break;
@@ -446,7 +446,7 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       if (dt1->attr.dimension && gfc_compare_array_spec (dt1->as, dt2->as) == 0)
 	return 0;
 
-      /* Make sure that link lists do not put this function into an 
+      /* Make sure that link lists do not put this function into an
 	 endless recursive loop!  */
       if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
 	    && !(dt2->ts.type == BT_DERIVED && derived2 == dt2->ts.u.derived)
@@ -485,7 +485,17 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
      that is for the formal arg, but oh well.  */
   if (ts1->type == BT_VOID || ts2->type == BT_VOID)
     return 1;
-   
+
+  if (ts1->type == BT_CLASS
+      && ts1->u.derived->components->ts.u.derived->attr.unlimited_polymorphic)
+    return 1;
+
+  /* F2003: C717  */
+  if (ts2->type == BT_CLASS && ts1->type == BT_DERIVED
+      && ts2->u.derived->components->ts.u.derived->attr.unlimited_polymorphic
+      && (ts1->u.derived->attr.sequence || ts1->u.derived->attr.is_bind_c))
+    return 1;
+
   if (ts1->type != ts2->type
       && ((ts1->type != BT_DERIVED && ts1->type != BT_CLASS)
 	  || (ts2->type != BT_DERIVED && ts2->type != BT_CLASS)))
@@ -523,7 +533,7 @@ compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
     return 0;			/* Ranks differ.  */
 
   return gfc_compare_types (&s1->ts, &s2->ts)
-	 || s1->ts.type == BT_ASSUMED || s2->ts.type == BT_ASSUMED; 
+	 || s1->ts.type == BT_ASSUMED || s2->ts.type == BT_ASSUMED;
 }
 
 
@@ -1157,7 +1167,7 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	    }
 	  }
     }
-    
+
   return SUCCESS;
 }
 
@@ -1403,6 +1413,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	    return 0;
 	  }
 
+	if (UNLIMITED_POLY (f1->sym))
+	  goto next;
+
 	if (strict_flag)
 	  {
 	    /* Check all characteristics.  */
@@ -1418,7 +1431,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 			f1->sym->name);
 	    return 0;
 	  }
-
+next:
 	f1 = f1->next;
 	f2 = f2->next;
       }
@@ -1569,9 +1582,6 @@ check_sym_interfaces (gfc_symbol *sym)
 
       for (p = sym->generic; p; p = p->next)
 	{
-	  if (sym->attr.access != ACCESS_PRIVATE)
-	    p->sym->attr.public_used = 1;
-
 	  if (p->sym->attr.mod_proc
 	      && (p->sym->attr.if_source != IFSRC_DECL
 		  || p->sym->attr.procedure))
@@ -1597,15 +1607,10 @@ check_uop_interfaces (gfc_user_op *uop)
   char interface_name[100];
   gfc_user_op *uop2;
   gfc_namespace *ns;
-  gfc_interface *p;
 
   sprintf (interface_name, "operator interface '%s'", uop->name);
   if (check_interface0 (uop->op, interface_name))
     return;
-
-  if (uop->access != ACCESS_PRIVATE)
-    for (p = uop->op; p; p = p->next)
-      p->sym->attr.public_used = 1;
 
   for (ns = gfc_current_ns; ns; ns = ns->parent)
     {
@@ -1676,7 +1681,6 @@ void
 gfc_check_interfaces (gfc_namespace *ns)
 {
   gfc_namespace *old_ns, *ns2;
-  gfc_interface *p;
   char interface_name[100];
   int i;
 
@@ -1701,10 +1705,6 @@ gfc_check_interfaces (gfc_namespace *ns)
       if (check_interface0 (ns->op[i], interface_name))
 	continue;
 
-      for (p = ns->op[i]; p; p = p->next)
-	p->sym->attr.public_used = 1;
-
-
       if (ns->op[i])
 	gfc_check_operator_interface (ns->op[i]->sym, (gfc_intrinsic_op) i,
 				      ns->op[i]->where);
@@ -1712,7 +1712,7 @@ gfc_check_interfaces (gfc_namespace *ns)
       for (ns2 = ns; ns2; ns2 = ns2->parent)
 	{
 	  gfc_intrinsic_op other_op;
-	  
+
 	  if (check_interface1 (ns->op[i], ns2->op[i], 0,
 				interface_name, true))
 	    goto done;
@@ -1814,7 +1814,7 @@ argument_rank_mismatch (const char *name, locus *where,
 		 "(rank-%d and scalar)", name, where, rank1);
     }
   else
-    {    
+    {
       gfc_error ("Rank mismatch in argument '%s' at %L "
 		 "(rank-%d and rank-%d)", name, where, rank1, rank2);
     }
@@ -1900,7 +1900,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && formal->ts.type != BT_ASSUMED
       && !gfc_compare_types (&formal->ts, &actual->ts)
       && !(formal->ts.type == BT_DERIVED && actual->ts.type == BT_CLASS
-	   && gfc_compare_derived_types (formal->ts.u.derived, 
+	   && gfc_compare_derived_types (formal->ts.u.derived,
 					 CLASS_DATA (actual)->ts.u.derived)))
     {
       if (where)
@@ -1931,6 +1931,23 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		       "declared type", formal->name, &actual->where);
 	  return 0;
 	}
+    }
+
+  /* F08: 12.5.2.5 Allocatable and pointer dummy variables.  However, this
+     is necessary also for F03, so retain error for both.
+     NOTE: Other type/kind errors pre-empt this error.  Since they are F03
+     compatible, no attempt has been made to channel to this one.  */
+  if (UNLIMITED_POLY (formal) && !UNLIMITED_POLY (actual)
+      && (CLASS_DATA (formal)->attr.allocatable
+	  ||CLASS_DATA (formal)->attr.class_pointer))
+    {
+      if (where)
+	gfc_error ("Actual argument to '%s' at %L must be unlimited "
+		   "polymorphic since the formal argument is a "
+		   "pointer or allocatable unlimited polymorphic "
+		   "entity [F2008: 12.5.2.5]", formal->name,
+		   &actual->where);
+      return 0;
     }
 
   if (formal->attr.codimension && !gfc_is_coarray (actual))
@@ -2078,7 +2095,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	is_pointer = ref->u.c.component->attr.pointer;
       else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
 	       && ref->u.ar.dimen > 0
-	       && (!ref->next 
+	       && (!ref->next
 		   || (ref->next->type == REF_SUBSTRING && !ref->next->next)))
         break;
     }
@@ -2156,7 +2173,7 @@ get_sym_storage_size (gfc_symbol *sym)
 	return 0;
     }
   else
-    strlen = 1; 
+    strlen = 1;
 
   if (symbol_rank (sym) == 0)
     return strlen;
@@ -2194,7 +2211,7 @@ get_expr_storage_size (gfc_expr *e)
 
   if (e == NULL)
     return 0;
-  
+
   if (e->ts.type == BT_CHARACTER)
     {
       if (e->ts.u.cl && e->ts.u.cl->length
@@ -2455,6 +2472,13 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
+      /* Make sure that intrinsic vtables exist for calls to unlimited
+	 polymorphic formal arguments.  */
+      if (UNLIMITED_POLY(f->sym)
+	  && a->expr->ts.type != BT_DERIVED
+	  && a->expr->ts.type != BT_CLASS)
+	gfc_find_intrinsic_vtab (&a->expr->ts);
+
       if (a->expr->expr_type == EXPR_NULL
 	  && ((f->sym->ts.type != BT_CLASS && !f->sym->attr.pointer
 	       && (f->sym->attr.allocatable || !f->sym->attr.optional
@@ -2478,7 +2502,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
 	  return 0;
 	}
-      
+
       if (!compare_parameter (f->sym, a->expr, ranks_must_agree,
 			      is_elemental, where))
 	return 0;
@@ -2628,7 +2652,7 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "pointer dummy '%s'", &a->expr->where,f->sym->name);
 	  return 0;
 	}
-	
+
 
       /* Fortran 2008, C1242.  */
       if (f->sym->attr.pointer && gfc_is_coindexed (a->expr))
@@ -3283,7 +3307,7 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 	has_null_arg = true;
 	null_expr_loc = a->expr->where;
 	break;
-      } 
+      }
 
   for (; intr; intr = intr->next)
     {
@@ -3310,7 +3334,7 @@ gfc_search_interface (gfc_interface *intr, int sub_flag,
 	    }
 
 	  /* Satisfy 12.4.4.1 such that an elemental match has lower
-	     weight than a non-elemental match.  */ 
+	     weight than a non-elemental match.  */
 	  if (intr->sym->attr.elemental)
 	    {
 	      elem_sym = intr->sym;
@@ -3613,7 +3637,7 @@ gfc_extend_expr (gfc_expr *e)
 	      tbo = matching_typebound_op (&tb_base, actual, i, NULL, &gname);
 	      break;
 	  }
-	      
+
       /* If there is a matching typebound-operator, replace the expression with
 	 a call to it and succeed.  */
       if (tbo)
@@ -3703,7 +3727,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
       /* See if we find a matching type-bound assignment.  */
       tbo = matching_typebound_op (&tb_base, actual,
 				   INTRINSIC_ASSIGN, NULL, &gname);
-	      
+
       /* If there is one, replace the expression with a call to it and
 	 succeed.  */
       if (tbo)
@@ -4028,7 +4052,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 		     " FUNCTION", proc->name, &where);
 	  return FAILURE;
 	}
-	
+
       if (check_result_characteristics (proc_target, old_target,
 					err, sizeof(err)) == FAILURE)
 	{

@@ -60,6 +60,7 @@ import java.util.Map;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public interface ResultSet
+  extends AutoCloseable
 {
   /**
    * The rows will be processed in order from first to last.

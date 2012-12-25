@@ -63,6 +63,7 @@ Some basic guidelines for editing this document:
 * @code{ATANH}:         ATANH,     Inverse hyperbolic tangent function
 * @code{ATOMIC_DEFINE}: ATOMIC_DEFINE, Setting a variable atomically
 * @code{ATOMIC_REF}:    ATOMIC_REF, Obtaining the value of a variable atomically
+* @code{BACKTRACE}:     BACKTRACE, Show a backtrace
 * @code{BESSEL_J0}:     BESSEL_J0, Bessel function of the first kind of order 0
 * @code{BESSEL_J1}:     BESSEL_J1, Bessel function of the first kind of order 1
 * @code{BESSEL_JN}:     BESSEL_JN, Bessel function of the first kind
@@ -349,6 +350,7 @@ the applicable standard for each intrinsic procedure is noted.
 @item @emph{Description}:
 @code{ABORT} causes immediate termination of the program.  On operating
 systems that support a core dump, @code{ABORT} will produce a core dump.
+It will also print a backtrace, unless @code{-fno-backtrace} is given.
 
 @item @emph{Standard}:
 GNU extension
@@ -371,7 +373,7 @@ end program test_abort
 @end smallexample
 
 @item @emph{See also}:
-@ref{EXIT}, @ref{KILL}
+@ref{EXIT}, @ref{KILL}, @ref{BACKTRACE}
 
 @end table
 
@@ -1640,6 +1642,35 @@ end program atomic
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @ref{ISO_FORTRAN_ENV}
+@end table
+
+
+
+@node BACKTRACE
+@section @code{BACKTRACE} --- Show a backtrace
+@fnindex BACKTRACE
+@cindex backtrace
+
+@table @asis
+@item @emph{Description}:
+@code{BACKTRACE} shows a backtrace at an arbitrary place in user code. Program
+execution continues normally afterwards. The backtrace information is printed
+to the unit corresponding to @code{ERROR_UNIT} in @code{ISO_FORTRAN_ENV}.
+
+@item @emph{Standard}:
+GNU Extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL BACKTRACE}
+
+@item @emph{Arguments}:
+None
+
+@item @emph{See also}:
+@ref{ABORT}
 @end table
 
 

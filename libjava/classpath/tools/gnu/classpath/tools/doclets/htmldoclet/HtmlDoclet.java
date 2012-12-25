@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.doclets.htmldoclet.HtmlDoclet
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -109,12 +109,12 @@ public class HtmlDoclet
    /**
     *  Contains ExternalDocSet.
     */
-   private List externalDocSets = new LinkedList();
+   private List<ExternalDocSet> externalDocSets = new LinkedList<ExternalDocSet>();
 
    /**
     *  Contains String->ExternalDocSet.
     */
-   private Map packageNameToDocSet = new HashMap();
+   private Map<String,ExternalDocSet> packageNameToDocSet = new HashMap<String, ExternalDocSet>();
 
    /**
     *  Cache for version string from resource /version.properties
@@ -682,7 +682,7 @@ public class HtmlDoclet
       HtmlPage output = newHtmlPage(new File(packageDir, "package-summary" + filenameExtension),
                                     pathToRoot);
 
-      Set keywords = new LinkedHashSet();
+      Set<String> keywords = new LinkedHashSet<String>();
       keywords.add(packageDoc.name() + " packages");
 
       output.beginPage(getPageTitle(packageDoc.name()), getOutputCharset(),
@@ -725,10 +725,10 @@ public class HtmlDoclet
    }
 
    static class TreeNode
-      implements Comparable
+      implements Comparable<TreeNode>
    {
       ClassDoc classDoc;
-      SortedSet children = new TreeSet();
+      SortedSet<TreeNode> children = new TreeSet<TreeNode>();
 
       TreeNode(ClassDoc classDoc) {
          TreeNode.this.classDoc = classDoc;
@@ -739,9 +739,9 @@ public class HtmlDoclet
          return classDoc.equals(((TreeNode)other).classDoc);
       }
 
-      public int compareTo(Object other)
+      public int compareTo(TreeNode other)
       {
-         return classDoc.compareTo(((TreeNode)other).classDoc);
+         return classDoc.compareTo(other.classDoc);
       }
 
       public int hashCode()
@@ -750,9 +750,9 @@ public class HtmlDoclet
       }
    }
 
-   private TreeNode addClassTreeNode(Map treeMap, ClassDoc classDoc)
+   private TreeNode addClassTreeNode(Map<String,TreeNode> treeMap, ClassDoc classDoc)
    {
-      TreeNode node = (TreeNode)treeMap.get(classDoc.qualifiedName());
+      TreeNode node = treeMap.get(classDoc.qualifiedName());
       if (null == node) {
          node = new TreeNode(classDoc);
          treeMap.put(classDoc.qualifiedName(), node);
@@ -766,9 +766,9 @@ public class HtmlDoclet
       return node;
    }
 
-   private TreeNode addInterfaceTreeNode(Map treeMap, ClassDoc classDoc)
+   private TreeNode addInterfaceTreeNode(Map<String,TreeNode> treeMap, ClassDoc classDoc)
    {
-      TreeNode node = (TreeNode)treeMap.get(classDoc.qualifiedName());
+      TreeNode node = treeMap.get(classDoc.qualifiedName());
       if (null == node) {
          node = new TreeNode(classDoc);
          treeMap.put(classDoc.qualifiedName(), node);
@@ -781,7 +781,7 @@ public class HtmlDoclet
             }
          }
          else {
-            TreeNode rootNode = (TreeNode)treeMap.get("<root>");
+            TreeNode rootNode = treeMap.get("<root>");
             if (null == rootNode) {
                rootNode = new TreeNode(null);
                treeMap.put("<root>", rootNode);
@@ -849,10 +849,9 @@ public class HtmlDoclet
       if (!node.children.isEmpty()) {
          output.beginElement("li", "class", "level");
          output.beginElement("ul");
-         Iterator it = node.children.iterator();
+         Iterator<TreeNode> it = node.children.iterator();
          while (it.hasNext()) {
-            TreeNode child = (TreeNode)it.next();
-            printPackageTreeRec(output, child, node);
+            printPackageTreeRec(output, it.next(), node);
          }
          output.endElement("ul");
          output.endElement("li");
@@ -861,7 +860,7 @@ public class HtmlDoclet
 
    private void printClassTree(HtmlPage output, ClassDoc[] classDocs)
    {
-      Map classTreeMap = new HashMap();
+     Map<String,TreeNode> classTreeMap = new HashMap<String,TreeNode>();
 
       for (int i=0; i<classDocs.length; ++i) {
          ClassDoc classDoc = classDocs[i];
@@ -870,7 +869,7 @@ public class HtmlDoclet
          }
       }
 
-      TreeNode root = (TreeNode)classTreeMap.get("java.lang.Object");
+      TreeNode root = classTreeMap.get("java.lang.Object");
       if (null != root) {
          output.div(CssClass.PACKAGE_TREE_SECTION_TITLE, "Class Hierarchy");
          output.beginDiv(CssClass.PACKAGE_TREE);
@@ -881,7 +880,7 @@ public class HtmlDoclet
 
    private void printInterfaceTree(HtmlPage output, ClassDoc[] classDocs)
    {
-      Map interfaceTreeMap = new HashMap();
+      Map<String,TreeNode> interfaceTreeMap = new HashMap<String,TreeNode>();
 
       for (int i=0; i<classDocs.length; ++i) {
          ClassDoc classDoc = classDocs[i];
@@ -890,14 +889,14 @@ public class HtmlDoclet
          }
       }
 
-      TreeNode interfaceRoot = (TreeNode)interfaceTreeMap.get("<root>");
+      TreeNode interfaceRoot = interfaceTreeMap.get("<root>");
       if (null != interfaceRoot) {
-         Iterator it = interfaceRoot.children.iterator();
+         Iterator<TreeNode> it = interfaceRoot.children.iterator();
          if (it.hasNext()) {
             output.div(CssClass.PACKAGE_TREE_SECTION_TITLE, "Interface Hierarchy");
             output.beginDiv(CssClass.PACKAGE_TREE);
             while (it.hasNext()) {
-               TreeNode node = (TreeNode)it.next();
+               TreeNode node = it.next();
                printPackageTreeRec(output, node, null);
             }
             output.endDiv(CssClass.PACKAGE_TREE);
@@ -947,10 +946,10 @@ public class HtmlDoclet
       output.beginDiv(CssClass.FULL_TREE_PACKAGELIST);
       output.div(CssClass.FULL_TREE_PACKAGELIST_HEADER, "Package Hierarchies:");
       output.beginDiv(CssClass.FULL_TREE_PACKAGELIST_ITEM);
-      Set allPackages = getAllPackages();
-      Iterator it = allPackages.iterator();
+      Set<PackageDoc> allPackages = getAllPackages();
+      Iterator<PackageDoc> it = allPackages.iterator();
       while (it.hasNext()) {
-         PackageDoc packageDoc = (PackageDoc)it.next();
+         PackageDoc packageDoc = it.next();
          output.beginAnchor(getPackageURL(packageDoc) + "tree" + filenameExtension);
          output.print(packageDoc.name());
          output.endAnchor();
@@ -975,8 +974,6 @@ public class HtmlDoclet
    {
       output.beginDiv(CssClass.INDEX_ENTRY);
       output.beginDiv(CssClass.INDEX_ENTRY_KEY);
-      String anchor = null;
-      String description = null;
       if (entry instanceof PackageDoc) {
          output.beginAnchor(getPackageURL((PackageDoc)entry) + "package-summary" + filenameExtension);
          output.print(entry.name());
@@ -1105,10 +1102,10 @@ public class HtmlDoclet
 
       output.beginDiv(CssClass.PACKAGE_MENU_LIST);
 
-      Set packageDocs = getAllPackages();
-      Iterator it = packageDocs.iterator();
+      Set<PackageDoc> packageDocs = getAllPackages();
+      Iterator<PackageDoc> it = packageDocs.iterator();
       while (it.hasNext()) {
-         PackageDoc packageDoc = (PackageDoc)it.next();
+         PackageDoc packageDoc = it.next();
          output.beginSpan(CssClass.PACKAGE_MENU_ENTRY);
          output.beginAnchor(getPackageURL(packageDoc) + "classes" + filenameExtension,
                             null,
@@ -1153,9 +1150,9 @@ public class HtmlDoclet
    {
       if (!classDocs.isEmpty()) {
          output.div(CssClass.CLASS_MENU_SUBTITLE, header);
-         Iterator it = classDocs.iterator();
+         Iterator<ClassDoc> it = classDocs.iterator();
          while (it.hasNext()) {
-            ClassDoc classDoc = (ClassDoc)it.next();
+            ClassDoc classDoc = it.next();
             printClassMenuEntry(output, classDoc);
          }
       }
@@ -1166,10 +1163,10 @@ public class HtmlDoclet
       output.beginDiv(CssClass.CLASS_MENU_LIST);
 
       if (categorized) {
-         Set classes = new TreeSet();
-         Set interfaces = new TreeSet();
-         Set exceptions = new TreeSet();
-         Set errors = new TreeSet();
+         Set<ClassDoc> classes = new TreeSet<ClassDoc>();
+         Set<ClassDoc> interfaces = new TreeSet<ClassDoc>();
+         Set<ClassDoc> exceptions = new TreeSet<ClassDoc>();
+         Set<ClassDoc> errors = new TreeSet<ClassDoc>();
 
          for (int i=0; i<classDocs.length; ++i) {
             ClassDoc classDoc = classDocs[i];
@@ -1253,13 +1250,13 @@ public class HtmlDoclet
    private void printSplitIndex()
       throws IOException
    {
-      Map categorizedIndex = getCategorizedIndex();
-      Iterator it = categorizedIndex.keySet().iterator();
+      Map<Character,List<Doc>> categorizedIndex = getCategorizedIndex();
+      Iterator<Character> it = categorizedIndex.keySet().iterator();
       int n = 1;
       int count = categorizedIndex.size();
       while (it.hasNext()) {
-         Character c = (Character)it.next();
-         List classList = (List)categorizedIndex.get(c);
+         Character c = it.next();
+         List<Doc> classList = categorizedIndex.get(c);
          printIndexPage(n++, count, c, classList);
       }
    }
@@ -1270,7 +1267,7 @@ public class HtmlDoclet
       printIndexPage(0, 0, null, null);
    }
 
-   private void printIndexPage(int index, int maxIndex, Character letter, List classList)
+   private void printIndexPage(int index, int maxIndex, Character letter, List<Doc> classList)
       throws IOException
    {
       String pageName = "alphaindex";
@@ -1334,12 +1331,12 @@ public class HtmlDoclet
          printIndexCategory(output, letter, classList);
       }
       else {
-         Map categorizedIndex = getCategorizedIndex();
-         Iterator categoryIt = categorizedIndex.keySet().iterator();
+         Map<Character,List<Doc>> categorizedIndex = getCategorizedIndex();
+         Iterator<Character> categoryIt = categorizedIndex.keySet().iterator();
 
          while (categoryIt.hasNext()) {
-            letter = (Character)categoryIt.next();
-            classList = (List)categorizedIndex.get(letter);
+            letter = categoryIt.next();
+            classList = categorizedIndex.get(letter);
             output.anchorName(letter.toString());
             printIndexCategory(output, letter, classList);
          }
@@ -1420,13 +1417,13 @@ public class HtmlDoclet
 
       output.div(CssClass.SERIALIZED_TITLE, "Serialized Form");
 
-      Iterator it = getAllPackages().iterator();
+      Iterator<PackageDoc> it = getAllPackages().iterator();
 
       while (it.hasNext()) {
 
-         PackageDoc packageDoc = (PackageDoc)it.next();
+         PackageDoc packageDoc = it.next();
 
-         List serializableClasses = new LinkedList();
+         List<ClassDoc> serializableClasses = new LinkedList<ClassDoc>();
          ClassDoc[] classes = packageDoc.allClasses();
          for (int i=0; i<classes.length; ++i) {
             ClassDoc classDoc = classes[i];
@@ -1438,9 +1435,9 @@ public class HtmlDoclet
          if (!serializableClasses.isEmpty()) {
             output.div(CssClass.SERIALIZED_PACKAGE_HEADER, "Package " + packageDoc.name());
 
-            Iterator cit = serializableClasses.iterator();
+            Iterator<ClassDoc> cit = serializableClasses.iterator();
             while (cit.hasNext()) {
-               ClassDoc classDoc = (ClassDoc)cit.next();
+               ClassDoc classDoc = cit.next();
 
                output.anchorName(classDoc.qualifiedTypeName());
 
@@ -1500,13 +1497,13 @@ public class HtmlDoclet
 
       output.div(CssClass.DEPRECATION_TITLE, "Deprecated API");
 
-      List deprecatedInterfaces = new LinkedList();
-      List deprecatedExceptions = new LinkedList();
-      List deprecatedErrors = new LinkedList();
-      List deprecatedClasses = new LinkedList();
-      List deprecatedFields = new LinkedList();
-      List deprecatedMethods = new LinkedList();
-      List deprecatedConstructors = new LinkedList();
+      List<ClassDoc> deprecatedInterfaces = new LinkedList<ClassDoc>();
+      List<ClassDoc> deprecatedExceptions = new LinkedList<ClassDoc>();
+      List<ClassDoc> deprecatedErrors = new LinkedList<ClassDoc>();
+      List<ClassDoc> deprecatedClasses = new LinkedList<ClassDoc>();
+      List<FieldDoc> deprecatedFields = new LinkedList<FieldDoc>();
+      List<MethodDoc> deprecatedMethods = new LinkedList<MethodDoc>();
+      List<ConstructorDoc> deprecatedConstructors = new LinkedList<ConstructorDoc>();
 
       ClassDoc[] classDocs = getRootDoc().classes();
       for (int i=0; i<classDocs.length; ++i) {
@@ -2870,7 +2867,7 @@ public class HtmlDoclet
       PackageDoc packageDoc = classDoc.containingPackage();
       ExternalDocSet externalDocSet = null;
       if (classDoc.containingPackage().name().length() > 0) {
-         externalDocSet = (ExternalDocSet)packageNameToDocSet.get(packageDoc.name());
+         externalDocSet = packageNameToDocSet.get(packageDoc.name());
       }
       StringBuffer result = new StringBuffer();
       result.append(getClassDocURL(output, classDoc));
@@ -2900,14 +2897,13 @@ public class HtmlDoclet
       String url = null;
       if (null != asClassDoc && asClassDoc.isIncluded()) {
          url = getClassDocURL(output, asClassDoc);
-      }
+     }
       else if (!type.isPrimitive()) {
          if (type.qualifiedTypeName().length() > type.typeName().length()) {
             String packageName = type.qualifiedTypeName();
             packageName = packageName.substring(0, packageName.length() - type.typeName().length() - 1);
 
-            ExternalDocSet externalDocSet
-               = (ExternalDocSet)packageNameToDocSet.get(packageName);
+            ExternalDocSet externalDocSet = packageNameToDocSet.get(packageName);
             if (null != externalDocSet) {
                url = externalDocSet.getClassDocURL(packageName, type.typeName());
             }
@@ -2950,7 +2946,7 @@ public class HtmlDoclet
    private String getPackageURL(PackageDoc packageDoc)
    {
       if (packageDoc.name().length() > 0) {
-         ExternalDocSet externalDocSet = (ExternalDocSet)packageNameToDocSet.get(packageDoc.name());
+         ExternalDocSet externalDocSet = packageNameToDocSet.get(packageDoc.name());
          String url;
          if (null != externalDocSet) {
             url = externalDocSet.getPackageDocURL(packageDoc.name());
@@ -2974,7 +2970,7 @@ public class HtmlDoclet
    {
       ExternalDocSet externalDocSet = null;
       if (classDoc.containingPackage().name().length() > 0) {
-         externalDocSet = (ExternalDocSet)packageNameToDocSet.get(classDoc.containingPackage().name());
+         externalDocSet = packageNameToDocSet.get(classDoc.containingPackage().name());
       }
       if (null != externalDocSet) {
          return externalDocSet.getClassDocURL(classDoc.containingPackage().name(),

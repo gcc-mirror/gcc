@@ -48,7 +48,8 @@ package java.io;
   *
   * @see DataInput
   */
-public interface ObjectInput extends DataInput
+public interface ObjectInput
+  extends DataInput, AutoCloseable
 {
   /**
     * This method returns the number of bytes that can be read without

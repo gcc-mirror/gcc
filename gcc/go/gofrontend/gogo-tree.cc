@@ -6,8 +6,6 @@
 
 #include "go-system.h"
 
-#include <gmp.h>
-
 #include "toplev.h"
 #include "tree.h"
 #include "gimple.h"

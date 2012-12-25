@@ -362,13 +362,13 @@ func MemProfile(p Slice, include_inuse_zero bool) (n int, ok bool) {
 }
 
 void
-runtime_MProf_Mark(void (*addroot)(byte *, uintptr))
+runtime_MProf_Mark(void (*addroot)(Obj))
 {
 	// buckhash is not allocated via mallocgc.
-	addroot((byte*)&mbuckets, sizeof mbuckets);
-	addroot((byte*)&bbuckets, sizeof bbuckets);
-	addroot((byte*)&addrhash, sizeof addrhash);
-	addroot((byte*)&addrfree, sizeof addrfree);
+	addroot((Obj){(byte*)&mbuckets, sizeof mbuckets, 0});
+	addroot((Obj){(byte*)&bbuckets, sizeof bbuckets, 0});
+	addroot((Obj){(byte*)&addrhash, sizeof addrhash, 0});
+	addroot((Obj){(byte*)&addrfree, sizeof addrfree, 0});
 }
 
 // Must match BlockProfileRecord in debug.go.
@@ -412,18 +412,18 @@ struct TRecord {
 
 func ThreadCreateProfile(p Slice) (n int, ok bool) {
 	TRecord *r;
-	M *first, *m;
+	M *first, *mp;
 	
 	first = runtime_atomicloadp(&runtime_allm);
 	n = 0;
-	for(m=first; m; m=m->alllink)
+	for(mp=first; mp; mp=mp->alllink)
 		n++;
 	ok = false;
 	if(n <= p.__count) {
 		ok = true;
 		r = (TRecord*)p.__values;
-		for(m=first; m; m=m->alllink) {
-			runtime_memmove(r->stk, m->createstack, sizeof r->stk);
+		for(mp=first; mp; mp=mp->alllink) {
+			runtime_memmove(r->stk, mp->createstack, sizeof r->stk);
 			r++;
 		}
 	}
@@ -471,11 +471,11 @@ func Stack(b Slice, all bool) (n int) {
 }
 
 static void
-saveg(G *g, TRecord *r)
+saveg(G *gp, TRecord *r)
 {
 	int32 n;
 
-	if(g == runtime_g())
+	if(gp == runtime_g())
 		n = runtime_callers(0, r->stk, nelem(r->stk));
 	else {
 		// FIXME: Not implemented.

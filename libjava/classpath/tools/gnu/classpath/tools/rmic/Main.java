@@ -1,5 +1,5 @@
 /* Main.java -- RMI stub generator.
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -236,7 +236,7 @@ public class Main
         System.exit(1);
       }
 
-    ArrayList backends = new ArrayList();
+    ArrayList<RmicBackend> backends = new ArrayList<RmicBackend>();
 
     // FIXME: need an IDL RmicBackend
     // FIXME: need a ClassGiopRmicCompiler RmicBackend
@@ -262,7 +262,7 @@ public class Main
 
     for (int i = 0; i < backends.size(); i++)
       {
-        RmicBackend b = (RmicBackend) backends.get(i);
+        RmicBackend b = backends.get(i);
         b.setup(keep, need11Stubs, need12Stubs,
                 iiop, poa, false, warnings,
                 noWrite,  verbose, force, classpath,

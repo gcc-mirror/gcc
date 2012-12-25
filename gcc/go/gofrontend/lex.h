@@ -7,7 +7,6 @@
 #ifndef GO_LEX_H
 #define GO_LEX_H
 
-#include <gmp.h>
 #include <mpfr.h>
 
 #include "operator.h"

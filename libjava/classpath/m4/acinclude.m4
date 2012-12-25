@@ -190,6 +190,8 @@ AC_DEFUN([CLASSPATH_WITH_GJDOC],
     case ${gjdoc_version} in
       0.7.9) ;;
       0.8*) ;;
+      0.9*) ;;
+      1*) ;;
       *) AC_MSG_ERROR([Building documentation requires GJDoc >= 0.7.9, ${gjdoc_version} found.]) ;;
     esac
   fi

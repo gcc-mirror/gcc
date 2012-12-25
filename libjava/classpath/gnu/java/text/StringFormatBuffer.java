@@ -1,5 +1,5 @@
 /* StringFormatBuffer.java -- Implements FormatBuffer using StringBuffer.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,7 +37,10 @@ exception statement from your version. */
 package gnu.java.text;
 
 import java.text.AttributedCharacterIterator;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.text.AttributedCharacterIterator.Attribute;
 
 /**
  * This class is an implementation of a FormatBuffer without attributes.
@@ -48,7 +51,7 @@ import java.util.HashMap;
 public class StringFormatBuffer implements FormatBuffer
 {
   private final StringBuffer buffer;
-  private AttributedCharacterIterator.Attribute defaultAttr;
+  private Attribute defaultAttr;
 
   public StringFormatBuffer(int prebuffer)
   {
@@ -65,12 +68,12 @@ public class StringFormatBuffer implements FormatBuffer
     buffer.append(s);
   }
 
-  public void append(String s, AttributedCharacterIterator.Attribute attr)
+  public void append(String s, Attribute attr)
   {
     buffer.append(s);
   }
 
-  public void append(String s, int[] ranges, HashMap[] attrs)
+  public void append(String s, int[] ranges, List<Map<Attribute,Object>> attrs)
   {
     buffer.append(s);
   }
@@ -80,17 +83,17 @@ public class StringFormatBuffer implements FormatBuffer
     buffer.append(c);
   }
 
-  public void append(char c, AttributedCharacterIterator.Attribute attr)
+  public void append(char c, Attribute attr)
   {
     buffer.append(c);
   }
 
-  public void setDefaultAttribute(AttributedCharacterIterator.Attribute attr)
+  public void setDefaultAttribute(Attribute attr)
   {
     defaultAttr = attr;
   }
 
-  public AttributedCharacterIterator.Attribute getDefaultAttribute()
+  public Attribute getDefaultAttribute()
   {
     return defaultAttr;
   }

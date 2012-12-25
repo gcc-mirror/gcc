@@ -500,6 +500,7 @@ dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
 dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
+dependencies = { module=all-target-libgo; on=all-target-libatomic; };
 dependencies = { module=configure-target-libjava; on=configure-target-zlib; };
 dependencies = { module=configure-target-libjava; on=configure-target-boehm-gc; };
 dependencies = { module=configure-target-libjava; on=configure-target-libffi; };
@@ -518,6 +519,16 @@ dependencies = { module=all-target-libstdc++-v3; on=configure-target-libgomp; };
 // Installing UPC headers must follow gcc install because
 // gcc removes and then recreates the include directory.
 dependencies = { module=install-target-libgupc; on=install-gcc; };
+
+dependencies = { module=install-target-libgo; on=install-target-libatomic; };
+dependencies = { module=install-target-libgfortran; on=install-target-libquadmath; };
+dependencies = { module=install-target-libgfortran; on=install-target-libgcc; };
+dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
+dependencies = { module=install-target-libjava; on=install-target-libgcc; };
+dependencies = { module=install-target-libitm; on=install-target-libgcc; };
+dependencies = { module=install-target-libobjc; on=install-target-libgcc; };
+dependencies = { module=install-target-libgupc; on=install-target-libgcc; };
+dependencies = { module=install-target-libstdc++-v3; on=install-target-libgcc; };
 
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=libtermcap; };

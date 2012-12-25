@@ -90,7 +90,7 @@
 
 (define_insn_reservation "cortex_r4_alu_shift" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "alu_shift"))
+       (eq_attr "type" "simple_alu_shift,alu_shift"))
   "cortex_r4_alu")
 
 (define_insn_reservation "cortex_r4_alu_shift_reg" 2

@@ -55,7 +55,7 @@ public interface EndElement
   /**
    * Returns the namespaces that have gone out of scope.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   Iterator getNamespaces();
 
 }

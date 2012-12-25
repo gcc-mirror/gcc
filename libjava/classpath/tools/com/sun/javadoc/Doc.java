@@ -1,5 +1,5 @@
 /* Doc.java -- Model of an item to document.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package com.sun.javadoc;
   * This interface is the super-interface of all items that can have
   * Javadoc comments associated with them.
   */
-public interface Doc extends java.io.Serializable, Comparable
+public interface Doc extends java.io.Serializable, Comparable<Doc>
 {
 
 /**

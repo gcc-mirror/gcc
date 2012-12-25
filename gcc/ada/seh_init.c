@@ -32,10 +32,6 @@
 /*  This unit contains support for SEH (Structured Exception Handling).
     Right now the only implementation is for Win32.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -49,6 +45,10 @@ extern "C" {
 #endif
 
 #include "raise.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Addresses of exception data blocks for predefined exceptions. */
 extern struct Exception_Data constraint_error;

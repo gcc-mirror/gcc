@@ -1,3 +1,12 @@
+2012-12-18  Ian Lance Taylor  <iant@google.com>
+
+	PR go/55201
+	* Makefile.am (noinst_LTLIBRARIES): Define new make variable.
+	(libatomic_convenience_la_SOURCES): Likewise.
+	(libatomic_convenience_la_LIBADD): Likewise.
+	* Makefile.in: Rebuild.
+	* testsuite/Makefile.in: Rebuild.
+
 2012-12-04  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/arm/arm-config.h (__ARM_ARCH_8A__): New.

@@ -29,6 +29,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     package_(NULL),
     functions_(),
     globals_(new Bindings(NULL)),
+    file_block_names_(),
     imports_(),
     imported_unsafe_(false),
     packages_(),
@@ -1243,6 +1244,33 @@ Gogo::define_global_names()
       else if (no->is_unknown())
 	no->unknown_value()->set_real_named_object(global_no);
     }
+
+  // Give an error if any name is defined in both the package block
+  // and the file block.  For example, this can happen if one file
+  // imports "fmt" and another file defines a global variable fmt.
+  for (Bindings::const_declarations_iterator p =
+	 this->package_->bindings()->begin_declarations();
+       p != this->package_->bindings()->end_declarations();
+       ++p)
+    {
+      if (p->second->is_unknown()
+	  && p->second->unknown_value()->real_named_object() == NULL)
+	{
+	  // No point in warning about an undefined name, as we will
+	  // get other errors later anyhow.
+	  continue;
+	}
+      File_block_names::const_iterator pf =
+	this->file_block_names_.find(p->second->name());
+      if (pf != this->file_block_names_.end())
+	{
+	  std::string n = p->second->message_name();
+	  error_at(p->second->location(),
+		   "%qs defined as both imported name and global name",
+		   n.c_str());
+	  inform(pf->second, "%qs imported here", n.c_str());
+	}
+    }
 }
 
 // Clear out names in file scope.
@@ -1250,7 +1278,7 @@ Gogo::define_global_names()
 void
 Gogo::clear_file_scope()
 {
-  this->package_->bindings()->clear_file_scope();
+  this->package_->bindings()->clear_file_scope(this);
 
   // Warn about packages which were imported but not used.
   bool quiet = saw_errors();
@@ -4855,7 +4883,7 @@ Bindings::Bindings(Bindings* enclosing)
 // Clear imports.
 
 void
-Bindings::clear_file_scope()
+Bindings::clear_file_scope(Gogo* gogo)
 {
   Contour::iterator p = this->bindings_.begin();
   while (p != this->bindings_.end())
@@ -4875,7 +4903,10 @@ Bindings::clear_file_scope()
       if (keep)
 	++p;
       else
-	p = this->bindings_.erase(p);
+	{
+	  gogo->add_file_block_name(p->second->name(), p->second->location());
+	  p = this->bindings_.erase(p);
+	}
     }
 }
 

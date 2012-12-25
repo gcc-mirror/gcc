@@ -61,6 +61,8 @@ static inline int get_nprocs()
 #ifndef _GLIBCXX_USE_NANOSLEEP
 # ifdef _GLIBCXX_HAVE_SLEEP
 #  include <unistd.h>
+# elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+#  include <windows.h>
 # else
 #  error "No sleep function known for this target"
 # endif
@@ -170,9 +172,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static_cast<long>(__ns.count())
       };
     ::nanosleep(&__ts, 0);
-#else
-# ifdef _GLIBCXX_HAVE_SLEEP
-#  ifdef _GLIBCXX_HAVE_USLEEP
+#elif defined(_GLIBCXX_HAVE_SLEEP)
+# ifdef _GLIBCXX_HAVE_USLEEP
     ::sleep(__s.count());
     if (__ns.count() > 0)
       {
@@ -181,10 +182,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           __us = 1;
         ::usleep(__us);
       }
-#  else
+# else
     ::sleep(__s.count() + (__ns >= 1000000));
-#  endif
 # endif
+#elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+    unsigned long ms = __ns.count() / 1000000;
+    if (__ns.count() > 0 && ms == 0)
+      ms = 1;
+    ::Sleep(chrono::milliseconds(__s).count() + ms);
 #endif
   }
 

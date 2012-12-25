@@ -501,9 +501,6 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
   // @} group functors
 
-  template<typename... _Cond>
-    using _Require = typename enable_if<__and_<_Cond...>::value>::type;
-
   template<typename... _Types>
     struct _Pack : integral_constant<size_t, sizeof...(_Types)>
     { };

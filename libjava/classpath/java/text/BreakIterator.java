@@ -1,5 +1,5 @@
 /* BreakIterator.java -- Breaks text into elements
-   Copyright (C) 1998, 1999, 2001, 2004, 2005, 2007
+   Copyright (C) 1998, 1999, 2001, 2004, 2005, 2007, 2012
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -160,7 +160,7 @@ public abstract class BreakIterator implements Cloneable
       }
     try
       {
-        Class k = Class.forName(className);
+        Class<?> k = Class.forName(className);
         return (BreakIterator) k.newInstance();
       }
     catch (ClassNotFoundException x1)

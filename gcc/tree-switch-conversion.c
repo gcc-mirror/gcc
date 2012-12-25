@@ -873,7 +873,8 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      constructor_elt elt;
 
 	      elt.index = int_const_binop (MINUS_EXPR, pos, info->range_min);
-	      elt.value = info->default_values[k];
+	      elt.value
+		= unshare_expr_without_location (info->default_values[k]);
 	      info->constructors[k]->quick_push (elt);
 	    }
 
@@ -899,7 +900,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      constructor_elt elt;
 
 	      elt.index = int_const_binop (MINUS_EXPR, pos, info->range_min);
-	      elt.value = val;
+	      elt.value = unshare_expr_without_location (val);
 	      info->constructors[j]->quick_push (elt);
 
 	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *        Copyright (C) 2005-2011, Free Software Foundation, Inc.           *
+ *        Copyright (C) 2005-2012, Free Software Foundation, Inc.           *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -35,10 +35,6 @@
     Note that, in order to have access to the TARGET_* macros used below,
     the file must be compiled with IN_GCC defined, even for the library.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -55,6 +51,10 @@ extern "C" {
 
 #ifndef TARGET_EXECUTABLE_SUFFIX
 #define TARGET_EXECUTABLE_SUFFIX ""
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 const char *__gnat_target_object_extension = TARGET_OBJECT_SUFFIX;

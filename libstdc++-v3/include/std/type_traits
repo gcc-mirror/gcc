@@ -1771,6 +1771,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct enable_if<true, _Tp>
     { typedef _Tp type; };
 
+  template<typename... _Cond>
+    using _Require = typename enable_if<__and_<_Cond...>::value>::type;
 
   // Primary template.
   /// Define a member typedef @c type to one of two argument types.

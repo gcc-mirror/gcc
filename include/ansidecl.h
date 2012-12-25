@@ -279,8 +279,15 @@ So instead we use the macro below and test it against specific values.  */
 # endif
 #endif
 
+/* Similarly to ARG_UNUSED below.  Prior to GCC 3.4, the C++ frontend
+   couldn't parse attributes placed after the identifier name, and now
+   the entire compiler is built with C++.  */
 #ifndef ATTRIBUTE_UNUSED
-#define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+#if GCC_VERSION >= 3004
+#  define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+#else
+#define ATTRIBUTE_UNUSED
+#endif
 #endif /* ATTRIBUTE_UNUSED */
 
 /* Before GCC 3.4, the C++ frontend couldn't parse attributes placed after the

@@ -161,6 +161,7 @@ extern "Java"
       class ArrayIndexOutOfBoundsException;
       class ArrayStoreException;
       class AssertionError;
+      class AutoCloseable;
       class Boolean;
       class Byte;
       class CharSequence;
@@ -226,6 +227,7 @@ extern "Java"
       class Process;
       class ProcessBuilder;
       class Readable;
+      class ReflectiveOperationException;
       class Runnable;
       class Runtime;
       class RuntimeException;

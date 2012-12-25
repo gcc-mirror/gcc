@@ -101,6 +101,10 @@
   return true;
 })
 
+(define_predicate "nonzero_shift_count_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, GET_MODE_BITSIZE (mode) - 1)")))
+
 ;;  Return true if OP a valid operand for the LARL instruction.
 
 (define_predicate "larl_operand"
@@ -152,6 +156,12 @@
     return true;
 
   return false;
+})
+
+(define_predicate "contiguous_bitmask_operand"
+  (match_code "const_int")
+{
+  return s390_contiguous_bitmask_p (INTVAL (op), GET_MODE_BITSIZE (mode), NULL, NULL);
 })
 
 ;; operators --------------------------------------------------------------

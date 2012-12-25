@@ -1,5 +1,5 @@
 /* MessageFormat.java - Localized message formatting.
-   Copyright (C) 1999, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2004, 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -164,7 +164,6 @@ public class MessageFormat extends Format
     public static final MessageFormat.Field ARGUMENT = new MessageFormat.Field("argument");
 
     // For deserialization
-    @SuppressWarnings("unused")
     private Field()
     {
       super("");

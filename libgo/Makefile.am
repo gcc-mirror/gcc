@@ -502,6 +502,7 @@ runtime_files = \
 	runtime/go-unwind.c \
 	runtime/chan.c \
 	runtime/cpuprof.c \
+	runtime/env_posix.c \
 	runtime/lfstack.c \
 	$(runtime_lock_files) \
 	runtime/mcache.c \
@@ -1657,6 +1658,13 @@ else
 syscall_lsf_file =
 endif
 
+# GNU/Linux specific utimesnano support.
+if LIBGO_IS_LINUX
+syscall_utimesnano_file = go/syscall/libcall_linux_utimesnano.go
+else
+syscall_utimesnano_file = go/syscall/libcall_posix_utimesnano.go
+endif
+
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -1679,6 +1687,7 @@ go_base_syscall_files = \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
+	$(syscall_utimesnano_file) \
 	$(GO_LIBCALL_OS_FILE) \
 	$(GO_LIBCALL_OS_ARCH_FILE) \
 	$(GO_SYSCALL_OS_FILE) \
@@ -1909,6 +1918,7 @@ libgo_la_LDFLAGS = \
 
 libgo_la_LIBADD = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
+	../libatomic/libatomic_convenience.la \
 	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \

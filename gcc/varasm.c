@@ -927,7 +927,7 @@ decode_reg_name (const char *name)
 
 /* Return true if DECL's initializer is suitable for a BSS section.  */
 
-static bool
+bool
 bss_initializer_p (const_tree decl)
 {
   return (DECL_INITIAL (decl) == NULL
@@ -2088,12 +2088,12 @@ contains_pointers_p (tree type)
    it all the way to final.  See PR 17982 for further discussion.  */
 static GTY(()) tree pending_assemble_externals;
 
+#ifdef ASM_OUTPUT_EXTERNAL
 /* Some targets delay some output to final using TARGET_ASM_FILE_END.
    As a result, assemble_external can be called after the list of externals
    is processed and the pointer set destroyed.  */
 static bool pending_assemble_externals_processed;
 
-#ifdef ASM_OUTPUT_EXTERNAL
 /* Avoid O(external_decls**2) lookups in the pending_assemble_externals
    TREE_LIST in assemble_external.  */
 static struct pointer_set_t *pending_assemble_externals_set;

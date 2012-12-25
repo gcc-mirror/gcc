@@ -1,5 +1,5 @@
 /* AttributedStringIterator.java -- Class to iterate over AttributedString
-   Copyright (C) 1998, 1999, 2004, 2005, 2006, Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2004, 2005, 2006, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import static java.text.AttributedCharacterIterator.Attribute;
+
 /**
   * This class implements the AttributedCharacterIterator interface.  It
   * is used by AttributedString.getIterator().
@@ -67,7 +69,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
    * The list of attributes that the user is interested in.  We may,
    * at our option, not return any other attributes.
    */
-  private AttributedCharacterIterator.Attribute[] restricts;
+  private Attribute[] restricts;
 
   /*************************************************************************/
 
@@ -155,9 +157,9 @@ class AttributedStringIterator implements AttributedCharacterIterator
    * Returns a list of all the attribute keys that are defined anywhere
    * on this string.
    */
-  public Set getAllAttributeKeys()
+  public Set<Attribute> getAllAttributeKeys()
   {
-    HashSet s = new HashSet();
+    HashSet<Attribute> s = new HashSet<Attribute>();
     if (attribs == null)
       return(s);
 
@@ -167,8 +169,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
           || attribs[i].endIndex <= getBeginIndex())
         continue;
 
-      Set key_set = attribs[i].attribs.keySet();
-      Iterator iter = key_set.iterator();
+      Iterator<? extends Attribute> iter = attribs[i].attribs.keySet().iterator();
       while (iter.hasNext())
         {
           s.add(iter.next());
@@ -190,14 +191,14 @@ class AttributedStringIterator implements AttributedCharacterIterator
     return getRunLimit(getAllAttributeKeys());
   }
 
-  public int getRunLimit(AttributedCharacterIterator.Attribute attrib)
+  public int getRunLimit(Attribute attrib)
   {
-    HashSet s = new HashSet();
+    HashSet<Attribute> s = new HashSet<Attribute>();
     s.add(attrib);
     return(getRunLimit(s));
   }
 
-  public synchronized int getRunLimit(Set attributeSet)
+  public synchronized int getRunLimit(Set<? extends Attribute> attributeSet)
   {
     if (attributeSet == null)
       return ci.getEndIndex();
@@ -207,13 +208,13 @@ class AttributedStringIterator implements AttributedCharacterIterator
     int limit = current;
     if (current == end)
       return end;
-    Map runValues = getAttributes();
+    Map<Attribute,Object> runValues = getAttributes();
     while (limit < end)
     {
-      Iterator iterator = attributeSet.iterator();
+      Iterator<? extends Attribute> iterator = attributeSet.iterator();
       while (iterator.hasNext())
       {
-        Attribute attributeKey = (Attribute) iterator.next();
+        Attribute attributeKey = iterator.next();
         Object v1 = runValues.get(attributeKey);
         Object v2 = getAttribute(attributeKey, limit + 1);
         boolean changed = false;
@@ -262,11 +263,11 @@ class AttributedStringIterator implements AttributedCharacterIterator
    *
    * return The index of the first character in the run.
    */
-  public int getRunStart(AttributedCharacterIterator.Attribute attrib)
+  public int getRunStart(Attribute attrib)
   {
     if (attrib == null)
       return ci.getBeginIndex();
-    HashSet s = new HashSet();
+    HashSet<Attribute> s = new HashSet<Attribute>();
     s.add(attrib);
     return(getRunStart(s));
   }
@@ -279,7 +280,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
    *
    * return The index of the first character in the run.
    */
-  public int getRunStart(Set attributeSet)
+  public int getRunStart(Set<? extends Attribute> attributeSet)
   {
     if (attributeSet == null)
       return ci.getBeginIndex();
@@ -289,14 +290,14 @@ class AttributedStringIterator implements AttributedCharacterIterator
     int start = current;
     if (start == begin)
       return begin;
-    Map runValues = getAttributes();
+    Map<Attribute, Object> runValues = getAttributes();
     int prev = start - 1;
     while (start > begin)
     {
-      Iterator iterator = attributeSet.iterator();
+      Iterator<? extends Attribute> iterator = attributeSet.iterator();
       while (iterator.hasNext())
       {
-        Attribute attributeKey = (Attribute) iterator.next();
+        Attribute attributeKey = iterator.next();
         Object v1 = runValues.get(attributeKey);
         Object v2 = getAttribute(attributeKey, prev);
         boolean changed = false;
@@ -340,7 +341,7 @@ class AttributedStringIterator implements AttributedCharacterIterator
       {
         if (pos >= attribs[i].beginIndex && pos < attribs[i].endIndex)
           {
-            Set keys = attribs[i].attribs.keySet();
+            Set<? extends Attribute> keys = attribs[i].attribs.keySet();
             if (keys.contains(key))
               {
                 return attribs[i].attribs.get(key);
@@ -370,9 +371,9 @@ class AttributedStringIterator implements AttributedCharacterIterator
    * Return a list of all the attributes and values defined for this
    * character
    */
-  public Map getAttributes()
+  public Map<Attribute,Object> getAttributes()
   {
-    HashMap m = new HashMap();
+    HashMap<Attribute,Object> m = new HashMap<Attribute,Object>();
     if (attribs == null)
       return(m);
 

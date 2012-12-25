@@ -1,3 +1,13 @@
+2012-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/fortran.exp: Set
+	-fintrinsic-modules-path.
+
+2012-12-19  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/use_intrinsic_1.f90: New; moved
+	from gcc/testsuite/gfortran.dg/gomp/use_intrinsic_1.f90.
+
 2012-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/55411

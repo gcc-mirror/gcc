@@ -36,6 +36,7 @@ public:
   virtual jlong position();
   virtual jlong size();
   virtual ::java::lang::String * toString();
+  virtual void close() = 0;
 private:
   ::java::nio::channels::FileChannel * __attribute__((aligned(__alignof__( ::java::lang::Object)))) channel__;
   jlong position__;

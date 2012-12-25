@@ -702,24 +702,19 @@ func (c *conn) closeWriteAndWait() {
 // Serve a new connection.
 func (c *conn) serve() {
 	defer func() {
-		err := recover()
-		if err == nil {
-			return
+		if err := recover(); err != nil {
+			const size = 4096
+			buf := make([]byte, size)
+			buf = buf[:runtime.Stack(buf, false)]
+			log.Printf("http: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
 		}
-
-		const size = 4096
-		buf := make([]byte, size)
-		buf = buf[:runtime.Stack(buf, false)]
-		log.Printf("http: panic serving %v: %v\n%s", c.remoteAddr, err, buf)
-
-		if c.rwc != nil { // may be nil if connection hijacked
-			c.rwc.Close()
+		if !c.hijacked() {
+			c.close()
 		}
 	}()
 
 	if tlsConn, ok := c.rwc.(*tls.Conn); ok {
 		if err := tlsConn.Handshake(); err != nil {
-			c.close()
 			return
 		}
 		c.tlsState = new(tls.ConnectionState)
@@ -770,6 +765,9 @@ func (c *conn) serve() {
 		if handler == nil {
 			handler = DefaultServeMux
 		}
+		if req.RequestURI == "*" && req.Method == "OPTIONS" {
+			handler = globalOptionsHandler{}
+		}
 
 		// HTTP cannot have multiple simultaneous active requests.[*]
 		// Until the server replies to this request, it can't read another,
@@ -788,7 +786,6 @@ func (c *conn) serve() {
 			break
 		}
 	}
-	c.close()
 }
 
 func (w *response) sendExpectationFailed() {
@@ -1085,6 +1082,11 @@ func (mux *ServeMux) handler(host, path string) (h Handler, pattern string) {
 // ServeHTTP dispatches the request to the handler whose
 // pattern most closely matches the request URL.
 func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
+	if r.RequestURI == "*" {
+		w.Header().Set("Connection", "close")
+		w.WriteHeader(StatusBadRequest)
+		return
+	}
 	h, _ := mux.Handler(r)
 	h.ServeHTTP(w, r)
 }
@@ -1406,6 +1408,22 @@ func (tw *timeoutWriter) WriteHeader(code int) {
 	tw.wroteHeader = true
 	tw.mu.Unlock()
 	tw.w.WriteHeader(code)
+}
+
+// globalOptionsHandler responds to "OPTIONS *" requests.
+type globalOptionsHandler struct{}
+
+func (globalOptionsHandler) ServeHTTP(w ResponseWriter, r *Request) {
+	w.Header().Set("Content-Length", "0")
+	if r.ContentLength != 0 {
+		// Read up to 4KB of OPTIONS body (as mentioned in the
+		// spec as being reserved for future use), but anything
+		// over that is considered a waste of server resources
+		// (or an attack) and we abort and close the connection,
+		// courtesy of MaxBytesReader's EOF behavior.
+		mb := MaxBytesReader(w, r.Body, 4<<10)
+		io.Copy(ioutil.Discard, mb)
+	}
 }
 
 // loggingConn is used for debugging.

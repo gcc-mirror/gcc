@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic-core.h"
 #include "tree-inline.h"
-#include "gmp.h"
 
 #define SWAP(X, Y) do { affine_iv *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
 
@@ -2671,7 +2670,12 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
       upper = false;
     }
 
-  ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, *idx));
+  struct loop *dloop = loop_containing_stmt (data->stmt);
+  if (!dloop)
+    return true;
+
+  ev = analyze_scalar_evolution (dloop, *idx);
+  ev = instantiate_parameters (loop, ev);
   init = initial_condition (ev);
   step = evolution_part_in_loop_num (ev, loop->num);
 

@@ -557,7 +557,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	    goto cleanup;
 
 	  case AS_ASSUMED_RANK:
-	    gcc_unreachable (); 
+	    gcc_unreachable ();
 	  }
 
       if (gfc_match_char (')') == MATCH_YES)
@@ -666,7 +666,7 @@ coarray:
 	      goto cleanup;
 
 	    case AS_ASSUMED_RANK:
-	      gcc_unreachable (); 
+	      gcc_unreachable ();
 	  }
 
       if (gfc_match_char (']') == MATCH_YES)
@@ -1414,7 +1414,7 @@ extract_element (gfc_expr *e)
     gfc_free_expr (e);
 
   current_expand.extract_count++;
-  
+
   return SUCCESS;
 }
 
@@ -1815,7 +1815,7 @@ resolve_array_list (gfc_constructor_base base)
         {
 	  gfc_symbol *iter_var;
 	  locus iter_var_loc;
-	 
+
 	  if (gfc_resolve_iterator (iter, false, true) == FAILURE)
 	    t = FAILURE;
 
@@ -1847,6 +1847,13 @@ resolve_array_list (gfc_constructor_base base)
 
       if (gfc_resolve_expr (c->expr) == FAILURE)
 	t = FAILURE;
+
+      if (UNLIMITED_POLY (c->expr))
+	{
+	  gfc_error ("Array constructor value at %L shall not be unlimited "
+		     "polymorphic [F2008: C4106]", &c->expr->where);
+	  t = FAILURE;
+	}
     }
 
   return t;
@@ -1941,7 +1948,7 @@ got_charlen:
       expr->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
 						NULL, found_length);
     }
-  else 
+  else
     {
       /* We've got a character length specified.  It should be an integer,
 	 otherwise an error is signalled elsewhere.  */

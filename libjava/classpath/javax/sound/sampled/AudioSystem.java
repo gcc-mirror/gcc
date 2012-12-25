@@ -1,5 +1,5 @@
 /* Main interface to audio system
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -84,10 +84,10 @@ public class AudioSystem
   public static AudioFileFormat getAudioFileFormat(File f)
     throws UnsupportedAudioFileException, IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileReader.class);
+    Iterator<AudioFileReader> i = ServiceFactory.lookupProviders(AudioFileReader.class);
     while (i.hasNext())
       {
-        AudioFileReader reader = (AudioFileReader) i.next();
+        AudioFileReader reader = i.next();
         try
           {
             return reader.getAudioFileFormat(f);
@@ -111,10 +111,10 @@ public class AudioSystem
   public static AudioFileFormat getAudioFileFormat(InputStream is)
     throws UnsupportedAudioFileException, IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileReader.class);
+    Iterator<AudioFileReader> i = ServiceFactory.lookupProviders(AudioFileReader.class);
     while (i.hasNext())
       {
-        AudioFileReader reader = (AudioFileReader) i.next();
+        AudioFileReader reader = i.next();
         try
           {
             return reader.getAudioFileFormat(is);
@@ -138,10 +138,10 @@ public class AudioSystem
   public static AudioFileFormat getAudioFileFormat(URL url)
     throws UnsupportedAudioFileException, IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileReader.class);
+    Iterator<AudioFileReader> i = ServiceFactory.lookupProviders(AudioFileReader.class);
     while (i.hasNext())
       {
-        AudioFileReader reader = (AudioFileReader) i.next();
+        AudioFileReader reader = i.next();
         try
           {
             return reader.getAudioFileFormat(url);
@@ -162,10 +162,10 @@ public class AudioSystem
   {
     HashSet<AudioFileFormat.Type> result
       = new HashSet<AudioFileFormat.Type>();
-    Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
+    Iterator<AudioFileWriter> i = ServiceFactory.lookupProviders(AudioFileWriter.class);
     while (i.hasNext())
       {
-        AudioFileWriter writer = (AudioFileWriter) i.next();
+        AudioFileWriter writer = i.next();
         AudioFileFormat.Type[] types = writer.getAudioFileTypes();
         for (int j = 0; j < types.length; ++j)
           result.add(types[j]);
@@ -183,10 +183,10 @@ public class AudioSystem
   {
     HashSet<AudioFileFormat.Type> result
       = new HashSet<AudioFileFormat.Type>();
-    Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
+    Iterator<AudioFileWriter> i = ServiceFactory.lookupProviders(AudioFileWriter.class);
     while (i.hasNext())
       {
-        AudioFileWriter writer = (AudioFileWriter) i.next();
+        AudioFileWriter writer = i.next();
         AudioFileFormat.Type[] types = writer.getAudioFileTypes(ais);
         for (int j = 0; j < types.length; ++j)
           result.add(types[j]);
@@ -206,10 +206,11 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(AudioFormat.Encoding targ,
                                                      AudioInputStream ais)
   {
-    Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
+    Iterator<FormatConversionProvider> i =
+      ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         if (! prov.isConversionSupported(targ, ais.getFormat()))
           continue;
         return prov.getAudioInputStream(targ, ais);
@@ -229,10 +230,11 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(AudioFormat targ,
                                                      AudioInputStream ais)
   {
-    Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
+    Iterator<FormatConversionProvider> i =
+      ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         if (! prov.isConversionSupported(targ, ais.getFormat()))
           continue;
         return prov.getAudioInputStream(targ, ais);
@@ -251,10 +253,10 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(File f)
     throws UnsupportedAudioFileException, IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileReader.class);
+    Iterator<AudioFileReader> i = ServiceFactory.lookupProviders(AudioFileReader.class);
     while (i.hasNext())
       {
-        AudioFileReader reader = (AudioFileReader) i.next();
+        AudioFileReader reader = i.next();
         try
           {
             return reader.getAudioInputStream(f);
@@ -278,10 +280,10 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(InputStream is)
     throws UnsupportedAudioFileException, IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileReader.class);
+    Iterator<AudioFileReader> i = ServiceFactory.lookupProviders(AudioFileReader.class);
     while (i.hasNext())
       {
-        AudioFileReader reader = (AudioFileReader) i.next();
+        AudioFileReader reader = i.next();
         try
           {
             return reader.getAudioInputStream(is);
@@ -305,10 +307,10 @@ public class AudioSystem
   public static AudioInputStream getAudioInputStream(URL url)
     throws UnsupportedAudioFileException, IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileReader.class);
+    Iterator<AudioFileReader> i = ServiceFactory.lookupProviders(AudioFileReader.class);
     while (i.hasNext())
       {
-        AudioFileReader reader = (AudioFileReader) i.next();
+        AudioFileReader reader = i.next();
         try
           {
             return reader.getAudioInputStream(url);
@@ -401,10 +403,10 @@ public class AudioSystem
    */
   public static Mixer getMixer(Mixer.Info info)
   {
-    Iterator i = ServiceFactory.lookupProviders(MixerProvider.class);
+    Iterator<MixerProvider> i = ServiceFactory.lookupProviders(MixerProvider.class);
     while (i.hasNext())
       {
-        MixerProvider prov = (MixerProvider) i.next();
+        MixerProvider prov = i.next();
         if (prov.isMixerSupported(info))
           return prov.getMixer(info);
       }
@@ -417,10 +419,10 @@ public class AudioSystem
   public static Mixer.Info[] getMixerInfo()
   {
     HashSet<Mixer.Info> result = new HashSet<Mixer.Info>();
-    Iterator i = ServiceFactory.lookupProviders(MixerProvider.class);
+    Iterator<MixerProvider> i = ServiceFactory.lookupProviders(MixerProvider.class);
     while (i.hasNext())
       {
-        MixerProvider prov = (MixerProvider) i.next();
+        MixerProvider prov = i.next();
         Mixer.Info[] is = prov.getMixerInfo();
         for (int j = 0; j < is.length; ++j)
           result.add(is[j]);
@@ -536,10 +538,11 @@ public class AudioSystem
   {
     HashSet<AudioFormat.Encoding> result
       = new HashSet<AudioFormat.Encoding>();
-    Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
+    Iterator<FormatConversionProvider> i =
+      ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         if (! prov.isSourceEncodingSupported(source))
           continue;
         AudioFormat.Encoding[] es = prov.getTargetEncodings();
@@ -558,10 +561,11 @@ public class AudioSystem
   {
     HashSet<AudioFormat.Encoding> result
       = new HashSet<AudioFormat.Encoding>();
-    Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
+    Iterator<FormatConversionProvider> i =
+      ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         AudioFormat.Encoding[] es = prov.getTargetEncodings(source);
         for (int j = 0; j < es.length; ++j)
           result.add(es[j]);
@@ -579,10 +583,11 @@ public class AudioSystem
                                                AudioFormat sourceFmt)
   {
     HashSet<AudioFormat> result = new HashSet<AudioFormat>();
-    Iterator i = ServiceFactory.lookupProviders(FormatConversionProvider.class);
+    Iterator<FormatConversionProvider> i =
+      ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         AudioFormat[] es = prov.getTargetFormats(encoding, sourceFmt);
         for (int j = 0; j < es.length; ++j)
           result.add(es[j]);
@@ -618,11 +623,11 @@ public class AudioSystem
   public static boolean isConversionSupported(AudioFormat.Encoding targ,
                                               AudioFormat source)
   {
-    Iterator i
+    Iterator<FormatConversionProvider> i
       = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         if (prov.isConversionSupported(targ, source))
           return true;
       }
@@ -638,11 +643,11 @@ public class AudioSystem
   public static boolean isConversionSupported(AudioFormat targ,
                                               AudioFormat source)
   {
-    Iterator i
+    Iterator<FormatConversionProvider> i
       = ServiceFactory.lookupProviders(FormatConversionProvider.class);
     while (i.hasNext())
       {
-        FormatConversionProvider prov = (FormatConversionProvider) i.next();
+        FormatConversionProvider prov = i.next();
         if (prov.isConversionSupported(targ, source))
           return true;
       }
@@ -714,10 +719,10 @@ public class AudioSystem
                           File out)
     throws IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
+    Iterator<AudioFileWriter> i = ServiceFactory.lookupProviders(AudioFileWriter.class);
     while (i.hasNext())
       {
-        AudioFileWriter w = (AudioFileWriter) i.next();
+        AudioFileWriter w = i.next();
         if (w.isFileTypeSupported(type, ais))
           return w.write(ais, type, out);
       }
@@ -739,10 +744,10 @@ public class AudioSystem
                           OutputStream os)
     throws IOException
   {
-    Iterator i = ServiceFactory.lookupProviders(AudioFileWriter.class);
+    Iterator<AudioFileWriter> i = ServiceFactory.lookupProviders(AudioFileWriter.class);
     while (i.hasNext())
       {
-        AudioFileWriter w = (AudioFileWriter) i.next();
+        AudioFileWriter w = i.next();
         if (w.isFileTypeSupported(type, ais))
           return w.write(ais, type, os);
       }

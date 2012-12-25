@@ -166,7 +166,8 @@ sys_abort (void)
   if (options.backtrace == 1
       || (options.backtrace == -1 && compile_options.backtrace == 1))
     {
-      show_backtrace ();
+      estr_write ("\nProgram aborted. Backtrace:\n");
+      backtrace ();
       signal (SIGABRT, SIG_DFL);
     }
 

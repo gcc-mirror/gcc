@@ -1,5 +1,5 @@
 /* InvocationTargetException.java -- Wrapper exception for reflection
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,9 +50,9 @@ package java.lang.reflect;
  * @see Method#invoke(Object,Object[])
  * @see Constructor#newInstance(Object[])
  * @since 1.1
- * @status updated to 1.4
+ * @status updated to 1.7
  */
-public class InvocationTargetException extends Exception
+public class InvocationTargetException extends ReflectiveOperationException
 {
   /**
    * Compatible with JDK 1.1+.

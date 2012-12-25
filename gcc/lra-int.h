@@ -249,6 +249,25 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 #define LRA_LOSER_COST_FACTOR 6
 #define LRA_MAX_REJECT 600
 
+/* Maximum allowed number of constraint pass iterations after the last
+   spill pass.	It is for preventing LRA cycling in a bug case.	 */
+#define LRA_MAX_CONSTRAINT_ITERATION_NUMBER 30
+
+/* The maximal number of inheritance/split passes in LRA.  It should
+   be more 1 in order to perform caller saves transformations and much
+   less MAX_CONSTRAINT_ITERATION_NUMBER to prevent LRA to do as many
+   as permitted constraint passes in some complicated cases.  The
+   first inheritance/split pass has a biggest impact on generated code
+   quality.  Each subsequent affects generated code in less degree.
+   For example, the 3rd pass does not change generated SPEC2000 code
+   at all on x86-64.  */
+#define LRA_MAX_INHERITANCE_PASSES 2
+
+#if LRA_MAX_INHERITANCE_PASSES <= 0 \
+    || LRA_MAX_INHERITANCE_PASSES >= LRA_MAX_CONSTRAINT_ITERATION_NUMBER - 8
+#error wrong LRA_MAX_INHERITANCE_PASSES value
+#endif
+
 /* lra.c: */
 
 extern FILE *lra_dump_file;

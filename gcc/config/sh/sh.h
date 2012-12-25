@@ -1873,10 +1873,6 @@ struct sh_args {
    more compact code.  */
 #define SHIFT_COUNT_TRUNCATED (0)
 
-/* CANONICALIZE_COMPARISON macro for the combine pass.  */
-#define CANONICALIZE_COMPARISON(CODE, OP0, OP1) \
-  sh_canonicalize_comparison ((CODE), (OP0), (OP1))
-
 /* All integers have the same format so truncation is easy.  */
 /* But SHmedia must sign-extend DImode when truncating to SImode.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC) \

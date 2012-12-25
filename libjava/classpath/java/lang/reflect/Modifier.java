@@ -1,5 +1,5 @@
 /* java.lang.reflect.Modifier
-   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2008  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005, 2008, 2012  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -297,6 +297,46 @@ public class Modifier
   public static boolean isVolatile(int mod)
   {
     return (mod & VOLATILE) != 0;
+  }
+
+  /**
+   * @since 1.7
+   */
+  public static int classModifiers()
+  {
+    return PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT | FINAL | STRICT;
+  }
+
+  /**
+   * @since 1.7
+   */
+  public static int interfaceModifiers()
+  {
+    return PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT | STRICT;
+  }
+
+  /**
+   * @since 1.7
+   */
+  public static int constructorModifiers()
+  {
+    return PUBLIC | PROTECTED | PRIVATE;
+  }
+
+  /**
+   * @since 1.7
+   */
+  public static int methodModifiers()
+  {
+    return PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT | FINAL | STRICT | SYNCHRONIZED | NATIVE;
+  }
+
+  /**
+   * @since 1.7
+   */
+  public static int fieldModifiers()
+  {
+    return PUBLIC | PROTECTED | PRIVATE | STATIC | FINAL | TRANSIENT | VOLATILE;
   }
 
   /**

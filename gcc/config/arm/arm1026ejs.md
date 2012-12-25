@@ -72,7 +72,7 @@
 ;; ALU operations with a shift-by-constant operand
 (define_insn_reservation "alu_shift_op" 1 
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "alu_shift"))
+      (eq_attr "type" "simple_alu_shift,alu_shift"))
  "a_e,a_m,a_w")
 
 ;; ALU operations with a shift-by-register operand

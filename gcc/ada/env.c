@@ -29,10 +29,6 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
@@ -75,6 +71,10 @@ extern "C" {
 #include "config.h"
 #include "system.h"
 #endif /* IN_RTS */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if defined (__APPLE__)
 #include <crt_externs.h>

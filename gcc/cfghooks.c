@@ -724,11 +724,23 @@ merge_blocks (basic_block a, basic_block b)
 
   cfg_hooks->merge_blocks (a, b);
 
-  /* If we merge a loop header into its predecessor, update the loop
-     structure.  */
   if (current_loops != NULL)
     {
-      if (b->loop_father->header == b)
+      /* If the block we merge into is a loop header do nothing unless ... */
+      if (a->loop_father->header == a)
+	{
+	  /* ... we merge two loop headers, in which case we kill
+	     the inner loop.  */
+	  if (b->loop_father->header == b)
+	    {
+	      b->loop_father->header = NULL;
+	      b->loop_father->latch = NULL;
+	      loops_state_set (LOOPS_NEED_FIXUP);
+	    }
+	}
+      /* If we merge a loop header into its predecessor, update the loop
+	 structure.  */
+      else if (b->loop_father->header == b)
 	{
 	  remove_bb_from_loops (a);
 	  add_bb_to_loop  (a, b->loop_father);

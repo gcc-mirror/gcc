@@ -175,7 +175,8 @@ am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	testing/iotest.lo testing/quick.lo unicode/utf16.lo \
 	unicode/utf8.lo
 libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
-	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_1) \
+	../libbacktrace/libbacktrace.la \
+	../libatomic/libatomic_convenience.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 @LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
@@ -212,12 +213,13 @@ am__objects_5 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-type-float.lo go-type-identity.lo go-type-interface.lo \
 	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
 	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
-	go-unwind.lo chan.lo cpuprof.lo lfstack.lo $(am__objects_1) \
-	mcache.lo mcentral.lo $(am__objects_2) mfinal.lo mfixalloc.lo \
-	mgc0.lo mheap.lo msize.lo panic.lo parfor.lo print.lo proc.lo \
-	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_3) \
-	iface.lo malloc.lo map.lo mprof.lo reflect.lo runtime1.lo \
-	sema.lo sigqueue.lo string.lo time.lo $(am__objects_4)
+	go-unwind.lo chan.lo cpuprof.lo env_posix.lo lfstack.lo \
+	$(am__objects_1) mcache.lo mcentral.lo $(am__objects_2) \
+	mfinal.lo mfixalloc.lo mgc0.lo mheap.lo msize.lo panic.lo \
+	parfor.lo print.lo proc.lo runtime.lo signal_unix.lo thread.lo \
+	yield.lo $(am__objects_3) iface.lo malloc.lo map.lo mprof.lo \
+	reflect.lo runtime1.lo sema.lo sigqueue.lo string.lo time.lo \
+	$(am__objects_4)
 am_libgo_la_OBJECTS = $(am__objects_5)
 libgo_la_OBJECTS = $(am_libgo_la_OBJECTS)
 libgo_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -834,6 +836,7 @@ runtime_files = \
 	runtime/go-unwind.c \
 	runtime/chan.c \
 	runtime/cpuprof.c \
+	runtime/env_posix.c \
 	runtime/lfstack.c \
 	$(runtime_lock_files) \
 	runtime/mcache.c \
@@ -1839,6 +1842,10 @@ go_unicode_utf8_files = \
 
 # GNU/Linux specific socket filters.
 @LIBGO_IS_LINUX_TRUE@syscall_lsf_file = go/syscall/lsf_linux.go
+@LIBGO_IS_LINUX_FALSE@syscall_utimesnano_file = go/syscall/libcall_posix_utimesnano.go
+
+# GNU/Linux specific utimesnano support.
+@LIBGO_IS_LINUX_TRUE@syscall_utimesnano_file = go/syscall/libcall_linux_utimesnano.go
 go_base_syscall_files = \
 	go/syscall/env_unix.go \
 	go/syscall/syscall_errno.go \
@@ -1861,6 +1868,7 @@ go_base_syscall_files = \
 	$(syscall_uname_file) \
 	$(syscall_netlink_file) \
 	$(syscall_lsf_file) \
+	$(syscall_utimesnano_file) \
 	$(GO_LIBCALL_OS_FILE) \
 	$(GO_LIBCALL_OS_ARCH_FILE) \
 	$(GO_SYSCALL_OS_FILE) \
@@ -2037,6 +2045,7 @@ libgo_la_LDFLAGS = \
 
 libgo_la_LIBADD = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
+	../libatomic/libatomic_convenience.la \
 	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \
@@ -2416,6 +2425,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cpuprof.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/env_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-bsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-irix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getncpu-linux.Plo@am__quote@
@@ -3024,6 +3034,13 @@ cpuprof.lo: runtime/cpuprof.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/cpuprof.c' object='cpuprof.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpuprof.lo `test -f 'runtime/cpuprof.c' || echo '$(srcdir)/'`runtime/cpuprof.c
+
+env_posix.lo: runtime/env_posix.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT env_posix.lo -MD -MP -MF $(DEPDIR)/env_posix.Tpo -c -o env_posix.lo `test -f 'runtime/env_posix.c' || echo '$(srcdir)/'`runtime/env_posix.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/env_posix.Tpo $(DEPDIR)/env_posix.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/env_posix.c' object='env_posix.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env_posix.lo `test -f 'runtime/env_posix.c' || echo '$(srcdir)/'`runtime/env_posix.c
 
 lfstack.lo: runtime/lfstack.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lfstack.lo -MD -MP -MF $(DEPDIR)/lfstack.Tpo -c -o lfstack.lo `test -f 'runtime/lfstack.c' || echo '$(srcdir)/'`runtime/lfstack.c

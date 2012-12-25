@@ -136,7 +136,7 @@ public abstract class OutputStream
    *
    * @param value a value type object to write.
    */
-  @SuppressWarnings("unchecked") // Needed for API compatibility
+  @SuppressWarnings("rawtypes") // Needed for API compatibility
   public void write_value(Serializable value, Class clz)
   {
     Vio.write(this, value, clz);

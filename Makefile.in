@@ -36955,7 +36955,7 @@ all-target-libgupc: configure-target-libgupc
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
 	(cd $(TARGET_SUBDIR)/libgupc && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libgupc))
 @endif target-libgupc
 
@@ -46652,6 +46652,7 @@ configure-target-libgo: maybe-configure-target-libffi
 configure-target-libgo: maybe-all-target-libstdc++-v3
 all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libffi
+all-target-libgo: maybe-all-target-libatomic
 configure-target-libjava: maybe-configure-target-zlib
 configure-target-libjava: maybe-configure-target-boehm-gc
 configure-target-libjava: maybe-configure-target-libffi
@@ -46686,6 +46687,15 @@ all-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
 all-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
 all-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
 install-target-libgupc: maybe-install-gcc
+install-target-libgo: maybe-install-target-libatomic
+install-target-libgfortran: maybe-install-target-libquadmath
+install-target-libgfortran: maybe-install-target-libgcc
+install-target-libsanitizer: maybe-install-target-libgcc
+install-target-libjava: maybe-install-target-libgcc
+install-target-libitm: maybe-install-target-libgcc
+install-target-libobjc: maybe-install-target-libgcc
+install-target-libgupc: maybe-install-target-libgcc
+install-target-libstdc++-v3: maybe-install-target-libgcc
 all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libtermcap
 configure-target-newlib: maybe-all-binutils

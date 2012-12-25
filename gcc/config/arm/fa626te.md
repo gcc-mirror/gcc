@@ -73,7 +73,7 @@
 
 (define_insn_reservation "626te_alu_shift_op" 2
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "alu_shift,alu_shift_reg"))
+      (eq_attr "type" "simple_alu_shift,alu_shift,alu_shift_reg"))
  "fa626te_core")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

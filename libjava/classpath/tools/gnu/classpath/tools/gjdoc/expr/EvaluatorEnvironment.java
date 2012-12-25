@@ -1,5 +1,5 @@
 /* gnu.classpath.tools.gjdoc.expr.EvaluatorEnvironment
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2012 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,12 @@ exception statement from your version. */
 
 package gnu.classpath.tools.gjdoc.expr;
 
+import com.sun.javadoc.FieldDoc;
+
 import java.util.Set;
 
 public interface EvaluatorEnvironment
 {
-   public Object getValue(String identifier, Set visitedFields)
+   public Object getValue(String identifier, Set<FieldDoc> visitedFields)
       throws IllegalExpressionException, UnknownIdentifierException;
 }

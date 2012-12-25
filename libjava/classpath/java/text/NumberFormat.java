@@ -1,5 +1,5 @@
 /* NumberFormat.java -- Formats and parses numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2007
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2007, 2012
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -177,7 +177,6 @@ public abstract class NumberFormat extends Format implements Cloneable
      * This constructor is only used by the deserializer. Without it,
      * it would fail to construct a valid object.
      */
-    @SuppressWarnings("unused")
     private Field()
     {
       super("");

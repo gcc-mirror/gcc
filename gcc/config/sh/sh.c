@@ -314,6 +314,9 @@ static int max_mov_insn_displacement (enum machine_mode, bool);
 static int mov_insn_alignment_mask (enum machine_mode, bool);
 static HOST_WIDE_INT disp_addr_displacement (rtx);
 static bool sequence_insn_p (rtx);
+static void sh_canonicalize_comparison (int *, rtx *, rtx *, bool);
+static void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
+					enum machine_mode, bool);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 
@@ -585,6 +588,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P	sh_legitimate_constant_p
+
+#undef TARGET_CANONICALIZE_COMPARISON
+#define TARGET_CANONICALIZE_COMPARISON	sh_canonicalize_comparison
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
@@ -1909,12 +1915,14 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
     }
 }
 
-/* Implement the CANONICALIZE_COMPARISON macro for the combine pass.
-   This function is also re-used to canonicalize comparisons in cbranch
-   pattern expanders.  */
-void
+/* Implement the canonicalize_comparison target hook for the combine
+   pass.  For the target hook this function is invoked via
+   sh_canonicalize_comparison.  This function is also re-used to
+   canonicalize comparisons in cbranch pattern expanders.  */
+static void
 sh_canonicalize_comparison (enum rtx_code& cmp, rtx& op0, rtx& op1,
-			    enum machine_mode mode)
+			    enum machine_mode mode,
+			    bool op0_preserve_value ATTRIBUTE_UNUSED)
 {
   /* When invoked from within the combine pass the mode is not specified,
      so try to get it from one of the operands.  */
@@ -2008,6 +2016,19 @@ sh_canonicalize_comparison (enum rtx_code& cmp, rtx& op0, rtx& op1,
     }
 }
 
+/* This function implements the canonicalize_comparison target hook.
+   This wrapper around the internally used sh_canonicalize_comparison
+   function is needed to do the enum rtx_code <-> int conversion.
+   Target hooks cannot use enum rtx_code in its definition.  */
+static void
+sh_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
+			    bool op0_preserve_value)
+{
+  enum rtx_code tmp_code = (enum rtx_code)*code;
+  sh_canonicalize_comparison (tmp_code, *op0, *op1,
+			      VOIDmode, op0_preserve_value);
+  *code = (int)tmp_code;
+}
 enum rtx_code
 prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 			  enum rtx_code comparison)
@@ -2021,7 +2042,8 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
   else
     scratch = operands[4];
 
-  sh_canonicalize_comparison (comparison, operands[1], operands[2], mode);
+  sh_canonicalize_comparison (comparison, operands[1], operands[2],
+			      mode, false);
 
   /* Notice that this function is also invoked after reload by
      the cbranchdi4_i pattern, through expand_cbranchdi4.  */

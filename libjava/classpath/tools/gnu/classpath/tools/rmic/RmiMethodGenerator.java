@@ -86,7 +86,7 @@ public class RmiMethodGenerator
   {
     StringBuilder b = new StringBuilder();
 
-    Class[] args = method.getParameterTypes();
+    Class<?>[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)
       {
@@ -108,7 +108,7 @@ public class RmiMethodGenerator
   {
     StringBuilder b = new StringBuilder();
 
-    Class[] args = method.getParameterTypes();
+    Class<?>[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)
       {
@@ -128,7 +128,7 @@ public class RmiMethodGenerator
   {
     StringBuilder b = new StringBuilder();
 
-    Class[] args = method.getExceptionTypes();
+    Class<?>[] args = method.getExceptionTypes();
 
     for (int i = 0; i < args.length; i++)
       {
@@ -184,7 +184,7 @@ public class RmiMethodGenerator
   public String getStaticMethodDeclarations()
   {
     StringBuilder b = new StringBuilder();
-    Class[] args = method.getParameterTypes();
+    Class<?>[] args = method.getParameterTypes();
 
     for (int i = 0; i < args.length; i++)
       {

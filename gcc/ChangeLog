@@ -1,3 +1,426 @@
+2012-12-22  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54728
+	* cgraph.h (symtab_real_symbol_p): Drop code looking for external functions.
+	* lto-streamer-out.c (output_symbol_p): New function.
+	(produce_symtab) Use it.
+
+2012-12-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55355
+	* tree-sra.c (type_internals_preclude_sra_p): Also check that
+	bit_position is small enough to fit a single HOST_WIDE_INT.
+
+2012-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* rtlanal.c (volatile_insn_p): Delete commented out code.
+	(side_effects_p): Likewise.
+	(may_trap_p_1) <UNSPEC_VOLATILE>: Return 1 again.
+	* target.def (unspec_may_trap_p): Adjust comment.
+	* targhooks.c (default_unspec_may_trap_p): Don't handle UNSPEC_VOLATILE.
+	* config/ia64/ia64.c (ia64_unspec_may_trap_p): Adjust to above change.
+
+2012-12-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/55775
+	* lra-assigns.c (improve_inheritance): Do nothing after
+	LRA_MAX_INHERITANCE_PASSES pass.
+	* lra-constraints.c (MAX_CONSTRAINT_ITERATION_NUMBER): Rename to
+	LRA_MAX_CONSTRAINT_ITERATION_NUMBER.  Move to lra-int.h.
+	(MAX_INHERITANCE_PASSES): Rename to LRA_MAX_INHERITANCE_PASSES.
+	Move to lra-int.h.
+	* lra-int.h (LRA_MAX_CONSTRAINT_ITERATION_NUMBER): Move from
+	lra-constraints.c.
+	(LRA_MAX_INHERITANCE_PASSES): Ditto.
+
+2012-12-21  Steve Ellcey  <sellcey@mips.com>
+
+	PR bootstrap/54128
+	* ira.c (build_insn_chain): Check only NONDEBUG instructions for
+	register usage.
+
+2012-12-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* varasm.c (bss_initializer_p): Remove static.
+	* output.h (bss_initializer_p): Declare.
+	* xcoffout.c (xcoff_tbss_section_name): Define.
+	* xcoffout.h (xcoff_tbss_section_name): Declare.
+	* config/rs6000/xcoff.h (TARGET_ENCODE_SECTION_INFO): Define.
+	(ASM_OUTPUT_TLS_COMMON): Merge strings.
+	* config/rs6000/rs6000.c (tls_private_data_section): New.
+	(output_toc): Only output CSECT decoration for TLS.
+	Output appropriate CSECT for data or bss.
+	(rs6000_xcoff_asm_init_sections) Define tls_private_data_section.
+	(rs6000_xcoff_select_section): Handle TLS bss and private data.
+	(rs6000_xcoff_file_start): Generate xcoff_tbss_section_name.
+	(rs6000_xcoff_encode_section_info): Strip SYMBOL_FLAG_HAS_BLOCK_INFO
+	from native TLS symbols.
+
+2012-12-21  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/52996
+	* cprop.c (bypass_block): When loops are to be preserved
+	do not bypass loop headers.  Revert earlier kludge to remove
+	loops when doing that.
+
+2012-12-21  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/54659
+	* system.h: Include gmp.h.
+	* tree-ssa-loop-niter.c: Do not include gmp.h here.
+	* double-int.h: Likewise.
+	* realmpfr.h: Likewise.
+
+2012-12-21  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+        * config/arm/cortex-a7.md: New file.
+        * config/arm/t-arm (MD_INCLUDES): Add cortex-a7.md.
+        * config/arm/arm.md: Include cortex-a7.md.
+        (generic_sched): Don't use generic scheduler for Cortex-A7.
+        (generic_vfp): Likewise.
+        * config/arm/arm.c: (TARGET_SCHED_REORDER): Use arm_sched_reorder.
+        (arm_sched_reorder,cortexa7_sched_reorder): New function.
+        (cortexa7_older_only,cortexa7_younger): Likewise.
+        (arm_issue_rate): Add Cortex-A7.
+
+2012-12-20  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc/config/aarch64/aarch64.md
+	(*addsi3_aarch64_uxtw): New pattern.
+	(*addsi3_compare0_uxtw): New pattern.
+	(*add_<shift>_si_uxtw): New pattern.
+	(*add_<optab><SHORT:mode>_si_uxtw): New pattern.
+	(*add_<optab><SHORT:mode>_shft_si_uxtw): New pattern.
+	(*add_<optab><SHORT:mode>_mult_si_uxtw): New pattern.
+	(*add_<optab>si_multp2_uxtw): New pattern.
+	(*addsi3_carryin_uxtw): New pattern.
+	(*addsi3_carryin_alt1_uxtw): New pattern.
+	(*addsi3_carryin_alt2_uxtw): New pattern.
+	(*addsi3_carryin_alt3_uxtw): New pattern.
+	(*add_uxtsi_multp2_uxtw): New pattern.
+	(*subsi3_uxtw): New pattern.
+	(*subsi3_compare0_uxtw): New pattern.
+	(*sub_<shift>_si_uxtw): New pattern.
+	(*sub_mul_imm_si_uxtw): New pattern.
+	(*sub_<optab><SHORT:mode>_si_uxtw): New pattern.
+	(*sub_<optab><SHORT:mode>_shft_si_uxtw): New pattern.
+	(*sub_<optab>si_multp2_uxtw): New pattern.
+	(*sub_uxtsi_multp2_uxtw): New pattern.
+	(*negsi2_uxtw): New pattern.
+	(*negsi2_compare0_uxtw): New pattern.
+	(*neg_<shift>_si2_uxtw): New pattern.
+	(*neg_mul_imm_si2_uxtw): New pattern.
+	(*mulsi3_uxtw): New pattern.
+	(*maddsi_uxtw): New pattern.
+	(*msubsi_uxtw): New pattern.
+	(*mulsi_neg_uxtw): New pattern.
+	(*<su_optab>divsi3_uxtw): New pattern.
+
+2012-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/55750
+	* gimplify.c (gimplify_self_mod_expr): Don't force lvalue to
+	pass is_gimple_min_lval.
+
+2012-12-20  Richard Henderson  <rth@redhat.com>
+	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/constraints.md (NxxDq, NxxSq): New.
+	* config/s390/predicates.md (contiguous_bitmask_operand): New.
+	* config/s390/s390.c (print_operand) ['e', 'f', 's', 't']: New
+	operand letters.
+	* config/s390/s390.md (bfstart, bfend): New mode attrs.
+	(*insv<GPR>_zEC12_noshift): Use them.
+	(*insv<GPR>_z10_noshift): Likewise.
+	(*insv<GPR>_or_z10_noshift): Likewise.
+
+	* config/s390/s390.md (*insv_l_di_reg_extimm): Un-macroize from :P.
+
+	* config/s390/s390.md (*anddi3_cc): Add risbg alternative.
+	(*anddi3_cconly, *anddi3): Likewise.
+	(*andsi3, *andsi3_cconly, *andsi3_zarch): Likewise.
+
+	* config/s390/s390.md (bitsize): New mode attr.
+	(*extzv<GPR>, *extzv<GPR>, *insv<GPR>_zEC12, *insv<GPR>_z10): Use it.
+	(extend<HQI><DSI>2, zero_extend<HQI>si2): Likewise.
+	(zero_extend<HQI>di2, fixuns_trunc<BFP><GPR>2): Likewise.
+
+	* config/s390/predicates.md (nonzero_shift_count_operand): New.
+	* config/s390/s390-protos.h (s390_extzv_shift_ok): Declare.
+	* config/s390/s390.c (s390_extzv_shift_ok): New function.
+	* config/s390/s390.md (extzv): New expander.
+	(*extzv<GPR>_zEC12, *extzv<GPR>_z10): New insns.
+	(*pre_z10_extzv<GPR>): Rename from *extzv<GPR>; simplify with
+	nonzero_shift_count_operand.
+	(*extzv_<GPR>_srl, *extzv_<GPR>_sll): New insns.
+
+	* config/s390/s390.md (IXOR): New code iterator.
+	(*r<IXOR>sbg_<GPR>_noshift): Rename from *insv<GPR>_or_z10_noshift;
+	macro-ize to handle XOR too.
+	(*r<IXOR>sbg_di_rotl, *r<IXOR>sbg_<GPR>_srl, *r<IXOR>sbg_<GPR>_sll):
+	New patterns.
+
+	* config/s390/s390.md (*insv_rnsbg_noshift, *insv_rnsbg_srl): New.
+
+2012-12-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR bootstrap/55202
+	* configure.ac <PLUGIN_LD_SUFFIX>: Use POSIX shell syntax.
+	* configure: Regenerate.
+
+2012-12-20  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/55754
+	* config/arm/arm.c (arm_canonicalize_comparison): Remove
+	op0_preserve_value check for zero_extend to and transformation.
+
+2012-12-20  Teresa Johnson  <tejohnson@google.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/55734
+	* gcov-io.c (gcov_read_summary): Use __builtin_popcount instead
+	of __builtin_popcountll when building libgcov.a, otherwise use
+	popcount_hwi.
+	(gcov_histo_index): When not building libgcov.a, use floor_log2
+	instead of __builtin_clzll.
+
+2012-12-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55740
+	* cfghooks.c (merge_blocks): Properly handle merging of
+	two loop headers.
+
+2012-12-20  Roland Stigge  <stigge@debian.org>
+	    Matthias Klose  <doko@ubuntu.com>
+
+	* config/rs6000/t-spe (MULTIARCH_DIRNAME): Remove.
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Define name for
+	powerpc-linux-gnuspe.
+
+2012-12-19  Matthias Klose  <doko@ubuntu.com>
+
+	* config/i386/t-kfreebsd (MULTIARCH_DIRNAME): Add comma to
+	separate arguments in make function.
+
+2012-12-19  Uros Bizjak  <ubizjak@gmail.com>
+	    Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.h (enum ix86_tune_indices): Add
+	X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE.
+	(TARGET_AVOID_MEM_OPND_FOR_CMOVE): New define.
+	* config/i386/i386.c (initial_ix86_tune_features)
+	<X86TUNE_AVOID_MEM_OPND_FOR_CMOVE>: Initialize.
+	* config/i386/i386.md (splitters to avoid cmove memory operands): New.
+	(peephole2s to avoid cmove memory operands): New.
+
+2012-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (f_minmaxs, f_minmaxd): New types.
+	* config/arm/vfp.md (smax<mode>3): New pattern.
+	(smin<mode>3): Likewise.
+
+2012-12-19  Richard Biener  <rguenther@suse.de>
+
+	* targhooks.h (default_canonicalize_comparison): Fix prototype.
+	* targhooks.c (default_canonicalize_comparison): Define.
+
+2012-12-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55736
+	PR tree-optimization/55703
+	* gimplify.c (prune_expr_location): New function.
+	(unshare_expr_without_location): Likewise.
+	* tree.h (unshare_expr_without_location): Declare.
+	* ipa-prop.c (prune_expression_for_jf): Remove.
+	(prune_expression_for_jf_1): Likewise.
+	(ipa_set_jf_constant): Use unshare_expr_without_location.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(determine_known_aggregate_parts): Likewise.
+	* tree-switch-conversion.c (build_constructors): Use
+	unshare_expr_without_location on all constructor elements.
+
+2012-12-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* target.def: Define canonicalize_comparison hook.
+	* targhooks.h (default_canonicalize_comparison): New prototype.
+	* targhooks.c (default_canonicalize_comparison): New function.
+	* doc/tm.texi: Add documentation for the new target hook.
+	* doc/tm.texi.in: Likewise.
+	* combine.c (try_combine): Adjust to use the target hook.
+	* config/alpha/alpha.h (CANONICALIZE_COMPARISON): Remove macro
+	definition.
+	* config/alpha/alpha.c (alpha_canonicalize_comparison): New function.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/arm/arm-protos.h (arm_canonicalize_comparison): Remove
+	prototype.
+	* config/arm/arm.c (arm_canonicalize_comparison): Add new parameter.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/arm/arm.h (CANONICALIZE_COMPARISON): Remove macro definition.
+	* config/s390/s390-protos.h (s390_canonicalize_comparison): Remove
+	prototype.
+	* config/s390/s390.c (s390_canonicalize_comparison): Add new parameter.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/s390/s390.h (CANONICALIZE_COMPARISON): Remove macro definition.
+	* config/sh/sh-protos.h (sh_canonicalize_comparison): Remove prototype.
+	* config/sh/sh.c (sh_canonicalize_comparison): Add new prototype.  New
+	function overloading the old one.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/sh/sh.h (CANONICALIZE_COMPARISON): Remove macro definition.
+	* config/spu/spu.c (spu_canonicalize_comparison): New function.
+	(TARGET_CANONICALIZE_COMPARISON): New macro definition.
+	* config/spu/spu.h (CANONICALIZE_COMPARISON): Remove macro definition.
+
+2012-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55730
+	* dwarf2out.c (mem_loc_descriptor): Ignore CLOBBER.
+	* valtrack.c (gen_lowpart_for_debug): New function.
+	(propagate_for_debug): Temporarily set rtl_hooks.gen_lowpart_no_emit
+	to gen_lowpart_for_debug.
+
+2012-12-18  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55683
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Look into constants
+	for binfo.
+
+2012-12-19  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (thumb_find_work_register): Check argument
+	register number based on current PCS.
+
+2012-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55562
+	* sbitmap.c (bitmap_and, bitmap_xor, bitmap_ior): Return whether
+	dst sbitmap changed even if it doesn't have popcount.
+
+2012-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (insv_imm<mode>): Add modes
+	for source operands.
+
+2012-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_move):
+	Remove unused variables.
+	(aarch64_split_compare_and_swap): Likewise.
+
+2012-12-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/driver-arm.c (arm_cpu_table): Add Cortex-A7.
+
+2012-12-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/54324
+	* doc/install.texi (Tools/packages necessary for building GCC):
+	Suggest --disable-stage1-checking for older GCC's.
+
+2012-12-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR other/54324
+	* tree-ssa-coalesce.c (struct ssa_name_var_hash): Remove "union"
+	from template parameter.
+
+2012-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54838
+	* cfgloopmanip.c (fix_loop_structure): Re-discover latch
+	edges first and mark loops for removal if no latch edges remain.
+	Properly re-create LOOPS_HAVE_FALLTHRU_PREHEADERS.
+	* loop-init.c (loop_optimizer_finalize): Set
+	LOOPS_MAY_HAVE_MULTIPLE_LATCHES.
+
+2012-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55555
+	* tree-ssa-loop-niter.c (idx_infer_loop_bounds): Properly
+	analyze evolution of the index for the loop it is used in.
+	* tree-scalar-evolution.c (instantiate_scev_name): Take
+	inner loop we will be creating a chrec for.  Generalize
+	fix for PR40281 and prune invalid SCEVs.
+	(instantiate_scev_poly): Likewise - pass down inner loop
+	we will be creating a chrec for.
+	(instantiate_scev_binary): Take and pass through inner loop.
+	(instantiate_array_ref): Likewise.
+	(instantiate_scev_convert): Likewise.
+	(instantiate_scev_not): Likewise.
+	(instantiate_scev_3): Likewise.
+	(instantiate_scev_2): Likewise.
+	(instantiate_scev_1): Likewise.
+	(instantiate_scev_r): Likewise.
+	(resolve_mixers): Adjust.
+	(instantiate_scev): Likewise.
+
+2012-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55717
+	* rtlhooks-def.h (RTL_HOOKS_GEN_LOWPART_NO_EMIT): Define to
+	gen_lowpart_if_possible.
+	(gen_lowpart_no_emit_general): Remove prototype.
+	* rtlhooks.c (gen_lowpart_no_emit_general): Removed.
+	* simplify-rtx.c (simplify_unary_operation_1,
+	simplify_binary_operation_1): Continue simplifying if
+	rtl_hooks.gen_lowpart_no_emit returns NULL_RTX.
+	* dwarf2out.c (mem_loc_descriptor) <case TRUNCATE>: Handle
+	truncation like lowpart SUBREG.
+
+2012-12-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Update Kaveh Ghazi's entry;
+	remove broken link to Rutgers University.
+
+2012-12-17  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* varasm.c (pending_assemble_externals_processed): Guard
+	with ASM_OUTPUT_EXTERNAL.
+
+2012-12-17  Andrew Stubbs  <ams@codesourcery.com>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.md (zero_extend<mode>di2): Add extra alternatives
+	for NEON registers.
+	Add alternative for one-instruction extend-in-place.
+	(extend<mode>di2): Likewise.
+	Add constraints for Thumb-mode memory loads.
+	Prevent extend splitters doing NEON alternatives.
+	* config/arm/iterators.md (qhs_extenddi_cstr, qhs_zextenddi_cstr):
+	Adjust constraints to add new alternatives.
+	* config/arm/neon.md: Add splitters for zero- and sign-extend.
+
+2012-12-17  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.md (type): Add "simple_alu_shift" to attribute "type".
+	(core_cycles): Update for simple_alu_shift.
+	(thumb1_zero_extendhisi2,arm_zero_extendhisi2_v6): Use simple_alu_shift
+	instead of a CPU-speicific condition for "type" attribute.
+	(thumb1_zero_extendqisi2_v6,arm_zero_extendqisi2_v6): Likewise.
+	(thumb1_extendhisi2,arm_extendhisi2_v6,arm_extendqisi_v6): Likewise.
+	(thumb1_extendqisi2): Likewise.
+	* config/arm/thumb2.md (thumb2_extendqisi_v6): Likewise.
+	(thumb2_zero_extendhisi2_v6,thumb2_zero_extendqisi2_v6) Likewise.
+	* config/arm/arm1020e.md (alu_shift_op): Use simple_alu_shift.
+	* config/arm/arm1026ejs.md (alu_shift_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_shift_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu_shift): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu_shift): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu_shift,cortex_a8_mov): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp,cortex_a9_dp_shift): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Likewise.
+	* config/arm/cortex-r4.md (cortex_r4_alu_shift): Likewise.
+	* config/arm/fa526.md (526_alu_shift_op): Likewise.
+	* config/arm/fa606te.md (fa606te_core): Likewise.
+	* config/arm/fa626te.md (626te_alu_shift_op): Likewise.
+	* config/arm/fa726te.md (726te_alu_shift_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_shift_op): Likewise.
+
+2012-12-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54781
+	* alias.c (ao_ref_from_mem): More appropriately constrain the
+	base object we feed to the tree oracle.  Remove dead code.
+
 2012-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 
@@ -49,9 +472,9 @@
 
 2012-12-14  Teresa Johnson  <tejohnson@google.com>
 
-        PR gcov-profile/55674
+	PR gcov-profile/55674
 	* lto-cgraph.c (merge_profile_summaries): Set min correctly the
-        first time we merge into a histogram entry.
+	first time we merge into a histogram entry.
 
 2012-12-14  Richard Biener  <rguenther@suse.de>
 
