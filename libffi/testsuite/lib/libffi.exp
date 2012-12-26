@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2005, 2008, 2009, 2010 Free Software Foundation, Inc.
+#   Copyright (C) 2003, 2005, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 proc load_gcc_lib { filename } {
     global srcdir
-    load_file $srcdir/../../gcc/testsuite/lib/$filename
+    load_file $srcdir/lib/$filename
 }
 
 load_lib dg.exp
@@ -94,7 +94,6 @@ proc libffi-init { args } {
     global srcdir
     global blddirffi
     global objdir
-    global blddircxx
     global TOOL_OPTIONS
     global tool
     global libffi_include
@@ -102,10 +101,8 @@ proc libffi-init { args } {
     global tool_root_dir
     global ld_library_path
 
-    set blddirffi [lookfor_file [get_multilibs] libffi]
+    set blddirffi [pwd]/.. 
     verbose "libffi $blddirffi"
-    set blddircxx [lookfor_file [get_multilibs] libstdc++-v3]
-    verbose "libstdc++ $blddircxx"
 
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
@@ -132,8 +129,6 @@ proc libffi-init { args } {
     }
     # add the library path for libffi.
     append ld_library_path ":${blddirffi}/.libs"
-    # add the library path for libstdc++ as well.
-    append ld_library_path ":${blddircxx}/src/.libs"
 
     verbose "ld_library_path: $ld_library_path"
 
@@ -146,7 +141,6 @@ proc libffi-init { args } {
     if { $libffi_dir != "" } {
 	set libffi_dir [file dirname ${libffi_dir}]
 	set libffi_link_flags "-L${libffi_dir}/.libs"
-	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
 
     set_ld_library_path_env_vars
@@ -208,6 +202,10 @@ proc libffi_target_compile { source dest type options } {
     }
 
     lappend options "libs= -lffi"
+
+    if { [string match "aarch64*-*-linux*" $target_triplet] } {
+	lappend options "libs= -lpthread"
+    }
 
     verbose "options: $options"
     return [target_compile $source $dest $type $options]
