@@ -8,7 +8,7 @@
 
 #include "ffitest.h"
 
-static size_t __attribute__((fastcall)) my_fastcall_f(float a, char *s)
+static size_t __FASTCALL__ my_fastcall_f(float a, char *s)
 {
   return (size_t) ((int) strlen(s) + (int) a);
 }

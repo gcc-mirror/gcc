@@ -229,6 +229,19 @@ main(int argc __UNUSED__, const char** argv __UNUSED__)
 	ffi_type*	st_fields[51];
 	BigStruct	retVal;
 
+	uint8_t		ui8		= 1;
+	int8_t		si8		= 2;
+	uint16_t	ui16	= 3;
+	int16_t		si16	= 4;
+	uint32_t	ui32	= 5;
+	int32_t		si32	= 6;
+	uint64_t	ui64	= 7;
+	int64_t		si64	= 8;
+	float		f		= 9;
+	double		d		= 10;
+	long double	ld		= 11;
+	char*		p		= (char*)0x12345678;
+
 	memset (&retVal, 0, sizeof(retVal));
 
 	ret_struct_type.size = 0;
@@ -250,19 +263,6 @@ main(int argc __UNUSED__, const char** argv __UNUSED__)
 	st_fields[11]	= st_fields[23]	= st_fields[35]	= st_fields[47]	= &ffi_type_pointer;
 
 	st_fields[50] = NULL;
-
-	uint8_t		ui8		= 1;
-	int8_t		si8		= 2;
-	uint16_t	ui16	= 3;
-	int16_t		si16	= 4;
-	uint32_t	ui32	= 5;
-	int32_t		si32	= 6;
-	uint64_t	ui64	= 7;
-	int64_t		si64	= 8;
-	float		f		= 9;
-	double		d		= 10;
-	long double	ld		= 11;
-	char*		p		= (char*)0x12345678;
 
 	argTypes[0]		= argTypes[12]	= argTypes[24]	= argTypes[36]	= argTypes[48]	= &ffi_type_uint8;
 	argValues[0]	= argValues[12]	= argValues[24]	= argValues[36]	= argValues[48]	= &ui8;
