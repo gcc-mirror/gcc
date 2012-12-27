@@ -1364,6 +1364,9 @@ gfc_trans_inquire (gfc_code * code)
   if (p->id)
     mask2 |= set_parameter_ref (&block, &post_block,var, IOPARM_inquire_id,
 				p->id);
+  if (p->iqstream)
+    mask2 |= set_string (&block, &post_block, var, IOPARM_inquire_iqstream,
+			 p->iqstream);
 
   if (mask2)
     mask |= set_parameter_const (&block, var, IOPARM_inquire_flags2, mask2);
