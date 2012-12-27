@@ -2839,7 +2839,7 @@ DEFHOOK
 (supports_function_versions,
  "",
  bool, (void),
- hool_bool_void_false)
+ hook_bool_void_false)
 
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX
