@@ -1,7 +1,26 @@
+<<<<<<< .mine
+2012-12-26  Sriraman Tallam  <tmsriram@google.com>
+
+	* doc/tm.texi.in (TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS): Document
+	new target hook.
+	* doc/tm.texi: Regenerate.
+	* c-family/c-common.c (handle_target_attribute): Retain target attribute
+	for targets that support versioning.
+	* target.def (supports_function_versions): New hook.
+	* cp/class.c (add_method): Remove calls
+	to DECL_FUNCTION_SPECIFIC_TARGET.
+	* config/i386/i386.c (ix86_function_versions): Use target string
+	to check for function versions instead of target flags.
+	* (ix86_supports_function_versions): New function.
+	* (is_function_default_version): Check target string.
+	* TARGET_OPTION_SUPPORTS_FUNCTION_VERSIONS: New macro.
+
+=======
 2012-12-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cgraph.c (verify_cgraph_node): Don't allocate/free visited_nodes set.
 
+>>>>>>> .r194729
 2012-12-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/53789

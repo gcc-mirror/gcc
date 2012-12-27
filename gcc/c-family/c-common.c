@@ -8742,8 +8742,12 @@ handle_target_attribute (tree *node, tree name, tree args, int flags,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+  /* Do not strip invalid target attributes for targets which support function
+     multiversioning as the target string is used to determine versioned
+     functions.  */
   else if (! targetm.target_option.valid_attribute_p (*node, name, args,
-						      flags))
+						      flags)
+	   && ! targetm.target_option.supports_function_versions ())
     *no_add_attrs = true;
 
   return NULL_TREE;

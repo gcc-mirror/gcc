@@ -3,7 +3,7 @@
 
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-ifunc "" }  */
-/* { dg-options "-O2  -mno-popcnt" } */
+/* { dg-options "-O2" } */
 
 
 /* Default version.  */
