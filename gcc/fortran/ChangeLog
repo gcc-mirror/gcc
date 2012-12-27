@@ -1,3 +1,13 @@
+2012-12-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/48976
+	* gfortran.h (gfc_inquire struct): Add pointer for inquire stream.
+	* io.c (io_tag): Add tag for inquire stream. (match_inquire_element):
+	Add matcher for new tag. (gfc_resolve_inquire): Resolve new tag.
+	* ioparm.def: Add new parameter for inquire stream.
+	* trans-io.c (gfc_trans_inquire): Add tranlste code for inquire
+	stream.
+
 2012-12-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54884

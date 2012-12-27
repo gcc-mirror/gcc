@@ -2008,7 +2008,8 @@ typedef struct
     *name, *access, *sequential, *direct, *form, *formatted,
     *unformatted, *recl, *nextrec, *blank, *position, *action, *read,
     *write, *readwrite, *delim, *pad, *iolength, *iomsg, *convert, *strm_pos,
-    *asynchronous, *decimal, *encoding, *pending, *round, *sign, *size, *id;
+    *asynchronous, *decimal, *encoding, *pending, *round, *sign, *size, *id,
+    *iqstream;
 
   gfc_st_label *err;
 
