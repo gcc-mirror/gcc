@@ -89,6 +89,12 @@ typedef enum tinfo_kind
   /* ...		   abi::__vmi_type_info<I> */
 } tinfo_kind;
 
+/* Helper macro to get maximum scalar-width of pointer or of the 'long'-type.
+   This of interest for llp64 targets.  */
+#define LONGPTR_T \
+  integer_types[(POINTER_SIZE <= TYPE_PRECISION (integer_types[itk_long]) \
+		 ? itk_long : itk_long_long)]
+
 /* A vector of all tinfo decls that haven't yet been emitted.  */
 vec<tree, va_gc> *unemitted_tinfo_decls;
 
@@ -1116,7 +1122,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	tree binfo = TYPE_BINFO (type);
 	int nbases = BINFO_N_BASE_BINFOS (binfo);
 	vec<tree, va_gc> *base_accesses = BINFO_BASE_ACCESSES (binfo);
-	tree offset_type = integer_types[itk_long];
+	tree offset_type = LONGPTR_T;
 	tree base_inits = NULL_TREE;
 	int ix;
 	vec<constructor_elt, va_gc> *init_vec = NULL;
@@ -1420,7 +1426,7 @@ create_tinfo_types (void)
     fields = field;
 
     field = build_decl (BUILTINS_LOCATION,
-			FIELD_DECL, NULL_TREE, integer_types[itk_long]);
+			FIELD_DECL, NULL_TREE, LONGPTR_T);
     DECL_CHAIN (field) = fields;
     fields = field;
 
