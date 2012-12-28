@@ -895,12 +895,10 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 
   where = &pointer->where;
 
-  if (pointer->expr_type == EXPR_VARIABLE || pointer->expr_type == EXPR_FUNCTION)
-    attr1 = gfc_expr_attr (pointer);
-  else if (pointer->expr_type == EXPR_NULL)
+  if (pointer->expr_type == EXPR_NULL)
     goto null_arg;
-  else
-    gcc_assert (0); /* Pointer must be a variable or a function.  */
+
+  attr1 = gfc_expr_attr (pointer);
 
   if (!attr1.pointer && !attr1.proc_pointer)
     {
