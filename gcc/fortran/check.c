@@ -2791,17 +2791,14 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
       return FAILURE;
     }
 
-  if (to->ts.kind != from->ts.kind)
-    {
-      gfc_error ("The FROM and TO arguments of the MOVE_ALLOC intrinsic at %L"
-		 " must be of the same kind %d/%d", &to->where, from->ts.kind,
-		 to->ts.kind);
-      return FAILURE;
-    }
-
   /* CLASS arguments: Make sure the vtab of from is present.  */
-  if (to->ts.type == BT_CLASS)
-    gfc_find_derived_vtab (from->ts.u.derived);
+  if (to->ts.type == BT_CLASS && !UNLIMITED_POLY (from))
+    {
+      if (from->ts.type == BT_CLASS || from->ts.type == BT_DERIVED)
+	gfc_find_derived_vtab (from->ts.u.derived);
+      else
+	gfc_find_intrinsic_vtab (&from->ts);
+    }
 
   return SUCCESS;
 }

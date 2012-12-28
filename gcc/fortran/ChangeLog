@@ -1,3 +1,9 @@
+2012-12-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* check.c (gfc_check_move_alloc): Handle unlimited polymorphic.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Ditto.
+
 2012-12-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/48976
