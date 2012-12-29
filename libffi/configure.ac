@@ -14,6 +14,31 @@ target_alias=${target_alias-$host_alias}
 
 AM_INIT_AUTOMAKE
 
+# See if makeinfo has been installed and is modern enough
+# that we can use it.
+ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
+                   [GNU texinfo.* \([0-9][0-9.]*\)],
+                   [4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*])
+AM_CONDITIONAL(BUILD_INFO, test $gcc_cv_prog_makeinfo_modern = "yes")
+
+# We would like our source tree to be readonly. However when releases or
+# pre-releases are generated, the flex/bison generated files as well as the
+# various formats of manuals need to be included along with the rest of the
+# sources.  Therefore we have --enable-generated-files-in-srcdir to do
+# just that.
+AC_MSG_CHECKING(generated-files-in-srcdir)
+AC_ARG_ENABLE(generated-files-in-srcdir,
+AS_HELP_STRING([--enable-generated-files-in-srcdir],
+ [put copies of generated files in source dir intended for creating source tarballs for users without texinfo bison or flex]),
+[case "$enableval" in
+ yes) enable_generated_files_in_srcdir=yes ;;
+ no)  enable_generated_files_in_srcdir=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+ esac],
+[enable_generated_files_in_srcdir=no])
+AC_MSG_RESULT($enable_generated_files_in_srcdir)
+AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
+
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise
 # the wrong, non-multilib-adjusted value will be used in multilibs.
