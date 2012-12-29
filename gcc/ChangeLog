@@ -12875,18 +12875,14 @@
 2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Document -mlong-double-64/-mlong-double-80.
-
 	* config/i386/i386.c (flag_opts): Add -mlong-double-64.
 	(TARGET_HAS_BIONIC): Default long double to 64-bit for Bionic.
-
 	* config/i386/i386.h (LONG_DOUBLE_TYPE_SIZE): Use 64 if
 	TARGET_LONG_DOUBLE_64 is true.
 	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): New macro.
 	(WIDEST_HARDWARE_FP_SIZE): Defined to 80.
-
 	* config/i386/i386.opt (mlong-double-80): New option.
 	(mlong-double-64): Likewise.
-
 	* config/i386/i386-c.c (ix86_target_macros): Define
 	__LONG_DOUBLE_64__ for TARGET_LONG_DOUBLE_64.
 
@@ -13298,7 +13294,6 @@
 	PR target/20020
 	* config/i386/i386.c (ix86_member_type_forces_blk): New function.
 	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
-
 	* config/i386/i386.h (MAX_FIXED_MODE_SIZE): New macro.
 
 2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
@@ -13311,31 +13306,21 @@
 	* stor-layout.c (compute_record_mode): Replace
 	MEMBER_TYPE_FORCES_BLK with targetm.member_type_forces_blk.
 	(layout_type): Likewise.
-
 	* system.h: Poison MEMBER_TYPE_FORCES_BLK.
-
 	* target.def (member_type_forces_blk): New target hook.
-
 	* targhooks.c (default_member_type_forces_blk): New.
 	* targhooks.h (default_member_type_forces_blk): Likewise.
-
 	* doc/tm.texi.in (MEMBER_TYPE_FORCES_BLK): Removed.
 	(TARGET_MEMBER_TYPE_FORCES_BLK): New hook.
 	* doc/tm.texi: Regenerated.
-
 	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Removed.
-
 	* config/ia64/ia64.c (ia64_member_type_forces_blk): New function.
 	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
-
 	* config/rs6000/rs6000.c (TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
 	(rs6000_member_type_forces_blk): New function.
-
 	* config/rs6000/rs6000.h (MEMBER_TYPE_FORCES_BLK): Removed.
-
 	* config/xtensa/xtensa.c (xtensa_member_type_forces_blk): New function.
 	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
-
 	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Removed.
 
 2012-08-17  Diego Novillo  <dnovillo@google.com>
@@ -16012,20 +15997,15 @@
 	PR middle-end/53865
 	* ipa-inline-analysis.c (inline_free_summary): Return if
 	inline_edge_summary_vec is NULL.
-
 	* ipa-split.c (execute_split_functions): Check if a function
 	is inlinable only if inline_edge_summary_vec != NULL.
-
 	* ipa.c (symtab_remove_unreachable_nodes): Restore
 	cgraph_propagate_frequency call when something was changed.
 	(free_inline_summary): New function.
 	(pass_ipa_free_inline_summary): New pass.
-
 	* passes.c (init_optimization_passes): Add
 	pass_ipa_free_inline_summary before pass_ipa_tree_profile.
-
 	* timevar.def (TV_IPA_FREE_INLINE_SUMMARY): New.
-
 	* tree-pass.h (pass_ipa_free_inline_summary): New.
 
 2012-08-02  Richard Earnshaw  <rearnsha@arm.com>
@@ -20901,10 +20881,8 @@
 
 	PR target/53383
 	* doc/invoke.texi: Add a warning for -mpreferred-stack-boundary=3.
-
 	* config/i386/i386.c (ix86_option_override_internal): Allow
 	-mpreferred-stack-boundary=3 for 64-bit if SSE is disabled.
-
 	* config/i386/i386.h (MIN_STACK_BOUNDARY): Set to 64 for 64-bit
 	if SSE is disabled.
 
@@ -22497,7 +22475,7 @@
 2012-06-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/53555
-	* config/i386/i386.c (ix86_sched_reorder) Skip debug insns.
+	* config/i386/i386.c (ix86_sched_reorder): Skip debug insns.
 
 2012-06-04  Jason Merrill  <jason@redhat.com>
 
@@ -28788,7 +28766,6 @@
 	PR rtl-optimization/52876
 	* emit-rtl.c (set_reg_attrs_from_value): Handle arbitrary value.
 	Don't call mark_reg_pointer for incompatible pointer sign extension.
-
 	* reginfo.c (reg_scan_mark_refs): Call set_reg_attrs_from_value
 	directly.
 
@@ -29637,21 +29614,17 @@
 
 	* config/i386/biarch64.h (TARGET_64BIT_DEFAULT): Add
 	OPTION_MASK_ABI_64.
-
 	* config/i386/gnu-user64.h (SPEC_64): Support TARGET_BI_ARCH == 2.
 	(SPEC_X32): Likewise.
 	(MULTILIB_DEFAULTS): Likewise.
-
 	* config/i386/i386.c (isa_opts): Remove -m64.
 	(ix86_target_string): Properly handle -m32/-m64/-mx32.
 	(ix86_option_override_internal): Properly
 	set OPTION_MASK_ISA_64BIT and OPTION_MASK_ISA_X32 as well as
 	handle -m32, -m64 and -mx32.
-
 	* config/i386/i386.h (TARGET_X32): Replace OPTION_ISA_X32
 	with OPTION_ABI_X32.  Moved after TARGET_LP64.
 	(TARGET_LP64): Changed to OPTION_ABI_64.
-
 	* config/i386/i386.opt (m64): Replace ISA_64BIT with ABI_64.
 	(mx32): Replace ISA_X32 with ABI_X32.
 
@@ -30349,7 +30322,6 @@
 	if Pmode != word_mode.
 	(legitimize_tls_address): Call gen_tls_initial_exec_x32 if
 	Pmode == SImode for TARGET_X32.
-
 	* config/i386/i386.md (UNSPEC_TLS_IE_X32): New.
 	(tls_initial_exec_x32): Likewise.
 
@@ -30656,14 +30628,10 @@
 
 	PR target/50797
 	* config/i386/i386-opts.h (pmode): New.
-
 	* config/i386/i386.c (ix86_option_override_internal): Properly
 	check and set ix86_pmode.
-
 	* config/i386/i386.h (Pmode): Check ix86_pmode instead of TARGET_64BIT.
-
 	* config/i386/i386.opt (maddress-mode=): New.
-
 	* doc/invoke.texi: Document -maddress-mode=short|long for x86.
 
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
@@ -31038,7 +31006,6 @@
 	and ix86_gen_tls_local_dynamic_base_64.
 	(legitimize_tls_address): Use ix86_gen_tls_global_dynamic_64 and
 	ix86_gen_tls_local_dynamic_base_64.
-
 	* config/i386/i386.md (*tls_global_dynamic_64): Renamed to ...
 	(*tls_global_dynamic_64_<mode>): This.
 	(tls_global_dynamic_64): Renamed to ...
@@ -31055,7 +31022,6 @@
 	instead of TARGET_64BIT, to set ix86_gen_add3, ix86_gen_sub3,
 	ix86_gen_one_cmpl2, ix86_gen_andsp, ix86_gen_allocate_stack_worker,
 	ix86_gen_adjust_stack_and_probe and ix86_gen_probe_stack_range.
-
 	* config/i386/sse.md (sse3_monitor64): Renamed to ...
 	(sse3_monitor64_<mode>): This.
 
@@ -31320,7 +31286,6 @@
 	if Pmode != word_mode.
 	(legitimize_tls_address): Call gen_tls_initial_exec_x32 if
 	Pmode == SImode for TARGET_X32.
-
 	* config/i386/i386.md (UNSPEC_TLS_IE_X32): New.
 	(tls_initial_exec_x32): Likewise.
 
@@ -31446,7 +31411,6 @@
 	word_mode.
 	(ix86_split_to_parts): Use word_mode with PUT_MODE for push.
 	(ix86_split_long_move): Likewise.
-
 	* config/i386/i386.md (W): New.
 	(*push<mode>2_prologue): Replace :P with :W.
 	(*pop<mode>1): Likewise.
