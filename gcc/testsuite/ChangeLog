@@ -1,5 +1,9 @@
 2012-12-31  Uros Bizjak  <ubizjak@gmail.com>
 
+	* g++.dg/ipa/devirt-9.C: Cleanup inline ipa dump.
+
+2012-12-31  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/builtin_target.c (vendor_signatures): Remove.
 	(check_detailed): Use signature_INTEL_ebx and signature_AMD_ebx
 	to check vendor signature.
@@ -929,7 +933,7 @@
 
 	PR middle-end/55030
 	* gcc.dg/guality/pr36728-1.c, gcc.dg/guality/pr36728-2.c (foo): Don't
-	use volatile asms, use plain asms.   Where the output value for the
+	use volatile asms, use plain asms.  Where the output value for the
 	asm is unused, write a global variable.
 
 2012-11-25  Uros Bizjak  <ubizjak@gmail.com>
