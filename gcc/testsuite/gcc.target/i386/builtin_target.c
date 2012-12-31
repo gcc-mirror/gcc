@@ -9,12 +9,6 @@
 #include <assert.h>
 #include "cpuid.h"
 
-enum vendor_signatures
-{
-  SIG_INTEL =	0x756e6547 /* Genu */,
-  SIG_AMD =	0x68747541 /* Auth */
-};
-
 /* Check if the Intel CPU model and sub-model are identified.  */
 static void
 check_intel_cpu_model (unsigned int family, unsigned int model,
@@ -191,7 +185,7 @@ check_detailed ()
   extended_model = (eax >> 12) & 0xf0;
   extended_family = (eax >> 20) & 0xff;
 
-  if (vendor == SIG_INTEL)
+  if (vendor == signature_INTEL_ebx)
     {
       assert (__builtin_cpu_is ("intel"));
       /* Adjust family and model for Intel CPUs.  */
@@ -205,7 +199,7 @@ check_detailed ()
       check_intel_cpu_model (family, model, brand_id);
       check_features (ecx, edx, max_level);
     }
-  else if (vendor == SIG_AMD)
+  else if (vendor == signature_AMD_ebx)
     {
       assert (__builtin_cpu_is ("amd"));
       /* Adjust model and family for AMD CPUS. */
