@@ -1,3 +1,9 @@
+2013-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55831
+	* tree-vect-loop.c (get_initial_def_for_induction): Use
+	gsi_after_labels instead of gsi_start_bb.
+
 2012-12-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_deligitimze_address): Do not
