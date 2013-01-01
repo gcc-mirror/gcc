@@ -1,5 +1,12 @@
 2013-01-01  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/54834
+	* Makefile.am (AM_CPPFLAGS): Remove -I ../gcc/include and -I
+	$(MULTIBUILDTOP)/../../gcc/include.
+	* Makefile.in: Rebuild.
+
+2013-01-01  Ian Lance Taylor  <iant@google.com>
+
 	PR other/55536
 	* mmap.c (backtrace_alloc): Don't call sync functions if not
 	threaded.
