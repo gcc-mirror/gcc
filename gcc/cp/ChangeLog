@@ -1,5 +1,9 @@
 2013-01-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54325
+	* call.c (build_new_method_call_1): Don't use build_value_init for
+	user-provided default constructors.
+
 	* decl.c (check_default_argument): Use LOOKUP_IMPLICIT.
 
 	PR c++/55032
