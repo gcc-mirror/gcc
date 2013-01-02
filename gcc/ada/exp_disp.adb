@@ -8431,11 +8431,11 @@ package body Exp_Disp is
       if Is_Controlled (Typ) then
          if not Finalized then
             Error_Msg_N
-              ("controlled type has no explicit Finalize method?", Typ);
+              ("controlled type has no explicit Finalize method??", Typ);
 
          elsif not Adjusted then
             Error_Msg_N
-              ("controlled type has no explicit Adjust method?", Typ);
+              ("controlled type has no explicit Adjust method??", Typ);
          end if;
       end if;
 
@@ -8754,7 +8754,7 @@ package body Exp_Disp is
       if Has_CPP_Constructors (Typ)
         and then No (Init_Proc (Typ))
       then
-         Error_Msg_N ("?default constructor must be imported from C++", Typ);
+         Error_Msg_N ("??default constructor must be imported from C++", Typ);
       end if;
    end Set_CPP_Constructors;
 

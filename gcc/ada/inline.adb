@@ -699,11 +699,11 @@ package body Inline is
 
                         Error_Msg_Unit_1 := Bname;
                         Error_Msg_N
-                          ("one or more inlined subprograms accessed in $!?",
+                          ("one or more inlined subprograms accessed in $!??",
                            Comp_Unit);
                         Error_Msg_File_1 :=
                           Get_File_Name (Bname, Subunit => False);
-                        Error_Msg_N ("\but file{ was not found!?", Comp_Unit);
+                        Error_Msg_N ("\but file{ was not found!??", Comp_Unit);
 
                      else
                         --  If the package to be inlined is an ancestor unit of
@@ -882,11 +882,11 @@ package body Inline is
                               then
                                  Error_Msg_Node_2 := Child_Spec;
                                  Error_Msg_NE
-                                   ("body of & depends on child unit&?",
-                                      With_Clause, P);
+                                   ("body of & depends on child unit&??",
+                                    With_Clause, P);
                                  Error_Msg_N
-                                   ("\subprograms in body cannot be inlined?",
-                                      With_Clause);
+                                   ("\subprograms in body cannot be inlined??",
+                                    With_Clause);
 
                                  --  Disable further inlining from this unit,
                                  --  and keep Taft-amendment types incomplete.
@@ -916,8 +916,8 @@ package body Inline is
                   elsif Ineffective_Inline_Warnings then
                      Error_Msg_Unit_1 := Bname;
                      Error_Msg_N
-                       ("unable to inline subprograms defined in $?", P);
-                     Error_Msg_N ("\body not found?", P);
+                       ("unable to inline subprograms defined in $??", P);
+                     Error_Msg_N ("\body not found??", P);
                      return;
                   end if;
                end if;

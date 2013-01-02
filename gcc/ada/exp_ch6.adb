@@ -1450,7 +1450,7 @@ package body Exp_Ch6 is
            and then Is_Valued_Procedure (Scope (Formal))
          then
             Error_Msg_N
-              ("by_reference actual may be misaligned?", Actual);
+              ("by_reference actual may be misaligned??", Actual);
             return False;
 
          else
@@ -1527,8 +1527,9 @@ package body Exp_Ch6 is
               and then In_Open_Scopes (Entity (Actual))
             then
                if Scope (Subp) /= Entity (Actual) then
-                  Error_Msg_N ("operation outside protected type may not "
-                    & "call back its protected operations?", Actual);
+                  Error_Msg_N
+                    ("operation outside protected type may not "
+                     & "call back its protected operations??", Actual);
                end if;
 
                Rewrite (Actual,
@@ -2002,8 +2003,7 @@ package body Exp_Ch6 is
                          (Loc, Sloc (Body_To_Inline (Spec)))
             then
                Error_Msg_NE
-                 ("cannot inline& (body not seen yet)?",
-                  Call_Node, Subp);
+                 ("cannot inline& (body not seen yet)??", Call_Node, Subp);
 
             else
                declare
@@ -2122,7 +2122,7 @@ package body Exp_Ch6 is
 
                if not In_Same_Extended_Unit (Call_Node, Subp) then
                   Cannot_Inline
-                    ("cannot inline& (body not seen yet)", Call_Node, Subp,
+                    ("cannot inline& (body not seen yet)?", Call_Node, Subp,
                      Is_Serious => True);
 
                elsif In_Open_Scopes (Subp) then
@@ -2136,7 +2136,7 @@ package body Exp_Ch6 is
                     and then Optimization_Level = 0
                   then
                      Error_Msg_N
-                       ("call to recursive subprogram cannot be inlined?",
+                       ("call to recursive subprogram cannot be inlined?p?",
                         N);
 
                   --  Do not emit error compiling runtime packages
@@ -2145,7 +2145,7 @@ package body Exp_Ch6 is
                     (Unit_File_Name (Get_Source_Unit (Subp)))
                   then
                      Error_Msg_N
-                       ("call to recursive subprogram cannot be inlined?",
+                       ("call to recursive subprogram cannot be inlined??",
                         N);
 
                   else
@@ -3790,7 +3790,8 @@ package body Exp_Ch6 is
                     and then In_Same_Extended_Unit (Sloc (Spec), Loc)
                   then
                      Cannot_Inline
-                      ("cannot inline& (body not seen yet)?", Call_Node, Subp);
+                       ("cannot inline& (body not seen yet)?",
+                        Call_Node, Subp);
                   end if;
                end if;
             end Inlined_Subprogram;
@@ -4644,7 +4645,7 @@ package body Exp_Ch6 is
       --  subprograms this must be done explicitly.
 
       if In_Open_Scopes (Subp) then
-         Error_Msg_N ("call to recursive subprogram cannot be inlined?", N);
+         Error_Msg_N ("call to recursive subprogram cannot be inlined??", N);
          Set_Is_Inlined (Subp, False);
          return;
 

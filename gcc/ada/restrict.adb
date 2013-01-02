@@ -582,7 +582,7 @@ package body Restrict is
 
             if No_Dependences.Table (J).Warn then
                Error_Msg
-                 ("?violation of restriction `No_Dependence '='> &`#",
+                 ("??violation of restriction `No_Dependence '='> &`#",
                   Sloc (Err));
             else
                Error_Msg
@@ -798,9 +798,9 @@ package body Restrict is
 
       if Warn_On_Obsolescent_Feature then
          Error_Msg_Name_1 := Old_Name;
-         Error_Msg_N ("restriction identifier % is obsolescent?", N);
+         Error_Msg_N ("restriction identifier % is obsolescent?j?", N);
          Error_Msg_Name_1 := New_Name;
-         Error_Msg_N ("|use restriction identifier % instead", N);
+         Error_Msg_N ("|use restriction identifier % instead?j?", N);
       end if;
 
       return New_Name;
@@ -951,7 +951,7 @@ package body Restrict is
       --  Set warning message if warning
 
       if Restriction_Warnings (R) then
-         Add_Char ('?');
+         Add_Str ("??");
 
       --  If real violation (not warning), then mark it as non-serious unless
       --  it is a violation of No_Finalization in which case we leave it as a
@@ -1012,7 +1012,7 @@ package body Restrict is
          --  Set as warning if warning case
 
          if Restriction_Warnings (R) then
-            Add_Char ('?');
+            Add_Str ("??");
          end if;
 
          --  Set main message

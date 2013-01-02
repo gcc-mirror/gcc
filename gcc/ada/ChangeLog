@@ -1,5 +1,23 @@
 2013-01-02  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb, exp_ch4.adb, exp_ch6.adb, exp_ch7.adb, exp_ch9.adb,
+	exp_disp.adb, exp_dist.adb, exp_intr.adb, exp_prag.adb, exp_util.adb,
+	freeze.adb, gnat1drv.adb, inline.adb, layout.adb, lib-xref.adb,
+	par-ch10.adb, par-labl.adb, par-load.adb, par-util.adb, restrict.adb,
+	sem_ch13.adb, sem_ch4.adb, sem_ch6.adb, sem_dim.adb, sem_elab.adb,
+	sem_res.adb, sem_warn.adb, sinput-l.adb: Add tags to warning messages.
+	* sem_ch6.ads, warnsw.ads, opt.ads: Minor comment updates.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads: Minor comment fix.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Refine predicate.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
 	* errout.ads: Minor comment fixes.
 	* opt.ads: Minor comment additions.
 	* exp_aggr.adb: Add tags to warning messages

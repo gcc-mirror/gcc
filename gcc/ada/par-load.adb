@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,7 +172,7 @@ begin
    then
       Error_Msg_File_1 := File_Name;
       Error_Msg
-        ("?file name does not match unit name, should be{", Sloc (Curunit));
+        ("??file name does not match unit name, should be{", Sloc (Curunit));
    end if;
 
    --  For units other than the main unit, the expected unit name is set and

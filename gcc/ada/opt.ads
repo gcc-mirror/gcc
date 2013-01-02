@@ -174,7 +174,8 @@ package Opt is
 
    Address_Clause_Overlay_Warnings : Boolean := True;
    --  GNAT
-   --  Set False to disable address clause warnings
+   --  Set False to disable address clause warnings. Modified by use of
+   --  -gnatwo/O.
 
    Address_Is_Private : Boolean := False;
    --  GNAT, GNATBIND
@@ -317,6 +318,7 @@ package Opt is
    --  GNAT
    --  Set to True to enable checking for unreferenced entities other
    --  than formal parameters (for which see Check_Unreferenced_Formals)
+   --  Modified by use of -gnatwu/U.
 
    Check_Unreferenced_Formals : Boolean := False;
    --  GNAT
@@ -332,6 +334,7 @@ package Opt is
    --  GNAT
    --  Set to True to enable checking for unused withs, and also the case
    --  of withing a package and using none of the entities in the package.
+   --  Modified by use of -gnatwu/U.
 
    CodePeer_Mode : Boolean := False;
    --  GNAT, GNATBIND
@@ -714,7 +717,7 @@ package Opt is
    Implementation_Unit_Warnings : Boolean := True;
    --  GNAT
    --  Set True to active warnings for use of implementation internal units.
-   --  Can be controlled by use of -gnatwi/-gnatwI.
+   --  Modified by use of -gnatwi/-gnatwI.
 
    Implicit_Packing : Boolean := False;
    --  GNAT
@@ -824,8 +827,7 @@ package Opt is
    --  GNAT
    --  List inherited invariants, preconditions, and postconditions from
    --  Invariant'Class, Pre'Class, and Post'Class aspects. Also list inherited
-   --  subtype predicates. Set True by use of -gnatw.l and False by use of
-   --  -gnatw.L.
+   --  subtype predicates. Modified by use of -gnatw.l/.L.
 
    List_Restrictions : Boolean := False;
    --  GNATBIND
@@ -1467,31 +1469,31 @@ package Opt is
    --  GNAT
    --  Set to True to generate all warnings on Ada 2005 compatibility issues,
    --  including warnings on Ada 2005 obsolescent features used in Ada 2005
-   --  mode. Set by default, set False by -gnatwY.
+   --  mode. Set by default, modified by use of -gnatwy/Y.
 
    Warn_On_Ada_2012_Compatibility : Boolean := True;
    --  GNAT
    --  Set to True to generate all warnings on Ada 2012 compatibility issues,
    --  including warnings on Ada 2012 obsolescent features used in Ada 2012
-   --  mode. Set False by -gnatwY.
+   --  mode. Modified by use of -gnatwy/Y.
 
    Warn_On_All_Unread_Out_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings in all cases where a variable is
    --  modified by being passed as to an OUT formal, but the resulting value is
-   --  never read. The default is that this warning is suppressed, except in
-   --  the case of
+   --  never read. The default is that this warning is suppressed. Modified
+   --  by use of gnatw.o/.O.
 
    Warn_On_Assertion_Failure : Boolean := True;
    --  GNAT
    --  Set to True to activate warnings on assertions that can be determined
-   --  at compile time will always fail. Set false by -gnatw.A.
+   --  at compile time will always fail. Modified by use of -gnatw.a/.A.
 
    Warn_On_Assumed_Low_Bound : Boolean := True;
    --  GNAT
    --  Set to True to activate warnings for string parameters that are indexed
-   --  with literals or S'Length, presumably assuming a lower bound of one. Set
-   --  False by -gnatwW.
+   --  with literals or S'Length, presumably assuming a lower bound of one.
+   --  Modified by use of -gnatww/W.
 
    Warn_On_Atomic_Synchronization : Boolean := False;
    --  GNAT
@@ -1542,7 +1544,8 @@ package Opt is
    --  Set to True to generate warnings if a variable is assigned but is never
    --  read. Also controls warnings for similar cases involving out parameters,
    --  but only if there is only one out parameter for the procedure involved.
-   --  The default is that this warning is suppressed.
+   --  The default is that this warning is suppressed, modified by use of
+   --  -gnatwm/M.
 
    Warn_On_No_Value_Assigned : Boolean := True;
    --  GNAT
@@ -1583,6 +1586,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings when a writable actual which is not
    --  a by-copy type overlaps with another actual in a subprogram call.
+   --  Modified by use of -gnatw.i/.I.
 
    Warn_On_Questionable_Missing_Parens : Boolean := True;
    --  GNAT
@@ -1612,7 +1616,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for suspicious contracts expressed as
    --  pragmas or aspects precondition and postcondition. The default is that
-   --  this warning is disabled.
+   --  this warning is disabled. Modified by use of -gnatw.t/.T.
 
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT
@@ -1623,7 +1627,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for unchecked conversions that may have
    --  non-portable semantics (e.g. because sizes of types differ). Modified
-   --  by use of -gnatw.z/.Z.
+   --  by use of -gnatwz/Z.
 
    Warn_On_Unordered_Enumeration_Type : Boolean := False;
    --  GNAT
@@ -1647,7 +1651,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for use of Pragma Warnings (Off, ent),
    --  where either the pragma is never used, or it could be replaced by a
-   --  pragma Unmodified or Unreferenced.
+   --  pragma Unmodified or Unreferenced. Modified by use of -gnatw.w/.W.
 
    type Warning_Mode_Type is (Suppress, Normal, Treat_As_Error);
    Warning_Mode : Warning_Mode_Type := Normal;

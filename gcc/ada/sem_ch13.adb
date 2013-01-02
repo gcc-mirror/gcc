@@ -5339,7 +5339,7 @@ package body Sem_Ch13 is
                if Inherit and Opt.List_Inherited_Aspects then
                   Error_Msg_Sloc := Sloc (Ritem);
                   Error_Msg_N
-                    ("?info: & inherits `Invariant''Class` aspect from #",
+                    ("?L?info: & inherits `Invariant''Class` aspect from #",
                      Typ);
                end if;
             end if;
@@ -5563,7 +5563,7 @@ package body Sem_Ch13 is
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
-               Error_Msg_N ("info: & inherits predicate from & #??", Typ);
+               Error_Msg_N ("info: & inherits predicate from & #?L?", Typ);
             end if;
          end if;
       end Add_Call;
@@ -9797,7 +9797,7 @@ package body Sem_Ch13 is
            or else OpenVMS_On_Target
          then
             Error_Msg_N
-              ("?Z?conversion between pointers with different conventions!",
+              ("?z?conversion between pointers with different conventions!",
                N);
          end if;
       end if;
@@ -9824,7 +9824,7 @@ package body Sem_Ch13 is
 
             if Source = Calendar_Time or else Target = Calendar_Time then
                Error_Msg_N
-                 ("?Z?representation of 'Time values may change between " &
+                 ("?z?representation of 'Time values may change between " &
                   "'G'N'A'T versions", N);
             end if;
          end;
@@ -9925,7 +9925,7 @@ package body Sem_Ch13 is
 
                if Source_Siz /= Target_Siz then
                   Error_Msg
-                    ("?Z?types for unchecked conversion have different sizes!",
+                    ("?z?types for unchecked conversion have different sizes!",
                      Eloc);
 
                   if All_Errors_Mode then
@@ -9933,7 +9933,7 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := Source_Siz;
                      Error_Msg_Name_2 := Chars (Target);
                      Error_Msg_Uint_2 := Target_Siz;
-                     Error_Msg ("\size of % is ^, size of % is ^?Z?", Eloc);
+                     Error_Msg ("\size of % is ^, size of % is ^?z?", Eloc);
 
                      Error_Msg_Uint_1 := UI_Abs (Source_Siz - Target_Siz);
 
@@ -9943,17 +9943,17 @@ package body Sem_Ch13 is
                      then
                         if Source_Siz > Target_Siz then
                            Error_Msg
-                             ("\?Z?^ high order bits of source will "
+                             ("\?z?^ high order bits of source will "
                               & "be ignored!", Eloc);
 
                         elsif Is_Unsigned_Type (Source) then
                            Error_Msg
-                             ("\?Z?source will be extended with ^ high order "
+                             ("\?z?source will be extended with ^ high order "
                               & "zero bits?!", Eloc);
 
                         else
                            Error_Msg
-                             ("\?Z?source will be extended with ^ high order "
+                             ("\?z?source will be extended with ^ high order "
                               & "sign bits!", Eloc);
                         end if;
 
@@ -9961,23 +9961,23 @@ package body Sem_Ch13 is
                         if Is_Discrete_Type (Target) then
                            if Bytes_Big_Endian then
                               Error_Msg
-                                ("\?Z?target value will include ^ undefined "
+                                ("\?z?target value will include ^ undefined "
                                  & "low order bits!", Eloc);
                            else
                               Error_Msg
-                                ("\?Z?target value will include ^ undefined "
+                                ("\?z?target value will include ^ undefined "
                                  & "high order bits!", Eloc);
                            end if;
 
                         else
                            Error_Msg
-                             ("\?Z?^ trailing bits of target value will be "
+                             ("\?z?^ trailing bits of target value will be "
                               & "undefined!", Eloc);
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
                         Error_Msg
-                          ("\?Z?^ trailing bits of source will be ignored!",
+                          ("\?z?^ trailing bits of source will be ignored!",
                            Eloc);
                      end if;
                   end if;
@@ -10030,10 +10030,10 @@ package body Sem_Ch13 is
                            Error_Msg_Node_1 := D_Target;
                            Error_Msg_Node_2 := D_Source;
                            Error_Msg
-                             ("?Z?alignment of & (^) is stricter than "
+                             ("?z?alignment of & (^) is stricter than "
                               & "alignment of & (^)!", Eloc);
                            Error_Msg
-                             ("\?Z?resulting access value may have invalid "
+                             ("\?z?resulting access value may have invalid "
                               & "alignment!", Eloc);
                         end if;
                      end;

@@ -1083,7 +1083,7 @@ package body Sem_Warn is
                     and then not Is_Imported (E1)
                   then
                      Error_Msg_N
-                       ("??& is not modified, volatile has no effect!", E1);
+                       ("?k?& is not modified, volatile has no effect!", E1);
 
                   --  Another special case, Exception_Occurrence, this catches
                   --  the case of exception choice (and a bit more too, but not
@@ -1105,7 +1105,7 @@ package body Sem_Warn is
                         then
                            if not Warnings_Off_E1 then
                               Error_Msg_N -- CODEFIX
-                                ("??& is not modified, "
+                                ("?k?& is not modified, "
                                  & "could be declared constant!",
                                  E1);
                            end if;
@@ -1237,7 +1237,7 @@ package body Sem_Warn is
                              and then not Warnings_Off_E1
                            then
                               Output_Reference_Error
-                                ("?v?formal parameter& is read but "
+                                ("?f?formal parameter& is read but "
                                  & "never assigned!");
                            end if;
 
@@ -1245,7 +1245,7 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                         then
                            Output_Reference_Error
-                             ("?v?formal parameter& is not referenced!");
+                             ("?f?formal parameter& is not referenced!");
                         end if;
                      end if;
 
@@ -2112,7 +2112,7 @@ package body Sem_Warn is
                      if Entity (Nam) = Pack then
                         Error_Msg_Qual_Level := 1;
                         Error_Msg_NE -- CODEFIX
-                          ("?no entities of package& are referenced!",
+                          ("?u?no entities of package& are referenced!",
                              Nam, Pack);
                         Error_Msg_Qual_Level := 0;
                      end if;
@@ -2309,7 +2309,7 @@ package body Sem_Warn is
 
                      elsif Has_Visible_Entities (Entity (Name (Item))) then
                         Error_Msg_N -- CODEFIX
-                          ("?unit& is not referenced!", Name (Item));
+                          ("?u?unit& is not referenced!", Name (Item));
                      end if;
                   end if;
 
@@ -2386,7 +2386,7 @@ package body Sem_Warn is
                                 Has_Unreferenced (Entity (Name (Item)))
                               then
                                  Error_Msg_N -- CODEFIX
-                                   ("?no entities of & are referenced!",
+                                   ("?u?no entities of & are referenced!",
                                     Name (Item));
                               end if;
 
@@ -2402,7 +2402,7 @@ package body Sem_Warn is
                                 and then not Has_Unreferenced (Pack)
                               then
                                  Error_Msg_NE -- CODEFIX
-                                   ("?no entities of & are referenced!",
+                                   ("?u?no entities of & are referenced!",
                                      Unit_Declaration_Node (Pack),
                                      Pack);
                               end if;
@@ -2452,12 +2452,12 @@ package body Sem_Warn is
 
                            elsif Unreferenced_In_Spec (Item) then
                               Error_Msg_N -- CODEFIX
-                                ("?unit& is not referenced in spec!",
+                                ("?u?unit& is not referenced in spec!",
                                  Name (Item));
 
                            elsif No_Entities_Ref_In_Spec (Item) then
                               Error_Msg_N -- CODEFIX
-                                ("?no entities of & are referenced in spec!",
+                                ("?u?no entities of & are referenced in spec!",
                                  Name (Item));
 
                            else
@@ -2470,7 +2470,7 @@ package body Sem_Warn is
 
                            if not Is_Visible_Renaming then
                               Error_Msg_N -- CODEFIX
-                                ("\?with clause might be moved to body!",
+                                ("\?u?with clause might be moved to body!",
                                  Name (Item));
                            end if;
 
@@ -2498,7 +2498,7 @@ package body Sem_Warn is
                         Set_Unreferenced_In_Spec (Item);
                      else
                         Error_Msg_N -- CODEFIX
-                          ("?unit& is never instantiated!", Name (Item));
+                          ("?u?unit& is never instantiated!", Name (Item));
                      end if;
 
                   --  If unit was indeed instantiated, make sure that flag is
@@ -2507,9 +2507,9 @@ package body Sem_Warn is
 
                   elsif Unreferenced_In_Spec (Item) then
                      Error_Msg_N
-                       ("?unit& is not instantiated in spec!", Name (Item));
+                       ("?u?unit& is not instantiated in spec!", Name (Item));
                      Error_Msg_N -- CODEFIX
-                       ("\?with clause can be moved to body!", Name (Item));
+                       ("\?u?with clause can be moved to body!", Name (Item));
                   end if;
                end if;
             end if;
@@ -2521,9 +2521,7 @@ package body Sem_Warn is
    --  Start of processing for Check_Unused_Withs
 
    begin
-      if not Opt.Check_Withs
-        or else Operating_Mode = Check_Syntax
-      then
+      if not Opt.Check_Withs or else Operating_Mode = Check_Syntax then
          return;
       end if;
 
@@ -2794,9 +2792,9 @@ package body Sem_Warn is
                if not Is_Trivial_Subprogram (Scope (E1)) then
                   if Warn_On_Constant then
                      Error_Msg_N
-                       ("?formal parameter & is not modified!", E1);
+                       ("?u?formal parameter & is not modified!", E1);
                      Error_Msg_N
-                       ("\?mode could be IN instead of `IN OUT`!", E1);
+                       ("\?u?mode could be IN instead of `IN OUT`!", E1);
 
                      --  We do not generate warnings for IN OUT parameters
                      --  unless we have at least -gnatwu. This is deliberately
@@ -2806,7 +2804,7 @@ package body Sem_Warn is
 
                   elsif Check_Unreferenced then
                      Error_Msg_N
-                       ("?formal parameter& is read but "
+                       ("?u?formal parameter& is read but "
                         & "never assigned!", E1);
                   end if;
                end if;
@@ -2865,13 +2863,13 @@ package body Sem_Warn is
       if Nkind (P) = N_With_Clause then
          if Ekind (E) = E_Package then
             Error_Msg_NE
-              ("?with of obsolescent package& declared#", N, E);
+              ("??with of obsolescent package& declared#", N, E);
          elsif Ekind (E) = E_Procedure then
             Error_Msg_NE
-              ("?with of obsolescent procedure& declared#", N, E);
+              ("??with of obsolescent procedure& declared#", N, E);
          else
             Error_Msg_NE
-              ("?with of obsolescent function& declared#", N, E);
+              ("??with of obsolescent function& declared#", N, E);
          end if;
 
       --  If we do not have a with clause, then ignore any reference to an
@@ -2885,51 +2883,49 @@ package body Sem_Warn is
 
       elsif Nkind (P) = N_Procedure_Call_Statement then
          Error_Msg_NE
-           ("?call to obsolescent procedure& declared#", N, E);
+           ("??call to obsolescent procedure& declared#", N, E);
 
       --  Function call
 
       elsif Nkind (P) = N_Function_Call then
          Error_Msg_NE
-           ("?call to obsolescent function& declared#", N, E);
+           ("??call to obsolescent function& declared#", N, E);
 
       --  Reference to obsolescent type
 
       elsif Is_Type (E) then
          Error_Msg_NE
-           ("?reference to obsolescent type& declared#", N, E);
+           ("??reference to obsolescent type& declared#", N, E);
 
       --  Reference to obsolescent component
 
       elsif Ekind_In (E, E_Component, E_Discriminant) then
          Error_Msg_NE
-           ("?reference to obsolescent component& declared#", N, E);
+           ("??reference to obsolescent component& declared#", N, E);
 
       --  Reference to obsolescent variable
 
       elsif Ekind (E) = E_Variable then
          Error_Msg_NE
-           ("?reference to obsolescent variable& declared#", N, E);
+           ("??reference to obsolescent variable& declared#", N, E);
 
       --  Reference to obsolescent constant
 
-      elsif Ekind (E) = E_Constant
-        or else Ekind (E) in Named_Kind
-      then
+      elsif Ekind (E) = E_Constant or else Ekind (E) in Named_Kind then
          Error_Msg_NE
-           ("?reference to obsolescent constant& declared#", N, E);
+           ("??reference to obsolescent constant& declared#", N, E);
 
       --  Reference to obsolescent enumeration literal
 
       elsif Ekind (E) = E_Enumeration_Literal then
          Error_Msg_NE
-           ("?reference to obsolescent enumeration literal& declared#", N, E);
+           ("??reference to obsolescent enumeration literal& declared#", N, E);
 
       --  Generic message for any other case we missed
 
       else
          Error_Msg_NE
-           ("?reference to obsolescent entity& declared#", N, E);
+           ("??reference to obsolescent entity& declared#", N, E);
       end if;
 
       --  Output additional warning if present
@@ -2939,7 +2935,7 @@ package body Sem_Warn is
             String_To_Name_Buffer (Obsolescent_Warnings.Table (J).Msg);
             Error_Msg_Strlen := Name_Len;
             Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
-            Error_Msg_N ("\\?~", N);
+            Error_Msg_N ("\\??~", N);
             exit;
          end if;
       end loop;
@@ -2993,21 +2989,21 @@ package body Sem_Warn is
 
             elsif Warnings_Off_Used_Unmodified (E) then
                Error_Msg_NE
-                 ("?could use Unmodified instead of "
+                 ("?W?could use Unmodified instead of "
                   & "Warnings Off for &", Pragma_Identifier (N), E);
 
             --  Used only in context where Unreferenced would have worked
 
             elsif Warnings_Off_Used_Unreferenced (E) then
                Error_Msg_NE
-                 ("?could use Unreferenced instead of "
+                 ("?W?could use Unreferenced instead of "
                   & "Warnings Off for &", Pragma_Identifier (N), E);
 
             --  Not used at all
 
             else
                Error_Msg_NE
-                 ("?pragma Warnings Off for & unused, "
+                 ("?W?pragma Warnings Off for & unused, "
                   & "could be omitted", N, E);
             end if;
          end;
@@ -3249,16 +3245,16 @@ package body Sem_Warn is
                     and then Nkind (Cond) /= N_Op_Not
                   then
                      Error_Msg_NE
-                       ("object & is always True?", Cond, Original_Node (C));
+                       ("object & is always True?c?", Cond, Original_Node (C));
                      Track (Original_Node (C), Cond);
 
                   else
-                     Error_Msg_N ("condition is always True?", Cond);
+                     Error_Msg_N ("condition is always True?c?", Cond);
                      Track (Cond, Cond);
                   end if;
 
                else
-                  Error_Msg_N ("condition is always False?", Cond);
+                  Error_Msg_N ("condition is always False?c?", Cond);
                   Track (Cond, Cond);
                end if;
             end;
@@ -3388,23 +3384,23 @@ package body Sem_Warn is
                         then
                            if Act1 = First_Actual (N) then
                               Error_Msg_FE
-                                ("`IN OUT` prefix overlaps with actual for&?",
-                                 Act1, Form);
+                                ("`IN OUT` prefix overlaps with "
+                                 & "actual for&?I?", Act1, Form);
 
                            else
                               --  For greater clarity, give name of formal.
 
                               Error_Msg_Node_2 := Form;
                               Error_Msg_FE
-                                ("writable actual for & overlaps with"
-                                  & "  actual for&?", Act1, Form);
+                                ("writable actual for & overlaps with "
+                                  & "actual for&?I?", Act1, Form);
                            end if;
 
                         else
                            Error_Msg_Node_2 := Form;
                            Error_Msg_FE
                              ("writable actual for & overlaps with"
-                               & " actual for&?", Act1, Form1);
+                               & " actual for&?I?", Act1, Form1);
                         end if;
                      end;
                   end if;
@@ -3514,7 +3510,7 @@ package body Sem_Warn is
          begin
             Error_Msg_Uint_1 := Low_Bound;
             Error_Msg_FE -- CODEFIX
-              ("?index for& may assume lower bound of^", X, Ent);
+              ("?w?index for& may assume lower bound of^", X, Ent);
          end Warn1;
 
       --  Start of processing for Test_Suspicious_Index
@@ -3539,11 +3535,11 @@ package body Sem_Warn is
             if Nkind (Original_Node (X)) = N_Integer_Literal then
                if Intval (X) = Low_Bound then
                   Error_Msg_FE -- CODEFIX
-                    ("\suggested replacement: `&''First`", X, Ent);
+                    ("\?w?suggested replacement: `&''First`", X, Ent);
                else
                   Error_Msg_Uint_1 := Intval (X) - Low_Bound;
                   Error_Msg_FE -- CODEFIX
-                    ("\suggested replacement: `&''First + ^`", X, Ent);
+                    ("\?w?suggested replacement: `&''First + ^`", X, Ent);
 
                end if;
 
@@ -3649,7 +3645,7 @@ package body Sem_Warn is
                --  Replacement subscript is now in string buffer
 
                Error_Msg_FE -- CODEFIX
-                 ("\suggested replacement: `&~`", Original_Node (X), Ent);
+                 ("\?w?suggested replacement: `&~`", Original_Node (X), Ent);
             end if;
 
          --  Case where subscript is of the form X'Length
@@ -3658,7 +3654,7 @@ package body Sem_Warn is
             Warn1;
             Error_Msg_Node_2 := Ent;
             Error_Msg_FE
-              ("\suggest replacement of `&''Length` by `&''Last`",
+              ("\?w?suggest replacement of `&''Length` by `&''Last`",
                X, Ent);
 
          --  Case where subscript is of the form X'Length - expression
@@ -3669,7 +3665,7 @@ package body Sem_Warn is
             Warn1;
             Error_Msg_Node_2 := Ent;
             Error_Msg_FE
-              ("\suggest replacement of `&''Length` by `&''Last`",
+              ("\?w?suggest replacement of `&''Length` by `&''Last`",
                Left_Opnd (X), Ent);
          end if;
       end Test_Suspicious_Index;
@@ -3797,7 +3793,7 @@ package body Sem_Warn is
                   then
                      if not Has_Pragma_Unmodified_Check_Spec (E) then
                         Error_Msg_N -- CODEFIX
-                          ("?variable & is assigned but never read!", E);
+                          ("?u?variable & is assigned but never read!", E);
                      end if;
 
                      Set_Last_Assignment (E, Empty);
@@ -3821,10 +3817,10 @@ package body Sem_Warn is
                        and then Comes_From_Source (Renamed_Object (E))
                      then
                         Error_Msg_N -- CODEFIX
-                          ("?renamed variable & is not referenced!", E);
+                          ("?u?renamed variable & is not referenced!", E);
                      else
                         Error_Msg_N -- CODEFIX
-                          ("?variable & is not referenced!", E);
+                          ("?u?variable & is not referenced!", E);
                      end if;
                   end if;
                end if;
@@ -3834,10 +3830,10 @@ package body Sem_Warn is
                  and then Comes_From_Source (Renamed_Object (E))
                then
                   Error_Msg_N -- CODEFIX
-                    ("?renamed constant & is not referenced!", E);
+                    ("?u?renamed constant & is not referenced!", E);
                else
                   Error_Msg_N -- CODEFIX
-                    ("?constant & is not referenced!", E);
+                    ("?u?constant & is not referenced!", E);
                end if;
 
             when E_In_Parameter     |
@@ -3846,8 +3842,8 @@ package body Sem_Warn is
                --  Do not emit message for formals of a renaming, because
                --  they are never referenced explicitly.
 
-               if Nkind (Original_Node (Unit_Declaration_Node (Scope (E))))
-                 /= N_Subprogram_Renaming_Declaration
+               if Nkind (Original_Node (Unit_Declaration_Node (Scope (E)))) /=
+                                          N_Subprogram_Renaming_Declaration
                then
                   --  Suppress this message for an IN OUT parameter of a
                   --  non-scalar type, since it is normal to have only an
@@ -3863,7 +3859,7 @@ package body Sem_Warn is
 
                      if not Is_Trivial_Subprogram (Scope (E)) then
                         Error_Msg_NE -- CODEFIX
-                          ("?formal parameter & is not referenced!",
+                          ("?u?formal parameter & is not referenced!",
                            E, Spec_E);
                      end if;
                   end if;
@@ -3873,56 +3869,56 @@ package body Sem_Warn is
                null;
 
             when E_Discriminant =>
-               Error_Msg_N ("?discriminant & is not referenced!", E);
+               Error_Msg_N ("?u?discriminant & is not referenced!", E);
 
             when E_Named_Integer |
                  E_Named_Real    =>
                Error_Msg_N -- CODEFIX
-                 ("?named number & is not referenced!", E);
+                 ("?u?named number & is not referenced!", E);
 
             when Formal_Object_Kind =>
                Error_Msg_N -- CODEFIX
-                 ("?formal object & is not referenced!", E);
+                 ("?u?formal object & is not referenced!", E);
 
             when E_Enumeration_Literal =>
                Error_Msg_N -- CODEFIX
-                 ("?literal & is not referenced!", E);
+                 ("?u?literal & is not referenced!", E);
 
             when E_Function =>
                Error_Msg_N -- CODEFIX
-                 ("?function & is not referenced!", E);
+                 ("?u?function & is not referenced!", E);
 
             when E_Procedure =>
                Error_Msg_N -- CODEFIX
-                 ("?procedure & is not referenced!", E);
+                 ("?u?procedure & is not referenced!", E);
 
             when E_Package =>
                Error_Msg_N -- CODEFIX
-                 ("?package & is not referenced!", E);
+                 ("?u?package & is not referenced!", E);
 
             when E_Exception =>
                Error_Msg_N -- CODEFIX
-                 ("?exception & is not referenced!", E);
+                 ("?u?exception & is not referenced!", E);
 
             when E_Label =>
                Error_Msg_N -- CODEFIX
-                 ("?label & is not referenced!", E);
+                 ("?u?label & is not referenced!", E);
 
             when E_Generic_Procedure =>
                Error_Msg_N -- CODEFIX
-                 ("?generic procedure & is never instantiated!", E);
+                 ("?u?generic procedure & is never instantiated!", E);
 
             when E_Generic_Function =>
                Error_Msg_N -- CODEFIX
-                 ("?generic function & is never instantiated!", E);
+                 ("?u?generic function & is never instantiated!", E);
 
             when Type_Kind =>
                Error_Msg_N -- CODEFIX
-                 ("?type & is not referenced!", E);
+                 ("?u?type & is not referenced!", E);
 
             when others =>
                Error_Msg_N -- CODEFIX
-                 ("?& is not referenced!", E);
+                 ("?u?& is not referenced!", E);
          end case;
 
          --  Kill warnings on the entity on which the message has been posted
@@ -4024,12 +4020,12 @@ package body Sem_Warn is
                                                   N_Parameter_Association)
                         then
                            Error_Msg_NE
-                             ("?& modified by call, but value never "
+                             ("?m?& modified by call, but value never "
                               & "referenced", LA, Ent);
 
                         else
                            Error_Msg_NE -- CODEFIX
-                             ("?useless assignment to&, value never "
+                             ("?m?useless assignment to&, value never "
                               & "referenced!", LA, Ent);
                         end if;
                      end if;
@@ -4051,11 +4047,11 @@ package body Sem_Warn is
                                                N_Parameter_Association)
                      then
                         Error_Msg_NE
-                          ("?& modified by call, but value overwritten #!",
+                          ("?m?& modified by call, but value overwritten #!",
                            LA, Ent);
                      else
                         Error_Msg_NE -- CODEFIX
-                          ("?useless assignment to&, value overwritten #!",
+                          ("?m?useless assignment to&, value overwritten #!",
                            LA, Ent);
                      end if;
                   end;
