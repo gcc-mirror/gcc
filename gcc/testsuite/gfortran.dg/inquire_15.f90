@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR48976 test case by jvdelisle@gcc.gnu.org
 character(len=20) :: str
 str = "abcdefg"

@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR48960 On ERROR newunit should not modify user variable.
 program test_newunit
     integer :: st, un = 0
