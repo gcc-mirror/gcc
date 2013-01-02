@@ -1606,6 +1606,17 @@ package body Sem_Ch13 is
 
                   if Nkind (Parent (N)) = N_Compilation_Unit then
                      Add_Global_Declaration (Aitem);
+
+                  --  If it is a subprogram body, add pragmas to list of
+                  --  declarations in body.
+
+                  elsif Nkind (N) = N_Subprogram_Body then
+                     if No (Declarations (N)) then
+                        Set_Declarations (N, New_List);
+                     end if;
+
+                     Append (Aitem, Declarations (N));
+
                   else
                      Insert_After (N, Aitem);
                   end if;

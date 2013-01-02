@@ -274,8 +274,8 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      Cond : constant Node_Id    := Arg2 (N);
-      Nam  : constant Name_Id    := Chars (Arg1 (N));
+      Cond : constant Node_Id := Arg2 (N);
+      Nam  : constant Name_Id := Chars (Arg1 (N));
       Msg  : Node_Id;
 
       Loc  : constant Source_Ptr := Sloc (First_Node (Cond));
