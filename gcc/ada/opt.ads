@@ -276,6 +276,13 @@ package Opt is
    --  Set to True to detect whether subprogram parameters and function results
    --  alias the same object(s).
 
+   Check_Float_Overflow : Boolean := False;
+   --  GNAT
+   --  Set to True to check that operations on predefined unconstrained float
+   --  types (e.g. Float, Long_Float) do not overflow and generate infinities
+   --  or invalid values. Set by the Check_Float_Overflow pragma, or by use
+   --  of the -gnateo switch.
+
    Check_Object_Consistency : Boolean := False;
    --  GNATBIND, GNATMAKE
    --  Set to True to check whether every object file is consistent with
@@ -556,8 +563,7 @@ package Opt is
    Extensions_Allowed : Boolean := False;
    --  GNAT
    --  Set to True by switch -gnatX if GNAT specific language extensions
-   --  are allowed. For example, the use of 'Constrained with objects of
-   --  generic types is a GNAT extension.
+   --  are allowed. Currently there are no such defined extensions.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source
@@ -1021,7 +1027,7 @@ package Opt is
    Object_Path_File_Name : String_Ptr := null;
    --  GNAT2WHY
    --  Path of the temporary file that contains a list of object directories
-   --  passed by -gnateO=<obj_pat_file>.
+   --  passed by -gnateO=<obj_path_file>.
 
    One_Compilation_Per_Obj_Dir : Boolean := False;
    --  GNATMAKE, GPRBUILD
@@ -1726,6 +1732,13 @@ package Opt is
    --  -gnatB, and possibly modified by the use of the configuration pragma
    --  Assume_No_Invalid_Values.
 
+   Check_Float_Overflow_Config : Boolean;
+   --  GNAT
+   --  Set to True to check that operations on predefined unconstrained float
+   --  types (e.g. Float, Long_Float) do not overflow and generate infinities
+   --  or invalid values. Set by the Check_Float_Overflow pragma, or by use
+   --  of the -gnateo switch.
+
    Check_Policy_List_Config : Node_Id;
    --  GNAT
    --  This points to the list of N_Pragma nodes for Check_Policy pragmas
@@ -1981,6 +1994,7 @@ private
       Ada_Version_Explicit           : Ada_Version_Type;
       Assertions_Enabled             : Boolean;
       Assume_No_Invalid_Values       : Boolean;
+      Check_Float_Overflow           : Boolean;
       Check_Policy_List              : Node_Id;
       Debug_Pragmas_Disabled         : Boolean;
       Debug_Pragmas_Enabled          : Boolean;

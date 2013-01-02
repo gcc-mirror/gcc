@@ -7560,6 +7560,18 @@ package body Sem_Prag is
             end if;
          end Check;
 
+         --------------------------
+         -- Check_Float_Overflow --
+         --------------------------
+
+         --  pragma Check_Float_Overflow;
+
+         when Pragma_Check_Float_Overflow =>
+            GNAT_Pragma;
+            Check_Valid_Configuration_Pragma;
+            Check_Arg_Count (0);
+            Check_Float_Overflow := True;
+
          ----------------
          -- Check_Name --
          ----------------
@@ -15740,6 +15752,7 @@ package body Sem_Prag is
       Pragma_Atomic_Components              =>  0,
       Pragma_Attach_Handler                 => -1,
       Pragma_Check                          => 99,
+      Pragma_Check_Float_Overflow           =>  0,
       Pragma_Check_Name                     =>  0,
       Pragma_Check_Policy                   =>  0,
       Pragma_CIL_Constructor                => -1,

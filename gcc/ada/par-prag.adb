@@ -1106,6 +1106,7 @@ begin
            Pragma_Attach_Handler                 |
            Pragma_Attribute_Definition           |
            Pragma_Check                          |
+           Pragma_Check_Float_Overflow           |
            Pragma_Check_Name                     |
            Pragma_Check_Policy                   |
            Pragma_CIL_Constructor                |
