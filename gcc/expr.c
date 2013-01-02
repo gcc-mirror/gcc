@@ -9960,7 +9960,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
 		&& GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT
 		&& modifier != EXPAND_CONST_ADDRESS
-		&& modifier != EXPAND_INITIALIZER)
+		&& modifier != EXPAND_INITIALIZER
+		&& modifier != EXPAND_MEMORY)
 	    /* If the field is volatile, we always want an aligned
 	       access.  Do this in following two situations:
 	       1. the access is not already naturally

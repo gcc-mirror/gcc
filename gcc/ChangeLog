@@ -1,3 +1,9 @@
+2013-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/55198
+	* expr.c (expand_expr_real_1): Don't use bitfield extraction for non
+	BLKmode objects when EXPAND_MEMORY is specified.
+
 2013-01-02  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/i386.c (ix86_get_function_versions_dispatcher): Fix bug
