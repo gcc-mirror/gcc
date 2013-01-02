@@ -1,3 +1,10 @@
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* scos.ads (In_Decision): Add missing entry for 'a'.
+	* sem_prag.adb (Analyze_Pragma, case pragma Check): Omit
+	call to Set_SCO_Pragma_Enabled for Invariant and Predicate.
+	* sem_ch13.adb: Minor comment update.
+
 2012-12-21  Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/53737

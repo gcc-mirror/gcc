@@ -385,8 +385,8 @@ package SCOs is
      Table_Increment      => 300);
 
    Is_Decision : constant array (Character) of Boolean :=
-     ('E' | 'G' | 'I' | 'P' | 'A' | 'W' | 'X' => True,
-      others                                  => False);
+     ('E' | 'G' | 'I' | 'P' | 'a' | 'A' | 'W' | 'X' => True,
+      others                                        => False);
    --  Indicates which C1 values correspond to decisions
 
    --  The SCO_Table_Entry values appear as follows:

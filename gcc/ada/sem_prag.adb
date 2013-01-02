@@ -2233,7 +2233,7 @@ package body Sem_Prag is
               (Get_Pragma_Arg (Arg2), Standard_String);
          end if;
 
-         --  For a pragma in the extended main source unit, record enabled
+         --  For a pragma PPC in the extended main source unit, record enabled
          --  status in SCO.
 
          --  This may seem redundant with the call to Check_Enabled occurring
@@ -7449,8 +7449,9 @@ package body Sem_Prag is
          --              [,[Message =>] String_EXPRESSION]);
 
          when Pragma_Check => Check : declare
-            Expr : Node_Id;
-            Eloc : Source_Ptr;
+            Expr  : Node_Id;
+            Eloc  : Source_Ptr;
+            Cname : Name_Id;
 
             Check_On : Boolean;
             --  Set True if category of assertions referenced by Name enabled
@@ -7477,14 +7478,28 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  Indicate if pragma is enabled. The Original_Node reference here
-            --  is to deal with pragma Assert rewritten as a Check pragma.
+            Cname := Chars (Get_Pragma_Arg (Arg1));
+            Check_On := Check_Enabled (Cname);
 
-            Check_On := Check_Enabled (Chars (Get_Pragma_Arg (Arg1)));
+            case Cname is
+               when Name_Predicate |
+                    Name_Invariant =>
 
-            if Check_On and then not Split_PPC (N) then
-               Set_SCO_Pragma_Enabled (Loc);
-            end if;
+                  --  Nothing to do: since checks occur in client units,
+                  --  the SCO for the aspect in the declaration unit is
+                  --  conservatively always enabled.
+
+                  null;
+
+               when others =>
+
+                  if Check_On and then not Split_PPC (N) then
+
+                     --  Mark pragma/aspect SCO as enabled
+
+                     Set_SCO_Pragma_Enabled (Loc);
+                  end if;
+            end case;
 
             --  If expansion is active and the check is not enabled then we
             --  rewrite the Check as:

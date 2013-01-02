@@ -5229,8 +5229,7 @@ package body Sem_Ch13 is
 
                Exp := New_Copy_Tree (Arg2);
 
-               --  Preserve sloc of original pragma Invariant (this is required
-               --  by Par_SCO).
+               --  Preserve sloc of original pragma Invariant
 
                Loc := Sloc (Ritem);
 
