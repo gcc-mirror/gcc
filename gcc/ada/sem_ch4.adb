@@ -635,10 +635,9 @@ package body Sem_Ch4 is
                      Insert_Action (N, Not_Null_Check);
                      Analyze (Not_Null_Check);
 
-                  else
-                     --  Seems weird for the following to be a warning ???
-
-                     Error_Msg_N ("null value not allowed here??", E);
+                  elsif Warn_On_Ada_2012_Compatibility then
+                     Error_Msg_N
+                       ("null value not allowed here in Ada 2012?y?", E);
                   end if;
                end;
             end if;

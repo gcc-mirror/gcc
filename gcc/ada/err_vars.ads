@@ -89,7 +89,7 @@ package Err_Vars is
    --  to force an initial reference to the real source file name.
 
    Warning_Doc_Switch : Boolean := False;
-   --  If this is set True, then the ??/?x?/?.x? sequences in error messages
+   --  If this is set True, then the ??/?x?/?x? sequences in error messages
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.

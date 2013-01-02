@@ -3788,6 +3788,7 @@ package body Sem_Ch6 is
                      if Has_Excluded_Statement (Then_Statements (E)) then
                         return True;
                      end if;
+
                      Next (E);
                   end loop;
                end if;
@@ -3975,7 +3976,7 @@ package body Sem_Ch6 is
             then
                Cannot_Inline
                  ("cannot inline & (call returns unconstrained type)?",
-                    N, Subp);
+                  N, Subp);
                return Abandon;
             else
                return OK;
@@ -7287,17 +7288,18 @@ package body Sem_Ch6 is
       then
          if Present (Last_Postcondition) then
             if Present (Last_Contract_Case) then
-               Error_Msg_N ("neither function postcondition nor "
-                            & "contract cases mention result??",
-                            Last_Postcondition);
+               Error_Msg_N
+                 ("neither function postcondition nor "
+                  & "contract cases mention result?T?", Last_Postcondition);
 
             else
-               Error_Msg_N ("function postcondition does not mention result??",
-                            Last_Postcondition);
+               Error_Msg_N
+                 ("function postcondition does not mention result?T?",
+                  Last_Postcondition);
             end if;
          else
-            Error_Msg_N ("contract cases do not mention result??",
-                         Last_Contract_Case);
+            Error_Msg_N
+              ("contract cases do not mention result?T?", Last_Contract_Case);
          end if;
       end if;
    end Check_Subprogram_Contract;
@@ -9364,10 +9366,12 @@ package body Sem_Ch6 is
                   if Class_Present (P) and then not Split_PPC (P) then
                      if Pragma_Name (P) = Name_Precondition then
                         Error_Msg_N
-                          ("info: & inherits `Pre''Class` aspect from #?", E);
+                          ("info: & inherits `Pre''Class` aspect from #?L?",
+                           E);
                      else
                         Error_Msg_N
-                          ("info: & inherits `Post''Class` aspect from #?", E);
+                          ("info: & inherits `Post''Class` aspect from #?L?",
+                           E);
                      end if;
                   end if;
 

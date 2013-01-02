@@ -668,7 +668,7 @@ package body Sinput.L is
 
                         if not Status then
                            Errout.Error_Msg
-                             ("?could not write processed file """ &
+                             ("??could not write processed file """ &
                               Name_Buffer (1 .. Name_Len) & '"',
                               Lo);
                         end if;

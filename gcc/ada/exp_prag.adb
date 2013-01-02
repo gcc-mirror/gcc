@@ -448,10 +448,12 @@ package body Exp_Prag is
            and then Entity (Original_Node (Cond)) = Standard_False
          then
             return;
+
          elsif Nam = Name_Assertion then
-            Error_Msg_N ("?assertion will fail at run time", N);
+            Error_Msg_N ("?A?assertion will fail at run time", N);
          else
-            Error_Msg_N ("?check will fail at run time", N);
+
+            Error_Msg_N ("?A?check will fail at run time", N);
          end if;
       end if;
    end Expand_Pragma_Check;

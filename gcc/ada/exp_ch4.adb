@@ -5685,8 +5685,8 @@ package body Exp_Ch4 is
 
             if Lcheck = LT or else Ucheck = GT then
                if Warn1 then
-                  Error_Msg_N ("??range test optimized away", N);
-                  Error_Msg_N ("\??value is known to be out of range", N);
+                  Error_Msg_N ("?c?range test optimized away", N);
+                  Error_Msg_N ("\?c?value is known to be out of range", N);
                end if;
 
                Rewrite (N, New_Reference_To (Standard_False, Loc));
@@ -5699,8 +5699,8 @@ package body Exp_Ch4 is
 
             elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
                if Warn1 then
-                  Error_Msg_N ("??range test optimized away", N);
-                  Error_Msg_N ("\??value is known to be in range", N);
+                  Error_Msg_N ("?c?range test optimized away", N);
+                  Error_Msg_N ("\?c?value is known to be in range", N);
                end if;
 
                Rewrite (N, New_Reference_To (Standard_True, Loc));
@@ -5756,25 +5756,25 @@ package body Exp_Ch4 is
 
                if Lcheck = LT or else Ucheck = GT then
                   Error_Msg_N
-                    ("??value can only be in range if it is invalid", N);
+                    ("?c?value can only be in range if it is invalid", N);
 
                --  Result is in range for valid value
 
                elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
                   Error_Msg_N
-                    ("??value can only be out of range if it is invalid", N);
+                    ("?c?value can only be out of range if it is invalid", N);
 
                --  Lower bound check succeeds if value is valid
 
                elsif Warn2 and then Lcheck in Compare_GE then
                   Error_Msg_N
-                    ("??lower bound check only fails if it is invalid", Lo);
+                    ("?c?lower bound check only fails if it is invalid", Lo);
 
                --  Upper bound  check succeeds if value is valid
 
                elsif Warn2 and then Ucheck in Compare_LE then
                   Error_Msg_N
-                    ("??upper bound check only fails for invalid values", Hi);
+                    ("?c?upper bound check only fails for invalid values", Hi);
                end if;
             end if;
          end;

@@ -186,7 +186,7 @@ package body Util is
            or else (Token_Name = Name_Interface
                      and then Prev_Token /= Tok_Pragma)
          then
-            Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+            Error_Msg_N ("& is a reserved word in Ada 2005?y?", Token_Node);
          end if;
       end if;
 
@@ -196,7 +196,7 @@ package body Util is
         and then Warn_On_Ada_2012_Compatibility
       then
          if Token_Name = Name_Some then
-            Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
+            Error_Msg_N ("& is a reserved word in Ada 2012?y?", Token_Node);
          end if;
       end if;
 
@@ -761,7 +761,7 @@ package body Util is
             C : constant Entity_Id := Current_Entity (N);
          begin
             if Present (C) and then Sloc (C) = Standard_Location then
-               Error_Msg_N ("redefinition of entity& in Standard?", N);
+               Error_Msg_N ("redefinition of entity& in Standard?K?", N);
             end if;
          end;
       end if;

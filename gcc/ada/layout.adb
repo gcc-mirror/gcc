@@ -2435,7 +2435,7 @@ package body Layout is
                  Convention (E) = Convention_CPP)
             then
                Error_Msg_N
-                 ("?this access type does not correspond to C pointer", E);
+                 ("?x?this access type does not correspond to C pointer", E);
             end if;
 
          --  If the designated type is a limited view it is unanalyzed. We can
@@ -2804,7 +2804,7 @@ package body Layout is
       begin
          if Spec > Max then
             Error_Msg_Uint_1 := Spec - Max;
-            Error_Msg_NE ("?^ bits of & unused", SC, E);
+            Error_Msg_NE ("??^ bits of & unused", SC, E);
          end if;
       end Check_Unused_Bits;
 
@@ -2883,8 +2883,8 @@ package body Layout is
         and then not Is_Atomic (E)
       then
          if not Size_Known_At_Compile_Time (E) then
-            Error_Msg_N ("Optimize_Alignment has no effect for &", E);
-            Error_Msg_N ("\pragma is ignored for variable length record?", E);
+            Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
+            Error_Msg_N ("\pragma is ignored for variable length record??", E);
          else
             Align := 1;
          end if;

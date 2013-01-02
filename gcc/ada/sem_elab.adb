@@ -1030,7 +1030,7 @@ package body Sem_Elab is
                   Error_Msg_Node_2 := W_Scope;
                   Error_Msg_NE
                     ("call to& in elaboration code " &
-                     "requires pragma Elaborate_All on&??", N, E);
+                     "requires pragma Elaborate_All on&?l?", N, E);
                end if;
 
                --  Set indication for binder to generate Elaborate_All
@@ -2506,7 +2506,7 @@ package body Sem_Elab is
                Error_Msg_Node_2 := Task_Scope;
                Error_Msg_NE
                  ("activation of an instance of task type&" &
-                  " requires pragma Elaborate_All on &??", N, Ent);
+                  " requires pragma Elaborate_All on &?l?", N, Ent);
             end if;
 
             Activate_Elaborate_All_Desirable (N, Task_Scope);

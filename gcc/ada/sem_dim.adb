@@ -2451,7 +2451,7 @@ package body Sem_Dim is
       Add_String_To_Name_Buffer (Symbol_Of (Typ));
 
       Error_Msg_Name_1 := Name_Find;
-      Error_Msg_N ("?assumed to be%%", N);
+      Error_Msg_N ("??assumed to be%%", N);
    end Dim_Warning_For_Numeric_Literal;
 
    ----------------------------------------

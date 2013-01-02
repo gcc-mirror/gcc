@@ -13008,11 +13008,21 @@ package body Sem_Ch12 is
                  and then Present (Original_Node (N2))
                  and then Present (Entity (Original_Node (N2)))
                then
-                  N2 := Original_Node (N2);
-                  Set_Associated_Node (N, N2);
-               end if;
+                  if Is_Global (Entity (Original_Node (N2))) then
+                     N2 := Original_Node (N2);
+                     Set_Associated_Node (N, N2);
+                     Set_Global_Type (N, N2);
 
-               Set_Global_Type (N, N2);
+                  else
+                     --  Renaming is local, and will be resolved in instance
+
+                     Set_Associated_Node (N, Empty);
+                     Set_Etype  (N, Empty);
+                  end if;
+
+               else
+                  Set_Global_Type (N, N2);
+               end if;
 
             elsif Nkind (N) = N_Op_Concat
               and then Is_Generic_Type (Etype (N2))

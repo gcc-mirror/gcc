@@ -8891,7 +8891,7 @@ package body Sem_Res is
                      --  of the First_Node call here.
 
                      Error_Msg_F
-                       ("??assertion would fail at run time!",
+                       ("?A?assertion would fail at run time!",
                         Expression
                           (First (Pragma_Argument_Associations (Orig))));
                   end if;
@@ -8922,7 +8922,7 @@ package body Sem_Res is
                      --  comment above for an explanation of why we do this.
 
                      Error_Msg_F
-                       ("??check would fail at run time!",
+                       ("?A?check would fail at run time!",
                         Expression
                           (Last (Pragma_Argument_Associations (Orig))));
                   end if;
