@@ -1,3 +1,10 @@
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* vms_data.ads: Add entry for Float_Check_Valid (-gnateF).
+	* ug_words: Add entry for Float_Check_Overflow.
+	* usage.adb: Minor reformatting.
+	* gnat_ugn.texi: Add documentation for -gnateF (Check_Float_Overflow).
+
 2013-01-02  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Add documentation for switches -gnateA, -gnated,

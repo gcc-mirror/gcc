@@ -252,6 +252,8 @@ begin
    Write_Switch_Char ("eV");
    Write_Line ("Validity checks on subprogram parameters");
 
+   --  Line for -gnatez switch
+
    Write_Switch_Char ("ez");
    Write_Line ("Delimiter for automatically added switches (internal switch");
 
