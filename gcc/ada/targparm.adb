@@ -554,7 +554,7 @@ package body Targparm is
                   case K is
                      when AAM => AAMP_On_Target                      := Result;
                      when ACR => Always_Compatible_Rep_On_Target     := Result;
-                     when ASD => Atomic_Sync_Default                 := Result;
+                     when ASD => Atomic_Sync_Default_On_Target       := Result;
                      when BDC => Backend_Divide_Checks_On_Target     := Result;
                      when BOC => Backend_Overflow_Checks_On_Target   := Result;
                      when CLA => Command_Line_Args_On_Target         := Result;

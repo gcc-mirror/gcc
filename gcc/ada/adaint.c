@@ -2960,6 +2960,45 @@ __gnat_locate_exec_on_path (char *exec_name)
 #endif
 }
 
+/* __gnat_get_module_name returns the module name (executable or shared
+   library) in which the code at addr is. This is used to properly
+   report the symbolic tracebacks.  If the module cannot be located
+   it returns the empty string. The returned value must not be freed.  */
+
+char *__gnat_get_module_name (void *addr ATTRIBUTE_UNUSED)
+{
+  extern char **gnat_argv;
+
+#ifdef _WIN32
+  static char lpFilename[MAX_PATH];
+  HMODULE hModule;
+
+  lpFilename[0] = '\0';
+
+  /* Get the module handle in which the code running at the specified
+     address is contained.  */
+
+  if (GetModuleHandleEx
+      (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, addr, &hModule) == FALSE)
+    return __gnat_locate_exec_on_path (gnat_argv[0]);
+
+  /* Get the corresponding module full path name.  We really want the
+     standard ASCII version of this routine as the name is passed to
+     the BFD library.  */
+
+  if (GetModuleFileNameA (hModule, lpFilename, MAX_PATH) == 0)
+    return __gnat_locate_exec_on_path (gnat_argv[0]);
+
+  return lpFilename;
+
+#else
+  /* On all other platforms we just return the full path name of the
+     main executable.  */
+
+  return __gnat_locate_exec_on_path (gnat_argv[0]);
+#endif
+}
+
 #ifdef VMS
 
 /* These functions are used to translate to and from VMS and Unix syntax

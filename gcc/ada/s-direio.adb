@@ -283,7 +283,6 @@ package body System.Direct_IO is
       use type System.CRTL.ssize_t;
       R : int;
    begin
-      pragma Warnings (Off, "*condition is always*");
       if Standard'Address_Size = 64 then
          R := fseek64
            (File.Stream, ssize_t (File.Bytes) *
@@ -293,7 +292,6 @@ package body System.Direct_IO is
            (File.Stream, long (File.Bytes) *
               long (File.Index - 1), SEEK_SET);
       end if;
-      pragma Warnings (On, "*condition is always*");
 
       if R /= 0 then
          raise Use_Error;
@@ -314,13 +312,11 @@ package body System.Direct_IO is
          raise Device_Error;
       end if;
 
-      pragma Warnings (Off, "*condition is always*");
       if Standard'Address_Size = 64 then
          return Count (ftell64 (File.Stream) / ssize_t (File.Bytes));
       else
          return Count (ftell (File.Stream) / long (File.Bytes));
       end if;
-      pragma Warnings (On, "*condition is always*");
    end Size;
 
    -----------

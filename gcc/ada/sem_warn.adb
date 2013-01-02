@@ -3175,9 +3175,20 @@ package body Sem_Warn is
 
       if Constant_Condition_Warnings
         and then Is_Known_Branch
-        and then Comes_From_Source (Original_Node (C))
+        and then Comes_From_Source (Orig)
         and then not In_Instance
       then
+         --  Don't warn if comparison of result of attribute against a constant
+         --  value, since this is likely legitimate conditional compilation.
+
+         if Nkind (Orig) in N_Op_Compare
+           and then Compile_Time_Known_Value (Right_Opnd (Orig))
+           and then Nkind (Original_Node (Left_Opnd (Orig))) =
+                                                     N_Attribute_Reference
+         then
+            return;
+         end if;
+
          --  See if this is in a statement or a declaration
 
          P := Parent (C);
