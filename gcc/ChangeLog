@@ -1,5 +1,12 @@
 2013-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* builtins.c (expand_builtin_mathfn, expand_builtin_mathfn_2)
+	(expand_builtin_mathfn_ternary, expand_builtin_mathfn_3)
+	(expand_builtin_int_roundingfn_2): Keep the original target around
+	for the fallback case.
+
+2013-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* tree-vrp.c (range_fits_type_p): Require the MSB of the double_int
 	to be clear for sign changes.
 
