@@ -1,3 +1,48 @@
+2013-01-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Skip the special _Parent
+	scope generated for subprogram inlining purposes while trying
+	to locate the enclosing function.
+	* sem_prag.adb (Analyze_Pragma): Preanalyze the boolean
+	expression of pragma Postcondition when the pragma comes from
+	source and appears inside a subprogram body.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* switch-c.adb, fe.h, back_end.adb: Enable generation of instantiation
+	information in debug info unconditionally when using -fdump-scos,
+	instead of relying on a separate command line switch -fdebug-instances.
+	* gcc-interface/gigi.h, gcc-interface/misc.c
+	(set_flag_debug_instances): New subprogram.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Additional refinement of predicate.
+
+2013-01-02  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Remove incorrect spaces at end of descriptions
+	of qualifiers for single switch.
+
+2013-01-02  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor edits / wordsmithing in section on pragma
+	Check_Float_Overflow.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual): Do not add extra parens for
+	a conditional expression (CASE or IF expression) that already
+	has parens. Also omit ELSE keyword for an IF expression without
+	an ELSE part.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Adjust back-end
+	flag_debug_instances here, after front-end switches have been
+	processed.
+
 2013-01-02  Vincent Celier  <celier@adacore.com>
 
 	* usage.adb: Minor reformatting.

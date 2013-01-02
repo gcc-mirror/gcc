@@ -255,6 +255,8 @@ extern void gigi (Node_Id gnat_root, int max_gnat_node,
                   Entity_Id standard_exception_type,
                   Int gigi_operating_mode);
 
+extern void set_flag_debug_instances (int);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1417,41 +1417,43 @@ pragma Check_Float_Overflow;
 @noindent
 In Ada, the predefined floating-point types (@code{Short_Float},
 @code{Float}, @code{Long_Float}, @code{Long_Long_Float}) are
-defined as being unconstrained. This means that even though they
-have well defined base ranges, there is no requirement that an
-overflow exception be raised when the result of an operation is
-outside this base range. This definition accomodates the notion
+defined to be @emph{unconstrained}. This means that even though each
+has a well-defined base range, an operation that delivers a result
+outside this base range is not required to raise an exception.
+This implementation permission accommodates the notion
 of infinities in IEEE floating-point, and corresponds to the
 efficient execution mode on most machines. GNAT will not raise
-overflow exceptions on these machines, instead it will generate
+overflow exceptions on these machines; instead it will generate
 infinities and NaN's as defined in the IEEE standard.
 
-Although the generation of infinities is efficient, it is not
-always desirable, and it is often the case that it would be
-preferable to check for overflows, even if this resulted in
-substantially less efficient code. This can be accomplished
-by defining your own float subtypes, and indeed such types
-can have the same base range as in:
+Generating infinities, although efficient, is not always desirable.
+Often the preferable approach is to check for overflow, even at the
+(perhaps considerable) expense of run-time performance.
+This can be accomplished by defining your own constrained floating-point subtypes -- i.e., by supplying explicit
+range constraints -- and indeed such a subtype
+can have the same base range as its base type. For example:
 
 @smallexample @c ada
 subtype My_Float is Float range Float'Range;
 @end smallexample
 
 @noindent
-In this example, @code{My_Float} has the same range as
-@code{Float} but it is constrained, so operations on
+Here @code{My_Float} has the same range as
+@code{Float} but is constrained, so operations on
 @code{My_Float} values will be checked for overflow
 against this range.
 
-However, it is often convenient to avoid the need to
-define your own floating-point types, and instead use
-the standard predefined types. The @code{Check_Float_Overflow}
-configuration pragma achieves that. If a unit is compiled
+This style will achieve the desired goal, but
+it is often more convenient to be able to simply use
+the standard predefined floating-point types as long
+as overflow checking could be guaranteed.
+The @code{Check_Float_Overflow}
+configuration pragma achieves this effect. If a unit is compiled
 subject to this configuration pragma, then all operations
 on predefined floating-point types will be treated as
-though those types were constrained and overflow checks
-will be generated, resulting in a @code{Constraint_Error}
-exception if the result is out of range.
+though those types were constrained, and overflow checks
+will be generated. The @code{Constraint_Error}
+exception is raised if the result is out of range.
 
 This mode can also be set by use of the compiler
 switch @option{-gnateF}.

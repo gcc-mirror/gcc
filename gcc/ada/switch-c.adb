@@ -618,6 +618,7 @@ package body Switch.C is
 
                   when 'S' =>
                      Generate_SCO := True;
+                     Generate_SCO_Instance_Table := True;
                      Ptr := Ptr + 1;
 
                   --  -gnatet (generate target dependent information)

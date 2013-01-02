@@ -4586,11 +4586,26 @@ package body Sem_Attr is
          --  During pre-analysis, Prag is the enclosing pragma node if any
 
       begin
-         --  Find enclosing scopes, excluding loops
+         --  Find the proper enclosing scope
 
          CS := Current_Scope;
-         while Ekind (CS) = E_Loop loop
-            CS := Scope (CS);
+         while Present (CS) loop
+
+            --  Skip generated loops
+
+            if Ekind (CS) = E_Loop then
+               CS := Scope (CS);
+
+            --  Skip the special _Parent scope generated to capture references
+            --  to formals during the process of subprogram inlining.
+
+            elsif Ekind (CS) = E_Function
+              and then Chars (CS) = Name_uParent
+            then
+               CS := Scope (CS);
+            else
+               exit;
+            end if;
          end loop;
 
          PS := Scope (CS);
