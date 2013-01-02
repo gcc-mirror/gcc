@@ -4178,6 +4178,10 @@ Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
 (see @option{-gnatx}).
 
+@item ^-gnateA^/ALIASING_CHECK^
+@cindex @option{-gnateA} (@command{gcc})
+Check that there is no aliasing between two parameters of the same subprogram.
+
 @item -gnatec=@var{path}
 @cindex @option{-gnatec} (@command{gcc})
 Specify a configuration pragma file
@@ -4185,6 +4189,10 @@ Specify a configuration pragma file
 (the equal sign is optional)
 @end ifclear
 (@pxref{The Configuration Pragmas Files}).
+
+@item ^-gnated^/DISABLE_ATOMIC_SYNCHRONIZATION^
+@cindex @option{-gnated} (@command{gcc})
+Disable atomic synchronization
 
 @item ^-gnateD^/DATA_PREPROCESSING=^symbol@r{[}=@var{value}@r{]}
 @cindex @option{-gnateD} (@command{gcc})
@@ -4228,6 +4236,10 @@ Specify a mapping file
 @end ifclear
 (@pxref{Units to Sources Mapping Files}).
 
+@item -gnateO=@var{path}
+@cindex @option{-gnateO} (@command{gcc})
+Specify a path for the object files.
+
 @item -gnatep=@var{file}
 @cindex @option{-gnatep} (@command{gcc})
 Specify a preprocessing data file
@@ -4248,6 +4260,14 @@ temporary use of special test software.
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backards compatibility.
+
+@item ^-gnatet^/TARGET_DEPENDENT_INFO^
+@cindex @option{-gnatet} (@command{gcc})
+Generate target dependent information.
+
+@item ^-gnateV^/PARAMETER_VALIDITY_CHECK^
+@cindex @option{-gnateV} (@command{gcc})
+Check validity of subprogram parameters.
 
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})

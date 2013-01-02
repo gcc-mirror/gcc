@@ -167,6 +167,11 @@ begin
    Write_Switch_Char ("Dnn");
    Write_Line ("Debug expanded generated code (max line length = nn)");
 
+   --  Line for -gnatea switch
+
+   Write_Switch_Char ("ea");
+   Write_Line ("Delimiter for automatically added switches (internal switch");
+
    --  Line for -gnateA switch
 
    Write_Switch_Char ("eA");
@@ -217,6 +222,11 @@ begin
    Write_Switch_Char ("em=?");
    Write_Line ("Specify mapping file, e.g. -gnatem=mapping");
 
+   --  Line for -gnateO=?
+
+   Write_Switch_Char ("eO=?");
+   Write_Line ("Specify an object path file");
+
    --  Line for -gnatep switch
 
    Write_Switch_Char ("ep=?");
@@ -241,6 +251,9 @@ begin
 
    Write_Switch_Char ("eV");
    Write_Line ("Validity checks on subprogram parameters");
+
+   Write_Switch_Char ("ez");
+   Write_Line ("Delimiter for automatically added switches (internal switch");
 
    --  Line for -gnatE switch
 
