@@ -109,9 +109,6 @@ procedure Gnat1drv is
    ----------------------------
 
    procedure Adjust_Global_Switches is
-      procedure set_flag_debug_instances (Val : Int);
-      pragma Import (C, set_flag_debug_instances);
-
    begin
       --  Debug flag -gnatd.I is a synonym for Generate_SCIL and requires code
       --  generation.
@@ -575,10 +572,6 @@ procedure Gnat1drv is
             Inline_Level := 2;
          end if;
       end if;
-
-      --  Set back-end flag_debug_instances from corresponding front-end flag
-
-      set_flag_debug_instances (Boolean'Pos (Generate_SCO_Instance_Table));
 
       --  Finally capture adjusted value of Suppress_Options as the initial
       --  value for Scope_Suppress, which will be modified as we move from
