@@ -3095,7 +3095,7 @@ package body Sem_Res is
 
                if Wrong_Order then
                   Error_Msg_N
-                    ("actuals for this call may be in wrong order?", N);
+                    ("?P?actuals for this call may be in wrong order", N);
                end if;
             end;
          end;

@@ -211,6 +211,7 @@ package body Errutil is
       Errors.Table (Cur_Msg).Col      := Get_Column_Number (Sptr);
       Errors.Table (Cur_Msg).Style    := Is_Style_Msg;
       Errors.Table (Cur_Msg).Warn     := Is_Warning_Msg;
+      Errors.Table (Cur_Msg).Warn_Chr := Warning_Msg_Char;
       Errors.Table (Cur_Msg).Serious  := Is_Serious_Error;
       Errors.Table (Cur_Msg).Uncond   := Is_Unconditional_Msg;
       Errors.Table (Cur_Msg).Msg_Cont := Continuation;

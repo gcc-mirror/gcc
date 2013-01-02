@@ -22,8 +22,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-with Opt; use Opt;
+with Err_Vars; use Err_Vars;
+with Opt;      use Opt;
 
 package body Warnsw is
 
@@ -51,6 +51,12 @@ package body Warnsw is
 
          when 'C' =>
             Warn_On_Unrepped_Components         := False;
+
+         when 'd' =>
+            Warning_Doc_Switch                     := True;
+
+         when 'D' =>
+            Warning_Doc_Switch                     := False;
 
          when 'e' =>
             Address_Clause_Overlay_Warnings     := True;

@@ -6912,10 +6912,10 @@ package body Sem_Ch6 is
          if Mode = 'F' then
             if not Raise_Exception_Call then
                Error_Msg_N
-                 ("?RETURN statement missing following this statement!",
+                 ("??RETURN statement missing following this statement!",
                   Last_Stm);
                Error_Msg_N
-                 ("\?Program_Error may be raised at run time!",
+                 ("\??Program_Error may be raised at run time!",
                   Last_Stm);
             end if;
 
