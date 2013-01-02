@@ -4744,7 +4744,7 @@ package body Sem_Ch8 is
             goto Found;
 
          --  If there is more than one potentially use-visible entity and at
-         --  least one of them non-overloadable, we have an error (RM 8.4(11).
+         --  least one of them non-overloadable, we have an error (RM 8.4(11)).
          --  Note that E points to the first such entity on the homonym list.
          --  Special case: if one of the entities is declared in an actual
          --  package, it was visible in the generic, and takes precedence over

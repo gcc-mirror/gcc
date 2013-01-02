@@ -2170,12 +2170,12 @@ package body Par_SCO is
    is
       Spec : constant Node_Id := Specification (N);
       Dom  : Dominant_Info;
-   begin
-      Dom := Traverse_Declarations_Or_Statements
-               (Visible_Declarations (Spec), D);
 
-      --  The first private declaration is dominated by the last visible
-      --  declaration.
+   begin
+      Dom :=
+        Traverse_Declarations_Or_Statements (Visible_Declarations (Spec), D);
+
+      --  First private declaration is dominated by last visible declaration
 
       Traverse_Declarations_Or_Statements (Private_Declarations (Spec), Dom);
    end Traverse_Package_Declaration;

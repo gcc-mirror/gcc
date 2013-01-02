@@ -1,3 +1,32 @@
+2013-01-02  Geert Bosch  <bosch@adacore.com>
+
+	* a-nllcef.ads, a-nlcefu.ads, a-nscefu.ads: Make Pure.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb: Minor reformatting.
+
+2013-01-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Remove dead code.
+
+2013-01-02  Olivier Hainque  <hainque@adacore.com>
+
+	* a-exctra.ads (Get_PC): New function.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch7.adb: Minor reformatting.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Do not crash on
+	_Tag component.
+
 2013-01-02  Robert Dewar  <dewar@adacore.com>
 
 	* gnat1drv.adb, targparm.adb, targparm.ads: Minor name change: add

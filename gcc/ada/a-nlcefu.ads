@@ -19,3 +19,4 @@ with Ada.Numerics.Generic_Complex_Elementary_Functions;
 package Ada.Numerics.Long_Complex_Elementary_Functions is
   new Ada.Numerics.Generic_Complex_Elementary_Functions
                                           (Ada.Numerics.Long_Complex_Types);
+pragma Pure (Ada.Numerics.Long_Complex_Elementary_Functions);
