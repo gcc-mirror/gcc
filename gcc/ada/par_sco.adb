@@ -161,6 +161,7 @@ package body Par_SCO is
    procedure Traverse_Package_Body                (N : Node_Id);
    procedure Traverse_Package_Declaration         (N : Node_Id);
    procedure Traverse_Protected_Body              (N : Node_Id);
+   procedure Traverse_Protected_Definition        (N : Node_Id);
    procedure Traverse_Subprogram_Or_Task_Body
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
@@ -1201,12 +1202,13 @@ package body Par_SCO is
 
       procedure Set_Statement_Entry;
       --  Output CS entries for all statements saved in table SC, and end the
-      --  current CS sequence.
+      --  current CS sequence. Then output entries for all decisions nested in
+      --  these statements, which have been deferred so far.
 
       procedure Process_Decisions_Defer (N : Node_Id; T : Character);
       pragma Inline (Process_Decisions_Defer);
       --  This routine is logically the same as Process_Decisions, except that
-      --  the arguments are saved in the SD table, for later processing when
+      --  the arguments are saved in the SD table for later processing when
       --  Set_Statement_Entry is called, which goes through the saved entries
       --  making the corresponding calls to Process_Decision.
 
@@ -1350,11 +1352,21 @@ package body Par_SCO is
             when N_Loop_Statement =>
                To_Node := Iteration_Scheme (N);
 
-            when N_Selective_Accept       |
-                 N_Timed_Entry_Call       |
-                 N_Conditional_Entry_Call |
-                 N_Asynchronous_Select    =>
+            when N_Selective_Accept             |
+                 N_Timed_Entry_Call             |
+                 N_Conditional_Entry_Call       |
+                 N_Asynchronous_Select          |
+                 N_Single_Protected_Declaration =>
                T := F;
+
+            when N_Protected_Type_Declaration =>
+               if Has_Aspects (N) then
+                  To_Node := Last (Aspect_Specifications (N));
+               elsif Present (Discriminant_Specifications (N)) then
+                  To_Node := Last (Discriminant_Specifications (N));
+               else
+                  To_Node := Defining_Identifier (N);
+               end if;
 
             when others =>
                null;
@@ -1930,7 +1942,7 @@ package body Par_SCO is
             --  Object declaration. Ignored if Prev_Ids is set, since the
             --  parser generates multiple instances of the whole declaration
             --  if there is more than one identifier declared, and we only
-            --  want one entry in the SCO's, so we take the first, for which
+            --  want one entry in the SCOs, so we take the first, for which
             --  Prev_Ids is False.
 
             when N_Object_Declaration =>
@@ -1944,6 +1956,19 @@ package body Par_SCO is
 
             --  All other cases, which extend the current statement sequence
             --  but do not terminate it, even if they have nested decisions.
+
+            when N_Protected_Type_Declaration =>
+               Extend_Statement_Sequence (N, 't');
+               Process_Decisions_Defer (Discriminant_Specifications (N), 'X');
+               Set_Statement_Entry;
+
+               Traverse_Protected_Definition (Protected_Definition (N));
+
+            when N_Single_Protected_Declaration =>
+               Extend_Statement_Sequence (N, 'o');
+               Set_Statement_Entry;
+
+               Traverse_Protected_Definition (Protected_Definition (N));
 
             when others =>
 
@@ -2092,6 +2117,28 @@ package body Par_SCO is
    begin
       Traverse_Declarations_Or_Statements (Declarations (N));
    end Traverse_Protected_Body;
+
+   -----------------------------------
+   -- Traverse_Protected_Definition --
+   -----------------------------------
+
+   procedure Traverse_Protected_Definition (N : Node_Id) is
+      Dom_Info : Dominant_Info    := ('S', Parent (N));
+      Vis_Decl : constant List_Id := Visible_Declarations (N);
+
+   begin
+      Traverse_Declarations_Or_Statements
+        (L => Vis_Decl,
+         D => Dom_Info);
+
+      if not Is_Empty_List (Vis_Decl) then
+         Dom_Info.N := Last (Vis_Decl);
+      end if;
+
+      Traverse_Declarations_Or_Statements
+        (L => Private_Declarations (N),
+         D => Dom_Info);
+   end Traverse_Protected_Definition;
 
    --------------------------------------
    -- Traverse_Subprogram_Or_Task_Body --

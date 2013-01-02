@@ -1,3 +1,12 @@
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Add SCO generation for S of protected types and
+	single protected object declarations.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb, osint.ads: Minor reformatting.
+
 2013-01-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Check the legality of pragma Assume.

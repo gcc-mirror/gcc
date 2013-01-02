@@ -752,10 +752,9 @@ package body Sem_Eval is
       --  conditions when this is inappropriate.
 
       if not (Full_Analysis
-                or else
-              (Is_Static_Expression (L)
-                 and then
-               Is_Static_Expression (R)))
+               or else (Is_Static_Expression (L)
+                          and then
+                        Is_Static_Expression (R)))
       then
          return Unknown;
       end if;
@@ -3259,7 +3258,7 @@ package body Sem_Eval is
       Left_Int := Expr_Value (Left);
 
       if (Kind = N_And_Then and then Is_False (Left_Int))
-            or else
+           or else
          (Kind = N_Or_Else  and then Is_True  (Left_Int))
       then
          Fold_Uint (N, Left_Int, Rstat);
