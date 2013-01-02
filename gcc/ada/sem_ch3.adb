@@ -5056,8 +5056,8 @@ package body Sem_Ch3 is
       --  In ASIS mode, analyze the profile on the original node, because
       --  the separate copy does not provide enough links to recover the
       --  original tree. Analysis is limited to type annotations, within
-      --  a temporary scope that serves as an anonnymous subprogram to
-      --  collect otherwise useless temporaries and itypes.
+      --  a temporary scope that serves as an anonymous subprogram to collect
+      --  otherwise useless temporaries and itypes.
 
       if ASIS_Mode then
          declare

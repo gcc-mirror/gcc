@@ -1,5 +1,19 @@
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_ch3.adb: Minor reformatting.
+
+2013-01-02  Pascal Obry  <obry@adacore.com>
+
+	* cstreams.c (__gnat_ftell64): New routine. Use _ftelli64 on
+	Win64 and default to ftell on other platforms.
+	(__gnat_fsek64): Likewise.
+	* i-cstrea.ads: Add fssek64 and ftell64 specs.
+	* s-crtl.ads: Likewise.
+	* a-ststio.adb, s-direio.adb (Size): Use 64 bits version when required.
+	(Set_Position): Likewise.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
 	* par_sco.adb: Generate X SCOs for default expressions in
 	subprogram body stubs.	Do not generate any SCO for package,
 	task, or protected body stubs.
