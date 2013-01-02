@@ -636,7 +636,9 @@ package body Sem_Ch4 is
                      Analyze (Not_Null_Check);
 
                   else
-                     Error_Msg_N ("null value not allowed here?", E);
+                     --  Seems weird for the following to be a warning ???
+
+                     Error_Msg_N ("null value not allowed here??", E);
                   end if;
                end;
             end if;
@@ -2082,7 +2084,8 @@ package body Sem_Ch4 is
             --  account a possible implicit dereference.
 
             if Is_Access_Type (Array_Type) then
-               Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+               Error_Msg_NW
+                 (Warn_On_Dereference, "?d?implicit dereference", N);
                Array_Type := Process_Implicit_Dereference_Prefix (Pent, P);
             end if;
 
@@ -2241,7 +2244,8 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Typ) then
                Typ := Designated_Type (Typ);
-               Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+               Error_Msg_NW
+                 (Warn_On_Dereference, "?d?implicit dereference", N);
             end if;
 
             if Is_Array_Type (Typ) then
@@ -2670,7 +2674,7 @@ package body Sem_Ch4 is
         and then Intval (Right_Opnd (Parent (N))) <= Uint_64
       then
          Error_Msg_N
-           ("suspicious MOD value, was '*'* intended'??", Parent (N));
+           ("suspicious MOD value, was '*'* intended'??M?", Parent (N));
       end if;
 
       --  Remaining processing is same as for other arithmetic operators
@@ -3235,7 +3239,7 @@ package body Sem_Ch4 is
       while Present (It.Typ) loop
          if Is_Access_Type (It.Typ) then
             T := Designated_Type (It.Typ);
-            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+            Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
          else
             T := It.Typ;
          end if;
@@ -3318,7 +3322,7 @@ package body Sem_Ch4 is
                   then
                      Insert_Explicit_Dereference (Nam);
                      Error_Msg_NW
-                       (Warn_On_Dereference, "?implicit dereference", N);
+                       (Warn_On_Dereference, "?d?implicit dereference", N);
                   end if;
                end if;
 
@@ -3427,13 +3431,13 @@ package body Sem_Ch4 is
 
             if All_Present (N) then
                Error_Msg_N
-                 ("?quantified expression with ALL "
+                 ("??quantified expression with ALL "
                   & "over a null range has value True", N);
                Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
 
             else
                Error_Msg_N
-                 ("?quantified expression with SOME "
+                 ("??quantified expression with SOME "
                   & "over a null range has value False", N);
                Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
             end if;
@@ -3810,7 +3814,7 @@ package body Sem_Ch4 is
          --  Normal case of selected component applied to access type
 
          else
-            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+            Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
 
             if Is_Entity_Name (Name) then
                Pent := Entity (Name);
@@ -3922,7 +3926,7 @@ package body Sem_Ch4 is
 
          if Is_Access_Type (Etype (Name)) then
             Insert_Explicit_Dereference (Name);
-            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+            Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
          end if;
 
       elsif Is_Record_Type (Prefix_Type) then
@@ -4220,7 +4224,7 @@ package body Sem_Ch4 is
                if Is_Access_Type (Etype (Name)) then
                   Insert_Explicit_Dereference (Name);
                   Error_Msg_NW
-                    (Warn_On_Dereference, "?implicit dereference", N);
+                    (Warn_On_Dereference, "?d?implicit dereference", N);
                end if;
             end if;
 
@@ -4403,7 +4407,7 @@ package body Sem_Ch4 is
                            Ent => Prefix_Type, Rep => False);
                      else
                         Apply_Compile_Time_Constraint_Error
-                          (N, "component not present in }?",
+                          (N, "component not present in }??",
                            CE_Discriminant_Check_Failed,
                            Ent => Prefix_Type, Rep => False);
                      end if;
@@ -4537,7 +4541,8 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Typ) then
                Typ := Designated_Type (Typ);
-               Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+               Error_Msg_NW
+                 (Warn_On_Dereference, "?d?implicit dereference", N);
             end if;
 
             if Is_Array_Type (Typ)
@@ -4574,7 +4579,7 @@ package body Sem_Ch4 is
 
          if Is_Access_Type (Array_Type) then
             Array_Type := Designated_Type (Array_Type);
-            Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+            Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
          end if;
 
          if not Is_Array_Type (Array_Type) then

@@ -211,10 +211,9 @@ package Opt is
    --  Enable assertions made using pragma Assert
 
    Assume_No_Invalid_Values : Boolean := False;
-   --  GNAT
-   --  Normally, in accordance with (RM 13.9.1 (9-11)) the front end assumes
-   --  that values could have invalid representations, unless it can clearly
-   --  prove that the values are valid. If this switch is set (by -gnatB or by
+   --  GNAT Normally, in accordance with (RM 13.9.1 (9-11)) the front end
+   --  assumes that values could have invalid representations, unless it can
+   --  clearly prove that the values are valid. If this switch is set (by
    --  pragma Assume_No_Invalid_Values (Off)), then the compiler assumes values
    --  are valid and in range of their representations. This feature is now
    --  fully enabled in the compiler.
@@ -374,7 +373,8 @@ package Opt is
 
    Constant_Condition_Warnings : Boolean := False;
    --  GNAT
-   --  Set to True to activate warnings on constant conditions
+   --  Set to True to activate warnings on constant conditions. Modified by
+   --  use of -gnatwc/C.
 
    Create_Mapping_File : Boolean := False;
    --  GNATMAKE, GPRMAKE
@@ -1467,7 +1467,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate all warnings on Ada 2005 compatibility issues,
    --  including warnings on Ada 2005 obsolescent features used in Ada 2005
-   --  mode. Set False by -gnatwY.
+   --  mode. Set by default, set False by -gnatwY.
 
    Warn_On_Ada_2012_Compatibility : Boolean := True;
    --  GNAT
@@ -1496,12 +1496,13 @@ package Opt is
    Warn_On_Atomic_Synchronization : Boolean := False;
    --  GNAT
    --  Set to True to generate information messages for atomic synchronization.
-   --  Set True by use of -gnatw.n.
+   --  Modified by use of -gnatw.n/.N.
 
    Warn_On_Bad_Fixed_Value : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings for static fixed-point expression
    --  values that are not an exact multiple of the small value of the type.
+   --  Odd by default, modified by use of -gnatwb/B.
 
    Warn_On_Biased_Representation : Boolean := True;
    --  GNAT
@@ -1548,6 +1549,7 @@ package Opt is
    --  Set to True to generate warnings if no value is ever assigned to a
    --  variable that is at least partially uninitialized. Set to false to
    --  suppress such warnings. The default is that such warnings are enabled.
+   --  Modified by use of -gnatwv/V.
 
    Warn_On_Non_Local_Exception : Boolean := False;
    --  GNAT
@@ -1557,6 +1559,7 @@ package Opt is
    --  default is not to generate the warnings except that if the source has
    --  at least one exception handler, and this restriction is set, and the
    --  warning was not explicitly turned off, then it is turned on by default.
+   --  Modified by use of -gnatw.x/.X.
 
    No_Warn_On_Non_Local_Exception : Boolean := False;
    --  GNAT
@@ -1584,7 +1587,8 @@ package Opt is
    Warn_On_Questionable_Missing_Parens : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for cases where parentheses are missing
-   --  and the usage is questionable, because the intent is unclear.
+   --  and the usage is questionable, because the intent is unclear. On by
+   --  default, modified by use of -gnatwq/Q.
 
    Warn_On_Parameter_Order : Boolean := False;
    --  GNAT
@@ -1613,7 +1617,7 @@ package Opt is
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for suspicious modulus values. The
-   --  default is that this warning is enabled.
+   --  default is that this warning is enabled. Modified by -gnatw.m/.M.
 
    Warn_On_Unchecked_Conversion : Boolean := True;
    --  GNAT
@@ -1626,12 +1630,12 @@ package Opt is
    --  Set to True to generate warnings for inappropriate uses (comparisons
    --  and explicit ranges) on unordered enumeration types (which includes
    --  all enumeration types for which pragma Ordered is not given). The
-   --  default is that this warning is disabled.
+   --  default is that this warning is disabled. Modified by -gnat.u/.U.
 
    Warn_On_Unrecognized_Pragma : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for unrecognized pragmas. The default
-   --  is that this warning is enabled.
+   --  is that this warning is enabled. Modified by use of -gnatwg/G.
 
    Warn_On_Unrepped_Components : Boolean := False;
    --  GNAT

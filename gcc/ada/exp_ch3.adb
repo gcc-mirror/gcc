@@ -7132,7 +7132,7 @@ package body Exp_Ch3 is
 
                      if Is_Ancestor (RSPWS, Etype (Pool)) then
                         Error_Msg_N
-                          ("?subpool access type has deeper accessibility " &
+                          ("??subpool access type has deeper accessibility " &
                            "level than pool", Def_Id);
 
                         Append_Freeze_Action (Def_Id,
@@ -7744,14 +7744,13 @@ package body Exp_Ch3 is
 
                if Warning_Needed then
                   Error_Msg_N
-                    ("Objects of the type cannot be initialized " &
-                       "statically by default?",
-                       Parent (E));
+                    ("Objects of the type cannot be initialized "
+                     & "statically by default??", Parent (E));
                end if;
             end if;
 
          else
-            Error_Msg_N ("Object cannot be initialized statically?", E);
+            Error_Msg_N ("Object cannot be initialized statically??", E);
          end if;
       end if;
    end Initialization_Warning;

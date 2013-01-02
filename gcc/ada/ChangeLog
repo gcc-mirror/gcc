@@ -1,5 +1,24 @@
 2013-01-02  Robert Dewar  <dewar@adacore.com>
 
+	* errout.ads: Minor comment fixes.
+	* opt.ads: Minor comment additions.
+	* exp_aggr.adb: Add tags to warning messages
+	* exp_ch11.adb, exp_ch3.adb, exp_ch4.adb, exp_util.adb, sem_aggr.adb,
+	sem_attr.adb, sem_case.adb, sem_cat.adb, sem_ch3.adb, sem_ch4.adb,
+	sem_ch5.adb, sem_disp.adb, sem_dist.adb, sem_elab.adb, sem_eval.adb,
+	sem_intr.adb, sem_mech.adb, sem_prag.adb, sem_res.adb, sem_util.adb,
+	sem_warn.adb: Add tags to warning messages
+
+2013-01-02  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [VMS] Remove subtest on reason mask for ACCVIO that is a C_E.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Recover source name for renamed packagea.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
 	* errout.adb (Set_Msg_Insertion_Warning): Correct typo causing
 	tests to fail if insertion sequence is at end of message string.
 	* opt.ads: Minor comment fixes and additions.

@@ -60,7 +60,7 @@ package Errout is
    --  Exception raised if Raise_Exception_On_Error is true
 
    Warning_Doc_Switch : Boolean renames Err_Vars.Warning_Doc_Switch;
-   --  If this is set True, then the ??/?x?/?.x? sequences in error messages
+   --  If this is set True, then the ??/?x?/?X? sequences in error messages
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.

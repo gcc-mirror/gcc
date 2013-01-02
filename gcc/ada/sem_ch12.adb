@@ -12996,6 +12996,22 @@ package body Sem_Ch12 is
             end if;
 
             if Is_Global (E) then
+
+               --  If the entity is a package renaming that is the prefix of
+               --  an expanded name, it has been rewritten as the renamed
+               --  package, which is necessary semantically but complicates
+               --  ASIS tree traversal, so we recover the original entity to
+               --  expose the renaming.
+
+               if Ekind (E) = E_Package
+                 and then Nkind (Parent (N)) = N_Expanded_Name
+                 and then Present (Original_Node (N2))
+                 and then Present (Entity (Original_Node (N2)))
+               then
+                  N2 := Original_Node (N2);
+                  Set_Associated_Node (N, N2);
+               end if;
+
                Set_Global_Type (N, N2);
 
             elsif Nkind (N) = N_Op_Concat

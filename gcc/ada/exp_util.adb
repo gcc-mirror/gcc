@@ -224,9 +224,11 @@ package body Exp_Util is
          end case;
 
          if Present (Msg_Node) then
-            Error_Msg_N ("?info: atomic synchronization set for &", Msg_Node);
+            Error_Msg_N
+              ("?n?info: atomic synchronization set for &", Msg_Node);
          else
-            Error_Msg_N ("?info: atomic synchronization set", N);
+            Error_Msg_N
+              ("?n?info: atomic synchronization set", N);
          end if;
       end if;
    end Activate_Atomic_Synchronization;
@@ -5125,7 +5127,8 @@ package body Exp_Util is
 
             if W then
                Error_Msg_F
-                 ("?this code can never be executed and has been deleted!", N);
+                 ("??this code can never be executed and has been deleted!",
+                  N);
             end if;
          end if;
 

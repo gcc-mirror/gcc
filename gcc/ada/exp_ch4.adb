@@ -3686,7 +3686,7 @@ package body Exp_Ch4 is
          Kill_Dead_Code (Declaration_Node (Entity (High_Bound)));
          Apply_Compile_Time_Constraint_Error
            (N      => Cnode,
-            Msg    => "concatenation result upper bound out of range?",
+            Msg    => "concatenation result upper bound out of range??",
             Reason => CE_Range_Check_Failed);
    end Expand_Concatenate;
 
@@ -5501,9 +5501,10 @@ package body Exp_Ch4 is
          --  actually eliminated the danger of optimization above.
 
          if Overflow_Check_Mode not in Minimized_Or_Eliminated then
-            Error_Msg_N ("?explicit membership test may be optimized away", N);
+            Error_Msg_N
+              ("??explicit membership test may be optimized away", N);
             Error_Msg_N -- CODEFIX
-              ("\?use ''Valid attribute instead", N);
+              ("\??use ''Valid attribute instead", N);
          end if;
 
          return;
@@ -5684,8 +5685,8 @@ package body Exp_Ch4 is
 
             if Lcheck = LT or else Ucheck = GT then
                if Warn1 then
-                  Error_Msg_N ("?range test optimized away", N);
-                  Error_Msg_N ("\?value is known to be out of range", N);
+                  Error_Msg_N ("??range test optimized away", N);
+                  Error_Msg_N ("\??value is known to be out of range", N);
                end if;
 
                Rewrite (N, New_Reference_To (Standard_False, Loc));
@@ -5698,8 +5699,8 @@ package body Exp_Ch4 is
 
             elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
                if Warn1 then
-                  Error_Msg_N ("?range test optimized away", N);
-                  Error_Msg_N ("\?value is known to be in range", N);
+                  Error_Msg_N ("??range test optimized away", N);
+                  Error_Msg_N ("\??value is known to be in range", N);
                end if;
 
                Rewrite (N, New_Reference_To (Standard_True, Loc));
@@ -5713,8 +5714,8 @@ package body Exp_Ch4 is
 
             elsif Lcheck in Compare_GE then
                if Warn2 and then not In_Instance then
-                  Error_Msg_N ("?lower bound test optimized away", Lo);
-                  Error_Msg_N ("\?value is known to be in range", Lo);
+                  Error_Msg_N ("??lower bound test optimized away", Lo);
+                  Error_Msg_N ("\??value is known to be in range", Lo);
                end if;
 
                Rewrite (N,
@@ -5730,8 +5731,8 @@ package body Exp_Ch4 is
 
             elsif Ucheck in Compare_LE then
                if Warn2 and then not In_Instance then
-                  Error_Msg_N ("?upper bound test optimized away", Hi);
-                  Error_Msg_N ("\?value is known to be in range", Hi);
+                  Error_Msg_N ("??upper bound test optimized away", Hi);
+                  Error_Msg_N ("\??value is known to be in range", Hi);
                end if;
 
                Rewrite (N,
@@ -5755,25 +5756,25 @@ package body Exp_Ch4 is
 
                if Lcheck = LT or else Ucheck = GT then
                   Error_Msg_N
-                    ("?value can only be in range if it is invalid", N);
+                    ("??value can only be in range if it is invalid", N);
 
                --  Result is in range for valid value
 
                elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
                   Error_Msg_N
-                    ("?value can only be out of range if it is invalid", N);
+                    ("??value can only be out of range if it is invalid", N);
 
                --  Lower bound check succeeds if value is valid
 
                elsif Warn2 and then Lcheck in Compare_GE then
                   Error_Msg_N
-                    ("?lower bound check only fails if it is invalid", Lo);
+                    ("??lower bound check only fails if it is invalid", Lo);
 
                --  Upper bound  check succeeds if value is valid
 
                elsif Warn2 and then Ucheck in Compare_LE then
                   Error_Msg_N
-                    ("?upper bound check only fails for invalid values", Hi);
+                    ("??upper bound check only fails for invalid values", Hi);
                end if;
             end if;
          end;
@@ -9665,9 +9666,10 @@ package body Exp_Ch4 is
              Reason => PE_Accessibility_Check_Failed));
          Set_Etype (N, Target_Type);
 
-         Error_Msg_N ("?accessibility check failure", N);
+         Error_Msg_N
+           ("??accessibility check failure", N);
          Error_Msg_NE
-           ("\?& will be raised at run time", N, Standard_Program_Error);
+           ("\??& will be raised at run time", N, Standard_Program_Error);
       end Raise_Accessibility_Error;
 
       ----------------------
@@ -10632,7 +10634,7 @@ package body Exp_Ch4 is
       end if;
 
       --  Otherwise force evaluation unless Assignment_OK flag is set (this
-      --  flag indicates ??? -- more comments needed here)
+      --  flag indicates ??? More comments needed here)
 
       if Assignment_OK (N) then
          null;
@@ -12061,7 +12063,7 @@ package body Exp_Ch4 is
                if Constant_Condition_Warnings
                  and then Comes_From_Source (Original_Node (N))
                then
-                  Error_Msg_N ("could replace by ""'=""?", N);
+                  Error_Msg_N ("could replace by ""'=""?c?", N);
                end if;
 
                Op := N_Op_Eq;
@@ -12254,7 +12256,8 @@ package body Exp_Ch4 is
                  and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
                then
                   Error_Msg_N
-                    ("can never be greater than, could replace by ""'=""?", N);
+                    ("can never be greater than, could replace by ""'=""?c?",
+                     N);
                   Warning_Generated := True;
                end if;
 
@@ -12279,7 +12282,7 @@ package body Exp_Ch4 is
                  and then not Has_Warnings_Off (Etype (Left_Opnd (N)))
                then
                   Error_Msg_N
-                    ("can never be less than, could replace by ""'=""?", N);
+                    ("can never be less than, could replace by ""'=""?c?", N);
                   Warning_Generated := True;
                end if;
 
@@ -12312,11 +12315,11 @@ package body Exp_Ch4 is
             then
                if True_Result then
                   Error_Msg_N
-                    ("condition can only be False if invalid values present?",
+                    ("condition can only be False if invalid values present??",
                      N);
                elsif False_Result then
                   Error_Msg_N
-                    ("condition can only be True if invalid values present?",
+                    ("condition can only be True if invalid values present??",
                      N);
                end if;
             end if;

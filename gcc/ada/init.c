@@ -985,12 +985,10 @@ static const struct cond_except dec_ada_cond_except_table [] = {
 
 /* Subtest for ACCVIO Constraint_Error, kept for compatibility,
    in hindsight should have just made ACCVIO == Storage_Error.  */
-#define ACCVIO_REASON_MASK 2
 #define ACCVIO_VIRTUAL_ADDR 3
 static const struct cond_subtests accvio_c_e =
-  {2,  /* number of subtests below */
+  {1,  /* number of subtests below */
      {
-       {ACCVIO_REASON_MASK, 0},
        {ACCVIO_VIRTUAL_ADDR, 0}
       }
    };

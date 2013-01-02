@@ -739,7 +739,7 @@ package body Sem_Attr is
 
                   if Is_CPP_Class (Root_Type (Typ)) then
                      Error_Msg_N
-                       ("?current instance unsupported for derivations of "
+                       ("??current instance unsupported for derivations of "
                         & "'C'P'P types", N);
                   end if;
 
@@ -2019,7 +2019,7 @@ package body Sem_Attr is
          if not Attribute_83 (Attr_Id) then
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_Name_1 := Aname;
-               Error_Msg_N ("(Ada 83) attribute% is not standard?", N);
+               Error_Msg_N ("(Ada 83) attribute% is not standard??", N);
             end if;
 
             if Attribute_Impl_Def (Attr_Id) then
@@ -2640,7 +2640,7 @@ package body Sem_Attr is
            and then Warn_On_Redundant_Constructs
          then
             Error_Msg_NE -- CODEFIX
-              ("?redundant attribute, & is its own base type", N, Typ);
+              ("?r?redundant attribute, & is its own base type", N, Typ);
          end if;
 
          if Nkind (Parent (N)) /= N_Attribute_Reference then
@@ -2896,7 +2896,7 @@ package body Sem_Attr is
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
                  ("constrained for private type is an " &
-                  "obsolescent feature (RM J.4)?", N);
+                  "obsolescent feature (RM J.4)?j?", N);
             end if;
 
             --  If we are within an instance, the attribute must be legal
@@ -4346,7 +4346,7 @@ package body Sem_Attr is
            and then Is_Constant_Object (Entity (P))
          then
             Error_Msg_N
-              ("?attribute Old applied to constant has no effect", P);
+              ("??attribute Old applied to constant has no effect", P);
          end if;
 
          --  The attribute appears within a pre/postcondition, but refers to
@@ -4603,7 +4603,7 @@ package body Sem_Attr is
            and then Warn_On_Redundant_Constructs
          then
             Error_Msg_N
-              ("postconditions on inlined functions not enforced?", N);
+              ("postconditions on inlined functions not enforced?r?", N);
          end if;
 
          --  If we are in the scope of a function and in Spec_Expression mode,
@@ -5032,10 +5032,10 @@ package body Sem_Attr is
                                            Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_Name_1 := Aname;
-                  Error_Msg_N ("cannot use % attribute for type with simple " &
-                               "storage pool?", N);
+                  Error_Msg_N ("cannot use % attribute for type with simple "
+                               & "storage pool??", N);
                   Error_Msg_N
-                     ("\Program_Error will be raised at run time?", N);
+                     ("\Program_Error will be raised at run time??", N);
 
                   Rewrite
                     (N, Make_Raise_Program_Error
@@ -5228,8 +5228,8 @@ package body Sem_Attr is
          if not Is_Tagged_Type (P_Type) then
             Error_Attr_P ("prefix of % attribute must be tagged");
 
-         --  Next test does not apply to generated code
-         --  why not, and what does the illegal reference mean???
+         --  Next test does not apply to generated code why not, and what does
+         --  the illegal reference mean???
 
          elsif Is_Object_Reference (P)
            and then not Is_Class_Wide_Type (P_Type)
@@ -5240,9 +5240,9 @@ package body Sem_Attr is
                "of class - wide type");
          end if;
 
-         --  The prefix cannot be an incomplete type. However, references
-         --  to 'Tag can be generated when expanding interface conversions,
-         --  and this is legal.
+         --  The prefix cannot be an incomplete type. However, references to
+         --  'Tag can be generated when expanding interface conversions, and
+         --  this is legal.
 
          if Comes_From_Source (N) then
             Check_Not_Incomplete_Type;
@@ -5728,8 +5728,8 @@ package body Sem_Attr is
          begin
             if Present (Pred_Func) and then Current_Scope = Pred_Func then
                Error_Msg_N
-                 ("attribute Valid requires a predicate check?", N);
-               Error_Msg_N ("\and will result in infinite recursion?", N);
+                 ("attribute Valid requires a predicate check??", N);
+               Error_Msg_N ("\and will result in infinite recursion??", N);
             end if;
          end;
 
@@ -5744,7 +5744,7 @@ package body Sem_Attr is
          Check_Object_Reference (P);
 
          if No_Scalar_Parts (P_Type) then
-            Error_Attr_P ("?attribute % always True, no scalars to check");
+            Error_Attr_P ("??attribute % always True, no scalars to check");
          end if;
 
          Set_Etype (N, Standard_Boolean);
@@ -6095,7 +6095,7 @@ package body Sem_Attr is
 
          elsif Is_Out_Of_Range (N, T) then
             Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}?", CE_Range_Check_Failed);
+              (N, "value not in range of}??", CE_Range_Check_Failed);
 
          elsif not Range_Checks_Suppressed (T) then
             Enable_Range_Check (N);
@@ -8894,9 +8894,10 @@ package body Sem_Attr is
          --  know will fail, so generate an appropriate warning.
 
          if In_Instance_Body then
-            Error_Msg_F ("?non-local pointer cannot point to local object", P);
             Error_Msg_F
-              ("\?Program_Error will be raised at run time", P);
+              ("??non-local pointer cannot point to local object", P);
+            Error_Msg_F
+              ("\??Program_Error will be raised at run time", P);
             Rewrite (N,
               Make_Raise_Program_Error (Loc,
                 Reason => PE_Accessibility_Check_Failed));
@@ -9368,9 +9369,9 @@ package body Sem_Attr is
 
                   if In_Instance_Body then
                      Error_Msg_F
-                       ("?non-local pointer cannot point to local object", P);
+                       ("??non-local pointer cannot point to local object", P);
                      Error_Msg_F
-                       ("\?Program_Error will be raised at run time", P);
+                       ("\??Program_Error will be raised at run time", P);
                      Rewrite (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Accessibility_Check_Failed));
@@ -9484,11 +9485,13 @@ package body Sem_Attr is
                      declare
                         D : constant Node_Id := Declaration_Node (Entity (P));
                      begin
-                        Error_Msg_N ("aliased object has explicit bounds?",
-                          D);
-                        Error_Msg_N ("\declare without bounds"
-                          & " (and with explicit initialization)?", D);
-                        Error_Msg_N ("\for use with unconstrained access?", D);
+                        Error_Msg_N
+                          ("aliased object has explicit bounds??", D);
+                        Error_Msg_N
+                          ("\declare without bounds (and with explicit "
+                           & "initialization)??", D);
+                        Error_Msg_N
+                          ("\for use with unconstrained access??", D);
                      end;
                   end if;
                end if;

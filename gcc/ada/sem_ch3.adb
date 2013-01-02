@@ -3643,9 +3643,9 @@ package body Sem_Ch3 is
                                         (E, Attribute_Address))
                   then
                      Error_Msg_N
-                       ("?more than one task with same entry address", N);
+                       ("??more than one task with same entry address", N);
                      Error_Msg_N
-                       ("\?Program_Error will be raised at run time", N);
+                       ("\??Program_Error will be raised at run time", N);
                      Insert_Action (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Duplicated_Entry_Address));
@@ -10866,7 +10866,7 @@ package body Sem_Ch3 is
             if Ada_Version < Ada_2005 then
                Error_Msg_N
                  ("access subtype of general access type would not " &
-                  "be allowed in Ada 2005?", S);
+                  "be allowed in Ada 2005?y?", S);
             else
                Error_Msg_N
                  ("access subtype of general access type not allowed", S);
@@ -10882,7 +10882,7 @@ package body Sem_Ch3 is
             if Ada_Version < Ada_2005 then
                Error_Msg_N
                  ("access subtype would not be allowed in generic body " &
-                  "in Ada 2005?", S);
+                  "in Ada 2005?y?", S);
             else
                Error_Msg_N
                  ("access subtype not allowed in generic body", S);
@@ -11320,6 +11320,7 @@ package body Sem_Ch3 is
          --  to one: one new discriminant can constrain several old ones. In
          --  that case, scan sequentially the stored_constraint, the list of
          --  discriminants of the parents, and the constraints.
+
          --  Previous code checked for the present of the Stored_Constraint
          --  list for the derived type, but did not use it at all. Should it
          --  be present when the component is a discriminated task type?
@@ -11780,7 +11781,7 @@ package body Sem_Ch3 is
          if Warn_On_Obsolescent_Feature then
             Error_Msg_N
               ("subtype digits constraint is an " &
-               "obsolescent feature (RM J.3(8))?", C);
+               "obsolescent feature (RM J.3(8))?j?", C);
          end if;
 
          D := Digits_Expression (C);
@@ -11794,7 +11795,7 @@ package body Sem_Ch3 is
 
          if Digits_Value (Def_Id) > Digits_Value (T) then
             Error_Msg_Uint_1 := Digits_Value (T);
-            Error_Msg_N ("?digits value is too large, maximum is ^", D);
+            Error_Msg_N ("??digits value is too large, maximum is ^", D);
             Rais :=
               Make_Raise_Constraint_Error (Sloc (D),
                 Reason => CE_Range_Check_Failed);
@@ -12007,7 +12008,7 @@ package body Sem_Ch3 is
          if Warn_On_Obsolescent_Feature then
             Error_Msg_S
               ("subtype delta constraint is an " &
-               "obsolescent feature (RM J.3(7))?");
+               "obsolescent feature (RM J.3(7))?j?");
          end if;
 
          D := Delta_Expression (C);
@@ -12020,7 +12021,7 @@ package body Sem_Ch3 is
          --  course there is an ACVC test that checks this!
 
          if Delta_Value (Def_Id) < Delta_Value (T) then
-            Error_Msg_N ("?delta value is too small", D);
+            Error_Msg_N ("??delta value is too small", D);
             Rais :=
               Make_Raise_Constraint_Error (Sloc (D),
                 Reason => CE_Range_Check_Failed);
@@ -16797,10 +16798,6 @@ package body Sem_Ch3 is
 
             Set_Must_Not_Freeze (I);
             Set_Must_Not_Freeze (Prefix (I));
-
-            --  Is order critical??? if so, document why, if not
-            --  use Analyze_And_Resolve
-
             Analyze_And_Resolve (I);
             T := Etype (I);
             R := I;
@@ -16928,7 +16925,8 @@ package body Sem_Ch3 is
         and then Nkind (Right_Opnd (Mod_Expr)) = N_Integer_Literal
         and then Intval (Right_Opnd (Mod_Expr)) <= Uint_64
       then
-         Error_Msg_N ("suspicious MOD value, was '*'* intended'??", Mod_Expr);
+         Error_Msg_N
+           ("suspicious MOD value, was '*'* intended'??M?", Mod_Expr);
       end if;
 
       --  Proceed with analysis of mod expression
@@ -17273,7 +17271,7 @@ package body Sem_Ch3 is
             High_Val := Expr_Value_R (High);
 
             if Low_Val > High_Val then
-               Error_Msg_NE ("?fixed point type& has null range", Def, T);
+               Error_Msg_NE ("??fixed point type& has null range", Def, T);
             end if;
          end;
       end if;
@@ -19141,7 +19139,7 @@ package body Sem_Ch3 is
             then
                Make_Class_Wide_Type (Typ);
                Error_Msg_N
-                 ("incomplete view of tagged type should be declared tagged?",
+                 ("incomplete view of tagged type should be declared tagged??",
                   Parent (Current_Entity (Typ)));
             end if;
             return;

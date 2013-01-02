@@ -200,7 +200,7 @@ package body Sem_Warn is
 
       if No (Asm_Input_Value) then
          Error_Msg_F
-           ("?code statement with no inputs should usually be Volatile!", N);
+           ("??code statement with no inputs should usually be Volatile!", N);
          return;
       end if;
 
@@ -208,7 +208,7 @@ package body Sem_Warn is
 
       if No (Asm_Output_Variable) then
          Error_Msg_F
-           ("?code statement with no outputs should usually be Volatile!", N);
+           ("??code statement with no outputs should usually be Volatile!", N);
          return;
       end if;
    end Check_Code_Statement;
@@ -707,9 +707,9 @@ package body Sem_Warn is
 
       if No_Ref_Found (Loop_Statement) = OK then
          Error_Msg_NE
-           ("?variable& is not modified in loop body!", Ref, Var);
+           ("??variable& is not modified in loop body!", Ref, Var);
          Error_Msg_N
-           ("\?possible infinite loop!", Ref);
+           ("\??possible infinite loop!", Ref);
       end if;
    end Check_Infinite_Loop_Warning;
 
@@ -1057,7 +1057,7 @@ package body Sem_Warn is
                   --  the designated object).
 
                   if not Warnings_Off_E1 then
-                     Error_Msg_NE ("?& may be null!", UR, E1);
+                     Error_Msg_NE ("??& may be null!", UR, E1);
                   end if;
 
                   goto Continue;
@@ -1083,7 +1083,7 @@ package body Sem_Warn is
                     and then not Is_Imported (E1)
                   then
                      Error_Msg_N
-                       ("?& is not modified, volatile has no effect!", E1);
+                       ("??& is not modified, volatile has no effect!", E1);
 
                   --  Another special case, Exception_Occurrence, this catches
                   --  the case of exception choice (and a bit more too, but not
@@ -1105,7 +1105,7 @@ package body Sem_Warn is
                         then
                            if not Warnings_Off_E1 then
                               Error_Msg_N -- CODEFIX
-                                ("?& is not modified, "
+                                ("??& is not modified, "
                                  & "could be declared constant!",
                                  E1);
                            end if;
@@ -1237,7 +1237,7 @@ package body Sem_Warn is
                              and then not Warnings_Off_E1
                            then
                               Output_Reference_Error
-                                ("?formal parameter& is read but "
+                                ("?v?formal parameter& is read but "
                                  & "never assigned!");
                            end if;
 
@@ -1245,7 +1245,7 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                         then
                            Output_Reference_Error
-                             ("?formal parameter& is not referenced!");
+                             ("?v?formal parameter& is not referenced!");
                         end if;
                      end if;
 
@@ -1257,14 +1257,14 @@ package body Sem_Warn is
                           and then not Warnings_Off_E1
                         then
                            Output_Reference_Error
-                             ("?variable& is read but never assigned!");
+                             ("?v?variable& is read but never assigned!");
                         end if;
 
                      elsif not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
                      then
                         Output_Reference_Error -- CODEFIX
-                          ("?variable& is never read and never assigned!");
+                          ("?v?variable& is never read and never assigned!");
                      end if;
 
                      --  Deal with special case where this variable is hidden
@@ -1275,12 +1275,12 @@ package body Sem_Warn is
                        and then not Warnings_Off_E1
                      then
                         Error_Msg_N
-                          ("?for loop implicitly declares loop variable!",
+                          ("?v?for loop implicitly declares loop variable!",
                            Hiding_Loop_Variable (E1));
 
                         Error_Msg_Sloc := Sloc (E1);
                         Error_Msg_N
-                          ("\?declaration hides & declared#!",
+                          ("\?v?declaration hides & declared#!",
                            Hiding_Loop_Variable (E1));
                      end if;
                   end if;
@@ -1321,7 +1321,8 @@ package body Sem_Warn is
                      then
                         if not Warnings_Off_E1 then
                            Error_Msg_NE
-                             ("?OUT parameter& not set before return", UR, E1);
+                             ("?v?OUT parameter& not set before return",
+                              UR, E1);
                         end if;
 
                         --  If the unset reference is a selected component
