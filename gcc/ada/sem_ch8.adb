@@ -1906,7 +1906,7 @@ package body Sem_Ch8 is
             end loop;
 
             New_S := Analyze_Subprogram_Specification (Spec);
-            Result :=  Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
+            Result := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
          end if;
 
          if Result /= Any_Id then
