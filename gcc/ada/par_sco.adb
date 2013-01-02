@@ -1890,10 +1890,13 @@ package body Par_SCO is
 
                begin
                   case Nam is
-                     when Name_Assert        |
-                          Name_Check         |
-                          Name_Precondition  |
-                          Name_Postcondition =>
+                     when Name_Assert         |
+                          Name_Assert_And_Cut |
+                          Name_Assume         |
+                          Name_Check          |
+                          Name_Loop_Invariant |
+                          Name_Precondition   |
+                          Name_Postcondition  =>
 
                         --  For Assert/Check/Precondition/Postcondition, we
                         --  must generate a P entry for the decision. Note

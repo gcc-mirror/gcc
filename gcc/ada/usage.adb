@@ -170,7 +170,7 @@ begin
    --  Line for -gnatea switch
 
    Write_Switch_Char ("ea");
-   Write_Line ("Delimiter for automatically added switches (internal switch");
+   Write_Line ("Delimiter for automatically added switches (internal switch)");
 
    --  Line for -gnateA switch
 
@@ -255,7 +255,7 @@ begin
    --  Line for -gnatez switch
 
    Write_Switch_Char ("ez");
-   Write_Line ("Delimiter for automatically added switches (internal switch");
+   Write_Line ("Delimiter for automatically added switches (internal switch)");
 
    --  Line for -gnatE switch
 
