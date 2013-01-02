@@ -154,18 +154,21 @@ package body Par_SCO is
    --  Process L, a list of statements or declarations dominated by D.
    --  If P is present, it is processed as though it had been prepended to L.
 
+   --  The following Traverse_* routines perform appropriate calls to
+   --  Traverse_Declarations_Or_Statements to traverse specific node kinds
+
    procedure Traverse_Generic_Package_Declaration (N : Node_Id);
    procedure Traverse_Handled_Statement_Sequence
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
-   procedure Traverse_Package_Body                (N : Node_Id);
-   procedure Traverse_Package_Declaration         (N : Node_Id);
-   procedure Traverse_Protected_Body              (N : Node_Id);
-   procedure Traverse_Protected_Definition        (N : Node_Id);
+   procedure Traverse_Package_Body        (N : Node_Id);
+   procedure Traverse_Package_Declaration (N : Node_Id);
    procedure Traverse_Subprogram_Or_Task_Body
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
-   --  Traverse the corresponding construct, generating SCO table entries
+
+   procedure Traverse_Sync_Definition     (N : Node_Id);
+   --  Traverse a protected definition or task definition
 
    procedure Write_SCOs_To_ALI_File is new Put_SCOs;
    --  Write SCO information to the ALI file using routines in Lib.Util
@@ -958,9 +961,7 @@ package body Par_SCO is
            N_Task_Body                   |
            N_Generic_Instantiation       =>
 
-            Traverse_Declarations_Or_Statements
-              (L => No_List,
-               P => Lu);
+            Traverse_Declarations_Or_Statements (L => No_List, P => Lu);
 
          when others =>
 
@@ -1356,14 +1357,17 @@ package body Par_SCO is
                  N_Timed_Entry_Call             |
                  N_Conditional_Entry_Call       |
                  N_Asynchronous_Select          |
-                 N_Single_Protected_Declaration =>
+                 N_Single_Protected_Declaration |
+                 N_Single_Task_Declaration      =>
                T := F;
 
-            when N_Protected_Type_Declaration =>
+            when N_Protected_Type_Declaration | N_Task_Type_Declaration =>
                if Has_Aspects (N) then
                   To_Node := Last (Aspect_Specifications (N));
+
                elsif Present (Discriminant_Specifications (N)) then
                   To_Node := Last (Discriminant_Specifications (N));
+
                else
                   To_Node := Defining_Identifier (N);
                end if;
@@ -1550,7 +1554,7 @@ package body Par_SCO is
 
             when N_Protected_Body =>
                Set_Statement_Entry;
-               Traverse_Protected_Body (N);
+               Traverse_Declarations_Or_Statements (Declarations (N));
 
             --  Exit statement, which is an exit statement in the SCO sense,
             --  so it is included in the current statement sequence, but
@@ -1960,18 +1964,18 @@ package body Par_SCO is
             --  All other cases, which extend the current statement sequence
             --  but do not terminate it, even if they have nested decisions.
 
-            when N_Protected_Type_Declaration =>
+            when N_Protected_Type_Declaration | N_Task_Type_Declaration =>
                Extend_Statement_Sequence (N, 't');
                Process_Decisions_Defer (Discriminant_Specifications (N), 'X');
                Set_Statement_Entry;
 
-               Traverse_Protected_Definition (Protected_Definition (N));
+               Traverse_Sync_Definition (N);
 
-            when N_Single_Protected_Declaration =>
+            when N_Single_Protected_Declaration | N_Single_Task_Declaration =>
                Extend_Statement_Sequence (N, 'o');
                Set_Statement_Entry;
 
-               Traverse_Protected_Definition (Protected_Definition (N));
+               Traverse_Sync_Definition (N);
 
             when others =>
 
@@ -2112,36 +2116,52 @@ package body Par_SCO is
       Traverse_Declarations_Or_Statements (Private_Declarations (Spec));
    end Traverse_Package_Declaration;
 
-   -----------------------------
-   -- Traverse_Protected_Body --
-   -----------------------------
+   ------------------------------
+   -- Traverse_Sync_Definition --
+   ------------------------------
 
-   procedure Traverse_Protected_Body (N : Node_Id) is
-   begin
-      Traverse_Declarations_Or_Statements (Declarations (N));
-   end Traverse_Protected_Body;
+   procedure Traverse_Sync_Definition (N : Node_Id) is
+      Dom_Info : Dominant_Info := ('S', N);
+      --  The first declaration is dominated by the protected or task [type]
+      --  declaration.
 
-   -----------------------------------
-   -- Traverse_Protected_Definition --
-   -----------------------------------
+      Sync_Def : Node_Id;
+      --  N's protected or task definition
 
-   procedure Traverse_Protected_Definition (N : Node_Id) is
-      Dom_Info : Dominant_Info    := ('S', Parent (N));
-      Vis_Decl : constant List_Id := Visible_Declarations (N);
+      Vis_Decl : List_Id;
+      --  Sync_Def's Visible_Declarations
 
    begin
+      case Nkind (N) is
+         when N_Single_Protected_Declaration | N_Protected_Type_Declaration =>
+            Sync_Def := Protected_Definition (N);
+
+         when N_Single_Task_Declaration      | N_Task_Type_Declaration      =>
+            Sync_Def := Task_Definition (N);
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      Vis_Decl := Visible_Declarations (Sync_Def);
+
       Traverse_Declarations_Or_Statements
         (L => Vis_Decl,
          D => Dom_Info);
+
+      --  If visible declarations are present, the first private declaration
+      --  is dominated by the last visible declaration.
+
+      --  This is incorrect if Last (Vis_Decl) does not generate a SCO???
 
       if not Is_Empty_List (Vis_Decl) then
          Dom_Info.N := Last (Vis_Decl);
       end if;
 
       Traverse_Declarations_Or_Statements
-        (L => Private_Declarations (N),
+        (L => Private_Declarations (Sync_Def),
          D => Dom_Info);
-   end Traverse_Protected_Definition;
+   end Traverse_Sync_Definition;
 
    --------------------------------------
    -- Traverse_Subprogram_Or_Task_Body --

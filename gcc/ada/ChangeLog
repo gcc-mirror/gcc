@@ -1,3 +1,11 @@
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Add SCO generation for task types and single
+	task declarations.
+	* get_scos.adb: When adding an instance table entry for a
+	non-nested instantiation, make sure the Enclosing_Instance is
+	correctly set to 0.
+
 2013-01-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Skip the special _Parent
@@ -12,8 +20,6 @@
 	* switch-c.adb, fe.h, back_end.adb: Enable generation of instantiation
 	information in debug info unconditionally when using -fdump-scos,
 	instead of relying on a separate command line switch -fdebug-instances.
-	* gcc-interface/gigi.h, gcc-interface/misc.c
-	(set_flag_debug_instances): New subprogram.
 	* gcc-interface/Make-lang.in: Update dependencies.
 
 2013-01-02  Ed Schonberg  <schonberg@adacore.com>

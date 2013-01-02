@@ -302,6 +302,16 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
+#if 0
+  if (Generate_SCO_Instance_Table)
+    flag_debug_instances = 1;
+#else
+  /* Temporary compatibility shim: FSF head back-end does not support instance
+     based debug info discriminators, so disable the generation of the SCO
+     instance table.  ??? */
+  Generate_SCO_Instance_Table = False;
+#endif
+
   for (i = 0; i < number_file; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
