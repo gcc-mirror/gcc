@@ -1,3 +1,36 @@
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads (Warning_Doc_Switch): New flag.
+	* errout.adb (Error_Msg_Internal): Implement new warning flag
+	doc tag stuff (Set_Msg_Insertion_Warning): New procedure.
+	* errout.ads: Document new insertion sequences ?? ?x? ?.x?
+	* erroutc.adb (Output_Msg_Text): Handle ?? and ?x? warning doc
+	tag stuff.
+	* erroutc.ads (Warning_Msg_Char): New variable.
+	(Warn_Chr): New field in error message object.
+	* errutil.adb (Error_Msg): Set Warn_Chr in error message object.
+	* sem_ch13.adb: Minor reformatting.
+	* warnsw.adb: Add handling for -gnatw.d and -gnatw.D
+	(Warning_Doc_Switch).
+	* warnsw.ads: Add handling of -gnatw.d/.D switches (warning
+	doc tag).
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Minor reformatting.
+
+2013-01-02  Doug Rupp  <rupp@adacore.com>
+
+	* init.c: Reorganize VMS section.
+	(scan_condtions): New function for scanning condition tables.
+	(__gnat_handle_vms_condtion): Use actual exception name for imported
+	exceptions vice IMPORTED_EXCEPTION.
+	Move condition table scanning into separate function. Move formerly
+	special handled conditions to system condition table. Use SYS$PUTMSG
+	output to fill exception message field for formally special handled
+	condtions, in particular HPARITH to provide more clues about cause and
+	location then raised from the translated image.
+
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): For a Pre/Post

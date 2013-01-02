@@ -1610,6 +1610,7 @@ package body Sem_Ch13 is
                   if Nkind (Parent (N)) = N_Compilation_Unit then
                      declare
                         Aux : constant Node_Id := Aux_Decls_Node (Parent (N));
+
                      begin
                         if No (Pragmas_After (Aux)) then
                            Set_Pragmas_After (Aux, New_List);
@@ -2014,9 +2015,9 @@ package body Sem_Ch13 is
 
       if Warn_On_Obsolescent_Feature then
          Error_Msg_N
-           ("at clause is an obsolescent feature (RM J.7(2))?", N);
+           ("?j?at clause is an obsolescent feature (RM J.7(2))", N);
          Error_Msg_N
-           ("\use address attribute definition clause instead?", N);
+           ("\?j?use address attribute definition clause instead", N);
       end if;
 
       --  Rewrite as address clause
@@ -4720,9 +4721,9 @@ package body Sem_Ch13 is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("mod clause is an obsolescent feature (RM J.8)?", N);
+                 ("?j?mod clause is an obsolescent feature (RM J.8)", N);
                Error_Msg_N
-                 ("\use alignment attribute definition clause instead?", N);
+                 ("\?j?use alignment attribute definition clause instead?", N);
             end if;
 
             if Present (P) then

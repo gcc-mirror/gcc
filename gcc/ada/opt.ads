@@ -1533,7 +1533,8 @@ package Opt is
    Warn_On_Hiding : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings if a declared entity hides another
-   --  entity. The default is that this warning is suppressed.
+   --  entity. The default is that this warning is suppressed. Modified by
+   --  use of -gnatwh/H.
 
    Warn_On_Modified_Unread : Boolean := False;
    --  GNAT
@@ -1593,6 +1594,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for redundant constructs (e.g. useless
    --  assignments/conversions). The default is that this warning is disabled.
+   --  Modified by use of -gnatwr/R.
 
    Warn_On_Reverse_Bit_Order : Boolean := True;
    --  GNAT
