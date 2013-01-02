@@ -1602,10 +1602,21 @@ package body Sem_Ch13 is
                   --  with delay of visibility for the expression analysis.
 
                   --  If the entity is a library-level subprogram, the pre/
-                  --  postconditions must be treated as late pragmas.
+                  --  postconditions must be treated as late pragmas. Note
+                  --  that they must be prepended, not appended, to the list,
+                  --  so that split AND THEN sections are processed in the
+                  --  correct order.
 
                   if Nkind (Parent (N)) = N_Compilation_Unit then
-                     Add_Global_Declaration (Aitem);
+                     declare
+                        Aux : constant Node_Id := Aux_Decls_Node (Parent (N));
+                     begin
+                        if No (Pragmas_After (Aux)) then
+                           Set_Pragmas_After (Aux, New_List);
+                        end if;
+
+                        Prepend (Aitem, Pragmas_After (Aux));
+                     end;
 
                   --  If it is a subprogram body, add pragmas to list of
                   --  declarations in body.
@@ -1930,7 +1941,7 @@ package body Sem_Ch13 is
 
                   else
                      if No (Pragmas_After (Aux)) then
-                        Set_Pragmas_After (Aux, Empty_List);
+                        Set_Pragmas_After (Aux, New_List);
                      end if;
 
                      Append (Aitem, Pragmas_After (Aux));
