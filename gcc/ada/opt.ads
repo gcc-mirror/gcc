@@ -281,7 +281,7 @@ package Opt is
    --  Set to True to check that operations on predefined unconstrained float
    --  types (e.g. Float, Long_Float) do not overflow and generate infinities
    --  or invalid values. Set by the Check_Float_Overflow pragma, or by use
-   --  of the -gnateo switch.
+   --  of the -gnateF switch.
 
    Check_Object_Consistency : Boolean := False;
    --  GNATBIND, GNATMAKE
@@ -1737,7 +1737,7 @@ package Opt is
    --  Set to True to check that operations on predefined unconstrained float
    --  types (e.g. Float, Long_Float) do not overflow and generate infinities
    --  or invalid values. Set by the Check_Float_Overflow pragma, or by use
-   --  of the -gnateo switch.
+   --  of the -gnateF switch.
 
    Check_Policy_List_Config : Node_Id;
    --  GNAT
