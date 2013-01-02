@@ -154,6 +154,13 @@ package body Par_SCO is
    --  Process L, a list of statements or declarations dominated by D.
    --  If P is present, it is processed as though it had been prepended to L.
 
+   function Traverse_Declarations_Or_Statements
+     (L : List_Id;
+      D : Dominant_Info := No_Dominant;
+      P : Node_Id       := Empty) return Dominant_Info;
+   --  Same as above, and returns dominant information corresponding to the
+   --  last node with SCO in L.
+
    --  The following Traverse_* routines perform appropriate calls to
    --  Traverse_Declarations_Or_Statements to traverse specific node kinds
 
@@ -1024,8 +1031,7 @@ package body Par_SCO is
       --  original source occurrence of the pragma.
 
       if not (Generate_SCO
-               and then
-                 In_Extended_Main_Source_Unit (Cunit_Entity (Current_Sem_Unit))
+               and then In_Extended_Main_Source_Unit (Loc)
                and then not (In_Instance or In_Inlined_Body))
       then
          return;
@@ -1183,6 +1189,17 @@ package body Par_SCO is
      (L : List_Id;
       D : Dominant_Info := No_Dominant;
       P : Node_Id       := Empty)
+   is
+      Discard_Dom : Dominant_Info;
+      pragma Warnings (Off, Discard_Dom);
+   begin
+      Discard_Dom := Traverse_Declarations_Or_Statements (L, D, P);
+   end Traverse_Declarations_Or_Statements;
+
+   function Traverse_Declarations_Or_Statements
+     (L : List_Id;
+      D : Dominant_Info := No_Dominant;
+      P : Node_Id       := Empty) return Dominant_Info
    is
       Current_Dominant : Dominant_Info := D;
       --  Dominance information for the current basic block
@@ -1441,6 +1458,9 @@ package body Par_SCO is
                --  entry since Set_SCO_Pragma_Enabled will be called when
                --  analyzing actual checks, possibly in other units).
 
+               --  Pre/post can have checks in client units too because of
+               --  inheritance, so should they be moved here???
+
                when Aspect_Predicate         |
                     Aspect_Static_Predicate  |
                     Aspect_Dynamic_Predicate |
@@ -1587,9 +1607,14 @@ package body Par_SCO is
 
             when N_Block_Statement =>
                Set_Statement_Entry;
-               Traverse_Declarations_Or_Statements
-                 (L => Declarations (N),
-                  D => Current_Dominant);
+
+               --  The first statement in the handled sequence of statements
+               --  is dominated by the elaboration of the last declaration.
+
+               Current_Dominant := Traverse_Declarations_Or_Statements
+                                     (L => Declarations (N),
+                                      D => Current_Dominant);
+
                Traverse_Handled_Statement_Sequence
                  (N => Handled_Statement_Sequence (N),
                   D => Current_Dominant);
@@ -1916,6 +1941,9 @@ package body Par_SCO is
                         Process_Decisions_Defer (Expression (Arg), 'P');
                         Typ := 'p';
 
+                        --  Pre/postconditions can be inherited so SCO should
+                        --  never be deactivated???
+
                      when Name_Debug =>
                         if Present (Arg) and then Present (Next (Arg)) then
 
@@ -1933,6 +1961,10 @@ package body Par_SCO is
                      --  For all other pragmas, we generate decision entries
                      --  for any embedded expressions, and the pragma is
                      --  never disabled.
+
+                     --  Should generate P decisions (not X) for assertion
+                     --  related pragmas: [Type_]Invariant,
+                     --  [{Static,Dynamic}_]Predicate???
 
                      when others =>
                         Process_Decisions_Defer (N, 'X');
@@ -2053,6 +2085,8 @@ package body Par_SCO is
       if Present (P) or else Is_Non_Empty_List (L) then
          Set_Statement_Entry;
       end if;
+
+      return Current_Dominant;
    end Traverse_Declarations_Or_Statements;
 
    ------------------------------------------
@@ -2100,9 +2134,15 @@ package body Par_SCO is
    ---------------------------
 
    procedure Traverse_Package_Body (N : Node_Id) is
+      Dom : Dominant_Info;
    begin
-      Traverse_Declarations_Or_Statements (Declarations (N));
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
+      --  The first statement in the handled sequence of statements is
+      --  dominated by the elaboration of the last declaration.
+
+      Dom := Traverse_Declarations_Or_Statements (Declarations (N));
+
+      Traverse_Handled_Statement_Sequence
+        (Handled_Statement_Sequence (N), Dom);
    end Traverse_Package_Body;
 
    ----------------------------------
@@ -2111,9 +2151,13 @@ package body Par_SCO is
 
    procedure Traverse_Package_Declaration (N : Node_Id) is
       Spec : constant Node_Id := Specification (N);
+      Dom  : Dominant_Info;
    begin
-      Traverse_Declarations_Or_Statements (Visible_Declarations (Spec));
-      Traverse_Declarations_Or_Statements (Private_Declarations (Spec));
+      --  The first private declaration is dominated by the last visible
+      --  declaration.
+
+      Dom := Traverse_Declarations_Or_Statements (Visible_Declarations (Spec));
+      Traverse_Declarations_Or_Statements (Private_Declarations (Spec), Dom);
    end Traverse_Package_Declaration;
 
    ------------------------------
@@ -2145,18 +2189,12 @@ package body Par_SCO is
 
       Vis_Decl := Visible_Declarations (Sync_Def);
 
-      Traverse_Declarations_Or_Statements
-        (L => Vis_Decl,
-         D => Dom_Info);
+      Dom_Info := Traverse_Declarations_Or_Statements
+                    (L => Vis_Decl,
+                     D => Dom_Info);
 
       --  If visible declarations are present, the first private declaration
       --  is dominated by the last visible declaration.
-
-      --  This is incorrect if Last (Vis_Decl) does not generate a SCO???
-
-      if not Is_Empty_List (Vis_Decl) then
-         Dom_Info.N := Last (Vis_Decl);
-      end if;
 
       Traverse_Declarations_Or_Statements
         (L => Private_Declarations (Sync_Def),
@@ -2171,9 +2209,18 @@ package body Par_SCO is
      (N : Node_Id;
       D : Dominant_Info := No_Dominant)
    is
+      Decls    : constant List_Id := Declarations (N);
+      Dom_Info : Dominant_Info := D;
    begin
-      Traverse_Declarations_Or_Statements (Declarations (N), D);
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N), D);
+      --  If declarations are present, the first statement is dominated by the
+      --  last declaration.
+
+      Dom_Info := Traverse_Declarations_Or_Statements
+                    (L => Decls, D => Dom_Info);
+
+      Traverse_Handled_Statement_Sequence
+        (N => Handled_Statement_Sequence (N),
+         D => Dom_Info);
    end Traverse_Subprogram_Or_Task_Body;
 
 end Par_SCO;

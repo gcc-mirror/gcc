@@ -4242,10 +4242,6 @@ Specify a mapping file
 @end ifclear
 (@pxref{Units to Sources Mapping Files}).
 
-@item -gnateO=@var{path}
-@cindex @option{-gnateO} (@command{gcc})
-Specify a path for the object files.
-
 @item -gnatep=@var{file}
 @cindex @option{-gnatep} (@command{gcc})
 Specify a preprocessing data file
