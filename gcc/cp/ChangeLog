@@ -1,5 +1,7 @@
 2013-01-02  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (check_default_argument): Use LOOKUP_IMPLICIT.
+
 	PR c++/55032
 	PR c++/55245
 	* tree.c (build_cplus_array_type): Copy layout information
