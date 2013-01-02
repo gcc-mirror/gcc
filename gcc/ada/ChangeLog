@@ -1,3 +1,31 @@
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_prag.adb: Minor reformatting.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Get_Associated_Node): If the node is an
+	identifier that denotes an unconstrained array in an object
+	declaration, it is rewritten as the name of an anonymous
+	subtype whose bounds are given by the initial expression in the
+	declaration. When checking whether that identifier is global
+	reference, use the original node, not the local generated subtype.
+
+2013-01-02  Olivier Hainque  <hainque@adacore.com>
+
+	* tracebak.c: Revert previous change, incomplete.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): If the aspect
+	appears on a subprogram body that acts as a spec, place the
+	corresponding pragma in the declarations of the body, so that
+	e.g. pre/postcondition checks can be generated appropriately.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting and code reorganization.
+
 2013-01-02  Vincent Celier  <celier@adacore.com>
 
 	* switch-m.adb (Normalize_Compiler_Switches): Record the

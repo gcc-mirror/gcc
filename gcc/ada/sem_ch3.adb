@@ -13633,7 +13633,7 @@ package body Sem_Ch3 is
 
       Alias_Subp   : Entity_Id;
       Act_List     : Elist_Id;
-      Act_Elmt     : Elmt_Id   := No_Elmt;
+      Act_Elmt     : Elmt_Id;
       Act_Subp     : Entity_Id := Empty;
       Elmt         : Elmt_Id;
       Need_Search  : Boolean   := False;
@@ -13656,6 +13656,9 @@ package body Sem_Ch3 is
       if Present (Generic_Actual) then
          Act_List := Collect_Primitive_Operations (Generic_Actual);
          Act_Elmt := First_Elmt (Act_List);
+      else
+         Act_List := No_Elist;
+         Act_Elmt := No_Elmt;
       end if;
 
       --  Derive primitives inherited from the parent. Note that if the generic
@@ -13850,15 +13853,17 @@ package body Sem_Ch3 is
                      pragma Assert
                        (Is_Generic_Unit
                           (Scope (Find_Dispatching_Type (Alias_Subp)))
-                       or else
-                        Instantiation_Depth
-                          (Sloc (Find_Dispatching_Type (Alias_Subp))) > 0);
+                         or else
+                           Instantiation_Depth
+                             (Sloc (Find_Dispatching_Type (Alias_Subp))) > 0);
 
                      declare
                         Iface_Prim_Loc : constant Source_Ptr :=
                                          Original_Location (Sloc (Alias_Subp));
-                        Elmt      : Elmt_Id;
-                        Prim      : Entity_Id;
+
+                        Elmt : Elmt_Id;
+                        Prim : Entity_Id;
+
                      begin
                         Elmt :=
                           First_Elmt (Primitive_Operations (Generic_Actual));
@@ -13868,8 +13873,8 @@ package body Sem_Ch3 is
 
                            if Present (Interface_Alias (Prim))
                              and then Original_Location
-                                        (Sloc (Interface_Alias (Prim)))
-                                       = Iface_Prim_Loc
+                                        (Sloc (Interface_Alias (Prim))) =
+                                                              Iface_Prim_Loc
                            then
                               Act_Subp := Alias (Prim);
                               exit Search;

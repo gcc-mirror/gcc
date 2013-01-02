@@ -4929,6 +4929,17 @@ package body Sem_Ch12 is
             Assoc := Associated_Node (Assoc);
          end if;
 
+         --  An additional special case: an unconstrained type in an object
+         --  declaration may have been rewritten as a local subtype constrained
+         --  by the expression in the declaration. We need to recover the
+         --  original entity which may be global.
+
+         if Present (Original_Node (Assoc))
+           and then Nkind (Parent (N)) = N_Object_Declaration
+         then
+            Assoc := Original_Node (Assoc);
+         end if;
+
          return Assoc;
       end if;
    end Get_Associated_Node;
