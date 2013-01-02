@@ -1274,18 +1274,18 @@ package VMS_Data is
    --   extensions. See features file for list of implemented features.
    --   Equivalent to /12 (/2012 is the preferred usage).
 
-   S_GCC_Aliasing_Check : aliased constant S := "/ALIASING_CHECK "         &
-                                                    "-gnateA";
+   S_GCC_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
+                                             "-aP*";
+   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
+   --
+   --   Add directories to the project search path.
+
+   S_GCC_AlCheck : aliased constant S := "/ALIASING_CHECK "                &
+                                             "-gnateA";
    --        /NOALIASING_CHECK (D)
    --        /ALIASING_CHECK
    --
    --   Check that there are no aliased parameters in subprogram calls.
-
-   S_GCC_Add     : aliased constant S := "/ADD_PROJECT_SEARCH_DIR=*"       &
-                                            "-aP*";
-   --        /ADD_PROJECT_SEARCH_PATH=(directory[,...])
-   --
-   --   Add directories to the project search path.
 
    S_GCC_Asm     : aliased constant S := "/ASM "                           &
                                              "-S,!-c";
@@ -1406,10 +1406,12 @@ package VMS_Data is
    --  NODOC (see /CHECKS)
 
    S_GCC_Chflov  : aliased constant S := "/FLOAT_OVERFLOW_CHECK "          &
-                     "-gnateF ";
-
-   --  Set mode to check overflow for all floating-point operations including
-   --  those using an unconstrained predefined type (i.e. no infinities).
+                                             "-gnateF ";
+   --        /NOFLOAT_OVERFLOW_CHECK (D)
+   --        /FLOAT_OVERFLOW_CHECK
+   --
+   --   Set mode to check overflow for all floating-point operations including
+   --   those using an unconstrained predefined type (i.e. no infinities).
 
    S_GCC_Compres : aliased constant S := "/COMPRESS_NAMES "                &
                                              "-gnatC ";
@@ -1427,7 +1429,8 @@ package VMS_Data is
                                              "-gnatec>";
    --        /CONFIGURATION_PRAGMAS_FILE=file
    --
-   --   Specify a configuration pragmas file that need to be taken into account
+   --   Specify a configuration pragmas file that need to be taken into
+   --   account.
 
    S_GCC_Current : aliased constant S := "/CURRENT_DIRECTORY "             &
                                              "!-I-";
@@ -1547,8 +1550,7 @@ package VMS_Data is
                                              "!-g";
    --  NODOC (see /Debug)
 
-   S_GCC_Dis_Atomic : aliased constant S :=
-                                        "/DISABLE_ATOMIC_SYNCHRONIZATION " &
+   S_GCC_DisAtom : aliased constant S := "/DISABLE_ATOMIC_SYNCHRONIZATION " &
                                             "-gnated";
    --         /NODISABLE_ATOMIC_SYNCHRONIZATION (D)
    --         /DISABLE_ATOMIC_SYNCHRONIZATION
@@ -2146,8 +2148,8 @@ package VMS_Data is
    --   assertion, and the second digit sets the mode for expressions within
    --   an assertion.
 
-   S_GCC_Param_Valid : aliased constant S := "/PARAMETER_VALIDITY_CHECK "  &
-                                                "-gnateV";
+   S_GCC_PValid  : aliased constant S := "/PARAMETER_VALIDITY_CHECK "      &
+                                            "-gnateV";
    --        /NOPARAMETER_VALIDITY_CHECK (D)
    --        /PARAMETER_VALIDITY_CHECK
    --
@@ -3626,7 +3628,7 @@ package VMS_Data is
                      S_GCC_Ada_12  'Access,
                      S_GCC_Ada_2012'Access,
                      S_GCC_Add     'Access,
-                     S_GCC_Aliasing_Check'Access,
+                     S_GCC_AlCheck 'Access,
                      S_GCC_Asm     'Access,
                      S_GCC_AValid  'Access,
                      S_GCC_CategW  'Access,
@@ -3639,7 +3641,7 @@ package VMS_Data is
                      S_GCC_Debug   'Access,
                      S_GCC_DebugX  'Access,
                      S_GCC_Data    'Access,
-                     S_GCC_Dis_Atomic'Access,
+                     S_GCC_DisAtom 'Access,
                      S_GCC_Dist    'Access,
                      S_GCC_DistX   'Access,
                      S_GCC_Error   'Access,
@@ -3682,7 +3684,7 @@ package VMS_Data is
                      S_GCC_Opt     'Access,
                      S_GCC_OptX    'Access,
                      S_GCC_Overflo 'Access,
-                     S_GCC_Param_Valid'Access,
+                     S_GCC_PValid  'Access,
                      S_GCC_Pointer 'Access,
                      S_GCC_Polling 'Access,
                      S_GCC_Project 'Access,
@@ -6136,6 +6138,7 @@ package VMS_Data is
    --   By default, the form of the line terminator depends on the platforms.
    --   On Unix and VMS, it is a Line Feed (LF) character. On Windows (DOS),
    --   It is a Carriage Return (CR) followed by a Line Feed.
+
    --   The Options DOS and CRLF are equivalent. The options UNIX and LF are
    --   also equivalent.
 

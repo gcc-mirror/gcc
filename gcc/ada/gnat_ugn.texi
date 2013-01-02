@@ -4212,6 +4212,12 @@ produced at run time.
 @cindex @option{-gnatef} (@command{gcc})
 Display full source path name in brief error messages.
 
+@item -gnateF
+@cindex @option{-gnateF} (@command{gcc})
+Check for overflow on all floating-point operations, including those
+for unconstrained predefined types. See description of pragma
+@code{Check_Float_Overflow} in GNAT RM.
+
 @item -gnateG
 @cindex @option{-gnateG} (@command{gcc})
 Save result of preprocessing in a text file.
