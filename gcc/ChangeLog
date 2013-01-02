@@ -1,5 +1,11 @@
 2013-01-02  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_load): When vectorizing an
+	invariant load do not generate a vector load from the scalar
+	location.
+
+2013-01-02  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/55784
 	* configure.ac: Add $GMPINC to CFLAGS/CXXFLAGS.
 	* configure: Regenerate.
