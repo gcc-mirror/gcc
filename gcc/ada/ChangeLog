@@ -1,3 +1,20 @@
+2013-01-02  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Record the
+	complete switch -fstack-check=specific instead of its shorter
+	alias -fstack-check.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Derive_Subprogram): Enforce RM 6.3.1 (8):
+	if the derived type is a tagged generic formal type with
+	unknown discriminants, the inherited operation has convention
+	Intrinsic. As such, the 'Access attribute cannot be applied to it.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
 	* par_sco.adb: Add SCO generation for S of protected types and

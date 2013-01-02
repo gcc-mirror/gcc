@@ -13320,8 +13320,29 @@ package body Sem_Ch3 is
       --  of the parent subprogram (a requirement of AI-117). Derived
       --  subprograms of untagged types simply get convention Ada by default.
 
+      --  If the derived type is a tagged generic formal type with unknown
+      --  discriminants, its convention is intrinsic (RM 6.3.1 (8)).
+
+      --  However, if the type is derived from a generic formal, the further
+      --  inherited subprogram has the convention of the non-generic ancestor.
+      --  Otherwise there would be no way to override the operation.
+      --  (This is subject to forthcoming ARG discussions).
+
       if Is_Tagged_Type (Derived_Type) then
-         Set_Convention (New_Subp, Convention (Parent_Subp));
+         if Is_Generic_Type (Derived_Type)
+           and then Has_Unknown_Discriminants (Derived_Type)
+         then
+            Set_Convention (New_Subp, Convention_Intrinsic);
+
+         else
+            if Is_Generic_Type (Parent_Type)
+              and then Has_Unknown_Discriminants (Parent_Type)
+            then
+               Set_Convention (New_Subp, Convention (Alias (Parent_Subp)));
+            else
+               Set_Convention (New_Subp, Convention (Parent_Subp));
+            end if;
+         end if;
       end if;
 
       --  Predefined controlled operations retain their name even if the parent
@@ -13333,9 +13354,9 @@ package body Sem_Ch3 is
 
       if Is_Controlled (Parent_Type)
         and then
-          (Chars (Parent_Subp) = Name_Initialize
-            or else Chars (Parent_Subp) = Name_Adjust
-            or else Chars (Parent_Subp) = Name_Finalize)
+          (Chars (Parent_Subp) = Name_Initialize or else
+           Chars (Parent_Subp) = Name_Adjust     or else
+           Chars (Parent_Subp) = Name_Finalize)
         and then Is_Hidden (Parent_Subp)
         and then not Is_Visibly_Controlled (Parent_Type)
       then
@@ -13377,14 +13398,14 @@ package body Sem_Ch3 is
       elsif Ada_Version >= Ada_2005
         and then (Is_Abstract_Subprogram (Alias (New_Subp))
                    or else (Is_Tagged_Type (Derived_Type)
-                            and then Etype (New_Subp) = Derived_Type
-                            and then not Is_Null_Extension (Derived_Type))
+                             and then Etype (New_Subp) = Derived_Type
+                             and then not Is_Null_Extension (Derived_Type))
                    or else (Is_Tagged_Type (Derived_Type)
-                            and then Ekind (Etype (New_Subp)) =
+                             and then Ekind (Etype (New_Subp)) =
                                                        E_Anonymous_Access_Type
-                            and then Designated_Type (Etype (New_Subp)) =
-                                                       Derived_Type
-                            and then not Is_Null_Extension (Derived_Type)))
+                             and then Designated_Type (Etype (New_Subp)) =
+                                                        Derived_Type
+                             and then not Is_Null_Extension (Derived_Type)))
         and then No (Actual_Subp)
       then
          if not Is_Tagged_Type (Derived_Type)
@@ -13509,9 +13530,7 @@ package body Sem_Ch3 is
          --  an incomplete type whose full-view is derived type
 
          E := First_Entity (Scope (Derived_Type));
-         while Present (E)
-           and then E /= Derived_Type
-         loop
+         while Present (E) and then E /= Derived_Type loop
             if Ekind (E) = E_Incomplete_Type
               and then Present (Full_View (E))
               and then Full_View (E) = Derived_Type
@@ -13648,8 +13667,7 @@ package body Sem_Ch3 is
       if not Is_Tagged_Type (Derived_Type)
         or else (not Has_Interfaces (Derived_Type)
                   and then not (Present (Generic_Actual)
-                                  and then
-                                Has_Interfaces (Generic_Actual)))
+                                 and then Has_Interfaces (Generic_Actual)))
       then
          Elmt := First_Elmt (Op_List);
          while Present (Elmt) loop
@@ -13673,9 +13691,10 @@ package body Sem_Ch3 is
             else
                pragma Assert (No (Node (Act_Elmt))
                  or else (Primitive_Names_Match (Subp, Node (Act_Elmt))
-                            and then
-                          Type_Conformant (Subp, Node (Act_Elmt),
-                                           Skip_Controlling_Formals => True)));
+                           and then
+                             Type_Conformant
+                               (Subp, Node (Act_Elmt),
+                                Skip_Controlling_Formals => True)));
 
                Derive_Subprogram
                  (New_Subp, Subp, Derived_Type, Parent_Base, Node (Act_Elmt));
@@ -14722,9 +14741,7 @@ package body Sem_Ch3 is
       --  Set Discard_Names if configuration pragma set, or if there is
       --  a parameterless pragma in the current declarative region
 
-      if Global_Discard_Names
-        or else Discard_Names (Scope (T))
-      then
+      if Global_Discard_Names or else Discard_Names (Scope (T)) then
          Set_Discard_Names (T);
       end if;
 

@@ -4251,9 +4251,9 @@ package body Sem_Attr is
 
             Prag := N;
             while not Nkind_In (Prag, N_Pragma,
-                                N_Function_Specification,
-                                N_Procedure_Specification,
-                                N_Subprogram_Body)
+                                      N_Function_Specification,
+                                      N_Procedure_Specification,
+                                      N_Subprogram_Body)
             loop
                Prag := Parent (Prag);
             end loop;
