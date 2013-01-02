@@ -162,7 +162,12 @@ package body Par_SCO is
    --  last node with SCO in L.
 
    --  The following Traverse_* routines perform appropriate calls to
-   --  Traverse_Declarations_Or_Statements to traverse specific node kinds
+   --  Traverse_Declarations_Or_Statements to traverse specific node kinds.
+   --  Parameter D, when present, indicates the dominant of the first
+   --  declaration or statement within N.
+
+   --  Why is Traverse_Sync_Definition commented specificaly and
+   --   the others are not???
 
    procedure Traverse_Generic_Package_Declaration (N : Node_Id);
    procedure Traverse_Handled_Statement_Sequence

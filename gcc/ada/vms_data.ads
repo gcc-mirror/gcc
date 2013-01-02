@@ -1429,7 +1429,7 @@ package VMS_Data is
                                              "-gnatec>";
    --        /CONFIGURATION_PRAGMAS_FILE=file
    --
-   --   Specify a configuration pragmas file that need to be taken into
+   --   Specify a configuration pragmas file that needs to be taken into
    --   account.
 
    S_GCC_Current : aliased constant S := "/CURRENT_DIRECTORY "             &
