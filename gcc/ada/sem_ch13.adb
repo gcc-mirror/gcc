@@ -1886,7 +1886,7 @@ package body Sem_Ch13 is
 
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the
-            --  N_Compilation_Unit_Aux node (No delay is required here)
+            --  N_Compilation_Unit_Aux node (no delay is required here)
             --  except for aspects on a subprogram body (see below).
 
             if Nkind (Parent (N)) = N_Compilation_Unit
@@ -2012,8 +2012,8 @@ package body Sem_Ch13 is
 
       Rewrite (N,
         Make_Attribute_Definition_Clause (Sloc (N),
-          Name  => Identifier (N),
-          Chars => Name_Address,
+          Name       => Identifier (N),
+          Chars      => Name_Address,
           Expression => Expression (N)));
 
       --  We preserve Comes_From_Source, since logically the clause still comes

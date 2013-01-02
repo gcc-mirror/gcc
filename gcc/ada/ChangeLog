@@ -1,5 +1,31 @@
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_prag.adb (Expand_Pragma_Check): The statements generated
+	for the pragma must have the sloc of the pragma, not the
+	sloc of the condition, otherwise this creates anomalies in the
+	generated debug information that confuse coverage analysis tools.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb: Minor reformatting.
+
+2013-01-02  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-excact.ads (Core_Dump): Clarify that this subprogram does
+	not dump cores under Windows.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Primitive_Renamed_Operation): The prefixed
+	view of a subprogram has convention Intrnnsic, and a renaming
+	of a prefixed view cannot be the prefix of an Access attribute.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb: Minor reformatting.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_prag.adb: Minor reformatting.
 
 2013-01-02  Ed Schonberg  <schonberg@adacore.com>
