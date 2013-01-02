@@ -397,8 +397,10 @@ package body Sem_Ch8 is
       New_S   : Entity_Id;
       Is_Body : Boolean);
    --  If the renamed entity in a subprogram renaming is a primitive operation
-   --  or a class-wide operation in prefix form, save the target object, which
-   --  must be added to the list of actuals in any subsequent call.
+   --  or a class-wide operation in prefix form, save the target object,
+   --  which must be added to the list of actuals in any subsequent call.
+   --  The renaming operation is intrinsic because the compiler must in
+   --  fact generate a wrapper for it (6.3.1 (10 1/2)).
 
    function Applicable_Use (Pack_Name : Node_Id) return Boolean;
    --  Common code to Use_One_Package and Set_Use, to determine whether use
@@ -1602,6 +1604,10 @@ package body Sem_Ch8 is
       --  match. The first formal of the renamed entity is skipped because it
       --  is the target object in any subsequent call.
 
+      --------------
+      -- Conforms --
+      --------------
+
       function Conforms
         (Subp : Entity_Id;
          Ctyp : Conformance_Type) return Boolean
@@ -1633,6 +1639,8 @@ package body Sem_Ch8 is
 
          return True;
       end Conforms;
+
+   --  Start of processing for Analyze_Renamed_Primitive_Operation
 
    begin
       if not Is_Overloaded (Selector_Name (Name (N))) then
@@ -1681,6 +1689,14 @@ package body Sem_Ch8 is
             if not Conforms (Old_S, Mode_Conformant) then
                Error_Msg_N ("mode conformance error in renaming", N);
             end if;
+
+            --  Enforce the rule given in (RM 6.3.1 (10.1/2)): a prefixed
+            --  view of a subprogram is intrinsic, because the compiler has
+            --  to generate a wrapper for any call to it. If the name in a
+            --  subprogram renaming is a prefixed view, the entity is thus
+            --  intrinsic, and 'Access cannot be applied to it.
+
+            Set_Convention (New_S, Convention_Intrinsic);
          end if;
 
          --  Inherit_Renamed_Profile (New_S, Old_S);

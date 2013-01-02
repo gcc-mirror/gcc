@@ -611,8 +611,8 @@ package body Restrict is
       end if;
 
       --  Ignore call if node N is not in the main source unit, since we only
-      --  give messages for . This avoids giving messages for aspects that are
-      --  specified in withed units.
+      --  give messages for the main unit. This avoids giving messages for
+      --  aspects that are specified in withed units.
 
       if not In_Extended_Main_Source_Unit (N) then
          return;
