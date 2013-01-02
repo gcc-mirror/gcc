@@ -1,5 +1,9 @@
 2013-01-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54325
+	* call.c (build_new_method_call_1): Don't use build_value_init for
+	user-provided default constructors.
+
 	PR c++/55032
 	PR c++/55245
 	* tree.c (build_cplus_array_type): Copy layout information

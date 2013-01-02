@@ -7218,6 +7218,9 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	 build_special_member_call.  */
       if (CONSTRUCTOR_NELTS (init_list) == 0
 	  && TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
+	  /* For a user-provided default constructor, use the normal
+	     mechanisms so that protected access works.  */
+	  && !type_has_user_provided_default_constructor (basetype)
 	  && !processing_template_decl)
 	init = build_value_init (basetype, complain);
 
