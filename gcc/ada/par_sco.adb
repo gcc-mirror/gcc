@@ -154,7 +154,6 @@ package body Par_SCO is
    --  Process L, a list of statements or declarations dominated by D.
    --  If P is present, it is processed as though it had been prepended to L.
 
-   procedure Traverse_Generic_Instantiation       (N : Node_Id);
    procedure Traverse_Generic_Package_Declaration (N : Node_Id);
    procedure Traverse_Handled_Statement_Sequence
      (N : Node_Id;
@@ -165,7 +164,6 @@ package body Par_SCO is
    procedure Traverse_Subprogram_Or_Task_Body
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
-   procedure Traverse_Subprogram_Declaration      (N : Node_Id);
    --  Traverse the corresponding construct, generating SCO table entries
 
    procedure Write_SCOs_To_ALI_File is new Put_SCOs;
@@ -900,6 +898,23 @@ package body Par_SCO is
       Lu   : Node_Id;
       From : Nat;
 
+      procedure Traverse_Aux_Decls (N : Node_Id);
+      --  Traverse the Aux_Decl_Nodes of compilation unit N
+
+      ------------------------
+      -- Traverse_Aux_Decls --
+      ------------------------
+
+      procedure Traverse_Aux_Decls (N : Node_Id) is
+         ADN : constant Node_Id := Aux_Decls_Node (N);
+      begin
+         Traverse_Declarations_Or_Statements (Config_Pragmas (ADN));
+         Traverse_Declarations_Or_Statements (Declarations   (ADN));
+         Traverse_Declarations_Or_Statements (Pragmas_After  (ADN));
+      end Traverse_Aux_Decls;
+
+   --  Start of processing for SCO_Record
+
    begin
       --  Ignore call if not generating code and generating SCO's
 
@@ -929,27 +944,22 @@ package body Par_SCO is
 
       --  Traverse the unit
 
+      Traverse_Aux_Decls (Cunit (U));
+
       case Nkind (Lu) is
-         when N_Protected_Body =>
-            Traverse_Protected_Body (Lu);
+         when
+           N_Package_Declaration         |
+           N_Package_Body                |
+           N_Subprogram_Declaration      |
+           N_Subprogram_Body             |
+           N_Generic_Package_Declaration |
+           N_Protected_Body              |
+           N_Task_Body                   |
+           N_Generic_Instantiation       =>
 
-         when N_Subprogram_Body | N_Task_Body =>
-            Traverse_Subprogram_Or_Task_Body (Lu);
-
-         when N_Subprogram_Declaration =>
-            Traverse_Subprogram_Declaration (Lu);
-
-         when N_Package_Declaration =>
-            Traverse_Package_Declaration (Lu);
-
-         when N_Package_Body =>
-            Traverse_Package_Body (Lu);
-
-         when N_Generic_Package_Declaration =>
-            Traverse_Generic_Package_Declaration (Lu);
-
-         when N_Generic_Instantiation =>
-            Traverse_Generic_Instantiation (Lu);
+            Traverse_Declarations_Or_Statements
+              (L => No_List,
+               P => Lu);
 
          when others =>
 
@@ -1989,47 +1999,29 @@ package body Par_SCO is
    --  Start of processing for Traverse_Declarations_Or_Statements
 
    begin
+      --  Process single prefixed node
+
       if Present (P) then
          Traverse_One (P);
       end if;
 
+      --  Loop through statements or declarations
+
       if Is_Non_Empty_List (L) then
-
-         --  Loop through statements or declarations
-
          N := First (L);
          while Present (N) loop
             Traverse_One (N);
             Next (N);
          end loop;
 
+      end if;
+
+      --  End sequence of statements and flush deferred decisions
+
+      if Present (P) or else Is_Non_Empty_List (L) then
          Set_Statement_Entry;
       end if;
    end Traverse_Declarations_Or_Statements;
-
-   ------------------------------------
-   -- Traverse_Generic_Instantiation --
-   ------------------------------------
-
-   procedure Traverse_Generic_Instantiation (N : Node_Id) is
-      First : Source_Ptr;
-      Last  : Source_Ptr;
-
-   begin
-      --  First we need a statement entry to cover the instantiation
-
-      Sloc_Range (N, First, Last);
-      Set_Table_Entry
-        (C1   => 'S',
-         C2   => ' ',
-         From => First,
-         To   => Last,
-         Last => True);
-
-      --  Now output any embedded decisions
-
-      Process_Decisions (N, 'X', No_Location);
-   end Traverse_Generic_Instantiation;
 
    ------------------------------------------
    -- Traverse_Generic_Package_Declaration --
@@ -2113,17 +2105,5 @@ package body Par_SCO is
       Traverse_Declarations_Or_Statements (Declarations (N), D);
       Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N), D);
    end Traverse_Subprogram_Or_Task_Body;
-
-   -------------------------------------
-   -- Traverse_Subprogram_Declaration --
-   -------------------------------------
-
-   procedure Traverse_Subprogram_Declaration (N : Node_Id) is
-      ADN : constant Node_Id := Aux_Decls_Node (Parent (N));
-   begin
-      Traverse_Declarations_Or_Statements (Config_Pragmas (ADN));
-      Traverse_Declarations_Or_Statements (Declarations   (ADN));
-      Traverse_Declarations_Or_Statements (Pragmas_After  (ADN));
-   end Traverse_Subprogram_Declaration;
 
 end Par_SCO;

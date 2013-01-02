@@ -7013,16 +7013,27 @@ package body Sem_Prag is
 
          --  pragma Assume (boolean_EXPRESSION);
 
-         --  This should share pragma Assert code ???
-         --  Run-time check is missing completely ???
-
          when Pragma_Assume => Assume : declare
          begin
             GNAT_Pragma;
             S14_Pragma;
             Check_Arg_Count (1);
 
-            Analyze_And_Resolve (Expression (Arg1), Any_Boolean);
+            --  Pragma Assume is transformed into pragma Check in the following
+            --  manner:
+
+            --    pragma Check (Assume, Expr);
+
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Check,
+                Pragma_Argument_Associations => New_List (
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Make_Identifier (Loc, Name_Assume)),
+
+                  Make_Pragma_Argument_Association (Loc,
+                    Expression => Relocate_Node (Expression (Arg1))))));
+            Analyze (N);
          end Assume;
 
          ------------------------------

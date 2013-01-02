@@ -1,3 +1,18 @@
+2013-01-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Check the legality of pragma Assume.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Compare): For static operands, we
+	can perform a compile time comparison even if in preanalysis mode.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (SCO_Record): Always use
+	Traverse_Declarations_Or_Statements to process the library level
+	declaration, so that SCOs are properly generated for its aspects.
+
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
 	* scos.ads (In_Decision): Add missing entry for 'a'.
