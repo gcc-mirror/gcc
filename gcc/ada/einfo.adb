@@ -285,6 +285,7 @@ package body Einfo is
    --    Checks_May_Be_Suppressed        Flag31
    --    Kill_Elaboration_Checks         Flag32
    --    Kill_Range_Checks               Flag33
+   --    Has_Independent_Components      Flag34
    --    Is_Class_Wide_Equivalent_Type   Flag35
    --    Referenced_As_LHS               Flag36
    --    Is_Known_Non_Null               Flag37
@@ -527,7 +528,6 @@ package body Einfo is
    --    Has_Anonymous_Master            Flag253
    --    Is_Implementation_Defined       Flag254
 
-   --    (unused)                        Flag34
    --    (unused)                        Flag201
 
    -----------------------
@@ -1337,6 +1337,12 @@ package body Einfo is
    begin
       return Flag251 (Id);
    end Has_Implicit_Dereference;
+
+   function Has_Independent_Components (Id : E) return B is
+   begin
+      pragma Assert (Is_Object (Id) or else Is_Type (Id));
+      return Flag34 (Id);
+   end Has_Independent_Components;
 
    function Has_Inheritable_Invariants (Id : E) return B is
    begin
@@ -3852,6 +3858,12 @@ package body Einfo is
    begin
       Set_Flag251 (Id, V);
    end Set_Has_Implicit_Dereference;
+
+   procedure Set_Has_Independent_Components (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Object (Id) or else Is_Type (Id));
+      Set_Flag34 (Id, V);
+   end Set_Has_Independent_Components;
 
    procedure Set_Has_Inheritable_Invariants (Id : E; V : B := True) is
    begin

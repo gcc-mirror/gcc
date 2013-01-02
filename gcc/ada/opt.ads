@@ -1618,11 +1618,11 @@ package Opt is
    --  clauses that are affected by non-standard bit-order. The default is
    --  that this warning is enabled. Modified by -gnatw.v/.V.
 
-   Warn_On_Suspicious_Contract : Boolean := False;
+   Warn_On_Suspicious_Contract : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for suspicious contracts expressed as
    --  pragmas or aspects precondition and postcondition. The default is that
-   --  this warning is disabled. Modified by use of -gnatw.t/.T.
+   --  this warning is enabled. Modified by use of -gnatw.t/.T.
 
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT

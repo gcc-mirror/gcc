@@ -10330,15 +10330,19 @@ package body Sem_Prag is
             D := Declaration_Node (E);
             K := Nkind (D);
 
-            if (K = N_Full_Type_Declaration
-                 and then (Is_Array_Type (E) or else Is_Record_Type (E)))
-              or else
-                ((Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
-                   and then Nkind (D) = N_Object_Declaration
-                   and then Nkind (Object_Definition (D)) =
-                                       N_Constrained_Array_Definition)
+            if K = N_Full_Type_Declaration
+              and then (Is_Array_Type (E) or else Is_Record_Type (E))
             then
                Independence_Checks.Append ((N, E));
+               Set_Has_Independent_Components (Base_Type (E));
+
+            elsif (Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
+              and then Nkind (D) = N_Object_Declaration
+              and then Nkind (Object_Definition (D)) =
+                                           N_Constrained_Array_Definition
+            then
+               Independence_Checks.Append ((N, E));
+               Set_Has_Independent_Components (E);
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);

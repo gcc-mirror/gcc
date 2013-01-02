@@ -802,17 +802,22 @@ package body Freeze is
                --  size of packed records if we can tell the size of the packed
                --  record in the front end. Packed_Size_Known is True if so far
                --  we can figure out the size. It is initialized to True for a
-               --  packed record, unless the record has discriminants. The
-               --  reason we eliminate the discriminated case is that we don't
-               --  know the way the back end lays out discriminated packed
-               --  records. If Packed_Size_Known is True, then Packed_Size is
-               --  the size in bits so far.
+               --  packed record, unless the record has discriminants or atomic
+               --  components or independent components.
+
+               --  The reason we eliminate the discriminated case is that
+               --  we don't know the way the back end lays out discriminated
+               --  packed records. If Packed_Size_Known is True, then
+               --  Packed_Size is the size in bits so far.
 
                Packed_Size_Known : Boolean :=
-                                     Is_Packed (T)
-                                       and then not Has_Discriminants (T);
+                 Is_Packed (T)
+                   and then not Has_Discriminants (T)
+                   and then not Has_Atomic_Components (T)
+                   and then not Has_Independent_Components (T);
 
                Packed_Size : Uint := Uint_0;
+               --  SIze in bis so far
 
             begin
                --  Test for variant part present
@@ -853,6 +858,16 @@ package body Freeze is
                   --  size gets figured out anyway by a different circuit).
 
                   if Present (Component_Clause (Comp)) then
+                     Packed_Size_Known := False;
+                  end if;
+
+                  --  We do not know the packed size if we have a by reference
+                  --  type, or an atomic type or an atomic component.
+
+                  if Is_Atomic (Ctyp)
+                    or else Is_Atomic (Comp)
+                    or else Is_By_Reference_Type (Ctyp)
+                  then
                      Packed_Size_Known := False;
                   end if;
 
@@ -934,10 +949,19 @@ package body Freeze is
                                  and then Is_Modular_Integer_Type
                                             (Packed_Array_Type (Ctyp)))
                      then
-                        --  If RM_Size is known and static, then we can keep
-                        --  accumulating the packed size.
+                        --  Packed size unknown if we have an atomic type
+                        --  or a by reference type, since the back end
+                        --  knows how these are layed out.
 
-                        if Known_Static_RM_Size (Ctyp) then
+                        if Is_Atomic (Ctyp)
+                          or else Is_By_Reference_Type (Ctyp)
+                        then
+                           Packed_Size_Known := False;
+
+                        --  If RM_Size is known and static, then we can keep
+                        --  accumulating the packed size
+
+                        elsif Known_Static_RM_Size (Ctyp) then
 
                            --  A little glitch, to be removed sometime ???
                            --  gigi does not understand zero sizes yet.
@@ -1050,7 +1074,7 @@ package body Freeze is
             Comp_Byte_Aligned :=
               Present (Component_Clause (Comp))
                 and then
-              Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+                  Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
          end if;
 
       --  Array case
