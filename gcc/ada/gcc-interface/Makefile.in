@@ -273,7 +273,7 @@ endif
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include
+INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include $(GMPINC)
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
@@ -283,11 +283,11 @@ ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 ifneq ($(findstring vxworks,$(osys)),)
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada \
-			-I$(fsrcdir)/../include
+			-I$(fsrcdir)/../include $(GMPINC)
 else
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
-			-I$(fsrcdir)/../include
+			-I$(fsrcdir)/../include $(GMPINC)
 endif
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada

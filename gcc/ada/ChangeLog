@@ -1,3 +1,8 @@
+2013-01-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/55784
+	* gcc-interface/Makefile.in: Add $(GMPINC) to includes.
+
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Remove
