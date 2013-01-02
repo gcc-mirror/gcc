@@ -1048,10 +1048,15 @@ package body Par_SCO is
 
       Index := Condition_Pragma_Hash_Table.Get (Loc);
 
-      --  The test here for zero is to deal with possible previous errors
+      --  A zero index here indicates that semantic analysis found an
+      --  activated pragma at Loc which does not have a corresponding pragma
+      --  or aspect at the syntax level. This may occur in legitimate cases
+      --  because of expanded code (such are Pre/Post conditions generated for
+      --  formal parameter validity checks), or as a consequence of a previous
+      --  error.
 
       if Index = 0 then
-         Check_Error_Detected;
+         return;
 
       else
          declare
@@ -1533,7 +1538,7 @@ package body Par_SCO is
 
             --  Subprogram declaration
 
-            when N_Subprogram_Declaration =>
+            when N_Subprogram_Declaration | N_Subprogram_Body_Stub =>
                Process_Decisions_Defer
                  (Parameter_Specifications (Specification (N)), 'X');
 
@@ -2041,7 +2046,10 @@ package body Par_SCO is
 
                      when N_Representation_Clause         |
                           N_Use_Package_Clause            |
-                          N_Use_Type_Clause               =>
+                          N_Use_Type_Clause               |
+                          N_Package_Body_Stub             |
+                          N_Task_Body_Stub                |
+                          N_Protected_Body_Stub           =>
                         Typ := ASCII.NUL;
 
                      when others                          =>
