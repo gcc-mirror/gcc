@@ -7409,15 +7409,10 @@ build_array_type_1 (tree elt_type, tree index_type, bool shared)
 
   if (shared)
     {
-      tree old_t = t;
       hashval_t hashcode = iterative_hash_object (TYPE_HASH (elt_type), 0);
       if (index_type)
 	hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
       t = type_hash_canon (hashcode, t);
-      if (t != old_t)
-	/* Lay it out again in case the element type has been completed since
-	   the array was added to the hash table.  */
-	layout_type (t);
     }
 
   if (TYPE_CANONICAL (t) == t)

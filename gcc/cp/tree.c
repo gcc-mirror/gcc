@@ -734,6 +734,7 @@ tree
 build_cplus_array_type (tree elt_type, tree index_type)
 {
   tree t;
+  bool needs_ctor, needs_dtor;
 
   if (elt_type == error_mark_node || index_type == error_mark_node)
     return error_mark_node;
@@ -799,6 +800,15 @@ build_cplus_array_type (tree elt_type, tree index_type)
       t = build_array_type (elt_type, index_type);
     }
 
+  /* Push these needs up so that initialization takes place
+     more easily.  */
+  needs_ctor
+    = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
+  TYPE_NEEDS_CONSTRUCTING (t) = needs_ctor;
+  needs_dtor
+    = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
+  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = needs_dtor;
+
   /* We want TYPE_MAIN_VARIANT of an array to strip cv-quals from the
      element type as well, so fix it up if needed.  */
   if (elt_type != TYPE_MAIN_VARIANT (elt_type))
@@ -808,18 +818,34 @@ build_cplus_array_type (tree elt_type, tree index_type)
 
       if (TYPE_MAIN_VARIANT (t) != m)
 	{
+	  if (COMPLETE_TYPE_P (t) && !COMPLETE_TYPE_P (m))
+	    {
+	      /* m was built before the element type was complete, so we
+		 also need to copy the layout info from t.  */
+	      tree size = TYPE_SIZE (t);
+	      tree size_unit = TYPE_SIZE_UNIT (t);
+	      unsigned int align = TYPE_ALIGN (t);
+	      unsigned int user_align = TYPE_USER_ALIGN (t);
+	      enum machine_mode mode = TYPE_MODE (t);
+	      tree var;
+	      for (var = m; var; var = TYPE_NEXT_VARIANT (var))
+		{
+		  TYPE_SIZE (var) = size;
+		  TYPE_SIZE_UNIT (var) = size_unit;
+		  TYPE_ALIGN (var) = align;
+		  TYPE_USER_ALIGN (var) = user_align;
+		  SET_TYPE_MODE (var, mode);
+		  TYPE_NEEDS_CONSTRUCTING (var) = needs_ctor;
+		  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (var) = needs_dtor;
+		}
+	    }
+
 	  TYPE_MAIN_VARIANT (t) = m;
 	  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
 	  TYPE_NEXT_VARIANT (m) = t;
 	}
     }
 
-  /* Push these needs up so that initialization takes place
-     more easily.  */
-  TYPE_NEEDS_CONSTRUCTING (t)
-    = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
-  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-    = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
   return t;
 }
 
