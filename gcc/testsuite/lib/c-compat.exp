@@ -1,4 +1,4 @@
-# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008
+# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008, 2013
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -35,12 +35,16 @@ load_lib target-supports.exp
 # 
 proc compat-use-alt-compiler { } {
     global GCC_UNDER_TEST ALT_CC_UNDER_TEST
-    global compat_same_alt
+    global compat_same_alt compat_alt_caret
+    global TEST_ALWAYS_FLAGS
 
     # We don't need to do this if the alternate compiler is actually
     # the same as the compiler under test.
     if { $compat_same_alt == 0 } then {
 	set GCC_UNDER_TEST $ALT_CC_UNDER_TEST
+	if { $compat_alt_caret == 0 } then {
+	    regsub -- "-fno-diagnostics-show-caret" $TEST_ALWAYS_FLAGS "" TEST_ALWAYS_FLAGS
+	}
     }
 }
 
@@ -50,12 +54,14 @@ proc compat-use-alt-compiler { } {
 proc compat-use-tst-compiler { } {
     global GCC_UNDER_TEST compat_save_gcc_under_test
     global compat_same_alt
+    global TEST_ALWAYS_FLAGS compat_save_TEST_ALWAYS_FLAGS
 
     # We don't need to do this if the alternate compiler is actually
     # the same as the compiler under test.
 
     if { $compat_same_alt == 0 } then {
 	set GCC_UNDER_TEST $compat_save_gcc_under_test
+	set TEST_ALWAYS_FLAGS $compat_save_TEST_ALWAYS_FLAGS
     }
 }
 
@@ -64,6 +70,11 @@ proc compat_setup_dfp { } {
     global compat_use_alt
     global compat_same_alt
     global compat_have_dfp
+    global compat_alt_caret
+    global TEST_ALWAYS_FLAGS compat_save_TEST_ALWAYS_FLAGS
+
+    set compat_alt_caret 0
+    set compat_save_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
 
     verbose "compat_setup_dfp: $compat_use_alt $compat_same_alt" 2
 
@@ -71,6 +82,15 @@ proc compat_setup_dfp { } {
     compat-use-tst-compiler
     set compat_have_dfp [check_effective_target_dfprt_nocache]
     verbose "compat_have_dfp for tst compiler: $compat_have_dfp" 2
+
+    if { $compat_use_alt == 1 && $compat_same_alt == 0 } {
+	compat-use-alt-compiler
+	if { [check_no_compiler_messages_nocache compat_alt_has_caret object {
+		int dummy; } "-fno-diagnostics-show-caret"] != 0 } {
+	    set compat_alt_caret 1
+	}
+	compat-use-tst-compiler
+    }
 
     # If there is an alternate compiler, does it support decimal float types?
     if { $compat_have_dfp == 1 && $compat_use_alt == 1 && $compat_same_alt == 0 } {

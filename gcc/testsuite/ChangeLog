@@ -1,3 +1,11 @@
+2013-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/c-compat.exp (compat-use-alt-compiler): Remove
+	-fno-diagnostics-show-caret from TEST_ALWAYS_FLAGS if needed.
+	(compat-use-tst-compiler): Restore TEST_ALWAYS_FLAGS.
+	(compat_setup_dfp): Initialize compat_alt_caret and
+	compat_save_TEST_ALWAYS_FLAGS.
+
 2013-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/torture/tls/tls-reload-1.c: New test.
