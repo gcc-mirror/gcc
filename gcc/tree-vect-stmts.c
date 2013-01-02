@@ -4988,6 +4988,19 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  /* Record the mapping between SSA_NAMEs and statements.  */
 	  vect_record_grouped_load_vectors (stmt, dr_chain);
 	}
+      /* Handle invariant-load.  */
+      else if (inv_p && !bb_vinfo)
+	{
+	  gimple_stmt_iterator gsi2 = *gsi;
+	  gcc_assert (!grouped_load && !slp_perm);
+	  gsi_next (&gsi2);
+	  new_temp = vect_init_vector (stmt, scalar_dest,
+				       vectype, &gsi2);
+	  new_stmt = SSA_NAME_DEF_STMT (new_temp);
+	  /* Store vector loads in the corresponding SLP_NODE.  */
+	  if (slp)
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	}
       else
 	{
 	  for (i = 0; i < vec_num; i++)
@@ -5133,17 +5146,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 				     UNKNOWN_LOCATION);
 		      msq = lsq;
 		    }
-		}
-
-	      /* 4. Handle invariant-load.  */
-	      if (inv_p && !bb_vinfo)
-		{
-		  gimple_stmt_iterator gsi2 = *gsi;
-		  gcc_assert (!grouped_load);
-		  gsi_next (&gsi2);
-		  new_temp = vect_init_vector (stmt, scalar_dest,
-					       vectype, &gsi2);
-		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
 		}
 
 	      if (negative)
