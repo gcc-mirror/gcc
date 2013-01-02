@@ -214,6 +214,12 @@ package body Switch.M is
                then
                   Add_Switch_Component (Switch_Chars);
 
+               --  Special case for -fstack-check (alias for
+               --  -fstack-check=specific)
+
+               elsif Switch_Chars = "-fstack-check" then
+                  Add_Switch_Component ("-fstack-check=specific");
+
                --  Take only into account switches that are transmitted to
                --  gnat1 by the gcc driver and stored by gnat1 in the ALI file.
 
