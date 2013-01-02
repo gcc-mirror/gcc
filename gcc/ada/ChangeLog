@@ -1,3 +1,30 @@
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb, targparm.adb, targparm.ads: Minor name change: add
+	On_Target to Atomic_Sync_Default.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Known_Condition): Suppress warning for
+	comparison of attribute result with constant
+	* a-ststio.adb, s-direio.adb, s-rannum.adb: Remove unnecessary pragma
+	Warnings (Off, "..");
+
+2013-01-02  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.ads: Minor correction of comment.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_Package_Declaration): The first
+	declaration in a nested package is dominated by the preceding
+	declaration in the enclosing scope.
+
+2013-01-02  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, adaint.h (__gnat_get_module_name): Return the actual
+	module containing a given address.
+
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting.

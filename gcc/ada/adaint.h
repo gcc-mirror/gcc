@@ -186,6 +186,7 @@ extern int    __gnat_portable_wait                 (int *);
 extern char  *__gnat_locate_exec                   (char *, char *);
 extern char  *__gnat_locate_exec_on_path	   (char *);
 extern char  *__gnat_locate_regular_file           (char *, char *);
+extern char  *__gnat_get_module_name               (void *);
 extern void   __gnat_maybe_glob_args               (int *, char ***);
 extern void   __gnat_os_exit			   (int);
 extern char  *__gnat_get_libraries_from_registry   (void);

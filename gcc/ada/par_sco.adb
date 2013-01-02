@@ -174,7 +174,9 @@ package body Par_SCO is
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
    procedure Traverse_Package_Body        (N : Node_Id);
-   procedure Traverse_Package_Declaration (N : Node_Id);
+   procedure Traverse_Package_Declaration
+     (N : Node_Id;
+      D : Dominant_Info := No_Dominant);
    procedure Traverse_Subprogram_Or_Task_Body
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
@@ -1522,7 +1524,7 @@ package body Par_SCO is
 
             when N_Package_Declaration =>
                Set_Statement_Entry;
-               Traverse_Package_Declaration (N);
+               Traverse_Package_Declaration (N, Current_Dominant);
 
             --  Generic package declaration
 
@@ -2162,14 +2164,19 @@ package body Par_SCO is
    -- Traverse_Package_Declaration --
    ----------------------------------
 
-   procedure Traverse_Package_Declaration (N : Node_Id) is
+   procedure Traverse_Package_Declaration
+     (N : Node_Id;
+      D : Dominant_Info := No_Dominant)
+   is
       Spec : constant Node_Id := Specification (N);
       Dom  : Dominant_Info;
    begin
+      Dom := Traverse_Declarations_Or_Statements
+               (Visible_Declarations (Spec), D);
+
       --  The first private declaration is dominated by the last visible
       --  declaration.
 
-      Dom := Traverse_Declarations_Or_Statements (Visible_Declarations (Spec));
       Traverse_Declarations_Or_Statements (Private_Declarations (Spec), Dom);
    end Traverse_Package_Declaration;
 

@@ -518,7 +518,7 @@ procedure Gnat1drv is
       --  off. Note Atomic Synchronization is implemented as check.
 
       Suppress_Options.Suppress (Atomic_Synchronization) :=
-        not Atomic_Sync_Default;
+        not Atomic_Sync_Default_On_Target;
 
       --  Set switch indicating if we can use N_Expression_With_Actions
 
