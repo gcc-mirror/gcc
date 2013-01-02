@@ -8766,9 +8766,11 @@ range_fits_type_p (value_range_t *vr, unsigned precision, bool unsigned_p)
       || TREE_CODE (vr->max) != INTEGER_CST)
     return false;
 
-  /* For precision-preserving sign-changes the MSB of the double-int
-     has to be clear.  */
-  if (src_precision == precision
+  /* For sign changes, the MSB of the double_int has to be clear.
+     An unsigned value with its MSB set cannot be represented by
+     a signed double_int, while a negative value cannot be represented
+     by an unsigned double_int.  */
+  if (TYPE_UNSIGNED (src_type) != unsigned_p
       && (TREE_INT_CST_HIGH (vr->min) | TREE_INT_CST_HIGH (vr->max)) < 0)
     return false;
 

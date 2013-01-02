@@ -1,3 +1,8 @@
+2013-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree-vrp.c (range_fits_type_p): Require the MSB of the double_int
+	to be clear for sign changes.
+
 2013-01-01  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c: Fix formatting.
