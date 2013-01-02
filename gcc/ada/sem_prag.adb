@@ -12748,7 +12748,6 @@ package body Sem_Prag is
 
          when Pragma_Postcondition => Postcondition : declare
             In_Body : Boolean;
-            pragma Warnings (Off, In_Body);
 
          begin
             GNAT_Pragma;
@@ -12756,10 +12755,22 @@ package body Sem_Prag is
             Check_At_Most_N_Arguments (2);
             Check_Optional_Identifier (Arg1, Name_Check);
 
-            --  All we need to do here is call the common check procedure,
-            --  the remainder of the processing is found in Sem_Ch6/Sem_Ch7.
+            --  Verify the proper placement of the pragma. The remainder of the
+            --  processing is found in Sem_Ch6/Sem_Ch7.
 
             Check_Precondition_Postcondition (In_Body);
+
+            --  When the pragma is a source contruct and appears inside a body,
+            --  preanalyze the boolean_expression to detect illegal forward
+            --  references:
+
+            --    procedure P is
+            --       pragma Postcondition (X'Old ...);
+            --       X : ...
+
+            if Comes_From_Source (N) and then In_Body then
+               Preanalyze_Spec_Expression (Expression (Arg1), Any_Boolean);
+            end if;
          end Postcondition;
 
          ------------------

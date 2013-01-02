@@ -1402,11 +1402,11 @@ package VMS_Data is
    --   source.
 
    S_GCC_ChecksX : aliased constant S := "/NOCHECKS "                      &
-                                             "-gnatp,!-gnato,!-gnatE ";
+                                             "-gnatp,!-gnato,!-gnatE";
    --  NODOC (see /CHECKS)
 
    S_GCC_Chflov  : aliased constant S := "/FLOAT_OVERFLOW_CHECK "          &
-                                             "-gnateF ";
+                                             "-gnateF";
    --        /NOFLOAT_OVERFLOW_CHECK (D)
    --        /FLOAT_OVERFLOW_CHECK
    --
@@ -1414,7 +1414,7 @@ package VMS_Data is
    --   those using an unconstrained predefined type (i.e. no infinities).
 
    S_GCC_Compres : aliased constant S := "/COMPRESS_NAMES "                &
-                                             "-gnatC ";
+                                             "-gnatC";
    --        /NOCOMPRESS_NAMES (D)
    --        /COMPRESS_NAMES
    --

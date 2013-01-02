@@ -244,11 +244,6 @@ package body Back_End is
 
             elsif Switch_Chars (First .. Last) = "fdump-scos" then
                Opt.Generate_SCO := True;
-
-            --  Back end switch -fdebug-instances also enables instance table
-            --  SCO generation.
-
-            elsif Switch_Chars (First .. Last) = "fdebug-instances" then
                Opt.Generate_SCO_Instance_Table := True;
 
             end if;

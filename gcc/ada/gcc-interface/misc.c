@@ -228,7 +228,9 @@ int optimize_size;
 int flag_compare_debug;
 enum stack_check_type flag_stack_check = NO_STACK_CHECK;
 
-/* Post-switch processing.  */
+/* Settings adjustments after switches processing by the back-end.
+   Note that the front-end switches processing (Scan_Compiler_Arguments)
+   has not been done yet at this point!  */
 
 static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
@@ -805,6 +807,23 @@ gnat_eh_personality (void)
   if (!gnat_eh_personality_decl)
     gnat_eh_personality_decl = build_personality_function ("gnat");
   return gnat_eh_personality_decl;
+}
+
+/* Set flag_debug_instances.  */
+
+void
+set_flag_debug_instances (int val ATTRIBUTE_UNUSED)
+{
+#if 0
+  /* Temporary compatibility shim???
+     This should be enabled when back-end support for instance info in
+     DWARF is merged at the FSF.  */
+  flag_debug_instances = val;
+#else
+  /* Until then, forcibly turn off SCO instance table generation.  */
+  extern Boolean opt__generate_sco_instance_table;
+  opt__generate_sco_instance_table = False;
+#endif
 }
 
 /* Initialize language-specific bits of tree_contains_struct.  */
