@@ -279,16 +279,16 @@ package body Sem_Ch13 is
                      then
                         Error_Msg_N
                           ("multi-byte field specified with non-standard"
-                           & " Bit_Order?", CLC);
+                           & " Bit_Order??", CLC);
 
                         if Bytes_Big_Endian then
                            Error_Msg_N
                              ("bytes are not reversed "
-                              & "(component is big-endian)?", CLC);
+                              & "(component is big-endian)??", CLC);
                         else
                            Error_Msg_N
                              ("bytes are not reversed "
-                              & "(component is little-endian)?", CLC);
+                              & "(component is little-endian)??", CLC);
                         end if;
 
                         --  Do not allow non-contiguous field
@@ -314,14 +314,14 @@ package body Sem_Ch13 is
                        and then Warn_On_Reverse_Bit_Order
                      then
                         Error_Msg_N
-                          ("?Bit_Order clause does not affect " &
-                           "byte ordering", Pos);
+                          ("Bit_Order clause does not affect " &
+                           "byte ordering?V?", Pos);
                         Error_Msg_Uint_1 :=
                           Intval (Pos) + Intval (FB) /
                           System_Storage_Unit;
                         Error_Msg_N
-                          ("?position normalized to ^ before bit " &
-                           "order interpreted", Pos);
+                          ("position normalized to ^ before bit " &
+                           "order interpreted?V?", Pos);
                      end if;
 
                      --  Here is where we fix up the Component_Bit_Offset value
@@ -390,10 +390,8 @@ package body Sem_Ch13 is
 
                if Present (CC) then
                   declare
-                     Fbit : constant Uint :=
-                              Static_Integer (First_Bit (CC));
-                     Lbit : constant Uint :=
-                              Static_Integer (Last_Bit (CC));
+                     Fbit : constant Uint := Static_Integer (First_Bit (CC));
+                     Lbit : constant Uint := Static_Integer (Last_Bit (CC));
 
                   begin
                      --  Case of component with last bit >= max machine scalar
@@ -410,16 +408,16 @@ package body Sem_Ch13 is
                            if Warn_On_Reverse_Bit_Order then
                               Error_Msg_N
                                 ("multi-byte field specified with "
-                                 & "  non-standard Bit_Order?", CC);
+                                 & "  non-standard Bit_Order?V?", CC);
 
                               if Bytes_Big_Endian then
                                  Error_Msg_N
                                    ("\bytes are not reversed "
-                                    & "(component is big-endian)?", CC);
+                                    & "(component is big-endian)?V?", CC);
                               else
                                  Error_Msg_N
                                    ("\bytes are not reversed "
-                                    & "(component is little-endian)?", CC);
+                                    & "(component is little-endian)?V?", CC);
                               end if;
                            end if;
 
@@ -633,19 +631,19 @@ package body Sem_Ch13 is
                            Error_Msg_Uint_1 := MSS;
                            Error_Msg_N
                              ("info: reverse bit order in machine " &
-                              "scalar of length^?", First_Bit (CC));
+                              "scalar of length^?V?", First_Bit (CC));
                            Error_Msg_Uint_1 := NFB;
                            Error_Msg_Uint_2 := NLB;
 
                            if Bytes_Big_Endian then
                               Error_Msg_NE
-                                ("?\info: big-endian range for "
-                                 & "component & is ^ .. ^",
+                                ("\info: big-endian range for "
+                                 & "component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            else
                               Error_Msg_NE
-                                ("?\info: little-endian range "
-                                 & "for component & is ^ .. ^",
+                                ("\info: little-endian range "
+                                 & "for component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            end if;
                         end if;
@@ -2759,9 +2757,9 @@ package body Sem_Ch13 is
                  and then Comes_From_Source (Scope (U_Ent))
                then
                   Error_Msg_N
-                    ("?entry address declared for entry in task type", N);
+                    ("??entry address declared for entry in task type", N);
                   Error_Msg_N
-                    ("\?only one task can be declared of this type", N);
+                    ("\??only one task can be declared of this type", N);
                end if;
 
                --  Entry address clauses are obsolescent
@@ -2770,10 +2768,10 @@ package body Sem_Ch13 is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
-                    ("attaching interrupt to task entry is an " &
-                     "obsolescent feature (RM J.7.1)?", N);
+                    ("?j?attaching interrupt to task entry is an " &
+                     "obsolescent feature (RM J.7.1)", N);
                   Error_Msg_N
-                    ("\use interrupt procedure instead?", N);
+                    ("\?j?use interrupt procedure instead", N);
                end if;
 
             --  Case of an address clause for a controlled object which we
@@ -2783,9 +2781,9 @@ package body Sem_Ch13 is
               or else Has_Controlled_Component (Etype (U_Ent))
             then
                Error_Msg_NE
-                 ("?controlled object& must not be overlaid", Nam, U_Ent);
+                 ("??controlled object& must not be overlaid", Nam, U_Ent);
                Error_Msg_N
-                 ("\?Program_Error will be raised at run time", Nam);
+                 ("\??Program_Error will be raised at run time", Nam);
                Insert_Action (Declaration_Node (U_Ent),
                  Make_Raise_Program_Error (Loc,
                    Reason => PE_Overlaid_Controlled_Object));
@@ -2822,9 +2820,9 @@ package body Sem_Ch13 is
                                 or else Is_Controlled (Etype (O_Ent)))
                   then
                      Error_Msg_N
-                       ("?cannot overlay with controlled object", Expr);
+                       ("??cannot overlay with controlled object", Expr);
                      Error_Msg_N
-                       ("\?Program_Error will be raised at run time", Expr);
+                       ("\??Program_Error will be raised at run time", Expr);
                      Insert_Action (Declaration_Node (U_Ent),
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Overlaid_Controlled_Object));
@@ -2834,7 +2832,7 @@ package body Sem_Ch13 is
                     and then Ekind (U_Ent) = E_Constant
                     and then not Is_Constant_Object (O_Ent)
                   then
-                     Error_Msg_N ("constant overlays a variable?", Expr);
+                     Error_Msg_N ("??constant overlays a variable", Expr);
 
                   --  Imported variables can have an address clause, but then
                   --  the import is pretty meaningless except to suppress
@@ -3005,7 +3003,7 @@ package body Sem_Ch13 is
 
                if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
                   Error_Msg_N
-                    ("?alignment for & set to Maximum_Aligment", Nam);
+                    ("alignment for & set to Maximum_Aligment??", Nam);
                      Set_Alignment (U_Ent, Max_Align);
 
                --  All other cases
@@ -3133,7 +3131,7 @@ package body Sem_Ch13 is
 
                   if not GNAT_Mode then
                      Error_Msg_N
-                       ("?component size ignored in this configuration", N);
+                       ("component size ignored in this configuration??", N);
                   end if;
                end if;
 
@@ -3144,8 +3142,7 @@ package body Sem_Ch13 is
                  and then RM_Size (Ctyp) /= Csize
                then
                   Error_Msg_NE
-                    ("?component size overrides size clause for&",
-                     N, Ctyp);
+                    ("component size overrides size clause for&?S?", N, Ctyp);
                end if;
 
                Set_Has_Component_Size_Clause (Btype, True);
@@ -3301,11 +3298,12 @@ package body Sem_Ch13 is
 
                if not Is_Library_Level_Entity (U_Ent) then
                   Error_Msg_NE
-                    ("?non-unique external tag supplied for &", N, U_Ent);
+                    ("??non-unique external tag supplied for &", N, U_Ent);
                   Error_Msg_N
-                    ("?\same external tag applies to all subprogram calls", N);
+                       ("\??same external tag applies to all "
+                        & "subprogram calls", N);
                   Error_Msg_N
-                    ("?\corresponding internal tag cannot be obtained", N);
+                    ("\??corresponding internal tag cannot be obtained", N);
                end if;
             end if;
          end External_Tag;
@@ -3586,7 +3584,7 @@ package body Sem_Ch13 is
                   --  case this is useless.
 
                   Error_Msg_N
-                    ("?size clauses are ignored in this configuration", N);
+                    ("size clauses are ignored in this configuration??", N);
                end if;
 
                if Is_Type (U_Ent) then
@@ -3875,9 +3873,9 @@ package body Sem_Ch13 is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
-                    ("storage size clause for task is an " &
-                     "obsolescent feature (RM J.9)?", N);
-                  Error_Msg_N ("\use Storage_Size pragma instead?", N);
+                    ("?j?storage size clause for task is an " &
+                     "obsolescent feature (RM J.9)", N);
+                  Error_Msg_N ("\?j?use Storage_Size pragma instead", N);
                end if;
 
                FOnly := True;
@@ -4510,7 +4508,7 @@ package body Sem_Ch13 is
 
             if First_Entity (E) /= Last_Entity (E) then
                Error_Msg_N
-                 ("?'C'P'P type must import at least one primitive from C++",
+                 ("'C'P'P type must import at least one primitive from C++??",
                   E);
             end if;
          end if;
@@ -4537,15 +4535,15 @@ package body Sem_Ch13 is
                     or else Convention (Prim) /= Convention_CPP
                   then
                      Error_Msg_N
-                       ("?primitives of 'C'P'P types must be imported from C++"
-                        & " or abstract", Prim);
+                       ("primitives of 'C'P'P types must be imported from C++ "
+                        & "or abstract??", Prim);
 
                   elsif not Has_Constructors
                      and then not Error_Reported
                   then
                      Error_Msg_Name_1 := Chars (E);
                      Error_Msg_N
-                       ("?'C'P'P constructor required for type %", Prim);
+                       ("??'C'P'P constructor required for type %", Prim);
                      Error_Reported := True;
                   end if;
                end if;
@@ -4723,7 +4721,7 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("?j?mod clause is an obsolescent feature (RM J.8)", N);
                Error_Msg_N
-                 ("\?j?use alignment attribute definition clause instead?", N);
+                 ("\?j?use alignment attribute definition clause instead", N);
             end if;
 
             if Present (P) then
@@ -4910,7 +4908,7 @@ package body Sem_Ch13 is
                                  & "with representation of ancestor", CC);
                            elsif Warn_On_Redundant_Constructs then
                               Error_Msg_N
-                                ("?redundant component clause "
+                                ("?r?redundant component clause "
                                  & "for inherited component!", CC);
                            end if;
                         end;
@@ -4950,7 +4948,7 @@ package body Sem_Ch13 is
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
                         then
                            Error_Msg_NE
-                             ("?component size overrides size clause for&",
+                             ("?S?component size overrides size clause for&",
                               Component_Name (CC), Etype (Comp));
                         end if;
 
@@ -5016,7 +5014,7 @@ package body Sem_Ch13 is
             Next_Component_Or_Discriminant (Comp);
          end loop;
 
-         --  If no Complete_Representation pragma, warn if missing components
+      --  Give missing components warning if required
 
       elsif Warn_On_Unrepped_Components then
          declare
@@ -5060,7 +5058,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
-                       ("?no component clause given for & declared #",
+                       ("?C?no component clause given for & declared #",
                         N, Comp);
                   end if;
 
@@ -5089,9 +5087,7 @@ package body Sem_Ch13 is
 
       --  Check for duplicate definiations.
 
-      if Has_Invariants (Typ)
-        and then Present (Invariant_Procedure (Typ))
-      then
+      if Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)) then
          return Empty;
       end if;
 
@@ -5567,7 +5563,7 @@ package body Sem_Ch13 is
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
-               Error_Msg_N ("?info: & inherits predicate from & #", Typ);
+               Error_Msg_N ("info: & inherits predicate from & #??", Typ);
             end if;
          end if;
       end Add_Call;
@@ -6777,7 +6773,7 @@ package body Sem_Ch13 is
            ("visibility of aspect for& changes after freeze point",
             ASN, Ent);
          Error_Msg_NE
-           ("?info: & is frozen here, aspects evaluated at this point",
+           ("info: & is frozen here, aspects evaluated at this point??",
             Freeze_Node (Ent), Ent);
       end if;
    end Check_Aspect_At_End_Of_Declarations;
@@ -7954,7 +7950,7 @@ package body Sem_Ch13 is
 
                      if Error_Msg_Uint_1 > 0 then
                         Error_Msg_NE
-                          ("?^-bit gap before component&",
+                          ("?H?^-bit gap before component&",
                            Component_Name (Component_Clause (CEnt)), CEnt);
                      end if;
 
@@ -8909,7 +8905,7 @@ package body Sem_Ch13 is
 
          if Present (Freeze_Node (S)) then
             Error_Msg_NE
-              ("?no more representation items for }", Freeze_Node (S), S);
+              ("??no more representation items for }", Freeze_Node (S), S);
          end if;
 
          return True;
@@ -9291,7 +9287,7 @@ package body Sem_Ch13 is
 
          if Warn_On_Biased_Representation then
             Error_Msg_NE
-              ("?" & Msg & " forces biased representation for&", N, E);
+              ("?B?" & Msg & " forces biased representation for&", N, E);
          end if;
       end if;
    end Set_Biased;
@@ -9400,13 +9396,13 @@ package body Sem_Ch13 is
                   Error_Msg_NE
                     ("?& overlays smaller object", ACCR.N, ACCR.X);
                   Error_Msg_N
-                    ("\?program execution may be erroneous", ACCR.N);
+                    ("\??program execution may be erroneous", ACCR.N);
                   Error_Msg_Uint_1 := X_Size;
                   Error_Msg_NE
-                    ("\?size of & is ^", ACCR.N, ACCR.X);
+                    ("\??size of & is ^", ACCR.N, ACCR.X);
                   Error_Msg_Uint_1 := Y_Size;
                   Error_Msg_NE
-                    ("\?size of & is ^", ACCR.N, ACCR.Y);
+                    ("\??size of & is ^", ACCR.N, ACCR.Y);
 
                --  Check for inadequate alignment, both of the base object
                --  and of the offset, if any.
@@ -9427,24 +9423,20 @@ package body Sem_Ch13 is
                                              /= Known_Compatible))
                then
                   Error_Msg_NE
-                    ("?specified address for& may be inconsistent "
-                       & "with alignment",
-                     ACCR.N, ACCR.X);
+                    ("??specified address for& may be inconsistent "
+                       & "with alignment", ACCR.N, ACCR.X);
                   Error_Msg_N
-                    ("\?program execution may be erroneous (RM 13.3(27))",
+                    ("\??program execution may be erroneous (RM 13.3(27))",
                      ACCR.N);
                   Error_Msg_Uint_1 := X_Alignment;
                   Error_Msg_NE
-                    ("\?alignment of & is ^",
-                     ACCR.N, ACCR.X);
+                    ("\??alignment of & is ^", ACCR.N, ACCR.X);
                   Error_Msg_Uint_1 := Y_Alignment;
                   Error_Msg_NE
-                    ("\?alignment of & is ^",
-                     ACCR.N, ACCR.Y);
+                    ("\??alignment of & is ^", ACCR.N, ACCR.Y);
                   if Y_Alignment >= X_Alignment then
                      Error_Msg_N
-                      ("\?but offset is not multiple of alignment",
-                       ACCR.N);
+                      ("\??but offset is not multiple of alignment", ACCR.N);
                   end if;
                end if;
             end if;
@@ -9805,7 +9797,8 @@ package body Sem_Ch13 is
            or else OpenVMS_On_Target
          then
             Error_Msg_N
-              ("?conversion between pointers with different conventions!", N);
+              ("?Z?conversion between pointers with different conventions!",
+               N);
          end if;
       end if;
 
@@ -9831,7 +9824,7 @@ package body Sem_Ch13 is
 
             if Source = Calendar_Time or else Target = Calendar_Time then
                Error_Msg_N
-                 ("?representation of 'Time values may change between " &
+                 ("?Z?representation of 'Time values may change between " &
                   "'G'N'A'T versions", N);
             end if;
          end;
@@ -9853,7 +9846,8 @@ package body Sem_Ch13 is
          --  known statically, then we need the annotation.
 
          if Known_Static_RM_Size (Source)
-           and then Known_Static_RM_Size (Target)
+              and then
+            Known_Static_RM_Size (Target)
          then
             null;
          else
@@ -9931,7 +9925,7 @@ package body Sem_Ch13 is
 
                if Source_Siz /= Target_Siz then
                   Error_Msg
-                    ("?types for unchecked conversion have different sizes!",
+                    ("?Z?types for unchecked conversion have different sizes!",
                      Eloc);
 
                   if All_Errors_Mode then
@@ -9939,7 +9933,7 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := Source_Siz;
                      Error_Msg_Name_2 := Chars (Target);
                      Error_Msg_Uint_2 := Target_Siz;
-                     Error_Msg ("\size of % is ^, size of % is ^?", Eloc);
+                     Error_Msg ("\size of % is ^, size of % is ^?Z?", Eloc);
 
                      Error_Msg_Uint_1 := UI_Abs (Source_Siz - Target_Siz);
 
@@ -9949,44 +9943,41 @@ package body Sem_Ch13 is
                      then
                         if Source_Siz > Target_Siz then
                            Error_Msg
-                             ("\?^ high order bits of source will be ignored!",
-                              Eloc);
+                             ("\?Z?^ high order bits of source will "
+                              & "be ignored!", Eloc);
 
                         elsif Is_Unsigned_Type (Source) then
                            Error_Msg
-                             ("\?source will be extended with ^ high order " &
-                              "zero bits?!", Eloc);
+                             ("\?Z?source will be extended with ^ high order "
+                              & "zero bits?!", Eloc);
 
                         else
                            Error_Msg
-                             ("\?source will be extended with ^ high order " &
-                              "sign bits!",
-                              Eloc);
+                             ("\?Z?source will be extended with ^ high order "
+                              & "sign bits!", Eloc);
                         end if;
 
                      elsif Source_Siz < Target_Siz then
                         if Is_Discrete_Type (Target) then
                            if Bytes_Big_Endian then
                               Error_Msg
-                                ("\?target value will include ^ undefined " &
-                                 "low order bits!",
-                                 Eloc);
+                                ("\?Z?target value will include ^ undefined "
+                                 & "low order bits!", Eloc);
                            else
                               Error_Msg
-                                ("\?target value will include ^ undefined " &
-                                 "high order bits!",
-                                 Eloc);
+                                ("\?Z?target value will include ^ undefined "
+                                 & "high order bits!", Eloc);
                            end if;
 
                         else
                            Error_Msg
-                             ("\?^ trailing bits of target value will be " &
-                              "undefined!", Eloc);
+                             ("\?Z?^ trailing bits of target value will be "
+                              & "undefined!", Eloc);
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
                         Error_Msg
-                          ("\?^ trailing bits of source will be ignored!",
+                          ("\?Z?^ trailing bits of source will be ignored!",
                            Eloc);
                      end if;
                   end if;
@@ -10039,11 +10030,11 @@ package body Sem_Ch13 is
                            Error_Msg_Node_1 := D_Target;
                            Error_Msg_Node_2 := D_Source;
                            Error_Msg
-                             ("?alignment of & (^) is stricter than " &
-                              "alignment of & (^)!", Eloc);
+                             ("?Z?alignment of & (^) is stricter than "
+                              & "alignment of & (^)!", Eloc);
                            Error_Msg
-                             ("\?resulting access value may have invalid " &
-                              "alignment!", Eloc);
+                             ("\?Z?resulting access value may have invalid "
+                              & "alignment!", Eloc);
                         end if;
                      end;
                   end if;

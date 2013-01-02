@@ -556,7 +556,7 @@ package body Sem_Ch10 is
                                        Used_In_Spec)
                      then
                         Error_Msg_N -- CODEFIX
-                          ("?redundant with clause in body", Clause);
+                          ("redundant with clause in body??", Clause);
                      end if;
 
                      Used_In_Body := False;
@@ -585,7 +585,7 @@ package body Sem_Ch10 is
 
                      if Withed then
                         Error_Msg_N -- CODEFIX
-                          ("?redundant with clause", Clause);
+                          ("redundant with clause??", Clause);
                      end if;
                   end;
                end if;
@@ -1793,7 +1793,7 @@ package body Sem_Ch10 is
                Error_Msg_File_1 :=
                  Get_File_Name (Subunit_Name, Subunit => True);
                Error_Msg_N
-                 ("subunit$$ in file{ not found?!!", N);
+                 ("subunit$$ in file{ not found??!!", N);
                Subunits_Missing := True;
             end if;
 
@@ -2513,30 +2513,30 @@ package body Sem_Ch10 is
 
             begin
                if U_Kind = Implementation_Unit then
-                  Error_Msg_F ("& is an internal 'G'N'A'T unit?", Name (N));
+                  Error_Msg_F ("& is an internal 'G'N'A'T unit?i?", Name (N));
 
                   --  Add alternative name if available, otherwise issue a
                   --  general warning message.
 
                   if Error_Msg_Strlen /= 0 then
-                     Error_Msg_F ("\use ""~"" instead", Name (N));
+                     Error_Msg_F ("\use ""~"" instead?i?", Name (N));
                   else
                      Error_Msg_F
                        ("\use of this unit is non-portable " &
-                        "and version-dependent?", Name (N));
+                        "and version-dependent?i?", Name (N));
                   end if;
 
                elsif U_Kind = Ada_2005_Unit
                  and then Ada_Version < Ada_2005
                  and then Warn_On_Ada_2005_Compatibility
                then
-                  Error_Msg_N ("& is an Ada 2005 unit?", Name (N));
+                  Error_Msg_N ("& is an Ada 2005 unit?i?", Name (N));
 
                elsif U_Kind = Ada_2012_Unit
                  and then Ada_Version < Ada_2012
                  and then Warn_On_Ada_2012_Compatibility
                then
-                  Error_Msg_N ("& is an Ada 2012 unit?", Name (N));
+                  Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
                end if;
             end;
          end if;
@@ -3342,7 +3342,7 @@ package body Sem_Ch10 is
                   procedure License_Error is
                   begin
                      Error_Msg_N
-                       ("?license of withed unit & may be inconsistent",
+                       ("license of withed unit & may be inconsistent??",
                         Name (Item));
                   end License_Error;
 
@@ -4129,7 +4129,7 @@ package body Sem_Ch10 is
                         then
                            Error_Msg_NE
                               ("child unit& hides compilation unit " &
-                               "with the same name?",
+                               "with the same name??",
                                  Name (Item), Id);
                            exit;
                         end if;

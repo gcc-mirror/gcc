@@ -1,5 +1,15 @@
 2013-01-02  Robert Dewar  <dewar@adacore.com>
 
+	* errout.adb (Set_Msg_Insertion_Warning): Correct typo causing
+	tests to fail if insertion sequence is at end of message string.
+	* opt.ads: Minor comment fixes and additions.
+	* sem_ch7.adb, sem_ch8.adb, sem_ch9.adb, sem_ch10.adb, sem_ch11.adb,
+	sem_ch12.adb, sem_ch13.adb: Add tags to warning messages.
+	* sem_ch6.ads, sem_ch6.adb (Cannot_Inline): Deal with warning message
+	tags. Add tags to warning messages.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
 	* err_vars.ads (Warning_Doc_Switch): New flag.
 	* errout.adb (Error_Msg_Internal): Implement new warning flag
 	doc tag stuff (Set_Msg_Insertion_Warning): New procedure.

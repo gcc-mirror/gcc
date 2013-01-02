@@ -1017,13 +1017,13 @@ package body Sem_Ch8 is
                  and then Comes_From_Source (Nam)
                then
                   Error_Msg_N
-                    ("?renaming function result object is suspicious", Nam);
+                    ("renaming function result object is suspicious?R?", Nam);
                   Error_Msg_NE
-                    ("\?function & will be called only once", Nam,
+                    ("\function & will be called only once?R?", Nam,
                      Entity (Name (Nam)));
                   Error_Msg_N -- CODEFIX
-                    ("\?suggest using an initialized constant object instead",
-                     Nam);
+                    ("\suggest using an initialized constant "
+                     & "object instead?R?", Nam);
                end if;
 
          end case;
@@ -2289,10 +2289,10 @@ package body Sem_Ch8 is
                        and then Hidden /= Old_S
                      then
                         Error_Msg_Sloc := Sloc (Hidden);
-                        Error_Msg_N ("?default subprogram is resolved " &
+                        Error_Msg_N ("default subprogram is resolved " &
                                      "in the generic declaration " &
-                                     "(RM 12.6(17))", N);
-                        Error_Msg_NE ("\?and will not use & #", N, Hidden);
+                                     "(RM 12.6(17))??", N);
+                        Error_Msg_NE ("\and will not use & #??", N, Hidden);
                      end if;
                   end;
                end if;
@@ -2942,7 +2942,7 @@ package body Sem_Ch8 is
         and then Chars (Old_S) /= Chars (New_S)
       then
          Error_Msg_NE
-           ("?& is being renamed as a different operator", N, Old_S);
+           ("& is being renamed as a different operator??", N, Old_S);
       end if;
 
       --  Check for renaming of obsolescent subprogram
@@ -2965,7 +2965,7 @@ package body Sem_Ch8 is
         and then Chars (Current_Scope) /= Chars (Old_S)
       then
          Error_Msg_N
-          ("?redundant renaming, entity is directly visible", Name (N));
+          ("redundant renaming, entity is directly visible?r?", Name (N));
       end if;
 
       --  Implementation-defined aspect specifications can appear in a renaming
@@ -3219,7 +3219,7 @@ package body Sem_Ch8 is
            and then Pack = Current_Scope
          then
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible within itself?", Pack_Name, Pack);
+              ("& is already use-visible within itself?r?", Pack_Name, Pack);
          end if;
 
          return False;
@@ -6015,7 +6015,8 @@ package body Sem_Ch8 is
          then
             --  Selected component of record. Type checking will validate
             --  name of selector.
-            --  ??? could we rewrite an implicit dereference into an explicit
+
+            --  ??? Could we rewrite an implicit dereference into an explicit
             --  one here?
 
             Analyze_Selected_Component (N);
@@ -6275,18 +6276,18 @@ package body Sem_Ch8 is
                         Set_Entity (N, Any_Type);
                         return;
 
-                  --  ??? This test is temporarily disabled (always False)
-                  --  because it causes an unwanted warning on GNAT sources
-                  --  (built with -gnatg, which includes Warn_On_Obsolescent_
-                  --  Feature). Once this issue is cleared in the sources, it
-                  --  can be enabled.
+                     --  ??? This test is temporarily disabled (always
+                     --  False) because it causes an unwanted warning on
+                     --  GNAT sources (built with -gnatg, which includes
+                     --  Warn_On_Obsolescent_ Feature). Once this issue
+                     --  is cleared in the sources, it can be enabled.
 
                      elsif Warn_On_Obsolescent_Feature
                        and then False
                      then
                         Error_Msg_N
                           ("applying 'Class to an untagged incomplete type"
-                           & " is an obsolescent feature  (RM J.11)", N);
+                           & " is an obsolescent feature (RM J.11)?r?", N);
                      end if;
                   end if;
 
@@ -6379,7 +6380,7 @@ package body Sem_Ch8 is
                  and then Base_Type (Typ) = Typ
                then
                   Error_Msg_NE -- CODEFIX
-                    ("?redundant attribute, & is its own base type", N, Typ);
+                    ("redundant attribute, & is its own base type?r?", N, Typ);
                end if;
 
                T := Base_Type (Typ);
@@ -7248,7 +7249,7 @@ package body Sem_Ch8 is
       if Present (Redundant) then
          Error_Msg_Sloc := Sloc (Prev_Use);
          Error_Msg_NE -- CODEFIX
-           ("& is already use-visible through previous use clause #?",
+           ("& is already use-visible through previous use clause #??",
             Redundant, Pack_Name);
       end if;
    end Note_Redundant_Use;
@@ -8362,14 +8363,14 @@ package body Sem_Ch8 is
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Error_Msg_NE -- CODEFIX
                           ("& is already use-visible through previous "
-                           & "use_type_clause #?", Clause1, T);
+                           & "use_type_clause #??", Clause1, T);
                         return;
 
                      elsif Nkind (Unit1) = N_Subunit then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Error_Msg_NE -- CODEFIX
                           ("& is already use-visible through previous "
-                           & "use_type_clause #?", Clause1, T);
+                           & "use_type_clause #??", Clause1, T);
                         return;
 
                      elsif Nkind_In (Unit2, N_Package_Body, N_Subprogram_Body)
@@ -8379,7 +8380,7 @@ package body Sem_Ch8 is
                         Error_Msg_Sloc := Sloc (Clause1);
                         Error_Msg_NE -- CODEFIX
                           ("& is already use-visible through previous "
-                           & "use_type_clause #?", Current_Use_Clause (T), T);
+                           & "use_type_clause #??", Current_Use_Clause (T), T);
                         return;
                      end if;
 
@@ -8431,7 +8432,7 @@ package body Sem_Ch8 is
 
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use_type_clause #?", Err_No, Id);
+                        & "use_type_clause #??", Err_No, Id);
 
                   --  Case where current use type clause and the use type
                   --  clause for the type are not both at the compilation unit
@@ -8440,7 +8441,7 @@ package body Sem_Ch8 is
                   else
                      Error_Msg_NE -- CODEFIX
                        ("& is already use-visible through previous "
-                        & "use type clause?", Id, T);
+                        & "use type clause??", Id, T);
                   end if;
                end Use_Clause_Known;
 
@@ -8450,7 +8451,7 @@ package body Sem_Ch8 is
             else
                Error_Msg_NE -- CODEFIX
                  ("& is already use-visible through previous "
-                  & "use type clause?", Id, T);
+                  & "use type clause??", Id, T);
             end if;
 
          --  The package where T is declared is already used
@@ -8458,7 +8459,7 @@ package body Sem_Ch8 is
          elsif In_Use (Scope (T)) then
             Error_Msg_Sloc := Sloc (Current_Use_Clause (Scope (T)));
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible through package use clause #?",
+              ("& is already use-visible through package use clause #??",
                Id, T);
 
          --  The current scope is the package where T is declared
@@ -8466,7 +8467,7 @@ package body Sem_Ch8 is
          else
             Error_Msg_Node_2 := Scope (T);
             Error_Msg_NE -- CODEFIX
-              ("& is already use-visible inside package &?", Id, T);
+              ("& is already use-visible inside package &??", Id, T);
          end if;
       end if;
    end Use_One_Type;
