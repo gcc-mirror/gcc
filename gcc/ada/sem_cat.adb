@@ -923,6 +923,7 @@ package body Sem_Cat is
       then
          --  If the type is private, it must have the Ada 2005 pragma
          --  Has_Preelaborable_Initialization.
+
          --  The check is omitted within predefined units. This is probably
          --  obsolete code to fix the Ada 95 weakness in this area ???
 
@@ -1728,8 +1729,7 @@ package body Sem_Cat is
       Direct_Designated_Type := Designated_Type (T);
       Desig_Type := Etype (Direct_Designated_Type);
 
-      --  Why is the check below not in
-      --  Validate_Remote_Access_To_Class_Wide_Type???
+      --  Why is this check not in Validate_Remote_Access_To_Class_Wide_Type???
 
       if not Is_Valid_Remote_Object_Type (Desig_Type) then
          Error_Msg_N
@@ -2047,6 +2047,7 @@ package body Sem_Cat is
       function Is_Primary (N : Node_Id) return Boolean;
       --  Determine whether node is syntactically a primary in an expression
       --  This function should probably be somewhere else ???
+      --
       --  Also it does not do what it says, e.g if N is a binary operator
       --  whose parent is a binary operator, Is_Primary returns True ???
 
@@ -2170,7 +2171,7 @@ package body Sem_Cat is
 
                if GNAT_Mode then
                   Error_Msg_N
-                    ("?non-static constant in preelaborated unit", N);
+                    ("??non-static constant in preelaborated unit", N);
                else
                   Flag_Non_Static_Expr
                     ("non-static constant in preelaborated unit", N);

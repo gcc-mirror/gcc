@@ -468,13 +468,13 @@ package body Sem_Aggr is
       then
          if Is_Out_Of_Range (Exp, Base_Type (Check_Typ)) then
             Apply_Compile_Time_Constraint_Error
-              (Exp, "value not in range of}?", CE_Range_Check_Failed,
+              (Exp, "value not in range of}??", CE_Range_Check_Failed,
                Ent => Base_Type (Check_Typ),
                Typ => Base_Type (Check_Typ));
 
          elsif Is_Out_Of_Range (Exp, Check_Typ) then
             Apply_Compile_Time_Constraint_Error
-              (Exp, "value not in range of}?", CE_Range_Check_Failed,
+              (Exp, "value not in range of}??", CE_Range_Check_Failed,
                Ent => Check_Typ,
                Typ => Check_Typ);
 
@@ -583,9 +583,9 @@ package body Sem_Aggr is
 
                elsif Expr_Value (This_Low) /= Expr_Value (Aggr_Low (Dim)) then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("sub-aggregate low bound mismatch?", N);
+                  Error_Msg_N ("sub-aggregate low bound mismatch??", N);
                   Error_Msg_N
-                     ("\Constraint_Error will be raised at run time?", N);
+                     ("\Constraint_Error will be raised at run time??", N);
                end if;
             end if;
 
@@ -597,9 +597,9 @@ package body Sem_Aggr is
                  Expr_Value (This_High) /= Expr_Value (Aggr_High (Dim))
                then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("sub-aggregate high bound mismatch?", N);
+                  Error_Msg_N ("sub-aggregate high bound mismatch??", N);
                   Error_Msg_N
-                     ("\Constraint_Error will be raised at run time?", N);
+                     ("\Constraint_Error will be raised at run time??", N);
                end if;
             end if;
          end if;
@@ -1440,8 +1440,8 @@ package body Sem_Aggr is
 
          if OK_BH and then OK_AH and then Val_BH < Val_AH then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("upper bound out of range?", AH);
-            Error_Msg_N ("\Constraint_Error will be raised at run time?", AH);
+            Error_Msg_N ("upper bound out of range??", AH);
+            Error_Msg_N ("\Constraint_Error will be raised at run time??", AH);
 
             --  You need to set AH to BH or else in the case of enumerations
             --  indexes we will not be able to resolve the aggregate bounds.
@@ -1483,14 +1483,14 @@ package body Sem_Aggr is
 
          if OK_L and then Val_L > Val_AL then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("lower bound of aggregate out of range?", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time?", N);
+            Error_Msg_N ("lower bound of aggregate out of range??", N);
+            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
          end if;
 
          if OK_H and then Val_H < Val_AH then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("upper bound of aggregate out of range?", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time?", N);
+            Error_Msg_N ("upper bound of aggregate out of range??", N);
+            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
          end if;
       end Check_Bounds;
 
@@ -1529,8 +1529,8 @@ package body Sem_Aggr is
 
          if Range_Len < Len then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("too many elements?", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time?", N);
+            Error_Msg_N ("too many elements??", N);
+            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
          end if;
       end Check_Length;
 
@@ -1980,7 +1980,7 @@ package body Sem_Aggr is
                   elsif Nkind (Choice) = N_Subtype_Indication then
                      Resolve_Discrete_Subtype_Indication (Choice, Index_Base);
 
-                     --  Does the subtype indication evaluation raise CE ?
+                     --  Does the subtype indication evaluation raise CE?
 
                      Get_Index_Bounds (Subtype_Mark (Choice), S_Low, S_High);
                      Get_Index_Bounds (Choice, Low, High);
@@ -2310,7 +2310,8 @@ package body Sem_Aggr is
                            (Enumeration_Pos (AHi) - Enumeration_Pos (ALo))
                         then
                            Error_Msg_N
-                             ("missing index value(s) in array aggregate?", N);
+                             ("missing index value(s) in array aggregate??",
+                              N);
 
                            --  Output missing value(s) at start
 
@@ -2319,11 +2320,11 @@ package body Sem_Aggr is
 
                               if Chars (ALo) = Chars (Ent) then
                                  Error_Msg_Name_1 := Chars (ALo);
-                                 Error_Msg_N ("\  %?", N);
+                                 Error_Msg_N ("\  %??", N);
                               else
                                  Error_Msg_Name_1 := Chars (ALo);
                                  Error_Msg_Name_2 := Chars (Ent);
-                                 Error_Msg_N ("\  % .. %?", N);
+                                 Error_Msg_N ("\  % .. %??", N);
                               end if;
                            end if;
 
@@ -2334,11 +2335,11 @@ package body Sem_Aggr is
 
                               if Chars (AHi) = Chars (Ent) then
                                  Error_Msg_Name_1 := Chars (Ent);
-                                 Error_Msg_N ("\  %?", N);
+                                 Error_Msg_N ("\  %??", N);
                               else
                                  Error_Msg_Name_1 := Chars (Ent);
                                  Error_Msg_Name_2 := Chars (AHi);
-                                 Error_Msg_N ("\  % .. %?", N);
+                                 Error_Msg_N ("\  % .. %??", N);
                               end if;
                            end if;
 
@@ -2356,7 +2357,7 @@ package body Sem_Aggr is
                             not Is_Constrained (First_Subtype (Etype (N)))
                         then
                            Error_Msg_N
-                             ("bounds of aggregate do not match target?", N);
+                             ("bounds of aggregate do not match target??", N);
                         end if;
                      end;
                   end if;
@@ -2810,7 +2811,7 @@ package body Sem_Aggr is
               and then Enclosing_CPP_Parent (Typ) /= A_Type
             then
                Error_Msg_NE
-                 ("?must use 'C'P'P constructor for type &", A,
+                 ("??must use 'C'P'P constructor for type &", A,
                   Enclosing_CPP_Parent (Typ));
 
                --  The following call is not needed if the previous warning
@@ -4576,9 +4577,9 @@ package body Sem_Aggr is
          Insert_Action
            (Compile_Time_Constraint_Error
               (Expr,
-               "(Ada 2005) null not allowed in null-excluding component?"),
-            Make_Raise_Constraint_Error (Sloc (Expr),
-              Reason => CE_Access_Check_Failed));
+               "(Ada 2005) null not allowed in null-excluding component??"),
+            Make_Raise_Constraint_Error
+              (Sloc (Expr), Reason => CE_Access_Check_Failed));
 
          --  Set proper type for bogus component (why is this needed???)
 

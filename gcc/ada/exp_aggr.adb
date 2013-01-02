@@ -431,13 +431,14 @@ package body Exp_Aggr is
                   if Present (Component_Associations (N)) then
                      Indx :=
                        First (Choices (First (Component_Associations (N))));
+
                      if Is_Entity_Name (Indx)
                        and then not Is_Type (Entity (Indx))
                      then
                         Error_Msg_N
-                          ("single component aggregate in non-static context?",
-                            Indx);
-                        Error_Msg_N ("\maybe subtype name was meant?", Indx);
+                          ("single component aggregate in "
+                           &  "non-static context??", Indx);
+                        Error_Msg_N ("\maybe subtype name was meant??", Indx);
                      end if;
                   end if;
 
@@ -3057,7 +3058,7 @@ package body Exp_Aggr is
 
             elsif Expr_Value (Val1) /= Expr_Value (Val2) then
                Apply_Compile_Time_Constraint_Error (Aggr,
-                 Msg    => "incorrect value for discriminant&?",
+                 Msg    => "incorrect value for discriminant&??",
                  Reason => CE_Discriminant_Check_Failed,
                  Ent    => D);
                return False;
@@ -3767,7 +3768,7 @@ package body Exp_Aggr is
 
                   else
                      Error_Msg_N
-                       ("non-static object  requires elaboration code?", N);
+                       ("non-static object  requires elaboration code??", N);
                      exit;
                   end if;
 
@@ -3775,7 +3776,7 @@ package body Exp_Aggr is
                end loop;
 
                if Present (Component_Associations (N)) then
-                  Error_Msg_N ("object requires elaboration code?", N);
+                  Error_Msg_N ("object requires elaboration code??", N);
                end if;
             end if;
          end;

@@ -444,8 +444,8 @@ package body Sem_Util is
    begin
       if Has_Predicates (Typ) then
          if Is_Generic_Actual_Type (Typ) then
-            Error_Msg_FE (Msg & '?', N, Typ);
-            Error_Msg_F ("\Program_Error will be raised at run time?", N);
+            Error_Msg_FE (Msg & "??", N, Typ);
+            Error_Msg_F ("\Program_Error will be raised at run time??", N);
             Insert_Action (N,
               Make_Raise_Program_Error (Sloc (N),
                 Reason => PE_Bad_Predicated_Generic_Type));
@@ -1576,7 +1576,7 @@ package body Sem_Util is
                   then
                      Error_Msg_N
                        ("result may differ if evaluated "
-                        & "after other actual in expression?", Act1);
+                        & "after other actual in expression??", Act1);
                   end if;
                end if;
             end loop;
@@ -1610,7 +1610,7 @@ package body Sem_Util is
       while Present (S) and then S /= Standard_Standard loop
          if Is_Protected_Type (S) then
             Error_Msg_N
-              ("potentially blocking operation in protected operation?", N);
+              ("potentially blocking operation in protected operation??", N);
             return;
          end if;
 
@@ -1724,7 +1724,7 @@ package body Sem_Util is
                       Object_Access_Level (Context)
          then
             Error_Msg_N
-              ("?possible unprotected access to protected data", Expr);
+              ("??possible unprotected access to protected data", Expr);
          end if;
       end if;
    end Check_Unprotected_Access;
@@ -2249,8 +2249,8 @@ package body Sem_Util is
       Loc  : Source_Ptr := No_Location;
       Warn : Boolean    := False) return Node_Id
    is
-      Msgc : String (1 .. Msg'Length + 2);
-      --  Copy of message, with room for possible ? and ! at end
+      Msgc : String (1 .. Msg'Length + 3);
+      --  Copy of message, with room for possible ?? and ! at end
 
       Msgl : Natural;
       Wmsg : Boolean;
@@ -2291,9 +2291,13 @@ package body Sem_Util is
          then
             Msgl := Msgl + 1;
             Msgc (Msgl) := '?';
+            Msgl := Msgl + 1;
+            Msgc (Msgl) := '?';
             Wmsg := True;
 
          elsif In_Instance_Not_Visible then
+            Msgl := Msgl + 1;
+            Msgc (Msgl) := '?';
             Msgl := Msgl + 1;
             Msgc (Msgl) := '?';
             Wmsg := True;
@@ -2413,19 +2417,19 @@ package body Sem_Util is
                        and then not Comes_From_Source (Conc_Typ)
                      then
                         Error_Msg_NEL
-                          ("\?& will be raised at run time",
+                          ("\??& will be raised at run time",
                            N, Standard_Constraint_Error, Eloc);
 
                      else
                         Error_Msg_NEL
-                          ("\?& will be raised for objects of this type",
+                          ("\??& will be raised for objects of this type",
                            N, Standard_Constraint_Error, Eloc);
                      end if;
                   end;
 
                else
                   Error_Msg_NEL
-                    ("\?& will be raised at run time",
+                    ("\??& will be raised at run time",
                      N, Standard_Constraint_Error, Eloc);
                end if;
 
@@ -3863,7 +3867,7 @@ package body Sem_Util is
             Is_Potentially_Use_Visible (C))
       then
          Error_Msg_Sloc := Sloc (C);
-         Error_Msg_N ("declaration hides &#?", Def_Id);
+         Error_Msg_N ("declaration hides &#?h?", Def_Id);
       end if;
    end Enter_Name;
 
@@ -11258,7 +11262,8 @@ package body Sem_Util is
                   --  sure this is a modification.
 
                   if Has_Pragma_Unmodified (Ent) and then Sure then
-                     Error_Msg_NE ("?pragma Unmodified given for &!", N, Ent);
+                     Error_Msg_NE
+                       ("??pragma Unmodified given for &!", N, Ent);
                   end if;
 
                   Set_Never_Set_In_Source (Ent, False);
@@ -11348,8 +11353,8 @@ package body Sem_Util is
                         then
                            Error_Msg_Sloc := Sloc (A);
                            Error_Msg_NE
-                             ("constant& may be modified via address clause#?",
-                              N, Entity (Prefix (Exp)));
+                             ("constant& may be modified via address "
+                              & "clause#??", N, Entity (Prefix (Exp)));
                         end if;
                      end;
                   end if;
@@ -11600,16 +11605,15 @@ package body Sem_Util is
             end Return_Master_Scope_Depth_Of_Call;
          end if;
 
-      --  For convenience we handle qualified expressions, even though
-      --  they aren't technically object names.
+      --  For convenience we handle qualified expressions, even though they
+      --  aren't technically object names.
 
       elsif Nkind (Obj) = N_Qualified_Expression then
          return Object_Access_Level (Expression (Obj));
 
-      --  Otherwise return the scope level of Standard.
-      --  (If there are cases that fall through
-      --  to this point they will be treated as
-      --  having global accessibility for now. ???)
+      --  Otherwise return the scope level of Standard. (If there are cases
+      --  that fall through to this point they will be treated as having
+      --  global accessibility for now. ???)
 
       else
          return Scope_Depth (Standard_Standard);

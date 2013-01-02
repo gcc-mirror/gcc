@@ -904,10 +904,10 @@ package body Sem_Disp is
                  and then not Is_Generic_Type (Typ)
                  and then not In_Instance
                then
-                  Error_Msg_N ("?declaration of& is too late!", Subp);
+                  Error_Msg_N ("??declaration of& is too late!", Subp);
                   Error_Msg_NE -- CODEFIX??
-                    ("\spec should appear immediately after declaration of &!",
-                     Subp, Typ);
+                    ("\??spec should appear immediately after declaration "
+                     & "of & !", Subp, Typ);
                   exit;
                end if;
 
@@ -933,10 +933,10 @@ package body Sem_Disp is
                  and then not Is_Generic_Type (Typ)
                  and then not In_Instance
                then
-                  Error_Msg_N ("?declaration of& is too late!", Subp);
+                  Error_Msg_N ("??declaration of& is too late!", Subp);
                   Error_Msg_NE
-                    ("\spec should appear immediately after declaration of &!",
-                     Subp, Typ);
+                    ("\??spec should appear immediately after declaration "
+                     & "of & !", Subp, Typ);
                end if;
             end if;
          end;
@@ -1153,7 +1153,7 @@ package body Sem_Disp is
            and then In_Same_List (Parent (Tagged_Type), Parent (Parent (Subp)))
          then
             Error_Msg_N
-              ("?not dispatching (must be defined in a package spec)", Subp);
+              ("??not dispatching (must be defined in a package spec)", Subp);
             return;
 
          --  When the type is frozen, it is legitimate to define a new
@@ -1169,7 +1169,7 @@ package body Sem_Disp is
       elsif Is_Frozen (Tagged_Type) and then not Has_Dispatching_Parent then
          Error_Msg_N ("this primitive operation is declared too late", Subp);
          Error_Msg_NE
-           ("?no primitive operations for& after this line",
+           ("??no primitive operations for& after this line",
             Freeze_Node (Tagged_Type),
             Tagged_Type);
          return;
@@ -1220,7 +1220,7 @@ package body Sem_Disp is
 
             else
                Error_Msg_NE
-                 ("operation does not override inherited&?", Subp, Subp);
+                 ("operation does not override inherited&??", Subp, Subp);
             end if;
 
          else
