@@ -6846,13 +6846,13 @@ that make up scalar components are ordered within S. Other properties are
 as for standard representation attribute @code{Bit_Order}, as defined by
 Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
-If @code{@var{S}'Scalar_Storage_Order} is specified explicitly, it shall be
-equal to @code{@var{S}'Bit_Order}. Note: This means that if a
-@code{Scalar_Storage_Order} attribute definition clause is not confirming,
-then the type's @code{Bit_Order} shall be specified explicitly and set to
-the same value.
+For a record type @var{S}, if @code{@var{S}'Scalar_Storage_Order} is
+specified explicitly, it shall be equal to @code{@var{S}'Bit_Order}. Note:
+This means that if a @code{Scalar_Storage_Order} attribute definition
+clause is not confirming, then the type's @code{Bit_Order} shall be
+specified explicitly and set to the same value.
 
-If a component of S has itself a record or array type, then it shall also
+If a component of @var{S} has itself a record or array type, then it shall also
 have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
 if the component does not start on a byte boundary, then the scalar storage
 order specified for S and for the nested component type shall be identical.
@@ -6864,10 +6864,11 @@ A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
 with a value equal to @code{System.Default_Bit_Order}) has no effect.
 
 If the opposite storage order is specified, then whenever the value of
-a scalar component of S is read, the storage elements of the enclosing
-machine scalar are first reversed (before retrieving the component value,
-possibly applying some shift and mask operatings on the enclosing machine
-scalar), and the opposite operation is done for writes.
+a scalar component of an object of type @var{S} is read, the storage
+elements of the enclosing machine scalar are first reversed (before
+retrieving the component value, possibly applying some shift and mask
+operatings on the enclosing machine scalar), and the opposite operation
+is done for writes.
 
 In that case, the restrictions set forth in 13.5.1(10.3/2) for scalar components
 are relaxed. Instead, the following rules apply:

@@ -225,7 +225,7 @@ begin
    --  Line for -gnateO=?
 
    Write_Switch_Char ("eO=?");
-   Write_Line ("Specify an object path file");
+   Write_Line ("Specify an object path file (internal switch)");
 
    --  Line for -gnatep switch
 

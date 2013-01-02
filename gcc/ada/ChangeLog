@@ -1,5 +1,29 @@
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
+	* par_sco.adb (Traverse_Declarations_Or_Statement): Function
+	form, returning value of Current_Dominant upon exit, for chaining
+	purposes.
+	(Traverse_Declarations_Or_Statement.Traverse_One, case
+	N_Block_Statement): First statement is dominated by last declaration.
+	(Traverse_Subprogram_Or_Task_Body): Ditto.
+	(Traverse_Package_Declaration): First private
+	declaration is dominated by last visible declaration.
+	(Traverse_Sync_Definition): Ditto.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Restrict the requirement for Scalar_Storage_Order
+	matching Bit_Order to record types only, since array types do not
+	have a Bit_Order.
+
+2013-01-02  Vincent Celier  <celier@adacore.com>
+
+	* gnat_ugn.texi: Remove documentation of -gnateO, which is an
+	internal switch.
+	* usage.adb: Indicate that -gnateO is an internal switch.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
 	* par_sco.adb: Add SCO generation for task types and single
 	task declarations.
 	* get_scos.adb: When adding an instance table entry for a
