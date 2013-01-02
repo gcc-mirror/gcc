@@ -10491,8 +10491,7 @@ package body Sem_Ch12 is
 
          --  This is a binding interpretation that applies to previous versions
          --  of the language, but for now we retain the milder check in order
-         --  to preserve ACATS tests.
-         --  These will be protested eventually ???
+         --  to preserve ACATS tests. These will be protested eventually ???
 
          if Ada_Version < Ada_2012 then
             Check_Mode_Conformant
@@ -12155,8 +12154,8 @@ package body Sem_Ch12 is
       E1 := First_Entity (Form);
       E2 := First_Entity (Act);
       while Present (E1) and then E1 /= First_Private_Entity (Form) loop
-         --  Could this test be a single condition???
-         --  Seems like it could, and isn't FPE (Form) a constant anyway???
+         --  Could this test be a single condition??? Seems like it could, and
+         --  isn't FPE (Form) a constant anyway???
 
          if not Is_Internal (E1)
            and then Present (Parent (E1))
@@ -12422,7 +12421,7 @@ package body Sem_Ch12 is
                   --  provide additional warning which might explain the error.
 
                   Set_Is_Immediately_Visible (Cur, Vis);
-                  Error_Msg_NE ("& hides outer unit with the same name?",
+                  Error_Msg_NE ("& hides outer unit with the same name??",
                     N, Defining_Unit_Name (N));
                end if;
 

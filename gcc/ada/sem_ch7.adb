@@ -261,7 +261,7 @@ package body Sem_Ch7 is
          then
             if Ada_Version = Ada_83 then
                Error_Msg_N
-                 ("optional package body (not allowed in Ada 95)?", N);
+                 ("optional package body (not allowed in Ada 95)??", N);
             else
                Error_Msg_N ("spec of this package does not allow a body", N);
             end if;

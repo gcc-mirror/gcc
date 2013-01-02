@@ -1506,8 +1506,8 @@ package Opt is
    Warn_On_Biased_Representation : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for size clauses, component clauses
-   --  and component_size clauses that force biased representation. Set False
-   --  by -gnatw.B.
+   --  and component_size clauses that force biased representation. Modified
+   --  by use of -gnatw.b/.B.
 
    Warn_On_Constant : Boolean := False;
    --  GNAT
@@ -1567,12 +1567,14 @@ package Opt is
    Warn_On_Object_Renames_Function : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings when a function result is renamed as
-   --  an object. The default is that this warning is disabled.
+   --  an object. The default is that this warning is disabled. Modified by
+   --  use of -gnatw.r/.R.
 
    Warn_On_Obsolescent_Feature : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings on use of any feature in Annex or if a
-   --  subprogram is called for which a pragma Obsolescent applies.
+   --  subprogram is called for which a pragma Obsolescent applies. Modified
+   --  by use of -gnatwj/J.
 
    Warn_On_Overlap : Boolean := False;
    --  GNAT
@@ -1600,7 +1602,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warning (informational) messages for component
    --  clauses that are affected by non-standard bit-order. The default is
-   --  that this warning is enabled.
+   --  that this warning is enabled. Modified by -gnatw.v/.V.
 
    Warn_On_Suspicious_Contract : Boolean := False;
    --  GNAT
@@ -1616,8 +1618,8 @@ package Opt is
    Warn_On_Unchecked_Conversion : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for unchecked conversions that may have
-   --  non-portable semantics (e.g. because sizes of types differ). The default
-   --  is that this warning is enabled.
+   --  non-portable semantics (e.g. because sizes of types differ). Modified
+   --  by use of -gnatw.z/.Z.
 
    Warn_On_Unordered_Enumeration_Type : Boolean := False;
    --  GNAT
@@ -1635,7 +1637,7 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for the case of components of record
    --  which have a record representation clause but this component does not
-   --  have a component clause. The default is that this warning is disabled.
+   --  have a component clause. Modified by use of -gnatw.c/.C.
 
    Warn_On_Warnings_Off : Boolean := False;
    --  GNAT

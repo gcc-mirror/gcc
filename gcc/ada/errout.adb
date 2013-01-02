@@ -2677,14 +2677,14 @@ package body Errout is
       begin
          Warning_Msg_Char := ' ';
 
-         if P + 1 <= Text'Last and then Text (P) = '?' then
+         if P <= Text'Last and then Text (P) = '?' then
             if Warning_Doc_Switch then
                Warning_Msg_Char := '?';
             end if;
 
             P := P + 1;
 
-         elsif P + 2 <= Text'Last
+         elsif P + 1 <= Text'Last
            and then (Text (P) in 'a' .. 'z'
                       or else
                      Text (P) in 'A' .. 'Z')
