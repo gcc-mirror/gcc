@@ -1,5 +1,16 @@
 2013-01-02  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb (Apply_Scalar_Range_Check): Implement Check_Float_Overflow.
+	* opt.ads, opt.adb: Handle flags Check_Float_Overflow[_Config].
+	* par-prag.adb: Add dummy entry for pragma Check_Float_Overflow.
+	* sem_prag.adb: Implement pragma Check_Float_Overflow.
+	* snames.ads-tmpl: Add entries for pragma Check_Float_Overflow.
+	* switch-c.adb: Recognize -gnateF switch.
+	* tree_io.ads: Update ASIS version number.
+	* gnat_rm.texi: Add documentation of pragma Check_Float_Overflow.
+
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb, exp_ch4.adb, exp_ch6.adb, exp_ch7.adb, exp_ch9.adb,
 	exp_disp.adb, exp_dist.adb, exp_intr.adb, exp_prag.adb, exp_util.adb,
 	freeze.adb, gnat1drv.adb, inline.adb, layout.adb, lib-xref.adb,

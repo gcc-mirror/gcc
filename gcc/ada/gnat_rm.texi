@@ -111,6 +111,7 @@ Implementation Defined Pragmas
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
+* Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
 * Pragma Comment::
@@ -850,6 +851,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
+* Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
 * Pragma Comment::
@@ -1401,6 +1403,58 @@ names, so these three names would normally not be used directly in a pragma
 Checks introduced by this pragma are normally deactivated by default. They can
 be activated either by the command line option @option{-gnata}, which turns on
 all checks, or individually controlled using pragma @code{Check_Policy}.
+
+@node Pragma Check_Float_Overflow
+@unnumberedsec Pragma Check_Float_Overflow
+@cindex Floating-point overflow
+@findex Check_Float_Overflow
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Check_Float_Overflow;
+@end smallexample
+
+@noindent
+In Ada, the predefined floating-point types (@code{Short_Float},
+@code{Float}, @code{Long_Float}, @code{Long_Long_Float}) are
+defined as being unconstrained. This means that even though they
+have well defined base ranges, there is no requirement that an
+overflow exception be raised when the result of an operation is
+outside this base range. This definition accomodates the notion
+of infinities in IEEE floating-point, and corresponds to the
+efficient execution mode on most machines. GNAT will not raise
+overflow exceptions on these machines, instead it will generate
+infinities and NaN's as defined in the IEEE standard.
+
+Although the generation of infinities is efficient, it is not
+always desirable, and it is often the case that it would be
+preferable to check for overflows, even if this resulted in
+substantially less efficient code. This can be accomplished
+by defining your own float subtypes, and indeed such types
+can have the same base range as in:
+
+@smallexample @c ada
+subtype My_Float is Float range Float'Range;
+@end smallexample
+
+@noindent
+In this example, @code{My_Float} has the same range as
+@code{Float} but it is constrained, so operations on
+@code{My_Float} values will be checked for overflow
+against this range.
+
+However, it is often convenient to avoid the need to
+define your own floating-point types, and instead use
+the standard predefined types. The @code{Check_Float_Overflow}
+configuration pragma achieves that. If a unit is compiled
+subject to this configuration pragma, then all operations
+on predefined floating-point types will be treated as
+though those types were constrained and overflow checks
+will be generated, resulting in a @code{Constraint_Error}
+exception if the result is out of range.
+
+This mode can also be set by use of the compiler
+switch @option{-gnateF}.
 
 @node Pragma Check_Name
 @unnumberedsec Pragma Check_Name
