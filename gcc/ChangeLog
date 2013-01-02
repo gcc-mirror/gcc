@@ -1,3 +1,9 @@
+2013-01-02  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add entries for "cortex-a53" and
+	"cortex-a57".
+	* config/aarch64/aarch64-tune.md: Re-generate.
+
 2013-01-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_load): When vectorizing an
