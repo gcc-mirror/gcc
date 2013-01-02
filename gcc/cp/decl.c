@@ -10829,7 +10829,7 @@ check_default_argument (tree decl, tree arg)
      parameter type.  */
   ++cp_unevaluated_operand;
   perform_implicit_conversion_flags (decl_type, arg, tf_warning_or_error,
-				     LOOKUP_NORMAL);
+				     LOOKUP_IMPLICIT);
   --cp_unevaluated_operand;
 
   if (warn_zero_as_null_pointer_constant
