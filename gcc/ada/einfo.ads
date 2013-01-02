@@ -528,7 +528,7 @@ package Einfo is
 --
 --       Setting this False in all cases corresponds to the traditional back
 --       end strategy, where all access-to-subprogram types are represented the
---       same way, independent of the Convention. See also
+--       same way, independent of the Convention. For further details, see also
 --       Always_Compatible_Rep in Targparm.
 --
 --       Efficiency note: On targets that use dynamically generated
@@ -536,11 +536,11 @@ package Einfo is
 --       subprograms, whereas True generally favors efficiency of nested
 --       ones. On other targets, this flag has little or no effect on
 --       efficiency. The front end should take this into account. In
---       particular, pragma Favor_Top_Level gives a hint that the flag should
---       be False.
+--       particular, pragma Favor_Top_Level gives a hint that the flag
+--       should be False.
 --
 --       Note: We considered using Convention-C for this purpose, but we need
---       this separate flag, because Convention-C implies that for
+--       this separate flag, because Convention-C implies that in the case of
 --       P'[Unrestricted_]Access, P also have convention C. Sometimes we want
 --       to have Can_Use_Internal_Rep False for an access type, but allow P to
 --       have convention Ada.
@@ -1547,6 +1547,19 @@ package Einfo is
 --       Implicit_Dereference. Set also on the discriminant named in the aspect
 --       clause, to simplify type resolution.
 
+--    Has_Independent_Components (Flag34)
+--       Defined in objects and types. Set if the aspect Independent_Components
+--       applies (as set by coresponding pragma or aspect specification).
+
+--    Has_Inheritable_Invariants (Flag248)
+--       Defined in all type entities. Set True in private types from which one
+--       or more Invariant'Class aspects will be inherited if a another type is
+--       derived from the type (i.e. those types which have an Invariant'Class
+--       aspect, or which inherit one or more Invariant'Class aspects). Also
+--       set in the corresponding full types. Note that it might be the full
+--       type which has inheritable invariants, and in this case the flag will
+--       also be set in the private type.
+
 --    Has_Initial_Value (Flag219)
 --       Defined in entities for variables and out parameters. Set if there
 --       is an explicit initial value expression in the declaration of the
@@ -1572,15 +1585,6 @@ package Einfo is
 --       and then the flag will also be set in the private type. Also set in
 --       the invariant procedure entity, to distinguish it among entries in the
 --       Subprograms_For_Type.
-
---    Has_Inheritable_Invariants (Flag248)
---       Defined in all type entities. Set True in private types from which one
---       or more Invariant'Class aspects will be inherited if a another type is
---       derived from the type (i.e. those types which have an Invariant'Class
---       aspect, or which inherit one or more Invariant'Class aspects). Also
---       set in the corresponding full types. Note that it might be the full
---       type which has inheritable invariants, and in this case the flag will
---       also be set in the private type.
 
 --    Has_Machine_Radix_Clause (Flag83)
 --       Defined in decimal types and subtypes, set if a Machine_Radix
@@ -4902,6 +4906,7 @@ package Einfo is
    --    Has_Controlled_Component            (Flag43)   (base type only)
    --    Has_Default_Aspect                  (Flag39)   (base type only)
    --    Has_Discriminants                   (Flag5)
+   --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Inheritable_Invariants          (Flag248)
    --    Has_Invariants                      (Flag232)
    --    Has_Non_Standard_Rep                (Flag75)   (base type only)
@@ -5102,6 +5107,7 @@ package Einfo is
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Completion                      (Flag26)   (constants only)
+   --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)
@@ -5769,6 +5775,7 @@ package Einfo is
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Initial_Value                   (Flag219)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Up_Level_Access                 (Flag215)
@@ -6154,6 +6161,7 @@ package Einfo is
    function Has_Gigi_Rep_Item                   (Id : E) return B;
    function Has_Homonym                         (Id : E) return B;
    function Has_Implicit_Dereference            (Id : E) return B;
+   function Has_Independent_Components          (Id : E) return B;
    function Has_Inheritable_Invariants          (Id : E) return B;
    function Has_Initial_Value                   (Id : E) return B;
    function Has_Interrupt_Handler               (Id : E) return B;
@@ -6745,6 +6753,7 @@ package Einfo is
    procedure Set_Has_Gigi_Rep_Item               (Id : E; V : B := True);
    procedure Set_Has_Homonym                     (Id : E; V : B := True);
    procedure Set_Has_Implicit_Dereference        (Id : E; V : B := True);
+   procedure Set_Has_Independent_Components      (Id : E; V : B := True);
    procedure Set_Has_Inheritable_Invariants      (Id : E; V : B := True);
    procedure Set_Has_Initial_Value               (Id : E; V : B := True);
    procedure Set_Has_Invariants                  (Id : E; V : B := True);
@@ -7424,6 +7433,7 @@ package Einfo is
    pragma Inline (Has_Gigi_Rep_Item);
    pragma Inline (Has_Homonym);
    pragma Inline (Has_Implicit_Dereference);
+   pragma Inline (Has_Independent_Components);
    pragma Inline (Has_Inheritable_Invariants);
    pragma Inline (Has_Initial_Value);
    pragma Inline (Has_Invariants);
@@ -7870,6 +7880,7 @@ package Einfo is
    pragma Inline (Set_Has_Gigi_Rep_Item);
    pragma Inline (Set_Has_Homonym);
    pragma Inline (Set_Has_Implicit_Dereference);
+   pragma Inline (Set_Has_Independent_Components);
    pragma Inline (Set_Has_Inheritable_Invariants);
    pragma Inline (Set_Has_Initial_Value);
    pragma Inline (Set_Has_Invariants);

@@ -2963,7 +2963,10 @@ __gnat_locate_exec_on_path (char *exec_name)
 /* __gnat_get_module_name returns the module name (executable or shared
    library) in which the code at addr is. This is used to properly
    report the symbolic tracebacks.  If the module cannot be located
-   it returns the empty string. The returned value must not be freed.  */
+   it returns the empty string. The returned value must not be freed.
+
+   If this routine is fully implemented the value for
+   __gnat_is_module_name_supported should be set to 1.  */
 
 char *__gnat_get_module_name (void *addr ATTRIBUTE_UNUSED)
 {
@@ -2998,6 +3001,12 @@ char *__gnat_get_module_name (void *addr ATTRIBUTE_UNUSED)
   return __gnat_locate_exec_on_path (gnat_argv[0]);
 #endif
 }
+
+#ifdef _WIN32
+int __gnat_is_module_name_supported = 1;
+#else
+int __gnat_is_module_name_supported = 0;
+#endif
 
 #ifdef VMS
 

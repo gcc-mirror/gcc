@@ -1,3 +1,26 @@
+2013-01-02  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Independent_Components): New flag.
+	* freeze.adb (Size_Known): We do not know the size of a packed
+	record if it has atomic components, by reference type components,
+	or independent components.
+	* sem_prag.adb (Analyze_Pragma, case Independent_Components): Set new
+	flag Has_Independent_Components.
+
+2013-01-02  Yannick Moy  <moy@adacore.com>
+
+	* opt.ads (Warn_On_Suspicious_Contract): Set to True by default.
+	* usage.adb (Usage): Update usage message.
+
+2013-01-02  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_is_module_name_supported): New constant.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Array_Type): Reject an attribute reference on an
+	array whose component type does not have a completion.
+
 2013-01-02  Geert Bosch  <bosch@adacore.com>
 
 	* a-nllcef.ads, a-nlcefu.ads, a-nscefu.ads: Make Pure.

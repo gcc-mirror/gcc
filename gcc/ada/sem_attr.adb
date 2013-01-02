@@ -1015,6 +1015,16 @@ package body Sem_Attr is
                  ("prefix for % attribute must be constrained array", P);
             end if;
 
+            --  The attribute reference freezes the type, and thus the
+            --  component type, even if the attribute may not depend on the
+            --  component. Diagnose arrays with incomplete components now.
+            --  If the prefix is an access to array, this does not freeze
+            --  the designated type.
+
+            if Nkind (P) /= N_Explicit_Dereference then
+               Check_Fully_Declared (Component_Type (P_Type), P);
+            end if;
+
             D := Number_Dimensions (P_Type);
 
          else
