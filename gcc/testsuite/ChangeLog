@@ -1,5 +1,9 @@
 2013-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/torture/tls/tls-reload-1.c: New test.
+
+2013-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/torture/fp-int-convert-2.c: New test.
 
 2013-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
