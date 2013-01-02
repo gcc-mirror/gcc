@@ -902,11 +902,11 @@ package Einfo is
 --    DTC_Entity (Node16)
 --       Defined in function and procedure entities. Set to Empty unless
 --       the subprogram is dispatching in which case it references the
---       Dispatch Table pointer Component. That is to say the component _tag
---       for regular Ada tagged types, for CPP_Class types and their
---       descendants this field points to the component entity in the record
---       that is the Vtable pointer for the Vtable containing the entry that
---       references the subprogram.
+--       Dispatch Table pointer Component. For regular Ada tagged this, this
+--       is the _Tag component. For CPP_Class types and their descendants,
+--       this points to the component entity in the record that holds the
+--       Vtable pointer for the Vtable containing the entry referencing the
+--       subprogram.
 
 --    DT_Entry_Count (Uint15)
 --       Defined in E_Component entities. Only used for component marked
