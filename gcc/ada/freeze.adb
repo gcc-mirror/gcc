@@ -1040,11 +1040,18 @@ package body Freeze is
       if Present (Comp) then
          Err_Node  := Comp;
          Comp_Type := Etype (Comp);
-         Comp_Def  := Component_Definition (Parent (Comp));
 
-         Comp_Byte_Aligned :=
-           Present (Component_Clause (Comp))
-             and then Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+         if Is_Tag (Comp) then
+            Comp_Def          := Empty;
+            Comp_Byte_Aligned := True;
+
+         else
+            Comp_Def          := Component_Definition (Parent (Comp));
+            Comp_Byte_Aligned :=
+              Present (Component_Clause (Comp))
+                and then
+              Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+         end if;
 
       --  Array case
 
@@ -1080,7 +1087,7 @@ package body Freeze is
                & "storage order as enclosing composite", Err_Node);
          end if;
 
-      elsif Aliased_Present (Comp_Def) then
+      elsif Present (Comp_Def) and then Aliased_Present (Comp_Def) then
          Error_Msg_N
            ("aliased component not permitted for type with "
             & "explicit Scalar_Storage_Order", Err_Node);

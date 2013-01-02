@@ -1877,31 +1877,6 @@ package body Sem_Aggr is
          return Failure;
       end if;
 
-      if Others_Present
-        and then Nkind (Parent (N)) /= N_Component_Association
-        and then No (Expressions (N))
-        and then
-          Nkind (First (Choices (First (Component_Associations (N)))))
-            = N_Others_Choice
-        and then Is_Elementary_Type (Component_Typ)
-        and then False
-      then
-         declare
-            Assoc : constant Node_Id := First (Component_Associations (N));
-         begin
-            Rewrite (Assoc,
-              Make_Component_Association (Loc,
-                 Choices =>
-                   New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix => New_Occurrence_Of (Index_Typ, Loc),
-                       Attribute_Name => Name_Range)),
-                 Expression => Relocate_Node (Expression (Assoc))));
-            return Resolve_Array_Aggregate
-              (N, Index, Index_Constr, Component_Typ, Others_Allowed);
-         end;
-      end if;
-
       --  Protect against cascaded errors
 
       if Etype (Index_Typ) = Any_Type then
