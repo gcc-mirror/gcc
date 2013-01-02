@@ -1,5 +1,12 @@
 2013-01-02  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For a Pre/Post
+	aspect that applies to a library subprogram, prepend corresponding
+	pragma to the Pragmas_After list, in order for split AND THEN
+	sections to be processed in the expected order.
+
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_prag.adb (Expand_Pragma_Check): The statements generated
 	for the pragma must have the sloc of the pragma, not the
 	sloc of the condition, otherwise this creates anomalies in the
