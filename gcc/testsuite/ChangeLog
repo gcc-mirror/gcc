@@ -1,3 +1,8 @@
+2013-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/newunit_3.f90: Add dg-do run.
+	* gfortran.dg/inquire_15.f90: Add dg-do run.
+
 2013-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55831
