@@ -148,6 +148,7 @@ struct simple_object_functions
 extern const struct simple_object_functions simple_object_coff_functions;
 extern const struct simple_object_functions simple_object_elf_functions;
 extern const struct simple_object_functions simple_object_mach_o_functions;
+extern const struct simple_object_functions simple_object_xcoff_functions;
 
 /* Read SIZE bytes from DESCRIPTOR at file offset OFFSET into BUFFER.
    Return non-zero on success.  On failure return 0 and set *ERRMSG
