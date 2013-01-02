@@ -5049,9 +5049,44 @@ package body Sem_Ch3 is
       Decl :=
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => Anon,
-          Type_Definition     => Relocate_Node (Spec));
+          Type_Definition     => Copy_Separate_Tree (Spec));
 
       Mark_Rewrite_Insertion (Decl);
+
+      --  In ASIS mode, analyze the profile on the original node, because
+      --  the separate copy does not provide enough links to recover the
+      --  original tree. Analysis is limited to type annotations, within
+      --  a temporary scope that serves as an anonnymous subprogram to
+      --  collect otherwise useless temporaries and itypes.
+
+      if ASIS_Mode then
+         declare
+            Typ : constant Entity_Id :=  Make_Temporary (Loc, 'S');
+
+         begin
+            if Nkind (Spec) = N_Access_Function_Definition then
+               Set_Ekind (Typ, E_Function);
+            else
+               Set_Ekind (Typ, E_Procedure);
+            end if;
+
+            Set_Parent (Typ, N);
+            Set_Scope  (Typ, Current_Scope);
+            Push_Scope (Typ);
+
+            Process_Formals (Parameter_Specifications (Spec), Spec);
+
+            if Nkind (Spec) = N_Access_Function_Definition then
+               if Nkind (Result_Definition (Spec)) = N_Access_Definition then
+                  Find_Type (Subtype_Mark (Result_Definition (Spec)));
+               else
+                  Find_Type (Result_Definition (Spec));
+               end if;
+            end if;
+
+            End_Scope;
+         end;
+      end if;
 
       --  Insert the new declaration in the nearest enclosing scope. If the
       --  node is a body and N is its return type, the declaration belongs in

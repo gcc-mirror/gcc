@@ -1,3 +1,14 @@
+2013-01-02  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Generate X SCOs for default expressions in
+	subprogram body stubs.	Do not generate any SCO for package,
+	task, or protected body stubs.
+
+2013-01-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Further improvement to ASIS mode for anonymous
+	access to protected subprograms.
+
 2013-01-02  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, vms_data.ads: Minor reformatting.
