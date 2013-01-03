@@ -1,6 +1,6 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012,
+   2013 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -5545,6 +5545,7 @@ reverse_op (rtx val, const_rtx expr, rtx insn)
   cselib_val *v;
   struct elt_loc_list *l;
   enum rtx_code code;
+  int count;
 
   if (GET_CODE (expr) != SET)
     return;
@@ -5586,9 +5587,12 @@ reverse_op (rtx val, const_rtx expr, rtx insn)
   /* Adding a reverse op isn't useful if V already has an always valid
      location.  Ignore ENTRY_VALUE, while it is always constant, we should
      prefer non-ENTRY_VALUE locations whenever possible.  */
-  for (l = v->locs; l; l = l->next)
+  for (l = v->locs, count = 0; l; l = l->next, count++)
     if (CONSTANT_P (l->loc)
 	&& (GET_CODE (l->loc) != CONST || !references_value_p (l->loc, 0)))
+      return;
+    /* Avoid creating too large locs lists.  */
+    else if (count == PARAM_VALUE (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE))
       return;
 
   switch (GET_CODE (src))

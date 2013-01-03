@@ -1,3 +1,12 @@
+2013-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54402
+	* params.def (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE): New param.
+	* var-tracking.c (reverse_op): Don't add reverse ops to
+	VALUEs that have already
+	PARAM_VALUE (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE) or longer
+	locs list.
+
 2013-01-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi: Note years as release manager for Mark Mitchell.
