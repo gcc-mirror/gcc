@@ -42,7 +42,7 @@ main (void)
   int i;
 
   setup (array);
-  B(CHECK, tls);
+  C(CHECK, tls);
   if (!y)
     abort ();
   return 0;
