@@ -11,8 +11,7 @@
 
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
-	* tree-data-ref.c (dump_conflict_function): Use less vertical
-	spacing.
+	* tree-data-ref.c (dump_conflict_function): Use less vertical spacing.
 	(dump_subscript): Adjust.
 	(finalize_ddr_dependent): Do not dump redundant info.
 	(analyze_siv_subscript): Adjust.
@@ -31,8 +30,7 @@
 	2013-01-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_load): When vectorizing an
-	invariant load do not generate a vector load from the scalar
-	location.
+	invariant load do not generate a vector load from the scalar location.
 
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
@@ -79,8 +77,7 @@
 	* params.def (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE): New param.
 	* var-tracking.c (reverse_op): Don't add reverse ops to
 	VALUEs that have already
-	PARAM_VALUE (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE) or longer
-	locs list.
+	PARAM_VALUE (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE) or longer locs list.
 
 2013-01-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -107,19 +104,6 @@
 	(decide_unroll_stupid): Ditto.
 	* cfgloop.c (get_loop_location): New function.
 	* cfgloop.h (get_loop_location): Declare.
-
-	testsuite/
-	* gcc.dg/tree-ssa/loop-1.c: Update expected dump message.
-	* gcc.dg/tree-ssa/loop-23.c: Ditto.
-	* gcc.dg/tree-ssa/cunroll-1.c: Ditto.
-	* gcc.dg/tree-ssa/cunroll-2.c: Ditto.
-	* gcc.dg/tree-ssa/cunroll-3.c: Ditto.
-	* gcc.dg/tree-ssa/cunroll-4.c: Ditto.
-	* gcc.dg/tree-ssa/cunroll-5.c: Ditto.
-	* gcc.dg/unroll_1.c: Ditto.
-	* gcc.dg/unroll_2.c: Ditto.
-	* gcc.dg/unroll_3.c: Ditto.
-	* gcc.dg/unroll_4.c: Ditto.
 
 2013-01-02  Sriraman Tallam  <tmsriram@google.com>
 
@@ -152,8 +136,7 @@
 2013-01-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_load): When vectorizing an
-	invariant load do not generate a vector load from the scalar
-	location.
+	invariant load do not generate a vector load from the scalar location.
 
 2013-01-02  Richard Biener  <rguenther@suse.de>
 

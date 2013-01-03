@@ -22,6 +22,20 @@
 	PR tree-optimization/55832
 	* gcc.c-torture/compile/pr55832.c: New test.
 
+2013-01-02  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/tree-ssa/loop-1.c: Update expected dump message.
+	* gcc.dg/tree-ssa/loop-23.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-1.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-2.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-3.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-4.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-5.c: Ditto.
+	* gcc.dg/unroll_1.c: Ditto.
+	* gcc.dg/unroll_2.c: Ditto.
+	* gcc.dg/unroll_3.c: Ditto.
+	* gcc.dg/unroll_4.c: Ditto.
+
 2013-01-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/pr55430.c: Define MAP_FAILED if not defined.
