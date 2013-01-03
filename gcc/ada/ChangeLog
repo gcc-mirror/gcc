@@ -1,3 +1,19 @@
+2013-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb, einfo.ads, einfo.adb: Minor code reorganization.
+
+2013-01-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Exclude
+	internal entities associated with interfaces and add minimum
+	decoration to the defining entity of the generated wrapper to
+	allow overriding interface primitives.
+	* sem_disp.ads (Override_Dispatching_Operation): Addition of a
+	new formal (Is_Wrapper).
+	* sem_disp.adb (Override_Dispatching_Operation): When overriding
+	interface primitives the new formal helps identifying that the
+	new operation is not fully decorated.
+
 2013-01-03  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch7.adb, sem_ch10.adb, einfo.adb, einfo.ads, sem_ch12.adb,

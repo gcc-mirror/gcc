@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,10 +121,12 @@ package Sem_Disp is
    procedure Override_Dispatching_Operation
      (Tagged_Type : Entity_Id;
       Prev_Op     : Entity_Id;
-      New_Op      : Entity_Id);
+      New_Op      : Entity_Id;
+      Is_Wrapper  : Boolean := False);
    --  Replace an implicit dispatching operation with an explicit one.
    --  Prev_Op is an inherited primitive operation which is overridden
-   --  by the explicit declaration of New_Op.
+   --  by the explicit declaration of New_Op. Is_Wrapper is True when
+   --  New_Op is an internally generated wrapper of a controlling function.
 
    procedure Propagate_Tag (Control : Node_Id; Actual : Node_Id);
    --  If a function call is tag-indeterminate,  its controlling argument is

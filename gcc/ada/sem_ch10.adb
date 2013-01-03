@@ -5147,9 +5147,8 @@ package body Sem_Ch10 is
 
       elsif not Is_Immediately_Visible (Uname) then
          Set_Is_Visible_Lib_Unit (Uname);
-         if not Private_Present (With_Clause)
-           or else Private_With_OK
-         then
+
+         if not Private_Present (With_Clause) or else Private_With_OK then
             Set_Is_Immediately_Visible (Uname);
          end if;
 
@@ -5177,7 +5176,7 @@ package body Sem_Ch10 is
         and then Ada_Version >= Ada_2005
       then
          declare
-            Decl1 : constant Node_Id  := Unit_Declaration_Node (P);
+            Decl1 : constant Node_Id := Unit_Declaration_Node (P);
             Decl2 : Node_Id;
             P2    : Entity_Id;
             U2    : Entity_Id;
@@ -5190,9 +5189,7 @@ package body Sem_Ch10 is
                P2 := Scope (U2);
                Decl2  := Unit_Declaration_Node (P2);
 
-               if Is_Child_Unit (U2)
-                 and then Is_Visible_Lib_Unit (U2)
-               then
+               if Is_Child_Unit (U2) and then Is_Visible_Lib_Unit (U2) then
                   if Is_Generic_Instance (P)
                     and then Nkind (Decl1) = N_Package_Declaration
                     and then Generic_Parent (Specification (Decl1)) = P2

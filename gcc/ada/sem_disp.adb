@@ -2213,7 +2213,8 @@ package body Sem_Disp is
    procedure Override_Dispatching_Operation
      (Tagged_Type : Entity_Id;
       Prev_Op     : Entity_Id;
-      New_Op      : Entity_Id)
+      New_Op      : Entity_Id;
+      Is_Wrapper  : Boolean := False)
    is
       Elmt : Elmt_Id;
       Prim : Node_Id;
@@ -2278,7 +2279,8 @@ package body Sem_Disp is
          --  operations that it implements (for operations inherited from the
          --  parent itself, this check is made when building the derived type).
 
-         --  Note: This code is only executed in case of late overriding
+         --  Note: This code is executed with internally generated wrappers of
+         --  functions with controlling result and late overridings.
 
          Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
          while Present (Elmt) loop
@@ -2293,18 +2295,25 @@ package body Sem_Disp is
             elsif Is_Subprogram (Prim)
               and then Present (Interface_Alias (Prim))
               and then Alias (Prim) = Prev_Op
-              and then Present (Etype (New_Op))
             then
                Set_Alias (Prim, New_Op);
-               Check_Subtype_Conformant (New_Op, Prim);
-               Set_Is_Abstract_Subprogram (Prim,
-                 Is_Abstract_Subprogram (New_Op));
 
-               --  Ensure that this entity will be expanded to fill the
-               --  corresponding entry in its dispatch table.
+               --  No further decoration needed yet for internally generated
+               --  wrappers of controlling functions since (at this stage)
+               --  they are not yet decorated.
 
-               if not Is_Abstract_Subprogram (Prim) then
-                  Set_Has_Delayed_Freeze (Prim);
+               if not Is_Wrapper then
+                  Check_Subtype_Conformant (New_Op, Prim);
+
+                  Set_Is_Abstract_Subprogram (Prim,
+                    Is_Abstract_Subprogram (New_Op));
+
+                  --  Ensure that this entity will be expanded to fill the
+                  --  corresponding entry in its dispatch table.
+
+                  if not Is_Abstract_Subprogram (Prim) then
+                     Set_Has_Delayed_Freeze (Prim);
+                  end if;
                end if;
             end if;
 
