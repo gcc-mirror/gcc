@@ -5910,14 +5910,12 @@ package body Einfo is
    begin
       pragma Assert
         (Is_Record_Type (Id)
-         or else Is_Incomplete_Or_Private_Type (Id)
-         or else Has_Discriminants (Id));
+          or else Is_Incomplete_Or_Private_Type (Id)
+          or else Has_Discriminants (Id));
 
       Comp_Id := First_Entity (Id);
       while Present (Comp_Id) loop
-         exit when Ekind (Comp_Id) = E_Component
-                     or else
-                   Ekind (Comp_Id) = E_Discriminant;
+         exit when Ekind_In (Comp_Id, E_Component, E_Discriminant);
          Comp_Id := Next_Entity (Comp_Id);
       end loop;
 

@@ -8107,7 +8107,7 @@ package body Exp_Disp is
          procedure Handle_Inherited_Private_Subprograms (Typ : Entity_Id);
          --  Called if Typ is declared in a nested package or a public child
          --  package to handle inherited primitives that were inherited by Typ
-         --  in  the visible part, but whose declaration was deferred because
+         --  in the visible part, but whose declaration was deferred because
          --  the parent operation was private and not visible at that point.
 
          procedure Set_Fixed_Prim (Pos : Nat);
