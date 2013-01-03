@@ -5454,7 +5454,8 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2) 
 	      || (CLASS_TYPE_P (type1)
 		  && (t = locate_ctor (type1))
-		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
+		  && (maybe_instantiate_noexcept (t),
+		      TYPE_NOTHROW_P (TREE_TYPE (t)))));
 
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
       type1 = strip_array_types (type1);
