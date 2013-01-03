@@ -5588,3 +5588,9 @@
 
 	* configure.in: Add support for NetBSD cross compiles.
 	* configure: Regenerate.
+
+Copyright (C) 2002 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

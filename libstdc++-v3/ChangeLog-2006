@@ -5849,3 +5849,9 @@
 	detail existing @GLIBCXX_3.4 exports of basic_ostream, num_put,
 	money_put, etc., symbols to avoid exporting _M_insert symbols
 	@GLIBCXX_3.4.
+
+Copyright (C) 2006 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

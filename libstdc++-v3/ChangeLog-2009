@@ -12425,3 +12425,9 @@
 	* testsuite/27_io/basic_istream/read/wchar_t/38678.cc: Likewise.
 	* testsuite/27_io/basic_ostream/write/char/38678.cc: Likewise.
 	* testsuite/27_io/basic_ostream/write/wchar_t/38678.cc: Likewise.
+
+Copyright (C) 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
