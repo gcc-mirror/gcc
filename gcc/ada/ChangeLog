@@ -1,3 +1,30 @@
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch7.adb, sem_ch10.adb, einfo.adb, einfo.ads, sem_ch12.adb,
+	rtsfind.adb, sem_elab.adb, sem_ch4.adb, sem_ch8.adb
+	(Einfo.Is_Visible_Child_Unit, Einfo.Set_Is_Visible_Child_Unit):
+	Rename to Is_Visible_Lib_Unit, Set_Is_Visible_Lib_Unit, and
+	update spec accordingly (now also applies to root library units).
+	(Sem_Ch10.Analyze_Subunit.Analyze_Subunit_Context): Toggle above flag
+	on root library units, not only child units.
+	(Sem_Ch10.Install[_Limited]_Withed_Unit): Same.
+	(Sem_Ch10.Remove_Unit_From_Visibility): Reset Is_Visible_Lib_Unit
+	even for root library units.
+	(Sem_Ch8.Find_Expanded_Name): A selected component form whose prefix is
+	Standard is an expanded name for a root library unit.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting.
+
+2013-01-03  Olivier Hainque  <hainque@adacore.com>
+
+	* tracebak.c: Reinstate changes to support ppc-lynx178.
+
+2013-01-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.ads: Minor reformatting and documentation enhancement.
+
 2013-01-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Object_Declaration): If the object has

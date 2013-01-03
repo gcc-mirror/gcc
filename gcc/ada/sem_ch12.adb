@@ -5719,7 +5719,7 @@ package body Sem_Ch12 is
                  and then Is_Child_Unit (E)
                then
                   if Is_Child_Unit (E)
-                    and then not Is_Visible_Child_Unit (E)
+                    and then not Is_Visible_Lib_Unit (E)
                   then
                      Error_Msg_NE
                        ("generic child unit& is not visible", Gen_Id, E);

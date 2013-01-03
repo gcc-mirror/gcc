@@ -508,7 +508,9 @@ package Atree is
    --  entities point correctly to their original parents. The effect is thus
    --  to leave the tree completely unchanged in structure, except that the
    --  entity ID values of the two entities are interchanged. Neither of the
-   --  two entities may be list members.
+   --  two entities may be list members. Note that entities appear on two
+   --  semantic chains: Homonym and Next_Entity: the corresponding links must
+   --  be adjusted by the caller, according to context.
 
    function Extend_Node (Node : Node_Id) return Entity_Id;
    --  This function returns a copy of its input node with an extension added.

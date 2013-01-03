@@ -5143,8 +5143,8 @@ package body Sem_Ch8 is
             end if;
 
             if Is_New_Candidate then
-               if Is_Child_Unit (Id) then
-                  exit when Is_Visible_Child_Unit (Id)
+               if Is_Child_Unit (Id) or else P_Name = Standard_Standard then
+                  exit when Is_Visible_Lib_Unit (Id)
                     or else Is_Immediately_Visible (Id);
 
                else
@@ -5334,7 +5334,7 @@ package body Sem_Ch8 is
                     and then Is_Compilation_Unit (Homonym (P_Name))
                     and then
                      (Is_Immediately_Visible (Homonym (P_Name))
-                        or else Is_Visible_Child_Unit (Homonym (P_Name)))
+                        or else Is_Visible_Lib_Unit (Homonym (P_Name)))
                   then
                      declare
                         H : constant Entity_Id := Homonym (P_Name);
@@ -7685,7 +7685,7 @@ package body Sem_Ch8 is
                if Is_Child_Unit (E) then
                   if not From_With_Type (E) then
                      Set_Is_Immediately_Visible (E,
-                       Is_Visible_Child_Unit (E) or else In_Open_Scopes (E));
+                       Is_Visible_Lib_Unit (E) or else In_Open_Scopes (E));
 
                   else
                      pragma Assert
@@ -7718,7 +7718,7 @@ package body Sem_Ch8 is
                while Present (E) loop
                   if Is_Child_Unit (E) then
                      Set_Is_Immediately_Visible (E,
-                       Is_Visible_Child_Unit (E) or else In_Open_Scopes (E));
+                       Is_Visible_Lib_Unit (E) or else In_Open_Scopes (E));
                   end if;
 
                   Next_Entity (E);
@@ -8030,7 +8030,7 @@ package body Sem_Ch8 is
 
          if not Is_Hidden (Id)
            and then ((not Is_Child_Unit (Id))
-                       or else Is_Visible_Child_Unit (Id))
+                       or else Is_Visible_Lib_Unit (Id))
          then
             Set_Is_Potentially_Use_Visible (Id);
 
@@ -8050,7 +8050,7 @@ package body Sem_Ch8 is
 
       while Present (Id) loop
          if Is_Child_Unit (Id)
-           and then Is_Visible_Child_Unit (Id)
+           and then Is_Visible_Lib_Unit (Id)
          then
             Set_Is_Potentially_Use_Visible (Id);
          end if;

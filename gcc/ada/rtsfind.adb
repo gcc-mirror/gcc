@@ -1466,7 +1466,7 @@ package body Rtsfind is
                end if;
 
                Load_RTU (To_Load, Use_Setting => In_Use (Cunit_Entity (U)));
-               Set_Is_Visible_Child_Unit (RT_Unit_Table (To_Load).Entity);
+               Set_Is_Visible_Lib_Unit (RT_Unit_Table (To_Load).Entity);
 
                --  Prevent creation of an implicit 'with' from (for example)
                --  Ada.Wide_Text_IO.Integer_IO to Ada.Text_IO.Integer_IO,

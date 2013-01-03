@@ -35,6 +35,7 @@
    PowerPC/AiX
    PowerPC/Darwin
    PowerPC/VxWorks
+   PowerPC/LynxOS-178
    SPARC/Solaris
    i386/GNU/Linux
    i386/Solaris
@@ -287,9 +288,10 @@ __gnat_backtrace (void **array,
 #error Unhandled darwin architecture.
 #endif
 
-/*------------------------ PPC AIX/Older Darwin -------------------------*/
+/*---------------------- PPC AIX/PPC Lynx 178/Older Darwin ------------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \
-(defined (__ppc__) && defined (__APPLE__)))
+       (defined (__powerpc__) && defined (__Lynx__) && !defined(__ELF__)) || \
+       (defined (__ppc__) && defined (__APPLE__)))
 
 #define USE_GENERIC_UNWINDER
 
@@ -307,9 +309,26 @@ struct layout
    should to feature a null backchain, AIX might expose a null return
    address instead.  */
 
+/* Then LynxOS-178 features yet another variation, with return_address
+   == &<entrypoint>, with two possible entry points (one for the main
+   process and one for threads). Beware that &bla returns the address
+   of a descriptor when "bla" is a function.  Getting the code address
+   requires an extra dereference.  */
+
+#if defined (__Lynx__)
+extern void __start();  /* process entry point.  */
+extern void __runnit(); /* thread entry point.  */
+#define EXTRA_STOP_CONDITION(CURRENT)                 \
+  ((CURRENT)->return_address == *(void**)&__start     \
+   || (CURRENT)->return_address == *(void**)&__runnit)
+#else
+#define EXTRA_STOP_CONDITION(CURRENT) (0)
+#endif
+
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   (((void *) (CURRENT) < (TOP_STACK)) \
-   || (CURRENT)->return_address == NULL)
+   || (CURRENT)->return_address == NULL \
+   || EXTRA_STOP_CONDITION(CURRENT))
 
 /* The PPC ABI has an interesting specificity: the return address saved by a
    function is located in it's caller's frame, and the save operation only
