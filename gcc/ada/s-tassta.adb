@@ -806,8 +806,9 @@ package body System.Tasking.Stages is
    procedure Finalize_Global_Tasks is
       Self_ID : constant Task_Id := STPO.Self;
 
-      Ignore  : Boolean;
-      pragma Unreferenced (Ignore);
+      Ignore_1 : Boolean;
+      Ignore_2 : Boolean;
+      pragma Unreferenced (Ignore_1, Ignore_2);
 
       function State
         (Int : System.Interrupt_Management.Interrupt_ID) return Character;
@@ -877,7 +878,7 @@ package body System.Tasking.Stages is
 
             Timed_Sleep
               (Self_ID, 0.01, System.OS_Primitives.Relative,
-               Self_ID.Common.State, Ignore, Ignore);
+               Self_ID.Common.State, Ignore_1, Ignore_2);
          end loop;
       end if;
 
@@ -886,7 +887,7 @@ package body System.Tasking.Stages is
 
       Timed_Sleep
         (Self_ID, 0.01, System.OS_Primitives.Relative,
-         Self_ID.Common.State, Ignore, Ignore);
+         Self_ID.Common.State, Ignore_1, Ignore_2);
 
       Unlock (Self_ID);
 

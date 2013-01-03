@@ -3012,8 +3012,6 @@ package body Exp_Aggr is
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
       Occ  : constant Node_Id    := New_Occurrence_Of (Obj, Loc);
-      Blk  : Node_Id             := Empty;
-      Ins  : Node_Id;
 
       function Discriminants_Ok return Boolean;
       --  If the object type is constrained, the discriminants in the
@@ -3118,27 +3116,39 @@ package body Exp_Aggr is
            (Aggr,
             Sec_Stack =>
               Is_Controlled (Typ) or else Has_Controlled_Component (Typ));
-         Ins := N;
-
-         --  Need to Set_Initialization_Statements??? (see below)
-
-      else
-         --  Capture initialization statements within an identified block
-         --  statement, as we might need to move them to the freeze actions
-         --  of Obj later on if a representation clause (such as an address
-         --  clause) makes it necessary to delay freezing.
-
-         Ins := Make_Null_Statement (Loc);
-         Blk := Make_Block_Statement (Loc,
-                  Declarations               => New_List,
-                  Handled_Statement_Sequence =>
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => New_List (Ins)));
-         Insert_Action_After (N, Blk);
-         Set_Initialization_Statements (Obj, Blk);
       end if;
 
-      Insert_Actions_After (Ins, Late_Expansion (Aggr, Typ, Occ));
+      declare
+         Node_After   : constant Node_Id := Next (N);
+         Init_Node    : Node_Id;
+         Blk          : Node_Id;
+         Init_Actions : constant List_Id := New_List;
+      begin
+         Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
+
+         --  Move inserted, analyzed actions to Init_Actions, but skip over
+         --  freeze nodes as these need to remain in the proper scope.
+
+         Init_Node := N;
+
+         while Next (Init_Node) /= Node_After loop
+            if Nkind (Next (Init_Node)) = N_Freeze_Entity then
+               Next (Init_Node);
+            else
+               Append_To (Init_Actions, Remove_Next (Init_Node));
+            end if;
+         end loop;
+
+         if not Is_Empty_List (Init_Actions) then
+            Blk := Make_Block_Statement (Loc,
+                     Declarations => New_List,
+                     Handled_Statement_Sequence =>
+                       Make_Handled_Sequence_Of_Statements (Loc,
+                         Statements => Init_Actions));
+            Insert_Action_After (Init_Node, Blk);
+            Set_Initialization_Statements (Obj, Blk);
+         end if;
+      end;
       Set_No_Initialization (N);
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;

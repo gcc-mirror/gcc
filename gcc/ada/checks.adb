@@ -575,6 +575,8 @@ package body Checks is
    --------------------------------
 
    procedure Apply_Address_Clause_Check (E : Entity_Id; N : Node_Id) is
+      pragma Assert (Nkind (N) = N_Freeze_Entity);
+
       AC   : constant Node_Id    := Address_Clause (E);
       Loc  : constant Source_Ptr := Sloc (AC);
       Typ  : constant Entity_Id  := Etype (E);
@@ -734,7 +736,11 @@ package body Checks is
             Remove_Side_Effects (Expr);
          end if;
 
-         Insert_After_And_Analyze (N,
+         if No (Actions (N)) then
+            Set_Actions (N, New_List);
+         end if;
+
+         Prepend_To (Actions (N),
            Make_Raise_Program_Error (Loc,
              Condition =>
                Make_Op_Ne (Loc,
@@ -745,11 +751,11 @@ package body Checks is
                          (RTE (RE_Integer_Address), Expr),
                      Right_Opnd =>
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Occurrence_Of (E, Loc),
+                         Prefix         => New_Occurrence_Of (E, Loc),
                          Attribute_Name => Name_Alignment)),
                  Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
-             Reason => PE_Misaligned_Address_Value),
-           Suppress => All_Checks);
+             Reason => PE_Misaligned_Address_Value));
+         Analyze (First (Actions (N)), Suppress => All_Checks);
          return;
       end if;
 
