@@ -55,12 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 DEBUG_FUNCTION void
 debug_gmp_value (mpz_t val)
 {
-  char *str = mpz_get_str (0, 10, val);
-  void (*gmp_free) (void *, size_t);
-
-  fprintf (stderr, "%s", str);
-  mp_get_memory_functions (NULL, NULL, &gmp_free);
-  (*gmp_free) (str, strlen (str) + 1);
+  gmp_fprintf (stderr, "%Zd", val);
 }
 
 /* Return the maximal loop depth in SCOP.  */
