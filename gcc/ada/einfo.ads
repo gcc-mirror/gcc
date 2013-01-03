@@ -1932,6 +1932,12 @@ package Einfo is
 --       the end of the package declaration. For objects it indicates that the
 --       declaration of the object occurs in the private part of a package.
 
+--    Initialization_Statements (Node28)
+--       Defined in constants and variables. For a composite object initialized
+--       initialized with an aggregate that has been converted to a sequence
+--       of assignments, points to a block statement containing the
+--       assignments.
+
 --    Inner_Instances (Elist23)
 --       Defined in generic units. Contains element list of units that are
 --       instantiated within the given generic. Used to diagnose circular
@@ -5104,6 +5110,7 @@ package Einfo is
    --    Prival_Link                         (Node20)   (privals only)
    --    Interface_Name                      (Node21)   (constants only)
    --    Related_Type                        (Node27)   (constants only)
+   --    Initialization_Statements           (Node28)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
@@ -5773,6 +5780,7 @@ package Einfo is
    --    Debug_Renaming_Link                 (Node25)
    --    Last_Assignment                     (Node26)
    --    Related_Type                        (Node27)
+   --    Initialization_Statements           (Node28)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
@@ -6217,6 +6225,7 @@ package Einfo is
    function In_Package_Body                     (Id : E) return B;
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
+   function Initialization_Statements           (Id : E) return N;
    function Inner_Instances                     (Id : E) return L;
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
@@ -6809,6 +6818,7 @@ package Einfo is
    procedure Set_In_Package_Body                 (Id : E; V : B := True);
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
+   procedure Set_Initialization_Statements       (Id : E; V : N);
    procedure Set_Inner_Instances                 (Id : E; V : L);
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);

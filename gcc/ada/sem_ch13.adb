@@ -2880,7 +2880,9 @@ package body Sem_Ch13 is
                   --  Legality checks on the address clause for initialized
                   --  objects is deferred until the freeze point, because
                   --  a subsequent pragma might indicate that the object
-                  --  is imported and thus not initialized.
+                  --  is imported and thus not initialized. Also, the address
+                  --  clause might involve entities that have yet to be
+                  --  elaborated.
 
                   Set_Has_Delayed_Freeze (U_Ent);
 
@@ -7216,27 +7218,9 @@ package body Sem_Ch13 is
 
             when N_Type_Conversion           |
                  N_Qualified_Expression      |
-                 N_Allocator                 =>
+                 N_Allocator                 |
+                 N_Unchecked_Type_Conversion =>
                Check_Expr_Constants (Expression (Nod));
-
-            when N_Unchecked_Type_Conversion =>
-               Check_Expr_Constants (Expression (Nod));
-
-               --  If this is a rewritten unchecked conversion, subtypes in
-               --  this node are those created within the instance. To avoid
-               --  order of elaboration issues, replace them with their base
-               --  types. Note that address clauses can cause order of
-               --  elaboration problems because they are elaborated by the
-               --  back-end at the point of definition, and may mention
-               --  entities declared in between (as long as everything is
-               --  static). It is user-friendly to allow unchecked conversions
-               --  in this context.
-
-               if Nkind (Original_Node (Nod)) = N_Function_Call then
-                  Set_Etype (Expression (Nod),
-                    Base_Type (Etype (Expression (Nod))));
-                  Set_Etype (Nod, Base_Type (Etype (Nod)));
-               end if;
 
             when N_Function_Call =>
                if not Is_Pure (Entity (Name (Nod))) then

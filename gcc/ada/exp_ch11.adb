@@ -1832,7 +1832,7 @@ package body Exp_Ch11 is
 
       Rewrite (N,
         Make_Attribute_Reference (Loc,
-          Prefix => Identifier (N),
+          Prefix         => Identifier (N),
           Attribute_Name => Name_Code_Address));
 
       Analyze_And_Resolve (N, RTE (RE_Code_Loc));
