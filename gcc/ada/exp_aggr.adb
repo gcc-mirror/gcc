@@ -4979,9 +4979,11 @@ package body Exp_Aggr is
       end if;
 
       --  Perform in-place expansion of aggregate in an object declaration.
-      --  Note: actions generated for the aggregate will be captured in a block
-      --  statement so that they can be transferred to freeze actions later
-      --  if there is an address clause for the object.
+      --  Note: actions generated for the aggregate will be captured in an
+      --  expression-with-actions statement so that they can be transferred
+      --  to freeze actions later if there is an address clause for the
+      --  object. (Note: we don't use a block statement because this would
+      --  cause generated freeze nodes to be elaborated in the wrong scope).
 
       --  Should document these individual tests ???
 

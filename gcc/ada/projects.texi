@@ -227,6 +227,7 @@ should contain the following code:
 * Avoid Duplication With Variables::
 * Naming Schemes::
 * Installation::
+* Distributed support::
 @end menu
 
 @c ---------------------------------------------
@@ -1075,6 +1076,53 @@ installed. Default is @b{include}.
 
 Subdirectory of @b{Prefix} where the generated project file is to be
 installed. Default is @b{share/gpr}.
+@end table
+
+@c ---------------------------------------------
+@node Distributed support
+@subsection Distributed support
+@c ---------------------------------------------
+
+@noindent
+For large projects the compilation time can become a limitation in
+the development cycle. To cope with that, GPRbuild supports
+distributed compilation.
+
+The following attributes can be defined in package @code{Remote}:
+
+@table @asis
+
+@item @b{Build_Slaves}
+@cindex @code{Build_Slaves}
+
+A list of string referencing the remote build slaves to use for the
+compilation phase. The format is:
+@code{[protocol://]name.domain[:port]}.
+
+Where @code{protocol} is one of:
+
+@table @asis
+
+@item rsync
+@cindex @code{rsync}
+
+The sources are copied using the external @code{rsync} tool.
+
+@item file
+
+The sources are accessed via a shared directory or mount point.
+
+@end table
+
+The default port used to communicate with @command{gprslave} is
+@code{8484}.
+
+@item @b{Root_Dir}:
+@cindex @code{Root_Dir}
+
+Root directory of the project's sources. The default value is the
+project's directory.
+
 @end table
 
 @c ---------------------------------------------

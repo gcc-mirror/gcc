@@ -1,3 +1,12 @@
+2013-01-03  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add package remote and
+	corresponding attibutes.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb: Minor comment improvement.
+
 2013-01-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb, aspects.ads: Add Aspect_Abstract_State to all the
