@@ -563,7 +563,7 @@ package Opt is
    Extensions_Allowed : Boolean := False;
    --  GNAT
    --  Set to True by switch -gnatX if GNAT specific language extensions
-   --  are allowed. Currently there are no such defined extensions.
+   --  are allowed.
 
    type External_Casing_Type is (
      As_Is,       -- External names cased as they appear in the Ada source

@@ -925,10 +925,11 @@ package body Xref_Lib is
          end;
       end if;
 
-      if Ali (Ptr) = '<'
-        or else Ali (Ptr) = '('
-        or else Ali (Ptr) = '{'
-      then
+      while Ptr <= Ali'Last
+         and then (Ali (Ptr) = '<'
+                   or else Ali (Ptr) = '('
+                   or else Ali (Ptr) = '{')
+      loop
          --  Here we have a type derivation information. The format is
          --  <3|12I45> which means that the current entity is derived from the
          --  type defined in unit number 3, line 12 column 45. The pipe and
@@ -1065,7 +1066,7 @@ package body Xref_Lib is
             end loop;
             Ptr := Ptr + 1;
          end if;
-      end if;
+      end loop;
 
       --  To find the body, we will have to parse the file too
 

@@ -1,3 +1,43 @@
+2013-01-03  Emmanuel Briot  <briot@adacore.com>
+
+	* xref_lib.adb (Parse_Identifier_Info): Fix handling of arrays, which
+	have information in the ALI file for both the index and the component
+	types.
+
+2013-01-03  Emmanuel Briot  <briot@adacore.com>
+
+	* projects.texi: Fix error in documenting the project path
+	computed for an aggregate project.
+
+2013-01-03  Javier Miranda  <miranda@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Adding documentation
+	plus restricting the functionality of this routine to cover the
+	cases described in the Ada 2012 reference manual. The previous
+	extended support is now available under -gnatX.
+	* s-tassta.adb (Finalize_Global_Tasks): Addition of a dummy
+	variable to call Timed_Sleep.  Required to avoid warning on
+	overlapping out-mode actuals.
+	* opt.ads (Extensions_Allowed): Update documentation.
+
+2013-01-03  Tristan Gingold  <gingold@adacore.com>
+
+	* s-arit64.ads: Use Multiply_With_Ovflo_Check as __gnat_mulv64.
+	* arit64.c: Removed
+	* gcc-interface/Makefile.in: Remove reference to arit64.c.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* checks.adb, checks.ads (Apply_Address_Clause_Check): The check must
+	be generated at the start of the freeze actions for the entity, not
+	before (or after) the freeze node.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb (Exp_Aggr.Convert_Aggregate_In_Obj_Decl):
+	Reorganize code to capture initialization statements in a block,
+	so that freeze nodes are excluded from the captured block.
+
 2013-01-03  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch11.adb: Minor reformatting.
