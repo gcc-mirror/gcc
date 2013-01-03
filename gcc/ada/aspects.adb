@@ -238,6 +238,7 @@ package body Aspects is
 
    Canonical_Aspect : constant array (Aspect_Id) of Aspect_Id :=
    (No_Aspect                           => No_Aspect,
+    Aspect_Abstract_State               => Aspect_Abstract_State,
     Aspect_Ada_2005                     => Aspect_Ada_2005,
     Aspect_Ada_2012                     => Aspect_Ada_2005,
     Aspect_Address                      => Aspect_Address,

@@ -87,7 +87,8 @@ package body Freeze is
 
    procedure Check_Address_Clause (E : Entity_Id);
    --  Apply legality checks to address clauses for object declarations,
-   --  at the point the object is frozen.
+   --  at the point the object is frozen. Also ensure any initialization is
+   --  performed only after the object has been frozen.
 
    procedure Check_Component_Storage_Order
      (Encl_Type : Entity_Id;
@@ -549,10 +550,11 @@ package body Freeze is
    --------------------------
 
    procedure Check_Address_Clause (E : Entity_Id) is
-      Addr : constant Node_Id   := Address_Clause (E);
+      Addr : constant Node_Id    := Address_Clause (E);
       Expr : Node_Id;
-      Decl : constant Node_Id   := Declaration_Node (E);
-      Typ  : constant Entity_Id := Etype (E);
+      Decl : constant Node_Id    := Declaration_Node (E);
+      Loc  : constant Source_Ptr := Sloc (Decl);
+      Typ  : constant Entity_Id  := Etype (E);
 
    begin
       if Present (Addr) then
@@ -600,6 +602,24 @@ package body Freeze is
            and then not Needs_Finalization (Typ)
          then
             Warn_Overlay (Expr, Typ, Name (Addr));
+         end if;
+
+         if Present (Expression (Decl)) then
+
+            --  Capture initialization value at point of declaration
+
+            Remove_Side_Effects (Expression (Decl));
+
+            --  Move initialization to freeze actions (once the object has
+            --  been frozen, and the address clause alignment check has been
+            --  performed.
+
+            Append_Freeze_Action (E,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (E, Loc),
+                Expression => Expression (Decl)));
+
+            Set_No_Initialization (Decl);
          end if;
       end if;
    end Check_Address_Clause;

@@ -1546,7 +1546,8 @@ package Sinfo is
    --    proc). This is needed for controlled aggregates. When the Object
    --    declaration has an expression, this flag means that this expression
    --    should not be taken into account (needed for in place initialization
-   --    with aggregates).
+   --    with aggregates, and for object with an address clause, which are
+   --    initialized with an assignment at freeze time).
 
    --  No_Minimize_Eliminate (Flag17-Sem)
    --    This flag is present in membership operator nodes (N_In/N_Not_In).
@@ -7025,6 +7026,10 @@ package Sinfo is
       --  declarations within the actions will definitely not be referenced
       --  once elaboration of the construct is completed).
 
+      --  But we rely on freeze nodes appearing in actions being elaborated in
+      --  the enclosing scope (see Exp_Aggr.Collect_Initialization_
+      --  Statements)???
+
       --  Sprint syntax:  do
       --                    action;
       --                    action;
@@ -7039,6 +7044,9 @@ package Sinfo is
 
       --  Note: the actions list is always non-null, since we would
       --  never have created this node if there weren't some actions.
+
+      --  Note: Expression may be a Null_Statement, in which case the
+      --  N_Expression_With_Actions has type Standard_Void_Type.
 
       --------------------
       -- Free Statement --

@@ -1,3 +1,67 @@
+2013-01-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb, aspects.ads: Add Aspect_Abstract_State to all the
+	relevant tables.
+	* einfo.ads, einfo.adb: Add Integrity_Level and Refined_State to
+	the description of fields (Abstract_States): New routine.
+	(Integrity_Level): New routine.
+	(Has_Property): New routine.
+	(Is_Input_State): New routine.
+	(Is_Null_State): New routine.
+	(Is_Output_State): New routine.
+	(Is_Volatile_State): New routine.
+	(Refined_State): New routine.
+	(Set_Abstract_States): New routine.
+	(Set_Integrity_Level): New routine.
+	(Set_Refined_State): New routine.
+	(Write_Field8_Name): Add proper output for E_Abstract_State.
+	(Write_Field9_Name): Add proper output for E_Abstract_State.
+	(Write_Field25_Name): Add proper output for E_Package.
+	* lib-xref.ads: Add new letter for an abstract state.
+	* par-prag.adb: Add pragma Abstract_State to the list of pragma
+	that do not need special processing by the parser.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Convert
+	aspect Abstract_State into a pragma without any form
+	of legality checks. The work is done by Analyze_Pragma.
+	(Check_Aspect_At_Freeze_Point): Aspect Abstract_State does not
+	require delayed analysis.
+	* sem_prag.adb: Add a value for pragma Abstract_State in table
+	Sig_Flags.
+	(Analyze_Pragma): Add legality checks for pragma
+	Abstract_State. Analysis of individual states introduces a state
+	abstraction entity into the visibility chain.
+	* snames.ads-tmpl: Add new names for abstract state and
+	integrity. Add new pragma id for abstract state.
+
+2013-01-03  Bob Duff  <duff@adacore.com>
+
+	* table.adb (Reallocate): Calculate new Length in
+	Long_Integer to avoid overflow.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb, sinfo.ads, freeze.adb, sem_ch4.adb, exp_aggr.adb
+	(Sem_Ch3.Analyze_Object_Declaration): Set Ekind early so that
+	it is set properly when expanding the initialization expression.
+	(Freeze.Check_Address_Clause): Transfer initialization expression
+	to an assignment in the freeze actions, so that the object is
+	initialized only after being elaborated by GIGI.
+	(Sinfo (comments), Sem_Ch4.Analyze_Expression_With_Actions): Allow
+	a Null_Statement as the expression in an Expression_With_Actions.
+	(Exp_Aggr.Collect_Initialization_Statements): New subprogram
+	shared by expansion of record and array aggregates, used to
+	capture statements for an aggregate used to initalize an object
+	into an Expression_With_Actions (which acts as a container for
+	a list of actions).
+	(Exp_Aggr.Convert_Aggr_In_Obj_Decl): Use the above to
+	capture initialization statements, instead of the previously
+	existing loop which left freeze nodes out of the capturing
+	construct (causing out of order elaboration crashes in GIGI).
+	(Exp_Aggr.Expand_Array_Aggregate):  Use the above to capture
+	initialization statements (this was previously not done for
+	arrays).  Also do not unconditionally prevent in place expansion
+	for an object with address clause.
+
 2013-01-03  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_rm.texi, freeze.adb (Check_Component_Storage_Order): Check that

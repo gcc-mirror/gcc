@@ -327,6 +327,10 @@ package Einfo is
 --  type, and if assertions are enabled, an attempt to set the attribute on a
 --  subtype will raise an assert error.
 
+--    Abstract_States (Elist25)
+--       Defined for E_Package entities. Contains a list of all the abstract
+--       states declared by the related package.
+
 --    Accept_Address (Elist21)
 --       Defined in entries. If an accept has a statement sequence, then an
 --       address variable is created, which is used to hold the address of the
@@ -1907,18 +1911,6 @@ package Einfo is
 --       that we still have a concrete type. For entities other than types,
 --       returns the entity unchanged.
 
---    Interface_Alias (Node25)
---       Defined in subprograms that cover a primitive operation of an abstract
---       interface type. Can be set only if the Is_Hidden flag is also set,
---       since such entities are always hidden. Points to its associated
---       interface subprogram. It is used to register the subprogram in
---       secondary dispatch table of the interface (Ada 2005: AI-251).
-
---    Interfaces (Elist25)
---       Defined in record types and subtypes. List of abstract interfaces
---       implemented by a tagged type that are not already implemented by the
---       ancestors (Ada 2005: AI-251).
-
 --    In_Package_Body (Flag48)
 --       Defined in package entities. Set on the entity that denotes the
 --       package (the defining occurrence of the package declaration) while
@@ -1943,6 +1935,18 @@ package Einfo is
 --       instantiated within the given generic. Used to diagnose circular
 --       instantiations.
 
+--    Integrity_Level (Uint8)
+--       Defined for E_Abstract_State entities. Contains the numerical value of
+--       the integrity level state property. A value of Uint_0 designates a non
+--       existent integrity.
+
+--    Interface_Alias (Node25)
+--       Defined in subprograms that cover a primitive operation of an abstract
+--       interface type. Can be set only if the Is_Hidden flag is also set,
+--       since such entities are always hidden. Points to its associated
+--       interface subprogram. It is used to register the subprogram in
+--       secondary dispatch table of the interface (Ada 2005: AI-251).
+
 --    Interface_Name (Node21)
 --       Defined in constants, variables, exceptions, functions, procedures,
 --       packages, components (JGNAT only), discriminants (JGNAT only), and
@@ -1966,6 +1970,11 @@ package Einfo is
 --       object fields. A pragma Import for a component can define the
 --       External_Name of the imported Java field (which is generally needed,
 --       because Java names are case sensitive).
+
+--    Interfaces (Elist25)
+--       Defined in record types and subtypes. List of abstract interfaces
+--       implemented by a tagged type that are not already implemented by the
+--       ancestors (Ada 2005: AI-251).
 
 --    Invariant_Procedure (synthesized)
 --       Defined in types and subtypes. Set for private types if one or more
@@ -2329,6 +2338,10 @@ package Einfo is
 --       inherited by their instances. It is also set on the body entities
 --       of inlined subprograms. See also Has_Pragma_Inline.
 
+--    Is_Input_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       property Input.
+
 --    Is_Instantiated (Flag126)
 --       Defined in generic packages and generic subprograms. Set if the unit
 --       is instantiated from somewhere in the extended main source unit. This
@@ -2523,6 +2536,10 @@ package Einfo is
 --       but there is no need to call such procedures within a compilation
 --       unit, and this flag is used to suppress such calls.
 
+--    Is_Null_State (synthesized)
+--       Applies to all entities, true for an abstract state declared with
+--       keyword null.
+
 --    Is_Numeric_Type (synthesized)
 --       Applies to all entities, true for all numeric types and subtypes
 --       (integer, fixed, float).
@@ -2549,6 +2566,10 @@ package Einfo is
 --    Is_Ordinary_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for ordinary fixed point types and
 --       subtypes.
+
+--    Is_Output_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       property Output.
 
 --    Is_Package_Or_Generic_Package (synthesized)
 --       Applies to all entities. True for packages and generic packages.
@@ -2894,6 +2915,10 @@ package Einfo is
 --       Similarly, any front end test which is concerned with suppressing
 --       optimizations on volatile objects should test Treat_As_Volatile
 --       rather than testing this flag.
+
+--    Is_Volatile_State (synthesized)
+--       Applies to all entities, true for abstract states that are subject to
+--       property Volatile.
 
 --    Is_Wrapper_Package (synthesized)
 --       Defined in package entities. Indicates that the package has been
@@ -3440,6 +3465,10 @@ package Einfo is
 --       formal. The reason we distinguish this kind of reference is that
 --       we have a separate warning for variables that are only assigned and
 --       never read, and out parameters are a special case.
+
+--    Refined_State (Node9)
+--       Defined in E_Abstract_State entities. Contains the entity of the
+--       abstract state completion which is usually foung in package bodies.
 
 --    Register_Exception_Call (Node20)
 --       Defined in exception entities. When an exception is declared,
@@ -4400,11 +4429,16 @@ package Einfo is
       --  A task body. This entity serves almost no function, since all
       --  semantic analysis uses the protected entity (E_Task_Type).
 
-      E_Subprogram_Body
+      E_Subprogram_Body,
       --  A subprogram body. Used when a subprogram has a separate declaration
       --  to represent the entity for the body. This entity serves almost no
       --  function, since all semantic analysis uses the subprogram entity
       --  for the declaration (E_Function or E_Procedure).
+
+      E_Abstract_State
+      --  A state abstraction. Used to designate entities introduced by aspect
+      --  or pragma Abstract_State. The entity carries the various properties
+      --  of the state.
    );
 
    for Entity_Kind'Size use 8;
@@ -4972,6 +5006,14 @@ package Einfo is
    -- Applicable attributes by entity kind --
    ------------------------------------------
 
+   --  E_Abstract_State
+   --    Integrity_Level                     (Uint8)
+   --    Refined_State                       (Node9)
+   --    Is_Input_State                      (synth)
+   --    Is_Null_State                       (synth)
+   --    Is_Output_State                     (synth)
+   --    Is_Volatile_State                   (synth)
+
    --  E_Access_Protected_Subprogram_Type
    --    Equivalent_Type                     (Node18)
    --    Directly_Designated_Type            (Node20)
@@ -5480,8 +5522,9 @@ package Einfo is
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Limited_View                        (Node23)   (non-generic/instance)
    --    Finalizer                           (Node24)   (non-generic case only)
-   --    Current_Use_Clause                  (Node27)
+   --    Abstract_States                     (Elist25)
    --    Package_Instantiation               (Node26)
+   --    Current_Use_Clause                  (Node27)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Discard_Names                       (Flag88)
@@ -6040,6 +6083,7 @@ package Einfo is
    --  section contains the functions used to obtain attribute values which
    --  correspond to values in fields or flags in the entity itself.
 
+   function Abstract_States                     (Id : E) return L;
    function Accept_Address                      (Id : E) return L;
    function Access_Disp_Table                   (Id : E) return L;
    function Actual_Subtype                      (Id : E) return E;
@@ -6226,6 +6270,7 @@ package Einfo is
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
    function Initialization_Statements           (Id : E) return N;
+   function Integrity_Level                     (Id : E) return U;
    function Inner_Instances                     (Id : E) return L;
    function Interface_Alias                     (Id : E) return E;
    function Interface_Name                      (Id : E) return N;
@@ -6380,6 +6425,7 @@ package Einfo is
    function Referenced                          (Id : E) return B;
    function Referenced_As_LHS                   (Id : E) return B;
    function Referenced_As_Out_Parameter         (Id : E) return B;
+   function Refined_State                       (Id : E) return E;
    function Register_Exception_Call             (Id : E) return N;
    function Related_Array_Object                (Id : E) return E;
    function Related_Expression                  (Id : E) return N;
@@ -6524,6 +6570,9 @@ package Einfo is
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
    function Is_Finalizer                        (Id : E) return B;
+   function Is_Input_State                      (Id : E) return B;
+   function Is_Null_State                       (Id : E) return B;
+   function Is_Output_State                     (Id : E) return B;
    function Is_Package_Or_Generic_Package       (Id : E) return B;
    function Is_Prival                           (Id : E) return B;
    function Is_Protected_Component              (Id : E) return B;
@@ -6534,6 +6583,7 @@ package Einfo is
    function Is_Synchronized_Interface           (Id : E) return B;
    function Is_Task_Interface                   (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
+   function Is_Volatile_State                   (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
    function Last_Formal                         (Id : E) return E;
    function Machine_Emax_Value                  (Id : E) return U;
@@ -6634,6 +6684,7 @@ package Einfo is
    -- Attribute Set Procedures --
    ------------------------------
 
+   procedure Set_Abstract_States                 (Id : E; V : L);
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
    procedure Set_Actual_Subtype                  (Id : E; V : E);
@@ -6819,6 +6870,7 @@ package Einfo is
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
    procedure Set_Initialization_Statements       (Id : E; V : N);
+   procedure Set_Integrity_Level                 (Id : E; V : U);
    procedure Set_Inner_Instances                 (Id : E; V : L);
    procedure Set_Interface_Alias                 (Id : E; V : E);
    procedure Set_Interface_Name                  (Id : E; V : N);
@@ -6979,6 +7031,7 @@ package Einfo is
    procedure Set_Referenced                      (Id : E; V : B := True);
    procedure Set_Referenced_As_LHS               (Id : E; V : B := True);
    procedure Set_Referenced_As_Out_Parameter     (Id : E; V : B := True);
+   procedure Set_Refined_State                   (Id : E; V : E);
    procedure Set_Register_Exception_Call         (Id : E; V : N);
    procedure Set_Related_Array_Object            (Id : E; V : E);
    procedure Set_Related_Expression              (Id : E; V : N);
@@ -7317,6 +7370,7 @@ package Einfo is
    --  subprograms meeting the requirements documented in the section on
    --  XEINFO may be referenced in this section.
 
+   pragma Inline (Abstract_States);
    pragma Inline (Accept_Address);
    pragma Inline (Access_Disp_Table);
    pragma Inline (Actual_Subtype);
@@ -7499,6 +7553,7 @@ package Einfo is
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
+   pragma Inline (Integrity_Level);
    pragma Inline (Inner_Instances);
    pragma Inline (Interface_Alias);
    pragma Inline (Interface_Name);
@@ -7702,6 +7757,7 @@ package Einfo is
    pragma Inline (Referenced);
    pragma Inline (Referenced_As_LHS);
    pragma Inline (Referenced_As_Out_Parameter);
+   pragma Inline (Refined_State);
    pragma Inline (Register_Exception_Call);
    pragma Inline (Related_Array_Object);
    pragma Inline (Related_Expression);
@@ -7766,6 +7822,7 @@ package Einfo is
    pragma Inline (Init_Esize);
    pragma Inline (Init_RM_Size);
 
+   pragma Inline (Set_Abstract_States);
    pragma Inline (Set_Accept_Address);
    pragma Inline (Set_Access_Disp_Table);
    pragma Inline (Set_Actual_Subtype);
@@ -7947,6 +8004,7 @@ package Einfo is
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);
    pragma Inline (Set_Inner_Instances);
+   pragma Inline (Set_Integrity_Level);
    pragma Inline (Set_Interface_Alias);
    pragma Inline (Set_Interface_Name);
    pragma Inline (Set_Interfaces);
@@ -8106,6 +8164,7 @@ package Einfo is
    pragma Inline (Set_Referenced);
    pragma Inline (Set_Referenced_As_LHS);
    pragma Inline (Set_Referenced_As_Out_Parameter);
+   pragma Inline (Set_Refined_State);
    pragma Inline (Set_Register_Exception_Call);
    pragma Inline (Set_Related_Array_Object);
    pragma Inline (Set_Related_Expression);

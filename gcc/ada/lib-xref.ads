@@ -531,7 +531,12 @@ package Lib.Xref is
       E_Protected_Object                           => ' ',
       E_Protected_Body                             => ' ',
       E_Task_Body                                  => ' ',
-      E_Subprogram_Body                            => ' ');
+      E_Subprogram_Body                            => ' ',
+
+      --  ??? The following letter is added for completion, proper design and
+      --  implementation of abstract state cross-referencing to follow.
+
+      E_Abstract_State                             => ' ');
 
    --  The following table is for information purposes. It shows the use of
    --  each character appearing as an entity type.

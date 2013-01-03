@@ -74,6 +74,7 @@ package Aspects is
 
    type Aspect_Id is
      (No_Aspect,                            -- Dummy entry for no aspect
+      Aspect_Abstract_State,                -- GNAT
       Aspect_Address,
       Aspect_Alignment,
       Aspect_Attach_Handler,
@@ -221,7 +222,8 @@ package Aspects is
    --  The following array identifies all implementation defined aspects
 
    Impl_Defined_Aspects : constant array (Aspect_Id) of Boolean :=
-                            (Aspect_Ada_2005                 => True,
+                            (Aspect_Abstract_State           => True,
+                             Aspect_Ada_2005                 => True,
                              Aspect_Ada_2012                 => True,
                              Aspect_Compiler_Unit            => True,
                              Aspect_Contract_Case            => True,
@@ -305,6 +307,7 @@ package Aspects is
 
    Aspect_Argument : constant array (Aspect_Id) of Aspect_Expression :=
                        (No_Aspect                      => Optional,
+                        Aspect_Abstract_State          => Expression,
                         Aspect_Address                 => Expression,
                         Aspect_Alignment               => Expression,
                         Aspect_Attach_Handler          => Expression,
@@ -370,6 +373,7 @@ package Aspects is
 
    Aspect_Names : constant array (Aspect_Id) of Name_Id := (
      No_Aspect                           => No_Name,
+     Aspect_Abstract_State               => Name_Abstract_State,
      Aspect_Ada_2005                     => Name_Ada_2005,
      Aspect_Ada_2012                     => Name_Ada_2012,
      Aspect_Address                      => Name_Address,

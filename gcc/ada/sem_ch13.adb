@@ -1434,13 +1434,23 @@ package body Sem_Ch13 is
                --  Case 2d : Aspects that correspond to a pragma with one
                --  argument.
 
+               when Aspect_Abstract_State        =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Abstract_State),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+                  Delay_Required := False;
+
                when Aspect_Relative_Deadline     =>
                   Aitem :=
                     Make_Pragma (Loc,
-                      Pragma_Argument_Associations =>
-                        New_List (
-                          Make_Pragma_Argument_Association (Loc,
-                             Expression => Relocate_Node (Expr))),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Relative_Deadline));
 
@@ -6961,9 +6971,10 @@ package body Sem_Ch13 is
               Aspect_Type_Invariant    =>
             T := Standard_Boolean;
 
-         --  Here is the list of aspects that don't require delay analysis.
+         --  Here is the list of aspects that don't require delay analysis
 
-         when Aspect_Contract_Case        |
+         when Aspect_Abstract_State       |
+              Aspect_Contract_Case        |
               Aspect_Contract_Cases       |
               Aspect_Dimension            |
               Aspect_Dimension_System     |

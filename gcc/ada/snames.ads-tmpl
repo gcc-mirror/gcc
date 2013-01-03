@@ -446,6 +446,7 @@ package Snames is
    --  Remaining pragma names
 
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
+   Name_Abstract_State                 : constant Name_Id := N + $; -- GNAT
    Name_All_Calls_Remote               : constant Name_Id := N + $;
 
    --  Note: AST_Entry is not in this list because its name matches the name of
@@ -696,6 +697,7 @@ package Snames is
    Name_Ignore                         : constant Name_Id := N + $;
    Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
+   Name_Integrity                      : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
@@ -1731,6 +1733,7 @@ package Snames is
       --  Remaining (non-configuration) pragmas
 
       Pragma_Abort_Defer,
+      Pragma_Abstract_State,
       Pragma_All_Calls_Remote,
       Pragma_Assert,
       Pragma_Assert_And_Cut,
