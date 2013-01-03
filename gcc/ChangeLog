@@ -1,3 +1,7 @@
+2013-01-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi: Note years as release manager for Mark Mitchell.
+
 2013-01-02  Teresa Johnson  <tejohnson@google.com>
 
 	* dumpfile.c (dump_loc): Print filename with location.
