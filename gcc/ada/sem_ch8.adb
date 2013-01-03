@@ -8531,4 +8531,21 @@ package body Sem_Ch8 is
       end loop;
    end ws;
 
+   --------
+   -- we --
+   --------
+
+   procedure we (S : Entity_Id) is
+      E : Entity_Id;
+   begin
+      E := First_Entity (S);
+      while Present (E) loop
+         Write_Int (Int (E));
+         Write_Str (" === ");
+         Write_Name (Chars (E));
+         Write_Eol;
+
+         Next_Entity (E);
+      end loop;
+   end we;
 end Sem_Ch8;
