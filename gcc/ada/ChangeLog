@@ -1,3 +1,47 @@
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch11.adb: Minor reformatting.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.adb, einfo.adb, einfo.ads, freeze.adb, exp_aggr.adb,
+	sem_ch13.adb (Einfo.Initialization_Statements,
+	Einfo.Set_Initialization_Statements): New entity attribute
+	for objects.
+	(Exp_Util.Find_Init_Call): Handle case of an object initialized
+	by an aggregate converted to a block of assignment statements.
+	(Freeze.Check_Address_Clause): Do not clear Has_Delayed_Freeze
+	even for objects that require a constant address, because the
+	address expression might involve entities that have yet to be
+	elaborated at the point of the object declaration.
+	(Exp_Aggr.Convert_Aggregate_In_Obj_Decl): For a type that does
+	not require a transient scope, capture the assignment statements
+	in a block so that they can be moved down after elaboration of
+	an address clause if needed.
+	(Sem_Ch13.Check_Constant_Address_Clause.Check_Expr_Constants,
+	case N_Unchecked_Conversion): Do not replace operand subtype with
+	its base type as this violates a GIGI invariant if the operand
+	is an identifier (in which case the etype of the identifier
+	is expected to be equal to that of the denoted entity).
+
+2013-01-03  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Denotes_Same_Object): Extend the
+	functionality of this routine to cover cases described in the Ada 2012
+	reference manual.
+
+2013-01-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elab.adb (Set_Elaboration_Constraint): Handle properly
+	a 'Access attribute reference when the subprogram is called
+	Initialize.
+
+2013-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tpobop.adb (PO_Do_Or_Queue): Refine assertion, since a
+	select statement may be called from a controlled (e.g. Initialize)
+	operation and have abort always deferred.
+
 2013-01-03  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, einfo.ads, einfo.adb: Minor code reorganization.

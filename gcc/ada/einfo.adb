@@ -237,6 +237,7 @@ package body Einfo is
    --    Wrapped_Entity                  Node27
 
    --    Extra_Formals                   Node28
+   --    Initialization_Statements       Node28
    --    Underlying_Record_View          Node28
 
    --    Subprograms_For_Type            Node29
@@ -1654,6 +1655,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       return Flag8 (Id);
    end In_Use;
+
+   function Initialization_Statements (Id : E) return N is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      return Node28 (Id);
+   end Initialization_Statements;
 
    function Inner_Instances (Id : E) return L is
    begin
@@ -4186,6 +4193,12 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Flag8 (Id, V);
    end Set_In_Use;
+
+   procedure Set_Initialization_Statements (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      Set_Node28 (Id, V);
+   end Set_Initialization_Statements;
 
    procedure Set_Inner_Instances (Id : E; V : L) is
    begin
@@ -8701,6 +8714,9 @@ package body Einfo is
               E_Subprogram_Body                            |
               E_Subprogram_Type                            =>
             Write_Str ("Extra_Formals");
+
+         when E_Constant | E_Variable =>
+            Write_Str ("Initialization_Statements");
 
          when E_Record_Type =>
             Write_Str ("Underlying_Record_View");

@@ -2206,12 +2206,19 @@ package body Exp_Util is
    --  Start of processing for Find_Init_Call
 
    begin
-      if not Has_Non_Null_Base_Init_Proc (Typ) then
+      if Present (Initialization_Statements (Var)) then
+         return Initialization_Statements (Var);
+
+      elsif not Has_Non_Null_Base_Init_Proc (Typ) then
 
          --  No init proc for the type, so obviously no call to be found
 
          return Empty;
       end if;
+
+      --  We might be able to handle other cases below by just properly setting
+      --  Initialization_Statements at the point where the init proc call is
+      --  generated???
 
       Init_Proc := Base_Init_Proc (Typ);
 

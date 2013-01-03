@@ -562,12 +562,9 @@ package body Freeze is
             Check_Constant_Address_Clause (Expr, E);
 
             --  Has_Delayed_Freeze was set on E when the address clause was
-            --  analyzed. Reset the flag now unless freeze actions were
-            --  attached to it in the mean time.
-
-            if No (Freeze_Node (E)) then
-               Set_Has_Delayed_Freeze (E, False);
-            end if;
+            --  analyzed, and must remain set because we want the address
+            --  clause to be elaborated only after any entity it references
+            --  has been elaborated.
          end if;
 
          --  If Rep_Clauses are to be ignored, remove address clause from
