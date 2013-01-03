@@ -1,5 +1,5 @@
 /* Data dependence analysis for Graphite.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2013 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Konrad Trifunovic <konrad.trifunovic@inria.fr>.
 
@@ -56,7 +56,7 @@ hash_poly_ddr_p (const void *pddr)
 {
   const struct poly_ddr *p = (const struct poly_ddr *) pddr;
 
-  return (hashval_t) ((long) PDDR_SOURCE (p) + (long) PDDR_SINK (p));
+  return (hashval_t) ((intptr_t) PDDR_SOURCE (p) + (intptr_t) PDDR_SINK (p));
 }
 
 /* Returns true when PDDR has no dependence.  */

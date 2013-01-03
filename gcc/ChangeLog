@@ -1,3 +1,9 @@
+2013-01-02  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR bootstrap/55707
+	* graphite-dependences.c (hash_poly_ddr_p): Cast from pointer via
+	intptr_t.
+
 2013-01-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55804
