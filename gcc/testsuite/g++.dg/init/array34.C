@@ -1,7 +1,9 @@
 // PR c++/53650
 // We should loop over array inits if they don't involve temporaries
 // that need extending.
-// { dg-final { scan-assembler-times "_ZN5ClassC1Ev" 1 } }
+// { dg-options "-fdump-tree-gimple" }
+// { dg-final { scan-tree-dump-times "Class::Class" 1 "gimple" } }
+// { dg-final { cleanup-tree-dump "gimple" } }
 
 struct Class {
   Class();
