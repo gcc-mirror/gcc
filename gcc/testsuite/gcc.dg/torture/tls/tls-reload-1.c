@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target tls_runtime } */
+/* { dg-add-options tls } */
 
 #define ARRAY(X) X##_array
 #define DECLARE(X) \

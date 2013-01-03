@@ -1,3 +1,7 @@
+2013-01-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/torture/tls/tls-reload-1.c: Add tls options.
+
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55857
