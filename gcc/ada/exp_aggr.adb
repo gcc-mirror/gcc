@@ -102,6 +102,14 @@ package body Exp_Aggr is
    --  statement of variant part will usually be small and probably in near
    --  sorted order.
 
+   procedure Collect_Initialization_Statements
+     (Obj        : Entity_Id;
+      N          : Node_Id;
+      Node_After : Node_Id);
+   --  Collect actions inserted after N until, but not including, Node_After,
+   --  for initialization of Obj, and move them to an expression with actions,
+   --  which becomes the Initialization_Statements for Obj.
+
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
    ------------------------------------------------------
@@ -2943,6 +2951,35 @@ package body Exp_Aggr is
       return L;
    end Build_Record_Aggr_Code;
 
+   ---------------------------------------
+   -- Collect_Initialization_Statements --
+   ---------------------------------------
+
+   procedure Collect_Initialization_Statements
+     (Obj        : Entity_Id;
+      N          : Node_Id;
+      Node_After : Node_Id)
+   is
+      Loc          : constant Source_Ptr := Sloc (N);
+      Init_Node    : Node_Id;
+      EA           : Node_Id;
+      Init_Actions : constant List_Id := New_List;
+   begin
+      Init_Node := N;
+
+      while Next (Init_Node) /= Node_After loop
+         Append_To (Init_Actions, Remove_Next (Init_Node));
+      end loop;
+
+      if not Is_Empty_List (Init_Actions) then
+         EA := Make_Expression_With_Actions (Loc,
+                 Actions    => Init_Actions,
+                 Expression => Make_Null_Statement (Loc));
+         Insert_Action_After (Init_Node, EA);
+         Set_Initialization_Statements (Obj, EA);
+      end if;
+   end Collect_Initialization_Statements;
+
    -------------------------------
    -- Convert_Aggr_In_Allocator --
    -------------------------------
@@ -3120,34 +3157,9 @@ package body Exp_Aggr is
 
       declare
          Node_After   : constant Node_Id := Next (N);
-         Init_Node    : Node_Id;
-         Blk          : Node_Id;
-         Init_Actions : constant List_Id := New_List;
       begin
          Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
-
-         --  Move inserted, analyzed actions to Init_Actions, but skip over
-         --  freeze nodes as these need to remain in the proper scope.
-
-         Init_Node := N;
-
-         while Next (Init_Node) /= Node_After loop
-            if Nkind (Next (Init_Node)) = N_Freeze_Entity then
-               Next (Init_Node);
-            else
-               Append_To (Init_Actions, Remove_Next (Init_Node));
-            end if;
-         end loop;
-
-         if not Is_Empty_List (Init_Actions) then
-            Blk := Make_Block_Statement (Loc,
-                     Declarations => New_List,
-                     Handled_Statement_Sequence =>
-                       Make_Handled_Sequence_Of_Statements (Loc,
-                         Statements => Init_Actions));
-            Insert_Action_After (Init_Node, Blk);
-            Set_Initialization_Statements (Obj, Blk);
-         end if;
+         Collect_Initialization_Statements (Obj, N, Node_After);
       end;
       Set_No_Initialization (N);
       Initialize_Discriminants (N, Typ);
@@ -4966,23 +4978,21 @@ package body Exp_Aggr is
          Build_Activation_Chain_Entity (N);
       end if;
 
+      --  Perform in-place expansion of aggregate in an object declaration.
+      --  Note: actions generated for the aggregate will be captured in a block
+      --  statement so that they can be transferred to freeze actions later
+      --  if there is an address clause for the object.
+
       --  Should document these individual tests ???
 
       if not Has_Default_Init_Comps (N)
-         and then Comes_From_Source (Parent (N))
-         and then Nkind (Parent (N)) = N_Object_Declaration
+         and then Comes_From_Source (Parent_Node)
+         and then Parent_Kind = N_Object_Declaration
          and then not
-           Must_Slide (Etype (Defining_Identifier (Parent (N))), Typ)
-         and then N = Expression (Parent (N))
+           Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
+         and then N = Expression (Parent_Node)
          and then not Is_Bit_Packed_Array (Typ)
          and then not Has_Controlled_Component (Typ)
-
-      --  If the aggregate is the expression in an object declaration, it
-      --  cannot be expanded in place. Lookahead in the current declarative
-      --  part to find an address clause for the object being declared. If
-      --  one is present, we cannot build in place. Unclear comment???
-
-         and then not Has_Following_Address_Clause (Parent (N))
       then
          Tmp := Defining_Identifier (Parent (N));
          Set_No_Initialization (Parent (N));
@@ -5101,7 +5111,16 @@ package body Exp_Aggr is
       end;
 
       if Comes_From_Source (Tmp) then
-         Insert_Actions_After (Parent (N), Aggr_Code);
+         declare
+            Node_After : constant Node_Id := Next (Parent_Node);
+         begin
+            Insert_Actions_After (Parent_Node, Aggr_Code);
+
+            if Parent_Kind = N_Object_Declaration then
+               Collect_Initialization_Statements
+                 (Obj => Tmp, N => Parent_Node, Node_After => Node_After);
+            end if;
+         end;
 
       else
          Insert_Actions (N, Aggr_Code);

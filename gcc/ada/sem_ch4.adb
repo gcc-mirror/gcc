@@ -1902,8 +1902,12 @@ package body Sem_Ch4 is
          exit when No (A);
       end loop;
 
-      Analyze_Expression (Expression (N));
-      Set_Etype (N, Etype (Expression (N)));
+      if Nkind (Expression (N)) = N_Null_Statement then
+         Set_Etype (N, Standard_Void_Type);
+      else
+         Analyze_Expression (Expression (N));
+         Set_Etype (N, Etype (Expression (N)));
+      end if;
    end Analyze_Expression_With_Actions;
 
    ---------------------------

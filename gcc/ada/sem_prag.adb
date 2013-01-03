@@ -6640,6 +6640,280 @@ package body Sem_Prag is
                Pragma_Misplaced;
             end if;
 
+         --------------------
+         -- Abstract_State --
+         --------------------
+
+         when Pragma_Abstract_State => Abstract_State : declare
+            Pack_Id : Entity_Id;
+
+            --  Flags used to verify the consistency of states
+
+            Non_Null_Seen : Boolean := False;
+            Null_Seen     : Boolean := False;
+
+            procedure Analyze_Abstract_State (State : Node_Id);
+            --  Verify the legality of a single state declaration. Create and
+            --  decorate a state abstraction entity and introduce it into the
+            --  visibility chain.
+
+            ----------------------------
+            -- Analyze_Abstract_State --
+            ----------------------------
+
+            procedure Analyze_Abstract_State (State : Node_Id) is
+               procedure Check_Duplicate_Property
+                 (Prop   : Node_Id;
+                  Status : in out Boolean);
+               --  Flag Status denotes whether a particular property has been
+               --  seen while processing a state. This routine verifies that
+               --  Prop is not a duplicate property and sets the flag Status.
+
+               ------------------------------
+               -- Check_Duplicate_Property --
+               ------------------------------
+
+               procedure Check_Duplicate_Property
+                 (Prop   : Node_Id;
+                  Status : in out Boolean)
+               is
+               begin
+                  if Status then
+                     Error_Msg_N ("duplicate state property", Prop);
+                  end if;
+
+                  Status := True;
+               end Check_Duplicate_Property;
+
+               --  Local variables
+
+               Errors  : constant Nat := Serious_Errors_Detected;
+               Loc     : constant Source_Ptr := Sloc (State);
+               Assoc   : Node_Id;
+               Id      : Entity_Id;
+               Is_Null : Boolean := False;
+               Level   : Uint := Uint_0;
+               Name    : Name_Id;
+               Prop    : Node_Id;
+
+               --  Flags used to verify the consistency of properties
+
+               Input_Seen     : Boolean := False;
+               Integrity_Seen : Boolean := False;
+               Output_Seen    : Boolean := False;
+               Volatile_Seen  : Boolean := False;
+
+            --  Start of processing for Analyze_Abstract_State
+
+            begin
+               --  A package with a null abstract state is not allowed to
+               --  declare additional states.
+
+               if Null_Seen then
+                  Error_Msg_Name_1 := Chars (Pack_Id);
+                  Error_Msg_N ("package % has null abstract state", State);
+
+               --  Null states appear as internally generated entities
+
+               elsif Nkind (State) = N_Null then
+                  Name := New_Internal_Name ('S');
+                  Is_Null   := True;
+                  Null_Seen := True;
+
+                  --  Catch a case where a null state appears in a list of
+                  --  non-null states.
+
+                  if Non_Null_Seen then
+                     Error_Msg_Name_1 := Chars (Pack_Id);
+                     Error_Msg_N
+                       ("package % has non-null abstract state", State);
+                  end if;
+
+               --  Simple state declaration
+
+               elsif Nkind (State) = N_Identifier then
+                  Name := Chars (State);
+                  Non_Null_Seen := True;
+
+               --  State declaration with various properties. This construct
+               --  appears as an extension aggregate in the tree.
+
+               elsif Nkind (State) = N_Extension_Aggregate then
+                  if Nkind (Ancestor_Part (State)) = N_Identifier then
+                     Name := Chars (Ancestor_Part (State));
+                     Non_Null_Seen := True;
+                  else
+                     Error_Msg_N
+                       ("state name must be an identifier",
+                        Ancestor_Part (State));
+                  end if;
+
+                  --  Process properties Input, Output and Volatile. Ensure
+                  --  that none of them appear more than once.
+
+                  Prop := First (Expressions (State));
+                  while Present (Prop) loop
+                     if Nkind (Prop) = N_Identifier then
+                        if Chars (Prop) = Name_Input then
+                           Check_Duplicate_Property (Prop, Input_Seen);
+                        elsif Chars (Prop) = Name_Output then
+                           Check_Duplicate_Property (Prop, Output_Seen);
+                        elsif Chars (Prop) = Name_Volatile then
+                           Check_Duplicate_Property (Prop, Volatile_Seen);
+                        else
+                           Error_Msg_N ("invalid state property", Prop);
+                        end if;
+                     else
+                        Error_Msg_N ("invalid state property", Prop);
+                     end if;
+
+                     Next (Prop);
+                  end loop;
+
+                  --  Volatile requires exactly one Input or Output
+
+                  if Volatile_Seen
+                    and then
+                      ((Input_Seen and then Output_Seen)           --  both
+                          or else
+                       (not Input_Seen and then not Output_Seen))  --  none
+                  then
+                     Error_Msg_N
+                       ("property Volatile requires exactly one Input or " &
+                        "Output", State);
+                  end if;
+
+                  --  Either Input or Output require Volatile
+
+                  if (Input_Seen or else Output_Seen)
+                    and then not Volatile_Seen
+                  then
+                     Error_Msg_N
+                       ("properties Input and Output require Volatile", State);
+                  end if;
+
+                  --  State property Integrity appears as a component
+                  --  association.
+
+                  Assoc := First (Component_Associations (State));
+                  while Present (Assoc) loop
+                     Prop := First (Choices (Assoc));
+                     while Present (Prop) loop
+                        if Nkind (Prop) = N_Identifier
+                          and then Chars (Prop) = Name_Integrity
+                        then
+                           Check_Duplicate_Property (Prop, Integrity_Seen);
+                        else
+                           Error_Msg_N ("invalid state property", Prop);
+                        end if;
+
+                        Next (Prop);
+                     end loop;
+
+                     if Nkind (Expression (Assoc)) = N_Integer_Literal then
+                        Level := Intval (Expression (Assoc));
+                     else
+                        Error_Msg_N
+                          ("integrity level must be an integer literal",
+                           Expression (Assoc));
+                     end if;
+
+                     Next (Assoc);
+                  end loop;
+
+               --  Any other attempt to declare a state is erroneous
+
+               else
+                  Error_Msg_N ("malformed abstract state declaration", N);
+               end if;
+
+               --  Do not generate a state abstraction entity if it was not
+               --  properly declared.
+
+               if Serious_Errors_Detected > Errors then
+                  return;
+               end if;
+
+               --  The generated state abstraction reuses the same characters
+               --  from the original state declaration. Decorate the entity.
+
+               Id := Make_Defining_Identifier (Loc, New_External_Name (Name));
+               Set_Comes_From_Source (Id, not Is_Null);
+               Set_Parent            (Id, State);
+               Set_Ekind             (Id, E_Abstract_State);
+               Set_Etype             (Id, Standard_Void_Type);
+               Set_Integrity_Level   (Id, Level);
+               Set_Refined_State     (Id, Empty);
+
+               --  Every non-null state must be nameable and resolvable the
+               --  same way a constant is.
+
+               if not Is_Null then
+                  Push_Scope (Pack_Id);
+                  Enter_Name (Id);
+                  Pop_Scope;
+               end if;
+
+               --  Associate the state with its related package
+
+               if No (Abstract_States (Pack_Id)) then
+                  Set_Abstract_States (Pack_Id, New_Elmt_List);
+               end if;
+
+               Append_Elmt (Id, Abstract_States (Pack_Id));
+            end Analyze_Abstract_State;
+
+            --  Local variables
+
+            Par   : Node_Id;
+            State : Node_Id;
+
+         --  Start of processing for Abstract_State
+
+         begin
+            GNAT_Pragma;
+            S14_Pragma;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Abstract states must
+            --  be associated with a package declaration.
+
+            if From_Aspect_Specification (N) then
+               Par := Parent (Corresponding_Aspect (N));
+            else
+               Par := Parent (Parent (N));
+            end if;
+
+            if Nkind (Par) = N_Compilation_Unit then
+               Par := Unit (Par);
+            end if;
+
+            if Nkind (Par) /= N_Package_Declaration then
+               Pragma_Misplaced;
+               return;
+            end if;
+
+            Pack_Id := Defining_Unit_Name (Specification (Par));
+            State   := Expression (Arg1);
+
+            --  Multiple abstract states appear as an aggregate
+
+            if Nkind (State) = N_Aggregate then
+               State := First (Expressions (State));
+               while Present (State) loop
+                  Analyze_Abstract_State (State);
+
+                  Next (State);
+               end loop;
+
+            --  Various forms of a single abstract state. Note that these may
+            --  include malformed state declarations.
+
+            else
+               Analyze_Abstract_State (State);
+            end if;
+         end Abstract_State;
+
          ------------
          -- Ada_83 --
          ------------
@@ -15748,6 +16022,7 @@ package body Sem_Prag is
    Sig_Flags : constant array (Pragma_Id) of Int :=
      (Pragma_AST_Entry                      => -1,
       Pragma_Abort_Defer                    => -1,
+      Pragma_Abstract_State                 => -1,
       Pragma_Ada_83                         => -1,
       Pragma_Ada_95                         => -1,
       Pragma_Ada_05                         => -1,
