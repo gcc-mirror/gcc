@@ -1,3 +1,7 @@
+2013-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* mf-runtime.c (__mf_usage): Update copyright notice dates.
+
 2012-12-15  Alexandre Oliva <aoliva@redhat.com>
 
 	* mf-hooks1.c (free): Return on NULL before any logging.
