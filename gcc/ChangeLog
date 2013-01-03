@@ -1,5 +1,20 @@
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
+	Revert
+	2013-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55857
+	* tree-vect-stmts.c (vectorizable_load): Do not setup
+	re-alignment for invariant loads.
+
+	2013-01-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): When vectorizing an
+	invariant load do not generate a vector load from the scalar
+	location.
+
+2013-01-03  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-loop.c (vect_analyze_loop_form): Clarify reason
 	for not vectorizing.
 	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Do
