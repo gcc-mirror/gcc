@@ -67,13 +67,14 @@
 
 --  In order to retrieve symbolic information, functions in this package will
 --  read on disk all the debug information of the executable file (found via
---  Argument (0), and looked in the PATH if needed), and load them in memory,
---  causing a significant cpu and memory overhead.
+--  Argument (0), and looked in the PATH if needed) or shared libraries using
+--  OS facilities, and load them in memory, causing a significant cpu and
+--  memory overhead.
 
---  On all platforms except VMS, this package is not intended to be used
---  within a shared library, symbolic tracebacks are only supported for the
---  main executable and not for shared libraries. You should consider using
---  gdb to obtain symbolic traceback in such cases.
+--  Symbolic traceback from shared libraries is only supported for VMS, Windows
+--  and GNU/Linux. On other targets symbolic tracebacks are only supported for
+--  the main executable. You should consider using gdb to obtain symbolic
+--  traceback in such cases.
 
 --  On VMS, there is no restriction on using this facility with shared
 --  libraries. However, the OS should be at least v7.3-1 and OS patch

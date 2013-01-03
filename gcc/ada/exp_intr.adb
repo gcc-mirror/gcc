@@ -287,7 +287,8 @@ package body Exp_Intr is
          Set_Controlling_Argument (Cnstr_Call,
            New_Occurrence_Of (Defining_Identifier (Iface_Tag), Loc));
       else
-         Set_Controlling_Argument (Cnstr_Call, Relocate_Node (Tag_Arg));
+         Set_Controlling_Argument (Cnstr_Call,
+           Relocate_Node (Tag_Arg));
       end if;
 
       --  Rewrite and analyze the call to the instance as a class-wide

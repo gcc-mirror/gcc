@@ -154,6 +154,8 @@ package System.Win32 is
    FILE_ATTRIBUTE_VALID_FLAGS         : constant := 16#00007fb7#;
    FILE_ATTRIBUTE_VALID_SET_FLAGS     : constant := 16#000031a7#;
 
+   GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS : constant := 16#00000004#;
+
    type OVERLAPPED is record
       Internal     : DWORD;
       InternalHigh : DWORD;
@@ -317,5 +319,21 @@ package System.Win32 is
      (lpPerformanceCount : access LARGE_INTEGER) return BOOL;
    pragma Import
      (Stdcall, QueryPerformanceCounter, "QueryPerformanceCounter");
+
+   ------------
+   -- Module --
+   ------------
+
+   function GetModuleHandleEx
+     (dwFlags      : DWORD;
+      lpModuleName : Address;
+      phModule     : access HANDLE) return BOOL;
+   pragma Import (Stdcall, GetModuleHandleEx, "GetModuleHandleExA");
+
+   function GetModuleFileName
+     (hModule    : HANDLE;
+      lpFilename : Address;
+      nSize      : DWORD) return DWORD;
+   pragma Import (Stdcall, GetModuleFileName, "GetModuleFileNameA");
 
 end System.Win32;

@@ -1,3 +1,27 @@
+2013-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* exp_intr.adb: Minor reformatting.
+
+2013-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb: Minor reformatting.
+
+2013-01-03  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c, adaint.h (__gnat_get_module_name): Removed.
+	(__gnat_is_module_name_supported): Removed.
+	* s-win32.ads: Add some needed definitions.
+	* g-trasym.ads: Update comments.
+
+2013-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb (Set_Composite_Alignment): Fix problems of
+	interactions with Optimize_Alignment set to Space.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+
 2013-01-02  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/55784
