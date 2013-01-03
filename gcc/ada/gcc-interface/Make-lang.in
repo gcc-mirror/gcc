@@ -49,9 +49,12 @@ COMMON_ADAFLAGS= -gnatpg -gnata
 WARN_ADAFLAGS= -W -Wall
 BOOT_ADAFLAGS= $(COMMON_ADAFLAGS)
 
+# For native builds, the base compiler might be old and we need to arrange for
+# style warnings not to be flagged as errors during stage1.  Cross compilers
+# need to be built by a recent/matching native so we might as well leave the
+# checks fully active.
+
 ifeq ($(CROSS),)
-# If not in cross context we are probably doing a bootstrap
-# so disable warnings during stage1
 ADAFLAGS= $(COMMON_ADAFLAGS) -gnatwns
 else
 ADAFLAGS= $(COMMON_ADAFLAGS)
