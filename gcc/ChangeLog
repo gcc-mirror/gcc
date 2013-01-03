@@ -1,3 +1,9 @@
+2013-01-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR bootstrap/50167
+	* graphite-interchange.c (pdr_stride_in_loop): Use gmp_fprintf.
+	* graphite-poly.c (debug_gmp_value): Likewise.
+
 2013-01-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/55712

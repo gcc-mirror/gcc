@@ -240,15 +240,8 @@ pdr_stride_in_loop (mpz_t stride, graphite_dim_t depth, poly_dr_p pdr)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      char *str;
-      void (*gmp_free) (void *, size_t);
-
-      fprintf (dump_file, "\nStride in BB_%d, DR_%d, depth %d:",
-	       pbb_index (pbb), PDR_ID (pdr), (int) depth);
-      str = mpz_get_str (0, 10, stride);
-      fprintf (dump_file, "  %s ", str);
-      mp_get_memory_functions (NULL, NULL, &gmp_free);
-      (*gmp_free) (str, strlen (str) + 1);
+      gmp_fprintf (dump_file, "\nStride in BB_%d, DR_%d, depth %d:  %Zd ",
+		   pbb_index (pbb), PDR_ID (pdr), (int) depth, stride);
     }
 }
 
