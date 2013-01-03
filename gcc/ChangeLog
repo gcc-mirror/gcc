@@ -1,5 +1,14 @@
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_analyze_loop_form): Clarify reason
+	for not vectorizing.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Do
+	not build INDIRECT_REFs, call get_name once only.
+	(vect_create_data_ref_ptr): Likewise.  Dump base object kind
+	based on DR_BASE_OBJECT, not DR_BASE_ADDRESS.
+
+2013-01-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/55857
 	* tree-vect-stmts.c (vectorizable_load): Do not setup
 	re-alignment for invariant loads.
