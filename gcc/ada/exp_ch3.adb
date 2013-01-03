@@ -8274,7 +8274,10 @@ package body Exp_Ch3 is
          --  Input attributes, since each type will have its own version of
          --  Input constructed by the expander. The test for Comes_From_Source
          --  is needed to distinguish inherited operations from renamings
-         --  (which also have Alias set).
+         --  (which also have Alias set). We exclude internal entities with
+         --  Interface_Alias to avoid generating duplicated wrappers since
+         --  the primitive which covers the interface is also available in
+         --  the list of primitive operations.
 
          --  The function may be abstract, or require_Overriding may be set
          --  for it, because tests for null extensions may already have reset
@@ -8284,6 +8287,7 @@ package body Exp_Ch3 is
 
          if Comes_From_Source (Subp)
            or else No (Alias (Subp))
+           or else Present (Interface_Alias (Subp))
            or else Ekind (Subp) /= E_Function
            or else not Has_Controlling_Result (Subp)
            or else Is_Access_Type (Etype (Subp))
@@ -8400,11 +8404,15 @@ package body Exp_Ch3 is
 
             Append_To (Body_List, Func_Body);
 
-            --  Replace the inherited function with the wrapper function
-            --  in the primitive operations list.
+            --  Replace the inherited function with the wrapper function in the
+            --  primitive operations list. We add the minimum decoration needed
+            --  to override interface primitives.
+
+            Set_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
 
             Override_Dispatching_Operation
-              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec));
+              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec),
+               Is_Wrapper => True);
          end if;
 
       <<Next_Prim>>

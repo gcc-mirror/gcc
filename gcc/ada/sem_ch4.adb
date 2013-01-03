@@ -1765,7 +1765,7 @@ package body Sem_Ch4 is
                    (Is_Immediately_Visible (Scope (DT))
                      or else
                        (Is_Child_Unit (Scope (DT))
-                          and then Is_Visible_Lib_Unit (Scope (DT))))
+                         and then Is_Visible_Lib_Unit (Scope (DT))))
                then
                   Set_Etype (N, Available_View (DT));
 
@@ -6320,13 +6320,12 @@ package body Sem_Ch4 is
           (Is_Immediately_Visible (Scope (Typ))
             or else
               (Is_Child_Unit (Scope (Typ))
-                 and then Is_Visible_Lib_Unit (Scope (Typ))))
+                and then Is_Visible_Lib_Unit (Scope (Typ))))
       then
          return Available_View (Typ);
       else
          return Typ;
       end if;
-
    end Process_Implicit_Dereference_Prefix;
 
    --------------------------------

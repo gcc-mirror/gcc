@@ -846,8 +846,9 @@ package Einfo is
 --       full details of the use of discriminals.
 
 --    Discriminal_Link (Node10)
---       Defined in discriminals (which have an Ekind of E_In_Parameter,
---       or E_Constant), points back to corresponding discriminant.
+--       Defined in E_In_Parameter or E_Constant entities. For discriminals,
+--       points back to corresponding discriminant. For other entities, must
+--       remain Empty.
 
 --    Discriminant_Checking_Func (Node20)
 --       Defined in components. Points to the defining identifier of the
@@ -2168,7 +2169,7 @@ package Einfo is
 
 --    Is_Discriminal (synthesized)
 --       Applies to all entities, true for renamings of discriminants. Such
---       entities appear as constants or in parameters.
+--       entities appear as constants or IN parameters.
 
 --    Is_Dispatch_Table_Entity (Flag234)
 --       Applies to all entities. Set to indicate to the backend that this
@@ -2856,17 +2857,17 @@ package Einfo is
 --       Defined in procedure entities. Set if an Import_Valued_Procedure
 --       or Export_Valued_Procedure pragma applies to the procedure entity.
 
---    Is_Visible_Lib_Unit (Flag116)
---       Defined in all (root or child) library unit entities. Once compiled,
---       library units remain chained to the entities in the parent scope, and
---       a separate flag must be used to indicate whether the names are visible
---       by selected notation, or not.
-
 --    Is_Visible_Formal (Flag206)
 --       Defined in all entities. Set True for instances of the formals of a
 --       formal package. Indicates that the entity must be made visible in the
 --       body of the instance, to reproduce the visibility of the generic.
 --       This simplifies visibility settings in instance bodies.
+
+--    Is_Visible_Lib_Unit (Flag116)
+--       Defined in all (root or child) library unit entities. Once compiled,
+--       library units remain chained to the entities in the parent scope, and
+--       a separate flag must be used to indicate whether the names are visible
+--       by selected notation, or not.
 
 --    Is_VMS_Exception (Flag133)
 --       Defined in all entities. Set only for exception entities where the
@@ -5091,7 +5092,7 @@ package Einfo is
    --  E_Constant
    --  E_Loop_Parameter
    --    Current_Value                       (Node9)    (always Empty)
-   --    Discriminal_Link                    (Node10)   (discriminals only)
+   --    Discriminal_Link                    (Node10)
    --    Full_View                           (Node11)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)   (constants only)
@@ -6310,8 +6311,8 @@ package Einfo is
    function Is_Unsigned_Type                    (Id : E) return B;
    function Is_VMS_Exception                    (Id : E) return B;
    function Is_Valued_Procedure                 (Id : E) return B;
-   function Is_Visible_Lib_Unit                 (Id : E) return B;
    function Is_Visible_Formal                   (Id : E) return B;
+   function Is_Visible_Lib_Unit                 (Id : E) return B;
    function Is_Volatile                         (Id : E) return B;
    function Itype_Printed                       (Id : E) return B;
    function Kill_Elaboration_Checks             (Id : E) return B;
@@ -6908,8 +6909,8 @@ package Einfo is
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
    procedure Set_Is_VMS_Exception                (Id : E; V : B := True);
    procedure Set_Is_Valued_Procedure             (Id : E; V : B := True);
-   procedure Set_Is_Visible_Lib_Unit             (Id : E; V : B := True);
    procedure Set_Is_Visible_Formal               (Id : E; V : B := True);
+   procedure Set_Is_Visible_Lib_Unit             (Id : E; V : B := True);
    procedure Set_Is_Volatile                     (Id : E; V : B := True);
    procedure Set_Itype_Printed                   (Id : E; V : B := True);
    procedure Set_Kill_Elaboration_Checks         (Id : E; V : B := True);
@@ -7629,8 +7630,8 @@ package Einfo is
    pragma Inline (Is_Unsigned_Type);
    pragma Inline (Is_VMS_Exception);
    pragma Inline (Is_Valued_Procedure);
-   pragma Inline (Is_Visible_Lib_Unit);
    pragma Inline (Is_Visible_Formal);
+   pragma Inline (Is_Visible_Lib_Unit);
    pragma Inline (Itype_Printed);
    pragma Inline (Kill_Elaboration_Checks);
    pragma Inline (Kill_Range_Checks);
@@ -8035,8 +8036,8 @@ package Einfo is
    pragma Inline (Set_Is_Unsigned_Type);
    pragma Inline (Set_Is_VMS_Exception);
    pragma Inline (Set_Is_Valued_Procedure);
-   pragma Inline (Set_Is_Visible_Lib_Unit);
    pragma Inline (Set_Is_Visible_Formal);
+   pragma Inline (Set_Is_Visible_Lib_Unit);
    pragma Inline (Set_Is_Volatile);
    pragma Inline (Set_Itype_Printed);
    pragma Inline (Set_Kill_Elaboration_Checks);
