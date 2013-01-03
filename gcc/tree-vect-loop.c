@@ -1167,11 +1167,11 @@ vect_analyze_loop_form (struct loop *loop)
      before the loop if needed), where the loop header contains all the
      executable statements, and the latch is empty.  */
   if (!empty_block_p (loop->latch)
-        || !gimple_seq_empty_p (phi_nodes (loop->latch)))
+      || !gimple_seq_empty_p (phi_nodes (loop->latch)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: unexpected loop form.");
+			 "not vectorized: latch block not empty.");
       if (inner_loop_vinfo)
 	destroy_loop_vec_info (inner_loop_vinfo, true);
       return NULL;
