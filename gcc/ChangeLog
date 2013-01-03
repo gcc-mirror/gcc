@@ -1,4 +1,12 @@
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/55832
+	* fold-const.c (fold_binary_loc): For ABS_EXPR<x> >= 0 and
+	ABS_EXPR<x> < 0 folding use constant_boolean_node instead of
+	integer_{one,zero}_node.
+
+2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/54402
 	* params.def (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE): New param.
