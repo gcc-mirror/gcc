@@ -5848,15 +5848,19 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
       member = TREE_OPERAND (t, 0);
       init = unshare_expr (TREE_OPERAND (t, 1));
     }
-  else
+  else if (TREE_CODE (t) == CALL_EXPR)
     {
-      gcc_assert (TREE_CODE (t) == CALL_EXPR);
       member = CALL_EXPR_ARG (t, 0);
       /* We don't use build_cplus_new here because it complains about
 	 abstract bases.  Leaving the call unwrapped means that it has the
 	 wrong type, but cxx_eval_constant_expression doesn't care.  */
       init = unshare_expr (t);
     }
+  else if (TREE_CODE (t) == DECL_EXPR)
+    /* Declaring a temporary, don't add it to the CONSTRUCTOR.  */
+    return true;
+  else
+    gcc_unreachable ();
   if (TREE_CODE (member) == INDIRECT_REF)
     member = TREE_OPERAND (member, 0);
   if (TREE_CODE (member) == NOP_EXPR)
