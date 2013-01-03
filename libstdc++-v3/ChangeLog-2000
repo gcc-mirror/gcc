@@ -5641,4 +5641,9 @@ Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 	* docs/index.html, docs/links.html, docs/mail.html,
 	  docs/status.html, docs/thanks.html, docs/faq/index.txt:  Ditto.
 	* docs/how.html:  Ditto.  (This file should go away soon.)
+
+Copyright (C) 2000 Free Software Foundation, Inc.
 
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
