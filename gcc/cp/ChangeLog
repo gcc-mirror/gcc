@@ -1,5 +1,8 @@
 2013-01-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55856
+	* semantics.c (build_data_member_initialization): Handle DECL_EXPR.
+
 	PR c++/53650
 	* call.c (type_has_extended_temps): New.
 	* cp-tree.h: Declare it.
