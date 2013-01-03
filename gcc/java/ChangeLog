@@ -1,3 +1,7 @@
+2013-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* jcf-dump.c (version): Update copyright notice dates.
+
 2012-11-16  Diego Novillo  <dnovillo@google.com>
 
 	Adjust for new vec API (http://gcc.gnu.org/wiki/cxx-conversion/cxx-vec)
