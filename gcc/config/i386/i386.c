@@ -29626,15 +29626,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"avx2",   F_AVX2}
     };
 
-  tree __processor_model_type = NULL_TREE;
-  tree __cpu_model_var = NULL_TREE;
-
-  if (__processor_model_type == NULL_TREE)
-    __processor_model_type = build_processor_model_struct ();
-
-  if (__cpu_model_var == NULL_TREE)
-    __cpu_model_var = make_var_decl (__processor_model_type,
-				     "__cpu_model");
+  tree __processor_model_type = build_processor_model_struct ();
+  tree __cpu_model_var = make_var_decl (__processor_model_type,
+					"__cpu_model");
 
   gcc_assert ((args != NULL) && (*args != NULL));
 
