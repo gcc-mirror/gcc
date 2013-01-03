@@ -14119,10 +14119,8 @@ tsubst_copy_and_build (tree t,
     case TARGET_EXPR:
       /* We can get here for a constant initializer of non-dependent type.
          FIXME stop folding in cp_parser_initializer_clause.  */
-      gcc_assert (TREE_CONSTANT (t));
       {
 	tree r = get_target_expr (RECUR (TARGET_EXPR_INITIAL (t)));
-	TREE_CONSTANT (r) = true;
 	return r;
       }
 

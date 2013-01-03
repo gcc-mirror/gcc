@@ -1,5 +1,10 @@
 2013-01-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55419
+	PR c++/55753
+	* pt.c (tsubst_copy_and_build) [TARGET_EXPR]: Don't touch
+	TREE_CONSTANT.
+
 	PR c++/55842
 	* semantics.c (trait_expr_value): Call maybe_instantiate_noexcept.
 
