@@ -623,7 +623,8 @@ entire libstdc++ testsuite namespace-compatible.
 @item
 Mark Mitchell for his direction via the steering committee, mountains of
 C++ work, load/store hoisting out of loops, alias analysis improvements,
-ISO C @code{restrict} support, and serving as release manager for GCC 3.x.
+ISO C @code{restrict} support, and serving as release manager from 2000
+to 2011.
 
 @item
 Alan Modra for various GNU/Linux bits and testing.
