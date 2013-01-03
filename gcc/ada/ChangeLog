@@ -1,3 +1,46 @@
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi, freeze.adb (Check_Component_Storage_Order): Check that
+	a record extension has the same scalar storage order as the parent type.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb: Add comment.
+
+2013-01-03  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb: Minor spelling error correction in comment.
+
+2013-01-03  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): If a single main has been specified
+	as an absolute path, use its simple file name to find specific
+	switches, instead of the absolute path.
+
+2013-01-03  Javier Miranda  <miranda@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): For overlapping
+	parameters that are record types or array types generate warnings
+	only compiling under -gnatw.i
+	* opt.ads (Extensions_Allowed): Restore previous documentation.
+
+2013-01-03  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Do_Autoconf): If Target is specified in the
+	main project, but not on the command line, use the Target in
+	the project to invoke gprconfig in auto-configuration.
+	* makeutl.ads (Default_Config_Name): New constant String.
+
+2013-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb: Minor: fix typo in usage.
+
+2013-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Record_Representation_Clause): Reject
+	an illegal component clause for an inherited component in a
+	record extension.
+
 2013-01-03  Emmanuel Briot  <briot@adacore.com>
 
 	* xref_lib.adb (Parse_Identifier_Info): Fix handling of arrays, which

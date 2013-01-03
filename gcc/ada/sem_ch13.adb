@@ -4663,9 +4663,33 @@ package body Sem_Ch13 is
       Ocomp   : Entity_Id;
       Posit   : Uint;
       Rectype : Entity_Id;
+      Recdef  : Node_Id;
+
+      function Is_Inherited (Comp : Entity_Id) return Boolean;
+      --  True if Comp is an inherited component in a record extension
+
+      ------------------
+      -- Is_Inherited --
+      ------------------
+
+      function Is_Inherited (Comp : Entity_Id) return Boolean is
+         Comp_Base : Entity_Id;
+      begin
+         if Ekind (Rectype) = E_Record_Subtype then
+            Comp_Base := Original_Record_Component (Comp);
+         else
+            Comp_Base := Comp;
+         end if;
+         return Comp_Base /= Original_Record_Component (Comp_Base);
+      end Is_Inherited;
+
+      Is_Record_Extension : Boolean;
+      --  True if Rectype is a record extension
 
       CR_Pragma : Node_Id := Empty;
       --  Points to N_Pragma node if Complete_Representation pragma present
+
+   --  Start of processing for Analyze_Record_Representation_Clause
 
    begin
       if Ignore_Rep_Clauses then
@@ -4705,6 +4729,14 @@ package body Sem_Ch13 is
       elsif Rep_Item_Too_Late (Rectype, N) then
          return;
       end if;
+
+      --  We know we have a first subtype, now possibly go the the anonymous
+      --  base type to determine whether Rectype is a record extension.
+
+      Recdef := Type_Definition (Declaration_Node (Base_Type (Rectype)));
+      Is_Record_Extension :=
+        Nkind (Recdef) = N_Derived_Type_Definition
+          and then Present (Record_Extension_Part (Recdef));
 
       if Present (Mod_Clause (N)) then
          declare
@@ -4881,6 +4913,11 @@ package body Sem_Ch13 is
                        ("cannot reference discriminant of unchecked union",
                         Component_Name (CC));
 
+                  elsif Is_Record_Extension and then Is_Inherited (Comp) then
+                     Error_Msg_NE
+                       ("component clause not allowed for inherited "
+                        & "component&", CC, Comp);
+
                   elsif Present (Component_Clause (Comp)) then
 
                      --  Diagnose duplicate rep clause, or check consistency
@@ -4908,10 +4945,11 @@ package body Sem_Ch13 is
                               Error_Msg_N
                                 ("component clause inconsistent "
                                  & "with representation of ancestor", CC);
+
                            elsif Warn_On_Redundant_Constructs then
                               Error_Msg_N
-                                ("?r?redundant component clause "
-                                 & "for inherited component!", CC);
+                                ("?r?redundant confirming component clause "
+                                 & "for component!", CC);
                            end if;
                         end;
                      end if;
@@ -7346,7 +7384,7 @@ package body Sem_Ch13 is
       begin
          if Present (CC1) and then Present (CC2) then
 
-            --  Exclude odd case where we have two tag fields in the same
+            --  Exclude odd case where we have two tag components in the same
             --  record, both at location zero. This seems a bit strange, but
             --  it seems to happen in some circumstances, perhaps on an error.
 
@@ -7387,7 +7425,7 @@ package body Sem_Ch13 is
       procedure Find_Component is
 
          procedure Search_Component (R : Entity_Id);
-         --  Search components of R for a match. If found, Comp is set.
+         --  Search components of R for a match. If found, Comp is set
 
          ----------------------
          -- Search_Component --
@@ -7426,8 +7464,8 @@ package body Sem_Ch13 is
 
          Search_Component (Rectype);
 
-         --  If not found, maybe component of base type that is absent from
-         --  statically constrained first subtype.
+         --  If not found, maybe component of base type discriminant that is
+         --  absent from statically constrained first subtype.
 
          if No (Comp) then
             Search_Component (Base_Type (Rectype));
@@ -7555,7 +7593,7 @@ package body Sem_Ch13 is
                  ("bit number out of range of specified size",
                   Last_Bit (CC));
 
-               --  Check for overlap with tag field
+               --  Check for overlap with tag component
 
             else
                if Is_Tagged_Type (Rectype)

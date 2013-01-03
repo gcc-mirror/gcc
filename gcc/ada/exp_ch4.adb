@@ -10693,6 +10693,9 @@ package body Exp_Ch4 is
          then
             return Suitable_Element (Next_Entity (C));
 
+         --  Below test for C /= Original_Record_Component (C) is dubious
+         --  if Typ is a constrained record subtype???
+
          elsif Is_Tagged_Type (Typ)
            and then C /= Original_Record_Component (C)
          then

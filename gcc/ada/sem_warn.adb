@@ -3293,8 +3293,7 @@ package body Sem_Warn is
       Form1, Form2 : Entity_Id;
 
       function Is_Covered_Formal (Formal : Node_Id) return Boolean;
-      --  Return True if Formal is covered by the Ada 2012 rule. Under -gnatX
-      --  the rule is extended to cover record and array types.
+      --  Return True if Formal is covered by the rule.
 
       function Refer_Same_Object (Act1, Act2 : Node_Id) return Boolean;
       --  Two names are known to refer to the same object if the two names
@@ -3321,24 +3320,12 @@ package body Sem_Warn is
 
       function Is_Covered_Formal (Formal : Node_Id) return Boolean is
       begin
-         --  Ada 2012 rule
-
-         if not Extensions_Allowed then
-            return
-              Ekind_In (Formal, E_Out_Parameter,
-                                E_In_Out_Parameter)
-                and then Is_Elementary_Type (Etype (Formal));
-
-         --  Under -gnatX the rule is extended to cover array and record types
-
-         else
-            return
-              Ekind_In (Formal, E_Out_Parameter,
-                                E_In_Out_Parameter)
-                and then (Is_Elementary_Type (Etype (Formal))
-                            or else Is_Record_Type (Etype (Formal))
-                            or else Is_Array_Type (Etype (Formal)));
-         end if;
+         return
+           Ekind_In (Formal, E_Out_Parameter,
+                             E_In_Out_Parameter)
+             and then (Is_Elementary_Type (Etype (Formal))
+                         or else Is_Record_Type (Etype (Formal))
+                         or else Is_Array_Type (Etype (Formal)));
       end Is_Covered_Formal;
 
    begin
@@ -3360,7 +3347,8 @@ package body Sem_Warn is
       --  there is no other name among the other parameters of mode in out or
       --  out to C that is known to denote the same object (RM 6.4.1(6.15/3))
 
-      --  Under -gnatX the rule is extended to cover array and record types.
+      --  Compiling under -gnatw.i we also report warnings on overlapping
+      --  parameters that are record types or array types.
 
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
@@ -3401,10 +3389,21 @@ package body Sem_Warn is
                   then
                      null;
 
+                  --  Under Ada 2012 we only report warnings on overlapping
+                  --  arrays and record types if compiling under -gnatw.i
+
+                  elsif Ada_Version >= Ada_2012
+                     and then not Is_Elementary_Type (Etype (Form1))
+                     and then not Warn_On_Overlap
+                  then
+                     null;
+
                   --  Here we may need to issue message
 
                   else
-                     Error_Msg_Warn := Ada_Version < Ada_2012;
+                     Error_Msg_Warn :=
+                       Ada_Version < Ada_2012
+                         or else not Is_Elementary_Type (Etype (Form1));
 
                      declare
                         Act  : Node_Id;

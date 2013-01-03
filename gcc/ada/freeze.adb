@@ -1094,13 +1094,25 @@ package body Freeze is
                 Attribute_Scalar_Storage_Order);
 
       if Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
-         if No (ADC) then
+         if Present (Comp)
+              and then Chars (Comp) = Name_uParent
+         then
+            if Reverse_Storage_Order (Encl_Type)
+                 /=
+               Reverse_Storage_Order (Comp_Type)
+            then
+               Error_Msg_N
+                 ("record extension must have same scalar storage order as "
+                  & "parent", Err_Node);
+            end if;
+
+         elsif No (ADC) then
             Error_Msg_N ("nested composite must have explicit scalar "
                          & "storage order", Err_Node);
 
          elsif (Reverse_Storage_Order (Encl_Type)
                   /=
-                Reverse_Storage_Order (Etype (Comp_Type)))
+                Reverse_Storage_Order (Comp_Type))
            and then not Comp_Byte_Aligned
          then
             Error_Msg_N
