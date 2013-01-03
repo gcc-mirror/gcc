@@ -3151,9 +3151,8 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 
   /* This is possibly a typo: x = f() instead of x => f().  */
   if (gfc_option.warn_surprising
-      && rvalue->expr_type == EXPR_FUNCTION
-      && rvalue->symtree->n.sym->attr.pointer)
-    gfc_warning ("POINTER valued function appears on right-hand side of "
+      && rvalue->expr_type == EXPR_FUNCTION && gfc_expr_attr (rvalue).pointer)
+    gfc_warning ("POINTER-valued function appears on right-hand side of "
 		 "assignment at %L", &rvalue->where);
 
   /* Check size of array assignments.  */
