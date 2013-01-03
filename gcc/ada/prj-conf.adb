@@ -48,9 +48,6 @@ package body Prj.Conf is
 
    Auto_Cgpr : constant String := "auto.cgpr";
 
-   Default_Name : constant String := "default.cgpr";
-   --  Default configuration file that will be used if found
-
    Config_Project_Env_Var : constant String := "GPR_CONFIG";
    --  Name of the environment variable that provides the name of the
    --  configuration file to use.
@@ -669,7 +666,7 @@ package body Prj.Conf is
                Free (Tmp);
 
                if T'Length = 0 then
-                  return Default_Name;
+                  return Default_Config_Name;
                else
                   return T;
                end if;
@@ -1183,13 +1180,46 @@ package body Prj.Conf is
                Arg_Last := 3;
             else
                if Target_Name = "" then
-                  if At_Least_One_Compiler_Command then
-                     Args (4) := new String'("--target=all");
 
-                  else
-                     Args (4) :=
-                       new String'("--target=" & Normalized_Hostname);
-                  end if;
+                  --  Check if attribute Target is specified in the main
+                  --  project, or in a project it extends. If it is, use this
+                  --  target to invoke gprconfig.
+
+                  declare
+                     Variable : Variable_Value;
+                     Proj : Project_Id;
+                     Tgt_Name : Name_Id := No_Name;
+                  begin
+                     Proj := Project;
+                     Project_Loop :
+                     while Proj /= No_Project loop
+                        Variable :=
+                          Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
+
+                        if Variable /= Nil_Variable_Value and then
+                          not Variable.Default and then
+                          Variable.Value /= No_Name
+                        then
+                           Tgt_Name := Variable.Value;
+                           exit Project_Loop;
+                        end if;
+
+                        Proj := Proj.Extends;
+                     end loop Project_Loop;
+
+                     if Tgt_Name /= No_Name then
+                        Args (4) :=
+                          new String'("--target=" &
+                                      Get_Name_String (Tgt_Name));
+
+                     elsif At_Least_One_Compiler_Command then
+                        Args (4) := new String'("--target=all");
+
+                     else
+                        Args (4) :=
+                          new String'("--target=" & Normalized_Hostname);
+                     end if;
+                  end;
 
                else
                   Args (4) := new String'("--target=" & Target_Name);

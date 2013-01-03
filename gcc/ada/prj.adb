@@ -563,7 +563,7 @@ package body Prj is
            new Ada.Containers.Ordered_Sets (Element_Type => Name_Id);
 
          Seen_Name : Name_Id_Set.Set;
-         --  This set is needed to ensure that we do not haandle the same
+         --  This set is needed to ensure that we do not handle the same
          --  project twice in the context of aggregate libraries.
 
          procedure Recursive_Check
