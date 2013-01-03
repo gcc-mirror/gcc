@@ -8,7 +8,7 @@ test(int c)
     a[i]=5;
 }
 /* Basic testcase for complette unrolling.  */
-/* { dg-final { scan-tree-dump "Unrolled loop 1 completely .duplicated 5 times.." "cunroll"} } */
+/* { dg-final { scan-tree-dump "Completely unroll loop 5 times" "cunroll"} } */
 /* { dg-final { scan-tree-dump "Exit condition of peeled iterations was eliminated." "cunroll"} } */
 /* { dg-final { scan-tree-dump "Last iteration exit edge was proved true." "cunroll"} } */
 /* { dg-final { cleanup-tree-dump "cunroll" } } */
