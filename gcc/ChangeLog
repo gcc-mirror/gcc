@@ -1,3 +1,38 @@
+2013-01-02  Teresa Johnson  <tejohnson@google.com>
+
+	* dumpfile.c (dump_loc): Print filename with location.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Use
+	new location_t parameter to emit complete unroll message with
+	new dump framework.
+	(canonicalize_loop_induction_variables): Compute loops location
+	and pass to try_unroll_loop_completely.
+	* loop-unroll.c (report_unroll_peel): New function.
+	(peel_loops_completely): Use new dump format with location
+	for main dumpfile message, and invoke report_unroll_peel on success.
+	(decide_unrolling_and_peeling): Ditto.
+	(decide_peel_once_rolling): Remove old dumpfile message subsumed
+	by report_unroll_peel.
+	(decide_peel_completely): Ditto.
+	(decide_unroll_constant_iterations): Ditto.
+	(decide_unroll_runtime_iterations): Ditto.
+	(decide_peel_simple): Ditto.
+	(decide_unroll_stupid): Ditto.
+	* cfgloop.c (get_loop_location): New function.
+	* cfgloop.h (get_loop_location): Declare.
+
+	testsuite/
+	* gcc.dg/tree-ssa/loop-1.c: Update expected dump message.
+	* gcc.dg/tree-ssa/loop-23.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-1.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-2.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-3.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-4.c: Ditto.
+	* gcc.dg/tree-ssa/cunroll-5.c: Ditto.
+	* gcc.dg/unroll_1.c: Ditto.
+	* gcc.dg/unroll_2.c: Ditto.
+	* gcc.dg/unroll_3.c: Ditto.
+	* gcc.dg/unroll_4.c: Ditto.
+
 2013-01-02  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/i386.c (fold_builtin_cpu): Remove unnecessary checks for
