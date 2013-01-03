@@ -1,3 +1,14 @@
+2013-01-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/55712
+	* config/i386/i386-c.c (ix86_target_macros_internal): Depending on
+	selected code model, define __code_mode_small__, __code_model_medium__,
+	__code_model_large__, __code_model_32__ or __code_model_kernel__.
+	* config/i386/cpuid.h (__cpuid, __cpuid_count) [__i386__]: Prefix
+	xchg temporary register with %k.  Declare temporary register as
+	early clobbered.
+	[__x86_64__]: For medium and large code models, preserve %rbx register.
+
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-data-ref.c (dump_conflict_function): Use less vertical
