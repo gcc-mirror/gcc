@@ -361,6 +361,12 @@ package body Prj.Attr is
    "SVproject_subdir#" &
    "SVactive#" &
 
+   --  package Remote
+
+   "Premote#" &
+   "LVbuild_slaves#" &
+   "SVroot_dir#" &
+
    --  package Stack
 
    "Pstack#" &
