@@ -1,5 +1,15 @@
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
+	* tree-data-ref.c (dump_conflict_function): Use less vertical
+	spacing.
+	(dump_subscript): Adjust.
+	(finalize_ddr_dependent): Do not dump redundant info.
+	(analyze_siv_subscript): Adjust.
+	(subscript_dependence_tester): Likewise.
+	(compute_affine_dependence): Likewise.
+
+2013-01-03  Richard Biener  <rguenther@suse.de>
+
 	Revert
 	2013-01-03  Richard Biener  <rguenther@suse.de>
 
