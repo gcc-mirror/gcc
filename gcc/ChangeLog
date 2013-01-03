@@ -1,3 +1,9 @@
+2013-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR lto/55848
+	* lto-symtab.c (lto_symtab_merge_decls_1): As last resort, always
+	prefer a built-in decl.
+
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (process_command): Update copyright notice dates.
