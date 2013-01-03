@@ -375,7 +375,7 @@ package body Einfo is
    --    No_Return                       Flag113
    --    Delay_Cleanups                  Flag114
    --    Never_Set_In_Source             Flag115
-   --    Is_Visible_Child_Unit           Flag116
+   --    Is_Visible_Lib_Unit             Flag116
    --    Is_Unchecked_Union              Flag117
    --    Is_For_Access_Subtype           Flag118
    --    Has_Convention_Pragma           Flag119
@@ -2175,11 +2175,10 @@ package body Einfo is
       return Flag127 (Id);
    end Is_Valued_Procedure;
 
-   function Is_Visible_Child_Unit (Id : E) return B is
+   function Is_Visible_Lib_Unit (Id : E) return B is
    begin
-      pragma Assert (Is_Child_Unit (Id));
       return Flag116 (Id);
-   end Is_Visible_Child_Unit;
+   end Is_Visible_Lib_Unit;
 
    function Is_Visible_Formal (Id : E) return B is
    begin
@@ -4736,11 +4735,10 @@ package body Einfo is
       Set_Flag127 (Id, V);
    end Set_Is_Valued_Procedure;
 
-   procedure Set_Is_Visible_Child_Unit (Id : E; V : B := True) is
+   procedure Set_Is_Visible_Lib_Unit (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Child_Unit (Id));
       Set_Flag116 (Id, V);
-   end Set_Is_Visible_Child_Unit;
+   end Set_Is_Visible_Lib_Unit;
 
    procedure Set_Is_Visible_Formal (Id : E; V : B := True) is
    begin
@@ -7602,7 +7600,7 @@ package body Einfo is
       W ("Is_Unsigned_Type",                Flag144 (Id));
       W ("Is_VMS_Exception",                Flag133 (Id));
       W ("Is_Valued_Procedure",             Flag127 (Id));
-      W ("Is_Visible_Child_Unit",           Flag116 (Id));
+      W ("Is_Visible_Lib_Unit",             Flag116 (Id));
       W ("Is_Visible_Formal",               Flag206 (Id));
       W ("Is_Volatile",                     Flag16  (Id));
       W ("Itype_Printed",                   Flag202 (Id));

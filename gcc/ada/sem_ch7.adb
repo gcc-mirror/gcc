@@ -2253,7 +2253,7 @@ package body Sem_Ch7 is
 
                if Is_Child_Unit (Id) then
                   Set_Is_Potentially_Use_Visible
-                    (Id, Is_Visible_Child_Unit (Id));
+                    (Id, Is_Visible_Lib_Unit (Id));
                else
                   Set_Is_Potentially_Use_Visible (Id);
                end if;

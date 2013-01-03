@@ -2856,11 +2856,11 @@ package Einfo is
 --       Defined in procedure entities. Set if an Import_Valued_Procedure
 --       or Export_Valued_Procedure pragma applies to the procedure entity.
 
---    Is_Visible_Child_Unit (Flag116)
---       Defined in compilation units that are child units. Once compiled,
---       child units remain chained to the entities in the parent unit, and
---       a separate flag must be used to indicate whether the names are
---       visible by selected notation, or not.
+--    Is_Visible_Lib_Unit (Flag116)
+--       Defined in all (root or child) library unit entities. Once compiled,
+--       library units remain chained to the entities in the parent scope, and
+--       a separate flag must be used to indicate whether the names are visible
+--       by selected notation, or not.
 
 --    Is_Visible_Formal (Flag206)
 --       Defined in all entities. Set True for instances of the formals of a
@@ -5310,7 +5310,7 @@ package Einfo is
    --    Is_Private_Primitive                (Flag245)  (non-generic case only)
    --    Is_Pure                             (Flag44)
    --    Is_Thunk                            (Flag225)
-   --    Is_Visible_Child_Unit               (Flag116)
+   --    Is_Visible_Lib_Unit                 (Flag116)
    --    Needs_No_Actuals                    (Flag22)
    --    Requires_Overriding                 (Flag213)  (non-generic case only)
    --    Return_Present                      (Flag54)
@@ -5490,7 +5490,7 @@ package Einfo is
    --    In_Use                              (Flag8)
    --    Is_Instantiated                     (Flag126)
    --    Is_Private_Descendant               (Flag53)
-   --    Is_Visible_Child_Unit               (Flag116)
+   --    Is_Visible_Lib_Unit                 (Flag116)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
    --    Static_Elaboration_Desired          (Flag77)   (non-generic case only)
    --    Is_Wrapper_Package                  (synth)    (non-generic case only)
@@ -5580,7 +5580,7 @@ package Einfo is
    --    Is_Pure                             (Flag44)
    --    Is_Thunk                            (Flag225)
    --    Is_Valued_Procedure                 (Flag127)
-   --    Is_Visible_Child_Unit               (Flag116)
+   --    Is_Visible_Lib_Unit                 (Flag116)
    --    Needs_No_Actuals                    (Flag22)
    --    No_Return                           (Flag113)
    --    Requires_Overriding                 (Flag213)  (non-generic case only)
@@ -6310,7 +6310,7 @@ package Einfo is
    function Is_Unsigned_Type                    (Id : E) return B;
    function Is_VMS_Exception                    (Id : E) return B;
    function Is_Valued_Procedure                 (Id : E) return B;
-   function Is_Visible_Child_Unit               (Id : E) return B;
+   function Is_Visible_Lib_Unit                 (Id : E) return B;
    function Is_Visible_Formal                   (Id : E) return B;
    function Is_Volatile                         (Id : E) return B;
    function Itype_Printed                       (Id : E) return B;
@@ -6908,7 +6908,7 @@ package Einfo is
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
    procedure Set_Is_VMS_Exception                (Id : E; V : B := True);
    procedure Set_Is_Valued_Procedure             (Id : E; V : B := True);
-   procedure Set_Is_Visible_Child_Unit           (Id : E; V : B := True);
+   procedure Set_Is_Visible_Lib_Unit             (Id : E; V : B := True);
    procedure Set_Is_Visible_Formal               (Id : E; V : B := True);
    procedure Set_Is_Volatile                     (Id : E; V : B := True);
    procedure Set_Itype_Printed                   (Id : E; V : B := True);
@@ -7629,7 +7629,7 @@ package Einfo is
    pragma Inline (Is_Unsigned_Type);
    pragma Inline (Is_VMS_Exception);
    pragma Inline (Is_Valued_Procedure);
-   pragma Inline (Is_Visible_Child_Unit);
+   pragma Inline (Is_Visible_Lib_Unit);
    pragma Inline (Is_Visible_Formal);
    pragma Inline (Itype_Printed);
    pragma Inline (Kill_Elaboration_Checks);
@@ -8035,7 +8035,7 @@ package Einfo is
    pragma Inline (Set_Is_Unsigned_Type);
    pragma Inline (Set_Is_VMS_Exception);
    pragma Inline (Set_Is_Valued_Procedure);
-   pragma Inline (Set_Is_Visible_Child_Unit);
+   pragma Inline (Set_Is_Visible_Lib_Unit);
    pragma Inline (Set_Is_Visible_Formal);
    pragma Inline (Set_Is_Volatile);
    pragma Inline (Set_Itype_Printed);

@@ -5315,6 +5315,17 @@ package body Exp_Ch3 is
                       Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                       Name => Convert_Tag_To_Interface (Typ, Tag_Comp)));
 
+                  --  If the original entity comes from source, then mark the
+                  --  new entity as needing debug information, even though it's
+                  --  defined by a generated renaming that does not come from
+                  --  source, so that Materialize_Entity will be set on the
+                  --  entity when Debug_Renaming_Declaration is called during
+                  --  analysis.
+
+                  if Comes_From_Source (Def_Id) then
+                     Set_Debug_Info_Needed (Defining_Identifier (N));
+                  end if;
+
                   Analyze (N, Suppress => All_Checks);
 
                   --  Replace internal identifier of rewritten node by the
@@ -5328,7 +5339,7 @@ package body Exp_Ch3 is
                   --  which may be a constant. Preserve entity chain because
                   --  itypes may have been generated already, and the full
                   --  chain must be preserved for final freezing. Finally,
-                  --  Preserve Comes_From_Source setting, so that debugging
+                  --  preserve Comes_From_Source setting, so that debugging
                   --  and cross-referencing information is properly kept.
 
                   declare
@@ -5340,9 +5351,11 @@ package body Exp_Ch3 is
                   begin
                      Set_Next_Entity (New_Id, Next_Entity (Def_Id));
                      Set_Next_Entity (Def_Id, Next_Temp);
-                     Set_Chars (Defining_Identifier (N), Chars (Def_Id));
+
+                     Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
-                     Set_Ekind (Defining_Identifier (N), Ekind (Def_Id));
+                     Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
+
                      Set_Comes_From_Source (Def_Id, False);
                      Exchange_Entities (Defining_Identifier (N), Def_Id);
                      Set_Comes_From_Source (Def_Id, S_Flag);
