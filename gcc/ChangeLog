@@ -1,5 +1,11 @@
 2013-01-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/55857
+	* tree-vect-stmts.c (vectorizable_load): Do not setup
+	re-alignment for invariant loads.
+
+2013-01-03  Richard Biener  <rguenther@suse.de>
+
 	PR lto/55848
 	* lto-symtab.c (lto_symtab_merge_decls_1): As last resort, always
 	prefer a built-in decl.

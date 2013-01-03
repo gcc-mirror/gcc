@@ -4927,7 +4927,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   if ((alignment_support_scheme == dr_explicit_realign_optimized
        || alignment_support_scheme == dr_explicit_realign)
-      && !compute_in_loop)
+      && !compute_in_loop
+      && !integer_zerop (DR_STEP (dr)))
     {
       msq = vect_setup_realignment (first_stmt, gsi, &realignment_token,
 				    alignment_support_scheme, NULL_TREE,
