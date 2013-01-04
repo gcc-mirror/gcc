@@ -1,5 +1,10 @@
 2013-01-04  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/55763
+	* decl.c (gfc_match_null): Parse and reject MOLD.
+
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/55854
 	PR fortran/55763
 	* class.c (gfc_class_null_initializer): Fix finding the vtab.
