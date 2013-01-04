@@ -4377,11 +4377,12 @@ ada/validsw.o : ada/ada.ads ada/a-unccon.ads ada/a-uncdea.ads \
 ada/warnsw.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/err_vars.ads \
    ada/hostparm.ads ada/namet.ads ada/opt.ads ada/output.ads \
-   ada/system.ads ada/s-exctab.ads ada/s-memory.ads ada/s-os_lib.ads \
-   ada/s-parame.ads ada/s-stalib.ads ada/s-string.ads ada/s-traent.ads \
-   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
-   ada/tree_io.ads ada/types.ads ada/uintp.ads ada/unchconv.ads \
-   ada/unchdeal.ads ada/warnsw.ads ada/warnsw.adb 
+   ada/rident.ads ada/system.ads ada/s-exctab.ads ada/s-memory.ads \
+   ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads ada/s-stalib.ads \
+   ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads \
+   ada/table.ads ada/table.adb ada/targparm.ads ada/tree_io.ads \
+   ada/types.ads ada/uintp.ads ada/unchconv.ads ada/unchdeal.ads \
+   ada/warnsw.ads ada/warnsw.adb 
 
 ada/widechar.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/hostparm.ads ada/interfac.ads ada/opt.ads \

@@ -5214,7 +5214,7 @@ individually controlled.  The warnings that are not turned on by this
 switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
-@ifclear VMS
+@ifclear vms
 @option{-gnatw.d} (tag warnings with -gnatw switch)
 @end ifclear
 @option{-gnatw.h} (holes (gaps) in record layouts)

@@ -78,7 +78,7 @@ package Validsw is
 
    Validity_Check_In_Params : Boolean := False;
    --  Controls the validity checking of IN parameters. If this switch is
-   --  set to True using -gnatVm or an 'i' in the argument of a pragma
+   --  set to True using -gnatVi or an 'i' in the argument of a pragma
    --  Validity_Checks, then the initial value of all IN parameters
    --  will be checked at the point of call of a procedure or function.
 

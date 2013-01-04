@@ -1466,10 +1466,12 @@ package Prj is
      (In_Tree           : Project_Tree_Ref;
       Project           : Project_Id := No_Project;
       Language          : Name_Id    := No_Name;
-      Encapsulated_Libs : Boolean    := True) return Source_Iterator;
+      Encapsulated_Libs : Boolean    := True;
+      Locally_Removed   : Boolean    := True) return Source_Iterator;
    --  Returns an iterator for all the sources of a project tree, or a specific
    --  project, or a specific language. Include sources from aggregated libs if
-   --  Aggregated_Libs is True.
+   --  Aggregated_Libs is True. If Locally_Removed is set to False the
+   --  Locally_Removed files won't be reported.
 
    function Element (Iter : Source_Iterator) return Source_Id;
    --  Return the current source (or No_Source if there are no more sources)
@@ -1923,6 +1925,8 @@ private
 
       Encapsulated_Libs : Boolean;
       --  True if we want to include the sources from encapsulated libs
+
+      Locally_Removed : Boolean;
    end record;
 
    procedure Add_To_Buffer
