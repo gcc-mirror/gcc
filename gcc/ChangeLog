@@ -1,3 +1,10 @@
+2013-01-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/53789
+	* config/pa/pa.md (movsi): Revert previous change.
+	* config/pa/pa.c (pa_legitimate_constant_p): Reject all TLS symbol
+	references.
+
 2013-01-02  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	PR bootstrap/55707

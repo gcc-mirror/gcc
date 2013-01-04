@@ -10328,14 +10328,10 @@ pa_legitimate_constant_p (enum machine_mode mode, rtx x)
     return false;
 
   /* TLS_MODEL_GLOBAL_DYNAMIC and TLS_MODEL_LOCAL_DYNAMIC are not
-     legitimate constants.  */
+     legitimate constants.  The other variants can't be handled by
+     the move patterns after reload starts.  */
   if (PA_SYMBOL_REF_TLS_P (x))
-   {
-     enum tls_model model = SYMBOL_REF_TLS_MODEL (x);
-
-     if (model == TLS_MODEL_GLOBAL_DYNAMIC || model == TLS_MODEL_LOCAL_DYNAMIC)
-       return false;
-   }
+    return false;
 
   if (TARGET_64BIT && GET_CODE (x) == CONST_DOUBLE)
     return false;

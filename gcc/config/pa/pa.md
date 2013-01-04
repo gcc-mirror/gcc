@@ -2051,12 +2051,6 @@
   ""
   "
 {
-  /* A TLS symbol reference is not a valid move source operand.
-     pa_emit_move_sequence can only handle them prior to reload.
-     There is also no way to reload a TLS symbol reference, so
-     we must reject them after reload starts.  */
-  if (PA_SYMBOL_REF_TLS_P (operands[1]) && !can_create_pseudo_p ())
-    FAIL;
   if (pa_emit_move_sequence (operands, SImode, 0))
     DONE;
 }")
