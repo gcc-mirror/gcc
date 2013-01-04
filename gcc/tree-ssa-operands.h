@@ -1,5 +1,5 @@
 /* SSA operand management for trees.
-   Copyright (C) 2003, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2003, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

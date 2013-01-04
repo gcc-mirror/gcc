@@ -1,4 +1,4 @@
-/* Copyright (C) 2011
+/* Copyright (C) 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 

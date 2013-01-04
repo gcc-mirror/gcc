@@ -1,5 +1,5 @@
 /* Built-in and inline functions for gcj
-   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

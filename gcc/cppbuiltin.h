@@ -1,5 +1,5 @@
 /* Define builtin-in macros for all front ends that perform preprocessing
-   Copyright (C) 2010
+   Copyright (C) 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

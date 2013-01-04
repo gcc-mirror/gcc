@@ -1,5 +1,5 @@
 /* The implementation of class Object for Objective-C.
-   Copyright (C) 1993, 1994, 1995, 1997, 2002, 2009, 2010
+   Copyright (C) 1993, 1994, 1995, 1997, 2002, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.

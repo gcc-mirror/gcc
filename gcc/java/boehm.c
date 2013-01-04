@@ -1,5 +1,5 @@
 /* Functions related to the Boehm garbage collector.
-   Copyright (C) 2000, 2003, 2004, 2006, 2009, 2010
+   Copyright (C) 2000, 2003, 2004, 2006, 2009, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

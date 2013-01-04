@@ -1,5 +1,5 @@
 /* Post-reload compare elimination.
-   Copyright (C) 2010, 2011
+   Copyright (C) 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

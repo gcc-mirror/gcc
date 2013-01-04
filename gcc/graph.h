@@ -1,5 +1,5 @@
 /* Header file for graph routines.
-   Copyright (C) 1999, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004, 2007, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

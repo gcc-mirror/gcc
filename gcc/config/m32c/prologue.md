@@ -1,5 +1,5 @@
 ;; Machine Descriptions for R8C/M16C/M32C
-;; Copyright (C) 2005, 2007, 2008
+;; Copyright (C) 2005, 2007, 2008, 2011
 ;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat.
 ;;

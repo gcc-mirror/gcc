@@ -1,5 +1,5 @@
 /* Routines for discovering and unpropagating edge equivalences.
-   Copyright (C) 2005, 2007, 2008, 2010
+   Copyright (C) 2005, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

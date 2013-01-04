@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2004, 2007, 2008, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2004, 2007, 2008, 2010,
+   2012 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
    This file is part of GCC.

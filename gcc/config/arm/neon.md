@@ -1,5 +1,5 @@
 ;; ARM NEON coprocessor Machine Description
-;; Copyright (C) 2006, 2007, 2008, 2009, 2010, 2012
+;; Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
 ;;   Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;

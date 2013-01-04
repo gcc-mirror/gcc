@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (Darwin/PPC64 Version)                           --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--             Copyright (C) 2011-2012, Free Software Foundation, Inc.      --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
