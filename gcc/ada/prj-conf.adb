@@ -628,6 +628,9 @@ package body Prj.Conf is
       --  Generate a new config file through gprconfig. In case of error, this
       --  raises the Invalid_Config exception with an appropriate message
 
+      procedure Check_Builder_Switches;
+      --  Check for switch --RTS in package Builder
+
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
 
@@ -635,6 +638,119 @@ package body Prj.Conf is
       --  True if the specified project might have sources (ie the user has not
       --  explicitly specified it. We haven't checked the file system, nor do
       --  we need to at this stage.
+
+      ----------------------------
+      -- Check_Builder_Switches --
+      ----------------------------
+
+      procedure Check_Builder_Switches is
+         Get_RTS_Switches : constant Boolean :=
+                              RTS_Languages.Get_First = No_Name;
+         --  If no switch --RTS have been specified on the command line, look
+         --  for --RTS switches in the Builder switches.
+
+         Builder : constant Package_Id :=
+                     Value_Of (Name_Builder, Project.Decl.Packages, Shared);
+
+         Switch_Array_Id : Array_Element_Id;
+         --  The Switches to be checked
+
+         procedure Check_Switches;
+         --  Check the switches in Switch_Array_Id
+
+         --------------------
+         -- Check_Switches --
+         --------------------
+
+         procedure Check_Switches is
+            Switch_Array    : Array_Element;
+            Switch_List     : String_List_Id := Nil_String;
+            Switch          : String_Element;
+            Lang            : Name_Id;
+            Lang_Last       : Positive;
+
+         begin
+            while Switch_Array_Id /= No_Array_Element loop
+               Switch_Array :=
+                 Shared.Array_Elements.Table (Switch_Array_Id);
+
+               Switch_List := Switch_Array.Value.Values;
+               List_Loop : while Switch_List /= Nil_String loop
+                  Switch := Shared.String_Elements.Table (Switch_List);
+
+                  if Switch.Value /= No_Name then
+                     Get_Name_String (Switch.Value);
+
+                     if Get_RTS_Switches
+                       and then Name_Len >= 7
+                       and then Name_Buffer (1 .. 5) = "--RTS"
+                     then
+                        if Name_Buffer (6) = '=' then
+                           if not Runtime_Name_Set_For (Name_Ada) then
+                              Set_Runtime_For
+                                (Name_Ada,
+                                 Name_Buffer (7 .. Name_Len));
+                              Locate_Runtime (Name_Ada, Project_Tree);
+                           end if;
+
+                        elsif Name_Len > 7
+                          and then Name_Buffer (6) = ':'
+                          and then Name_Buffer (7) /= '='
+                        then
+                           Lang_Last := 7;
+                           while Lang_Last < Name_Len
+                             and then Name_Buffer (Lang_Last + 1) /= '='
+                           loop
+                              Lang_Last := Lang_Last + 1;
+                           end loop;
+
+                           if Name_Buffer (Lang_Last + 1) = '=' then
+                              declare
+                                 RTS : constant String :=
+                                   Name_Buffer (Lang_Last + 2 .. Name_Len);
+                              begin
+                                 Name_Buffer (1 .. Lang_Last - 6) :=
+                                   Name_Buffer (7 .. Lang_Last);
+                                 Name_Len := Lang_Last - 6;
+                                 To_Lower (Name_Buffer (1 .. Name_Len));
+                                 Lang := Name_Find;
+
+                                 if not Runtime_Name_Set_For (Lang) then
+                                    Set_Runtime_For (Lang, RTS);
+                                    Locate_Runtime (Lang, Project_Tree);
+                                 end if;
+                              end;
+                           end if;
+                        end if;
+                     end if;
+                  end if;
+
+                  Switch_List := Switch.Next;
+               end loop List_Loop;
+
+               Switch_Array_Id := Switch_Array.Next;
+            end loop;
+         end Check_Switches;
+
+      --  Start of processing for Check_Builder_Switches
+
+      begin
+         if Builder /= No_Package then
+            Switch_Array_Id :=
+              Value_Of
+                (Name      => Name_Switches,
+                 In_Arrays => Shared.Packages.Table (Builder).Decl.Arrays,
+                 Shared    => Shared);
+            Check_Switches;
+
+            Switch_Array_Id :=
+              Value_Of
+                (Name      => Name_Default_Switches,
+                 In_Arrays => Shared.Packages.Table (Builder).Decl.Arrays,
+                 Shared    => Shared);
+            Check_Switches;
+         end if;
+      end Check_Builder_Switches;
 
       -----------------------
       -- Default_File_Name --
@@ -647,10 +763,11 @@ package body Prj.Conf is
       begin
          if Target_Name /= "" then
             if Ada_RTS /= "" then
-               return Target_Name & '-' & Ada_RTS
-                 & Config_Project_File_Extension;
+               return
+                 Target_Name & '-' & Ada_RTS & Config_Project_File_Extension;
             else
-               return Target_Name & Config_Project_File_Extension;
+               return
+                 Target_Name & Config_Project_File_Extension;
             end if;
 
          elsif Ada_RTS /= "" then
@@ -1012,117 +1129,6 @@ package body Prj.Conf is
                end case;
             end if;
 
-            --  If no switch --RTS have been specified on the command line,
-            --  look for --RTS switches in the Builder switches.
-
-            if RTS_Languages.Get_First = No_Name then
-               declare
-                  Builder : constant Package_Id :=
-                              Value_Of
-                                (Name_Builder, Project.Decl.Packages, Shared);
-                  Switch_Array_Id : Array_Element_Id;
-
-                  procedure Check_RTS_Switches;
-                  --  Take into account eventual switches --RTS in
-                  --  Switch_Array_Id.
-
-                  ------------------------
-                  -- Check_RTS_SWitches --
-                  ------------------------
-
-                  procedure Check_RTS_Switches is
-                     Switch_Array : Array_Element;
-                     Switch_List  : String_List_Id := Nil_String;
-                     Switch       : String_Element;
-                     Lang         : Name_Id;
-                     Lang_Last    : Positive;
-
-                  begin
-                     while Switch_Array_Id /= No_Array_Element loop
-                        Switch_Array :=
-                          Shared.Array_Elements.Table (Switch_Array_Id);
-
-                        Switch_List := Switch_Array.Value.Values;
-                        while Switch_List /= Nil_String loop
-                           Switch :=
-                             Shared.String_Elements.Table (Switch_List);
-
-                           if Switch.Value /= No_Name then
-                              Get_Name_String (Switch.Value);
-
-                              if Name_Len >= 7 and then
-                                Name_Buffer (1 .. 5) = "--RTS"
-                              then
-                                 if Name_Buffer (6) = '=' then
-                                    if not Runtime_Name_Set_For (Name_Ada) then
-                                       Set_Runtime_For
-                                         (Name_Ada,
-                                          Name_Buffer (7 .. Name_Len));
-                                    end if;
-
-                                 elsif Name_Len > 7 and then
-                                   Name_Buffer (6) = ':' and then
-                                   Name_Buffer (7) /= '='
-                                 then
-                                    Lang_Last := 7;
-                                    while Lang_Last < Name_Len and then
-                                      Name_Buffer (Lang_Last + 1) /= '='
-                                    loop
-                                       Lang_Last := Lang_Last + 1;
-                                    end loop;
-
-                                    if Name_Buffer (Lang_Last + 1) = '=' then
-                                       declare
-                                          RTS : constant String :=
-                                                  Name_Buffer (Lang_Last + 2 ..
-                                                               Name_Len);
-                                       begin
-                                          Name_Buffer (1 .. Lang_Last - 6) :=
-                                            Name_Buffer (7 .. Lang_Last);
-                                          Name_Len := Lang_Last - 6;
-                                          To_Lower
-                                            (Name_Buffer (1 .. Name_Len));
-                                          Lang := Name_Find;
-
-                                          if not
-                                            Runtime_Name_Set_For (Lang)
-                                          then
-                                             Set_Runtime_For (Lang, RTS);
-                                          end if;
-                                       end;
-                                    end if;
-                                 end if;
-                              end if;
-                           end if;
-
-                           Switch_List := Switch.Next;
-                        end loop;
-
-                        Switch_Array_Id := Switch_Array.Next;
-                     end loop;
-                  end Check_RTS_Switches;
-
-               begin
-                  if Builder /= No_Package then
-                     Switch_Array_Id :=
-                       Value_Of
-                         (Name      => Name_Switches,
-                          In_Arrays =>
-                            Shared.Packages.Table (Builder).Decl.Arrays,
-                          Shared    => Shared);
-                     Check_RTS_Switches;
-
-                     Switch_Array_Id :=
-                       Value_Of
-                         (Name      => Name_Default_Switches,
-                          In_Arrays =>
-                            Shared.Packages.Table (Builder).Decl.Arrays,
-                          Shared    => Shared);
-                     Check_RTS_Switches;
-                  end if;
-               end;
-            end if;
-
             --  Get the config switches. This should be done only now, as some
             --  runtimes may have been found if the Builder switches.
 
@@ -1135,7 +1141,7 @@ package body Prj.Conf is
 
             --  If no config file was specified, set the auto.cgpr one
 
-            if Config_File_Name = "" then
+            if Config_File_Name'Length = 0 then
                if Obj_Dir_Exists then
                   Args (3) := new String'(Obj_Dir & Auto_Cgpr);
 
@@ -1253,7 +1259,7 @@ package body Prj.Conf is
                --  Display no message if we are creating auto.cgpr, unless in
                --  verbose mode
 
-               if Config_File_Name /= ""
+               if Config_File_Name'Length > 0
                  or else Verbose_Mode
                then
                   Write_Str ("creating ");
@@ -1290,7 +1296,9 @@ package body Prj.Conf is
       Free (Config_File_Path);
       Config := No_Project;
 
-      if Config_File_Name /= "" then
+      Check_Builder_Switches;
+
+      if Config_File_Name'Length > 0 then
          Config_File_Path := Locate_Config_File (Config_File_Name);
       else
          Config_File_Path := Locate_Config_File (Default_File_Name);
@@ -1298,7 +1306,7 @@ package body Prj.Conf is
 
       if Config_File_Path = null then
          if (not Allow_Automatic_Generation)
-           and then Config_File_Name /= ""
+           and then Config_File_Name'Length > 0
          then
             Raise_Invalid_Config
               ("could not locate main configuration project "
@@ -1326,10 +1334,11 @@ package body Prj.Conf is
          end if;
 
       --  If the config file is not auto-generated, warn if there is any --RTS
-      --  switch on the command line.
+      --  switch, but not when the config file is generated in memory.
 
       elsif RTS_Languages.Get_First /= No_Name
         and then Opt.Warning_Mode /= Opt.Suppress
+        and then On_Load_Config = null
       then
          Write_Line
            ("warning: --RTS is taken into account only in auto-configuration");
@@ -1410,6 +1419,56 @@ package body Prj.Conf is
          return Locate_Regular_File (Name, ".");
       end if;
    end Locate_Config_File;
+
+   --------------------
+   -- Locate_Runtime --
+   --------------------
+
+   procedure Locate_Runtime
+     (Language     : Name_Id;
+      Project_Tree : Prj.Project_Tree_Ref)
+   is
+      function Is_Base_Name (Path : String) return Boolean;
+      --  Returns True if Path has no directory separator
+
+      ------------------
+      -- Is_Base_Name --
+      ------------------
+
+      function Is_Base_Name (Path : String) return Boolean is
+      begin
+         for I in Path'Range loop
+            if Path (I) = Directory_Separator or else Path (I) = '/' then
+               return False;
+            end if;
+         end loop;
+         return True;
+      end Is_Base_Name;
+
+      --  Local declarations
+
+      function Find_Rts_In_Path is new Prj.Env.Find_Name_In_Path
+        (Check_Filename => Is_Directory);
+
+      RTS_Name : constant String := Runtime_Name_For (Language);
+
+      Full_Path : String_Access;
+
+   --  Start of processing for Locate_Runtime
+
+   begin
+      if not Is_Base_Name (RTS_Name) then
+         Full_Path :=
+           Find_Rts_In_Path (Root_Environment.Project_Path, RTS_Name);
+
+         if Full_Path = null then
+            Fail_Program (Project_Tree, "cannot find RTS " & RTS_Name);
+         end if;
+
+         Set_Runtime_For (Language, Normalize_Pathname (Full_Path.all));
+         Free (Full_Path);
+      end if;
+   end Locate_Runtime;
 
    ------------------------------------
    -- Parse_Project_And_Apply_Config --
