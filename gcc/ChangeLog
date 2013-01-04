@@ -1,3 +1,9 @@
+2013-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55863
+	* fold-const.c (split_tree): Undo -X - 1 to ~X folding for
+	reassociation.
+
 2013-01-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/53789
