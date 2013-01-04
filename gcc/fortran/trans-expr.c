@@ -1,6 +1,6 @@
 /* Expression translation
    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011, 2012
+   2011, 2012, 2013
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -61,8 +61,8 @@ get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
 				    akind, !(attr.pointer || attr.target));
 }
 
-static tree
-conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
+tree
+gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
 {
   tree desc, type;
 
@@ -4355,8 +4355,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      if (TREE_CODE (tmp) == ADDR_EXPR
 			  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp, 0))))
 			tmp = TREE_OPERAND (tmp, 0);
-		      parmse.expr = conv_scalar_to_descriptor (&parmse, tmp,
-							       fsym->attr);
+		      parmse.expr = gfc_conv_scalar_to_descriptor (&parmse, tmp,
+								   fsym->attr);
 		      parmse.expr = gfc_build_addr_expr (NULL_TREE,
 							 parmse.expr);
 		    }
