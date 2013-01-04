@@ -1,5 +1,5 @@
 /* simple-object-mach-o.c -- routines to manipulate Mach-O object files.
-   Copyright 2010, 2011 Free Software Foundation, Inc.
+   Copyright 2010, 2011, 2013 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 This program is free software; you can redistribute it and/or modify it
@@ -701,12 +701,13 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
 	   /* Otherwise, make a name like __segment,__section as per the
 	      convention in mach-o asm.  */
 	  name = &namebuf[0];
-	  memset (namebuf, 0, MACH_O_NAME_LEN * 2 + 2);
 	  memcpy (namebuf, (char *) sechdr + segname_offset, MACH_O_NAME_LEN);
+	  namebuf[MACH_O_NAME_LEN] = '\0';
 	  l = strlen (namebuf);
 	  namebuf[l] = ',';
 	  memcpy (namebuf + l + 1, (char *) sechdr + sectname_offset,
 		  MACH_O_NAME_LEN);
+	  namebuf[l + 1 + MACH_O_NAME_LEN] = '\0';
 	}
 
       simple_object_mach_o_section_info (omr->is_big_endian, is_32, sechdr,
