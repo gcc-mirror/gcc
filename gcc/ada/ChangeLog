@@ -1,3 +1,9 @@
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, gnatcmd.adb, exp_util.adb, table.adb, sem_prag.adb,
+	freeze.adb, sem_ch4.adb, sem_warn.adb, opt.ads, exp_aggr.adb,
+	prj-conf.adb, sem_ch13.adb: Minor reformatting.
+
 2013-01-04  Thomas Quinot  <quinot@adacore.com>
 
 	* sinfo.ads: Minor documentation update.

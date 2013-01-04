@@ -6227,9 +6227,9 @@ package body Exp_Util is
 
       function Find_Init_Call_In_List (From : Node_Id) return Node_Id is
          Init_Call : Node_Id;
+
       begin
          Init_Call := From;
-
          while Present (Init_Call) and then Init_Call /= Rep_Clause loop
             if Nkind (Init_Call) = N_Procedure_Call_Statement
               and then Is_Entity_Name (Name (Init_Call))

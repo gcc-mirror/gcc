@@ -2001,10 +2001,10 @@ begin
                      Name_Len := 0;
 
                      --  If the single main has been specified as an absolute
-                     --  path, we use only the simple file name. If the
-                     --  absolute path is incorrect, an error will be reported
-                     --  by the underlying tool and it does not make a
-                     --  difference what switches are used.
+                     --  path, use only the simple file name. If the absolute
+                     --  path is incorrect, an error will be reported by the
+                     --  underlying tool and it does not make a difference
+                     --  what switches are used.
 
                      if Is_Absolute_Path (Main.all) then
                         Add_Str_To_Name_Buffer (File_Name (Main.all));

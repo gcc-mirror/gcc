@@ -1187,8 +1187,9 @@ package body Prj.Conf is
 
                   declare
                      Variable : Variable_Value;
-                     Proj : Project_Id;
+                     Proj     : Project_Id;
                      Tgt_Name : Name_Id := No_Name;
+
                   begin
                      Proj := Project;
                      Project_Loop :
@@ -1196,9 +1197,9 @@ package body Prj.Conf is
                         Variable :=
                           Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
 
-                        if Variable /= Nil_Variable_Value and then
-                          not Variable.Default and then
-                          Variable.Value /= No_Name
+                        if Variable /= Nil_Variable_Value
+                          and then not Variable.Default
+                          and then Variable.Value /= No_Name
                         then
                            Tgt_Name := Variable.Value;
                            exit Project_Loop;

@@ -1318,14 +1318,16 @@ package body Sem_Ch13 is
                            P_Name := A_Name;
 
                         elsif A_Name = Name_Link_Name then
-                           L_Assoc := Make_Pragma_Argument_Association (Loc,
-                              Chars => A_Name,
-                              Expression => Relocate_Node (Expression (A)));
+                           L_Assoc :=
+                             Make_Pragma_Argument_Association (Loc,
+                               Chars      => A_Name,
+                               Expression => Relocate_Node (Expression (A)));
 
                         elsif A_Name = Name_External_Name then
-                           E_Assoc := Make_Pragma_Argument_Association (Loc,
-                              Chars => A_Name,
-                              Expression => Relocate_Node (Expression (A)));
+                           E_Assoc :=
+                             Make_Pragma_Argument_Association (Loc,
+                               Chars      => A_Name,
+                               Expression => Relocate_Node (Expression (A)));
                         end if;
 
                         Next (A);
@@ -2905,6 +2907,7 @@ package body Sem_Ch13 is
                   declare
                      Init_Call : constant Node_Id :=
                                    Remove_Init_Call (U_Ent, N);
+
                   begin
                      if Present (Init_Call) then
 
@@ -2912,8 +2915,8 @@ package body Sem_Ch13 is
                         --  null expression, just extract the actions.
 
                         if Nkind (Init_Call) = N_Expression_With_Actions
-                             and then Nkind (Expression (Init_Call))
-                               = N_Null_Statement
+                          and then
+                            Nkind (Expression (Init_Call)) = N_Null_Statement
                         then
                            Append_Freeze_Actions (U_Ent, Actions (Init_Call));
 
@@ -2930,9 +2933,8 @@ package body Sem_Ch13 is
                        ("& cannot be exported if an address clause is given",
                         Nam);
                      Error_Msg_N
-                       ("\define and export a variable " &
-                        "that holds its address instead",
-                        Nam);
+                       ("\define and export a variable "
+                        & "that holds its address instead", Nam);
                   end if;
 
                   --  Entity has delayed freeze, so we will generate an
@@ -4698,14 +4700,18 @@ package body Sem_Ch13 is
 
       function Is_Inherited (Comp : Entity_Id) return Boolean is
          Comp_Base : Entity_Id;
+
       begin
          if Ekind (Rectype) = E_Record_Subtype then
             Comp_Base := Original_Record_Component (Comp);
          else
             Comp_Base := Comp;
          end if;
+
          return Comp_Base /= Original_Record_Component (Comp_Base);
       end Is_Inherited;
+
+      --  Local variables
 
       Is_Record_Extension : Boolean;
       --  True if Rectype is a record extension
@@ -4723,9 +4729,7 @@ package body Sem_Ch13 is
       Find_Type (Ident);
       Rectype := Entity (Ident);
 
-      if Rectype = Any_Type
-        or else Rep_Item_Too_Early (Rectype, N)
-      then
+      if Rectype = Any_Type or else Rep_Item_Too_Early (Rectype, N) then
          return;
       else
          Rectype := Underlying_Type (Rectype);
@@ -5155,8 +5159,9 @@ package body Sem_Ch13 is
          return Empty;
       end if;
 
-      SId := Make_Defining_Identifier (Loc,
-         Chars => New_External_Name (Chars (Typ), "Invariant"));
+      SId :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Typ), "Invariant"));
       Set_Has_Invariants (SId);
       Set_Has_Invariants (Typ);
       Set_Ekind (SId, E_Procedure);
@@ -8779,10 +8784,11 @@ package body Sem_Ch13 is
                                 Designated_Type (Etype (F)), Loc))));
 
          if Nam = TSS_Stream_Input then
-            Spec := Make_Function_Specification (Loc,
-                      Defining_Unit_Name       => Subp_Id,
-                      Parameter_Specifications => Formals,
-                      Result_Definition        => T_Ref);
+            Spec :=
+              Make_Function_Specification (Loc,
+                Defining_Unit_Name       => Subp_Id,
+                Parameter_Specifications => Formals,
+                Result_Definition        => T_Ref);
          else
             --  V : [out] T
 

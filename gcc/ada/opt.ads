@@ -537,16 +537,16 @@ package Opt is
    --  Determines the handling of exceptions. See Exp_Ch11 for details
    --
      (Front_End_Setjmp_Longjmp_Exceptions,
-      --  Exceptions use setjmp/longjmp generated explicitly by the
-      --  front end (this includes gigi or other equivalent parts of
-      --  the code generator). AT END handlers are converted into
-      --  exception handlers by the front end in this mode.
+      --  Exceptions use setjmp/longjmp generated explicitly by the front end
+      --  (this includes gigi or other equivalent parts of the code generator).
+      --  AT END handlers are converted into exception handlers by the front
+      --  end in this mode.
 
       Back_End_Exceptions);
       --  Exceptions are handled by the back end. The front end simply
-      --  generates the handlers as they appear in the source, and AT
-      --  END handlers are left untouched (they are not converted into
-      --  exception handlers when operating in this mode.
+      --  generates the handlers as they appear in the source, and AT END
+      --  handlers are left untouched (they are not converted into exception
+      --  handlers when operating in this mode.
    pragma Convention (C, Exception_Mechanism_Type);
 
    Exception_Mechanism : Exception_Mechanism_Type :=

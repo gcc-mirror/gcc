@@ -6775,7 +6775,7 @@ package body Sem_Prag is
                   if Volatile_Seen
                     and then
                       ((Input_Seen and then Output_Seen)           --  both
-                          or else
+                         or else
                        (not Input_Seen and then not Output_Seen))  --  none
                   then
                      Error_Msg_N
@@ -6785,7 +6785,7 @@ package body Sem_Prag is
 
                   --  Either Input or Output require Volatile
 
-                  if (Input_Seen or else Output_Seen)
+                  if (Input_Seen or Output_Seen)
                     and then not Volatile_Seen
                   then
                      Error_Msg_N
