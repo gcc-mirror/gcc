@@ -1,3 +1,13 @@
+2013-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_legitimize_address): Call convert_to_mode
+	unconditionally.
+	(ix86_expand_move): Ditto.
+	(ix86_zero_extend_to_Pmode): Ditto.
+	(ix86_expand_call): Ditto.
+	(ix86_expand_special_args_builtin): Ditto.
+	(ix86_expand_builtin): Ditto.
+
 2013-01-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55862
