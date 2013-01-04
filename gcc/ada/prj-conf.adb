@@ -566,7 +566,7 @@ package body Prj.Conf is
       end if;
 
       if Target = "" then
-         OK := not Autoconf_Specified or else Tgt_Name = No_Name;
+         OK := Autoconf_Specified or else Tgt_Name = No_Name;
       else
          OK := Tgt_Name /= No_Name
                  and then Target = Get_Name_String (Tgt_Name);

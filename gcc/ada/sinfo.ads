@@ -7638,6 +7638,12 @@ package Sinfo is
       N_Function_Call,
       N_Procedure_Call_Statement,
 
+      --  N_Subexpr, N_Has_Etype, N_Raise_xxx_Error
+
+      N_Raise_Constraint_Error,
+      N_Raise_Program_Error,
+      N_Raise_Storage_Error,
+
       --  N_Subexpr, N_Has_Etype
 
       N_Explicit_Dereference,
@@ -7648,15 +7654,6 @@ package Sinfo is
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,
-
-      --  N_Raise_xxx_Error, N_Subexpr, N_Has_Etype
-
-      N_Raise_Constraint_Error,
-      N_Raise_Program_Error,
-      N_Raise_Storage_Error,
-
-      --  N_Subexpr, N_Has_Etype
-
       N_Aggregate,
       N_Allocator,
       N_Case_Expression,
