@@ -1,3 +1,21 @@
+2013-01-04  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb: Minor reformatting.
+
+2013-01-04  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.ads (Root_Environment): New variable, moved rom
+	gprbuild (Load_Standard_Base): New Boolean variable, moved
+	from gprbuild.
+	* prj-conf.adb (Check_Builder_Switches): New procedure to check
+	for switch --RTS in package Builder. If a runtime specified
+	by --RTS is a relative path name, but not a base name, then
+	find the path on the Project Search Path.
+	(Do_Autoconf): Call Check_Builder_Switches.
+	(Locate_Runtime): New procedure, moved from gprbuild, to get the
+	absolute paths of runtimes when they are not specified as a base name.
+	* prj-conf.ads (Locate_Runtime): New procedure, moved from gprbuild.
+
 2013-01-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Build_Private_Derived_Type): Set
