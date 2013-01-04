@@ -131,8 +131,11 @@ package Checks is
    --  are enabled, then this procedure generates a check that the specified
    --  address has an alignment consistent with the alignment of the object,
    --  raising PE if this is not the case. The resulting check (if one is
-   --  generated) is inserted before node N. check is also made for the case of
-   --  a clear overlay situation that the size of the overlaying object is not
+   --  generated) is prepended to the Actions list of N_Freeze_Entity node N.
+   --  Note that the check references E'Alignment, so it cannot be emitted
+   --  before N (its freeze node), otherwise this would cause an illegal
+   --  access before elaboration error in GIGI. For the case of a clear overlay
+   --  situation, we also check that the size of the overlaying object is not
    --  larger than the overlaid object.
 
    procedure Apply_Arithmetic_Overflow_Check (N : Node_Id);

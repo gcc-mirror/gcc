@@ -35,41 +35,49 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@MIPS_TRUE@am__append_1 = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
-@X86_TRUE@am__append_2 = src/x86/ffi.c src/x86/sysv.S
-@X86_FREEBSD_TRUE@am__append_3 = src/x86/ffi.c src/x86/freebsd.S
-@X86_WIN32_TRUE@am__append_4 = src/x86/ffi.c src/x86/win32.S
-@X86_WIN64_TRUE@am__append_5 = src/x86/ffi.c src/x86/win64.S
-@X86_DARWIN_TRUE@am__append_6 = src/x86/ffi.c src/x86/darwin.S src/x86/ffi64.c src/x86/darwin64.S
-@SPARC_TRUE@am__append_7 = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
-@ALPHA_TRUE@am__append_8 = src/alpha/ffi.c src/alpha/osf.S
-@IA64_TRUE@am__append_9 = src/ia64/ffi.c src/ia64/unix.S
-@M32R_TRUE@am__append_10 = src/m32r/sysv.S src/m32r/ffi.c
-@M68K_TRUE@am__append_11 = src/m68k/ffi.c src/m68k/sysv.S
-@POWERPC_TRUE@am__append_12 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
-@POWERPC_AIX_TRUE@am__append_13 = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
-@POWERPC_DARWIN_TRUE@am__append_14 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
-@POWERPC_FREEBSD_TRUE@am__append_15 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
-@ARM_TRUE@am__append_16 = src/arm/sysv.S src/arm/ffi.c
-@AVR32_TRUE@am__append_17 = src/avr32/sysv.S src/avr32/ffi.c
-@LIBFFI_CRIS_TRUE@am__append_18 = src/cris/sysv.S src/cris/ffi.c
-@FRV_TRUE@am__append_19 = src/frv/eabi.S src/frv/ffi.c
-@S390_TRUE@am__append_20 = src/s390/sysv.S src/s390/ffi.c
-@X86_64_TRUE@am__append_21 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
-@SH_TRUE@am__append_22 = src/sh/sysv.S src/sh/ffi.c
-@SH64_TRUE@am__append_23 = src/sh64/sysv.S src/sh64/ffi.c
-@PA_LINUX_TRUE@am__append_24 = src/pa/linux.S src/pa/ffi.c
-@PA_HPUX_TRUE@am__append_25 = src/pa/hpux32.S src/pa/ffi.c
+@FFI_DEBUG_TRUE@am__append_1 = src/debug.c
+@MIPS_TRUE@am__append_2 = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
+@BFIN_TRUE@am__append_3 = src/bfin/ffi.c src/bfin/sysv.S
+@X86_TRUE@am__append_4 = src/x86/ffi.c src/x86/sysv.S
+@X86_FREEBSD_TRUE@am__append_5 = src/x86/ffi.c src/x86/freebsd.S
+@X86_WIN32_TRUE@am__append_6 = src/x86/ffi.c src/x86/win32.S
+@X86_WIN64_TRUE@am__append_7 = src/x86/ffi.c src/x86/win64.S
+@X86_DARWIN_TRUE@am__append_8 = src/x86/ffi.c src/x86/darwin.S src/x86/ffi64.c src/x86/darwin64.S
+@SPARC_TRUE@am__append_9 = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
+@ALPHA_TRUE@am__append_10 = src/alpha/ffi.c src/alpha/osf.S
+@IA64_TRUE@am__append_11 = src/ia64/ffi.c src/ia64/unix.S
+@M32R_TRUE@am__append_12 = src/m32r/sysv.S src/m32r/ffi.c
+@M68K_TRUE@am__append_13 = src/m68k/ffi.c src/m68k/sysv.S
+@POWERPC_TRUE@am__append_14 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
+@POWERPC_AIX_TRUE@am__append_15 = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
+@POWERPC_DARWIN_TRUE@am__append_16 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
+@POWERPC_FREEBSD_TRUE@am__append_17 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
+@AARCH64_TRUE@am__append_18 = src/aarch64/sysv.S src/aarch64/ffi.c
+@ARM_TRUE@am__append_19 = src/arm/sysv.S src/arm/ffi.c
+@ARM_TRUE@@FFI_EXEC_TRAMPOLINE_TABLE_TRUE@am__append_20 = src/arm/trampoline.S
+@AVR32_TRUE@am__append_21 = src/avr32/sysv.S src/avr32/ffi.c
+@LIBFFI_CRIS_TRUE@am__append_22 = src/cris/sysv.S src/cris/ffi.c
+@FRV_TRUE@am__append_23 = src/frv/eabi.S src/frv/ffi.c
+@S390_TRUE@am__append_24 = src/s390/sysv.S src/s390/ffi.c
+@X86_64_TRUE@am__append_25 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
+@SH_TRUE@am__append_26 = src/sh/sysv.S src/sh/ffi.c
+@SH64_TRUE@am__append_27 = src/sh64/sysv.S src/sh64/ffi.c
+@PA_LINUX_TRUE@am__append_28 = src/pa/linux.S src/pa/ffi.c
+@PA_HPUX_TRUE@am__append_29 = src/pa/hpux32.S src/pa/ffi.c
+@TILE_TRUE@am__append_30 = src/tile/tile.S src/tile/ffi.c
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
 	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/fficonfig.h.in \
-	$(top_srcdir)/configure ChangeLog
+	$(srcdir)/Makefile.in $(srcdir)/doc/stamp-vti \
+	$(srcdir)/doc/version.texi $(srcdir)/fficonfig.h.in \
+	$(top_srcdir)/configure ChangeLog mdate-sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/asmcfi.m4 \
+	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -106,50 +114,55 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libffi_la_LIBADD =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
-	src/raw_api.lo src/java_raw_api.lo src/closures.lo
-@MIPS_TRUE@am__objects_1 = src/mips/ffi.lo src/mips/o32.lo \
+am_libffi_la_OBJECTS = src/prep_cif.lo src/types.lo src/raw_api.lo \
+	src/java_raw_api.lo src/closures.lo
+@FFI_DEBUG_TRUE@am__objects_1 = src/debug.lo
+@MIPS_TRUE@am__objects_2 = src/mips/ffi.lo src/mips/o32.lo \
 @MIPS_TRUE@	src/mips/n32.lo
-@X86_TRUE@am__objects_2 = src/x86/ffi.lo src/x86/sysv.lo
-@X86_FREEBSD_TRUE@am__objects_3 = src/x86/ffi.lo src/x86/freebsd.lo
-@X86_WIN32_TRUE@am__objects_4 = src/x86/ffi.lo src/x86/win32.lo
-@X86_WIN64_TRUE@am__objects_5 = src/x86/ffi.lo src/x86/win64.lo
-@X86_DARWIN_TRUE@am__objects_6 = src/x86/ffi.lo src/x86/darwin.lo \
+@BFIN_TRUE@am__objects_3 = src/bfin/ffi.lo src/bfin/sysv.lo
+@X86_TRUE@am__objects_4 = src/x86/ffi.lo src/x86/sysv.lo
+@X86_FREEBSD_TRUE@am__objects_5 = src/x86/ffi.lo src/x86/freebsd.lo
+@X86_WIN32_TRUE@am__objects_6 = src/x86/ffi.lo src/x86/win32.lo
+@X86_WIN64_TRUE@am__objects_7 = src/x86/ffi.lo src/x86/win64.lo
+@X86_DARWIN_TRUE@am__objects_8 = src/x86/ffi.lo src/x86/darwin.lo \
 @X86_DARWIN_TRUE@	src/x86/ffi64.lo src/x86/darwin64.lo
-@SPARC_TRUE@am__objects_7 = src/sparc/ffi.lo src/sparc/v8.lo \
+@SPARC_TRUE@am__objects_9 = src/sparc/ffi.lo src/sparc/v8.lo \
 @SPARC_TRUE@	src/sparc/v9.lo
-@ALPHA_TRUE@am__objects_8 = src/alpha/ffi.lo src/alpha/osf.lo
-@IA64_TRUE@am__objects_9 = src/ia64/ffi.lo src/ia64/unix.lo
-@M32R_TRUE@am__objects_10 = src/m32r/sysv.lo src/m32r/ffi.lo
-@M68K_TRUE@am__objects_11 = src/m68k/ffi.lo src/m68k/sysv.lo
-@POWERPC_TRUE@am__objects_12 = src/powerpc/ffi.lo src/powerpc/sysv.lo \
+@ALPHA_TRUE@am__objects_10 = src/alpha/ffi.lo src/alpha/osf.lo
+@IA64_TRUE@am__objects_11 = src/ia64/ffi.lo src/ia64/unix.lo
+@M32R_TRUE@am__objects_12 = src/m32r/sysv.lo src/m32r/ffi.lo
+@M68K_TRUE@am__objects_13 = src/m68k/ffi.lo src/m68k/sysv.lo
+@POWERPC_TRUE@am__objects_14 = src/powerpc/ffi.lo src/powerpc/sysv.lo \
 @POWERPC_TRUE@	src/powerpc/ppc_closure.lo \
 @POWERPC_TRUE@	src/powerpc/linux64.lo \
 @POWERPC_TRUE@	src/powerpc/linux64_closure.lo
-@POWERPC_AIX_TRUE@am__objects_13 = src/powerpc/ffi_darwin.lo \
+@POWERPC_AIX_TRUE@am__objects_15 = src/powerpc/ffi_darwin.lo \
 @POWERPC_AIX_TRUE@	src/powerpc/aix.lo \
 @POWERPC_AIX_TRUE@	src/powerpc/aix_closure.lo
-@POWERPC_DARWIN_TRUE@am__objects_14 = src/powerpc/ffi_darwin.lo \
+@POWERPC_DARWIN_TRUE@am__objects_16 = src/powerpc/ffi_darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin_closure.lo
-@POWERPC_FREEBSD_TRUE@am__objects_15 = src/powerpc/ffi.lo \
+@POWERPC_FREEBSD_TRUE@am__objects_17 = src/powerpc/ffi.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/sysv.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/ppc_closure.lo
-@ARM_TRUE@am__objects_16 = src/arm/sysv.lo src/arm/ffi.lo
-@AVR32_TRUE@am__objects_17 = src/avr32/sysv.lo src/avr32/ffi.lo
-@LIBFFI_CRIS_TRUE@am__objects_18 = src/cris/sysv.lo src/cris/ffi.lo
-@FRV_TRUE@am__objects_19 = src/frv/eabi.lo src/frv/ffi.lo
-@S390_TRUE@am__objects_20 = src/s390/sysv.lo src/s390/ffi.lo
-@X86_64_TRUE@am__objects_21 = src/x86/ffi64.lo src/x86/unix64.lo \
+@AARCH64_TRUE@am__objects_18 = src/aarch64/sysv.lo src/aarch64/ffi.lo
+@ARM_TRUE@am__objects_19 = src/arm/sysv.lo src/arm/ffi.lo
+@ARM_TRUE@@FFI_EXEC_TRAMPOLINE_TABLE_TRUE@am__objects_20 = src/arm/trampoline.lo
+@AVR32_TRUE@am__objects_21 = src/avr32/sysv.lo src/avr32/ffi.lo
+@LIBFFI_CRIS_TRUE@am__objects_22 = src/cris/sysv.lo src/cris/ffi.lo
+@FRV_TRUE@am__objects_23 = src/frv/eabi.lo src/frv/ffi.lo
+@S390_TRUE@am__objects_24 = src/s390/sysv.lo src/s390/ffi.lo
+@X86_64_TRUE@am__objects_25 = src/x86/ffi64.lo src/x86/unix64.lo \
 @X86_64_TRUE@	src/x86/ffi.lo src/x86/sysv.lo
-@SH_TRUE@am__objects_22 = src/sh/sysv.lo src/sh/ffi.lo
-@SH64_TRUE@am__objects_23 = src/sh64/sysv.lo src/sh64/ffi.lo
-@PA_LINUX_TRUE@am__objects_24 = src/pa/linux.lo src/pa/ffi.lo
-@PA_HPUX_TRUE@am__objects_25 = src/pa/hpux32.lo src/pa/ffi.lo
+@SH_TRUE@am__objects_26 = src/sh/sysv.lo src/sh/ffi.lo
+@SH64_TRUE@am__objects_27 = src/sh64/sysv.lo src/sh64/ffi.lo
+@PA_LINUX_TRUE@am__objects_28 = src/pa/linux.lo src/pa/ffi.lo
+@PA_HPUX_TRUE@am__objects_29 = src/pa/hpux32.lo src/pa/ffi.lo
+@TILE_TRUE@am__objects_30 = src/tile/tile.lo src/tile/ffi.lo
 nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
@@ -158,17 +171,19 @@ nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_15) $(am__objects_16) $(am__objects_17) \
 	$(am__objects_18) $(am__objects_19) $(am__objects_20) \
 	$(am__objects_21) $(am__objects_22) $(am__objects_23) \
-	$(am__objects_24) $(am__objects_25)
+	$(am__objects_24) $(am__objects_25) $(am__objects_26) \
+	$(am__objects_27) $(am__objects_28) $(am__objects_29) \
+	$(am__objects_30)
 libffi_la_OBJECTS = $(am_libffi_la_OBJECTS) \
 	$(nodist_libffi_la_OBJECTS)
 libffi_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libffi_la_LDFLAGS) $(LDFLAGS) -o $@
 libffi_convenience_la_LIBADD =
-am__objects_26 = src/debug.lo src/prep_cif.lo src/types.lo \
-	src/raw_api.lo src/java_raw_api.lo src/closures.lo
-am_libffi_convenience_la_OBJECTS = $(am__objects_26)
-am__objects_27 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
+am__objects_31 = src/prep_cif.lo src/types.lo src/raw_api.lo \
+	src/java_raw_api.lo src/closures.lo
+am_libffi_convenience_la_OBJECTS = $(am__objects_31)
+am__objects_32 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
@@ -176,8 +191,9 @@ am__objects_27 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
 	$(am__objects_19) $(am__objects_20) $(am__objects_21) \
 	$(am__objects_22) $(am__objects_23) $(am__objects_24) \
-	$(am__objects_25)
-nodist_libffi_convenience_la_OBJECTS = $(am__objects_27)
+	$(am__objects_25) $(am__objects_26) $(am__objects_27) \
+	$(am__objects_28) $(am__objects_29) $(am__objects_30)
+nodist_libffi_convenience_la_OBJECTS = $(am__objects_32)
 libffi_convenience_la_OBJECTS = $(am_libffi_convenience_la_OBJECTS) \
 	$(nodist_libffi_convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -208,6 +224,18 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
+INFO_DEPS = doc/libffi.info
+am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
+DVIS = doc/libffi.dvi
+PDFS = doc/libffi.pdf
+PSS = doc/libffi.ps
+HTMLS = doc/libffi.html
+TEXINFOS = doc/libffi.texi
+TEXI2DVI = texi2dvi
+TEXI2PDF = $(TEXI2DVI) --pdf --batch
+MAKEINFOHTML = $(MAKEINFO) --html
+AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
+DVIPS = dvips
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -287,6 +315,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+FFI_EXEC_TRAMPOLINE_TABLE = @FFI_EXEC_TRAMPOLINE_TABLE@
 FGREP = @FGREP@
 GREP = @GREP@
 HAVE_LONG_DOUBLE = @HAVE_LONG_DOUBLE@
@@ -389,33 +418,62 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 SUBDIRS = include testsuite man
-EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
-	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
-	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
-	src/avr32/ffi.c src/avr32/sysv.S src/avr32/ffitarget.h \
-	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \
-	src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h \
-	src/ia64/unix.S \
-	src/mips/ffi.c src/mips/n32.S src/mips/o32.S \
-	src/mips/ffitarget.h \
-	src/m32r/ffi.c src/m32r/sysv.S src/m32r/ffitarget.h \
-	src/m68k/ffi.c src/m68k/sysv.S src/m68k/ffitarget.h \
-	src/powerpc/ffi.c src/powerpc/sysv.S \
-	src/powerpc/linux64.S src/powerpc/linux64_closure.S \
-	src/powerpc/ppc_closure.S src/powerpc/asm.h \
-	src/powerpc/aix.S src/powerpc/darwin.S \
-	src/powerpc/aix_closure.S src/powerpc/darwin_closure.S \
-	src/powerpc/ffi_darwin.c src/powerpc/ffitarget.h \
-	src/s390/ffi.c src/s390/sysv.S src/s390/ffitarget.h \
-	src/sh/ffi.c src/sh/sysv.S src/sh/ffitarget.h \
-	src/sh64/ffi.c src/sh64/sysv.S src/sh64/ffitarget.h \
-	src/sparc/v8.S src/sparc/v9.S src/sparc/ffitarget.h \
-	src/sparc/ffi.c src/x86/darwin64.S \
-	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S src/x86/darwin.S \
-	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
-	src/pa/ffitarget.h src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
-	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h src/dlmalloc.c
+EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host	\
+	 src/aarch64/ffi.c src/aarch64/ffitarget.h			\
+	 src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h		\
+	 src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h		\
+	 src/avr32/ffi.c src/avr32/sysv.S src/avr32/ffitarget.h		\
+	 src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h		\
+	 src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h	\
+	 src/ia64/unix.S src/mips/ffi.c src/mips/n32.S src/mips/o32.S	\
+	 src/mips/ffitarget.h src/m32r/ffi.c src/m32r/sysv.S		\
+	 src/m32r/ffitarget.h src/m68k/ffi.c src/m68k/sysv.S		\
+	 src/m68k/ffitarget.h src/powerpc/ffi.c src/powerpc/sysv.S	\
+	 src/powerpc/linux64.S src/powerpc/linux64_closure.S		\
+	 src/powerpc/ppc_closure.S src/powerpc/asm.h			\
+	src/powerpc/aix.S src/powerpc/darwin.S				\
+	src/powerpc/aix_closure.S src/powerpc/darwin_closure.S		\
+	src/powerpc/ffi_darwin.c src/powerpc/ffitarget.h		\
+	src/s390/ffi.c src/s390/sysv.S src/s390/ffitarget.h		\
+	src/sh/ffi.c src/sh/sysv.S src/sh/ffitarget.h src/sh64/ffi.c	\
+	src/sh64/sysv.S src/sh64/ffitarget.h src/sparc/v8.S		\
+	src/sparc/v9.S src/sparc/ffitarget.h src/sparc/ffi.c		\
+	src/x86/darwin64.S src/x86/ffi.c src/x86/sysv.S			\
+	src/x86/win32.S src/x86/darwin.S src/x86/win64.S		\
+	src/x86/freebsd.S src/x86/ffi64.c src/x86/unix64.S		\
+	src/x86/ffitarget.h src/pa/ffitarget.h src/pa/ffi.c		\
+	src/pa/linux.S src/pa/hpux32.S src/frv/ffi.c src/bfin/ffi.c	\
+	src/bfin/ffitarget.h src/bfin/sysv.S src/frv/eabi.S		\
+	src/frv/ffitarget.h src/dlmalloc.c src/tile/ffi.c		\
+	src/tile/ffitarget.h src/tile/tile.S libtool-version		\
+	 ChangeLog.libffi m4/libtool.m4 m4/lt~obsolete.m4		\
+	 m4/ltoptions.m4 m4/ltsugar.m4 m4/ltversion.m4			\
+	 m4/ltversion.m4 src/arm/gentramp.sh src/debug.c msvcc.sh	\
+	generate-ios-source-and-headers.py				\
+	 generate-osx-source-and-headers.py				\
+	 libffi.xcodeproj/project.pbxproj src/arm/trampoline.S
 
+
+# Automake Documentation:
+# If your package has Texinfo files in many directories, you can use the
+# variable TEXINFO_TEX to tell Automake where to find the canonical
+# `texinfo.tex' for your package. The value of this variable should be
+# the relative path from the current `Makefile.am' to `texinfo.tex'.
+TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
+
+# Defines info, dvi, pdf and html targets
+MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
+info_TEXINFOS = doc/libffi.texi
+@GENINSRC_FALSE@STAMP_GENINSRC = 
+
+# AM_CONDITIONAL on configure option --generated-files-in-srcdir
+@GENINSRC_TRUE@STAMP_GENINSRC = stamp-geninsrc
+@BUILD_INFO_FALSE@STAMP_BUILD_INFO = 
+
+# AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
+@BUILD_INFO_TRUE@STAMP_BUILD_INFO = stamp-build-info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) doc/libffi.info
+MAINTAINERCLEANFILES = $(srcdir)/doc/libffi.info
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -461,7 +519,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 MAKEOVERRIDES = 
 toolexeclib_LTLIBRARIES = libffi.la
 noinst_LTLIBRARIES = libffi_convenience.la
-libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c \
+libffi_la_SOURCES = src/prep_cif.c src/types.c \
 		src/raw_api.c src/java_raw_api.c src/closures.c
 
 nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
@@ -472,7 +530,9 @@ nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
 	$(am__append_18) $(am__append_19) $(am__append_20) \
 	$(am__append_21) $(am__append_22) $(am__append_23) \
-	$(am__append_24) $(am__append_25)
+	$(am__append_24) $(am__append_25) $(am__append_26) \
+	$(am__append_27) $(am__append_28) $(am__append_29) \
+	$(am__append_30)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 AM_CFLAGS = -Wall -g -fexceptions
@@ -484,7 +544,7 @@ all: fficonfig.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .obj
+.SUFFIXES: .S .c .dvi .lo .o .obj .ps
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -582,12 +642,12 @@ src/$(am__dirstamp):
 src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
-src/debug.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/prep_cif.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/types.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/raw_api.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/java_raw_api.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/closures.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/debug.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/mips/$(am__dirstamp):
 	@$(MKDIR_P) src/mips
 	@: > src/mips/$(am__dirstamp)
@@ -600,6 +660,16 @@ src/mips/o32.lo: src/mips/$(am__dirstamp) \
 	src/mips/$(DEPDIR)/$(am__dirstamp)
 src/mips/n32.lo: src/mips/$(am__dirstamp) \
 	src/mips/$(DEPDIR)/$(am__dirstamp)
+src/bfin/$(am__dirstamp):
+	@$(MKDIR_P) src/bfin
+	@: > src/bfin/$(am__dirstamp)
+src/bfin/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/bfin/$(DEPDIR)
+	@: > src/bfin/$(DEPDIR)/$(am__dirstamp)
+src/bfin/ffi.lo: src/bfin/$(am__dirstamp) \
+	src/bfin/$(DEPDIR)/$(am__dirstamp)
+src/bfin/sysv.lo: src/bfin/$(am__dirstamp) \
+	src/bfin/$(DEPDIR)/$(am__dirstamp)
 src/x86/$(am__dirstamp):
 	@$(MKDIR_P) src/x86
 	@: > src/x86/$(am__dirstamp)
@@ -700,6 +770,16 @@ src/powerpc/darwin.lo: src/powerpc/$(am__dirstamp) \
 	src/powerpc/$(DEPDIR)/$(am__dirstamp)
 src/powerpc/darwin_closure.lo: src/powerpc/$(am__dirstamp) \
 	src/powerpc/$(DEPDIR)/$(am__dirstamp)
+src/aarch64/$(am__dirstamp):
+	@$(MKDIR_P) src/aarch64
+	@: > src/aarch64/$(am__dirstamp)
+src/aarch64/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/aarch64/$(DEPDIR)
+	@: > src/aarch64/$(DEPDIR)/$(am__dirstamp)
+src/aarch64/sysv.lo: src/aarch64/$(am__dirstamp) \
+	src/aarch64/$(DEPDIR)/$(am__dirstamp)
+src/aarch64/ffi.lo: src/aarch64/$(am__dirstamp) \
+	src/aarch64/$(DEPDIR)/$(am__dirstamp)
 src/arm/$(am__dirstamp):
 	@$(MKDIR_P) src/arm
 	@: > src/arm/$(am__dirstamp)
@@ -709,6 +789,8 @@ src/arm/$(DEPDIR)/$(am__dirstamp):
 src/arm/sysv.lo: src/arm/$(am__dirstamp) \
 	src/arm/$(DEPDIR)/$(am__dirstamp)
 src/arm/ffi.lo: src/arm/$(am__dirstamp) \
+	src/arm/$(DEPDIR)/$(am__dirstamp)
+src/arm/trampoline.lo: src/arm/$(am__dirstamp) \
 	src/arm/$(DEPDIR)/$(am__dirstamp)
 src/avr32/$(am__dirstamp):
 	@$(MKDIR_P) src/avr32
@@ -782,6 +864,16 @@ src/pa/linux.lo: src/pa/$(am__dirstamp) \
 src/pa/ffi.lo: src/pa/$(am__dirstamp) src/pa/$(DEPDIR)/$(am__dirstamp)
 src/pa/hpux32.lo: src/pa/$(am__dirstamp) \
 	src/pa/$(DEPDIR)/$(am__dirstamp)
+src/tile/$(am__dirstamp):
+	@$(MKDIR_P) src/tile
+	@: > src/tile/$(am__dirstamp)
+src/tile/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/tile/$(DEPDIR)
+	@: > src/tile/$(DEPDIR)/$(am__dirstamp)
+src/tile/tile.lo: src/tile/$(am__dirstamp) \
+	src/tile/$(DEPDIR)/$(am__dirstamp)
+src/tile/ffi.lo: src/tile/$(am__dirstamp) \
+	src/tile/$(DEPDIR)/$(am__dirstamp)
 libffi.la: $(libffi_la_OBJECTS) $(libffi_la_DEPENDENCIES) 
 	$(libffi_la_LINK) -rpath $(toolexeclibdir) $(libffi_la_OBJECTS) $(libffi_la_LIBADD) $(LIBS)
 libffi_convenience.la: $(libffi_convenience_la_OBJECTS) $(libffi_convenience_la_DEPENDENCIES) 
@@ -789,6 +881,10 @@ libffi_convenience.la: $(libffi_convenience_la_OBJECTS) $(libffi_convenience_la_
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f src/aarch64/ffi.$(OBJEXT)
+	-rm -f src/aarch64/ffi.lo
+	-rm -f src/aarch64/sysv.$(OBJEXT)
+	-rm -f src/aarch64/sysv.lo
 	-rm -f src/alpha/ffi.$(OBJEXT)
 	-rm -f src/alpha/ffi.lo
 	-rm -f src/alpha/osf.$(OBJEXT)
@@ -797,10 +893,16 @@ mostlyclean-compile:
 	-rm -f src/arm/ffi.lo
 	-rm -f src/arm/sysv.$(OBJEXT)
 	-rm -f src/arm/sysv.lo
+	-rm -f src/arm/trampoline.$(OBJEXT)
+	-rm -f src/arm/trampoline.lo
 	-rm -f src/avr32/ffi.$(OBJEXT)
 	-rm -f src/avr32/ffi.lo
 	-rm -f src/avr32/sysv.$(OBJEXT)
 	-rm -f src/avr32/sysv.lo
+	-rm -f src/bfin/ffi.$(OBJEXT)
+	-rm -f src/bfin/ffi.lo
+	-rm -f src/bfin/sysv.$(OBJEXT)
+	-rm -f src/bfin/sysv.lo
 	-rm -f src/closures.$(OBJEXT)
 	-rm -f src/closures.lo
 	-rm -f src/cris/ffi.$(OBJEXT)
@@ -881,6 +983,10 @@ mostlyclean-compile:
 	-rm -f src/sparc/v8.lo
 	-rm -f src/sparc/v9.$(OBJEXT)
 	-rm -f src/sparc/v9.lo
+	-rm -f src/tile/ffi.$(OBJEXT)
+	-rm -f src/tile/ffi.lo
+	-rm -f src/tile/tile.$(OBJEXT)
+	-rm -f src/tile/tile.lo
 	-rm -f src/types.$(OBJEXT)
 	-rm -f src/types.lo
 	-rm -f src/x86/darwin.$(OBJEXT)
@@ -911,12 +1017,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/prep_cif.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/raw_api.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/types.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/aarch64/$(DEPDIR)/ffi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/aarch64/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/alpha/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/alpha/$(DEPDIR)/osf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/arm/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/arm/$(DEPDIR)/sysv.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/arm/$(DEPDIR)/trampoline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/avr32/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/avr32/$(DEPDIR)/sysv.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/bfin/$(DEPDIR)/ffi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/bfin/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/cris/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/cris/$(DEPDIR)/sysv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/frv/$(DEPDIR)/eabi.Plo@am__quote@
@@ -952,6 +1063,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/sparc/$(DEPDIR)/ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/sparc/$(DEPDIR)/v8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/sparc/$(DEPDIR)/v9.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/tile/$(DEPDIR)/ffi.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/tile/$(DEPDIR)/tile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/x86/$(DEPDIR)/darwin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/x86/$(DEPDIR)/darwin64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/x86/$(DEPDIR)/ffi.Plo@am__quote@
@@ -1016,9 +1129,11 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf src/.libs src/_libs
+	-rm -rf src/aarch64/.libs src/aarch64/_libs
 	-rm -rf src/alpha/.libs src/alpha/_libs
 	-rm -rf src/arm/.libs src/arm/_libs
 	-rm -rf src/avr32/.libs src/avr32/_libs
+	-rm -rf src/bfin/.libs src/bfin/_libs
 	-rm -rf src/cris/.libs src/cris/_libs
 	-rm -rf src/frv/.libs src/frv/_libs
 	-rm -rf src/ia64/.libs src/ia64/_libs
@@ -1031,6 +1146,7 @@ clean-libtool:
 	-rm -rf src/sh/.libs src/sh/_libs
 	-rm -rf src/sh64/.libs src/sh64/_libs
 	-rm -rf src/sparc/.libs src/sparc/_libs
+	-rm -rf src/tile/.libs src/tile/_libs
 	-rm -rf src/x86/.libs src/x86/_libs
 
 distclean-libtool:
@@ -1052,6 +1168,149 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean # $(MAKE)
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean # $(MAKE)
+doc/$(am__dirstamp):
+	@$(MKDIR_P) doc
+	@: > doc/$(am__dirstamp)
+
+doc/libffi.dvi: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I doc -I $(srcdir)/doc' \
+	$(TEXI2DVI) -o $@ `test -f 'doc/libffi.texi' || echo '$(srcdir)/'`doc/libffi.texi
+
+doc/libffi.pdf: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I doc -I $(srcdir)/doc' \
+	$(TEXI2PDF) -o $@ `test -f 'doc/libffi.texi' || echo '$(srcdir)/'`doc/libffi.texi
+
+doc/libffi.html: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
+	rm -rf $(@:.html=.htp)
+	if $(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I doc -I $(srcdir)/doc \
+	 -o $(@:.html=.htp) `test -f 'doc/libffi.texi' || echo '$(srcdir)/'`doc/libffi.texi; \
+	then \
+	  rm -rf $@; \
+	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
+	    mv $(@:.html=) $@; else mv $(@:.html=.htp) $@; fi; \
+	else \
+	  if test ! -d $(@:.html=.htp) && test -d $(@:.html=); then \
+	    rm -rf $(@:.html=); else rm -Rf $(@:.html=.htp) $@; fi; \
+	  exit 1; \
+	fi
+$(srcdir)/doc/version.texi: @MAINTAINER_MODE_TRUE@ $(srcdir)/doc/stamp-vti
+$(srcdir)/doc/stamp-vti: doc/libffi.texi $(top_srcdir)/configure
+	test -f doc/$(am__dirstamp) || $(MAKE) $(AM_MAKEFLAGS) doc/$(am__dirstamp)
+	@(dir=.; test -f ./doc/libffi.texi || dir=$(srcdir); \
+	set `$(SHELL) $(srcdir)/mdate-sh $$dir/doc/libffi.texi`; \
+	echo "@set UPDATED $$1 $$2 $$3"; \
+	echo "@set UPDATED-MONTH $$2 $$3"; \
+	echo "@set EDITION $(VERSION)"; \
+	echo "@set VERSION $(VERSION)") > vti.tmp
+	@cmp -s vti.tmp $(srcdir)/doc/version.texi \
+	  || (echo "Updating $(srcdir)/doc/version.texi"; \
+	      cp vti.tmp $(srcdir)/doc/version.texi)
+	-@rm -f vti.tmp
+	@cp $(srcdir)/doc/version.texi $@
+
+mostlyclean-vti:
+	-rm -f vti.tmp
+
+maintainer-clean-vti:
+@MAINTAINER_MODE_TRUE@	-rm -f $(srcdir)/doc/stamp-vti $(srcdir)/doc/version.texi
+.dvi.ps:
+	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
+	$(DVIPS) -o $@ $<
+
+uninstall-dvi-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(dvidir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(dvidir)/$$f"; \
+	done
+
+uninstall-html-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(HTMLS)'; test -n "$(htmldir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -rf '$(DESTDIR)$(htmldir)/$$f'"; \
+	  rm -rf "$(DESTDIR)$(htmldir)/$$f"; \
+	done
+
+uninstall-info-am:
+	@$(PRE_UNINSTALL)
+	@if test -d '$(DESTDIR)$(infodir)' && \
+	    (install-info --version && \
+	     install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	  list='$(INFO_DEPS)'; \
+	  for file in $$list; do \
+	    relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	    echo " install-info --info-dir='$(DESTDIR)$(infodir)' --remove '$(DESTDIR)$(infodir)/$$relfile'"; \
+	    if install-info --info-dir="$(DESTDIR)$(infodir)" --remove "$(DESTDIR)$(infodir)/$$relfile"; \
+	    then :; else test ! -f "$(DESTDIR)$(infodir)/$$relfile" || exit 1; fi; \
+	  done; \
+	else :; fi
+	@$(NORMAL_UNINSTALL)
+	@list='$(INFO_DEPS)'; \
+	for file in $$list; do \
+	  relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	  relfile_i=`echo "$$relfile" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  (if test -d "$(DESTDIR)$(infodir)" && cd "$(DESTDIR)$(infodir)"; then \
+	     echo " cd '$(DESTDIR)$(infodir)' && rm -f $$relfile $$relfile-[0-9] $$relfile-[0-9][0-9] $$relfile_i[0-9] $$relfile_i[0-9][0-9]"; \
+	     rm -f $$relfile $$relfile-[0-9] $$relfile-[0-9][0-9] $$relfile_i[0-9] $$relfile_i[0-9][0-9]; \
+	   else :; fi); \
+	done
+
+uninstall-pdf-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(PDFS)'; test -n "$(pdfdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(pdfdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(pdfdir)/$$f"; \
+	done
+
+uninstall-ps-am:
+	@$(NORMAL_UNINSTALL)
+	@list='$(PSS)'; test -n "$(psdir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(psdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(psdir)/$$f"; \
+	done
+
+dist-info: $(INFO_DEPS)
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(INFO_DEPS)'; \
+	for base in $$list; do \
+	  case $$base in \
+	    $(srcdir)/*) base=`echo "$$base" | sed "s|^$$srcdirstrip/||"`;; \
+	  esac; \
+	  if test -f $$base; then d=.; else d=$(srcdir); fi; \
+	  base_i=`echo "$$base" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  for file in $$d/$$base $$d/$$base-[0-9] $$d/$$base-[0-9][0-9] $$d/$$base_i[0-9] $$d/$$base_i[0-9][0-9]; do \
+	    if test -f $$file; then \
+	      relfile=`expr "$$file" : "$$d/\(.*\)"`; \
+	      test -f "$(distdir)/$$relfile" || \
+		cp -p $$file "$(distdir)/$$relfile"; \
+	    else :; fi; \
+	  done; \
+	done
+
+mostlyclean-aminfo:
+	-rm -rf libffi.aux libffi.cp libffi.cps libffi.fn libffi.ky libffi.log \
+	  libffi.pg libffi.tmp libffi.toc libffi.tp libffi.vr
+
+clean-aminfo:
+	-test -z "doc/libffi.dvi doc/libffi.pdf doc/libffi.ps doc/libffi.html" \
+	|| rm -rf doc/libffi.dvi doc/libffi.pdf doc/libffi.ps doc/libffi.html
+
+maintainer-clean-aminfo:
+	@list='$(INFO_DEPS)'; for i in $$list; do \
+	  i_i=`echo "$$i" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  echo " rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]"; \
+	  rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -1248,6 +1507,9 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+	$(MAKE) $(AM_MAKEFLAGS) \
+	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
+	  dist-info
 	-test -n "$(am__skip_mode_fix)" \
 	|| find "$(distdir)" -type d ! -perm -755 \
 		-exec chmod u+rwx,go+rx {} \; -o \
@@ -1365,10 +1627,11 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) all-multi fficonfig.h
+all-am: Makefile $(INFO_DEPS) $(LTLIBRARIES) all-multi fficonfig.h \
+		all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1388,18 +1651,24 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f doc/$(am__dirstamp)
 	-rm -f src/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/$(am__dirstamp)
+	-rm -f src/aarch64/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/aarch64/$(am__dirstamp)
 	-rm -f src/alpha/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/alpha/$(am__dirstamp)
 	-rm -f src/arm/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/arm/$(am__dirstamp)
 	-rm -f src/avr32/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/avr32/$(am__dirstamp)
+	-rm -f src/bfin/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/bfin/$(am__dirstamp)
 	-rm -f src/cris/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/cris/$(am__dirstamp)
 	-rm -f src/frv/$(DEPDIR)/$(am__dirstamp)
@@ -1424,85 +1693,168 @@ distclean-generic:
 	-rm -f src/sh64/$(am__dirstamp)
 	-rm -f src/sparc/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/sparc/$(am__dirstamp)
+	-rm -f src/tile/$(DEPDIR)/$(am__dirstamp)
+	-rm -f src/tile/$(am__dirstamp)
 	-rm -f src/x86/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/x86/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-multi clean-recursive
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+clean-am: clean-aminfo clean-generic clean-libtool \
+	clean-noinstLTLIBRARIES clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf src/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/x86/$(DEPDIR)
+	-rm -rf src/$(DEPDIR) src/aarch64/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/bfin/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/tile/$(DEPDIR) src/x86/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
 
 dvi: dvi-recursive
 
-dvi-am:
+dvi-am: $(DVIS)
 
 html: html-recursive
 
-html-am:
+html-am: $(HTMLS)
 
 info: info-recursive
 
-info-am:
+info-am: $(INFO_DEPS)
 
-install-data-am:
+install-data-am: install-info-am
 
 install-dvi: install-dvi-recursive
 
-install-dvi-am:
-
+install-dvi-am: $(DVIS)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)" || $(MKDIR_P) "$(DESTDIR)$(dvidir)"
+	@list='$(DVIS)'; test -n "$(dvidir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(dvidir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dvidir)" || exit $$?; \
+	done
 install-exec-am: install-multi install-toolexeclibLTLIBRARIES
 
 install-html: install-html-recursive
 
-install-html-am:
-
+install-html-am: $(HTMLS)
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(MKDIR_P) "$(DESTDIR)$(htmldir)"
+	@list='$(HTMLS)'; list2=; test -n "$(htmldir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p" || test -d "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  $(am__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(MKDIR_P) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(MKDIR_P) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f" || exit $$?; \
+	  else \
+	    list2="$$list2 $$d$$p"; \
+	  fi; \
+	done; \
+	test -z "$$list2" || { echo "$$list2" | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(htmldir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(htmldir)" || exit $$?; \
+	done; }
 install-info: install-info-recursive
 
-install-info-am:
-
+install-info-am: $(INFO_DEPS)
+	@$(NORMAL_INSTALL)
+	test -z "$(infodir)" || $(MKDIR_P) "$(DESTDIR)$(infodir)"
+	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
+	list='$(INFO_DEPS)'; test -n "$(infodir)" || list=; \
+	for file in $$list; do \
+	  case $$file in \
+	    $(srcdir)/*) file=`echo "$$file" | sed "s|^$$srcdirstrip/||"`;; \
+	  esac; \
+	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  file_i=`echo "$$file" | sed 's|\.info$$||;s|$$|.i|'`; \
+	  for ifile in $$d/$$file $$d/$$file-[0-9] $$d/$$file-[0-9][0-9] \
+	               $$d/$$file_i[0-9] $$d/$$file_i[0-9][0-9] ; do \
+	    if test -f $$ifile; then \
+	      echo "$$ifile"; \
+	    else : ; fi; \
+	  done; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(infodir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(infodir)" || exit $$?; done
+	@$(POST_INSTALL)
+	@if (install-info --version && \
+	     install-info --version 2>&1 | sed 1q | grep -i -v debian) >/dev/null 2>&1; then \
+	  list='$(INFO_DEPS)'; test -n "$(infodir)" || list=; \
+	  for file in $$list; do \
+	    relfile=`echo "$$file" | sed 's|^.*/||'`; \
+	    echo " install-info --info-dir='$(DESTDIR)$(infodir)' '$(DESTDIR)$(infodir)/$$relfile'";\
+	    install-info --info-dir="$(DESTDIR)$(infodir)" "$(DESTDIR)$(infodir)/$$relfile" || :;\
+	  done; \
+	else : ; fi
 install-man:
 
 install-pdf: install-pdf-recursive
 
-install-pdf-am:
-
+install-pdf-am: $(PDFS)
+	@$(NORMAL_INSTALL)
+	test -z "$(pdfdir)" || $(MKDIR_P) "$(DESTDIR)$(pdfdir)"
+	@list='$(PDFS)'; test -n "$(pdfdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(pdfdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(pdfdir)" || exit $$?; done
 install-ps: install-ps-recursive
 
-install-ps-am:
-
+install-ps-am: $(PSS)
+	@$(NORMAL_INSTALL)
+	test -z "$(psdir)" || $(MKDIR_P) "$(DESTDIR)$(psdir)"
+	@list='$(PSS)'; test -n "$(psdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(psdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(psdir)" || exit $$?; done
 installcheck-am:
 
 maintainer-clean: maintainer-clean-multi maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf src/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/x86/$(DEPDIR)
+	-rm -rf src/$(DEPDIR) src/aarch64/$(DEPDIR) src/alpha/$(DEPDIR) src/arm/$(DEPDIR) src/avr32/$(DEPDIR) src/bfin/$(DEPDIR) src/cris/$(DEPDIR) src/frv/$(DEPDIR) src/ia64/$(DEPDIR) src/m32r/$(DEPDIR) src/m68k/$(DEPDIR) src/mips/$(DEPDIR) src/pa/$(DEPDIR) src/powerpc/$(DEPDIR) src/s390/$(DEPDIR) src/sh/$(DEPDIR) src/sh64/$(DEPDIR) src/sparc/$(DEPDIR) src/tile/$(DEPDIR) src/x86/$(DEPDIR)
 	-rm -f Makefile
-maintainer-clean-am: distclean-am maintainer-clean-generic
+maintainer-clean-am: distclean-am maintainer-clean-aminfo \
+	maintainer-clean-generic maintainer-clean-vti
 
 mostlyclean: mostlyclean-multi mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-aminfo mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-vti
 
 pdf: pdf-recursive
 
-pdf-am:
+pdf-am: $(PDFS)
 
 ps: ps-recursive
 
-ps-am:
+ps-am: $(PSS)
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
+	uninstall-pdf-am uninstall-ps-am \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all all-multi \
 	clean-multi ctags-recursive distclean-multi install-am \
@@ -1510,12 +1862,12 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	mostlyclean-multi tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am all-multi am--refresh check check-am clean \
-	clean-generic clean-libtool clean-multi \
+	all all-am all-local all-multi am--refresh check check-am \
+	clean clean-aminfo clean-generic clean-libtool clean-multi \
 	clean-noinstLTLIBRARIES clean-toolexeclibLTLIBRARIES ctags \
-	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-lzma \
-	dist-shar dist-tarZ dist-xz dist-zip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
+	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-info \
+	dist-lzma dist-shar dist-tarZ dist-xz dist-zip distcheck \
+	distclean distclean-compile distclean-generic distclean-hdr \
 	distclean-libtool distclean-multi distclean-tags \
 	distcleancheck distdir distuninstallcheck dvi dvi-am html \
 	html-am info info-am install install-am install-data \
@@ -1525,11 +1877,27 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	install-pdf-am install-ps install-ps-am install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-multi mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-multi pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-toolexeclibLTLIBRARIES
+	maintainer-clean-aminfo maintainer-clean-generic \
+	maintainer-clean-multi maintainer-clean-vti mostlyclean \
+	mostlyclean-aminfo mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-multi mostlyclean-vti pdf \
+	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-dvi-am uninstall-html-am uninstall-info-am \
+	uninstall-pdf-am uninstall-ps-am \
+	uninstall-toolexeclibLTLIBRARIES
 
+
+all-local: $(STAMP_GENINSRC)
+
+stamp-geninsrc: doc/libffi.info
+	cp -p $(top_builddir)/doc/libffi.info $(srcdir)/doc/libffi.info
+	@touch $@
+
+doc/libffi.info: $(STAMP_BUILD_INFO)
+
+stamp-build-info: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)/doc -o doc/libffi.info $(srcdir)/doc/libffi.texi
+	@touch $@
 
 # Multilib support.  Automake should provide these on its own.
 all-recursive: all-multi

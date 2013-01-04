@@ -274,17 +274,17 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      Cond : constant Node_Id    := Arg2 (N);
-      Nam  : constant Name_Id    := Chars (Arg1 (N));
-      Msg  : Node_Id;
+      Loc  : constant Source_Ptr := Sloc (N);
+      --  Location of the pragma node. Note: it is important to use this
+      --  location (and not the location of the expression) for the generated
+      --  statements, otherwise the implicit return statement in the body
+      --  of a pre/postcondition subprogram may inherit the source location
+      --  of part of the expression, which causes confusing debug information
+      --  to be generated, which interferes with coverage analysis tools.
 
-      Loc  : constant Source_Ptr := Sloc (First_Node (Cond));
-      --  Source location used in the case of a failed assertion. Note that
-      --  the source location of the expression is not usually the best choice
-      --  here. For example, it gets located on the last AND keyword in a
-      --  chain of boolean expressiond AND'ed together. It is best to put the
-      --  message on the first character of the assertion, which is the effect
-      --  of the First_Node call here.
+      Cond : constant Node_Id := Arg2 (N);
+      Nam  : constant Name_Id := Chars (Arg1 (N));
+      Msg  : Node_Id;
 
    begin
       --  We already know that this check is enabled, because otherwise the
@@ -362,7 +362,15 @@ package body Exp_Prag is
 
          else
             declare
-               Msg_Loc : constant String := Build_Location_String (Loc);
+               Msg_Loc : constant String :=
+                           Build_Location_String (Sloc (First_Node (Cond)));
+               --  Source location used in the case of a failed assertion:
+               --  point to the failing condition, not Loc. Note that the
+               --  source location of the expression is not usually the best
+               --  choice here. For example, it gets located on the last AND
+               --  keyword in a chain of boolean expressiond AND'ed together.
+               --  It is best to put the message on the first character of the
+               --  condition, which is the effect of the First_Node call here.
 
             begin
                Name_Len := 0;
@@ -440,10 +448,12 @@ package body Exp_Prag is
            and then Entity (Original_Node (Cond)) = Standard_False
          then
             return;
+
          elsif Nam = Name_Assertion then
-            Error_Msg_N ("?assertion will fail at run time", N);
+            Error_Msg_N ("?A?assertion will fail at run time", N);
          else
-            Error_Msg_N ("?check will fail at run time", N);
+
+            Error_Msg_N ("?A?check will fail at run time", N);
          end if;
       end if;
    end Expand_Pragma_Check;
@@ -520,16 +530,16 @@ package body Exp_Prag is
    -- Expand_Pragma_Import_Or_Interface --
    ---------------------------------------
 
-   --  When applied to a variable, the default initialization must not be
-   --  done. As it is already done when the pragma is found, we just get rid
-   --  of the call the initialization procedure which followed the object
-   --  declaration. The call is inserted after the declaration, but validity
-   --  checks may also have been inserted and the initialization call does
-   --  not necessarily appear immediately after the object declaration.
+   --  When applied to a variable, the default initialization must not be done.
+   --  As it is already done when the pragma is found, we just get rid of the
+   --  call the initialization procedure which followed the object declaration.
+   --  The call is inserted after the declaration, but validity checks may
+   --  also have been inserted and the initialization call does not necessarily
+   --  appear immediately after the object declaration.
 
-   --  We can't use the freezing mechanism for this purpose, since we
-   --  have to elaborate the initialization expression when it is first
-   --  seen (i.e. this elaboration cannot be deferred to the freeze point).
+   --  We can't use the freezing mechanism for this purpose, since we have to
+   --  elaborate the initialization expression when it is first seen (i.e. this
+   --  elaboration cannot be deferred to the freeze point).
 
    procedure Expand_Pragma_Import_Or_Interface (N : Node_Id) is
       Def_Id    : Entity_Id;
@@ -539,18 +549,15 @@ package body Exp_Prag is
       Def_Id := Entity (Arg2 (N));
       if Ekind (Def_Id) = E_Variable then
 
-         --  Find generated initialization call for object, if any
+         --  Find and remove generated initialization call for object, if any
 
-         Init_Call := Find_Init_Call (Def_Id, Rep_Clause => N);
-         if Present (Init_Call) then
-            Remove (Init_Call);
-         end if;
+         Init_Call := Remove_Init_Call (Def_Id, Rep_Clause => N);
 
-         --  Any default initialization expression should be removed
-         --  (e.g., null defaults for access objects, zero initialization
-         --  of packed bit arrays). Imported objects aren't allowed to
-         --  have explicit initialization, so the expression must have
-         --  been generated by the compiler.
+         --  Any default initialization expression should be removed (e.g.,
+         --  null defaults for access objects, zero initialization of packed
+         --  bit arrays). Imported objects aren't allowed to have explicit
+         --  initialization, so the expression must have been generated by
+         --  the compiler.
 
          if No (Init_Call) and then Present (Expression (Parent (Def_Id))) then
             Set_Expression (Parent (Def_Id), Empty);

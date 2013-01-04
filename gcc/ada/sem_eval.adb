@@ -293,7 +293,7 @@ package body Sem_Eval is
            and then Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True)
          then
             Error_Msg_N
-              ("?float value out of range, infinity will be generated", N);
+              ("??float value out of range, infinity will be generated", N);
          end if;
 
          return;
@@ -369,7 +369,7 @@ package body Sem_Eval is
            Intval (N) > Expr_Value (Type_High_Bound (Universal_Integer)))
       then
          Apply_Compile_Time_Constraint_Error
-           (N, "non-static universal integer value out of range?",
+           (N, "non-static universal integer value out of range??",
             CE_Range_Check_Failed);
 
       --  Check out of range of base type
@@ -390,7 +390,7 @@ package body Sem_Eval is
 
          elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
             Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}?", CE_Range_Check_Failed);
+              (N, "value not in range of}??", CE_Range_Check_Failed);
 
          elsif Checks_On then
             Enable_Range_Check (N);
@@ -407,14 +407,12 @@ package body Sem_Eval is
 
    procedure Check_String_Literal_Length (N : Node_Id; Ttype : Entity_Id) is
    begin
-      if not Raises_Constraint_Error (N)
-        and then Is_Constrained (Ttype)
-      then
+      if not Raises_Constraint_Error (N) and then Is_Constrained (Ttype) then
          if
            UI_From_Int (String_Length (Strval (N))) /= String_Type_Len (Ttype)
          then
             Apply_Compile_Time_Constraint_Error
-              (N, "string length wrong for}?",
+              (N, "string length wrong for}??",
                CE_Length_Check_Failed,
                Ent => Ttype,
                Typ => Ttype);
@@ -744,13 +742,18 @@ package body Sem_Eval is
    begin
       Diff.all := No_Uint;
 
-      --  In preanalysis mode, always return Unknown, it is too early to be
-      --  thinking we know the result of a comparison, save that judgment for
-      --  the full analysis. This is particularly important in the case of
-      --  pre and postconditions, which otherwise can be prematurely collapsed
-      --  into having True or False conditions when this is inappropriate.
+      --  In preanalysis mode, always return Unknown unless the expression
+      --  is static. It is too early to be thinking we know the result of a
+      --  comparison, save that judgment for the full analysis. This is
+      --  particularly important in the case of pre and postconditions, which
+      --  otherwise can be prematurely collapsed into having True or False
+      --  conditions when this is inappropriate.
 
-      if not Full_Analysis then
+      if not (Full_Analysis
+               or else (Is_Static_Expression (L)
+                          and then
+                        Is_Static_Expression (R)))
+      then
          return Unknown;
       end if;
 
@@ -1650,7 +1653,7 @@ package body Sem_Eval is
                begin
                   if Result < Lo or else Result > Hi then
                      Apply_Compile_Time_Constraint_Error
-                       (N, "value not in range of }?",
+                       (N, "value not in range of }??",
                         CE_Overflow_Check_Failed,
                         Ent => BT);
                      return;
@@ -3253,7 +3256,7 @@ package body Sem_Eval is
       Left_Int := Expr_Value (Left);
 
       if (Kind = N_And_Then and then Is_False (Left_Int))
-            or else
+           or else
          (Kind = N_Or_Else  and then Is_True  (Left_Int))
       then
          Fold_Uint (N, Left_Int, Rstat);
@@ -3311,10 +3314,10 @@ package body Sem_Eval is
                     = Entity (Drange)
                then
                   if Warn_On_Redundant_Constructs then
-                     Error_Msg_N ("redundant slice denotes whole array?", N);
+                     Error_Msg_N ("redundant slice denotes whole array?r?", N);
                   end if;
 
-                  --  The following might be a useful optimization????
+                  --  The following might be a useful optimization???
 
                   --  Rewrite (N, New_Occurrence_Of (E, Sloc (N)));
                end if;
@@ -4651,7 +4654,7 @@ package body Sem_Eval is
 
       else
          Apply_Compile_Time_Constraint_Error
-           (N, "value not in range of}?", CE_Range_Check_Failed);
+           (N, "value not in range of}??", CE_Range_Check_Failed);
       end if;
    end Out_Of_Range;
 

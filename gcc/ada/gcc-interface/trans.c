@@ -302,6 +302,10 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
+  /* ??? Disable the generation of the SCO instance table until after the
+     back-end supports instance based debug info discriminators.  */
+  Generate_SCO_Instance_Table = False;
+
   for (i = 0; i < number_file; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as

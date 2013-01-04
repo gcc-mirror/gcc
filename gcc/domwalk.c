@@ -1,6 +1,6 @@
 /* Generic dominator tree walker
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2010 Free Software Foundation,
-   Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2010, 2012
+   Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.

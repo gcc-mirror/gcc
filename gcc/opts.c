@@ -1,7 +1,6 @@
 /* Command line option handling.
    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012
-
+   2012, 2013
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -542,9 +541,8 @@ default_options_optimization (struct gcc_options *opts,
 	    {
 	      const int optimize_val = integral_argument (opt->arg);
 	      if (optimize_val == -1)
-		error_at (loc,
-			  "argument to %qs should be a non-negative integer",
-			  "-O");
+		error_at (loc, "argument to %<-O%> should be a non-negative "
+			       "integer, %<g%>, %<s%> or %<fast%>");
 	      else
 		{
 		  opts->x_optimize = optimize_val;

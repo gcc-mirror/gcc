@@ -8812,9 +8812,7 @@ package body Exp_Ch9 is
 
       if Present (Private_Declarations (Pdef)) then
          Priv := First (Private_Declarations (Pdef));
-
          while Present (Priv) loop
-
             if Nkind (Priv) = N_Component_Declaration then
                if not Static_Component_Size (Defining_Identifier (Priv)) then
 
@@ -8827,10 +8825,10 @@ package body Exp_Ch9 is
                      Check_Restriction (No_Implicit_Heap_Allocations, Priv);
 
                   elsif Restriction_Active (No_Implicit_Heap_Allocations) then
-                     Error_Msg_N ("component has non-static size?", Priv);
+                     Error_Msg_N ("component has non-static size??", Priv);
                      Error_Msg_NE
                        ("\creation of protected object of type& will violate"
-                        & " restriction No_Implicit_Heap_Allocations?",
+                        & " restriction No_Implicit_Heap_Allocations??",
                         Priv, Prot_Typ);
                   end if;
                end if;

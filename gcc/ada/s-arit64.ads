@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,9 @@
 --  signed integer values in cases where either overflow checking is
 --  required, or intermediate results are longer than 64 bits.
 
+pragma Restrictions (No_Elaboration_Code);
+--  Allow direct call from gigi generated code
+
 with Interfaces;
 
 package System.Arith_64 is
@@ -49,8 +52,10 @@ package System.Arith_64 is
    --  bits, otherwise returns the 64-bit signed integer difference.
 
    function Multiply_With_Ovflo_Check (X, Y : Int64) return Int64;
+   pragma Export (C, Multiply_With_Ovflo_Check, "__gnat_mulv64");
    --  Raises Constraint_Error if product of operands overflows 64
    --  bits, otherwise returns the 64-bit signed integer product.
+   --  GIGI may also call this routine directly.
 
    procedure Scaled_Divide
      (X, Y, Z : Int64;

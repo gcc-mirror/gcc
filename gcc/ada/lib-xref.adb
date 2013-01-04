@@ -597,7 +597,7 @@ package body Lib.Xref is
         and then Warn_On_Ada_2005_Compatibility
         and then (Typ = 'm' or else Typ = 'r' or else Typ = 's')
       then
-         Error_Msg_NE ("& is only defined in Ada 2005?", N, E);
+         Error_Msg_NE ("& is only defined in Ada 2005?y?", N, E);
       end if;
 
       --  Warn if reference to Ada 2012 entity not in Ada 2012 mode. We only
@@ -609,7 +609,7 @@ package body Lib.Xref is
         and then Warn_On_Ada_2012_Compatibility
         and then (Typ = 'm' or else Typ = 'r')
       then
-         Error_Msg_NE ("& is only defined in Ada 2012?", N, E);
+         Error_Msg_NE ("& is only defined in Ada 2012?y?", N, E);
       end if;
 
       --  Never collect references if not in main source unit. However, we omit
@@ -841,7 +841,7 @@ package body Lib.Xref is
                   while Present (BE) loop
                      if Chars (BE) = Chars (E) then
                         Error_Msg_NE -- CODEFIX
-                          ("?pragma Unreferenced given for&!", N, BE);
+                          ("??pragma Unreferenced given for&!", N, BE);
                         exit;
                      end if;
 

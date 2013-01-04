@@ -7417,6 +7417,7 @@ package body Exp_Dist is
 
             --  If the current parameter has a dynamic constrained status, then
             --  this status is transmitted as well.
+
             --  This should be done for accessibility as well ???
 
             if Nkind (Parameter_Type (Current_Parameter)) /=

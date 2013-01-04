@@ -1,6 +1,6 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
-   2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007-2013
+   Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -2290,6 +2290,17 @@ _cpp_lex_direct (cpp_reader *pfile)
 	{
 	  if (*buffer->cur == ':')
 	    {
+	      /* C++11 [2.5/3 lex.pptoken], "Otherwise, if the next
+		 three characters are <:: and the subsequent character
+		 is neither : nor >, the < is treated as a preprocessor
+		 token by itself".  */
+	      if (CPP_OPTION (pfile, cplusplus)
+		  && (CPP_OPTION (pfile, lang) == CLK_CXX11
+		      || CPP_OPTION (pfile, lang) == CLK_GNUCXX11)
+		  && buffer->cur[1] == ':'
+		  && buffer->cur[2] != ':' && buffer->cur[2] != '>')
+		break;
+
 	      buffer->cur++;
 	      result->flags |= DIGRAPH;
 	      result->type = CPP_OPEN_SQUARE;

@@ -6707,3 +6707,9 @@
 	Dimension _M_atoms_out and _M_atoms_in one position smaller.
 	(__numpunct_cache<>::_M_cache): Don't zero terminate _M_atoms_out
 	and _M_atoms_in.
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

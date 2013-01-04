@@ -388,7 +388,7 @@ package Targparm is
    --  used at the source level, and the corresponding flag is false, then an
    --  error message will be issued saying the feature is not supported.
 
-   Atomic_Sync_Default : Boolean := True;
+   Atomic_Sync_Default_On_Target : Boolean := True;
    --  Access to atomic variables requires memory barrier synchronization in
    --  the general case to ensure proper behavior when such accesses are used
    --  on a multi-processor to synchronize tasks (e.g. by using spin locks).

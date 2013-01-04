@@ -1,7 +1,7 @@
 /* Fold a constant sub-tree into a single node for C-compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
    2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012 Free Software Foundation, Inc.
+   2012, 2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -820,6 +820,13 @@ split_tree (tree in, enum tree_code code, tree *conp, tree *litp,
 	*conp = negate_expr (*conp);
       if (neg_var_p)
 	var = negate_expr (var);
+    }
+  else if (TREE_CODE (in) == BIT_NOT_EXPR
+	   && code == PLUS_EXPR)
+    {
+      /* -X - 1 is folded to ~X, undo that here.  */
+      *minus_litp = build_one_cst (TREE_TYPE (in));
+      var = negate_expr (TREE_OPERAND (in, 0));
     }
   else if (TREE_CONSTANT (in))
     *conp = in;
@@ -13519,7 +13526,9 @@ fold_binary_loc (location_t loc,
 				    "when simplifying comparison of "
 				    "absolute value and zero"),
 				   WARN_STRICT_OVERFLOW_CONDITIONAL);
-	  return omit_one_operand_loc (loc, type, integer_one_node, arg0);
+	  return omit_one_operand_loc (loc, type,
+				       constant_boolean_node (true, type),
+				       arg0);
 	}
 
       /* Convert ABS_EXPR<x> < 0 to false.  */
@@ -13533,7 +13542,9 @@ fold_binary_loc (location_t loc,
 				    "when simplifying comparison of "
 				    "absolute value and zero"),
 				   WARN_STRICT_OVERFLOW_CONDITIONAL);
-	  return omit_one_operand_loc (loc, type, integer_zero_node, arg0);
+	  return omit_one_operand_loc (loc, type,
+				       constant_boolean_node (false, type),
+				       arg0);
 	}
 
       /* If X is unsigned, convert X < (1 << Y) into X >> Y == 0

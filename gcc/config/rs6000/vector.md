@@ -3,7 +3,7 @@
 ;; expander, and the actual vector instructions will be in altivec.md and
 ;; vsx.md
 
-;; Copyright (C) 2009, 2010, 2011
+;; Copyright (C) 2009, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 

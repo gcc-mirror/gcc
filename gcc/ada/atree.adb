@@ -205,6 +205,31 @@ package body Atree is
    function To_Flag_Byte3_Ptr is new
      Unchecked_Conversion (Node_Kind_Ptr, Flag_Byte3_Ptr);
 
+   --  The following declarations are used to store flags 310-317 in the
+   --  Nkind field of the sixth component of an extended (entity) node.
+
+   type Flag_Byte4 is record
+      Flag310 : Boolean;
+      Flag311 : Boolean;
+      Flag312 : Boolean;
+      Flag313 : Boolean;
+      Flag314 : Boolean;
+      Flag315 : Boolean;
+      Flag316 : Boolean;
+      Flag317 : Boolean;
+   end record;
+
+   pragma Pack (Flag_Byte4);
+   for Flag_Byte4'Size use 8;
+
+   type Flag_Byte4_Ptr is access all Flag_Byte4;
+
+   function To_Flag_Byte4 is new
+     Unchecked_Conversion (Node_Kind, Flag_Byte4);
+
+   function To_Flag_Byte4_Ptr is new
+     Unchecked_Conversion (Node_Kind_Ptr, Flag_Byte4_Ptr);
+
    --  The following declarations are used to store flags 73-96 and the
    --  Convention field in the Field12 field of the third component of an
    --  extended (Entity) node.
@@ -412,6 +437,59 @@ package body Atree is
    function To_Flag_Word4_Ptr is new
      Unchecked_Conversion (Union_Id_Ptr, Flag_Word4_Ptr);
 
+   --  The following declarations are used to store flags 255-286 in the
+   --  Field12 field of the sixth component of an extended (entity) node.
+
+   type Flag_Word5 is record
+      Flag255 : Boolean;
+      Flag256 : Boolean;
+      Flag257 : Boolean;
+      Flag258 : Boolean;
+      Flag259 : Boolean;
+      Flag260 : Boolean;
+      Flag261 : Boolean;
+      Flag262 : Boolean;
+
+      Flag263 : Boolean;
+      Flag264 : Boolean;
+      Flag265 : Boolean;
+      Flag266 : Boolean;
+      Flag267 : Boolean;
+      Flag268 : Boolean;
+      Flag269 : Boolean;
+      Flag270 : Boolean;
+
+      Flag271 : Boolean;
+      Flag272 : Boolean;
+      Flag273 : Boolean;
+      Flag274 : Boolean;
+      Flag275 : Boolean;
+      Flag276 : Boolean;
+      Flag277 : Boolean;
+      Flag278 : Boolean;
+
+      Flag279 : Boolean;
+      Flag280 : Boolean;
+      Flag281 : Boolean;
+      Flag282 : Boolean;
+      Flag283 : Boolean;
+      Flag284 : Boolean;
+      Flag285 : Boolean;
+      Flag286 : Boolean;
+   end record;
+
+   pragma Pack (Flag_Word5);
+   for Flag_Word5'Size use 32;
+   for Flag_Word5'Alignment use 4;
+
+   type Flag_Word5_Ptr is access all Flag_Word5;
+
+   function To_Flag_Word5 is new
+     Unchecked_Conversion (Union_Id, Flag_Word5);
+
+   function To_Flag_Word5_Ptr is new
+     Unchecked_Conversion (Union_Id_Ptr, Flag_Word5_Ptr);
+
    --------------------------------------------------
    -- Implementation of Tree Substitution Routines --
    --------------------------------------------------
@@ -470,8 +548,8 @@ package body Atree is
    function Allocate_Initialize_Node
      (Src            : Node_Id;
       With_Extension : Boolean) return Node_Id;
-   --  Allocate a new node or node extension. If Src is not empty,
-   --  the information for the newly-allocated node is copied from it.
+   --  Allocate a new node or node extension. If Src is not empty, the
+   --  information for the newly-allocated node is copied from it.
 
    ------------------------------
    -- Allocate_Initialize_Node --
@@ -2231,6 +2309,42 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          return Nodes.Table (N + 4).Field11;
       end Field29;
+
+      function Field30 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Field6;
+      end Field30;
+
+      function Field31 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Field7;
+      end Field31;
+
+      function Field32 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Field8;
+      end Field32;
+
+      function Field33 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Field9;
+      end Field33;
+
+      function Field34 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Field10;
+      end Field34;
+
+      function Field35 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Field11;
+      end Field35;
 
       function Node1 (N : Node_Id) return Node_Id is
       begin
@@ -4337,6 +4451,384 @@ package body Atree is
          return To_Flag_Byte3 (Nodes.Table (N + 4).Nkind).Flag254;
       end Flag254;
 
+      function Flag255 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag255;
+      end Flag255;
+
+      function Flag256 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag256;
+      end Flag256;
+
+      function Flag257 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag257;
+      end Flag257;
+
+      function Flag258 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag258;
+      end Flag258;
+
+      function Flag259 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag259;
+      end Flag259;
+
+      function Flag260 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag260;
+      end Flag260;
+
+      function Flag261 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag261;
+      end Flag261;
+
+      function Flag262 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag262;
+      end Flag262;
+
+      function Flag263 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag263;
+      end Flag263;
+
+      function Flag264 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag264;
+      end Flag264;
+
+      function Flag265 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag265;
+      end Flag265;
+
+      function Flag266 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag266;
+      end Flag266;
+
+      function Flag267 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag267;
+      end Flag267;
+
+      function Flag268 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag268;
+      end Flag268;
+
+      function Flag269 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag269;
+      end Flag269;
+
+      function Flag270 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag270;
+      end Flag270;
+
+      function Flag271 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag271;
+      end Flag271;
+
+      function Flag272 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag272;
+      end Flag272;
+
+      function Flag273 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag273;
+      end Flag273;
+
+      function Flag274 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag274;
+      end Flag274;
+
+      function Flag275 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag275;
+      end Flag275;
+
+      function Flag276 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag276;
+      end Flag276;
+
+      function Flag277 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag277;
+      end Flag277;
+
+      function Flag278 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag278;
+      end Flag278;
+
+      function Flag279 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag279;
+      end Flag279;
+
+      function Flag280 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag280;
+      end Flag280;
+
+      function Flag281 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag281;
+      end Flag281;
+
+      function Flag282 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag282;
+      end Flag282;
+
+      function Flag283 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag283;
+      end Flag283;
+
+      function Flag284 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag284;
+      end Flag284;
+
+      function Flag285 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag285;
+      end Flag285;
+
+      function Flag286 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Word5 (Nodes.Table (N + 5).Field12).Flag286;
+      end Flag286;
+
+      function Flag287 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).In_List;
+      end Flag287;
+
+      function Flag288 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Has_Aspects;
+      end Flag288;
+
+      function Flag289 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Rewrite_Ins;
+      end Flag289;
+
+      function Flag290 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Analyzed;
+      end Flag290;
+
+      function Flag291 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Comes_From_Source;
+      end Flag291;
+
+      function Flag292 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Error_Posted;
+      end Flag292;
+
+      function Flag293 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag4;
+      end Flag293;
+
+      function Flag294 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag5;
+      end Flag294;
+
+      function Flag295 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag6;
+      end Flag295;
+
+      function Flag296 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag7;
+      end Flag296;
+
+      function Flag297 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag8;
+      end Flag297;
+
+      function Flag298 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag9;
+      end Flag298;
+
+      function Flag299 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag10;
+      end Flag299;
+
+      function Flag300 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag11;
+      end Flag300;
+
+      function Flag301 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag12;
+      end Flag301;
+
+      function Flag302 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag13;
+      end Flag302;
+
+      function Flag303 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag14;
+      end Flag303;
+
+      function Flag304 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag15;
+      end Flag304;
+
+      function Flag305 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag16;
+      end Flag305;
+
+      function Flag306 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag17;
+      end Flag306;
+
+      function Flag307 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Flag18;
+      end Flag307;
+
+      function Flag308 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Pflag1;
+      end Flag308;
+
+      function Flag309 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 5).Pflag2;
+      end Flag309;
+
+      function Flag310 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag310;
+      end Flag310;
+
+      function Flag311 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag311;
+      end Flag311;
+
+      function Flag312 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag312;
+      end Flag312;
+
+      function Flag313 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag313;
+      end Flag313;
+
+      function Flag314 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag314;
+      end Flag314;
+
+      function Flag315 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag315;
+      end Flag315;
+
+      function Flag316 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag316;
+      end Flag316;
+
+      function Flag317 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return To_Flag_Byte4 (Nodes.Table (N + 5).Nkind).Flag317;
+      end Flag317;
+
       procedure Set_Nkind (N : Node_Id; Val : Node_Kind) is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -4516,6 +5008,42 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 4).Field11 := Val;
       end Set_Field29;
+
+      procedure Set_Field30 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field6 := Val;
+      end Set_Field30;
+
+      procedure Set_Field31 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field7 := Val;
+      end Set_Field31;
+
+      procedure Set_Field32 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field8 := Val;
+      end Set_Field32;
+
+      procedure Set_Field33 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field9 := Val;
+      end Set_Field33;
+
+      procedure Set_Field34 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field10 := Val;
+      end Set_Field34;
+
+      procedure Set_Field35 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field11 := Val;
+      end Set_Field35;
 
       procedure Set_Node1 (N : Node_Id; Val : Node_Id) is
       begin
@@ -6749,6 +7277,464 @@ package body Atree is
            (Node_Kind_Ptr'
              (Nodes.Table (N + 4).Nkind'Unrestricted_Access)).Flag254 := Val;
       end Set_Flag254;
+
+      procedure Set_Flag255 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag255 := Val;
+      end Set_Flag255;
+
+      procedure Set_Flag256 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag256 := Val;
+      end Set_Flag256;
+
+      procedure Set_Flag257 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag257 := Val;
+      end Set_Flag257;
+
+      procedure Set_Flag258 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag258 := Val;
+      end Set_Flag258;
+
+      procedure Set_Flag259 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag259 := Val;
+      end Set_Flag259;
+
+      procedure Set_Flag260 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag260 := Val;
+      end Set_Flag260;
+
+      procedure Set_Flag261 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag261 := Val;
+      end Set_Flag261;
+
+      procedure Set_Flag262 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag262 := Val;
+      end Set_Flag262;
+
+      procedure Set_Flag263 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag263 := Val;
+      end Set_Flag263;
+
+      procedure Set_Flag264 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag264 := Val;
+      end Set_Flag264;
+
+      procedure Set_Flag265 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag265 := Val;
+      end Set_Flag265;
+
+      procedure Set_Flag266 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag266 := Val;
+      end Set_Flag266;
+
+      procedure Set_Flag267 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag267 := Val;
+      end Set_Flag267;
+
+      procedure Set_Flag268 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag268 := Val;
+      end Set_Flag268;
+
+      procedure Set_Flag269 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag269 := Val;
+      end Set_Flag269;
+
+      procedure Set_Flag270 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag270 := Val;
+      end Set_Flag270;
+
+      procedure Set_Flag271 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag271 := Val;
+      end Set_Flag271;
+
+      procedure Set_Flag272 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag272 := Val;
+      end Set_Flag272;
+
+      procedure Set_Flag273 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag273 := Val;
+      end Set_Flag273;
+
+      procedure Set_Flag274 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag274 := Val;
+      end Set_Flag274;
+
+      procedure Set_Flag275 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag275 := Val;
+      end Set_Flag275;
+
+      procedure Set_Flag276 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag276 := Val;
+      end Set_Flag276;
+
+      procedure Set_Flag277 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag277 := Val;
+      end Set_Flag277;
+
+      procedure Set_Flag278 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag278 := Val;
+      end Set_Flag278;
+
+      procedure Set_Flag279 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag279 := Val;
+      end Set_Flag279;
+
+      procedure Set_Flag280 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag280 := Val;
+      end Set_Flag280;
+
+      procedure Set_Flag281 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag281 := Val;
+      end Set_Flag281;
+
+      procedure Set_Flag282 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag282 := Val;
+      end Set_Flag282;
+
+      procedure Set_Flag283 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag283 := Val;
+      end Set_Flag283;
+
+      procedure Set_Flag284 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag284 := Val;
+      end Set_Flag284;
+
+      procedure Set_Flag285 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag285 := Val;
+      end Set_Flag285;
+
+      procedure Set_Flag286 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Word5_Ptr
+           (Union_Id_Ptr'
+             (Nodes.Table (N + 5).Field12'Unrestricted_Access)).Flag286 := Val;
+      end Set_Flag286;
+
+      procedure Set_Flag287 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).In_List := Val;
+      end Set_Flag287;
+
+      procedure Set_Flag288 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Has_Aspects := Val;
+      end Set_Flag288;
+
+      procedure Set_Flag289 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Rewrite_Ins := Val;
+      end Set_Flag289;
+
+      procedure Set_Flag290 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Analyzed := Val;
+      end Set_Flag290;
+
+      procedure Set_Flag291 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Comes_From_Source := Val;
+      end Set_Flag291;
+
+      procedure Set_Flag292 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Error_Posted := Val;
+      end Set_Flag292;
+
+      procedure Set_Flag293 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag4 := Val;
+      end Set_Flag293;
+
+      procedure Set_Flag294 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag5 := Val;
+      end Set_Flag294;
+
+      procedure Set_Flag295 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag6 := Val;
+      end Set_Flag295;
+
+      procedure Set_Flag296 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag7 := Val;
+      end Set_Flag296;
+
+      procedure Set_Flag297 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag8 := Val;
+      end Set_Flag297;
+
+      procedure Set_Flag298 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag9 := Val;
+      end Set_Flag298;
+
+      procedure Set_Flag299 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag10 := Val;
+      end Set_Flag299;
+
+      procedure Set_Flag300 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag11 := Val;
+      end Set_Flag300;
+
+      procedure Set_Flag301 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag12 := Val;
+      end Set_Flag301;
+
+      procedure Set_Flag302 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag13 := Val;
+      end Set_Flag302;
+
+      procedure Set_Flag303 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag14 := Val;
+      end Set_Flag303;
+
+      procedure Set_Flag304 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag15 := Val;
+      end Set_Flag304;
+
+      procedure Set_Flag305 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag16 := Val;
+      end Set_Flag305;
+
+      procedure Set_Flag306 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag17 := Val;
+      end Set_Flag306;
+
+      procedure Set_Flag307 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Flag18 := Val;
+      end Set_Flag307;
+
+      procedure Set_Flag308 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Pflag1 := Val;
+      end Set_Flag308;
+
+      procedure Set_Flag309 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Pflag2 := Val;
+      end Set_Flag309;
+
+      procedure Set_Flag310 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag310 := Val;
+      end Set_Flag310;
+
+      procedure Set_Flag311 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag311 := Val;
+      end Set_Flag311;
+
+      procedure Set_Flag312 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag312 := Val;
+      end Set_Flag312;
+
+      procedure Set_Flag313 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag313 := Val;
+      end Set_Flag313;
+
+      procedure Set_Flag314 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag314 := Val;
+      end Set_Flag314;
+
+      procedure Set_Flag315 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag315 := Val;
+      end Set_Flag315;
+
+      procedure Set_Flag316 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag316 := Val;
+      end Set_Flag316;
+
+      procedure Set_Flag317 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         To_Flag_Byte4_Ptr
+           (Node_Kind_Ptr'
+             (Nodes.Table (N + 5).Nkind'Unrestricted_Access)).Flag317 := Val;
+      end Set_Flag317;
 
       procedure Set_Node1_With_Parent (N : Node_Id; Val : Node_Id) is
       begin

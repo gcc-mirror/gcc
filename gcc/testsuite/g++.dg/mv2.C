@@ -2,7 +2,7 @@
    dispatching order when versions are for various ISAs.  */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-ifunc "" }  */
-/* { dg-options "-O2 -mno-sse -mno-mmx -mno-popcnt -mno-avx" } */
+/* { dg-options "-O2" } */
 
 #include <assert.h>
 

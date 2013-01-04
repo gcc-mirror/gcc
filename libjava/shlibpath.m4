@@ -1,5 +1,5 @@
 # shlibpath.m4 - Define LTDL_SHLIBPATH_VAR. -*-Autoconf-*-
-## Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2005
+## Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2005, 2011
 ## Free Software Foundation, Inc.
 ## Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 ##

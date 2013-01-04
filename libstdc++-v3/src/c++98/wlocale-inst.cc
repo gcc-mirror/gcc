@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2006, 2009
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2006, 2009, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

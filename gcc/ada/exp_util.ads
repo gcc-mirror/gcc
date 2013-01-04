@@ -75,6 +75,9 @@ package Exp_Util is
    --    expansion of the N_If_Expression node rewrites the node so that the
    --    actions can be positioned normally.
 
+   --    For actions coming from expansion of the expression in an expression
+   --    with actions node, the action is appended to the list of actions.
+
    --  Basically what we do is to climb up to the tree looking for the
    --  proper insertion point, as described by one of the above cases,
    --  and then insert the appropriate action or actions.
@@ -378,14 +381,6 @@ package Exp_Util is
    --  Build a constrained subtype from the initial value in object
    --  declarations and/or allocations when the type is indefinite (including
    --  class-wide).
-
-   function Find_Init_Call
-     (Var        : Entity_Id;
-      Rep_Clause : Node_Id) return Node_Id;
-   --  Look for init_proc call for variable Var, either among declarations
-   --  between that of Var and a subsequent Rep_Clause applying to Var, or
-   --  in the list of freeze actions associated with Var, and if found, return
-   --  that call node.
 
    function Find_Interface_ADT
      (T     : Entity_Id;
@@ -722,6 +717,14 @@ package Exp_Util is
    --  N is a node which contains a non-handled statement list. Inspect the
    --  statements looking for declarations of controlled objects. If at least
    --  one such object is found, wrap the statement list in a block.
+
+   function Remove_Init_Call
+     (Var        : Entity_Id;
+      Rep_Clause : Node_Id) return Node_Id;
+   --  Look for init_proc call or aggregate initialization statements for
+   --  variable Var, either among declarations between that of Var and a
+   --  subsequent Rep_Clause applying to Var, or in the list of freeze actions
+   --  associated with Var, and if found, remove and return that call node.
 
    procedure Remove_Side_Effects
      (Exp          : Node_Id;

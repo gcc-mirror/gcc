@@ -279,16 +279,16 @@ package body Sem_Ch13 is
                      then
                         Error_Msg_N
                           ("multi-byte field specified with non-standard"
-                           & " Bit_Order?", CLC);
+                           & " Bit_Order??", CLC);
 
                         if Bytes_Big_Endian then
                            Error_Msg_N
                              ("bytes are not reversed "
-                              & "(component is big-endian)?", CLC);
+                              & "(component is big-endian)??", CLC);
                         else
                            Error_Msg_N
                              ("bytes are not reversed "
-                              & "(component is little-endian)?", CLC);
+                              & "(component is little-endian)??", CLC);
                         end if;
 
                         --  Do not allow non-contiguous field
@@ -314,14 +314,14 @@ package body Sem_Ch13 is
                        and then Warn_On_Reverse_Bit_Order
                      then
                         Error_Msg_N
-                          ("?Bit_Order clause does not affect " &
-                           "byte ordering", Pos);
+                          ("Bit_Order clause does not affect " &
+                           "byte ordering?V?", Pos);
                         Error_Msg_Uint_1 :=
                           Intval (Pos) + Intval (FB) /
                           System_Storage_Unit;
                         Error_Msg_N
-                          ("?position normalized to ^ before bit " &
-                           "order interpreted", Pos);
+                          ("position normalized to ^ before bit " &
+                           "order interpreted?V?", Pos);
                      end if;
 
                      --  Here is where we fix up the Component_Bit_Offset value
@@ -390,10 +390,8 @@ package body Sem_Ch13 is
 
                if Present (CC) then
                   declare
-                     Fbit : constant Uint :=
-                              Static_Integer (First_Bit (CC));
-                     Lbit : constant Uint :=
-                              Static_Integer (Last_Bit (CC));
+                     Fbit : constant Uint := Static_Integer (First_Bit (CC));
+                     Lbit : constant Uint := Static_Integer (Last_Bit (CC));
 
                   begin
                      --  Case of component with last bit >= max machine scalar
@@ -410,16 +408,16 @@ package body Sem_Ch13 is
                            if Warn_On_Reverse_Bit_Order then
                               Error_Msg_N
                                 ("multi-byte field specified with "
-                                 & "  non-standard Bit_Order?", CC);
+                                 & "  non-standard Bit_Order?V?", CC);
 
                               if Bytes_Big_Endian then
                                  Error_Msg_N
                                    ("\bytes are not reversed "
-                                    & "(component is big-endian)?", CC);
+                                    & "(component is big-endian)?V?", CC);
                               else
                                  Error_Msg_N
                                    ("\bytes are not reversed "
-                                    & "(component is little-endian)?", CC);
+                                    & "(component is little-endian)?V?", CC);
                               end if;
                            end if;
 
@@ -633,19 +631,19 @@ package body Sem_Ch13 is
                            Error_Msg_Uint_1 := MSS;
                            Error_Msg_N
                              ("info: reverse bit order in machine " &
-                              "scalar of length^?", First_Bit (CC));
+                              "scalar of length^?V?", First_Bit (CC));
                            Error_Msg_Uint_1 := NFB;
                            Error_Msg_Uint_2 := NLB;
 
                            if Bytes_Big_Endian then
                               Error_Msg_NE
-                                ("?\info: big-endian range for "
-                                 & "component & is ^ .. ^",
+                                ("\info: big-endian range for "
+                                 & "component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            else
                               Error_Msg_NE
-                                ("?\info: little-endian range "
-                                 & "for component & is ^ .. ^",
+                                ("\info: little-endian range "
+                                 & "for component & is ^ .. ^?V?",
                                  First_Bit (CC), Comp);
                            end if;
                         end if;
@@ -1320,14 +1318,16 @@ package body Sem_Ch13 is
                            P_Name := A_Name;
 
                         elsif A_Name = Name_Link_Name then
-                           L_Assoc := Make_Pragma_Argument_Association (Loc,
-                              Chars => A_Name,
-                              Expression => Relocate_Node (Expression (A)));
+                           L_Assoc :=
+                             Make_Pragma_Argument_Association (Loc,
+                               Chars      => A_Name,
+                               Expression => Relocate_Node (Expression (A)));
 
                         elsif A_Name = Name_External_Name then
-                           E_Assoc := Make_Pragma_Argument_Association (Loc,
-                              Chars => A_Name,
-                              Expression => Relocate_Node (Expression (A)));
+                           E_Assoc :=
+                             Make_Pragma_Argument_Association (Loc,
+                               Chars      => A_Name,
+                               Expression => Relocate_Node (Expression (A)));
                         end if;
 
                         Next (A);
@@ -1436,13 +1436,36 @@ package body Sem_Ch13 is
                --  Case 2d : Aspects that correspond to a pragma with one
                --  argument.
 
-               when Aspect_Relative_Deadline     =>
+               when Aspect_Abstract_State =>
                   Aitem :=
                     Make_Pragma (Loc,
-                      Pragma_Argument_Associations =>
-                        New_List (
-                          Make_Pragma_Argument_Association (Loc,
-                             Expression => Relocate_Node (Expr))),
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Abstract_State),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+                  Delay_Required := False;
+
+               --  Aspect Global must be delayed because it can mention names
+               --  and benefit from the forward visibility rules applicable to
+               --  aspects of subprograms.
+
+               when Aspect_Global =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Global),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+               when Aspect_Relative_Deadline =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))),
                       Pragma_Identifier            =>
                         Make_Identifier (Sloc (Id), Name_Relative_Deadline));
 
@@ -1602,10 +1625,33 @@ package body Sem_Ch13 is
                   --  with delay of visibility for the expression analysis.
 
                   --  If the entity is a library-level subprogram, the pre/
-                  --  postconditions must be treated as late pragmas.
+                  --  postconditions must be treated as late pragmas. Note
+                  --  that they must be prepended, not appended, to the list,
+                  --  so that split AND THEN sections are processed in the
+                  --  correct order.
 
                   if Nkind (Parent (N)) = N_Compilation_Unit then
-                     Add_Global_Declaration (Aitem);
+                     declare
+                        Aux : constant Node_Id := Aux_Decls_Node (Parent (N));
+
+                     begin
+                        if No (Pragmas_After (Aux)) then
+                           Set_Pragmas_After (Aux, New_List);
+                        end if;
+
+                        Prepend (Aitem, Pragmas_After (Aux));
+                     end;
+
+                  --  If it is a subprogram body, add pragmas to list of
+                  --  declarations in body.
+
+                  elsif Nkind (N) = N_Subprogram_Body then
+                     if No (Declarations (N)) then
+                        Set_Declarations (N, New_List);
+                     end if;
+
+                     Append (Aitem, Declarations (N));
+
                   else
                      Insert_After (N, Aitem);
                   end if;
@@ -1875,7 +1921,7 @@ package body Sem_Ch13 is
 
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the
-            --  N_Compilation_Unit_Aux node (No delay is required here)
+            --  N_Compilation_Unit_Aux node (no delay is required here)
             --  except for aspects on a subprogram body (see below).
 
             if Nkind (Parent (N)) = N_Compilation_Unit
@@ -1917,9 +1963,23 @@ package body Sem_Ch13 is
 
                      Prepend (Aitem, Declarations (N));
 
+                  --  Aspect Abstract_State produces implicit declarations for
+                  --  all state abstraction entities it defines. To emulate
+                  --  this behavior, insert the pragma at the start of the
+                  --  visible declarations of the related package.
+
+                  elsif Nam = Name_Abstract_State
+                    and then Nkind (N) = N_Package_Declaration
+                  then
+                     if No (Visible_Declarations (Specification (N))) then
+                        Set_Visible_Declarations (Specification (N), New_List);
+                     end if;
+
+                     Prepend (Aitem, Visible_Declarations (Specification (N)));
+
                   else
                      if No (Pragmas_After (Aux)) then
-                        Set_Pragmas_After (Aux, Empty_List);
+                        Set_Pragmas_After (Aux, New_List);
                      end if;
 
                      Append (Aitem, Pragmas_After (Aux));
@@ -1992,17 +2052,17 @@ package body Sem_Ch13 is
 
       if Warn_On_Obsolescent_Feature then
          Error_Msg_N
-           ("at clause is an obsolescent feature (RM J.7(2))?", N);
+           ("?j?at clause is an obsolescent feature (RM J.7(2))", N);
          Error_Msg_N
-           ("\use address attribute definition clause instead?", N);
+           ("\?j?use address attribute definition clause instead", N);
       end if;
 
       --  Rewrite as address clause
 
       Rewrite (N,
         Make_Attribute_Definition_Clause (Sloc (N),
-          Name  => Identifier (N),
-          Chars => Name_Address,
+          Name       => Identifier (N),
+          Chars      => Name_Address,
           Expression => Expression (N)));
 
       --  We preserve Comes_From_Source, since logically the clause still comes
@@ -2736,9 +2796,9 @@ package body Sem_Ch13 is
                  and then Comes_From_Source (Scope (U_Ent))
                then
                   Error_Msg_N
-                    ("?entry address declared for entry in task type", N);
+                    ("??entry address declared for entry in task type", N);
                   Error_Msg_N
-                    ("\?only one task can be declared of this type", N);
+                    ("\??only one task can be declared of this type", N);
                end if;
 
                --  Entry address clauses are obsolescent
@@ -2747,10 +2807,10 @@ package body Sem_Ch13 is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
-                    ("attaching interrupt to task entry is an " &
-                     "obsolescent feature (RM J.7.1)?", N);
+                    ("?j?attaching interrupt to task entry is an " &
+                     "obsolescent feature (RM J.7.1)", N);
                   Error_Msg_N
-                    ("\use interrupt procedure instead?", N);
+                    ("\?j?use interrupt procedure instead", N);
                end if;
 
             --  Case of an address clause for a controlled object which we
@@ -2760,9 +2820,9 @@ package body Sem_Ch13 is
               or else Has_Controlled_Component (Etype (U_Ent))
             then
                Error_Msg_NE
-                 ("?controlled object& must not be overlaid", Nam, U_Ent);
+                 ("??controlled object& must not be overlaid", Nam, U_Ent);
                Error_Msg_N
-                 ("\?Program_Error will be raised at run time", Nam);
+                 ("\??Program_Error will be raised at run time", Nam);
                Insert_Action (Declaration_Node (U_Ent),
                  Make_Raise_Program_Error (Loc,
                    Reason => PE_Overlaid_Controlled_Object));
@@ -2799,9 +2859,9 @@ package body Sem_Ch13 is
                                 or else Is_Controlled (Etype (O_Ent)))
                   then
                      Error_Msg_N
-                       ("?cannot overlay with controlled object", Expr);
+                       ("??cannot overlay with controlled object", Expr);
                      Error_Msg_N
-                       ("\?Program_Error will be raised at run time", Expr);
+                       ("\??Program_Error will be raised at run time", Expr);
                      Insert_Action (Declaration_Node (U_Ent),
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Overlaid_Controlled_Object));
@@ -2811,7 +2871,7 @@ package body Sem_Ch13 is
                     and then Ekind (U_Ent) = E_Constant
                     and then not Is_Constant_Object (O_Ent)
                   then
-                     Error_Msg_N ("constant overlays a variable?", Expr);
+                     Error_Msg_N ("??constant overlays a variable", Expr);
 
                   --  Imported variables can have an address clause, but then
                   --  the import is pretty meaningless except to suppress
@@ -2859,7 +2919,9 @@ package body Sem_Ch13 is
                   --  Legality checks on the address clause for initialized
                   --  objects is deferred until the freeze point, because
                   --  a subsequent pragma might indicate that the object
-                  --  is imported and thus not initialized.
+                  --  is imported and thus not initialized. Also, the address
+                  --  clause might involve entities that have yet to be
+                  --  elaborated.
 
                   Set_Has_Delayed_Freeze (U_Ent);
 
@@ -2870,11 +2932,26 @@ package body Sem_Ch13 is
                   --  before its definition.
 
                   declare
-                     Init_Call : constant Node_Id := Find_Init_Call (U_Ent, N);
+                     Init_Call : constant Node_Id :=
+                                   Remove_Init_Call (U_Ent, N);
+
                   begin
                      if Present (Init_Call) then
-                        Remove (Init_Call);
-                        Append_Freeze_Action (U_Ent, Init_Call);
+
+                        --  If the init call is an expression with actions with
+                        --  null expression, just extract the actions.
+
+                        if Nkind (Init_Call) = N_Expression_With_Actions
+                          and then
+                            Nkind (Expression (Init_Call)) = N_Null_Statement
+                        then
+                           Append_Freeze_Actions (U_Ent, Actions (Init_Call));
+
+                        --  General case: move Init_Call to freeze actions
+
+                        else
+                           Append_Freeze_Action (U_Ent, Init_Call);
+                        end if;
                      end if;
                   end;
 
@@ -2883,9 +2960,8 @@ package body Sem_Ch13 is
                        ("& cannot be exported if an address clause is given",
                         Nam);
                      Error_Msg_N
-                       ("\define and export a variable " &
-                        "that holds its address instead",
-                        Nam);
+                       ("\define and export a variable "
+                        & "that holds its address instead", Nam);
                   end if;
 
                   --  Entity has delayed freeze, so we will generate an
@@ -2982,7 +3058,7 @@ package body Sem_Ch13 is
 
                if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
                   Error_Msg_N
-                    ("?alignment for & set to Maximum_Aligment", Nam);
+                    ("alignment for & set to Maximum_Aligment??", Nam);
                      Set_Alignment (U_Ent, Max_Align);
 
                --  All other cases
@@ -3110,7 +3186,7 @@ package body Sem_Ch13 is
 
                   if not GNAT_Mode then
                      Error_Msg_N
-                       ("?component size ignored in this configuration", N);
+                       ("component size ignored in this configuration??", N);
                   end if;
                end if;
 
@@ -3121,8 +3197,7 @@ package body Sem_Ch13 is
                  and then RM_Size (Ctyp) /= Csize
                then
                   Error_Msg_NE
-                    ("?component size overrides size clause for&",
-                     N, Ctyp);
+                    ("component size overrides size clause for&?S?", N, Ctyp);
                end if;
 
                Set_Has_Component_Size_Clause (Btype, True);
@@ -3278,11 +3353,12 @@ package body Sem_Ch13 is
 
                if not Is_Library_Level_Entity (U_Ent) then
                   Error_Msg_NE
-                    ("?non-unique external tag supplied for &", N, U_Ent);
+                    ("??non-unique external tag supplied for &", N, U_Ent);
                   Error_Msg_N
-                    ("?\same external tag applies to all subprogram calls", N);
+                       ("\??same external tag applies to all "
+                        & "subprogram calls", N);
                   Error_Msg_N
-                    ("?\corresponding internal tag cannot be obtained", N);
+                    ("\??corresponding internal tag cannot be obtained", N);
                end if;
             end if;
          end External_Tag;
@@ -3563,7 +3639,7 @@ package body Sem_Ch13 is
                   --  case this is useless.
 
                   Error_Msg_N
-                    ("?size clauses are ignored in this configuration", N);
+                    ("size clauses are ignored in this configuration??", N);
                end if;
 
                if Is_Type (U_Ent) then
@@ -3852,9 +3928,9 @@ package body Sem_Ch13 is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_N
-                    ("storage size clause for task is an " &
-                     "obsolescent feature (RM J.9)?", N);
-                  Error_Msg_N ("\use Storage_Size pragma instead?", N);
+                    ("?j?storage size clause for task is an " &
+                     "obsolescent feature (RM J.9)", N);
+                  Error_Msg_N ("\?j?use Storage_Size pragma instead", N);
                end if;
 
                FOnly := True;
@@ -4487,7 +4563,7 @@ package body Sem_Ch13 is
 
             if First_Entity (E) /= Last_Entity (E) then
                Error_Msg_N
-                 ("?'C'P'P type must import at least one primitive from C++",
+                 ("'C'P'P type must import at least one primitive from C++??",
                   E);
             end if;
          end if;
@@ -4514,15 +4590,15 @@ package body Sem_Ch13 is
                     or else Convention (Prim) /= Convention_CPP
                   then
                      Error_Msg_N
-                       ("?primitives of 'C'P'P types must be imported from C++"
-                        & " or abstract", Prim);
+                       ("primitives of 'C'P'P types must be imported from C++ "
+                        & "or abstract??", Prim);
 
                   elsif not Has_Constructors
                      and then not Error_Reported
                   then
                      Error_Msg_Name_1 := Chars (E);
                      Error_Msg_N
-                       ("?'C'P'P constructor required for type %", Prim);
+                       ("??'C'P'P constructor required for type %", Prim);
                      Error_Reported := True;
                   end if;
                end if;
@@ -4640,9 +4716,37 @@ package body Sem_Ch13 is
       Ocomp   : Entity_Id;
       Posit   : Uint;
       Rectype : Entity_Id;
+      Recdef  : Node_Id;
+
+      function Is_Inherited (Comp : Entity_Id) return Boolean;
+      --  True if Comp is an inherited component in a record extension
+
+      ------------------
+      -- Is_Inherited --
+      ------------------
+
+      function Is_Inherited (Comp : Entity_Id) return Boolean is
+         Comp_Base : Entity_Id;
+
+      begin
+         if Ekind (Rectype) = E_Record_Subtype then
+            Comp_Base := Original_Record_Component (Comp);
+         else
+            Comp_Base := Comp;
+         end if;
+
+         return Comp_Base /= Original_Record_Component (Comp_Base);
+      end Is_Inherited;
+
+      --  Local variables
+
+      Is_Record_Extension : Boolean;
+      --  True if Rectype is a record extension
 
       CR_Pragma : Node_Id := Empty;
       --  Points to N_Pragma node if Complete_Representation pragma present
+
+   --  Start of processing for Analyze_Record_Representation_Clause
 
    begin
       if Ignore_Rep_Clauses then
@@ -4652,9 +4756,7 @@ package body Sem_Ch13 is
       Find_Type (Ident);
       Rectype := Entity (Ident);
 
-      if Rectype = Any_Type
-        or else Rep_Item_Too_Early (Rectype, N)
-      then
+      if Rectype = Any_Type or else Rep_Item_Too_Early (Rectype, N) then
          return;
       else
          Rectype := Underlying_Type (Rectype);
@@ -4683,6 +4785,14 @@ package body Sem_Ch13 is
          return;
       end if;
 
+      --  We know we have a first subtype, now possibly go the the anonymous
+      --  base type to determine whether Rectype is a record extension.
+
+      Recdef := Type_Definition (Declaration_Node (Base_Type (Rectype)));
+      Is_Record_Extension :=
+        Nkind (Recdef) = N_Derived_Type_Definition
+          and then Present (Record_Extension_Part (Recdef));
+
       if Present (Mod_Clause (N)) then
          declare
             Loc     : constant Source_Ptr := Sloc (N);
@@ -4698,9 +4808,9 @@ package body Sem_Ch13 is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("mod clause is an obsolescent feature (RM J.8)?", N);
+                 ("?j?mod clause is an obsolescent feature (RM J.8)", N);
                Error_Msg_N
-                 ("\use alignment attribute definition clause instead?", N);
+                 ("\?j?use alignment attribute definition clause instead", N);
             end if;
 
             if Present (P) then
@@ -4858,6 +4968,11 @@ package body Sem_Ch13 is
                        ("cannot reference discriminant of unchecked union",
                         Component_Name (CC));
 
+                  elsif Is_Record_Extension and then Is_Inherited (Comp) then
+                     Error_Msg_NE
+                       ("component clause not allowed for inherited "
+                        & "component&", CC, Comp);
+
                   elsif Present (Component_Clause (Comp)) then
 
                      --  Diagnose duplicate rep clause, or check consistency
@@ -4885,10 +5000,11 @@ package body Sem_Ch13 is
                               Error_Msg_N
                                 ("component clause inconsistent "
                                  & "with representation of ancestor", CC);
+
                            elsif Warn_On_Redundant_Constructs then
                               Error_Msg_N
-                                ("?redundant component clause "
-                                 & "for inherited component!", CC);
+                                ("?r?redundant confirming component clause "
+                                 & "for component!", CC);
                            end if;
                         end;
                      end if;
@@ -4927,7 +5043,7 @@ package body Sem_Ch13 is
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
                         then
                            Error_Msg_NE
-                             ("?component size overrides size clause for&",
+                             ("?S?component size overrides size clause for&",
                               Component_Name (CC), Etype (Comp));
                         end if;
 
@@ -4993,7 +5109,7 @@ package body Sem_Ch13 is
             Next_Component_Or_Discriminant (Comp);
          end loop;
 
-         --  If no Complete_Representation pragma, warn if missing components
+      --  Give missing components warning if required
 
       elsif Warn_On_Unrepped_Components then
          declare
@@ -5037,7 +5153,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
-                       ("?no component clause given for & declared #",
+                       ("?C?no component clause given for & declared #",
                         N, Comp);
                   end if;
 
@@ -5066,14 +5182,13 @@ package body Sem_Ch13 is
 
       --  Check for duplicate definiations.
 
-      if Has_Invariants (Typ)
-        and then Present (Invariant_Procedure (Typ))
-      then
+      if Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)) then
          return Empty;
       end if;
 
-      SId := Make_Defining_Identifier (Loc,
-         Chars => New_External_Name (Chars (Typ), "Invariant"));
+      SId :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Typ), "Invariant"));
       Set_Has_Invariants (SId);
       Set_Has_Invariants (Typ);
       Set_Ekind (SId, E_Procedure);
@@ -5229,8 +5344,7 @@ package body Sem_Ch13 is
 
                Exp := New_Copy_Tree (Arg2);
 
-               --  Preserve sloc of original pragma Invariant (this is required
-               --  by Par_SCO).
+               --  Preserve sloc of original pragma Invariant
 
                Loc := Sloc (Ritem);
 
@@ -5321,7 +5435,7 @@ package body Sem_Ch13 is
                if Inherit and Opt.List_Inherited_Aspects then
                   Error_Msg_Sloc := Sloc (Ritem);
                   Error_Msg_N
-                    ("?info: & inherits `Invariant''Class` aspect from #",
+                    ("?L?info: & inherits `Invariant''Class` aspect from #",
                      Typ);
                end if;
             end if;
@@ -5545,7 +5659,7 @@ package body Sem_Ch13 is
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
-               Error_Msg_N ("?info: & inherits predicate from & #", Typ);
+               Error_Msg_N ("info: & inherits predicate from & #?L?", Typ);
             end if;
          end if;
       end Add_Call;
@@ -6755,7 +6869,7 @@ package body Sem_Ch13 is
            ("visibility of aspect for& changes after freeze point",
             ASN, Ent);
          Error_Msg_NE
-           ("?info: & is frozen here, aspects evaluated at this point",
+           ("info: & is frozen here, aspects evaluated at this point??",
             Freeze_Node (Ent), Ent);
       end if;
    end Check_Aspect_At_End_Of_Declarations;
@@ -6800,32 +6914,32 @@ package body Sem_Ch13 is
               Library_Unit_Aspects =>
             T := Standard_Boolean;
 
+         --  Aspects corresponding to attribute definition clauses
+
+         when Aspect_Address =>
+            T := RTE (RE_Address);
+
          when Aspect_Attach_Handler =>
             T := RTE (RE_Interrupt_ID);
+
+         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
+            T := RTE (RE_Bit_Order);
 
          when Aspect_Convention =>
             return;
 
-         --  Default_Value is resolved with the type entity in question
-
-         when Aspect_Default_Value =>
-            T := Entity (ASN);
+         when Aspect_CPU =>
+            T := RTE (RE_CPU_Range);
 
          --  Default_Component_Value is resolved with the component type
 
          when Aspect_Default_Component_Value =>
             T := Component_Type (Entity (ASN));
 
-         --  Aspects corresponding to attribute definition clauses
+         --  Default_Value is resolved with the type entity in question
 
-         when Aspect_Address =>
-            T := RTE (RE_Address);
-
-         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
-            T := RTE (RE_Bit_Order);
-
-         when Aspect_CPU =>
-            T := RTE (RE_CPU_Range);
+         when Aspect_Default_Value =>
+            T := Entity (ASN);
 
          when Aspect_Dispatching_Domain =>
             T := RTE (RE_Dispatching_Domain);
@@ -6835,6 +6949,14 @@ package body Sem_Ch13 is
 
          when Aspect_External_Name =>
             T := Standard_String;
+
+         --  Global is a delayed aspect because it may reference names that
+         --  have not been declared yet. There is no action to be taken with
+         --  respect to the aspect itself as the reference checking is done on
+         --  the corresponding pragma.
+
+         when Aspect_Global =>
+            return;
 
          when Aspect_Link_Name =>
             T := Standard_String;
@@ -6903,9 +7025,10 @@ package body Sem_Ch13 is
               Aspect_Type_Invariant    =>
             T := Standard_Boolean;
 
-         --  Here is the list of aspects that don't require delay analysis.
+         --  Here is the list of aspects that don't require delay analysis
 
-         when Aspect_Contract_Case        |
+         when Aspect_Abstract_State       |
+              Aspect_Contract_Case        |
               Aspect_Contract_Cases       |
               Aspect_Dimension            |
               Aspect_Dimension_System     |
@@ -7198,27 +7321,9 @@ package body Sem_Ch13 is
 
             when N_Type_Conversion           |
                  N_Qualified_Expression      |
-                 N_Allocator                 =>
+                 N_Allocator                 |
+                 N_Unchecked_Type_Conversion =>
                Check_Expr_Constants (Expression (Nod));
-
-            when N_Unchecked_Type_Conversion =>
-               Check_Expr_Constants (Expression (Nod));
-
-               --  If this is a rewritten unchecked conversion, subtypes in
-               --  this node are those created within the instance. To avoid
-               --  order of elaboration issues, replace them with their base
-               --  types. Note that address clauses can cause order of
-               --  elaboration problems because they are elaborated by the
-               --  back-end at the point of definition, and may mention
-               --  entities declared in between (as long as everything is
-               --  static). It is user-friendly to allow unchecked conversions
-               --  in this context.
-
-               if Nkind (Original_Node (Nod)) = N_Function_Call then
-                  Set_Etype (Expression (Nod),
-                    Base_Type (Etype (Expression (Nod))));
-                  Set_Etype (Nod, Base_Type (Etype (Nod)));
-               end if;
 
             when N_Function_Call =>
                if not Is_Pure (Entity (Name (Nod))) then
@@ -7344,7 +7449,7 @@ package body Sem_Ch13 is
       begin
          if Present (CC1) and then Present (CC2) then
 
-            --  Exclude odd case where we have two tag fields in the same
+            --  Exclude odd case where we have two tag components in the same
             --  record, both at location zero. This seems a bit strange, but
             --  it seems to happen in some circumstances, perhaps on an error.
 
@@ -7385,7 +7490,7 @@ package body Sem_Ch13 is
       procedure Find_Component is
 
          procedure Search_Component (R : Entity_Id);
-         --  Search components of R for a match. If found, Comp is set.
+         --  Search components of R for a match. If found, Comp is set
 
          ----------------------
          -- Search_Component --
@@ -7424,8 +7529,8 @@ package body Sem_Ch13 is
 
          Search_Component (Rectype);
 
-         --  If not found, maybe component of base type that is absent from
-         --  statically constrained first subtype.
+         --  If not found, maybe component of base type discriminant that is
+         --  absent from statically constrained first subtype.
 
          if No (Comp) then
             Search_Component (Base_Type (Rectype));
@@ -7553,7 +7658,7 @@ package body Sem_Ch13 is
                  ("bit number out of range of specified size",
                   Last_Bit (CC));
 
-               --  Check for overlap with tag field
+               --  Check for overlap with tag component
 
             else
                if Is_Tagged_Type (Rectype)
@@ -7932,7 +8037,7 @@ package body Sem_Ch13 is
 
                      if Error_Msg_Uint_1 > 0 then
                         Error_Msg_NE
-                          ("?^-bit gap before component&",
+                          ("?H?^-bit gap before component&",
                            Component_Name (Component_Clause (CEnt)), CEnt);
                      end if;
 
@@ -8714,10 +8819,11 @@ package body Sem_Ch13 is
                                 Designated_Type (Etype (F)), Loc))));
 
          if Nam = TSS_Stream_Input then
-            Spec := Make_Function_Specification (Loc,
-                      Defining_Unit_Name       => Subp_Id,
-                      Parameter_Specifications => Formals,
-                      Result_Definition        => T_Ref);
+            Spec :=
+              Make_Function_Specification (Loc,
+                Defining_Unit_Name       => Subp_Id,
+                Parameter_Specifications => Formals,
+                Result_Definition        => T_Ref);
          else
             --  V : [out] T
 
@@ -8887,7 +8993,7 @@ package body Sem_Ch13 is
 
          if Present (Freeze_Node (S)) then
             Error_Msg_NE
-              ("?no more representation items for }", Freeze_Node (S), S);
+              ("??no more representation items for }", Freeze_Node (S), S);
          end if;
 
          return True;
@@ -9269,7 +9375,7 @@ package body Sem_Ch13 is
 
          if Warn_On_Biased_Representation then
             Error_Msg_NE
-              ("?" & Msg & " forces biased representation for&", N, E);
+              ("?B?" & Msg & " forces biased representation for&", N, E);
          end if;
       end if;
    end Set_Biased;
@@ -9378,13 +9484,13 @@ package body Sem_Ch13 is
                   Error_Msg_NE
                     ("?& overlays smaller object", ACCR.N, ACCR.X);
                   Error_Msg_N
-                    ("\?program execution may be erroneous", ACCR.N);
+                    ("\??program execution may be erroneous", ACCR.N);
                   Error_Msg_Uint_1 := X_Size;
                   Error_Msg_NE
-                    ("\?size of & is ^", ACCR.N, ACCR.X);
+                    ("\??size of & is ^", ACCR.N, ACCR.X);
                   Error_Msg_Uint_1 := Y_Size;
                   Error_Msg_NE
-                    ("\?size of & is ^", ACCR.N, ACCR.Y);
+                    ("\??size of & is ^", ACCR.N, ACCR.Y);
 
                --  Check for inadequate alignment, both of the base object
                --  and of the offset, if any.
@@ -9405,24 +9511,20 @@ package body Sem_Ch13 is
                                              /= Known_Compatible))
                then
                   Error_Msg_NE
-                    ("?specified address for& may be inconsistent "
-                       & "with alignment",
-                     ACCR.N, ACCR.X);
+                    ("??specified address for& may be inconsistent "
+                       & "with alignment", ACCR.N, ACCR.X);
                   Error_Msg_N
-                    ("\?program execution may be erroneous (RM 13.3(27))",
+                    ("\??program execution may be erroneous (RM 13.3(27))",
                      ACCR.N);
                   Error_Msg_Uint_1 := X_Alignment;
                   Error_Msg_NE
-                    ("\?alignment of & is ^",
-                     ACCR.N, ACCR.X);
+                    ("\??alignment of & is ^", ACCR.N, ACCR.X);
                   Error_Msg_Uint_1 := Y_Alignment;
                   Error_Msg_NE
-                    ("\?alignment of & is ^",
-                     ACCR.N, ACCR.Y);
+                    ("\??alignment of & is ^", ACCR.N, ACCR.Y);
                   if Y_Alignment >= X_Alignment then
                      Error_Msg_N
-                      ("\?but offset is not multiple of alignment",
-                       ACCR.N);
+                      ("\??but offset is not multiple of alignment", ACCR.N);
                   end if;
                end if;
             end if;
@@ -9783,7 +9885,8 @@ package body Sem_Ch13 is
            or else OpenVMS_On_Target
          then
             Error_Msg_N
-              ("?conversion between pointers with different conventions!", N);
+              ("?z?conversion between pointers with different conventions!",
+               N);
          end if;
       end if;
 
@@ -9809,7 +9912,7 @@ package body Sem_Ch13 is
 
             if Source = Calendar_Time or else Target = Calendar_Time then
                Error_Msg_N
-                 ("?representation of 'Time values may change between " &
+                 ("?z?representation of 'Time values may change between " &
                   "'G'N'A'T versions", N);
             end if;
          end;
@@ -9831,7 +9934,8 @@ package body Sem_Ch13 is
          --  known statically, then we need the annotation.
 
          if Known_Static_RM_Size (Source)
-           and then Known_Static_RM_Size (Target)
+              and then
+            Known_Static_RM_Size (Target)
          then
             null;
          else
@@ -9909,7 +10013,7 @@ package body Sem_Ch13 is
 
                if Source_Siz /= Target_Siz then
                   Error_Msg
-                    ("?types for unchecked conversion have different sizes!",
+                    ("?z?types for unchecked conversion have different sizes!",
                      Eloc);
 
                   if All_Errors_Mode then
@@ -9917,7 +10021,7 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := Source_Siz;
                      Error_Msg_Name_2 := Chars (Target);
                      Error_Msg_Uint_2 := Target_Siz;
-                     Error_Msg ("\size of % is ^, size of % is ^?", Eloc);
+                     Error_Msg ("\size of % is ^, size of % is ^?z?", Eloc);
 
                      Error_Msg_Uint_1 := UI_Abs (Source_Siz - Target_Siz);
 
@@ -9927,44 +10031,41 @@ package body Sem_Ch13 is
                      then
                         if Source_Siz > Target_Siz then
                            Error_Msg
-                             ("\?^ high order bits of source will be ignored!",
-                              Eloc);
+                             ("\?z?^ high order bits of source will "
+                              & "be ignored!", Eloc);
 
                         elsif Is_Unsigned_Type (Source) then
                            Error_Msg
-                             ("\?source will be extended with ^ high order " &
-                              "zero bits?!", Eloc);
+                             ("\?z?source will be extended with ^ high order "
+                              & "zero bits?!", Eloc);
 
                         else
                            Error_Msg
-                             ("\?source will be extended with ^ high order " &
-                              "sign bits!",
-                              Eloc);
+                             ("\?z?source will be extended with ^ high order "
+                              & "sign bits!", Eloc);
                         end if;
 
                      elsif Source_Siz < Target_Siz then
                         if Is_Discrete_Type (Target) then
                            if Bytes_Big_Endian then
                               Error_Msg
-                                ("\?target value will include ^ undefined " &
-                                 "low order bits!",
-                                 Eloc);
+                                ("\?z?target value will include ^ undefined "
+                                 & "low order bits!", Eloc);
                            else
                               Error_Msg
-                                ("\?target value will include ^ undefined " &
-                                 "high order bits!",
-                                 Eloc);
+                                ("\?z?target value will include ^ undefined "
+                                 & "high order bits!", Eloc);
                            end if;
 
                         else
                            Error_Msg
-                             ("\?^ trailing bits of target value will be " &
-                              "undefined!", Eloc);
+                             ("\?z?^ trailing bits of target value will be "
+                              & "undefined!", Eloc);
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
                         Error_Msg
-                          ("\?^ trailing bits of source will be ignored!",
+                          ("\?z?^ trailing bits of source will be ignored!",
                            Eloc);
                      end if;
                   end if;
@@ -10017,11 +10118,11 @@ package body Sem_Ch13 is
                            Error_Msg_Node_1 := D_Target;
                            Error_Msg_Node_2 := D_Source;
                            Error_Msg
-                             ("?alignment of & (^) is stricter than " &
-                              "alignment of & (^)!", Eloc);
+                             ("?z?alignment of & (^) is stricter than "
+                              & "alignment of & (^)!", Eloc);
                            Error_Msg
-                             ("\?resulting access value may have invalid " &
-                              "alignment!", Eloc);
+                             ("\?z?resulting access value may have invalid "
+                              & "alignment!", Eloc);
                         end if;
                      end;
                   end if;

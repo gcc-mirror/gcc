@@ -214,6 +214,7 @@ AdaCore@*
 * Compatibility and Porting Guide::
 @ifset unw
 * Microsoft Windows Topics::
+* Mac OS Topics::
 @end ifset
 * GNU Free Documentation License::
 * Index::
@@ -666,6 +667,10 @@ Microsoft Windows Topics
 * Debugging a DLL::
 * Setting Stack Size from gnatlink::
 * Setting Heap Size from gnatlink::
+
+Mac OS Topics
+
+* Codesigning the Debugger::
 @end ifset
 
 * Index::
@@ -919,6 +924,10 @@ to assist in porting code from those environments.
 @item
 @ref{Microsoft Windows Topics}, presents information relevant to the
 Microsoft Windows platform.
+
+@item
+@ref{Mac OS Topics}, presents information relevant to Apple's OS X
+platform.
 @end ifset
 @end itemize
 
@@ -4178,6 +4187,10 @@ Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
 (see @option{-gnatx}).
 
+@item ^-gnateA^/ALIASING_CHECK^
+@cindex @option{-gnateA} (@command{gcc})
+Check that there is no aliasing between two parameters of the same subprogram.
+
 @item -gnatec=@var{path}
 @cindex @option{-gnatec} (@command{gcc})
 Specify a configuration pragma file
@@ -4185,6 +4198,10 @@ Specify a configuration pragma file
 (the equal sign is optional)
 @end ifclear
 (@pxref{The Configuration Pragmas Files}).
+
+@item ^-gnated^/DISABLE_ATOMIC_SYNCHRONIZATION^
+@cindex @option{-gnated} (@command{gcc})
+Disable atomic synchronization
 
 @item ^-gnateD^/DATA_PREPROCESSING=^symbol@r{[}=@var{value}@r{]}
 @cindex @option{-gnateD} (@command{gcc})
@@ -4203,6 +4220,12 @@ produced at run time.
 @item -gnatef
 @cindex @option{-gnatef} (@command{gcc})
 Display full source path name in brief error messages.
+
+@item -gnateF
+@cindex @option{-gnateF} (@command{gcc})
+Check for overflow on all floating-point operations, including those
+for unconstrained predefined types. See description of pragma
+@code{Check_Float_Overflow} in GNAT RM.
 
 @item -gnateG
 @cindex @option{-gnateG} (@command{gcc})
@@ -4248,6 +4271,14 @@ temporary use of special test software.
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backards compatibility.
+
+@item ^-gnatet^/TARGET_DEPENDENT_INFO^
+@cindex @option{-gnatet} (@command{gcc})
+Generate target dependent information.
+
+@item ^-gnateV^/PARAMETER_VALIDITY_CHECK^
+@cindex @option{-gnateV} (@command{gcc})
+Check validity of subprogram parameters.
 
 @item -gnatE
 @cindex @option{-gnatE} (@command{gcc})
@@ -5183,6 +5214,9 @@ individually controlled.  The warnings that are not turned on by this
 switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
+@ifclear vms
+@option{-gnatw.d} (tag warnings with -gnatw switch)
+@end ifclear
 @option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatw.i} (overlapping actuals),
 @option{-gnatw.k} (redefinition of names in standard),
@@ -5330,6 +5364,24 @@ this warning option.
 @cindex Dereferencing, implicit
 This switch suppresses warnings for implicit dereferences in
 indexed components, slices, and selected components.
+
+@ifclear vms
+@item -gnatw.d
+@emph{Activate tagging of warning messages.}
+@cindex @option{-gnatw.d} (@command{gcc})
+If this switch is set, then warning messages are tagged, either with
+the string ``@option{-gnatw?}'' showing which switch controls the warning,
+or with ``[enabled by default]'' if the warning is not under control of a
+specific @option{-gnatw?} switch. This mode is off by default, and is not
+affected by the use of @code{-gnatwa}.
+
+@item -gnatw.D
+@emph{Deactivate tagging of warning messages.}
+@cindex @option{-gnatw.d} (@command{gcc})
+If this switch is set, then warning messages return to the default
+mode in which warnings are not tagged as described above for
+@code{-gnatw.d}.
+@end ifclear
 
 @item -gnatwe
 @emph{Treat warnings and style checks as errors.}
@@ -18341,10 +18393,12 @@ relative to the object directory of the project file.
 
 @item --separates
 @cindex @option{--separates} (@command{gnattest})
-Bodies of all test routines are generated as separates. This option is
-temporarily provided for compatibility to support the old way of generating test
-skeletons. Its usage is not recommended because at some point the option will be
-abandoned together with this way of generating test packages.
+Bodies of all test routines are generated as separates. Note that this mode is
+kept for compatibility reasons only and it is not advised to use it due to
+possible problems with hash in names of test skeletons when using an
+inconsistent casing. Separate test skeletons can be incorporated to monolith
+test package with improved hash being used by using @option{--transition}
+switch.
 
 
 @item --transition
@@ -30163,6 +30217,81 @@ This sets the heap reserve size to 0x1000000 bytes. Note that with
 because the coma is a separator for this option.
 
 @end itemize
+
+@node Mac OS Topics
+@appendix Mac OS Topics
+@cindex OS X
+
+@noindent
+This chapter describes topics that are specific to Apple's OS X
+platform.
+
+@menu
+* Codesigning the Debugger::
+@end menu
+
+@node Codesigning the Debugger
+@section Codesigning the Debugger
+
+@noindent
+The Darwin Kernel requires the debugger to have special permissions
+before it is allowed to control other processes. These permissions
+are granted by codesigning the GDB executable. Without these
+permissions, the debugger will report error messages such as:
+
+@smallexample
+Starting program: /x/y/foo
+Unable to find Mach task port for process-id 28885: (os/kern) failure (0x5).
+ (please check gdb is codesigned - see taskgated(8))
+@end smallexample
+
+Codesigning requires a certificate.  The following procedure explains
+how to create one:
+
+@itemize @bullet
+@item Start the Keychain Access application (in
+/Applications/Utilities/Keychain Access.app)
+
+@item Select the Keychain Access -> Certificate Assistant ->
+Create a Certificate... menu
+
+@item Then:
+
+@itemize @bullet
+@item Choose a name for the new certificate (this procedure will use
+"gdb-cert" as an example)
+
+@item Set "Identity Type" to "Self Signed Root"
+
+@item Set "Certificate Type" to "Code Signing"
+
+@item Activate the "Let me override defaults" option
+
+@end itemize
+
+@item Click several times on "Continue" until the "Specify a Location
+For The Certificate" screen appears, then set "Keychain" to "System"
+
+@item Click on "Continue" until the certificate is created
+
+@item Finally, in the view, double-click on the new certificate,
+and set "When using this certificate" to "Always Trust"
+
+@item Exit the Keychain Access application and restart the computer
+(this is unfortunately required)
+
+@end itemize
+
+Once a certificate has been created, the debugger can be codesigned
+as follow. In a Terminal, run the following command...
+
+@smallexample
+codesign -f -s  "gdb-cert"  <gnat_install_prefix>/bin/gdb
+@end smallexample
+
+... where "gdb-cert" should be replaced by the actual certificate
+name chosen above, and <gnat_install_prefix> should be replaced by
+the location where you installed GNAT.
 
 @end ifset
 

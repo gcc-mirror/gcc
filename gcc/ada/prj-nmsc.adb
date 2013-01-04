@@ -6727,9 +6727,9 @@ package body Prj.Nmsc is
 
    procedure Free (Data : in out Project_Processing_Data) is
    begin
-      Source_Names_Htable.Reset      (Data.Source_Names);
-      Unit_Exceptions_Htable.Reset   (Data.Unit_Exceptions);
-      Excluded_Sources_Htable.Reset  (Data.Excluded);
+      Source_Names_Htable.Reset     (Data.Source_Names);
+      Unit_Exceptions_Htable.Reset  (Data.Unit_Exceptions);
+      Excluded_Sources_Htable.Reset (Data.Excluded);
    end Free;
 
    -------------------------------
@@ -6996,9 +6996,9 @@ package body Prj.Nmsc is
 
                if Name_Loc.Source.Naming_Exception = Inherited then
                   declare
-                     Proj  : Project_Id := Name_Loc.Source.Project.Extends;
-                     Iter  : Source_Iterator;
-                     Src   : Source_Id;
+                     Proj : Project_Id := Name_Loc.Source.Project.Extends;
+                     Iter : Source_Iterator;
+                     Src  : Source_Id;
                   begin
                      while Proj /= No_Project loop
                         Iter := For_Each_Source (Data.Tree, Proj);
@@ -7149,10 +7149,10 @@ package body Prj.Nmsc is
         (Path : Path_Information;
          Rank : Natural) return Boolean
       is
-         Dir   : Dir_Type;
-         Name  : String (1 .. 250);
-         Last  : Natural;
-         Found : Path_Information;
+         Dir     : Dir_Type;
+         Name    : String (1 .. 250);
+         Last    : Natural;
+         Found   : Path_Information;
          Success : Boolean := False;
 
       begin
@@ -7198,10 +7198,10 @@ package body Prj.Nmsc is
          Rank : Natural) return Boolean
       is
          Path_Str : constant String := Get_Name_String (Path.Display_Name);
-         Dir   : Dir_Type;
-         Name  : String (1 .. 250);
-         Last  : Natural;
-         Success : Boolean := False;
+         Dir      : Dir_Type;
+         Name     : String (1 .. 250);
+         Last     : Natural;
+         Success  : Boolean := False;
 
       begin
          Debug_Output ("looking for subdirs of ", Name_Id (Path.Display_Name));
@@ -8321,9 +8321,7 @@ package body Prj.Nmsc is
             procedure Check_Not_Defined (Name : Name_Id) is
                Var : constant Prj.Variable_Value :=
                        Prj.Util.Value_Of
-                         (Name,
-                          Project.Decl.Attributes,
-                          Data.Tree.Shared);
+                         (Name, Project.Decl.Attributes, Data.Tree.Shared);
             begin
                if not Var.Default then
                   Error_Msg_Name_1 := Name;

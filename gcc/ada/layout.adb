@@ -2435,7 +2435,7 @@ package body Layout is
                  Convention (E) = Convention_CPP)
             then
                Error_Msg_N
-                 ("?this access type does not correspond to C pointer", E);
+                 ("?x?this access type does not correspond to C pointer", E);
             end if;
 
          --  If the designated type is a limited view it is unanalyzed. We can
@@ -2804,7 +2804,7 @@ package body Layout is
       begin
          if Spec > Max then
             Error_Msg_Uint_1 := Spec - Max;
-            Error_Msg_NE ("?^ bits of & unused", SC, E);
+            Error_Msg_NE ("??^ bits of & unused", SC, E);
          end if;
       end Check_Unused_Bits;
 
@@ -2873,21 +2873,62 @@ package body Layout is
       --  Alignment is not known, see if we can set it, taking into account
       --  the setting of the Optimize_Alignment mode.
 
-      --  If Optimize_Alignment is set to Space, then packed records always
-      --  have an alignment of 1. But don't do anything for atomic records
-      --  since we may need higher alignment for indivisible access.
+      --  If Optimize_Alignment is set to Space, then we try to give packed
+      --  records an aligmment of 1, unless there is some reason we can't.
 
       if Optimize_Alignment_Space (E)
         and then Is_Record_Type (E)
         and then Is_Packed (E)
-        and then not Is_Atomic (E)
       then
-         if not Size_Known_At_Compile_Time (E) then
-            Error_Msg_N ("Optimize_Alignment has no effect for &", E);
-            Error_Msg_N ("\pragma is ignored for variable length record?", E);
-         else
-            Align := 1;
+         --  No effect for record with atomic components
+
+         if Is_Atomic (E) then
+            Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
+            Error_Msg_N ("\pragma ignored for atomic record??", E);
+            return;
          end if;
+
+         --  No effect if independent components
+
+         if Has_Independent_Components (E) then
+            Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
+            Error_Msg_N
+              ("\pragma ignored for record with independent components??", E);
+            return;
+         end if;
+
+         --  No effect if any component is atomic or is a by reference type
+
+         declare
+            Ent : Entity_Id;
+         begin
+            Ent := First_Component_Or_Discriminant (E);
+            while Present (Ent) loop
+               if Is_By_Reference_Type (Etype (Ent))
+                 or else Is_Atomic (Etype (Ent))
+                 or else Is_Atomic (Ent)
+               then
+                  Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
+                  Error_Msg_N
+                    ("\pragma is ignored if atomic components present??", E);
+                  return;
+               else
+                  Next_Component_Or_Discriminant (Ent);
+               end if;
+            end loop;
+         end;
+
+         --  Optimize_Alignment has no effect on variable length record
+
+         if not Size_Known_At_Compile_Time (E) then
+            Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
+            Error_Msg_N ("\pragma is ignored for variable length record??", E);
+            return;
+         end if;
+
+         --  All tests passed, we can set alignment to 1
+
+         Align := 1;
 
       --  Not a record, or not packed
 

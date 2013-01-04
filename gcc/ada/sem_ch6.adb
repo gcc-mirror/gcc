@@ -261,7 +261,7 @@ package body Sem_Ch6 is
                    or else Scop /= Scope (Etype (First_Formal (Designator))))
       then
          Error_Msg_N
-           ("?abstract subprogram is not dispatching or overriding", N);
+           ("abstract subprogram is not dispatching or overriding?r?", N);
       end if;
 
       Generate_Reference_To_Formals (Designator);
@@ -579,16 +579,16 @@ package body Sem_Ch6 is
                if Inside_A_Generic then
                   Error_Msg_N
                     ("return of limited object not permitted in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?", Expr);
+                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
 
                elsif Is_Immutably_Limited_Type (R_Type) then
                   Error_Msg_N
                     ("return by reference not permitted in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?", Expr);
+                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
                else
                   Error_Msg_N
                     ("cannot copy object of a limited type in Ada 2005 "
-                     & "(RM-2005 6.5(5.5/2))?", Expr);
+                     & "(RM-2005 6.5(5.5/2))?y?", Expr);
                end if;
 
             --  Ada 95 mode, compatibility warnings disabled
@@ -847,7 +847,12 @@ package body Sem_Ch6 is
 
             if Has_Aliased then
                if Ada_Version < Ada_2012 then
-                  Error_Msg_N ("aliased only allowed for limited"
+
+                  --  Shouldn't this test Warn_On_Ada_2012_Compatibility ???
+                  --  Can it really happen (extended return???)
+
+                  Error_Msg_N
+                    ("aliased only allowed for limited"
                      & " return objects in Ada 2012?", N);
 
                elsif not Is_Immutably_Limited_Type (R_Type) then
@@ -937,7 +942,6 @@ package body Sem_Ch6 is
            and then Object_Access_Level (Expr) >
                       Subprogram_Access_Level (Scope_Id)
          then
-
             --  Suppress the message in a generic, where the rewriting
             --  is irrelevant.
 
@@ -951,9 +955,9 @@ package body Sem_Ch6 is
                Analyze (N);
 
                Error_Msg_N
-                 ("cannot return a local value by reference?", N);
+                 ("cannot return a local value by reference??", N);
                Error_Msg_NE
-                 ("\& will be raised at run time?",
+                 ("\& will be raised at run time??",
                    N, Standard_Program_Error);
             end if;
          end if;
@@ -965,7 +969,7 @@ package body Sem_Ch6 is
             Apply_Compile_Time_Constraint_Error
               (N      => Expr,
                Msg    => "(Ada 2005) null not allowed for "
-                         & "null-excluding return?",
+                         & "null-excluding return??",
                Reason => CE_Null_Not_Allowed);
          end if;
 
@@ -3784,6 +3788,7 @@ package body Sem_Ch6 is
                      if Has_Excluded_Statement (Then_Statements (E)) then
                         return True;
                      end if;
+
                      Next (E);
                   end loop;
                end if;
@@ -3971,7 +3976,7 @@ package body Sem_Ch6 is
             then
                Cannot_Inline
                  ("cannot inline & (call returns unconstrained type)?",
-                    N, Subp);
+                  N, Subp);
                return Abandon;
             else
                return OK;
@@ -4168,7 +4173,7 @@ package body Sem_Ch6 is
             Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
          elsif Ineffective_Inline_Warnings then
-            Error_Msg_NE (Msg, N, Subp);
+            Error_Msg_NE (Msg & "p?", N, Subp);
          end if;
 
          return;
@@ -4207,7 +4212,7 @@ package body Sem_Ch6 is
                     (Unit_File_Name (Get_Source_Unit (Gen_P)))
                   then
                      Set_Is_Inlined (Subp, False);
-                     Error_Msg_NE (Msg, N, Subp);
+                     Error_Msg_NE (Msg & "p?", N, Subp);
                      return;
                   end if;
                end;
@@ -4225,7 +4230,7 @@ package body Sem_Ch6 is
             --  For backward compatibility we still report a warning.
 
             if Ineffective_Inline_Warnings then
-               Error_Msg_NE (Msg, N, Subp);
+               Error_Msg_NE (Msg & "p?", N, Subp);
             end if;
          end if;
 
@@ -6912,10 +6917,10 @@ package body Sem_Ch6 is
          if Mode = 'F' then
             if not Raise_Exception_Call then
                Error_Msg_N
-                 ("?RETURN statement missing following this statement!",
+                 ("RETURN statement missing following this statement??!",
                   Last_Stm);
                Error_Msg_N
-                 ("\?Program_Error may be raised at run time!",
+                 ("\Program_Error may be raised at run time??!",
                   Last_Stm);
             end if;
 
@@ -6931,11 +6936,11 @@ package body Sem_Ch6 is
          else
             if not Raise_Exception_Call then
                Error_Msg_N
-                 ("?implied return after this statement " &
-                  "will raise Program_Error",
+                 ("implied return after this statement " &
+                  "will raise Program_Error??",
                   Last_Stm);
                Error_Msg_NE
-                 ("\?procedure & is marked as No_Return!",
+                 ("\procedure & is marked as No_Return??!",
                   Last_Stm, Proc);
             end if;
 
@@ -7172,7 +7177,7 @@ package body Sem_Ch6 is
                   No_Warning_On_Some_Postcondition := True;
                else
                   Error_Msg_N
-                    ("?`Ensures` component refers only to pre-state", Prag);
+                    ("`Ensures` component refers only to pre-state??", Prag);
                end if;
             end if;
 
@@ -7229,7 +7234,7 @@ package body Sem_Ch6 is
                      No_Warning_On_Some_Postcondition := True;
                   else
                      Error_Msg_N
-                       ("?postcondition refers only to pre-state", Prag);
+                       ("postcondition refers only to pre-state??", Prag);
                   end if;
                end if;
             end if;
@@ -7283,17 +7288,18 @@ package body Sem_Ch6 is
       then
          if Present (Last_Postcondition) then
             if Present (Last_Contract_Case) then
-               Error_Msg_N ("?neither function postcondition nor " &
-                              "contract cases do mention result",
-                            Last_Postcondition);
+               Error_Msg_N
+                 ("neither function postcondition nor "
+                  & "contract cases mention result?T?", Last_Postcondition);
 
             else
-               Error_Msg_N ("?function postcondition does not mention result",
-                            Last_Postcondition);
+               Error_Msg_N
+                 ("function postcondition does not mention result?T?",
+                  Last_Postcondition);
             end if;
          else
-            Error_Msg_N ("?contract cases do not mention result",
-                         Last_Contract_Case);
+            Error_Msg_N
+              ("contract cases do not mention result?T?", Last_Contract_Case);
          end if;
       end if;
    end Check_Subprogram_Contract;
@@ -8143,14 +8149,14 @@ package body Sem_Ch6 is
             then
                if Scope (E) /= Standard_Standard then
                   Error_Msg_Sloc := Sloc (E);
-                  Error_Msg_N ("declaration of & hides one#?", S);
+                  Error_Msg_N ("declaration of & hides one#?h?", S);
 
                elsif Nkind (S) = N_Defining_Operator_Symbol
                  and then
                    Scope (Base_Type (Etype (First_Formal (S)))) /= Scope (S)
                then
                   Error_Msg_N
-                    ("declaration of & hides predefined operator?", S);
+                    ("declaration of & hides predefined operator?h?", S);
                end if;
             end if;
          end loop;
@@ -8199,17 +8205,15 @@ package body Sem_Ch6 is
                    & "before type& is frozen", Eq_Op, Typ);
 
                Obj_Decl := Next (Parent (Typ));
-               while Present (Obj_Decl)
-                 and then Obj_Decl /= Decl
-               loop
+               while Present (Obj_Decl) and then Obj_Decl /= Decl loop
                   if Nkind (Obj_Decl) = N_Object_Declaration
                     and then Etype (Defining_Identifier (Obj_Decl)) = Typ
                   then
-                     Error_Msg_NE ("type& is frozen by declaration?",
-                        Obj_Decl, Typ);
+                     Error_Msg_NE
+                       ("type& is frozen by declaration??", Obj_Decl, Typ);
                      Error_Msg_N
                        ("\an equality operator cannot be declared after this "
-                         & "point (RM 4.5.2 (9.8)) (Ada 2012))?", Obj_Decl);
+                         & "point (RM 4.5.2 (9.8)) (Ada 2012))??", Obj_Decl);
                      exit;
                   end if;
 
@@ -9328,7 +9332,7 @@ package body Sem_Ch6 is
                   Error_Msg_Node_2 := F_Typ;
                   Error_Msg_NE
                     ("private operation& in generic unit does not override " &
-                     "any primitive operation of& (RM 12.3 (18))?",
+                     "any primitive operation of& (RM 12.3 (18))??",
                      New_E, New_E);
                end if;
 
@@ -9350,24 +9354,24 @@ package body Sem_Ch6 is
         and then (Is_Subprogram (E) or else Is_Generic_Subprogram (E))
       then
          declare
-            Inherited : constant Subprogram_List :=
-                          Inherited_Subprograms (E);
+            Inherited : constant Subprogram_List := Inherited_Subprograms (E);
             P         : Node_Id;
 
          begin
             for J in Inherited'Range loop
                P := Spec_PPC_List (Contract (Inherited (J)));
-
                while Present (P) loop
                   Error_Msg_Sloc := Sloc (P);
 
                   if Class_Present (P) and then not Split_PPC (P) then
                      if Pragma_Name (P) = Name_Precondition then
                         Error_Msg_N
-                          ("?info: & inherits `Pre''Class` aspect from #", E);
+                          ("info: & inherits `Pre''Class` aspect from #?L?",
+                           E);
                      else
                         Error_Msg_N
-                          ("?info: & inherits `Post''Class` aspect from #", E);
+                          ("info: & inherits `Post''Class` aspect from #?L?",
+                           E);
                      end if;
                   end if;
 
@@ -10659,7 +10663,7 @@ package body Sem_Ch6 is
                        and then No (F1)
                        and then No (F2)
                      then
-                        Error_Msg_NE ("calls to& may be ambiguous?", S, S);
+                        Error_Msg_NE ("calls to& may be ambiguous??", S, S);
                      end if;
                   end;
                end if;
@@ -11094,7 +11098,7 @@ package body Sem_Ch6 is
 
             if Convention (Formal_Type) = Convention_Ada_Pass_By_Copy then
                Error_Msg_N
-                 ("?cannot pass aliased parameter & by copy", Formal);
+                 ("cannot pass aliased parameter & by copy?", Formal);
             end if;
 
          --  Force mechanism if type has Convention Ada_Pass_By_Ref/Copy

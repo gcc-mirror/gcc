@@ -154,19 +154,35 @@ package body Par_SCO is
    --  Process L, a list of statements or declarations dominated by D.
    --  If P is present, it is processed as though it had been prepended to L.
 
-   procedure Traverse_Generic_Instantiation       (N : Node_Id);
+   function Traverse_Declarations_Or_Statements
+     (L : List_Id;
+      D : Dominant_Info := No_Dominant;
+      P : Node_Id       := Empty) return Dominant_Info;
+   --  Same as above, and returns dominant information corresponding to the
+   --  last node with SCO in L.
+
+   --  The following Traverse_* routines perform appropriate calls to
+   --  Traverse_Declarations_Or_Statements to traverse specific node kinds.
+   --  Parameter D, when present, indicates the dominant of the first
+   --  declaration or statement within N.
+
+   --  Why is Traverse_Sync_Definition commented specificaly and
+   --   the others are not???
+
    procedure Traverse_Generic_Package_Declaration (N : Node_Id);
    procedure Traverse_Handled_Statement_Sequence
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
-   procedure Traverse_Package_Body                (N : Node_Id);
-   procedure Traverse_Package_Declaration         (N : Node_Id);
-   procedure Traverse_Protected_Body              (N : Node_Id);
+   procedure Traverse_Package_Body        (N : Node_Id);
+   procedure Traverse_Package_Declaration
+     (N : Node_Id;
+      D : Dominant_Info := No_Dominant);
    procedure Traverse_Subprogram_Or_Task_Body
      (N : Node_Id;
       D : Dominant_Info := No_Dominant);
-   procedure Traverse_Subprogram_Declaration      (N : Node_Id);
-   --  Traverse the corresponding construct, generating SCO table entries
+
+   procedure Traverse_Sync_Definition     (N : Node_Id);
+   --  Traverse a protected definition or task definition
 
    procedure Write_SCOs_To_ALI_File is new Put_SCOs;
    --  Write SCO information to the ALI file using routines in Lib.Util
@@ -900,6 +916,23 @@ package body Par_SCO is
       Lu   : Node_Id;
       From : Nat;
 
+      procedure Traverse_Aux_Decls (N : Node_Id);
+      --  Traverse the Aux_Decl_Nodes of compilation unit N
+
+      ------------------------
+      -- Traverse_Aux_Decls --
+      ------------------------
+
+      procedure Traverse_Aux_Decls (N : Node_Id) is
+         ADN : constant Node_Id := Aux_Decls_Node (N);
+      begin
+         Traverse_Declarations_Or_Statements (Config_Pragmas (ADN));
+         Traverse_Declarations_Or_Statements (Declarations   (ADN));
+         Traverse_Declarations_Or_Statements (Pragmas_After  (ADN));
+      end Traverse_Aux_Decls;
+
+   --  Start of processing for SCO_Record
+
    begin
       --  Ignore call if not generating code and generating SCO's
 
@@ -929,27 +962,20 @@ package body Par_SCO is
 
       --  Traverse the unit
 
+      Traverse_Aux_Decls (Cunit (U));
+
       case Nkind (Lu) is
-         when N_Protected_Body =>
-            Traverse_Protected_Body (Lu);
+         when
+           N_Package_Declaration         |
+           N_Package_Body                |
+           N_Subprogram_Declaration      |
+           N_Subprogram_Body             |
+           N_Generic_Package_Declaration |
+           N_Protected_Body              |
+           N_Task_Body                   |
+           N_Generic_Instantiation       =>
 
-         when N_Subprogram_Body | N_Task_Body =>
-            Traverse_Subprogram_Or_Task_Body (Lu);
-
-         when N_Subprogram_Declaration =>
-            Traverse_Subprogram_Declaration (Lu);
-
-         when N_Package_Declaration =>
-            Traverse_Package_Declaration (Lu);
-
-         when N_Package_Body =>
-            Traverse_Package_Body (Lu);
-
-         when N_Generic_Package_Declaration =>
-            Traverse_Generic_Package_Declaration (Lu);
-
-         when N_Generic_Instantiation =>
-            Traverse_Generic_Instantiation (Lu);
+            Traverse_Declarations_Or_Statements (L => No_List, P => Lu);
 
          when others =>
 
@@ -1012,8 +1038,7 @@ package body Par_SCO is
       --  original source occurrence of the pragma.
 
       if not (Generate_SCO
-               and then
-                 In_Extended_Main_Source_Unit (Cunit_Entity (Current_Sem_Unit))
+               and then In_Extended_Main_Source_Unit (Loc)
                and then not (In_Instance or In_Inlined_Body))
       then
          return;
@@ -1025,10 +1050,15 @@ package body Par_SCO is
 
       Index := Condition_Pragma_Hash_Table.Get (Loc);
 
-      --  The test here for zero is to deal with possible previous errors
+      --  A zero index here indicates that semantic analysis found an
+      --  activated pragma at Loc which does not have a corresponding pragma
+      --  or aspect at the syntax level. This may occur in legitimate cases
+      --  because of expanded code (such are Pre/Post conditions generated for
+      --  formal parameter validity checks), or as a consequence of a previous
+      --  error.
 
       if Index = 0 then
-         Check_Error_Detected;
+         return;
 
       else
          declare
@@ -1172,6 +1202,17 @@ package body Par_SCO is
       D : Dominant_Info := No_Dominant;
       P : Node_Id       := Empty)
    is
+      Discard_Dom : Dominant_Info;
+      pragma Warnings (Off, Discard_Dom);
+   begin
+      Discard_Dom := Traverse_Declarations_Or_Statements (L, D, P);
+   end Traverse_Declarations_Or_Statements;
+
+   function Traverse_Declarations_Or_Statements
+     (L : List_Id;
+      D : Dominant_Info := No_Dominant;
+      P : Node_Id       := Empty) return Dominant_Info
+   is
       Current_Dominant : Dominant_Info := D;
       --  Dominance information for the current basic block
 
@@ -1191,12 +1232,13 @@ package body Par_SCO is
 
       procedure Set_Statement_Entry;
       --  Output CS entries for all statements saved in table SC, and end the
-      --  current CS sequence.
+      --  current CS sequence. Then output entries for all decisions nested in
+      --  these statements, which have been deferred so far.
 
       procedure Process_Decisions_Defer (N : Node_Id; T : Character);
       pragma Inline (Process_Decisions_Defer);
       --  This routine is logically the same as Process_Decisions, except that
-      --  the arguments are saved in the SD table, for later processing when
+      --  the arguments are saved in the SD table for later processing when
       --  Set_Statement_Entry is called, which goes through the saved entries
       --  making the corresponding calls to Process_Decision.
 
@@ -1340,11 +1382,24 @@ package body Par_SCO is
             when N_Loop_Statement =>
                To_Node := Iteration_Scheme (N);
 
-            when N_Selective_Accept       |
-                 N_Timed_Entry_Call       |
-                 N_Conditional_Entry_Call |
-                 N_Asynchronous_Select    =>
+            when N_Selective_Accept             |
+                 N_Timed_Entry_Call             |
+                 N_Conditional_Entry_Call       |
+                 N_Asynchronous_Select          |
+                 N_Single_Protected_Declaration |
+                 N_Single_Task_Declaration      =>
                T := F;
+
+            when N_Protected_Type_Declaration | N_Task_Type_Declaration =>
+               if Has_Aspects (N) then
+                  To_Node := Last (Aspect_Specifications (N));
+
+               elsif Present (Discriminant_Specifications (N)) then
+                  To_Node := Last (Discriminant_Specifications (N));
+
+               else
+                  To_Node := Defining_Identifier (N);
+               end if;
 
             when others =>
                null;
@@ -1415,6 +1470,9 @@ package body Par_SCO is
                --  entry since Set_SCO_Pragma_Enabled will be called when
                --  analyzing actual checks, possibly in other units).
 
+               --  Pre/post can have checks in client units too because of
+               --  inheritance, so should they be moved here???
+
                when Aspect_Predicate         |
                     Aspect_Static_Predicate  |
                     Aspect_Dynamic_Predicate |
@@ -1466,7 +1524,7 @@ package body Par_SCO is
 
             when N_Package_Declaration =>
                Set_Statement_Entry;
-               Traverse_Package_Declaration (N);
+               Traverse_Package_Declaration (N, Current_Dominant);
 
             --  Generic package declaration
 
@@ -1482,7 +1540,7 @@ package body Par_SCO is
 
             --  Subprogram declaration
 
-            when N_Subprogram_Declaration =>
+            when N_Subprogram_Declaration | N_Subprogram_Body_Stub =>
                Process_Decisions_Defer
                  (Parameter_Specifications (Specification (N)), 'X');
 
@@ -1528,7 +1586,7 @@ package body Par_SCO is
 
             when N_Protected_Body =>
                Set_Statement_Entry;
-               Traverse_Protected_Body (N);
+               Traverse_Declarations_Or_Statements (Declarations (N));
 
             --  Exit statement, which is an exit statement in the SCO sense,
             --  so it is included in the current statement sequence, but
@@ -1561,9 +1619,14 @@ package body Par_SCO is
 
             when N_Block_Statement =>
                Set_Statement_Entry;
-               Traverse_Declarations_Or_Statements
-                 (L => Declarations (N),
-                  D => Current_Dominant);
+
+               --  The first statement in the handled sequence of statements
+               --  is dominated by the elaboration of the last declaration.
+
+               Current_Dominant := Traverse_Declarations_Or_Statements
+                                     (L => Declarations (N),
+                                      D => Current_Dominant);
+
                Traverse_Handled_Statement_Sequence
                  (N => Handled_Statement_Sequence (N),
                   D => Current_Dominant);
@@ -1868,10 +1931,13 @@ package body Par_SCO is
 
                begin
                   case Nam is
-                     when Name_Assert        |
-                          Name_Check         |
-                          Name_Precondition  |
-                          Name_Postcondition =>
+                     when Name_Assert         |
+                          Name_Assert_And_Cut |
+                          Name_Assume         |
+                          Name_Check          |
+                          Name_Loop_Invariant |
+                          Name_Precondition   |
+                          Name_Postcondition  =>
 
                         --  For Assert/Check/Precondition/Postcondition, we
                         --  must generate a P entry for the decision. Note
@@ -1886,6 +1952,9 @@ package body Par_SCO is
 
                         Process_Decisions_Defer (Expression (Arg), 'P');
                         Typ := 'p';
+
+                        --  Pre/postconditions can be inherited so SCO should
+                        --  never be deactivated???
 
                      when Name_Debug =>
                         if Present (Arg) and then Present (Next (Arg)) then
@@ -1905,6 +1974,10 @@ package body Par_SCO is
                      --  for any embedded expressions, and the pragma is
                      --  never disabled.
 
+                     --  Should generate P decisions (not X) for assertion
+                     --  related pragmas: [Type_]Invariant,
+                     --  [{Static,Dynamic}_]Predicate???
+
                      when others =>
                         Process_Decisions_Defer (N, 'X');
                         Typ := 'P';
@@ -1920,7 +1993,7 @@ package body Par_SCO is
             --  Object declaration. Ignored if Prev_Ids is set, since the
             --  parser generates multiple instances of the whole declaration
             --  if there is more than one identifier declared, and we only
-            --  want one entry in the SCO's, so we take the first, for which
+            --  want one entry in the SCOs, so we take the first, for which
             --  Prev_Ids is False.
 
             when N_Object_Declaration =>
@@ -1934,6 +2007,19 @@ package body Par_SCO is
 
             --  All other cases, which extend the current statement sequence
             --  but do not terminate it, even if they have nested decisions.
+
+            when N_Protected_Type_Declaration | N_Task_Type_Declaration =>
+               Extend_Statement_Sequence (N, 't');
+               Process_Decisions_Defer (Discriminant_Specifications (N), 'X');
+               Set_Statement_Entry;
+
+               Traverse_Sync_Definition (N);
+
+            when N_Single_Protected_Declaration | N_Single_Task_Declaration =>
+               Extend_Statement_Sequence (N, 'o');
+               Set_Statement_Entry;
+
+               Traverse_Sync_Definition (N);
 
             when others =>
 
@@ -1962,7 +2048,10 @@ package body Par_SCO is
 
                      when N_Representation_Clause         |
                           N_Use_Package_Clause            |
-                          N_Use_Type_Clause               =>
+                          N_Use_Type_Clause               |
+                          N_Package_Body_Stub             |
+                          N_Task_Body_Stub                |
+                          N_Protected_Body_Stub           =>
                         Typ := ASCII.NUL;
 
                      when others                          =>
@@ -1989,47 +2078,31 @@ package body Par_SCO is
    --  Start of processing for Traverse_Declarations_Or_Statements
 
    begin
+      --  Process single prefixed node
+
       if Present (P) then
          Traverse_One (P);
       end if;
 
+      --  Loop through statements or declarations
+
       if Is_Non_Empty_List (L) then
-
-         --  Loop through statements or declarations
-
          N := First (L);
          while Present (N) loop
             Traverse_One (N);
             Next (N);
          end loop;
 
+      end if;
+
+      --  End sequence of statements and flush deferred decisions
+
+      if Present (P) or else Is_Non_Empty_List (L) then
          Set_Statement_Entry;
       end if;
+
+      return Current_Dominant;
    end Traverse_Declarations_Or_Statements;
-
-   ------------------------------------
-   -- Traverse_Generic_Instantiation --
-   ------------------------------------
-
-   procedure Traverse_Generic_Instantiation (N : Node_Id) is
-      First : Source_Ptr;
-      Last  : Source_Ptr;
-
-   begin
-      --  First we need a statement entry to cover the instantiation
-
-      Sloc_Range (N, First, Last);
-      Set_Table_Entry
-        (C1   => 'S',
-         C2   => ' ',
-         From => First,
-         To   => Last,
-         Last => True);
-
-      --  Now output any embedded decisions
-
-      Process_Decisions (N, 'X', No_Location);
-   end Traverse_Generic_Instantiation;
 
    ------------------------------------------
    -- Traverse_Generic_Package_Declaration --
@@ -2076,30 +2149,77 @@ package body Par_SCO is
    ---------------------------
 
    procedure Traverse_Package_Body (N : Node_Id) is
+      Dom : Dominant_Info;
    begin
-      Traverse_Declarations_Or_Statements (Declarations (N));
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N));
+      --  The first statement in the handled sequence of statements is
+      --  dominated by the elaboration of the last declaration.
+
+      Dom := Traverse_Declarations_Or_Statements (Declarations (N));
+
+      Traverse_Handled_Statement_Sequence
+        (Handled_Statement_Sequence (N), Dom);
    end Traverse_Package_Body;
 
    ----------------------------------
    -- Traverse_Package_Declaration --
    ----------------------------------
 
-   procedure Traverse_Package_Declaration (N : Node_Id) is
+   procedure Traverse_Package_Declaration
+     (N : Node_Id;
+      D : Dominant_Info := No_Dominant)
+   is
       Spec : constant Node_Id := Specification (N);
+      Dom  : Dominant_Info;
+
    begin
-      Traverse_Declarations_Or_Statements (Visible_Declarations (Spec));
-      Traverse_Declarations_Or_Statements (Private_Declarations (Spec));
+      Dom :=
+        Traverse_Declarations_Or_Statements (Visible_Declarations (Spec), D);
+
+      --  First private declaration is dominated by last visible declaration
+
+      Traverse_Declarations_Or_Statements (Private_Declarations (Spec), Dom);
    end Traverse_Package_Declaration;
 
-   -----------------------------
-   -- Traverse_Protected_Body --
-   -----------------------------
+   ------------------------------
+   -- Traverse_Sync_Definition --
+   ------------------------------
 
-   procedure Traverse_Protected_Body (N : Node_Id) is
+   procedure Traverse_Sync_Definition (N : Node_Id) is
+      Dom_Info : Dominant_Info := ('S', N);
+      --  The first declaration is dominated by the protected or task [type]
+      --  declaration.
+
+      Sync_Def : Node_Id;
+      --  N's protected or task definition
+
+      Vis_Decl : List_Id;
+      --  Sync_Def's Visible_Declarations
+
    begin
-      Traverse_Declarations_Or_Statements (Declarations (N));
-   end Traverse_Protected_Body;
+      case Nkind (N) is
+         when N_Single_Protected_Declaration | N_Protected_Type_Declaration =>
+            Sync_Def := Protected_Definition (N);
+
+         when N_Single_Task_Declaration      | N_Task_Type_Declaration      =>
+            Sync_Def := Task_Definition (N);
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      Vis_Decl := Visible_Declarations (Sync_Def);
+
+      Dom_Info := Traverse_Declarations_Or_Statements
+                    (L => Vis_Decl,
+                     D => Dom_Info);
+
+      --  If visible declarations are present, the first private declaration
+      --  is dominated by the last visible declaration.
+
+      Traverse_Declarations_Or_Statements
+        (L => Private_Declarations (Sync_Def),
+         D => Dom_Info);
+   end Traverse_Sync_Definition;
 
    --------------------------------------
    -- Traverse_Subprogram_Or_Task_Body --
@@ -2109,21 +2229,18 @@ package body Par_SCO is
      (N : Node_Id;
       D : Dominant_Info := No_Dominant)
    is
+      Decls    : constant List_Id := Declarations (N);
+      Dom_Info : Dominant_Info := D;
    begin
-      Traverse_Declarations_Or_Statements (Declarations (N), D);
-      Traverse_Handled_Statement_Sequence (Handled_Statement_Sequence (N), D);
+      --  If declarations are present, the first statement is dominated by the
+      --  last declaration.
+
+      Dom_Info := Traverse_Declarations_Or_Statements
+                    (L => Decls, D => Dom_Info);
+
+      Traverse_Handled_Statement_Sequence
+        (N => Handled_Statement_Sequence (N),
+         D => Dom_Info);
    end Traverse_Subprogram_Or_Task_Body;
-
-   -------------------------------------
-   -- Traverse_Subprogram_Declaration --
-   -------------------------------------
-
-   procedure Traverse_Subprogram_Declaration (N : Node_Id) is
-      ADN : constant Node_Id := Aux_Decls_Node (Parent (N));
-   begin
-      Traverse_Declarations_Or_Statements (Config_Pragmas (ADN));
-      Traverse_Declarations_Or_Statements (Declarations   (ADN));
-      Traverse_Declarations_Or_Statements (Pragmas_After  (ADN));
-   end Traverse_Subprogram_Declaration;
 
 end Par_SCO;

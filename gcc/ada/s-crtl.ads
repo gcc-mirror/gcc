@@ -122,8 +122,17 @@ package System.CRTL is
       origin : int) return int;
    pragma Import (C, fseek, "fseek");
 
+   function fseek64
+     (stream : FILEs;
+      offset : ssize_t;
+      origin : int) return int;
+   pragma Import (C, fseek64, "__gnat_fseek64");
+
    function ftell (stream : FILEs) return long;
    pragma Import (C, ftell, "ftell");
+
+   function ftell64 (stream : FILEs) return ssize_t;
+   pragma Import (C, ftell64, "__gnat_ftell64");
 
    function getenv (S : String) return System.Address;
    pragma Import (C, getenv, "getenv");

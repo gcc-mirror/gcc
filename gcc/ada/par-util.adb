@@ -186,7 +186,7 @@ package body Util is
            or else (Token_Name = Name_Interface
                      and then Prev_Token /= Tok_Pragma)
          then
-            Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+            Error_Msg_N ("& is a reserved word in Ada 2005?y?", Token_Node);
          end if;
       end if;
 
@@ -196,7 +196,7 @@ package body Util is
         and then Warn_On_Ada_2012_Compatibility
       then
          if Token_Name = Name_Some then
-            Error_Msg_N ("& is a reserved word in Ada 2012?", Token_Node);
+            Error_Msg_N ("& is a reserved word in Ada 2012?y?", Token_Node);
          end if;
       end if;
 
@@ -635,6 +635,15 @@ package body Util is
 
    procedure No_Constraint is
    begin
+      --  If next token is at start of line, don't object, it seems relatively
+      --  unlikely that a constraint would be on its own starting a line.
+
+      if Token_Is_At_Start_Of_Line then
+         return;
+      end if;
+
+      --  Otherwise if we have a token that could start a constraint, object
+
       if Token in Token_Class_Consk then
          Error_Msg_SC ("constraint not allowed here");
          Discard_Junk_Node (P_Constraint_Opt);
@@ -761,7 +770,7 @@ package body Util is
             C : constant Entity_Id := Current_Entity (N);
          begin
             if Present (C) and then Sloc (C) = Standard_Location then
-               Error_Msg_N ("redefinition of entity& in Standard?", N);
+               Error_Msg_N ("redefinition of entity& in Standard?K?", N);
             end if;
          end;
       end if;

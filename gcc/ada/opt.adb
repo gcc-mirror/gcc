@@ -57,6 +57,7 @@ package body Opt is
       Ada_Version_Explicit_Config           := Ada_Version_Explicit;
       Assertions_Enabled_Config             := Assertions_Enabled;
       Assume_No_Invalid_Values_Config       := Assume_No_Invalid_Values;
+      Check_Float_Overflow_Config           := Check_Float_Overflow;
       Check_Policy_List_Config              := Check_Policy_List;
       Debug_Pragmas_Disabled_Config         := Debug_Pragmas_Disabled;
       Debug_Pragmas_Enabled_Config          := Debug_Pragmas_Enabled;
@@ -91,6 +92,7 @@ package body Opt is
       Ada_Version_Explicit           := Save.Ada_Version_Explicit;
       Assertions_Enabled             := Save.Assertions_Enabled;
       Assume_No_Invalid_Values       := Save.Assume_No_Invalid_Values;
+      Check_Float_Overflow           := Save.Check_Float_Overflow;
       Check_Policy_List              := Save.Check_Policy_List;
       Debug_Pragmas_Disabled         := Save.Debug_Pragmas_Disabled;
       Debug_Pragmas_Enabled          := Save.Debug_Pragmas_Enabled;
@@ -127,6 +129,7 @@ package body Opt is
       Save.Ada_Version_Explicit           := Ada_Version_Explicit;
       Save.Assertions_Enabled             := Assertions_Enabled;
       Save.Assume_No_Invalid_Values       := Assume_No_Invalid_Values;
+      Save.Check_Float_Overflow           := Check_Float_Overflow;
       Save.Check_Policy_List              := Check_Policy_List;
       Save.Debug_Pragmas_Disabled         := Debug_Pragmas_Disabled;
       Save.Debug_Pragmas_Enabled          := Debug_Pragmas_Enabled;
@@ -198,6 +201,7 @@ package body Opt is
          Ada_Version_Explicit        := Ada_Version_Explicit_Config;
          Assertions_Enabled          := Assertions_Enabled_Config;
          Assume_No_Invalid_Values    := Assume_No_Invalid_Values_Config;
+         Check_Float_Overflow        := Check_Float_Overflow_Config;
          Check_Policy_List           := Check_Policy_List_Config;
          Debug_Pragmas_Disabled      := Debug_Pragmas_Disabled_Config;
          Debug_Pragmas_Enabled       := Debug_Pragmas_Enabled_Config;
@@ -255,6 +259,7 @@ package body Opt is
       Tree_Read_Int  (Assertions_Enabled_Config_Val);
       Tree_Read_Bool (All_Errors_Mode);
       Tree_Read_Bool (Assertions_Enabled);
+      Tree_Read_Bool (Check_Float_Overflow);
       Tree_Read_Int  (Int (Check_Policy_List));
       Tree_Read_Bool (Debug_Pragmas_Disabled);
       Tree_Read_Bool (Debug_Pragmas_Enabled);
@@ -321,6 +326,7 @@ package body Opt is
       Tree_Write_Int  (Boolean'Pos (Assertions_Enabled_Config));
       Tree_Write_Bool (All_Errors_Mode);
       Tree_Write_Bool (Assertions_Enabled);
+      Tree_Write_Bool (Check_Float_Overflow);
       Tree_Write_Int  (Int (Check_Policy_List));
       Tree_Write_Bool (Debug_Pragmas_Disabled);
       Tree_Write_Bool (Debug_Pragmas_Enabled);

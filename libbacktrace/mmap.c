@@ -84,6 +84,7 @@ backtrace_alloc (struct backtrace_state *state,
 		 void *data)
 {
   void *ret;
+  int locked;
   struct backtrace_freelist_struct **pp;
   size_t pagesize;
   size_t asksize;
@@ -96,7 +97,12 @@ backtrace_alloc (struct backtrace_state *state,
      using mmap.  __sync_lock_test_and_set returns the old state of
      the lock, so we have acquired it if it returns 0.  */
 
-  if (!__sync_lock_test_and_set (&state->lock_alloc, 1))
+  if (!state->threaded)
+    locked = 1;
+  else
+    locked = __sync_lock_test_and_set (&state->lock_alloc, 1) == 0;
+
+  if (locked)
     {
       for (pp = &state->freelist; *pp != NULL; pp = &(*pp)->next)
 	{
@@ -120,7 +126,8 @@ backtrace_alloc (struct backtrace_state *state,
 	    }
 	}
 
-      __sync_lock_release (&state->lock_alloc);
+      if (state->threaded)
+	__sync_lock_release (&state->lock_alloc);
     }
 
   if (ret == NULL)
@@ -154,15 +161,24 @@ backtrace_free (struct backtrace_state *state, void *addr, size_t size,
 		backtrace_error_callback error_callback ATTRIBUTE_UNUSED,
 		void *data ATTRIBUTE_UNUSED)
 {
+  int locked;
+
   /* If we can acquire the lock, add the new space to the free list.
      If we can't acquire the lock, just leak the memory.
      __sync_lock_test_and_set returns the old state of the lock, so we
      have acquired it if it returns 0.  */
-  if (!__sync_lock_test_and_set (&state->lock_alloc, 1))
+
+  if (!state->threaded)
+    locked = 1;
+  else
+    locked = __sync_lock_test_and_set (&state->lock_alloc, 1) == 0;
+
+  if (locked)
     {
       backtrace_free_locked (state, addr, size);
 
-      __sync_lock_release (&state->lock_alloc);
+      if (state->threaded)
+	__sync_lock_release (&state->lock_alloc);
     }
 }
 

@@ -227,6 +227,7 @@ should contain the following code:
 * Avoid Duplication With Variables::
 * Naming Schemes::
 * Installation::
+* Distributed support::
 @end menu
 
 @c ---------------------------------------------
@@ -1075,6 +1076,53 @@ installed. Default is @b{include}.
 
 Subdirectory of @b{Prefix} where the generated project file is to be
 installed. Default is @b{share/gpr}.
+@end table
+
+@c ---------------------------------------------
+@node Distributed support
+@subsection Distributed support
+@c ---------------------------------------------
+
+@noindent
+For large projects the compilation time can become a limitation in
+the development cycle. To cope with that, GPRbuild supports
+distributed compilation.
+
+The following attributes can be defined in package @code{Remote}:
+
+@table @asis
+
+@item @b{Build_Slaves}
+@cindex @code{Build_Slaves}
+
+A list of string referencing the remote build slaves to use for the
+compilation phase. The format is:
+@code{[protocol://]name.domain[:port]}.
+
+Where @code{protocol} is one of:
+
+@table @asis
+
+@item rsync
+@cindex @code{rsync}
+
+The sources are copied using the external @code{rsync} tool.
+
+@item file
+
+The sources are accessed via a shared directory or mount point.
+
+@end table
+
+The default port used to communicate with @command{gprslave} is
+@code{8484}.
+
+@item @b{Root_Dir}:
+@cindex @code{Root_Dir}
+
+Root directory of the project's sources. The default value is the
+project's directory.
+
 @end table
 
 @c ---------------------------------------------
@@ -2514,11 +2562,17 @@ project files specified with @code{Project_Files}.
 
 Each aggregate project has its own (that is if agg1.gpr includes
 agg2.gpr, they can potentially both have a different project path).
-This project path is defined as the concatenation, in that order, of
-the current directory, followed by the command line -aP switches,
-then the directories from the Project_Path attribute, then the
-directories from the GPR_PROJECT_PATH and ADA_PROJECT_PATH env.
-variables, and finally the predefined directories.
+
+This project path is defined as the concatenation, in that order, of:
+
+@itemize @bullet
+@item the current directory;
+@item followed by the command line -aP switches;
+@item then the directories from the GPR_PROJECT_PATH and ADA_PROJECT_PATH environment
+variables;
+@item then the directories from the Project_Path attribute;
+@item and finally the predefined directories.
+@end itemize
 
 In the example above, agg2.gpr's project path is not influenced by
 the attribute agg1'Project_Path, nor is agg1 influenced by

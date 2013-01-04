@@ -163,7 +163,7 @@ package body Sem_Intr is
         and then Can_Never_Be_Null (Etype (Arg1))
       then
          Error_Msg_N
-           ("freeing `NOT NULL` object will raise Constraint_Error?", N);
+           ("freeing `NOT NULL` object will raise Constraint_Error??", N);
 
       --  For unchecked deallocation, error to deallocate from empty pool.
       --  Note: this test used to be in Exp_Intr as a warning, but AI 157

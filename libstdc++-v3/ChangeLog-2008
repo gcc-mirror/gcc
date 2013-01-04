@@ -4799,3 +4799,9 @@
 	random_access_iterator_tag, random_access_iterator_tag)): Careful
 	with undereferenceable iterators.
 	* testsuite/25_algorithms/sort/34636.cc: New.
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -4302,7 +4302,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					     null_pointer_node);
 		      gfc_add_expr_to_block (&block, tmp);
 
-		      if (fsym->ts.type == BT_CLASS)
+		      if (fsym->ts.type == BT_CLASS && UNLIMITED_POLY (fsym))
+			{
+			  gfc_add_modify (&block, ptr,
+					  fold_convert (TREE_TYPE (ptr),
+							null_pointer_node));
+			  gfc_add_expr_to_block (&block, tmp);
+			}
+		      else if (fsym->ts.type == BT_CLASS)
 			{
 			  gfc_symbol *vtab;
 			  vtab = gfc_find_derived_vtab (fsym->ts.u.derived);

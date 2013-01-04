@@ -40,6 +40,7 @@ package System.Exceptions is
    --  Visible copy to allow Ada.Exceptions to know the exception model.
 
 private
+
    type Require_Body;
    --  Dummy Taft-amendment type to make it legal (and required) to provide
    --  a body for this package.

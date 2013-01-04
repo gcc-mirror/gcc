@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for VAX using ELF
-   Copyright (C) 2002, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2004, 2005, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
    Contributed by Matt Thomas <matt@3am-software.com>
 

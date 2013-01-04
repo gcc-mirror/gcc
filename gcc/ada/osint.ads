@@ -73,7 +73,7 @@ package Osint is
    --  found. Note that for the special case of gnat.adc, only the compilation
    --  environment directory is searched, i.e. the directory where the ali and
    --  object files are written. Another special case is Debug_Generated_Code
-   --  set and the file name ends on ".dg", in which case we look for the
+   --  set and the file name ends in ".dg", in which case we look for the
    --  generated file only in the current directory, since that is where it is
    --  always built.
 

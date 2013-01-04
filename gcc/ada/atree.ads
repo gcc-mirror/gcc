@@ -196,9 +196,9 @@ package Atree is
    --                 entity, it is of type Entity_Kind which is defined
    --                 in package Einfo.
 
-   --   Flag19        235 additional flags
+   --   Flag19        299 additional flags
    --   ...
-   --   Flag254
+   --   Flag317
 
    --   Convention    Entity convention (Convention_Id value)
 
@@ -208,9 +208,9 @@ package Atree is
    --   Elist6        Synonym for Field6 typed as Elist_Id (Empty = No_Elist)
    --   Uint6         Synonym for Field6 typed as Uint (Empty = Uint_0)
 
-   --   Similar definitions for Field7 to Field28 (and Node7-Node28,
-   --   Elist7-Elist28, Uint7-Uint28, Ureal7-Ureal28). Note that not all these
-   --   functions are defined, only the ones that are actually used.
+   --   Similar definitions for Field7 to Field35 (and also Node7-Node35,
+   --   Elist7-Elist35, Uint7-Uint35, Ureal7-Ureal35). Note that not all
+   --   these functions are defined, only the ones that are actually used.
 
    function Last_Node_Id return Node_Id;
    pragma Inline (Last_Node_Id);
@@ -334,22 +334,22 @@ package Atree is
 
    --  Field1-5 fields are set to Empty
 
-   --  Field6-29 fields in extended nodes are set to Empty
+   --  Field6-35 fields in extended nodes are set to Empty
 
    --  Parent is set to Empty
 
    --  All Boolean flag fields are set to False
 
-   --  Note: the value Empty is used in Field1-Field17 to indicate a null node.
-   --  The usage varies. The common uses are to indicate absence of an
-   --  optional clause or a completely unused Field1-17 field.
+   --  Note: the value Empty is used in Field1-Field35 to indicate a null node.
+   --  The usage varies. The common uses are to indicate absence of an optional
+   --  clause or a completely unused Field1-35 field.
 
    -------------------------------------
    -- Use of Synonyms for Node Fields --
    -------------------------------------
 
    --  A subpackage Atree.Unchecked_Access provides routines for reading and
-   --  writing the fields defined above (Field1-27, Node1-27, Flag4-254 etc).
+   --  writing the fields defined above (Field1-35, Node1-35, Flag4-317 etc).
    --  These unchecked access routines can be used for untyped traversals.
    --  In addition they are used in the implementations of the Sinfo and
    --  Einfo packages. These packages both provide logical synonyms for
@@ -481,10 +481,9 @@ package Atree is
    --  valid. This routine is used in conjunction with the tree rewrite
    --  routines (see descriptions of Replace/Rewrite).
    --
-   --  Note that the resulting node has the same parent as the source
-   --  node, and is thus still attached to the tree. It is valid for
-   --  Source to be Empty, in which case Relocate_Node simply returns
-   --  Empty as the result.
+   --  Note that the resulting node has the same parent as the source node, and
+   --  is thus still attached to the tree. It is valid for Source to be Empty,
+   --  in which case Relocate_Node simply returns Empty as the result.
 
    function Copy_Separate_Tree (Source : Node_Id) return Node_Id;
    --  Given a node that is the root of a subtree, Copy_Separate_Tree copies
@@ -508,7 +507,9 @@ package Atree is
    --  entities point correctly to their original parents. The effect is thus
    --  to leave the tree completely unchanged in structure, except that the
    --  entity ID values of the two entities are interchanged. Neither of the
-   --  two entities may be list members.
+   --  two entities may be list members. Note that entities appear on two
+   --  semantic chains: Homonym and Next_Entity: the corresponding links must
+   --  be adjusted by the caller, according to context.
 
    function Extend_Node (Node : Node_Id) return Entity_Id;
    --  This function returns a copy of its input node with an extension added.
@@ -1060,6 +1061,24 @@ package Atree is
 
       function Field29 (N : Node_Id) return Union_Id;
       pragma Inline (Field29);
+
+      function Field30 (N : Node_Id) return Union_Id;
+      pragma Inline (Field30);
+
+      function Field31 (N : Node_Id) return Union_Id;
+      pragma Inline (Field31);
+
+      function Field32 (N : Node_Id) return Union_Id;
+      pragma Inline (Field32);
+
+      function Field33 (N : Node_Id) return Union_Id;
+      pragma Inline (Field33);
+
+      function Field34 (N : Node_Id) return Union_Id;
+      pragma Inline (Field34);
+
+      function Field35 (N : Node_Id) return Union_Id;
+      pragma Inline (Field35);
 
       function Node1 (N : Node_Id) return Node_Id;
       pragma Inline (Node1);
@@ -2041,6 +2060,195 @@ package Atree is
       function Flag254 (N : Node_Id) return Boolean;
       pragma Inline (Flag254);
 
+      function Flag255 (N : Node_Id) return Boolean;
+      pragma Inline (Flag255);
+
+      function Flag256 (N : Node_Id) return Boolean;
+      pragma Inline (Flag256);
+
+      function Flag257 (N : Node_Id) return Boolean;
+      pragma Inline (Flag257);
+
+      function Flag258 (N : Node_Id) return Boolean;
+      pragma Inline (Flag258);
+
+      function Flag259 (N : Node_Id) return Boolean;
+      pragma Inline (Flag259);
+
+      function Flag260 (N : Node_Id) return Boolean;
+      pragma Inline (Flag260);
+
+      function Flag261 (N : Node_Id) return Boolean;
+      pragma Inline (Flag261);
+
+      function Flag262 (N : Node_Id) return Boolean;
+      pragma Inline (Flag262);
+
+      function Flag263 (N : Node_Id) return Boolean;
+      pragma Inline (Flag263);
+
+      function Flag264 (N : Node_Id) return Boolean;
+      pragma Inline (Flag264);
+
+      function Flag265 (N : Node_Id) return Boolean;
+      pragma Inline (Flag265);
+
+      function Flag266 (N : Node_Id) return Boolean;
+      pragma Inline (Flag266);
+
+      function Flag267 (N : Node_Id) return Boolean;
+      pragma Inline (Flag267);
+
+      function Flag268 (N : Node_Id) return Boolean;
+      pragma Inline (Flag268);
+
+      function Flag269 (N : Node_Id) return Boolean;
+      pragma Inline (Flag269);
+
+      function Flag270 (N : Node_Id) return Boolean;
+      pragma Inline (Flag270);
+
+      function Flag271 (N : Node_Id) return Boolean;
+      pragma Inline (Flag271);
+
+      function Flag272 (N : Node_Id) return Boolean;
+      pragma Inline (Flag272);
+
+      function Flag273 (N : Node_Id) return Boolean;
+      pragma Inline (Flag273);
+
+      function Flag274 (N : Node_Id) return Boolean;
+      pragma Inline (Flag274);
+
+      function Flag275 (N : Node_Id) return Boolean;
+      pragma Inline (Flag275);
+
+      function Flag276 (N : Node_Id) return Boolean;
+      pragma Inline (Flag276);
+
+      function Flag277 (N : Node_Id) return Boolean;
+      pragma Inline (Flag277);
+
+      function Flag278 (N : Node_Id) return Boolean;
+      pragma Inline (Flag278);
+
+      function Flag279 (N : Node_Id) return Boolean;
+      pragma Inline (Flag279);
+
+      function Flag280 (N : Node_Id) return Boolean;
+      pragma Inline (Flag280);
+
+      function Flag281 (N : Node_Id) return Boolean;
+      pragma Inline (Flag281);
+
+      function Flag282 (N : Node_Id) return Boolean;
+      pragma Inline (Flag282);
+
+      function Flag283 (N : Node_Id) return Boolean;
+      pragma Inline (Flag283);
+
+      function Flag284 (N : Node_Id) return Boolean;
+      pragma Inline (Flag284);
+
+      function Flag285 (N : Node_Id) return Boolean;
+      pragma Inline (Flag285);
+
+      function Flag286 (N : Node_Id) return Boolean;
+      pragma Inline (Flag286);
+
+      function Flag287 (N : Node_Id) return Boolean;
+      pragma Inline (Flag287);
+
+      function Flag288 (N : Node_Id) return Boolean;
+      pragma Inline (Flag288);
+
+      function Flag289 (N : Node_Id) return Boolean;
+      pragma Inline (Flag289);
+
+      function Flag290 (N : Node_Id) return Boolean;
+      pragma Inline (Flag290);
+
+      function Flag291 (N : Node_Id) return Boolean;
+      pragma Inline (Flag291);
+
+      function Flag292 (N : Node_Id) return Boolean;
+      pragma Inline (Flag292);
+
+      function Flag293 (N : Node_Id) return Boolean;
+      pragma Inline (Flag293);
+
+      function Flag294 (N : Node_Id) return Boolean;
+      pragma Inline (Flag294);
+
+      function Flag295 (N : Node_Id) return Boolean;
+      pragma Inline (Flag295);
+
+      function Flag296 (N : Node_Id) return Boolean;
+      pragma Inline (Flag296);
+
+      function Flag297 (N : Node_Id) return Boolean;
+      pragma Inline (Flag297);
+
+      function Flag298 (N : Node_Id) return Boolean;
+      pragma Inline (Flag298);
+
+      function Flag299 (N : Node_Id) return Boolean;
+      pragma Inline (Flag299);
+
+      function Flag300 (N : Node_Id) return Boolean;
+      pragma Inline (Flag300);
+
+      function Flag301 (N : Node_Id) return Boolean;
+      pragma Inline (Flag301);
+
+      function Flag302 (N : Node_Id) return Boolean;
+      pragma Inline (Flag302);
+
+      function Flag303 (N : Node_Id) return Boolean;
+      pragma Inline (Flag303);
+
+      function Flag304 (N : Node_Id) return Boolean;
+      pragma Inline (Flag304);
+
+      function Flag305 (N : Node_Id) return Boolean;
+      pragma Inline (Flag305);
+
+      function Flag306 (N : Node_Id) return Boolean;
+      pragma Inline (Flag306);
+
+      function Flag307 (N : Node_Id) return Boolean;
+      pragma Inline (Flag307);
+
+      function Flag308 (N : Node_Id) return Boolean;
+      pragma Inline (Flag308);
+
+      function Flag309 (N : Node_Id) return Boolean;
+      pragma Inline (Flag309);
+
+      function Flag310 (N : Node_Id) return Boolean;
+      pragma Inline (Flag310);
+
+      function Flag311 (N : Node_Id) return Boolean;
+      pragma Inline (Flag311);
+
+      function Flag312 (N : Node_Id) return Boolean;
+      pragma Inline (Flag312);
+
+      function Flag313 (N : Node_Id) return Boolean;
+      pragma Inline (Flag313);
+
+      function Flag314 (N : Node_Id) return Boolean;
+      pragma Inline (Flag314);
+
+      function Flag315 (N : Node_Id) return Boolean;
+      pragma Inline (Flag315);
+
+      function Flag316 (N : Node_Id) return Boolean;
+      pragma Inline (Flag316);
+
+      function Flag317 (N : Node_Id) return Boolean;
+      pragma Inline (Flag317);
+
       --  Procedures to set value of indicated field
 
       procedure Set_Nkind (N : Node_Id; Val : Node_Kind);
@@ -2132,6 +2340,24 @@ package Atree is
 
       procedure Set_Field29 (N : Node_Id; Val : Union_Id);
       pragma Inline (Set_Field29);
+
+      procedure Set_Field30 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field30);
+
+      procedure Set_Field31 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field31);
+
+      procedure Set_Field32 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field32);
+
+      procedure Set_Field33 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field33);
+
+      procedure Set_Field34 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field34);
+
+      procedure Set_Field35 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field35);
 
       procedure Set_Node1 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node1);
@@ -3108,6 +3334,195 @@ package Atree is
       procedure Set_Flag254 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag254);
 
+      procedure Set_Flag255 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag255);
+
+      procedure Set_Flag256 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag256);
+
+      procedure Set_Flag257 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag257);
+
+      procedure Set_Flag258 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag258);
+
+      procedure Set_Flag259 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag259);
+
+      procedure Set_Flag260 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag260);
+
+      procedure Set_Flag261 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag261);
+
+      procedure Set_Flag262 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag262);
+
+      procedure Set_Flag263 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag263);
+
+      procedure Set_Flag264 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag264);
+
+      procedure Set_Flag265 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag265);
+
+      procedure Set_Flag266 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag266);
+
+      procedure Set_Flag267 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag267);
+
+      procedure Set_Flag268 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag268);
+
+      procedure Set_Flag269 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag269);
+
+      procedure Set_Flag270 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag270);
+
+      procedure Set_Flag271 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag271);
+
+      procedure Set_Flag272 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag272);
+
+      procedure Set_Flag273 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag273);
+
+      procedure Set_Flag274 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag274);
+
+      procedure Set_Flag275 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag275);
+
+      procedure Set_Flag276 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag276);
+
+      procedure Set_Flag277 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag277);
+
+      procedure Set_Flag278 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag278);
+
+      procedure Set_Flag279 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag279);
+
+      procedure Set_Flag280 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag280);
+
+      procedure Set_Flag281 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag281);
+
+      procedure Set_Flag282 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag282);
+
+      procedure Set_Flag283 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag283);
+
+      procedure Set_Flag284 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag284);
+
+      procedure Set_Flag285 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag285);
+
+      procedure Set_Flag286 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag286);
+
+      procedure Set_Flag287 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag287);
+
+      procedure Set_Flag288 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag288);
+
+      procedure Set_Flag289 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag289);
+
+      procedure Set_Flag290 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag290);
+
+      procedure Set_Flag291 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag291);
+
+      procedure Set_Flag292 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag292);
+
+      procedure Set_Flag293 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag293);
+
+      procedure Set_Flag294 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag294);
+
+      procedure Set_Flag295 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag295);
+
+      procedure Set_Flag296 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag296);
+
+      procedure Set_Flag297 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag297);
+
+      procedure Set_Flag298 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag298);
+
+      procedure Set_Flag299 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag299);
+
+      procedure Set_Flag300 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag300);
+
+      procedure Set_Flag301 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag301);
+
+      procedure Set_Flag302 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag302);
+
+      procedure Set_Flag303 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag303);
+
+      procedure Set_Flag304 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag304);
+
+      procedure Set_Flag305 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag305);
+
+      procedure Set_Flag306 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag306);
+
+      procedure Set_Flag307 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag307);
+
+      procedure Set_Flag308 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag308);
+
+      procedure Set_Flag309 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag309);
+
+      procedure Set_Flag310 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag310);
+
+      procedure Set_Flag311 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag311);
+
+      procedure Set_Flag312 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag312);
+
+      procedure Set_Flag313 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag313);
+
+      procedure Set_Flag314 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag314);
+
+      procedure Set_Flag315 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag315);
+
+      procedure Set_Flag316 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag316);
+
+      procedure Set_Flag317 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag317);
+
       --  The following versions of Set_Noden also set the parent pointer of
       --  the referenced node if it is not Empty.
 
@@ -3224,32 +3639,32 @@ package Atree is
          Flag18 : Boolean;
          --  The eighteen flags for a normal node
 
-         --  The above fields are used as follows in components 2-5 of
+         --  The above fields are used as follows in components 2-6 of
          --  an extended node entry.
 
-         --    In_List              used as  Flag19, Flag40, Flag129, Flag216
-         --    Has_Aspects          used as  Flag20, Flag41, Flag130, Flag217
-         --    Rewrite_Ins          used as  Flag21, Flag42, Flag131, Flag218
-         --    Analyzed             used as  Flag22, Flag43, Flag132, Flag219
-         --    Comes_From_Source    used as  Flag23, Flag44, Flag133, Flag220
-         --    Error_Posted         used as  Flag24, Flag45, Flag134, Flag221
-         --    Flag4                used as  Flag25, Flag46, Flag135, Flag222
-         --    Flag5                used as  Flag26, Flag47, Flag136, Flag223
-         --    Flag6                used as  Flag27, Flag48, Flag137, Flag224
-         --    Flag7                used as  Flag28, Flag49, Flag138, Flag225
-         --    Flag8                used as  Flag29, Flag50, Flag139, Flag226
-         --    Flag9                used as  Flag30, Flag51, Flag140, Flag227
-         --    Flag10               used as  Flag31, Flag52, Flag141, Flag228
-         --    Flag11               used as  Flag32, Flag53, Flag142, Flag229
-         --    Flag12               used as  Flag33, Flag54, Flag143, Flag230
-         --    Flag13               used as  Flag34, Flag55, Flag144, Flag231
-         --    Flag14               used as  Flag35, Flag56, Flag145, Flag232
-         --    Flag15               used as  Flag36, Flag57, Flag146, Flag233
-         --    Flag16               used as  Flag37, Flag58, Flag147, Flag234
-         --    Flag17               used as  Flag38, Flag59, Flag148, Flag235
-         --    Flag18               used as  Flag39, Flag60, Flag149, Flag236
-         --    Pflag1               used as  Flag61, Flag62, Flag150, Flag237
-         --    Pflag2               used as  Flag63, Flag64, Flag151, Flag238
+         --    In_List           used as Flag19,Flag40,Flag129,Flag216,Flag287
+         --    Has_Aspects       used as Flag20,Flag41,Flag130,Flag217,Flag288
+         --    Rewrite_Ins       used as Flag21,Flag42,Flag131,Flag218,Flag289
+         --    Analyzed          used as Flag22,Flag43,Flag132,Flag219,Flag290
+         --    Comes_From_Source used as Flag23,Flag44,Flag133,Flag220,Flag291
+         --    Error_Posted      used as Flag24,Flag45,Flag134,Flag221,Flag292
+         --    Flag4             used as Flag25,Flag46,Flag135,Flag222,Flag293
+         --    Flag5             used as Flag26,Flag47,Flag136,Flag223,Flag294
+         --    Flag6             used as Flag27,Flag48,Flag137,Flag224,Flag295
+         --    Flag7             used as Flag28,Flag49,Flag138,Flag225,Flag296
+         --    Flag8             used as Flag29,Flag50,Flag139,Flag226,Flag297
+         --    Flag9             used as Flag30,Flag51,Flag140,Flag227,Flag298
+         --    Flag10            used as Flag31,Flag52,Flag141,Flag228,Flag299
+         --    Flag11            used as Flag32,Flag53,Flag142,Flag229,Flag300
+         --    Flag12            used as Flag33,Flag54,Flag143,Flag230,Flag301
+         --    Flag13            used as Flag34,Flag55,Flag144,Flag231,Flag302
+         --    Flag14            used as Flag35,Flag56,Flag145,Flag232,Flag303
+         --    Flag15            used as Flag36,Flag57,Flag146,Flag233,Flag304
+         --    Flag16            used as Flag37,Flag58,Flag147,Flag234,Flag305
+         --    Flag17            used as Flag38,Flag59,Flag148,Flag235,Flag306
+         --    Flag18            used as Flag39,Flag60,Flag149,Flag236,Flag307
+         --    Pflag1            used as Flag61,Flag62,Flag150,Flag237,Flag308
+         --    Pflag2            used as Flag63,Flag64,Flag151,Flag238,Flag309
 
          Nkind : Node_Kind;
          --  For a non-extended node, or the initial section of an extended
@@ -3260,6 +3675,7 @@ package Atree is
          --     Third entry:  holds 8 additional flags (Flag65-Flag72)
          --     Fourth entry: holds 8 additional flags (Flag239-246)
          --     Fifth entry:  holds 8 additional flags (Flag247-254)
+         --     Sixth entry:  holds 8 additional flags (Flag310-317)
 
          --  Now finally (on an 32-bit boundary!) comes the variant part
 
@@ -3325,6 +3741,13 @@ package Atree is
             --    Field6-11      Holds Field24-Field29
             --    Field12        Holds Flag184-Flag215
 
+            --  In the sixth component, the extension format as described
+            --  above is used to hold additional general fields and flags
+            --  as follows:
+
+            --    Field6-11      Holds Field30-Field35
+            --    Field12        Holds Flag255-Flag286
+
          end case;
       end record;
 
@@ -3378,10 +3801,10 @@ package Atree is
          Field5            => Empty_List_Or_Node);
 
       --  Default value used to initialize node extensions (i.e. the second
-      --  and third and fourth components of an extended node). Note we are
-      --  cheating a bit here when it comes to Node12, which really holds
-      --  flags an (for the third component), the convention. But it works
-      --  because Empty, False, Convention_Ada, all happen to be all zero bits.
+      --  through sixth components of an extended node). Note we are cheating
+      --  a bit here when it comes to Node12, which really holds flags and (for
+      --  the third component), the convention. But it works because Empty,
+      --  False, Convention_Ada, all happen to be all zero bits.
 
       Default_Node_Extension : constant Node_Record := (
          Is_Extension      => True,

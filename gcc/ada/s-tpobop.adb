@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -379,7 +379,7 @@ package body System.Tasking.Protected_Objects.Operations is
          end if;
 
          STPO.Write_Lock (Entry_Call.Self);
-         pragma Assert (Entry_Call.State >= Was_Abortable);
+         pragma Assert (Entry_Call.State /= Not_Yet_Abortable);
          Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Cancelled);
          STPO.Unlock (Entry_Call.Self);
 

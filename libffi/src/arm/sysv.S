@@ -41,7 +41,7 @@
 #define CNAME(x) x
 #endif
 #ifdef __APPLE__
-#define ENTRY(x) .globl CNAME(x); CNAME(x):
+#define ENTRY(x) .globl _##x; _##x:
 #else
 #define ENTRY(x) .globl CNAME(x); .type CNAME(x),%function; CNAME(x):
 #endif /* __APPLE__ */
@@ -187,7 +187,7 @@ ARM_FUNC_START ffi_call_SYSV
 	@     r1 already set
 
 	@ Call ffi_prep_args(stack, &ecif)
-	bl	ffi_prep_args
+	bl	CNAME(ffi_prep_args)
 
 	@ move first 4 parameters in registers
 	ldmia	sp, {r0-r3}
@@ -334,7 +334,9 @@ ARM_FUNC_START ffi_closure_SYSV
 
 
 /* Below are VFP hard-float ABI call and closure implementations.
-   Add VFP FPU directive here. */
+   Add VFP FPU directive here. This is only compiled into the library
+   under EABI.  */
+#ifdef __ARM_EABI__
 	.fpu	vfp
 
 	@ r0:   fn
@@ -362,7 +364,7 @@ ARM_FUNC_START ffi_call_VFP
 	sub	r2, fp, #64   @ VFP scratch space
 
 	@ Call ffi_prep_args(stack, &ecif, vfp_space)
-	bl	ffi_prep_args
+	bl	CNAME(ffi_prep_args)
 
 	@ Load VFP register args if needed
 	cmp	r0, #0
@@ -444,7 +446,7 @@ ARM_FUNC_START ffi_closure_VFP
 	sub	sp, sp, #72
 	str	sp, [sp, #64]
 	add	r1, sp, #64
-	bl	ffi_closure_SYSV_inner
+	bl	CNAME(ffi_closure_SYSV_inner)
 
 	cmp	r0, #FFI_TYPE_INT
 	beq	.Lretint_vfp
@@ -491,6 +493,7 @@ ARM_FUNC_START ffi_closure_VFP
 .ffi_closure_VFP_end:
 	UNWIND .fnend
         .size    CNAME(ffi_closure_VFP),.ffi_closure_VFP_end-CNAME(ffi_closure_VFP)
+#endif
 
 ENTRY(ffi_arm_trampoline)
 	stmfd sp!, {r0-r3}

@@ -1,6 +1,6 @@
 ;;  Machine description for Sunplus S+CORE
 ;;  Sunplus S+CORE Pipeline Description
-;;  Copyright (C) 2005, 2007, 2010
+;;  Copyright (C) 2005, 2007, 2010, 2011
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Sunnorth.
 

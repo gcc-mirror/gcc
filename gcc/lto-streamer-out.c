@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -1257,6 +1257,26 @@ write_symbol (struct streamer_tree_cache_d *cache,
   lto_output_data_stream (stream, &slot_num, 4);
 }
 
+/* Return true if NODE should appear in the plugin symbol table.  */
+
+bool
+output_symbol_p (symtab_node node)
+{
+  struct cgraph_node *cnode;
+  struct ipa_ref *ref;
+
+  if (!symtab_real_symbol_p (node))
+    return false;
+  /* We keep external functions in symtab for sake of inlining
+     and devirtualization.  We do not want to see them in symbol table as
+     references.  */
+  cnode = dyn_cast <cgraph_node> (node);
+  if (cnode && DECL_EXTERNAL (cnode->symbol.decl))
+    return (cnode->callers
+	    || ipa_ref_list_referring_iterate (&cnode->symbol.ref_list, 0, ref));
+  return true;
+}
+
 
 /* Write an IL symbol table to OB.
    SET and VSET are cgraph/varpool node sets we are outputting.  */
@@ -1285,7 +1305,7 @@ produce_symtab (struct output_block *ob)
     {
       symtab_node node = lsei_node (lsei);
 
-      if (!symtab_real_symbol_p (node) || DECL_EXTERNAL (node->symbol.decl))
+      if (!output_symbol_p (node) || DECL_EXTERNAL (node->symbol.decl))
 	continue;
       write_symbol (cache, &stream, node->symbol.decl, seen, false);
     }
@@ -1294,7 +1314,7 @@ produce_symtab (struct output_block *ob)
     {
       symtab_node node = lsei_node (lsei);
 
-      if (!symtab_real_symbol_p (node) || !DECL_EXTERNAL (node->symbol.decl))
+      if (!output_symbol_p (node) || !DECL_EXTERNAL (node->symbol.decl))
 	continue;
       write_symbol (cache, &stream, node->symbol.decl, seen, false);
     }

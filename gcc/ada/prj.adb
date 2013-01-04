@@ -461,6 +461,11 @@ package body Prj is
          if Iter.Current = No_Source then
             Iter.Language := Iter.Language.Next;
             Language_Changed (Iter);
+
+         elsif not Iter.Locally_Removed
+           and then Iter.Current.Locally_Removed
+         then
+            Next (Iter);
          end if;
       end if;
    end Language_Changed;
@@ -473,7 +478,8 @@ package body Prj is
      (In_Tree           : Project_Tree_Ref;
       Project           : Project_Id := No_Project;
       Language          : Name_Id := No_Name;
-      Encapsulated_Libs : Boolean := True) return Source_Iterator
+      Encapsulated_Libs : Boolean := True;
+      Locally_Removed   : Boolean := True) return Source_Iterator
    is
       Iter : Source_Iterator;
    begin
@@ -484,7 +490,8 @@ package body Prj is
          Language_Name     => Language,
          Language          => No_Language_Index,
          Current           => No_Source,
-         Encapsulated_Libs => Encapsulated_Libs);
+         Encapsulated_Libs => Encapsulated_Libs,
+         Locally_Removed   => Locally_Removed);
 
       if Project /= null then
          while Iter.Project /= null
@@ -521,7 +528,14 @@ package body Prj is
 
    procedure Next (Iter : in out Source_Iterator) is
    begin
-      Iter.Current := Iter.Current.Next_In_Lang;
+      loop
+         Iter.Current := Iter.Current.Next_In_Lang;
+
+         exit when Iter.Locally_Removed
+           or else Iter.Current = No_Source
+           or else not Iter.Current.Locally_Removed;
+      end loop;
+
       if Iter.Current = No_Source then
          Iter.Language := Iter.Language.Next;
          Language_Changed (Iter);
@@ -563,7 +577,7 @@ package body Prj is
            new Ada.Containers.Ordered_Sets (Element_Type => Name_Id);
 
          Seen_Name : Name_Id_Set.Set;
-         --  This set is needed to ensure that we do not haandle the same
+         --  This set is needed to ensure that we do not handle the same
          --  project twice in the context of aggregate libraries.
 
          procedure Recursive_Check

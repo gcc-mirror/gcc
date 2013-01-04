@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,5 +168,8 @@ package Sem_Ch8 is
 
    procedure ws;
    --  Debugging routine for use in gdb: dump all entities on scope stack
+
+   procedure we (S : Entity_Id);
+   --  Debugging routine for use in gdb: dump all entities in given scope
 
 end Sem_Ch8;

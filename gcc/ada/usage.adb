@@ -167,6 +167,11 @@ begin
    Write_Switch_Char ("Dnn");
    Write_Line ("Debug expanded generated code (max line length = nn)");
 
+   --  Line for -gnatea switch
+
+   Write_Switch_Char ("ea");
+   Write_Line ("Delimiter for automatically added switches (internal switch)");
+
    --  Line for -gnateA switch
 
    Write_Switch_Char ("eA");
@@ -197,6 +202,11 @@ begin
    Write_Switch_Char ("ef");
    Write_Line ("Full source path in brief error messages");
 
+   --  Line for -gnateF switch
+
+   Write_Switch_Char ("eF");
+   Write_Line ("Check overflow on predefined Float types");
+
    --  Line for -gnateG switch
 
    Write_Switch_Char ("eG");
@@ -216,6 +226,11 @@ begin
 
    Write_Switch_Char ("em=?");
    Write_Line ("Specify mapping file, e.g. -gnatem=mapping");
+
+   --  Line for -gnateO=?
+
+   Write_Switch_Char ("eO=?");
+   Write_Line ("Specify an object path file (internal switch)");
 
    --  Line for -gnatep switch
 
@@ -241,6 +256,11 @@ begin
 
    Write_Switch_Char ("eV");
    Write_Line ("Validity checks on subprogram parameters");
+
+   --  Line for -gnatez switch
+
+   Write_Switch_Char ("ez");
+   Write_Line ("Delimiter for automatically added switches (internal switch)");
 
    --  Line for -gnatE switch
 
@@ -315,11 +335,6 @@ begin
 
    Write_Switch_Char ("n[?]");
    Write_Line ("Enable pragma Inline (both within and across units, ?=1/2)");
-
-   --  Line for -gnatN switch
-
-   Write_Switch_Char ("N");
-   Write_Line ("Full (frontend) inlining of subprograms");
 
    --  Line for -gnato switch
 
@@ -459,6 +474,16 @@ begin
    Write_Line ("        .C*  turn off warnings for unrepped components");
    Write_Line ("        d    turn on warnings for implicit dereference");
    Write_Line ("        D*   turn off warnings for implicit dereference");
+
+   --  Switches -gnatw.d/w.D not available on VMS
+
+   if not OpenVMS_On_Target then
+      Write_Line
+        ("        .d   turn on tagging of warnings with -gnatw switch");
+      Write_Line
+        ("        .D*  turn off tagging of warnings with -gnatw switch");
+   end if;
+
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
@@ -487,7 +512,7 @@ begin
    Write_Line ("        L*   turn off warnings for missing " &
                                                   "elaboration pragma");
    Write_Line ("        .l   turn on info messages for inherited aspects");
-   Write_Line ("        .L*   turn off info messages for inherited aspects");
+   Write_Line ("        .L*  turn off info messages for inherited aspects");
    Write_Line ("        m+   turn on warnings for variable assigned " &
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &
@@ -526,8 +551,8 @@ begin
    Write_Line ("        .S*  turn off warnings for overridden size clause");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
-   Write_Line ("        .t+  turn on warnings for suspicious contract");
-   Write_Line ("        .T*  turn off warnings for suspicious contract");
+   Write_Line ("        .t*+ turn on warnings for suspicious contract");
+   Write_Line ("        .T   turn off warnings for suspicious contract");
    Write_Line ("        u+   turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
    Write_Line ("        .u   turn on warnings for unordered enumeration");

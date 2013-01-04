@@ -50,6 +50,13 @@ package Erroutc is
    Is_Warning_Msg : Boolean := False;
    --  Set True to indicate if current message is warning message
 
+   Warning_Msg_Char : Character;
+   --  Warning character, valid only if Is_Warning_Msg is True
+   --    ' '      -- ? appeared on its own in message
+   --    '?'      -- ?? appeared in message
+   --    'x'      -- ?x? appeared in message
+   --    'X'      -- ?x? appeared in message (X is upper case of x)
+
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
    --  (i.e. a message whose text starts with the characters "(style)").
@@ -181,6 +188,13 @@ package Erroutc is
 
       Warn : Boolean;
       --  True if warning message (i.e. insertion character ? appeared)
+
+      Warn_Chr : Character;
+      --  Warning character, valid only if Warn is True
+      --    ' '      -- ? appeared on its own in message
+      --    '?'      -- ?? appeared in message
+      --    'x'      -- ?x? appeared in message
+      --    'X'      -- ?x? appeared in message (X is upper case of x)
 
       Style : Boolean;
       --  True if style message (starts with "(style)")

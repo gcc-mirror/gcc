@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +31,14 @@
 
 with System.Storage_Elements;
 with System.Storage_Pools;
+
 package System.Checked_Pools is
 
    type Checked_Pool is abstract
      new System.Storage_Pools.Root_Storage_Pool with private;
    --  Equivalent of storage pools with the addition that Dereference is
    --  called on each implicit or explicit dereference of a pointer which
-   --  has such a storage pool
+   --  has such a storage pool.
 
    procedure Dereference
      (Pool                     : in out Checked_Pool;

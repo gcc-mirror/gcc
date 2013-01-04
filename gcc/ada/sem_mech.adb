@@ -245,7 +245,7 @@ package body Sem_Mech is
 
       if Mech in Descriptor_Codes and then not Is_Formal (Ent) then
          if Is_Record_Type (Etype (Ent)) then
-            Error_Msg_N ("?records cannot be returned by Descriptor", Enod);
+            Error_Msg_N ("??records cannot be returned by Descriptor", Enod);
             return;
          end if;
       end if;

@@ -293,6 +293,7 @@ st_parameter_filepos;
 #define IOPARM_INQUIRE_HAS_PENDING	(1 << 5)
 #define IOPARM_INQUIRE_HAS_SIZE		(1 << 6)
 #define IOPARM_INQUIRE_HAS_ID		(1 << 7)
+#define IOPARM_INQUIRE_HAS_IQSTREAM	(1 << 8)
 
 typedef struct
 {
@@ -326,6 +327,7 @@ typedef struct
   GFC_INTEGER_4 *pending;
   GFC_IO_INT *size;
   GFC_INTEGER_4 *id;
+  CHARACTER1 (iqstream);
 }
 st_parameter_inquire;
 

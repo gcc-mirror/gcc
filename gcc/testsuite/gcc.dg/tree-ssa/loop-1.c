@@ -33,7 +33,7 @@ int xxx(void)
 
 /* { dg-final { scan-tree-dump-times "Added canonical iv to loop 1, 4 iterations" 1 "ivcanon"} } */
 /* { dg-final { cleanup-tree-dump "ivcanon" } } */
-/* { dg-final { scan-tree-dump-times "Unrolled loop 1 completely" 1 "cunroll"} } */
+/* { dg-final { scan-tree-dump-times "Completely unroll loop 4 times" 1 "cunroll"} } */
 /* { dg-final { cleanup-tree-dump "cunroll" } } */
 /* { dg-final { scan-tree-dump-times "foo" 5 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

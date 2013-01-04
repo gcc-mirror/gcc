@@ -439,6 +439,16 @@ lto_symtab_merge_decls_1 (symtab_node first)
 		&& COMPLETE_TYPE_P (TREE_TYPE (e->symbol.decl)))
 	      prevailing = e;
 	}
+      /* For variables prefer the builtin if one is available.  */
+      else if (TREE_CODE (prevailing->symbol.decl) == FUNCTION_DECL)
+	{
+	  for (e = first; e; e = e->symbol.next_sharing_asm_name)
+	    if (DECL_BUILT_IN (e->symbol.decl))
+	      {
+		prevailing = e;
+		break;
+	      }
+	}
     }
 
   symtab_prevail_in_asm_name_hash (prevailing);

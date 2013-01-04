@@ -146,7 +146,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	random.c regex.c rename.c rindex.c				\
 	safe-ctype.c setenv.c setproctitle.c sha1.c sigsetmask.c        \
 	 simple-object.c simple-object-coff.c simple-object-elf.c	\
-	 simple-object-mach-o.c						\
+	 simple-object-mach-o.c simple-object-xcoff.c			\
          snprintf.c sort.c						\
 	 spaces.c splay-tree.c stack-limit.c stpcpy.c stpncpy.c		\
 	 strcasecmp.c strchr.c strdup.c strerror.c strncasecmp.c	\
@@ -183,6 +183,7 @@ REQUIRED_OFILES =							\
 	./safe-ctype.$(objext)						\
 	./simple-object.$(objext) ./simple-object-coff.$(objext)	\
 	./simple-object-elf.$(objext) ./simple-object-mach-o.$(objext)	\
+	./simple-object-xcoff.$(objext)					\
 	./sort.$(objext) ./spaces.$(objext)				\
 	./splay-tree.$(objext) ./stack-limit.$(objext)			\
 	./strerror.$(objext) ./strsignal.$(objext)			\
@@ -1008,6 +1009,14 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object-mach-o.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/simple-object-mach-o.c $(OUTPUT_OPTION)
+
+./simple-object-xcoff.$(objext): $(srcdir)/simple-object-xcoff.c config.h \
+	$(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/simple-object-common.h $(INCDIR)/simple-object.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/simple-object-xcoff.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/simple-object-xcoff.c $(OUTPUT_OPTION)
 
 ./simple-object.$(objext): $(srcdir)/simple-object.c config.h \
 	$(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \

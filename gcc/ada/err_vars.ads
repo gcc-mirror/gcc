@@ -88,6 +88,12 @@ package Err_Vars is
    --  Source_Reference line, then this is initialized to No_Source_File,
    --  to force an initial reference to the real source file name.
 
+   Warning_Doc_Switch : Boolean := False;
+   --  If this is set True, then the ??/?x?/?x? sequences in error messages
+   --  are active (see errout.ads for details). If this switch is False, then
+   --  these sequences are ignored (i.e. simply equivalent to a single ?). The
+   --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
+
    ----------------------------------------
    -- Error Message Insertion Parameters --
    ----------------------------------------
@@ -133,7 +139,9 @@ package Err_Vars is
    --  before any call to Error_Msg_xxx with a < insertion character present.
    --  Setting is irrelevant if no < insertion character is present. Note
    --  that it is not necessary to reset this after using it, since the proper
-   --  procedure is always to set it before issuing such a message.
+   --  procedure is always to set it before issuing such a message. Note that
+   --  the warning documentation tag is always [enabled by default] in the
+   --  case where this flag is True.
 
    Error_Msg_String : String (1 .. 4096);
    Error_Msg_Strlen : Natural;

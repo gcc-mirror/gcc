@@ -5454,7 +5454,8 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2) 
 	      || (CLASS_TYPE_P (type1)
 		  && (t = locate_ctor (type1))
-		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
+		  && (maybe_instantiate_noexcept (t),
+		      TYPE_NOTHROW_P (TREE_TYPE (t)))));
 
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
       type1 = strip_array_types (type1);
@@ -5848,15 +5849,19 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
       member = TREE_OPERAND (t, 0);
       init = unshare_expr (TREE_OPERAND (t, 1));
     }
-  else
+  else if (TREE_CODE (t) == CALL_EXPR)
     {
-      gcc_assert (TREE_CODE (t) == CALL_EXPR);
       member = CALL_EXPR_ARG (t, 0);
       /* We don't use build_cplus_new here because it complains about
 	 abstract bases.  Leaving the call unwrapped means that it has the
 	 wrong type, but cxx_eval_constant_expression doesn't care.  */
       init = unshare_expr (t);
     }
+  else if (TREE_CODE (t) == DECL_EXPR)
+    /* Declaring a temporary, don't add it to the CONSTRUCTOR.  */
+    return true;
+  else
+    gcc_unreachable ();
   if (TREE_CODE (member) == INDIRECT_REF)
     member = TREE_OPERAND (member, 0);
   if (TREE_CODE (member) == NOP_EXPR)
