@@ -1902,6 +1902,8 @@ package body Sem_Ch4 is
          exit when No (A);
       end loop;
 
+      --  This test needs a comment ???
+
       if Nkind (Expression (N)) = N_Null_Statement then
          Set_Etype (N, Standard_Void_Type);
       else

@@ -2962,9 +2962,10 @@ package body Exp_Aggr is
       Node_After : Node_Id)
    is
       Loc          : constant Source_Ptr := Sloc (N);
+      Init_Actions : constant List_Id    := New_List;
       Init_Node    : Node_Id;
       EA           : Node_Id;
-      Init_Actions : constant List_Id := New_List;
+
    begin
       --  Nothing to do if Obj is already frozen, as in this case we known we
       --  won't need to move the initialization statements about later on.
@@ -2974,15 +2975,15 @@ package body Exp_Aggr is
       end if;
 
       Init_Node := N;
-
       while Next (Init_Node) /= Node_After loop
          Append_To (Init_Actions, Remove_Next (Init_Node));
       end loop;
 
       if not Is_Empty_List (Init_Actions) then
-         EA := Make_Expression_With_Actions (Loc,
-                 Actions    => Init_Actions,
-                 Expression => Make_Null_Statement (Loc));
+         EA :=
+           Make_Expression_With_Actions (Loc,
+             Actions    => Init_Actions,
+             Expression => Make_Null_Statement (Loc));
          Insert_Action_After (Init_Node, EA);
          Set_Initialization_Statements (Obj, EA);
       end if;
@@ -5123,6 +5124,7 @@ package body Exp_Aggr is
       if Comes_From_Source (Tmp) then
          declare
             Node_After : constant Node_Id := Next (Parent_Node);
+
          begin
             Insert_Actions_After (Parent_Node, Aggr_Code);
 

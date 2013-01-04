@@ -1114,9 +1114,7 @@ package body Freeze is
                 Attribute_Scalar_Storage_Order);
 
       if Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
-         if Present (Comp)
-              and then Chars (Comp) = Name_uParent
-         then
+         if Present (Comp) and then Chars (Comp) = Name_uParent then
             if Reverse_Storage_Order (Encl_Type)
                  /=
                Reverse_Storage_Order (Comp_Type)
@@ -3358,9 +3356,8 @@ package body Freeze is
                                  Initialization_Statements (E);
                begin
                   if Present (Init_Stmts)
-                       and then Nkind (Init_Stmts) = N_Expression_With_Actions
-                       and then Nkind (Expression (Init_Stmts))
-                         = N_Null_Statement
+                    and then Nkind (Init_Stmts) = N_Expression_With_Actions
+                    and then Nkind (Expression (Init_Stmts)) = N_Null_Statement
                   then
                      Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
                      Remove (Init_Stmts);

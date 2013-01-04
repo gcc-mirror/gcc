@@ -3281,7 +3281,7 @@ package body Sem_Warn is
    begin
       return
         (Warn_On_Modified_Unread and then Is_Only_Out_Parameter (E))
-           or else Warn_On_All_Unread_Out_Parameters;
+          or else Warn_On_All_Unread_Out_Parameters;
    end Warn_On_Modified_As_Out_Parameter;
 
    ---------------------------------
@@ -3293,7 +3293,7 @@ package body Sem_Warn is
       Form1, Form2 : Entity_Id;
 
       function Is_Covered_Formal (Formal : Node_Id) return Boolean;
-      --  Return True if Formal is covered by the rule.
+      --  Return True if Formal is covered by the rule
 
       function Refer_Same_Object (Act1, Act2 : Node_Id) return Boolean;
       --  Two names are known to refer to the same object if the two names
@@ -3321,11 +3321,10 @@ package body Sem_Warn is
       function Is_Covered_Formal (Formal : Node_Id) return Boolean is
       begin
          return
-           Ekind_In (Formal, E_Out_Parameter,
-                             E_In_Out_Parameter)
+           Ekind_In (Formal, E_Out_Parameter, E_In_Out_Parameter)
              and then (Is_Elementary_Type (Etype (Formal))
-                         or else Is_Record_Type (Etype (Formal))
-                         or else Is_Array_Type (Etype (Formal)));
+                        or else Is_Record_Type (Etype (Formal))
+                        or else Is_Array_Type (Etype (Formal)));
       end Is_Covered_Formal;
 
    begin
@@ -3347,13 +3346,12 @@ package body Sem_Warn is
       --  there is no other name among the other parameters of mode in out or
       --  out to C that is known to denote the same object (RM 6.4.1(6.15/3))
 
-      --  Compiling under -gnatw.i we also report warnings on overlapping
-      --  parameters that are record types or array types.
+      --  If appropriate warning switch is set, we also report warnings on
+      --  overlapping parameters that are record types or array types.
 
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
       while Present (Form1) and then Present (Act1) loop
-
          if Is_Covered_Formal (Form1) then
             Form2 := First_Formal (Subp);
             Act2  := First_Actual (N);
@@ -3376,25 +3374,24 @@ package body Sem_Warn is
                   elsif Nkind (Act2) = N_Function_Call then
                      null;
 
-                  --  If type is not by-copy we can assume that the aliasing is
-                  --  intended.
+                  --  If type is not by-copy, assume that aliasing is intended
 
                   elsif
                     Present (Underlying_Type (Etype (Form1)))
                       and then
                         (Is_By_Reference_Type (Underlying_Type (Etype (Form1)))
                            or else
-                             Convention (Underlying_Type (Etype (Form1)))
-                               = Convention_Ada_Pass_By_Reference)
+                             Convention (Underlying_Type (Etype (Form1))) =
+                               Convention_Ada_Pass_By_Reference)
                   then
                      null;
 
                   --  Under Ada 2012 we only report warnings on overlapping
-                  --  arrays and record types if compiling under -gnatw.i
+                  --  arrays and record types if switch is set.
 
                   elsif Ada_Version >= Ada_2012
-                     and then not Is_Elementary_Type (Etype (Form1))
-                     and then not Warn_On_Overlap
+                    and then not Is_Elementary_Type (Etype (Form1))
+                    and then not Warn_On_Overlap
                   then
                      null;
 
@@ -3449,7 +3446,7 @@ package body Sem_Warn is
                                  & "actual for&?I?", Act1, Form);
 
                            else
-                              --  For greater clarity, give name of formal.
+                              --  For greater clarity, give name of formal
 
                               Error_Msg_Node_2 := Form;
                               Error_Msg_FE
@@ -3460,8 +3457,8 @@ package body Sem_Warn is
                         else
                            Error_Msg_Node_2 := Form;
                            Error_Msg_FE
-                             ("writable actual for & overlaps with"
-                               & " actual for&?I?", Act1, Form1);
+                             ("writable actual for & overlaps with "
+                               & "actual for&?I?", Act1, Form1);
                         end if;
                      end;
                   end if;
