@@ -3041,6 +3041,16 @@ aarch64_const_double_zero_rtx_p (rtx x)
   return REAL_VALUES_EQUAL (r, dconst0);
 }
 
+/* Return the fixed registers used for condition codes.  */
+
+static bool
+aarch64_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
+{
+  *p1 = CC_REGNUM;
+  *p2 = INVALID_REGNUM;
+  return true;
+}
+
 enum machine_mode
 aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 {
@@ -7550,6 +7560,9 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 #undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
   aarch64_vectorize_vec_perm_const_ok
+
+
+#define TARGET_FIXED_CONDITION_CODE_REGS aarch64_fixed_condition_code_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

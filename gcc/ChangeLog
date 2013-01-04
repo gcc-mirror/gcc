@@ -1,3 +1,9 @@
+2013-01-04  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_fixed_condition_code_regs):
+	New function.
+	(TARGET_FIXED_CONDITION_CODE_REGS): Define.
+
 2013-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_legitimize_address): Call convert_to_mode
