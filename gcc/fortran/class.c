@@ -1,5 +1,5 @@
 /* Implementation of Fortran 2003 Polymorphism.
-   Copyright (C) 2009, 2010, 2011, 2012
+   Copyright (C) 2009, 2010, 2011, 2012, 2013
    Free Software Foundation, Inc.
    Contributed by Paul Richard Thomas <pault@gcc.gnu.org>
    and Janus Weil <janus@gcc.gnu.org>
@@ -414,7 +414,7 @@ gfc_class_null_initializer (gfc_typespec *ts, gfc_expr *init_expr)
       && ts->u.derived->components->ts.u.derived->attr.unlimited_polymorphic;
 
   if (is_unlimited_polymorphic && init_expr)
-    vtab = gfc_find_intrinsic_vtab (&(init_expr->ts));
+    vtab = gfc_find_intrinsic_vtab (&ts->u.derived->components->ts);
   else
     vtab = gfc_find_derived_vtab (ts->u.derived);
 
@@ -2224,9 +2224,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
-	      /* Avoid segfaults because due to character length.   */
-	      c->ts.type = ts->type == BT_CHARACTER ? BT_VOID : ts->type;
-	      c->ts.kind = ts->kind;
+	      c->ts.type = BT_VOID;
 	      c->initializer = gfc_get_null_expr (NULL);
 
 	      /* Add component _def_init.  */
@@ -2234,9 +2232,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 		goto cleanup;
 	      c->attr.pointer = 1;
 	      c->attr.access = ACCESS_PRIVATE;
-	      /* Avoid segfaults due to missing character length.   */
-	      c->ts.type = ts->type == BT_CHARACTER ? BT_VOID : ts->type;
-	      c->ts.kind = ts->kind;
+	      c->ts.type = BT_VOID;
 	      c->initializer = gfc_get_null_expr (NULL);
 
 	      /* Add component _copy.  */
