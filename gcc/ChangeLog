@@ -2,7 +2,8 @@
 
 	PR target/53789
 	* config/pa/pa.md (movsi): Revert previous change.
-	* pa.c (pa_legitimate_constant_p): Reject all TLS symbol references.
+	* config/pa/pa.c (pa_legitimate_constant_p): Reject all TLS symbol
+	references.
 
 2013-01-03  Richard Henderson  <rth@redhat.com>
 
