@@ -1,5 +1,5 @@
 /* Memory and optimization statistics helpers.
-   Copyright (C) 2004, 2007, 2008
+   Copyright (C) 2004, 2007, 2008, 2012
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 

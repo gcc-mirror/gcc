@@ -1,5 +1,5 @@
 /* dwarf2out.h - Various declarations for functions found in dwarf2out.c
-   Copyright (C) 1998, 1999, 2000, 2003, 2007, 2010, 2011
+   Copyright (C) 1998, 1999, 2000, 2003, 2007, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory, header.
-   Copyright (C) 2007, 2008, 2010
+   Copyright (C) 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 

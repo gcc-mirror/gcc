@@ -1,7 +1,7 @@
 /* Routines for restoring various data types from a file stream.  This deals
    with various data types like strings, integers, enums, etc.
 
-   Copyright 2011 Free Software Foundation, Inc.
+   Copyright 2011, 2012 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.

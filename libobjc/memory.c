@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime Memory allocation functions
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 2002, 2009, 2010
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 2002, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 

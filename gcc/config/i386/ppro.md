@@ -1,5 +1,6 @@
 ;; Scheduling for the Intel P6 family of processors
-;; Copyright (C) 2004, 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2007, 2008, 2010, 2012
+;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

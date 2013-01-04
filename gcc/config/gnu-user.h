@@ -2,7 +2,7 @@
    (glibc-based) userspace or other userspace with libc derived from
    glibc (e.g. uClibc) or for which similar specs are appropriate.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2003, 2004, 2005, 2006,
-   2007, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2007, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 

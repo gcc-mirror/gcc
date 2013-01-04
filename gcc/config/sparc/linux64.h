@@ -1,6 +1,6 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
    Copyright 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011 Free Software Foundation, Inc.
+   2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GCC.

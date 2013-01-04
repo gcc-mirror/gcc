@@ -3,7 +3,8 @@
 
    Test to see if a particular fix should be applied to a header file.
 
-   Copyright (C) 1997, 1998, 1999, 2000, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2009, 2012
+   Free Software Foundation, Inc.
 
 = = = = = = = = = = = = = = = = = = = = = = = = =
 

@@ -1,5 +1,5 @@
 /* Language hooks common to C++ and ObjC++ front ends.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 

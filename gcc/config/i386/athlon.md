@@ -1,5 +1,5 @@
 ;; Copyright (C) 2002, 2003, 2004, 2005, 2006,
-;; 2007 Free Software Foundation, Inc.
+;; 2007, 2011, 2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

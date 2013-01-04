@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime selector related functions
-   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2004, 2009, 2010
+   Copyright (C) 1993, 1995, 1996, 1997, 2002, 2004, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 

@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2012
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 

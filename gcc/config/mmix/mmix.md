@@ -1,5 +1,5 @@
 ;; GCC machine description for MMIX
-;; Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010
+;; Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010, 2011, 2012
 ;; Free Software Foundation, Inc.
 ;; Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
