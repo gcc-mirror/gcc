@@ -1,5 +1,14 @@
 2013-01-04  Tobias Burnus  <burnus@net-b.de>
 
+	* trans.c (gfc_build_final_call): New function.
+	* trans.h (gfc_build_final_call, gfc_conv_scalar_to_descriptor):
+	New function prototypes.
+	* trans-expr.c (gfc_conv_scalar_to_descriptor): Renamed from
+	conv_scalar_to_descriptor, removed static attribute.
+	(gfc_conv_procedure_call): Honor renaming.
+
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
 	* intrinsic.c (add_functions): New internal intrinsic
 	function GFC_PREFIX ("stride").
 	* gfortran.h (gfc_isym_id): Add GFC_ISYM_STRIDE.
