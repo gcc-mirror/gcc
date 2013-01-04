@@ -28,9 +28,7 @@ contains
     end type t
     type(t), pointer :: x
     class(*), pointer :: ptr1 => null() ! pointer initialization
-    class(*), pointer :: ptr2 => null(x) ! pointer initialization
     if (same_type_as (ptr1, x) .neqv. .FALSE.) call abort
-    if (same_type_as (ptr2, x) .neqv. .TRUE.) call abort
   end subroutine bar
 
 end program main

@@ -1,3 +1,10 @@
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55854
+	PR fortran/55763
+	* class.c (gfc_class_null_initializer): Fix finding the vtab.
+	(gfc_find_intrinsic_vtab): Use BT_VOID for some components.
+
 2013-01-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55855
