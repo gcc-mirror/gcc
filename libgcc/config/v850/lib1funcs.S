@@ -1,27 +1,27 @@
 /* libgcc routines for NEC V850.
-   Copyright (C) 1996, 1997, 2002, 2005, 2009, 2010
+   Copyright (C) 1996, 1997, 2002, 2005, 2009, 2010, 2013
    Free Software Foundation, Inc.
 
-This file is part of GCC.
+   This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 3, or (at your option) any
-later version.
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
 
-This file is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+   This file is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-Under Section 7 of GPL version 3, you are granted additional
-permissions described in the GCC Runtime Library Exception, version
-3.1, as published by the Free Software Foundation.
+   Under Section 7 of GPL version 3, you are granted additional
+   permissions described in the GCC Runtime Library Exception, version
+   3.1, as published by the Free Software Foundation.
 
-You should have received a copy of the GNU General Public License and
-a copy of the GCC Runtime Library Exception along with this program;
-see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-<http://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU General Public License and
+   a copy of the GCC Runtime Library Exception along with this program;
+   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #ifdef L_mulsi3
 	.text
@@ -1764,6 +1764,7 @@ __restore_all_interrupt:
 	.size	__restore_all_interrupt,.-__restore_all_interrupt
 #endif /* L_save_all_interrupt */
 	
+#if defined __V850_CALLT__
 #if defined(__v850e__) || defined(__v850e1__) || defined(__v850e2__) || defined(__v850e2v3__)
 #ifdef	L_callt_save_r2_r29
 	/* Put these functions into the call table area.  */
@@ -2146,6 +2147,7 @@ __callt_return_r31c:	.short ctoff(.L_callt_return_r31c)
 #endif
 
 #endif /* __v850e__ */
+#endif /* __V850_CALLT__ */
 
 /*  libgcc2 routines for NEC V850.  */
 /*  Double Integer Arithmetical Operation.  */
@@ -2327,4 +2329,3 @@ ___muldi3:
 #endif /* defined(__v850e__) */
 	.size ___muldi3, . - ___muldi3
 #endif
-	
