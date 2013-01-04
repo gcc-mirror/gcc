@@ -1,3 +1,7 @@
+2013-01-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb, sem_ch3.adb: Minor reformatting.
+
 2013-01-04  Robert Dewar  <dewar@adacore.com>
 
 	* table.adb: Minor reformatting.

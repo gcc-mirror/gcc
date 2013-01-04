@@ -1142,7 +1142,7 @@ package body Sem_Ch3 is
                      else
                         Error_Msg_NE
                          ("illegal use of incomplete type&",
-                            Result_Definition (T_Def), Typ);
+                          Result_Definition (T_Def), Typ);
                      end if;
 
                   elsif Ekind (Current_Scope) = E_Package
@@ -1406,8 +1406,7 @@ package body Sem_Ch3 is
          Offset : Entity_Id;
 
       begin
-         pragma Assert (Is_Tagged_Type (Iface)
-           and then Is_Interface (Iface));
+         pragma Assert (Is_Tagged_Type (Iface) and then Is_Interface (Iface));
 
          --  This is a reasonable place to propagate predicates
 
@@ -1455,9 +1454,7 @@ package body Sem_Ch3 is
          --  For this purpose we add a supplementary component just after the
          --  field that contains the tag associated with each secondary DT.
 
-         if Typ /= Etype (Typ)
-           and then Has_Discriminants (Etype (Typ))
-         then
+         if Typ /= Etype (Typ) and then Has_Discriminants (Etype (Typ)) then
             Def :=
               Make_Component_Definition (Loc,
                 Subtype_Indication =>
@@ -1789,18 +1786,14 @@ package body Sem_Ch3 is
          --  so is the current type
 
          elsif Is_Limited_Record (R)
-           and then
-             (not Is_Interface (R)
-               or else not Is_Limited_Interface (R))
+           and then (not Is_Interface (R) or else not Is_Limited_Interface (R))
          then
             return True;
 
          --  Else the type may have a limited interface progenitor, but a
          --  limited record parent.
 
-         elsif R /= P
-           and then Is_Limited_Record (P)
-         then
+         elsif R /= P and then Is_Limited_Record (P) then
             return True;
 
          else
@@ -1969,9 +1962,7 @@ package body Sem_Ch3 is
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks.
 
-      if Ada_Version >= Ada_2005
-        and then Can_Never_Be_Null (T)
-      then
+      if Ada_Version >= Ada_2005 and then Can_Never_Be_Null (T) then
          Null_Exclusion_Static_Checks (N);
       end if;
 
@@ -2239,8 +2230,8 @@ package body Sem_Ch3 is
       Is_Remote : constant Boolean :=
                     (Is_Remote_Types (Current_Scope)
                        or else Is_Remote_Call_Interface (Current_Scope))
-                    and then not (In_Private_Part (Current_Scope)
-                                    or else In_Package_Body (Current_Scope));
+                      and then not (In_Private_Part (Current_Scope)
+                                     or else In_Package_Body (Current_Scope));
 
       procedure Check_Ops_From_Incomplete_Type;
       --  If there is a tagged incomplete partial view of the type, traverse
@@ -2646,8 +2637,8 @@ package body Sem_Ch3 is
 
       if VM_Target = No_VM
         and then (Is_Task_Interface (T)
-                    or else Is_Protected_Interface (T)
-                    or else Is_Synchronized_Interface (T))
+                   or else Is_Protected_Interface (T)
+                   or else Is_Synchronized_Interface (T))
         and then not RTE_Available (RE_Select_Specific_Data)
       then
          Error_Msg_CRT ("synchronized interfaces", T);
@@ -2721,8 +2712,7 @@ package body Sem_Ch3 is
 
          Get_First_Interp (E, Index, It);
          while Present (It.Typ) loop
-            if (Is_Integer_Type (It.Typ)
-                 or else Is_Real_Type (It.Typ))
+            if (Is_Integer_Type (It.Typ) or else Is_Real_Type (It.Typ))
               and then (Scope (Base_Type (It.Typ))) = Standard_Standard
             then
                if T = Any_Type then
@@ -2963,9 +2953,9 @@ package body Sem_Ch3 is
 
          if Nkind (Object_Definition (N)) = N_Access_Definition
            and then Present
-             (Access_To_Subprogram_Definition (Object_Definition (N)))
+                      (Access_To_Subprogram_Definition (Object_Definition (N)))
            and then Protected_Present
-             (Access_To_Subprogram_Definition (Object_Definition (N)))
+                      (Access_To_Subprogram_Definition (Object_Definition (N)))
          then
             T := Replace_Anonymous_Access_To_Protected_Subprogram (N);
          end if;
@@ -3012,9 +3002,8 @@ package body Sem_Ch3 is
       --  A deferred constant can appear in a package body if its completion
       --  is by means of an interface pragma.
 
-      if Constant_Present (N)
-        and then No (E)
-      then
+      if Constant_Present (N) and then No (E) then
+
          --  A deferred constant may appear in the declarative part of the
          --  following constructs:
 
@@ -3084,9 +3073,7 @@ package body Sem_Ch3 is
          --  AI05-0303: the AI is in fact a binding interpretation, and thus
          --  applies to the '95 version of the language as well.
 
-         if Has_Interrupt_Handler (T)
-           and then Ada_Version < Ada_95
-         then
+         if Has_Interrupt_Handler (T) and then Ada_Version < Ada_95 then
             Error_Msg_N
               ("interrupt object can only be declared at library level", Id);
          end if;
