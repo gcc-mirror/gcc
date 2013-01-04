@@ -1,3 +1,8 @@
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (gfc_find_intrinsic_vtab): Add _final
+	component.
+
 2013-01-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55172

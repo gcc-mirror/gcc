@@ -1682,7 +1682,7 @@ gfc_match_null (gfc_expr **result)
       locus old_loc;
       char name[GFC_MAX_SYMBOL_LEN + 1];
 
-      if ((m2 = gfc_match (" null (", name)) != MATCH_YES)
+      if ((m2 = gfc_match (" null (")) != MATCH_YES)
 	return m2;
 
       old_loc = gfc_current_locus;

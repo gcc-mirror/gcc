@@ -597,7 +597,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       fclass->refs++;
       fclass->ts.type = BT_UNKNOWN;
       if (!ts->u.derived->attr.unlimited_polymorphic)
-      fclass->attr.abstract = ts->u.derived->attr.abstract;
+	fclass->attr.abstract = ts->u.derived->attr.abstract;
       fclass->f2k_derived = gfc_get_namespace (NULL, 0);
       if (gfc_add_flavor (&fclass->attr, FL_DERIVED,
 	  NULL, &gfc_current_locus) == FAILURE)
@@ -2306,6 +2306,15 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      /* Set initializer.  */
 	      c->initializer = gfc_lval_expr_from_sym (copy);
 	      c->ts.interface = copy;
+
+	      /* Add component _final.  */
+	      if (gfc_add_component (vtype, "_final", &c) == FAILURE)
+		goto cleanup;
+	      c->attr.proc_pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->tb = XCNEW (gfc_typebound_proc);
+	      c->tb->ppc = 1;
+	      c->initializer = gfc_get_null_expr (NULL);
 	    }
 	  vtab->ts.u.derived = vtype;
 	  vtab->value = gfc_default_initializer (&vtab->ts);
