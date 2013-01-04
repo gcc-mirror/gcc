@@ -2903,11 +2903,25 @@ package body Sem_Ch13 is
                   --  before its definition.
 
                   declare
-                     Init_Call : constant Node_Id := Find_Init_Call (U_Ent, N);
+                     Init_Call : constant Node_Id :=
+                                   Remove_Init_Call (U_Ent, N);
                   begin
                      if Present (Init_Call) then
-                        Remove (Init_Call);
-                        Append_Freeze_Action (U_Ent, Init_Call);
+
+                        --  If the init call is an expression with actions with
+                        --  null expression, just extract the actions.
+
+                        if Nkind (Init_Call) = N_Expression_With_Actions
+                             and then Nkind (Expression (Init_Call))
+                               = N_Null_Statement
+                        then
+                           Append_Freeze_Actions (U_Ent, Actions (Init_Call));
+
+                        --  General case: move Init_Call to freeze actions
+
+                        else
+                           Append_Freeze_Action (U_Ent, Init_Call);
+                        end if;
                      end if;
                   end;
 

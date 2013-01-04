@@ -1,3 +1,44 @@
+2013-01-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads: Minor documentation update.
+
+2013-01-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb, einfo.adb (Analyze_Object_Declaration): Do not set Ekind
+	before resolving initialization expression.
+
+2013-01-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Generate_Index_Checks): Delay the generation of
+	the check for an indexed component where the prefix mentions
+	Loop_Entry until the attribute has been properly expanded.
+	* exp_ch5.adb (Expand_Loop_Entry_Attributes): Perform minor
+	decoration of the constant that captures the value of Loop_Entry's
+	prefix at the entry point into a loop.	Generate index checks
+	for an attribute reference that has been transformed into an
+	indexed component.
+
+2013-01-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_prag.adb, exp_util.adb, exp_util.ads, freeze.adb, exp_aggr.adb,
+	sem_ch13.adb (Exp_Aggr.Collect_Initialization_Statements): Nothing to
+	do if Obj is already frozen.
+	(Exp_Util.Find_Init_Call): Rename to...
+	(Exp_Util.Remove_Init_Call): New subprogram, renamed from
+	Find_Init_Call.  Remove the initialization call from the enclosing
+	list if found, and if it is from an Initialization_Statements
+	attribute, reset it.
+	(Exp_Util.Append_Freeze_Action): Minor code reorganization.
+	(Exp_Util.Append_Freeze_Actions): Ensure a freeze node has been
+	allocated (as is already done in Append_Freeze_Action).
+	(Freeze.Freeze_Entity): For an object with captured
+	Initialization_Statements and non-delayed freezeing, unwrap the
+	initialization statements and insert and them directly in the
+	enclosing list.
+	(Sem_Ch13.Check_Address_Clause): For an object
+	with Initialization_Statements and an address clause, unwrap the
+	initialization statements when moving them to the freeze actions.
+
 2013-01-03  Pascal Obry  <obry@adacore.com>
 
 	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add package remote and

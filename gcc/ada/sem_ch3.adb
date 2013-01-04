@@ -3171,14 +3171,9 @@ package body Sem_Ch3 is
             Set_Has_Completion (Id);
          end if;
 
-         --  Set kind (expansion of E may need it) and type now, and resolve.
-         --  Type might be overridden later on.
-
-         if Constant_Present (N) then
-            Set_Ekind (Id, E_Constant);
-         else
-            Set_Ekind (Id, E_Variable);
-         end if;
+         --  Set type and resolve (type may be overridden later on). Note:
+         --  Ekind (Id) must still be E_Void at this point so that incorrect
+         --  early usage within E is properly diagnosed.
 
          Set_Etype (Id, T);
          Resolve (E, T);
@@ -3520,12 +3515,11 @@ package body Sem_Ch3 is
 
       Set_Never_Set_In_Source (Id, True);
 
-      --  Now establish the proper kind (if not already set) and type of the
-      --  object.
+      --  Now establish the proper kind and type of the object
 
       if Constant_Present (N) then
+         Set_Ekind            (Id, E_Constant);
          Set_Is_True_Constant (Id, True);
-         Set_Ekind (Id, E_Constant);
 
       else
          Set_Ekind (Id, E_Variable);

@@ -366,10 +366,11 @@ package body Exp_Util is
       Fnode := Freeze_Node (T);
 
       if No (Actions (Fnode)) then
-         Set_Actions (Fnode, New_List);
+         Set_Actions (Fnode, New_List (N));
+      else
+         Append (N, Actions (Fnode));
       end if;
 
-      Append (N, Actions (Fnode));
    end Append_Freeze_Action;
 
    ---------------------------
@@ -377,18 +378,20 @@ package body Exp_Util is
    ---------------------------
 
    procedure Append_Freeze_Actions (T : Entity_Id; L : List_Id) is
-      Fnode : constant Node_Id := Freeze_Node (T);
+      Fnode : Node_Id;
 
    begin
       if No (L) then
          return;
+      end if;
 
+      Ensure_Freeze_Node (T);
+      Fnode := Freeze_Node (T);
+
+      if No (Actions (Fnode)) then
+         Set_Actions (Fnode, L);
       else
-         if No (Actions (Fnode)) then
-            Set_Actions (Fnode, L);
-         else
-            Append_List (L, Actions (Fnode));
-         end if;
+         Append_List (L, Actions (Fnode));
       end if;
    end Append_Freeze_Actions;
 
@@ -2159,101 +2162,6 @@ package body Exp_Util is
            Make_Subtype_From_Expr (Exp, Unc_Type));
       end if;
    end Expand_Subtype_From_Expr;
-
-   --------------------
-   -- Find_Init_Call --
-   --------------------
-
-   function Find_Init_Call
-     (Var        : Entity_Id;
-      Rep_Clause : Node_Id) return Node_Id
-   is
-      Par : constant Node_Id   := Parent (Var);
-      Typ : constant Entity_Id := Etype (Var);
-
-      Init_Proc : Entity_Id;
-      --  Initialization procedure for Typ
-
-      function Find_Init_Call_In_List (From : Node_Id) return Node_Id;
-      --  Look for init call for Var starting at From and scanning the
-      --  enclosing list until Rep_Clause or the end of the list is reached.
-
-      ----------------------------
-      -- Find_Init_Call_In_List --
-      ----------------------------
-
-      function Find_Init_Call_In_List (From : Node_Id) return Node_Id is
-         Init_Call : Node_Id;
-      begin
-         Init_Call := From;
-
-         while Present (Init_Call) and then Init_Call /= Rep_Clause loop
-            if Nkind (Init_Call) = N_Procedure_Call_Statement
-              and then Is_Entity_Name (Name (Init_Call))
-              and then Entity (Name (Init_Call)) = Init_Proc
-            then
-               return Init_Call;
-            end if;
-
-            Next (Init_Call);
-         end loop;
-
-         return Empty;
-      end Find_Init_Call_In_List;
-
-      Init_Call : Node_Id;
-
-   --  Start of processing for Find_Init_Call
-
-   begin
-      if Present (Initialization_Statements (Var)) then
-         return Initialization_Statements (Var);
-
-      elsif not Has_Non_Null_Base_Init_Proc (Typ) then
-
-         --  No init proc for the type, so obviously no call to be found
-
-         return Empty;
-      end if;
-
-      --  We might be able to handle other cases below by just properly setting
-      --  Initialization_Statements at the point where the init proc call is
-      --  generated???
-
-      Init_Proc := Base_Init_Proc (Typ);
-
-      --  First scan the list containing the declaration of Var
-
-      Init_Call := Find_Init_Call_In_List (From => Next (Par));
-
-      --  If not found, also look on Var's freeze actions list, if any, since
-      --  the init call may have been moved there (case of an address clause
-      --  applying to Var).
-
-      if No (Init_Call) and then Present (Freeze_Node (Var)) then
-         Init_Call :=
-           Find_Init_Call_In_List (First (Actions (Freeze_Node (Var))));
-      end if;
-
-      --  If the initialization call has actuals that use the secondary stack,
-      --  the call may have been wrapped into a temporary block, in which case
-      --  the block itself has to be removed.
-
-      if No (Init_Call) and then Nkind (Next (Par)) = N_Block_Statement then
-         declare
-            Blk : constant Node_Id := Next (Par);
-         begin
-            if Present
-                 (Find_Init_Call_In_List
-                   (First (Statements (Handled_Statement_Sequence (Blk)))))
-            then
-               Init_Call := Blk;
-            end if;
-         end;
-      end if;
-
-      return Init_Call;
-   end Find_Init_Call;
 
    ------------------------
    -- Find_Interface_ADT --
@@ -6294,6 +6202,106 @@ package body Exp_Util is
             null;
       end case;
    end Process_Statements_For_Controlled_Objects;
+
+   ----------------------
+   -- Remove_Init_Call --
+   ----------------------
+
+   function Remove_Init_Call
+     (Var        : Entity_Id;
+      Rep_Clause : Node_Id) return Node_Id
+   is
+      Par : constant Node_Id   := Parent (Var);
+      Typ : constant Entity_Id := Etype (Var);
+
+      Init_Proc : Entity_Id;
+      --  Initialization procedure for Typ
+
+      function Find_Init_Call_In_List (From : Node_Id) return Node_Id;
+      --  Look for init call for Var starting at From and scanning the
+      --  enclosing list until Rep_Clause or the end of the list is reached.
+
+      ----------------------------
+      -- Find_Init_Call_In_List --
+      ----------------------------
+
+      function Find_Init_Call_In_List (From : Node_Id) return Node_Id is
+         Init_Call : Node_Id;
+      begin
+         Init_Call := From;
+
+         while Present (Init_Call) and then Init_Call /= Rep_Clause loop
+            if Nkind (Init_Call) = N_Procedure_Call_Statement
+              and then Is_Entity_Name (Name (Init_Call))
+              and then Entity (Name (Init_Call)) = Init_Proc
+            then
+               return Init_Call;
+            end if;
+
+            Next (Init_Call);
+         end loop;
+
+         return Empty;
+      end Find_Init_Call_In_List;
+
+      Init_Call : Node_Id;
+
+   --  Start of processing for Find_Init_Call
+
+   begin
+      if Present (Initialization_Statements (Var)) then
+         Init_Call := Initialization_Statements (Var);
+         Set_Initialization_Statements (Var, Empty);
+
+      elsif not Has_Non_Null_Base_Init_Proc (Typ) then
+
+         --  No init proc for the type, so obviously no call to be found
+
+         return Empty;
+
+      else
+         --  We might be able to handle other cases below by just properly
+         --  setting Initialization_Statements at the point where the init proc
+         --  call is generated???
+
+         Init_Proc := Base_Init_Proc (Typ);
+
+         --  First scan the list containing the declaration of Var
+
+         Init_Call := Find_Init_Call_In_List (From => Next (Par));
+
+         --  If not found, also look on Var's freeze actions list, if any,
+         --  since the init call may have been moved there (case of an address
+         --  clause applying to Var).
+
+         if No (Init_Call) and then Present (Freeze_Node (Var)) then
+            Init_Call :=
+              Find_Init_Call_In_List (First (Actions (Freeze_Node (Var))));
+         end if;
+
+         --  If the initialization call has actuals that use the secondary
+         --  stack, the call may have been wrapped into a temporary block, in
+         --  which case the block itself has to be removed.
+
+         if No (Init_Call) and then Nkind (Next (Par)) = N_Block_Statement then
+            declare
+               Blk : constant Node_Id := Next (Par);
+            begin
+               if Present
+                    (Find_Init_Call_In_List
+                      (First (Statements (Handled_Statement_Sequence (Blk)))))
+               then
+                  Init_Call := Blk;
+               end if;
+            end;
+         end if;
+      end if;
+
+      if Present (Init_Call) then
+         Remove (Init_Call);
+      end if;
+      return Init_Call;
+   end Remove_Init_Call;
 
    -------------------------
    -- Remove_Side_Effects --
