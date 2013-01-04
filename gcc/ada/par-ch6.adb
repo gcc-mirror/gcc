@@ -592,15 +592,26 @@ package body Ch6 is
          elsif Aspect_Specifications_Present then
             goto Subprogram_Declaration;
 
-         --  Here we have a missing IS or missing semicolon, we always guess
-         --  a missing semicolon, since we are pretty good at fixing up a
-         --  semicolon which should really be an IS
+         --  Here we have a missing IS or missing semicolon
 
          else
-            Error_Msg_AP -- CODEFIX
-              ("|missing "";""");
-            SIS_Missing_Semicolon_Message := Get_Msg_Id;
-            goto Subprogram_Declaration;
+            --  If the next token is a left paren at the start of a line, then
+            --  this is almost certainly the start of the expression for an
+            --  expression function, so in this case guess a missing IS.
+
+            if Token = Tok_Left_Paren and then Token_Is_At_Start_Of_Line then
+               Error_Msg_AP -- CODEFIX
+                 ("missing IS");
+
+            --  In all other cases, we guess a missing semicolon, since we are
+            --  good at fixing up a semicolon which should really be an IS.
+
+            else
+               Error_Msg_AP -- CODEFIX
+                 ("|missing "";""");
+               SIS_Missing_Semicolon_Message := Get_Msg_Id;
+               goto Subprogram_Declaration;
+            end if;
          end if;
       end if;
 

@@ -53,10 +53,18 @@ package body Warnsw is
             Warn_On_Unrepped_Components         := False;
 
          when 'd' =>
-            Warning_Doc_Switch                     := True;
+            if Open_VMS_On_Target then
+               return False;
+            end if;
+
+            Warning_Doc_Switch                  := True;
 
          when 'D' =>
-            Warning_Doc_Switch                     := False;
+            if Open_VMS_On_Target then
+               return False;
+            end if;
+
+            Warning_Doc_Switch                  := False;
 
          when 'e' =>
             Address_Clause_Overlay_Warnings     := True;
@@ -68,6 +76,7 @@ package body Warnsw is
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
             List_Inherited_Aspects              := True;
+            Warning_Doc_Switch                  := True;
             Warn_On_Ada_2005_Compatibility      := True;
             Warn_On_Ada_2012_Compatibility      := True;
             Warn_On_All_Unread_Out_Parameters   := True;
@@ -217,6 +226,7 @@ package body Warnsw is
       Implementation_Unit_Warnings        := False;
       Ineffective_Inline_Warnings         := True;
       List_Inherited_Aspects              := False;
+      Warning_Doc_Switch                  := False;
       Warn_On_Ada_2005_Compatibility      := True;
       Warn_On_Ada_2012_Compatibility      := True;
       Warn_On_All_Unread_Out_Parameters   := False;
@@ -296,6 +306,7 @@ package body Warnsw is
             Implementation_Unit_Warnings        := False;
             Ineffective_Inline_Warnings         := False;
             List_Inherited_Aspects              := False;
+            Warning_Doc_Switch                  := False;
             Warn_On_Ada_2005_Compatibility      := False;
             Warn_On_Ada_2012_Compatibility      := False;
             Warn_On_All_Unread_Out_Parameters   := False;

@@ -1,5 +1,28 @@
 2013-01-04  Robert Dewar  <dewar@adacore.com>
 
+	* types.ads, prj-conf.adb, par-tchk.adb: Minor reformatting.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): Better handling of missing IS
+	after expression function.
+	* par-util.adb (No_Constraint): Improve handling to avoid bad warnings.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Insert_Actions): In expression with
+	actions case, new actions are appended to the sequence rather than
+	prepended.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document -gnatw.d/w.D (does no apply in VMS mode).
+	* usage.adb: Add lines for -gnatw.d/w.D switches.
+	* warnsw.adb: Minor fixes (some missing cases of setting
+	Warning_Doc_Switch). Reject -gnatw.d and -gnatw.D in VMS mode.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb (Remove_Side_Effects): Make sure scope suppress
 	is restored on exit.
 

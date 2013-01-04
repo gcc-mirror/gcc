@@ -635,6 +635,15 @@ package body Util is
 
    procedure No_Constraint is
    begin
+      --  If next token is at start of line, don't object, it seems relatively
+      --  unlikely that a constraint would be on its own starting a line.
+
+      if Token_Is_At_Start_Of_Line then
+         return;
+      end if;
+
+      --  Otherwise if we have a token that could start a constraint, object
+
       if Token in Token_Class_Consk then
          Error_Msg_SC ("constraint not allowed here");
          Discard_Junk_Node (P_Constraint_Opt);
