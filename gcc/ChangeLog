@@ -1,3 +1,9 @@
+2013-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55862
+	* tree-ssa-pre.c (phi_translate_1): Valueize SSA names after
+	translating them through PHI nodes.
+
 2013-01-04  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/55755
