@@ -105,6 +105,13 @@ package body Ch13 is
             if Token = Tok_Arrow then
                Result := True;
 
+            --  The identifier may be the name of a boolean aspect with a
+            --  defaulted True value. Further checks when analyzing aspect
+            --  specification.
+
+            elsif Token = Tok_Comma then
+               Result := True;
+
             elsif Token = Tok_Apostrophe then
                Scan; -- past apostrophe
 

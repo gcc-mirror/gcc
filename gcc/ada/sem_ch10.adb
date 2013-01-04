@@ -481,8 +481,15 @@ package body Sem_Ch10 is
                --  In this case, the second with clause is redundant since
                --  the pragma applies only to the first "with Pack;".
 
+               --  Note that we only consider with_clauses that comes from
+               --  source. In the case of renamings used as prefixes of names
+               --  in with_clauses, we generate a with_clause for the prefix,
+               --  which we do not treat as implicit because it is needed for
+               --  visibility analysis, but is also not redundant.
+
                elsif Nkind (Cont_Item) = N_With_Clause
                  and then not Implicit_With (Cont_Item)
+                 and then Comes_From_Source (Cont_Item)
                  and then not Limited_Present (Cont_Item)
                  and then Cont_Item /= Clause
                  and then Entity (Name (Cont_Item)) = Nam_Ent

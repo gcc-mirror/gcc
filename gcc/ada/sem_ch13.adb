@@ -1436,7 +1436,7 @@ package body Sem_Ch13 is
                --  Case 2d : Aspects that correspond to a pragma with one
                --  argument.
 
-               when Aspect_Abstract_State        =>
+               when Aspect_Abstract_State =>
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Identifier            =>
@@ -1447,7 +1447,20 @@ package body Sem_Ch13 is
 
                   Delay_Required := False;
 
-               when Aspect_Relative_Deadline     =>
+               --  Aspect Global must be delayed because it can mention names
+               --  and benefit from the forward visibility rules applicable to
+               --  aspects of subprograms.
+
+               when Aspect_Global =>
+                  Aitem :=
+                    Make_Pragma (Loc,
+                      Pragma_Identifier            =>
+                        Make_Identifier (Sloc (Id), Name_Global),
+                      Pragma_Argument_Associations => New_List (
+                        Make_Pragma_Argument_Association (Loc,
+                          Expression => Relocate_Node (Expr))));
+
+               when Aspect_Relative_Deadline =>
                   Aitem :=
                     Make_Pragma (Loc,
                       Pragma_Argument_Associations => New_List (
@@ -1949,6 +1962,20 @@ package body Sem_Ch13 is
                      end if;
 
                      Prepend (Aitem, Declarations (N));
+
+                  --  Aspect Abstract_State produces implicit declarations for
+                  --  all state abstraction entities it defines. To emulate
+                  --  this behavior, insert the pragma at the start of the
+                  --  visible declarations of the related package.
+
+                  elsif Nam = Name_Abstract_State
+                    and then Nkind (N) = N_Package_Declaration
+                  then
+                     if No (Visible_Declarations (Specification (N))) then
+                        Set_Visible_Declarations (Specification (N), New_List);
+                     end if;
+
+                     Prepend (Aitem, Visible_Declarations (Specification (N)));
 
                   else
                      if No (Pragmas_After (Aux)) then
@@ -6887,32 +6914,32 @@ package body Sem_Ch13 is
               Library_Unit_Aspects =>
             T := Standard_Boolean;
 
+         --  Aspects corresponding to attribute definition clauses
+
+         when Aspect_Address =>
+            T := RTE (RE_Address);
+
          when Aspect_Attach_Handler =>
             T := RTE (RE_Interrupt_ID);
+
+         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
+            T := RTE (RE_Bit_Order);
 
          when Aspect_Convention =>
             return;
 
-         --  Default_Value is resolved with the type entity in question
-
-         when Aspect_Default_Value =>
-            T := Entity (ASN);
+         when Aspect_CPU =>
+            T := RTE (RE_CPU_Range);
 
          --  Default_Component_Value is resolved with the component type
 
          when Aspect_Default_Component_Value =>
             T := Component_Type (Entity (ASN));
 
-         --  Aspects corresponding to attribute definition clauses
+         --  Default_Value is resolved with the type entity in question
 
-         when Aspect_Address =>
-            T := RTE (RE_Address);
-
-         when Aspect_Bit_Order | Aspect_Scalar_Storage_Order =>
-            T := RTE (RE_Bit_Order);
-
-         when Aspect_CPU =>
-            T := RTE (RE_CPU_Range);
+         when Aspect_Default_Value =>
+            T := Entity (ASN);
 
          when Aspect_Dispatching_Domain =>
             T := RTE (RE_Dispatching_Domain);
@@ -6922,6 +6949,14 @@ package body Sem_Ch13 is
 
          when Aspect_External_Name =>
             T := Standard_String;
+
+         --  Global is a delayed aspect because it may reference names that
+         --  have not been declared yet. There is no action to be taken with
+         --  respect to the aspect itself as the reference checking is done on
+         --  the corresponding pragma.
+
+         when Aspect_Global =>
+            return;
 
          when Aspect_Link_Name =>
             T := Standard_String;

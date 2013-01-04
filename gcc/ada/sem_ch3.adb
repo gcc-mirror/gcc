@@ -10362,7 +10362,7 @@ package body Sem_Ch3 is
          Set_Cloned_Subtype (Full, Full_Base);
       end if;
 
-      --  It is unsafe to share to bounds of a scalar type, because the Itype
+      --  It is unsafe to share the bounds of a scalar type, because the Itype
       --  is elaborated on demand, and if a bound is non-static then different
       --  orders of elaboration in different units will lead to different
       --  external symbols.
