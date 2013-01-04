@@ -1,7 +1,20 @@
 2013-01-04  Tobias Burnus  <burnus@net-b.de>
 
+	* intrinsic.c (add_functions): New internal intrinsic
+	function GFC_PREFIX ("stride").
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_STRIDE.
+	* intrinsic.h (gfc_resolve_stride): New prototypes.
+	* iresolve.c (gfc_resolve_stride): New function.
+	* trans-intrinsic.c (conv_intrinsic_stride): New static
+	function.
+	(gfc_conv_intrinsic_function): Use it.
+
+2013-01-04  Tobias Burnus  <burnus@net-b.de>
+
 	* class.c (gfc_find_intrinsic_vtab): Add _final
 	component.
+	* decl.c (gfc_match_null): Remove superfluous
+	variadic argument to gfc_match.
 
 2013-01-04  Paul Thomas  <pault@gcc.gnu.org>
 

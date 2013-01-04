@@ -1657,6 +1657,35 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
 
 static void
+conv_intrinsic_stride (gfc_se * se, gfc_expr * expr)
+{
+  gfc_actual_arglist *array_arg;
+  gfc_actual_arglist *dim_arg;
+  gfc_se argse;
+  tree desc, tmp;
+
+  array_arg = expr->value.function.actual;
+  dim_arg = array_arg->next;
+
+  gcc_assert (array_arg->expr->expr_type == EXPR_VARIABLE);
+
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr_descriptor (&argse, array_arg->expr);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  gfc_add_block_to_block (&se->post, &argse.post);
+  desc = argse.expr;
+
+  gcc_assert (dim_arg->expr);
+  gfc_init_se (&argse, NULL);
+  gfc_conv_expr_type (&argse, dim_arg->expr, gfc_array_index_type);
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			 argse.expr, gfc_index_one_node);
+  se->expr = gfc_conv_descriptor_stride_get (desc, tmp);
+}
+
+
+static void
 gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 {
   tree arg, cabs;
@@ -6804,6 +6833,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_SPACING:
       gfc_conv_intrinsic_spacing (se, expr);
+      break;
+
+    case GFC_ISYM_STRIDE:
+      conv_intrinsic_stride (se, expr);
       break;
 
     case GFC_ISYM_SUM:
