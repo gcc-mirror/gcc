@@ -3560,7 +3560,7 @@ package body Sem_Aggr is
          end if;
 
          --  AI05-0115: if the ancestor part is a subtype mark, the ancestor
-         --  must npt have unknown discriminants.
+         --  must not have unknown discriminants.
 
          if Is_Derived_Type (Typ)
            and then Has_Unknown_Discriminants (Root_Type (Typ))
@@ -3886,7 +3886,24 @@ package body Sem_Aggr is
                Next_Elmt (Parent_Elmt);
             end loop;
 
+         --  Typ is not a derived tagged type
+
          else
+            --  A type derived from an untagged private type whose full view
+            --  has discriminants is constructed as a record type but there
+            --  are no legal aggregates for it.
+
+            if Is_Derived_Type (Typ)
+              and then Has_Private_Ancestor (Typ)
+              and then Nkind (N) /= N_Extension_Aggregate
+            then
+               Error_Msg_Node_2 := Base_Type (Etype (Typ));
+               Error_Msg_NE
+                 ("no aggregate available for type& derived from "
+                  & "private type&", N, Typ);
+               return;
+            end if;
+
             Record_Def := Type_Definition (Parent (Base_Type (Typ)));
 
             if Null_Present (Record_Def) then
