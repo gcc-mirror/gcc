@@ -1,3 +1,9 @@
+2013-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54526 (again)
+	* parser.c (cp_parser_template_id): Revert core of previous change
+	(keep adjusted inform message).
+
 2013-01-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55419

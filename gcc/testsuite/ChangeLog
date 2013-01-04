@@ -1,3 +1,9 @@
+2013-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54526 (again)
+	* g++.dg/cpp0x/parse2.C: Extend.
+	* g++.old-deja/g++.other/crash28.C: Adjust.
+
 2013-01-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55862
