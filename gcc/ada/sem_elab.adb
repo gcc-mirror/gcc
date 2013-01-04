@@ -2543,7 +2543,7 @@ package body Sem_Elab is
       Elab_Unit  : Entity_Id;
 
       --  Check whether this is a call to an Initialize subprogram for a
-      --  controlled type. Note that Call can also be a 'access attribute
+      --  controlled type. Note that Call can also be a 'Access attribute
       --  reference, which now generates an elaboration check.
 
       Init_Call  : constant Boolean :=
