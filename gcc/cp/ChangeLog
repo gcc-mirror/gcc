@@ -1,3 +1,11 @@
+2013-01-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55877
+	* decl.c (reset_type_linkage, bt_reset_linkage): New.
+	(grokdeclarator): Use reset_type_linkage.
+	* name-lookup.c (binding_table_foreach): Handle null table.
+	* tree.c (decl_anon_ns_mem_p): Check TYPE_MAIN_DECL, not TYPE_NAME.
+
 2013-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54526 (again)
