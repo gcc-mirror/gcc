@@ -331,11 +331,6 @@ begin
    Write_Switch_Char ("n[?]");
    Write_Line ("Enable pragma Inline (both within and across units, ?=1/2)");
 
-   --  Line for -gnatN switch
-
-   Write_Switch_Char ("N");
-   Write_Line ("Full (frontend) inlining of subprograms");
-
    --  Line for -gnato switch
 
    Write_Switch_Char ("o");

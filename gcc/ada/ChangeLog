@@ -1,3 +1,16 @@
+2013-01-04  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* gnat_ugn.texi: Document procedure to codesign GDB on Darwin.
+	Update doc on gnattest --separates switch.
+
+2013-01-04  Thomas Quinot  <quinot@adacore.com>
+
+	* s-chepoo.ads: Minor reformatting.
+
+2013-01-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb: Remove mention of -gnatN in usage.
+
 2013-01-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb, gnatcmd.adb, exp_util.adb, table.adb, sem_prag.adb,
