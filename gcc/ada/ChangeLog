@@ -1,3 +1,11 @@
+2013-01-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Private_Derived_Type): Set
+	Has_Private_Ancestor on type derived from an untagged private
+	type whose full view has discriminants
+	* sem_aggr.adb (Resolve_Record_Aggregate): Reject non-extension
+	aggregate for untagged record type with private ancestor.
+
 2013-01-04  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_elab.adb, sem_ch3.adb: Minor reformatting.

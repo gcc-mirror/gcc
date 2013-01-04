@@ -6417,8 +6417,9 @@ package body Sem_Ch3 is
            and then (In_Open_Scopes (Scope (Parent_Type)))
          then
             Full_Der :=
-              Make_Defining_Identifier
-                (Sloc (Derived_Type), Chars (Derived_Type));
+              Make_Defining_Identifier (Sloc (Derived_Type),
+                Chars => Chars (Derived_Type));
+
             Set_Is_Itype (Full_Der);
             Set_Has_Private_Declaration (Full_Der);
             Set_Has_Private_Declaration (Derived_Type);
@@ -6434,7 +6435,12 @@ package body Sem_Ch3 is
          else
             Build_Derived_Record_Type
               (N, Full_View (Parent_Type), Derived_Type,
-                Derive_Subps => False);
+               Derive_Subps => False);
+
+            --  Except in the context of the full view of the parent, there
+            --  are no non-extension aggregates for the derived type.
+
+            Set_Has_Private_Ancestor (Derived_Type);
          end if;
 
          --  In any case, the primitive operations are inherited from the
