@@ -1,3 +1,27 @@
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Make sure scope suppress
+	is restored on exit.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb: Document -gnateF (check overflow for predefined Float).
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Remove incorrect
+	prevention of call to Apply_Type_Conversion_Checks, which resulted
+	in missing check flags in formal mode.
+
+2013-01-04  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.ads (Db_Switch_Args): New table used by gprbuild.
+	* prj-conf.adb (Check_Builder_Switches): Check for switches
+	--config= (Get_Db_Switches): New procedure to get the --db
+	switches so that they are used when invoking gprconfig in
+	auto-configuration.
+	(Do_Autoconf): When invoking gprconfig, use the --db switches, if any.
+
 2013-01-04  Pascal Obry  <obry@adacore.com>
 
 	* prj-nmsc.adb: Minor reformatting.
