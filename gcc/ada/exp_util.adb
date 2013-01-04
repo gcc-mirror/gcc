@@ -3138,7 +3138,7 @@ package body Exp_Util is
         and then not Is_Frozen (Current_Scope)
       then
          if No (Scope_Stack.Table
-           (Scope_Stack.Last).Pending_Freeze_Actions)
+                  (Scope_Stack.Last).Pending_Freeze_Actions)
          then
             Scope_Stack.Table (Scope_Stack.Last).Pending_Freeze_Actions :=
               Ins_Actions;
@@ -3306,13 +3306,13 @@ package body Exp_Util is
                return;
 
             --  Case of appearing within an Expressions_With_Actions node. We
-            --  prepend the actions to the list of actions already there, if
+            --  append the actions to the list of actions already there, if
             --  the node has not been analyzed yet. Otherwise find insertion
             --  location further up the tree.
 
             when N_Expression_With_Actions =>
                if not Analyzed (P) then
-                  Prepend_List (Ins_Actions, Actions (P));
+                  Append_List (Ins_Actions, Actions (P));
                   return;
                end if;
 

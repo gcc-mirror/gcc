@@ -688,9 +688,9 @@ package body Prj.Conf is
                   if Switch.Value /= No_Name then
                      Get_Name_String (Switch.Value);
 
-                     if Conf_File_Name'Length = 0 and then
-                        Name_Len > 9 and then
-                        Name_Buffer (1 .. 9) = "--config="
+                     if Conf_File_Name'Length = 0
+                       and then Name_Len > 9
+                       and then Name_Buffer (1 .. 9) = "--config="
                      then
                         Conf_File_Name :=
                           new String'(Name_Buffer (10 .. Name_Len));
@@ -1357,7 +1357,7 @@ package body Prj.Conf is
       end if;
 
       if Config_File_Path = null then
-         if (not Allow_Automatic_Generation)
+         if not Allow_Automatic_Generation
            and then Conf_File_Name'Length > 0
          then
             Raise_Invalid_Config

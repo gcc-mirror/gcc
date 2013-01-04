@@ -75,6 +75,9 @@ package Exp_Util is
    --    expansion of the N_If_Expression node rewrites the node so that the
    --    actions can be positioned normally.
 
+   --    For actions coming from expansion of the expression in an expression
+   --    with actions node, the action is appended to the list of actions.
+
    --  Basically what we do is to climb up to the tree looking for the
    --  proper insertion point, as described by one of the above cases,
    --  and then insert the appropriate action or actions.
