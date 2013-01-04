@@ -9474,8 +9474,8 @@ package body Sem_Res is
               and then abs (Realval (Rop)) < Delta_Value (Standard_Duration)
             then
                Error_Msg_N
-                 ("??universal real operand can only " &
-                  "be interpreted as Duration!", Rop);
+                 ("??universal real operand can only "
+                  & "be interpreted as Duration!", Rop);
                Error_Msg_N
                  ("\??precision will be lost in the conversion!", Rop);
             end if;
@@ -9556,11 +9556,6 @@ package body Sem_Res is
         and then not Is_Generic_Type (Root_Type (Target_Typ))
         and then Target_Typ  /= Universal_Fixed
         and then Operand_Typ /= Universal_Fixed
-
-        --  Also skip type conversion checks in formal verification mode, as
-        --  the formal verification backend deals directly with these checks.
-
-        and then not Alfa_Mode
       then
          Apply_Type_Conversion_Checks (N);
       end if;

@@ -6712,8 +6712,8 @@ package body Exp_Util is
            or else Nkind (N) = N_Selected_Component
          then
             return Within_In_Parameter (Prefix (N));
-         else
 
+         else
             return False;
          end if;
       end Within_In_Parameter;
@@ -6743,7 +6743,10 @@ package body Exp_Util is
          return;
       end if;
 
-      --  All this must not have any checks
+      --  The remaining procesaing is done with all checks suppressed
+
+      --  Note: from now on, don't use return statements, instead do a goto
+      --  Leave, to ensure that we properly restore Scope_Suppress.Suppress.
 
       Scope_Suppress.Suppress := (others => True);
 
@@ -6809,8 +6812,7 @@ package body Exp_Util is
         and then Nkind (Expression (Exp)) = N_Explicit_Dereference
       then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
-         Scope_Suppress := Svg_Suppress;
-         return;
+         goto Leave;
 
       --  If this is a type conversion, leave the type conversion and remove
       --  the side effects in the expression. This is important in several
@@ -6820,8 +6822,7 @@ package body Exp_Util is
 
       elsif Nkind (Exp) = N_Type_Conversion then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
-         Scope_Suppress := Svg_Suppress;
-         return;
+         goto Leave;
 
       --  If this is an unchecked conversion that Gigi can't handle, make
       --  a copy or a use a renaming to capture the value.
@@ -6935,7 +6936,7 @@ package body Exp_Util is
          if Alfa_Mode
            and then Nkind (Parent (Exp)) = N_Object_Declaration
          then
-            return;
+            goto Leave;
          end if;
 
          --  Special processing for function calls that return a limited type.
@@ -6965,7 +6966,7 @@ package body Exp_Util is
                Insert_Action (Exp, Decl);
                Set_Etype (Obj, Exp_Type);
                Rewrite (Exp, New_Occurrence_Of (Obj, Loc));
-               return;
+               goto Leave;
             end;
          end if;
 
@@ -7064,6 +7065,8 @@ package body Exp_Util is
 
       Rewrite (Exp, Res);
       Analyze_And_Resolve (Exp, Exp_Type);
+
+   <<Leave>>
       Scope_Suppress := Svg_Suppress;
    end Remove_Side_Effects;
 

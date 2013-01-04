@@ -202,6 +202,11 @@ begin
    Write_Switch_Char ("ef");
    Write_Line ("Full source path in brief error messages");
 
+   --  Line for -gnateF switch
+
+   Write_Switch_Char ("eF");
+   Write_Line ("Check overflow on predefined Float types");
+
    --  Line for -gnateG switch
 
    Write_Switch_Char ("eG");

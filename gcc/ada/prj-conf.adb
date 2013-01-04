@@ -621,6 +621,10 @@ package body Prj.Conf is
       --  Set to True if at least one attribute Ide'Compiler_Command is
       --  specified for one language of the system.
 
+      Conf_File_Name : String_Access := new String'(Config_File_Name);
+      --  The configuration project file name. May be modified if there are
+      --  switches --config= in the Builder package of the main project.
+
       function Default_File_Name return String;
       --  Return the name of the default config file that should be tested
 
@@ -629,10 +633,13 @@ package body Prj.Conf is
       --  raises the Invalid_Config exception with an appropriate message
 
       procedure Check_Builder_Switches;
-      --  Check for switch --RTS in package Builder
+      --  Check for switches --config and --RTS in package Builder
 
       function Get_Config_Switches return Argument_List_Access;
       --  Return the --config switches to use for gprconfig
+
+      function Get_Db_Switches return Argument_List_Access;
+      --  Return the --db switches to use for gprconfig
 
       function Might_Have_Sources (Project : Project_Id) return Boolean;
       --  True if the specified project might have sources (ie the user has not
@@ -681,7 +688,14 @@ package body Prj.Conf is
                   if Switch.Value /= No_Name then
                      Get_Name_String (Switch.Value);
 
-                     if Get_RTS_Switches
+                     if Conf_File_Name'Length = 0 and then
+                        Name_Len > 9 and then
+                        Name_Buffer (1 .. 9) = "--config="
+                     then
+                        Conf_File_Name :=
+                          new String'(Name_Buffer (10 .. Name_Len));
+
+                     elsif Get_RTS_Switches
                        and then Name_Len >= 7
                        and then Name_Buffer (1 .. 5) = "--RTS"
                      then
@@ -791,37 +805,307 @@ package body Prj.Conf is
          end if;
       end Default_File_Name;
 
-      ------------------------
-      -- Might_Have_Sources --
-      ------------------------
+      -----------------
+      -- Do_Autoconf --
+      -----------------
 
-      function Might_Have_Sources (Project : Project_Id) return Boolean is
-         Variable : Variable_Value;
+      procedure Do_Autoconf is
+         Obj_Dir : constant Variable_Value :=
+                     Value_Of
+                       (Name_Object_Dir,
+                        Project.Decl.Attributes,
+                        Shared);
+
+         Gprconfig_Path  : String_Access;
+         Success         : Boolean;
 
       begin
-         Variable :=
-           Value_Of
-             (Name_Source_Dirs,
-              Project.Decl.Attributes,
-              Shared);
+         Gprconfig_Path := Locate_Exec_On_Path (Gprconfig_Name);
 
-         if Variable = Nil_Variable_Value
-           or else Variable.Default
-           or else Variable.Values /= Nil_String
-         then
-            Variable :=
-              Value_Of
-                (Name_Source_Files,
-                 Project.Decl.Attributes,
-                 Shared);
-            return Variable = Nil_Variable_Value
-              or else Variable.Default
-              or else Variable.Values /= Nil_String;
+         if Gprconfig_Path = null then
+            Raise_Invalid_Config
+              ("could not locate gprconfig for auto-configuration");
+         end if;
+
+         --  First, find the object directory of the user's project
+
+         if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
+            Get_Name_String (Project.Directory.Display_Name);
 
          else
-            return False;
+            if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
+               Get_Name_String (Obj_Dir.Value);
+
+            else
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer
+                 (Get_Name_String (Project.Directory.Display_Name));
+               Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
+            end if;
          end if;
-      end Might_Have_Sources;
+
+         if Subdirs /= null then
+            Add_Char_To_Name_Buffer (Directory_Separator);
+            Add_Str_To_Name_Buffer (Subdirs.all);
+         end if;
+
+         for J in 1 .. Name_Len loop
+            if Name_Buffer (J) = '/' then
+               Name_Buffer (J) := Directory_Separator;
+            end if;
+         end loop;
+
+         --  Make sure that Obj_Dir ends with a directory separator
+
+         if Name_Buffer (Name_Len) /= Directory_Separator then
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := Directory_Separator;
+         end if;
+
+         declare
+            Obj_Dir         : constant String := Name_Buffer (1 .. Name_Len);
+            Config_Switches : Argument_List_Access;
+            Db_Switches     : Argument_List_Access;
+            Args            : Argument_List (1 .. 5);
+            Arg_Last        : Positive;
+            Obj_Dir_Exists  : Boolean := True;
+
+         begin
+            --  Check if the object directory exists. If Setup_Projects is True
+            --  (-p) and directory does not exist, attempt to create it.
+            --  Otherwise, if directory does not exist, fail without calling
+            --  gprconfig.
+
+            if not Is_Directory (Obj_Dir)
+              and then (Setup_Projects or else Subdirs /= null)
+            then
+               begin
+                  Create_Path (Obj_Dir);
+
+                  if not Quiet_Output then
+                     Write_Str ("object directory """);
+                     Write_Str (Obj_Dir);
+                     Write_Line (""" created");
+                  end if;
+
+               exception
+                  when others =>
+                     Raise_Invalid_Config
+                       ("could not create object directory " & Obj_Dir);
+               end;
+            end if;
+
+            if not Is_Directory (Obj_Dir) then
+               case Env.Flags.Require_Obj_Dirs is
+                  when Error =>
+                     Raise_Invalid_Config
+                       ("object directory " & Obj_Dir & " does not exist");
+
+                  when Warning =>
+                     Prj.Err.Error_Msg
+                       (Env.Flags,
+                        "?object directory " & Obj_Dir & " does not exist");
+                     Obj_Dir_Exists := False;
+
+                  when Silent =>
+                     null;
+               end case;
+            end if;
+
+            --  Get the config switches. This should be done only now, as some
+            --  runtimes may have been found if the Builder switches.
+
+            Config_Switches := Get_Config_Switches;
+
+            --  Get eventual --db switches
+
+            Db_Switches := Get_Db_Switches;
+
+            --  Invoke gprconfig
+
+            Args (1) := new String'("--batch");
+            Args (2) := new String'("-o");
+
+            --  If no config file was specified, set the auto.cgpr one
+
+            if Conf_File_Name'Length = 0 then
+               if Obj_Dir_Exists then
+                  Args (3) := new String'(Obj_Dir & Auto_Cgpr);
+
+               else
+                  declare
+                     Path_FD   : File_Descriptor;
+                     Path_Name : Path_Name_Type;
+
+                  begin
+                     Prj.Env.Create_Temp_File
+                       (Shared    => Project_Tree.Shared,
+                        Path_FD   => Path_FD,
+                        Path_Name => Path_Name,
+                        File_Use  => "configuration file");
+
+                     if Path_FD /= Invalid_FD then
+                        declare
+                           Temp_Dir : constant String :=
+                                        Containing_Directory
+                                          (Get_Name_String (Path_Name));
+                        begin
+                           GNAT.OS_Lib.Close (Path_FD);
+                           Args (3) :=
+                             new String'(Temp_Dir &
+                                         Directory_Separator &
+                                         Auto_Cgpr);
+                           Delete_File (Get_Name_String (Path_Name));
+                        end;
+
+                     else
+                        --  We'll have an error message later on
+
+                        Args (3) := new String'(Obj_Dir & Auto_Cgpr);
+                     end if;
+                  end;
+               end if;
+            else
+               Args (3) := Conf_File_Name;
+            end if;
+
+            if Normalized_Hostname = "" then
+               Arg_Last := 3;
+            else
+               if Target_Name = "" then
+
+                  --  Check if attribute Target is specified in the main
+                  --  project, or in a project it extends. If it is, use this
+                  --  target to invoke gprconfig.
+
+                  declare
+                     Variable : Variable_Value;
+                     Proj     : Project_Id;
+                     Tgt_Name : Name_Id := No_Name;
+
+                  begin
+                     Proj := Project;
+                     Project_Loop :
+                     while Proj /= No_Project loop
+                        Variable :=
+                          Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
+
+                        if Variable /= Nil_Variable_Value
+                          and then not Variable.Default
+                          and then Variable.Value /= No_Name
+                        then
+                           Tgt_Name := Variable.Value;
+                           exit Project_Loop;
+                        end if;
+
+                        Proj := Proj.Extends;
+                     end loop Project_Loop;
+
+                     if Tgt_Name /= No_Name then
+                        Args (4) :=
+                          new String'("--target=" &
+                                      Get_Name_String (Tgt_Name));
+
+                     elsif At_Least_One_Compiler_Command then
+                        Args (4) := new String'("--target=all");
+
+                     else
+                        Args (4) :=
+                          new String'("--target=" & Normalized_Hostname);
+                     end if;
+                  end;
+
+               else
+                  Args (4) := new String'("--target=" & Target_Name);
+               end if;
+
+               Arg_Last := 4;
+            end if;
+
+            if not Verbose_Mode then
+               Arg_Last := Arg_Last + 1;
+               Args (Arg_Last) := new String'("-q");
+            end if;
+
+            if Verbose_Mode then
+               Write_Str (Gprconfig_Name);
+
+               for J in 1 .. Arg_Last loop
+                  Write_Char (' ');
+                  Write_Str (Args (J).all);
+               end loop;
+
+               for J in Config_Switches'Range loop
+                  Write_Char (' ');
+                  Write_Str (Config_Switches (J).all);
+               end loop;
+
+               for J in Db_Switches'Range loop
+                  Write_Char (' ');
+                  Write_Str (Db_Switches (J).all);
+               end loop;
+
+               Write_Eol;
+
+            elsif not Quiet_Output then
+               --  Display no message if we are creating auto.cgpr, unless in
+               --  verbose mode
+
+               if Config_File_Name'Length > 0
+                 or else Verbose_Mode
+               then
+                  Write_Str ("creating ");
+                  Write_Str (Simple_Name (Args (3).all));
+                  Write_Eol;
+               end if;
+            end if;
+
+            Spawn (Gprconfig_Path.all, Args (1 .. Arg_Last) &
+                   Config_Switches.all & Db_Switches.all,
+                   Success);
+
+            Free (Config_Switches);
+
+            Config_File_Path := Locate_Config_File (Args (3).all);
+
+            if Config_File_Path = null then
+               Raise_Invalid_Config
+                 ("could not create " & Args (3).all);
+            end if;
+
+            for F in Args'Range loop
+               Free (Args (F));
+            end loop;
+         end;
+      end Do_Autoconf;
+
+      ---------------------
+      -- Get_Db_Switches --
+      ---------------------
+
+      function Get_Db_Switches return Argument_List_Access is
+         Result : Argument_List_Access;
+         Nmb_Arg : Natural;
+      begin
+         Nmb_Arg :=
+           (2 * Db_Switch_Args.Last) + Boolean'Pos (not Load_Standard_Base);
+         Result := new Argument_List (1 .. Nmb_Arg);
+
+         if Nmb_Arg /= 0 then
+            for J in 1 .. Db_Switch_Args.Last loop
+               Result (2 * J - 1) :=
+                 new String'("--db");
+               Result (2 * J) :=
+                 new String'(Get_Name_String (Db_Switch_Args.Table (J)));
+            end loop;
+
+            if not Load_Standard_Base then
+               Result (Result'Last) := new String'("--db-");
+            end if;
+         end if;
+
+         return Result;
+      end Get_Db_Switches;
 
       -------------------------
       -- Get_Config_Switches --
@@ -1023,269 +1307,37 @@ package body Prj.Conf is
          return Result;
       end Get_Config_Switches;
 
-      -----------------
-      -- Do_Autoconf --
-      -----------------
+      ------------------------
+      -- Might_Have_Sources --
+      ------------------------
 
-      procedure Do_Autoconf is
-         Obj_Dir : constant Variable_Value :=
-                     Value_Of
-                       (Name_Object_Dir,
-                        Project.Decl.Attributes,
-                        Shared);
-
-         Gprconfig_Path  : String_Access;
-         Success         : Boolean;
+      function Might_Have_Sources (Project : Project_Id) return Boolean is
+         Variable : Variable_Value;
 
       begin
-         Gprconfig_Path := Locate_Exec_On_Path (Gprconfig_Name);
+         Variable :=
+           Value_Of
+             (Name_Source_Dirs,
+              Project.Decl.Attributes,
+              Shared);
 
-         if Gprconfig_Path = null then
-            Raise_Invalid_Config
-              ("could not locate gprconfig for auto-configuration");
-         end if;
-
-         --  First, find the object directory of the user's project
-
-         if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
-            Get_Name_String (Project.Directory.Display_Name);
+         if Variable = Nil_Variable_Value
+           or else Variable.Default
+           or else Variable.Values /= Nil_String
+         then
+            Variable :=
+              Value_Of
+                (Name_Source_Files,
+                 Project.Decl.Attributes,
+                 Shared);
+            return Variable = Nil_Variable_Value
+              or else Variable.Default
+              or else Variable.Values /= Nil_String;
 
          else
-            if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
-               Get_Name_String (Obj_Dir.Value);
-
-            else
-               Name_Len := 0;
-               Add_Str_To_Name_Buffer
-                 (Get_Name_String (Project.Directory.Display_Name));
-               Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
-            end if;
+            return False;
          end if;
-
-         if Subdirs /= null then
-            Add_Char_To_Name_Buffer (Directory_Separator);
-            Add_Str_To_Name_Buffer (Subdirs.all);
-         end if;
-
-         for J in 1 .. Name_Len loop
-            if Name_Buffer (J) = '/' then
-               Name_Buffer (J) := Directory_Separator;
-            end if;
-         end loop;
-
-         --  Make sure that Obj_Dir ends with a directory separator
-
-         if Name_Buffer (Name_Len) /= Directory_Separator then
-            Name_Len := Name_Len + 1;
-            Name_Buffer (Name_Len) := Directory_Separator;
-         end if;
-
-         declare
-            Obj_Dir         : constant String := Name_Buffer (1 .. Name_Len);
-            Config_Switches : Argument_List_Access;
-            Args            : Argument_List (1 .. 5);
-            Arg_Last        : Positive;
-            Obj_Dir_Exists  : Boolean := True;
-
-         begin
-            --  Check if the object directory exists. If Setup_Projects is True
-            --  (-p) and directory does not exist, attempt to create it.
-            --  Otherwise, if directory does not exist, fail without calling
-            --  gprconfig.
-
-            if not Is_Directory (Obj_Dir)
-              and then (Setup_Projects or else Subdirs /= null)
-            then
-               begin
-                  Create_Path (Obj_Dir);
-
-                  if not Quiet_Output then
-                     Write_Str ("object directory """);
-                     Write_Str (Obj_Dir);
-                     Write_Line (""" created");
-                  end if;
-
-               exception
-                  when others =>
-                     Raise_Invalid_Config
-                       ("could not create object directory " & Obj_Dir);
-               end;
-            end if;
-
-            if not Is_Directory (Obj_Dir) then
-               case Env.Flags.Require_Obj_Dirs is
-                  when Error =>
-                     Raise_Invalid_Config
-                       ("object directory " & Obj_Dir & " does not exist");
-
-                  when Warning =>
-                     Prj.Err.Error_Msg
-                       (Env.Flags,
-                        "?object directory " & Obj_Dir & " does not exist");
-                     Obj_Dir_Exists := False;
-
-                  when Silent =>
-                     null;
-               end case;
-            end if;
-
-            --  Get the config switches. This should be done only now, as some
-            --  runtimes may have been found if the Builder switches.
-
-            Config_Switches := Get_Config_Switches;
-
-            --  Invoke gprconfig
-
-            Args (1) := new String'("--batch");
-            Args (2) := new String'("-o");
-
-            --  If no config file was specified, set the auto.cgpr one
-
-            if Config_File_Name'Length = 0 then
-               if Obj_Dir_Exists then
-                  Args (3) := new String'(Obj_Dir & Auto_Cgpr);
-
-               else
-                  declare
-                     Path_FD   : File_Descriptor;
-                     Path_Name : Path_Name_Type;
-
-                  begin
-                     Prj.Env.Create_Temp_File
-                       (Shared    => Project_Tree.Shared,
-                        Path_FD   => Path_FD,
-                        Path_Name => Path_Name,
-                        File_Use  => "configuration file");
-
-                     if Path_FD /= Invalid_FD then
-                        declare
-                           Temp_Dir : constant String :=
-                                        Containing_Directory
-                                          (Get_Name_String (Path_Name));
-                        begin
-                           GNAT.OS_Lib.Close (Path_FD);
-                           Args (3) :=
-                             new String'(Temp_Dir &
-                                         Directory_Separator &
-                                         Auto_Cgpr);
-                           Delete_File (Get_Name_String (Path_Name));
-                        end;
-
-                     else
-                        --  We'll have an error message later on
-
-                        Args (3) := new String'(Obj_Dir & Auto_Cgpr);
-                     end if;
-                  end;
-               end if;
-            else
-               Args (3) := new String'(Config_File_Name);
-            end if;
-
-            if Normalized_Hostname = "" then
-               Arg_Last := 3;
-            else
-               if Target_Name = "" then
-
-                  --  Check if attribute Target is specified in the main
-                  --  project, or in a project it extends. If it is, use this
-                  --  target to invoke gprconfig.
-
-                  declare
-                     Variable : Variable_Value;
-                     Proj     : Project_Id;
-                     Tgt_Name : Name_Id := No_Name;
-
-                  begin
-                     Proj := Project;
-                     Project_Loop :
-                     while Proj /= No_Project loop
-                        Variable :=
-                          Value_Of (Name_Target, Proj.Decl.Attributes, Shared);
-
-                        if Variable /= Nil_Variable_Value
-                          and then not Variable.Default
-                          and then Variable.Value /= No_Name
-                        then
-                           Tgt_Name := Variable.Value;
-                           exit Project_Loop;
-                        end if;
-
-                        Proj := Proj.Extends;
-                     end loop Project_Loop;
-
-                     if Tgt_Name /= No_Name then
-                        Args (4) :=
-                          new String'("--target=" &
-                                      Get_Name_String (Tgt_Name));
-
-                     elsif At_Least_One_Compiler_Command then
-                        Args (4) := new String'("--target=all");
-
-                     else
-                        Args (4) :=
-                          new String'("--target=" & Normalized_Hostname);
-                     end if;
-                  end;
-
-               else
-                  Args (4) := new String'("--target=" & Target_Name);
-               end if;
-
-               Arg_Last := 4;
-            end if;
-
-            if not Verbose_Mode then
-               Arg_Last := Arg_Last + 1;
-               Args (Arg_Last) := new String'("-q");
-            end if;
-
-            if Verbose_Mode then
-               Write_Str (Gprconfig_Name);
-
-               for J in 1 .. Arg_Last loop
-                  Write_Char (' ');
-                  Write_Str (Args (J).all);
-               end loop;
-
-               for J in Config_Switches'Range loop
-                  Write_Char (' ');
-                  Write_Str (Config_Switches (J).all);
-               end loop;
-
-               Write_Eol;
-
-            elsif not Quiet_Output then
-               --  Display no message if we are creating auto.cgpr, unless in
-               --  verbose mode
-
-               if Config_File_Name'Length > 0
-                 or else Verbose_Mode
-               then
-                  Write_Str ("creating ");
-                  Write_Str (Simple_Name (Args (3).all));
-                  Write_Eol;
-               end if;
-            end if;
-
-            Spawn (Gprconfig_Path.all, Args (1 .. Arg_Last) &
-                   Config_Switches.all,
-                   Success);
-
-            Free (Config_Switches);
-
-            Config_File_Path := Locate_Config_File (Args (3).all);
-
-            if Config_File_Path = null then
-               Raise_Invalid_Config
-                 ("could not create " & Args (3).all);
-            end if;
-
-            for F in Args'Range loop
-               Free (Args (F));
-            end loop;
-         end;
-      end Do_Autoconf;
+      end Might_Have_Sources;
 
       Success             : Boolean;
       Config_Project_Node : Project_Node_Id := Empty_Node;
@@ -1298,19 +1350,19 @@ package body Prj.Conf is
 
       Check_Builder_Switches;
 
-      if Config_File_Name'Length > 0 then
-         Config_File_Path := Locate_Config_File (Config_File_Name);
+      if Conf_File_Name'Length > 0 then
+         Config_File_Path := Locate_Config_File (Conf_File_Name.all);
       else
          Config_File_Path := Locate_Config_File (Default_File_Name);
       end if;
 
       if Config_File_Path = null then
          if (not Allow_Automatic_Generation)
-           and then Config_File_Name'Length > 0
+           and then Conf_File_Name'Length > 0
          then
             Raise_Invalid_Config
               ("could not locate main configuration project "
-               & Config_File_Name);
+               & Conf_File_Name.all);
          end if;
       end if;
 

@@ -82,6 +82,15 @@ package Makeutl is
    Load_Standard_Base : Boolean := True;
    --  False when gprbuild is called with --db-
 
+   package Db_Switch_Args is new Table.Table
+     (Table_Component_Type => Name_Id,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 200,
+      Table_Increment      => 100,
+      Table_Name           => "Makegpr.Db_Switch_Args");
+   --  Table of all the arguments of --db switches of gprbuild
+
    package Directories is new Table.Table
      (Table_Component_Type => Path_Name_Type,
       Table_Index_Type     => Integer,
