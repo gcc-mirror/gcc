@@ -1,3 +1,12 @@
+2013-01-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55172
+	* match.c (copy_ts_from_selector_to_associate): Remove call to
+	gfc_resolve_expr and replace it with explicit setting of the
+	array reference type.
+	* resolve.c (resolve_select_type): It is an error if the
+	selector is coindexed.
+
 2013-01-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
