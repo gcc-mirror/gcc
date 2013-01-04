@@ -188,15 +188,12 @@ package body Table is
             --  for the use of 10 here is to ensure that the table does really
             --  increase in size (which would not be the case for a table of
             --  length 10 increased by 3% for instance). Do the intermediate
-            --  calculation in Long_Long_Integer to avoid overflow. Note that
-            --  Long_Integer has the same range as Integer on Windows, so we
-            --  need Long_Long_.
+            --  calculation in Long_Long_Integer to avoid overflow.
 
             while Max < Last_Val loop
                New_Length :=
                  Long_Long_Integer (Length) *
-                 (100 + Long_Long_Integer (Table_Increment))
-                 / 100;
+                    (100 + Long_Long_Integer (Table_Increment)) / 100;
                Length := Int'Max (Int (New_Length), Length + 10);
                Max := Min + Length - 1;
             end loop;

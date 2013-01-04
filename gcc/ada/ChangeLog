@@ -1,3 +1,44 @@
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* table.adb: Minor reformatting.
+
+2013-01-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Check_Redundant_Withs): A with_clause that does
+	not come from source does not generate a warning for redundant
+	with_clauses.
+
+2013-01-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb, aspects.ads: Add Aspect_Global to all relevant tables.
+	* par-prag.adb: Add pragma Global to the list of pragmas that
+	do not need special processing by the parser.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Convert aspect
+	Global into a pragma without any form of legality checks. The
+	work is done by Analyze_Pragma. The aspect and pragma are both
+	marked as needing delayed processing.  Insert the corresponding
+	pragma of aspect Abstract_State in the visible declarations of the
+	related package.
+	(Check_Aspect_At_Freeze_Point): Aspect Global
+	does not need processing even though it is marked as delayed.
+	Alphabetize the list on aspect names.
+	* sem_prag.adb: Add a value for pragma Global in table Sig_Flags.
+	(Analyze_Pragma): Add ??? comment about the grammar of pragma
+	Abstract_State.  Move the error location from the pragma to the
+	state to improve the quality of error placement.  Add legality
+	checks for pragma Global.
+	* snames.ads-tmpl Add the following specially recognized names
+
+2013-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb: Fix minor typo.
+
+2013-01-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch13.adb (Aspect_Specifications_Present): In Strict mode,
+	accept an aspect name followed by a comma, indicating a defaulted
+	boolean aspect.
+
 2013-01-04  Joel Brobecker  <brobecker@adacore.com brobecker>
 
 	* gnat_ugn.texi: Document procedure to codesign GDB on Darwin.
