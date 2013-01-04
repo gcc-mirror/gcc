@@ -15523,9 +15523,9 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
       if (tmp)
 	{
 	  tmp = force_operand (tmp, NULL);
-	  tmp = expand_simple_binop (Pmode, PLUS, tmp, addend,
+	  op1 = expand_simple_binop (Pmode, PLUS, tmp, addend,
 				     op0, 1, OPTAB_DIRECT);
-	  if (tmp == op0)
+	  if (op1 == op0)
 	    return;
 	}
     }
