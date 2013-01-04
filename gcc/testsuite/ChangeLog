@@ -1,3 +1,7 @@
+2013-01-04  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/cmp-1.c: New testcase.
+
 2013-01-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55172
