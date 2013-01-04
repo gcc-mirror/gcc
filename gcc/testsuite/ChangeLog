@@ -1,3 +1,10 @@
+2013-01-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/55755
+	* gcc.dg/torture/pr55755.c: New test.
+	* gcc.dg/tree-ssa/sra-13.c: Likewise.
+	* gcc.dg/tree-ssa/pr45144.c: Update.
+
 2013-01-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55863
