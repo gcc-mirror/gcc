@@ -251,9 +251,13 @@ binding_table_find (binding_table table, tree name)
 void
 binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
 {
-  const size_t chain_count = table->chain_count;
+  size_t chain_count;
   size_t i;
 
+  if (!table)
+    return;
+
+  chain_count = table->chain_count;
   for (i = 0; i < chain_count; ++i)
     {
       binding_entry entry = table->chain[i];
