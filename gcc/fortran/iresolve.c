@@ -2314,6 +2314,15 @@ gfc_resolve_size (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 
 
 void
+gfc_resolve_stride (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
+		  gfc_expr *dim ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_index_integer_kind;
+}
+
+
+void
 gfc_resolve_spacing (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
