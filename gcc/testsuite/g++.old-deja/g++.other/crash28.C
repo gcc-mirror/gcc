@@ -31,5 +31,5 @@ public:
 };
 void foo::x() throw(bar)
 {
-  if (!b) throw bar (static_cast<::N::X*>(this));	// { dg-error "lambda expressions|expected" } parse error
+  if (!b) throw bar (static_cast<::N::X*>(this));	// { dg-error "lambda expressions|expected|invalid" } parse error
 }
