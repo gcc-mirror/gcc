@@ -22,9 +22,10 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
-
+with Targparm; use Targparm;
 package body Warnsw is
 
    ----------------------------
@@ -53,14 +54,14 @@ package body Warnsw is
             Warn_On_Unrepped_Components         := False;
 
          when 'd' =>
-            if Open_VMS_On_Target then
+            if OpenVMS_On_Target then
                return False;
             end if;
 
             Warning_Doc_Switch                  := True;
 
          when 'D' =>
-            if Open_VMS_On_Target then
+            if OpenVMS_On_Target then
                return False;
             end if;
 
@@ -76,7 +77,11 @@ package body Warnsw is
             Implementation_Unit_Warnings        := True;
             Ineffective_Inline_Warnings         := True;
             List_Inherited_Aspects              := True;
-            Warning_Doc_Switch                  := True;
+
+            if not OpenVMS_On_Target then
+               Warning_Doc_Switch               := True;
+            end if;
+
             Warn_On_Ada_2005_Compatibility      := True;
             Warn_On_Ada_2012_Compatibility      := True;
             Warn_On_All_Unread_Out_Parameters   := True;

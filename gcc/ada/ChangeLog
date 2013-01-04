@@ -1,5 +1,63 @@
 2013-01-04  Robert Dewar  <dewar@adacore.com>
 
+	* warnsw.adb: Minor fixes to -gnatw.d handling.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, atree.adb: Enlarge entities to make 63 more flags, 6 more
+	fields.
+
+2013-01-04  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* gnat_ugn.texi: Fix typo.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document alignment choice for subtypes.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* validsw.ads: Minor fix to comment.
+
+2013-01-04  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS,
+	GNATRTL_ALTIVEC_OBJS): Factor g-al* objects.
+	* gcc-interface/Makefile.in (ADA_EXCLUDE_SRCS): Add g-al* sources.
+	(GNATRTL_ALTIVEC_OBJS): Override to null for VMS.
+	Rename leon vxworks toolchain as leon-wrs-vxworks.
+	* gcc-interface/Make-lang.in: Update dependencies
+
+2013-01-04  Pascal Obry  <obry@adacore.com>
+
+	* prj.ads (For_Each_Source): Add Locally_Removed parameter.
+	(Source_Iterator): Add Locally_Removed field.
+	* prj.adb (For_Each_Source): Ignore Locally_Removed files if needed.
+	(Next): Likewise.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Minor reformatting.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Fix handling of renamed
+	packed array element.
+	* exp_ch4.adb (Expand_Concatenate): Fix some missing parent
+	fields in generated code.
+	* exp_util.adb (Side_Effect_Free): Improve detection of cases
+	needing renaming.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Clean up order of N_xxx subtypes
+
+2013-01-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Check_Target): Allow --autoconf= with no target.
+
+2013-01-04  Robert Dewar  <dewar@adacore.com>
+
 	* types.ads, prj-conf.adb, par-tchk.adb: Minor reformatting.
 
 2013-01-04  Robert Dewar  <dewar@adacore.com>

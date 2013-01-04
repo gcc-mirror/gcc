@@ -444,9 +444,7 @@ package body Exp_Util is
 
          --  Handle private types
 
-         if Is_Private_Type (Utyp)
-           and then Present (Full_View (Utyp))
-         then
+         if Is_Private_Type (Utyp) and then Present (Full_View (Utyp)) then
             Utyp := Full_View (Utyp);
          end if;
 
@@ -750,9 +748,7 @@ package body Exp_Util is
             --  Primitive Finalize_Address is never generated in CodePeer mode
             --  since it contains an Unchecked_Conversion.
 
-            if Needs_Finalization (Desig_Typ)
-              and then not CodePeer_Mode
-            then
+            if Needs_Finalization (Desig_Typ) and then not CodePeer_Mode then
                Fin_Addr_Id := Find_Finalize_Address (Desig_Typ);
                pragma Assert (Present (Fin_Addr_Id));
 
@@ -1588,9 +1584,7 @@ package body Exp_Util is
 
       --  It is only array and record types that cause trouble
 
-      if not Is_Record_Type (UT)
-        and then not Is_Array_Type (UT)
-      then
+      if not Is_Record_Type (UT) and then not Is_Array_Type (UT) then
          return False;
 
       --  If we know that we have a small (64 bits or less) record or small
@@ -1598,8 +1592,7 @@ package body Exp_Util is
       --  handle these cases correctly.
 
       elsif Esize (Comp) <= 64
-        and then (Is_Record_Type (UT)
-                   or else Is_Bit_Packed_Array (UT))
+        and then (Is_Record_Type (UT) or else Is_Bit_Packed_Array (UT))
       then
          return False;
 
@@ -1740,7 +1733,6 @@ package body Exp_Util is
       Name_Req : Boolean := False) return Node_Id
    is
       New_Exp : Node_Id;
-
    begin
       Remove_Side_Effects (Exp, Name_Req);
       New_Exp := New_Copy_Tree (Exp);
@@ -1775,9 +1767,7 @@ package body Exp_Util is
       --  An itype reference must only be created if this is a local itype, so
       --  that gigi can elaborate it on the proper objstack.
 
-      if Is_Itype (Typ)
-        and then Scope (Typ) = Current_Scope
-      then
+      if Is_Itype (Typ) and then Scope (Typ) = Current_Scope then
          IR := Make_Itype_Reference (Sloc (N));
          Set_Itype (IR, Typ);
          Insert_Action (N, IR);
@@ -1985,8 +1975,7 @@ package body Exp_Util is
       --  standard string types and more generally arrays of characters.
 
       if not Expander_Active
-        and then (No (Etype (Exp))
-                   or else not Is_String_Type (Etype (Exp)))
+        and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))
       then
          return;
       end if;
@@ -2179,9 +2168,7 @@ package body Exp_Util is
 
       --  Handle private types
 
-      if Has_Private_Declaration (Typ)
-        and then Present (Full_View (Typ))
-      then
+      if Has_Private_Declaration (Typ) and then Present (Full_View (Typ)) then
          Typ := Full_View (Typ);
       end if;
 
@@ -2309,9 +2296,7 @@ package body Exp_Util is
 
       --  Handle private types
 
-      if Has_Private_Declaration (Typ)
-        and then Present (Full_View (Typ))
-      then
+      if Has_Private_Declaration (Typ) and then Present (Full_View (Typ)) then
          Typ := Full_View (Typ);
       end if;
 
@@ -2374,7 +2359,7 @@ package body Exp_Util is
          exit when Chars (Op) = Name
            and then
              (Name /= Name_Op_Eq
-                or else Etype (First_Formal (Op)) = Etype (Last_Formal (Op)));
+               or else Etype (First_Formal (Op)) = Etype (Last_Formal (Op)));
 
          Next_Elmt (Prim);
 
@@ -2446,10 +2431,7 @@ package body Exp_Util is
    begin
       S := Scop;
       while Present (S) loop
-         if (Ekind (S) = E_Entry
-               or else Ekind (S) = E_Entry_Family
-               or else Ekind (S) = E_Function
-               or else Ekind (S) = E_Procedure)
+         if Ekind_In (S, E_Entry, E_Entry_Family, E_Function, E_Procedure)
            and then Present (Protection_Object (S))
          then
             return Protection_Object (S);
@@ -2634,9 +2616,8 @@ package body Exp_Util is
 
          --  Deal with AND THEN and AND cases
 
-         if Nkind (Cond) = N_And_Then
-           or else Nkind (Cond) = N_Op_And
-         then
+         if Nkind_In (Cond, N_And_Then, N_Op_And) then
+
             --  Don't ever try to invert a condition that is of the form of an
             --  AND or AND THEN (since we are not doing sufficiently general
             --  processing to allow this).
@@ -2715,9 +2696,7 @@ package body Exp_Util is
             --  reference had said var = True.
 
          else
-            if Is_Entity_Name (Cond)
-              and then Ent = Entity (Cond)
-            then
+            if Is_Entity_Name (Cond) and then Ent = Entity (Cond) then
                Val := New_Occurrence_Of (Standard_True, Sloc (Cond));
 
                if Sens = False then
@@ -2947,9 +2926,7 @@ package body Exp_Util is
       T    : constant Entity_Id := Etype (E);
 
    begin
-      if Has_Per_Object_Constraint (E)
-        and then Has_Discriminants (T)
-      then
+      if Has_Per_Object_Constraint (E) and then Has_Discriminants (T) then
          Disc := First_Discriminant (T);
          while Present (Disc) loop
             if Is_Access_Type (Etype (Disc)) then
@@ -3437,9 +3414,7 @@ package body Exp_Util is
                --  actions should be inserted outside the complete record
                --  declaration.
 
-               elsif Nkind (Parent (P)) = N_Variant
-                 or else Nkind (Parent (P)) = N_Record_Definition
-               then
+               elsif Nkind_In (Parent (P), N_Variant, N_Record_Definition) then
                   null;
 
                --  Do not insert freeze nodes within the loop generated for
@@ -3784,9 +3759,7 @@ package body Exp_Util is
       Ins_Actions : List_Id)
    is
    begin
-      if Scope_Is_Transient
-        and then Assoc_Node = Node_To_Be_Wrapped
-      then
+      if Scope_Is_Transient and then Assoc_Node = Node_To_Be_Wrapped then
          Store_After_Actions_In_Scope (Ins_Actions);
       else
          Insert_List_After_And_Analyze (Assoc_Node, Ins_Actions);
@@ -3846,9 +3819,7 @@ package body Exp_Util is
 
    begin
       S := Current_Scope;
-      while Present (S)
-        and then S /= Standard_Standard
-      loop
+      while Present (S) and then S /= Standard_Standard loop
          if Is_Init_Proc (S) then
             return True;
          else
@@ -4139,7 +4110,7 @@ package body Exp_Util is
                   Next (Param);
                end loop;
 
-               return Access_OK and then Alloc_OK;
+               return Access_OK and Alloc_OK;
             end;
          end if;
 
@@ -4235,9 +4206,7 @@ package body Exp_Util is
             elsif Nkind (Stmt) = N_Object_Renaming_Declaration then
                Ren_Obj := Find_Renamed_Object (Stmt);
 
-               if Present (Ren_Obj)
-                 and then Ren_Obj = Trans_Id
-               then
+               if Present (Ren_Obj) and then Ren_Obj = Trans_Id then
                   return True;
                end if;
             end if;
@@ -4439,8 +4408,7 @@ package body Exp_Util is
 
    function Is_Library_Level_Tagged_Type (Typ : Entity_Id) return Boolean is
    begin
-      return Is_Tagged_Type (Typ)
-        and then Is_Library_Level_Entity (Typ);
+      return Is_Tagged_Type (Typ) and then Is_Library_Level_Entity (Typ);
    end Is_Library_Level_Tagged_Type;
 
    --------------------------
@@ -4700,7 +4668,7 @@ package body Exp_Util is
 
                if Known_Alignment (Ptyp)
                  and then (Unknown_Alignment (Styp)
-                             or else Alignment (Styp) > Alignment (Ptyp))
+                            or else Alignment (Styp) > Alignment (Ptyp))
                then
                   return True;
                end if;
@@ -4776,10 +4744,7 @@ package body Exp_Util is
          return Is_Ref_To_Bit_Packed_Array (Renamed_Object (Entity (N)));
       end if;
 
-      if Nkind (N) = N_Indexed_Component
-           or else
-         Nkind (N) = N_Selected_Component
-      then
+      if Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
          if Is_Bit_Packed_Array (Etype (Prefix (N))) then
             Result := True;
          else
@@ -4821,10 +4786,7 @@ package body Exp_Util is
       then
          return True;
 
-      elsif Nkind (N) = N_Indexed_Component
-           or else
-         Nkind (N) = N_Selected_Component
-      then
+      elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
          return Is_Ref_To_Bit_Packed_Slice (Prefix (N));
 
       else
@@ -4971,9 +4933,9 @@ package body Exp_Util is
 
       elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
          if (Is_Entity_Name (Prefix (N))
-               and then Has_Volatile_Components (Entity (Prefix (N))))
+              and then Has_Volatile_Components (Entity (Prefix (N))))
            or else (Present (Etype (Prefix (N)))
-                      and then Has_Volatile_Components (Etype (Prefix (N))))
+                     and then Has_Volatile_Components (Etype (Prefix (N))))
          then
             return True;
          else
@@ -4995,9 +4957,9 @@ package body Exp_Util is
         and then (Nkind (N) = N_Slice
                     or else
                       (Nkind (N) = N_Identifier
-                         and then Present (Renamed_Object (Entity (N)))
-                         and then Nkind (Renamed_Object (Entity (N)))
-                                    = N_Slice));
+                        and then Present (Renamed_Object (Entity (N)))
+                        and then Nkind (Renamed_Object (Entity (N))) =
+                                                                 N_Slice));
    end Is_VM_By_Copy_Actual;
 
    --------------------
@@ -5031,7 +4993,7 @@ package body Exp_Util is
                     and then
                       (In_Instance
                         or else (Present (Entity (C))
-                                   and then Has_Warnings_Off (Entity (C))))
+                                  and then Has_Warnings_Off (Entity (C))))
                   then
                      W := False;
                   end if;
@@ -5137,15 +5099,12 @@ package body Exp_Util is
 
    function Known_Non_Negative (Opnd : Node_Id) return Boolean is
    begin
-      if Is_OK_Static_Expression (Opnd)
-        and then Expr_Value (Opnd) >= 0
-      then
+      if Is_OK_Static_Expression (Opnd) and then Expr_Value (Opnd) >= 0 then
          return True;
 
       else
          declare
             Lo : constant Node_Id := Type_Low_Bound (Etype (Opnd));
-
          begin
             return
               Is_OK_Static_Expression (Lo) and then Expr_Value (Lo) >= 0;
@@ -5751,9 +5710,7 @@ package body Exp_Util is
       elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
          return False;
 
-      elsif Is_Array_Type (Typ)
-        and then Present (Packed_Array_Type (Typ))
-      then
+      elsif Is_Array_Type (Typ) and then Present (Packed_Array_Type (Typ)) then
          return May_Generate_Large_Temp (Packed_Array_Type (Typ));
 
       --  We could do more here to find other small types ???
@@ -5842,8 +5799,8 @@ package body Exp_Util is
              or else Has_Some_Controlled_Component (T)
              or else
                (Is_Concurrent_Type (T)
-                  and then Present (Corresponding_Record_Type (T))
-                  and then Needs_Finalization (Corresponding_Record_Type (T)));
+                 and then Present (Corresponding_Record_Type (T))
+                 and then Needs_Finalization (Corresponding_Record_Type (T)));
       end if;
    end Needs_Finalization;
 
@@ -5885,7 +5842,7 @@ package body Exp_Util is
         or else Is_Access_Type (Typ)
         or else
           (Is_Bit_Packed_Array (Typ)
-             and then Is_Modular_Integer_Type (Packed_Array_Type (Typ)))
+            and then Is_Modular_Integer_Type (Packed_Array_Type (Typ)))
       then
          return False;
 
@@ -6519,7 +6476,32 @@ package body Exp_Util is
            and then Is_Renaming_Of_Object (Entity (Original_Node (N)))
            and then Ekind (Entity (Original_Node (N))) /= E_Constant
          then
-            return False;
+            declare
+               RO : constant Node_Id :=
+                      Renamed_Object (Entity (Original_Node (N)));
+
+            begin
+               --  If the renamed object is an indexed component, or an
+               --  explicit dereference, then the designated object could
+               --  be modified by an assignment.
+
+               if Nkind_In (RO, N_Indexed_Component,
+                                N_Explicit_Dereference)
+               then
+                  return False;
+
+               --  A selected component must have a safe prefix
+
+               elsif Nkind (RO) = N_Selected_Component then
+                  return Safe_Prefixed_Reference (RO);
+
+               --  In all other cases, designated object cannot be changed so
+               --  we are side effect free.
+
+               else
+                  return True;
+               end if;
+            end;
 
          --  Remove_Side_Effects generates an object renaming declaration to
          --  capture the expression of a class-wide expression. In VM targets
@@ -6708,9 +6690,7 @@ package body Exp_Util is
          elsif Is_Entity_Name (N) then
             return Ekind (Entity (N)) = E_In_Parameter;
 
-         elsif Nkind (N) = N_Indexed_Component
-           or else Nkind (N) = N_Selected_Component
-         then
+         elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
             return Within_In_Parameter (Prefix (N));
 
          else
@@ -6757,9 +6737,9 @@ package body Exp_Util is
 
       if Is_Elementary_Type (Exp_Type)
         and then (Variable_Ref
-                   or else Nkind (Exp) = N_Function_Call
-                   or else Nkind (Exp) = N_Attribute_Reference
-                   or else Nkind (Exp) = N_Allocator
+                   or else Nkind_In (Exp, N_Function_Call,
+                                          N_Attribute_Reference,
+                                          N_Allocator)
                    or else Nkind (Exp) in N_Op
                    or else (not Name_Req and then Is_Volatile_Reference (Exp)))
       then
@@ -6918,8 +6898,7 @@ package body Exp_Util is
          --  by the expression it renames, which would defeat the purpose of
          --  removing the side-effect.
 
-         if (Nkind (Exp) = N_Selected_Component
-              or else Nkind (Exp) = N_Indexed_Component)
+         if Nkind_In (Exp, N_Selected_Component, N_Indexed_Component)
            and then Has_Non_Standard_Rep (Etype (Prefix (Exp)))
          then
             null;
@@ -6933,9 +6912,7 @@ package body Exp_Util is
          --  An expression which is in Alfa mode is considered side effect free
          --  if the resulting value is captured by a variable or a constant.
 
-         if Alfa_Mode
-           and then Nkind (Parent (Exp)) = N_Object_Declaration
-         then
+         if Alfa_Mode and then Nkind (Parent (Exp)) = N_Object_Declaration then
             goto Leave;
          end if;
 
@@ -7079,7 +7056,7 @@ package body Exp_Util is
    begin
       return Is_Scalar_Type (UT)
         or else (Is_Bit_Packed_Array (UT)
-                   and then Is_Scalar_Type (Packed_Array_Type (UT)));
+                  and then Is_Scalar_Type (Packed_Array_Type (UT)));
    end Represented_As_Scalar;
 
    ------------------------------
@@ -7200,7 +7177,7 @@ package body Exp_Util is
             elsif not Is_Imported (Obj_Id)
               and then Needs_Finalization (Obj_Typ)
               and then not (Ekind (Obj_Id) = E_Constant
-                              and then not Has_Completion (Obj_Id))
+                             and then not Has_Completion (Obj_Id))
               and then not Is_Tag_To_Class_Wide_Conversion (Obj_Id)
             then
                return True;
@@ -7241,7 +7218,7 @@ package body Exp_Util is
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
               and then Nkind (Status_Flag_Or_Transient_Decl (Obj_Id)) =
-                         N_Defining_Identifier
+                                                      N_Defining_Identifier
               and then Present (Expr)
               and then Nkind (Expr) = N_Null
             then
@@ -7319,7 +7296,7 @@ package body Exp_Util is
                              (Available_View (Designated_Type (Typ))))
                or else
                 (Is_Type (Typ)
-                   and then Needs_Finalization (Typ)))
+                  and then Needs_Finalization (Typ)))
               and then Requires_Cleanup_Actions
                          (Actions (Decl), Lib_Level, Nested_Constructs)
             then
@@ -7338,17 +7315,15 @@ package body Exp_Util is
             end if;
 
             if Ekind (Pack_Id) /= E_Generic_Package
-              and then Requires_Cleanup_Actions
-                         (Specification (Decl), Lib_Level)
+              and then
+                Requires_Cleanup_Actions (Specification (Decl), Lib_Level)
             then
                return True;
             end if;
 
          --  Nested package bodies
 
-         elsif Nested_Constructs
-           and then Nkind (Decl) = N_Package_Body
-         then
+         elsif Nested_Constructs and then Nkind (Decl) = N_Package_Body then
             Pack_Id := Corresponding_Spec (Decl);
 
             if Ekind (Pack_Id) /= E_Generic_Package
@@ -7391,8 +7366,8 @@ package body Exp_Util is
 
       if (Nkind (Pexp) = N_Assignment_Statement
            and then Expression (Pexp) = Exp)
-        or else Nkind (Pexp) = N_Object_Declaration
-        or else Nkind (Pexp) = N_Object_Renaming_Declaration
+        or else Nkind_In (Pexp, N_Object_Declaration,
+                                N_Object_Renaming_Declaration)
       then
          return True;
 
@@ -7403,7 +7378,7 @@ package body Exp_Util is
       --  introduce a temporary in this case.
 
       elsif Nkind (Pexp) = N_Selected_Component
-         and then Prefix (Pexp) = Exp
+        and then Prefix (Pexp) = Exp
       then
          if No (Etype (Pexp)) then
             return True;
@@ -7491,7 +7466,7 @@ package body Exp_Util is
       elsif Size_Known_At_Compile_Time (Otyp)
         and then
           (not Stack_Checking_Enabled
-             or else not May_Generate_Large_Temp (Otyp))
+            or else not May_Generate_Large_Temp (Otyp))
         and then not (Is_Record_Type (Otyp) and then not Is_Constrained (Otyp))
       then
          return True;

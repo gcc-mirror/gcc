@@ -3233,6 +3233,7 @@ package body Exp_Ch4 is
                    Prefix         =>
                      Duplicate_Subexpr (Opnd, Name_Req => True),
                    Attribute_Name => Name_First);
+               Set_Parent (Opnd_Low_Bound (NN), Opnd);
 
                --  Capture last operand bounds if result could be null
 
@@ -3243,6 +3244,7 @@ package body Exp_Ch4 is
                         Prefix         =>
                           Duplicate_Subexpr (Opnd, Name_Req => True),
                         Attribute_Name => Name_First));
+                  Set_Parent (Last_Opnd_Low_Bound, Opnd);
 
                   Last_Opnd_High_Bound :=
                     Convert_To (Ityp,
@@ -3250,6 +3252,7 @@ package body Exp_Ch4 is
                         Prefix         =>
                           Duplicate_Subexpr (Opnd, Name_Req => True),
                         Attribute_Name => Name_Last));
+                  Set_Parent (Last_Opnd_High_Bound, Opnd);
                end if;
 
                --  Capture length of operand in entity

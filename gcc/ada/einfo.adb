@@ -244,6 +244,18 @@ package body Einfo is
 
    --    Subprograms_For_Type            Node29
 
+   --    (unused)                        Node30
+
+   --    (unused)                        Node31
+
+   --    (unused)                        Node32
+
+   --    (unused)                        Node33
+
+   --    (unused)                        Node34
+
+   --    (unused)                        Node35
+
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
    ---------------------------------------------
@@ -253,7 +265,7 @@ package body Einfo is
    --  sense for them to be set true for certain subsets of entity kinds. See
    --  the spec of Einfo for further details.
 
-   --  Note: Flag1-Flag3 are absent from this list, for historical reasons
+   --  Note: Flag1-Flag3 are not used, for historical reasons
 
    --    Is_Frozen                       Flag4
    --    Has_Discriminants               Flag5
@@ -532,6 +544,76 @@ package body Einfo is
    --    Is_Implementation_Defined       Flag254
 
    --    (unused)                        Flag201
+
+   --    (unused)                        Flag255
+   --    (unused)                        Flag256
+   --    (unused)                        Flag257
+   --    (unused)                        Flag258
+   --    (unused)                        Flag259
+   --    (unused)                        Flag260
+
+   --    (unused)                        Flag261
+   --    (unused)                        Flag262
+   --    (unused)                        Flag263
+   --    (unused)                        Flag264
+   --    (unused)                        Flag265
+   --    (unused)                        Flag266
+   --    (unused)                        Flag267
+   --    (unused)                        Flag268
+   --    (unused)                        Flag269
+   --    (unused)                        Flag270
+
+   --    (unused)                        Flag271
+   --    (unused)                        Flag272
+   --    (unused)                        Flag273
+   --    (unused)                        Flag274
+   --    (unused)                        Flag275
+   --    (unused)                        Flag276
+   --    (unused)                        Flag277
+   --    (unused)                        Flag278
+   --    (unused)                        Flag279
+   --    (unused)                        Flag280
+
+   --    (unused)                        Flag281
+   --    (unused)                        Flag282
+   --    (unused)                        Flag283
+   --    (unused)                        Flag284
+   --    (unused)                        Flag285
+   --    (unused)                        Flag286
+   --    (unused)                        Flag287
+   --    (unused)                        Flag288
+   --    (unused)                        Flag289
+   --    (unused)                        Flag290
+
+   --    (unused)                        Flag291
+   --    (unused)                        Flag292
+   --    (unused)                        Flag293
+   --    (unused)                        Flag294
+   --    (unused)                        Flag295
+   --    (unused)                        Flag296
+   --    (unused)                        Flag297
+   --    (unused)                        Flag298
+   --    (unused)                        Flag299
+   --    (unused)                        Flag300
+
+   --    (unused)                        Flag301
+   --    (unused)                        Flag302
+   --    (unused)                        Flag303
+   --    (unused)                        Flag304
+   --    (unused)                        Flag305
+   --    (unused)                        Flag306
+   --    (unused)                        Flag307
+   --    (unused)                        Flag308
+   --    (unused)                        Flag309
+   --    (unused)                        Flag310
+
+   --    (unused)                        Flag311
+   --    (unused)                        Flag312
+   --    (unused)                        Flag313
+   --    (unused)                        Flag314
+   --    (unused)                        Flag315
+   --    (unused)                        Flag316
+   --    (unused)                        Flag317
 
    -----------------------
    -- Local subprograms --
