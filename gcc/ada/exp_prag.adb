@@ -549,12 +549,9 @@ package body Exp_Prag is
       Def_Id := Entity (Arg2 (N));
       if Ekind (Def_Id) = E_Variable then
 
-         --  Find generated initialization call for object, if any
+         --  Find and remove generated initialization call for object, if any
 
-         Init_Call := Find_Init_Call (Def_Id, Rep_Clause => N);
-         if Present (Init_Call) then
-            Remove (Init_Call);
-         end if;
+         Init_Call := Remove_Init_Call (Def_Id, Rep_Clause => N);
 
          --  Any default initialization expression should be removed
          --  (e.g., null defaults for access objects, zero initialization

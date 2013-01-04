@@ -106,9 +106,10 @@ package body Exp_Aggr is
      (Obj        : Entity_Id;
       N          : Node_Id;
       Node_After : Node_Id);
-   --  Collect actions inserted after N until, but not including, Node_After,
-   --  for initialization of Obj, and move them to an expression with actions,
-   --  which becomes the Initialization_Statements for Obj.
+   --  If Obj is not frozen, collect actions inserted after N until, but not
+   --  including, Node_After, for initialization of Obj, and move them to an
+   --  expression with actions, which becomes the Initialization_Statements for
+   --  Obj.
 
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
@@ -2965,6 +2966,13 @@ package body Exp_Aggr is
       EA           : Node_Id;
       Init_Actions : constant List_Id := New_List;
    begin
+      --  Nothing to do if Obj is already frozen, as in this case we known we
+      --  won't need to move the initialization statements about later on.
+
+      if Is_Frozen (Obj) then
+         return;
+      end if;
+
       Init_Node := N;
 
       while Next (Init_Node) /= Node_After loop

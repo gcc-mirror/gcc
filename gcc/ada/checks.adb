@@ -5522,6 +5522,23 @@ package body Checks is
         or else Index_Checks_Suppressed (Etype (A))
       then
          return;
+
+      --  The indexed component we are dealing with contains 'Loop_Entry in its
+      --  prefix. This case arises when analysis has determined that constructs
+      --  such as
+
+      --     Prefix'Loop_Entry (Expr)
+      --     Prefix'Loop_Entry (Expr1, Expr2, ... ExprN)
+
+      --  require rewriting for error detection purposes. A side effect of this
+      --  action is the generation of index checks that mention 'Loop_Entry.
+      --  Delay the generation of the check until 'Loop_Entry has been properly
+      --  expanded. This is done in Expand_Loop_Entry_Attributes.
+
+      elsif Nkind (Prefix (N)) = N_Attribute_Reference
+        and then Attribute_Name (Prefix (N)) = Name_Loop_Entry
+      then
+         return;
       end if;
 
       --  Generate a raise of constraint error with the appropriate reason and

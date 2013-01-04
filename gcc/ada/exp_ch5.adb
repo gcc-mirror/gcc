@@ -1828,10 +1828,28 @@ package body Exp_Ch5 is
              Object_Definition   => New_Reference_To (Typ, Loc),
              Expression          => Relocate_Node (Prefix (LE))));
 
+         --  Perform minor decoration as this information will be needed for
+         --  the creation of index checks (if applicable).
+
+         Set_Ekind (Temp, E_Constant);
+         Set_Etype (Temp, Typ);
+
          --  Replace the original attribute with a reference to the constant
 
          Rewrite (LE, New_Reference_To (Temp, Loc));
          Set_Etype (LE, Typ);
+
+         --  Analysis converts attribute references of the following form
+
+         --     Prefix'Loop_Entry (Expr)
+         --     Prefix'Loop_Entry (Expr1, Expr2, ... ExprN)
+
+         --  into indexed components for error detection purposes. Generate
+         --  index checks now that 'Loop_Entry has been properly expanded.
+
+         if Nkind (Parent (LE)) = N_Indexed_Component then
+            Generate_Index_Checks (Parent (LE));
+         end if;
 
          Next_Elmt (LE_Elmt);
       end loop;

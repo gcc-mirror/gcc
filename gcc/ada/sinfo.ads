@@ -7020,15 +7020,10 @@ package Sinfo is
       --  a subexpression, whose value is the value of the Expression after
       --  executing all the actions.
 
-      --  Note: if the actions contain declarations, then these declarations
-      --  may be referenced within the expression. It is thus appropriate for
-      --  the back-end to create a scope that encompasses the construct (any
-      --  declarations within the actions will definitely not be referenced
-      --  once elaboration of the construct is completed).
-
-      --  But we rely on freeze nodes appearing in actions being elaborated in
-      --  the enclosing scope (see Exp_Aggr.Collect_Initialization_
-      --  Statements)???
+      --  If the actions contain declarations, then these declarations may
+      --  be referenced within the expression. However note that there is
+      --  no proper scope associated with the expression-with-action, so the
+      --  back-end will elaborate them in the context of the enclosing scope.
 
       --  Sprint syntax:  do
       --                    action;
@@ -7046,7 +7041,10 @@ package Sinfo is
       --  never have created this node if there weren't some actions.
 
       --  Note: Expression may be a Null_Statement, in which case the
-      --  N_Expression_With_Actions has type Standard_Void_Type.
+      --  N_Expression_With_Actions has type Standard_Void_Type. However some
+      --  backends do not support such expression-with-actions occurring
+      --  outside of a proper (non-void) expression, so this should just be
+      --  used as an intermediate representation within the front-end.
 
       --------------------
       -- Free Statement --
@@ -7183,7 +7181,7 @@ package Sinfo is
       --  the exception to be raised (i.e. it is equivalent to a raise
       --  statement that raises the corresponding exception). This use
       --  is distinguished by the fact that the Etype in this case is
-      --  Standard_Void_Type, In the subexpression case, the Etype is the
+      --  Standard_Void_Type; in the subexpression case, the Etype is the
       --  same as the type of the subexpression which it replaces.
 
       --  If Condition is empty, then the raise is unconditional. If the

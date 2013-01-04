@@ -4263,7 +4263,11 @@ package body Einfo is
 
    procedure Set_Initialization_Statements (Id : E; V : N) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      --  Tolerate an E_Void entity since this can be called while resolving
+      --  an aggregate used as the initialization expression for an object
+      --  declaration, and this occurs before the Ekind for the object is set.
+
+      pragma Assert (Ekind_In (Id, E_Void, E_Constant, E_Variable));
       Set_Node28 (Id, V);
    end Set_Initialization_Statements;
 
