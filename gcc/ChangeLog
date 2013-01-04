@@ -1,3 +1,8 @@
+2013-01-04  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/55859
+	* opts.c (default_options_optimization): Clarify error message.
+
 2013-01-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55863
