@@ -1,6 +1,7 @@
 2013-01-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/55827
 	* class.c (gfc_fix_class_refs): Adapt ts initialization for the case
 	e->symtree == NULL.
 	* trans-expr.c (gfc_conv_function_expr): Init sym earlier. Use it.
