@@ -1,3 +1,10 @@
+2013-01-05  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (finalize_component): Used passed offset expr.
+	(finalization_get_offset): New static function.
+	(finalizer_insert_packed_call, generate_finalization_wrapper): Use it
+	to handle noncontiguous arrays.
+
 2013-01-04  Tobias Burnus  <burnus@net-b.de>
 
 	* trans.c (gfc_build_final_call): New function.
