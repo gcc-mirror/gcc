@@ -148,6 +148,7 @@ do {									\
 #define LIB_SPEC "%{pg:-L%R/lib/profiled -L%R/usr/lib/profiled}\
    %{p:-L%R/lib/profiled -L%R/usr/lib/profiled}\
    %{!maix64:%{!shared:%{g*:-lg}}}\
+   %{fprofile-arcs|fprofile-generate*|coverage:-lpthreads}\
    %{mpe:-L%R/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
    %{pthread:-lpthreads} -lc"
 
