@@ -1,3 +1,9 @@
+2013-01-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix53.h (LIB_SPEC): Add -lpthreads when compiling
+	to generate profiling.
+	* config/rs6000/aix64.h (LIB_SPEC): Same.
+
 2013-01-04  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch64_fixed_condition_code_regs):
