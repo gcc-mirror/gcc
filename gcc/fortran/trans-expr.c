@@ -5525,19 +5525,19 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
       return;
     }
 
-  /* We distinguish statement functions from general functions to improve
-     runtime performance.  */
-  if (expr->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
-    {
-      gfc_conv_statement_function (se, expr);
-      return;
-    }
-
   /* expr.value.function.esym is the resolved (specific) function symbol for
      most functions.  However this isn't set for dummy procedures.  */
   sym = expr->value.function.esym;
   if (!sym)
     sym = expr->symtree->n.sym;
+
+  /* We distinguish statement functions from general functions to improve
+     runtime performance.  */
+  if (sym->attr.proc == PROC_ST_FUNCTION)
+    {
+      gfc_conv_statement_function (se, expr);
+      return;
+    }
 
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			   NULL);

@@ -1,3 +1,8 @@
+2013-01-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/use_22.f90: New test.
+
 2013-01-04  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/cmp-1.c: New testcase.
