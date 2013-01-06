@@ -11258,6 +11258,30 @@ The default alignment for the type @code{V} is 4, as a result of the
 Integer field in the record, but it is permissible, as shown, to
 override the default alignment of the record with a smaller value.
 
+@cindex Alignment, subtypes
+Note that according to the Ada standard, an alignment clause applies only
+to the first named subtype. If additional subtypes are declared, then the
+compiler is allowed to choose any alignment it likes, and there is no way
+to control this choice. Consider:
+
+@smallexample @c ada
+   type R is range 1 .. 10_000;
+   for R'Alignment use 1;
+   subtype RS is R range 1 .. 1000;
+@end smallexample
+
+@noindent
+The alignment clause specifies an alignment of 1 for the first named subtype
+@code{R} but this does not necessarily apply to @code{RS}. When writing
+portable Ada code, you should avoid writing code that explicitly or
+implicitly relies on the alignment of such subtypes.
+
+For the GNAT compiler, if an explicit alignment clause is given, this
+value is also used for any subsequent subtypes. So for GNAT, in the
+above example, you can count on the alignment of @code{RS} being 1. But this
+assumption is non-portable, and other compilers may choose different
+alignments for the subtype @code{RS}.
+
 @node Size Clauses
 @section Size Clauses
 @cindex Size Clause
