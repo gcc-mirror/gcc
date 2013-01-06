@@ -1,3 +1,11 @@
+2013-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Emit a specialized
+	diagnostic for component size mismatch wrt volatile requirements.
+	Add a gcc_unreachable() at the end of the checks for size.  Split
+	the check on volatile for positions into one check on atomic and
+	a subsequent one on volatile.
+
 2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (elaborate_entity) <E_Record_Type>: Delete.

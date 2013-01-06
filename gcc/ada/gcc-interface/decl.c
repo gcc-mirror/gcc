@@ -6489,10 +6489,11 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
 
       /* If this field needs strict alignment, check that the record is
-	 sufficiently aligned and that position and size are consistent
-	 with the alignment.  But don't do it if we are just annotating
-	 types and the field's type is tagged, since tagged types aren't
-	 fully laid out in this mode.  */
+	 sufficiently aligned and that position and size are consistent with
+	 the alignment.  But don't do it if we are just annotating types and
+	 the field's type is tagged, since tagged types aren't fully laid out
+	 in this mode.  Also, note that atomic implies volatile so the inner
+	 test sequences ordering is significant here.  */
       if (needs_strict_alignment
 	  && !(type_annotate_only && Is_Tagged_Type (gnat_field_type)))
 	{
@@ -6508,6 +6509,12 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_SIZE (gnu_field_type));
 
+	      else if (is_volatile)
+		post_error_ne_tree
+		  ("volatile field& must be natural size of type{ (^)}",
+		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
+		   TYPE_SIZE (gnu_field_type));
+
 	      else if (Is_Aliased (gnat_field))
 		post_error_ne_tree
 		  ("size of aliased field& must be ^ bits",
@@ -6520,6 +6527,9 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   Last_Bit (Component_Clause (gnat_field)), gnat_field,
 		   TYPE_SIZE (gnu_field_type));
 
+              else
+		gcc_unreachable ();
+
 	      gnu_size = NULL_TREE;
 	    }
 
@@ -6527,7 +6537,13 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 			      (TRUNC_MOD_EXPR, gnu_pos,
 			       bitsize_int (TYPE_ALIGN (gnu_field_type)))))
 	    {
-	      if (is_volatile)
+	      if (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type))
+		post_error_ne_num
+		  ("position of atomic field& must be multiple of ^ bits",
+		   First_Bit (Component_Clause (gnat_field)), gnat_field,
+		   TYPE_ALIGN (gnu_field_type));
+
+              else if (is_volatile)
 		post_error_ne_num
 		  ("position of volatile field& must be multiple of ^ bits",
 		   First_Bit (Component_Clause (gnat_field)), gnat_field,
