@@ -271,6 +271,7 @@ compatible.
     <listitem><para>GCC 4.5.0: libstdc++.so.6.0.14</para></listitem>
     <listitem><para>GCC 4.6.0: libstdc++.so.6.0.15</para></listitem>
     <listitem><para>GCC 4.6.1: libstdc++.so.6.0.16</para></listitem>
+    <listitem><para>GCC 4.7.0: libstdc++.so.6.0.17</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -332,6 +333,7 @@ compatible.
     <listitem><para>GCC 4.5.0: GLIBCXX_3.4.14, CXXABI_1.3.4</para></listitem>
     <listitem><para>GCC 4.6.0: GLIBCXX_3.4.15, CXXABI_1.3.5</para></listitem>
     <listitem><para>GCC 4.6.1: GLIBCXX_3.4.16, CXXABI_1.3.5</para></listitem>
+    <listitem><para>GCC 4.7.0: GLIBCXX_3.4.17, CXXABI_1.3.6</para></listitem>
     </itemizedlist>
     </listitem>
 
@@ -449,13 +451,19 @@ compatible.
     <listitem><para>GCC 4.4.4: 20100429</para></listitem>
     <listitem><para>GCC 4.4.5: 20101001</para></listitem>
     <listitem><para>GCC 4.4.6: 20110416</para></listitem>
+    <listitem><para>GCC 4.4.7: 20120313</para></listitem>
     <listitem><para>GCC 4.5.0: 20100414</para></listitem>
     <listitem><para>GCC 4.5.1: 20100731</para></listitem>
     <listitem><para>GCC 4.5.2: 20101216</para></listitem>
     <listitem><para>GCC 4.5.3: 20110428</para></listitem>
+    <listitem><para>GCC 4.5.4: 20120702</para></listitem>
     <listitem><para>GCC 4.6.0: 20110325</para></listitem>
     <listitem><para>GCC 4.6.1: 20110627</para></listitem>
     <listitem><para>GCC 4.6.2: 20111026</para></listitem>
+    <listitem><para>GCC 4.6.3: 20120301</para></listitem>
+    <listitem><para>GCC 4.7.0: 20120322</para></listitem>
+    <listitem><para>GCC 4.7.1: 20120614</para></listitem>
+    <listitem><para>GCC 4.7.2: 20120920</para></listitem>
     </itemizedlist>
     <para/>
     </listitem>
