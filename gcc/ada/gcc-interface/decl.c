@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -4965,7 +4965,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 	}
 
-      /* If this is a record type or subtype, call elaborate_expression_1 on
+      /* If this is a record type or subtype, call elaborate_expression_2 on
 	 any field position.  Do this for both global and local types.
 	 Skip any fields that we haven't made trees for to avoid problems with
 	 class wide types.  */
@@ -7286,15 +7286,22 @@ annotate_value (tree gnu_size)
 
     case COMPONENT_REF:
       /* The only case we handle here is a simple discriminant reference.  */
-      if (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == PLACEHOLDER_EXPR
-	  && TREE_CODE (TREE_OPERAND (gnu_size, 1)) == FIELD_DECL
-	  && DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1)))
-	return Create_Node (Discrim_Val,
-			    annotate_value (DECL_DISCRIMINANT_NUMBER
-					    (TREE_OPERAND (gnu_size, 1))),
-			    No_Uint, No_Uint);
-      else
-	return No_Uint;
+      if (DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1)))
+	{
+	  tree n = DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1));
+
+	  /* Climb up the chain of successive extensions, if any.  */
+	  while (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == COMPONENT_REF
+		 && DECL_NAME (TREE_OPERAND (TREE_OPERAND (gnu_size, 0), 1))
+		    == parent_name_id)
+	    gnu_size = TREE_OPERAND (gnu_size, 0);
+
+	  if (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == PLACEHOLDER_EXPR)
+	    return
+	      Create_Node (Discrim_Val, annotate_value (n), No_Uint, No_Uint);
+	}
+
+      return No_Uint;
 
     CASE_CONVERT:   case NON_LVALUE_EXPR:
       return annotate_value (TREE_OPERAND (gnu_size, 0));
