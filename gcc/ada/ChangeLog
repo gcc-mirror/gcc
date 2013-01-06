@@ -1,5 +1,9 @@
 2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (elaborate_entity) <E_Record_Type>: Delete.
+
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Do not
 	pack the field of the record type made for a misaligned type.
 

@@ -5944,18 +5944,6 @@ elaborate_entity (Entity_Id gnat_entity)
       break;
       }
 
-    case E_Record_Type:
-      {
-	Node_Id full_definition = Declaration_Node (gnat_entity);
-	Node_Id record_definition = Type_Definition (full_definition);
-
-	/* If this is a record extension, go a level further to find the
-	   record definition.  */
-	if (Nkind (record_definition) == N_Derived_Type_Definition)
-	  record_definition = Record_Extension_Part (record_definition);
-      }
-      break;
-
     case E_Record_Subtype:
     case E_Private_Subtype:
     case E_Limited_Private_Subtype:
