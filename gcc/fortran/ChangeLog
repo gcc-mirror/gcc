@@ -1,3 +1,16 @@
+2013-01-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/PR53876
+	PR fortran/PR54990
+	PR fortran/PR54992
+	* trans-array.c (build_array_ref): Check the TYPE_CANONICAL
+	to see if it is GFC_CLASS_TYPE_P.
+	* trans-expr.c (gfc_get_vptr_from_expr): The same.
+	(gfc_conv_class_to_class): If the types are not the same,
+	cast parmese->expr to the type of ctree.
+	* trans-types.c (gfc_get_derived_type): GFC_CLASS_TYPE_P of
+	CLASS components must be set.
+
 2013-01-06  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/42769

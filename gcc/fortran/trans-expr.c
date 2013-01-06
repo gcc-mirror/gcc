@@ -198,16 +198,31 @@ gfc_vtable_final_get (tree decl)
 #undef VTABLE_FINAL_FIELD
 
 
-/* Obtain the vptr of the last class reference in an expression.  */
+/* Obtain the vptr of the last class reference in an expression.
+   Return NULL_TREE if no class reference is found.  */
 
 tree
 gfc_get_vptr_from_expr (tree expr)
 {
-  tree tmp = expr;
-  while (tmp && !GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
-    tmp = TREE_OPERAND (tmp, 0);
-  tmp = gfc_class_vptr_get (tmp);
-  return tmp;
+  tree tmp;
+  tree type;
+
+  for (tmp = expr; tmp; tmp = TREE_OPERAND (tmp, 0))
+    {
+      type = TREE_TYPE (tmp);
+      while (type)
+	{
+	  if (GFC_CLASS_TYPE_P (type))
+	    return gfc_class_vptr_get (tmp);
+	  if (type != TYPE_CANONICAL (type))
+	    type = TYPE_CANONICAL (type);
+	  else
+	    type = NULL_TREE;
+	}
+      if (TREE_CODE (tmp) == VAR_DECL)
+	break;
+    }
+  return NULL_TREE;
 }
 
 
@@ -594,7 +609,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
     }
   else
     {
-      if (CLASS_DATA (e)->attr.codimension)
+      if (TREE_TYPE (parmse->expr) != TREE_TYPE (ctree))
 	parmse->expr = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
 					TREE_TYPE (ctree), parmse->expr);
       gfc_add_modify (&block, ctree, parmse->expr);
@@ -1562,6 +1577,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       c->norestrict_decl = f2;
       field = f2;
     }
+
   tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
 			 decl, field, NULL_TREE);
 
