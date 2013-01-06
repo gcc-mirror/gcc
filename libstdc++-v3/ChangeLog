@@ -1,5 +1,11 @@
 2013-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/unordered_map.h: Fix typo in comments.
+	* doc/xml/manual/status_cxx2011.xml: Add implementation-defined bucket
+	counts for unordered associative containers.
+
+2013-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/abi.xml: Update library and symbol versions.
 
 2013-01-06  Richard Sandiford  <rdsandiford@googlemail.com>

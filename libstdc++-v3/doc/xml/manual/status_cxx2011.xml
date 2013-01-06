@@ -2635,6 +2635,15 @@ particular release.
    </para>
 
    <para>
+      <emphasis>23.5.4.2 [unord.map.cnstr]</emphasis>,
+      <emphasis>23.5.5.2 [unord.multimap.cnstr]</emphasis>,
+      <emphasis>23.5.6.2 [unord.set.cnstr]</emphasis>,
+      <emphasis>23.5.7.2 [unord.multiset.cnstr]</emphasis>
+      The default bucket count is 10 for the default constructors
+      and 0 for the range constructors and initializer-list constructors.
+   </para>
+
+   <para>
       <emphasis>30.2.3 [thread.req.native]/1</emphasis>
       <classname>native_handle_type</classname> and
       <methodname>native_handle</methodname> are provided. The handle types
