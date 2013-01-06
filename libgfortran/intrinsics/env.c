@@ -185,7 +185,8 @@ get_environment_variable_i8 (char *name, char *value, GFC_INTEGER_8 *length,
     trim_name4 = *trim_name;
 
   get_environment_variable_i4 (name, value, &length4, &status4, 
-			       &trim_name4, name_len, value_len);
+			       trim_name ? &trim_name4 : NULL,
+			       name_len, value_len);
 
   if (length)
     *length = length4;
