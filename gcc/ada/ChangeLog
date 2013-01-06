@@ -1,5 +1,10 @@
 2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <discrete_type>: Do not
+	pack the field of the record type made for a misaligned type.
+
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (annotate_value) <COMPONENT_REF>: Be prepared
 	for discriminants inherited from parent record types.
 
@@ -12,7 +17,7 @@
 	* einfo.adb, atree.adb: Enlarge entities to make 63 more flags, 6 more
 	fields.
 
-2013-01-04  Joel Brobecker  <brobecker@adacore.com brobecker>
+2013-01-04  Joel Brobecker  <brobecker@adacore.com>
 
 	* gnat_ugn.texi: Fix typo.
 
