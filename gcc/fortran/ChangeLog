@@ -1,3 +1,14 @@
+2013-01-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42769
+	PR fortran/45836
+	PR fortran/45900
+	* module.c (read_module): Don't reuse local symtree if the associated
+	symbol isn't exactly the one wanted.  Don't reuse local symtree if it is
+	ambiguous.
+	* resolve.c (resolve_call): Use symtree's name instead of symbol's to
+	lookup the symtree.
+
 2013-01-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
