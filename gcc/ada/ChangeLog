@@ -1,3 +1,7 @@
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Current_Year): Bump to 2013.
+
 2013-01-06  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_field): Emit a specialized
