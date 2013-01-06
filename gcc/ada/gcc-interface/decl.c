@@ -1896,8 +1896,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       /* If the type we are dealing with has got a smaller alignment than the
-	 natural one, we need to wrap it up in a record type and under-align
-	 the latter.  We reuse the padding machinery for this purpose.  */
+	 natural one, we need to wrap it up in a record type and misalign the
+	 latter; we reuse the padding machinery for this purpose.  Note that,
+	 even if the record type is marked as packed because of misalignment,
+	 we don't pack the field so as to give it the size of the type.  */
       else if (align > 0)
 	{
 	  tree gnu_field_type, gnu_field;
@@ -1927,7 +1929,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     a bitfield.  */
 	  gnu_field
 	    = create_field_decl (get_identifier ("F"), gnu_field_type,
-				 gnu_type, NULL_TREE, bitsize_zero_node, 1, 0);
+				 gnu_type, TYPE_SIZE (gnu_field_type),
+				 bitsize_zero_node, 0, 0);
 
 	  finish_record_type (gnu_type, gnu_field, 2, debug_info_p);
 	  compute_record_mode (gnu_type);

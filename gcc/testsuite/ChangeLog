@@ -1,3 +1,7 @@
+2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment10.adb: New test.
+
 2012-12-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
