@@ -1,3 +1,14 @@
+2013-01-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42769
+	PR fortran/45836
+	PR fortran/45900
+	* gfortran.dg/use_23.f90: New test.
+	* gfortran.dg/use_24.f90: New test.
+	* gfortran.dg/use_25.f90: New test.
+	* gfortran.dg/use_26.f90: New test.
+	* gfortran.dg/use_27.f90: New test.
+
 2013-01-06  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/specs/clause_on_volatile.ads: New test.

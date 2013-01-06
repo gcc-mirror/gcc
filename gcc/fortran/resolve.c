@@ -3776,7 +3776,7 @@ resolve_call (gfc_code *c)
   if (csym && gfc_current_ns->parent && csym->ns != gfc_current_ns)
     {
       gfc_symtree *st;
-      gfc_find_sym_tree (csym->name, gfc_current_ns, 1, &st);
+      gfc_find_sym_tree (c->symtree->name, gfc_current_ns, 1, &st);
       sym = st ? st->n.sym : NULL;
       if (sym && csym != sym
 	      && sym->ns == gfc_current_ns
