@@ -4014,8 +4014,7 @@ find_func_aliases_for_builtin_call (gimple t)
   vec<ce_s> rhsc = vNULL;
   varinfo_t fi;
 
-  if (fndecl != NULL_TREE
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (gimple_call_builtin_p (t, BUILT_IN_NORMAL))
     /* ???  All builtins that are handled here need to be handled
        in the alias-oracle query functions explicitly!  */
     switch (DECL_FUNCTION_CODE (fndecl))
@@ -4768,8 +4767,7 @@ find_func_clobbers (gimple origt)
 
       /* For builtins we do not have separate function info.  For those
 	 we do not generate escapes for we have to generate clobbers/uses.  */
-      if (decl
-	  && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+      if (gimple_call_builtin_p (t, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (decl))
 	  {
 	  /* The following functions use and clobber memory pointed to

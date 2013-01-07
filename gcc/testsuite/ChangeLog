@@ -1,3 +1,9 @@
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55890
+	* gcc.dg/torture/pr55890-1.c: New testcase.
+	* gcc.dg/torture/pr55890-2.c: Likewise.
+
 2013-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/fmovd.c: New.
