@@ -1,3 +1,10 @@
+2013-01-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Adjust
+	comment about type extension with discriminants.
+	<E_Record_Subtype>: Remove useless test and reorder conditions.
+	(elaborate_entity) <E_Record_Subtype>: Likewise.
+
 2013-01-07  Richard Biener  <rguenther@suse.de>
 
 	PR ada/864

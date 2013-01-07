@@ -3006,9 +3006,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    tree gnu_parent;
 
 	    /* A major complexity here is that the parent subtype will
-	       reference our discriminants in its Discriminant_Constraint
-	       list.  But those must reference the parent component of this
-	       record which is of the parent subtype we have not built yet!
+	       reference our discriminants in its Stored_Constraint list.
+	       But those must reference the parent component of this record
+	       which is precisely of the parent subtype we have not built yet!
 	       To break the circle we first build a dummy COMPONENT_REF which
 	       represents the "get to the parent" operation and initialize
 	       each of those discriminants to a COMPONENT_REF of the above
@@ -3287,9 +3287,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  if (IN (Ekind (gnat_base_type), Record_Kind)
 	      && !Is_Unchecked_Union (gnat_base_type)
 	      && !Is_For_Access_Subtype (gnat_entity)
-	      && Is_Constrained (gnat_entity)
 	      && Has_Discriminants (gnat_entity)
-	      && Present (Discriminant_Constraint (gnat_entity))
+	      && Is_Constrained (gnat_entity)
 	      && Stored_Constraint (gnat_entity) != No_Elist)
 	    {
 	      vec<subst_pair> gnu_subst_list
@@ -5948,9 +5947,7 @@ elaborate_entity (Entity_Id gnat_entity)
     case E_Private_Subtype:
     case E_Limited_Private_Subtype:
     case E_Record_Subtype_With_Private:
-      if (Is_Constrained (gnat_entity)
-	  && Has_Discriminants (gnat_entity)
-	  && Present (Discriminant_Constraint (gnat_entity)))
+      if (Has_Discriminants (gnat_entity) && Is_Constrained (gnat_entity))
 	{
 	  Node_Id gnat_discriminant_expr;
 	  Entity_Id gnat_field;
