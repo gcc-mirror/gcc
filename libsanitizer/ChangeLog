@@ -1,3 +1,15 @@
+2013-01-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* asan/Makefile.am (libasan_la_LIBADD): Replace
+	LIBSTDCXX_RAW_CXX_LDLAGS with LIBSTDCXX_RAW_CXX_LDFLAGS.
+	* tsan/Makefile.am (libtsan_la_LIBADD): Likewise.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+	* asan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+
 2012-12-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.am (AM_MAKEFLAGS): Restored.
