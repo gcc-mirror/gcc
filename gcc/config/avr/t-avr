@@ -49,7 +49,7 @@ avr-mcus: $(srcdir)/config/avr/t-multilib \
 	  $(srcdir)/doc/avr-mmcu.texi ; @true
 
 # Make sure that -mmcu= is supported for devices from avr-mcus.def and
-# is displaed all -mmcu= values are displayed on the help screen
+# all -mmcu= values are displayed on the help screen
 $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
 	$(SHELL) $< $(AVR_MCUS) > $@
 
