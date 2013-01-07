@@ -1,3 +1,7 @@
+2013-01-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (DEFAULT_PCC_STRUCT_RETURN): Remove.
+
 2013-01-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* file-find.c, file-find.h, realmpfr.c: Add FSF as copyright holder.
