@@ -5573,7 +5573,9 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
       /* Otherwise, we build a new SIZE call.  This is hopefully at least
 	 simpler than the original one.  */
       if (!simplified)
-	simplified = gfc_build_intrinsic_call ("size", array->where, 3,
+	simplified = gfc_build_intrinsic_call (gfc_current_ns,
+					       GFC_ISYM_SIZE, "size",
+					       array->where, 3,
 					       gfc_copy_expr (replacement),
 					       gfc_copy_expr (dim),
 					       gfc_copy_expr (kind));

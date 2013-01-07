@@ -1,3 +1,14 @@
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/55852
+	* expr.c (gfc_build_intrinsic_call): Avoid clashes
+	with user's procedures.
+	* gfortran.h (gfc_build_intrinsic_call): Update prototype.
+	(GFC_PREFIX): Define.
+	* simplify.c (gfc_simplify_size): Update call.
+
 2013-01-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

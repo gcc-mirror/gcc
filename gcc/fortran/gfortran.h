@@ -61,6 +61,15 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFIX(x) "_gfortran_" x
 #define PREFIX_LEN 10
 
+/* A prefix for internal variables, which are not user-visible.  */
+#if !defined (NO_DOT_IN_LABEL)
+# define GFC_PREFIX(x) "_F." x
+#elif !defined (NO_DOLLAR_IN_LABEL)
+# define GFC_PREFIX(x) "_F$" x
+#else
+# define GFC_PREFIX(x) "_F_" x
+#endif
+
 #define BLANK_COMMON_NAME "__BLNK__"
 
 /* Macro to initialize an mstring structure.  */
@@ -2764,7 +2773,8 @@ int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
-gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
+gfc_expr* gfc_build_intrinsic_call (gfc_namespace *, gfc_isym_id, const char*,
+				    locus, unsigned, ...);
 gfc_try gfc_check_vardef_context (gfc_expr*, bool, bool, const char*);
 
 
