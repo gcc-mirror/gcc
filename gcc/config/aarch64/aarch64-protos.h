@@ -136,8 +136,8 @@ struct tune_params
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, enum machine_mode);
-bool aarch64_const_double_zero_rtx_p (rtx);
 bool aarch64_constant_address_p (rtx);
+bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
 bool aarch64_gen_movmemqi (rtx *);
 bool aarch64_is_extend_from_extract (enum machine_mode, rtx, rtx);
@@ -215,6 +215,9 @@ void aarch64_split_128bit_move (rtx, rtx);
 
 bool aarch64_split_128bit_move_p (rtx, rtx);
 
+/* Check for a legitimate floating point constant for FMOV.  */
+bool aarch64_float_const_representable_p (rtx);
+
 #if defined (RTX_CODE)
 
 bool aarch64_legitimate_address_p (enum machine_mode, rtx, RTX_CODE, bool);
@@ -246,4 +249,5 @@ extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
 
+char* aarch64_output_simd_mov_immediate (rtx *, enum machine_mode, unsigned);
 #endif /* GCC_AARCH64_PROTOS_H */

@@ -1,3 +1,30 @@
+2013-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_const_double_zero_rtx_p): Rename to...
+	(aarch64_float_const_zero_rtx_p): ...this.
+	(aarch64_float_const_representable_p): New.
+	(aarch64_output_simd_mov_immediate): Likewise.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>): Refactor
+	move immediate case.
+	* config/aarch64/aarch64.c
+	(aarch64_const_double_zero_rtx_p): Rename to...
+	(aarch64_float_const_zero_rtx_p): ...this.
+	(aarch64_print_operand): Allow printing of new constants.
+	(aarch64_valid_floating_const): New.
+	(aarch64_legitimate_constant_p): Check for valid floating-point
+	constants.
+	(aarch64_simd_valid_immediate): Likewise.
+	(aarch64_vect_float_const_representable_p): New.
+	(aarch64_float_const_representable_p): Likewise.
+	(aarch64_simd_imm_zero_p): Also allow for floating-point 0.0.
+	(aarch64_output_simd_mov_immediate): New.
+	* config/aarch64/aarch64.md (*movsf_aarch64): Add new alternative.
+	(*movdf_aarch64): Likewise.
+	* config/aarch64/constraints.md (Ufc): New.
+	(Y): call aarch64_float_const_zero_rtx.
+	* config/aarch64/predicates.md (aarch64_fp_compare_operand): New.
+
 2013-01-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55888

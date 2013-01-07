@@ -41,7 +41,7 @@
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_double")
-	    (match_test "aarch64_const_double_zero_rtx_p (op)"))))
+	    (match_test "aarch64_float_const_zero_rtx_p (op)"))))
 
 (define_predicate "aarch64_plus_immediate"
   (and (match_code "const_int")
