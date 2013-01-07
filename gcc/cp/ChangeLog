@@ -1,3 +1,10 @@
+2013-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55753
+	* tree.c (build_aggr_init_expr): Do nothing in a template.
+	* pt.c (tsubst_copy_and_build) [CALL_EXPR]: Strip an ADDR_EXPR off
+	a FUNCTION_DECL before tsubsting.
+
 2013-01-04  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/52343
