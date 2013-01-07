@@ -8387,7 +8387,7 @@ vhsubq_u32 (uint32x4_t a, uint32x4_t b)
 }
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vld1_dup_f32 (float32_t * a)
+vld1_dup_f32 (const float32_t * a)
 {
   float32x2_t result;
   __asm__ ("ld1r {%0.2s},[%1]"
@@ -8398,7 +8398,7 @@ vld1_dup_f32 (float32_t * a)
 }
 
 __extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
-vld1_dup_f64 (float64_t * a)
+vld1_dup_f64 (const float64_t * a)
 {
   float64x1_t result;
   __asm__ ("ld1 {%0.1d},[%1]"
@@ -8409,7 +8409,7 @@ vld1_dup_f64 (float64_t * a)
 }
 
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vld1_dup_p8 (poly8_t * a)
+vld1_dup_p8 (const poly8_t * a)
 {
   poly8x8_t result;
   __asm__ ("ld1r {%0.8b},[%1]"
@@ -8420,7 +8420,7 @@ vld1_dup_p8 (poly8_t * a)
 }
 
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vld1_dup_p16 (poly16_t * a)
+vld1_dup_p16 (const poly16_t * a)
 {
   poly16x4_t result;
   __asm__ ("ld1r {%0.4h},[%1]"
@@ -8431,7 +8431,7 @@ vld1_dup_p16 (poly16_t * a)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vld1_dup_s8 (int8_t * a)
+vld1_dup_s8 (const int8_t * a)
 {
   int8x8_t result;
   __asm__ ("ld1r {%0.8b},[%1]"
@@ -8442,7 +8442,7 @@ vld1_dup_s8 (int8_t * a)
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vld1_dup_s16 (int16_t * a)
+vld1_dup_s16 (const int16_t * a)
 {
   int16x4_t result;
   __asm__ ("ld1r {%0.4h},[%1]"
@@ -8453,7 +8453,7 @@ vld1_dup_s16 (int16_t * a)
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vld1_dup_s32 (int32_t * a)
+vld1_dup_s32 (const int32_t * a)
 {
   int32x2_t result;
   __asm__ ("ld1r {%0.2s},[%1]"
@@ -8464,7 +8464,7 @@ vld1_dup_s32 (int32_t * a)
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vld1_dup_s64 (int64_t * a)
+vld1_dup_s64 (const int64_t * a)
 {
   int64x1_t result;
   __asm__ ("ld1 {%0.1d},[%1]"
@@ -8475,7 +8475,7 @@ vld1_dup_s64 (int64_t * a)
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vld1_dup_u8 (uint8_t * a)
+vld1_dup_u8 (const uint8_t * a)
 {
   uint8x8_t result;
   __asm__ ("ld1r {%0.8b},[%1]"
@@ -8486,7 +8486,7 @@ vld1_dup_u8 (uint8_t * a)
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vld1_dup_u16 (uint16_t * a)
+vld1_dup_u16 (const uint16_t * a)
 {
   uint16x4_t result;
   __asm__ ("ld1r {%0.4h},[%1]"
@@ -8497,7 +8497,7 @@ vld1_dup_u16 (uint16_t * a)
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vld1_dup_u32 (uint32_t * a)
+vld1_dup_u32 (const uint32_t * a)
 {
   uint32x2_t result;
   __asm__ ("ld1r {%0.2s},[%1]"
@@ -8508,7 +8508,7 @@ vld1_dup_u32 (uint32_t * a)
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vld1_dup_u64 (uint64_t * a)
+vld1_dup_u64 (const uint64_t * a)
 {
   uint64x1_t result;
   __asm__ ("ld1 {%0.1d},[%1]"
@@ -8519,7 +8519,7 @@ vld1_dup_u64 (uint64_t * a)
 }
 
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vld1_f32 (float32_t * a)
+vld1_f32 (const float32_t * a)
 {
   float32x2_t result;
   __asm__ ("ld1 {%0.2s},[%1]"
@@ -8530,7 +8530,7 @@ vld1_f32 (float32_t * a)
 }
 
 __extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
-vld1_f64 (float64_t * a)
+vld1_f64 (const float64_t * a)
 {
   float64x1_t result;
   __asm__ ("ld1 {%0.1d},[%1]"
@@ -8544,7 +8544,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        float32x2_t b_ = (b);                                            \
-       float32_t * a_ = (a);                                            \
+       const float32_t * a_ = (a);                                      \
        float32x2_t result;                                              \
        __asm__ ("ld1 {%0.s}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8557,7 +8557,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        float64x1_t b_ = (b);                                            \
-       float64_t * a_ = (a);                                            \
+       const float64_t * a_ = (a);                                      \
        float64x1_t result;                                              \
        __asm__ ("ld1 {%0.d}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8570,7 +8570,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        poly8x8_t b_ = (b);                                              \
-       poly8_t * a_ = (a);                                              \
+       const poly8_t * a_ = (a);                                        \
        poly8x8_t result;                                                \
        __asm__ ("ld1 {%0.b}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8583,7 +8583,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        poly16x4_t b_ = (b);                                             \
-       poly16_t * a_ = (a);                                             \
+       const poly16_t * a_ = (a);                                       \
        poly16x4_t result;                                               \
        __asm__ ("ld1 {%0.h}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8596,7 +8596,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int8x8_t b_ = (b);                                               \
-       int8_t * a_ = (a);                                               \
+       const int8_t * a_ = (a);                                         \
        int8x8_t result;                                                 \
        __asm__ ("ld1 {%0.b}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8609,7 +8609,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int16x4_t b_ = (b);                                              \
-       int16_t * a_ = (a);                                              \
+       const int16_t * a_ = (a);                                        \
        int16x4_t result;                                                \
        __asm__ ("ld1 {%0.h}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8622,7 +8622,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int32x2_t b_ = (b);                                              \
-       int32_t * a_ = (a);                                              \
+       const int32_t * a_ = (a);                                        \
        int32x2_t result;                                                \
        __asm__ ("ld1 {%0.s}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8635,7 +8635,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int64x1_t b_ = (b);                                              \
-       int64_t * a_ = (a);                                              \
+       const int64_t * a_ = (a);                                        \
        int64x1_t result;                                                \
        __asm__ ("ld1 {%0.d}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8648,7 +8648,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint8x8_t b_ = (b);                                              \
-       uint8_t * a_ = (a);                                              \
+       const uint8_t * a_ = (a);                                        \
        uint8x8_t result;                                                \
        __asm__ ("ld1 {%0.b}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8661,7 +8661,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint16x4_t b_ = (b);                                             \
-       uint16_t * a_ = (a);                                             \
+       const uint16_t * a_ = (a);                                       \
        uint16x4_t result;                                               \
        __asm__ ("ld1 {%0.h}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8674,7 +8674,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint32x2_t b_ = (b);                                             \
-       uint32_t * a_ = (a);                                             \
+       const uint32_t * a_ = (a);                                       \
        uint32x2_t result;                                               \
        __asm__ ("ld1 {%0.s}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8687,7 +8687,7 @@ vld1_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint64x1_t b_ = (b);                                             \
-       uint64_t * a_ = (a);                                             \
+       const uint64_t * a_ = (a);                                       \
        uint64x1_t result;                                               \
        __asm__ ("ld1 {%0.d}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8697,7 +8697,7 @@ vld1_f64 (float64_t * a)
      })
 
 __extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vld1_p8 (poly8_t * a)
+vld1_p8 (const poly8_t * a)
 {
   poly8x8_t result;
   __asm__ ("ld1 {%0.8b}, [%1]"
@@ -8708,7 +8708,7 @@ vld1_p8 (poly8_t * a)
 }
 
 __extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vld1_p16 (poly16_t * a)
+vld1_p16 (const poly16_t * a)
 {
   poly16x4_t result;
   __asm__ ("ld1 {%0.4h}, [%1]"
@@ -8719,7 +8719,7 @@ vld1_p16 (poly16_t * a)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vld1_s8 (int8_t * a)
+vld1_s8 (const int8_t * a)
 {
   int8x8_t result;
   __asm__ ("ld1 {%0.8b},[%1]"
@@ -8730,7 +8730,7 @@ vld1_s8 (int8_t * a)
 }
 
 __extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vld1_s16 (int16_t * a)
+vld1_s16 (const int16_t * a)
 {
   int16x4_t result;
   __asm__ ("ld1 {%0.4h},[%1]"
@@ -8741,7 +8741,7 @@ vld1_s16 (int16_t * a)
 }
 
 __extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vld1_s32 (int32_t * a)
+vld1_s32 (const int32_t * a)
 {
   int32x2_t result;
   __asm__ ("ld1 {%0.2s},[%1]"
@@ -8752,7 +8752,7 @@ vld1_s32 (int32_t * a)
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vld1_s64 (int64_t * a)
+vld1_s64 (const int64_t * a)
 {
   int64x1_t result;
   __asm__ ("ld1 {%0.1d},[%1]"
@@ -8763,7 +8763,7 @@ vld1_s64 (int64_t * a)
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vld1_u8 (uint8_t * a)
+vld1_u8 (const uint8_t * a)
 {
   uint8x8_t result;
   __asm__ ("ld1 {%0.8b},[%1]"
@@ -8774,7 +8774,7 @@ vld1_u8 (uint8_t * a)
 }
 
 __extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vld1_u16 (uint16_t * a)
+vld1_u16 (const uint16_t * a)
 {
   uint16x4_t result;
   __asm__ ("ld1 {%0.4h},[%1]"
@@ -8785,7 +8785,7 @@ vld1_u16 (uint16_t * a)
 }
 
 __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vld1_u32 (uint32_t * a)
+vld1_u32 (const uint32_t * a)
 {
   uint32x2_t result;
   __asm__ ("ld1 {%0.2s},[%1]"
@@ -8796,7 +8796,7 @@ vld1_u32 (uint32_t * a)
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vld1_u64 (uint64_t * a)
+vld1_u64 (const uint64_t * a)
 {
   uint64x1_t result;
   __asm__ ("ld1 {%0.1d},[%1]"
@@ -8807,7 +8807,7 @@ vld1_u64 (uint64_t * a)
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vld1q_dup_f32 (float32_t * a)
+vld1q_dup_f32 (const float32_t * a)
 {
   float32x4_t result;
   __asm__ ("ld1r {%0.4s},[%1]"
@@ -8818,7 +8818,7 @@ vld1q_dup_f32 (float32_t * a)
 }
 
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vld1q_dup_f64 (float64_t * a)
+vld1q_dup_f64 (const float64_t * a)
 {
   float64x2_t result;
   __asm__ ("ld1r {%0.2d},[%1]"
@@ -8829,7 +8829,7 @@ vld1q_dup_f64 (float64_t * a)
 }
 
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vld1q_dup_p8 (poly8_t * a)
+vld1q_dup_p8 (const poly8_t * a)
 {
   poly8x16_t result;
   __asm__ ("ld1r {%0.16b},[%1]"
@@ -8840,7 +8840,7 @@ vld1q_dup_p8 (poly8_t * a)
 }
 
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vld1q_dup_p16 (poly16_t * a)
+vld1q_dup_p16 (const poly16_t * a)
 {
   poly16x8_t result;
   __asm__ ("ld1r {%0.8h},[%1]"
@@ -8851,7 +8851,7 @@ vld1q_dup_p16 (poly16_t * a)
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vld1q_dup_s8 (int8_t * a)
+vld1q_dup_s8 (const int8_t * a)
 {
   int8x16_t result;
   __asm__ ("ld1r {%0.16b},[%1]"
@@ -8862,7 +8862,7 @@ vld1q_dup_s8 (int8_t * a)
 }
 
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vld1q_dup_s16 (int16_t * a)
+vld1q_dup_s16 (const int16_t * a)
 {
   int16x8_t result;
   __asm__ ("ld1r {%0.8h},[%1]"
@@ -8873,7 +8873,7 @@ vld1q_dup_s16 (int16_t * a)
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vld1q_dup_s32 (int32_t * a)
+vld1q_dup_s32 (const int32_t * a)
 {
   int32x4_t result;
   __asm__ ("ld1r {%0.4s},[%1]"
@@ -8884,7 +8884,7 @@ vld1q_dup_s32 (int32_t * a)
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vld1q_dup_s64 (int64_t * a)
+vld1q_dup_s64 (const int64_t * a)
 {
   int64x2_t result;
   __asm__ ("ld1r {%0.2d},[%1]"
@@ -8895,7 +8895,7 @@ vld1q_dup_s64 (int64_t * a)
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vld1q_dup_u8 (uint8_t * a)
+vld1q_dup_u8 (const uint8_t * a)
 {
   uint8x16_t result;
   __asm__ ("ld1r {%0.16b},[%1]"
@@ -8906,7 +8906,7 @@ vld1q_dup_u8 (uint8_t * a)
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vld1q_dup_u16 (uint16_t * a)
+vld1q_dup_u16 (const uint16_t * a)
 {
   uint16x8_t result;
   __asm__ ("ld1r {%0.8h},[%1]"
@@ -8917,7 +8917,7 @@ vld1q_dup_u16 (uint16_t * a)
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vld1q_dup_u32 (uint32_t * a)
+vld1q_dup_u32 (const uint32_t * a)
 {
   uint32x4_t result;
   __asm__ ("ld1r {%0.4s},[%1]"
@@ -8928,7 +8928,7 @@ vld1q_dup_u32 (uint32_t * a)
 }
 
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vld1q_dup_u64 (uint64_t * a)
+vld1q_dup_u64 (const uint64_t * a)
 {
   uint64x2_t result;
   __asm__ ("ld1r {%0.2d},[%1]"
@@ -8939,7 +8939,7 @@ vld1q_dup_u64 (uint64_t * a)
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vld1q_f32 (float32_t * a)
+vld1q_f32 (const float32_t * a)
 {
   float32x4_t result;
   __asm__ ("ld1 {%0.4s},[%1]"
@@ -8950,7 +8950,7 @@ vld1q_f32 (float32_t * a)
 }
 
 __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vld1q_f64 (float64_t * a)
+vld1q_f64 (const float64_t * a)
 {
   float64x2_t result;
   __asm__ ("ld1 {%0.2d},[%1]"
@@ -8964,7 +8964,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        float32x4_t b_ = (b);                                            \
-       float32_t * a_ = (a);                                            \
+       const float32_t * a_ = (a);                                      \
        float32x4_t result;                                              \
        __asm__ ("ld1 {%0.s}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8977,7 +8977,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        float64x2_t b_ = (b);                                            \
-       float64_t * a_ = (a);                                            \
+       const float64_t * a_ = (a);                                      \
        float64x2_t result;                                              \
        __asm__ ("ld1 {%0.d}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -8990,7 +8990,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        poly8x16_t b_ = (b);                                             \
-       poly8_t * a_ = (a);                                              \
+       const poly8_t * a_ = (a);                                        \
        poly8x16_t result;                                               \
        __asm__ ("ld1 {%0.b}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9003,7 +9003,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        poly16x8_t b_ = (b);                                             \
-       poly16_t * a_ = (a);                                             \
+       const poly16_t * a_ = (a);                                       \
        poly16x8_t result;                                               \
        __asm__ ("ld1 {%0.h}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9016,7 +9016,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int8x16_t b_ = (b);                                              \
-       int8_t * a_ = (a);                                               \
+       const int8_t * a_ = (a);                                         \
        int8x16_t result;                                                \
        __asm__ ("ld1 {%0.b}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9029,7 +9029,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int16x8_t b_ = (b);                                              \
-       int16_t * a_ = (a);                                              \
+       const int16_t * a_ = (a);                                        \
        int16x8_t result;                                                \
        __asm__ ("ld1 {%0.h}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9042,7 +9042,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int32x4_t b_ = (b);                                              \
-       int32_t * a_ = (a);                                              \
+       const int32_t * a_ = (a);                                        \
        int32x4_t result;                                                \
        __asm__ ("ld1 {%0.s}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9055,7 +9055,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        int64x2_t b_ = (b);                                              \
-       int64_t * a_ = (a);                                              \
+       const int64_t * a_ = (a);                                        \
        int64x2_t result;                                                \
        __asm__ ("ld1 {%0.d}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9068,7 +9068,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint8x16_t b_ = (b);                                             \
-       uint8_t * a_ = (a);                                              \
+       const uint8_t * a_ = (a);                                        \
        uint8x16_t result;                                               \
        __asm__ ("ld1 {%0.b}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9081,7 +9081,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint16x8_t b_ = (b);                                             \
-       uint16_t * a_ = (a);                                             \
+       const uint16_t * a_ = (a);                                       \
        uint16x8_t result;                                               \
        __asm__ ("ld1 {%0.h}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9094,7 +9094,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint32x4_t b_ = (b);                                             \
-       uint32_t * a_ = (a);                                             \
+       const uint32_t * a_ = (a);                                       \
        uint32x4_t result;                                               \
        __asm__ ("ld1 {%0.s}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9107,7 +9107,7 @@ vld1q_f64 (float64_t * a)
   __extension__                                                         \
     ({                                                                  \
        uint64x2_t b_ = (b);                                             \
-       uint64_t * a_ = (a);                                             \
+       const uint64_t * a_ = (a);                                       \
        uint64x2_t result;                                               \
        __asm__ ("ld1 {%0.d}[%3],[%1]"                                   \
                 : "=w"(result)                                          \
@@ -9117,7 +9117,7 @@ vld1q_f64 (float64_t * a)
      })
 
 __extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vld1q_p8 (poly8_t * a)
+vld1q_p8 (const poly8_t * a)
 {
   poly8x16_t result;
   __asm__ ("ld1 {%0.16b},[%1]"
@@ -9128,7 +9128,7 @@ vld1q_p8 (poly8_t * a)
 }
 
 __extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vld1q_p16 (poly16_t * a)
+vld1q_p16 (const poly16_t * a)
 {
   poly16x8_t result;
   __asm__ ("ld1 {%0.8h},[%1]"
@@ -9139,7 +9139,7 @@ vld1q_p16 (poly16_t * a)
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vld1q_s8 (int8_t * a)
+vld1q_s8 (const int8_t * a)
 {
   int8x16_t result;
   __asm__ ("ld1 {%0.16b},[%1]"
@@ -9150,7 +9150,7 @@ vld1q_s8 (int8_t * a)
 }
 
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vld1q_s16 (int16_t * a)
+vld1q_s16 (const int16_t * a)
 {
   int16x8_t result;
   __asm__ ("ld1 {%0.8h},[%1]"
@@ -9161,7 +9161,7 @@ vld1q_s16 (int16_t * a)
 }
 
 __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vld1q_s32 (int32_t * a)
+vld1q_s32 (const int32_t * a)
 {
   int32x4_t result;
   __asm__ ("ld1 {%0.4s},[%1]"
@@ -9172,7 +9172,7 @@ vld1q_s32 (int32_t * a)
 }
 
 __extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vld1q_s64 (int64_t * a)
+vld1q_s64 (const int64_t * a)
 {
   int64x2_t result;
   __asm__ ("ld1 {%0.2d},[%1]"
@@ -9183,7 +9183,7 @@ vld1q_s64 (int64_t * a)
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vld1q_u8 (uint8_t * a)
+vld1q_u8 (const uint8_t * a)
 {
   uint8x16_t result;
   __asm__ ("ld1 {%0.16b},[%1]"
@@ -9194,7 +9194,7 @@ vld1q_u8 (uint8_t * a)
 }
 
 __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vld1q_u16 (uint16_t * a)
+vld1q_u16 (const uint16_t * a)
 {
   uint16x8_t result;
   __asm__ ("ld1 {%0.8h},[%1]"
@@ -9205,7 +9205,7 @@ vld1q_u16 (uint16_t * a)
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vld1q_u32 (uint32_t * a)
+vld1q_u32 (const uint32_t * a)
 {
   uint32x4_t result;
   __asm__ ("ld1 {%0.4s},[%1]"
@@ -9216,7 +9216,7 @@ vld1q_u32 (uint32_t * a)
 }
 
 __extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vld1q_u64 (uint64_t * a)
+vld1q_u64 (const uint64_t * a)
 {
   uint64x2_t result;
   __asm__ ("ld1 {%0.2d},[%1]"

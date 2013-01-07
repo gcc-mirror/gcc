@@ -1,3 +1,12 @@
+2013-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h (vld1_dup_*): Make argument const.
+	(vld1q_dup_*): Likewise.
+	(vld1_*): Likewise.
+	(vld1q_*): Likewise.
+	(vld1_lane_*): Likewise.
+	(vld1q_lane_*): Likewise.
+
 2013-01-07  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (LTO_minor_version): Bump to 2.
