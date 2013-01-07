@@ -1,3 +1,15 @@
+2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2013-01-07 trunk r194968.
+	
+	PR other/55243
+	* config/avr/t-avr: Don't automatically rebuild
+	$(srcdir)/config/avr/t-multilib
+	$(srcdir)/config/avr/avr-tables.opt
+	(avr-mcus): New phony target to build them on request.
+	(s-avr-mlib): Remove.
+	* avr/avr-mcus.def: Adjust comments.
+
 2013-01-07  Terry Guo  <terry.guo@arm.com>
 
 	Backport from mainline

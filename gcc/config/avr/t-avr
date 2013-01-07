@@ -1,5 +1,4 @@
-# Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-# 2009, 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 2000 -- 2013 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -40,19 +39,27 @@ avr.o avr-c.o: $(srcdir)/config/avr/builtins.def
 
 AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 
+# Run `avr-mcus' after you changed or added devices in  avr-mcus.def
+
+.PHONY: avr-mcus
+
+avr-mcus: $(srcdir)/config/avr/t-multilib \
+	  $(srcdir)/config/avr/avr-tables.opt; @true
+
+# Make sure that -mmcu= is supported for devices from avr-mcus.def and
+# all -mmcu= values are displayed on the help screen
 $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
 	$(SHELL) $< $(AVR_MCUS) > $@
+
+# Map -mmcu= to the right multilib variant
 
 # MULTILIB_OPTIONS
 # MULTILIB_DIRNAMES
 # MULTILIB_EXCEPTIONS
 # MULTILIB_MATCHES
-$(srcdir)/config/avr/t-multilib: s-avr-mlib; @true
 
 s-mlib: $(srcdir)/config/avr/t-multilib
 
-s-avr-mlib: $(srcdir)/config/avr/genmultilib.awk $(AVR_MCUS)
-	$(AWK) -f $< -v FORMAT=Makefile   $< $(AVR_MCUS) > tmp-avr-mlib
-	$(SHELL) $(srcdir)/../move-if-change \
-		tmp-avr-mlib 	$(srcdir)/config/avr/t-multilib
-	$(STAMP) $@
+$(srcdir)/config/avr/t-multilib: $(srcdir)/config/avr/genmultilib.awk \
+				 $(AVR_MCUS)
+	$(AWK) -f $< -v FORMAT=Makefile   $< $(AVR_MCUS) > $@

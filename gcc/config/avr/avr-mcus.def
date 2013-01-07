@@ -1,5 +1,5 @@
 /* AVR MCUs.
-   Copyright (C) 2009, 2010, 2011
+   Copyright (C) 2009 -- 2013
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -18,19 +18,50 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* List of all known AVR MCU types - if updated, it has to be kept
-   in sync in several places (FIXME: is there a better way?):
-    - here;
-    - gas/config/tc-avr.c;
-    - avr-libc.
+/* List of all known AVR MCU types.  If updated, cd to $(builddir)/gcc and run
+
+   $ make avr-mcus
+
+   This will regenerate / update the following source files:
+
+   -  $(srcdir)/config/avr/t-multilib
+   -  $(srcdir)/config/avr/avr-tables.opt
+
+   After that, rebuild everything and check-in the new sources to the repo.
+   The device list below has to be kept in sync with the following places:
+
+   -  here
+   -  gcc/doc/invoke.texi
+   -  gas/config/tc-avr.c
+   -  avr-libc
 
    Before including this file, define a macro:
 
-   AVR_MCU (NAME, ARCH, MACRO, SHORT_SP, ERRATA_SKIP, DATA_SEC, N_FLASH, LIBRARY_NAME)
+   AVR_MCU (NAME, ARCH, MACRO, SHORT_SP, ERRATA_SKIP, DATA_SEC, N_FLASH,
+            LIBRARY_NAME)
 
-   where the arguments are the fields of struct mcu_type_s.  */
+   where the arguments are the fields of struct mcu_type_s:
+   
+       NAME         Accept -mmcu=<NAME>
 
-/* "avr2" must be first for the "0" default to work as intended.  */
+       ARCH         Specifies the multilib variant together with SHORT_SP
+
+       MACRO        If NULL, this is a core and not a device.  If non-NULL,
+                    supply respective built-in macro.
+
+       SHORT_SP     The device / multilib has an 8-bit stack pointer (no SPH).
+
+       ERRATA_SKIP  Apply work-around for the "skip 32-bit instruction"
+                    silicon bug:  Don't skip 32-bit instrctions.
+
+       DATA_SEC     First address of SRAM, used in  -Tdata=  by the driver.
+
+       N_FLASH      Number of 64 KiB flash segments, rounded up.
+
+       LIBRARY_NAME Used by the driver to linke startup code from avr-libc
+                    as of  crt<LIBRARY_NAME>.o
+
+   "avr2" must be first for the "0" default to work as intended.  */
 
 /* Classic, <= 8K.  */
 AVR_MCU ("avr2",                 ARCH_AVR2, NULL,                        0, 1, 0x0060, 6, "s8515")
