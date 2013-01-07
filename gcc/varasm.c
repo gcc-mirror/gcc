@@ -1,7 +1,7 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012  Free Software Foundation, Inc.
+   2010, 2011, 2012, 2013  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3252,6 +3252,7 @@ output_constant_def_contents (rtx symbol)
   tree decl = SYMBOL_REF_DECL (symbol);
   tree exp = DECL_INITIAL (decl);
   unsigned int align;
+  bool asan_protected = false;
 
   /* Make sure any other constants whose addresses appear in EXP
      are assigned label numbers.  */
@@ -3260,6 +3261,14 @@ output_constant_def_contents (rtx symbol)
   /* We are no longer deferring this constant.  */
   TREE_ASM_WRITTEN (decl) = TREE_ASM_WRITTEN (exp) = 1;
 
+  if (flag_asan && TREE_CODE (exp) == STRING_CST
+      && asan_protect_global (exp))
+    {
+      asan_protected = true;
+      DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl),
+			       ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+    }
+
   /* If the constant is part of an object block, make sure that the
      decl has been positioned within its block, but do not write out
      its definition yet.  output_object_blocks will do that later.  */
@@ -3267,15 +3276,8 @@ output_constant_def_contents (rtx symbol)
     place_block_symbol (symbol);
   else
     {
-      bool asan_protected = false;
       align = DECL_ALIGN (decl);
       switch_to_section (get_constant_section (exp, align));
-      if (flag_asan && TREE_CODE (exp) == STRING_CST
-	  && asan_protect_global (exp))
-	{
-	  asan_protected = true;
-	  align = MAX (align, ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
-	}
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_constant_contents (exp, XSTR (symbol, 0), align);
@@ -6968,6 +6970,10 @@ place_block_symbol (rtx symbol)
       decl = SYMBOL_REF_DECL (symbol);
       alignment = DECL_ALIGN (decl);
       size = get_constant_size (DECL_INITIAL (decl));
+      if (flag_asan
+	  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
+	  && asan_protect_global (DECL_INITIAL (decl)))
+	size += asan_red_zone_size (size);
     }
   else
     {
@@ -6975,7 +6981,11 @@ place_block_symbol (rtx symbol)
       alignment = DECL_ALIGN (decl);
       size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
       if (flag_asan && asan_protect_global (decl))
-	size += asan_red_zone_size (size);
+	{
+	  size += asan_red_zone_size (size);
+	  alignment = MAX (alignment,
+			   ASAN_RED_ZONE_SIZE * BITS_PER_UNIT);
+	}
     }
 
   /* Calculate the object's offset from the start of the block.  */
@@ -7114,16 +7124,34 @@ output_object_block (struct object_block *block)
 	}
       else if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
 	{
+	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
 	  assemble_constant_contents (DECL_INITIAL (decl), XSTR (symbol, 0),
 				      DECL_ALIGN (decl));
-	  offset += get_constant_size (DECL_INITIAL (decl));
+	  size = get_constant_size (DECL_INITIAL (decl));
+	  offset += size;
+	  if (flag_asan
+	      && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
+	      && asan_protect_global (DECL_INITIAL (decl)))
+	    {
+	      size = asan_red_zone_size (size);
+	      assemble_zeros (size);
+	      offset += size;
+	    }
 	}
       else
 	{
+	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
 	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
-	  offset += tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  offset += size;
+	  if (flag_asan && asan_protect_global (decl))
+	    {
+	      size = asan_red_zone_size (size);
+	      assemble_zeros (size);
+	      offset += size;
+	    }
 	}
     }
 }

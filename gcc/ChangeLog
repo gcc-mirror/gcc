@@ -1,3 +1,16 @@
+2013-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (output_constant_def_contents): For asan_protect_global
+	protected strings, adjust DECL_ALIGN if needed, before testing for
+	anchored symbols.
+	(place_block_symbol): Adjust size for asan protected STRING_CSTs if
+	TREE_CONSTANT_POOL_ADDRESS_P.  Increase alignment for asan protected
+	normal decls.
+	(output_object_block): For asan protected decls, emit asan padding
+	after their contents.
+	* asan.c (asan_protect_global): Don't check TREE_ASM_WRITTEN here.
+	(asan_finish_file): Test it here instead.
+
 2013-01-07   Nick Clifton  <nickc@redhat.com>
 	     Matthias Klose <doko@debian.org>
 	     Doug Kwan  <dougkwan@google.com>
