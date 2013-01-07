@@ -1,6 +1,6 @@
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
-	PR target/PR54461
+	PR target/54461
 	* doc/install.texi (Cross-Compiler-Specific Options): Document
 	--with-avrlibc.
 
