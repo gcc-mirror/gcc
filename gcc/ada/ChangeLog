@@ -1,3 +1,9 @@
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR ada/864
+	* gcc-interface/Make-lang.in (ada.install-common): Always apply
+	program_transform_name.
+
 2013-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Current_Year): Bump to 2013.
