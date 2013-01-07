@@ -1,3 +1,14 @@
+2013-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/fmovd.c: New.
+	* gcc.target/aarch64/fmovf.c: Likewise.
+	* gcc.target/aarch64/fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/fmovf-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+
 2013-01-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/55888

@@ -69,7 +69,7 @@
 (define_constraint "Y"
   "Floating point constant zero."
   (and (match_code "const_double")
-       (match_test "aarch64_const_double_zero_rtx_p (op)")))
+       (match_test "aarch64_float_const_zero_rtx_p (op)")))
 
 (define_constraint "Z"
   "Integer constant zero."
@@ -137,6 +137,12 @@
    types wider than TImode."
   (and (match_code "mem")
        (match_test "aarch64_simd_mem_operand_p (op)")))
+
+(define_constraint "Ufc"
+  "A floating point constant which can be used with an\
+   FMOV immediate operation."
+  (and (match_code "const_double")
+       (match_test "aarch64_float_const_representable_p (op)")))
 
 (define_constraint "Dn"
   "@internal

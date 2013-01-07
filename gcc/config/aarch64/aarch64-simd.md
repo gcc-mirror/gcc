@@ -394,34 +394,8 @@
      case 4: return "ins\t%0.d[0], %1";
      case 5: return "mov\t%0, %1";
      case 6:
-       {
-	int is_valid;
-	unsigned char widthc;
-	int width;
-	static char templ[40];
-	int shift = 0, mvn = 0;
-	const char *mnemonic;
-	int length = 0;
-
-	is_valid =
-	  aarch64_simd_immediate_valid_for_move (operands[1], <MODE>mode,
-						 &operands[1], &width, &widthc,
-						 &mvn, &shift);
-	gcc_assert (is_valid != 0);
-
-	mnemonic = mvn ? "mvni" : "movi";
-	if (widthc != 'd')
-	  length += snprintf (templ, sizeof (templ),
-			      "%s\t%%0.%d%c, %%1",
-			      mnemonic, 64 / width, widthc);
-	else
-	  length += snprintf (templ, sizeof (templ), "%s\t%%d0, %%1", mnemonic);
-
-	if (shift != 0)
-	  length += snprintf (templ + length, sizeof (templ) - length,
-			      ", lsl %d", shift);
-	return templ;
-       }
+	return aarch64_output_simd_mov_immediate (&operands[1],
+						  <MODE>mode, 64);
      default: gcc_unreachable ();
      }
 }
@@ -438,39 +412,19 @@
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
 {
-   switch (which_alternative)
-     {
-     case 0: return "ld1\t{%0.<Vtype>}, %1";
-     case 1: return "st1\t{%1.<Vtype>}, %0";
-     case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
-     case 3: return "umov\t%0, %1.d[0]\;umov\t%H0, %1.d[1]";
-     case 4: return "ins\t%0.d[0], %1\;ins\t%0.d[1], %H1";
-     case 5: return "#";
-     case 6:
-       {
-	int is_valid;
-	unsigned char widthc;
-	int width;
-	static char templ[40];
-	int shift = 0, mvn = 0;
-
-	is_valid =
-	  aarch64_simd_immediate_valid_for_move (operands[1], <MODE>mode,
-						 &operands[1], &width, &widthc,
-						 &mvn, &shift);
-	gcc_assert (is_valid != 0);
-	if (shift)
-	  snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, %%1, lsl %d",
-		    mvn ? "mvni" : "movi",
-		    128 / width, widthc, shift);
-	else
-	  snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, %%1",
-		    mvn ? "mvni" : "movi",
-		    128 / width, widthc);
-	return templ;
-       }
-     default: gcc_unreachable ();
-     }
+  switch (which_alternative)
+    {
+    case 0: return "ld1\t{%0.<Vtype>}, %1";
+    case 1: return "st1\t{%1.<Vtype>}, %0";
+    case 2: return "orr\t%0.<Vbtype>, %1.<Vbtype>, %1.<Vbtype>";
+    case 3: return "umov\t%0, %1.d[0]\;umov\t%H0, %1.d[1]";
+    case 4: return "ins\t%0.d[0], %1\;ins\t%0.d[1], %H1";
+    case 5: return "#";
+    case 6:
+	return aarch64_output_simd_mov_immediate (&operands[1],
+						  <MODE>mode, 128);
+    default: gcc_unreachable ();
+    }
 }
   [(set_attr "simd_type" "simd_load1,simd_store1,simd_move,simd_movgp,simd_insgp,simd_move,simd_move_imm")
    (set_attr "simd_mode" "<MODE>")
