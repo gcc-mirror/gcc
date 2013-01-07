@@ -1880,19 +1880,25 @@ decay_conversion (tree exp, tsubst_flags_t complain)
       return error_mark_node;
     }
 
-  /* FIXME remove? at least need to remember that this isn't really a
-     constant expression if EXP isn't decl_constant_var_p, like with
-     C_MAYBE_CONST_EXPR.  */
-  exp = decl_constant_value_safe (exp);
-  if (error_operand_p (exp))
-    return error_mark_node;
+  code = TREE_CODE (type);
+
+  /* For an array decl decay_conversion should not try to return its
+     initializer.  */
+  if (code != ARRAY_TYPE)
+    {
+      /* FIXME remove? at least need to remember that this isn't really a
+	 constant expression if EXP isn't decl_constant_var_p, like with
+	 C_MAYBE_CONST_EXPR.  */
+      exp = decl_constant_value_safe (exp);
+      if (error_operand_p (exp))
+	return error_mark_node;
+    }
 
   if (NULLPTR_TYPE_P (type) && !TREE_SIDE_EFFECTS (exp))
     return nullptr_node;
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
-  code = TREE_CODE (type);
   if (code == VOID_TYPE)
     {
       if (complain & tf_error)
