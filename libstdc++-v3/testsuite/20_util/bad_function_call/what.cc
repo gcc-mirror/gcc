@@ -1,6 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
 
-// Copyright (C) 2005-2013 Free Software Foundation
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,43 +17,17 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
-
-#include <memory>
+#include <functional>
 #include <testsuite_hooks.h>
 
-struct A { };
-
-// 20.6.6.2.1 shared_ptr constructors [util.smartptr.shared.const]
-
-// Construction from expired weak_ptr
-int
-test01()
+int main()
 {
-  bool test = false;
-
-  std::shared_ptr<A> a1(new A);
-  std::weak_ptr<A> wa(a1);
-  a1.reset();
-  VERIFY( wa.expired() );
   try
   {
-    std::shared_ptr<A> a2(wa);
+    std::function<void()>{}();
   }
-  catch (const std::bad_weak_ptr& e)
+  catch (const std::exception& e)
   {
-    // Expected.
-    if (e.what() == std::string("bad_weak_ptr"))
-      test = true;
+    VERIFY( e.what() == std::string("bad_function_call") );
   }
-  VERIFY( test );
-
-  return 0;
-}
-
-int
-main()
-{
-  test01();
-  return 0;
 }
