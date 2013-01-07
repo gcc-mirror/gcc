@@ -1,3 +1,8 @@
+2013-01-07  Steve Ellcey  <sellcey@mips.com>
+
+	PR target/42661
+	* config/mips/mips.opt: Change mad to mmad to match documentation.
+
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/55897
