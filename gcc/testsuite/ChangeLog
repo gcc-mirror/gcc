@@ -1,3 +1,8 @@
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55852
+	* gfortran.dg/intrinsic_size_3.f90: New.
+
 2012-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763

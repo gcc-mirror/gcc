@@ -969,31 +969,6 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
 
   /* The <addr> part: TRANSFER (C_LOC (array), c_intptr_t).  */
 
-  /* TRANSFER.  */
-  expr2 = gfc_get_expr ();
-  expr2->expr_type = EXPR_FUNCTION;
-  expr2->value.function.name = "__transfer0";
-  expr2->value.function.isym
-	    = gfc_intrinsic_function_by_id (GFC_ISYM_TRANSFER);
-  /* Set symtree for -fdump-parse-tree.  */
-  gfc_get_sym_tree ("transfer", sub_ns, &expr2->symtree, false);
-  expr2->symtree->n.sym->intmod_sym_id = GFC_ISYM_TRANSFER;
-  expr2->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  expr2->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (expr2->symtree->n.sym);
-  expr2->value.function.actual = gfc_get_actual_arglist ();
-  expr2->value.function.actual->expr
-	    = gfc_lval_expr_from_sym (array);
-  expr2->ts.type = BT_INTEGER;
-  expr2->ts.kind = gfc_index_integer_kind;
-
-  /* TRANSFER's second argument: 0_c_intptr_t.  */
-  expr2->value.function.actual = gfc_get_actual_arglist ();
-  expr2->value.function.actual->next = gfc_get_actual_arglist ();
-  expr2->value.function.actual->next->expr
-		= gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
-  expr2->value.function.actual->next->next = gfc_get_actual_arglist ();
-
   /* TRANSFER's first argument: C_LOC (array).  */
   expr = gfc_get_expr ();
   expr->expr_type = EXPR_FUNCTION;
@@ -1010,7 +985,14 @@ finalization_scalarizer (gfc_symbol *array, gfc_symbol *ptr,
   gfc_commit_symbol (expr->symtree->n.sym);
   expr->ts.type = BT_INTEGER;
   expr->ts.kind = gfc_index_integer_kind;
-  expr2->value.function.actual->expr = expr;
+
+  /* TRANSFER.  */
+  expr2 = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_TRANSFER, "transfer",
+				    gfc_current_locus, 2, expr,
+				    gfc_get_int_expr (gfc_index_integer_kind,
+						      NULL, 0));
+  expr2->ts.type = BT_INTEGER;
+  expr2->ts.kind = gfc_index_integer_kind;
 
   /* <array addr> + <offset>.  */
   block->ext.actual->expr = gfc_get_expr ();
@@ -1072,27 +1054,18 @@ finalization_get_offset (gfc_symbol *idx, gfc_symbol *idx2, gfc_symbol *offset,
 				  * strides(idx2).  */
 
   /* mod (idx, sizes(idx2)).  */
-  expr = gfc_get_expr ();
-  expr->expr_type = EXPR_FUNCTION;
-  expr->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_MOD);
-  gfc_get_sym_tree ("mod", sub_ns, &expr->symtree, false);
-  expr->symtree->n.sym->intmod_sym_id = GFC_ISYM_MOD;
-  expr->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  expr->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (expr->symtree->n.sym);
-  expr->value.function.actual = gfc_get_actual_arglist ();
-  expr->value.function.actual->expr = gfc_lval_expr_from_sym (idx);
-  expr->value.function.actual->next = gfc_get_actual_arglist ();
-  expr->value.function.actual->next->expr = gfc_lval_expr_from_sym (sizes);
-  expr->value.function.actual->next->expr->ref = gfc_get_ref ();
-  expr->value.function.actual->next->expr->ref->type = REF_ARRAY;
-  expr->value.function.actual->next->expr->ref->u.ar.as = sizes->as;
-  expr->value.function.actual->next->expr->ref->u.ar.type = AR_ELEMENT;
-  expr->value.function.actual->next->expr->ref->u.ar.dimen = 1;
-  expr->value.function.actual->next->expr->ref->u.ar.dimen_type[0]
-	= DIMEN_ELEMENT;
-  expr->value.function.actual->next->expr->ref->u.ar.start[0]
-	= gfc_lval_expr_from_sym (idx2);
+  expr = gfc_lval_expr_from_sym (sizes);
+  expr->ref = gfc_get_ref ();
+  expr->ref->type = REF_ARRAY;
+  expr->ref->u.ar.as = sizes->as;
+  expr->ref->u.ar.type = AR_ELEMENT;
+  expr->ref->u.ar.dimen = 1;
+  expr->ref->u.ar.dimen_type[0] = DIMEN_ELEMENT;
+  expr->ref->u.ar.start[0] = gfc_lval_expr_from_sym (idx2);
+
+  expr = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_MOD, "mod",
+				   gfc_current_locus, 2,
+				   gfc_lval_expr_from_sym (idx), expr);
   expr->ts = idx->ts;
 
   /* (...) / sizes(idx2-1).  */
@@ -1195,7 +1168,7 @@ static void
 finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
 			      gfc_symbol *array, gfc_symbol *byte_stride,
 			      gfc_symbol *idx, gfc_symbol *ptr,
-			      gfc_symbol *nelem, gfc_symtree *size_intr,
+			      gfc_symbol *nelem,
 			      gfc_symbol *strides, gfc_symbol *sizes,
 			      gfc_symbol *idx2, gfc_symbol *offset,
 			      gfc_symbol *is_contiguous, gfc_expr *rank,
@@ -1225,24 +1198,12 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
   size_expr->value.op.op = INTRINSIC_DIVIDE;
 
   /* STORAGE_SIZE (array,kind=c_intptr_t).  */
-  size_expr->value.op.op1 = gfc_get_expr ();
-  size_expr->value.op.op1->where = gfc_current_locus;
-  size_expr->value.op.op1->expr_type = EXPR_FUNCTION;
-  size_expr->value.op.op1->value.function.isym
-               = gfc_intrinsic_function_by_id (GFC_ISYM_STORAGE_SIZE);
-  gfc_get_sym_tree ("storage_size", sub_ns, &size_expr->value.op.op1->symtree,
-		    false);
-  size_expr->value.op.op1->symtree->n.sym->intmod_sym_id
-	= GFC_ISYM_STORAGE_SIZE;
-  size_expr->value.op.op1->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  size_expr->value.op.op1->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (size_expr->value.op.op1->symtree->n.sym);
-  size_expr->value.op.op1->value.function.actual = gfc_get_actual_arglist ();
-  size_expr->value.op.op1->value.function.actual->expr
-               = gfc_lval_expr_from_sym (array);
-  size_expr->value.op.op1->value.function.actual->next = gfc_get_actual_arglist ();
-  size_expr->value.op.op1->value.function.actual->next->expr
-               = gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
+  size_expr->value.op.op1
+	= gfc_build_intrinsic_call (sub_ns, GFC_ISYM_STORAGE_SIZE,
+				    "storage_size", gfc_current_locus, 2,
+				    gfc_lval_expr_from_sym (array));
+				    gfc_get_int_expr (gfc_index_integer_kind,
+						      NULL, 0);
 
   /* NUMERIC_STORAGE_SIZE.  */
   size_expr->value.op.op2 = gfc_get_int_expr (gfc_index_integer_kind, NULL,
@@ -1356,21 +1317,14 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
       tmp_array->as->lower[i] = gfc_get_int_expr (gfc_default_integer_kind,
 						  NULL, 1);
       /* SIZE (array, dim=i+1, kind=default_kind).  */
-      shape_expr = gfc_get_expr ();
-      shape_expr->expr_type = EXPR_FUNCTION;
-      shape_expr->value.function.isym
-				= gfc_intrinsic_function_by_id (GFC_ISYM_SIZE);
-      shape_expr->symtree = size_intr;
-      shape_expr->value.function.actual = gfc_get_actual_arglist ();
-      shape_expr->value.function.actual->expr = gfc_lval_expr_from_sym (array);
-      shape_expr->value.function.actual->next = gfc_get_actual_arglist ();
-      shape_expr->value.function.actual->next->expr
-		= gfc_get_int_expr (gfc_default_integer_kind, NULL, i+1);
-      shape_expr->value.function.actual->next->next = gfc_get_actual_arglist ();
-      shape_expr->value.function.actual->next->next->expr
-		= gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
-      shape_expr->ts = shape_expr->value.function.isym->ts;
-
+      shape_expr
+	= gfc_build_intrinsic_call (sub_ns, GFC_ISYM_SIZE, "size",
+				    gfc_current_locus, 3,
+				    gfc_lval_expr_from_sym (array),
+				    gfc_get_int_expr (gfc_default_integer_kind,
+						      NULL, i+1),
+				    gfc_get_int_expr (gfc_default_integer_kind,
+						      NULL, 0));
       tmp_array->as->upper[i] = shape_expr;
     }
   gfc_set_sym_referenced (tmp_array);
@@ -1495,7 +1449,6 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 {
   gfc_symbol *final, *array, *fini_coarray, *byte_stride, *sizes, *strides;
   gfc_symbol *ptr = NULL, *idx, *idx2, *is_contiguous, *offset, *nelem;
-  gfc_symtree *size_intr;
   gfc_component *comp;
   gfc_namespace *sub_ns;
   gfc_code *last_code, *block;
@@ -1678,17 +1631,9 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   gfc_commit_symbol (offset);
 
   /* Create RANK expression.  */
-  rank = gfc_get_expr ();
-  rank->expr_type = EXPR_FUNCTION;
-  rank->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_RANK);
-  gfc_get_sym_tree ("rank", sub_ns, &rank->symtree, false);
-  rank->symtree->n.sym->intmod_sym_id = GFC_ISYM_RANK;
-  rank->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  rank->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (rank->symtree->n.sym);
-  rank->value.function.actual = gfc_get_actual_arglist ();
-  rank->value.function.actual->expr = gfc_lval_expr_from_sym (array);
-  rank->ts = rank->value.function.isym->ts;
+  rank = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_RANK, "rank",
+				   gfc_current_locus, 1,
+				   gfc_lval_expr_from_sym (array));
   gfc_convert_type (rank, &idx->ts, 2);
 
   /* Create is_contiguous variable.  */
@@ -1805,23 +1750,10 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   block->expr1->ref->u.ar.start[0] = gfc_lval_expr_from_sym (idx);
   block->expr1->ref->u.ar.as = strides->as;
 
-  block->expr2 = gfc_get_expr ();
-  block->expr2->expr_type = EXPR_FUNCTION;
-  block->expr2->value.function.isym
-	= gfc_intrinsic_function_by_id (GFC_ISYM_STRIDE);
-  gfc_get_sym_tree (GFC_PREFIX ("stride"), sub_ns,
-		    &block->expr2->symtree, false);
-  block->expr2->symtree->n.sym->intmod_sym_id = GFC_ISYM_STRIDE;
-  block->expr2->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  block->expr2->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (block->expr2->symtree->n.sym);
-  block->expr2->value.function.actual = gfc_get_actual_arglist ();
-  block->expr2->value.function.actual->expr = gfc_lval_expr_from_sym (array);
-  /* dim=idx. */
-  block->expr2->value.function.actual->next = gfc_get_actual_arglist ();
-  block->expr2->value.function.actual->next->expr
-	= gfc_lval_expr_from_sym (idx);
-  block->expr2->ts = block->expr2->value.function.isym->ts;
+  block->expr2 = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_STRIDE, "stride",
+					   gfc_current_locus, 2,
+					   gfc_lval_expr_from_sym (array),
+					   gfc_lval_expr_from_sym (idx));
 
   /* sizes(idx) = sizes(idx-1) * size(array,dim=idx, kind=index_kind). */
   block->next = XCNEW (gfc_code);
@@ -1862,32 +1794,13 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	= block->expr2->value.op.op1->ref->u.ar.start[0]->value.op.op1->ts;
 
   /* size(array, dim=idx, kind=index_kind).  */
-  block->expr2->value.op.op2 = gfc_get_expr ();
-  block->expr2->value.op.op2->expr_type = EXPR_FUNCTION;
-  block->expr2->value.op.op2->value.function.isym
-	= gfc_intrinsic_function_by_id (GFC_ISYM_SIZE);
-  gfc_get_sym_tree ("size", sub_ns, &block->expr2->value.op.op2->symtree,
-		    false);
-  size_intr = block->expr2->value.op.op2->symtree;
-  block->expr2->value.op.op2->symtree->n.sym->intmod_sym_id = GFC_ISYM_SIZE;
-  block->expr2->value.op.op2->symtree->n.sym->attr.flavor = FL_PROCEDURE;
-  block->expr2->value.op.op2->symtree->n.sym->attr.intrinsic = 1;
-  gfc_commit_symbol (block->expr2->value.op.op2->symtree->n.sym);
-  block->expr2->value.op.op2->value.function.actual
-	= gfc_get_actual_arglist ();
-  block->expr2->value.op.op2->value.function.actual->expr
-	= gfc_lval_expr_from_sym (array);
-  /* dim=idx. */
-  block->expr2->value.op.op2->value.function.actual->next
-	= gfc_get_actual_arglist ();
-  block->expr2->value.op.op2->value.function.actual->next->expr
-	= gfc_lval_expr_from_sym (idx);
-  /* kind=c_intptr_t. */
-  block->expr2->value.op.op2->value.function.actual->next->next
-	= gfc_get_actual_arglist ();
-  block->expr2->value.op.op2->value.function.actual->next->next->expr
-	= gfc_get_int_expr (gfc_index_integer_kind, NULL, 0);
-  block->expr2->value.op.op2->ts = idx->ts;
+  block->expr2->value.op.op2
+	= gfc_build_intrinsic_call (sub_ns, GFC_ISYM_SIZE, "size",
+				    gfc_current_locus, 3,
+				    gfc_lval_expr_from_sym (array),
+				    gfc_lval_expr_from_sym (idx),
+				    gfc_get_int_expr (gfc_index_integer_kind,
+						      NULL, 0));
   block->expr2->ts = idx->ts;
 
   /* if (strides(idx) /= sizes(idx-1)) is_contiguous = .false.  */
@@ -2053,7 +1966,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	  /* CALL fini_rank (array) - possibly with packing.  */
           if (fini->proc_tree->n.sym->formal->sym->attr.dimension)
 	    finalizer_insert_packed_call (block, fini, array, byte_stride,
-					  idx, ptr, nelem, size_intr, strides,
+					  idx, ptr, nelem, strides,
 					  sizes, idx2, offset, is_contiguous,
 					  rank, sub_ns);
 	  else
