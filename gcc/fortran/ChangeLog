@@ -30,9 +30,9 @@
 
 2013-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/PR53876
-	PR fortran/PR54990
-	PR fortran/PR54992
+	PR fortran/53876
+	PR fortran/54990
+	PR fortran/54992
 	* trans-array.c (build_array_ref): Check the TYPE_CANONICAL
 	to see if it is GFC_CLASS_TYPE_P.
 	* trans-expr.c (gfc_get_vptr_from_expr): The same.
