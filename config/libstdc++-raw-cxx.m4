@@ -24,7 +24,7 @@ AC_DEFUN([GCC_LIBSTDCXX_RAW_CXX_FLAGS], [
     -I\$(top_builddir)/../libstdc++-v3/include/\$(target_noncanonical) \
     -I\$(top_srcdir)/../libstdc++-v3/libsupc++"
   LIBSTDCXX_RAW_CXX_LDFLAGS="\
-    -I\$(top_builddir)/../libstdc++-v3/src/libstdc++.la"
+    \$(top_builddir)/../libstdc++-v3/src/libstdc++.la"
   AC_SUBST(LIBSTDCXX_RAW_CXX_CXXFLAGS)
   AC_SUBST(LIBSTDCXX_RAW_CXX_LDFLAGS)
 ])

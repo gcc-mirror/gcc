@@ -594,7 +594,7 @@ lib_gnu_awt_xlib_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	$(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ## The mysterious backslash in the grep pattern is consumed by make.
-lib_gnu_awt_xlib_la_LDFLAGS = $(LIBSTDCXX_RAW_CXX_LDLAGS) \
+lib_gnu_awt_xlib_la_LDFLAGS = $(LIBSTDCXX_RAW_CXX_LDFLAGS) \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
