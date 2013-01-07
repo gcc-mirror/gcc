@@ -80,29 +80,18 @@
 
 /* Known address spaces.  The order must be the same as in the respective
    enum from avr.h (or designated initialized must be used).  */
-const avr_addrspace_t avr_addrspace[] =
+const avr_addrspace_t avr_addrspace[ADDR_SPACE_COUNT] =
 {
-    { ADDR_SPACE_RAM,  0, 2, ""     ,   0 },
-    { ADDR_SPACE_FLASH,  1, 2, "__flash",   0 },
-    { ADDR_SPACE_FLASH1, 1, 2, "__flash1",  1 },
-    { ADDR_SPACE_FLASH2, 1, 2, "__flash2",  2 },
-    { ADDR_SPACE_FLASH3, 1, 2, "__flash3",  3 },
-    { ADDR_SPACE_FLASH4, 1, 2, "__flash4",  4 },
-    { ADDR_SPACE_FLASH5, 1, 2, "__flash5",  5 },
-    { ADDR_SPACE_MEMX, 1, 3, "__memx",  0 },
-    { 0              , 0, 0, NULL,      0 }
+  { ADDR_SPACE_RAM,  0, 2, "", 0, NULL },
+  { ADDR_SPACE_FLASH,  1, 2, "__flash",   0, ".progmem.data" },
+  { ADDR_SPACE_FLASH1, 1, 2, "__flash1",  1, ".progmem1.data" },
+  { ADDR_SPACE_FLASH2, 1, 2, "__flash2",  2, ".progmem2.data" },
+  { ADDR_SPACE_FLASH3, 1, 2, "__flash3",  3, ".progmem3.data" },
+  { ADDR_SPACE_FLASH4, 1, 2, "__flash4",  4, ".progmem4.data" },
+  { ADDR_SPACE_FLASH5, 1, 2, "__flash5",  5, ".progmem5.data" },
+  { ADDR_SPACE_MEMX, 1, 3, "__memx",  0, ".progmemx.data" },
 };
 
-/* Map 64-k Flash segment to section prefix.  */
-static const char* const progmem_section_prefix[6] =
-  {
-    ".progmem.data",
-    ".progmem1.data",
-    ".progmem2.data",
-    ".progmem3.data",
-    ".progmem4.data",
-    ".progmem5.data"
-  };
 
 /* Holding RAM addresses of some SFRs used by the compiler and that
    are unique over all devices in an architecture like 'avr4'.  */
@@ -208,8 +197,9 @@ const struct mcu_type_s *avr_current_device;
 static GTY(()) section *progmem_swtable_section;
 
 /* Unnamed sections associated to __attribute__((progmem)) aka. PROGMEM
-   or to address space __flash*.  */
-static GTY(()) section *progmem_section[6];
+   or to address space __flash* or __memx.  Only used as singletons inside
+   avr_asm_select_section, but it must not be local there because of GTY.  */
+static GTY(()) section *progmem_section[ADDR_SPACE_COUNT];
 
 /* Condition for insns/expanders from avr-dimode.md.  */
 bool avr_have_dimode = true;
@@ -7120,8 +7110,6 @@ avr_output_progmem_section_asm_op (const void *data)
 static void
 avr_asm_init_sections (void)
 {
-  unsigned int n;
-  
   /* Set up a section for jump tables.  Alignment is handled by
      ASM_OUTPUT_BEFORE_CASE_LABEL.  */
   
@@ -7140,13 +7128,6 @@ avr_asm_init_sections (void)
                                ",\"ax\",@progbits");
     }
 
-  for (n = 0; n < sizeof (progmem_section) / sizeof (*progmem_section); n++)
-    {
-      progmem_section[n]
-        = get_unnamed_section (0, avr_output_progmem_section_asm_op,
-                               progmem_section_prefix[n]);
-    }
-  
   /* Override section callbacks to keep track of `avr_need_clear_bss_p'
      resp. `avr_need_copy_data_p'.  */
   
@@ -7224,10 +7205,9 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
   if (flags & AVR_SECTION_PROGMEM)
     {
       addr_space_t as = (flags & AVR_SECTION_PROGMEM) / SECTION_MACH_DEP;
-      int segment = avr_addrspace[as].segment;
       const char *old_prefix = ".rodata";
-      const char *new_prefix = progmem_section_prefix[segment];
-      
+      const char *new_prefix = avr_addrspace[as].section_name;
+
       if (STR_PREFIX_P (name, old_prefix))
         {
           const char *sname = ACONCAT ((new_prefix,
@@ -7339,13 +7319,18 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
       && avr_progmem_p (decl, DECL_ATTRIBUTES (decl)))
     {
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
-      int segment = avr_addrspace[as].segment;
+
+      /* __progmem__ goes in generic space but shall be allocated to
+         .progmem.data  */
+
+      if (ADDR_SPACE_GENERIC_P (as))
+        as = ADDR_SPACE_FLASH;
       
       if (sect->common.flags & SECTION_NAMED)
         {
           const char * name = sect->named.name;
           const char * old_prefix = ".rodata";
-          const char * new_prefix = progmem_section_prefix[segment];
+          const char * new_prefix = avr_addrspace[as].section_name;
 
           if (STR_PREFIX_P (name, old_prefix))
             {
@@ -7354,8 +7339,15 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
               return get_section (sname, sect->common.flags, sect->named.decl);
             }
         }
-          
-      return progmem_section[segment];
+
+      if (!progmem_section[as])
+        {
+          progmem_section[as]
+            = get_unnamed_section (0, avr_output_progmem_section_asm_op,
+                                   avr_addrspace[as].section_name);
+        }
+
+      return progmem_section[as];
     }
 
   return sect;

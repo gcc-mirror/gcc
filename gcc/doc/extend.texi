@@ -1274,7 +1274,7 @@ RAM using the lower two bytes as RAM address.
 If the high bit of the address is clear, data is read from flash
 with @code{RAMPZ} set according to the high byte of the address.
 
-Objects in this address space will be located in @code{.progmem.data}.
+Objects in this address space will be located in @code{.progmemx.data}.
 @end table
 
 @b{Example}
