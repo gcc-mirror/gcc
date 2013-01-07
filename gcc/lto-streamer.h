@@ -141,7 +141,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LTO_SECTION_NAME_PREFIX         ".gnu.lto_"
 
 #define LTO_major_version 2
-#define LTO_minor_version 1
+#define LTO_minor_version 2
 
 typedef unsigned char	lto_decl_flags_t;
 
