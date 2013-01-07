@@ -8388,12 +8388,16 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	}
 
       /* Check F03:C816.  */
-      if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-	  && !selector_type->attr.unlimited_polymorphic
-	  && !gfc_type_is_extension_of (selector_type, c->ts.u.derived))
+      if (c->ts.type != BT_UNKNOWN && !selector_type->attr.unlimited_polymorphic
+	  && ((c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
+	      || !gfc_type_is_extension_of (selector_type, c->ts.u.derived)))
 	{
-	  gfc_error ("Derived type '%s' at %L must be an extension of '%s'",
-		     c->ts.u.derived->name, &c->where, selector_type->name);
+	  if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	    gfc_error ("Derived type '%s' at %L must be an extension of '%s'",
+		       c->ts.u.derived->name, &c->where, selector_type->name);
+	  else
+	    gfc_error ("Unexpected intrinsic type '%s' at %L",
+		       gfc_basic_typename (c->ts.type), &c->where);
 	  error++;
 	  continue;
 	}
