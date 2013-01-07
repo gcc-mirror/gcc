@@ -1342,6 +1342,9 @@ GLIBCXX_3.4.18 {
     # std::this_thread::__sleep_for
     _ZNSt11this_thread11__sleep_for*;
 
+    # std::bad_function_call::what()
+    _ZNKSt17bad_function_call4whatEv;
+
 } GLIBCXX_3.4.17;
 
 # Symbols in the support library (libsupc++) have their own tag.

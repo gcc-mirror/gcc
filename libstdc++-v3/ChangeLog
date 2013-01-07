@@ -1,3 +1,16 @@
+2013-01-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55847
+	* src/c++11/shared_ptr.cc (bad_weak_ptr::what()): Correct string.
+	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Verify
+	string.
+
+	PR libstdc++/55728
+	* include/std/functional (bad_function_call::what()): Declare.
+	* src/c++11/functional.cc (bad_function_call::what()): Define.
+	* config/abi/pre/gnu.ver (bad_function_call::what()): Export.
+	* testsuite/20_util/bad_function_call/what.cc: New.
+
 2013-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/unordered_map.h: Fix typo in comments.
