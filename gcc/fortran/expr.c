@@ -3291,22 +3291,21 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 gfc_try
 gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 {
-  symbol_attribute attr;
+  symbol_attribute attr, lhs_attr;
   gfc_ref *ref;
   bool is_pure, is_implicit_pure, rank_remap;
   int proc_pointer;
 
-  if (lvalue->symtree->n.sym->ts.type == BT_UNKNOWN
-      && !lvalue->symtree->n.sym->attr.proc_pointer)
+  lhs_attr = gfc_expr_attr (lvalue);
+  if (lvalue->ts.type == BT_UNKNOWN && !lhs_attr.proc_pointer)
     {
       gfc_error ("Pointer assignment target is not a POINTER at %L",
 		 &lvalue->where);
       return FAILURE;
     }
 
-  if (lvalue->symtree->n.sym->attr.flavor == FL_PROCEDURE
-      && lvalue->symtree->n.sym->attr.use_assoc
-      && !lvalue->symtree->n.sym->attr.proc_pointer)
+  if (lhs_attr.flavor == FL_PROCEDURE && lhs_attr.use_assoc
+      && !lhs_attr.proc_pointer)
     {
       gfc_error ("'%s' in the pointer assignment at %L cannot be an "
 		 "l-value since it is a procedure",
@@ -3735,10 +3734,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
    symbol.  Used for initialization assignments.  */
 
 gfc_try
-gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
+gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
 {
   gfc_expr lvalue;
   gfc_try r;
+  bool pointer, proc_pointer;
 
   memset (&lvalue, '\0', sizeof (gfc_expr));
 
@@ -3750,9 +3750,27 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   lvalue.symtree->n.sym = sym;
   lvalue.where = sym->declared_at;
 
-  if (sym->attr.pointer || sym->attr.proc_pointer
-      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.class_pointer
-	  && rvalue->expr_type == EXPR_NULL))
+  if (comp)
+    {
+      lvalue.ref = gfc_get_ref ();
+      lvalue.ref->type = REF_COMPONENT;
+      lvalue.ref->u.c.component = comp;
+      lvalue.ref->u.c.sym = sym;
+      lvalue.ts = comp->ts;
+      lvalue.rank = comp->as ? comp->as->rank : 0;
+      lvalue.where = comp->loc;
+      pointer = comp->ts.type == BT_CLASS &&  CLASS_DATA (comp)
+		? CLASS_DATA (comp)->attr.class_pointer : comp->attr.pointer;
+      proc_pointer = comp->attr.proc_pointer;
+    }
+  else
+    {
+      pointer = sym->ts.type == BT_CLASS &&  CLASS_DATA (sym)
+		? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer;
+      proc_pointer = sym->attr.proc_pointer;
+    }
+
+  if (pointer || proc_pointer)
     r = gfc_check_pointer_assign (&lvalue, rvalue);
   else
     r = gfc_check_assign (&lvalue, rvalue, 1);
@@ -3762,32 +3780,41 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   if (r == FAILURE)
     return r;
 
-  if (sym->attr.pointer && rvalue->expr_type != EXPR_NULL)
+  if (pointer && rvalue->expr_type != EXPR_NULL)
     {
       /* F08:C461. Additional checks for pointer initialization.  */
       symbol_attribute attr;
       attr = gfc_expr_attr (rvalue);
       if (attr.allocatable)
 	{
-	  gfc_error ("Pointer initialization target at %C "
-	             "must not be ALLOCATABLE ");
+	  gfc_error ("Pointer initialization target at %L "
+	             "must not be ALLOCATABLE", &rvalue->where);
 	  return FAILURE;
 	}
       if (!attr.target || attr.pointer)
 	{
-	  gfc_error ("Pointer initialization target at %C "
-		     "must have the TARGET attribute");
+	  gfc_error ("Pointer initialization target at %L "
+		     "must have the TARGET attribute", &rvalue->where);
 	  return FAILURE;
 	}
+
+      if (!attr.save && rvalue->expr_type == EXPR_VARIABLE
+	  && rvalue->symtree->n.sym->ns->proc_name
+	  && rvalue->symtree->n.sym->ns->proc_name->attr.is_main_program)
+	{
+	  rvalue->symtree->n.sym->ns->proc_name->attr.save = SAVE_IMPLICIT;
+	  attr.save = SAVE_IMPLICIT;
+	}
+
       if (!attr.save)
 	{
-	  gfc_error ("Pointer initialization target at %C "
-		     "must have the SAVE attribute");
+	  gfc_error ("Pointer initialization target at %L "
+		     "must have the SAVE attribute", &rvalue->where);
 	  return FAILURE;
 	}
     }
 
-  if (sym->attr.proc_pointer && rvalue->expr_type != EXPR_NULL)
+  if (proc_pointer && rvalue->expr_type != EXPR_NULL)
     {
       /* F08:C1220. Additional checks for procedure pointer initialization.  */
       symbol_attribute attr = gfc_expr_attr (rvalue);

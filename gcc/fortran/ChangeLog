@@ -1,4 +1,16 @@
 2013-01-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55763
+	* gfortran.h (gfc_check_assign_symbol): Update prototype.
+	* decl.c (add_init_expr_to_sym, do_parm): Update call.
+	* expr.c (gfc_check_assign_symbol): Handle BT_CLASS and
+	improve error location; support components.
+	(gfc_check_pointer_assign): Handle component assignments.
+	* resolve.c (resolve_fl_derived0): Call gfc_check_assign_symbol.
+	(resolve_values): Update call.
+	(resolve_structure_cons): Avoid double diagnostic.
+
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/55852
