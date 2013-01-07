@@ -736,14 +736,13 @@ ada.install-common:
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
 	  for tool in $(ADA_TOOLS) ; do \
+	    install_name=`echo $$tool|sed '$(program_transform_name)'`$(exeext); \
+	    $(RM) $(DESTDIR)$(bindir)/$$install_name; \
 	    if [ -f $$tool-cross$(exeext) ] ; \
 	    then \
-	      install_name=`echo $$tool|sed '$(program_transform_name)'`$(exeext); \
-	      $(RM) $(DESTDIR)$(bindir)/$$install_name; \
 	      $(INSTALL_PROGRAM) $$tool-cross$(exeext) $(DESTDIR)$(bindir)/$$install_name; \
 	    else \
-	      $(RM) $(DESTDIR)$(bindir)/$$tool$(exeext); \
-	      $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool$(exeext); \
+	      $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$install_name; \
 	    fi ; \
 	  done; \
 	  $(RM) $(DESTDIR)$(bindir)/gnatdll$(exeext); \
