@@ -2397,12 +2397,6 @@ static enum calling_abi ix86_function_abi (const_tree);
 #define SUBTARGET32_DEFAULT_CPU "i386"
 #endif
 
-/* The svr4 ABI for the i386 says that records and unions are returned
-   in memory.  */
-#ifndef DEFAULT_PCC_STRUCT_RETURN
-#define DEFAULT_PCC_STRUCT_RETURN 1
-#endif
-
 /* Whether -mtune= or -march= were specified */
 static int ix86_tune_defaulted;
 static int ix86_arch_specified;
