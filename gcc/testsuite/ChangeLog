@@ -48,9 +48,9 @@
 
 2013-01-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/PR53876
-	PR fortran/PR54990
-	PR fortran/PR54992
+	PR fortran/53876
+	PR fortran/54990
+	PR fortran/54992
 	* gfortran.dg/class_array_15.f03: New test.
 
 2013-01-06  Mikael Morin  <mikael@gcc.gnu.org>
