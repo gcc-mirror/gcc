@@ -1,5 +1,9 @@
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/t-avr: Typo.
+
+2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR55243
 	* config/avr/t-avr: Don't automatically rebuild
 	$(srcdir)/config/avr/t-multilib
