@@ -1105,23 +1105,28 @@ resolve_structure_cons (gfc_expr *expr, int init)
       if (!comp->attr.proc_pointer &&
 	  !gfc_compare_types (&cons->expr->ts, &comp->ts))
 	{
-	  t = FAILURE;
 	  if (strcmp (comp->name, "_extends") == 0)
 	    {
 	      /* Can afford to be brutal with the _extends initializer.
 		 The derived type can get lost because it is PRIVATE
 		 but it is not usage constrained by the standard.  */
 	      cons->expr->ts = comp->ts;
-	      t = SUCCESS;
 	    }
 	  else if (comp->attr.pointer && cons->expr->ts.type != BT_UNKNOWN)
-	    gfc_error ("The element in the structure constructor at %L, "
-		       "for pointer component '%s', is %s but should be %s",
-		       &cons->expr->where, comp->name,
-		       gfc_basic_typename (cons->expr->ts.type),
-		       gfc_basic_typename (comp->ts.type));
+	    {
+	      gfc_error ("The element in the structure constructor at %L, "
+			 "for pointer component '%s', is %s but should be %s",
+			 &cons->expr->where, comp->name,
+			 gfc_basic_typename (cons->expr->ts.type),
+			 gfc_basic_typename (comp->ts.type));
+	      t = FAILURE;
+	    }
 	  else
-	    t = gfc_convert_type (cons->expr, &comp->ts, 1);
+	    {
+	      gfc_try t2 = gfc_convert_type (cons->expr, &comp->ts, 1);
+	      if (t != FAILURE)
+		t = t2;
+	    }
 	}
 
       /* For strings, the length of the constructor should be the same as
@@ -10450,7 +10455,7 @@ resolve_values (gfc_symbol *sym)
   if (t == FAILURE)
     return;
 
-  gfc_check_assign_symbol (sym, sym->value);
+  gfc_check_assign_symbol (sym, NULL, sym->value);
 }
 
 
@@ -12873,6 +12878,10 @@ resolve_fl_derived0 (gfc_symbol *sym)
       if (gfc_resolve_array_spec (c->as, !(c->attr.pointer
 					   || c->attr.proc_pointer
 					   || c->attr.allocatable)) == FAILURE)
+	return FAILURE;
+
+      if (c->initializer && !sym->attr.vtype
+	  && gfc_check_assign_symbol (sym, c, c->initializer) == FAILURE)
 	return FAILURE;
     }
 

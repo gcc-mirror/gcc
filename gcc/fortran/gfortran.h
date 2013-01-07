@@ -2770,7 +2770,7 @@ int gfc_kind_max (gfc_expr *, gfc_expr *);
 gfc_try gfc_check_conformance (gfc_expr *, gfc_expr *, const char *, ...) ATTRIBUTE_PRINTF_3;
 gfc_try gfc_check_assign (gfc_expr *, gfc_expr *, int);
 gfc_try gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
-gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
+gfc_try gfc_check_assign_symbol (gfc_symbol *, gfc_component *, gfc_expr *);
 
 bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
