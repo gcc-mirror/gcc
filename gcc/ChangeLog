@@ -1,3 +1,14 @@
+2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR55243
+	* config/avr/t-avr: Don't automatically rebuild
+	$(srcdir)/config/avr/t-multilib
+	$(srcdir)/config/avr/avr-tables.opt
+	$(srcdir)/doc/avr-mmcu.texi
+	(avr-mcus): New phony target to build them on request.
+	(s-avr-mlib, s-avr-mmcu-texi): Remove.
+	* avr/avr-mcus.def: Adjust comments.
+
 2013-01-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (DEFAULT_PCC_STRUCT_RETURN): Remove.
