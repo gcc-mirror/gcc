@@ -1804,6 +1804,16 @@ being used as the target C library.  This causes @code{__eprintf} to be
 omitted from @file{libgcc.a} on the assumption that it will be provided by
 @samp{newlib}.
 
+@item --with-avrlibc
+Specifies that @samp{AVR-Libc} is
+being used as the target C library.  This causes float support
+functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
+the assumption that it will be provided by @file{libm.a}.  For more
+technical details, cf. @uref{http://gcc.gnu.org/PR54461,,PR54461}.
+This option is only supported for the AVR target.  It is not supported for
+RTEMS configurations, which currently use newlib.  The option is
+supported since version 4.7.2 and is the default in 4.8.0 and newer.
+
 @item --with-build-time-tools=@var{dir}
 Specifies where to find the set of target tools (assembler, linker, etc.)
 that will be used while building GCC itself.  This option can be useful
