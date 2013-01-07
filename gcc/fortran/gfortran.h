@@ -2798,7 +2798,8 @@ int gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
-gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
+gfc_expr* gfc_build_intrinsic_call (gfc_namespace *, gfc_isym_id, const char*,
+				    locus, unsigned, ...);
 gfc_try gfc_check_vardef_context (gfc_expr*, bool, bool, bool, const char*);
 
 

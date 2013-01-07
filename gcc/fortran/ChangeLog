@@ -1,3 +1,15 @@
+2013-01-07  Tobias Burnus  <burnus@net-b.de>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/55852
+	* expr.c (gfc_build_intrinsic_call): Avoid clashes
+	with user's procedures.
+	* gfortran.h (gfc_build_intrinsic_call): Update prototype.
+	* simplify.c (gfc_simplify_size): Update call.
+	* class.c (finalization_scalarizer, finalization_get_offset,
+	finalizer_insert_packed_call, generate_finalization_wrapper):
+	Clean up by using gfc_build_intrinsic_call.
+
 2012-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763
