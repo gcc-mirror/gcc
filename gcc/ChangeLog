@@ -1,3 +1,20 @@
+2013-01-07   Nick Clifton  <nickc@redhat.com>
+	     Matthias Klose <doko@debian.org>
+	     Doug Kwan  <dougkwan@google.com>
+	     H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/55470
+	* collect2.c (main): Support -fuse-ld=bfd and -fuse-ld=gold.
+
+	* common.opt: Add fuse-ld=bfd and fuse-ld=gold.
+
+	* gcc.c (LINK_COMMAND_SPEC): Pass -fuse-ld=* to collect2.
+
+	* opts.c (comman_handle_option): Ignore -fuse-ld=bfd and
+	-fuse-ld=gold.
+
+	* doc/invoke.texi: Document -fuse-ld=bfd and -fuse-ld=gold.
+
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54461

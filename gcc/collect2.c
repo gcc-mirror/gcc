@@ -842,8 +842,21 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 int
 main (int argc, char **argv)
 {
-  static const char *const ld_suffix	= "ld";
-  static const char *const plugin_ld_suffix = PLUGIN_LD_SUFFIX;
+  enum linker_select
+    {
+      USE_DEFAULT_LD,
+      USE_PLUGIN_LD,
+      USE_GOLD_LD,
+      USE_BFD_LD,
+      USE_LD_MAX
+    } selected_linker = USE_DEFAULT_LD;
+  static const char *const ld_suffixes[USE_LD_MAX] =
+    {
+      "ld",
+      PLUGIN_LD_SUFFIX,
+      "ld.gold",
+      "ld.bfd"
+    };
   static const char *const real_ld_suffix = "real-ld";
   static const char *const collect_ld_suffix = "collect-ld";
   static const char *const nm_suffix	= "nm";
@@ -854,16 +867,13 @@ main (int argc, char **argv)
   static const char *const strip_suffix = "strip";
   static const char *const gstrip_suffix = "gstrip";
 
+  const char *full_ld_suffixes[USE_LD_MAX];
 #ifdef CROSS_DIRECTORY_STRUCTURE
   /* If we look for a program in the compiler directories, we just use
      the short name, since these directories are already system-specific.
      But it we look for a program in the system directories, we need to
      qualify the program name with the target machine.  */
 
-  const char *const full_ld_suffix =
-    concat(target_machine, "-", ld_suffix, NULL);
-  const char *const full_plugin_ld_suffix =
-    concat(target_machine, "-", plugin_ld_suffix, NULL);
   const char *const full_nm_suffix =
     concat (target_machine, "-", nm_suffix, NULL);
   const char *const full_gnm_suffix =
@@ -877,13 +887,11 @@ main (int argc, char **argv)
   const char *const full_gstrip_suffix =
     concat (target_machine, "-", gstrip_suffix, NULL);
 #else
-  const char *const full_ld_suffix	= ld_suffix;
-  const char *const full_plugin_ld_suffix = plugin_ld_suffix;
-  const char *const full_nm_suffix	= nm_suffix;
-  const char *const full_gnm_suffix	= gnm_suffix;
 #ifdef LDD_SUFFIX
   const char *const full_ldd_suffix	= ldd_suffix;
 #endif
+  const char *const full_nm_suffix	= nm_suffix;
+  const char *const full_gnm_suffix	= gnm_suffix;
   const char *const full_strip_suffix	= strip_suffix;
   const char *const full_gstrip_suffix	= gstrip_suffix;
 #endif /* CROSS_DIRECTORY_STRUCTURE */
@@ -900,6 +908,7 @@ main (int argc, char **argv)
   char **ld1_argv;
   const char **ld1;
   bool use_plugin = false;
+  bool use_collect_ld = false;
 
   /* The kinds of symbols we will have to consider when scanning the
      outcome of a first pass link.  This is ALL to start with, then might
@@ -919,6 +928,15 @@ main (int argc, char **argv)
   int first_file;
   int num_c_args;
   char **old_argv;
+  int i;
+
+  for (i = 0; i < USE_LD_MAX; i++)
+    full_ld_suffixes[i]
+#ifdef CROSS_DIRECTORY_STRUCTURE
+      = concat (target_machine, "-", ld_suffixes[i], NULL);
+#else
+      = ld_suffixes[i];
+#endif
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
@@ -980,7 +998,6 @@ main (int argc, char **argv)
      are called.  We also look for the -flto or -flto-partition=none flag to know
      what LTO mode we are in.  */
   {
-    int i;
     bool no_partition = false;
 
     for (i = 1; argv[i] != NULL; i ++)
@@ -998,7 +1015,14 @@ main (int argc, char **argv)
 	  {
 	    use_plugin = true;
 	    lto_mode = LTO_MODE_NONE;
+	    if (selected_linker == USE_DEFAULT_LD)
+	      selected_linker = USE_PLUGIN_LD;
 	  }
+	else if (strcmp (argv[i], "-fuse-ld=bfd") == 0)
+	  selected_linker = USE_BFD_LD;
+	else if (strcmp (argv[i], "-fuse-ld=gold") == 0)
+	  selected_linker = USE_GOLD_LD;
+
 #ifdef COLLECT_EXPORT_LIST
 	/* since -brtl, -bexport, -b64 are not position dependent
 	   also check for them here */
@@ -1095,21 +1119,18 @@ main (int argc, char **argv)
   ld_file_name = find_a_file (&cpath, real_ld_suffix);
   /* Likewise for `collect-ld'.  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&cpath, collect_ld_suffix);
+    {
+      ld_file_name = find_a_file (&cpath, collect_ld_suffix);
+      use_collect_ld = ld_file_name != 0;
+    }
   /* Search the compiler directories for `ld'.  We have protection against
      recursive calls in find_a_file.  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&cpath,
-				use_plugin
-				? plugin_ld_suffix
-				: ld_suffix);
+    ld_file_name = find_a_file (&cpath, ld_suffixes[selected_linker]);
   /* Search the ordinary system bin directories
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&path,
-				use_plugin
-				? full_plugin_ld_suffix
-				: full_ld_suffix);
+    ld_file_name = find_a_file (&path, full_ld_suffixes[selected_linker]);
 
 #ifdef REAL_NM_FILE_NAME
   nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
@@ -1265,6 +1286,13 @@ main (int argc, char **argv)
 		  error ("LTO support has not been enabled in this "
 			 "configuration");
 #endif
+		}
+	      else if (!use_collect_ld
+		       && strncmp (arg, "-fuse-ld=", 9) == 0)
+		{
+		  /* Do not pass -fuse-ld={bfd|gold} to the linker. */
+		  ld1--;
+		  ld2--;
 		}
 #ifdef TARGET_AIX_VERSION
 	      else
