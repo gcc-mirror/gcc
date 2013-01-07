@@ -162,7 +162,23 @@ gfc_fix_class_refs (gfc_expr *e)
 	  && e->value.function.isym != NULL))
     return;
 
-  ts = &e->symtree->n.sym->ts;
+  if (e->expr_type == EXPR_VARIABLE)
+    ts = &e->symtree->n.sym->ts;
+  else
+    {
+      gfc_symbol *func;
+
+      gcc_assert (e->expr_type == EXPR_FUNCTION);
+      if (e->value.function.esym != NULL)
+	func = e->value.function.esym;
+      else
+	func = e->symtree->n.sym;
+
+      if (func->result != NULL)
+	ts = &func->result->ts;
+      else
+	ts = &func->ts;
+    }
 
   for (ref = &e->ref; *ref != NULL; ref = &(*ref)->next)
     {
