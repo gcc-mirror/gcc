@@ -1280,7 +1280,7 @@ If the high bit of the address is clear, data is read from flash
 with @code{RAMPZ} set according to the high byte of the address.
 @xref{AVR Built-in Functions,,@code{__builtin_avr_flash_segment}}.
 
-Objects in this address space are located in @code{.progmem.data}.
+Objects in this address space are located in @code{.progmemx.data}.
 @end table
 
 @b{Example}

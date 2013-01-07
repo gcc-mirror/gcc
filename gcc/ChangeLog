@@ -1,6 +1,12 @@
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/55897
+	* doc/extend.texi (AVR Named Address Spaces): __memx goes into
+	.progmemx.data now.
+
+2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/55897
 	* config/avr/avr.h (ADDR_SPACE_COUNT): New enum.
 	(avr_addrspace_t): Add .section_name field.
 	* config/avr/avr.c (progmem_section): Use ADDR_SPACE_COUNT as
