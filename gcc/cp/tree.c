@@ -412,6 +412,10 @@ build_aggr_init_expr (tree type, tree init)
   tree rval;
   int is_ctor;
 
+  /* Don't build AGGR_INIT_EXPR in a template.  */
+  if (processing_template_decl)
+    return init;
+
   if (TREE_CODE (init) == CALL_EXPR)
     fn = CALL_EXPR_FN (init);
   else if (TREE_CODE (init) == AGGR_INIT_EXPR)
