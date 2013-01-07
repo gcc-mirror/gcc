@@ -1,3 +1,8 @@
+2013-01-07  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config/i386/openbsdelf.h (LIBGCC2_HAS_TF_MODE, LIBGCC2_TF_CEXT,
+	TF_SIZE): Define.
+			
 2013-01-07  Steve Ellcey  <sellcey@mips.com>
 
 	PR target/42661

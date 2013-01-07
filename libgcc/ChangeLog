@@ -1,3 +1,8 @@
+2013-01-07  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.host (i[34567]86-*-openbsd* and x86_64-*-openbsd*):
+	Add to lists of i[34567]86-*-* and x86_64-*-* soft-fp targets.
+			
 2013-01-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/lib1funcs.S: Only provide CALLT support functions if
