@@ -1,3 +1,11 @@
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/55888
+	PR tree-optimization/55862
+	* tree-ssa-pre.c (phi_translate_1): Revert previous change.
+	(valid_in_sets): Check if a NAME has a leader in AVAIL_OUT,
+	not if it is contained therein.
+
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr: Typo.
