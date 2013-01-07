@@ -1,3 +1,15 @@
+2013-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55890
+	* gimple.h (gimple_call_builtin_p): New overload.
+	* gimple.c (validate_call): New function.
+	(gimple_call_builtin_p): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Use gimple_call_builtin_p.
+	(find_func_clobbers): Likewise.
+	* tree-ssa-strlen.c (adjust_last_stmt): Likewise.
+	(strlen_optimize_stmt): Likewise.
+
 2013-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vld1_dup_*): Make argument const.
