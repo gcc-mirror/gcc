@@ -1,6 +1,6 @@
 /* ARM NEON intrinsics include file.
 
-   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 2011-2013 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -11647,7 +11647,7 @@ __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vmovn_high_s16 (int8x8_t a, int16x8_t b)
 {
   int8x16_t result = vcombine_s8 (a, vcreate_s8 (UINT64_C (0x0)));
-  __asm__ ("xtn2 %0.16b,%2.8h"
+  __asm__ ("xtn2 %0.16b,%1.8h"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -11658,7 +11658,7 @@ __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vmovn_high_s32 (int16x4_t a, int32x4_t b)
 {
   int16x8_t result = vcombine_s16 (a, vcreate_s16 (UINT64_C (0x0)));
-  __asm__ ("xtn2 %0.8h,%2.4s"
+  __asm__ ("xtn2 %0.8h,%1.4s"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -11669,7 +11669,7 @@ __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vmovn_high_s64 (int32x2_t a, int64x2_t b)
 {
   int32x4_t result = vcombine_s32 (a, vcreate_s32 (UINT64_C (0x0)));
-  __asm__ ("xtn2 %0.4s,%2.2d"
+  __asm__ ("xtn2 %0.4s,%1.2d"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -11680,7 +11680,7 @@ __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vmovn_high_u16 (uint8x8_t a, uint16x8_t b)
 {
   uint8x16_t result = vcombine_u8 (a, vcreate_u8 (UINT64_C (0x0)));
-  __asm__ ("xtn2 %0.16b,%2.8h"
+  __asm__ ("xtn2 %0.16b,%1.8h"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -11691,7 +11691,7 @@ __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vmovn_high_u32 (uint16x4_t a, uint32x4_t b)
 {
   uint16x8_t result = vcombine_u16 (a, vcreate_u16 (UINT64_C (0x0)));
-  __asm__ ("xtn2 %0.8h,%2.4s"
+  __asm__ ("xtn2 %0.8h,%1.4s"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -11702,7 +11702,7 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vmovn_high_u64 (uint32x2_t a, uint64x2_t b)
 {
   uint32x4_t result = vcombine_u32 (a, vcreate_u32 (UINT64_C (0x0)));
-  __asm__ ("xtn2 %0.4s,%2.2d"
+  __asm__ ("xtn2 %0.4s,%1.2d"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14121,7 +14121,7 @@ __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vqmovn_high_s16 (int8x8_t a, int16x8_t b)
 {
   int8x16_t result = vcombine_s8 (a, vcreate_s8 (UINT64_C (0x0)));
-  __asm__ ("sqxtn2 %0.16b, %2.8h"
+  __asm__ ("sqxtn2 %0.16b, %1.8h"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14132,7 +14132,7 @@ __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vqmovn_high_s32 (int16x4_t a, int32x4_t b)
 {
   int16x8_t result = vcombine_s16 (a, vcreate_s16 (UINT64_C (0x0)));
-  __asm__ ("sqxtn2 %0.8h, %2.4s"
+  __asm__ ("sqxtn2 %0.8h, %1.4s"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14143,7 +14143,7 @@ __extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
 vqmovn_high_s64 (int32x2_t a, int64x2_t b)
 {
   int32x4_t result = vcombine_s32 (a, vcreate_s32 (UINT64_C (0x0)));
-  __asm__ ("sqxtn2 %0.4s, %2.2d"
+  __asm__ ("sqxtn2 %0.4s, %1.2d"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14154,7 +14154,7 @@ __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vqmovn_high_u16 (uint8x8_t a, uint16x8_t b)
 {
   uint8x16_t result = vcombine_u8 (a, vcreate_u8 (UINT64_C (0x0)));
-  __asm__ ("uqxtn2 %0.16b, %2.8h"
+  __asm__ ("uqxtn2 %0.16b, %1.8h"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14165,7 +14165,7 @@ __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vqmovn_high_u32 (uint16x4_t a, uint32x4_t b)
 {
   uint16x8_t result = vcombine_u16 (a, vcreate_u16 (UINT64_C (0x0)));
-  __asm__ ("uqxtn2 %0.8h, %2.4s"
+  __asm__ ("uqxtn2 %0.8h, %1.4s"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14176,7 +14176,7 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vqmovn_high_u64 (uint32x2_t a, uint64x2_t b)
 {
   uint32x4_t result = vcombine_u32 (a, vcreate_u32 (UINT64_C (0x0)));
-  __asm__ ("uqxtn2 %0.4s, %2.2d"
+  __asm__ ("uqxtn2 %0.4s, %1.2d"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14187,7 +14187,7 @@ __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vqmovun_high_s16 (uint8x8_t a, int16x8_t b)
 {
   uint8x16_t result = vcombine_u8 (a, vcreate_u8 (UINT64_C (0x0)));
-  __asm__ ("sqxtun2 %0.16b, %2.8h"
+  __asm__ ("sqxtun2 %0.16b, %1.8h"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14198,7 +14198,7 @@ __extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
 vqmovun_high_s32 (uint16x4_t a, int32x4_t b)
 {
   uint16x8_t result = vcombine_u16 (a, vcreate_u16 (UINT64_C (0x0)));
-  __asm__ ("sqxtun2 %0.8h, %2.4s"
+  __asm__ ("sqxtun2 %0.8h, %1.4s"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
@@ -14209,7 +14209,7 @@ __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vqmovun_high_s64 (uint32x2_t a, int64x2_t b)
 {
   uint32x4_t result = vcombine_u32 (a, vcreate_u32 (UINT64_C (0x0)));
-  __asm__ ("sqxtun2 %0.4s, %2.2d"
+  __asm__ ("sqxtun2 %0.4s, %1.2d"
            : "+w"(result)
            : "w"(b)
            : /* No clobbers */);
