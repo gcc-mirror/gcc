@@ -17664,9 +17664,10 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 	       && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
 	{
 	  /* In C++11, [ could start a lambda-introducer.  */
+	  bool non_const = false;
+
 	  cp_parser_parse_tentatively (parser);
 	  cp_lexer_consume_token (parser->lexer);
-	  bool non_const = false;
 	  designator = cp_parser_constant_expression (parser, true, &non_const);
 	  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 	  cp_parser_require (parser, CPP_EQ, RT_EQ);
