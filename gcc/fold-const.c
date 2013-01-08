@@ -900,9 +900,9 @@ associate_trees (location_t loc, tree t1, tree t2, enum tree_code code, tree typ
 static bool
 int_binop_types_match_p (enum tree_code code, const_tree type1, const_tree type2)
 {
-  if (TREE_CODE (type1) != INTEGER_TYPE && !POINTER_TYPE_P (type1))
+  if (!INTEGRAL_TYPE_P (type1) && !POINTER_TYPE_P (type1))
     return false;
-  if (TREE_CODE (type2) != INTEGER_TYPE && !POINTER_TYPE_P (type2))
+  if (!INTEGRAL_TYPE_P (type2) && !POINTER_TYPE_P (type2))
     return false;
 
   switch (code)

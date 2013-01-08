@@ -1,5 +1,8 @@
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/55851
+	* gcc.c-torture/compile/pr55851.c: New test.
+
 	PR sanitizer/55844
 	* c-c++-common/asan/null-deref-1.c: Add -fno-shrink-wrap to
 	dg-options.
