@@ -1,3 +1,10 @@
+2013-01-08  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/55851
+	* fold-const.c (int_binop_types_match_p): Allow all INTEGRAL_TYPE_P
+	types instead of just INTEGER_TYPE types.
+
 2013-01-07  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config/i386/openbsdelf.h (LIBGCC2_HAS_TF_MODE, LIBGCC2_TF_CEXT,
