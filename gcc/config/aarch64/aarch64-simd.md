@@ -1054,7 +1054,7 @@
                            (match_operand:VQW 2 "register_operand" "w")
                            (match_dup 3)))))]
   "TARGET_SIMD"
-  "<su>mull %0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
+  "<su>mull\\t%0.<Vwtype>, %1.<Vhalftype>, %2.<Vhalftype>"
   [(set_attr "simd_type" "simd_mull")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1082,7 +1082,7 @@
 			    (match_operand:VQW 2 "register_operand" "w")
 			    (match_dup 3)))))]
   "TARGET_SIMD"
-  "<su>mull2 %0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>mull2\\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_mull")
    (set_attr "simd_mode" "<MODE>")]
 )
