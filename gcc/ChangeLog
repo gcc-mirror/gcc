@@ -1,5 +1,8 @@
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/55890
+	* tree-ssa-ccp.c (evaluate_stmt): Use gimple_call_builtin_p.
+
 	PR tree-optimization/54120
 	* tree-vrp.c (range_fits_type_p): Don't allow
 	src_precision < precision from signed vr to unsigned_p
