@@ -1,3 +1,11 @@
+2013-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/55908
+	* include/std/functional (_Mem_fn::operator()): Fix constraints to
+	avoid ambiguity.
+	* testsuite/20_util/function_objects/mem_fn/55908.cc: New.
+	* testsuite/20_util/bind/ref_neg.cc: Adjust dg-error line numbers.
+
 2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/55594
