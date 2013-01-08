@@ -839,6 +839,9 @@ rl78_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->framesize;
 
+  if (is_interrupt_func (cfun->decl))
+    emit_insn (gen_sel_rb (GEN_INT (0)));
+
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])
       {
