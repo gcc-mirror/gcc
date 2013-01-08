@@ -12,8 +12,10 @@ foo (int size, double *y, double *x)
 {
   double sum = 0.0;
   int i;
-  for (i = 0, sum = 0.; i < size; i++)
+
+  for (i = 0; i < size; i++)
     sum += y[i] * x[i];
+
   return sum;
 }
 
@@ -21,8 +23,7 @@ static void
 __attribute__ ((noinline))
 avx_test ()
 {
-  double x[N];
-  double y[N];
+  double x[N], y[N];
   double s;
   int i;
 
