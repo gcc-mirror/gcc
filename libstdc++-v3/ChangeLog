@@ -1,3 +1,10 @@
+2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/55594
+	* acinclude.m4 (GLIBCXX_CHECK_ASSEMBLER_HWCAP): Restrict test to
+	Solaris targets.
+	* configure: Regenerate.
+
 2013-01-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/55847
