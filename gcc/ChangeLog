@@ -1,3 +1,8 @@
+2013-01-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_expand_prologue): Always select
+	register bank 0 at the start of an interrupt handler.
+
 2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md
@@ -42,7 +47,7 @@
 
 	* config/i386/openbsdelf.h (LIBGCC2_HAS_TF_MODE, LIBGCC2_TF_CEXT,
 	TF_SIZE): Define.
-			
+
 2013-01-07  Steve Ellcey  <sellcey@mips.com>
 
 	PR target/42661
