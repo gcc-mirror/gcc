@@ -1,3 +1,9 @@
+2013-01-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/55579
+	* tree-sra.c (analyze_access_subtree): Return true also after
+	potentially creating a debug-only replacement.
+
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/55890
