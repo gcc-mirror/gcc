@@ -1,3 +1,8 @@
+2013-01-08  Joel Brobecker  <brobecker@adacore.com>
+
+	* parser.c (cp_parser_initializer_list): Move declaration
+	of variable non_const to start of lexical block.
+
 2013-01-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55753
