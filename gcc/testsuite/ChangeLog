@@ -1,3 +1,14 @@
+2013-01-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42769
+	PR fortran/45836
+	PR fortran/45900
+	* gfortran.dg/use_23.f90: New test.
+	* gfortran.dg/use_24.f90: New test.
+	* gfortran.dg/use_25.f90: New test.
+	* gfortran.dg/use_26.f90: New test.
+	* gfortran.dg/use_27.f90: New test.
+
 2013-01-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
