@@ -1,3 +1,12 @@
+2012-01-08  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/55845
+	* df-problems.c (can_move_insns_across): Stop scanning at
+	volatile_insn_p source instruction or give up if
+	across_from .. across_to range contains any volatile_insn_p
+	instructions.
+
 2013-01-08  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_init<mode>): New. 
