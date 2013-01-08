@@ -1,3 +1,8 @@
+2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* Makefile.def: Merge from binutils.
+	* Makefile.in: Dito.
+
 2013-01-01  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
 	* MAINTAINERS: Update my email.
