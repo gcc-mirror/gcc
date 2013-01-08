@@ -2,6 +2,8 @@
 
 	* config/rl78/rl78.c (rl78_expand_prologue): Always select
 	register bank 0 at the start of an interrupt handler.
+	* config/rl78/rl78.md (mulsi3_g13): Correct values for MDBL and
+	MDBH registers.
 
 2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
