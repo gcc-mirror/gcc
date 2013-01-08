@@ -1,3 +1,8 @@
+2013-01-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/55823
+	* ipa-prop.c (update_indirect_edges_after_inlining): Fix ordering issue.
+
 2012-01-08  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
