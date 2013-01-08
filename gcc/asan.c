@@ -270,6 +270,45 @@ asan_shadow_cst (unsigned char shadow_bytes[4])
   return GEN_INT (trunc_int_for_mode (val, SImode));
 }
 
+/* Clear shadow memory at SHADOW_MEM, LEN bytes.  Can't call a library call here
+   though.  */
+
+static void
+asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
+{
+  rtx insn, insns, top_label, end, addr, tmp, jump;
+
+  start_sequence ();
+  clear_storage (shadow_mem, GEN_INT (len), BLOCK_OP_NORMAL);
+  insns = get_insns ();
+  end_sequence ();
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    if (CALL_P (insn))
+      break;
+  if (insn == NULL_RTX)
+    {
+      emit_insn (insns);
+      return;
+    }
+
+  gcc_assert ((len & 3) == 0);
+  top_label = gen_label_rtx ();
+  addr = force_reg (Pmode, XEXP (shadow_mem, 0));
+  shadow_mem = adjust_automodify_address (shadow_mem, SImode, addr, 0);
+  end = force_reg (Pmode, plus_constant (Pmode, addr, len));
+  emit_label (top_label);
+
+  emit_move_insn (shadow_mem, const0_rtx);
+  tmp = expand_simple_binop (Pmode, PLUS, addr, GEN_INT (4), addr,
+                             true, OPTAB_LIB_WIDEN);
+  if (tmp != addr)
+    emit_move_insn (addr, tmp);
+  emit_cmp_and_jump_insns (addr, end, LT, NULL_RTX, Pmode, true, top_label);
+  jump = get_last_insn ();
+  gcc_assert (JUMP_P (jump));
+  add_reg_note (jump, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE * 80 / 100));
+}
+
 /* Insert code to protect stack vars.  The prologue sequence should be emitted
    directly, epilogue sequence returned.  BASE is the register holding the
    stack base, against which OFFSETS array offsets are relative to, OFFSETS
@@ -404,8 +443,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 				       (last_offset - prev_offset)
 				       >> ASAN_SHADOW_SHIFT);
 	  prev_offset = last_offset;
-	  clear_storage (shadow_mem, GEN_INT (last_size >> ASAN_SHADOW_SHIFT),
-			 BLOCK_OP_NORMAL);
+	  asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
 	  last_offset = offset;
 	  last_size = 0;
 	}
@@ -418,8 +456,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
       shadow_mem = adjust_address (shadow_mem, VOIDmode,
 				   (last_offset - prev_offset)
 				   >> ASAN_SHADOW_SHIFT);
-      clear_storage (shadow_mem, GEN_INT (last_size >> ASAN_SHADOW_SHIFT),
-		     BLOCK_OP_NORMAL);
+      asan_clear_shadow (shadow_mem, last_size >> ASAN_SHADOW_SHIFT);
     }
 
   do_pending_stack_adjust ();
