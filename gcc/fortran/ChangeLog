@@ -1,3 +1,10 @@
+2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/55618
+	* trans-expr.c (gfc_conv_procedure_call): Dereference scalar
+	character function arguments to elemental procedures in
+	scalarization loops.
+
 2013-01-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55763

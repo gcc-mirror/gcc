@@ -4115,7 +4115,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
 	    }
 	  else
-	    gfc_conv_expr_reference (&parmse, e);
+	    {
+	      gfc_conv_expr_reference (&parmse, e);
+	      if (e->ts.type == BT_CHARACTER && !e->rank
+		  && e->expr_type == EXPR_FUNCTION)
+		parmse.expr = build_fold_indirect_ref_loc (input_location,
+							   parmse.expr);
+	    }
 
 	  if (fsym && fsym->ts.type == BT_DERIVED
 	      && gfc_is_class_container_ref (e))
