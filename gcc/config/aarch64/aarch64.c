@@ -6548,6 +6548,166 @@ aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
   return true;
 }
 
+/* If VALS is a vector constant that can be loaded into a register
+   using DUP, generate instructions to do so and return an RTX to
+   assign to the register.  Otherwise return NULL_RTX.  */
+static rtx
+aarch64_simd_dup_constant (rtx vals)
+{
+  enum machine_mode mode = GET_MODE (vals);
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  int n_elts = GET_MODE_NUNITS (mode);
+  bool all_same = true;
+  rtx x;
+  int i;
+
+  if (GET_CODE (vals) != CONST_VECTOR)
+    return NULL_RTX;
+
+  for (i = 1; i < n_elts; ++i)
+    {
+      x = CONST_VECTOR_ELT (vals, i);
+      if (!rtx_equal_p (x, CONST_VECTOR_ELT (vals, 0)))
+	all_same = false;
+    }
+
+  if (!all_same)
+    return NULL_RTX;
+
+  /* We can load this constant by using DUP and a constant in a
+     single ARM register.  This will be cheaper than a vector
+     load.  */
+  x = copy_to_mode_reg (inner_mode, CONST_VECTOR_ELT (vals, 0));
+  return gen_rtx_VEC_DUPLICATE (mode, x);
+}
+
+
+/* Generate code to load VALS, which is a PARALLEL containing only
+   constants (for vec_init) or CONST_VECTOR, efficiently into a
+   register.  Returns an RTX to copy into the register, or NULL_RTX
+   for a PARALLEL that can not be converted into a CONST_VECTOR.  */
+rtx
+aarch64_simd_make_constant (rtx vals)
+{
+  enum machine_mode mode = GET_MODE (vals);
+  rtx const_dup;
+  rtx const_vec = NULL_RTX;
+  int n_elts = GET_MODE_NUNITS (mode);
+  int n_const = 0;
+  int i;
+
+  if (GET_CODE (vals) == CONST_VECTOR)
+    const_vec = vals;
+  else if (GET_CODE (vals) == PARALLEL)
+    {
+      /* A CONST_VECTOR must contain only CONST_INTs and
+	 CONST_DOUBLEs, but CONSTANT_P allows more (e.g. SYMBOL_REF).
+	 Only store valid constants in a CONST_VECTOR.  */
+      for (i = 0; i < n_elts; ++i)
+	{
+	  rtx x = XVECEXP (vals, 0, i);
+	  if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
+	    n_const++;
+	}
+      if (n_const == n_elts)
+	const_vec = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
+    }
+  else
+    gcc_unreachable ();
+
+  if (const_vec != NULL_RTX
+      && aarch64_simd_immediate_valid_for_move (const_vec, mode, NULL, NULL,
+						NULL, NULL, NULL))
+    /* Load using MOVI/MVNI.  */
+    return const_vec;
+  else if ((const_dup = aarch64_simd_dup_constant (vals)) != NULL_RTX)
+    /* Loaded using DUP.  */
+    return const_dup;
+  else if (const_vec != NULL_RTX)
+    /* Load from constant pool. We can not take advantage of single-cycle
+       LD1 because we need a PC-relative addressing mode.  */
+    return const_vec;
+  else
+    /* A PARALLEL containing something not valid inside CONST_VECTOR.
+       We can not construct an initializer.  */
+    return NULL_RTX;
+}
+
+void
+aarch64_expand_vector_init (rtx target, rtx vals)
+{
+  enum machine_mode mode = GET_MODE (target);
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  int n_elts = GET_MODE_NUNITS (mode);
+  int n_var = 0, one_var = -1;
+  bool all_same = true;
+  rtx x, mem;
+  int i;
+
+  x = XVECEXP (vals, 0, 0);
+  if (!CONST_INT_P (x) && !CONST_DOUBLE_P (x))
+    n_var = 1, one_var = 0;
+  
+  for (i = 1; i < n_elts; ++i)
+    {
+      x = XVECEXP (vals, 0, i);
+      if (!CONST_INT_P (x) && !CONST_DOUBLE_P (x))
+	++n_var, one_var = i;
+
+      if (!rtx_equal_p (x, XVECEXP (vals, 0, 0)))
+	all_same = false;
+    }
+
+  if (n_var == 0)
+    {
+      rtx constant = aarch64_simd_make_constant (vals);
+      if (constant != NULL_RTX)
+	{
+	  emit_move_insn (target, constant);
+	  return;
+	}
+    }
+
+  /* Splat a single non-constant element if we can.  */
+  if (all_same)
+    {
+      x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
+      aarch64_emit_move (target, gen_rtx_VEC_DUPLICATE (mode, x));
+      return;
+    }
+
+  /* One field is non-constant.  Load constant then overwrite varying
+     field.  This is more efficient than using the stack.  */
+  if (n_var == 1)
+    {
+      rtx copy = copy_rtx (vals);
+      rtx index = GEN_INT (one_var);
+      enum insn_code icode;
+
+      /* Load constant part of vector, substitute neighboring value for
+	 varying element.  */
+      XVECEXP (copy, 0, one_var) = XVECEXP (vals, 0, one_var ^ 1);
+      aarch64_expand_vector_init (target, copy);
+
+      /* Insert variable.  */
+      x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, one_var));
+      icode = optab_handler (vec_set_optab, mode);
+      gcc_assert (icode != CODE_FOR_nothing);
+      emit_insn (GEN_FCN (icode) (target, x, index));
+      return;
+    }
+
+  /* Construct the vector in memory one field at a time
+     and load the whole vector.  */
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
+  for (i = 0; i < n_elts; i++)
+    emit_move_insn (adjust_address_nv (mem, inner_mode,
+				    i * GET_MODE_SIZE (inner_mode)),
+		    XVECEXP (vals, 0, i));
+  emit_move_insn (target, mem);
+
+}
+
 static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (enum machine_mode mode)
 {

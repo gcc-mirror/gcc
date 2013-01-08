@@ -3548,3 +3548,14 @@
   DONE;
 })
 
+;; Standard pattern name vec_init<mode>.
+
+(define_expand "vec_init<mode>"
+  [(match_operand:VALL 0 "register_operand" "")
+   (match_operand 1 "" "")]
+  "TARGET_SIMD"
+{
+  aarch64_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})
+
