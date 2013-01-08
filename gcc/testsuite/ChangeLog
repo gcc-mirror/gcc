@@ -1,5 +1,8 @@
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/55890
+	* gcc.dg/torture/pr55890-3.c: New test.
+
 	PR middle-end/55851
 	* gcc.c-torture/compile/pr55851.c: New test.
 
