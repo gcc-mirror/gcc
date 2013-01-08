@@ -1,3 +1,8 @@
+2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/pr54508.C: Allow for more whitespace after
+	asm comments.
+
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/55890

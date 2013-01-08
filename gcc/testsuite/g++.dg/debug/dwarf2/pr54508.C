@@ -2,17 +2,17 @@
 // { dg-do compile }
 // { dg-options "-g2 -dA -fno-merge-debug-strings" }
 
-// { dg-final { scan-assembler-not "\"cbase\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler "\"c\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ DW_AT_decl_line\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ DW_AT_declaration" } }
-// { dg-final { scan-assembler-not "\"OPCODE\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler-not "\"bi\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler-not "\"si\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler "\"s\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler-not "\"s\\\\0\"\[^#;/!|@\]+\[#;/!|@\]+ DW_AT_name\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ DW_AT_decl_line\[\r\n\]+\[ \t\]+\[#;/!|@\]+ DW_AT_declaration" } }
-// { dg-final { scan-assembler "\"f1\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler "\"u\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ DW_AT_decl_line\[\r\n\]+\[^#;/!|@\]+\[#;/!|@\]+ DW_AT_declaration" } }
-// { dg-final { scan-assembler-not "\"f2\\\\0\"\[ \t\]+\[#;/!|@\]+ DW_AT_name" } }
-// { dg-final { scan-assembler-not "\"nc\\\\0\"\[ \t\]+\# DW_AT_name" } }
+// { dg-final { scan-assembler-not "\"cbase\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler "\"c\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ +DW_AT_decl_line\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ +DW_AT_declaration" } }
+// { dg-final { scan-assembler-not "\"OPCODE\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler-not "\"bi\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler-not "\"si\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler "\"s\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler-not "\"s\\\\0\"\[^#;/!|@\]+\[#;/!|@\]+ +DW_AT_name\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ +DW_AT_decl_line\[\r\n\]+\[ \t\]+\[#;/!|@\]+ +DW_AT_declaration" } }
+// { dg-final { scan-assembler "\"f1\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler "\"u\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^\r\n\]+\[\r\n\]+\[\^#;/!|@\]+\[#;/!|@\]+ +DW_AT_decl_line\[\r\n\]+\[^#;/!|@\]+\[#;/!|@\]+ +DW_AT_declaration" } }
+// { dg-final { scan-assembler-not "\"f2\\\\0\"\[ \t\]+\[#;/!|@\]+ +DW_AT_name" } }
+// { dg-final { scan-assembler-not "\"nc\\\\0\"\[ \t\]+\# +DW_AT_name" } }
 
 class cbase
 
