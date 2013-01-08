@@ -1,5 +1,10 @@
 2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
+	* config.sub: Merge from config repo.
+	* config.guess: Dito.
+
+2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
 	* Makefile.def: Merge from binutils.
 	* Makefile.in: Dito.
 
