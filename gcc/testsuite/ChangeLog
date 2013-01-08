@@ -1,3 +1,8 @@
+2013-01-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR debug/55579
+	* gcc.dg/tree-ssa/pr55579.c: New test.
+
 2013-01-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/debug/dwarf2/pr54508.C: Allow for more whitespace after
