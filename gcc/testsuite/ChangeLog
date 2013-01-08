@@ -1,3 +1,8 @@
+2013-01-08  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/vect-mull-compile.c: Explicitly scan for 
+	instructions generated instead of number of occurances.
+
 2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc/testsuite/gcc.target/aarch64/vect-fcm-eq-d.c: New.
