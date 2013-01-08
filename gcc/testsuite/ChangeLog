@@ -1,3 +1,9 @@
+2012-01-08  Uros Bizjak  <ubizjak@gmail.com>
+	    Vladimir Yakovlev  <vladimir.b.yakovlev@intel.com>
+
+	PR rtl-optimization/55845
+	* gcc.target/i386/pr55845.c: New test.
+
 2013-01-08  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.target/aarch64/vect-mull-compile.c: Explicitly scan for 
