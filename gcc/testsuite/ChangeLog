@@ -1,3 +1,9 @@
+2013-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/55844
+	* c-c++-common/asan/null-deref-1.c: Add -fno-shrink-wrap to
+	dg-options.
+
 2013-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55618
