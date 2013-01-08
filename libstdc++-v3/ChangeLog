@@ -1,3 +1,7 @@
+2013-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document that N3189 is missing.
+
 2013-01-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/abi.xml: Update library and symbol versions.

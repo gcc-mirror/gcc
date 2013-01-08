@@ -158,10 +158,13 @@ particular release.
       <entry>C library dependency for quick_exit, at_quick_exit</entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.6</entry>
       <entry>Dynamic memory management</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>get_new_handler</code>.
+             <code>set_new_handler</code> is not thread-safe.
+      </entry>
     </row>
     <row>
       <entry>18.7</entry>
@@ -206,10 +209,13 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>18.8.3</entry>
       <entry>Abnormal termination</entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>get_terminate</code>.
+             <code>set_terminate</code> is not thread-safe.
+      </entry>
     </row>
     <row>
       <entry>18.8.4</entry>
@@ -2606,10 +2612,13 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>D.11</entry>
       <entry>Violating exception-specifications</entry>
-      <entry/>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>get_unexpected</code>.
+             <code>set_unexpected</code> is not thread-safe.
+      </entry>
     </row>
 
   </tbody>
