@@ -1463,7 +1463,7 @@
    (set_attr "simd_mode" "V2SI")]
 )
 
-;; vbsl_* intrinsics may compile to any of vbsl/vbif/vbit depending on register
+;; vbsl_* intrinsics may compile to any of bsl/bif/bit depending on register
 ;; allocation.  For an intrinsic of form:
 ;;   vD = bsl_* (vS, vN, vM)
 ;; We can use any of:
@@ -1472,11 +1472,12 @@
 ;;   bif vD, vM, vS  (if D = N, so 0-bits in vS choose bits from vM, else vN)
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
-  [(set (match_operand:VDQ 0 "register_operand"		     "=w,w,w")
-	(unspec:VDQ [(match_operand:VDQ 1 "register_operand" " 0,w,w")
-		     (match_operand:VDQ 2 "register_operand" " w,w,0")
-		     (match_operand:VDQ 3 "register_operand" " w,0,w")]
-		    UNSPEC_BSL))]
+  [(set (match_operand:VALL 0 "register_operand"		"=w,w,w")
+	(unspec:VALL
+	 [(match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w")
+	  (match_operand:VALL 2 "register_operand"		" w,w,0")
+	  (match_operand:VALL 3 "register_operand"		" w,0,w")]
+	 UNSPEC_BSL))]
   "TARGET_SIMD"
   "@
   bsl\\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
@@ -1485,15 +1486,15 @@
 )
 
 (define_expand "aarch64_simd_bsl<mode>"
-  [(set (match_operand:VDQ 0 "register_operand")
-	(unspec:VDQ [(match_operand:<V_cmp_result> 1 "register_operand")
-		     (match_operand:VDQ 2 "register_operand")
-		     (match_operand:VDQ 3 "register_operand")]
-		    UNSPEC_BSL))]
+  [(set (match_operand:VALL 0 "register_operand")
+	(unspec:VALL [(match_operand:<V_cmp_result> 1 "register_operand")
+		      (match_operand:VALL 2 "register_operand")
+		      (match_operand:VALL 3 "register_operand")]
+		     UNSPEC_BSL))]
   "TARGET_SIMD"
 {
   /* We can't alias operands together if they have different modes.  */
-  operands[1] = gen_lowpart (<MODE>mode, operands[1]);
+  operands[1] = gen_lowpart (<V_cmp_result>mode, operands[1]);
 })
 
 (define_expand "aarch64_vcond_internal<mode>"
@@ -1574,14 +1575,64 @@
   DONE;
 })
 
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VDQ 0 "register_operand")
-	(if_then_else:VDQ
+(define_expand "aarch64_vcond_internal<mode>"
+  [(set (match_operand:VDQF 0 "register_operand")
+	(if_then_else:VDQF
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQ 4 "register_operand")
-	     (match_operand:VDQ 5 "nonmemory_operand")])
-	  (match_operand:VDQ 1 "register_operand")
-	  (match_operand:VDQ 2 "register_operand")))]
+	    [(match_operand:VDQF 4 "register_operand")
+	     (match_operand:VDQF 5 "nonmemory_operand")])
+	  (match_operand:VDQF 1 "register_operand")
+	  (match_operand:VDQF 2 "register_operand")))]
+  "TARGET_SIMD"
+{
+  int inverse = 0;
+  rtx mask = gen_reg_rtx (<V_cmp_result>mode);
+
+  if (!REG_P (operands[5])
+      && (operands[5] != CONST0_RTX (<MODE>mode)))
+    operands[5] = force_reg (<MODE>mode, operands[5]);
+
+  switch (GET_CODE (operands[3]))
+    {
+    case LT:
+      inverse = 1;
+      /* Fall through.  */
+    case GE:
+      emit_insn (gen_aarch64_cmge<mode> (mask, operands[4], operands[5]));
+      break;
+    case LE:
+      inverse = 1;
+      /* Fall through.  */
+    case GT:
+      emit_insn (gen_aarch64_cmgt<mode> (mask, operands[4], operands[5]));
+      break;
+    case NE:
+      inverse = 1;
+      /* Fall through.  */
+    case EQ:
+      emit_insn (gen_aarch64_cmeq<mode> (mask, operands[4], operands[5]));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (inverse)
+    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[2],
+				    operands[1]));
+  else
+    emit_insn (gen_aarch64_simd_bsl<mode> (operands[0], mask, operands[1],
+				    operands[2]));
+  DONE;
+})
+
+(define_expand "vcond<mode><mode>"
+  [(set (match_operand:VALL 0 "register_operand")
+	(if_then_else:VALL
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:VALL 4 "register_operand")
+	     (match_operand:VALL 5 "nonmemory_operand")])
+	  (match_operand:VALL 1 "register_operand")
+	  (match_operand:VALL 2 "register_operand")))]
   "TARGET_SIMD"
 {
   emit_insn (gen_aarch64_vcond_internal<mode> (operands[0], operands[1],
@@ -2863,6 +2914,22 @@
   "TARGET_SIMD"
   "cm<cmp>\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_cmp")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+;; fcm(eq|ge|le|lt|gt)
+
+(define_insn "aarch64_cm<cmp><mode>"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand" "=w,w")
+	(unspec:<V_cmp_result>
+	  [(match_operand:VDQF 1 "register_operand" "w,w")
+	   (match_operand:VDQF 2 "aarch64_simd_reg_or_zero" "w,Dz")]
+	   VCMP_S))]
+  "TARGET_SIMD"
+  "@
+  fcm<cmp>\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>
+  fcm<cmp>\t%<v>0<Vmtype>, %<v>1<Vmtype>, 0"
+  [(set_attr "simd_type" "simd_fcmp")
    (set_attr "simd_mode" "<MODE>")]
 )
 
