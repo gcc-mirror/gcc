@@ -373,6 +373,9 @@ dependencies = { module=all-bfd; on=all-intl; };
 dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
 
+// We must build gas before binutils, gprof, ld and gold to avoid race
+// condition in the prev-gcc/as script during bootstrap of combined tree
+// with GCC and binutils.  See PR gas/14899 for details.
 dependencies = { module=configure-binutils; on=configure-intl; };
 dependencies = { module=all-binutils; on=all-libiberty; };
 dependencies = { module=all-binutils; on=all-opcodes; };
@@ -380,6 +383,7 @@ dependencies = { module=all-binutils; on=all-bfd; };
 dependencies = { module=all-binutils; on=all-build-flex; };
 dependencies = { module=all-binutils; on=all-build-bison; };
 dependencies = { module=all-binutils; on=all-intl; };
+dependencies = { module=all-binutils; on=all-gas; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes
@@ -401,6 +405,7 @@ dependencies = { module=all-gprof; on=all-libiberty; };
 dependencies = { module=all-gprof; on=all-bfd; };
 dependencies = { module=all-gprof; on=all-opcodes; };
 dependencies = { module=all-gprof; on=all-intl; };
+dependencies = { module=all-gprof; on=all-gas; };
 dependencies = { module=configure-ld; on=configure-intl; };
 dependencies = { module=all-ld; on=all-libiberty; };
 dependencies = { module=all-ld; on=all-bfd; };
@@ -408,6 +413,7 @@ dependencies = { module=all-ld; on=all-opcodes; };
 dependencies = { module=all-ld; on=all-build-bison; };
 dependencies = { module=all-ld; on=all-build-flex; };
 dependencies = { module=all-ld; on=all-intl; };
+dependencies = { module=all-ld; on=all-gas; };
 dependencies = { module=install-ld; on=install-gold; };
 dependencies = { module=install-strip-ld; on=install-strip-gold; };
 dependencies = { module=configure-gold; on=configure-intl; };
@@ -415,6 +421,7 @@ dependencies = { module=all-gold; on=all-libiberty; };
 dependencies = { module=all-gold; on=all-intl; };
 dependencies = { module=all-gold; on=all-bfd; };
 dependencies = { module=all-gold; on=all-build-bison; };
+dependencies = { module=all-gold; on=all-gas; };
 dependencies = { module=check-gold; on=all-binutils; };
 dependencies = { module=check-gold; on=all-gas; };
 
