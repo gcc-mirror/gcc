@@ -11,9 +11,11 @@ extern void abort (void);
 void
 test_square_root_v2sf ()
 {
-  float32x2_t val = {4.0f, 9.0f};
+  const float32_t pool[] = {4.0f, 9.0f};
+  float32x2_t val;
   float32x2_t res;
 
+  val = vld1_f32 (pool);
   res = vsqrt_f32 (val);
 
   if (vget_lane_f32 (res, 0) != 2.0f)
@@ -25,9 +27,11 @@ test_square_root_v2sf ()
 void
 test_square_root_v4sf ()
 {
-  float32x4_t val = {4.0f, 9.0f, 16.0f, 25.0f};
+  const float32_t pool[] = {4.0f, 9.0f, 16.0f, 25.0f};
+  float32x4_t val;
   float32x4_t res;
 
+  val = vld1q_f32 (pool);
   res = vsqrtq_f32 (val);
 
   if (vgetq_lane_f32 (res, 0) != 2.0f)
@@ -43,9 +47,11 @@ test_square_root_v4sf ()
 void
 test_square_root_v2df ()
 {
-  float64x2_t val = {4.0, 9.0};
+  const float64_t pool[] = {4.0, 9.0};
+  float64x2_t val;
   float64x2_t res;
 
+  val = vld1q_f64 (pool);
   res = vsqrtq_f64 (val);
 
   if (vgetq_lane_f64 (res, 0) != 2.0)

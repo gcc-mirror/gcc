@@ -1,3 +1,12 @@
+2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vsqrt.c (test_square_root_v2sf): Use
+	endian-safe float pool loading.
+	(test_square_root_v4sf): Likewise.
+	(test_square_root_v2df): Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_vect_call_sqrtf): Add AArch64.
+
 2013-01-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR debug/55579
