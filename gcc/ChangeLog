@@ -1,4 +1,13 @@
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54120
+	* tree-vrp.c (range_fits_type_p): Don't allow
+	src_precision < precision from signed vr to unsigned_p
+	if vr->min or vr->max is negative.
+	(simplify_float_conversion_using_ranges): Test can_float_p
+	against CODE_FOR_nothing.
+
+2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/55851
