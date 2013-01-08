@@ -1,5 +1,17 @@
 2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm-eq-d.c: New.
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm-eq-f.c: Likewise.
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm-ge-f.c: Likewise.
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm-gt-f.c: Likewise.
+	* gcc/testsuite/gcc.target/aarch64/vect-fcm.x: Likewise.
+	* gcc/testsuite/lib/target-supports.exp
+	(check_effective_target_vect_cond): Enable for AArch64.
+
+2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/aarch64/vsqrt.c (test_square_root_v2sf): Use
 	endian-safe float pool loading.
 	(test_square_root_v4sf): Likewise.

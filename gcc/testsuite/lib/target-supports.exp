@@ -3699,7 +3699,8 @@ proc check_effective_target_vect_condition { } {
 	verbose "check_effective_target_vect_cond: using cached result" 2
     } else {
 	set et_vect_cond_saved 0
-	if { [istarget powerpc*-*-*]
+	if { [istarget aarch64*-*-*]
+	     || [istarget powerpc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget spu-*-*]

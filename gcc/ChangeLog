@@ -1,5 +1,15 @@
 2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_bsl<mode>_internal): Add floating-point modes.
+	(aarch64_simd_bsl): Likewise.
+	(aarch64_vcond_internal<mode>): Likewise.
+	(vcond<mode><mode>): Likewise.
+	(aarch64_cm<cmp><mode>): Fix constraints, add new modes.
+	* config/aarch64/iterators.md (V_cmp_result): Add V2DF.
+
+2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_builtin_vectorized_function): Handle sqrt, sqrtf.
 
