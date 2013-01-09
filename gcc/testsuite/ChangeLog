@@ -1,3 +1,8 @@
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48189
+	* gcc.dg/pr48189.c: New test.
+
 2013-01-04  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55823
