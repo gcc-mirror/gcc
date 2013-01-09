@@ -1,3 +1,9 @@
+2013-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47203
+	* module.c (check_for_ambiguous): Get the current program unit using
+	gfc_current_ns.
+
 2013-01-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/55758
