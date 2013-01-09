@@ -15,7 +15,7 @@
       L = .FALSE.
       END FUNCTION
 
-      LOGICAL(8) FUNCTION L2() BIND(C)
+      LOGICAL(8) FUNCTION L2() BIND(C) ! { dg-warning "GNU Extension: LOGICAL result variable 'l2' at .1. with non-C_Bool kind in BIND.C. procedure 'l2'" }
       L2 = .FALSE._8
       END FUNCTION
 

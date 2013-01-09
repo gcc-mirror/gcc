@@ -1,3 +1,9 @@
+2013-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/55758
+	* gfortran.dg/bind_c_bool_1.f90: New.
+	* gfortran.dg/do_5.f90: Add dg-warning.
+
 2013-01-09  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimiation/55875

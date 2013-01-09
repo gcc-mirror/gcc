@@ -13671,6 +13671,32 @@ resolve_symbol (gfc_symbol *sym)
       return;
     }
 
+  if (sym->ts.type == BT_LOGICAL
+      && ((sym->attr.function && sym->attr.is_bind_c && sym->result == sym)
+	  || ((sym->attr.dummy || sym->attr.result) && sym->ns->proc_name
+	      && sym->ns->proc_name->attr.is_bind_c)))
+    {
+      int i;
+      for (i = 0; gfc_logical_kinds[i].kind; i++)
+        if (gfc_logical_kinds[i].kind == sym->ts.kind)
+          break;
+      if (!gfc_logical_kinds[i].c_bool && sym->attr.dummy
+	  && gfc_notify_std (GFC_STD_GNU, "LOGICAL dummy argument '%s' at %L "
+			     "with non-C_Bool kind in BIND(C) procedure '%s'",
+			     sym->name, &sym->declared_at,
+			     sym->ns->proc_name->name) == FAILURE)
+	return;
+      else if (!gfc_logical_kinds[i].c_bool
+	       && gfc_notify_std (GFC_STD_GNU, "LOGICAL result variable '%s' at"
+				  " %L with non-C_Bool kind in BIND(C) "
+				  "procedure '%s'", sym->name,
+				  &sym->declared_at,
+				  sym->attr.function ? sym->name
+						     : sym->ns->proc_name->name)
+		  == FAILURE)
+	return;
+    }
+
   switch (sym->attr.flavor)
     {
     case FL_VARIABLE:
