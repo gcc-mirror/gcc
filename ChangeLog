@@ -1,3 +1,9 @@
+2013-01-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.def (configure-gcc): Depend on all-gmp.
+	(all-gcc): Remove dependency on all-gmp.
+	* Makefile.in: Regenerated.
+
 2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config.sub: Merge from config repo.

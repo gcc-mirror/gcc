@@ -45485,6 +45485,14 @@ configure-stage3-gcc: maybe-configure-stage3-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
+configure-gcc: maybe-all-gmp
+
+configure-stage1-gcc: maybe-all-stage1-gmp
+configure-stage2-gcc: maybe-all-stage2-gmp
+configure-stage3-gcc: maybe-all-stage3-gmp
+configure-stage4-gcc: maybe-all-stage4-gmp
+configure-stageprofile-gcc: maybe-all-stageprofile-gmp
+configure-stagefeedback-gcc: maybe-all-stagefeedback-gmp
 configure-gcc: maybe-all-lto-plugin
 
 configure-stage1-gcc: maybe-all-stage1-lto-plugin
@@ -45541,14 +45549,6 @@ all-stage3-gcc: all-stage3-libiberty
 all-stage4-gcc: all-stage4-libiberty
 all-stageprofile-gcc: all-stageprofile-libiberty
 all-stagefeedback-gcc: all-stagefeedback-libiberty
-all-gcc: maybe-all-gmp
-
-all-stage1-gcc: maybe-all-stage1-gmp
-all-stage2-gcc: maybe-all-stage2-gmp
-all-stage3-gcc: maybe-all-stage3-gmp
-all-stage4-gcc: maybe-all-stage4-gmp
-all-stageprofile-gcc: maybe-all-stageprofile-gmp
-all-stagefeedback-gcc: maybe-all-stagefeedback-gmp
 all-gcc: maybe-all-intl
 
 all-stage1-gcc: maybe-all-stage1-intl
