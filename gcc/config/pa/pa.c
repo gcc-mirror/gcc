@@ -2190,8 +2190,12 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		  emit_insn (gen_rtx_SET (VOIDmode, temp,
 					  gen_rtx_HIGH (mode, operand1)));
 		  emit_move_insn (temp, gen_rtx_LO_SUM (mode, temp, operand1));
-		  emit_insn (gen_insv (operand0, GEN_INT (32),
-				       const0_rtx, temp));
+		  if (mode == DImode)
+		    emit_insn (gen_insvdi (operand0, GEN_INT (32),
+					   const0_rtx, temp));
+		  else
+		    emit_insn (gen_insvsi (operand0, GEN_INT (32),
+					   const0_rtx, temp));
 		}
 	      else
 		{
@@ -2212,8 +2216,12 @@ pa_emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 			  pos -= 1;
 			}
 
-		      emit_insn (gen_insv (operand0, GEN_INT (len),
-					   GEN_INT (pos), GEN_INT (v5)));
+		      if (mode == DImode)
+			emit_insn (gen_insvdi (operand0, GEN_INT (len),
+					       GEN_INT (pos), GEN_INT (v5)));
+		      else
+			emit_insn (gen_insvsi (operand0, GEN_INT (len),
+					       GEN_INT (pos), GEN_INT (v5)));
 
 		      len = pos > 0 && pos < 5 ? pos : 5;
 		      pos -= len;
