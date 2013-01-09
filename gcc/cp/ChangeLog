@@ -1,3 +1,10 @@
+2013-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/48418
+	* typeck.c (cp_build_binary_op): For LSHIFT_EXPR and RSHIFT_EXPR,
+	call maybe_constant_value for the negative or too big shift
+	count warnings.
+
 2013-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/55801
