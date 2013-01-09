@@ -1,3 +1,13 @@
+2013-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_interleave_highv2df): Change mode
+	attribute of movddup insn to DF.
+	(*vec_interleave_lowv2df): Ditto.
+	(vec_dupv2df): Ditto.
+
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-01-07 trunk r194991, r194992.
@@ -33,7 +43,7 @@
 2013-01-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-01-07 trunk r194968.
-	
+
 	PR other/55243
 	* config/avr/t-avr: Don't automatically rebuild
 	$(srcdir)/config/avr/t-multilib
