@@ -40,8 +40,6 @@ extern char * construct_restore_jr          (rtx);
 extern char * construct_dispose_instruction (rtx);
 extern char * construct_prepare_instruction (rtx);
 extern int    ep_memory_operand             (rtx, enum machine_mode, int);
-extern int    v850_float_z_comparison_operator (rtx, enum machine_mode);
-extern int    v850_float_nz_comparison_operator (rtx, enum machine_mode);
 extern rtx    v850_gen_compare              (enum rtx_code, enum machine_mode,
 					     rtx, rtx);
 extern enum machine_mode  v850_gen_float_compare (enum rtx_code,
