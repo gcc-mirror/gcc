@@ -1,5 +1,11 @@
 2013-01-09  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/55569
+	* cfgloopmanip.c (scale_loop_profile): Make ITERATION_BOUND gcov_type.
+	* cfgloop.h (scale_loop_profile): Likewise.
+
+2013-01-09  Jan Hubicka  <jh@suse.cz>
+
 	PR lto/45375
 	* ipa-inline.c (ipa_inline): Remove extern inlines and virtual functions.
 	* cgraphclones.c (cgraph_clone_node): Cpoy also LTO file data.
