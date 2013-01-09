@@ -334,6 +334,8 @@ extern rtx emit_group_move_into_temps (rtx);
    PARALLEL.  */
 extern void emit_group_store (rtx, rtx, tree, int);
 
+extern rtx maybe_emit_group_store (rtx, tree);
+
 /* Copy BLKmode object from a set of registers.  */
 extern void copy_blkmode_from_reg (rtx, rtx, tree);
 

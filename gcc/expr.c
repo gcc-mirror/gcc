@@ -2079,6 +2079,23 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
     emit_move_insn (orig_dst, dst);
 }
 
+/* Return a form of X that does not use a PARALLEL.  TYPE is the type
+   of the value stored in X.  */
+
+rtx
+maybe_emit_group_store (rtx x, tree type)
+{
+  enum machine_mode mode = TYPE_MODE (type);
+  gcc_checking_assert (GET_MODE (x) == VOIDmode || GET_MODE (x) == mode);
+  if (GET_CODE (x) == PARALLEL)
+    {
+      rtx result = gen_reg_rtx (mode);
+      emit_group_store (result, x, type, int_size_in_bytes (type));
+      return result;
+    }
+  return x;
+}
+
 /* Copy a BLKmode object of TYPE out of a register SRCREG into TARGET.
 
    This is used on targets that return BLKmode values in registers.  */
