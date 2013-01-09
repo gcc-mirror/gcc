@@ -1,3 +1,18 @@
+2013-01-09  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimiation/55875
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Add
+	EVERY_ITERATION parameter.
+	(number_of_iterations_exit): Check if exit is executed every
+	iteration.
+	(idx_infer_loop_bounds): Similarly here.
+	(n_of_executions_at_most): Simplify
+	to only test for cases where statement is dominated by the
+	particular bound; handle correctly the "postdominance"
+	test.
+	(scev_probably_wraps_p): Use max loop iterations info
+	as a global bound first.
+
 2013-01-09  Nguyen Duy Dat
 	    Nick Clifton  <nickc@redhat.com>
 

@@ -1,3 +1,9 @@
+2013-01-09  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimiation/55875
+	* gcc.c-torture/execute/pr55875.c: New testcase.
+	* g++.dg/torture/pr55875.C: New testcase.
+
 2013-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48418
