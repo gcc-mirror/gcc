@@ -1,3 +1,25 @@
+2013-01-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.h (VAL_U6_BITS_P): Define.
+	(INT_U6_BITS): Likewise.
+	* config/pa/predicates.md (uint6_operand): New predicate.
+	(shift5_operand, shift6_operand): Likewise.
+	* config/pa/pa.md (lshrsi3, rotrsi3): Use shift5_operand instead of
+	arith32_operand.
+	(lshrdi3): Use shift6_operand.
+	(shrpsi4, shrpdi4): New insn patterns.
+	(extzv): Delete expander.
+	(extzvsi, extzvdi): New expanders.  Use uint5_operand and uint6_operand
+	predicates in unamed zero extract patterns.  Tighten common constraint.
+	(extv): Delete expander.
+	(extvsi, extvdi): New expanders.  Use uint5_operand and uint6_operand
+	predicates in unamed sign extract patterns.  Tighten common constraint.
+	(insv): Delete expander.
+	(insvsi, insvdi): New expanders.  Use uint5_operand and uint6_operand
+	predicates in unamed insert patterns.  Tighten common constraint.
+	Change uint32_operand predicate to uint6_operand predicate in unamed
+	DImode pattern to insert constant values of type 1...1xxxx.
+
 2013-01-04  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55823

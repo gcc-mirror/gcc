@@ -956,6 +956,9 @@ extern int may_call_alloca;
 #define VAL_U5_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) < 0x20)
 #define INT_U5_BITS(X) VAL_U5_BITS_P (INTVAL (X))
 
+#define VAL_U6_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) < 0x40)
+#define INT_U6_BITS(X) VAL_U6_BITS_P (INTVAL (X))
+
 #define VAL_11_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) + 0x400 < 0x800)
 #define INT_11_BITS(X) VAL_11_BITS_P (INTVAL (X))
 
