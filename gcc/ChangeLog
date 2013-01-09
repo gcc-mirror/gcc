@@ -1,3 +1,33 @@
+2013-01-09  Nguyen Duy Dat
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.md (cbranchsf4): New pattern.
+	(cstoresf4): New pattern.
+	(cbranchdf4): New pattern.
+	(cstoredf4): New pattern.
+	(movsicc): Disallow floating point comparisons.
+	(cmpsf_le_insn): Fix order of operators.
+	(cmpsf_lt_insn): Likewise.
+	(cmpsf_eq_insn): Likewise.
+	(cmpdf_le_insn): Likewise.
+	(cmpdf_lt_insn): Likewise.
+	(cmpdf_eq_insn): Likewise.
+	(cmpsf_ge_insn): Use LE comparison.
+	(cmpdf_ge_insn): Likewise.
+	(cmpsf_gt_insn): Use LT comparison.
+	(cmpdf_gt_insn): Likewise.
+	(cmpsf_ne_insn): Delete pattern.
+	(cmpdf_ne_insn): Delete pattern.
+	* config/v850/v850.c (v850_gen_float_compare): Use
+	gen_cmpdf_eq_insn for NE comparison.
+	(v850_float_z_comparison_operator)
+	(v850_float_nz_comparison_operator): Move from here ...
+	* config/v850/predicates.md: ... to here.  Move GT and GE
+	comparisons into v850_float_z_comparison_operator.
+	* config/v850/v850-protos.h (v850_float_z_comparison_operator):
+	Delete prototype.
+	(v850_float_nz_comparison_operator): Likewise.
+
 2013-01-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.c (pa_emit_move_sequence): Replace calls to gen_insv
