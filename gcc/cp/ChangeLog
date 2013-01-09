@@ -1,3 +1,9 @@
+2013-01-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55893
+	* decl.c (cp_finish_decl): Clear TREE_READONLY if the variable
+	needs destruction.
+
 2013-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/48418
