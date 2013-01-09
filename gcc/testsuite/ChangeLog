@@ -1,6 +1,11 @@
+2012-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/intrinsic_size_3.f90: Make scan-tree-dump-times
+	number matching more robust.
+
 2013-01-09  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/pr55829
+	PR rtl-optimization/55829
 	* gcc.target/i386/pr55829.c: New.
 
 2013-01-09  Tobias Burnus  <burnus@net-b.de>

@@ -8,7 +8,7 @@
 
 2013-01-09  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR rtl-optimization/pr55829
+	PR rtl-optimization/55829
 	* lra-constraints.c (match_reload): Add code for absent output.
 	(curr_insn_transform): Add code for reloads of matched inputs
 	without output.
