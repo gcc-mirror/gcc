@@ -1,3 +1,11 @@
+2013-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/55114
+	* expr.h (maybe_emit_group_store): Declare.
+	* expr.c (maybe_emit_group_store): New function.
+	* builtins.c (expand_builtin_int_roundingfn): Call it.
+	(expand_builtin_int_roundingfn_2): Likewise.
+
 2013-01-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/pr55829

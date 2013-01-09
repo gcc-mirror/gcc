@@ -2753,6 +2753,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target)
   exp = build_call_nofold_loc (EXPR_LOCATION (exp), fallback_fndecl, 1, arg);
 
   tmp = expand_normal (exp);
+  tmp = maybe_emit_group_store (tmp, TREE_TYPE (exp));
 
   /* Truncate the result of floating point optab to integer
      via expand_fix ().  */
@@ -2856,6 +2857,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target)
 				   fallback_fndecl, 1, arg);
 
       target = expand_call (exp, NULL_RTX, target == const0_rtx);
+      target = maybe_emit_group_store (target, TREE_TYPE (exp));
       return convert_to_mode (mode, target, 0);
     }
 
