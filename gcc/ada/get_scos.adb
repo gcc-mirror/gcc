@@ -205,7 +205,7 @@ procedure Get_SCOs is
 
    Nam : Name_Id;
 
---  Start of processing for Get_Scos
+--  Start of processing for Get_SCOs
 
 begin
    SCOs.Initialize;
@@ -265,7 +265,9 @@ begin
                         pragma Assert (C = '|');
                         Get_Source_Location (SIE.Inst_Loc);
 
-                        if not At_EOL then
+                        if At_EOL then
+                           SIE.Enclosing_Instance := 0;
+                        else
                            Skip_Spaces;
                            SIE.Enclosing_Instance :=
                              SCO_Instance_Index (Get_Int);
@@ -341,6 +343,10 @@ begin
                         Skipc;
                         Key := '>';
                         Typ := Getc;
+
+                        --  Sanity check on dominance marker type indication
+
+                        pragma Assert (Typ in 'A' .. 'Z');
 
                      when '1' .. '9' =>
                         Typ := ' ';

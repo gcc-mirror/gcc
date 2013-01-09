@@ -1062,9 +1062,9 @@ package body Sem_Ch9 is
         and then Nkind (First (Else_Statements (N))) in N_Delay_Statement
       then
          Error_Msg_N
-           ("suspicious form of conditional entry call?!", N);
+           ("suspicious form of conditional entry call??!", N);
          Error_Msg_N
-           ("\`SELECT OR` may be intended rather than `SELECT ELSE`!", N);
+           ("\`SELECT OR` may be intended rather than `SELECT ELSE`??!", N);
       end if;
 
       --  Postpone the analysis of the statements till expansion. Analyze only
@@ -1987,11 +1987,11 @@ package body Sem_Ch9 is
          if Error_Msg_Sloc = No_Location then
             Error_Msg_N
               ("objects of this type will violate " &
-               "`No_Local_Protected_Objects`?", N);
+               "`No_Local_Protected_Objects`??", N);
          else
             Error_Msg_N
               ("objects of this type will violate " &
-               "`No_Local_Protected_Objects`?#", N);
+               "`No_Local_Protected_Objects`#??", N);
          end if;
       end if;
 
@@ -2052,15 +2052,15 @@ package body Sem_Ch9 is
                  or else From_Aspect_Specification (Prio_Item)
                then
                   Error_Msg_Name_1 := Chars (Identifier (Prio_Item));
-                  Error_Msg_NE ("?aspect% for & has no effect when Lock_Free" &
-                                " given", Prio_Item, Id);
+                  Error_Msg_NE ("aspect% for & has no effect when Lock_Free" &
+                                " given??", Prio_Item, Id);
 
                --  Pragma case
 
                else
                   Error_Msg_Name_1 := Pragma_Name (Prio_Item);
-                  Error_Msg_NE ("?pragma% for & has no effect when Lock_Free" &
-                                " given", Prio_Item, Id);
+                  Error_Msg_NE ("pragma% for & has no effect when Lock_Free" &
+                                " given??", Prio_Item, Id);
                end if;
             end if;
          end;
@@ -2089,16 +2089,16 @@ package body Sem_Ch9 is
                     or else From_Aspect_Specification (Prio_Item))
                  and then Chars (Identifier (Prio_Item)) = Name_Priority
                then
-                  Error_Msg_N ("?aspect Interrupt_Priority is preferred "
-                               & "in presence of handlers", Prio_Item);
+                  Error_Msg_N ("aspect Interrupt_Priority is preferred "
+                               & "in presence of handlers??", Prio_Item);
 
                --  Pragma case
 
                elsif Nkind (Prio_Item) = N_Pragma
                  and then Pragma_Name (Prio_Item) = Name_Priority
                then
-                  Error_Msg_N ("?pragma Interrupt_Priority is preferred "
-                               & "in presence of handlers", Prio_Item);
+                  Error_Msg_N ("pragma Interrupt_Priority is preferred "
+                               & "in presence of handlers??", Prio_Item);
                end if;
             end if;
          end;
@@ -2516,7 +2516,7 @@ package body Sem_Ch9 is
                               if Entity (EDN1) = Ent then
                                  Error_Msg_Sloc := Sloc (Stm1);
                                  Error_Msg_N
-                                   ("?accept duplicates one on line#", Stm);
+                                   ("accept duplicates one on line#??", Stm);
                                  exit;
                               end if;
                            end if;
@@ -2799,7 +2799,7 @@ package body Sem_Ch9 is
               and then not Entry_Accepted (Ent)
               and then Comes_From_Source (Ent)
             then
-               Error_Msg_NE ("no accept for entry &?", N, Ent);
+               Error_Msg_NE ("no accept for entry &??", N, Ent);
             end if;
 
             Next_Entity (Ent);
@@ -2923,10 +2923,10 @@ package body Sem_Ch9 is
 
          if Error_Msg_Sloc = No_Location then
             Error_Msg_N
-              ("objects of this type will violate `No_Task_Hierarchy`?", N);
+              ("objects of this type will violate `No_Task_Hierarchy`??", N);
          else
             Error_Msg_N
-              ("objects of this type will violate `No_Task_Hierarchy`?#", N);
+              ("objects of this type will violate `No_Task_Hierarchy`#??", N);
          end if;
       end if;
 

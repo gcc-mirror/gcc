@@ -13,9 +13,9 @@ int main (void)
 	ffi_cif cif;
 	ffi_type* arg_types[1];
 
-	arg_types[0] = NULL;
-
 	ffi_type	badType	= ffi_type_void;
+
+	arg_types[0] = NULL;
 
 	badType.size = 0;
 

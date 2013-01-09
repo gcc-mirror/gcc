@@ -483,16 +483,19 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   /* Scan the digits string and count the number of zeros.  If we make it
      all the way through the loop, we know the value is zero after the
      rounding completed above.  */
-  for (i = 0; i < ndigits; i++)
+  int hasdot = 0;
+  for (i = 0; i < ndigits + hasdot; i++)
     {
-      if (digits[i] != '0' && digits[i] != '.')
+      if (digits[i] == '.')
+	hasdot = 1;
+      else if (digits[i] != '0')
 	break;
     }
 
   /* To format properly, we need to know if the rounded result is zero and if
      so, we set the zero_flag which may have been already set for
      actual zero.  */
-  if (i == ndigits)
+  if (i == ndigits + hasdot)
     {
       zero_flag = true;
       /* The output is zero, so set the sign according to the sign bit unless

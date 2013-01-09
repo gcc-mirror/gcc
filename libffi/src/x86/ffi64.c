@@ -37,11 +37,17 @@
 #define MAX_GPR_REGS 6
 #define MAX_SSE_REGS 8
 
+#ifdef __INTEL_COMPILER
+#define UINT128 __m128
+#else
+#define UINT128 __int128_t
+#endif
+
 struct register_args
 {
   /* Registers for argument passing.  */
   UINT64 gpr[MAX_GPR_REGS];
-  __int128_t sse[MAX_SSE_REGS];
+  UINT128 sse[MAX_SSE_REGS];
 };
 
 extern void ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,

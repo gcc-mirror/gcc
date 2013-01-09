@@ -366,6 +366,7 @@ package Snames is
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_Attribute_Definition           : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
+   Name_Check_Float_Overflow           : constant Name_Id := N + $; -- GNAT
    Name_Check_Name                     : constant Name_Id := N + $; -- GNAT
    Name_Check_Policy                   : constant Name_Id := N + $; -- GNAT
    Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
@@ -445,6 +446,7 @@ package Snames is
    --  Remaining pragma names
 
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
+   Name_Abstract_State                 : constant Name_Id := N + $; -- GNAT
    Name_All_Calls_Remote               : constant Name_Id := N + $;
 
    --  Note: AST_Entry is not in this list because its name matches the name of
@@ -492,6 +494,7 @@ package Snames is
    Name_Export_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
+   Name_Global                         : constant Name_Id := N + $; -- GNAT
    Name_Ident                          : constant Name_Id := N + $; -- VMS
    Name_Implementation_Defined         : constant Name_Id := N + $; -- GNAT
    Name_Implemented                    : constant Name_Id := N + $; -- Ada 12
@@ -671,6 +674,7 @@ package Snames is
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
+   Name_Contract_In                    : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
    Name_D_Float                        : constant Name_Id := N + $;
    Name_Decreases                      : constant Name_Id := N + $;
@@ -693,8 +697,10 @@ package Snames is
    Name_GPL                            : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
+   Name_In_Out                         : constant Name_Id := N + $;
    Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
+   Name_Integrity                      : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
@@ -1190,6 +1196,7 @@ package Snames is
    Name_Archive_Suffix                     : constant Name_Id := N + $;
    Name_Binder                             : constant Name_Id := N + $;
    Name_Body_Suffix                        : constant Name_Id := N + $;
+   Name_Build_Slaves                       : constant Name_Id := N + $;
    Name_Builder                            : constant Name_Id := N + $;
    Name_Clean                              : constant Name_Id := N + $;
    Name_Compiler                           : constant Name_Id := N + $;
@@ -1305,8 +1312,10 @@ package Snames is
    Name_Project_Files                      : constant Name_Id := N + $;
    Name_Project_Path                       : constant Name_Id := N + $;
    Name_Project_Subdir                     : constant Name_Id := N + $;
+   Name_Remote                             : constant Name_Id := N + $;
    Name_Response_File_Format               : constant Name_Id := N + $;
    Name_Response_File_Switches             : constant Name_Id := N + $;
+   Name_Root_Dir                           : constant Name_Id := N + $;
    Name_Roots                              : constant Name_Id := N + $; -- GB
    Name_Required_Switches                  : constant Name_Id := N + $;
    Name_Run_Path_Option                    : constant Name_Id := N + $;
@@ -1665,6 +1674,7 @@ package Snames is
       Pragma_Assume_No_Invalid_Values,
       Pragma_Attribute_Definition,
       Pragma_C_Pass_By_Copy,
+      Pragma_Check_Float_Overflow,
       Pragma_Check_Name,
       Pragma_Check_Policy,
       Pragma_Compile_Time_Error,
@@ -1729,6 +1739,7 @@ package Snames is
       --  Remaining (non-configuration) pragmas
 
       Pragma_Abort_Defer,
+      Pragma_Abstract_State,
       Pragma_All_Calls_Remote,
       Pragma_Assert,
       Pragma_Assert_And_Cut,
@@ -1763,6 +1774,7 @@ package Snames is
       Pragma_Export_Valued_Procedure,
       Pragma_External,
       Pragma_Finalize_Storage_Only,
+      Pragma_Global,
       Pragma_Ident,
       Pragma_Implementation_Defined,
       Pragma_Implemented,

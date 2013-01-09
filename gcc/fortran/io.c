@@ -1,6 +1,6 @@
 /* Deal with I/O statements & related stuff.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010, 2011
+   2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -97,7 +97,8 @@ static const io_tag
 	tag_eor		= {"EOR", " eor =", " %l", BT_UNKNOWN},
 	tag_id		= {"ID", " id =", " %v", BT_INTEGER},
 	tag_pending	= {"PENDING", " pending =", " %v", BT_LOGICAL},
-	tag_newunit	= {"NEWUNIT", " newunit =", " %v", BT_INTEGER};
+	tag_newunit	= {"NEWUNIT", " newunit =", " %v", BT_INTEGER},
+	tag_s_iqstream	= {"STREAM", " stream =", " %v", BT_CHARACTER};
 
 static gfc_dt *current_dt;
 
@@ -3912,6 +3913,7 @@ match_inquire_element (gfc_inquire *inquire)
   RETM m = match_out_tag (&tag_strm_out, &inquire->strm_pos);
   RETM m = match_vtag (&tag_pending, &inquire->pending);
   RETM m = match_vtag (&tag_id, &inquire->id);
+  RETM m = match_vtag (&tag_s_iqstream, &inquire->iqstream);
   RETM return MATCH_NO;
 }
 
@@ -4101,6 +4103,7 @@ gfc_resolve_inquire (gfc_inquire *inquire)
   INQUIRE_RESOLVE_TAG (&tag_pending, inquire->pending);
   INQUIRE_RESOLVE_TAG (&tag_size, inquire->size);
   INQUIRE_RESOLVE_TAG (&tag_s_decimal, inquire->decimal);
+  INQUIRE_RESOLVE_TAG (&tag_s_iqstream, inquire->iqstream);
 #undef INQUIRE_RESOLVE_TAG
 
   if (gfc_reference_st_label (inquire->err, ST_LABEL_TARGET) == FAILURE)

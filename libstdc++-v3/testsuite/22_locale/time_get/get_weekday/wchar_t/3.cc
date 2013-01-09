@@ -1,6 +1,6 @@
 // 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009'
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

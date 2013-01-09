@@ -514,6 +514,12 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Full_Path_Name_For_Brief_Errors := True;
 
+                  --  -gnateF (Check_Float_Overflow)
+
+                  when 'F' =>
+                     Ptr := Ptr + 1;
+                     Check_Float_Overflow := True;
+
                   --  -gnateG (save preprocessor output)
 
                   when 'G' =>
@@ -612,6 +618,7 @@ package body Switch.C is
 
                   when 'S' =>
                      Generate_SCO := True;
+                     Generate_SCO_Instance_Table := True;
                      Ptr := Ptr + 1;
 
                   --  -gnatet (generate target dependent information)

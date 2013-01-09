@@ -1,7 +1,7 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011 Free Software Foundation, Inc.
+   2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -546,6 +546,7 @@ void gfc_resolve_signal (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_sin (gfc_expr *, gfc_expr *);
 void gfc_resolve_sinh (gfc_expr *, gfc_expr *);
 void gfc_resolve_size (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_stride (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_spacing (gfc_expr *, gfc_expr *);
 void gfc_resolve_spread (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_sqrt (gfc_expr *, gfc_expr *);

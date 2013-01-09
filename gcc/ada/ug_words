@@ -58,10 +58,13 @@ gcc -c          ^ GNAT COMPILE
 -gnatC          ^ /COMPRESS_NAMES
 -gnatDG         ^ /XDEBUG /EXPAND_SOURCEA
 -gnatD          ^ /XDEBUG
+-gnateA         ^ /ALIASING_CHECK
 -gnatec         ^ /CONFIGURATION_PRAGMAS_FILE
--gnateE         ^ /EXTRA_EXCEPTION_INFORMATION
+-gnated         ^ /DISABLE_ATOMIC_SYNCHRONIZATION
 -gnateD         ^ /SYMBOL_PREPROCESSING
+-gnateE         ^ /EXTRA_EXCEPTION_INFORMATION
 -gnatef         ^ /FULL_PATH_IN_BRIEF_MESSAGES
+-gnateF         ^ /FLOAT_OVERFLOW_CHECK
 -gnateG         ^ /GENERATE_PROCESSED_SOURCE
 -gnatei         ^ /MAX_INSTANTIATIONS=
 -gnateI         ^ /MULTI_UNIT_INDEX=
@@ -69,6 +72,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatep         ^ /DATA_PREPROCESSING
 -gnateP         ^ /CATEGORIZATION_WARNINGS
 -gnateS         ^ /SCO_OUTPUT
+-gnatet         ^ /TARGET_DEPENDENT_INFO
+-gnateV         ^ /PARAMETER_VALIDITY_CHECK
 -gnatE          ^ /CHECKS=ELABORATION
 -gnatf          ^ /REPORT_ERRORS=FULL
 -gnatF          ^ /UPPERCASE_EXTERNALS

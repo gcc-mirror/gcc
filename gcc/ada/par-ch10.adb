@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,8 +314,9 @@ package body Ch10 is
                --  Do not complain if there is a pragma No_Body
 
                if not No_Body then
-                  Error_Msg_SC ("?file contains no compilation units");
+                  Error_Msg_SC ("??file contains no compilation units");
                end if;
+
             else
                Error_Msg_SC ("compilation unit expected");
                Cunit_Error_Flag := True;

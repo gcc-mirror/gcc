@@ -2,7 +2,7 @@
    It is not stand-alone:  It depends on tons of macros, and the
    intent is you #include this file after you've defined the macros.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006,
-   2007, 2008, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2010, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

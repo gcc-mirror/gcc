@@ -3576,7 +3576,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree data_ref_base = unshare_expr (DR_BASE_ADDRESS (dr));
-  tree base_name;
+  const char *base_name;
   tree data_ref_base_var;
   tree vec_stmt;
   tree addr_base, addr_expr;
@@ -3601,12 +3601,12 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     }
 
   if (loop_vinfo)
-    base_name = build_fold_indirect_ref (data_ref_base);
+    base_name = get_name (data_ref_base);
   else
     {
       base_offset = ssize_int (0);
       init = ssize_int (0);
-      base_name = build_fold_indirect_ref (unshare_expr (DR_REF (dr)));
+      base_name = get_name (DR_REF (dr));
     }
 
   data_ref_base_var = create_tmp_var (TREE_TYPE (data_ref_base), "batmp");
@@ -3654,7 +3654,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 
   vec_stmt = fold_convert (vect_ptr_type, addr_base);
   addr_expr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
-                                     get_name (base_name));
+                                     base_name);
   vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr);
   gimple_seq_add_seq (new_stmt_list, seq);
 
@@ -3729,7 +3729,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 			  gimple_stmt_iterator *gsi, gimple *ptr_incr,
 			  bool only_init, bool *inv_p)
 {
-  tree base_name;
+  const char *base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
@@ -3786,23 +3786,22 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 
   /* Create an expression for the first address accessed by this load
      in LOOP.  */
-  base_name = build_fold_indirect_ref (unshare_expr (DR_BASE_ADDRESS (dr)));
+  base_name = get_name (DR_BASE_ADDRESS (dr));
 
   if (dump_enabled_p ())
     {
-      tree data_ref_base = base_name;
+      tree dr_base_type = TREE_TYPE (DR_BASE_OBJECT (dr));
       dump_printf_loc (MSG_NOTE, vect_location,
                        "create %s-pointer variable to type: ",
                        tree_code_name[(int) TREE_CODE (aggr_type)]);
       dump_generic_expr (MSG_NOTE, TDF_SLIM, aggr_type);
-      if (TREE_CODE (data_ref_base) == VAR_DECL
-          || TREE_CODE (data_ref_base) == ARRAY_REF)
+      if (TREE_CODE (dr_base_type) == ARRAY_TYPE)
         dump_printf (MSG_NOTE, "  vectorizing an array ref: ");
-      else if (TREE_CODE (data_ref_base) == COMPONENT_REF)
+      else if (TREE_CODE (dr_base_type) == RECORD_TYPE)
         dump_printf (MSG_NOTE, "  vectorizing a record based array ref: ");
-      else if (TREE_CODE (data_ref_base) == SSA_NAME)
+      else
         dump_printf (MSG_NOTE, "  vectorizing a pointer ref: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, base_name);
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_BASE_OBJECT (dr));
     }
 
   /* (1) Create the new aggregate-pointer variable.  */
@@ -3813,8 +3812,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
     aggr_ptr_type
       = build_qualified_type (aggr_ptr_type,
 			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
-  aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
-                                    get_name (base_name));
+  aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var, base_name);
 
   /* Vector and array types inherit the alias set of their component
      type by default so we need to use a ref-all pointer if the data
@@ -3827,7 +3825,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 	= build_pointer_type_for_mode (aggr_type,
 				       TYPE_MODE (aggr_ptr_type), true);
       aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
-					get_name (base_name));
+					base_name);
     }
 
   /* Likewise for any of the data references in the stmt group.  */
@@ -3845,7 +3843,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 					       TYPE_MODE (aggr_ptr_type), true);
 	      aggr_ptr
 		= vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var,
-					 get_name (base_name));
+					 base_name);
 	      break;
 	    }
 

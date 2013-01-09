@@ -58,26 +58,31 @@ package Sem_Ch6 is
       Is_Serious : Boolean := False);
    --  This procedure is called if the node N, an instance of a call to
    --  subprogram Subp, cannot be inlined. Msg is the message to be issued,
-   --  and has a ? as the last character. Temporarily the behavior of this
-   --  routine depends on the value of -gnatd.k:
+   --  which ends with ? (it does not end with ?p?, this routine takes care of
+   --  the need to change ? to ?p?). Temporarily the behavior of this routine
+   --  depends on the value of -gnatd.k:
+   --
    --    * If -gnatd.k is not set (ie. old inlining model) then if Subp has
    --      a pragma Always_Inlined, then an error message is issued (by
    --      removing the last character of Msg). If Subp is not Always_Inlined,
    --      then a warning is issued if the flag Ineffective_Inline_Warnings
-   --      is set, and if not, the call has no effect.
+   --      is set, adding ?p to the msg, and if not, the call has no effect.
+   --
    --    * If -gnatd.k is set (ie. new inlining model) then:
    --      - If Is_Serious is true, then an error is reported (by removing the
    --        last character of Msg);
+   --
    --      - otherwise:
+   --
    --        * Compiling without optimizations if Subp has a pragma
    --          Always_Inlined, then an error message is issued; if Subp is
    --          not Always_Inlined, then a warning is issued if the flag
-   --          Ineffective_Inline_Warnings is set, and if not, the call
-   --          has no effect.
-   --        * Compiling with optimizations then a warning is issued if
-   --          the flag Ineffective_Inline_Warnings is set; otherwise the
-   --          call has no effect since inlining may be performed by the
-   --          backend.
+   --          Ineffective_Inline_Warnings is set (adding p?), and if not,
+   --          the call has no effect.
+   --
+   --        * Compiling with optimizations then a warning is issued if the
+   --          flag Ineffective_Inline_Warnings is set (adding p?); otherwise
+   --          no effect since inlining may be performed by the backend.
 
    procedure Check_Conventions (Typ : Entity_Id);
    --  Ada 2005 (AI-430): Check that the conventions of all inherited and

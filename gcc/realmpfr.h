@@ -1,6 +1,6 @@
 /* Definitions of floating-point conversion from compiler
    internal format to MPFR.
-   Copyright (C) 2010
+   Copyright (C) 2010, 2012
    Free Software Foundation, Inc.
 
    This file is part of GCC.

@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to IWMMXT and Neon.
-;; Copyright (C) 2006, 2007, 2010, 2012 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2010, 2011, 2012 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.

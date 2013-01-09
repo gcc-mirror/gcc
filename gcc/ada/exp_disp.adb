@@ -8107,7 +8107,7 @@ package body Exp_Disp is
          procedure Handle_Inherited_Private_Subprograms (Typ : Entity_Id);
          --  Called if Typ is declared in a nested package or a public child
          --  package to handle inherited primitives that were inherited by Typ
-         --  in  the visible part, but whose declaration was deferred because
+         --  in the visible part, but whose declaration was deferred because
          --  the parent operation was private and not visible at that point.
 
          procedure Set_Fixed_Prim (Pos : Nat);
@@ -8431,11 +8431,11 @@ package body Exp_Disp is
       if Is_Controlled (Typ) then
          if not Finalized then
             Error_Msg_N
-              ("controlled type has no explicit Finalize method?", Typ);
+              ("controlled type has no explicit Finalize method??", Typ);
 
          elsif not Adjusted then
             Error_Msg_N
-              ("controlled type has no explicit Adjust method?", Typ);
+              ("controlled type has no explicit Adjust method??", Typ);
          end if;
       end if;
 
@@ -8754,7 +8754,7 @@ package body Exp_Disp is
       if Has_CPP_Constructors (Typ)
         and then No (Init_Proc (Typ))
       then
-         Error_Msg_N ("?default constructor must be imported from C++", Typ);
+         Error_Msg_N ("??default constructor must be imported from C++", Typ);
       end if;
    end Set_CPP_Constructors;
 

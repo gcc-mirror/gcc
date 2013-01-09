@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,13 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.IO_Exceptions;      use Ada.IO_Exceptions;
-with Interfaces.C_Streams;   use Interfaces.C_Streams;
-with System;                 use System;
+with Ada.IO_Exceptions;          use Ada.IO_Exceptions;
+with Ada.Unchecked_Deallocation;
+with Interfaces.C_Streams;       use Interfaces.C_Streams;
+with System;                     use System;
 with System.CRTL;
 with System.File_IO;
 with System.Soft_Links;
-with Ada.Unchecked_Deallocation;
 
 package body System.Direct_IO is
 
@@ -280,11 +280,20 @@ package body System.Direct_IO is
    ------------------
 
    procedure Set_Position (File : File_Type) is
+      use type System.CRTL.ssize_t;
+      R : int;
    begin
-      if fseek
+      if Standard'Address_Size = 64 then
+         R := fseek64
+           (File.Stream, ssize_t (File.Bytes) *
+              ssize_t (File.Index - 1), SEEK_SET);
+      else
+         R := fseek
            (File.Stream, long (File.Bytes) *
-              long (File.Index - 1), SEEK_SET) /= 0
-      then
+              long (File.Index - 1), SEEK_SET);
+      end if;
+
+      if R /= 0 then
          raise Use_Error;
       end if;
    end Set_Position;
@@ -294,6 +303,7 @@ package body System.Direct_IO is
    ----------
 
    function Size (File : File_Type) return Count is
+      use type System.CRTL.ssize_t;
    begin
       FIO.Check_File_Open (AP (File));
       File.Last_Op := Op_Other;
@@ -302,7 +312,11 @@ package body System.Direct_IO is
          raise Device_Error;
       end if;
 
-      return Count (ftell (File.Stream) / long (File.Bytes));
+      if Standard'Address_Size = 64 then
+         return Count (ftell64 (File.Stream) / ssize_t (File.Bytes));
+      else
+         return Count (ftell (File.Stream) / long (File.Bytes));
+      end if;
    end Size;
 
    -----------

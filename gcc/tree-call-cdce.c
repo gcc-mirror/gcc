@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008, 2009, 2010
+   Copyright (C) 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 

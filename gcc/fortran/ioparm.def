@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2006, 2008, 2010
+/* Copyright (C) 2005, 2006, 2008, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -88,6 +88,7 @@ IOPARM (inquire, sign,		1 << 4,  char1)
 IOPARM (inquire, pending,	1 << 5,  pint4)
 IOPARM (inquire, size,		1 << 6,  pintio)
 IOPARM (inquire, id,		1 << 7,  pint4)
+IOPARM (inquire, iqstream,	1 << 8,  char1)
 IOPARM (wait,    common,	0,	 common)
 IOPARM (wait,    id,		1 << 7,  pint4)
 #ifndef IOPARM_dt_list_format

@@ -251,8 +251,10 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
       break;
 
     case FFI_VFP:
+#ifdef __ARM_EABI__
       ffi_call_VFP (fn, &ecif, cif->bytes, cif->flags, ecif.rvalue);
       break;
+#endif
 
     default:
       FFI_ASSERT(0);
@@ -609,8 +611,10 @@ ffi_prep_closure_loc (ffi_closure* closure,
 
   if (cif->abi == FFI_SYSV)
     closure_func = &ffi_closure_SYSV;
+#ifdef __ARM_EABI__
   else if (cif->abi == FFI_VFP)
     closure_func = &ffi_closure_VFP;
+#endif
   else
     return FFI_BAD_ABI;
     

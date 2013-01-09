@@ -273,7 +273,7 @@ endif
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include
+INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/../include $(GMPINC)
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
@@ -283,11 +283,11 @@ ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 ifneq ($(findstring vxworks,$(osys)),)
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada \
-			-I$(fsrcdir)/../include
+			-I$(fsrcdir)/../include $(GMPINC)
 else
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada -iquote $(fsrcdir) \
-			-I$(fsrcdir)/../include
+			-I$(fsrcdir)/../include $(GMPINC)
 endif
 
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
@@ -770,7 +770,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
 endif
 
 # Sparc VxWorks
-ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
+ifeq ($(strip $(filter-out sparc% leon% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -797,7 +797,7 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
   indepsw.adb<indepsw-gnu.adb
 
-  ifeq ($(arch),sparc)
+  ifeq ($(strip $(filter-out sparc erc32 leon leon3, $(arch))),)
     # 32-bits
     LIBGNAT_TARGET_PAIRS += \
     s-vxwork.ads<s-vxwork-sparc.ads \
@@ -1535,6 +1535,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
       $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     EXTRA_LIBGNAT_SRCS+=tb-ivms.c
+    override GNATRTL_ALTIVEC_OBJS=
 
     TOOLS_TARGET_PAIRS= \
       mlib-tgt-specific.adb<mlib-tgt-specific-vms-ia64.adb \
@@ -2308,7 +2309,7 @@ endif
 # LIBGNAT_SRCS is the list of all C files (including headers) of the runtime
 # library.  LIBGNAT_OBJS is the list of object files for libgnat.
 # thread.c is special as put into GNATRTL_TASKING_OBJS by Makefile.rtl
-LIBGNAT_OBJS = adadecode.o adaint.o argv.o arit64.o aux-io.o 		\
+LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
   cal.o cio.o cstreams.o ctrl_c.o					\
   env.o errno.o exit.o expect.o final.o 				\
   init.o initialize.o locales.o mkdir.o					\
@@ -2357,7 +2358,9 @@ ADA_EXCLUDE_SRCS =\
   s-vxwexc.adb s-vxwexc.ads s-vxwext.adb s-vxwext.ads \
   s-win32.ads  s-winext.ads \
   g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
-  i-vxwoio.adb i-vxwoio.ads i-vxwork.ads
+  i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
+  g-allein.ads g-alleve.ads g-altcon.ads g-alveop.adb g-alvety.ads \
+  g-alleve.adb g-altcon.adb g-altive.ads g-alveop.ads g-alvevi.ads
 
 # ADA_EXCLUDE_SRCS without the sources used by the target
 ADA_EXCLUDE_FILES=$(filter-out \

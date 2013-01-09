@@ -25,18 +25,18 @@ double float_va_fn(unsigned int x, double y,...)
   total+=(double)x;
   total+=y;
 
-  printf("%u: %.1lf :", x, y);
+  printf("%u: %.1f :", x, y);
 
   va_start(ap, y);
   for(i=0;i<x;i++)
   {
     double arg=va_arg(ap, double);
     total+=arg;
-    printf(" %d:%.1lf ", i, arg);
+    printf(" %d:%.1f ", i, arg);
   }
   va_end(ap);
 
-  printf(" total: %.1lf\n", total);
+  printf(" total: %.1f\n", total);
 
   return total;
 }
@@ -57,7 +57,7 @@ int main (void)
   /* Call it statically and then via ffi */
   resfp=float_va_fn(0,2.0);
   // { dg-output "0: 2.0 : total: 2.0" }
-  printf("compiled: %.1lf\n", resfp);
+  printf("compiled: %.1f\n", resfp);
   // { dg-output "\ncompiled: 2.0" }
 
   arg_types[0] = &ffi_type_uint;
@@ -72,14 +72,14 @@ int main (void)
   values[1] = &doubles[0];
   ffi_call(&cif, FFI_FN(float_va_fn), &resfp, values);
   // { dg-output "\n0: 2.0 : total: 2.0" }
-  printf("ffi: %.1lf\n", resfp);
+  printf("ffi: %.1f\n", resfp);
   // { dg-output "\nffi: 2.0" }
 
   /* Second test, float_va_fn(2,2.0,3.0,4.0), now with variadic params */
   /* Call it statically and then via ffi */
   resfp=float_va_fn(2,2.0,3.0,4.0);
   // { dg-output "\n2: 2.0 : 0:3.0  1:4.0  total: 11.0" }
-  printf("compiled: %.1lf\n", resfp);
+  printf("compiled: %.1f\n", resfp);
   // { dg-output "\ncompiled: 11.0" }
 
   arg_types[0] = &ffi_type_uint;
@@ -100,7 +100,7 @@ int main (void)
   values[3] = &doubles[2];
   ffi_call(&cif, FFI_FN(float_va_fn), &resfp, values);
   // { dg-output "\n2: 2.0 : 0:3.0  1:4.0  total: 11.0" }
-  printf("ffi: %.1lf\n", resfp);
+  printf("ffi: %.1f\n", resfp);
   // { dg-output "\nffi: 11.0" }
 
   exit(0);

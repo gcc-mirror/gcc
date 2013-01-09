@@ -1999,7 +1999,19 @@ begin
                           In_Arrays => Element.Decl.Arrays,
                           Shared    => Project_Tree.Shared);
                      Name_Len := 0;
-                     Add_Str_To_Name_Buffer (Main.all);
+
+                     --  If the single main has been specified as an absolute
+                     --  path, use only the simple file name. If the absolute
+                     --  path is incorrect, an error will be reported by the
+                     --  underlying tool and it does not make a difference
+                     --  what switches are used.
+
+                     if Is_Absolute_Path (Main.all) then
+                        Add_Str_To_Name_Buffer (File_Name (Main.all));
+                     else
+                        Add_Str_To_Name_Buffer (Main.all);
+                     end if;
+
                      The_Switches := Prj.Util.Value_Of
                        (Index     => Name_Find,
                         Src_Index => 0,

@@ -4929,6 +4929,17 @@ package body Sem_Ch12 is
             Assoc := Associated_Node (Assoc);
          end if;
 
+         --  An additional special case: an unconstrained type in an object
+         --  declaration may have been rewritten as a local subtype constrained
+         --  by the expression in the declaration. We need to recover the
+         --  original entity which may be global.
+
+         if Present (Original_Node (Assoc))
+           and then Nkind (Parent (N)) = N_Object_Declaration
+         then
+            Assoc := Original_Node (Assoc);
+         end if;
+
          return Assoc;
       end if;
    end Get_Associated_Node;
@@ -5708,7 +5719,7 @@ package body Sem_Ch12 is
                  and then Is_Child_Unit (E)
                then
                   if Is_Child_Unit (E)
-                    and then not Is_Visible_Child_Unit (E)
+                    and then not Is_Visible_Lib_Unit (E)
                   then
                      Error_Msg_NE
                        ("generic child unit& is not visible", Gen_Id, E);
@@ -10480,8 +10491,7 @@ package body Sem_Ch12 is
 
          --  This is a binding interpretation that applies to previous versions
          --  of the language, but for now we retain the milder check in order
-         --  to preserve ACATS tests.
-         --  These will be protested eventually ???
+         --  to preserve ACATS tests. These will be protested eventually ???
 
          if Ada_Version < Ada_2012 then
             Check_Mode_Conformant
@@ -12144,8 +12154,8 @@ package body Sem_Ch12 is
       E1 := First_Entity (Form);
       E2 := First_Entity (Act);
       while Present (E1) and then E1 /= First_Private_Entity (Form) loop
-         --  Could this test be a single condition???
-         --  Seems like it could, and isn't FPE (Form) a constant anyway???
+         --  Could this test be a single condition??? Seems like it could, and
+         --  isn't FPE (Form) a constant anyway???
 
          if not Is_Internal (E1)
            and then Present (Parent (E1))
@@ -12411,7 +12421,7 @@ package body Sem_Ch12 is
                   --  provide additional warning which might explain the error.
 
                   Set_Is_Immediately_Visible (Cur, Vis);
-                  Error_Msg_NE ("& hides outer unit with the same name?",
+                  Error_Msg_NE ("& hides outer unit with the same name??",
                     N, Defining_Unit_Name (N));
                end if;
 
@@ -12986,7 +12996,36 @@ package body Sem_Ch12 is
             end if;
 
             if Is_Global (E) then
-               Set_Global_Type (N, N2);
+
+               --  If the entity is a package renaming that is the prefix of
+               --  an expanded name, it has been rewritten as the renamed
+               --  package, which is necessary semantically but complicates
+               --  ASIS tree traversal, so we recover the original entity to
+               --  expose the renaming. Take into account that the context may
+               --  be a nested generic and that the original node may itself
+               --  have an associated node.
+
+               if Ekind (E) = E_Package
+                 and then Nkind (Parent (N)) = N_Expanded_Name
+                 and then Present (Original_Node (N2))
+                 and then Present (Entity (Original_Node (N2)))
+                 and then Is_Entity_Name (Entity (Original_Node (N2)))
+               then
+                  if Is_Global (Entity (Original_Node (N2))) then
+                     N2 := Original_Node (N2);
+                     Set_Associated_Node (N, N2);
+                     Set_Global_Type (N, N2);
+
+                  else
+                     --  Renaming is local, and will be resolved in instance
+
+                     Set_Associated_Node (N, Empty);
+                     Set_Etype  (N, Empty);
+                  end if;
+
+               else
+                  Set_Global_Type (N, N2);
+               end if;
 
             elsif Nkind (N) = N_Op_Concat
               and then Is_Generic_Type (Etype (N2))

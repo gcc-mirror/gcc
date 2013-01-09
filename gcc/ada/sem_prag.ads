@@ -58,7 +58,8 @@ package Sem_Prag is
    --  This function is used in connection with pragmas Assertion, Check,
    --  Precondition, and Postcondition, to determine if Check pragmas (or
    --  corresponding Assert, Precondition, or Postcondition pragmas) are
-   --  currently disabled (as set by a Policy pragma with the Disabled
+   --  currently disabled (as set by a Check_Policy or Assertion_Policy pragma
+   --  with the Disable argument).
 
    function Check_Enabled (Nam : Name_Id) return Boolean;
    --  This function is used in connection with pragmas Assertion, Check,

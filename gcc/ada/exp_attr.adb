@@ -5404,7 +5404,6 @@ package body Exp_Attr is
                Ftp : Entity_Id;
 
             begin
-
                case Float_Rep (Btyp) is
 
                   --  For vax fpt types, call appropriate routine in special

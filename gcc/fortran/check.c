@@ -895,12 +895,10 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
 
   where = &pointer->where;
 
-  if (pointer->expr_type == EXPR_VARIABLE || pointer->expr_type == EXPR_FUNCTION)
-    attr1 = gfc_expr_attr (pointer);
-  else if (pointer->expr_type == EXPR_NULL)
+  if (pointer->expr_type == EXPR_NULL)
     goto null_arg;
-  else
-    gcc_assert (0); /* Pointer must be a variable or a function.  */
+
+  attr1 = gfc_expr_attr (pointer);
 
   if (!attr1.pointer && !attr1.proc_pointer)
     {
@@ -2791,17 +2789,14 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
       return FAILURE;
     }
 
-  if (to->ts.kind != from->ts.kind)
-    {
-      gfc_error ("The FROM and TO arguments of the MOVE_ALLOC intrinsic at %L"
-		 " must be of the same kind %d/%d", &to->where, from->ts.kind,
-		 to->ts.kind);
-      return FAILURE;
-    }
-
   /* CLASS arguments: Make sure the vtab of from is present.  */
-  if (to->ts.type == BT_CLASS)
-    gfc_find_derived_vtab (from->ts.u.derived);
+  if (to->ts.type == BT_CLASS && !UNLIMITED_POLY (from))
+    {
+      if (from->ts.type == BT_CLASS || from->ts.type == BT_DERIVED)
+	gfc_find_derived_vtab (from->ts.u.derived);
+      else
+	gfc_find_intrinsic_vtab (&from->ts);
+    }
 
   return SUCCESS;
 }

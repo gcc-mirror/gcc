@@ -5332,16 +5332,34 @@ package body Exp_Ch3 is
                   --  identifier found in the sources. We also have to exchange
                   --  entities containing their defining identifiers to ensure
                   --  the correct replacement of the object declaration by this
-                  --  object renaming declaration ---because these identifiers
+                  --  object renaming declaration because these identifiers
                   --  were previously added by Enter_Name to the current scope.
                   --  We must preserve the homonym chain of the source entity
                   --  as well. We must also preserve the kind of the entity,
-                  --  which may be a constant.
+                  --  which may be a constant. Preserve entity chain because
+                  --  itypes may have been generated already, and the full
+                  --  chain must be preserved for final freezing. Finally,
+                  --  preserve Comes_From_Source setting, so that debugging
+                  --  and cross-referencing information is properly kept.
 
-                  Set_Chars (Defining_Identifier (N), Chars (Def_Id));
-                  Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
-                  Set_Ekind (Defining_Identifier (N), Ekind (Def_Id));
-                  Exchange_Entities (Defining_Identifier (N), Def_Id);
+                  declare
+                     New_Id    : constant Entity_Id := Defining_Identifier (N);
+                     Next_Temp : constant Entity_Id := Next_Entity (New_Id);
+                     S_Flag    : constant Boolean   :=
+                                   Comes_From_Source (Def_Id);
+
+                  begin
+                     Set_Next_Entity (New_Id, Next_Entity (Def_Id));
+                     Set_Next_Entity (Def_Id, Next_Temp);
+
+                     Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
+                     Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
+                     Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
+
+                     Set_Comes_From_Source (Def_Id, False);
+                     Exchange_Entities (Defining_Identifier (N), Def_Id);
+                     Set_Comes_From_Source (Def_Id, S_Flag);
+                  end;
                end;
             end if;
 
@@ -7132,7 +7150,7 @@ package body Exp_Ch3 is
 
                      if Is_Ancestor (RSPWS, Etype (Pool)) then
                         Error_Msg_N
-                          ("?subpool access type has deeper accessibility " &
+                          ("??subpool access type has deeper accessibility " &
                            "level than pool", Def_Id);
 
                         Append_Freeze_Action (Def_Id,
@@ -7744,14 +7762,13 @@ package body Exp_Ch3 is
 
                if Warning_Needed then
                   Error_Msg_N
-                    ("Objects of the type cannot be initialized " &
-                       "statically by default?",
-                       Parent (E));
+                    ("Objects of the type cannot be initialized "
+                     & "statically by default??", Parent (E));
                end if;
             end if;
 
          else
-            Error_Msg_N ("Object cannot be initialized statically?", E);
+            Error_Msg_N ("Object cannot be initialized statically??", E);
          end if;
       end if;
    end Initialization_Warning;
@@ -8257,7 +8274,10 @@ package body Exp_Ch3 is
          --  Input attributes, since each type will have its own version of
          --  Input constructed by the expander. The test for Comes_From_Source
          --  is needed to distinguish inherited operations from renamings
-         --  (which also have Alias set).
+         --  (which also have Alias set). We exclude internal entities with
+         --  Interface_Alias to avoid generating duplicated wrappers since
+         --  the primitive which covers the interface is also available in
+         --  the list of primitive operations.
 
          --  The function may be abstract, or require_Overriding may be set
          --  for it, because tests for null extensions may already have reset
@@ -8267,6 +8287,7 @@ package body Exp_Ch3 is
 
          if Comes_From_Source (Subp)
            or else No (Alias (Subp))
+           or else Present (Interface_Alias (Subp))
            or else Ekind (Subp) /= E_Function
            or else not Has_Controlling_Result (Subp)
            or else Is_Access_Type (Etype (Subp))
@@ -8383,11 +8404,15 @@ package body Exp_Ch3 is
 
             Append_To (Body_List, Func_Body);
 
-            --  Replace the inherited function with the wrapper function
-            --  in the primitive operations list.
+            --  Replace the inherited function with the wrapper function in the
+            --  primitive operations list. We add the minimum decoration needed
+            --  to override interface primitives.
+
+            Set_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
 
             Override_Dispatching_Operation
-              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec));
+              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec),
+               Is_Wrapper => True);
          end if;
 
       <<Next_Prim>>

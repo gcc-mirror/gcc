@@ -1005,8 +1005,8 @@ package body Exp_Ch11 is
             then
                Warn_No_Exception_Propagation_Active (Handler);
                Error_Msg_N
-                 ("\?this handler can never be entered, and has been removed",
-                  Handler);
+                 ("\?X?this handler can never be entered, "
+                  & "and has been removed", Handler);
             end if;
 
             if No_Exception_Propagation_Active then
@@ -1808,10 +1808,10 @@ package body Exp_Ch11 is
 
             if Configurable_Run_Time_Mode then
                Error_Msg_NE
-                 ("\?& may call Last_Chance_Handler", N, E);
+                 ("\?X?& may call Last_Chance_Handler", N, E);
             else
                Error_Msg_NE
-                 ("\?& may result in unhandled exception", N, E);
+                 ("\?X?& may result in unhandled exception", N, E);
             end if;
          end if;
       end;
@@ -1832,7 +1832,7 @@ package body Exp_Ch11 is
 
       Rewrite (N,
         Make_Attribute_Reference (Loc,
-          Prefix => Identifier (N),
+          Prefix         => Identifier (N),
           Attribute_Name => Name_Code_Address));
 
       Analyze_And_Resolve (N, RTE (RE_Code_Loc));
@@ -2147,10 +2147,10 @@ package body Exp_Ch11 is
 
          if Configurable_Run_Time_Mode then
             Error_Msg_N
-              ("\?Last_Chance_Handler will be called on exception", N);
+              ("\?X?Last_Chance_Handler will be called on exception", N);
          else
             Error_Msg_N
-              ("\?execution may raise unhandled exception", N);
+              ("\?X?execution may raise unhandled exception", N);
          end if;
       end if;
    end Warn_If_No_Propagation;
@@ -2162,7 +2162,7 @@ package body Exp_Ch11 is
    procedure Warn_No_Exception_Propagation_Active (N : Node_Id) is
    begin
       Error_Msg_N
-        ("?pragma Restrictions (No_Exception_Propagation) in effect", N);
+        ("?X?pragma Restrictions (No_Exception_Propagation) in effect", N);
    end Warn_No_Exception_Propagation_Active;
 
 end Exp_Ch11;

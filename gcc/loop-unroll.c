@@ -1,5 +1,5 @@
 /* Loop unrolling and peeling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -148,6 +148,61 @@ static void combine_var_copies_in_loop_exit (struct var_to_expand *,
 					     basic_block);
 static rtx get_expansion (struct var_to_expand *);
 
+/* Emit a message summarizing the unroll or peel that will be
+   performed for LOOP, along with the loop's location LOCUS, if
+   appropriate given the dump or -fopt-info settings.  */
+
+static void
+report_unroll_peel (struct loop *loop, location_t locus)
+{
+  struct niter_desc *desc;
+  int niters = 0;
+  int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
+
+  if (!dump_enabled_p ())
+    return;
+
+  /* In the special case where the loop never iterated, emit
+     a different message so that we don't report an unroll by 0.
+     This matches the equivalent message emitted during tree unrolling.  */
+  if (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY
+      && !loop->lpt_decision.times)
+    {
+      dump_printf_loc (report_flags, locus,
+                       "Turned loop into non-loop; it never loops.\n");
+      return;
+    }
+
+  desc = get_simple_loop_desc (loop);
+
+  if (desc->const_iter)
+    niters = desc->niter;
+  else if (loop->header->count)
+    niters = expected_loop_iterations (loop);
+
+  dump_printf_loc (report_flags, locus,
+                   "%s loop %d times",
+                   (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY
+                    ?  "Completely unroll"
+                    : (loop->lpt_decision.decision == LPT_PEEL_SIMPLE
+                       ? "Peel" : "Unroll")),
+                   loop->lpt_decision.times);
+  if (profile_info)
+    dump_printf (report_flags,
+                 " (header execution count %d",
+                 (int)loop->header->count);
+  if (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY)
+    dump_printf (report_flags,
+                 "%s%s iterations %d)",
+                 profile_info ? ", " : " (",
+                 desc->const_iter ? "const" : "average",
+                 niters);
+  else if (profile_info)
+    dump_printf (report_flags, ")");
+
+  dump_printf (report_flags, "\n");
+}
+
 /* Unroll and/or peel (depending on FLAGS) LOOPS.  */
 void
 unroll_and_peel_loops (int flags)
@@ -234,11 +289,13 @@ peel_loops_completely (int flags)
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       loop->lpt_decision.decision = LPT_NONE;
+      location_t locus = get_loop_location (loop);
 
-      if (dump_file)
-	fprintf (dump_file,
-		 "\n;; *** Considering loop %d for complete peeling ***\n",
-		 loop->num);
+      if (dump_enabled_p ())
+	dump_printf_loc (TDF_RTL, locus,
+                         ";; *** Considering loop %d at BB %d for "
+                         "complete peeling ***\n",
+                         loop->num, loop->header->index);
 
       loop->ninsns = num_loop_insns (loop);
 
@@ -248,6 +305,7 @@ peel_loops_completely (int flags)
 
       if (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY)
 	{
+	  report_unroll_peel (loop, locus);
 	  peel_loop_completely (loop);
 #ifdef ENABLE_CHECKING
 	  verify_loop_structure ();
@@ -267,9 +325,13 @@ decide_unrolling_and_peeling (int flags)
   FOR_EACH_LOOP (li, loop, LI_FROM_INNERMOST)
     {
       loop->lpt_decision.decision = LPT_NONE;
+      location_t locus = get_loop_location (loop);
 
-      if (dump_file)
-	fprintf (dump_file, "\n;; *** Considering loop %d ***\n", loop->num);
+      if (dump_enabled_p ())
+	dump_printf_loc (TDF_RTL, locus,
+                         ";; *** Considering loop %d at BB %d for "
+                         "unrolling and peeling ***\n",
+                         loop->num, loop->header->index);
 
       /* Do not peel cold areas.  */
       if (optimize_loop_for_size_p (loop))
@@ -309,6 +371,8 @@ decide_unrolling_and_peeling (int flags)
 	decide_unroll_stupid (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
 	decide_peel_simple (loop, flags);
+
+      report_unroll_peel (loop, locus);
     }
 }
 
@@ -348,8 +412,6 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
     }
 
   /* Success.  */
-  if (dump_file)
-    fprintf (dump_file, ";; Decided to peel exactly once rolling loop\n");
   loop->lpt_decision.decision = LPT_PEEL_COMPLETELY;
 }
 
@@ -429,8 +491,6 @@ decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
     }
 
   /* Success.  */
-  if (dump_file)
-    fprintf (dump_file, ";; Decided to peel loop completely\n");
   loop->lpt_decision.decision = LPT_PEEL_COMPLETELY;
 }
 
@@ -608,10 +668,6 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
 
   loop->lpt_decision.decision = LPT_UNROLL_CONSTANT;
   loop->lpt_decision.times = best_unroll;
-
-  if (dump_file)
-    fprintf (dump_file, ";; Decided to unroll the loop %d times (%d copies).\n",
-	     loop->lpt_decision.times, best_copies);
 }
 
 /* Unroll LOOP with constant number of iterations LOOP->LPT_DECISION.TIMES times.
@@ -893,10 +949,6 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 
   loop->lpt_decision.decision = LPT_UNROLL_RUNTIME;
   loop->lpt_decision.times = i - 1;
-
-  if (dump_file)
-    fprintf (dump_file, ";; Decided to unroll the loop %d times.\n",
-	     loop->lpt_decision.times);
 }
 
 /* Splits edge E and inserts the sequence of instructions INSNS on it, and
@@ -1305,10 +1357,6 @@ decide_peel_simple (struct loop *loop, int flags)
   /* Success.  */
   loop->lpt_decision.decision = LPT_PEEL_SIMPLE;
   loop->lpt_decision.times = npeel;
-
-  if (dump_file)
-    fprintf (dump_file, ";; Decided to simply peel the loop %d times.\n",
-	     loop->lpt_decision.times);
 }
 
 /* Peel a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation does this:
@@ -1460,10 +1508,6 @@ decide_unroll_stupid (struct loop *loop, int flags)
 
   loop->lpt_decision.decision = LPT_UNROLL_STUPID;
   loop->lpt_decision.times = i - 1;
-
-  if (dump_file)
-    fprintf (dump_file, ";; Decided to unroll the loop stupidly %d times.\n",
-	     loop->lpt_decision.times);
 }
 
 /* Unroll a LOOP LOOP->LPT_DECISION.TIMES times.  The transformation does this:

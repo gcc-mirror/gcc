@@ -481,8 +481,15 @@ package body Sem_Ch10 is
                --  In this case, the second with clause is redundant since
                --  the pragma applies only to the first "with Pack;".
 
+               --  Note that we only consider with_clauses that comes from
+               --  source. In the case of renamings used as prefixes of names
+               --  in with_clauses, we generate a with_clause for the prefix,
+               --  which we do not treat as implicit because it is needed for
+               --  visibility analysis, but is also not redundant.
+
                elsif Nkind (Cont_Item) = N_With_Clause
                  and then not Implicit_With (Cont_Item)
+                 and then Comes_From_Source (Cont_Item)
                  and then not Limited_Present (Cont_Item)
                  and then Cont_Item /= Clause
                  and then Entity (Name (Cont_Item)) = Nam_Ent
@@ -556,7 +563,7 @@ package body Sem_Ch10 is
                                        Used_In_Spec)
                      then
                         Error_Msg_N -- CODEFIX
-                          ("?redundant with clause in body", Clause);
+                          ("redundant with clause in body??", Clause);
                      end if;
 
                      Used_In_Body := False;
@@ -585,7 +592,7 @@ package body Sem_Ch10 is
 
                      if Withed then
                         Error_Msg_N -- CODEFIX
-                          ("?redundant with clause", Clause);
+                          ("redundant with clause??", Clause);
                      end if;
                   end;
                end if;
@@ -1793,7 +1800,7 @@ package body Sem_Ch10 is
                Error_Msg_File_1 :=
                  Get_File_Name (Subunit_Name, Subunit => True);
                Error_Msg_N
-                 ("subunit$$ in file{ not found?!!", N);
+                 ("subunit$$ in file{ not found??!!", N);
                Subunits_Missing := True;
             end if;
 
@@ -2040,9 +2047,15 @@ package body Sem_Ch10 is
                      end if;
 
                      Unit_Name := Entity (Name (Item));
-                     while Is_Child_Unit (Unit_Name) loop
-                        Set_Is_Visible_Child_Unit (Unit_Name);
+                     loop
+                        Set_Is_Visible_Lib_Unit (Unit_Name);
+                        exit when Scope (Unit_Name) = Standard_Standard;
                         Unit_Name := Scope (Unit_Name);
+
+                        if No (Unit_Name) then
+                           Check_Error_Detected;
+                           return;
+                        end if;
                      end loop;
 
                      if not Is_Immediately_Visible (Unit_Name) then
@@ -2083,8 +2096,9 @@ package body Sem_Ch10 is
               and then not Error_Posted (Item)
             then
                Unit_Name := Entity (Name (Item));
-               while Is_Child_Unit (Unit_Name) loop
-                  Set_Is_Visible_Child_Unit (Unit_Name, False);
+               loop
+                  Set_Is_Visible_Lib_Unit (Unit_Name, False);
+                  exit when Scope (Unit_Name) = Standard_Standard;
                   Unit_Name := Scope (Unit_Name);
                end loop;
 
@@ -2131,7 +2145,7 @@ package body Sem_Ch10 is
          E := First_Entity (Current_Scope);
          while Present (E) loop
             if not Is_Child_Unit (E)
-              or else Is_Visible_Child_Unit (E)
+              or else Is_Visible_Lib_Unit (E)
             then
                Set_Is_Immediately_Visible (E);
             end if;
@@ -2296,11 +2310,9 @@ package body Sem_Ch10 is
             C : Entity_Id;
          begin
             C := Current_Scope;
-            while Present (C)
-              and then Is_Child_Unit (C)
-            loop
+            while Present (C) and then C /= Standard_Standard loop
                Set_Is_Immediately_Visible (C);
-               Set_Is_Visible_Child_Unit (C);
+               Set_Is_Visible_Lib_Unit (C);
                C := Scope (C);
             end loop;
          end;
@@ -2513,30 +2525,30 @@ package body Sem_Ch10 is
 
             begin
                if U_Kind = Implementation_Unit then
-                  Error_Msg_F ("& is an internal 'G'N'A'T unit?", Name (N));
+                  Error_Msg_F ("& is an internal 'G'N'A'T unit?i?", Name (N));
 
                   --  Add alternative name if available, otherwise issue a
                   --  general warning message.
 
                   if Error_Msg_Strlen /= 0 then
-                     Error_Msg_F ("\use ""~"" instead", Name (N));
+                     Error_Msg_F ("\use ""~"" instead?i?", Name (N));
                   else
                      Error_Msg_F
                        ("\use of this unit is non-portable " &
-                        "and version-dependent?", Name (N));
+                        "and version-dependent?i?", Name (N));
                   end if;
 
                elsif U_Kind = Ada_2005_Unit
                  and then Ada_Version < Ada_2005
                  and then Warn_On_Ada_2005_Compatibility
                then
-                  Error_Msg_N ("& is an Ada 2005 unit?", Name (N));
+                  Error_Msg_N ("& is an Ada 2005 unit?i?", Name (N));
 
                elsif U_Kind = Ada_2012_Unit
                  and then Ada_Version < Ada_2012
                  and then Warn_On_Ada_2012_Compatibility
                then
-                  Error_Msg_N ("& is an Ada 2012 unit?", Name (N));
+                  Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
                end if;
             end;
          end if;
@@ -3342,7 +3354,7 @@ package body Sem_Ch10 is
                   procedure License_Error is
                   begin
                      Error_Msg_N
-                       ("?license of withed unit & may be inconsistent",
+                       ("license of withed unit & may be inconsistent??",
                         Name (Item));
                   end License_Error;
 
@@ -4129,7 +4141,7 @@ package body Sem_Ch10 is
                         then
                            Error_Msg_NE
                               ("child unit& hides compilation unit " &
-                               "with the same name?",
+                               "with the same name??",
                                  Name (Item), Id);
                            exit;
                         end if;
@@ -4210,7 +4222,7 @@ package body Sem_Ch10 is
                   end In_Context;
 
                begin
-                  Set_Is_Visible_Child_Unit (Id, In_Context);
+                  Set_Is_Visible_Lib_Unit (Id, In_Context);
                end;
             end if;
          end if;
@@ -4788,7 +4800,7 @@ package body Sem_Ch10 is
       if Analyzed (P_Unit)
         and then
           (Is_Immediately_Visible (P)
-            or else (Is_Child_Package and then Is_Visible_Child_Unit (P)))
+            or else (Is_Child_Package and then Is_Visible_Lib_Unit (P)))
       then
 
          --  The presence of both the limited and the analyzed nonlimited view
@@ -4852,10 +4864,10 @@ package body Sem_Ch10 is
             Set_Ekind (P, E_Package);
             Set_Etype (P, Standard_Void_Type);
             Set_Scope (P, Standard_Standard);
+            Set_Is_Visible_Lib_Unit (P);
 
             if Is_Child_Package then
                Set_Is_Child_Unit (P);
-               Set_Is_Visible_Child_Unit (P);
                Set_Scope (P, Defining_Entity (Unit (Parent_Spec (P_Unit))));
             end if;
 
@@ -5101,7 +5113,7 @@ package body Sem_Ch10 is
             Error_Msg_N
               ("instantiation depends on itself", Name (With_Clause));
 
-         elsif not Is_Visible_Child_Unit (Uname) then
+         elsif not Is_Visible_Lib_Unit (Uname) then
 
             --  Abandon processing in case of previous errors
 
@@ -5110,7 +5122,7 @@ package body Sem_Ch10 is
                return;
             end if;
 
-            Set_Is_Visible_Child_Unit (Uname);
+            Set_Is_Visible_Lib_Unit (Uname);
 
             --  If the child unit appears in the context of its parent, it is
             --  immediately visible.
@@ -5125,7 +5137,7 @@ package body Sem_Ch10 is
                --  Set flag as well on the visible entity that denotes the
                --  instance, which renames the current one.
 
-               Set_Is_Visible_Child_Unit
+               Set_Is_Visible_Lib_Unit
                  (Related_Instance
                    (Defining_Entity (Unit (Library_Unit (With_Clause)))));
             end if;
@@ -5141,9 +5153,9 @@ package body Sem_Ch10 is
          end if;
 
       elsif not Is_Immediately_Visible (Uname) then
-         if not Private_Present (With_Clause)
-           or else Private_With_OK
-         then
+         Set_Is_Visible_Lib_Unit (Uname);
+
+         if not Private_Present (With_Clause) or else Private_With_OK then
             Set_Is_Immediately_Visible (Uname);
          end if;
 
@@ -5167,11 +5179,11 @@ package body Sem_Ch10 is
       --  not apply the check to the Standard package itself.
 
       if Is_Child_Unit (Uname)
-        and then Is_Visible_Child_Unit (Uname)
+        and then Is_Visible_Lib_Unit (Uname)
         and then Ada_Version >= Ada_2005
       then
          declare
-            Decl1 : constant Node_Id  := Unit_Declaration_Node (P);
+            Decl1 : constant Node_Id := Unit_Declaration_Node (P);
             Decl2 : Node_Id;
             P2    : Entity_Id;
             U2    : Entity_Id;
@@ -5184,9 +5196,7 @@ package body Sem_Ch10 is
                P2 := Scope (U2);
                Decl2  := Unit_Declaration_Node (P2);
 
-               if Is_Child_Unit (U2)
-                 and then Is_Visible_Child_Unit (U2)
-               then
+               if Is_Child_Unit (U2) and then Is_Visible_Lib_Unit (U2) then
                   if Is_Generic_Instance (P)
                     and then Nkind (Decl1) = N_Package_Declaration
                     and then Generic_Parent (Specification (Decl1)) = P2
@@ -6220,8 +6230,6 @@ package body Sem_Ch10 is
    ---------------------------------
 
    procedure Remove_Unit_From_Visibility (Unit_Name : Entity_Id) is
-      P : constant Entity_Id := Scope (Unit_Name);
-
    begin
       if Debug_Flag_I then
          Write_Str ("remove unit ");
@@ -6230,10 +6238,7 @@ package body Sem_Ch10 is
          Write_Eol;
       end if;
 
-      if P /= Standard_Standard then
-         Set_Is_Visible_Child_Unit (Unit_Name, False);
-      end if;
-
+      Set_Is_Visible_Lib_Unit        (Unit_Name, False);
       Set_Is_Potentially_Use_Visible (Unit_Name, False);
       Set_Is_Immediately_Visible     (Unit_Name, False);
 

@@ -339,9 +339,9 @@ package body Scn is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg
-                 ("use of "":"" is an obsolescent feature (RM J.2(3))?", S);
+                 ("?j?use of "":"" is an obsolescent feature (RM J.2(3))", S);
                Error_Msg
-                 ("\use ""'#"" instead?", S);
+                 ("\?j?use ""'#"" instead", S);
             end if;
          end if;
       end Check_Obsolete_Base_Char;
@@ -382,8 +382,8 @@ package body Scn is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_SC
-                    ("use of ""'%"" is an obsolescent feature (RM J.2(4))?");
-                  Error_Msg_SC ("\use """""" instead?");
+                    ("?j?use of ""'%"" is an obsolescent feature (RM J.2(4))");
+                  Error_Msg_SC ("\?j?use """""" instead");
                end if;
             end if;
 
@@ -398,8 +398,8 @@ package body Scn is
 
                if Warn_On_Obsolescent_Feature then
                   Error_Msg_SC
-                    ("use of ""'!"" is an obsolescent feature (RM J.2(2))?");
-                  Error_Msg_SC ("\use ""'|"" instead?");
+                    ("?j?use of ""'!"" is an obsolescent feature (RM J.2(2))");
+                  Error_Msg_SC ("\?j?use ""'|"" instead");
                end if;
             end if;
 

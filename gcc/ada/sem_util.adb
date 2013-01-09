@@ -444,8 +444,8 @@ package body Sem_Util is
    begin
       if Has_Predicates (Typ) then
          if Is_Generic_Actual_Type (Typ) then
-            Error_Msg_FE (Msg & '?', N, Typ);
-            Error_Msg_F ("\Program_Error will be raised at run time?", N);
+            Error_Msg_FE (Msg & "??", N, Typ);
+            Error_Msg_F ("\Program_Error will be raised at run time??", N);
             Insert_Action (N,
               Make_Raise_Program_Error (Sloc (N),
                 Reason => PE_Bad_Predicated_Generic_Type));
@@ -1576,7 +1576,7 @@ package body Sem_Util is
                   then
                      Error_Msg_N
                        ("result may differ if evaluated "
-                        & "after other actual in expression?", Act1);
+                        & "after other actual in expression??", Act1);
                   end if;
                end if;
             end loop;
@@ -1610,7 +1610,7 @@ package body Sem_Util is
       while Present (S) and then S /= Standard_Standard loop
          if Is_Protected_Type (S) then
             Error_Msg_N
-              ("potentially blocking operation in protected operation?", N);
+              ("potentially blocking operation in protected operation??", N);
             return;
          end if;
 
@@ -1724,7 +1724,7 @@ package body Sem_Util is
                       Object_Access_Level (Context)
          then
             Error_Msg_N
-              ("?possible unprotected access to protected data", Expr);
+              ("??possible unprotected access to protected data", Expr);
          end if;
       end if;
    end Check_Unprotected_Access;
@@ -2249,8 +2249,8 @@ package body Sem_Util is
       Loc  : Source_Ptr := No_Location;
       Warn : Boolean    := False) return Node_Id
    is
-      Msgc : String (1 .. Msg'Length + 2);
-      --  Copy of message, with room for possible ? and ! at end
+      Msgc : String (1 .. Msg'Length + 3);
+      --  Copy of message, with room for possible ?? and ! at end
 
       Msgl : Natural;
       Wmsg : Boolean;
@@ -2291,9 +2291,13 @@ package body Sem_Util is
          then
             Msgl := Msgl + 1;
             Msgc (Msgl) := '?';
+            Msgl := Msgl + 1;
+            Msgc (Msgl) := '?';
             Wmsg := True;
 
          elsif In_Instance_Not_Visible then
+            Msgl := Msgl + 1;
+            Msgc (Msgl) := '?';
             Msgl := Msgl + 1;
             Msgc (Msgl) := '?';
             Wmsg := True;
@@ -2413,19 +2417,19 @@ package body Sem_Util is
                        and then not Comes_From_Source (Conc_Typ)
                      then
                         Error_Msg_NEL
-                          ("\?& will be raised at run time",
+                          ("\??& will be raised at run time",
                            N, Standard_Constraint_Error, Eloc);
 
                      else
                         Error_Msg_NEL
-                          ("\?& will be raised for objects of this type",
+                          ("\??& will be raised for objects of this type",
                            N, Standard_Constraint_Error, Eloc);
                      end if;
                   end;
 
                else
                   Error_Msg_NEL
-                    ("\?& will be raised at run time",
+                    ("\??& will be raised at run time",
                      N, Standard_Constraint_Error, Eloc);
                end if;
 
@@ -2810,87 +2814,188 @@ package body Sem_Util is
       Obj1 : Node_Id := A1;
       Obj2 : Node_Id := A2;
 
-      procedure Check_Renaming (Obj : in out Node_Id);
-      --  If an object is a renaming, examine renamed object. If it is a
-      --  dereference of a variable, or an indexed expression with non-constant
-      --  indexes, no overlap check can be reported.
+      function Has_Prefix (N : Node_Id) return Boolean;
+      --  Return True if N has attribute Prefix
 
-      --------------------
-      -- Check_Renaming --
-      --------------------
+      function Is_Renaming (N : Node_Id) return Boolean;
+      --  Return true if N names a renaming entity
 
-      procedure Check_Renaming (Obj : in out Node_Id) is
+      function Is_Valid_Renaming (N : Node_Id) return Boolean;
+      --  For renamings, return False if the prefix of any dereference within
+      --  the renamed object_name is a variable, or any expression within the
+      --  renamed object_name contains references to variables or calls on
+      --  nonstatic functions; otherwise return True (RM 6.4.1(6.10/3))
+
+      ----------------
+      -- Has_Prefix --
+      ----------------
+
+      function Has_Prefix (N : Node_Id) return Boolean is
       begin
-         if Is_Entity_Name (Obj)
-           and then Present (Renamed_Entity (Entity (Obj)))
-         then
-            Obj := Renamed_Entity (Entity (Obj));
-            if Nkind (Obj) = N_Explicit_Dereference
-              and then Is_Variable (Prefix (Obj))
-            then
-               Obj := Empty;
+         return
+           Nkind_In (N,
+             N_Attribute_Reference,
+             N_Expanded_Name,
+             N_Explicit_Dereference,
+             N_Indexed_Component,
+             N_Reference,
+             N_Selected_Component,
+             N_Slice);
+      end Has_Prefix;
 
-            elsif Nkind (Obj) = N_Indexed_Component then
+      -----------------
+      -- Is_Renaming --
+      -----------------
+
+      function Is_Renaming (N : Node_Id) return Boolean is
+      begin
+         return Is_Entity_Name (N)
+           and then Present (Renamed_Entity (Entity (N)));
+      end Is_Renaming;
+
+      -----------------------
+      -- Is_Valid_Renaming --
+      -----------------------
+
+      function Is_Valid_Renaming (N : Node_Id) return Boolean is
+
+         function Check_Renaming (N : Node_Id) return Boolean;
+         --  Recursive function used to traverse all the prefixes of N
+
+         function Check_Renaming (N : Node_Id) return Boolean is
+         begin
+            if Is_Renaming (N)
+              and then not Check_Renaming (Renamed_Entity (Entity (N)))
+            then
+               return False;
+            end if;
+
+            if Nkind (N) = N_Indexed_Component then
                declare
                   Indx : Node_Id;
 
                begin
-                  Indx := First (Expressions (Obj));
+                  Indx := First (Expressions (N));
                   while Present (Indx) loop
                      if not Is_OK_Static_Expression (Indx) then
-                        Obj := Empty;
-                        exit;
+                        return False;
                      end if;
 
                      Next_Index (Indx);
                   end loop;
                end;
             end if;
-         end if;
-      end Check_Renaming;
+
+            if Has_Prefix (N) then
+               declare
+                  P : constant Node_Id := Prefix (N);
+
+               begin
+                  if Nkind (N) = N_Explicit_Dereference
+                    and then Is_Variable (P)
+                  then
+                     return False;
+
+                  elsif Is_Entity_Name (P)
+                    and then Ekind (Entity (P)) = E_Function
+                  then
+                     return False;
+
+                  elsif Nkind (P) = N_Function_Call then
+                     return False;
+                  end if;
+
+                  --  Recursion to continue traversing the prefix of the
+                  --  renaming expression
+
+                  return Check_Renaming (P);
+               end;
+            end if;
+
+            return True;
+         end Check_Renaming;
+
+      --  Start of processing for Is_Valid_Renaming
+
+      begin
+         return Check_Renaming (N);
+      end Is_Valid_Renaming;
 
    --  Start of processing for Denotes_Same_Object
 
    begin
-      Check_Renaming (Obj1);
-      Check_Renaming (Obj2);
+      --  Both names statically denote the same stand-alone object or parameter
+      --  (RM 6.4.1(6.5/3))
 
-      if No (Obj1)
-        or else No (Obj2)
+      if Is_Entity_Name (Obj1)
+        and then Is_Entity_Name (Obj2)
+        and then Entity (Obj1) = Entity (Obj2)
       then
-         return False;
+         return True;
       end if;
 
-      --  If we have entity names, then must be same entity
+      --  For renamings, the prefix of any dereference within the renamed
+      --  object_name is not a variable, and any expression within the
+      --  renamed object_name contains no references to variables nor
+      --  calls on nonstatic functions (RM 6.4.1(6.10/3)).
 
-      if Is_Entity_Name (Obj1) then
+      if Is_Renaming (Obj1) then
+         if Is_Valid_Renaming (Obj1) then
+            Obj1 := Renamed_Entity (Entity (Obj1));
+         else
+            return False;
+         end if;
+      end if;
+
+      if Is_Renaming (Obj2) then
+         if Is_Valid_Renaming (Obj2) then
+            Obj2 := Renamed_Entity (Entity (Obj2));
+         else
+            return False;
+         end if;
+      end if;
+
+      --  No match if not same node kind (such cases are handled by
+      --  Denotes_Same_Prefix)
+
+      if Nkind (Obj1) /= Nkind (Obj2) then
+         return False;
+
+      --  After handling valid renamings, one of the two names statically
+      --  denoted a renaming declaration whose renamed object_name is known
+      --  to denote the same object as the other (RM 6.4.1(6.10/3))
+
+      elsif Is_Entity_Name (Obj1) then
          if Is_Entity_Name (Obj2) then
             return Entity (Obj1) = Entity (Obj2);
          else
             return False;
          end if;
 
-      --  No match if not same node kind
-
-      elsif Nkind (Obj1) /= Nkind (Obj2) then
-         return False;
-
-      --  For selected components, must have same prefix and selector
+      --  Both names are selected_components, their prefixes are known to
+      --  denote the same object, and their selector_names denote the same
+      --  component (RM 6.4.1(6.6/3)
 
       elsif Nkind (Obj1) = N_Selected_Component then
          return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
            and then
          Entity (Selector_Name (Obj1)) = Entity (Selector_Name (Obj2));
 
-      --  For explicit dereferences, prefixes must be same
+      --  Both names are dereferences and the dereferenced names are known to
+      --  denote the same object (RM 6.4.1(6.7/3))
 
       elsif Nkind (Obj1) = N_Explicit_Dereference then
          return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2));
 
-      --  For indexed components, prefixes and all subscripts must be the same
+      --  Both names are indexed_components, their prefixes are known to denote
+      --  the same object, and each of the pairs of corresponding index values
+      --  are either both static expressions with the same static value or both
+      --  names that are known to denote the same object (RM 6.4.1(6.8/3))
 
       elsif Nkind (Obj1) = N_Indexed_Component then
-         if Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2)) then
+         if not Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2)) then
+            return False;
+         else
             declare
                Indx1 : Node_Id;
                Indx2 : Node_Id;
@@ -2920,11 +3025,11 @@ package body Sem_Util is
 
                return True;
             end;
-         else
-            return False;
          end if;
 
-      --  For slices, prefixes must match and bounds must match
+      --  Both names are slices, their prefixes are known to denote the same
+      --  object, and the two slices have statically matching index constraints
+      --  (RM 6.4.1(6.9/3))
 
       elsif Nkind (Obj1) = N_Slice
         and then Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
@@ -2943,10 +3048,11 @@ package body Sem_Util is
               and then Denotes_Same_Object (Hi1, Hi2);
          end;
 
-         --  Literals will appear as indexes. Isn't this where we should check
-         --  Known_At_Compile_Time at least if we are generating warnings ???
+      --  In the recursion, literals appear as indexes.
 
-      elsif Nkind (Obj1) = N_Integer_Literal then
+      elsif Nkind (Obj1) = N_Integer_Literal
+        and then Nkind (Obj2) = N_Integer_Literal
+      then
          return Intval (Obj1) = Intval (Obj2);
 
       else
@@ -3010,7 +3116,7 @@ package body Sem_Util is
             end loop;
 
             --  If both have the same depth and they do not denote the same
-            --  object, they are disjoint and not warning is needed.
+            --  object, they are disjoint and no warning is needed.
 
             if Depth1 = Depth2 then
                return False;
@@ -3863,7 +3969,7 @@ package body Sem_Util is
             Is_Potentially_Use_Visible (C))
       then
          Error_Msg_Sloc := Sloc (C);
-         Error_Msg_N ("declaration hides &#?", Def_Id);
+         Error_Msg_N ("declaration hides &#?h?", Def_Id);
       end if;
    end Enter_Name;
 
@@ -11258,7 +11364,8 @@ package body Sem_Util is
                   --  sure this is a modification.
 
                   if Has_Pragma_Unmodified (Ent) and then Sure then
-                     Error_Msg_NE ("?pragma Unmodified given for &!", N, Ent);
+                     Error_Msg_NE
+                       ("??pragma Unmodified given for &!", N, Ent);
                   end if;
 
                   Set_Never_Set_In_Source (Ent, False);
@@ -11348,8 +11455,8 @@ package body Sem_Util is
                         then
                            Error_Msg_Sloc := Sloc (A);
                            Error_Msg_NE
-                             ("constant& may be modified via address clause#?",
-                              N, Entity (Prefix (Exp)));
+                             ("constant& may be modified via address "
+                              & "clause#??", N, Entity (Prefix (Exp)));
                         end if;
                      end;
                   end if;
@@ -11600,16 +11707,15 @@ package body Sem_Util is
             end Return_Master_Scope_Depth_Of_Call;
          end if;
 
-      --  For convenience we handle qualified expressions, even though
-      --  they aren't technically object names.
+      --  For convenience we handle qualified expressions, even though they
+      --  aren't technically object names.
 
       elsif Nkind (Obj) = N_Qualified_Expression then
          return Object_Access_Level (Expression (Obj));
 
-      --  Otherwise return the scope level of Standard.
-      --  (If there are cases that fall through
-      --  to this point they will be treated as
-      --  having global accessibility for now. ???)
+      --  Otherwise return the scope level of Standard. (If there are cases
+      --  that fall through to this point they will be treated as having
+      --  global accessibility for now. ???)
 
       else
          return Scope_Depth (Standard_Standard);

@@ -1,5 +1,5 @@
 /* Graphite polyhedral representation.
-   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -55,12 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 DEBUG_FUNCTION void
 debug_gmp_value (mpz_t val)
 {
-  char *str = mpz_get_str (0, 10, val);
-  void (*gmp_free) (void *, size_t);
-
-  fprintf (stderr, "%s", str);
-  mp_get_memory_functions (NULL, NULL, &gmp_free);
-  (*gmp_free) (str, strlen (str) + 1);
+  gmp_fprintf (stderr, "%Zd", val);
 }
 
 /* Return the maximal loop depth in SCOP.  */

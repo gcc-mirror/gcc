@@ -18,7 +18,7 @@
 @ifinfo
 This file documents the internals of the GNU C Preprocessor.
 
-Copyright 2000, 2001, 2002, 2004, 2005, 2006, 2007 Free Software
+Copyright 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2011 Free Software
 Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of

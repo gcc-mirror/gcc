@@ -1096,8 +1096,6 @@ add_method (tree type, tree method, tree using_decl)
 	      && TREE_CODE (method) == FUNCTION_DECL
 	      && !DECL_EXTERN_C_P (fn)
 	      && !DECL_EXTERN_C_P (method)
-	      && (DECL_FUNCTION_SPECIFIC_TARGET (fn)
-		  || DECL_FUNCTION_SPECIFIC_TARGET (method))
 	      && targetm.target_option.function_versions (fn, method))
  	    {
 	      /* Mark functions as versions if necessary.  Modify the mangled

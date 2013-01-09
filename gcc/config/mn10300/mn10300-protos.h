@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 2000, 2003, 2004, 2005, 2007, 2009, 2010, 2011
+   Copyright (C) 2000, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 

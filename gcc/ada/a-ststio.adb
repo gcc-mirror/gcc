@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -367,7 +367,11 @@ package body Ada.Streams.Stream_IO is
       FIO.Append_Set (AP (File));
 
       if File.Mode = FCB.Append_File then
-         File.Index := Count (ftell (File.Stream)) + 1;
+         if Standard'Address_Size = 64 then
+            File.Index := Count (ftell64 (File.Stream)) + 1;
+         else
+            File.Index := Count (ftell (File.Stream)) + 1;
+         end if;
       end if;
 
       File.Last_Op := Op_Other;
@@ -379,10 +383,18 @@ package body Ada.Streams.Stream_IO is
 
    procedure Set_Position (File : File_Type) is
       use type System.CRTL.long;
+      use type System.CRTL.ssize_t;
+      R : int;
    begin
-      if fseek (File.Stream,
-                System.CRTL.long (File.Index) - 1, SEEK_SET) /= 0
-      then
+      if Standard'Address_Size = 64 then
+         R := fseek64 (File.Stream,
+                       System.CRTL.ssize_t (File.Index) - 1, SEEK_SET);
+      else
+         R := fseek (File.Stream,
+                     System.CRTL.long (File.Index) - 1, SEEK_SET);
+      end if;
+
+      if R /= 0 then
          raise Use_Error;
       end if;
    end Set_Position;
@@ -402,7 +414,11 @@ package body Ada.Streams.Stream_IO is
             raise Device_Error;
          end if;
 
-         File.File_Size := Stream_Element_Offset (ftell (File.Stream));
+         if Standard'Address_Size = 64 then
+            File.File_Size := Stream_Element_Offset (ftell64 (File.Stream));
+         else
+            File.File_Size := Stream_Element_Offset (ftell (File.Stream));
+         end if;
       end if;
 
       return Count (File.File_Size);

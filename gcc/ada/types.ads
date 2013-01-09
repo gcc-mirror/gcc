@@ -257,12 +257,12 @@ package Types is
    --  possible values for each of the above types is disjoint so that this
    --  distinction is possible.
 
-   type Union_Id is new Int;
-   --  The type in the tree for a union of possible ID values
-
    --  Note: it is also helpful for debugging purposes to make these ranges
    --  distinct. If a bug leads to misidentification of a value, then it will
    --  typically result in an out of range value and a Constraint_Error.
+
+   type Union_Id is new Int;
+   --  The type in the tree for a union of possible ID values
 
    List_Low_Bound : constant := -100_000_000;
    --  The List_Id values are subscripts into an array of list headers which

@@ -35,6 +35,7 @@
    PowerPC/AiX
    PowerPC/Darwin
    PowerPC/VxWorks
+   PowerPC/LynxOS-178
    SPARC/Solaris
    i386/GNU/Linux
    i386/Solaris
@@ -309,14 +310,17 @@ struct layout
    address instead.  */
 
 /* Then LynxOS-178 features yet another variation, with return_address
-   == &__start, which we only add conditionally as this symbol is not
-   necessarily present elsewhere.  Beware that &bla returns the
-   address of a descriptor when "bla" is a function.  Getting the code
-   address requires an extra dereference.  */
+   == &<entrypoint>, with two possible entry points (one for the main
+   process and one for threads). Beware that &bla returns the address
+   of a descriptor when "bla" is a function.  Getting the code address
+   requires an extra dereference.  */
 
 #if defined (__Lynx__)
-extern void __start();
-#define EXTRA_STOP_CONDITION(CURRENT) ((CURRENT)->return_address == *(void**)&__start)
+extern void __start();  /* process entry point.  */
+extern void __runnit(); /* thread entry point.  */
+#define EXTRA_STOP_CONDITION(CURRENT)                 \
+  ((CURRENT)->return_address == *(void**)&__start     \
+   || (CURRENT)->return_address == *(void**)&__runnit)
 #else
 #define EXTRA_STOP_CONDITION(CURRENT) (0)
 #endif

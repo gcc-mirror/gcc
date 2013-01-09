@@ -10,3 +10,6 @@ int main()
 {
   X<::A> x;
 }
+
+int a;
+bool b = 0<::a;

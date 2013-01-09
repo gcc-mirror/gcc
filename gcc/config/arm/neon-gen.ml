@@ -1,5 +1,5 @@
 (* Auto-generate ARM Neon intrinsics header file.
-   Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

@@ -406,7 +406,7 @@ package body System.Random_Numbers is
             --  Ignore different-size warnings here since GNAT's handling
             --  is correct.
 
-            pragma Warnings ("Z");  -- better to use msg string! ???
+            pragma Warnings ("Z");
             function Conv_To_Unsigned is
                new Unchecked_Conversion (Result_Subtype'Base, Unsigned_64);
             function Conv_To_Result is
@@ -496,7 +496,6 @@ package body System.Random_Numbers is
 
    procedure Reset (Gen : Generator; Initiator : Integer) is
    begin
-      pragma Warnings (Off, "condition is always *");
       --  This is probably an unnecessary precaution against future change, but
       --  since the test is a static expression, no extra code is involved.
 
@@ -515,8 +514,6 @@ package body System.Random_Numbers is
             Reset (Gen, Initialization_Vector'(Init0, Init1));
          end;
       end if;
-
-      pragma Warnings (On, "condition is always *");
    end Reset;
 
    procedure Reset (Gen : Generator; Initiator : Initialization_Vector) is

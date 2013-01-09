@@ -1,7 +1,7 @@
 /* Streamer hooks.  Support for adding streamer-specific callbacks to
    generic streaming routines.
 
-   Copyright 2011 Free Software Foundation, Inc.
+   Copyright 2011, 2012 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.

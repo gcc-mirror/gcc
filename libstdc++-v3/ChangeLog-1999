@@ -3541,4 +3541,9 @@
 	* bits/std_fstream.h: Set _M_buf_size based on cstdio's BUFSIZ.
 	Re-implement virtual functions.
 	* bits/fstream.tcc: Delete unused mf's.
+
+Copyright (C) 1999 Free Software Foundation, Inc.
 
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -5466,3 +5466,9 @@
 	null-terminate array1 at the outset.
 	* testsuite/27_io/basic_istream/extractors_character/wchar_t/1.cc:
 	Likewise.
+
+Copyright (C) 2005 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

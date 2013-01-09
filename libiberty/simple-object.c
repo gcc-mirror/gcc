@@ -51,7 +51,8 @@ static const struct simple_object_functions * const format_functions[] =
 {
   &simple_object_elf_functions,
   &simple_object_mach_o_functions,
-  &simple_object_coff_functions
+  &simple_object_coff_functions,
+  &simple_object_xcoff_functions
 };
 
 /* Read data from a file using the simple_object error reporting

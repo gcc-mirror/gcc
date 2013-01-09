@@ -1,3 +1,17 @@
+2013-01-04  Ian Lance Taylor  <iant@google.com>
+
+	PR other/54800
+	* simple-object-mach-o.c (simple_object_mach_o_segment): Don't
+	bother to zero out a buffer we are about to set anyhow.
+
+2013-01-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	* simple-object-xcoff.c: New file.
+	* Makefile.in: Add it to build machinery.
+	* simple-object-common.h (simple_object_xcoff_functions): Declare.
+	* simple-object.c (format_functions): Add
+	simple_object_xcoff_functions.
+
 2012-11-10  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_unqualified_name): Handle abi tags here.

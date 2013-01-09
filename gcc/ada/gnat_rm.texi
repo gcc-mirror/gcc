@@ -111,6 +111,7 @@ Implementation Defined Pragmas
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
+* Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
 * Pragma Comment::
@@ -850,6 +851,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
+* Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
 * Pragma Comment::
@@ -1401,6 +1403,60 @@ names, so these three names would normally not be used directly in a pragma
 Checks introduced by this pragma are normally deactivated by default. They can
 be activated either by the command line option @option{-gnata}, which turns on
 all checks, or individually controlled using pragma @code{Check_Policy}.
+
+@node Pragma Check_Float_Overflow
+@unnumberedsec Pragma Check_Float_Overflow
+@cindex Floating-point overflow
+@findex Check_Float_Overflow
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Check_Float_Overflow;
+@end smallexample
+
+@noindent
+In Ada, the predefined floating-point types (@code{Short_Float},
+@code{Float}, @code{Long_Float}, @code{Long_Long_Float}) are
+defined to be @emph{unconstrained}. This means that even though each
+has a well-defined base range, an operation that delivers a result
+outside this base range is not required to raise an exception.
+This implementation permission accommodates the notion
+of infinities in IEEE floating-point, and corresponds to the
+efficient execution mode on most machines. GNAT will not raise
+overflow exceptions on these machines; instead it will generate
+infinities and NaN's as defined in the IEEE standard.
+
+Generating infinities, although efficient, is not always desirable.
+Often the preferable approach is to check for overflow, even at the
+(perhaps considerable) expense of run-time performance.
+This can be accomplished by defining your own constrained floating-point subtypes -- i.e., by supplying explicit
+range constraints -- and indeed such a subtype
+can have the same base range as its base type. For example:
+
+@smallexample @c ada
+subtype My_Float is Float range Float'Range;
+@end smallexample
+
+@noindent
+Here @code{My_Float} has the same range as
+@code{Float} but is constrained, so operations on
+@code{My_Float} values will be checked for overflow
+against this range.
+
+This style will achieve the desired goal, but
+it is often more convenient to be able to simply use
+the standard predefined floating-point types as long
+as overflow checking could be guaranteed.
+The @code{Check_Float_Overflow}
+configuration pragma achieves this effect. If a unit is compiled
+subject to this configuration pragma, then all operations
+on predefined floating-point types will be treated as
+though those types were constrained, and overflow checks
+will be generated. The @code{Constraint_Error}
+exception is raised if the result is out of range.
+
+This mode can also be set by use of the compiler
+switch @option{-gnateF}.
 
 @node Pragma Check_Name
 @unnumberedsec Pragma Check_Name
@@ -6790,13 +6846,16 @@ that make up scalar components are ordered within S. Other properties are
 as for standard representation attribute @code{Bit_Order}, as defined by
 Ada RM 13.5.3(4). The default is @code{System.Default_Bit_Order}.
 
-If @code{@var{S}'Scalar_Storage_Order} is specified explicitly, it shall be
-equal to @code{@var{S}'Bit_Order}. Note: This means that if a
-@code{Scalar_Storage_Order} attribute definition clause is not confirming,
-then the type's @code{Bit_Order} shall be specified explicitly and set to
-the same value.
+For a record type @var{S}, if @code{@var{S}'Scalar_Storage_Order} is
+specified explicitly, it shall be equal to @code{@var{S}'Bit_Order}. Note:
+This means that if a @code{Scalar_Storage_Order} attribute definition
+clause is not confirming, then the type's @code{Bit_Order} shall be
+specified explicitly and set to the same value.
 
-If a component of S has itself a record or array type, then it shall also
+For a record extension, the derived type shall have the same scalar storage
+order as the parent type.
+
+If a component of @var{S} has itself a record or array type, then it shall also
 have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
 if the component does not start on a byte boundary, then the scalar storage
 order specified for S and for the nested component type shall be identical.
@@ -6808,10 +6867,11 @@ A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
 with a value equal to @code{System.Default_Bit_Order}) has no effect.
 
 If the opposite storage order is specified, then whenever the value of
-a scalar component of S is read, the storage elements of the enclosing
-machine scalar are first reversed (before retrieving the component value,
-possibly applying some shift and mask operatings on the enclosing machine
-scalar), and the opposite operation is done for writes.
+a scalar component of an object of type @var{S} is read, the storage
+elements of the enclosing machine scalar are first reversed (before
+retrieving the component value, possibly applying some shift and mask
+operatings on the enclosing machine scalar), and the opposite operation
+is done for writes.
 
 In that case, the restrictions set forth in 13.5.1(10.3/2) for scalar components
 are relaxed. Instead, the following rules apply:
@@ -11485,6 +11545,30 @@ fixed point types, as well as for record types, for example
 The default alignment for the type @code{V} is 4, as a result of the
 Integer field in the record, but it is permissible, as shown, to
 override the default alignment of the record with a smaller value.
+
+@cindex Alignment, subtypes
+Note that according to the Ada standard, an alignment clause applies only
+to the first named subtype. If additional subtypes are declared, then the
+compiler is allowed to choose any alignment it likes, and there is no way
+to control this choice. Consider:
+
+@smallexample @c ada
+   type R is range 1 .. 10_000;
+   for R'Alignment use 1;
+   subtype RS is R range 1 .. 1000;
+@end smallexample
+
+@noindent
+The alignment clause specifies an alignment of 1 for the first named subtype
+@code{R} but this does not necessarily apply to @code{RS}. When writing
+portable Ada code, you should avoid writing code that explicitly or
+implicitly relies on the alignment of such subtypes.
+
+For the GNAT compiler, if an explicit alignment clause is given, this
+value is also used for any subsequent subtypes. So for GNAT, in the
+above example, you can count on the alignment of @code{RS} being 1. But this
+assumption is non-portable, and other compilers may choose different
+alignments for the subtype @code{RS}.
 
 @node Size Clauses
 @section Size Clauses

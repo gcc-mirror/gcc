@@ -6356,7 +6356,6 @@
 
 	PR libstdc++/46922
 	* config/abi/pre/gnu.ver: Export std::bad_function_call symbols.
-
 
 Copyright (C) 2011 Free Software Foundation, Inc.
 

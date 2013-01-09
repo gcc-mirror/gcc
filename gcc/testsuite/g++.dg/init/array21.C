@@ -3,5 +3,5 @@
 void foo()
 {
   const int x[] = 0; // { dg-error "initializer" }
-  ++x;
+  ++x; // { dg-error "read-only|operand" }
 }

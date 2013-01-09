@@ -228,7 +228,9 @@ int optimize_size;
 int flag_compare_debug;
 enum stack_check_type flag_stack_check = NO_STACK_CHECK;
 
-/* Post-switch processing.  */
+/* Settings adjustments after switches processing by the back-end.
+   Note that the front-end switches processing (Scan_Compiler_Arguments)
+   has not been done yet at this point!  */
 
 static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)

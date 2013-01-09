@@ -10,7 +10,7 @@
    test should pass.  */
 
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -mno-sse -mno-popcnt" } */
+/* { dg-options "-O2" } */
 
 
 int __attribute__ ((target ("sse")))

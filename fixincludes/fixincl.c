@@ -2,7 +2,7 @@
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GCC will search.
 
-   Copyright (C) 1997, 1998, 1999, 2000, 2004, 2009
+   Copyright (C) 1997, 1998, 1999, 2000, 2004, 2009, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.

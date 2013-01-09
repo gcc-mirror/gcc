@@ -8617,3 +8617,9 @@
 	* config/cpu/i486/atomicity.h (__exchange_and_add, __atomic_add):
 	*__mem is also an output.
 	* config/cpu/m68k/atomicity.h (__exchange_and_add): Likewise.
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -1065,10 +1065,10 @@ ffi_prep_closure_loc (ffi_closure* closure,
       closure->cif = cif;
       closure->fun = fun;
       closure->user_data = user_data;
+      break;
 
     default:
-
-      FFI_ASSERT(0);
+      return FFI_BAD_ABI;
       break;
     }
   return FFI_OK;
@@ -1235,7 +1235,7 @@ ffi_closure_helper_DARWIN (ffi_closure *closure, void *rvalue,
 	  if (arg_types[i]->elements[0]->type == FFI_TYPE_DOUBLE)
 	    size_al = ALIGN(arg_types[i]->size, 8);
 #  if defined(POWERPC64)
-	  FFI_ASSERT (cif->abi != FFI_DARWIN)
+	  FFI_ASSERT (cif->abi != FFI_DARWIN);
 	  avalue[i] = pgr;
 	  pgr += (size_al + 7) / 8;
 #  else

@@ -518,7 +518,7 @@ procedure Gnat1drv is
       --  off. Note Atomic Synchronization is implemented as check.
 
       Suppress_Options.Suppress (Atomic_Synchronization) :=
-        not Atomic_Sync_Default;
+        not Atomic_Sync_Default_On_Target;
 
       --  Set switch indicating if we can use N_Expression_With_Actions
 
@@ -677,9 +677,9 @@ procedure Gnat1drv is
               and then not Compilation_Errors
             then
                Error_Msg_N
-                 ("package $$ does not require a body?", Main_Unit_Node);
+                 ("package $$ does not require a body??", Main_Unit_Node);
                Error_Msg_File_1 := Fname;
-               Error_Msg_N ("body in file{? will be ignored", Main_Unit_Node);
+               Error_Msg_N ("body in file{ will be ignored??", Main_Unit_Node);
 
                --  Ada 95 cases of a body file present when no body is
                --  permitted. This we consider to be an error.

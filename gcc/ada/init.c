@@ -821,34 +821,46 @@ int __gnat_features_set = 0;
 #endif
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
-   Most of these are also defined in the header file ssdef.h which has not
-   yet been converted to be recognized by GNU C.  */
+   It would be better to just include <ssdef.h> */
 
-/* Defining these as macros, as opposed to external addresses, allows
-   them to be used in a case statement below.  */
 #define SS$_ACCVIO            12
 #define SS$_HPARITH         1284
+#define SS$_INTDIV          1156
 #define SS$_STKOVF          1364
 #define SS$_RESIGNAL        2328
+
+#define MTH$_FLOOVEMAT   1475268       /* Some ACVC_21 CXA tests */
+
+/* The following codes must be resignalled, and not handled here. */
 
 /* These codes are in standard message libraries.  */
 extern int C$_SIGKILL;
 extern int SS$_DEBUG;
 extern int LIB$_KEYNOTFOU;
 extern int LIB$_ACTIMAGE;
-#define CMA$_EXIT_THREAD 4227492
-#define MTH$_FLOOVEMAT 1475268       /* Some ACVC_21 CXA tests */
-#define SS$_INTDIV 1156
 
 /* These codes are non standard, which is to say the author is
    not sure if they are defined in the standard message libraries
    so keep them as macros for now.  */
 #define RDB$_STREAM_EOF 20480426
 #define FDL$_UNPRIKW 11829410
+#define CMA$_EXIT_THREAD 4227492
+
+struct cond_sigargs {
+  unsigned int sigarg;
+  unsigned int sigargval;
+};
+
+struct cond_subtests {
+  unsigned int num;
+  const struct cond_sigargs sigargs[];
+};
 
 struct cond_except {
   unsigned int cond;
   const struct Exception_Data *except;
+  unsigned int needs_adjust;  /* 1 = adjust PC,  0 = no adjust */
+  const struct cond_subtests *subtests;
 };
 
 struct descriptor_s {
@@ -928,53 +940,72 @@ extern Exception_Code Base_Code_In (Exception_Code);
 
 /* DEC Ada specific conditions.  */
 static const struct cond_except dec_ada_cond_except_table [] = {
-  {ADA$_PROGRAM_ERROR,   &program_error},
-  {ADA$_USE_ERROR,       &Use_Error},
-  {ADA$_KEYSIZERR,       &program_error},
-  {ADA$_STAOVF,          &storage_error},
-  {ADA$_CONSTRAINT_ERRO, &constraint_error},
-  {ADA$_IOSYSFAILED,     &Device_Error},
-  {ADA$_LAYOUT_ERROR,    &Layout_Error},
-  {ADA$_STORAGE_ERROR,   &storage_error},
-  {ADA$_DATA_ERROR,      &Data_Error},
-  {ADA$_DEVICE_ERROR,    &Device_Error},
-  {ADA$_END_ERROR,       &End_Error},
-  {ADA$_MODE_ERROR,      &Mode_Error},
-  {ADA$_NAME_ERROR,      &Name_Error},
-  {ADA$_STATUS_ERROR,    &Status_Error},
-  {ADA$_NOT_OPEN,        &Use_Error},
-  {ADA$_ALREADY_OPEN,    &Use_Error},
-  {ADA$_USE_ERROR,       &Use_Error},
-  {ADA$_UNSUPPORTED,     &Use_Error},
-  {ADA$_FAC_MODE_MISMAT, &Use_Error},
-  {ADA$_ORG_MISMATCH,    &Use_Error},
-  {ADA$_RFM_MISMATCH,    &Use_Error},
-  {ADA$_RAT_MISMATCH,    &Use_Error},
-  {ADA$_MRS_MISMATCH,    &Use_Error},
-  {ADA$_MRN_MISMATCH,    &Use_Error},
-  {ADA$_KEY_MISMATCH,    &Use_Error},
-  {ADA$_MAXLINEXC,       &constraint_error},
-  {ADA$_LINEXCMRS,       &constraint_error},
+  {ADA$_PROGRAM_ERROR,   &program_error, 0, 0},
+  {ADA$_USE_ERROR,       &Use_Error, 0, 0},
+  {ADA$_KEYSIZERR,       &program_error, 0, 0},
+  {ADA$_STAOVF,          &storage_error, 0, 0},
+  {ADA$_CONSTRAINT_ERRO, &constraint_error, 0, 0},
+  {ADA$_IOSYSFAILED,     &Device_Error, 0, 0},
+  {ADA$_LAYOUT_ERROR,    &Layout_Error, 0, 0},
+  {ADA$_STORAGE_ERROR,   &storage_error, 0, 0},
+  {ADA$_DATA_ERROR,      &Data_Error, 0, 0},
+  {ADA$_DEVICE_ERROR,    &Device_Error, 0, 0},
+  {ADA$_END_ERROR,       &End_Error, 0, 0},
+  {ADA$_MODE_ERROR,      &Mode_Error, 0, 0},
+  {ADA$_NAME_ERROR,      &Name_Error, 0, 0},
+  {ADA$_STATUS_ERROR,    &Status_Error, 0, 0},
+  {ADA$_NOT_OPEN,        &Use_Error, 0, 0},
+  {ADA$_ALREADY_OPEN,    &Use_Error, 0, 0},
+  {ADA$_USE_ERROR,       &Use_Error, 0, 0},
+  {ADA$_UNSUPPORTED,     &Use_Error, 0, 0},
+  {ADA$_FAC_MODE_MISMAT, &Use_Error, 0, 0},
+  {ADA$_ORG_MISMATCH,    &Use_Error, 0, 0},
+  {ADA$_RFM_MISMATCH,    &Use_Error, 0, 0},
+  {ADA$_RAT_MISMATCH,    &Use_Error, 0, 0},
+  {ADA$_MRS_MISMATCH,    &Use_Error, 0, 0},
+  {ADA$_MRN_MISMATCH,    &Use_Error, 0, 0},
+  {ADA$_KEY_MISMATCH,    &Use_Error, 0, 0},
+  {ADA$_MAXLINEXC,       &constraint_error, 0, 0},
+  {ADA$_LINEXCMRS,       &constraint_error, 0, 0},
 
 #if 0
    /* Already handled by a pragma Import_Exception
       in Aux_IO_Exceptions */
-  {ADA$_LOCK_ERROR,      &Lock_Error},
-  {ADA$_EXISTENCE_ERROR, &Existence_Error},
-  {ADA$_KEY_ERROR,       &Key_Error},
+  {ADA$_LOCK_ERROR,      &Lock_Error, 0, 0},
+  {ADA$_EXISTENCE_ERROR, &Existence_Error, 0, 0},
+  {ADA$_KEY_ERROR,       &Key_Error, 0, 0},
 #endif
 
-  {0,                    0}
+  {0,                    0, 0, 0}
 };
 
 #endif /* IN_RTS */
 
-/* Non-DEC Ada specific conditions.  We could probably also put
-   SS$_HPARITH here and possibly SS$_ACCVIO, SS$_STKOVF.  */
-static const struct cond_except cond_except_table [] = {
-  {MTH$_FLOOVEMAT, &constraint_error},
-  {SS$_INTDIV,     &constraint_error},
-  {0,               0}
+/* Non-DEC Ada specific conditions that map to Ada exceptions.  */
+
+/* Subtest for ACCVIO Constraint_Error, kept for compatibility,
+   in hindsight should have just made ACCVIO == Storage_Error.  */
+#define ACCVIO_VIRTUAL_ADDR 3
+static const struct cond_subtests accvio_c_e =
+  {1,  /* number of subtests below */
+     {
+       {ACCVIO_VIRTUAL_ADDR, 0}
+      }
+   };
+
+/* Macro flag to adjust PC which gets off by one for some conditions,
+   not sure if this is reliably true, PC could be off by more for
+   HPARITH for example, unless a trapb is inserted. */
+#define NEEDS_ADJUST 1
+
+static const struct cond_except system_cond_except_table [] = {
+  {MTH$_FLOOVEMAT, &constraint_error, 0, 0},
+  {SS$_INTDIV,     &constraint_error, 0, 0},
+  {SS$_HPARITH,    &constraint_error, NEEDS_ADJUST, 0},
+  {SS$_ACCVIO,     &constraint_error, NEEDS_ADJUST, &accvio_c_e},
+  {SS$_ACCVIO,     &storage_error,    NEEDS_ADJUST, 0},
+  {SS$_STKOVF,     &storage_error,    NEEDS_ADJUST, 0},
+  {0,               0, 0, 0}
 };
 
 /* To deal with VMS conditions and their mapping to Ada exceptions,
@@ -1039,7 +1070,7 @@ __gnat_default_resignal_p (int code)
 
   for (i = 0, iexcept = 0;
        cond_resignal_table [i]
-         && !(iexcept = LIB$MATCH_COND (&code, &cond_resignal_table [i]));
+	&& !(iexcept = LIB$MATCH_COND (&code, &cond_resignal_table [i]));
        i++);
 
   return iexcept;
@@ -1092,10 +1123,62 @@ copy_msg (struct descriptor_s *msgdesc, char *message)
   return 0;
 }
 
+/* Scan TABLE for a match for the condition contained in SIGARGS,
+   and return the entry, or the empty entry if no match found.  */
+
+static const struct cond_except *
+  scan_conditions ( int *sigargs, const struct cond_except *table [])
+{
+  int i;
+  struct cond_except entry;
+
+  /* Scan the exception condition table for a match and fetch
+     the associated GNAT exception pointer.  */
+  for (i = 0; (*table) [i].cond; i++)
+    {
+      unsigned int match = LIB$MATCH_COND (&sigargs [1], &(*table) [i].cond);
+      const struct cond_subtests *subtests  = (*table) [i].subtests;
+
+      if (match)
+	{
+	  if (!subtests)
+	    {
+	      return &(*table) [i];
+	    }
+	  else
+	    {
+	      unsigned int ii;
+	      int num = (*subtests).num;
+
+	      /* Perform subtests to differentiate exception.  */
+	      for (ii = 0; ii < num; ii++)
+		{
+		  unsigned int arg = (*subtests).sigargs [ii].sigarg;
+		  unsigned int argval = (*subtests).sigargs [ii].sigargval;
+
+		  if (sigargs [arg] != argval)
+		    {
+		      num = 0;
+		      break;
+		    }
+		}
+
+	      /* All subtests passed.  */
+	      if (num == (*subtests).num)
+	        return &(*table) [i];
+	    }
+	}
+    }
+
+    /* No match, return the null terminating entry.  */
+    return &(*table) [i];
+}
+
 long
 __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 {
   struct Exception_Data *exception = 0;
+  unsigned int needs_adjust = 0;
   Exception_Code base_code;
   struct descriptor_s gnat_facility = {4, 0, "GNAT"};
   char message [Default_Exception_Msg_Max_Length];
@@ -1106,112 +1189,60 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
      Import_Exception.  */
   if (__gnat_resignal_p (sigargs [1]))
     return SS$_RESIGNAL;
+#ifndef IN_RTS
+  /* toplev.c handles this for compiler.  */
+  if (sigargs [1] == SS$_HPARITH)
+    return SS$_RESIGNAL;
+#endif
 
 #ifdef IN_RTS
   /* See if it's an imported exception.  Beware that registered exceptions
      are bound to their base code, with the severity bits masked off.  */
   base_code = Base_Code_In ((Exception_Code) sigargs[1]);
   exception = Coded_Exception (base_code);
-
-  if (exception)
-    {
-      message[0] = 0;
-
-      /* Subtract PC & PSL fields which messes with PUTMSG.  */
-      sigargs[0] -= 2;
-      SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
-      sigargs[0] += 2;
-      msg = message;
-
-      exception->Name_Length = 19;
-      /* ??? The full name really should be get SYS$GETMSG returns.  */
-      exception->Full_Name = "IMPORTED_EXCEPTION";
-      exception->Import_Code = base_code;
-
-#ifdef __IA64
-      /* Do not adjust the program counter as already points to the next
-	 instruction (just after the call to LIB$STOP).  */
-      Raise_From_Signal_Handler (exception, msg);
-#endif
-    }
 #endif
 
   if (exception == 0)
-    switch (sigargs[1])
-      {
-      case SS$_ACCVIO:
-        if (sigargs[3] == 0)
-	  {
-	    exception = &constraint_error;
-	    msg = "access zero";
-	  }
-	else
-	  {
-	    exception = &storage_error;
-	    msg = "stack overflow or erroneous memory access";
-	  }
-	__gnat_adjust_context_for_raise (SS$_ACCVIO, (void *)mechargs);
-	break;
-
-      case SS$_STKOVF:
-	exception = &storage_error;
-	msg = "stack overflow";
-	__gnat_adjust_context_for_raise (SS$_STKOVF, (void *)mechargs);
-	break;
-
-      case SS$_HPARITH:
-#ifndef IN_RTS
-	return SS$_RESIGNAL; /* toplev.c handles for compiler */
-#else
-	exception = &constraint_error;
-	msg = "arithmetic error";
-	__gnat_adjust_context_for_raise (SS$_HPARITH, (void *)mechargs);
-#endif
-	break;
-
-      default:
 #ifdef IN_RTS
+    {
+      int i;
+      struct cond_except cond;
+      const struct cond_except *cond_table;
+      const struct cond_except *cond_tables [] = {dec_ada_cond_except_table,
+					          system_cond_except_table,
+					          0};
+
+      i = 0;
+      while ((cond_table = cond_tables[i++]) && !exception)
 	{
-	  int i;
-
-	  /* Scan the DEC Ada exception condition table for a match and fetch
-	     the associated GNAT exception pointer.  */
-	  for (i = 0;
-	       dec_ada_cond_except_table [i].cond &&
-	       !LIB$MATCH_COND (&sigargs [1],
-			        &dec_ada_cond_except_table [i].cond);
-	       i++);
-	  exception = (struct Exception_Data *)
-	    dec_ada_cond_except_table [i].except;
-
-	  if (!exception)
-	    {
-	      /* Scan the VMS standard condition table for a match and fetch
-		 the associated GNAT exception pointer.  */
-	      for (i = 0;
-		   cond_except_table[i].cond &&
-		   !LIB$MATCH_COND (&sigargs[1], &cond_except_table[i].cond);
-		   i++);
-	      exception = (struct Exception_Data *)
-		cond_except_table [i].except;
-
-	      if (!exception)
-		/* User programs expect Non_Ada_Error to be raised, reference
-		   DEC Ada test CXCONDHAN.  */
-		exception = &Non_Ada_Error;
-	    }
+	  cond = *scan_conditions (sigargs, &cond_table);
+	  exception = (struct Exception_Data *) cond.except;
 	}
-#else
-	exception = &program_error;
-#endif
-	message[0] = 0;
-	/* Subtract PC & PSL fields which messes with PUTMSG.  */
-	sigargs[0] -= 2;
-	SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
-	sigargs[0] += 2;
-	msg = message;
-	break;
+
+      if (exception)
+	needs_adjust = cond.needs_adjust;
+      else
+	/* User programs expect Non_Ada_Error to be raised if no match,
+	   reference DEC Ada test CXCONDHAN.  */
+	exception = &Non_Ada_Error;
       }
+#else
+    {
+      /* Pretty much everything is just a program error in the compiler */
+      exception = &program_error;
+    }
+#endif
+
+  message[0] = 0;
+  /* Subtract PC & PSL fields as per ABI for SYS$PUTMSG.  */
+  sigargs[0] -= 2;
+  SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
+  /* Add back PC & PSL fields as per ABI for SYS$PUTMSG.  */
+  sigargs[0] += 2;
+  msg = message;
+
+  if (needs_adjust)
+    __gnat_adjust_context_for_raise (sigargs [1], (void *)mechargs);
 
   Raise_From_Signal_Handler (exception, msg);
 }
@@ -1244,11 +1275,11 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   if (signo == SS$_HPARITH)
     {
       /* Sub one to the address of the instruction signaling the condition,
-         located in the sigargs array.  */
+	 located in the sigargs array.  */
 
       CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
       CHF$SIGNAL_ARRAY * sigargs
-        = (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
+	= (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
 
       int vcount = sigargs->chf$is_sig_args;
       int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];

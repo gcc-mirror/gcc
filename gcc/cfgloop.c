@@ -1,5 +1,5 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1666,3 +1666,55 @@ loop_exits_from_bb_p (struct loop *loop, basic_block bb)
 
   return false;
 }
+
+/* Return location corresponding to the loop control condition if possible.  */
+
+location_t
+get_loop_location (struct loop *loop)
+{
+  rtx insn = NULL;
+  struct niter_desc *desc = NULL;
+  edge exit;
+
+  /* For a for or while loop, we would like to return the location
+     of the for or while statement, if possible.  To do this, look
+     for the branch guarding the loop back-edge.  */
+
+  /* If this is a simple loop with an in_edge, then the loop control
+     branch is typically at the end of its source.  */
+  desc = get_simple_loop_desc (loop);
+  if (desc->in_edge)
+    {
+      FOR_BB_INSNS_REVERSE (desc->in_edge->src, insn)
+        {
+          if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+            return INSN_LOCATION (insn);
+        }
+    }
+  /* If loop has a single exit, then the loop control branch
+     must be at the end of its source.  */
+  if ((exit = single_exit (loop)))
+    {
+      FOR_BB_INSNS_REVERSE (exit->src, insn)
+        {
+          if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+            return INSN_LOCATION (insn);
+        }
+    }
+  /* Next check the latch, to see if it is non-empty.  */
+  FOR_BB_INSNS_REVERSE (loop->latch, insn)
+    {
+      if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+        return INSN_LOCATION (insn);
+    }
+  /* Finally, if none of the above identifies the loop control branch,
+     return the first location in the loop header.  */
+  FOR_BB_INSNS (loop->header, insn)
+    {
+      if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+        return INSN_LOCATION (insn);
+    }
+  /* If all else fails, simply return the current function location.  */
+  return DECL_SOURCE_LOCATION (current_function_decl);
+}
+

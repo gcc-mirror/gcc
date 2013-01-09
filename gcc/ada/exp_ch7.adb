@@ -148,6 +148,7 @@ package body Exp_Ch7 is
    --  Set the field Node_To_Be_Wrapped of the current scope
 
    --  ??? The entire comment needs to be rewritten
+   --  ??? which entire comment?
 
    -----------------------------
    -- Finalization Management --
@@ -3379,7 +3380,7 @@ package body Exp_Ch7 is
          --  with the array case and non-discriminated record cases.
 
          Error_Msg_N
-           ("task/protected object in variant record will not be freed?", N);
+           ("task/protected object in variant record will not be freed??", N);
          return New_List (Make_Null_Statement (Loc));
       end if;
 

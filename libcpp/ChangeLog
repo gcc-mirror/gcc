@@ -1,3 +1,15 @@
+2013-01-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54526 (again)
+	* lex.c (_cpp_lex_direct): In C++11 mode, implement 2.5 p3, bullet 2.
+
+2013-01-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR bootstrap/50177
+	* line-map.c (get_combined_adhoc_loc): Cast from extern "C" type.
+	(new_linemap): Likewise.
+	(linemap_enter_macro): Likewise.
+
 2012-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/55380
