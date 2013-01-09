@@ -1,15 +1,20 @@
+2013-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_interleave_highv2df): Change mode
+	attribute of movddup insn to DF.
+	(*vec_interleave_lowv2df): Ditto.
+	(vec_dupv2df): Ditto.
+
 2013-01-09  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimiation/55875
 	* tree-ssa-loop-niter.c (number_of_iterations_cond): Add
 	EVERY_ITERATION parameter.
-	(number_of_iterations_exit): Check if exit is executed every
-	iteration.
+	(number_of_iterations_exit): Check if exit is executed every iteration.
 	(idx_infer_loop_bounds): Similarly here.
 	(n_of_executions_at_most): Simplify
 	to only test for cases where statement is dominated by the
-	particular bound; handle correctly the "postdominance"
-	test.
+	particular bound; handle correctly the "postdominance" test.
 	(scev_probably_wraps_p): Use max loop iterations info
 	as a global bound first.
 
@@ -85,7 +90,8 @@
 2013-01-04  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/55823
-	* ipa-prop.c (update_indirect_edges_after_inlining): Fix ordering issue.
+	* ipa-prop.c (update_indirect_edges_after_inlining): Fix ordering
+	issue.
 
 2012-01-08  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
@@ -98,10 +104,11 @@
 
 2013-01-08  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* config/aarch64/aarch64-simd.md (vec_init<mode>): New. 
-	* config/aarch64/aarch64-protos.h (aarch64_expand_vector_init): Declare.
+	* config/aarch64/aarch64-simd.md (vec_init<mode>): New.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_vector_init):
+	Declare.
 	* config/aarch64/aarch64.c (aarch64_simd_dup_constant,
-	aarch64_simd_make_constant, aarch64_expand_vector_init): New. 
+	aarch64_simd_make_constant, aarch64_expand_vector_init): New.
 
 2013-01-08  Jakub Jelinek  <jakub@redhat.com>
 
@@ -222,8 +229,7 @@
 
 	* gcc.c (LINK_COMMAND_SPEC): Pass -fuse-ld=* to collect2.
 
-	* opts.c (comman_handle_option): Ignore -fuse-ld=bfd and
-	-fuse-ld=gold.
+	* opts.c (comman_handle_option): Ignore -fuse-ld=bfd and -fuse-ld=gold.
 
 	* doc/invoke.texi: Document -fuse-ld=bfd and -fuse-ld=gold.
 
