@@ -184,6 +184,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->symbol.decl = decl;
   symtab_register_node ((symtab_node)new_node);
   new_node->origin = n->origin;
+  new_node->symbol.lto_file_data = n->symbol.lto_file_data;
   if (new_node->origin)
     {
       new_node->next_nested = new_node->origin->nested;
