@@ -1,3 +1,7 @@
+2013-01-09  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/guality/pr54693.c: Null-terminate arr.
+
 2013-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48189
