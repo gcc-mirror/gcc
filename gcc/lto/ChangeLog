@@ -1,3 +1,8 @@
+2013-01-09  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45375
+	* lto.c (do_whole_program_analysis): Remove unreachable nodes after IPA.
+
 2012-12-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR lto/55466

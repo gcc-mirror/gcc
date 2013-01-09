@@ -3215,6 +3215,7 @@ do_whole_program_analysis (void)
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   execute_ipa_pass_list (all_regular_ipa_passes);
+  symtab_remove_unreachable_nodes (false, dump_file);
 
   if (cgraph_dump_file)
     {
