@@ -1,3 +1,8 @@
+2013-01-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* config/i386/i386.c (initial_ix86_tune_features): Set up
+	X86_TUNE_AVX128_OPTIMAL for m_BTVER2.
+
 2013-01-09  Steven Bosscher  <steven@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

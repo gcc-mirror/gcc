@@ -2014,7 +2014,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
      the auto-vectorizer.  */
-  m_BDVER,
+  m_BDVER | m_BTVER2,
 
   /* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
      during reassociation of integer computation.  */
