@@ -1,3 +1,8 @@
+2013-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55801
+	* g++.dg/tls/thread_local-ice.C: New.
+
 2013-01-09  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/guality/pr54693.c: Null-terminate arr.
@@ -20,7 +25,7 @@
 
 2013-01-08  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* gcc.target/aarch64/vect-mull-compile.c: Explicitly scan for 
+	* gcc.target/aarch64/vect-mull-compile.c: Explicitly scan for
 	instructions generated instead of number of occurances.
 
 2013-01-08  James Greenhalgh  <james.greenhalgh@arm.com>

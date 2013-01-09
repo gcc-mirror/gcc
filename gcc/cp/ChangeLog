@@ -1,3 +1,9 @@
+2013-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/55801
+	* decl2.c (var_needs_tls_wrapper): Return false when error_operand_p
+	of the argument is true.
+
 2013-01-08  Joel Brobecker  <brobecker@adacore.com>
 
 	* parser.c (cp_parser_initializer_list): Move declaration
