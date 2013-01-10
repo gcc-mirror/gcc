@@ -1,3 +1,15 @@
+2013-01-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/55718
+	* config/s390/s390.c (s390_symref_operand_p)
+	(s390_loadrelative_operand_p): Merge the two functions.
+	(s390_check_qrst_address, print_operand_address): Add parameters
+	to s390_loadrelative_operand_p invokation.
+	(s390_check_symref_alignment): Use s390_loadrelative_operand_p.
+	(s390_reload_larl_operand, s390_secondary_reload): Use
+	s390_loadrelative_operand_p instead of s390_symref_operand_p.
+	(legitimize_pic_address): Handle @GOTENT and @PLT + addend.
+
 2013-01-09  Mike Stump  <mikestump@comcast.net>
 
 	* dse.c (record_store): Remove unnecessary assert.
