@@ -1,3 +1,8 @@
+2013-01-10  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure.ac (HAVE_AS_TLS): Add check for powerpc-ibm-aix.
+	* configure: Regenerate.
+
 2013-01-10  Richard Biener  <rguenther@suse.de>
 
 	* builtins.c (expand_builtin_init_trampoline): Use
