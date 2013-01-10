@@ -3278,7 +3278,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  return;
 	}
 
-      asm_fprintf (f, "%r", REGNO (x) + 1);
+      asm_fprintf (f, "%s", reg_names [REGNO (x) + 1]);
       break;
 
     case 'Q':
@@ -3288,7 +3288,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "%r", REGNO (x) + (WORDS_BIG_ENDIAN ? 1 : 0));
+      asm_fprintf (f, "%s", reg_names [REGNO (x) + (WORDS_BIG_ENDIAN ? 1 : 0)]);
       break;
 
     case 'R':
@@ -3298,7 +3298,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "%r", REGNO (x) + (WORDS_BIG_ENDIAN ? 0 : 1));
+      asm_fprintf (f, "%s", reg_names [REGNO (x) + (WORDS_BIG_ENDIAN ? 0 : 1)]);
       break;
 
     case 'm':
@@ -3403,7 +3403,7 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       switch (GET_CODE (x))
 	{
 	case REG:
-	  asm_fprintf (f, "%r", REGNO (x));
+	  asm_fprintf (f, "%s", reg_names [REGNO (x)]);
 	  break;
 
 	case MEM:
@@ -3558,36 +3558,36 @@ aarch64_print_operand_address (FILE *f, rtx x)
       {
       case ADDRESS_REG_IMM:
 	if (addr.offset == const0_rtx)
-	  asm_fprintf (f, "[%r]", REGNO (addr.base));
+	  asm_fprintf (f, "[%s]", reg_names [REGNO (addr.base)]);
 	else
-	  asm_fprintf (f, "[%r,%wd]", REGNO (addr.base),
+	  asm_fprintf (f, "[%s,%wd]", reg_names [REGNO (addr.base)],
 		       INTVAL (addr.offset));
 	return;
 
       case ADDRESS_REG_REG:
 	if (addr.shift == 0)
-	  asm_fprintf (f, "[%r,%r]", REGNO (addr.base),
-		       REGNO (addr.offset));
+	  asm_fprintf (f, "[%s,%s]", reg_names [REGNO (addr.base)],
+		       reg_names [REGNO (addr.offset)]);
 	else
-	  asm_fprintf (f, "[%r,%r,lsl %u]", REGNO (addr.base),
-		       REGNO (addr.offset), addr.shift);
+	  asm_fprintf (f, "[%s,%s,lsl %u]", reg_names [REGNO (addr.base)],
+		       reg_names [REGNO (addr.offset)], addr.shift);
 	return;
 
       case ADDRESS_REG_UXTW:
 	if (addr.shift == 0)
-	  asm_fprintf (f, "[%r,w%d,uxtw]", REGNO (addr.base),
+	  asm_fprintf (f, "[%s,w%d,uxtw]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM);
 	else
-	  asm_fprintf (f, "[%r,w%d,uxtw %u]", REGNO (addr.base),
+	  asm_fprintf (f, "[%s,w%d,uxtw %u]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM, addr.shift);
 	return;
 
       case ADDRESS_REG_SXTW:
 	if (addr.shift == 0)
-	  asm_fprintf (f, "[%r,w%d,sxtw]", REGNO (addr.base),
+	  asm_fprintf (f, "[%s,w%d,sxtw]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM);
 	else
-	  asm_fprintf (f, "[%r,w%d,sxtw %u]", REGNO (addr.base),
+	  asm_fprintf (f, "[%s,w%d,sxtw %u]", reg_names [REGNO (addr.base)],
 		       REGNO (addr.offset) - R0_REGNUM, addr.shift);
 	return;
 
@@ -3595,27 +3595,27 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	switch (GET_CODE (x))
 	  {
 	  case PRE_INC:
-	    asm_fprintf (f, "[%r,%d]!", REGNO (addr.base),
+	    asm_fprintf (f, "[%s,%d]!", reg_names [REGNO (addr.base)], 
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case POST_INC:
-	    asm_fprintf (f, "[%r],%d", REGNO (addr.base),
+	    asm_fprintf (f, "[%s],%d", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case PRE_DEC:
-	    asm_fprintf (f, "[%r,-%d]!", REGNO (addr.base),
+	    asm_fprintf (f, "[%s,-%d]!", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case POST_DEC:
-	    asm_fprintf (f, "[%r],-%d", REGNO (addr.base),
+	    asm_fprintf (f, "[%s],-%d", reg_names [REGNO (addr.base)],
 			 GET_MODE_SIZE (aarch64_memory_reference_mode));
 	    return;
 	  case PRE_MODIFY:
-	    asm_fprintf (f, "[%r,%wd]!", REGNO (addr.base),
+	    asm_fprintf (f, "[%s,%wd]!", reg_names [REGNO (addr.base)],
 			 INTVAL (addr.offset));
 	    return;
 	  case POST_MODIFY:
-	    asm_fprintf (f, "[%r],%wd", REGNO (addr.base),
+	    asm_fprintf (f, "[%s],%wd", reg_names [REGNO (addr.base)],
 			 INTVAL (addr.offset));
 	    return;
 	  default:
@@ -3624,7 +3624,7 @@ aarch64_print_operand_address (FILE *f, rtx x)
 	break;
 
       case ADDRESS_LO_SUM:
-	asm_fprintf (f, "[%r,#:lo12:", REGNO (addr.base));
+	asm_fprintf (f, "[%s,#:lo12:", reg_names [REGNO (addr.base)]);
 	output_addr_const (f, addr.offset);
 	asm_fprintf (f, "]");
 	return;
@@ -3935,9 +3935,9 @@ aarch64_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 static void
 aarch64_asm_trampoline_template (FILE *f)
 {
-  asm_fprintf (f, "\tldr\t%r, .+16\n", IP1_REGNUM);
-  asm_fprintf (f, "\tldr\t%r, .+20\n", STATIC_CHAIN_REGNUM);
-  asm_fprintf (f, "\tbr\t%r\n", IP1_REGNUM);
+  asm_fprintf (f, "\tldr\t%s, .+16\n", reg_names [IP1_REGNUM]);
+  asm_fprintf (f, "\tldr\t%s, .+20\n", reg_names [STATIC_CHAIN_REGNUM]);
+  asm_fprintf (f, "\tbr\t%s\n", reg_names [IP1_REGNUM]);
   assemble_aligned_integer (4, const0_rtx);
   assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
   assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
