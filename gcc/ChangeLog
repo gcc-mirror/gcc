@@ -1,8 +1,8 @@
 2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/pr55672
-	* lra-eliminations.c (mark_not_elimnable): Permit addition with
-	const to be elimnable.
+	* lra-eliminations.c (mark_not_eliminable): Permit addition with
+	const to be eliminable.
 
 2013-01-10  David Edelsohn  <dje.gcc@gmail.com>
 
