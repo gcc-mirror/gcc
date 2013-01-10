@@ -1,3 +1,9 @@
+2013-01-10  Jeff Law  <law@redhat.com>
+
+	* gcc/dg/tree-ssa/vrp06.c: Tighten expected output.  Make each
+	pass/fail message unique.
+
+
 2013-01-10  Jason Merrill  <jason@redhat.com>
 
 	* ada/.gitignore: New.
