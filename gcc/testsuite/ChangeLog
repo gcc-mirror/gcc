@@ -1,3 +1,10 @@
+2013-01-10  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55565
+	* gcc.target/powerpc/ppc-mov-1.c: Update scan-assembler-not
+	regex.
+
 2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/pr55672
