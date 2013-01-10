@@ -5,8 +5,7 @@
 
 2013-01-10  Richard Biener  <rguenther@suse.de>
 
-	* builtins.c (expand_builtin_init_trampoline): Use
-	set_mem_attributes.
+	* builtins.c (expand_builtin_init_trampoline): Use set_mem_attributes.
 
 2013-01-10  Richard Biener  <rguenther@suse.de>
 
@@ -51,7 +50,8 @@
 2013-01-09  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45375
-	* ipa-inline.c (ipa_inline): Remove extern inlines and virtual functions.
+	* ipa-inline.c (ipa_inline): Remove extern inlines and virtual
+	functions.
 	* cgraphclones.c (cgraph_clone_node): Cpoy also LTO file data.
 
 2013-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
