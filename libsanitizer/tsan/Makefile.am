@@ -31,6 +31,9 @@ tsan_files = \
         tsan_interface_ann.cc \
         tsan_mman.cc \
         tsan_rtl_report.cc \
+	tsan_fd.cc \
+        tsan_interface_java.cc \
+        tsan_mutexset.cc \
         tsan_symbolize_addr2line_linux.cc
 
 libtsan_la_SOURCES = $(tsan_files) 

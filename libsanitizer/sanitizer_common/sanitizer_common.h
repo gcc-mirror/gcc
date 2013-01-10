@@ -42,9 +42,13 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
 void *MmapOrDie(uptr size, const char *mem_type);
 void UnmapOrDie(void *addr, uptr size);
 void *MmapFixedNoReserve(uptr fixed_addr, uptr size);
+void *MmapFixedOrDie(uptr fixed_addr, uptr size);
 void *Mprotect(uptr fixed_addr, uptr size);
+// Map aligned chunk of address space; size and alignment are powers of two.
+void *MmapAlignedOrDie(uptr size, uptr alignment, const char *mem_type);
 // Used to check if we can map shadow memory to a fixed location.
 bool MemoryRangeIsAvailable(uptr range_start, uptr range_end);
+void FlushUnneededShadowMemory(uptr addr, uptr size);
 
 // Internal allocator
 void *InternalAlloc(uptr size);
@@ -119,6 +123,7 @@ const char *GetPwd();
 void ReExec();
 bool StackSizeIsUnlimited();
 void SetStackSizeLimitInBytes(uptr limit);
+void PrepareForSandboxing();
 
 // Other
 void SleepForSeconds(int seconds);
@@ -132,6 +137,13 @@ void NORETURN Exit(int exitcode);
 void NORETURN Die();
 void NORETURN SANITIZER_INTERFACE_ATTRIBUTE
 CheckFailed(const char *file, int line, const char *cond, u64 v1, u64 v2);
+
+// Set the name of the current thread to 'name', return true on succees.
+// The name may be truncated to a system-dependent limit.
+bool SanitizerSetThreadName(const char *name);
+// Get the name of the current thread (no more than max_len bytes),
+// return true on succees. name should have space for at least max_len+1 bytes.
+bool SanitizerGetThreadName(char *name, int max_len);
 
 // Specific tools may override behavior of "Die" and "CheckFailed" functions
 // to do tool-specific job.
@@ -147,6 +159,12 @@ INLINE bool IsPowerOfTwo(uptr x) {
 INLINE uptr RoundUpTo(uptr size, uptr boundary) {
   CHECK(IsPowerOfTwo(boundary));
   return (size + boundary - 1) & ~(boundary - 1);
+}
+INLINE uptr RoundDownTo(uptr x, uptr boundary) {
+  return x & ~(boundary - 1);
+}
+INLINE bool IsAligned(uptr a, uptr alignment) {
+  return (a & (alignment - 1)) == 0;
 }
 // Don't use std::min, std::max or std::swap, to minimize dependency
 // on libstdc++.

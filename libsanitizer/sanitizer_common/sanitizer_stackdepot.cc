@@ -40,6 +40,12 @@ static struct {
   atomic_uint32_t seq[kPartCount];  // Unique id generators.
 } depot;
 
+static StackDepotStats stats;
+
+StackDepotStats *StackDepotGetStats() {
+  return &stats;
+}
+
 static u32 hash(const uptr *stack, uptr size) {
   // murmur2
   const u32 m = 0x5bd1e995;
@@ -75,7 +81,7 @@ static StackDesc *tryallocDesc(uptr memsz) {
 }
 
 static StackDesc *allocDesc(uptr size) {
-  // Frist, try to allocate optimisitically.
+  // First, try to allocate optimisitically.
   uptr memsz = sizeof(StackDesc) + (size - 1) * sizeof(uptr);
   StackDesc *s = tryallocDesc(memsz);
   if (s)
@@ -91,6 +97,7 @@ static StackDesc *allocDesc(uptr size) {
     if (allocsz < memsz)
       allocsz = memsz;
     uptr mem = (uptr)MmapOrDie(allocsz, "stack depot");
+    stats.mapped += allocsz;
     atomic_store(&depot.region_end, mem + allocsz, memory_order_release);
     atomic_store(&depot.region_pos, mem, memory_order_release);
   }
@@ -154,6 +161,7 @@ u32 StackDepotPut(const uptr *stack, uptr size) {
   }
   uptr part = (h % kTabSize) / kPartSize;
   id = atomic_fetch_add(&depot.seq[part], 1, memory_order_relaxed) + 1;
+  stats.n_uniq_ids++;
   CHECK_LT(id, kMaxId);
   id |= part << kPartShift;
   CHECK_NE(id, 0);

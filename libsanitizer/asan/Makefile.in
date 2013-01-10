@@ -84,19 +84,20 @@ am__DEPENDENCIES_1 =
 @USING_MAC_INTERPOSE_FALSE@	$(am__DEPENDENCIES_1)
 @USING_MAC_INTERPOSE_TRUE@libasan_la_DEPENDENCIES = $(top_builddir)/sanitizer_common/libsanitizer_common.la \
 @USING_MAC_INTERPOSE_TRUE@	$(am__DEPENDENCIES_1)
-am__libasan_la_SOURCES_DIST = asan_allocator.cc asan_interceptors.cc \
-	asan_mac.cc asan_malloc_mac.cc asan_new_delete.cc \
-	asan_posix.cc asan_rtl.cc asan_stats.cc \
-	asan_thread_registry.cc asan_globals.cc asan_linux.cc \
-	asan_malloc_linux.cc asan_malloc_win.cc asan_poisoning.cc \
-	asan_report.cc asan_stack.cc asan_thread.cc asan_win.cc \
-	dynamic/asan_interceptors_dynamic.cc
-am__objects_1 = asan_allocator.lo asan_interceptors.lo asan_mac.lo \
-	asan_malloc_mac.lo asan_new_delete.lo asan_posix.lo \
-	asan_rtl.lo asan_stats.lo asan_thread_registry.lo \
-	asan_globals.lo asan_linux.lo asan_malloc_linux.lo \
-	asan_malloc_win.lo asan_poisoning.lo asan_report.lo \
-	asan_stack.lo asan_thread.lo asan_win.lo
+am__libasan_la_SOURCES_DIST = asan_allocator.cc asan_allocator2.cc \
+	asan_interceptors.cc asan_mac.cc asan_malloc_mac.cc \
+	asan_new_delete.cc asan_posix.cc asan_rtl.cc asan_stats.cc \
+	asan_thread_registry.cc asan_fake_stack.cc asan_globals.cc \
+	asan_linux.cc asan_malloc_linux.cc asan_malloc_win.cc \
+	asan_poisoning.cc asan_report.cc asan_stack.cc asan_thread.cc \
+	asan_win.cc dynamic/asan_interceptors_dynamic.cc
+am__objects_1 = asan_allocator.lo asan_allocator2.lo \
+	asan_interceptors.lo asan_mac.lo asan_malloc_mac.lo \
+	asan_new_delete.lo asan_posix.lo asan_rtl.lo asan_stats.lo \
+	asan_thread_registry.lo asan_fake_stack.lo asan_globals.lo \
+	asan_linux.lo asan_malloc_linux.lo asan_malloc_win.lo \
+	asan_poisoning.lo asan_report.lo asan_stack.lo asan_thread.lo \
+	asan_win.lo
 @USING_MAC_INTERPOSE_TRUE@am__objects_2 =  \
 @USING_MAC_INTERPOSE_TRUE@	asan_interceptors_dynamic.lo
 am_libasan_la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -269,6 +270,7 @@ ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 toolexeclib_LTLIBRARIES = libasan.la
 asan_files = \
 	asan_allocator.cc \
+	asan_allocator2.cc \
 	asan_interceptors.cc \
 	asan_mac.cc \
 	asan_malloc_mac.cc \
@@ -277,6 +279,7 @@ asan_files = \
 	asan_rtl.cc \
 	asan_stats.cc \
 	asan_thread_registry.cc \
+	asan_fake_stack.cc \
 	asan_globals.cc \
 	asan_linux.cc \
 	asan_malloc_linux.cc \
@@ -409,6 +412,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_allocator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_allocator2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_fake_stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_globals.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_interceptors_dynamic.Plo@am__quote@

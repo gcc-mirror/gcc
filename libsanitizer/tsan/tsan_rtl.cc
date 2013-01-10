@@ -164,6 +164,16 @@ void MapShadow(uptr addr, uptr size) {
   MmapFixedNoReserve(MemToShadow(addr), size * kShadowMultiplier);
 }
 
+void MapThreadTrace(uptr addr, uptr size) {
+  DPrintf("#0: Mapping trace at %p-%p(0x%zx)\n", addr, addr + size, size);
+  CHECK_GE(addr, kTraceMemBegin);
+  CHECK_LE(addr + size, kTraceMemBegin + kTraceMemSize);
+  if (addr != (uptr)MmapFixedNoReserve(addr, size)) {
+    Printf("FATAL: ThreadSanitizer can not mmap thread trace\n");
+    Die();
+  }
+}
+
 void Initialize(ThreadState *thr) {
   // Thread safe because done before all threads exist.
   static bool is_initialized = false;
@@ -289,6 +299,7 @@ void TraceSwitch(ThreadState *thr) {
   TraceHeader *hdr = &thr->trace.headers[trace];
   hdr->epoch0 = thr->fast_state.epoch();
   hdr->stack0.ObtainCurrent(thr, 0);
+  hdr->mset0 = thr->mset;
   thr->nomalloc--;
 }
 
@@ -443,7 +454,7 @@ ALWAYS_INLINE
 void MemoryAccess(ThreadState *thr, uptr pc, uptr addr,
     int kAccessSizeLog, bool kAccessIsWrite) {
   u64 *shadow_mem = (u64*)MemToShadow(addr);
-  DPrintf2("#%d: tsan::OnMemoryAccess: @%p %p size=%d"
+  DPrintf2("#%d: MemoryAccess: @%p %p size=%d"
       " is_write=%d shadow_mem=%p {%zx, %zx, %zx, %zx}\n",
       (int)thr->fast_state.tid(), (void*)pc, (void*)addr,
       (int)(1 << kAccessSizeLog), kAccessIsWrite, shadow_mem,
