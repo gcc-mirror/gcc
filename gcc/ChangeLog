@@ -1,3 +1,10 @@
+2013-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/55792
+	* tree-into-ssa.c (rewrite_add_phi_arguments): Do not set
+	locations for virtual PHI arguments.
+	(rewrite_update_phi_arguments): Likewise.
+
 2013-01-10  Joel Sherrill  <joel.sherrill@OARcorp.com>
 
 	* config/v850/rtems.h (ASM_SPEC): Pass -m8byte-align and -mgcc-abi
