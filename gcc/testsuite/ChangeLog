@@ -1,3 +1,7 @@
+2013-01-10  Jason Merrill  <jason@redhat.com>
+
+	* ada/.gitignore: New.
+
 2013-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/tls/thread_local-cse.C: Don't xfail on *-*-solaris2.9.

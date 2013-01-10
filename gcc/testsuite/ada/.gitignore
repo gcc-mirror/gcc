@@ -1,0 +1,2 @@
+# In the Ada testsuite, .a is an ada source file, not a library.
+!*.a
