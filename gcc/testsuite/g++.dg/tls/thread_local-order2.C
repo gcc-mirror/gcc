@@ -4,6 +4,7 @@
 
 // { dg-do run { xfail *-*-* } }
 // { dg-options "-std=c++11" }
+// { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
 // { dg-require-alias }
 

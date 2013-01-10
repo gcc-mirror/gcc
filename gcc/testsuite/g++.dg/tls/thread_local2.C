@@ -1,5 +1,6 @@
-// { dg-do run { xfail *-*-solaris2.9 } }
+// { dg-do run }
 // { dg-options "-std=c++11" }
+// { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
 
 extern "C" void abort();
