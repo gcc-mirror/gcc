@@ -1,6 +1,5 @@
 /* Prototypes for exported functions defined in xstormy16.c
-   Copyright (C) 2000, 2001, 2003, 2004, 2007, 2008, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2000-2013 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.

@@ -1,5 +1,5 @@
 /* Definitions needed when using stabs embedded in COFF sections.
-   Copyright (C) 1996, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1996-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,6 +1,5 @@
 /* Definitions for C language specific types.
-   Copyright (C) 2009, 2010, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2009-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

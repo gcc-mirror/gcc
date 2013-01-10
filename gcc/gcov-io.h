@@ -1,6 +1,5 @@
 /* File format for coverage information
-   Copyright (C) 1996, 1997, 1998, 2000, 2002,
-   2003, 2004, 2005, 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1996-2013 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 

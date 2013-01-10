@@ -1,5 +1,5 @@
 /* Prefer DBX (stabs) debugging information.
-   Copyright (C) 1996, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1996-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

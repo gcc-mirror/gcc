@@ -1,5 +1,5 @@
 /* objc-map.c -- Implementation of map data structures for ObjC compiler
-   Copyright 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011-2013 Free Software Foundation, Inc.
    Written by Nicola Pero <nicola.pero@meta-innovation.com>
 
 This program is free software; you can redistribute it and/or modify it

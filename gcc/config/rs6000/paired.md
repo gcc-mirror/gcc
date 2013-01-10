@@ -1,6 +1,5 @@
 ;; PowerPC paired single and double hummer description
-;; Copyright (C) 2007, 2009, 2010, 2011, 2012
-;; Free Software Foundation, Inc.
+;; Copyright (C) 2007-2013 Free Software Foundation, Inc.
 ;; Contributed by David Edelsohn <edelsohn@gnu.org> and Revital Eres
 ;; <eres@il.ibm.com>
 

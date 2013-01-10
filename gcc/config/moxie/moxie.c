@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008, 2009, 2010, 2011, 2012  Free Software Foundation
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.

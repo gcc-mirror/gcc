@@ -1,6 +1,5 @@
 /* Prototypes for exported functions defined in c6x.c.
-   Copyright (C) 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2010-2013 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

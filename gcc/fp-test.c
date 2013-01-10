@@ -1,5 +1,5 @@
 /* fp-test.c - Check that all floating-point operations are available.
-   Copyright (C) 1995, 2000, 2003, 2007  Free Software Foundation, Inc.
+   Copyright (C) 1995-2013 Free Software Foundation, Inc.
    Contributed by Ronald F. Guilmette <rfg@monkeys.com>.
 
    This file is part of GCC.

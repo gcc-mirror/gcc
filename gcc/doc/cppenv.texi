@@ -1,5 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2004
-@c Free Software Foundation, Inc.
+@c Copyright (C) 1999-2013 Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
 

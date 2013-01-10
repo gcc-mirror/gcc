@@ -1,6 +1,6 @@
 /* LTO IL compression streams.
 
-   Copyright 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.

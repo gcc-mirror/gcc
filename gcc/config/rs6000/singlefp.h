@@ -1,7 +1,7 @@
 /* Definitions for PowerPC single-precision floating point unit
    such as Xilinx PowerPC 405/440 APU.
 
-   Copyright (C) 2008 Free Software Foundation, Inc.
+   Copyright (C) 2008-2013 Free Software Foundation, Inc.
    Contributed by Michael Eager (eager@eagercon.com)
 
    This file is part of GCC.
