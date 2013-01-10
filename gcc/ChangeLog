@@ -1,3 +1,9 @@
+2013-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/55921
+	* tree-complex.c (expand_complex_asm): New function.
+	(expand_complex_operations_1): Call it for GIMPLE_ASM.
+
 2013-01-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/55718
