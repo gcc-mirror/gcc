@@ -1,5 +1,10 @@
 2013-01-10  Richard Biener  <rguenther@suse.de>
 
+	* builtins.c (expand_builtin_init_trampoline): Use
+	set_mem_attributes.
+
+2013-01-10  Richard Biener  <rguenther@suse.de>
+
 	PR bootstrap/55792
 	* tree-into-ssa.c (rewrite_add_phi_arguments): Do not set
 	locations for virtual PHI arguments.
