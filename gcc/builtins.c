@@ -4853,8 +4853,7 @@ expand_builtin_init_trampoline (tree exp, bool onstack)
      within the local function's FRAME decl.  Either way, let's see if
      we can fill in the MEM_ATTRs for this memory.  */
   if (TREE_CODE (t_tramp) == ADDR_EXPR)
-    set_mem_attributes_minus_bitpos (m_tramp, TREE_OPERAND (t_tramp, 0),
-				     true, 0);
+    set_mem_attributes (m_tramp, TREE_OPERAND (t_tramp, 0), true);
 
   /* Creator of a heap trampoline is responsible for making sure the
      address is aligned to at least STACK_BOUNDARY.  Normally malloc
