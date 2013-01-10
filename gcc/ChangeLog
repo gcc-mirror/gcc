@@ -1,3 +1,9 @@
+2013-01-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/pr55672
+	* lra-eliminations.c (mark_not_elimnable): Permit addition with
+	const to be elimnable.
+
 2013-01-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure.ac (HAVE_AS_TLS): Add check for powerpc-ibm-aix.

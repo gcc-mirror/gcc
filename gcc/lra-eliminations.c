@@ -657,7 +657,7 @@ mark_not_eliminable (rtx x)
     case PRE_MODIFY:
       if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
 	/* If we modify the source of an elimination rule, disable
-	   it. Do the same if it is the source and not the hard frame
+	   it.  Do the same if it is the source and not the hard frame
 	   register.  */
 	for (ep = reg_eliminate;
 	     ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
@@ -716,7 +716,10 @@ mark_not_eliminable (rtx x)
 	       ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 	       ep++)
 	    if (ep->to_rtx == SET_DEST (x)
-		&& SET_DEST (x) != hard_frame_pointer_rtx)
+		&& SET_DEST (x) != hard_frame_pointer_rtx
+		&& (GET_CODE (SET_SRC (x)) != PLUS
+		    || XEXP (SET_SRC (x), 0) != SET_DEST (x)
+		    || ! CONST_INT_P (XEXP (SET_SRC (x), 1))))
 	      setup_can_eliminate (ep, false);
 	}
 
