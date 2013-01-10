@@ -67,7 +67,7 @@
 	(scev_probably_wraps_p): Use max loop iterations info
 	as a global bound first.
 
-2013-01-09  Nguyen Duy Dat
+2013-01-09  Nguyen Duy Dat  <dat.nguyen.yn@rvc.renesas.com>
 	    Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.md (cbranchsf4): New pattern.
