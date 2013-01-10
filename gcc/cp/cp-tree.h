@@ -5476,9 +5476,9 @@ extern void finish_repo				(void);
 extern GTY(()) vec<tree, va_gc> *unemitted_tinfo_decls;
 
 extern void init_rtti_processing		(void);
-extern tree build_typeid			(tree);
+extern tree build_typeid			(tree, tsubst_flags_t);
 extern tree get_tinfo_decl			(tree);
-extern tree get_typeid				(tree);
+extern tree get_typeid				(tree, tsubst_flags_t);
 extern tree build_headof			(tree);
 extern tree build_dynamic_cast			(tree, tree, tsubst_flags_t);
 extern void emit_support_tinfos			(void);
