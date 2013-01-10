@@ -1,5 +1,10 @@
 2013-01-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55878
+	* rtti.c (build_typeid, get_typeid): Add complain parm.
+	(get_tinfo_decl_dynamic): Likewise.
+	* cp-tree.h, parser.c, pt.c: Adjust.
+
 	PR c++/55893
 	* decl.c (cp_finish_decl): Clear TREE_READONLY if the variable
 	needs destruction.

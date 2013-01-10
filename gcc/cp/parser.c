@@ -5473,7 +5473,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	/* If all went well, simply lookup the type-id.  */
 	if (cp_parser_parse_definitely (parser))
-	  postfix_expression = get_typeid (type);
+	  postfix_expression = get_typeid (type, tf_warning_or_error);
 	/* Otherwise, fall back to the expression variant.  */
 	else
 	  {
@@ -5482,7 +5482,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    /* Look for an expression.  */
 	    expression = cp_parser_expression (parser, /*cast_p=*/false, & idk);
 	    /* Compute its typeid.  */
-	    postfix_expression = build_typeid (expression);
+	    postfix_expression = build_typeid (expression, tf_warning_or_error);
 	    /* Look for the `)' token.  */
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	  }

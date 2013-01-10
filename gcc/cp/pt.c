@@ -14223,12 +14223,12 @@ tsubst_copy_and_build (tree t,
 	if (TYPE_P (operand_0))
 	  {
 	    operand_0 = tsubst (operand_0, args, complain, in_decl);
-	    RETURN (get_typeid (operand_0));
+	    RETURN (get_typeid (operand_0, complain));
 	  }
 	else
 	  {
 	    operand_0 = RECUR (operand_0);
-	    RETURN (build_typeid (operand_0));
+	    RETURN (build_typeid (operand_0, complain));
 	  }
       }
 
