@@ -1,3 +1,8 @@
+2013-01-10  Joel Sherrill  <joel.sherrill@OARcorp.com>
+
+	* config/v850/rtems.h (ASM_SPEC): Pass -m8byte-align and -mgcc-abi
+	on to assembler.
+
 2013-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55921
