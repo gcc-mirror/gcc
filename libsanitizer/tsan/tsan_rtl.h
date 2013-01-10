@@ -580,7 +580,7 @@ void AfterSleep(ThreadState *thr, uptr pc);
 // The trick is that the call preserves all registers and the compiler
 // does not treat it as a call.
 // If it does not work for you, use normal call.
-#if 0 && TSAN_DEBUG == 0
+#if TSAN_DEBUG == 0
 // The caller may not create the stack frame for itself at all,
 // so we create a reserve stack frame for it (1024b must be enough).
 #define HACKY_CALL(f) \

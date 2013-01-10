@@ -34,7 +34,8 @@ tsan_files = \
 	tsan_fd.cc \
         tsan_interface_java.cc \
         tsan_mutexset.cc \
-        tsan_symbolize_addr2line_linux.cc
+        tsan_symbolize_addr2line_linux.cc \
+        tsan_rtl_amd64.S
 
 libtsan_la_SOURCES = $(tsan_files) 
 libtsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDFLAGS)

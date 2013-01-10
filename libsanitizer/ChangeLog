@@ -1,3 +1,10 @@
+2013-01-10  Wei Mi  <wmi@google.com>
+
+	PR sanitizer/55488
+	* tsan/Makefile.am: Add tsan_rtl_amd64.S.
+	* tsan/Makefile.in: Regenerated.
+	* tsan/tsan_rtl.h: Enable HACKY_CALL.
+
 2013-01-10  Kostya Serebryany  <kcc@google.com>
 
 	* All source files: Merge from upstream r171973.
