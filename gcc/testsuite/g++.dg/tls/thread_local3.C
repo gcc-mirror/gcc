@@ -3,6 +3,7 @@
 // { dg-require-effective-target tls_runtime }
 // { dg-require-effective-target pthread }
 // { dg-options -pthread }
+// { dg-add-options tls }
 
 int c;
 int d;

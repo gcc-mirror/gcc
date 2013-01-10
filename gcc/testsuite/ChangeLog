@@ -1,3 +1,20 @@
+2013-01-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/tls/thread_local-cse.C: Don't xfail on *-*-solaris2.9.
+	Add tls options.
+	* g++.dg/tls/thread_local2.C: Likewise.
+	* g++.dg/tls/thread_local2g.C: Likewise.
+	* g++.dg/tls/thread_local6.C: Likewise.
+	* g++.dg/tls/thread_local-order1.C: Add tls options.
+	* g++.dg/tls/thread_local-order2.C: Likewise.
+	* g++.dg/tls/thread_local3.C: Likewise.
+	* g++.dg/tls/thread_local3g.C: Likewise.
+	* g++.dg/tls/thread_local4.C: Likewise.
+	* g++.dg/tls/thread_local4g.C: Likewise.
+	* g++.dg/tls/thread_local5.C: Likewise.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+
 2013-01-10  Kostya Serebryany  <kcc@google.com>
 
 	* g++.dg/asan/asan_test.cc: Sync from upstream.
