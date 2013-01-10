@@ -1,6 +1,5 @@
 /* Target definitions for GCC for Intel 80386 running System V.4
-   Copyright (C) 1991, 2001, 2002, 2007, 2008, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2013 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com).
 

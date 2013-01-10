@@ -1,6 +1,5 @@
 /* "Bag-of-pages" zone garbage collector for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1999-2013 Free Software Foundation, Inc.
 
    Contributed by Richard Henderson (rth@redhat.com) and Daniel Berlin
    (dberlin@dberlin.org).  Rewritten by Daniel Jacobowitz

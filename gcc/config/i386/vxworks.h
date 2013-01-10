@@ -1,6 +1,5 @@
 /* IA32 VxWorks target definitions for GNU compiler.
-   Copyright (C) 2003, 2004, 2005, 2007, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2003-2013 Free Software Foundation, Inc.
    Updated by CodeSourcery, LLC.
 
 This file is part of GCC.

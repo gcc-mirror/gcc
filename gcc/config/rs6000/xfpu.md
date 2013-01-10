@@ -1,5 +1,5 @@
 ;; Scheduling description for the Xilinx PowerPC 405 APU Floating Point Unit.
-;; Copyright (C) 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2013 Free Software Foundation, Inc.
 ;; Contributed by Michael Eager (eager@eagercon.com).
 ;;
 ;; This file is part of GCC.

@@ -1,6 +1,5 @@
 /* RTL specific diagnostic subroutines for GCC
-   Copyright (C) 2001, 2002, 2003, 2004, 2007, 2008, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2001-2013 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.

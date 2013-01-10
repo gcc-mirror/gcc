@@ -1,6 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ARM on semi-hosted platform
-   Copyright (C) 1994, 1995, 1996, 1997, 2001, 2004, 2005, 2007, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1994-2013 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (richard.earnshaw@arm.com)
 
    This file is part of GCC.

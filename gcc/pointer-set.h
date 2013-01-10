@@ -1,5 +1,5 @@
 /* Set operations on pointers
-   Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

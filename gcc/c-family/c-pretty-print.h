@@ -1,6 +1,5 @@
 /* Various declarations for the C and C++ pretty-printers.
-   Copyright (C) 2002, 2003, 2004, 2007, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2013 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
