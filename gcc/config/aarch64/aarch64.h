@@ -768,16 +768,6 @@ do {									     \
 #define ASM_APP_ON	"\t" ASM_COMMENT_START " Start of user assembly\n"
 #define ASM_APP_OFF	"\t" ASM_COMMENT_START " End of user assembly\n"
 
-#define ASM_FPRINTF_EXTENSIONS(FILE, ARGS, P)		\
-  case '@':						\
-    fputs (ASM_COMMENT_START, FILE);			\
-    break;						\
-							\
-  case 'r':						\
-    fputs (REGISTER_PREFIX, FILE);			\
-    fputs (reg_names[va_arg (ARGS, int)], FILE);	\
-    break;
-
 #define CONSTANT_POOL_BEFORE_FUNCTION 0
 
 /* This definition should be relocated to aarch64-elf-raw.h.  This macro

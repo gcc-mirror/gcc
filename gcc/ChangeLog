@@ -96,6 +96,14 @@
 	* predict.c (predict_loops): If max is 0, don't call compare_tree_int.
 	If nitercst is 0, don't predict the exit edge.
 
+2013-01-08   Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Replace %r
+	in asm_fprintf with reg_names.
+	(aarch64_print_operand_address): Likewise.
+	(aarch64_return_addr): Likewise.
+	* config/aarch64/aarch64.h (ASM_FPRINTF_EXTENSIONS): Remove.
+
 2013-01-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.h (VAL_U6_BITS_P): Define.
