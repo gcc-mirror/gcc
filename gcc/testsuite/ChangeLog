@@ -1,3 +1,7 @@
+2013-01-10  Kostya Serebryany  <kcc@google.com>
+
+	* g++.dg/asan/asan_test.cc: Sync from upstream.
+
 2013-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/55921

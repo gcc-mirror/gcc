@@ -87,7 +87,8 @@ am__objects_1 = tsan_clock.lo tsan_interface_atomic.lo tsan_mutex.lo \
 	tsan_rtl.lo tsan_stat.lo tsan_sync.lo tsan_interceptors.lo \
 	tsan_md5.lo tsan_platform_mac.lo tsan_rtl_mutex.lo \
 	tsan_suppressions.lo tsan_interface_ann.lo tsan_mman.lo \
-	tsan_rtl_report.lo tsan_symbolize_addr2line_linux.lo
+	tsan_rtl_report.lo tsan_fd.lo tsan_interface_java.lo \
+	tsan_mutexset.lo tsan_symbolize_addr2line_linux.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -273,6 +274,9 @@ tsan_files = \
         tsan_interface_ann.cc \
         tsan_mman.cc \
         tsan_rtl_report.cc \
+	tsan_fd.cc \
+        tsan_interface_java.cc \
+        tsan_mutexset.cc \
         tsan_symbolize_addr2line_linux.cc
 
 libtsan_la_SOURCES = $(tsan_files) 
@@ -393,14 +397,17 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_clock.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_fd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_ann.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_atomic.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_java.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_md5.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mman.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_mutexset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_platform_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_report.Plo@am__quote@

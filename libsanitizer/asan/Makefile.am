@@ -15,6 +15,7 @@ toolexeclib_LTLIBRARIES = libasan.la
 
 asan_files = \
 	asan_allocator.cc \
+	asan_allocator2.cc \
 	asan_interceptors.cc \
 	asan_mac.cc \
 	asan_malloc_mac.cc \
@@ -23,6 +24,7 @@ asan_files = \
 	asan_rtl.cc \
 	asan_stats.cc \
 	asan_thread_registry.cc \
+	asan_fake_stack.cc \
 	asan_globals.cc \
 	asan_linux.cc \
 	asan_malloc_linux.cc \

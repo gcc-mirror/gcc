@@ -154,6 +154,7 @@ int ThreadCreate(ThreadState *thr, uptr pc, uptr uid, bool detached) {
     thr->clock.release(&tctx->sync);
     StatInc(thr, StatSyncRelease);
     tctx->creation_stack.ObtainCurrent(thr, pc);
+    tctx->creation_tid = thr->tid;
   }
   return tid;
 }
@@ -303,6 +304,7 @@ void ThreadJoin(ThreadState *thr, uptr pc, int tid) {
     Printf("ThreadSanitizer: join of non-existent thread\n");
     return;
   }
+  // FIXME(dvyukov): print message and continue (it's user error).
   CHECK_EQ(tctx->detached, false);
   CHECK_EQ(tctx->status, ThreadStatusFinished);
   thr->clock.acquire(&tctx->sync);

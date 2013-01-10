@@ -14,10 +14,12 @@
 #include "asan_internal.h"
 #include "asan_mapping.h"
 #include "sanitizer/asan_interface.h"
+#include "sanitizer_common/sanitizer_libc.h"
 
 namespace __asan {
 
 void PoisonShadow(uptr addr, uptr size, u8 value) {
+  if (!flags()->poison_heap) return;
   CHECK(AddrIsAlignedByGranularity(addr));
   CHECK(AddrIsAlignedByGranularity(addr + size));
   uptr shadow_beg = MemToShadow(addr);
@@ -30,6 +32,7 @@ void PoisonShadowPartialRightRedzone(uptr addr,
                                      uptr size,
                                      uptr redzone_size,
                                      u8 value) {
+  if (!flags()->poison_heap) return;
   CHECK(AddrIsAlignedByGranularity(addr));
   u8 *shadow = (u8*)MemToShadow(addr);
   for (uptr i = 0; i < redzone_size;
@@ -150,6 +153,33 @@ bool __asan_address_is_poisoned(void const volatile *addr) {
   return __asan::AddressIsPoisoned((uptr)addr);
 }
 
+uptr __asan_region_is_poisoned(uptr beg, uptr size) {
+  if (!size) return 0;
+  uptr end = beg + size;
+  if (!AddrIsInMem(beg)) return beg;
+  if (!AddrIsInMem(end)) return end;
+  uptr aligned_b = RoundUpTo(beg, SHADOW_GRANULARITY);
+  uptr aligned_e = RoundDownTo(end, SHADOW_GRANULARITY);
+  uptr shadow_beg = MemToShadow(aligned_b);
+  uptr shadow_end = MemToShadow(aligned_e);
+  // First check the first and the last application bytes,
+  // then check the SHADOW_GRANULARITY-aligned region by calling
+  // mem_is_zero on the corresponding shadow.
+  if (!__asan::AddressIsPoisoned(beg) &&
+      !__asan::AddressIsPoisoned(end - 1) &&
+      (shadow_end <= shadow_beg ||
+       __sanitizer::mem_is_zero((const char *)shadow_beg,
+                                shadow_end - shadow_beg)))
+    return 0;
+  // The fast check failed, so we have a poisoned byte somewhere.
+  // Find it slowly.
+  for (; beg < end; beg++)
+    if (__asan::AddressIsPoisoned(beg))
+      return beg;
+  UNREACHABLE("mem_is_zero returned false, but poisoned byte was not found");
+  return 0;
+}
+
 // This is a simplified version of __asan_(un)poison_memory_region, which
 // assumes that left border of region to be poisoned is properly aligned.
 static void PoisonAlignedStackMemory(uptr addr, uptr size, bool do_poison) {
@@ -166,7 +196,7 @@ static void PoisonAlignedStackMemory(uptr addr, uptr size, bool do_poison) {
     // If possible, mark all the bytes mapping to last shadow byte as
     // unaddressable.
     if (end_value > 0 && end_value <= end_offset)
-      *shadow_end = kAsanStackUseAfterScopeMagic;
+      *shadow_end = (s8)kAsanStackUseAfterScopeMagic;
   } else {
     // If necessary, mark few first bytes mapping to last shadow byte
     // as addressable

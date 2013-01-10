@@ -15,8 +15,21 @@
 
 #include "asan_internal.h"
 #include "asan_interceptors.h"
+#include "sanitizer_common/sanitizer_list.h"
+
+// We are in the process of transitioning from the old allocator (version 1)
+// to a new one (version 2). The change is quite intrusive so both allocators
+// will co-exist in the source base for a while. The actual allocator is chosen
+// at build time by redefining this macrozz.
+#define ASAN_ALLOCATOR_VERSION 1
 
 namespace __asan {
+
+enum AllocType {
+  FROM_MALLOC = 1,  // Memory block came from malloc, calloc, realloc, etc.
+  FROM_NEW = 2,     // Memory block came from operator new.
+  FROM_NEW_BR = 3   // Memory block came from operator new [ ]
+};
 
 static const uptr kNumberOfSizeClasses = 255;
 struct AsanChunk;
@@ -32,16 +45,40 @@ class AsanChunkView {
   uptr FreeTid();
   void GetAllocStack(StackTrace *stack);
   void GetFreeStack(StackTrace *stack);
-  bool AddrIsInside(uptr addr, uptr access_size, uptr *offset);
-  bool AddrIsAtLeft(uptr addr, uptr access_size, uptr *offset);
-  bool AddrIsAtRight(uptr addr, uptr access_size, uptr *offset);
+  bool AddrIsInside(uptr addr, uptr access_size, uptr *offset) {
+    if (addr >= Beg() && (addr + access_size) <= End()) {
+      *offset = addr - Beg();
+      return true;
+    }
+    return false;
+  }
+  bool AddrIsAtLeft(uptr addr, uptr access_size, uptr *offset) {
+    (void)access_size;
+    if (addr < Beg()) {
+      *offset = Beg() - addr;
+      return true;
+    }
+    return false;
+  }
+  bool AddrIsAtRight(uptr addr, uptr access_size, uptr *offset) {
+    if (addr + access_size >= End()) {
+      if (addr <= End())
+        *offset = 0;
+      else
+        *offset = addr - End();
+      return true;
+    }
+    return false;
+  }
+
  private:
   AsanChunk *const chunk_;
 };
 
 AsanChunkView FindHeapChunkByAddress(uptr address);
 
-class AsanChunkFifoList {
+// List of AsanChunks with total size.
+class AsanChunkFifoList: public IntrusiveList<AsanChunk> {
  public:
   explicit AsanChunkFifoList(LinkerInitialized) { }
   AsanChunkFifoList() { clear(); }
@@ -50,12 +87,10 @@ class AsanChunkFifoList {
   AsanChunk *Pop();
   uptr size() { return size_; }
   void clear() {
-    first_ = last_ = 0;
+    IntrusiveList<AsanChunk>::clear();
     size_ = 0;
   }
  private:
-  AsanChunk *first_;
-  AsanChunk *last_;
   uptr size_;
 };
 
@@ -68,7 +103,11 @@ struct AsanThreadLocalMallocStorage {
   }
 
   AsanChunkFifoList quarantine_;
+#if ASAN_ALLOCATOR_VERSION == 1
   AsanChunk *free_lists_[kNumberOfSizeClasses];
+#else
+  uptr allocator2_cache[1024];  // Opaque.
+#endif
   void CommitBack();
 };
 
@@ -156,8 +195,9 @@ class FakeStack {
   FakeFrameLifo call_stack_;
 };
 
-void *asan_memalign(uptr alignment, uptr size, StackTrace *stack);
-void asan_free(void *ptr, StackTrace *stack);
+void *asan_memalign(uptr alignment, uptr size, StackTrace *stack,
+                    AllocType alloc_type);
+void asan_free(void *ptr, StackTrace *stack, AllocType alloc_type);
 
 void *asan_malloc(uptr size, StackTrace *stack);
 void *asan_calloc(uptr nmemb, uptr size, StackTrace *stack);
@@ -172,6 +212,53 @@ uptr asan_malloc_usable_size(void *ptr, StackTrace *stack);
 uptr asan_mz_size(const void *ptr);
 void asan_mz_force_lock();
 void asan_mz_force_unlock();
+
+void PrintInternalAllocatorStats();
+
+// Log2 and RoundUpToPowerOfTwo should be inlined for performance.
+#if defined(_WIN32) && !defined(__clang__)
+extern "C" {
+unsigned char _BitScanForward(unsigned long *index, unsigned long mask);  // NOLINT
+unsigned char _BitScanReverse(unsigned long *index, unsigned long mask);  // NOLINT
+#if defined(_WIN64)
+unsigned char _BitScanForward64(unsigned long *index, unsigned __int64 mask);  // NOLINT
+unsigned char _BitScanReverse64(unsigned long *index, unsigned __int64 mask);  // NOLINT
+#endif
+}
+#endif
+
+static inline uptr Log2(uptr x) {
+  CHECK(IsPowerOfTwo(x));
+#if !defined(_WIN32) || defined(__clang__)
+  return __builtin_ctzl(x);
+#elif defined(_WIN64)
+  unsigned long ret;  // NOLINT
+  _BitScanForward64(&ret, x);
+  return ret;
+#else
+  unsigned long ret;  // NOLINT
+  _BitScanForward(&ret, x);
+  return ret;
+#endif
+}
+
+static inline uptr RoundUpToPowerOfTwo(uptr size) {
+  CHECK(size);
+  if (IsPowerOfTwo(size)) return size;
+
+  unsigned long up;  // NOLINT
+#if !defined(_WIN32) || defined(__clang__)
+  up = SANITIZER_WORDSIZE - 1 - __builtin_clzl(size);
+#elif defined(_WIN64)
+  _BitScanReverse64(&up, size);
+#else
+  _BitScanReverse(&up, size);
+#endif
+  CHECK(size < (1ULL << (up + 1)));
+  CHECK(size > (1ULL << up));
+  return 1UL << (up + 1);
+}
+
 
 }  // namespace __asan
 #endif  // ASAN_ALLOCATOR_H

@@ -15,6 +15,7 @@
 #include "asan_stats.h"
 #include "asan_thread_registry.h"
 #include "sanitizer/asan_interface.h"
+#include "sanitizer_common/sanitizer_stackdepot.h"
 
 namespace __asan {
 
@@ -40,8 +41,9 @@ void AsanStats::Print() {
   Printf("Stats: %zuM freed by %zu calls\n", freed>>20, frees);
   Printf("Stats: %zuM really freed by %zu calls\n",
              really_freed>>20, real_frees);
-  Printf("Stats: %zuM (%zu full pages) mmaped in %zu calls\n",
-             mmaped>>20, mmaped / GetPageSizeCached(), mmaps);
+  Printf("Stats: %zuM (%zuM-%zuM) mmaped; %zu maps, %zu unmaps\n",
+             (mmaped-munmaped)>>20, mmaped>>20, munmaped>>20,
+             mmaps, munmaps);
 
   PrintMallocStatsArray("  mmaps   by size class: ", mmaped_by_size);
   PrintMallocStatsArray("  mallocs by size class: ", malloced_by_size);
@@ -59,6 +61,10 @@ static void PrintAccumulatedStats() {
   // Use lock to keep reports from mixing up.
   ScopedLock lock(&print_lock);
   stats.Print();
+  StackDepotStats *stack_depot_stats = StackDepotGetStats();
+  Printf("Stats: StackDepot: %zd ids; %zdM mapped\n",
+         stack_depot_stats->n_uniq_ids, stack_depot_stats->mapped >> 20);
+  PrintInternalAllocatorStats();
 }
 
 }  // namespace __asan

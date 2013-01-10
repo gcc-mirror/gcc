@@ -69,9 +69,7 @@ uptr GetShadowMemoryConsumption() {
 }
 
 void FlushShadowMemory() {
-  madvise((void*)kLinuxShadowBeg,
-          kLinuxShadowEnd - kLinuxShadowBeg,
-          MADV_DONTNEED);
+  FlushUnneededShadowMemory(kLinuxShadowBeg, kLinuxShadowEnd - kLinuxShadowBeg);
 }
 
 #ifndef TSAN_GO
@@ -117,16 +115,6 @@ void InitializeShadowMemory() {
   DPrintf("stack        %zx\n", (uptr)&shadow);
 }
 #endif
-
-void MapThreadTrace(uptr addr, uptr size) {
-  DPrintf("Mapping trace at %p-%p(0x%zx)\n", addr, addr + size, size);
-  CHECK_GE(addr, kTraceMemBegin);
-  CHECK_LE(addr + size, kTraceMemBegin + kTraceMemSize);
-  if (addr != (uptr)MmapFixedNoReserve(addr, size)) {
-    Printf("FATAL: ThreadSanitizer can not mmap thread trace\n");
-    Die();
-  }
-}
 
 static uptr g_data_start;
 static uptr g_data_end;
@@ -180,18 +168,14 @@ static uptr g_tls_size;
 #else
 # define INTERNAL_FUNCTION
 #endif
-extern "C" void _dl_get_tls_static_info(size_t*, size_t*)
-    __attribute__((weak)) INTERNAL_FUNCTION;
 
 static int InitTlsSize() {
   typedef void (*get_tls_func)(size_t*, size_t*) INTERNAL_FUNCTION;
-  get_tls_func get_tls = &_dl_get_tls_static_info;
-  if (get_tls == 0) {
-    void *get_tls_static_info_ptr = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
-    CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
-    internal_memcpy(&get_tls, &get_tls_static_info_ptr,
-                    sizeof(get_tls_static_info_ptr));
-  }
+  get_tls_func get_tls;
+  void *get_tls_static_info_ptr = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
+  CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
+  internal_memcpy(&get_tls, &get_tls_static_info_ptr,
+                  sizeof(get_tls_static_info_ptr));
   CHECK_NE(get_tls, 0);
   size_t tls_size = 0;
   size_t tls_align = 0;
@@ -220,29 +204,35 @@ const char *InitializePlatform() {
     // Disable core dumps, dumping of 16TB usually takes a bit long.
     setlim(RLIMIT_CORE, 0);
   }
-  bool reexec = false;
-  // TSan doesn't play well with unlimited stack size (as stack
-  // overlaps with shadow memory). If we detect unlimited stack size,
-  // we re-exec the program with limited stack size as a best effort.
-  if (getlim(RLIMIT_STACK) == (rlim_t)-1) {
-    const uptr kMaxStackSize = 32 * 1024 * 1024;
-    Report("WARNING: Program is run with unlimited stack size, which "
-           "wouldn't work with ThreadSanitizer.\n");
-    Report("Re-execing with stack size limited to %zd bytes.\n", kMaxStackSize);
-    SetStackSizeLimitInBytes(kMaxStackSize);
-    reexec = true;
-  }
 
-  if (getlim(RLIMIT_AS) != (rlim_t)-1) {
-    Report("WARNING: Program is run with limited virtual address space, which "
-           "wouldn't work with ThreadSanitizer.\n");
-    Report("Re-execing with unlimited virtual address space.\n");
-    setlim(RLIMIT_AS, -1);
-    reexec = true;
-  }
+  // Go maps shadow memory lazily and works fine with limited address space.
+  // Unlimited stack is not a problem as well, because the executable
+  // is not compiled with -pie.
+  if (kCppMode) {
+    bool reexec = false;
+    // TSan doesn't play well with unlimited stack size (as stack
+    // overlaps with shadow memory). If we detect unlimited stack size,
+    // we re-exec the program with limited stack size as a best effort.
+    if (getlim(RLIMIT_STACK) == (rlim_t)-1) {
+      const uptr kMaxStackSize = 32 * 1024 * 1024;
+      Report("WARNING: Program is run with unlimited stack size, which "
+             "wouldn't work with ThreadSanitizer.\n");
+      Report("Re-execing with stack size limited to %zd bytes.\n",
+             kMaxStackSize);
+      SetStackSizeLimitInBytes(kMaxStackSize);
+      reexec = true;
+    }
 
-  if (reexec)
-    ReExec();
+    if (getlim(RLIMIT_AS) != (rlim_t)-1) {
+      Report("WARNING: Program is run with limited virtual address space,"
+             " which wouldn't work with ThreadSanitizer.\n");
+      Report("Re-execing with unlimited virtual address space.\n");
+      setlim(RLIMIT_AS, -1);
+      reexec = true;
+    }
+    if (reexec)
+      ReExec();
+  }
 
 #ifndef TSAN_GO
   CheckPIE();
