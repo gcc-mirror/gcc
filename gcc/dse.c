@@ -1495,10 +1495,7 @@ record_store (rtx body, bb_info_t bb_info)
   if (GET_MODE (mem) == BLKmode)
     width = MEM_SIZE (mem);
   else
-    {
-      width = GET_MODE_SIZE (GET_MODE (mem));
-      gcc_assert ((unsigned) width <= HOST_BITS_PER_WIDE_INT);
-    }
+    width = GET_MODE_SIZE (GET_MODE (mem));
 
   if (spill_alias_set)
     {
