@@ -3134,7 +3134,9 @@ expand_call (tree exp, rtx target, int ignore)
 	  int arg_nr = return_flags & ERF_RETURN_ARG_MASK;
 	  if (PUSH_ARGS_REVERSED)
 	    arg_nr = num_actuals - arg_nr - 1;
-	  if (args[arg_nr].reg
+	  if (arg_nr >= 0
+	      && arg_nr < num_actuals
+	      && args[arg_nr].reg
 	      && valreg
 	      && REG_P (valreg)
 	      && GET_MODE (args[arg_nr].reg) == GET_MODE (valreg))
