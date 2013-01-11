@@ -219,7 +219,9 @@ proc gdb_batch_check {command pattern} {
     set gdb_name $::env(GUALITY_GDB_NAME)
     set cmd "$gdb_name -nw -nx -quiet -batch -ex \"$command\""
     send_log "Spawning: $cmd\n"
-    set res [remote_spawn target "$cmd"]
+    if [catch { set res [remote_spawn target "$cmd"] } ] {
+	return 0
+    }
     if { $res < 0 || $res == "" } {
 	return 0
     }
