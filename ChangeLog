@@ -24,12 +24,12 @@
 2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config.sub: Merge from config repo.
-	* config.guess: Dito.
+	* config.guess: Ditto.
 
 2013-01-08  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* Makefile.def: Merge from binutils.
-	* Makefile.in: Dito.
+	* Makefile.in: Ditto.
 
 2013-01-01  Maxim Kuvyrkov  <maxim.kuvyrkov@gmail.com>
 
